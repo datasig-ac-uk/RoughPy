@@ -1,6 +1,6 @@
 [submodule "external/libalgebra_lite"]
 	path = external/libalgebra_lite
-	url = ssh://github/datasig-ac-uk/libalgebra-lite.git
+	url = github:datasig-ac-uk/libalgebra-lite
 [submodule "external/pybind11"]
 	path = external/pybind11
 	url = https://github.com/pybind/pybind11.git
