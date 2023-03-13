@@ -32,12 +32,12 @@ target_link_libraries(RoughPy_Streams PUBLIC
 
 
 set(ROUGHPY_STREAMS_PUBLIC_HEADERS
-        include/roughpy/paths/dyadic_caching_layer.h
-        include/roughpy/paths/dynamically_constructed_stream.h
-        include/roughpy/paths/lie_increment_stream.h
-        include/roughpy/paths/stream.h
-        include/roughpy/paths/stream_base.h
-        include/roughpy/paths/tick_stream.h
+        include/roughpy/streams/dyadic_caching_layer.h
+        include/roughpy/streams/dynamically_constructed_stream.h
+        include/roughpy/streams/lie_increment_stream.h
+        include/roughpy/streams/stream.h
+        include/roughpy/streams/stream_base.h
+        include/roughpy/streams/tick_stream.h
         )
 
 target_sources(RoughPy_Streams

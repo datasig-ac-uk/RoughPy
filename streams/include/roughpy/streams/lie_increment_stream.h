@@ -1,5 +1,5 @@
-#ifndef ROUGHPY_PATHS_LIE_INCREMENT_STREAM_H_
-#define ROUGHPY_PATHS_LIE_INCREMENT_STREAM_H_
+#ifndef ROUGHPY_STREAMS_LIE_INCREMENT_STREAM_H_
+#define ROUGHPY_STREAMS_LIE_INCREMENT_STREAM_H_
 
 #include "stream_base.h"
 #include "dyadic_caching_layer.h"
@@ -36,4 +36,4 @@ public:
 }}
 
 
-#endif // ROUGHPY_PATHS_LIE_INCREMENT_STREAM_H_
+#endif // ROUGHPY_STREAMS_LIE_INCREMENT_STREAM_H_

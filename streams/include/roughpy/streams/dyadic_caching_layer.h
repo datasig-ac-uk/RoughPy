@@ -1,5 +1,5 @@
-#ifndef ROUGHPY_PATHS_DYADIC_CACHING_LAYER_H_
-#define ROUGHPY_PATHS_DYADIC_CACHING_LAYER_H_
+#ifndef ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_
+#define ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_
 
 
 #include <map>
@@ -54,4 +54,4 @@ algebra::Lie DyadicCachingLayer<BaseInterface>::log_signature(const intervals::I
 }
 
 }}
-#endif // ROUGHPY_PATHS_DYADIC_CACHING_LAYER_H_
+#endif // ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_

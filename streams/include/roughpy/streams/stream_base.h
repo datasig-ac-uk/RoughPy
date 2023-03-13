@@ -1,5 +1,5 @@
-#ifndef ROUGHPY_PATHS_STREAM_BASE_H_
-#define ROUGHPY_PATHS_STREAM_BASE_H_
+#ifndef ROUGHPY_STREAMS_STREAM_BASE_H_
+#define ROUGHPY_STREAMS_STREAM_BASE_H_
 
 #include <roughpy/algebra/context.h>
 #include <roughpy/config/implementation_types.h>
@@ -95,4 +95,4 @@ public:
 }// namespace streams
 }// namespace rpy
 
-#endif// ROUGHPY_PATHS_STREAM_BASE_H_
+#endif// ROUGHPY_STREAMS_STREAM_BASE_H_

@@ -1,5 +1,5 @@
-#ifndef ROUGHPY_PATHS_STREAM_H_
-#define ROUGHPY_PATHS_STREAM_H_
+#ifndef ROUGHPY_STREAMS_STREAM_H_
+#define ROUGHPY_STREAMS_STREAM_H_
 
 #include "roughpy_streams_export.h"
 #include "stream_base.h"
@@ -84,4 +84,4 @@ Stream::Stream(Impl &&impl)
 }// namespace streams
 }// namespace rpy
 
-#endif// ROUGHPY_PATHS_STREAM_H_
+#endif// ROUGHPY_STREAMS_STREAM_H_
