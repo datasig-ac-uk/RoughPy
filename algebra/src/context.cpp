@@ -1,0 +1,185 @@
+//
+// Created by user on 05/03/23.
+//
+
+#include "context.h"
+
+#include "hall_set_size.h"
+
+#include <unordered_map>
+#include <mutex>
+
+#include <boost/functional/hash.hpp>
+
+using namespace rpy;
+using namespace rpy::algebra;
+
+
+ContextBase::ContextBase(
+    deg_t width,
+    deg_t depth,
+    const dimn_t *lie_sizes,
+    const dimn_t *tensor_sizes)
+    : m_width(width),
+      m_depth(depth),
+      p_lie_sizes(lie_sizes),
+      p_tensor_sizes(tensor_sizes)
+{
+    if (!p_tensor_sizes) {
+        auto *tsizes = new dimn_t[1 + m_depth];
+        // Immediately give ownership to the MaybeOwned type so we don't leak
+        // memory.
+        p_tensor_sizes = tsizes;
+        tsizes[0] = 1;
+        tsizes[1] = 1 + m_width;
+        for (deg_t i = 1; i <= m_depth; ++i) {
+            tsizes[i] = 1 + tsizes[i - 1] * m_width;
+        }
+    }
+
+    if (!p_lie_sizes) {
+        HallSetSizeHelper helper(m_width, m_depth);
+        auto* lsizes = new dimn_t[1 + m_depth];
+        // Immediately give ownership to the MaybeOwned type so we don't leak
+        // memory.
+        p_lie_sizes = lsizes;
+        lsizes[0] = 0;
+        lsizes[1] = m_width;
+        for (int i=2; i<=m_depth; ++i) {
+            lsizes[i] = helper(i)*lsizes[i-1];
+        }
+    }
+
+}
+
+ContextBase::~ContextBase() = default;
+
+
+dimn_t ContextBase::lie_size(deg_t deg) const noexcept {
+    if (deg < 0 || deg > m_depth) {
+        deg = m_depth;
+    }
+    return p_lie_sizes[deg];
+}
+dimn_t ContextBase::tensor_size(deg_t deg) const noexcept {
+    if (deg < 0 || deg > m_depth) {
+        deg = m_depth;
+    }
+    return p_tensor_sizes[deg];
+}
+bool Context::check_compatible(const Context &other_ctx) const noexcept {
+    return false;
+}
+FreeTensor Context::zero_free_tensor(VectorType vtype) const {
+    return construct_free_tensor({ scalars::KeyScalarArray(), vtype });
+}
+ShuffleTensor Context::zero_shuffle_tensor(VectorType vtype) const {
+    return construct_shuffle_tensor({scalars::KeyScalarArray(), vtype});
+}
+Lie Context::zero_lie(VectorType vtype) const {
+    return construct_lie({scalars::KeyScalarArray(), vtype});
+}
+FreeTensor Context::to_signature(const Lie &log_signature) const {
+    return lie_to_tensor(log_signature).exp();
+}
+
+void Context::lie_to_tensor_fallback(FreeTensor &result, const Lie &arg) const {
+    //TODO: Implement
+}
+void Context::tensor_to_lie_fallback(Lie &result, const FreeTensor &arg) const {
+    //TODO: Implement
+}
+void Context::cbh_fallback(FreeTensor &collector, const std::vector<Lie> &lies) const {
+    for (const auto &alie : lies) {
+        collector.fmexp(this->lie_to_tensor(alie));
+    }
+}
+
+Lie Context::cbh(const std::vector<Lie> &lies, VectorType vtype) const {
+    FreeTensor collector = zero_free_tensor(vtype);
+    collector[0] = scalars::Scalar(1);
+
+    cbh_fallback(collector, lies);
+
+    return tensor_to_lie(collector.log());
+}
+
+static std::recursive_mutex s_context_lock;
+
+static std::vector<std::unique_ptr<ContextMaker>>& get_context_maker_list() {
+    static std::vector<std::unique_ptr<ContextMaker>> list;
+    return list;
+}
+
+namespace {
+
+class ConcreteContextBase : public ContextBase {
+public:
+
+    ConcreteContextBase(deg_t width, deg_t depth) :
+        ContextBase(width, depth, nullptr, nullptr)
+    {}
+
+};
+
+}
+
+
+base_context_pointer get_base_context(deg_t width, deg_t depth) {
+    std::lock_guard<std::recursive_mutex> access(s_context_lock);
+    auto& maker_list = get_context_maker_list();
+
+    for (const auto& maker : maker_list) {
+        auto found = maker->get_base_context(width, depth);
+        if (found.has_value()) {
+            return found.value();
+        }
+    }
+
+    // No context makers have a base context with this configuration, let's
+    // make a new one
+    static std::vector<base_context_pointer> s_base_context_cache;
+
+    for (const auto& bcp : s_base_context_cache) {
+        if (bcp->width() == width && bcp->depth() == depth) {
+            return bcp;
+        }
+    }
+
+    s_base_context_cache.emplace_back(new ConcreteContextBase(width, depth));
+    return s_base_context_cache.back();
+}
+context_pointer get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype,
+                            const std::vector<std::pair<std::string, std::string>> &preferences) {
+    std::lock_guard<std::recursive_mutex> access(s_context_lock);
+    auto& maker_list = get_context_maker_list();
+
+    std::vector<const ContextMaker*> found;
+    found.reserve(maker_list.size());
+    for (const auto& maker : maker_list) {
+        if (maker->can_get(std::make_tuple(width, depth, ctype, preferences))) {
+            found.push_back(maker.get());
+        }
+    }
+
+    if (found.empty()) {
+        throw std::invalid_argument("cannot find a context maker for the width, depth, ctype, and preferences set");
+    }
+
+    if (found.size() > 1) {
+        throw std::invalid_argument("found multiple context maker candidates for specified width, depth, ctype, and preferences set");
+    }
+
+    return found[0]->get_context(width, depth, ctype, preferences);
+}
+
+const ContextMaker *register_context_maker(std::unique_ptr<ContextMaker> maker) {
+    std::lock_guard<std::recursive_mutex> access(s_context_lock);
+    auto& maker_list = get_context_maker_list();
+    maker_list.push_back(std::move(maker));
+    return maker_list.back().get();
+}
+
+bool ContextMaker::can_get(deg_t width, deg_t depth, const scalars::ScalarType *ctype, const preference_list &preferences) const {
+    return false;
+}
