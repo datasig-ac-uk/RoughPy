@@ -78,6 +78,12 @@ public:
     const void *ptr() const noexcept { return p_data; }
 
     /**
+     * @brief Get the raw pointer contained held
+     * @return const raw pointer to underlying data
+     */
+    const void *cptr() const noexcept { return p_data; }
+
+    /**
      * @brief Get the mutable raw pointer held
      * @return mutable raw pointer to underlying data
      */

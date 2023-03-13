@@ -137,7 +137,7 @@ namespace dtl {
 template <typename T>
 struct type_of_T_defined {
     static T cast(ScalarPointer scalar) {
-        const auto *tp = ScalarType::of<T>;
+        const auto *tp = ScalarType::of<T>();
         if (tp == scalar.type()) {
             return *scalar.raw_cast<const T *>();
         }

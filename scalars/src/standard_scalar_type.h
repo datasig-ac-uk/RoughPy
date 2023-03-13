@@ -227,7 +227,7 @@ public:
         *ptr /= try_convert(rhs);
     }
     bool is_zero(ScalarPointer arg) const override {
-        return arg || *arg.raw_cast<const ScalarImpl *>() == ScalarImpl(0);
+        return !static_cast<bool>(arg) || *arg.raw_cast<const ScalarImpl *>() == ScalarImpl(0);
     }
     void print(ScalarPointer arg, std::ostream &os) const override {
         if (!arg) {

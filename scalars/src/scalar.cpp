@@ -91,9 +91,6 @@ bool Scalar::is_zero() const noexcept {
     if (m_pointer_type == InterfacePointer) {
         return static_cast<const ScalarInterface *>(p_data)->is_zero();
     }
-    if (m_pointer_type == OwnedPointer) {
-        return true;
-    }
 
     // TODO: finish this off?
     return p_type->is_zero(to_pointer());

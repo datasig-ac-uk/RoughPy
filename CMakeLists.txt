@@ -13,6 +13,8 @@ if (ROUGHPY_BUILD_TESTS)
     if(NOT TARGET GTest::gtest)
         message(FATAL_ERROR "GTest::gtest target not defined")
     endif()
+
+    enable_testing()
 endif()
 
 include(cmake/roughpy_test_helpers.cmake)

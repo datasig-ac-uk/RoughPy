@@ -62,7 +62,6 @@ target_sources(RoughPy_Scalars
 
 target_include_directories(RoughPy_Scalars
         PRIVATE
-            "${CMAKE_CURRENT_BINARY_DIR}"
             "include/roughpy/scalars"
         PUBLIC
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
@@ -71,9 +70,6 @@ target_include_directories(RoughPy_Scalars
         )
 
 generate_export_header(RoughPy_Scalars)
-
-target_compile_definitions(RoughPy_Scalars PRIVATE
-        RoughPy_Scalars_EXPORTS=1)
 
 
 set_target_properties(RoughPy_Scalars PROPERTIES
@@ -84,7 +80,7 @@ set_target_properties(RoughPy_Scalars PROPERTIES
 
 
 add_roughpy_test(scalar
+        LINK_COMPONENT
         SRC
             src/test_scalar.cpp
-        LINK_COMPONENT
         )
