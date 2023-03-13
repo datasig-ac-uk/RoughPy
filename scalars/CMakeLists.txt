@@ -56,6 +56,8 @@ target_sources(RoughPy_Scalars
             src/float_type.h
             src/double_type.cpp
             src/double_type.h
+            src/RationalType.cpp
+            src/RationalType.h
         )
 
 
@@ -77,10 +79,21 @@ set_target_properties(RoughPy_Scalars PROPERTIES
 
         )
 
+if (TARGET Bignum::Bignum)
+    set(RPY_RATIONAL_HEADER "gmp.hpp")
+    set(RPY_RATIONAL_TYPE "boost::multiprecision::mpq_rational")
+    target_link_libraries(RoughPy_Scalars PUBLIC Bignum::Bignum)
+else()
+    set(RPY_RATIONAL_HEADER "cpp_int.hpp")
+    set(RPY_RATIONAL_TYPE "boost::multiprecision::cpp_rational")
+endif()
+
+configure_file("src/rational_type.h.in" "rational_type.h" NO_SOURCE_PERMISSIONS @ONLY)
 
 
 add_roughpy_test(scalar
         LINK_COMPONENT
         SRC
             src/test_scalar.cpp
+            src/test_scalar_type.cpp
         )

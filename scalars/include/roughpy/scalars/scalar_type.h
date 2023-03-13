@@ -3,6 +3,7 @@
 
 #include "roughpy_scalars_export.h"
 #include "scalars_fwd.h"
+#include "rational_type.h"
 
 #include <functional>
 #include <iosfwd>
@@ -363,8 +364,8 @@ ROUGHPY_SCALARS_EXPORT const ScalarType *scalar_type_holder<float>::get_type() n
 template <>
 ROUGHPY_SCALARS_EXPORT const ScalarType *scalar_type_holder<double>::get_type() noexcept;
 
-//template <>
-//ROUGHPY_SCALARS_EXPORT const ScalarType *scalar_type_holder<rational_scalar_type>::get_type() noexcept;
+template <>
+ROUGHPY_SCALARS_EXPORT const ScalarType *scalar_type_holder<rational_scalar_type>::get_type() noexcept;
 
 }// namespace dtl
 

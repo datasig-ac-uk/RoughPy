@@ -22,6 +22,10 @@ class SparseMutableRefScalarImpl : public ScalarInterface {
     data_type m_data;
 
 public:
+
+    explicit SparseMutableRefScalarImpl(data_type&& arg) : m_data(std::move(arg))
+    {}
+
     using value_type = typename MapType::mapped_type;
     using rational_type = typename trait::rational_type;
 

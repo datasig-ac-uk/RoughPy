@@ -12,10 +12,10 @@ namespace algebra {
 
 template <typename Iter>
 struct iterator_helper_trait {
-    static auto key(Iter& it) noexcept -> decltype(it->first) {
+    static auto key(const Iter& it) noexcept -> decltype(it->first) {
         return it->first;
     }
-    static auto value(Iter& it) noexcept ->decltype(it->second) {
+    static auto value(const Iter& it) noexcept ->decltype(it->second) {
         return it->second;
     }
 };
@@ -29,18 +29,18 @@ class AlgebraIteratorImplementation : public AlgebraIteratorInterface {
 public:
 
     AlgebraIteratorImplementation(Iter iter, const RealBasis* basis)
-        : m_iter(std::move(iter)), p_basis(basis)
+        : AlgebraIteratorInterface(Basis(p_basis)), m_iter(std::move(iter)), p_basis(basis)
     {}
 
     key_type key() const noexcept override {
-        return basis_info<RealBasis>::convert_key(p_basis, itraits::key(m_iter));
+        return basis_info<RealBasis>::convert_key(*p_basis, itraits::key(m_iter));
     }
     scalars::Scalar value() const noexcept override {
         using trait = scalars::scalar_type_trait<decltype(itraits::value(m_iter))>;
         return trait::make(itraits::value(m_iter));
     }
     std::shared_ptr<AlgebraIteratorInterface> clone() const override {
-        return {new AlgebraIteratorImplementation(p_basis, m_iter)};
+        return std::shared_ptr<AlgebraIteratorInterface>(new AlgebraIteratorImplementation(m_iter, p_basis));
     }
     void advance() override {
         ++m_iter;

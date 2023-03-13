@@ -96,3 +96,13 @@ target_include_directories(RoughPy_Algebra
         )
 
 generate_export_header(RoughPy_Algebra)
+
+
+
+add_roughpy_test(algebra
+        SRC
+            src/ContextFixture.cpp
+            src/ContextFixture.h
+            src/test_lie.cpp
+        LINK_COMPONENT
+        )

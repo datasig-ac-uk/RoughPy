@@ -39,7 +39,7 @@ FreeTensor FreeTensor::antipode() const {
 }
 FreeTensor& FreeTensor::fmexp(const FreeTensor &other) {
     if (p_impl && !is_equivalent_to_zero(other)) {
-       p_impl->fmexp(*other);
+       p_impl->fmexp(other);
     }
     return *this;
 }

@@ -80,7 +80,7 @@ struct algebra_info<lal::lie<Coeffs, VectorType, Storage>> {
 //    }
 
     static algebra_t create_like(const algebra_t &instance) {
-        return Algebra(instance.get_basis(), instance.multiplication());
+        return algebra_t(instance.get_basis(), instance.multiplication());
     }
 };
 

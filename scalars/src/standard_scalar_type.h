@@ -18,7 +18,7 @@ template <typename ScalarImpl>
 class StandardScalarType : public ScalarType {
 public:
     explicit StandardScalarType(std::string id, std::string name)
-        : ScalarType({{2U, sizeof(ScalarImpl)*8, 1U},
+        : ScalarType({{2U, std::uint8_t(sizeof(ScalarImpl)*8), 1U},
                       std::move(name), std::move(id)}) {}
 
 

@@ -20,7 +20,7 @@ public:
     }
 
     static Scalar make(value_type &&arg) {
-        return Scalar(arg, get_type());
+        return Scalar(get_type(), std::move(arg));
     }
 };
 
@@ -37,7 +37,7 @@ public:
     }
 
     static Scalar make(reference arg) {
-        return Scalar(ScalarPointer(&arg, get_type()));
+        return Scalar(ScalarPointer(get_type(), &arg));
     }
 };
 
@@ -54,7 +54,7 @@ public:
     }
 
     static Scalar make(const_reference arg) {
-        return Scalar(ScalarPointer(&arg, get_type()));
+        return Scalar(ScalarPointer(get_type(), &arg));
     }
 };
 

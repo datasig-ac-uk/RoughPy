@@ -16,11 +16,13 @@ class ROUGHPY_ALGEBRA_EXPORT FreeTensorInterface
 public:
     using algebra_interface_t = AlgebraInterface<FreeTensor>;
 
+    using algebra_interface_t::algebra_interface_t;
+
     virtual FreeTensor exp() const = 0;
     virtual FreeTensor log() const = 0;
     virtual FreeTensor inverse() const = 0;
     virtual FreeTensor antipode() const = 0;
-    virtual void fmexp(const FreeTensorInterface& other) = 0;
+    virtual void fmexp(const FreeTensor& other) = 0;
 };
 
 template <typename, template <typename> class>

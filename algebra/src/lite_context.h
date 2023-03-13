@@ -117,11 +117,11 @@ private:
 
 
     template <VectorType VType>
-    free_tensor_t<VType> convert_impl(const FreeTensor& arg);
+    free_tensor_t<VType> convert_impl(const FreeTensor& arg) const;
     template <VectorType VType>
-    shuffle_tensor_t<VType> convert_impl(const ShuffleTensor& arg);
+    shuffle_tensor_t<VType> convert_impl(const ShuffleTensor& arg) const;
     template <VectorType VType>
-    lie_t<VType> convert_impl(const Lie& arg);
+    lie_t<VType> convert_impl(const Lie& arg) const;
 
 
 
@@ -237,7 +237,7 @@ void tensor_populate_vcd(VectorConstructionData& data, const TensorObject& arg) 
 
 template <typename Coefficients>
 template <VectorType VType>
-typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Coefficients>::convert_impl(const FreeTensor &arg) {
+typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Coefficients>::convert_impl(const FreeTensor &arg) const {
     /*
      * Tensor bases are assumed to be order-isomorphic to one another.
      * So it is quite safe to copy the data across from the source tensor
@@ -254,7 +254,7 @@ typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Co
 }
 template <typename Coefficients>
 template <VectorType VType>
-typename LiteContext<Coefficients>::template shuffle_tensor_t<VType> LiteContext<Coefficients>::convert_impl(const ShuffleTensor &arg) {
+typename LiteContext<Coefficients>::template shuffle_tensor_t<VType> LiteContext<Coefficients>::convert_impl(const ShuffleTensor &arg) const {
     /*
      * See comments in the convert_impl for FreeTensor. The same applies here.
      */
@@ -267,7 +267,7 @@ typename LiteContext<Coefficients>::template shuffle_tensor_t<VType> LiteContext
 }
 template <typename Coefficients>
 template <VectorType VType>
-typename LiteContext<Coefficients>::template lie_t<VType> LiteContext<Coefficients>::convert_impl(const Lie &arg) {
+typename LiteContext<Coefficients>::template lie_t<VType> LiteContext<Coefficients>::convert_impl(const Lie &arg) const {
     /*
      * Lie bases need not be order-isomorphic to one another. We get around this by
      * factoring the Lie object through the FreeTensor. So we use arg.context() to
@@ -275,7 +275,7 @@ typename LiteContext<Coefficients>::template lie_t<VType> LiteContext<Coefficien
      * then use tensor_to_lie (from this) to convert back to a lie_t<VType>.
      */
     auto tensor_version = arg->context()->lie_to_tensor(arg);
-    return tensor_to_lie_impl<VType>(convert_impl<VType>(tensor_version));
+    return m_maps.tensor_to_lie(convert_impl<VType>(tensor_version));
 }
 
 template <typename Coefficients>
@@ -415,7 +415,7 @@ typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Co
 template <typename Coefficients>
 template <VectorType VType>
 typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Coefficients>::sig_derivative_single(const LiteContext::free_tensor_t<VType> &signature, const LiteContext::free_tensor_t<VType> &t_incr, const LiteContext::free_tensor_t<VType> &perturbation) const {
-    return signature * derive_series_compute(t_incr, perturbation);
+    return signature * derive_series_compute<VType>(t_incr, perturbation);
 }
 template <typename Coefficients>
 template <VectorType VType>
@@ -445,19 +445,19 @@ typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Co
 
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::construct_impl(const VectorConstructionData &data, dtl::alg_type_tag<AlgebraType::FreeTensor>) const {
-#define RPY_SWITCH_FN(VTYPE) new FreeTensorImplementation<free_tensor_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<free_tensor_t<(VTYPE)>>(data))
+#define RPY_SWITCH_FN(VTYPE) new FreeTensorImplementation<free_tensor_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<free_tensor_t<(VTYPE)>>(data, p_tbasis, p_ftmul))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::construct_impl(const VectorConstructionData &data, dtl::alg_type_tag<AlgebraType::ShuffleTensor>) const {
-#define RPY_SWITCH_FN(VTYPE) new AlgebraImplementation<ShuffleTensorInterface, shuffle_tensor_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<shuffle_tensor_t<(VTYPE)>>(data))
+#define RPY_SWITCH_FN(VTYPE) new AlgebraImplementation<ShuffleTensorInterface, shuffle_tensor_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<shuffle_tensor_t<(VTYPE)>>(data, p_tbasis, p_stmul))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::construct_impl(const VectorConstructionData &data, dtl::alg_type_tag<AlgebraType::Lie>) const {
-#define RPY_SWITCH_FN(VTYPE) new AlgebraImplementation<LieInterface, lie_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<lie_t<(VTYPE)>>(data))
+#define RPY_SWITCH_FN(VTYPE) new AlgebraImplementation<LieInterface, lie_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<lie_t<(VTYPE)>>(data, p_lbasis, p_liemul))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
 #undef RPY_SWITCH_FN
 }
@@ -469,6 +469,7 @@ LiteContext<Coefficients>::LiteContext(deg_t width, deg_t depth)
       Context(width, depth, scalars::ScalarType::of<scalar_type>(),
               std::string("libalgebra_lite"),
               p_tbasis->sizes().data(), p_lbasis->sizes().data()),
+      m_tensor_basis(&*p_tbasis), m_lie_basis(&*p_lbasis),
       p_ftmul(lal::multiplication_registry<lal::free_tensor_multiplication>::get(*p_tbasis)),
       p_liemul(lal::multiplication_registry<lal::lie_multiplication>::get(*p_lbasis)),
       p_stmul(lal::multiplication_registry<lal::shuffle_tensor_multiplication>::get(*p_tbasis)),
@@ -502,39 +503,39 @@ Basis LiteContext<Coefficients>::get_tensor_basis() const {
 template <typename Coefficients>
 FreeTensor LiteContext<Coefficients>::convert(const FreeTensor &arg, optional<VectorType> new_vec_type) const {
     auto vtype = (new_vec_type.has_value()) ? new_vec_type.value() : arg.storage_type();
-#define RPY_SWITCH_FN(VTYPE) FreeTensor(convert_impl<VTYPE>(arg), this)
+#define RPY_SWITCH_FN(VTYPE) FreeTensor(this, convert_impl<(VTYPE)>(arg))
     RPY_MAKE_VTYPE_SWITCH(vtype)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 ShuffleTensor LiteContext<Coefficients>::convert(const ShuffleTensor &arg, optional<VectorType> new_vec_type) const {
     auto vtype = (new_vec_type.has_value()) ? new_vec_type.value() : arg.storage_type();
-#define RPY_SWITCH_FN(VTYPE) ShuffleTensor(convert_impl<VTYPE>(arg), this)
+#define RPY_SWITCH_FN(VTYPE) ShuffleTensor(this, convert_impl<(VTYPE)>(arg))
     RPY_MAKE_VTYPE_SWITCH(vtype)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 Lie LiteContext<Coefficients>::convert(const Lie &arg, optional<VectorType> new_vec_type) const {
     auto vtype = (new_vec_type.has_value()) ? new_vec_type.value() : arg.storage_type();
-#define RPY_SWITCH_FN(VTYPE) Lie(convert_impl<VTYPE>(arg), this)
+#define RPY_SWITCH_FN(VTYPE) Lie(this, convert_impl<(VTYPE)>(arg))
     RPY_MAKE_VTYPE_SWITCH(vtype)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 FreeTensor LiteContext<Coefficients>::construct_free_tensor(const VectorConstructionData &arg) const {
-#define RPY_SWITCH_FN(VTYPE) construct_impl<free_tensor_t<(VTYPE)>>(arg)
+#define RPY_SWITCH_FN(VTYPE) FreeTensor(this, construct_impl<free_tensor_t<(VTYPE)>>(arg, p_tbasis, p_ftmul))
     RPY_MAKE_VTYPE_SWITCH(arg.vector_type)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 ShuffleTensor LiteContext<Coefficients>::construct_shuffle_tensor(const VectorConstructionData &arg) const {
-#define RPY_SWITCH_FN(VTYPE) construct_impl<shuffle_tensor_t<(VTYPE)>>(arg)
+#define RPY_SWITCH_FN(VTYPE) ShuffleTensor(this, construct_impl<shuffle_tensor_t<(VTYPE)>>(arg, p_tbasis, p_stmul))
     RPY_MAKE_VTYPE_SWITCH(arg.vector_type)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 Lie LiteContext<Coefficients>::construct_lie(const VectorConstructionData &arg) const {
-#define RPY_SWITCH_FN(VTYPE) construct_impl<lie_t<(VTYPE)>>(arg);
+#define RPY_SWITCH_FN(VTYPE) Lie(this, construct_impl<lie_t<(VTYPE)>>(arg, p_lbasis, p_liemul))
     RPY_MAKE_VTYPE_SWITCH(arg.vector_type)
 #undef RPY_SWITCH_FN
 }
@@ -546,7 +547,7 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::construct(AlgebraType type, co
 }
 template <typename Coefficients>
 FreeTensor LiteContext<Coefficients>::lie_to_tensor(const Lie &arg) const {
-#define RPY_SWITCH_FN(VTYPE) FreeTensor(lie_to_tensor_impl<VTYPE>(arg), this)
+#define RPY_SWITCH_FN(VTYPE) FreeTensor(this, lie_to_tensor_impl<VTYPE>(arg))
     RPY_MAKE_VTYPE_SWITCH(arg.storage_type())
 #undef RPY_SWITCH_FN
 }
@@ -554,13 +555,13 @@ FreeTensor LiteContext<Coefficients>::lie_to_tensor(const Lie &arg) const {
 template <typename Coefficients>
 Lie LiteContext<Coefficients>::tensor_to_lie(
 const FreeTensor &arg) const {
-#define RPY_SWITCH_FN(VTYPE) Lie(tensor_to_lie_impl<VTYPE>(arg), this)
+#define RPY_SWITCH_FN(VTYPE) Lie(this, tensor_to_lie_impl<VTYPE>(arg))
     RPY_MAKE_VTYPE_SWITCH(arg.storage_type())
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 FreeTensor LiteContext<Coefficients>::signature(const SignatureData &data) const {
-#define RPY_SWITCH_FN(VTYPE) FreeTensor(compute_signature<VTYPE>(data), this)
+#define RPY_SWITCH_FN(VTYPE) FreeTensor(this, compute_signature<VTYPE>(data))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
 #undef RPY_SWITCH_FN
 }
@@ -570,7 +571,7 @@ Lie LiteContext<Coefficients>::log_signature(const SignatureData &data) const {
 }
 template <typename Coefficients>
 FreeTensor LiteContext<Coefficients>::sig_derivative(const std::vector<DerivativeComputeInfo> &info, VectorType vtype) const {
-#define RPY_SWITCH_FN(VTYPE) FreeTensor(sig_derivative_impl<VTYPE>(info), this)
+#define RPY_SWITCH_FN(VTYPE) FreeTensor(this, sig_derivative_impl<VTYPE>(info))
     RPY_MAKE_VTYPE_SWITCH(vtype)
 #undef RPY_SWITCH_FN
 }

@@ -5,6 +5,8 @@
 
 #include <roughpy/config/traits.h>
 
+#include <sstream>
+
 namespace rpy {
 namespace algebra {
 
@@ -38,7 +40,9 @@ public:
     }
     std::string key_to_string(const rpy::key_type key) const override {
         if (p_basis != nullptr) {
-            return p_basis->print_key(traits::convert_key(*p_basis, key));
+            std::stringstream ss;
+            p_basis->print_key(ss, traits::convert_key(*p_basis, key));
+            return ss.str();
         }
         return std::to_string(key);
     }
@@ -90,7 +94,7 @@ public:
     }
     optional<key_type> key_of_letter(rpy::let_t letter) const noexcept override {
         if (p_basis != nullptr) {
-            return p_basis->key_of_letter(letter);
+            return traits::convert_key(*p_basis, p_basis->key_of_letter(letter));
         }
         return letter;
     }

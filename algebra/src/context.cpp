@@ -125,7 +125,7 @@ public:
 }
 
 
-base_context_pointer get_base_context(deg_t width, deg_t depth) {
+base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth) {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
     auto& maker_list = get_context_maker_list();
 
@@ -149,7 +149,7 @@ base_context_pointer get_base_context(deg_t width, deg_t depth) {
     s_base_context_cache.emplace_back(new ConcreteContextBase(width, depth));
     return s_base_context_cache.back();
 }
-context_pointer get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype,
+context_pointer rpy::algebra::get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype,
                             const std::vector<std::pair<std::string, std::string>> &preferences) {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
     auto& maker_list = get_context_maker_list();
@@ -157,7 +157,7 @@ context_pointer get_context(deg_t width, deg_t depth, const scalars::ScalarType 
     std::vector<const ContextMaker*> found;
     found.reserve(maker_list.size());
     for (const auto& maker : maker_list) {
-        if (maker->can_get(std::make_tuple(width, depth, ctype, preferences))) {
+        if (maker->can_get(width, depth, ctype, preferences)) {
             found.push_back(maker.get());
         }
     }
@@ -173,7 +173,7 @@ context_pointer get_context(deg_t width, deg_t depth, const scalars::ScalarType 
     return found[0]->get_context(width, depth, ctype, preferences);
 }
 
-const ContextMaker *register_context_maker(std::unique_ptr<ContextMaker> maker) {
+const ContextMaker *rpy::algebra::register_context_maker(std::unique_ptr<ContextMaker> maker) {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
     auto& maker_list = get_context_maker_list();
     maker_list.push_back(std::move(maker));

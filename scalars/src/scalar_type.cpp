@@ -14,6 +14,7 @@
 
 #include "float_type.h"
 #include "double_type.h"
+#include "RationalType.h"
 
 using namespace rpy;
 using namespace scalars;
@@ -102,6 +103,12 @@ template <>
 const ScalarType* rpy::scalars::dtl::scalar_type_holder<double>::get_type() noexcept {
     static const DoubleType dtype;
     return &dtype;
+}
+
+template <>
+const ScalarType* rpy::scalars::dtl::scalar_type_holder<rational_scalar_type>::get_type() noexcept {
+    static const RationalType rtype;
+    return &rtype;
 }
 
 /*

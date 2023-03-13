@@ -83,6 +83,7 @@ protected:
 
 
 public:
+
     const scalars::ScalarType *ctype() const noexcept { return p_ctype; }
     const std::string &backend() const noexcept { return m_ctx_backend; }
 
@@ -140,8 +141,6 @@ ROUGHPY_ALGEBRA_EXPORT
 context_pointer get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype,
                             const std::vector<std::pair<std::string, std::string>> &preferences = {});
 
-ROUGHPY_ALGEBRA_EXPORT
-base_context_pointer get_base_context(deg_t width, deg_t depth);
 
 
 class ROUGHPY_ALGEBRA_EXPORT ContextMaker {
