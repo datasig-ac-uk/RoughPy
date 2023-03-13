@@ -14,7 +14,7 @@ option(RPY_SCALARS_SHARED "Build shared RoughPy scalars module" ON)
 
 
 if (RPY_SCALARS_SHARED)
-    add_library(RoughPy_Scalars SHARED )
+    add_library(RoughPy_Scalars SHARED)
 else()
     add_library(RoughPy_Scalars STATIC)
 endif()
@@ -79,4 +79,12 @@ target_compile_definitions(RoughPy_Scalars PRIVATE
 set_target_properties(RoughPy_Scalars PROPERTIES
         PUBLIC_HEADER "${ROUGHPY_SCALARS_PUBLIC_HEADERS}"
 
+        )
+
+
+
+add_roughpy_test(scalar
+        SRC
+            src/test_scalar.cpp
+        LINK_COMPONENT
         )
