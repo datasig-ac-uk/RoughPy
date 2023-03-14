@@ -55,7 +55,7 @@ target_sources(RoughPy_Streams
 
 target_include_directories(RoughPy_Streams
         PRIVATE
-            "include/roughpy/paths"
+            "include/roughpy/streams"
         PUBLIC
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
