@@ -1,7 +1,7 @@
 #ifndef RPY_PY_ARGS_KWARGS_TO_VECTOR_CONSTRUCTION_H_
 #define RPY_PY_ARGS_KWARGS_TO_VECTOR_CONSTRUCTION_H_
 
-#include <pybind11/pybind11.h>
+#include "roughpy_module.h"
 
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/algebra/context_fwd.h>
@@ -10,7 +10,6 @@
 namespace rpy {
 namespace python {
 
-namespace py = pybind11;
 
 struct PyVectorConstructionHelper {
     /// Context if provided by user

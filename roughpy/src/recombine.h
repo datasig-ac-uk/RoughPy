@@ -1,13 +1,11 @@
 #ifndef RPY_PY__RECOMBINE_H_
 #define RPY_PY__RECOMBINE_H_
 
-#include <pybind11/pybind11.h>
-
+#include "roughpy_module.h"
 
 namespace rpy {
 namespace python {
 
-namespace py = pybind11;
 
 void init_recombine(py::module_& m);
 

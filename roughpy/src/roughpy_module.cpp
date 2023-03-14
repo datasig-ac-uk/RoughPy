@@ -2,8 +2,7 @@
 // Created by user on 11/03/23.
 //
 
-#include <pybind11/pybind11.h>
-
+#include "roughpy_module.h"
 
 #include "scalars/scalars.h"
 #include "intervals/intervals.h"
@@ -16,7 +15,6 @@
 #define ROUGHPY_VERSION_STRING "1.0.0"
 #endif
 
-namespace py = pybind11;
 
 PYBIND11_MODULE(_roughpy, m) {
     using namespace rpy::python;

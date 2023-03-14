@@ -1,12 +1,11 @@
 #ifndef RPY_PY_STREAMS_STREAMS_H_
 #define RPY_PY_STREAMS_STREAMS_H_
 
-#include <pybind11/pybind11.h>
+#include "roughpy_module.h"
 
 namespace rpy {
 namespace python {
 
-namespace py = pybind11;
 
 void init_streams(py::module_& m);
 

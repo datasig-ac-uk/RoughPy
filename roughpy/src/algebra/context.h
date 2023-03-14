@@ -1,7 +1,7 @@
 #ifndef RPY_PY_ALGEBRA_CONTEXT_H_
 #define RPY_PY_ALGEBRA_CONTEXT_H_
 
-#include <pybind11/pybind11.h>
+#include "roughpy_module.h"
 
 #include <roughpy/algebra/context.h>
 
@@ -9,7 +9,6 @@
 namespace rpy {
 namespace python {
 
-namespace py = pybind11;
 
 class PyContext {
     algebra::context_pointer p_ctx;

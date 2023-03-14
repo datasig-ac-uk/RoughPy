@@ -1,17 +1,14 @@
 #ifndef RPY_PY_SCALARS_SCALAR_TYPE_H_
 #define RPY_PY_SCALARS_SCALAR_TYPE_H_
 
-#include <pybind11/pybind11.h>
-
+#include "roughpy_module.h"
 
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/key_scalar_array.h>
-#include <roughpy/config/implementation_types.h>
 
 namespace rpy {
 namespace python {
 
-namespace py = pybind11;
 
 struct PyScalarMetaType {
     PyHeapTypeObject tp_hto;

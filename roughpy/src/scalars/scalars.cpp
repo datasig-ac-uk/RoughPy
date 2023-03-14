@@ -14,7 +14,6 @@
 
 
 using namespace rpy;
-namespace py = pybind11;
 using namespace pybind11::literals;
 
 static const char *SCALAR_DOC = R"edoc(

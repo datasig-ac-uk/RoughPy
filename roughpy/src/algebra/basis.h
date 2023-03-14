@@ -1,6 +1,8 @@
 #ifndef RPY_PY_ALGEBRA_BASIS_H_
 #define RPY_PY_ALGEBRA_BASIS_H_
 
+#include "roughpy_module.h"
+
 namespace rpy {
 namespace python {
 

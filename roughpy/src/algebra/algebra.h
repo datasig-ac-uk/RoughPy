@@ -5,12 +5,10 @@
 #ifndef ROUGHPY_ROUGHPY_SRC_ALGEBRA_ALGEBRA_H
 #define ROUGHPY_ROUGHPY_SRC_ALGEBRA_ALGEBRA_H
 
-#include <pybind11/pybind11.h>
-
+#include "roughpy_module.h"
 
 namespace rpy { namespace python {
 
-namespace py = pybind11;
 
 void init_algebra(py::module_& m);
 

@@ -1,6 +1,8 @@
 #ifndef RPY_PY_STREAMS_FUNCTION_PATH_H_
 #define RPY_PY_STREAMS_FUNCTION_PATH_H_
 
+#include "roughpy_module.h"
+
 namespace rpy {
 namespace python {
 

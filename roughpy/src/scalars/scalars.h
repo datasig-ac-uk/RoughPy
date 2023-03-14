@@ -1,11 +1,11 @@
 #ifndef RPY_PY_SCALARS_SCALARS_H_
 #define RPY_PY_SCALARS_SCALARS_H_
 
+#include "roughpy_module.h"
+
 #include <functional>
 
-#include <pybind11/pybind11.h>
 
-#include <roughpy/config/implementation_types.h>
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/key_scalar_array.h>
@@ -13,7 +13,6 @@
 namespace rpy {
 namespace python {
 
-namespace py = pybind11;
 
 struct AlternativeKeyType {
     py::handle py_key_type;

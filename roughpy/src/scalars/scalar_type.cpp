@@ -7,7 +7,6 @@
 using namespace pybind11::literals;
 
 using namespace rpy;
-namespace py = pybind11;
 
 static PyMethodDef PyScalarMetaType_methods[] = {
     {nullptr, nullptr, 0, nullptr}};
