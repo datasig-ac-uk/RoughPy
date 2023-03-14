@@ -31,6 +31,7 @@ set_target_properties(RoughPy_PyModule PROPERTIES
 
 target_sources(RoughPy_PyModule PRIVATE
         src/roughpy_module.cpp
+        src/roughpy_module.h
         src/recombine.cpp
         src/recombine.h
         src/algebra/algebra.h
