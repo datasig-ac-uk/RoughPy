@@ -17,6 +17,7 @@ class PyContext {
 public:
 
     algebra::context_pointer to_context() && noexcept { return p_ctx; }
+    algebra::context_pointer get_context() const noexcept { return p_ctx; }
 };
 
 
