@@ -33,6 +33,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/roughpy_module.cpp
         src/recombine.cpp
         src/recombine.h
+        src/algebra/algebra.h
+        src/algebra/algebra.cpp
         src/algebra/basis.cpp
         src/algebra/basis.h
         src/algebra/context.cpp

@@ -1,8 +1,15 @@
 #ifndef RPY_PY_INTERVALS_INTERVALS_H_
 #define RPY_PY_INTERVALS_INTERVALS_H_
 
+#include <pybind11/pybind11.h>
+
 namespace rpy {
 namespace python {
+
+namespace py = pybind11;
+
+void init_intervals(py::module_& m);
+
 
 } // namespace python
 } // namespace rpy
