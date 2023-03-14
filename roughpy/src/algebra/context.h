@@ -16,9 +16,18 @@ class PyContext {
 
 public:
 
+    PyContext(algebra::context_pointer ctx) : p_ctx(std::move(ctx))
+    {}
+
     algebra::context_pointer to_context() && noexcept { return p_ctx; }
     algebra::context_pointer get_context() const noexcept { return p_ctx; }
+
+    const algebra::Context& operator*() const noexcept { return *p_ctx; }
+    const algebra::Context* operator->() const noexcept { return p_ctx.get(); }
+
 };
+
+void init_context(py::module_& m);
 
 
 } // namespace python
