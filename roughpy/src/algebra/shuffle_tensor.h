@@ -6,6 +6,8 @@
 namespace rpy {
 namespace python {
 
+void init_shuffle_tensor(py::module_& m);
+
 } // namespace python
 } // namespace rpy
 
