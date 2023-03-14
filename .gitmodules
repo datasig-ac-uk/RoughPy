@@ -5,3 +5,6 @@
 	path = external/pybind11
 	url = https://github.com/pybind/pybind11.git
 	branch = v2.10
+[submodule "external/dlpack"]
+	path = external/dlpack
+	url = https://github.com/dmlc/dlpack.git
