@@ -42,6 +42,9 @@ public:
 
     bool equals(const PyLieKey &other) const noexcept;
 };
+
+void init_py_lie_key(py::module_& m);
+
 } // namespace python
 } // namespace rpy
 

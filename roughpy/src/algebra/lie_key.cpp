@@ -232,3 +232,131 @@ bool python::PyLieKey::equals(const python::PyLieKey &other) const noexcept {
     const auto *rptr = other.m_data.data();
     return branches_equal(lptr, rptr) && branches_equal(++lptr, ++rptr);
 }
+
+namespace {
+
+class ToLieKeyHelper {
+    using container_type = typename python::PyLieKey::container_type;
+    dimn_t size;
+    dimn_t current;
+    deg_t width;
+    let_t max_letter = 0;
+
+public:
+    explicit ToLieKeyHelper(deg_t w) : size(2), current(0), width(w) {}
+
+    container_type parse_list(const py::handle &obj) {
+        if (py::len(obj) != 2) {
+            throw py::value_error("list items must contain exactly two elements");
+        }
+
+        auto left = obj[py::int_(0)];
+        auto right = obj[py::int_(1)];
+
+        return parse_pair(left, right);
+    }
+
+    container_type parse_single(const py::handle &obj) {
+        py::handle result;
+        if (py::isinstance<py::list>(obj)) {
+            return parse_list(obj);
+        }
+        if (py::isinstance<py::int_>(obj)) {
+            auto as_let = obj.cast<let_t>();
+            if (as_let > max_letter) {
+                max_letter = as_let;
+            }
+            return container_type{python::PyLieLetter::from_letter(as_let)};
+        }
+        throw py::type_error("items must be either int or lists");
+    }
+
+    container_type parse_pair(const py::handle &left, const py::handle &right) {
+
+        auto left_tree = parse_single(left);
+        auto right_tree = parse_single(right);
+
+        container_type result;
+        dimn_t left_size;
+
+        result.reserve(2 + left_tree.size() + right_tree.size());
+        if (left_tree.size() == 1) {
+            left_size = 0;
+            result.push_back(left_tree[0]);
+        } else {
+            left_size = left_tree.size();
+            result.push_back(python::PyLieLetter::from_offset(2));
+        }
+        if (right_tree.size() == 1) {
+            result.push_back(right_tree[0]);
+        } else {
+            result.push_back(python::PyLieLetter::from_offset(1 + left_size));
+        }
+        if (left_tree.size() > 1) {
+            result.insert(result.end(), left_tree.begin(), left_tree.end());
+        }
+        if (right_tree.size() > 1) {
+            result.insert(result.end(), right_tree.begin(), right_tree.end());
+        }
+
+        return result;
+    }
+
+    container_type operator()(const py::handle &obj) {
+        if (!py::isinstance<py::list>(obj)) {
+            throw py::type_error("expected a list with exactly two elements");
+        }
+        if (py::len(obj) != 2) {
+            throw py::value_error("expected list with exactly 2 elements");
+        }
+        return parse_pair(obj[py::int_(0)], obj[py::int_(1)]);
+    }
+
+    deg_t get_width() {
+        if (width != 0 && max_letter > width) {
+            throw py::value_error("a letter exceeds the width");
+        } else {
+            width = max_letter;
+        }
+        return width;
+    }
+};
+
+}
+
+
+static python::PyLieKey make_lie_key(const py::args &args, const py::kwargs &kwargs) {
+    deg_t width = 0;
+
+    if (kwargs.contains("width")) {
+        width = kwargs["width"].cast<deg_t>();
+    }
+
+    if (args.empty()) {
+        throw py::value_error("argument cannot be empty");
+    }
+
+    if (py::isinstance<py::int_>(args[0])) {
+        auto letter = args[0].cast<let_t>();
+        if (width != 0 && letter > width) {
+            throw py::value_error("letter exceeds width");
+        } else {
+            width = deg_t(letter);
+        }
+        return python::PyLieKey(width, letter);
+    }
+
+    if (!py::isinstance<py::list>(args[0])) {
+        throw py::type_error("expected int or list");
+    }
+
+    ToLieKeyHelper helper(width);
+
+    return python::PyLieKey(helper.get_width(), helper(args[0]));
+}
+void python::init_py_lie_key(py::module_ &m) {
+    py::class_<PyLieKey> klass(m, "LieKey");
+    klass.def(py::init(&make_lie_key));
+
+    klass.def("__str__", &PyLieKey::to_string);
+}
