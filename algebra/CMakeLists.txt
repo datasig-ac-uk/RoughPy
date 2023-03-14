@@ -98,6 +98,13 @@ target_include_directories(RoughPy_Algebra
 generate_export_header(RoughPy_Algebra)
 
 
+add_roughpy_test_helper(AlgebraMock STATIC
+        SRCS
+            src/testing/mock_context.cpp
+            src/testing/mock_context.h
+        DEPS
+            RoughPy::Algebra
+        )
 
 add_roughpy_test(algebra
         SRC
