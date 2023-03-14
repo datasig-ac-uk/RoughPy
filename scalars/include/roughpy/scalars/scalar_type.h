@@ -57,6 +57,20 @@ public:
     virtual ~ScalarType() = default;
 
     /**
+     * @brief Get the most appropriate scalar type for type id
+     * @param id Id to query
+     * @return const pointer to appropriate scalar type
+     */
+    static const ScalarType* for_id(const std::string& id);
+
+    /**
+     * @brief Get the most appropriate scalar type for type info
+     * @param details Basic description of scalar type
+     * @return const pointer to appropriate scalar type
+     */
+    static const ScalarType* for_type_details(const BasicScalarInfo& details);
+
+    /**
      * @brief Get the unique internal ID string for this type
      * @return const reference to the ID string.
      */

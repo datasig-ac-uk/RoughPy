@@ -23,6 +23,12 @@ const ScalarType *ScalarType::rational_type() const noexcept {
     return this;
 }
 
+const ScalarType *ScalarType::for_id(const std::string &id) {
+    return ScalarType::of<double>();
+}
+const ScalarType *ScalarType::for_type_details(const BasicScalarInfo &details) {
+    return ScalarType::of<double>();
+}
 Scalar ScalarType::from(long long int numerator, long long int denominator) const {
     if (denominator == 0){
         throw std::invalid_argument("division by zero");
