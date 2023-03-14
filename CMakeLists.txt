@@ -22,6 +22,10 @@ include(cmake/roughpy_test_helpers.cmake)
 
 add_subdirectory(external/libalgebra_lite)
 add_subdirectory(external/pybind11)
+# DLPACK has an annoying feature where it tries to build a demo
+# library. Disable this here
+set(BUILD_MOCK OFF CACHE BOOL INTERNAL)
+add_subdirectory(external/dlpack)
 
 add_subdirectory(config)
 add_subdirectory(scalars)

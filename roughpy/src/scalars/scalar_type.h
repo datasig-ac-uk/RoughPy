@@ -138,12 +138,9 @@ const scalars::ScalarType *py_arg_to_ctype(const py::object &arg);
 
 py::type scalar_type_to_py_type(const scalars::ScalarType* type);
 
-
-
-
-
-
-
+inline std::string pytype_name(const py::type &type) {
+    return {reinterpret_cast<PyTypeObject *>(type.ptr())->tp_name};
+}
 
 void init_scalar_types(py::module_& m);
 

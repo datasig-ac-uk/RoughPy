@@ -194,9 +194,6 @@ std::string python::py_buffer_to_type_id(const py::buffer_info &info) {
     return format;
 }
 
-static inline std::string pytype_name(const py::type& type) {
-    return {reinterpret_cast<PyTypeObject*>(type.ptr())->tp_name};
-}
 
 const scalars::ScalarType *python::py_buffer_to_scalar_type(const py::buffer_info &info) {
     using scalars::ScalarType;

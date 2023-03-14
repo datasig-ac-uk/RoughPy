@@ -87,6 +87,9 @@ target_sources(RoughPy_PyModule PRIVATE
         src/streams/tick_stream.cpp
         )
 
+target_include_directories(RoughPy_PyModule PRIVATE
+        src/
+        )
 
 target_link_libraries(RoughPy_PyModule PRIVATE
         RoughPy::Scalars
@@ -94,6 +97,7 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         RoughPy::Algebra
         RoughPy::Streams
         pybind11::headers
+        dlpack::dlpack
         )
 
 if(ROUGHPY_LINK_NUMPY)
