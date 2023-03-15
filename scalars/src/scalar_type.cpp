@@ -26,7 +26,7 @@ const ScalarType *ScalarType::rational_type() const noexcept {
 const ScalarType *ScalarType::for_id(const std::string &id) {
     return ScalarType::of<double>();
 }
-const ScalarType *ScalarType::for_type_details(const BasicScalarInfo &details) {
+const ScalarType *ScalarType::from_type_details(const BasicScalarInfo &details, const ScalarDeviceInfo& device) {
     return ScalarType::of<double>();
 }
 Scalar ScalarType::from(long long int numerator, long long int denominator) const {

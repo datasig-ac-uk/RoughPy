@@ -3,3 +3,11 @@
 //
 
 #include "dyadic_caching_layer.h"
+
+
+namespace rpy { namespace streams {
+
+template class DyadicCachingLayer<StreamInterface>;
+template class DyadicCachingLayer<SolutionStreamInterface>;
+
+}}

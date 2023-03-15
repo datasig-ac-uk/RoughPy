@@ -95,6 +95,20 @@ struct BasicScalarInfo {
 };
 
 
+/**
+ * @brief A collection of basic information for identifying a scalar type.
+ */
+struct ScalarTypeInfo {
+    BasicScalarInfo basic_info;
+    ScalarDeviceInfo device;
+    std::string name;
+    std::string id;
+    std::size_t n_bytes;
+    std::size_t alignment;
+};
+
+
+
 // Forward declarations
 
 class ScalarType;

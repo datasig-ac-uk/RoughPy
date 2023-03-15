@@ -14,11 +14,6 @@
 namespace rpy {
 namespace scalars {
 
-struct ScalarTypeInfo {
-    BasicScalarInfo basic_info;
-    std::string name;
-    std::string id;
-};
 
 using conversion_function = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
 
@@ -66,9 +61,10 @@ public:
     /**
      * @brief Get the most appropriate scalar type for type info
      * @param details Basic description of scalar type
+     * @param device Type and ID of the device for scalars.
      * @return const pointer to appropriate scalar type
      */
-    static const ScalarType* for_type_details(const BasicScalarInfo& details);
+    static const ScalarType* from_type_details(const BasicScalarInfo& details, const ScalarDeviceInfo& device);
 
     /**
      * @brief Get the unique internal ID string for this type
@@ -86,7 +82,7 @@ public:
      * @brief Get the size of a single scalar in bytes
      * @return number of bytes.
      */
-    int itemsize() const noexcept { return m_info.basic_info.bits / int(sizeof(char)); }
+    int itemsize() const noexcept { return m_info.n_bytes; }
 
     /**
      * @brief Get the rational type associated with this scalar type

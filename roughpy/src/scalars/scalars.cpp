@@ -103,7 +103,10 @@ void python::init_scalars(pybind11::module_ &m) {
  */
 
 static const scalars::ScalarType *dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device) {
-    return scalars::ScalarType::for_type_details({dtype.code, dtype.bits, dtype.lanes, {device.device_type, device.device_id}});
+    using scalars::ScalarDeviceType;
+    return scalars::ScalarType::from_type_details(
+        {dtype.code, dtype.bits, dtype.lanes},
+        {static_cast<ScalarDeviceType>(device.device_type), device.device_id});
 }
 
 static inline void dl_copy_strided(std::int32_t ndim,

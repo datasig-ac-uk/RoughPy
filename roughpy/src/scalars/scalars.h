@@ -11,7 +11,7 @@
 #include <roughpy/scalars/key_scalar_array.h>
 
 namespace rpy {
-namespace python {
+namespace __attribute__((visibility("hidden"))) python {
 
 
 struct AlternativeKeyType {

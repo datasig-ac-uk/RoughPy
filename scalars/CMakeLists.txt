@@ -94,6 +94,7 @@ configure_file("src/rational_type.h.in" "rational_type.h" NO_SOURCE_PERMISSIONS 
 add_roughpy_test(scalar
         LINK_COMPONENT
         SRC
+            src/ScalarTests.h
             src/test_scalar.cpp
             src/test_scalar_type.cpp
         )

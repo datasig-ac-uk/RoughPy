@@ -9,17 +9,28 @@
 #include "scalar.h"
 
 #include <ostream>
-
+#include <limits>
+#include <utility>
 
 namespace rpy  {
 namespace scalars {
+
+template <typename T>
+constexpr std::uint8_t sizeof_bits() noexcept {
+    return static_cast<std::uint8_t>(std::min(
+        static_cast<std::size_t>(std::numeric_limits<std::uint8_t>::max() / 8),
+        sizeof(T)
+        ) * 8U);
+}
 
 template <typename ScalarImpl>
 class StandardScalarType : public ScalarType {
 public:
     explicit StandardScalarType(std::string id, std::string name)
-        : ScalarType({{2U, std::uint8_t(sizeof(ScalarImpl)*8), 1U},
-                      std::move(name), std::move(id)}) {}
+        : ScalarType({{2U, sizeof_bits<ScalarImpl>(), 1U},
+                      {ScalarDeviceType::CPU, 0},
+                      std::move(name), std::move(id),
+                      sizeof(ScalarImpl), alignof(ScalarImpl)}) {}
 
 
     Scalar from(long long int numerator, long long int denominator) const override {
