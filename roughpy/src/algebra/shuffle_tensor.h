@@ -6,9 +6,9 @@
 namespace rpy {
 namespace python {
 
-void init_shuffle_tensor(py::module_& m);
+void init_shuffle_tensor(py::module_ &m);
 
-} // namespace python
-} // namespace rpy
+}// namespace python
+}// namespace rpy
 
-#endif // RPY_PY_ALGEBRA_SHUFFLE_TENSOR_H_
+#endif// RPY_PY_ALGEBRA_SHUFFLE_TENSOR_H_

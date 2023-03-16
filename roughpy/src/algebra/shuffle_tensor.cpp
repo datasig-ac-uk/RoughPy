@@ -13,6 +13,7 @@
 #include "scalars/scalars.h"
 
 #include "tensor_key.h"
+#include "setup_algebra_type.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -78,21 +79,13 @@ static ShuffleTensor construct_shuffle(py::object data, py::kwargs kwargs) {
 
 
 
-void python::init_shuffle_tensor(py::module_ &m) {
+void rpy::python::init_shuffle_tensor(py::module_ &m) {
     py::options options;
     options.disable_function_signatures();
 
     py::class_<ShuffleTensor> klass(m, "ShuffleTensor", SHUFFLE_TENSOR_DOC);
     klass.def(py::init(&construct_shuffle), "data"_a);
-
-    klass.def_property_readonly("width", &ShuffleTensor::width);
-    klass.def_property_readonly("depth", &ShuffleTensor::depth);
-    klass.def_property_readonly("coeff_type", &ShuffleTensor::coeff_type);
-    klass.def_property_readonly("storage_type", &ShuffleTensor::storage_type);
-
-    klass.def("size", &ShuffleTensor::size);
-    klass.def("dimension", &ShuffleTensor::dimension);
-    klass.def("degree", &ShuffleTensor::degree);
+    setup_algebra_type(klass);
 
     klass.def("__getitem__", [](const ShuffleTensor &self, key_type key) {
       return self[key];
@@ -102,92 +95,6 @@ void python::init_shuffle_tensor(py::module_ &m) {
         },
         py::keep_alive<0, 1>());
 
-    klass.def("__neg__", &ShuffleTensor::uminus, py::is_operator());
-
-    klass.def("__add__", &ShuffleTensor::add, py::is_operator());
-    klass.def("__sub__", &ShuffleTensor::sub, py::is_operator());
-    klass.def("__mul__", &ShuffleTensor::smul, py::is_operator());
-    klass.def("__truediv__", &ShuffleTensor::smul, py::is_operator());
-    klass.def("__mul__", &ShuffleTensor::mul, py::is_operator());
-    klass.def(
-        "__rmul__", [](const ShuffleTensor &self, const scalars::Scalar &other) { return self.smul(other); },
-        py::is_operator());
-
-    klass.def(
-        "__mul__", [](const ShuffleTensor &self, scalar_t arg) {
-          return self.smul(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__rmul__", [](const ShuffleTensor &self, scalar_t arg) {
-          return self.smul(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__mul__", [](const ShuffleTensor &self, long long arg) {
-          return self.smul(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-    klass.def(
-        "__rmul__", [](const ShuffleTensor &self, long long arg) {
-          return self.smul(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-    klass.def(
-        "__truediv__", [](const ShuffleTensor &self, scalar_t arg) {
-          return self.sdiv(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__truediv__", [](const ShuffleTensor &self, long long arg) {
-          return self.sdiv(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-
-    klass.def("__iadd__", &ShuffleTensor::add_inplace, py::is_operator());
-    klass.def("__isub__", &ShuffleTensor::sub_inplace, py::is_operator());
-    klass.def("__imul__", &ShuffleTensor::smul_inplace, py::is_operator());
-    klass.def("__itruediv__", &ShuffleTensor::sdiv_inplace, py::is_operator());
-    klass.def("__imul__", &ShuffleTensor::mul_inplace, py::is_operator());
-
-    klass.def(
-        "__imul__", [](ShuffleTensor &self, scalar_t arg) {
-          return self.smul_inplace(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__imul__", [](ShuffleTensor &self, long long arg) {
-          return self.smul_inplace(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-    klass.def(
-        "__itruediv__", [](ShuffleTensor &self, scalar_t arg) {
-          return self.sdiv_inplace(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__itruediv__", [](ShuffleTensor &self, long long arg) {
-          return self.sdiv_inplace(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-
-    klass.def("add_scal_mul", &ShuffleTensor::add_scal_mul, "other"_a, "scalar"_a);
-    klass.def("sub_scal_mul", &ShuffleTensor::sub_scal_mul, "other"_a, "scalar"_a);
-    klass.def("add_scal_div", &ShuffleTensor::add_scal_div, "other"_a, "scalar"_a);
-    klass.def("sub_scal_div", &ShuffleTensor::sub_scal_div, "other"_a, "scalar"_a);
-
-    klass.def("add_mul", &ShuffleTensor::add_mul, "lhs"_a, "rhs"_a);
-    klass.def("sub_mul", &ShuffleTensor::sub_mul, "lhs"_a, "rhs"_a);
-    klass.def("mul_smul", &ShuffleTensor::mul_smul, "other"_a, "scalar"_a);
-    klass.def("mul_sdiv", &ShuffleTensor::mul_sdiv, "other"_a, "scalar"_a);
-
-
-    klass.def("__str__", [](const ShuffleTensor &self) {
-      std::stringstream ss;
-      self.print(ss);
-      return ss.str();
-    });
-
     klass.def("__repr__", [](const ShuffleTensor &self) {
       std::stringstream ss;
       ss << "ShuffleTensor(width=" << self.width().value()
@@ -196,19 +103,5 @@ void python::init_shuffle_tensor(py::module_ &m) {
       return ss.str();
     });
 
-    klass.def("__eq__", [](const ShuffleTensor &lhs, const ShuffleTensor &rhs) { return lhs == rhs; });
-    klass.def("__neq__", [](const ShuffleTensor &lhs, const ShuffleTensor &rhs) { return lhs != rhs; });
 
-#ifdef ROUGHPY_WITH_NUMPY
-    klass.def("__array__", [](const ShuffleTensor &self) {
-      //        py::dtype dtype = dtype_from(self.coeff_type());
-      py::dtype dtype = python::ctype_to_npy_dtype(self.coeff_type());
-
-      if (self.storage_type() == VectorType::Dense) {
-          auto dense_data = self.dense_data().value();
-          return py::array(dtype, {dense_data.size()}, {}, dense_data.ptr());
-      }
-      return py::array(dtype);
-    });
-#endif
 }

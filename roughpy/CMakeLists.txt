@@ -50,6 +50,7 @@ target_sources(RoughPy_PyModule PRIVATE
         src/algebra/lie_key_iterator.h
         src/algebra/lie_letter.cpp
         src/algebra/lie_letter.h
+        src/algebra/setup_algebra_type.h
         src/algebra/shuffle_tensor.h
         src/algebra/shuffle_tensor.cpp
         src/algebra/tensor_key.cpp

@@ -12,6 +12,7 @@
 #include "scalars/scalars.h"
 
 #include "tensor_key.h"
+#include "setup_algebra_type.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -118,13 +119,7 @@ void python::init_free_tensor(py::module_ &m) {
     pybind11::class_<FreeTensor> klass(m, "FreeTensor", FREE_TENSOR_DOC);
     klass.def(py::init(&construct_free_tensor), "data"_a);
 
-    klass.def_property_readonly("width", &FreeTensor::width);
-    klass.def_property_readonly("max_degree", &FreeTensor::depth);
-    klass.def_property_readonly("dtype", [](const FreeTensor &arg) { return python::to_ctype_type(arg.coeff_type()); });
-    klass.def_property_readonly("storage_type", &FreeTensor::storage_type);
-
-    klass.def("size", &FreeTensor::size);
-    klass.def("degree", &FreeTensor::degree);
+    python::setup_algebra_type(klass);
 
     klass.def("__getitem__", [](const FreeTensor &self, key_type key) {
         return self[key];
@@ -135,95 +130,12 @@ void python::init_free_tensor(py::module_ &m) {
         },
         py::keep_alive<0, 1>());
 
-    klass.def("__neg__", &FreeTensor::uminus, py::is_operator());
-
-    klass.def("__add__", &FreeTensor::add, py::is_operator());
-    klass.def("__sub__", &FreeTensor::sub, py::is_operator());
-    klass.def("__mul__", &FreeTensor::smul, py::is_operator());
-    klass.def("__truediv__", &FreeTensor::smul, py::is_operator());
-    klass.def("__mul__", &FreeTensor::mul, py::is_operator());
-    klass.def(
-        "__rmul__", [](const FreeTensor &self, const scalars::Scalar &other) { return self.smul(other); },
-        py::is_operator());
-
-    klass.def(
-        "__mul__", [](const FreeTensor &self, scalar_t arg) {
-            return self.smul(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__rmul__", [](const FreeTensor &self, scalar_t arg) {
-            return self.smul(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__mul__", [](const FreeTensor &self, long long arg) {
-            return self.smul(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-    klass.def(
-        "__rmul__", [](const FreeTensor &self, long long arg) {
-            return self.smul(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-    klass.def(
-        "__truediv__", [](const FreeTensor &self, scalar_t arg) {
-            return self.sdiv(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__truediv__", [](const FreeTensor &self, long long arg) {
-            return self.sdiv(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-
-    klass.def("__iadd__", &FreeTensor::add_inplace, py::is_operator());
-    klass.def("__isub__", &FreeTensor::sub_inplace, py::is_operator());
-    klass.def("__imul__", &FreeTensor::smul_inplace, py::is_operator());
-    klass.def("__itruediv__", &FreeTensor::sdiv_inplace, py::is_operator());
-    klass.def("__imul__", &FreeTensor::mul_inplace, py::is_operator());
-
-    klass.def(
-        "__imul__", [](FreeTensor &self, scalar_t arg) {
-            return self.smul_inplace(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__imul__", [](FreeTensor &self, long long arg) {
-            return self.smul_inplace(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-    klass.def(
-        "__itruediv__", [](FreeTensor &self, scalar_t arg) {
-            return self.sdiv_inplace(scalars::Scalar(arg));
-        },
-        py::is_operator());
-    klass.def(
-        "__itruediv__", [](FreeTensor &self, long long arg) {
-            return self.sdiv_inplace(scalars::Scalar(self.coeff_type(), arg, 1LL));
-        },
-        py::is_operator());
-
-    klass.def("add_scal_mul", &FreeTensor::add_scal_mul, "other"_a, "scalar"_a);
-    klass.def("sub_scal_mul", &FreeTensor::sub_scal_mul, "other"_a, "scalar"_a);
-    klass.def("add_scal_div", &FreeTensor::add_scal_div, "other"_a, "scalar"_a);
-    klass.def("sub_scal_div", &FreeTensor::sub_scal_div, "other"_a, "scalar"_a);
-
-    klass.def("add_mul", &FreeTensor::add_mul, "lhs"_a, "rhs"_a);
-    klass.def("sub_mul", &FreeTensor::sub_mul, "lhs"_a, "rhs"_a);
-    klass.def("mul_smul", &FreeTensor::mul_smul, "other"_a, "scalar"_a);
-    klass.def("mul_sdiv", &FreeTensor::mul_sdiv, "other"_a, "scalar"_a);
 
     klass.def("exp", &FreeTensor::exp);
     klass.def("log", &FreeTensor::log);
     klass.def("inverse", &FreeTensor::inverse);
     klass.def("fmexp", &FreeTensor::fmexp, "other"_a);
 
-    klass.def("__str__", [](const FreeTensor &self) {
-        std::stringstream ss;
-        self.print(ss);
-        return ss.str();
-    });
 
     klass.def("__repr__", [](const FreeTensor &self) {
         std::stringstream ss;
@@ -233,20 +145,5 @@ void python::init_free_tensor(py::module_ &m) {
         return ss.str();
     });
 
-    klass.def("__eq__", [](const FreeTensor &lhs, const FreeTensor &rhs) { return lhs == rhs; });
-    klass.def("__neq__", [](const FreeTensor &lhs, const FreeTensor &rhs) { return lhs != rhs; });
-
-#ifdef ROUGHPY_WITH_NUMPY
-    klass.def("__array__", [](const FreeTensor &self) {
-        //        py::dtype dtype = dtype_from(self.coeff_type());
-        py::dtype dtype = python::ctype_to_npy_dtype(self.coeff_type());
-
-        if (self.storage_type() == VectorType::Dense) {
-            auto dense_data = self.dense_data().value();
-            return py::array(dtype, {dense_data.size()}, {}, dense_data.ptr());
-        }
-        return py::array(dtype);
-    });
-#endif
 
 }

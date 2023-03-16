@@ -21,6 +21,8 @@ void rpy::python::init_algebra(pybind11::module_ &m) {
         .value("SparseVector", algebra::VectorType::Sparse)
         .export_values();
 
+    // TOOD: Basis, algebra iterators.
+
     init_py_tensor_key(m);
     init_py_lie_key(m);
     init_tensor_key_iterator(m);
