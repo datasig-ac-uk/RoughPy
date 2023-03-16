@@ -29,6 +29,7 @@ public:
         assert(itype == IntervalType::Clopen || itype == IntervalType::Opencl);
     }
     explicit DyadicInterval(Dyadic dyadic) : Dyadic(dyadic), Interval() {}
+    DyadicInterval(Dyadic dyadic, IntervalType itype) : Dyadic(dyadic), Interval(itype) {}
     DyadicInterval(multiplier_t k, power_t n, IntervalType itype) : Dyadic(k, n), Interval(itype) {
         assert(itype == IntervalType::Clopen || itype == IntervalType::Opencl);
     }

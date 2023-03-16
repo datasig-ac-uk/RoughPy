@@ -58,3 +58,11 @@ target_include_directories(RoughPy_Intervals
 
 
 generate_export_header(RoughPy_Intervals)
+
+
+
+add_roughpy_test(Intervals
+        SRC
+            src/test_dyadic.cpp
+            src/test_dyadic_intervals.cpp
+        LINK_COMPONENT)
