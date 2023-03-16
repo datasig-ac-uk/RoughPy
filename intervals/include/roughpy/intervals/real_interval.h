@@ -17,7 +17,7 @@ public:
                  IntervalType itype=IntervalType::Clopen)
         : Interval(itype), m_inf(inf), m_sup(sup)
     {
-        if (m_inf < m_sup) {
+        if (m_inf > m_sup) {
             std::swap(m_inf, m_sup);
         }
     }

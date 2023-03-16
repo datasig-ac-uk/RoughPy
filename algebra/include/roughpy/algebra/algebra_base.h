@@ -216,6 +216,8 @@ public:
     const Interface *operator->() const noexcept { return p_impl.get(); }
     Interface *operator->() noexcept { return p_impl.get(); }
 
+    constexpr operator bool () const noexcept { return static_cast<bool>(p_impl); }
+
     dimn_t dimension() const;
     dimn_t size() const;
     bool is_zero() const;
@@ -723,7 +725,7 @@ bool AlgebraBase<Interface, DerivedImpl>::operator==(const algebra_t &other) con
     if (is_equivalent_to_zero(*this)) {
         return is_equivalent_to_zero(other) || other->is_zero();
     }
-    if (!is_equivalent_to_zero(other)) {
+    if (is_equivalent_to_zero(other)) {
         return p_impl->is_zero();
     }
     return p_impl->equals(other);

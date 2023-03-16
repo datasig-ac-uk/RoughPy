@@ -10,7 +10,7 @@
 namespace rpy {
 namespace intervals {
 
-class ROUGHPY_INTERVALS_EXPORT DyadicInterval : private Dyadic, public Interval {
+class ROUGHPY_INTERVALS_EXPORT DyadicInterval : public Dyadic, public Interval {
     using Dyadic::m_multiplier;
     using Dyadic::m_power;
 

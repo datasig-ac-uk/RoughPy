@@ -64,3 +64,9 @@ target_include_directories(RoughPy_Streams
 
 
 generate_export_header(RoughPy_Streams)
+
+
+add_roughpy_test(Streams
+        SRC
+            src/test_lie_increment_stream.cpp
+        LINK_COMPONENT)

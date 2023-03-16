@@ -20,10 +20,24 @@ private:
 
     std::vector<LiePiece> m_data;
 
-    static inline param_t to_proportion(const intervals::RealInterval& interval, param_t param) {
+    static inline scalars::Scalar to_multiplier_upper(const intervals::RealInterval& interval, param_t param) {
         assert(interval.inf() <= param && param <= interval.sup());
-        return (param - interval.inf()) / (interval.sup() - interval.inf());
+        return scalars::Scalar((interval.sup() - param) / (interval.sup() - interval.inf()));
     }
+    static inline scalars::Scalar to_multiplier_lower(const intervals::RealInterval& interval, param_t param) {
+        assert(interval.inf() <= param && param <= interval.sup());
+        return scalars::Scalar((param - interval.inf()) / (interval.sup() - interval.inf()));
+    }
+
+public:
+
+    PiecewiseLiePath(std::vector<LiePiece>&& arg, StreamMetadata&& md);
+
+    using StreamInterface::log_signature;
+
+    bool empty(const intervals::Interval& interval) const noexcept override;
+
+    algebra::Lie log_signature(const intervals::Interval& domain, const algebra::Context& ctx) const override;
 
 };
 

@@ -27,12 +27,12 @@ protected:
     const ScalarType *p_type = nullptr;
     const void *p_data = nullptr;
 
-    Constness m_constness = IsConst;
+    Constness m_constness = IsMutable;
+
+public:
 
     ScalarPointer(const ScalarType *type, const void *data, Constness constness)
         : p_type(type), p_data(data), m_constness(constness) {}
-
-public:
 
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;

@@ -3,3 +3,125 @@
 //
 
 #include "piecewise_lie_stream.h"
+
+using namespace rpy;
+using namespace rpy::streams;
+
+using rpy::algebra::Context;
+using rpy::algebra::Lie;
+using rpy::intervals::Interval;
+using rpy::intervals::RealInterval;
+
+PiecewiseLiePath::PiecewiseLiePath(std::vector<LiePiece> &&data, StreamMetadata &&md)
+    : StreamInterface(std::move(md)), m_data() {
+//    // first sort so we know the inf of each interval are in order
+//    auto sort_fun = [](const LiePiece &a, const LiePiece &b) {
+//        return a.first.inf() < b.first.inf();
+//    };
+//    std::sort(data.begin(), data.end(), sort_fun);
+//
+//    m_data.reserve(data.size());
+//    auto next = data.begin();
+//    auto it = next++;
+//    auto end = data.end();
+//    while (next != data.end()) {
+//        auto curr_i = it->first.inf(), curr_s = it->first.sup();
+//        auto next_i = next->first.inf(), next_s = next->first.sup();
+//        if (next_i < curr_s) {
+//            /*
+//         * If the interval of the next piece overlaps with the current piece interval
+//         * then we need to do a little hacking/slashing to make sure our data is correct.
+//         */
+//            RealInterval new_curr_interval(curr_i, next_i);
+//            auto new_lie = compute_lie_piece(*it, new_curr_interval);
+//            it->first = new_curr_interval;
+//            it->second.sub_inplace(new_lie);
+//            m_data.emplace_back(std::move(new_curr_interval), std::move(new_lie));
+//            /*
+//         * At this stage the part [a---[b has been sorted , so we need to decide what the next
+//         * iteration will look like. This means separating the intersecting parts of [b---a)
+//         * and on a)---b) (if it exists).
+//         */
+//
+//            if (curr_s < next_s) {
+//                // [a---[b--a)----b)
+//                // it->second is going to be replaced by the part on [b--a) and
+//                // next->second replace by the part on a)----b)
+//                RealInterval next_curr_interval(next_i, curr_s);
+//                new_lie = compute_lie_piece(*next, next_curr_interval);
+//
+//                it->first = RealInterval(next_i, curr_s);
+//                it->second.add_inplace(new_lie);
+//                next->first = RealInterval(curr_s, next_s);
+//                next->second.sub_inplace(new_lie);
+//
+//                // Increment next so the next iteration checks the interaction of the new it with next++
+//                // Do not increment it yet.
+//                ++next;
+//                continue;
+//            } else if (curr_s == next_s) {
+//                // [a---[b-------ab)
+//                // it->second is to be discarded, next->second replaced by part on [b----ab).
+//                next->second.add_inplace(it->second);
+//            } else {
+//                // [a---[b---b)---a)
+//                // it->second replaced by part on [b---b)
+//                // next-second replaced by part on b)---a)
+//                new_lie = compute_lie_piece(*it, next->first);
+//                std::swap(*it, *next);
+//
+//                it->second.add_inplace(new_lie);
+//                next->first = RealInterval(next_s, curr_s);
+//                next->second.sub_inplace(new_lie);
+//
+//                // Increment next so the next iteration checks the interaction of the new it with next++
+//                // Do not increment it yet.
+//                ++next;
+//                continue;
+//            }
+//        } else {
+//            // Here the intervals of definition are disjoint, so we can just push onto m_data.
+//            m_data.push_back(std::move(*it));
+//        }
+//
+//        if (++it == next) {
+//            ++next;
+//        }
+//    }
+//    for (; it != end; ++it) {
+//        m_data.push_back(std::move(*it));
+//    }
+}
+bool PiecewiseLiePath::empty(const Interval &interval) const noexcept {
+    return StreamInterface::empty(interval);
+}
+algebra::Lie PiecewiseLiePath::log_signature(const Interval &domain, const Context &ctx) const {
+    std::vector<algebra::Lie> lies;
+    lies.reserve(4);
+
+    auto a = domain.inf(), b = domain.sup();
+    for (const auto &piece : m_data) {
+        // data is in order, so if we are already past the end of the request interval,
+        // then we are done so break.
+        auto pa = piece.first.inf(), pb = piece.first.sup();
+        if (pa >= b) {
+            // [-----) [p----p)
+            break;
+        }
+        if (pb <= a) {
+            // [p----p) [-----)
+        } else if (pa >= a && pb <= b) {
+            // [-----[p-----p)---)
+            lies.push_back(piece.second);
+        } else if (pb <= pb) {
+            // [p---[---p)-----)
+            lies.push_back(piece.second.smul(to_multiplier_upper(piece.first, a)));
+        } else if (pa >= a && pb > b) {
+            // [---[p----)----p)
+            lies.push_back(piece.second.smul(to_multiplier_lower(piece.first, b)));
+        }
+    }
+
+    const auto &md = metadata();
+    return ctx.cbh(lies, md.cached_vector_type);
+}

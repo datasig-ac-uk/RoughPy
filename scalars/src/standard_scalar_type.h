@@ -39,9 +39,9 @@ public:
 
     ScalarPointer allocate(dimn_t size) const override {
         if (size == 1) {
-            return ScalarPointer(this, new ScalarImpl);
+            return ScalarPointer(this, new ScalarImpl, ScalarPointer::IsMutable);
         } else {
-            return ScalarPointer(this, new ScalarImpl[size]);
+            return ScalarPointer(this, new ScalarImpl[size], ScalarPointer::IsMutable);
         }
     }
     void free(ScalarPointer pointer, dimn_t size) const override {

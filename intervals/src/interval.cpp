@@ -5,6 +5,7 @@
 
 #include "interval.h"
 #include <stdexcept>
+#include <ostream>
 
 using namespace rpy::intervals;
 
@@ -51,4 +52,22 @@ bool Interval::operator==(const Interval &other) const {
 }
 bool Interval::operator!=(const Interval &other) const {
     return !operator==(other);
+}
+
+std::ostream &rpy::intervals::operator<<(std::ostream &os, const Interval &interval) {
+    if (interval.type() == IntervalType::Clopen) {
+        os << '[';
+    } else {
+        os << '(';
+    }
+
+    os << interval.inf() << ", " << interval.sup();
+
+    if (interval.type() == IntervalType::Clopen) {
+        os << ')';
+    } else {
+        os << ']';
+    }
+
+    return os;
 }
