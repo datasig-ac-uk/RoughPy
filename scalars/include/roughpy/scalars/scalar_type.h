@@ -24,9 +24,8 @@ struct type_id_of_impl;
 }
 
 template <typename T>
-inline const std::string &type_id_of() noexcept {
-    return dtl::type_id_of_impl<T>::get_id();
-}
+inline const std::string &type_id_of() noexcept;
+
 
 class ROUGHPY_SCALARS_EXPORT ScalarType {
     ScalarTypeInfo m_info;
@@ -347,6 +346,7 @@ ROUGHPY_MAKE_TYPE_ID_OF(unsigned_size_type_marker, "usize");
 
 ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
 ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
+ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational");
 
 // Long is silly. On Win64 it is 32 bits (because, Microsoft) on Unix, it is 64 bits
 template <>
@@ -358,30 +358,42 @@ struct type_id_of_impl<long>
 #undef ROUGHPY_MAKE_TYPE_ID_OF
 
 template <typename ScalarImpl>
-struct scalar_type_holder {
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+
+//template <typename ScalarImpl>
+//struct scalar_type_holder<ScalarImpl &> : scalar_type_holder<ScalarImpl> {};
+//
+//template <typename ScalarImpl>
+//struct scalar_type_holder<const ScalarImpl &> : scalar_type_holder<ScalarImpl> {};
+
+template <>
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<float> {
     static const ScalarType* get_type() noexcept;
 };
 
-template <typename ScalarImpl>
-struct scalar_type_holder<ScalarImpl &> : scalar_type_holder<ScalarImpl> {};
-
-template <typename ScalarImpl>
-struct scalar_type_holder<const ScalarImpl &> : scalar_type_holder<ScalarImpl> {};
+template <>
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<double> {
+    static const ScalarType* get_type() noexcept;
+};
 
 template <>
-ROUGHPY_SCALARS_EXPORT const ScalarType *scalar_type_holder<float>::get_type() noexcept;
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_scalar_type> {
+    static const ScalarType* get_type() noexcept;
+};
 
-template <>
-ROUGHPY_SCALARS_EXPORT const ScalarType *scalar_type_holder<double>::get_type() noexcept;
-
-template <>
-ROUGHPY_SCALARS_EXPORT const ScalarType *scalar_type_holder<rational_scalar_type>::get_type() noexcept;
 
 }// namespace dtl
 
 template <typename T>
 const ScalarType *ScalarType::of() {
-    return dtl::scalar_type_holder<T>::get_type();
+    return dtl::scalar_type_holder<traits::remove_cv_ref_t<T>>::get_type();
+}
+
+template <typename T>
+inline const std::string &type_id_of() noexcept {
+    return dtl::type_id_of_impl<T>::get_id();
 }
 
 }// namespace scalars

@@ -99,19 +99,16 @@ void ScalarType::print(ScalarPointer arg, std::ostream &os) const {
     os << to_scalar_t(arg);
 }
 
-template<>
 const ScalarType* rpy::scalars::dtl::scalar_type_holder<float>::get_type() noexcept {
     static const FloatType ftype;
     return &ftype;
 }
 
-template <>
 const ScalarType* rpy::scalars::dtl::scalar_type_holder<double>::get_type() noexcept {
     static const DoubleType dtype;
     return &dtype;
 }
 
-template <>
 const ScalarType* rpy::scalars::dtl::scalar_type_holder<rational_scalar_type>::get_type() noexcept {
     static const RationalType rtype;
     return &rtype;

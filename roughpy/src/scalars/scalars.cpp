@@ -216,7 +216,8 @@ static inline bool is_scalar(py::handle arg) {
 static inline bool is_key(py::handle arg, python::AlternativeKeyType *alternative) {
     if (alternative != nullptr) {
         return py::isinstance<py::int_>(arg) || py::isinstance(arg, alternative->py_key_type);
-    } else if (py::isinstance<py::int_>(arg)) {
+    }
+    if (py::isinstance<py::int_>(arg)) {
         return true;
     }
     return false;
@@ -236,7 +237,7 @@ static void check_and_set_dtype(python::PyToBufferOptions &options,
                                 py::handle arg) {
     if (options.type == nullptr) {
         if (options.no_check_imported) {
-            options.type = scalars::dtl::scalar_type_holder<double>::get_type();
+            options.type = scalars::ScalarType::of<double>();
         } else {
             options.type = python::py_type_to_scalar_type(py::type::of(arg));
         }
@@ -447,10 +448,10 @@ scalars::KeyScalarArray python::py_to_buffer(const py::object &object, python::P
         update_dtype_and_allocate(result, options, 1, 1);
 
         handle_sequence_tuple(result, result.keys(), object, options);
-    } else if (py::hasattr(object, "__dlpack__")) {
+//    } else if (py::hasattr(object, "__dlpack__")) {
         // If we used the dlpack interface, then the result is
         // already constructed.
-        try_fill_buffer_dlpack(result, options, object);
+//        try_fill_buffer_dlpack(result, options, object);
 
     } else if (py::isinstance<py::buffer>(object)) {
         // Fall back to the buffer protocol

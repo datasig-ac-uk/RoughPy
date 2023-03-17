@@ -439,7 +439,7 @@ typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::sub(const alg
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::mul(const algebra_t &rhs) const {
-    if (!is_equivalent_to_zero(rhs)) {
+    if (is_equivalent_to_zero(rhs)) {
         if (is_equivalent_to_zero(*this)) {
             return algebra_t();
         }
@@ -474,7 +474,7 @@ bool AlgebraBase<Interface, DerivedImpl>::is_zero() const {
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 optional<deg_t> AlgebraBase<Interface, DerivedImpl>::width() const {
-    if (is_equivalent_to_zero(*this)) {
+    if (!is_equivalent_to_zero(*this)) {
         return p_impl->width();
     }
     return {};
@@ -502,7 +502,7 @@ VectorType AlgebraBase<Interface, DerivedImpl>::storage_type() const noexcept {
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 const scalars::ScalarType *AlgebraBase<Interface, DerivedImpl>::coeff_type() const noexcept {
-    if (!is_equivalent_to_zero(*this)) {
+    if (p_impl) {
         return p_impl->coeff_type();
     }
     return nullptr;

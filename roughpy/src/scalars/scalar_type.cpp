@@ -18,29 +18,25 @@ PyObject *PyScalarMetaType_call(PyObject *, PyObject *, PyObject *) {
 
 static PyTypeObject PyScalarMetaType_type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    .tp_name = "_roughpy.ScalarMeta",
+        .tp_name = "_roughpy.ScalarMeta",
     .tp_basicsize = sizeof(python::PyScalarMetaType),
     .tp_itemsize = 0,
     .tp_call = PyScalarMetaType_call,
     .tp_flags = Py_TPFLAGS_TYPE_SUBCLASS,
     .tp_doc = PyDoc_STR("Scalar meta class"),
-    .tp_methods = PyScalarMetaType_methods
-};
+    .tp_methods = PyScalarMetaType_methods};
 
 static PyMethodDef PyScalarTypeBase_methods[] = {
     {nullptr, nullptr, 0, nullptr}};
 
 static PyTypeObject PyScalarTypeBase_type = {
     PyVarObject_HEAD_INIT(nullptr, 0)
-    .tp_name = "_roughpy.ScalarTypeBase",
+        .tp_name = "_roughpy.ScalarTypeBase",
     .tp_basicsize = sizeof(python::PyScalarTypeBase),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_DISALLOW_INSTANTIATION,
     .tp_doc = PyDoc_STR("Base class for scalar type"),
-    .tp_methods = PyScalarTypeBase_methods
-};
-
-
+    .tp_methods = PyScalarTypeBase_methods};
 
 pybind11::handle python::get_scalar_metaclass() {
     assert(PyType_Ready(&PyScalarMetaType_type) == 0);
@@ -51,17 +47,14 @@ pybind11::handle python::get_scalar_baseclass() {
     return pybind11::handle(reinterpret_cast<PyObject *>(&PyScalarTypeBase_type));
 }
 void python::PyScalarMetaType_dealloc(PyObject *arg) {
-    PyTypeObject* tp = Py_TYPE(arg);
-    PyMem_Free(reinterpret_cast<PyScalarMetaType*>(arg)->ht_name);
+    PyTypeObject *tp = Py_TYPE(arg);
+    PyMem_Free(reinterpret_cast<PyScalarMetaType *>(arg)->ht_name);
 
     tp->tp_free(arg);
     Py_DECREF(tp);
 }
 
-
 static std::unordered_map<const scalars::ScalarType *, py::object> ctype_type_cache;
-
-
 
 void python::register_scalar_type(const scalars::ScalarType *ctype, pybind11::handle py_type) {
     auto &found = ctype_type_cache[ctype];
@@ -74,10 +67,14 @@ void python::register_scalar_type(const scalars::ScalarType *ctype, pybind11::ha
 
 py::object python::to_ctype_type(const scalars::ScalarType *type) {
     // The GIL must be held because we're working with Python objects anyway.
+    if (type == nullptr) {
+        throw std::runtime_error("no matching ctype");
+    }
     const auto found = ctype_type_cache.find(type);
     if (found != ctype_type_cache.end()) {
         return found->second;
     }
+
     throw std::runtime_error("no matching ctype for type " + type->info().name);
 }
 
@@ -193,7 +190,6 @@ std::string python::py_buffer_to_type_id(const py::buffer_info &info) {
     return format;
 }
 
-
 const scalars::ScalarType *python::py_buffer_to_scalar_type(const py::buffer_info &info) {
     using scalars::ScalarType;
 
@@ -239,9 +235,6 @@ py::type python::scalar_type_to_py_type(const scalars::ScalarType *type) {
     throw py::type_error("no matching type for type " + type->info().name);
 }
 
-
-
-
 void python::init_scalar_types(pybind11::module_ &m) {
 
     PyScalarMetaType_type.tp_base = &PyType_Type;
@@ -262,6 +255,4 @@ void python::init_scalar_types(pybind11::module_ &m) {
     make_scalar_type(m, scalars::ScalarType::of<float>());
     make_scalar_type(m, scalars::ScalarType::of<double>());
     make_scalar_type(m, scalars::ScalarType::of<scalars::rational_scalar_type>());
-
-
 }

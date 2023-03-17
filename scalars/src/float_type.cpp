@@ -6,5 +6,5 @@
 
 using namespace rpy::scalars;
 
-FloatType::FloatType() : StandardScalarType<float>("f32", "float")
+FloatType::FloatType() : StandardScalarType<float>("f32", "SPReal")
 {}

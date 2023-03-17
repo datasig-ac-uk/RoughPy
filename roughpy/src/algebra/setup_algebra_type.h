@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include <pybind11/operators.h>
+#include <pybind11/stl.h>
 
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/algebra/algebra_fwd.h>

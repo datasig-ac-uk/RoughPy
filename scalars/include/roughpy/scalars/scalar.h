@@ -60,11 +60,20 @@ public:
     template <typename ScalarArg>
     Scalar(const ScalarType *type, ScalarArg arg) {
         const auto *scalar_arg_type = ScalarType::of<ScalarArg>();
-        if (type == nullptr) {
-            type = scalar_arg_type;
+        if (scalar_arg_type != nullptr) {
+            if (type == nullptr) {
+                type = scalar_arg_type;
+            }
+            ScalarPointer::operator=(type->allocate(1));
+            type->convert_copy(to_mut_pointer(), {scalar_arg_type, std::addressof(arg)}, 1);
+        } else {
+            const auto& id = type_id_of<ScalarArg>();
+            if (type == nullptr) {
+                type = ScalarType::for_id(id);
+            }
+            ScalarPointer::operator=(type->allocate(1));
+            type->convert_copy(to_mut_pointer(), &arg, 1, id);
         }
-        ScalarPointer::operator=(type->allocate(1));
-        type->convert_copy(to_mut_pointer(), {scalar_arg_type, std::addressof(arg)}, 1);
     }
 
     ~Scalar();

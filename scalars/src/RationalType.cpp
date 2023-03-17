@@ -9,5 +9,5 @@ using namespace rpy::scalars;
 
 
 RationalType::RationalType()
-    : StandardScalarType<rational_scalar_type>("rational", "rational")
+    : StandardScalarType<rational_scalar_type>("Rational", "Rational")
 {}

@@ -7,5 +7,5 @@
 
 using namespace rpy::scalars;
 
-DoubleType::DoubleType() : StandardScalarType<double>("f64", "double")
+DoubleType::DoubleType() : StandardScalarType<double>("f64", "DPReal")
 {}
