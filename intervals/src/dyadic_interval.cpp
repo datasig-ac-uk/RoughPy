@@ -50,7 +50,7 @@ Dyadic DyadicInterval::dinf() const {
         : dexcluded_end();
 }
 Dyadic DyadicInterval::dsup() const {
-    return m_interval_type == IntervalType::Opencl
+    return m_interval_type == IntervalType::Clopen
         ? dexcluded_end()
         : dincluded_end();
 }

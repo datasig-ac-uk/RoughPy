@@ -199,7 +199,14 @@ public:
         if (rhs.is_null()) {
             throw std::runtime_error("division by zero");
         }
-        return Scalar(this, *lhs.raw_cast<const ScalarImpl*>() / try_convert(rhs));
+
+        auto crhs = try_convert(rhs);
+
+        if (crhs == ScalarImpl(0)) {
+            throw std::runtime_error("division by zero");
+        }
+
+        return Scalar(this, static_cast<ScalarImpl>(*lhs.raw_cast<const ScalarImpl*>() / crhs));
     }
     bool are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept override {
         return *lhs.raw_cast<const ScalarImpl*>() == try_convert(rhs);
@@ -233,9 +240,16 @@ public:
         assert(lhs);
         auto *ptr = lhs.raw_cast<ScalarImpl *>();
         if (rhs.is_null()) {
-            throw std::invalid_argument("division by zero");
+            throw std::runtime_error("division by zero");
         }
-        *ptr /= try_convert(rhs);
+
+        auto crhs = try_convert(rhs);
+
+        if (crhs == ScalarImpl(0)) {
+            throw std::runtime_error("division by zero");
+        }
+
+        *ptr /= crhs;
     }
     bool is_zero(ScalarPointer arg) const override {
         return !static_cast<bool>(arg) || *arg.raw_cast<const ScalarImpl *>() == ScalarImpl(0);

@@ -193,9 +193,20 @@ Scalar Scalar::operator-() const {
 RPY_SCALAR_OP(+, add)
 RPY_SCALAR_OP(-, sub)
 RPY_SCALAR_OP(*, mul)
-RPY_SCALAR_OP(/, div)
 
 #undef RPY_SCALAR_OP
+
+Scalar Scalar::operator/(const Scalar &other) const {
+    const ScalarType *type = (p_type != nullptr) ? p_type : other.p_type;
+    if (type == nullptr) {
+        return Scalar();
+    }
+    if (other.p_data == nullptr) {
+        throw std::runtime_error("division by zero");
+    }
+
+    return type->div(to_pointer(), other.to_pointer());
+}
 
 #define RPY_SCALAR_IOP(OP, MNAME)                                                         \
     Scalar &Scalar::operator OP(const Scalar &other) {                                     \
