@@ -618,6 +618,7 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::mul_inplace(
     if (is_equivalent_to_zero(*this)) {
         *this = algebra_t();
     }
+    p_impl->mul_inplace(rhs);
     return downcast(*this);
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
