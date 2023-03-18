@@ -148,7 +148,7 @@ void setup_algebra_type(py::class_<Alg, Args...> &klass) {
 
       auto dense_data = self.dense_data();
       if (dense_data) {
-          auto dense_data_inner = dense_data.value();
+          const auto dense_data_inner = dense_data.value();
           return py::array(dtype, {dense_data_inner.size()}, {}, dense_data_inner.ptr());
       }
       return py::array(dtype);
