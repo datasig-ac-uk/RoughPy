@@ -367,7 +367,7 @@ optional<scalars::ScalarArray> AlgebraImplementation<Interface, Impl, StorageMod
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 template <typename B, typename>
 optional<scalars::ScalarArray> AlgebraImplementation<Interface, Impl, StorageModel>::dense_data_impl(const B &data) const {
-    return {Interface::coeff_type(), data.as_ptr(), data.dimension()};
+    return scalars::ScalarArray{{Interface::coeff_type(), data.as_ptr()}, data.dimension()};
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 optional<scalars::ScalarArray> AlgebraImplementation<Interface, Impl, StorageModel>::dense_data_impl(...) const {
