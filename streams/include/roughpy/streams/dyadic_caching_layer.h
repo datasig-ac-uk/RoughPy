@@ -33,6 +33,13 @@ class DyadicCachingLayer : public BaseInterface {
 public:
     using BaseInterface::BaseInterface;
 
+    DyadicCachingLayer(const DyadicCachingLayer&) = delete;
+    DyadicCachingLayer(DyadicCachingLayer&& other) noexcept;
+
+    DyadicCachingLayer& operator=(const DyadicCachingLayer&) = delete;
+    DyadicCachingLayer& operator=(DyadicCachingLayer&& other) noexcept;
+
+
     using BaseInterface::log_signature;
 
     algebra::Lie
@@ -45,6 +52,24 @@ public:
                   resolution_t resolution,
                   const algebra::Context &ctx);
 };
+
+template <typename BaseInterface>
+DyadicCachingLayer<BaseInterface>::DyadicCachingLayer(DyadicCachingLayer &&other) noexcept
+    : BaseInterface(static_cast<BaseInterface&&>(other))
+{
+    std::lock_guard<std::recursive_mutex> access(other.m_compute_lock);
+    m_cache = std::move(other.m_cache);
+}
+template <typename BaseInterface>
+DyadicCachingLayer<BaseInterface> &DyadicCachingLayer<BaseInterface>::operator=(DyadicCachingLayer &&other) noexcept {
+    if (&other != this) {
+        std::lock_guard<std::recursive_mutex> this_access(m_compute_lock);
+        std::lock_guard<std::recursive_mutex> that_access(other.m_compute_lock);
+        m_cache = std::move(other.m_cache);
+        BaseInterface::operator=(std::move(other));
+    }
+    return *this;
+}
 
 template <typename BaseInterface>
 algebra::Lie DyadicCachingLayer<BaseInterface>::log_signature(const intervals::DyadicInterval &interval, resolution_t resolution, const algebra::Context &ctx) {
