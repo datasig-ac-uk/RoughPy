@@ -63,7 +63,7 @@ def test_lie_create_list_ints():
 
     assert result.width == 3
     assert result.max_degree == 2
-    assert result.storage_type == esig.VectorType.DenseVector
+    assert result.storage_type == roughpy.VectorType.DenseVector
 
 
 def test_lie_create_list_floats():
@@ -71,7 +71,7 @@ def test_lie_create_list_floats():
 
     assert result.width == 3
     assert result.max_degree == 2
-    assert result.storage_type == esig.VectorType.DenseVector
+    assert result.storage_type == roughpy.VectorType.DenseVector
 
 
 def test_Lie_array_roundtrip(width, depth, data1):
@@ -81,7 +81,7 @@ def test_Lie_array_roundtrip(width, depth, data1):
 
 def test_Lie_repr(width, depth, data1, lie_size):
     l = Lie(data1, width=width, depth=depth)
-    assert repr(l) == f"Lie({width=}, depth={depth}, ctype=double)"
+    assert repr(l) == f"Lie({width=}, depth={depth}, ctype=DPReal)"
 
 
 def test_Lie_str():

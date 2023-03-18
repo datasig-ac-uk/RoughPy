@@ -98,7 +98,7 @@ class DLCreateDummy:
         self.array = array
 
     def __dlpack__(self, stream=None):
-        return self.array.__dlpack__(stream)
+        return self.array.__dlpack__(stream=stream)
 
 
 @pytest.mark.skipif(tuple(map(int, np.__version__.split("."))) < (1, 22, 0),
@@ -137,7 +137,7 @@ def test_create_intv_pair():
 
     assert result.width == 2
     assert result.max_degree == 2
-    assert result.storage_type == esig.VectorType.SparseVector
+    assert result.storage_type == roughpy.VectorType.SparseVector
     # assert_array_equal(result, np.array([0., 1., 0.]))
 
 
@@ -146,7 +146,7 @@ def test_create_list_intv_pairs():
 
     assert result.width == 2
     assert result.max_degree == 2
-    assert result.storage_type == esig.VectorType.SparseVector
+    assert result.storage_type == roughpy.VectorType.SparseVector
     # assert_array_equal(result, np.array([0., 1., 2.]))
 
 
@@ -156,7 +156,7 @@ def test_create_tkey_val_pair():
 
     assert result.width == 2
     assert result.max_degree == 2
-    assert result.storage_type == esig.VectorType.SparseVector
+    assert result.storage_type == roughpy.VectorType.SparseVector
     # assert result[1] == 1.0
 
 
@@ -169,15 +169,15 @@ def test_create_list_tkey_val_pairs():
 
     assert result.width == 2
     assert result.max_degree == 2
-    assert result.storage_type == esig.VectorType.SparseVector
+    assert result.storage_type == roughpy.VectorType.SparseVector
 
 
 def test_create_list_intv_pairs_dense():
-    result = FreeTensor([(1, 1.0), (2, 2.0)], width=2, depth=2, vector_type=esig.VectorType.DenseVector)
+    result = FreeTensor([(1, 1.0), (2, 2.0)], width=2, depth=2, vector_type=roughpy.VectorType.DenseVector)
 
     assert result.width == 2
     assert result.max_degree == 2
-    assert result.storage_type == esig.VectorType.DenseVector
+    assert result.storage_type == roughpy.VectorType.DenseVector
     assert_array_equal(result, np.array([0., 1., 2.]))
 
 
@@ -186,7 +186,7 @@ def test_create_dict_args():
 
     assert result.width == 2
     assert result.max_degree == 2
-    assert result.storage_type == esig.VectorType.SparseVector
+    assert result.storage_type == roughpy.VectorType.SparseVector
 
 
 def test_create_list_dicts():
@@ -239,7 +239,7 @@ def test_FreeTensor_repr(rng, width, depth, tensor_size):
     data = rng.uniform(0.0, 1.0, size=tensor_size)
     t = FreeTensor(data, width=width, depth=depth)
 
-    assert repr(t) == f"FreeTensor({width=}, depth={depth}, ctype=double)"
+    assert repr(t) == f"FreeTensor({width=}, depth={depth}, ctype=DPReal)"
 
 
 def test_FreeTensor_str():
