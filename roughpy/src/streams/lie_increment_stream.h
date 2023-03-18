@@ -6,6 +6,9 @@
 namespace rpy {
 namespace python {
 
+
+void init_lie_increment_stream(py::module_& m);
+
 } // namespace python
 } // namespace rpy
 
