@@ -89,7 +89,7 @@ public:
 };
 
 template <typename T>
-using d_has_as_ptr_t = decltype(traits::declval<const T&>().base_vector().as_ptr());
+using d_has_as_ptr_t = decltype(traits::declval<const T&>().as_ptr());
 
 #define RPY_HAS_FUSED_OP_CHECKER(NAME)          \
     template <typename T>                       \
