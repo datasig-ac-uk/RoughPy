@@ -60,8 +60,8 @@ bool LiteContextMaker::can_get(deg_t width, deg_t depth, const scalars::ScalarTy
 
     return true;
 }
-context_pointer LiteContextMaker::get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype, const preference_list &preferences) const {
 
+context_pointer LiteContextMaker::create_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype, const ContextMaker::preference_list &preferences) const {
     auto idx = index_of_ctype(ctype);
     assert(idx.has_value());
 
@@ -71,9 +71,17 @@ context_pointer LiteContextMaker::get_context(deg_t width, deg_t depth, const sc
         case 2: return new LiteContext<lal::rational_field>(width, depth);
     }
 
-
     RPY_UNREACHABLE();
+}
 
+context_pointer LiteContextMaker::get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype, const preference_list &preferences) const {
+    auto& found = s_lite_context_cache[std::make_tuple(width, depth, ctype)];
+
+    if (!found) {
+        found = create_context(width, depth, ctype, preferences);
+    }
+
+    return found;
 }
 optional<base_context_pointer> LiteContextMaker::get_base_context(deg_t width, deg_t depth) const {
     auto begin = s_lite_context_cache.begin();

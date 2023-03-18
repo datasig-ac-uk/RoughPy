@@ -173,8 +173,9 @@ public:
 
 
 class LiteContextMaker : public ContextMaker {
-public:
     using ContextMaker::preference_list;
+    context_pointer create_context(deg_t width, deg_t depth, const scalars::ScalarType* ctype, const preference_list& preferences) const;
+public:
 
     bool can_get(deg_t width, deg_t depth, const scalars::ScalarType *ctype, const preference_list &preferences) const override;
     context_pointer get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype, const preference_list &preferences) const override;
@@ -468,7 +469,7 @@ LiteContext<Coefficients>::LiteContext(deg_t width, deg_t depth)
     : dtl::LiteContextBasisHolder(width, depth),
       Context(width, depth, scalars::ScalarType::of<scalar_type>(),
               std::string("libalgebra_lite"),
-              p_tbasis->sizes().data(), p_lbasis->sizes().data()),
+              p_lbasis->sizes().data(), p_tbasis->sizes().data()),
       m_tensor_basis(&*p_tbasis), m_lie_basis(&*p_lbasis),
       p_ftmul(lal::multiplication_registry<lal::free_tensor_multiplication>::get(*p_tbasis)),
       p_liemul(lal::multiplication_registry<lal::lie_multiplication>::get(*p_lbasis)),
