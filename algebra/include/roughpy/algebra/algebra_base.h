@@ -397,17 +397,33 @@ AlgebraBase<Interface, DerivedImpl>::AlgebraBase(context_pointer ctx)
 }
 
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
-AlgebraBase<Interface, DerivedImpl>::AlgebraBase(const AlgebraBase &other) {
+AlgebraBase<Interface, DerivedImpl>::AlgebraBase(const AlgebraBase &other)
+{
+    if (other.p_impl) {
+        *this = other.p_impl->clone();
+    }
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
-AlgebraBase<Interface, DerivedImpl>::AlgebraBase(AlgebraBase &&other) noexcept {
+AlgebraBase<Interface, DerivedImpl>::AlgebraBase(AlgebraBase &&other) noexcept
+    : p_impl(std::move(other.p_impl))
+{
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 AlgebraBase<Interface, DerivedImpl> &AlgebraBase<Interface, DerivedImpl>::operator=(const AlgebraBase &other) {
+    if (&other != this) {
+        if (other.p_impl) {
+            *this = other.p_impl->clone();
+        } else {
+            p_impl.reset();
+        }
+    }
     return *this;
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 AlgebraBase<Interface, DerivedImpl> &AlgebraBase<Interface, DerivedImpl>::operator=(AlgebraBase &&other) noexcept {
+    if (&other != this) {
+        p_impl = std::move(other.p_impl);
+    }
     return *this;
 }
 
