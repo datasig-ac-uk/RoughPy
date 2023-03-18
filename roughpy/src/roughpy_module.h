@@ -13,7 +13,7 @@
 namespace PYBIND11_NAMESPACE {
 namespace detail {
 template <typename T>
-struct type_caster<boost::optional<T>> : optional_caster<boost::optional<T>> {};
+struct type_caster<boost::optional<T>> : public optional_caster<boost::optional<T>> {};
 }}
 
 namespace py = pybind11;
