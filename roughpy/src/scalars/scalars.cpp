@@ -151,7 +151,7 @@ static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
                                    python::PyToBufferOptions &options,
                                    const py::object &object) {
     py::capsule dlpack;
-    dlpack = object.attr("__dlpack__")(py::none());
+    dlpack = object.attr("__dlpack__")();
 
     auto *tensor = reinterpret_cast<DLManagedTensor *>(dlpack.get_pointer());
     if (tensor == nullptr) {
@@ -188,12 +188,12 @@ static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
         scalars::ScalarPointer p(tensor_stype, data);
         dl_copy_strided(ndim, shape, strides, p, buffer + static_cast<dimn_t>(0));
     }
-
-    if (tensor->deleter != nullptr) {
-        options.cleanup = [tensor]() {
-            tensor->deleter(tensor);
-        };
-    }
+//
+//    if (tensor->deleter != nullptr) {
+//        options.cleanup = [tensor]() {
+//            tensor->deleter(tensor);
+//        };
+//    }
 
     return true;
 }
@@ -448,10 +448,10 @@ scalars::KeyScalarArray python::py_to_buffer(const py::object &object, python::P
         update_dtype_and_allocate(result, options, 1, 1);
 
         handle_sequence_tuple(result, result.keys(), object, options);
-//    } else if (py::hasattr(object, "__dlpack__")) {
+    } else if (py::hasattr(object, "__dlpack__")) {
         // If we used the dlpack interface, then the result is
         // already constructed.
-//        try_fill_buffer_dlpack(result, options, object);
+        try_fill_buffer_dlpack(result, options, object);
 
     } else if (py::isinstance<py::buffer>(object)) {
         // Fall back to the buffer protocol
