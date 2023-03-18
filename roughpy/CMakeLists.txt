@@ -79,6 +79,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/scalars/scalar_type.cpp
         src/scalars/scalars.cpp
         src/scalars/scalars.h
+        src/streams/BaseStream.cpp
+        src/streams/BaseStream.h
         src/streams/function_path.cpp
         src/streams/function_path.h
         src/streams/lie_increment_stream.h
