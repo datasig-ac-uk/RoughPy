@@ -14,6 +14,12 @@ using namespace rpy;
 
 
 void python::init_intervals(pybind11::module_ &m) {
+
+    py::enum_<intervals::IntervalType>(m, "IntervalType")
+        .value("Clopen", intervals::IntervalType::Clopen)
+        .value("Opencl", intervals::IntervalType::Opencl)
+        .export_values();
+
     init_interval(m);
     init_real_interval(m);
     init_dyadic(m);

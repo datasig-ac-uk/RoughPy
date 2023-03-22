@@ -1,9 +1,10 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
 
+#include "rational_type.h"
+#include "roughpy/config/helpers.h"
 #include "roughpy_scalars_export.h"
 #include "scalars_fwd.h"
-#include "rational_type.h"
 
 #include <functional>
 #include <iosfwd>
@@ -27,8 +28,19 @@ template <typename T>
 inline const std::string &type_id_of() noexcept;
 
 
+
+struct RingCharacteristics {
+    unsigned is_field: 1;
+    unsigned is_ordered: 1;
+    unsigned has_sqrt: 1;
+};
+
+
+
+
 class ROUGHPY_SCALARS_EXPORT ScalarType {
     ScalarTypeInfo m_info;
+    RingCharacteristics m_characteristics;
 
 protected:
     explicit ScalarType(ScalarTypeInfo info) : m_info(std::move(info)) {}
@@ -276,6 +288,15 @@ public:
      * @param os output stream to print
      */
     virtual void print(ScalarPointer arg, std::ostream &os) const;
+
+
+    /**
+     * @brief Get a new random number generator for this scalar type
+     * @param bit_generator Source of randomness used for generating random numbers
+     * @param seed Seed bits (as a slice/array) of uint64_t (regardless of bit generator's seed type).
+     * @return Pointer to new RandomGenerator instance.
+     */
+    virtual std::unique_ptr<RandomGenerator> get_rng(const std::string& bit_generator="", Slice<uint64_t> seed={}) const;
 };
 
 /**

@@ -121,6 +121,7 @@ class OwnedScalarArray;
 class KeyScalarArray;
 class ScalarStream;
 
+class RandomGenerator;
 
 template <typename T>
 inline traits::remove_cv_ref_t<T> scalar_cast(const Scalar& arg);

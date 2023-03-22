@@ -7,6 +7,7 @@
 
 #include <cstring>
 #include <iterator>
+#include <vector>
 
 namespace rpy {
 
@@ -81,10 +82,16 @@ public:
 template <typename T>
 class Slice {
     T* p_data = nullptr;
-    std::size_t m_size = nullptr;
+    std::size_t m_size = 0;
 
 
 public:
+
+    Slice() = default;
+
+    Slice(T& num) : p_data(&num), m_size(1)
+    {}
+
 
     template <typename Container, typename=traits::enable_if_t<
         traits::is_same<
@@ -121,6 +128,8 @@ public:
         return p_data[i];
     }
 
+    bool empty() const noexcept { return p_data == nullptr || m_size == 0; }
+
     std::size_t size() const noexcept {
         return m_size;
     }
@@ -139,6 +148,15 @@ public:
     std::reverse_iterator<const T*> rend() const noexcept
     { return std::reverse_iterator<const T*>(p_data); }
 
+
+    operator std::vector<T> () const {
+        std::vector<T> result;
+        result.reserve(m_size);
+        for (dimn_t i=0; i<m_size; ++i) {
+            result.push_back(p_data[i]);
+        }
+        return result;
+    }
 
 };
 

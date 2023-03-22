@@ -21,7 +21,11 @@ endif()
 
 add_library(RoughPy::Scalars ALIAS RoughPy_Scalars)
 
-target_link_libraries(RoughPy_Scalars PUBLIC RoughPy::Config Boost::boost)
+target_link_libraries(RoughPy_Scalars PUBLIC
+        RoughPy::Config
+        Boost::boost
+        PCGRandom::pcg_random
+        )
 
 set(ROUGHPY_SCALARS_PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
@@ -33,6 +37,7 @@ set(ROUGHPY_SCALARS_PUBLIC_HEADERS
         include/roughpy/scalars/owned_scalar_array.h
         include/roughpy/scalars/key_scalar_array.h
         include/roughpy/scalars/scalar_traits.h
+        include/roughpy/scalars/random.h
         include/roughpy/scalars.h
         )
 
@@ -58,6 +63,8 @@ target_sources(RoughPy_Scalars
             src/double_type.h
             src/RationalType.cpp
             src/RationalType.h
+            src/standard_random_generator.cpp
+            src/standard_random_generator.h
         )
 
 

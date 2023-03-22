@@ -27,6 +27,15 @@ add_subdirectory(external/pybind11)
 set(BUILD_MOCK OFF CACHE BOOL INTERNAL)
 add_subdirectory(external/dlpack)
 
+# Make an imported target for PCG-CPP because it is a
+# makefile based project
+if(NOT TARGET PCGRandom::pcg_random)
+    add_library(PCGRandom::pcg_random IMPORTED INTERFACE)
+    target_include_directories(PCGRandom::pcg_random INTERFACE
+            external/pcg-cpp/include)
+endif()
+
+
 add_subdirectory(config)
 add_subdirectory(scalars)
 add_subdirectory(intervals)

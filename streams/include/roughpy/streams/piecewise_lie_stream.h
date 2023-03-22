@@ -12,7 +12,7 @@
 namespace rpy { namespace streams {
 
 
-class PiecewiseLiePath : public StreamInterface {
+class PiecewiseLieStream : public StreamInterface {
 public:
     using LiePiece = std::pair<intervals::RealInterval, algebra::Lie>;
 
@@ -30,8 +30,7 @@ private:
     }
 
 public:
-
-    PiecewiseLiePath(std::vector<LiePiece>&& arg, StreamMetadata&& md);
+    PiecewiseLieStream(std::vector<LiePiece>&& arg, StreamMetadata&& md);
 
     using StreamInterface::log_signature;
 

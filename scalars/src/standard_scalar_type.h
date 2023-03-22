@@ -5,33 +5,48 @@
 #ifndef ROUGHPY_SCALARS_SRC_STANDARD_SCALAR_TYPE_H
 #define ROUGHPY_SCALARS_SRC_STANDARD_SCALAR_TYPE_H
 
-#include "scalar_type.h"
 #include "scalar.h"
+#include "scalar_type.h"
 
-#include <ostream>
 #include <limits>
+#include <ostream>
+#include <unordered_map>
 #include <utility>
 
-namespace rpy  {
+#include "random.h"
+#include "standard_random_generator.h"
+
+namespace rpy {
 namespace scalars {
 
 template <typename T>
 constexpr std::uint8_t sizeof_bits() noexcept {
     return static_cast<std::uint8_t>(std::min(
-        static_cast<std::size_t>(std::numeric_limits<std::uint8_t>::max() / 8),
-        sizeof(T)
-        ) * 8U);
+                                         static_cast<std::size_t>(std::numeric_limits<std::uint8_t>::max() / 8),
+                                         sizeof(T))
+                                     * 8U);
 }
 
 template <typename ScalarImpl>
 class StandardScalarType : public ScalarType {
+
+    using rng_getter = std::unique_ptr<RandomGenerator> (*)(const ScalarType* type, Slice<uint64_t>);
+
+    static std::unique_ptr<RandomGenerator> get_mt19937_generator(const ScalarType* type, Slice<uint64_t> seed);
+    static std::unique_ptr<RandomGenerator> get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed);
+
+    std::unordered_map<std::string, rng_getter> m_rng_getters{
+        {"mt19937", &get_mt19937_generator},
+        {"pcg", &get_pcg_generator}};
+
 public:
     explicit StandardScalarType(std::string id, std::string name)
         : ScalarType({{2U, sizeof_bits<ScalarImpl>(), 1U},
                       {ScalarDeviceType::CPU, 0},
-                      std::move(name), std::move(id),
-                      sizeof(ScalarImpl), alignof(ScalarImpl)}) {}
-
+                      std::move(name),
+                      std::move(id),
+                      sizeof(ScalarImpl),
+                      alignof(ScalarImpl)}) {}
 
     Scalar from(long long int numerator, long long int denominator) const override {
         return Scalar(this, ScalarImpl(numerator) / denominator);
@@ -146,26 +161,24 @@ public:
         }
 
         // If we're here, then it is a non-standard type
-        const auto& conversion = get_conversion(type_id, this->id());
+        const auto &conversion = get_conversion(type_id, this->id());
         conversion(out, {nullptr, in}, count);
-
-
     }
 
     void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const override {
         if (src.type() == nullptr) {
             throw std::invalid_argument("source type cannot be null");
         }
-        convert_copy(dst, src.ptr(), count, src.type()->id());
+        convert_copy(dst, src.cptr(), count, src.type()->id());
     }
     void convert_copy(void *out, const void *in, std::size_t count, BasicScalarInfo info) const override {
         //TODO: Implement me
     }
     void assign(ScalarPointer target, long long int numerator, long long int denominator) const override {
-        *target.raw_cast<ScalarImpl*>() = ScalarImpl(numerator) / denominator;
+        *target.raw_cast<ScalarImpl *>() = ScalarImpl(numerator) / denominator;
     }
     scalar_t to_scalar_t(ScalarPointer arg) const override {
-        return static_cast<scalar_t>(*arg.raw_cast<const ScalarImpl*>());
+        return static_cast<scalar_t>(*arg.raw_cast<const ScalarImpl *>());
     }
 
     Scalar copy(ScalarPointer arg) const override {
@@ -178,19 +191,19 @@ public:
         if (!lhs) {
             return copy(rhs);
         }
-        return Scalar(this, *lhs.raw_cast<const ScalarImpl*>() + try_convert(rhs));
+        return Scalar(this, *lhs.raw_cast<const ScalarImpl *>() + try_convert(rhs));
     }
     Scalar sub(ScalarPointer lhs, ScalarPointer rhs) const override {
         if (!lhs) {
             return uminus(rhs);
         }
-        return Scalar(this, *lhs.raw_cast<const ScalarImpl*>() - try_convert(rhs));
+        return Scalar(this, *lhs.raw_cast<const ScalarImpl *>() - try_convert(rhs));
     }
     Scalar mul(ScalarPointer lhs, ScalarPointer rhs) const override {
         if (!lhs) {
             return zero();
         }
-        return Scalar(this, *lhs.raw_cast<const ScalarImpl*>() * try_convert(rhs));
+        return Scalar(this, *lhs.raw_cast<const ScalarImpl *>() * try_convert(rhs));
     }
     Scalar div(ScalarPointer lhs, ScalarPointer rhs) const override {
         if (!lhs) {
@@ -206,10 +219,10 @@ public:
             throw std::runtime_error("division by zero");
         }
 
-        return Scalar(this, static_cast<ScalarImpl>(*lhs.raw_cast<const ScalarImpl*>() / crhs));
+        return Scalar(this, static_cast<ScalarImpl>(*lhs.raw_cast<const ScalarImpl *>() / crhs));
     }
     bool are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept override {
-        return *lhs.raw_cast<const ScalarImpl*>() == try_convert(rhs);
+        return *lhs.raw_cast<const ScalarImpl *>() == try_convert(rhs);
     }
 
     Scalar one() const override {
@@ -223,7 +236,7 @@ public:
     }
     void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const override {
         assert(lhs);
-        auto *ptr = lhs.raw_cast<ScalarImpl*>();
+        auto *ptr = lhs.raw_cast<ScalarImpl *>();
         *ptr += try_convert(rhs);
     }
     void sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const override {
@@ -258,12 +271,54 @@ public:
         if (!arg) {
             os << 0.0;
         } else {
-            os << *arg.raw_cast<const ScalarImpl*>();
+            os << *arg.raw_cast<const ScalarImpl *>();
         }
     }
+
+    std::unique_ptr<RandomGenerator> get_rng(const std::string &bit_generator, Slice<uint64_t> seed) const override;
 };
 
+inline uint64_t device_to_seed() {
+    std::random_device rd;
+    uint64_t result (rd());
+    result <<= 32;
+    result += static_cast<uint64_t>(rd());
+    return result;
 }
+
+
+template <typename ScalarImpl>
+std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::get_mt19937_generator(const ScalarType* type, Slice<uint64_t> seed) {
+    if (seed.empty()) {
+        auto num_seed = device_to_seed();
+        return std::unique_ptr<RandomGenerator>{new StandardRandomGenerator<ScalarImpl, std::mt19937_64>(type, num_seed)};
+    }
+    return std::unique_ptr<RandomGenerator>{new StandardRandomGenerator<ScalarImpl, std::mt19937_64>(type, seed)};
 }
+template <typename ScalarImpl>
+std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed) {
+    if (seed.empty()) {
+        auto num_seed = device_to_seed();
+        return std::unique_ptr<RandomGenerator>{new StandardRandomGenerator<ScalarImpl, pcg64>(type, num_seed)};
+    }
+    return std::unique_ptr<RandomGenerator>{new StandardRandomGenerator<ScalarImpl, pcg64>(type, seed)};
+}
+
+template <typename ScalarImpl>
+std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::get_rng(const std::string &bit_generator, Slice<uint64_t> seed) const {
+    if (bit_generator.empty()) {
+        return m_rng_getters.find("pcg")->second(this, seed);
+    }
+
+    auto found = m_rng_getters.find(bit_generator);
+    if (found != m_rng_getters.end()) {
+        return found->second(this, seed);
+    }
+
+    return ScalarType::get_rng(bit_generator, seed);
+}
+
+}// namespace scalars
+}// namespace rpy
 
 #endif//ROUGHPY_SCALARS_SRC_STANDARD_SCALAR_TYPE_H

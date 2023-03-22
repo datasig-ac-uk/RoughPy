@@ -39,12 +39,29 @@ bool Interval::contains(param_t arg) const noexcept {
     return false;
 }
 bool Interval::is_associated(const Interval &arg) const noexcept {
-    return false;
+    return contains(arg.included_end());
 }
 bool Interval::contains(const Interval &arg) const noexcept {
     return contains(arg.inf()) && contains(arg.sup());
 }
 bool Interval::intersects_with(const Interval &arg) const noexcept {
+    auto lhs_inf = inf();
+    auto lhs_sup = sup();
+    auto rhs_inf = arg.inf();
+    auto rhs_sup = arg.sup();
+
+    if ((lhs_inf <= rhs_inf && lhs_sup > rhs_inf) || (rhs_inf <= lhs_inf && rhs_sup > lhs_inf)) {
+        // [l--[r---l)--r) || [r--[l--r)--l)
+        return true;
+    }
+    if (rhs_inf == lhs_sup) {
+        // (l--l][r--r)
+        return m_interval_type == IntervalType::Opencl && arg.m_interval_type == IntervalType::Clopen;
+    }
+    if (lhs_inf == rhs_sup) {
+        // (r--r][l---l)
+        return m_interval_type == IntervalType::Clopen && arg.m_interval_type == IntervalType::Opencl;
+    }
     return false;
 }
 bool Interval::operator==(const Interval &other) const {

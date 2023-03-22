@@ -81,10 +81,12 @@ target_sources(RoughPy_PyModule PRIVATE
         src/scalars/scalars.h
         src/streams/BaseStream.cpp
         src/streams/BaseStream.h
-        src/streams/function_path.cpp
-        src/streams/function_path.h
+        src/streams/function_stream.cpp
+        src/streams/function_stream.h
         src/streams/lie_increment_stream.h
         src/streams/lie_increment_stream.cpp
+        src/streams/piecewise_lie_stream.cpp
+        src/streams/piecewise_lie_stream.h
         src/streams/stream.cpp
         src/streams/stream.h
         src/streams/streams.cpp
@@ -107,6 +109,7 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         )
 
 if(ROUGHPY_LINK_NUMPY)
+    target_link_libraries(RoughPy_PyModule PRIVATE Python::NumPy)
     target_compile_definitions(RoughPy_PyModule PRIVATE
         ROUGHPY_WITH_NUMPY)
 endif()

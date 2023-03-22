@@ -11,11 +11,11 @@
 
 namespace rpy { namespace streams {
 
-class ROUGHPY_STREAMS_EXPORT LieIncrementStream : public DyadicCachingLayer<StreamInterface> {
+class ROUGHPY_STREAMS_EXPORT LieIncrementStream : public DyadicCachingLayer {
     scalars::KeyScalarArray m_buffer;
     boost::container::flat_map<param_t, dimn_t> m_mapping;
 
-    using base_t = DyadicCachingLayer<StreamInterface>;
+    using base_t = DyadicCachingLayer;
 public:
 
     LieIncrementStream(

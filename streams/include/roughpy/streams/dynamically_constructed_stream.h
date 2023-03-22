@@ -7,6 +7,16 @@
 namespace rpy {
 namespace streams {
 
+class DynamicallyConstructedStream : public StreamInterface {
+public:
+
+    using StreamInterface::StreamInterface;
+
+    algebra::Lie log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+
+protected:
+    virtual algebra::Lie eval(const intervals::Interval& interval) const = 0;
+};
 
 }// namespace streams
 }// namespace rpy

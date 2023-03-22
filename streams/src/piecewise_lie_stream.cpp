@@ -12,7 +12,7 @@ using rpy::algebra::Lie;
 using rpy::intervals::Interval;
 using rpy::intervals::RealInterval;
 
-PiecewiseLiePath::PiecewiseLiePath(std::vector<LiePiece> &&data, StreamMetadata &&md)
+PiecewiseLieStream::PiecewiseLieStream(std::vector<LiePiece> &&data, StreamMetadata &&md)
     : StreamInterface(std::move(md)), m_data() {
 //    // first sort so we know the inf of each interval are in order
 //    auto sort_fun = [](const LiePiece &a, const LiePiece &b) {
@@ -92,10 +92,10 @@ PiecewiseLiePath::PiecewiseLiePath(std::vector<LiePiece> &&data, StreamMetadata 
 //        m_data.push_back(std::move(*it));
 //    }
 }
-bool PiecewiseLiePath::empty(const Interval &interval) const noexcept {
+bool PiecewiseLieStream::empty(const Interval &interval) const noexcept {
     return StreamInterface::empty(interval);
 }
-algebra::Lie PiecewiseLiePath::log_signature(const Interval &domain, const Context &ctx) const {
+algebra::Lie PiecewiseLieStream::log_signature(const Interval &domain, const Context &ctx) const {
     std::vector<algebra::Lie> lies;
     lies.reserve(4);
 

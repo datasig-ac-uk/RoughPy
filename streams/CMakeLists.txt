@@ -47,6 +47,7 @@ target_sources(RoughPy_Streams
             src/stream_base.cpp
             src/stream.cpp
             src/lie_increment_stream.cpp
+            src/dynamically_constructed_stream.cpp
             src/dyadic_caching_layer.cpp
             src/piecewise_lie_stream.cpp
             src/tick_stream.cpp

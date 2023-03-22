@@ -176,6 +176,9 @@ static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
         return true;
     }
 
+    assert(shape != nullptr);
+    options.shape.assign(shape, shape+ndim);
+
     idimn_t size = 1;
     for (auto i = 0; i < ndim; ++i) {
         size *= static_cast<idimn_t>(shape[i]);

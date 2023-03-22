@@ -242,3 +242,7 @@ void rpy::scalars::register_conversion(const std::string &src_id, const std::str
         found = std::move(converter);
     }
 }
+
+std::unique_ptr<RandomGenerator> ScalarType::get_rng(const std::string &bit_generator, Slice<uint64_t> seed) const {
+    throw std::runtime_error("no random number generators are defined for this scalar type");
+}

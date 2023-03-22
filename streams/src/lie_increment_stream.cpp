@@ -41,11 +41,11 @@ algebra::Lie LieIncrementStream::log_signature(const intervals::Interval &interv
         data.data_stream.set_elts_per_row(row1 - row0);
     }
 
-    auto begin = (interval.type() == intervals::IntervalType::Clopen)
+    auto begin = (interval.type() == intervals::IntervalType::Opencl)
                  ? m_mapping.lower_bound(interval.inf())
                  : m_mapping.upper_bound(interval.inf());
 
-    auto end = (interval.type() == intervals::IntervalType::Clopen)
+    auto end = (interval.type() == intervals::IntervalType::Opencl)
                ? m_mapping.lower_bound(interval.sup())
                : m_mapping.upper_bound(interval.sup());
 

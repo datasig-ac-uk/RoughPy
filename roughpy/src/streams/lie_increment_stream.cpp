@@ -11,7 +11,7 @@
 #include "args/kwargs_to_path_metadata.h"
 #include "scalars/scalars.h"
 #include "scalars/scalar_type.h"
-
+#include "stream.h"
 
 
 using namespace rpy;
@@ -36,7 +36,7 @@ void buffer_to_indices(std::vector<param_t> &indices, const py::buffer_info &inf
     }
 }
 
-static streams::Stream lie_increment_stream_from_increments(const py::object& data, const py::kwargs& kwargs) {
+static py::object lie_increment_stream_from_increments(const py::object& data, const py::kwargs& kwargs) {
     auto md = kwargs_to_metadata(kwargs);
 
     std::vector<param_t> indices;
@@ -132,7 +132,7 @@ static streams::Stream lie_increment_stream_from_increments(const py::object& da
         options.cleanup();
     }
 
-    return result;
+    return py::reinterpret_steal<py::object>(python::RPyStream_FromStream(std::move(result)));
 
 }
 

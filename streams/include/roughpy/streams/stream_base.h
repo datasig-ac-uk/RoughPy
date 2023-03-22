@@ -67,6 +67,8 @@ public:
     virtual algebra::Lie
     log_signature(const intervals::Interval& interval, resolution_t resolution, const algebra::Context& ctx) const;
 
+    virtual algebra::FreeTensor signature(const intervals::Interval& interval, const algebra::Context& ctx) const;
+
     virtual algebra::FreeTensor
     signature(const intervals::Interval& interval, resolution_t resolution, const algebra::Context& ctx) const;
 
