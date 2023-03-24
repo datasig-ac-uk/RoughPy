@@ -125,6 +125,7 @@ protected:
 
 public:
     virtual Lie cbh(const std::vector<Lie> &lies, VectorType vtype) const;
+    virtual Lie cbh(const Lie& left, const Lie& right, VectorType vtype) const;
 
     virtual FreeTensor to_signature(const Lie &log_signature) const;
     virtual FreeTensor signature(const SignatureData &data) const = 0;

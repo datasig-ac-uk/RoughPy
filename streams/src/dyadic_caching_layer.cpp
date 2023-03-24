@@ -3,6 +3,7 @@
 //
 
 #include "dyadic_caching_layer.h"
+#include <iostream>
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -22,8 +23,8 @@ DyadicCachingLayer &DyadicCachingLayer::operator=(DyadicCachingLayer &&other) no
     }
     return *this;
 }
-algebra::Lie DyadicCachingLayer::log_signature(const intervals::DyadicInterval &interval, resolution_t resolution, const algebra::Context &ctx) {
-    if (DyadicCachingLayer::empty(interval)) {
+algebra::Lie DyadicCachingLayer::log_signature(const intervals::DyadicInterval &interval, resolution_t resolution, const algebra::Context &ctx) const {
+    if (empty(interval)) {
         return ctx.zero_lie(DyadicCachingLayer::metadata().cached_vector_type);
     }
 
@@ -32,8 +33,10 @@ algebra::Lie DyadicCachingLayer::log_signature(const intervals::DyadicInterval &
 
         auto &cached = m_cache[interval];
         if (!cached) {
-            cached = log_signature(interval, ctx);
+            cached = log_signature_impl(interval, ctx);
         }
+//        std::cerr << interval << ' ';
+//        cached.print(std::cerr) << '\n';
         return cached;
     }
 
@@ -54,7 +57,7 @@ algebra::Lie DyadicCachingLayer::log_signature(const intervals::DyadicInterval &
 
     return ctx.cbh({lhs, rhs}, DyadicCachingLayer::metadata().cached_vector_type);
 }
-algebra::Lie DyadicCachingLayer::log_signature(const intervals::Interval &domain, resolution_t resolution, const algebra::Context &ctx) {
+algebra::Lie DyadicCachingLayer::log_signature(const intervals::Interval &domain, resolution_t resolution, const algebra::Context &ctx) const {
     // For now, if the ctx depth is not the same as md depth just do the calculation without caching
     // be smarter about this in the future.
     const auto &md = DyadicCachingLayer::metadata();
@@ -69,8 +72,16 @@ algebra::Lie DyadicCachingLayer::log_signature(const intervals::Interval &domain
     lies.reserve(dyadic_dissection.size());
     for (const auto &itvl : dyadic_dissection) {
         auto lsig = log_signature(itvl, resolution, ctx);
+        std::cerr << itvl << ' ';
+        lsig.print(std::cerr) << '\n';
         lies.push_back(lsig);
     }
 
     return ctx.cbh(lies, DyadicCachingLayer::metadata().cached_vector_type);
+}
+algebra::Lie DyadicCachingLayer::log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const {
+    return log_signature(interval, metadata().default_resolution, ctx);
+}
+algebra::FreeTensor DyadicCachingLayer::signature(const intervals::Interval &interval, const algebra::Context &ctx) const {
+    return signature(interval, metadata().default_resolution, ctx);
 }

@@ -40,16 +40,21 @@ public:
 
 
     using StreamInterface::log_signature;
+    using StreamInterface::signature;
+
+    algebra::Lie log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
 
     algebra::Lie
     log_signature(const intervals::DyadicInterval &interval,
                   resolution_t resolution,
-                  const algebra::Context &ctx);
+                  const algebra::Context &ctx) const override;
 
     algebra::Lie
     log_signature(const intervals::Interval &domain,
                   resolution_t resolution,
-                  const algebra::Context &ctx);
+                  const algebra::Context &ctx) const override;
+
+    algebra::FreeTensor signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
 };
 
 }// namespace streams

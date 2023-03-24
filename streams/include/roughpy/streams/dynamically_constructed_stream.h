@@ -3,19 +3,19 @@
 
 #include "stream_base.h"
 
+#include "dyadic_caching_layer.h"
 
 namespace rpy {
 namespace streams {
 
-class DynamicallyConstructedStream : public StreamInterface {
+class DynamicallyConstructedStream : public DyadicCachingLayer  {
 public:
 
-    using StreamInterface::StreamInterface;
+    using DyadicCachingLayer::DyadicCachingLayer;
 
-    algebra::Lie log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
 
-protected:
-    virtual algebra::Lie eval(const intervals::Interval& interval) const = 0;
+
+
 };
 
 }// namespace streams

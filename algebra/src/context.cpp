@@ -103,6 +103,12 @@ Lie Context::cbh(const std::vector<Lie> &lies, VectorType vtype) const {
 
     return tensor_to_lie(collector.log());
 }
+Lie Context::cbh(const Lie &left, const Lie &right, VectorType vtype) const {
+    FreeTensor tmp = lie_to_tensor(left).exp();
+    tmp.fmexp(lie_to_tensor(right));
+
+    return tensor_to_lie(tmp.log());
+}
 
 static std::recursive_mutex s_context_lock;
 

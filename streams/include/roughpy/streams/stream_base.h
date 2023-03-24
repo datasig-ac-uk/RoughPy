@@ -41,7 +41,7 @@ struct StreamMetadata {
  * a free tensor or Lie element. This base class has establishes this interface
  * and also acts as a holder for the stream metadata.
  *
- * Stream implementations should implement the `log_signature` virtual function
+ * Stream implementations should implement the `log_signature_impl` virtual function
  * (taking `interval` and `context` arguments) that is used to implement the
  * other flavours of computation methods. (Note that signatures a computed
  * from log signatures, rather than using the data to compute these
@@ -58,19 +58,35 @@ public:
 
     virtual bool empty(const intervals::Interval& interval) const noexcept;
 
+protected:
     virtual algebra::Lie
-    log_signature(const intervals::Interval& interval, const algebra::Context& ctx) const = 0;
+    log_signature_impl(const intervals::Interval& interval,
+                       const algebra::Context& ctx) const = 0;
+
+public:
 
     virtual algebra::Lie
-    log_signature(const intervals::DyadicInterval& interval, resolution_t resolution, const algebra::Context& ctx) const;
+    log_signature(const intervals::Interval& interval,
+                  const algebra::Context& ctx) const;
 
     virtual algebra::Lie
-    log_signature(const intervals::Interval& interval, resolution_t resolution, const algebra::Context& ctx) const;
+    log_signature(const intervals::DyadicInterval& interval,
+                  resolution_t resolution,
+                  const algebra::Context& ctx) const;
 
-    virtual algebra::FreeTensor signature(const intervals::Interval& interval, const algebra::Context& ctx) const;
+    virtual algebra::Lie
+    log_signature(const intervals::Interval& interval,
+                  resolution_t resolution,
+                  const algebra::Context& ctx) const;
 
     virtual algebra::FreeTensor
-    signature(const intervals::Interval& interval, resolution_t resolution, const algebra::Context& ctx) const;
+    signature(const intervals::Interval& interval,
+              const algebra::Context& ctx) const;
+
+    virtual algebra::FreeTensor
+    signature(const intervals::Interval& interval,
+              resolution_t resolution,
+              const algebra::Context& ctx) const;
 
 protected:
 

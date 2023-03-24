@@ -21,7 +21,7 @@ LieIncrementStream::LieIncrementStream(
     }
 }
 
-algebra::Lie LieIncrementStream::log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const {
+algebra::Lie LieIncrementStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
 
     const auto &md = metadata();
     if (empty(interval)) {
@@ -74,4 +74,16 @@ algebra::Lie LieIncrementStream::log_signature(const intervals::Interval &interv
     //    assert(ctx.depth() == md.depth);
 
     return ctx.log_signature(data);
+}
+bool LieIncrementStream::empty(const intervals::Interval &interval) const noexcept {
+
+    auto begin = (interval.type() == intervals::IntervalType::Opencl)
+                 ? m_mapping.lower_bound(interval.inf())
+                 : m_mapping.upper_bound(interval.inf());
+
+    auto end = (interval.type() == intervals::IntervalType::Opencl)
+               ? m_mapping.lower_bound(interval.sup())
+               : m_mapping.upper_bound(interval.sup());
+
+    return begin == end;
 }

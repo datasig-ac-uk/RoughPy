@@ -32,11 +32,11 @@ private:
 public:
     PiecewiseLieStream(std::vector<LiePiece>&& arg, StreamMetadata&& md);
 
-    using StreamInterface::log_signature;
 
     bool empty(const intervals::Interval& interval) const noexcept override;
 
-    algebra::Lie log_signature(const intervals::Interval& domain, const algebra::Context& ctx) const override;
+protected:
+    algebra::Lie log_signature_impl(const intervals::Interval& domain, const algebra::Context& ctx) const override;
 
 };
 

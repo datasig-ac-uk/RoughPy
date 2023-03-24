@@ -11,8 +11,8 @@ python::FunctionStream::FunctionStream(py::function fn, streams::StreamMetadata 
     : DynamicallyConstructedStream(std::move(md)), m_fn(std::move(fn))
 {
 }
-algebra::Lie python::FunctionStream::eval(const intervals::Interval &interval) const {
-    return algebra::Lie();
+algebra::Lie python::FunctionStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
+    return ctx.zero_lie(metadata().cached_vector_type);
 }
 
 void python::init_function_stream(py::module_ &m) {

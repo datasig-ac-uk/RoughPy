@@ -95,7 +95,7 @@ PiecewiseLieStream::PiecewiseLieStream(std::vector<LiePiece> &&data, StreamMetad
 bool PiecewiseLieStream::empty(const Interval &interval) const noexcept {
     return StreamInterface::empty(interval);
 }
-algebra::Lie PiecewiseLieStream::log_signature(const Interval &domain, const Context &ctx) const {
+algebra::Lie PiecewiseLieStream::log_signature_impl(const Interval &domain, const Context &ctx) const {
     std::vector<algebra::Lie> lies;
     lies.reserve(4);
 

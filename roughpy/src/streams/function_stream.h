@@ -14,7 +14,7 @@ public:
     FunctionStream(py::function fn, streams::StreamMetadata md);
 
 protected:
-    algebra::Lie eval(const intervals::Interval &interval) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
 };
 
 

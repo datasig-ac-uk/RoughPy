@@ -24,11 +24,10 @@ public:
         StreamMetadata md
         );
 
-    using base_t::log_signature;
-    algebra::Lie log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+    bool empty(const intervals::Interval &interval) const noexcept override;
 
-
-
+protected:
+    algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
 
 };
 

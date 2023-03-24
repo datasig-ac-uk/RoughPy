@@ -14,8 +14,10 @@ namespace python {
 
 class PyBaseStream : public streams::StreamInterface {
 public:
-    algebra::Lie log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
     bool empty(const intervals::Interval &interval) const noexcept override;
+    algebra::Lie log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+    algebra::FreeTensor signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
     algebra::Lie log_signature(const intervals::DyadicInterval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const override;
     algebra::Lie log_signature(const intervals::Interval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const override;
     algebra::FreeTensor signature(const intervals::Interval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const override;

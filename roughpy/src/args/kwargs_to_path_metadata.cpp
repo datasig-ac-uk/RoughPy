@@ -1,6 +1,5 @@
 #include "kwargs_to_path_metadata.h"
 
-
 #include "algebra/context.h"
 #include "scalars/scalar_type.h"
 
@@ -11,13 +10,13 @@ using namespace rpy;
 python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwargs) {
 
     PyStreamMetaData md{
-        0,                                  // width
-        0,                                  // depth
-        intervals::RealInterval{0.0, 1.0},  // support
-        nullptr,                            // context
-        nullptr,                            // scalar type
-        algebra::VectorType::Dense,         // vector type
-        0                                   // default resolution
+        0,                                // width
+        0,                                // depth
+        intervals::RealInterval{0.0, 1.0},// support
+        nullptr,                          // context
+        nullptr,                          // scalar type
+        algebra::VectorType::Dense,       // vector type
+        3                                // default resolution
     };
 
     if (kwargs.contains("ctx")) {

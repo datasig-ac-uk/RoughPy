@@ -217,7 +217,7 @@ static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs) {
 
 static PyMethodDef RPyStream_members[] = {
     {"signature", (PyCFunction)&signature, METH_VARARGS | METH_KEYWORDS, SIGNATURE_DOC},
-    {"log_signature", (PyCFunction)&log_signature, METH_VARARGS | METH_KEYWORDS, LOGSIGNATURE_DOC},
+    {"log_signature_impl", (PyCFunction)&log_signature, METH_VARARGS | METH_KEYWORDS, LOGSIGNATURE_DOC},
     {"signature_derivative", (PyCFunction) &sig_deriv, METH_VARARGS | METH_KEYWORDS, SIG_DERIV_DOC},
     {nullptr, nullptr, 0, nullptr}};
 
