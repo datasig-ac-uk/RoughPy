@@ -17,7 +17,39 @@ if (ROUGHPY_BUILD_TESTS)
     enable_testing()
 endif()
 
-include(cmake/roughpy_test_helpers.cmake)
+include(cmake/roughpy_helpers.cmake)
+
+
+option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
+
+set(PYBIND11_FINDPYTHON ON)
+if (NOT PYTHON_FOUND AND SKBUILD)
+    cmake_path(GET "${PYTHON_EXECUTABLE}" PARENT_PATH _sk_env_dir)
+    message(STATUS "SKBuild environment: ${_sk_env_dir}")
+
+    # Some variables that are set might cause issues in the FindPython module,
+    # so unset those
+    unset(Python_LIBRARY CACHE)
+    unset(PYTHON_LIBRARY CACHE)
+    unset(Python3_LIBRARY CACHE)
+
+    # clean up temporary
+    unset(_sk_env_dir)
+else ()
+    set(Python_FIND_VIRTUALENV FIRST)
+endif ()
+
+if (ROUGHPY_LINK_NUMPY)
+    find_package(Python 3.8 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
+else ()
+    find_package(Python 3.8 REQUIRED COMPONENTS Interpreter Development.Module)
+endif ()
+
+if (DEFINED ENV{VIRTUAL_ENV})
+    # Put venv/lib on the prefix path so we can find
+    # a pip installed MKL
+    list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}/lib")
+endif()
 
 
 add_subdirectory(external/libalgebra_lite)
@@ -35,8 +67,9 @@ if(NOT TARGET PCGRandom::pcg_random)
             external/pcg-cpp/include)
 endif()
 
+add_subdirectory(external/recombine)
 
-add_subdirectory(config)
+add_subdirectory(core)
 add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)

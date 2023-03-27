@@ -11,3 +11,6 @@
 [submodule "external/pcg-cpp"]
 	path = external/pcg-cpp
 	url = https://github.com/imneme/pcg-cpp
+[submodule "external/recombine"]
+	path = external/recombine
+	url = https://github.com/datasig-ac-uk/Recombine.git
