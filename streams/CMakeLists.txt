@@ -23,7 +23,7 @@ add_library(RoughPy::Streams ALIAS RoughPy_Streams)
 
 
 target_link_libraries(RoughPy_Streams PUBLIC
-        RoughPy::Config
+        RoughPy::Core
         RoughPy::Intervals
         RoughPy::Scalars
         RoughPy::Algebra
@@ -38,6 +38,7 @@ set(ROUGHPY_STREAMS_PUBLIC_HEADERS
         include/roughpy/streams/stream.h
         include/roughpy/streams/stream_base.h
         include/roughpy/streams/tick_stream.h
+        include/roughpy/streams/brownian_stream.h
         )
 
 target_sources(RoughPy_Streams
@@ -51,6 +52,7 @@ target_sources(RoughPy_Streams
             src/dyadic_caching_layer.cpp
             src/piecewise_lie_stream.cpp
             src/tick_stream.cpp
+            src/brownian_path.cpp
         )
 
 

@@ -6,7 +6,7 @@
 
 #include <boost/container/flat_map.hpp>
 
-#include <roughpy/config/helpers.h>
+#include <roughpy/core/helpers.h>
 #include <roughpy/scalars/key_scalar_array.h>
 
 namespace rpy { namespace streams {

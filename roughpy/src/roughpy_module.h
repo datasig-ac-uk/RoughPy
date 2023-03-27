@@ -7,7 +7,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <roughpy/config/implementation_types.h>
+#include <roughpy/core/implementation_types.h>
 
 // `boost::optional` as an example -- can be any `std::optional`-like container
 namespace PYBIND11_NAMESPACE {

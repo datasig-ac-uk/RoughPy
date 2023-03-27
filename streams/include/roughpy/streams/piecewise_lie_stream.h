@@ -4,7 +4,7 @@
 
 #include "stream_base.h"
 
-#include <roughpy/config/implementation_types.h>
+#include <roughpy/core/implementation_types.h>
 #include <roughpy/algebra/lie.h>
 #include <roughpy/algebra/free_tensor.h>
 #include <roughpy/algebra/context.h>

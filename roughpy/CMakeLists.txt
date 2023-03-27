@@ -7,15 +7,6 @@ project(RoughPy_PyModule
         LANGUAGES CXX
         )
 
-option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
-
-
-if(ROUGHPY_LINK_NUMPY)
-    find_package(Python 3.8 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
-else()
-    find_package(Python 3.8 REQUIRED COMPONENTS Interpreter Development.Module)
-endif()
-
 
 if(NOT TARGET pybind11::headers)
     find_package(Pybind11 CONFIG REQUIRED)
@@ -106,6 +97,7 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         RoughPy::Streams
         pybind11::headers
         dlpack::dlpack
+        recombine::recombine
         )
 
 if(ROUGHPY_LINK_NUMPY)

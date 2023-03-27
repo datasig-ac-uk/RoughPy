@@ -2,7 +2,7 @@
 #define ROUGHPY_STREAMS_STREAM_BASE_H_
 
 #include <roughpy/algebra/context.h>
-#include <roughpy/config/implementation_types.h>
+#include <roughpy/core/implementation_types.h>
 #include <roughpy/intervals/real_interval.h>
 
 #include "roughpy/intervals/dyadic_interval.h"

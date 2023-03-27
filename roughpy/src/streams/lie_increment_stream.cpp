@@ -1,6 +1,6 @@
 #include "lie_increment_stream.h"
 
-#include <roughpy/config/helpers.h>
+#include <roughpy/core/helpers.h>
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/owned_scalar_array.h>

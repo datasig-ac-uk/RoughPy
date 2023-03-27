@@ -13,9 +13,8 @@ public:
 
     using DyadicCachingLayer::DyadicCachingLayer;
 
-
-
-
+    algebra::Lie log_signature(const intervals::DyadicInterval &interval, resolution_t resolution, const algebra::Context &ctx) const override;
+    algebra::Lie log_signature(const intervals::Interval &domain, resolution_t resolution, const algebra::Context &ctx) const override;
 };
 
 }// namespace streams
