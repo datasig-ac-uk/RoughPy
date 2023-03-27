@@ -22,7 +22,7 @@ endif()
 add_library(RoughPy::Scalars ALIAS RoughPy_Scalars)
 
 target_link_libraries(RoughPy_Scalars PUBLIC
-        RoughPy::Config
+        RoughPy::Core
         Boost::boost
         PCGRandom::pcg_random
         )

@@ -2,8 +2,8 @@
 // Created by user on 03/03/23.
 //
 
-#ifndef ROUGHPY_CONFIG_INCLUDE_ROUGHPY_CONFIG_TRAITS_H
-#define ROUGHPY_CONFIG_INCLUDE_ROUGHPY_CONFIG_TRAITS_H
+#ifndef ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
+#define ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
 
 #include <type_traits>
 
@@ -111,7 +111,24 @@ using ensure_pointer = conditional_t<is_pointer<T>::value, T, add_pointer_t<T>>;
 template <typename T>
 using param_type_t = typename boost::call_traits<T>::param_type;
 
+namespace dtl {
+template <typename... Ts>
+struct select_first_impl;
+
+template <typename First, typename... Ts>
+struct select_first_impl<First, Ts...> {
+    using type = First;
+};
+
+
+
+}// namespace dtl
+
+template <typename... Ts>
+using select_first_t = typename dtl::select_first_impl<Ts...>::type;
+
+
 }// namespace traits
 }// namespace rpy
 
-#endif//ROUGHPY_CONFIG_INCLUDE_ROUGHPY_CONFIG_TRAITS_H
+#endif//ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H

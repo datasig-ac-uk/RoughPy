@@ -3,7 +3,7 @@
 
 #include "scalars_fwd.h"
 
-#include <roughpy/config/traits.h>
+#include <roughpy/core/traits.h>
 
 
 #ifndef RPY_IF_CONSTEXPR

@@ -6,6 +6,8 @@
 
 #include <cassert>
 
+
+
 #include "scalar_pointer.h"
 
 namespace rpy { namespace scalars {

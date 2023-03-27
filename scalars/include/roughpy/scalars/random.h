@@ -2,7 +2,7 @@
 #define ROUGHPY_SCALARS_RANDOM_H_
 
 #include "owned_scalar_array.h"
-#include "roughpy/config/helpers.h"
+#include "roughpy/core/helpers.h"
 #include "scalar_type.h"
 
 namespace rpy {

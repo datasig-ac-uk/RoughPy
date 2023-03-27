@@ -2,8 +2,8 @@
 // Created by user on 04/03/23.
 //
 
-#ifndef ROUGHPY_CONFIG_MACROS_H
-#define ROUGHPY_CONFIG_MACROS_H
+#ifndef ROUGHPY_CORE_MACROS_H
+#define ROUGHPY_CORE_MACROS_H
 
 
 
@@ -68,4 +68,4 @@
 
 
 
-#endif//ROUGHPY_CONFIG_MACROS_H
+#endif//ROUGHPY_CORE_MACROS_H

@@ -9,6 +9,7 @@
 #include "scalar_array.h"
 #include "scalar.h"
 
+using namespace rpy;
 using namespace rpy::scalars;
 
 ScalarStream::ScalarStream() : m_stream(), m_elts_per_row(0), p_type(nullptr) {

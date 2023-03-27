@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <ostream>
 
+using namespace rpy;
 using namespace rpy::intervals;
 
 param_t Interval::included_end() const {

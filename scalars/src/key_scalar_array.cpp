@@ -11,6 +11,7 @@
 
 
 
+using namespace rpy;
 using namespace rpy::scalars;
 
 KeyScalarArray::~KeyScalarArray() {

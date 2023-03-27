@@ -2,16 +2,12 @@
 #define ROUGHPY_INTERVALS_INTERVAL_H_
 
 #include "roughpy_intervals_export.h"
+#include <roughpy/core/implementation_types.h>
 
-#include <cassert>
-#include <cstdint>
 #include <iosfwd>
 
 namespace rpy { namespace intervals {
 
-using param_t = double;
-using dyadic_multiplier_t = int;
-using dyadic_depth_t = int;
 
 
 

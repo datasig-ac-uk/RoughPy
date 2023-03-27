@@ -2,9 +2,10 @@
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
 
 #include "rational_type.h"
-#include "roughpy/config/helpers.h"
 #include "roughpy_scalars_export.h"
 #include "scalars_fwd.h"
+
+#include <roughpy/core/slice.h>
 
 #include <functional>
 #include <iosfwd>

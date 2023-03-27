@@ -12,16 +12,12 @@
 #include <stdexcept>
 #include <type_traits>
 
-#include <roughpy/config/traits.h>
+#include <roughpy/core/traits.h>
+#include <roughpy/core/implementation_types.h>
 
 namespace rpy {
 namespace scalars {
 
-
-using scalar_t = double;
-using dimn_t = std::size_t;
-using idimn_t = std::ptrdiff_t;
-using key_type = std::size_t;
 
 
 struct signed_size_type_marker {};
@@ -35,7 +31,7 @@ struct unsigned_size_type_marker {};
  * device types that scalar data may be allocated on. This code goes
  * with a 32bit integer device ID, which is implementation specific.
  */
-enum class ScalarDeviceType : std::int32_t {
+enum class ScalarDeviceType : int32_t {
     CPU = 1,
     CUDA = 2,
     CUDAHost = 3,
@@ -61,7 +57,7 @@ enum class ScalarDeviceType : std::int32_t {
  * data. Some of these types might not be compatible with
  * this library.
  */
-enum class ScalarTypeCode : std::uint8_t {
+enum class ScalarTypeCode : uint8_t {
     Int = 0U,
     UInt = 1U,
     Float = 2U,

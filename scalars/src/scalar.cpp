@@ -6,6 +6,7 @@
 
 #include <ostream>
 
+using namespace rpy;
 using namespace rpy::scalars;
 
 Scalar::Scalar(ScalarPointer data, PointerType ptype)
