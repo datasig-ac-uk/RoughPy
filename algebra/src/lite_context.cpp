@@ -3,7 +3,7 @@
 //
 
 #include "lite_context.h"
-#include <roughpy/config/macros.h>
+#include <roughpy/core/macros.h>
 
 #include "context.h"
 

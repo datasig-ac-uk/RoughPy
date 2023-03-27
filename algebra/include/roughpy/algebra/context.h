@@ -7,8 +7,8 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
-#include <roughpy/config/helpers.h>
-#include <roughpy/config/macros.h>
+#include <roughpy/core/helpers.h>
+#include <roughpy/core/macros.h>
 #include <roughpy/scalars/key_scalar_array.h>
 #include <roughpy/scalars/scalar_stream.h>
 #include <roughpy/scalars/scalar_type.h>
@@ -17,6 +17,8 @@
 #include <vector>
 #include <string>
 
+#include "lie_basis.h"
+#include "tensor_basis.h"
 #include "free_tensor.h"
 #include "lie.h"
 #include "shuffle_tensor.h"

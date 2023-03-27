@@ -2,7 +2,7 @@
 #define ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
 
 #include "roughpy_algebra_export.h"
-#include <roughpy/config/implementation_types.h>
+#include <roughpy/core/implementation_types.h>
 
 
 
@@ -36,11 +36,13 @@ struct algebra_access;
 template <typename Basis>
 struct basis_info;
 
-template <typename Algebra>
+template <typename Wrapper, typename Algebra>
 struct algebra_info;
 
 
 class AlgebraIterator;
+
+template <typename... Interfaces>
 class Basis;
 
 

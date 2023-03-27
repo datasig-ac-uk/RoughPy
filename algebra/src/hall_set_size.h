@@ -5,7 +5,7 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_HALL_SET_SIZE_H
 #define ROUGHPY_ALGEBRA_SRC_HALL_SET_SIZE_H
 
-#include <roughpy/config/implementation_types.h>
+#include <roughpy/core/implementation_types.h>
 
 #include <algorithm>
 #include <cmath>

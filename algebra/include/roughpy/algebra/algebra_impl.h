@@ -3,8 +3,8 @@
 
 #include <boost/type_traits/copy_cv.hpp>
 
-#include <roughpy/config/traits.h>
-#include <roughpy/config/helpers.h>
+#include <roughpy/core/traits.h>
+#include <roughpy/core/helpers.h>
 #include <roughpy/scalars/scalar_traits.h>
 
 #include "algebra_base.h"
@@ -128,6 +128,9 @@ class AlgebraImplementation
     static_assert(traits::is_base_of<dtl::AlgebraInterfaceTag, Interface>::value,
                   "algebra_interface must be an accessible base of Interface");
 
+    using alg_info = algebra_info<typename Interface::algebra_t, Impl>;
+    using basis_traits = BasisInfo<typename Interface::basis_type, typename alg_info::basis_type>;
+
 public:
     using interface_t = Interface;
     using algebra_t = typename Interface::algebra_t;
@@ -135,9 +138,9 @@ public:
 
     static constexpr AlgebraType s_alg_type = algebra_t::s_alg_type;
 
-    using scalar_type = typename algebra_info<Impl>::scalar_type;
-    using rational_type = typename algebra_info<Impl>::rational_type;
-    using basis_type = typename algebra_info<Impl>::basis_type;
+    using scalar_type = typename alg_info::scalar_type;
+    using rational_type = typename alg_info::rational_type ;
+    using basis_type = typename alg_info::basis_type;
 
 protected:
     using storage_base_t::data;
@@ -160,8 +163,8 @@ public:
     explicit AlgebraImplementation(context_pointer &&ctx, Args &&...args)
         : storage_base_t(std::forward<Args>(args)...),
           access_layer_t(std::move(ctx),
-                         algebra_info<Impl>::vtype(),
-                         algebra_info<Impl>::ctype(),
+                         alg_info ::vtype(),
+                         alg_info::ctype(),
                          storage_base_t::s_type)
     {}
 
@@ -303,15 +306,15 @@ bool AlgebraImplementation<Interface, Impl, StorageModel>::is_zero() const {
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 optional<deg_t> AlgebraImplementation<Interface, Impl, StorageModel>::degree() const {
-    return algebra_info<Impl>::degree(data());
+    return alg_info::degree(data());
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 optional<deg_t> AlgebraImplementation<Interface, Impl, StorageModel>::width() const {
-    return algebra_info<Impl>::width(&data());
+    return alg_info::width(&data());
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 optional<deg_t> AlgebraImplementation<Interface, Impl, StorageModel>::depth() const {
-    return algebra_info<Impl>::max_depth(&data());
+    return alg_info::max_depth(&data());
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::clone() const {
@@ -319,20 +322,18 @@ typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageMode
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::zero_like() const {
-    return algebra_t(Interface::context(), algebra_info<Impl>::create_like(data()));
+    return algebra_t(Interface::context(), alg_info::create_like(data()));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 scalars::Scalar AlgebraImplementation<Interface, Impl, StorageModel>::get(key_type key) const {
-    using info_t = algebra_info<Impl>;
-    auto akey = info_t::convert_key(&data(), key);
+    auto akey = basis_traits::convert_to_impl(&alg_info::basis(data()), key);
     using ref_t = decltype(data()[akey]);
     using trait = scalars::scalar_type_trait<ref_t>;
     return trait::make(data()[akey]);
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 scalars::Scalar AlgebraImplementation<Interface, Impl, StorageModel>::get_mut(key_type key) {
-    using info_t = algebra_info<Impl>;
-    auto akey = info_t::convert_key(&data(), key);
+    auto akey = basis_traits::convert_to_impl(&alg_info::basis(data()), key);
     using ref_t = decltype(data()[akey]);
     using trait = scalars::scalar_type_trait<ref_t>;
     return trait::make(data()[akey]);
@@ -340,7 +341,7 @@ scalars::Scalar AlgebraImplementation<Interface, Impl, StorageModel>::get_mut(ke
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 std::shared_ptr<AlgebraIteratorInterface> AlgebraImplementation<Interface, Impl, StorageModel>::make_iterator_ptr(typename Impl::const_iterator it) const {
     return std::shared_ptr<AlgebraIteratorInterface>(
-        new AlgebraIteratorImplementation<basis_type, typename Impl::const_iterator>(it, &algebra_info<Impl>::basis(data()))
+        new AlgebraIteratorImplementation<basis_type, typename Impl::const_iterator>(it, &alg_info::basis(data()))
         );
 }
 

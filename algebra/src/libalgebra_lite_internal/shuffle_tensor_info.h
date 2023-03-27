@@ -8,7 +8,7 @@
 #include "algebra_info.h"
 #include "vector_type_helper.h"
 
-#include <roughpy/config/traits.h>
+#include <roughpy/core/traits.h>
 
 #include <libalgebra_lite/shuffle_tensor.h>
 

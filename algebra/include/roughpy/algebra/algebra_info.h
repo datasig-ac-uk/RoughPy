@@ -2,83 +2,69 @@
 #define ROUGHPY_ALGEBRA_ALGEBRA_INFO_H_
 
 #include "algebra_fwd.h"
-#include <roughpy/config/traits.h>
+#include <roughpy/core/traits.h>
 #include <roughpy/scalars/scalar_type.h>
 
 #include <boost/container/small_vector.hpp>
 
+#include "basis_info.h"
+
 namespace rpy {
 namespace algebra {
 
-template <typename Basis>
-struct basis_info {
-    using this_key_type = typename Basis::key_type;
-
-    static const BasisInterface* make(const Basis* basis) {
-        return new BasisImplementation<Basis>(basis);
-    }
-    static this_key_type convert_key(const Basis &basis, rpy::key_type key) {
-        return basis.index_to_key(key);
-    }
-    static rpy::key_type convert_key(const Basis &basis, const this_key_type &key) {
-        return basis.key_to_index(key);
-    }
-    static rpy::key_type first_key(const Basis &basis) {
-        return 0;
-    }
-    static rpy::key_type last_key(const Basis &basis) {
-        return basis.size();
-    }
-    static deg_t native_degree(const Basis &basis, const this_key_type &key) {
-        return basis.degree(key);
-    }
-    static deg_t degree(const Basis &basis, rpy::key_type key) {
-        return native_degree(basis, convert_key(basis, key));
-    }
-};
-
-template <typename Algebra>
+template <typename Wrapper, typename Algebra>
 struct algebra_info {
+    /// The actual type of the algebra implementation
+    using algebra_type = Algebra;
+
+    /// The wrapping roughpy algebra type
+    using wrapper_type = Wrapper;
+
+    /// The basis type of the implementation
     using basis_type = typename Algebra::basis_type;
-    using basis_traits = basis_info<basis_type>;
+
+    /// The roughpy key type used in the wrapper
+    using key_type = typename Wrapper::basis_type::key_type;
+
+    /// Basis traits for querying the basis
+    using basis_traits = BasisInfo<typename Wrapper::basis_type, basis_type>;
+
+    /// Scalar type in the implementation
     using scalar_type = typename Algebra::scalar_type;
+
+    /// Rational type, default to scalar type
     using rational_type = scalar_type;
+
+    /// Reference type - currently unused
     using reference = scalar_type &;
+
+    /// Const reference type - currently unused
     using const_reference = const scalar_type &;
+
+    /// Pointer type - currently unused
     using pointer = scalar_type *;
+
+    /// Const pointer type - currently unused
     using const_pointer = const scalar_type *;
 
-    static const scalars::ScalarType *ctype() noexcept { return scalars::ScalarType::of<scalar_type>(); }
-    static constexpr VectorType vtype() noexcept { return VectorType::Sparse; }
-    static deg_t width(const Algebra *instance) noexcept { return instance->basis().width(); }
-    static deg_t max_depth(const Algebra *instance) noexcept { return instance->basis().depth(); }
+    /// Get the rpy ScalarType for the scalars in this algebra
+    static const scalars::ScalarType *ctype() noexcept
+    { return scalars::ScalarType::of<scalar_type>(); }
 
+    /// Get the storage type for this algebra.
+    static constexpr VectorType vtype() noexcept { return VectorType::Sparse; }
+
+    /// Get the basis for this algebra
     static const basis_type &basis(const Algebra &instance) noexcept { return instance.basis(); }
 
-    using this_key_type = typename Algebra::key_type;
-    static this_key_type convert_key(const Algebra *instance, rpy::key_type key) noexcept { return basis_traits::convert_key(instance->basis(), key); }
-
+    /// Get the maximum degree of non-zero elements in this algebra
     static deg_t degree(const Algebra &instance) noexcept { return instance.degree(); }
-    static deg_t degree(const Algebra *instance, rpy::key_type key) noexcept { return basis_traits::degree(instance->basis(), key); }
-    static deg_t native_degree(const Algebra *instance, this_key_type key) { return basis_traits::native_degree(instance->basis(), key); }
 
-    static key_type first_key(const Algebra *) noexcept { return 0; }
-    static key_type last_key(const Algebra *instance) noexcept { return basis_traits::last_key(instance->basis()); }
-//
-//    using key_prod_container = boost::container::small_vector_base<std::pair<key_type, int>>;
-//    static const key_prod_container &key_product(const Algebra *inst, key_type k1, key_type k2) {
-//        static const boost::container::small_vector<std::pair<key_type, int>, 0> null;
-//        return null;
-//    }
-//    static const key_prod_container &key_product(const Algebra *inst, const this_key_type &k1, const this_key_type &k2) {
-//        static const boost::container::small_vector<std::pair<key_type, int>, 0> null;
-//        return null;
-//    }
-
+    /// Create a new algebra instance with the same make-up as this argument
     static Algebra create_like(const Algebra &instance) {
         return Algebra();
     }
 };
-}
-}
-#endif // ROUGHPY_ALGEBRA_ALGEBRA_INFO_H_
+}// namespace algebra
+}// namespace rpy
+#endif// ROUGHPY_ALGEBRA_ALGEBRA_INFO_H_

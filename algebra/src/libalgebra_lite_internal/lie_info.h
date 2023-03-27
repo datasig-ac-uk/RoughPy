@@ -8,7 +8,7 @@
 #include "algebra_info.h"
 #include "lie_basis_info.h"
 
-#include <roughpy/config/traits.h>
+#include <roughpy/core/traits.h>
 #include <roughpy/scalars/scalar_type.h>
 
 #include <libalgebra_lite/lie.h>

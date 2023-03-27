@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include <roughpy/config/implementation_types.h>
+#include <roughpy/core/implementation_types.h>
 #include <roughpy/scalars/scalar_type.h>
 #include "context.h"
 

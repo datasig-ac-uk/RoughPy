@@ -3,12 +3,14 @@
 
 #include "algebra_base.h"
 
+#include "tensor_basis.h"
+
 namespace rpy {
 namespace algebra {
 
-extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<ShuffleTensor>;
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<ShuffleTensor, TensorBasis>;
 
-using ShuffleTensorInterface = AlgebraInterface<ShuffleTensor>;
+using ShuffleTensorInterface = AlgebraInterface<ShuffleTensor, TensorBasis>;
 
 extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBase<ShuffleTensorInterface>;
 

@@ -4,17 +4,19 @@
 #include "algebra_base.h"
 #include "context.h"
 
+#include "tensor_basis.h"
+
 namespace rpy {
 namespace algebra {
 
 
-extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<FreeTensor>;
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<FreeTensor, TensorBasis>;
 
 class ROUGHPY_ALGEBRA_EXPORT FreeTensorInterface
-    : public AlgebraInterface<FreeTensor>
+    : public AlgebraInterface<FreeTensor, TensorBasis>
 {
 public:
-    using algebra_interface_t = AlgebraInterface<FreeTensor>;
+    using algebra_interface_t = AlgebraInterface<FreeTensor, TensorBasis>;
 
     using algebra_interface_t::algebra_interface_t;
 

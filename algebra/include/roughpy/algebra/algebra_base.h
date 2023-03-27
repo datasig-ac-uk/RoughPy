@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-#include <roughpy/config/implementation_types.h>
+#include <roughpy/core/implementation_types.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 
@@ -39,7 +39,7 @@ using UnspecifiedAlgebraType = dtl::AlgebraInterfaceTag*;
  * @tparam Algebra The externally facing algebra that this interface will
  * be used in.
  */
-template <typename Algebra>
+template <typename Algebra, typename BasisType>
 class AlgebraInterface : public dtl::AlgebraInterfaceTag {
 
 protected:
@@ -61,8 +61,8 @@ public:
     using algebra_interface_t = AlgebraInterface;
     using id_t = std::uintptr_t;
 
-
-public:
+    using basis_type = BasisType;
+    using key_type = typename BasisType::key_type;
 
     virtual ~AlgebraInterface() = default;
 
@@ -180,11 +180,14 @@ protected:
 
 public:
     using interface_t = Interface;
+
+    using basis_type = typename interface_t::basis_type;
+    using key_type = typename interface_t::key_type;
+
     using algebra_t = typename Interface::algebra_t;
     using const_iterator = AlgebraIterator;
 
 
-public:
     AlgebraBase() : p_impl(nullptr) {}
     AlgebraBase(const AlgebraBase& other);
     AlgebraBase(AlgebraBase&& other) noexcept;

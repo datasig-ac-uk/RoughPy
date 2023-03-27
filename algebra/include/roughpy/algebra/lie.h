@@ -3,13 +3,15 @@
 
 #include "algebra_base.h"
 
+#include "lie_basis.h"
+
 namespace rpy {
 namespace algebra {
 
 
-extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<Lie>;
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<Lie, LieBasis>;
 
-using LieInterface = AlgebraInterface<Lie>;
+using LieInterface = AlgebraInterface<Lie, LieBasis>;
 
 extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBase<LieInterface>;
 
