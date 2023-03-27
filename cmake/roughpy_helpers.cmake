@@ -1,14 +1,83 @@
 
-
-
+include(GNUInstallDirs)
+include(GenerateExportHeader)
 include(GoogleTest)
 
-function(_get_component_name _out_var _dir_name)
+
+function(_get_component_name _out_var _component)
     string(SUBSTRING ${_component} 0 1 _first_letter)
     string(SUBSTRING ${_component} 1 -1 _remaining)
     string(TOUPPER ${_first_letter} _first_letter)
     string(CONCAT _comp_name "${_first_letter}" "${_remaining}")
     set(${_out_var} ${_comp_name} PARENT_SCOPE)
+endfunction()
+
+
+function(add_roughpy_lib _name)
+    cmake_parse_arguments(
+            ARG
+            ""
+            ""
+            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS"
+            ${ARGN}
+    )
+
+    if (RPY_BUILD_STATIC_LIBS)
+        set(_lib_type STATIC)
+    else()
+        set(_lib_type SHARED)
+    endif()
+
+    set(_real_name "RoughPy_${_name}")
+    set(_alias_name "RoughPy::${_name}")
+    cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
+    _get_component_name(_component_name ${_component})
+
+    set(_private_include_path "include/roughpy/${_component}/")
+    if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${_private_include_path}")
+        message(FATAL_ERROR "The path ${_private_include_path} does not exist")
+    endif()
+
+    add_library(${_real_name} ${_lib_type})
+    add_library(${_alias_name} ALIAS ${_real_name})
+    message(STATUS "Adding library ${_alias_name}")
+
+    target_include_directories(${_real_name}
+            PRIVATE
+                "${_private_include_path}"
+            PUBLIC
+                "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+                "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+            )
+
+    generate_export_header(${_real_name})
+
+    target_sources(${_real_name}
+            PUBLIC
+                ${ARG_PUBLIC_HEADERS}
+            PRIVATE
+                ${ARG_SOURCES}
+            )
+
+    set_target_properties(${_real_name} PROPERTIES
+            PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
+            LINKER_LANGUAGE CXX
+            )
+
+    if (RPY_BUILD_STATIC_LIBS)
+        set_target_properties(${_real_name} PROPERTIES
+                POSITION_INDEPENDENT_CODE ON)
+    endif()
+
+    target_link_libraries(${_real_name}
+            PUBLIC
+                ${ARG_PUBLIC_DEPS}
+            PRIVATE
+                ${ARG_PRIVATE_DEPS}
+            )
+
+
 endfunction()
 
 
