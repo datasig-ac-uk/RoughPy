@@ -18,8 +18,8 @@ python::PyLieKeyIterator::PyLieKeyIterator(const PyContext& ctx, key_type curren
 
 }
 
-static python::PyLieKey to_py_lie_key(key_type k, const algebra::Basis &lbasis) {
-    auto width = lbasis.width().value();
+static python::PyLieKey to_py_lie_key(key_type k, const algebra::LieBasis &lbasis) {
+    auto width = lbasis.width();
 
     if (lbasis.letter(k)) {
         return python::PyLieKey(width, k);
@@ -29,7 +29,7 @@ static python::PyLieKey to_py_lie_key(key_type k, const algebra::Basis &lbasis) 
     auto rparent = lbasis.rparent(k).value();
 
     if (lbasis.letter(lparent) && lbasis.letter(rparent)) {
-        return python::PyLieKey(lbasis.width().value(), lparent, rparent);
+        return python::PyLieKey(lbasis.width(), lparent, rparent);
     }
     if (lbasis.letter(lparent)) {
         return python::PyLieKey(width, lparent, to_py_lie_key(rparent, lbasis));

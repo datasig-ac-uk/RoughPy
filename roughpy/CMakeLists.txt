@@ -27,6 +27,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/recombine.h
         src/algebra/algebra.h
         src/algebra/algebra.cpp
+        src/algebra/algebra_iterator.cpp
+        src/algebra/algebra_iterator.h
         src/algebra/basis.cpp
         src/algebra/basis.h
         src/algebra/context.cpp

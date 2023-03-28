@@ -10,6 +10,11 @@ python::PyTensorKey::PyTensorKey(key_type key, deg_t width, deg_t depth)
     : m_key(key), m_width(width), m_depth(depth)
 {
 }
+python::PyTensorKey::PyTensorKey(algebra::TensorBasis basis, key_type key)
+    : m_key(key), m_width(basis.width()), m_depth(basis.depth())
+{
+}
+
 python::PyTensorKey::operator key_type() const noexcept {
     return m_key;
 }

@@ -3,6 +3,8 @@
 
 #include "roughpy_module.h"
 
+#include <roughpy/algebra/tensor_basis.h>
+
 namespace rpy {
 namespace python {
 namespace maths {
@@ -31,6 +33,7 @@ class PyTensorKey {
     deg_t m_depth;
 
 public:
+    explicit PyTensorKey(algebra::TensorBasis basis, key_type key);
     explicit PyTensorKey(key_type key, deg_t width, deg_t depth);
 
     explicit operator key_type() const noexcept;

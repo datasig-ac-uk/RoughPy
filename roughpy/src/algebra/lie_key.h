@@ -6,8 +6,10 @@
 #include <boost/container/small_vector.hpp>
 
 #include <roughpy/algebra/context_fwd.h>
+#include <roughpy/algebra/lie_basis.h>
 
 #include "lie_letter.h"
+
 
 
 namespace rpy {
@@ -28,6 +30,7 @@ public:
     explicit PyLieKey(deg_t width, let_t left, let_t right);
     explicit PyLieKey(deg_t width, let_t left, const PyLieKey &right);
     explicit PyLieKey(deg_t width, const PyLieKey &left, const PyLieKey &right);
+    explicit PyLieKey(algebra::LieBasis basis, key_type key);
     PyLieKey(const algebra::Context *ctx, key_type key);
 
     deg_t width() const noexcept { return m_width; }

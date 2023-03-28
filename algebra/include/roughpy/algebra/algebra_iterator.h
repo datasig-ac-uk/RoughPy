@@ -93,6 +93,7 @@ public:
 
 template <typename Algebra>
 AlgebraIterator<Algebra>::AlgebraIterator(const AlgebraIterator &arg)
+    : m_tag(arg.m_tag)
 {
     if (arg.p_interface) {
         p_interface = arg.p_interface->clone();
@@ -100,7 +101,7 @@ AlgebraIterator<Algebra>::AlgebraIterator(const AlgebraIterator &arg)
 }
 template <typename Algebra>
 AlgebraIterator<Algebra>::AlgebraIterator(AlgebraIterator &&arg) noexcept
-    : p_interface(std::move(arg.p_interface))
+    : p_interface(std::move(arg.p_interface)), m_tag(arg.m_tag)
 {
 }
 template <typename Algebra>
@@ -112,6 +113,7 @@ AlgebraIterator<Algebra> &AlgebraIterator<Algebra>::operator=(const AlgebraItera
             p_interface.reset();
         }
     }
+    m_tag = arg.m_tag;
     return *this;
 }
 template <typename Algebra>
@@ -119,6 +121,7 @@ AlgebraIterator<Algebra> &AlgebraIterator<Algebra>::operator=(AlgebraIterator &&
     if (&arg != this) {
         p_interface = std::move(arg.p_interface);
     }
+    m_tag = arg.m_tag;
     return *this;
 }
 template <typename Algebra>

@@ -90,10 +90,7 @@ void rpy::python::init_shuffle_tensor(py::module_ &m) {
     klass.def("__getitem__", [](const ShuffleTensor &self, key_type key) {
       return self[key];
     });
-    klass.def("__iter__", [](const ShuffleTensor &self) {
-          return py::make_iterator(self.begin(), self.end());
-        },
-        py::keep_alive<0, 1>());
+
 
     klass.def("__repr__", [](const ShuffleTensor &self) {
       std::stringstream ss;

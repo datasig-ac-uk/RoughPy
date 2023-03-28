@@ -353,11 +353,11 @@ std::shared_ptr<AlgebraIteratorInterface<typename Interface::algebra_t>> Algebra
 
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 AlgebraIterator<typename Interface::algebra_t> AlgebraImplementation<Interface, Impl, StorageModel>::begin() const {
-    return iterator_type(make_iterator_ptr(data().begin()), bit_cast<std::uintptr_t>(this));
+    return iterator_type(make_iterator_ptr(data().begin()), bit_cast<std::uintptr_t>(&data()));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 AlgebraIterator<typename Interface::algebra_t> AlgebraImplementation<Interface, Impl, StorageModel>::end() const {
-    return iterator_type(make_iterator_ptr(data().end()), bit_cast<std::uintptr_t>(this));
+    return iterator_type(make_iterator_ptr(data().end()), bit_cast<std::uintptr_t>(&data()));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::clear() {

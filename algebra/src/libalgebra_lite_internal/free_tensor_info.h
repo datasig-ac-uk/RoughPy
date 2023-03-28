@@ -57,7 +57,7 @@ struct algebra_info<FreeTensor, lal::free_tensor<Coeffs, VType, Storage>> {
     static const scalars::ScalarType *ctype() noexcept { return scalars::ScalarType::of<scalar_type>(); }
 
     /// Get the storage type for this algebra.
-    static constexpr VectorType vtype() noexcept { return VectorType::Sparse; }
+    static constexpr VectorType vtype() noexcept { return dtl::vector_type_helper<VType>::vtype; }
 
     /// Get the basis for this algebra
     static const basis_type &basis(const algebra_type &instance) noexcept { return instance.basis(); }

@@ -48,6 +48,10 @@ void setup_algebra_type(py::class_<Alg, Args...> &klass) {
 
     // TODO: Add access and iteration methods
 
+    klass.def("__iter__", [](const Alg& self) {
+             return py::make_iterator(self.begin(), self.end());
+         }, py::keep_alive<0, 1>());
+
     // setup arithmetic
     klass.def("__neg__", &Alg::uminus, py::is_operator());
 

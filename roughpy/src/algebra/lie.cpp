@@ -71,10 +71,6 @@ void python::init_lie(py::module_ &m) {
     klass.def("__getitem__", [](const Lie &self, key_type key) {
       return self[key];
     });
-    klass.def("__iter__", [](const Lie &self) {
-      return py::make_iterator(self.begin(), self.end());
-    });
-
 
     klass.def("__repr__", [](const Lie &self) {
       std::stringstream ss;

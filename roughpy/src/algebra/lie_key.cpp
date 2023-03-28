@@ -143,26 +143,24 @@ python::PyLieKey::PyLieKey(deg_t width, const python::PyLieKey &left, const pyth
     m_data.insert(m_data.end(), right.m_data.begin(), right.m_data.end());
 }
 
-static python::PyLieKey::container_type parse_key(const algebra::Basis &lbasis, key_type key) {
+static python::PyLieKey::container_type parse_key(const algebra::LieBasis &lbasis, key_type key) {
     using namespace rpy::python;
     if (lbasis.letter(key)) {
-        return {PyLieLetter::from_letter(lbasis.first_letter(key).value())};
+        return {PyLieLetter::from_letter(lbasis.first_letter(key))};
     }
 
-    auto left = lbasis.lparent(key);
-    auto right = lbasis.rparent(key);
+    auto keys = lbasis.parents(key);
+    auto left_key = keys.first.value();
+    auto right_key = keys.second.value();
 
-    assert(left.has_value() && right.has_value());
 
-    auto left_key = left.get();
-    auto right_key = right.get();
 
     const bool left_letter = lbasis.letter(left_key);
     const bool right_letter = lbasis.letter(right_key);
 
     if (left_letter && right_letter) {
-        return {PyLieLetter::from_letter(lbasis.first_letter(left_key).value()),
-                PyLieLetter::from_letter(lbasis.first_letter(right_key).value())};
+        return {PyLieLetter::from_letter(lbasis.first_letter(left_key)),
+                PyLieLetter::from_letter(lbasis.first_letter(right_key))};
     }
 
     typename PyLieKey::container_type result;
@@ -171,7 +169,7 @@ static python::PyLieKey::container_type parse_key(const algebra::Basis &lbasis, 
         auto right_result = parse_key(lbasis, right_key);
 
         result.reserve(2 + right_result.size());
-        result.push_back(PyLieLetter::from_letter(lbasis.first_letter(left_key).value()));
+        result.push_back(PyLieLetter::from_letter(lbasis.first_letter(left_key)));
         result.push_back(PyLieLetter::from_offset(1));
 
         result.insert(result.cend(), right_result.begin(), right_result.end());
@@ -180,7 +178,7 @@ static python::PyLieKey::container_type parse_key(const algebra::Basis &lbasis, 
 
         result.reserve(2 + left_result.size());
         result.push_back(PyLieLetter::from_offset(2));
-        result.push_back(PyLieLetter::from_letter(lbasis.first_letter(right_key).value()));
+        result.push_back(PyLieLetter::from_letter(lbasis.first_letter(right_key)));
 
         result.insert(result.cend(), left_result.begin(), left_result.end());
     } else {
@@ -200,6 +198,10 @@ static python::PyLieKey::container_type parse_key(const algebra::Basis &lbasis, 
 
 python::PyLieKey::PyLieKey(const algebra::Context *ctx, key_type key)
     : m_width(ctx->width()), m_data(parse_key(ctx->get_lie_basis(), key))
+{
+}
+python::PyLieKey::PyLieKey(algebra::LieBasis basis, key_type key)
+    : m_width(basis.width()), m_data(parse_key(basis, key))
 {
 }
 bool python::PyLieKey::is_letter() const noexcept {

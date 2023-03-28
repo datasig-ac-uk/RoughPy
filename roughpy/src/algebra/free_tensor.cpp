@@ -126,11 +126,7 @@ void python::init_free_tensor(py::module_ &m) {
     klass.def("__getitem__", [](const FreeTensor &self, key_type key) {
         return self[key];
     });
-    klass.def(
-        "__iter__", [](const FreeTensor &self) {
-            return py::make_iterator(self.begin(), self.end());
-        },
-        py::keep_alive<0, 1>());
+
 
 
     klass.def("exp", &FreeTensor::exp);

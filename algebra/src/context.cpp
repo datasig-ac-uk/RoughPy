@@ -91,7 +91,9 @@ void Context::tensor_to_lie_fallback(Lie &result, const FreeTensor &arg) const {
 }
 void Context::cbh_fallback(FreeTensor &collector, const std::vector<Lie> &lies) const {
     for (const auto &alie : lies) {
-        collector.fmexp(this->lie_to_tensor(alie));
+        if (alie.dimension() != 0) {
+            collector.fmexp(this->lie_to_tensor(alie));
+        }
     }
 }
 
@@ -99,7 +101,9 @@ Lie Context::cbh(const std::vector<Lie> &lies, VectorType vtype) const {
     FreeTensor collector = zero_free_tensor(vtype);
     collector[0] = scalars::Scalar(1);
 
-    cbh_fallback(collector, lies);
+    if (!lies.empty()) {
+        cbh_fallback(collector, lies);
+    }
 
     return tensor_to_lie(collector.log());
 }
