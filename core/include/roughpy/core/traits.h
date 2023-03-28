@@ -97,6 +97,8 @@ using boost::remove_cv_ref_t;
 
 using boost::is_detected;
 
+using boost::void_t;
+
 /**
  * @brief Ensure that the type T is a pointer.
  *
@@ -126,6 +128,13 @@ struct select_first_impl<First, Ts...> {
 
 template <typename... Ts>
 using select_first_t = typename dtl::select_first_impl<Ts...>::type;
+
+namespace dtl {
+struct EmptyBase {};
+}
+
+template <typename T, typename B=dtl::EmptyBase>
+using void_or_base = conditional_t<is_void<T>::value, B, T>;
 
 
 }// namespace traits
