@@ -10,7 +10,7 @@ using namespace rpy::algebra;
 namespace rpy {
 namespace algebra {
 
-template class Basis<LieBasisInterface, OrderedBasisInterface<>, WordLikeBasisInterface<>>;
+template class Basis<LieBasisInterface>;
 
 }
 }// namespace rpy

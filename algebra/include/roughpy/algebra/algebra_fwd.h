@@ -33,16 +33,14 @@ enum class AlgebraType : uint32_t {
 template <typename Interface>
 struct algebra_access;
 
-template <typename Basis>
-struct basis_info;
 
 template <typename Wrapper, typename Algebra>
 struct algebra_info;
 
-
+template <typename Algebra>
 class AlgebraIterator;
 
-template <typename... Interfaces>
+template <typename PrimaryInterface>
 class Basis;
 
 

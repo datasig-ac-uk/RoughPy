@@ -57,7 +57,7 @@ protected:
 
 public:
     using algebra_t = Algebra;
-    using const_iterator = AlgebraIterator;
+    using const_iterator = AlgebraIterator<algebra_t>;
     using algebra_interface_t = AlgebraInterface;
     using id_t = std::uintptr_t;
 
@@ -92,8 +92,8 @@ public:
     virtual scalars::Scalar get_mut(key_type key) = 0;
 
     // Iteration
-    virtual AlgebraIterator begin() const = 0;
-    virtual AlgebraIterator end() const = 0;
+    virtual const_iterator begin() const = 0;
+    virtual const_iterator end() const = 0;
 
     virtual optional<scalars::ScalarArray> dense_data() const;
 
@@ -185,7 +185,7 @@ public:
     using key_type = typename interface_t::key_type;
 
     using algebra_t = typename Interface::algebra_t;
-    using const_iterator = AlgebraIterator;
+    using const_iterator = AlgebraIterator<algebra_t>;
 
 
     AlgebraBase() : p_impl(nullptr) {}
@@ -281,96 +281,93 @@ public:
 
 // Definitions of all the member functions
 
-template <typename Algebra>
-typename AlgebraInterface<Algebra>::id_t AlgebraInterface<Algebra>::id() const noexcept {
-    return {};
+template <typename Algebra, typename BasisType>
+typename AlgebraInterface<Algebra, BasisType>::id_t AlgebraInterface<Algebra, BasisType>::id() const noexcept {
+    return 0;
 }
-
-
-
-template <typename Algebra>
-optional<deg_t> AlgebraInterface<Algebra>::degree() const {
-    return {};
+template <typename Algebra, typename BasisType>
+optional<deg_t> AlgebraInterface<Algebra, BasisType>::degree() const {
+    return optional<deg_t>();
 }
-template <typename Algebra>
-optional<deg_t> AlgebraInterface<Algebra>::width() const {
-    return {};
+template <typename Algebra, typename BasisType>
+optional<deg_t> AlgebraInterface<Algebra, BasisType>::width() const {
+    return optional<deg_t>();
 }
-template <typename Algebra>
-optional<deg_t> AlgebraInterface<Algebra>::depth() const {
-    return {};
+template <typename Algebra, typename BasisType>
+optional<deg_t> AlgebraInterface<Algebra, BasisType>::depth() const {
+    return optional<deg_t>();
 }
-template <typename Algebra>
-optional<scalars::ScalarArray> AlgebraInterface<Algebra>::dense_data() const {
-    return {};
+template <typename Algebra, typename BasisType>
+optional<scalars::ScalarArray> AlgebraInterface<Algebra, BasisType>::dense_data() const {
+    return optional<scalars::ScalarArray>();
 }
-template <typename Algebra>
-Algebra AlgebraInterface<Algebra>::add(const Algebra&other) const {
+template <typename Algebra, typename BasisType>
+Algebra AlgebraInterface<Algebra, BasisType>::add(const Algebra &other) const {
     auto result = clone();
     result->add_inplace(other);
     return result;
 }
-template <typename Algebra>
-Algebra AlgebraInterface<Algebra>::sub(const Algebra&other) const {
+template <typename Algebra, typename BasisType>
+Algebra AlgebraInterface<Algebra, BasisType>::sub(const Algebra &other) const {
     auto result = clone();
     result->sub_inplace(other);
     return result;
 }
-template <typename Algebra>
-Algebra AlgebraInterface<Algebra>::mul(const Algebra&other) const {
+template <typename Algebra, typename BasisType>
+Algebra AlgebraInterface<Algebra, BasisType>::mul(const Algebra &other) const {
     auto result = clone();
     result->mul_inplace(other);
     return result;
 }
-template <typename Algebra>
-Algebra AlgebraInterface<Algebra>::smul(const scalars::Scalar &other) const {
+template <typename Algebra, typename BasisType>
+Algebra AlgebraInterface<Algebra, BasisType>::smul(const scalars::Scalar &other) const {
     auto result = clone();
     result->smul_inplace(other);
     return result;
 }
-template <typename Algebra>
-Algebra AlgebraInterface<Algebra>::sdiv(const scalars::Scalar &other) const {
+template <typename Algebra, typename BasisType>
+Algebra AlgebraInterface<Algebra, BasisType>::sdiv(const scalars::Scalar &other) const {
     auto result = clone();
     result->sdiv_inplace(other);
     return result;
 }
-template <typename Algebra>
-void AlgebraInterface<Algebra>::add_scal_mul(const Algebra&rhs, const scalars::Scalar &scalar) {
+template <typename Algebra, typename BasisType>
+void AlgebraInterface<Algebra, BasisType>::add_scal_mul(const Algebra &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.smul(scalar);
     add_inplace(tmp);
 }
-template <typename Algebra>
-void AlgebraInterface<Algebra>::sub_scal_mul(const Algebra&rhs, const scalars::Scalar &scalar) {
+template <typename Algebra, typename BasisType>
+void AlgebraInterface<Algebra, BasisType>::sub_scal_mul(const Algebra &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.smul(scalar);
     sub_inplace(tmp);
 }
-template <typename Algebra>
-void AlgebraInterface<Algebra>::add_scal_div(const Algebra&rhs, const scalars::Scalar &scalar) {
+template <typename Algebra, typename BasisType>
+void AlgebraInterface<Algebra, BasisType>::add_scal_div(const Algebra &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.sdiv(scalar);
     add_inplace(tmp);
 }
-template <typename Algebra>
-void AlgebraInterface<Algebra>::sub_scal_div(const Algebra&rhs, const scalars::Scalar &scalar) {
+template <typename Algebra, typename BasisType>
+void AlgebraInterface<Algebra, BasisType>::sub_scal_div(const Algebra &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.sdiv(scalar);
     sub_inplace(tmp);
 }
-template <typename Algebra>
-void AlgebraInterface<Algebra>::add_mul(const Algebra&lhs, const Algebra&rhs) {
+template <typename Algebra, typename BasisType>
+void AlgebraInterface<Algebra, BasisType>::add_mul(const Algebra &lhs, const Algebra &rhs) {
     auto tmp = lhs.mul(rhs);
     add_inplace(tmp);
 }
-template <typename Algebra>
-void AlgebraInterface<Algebra>::sub_mul(const Algebra&lhs, const Algebra&rhs) {
+template <typename Algebra, typename BasisType>
+void AlgebraInterface<Algebra, BasisType>::sub_mul(const Algebra &lhs, const Algebra &rhs) {
     auto tmp = lhs.mul(rhs);
     sub_inplace(tmp);
 }
-template <typename Algebra>
-void AlgebraInterface<Algebra>::mul_smul(const Algebra&rhs, const scalars::Scalar &scalar) {
+template <typename Algebra, typename BasisType>
+void AlgebraInterface<Algebra, BasisType>::mul_smul(const Algebra &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.smul(scalar);
     mul_inplace(tmp);
 }
-template <typename Algebra>
-void AlgebraInterface<Algebra>::mul_sdiv(const Algebra&rhs, const scalars::Scalar &scalar) {
+template <typename Algebra, typename BasisType>
+void AlgebraInterface<Algebra, BasisType>::mul_sdiv(const Algebra &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.sdiv(scalar);
     mul_inplace(tmp);
 }
@@ -541,14 +538,16 @@ scalars::Scalar AlgebraBase<Interface, DerivedImpl>::operator[](key_type k) {
     return {};
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
-AlgebraIterator AlgebraBase<Interface, DerivedImpl>::begin() const {
+typename AlgebraBase<Interface, DerivedImpl>::const_iterator
+AlgebraBase<Interface, DerivedImpl>::begin() const {
     if (!is_equivalent_to_zero(*this)) {
         return p_impl->begin();
     }
     return {};
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
-AlgebraIterator AlgebraBase<Interface, DerivedImpl>::end() const {
+typename AlgebraBase<Interface, DerivedImpl>::const_iterator
+AlgebraBase<Interface, DerivedImpl>::end() const {
     if (!is_equivalent_to_zero(*this)) {
         return p_impl->end();
     }

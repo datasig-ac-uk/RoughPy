@@ -2,8 +2,8 @@
 #define ROUGHPY_ALGEBRA_ALGEBRA_ITERATOR_H_
 
 #include "algebra_fwd.h"
-#include "roughpy_algebra_export.h"
 #include "basis.h"
+#include "roughpy_algebra_export.h"
 
 #include <roughpy/scalars/scalar.h>
 
@@ -12,84 +12,165 @@
 namespace rpy {
 namespace algebra {
 
+template <typename Algebra>
+class AlgebraIteratorInterface {
+    typename Algebra::basis_type m_basis;
 
-class ROUGHPY_ALGEBRA_EXPORT AlgebraIteratorInterface {
-    Basis m_basis;
+    using basis_type = typename Algebra::basis_type;
 
 protected:
-    explicit AlgebraIteratorInterface(Basis basis) : m_basis(std::move(basis))
-    {}
+    explicit AlgebraIteratorInterface(basis_type basis) : m_basis(std::move(basis)) {}
 
 public:
     virtual ~AlgebraIteratorInterface() = default;
 
-    const Basis& basis() const { return m_basis; };
+    using key_type = typename basis_type::key_type;
+
+    const basis_type &basis() const { return m_basis; };
     virtual key_type key() const noexcept = 0;
     virtual scalars::Scalar value() const noexcept = 0;
 
     virtual std::shared_ptr<AlgebraIteratorInterface> clone() const = 0;
     virtual void advance() = 0;
-    virtual bool equals(const AlgebraIteratorInterface& other) const noexcept = 0;
-
+    virtual bool equals(const AlgebraIteratorInterface &other) const noexcept = 0;
 };
 
-
-class ROUGHPY_ALGEBRA_EXPORT AlgebraIteratorItem {
-    std::shared_ptr<AlgebraIteratorInterface> p_interface;
-
-    friend class AlgebraIterator;
-
-    AlgebraIteratorItem(std::shared_ptr<AlgebraIteratorInterface> interface)
-        : p_interface(std::move(interface))
-    {}
-
+template <typename Algebra>
+class AlgebraIteratorItem {
+    std::shared_ptr<AlgebraIteratorInterface<Algebra>> p_interface;
 
 public:
-    const Basis& basis() const;
-    key_type key() const noexcept;
-    scalars::Scalar value() const noexcept;
+    using basis_type = typename Algebra::basis_type;
+    using key_type = typename Algebra::key_type;
 
-    AlgebraIteratorItem* operator->() noexcept { return this; }
+    AlgebraIteratorItem(std::shared_ptr<AlgebraIteratorInterface<Algebra>> interface)
+        : p_interface(std::move(interface)) {}
 
+    const basis_type &basis() const { return p_interface->basis(); }
+    key_type key() const noexcept { return p_interface->key(); }
+    scalars::Scalar value() const noexcept { return p_interface->value(); };
 
+    AlgebraIteratorItem *operator->() noexcept { return this; }
+    AlgebraIteratorItem &operator*() noexcept { return *this; }
 };
 
+template <typename Algebra>
+class AlgebraIterator {
+public:
+    using interface_type = AlgebraIteratorInterface<Algebra>;
+    using value_type = AlgebraIteratorItem<Algebra>;
 
-class ROUGHPY_ALGEBRA_EXPORT AlgebraIterator {
-    std::shared_ptr<AlgebraIteratorInterface> p_interface;
+private:
+    std::shared_ptr<interface_type> p_interface;
     std::uintptr_t m_tag;
 
 public:
-
-    using value_type = AlgebraIteratorItem;
-    using reference = AlgebraIteratorItem;
-    using pointer = AlgebraIteratorItem;
+    using reference = value_type;
+    using pointer = value_type;
     using difference_type = std::ptrdiff_t;
     using iterator_category = std::forward_iterator_tag;
 
-    AlgebraIterator(std::shared_ptr<AlgebraIteratorInterface> interface,
+    AlgebraIterator(std::shared_ptr<interface_type> interface,
                     std::uintptr_t tag)
-        : p_interface(std::move(interface)), m_tag(tag) {}
+        : p_interface(std::move(interface)), m_tag(tag)
+    {}
 
     AlgebraIterator() = default;
-    AlgebraIterator(const AlgebraIterator& arg);
-    AlgebraIterator(AlgebraIterator&& arg) noexcept;
+    AlgebraIterator(const AlgebraIterator &arg);
+    AlgebraIterator(AlgebraIterator &&arg) noexcept;
 
-    AlgebraIterator& operator=(const AlgebraIterator& arg);
-    AlgebraIterator& operator=(AlgebraIterator&& arg) noexcept;
+    AlgebraIterator &operator=(const AlgebraIterator &arg);
+    AlgebraIterator &operator=(AlgebraIterator &&arg) noexcept;
 
-
-
-    AlgebraIterator& operator++();
+    AlgebraIterator &operator++();
     const AlgebraIterator operator++(int);
-    AlgebraIteratorItem operator*() const;
-    AlgebraIteratorItem operator->() const;
+    reference operator*() const;
+    pointer operator->() const;
 
-    bool operator==(const AlgebraIterator& other) const;
-    bool operator!=(const AlgebraIterator& other) const;
-
+    bool operator==(const AlgebraIterator &other) const;
+    bool operator!=(const AlgebraIterator &other) const;
 };
 
+template <typename Algebra>
+AlgebraIterator<Algebra>::AlgebraIterator(const AlgebraIterator &arg)
+{
+    if (arg.p_interface) {
+        p_interface = arg.p_interface->clone();
+    }
 }
+template <typename Algebra>
+AlgebraIterator<Algebra>::AlgebraIterator(AlgebraIterator &&arg) noexcept
+    : p_interface(std::move(arg.p_interface))
+{
 }
-#endif // ROUGHPY_ALGEBRA_ALGEBRA_ITERATOR_H_
+template <typename Algebra>
+AlgebraIterator<Algebra> &AlgebraIterator<Algebra>::operator=(const AlgebraIterator &arg) {
+    if (&arg != this) {
+        if (arg.p_interface) {
+            p_interface = arg.p_interface->clone();
+        } else {
+            p_interface.reset();
+        }
+    }
+    return *this;
+}
+template <typename Algebra>
+AlgebraIterator<Algebra> &AlgebraIterator<Algebra>::operator=(AlgebraIterator &&arg) noexcept {
+    if (&arg != this) {
+        p_interface = std::move(arg.p_interface);
+    }
+    return *this;
+}
+template <typename Algebra>
+AlgebraIterator<Algebra> &AlgebraIterator<Algebra>::operator++() {
+    if (p_interface) {
+        p_interface->advance();
+    }
+    return *this;
+}
+template <typename Algebra>
+const AlgebraIterator<Algebra> AlgebraIterator<Algebra>::operator++(int) {
+    AlgebraIterator result(*this);
+    if (p_interface) {
+        p_interface->advance();
+    }
+    return result;
+}
+template <typename Algebra>
+typename AlgebraIterator<Algebra>::reference AlgebraIterator<Algebra>::operator*() const {
+    if (!p_interface){
+        throw std::runtime_error("attempting to dereference an invalid iterator");
+    }
+    return {p_interface};
+}
+template <typename Algebra>
+typename AlgebraIterator<Algebra>::pointer AlgebraIterator<Algebra>::operator->() const {
+    if (!p_interface) {
+        throw std::runtime_error("cannot dereference an invalid iterator");
+    }
+    return {p_interface};
+}
+template <typename Algebra>
+bool AlgebraIterator<Algebra>::operator==(const AlgebraIterator &other) const {
+    if (!p_interface || !other.p_interface) {
+        return false;
+    }
+    if (m_tag != other.m_tag) {
+        return false;
+    }
+    return p_interface->equals(*other.p_interface);
+}
+template <typename Algebra>
+bool AlgebraIterator<Algebra>::operator!=(const AlgebraIterator &other) const {
+    if (!p_interface || !other.p_interface) {
+        return true;
+    }
+    if (m_tag != other.m_tag) {
+        return true;
+    }
+    return !p_interface->equals(*other.p_interface);
+}
+
+}// namespace algebra
+}// namespace rpy
+#endif// ROUGHPY_ALGEBRA_ALGEBRA_ITERATOR_H_

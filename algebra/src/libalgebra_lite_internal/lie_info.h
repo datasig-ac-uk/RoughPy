@@ -18,69 +18,57 @@
 
 namespace rpy { namespace algebra {
 
-template <typename Coeffs, template <typename, typename> class VectorType,
+template <typename Coeffs, template <typename, typename> class VType,
           template <typename> class Storage>
-struct algebra_info<lal::lie<Coeffs, VectorType, Storage>> {
+struct algebra_info<Lie, lal::lie<Coeffs, VType, Storage>> {
+    /// The actual type of the algebra implementation
+    using algebra_type = lal::lie<Coeffs, VType, Storage>;
+
+    /// The wrapping roughpy algebra type
+    using wrapper_type = Lie;
+
+    /// The basis type of the implementation
     using basis_type = lal::hall_basis;
-    using basis_traits = basis_info<lal::hall_basis>;
 
-    using algebra_t = lal::lie<Coeffs, VectorType, Storage>;
+    /// The roughpy key type used in the wrapper
+    using key_type = typename LieBasis::key_type ;
 
-    using scalar_type = typename algebra_t::scalar_type;
-    using rational_type = typename algebra_t::rational_type;
-    using reference = decltype(std::declval<algebra_t&>()[std::declval<typename basis_type::key_type>()]);
-    using const_reference = decltype(std::declval<const algebra_t&>()[std::declval<typename basis_type::key_type>()]);
+    /// Basis traits for querying the basis
+    using basis_traits = BasisInfo<LieBasis, basis_type>;
 
-    static const scalars::ScalarType *ctype() noexcept {
-        return scalars::ScalarType::of<scalar_type>();
-    }
-    static constexpr rpy::algebra::VectorType vtype() noexcept {
-        return dtl::vector_type_helper<VectorType>::vtype;
-    }
-    static deg_t width(const algebra_t *instance) noexcept {
-        return instance->basis().width();
-    }
+    /// Scalar type in the implementation
+    using scalar_type = typename Coeffs::scalar_type;
 
-    static deg_t max_depth(const algebra_t *instance) noexcept {
-        return instance->basis().depth();
-    }
+    /// Rational type, default to scalar type
+    using rational_type = typename Coeffs::rational_type;
 
-    static const basis_type &basis(const algebra_t &instance) noexcept {
-        return instance.basis();
-    }
+    /// Reference type - currently unused
+    using reference = scalar_type &;
 
-    using this_key_type = typename algebra_t::key_type;
-    static this_key_type convert_key(const algebra_t *instance, rpy::key_type key) noexcept {
-        return basis_traits::convert_key(instance->basis(), key);
-    }
+    /// Const reference type - currently unused
+    using const_reference = const scalar_type &;
 
-    static deg_t degree(const algebra_t &instance) noexcept {
-        return instance.degree();
-    }
-    static deg_t degree(const algebra_t *instance, rpy::key_type key) noexcept {
-        return basis_traits::degree(instance->basis(), key);
-    }
-    static deg_t native_degree(const algebra_t *instance, this_key_type key) {
-        return basis_traits::native_degree(instance->basis(), key);
-    }
+    /// Pointer type - currently unused
+    using pointer = scalar_type *;
 
-    static key_type first_key(const algebra_t *) noexcept {
-        return 1;
-    }
-    static key_type last_key(const algebra_t *instance) noexcept {
-        return basis_traits::last_key(instance->basis());
-    }
+    /// Const pointer type - currently unused
+    using const_pointer = const scalar_type *;
 
-//    using key_prod_container = boost::container::small_vector_base<std::pair<key_type, int>>;
-//    static const key_prod_container &key_product(const algebra_t *inst, key_type k1, key_type k2) {
-//        return key_product(inst, convert_key(inst, k1), convert_key(inst, k2));
-//    }
-//    static const key_prod_container &key_product(const algebra_t *inst, const this_key_type &k1, const this_key_type &k2) {
-//
-//    }
+    /// Get the rpy ScalarType for the scalars in this algebra
+    static const scalars::ScalarType *ctype() noexcept { return scalars::ScalarType::of<scalar_type>(); }
 
-    static algebra_t create_like(const algebra_t &instance) {
-        return algebra_t(instance.get_basis(), instance.multiplication());
+    /// Get the storage type for this algebra.
+    static constexpr VectorType vtype() noexcept { return VectorType::Sparse; }
+
+    /// Get the basis for this algebra
+    static const basis_type &basis(const algebra_type &instance) noexcept { return instance.basis(); }
+
+    /// Get the maximum degree of non-zero elements in this algebra
+    static deg_t degree(const algebra_type &instance) noexcept { return instance.degree(); }
+
+    /// Create a new algebra instance with the same make-up as this argument
+    static algebra_type create_like(const algebra_type &instance) {
+        return algebra_type(instance.get_basis(), instance.multiplication());
     }
 };
 

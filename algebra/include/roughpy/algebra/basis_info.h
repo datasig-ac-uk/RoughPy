@@ -117,7 +117,7 @@ struct BasisInfo {
     parents(storage_t basis, const our_key_type& key) {
         auto parents_pair = basis->parents(convert_to_impl(basis, key));
         return {convert_from_impl(basis, parents_pair.first),
-                convert_from_impl(bsais, parents_pair.second)};
+                convert_from_impl(basis, parents_pair.second)};
     }
 
     /// Get the first letter of the key as a word
@@ -127,7 +127,7 @@ struct BasisInfo {
 
     /// Get the key type that represents letter
     static our_key_type key_of_letter(storage_t basis, let_t letter) {
-        return basis->key_of_letter(letter);
+        return convert_from_impl(basis, basis->key_of_letter(letter));
     }
 
     /// Determine whether a key represents a single letter

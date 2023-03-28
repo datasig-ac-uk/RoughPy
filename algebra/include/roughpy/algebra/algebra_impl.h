@@ -142,6 +142,12 @@ public:
     using rational_type = typename alg_info::rational_type ;
     using basis_type = typename alg_info::basis_type;
 
+private:
+
+    using iterator_type = AlgebraIterator<algebra_t>;
+    using iterator_interface_type = AlgebraIteratorInterface<algebra_t>;
+    using iterator_impl_type = AlgebraIteratorImplementation<algebra_t, basis_type, typename Impl::const_iterator>;
+
 protected:
     using storage_base_t::data;
 
@@ -184,12 +190,12 @@ public:
 
 private:
 
-    std::shared_ptr<AlgebraIteratorInterface>
+    std::shared_ptr<iterator_interface_type>
     make_iterator_ptr(typename Impl::const_iterator it) const;
 
 public:
-    AlgebraIterator begin() const override;
-    AlgebraIterator end() const override;
+    iterator_type begin() const override;
+    iterator_type end() const override;
 
     void clear() override;
     void assign(const algebra_t& arg) override;
@@ -310,11 +316,11 @@ optional<deg_t> AlgebraImplementation<Interface, Impl, StorageModel>::degree() c
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 optional<deg_t> AlgebraImplementation<Interface, Impl, StorageModel>::width() const {
-    return alg_info::width(&data());
+    return basis_traits::width(&alg_info::basis(data()));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 optional<deg_t> AlgebraImplementation<Interface, Impl, StorageModel>::depth() const {
-    return alg_info::max_depth(&data());
+    return basis_traits::depth(&alg_info::basis(data()));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::clone() const {
@@ -339,19 +345,19 @@ scalars::Scalar AlgebraImplementation<Interface, Impl, StorageModel>::get_mut(ke
     return trait::make(data()[akey]);
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
-std::shared_ptr<AlgebraIteratorInterface> AlgebraImplementation<Interface, Impl, StorageModel>::make_iterator_ptr(typename Impl::const_iterator it) const {
-    return std::shared_ptr<AlgebraIteratorInterface>(
-        new AlgebraIteratorImplementation<basis_type, typename Impl::const_iterator>(it, &alg_info::basis(data()))
+std::shared_ptr<AlgebraIteratorInterface<typename Interface::algebra_t>> AlgebraImplementation<Interface, Impl, StorageModel>::make_iterator_ptr(typename Impl::const_iterator it) const {
+    return std::shared_ptr<iterator_interface_type>(
+        new iterator_impl_type (it, &alg_info::basis(data()))
         );
 }
 
 template <typename Interface, typename Impl, template <typename> class StorageModel>
-AlgebraIterator AlgebraImplementation<Interface, Impl, StorageModel>::begin() const {
-    return AlgebraIterator(make_iterator_ptr(data().begin()), bit_cast<std::uintptr_t>(this));
+AlgebraIterator<typename Interface::algebra_t> AlgebraImplementation<Interface, Impl, StorageModel>::begin() const {
+    return iterator_type(make_iterator_ptr(data().begin()), bit_cast<std::uintptr_t>(this));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
-AlgebraIterator AlgebraImplementation<Interface, Impl, StorageModel>::end() const {
-    return AlgebraIterator(make_iterator_ptr(data().end()), bit_cast<std::uintptr_t>(this));
+AlgebraIterator<typename Interface::algebra_t> AlgebraImplementation<Interface, Impl, StorageModel>::end() const {
+    return iterator_type(make_iterator_ptr(data().end()), bit_cast<std::uintptr_t>(this));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::clear() {

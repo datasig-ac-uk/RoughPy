@@ -9,9 +9,7 @@ using namespace rpy::algebra;
 
 namespace rpy {
 namespace algebra {
-template class Basis<TensorBasisInterface,
-                     OrderedBasisInterface<>,
-                     WordLikeBasisInterface<>>;
+template class Basis<TensorBasisInterface>;
 }
 }// namespace rpy
 

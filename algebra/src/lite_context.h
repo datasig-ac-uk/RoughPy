@@ -65,8 +65,8 @@ protected:
 
 template <typename Coefficients>
 class LiteContext : private dtl::LiteContextBasisHolder, public Context {
-    Basis m_lie_basis;
-    Basis m_tensor_basis;
+    LieBasis m_lie_basis;
+    TensorBasis m_tensor_basis;
 
     using dtl::LiteContextBasisHolder::p_tbasis;
     using dtl::LiteContextBasisHolder::p_lbasis;
@@ -153,8 +153,8 @@ public:
     context_pointer get_alike(const scalars::ScalarType *new_ctype) const override;
     context_pointer get_alike(deg_t new_depth, const scalars::ScalarType *new_ctype) const override;
     context_pointer get_alike(deg_t new_width, deg_t new_depth, const scalars::ScalarType *new_ctype) const override;
-    Basis get_lie_basis() const override;
-    Basis get_tensor_basis() const override;
+    LieBasis get_lie_basis() const override;
+    TensorBasis get_tensor_basis() const override;
     FreeTensor convert(const FreeTensor &arg, optional<VectorType> new_vec_type) const override;
     ShuffleTensor convert(const ShuffleTensor &arg, optional<VectorType> new_vec_type) const override;
     Lie convert(const Lie &arg, optional<VectorType> new_vec_type) const override;
@@ -493,11 +493,11 @@ context_pointer LiteContext<Coefficients>::get_alike(deg_t new_width, deg_t new_
     return get_context(new_width, new_depth, new_ctype, {{"backend", "libalgebra_lite"}});
 }
 template <typename Coefficients>
-Basis LiteContext<Coefficients>::get_lie_basis() const {
+LieBasis LiteContext<Coefficients>::get_lie_basis() const {
     return m_lie_basis;
 }
 template <typename Coefficients>
-Basis LiteContext<Coefficients>::get_tensor_basis() const {
+TensorBasis LiteContext<Coefficients>::get_tensor_basis() const {
     return m_tensor_basis;
 }
 

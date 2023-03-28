@@ -96,8 +96,8 @@ public:
 
     virtual bool check_compatible(const Context &other_ctx) const noexcept;
 
-    virtual Basis get_lie_basis() const = 0;
-    virtual Basis get_tensor_basis() const = 0;
+    virtual LieBasis get_lie_basis() const = 0;
+    virtual TensorBasis get_tensor_basis() const = 0;
 
     virtual FreeTensor convert(const FreeTensor &arg, optional<VectorType> new_vec_type) const = 0;
     virtual ShuffleTensor convert(const ShuffleTensor &arg, optional<VectorType> new_vec_type) const = 0;

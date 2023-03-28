@@ -9,18 +9,19 @@ namespace rpy {
 namespace algebra {
 
 
-class ROUGHPY_ALGEBRA_EXPORT TensorBasisInterface : public BasisInterface<>
+class ROUGHPY_ALGEBRA_EXPORT TensorBasisInterface
+    : public make_basis_interface<TensorBasisInterface, rpy::key_type,
+                                  OrderedBasisInterface,
+                                  WordLikeBasisInterface>
 {
 public:
     ~TensorBasisInterface() override;
 };
 
 
-extern template class ROUGHPY_ALGEBRA_EXPORT Basis<TensorBasisInterface, OrderedBasisInterface<>, WordLikeBasisInterface<>>;
+extern template class ROUGHPY_ALGEBRA_EXPORT Basis<TensorBasisInterface>;
 
-using TensorBasis = Basis<TensorBasisInterface,
-                          OrderedBasisInterface<>,
-                          WordLikeBasisInterface<> >;
+using TensorBasis = Basis<TensorBasisInterface>;
 
 }
 }// namespace rpy

@@ -8,7 +8,7 @@ using namespace rpy::algebra;
 
 namespace rpy {
 namespace algebra {
-template class AlgebraInterface<FreeTensor>;
+template class AlgebraInterface<FreeTensor, TensorBasis>;
 template class AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
 }// namespace algebra
 }// namespace rpy

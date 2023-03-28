@@ -12,28 +12,22 @@
 namespace rpy {
 namespace algebra {
 
-
-
-
 namespace dtl {
-template <typename KeyType, typename Derived>
-class StandardBasisMixin;
-
-template <typename KeyType, typename Derived>
-class StandardBasisImplementationMixin;
-
+template <typename T, typename PrimaryInterface>
+class BasisImplementation;
 }
 
-template <typename KeyType = rpy::key_type>
-class BasisInterface {
+template <typename Derived, typename KeyType = rpy::key_type>
+class BasisInterface
+    : public boost::intrusive_ref_counter<BasisInterface<KeyType>>
+{
 public:
     using key_type = KeyType;
 
-    template <typename D>
-    using mixin_class = dtl::StandardBasisMixin<KeyType, D>;
+    template <typename T>
+    using impl_t = dtl::BasisImplementation<T, Derived>;
 
-    template <typename D>
-    using impl_mixin_class = dtl::StandardBasisImplementationMixin<KeyType, D>;
+    using mixin_t = void;
 
     virtual ~BasisInterface() = default;
 
@@ -43,25 +37,25 @@ public:
 };
 
 namespace dtl {
-template <typename KeyType, typename Derived>
+template <typename Derived, typename Base>
 class OrderedBasisMixin;
 
-template <typename KeyType, typename Derived>
+template <typename T, typename Derived, typename Base>
 class OrderedBasisImplementationMixin;
 
 }
 
-template <typename KeyType = rpy::key_type>
-class OrderedBasisInterface {
+template <typename Derived, typename Base>
+class OrderedBasisInterface : public traits::void_or_base<Base> {
 
 public:
-    using key_type = KeyType;
+    using typename Base::key_type;
 
-    template <typename D>
-    using mixin_class = dtl::OrderedBasisMixin<KeyType, D>;
+    using mixin_t = dtl::OrderedBasisMixin<Derived, typename Base::mixin_t>;
 
-    template <typename D>
-    using impl_mixin_class = dtl::OrderedBasisImplementationMixin<KeyType, D>;
+    template <typename T>
+    using impl_t = dtl::OrderedBasisImplementationMixin<
+        T, Derived, typename Base::template impl_t<T>>;
 
     virtual ~OrderedBasisInterface() = default;
 
@@ -70,58 +64,53 @@ public:
 };
 
 namespace dtl {
-template <typename KeyType, typename Derived>
+template <typename Derived, typename Base>
 class WordLikeBasisMixin;
 
-template <typename KeyType, typename Derived>
+template <typename T, typename Derived, typename Base>
 class WordLikeBasisImplementationMixin;
 
 }
 
-template <typename KeyType = rpy::key_type>
-class WordLikeBasisInterface {
-
+template <typename Derived, typename Base>
+class WordLikeBasisInterface : public traits::void_or_base<Base> {
 public:
-    using key_type = KeyType;
-    template <typename D>
-    using mixin_class = dtl::WordLikeBasisMixin<KeyType, D>;
+    using typename Base::key_type;
 
-    template <typename D>
-    using impl_mixin_class = dtl::WordLikeBasisImplementationMixin<KeyType, D>;
+    using mixin_t = dtl::WordLikeBasisMixin<Derived, typename Base::mixin_t>;
 
-    virtual ~WordLikeBasisInterface() = default;
+    template <typename T>
+    using impl_t = dtl::WordLikeBasisImplementationMixin<
+        T, Derived, typename Base::template impl_t<T>>;
+
     virtual deg_t width() const noexcept = 0;
     virtual deg_t depth() const noexcept = 0;
-    virtual deg_t degree(const KeyType& key) const noexcept = 0;
+    virtual deg_t degree(const key_type& key) const noexcept = 0;
     virtual deg_t size(deg_t degree) const noexcept = 0;
-    virtual let_t first_letter(const KeyType &key) const noexcept = 0;
+    virtual let_t first_letter(const key_type &key) const noexcept = 0;
 
     virtual dimn_t start_of_degree(deg_t degree) const noexcept = 0;
-    virtual pair<optional<KeyType>, optional<KeyType>>
-    parents(const KeyType &key) const = 0;
-    optional<KeyType> lparent(const KeyType &key) const {
+    virtual pair<optional<key_type>, optional<key_type>>
+    parents(const key_type &key) const = 0;
+    optional<key_type> lparent(const key_type &key) const {
         return parents(key).first;
     }
-    optional<KeyType> rparent(const KeyType &key) const {
+    optional<key_type> rparent(const key_type &key) const {
         return parents(key).second;
     }
     virtual key_type key_of_letter(let_t letter) const noexcept = 0;
-    virtual bool letter(const KeyType &key) const = 0;
+    virtual bool letter(const key_type &key) const = 0;
 };
 
-namespace dtl {
-template <typename T, typename... Interfaces>
-class BasisImplementation;
-}
 
 
 
-template <typename... Interfaces>
-class Basis : Interfaces::template mixin_class<Basis<Interfaces...>>... {
-    using basis_interface = traits::select_first_t<Interfaces...>;
+template <typename PrimaryInterface>
+class Basis : public PrimaryInterface::mixin_t {
+    using basis_interface = PrimaryInterface;
     static_assert(
         traits::is_base_of<
-            BasisInterface<typename basis_interface::key_type>,
+            BasisInterface<PrimaryInterface, typename basis_interface::key_type>,
             basis_interface>::value,
         "Primary template must be an instance of BasisInterface");
 
@@ -132,87 +121,122 @@ public:
 
     template <typename B>
     explicit Basis(const B *basis)
-        : p_impl(new dtl::BasisImplementation<B, Interfaces...>(basis)) {}
+        : p_impl(new typename PrimaryInterface::template impl_t<B>(basis)) {}
 
     template <typename B>
     explicit Basis(const B& basis)
-        : p_impl(new dtl::BasisImplementation<B, Interfaces...>(basis))
+        : p_impl(new typename PrimaryInterface::template impl_t<B>(basis))
     {}
 
     const basis_interface &instance() const noexcept { return *p_impl; }
-};
 
-namespace dtl {
-
-template <typename KeyType, typename Derived>
-class StandardBasisMixin {
-public:
-    std::string key_to_string(const KeyType &key) const noexcept {
-        return static_cast<const Derived *>(this)->instance().key_to_string(key);
+    std::string key_to_string(const key_type &key) const noexcept {
+        return instance().key_to_string(key);
     }
 
     dimn_t dimension() const noexcept {
-        return static_cast<const Derived *>(this)->instance().dimension();
+        return instance().dimension();
     }
 };
 
-template <typename KeyType, typename Derived>
-class OrderedBasisMixin {
+namespace dtl {
+template <typename Derived, typename KeyType, template <typename, typename> class... Interfaces>
+struct make_basis_interface_impl;
+}
+
+template <typename Derived, typename KeyType, template <typename, typename> class... Interfaces>
+using make_basis_interface = typename
+    dtl::make_basis_interface_impl<Derived, KeyType, Interfaces...>::type;
+
+
+namespace dtl {
+
+
+template <typename Derived, typename Base>
+class OrderedBasisMixin : public Base {
+
+    const Derived& instance() const noexcept {
+        return static_cast<const Basis<Derived>*>(this)->instance();
+    }
+
 public:
-    KeyType index_to_key(dimn_t index) const {
-        return static_cast<const Derived *>(this)->instance().index_to_key(index);
+    using key_type = typename Derived::key_type;
+
+    key_type index_to_key(dimn_t index) const {
+        return instance().index_to_key(index);
     }
 
-    dimn_t key_to_index(const KeyType &key) const {
-        return static_cast<const Derived *>(this)->instance().key_to_index(key);
+    dimn_t key_to_index(const key_type &key) const {
+        return instance().key_to_index(key);
     }
 };
 
-template <typename KeyType, typename Derived>
+template <typename Derived, typename Base>
 class WordLikeBasisMixin {
+
+    const Derived &instance() const noexcept {
+        return static_cast<const Basis<Derived> *>(this)->instance();
+    }
+
 public:
+    using key_type = typename Derived::key_type;
+
     deg_t width() const noexcept {
-        return static_cast<const Derived*>(this)->instance().width();
+        return instance().width();
     }
     deg_t depth() const noexcept {
-        return static_cast<const Derived *>(this)->instance().depth();
+        return instance().depth();
     }
-    deg_t degree(const KeyType& key) const noexcept {
-        return static_cast<const Derived *>(this)->instance().degree(key);
+    deg_t degree(const key_type& key) const noexcept {
+        return instance().degree(key);
     }
     deg_t size(deg_t degree) const noexcept {
-        return static_cast<const Derived*>(this)->instance().size(degree);
+        return instance().size(degree);
     }
-    let_t first_letter(const KeyType &key) const noexcept {
-        return static_cast<const Derived *>(this)->instance().first_letter(key);
+    let_t first_letter(const key_type &key) const noexcept {
+        return instance().first_letter(key);
     }
     dimn_t start_of_degree(deg_t degree) const noexcept {
-        return static_cast<const Derived *>(this)->instance().start_of_degree(degree);
+        return instance().start_of_degree(degree);
     }
-    pair<optional<KeyType>, optional<KeyType>> parents(const KeyType &key) const {
-        return static_cast<const Derived *>(this)->instance().parents(key);
+    pair<optional<key_type>, optional<key_type>> parents(const key_type &key) const {
+        return instance().parents(key);
     }
-    optional<KeyType> lparent(const KeyType &key) const {
-        static_cast<const Derived*>(this)->instance().lparent(key);
+    optional<key_type> lparent(const key_type &key) const {
+        return instance().lparent(key);
     }
-    optional<KeyType> rparent(const KeyType &key) const {
-        static_cast<const Derived*>(this)->instance().rparent(key);
+    optional<key_type> rparent(const key_type &key) const {
+        return instance().rparent(key);
     }
     key_type key_of_letter(let_t letter) const noexcept {
-        return static_cast<const Derived *>(this)->instance().key_of_letter(letter);
+        return instance().key_of_letter(letter);
     }
-    bool letter(const KeyType &key) const {
-        return static_cast<const Derived *>(this)->instance().letter(key);
+    bool letter(const key_type &key) const {
+        return instance().letter(key);
     }
-
-
 
 };
+
+template <typename Derived, typename KeyType,
+          template <typename, typename> class FirstInterface,
+          template <typename, typename> class... Interfaces>
+struct make_basis_interface_impl<Derived, KeyType, FirstInterface, Interfaces...> {
+    using next_t = make_basis_interface_impl<Derived, KeyType, Interfaces...>;
+    using type = FirstInterface<Derived, typename next_t::type>;
+};
+
+template <typename Derived, typename KeyType>
+struct make_basis_interface_impl<Derived, KeyType> {
+    using type = BasisInterface<Derived, KeyType>;
+};
+
+
+
 }// namespace dtl
 
-extern template class ROUGHPY_ALGEBRA_EXPORT BasisInterface<>;
-extern template class ROUGHPY_ALGEBRA_EXPORT OrderedBasisInterface<>;
-extern template class ROUGHPY_ALGEBRA_EXPORT WordLikeBasisInterface<>;
+
+
+
 }// namespace algebra
 }// namespace rpy
 

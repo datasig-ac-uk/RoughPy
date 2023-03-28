@@ -8,7 +8,4 @@ using namespace rpy::algebra;
 
 
 namespace rpy { namespace algebra {
-template class BasisInterface<>;
-template class OrderedBasisInterface<>;
-template class WordLikeBasisInterface<>;
 }}
