@@ -23,7 +23,7 @@ protected:
     using basis_traits = BasisInfo<Basis<PrimaryInterface>, T>;
     using basis_storage_t = typename basis_traits::storage_t;
 
-    const basis_storage_t m_impl;
+    basis_storage_t m_impl;
 
 public:
     using typename PrimaryInterface::key_type;

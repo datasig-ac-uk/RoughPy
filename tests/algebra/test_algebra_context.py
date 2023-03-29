@@ -61,7 +61,7 @@ def test_make_zero_lie(width, depth):
     assert l.degree() == 0
 
 
-@pytest.mark.skip("not yet implemented")
+# @pytest.mark.skip("not yet implemented")
 def test_lie_to_tensor(width, depth):
     l = Lie(np.array(range(1, width+1), dtype=np.float64), width=width, depth=depth)
     ctx = get_context(width, depth)
@@ -73,7 +73,7 @@ def test_lie_to_tensor(width, depth):
                                   depth=depth)
 
 
-@pytest.mark.skip("not yet implemented")
+# @pytest.mark.skip("not yet implemented")
 def test_tensor_to_lie(width, depth):
     t = FreeTensor(np.array(range(width+1), dtype=np.float64), width=width, depth=depth)
     ctx = get_context(width, depth)

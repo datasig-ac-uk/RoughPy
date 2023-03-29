@@ -3,9 +3,10 @@ import math
 import pytest
 import numpy as np
 
-# import roughpy
-# from roughpy import RealInterval, Lie, FreeTensor, PiecewiseLieStream, get_context, VectorType
-skip = True
+import roughpy
+from roughpy import RealInterval, Lie, FreeTensor, PiecewiseLieStream, Stream, get_context, VectorType, DPReal
+# skip = True
+skip = False
 
 WIDTH = 5
 DEPTH = 3
@@ -31,12 +32,12 @@ def piecewise_lie_data(piecewise_intervals, rng):
 
 @pytest.fixture
 def piecewise_lie(piecewise_lie_data):
-    return Stream(piecewise_lie_data, type=PiecewiseLiePath, width=WIDTH, depth=DEPTH)
+    return Stream(piecewise_lie_data, type=PiecewiseLieStream, width=WIDTH, depth=DEPTH)
 
 @pytest.mark.skipif(skip, reason="path type not available")
 def test_log_signature_full_data(piecewise_lie_data):
-    ctx = get_context(WIDTH, DEPTH, CoefficientType.DPReal)
-    piecewise_lie = Stream(piecewise_lie_data, type=PiecewiseLiePath, width=WIDTH, depth=DEPTH)
+    ctx = get_context(WIDTH, DEPTH, DPReal)
+    piecewise_lie = Stream(piecewise_lie_data, type=PiecewiseLieStream, width=WIDTH, depth=DEPTH)
 
     result = piecewise_lie.log_signature(0.01)
     expected = ctx.cbh([d[1] for d in piecewise_lie_data], vec_type=VectorType.DenseVector)

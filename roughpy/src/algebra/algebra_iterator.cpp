@@ -25,7 +25,7 @@ static void init_iterator(py::module_& m, const char* iter_name) {
     klass.def("key", [](const AlgebraIteratorItem<Algebra>& item) {
         return KeyType(item.basis(), item.key());
     });
-    klass.def("scalar", &AlgebraIteratorItem<Algebra>::value);
+    klass.def("value", &AlgebraIteratorItem<Algebra>::value);
 
 }
 

@@ -23,12 +23,12 @@ def TensorKey_iter(width, depth):
     return itr
 
 
-@pytest.mark.xfail
+#@pytest.mark.xfail
 def test_FreeTensor_iterator(width, depth, tensor_size, TensorKey_iter):
     data = np.arange(1.0, float(tensor_size+1))
     tens = FreeTensor(data, width=width, depth=depth)
 
-    result = list(tens)
+    result = [(i.key(), i.value()) for i in tens]
     expected = list(zip(TensorKey_iter(), data))
 
     assert result == expected

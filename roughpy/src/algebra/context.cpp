@@ -78,5 +78,19 @@ void python::init_context(py::module_ &m) {
       return python::PyTensorKeyIterator(ctx->width(), ctx->depth());
     });
 
+    klass.def("lie_to_tensor", [](const PyContext& ctx, const Lie& arg) {
+            return ctx->lie_to_tensor(arg);
+        }, "arg"_a);
+    klass.def("tensor_to_lie", [](const PyContext& ctx, const FreeTensor& arg) {
+             return ctx->tensor_to_lie(arg);
+         }, "arg"_a);
+
+
+    klass.def("__enter__", [](const PyContext& ctx) { return ctx; });
+    klass.def("__exit__", [](const PyContext& ctx, py::handle exc_type, py::handle exc_value, py::handle tb) {
+             return py::none();
+         }, "exc_type"_a, "exc_value"_a, "traceback"_a);
+
     m.def("get_context", py_get_context, "width"_a, "depth"_a, "coeffs"_a = py::none());
+
 }

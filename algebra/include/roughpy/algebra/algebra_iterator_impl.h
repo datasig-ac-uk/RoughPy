@@ -34,7 +34,7 @@ public:
     using key_type = typename Algebra::key_type;
 
     AlgebraIteratorImplementation(Iter iter, const RealBasis* basis)
-        : interface_type(basis_type(p_basis)), m_iter(std::move(iter)), p_basis(basis)
+        : interface_type(basis_type(basis)), m_iter(std::move(iter)), p_basis(basis)
     {}
 
     key_type key() const noexcept override {
