@@ -10,22 +10,23 @@ namespace rpy {
 namespace python {
 
 
-class PyContext {
-    algebra::context_pointer p_ctx;
+extern "C" {
 
-
-public:
-
-    PyContext(algebra::context_pointer ctx) : p_ctx(std::move(ctx))
-    {}
-
-    algebra::context_pointer to_context() && noexcept { return p_ctx; }
-    algebra::context_pointer get_context() const noexcept { return p_ctx; }
-
-    const algebra::Context& operator*() const noexcept { return *p_ctx; }
-    const algebra::Context* operator->() const noexcept { return p_ctx.get(); }
-
+struct RPyContext {
+    PyObject_VAR_HEAD
+        algebra::context_pointer p_ctx;
 };
+
+extern PyTypeObject RPyContext_Type;
+
+PyObject* RPyContext_FromContext(algebra::context_pointer ctx);
+
+}
+
+inline const algebra::context_pointer &ctx_cast(PyObject *ctx) {
+    assert(ctx != nullptr && Py_TYPE(ctx) == &python::RPyContext_Type);
+    return reinterpret_cast<RPyContext *>(ctx)->p_ctx;
+}
 
 void init_context(py::module_& m);
 

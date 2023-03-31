@@ -20,7 +20,7 @@ class PyLieKeyIterator {
 
 public:
 
-    explicit PyLieKeyIterator(const PyContext& ctx,
+    explicit PyLieKeyIterator(const py::object& ctx,
                      key_type current=1,
                      key_type end=std::numeric_limits<key_type>::max());
 

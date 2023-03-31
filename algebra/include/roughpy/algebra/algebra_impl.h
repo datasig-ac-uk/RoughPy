@@ -67,7 +67,12 @@ protected:
 
     explicit BorrowedStorageModel(Impl *arg) : p_data(arg) {}
 
-    Impl &data() noexcept { return *p_data; }
+    Impl &data() {
+        if (traits::is_const<Impl>::value) {
+            throw std::runtime_error("cannot get mutable data from const object");
+        }
+        return *p_data;
+    }
     const Impl &data() const noexcept { return *p_data; }
 };
 
@@ -184,8 +189,12 @@ public:
     algebra_t clone() const override;
     algebra_t zero_like() const override;
 
+    algebra_t borrow() const override;
+    algebra_t borrow_mut() override;
+
     scalars::Scalar get(key_type key) const override;
     scalars::Scalar get_mut(key_type key) override;
+
 
 
 private:
@@ -330,6 +339,17 @@ template <typename Interface, typename Impl, template <typename> class StorageMo
 typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::zero_like() const {
     return algebra_t(Interface::context(), alg_info::create_like(data()));
 }
+
+template <typename Interface, typename Impl, template <typename> class StorageModel>
+typename AlgebraImplementation<Interface, Impl, StorageModel>::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::borrow() const {
+//    return algebra_t(Interface::context(), &data());
+    return algebra_t(Interface::context());
+}
+template <typename Interface, typename Impl, template <typename> class StorageModel>
+typename AlgebraImplementation<Interface, Impl, StorageModel>::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::borrow_mut() {
+    return algebra_t(Interface::context(), &data());
+}
+
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 scalars::Scalar AlgebraImplementation<Interface, Impl, StorageModel>::get(key_type key) const {
     auto akey = basis_traits::convert_to_impl(&alg_info::basis(data()), key);

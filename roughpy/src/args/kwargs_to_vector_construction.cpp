@@ -11,7 +11,7 @@ python::PyVectorConstructionHelper python::kwargs_to_construction_data(const pyb
     PyVectorConstructionHelper helper;
 
     if (kwargs.contains("context")) {
-        helper.ctx = kwargs["context"].cast<PyContext>().to_context();
+        helper.ctx = python::ctx_cast(kwargs["context"].ptr());
         helper.width = helper.ctx->width();
         helper.depth = helper.ctx->depth();
         helper.ctype = helper.ctx->ctype();

@@ -73,7 +73,7 @@ static int parse_sig_args(PyObject* args, PyObject* kwargs, const StreamMetadata
                                               &sup,
                                               &resolution_converter,
                                               &resolution,
-                                              py::type::of<python::PyContext>().ptr(),
+                                              &python::RPyContext_Type,
                                               &ctx,
                                               &depth,
                                               &dtype);
@@ -155,7 +155,7 @@ static int parse_sig_args(PyObject* args, PyObject* kwargs, const StreamMetadata
     } else {
         // a provided context always takes priority over other configurations.
         // This cast is infallible because we've already checked that the type is correct.
-        sigargs->ctx = py::handle(ctx).cast<const python::PyContext&>().get_context();
+        sigargs->ctx = python::ctx_cast(ctx);
     }
 
     return 0;
@@ -240,7 +240,7 @@ static PyObject *RPyStream_str(PyObject *self) {
 
 PyTypeObject rpy::python::RPyStream_Type =
     {
-        PyVarObject_HEAD_INIT(0, 0) "_roughpy.Stream", /* tp_name */
+        PyVarObject_HEAD_INIT(nullptr, 0) "_roughpy.Stream", /* tp_name */
         sizeof(python::RPyStream),                     /* tp_basicsize */
         0,                                             /* tp_itemsize */
         nullptr,                                       /* tp_dealloc */
@@ -255,9 +255,9 @@ PyTypeObject rpy::python::RPyStream_Type =
         nullptr,                   /* tp_hash */
         nullptr,                                       /* tp_call */
         (reprfunc) RPyStream_str,                                   /* tp_str */
-        PyObject_GenericGetAttr,                       /* tp_getattro */
+        nullptr,                       /* tp_getattro */
         (setattrofunc) nullptr,                        /* tp_setattro */
-        (PyBufferProcs *)0,                            /* tp_as_buffer */
+        (PyBufferProcs *)nullptr,                            /* tp_as_buffer */
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,      /* tp_flags */
         STREAM_DOC,                                    /* tp_doc */
         nullptr,                                       /* tp_traverse */
@@ -276,7 +276,7 @@ PyTypeObject rpy::python::RPyStream_Type =
         0,                                             /* tp_dictoffset */
         (initproc) nullptr,                            /* tp_init */
         nullptr,                                       /* tp_alloc */
-        PyType_GenericNew,                             /* tp_new */
+        nullptr,                             /* tp_new */
 };
 }
 

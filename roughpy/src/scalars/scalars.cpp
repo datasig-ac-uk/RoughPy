@@ -149,7 +149,7 @@ static inline void update_dtype_and_allocate(scalars::KeyScalarArray &result, py
 
 static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
                                    python::PyToBufferOptions &options,
-                                   const py::object &object) {
+                                   const py::handle &object) {
     py::capsule dlpack;
     dlpack = object.attr("__dlpack__")();
 
@@ -415,7 +415,7 @@ static void handle_dict(scalars::ScalarPointer &scalar_ptr,
 
     for (auto obj : py::reinterpret_borrow<py::dict>(dict_o)) {
         // dict iterator yields pairs [key, obj]
-        // Expecting key-value tuplesl
+        // Expecting key-value tuples
         auto key = obj.first;
         if (options.alternative_key != nullptr && py::isinstance(key, options.alternative_key->py_key_type)) {
             *(key_ptr++) = options.alternative_key->converter(key);
@@ -427,7 +427,7 @@ static void handle_dict(scalars::ScalarPointer &scalar_ptr,
     }
 }
 
-scalars::KeyScalarArray python::py_to_buffer(const py::object &object, python::PyToBufferOptions &options) {
+scalars::KeyScalarArray python::py_to_buffer(const py::handle &object, python::PyToBufferOptions &options) {
     scalars::KeyScalarArray result(options.type);
 
     // First handle the single number cases

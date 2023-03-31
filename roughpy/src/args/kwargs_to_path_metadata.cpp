@@ -20,7 +20,11 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
     };
 
     if (kwargs.contains("ctx")) {
-        md.ctx = kwargs["ctx"].cast<PyContext>().to_context();
+        auto ctx = kwargs["ctx"];
+        if (!py::isinstance(ctx, reinterpret_cast<PyObject*>(&RPyContext_Type))) {
+            throw py::type_error("expected a Context object");
+        }
+        md.ctx = python::ctx_cast(ctx.ptr());
         md.width = md.ctx->width();
         md.scalar_type = md.ctx->ctype();
     } else {

@@ -85,6 +85,10 @@ public:
     virtual Algebra clone() const = 0;
     virtual Algebra zero_like() const = 0;
 
+    // Borrow
+    virtual Algebra borrow() const = 0;
+    virtual Algebra borrow_mut() = 0;
+
 //    virtual Algebra convert_from_iterator(AlgebraIterator begin, AlgebraIterator end) const = 0;
 
     // Element access
@@ -213,6 +217,9 @@ public:
     from_args(context_pointer ctx, Args &&...args) {
         return algebra_t(std::move(ctx), new Wrapper(std::forward<Args>(args)...));
     }
+
+    algebra_t borrow() const;
+    algebra_t borrow_mut();
 
     const Interface &operator*() const noexcept { return *p_impl; }
     Interface &operator*() noexcept { return *p_impl; }
@@ -426,7 +433,20 @@ AlgebraBase<Interface, DerivedImpl> &AlgebraBase<Interface, DerivedImpl>::operat
     }
     return *this;
 }
-
+template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
+typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::borrow() const {
+    if (p_impl) {
+        return p_impl->borrow();
+    }
+    return algebra_t();
+}
+template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
+typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::borrow_mut() {
+    if (p_impl) {
+        return p_impl->borrow_mut();
+    }
+    return algebra_t();
+}
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::add(const algebra_t &rhs) const {
     if (is_equivalent_to_zero(rhs)) {
