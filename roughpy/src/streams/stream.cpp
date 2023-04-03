@@ -115,30 +115,37 @@ static int parse_sig_args(PyObject* args, PyObject* kwargs, const StreamMetadata
         // Global, nothing to do as optional default is empty.
     }
     else if (Py_TYPE(interval_or_inf) == &PyFloat_Type || Py_TYPE(interval_or_inf) == &PyLong_Type) {
-        param_t inf;
-        if (Py_TYPE(interval_or_inf) == &PyFloat_Type) {
-            inf = PyFloat_AsDouble(interval_or_inf);
-        } else {
-            inf = PyLong_AsDouble(interval_or_inf);
-        }
-
         if (std::isnan(sup)) {
-            PyErr_SetString(PyExc_ValueError, "inf and sup must both be specified");
-            return -1;
-        }
+            // In this case, we're expecting the first argument to be resolution
+            if (Py_TYPE(interval_or_inf) == &PyFloat_Type) {
+                PyErr_SetString(PyExc_TypeError, "expecting integer resolution");
+                return -1;
+            }
+            sigargs->resolution = static_cast<resolution_t>(PyLong_AsLong(interval_or_inf));
 
-        if (inf > sup) {
-            PyErr_SetString(PyExc_ValueError, "inf must not be larger than sup");
-            return -1;
-        }
+            using nl = std::numeric_limits<param_t>;
+            sigargs->interval = {};
+        } else {
+            param_t inf;
 
-        sigargs->interval = intervals::RealInterval(inf, sup);
+            if (Py_TYPE(interval_or_inf) == &PyFloat_Type) {
+                inf = PyFloat_AsDouble(interval_or_inf);
+            } else {
+                inf = PyLong_AsDouble(interval_or_inf);
+            }
+
+            if (inf > sup) {
+                PyErr_SetString(PyExc_ValueError, "inf must not be larger than sup");
+                return -1;
+            }
+            sigargs->interval = intervals::RealInterval(inf, sup);
+        }
+    } else if (Py_TYPE(interval_or_inf) == (PyTypeObject *)py::type::of<intervals::RealInterval>().ptr()) {
+        sigargs->interval = py::handle(interval_or_inf).cast<const intervals::RealInterval &>();
+    } else if (Py_TYPE(interval_or_inf) == (PyTypeObject *)py::type::of<intervals::DyadicInterval>().ptr()) {
+        sigargs->interval = intervals::RealInterval(py::handle(interval_or_inf).cast<const intervals::DyadicInterval &>());
     } else if (Py_TYPE(interval_or_inf) == (PyTypeObject*) py::type::of<intervals::Interval>().ptr()) {
         sigargs->interval = intervals::RealInterval(py::handle(interval_or_inf).cast<const intervals::Interval&>());
-    } else if (Py_TYPE(interval_or_inf) == (PyTypeObject*) py::type::of<intervals::RealInterval>().ptr()) {
-        sigargs->interval = py::handle(interval_or_inf).cast<const intervals::RealInterval&>();
-    } else if (Py_TYPE(interval_or_inf) == (PyTypeObject*) py::type::of<intervals::DyadicInterval>().ptr()) {
-        sigargs->interval = intervals::RealInterval(py::handle(interval_or_inf).cast<const intervals::DyadicInterval&>());
     } else {
         PyErr_SetString(PyExc_TypeError, "unexpected type for argument interval_or_inf");
         return -1;
@@ -226,9 +233,9 @@ static PyObject *log_signature(PyObject *self, PyObject *args, PyObject *kwargs)
 
     algebra::Lie result;
     if (sigargs.interval) {
-        result = stream->m_data.log_signature(sigargs.resolution, *sigargs.ctx);
-    } else {
         result = stream->m_data.log_signature(sigargs.interval.value(), sigargs.resolution, *sigargs.ctx);
+    } else {
+        result = stream->m_data.log_signature(sigargs.resolution, *sigargs.ctx);
     }
 
     return py::cast(result).release().ptr();
@@ -238,7 +245,106 @@ static const char* SIG_DERIV_DOC = R"rpydoc(Compute the derivative of a signatur
 to a perturbation of the underlying path.
 )rpydoc";
 static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs) {
-    Py_RETURN_NONE;
+    static const char* kwords[] = { "interval",
+                                    "perturbation",
+                                    "resolution",
+                                    "depth",
+                                    nullptr };
+
+    const auto& stream = reinterpret_cast<python::RPyStream*>(self)->m_data;
+
+    PyObject* arg;
+    PyObject* second_arg = nullptr;
+    rpy::resolution_t resolution = stream.metadata().default_resolution;
+    deg_t depth = -1;
+    auto ctx = stream.metadata().default_context;
+
+    auto parse_result = PyArg_ParseTupleAndKeywords(args, kwargs,
+                                              "O|Oi$i", const_cast<char**>(kwords),
+                                              &arg, &second_arg, &resolution, &depth
+                                              );
+    if (!static_cast<bool>(parse_result)) {
+        return nullptr;
+    }
+
+    if (depth != -1) {
+        ctx = ctx->get_alike(depth);
+    }
+
+    auto* interval_type = reinterpret_cast<PyTypeObject *>(py::type::of<intervals::Interval>().ptr());
+    auto* lie_type = reinterpret_cast<PyTypeObject*>(py::type::of<algebra::Lie>().ptr());
+
+    if (second_arg != nullptr && Py_TYPE(second_arg) == &PyLong_Type) {
+        resolution = static_cast<resolution_t>(PyLong_AsLong(second_arg));
+        second_arg = nullptr;
+    }
+
+    algebra::FreeTensor result;
+    if (PyObject_IsInstance(arg, (PyObject*) interval_type) && second_arg != nullptr
+        && Py_TYPE(second_arg) == lie_type) {
+
+        const auto &interval = py::handle(arg).cast<const intervals::Interval &>();
+        const auto &perturbation = py::handle(second_arg).cast<const algebra::Lie &>();
+
+        result = stream.signature_derivative(interval, perturbation, resolution, *ctx);
+
+    } else if (PyTuple_Check(arg) && PySequence_Length(arg) == 2) {
+        py::handle py_interval;
+        py::handle py_perturbation;
+
+        parse_result = PyArg_ParseTuple(arg, "O!O!",
+                                        interval_type,
+                                        &py_interval.ptr(),
+                                        lie_type,
+                                        &py_perturbation.ptr());
+        if (!static_cast<bool>(parse_result)) {
+            return nullptr;
+        }
+
+        const auto &interval = py_interval.cast<const intervals::Interval &>();
+        const auto &perturbation = py_perturbation.cast<const algebra::Lie &>();
+
+        result = stream.signature_derivative(interval, perturbation, resolution, *ctx);
+    } else if (static_cast<bool>(PySequence_Check(arg)) && PySequence_Length(arg) > 0) {
+        streams::Stream::perturbation_list_t perturbations;
+        const auto n_perturbations = PySequence_Length(arg);
+        perturbations.reserve(n_perturbations);
+
+        for (Py_ssize_t i=0; i<n_perturbations; ++i) {
+            PyObject* item = PySequence_ITEM(arg, i);
+
+            if (!static_cast<bool>(PySequence_Check(item))
+                || PySequence_Length(item) != 2) {
+                PyErr_SetString(PyExc_TypeError, "expected interval/perturbation pair");
+                return nullptr;
+            }
+
+            py::handle py_interval;
+            py::handle py_perturbation;
+
+            parse_result = PyArg_ParseTuple(item, "O!O!",
+                                            interval_type,
+                                            &py_interval.ptr(),
+                                            lie_type,
+                                            &py_perturbation.ptr());
+            if (!static_cast<bool>(parse_result)) {
+                return nullptr;
+            }
+
+            perturbations.emplace_back(
+                intervals::RealInterval(py_interval.cast<const intervals::Interval&>()),
+                py_perturbation.cast<algebra::Lie>()->borrow_mut()
+                );
+
+        }
+
+        result = stream.signature_derivative(perturbations, resolution, *ctx);
+    } else {
+        PyErr_SetString(PyExc_ValueError, "unexpected arguments to signature derivative");
+        return nullptr;
+    }
+
+    return py::cast(result).release().ptr();
 }
 
 

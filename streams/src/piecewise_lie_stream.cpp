@@ -40,7 +40,7 @@ using rpy::intervals::Interval;
 using rpy::intervals::RealInterval;
 
 PiecewiseLieStream::PiecewiseLieStream(std::vector<LiePiece> &&data, StreamMetadata &&md)
-    : StreamInterface(std::move(md)), m_data() {
+    : StreamInterface(std::move(md)), m_data(std::move(data)) {
 //    // first sort so we know the inf of each interval are in order
 //    auto sort_fun = [](const LiePiece &a, const LiePiece &b) {
 //        return a.first.inf() < b.first.inf();

@@ -123,7 +123,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature(const rpy::stre
                              resolution,
                              ctx);
 }
-rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(rpy::streams::Stream::Interval &domain, const rpy::streams::Stream::Lie &perturbation) const {
+rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(const rpy::streams::Stream::Interval &domain, const rpy::streams::Stream::Lie &perturbation) const {
     const auto& md = metadata();
     algebra::DerivativeComputeInfo info{
         log_signature(domain,
@@ -134,7 +134,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(rpy:
 
     return md.default_context->sig_derivative({std::move(info)}, md.cached_vector_type);
 }
-rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(rpy::streams::Stream::Interval &domain, const rpy::streams::Stream::Lie &perturbation, const rpy::streams::Stream::Context &ctx) const {
+rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(const rpy::streams::Stream::Interval &domain, const rpy::streams::Stream::Lie &perturbation, const rpy::streams::Stream::Context &ctx) const {
     const auto& md = metadata();
     algebra::DerivativeComputeInfo info {
         log_signature(domain,
@@ -145,7 +145,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(rpy:
 
     return ctx.sig_derivative({std::move(info)}, md.cached_vector_type);
 }
-rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(rpy::streams::Stream::Interval &domain, const rpy::streams::Stream::Lie &perturbation, rpy::streams::resolution_t resolution) const {
+rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(const rpy::streams::Stream::Interval &domain, const rpy::streams::Stream::Lie &perturbation, rpy::streams::resolution_t resolution) const {
     const auto& md = metadata();
     algebra::DerivativeComputeInfo info {
         log_signature(domain,
@@ -156,7 +156,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(rpy:
 
     return md.default_context->sig_derivative({std::move(info)}, md.cached_vector_type);
 }
-rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(rpy::streams::Stream::Interval &domain, const rpy::streams::Stream::Lie &perturbation, rpy::streams::resolution_t resolution, const rpy::streams::Stream::Context &ctx) const {
+rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(const rpy::streams::Stream::Interval &domain, const rpy::streams::Stream::Lie &perturbation, rpy::streams::resolution_t resolution, const rpy::streams::Stream::Context &ctx) const {
     const auto& md = metadata();
     algebra::DerivativeComputeInfo info {
         log_signature(domain, resolution, ctx),

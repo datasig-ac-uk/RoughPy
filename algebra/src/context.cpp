@@ -125,6 +125,10 @@ void Context::cbh_fallback(FreeTensor &collector, const std::vector<Lie> &lies) 
 }
 
 Lie Context::cbh(const std::vector<Lie> &lies, VectorType vtype) const {
+    if (lies.size() == 1) {
+        return convert(lies[0], vtype);
+    }
+
     FreeTensor collector = zero_free_tensor(vtype);
     collector[0] = scalars::Scalar(1);
 

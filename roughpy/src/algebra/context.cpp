@@ -54,7 +54,7 @@ static PyObject *RPyContext_tensor_size(PyObject *self, PyObject *degree) {
 }
 static const char *cbh_DOC = R"rpydoc()rpydoc";
 static PyObject *RPyContext_cbh(PyObject *self, PyObject *args, PyObject *kwargs) {
-    static const char *kwords[] = {"lies", "vtype", nullptr};
+    static const char *kwords[] = {"lies", "vec_type", nullptr};
     const auto &ctx = ctx_cast(self);
 
     PyObject *py_lies = nullptr;

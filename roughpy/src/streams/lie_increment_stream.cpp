@@ -79,7 +79,7 @@ static py::object lie_increment_stream_from_increments(const py::object& data, c
     idimn_t num_increments = 0;
 
     if (options.shape.empty()) {
-        increment_size = buffer.size();
+        increment_size = static_cast<idimn_t>(buffer.size());
         num_increments = 1;
     } else if (options.shape.size() == 1) {
         increment_size = options.shape[0];
@@ -173,6 +173,6 @@ void python::init_lie_increment_stream(py::module_ &m) {
     py::class_<streams::LieIncrementStream> klass(m, "LieIncrementStream", LIE_INCR_STREAM_DOC);
 
     klass.def_static("from_increments", &lie_increment_stream_from_increments, "data"_a);
-    klass.def_static("from_values", &lie_increment_path_from_values, "data"_a);
+//    klass.def_static("from_values", &lie_increment_path_from_values, "data"_a);
 
 }

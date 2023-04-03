@@ -46,14 +46,16 @@ LieIncrementStream::LieIncrementStream(
     for (dimn_t i = 0; i < indices.size(); ++i) {
         m_mapping[indices[i]] = i * md.width;
     }
+
+//    std::cerr << m_mapping.begin()->first << ' ' << (--m_mapping.end())->first << '\n';
 }
 
 algebra::Lie LieIncrementStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
 
     const auto &md = metadata();
-    if (empty(interval)) {
-        return ctx.zero_lie(md.cached_vector_type);
-    }
+//    if (empty(interval)) {
+//        return ctx.zero_lie(md.cached_vector_type);
+//    }
 
     rpy::algebra::SignatureData data{
         scalars::ScalarStream(ctx.ctype()),
@@ -69,12 +71,12 @@ algebra::Lie LieIncrementStream::log_signature_impl(const intervals::Interval &i
     }
 
     auto begin = (interval.type() == intervals::IntervalType::Opencl)
-                 ? m_mapping.lower_bound(interval.inf())
-                 : m_mapping.upper_bound(interval.inf());
+                 ? m_mapping.upper_bound(interval.inf())
+                 : m_mapping.lower_bound(interval.inf());
 
     auto end = (interval.type() == intervals::IntervalType::Opencl)
-               ? m_mapping.lower_bound(interval.sup())
-               : m_mapping.upper_bound(interval.sup());
+               ? m_mapping.upper_bound(interval.sup())
+               : m_mapping.lower_bound(interval.sup());
 
     if (begin == end) {
         return ctx.zero_lie(md.cached_vector_type);
@@ -103,14 +105,20 @@ algebra::Lie LieIncrementStream::log_signature_impl(const intervals::Interval &i
     return ctx.log_signature(data);
 }
 bool LieIncrementStream::empty(const intervals::Interval &interval) const noexcept {
-
+//    std::cerr << "Checking " << interval;
+//    for (auto& item : m_mapping) {
+//        if (item.first >= interval.inf() && item.first < interval.sup()) {
+//            std::cerr << ' ' << item.first << ", " << item.second << ';';
+//        }
+//    }
     auto begin = (interval.type() == intervals::IntervalType::Opencl)
-                 ? m_mapping.lower_bound(interval.inf())
-                 : m_mapping.upper_bound(interval.inf());
+                 ? m_mapping.upper_bound(interval.inf())
+                 : m_mapping.lower_bound(interval.inf());
 
     auto end = (interval.type() == intervals::IntervalType::Opencl)
-               ? m_mapping.lower_bound(interval.sup())
-               : m_mapping.upper_bound(interval.sup());
+               ? m_mapping.upper_bound(interval.sup())
+               : m_mapping.lower_bound(interval.sup());
 
+//    std::cerr << ' ' << (begin == end) << '\n';
     return begin == end;
 }

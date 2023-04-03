@@ -34,6 +34,9 @@
 #include <roughpy/streams/stream.h>
 #include <roughpy/streams/piecewise_lie_stream.h>
 
+#include "args/kwargs_to_path_metadata.h"
+#include "stream.h"
+
 using namespace rpy;
 using namespace pybind11::literals;
 
@@ -41,8 +44,55 @@ static const char* PW_LIE_STREAM_DOC = R"rpydoc(A stream formed of a sequence of
 )rpydoc";
 
 
+static py::object construct_piecewise_lie_stream(
+    std::vector<std::pair<intervals::RealInterval, algebra::Lie>> lies,
+    const py::kwargs& kwargs) {
+
+    auto pmd = python::kwargs_to_metadata(kwargs);
+
+    if (!pmd.ctx) {
+        if (pmd.width == 0 || pmd.depth == 0 || !pmd.scalar_type) {
+            throw py::value_error("cannot deduce width/depth/ctype");
+        }
+        pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type);
+    }
+    // TODO: make this more robust
+
+    using nl = std::numeric_limits<param_t>;
+    param_t a = nl::infinity();
+    param_t b = -nl::infinity();
+    for (auto& piece : lies) {
+        if (piece.first.inf() < a) {
+            a = piece.first.inf();
+        }
+        if (piece.first.sup() > b) {
+            b = piece.first.sup();
+        }
+    }
+
+    pmd.support = intervals::RealInterval(a, b);
+
+    streams::Stream result(
+        streams::PiecewiseLieStream (
+            std::move(lies),
+            {
+                pmd.width,
+                pmd.support,
+                pmd.ctx,
+                pmd.scalar_type,
+                pmd.vector_type,
+                pmd.resolution
+            }
+            )
+        );
+
+    return py::reinterpret_steal<py::object>(python::RPyStream_FromStream(std::move(result)));
+}
+
+
 void python::init_piecewise_lie_stream(py::module_ &m) {
 
     py::class_<streams::PiecewiseLieStream> klass(m, "PiecewiseLieStream", PW_LIE_STREAM_DOC);
 
+    klass.def_static("construct", &construct_piecewise_lie_stream);
 }

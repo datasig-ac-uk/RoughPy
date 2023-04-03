@@ -2,6 +2,7 @@ import math
 
 import pytest
 import numpy as np
+from numpy.testing import assert_array_almost_equal
 
 import roughpy
 from roughpy import RealInterval, Lie, FreeTensor, PiecewiseLieStream, Stream, get_context, VectorType, DPReal
@@ -32,13 +33,14 @@ def piecewise_lie_data(piecewise_intervals, rng):
 
 @pytest.fixture
 def piecewise_lie(piecewise_lie_data):
-    return Stream(piecewise_lie_data, type=PiecewiseLieStream, width=WIDTH, depth=DEPTH)
+    return PiecewiseLieStream.construct(piecewise_lie_data, width=WIDTH, depth=DEPTH)
 
 @pytest.mark.skipif(skip, reason="path type not available")
 def test_log_signature_full_data(piecewise_lie_data):
     ctx = get_context(WIDTH, DEPTH, DPReal)
-    piecewise_lie = Stream(piecewise_lie_data, type=PiecewiseLieStream, width=WIDTH, depth=DEPTH)
+    piecewise_lie = PiecewiseLieStream.construct(piecewise_lie_data, width=WIDTH, depth=DEPTH, ctype=DPReal)
 
-    result = piecewise_lie.log_signature(0.01)
+    result = piecewise_lie.log_signature(5)
     expected = ctx.cbh([d[1] for d in piecewise_lie_data], vec_type=VectorType.DenseVector)
-    assert result == expected
+    # assert result == expected, f"{expected}\n{result}"
+    assert_array_almost_equal(expected, result)

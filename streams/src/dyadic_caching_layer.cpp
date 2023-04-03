@@ -62,9 +62,6 @@ algebra::Lie DyadicCachingLayer::log_signature(const intervals::DyadicInterval &
         if (!cached) {
             cached = log_signature_impl(interval, ctx);
         }
-//        std::cerr << interval << ' ';
-//        cached.print(std::cerr) << '
-';
         return cached;
     }
 
@@ -100,9 +97,6 @@ algebra::Lie DyadicCachingLayer::log_signature(const intervals::Interval &domain
     lies.reserve(dyadic_dissection.size());
     for (const auto &itvl : dyadic_dissection) {
         auto lsig = log_signature(itvl, resolution, ctx);
-        std::cerr << itvl << ' ';
-        lsig.print(std::cerr) << '
-';
         lies.push_back(lsig);
     }
 

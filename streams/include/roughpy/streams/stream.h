@@ -80,15 +80,15 @@ public:
                          resolution_t resolution,
                          const Context &ctx) const;
 
-    FreeTensor signature_derivative(Interval &domain,
+    FreeTensor signature_derivative(const Interval &domain,
                                     const Lie &perturbation) const;
-    FreeTensor signature_derivative(Interval &domain,
+    FreeTensor signature_derivative(const Interval &domain,
                                     const Lie &perturbation,
                                     const Context &ctx) const;
-    FreeTensor signature_derivative(Interval &domain,
+    FreeTensor signature_derivative(const Interval &domain,
                                     const Lie &perturbation,
                                     resolution_t resolution) const;
-    FreeTensor signature_derivative(Interval &domain,
+    FreeTensor signature_derivative(const Interval &domain,
                                     const Lie &perturbation,
                                     resolution_t resolution,
                                     const Context &ctx) const;

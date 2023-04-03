@@ -62,9 +62,6 @@ rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(const rpy::interv
 
     for (auto& ivl : dissection) {
         lies.push_back(log_signature_impl(ivl, ctx));
-        std::cerr << ivl << ' ';
-        lies.back().print(std::cerr) << '
-';
     }
 
     return ctx.cbh(lies, m_metadata.cached_vector_type);
