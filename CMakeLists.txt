@@ -68,6 +68,7 @@ if(NOT TARGET PCGRandom::pcg_random)
 endif()
 
 add_subdirectory(external/recombine)
+add_subdirectory(external/libalgebra)
 
 add_subdirectory(core)
 add_subdirectory(scalars)
@@ -75,3 +76,4 @@ add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
 add_subdirectory(roughpy)
+add_subdirectory(la_context)

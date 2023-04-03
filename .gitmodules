@@ -14,3 +14,7 @@
 [submodule "external/recombine"]
 	path = external/recombine
 	url = https://github.com/datasig-ac-uk/Recombine.git
+[submodule "external/libalgebra"]
+	path = external/libalgebra
+	url = https://github.com/terrylyons/libalgebra
+	branch = develop
