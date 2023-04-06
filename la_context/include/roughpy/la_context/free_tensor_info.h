@@ -59,10 +59,10 @@ struct algebra_info<FreeTensor, alg::free_tensor<Coeffs, Width, Depth, VType, Mu
     using basis_traits = BasisInfo<TensorBasis, basis_type>;
 
     /// Scalar type in the implementation
-    using scalar_type = typename Coeffs::scalar_type;
+    using scalar_type = typename Coeffs::S;
 
     /// Rational type, default to scalar type
-    using rational_type = typename Coeffs::rational_type;
+    using rational_type = typename Coeffs::Q;
 
     /// Reference type - currently unused
     using reference = scalar_type &;
@@ -83,7 +83,7 @@ struct algebra_info<FreeTensor, alg::free_tensor<Coeffs, Width, Depth, VType, Mu
     static constexpr VectorType vtype() noexcept { return dtl::la_vector_type_helper<VType>::vtype; }
 
     /// Get the basis for this algebra
-    static const basis_type &basis(const algebra_type &instance) noexcept { return instance.basis(); }
+    static const basis_type &basis(const algebra_type &instance) noexcept { return instance.basis; }
 
     /// Get the maximum degree of non-zero elements in this algebra
     static deg_t degree(const algebra_type &instance) noexcept { return instance.degree(); }

@@ -150,10 +150,10 @@ public:
     explicit Basis(const B *basis)
         : p_impl(new typename PrimaryInterface::template impl_t<B>(basis)) {}
 
-    template <typename B>
-    explicit Basis(const B& basis)
-        : p_impl(new typename PrimaryInterface::template impl_t<B>(basis))
-    {}
+//    template <typename B>
+//    explicit Basis(const B& basis)
+//        : p_impl(new typename PrimaryInterface::template impl_t<B>(basis))
+//    {}
 
     const basis_interface &instance() const noexcept { return *p_impl; }
 

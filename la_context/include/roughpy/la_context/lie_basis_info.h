@@ -35,7 +35,6 @@
 
 #include <libalgebra/lie_basis.h>
 
-#include <sstream>
 
 namespace rpy {
 namespace algebra {
@@ -49,7 +48,7 @@ struct BasisInfo<LieBasis, alg::lie_basis<Width, Depth>> {
     using our_key_type = typename LieBasis::key_type;
 
     /// The key type that is handled internally in the implementation
-    using impl_key_type = typename alg::lie_basis<Width, Depth>::key_type;
+    using impl_key_type = typename alg::lie_basis<Width, Depth>::KEY;
 
     /// Method of constructing a storage_t from arguments
     static storage_t construct(storage_t arg) { return arg; }
@@ -83,14 +82,12 @@ struct BasisInfo<LieBasis, alg::lie_basis<Width, Depth>> {
 
     /// Generate a string representation of the key
     static std::string key_to_string(storage_t basis, const our_key_type &key) {
-        std::stringstream ss;
-        basis->print_key(ss, convert_to_impl(basis, key));
-        return ss.str();
+        return basis->key2string(convert_to_impl(basis, key));
     }
 
     /// Get the dimension of the span of this basis
     static dimn_t dimension(storage_t basis) noexcept {
-        return basis->size(-1);
+        return basis->size();
     }
 
     /*
@@ -124,12 +121,12 @@ struct BasisInfo<LieBasis, alg::lie_basis<Width, Depth>> {
 
     /// Get the size of the alphabet that defines the basis
     static deg_t width(storage_t basis) {
-        return basis->width();
+        return Width;
     }
 
     /// Get the maximum word length for basis elements
     static deg_t depth(storage_t basis) {
-        return basis->depth();
+        return Depth;
     }
 
     /// Get the length of a key as a word
@@ -139,7 +136,7 @@ struct BasisInfo<LieBasis, alg::lie_basis<Width, Depth>> {
 
     /// Get the size of the subspace of elements with degree at most given
     static dimn_t size(storage_t basis, deg_t degree) {
-        return basis->size(degree);
+        return basis->start_of_degree(degree+1);
     }
 
     /// Get the index at which the elements of given degree start in the
@@ -151,19 +148,18 @@ struct BasisInfo<LieBasis, alg::lie_basis<Width, Depth>> {
     /// Get the parents of a key according to the basis composition
     static pair<optional<our_key_type>, optional<our_key_type>>
     parents(storage_t basis, const our_key_type &key) {
-        auto parents_pair = basis->parents(convert_to_impl(basis, key));
-        return {convert_from_impl(basis, parents_pair.first),
-                convert_from_impl(basis, parents_pair.second)};
+        return {convert_from_impl(basis, basis->lparent(key)),
+                convert_from_impl(basis, basis->rparent(key))};
     }
 
     /// Get the first letter of the key as a word
     static let_t first_letter(storage_t basis, const our_key_type &key) {
-        return basis->first_letter(convert_to_impl(basis, key));
+        return basis->getletter(convert_to_impl(basis, key));
     }
 
     /// Get the key type that represents letter
     static our_key_type key_of_letter(storage_t basis, let_t letter) {
-        return convert_from_impl(basis, basis->key_of_letter(letter));
+        return convert_from_impl(basis, basis->keyofletter(letter));
     }
 
     /// Determine whether a key represents a single letter

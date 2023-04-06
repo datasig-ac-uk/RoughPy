@@ -49,6 +49,8 @@
 #include "roughpy/scalars/scalar_stream.h"
 #include "roughpy/scalars/scalar_type.h"
 
+#include <libalgebra/libalgebra.h>
+
 #include "la_context/free_tensor_info.h"
 #include "la_context/lie_basis_info.h"
 #include "la_context/lie_info.h"
@@ -193,7 +195,7 @@ OutType LAContext<Width, Depth, Coefficients>::construct_impl(const VectorConstr
         const auto *keys = data.data.keys();
 
         for (dimn_t i = 0; i < size; ++i) {
-            result[basis->index_to_key(keys[i])] = data_ptr[i];
+            result[basis.index_to_key(keys[i])] = data_ptr[i];
         }
 
     } else {
@@ -201,7 +203,7 @@ OutType LAContext<Width, Depth, Coefficients>::construct_impl(const VectorConstr
 
         for (dimn_t i = 0; i < size; ++i) {
             // Replace this with a more efficient method once it's implemented at the lower level
-            result[basis->index_to_key(i)] = data_ptr[i];
+            result[basis.index_to_key(i)] = data_ptr[i];
         }
     }
 
@@ -255,7 +257,7 @@ LAContext<Width, Depth, Coefficients>::lie_t<VType> LAContext<Width, Depth, Coef
         throw std::invalid_argument("cannot perform conversion on algebras with different bases");
     }
 
-    return maps.template tensor_to_lie(convert_impl<VType>(arg));
+    return maps.t2l(convert_impl<VType>(arg));
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
@@ -267,7 +269,7 @@ LAContext<Width, Depth, Coefficients>::lie_t<VType> LAContext<Width, Depth, Coef
         collector.fmexp_inplace(lie_to_tensor_impl<VType>(lie));
     }
 
-    return maps.tensor_to_lie(log(collector));
+    return maps.t2l(log(collector));
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
@@ -285,7 +287,7 @@ LAContext<Width, Depth, Coefficients>::free_tensor_t<VType> LAContext<Width, Dep
         auto lie_row = construct_impl<lie_t<VType>>(row_cdata);
 
         //#if 0
-        result.fmexp_inplace(maps.lie_to_tensor(lie_row));
+        result.fmexp_inplace(maps.l2t(lie_row));
         //#endif
     }
 
@@ -364,8 +366,8 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 LAContext<Width, Depth, Coefficients>::LAContext()
     : Context(Width, Depth, scalars::ScalarType::of<scalar_type>(),
         std::string("libalgebra")),
-      m_tensor_basis(&free_tensor_t<VectorType::Dense>::basis),
-      m_lie_basis(&lie_t<VectorType::Dense>::basis)
+      m_tensor_basis(std::addressof(free_tensor_t<VectorType::Dense>::basis)),
+      m_lie_basis(std::addressof(lie_t<VectorType::Dense>::basis))
 {
 }
 

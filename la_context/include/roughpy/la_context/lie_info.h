@@ -63,10 +63,10 @@ struct algebra_info<Lie, alg::lie<Coeffs, Width, Depth, VType, Args...>> {
     using basis_traits = BasisInfo<LieBasis, basis_type>;
 
     /// Scalar type in the implementation
-    using scalar_type = typename Coeffs::scalar_type;
+    using scalar_type = typename Coeffs::S;
 
     /// Rational type, default to scalar type
-    using rational_type = typename Coeffs::rational_type;
+    using rational_type = typename Coeffs::Q;
 
     /// Reference type - currently unused
     using reference = scalar_type &;

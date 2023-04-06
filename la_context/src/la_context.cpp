@@ -31,3 +31,9 @@
 //
 
 #include "roughpy/la_context.h"
+#include "RoughPy_LAContext_contexts.h"
+
+using namespace rpy;
+using namespace rpy::algebra;
+
+RPY_ALGEBRA_DECLARE_CTX_MAKER(LAContextMaker);

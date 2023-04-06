@@ -38,6 +38,8 @@
 #include "algebra_info.h"
 #include "algebra_iterator_impl.h"
 
+#include <functional>
+
 namespace rpy {
 namespace algebra {
 
@@ -510,15 +512,18 @@ typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageMode
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::add(const algebra_t &other) const {
-    return algebra_t(Interface::context(), data() + convert_argument(other));
+    std::plus<Impl> plus;
+    return algebra_t(Interface::context(), plus(data(), convert_argument(other)));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::sub(const algebra_t &other) const {
-    return algebra_t(Interface::context(), data() - convert_argument(other));
+    std::minus<Impl> minus;
+    return algebra_t(Interface::context(), minus(data(), convert_argument(other)));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::mul(const algebra_t &other) const {
-    return algebra_t(Interface::context(), data() * static_cast<const Impl&>(convert_argument(other)));
+    std::multiplies<Impl> mul;
+    return algebra_t(Interface::context(), mul(data(), static_cast<const Impl&>(convert_argument(other))));
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::smul(const scalars::Scalar &scalar) const {
@@ -528,13 +533,31 @@ template <typename Interface, typename Impl, template <typename> class StorageMo
 typename Interface::algebra_t AlgebraImplementation<Interface, Impl, StorageModel>::sdiv(const scalars::Scalar &scalar) const {
     return algebra_t(Interface::context(), data() / scalars::scalar_cast<rational_type>(scalar));
 }
+
+namespace ADL_FORCE {
+
+template <typename T, typename S>
+void add_assign(T& left, const S& right) {
+    left += static_cast<const T&>(right);
+}
+
+template <typename T, typename S>
+void sub_assign(T& left, const S& right) {
+    left -= static_cast<const T&>(right);
+}
+
+}
+
+
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_inplace(const algebra_t &other) {
-    data() += convert_argument(other);
+    ADL_FORCE::add_assign(data(), convert_argument(other));
+//    data() += convert_argument(other);
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_inplace(const algebra_t &other) {
-    data() -= convert_argument(other);
+    ADL_FORCE::sub_assign(data(), convert_argument(other));
+//    data() -= convert_argument(other);
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::mul_inplace(const algebra_t &other) {

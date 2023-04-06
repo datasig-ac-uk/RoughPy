@@ -31,4 +31,11 @@ add_roughpy_lib(LAContext
             RoughPy::Scalars
             RoughPy::Algebra
             Libalgebra::Libalgebra
+        PVT_INCLUDE_DIR
+            include/roughpy
         )
+
+
+add_libalgebra_contexts(LAContext
+        WIDTH 2 3 4 5 6 7 8
+        CHECK_SIZE 2000000)
