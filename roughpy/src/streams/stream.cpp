@@ -85,17 +85,17 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs, const StreamMetadata
         nullptr};
 
     PyObject *interval_or_inf;
-    double sup = std::nan("ns");
     resolution_t resolution = smeta->default_resolution;
     PyObject *ctx = nullptr;
-    int depth = 0;
+    PyObject *py_sup = nullptr;
     PyObject *dtype = nullptr;
+    deg_t depth = 0;
 
     auto result = PyArg_ParseTupleAndKeywords(args, kwargs,
-                                              "|OdO&$O!iO",
+                                              "|OOO&$O!iO",
                                               const_cast<char **>(kwords),
                                               &interval_or_inf,
-                                              &sup,
+                                              &py_sup,
                                               &resolution_converter,
                                               &resolution,
                                               &python::RPyContext_Type,
@@ -112,7 +112,7 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs, const StreamMetadata
     if (interval_or_inf == nullptr) {
         // Global, nothing to do as optional default is empty.
     } else if (Py_TYPE(interval_or_inf) == &PyFloat_Type || Py_TYPE(interval_or_inf) == &PyLong_Type) {
-        if (std::isnan(sup)) {
+        if (py_sup == nullptr) {
             // In this case, we're expecting the first argument to be resolution
             if (Py_TYPE(interval_or_inf) == &PyFloat_Type) {
                 PyErr_SetString(PyExc_TypeError, "expecting integer resolution");
@@ -123,11 +123,21 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs, const StreamMetadata
             sigargs->interval = {};
         } else {
             param_t inf;
+            param_t sup;
 
             if (Py_TYPE(interval_or_inf) == &PyFloat_Type) {
                 inf = PyFloat_AsDouble(interval_or_inf);
             } else {
                 inf = PyLong_AsDouble(interval_or_inf);
+            }
+
+            if (Py_TYPE(py_sup) == &PyFloat_Type) {
+                sup = PyFloat_AsDouble(py_sup);
+            } else if (Py_TYPE(py_sup) == &PyLong_Type) {
+                sup = PyLong_AsDouble(py_sup);
+            } else {
+                PyErr_SetString(PyExc_TypeError, "expected float value for sup");
+                return -1;
             }
 
             if (inf > sup) {
@@ -137,10 +147,28 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs, const StreamMetadata
             sigargs->interval = intervals::RealInterval(inf, sup);
         }
     } else if (Py_TYPE(interval_or_inf) == (PyTypeObject *)py::type::of<intervals::RealInterval>().ptr()) {
+        if (py_sup != nullptr) {
+            if (resolution_converter(py_sup, &sigargs->resolution) == 0) {
+                return -1;
+            }
+        }
+
         sigargs->interval = py::handle(interval_or_inf).cast<const intervals::RealInterval &>();
     } else if (Py_TYPE(interval_or_inf) == (PyTypeObject *)py::type::of<intervals::DyadicInterval>().ptr()) {
+        if (py_sup != nullptr) {
+            if (resolution_converter(py_sup, &sigargs->resolution) == 0) {
+                return -1;
+            }
+        }
+
         sigargs->interval = intervals::RealInterval(py::handle(interval_or_inf).cast<const intervals::DyadicInterval &>());
     } else if (Py_TYPE(interval_or_inf) == (PyTypeObject *)py::type::of<intervals::Interval>().ptr()) {
+        if (py_sup != nullptr) {
+            if (resolution_converter(py_sup, &sigargs->resolution) == 0) {
+                return -1;
+            }
+        }
+
         sigargs->interval = intervals::RealInterval(py::handle(interval_or_inf).cast<const intervals::Interval &>());
     } else {
         PyErr_SetString(PyExc_TypeError, "unexpected type for argument interval_or_inf");
