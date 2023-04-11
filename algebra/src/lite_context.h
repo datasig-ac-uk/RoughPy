@@ -431,8 +431,8 @@ typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Co
     auto depth = ContextBase::depth();
     typename Coefficients::rational_type factor(1);
 
-    auto ad_x = t_perturbation;
-    for (deg_t d = 0; d <= depth; ++d) {
+    auto ad_x = commutator(increment, t_perturbation);
+    for (deg_t d = 1; d <= depth; ++d) {
         factor *= typename Coefficients::scalar_type(d + 1);
         if (d % 2 == 0) {
             result.add_scal_div(ad_x, factor);
