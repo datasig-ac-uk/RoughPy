@@ -171,7 +171,6 @@ def test_tpath_known_signature_calc_with_context(width, depth, t_values, known_p
         np.array(p.signature(0.0, 3.125, depth=depth)),
         np.array(expected))
 
-@pytest.mark.skip("currently unimplemented")
 def test_tick_sig_deriv_width_3_depth_1_let_2_perturb():
     p = path(np.array([[0.2, 0.4, 0.6]]), indices=np.array([0.0]), width=3, depth=1)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), width=3, depth=1)
@@ -183,7 +182,6 @@ def test_tick_sig_deriv_width_3_depth_1_let_2_perturb():
 
     assert d == expected, f"expected {expected} but got {d}"
 
-@pytest.mark.skip("current unimplemented")
 def test_tick_sig_deriv_width_3_depth_2_let_2_perturb():
     p = path(np.array([[0.2, 0.4, 0.6]]), indices=np.array([0.0]), width=3, depth=2)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), width=3, depth=2)
@@ -199,7 +197,6 @@ def test_tick_sig_deriv_width_3_depth_2_let_2_perturb():
 
     assert d == expected, f"expected {expected} but got {d}"
 
-# @pytest.mark.skip("currently unimplemented")
 def test_tick_sig_deriv_width_3_depth_2_let_2_perturb_with_context():
     p = path(np.array([[0.2, 0.4, 0.6]]), indices=np.array([0.0]), width=3, depth=2)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), width=3, depth=2)
@@ -215,7 +212,6 @@ def test_tick_sig_deriv_width_3_depth_2_let_2_perturb_with_context():
 
     assert d == expected, f"expected {expected} but got {d}"
 
-# @pytest.mark.skip("currently unimplemented")
 def test_tick_path_sig_derivative(width, depth, tick_data, tick_indices, rng):
     p = path(tick_data, indices=tick_indices, width=width, depth=depth)
 
