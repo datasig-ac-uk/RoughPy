@@ -62,7 +62,8 @@ algebra::Lie DyadicCachingLayer::log_signature(const intervals::DyadicInterval &
         if (!cached) {
             cached = log_signature_impl(interval, ctx);
         }
-        return cached;
+        // Currently, const borrowing is not permitted, so return a mutable view.
+        return cached.borrow_mut();
     }
 
     intervals::DyadicInterval lhs_itvl(interval);
