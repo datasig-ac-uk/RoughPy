@@ -377,8 +377,13 @@ static PyObject *width_getter(PyObject *self) {
     return PyLong_FromUnsignedLong(reinterpret_cast<python::RPyStream *>(self)->m_data.metadata().width);
 }
 
+static PyObject* ctx_getter(PyObject* self) {
+    return python::RPyContext_FromContext(reinterpret_cast<python::RPyStream*>(self)->m_data.metadata().default_context);
+}
+
 static PyGetSetDef RPyStream_getset[] = {
     {"width", (getter)width_getter, nullptr, nullptr, nullptr},
+    {"ctx", (getter) ctx_getter, nullptr, nullptr, nullptr},
     {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 static PyObject *RPyStream_repr(PyObject *self) {
