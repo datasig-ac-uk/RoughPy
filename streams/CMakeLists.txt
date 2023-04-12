@@ -72,4 +72,5 @@ generate_export_header(RoughPy_Streams)
 add_roughpy_test(Streams
         SRC
             src/test_lie_increment_stream.cpp
+            src/test_brownian_stream.cpp
         LINK_COMPONENT)

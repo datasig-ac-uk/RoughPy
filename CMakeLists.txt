@@ -4,7 +4,7 @@ project(RoughPy VERSION 0.0.1)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
+option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
 
 if (ROUGHPY_BUILD_TESTS)
@@ -76,4 +76,6 @@ add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
 add_subdirectory(roughpy)
-add_subdirectory(la_context)
+if(ROUGHPY_BUILD_LA_CONTEXTS)
+    add_subdirectory(la_context)
+endif()

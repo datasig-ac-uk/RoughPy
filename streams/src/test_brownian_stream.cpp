@@ -1,19 +1,19 @@
 // Copyright (c) 2023 Datasig Group. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,39 +25,62 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_STREAMS_BROWNIAN_STREAM_H_
-#define ROUGHPY_STREAMS_BROWNIAN_STREAM_H_
+//
+// Created by user on 12/04/23.
+//
 
-#include "stream_base.h"
-#include "dynamically_constructed_stream.h"
-#include <roughpy/scalars/random.h>
+#include "brownian_stream.h"
+#include <gtest/gtest.h>
 
-#include <memory>
+using namespace rpy;
 
-namespace rpy {
-namespace streams {
+using rpy::intervals::DyadicInterval;
 
-class ROUGHPY_STREAMS_EXPORT BrownianStream : public DynamicallyConstructedStream {
-    std::unique_ptr<scalars::RandomGenerator> p_generator;
-
-    algebra::Lie gaussian_increment(const algebra::Context& ctx, param_t length) const;
-protected:
-    algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
-    Lie make_new_root_increment(DyadicInterval di) const override;
-    Lie make_neighbour_root_increment(DyadicInterval neighbour_di) const override;
-    pair<Lie, Lie> compute_child_lie_increments(DyadicInterval left_di, DyadicInterval right_di, const Lie &parent_value) const override;
-
+class BrownianStreamTests : public ::testing::Test {
 public:
+    static constexpr deg_t width = 2;
+    static constexpr deg_t depth = 2;
+    static constexpr algebra::VectorType vtype = algebra::VectorType::Dense;
+    std::size_t seed = 12345;
 
-    BrownianStream(std::unique_ptr<scalars::RandomGenerator> generator, StreamMetadata md)
-        : DynamicallyConstructedStream(std::move(md)), p_generator(std::move(generator))
+    const scalars::ScalarType* ctype;
+    algebra::context_pointer ctx;
+
+
+    class BrownianHolder : public streams::BrownianStream {
+    public:
+        using streams::BrownianStream::BrownianStream;
+    };
+
+    BrownianHolder bm;
+
+
+
+
+
+
+    BrownianStreamTests()
+        : seed(12345),
+          ctype(scalars::ScalarType::of<double>()),
+          ctx(algebra::get_context(width, depth, ctype, {})),
+          bm(ctype->get_rng("pcg", seed), {width, {0.0, 1.0}, ctx, ctype, vtype, 1})
     {}
-
 
 };
 
 
-}
-}// namespace rpy
 
-#endif// ROUGHPY_STREAMS_BROWNIAN_STREAM_H_
+TEST_F(BrownianStreamTests, TestLogSignatureResolutions) {
+    DyadicInterval unit(0, 0);
+
+    auto top = bm.log_signature(unit, 1, *ctx);
+
+    DyadicInterval left(0, 1);
+    DyadicInterval right(1, 1);
+
+    auto bottom_left = bm.log_signature(left, 1, *ctx);
+    auto bottom_right = bm.log_signature(right, 1, *ctx);
+
+    EXPECT_EQ(top, ctx->cbh(bottom_left, bottom_right, vtype));
+
+}
