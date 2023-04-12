@@ -36,12 +36,25 @@ namespace rpy {
 namespace python {
 
 class FunctionStream : public streams::DynamicallyConstructedStream {
-    py::function m_fn;
+    py::object m_fn;
+
 public:
-    FunctionStream(py::function fn, streams::StreamMetadata md);
+    enum FunctionValueType {
+        Value,
+        Increment
+    };
+
+private:
+    FunctionValueType m_val_type;
+
+public:
+    FunctionStream(py::object fn, FunctionValueType val_type, streams::StreamMetadata md);
+
 
 protected:
     algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+
+    pair<Lie, Lie> compute_child_lie_increments(DyadicInterval left_di, DyadicInterval right_di, const Lie &parent_value) const override;
 };
 
 
