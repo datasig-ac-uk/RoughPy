@@ -31,6 +31,7 @@
 #include "brownian_stream.h"
 
 #include <roughpy/scalars/key_scalar_array.h>
+#include <roughpy/algebra/lie.h>
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -43,4 +44,19 @@ algebra::Lie BrownianStream::gaussian_increment(const algebra::Context& ctx, par
 
 algebra::Lie BrownianStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
     return algebra::Lie();
+}
+pair<algebra::Lie, algebra::Lie> BrownianStream::compute_child_lie_increments(DynamicallyConstructedStream::DyadicInterval left_di, DynamicallyConstructedStream::DyadicInterval right_di, const DynamicallyConstructedStream::Lie &parent_value) const {
+    const auto& md = metadata();
+    const auto mean = parent_value.smul(md.data_scalar_type->from(1, 2));
+
+    auto length = ldexp(0.5, left_di.power());
+
+    const auto perturbation = gaussian_increment(*md.default_context, length);
+    return { mean.add(perturbation), mean.sub(perturbation)};
+}
+DynamicallyConstructedStream::Lie BrownianStream::make_new_root_increment(DynamicallyConstructedStream::DyadicInterval di) const {
+   return gaussian_increment(*metadata().default_context, di.sup() - di.inf());
+}
+DynamicallyConstructedStream::Lie BrownianStream::make_neighbour_root_increment(DynamicallyConstructedStream::DyadicInterval neighbour_di) const {
+   return gaussian_increment(*metadata().default_context, neighbour_di.sup() - neighbour_di.inf());
 }

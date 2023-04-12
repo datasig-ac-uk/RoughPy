@@ -52,7 +52,7 @@ target_sources(RoughPy_Streams
             src/dyadic_caching_layer.cpp
             src/piecewise_lie_stream.cpp
             src/tick_stream.cpp
-            src/brownian_path.cpp
+            src/brownian_stream.cpp
         )
 
 
