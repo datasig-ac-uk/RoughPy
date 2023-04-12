@@ -209,3 +209,29 @@ std::vector<DyadicInterval> rpy::intervals::to_dyadic_intervals(const Interval &
 
     return {intervals.begin(), intervals.end()};
 }
+
+bool rpy::intervals::operator<(const DyadicInterval &lhs, const DyadicInterval &rhs) noexcept {
+    if (lhs.type() != rhs.type()) {
+         return false;
+    }
+
+    auto lhs_k = lhs.multiplier();
+    auto lhs_n = lhs.power();
+    auto rhs_k = rhs.multiplier();
+    auto rhs_n = rhs.power();
+
+    auto unit = lhs.unit();
+
+    if (lhs_n == rhs_n) {
+         return unit *(rhs_k - lhs_k) > 0;
+    }
+
+    if (lhs_n > rhs_n) {
+         rhs_k = Dyadic::shift(rhs_k, lhs_n - rhs_n);
+         return unit*(rhs_k - lhs_k) > 0;
+    }
+
+    lhs_k = Dyadic::shift(lhs_k, rhs_n - lhs_n);
+    return unit*(rhs_k - lhs_k) >= 0;
+
+}

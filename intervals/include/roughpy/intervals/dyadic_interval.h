@@ -107,6 +107,9 @@ std::ostream& operator<<(std::ostream& os, const DyadicInterval& di);
 ROUGHPY_INTERVALS_EXPORT
 std::vector<DyadicInterval> to_dyadic_intervals(const Interval& interval, typename Dyadic::power_t tol, IntervalType itype=IntervalType::Clopen);
 
+ROUGHPY_INTERVALS_EXPORT
+bool operator<(const DyadicInterval& lhs, const DyadicInterval& rhs) noexcept;
+
 
 }// namespace intervals
 }// namespace rpy
