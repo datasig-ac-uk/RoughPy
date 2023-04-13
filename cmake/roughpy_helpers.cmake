@@ -12,6 +12,56 @@ function(_get_component_name _out_var _component)
     set(${_out_var} ${_comp_name} PARENT_SCOPE)
 endfunction()
 
+function(add_roughpy_interface_lib _name)
+    cmake_parse_arguments(
+            ARG
+            ""
+            ""
+            "PUBLIC_DEPS;DEFINITIONS;PUBLIC_HEADERS"
+            ${ARGN}
+    )
+
+    set(_real_name "RoughPy_${_name}")
+    set(_alias_name "RoughPy::${_name}")
+    cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
+    _get_component_name(_component_name ${_component})
+
+    if (ARG_PVT_INCLUDE_DIR)
+        set(_private_include_dir ${ARG_PVT_INCLUDE_DIR})
+    else ()
+        set(_private_include_path "include/roughpy/${_component}/")
+    endif ()
+    if (NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${_private_include_path}")
+        message(FATAL_ERROR "The path ${_private_include_path} does not exist")
+    endif ()
+
+    add_library(${_real_name} INTERFACE)
+    add_library(${_alias_name} ALIAS ${_real_name})
+    message(STATUS "Adding library ${_alias_name}")
+
+    target_sources(${_real_name} INTERFACE ${ARGS_PUBLIC_HEADERS})
+
+    target_include_directories(${_real_name}
+            INTERFACE
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+            )
+
+    set_target_properties(${_real_name} PROPERTIES
+            PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
+            LINKER_LANGUAGE CXX
+            CXX_DEFAULT_VISIBILITY hidden
+            VISIBILITY_INLINES_HIDDEN ON
+            )
+
+    target_link_libraries(${_real_name}
+            PUBLIC
+            ${ARG_PUBLIC_DEPS}
+            )
+
+endfunction()
+
+
 
 function(add_roughpy_lib _name)
     cmake_parse_arguments(

@@ -43,6 +43,8 @@ class ROUGHPY_SCALARS_EXPORT ScalarArray : public ScalarPointer {
 
 protected:
     dimn_t m_size = 0;
+    bool m_owns_values = false;
+
 
 public:
 

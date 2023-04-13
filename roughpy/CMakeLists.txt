@@ -74,6 +74,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/scalars/scalars.h
         src/streams/BaseStream.cpp
         src/streams/BaseStream.h
+        src/streams/brownian_stream.cpp
+        src/streams/brownian_stream.h
         src/streams/function_stream.cpp
         src/streams/function_stream.h
         src/streams/lie_increment_stream.h

@@ -173,6 +173,28 @@ context_pointer get_context(deg_t width, deg_t depth, const scalars::ScalarType 
 
 
 
+inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2) {
+    if (&ctx1 == &ctx2) {
+        // Early exit if both reference the same object.
+        return;
+    }
+
+    if (ctx1.width() != ctx2.width()) {
+        throw std::invalid_argument("contexts have incompatible width");
+    }
+
+    const auto* ctype1 = ctx1.ctype();
+    const auto* ctype2 = ctx2.ctype();
+    if (ctype1 == ctype2) {
+        // Both are OK if the ctypes are identical
+        return;
+    }
+
+    // TODO: Check that ctypes are actually same type but potentially different locations
+    // TODO: Alternatively, check that ctype1 is convertible to ctype2
+}
+
+
 class ROUGHPY_ALGEBRA_EXPORT ContextMaker {
 public:
     using preference_list = std::vector<std::pair<std::string, std::string>>;

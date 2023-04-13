@@ -35,7 +35,7 @@
 namespace rpy {
 namespace python {
 
-class FunctionStream : public streams::DynamicallyConstructedStream {
+class RPY_NO_EXPORT FunctionStream : public streams::DynamicallyConstructedStream {
     py::object m_fn;
 
 public:

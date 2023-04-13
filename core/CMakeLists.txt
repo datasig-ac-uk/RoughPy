@@ -7,18 +7,11 @@ project(RoughPy_Core
 
 include(GNUInstallDirs)
 
-add_library(RoughPy_Core INTERFACE)
-add_library(RoughPy::Core ALIAS RoughPy_Core)
-
-target_sources(RoughPy_Core INTERFACE
+add_roughpy_interface_lib(Core
+    PUBLIC_HEADERS
         include/roughpy/core/implementation_types.h
         include/roughpy/core/traits.h
         include/roughpy/core/macros.h
         include/roughpy/core/helpers.h
-        include/roughpy/core/slice.h)
-
-
-target_include_directories(RoughPy_Core INTERFACE
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+        include/roughpy/core/slice.h
         )

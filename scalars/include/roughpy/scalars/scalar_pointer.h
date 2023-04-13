@@ -45,7 +45,7 @@ namespace dtl {
 
 class ScalarPointer {
 public:
-    enum Constness {
+    enum Constness : uint32_t {
         IsConst,
         IsMutable
     };
@@ -53,8 +53,11 @@ public:
 protected:
     const ScalarType *p_type = nullptr;
     const void *p_data = nullptr;
+//    uint32_t m_flags;
+
 
     Constness m_constness = IsMutable;
+
 
 public:
 

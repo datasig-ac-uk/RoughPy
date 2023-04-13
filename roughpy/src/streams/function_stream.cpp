@@ -44,7 +44,7 @@ static const char* FUNC_STREAM_DOC = R"rpydoc(A stream generated dynamically by 
 python::FunctionStream::FunctionStream(py::object fn,
                                        python::FunctionStream::FunctionValueType val_type,
                                       streams::StreamMetadata md)
-    : DynamicallyConstructedStream(std::move(md)), m_fn(fn), m_val_type(val_type)
+    : DynamicallyConstructedStream(std::move(md)), m_fn(std::move(fn)), m_val_type(val_type)
 {
 
 }
@@ -78,6 +78,7 @@ static py::object from_function(py::object fn, py::kwargs kwargs) {
         pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type, {});
     }
 
+    // TODO: Fix this up properly.
 
     streams::StreamMetadata md {
         pmd.width,
