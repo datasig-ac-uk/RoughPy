@@ -68,7 +68,9 @@ class StandardScalarType : public ScalarType {
 
 public:
     explicit StandardScalarType(std::string id, std::string name)
-        : ScalarType({{2U, sizeof_bits<ScalarImpl>(), 1U},
+        : ScalarType({{ScalarTypeCode::Float,
+                       sizeof_bits<ScalarImpl>(),
+                       1U},
                       {ScalarDeviceType::CPU, 0},
                       std::move(name),
                       std::move(id),

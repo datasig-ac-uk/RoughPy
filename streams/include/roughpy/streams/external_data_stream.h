@@ -4,6 +4,8 @@
 #include "stream_base.h"
 
 #include <roughpy/core/traits.h>
+#include <roughpy/platform.h>
+#include "stream.h"
 
 #include <memory>
 
@@ -16,10 +18,20 @@ public:
 
     virtual ~ExternalDataStreamSource();
 
-    virtual scalars::KeyScalarArray query(const intervals::Interval& interval, const scalars::ScalarType* ctype) = 0;
+    virtual dimn_t query(scalars::KeyScalarArray& result, const intervals::Interval& interval) = 0;
 
 };
 
+class ROUGHPY_STREAMS_EXPORT ExternalDataSourceFactory {
+
+public:
+    virtual ~ExternalDataSourceFactory();
+
+
+    virtual bool supports(const url& uri) const;
+    virtual Stream construct_stream(const url& uri, StreamMetadata md) const = 0;
+
+};
 
 class ROUGHPY_STREAMS_EXPORT ExternalDataStream : public StreamInterface {
     std::unique_ptr<ExternalDataStreamSource> p_source;
@@ -28,11 +40,26 @@ public:
     template <typename Source, typename=traits::enable_if_t<traits::is_base_of<ExternalDataStreamSource, Source>::value>>
     explicit ExternalDataStream(Source &&src, StreamMetadata md)
         : StreamInterface(std::move(md)),
-          p_source(new Source(std::move(src)))
+          p_source(new Source(std::forward<Source>(src)))
     {}
+
+    static void register_factory(std::unique_ptr<const ExternalDataSourceFactory>&& factory);
+    static const ExternalDataSourceFactory* get_factory_for(const url& uri);
 
 protected:
     algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+};
+
+
+template <typename Source>
+class RegisterExternalDataSourceFactoryHelper {
+public:
+
+    template <typename... Args>
+    RegisterExternalDataSourceFactoryHelper(Args&&... args) {
+        ExternalDataStream::register_factory(
+            std::unique_ptr<const ExternalDataSourceFactory>(new Source(std::forward<Args>(args)...)));
+    }
 };
 
 

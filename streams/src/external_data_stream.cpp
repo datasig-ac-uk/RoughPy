@@ -32,13 +32,60 @@
 
 #include "external_data_stream.h"
 
-using namespace rpy;
-algebra::Lie streams::ExternalDataStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
+#include <vector>
+#include <memory>
+#include <mutex>
 
-    const algebra::VectorConstructionData data {
-        p_source->query(interval, ctx.ctype()),
+using namespace rpy;
+
+
+streams::ExternalDataStreamSource::~ExternalDataStreamSource() = default;
+
+streams::ExternalDataSourceFactory::~ExternalDataSourceFactory() = default;
+
+bool streams::ExternalDataSourceFactory::supports(const url &uri) const {
+    return false;
+}
+
+algebra::Lie streams::ExternalDataStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
+    scalars::KeyScalarArray buffer(ctx.ctype());
+    auto num_increments = p_source->query(buffer, interval);
+
+    algebra::SignatureData tmp {
+        scalars::ScalarStream(ctx.ctype()),
+        std::vector<const key_type*>(),
         metadata().cached_vector_type
     };
 
-    return ctx.construct_lie(data);
+    tmp.data_stream.reserve_size(num_increments);
+    const auto width = static_cast<dimn_t>(metadata().width);
+
+    scalars::ScalarPointer buf_ptr(buffer);
+    for (dimn_t i=0; i<num_increments; ++i) {
+        tmp.data_stream.push_back({buf_ptr, width});
+        buf_ptr += width;
+    }
+
+    return ctx.log_signature(tmp);
+}
+
+
+static std::mutex s_factory_guard;
+static std::vector<std::unique_ptr<const streams::ExternalDataSourceFactory>> s_factory_list;
+
+
+void streams::ExternalDataStream::register_factory(std::unique_ptr<const ExternalDataSourceFactory> &&factory) {
+    std::lock_guard<std::mutex> access(s_factory_guard);
+    s_factory_list.push_back(std::move(factory));
+}
+const streams::ExternalDataSourceFactory * streams::ExternalDataStream::get_factory_for(const url& uri) {
+    std::lock_guard<std::mutex> access(s_factory_guard);
+
+    for (auto it=s_factory_list.rbegin(); it != s_factory_list.rend(); ++it) {
+        if ((*it)->supports(uri)) {
+            return it->get();
+        }
+    }
+
+    return nullptr;
 }

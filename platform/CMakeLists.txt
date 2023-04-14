@@ -7,8 +7,12 @@ add_roughpy_lib(Platform
     SOURCES
         src/tmp.cpp
     PUBLIC_HEADERS
+        include/roughpy/platform.h
         include/roughpy/platform/filesystem.h
     PUBLIC_DEPS
+        RoughPy::Core
         Boost::boost
         Boost::filesystem
+        Boost::url
+        Boost::disable_autolinking
     )

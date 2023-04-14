@@ -112,7 +112,7 @@ struct ScalarDeviceInfo {
  * DLPack array interchange protocol.
  */
 struct BasicScalarInfo {
-    std::uint8_t code;
+    ScalarTypeCode code;
     std::uint8_t bits;
     std::uint16_t lanes;
 };

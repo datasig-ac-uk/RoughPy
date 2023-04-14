@@ -72,7 +72,7 @@ add_subdirectory(external/libalgebra)
 
 
 
-find_package(Boost CONFIG REQUIRED COMPONENTS headers filesystem)
+find_package(Boost REQUIRED COMPONENTS headers filesystem url)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 
