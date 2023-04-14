@@ -70,18 +70,15 @@ endif()
 add_subdirectory(external/recombine)
 add_subdirectory(external/libalgebra)
 
-include(FetchContent)
-FetchContent_Declare(Eigen3
-    URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
-    OVERRIDE_FIND_PACKAGE
-    DOWNLOAD_EXTRACT_TIMESTAMP ON
-    SOURCE_SUBDIR OFF
-)
+
+
+find_package(Boost CONFIG REQUIRED COMPONENTS headers filesystem)
 find_package(Eigen3 CONFIG REQUIRED)
-find_package(SndFile REQUIRED)
+find_package(SndFile CONFIG REQUIRED)
 
 
 add_subdirectory(core)
+add_subdirectory(platform)
 add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)

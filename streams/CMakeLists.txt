@@ -21,6 +21,9 @@ add_roughpy_lib(Streams
         src/piecewise_lie_stream.cpp
         src/tick_stream.cpp
         src/brownian_stream.cpp
+        src/external_data_stream.cpp
+        src/external_data_sources/sound_file_data_source.cpp
+        src/external_data_sources/sound_file_data_source.h
     PUBLIC_HEADERS
         include/roughpy/streams/dyadic_caching_layer.h
         include/roughpy/streams/dynamically_constructed_stream.h
@@ -32,10 +35,11 @@ add_roughpy_lib(Streams
         include/roughpy/streams/external_data_stream.h
     PUBLIC_DEPS
         RoughPy::Core
+        RoughPy::Platform
         RoughPy::Intervals
         RoughPy::Scalars
         RoughPy::Algebra
-
+        SndFile::sndfile
         )
 
 
