@@ -43,4 +43,20 @@ Similarly, the signature can be computed using the `signature` method on the str
 ```python
 sig = stream.signature(interval)
 ```
-Notice that the `lsig` and `sig` objects have types `Lie` and `FreeTensor`, respectively. They behave exactly as you would expect elements of these algebras to behave.
+Notice that the `lsig` and `sig` objects have types `Lie` and `FreeTensor`, respectively. They behave exactly as you would expect elements of these algebras to behave. Moreover, they will (usually) be convertible directly to a NumPy array (or TensorFlow, PyTorch, JAX tensor type in the future) of the underlying data, so you can interact with them as if they were simple arrays.
+
+
+
+## Support
+If you have a specific problem, the best way to record this is to open an issue on GitHub. We welcome any feedback or bug reports.
+
+## Contributing 
+In the future, we will welcome pull requests to implement new features, fix bugs, add documentation or examples, or add tests to the project.
+However, at present, we do not have robust CI pipelines set up to rigorously test incoming changes, and therefor will not be accepting pull requests made from outside the current team.
+
+
+## Contributors
+The full list of contributors is listed in `THANKS` alongside this readme. The people mentioned in this document constitute `The RoughPy Developers`.
+
+## License
+RoughPy is licensed under a BSD-3-Clause license. This was chosen specifically to match the license of NumPy.
