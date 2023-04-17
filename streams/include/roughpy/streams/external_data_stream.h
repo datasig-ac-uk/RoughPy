@@ -7,6 +7,8 @@
 #include <roughpy/platform.h>
 #include "stream.h"
 
+#include <boost/any.hpp>
+
 #include <memory>
 
 namespace rpy { namespace streams {
@@ -22,16 +24,68 @@ public:
 
 };
 
+class ExternalDataStreamConstructor;
+
 class ROUGHPY_STREAMS_EXPORT ExternalDataSourceFactory {
 
 public:
+
+    virtual void destroy_payload(void*& payload) const;
+
     virtual ~ExternalDataSourceFactory();
 
+    virtual void set_width(void* payload, deg_t width) const;
+    virtual void set_depth(void* payload, deg_t depth) const;
+    virtual void set_ctype(void* payload, const scalars::ScalarType *ctype) const;
+    virtual void set_context(void* payload, algebra::context_pointer ctx) const;
+    virtual void set_support(void* payload, intervals::RealInterval support) const;
+    virtual void set_vtype(void* payload, algebra::VectorType vtype) const;
+    virtual void set_resolution(void* payload, resolution_t resolution) const;
 
-    virtual bool supports(const url& uri) const;
-    virtual Stream construct_stream(const url& uri, StreamMetadata md) const = 0;
+    virtual void add_option(void *payload, const std::string& option, boost::any value) const;
+
+    virtual ExternalDataStreamConstructor get_constructor(const url& uri) const = 0;
+    virtual Stream construct_stream(void * payload) const = 0;
 
 };
+
+class ROUGHPY_STREAMS_EXPORT ExternalDataStreamConstructor {
+    const ExternalDataSourceFactory* p_factory = nullptr;
+    void* p_payload = nullptr;
+
+public:
+
+    ExternalDataStreamConstructor() = default;
+
+    ExternalDataStreamConstructor(const ExternalDataStreamConstructor& other) = delete;
+    ExternalDataStreamConstructor(ExternalDataStreamConstructor&& other) noexcept;
+
+
+    ExternalDataStreamConstructor(const ExternalDataSourceFactory* factory, void* payload);
+    ~ExternalDataStreamConstructor();
+
+    ExternalDataStreamConstructor& operator=(const ExternalDataStreamConstructor& other) = delete;
+    ExternalDataStreamConstructor& operator=(ExternalDataStreamConstructor&& other) noexcept;
+
+    void set_width(deg_t width);
+    void set_depth(deg_t depth);
+    void set_ctype(const scalars::ScalarType* ctype);
+    void set_context(algebra::context_pointer ctx);
+    void set_support(intervals::RealInterval support);
+    void set_vtype(algebra::VectorType vtype);
+    void set_resolution(resolution_t resolution);
+
+    void add_option(const std::string& option, const void* value);
+
+
+    Stream construct();
+
+    operator bool () const noexcept { return p_factory != nullptr; }
+
+
+};
+
+
 
 class ROUGHPY_STREAMS_EXPORT ExternalDataStream : public StreamInterface {
     std::unique_ptr<ExternalDataStreamSource> p_source;
@@ -44,7 +98,7 @@ public:
     {}
 
     static void register_factory(std::unique_ptr<const ExternalDataSourceFactory>&& factory);
-    static const ExternalDataSourceFactory* get_factory_for(const url& uri);
+    static ExternalDataStreamConstructor get_factory_for(const url& uri);
 
 protected:
     algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;

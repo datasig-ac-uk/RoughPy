@@ -28,24 +28,53 @@ static const char* EXTERNALLY_SOURCED_STREAM_DOC = R"rpydoc(A stream that acquir
 static py::object external_stream_constructor(std::string uri_string, const py::kwargs& kwargs) {
     const auto pmd = python::kwargs_to_metadata(kwargs);
 
-    url uri(uri_string);
+    auto uri_result = parse_uri_reference(uri_string);
 
-    const auto* factory = streams::ExternalDataStream::get_factory_for(uri);
+    if (!uri_result) {
+        throw py::value_error("could not parse uri");
+    }
 
-    if (factory == nullptr) {
+    auto uri = uri_result.value();
+
+    auto factory = streams::ExternalDataStream::get_factory_for(uri);
+
+    if (!factory) {
         throw py::value_error("The uri " + uri_string + " is not supported");
     }
 
-    StreamMetadata md {
-        pmd.width,
-        pmd.support,
-        pmd.ctx,
-        pmd.scalar_type,
-        pmd.vector_type,
-        pmd.resolution
-    };
+//    factory.add_metadata({
+//        pmd.width,
+//        pmd.support,
+//        pmd.ctx,
+//        pmd.scalar_type,
+//        pmd.vector_type,
+//        pmd.resolution
+//    });
 
-    PyObject* py_stream = python::RPyStream_FromStream(factory->construct_stream(uri, std::move(md)));
+    if (pmd.width != 0) {
+        factory.set_width(pmd.width);
+    }
+    if (pmd.depth != 0) {
+        factory.set_depth(pmd.depth);
+    }
+    if (pmd.scalar_type != nullptr) {
+        factory.set_ctype(pmd.scalar_type);
+    }
+    if (pmd.ctx) {
+        factory.set_context(pmd.ctx);
+    }
+    if (pmd.resolution != 0) {
+        factory.set_resolution(pmd.resolution);
+    }
+    if (pmd.support) {
+        factory.set_support(*pmd.support);
+    }
+    if (pmd.vector_type) {
+        factory.set_vtype(*pmd.vector_type);
+    }
+
+
+    PyObject* py_stream = python::RPyStream_FromStream(factory.construct());
 
     return py::reinterpret_steal<py::object>(py_stream);
 }

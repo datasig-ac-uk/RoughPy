@@ -82,10 +82,10 @@ static py::object from_function(py::object fn, py::kwargs kwargs) {
 
     streams::StreamMetadata md {
         pmd.width,
-        pmd.support,
+        pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
         pmd.ctx,
         pmd.scalar_type,
-        pmd.vector_type,
+        pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
         pmd.resolution
     };
 

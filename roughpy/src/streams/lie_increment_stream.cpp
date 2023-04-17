@@ -148,10 +148,10 @@ static py::object lie_increment_stream_from_increments(const py::object& data, c
             indices,
             {
                 md.width,
-                md.support,
+                md.support ? *md.support : intervals::RealInterval(0, 1),
                 md.ctx,
                 md.scalar_type,
-                md.vector_type,
+                md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
                 md.resolution
             }));
 

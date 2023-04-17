@@ -1,0 +1,36 @@
+{
+  "name" : "roughpy",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "4f9d25a7f299db656c376af402637819ee2caba0",
+  "dependencies" : [ {
+    "name" : "libsndfile",
+    "version>=" : "1.2.0"
+  }, {
+    "name" : "eigen3",
+    "version>=" : "3.4.0#2"
+  }, {
+    "name" : "boost-align",
+    "version>=" : "1.81.0#2"
+  }, {
+    "name" : "boost-container",
+    "version>=" : "1.81.0#2"
+  }, {
+    "name" : "boost-core",
+    "version>=" : "1.81.0#2"
+  }, {
+    "name" : "boost-filesystem",
+    "version>=" : "1.81.0#2"
+  }, {
+    "name" : "boost-url",
+    "version>=" : "1.81.0#2"
+  }, {
+    "name" : "boost-serialization",
+    "version>=" : "1.81.0#2"
+  }, {
+    "name" : "boost-multiprecision",
+    "version>=" : "1.81.0#2"
+  }, {
+    "name" : "boost-type-traits",
+    "version>=" : "1.81.0#2"
+  } ]
+}

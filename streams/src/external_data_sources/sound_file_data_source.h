@@ -67,7 +67,8 @@ class SoundFileDataSource : public ExternalDataStreamSource {
 
 public:
 
-    SoundFileDataSource(const url& uri);
+    explicit SoundFileDataSource(const url& uri);
+    explicit SoundFileDataSource(SndfileHandle&& handle);
 
     dimn_t query(scalars::KeyScalarArray& result, const intervals::Interval &interval) override;
 };
@@ -76,8 +77,16 @@ public:
 class SoundFileDataSourceFactory : public ExternalDataSourceFactory {
 
 public:
-    bool supports(const url &uri) const override;
-    Stream construct_stream(const url &uri, StreamMetadata md) const override;
+    void set_width(void *payload, deg_t width) const override;
+    void set_depth(void *payload, deg_t depth) const override;
+    void set_ctype(void *payload, const scalars::ScalarType *ctype) const override;
+    void set_context(void *payload, algebra::context_pointer ctx) const override;
+    void set_support(void *payload, intervals::RealInterval support) const override;
+    void set_vtype(void *payload, algebra::VectorType vtype) const override;
+    void set_resolution(void *payload, resolution_t resolution) const override;
+    void destroy_payload(void *& payload) const override;
+    ExternalDataStreamConstructor get_constructor(const url &uri) const override;
+    Stream construct_stream(void *payload) const override;
 };
 
 

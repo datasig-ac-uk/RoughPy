@@ -69,10 +69,10 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs) {
             pmd.resolution,
             {
                 pmd.width,
-                pmd.support,
+                pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
                 pmd.ctx,
                 pmd.scalar_type,
-                pmd.vector_type,
+                pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
                 pmd.resolution
             }
             )

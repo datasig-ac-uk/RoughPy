@@ -70,11 +70,19 @@ endif()
 add_subdirectory(external/recombine)
 add_subdirectory(external/libalgebra)
 
+# The Cmake setup for rapidcsv leaves much to be desired.
+# instead I'm going to define the target myself
+if (NOT TARGET RapidCSV::rapidcsv)
+    add_library(RapidCSV::rapidcsv IMPORTED INTERFACE)
+    target_include_directories(RapidCSV::rapidcsv INTERFACE
+            external/rapidcsv/src)
+endif()
 
 
-find_package(Boost REQUIRED COMPONENTS headers filesystem url)
+find_package(Boost 1.81 REQUIRED COMPONENTS filesystem url)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
+find_package(CURL REQUIRED)
 
 
 add_subdirectory(core)

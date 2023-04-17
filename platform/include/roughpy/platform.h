@@ -8,11 +8,16 @@
 #include <roughpy/core/helpers.h>
 
 #include <boost/url.hpp>
+#include <boost/url/parse.hpp>
 
 namespace rpy {
 
 using boost::url;
 using boost::url_view;
+
+using boost::urls::parse_uri;
+using boost::urls::parse_uri_reference;
+using URIScheme = boost::urls::scheme;
 
 
 }

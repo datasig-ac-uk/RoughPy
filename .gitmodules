@@ -21,3 +21,6 @@
 [submodule "external/libsndfile"]
 	path = external/libsndfile
 	url = https://github.com/libsndfile/libsndfile
+[submodule "external/rapidcsv"]
+	path = external/rapidcsv
+	url = https://github.com/d99kris/rapidcsv

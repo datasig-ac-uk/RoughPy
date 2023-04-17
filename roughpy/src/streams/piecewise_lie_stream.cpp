@@ -77,10 +77,10 @@ static py::object construct_piecewise_lie_stream(
             std::move(lies),
             {
                 pmd.width,
-                pmd.support,
+                pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
                 pmd.ctx,
                 pmd.scalar_type,
-                pmd.vector_type,
+                pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
                 pmd.resolution
             }
             )

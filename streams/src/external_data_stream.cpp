@@ -43,9 +43,6 @@ streams::ExternalDataStreamSource::~ExternalDataStreamSource() = default;
 
 streams::ExternalDataSourceFactory::~ExternalDataSourceFactory() = default;
 
-bool streams::ExternalDataSourceFactory::supports(const url &uri) const {
-    return false;
-}
 
 algebra::Lie streams::ExternalDataStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
     scalars::KeyScalarArray buffer(ctx.ctype());
@@ -78,14 +75,98 @@ void streams::ExternalDataStream::register_factory(std::unique_ptr<const Externa
     std::lock_guard<std::mutex> access(s_factory_guard);
     s_factory_list.push_back(std::move(factory));
 }
-const streams::ExternalDataSourceFactory * streams::ExternalDataStream::get_factory_for(const url& uri) {
+streams::ExternalDataStreamConstructor streams::ExternalDataStream::get_factory_for(const url& uri) {
     std::lock_guard<std::mutex> access(s_factory_guard);
 
+    ExternalDataStreamConstructor ctor;
     for (auto it=s_factory_list.rbegin(); it != s_factory_list.rend(); ++it) {
-        if ((*it)->supports(uri)) {
-            return it->get();
+        ctor = (*it)->get_constructor(uri);
+        if (ctor) {
+            return ctor;
         }
     }
 
-    return nullptr;
+    return ctor;
+}
+
+void streams::ExternalDataSourceFactory::destroy_payload(void *&payload) const {
+    assert(payload == nullptr);
+}
+
+void streams::ExternalDataSourceFactory::set_width(void *payload, deg_t width) const {
+}
+void streams::ExternalDataSourceFactory::set_depth(void *payload, deg_t depth) const {
+}
+void streams::ExternalDataSourceFactory::set_ctype(void *payload, const scalars::ScalarType *ctype) const {
+}
+void streams::ExternalDataSourceFactory::set_context(void *payload, algebra::context_pointer ctx) const {
+}
+void streams::ExternalDataSourceFactory::set_support(void *payload, intervals::RealInterval support) const {
+}
+void streams::ExternalDataSourceFactory::set_vtype(void *payload, algebra::VectorType vtype) const {
+}
+void streams::ExternalDataSourceFactory::set_resolution(void *payload, resolution_t resolution) const {
+}
+
+void streams::ExternalDataSourceFactory::add_option(void *payload, const std::string &option, boost::any value) const {
+}
+
+streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(const streams::ExternalDataSourceFactory *factory, void *payload)
+    : p_factory(factory), p_payload(payload)
+{
+    assert(p_factory != nullptr && p_payload != nullptr);
+}
+
+streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(streams::ExternalDataStreamConstructor &&other) noexcept
+    : p_factory(other.p_factory), p_payload(other.p_payload)
+{
+    other.p_factory = nullptr;
+    other.p_payload = nullptr;
+}
+
+streams::ExternalDataStreamConstructor::~ExternalDataStreamConstructor() {
+    if (p_factory != nullptr && p_payload != nullptr) {
+        p_factory->destroy_payload(p_payload);
+    }
+}
+streams::ExternalDataStreamConstructor &streams::ExternalDataStreamConstructor::operator=(streams::ExternalDataStreamConstructor &&other) noexcept {
+    if (this != &other) {
+        this->~ExternalDataStreamConstructor();
+        p_factory = other.p_factory;
+        p_payload = other.p_payload;
+        other.p_payload = nullptr;
+        other.p_factory = nullptr;
+    }
+    return *this;
+}
+
+void streams::ExternalDataStreamConstructor::set_width(deg_t width) {
+    p_factory->set_width(p_payload, width);
+}
+void streams::ExternalDataStreamConstructor::set_depth(deg_t depth) {
+    p_factory->set_depth(p_payload, depth);
+}
+void streams::ExternalDataStreamConstructor::set_ctype(const scalars::ScalarType *ctype) {
+    p_factory->set_ctype(p_payload, ctype);
+}
+void streams::ExternalDataStreamConstructor::set_context(algebra::context_pointer ctx) {
+    p_factory->set_context(p_payload, std::move(ctx));
+}
+void streams::ExternalDataStreamConstructor::set_support(intervals::RealInterval support) {
+    p_factory->set_support(p_payload, std::move(support));
+}
+void streams::ExternalDataStreamConstructor::set_vtype(algebra::VectorType vtype) {
+    p_factory->set_vtype(p_payload, vtype);
+}
+void streams::ExternalDataStreamConstructor::set_resolution(resolution_t resolution) {
+    p_factory->set_resolution(p_payload, resolution);
+}
+
+void streams::ExternalDataStreamConstructor::add_option(const std::string &option, const void* value) {
+    p_factory->add_option(p_payload, option, value);
+}
+streams::Stream streams::ExternalDataStreamConstructor::construct() {
+    auto* payload = p_payload;
+    p_payload = nullptr;
+    return p_factory->construct_stream(payload);
 }

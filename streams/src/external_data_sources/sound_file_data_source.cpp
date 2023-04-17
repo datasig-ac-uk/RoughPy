@@ -95,6 +95,11 @@ SoundFileDataSource::SoundFileDataSource(const url &uri)
 {
 }
 
+SoundFileDataSource::SoundFileDataSource(SndfileHandle &&handle)
+    : m_handle(std::move(handle))
+{
+}
+
 dimn_t SoundFileDataSource::query(scalars::KeyScalarArray &result,
                                 const intervals::Interval &interval) {
     const auto *ctype = result.type();
@@ -142,24 +147,154 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray &result,
 
     return static_cast<dimn_t>(frame_count);
 }
-Stream SoundFileDataSourceFactory::construct_stream(const url &uri, StreamMetadata md) const {
-    return Stream(ExternalDataStream(SoundFileDataSource(uri), std::move(md)));
+
+namespace {
+
+struct Payload {
+    SndfileHandle handle;
+    optional<deg_t> width;
+    optional<deg_t> depth;
+    const scalars::ScalarType* ctype;
+    algebra::context_pointer ctx;
+    optional<intervals::RealInterval> support;
+    optional<algebra::VectorType> vtype;
+    optional<resolution_t> resolution;
+};
+
 }
-bool SoundFileDataSourceFactory::supports(const url &uri) const {
-    if (uri.has_scheme() && uri.scheme() == "file") {
-        fs::path path(uri.path());
+
+static RegisterExternalDataSourceFactoryHelper<SoundFileDataSourceFactory> s_register_helper;
+ExternalDataStreamConstructor SoundFileDataSourceFactory::get_constructor(const url &uri) const {
+    ExternalDataStreamConstructor ctor;
+    if (!uri.has_scheme() || uri.scheme_id() == URIScheme::file) {
+        const fs::path path(uri.path());
 
         if (exists(path) && is_regular_file(path)) {
-            SndfileHandle sf(path.c_str());
-            if (sf.error() == 0) {
-                return true;
+
+            auto* payload = new Payload {
+                SndfileHandle(uri.path())
+            };
+
+            if (payload->handle.error() != 0) {
+                delete payload;
+                return ctor;
             }
+
+            ctor = ExternalDataStreamConstructor(this, payload);
         }
     }
 
-    return false;
+
+    return ctor;
+}
+Stream SoundFileDataSourceFactory::construct_stream(void *payload) const {
+    auto* pl = reinterpret_cast<Payload*>(payload);
+
+
+    StreamMetadata meta {
+        0,
+        intervals::RealInterval(0, 1),
+        nullptr,
+        nullptr,
+        algebra::VectorType::Dense,
+        10
+    };
+
+    if (pl->width) {
+        auto width = *pl->width;
+        if (width != pl->handle.channels()) {
+            throw std::invalid_argument("requested width does not match number of channels");
+        }
+        meta.width = width;
+    }
+    else {
+        meta.width = static_cast<deg_t>(pl->handle.channels());
+    }
+
+    if (pl->ctype != nullptr) {
+        meta.data_scalar_type = pl->ctype;
+    }
+    else {
+        switch (pl->handle.format() & SF_FORMAT_SUBMASK) {
+            case SF_FORMAT_PCM_S8:
+                meta.data_scalar_type = scalars::ScalarType::for_id("i8");
+                break;
+            case SF_FORMAT_PCM_16:
+                meta.data_scalar_type = scalars::ScalarType::for_id("i16");
+                break;
+            case SF_FORMAT_PCM_32:
+                meta.data_scalar_type = scalars::ScalarType::for_id("i32");
+                break;
+            case SF_FORMAT_FLOAT:
+                meta.data_scalar_type = scalars::ScalarType::of<float>();
+                break;
+            default:
+            case SF_FORMAT_DOUBLE:
+                meta.data_scalar_type = scalars::ScalarType::of<double>();
+                break;
+        }
+    }
+
+    if (pl->ctx != nullptr) {
+        // The width check should have already caught a mismatch between
+        // width and channels
+        meta.default_context = pl->ctx;
+    }
+    else {
+        if (meta.width != 0 && pl->depth && meta.data_scalar_type != nullptr) {
+            meta.default_context = algebra::get_context(meta.width, *pl->depth, meta.data_scalar_type, {});
+        }
+        else {
+            throw std::invalid_argument("insufficient information to get context");
+        }
+    }
+
+    if (pl->vtype) {
+        meta.cached_vector_type = *pl->vtype;
+    }
+    if (pl->resolution) {
+        meta.default_resolution = *pl->resolution;
+    }
+
+    if (pl->support) {
+        meta.effective_support = *pl->support;
+    }
+    else {
+        auto length = static_cast<param_t>(pl->handle.frames()) / pl->handle.samplerate();
+        meta.effective_support = intervals::RealInterval(0.0, length);
+    }
+
+
+    ExternalDataStream inner(SoundFileDataSource(std::move(pl->handle)), std::move(meta));
+
+    destroy_payload(payload);
+
+    return Stream(std::move(inner));
 }
 
+void SoundFileDataSourceFactory::destroy_payload(void *& payload) const {
+    delete reinterpret_cast<Payload*>(payload);
+    payload = nullptr;
+}
 
-
-static RegisterExternalDataSourceFactoryHelper<SoundFileDataSourceFactory> s_register_helper;
+void SoundFileDataSourceFactory::set_width(void *payload, deg_t width) const {
+    reinterpret_cast<Payload*>(payload)->width = width;
+}
+void SoundFileDataSourceFactory::set_depth(void *payload, deg_t depth) const {
+    reinterpret_cast<Payload*>(payload)->depth = depth;
+}
+void SoundFileDataSourceFactory::set_ctype(void *payload, const scalars::ScalarType *ctype) const {
+    reinterpret_cast<Payload *>(payload)->ctype = ctype;
+}
+void SoundFileDataSourceFactory::set_context(void *payload, algebra::context_pointer ctx) const {
+    reinterpret_cast<Payload*>(payload)->ctx = std::move(ctx);
+}
+void SoundFileDataSourceFactory::set_support(void *payload, intervals::RealInterval support) const {
+    reinterpret_cast<Payload*>(payload)->support = support;
+}
+void SoundFileDataSourceFactory::set_vtype(void *payload, algebra::VectorType vtype) const {
+    reinterpret_cast<Payload*>(payload)->vtype = vtype;
+}
+void SoundFileDataSourceFactory::set_resolution(void *payload, resolution_t resolution) const {
+    reinterpret_cast<Payload*>(payload)->resolution = resolution;
+}
