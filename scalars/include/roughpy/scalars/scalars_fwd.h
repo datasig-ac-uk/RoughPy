@@ -124,8 +124,8 @@ struct BasicScalarInfo {
 struct ScalarTypeInfo {
     BasicScalarInfo basic_info;
     ScalarDeviceInfo device;
-    std::string name;
-    std::string id;
+    string name;
+    string id;
     std::size_t n_bytes;
     std::size_t alignment;
 };
@@ -147,7 +147,7 @@ class ScalarStream;
 class RandomGenerator;
 
 template <typename T>
-inline traits::remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
+inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
 
 } // namespace scalars
 } // namespace rpy

@@ -53,7 +53,7 @@ struct type_id_of_impl;
 }
 
 template <typename T>
-inline const std::string &type_id_of() noexcept;
+inline const string &type_id_of() noexcept;
 
 
 
@@ -95,7 +95,7 @@ public:
      * @param id Id to query
      * @return const pointer to appropriate scalar type
      */
-    static const ScalarType* for_id(const std::string& id);
+    static const ScalarType* for_id(const string& id);
 
     /**
      * @brief Get the most appropriate scalar type for type info
@@ -109,7 +109,7 @@ public:
      * @brief Get the unique internal ID string for this type
      * @return const reference to the ID string.
      */
-    const std::string &id() const noexcept { return m_info.id; }
+    const string &id() const noexcept { return m_info.id; }
 
     /**
      * @brief Get the extended scalar type information for this type.
@@ -177,7 +177,7 @@ public:
      * @param count number of scalars to copy
      * @param id ID of scalar type for source data
      */
-    virtual void convert_copy(ScalarPointer out, const void *in, std::size_t count, const std::string &id) const = 0;
+    virtual void convert_copy(ScalarPointer out, const void *in, std::size_t count, const string &id) const = 0;
 
     /**
      * @brief
@@ -186,7 +186,7 @@ public:
      * @param count
      * @param id
      */
-    virtual void convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const std::string &id) const;
+    virtual void convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const string &id) const;
 
     /**
      * @brief Get the scalar whose value is one
@@ -324,7 +324,7 @@ public:
      * @param seed Seed bits (as a slice/array) of uint64_t (regardless of bit generator's seed type).
      * @return Pointer to new RandomGenerator instance.
      */
-    virtual std::unique_ptr<RandomGenerator> get_rng(const std::string& bit_generator="", Slice<uint64_t> seed={}) const;
+    virtual std::unique_ptr<RandomGenerator> get_rng(const string& bit_generator="", Slice<uint64_t> seed={}) const;
 };
 
 /**
@@ -342,7 +342,7 @@ void register_type(const ScalarType *type);
  * @return pointer to ScalarType representing id
  */
 ROUGHPY_SCALARS_EXPORT
-const ScalarType *get_type(const std::string &id);
+const ScalarType *get_type(const string &id);
 
 /**
  * @brief Get a list of all registered ScalarTypes
@@ -354,11 +354,11 @@ std::vector<const ScalarType *> list_types();
 
 ROUGHPY_SCALARS_EXPORT
 const conversion_function&
-get_conversion(const std::string& src_id, const std::string& dst_id);
+get_conversion(const string& src_id, const string& dst_id);
 
 ROUGHPY_SCALARS_EXPORT
-void register_conversion(const std::string& src_id,
-                         const std::string& dst_id,
+void register_conversion(const string& src_id,
+                         const string& dst_id,
                          conversion_function converter);
 
 
@@ -376,8 +376,8 @@ namespace dtl {
 #define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)           \
     template <>                                       \
     struct type_id_of_impl<TYPE> {                    \
-        static const std::string &get_id() noexcept { \
-            static const std::string type_id(NAME);   \
+        static const string &get_id() noexcept { \
+            static const string type_id(NAME);   \
             return type_id;                           \
         }                                             \
     }
@@ -437,11 +437,11 @@ struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_scalar_type> {
 
 template <typename T>
 const ScalarType *ScalarType::of() {
-    return dtl::scalar_type_holder<traits::remove_cv_ref_t<T>>::get_type();
+    return dtl::scalar_type_holder<remove_cv_ref_t<T>>::get_type();
 }
 
 template <typename T>
-inline const std::string &type_id_of() noexcept {
+inline const string &type_id_of() noexcept {
     return dtl::type_id_of_impl<T>::get_id();
 }
 

@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -58,8 +58,7 @@ struct AlgebraInterfaceTag {};
 
 }// namespace dtl
 
-
-using UnspecifiedAlgebraType = dtl::AlgebraInterfaceTag*;
+using UnspecifiedAlgebraType = dtl::AlgebraInterfaceTag *;
 
 /**
  * @brief Base interface for algebra types
@@ -75,12 +74,11 @@ protected:
     const scalars::ScalarType *p_coeff_type;
     ImplementationType m_impl_type;
 
-    explicit AlgebraInterface(context_pointer&& ctx,
+    explicit AlgebraInterface(context_pointer &&ctx,
                               VectorType vtype,
                               const scalars::ScalarType *stype,
                               ImplementationType impl_type)
         : p_ctx(ctx), m_vector_type(vtype), p_coeff_type(stype), m_impl_type(impl_type) {}
-
 
 public:
     using algebra_t = Algebra;
@@ -95,7 +93,7 @@ public:
 
     // Type information
     id_t id() const noexcept;
-    const context_pointer& context() const noexcept { return p_ctx; }
+    const context_pointer &context() const noexcept { return p_ctx; }
     ImplementationType impl_type() const noexcept { return m_impl_type; }
     VectorType storage_type() const noexcept { return m_vector_type; };
     const scalars::ScalarType *coeff_type() const noexcept { return p_coeff_type; };
@@ -116,7 +114,7 @@ public:
     virtual Algebra borrow() const = 0;
     virtual Algebra borrow_mut() = 0;
 
-//    virtual Algebra convert_from_iterator(AlgebraIterator begin, AlgebraIterator end) const = 0;
+    //    virtual Algebra convert_from_iterator(AlgebraIterator begin, AlgebraIterator end) const = 0;
 
     // Element access
     virtual scalars::Scalar get(key_type key) const = 0;
@@ -140,22 +138,22 @@ public:
     virtual Algebra sdiv(const scalars::Scalar &other) const;
 
     // Inplace arithmetic
-    virtual void add_inplace(const Algebra& other) = 0;
-    virtual void sub_inplace(const Algebra& other) = 0;
-    virtual void mul_inplace(const Algebra& other) = 0;
+    virtual void add_inplace(const Algebra &other) = 0;
+    virtual void sub_inplace(const Algebra &other) = 0;
+    virtual void mul_inplace(const Algebra &other) = 0;
     virtual void smul_inplace(const scalars::Scalar &other) = 0;
     virtual void sdiv_inplace(const scalars::Scalar &other) = 0;
 
     // Hybrid inplace arithmetic
-    virtual void add_scal_mul(const Algebra&rhs, const scalars::Scalar &scalar);
-    virtual void sub_scal_mul(const Algebra&rhs, const scalars::Scalar &scalar);
-    virtual void add_scal_div(const Algebra&rhs, const scalars::Scalar &scalar);
-    virtual void sub_scal_div(const Algebra&rhs, const scalars::Scalar &scalar);
+    virtual void add_scal_mul(const Algebra &rhs, const scalars::Scalar &scalar);
+    virtual void sub_scal_mul(const Algebra &rhs, const scalars::Scalar &scalar);
+    virtual void add_scal_div(const Algebra &rhs, const scalars::Scalar &scalar);
+    virtual void sub_scal_div(const Algebra &rhs, const scalars::Scalar &scalar);
 
-    virtual void add_mul(const Algebra&lhs, const Algebra&rhs);
-    virtual void sub_mul(const Algebra&lhs, const Algebra&rhs);
-    virtual void mul_smul(const Algebra&rhs, const scalars::Scalar &scalar);
-    virtual void mul_sdiv(const Algebra&rhs, const scalars::Scalar &scalar);
+    virtual void add_mul(const Algebra &lhs, const Algebra &rhs);
+    virtual void sub_mul(const Algebra &lhs, const Algebra &rhs);
+    virtual void mul_smul(const Algebra &rhs, const scalars::Scalar &scalar);
+    virtual void mul_sdiv(const Algebra &rhs, const scalars::Scalar &scalar);
 
     // Display
     virtual std::ostream &print(std::ostream &os) const = 0;
@@ -174,9 +172,9 @@ class AlgebraImplementation;
 
 namespace dtl {
 template <typename Impl, template <typename, template <typename> class> class Wrapper>
-using select_owned_or_borrowed_t = traits::conditional_t<traits::is_pointer<traits::remove_reference_t<Impl>>::value,
-                                                      Wrapper<traits::remove_cv_t<traits::remove_pointer_t<Impl>>, BorrowedStorageModel>,
-                                                      Wrapper<traits::remove_cv_ref_t<Impl>, OwnedStorageModel>>;
+using select_owned_or_borrowed_t = conditional_t<is_pointer<remove_reference_t<Impl>>::value,
+                                                         Wrapper<remove_cv_t<remove_pointer_t<Impl>>, BorrowedStorageModel>,
+                                                         Wrapper<remove_cv_ref_t<Impl>, OwnedStorageModel>>;
 
 template <typename IFace>
 struct with_interface {
@@ -185,7 +183,7 @@ struct with_interface {
 };
 
 ROUGHPY_ALGEBRA_EXPORT void print_empty_algebra(std::ostream &os);
-ROUGHPY_ALGEBRA_EXPORT const scalars::ScalarType* context_to_scalars(const context_pointer& ptr);
+ROUGHPY_ALGEBRA_EXPORT const scalars::ScalarType *context_to_scalars(const context_pointer &ptr);
 
 }// namespace dtl
 
@@ -218,29 +216,28 @@ public:
     using algebra_t = typename Interface::algebra_t;
     using const_iterator = AlgebraIterator<algebra_t>;
 
-
     AlgebraBase() : p_impl(nullptr) {}
-    AlgebraBase(const AlgebraBase& other);
-    AlgebraBase(AlgebraBase&& other) noexcept;
+    AlgebraBase(const AlgebraBase &other);
+    AlgebraBase(AlgebraBase &&other) noexcept;
 
-    AlgebraBase& operator=(const AlgebraBase& other);
-    AlgebraBase& operator=(AlgebraBase&& other) noexcept;
+    AlgebraBase &operator=(const AlgebraBase &other);
+    AlgebraBase &operator=(AlgebraBase &&other) noexcept;
 
     explicit AlgebraBase(context_pointer ctx);
 
     template <typename Impl,
-              typename = traits::enable_if_t<!traits::is_same<traits::remove_cv_ref_t<Impl>, algebra_t>::value>>
+              typename = enable_if_t<!is_same<remove_cv_ref_t<Impl>, algebra_t>::value>>
     explicit AlgebraBase(context_pointer ctx, Impl &&arg)
         : p_impl(new dtl::select_owned_or_borrowed_t<Impl, DerivedImpl>(std::move(ctx), std::forward<Impl>(arg))) {}
 
     template <typename Impl, typename... Args>
-    static traits::enable_if_t<!traits::is_base_of<Interface, Impl>::value, algebra_t>
+    static enable_if_t<!is_base_of<Interface, Impl>::value, algebra_t>
     from_args(context_pointer ctx, Args &&...args) {
         return algebra_t(std::move(ctx), new dtl::select_owned_or_borrowed_t<Impl, DerivedImpl>(std::forward<Args>(args)...));
     }
 
     template <typename Wrapper, typename... Args>
-    static traits::enable_if_t<traits::is_base_of<Interface, Wrapper>::value, algebra_t>
+    static enable_if_t<is_base_of<Interface, Wrapper>::value, algebra_t>
     from_args(context_pointer ctx, Args &&...args) {
         return algebra_t(std::move(ctx), new Wrapper(std::forward<Args>(args)...));
     }
@@ -253,7 +250,7 @@ public:
     const Interface *operator->() const noexcept { return p_impl.get(); }
     Interface *operator->() noexcept { return p_impl.get(); }
 
-    constexpr operator bool () const noexcept { return static_cast<bool>(p_impl); }
+    constexpr operator bool() const noexcept { return static_cast<bool>(p_impl); }
 
     dimn_t dimension() const;
     dimn_t size() const;
@@ -411,13 +408,11 @@ namespace dtl {
 ROUGHPY_ALGEBRA_EXPORT
 UnspecifiedAlgebraType try_create_new_empty(context_pointer ctx, AlgebraType alg_type);
 
-}
-
+}// namespace dtl
 
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 AlgebraBase<Interface, DerivedImpl>::AlgebraBase(context_pointer ctx)
-    : p_impl(nullptr)
-{
+    : p_impl(nullptr) {
     /*
      * Try and create a new empty instance by appealing to the context
      * and passing in the type to be created. This will return either
@@ -426,21 +421,18 @@ AlgebraBase<Interface, DerivedImpl>::AlgebraBase(context_pointer ctx)
      * construction is not possible.
      */
     p_impl = std::unique_ptr<Interface>(
-        static_cast<Interface*>(dtl::try_create_new_empty(std::move(ctx), algebra_t::s_alg_type))
-        );
+        static_cast<Interface *>(dtl::try_create_new_empty(std::move(ctx), algebra_t::s_alg_type)));
 }
 
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
-AlgebraBase<Interface, DerivedImpl>::AlgebraBase(const AlgebraBase &other)
-{
+AlgebraBase<Interface, DerivedImpl>::AlgebraBase(const AlgebraBase &other) {
     if (other.p_impl) {
         *this = other.p_impl->clone();
     }
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 AlgebraBase<Interface, DerivedImpl>::AlgebraBase(AlgebraBase &&other) noexcept
-    : p_impl(std::move(other.p_impl))
-{
+    : p_impl(std::move(other.p_impl)) {
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 AlgebraBase<Interface, DerivedImpl> &AlgebraBase<Interface, DerivedImpl>::operator=(const AlgebraBase &other) {
@@ -807,10 +799,9 @@ std::ostream &AlgebraBase<Interface, DerivedImpl>::print(std::ostream &os) const
 }
 
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
-inline std::ostream& operator<<(std::ostream& os, const AlgebraBase<Interface, DerivedImpl>& alg) {
+inline std::ostream &operator<<(std::ostream &os, const AlgebraBase<Interface, DerivedImpl> &alg) {
     return alg.print(os);
 }
-
 
 }// namespace algebra
 }// namespace rpy

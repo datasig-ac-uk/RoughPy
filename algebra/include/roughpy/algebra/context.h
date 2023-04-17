@@ -95,13 +95,13 @@ public:
 
 class ROUGHPY_ALGEBRA_EXPORT Context : public ContextBase {
     const scalars::ScalarType *p_ctype;
-    std::string m_ctx_backend;
+    string m_ctx_backend;
 
 protected:
     explicit Context(
         deg_t width, deg_t depth,
         const scalars::ScalarType *ctype,
-        std::string&& context_backend,
+        string&& context_backend,
         const dimn_t *lie_sizes = nullptr,
         const dimn_t *tensor_sizes = nullptr)
         : ContextBase(width, depth, lie_sizes, tensor_sizes),
@@ -114,7 +114,7 @@ protected:
 public:
 
     const scalars::ScalarType *ctype() const noexcept { return p_ctype; }
-    const std::string &backend() const noexcept { return m_ctx_backend; }
+    const string &backend() const noexcept { return m_ctx_backend; }
 
     virtual context_pointer get_alike(deg_t new_depth) const = 0;
     virtual context_pointer get_alike(const scalars::ScalarType *new_ctype) const = 0;
@@ -169,7 +169,7 @@ base_context_pointer get_base_context(deg_t width, deg_t depth);
 
 ROUGHPY_ALGEBRA_EXPORT
 context_pointer get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype,
-                            const std::vector<std::pair<std::string, std::string>> &preferences = {});
+                            const std::vector<std::pair<string, string>> &preferences = {});
 
 
 
@@ -197,7 +197,7 @@ inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2) 
 
 class ROUGHPY_ALGEBRA_EXPORT ContextMaker {
 public:
-    using preference_list = std::vector<std::pair<std::string, std::string>>;
+    using preference_list = std::vector<std::pair<string, string>>;
 
     virtual ~ContextMaker() = default;
     virtual bool can_get(deg_t width, deg_t depth, const scalars::ScalarType *ctype,

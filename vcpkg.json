@@ -32,5 +32,9 @@
   }, {
     "name" : "boost-type-traits",
     "version>=" : "1.81.0#2"
+  }, {
+    "name" : "tomlplusplus",
+    "version>=" : "3.1.0",
+    "$comment" : "    # this is heuristically generated, and may not be correct\n\n    find_package(tomlplusplus CONFIG REQUIRED)\n\n    target_link_libraries(main PRIVATE tomlplusplus::tomlplusplus)\n"
   } ]
 }

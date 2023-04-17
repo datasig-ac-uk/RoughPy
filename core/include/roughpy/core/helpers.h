@@ -43,18 +43,19 @@ namespace rpy {
  * @brief Cast the bit value from a value of type From to a value
  * of type To.
  *
- * We're using the same conditions on From and To as the Abseil library
+ * The implementation here is pretty similar to the example from
+ * https://en.cppreference.com/w/cpp/numeric/bit_cast
  * if we have to define our own version using memcpy.
  */
 #if defined(__cpp_lib_bit_cast) && __cpp_Lib_bit_cast >= 201806L
 using std::bit_cast;
 #else
 template <typename To, typename From>
-traits::enable_if_t<
+enable_if_t<
     sizeof(To) == sizeof(From)
-    && traits::is_trivially_copyable<From>::value
-    && traits::is_trivially_copyable<To>::value
-    && traits::is_default_constructible<To>::value
+    && is_trivially_copyable<From>::value
+    && is_trivially_copyable<To>::value
+    && is_default_constructible<To>::value
     , To>
 bit_cast(From from) {
     To to;

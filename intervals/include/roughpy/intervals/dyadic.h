@@ -29,6 +29,7 @@
 #define ROUGHPY_INTERVALS_DYADIC_H_
 
 #include "roughpy_intervals_export.h"
+#include <roughpy/core/implementation_types.h>
 
 #include <cassert>
 #include <cmath>
@@ -37,12 +38,11 @@
 
 namespace rpy { namespace intervals {
 
-using param_t = double;
 
 class ROUGHPY_INTERVALS_EXPORT Dyadic {
 public:
-    using multiplier_t = int;
-    using power_t = int;
+    using multiplier_t = dyadic_multiplier_t;
+    using power_t = dyadic_depth_t;
 
 protected:
     multiplier_t m_multiplier = 0;

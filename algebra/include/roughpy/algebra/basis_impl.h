@@ -60,7 +60,7 @@ public:
         : m_impl(basis_traits::construct(std::forward<Args>(args)...))
     {}
 
-    std::string key_to_string(const key_type &key) const override;
+    string key_to_string(const key_type &key) const override;
     dimn_t dimension() const noexcept override;
 };
 
@@ -101,7 +101,7 @@ public:
 };
 
 template <typename T, typename PrimaryInterface>
-std::string BasisImplementation<T, PrimaryInterface>::key_to_string(const key_type &key) const {
+string BasisImplementation<T, PrimaryInterface>::key_to_string(const key_type &key) const {
     return basis_traits::key_to_string(m_impl, key);
 }
 template <typename T, typename PrimaryInterface>

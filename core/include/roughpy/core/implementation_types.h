@@ -28,11 +28,19 @@
 #ifndef ROUGHPY_CORE_IMPLEMENTATION_TYPES_H_
 #define ROUGHPY_CORE_IMPLEMENTATION_TYPES_H_
 
+#include "macros.h"
+
 #include <cstdint>
 #include <utility>
+#include <string>
 
-
+#ifdef RPY_CPP_17
+#include <optional>
+#include <string_view>
+#else
 #include <boost/optional.hpp>
+#include <boost/utility/string_view.hpp>
+#endif
 
 namespace rpy {
 
@@ -53,14 +61,22 @@ using key_type = std::size_t;
 using param_t = double;
 using scalar_t = double;
 
+using resolution_t = int;
 using dyadic_multiplier_t = int;
-using dyadic_depth_t = int;
-using resolution_t = dyadic_depth_t;
+using dyadic_depth_t = resolution_t;
 
-
-using boost::optional;
-
+using std::string;
 using std::pair;
+
+#ifdef RPY_CPP_17
+using std::optional;
+using std::string_view;
+#else
+using boost::optional;
+using boost::string_view;
+#endif
+
+
 
 
 }

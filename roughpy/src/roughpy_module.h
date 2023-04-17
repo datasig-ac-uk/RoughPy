@@ -34,6 +34,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/functional.h>
 #include <roughpy/core/implementation_types.h>
 
 #if defined(__GNUC__) || defined(CLANG)
@@ -43,16 +44,17 @@
 #endif
 
 
-
+#ifndef RPY_CPP_17
 // `boost::optional` as an example -- can be any `std::optional`-like container
 namespace PYBIND11_NAMESPACE {
 namespace detail {
 template <typename T>
 struct type_caster<boost::optional<T>> : public optional_caster<boost::optional<T>> {};
 }}
+#endif
 
 namespace py = pybind11;
-namespace rpy { namespace python {
+namespace rpy { namespace RPY_NO_EXPORT python {
 
 template <typename T>
 inline PyObject* cast_to_object(T&& arg) noexcept {

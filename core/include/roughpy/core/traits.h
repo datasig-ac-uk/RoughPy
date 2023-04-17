@@ -35,6 +35,7 @@
 #include <type_traits>
 
 #include <boost/call_traits.hpp>
+
 #include <boost/type_traits/copy_cv.hpp>
 #include <boost/type_traits/copy_cv_ref.hpp>
 #include <boost/type_traits/detected.hpp>
@@ -43,7 +44,6 @@
 #include <boost/type_traits/remove_cv_ref.hpp>
 
 namespace rpy {
-namespace traits {
 
 using std::declval;
 
@@ -124,7 +124,11 @@ using boost::remove_cv_ref_t;
 
 using boost::is_detected;
 
+#ifdef RPY_CPP_17
+using std::void_t;
+#else
 using boost::void_t;
+#endif
 
 /**
  * @brief Ensure that the type T is a pointer.
@@ -164,7 +168,6 @@ template <typename T, typename B=dtl::EmptyBase>
 using void_or_base = conditional_t<is_void<T>::value, B, T>;
 
 
-}// namespace traits
 }// namespace rpy
 
 #endif//ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H

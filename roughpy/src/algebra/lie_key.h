@@ -64,7 +64,7 @@ public:
 
     bool is_letter() const noexcept;
     let_t as_letter() const;
-    std::string to_string() const;
+    string to_string() const;
     PyLieKey lparent() const;
     PyLieKey rparent() const;
 

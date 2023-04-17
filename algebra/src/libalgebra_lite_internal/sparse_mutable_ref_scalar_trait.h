@@ -79,7 +79,7 @@ public:
     void assign(const Scalar &other) override {
         assign(other.to_pointer());
     }
-    void assign(const void *data, const std::string &type_id) override {
+    void assign(const void *data, const string &type_id) override {
         value_type tmp = static_cast<const value_type &>(m_data);
         type()->convert_copy({type(), &tmp}, data, 1, type_id);
         m_data = tmp;

@@ -104,7 +104,7 @@ public:
 
 template <typename Impl>
 Stream::Stream(Impl &&impl)
-    : p_impl(new traits::remove_cv_t<Impl>(std::forward<Impl>(impl)))
+    : p_impl(new remove_cv_t<Impl>(std::forward<Impl>(impl)))
 {
 }
 

@@ -25,7 +25,7 @@ static const char* EXTERNALLY_SOURCED_STREAM_DOC = R"rpydoc(A stream that acquir
 )rpydoc";
 
 
-static py::object external_stream_constructor(std::string uri_string, const py::kwargs& kwargs) {
+static py::object external_stream_constructor(string uri_string, const py::kwargs& kwargs) {
     const auto pmd = python::kwargs_to_metadata(kwargs);
 
     auto uri_result = parse_uri_reference(uri_string);

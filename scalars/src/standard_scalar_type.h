@@ -62,12 +62,12 @@ class StandardScalarType : public ScalarType {
     static std::unique_ptr<RandomGenerator> get_mt19937_generator(const ScalarType* type, Slice<uint64_t> seed);
     static std::unique_ptr<RandomGenerator> get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed);
 
-    std::unordered_map<std::string, rng_getter> m_rng_getters{
+    std::unordered_map<string, rng_getter> m_rng_getters{
         {"mt19937", &get_mt19937_generator},
         {"pcg", &get_pcg_generator}};
 
 public:
-    explicit StandardScalarType(std::string id, std::string name)
+    explicit StandardScalarType(string id, string name)
         : ScalarType({{ScalarTypeCode::Float,
                        sizeof_bits<ScalarImpl>(),
                        1U},
@@ -162,7 +162,7 @@ public:
     void convert_copy(ScalarPointer out,
                       const void *in,
                       dimn_t count,
-                      const std::string &type_id) const override {
+                      const string &type_id) const override {
         if (type_id == "f64") {
             return convert_copy_basic<double>(out, in, count);
         } else if (type_id == "f32") {
@@ -304,7 +304,7 @@ public:
         }
     }
 
-    std::unique_ptr<RandomGenerator> get_rng(const std::string &bit_generator, Slice<uint64_t> seed) const override;
+    std::unique_ptr<RandomGenerator> get_rng(const string &bit_generator, Slice<uint64_t> seed) const override;
 };
 
 inline uint64_t device_to_seed() {
@@ -334,7 +334,7 @@ std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::get_pcg_generat
 }
 
 template <typename ScalarImpl>
-std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::get_rng(const std::string &bit_generator, Slice<uint64_t> seed) const {
+std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::get_rng(const string &bit_generator, Slice<uint64_t> seed) const {
     if (bit_generator.empty()) {
         return m_rng_getters.find("pcg")->second(this, seed);
     }

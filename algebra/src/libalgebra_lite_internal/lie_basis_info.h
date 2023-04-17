@@ -86,7 +86,7 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
      */
 
     /// Generate a string representation of the key
-    static std::string key_to_string(storage_t basis, const our_key_type &key) {
+    static string key_to_string(storage_t basis, const our_key_type &key) {
         std::stringstream ss;
         basis->print_key(ss, convert_to_impl(basis, key));
         return ss.str();

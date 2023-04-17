@@ -32,10 +32,13 @@
 #ifndef ROUGHPY_CORE_MACROS_H
 #define ROUGHPY_CORE_MACROS_H
 
+#include <cassert>
 
 
 #if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__)) && !defined(RPY_DEBUG)
 #   define RPY_DEBUG
+#else
+#   undef RPY_DEBUG
 #endif
 
 #if defined(_MSC_VER) && defined(_MSVC_LANG)
@@ -44,13 +47,27 @@
 #   define RPY_CPP_VERSION __cplusplus
 #endif
 
+#if RPY_CPP_VERSION >= 201403L
+#  define RPY_CPP_14
+#else
+#  undef RPY_CPP_14
+#endif
 
+#if RPY_CPP_VERSION >= 201703L
+#  define RPY_CPP_17
+#else
+#  undef RPY_CPP_17
+#endif
+
+
+#ifdef RPY_CPP_17
+#define RPY_UNUSED [[maybe_unused]]
+#else
 #if defined(__GNUC__) || defined(__clang__)
 #   define RPY_UNUSED __attribute__((unused))
-#   define RPY_USED __attribute__((used))
 #else
 #   define RPY_UNUSED
-#   define RPY_USED
+#endif
 #endif
 
 

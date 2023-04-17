@@ -111,7 +111,7 @@ void rpy::python::init_shuffle_tensor(py::module_ &m) {
     options.disable_function_signatures();
 
     py::class_<ShuffleTensor> klass(m, "ShuffleTensor", SHUFFLE_TENSOR_DOC);
-    klass.def(py::init(&construct_shuffle), "data"_a);
+    klass.def(py::init(&construct_shuffle), "data"_a=py::none());
     setup_algebra_type(klass);
 
     klass.def("__getitem__", [](const ShuffleTensor &self, key_type key) {

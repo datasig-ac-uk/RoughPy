@@ -65,7 +65,7 @@ public:
 
     explicit operator key_type() const noexcept;
 
-    std::string to_string() const;
+    string to_string() const;
     PyTensorKey lparent() const;
     PyTensorKey rparent() const;
     bool is_letter() const;

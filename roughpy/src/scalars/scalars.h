@@ -38,7 +38,7 @@
 #include <roughpy/scalars/key_scalar_array.h>
 
 namespace rpy {
-namespace __attribute__((visibility("hidden"))) python {
+namespace RPY_NO_EXPORT python {
 
 
 struct AlternativeKeyType {

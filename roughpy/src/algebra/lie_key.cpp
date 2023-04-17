@@ -93,7 +93,7 @@ struct print_walker {
         ss << ']';
     }
 
-    std::string operator()(pointer tree) {
+    string operator()(pointer tree) {
         walk_pair(tree, tree + 1);
         return ss.str();
     }
@@ -238,7 +238,7 @@ let_t python::PyLieKey::as_letter() const {
     assert(is_letter());
     return static_cast<let_t>(m_data[0]);
 }
-std::string python::PyLieKey::to_string() const {
+string python::PyLieKey::to_string() const {
     if (m_data.size() == 1) {
         std::stringstream ss;
         ss << static_cast<let_t>(m_data[0]);

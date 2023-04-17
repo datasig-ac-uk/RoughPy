@@ -103,8 +103,8 @@ pybind11::dtype python::ctype_to_npy_dtype(const scalars::ScalarType *type) {
     throw py::type_error("unsupported data type");
 }
 
-std::string python::npy_dtype_to_identifier(pybind11::dtype dtype) {
-    std::string identifier;
+string python::npy_dtype_to_identifier(pybind11::dtype dtype) {
+    string identifier;
 
     switch (dtype.num()) {
         case NPY_FLOAT:

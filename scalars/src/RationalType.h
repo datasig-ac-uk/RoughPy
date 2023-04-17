@@ -46,7 +46,7 @@ class RationalType : public ScalarType {
     static std::unique_ptr<RandomGenerator> get_mt19937_generator(const ScalarType* type, Slice<uint64_t> seed);
     static std::unique_ptr<RandomGenerator> get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed);
 
-    std::unordered_map<std::string, rng_getter> m_rng_getters {
+    std::unordered_map<string, rng_getter> m_rng_getters {
         {"mt19937", &get_mt19937_generator},
         {"pcg", &get_pcg_generator}
     };
@@ -81,7 +81,7 @@ private:
     }
 
 public:
-    void convert_copy(ScalarPointer out, const void *in, std::size_t count, const std::string &id) const override;
+    void convert_copy(ScalarPointer out, const void *in, std::size_t count, const string &id) const override;
     scalar_t to_scalar_t(ScalarPointer arg) const override;
     void assign(ScalarPointer target, long long int numerator, long long int denominator) const override;
     Scalar uminus(ScalarPointer arg) const override;
@@ -92,7 +92,7 @@ public:
     bool are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept override;
 
     Scalar from(long long int numerator, long long int denominator) const override;
-    void convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const std::string &id) const override;
+    void convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const string &id) const override;
     Scalar one() const override;
     Scalar mone() const override;
     Scalar zero() const override;
@@ -103,7 +103,7 @@ public:
     Scalar div(ScalarPointer lhs, ScalarPointer rhs) const override;
     bool is_zero(ScalarPointer arg) const override;
     void print(ScalarPointer arg, std::ostream &os) const override;
-    std::unique_ptr<RandomGenerator> get_rng(const std::string &bit_generator, Slice<uint64_t> seed) const override;
+    std::unique_ptr<RandomGenerator> get_rng(const string &bit_generator, Slice<uint64_t> seed) const override;
 };
 
 }// namespace scalars

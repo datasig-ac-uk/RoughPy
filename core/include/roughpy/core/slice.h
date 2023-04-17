@@ -60,7 +60,7 @@ public:
 
     constexpr Slice(nullptr_t) : p_data(nullptr), m_size(0) {}
 
-    template <typename Container, typename = traits::enable_if_t<traits::is_same<typename Container::value_type, T>::value>>
+    template <typename Container, typename = enable_if_t<is_same<typename Container::value_type, T>::value>>
     constexpr Slice(Container &container)
         : p_data(container.data()), m_size(container.size()) {}
 
@@ -72,8 +72,8 @@ public:
         : p_data(ptr), m_size(N) {}
 
     template <typename I>
-    constexpr traits::enable_if_t<
-        traits::is_integral<I>::value,
+    constexpr enable_if_t<
+        is_integral<I>::value,
         const T &>
     operator[](I i) noexcept {
         assert(0 <= i && i < m_size);
@@ -81,8 +81,8 @@ public:
     }
 
     template <typename I>
-    constexpr traits::enable_if_t<
-        traits::is_integral<I>::value,
+    constexpr enable_if_t<
+        is_integral<I>::value,
         T &>
     operator[](I i) const noexcept {
         assert(0 <= i && i < m_size);

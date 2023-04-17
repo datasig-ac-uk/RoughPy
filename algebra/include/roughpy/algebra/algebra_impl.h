@@ -55,10 +55,10 @@ public:
 };
 
 template <typename Impl, typename Interface>
-inline traits::copy_cv_t<Impl, Interface> &
+inline copy_cv_t<Impl, Interface> &
 algebra_cast(Interface &arg) noexcept {
-    using access_t = traits::copy_cv_t<ImplAccessLayer<Interface, Impl>, Interface>;
-    static_assert(traits::is_base_of<dtl::AlgebraInterfaceTag, Interface>::value,
+    using access_t = copy_cv_t<ImplAccessLayer<Interface, Impl>, Interface>;
+    static_assert(is_base_of<dtl::AlgebraInterfaceTag, Interface>::value,
                   "casting to algebra implementation is only possible for interfaces");
 //    assert(dynamic_cast<access_t*>(&arg) == std::addressof(arg));
     return static_cast<access_t&>(arg).get_data();
@@ -97,7 +97,7 @@ protected:
     explicit BorrowedStorageModel(Impl *arg) : p_data(arg) {}
 
     Impl &data() {
-        if (traits::is_const<Impl>::value) {
+        if (is_const<Impl>::value) {
             throw std::runtime_error("cannot get mutable data from const object");
         }
         return *p_data;
@@ -114,7 +114,7 @@ class ConvertedArgument {
 
 public:
     ConvertedArgument(Impl &&converted)
-        : m_holder(std::move(converted)), m_ref(m_holder.get()) {}
+        : m_holder(std::move(converted)), m_ref(m_holder.value()) {}
     ConvertedArgument(const Impl &same_type)
         : m_holder(), m_ref(same_type) {}
     operator const Impl &() const noexcept {
@@ -123,11 +123,11 @@ public:
 };
 
 template <typename T>
-using d_has_as_ptr_t = decltype(traits::declval<const T&>().as_ptr());
+using d_has_as_ptr_t = decltype(declval<const T&>().as_ptr());
 
 #define RPY_HAS_FUSED_OP_CHECKER(NAME)          \
     template <typename T>                       \
-    using d_##NAME = decltype(traits::declval<T&>().NAME())
+    using d_##NAME = decltype(declval<T&>().NAME())
 
 RPY_HAS_FUSED_OP_CHECKER(add_scal_prod);
 RPY_HAS_FUSED_OP_CHECKER(sub_scal_prod);
@@ -144,8 +144,8 @@ struct no_implementation {};
 struct has_implementation {};
 
 template <template <typename> class MF, typename T>
-using use_impl_t = traits::conditional_t<
-    traits::is_detected<MF, T>::value,
+using use_impl_t = conditional_t<
+    is_detected<MF, T>::value,
     has_implementation,
     no_implementation
 >;
@@ -159,7 +159,7 @@ class AlgebraImplementation
     using storage_base_t = StorageModel<Impl>;
     using access_layer_t = ImplAccessLayer<Interface, Impl>;
 
-    static_assert(traits::is_base_of<dtl::AlgebraInterfaceTag, Interface>::value,
+    static_assert(is_base_of<dtl::AlgebraInterfaceTag, Interface>::value,
                   "algebra_interface must be an accessible base of Interface");
 
     using alg_info = algebra_info<typename Interface::algebra_t, Impl>;
@@ -193,7 +193,7 @@ public:
         return data();
     }
     Impl &&take_data() override {
-        if (traits::is_same<storage_base_t, BorrowedStorageModel<Impl>>::value) {
+        if (is_same<storage_base_t, BorrowedStorageModel<Impl>>::value) {
             throw std::runtime_error("cannot take from a borrowed algebra");
         }
         return std::move(data());
@@ -239,7 +239,7 @@ public:
     void assign(const algebra_t& arg) override;
 private:
 
-    template <typename B, typename=traits::enable_if_t<traits::is_detected<dtl::d_has_as_ptr_t, B>::value>>
+    template <typename B, typename=enable_if_t<is_detected<dtl::d_has_as_ptr_t, B>::value>>
     optional<scalars::ScalarArray> dense_data_impl(const B& data) const;
 
     optional<scalars::ScalarArray> dense_data_impl(...) const;

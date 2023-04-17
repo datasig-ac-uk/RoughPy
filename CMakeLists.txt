@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 project(RoughPy VERSION 0.0.1)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
@@ -84,6 +84,8 @@ find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 find_package(CURL REQUIRED)
 
+# This package is c++17 so cannot be used if changing to a lower standard
+find_package(tomlplusplus CONFIG REQUIRED)
 
 add_subdirectory(core)
 add_subdirectory(platform)

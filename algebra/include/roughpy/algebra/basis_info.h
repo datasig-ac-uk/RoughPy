@@ -75,7 +75,7 @@ struct BasisInfo {
      */
 
     /// Generate a string representation of the key
-    static std::string key_to_string(storage_t basis, const our_key_type& key) {
+    static string key_to_string(storage_t basis, const our_key_type& key) {
         return basis->key_to_string(convert_to_impl(basis, key));
     }
 

@@ -42,7 +42,7 @@ public:
     virtual void set_vtype(void* payload, algebra::VectorType vtype) const;
     virtual void set_resolution(void* payload, resolution_t resolution) const;
 
-    virtual void add_option(void *payload, const std::string& option, boost::any value) const;
+    virtual void add_option(void *payload, const string& option, boost::any value) const;
 
     virtual ExternalDataStreamConstructor get_constructor(const url& uri) const = 0;
     virtual Stream construct_stream(void * payload) const = 0;
@@ -75,7 +75,7 @@ public:
     void set_vtype(algebra::VectorType vtype);
     void set_resolution(resolution_t resolution);
 
-    void add_option(const std::string& option, const void* value);
+    void add_option(const string& option, const void* value);
 
 
     Stream construct();
@@ -91,7 +91,7 @@ class ROUGHPY_STREAMS_EXPORT ExternalDataStream : public StreamInterface {
     std::unique_ptr<ExternalDataStreamSource> p_source;
 
 public:
-    template <typename Source, typename=traits::enable_if_t<traits::is_base_of<ExternalDataStreamSource, Source>::value>>
+    template <typename Source, typename=enable_if_t<is_base_of<ExternalDataStreamSource, Source>::value>>
     explicit ExternalDataStream(Source &&src, StreamMetadata md)
         : StreamInterface(std::move(md)),
           p_source(new Source(std::forward<Source>(src)))

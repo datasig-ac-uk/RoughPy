@@ -50,7 +50,7 @@ const ScalarType *ScalarType::rational_type() const noexcept {
     return this;
 }
 
-const ScalarType *ScalarType::for_id(const std::string &id) {
+const ScalarType *ScalarType::for_id(const string &id) {
     return ScalarType::of<double>();
 }
 const ScalarType *ScalarType::from_type_details(const BasicScalarInfo &details, const ScalarDeviceInfo& device) {
@@ -64,7 +64,7 @@ Scalar ScalarType::from(long long int numerator, long long int denominator) cons
     assign(result, numerator, denominator);
     return {result, Scalar::OwnedPointer};
 }
-void ScalarType::convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const std::string &id) const {
+void ScalarType::convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const string &id) const {
     if (!id.empty()) {
         try {
             const auto& conversion = get_conversion(id, this->id());
@@ -147,7 +147,7 @@ const ScalarType* rpy::scalars::dtl::scalar_type_holder<rational_scalar_type>::g
  * The last 3 are commented out, because they are to be implemented
  * separately.
  */
-static const std::string reserved[] = {
+static const string reserved[] = {
     "i32",  // int
     "u32",  // unsigned int
     "i64",  // long long
@@ -166,10 +166,10 @@ static const std::string reserved[] = {
     //    "O"                 // Object
 };
 static std::mutex s_scalar_type_cache_lock;
-static std::unordered_map<std::string, const ScalarType *> s_scalar_type_cache {
-    {std::string("f32"), ScalarType::of<float>()},
-    {std::string("f64"), ScalarType::of<float>()}
-//    {std::string("rational"), ScalarType::of<float>()},
+static std::unordered_map<string, const ScalarType *> s_scalar_type_cache {
+    {string("f32"), ScalarType::of<float>()},
+    {string("f64"), ScalarType::of<float>()}
+//    {string("rational"), ScalarType::of<float>()},
 };
 
 void rpy::scalars::register_type(const ScalarType *type) {
@@ -189,7 +189,7 @@ void rpy::scalars::register_type(const ScalarType *type) {
 
     entry = type;
 }
-const ScalarType *rpy::scalars::get_type(const std::string &id) {
+const ScalarType *rpy::scalars::get_type(const string &id) {
     return nullptr;
 }
 
@@ -223,13 +223,13 @@ MAKE_CONVERSION_FUNCTION(isize, f64, idimn_t, double)
 #undef MAKE_CONVERSION_FUNCTION
 
 
-using pair_type = std::pair<std::string, conversion_function>;
+using pair_type = std::pair<string, conversion_function>;
 
 #define ADD_DEF_CONV(SRC, DST) \
-    pair_type { std::string(#SRC "->" #DST), conversion_function(&SRC##_to_##DST) }
+    pair_type { string(#SRC "->" #DST), conversion_function(&SRC##_to_##DST) }
 
 static std::mutex s_conversion_lock;
-static std::unordered_map<std::string, conversion_function> s_conversion_cache{
+static std::unordered_map<string, conversion_function> s_conversion_cache{
     ADD_DEF_CONV(f32, f64),
     ADD_DEF_CONV(f64, f32),
     ADD_DEF_CONV(i32, f32),
@@ -245,11 +245,11 @@ static std::unordered_map<std::string, conversion_function> s_conversion_cache{
 
 #undef ADD_DEF_CONV
 
-static inline std::string type_ids_to_key(const std::string &src_type, const std::string &dst_type) {
+static inline string type_ids_to_key(const string &src_type, const string &dst_type) {
     return src_type + "->" + dst_type;
 }
 
-const conversion_function &rpy::scalars::get_conversion(const std::string &src_id, const std::string &dst_id) {
+const conversion_function &rpy::scalars::get_conversion(const string &src_id, const string &dst_id) {
     std::lock_guard<std::mutex> access(s_conversion_lock);
 
     auto found = s_conversion_cache.find(type_ids_to_key(src_id, dst_id));
@@ -259,7 +259,7 @@ const conversion_function &rpy::scalars::get_conversion(const std::string &src_i
 
     throw std::runtime_error("no conversion function from " + src_id + " to " + dst_id);
 }
-void rpy::scalars::register_conversion(const std::string &src_id, const std::string &dst_id, conversion_function converter) {
+void rpy::scalars::register_conversion(const string &src_id, const string &dst_id, conversion_function converter) {
     std::lock_guard<std::mutex> access(s_conversion_lock);
 
     auto &found = s_conversion_cache[type_ids_to_key(src_id, dst_id)];
@@ -270,6 +270,6 @@ void rpy::scalars::register_conversion(const std::string &src_id, const std::str
     }
 }
 
-std::unique_ptr<RandomGenerator> ScalarType::get_rng(const std::string &bit_generator, Slice<uint64_t> seed) const {
+std::unique_ptr<RandomGenerator> ScalarType::get_rng(const string &bit_generator, Slice<uint64_t> seed) const {
     throw std::runtime_error("no random number generators are defined for this scalar type");
 }

@@ -63,10 +63,14 @@ void setup_algebra_type(py::class_<Alg, Args...> &klass) {
     options.disable_function_signatures();
 
     // setup static properties
-    klass.def_property_readonly("width", &Alg::width);
-    klass.def_property_readonly("max_degree", &Alg::depth);
+    /*
+     * Use lambda wrapping functions because there is an issue with "noexcept"
+     * modifier on these methods in C++17 mode.
+     */
+    klass.def_property_readonly("width", [](const Alg& arg) { return arg.width(); });
+    klass.def_property_readonly("max_degree", [](const Alg& arg) { return arg.depth(); });
     klass.def_property_readonly("dtype", [](const Alg &arg) { return to_ctype_type(arg.coeff_type()); });
-    klass.def_property_readonly("storage_type", &Alg::storage_type);
+    klass.def_property_readonly("storage_type", [](const Alg& arg) { return arg.storage_type(); });
 
     // setup dynamic properties
     klass.def("size", &Alg::size);

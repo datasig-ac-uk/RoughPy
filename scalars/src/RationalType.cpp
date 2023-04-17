@@ -117,7 +117,7 @@ void RationalType::convert_copy(void *out, ScalarPointer in, std::size_t count) 
     }
 }
 
-void RationalType::convert_copy(ScalarPointer out, const void *in, std::size_t count, const std::string &type_id) const {
+void RationalType::convert_copy(ScalarPointer out, const void *in, std::size_t count, const string &type_id) const {
     if (type_id == "f64") {
         return convert_copy_basic<double>(out, in, count);
     } else if (type_id == "f32") {
@@ -193,7 +193,7 @@ bool RationalType::are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcep
 Scalar RationalType::from(long long int numerator, long long int denominator) const {
     return Scalar(this, scalar_type(numerator) / denominator);
 }
-void RationalType::convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const std::string &id) const {
+void RationalType::convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const string &id) const {
     ScalarType::convert_fill(out, in, count, id);
 }
 Scalar RationalType::one() const {
@@ -252,7 +252,7 @@ void RationalType::print(ScalarPointer arg, std::ostream &os) const {
         os << *arg.raw_cast<const scalar_type *>();
     }
 }
-std::unique_ptr<RandomGenerator> RationalType::get_rng(const std::string &bit_generator, Slice<uint64_t> seed) const {
+std::unique_ptr<RandomGenerator> RationalType::get_rng(const string &bit_generator, Slice<uint64_t> seed) const {
     ScalarType::get_rng(bit_generator, seed);
     RPY_UNREACHABLE();
 }

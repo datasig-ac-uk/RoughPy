@@ -105,7 +105,7 @@ py::object python::to_ctype_type(const scalars::ScalarType *type) {
     throw std::runtime_error("no matching ctype for type " + type->info().name);
 }
 
-char python::format_to_type_char(const std::string &fmt) {
+char python::format_to_type_char(const string &fmt) {
 
     char python_format = 0;
     for (const auto &chr : fmt) {
@@ -152,11 +152,11 @@ char python::format_to_type_char(const std::string &fmt) {
 after_loop:
     return python_format;
 }
-std::string python::py_buffer_to_type_id(const py::buffer_info &info) {
+string python::py_buffer_to_type_id(const py::buffer_info &info) {
     using scalars::type_id_of;
 
     auto python_format = format_to_type_char(info.format);
-    std::string format;
+    string format;
     switch (python_format) {
         case 'd':
             format = type_id_of<double>();
@@ -228,7 +228,7 @@ const scalars::ScalarType *python::py_buffer_to_scalar_type(const py::buffer_inf
         case 'd':
             return ScalarType::of<double>();
         default:
-            throw py::type_error("no matching type for buffer type " + std::string(&python_format));
+            throw py::type_error("no matching type for buffer type " + string(&python_format));
     }
     // TODO: Add custom type handling
 
@@ -249,7 +249,7 @@ const scalars::ScalarType *python::py_arg_to_ctype(const pybind11::object &arg) 
         return reinterpret_cast<python::PyScalarMetaType *>(arg.ptr())->tp_ctype;
     }
     if (py::isinstance<py::str>(arg)) {
-        return scalars::ScalarType::for_id(arg.cast<std::string>());
+        return scalars::ScalarType::for_id(arg.cast<string>());
     }
     return nullptr;
 }

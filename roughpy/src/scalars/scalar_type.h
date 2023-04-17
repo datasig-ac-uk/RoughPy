@@ -153,8 +153,8 @@ inline const scalars::ScalarType *to_stype_ptr(const py::handle &arg) {
     return reinterpret_cast<PyScalarMetaType *>(arg.ptr())->tp_ctype;
 }
 
-char format_to_type_char(const std::string& fmt);
-std::string py_buffer_to_type_id(const py::buffer_info& info);
+char format_to_type_char(const string& fmt);
+string py_buffer_to_type_id(const py::buffer_info& info);
 
 const scalars::ScalarType* py_buffer_to_scalar_type(const py::buffer_info& info);
 const scalars::ScalarType* py_type_to_scalar_type(const py::type& type);
@@ -162,7 +162,7 @@ const scalars::ScalarType *py_arg_to_ctype(const py::object &arg);
 
 py::type scalar_type_to_py_type(const scalars::ScalarType* type);
 
-inline std::string pytype_name(const py::type &type) {
+inline string pytype_name(const py::type &type) {
     return {reinterpret_cast<PyTypeObject *>(type.ptr())->tp_name};
 }
 

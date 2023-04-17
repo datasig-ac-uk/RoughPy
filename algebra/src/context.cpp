@@ -191,7 +191,7 @@ base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth) {
     return s_base_context_cache.back();
 }
 context_pointer rpy::algebra::get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype,
-                            const std::vector<std::pair<std::string, std::string>> &preferences) {
+                            const std::vector<std::pair<string, string>> &preferences) {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
     auto& maker_list = get_context_maker_list();
 

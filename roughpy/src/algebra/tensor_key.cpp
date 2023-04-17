@@ -45,7 +45,7 @@ python::PyTensorKey::PyTensorKey(algebra::TensorBasis basis, key_type key)
 python::PyTensorKey::operator key_type() const noexcept {
     return m_key;
 }
-std::string python::PyTensorKey::to_string() const {
+string python::PyTensorKey::to_string() const {
     std::stringstream ss;
     ss << '(';
     bool not_first = false;

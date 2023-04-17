@@ -53,7 +53,7 @@ class ROUGHPY_SCALARS_EXPORT ScalarInterface {
     virtual scalar_t as_scalar() const = 0;
     virtual void assign(ScalarPointer) = 0;
     virtual void assign(const Scalar &other) = 0;
-    virtual void assign(const void *data, const std::string &type_id) = 0;
+    virtual void assign(const void *data, const string &type_id) = 0;
 
     virtual ScalarPointer to_pointer() = 0;
     virtual ScalarPointer to_pointer() const noexcept = 0;

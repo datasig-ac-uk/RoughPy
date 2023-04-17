@@ -36,6 +36,7 @@
 #include <roughpy/core/traits.h>
 
 
+
 namespace rpy {
 namespace algebra {
 
@@ -58,7 +59,7 @@ public:
 
     virtual ~BasisInterface() = default;
 
-    virtual std::string key_to_string(const key_type& key) const = 0;
+    virtual string key_to_string(const key_type& key) const = 0;
 
     virtual dimn_t dimension() const noexcept = 0;
 };
@@ -73,7 +74,7 @@ class OrderedBasisImplementationMixin;
 }
 
 template <typename Derived, typename Base>
-class OrderedBasisInterface : public traits::void_or_base<Base> {
+class OrderedBasisInterface : public void_or_base<Base> {
 
 public:
     using typename Base::key_type;
@@ -100,7 +101,7 @@ class WordLikeBasisImplementationMixin;
 }
 
 template <typename Derived, typename Base>
-class WordLikeBasisInterface : public traits::void_or_base<Base> {
+class WordLikeBasisInterface : public void_or_base<Base> {
 public:
     using typename Base::key_type;
 
@@ -136,7 +137,7 @@ template <typename PrimaryInterface>
 class Basis : public PrimaryInterface::mixin_t {
     using basis_interface = PrimaryInterface;
     static_assert(
-        traits::is_base_of<
+        is_base_of<
             BasisInterface<PrimaryInterface, typename basis_interface::key_type>,
             basis_interface>::value,
         "Primary template must be an instance of BasisInterface");
@@ -157,7 +158,7 @@ public:
 
     const basis_interface &instance() const noexcept { return *p_impl; }
 
-    std::string key_to_string(const key_type &key) const noexcept {
+    string key_to_string(const key_type &key) const noexcept {
         return instance().key_to_string(key);
     }
 

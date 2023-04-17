@@ -125,8 +125,8 @@ public:
      * @return pointer to underlying type of T
      */
     template <typename T>
-    traits::ensure_pointer<T> raw_cast() const noexcept {
-        return static_cast<traits::ensure_pointer<T>>(p_data);
+    ensure_pointer<T> raw_cast() const noexcept {
+        return static_cast<ensure_pointer<T>>(p_data);
     }
 
     /**
@@ -135,11 +135,11 @@ public:
      * @return pointer to underlying type of T
      */
     template <typename T, typename=std::enable_if_t<!std::is_const<std::remove_pointer_t<T>>::value>>
-    traits::ensure_pointer<T> raw_cast() {
+    ensure_pointer<T> raw_cast() {
         if (m_constness == IsConst) {
             throw std::runtime_error("cannot cast const pointer to non-const pointer");
         }
-        return static_cast<traits::ensure_pointer<T>>(const_cast<void*>(p_data));
+        return static_cast<ensure_pointer<T>>(const_cast<void*>(p_data));
     }
 
     /**

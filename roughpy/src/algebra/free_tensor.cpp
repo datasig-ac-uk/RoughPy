@@ -146,7 +146,7 @@ void python::init_free_tensor(py::module_ &m) {
     options.disable_function_signatures();
 
     pybind11::class_<FreeTensor> klass(m, "FreeTensor", FREE_TENSOR_DOC);
-    klass.def(py::init(&construct_free_tensor), "data"_a);
+    klass.def(py::init(&construct_free_tensor), "data"_a=py::none());
 
     python::setup_algebra_type(klass);
 

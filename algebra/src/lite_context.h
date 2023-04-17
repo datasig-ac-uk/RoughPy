@@ -498,7 +498,7 @@ template <typename Coefficients>
 LiteContext<Coefficients>::LiteContext(deg_t width, deg_t depth)
     : dtl::LiteContextBasisHolder(width, depth),
       Context(width, depth, scalars::ScalarType::of<scalar_type>(),
-              std::string("libalgebra_lite"),
+              string("libalgebra_lite"),
               p_lbasis->sizes().data(), p_tbasis->sizes().data()),
       m_tensor_basis(&*p_tbasis), m_lie_basis(&*p_lbasis),
       p_ftmul(lal::multiplication_registry<lal::free_tensor_multiplication>::get(*p_tbasis)),

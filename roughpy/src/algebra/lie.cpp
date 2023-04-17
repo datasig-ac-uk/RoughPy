@@ -91,7 +91,7 @@ void python::init_lie(py::module_ &m) {
     options.disable_function_signatures();
 
     pybind11::class_<Lie> klass(m, "Lie", LIE_DOC);
-    klass.def(py::init(&construct_lie), "data"_a);
+    klass.def(py::init(&construct_lie), "data"_a=py::none());
 
     setup_algebra_type(klass);
 

@@ -201,12 +201,12 @@ struct type_of_T_not_defined {
 
 
 template <typename T>
-inline traits::remove_cv_ref_t<T> scalar_cast(const Scalar& scalar) {
+inline remove_cv_ref_t<T> scalar_cast(const Scalar& scalar) {
     if (scalar.is_zero()) {
         return T(0);
     }
-    using bare_t = traits::remove_cv_ref_t<T>;
-    using impl_t = traits::detected_or_t<dtl::type_of_T_not_defined<bare_t>,
+    using bare_t = remove_cv_ref_t<T>;
+    using impl_t = detected_or_t<dtl::type_of_T_not_defined<bare_t>,
         dtl::type_of_T_defined, bare_t>;
 
     // Now we are sure that scalar.type() != nullptr

@@ -60,7 +60,7 @@ void python::assign_py_object_to_scalar(scalars::ScalarPointer ptr, pybind11::ha
         // TODO: other checks
 
         auto tp = py::type::of(object);
-        throw py::value_error("bad conversion from " + tp.cast<std::string>() + " to " + ptr.type()->info().name);
+        throw py::value_error("bad conversion from " + tp.cast<string>() + " to " + ptr.type()->info().name);
     }
 }
 
@@ -293,7 +293,7 @@ static void check_and_set_dtype(python::PyToBufferOptions &options,
 
 static bool check_ground_type(py::handle object, ground_data_type &ground_type, python::PyToBufferOptions &options) {
     py::handle scalar;
-    if (is_scalar(object)) {
+    if (::is_scalar(object)) {
         if (ground_type == ground_data_type::UnSet) {
             ground_type = ground_data_type::Scalars;
         } else if (ground_type != ground_data_type::Scalars) {
