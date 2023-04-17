@@ -1,0 +1,14 @@
+Sam Morley for the core RoughPy components
+Terry Lyons for core features and design
+
+RoughPy is substantially based on LibRDE (Terry Lyons, Stephen Buckley, Djalil Chafai, Greg Gyurkó,
+Arend Janssen, Sam Morley, and Philippa Rubin), Libalgebra (Terry Lyons, Stephen Buckley,
+Djalil Chafai, Greg Gyurkó, Arend Janssen, and Hao Ni), and Esig (Terry Lyons, Greg Gyurkó,
+Alexandru Cioba, Radoslaw Kowalski, David Maxwell, Nick Barlow, Roly Perera, and Sam Morley)
+
+
+Institutions
+------------
+DataSig EPSRC Programme Grant for providing funding
+The Alan Turing Institute Defence & Security Programme for providing funding
+The Alan Turing Institute Data Centric Engineering Programme for providing funding
