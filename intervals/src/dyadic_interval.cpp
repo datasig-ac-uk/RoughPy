@@ -37,6 +37,7 @@
 
 #include "real_interval.h"
 
+using namespace rpy;
 using namespace rpy::intervals;
 
 DyadicInterval::DyadicInterval(Dyadic dyadic,

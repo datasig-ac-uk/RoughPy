@@ -30,6 +30,7 @@
 
 #include "dyadic.h"
 #include "interval.h"
+#include <roughpy/core/implementation_types.h>
 
 #include <iosfwd>
 #include <vector>
