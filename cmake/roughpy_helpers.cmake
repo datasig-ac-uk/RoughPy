@@ -12,126 +12,111 @@ function(_get_component_name _out_var _component)
     set(${_out_var} ${_comp_name} PARENT_SCOPE)
 endfunction()
 
-function(add_roughpy_interface_lib _name)
-    cmake_parse_arguments(
-            ARG
-            ""
-            ""
-            "PUBLIC_DEPS;DEFINITIONS;PUBLIC_HEADERS"
-            ${ARGN}
-    )
 
-    set(_real_name "RoughPy_${_name}")
-    set(_alias_name "RoughPy::${_name}")
-    cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
-    _get_component_name(_component_name ${_component})
+function(_check_and_set_libtype _out _shared _static _interface)
+    if (_shared)
 
-    if (ARG_PVT_INCLUDE_DIR)
-        set(_private_include_dir ${ARG_PVT_INCLUDE_DIR})
+        if (_static OR _interface)
+            message(FATAL_ERROR "Library cannot be both SHARED and STATIC or INTERFACE")
+        endif ()
+
+        set(${_out} SHARED PARENT_SCOPE)
+
+    elseif (_static)
+        if (_interface)
+            message(FATAL_ERROR "Library cannot be both STATIC and INTERFACE")
+        endif ()
+
+        set(${_out} STATIC PARENT_SCOPE)
+    elseif (_interface)
+        set(${_out} INTERFACE PARENT_SCOPE)
     else ()
-        set(_private_include_path "include/roughpy/${_component}/")
-    endif ()
-    if (NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${_private_include_path}")
-        message(FATAL_ERROR "The path ${_private_include_path} does not exist")
+        set(${_out} SHARED PARENT_SCOPE)
     endif ()
 
-    add_library(${_real_name} INTERFACE)
-    add_library(${_alias_name} ALIAS ${_real_name})
-    message(STATUS "Adding library ${_alias_name}")
-
-    target_sources(${_real_name} INTERFACE ${ARGS_PUBLIC_HEADERS})
-
-    target_include_directories(${_real_name}
-            INTERFACE
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-            )
-
-    set_target_properties(${_real_name} PROPERTIES
-            PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
-            LINKER_LANGUAGE CXX
-            CXX_DEFAULT_VISIBILITY hidden
-            VISIBILITY_INLINES_HIDDEN ON
-            )
-
-    target_link_libraries(${_real_name}
-            PUBLIC
-            ${ARG_PUBLIC_DEPS}
-            )
 
 endfunction()
-
-
 
 function(add_roughpy_lib _name)
     cmake_parse_arguments(
             ARG
-            ""
+            "STATIC;SHARED;INTERFACE"
             "PVT_INCLUDE_DIR"
             "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS"
             ${ARGN}
     )
 
-    if (RPY_BUILD_STATIC_LIBS)
-        set(_lib_type STATIC)
-    else ()
-        set(_lib_type SHARED)
-    endif ()
+    _check_and_set_libtype(_lib_type ${ARG_SHARED} ${ARG_STATIC} ${ARG_INTERFACE})
 
     set(_real_name "RoughPy_${_name}")
     set(_alias_name "RoughPy::${_name}")
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
     _get_component_name(_component_name ${_component})
 
-    if (ARG_PVT_INCLUDE_DIR)
-        set(_private_include_dir ${ARG_PVT_INCLUDE_DIR})
-    else()
-        set(_private_include_path "include/roughpy/${_component}/")
-    endif()
-    if (NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${_private_include_path}")
-        message(FATAL_ERROR "The path ${_private_include_path} does not exist")
+    if (NOT _lib_type STREQUAL INTERFACE)
+        if (ARG_PVT_INCLUDE_DIR)
+            set(_private_include_dir ${ARG_PVT_INCLUDE_DIR})
+        else ()
+            set(_private_include_path "include/roughpy/${_component}/")
+        endif ()
+        if (NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${_private_include_path}")
+            message(FATAL_ERROR "The path ${_private_include_path} does not exist")
+        endif ()
     endif ()
 
     add_library(${_real_name} ${_lib_type})
     add_library(${_alias_name} ALIAS ${_real_name})
-    message(STATUS "Adding library ${_alias_name}")
+    message(STATUS "Adding library ${_alias_name} version ${PROJECT_VERSION}")
 
-    target_include_directories(${_real_name}
-            PRIVATE
-            "${_private_include_path}"
-            PUBLIC
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-            )
-
-    generate_export_header(${_real_name})
-
-    target_sources(${_real_name}
-            PUBLIC
-            ${ARG_PUBLIC_HEADERS}
-            PRIVATE
-            ${ARG_SOURCES}
-            )
+    if (NOT ${_lib_type} STREQUAL INTERFACE)
+        target_include_directories(${_real_name}
+                PRIVATE
+                "${_private_include_path}"
+                PUBLIC
+                "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+                "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+                )
+        generate_export_header(${_real_name})
+        target_sources(${_real_name}
+                PUBLIC
+                ${ARG_PUBLIC_HEADERS}
+                PRIVATE
+                ${ARG_SOURCES}
+                )
+        target_link_libraries(${_real_name}
+                PUBLIC
+                ${ARG_PUBLIC_DEPS}
+                PRIVATE
+                ${ARG_PRIVATE_DEPS}
+                )
+    else ()
+        target_include_directories(${_real_name} INTERFACE
+                "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+                "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+                )
+        target_sources(${_real_name} INTERFACE ${ARG_PUBLIC_HEADERS})
+        target_link_libraries(${_real_name} INTERFACE ${ARG_PUBLIC_DEPS})
+    endif ()
 
     set_target_properties(${_real_name} PROPERTIES
             PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
             LINKER_LANGUAGE CXX
             CXX_DEFAULT_VISIBILITY hidden
             VISIBILITY_INLINES_HIDDEN ON
+            VERSION "${PROJECT_VERSION}"
             )
+    if (_lib_type STREQUAL SHARED)
+        set_target_properties(${_real_name} PROPERTIES
+                SOVERSION ${PROJECT_VERSION_MAJOR})
 
-    if (RPY_BUILD_STATIC_LIBS)
+    endif ()
+
+    if (_lib_type STREQUAL STATIC)
         set_target_properties(${_real_name} PROPERTIES
                 POSITION_INDEPENDENT_CODE ON)
     endif ()
-
-    target_link_libraries(${_real_name}
-            PUBLIC
-            ${ARG_PUBLIC_DEPS}
-            PRIVATE
-            ${ARG_PRIVATE_DEPS}
-            )
 
 
 endfunction()
@@ -340,14 +325,13 @@ optional<algebra::base_context_pointer> algebra::${_class_name}Maker::get_base_c
 }
 
 "
-        )
+                )
 
         target_sources(${_target} PRIVATE
                 ${_header_name}
                 ${_bin_dir}/${_class_name}Maker.cpp
                 )
-    endif()
-
+    endif ()
 
 
     set(_file_name "${_bin_dir}/${_tname}_${_width}_${_depth}_${_ctype}.cpp")
@@ -402,15 +386,15 @@ function(add_libalgebra_contexts _name)
 
     if (ARG_CLASS_NAME)
         set(_class_name ${ARG_CLASS_NAME})
-    else()
+    else ()
         set(_class_name LAContext)
-    endif()
+    endif ()
 
     if (ARG_CLASS_HEADER)
         set(_class_header ${ARG_CLASS_HEADER})
-    else()
+    else ()
         set(_class_header "roughpy/la_context.h")
-    endif()
+    endif ()
 
     unset(_ctypes)
     if (ARG_COEFFS)

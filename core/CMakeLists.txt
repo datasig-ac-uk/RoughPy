@@ -7,7 +7,7 @@ project(RoughPy_Core
 
 include(GNUInstallDirs)
 
-add_roughpy_interface_lib(Core
+add_roughpy_lib(Core INTERFACE
     PUBLIC_HEADERS
         include/roughpy/core/implementation_types.h
         include/roughpy/core/traits.h

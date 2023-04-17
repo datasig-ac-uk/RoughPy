@@ -111,3 +111,14 @@ if(ROUGHPY_LINK_NUMPY)
     target_compile_definitions(RoughPy_PyModule PRIVATE
         ROUGHPY_WITH_NUMPY)
 endif()
+
+
+get_target_property(RoughPy_Core_VERSION RoughPy::Core VERSION)
+get_target_property(RoughPy_Platform_VERSION RoughPy::Platform VERSION)
+get_target_property(RoughPy_Scalars_VERSION RoughPy::Scalars VERSION)
+get_target_property(RoughPy_Intervals_VERSION RoughPy::Intervals VERSION)
+get_target_property(RoughPy_Algebra_VERSION RoughPy::Algebra VERSION)
+get_target_property(RoughPy_Streams_VERSION RoughPy::Streams VERSION)
+
+
+configure_file(${CMAKE_SOURCE_DIR}/cmake/version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)

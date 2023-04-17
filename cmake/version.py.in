@@ -1,0 +1,13 @@
+
+
+
+__version__ = "@RoughPy_PyModule_VERSION@"
+
+PYMODULE_VERSION = __version__
+
+CORE_VERSION = "@RoughPy_Core_VERSION@"
+PLATFORM_VERSION = "@RoughPy_Platform_VERSION@"
+SCALARS_VERSION = "@RoughPy_Scalars_VERSION@"
+INTERVALS_VERSION = "@RoughPy_Intervals_VERSION@"
+ALGEBRA_VERSION = "@RoughPy_Algebra_VERSION@"
+STREAMS_VERSION = "@RoughPy_Streams_VERSION@"
