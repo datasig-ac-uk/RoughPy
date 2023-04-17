@@ -224,7 +224,7 @@ public:
 };
 
 #define RPY_ALGEBRA_DECLARE_CTX_MAKER(MAKER, ...) \
-    static RPY_USED RegisterMakerHelper<MAKER> rpy_static_algebra_maker_decl_##MAKER = RegisterMakerHelper<MAKER>(__VA_ARGS__)
+    static RegisterMakerHelper<MAKER> rpy_static_algebra_maker_decl_##MAKER = RegisterMakerHelper<MAKER>(__VA_ARGS__)
 
 }// namespace algebra
 }// namespace rpy
