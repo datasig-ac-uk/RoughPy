@@ -31,6 +31,7 @@
 #include "scalars_fwd.h"
 
 #include <roughpy/core/traits.h>
+#include <roughpy/core/helpers.h>
 
 
 #ifndef RPY_IF_CONSTEXPR
@@ -39,43 +40,185 @@
 
 namespace rpy { namespace scalars {
 
-namespace dtl {
+
+namespace flags {
+
+enum Constness : uint32_t {
+    IsMutable = 0,
+    IsConst = 1,
+};
+
+enum PointerType : uint32_t {
+    BorrowedPointer = 0,
+    OwnedPointer = 2,
+    InterfacePointer = 4,
+    SimpleInteger = 8
+};
+
+
+enum IntegerSign : uint32_t {
+    Unsigned = 0,
+    Signed = 1 << 7
+};
+
+enum IntegerType : uint32_t {
+    UnsignedInteger8    = Unsigned | 0 << 4 | SimpleInteger,    // (2**0) bytes
+    SignedInteger8      =   Signed | 0 << 4 | SimpleInteger,    // (2**0) bytes
+    UnsignedInteger16   = Unsigned | 2 << 4 | SimpleInteger,    // (2**1) bytes
+    SignedInteger16     =   Signed | 2 << 4 | SimpleInteger,    // (2**1) bytes
+    UnsignedInteger32   = Unsigned | 3 << 4 | SimpleInteger,    // (2**2) bytes
+    SignedInteger32     =   Signed | 3 << 4 | SimpleInteger,    // (2**2) bytes
+    UnsignedInteger64   = Unsigned | 4 << 4 | SimpleInteger,    // (2**3) bytes
+    SignedInteger64     =   Signed | 4 << 4 | SimpleInteger,    // (2**3) bytes
+    UnsignedSize        = Unsigned | 7 << 4 | SimpleInteger,    // Special
+    SignedSize          =   Signed | 7 << 4 | SimpleInteger,    // Special
+};
+
+
+
 }
 
 
 class ScalarPointer {
+    using Constness = flags::Constness;
+
+protected:
+    static constexpr uint32_t constness_flag     = 1;
+    static constexpr uint32_t owning_flag        = 1 << 1;
+    static constexpr uint32_t interface_flag     = 1 << 2;
+    static constexpr uint32_t integer_type_flag  = 1 << 3;
+    static constexpr uint32_t integer_bits_0     = 1 << 4;
+    static constexpr uint32_t integer_bits_1     = 1 << 5;
+    static constexpr uint32_t integer_bits_2     = 1 << 6;
+    static constexpr uint32_t signed_flag        = 1 << 7;
+
+    static constexpr uint32_t pointer_flags = constness_flag
+                                            | interface_flag
+                                            | owning_flag
+                                            | integer_type_flag
+                                            | integer_bits_0
+                                            | integer_bits_1
+                                            | integer_bits_2
+                                            | signed_flag;
+
 public:
-    enum Constness : uint32_t {
-        IsConst,
-        IsMutable
-    };
 
 protected:
     const ScalarType *p_type = nullptr;
     const void *p_data = nullptr;
-//    uint32_t m_flags;
+    uint32_t m_flags = 0;
 
 
-    Constness m_constness = IsMutable;
+//    Constness m_constness = IsMutable;
 
 
 public:
 
     ScalarPointer(const ScalarType *type, const void *data, Constness constness)
-        : p_type(type), p_data(data), m_constness(constness) {}
+        : p_type(type), p_data(data), m_flags(flags::BorrowedPointer | constness) {}
 
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
 
     ScalarPointer() = default;
 
-    explicit ScalarPointer(const ScalarType *type) : p_type(type) {}
+
+    ScalarPointer(const ScalarType* type, void* data, uint32_t flag)
+        : p_type(type), p_data(data), m_flags(flag)
+    {}
+
+    ScalarPointer(const ScalarType* type, const void* data, uint32_t flag)
+        : p_type(type), p_data(data), m_flags(flag)
+    {}
+
+    explicit ScalarPointer(const ScalarType *type) : p_type(type)
+    {}
 
     ScalarPointer(const ScalarType* type, void* ptr)
-        : p_type(type), p_data(ptr), m_constness(IsMutable)
+        : p_type(type), p_data(ptr), m_flags(flags::BorrowedPointer | flags::IsMutable)
     {}
     ScalarPointer(const ScalarType* type, const void* ptr)
-        : p_type(type), p_data(ptr), m_constness(IsConst)
+        : p_type(type), p_data(ptr), m_flags(flags::BorrowedPointer | flags::IsConst)
+    {}
+
+    explicit ScalarPointer(uint8_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::UnsignedInteger8 | flags::BorrowedPointer | flags::IsMutable)
+    {}
+
+    explicit ScalarPointer(const uint8_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::UnsignedInteger8 | flags::BorrowedPointer | flags::IsConst)
+    {}
+
+    explicit ScalarPointer(int8_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::SignedInteger8 | flags::BorrowedPointer | flags::IsMutable)
+    {}
+
+    explicit ScalarPointer(const int8_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::SignedInteger8 | flags::BorrowedPointer | flags::IsConst)
+    {}
+
+    explicit ScalarPointer(uint16_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::UnsignedInteger16 | flags::BorrowedPointer | flags::IsMutable)
+    {}
+
+    explicit ScalarPointer(const uint16_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::UnsignedInteger16 | flags::BorrowedPointer | flags::IsConst)
+    {}
+
+    explicit ScalarPointer(int16_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::SignedInteger16 | flags::BorrowedPointer | flags::IsMutable)
+    {}
+
+    explicit ScalarPointer(const int16_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::SignedInteger16 | flags::BorrowedPointer | flags::IsConst)
+    {}
+
+    explicit ScalarPointer(uint32_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::UnsignedInteger32 | flags::BorrowedPointer | flags::IsMutable)
+    {}
+
+    explicit ScalarPointer(const uint32_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::UnsignedInteger32 | flags::BorrowedPointer | flags::IsConst)
+    {}
+
+    explicit ScalarPointer(int32_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::SignedInteger32 | flags::BorrowedPointer | flags::IsMutable)
+    {}
+
+    explicit ScalarPointer(const int32_t* ptr)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::SignedInteger32 | flags::BorrowedPointer | flags::IsConst)
+    {}
+
+    explicit ScalarPointer(size_t* ptr, unsigned_size_type_marker)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::UnsignedSize | flags::BorrowedPointer | flags::IsMutable)
+    {}
+
+    explicit ScalarPointer(const size_t* ptr, unsigned_size_type_marker)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::UnsignedSize | flags::BorrowedPointer | flags::IsConst)
+    {}
+
+    explicit ScalarPointer(ptrdiff_t* ptr, signed_size_type_marker)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::SignedSize | flags::BorrowedPointer | flags::IsMutable)
+    {}
+
+    explicit ScalarPointer(const ptrdiff_t* ptr, signed_size_type_marker)
+        : p_type(nullptr), p_data(ptr),
+          m_flags(flags::SignedSize | flags::BorrowedPointer | flags::IsConst)
     {}
 
 
@@ -85,7 +228,7 @@ public:
      * @brief Get whether the pointer is const or not
      * @return bool, true if pointer is const
      */
-    bool is_const() const noexcept { return m_constness == IsConst; }
+    bool is_const() const noexcept { return (m_flags & constness_flag) != 0; }
 
     /**
      * @brief Get whether the pointer is the null pointer
@@ -136,7 +279,7 @@ public:
      */
     template <typename T, typename=std::enable_if_t<!std::is_const<std::remove_pointer_t<T>>::value>>
     ensure_pointer<T> raw_cast() {
-        if (m_constness == IsConst) {
+        if (is_const()) {
             throw std::runtime_error("cannot cast const pointer to non-const pointer");
         }
         return static_cast<ensure_pointer<T>>(const_cast<void*>(p_data));
@@ -173,6 +316,13 @@ public:
     Scalar operator[](size_type index);
 
     difference_type operator-(const ScalarPointer &right) const noexcept;
+
+
+protected:
+
+    constexpr bool is_owning() const noexcept { return (m_flags & owning_flag) != 0; }
+
+    constexpr bool is_interface() const noexcept { return (m_flags & interface_flag) != 0; }
 
 };
 

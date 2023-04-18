@@ -43,35 +43,21 @@ namespace rpy {
 namespace scalars {
 
 class Scalar : private ScalarPointer {
-    using ScalarPointer::IsConst;
-    using ScalarPointer::IsMutable;
-    using ScalarPointer::m_constness;
 
 public:
 
-    enum PointerType {
-        OwnedPointer,
-        BorrowedPointer,
-        InterfacePointer
-    };
-
-private:
-
-    PointerType m_pointer_type = OwnedPointer;
-
-
-public:
     Scalar() = default;
     Scalar(const Scalar &other);
     Scalar(Scalar &&other) noexcept;
-
     explicit Scalar(const ScalarType *type);
+
     explicit Scalar(scalar_t arg);
     explicit Scalar(ScalarPointer ptr);
     explicit Scalar(ScalarInterface *interface_ptr);
-    Scalar(ScalarPointer ptr, PointerType ptype);
-
+    Scalar(ScalarPointer ptr, flags::PointerType ptype);
     Scalar(const ScalarType *type, scalar_t arg);
+
+    Scalar(ScalarPointer other, uint32_t new_flags);
 
     template <typename I, typename J, typename = std::enable_if_t<std::is_integral<I>::value && std::is_integral<J>::value>>
     Scalar(const ScalarType *type, I numerator, J denominator) {
@@ -113,18 +99,18 @@ public:
         if (p_type == nullptr) {
             p_type = ScalarType::of<std::decay_t<T>>();
         } else {
-            if (m_constness == IsConst) {
+            if (is_const()) {
                 throw std::runtime_error("attempting to assign value to const scalar");
             }
         }
 
         if (p_data == nullptr) {
-            m_pointer_type = OwnedPointer;
+            m_flags |= flags::OwnedPointer;
             ScalarPointer::operator=(p_type->allocate(1));
         }
 
         const auto &type_id = type_id_of<T>();
-        if (m_pointer_type == InterfacePointer) {
+        if ((m_flags & interface_flag) != 0) {
             static_cast<ScalarInterface *>(const_cast<void *>(p_data))
                 ->assign(std::addressof(arg), type_id);
         } else {

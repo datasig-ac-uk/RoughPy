@@ -42,10 +42,6 @@ using namespace rpy;
 using namespace rpy::scalars;
 
 KeyScalarArray::~KeyScalarArray() {
-    if (p_type != nullptr && m_scalars_owned) {
-        auto size = ScalarArray::size();
-        p_type->free(*this, size);
-    }
     if (m_keys_owned) {
         delete[] p_keys;
     }
@@ -54,7 +50,7 @@ KeyScalarArray::~KeyScalarArray() {
 KeyScalarArray::KeyScalarArray(const KeyScalarArray &other)
     : ScalarArray(other.type()->allocate(other.size()), other.size()),
       m_scalars_owned(true) {
-    m_constness = IsMutable;
+
     if (other.p_data != nullptr) {
         p_type->convert_copy(const_cast<void *>(p_data), other, m_size);
 
@@ -71,7 +67,7 @@ KeyScalarArray::KeyScalarArray(KeyScalarArray &&other) noexcept
       p_keys(other.p_keys),
       m_scalars_owned(other.m_scalars_owned),
       m_keys_owned(other.m_keys_owned) {
-    m_constness = IsMutable;
+
     other.m_scalars_owned = false;
     other.p_keys = nullptr;
     other.p_data = nullptr;
@@ -79,7 +75,6 @@ KeyScalarArray::KeyScalarArray(KeyScalarArray &&other) noexcept
 }
 KeyScalarArray::KeyScalarArray(OwnedScalarArray &&sa) noexcept
     : ScalarArray(std::move(sa)), m_scalars_owned(true) {
-    m_constness = IsMutable;
 }
 KeyScalarArray::KeyScalarArray(ScalarArray base, const key_type *keys)
     : ScalarArray(base), p_keys(keys), m_keys_owned(false) {

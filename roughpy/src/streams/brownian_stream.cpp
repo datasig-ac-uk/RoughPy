@@ -48,7 +48,18 @@ static py::object Brownian_from_generator(const py::args& args, const py::kwargs
 
     auto pmd = python::kwargs_to_metadata(kwargs);
 
-    if (pmd.ctx == nullptr && pmd.width != 0 && pmd.depth != 0 && pmd.scalar_type != nullptr) {
+    if (pmd.scalar_type == nullptr) {
+        pmd.scalar_type = scalars::ScalarType::of<double>();
+    }
+
+    if (pmd.depth == 0) {
+        pmd.depth = 2;
+    }
+
+    if (pmd.ctx == nullptr) {
+        if (pmd.width == 0) {
+            throw std::invalid_argument("width must be provided");
+        }
         pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type, {});
     }
 

@@ -154,7 +154,7 @@ static PyObject *RPyContext_compute_signature(PyObject *self, PyObject *args, Py
 
         auto n_increments = options.shape.size();
         for (dimn_t i = 0; i < n_increments; ++i) {
-            request.data_stream.push_back({ctype, p_buffer,
+            request.data_stream.push_back({{ctype, p_buffer},
                                            static_cast<dimn_t>(options.shape[i])});
             request.key_stream.push_back(p_keys);
             p_buffer += options.shape[i] * itemsize;

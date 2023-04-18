@@ -62,7 +62,7 @@ Scalar ScalarType::from(long long int numerator, long long int denominator) cons
     }
     auto result = allocate(1);
     assign(result, numerator, denominator);
-    return {result, Scalar::OwnedPointer};
+    return {result, flags::OwnedPointer};
 }
 void ScalarType::convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const string &id) const {
     if (!id.empty()) {
@@ -99,7 +99,7 @@ Scalar ScalarType::copy(ScalarPointer source) const {
     auto result = allocate(1);
     convert_copy(result, source, 1);
 
-    return {result, Scalar::OwnedPointer};
+    return {result, flags::OwnedPointer};
 }
 Scalar ScalarType::add(ScalarPointer lhs, ScalarPointer rhs) const {
     auto result = copy(lhs);

@@ -40,19 +40,19 @@
 using namespace rpy::scalars;
 
 void *ScalarPointer::ptr() {
-    if (m_constness == IsConst) {
+    if (is_const()) {
         throw std::runtime_error("attempting to convert const pointer to non-const pointer");
     }
     return const_cast<void*>(p_data);
 }
 Scalar ScalarPointer::deref() const noexcept {
-    return Scalar(*this);
+    return Scalar(*this, (m_flags & ~owning_flag) | constness_flag) ;
 }
 Scalar ScalarPointer::deref_mut() {
-    if (m_constness == IsConst) {
+    if (is_const()) {
         throw std::runtime_error("attempting to dereference const pointer to non-const value");
     }
-    return Scalar(*this);
+    return Scalar(*this, m_flags & ~owning_flag);
 }
 Scalar ScalarPointer::operator*() {
     return deref_mut();
@@ -66,7 +66,7 @@ ScalarPointer ScalarPointer::operator+(ScalarPointer::size_type index) const noe
     }
 
     const auto* new_ptr = static_cast<const char*>(p_data) + index*p_type->itemsize();
-    return {p_type, static_cast<const void*>(new_ptr), m_constness};
+    return {p_type, static_cast<const void*>(new_ptr), m_flags & ~owning_flag};
 }
 ScalarPointer &ScalarPointer::operator+=(ScalarPointer::size_type index) noexcept {
     if (p_data != nullptr && p_type != nullptr) {

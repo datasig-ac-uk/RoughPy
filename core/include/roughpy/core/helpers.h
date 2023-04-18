@@ -68,6 +68,20 @@ bit_cast(From from) {
 
 
 
+// TODO: use popcount if available
+template <typename T>
+constexpr enable_if_t<is_integral<T>::value, size_t>
+count_bits(T val) noexcept {
+#if defined(__GNUC__) || defined(CLANG)
+    return __builtin_popcount(val);
+#else
+    retunrn 0;
+#endif
+}
+
+
+
+
 /**
  * @brief
  * @tparam T

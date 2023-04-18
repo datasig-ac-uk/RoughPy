@@ -49,9 +49,9 @@ RationalType::RationalType()
     : ScalarType({}) {}
 ScalarPointer RationalType::allocate(std::size_t count) const {
     if (count == 1) {
-        return ScalarPointer(this, new rational_scalar_type, ScalarPointer::IsMutable);
+        return ScalarPointer(this, new rational_scalar_type, flags::IsMutable | flags::OwnedPointer);
     } else {
-        return ScalarPointer(this, new rational_scalar_type[count], ScalarPointer::IsMutable);
+        return ScalarPointer(this, new rational_scalar_type[count], flags::IsMutable | flags::OwnedPointer);
     }
 }
 void RationalType::free(ScalarPointer pointer, std::size_t count) const {
