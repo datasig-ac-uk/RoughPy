@@ -82,7 +82,14 @@ endif()
 add_subdirectory(external/recombine)
 add_subdirectory(external/libalgebra)
 
-
+add_subdirectory(external/csv-parser)
+# The csv-parser CMakeLists.txt leaves much to be desired
+# Let's fix some of the problems now
+if(NOT TARGET csv::csv)
+    add_library(csv::csv ALIAS csv)
+    target_include_directories(csv INTERFACE
+            external/csv-parser/include)
+endif()
 
 
 add_subdirectory(core)
