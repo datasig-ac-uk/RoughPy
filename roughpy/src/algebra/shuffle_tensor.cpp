@@ -118,6 +118,13 @@ void rpy::python::init_shuffle_tensor(py::module_ &m) {
       return self[key];
     });
 
+    klass.def("__matmul__", [](const ShuffleTensor& shuf, const FreeTensor& arg) {
+            auto result = shuf->coeff_type()->zero();
+            for (auto&& item : shuf) {
+                result += item.value()*arg[item.key()];
+            }
+            return result;
+         }, py::is_operator());
 
     klass.def("__repr__", [](const ShuffleTensor &self) {
       std::stringstream ss;
