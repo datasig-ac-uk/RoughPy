@@ -10,6 +10,9 @@
 #include <boost/url.hpp>
 #include <boost/url/parse.hpp>
 
+#include "platform/filesystem.h"
+#include "platform/configuration.h"
+
 namespace rpy {
 
 using boost::url;

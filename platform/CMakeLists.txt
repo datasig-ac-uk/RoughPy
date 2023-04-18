@@ -5,10 +5,11 @@ project(Roughpy_Platform VERSION 0.0.1)
 
 add_roughpy_lib(Platform STATIC
     SOURCES
-        src/tmp.cpp
+        src/configuration.cpp
     PUBLIC_HEADERS
         include/roughpy/platform.h
         include/roughpy/platform/filesystem.h
+        include/roughpy/platform/configuration.h
     PUBLIC_DEPS
         RoughPy::Core
         Boost::boost
