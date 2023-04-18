@@ -188,6 +188,15 @@ public:
      */
     virtual void convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const string &id) const;
 
+
+    /**
+     * @brief Parse a string into this scalar type
+     * @param str string to be parsed
+     * @return new Scalar containing parsed value
+     */
+    virtual Scalar parse(string_view str) const;
+
+
     /**
      * @brief Get the scalar whose value is one
      * @return new Scalar object

@@ -83,6 +83,9 @@ void ScalarType::convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count,
         convert_copy({this, out_p}, out, 1);
     }
 }
+Scalar ScalarType::parse(string_view str) const {
+    throw std::runtime_error("could not parse string");
+}
 Scalar ScalarType::one() const {
     return from(1, 1);
 }
