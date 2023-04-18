@@ -29,9 +29,26 @@
 // Created by user on 16/04/23.
 //
 
-#include "csv_stream.h"
+#ifndef ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_CSV_DATA_SOURCE_H
+#define ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_CSV_DATA_SOURCE_H
 
-#include <rapidcsv.h>
+#include "external_data_stream.h"
 
-using namespace rpy;
-using namespace rpy::streams;
+
+namespace rpy {
+namespace streams {
+
+class CSVDataSource : public ExternalDataStreamSource {
+
+public:
+
+    explicit CSVDataSource()
+    {}
+
+    dimn_t query(scalars::KeyScalarArray &result, const intervals::Interval &interval) override;
+};
+
+}// namespace streams
+}// namespace rpy
+
+#endif//ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_CSV_DATA_SOURCE_H

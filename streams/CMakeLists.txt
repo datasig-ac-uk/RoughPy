@@ -22,8 +22,8 @@ add_roughpy_lib(Streams
         src/tick_stream.cpp
         src/brownian_stream.cpp
         src/external_data_stream.cpp
-        src/external_data_sources/csv_stream.cpp
-        src/external_data_sources/csv_stream.h
+        src/external_data_sources/csv_data_source.cpp
+        src/external_data_sources/csv_data_source.h
         src/external_data_sources/sound_file_data_source.cpp
         src/external_data_sources/sound_file_data_source.h
     PUBLIC_HEADERS
@@ -43,7 +43,6 @@ add_roughpy_lib(Streams
         RoughPy::Algebra
     PRIVATE_DEPS
         SndFile::sndfile
-        RapidCSV::rapidcsv
         )
 
 

@@ -29,16 +29,14 @@
 // Created by user on 16/04/23.
 //
 
-#ifndef ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_CSV_STREAM_H
-#define ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_CSV_STREAM_H
+#include "csv_data_source.h"
 
-namespace rpy {
-namespace streams {
 
-class CSVStream {
-};
+using namespace rpy;
+using namespace rpy::streams;
+dimn_t CSVDataSource::query(scalars::KeyScalarArray &result, const intervals::Interval &interval) {
 
-}// namespace streams
-}// namespace rpy
 
-#endif//ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_CSV_STREAM_H
+
+    return 0;
+}

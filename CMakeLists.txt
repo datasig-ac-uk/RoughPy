@@ -82,13 +82,6 @@ endif()
 add_subdirectory(external/recombine)
 add_subdirectory(external/libalgebra)
 
-# The Cmake setup for rapidcsv leaves much to be desired.
-# instead I'm going to define the target myself
-if (NOT TARGET RapidCSV::rapidcsv)
-    add_library(RapidCSV::rapidcsv IMPORTED INTERFACE)
-    target_include_directories(RapidCSV::rapidcsv INTERFACE
-            external/rapidcsv/src)
-endif()
 
 
 
