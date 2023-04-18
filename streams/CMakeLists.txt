@@ -43,6 +43,7 @@ add_roughpy_lib(Streams
         RoughPy::Algebra
     PRIVATE_DEPS
         SndFile::sndfile
+        csv::csv
         )
 
 
