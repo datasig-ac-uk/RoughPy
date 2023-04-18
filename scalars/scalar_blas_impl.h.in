@@ -1,0 +1,50 @@
+
+#cmakedefine RPY_USE_MKL
+
+#if @RPY_USE_MKL@
+#  include <mkl.h>
+#else
+#  include <cblas.h>
+#  include <lapack.h>
+#endif
+
+#include "scalar_matrix.h"
+
+namespace blas {
+
+#ifdef RPY_USE_MKL
+using integer = MKL_INT;
+#else
+using integer = blasint;
+#endif
+
+using BlasLayout = CBLAS_LAYOUT;
+using BlasTranspose = CBLAS_TRANSPOSE;
+using BlasUpLo = CBLAS_UPLO;
+using BlasDiag = CBLAS_DIAG;
+using BlasSide = CBLAS_SIDE;
+
+constexpr auto Blas_ColMajor = BlasLayout::CblasColMajor;
+constexpr auto Blas_RowMajor = BlasLayout::CblasRowMajor;
+
+constexpr auto Blas_NoTrans = BlasTranspose::CblasNoTrans;
+constexpr auto Blas_Trans = BlasTranspose::CblasTrans;
+
+constexpr auto Blas_Up = BlasUpLo::CblasUpper;
+constexpr auto Blas_Lo = BlasUpLo::CblasLower;
+
+constexpr auto Blas_DUnit = BlasDiag::CblasUnit;
+constexpr auto Blas_DNoUnit = BlasDiag::CblasNonUnit;
+
+constexpr auto Blas_Left = BlasSide::CblasLeft;
+constexpr auto Blas_Right = BlasSide::CblasRight;
+
+constexpr BlasLayout to_blas_layout(rpy::scalars::MatrixLayout layout) noexcept {
+return layout == rpy::scalars::MatrixLayout::CStype ? Blas_RowMajor : Blas_ColMajor;
+}
+
+constexpr BlasUpLo to_blas_uplo(rpy::scalars::MatrixStorage storage) noexcept {
+return storage == rpy::scalars::MatrixStorage::UpperTriangular ? Blas_Up : Blas_Lo;
+}
+
+}

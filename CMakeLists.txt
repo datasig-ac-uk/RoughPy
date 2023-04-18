@@ -52,6 +52,18 @@ if (DEFINED ENV{VIRTUAL_ENV})
 endif()
 
 
+find_package(Boost 1.81 REQUIRED COMPONENTS filesystem url)
+find_package(Eigen3 CONFIG REQUIRED)
+find_package(SndFile CONFIG REQUIRED)
+find_package(CURL REQUIRED)
+
+
+# This package is c++17 so cannot be used if changing to a lower standard
+find_package(tomlplusplus CONFIG REQUIRED)
+
+find_package(MKL CONFIG QUIET)
+
+
 add_subdirectory(external/libalgebra_lite)
 add_subdirectory(external/pybind11)
 # DLPACK has an annoying feature where it tries to build a demo
@@ -79,13 +91,6 @@ if (NOT TARGET RapidCSV::rapidcsv)
 endif()
 
 
-find_package(Boost 1.81 REQUIRED COMPONENTS filesystem url)
-find_package(Eigen3 CONFIG REQUIRED)
-find_package(SndFile CONFIG REQUIRED)
-find_package(CURL REQUIRED)
-
-# This package is c++17 so cannot be used if changing to a lower standard
-find_package(tomlplusplus CONFIG REQUIRED)
 
 add_subdirectory(core)
 add_subdirectory(platform)

@@ -31,3 +31,42 @@
 
 
 #include "scalar_matrix.h"
+
+#include "scalar_type.h"
+#include "scalar.h"
+
+rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type, rpy::deg_t rows, rpy::deg_t cols, rpy::scalars::MatrixStorage storage, rpy::scalars::MatrixLayout layout)
+    : ScalarArray(type, (void*) nullptr, 0),
+      m_nrows(rows), m_ncols(cols), m_layout(layout), m_storage(storage)
+{
+    if (p_type != nullptr && m_nrows > 0 && m_ncols > 0) {
+        const auto size = m_nrows * m_ncols;
+        ScalarPointer::operator=(p_type->allocate(size));
+        m_size = size;
+    }
+}
+rpy::scalars::ScalarMatrix::ScalarMatrix(rpy::deg_t rows, rpy::deg_t cols, rpy::scalars::ScalarArray &&array, rpy::scalars::MatrixStorage storage, rpy::scalars::MatrixLayout layout)
+    : ScalarArray(std::move(array)),
+      m_nrows(rows), m_ncols(cols), m_layout(layout), m_storage(storage)
+{
+    assert(m_nrows >= 0 && m_ncols >= 0);
+    assert(m_nrows * m_ncols == m_size);
+}
+rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::row(rpy::deg_t i) {
+    return rpy::scalars::ScalarMatrix(nullptr, 0, 0);
+}
+rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::row(rpy::deg_t i) const {
+    return rpy::scalars::ScalarMatrix(nullptr, 0, 0);
+}
+rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::col(rpy::deg_t i) {
+    return rpy::scalars::ScalarMatrix(nullptr, 0, 0);
+}
+rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::col(rpy::deg_t i) const {
+    return rpy::scalars::ScalarMatrix(nullptr, 0, 0);
+}
+rpy::scalars::ScalarPointer rpy::scalars::ScalarMatrix::data() const {
+    return rpy::scalars::ScalarPointer();
+}
+rpy::scalars::ScalarPointer rpy::scalars::ScalarMatrix::data() {
+    return rpy::scalars::ScalarPointer();
+}

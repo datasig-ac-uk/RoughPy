@@ -12,6 +12,9 @@ find_package(Boost 1.64 CONFIG REQUIRED COMPONENTS headers)
 
 option(RPY_SCALARS_SHARED "Build shared RoughPy scalars module" ON)
 
+set(RPY_USE_MKL ${MKL_FOUND})
+
+configure_file(scalar_blas_impl.h.in scalar_blas_impl.h @ONLY)
 add_roughpy_lib(Scalars
     SOURCES
         src/scalar_type.cpp
@@ -35,6 +38,10 @@ add_roughpy_lib(Scalars
         src/standard_random_generator.cpp
         src/standard_random_generator.h
         src/scalar_matrix.cpp
+        src/scalar_blas.cpp
+        src/float_blas.cpp
+        src/float_blas.h
+        ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_impl.h
     PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/scalar_pointer.h
@@ -47,12 +54,14 @@ add_roughpy_lib(Scalars
         include/roughpy/scalars/scalar_traits.h
         include/roughpy/scalars/random.h
         include/roughpy/scalars/scalar_matrix.h
-        include/roughpy/scalars/blas.h
+        include/roughpy/scalars/scalar_blas.h
         include/roughpy/scalars.h
     PUBLIC_DEPS
         RoughPy::Core
         Boost::boost
         PCGRandom::pcg_random
+        Eigen3::Eigen
+        "$<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,BLAS::BLAS LAPACK::LAPACK>"
     )
 
 
@@ -77,4 +86,5 @@ add_roughpy_test(scalar
             src/ScalarTests.h
             src/test_scalar.cpp
             src/test_scalar_type.cpp
+            src/test_float_blas.cpp
         )

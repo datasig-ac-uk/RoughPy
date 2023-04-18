@@ -57,11 +57,34 @@ class ROUGHPY_SCALARS_EXPORT ScalarMatrix
 
 public:
 
+    ScalarMatrix(const ScalarType* type,
+                 deg_t rows,
+                 deg_t cols,
+                 MatrixStorage=MatrixStorage::FullMatrix,
+                 MatrixLayout=MatrixLayout::CStype);
+
     ScalarMatrix(deg_t rows,
                  deg_t cols,
                  ScalarArray&& array,
                  MatrixStorage storage=MatrixStorage::FullMatrix,
                  MatrixLayout layout=MatrixLayout::CStype);
+
+    [[nodiscard]]
+    constexpr deg_t nrows() const noexcept { return m_nrows; }
+
+    [[nodiscard]]
+    constexpr deg_t ncols() const noexcept { return m_ncols; }
+
+    [[nodiscard]]
+    constexpr MatrixStorage storage() const noexcept
+    { return m_storage; }
+
+    [[nodiscard]]
+    constexpr MatrixLayout layout() const noexcept
+    { return m_layout; }
+
+    constexpr void layout(MatrixLayout new_layout) noexcept
+    { m_layout = new_layout; }
 
     ScalarMatrix row(deg_t i);
     ScalarMatrix row(deg_t i) const;

@@ -23,6 +23,9 @@ class ROUGHPY_SCALARS_EXPORT BlasInterface {
     const ScalarType* p_type;
 public:
 
+    [[nodiscard]]
+    const ScalarType* type() const noexcept { return p_type; }
+
     explicit BlasInterface(const ScalarType* type);
 
     virtual ~BlasInterface();
