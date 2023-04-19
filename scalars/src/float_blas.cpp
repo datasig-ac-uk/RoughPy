@@ -34,6 +34,7 @@
 
 #include "scalar.h"
 #include "scalar_array.h"
+#include "owned_scalar_array.h"
 #include "scalar_matrix.h"
 #include "scalar_pointer.h"
 #include "scalar_type.h"
@@ -41,10 +42,10 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-ScalarArray FloatBlas::vector_axpy(const ScalarArray &x, const Scalar &a, const ScalarArray &y) {
+OwnedScalarArray FloatBlas::vector_axpy(const ScalarArray &x, const Scalar &a, const ScalarArray &y) {
     const auto *type = BlasInterface::type();
     assert(x.type() == type && y.type() == type);
-    ScalarArray result(type->allocate(y.size()), y.size());
+    OwnedScalarArray result(type, y.size());
     type->convert_copy(result.ptr(), y, y.size());
 
     auto N = static_cast<blas::integer>(y.size());
@@ -81,7 +82,7 @@ Scalar FloatBlas::LInfNorm(const ScalarArray &vector) {
     auto result = ptr[idx];
     return {type(), result};
 }
-ScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix, const ScalarArray &vector) {
+OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix, const ScalarArray &vector) {
     assert(matrix.type() == type() && vector.type() == type());
 
     auto M = static_cast<blas::integer>(matrix.nrows());
@@ -92,8 +93,10 @@ ScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix, const ScalarArr
     }
 
     const auto layout = blas::to_blas_layout(matrix.layout());
-    ScalarArray result(type()->allocate(M), M);
+    OwnedScalarArray result(type(), M);
 
+
+    // TODO: fix lda/ldb values
     switch (matrix.storage()) {
         case MatrixStorage::FullMatrix:
             cblas_sgemv(layout,
@@ -182,9 +185,31 @@ static void ftmm(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatr
     tfmm(result, left, rhs_uplo == blas::Blas_Lo ? blas::Blas_Up : blas::Blas_Lo, right);
     result.layout(flip_layout(result.layout()));
 }
-static void bfmm(ScalarMatrix &result, const ScalarMatrix &lhs, blas::integer band, const ScalarMatrix &rhs) {
+static void dfmm(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
+    // lhs is diagonal, so the result of multiplying is just scaling each
+    // corresponding column of rhs.
+    assert(lhs.ncols() == rhs.nrows());
+    auto M = static_cast<blas::integer>(rhs.nrows());
+
+    blas::integer ldb;
+    if (rhs.layout() == MatrixLayout::CStype) {
+        ldb = static_cast<blas::integer>(rhs.ncols());
+    } else {
+        ldb = 1;
+    }
+
+    result.layout(rhs.layout());
+
+    auto* out_ptr = result.raw_cast<float*>();
+    // LHS is packed, containing M = N values in a flat vector.
+    const auto* lhs_ptr = lhs.raw_cast<const float*>();
+    const auto* rhs_ptr = rhs.raw_cast<const float*>();
+
+    for (blas::integer i=0; i<ldb; ++i) {
+        cblas_saxpy(M, lhs_ptr[i], rhs_ptr + i, ldb, out_ptr + i, ldb);
+    }
 }
-static void fbmm(ScalarMatrix &result, const ScalarMatrix& lhs, const ScalarMatrix& rhs, blas::integer band) {
+static void fdmm(ScalarMatrix &result, const ScalarMatrix& lhs, const ScalarMatrix& rhs) {
     // Use the fact that AB = (B'A')'
 
     ScalarMatrix right{
@@ -201,12 +226,11 @@ static void fbmm(ScalarMatrix &result, const ScalarMatrix& lhs, const ScalarMatr
         rhs.storage(),
         flip_layout(rhs.layout())};
 
-    bfmm(result, left, band, right);
+    dfmm(result, left, right);
     result.layout(flip_layout(result.layout()));
 }
 
-
-static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
+static void ffmm(ScalarMatrix& result, const ScalarMatrix& lhs, const ScalarMatrix& rhs) {
     auto M = static_cast<blas::integer>(lhs.nrows());
     auto K = static_cast<blas::integer>(lhs.ncols());
     auto N = static_cast<blas::integer>(rhs.ncols());
@@ -244,22 +268,72 @@ static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, co
         ldc = M;
     }
 
+    cblas_sgemm(
+        layout,
+        transa,
+        transb,
+        M, N, K,
+        1.0F,
+        lhs.raw_cast<const float *>(),
+        lda,
+        rhs.raw_cast<const float *>(),
+        ldb,
+        0.0F,
+        result.raw_cast<float *>(),
+        ldc);
+}
+
+static void ttmm(ScalarMatrix& result, const ScalarMatrix& lhs, blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs, blas::BlasUpLo rhs_uplo) {
+
+}
+
+static void dtmm(ScalarMatrix& result, const ScalarMatrix& lhs, const ScalarMatrix& rhs, blas::BlasUpLo rhs_uplo) {
+    // There is no BLAS routine for this so we're going to have to do it ourselves.
+
+}
+
+static void tdmm(ScalarMatrix& result, const ScalarMatrix& lhs, blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs) {
+    // Uss the fact that TD = (D'T')' = (DT')'
+    const auto old_storage = result.storage();
+    const auto old_layout = result.layout();
+
+    ScalarMatrix right {
+        lhs.nrows(),
+        lhs.ncols(),
+        ScalarArray(lhs),
+        lhs.storage() == MatrixStorage::UpperTriangular ? MatrixStorage::LowerTriangular : MatrixStorage::UpperTriangular,
+        flip_layout(lhs.layout())
+    };
+
+    result.layout(right.layout());
+    result.storage(right.storage());
+
+    dtmm(result, rhs, right, lhs_uplo == blas::Blas_Up ? blas::Blas_Lo : blas::Blas_Up);
+    result.layout(old_layout);
+    result.storage(old_storage);
+}
+
+static void ddmm(ScalarMatrix& result, const ScalarMatrix& lhs, const ScalarMatrix& rhs) {
+    assert(result.storage() == MatrixStorage::Diagonal);
+
+    auto* out_ptr = result.raw_cast<float*>();
+    const auto* lhs_ptr = lhs.raw_cast<const float*>();
+    const auto* rhs_ptr = rhs.raw_cast<const float*>();
+
+    // This is a silly simple case. just do the multiplication manually.
+    for (dimn_t i=0; i<lhs.ncols(); ++i) {
+        out_ptr[i] = lhs_ptr[i] * rhs_ptr[i];
+    }
+
+
+}
+
+
+static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
 
     switch (rhs.storage()) {
         case MatrixStorage::FullMatrix:
-            cblas_sgemm(
-                layout,
-                transa,
-                transb,
-                M, N, K,
-                1.0F,
-                lhs.raw_cast<const float*>(),
-                lda,
-                rhs.raw_cast<const float*>(),
-                ldb,
-                0.0F,
-                result.raw_cast<float*>(),
-                ldc);
+            ffmm(result, lhs, rhs);
             break;
         case MatrixStorage::LowerTriangular:
             ftmm(result, lhs, rhs, blas::Blas_Lo);
@@ -268,7 +342,7 @@ static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, co
             ftmm(result, lhs, rhs, blas::Blas_Up);
             break;
         case MatrixStorage::Diagonal:
-            fbmm(result, lhs, rhs, 1);
+            fdmm(result, lhs, rhs);
             break;
         default:
             throw std::runtime_error("matrix-matrix multiplications of these formats is not currently supported");
@@ -277,9 +351,42 @@ static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, co
 }
 
 static void triangular_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, blas::BlasUpLo lhs_uplo, const ScalarMatrix &rhs) {
-}
-static void banded_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, const deg_t band, const ScalarMatrix &rhs) {
 
+    switch (rhs.storage()) {
+        case MatrixStorage::FullMatrix:
+            tfmm(result, lhs, lhs_uplo, rhs);
+            break;
+        case MatrixStorage::UpperTriangular:
+            ttmm(result, lhs, lhs_uplo, rhs, blas::Blas_Up);
+            break;
+        case MatrixStorage::LowerTriangular:
+            ttmm(result, lhs, lhs_uplo, rhs, blas::Blas_Lo);
+            break;
+        case MatrixStorage::Diagonal:
+            tdmm(result, lhs, lhs_uplo, rhs);
+            break;
+        default:
+            throw std::runtime_error("matrix-matrix multiplications of these formats is currently unsupported");
+    }
+
+}
+static void diagonal_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
+    switch (rhs.storage()) {
+        case MatrixStorage::FullMatrix:
+            dfmm(result, lhs, rhs);
+            break;
+        case MatrixStorage::LowerTriangular:
+            dtmm(result, lhs, rhs, blas::Blas_Lo);
+            break;
+        case MatrixStorage::UpperTriangular:
+            dtmm(result, lhs, rhs, blas::Blas_Up);
+            break;
+        case MatrixStorage::Diagonal:
+            ddmm(result, lhs, rhs);
+            break;
+        default:
+            throw std::runtime_error("matrix-matrix multiplications of these formats is currently unsupported");
+    }
 }
 
 ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
@@ -302,7 +409,7 @@ ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix &lhs, const ScalarMatri
             triangular_matrix_matrix(result, lhs, blas::Blas_Lo, rhs);
             break;
         case MatrixStorage::Diagonal:
-            banded_matrix_matrix(result, lhs, 1, rhs);
+            diagonal_matrix_matrix(result, lhs, rhs);
             break;
     }
 
@@ -311,19 +418,19 @@ ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix &lhs, const ScalarMatri
 ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix &coeff_matrix, const ScalarMatrix &target_matrix) {
     return BlasInterface::solve_linear_system(coeff_matrix, target_matrix);
 }
-ScalarArray FloatBlas::lls_qr(const ScalarMatrix &matrix, const ScalarArray &target) {
+OwnedScalarArray FloatBlas::lls_qr(const ScalarMatrix &matrix, const ScalarArray &target) {
     return BlasInterface::lls_qr(matrix, target);
 }
-ScalarArray FloatBlas::lls_orth(const ScalarMatrix &matrix, const ScalarArray &target) {
+OwnedScalarArray FloatBlas::lls_orth(const ScalarMatrix &matrix, const ScalarArray &target) {
     return BlasInterface::lls_orth(matrix, target);
 }
-ScalarArray FloatBlas::lls_svd(const ScalarMatrix &matrix, const ScalarArray &target) {
+OwnedScalarArray FloatBlas::lls_svd(const ScalarMatrix &matrix, const ScalarArray &target) {
     return BlasInterface::lls_svd(matrix, target);
 }
-ScalarArray FloatBlas::lls_dcsvd(const ScalarMatrix &matrix, const ScalarArray &target) {
+OwnedScalarArray FloatBlas::lls_dcsvd(const ScalarMatrix &matrix, const ScalarArray &target) {
     return BlasInterface::lls_dcsvd(matrix, target);
 }
-ScalarArray FloatBlas::lse_grq(const ScalarMatrix &A, const ScalarMatrix &B, const ScalarArray &c, const ScalarArray &d) {
+OwnedScalarArray FloatBlas::lse_grq(const ScalarMatrix &A, const ScalarMatrix &B, const ScalarArray &c, const ScalarArray &d) {
     return BlasInterface::lse_grq(A, B, c, d);
 }
 ScalarMatrix FloatBlas::glm_GQR(const ScalarMatrix &A, const ScalarMatrix &B, const ScalarArray &d) {

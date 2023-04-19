@@ -79,6 +79,11 @@ public:
     constexpr MatrixStorage storage() const noexcept
     { return m_storage; }
 
+    constexpr void storage(MatrixStorage new_storage) {
+        //TODO: Check if htis requies allocaiton or something
+        m_storage = new_storage;
+    }
+
     [[nodiscard]]
     constexpr MatrixLayout layout() const noexcept
     { return m_layout; }

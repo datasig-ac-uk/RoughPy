@@ -43,12 +43,12 @@ public:
     explicit FloatBlas(const ScalarType* ctype) : BlasInterface(ctype)
     {}
 
-    ScalarArray vector_axpy(const ScalarArray &x, const Scalar &a, const ScalarArray &y) override;
+    OwnedScalarArray vector_axpy(const ScalarArray &x, const Scalar &a, const ScalarArray &y) override;
     Scalar dot_product(const ScalarArray &lhs, const ScalarArray &rhs) override;
     Scalar L1Norm(const ScalarArray &vector) override;
     Scalar L2Norm(const ScalarArray &vector) override;
     Scalar LInfNorm(const ScalarArray &vector) override;
-    ScalarArray matrix_vector(const ScalarMatrix &matrix, const ScalarArray &vector) override;
+    OwnedScalarArray matrix_vector(const ScalarMatrix &matrix, const ScalarArray &vector) override;
 
 private:
 
@@ -56,11 +56,11 @@ private:
 public:
     ScalarMatrix matrix_matrix(const ScalarMatrix &lhs, const ScalarMatrix &rhs) override;
     ScalarMatrix solve_linear_system(const ScalarMatrix &coeff_matrix, const ScalarMatrix &target_matrix) override;
-    ScalarArray lls_qr(const ScalarMatrix &matrix, const ScalarArray &target) override;
-    ScalarArray lls_orth(const ScalarMatrix &matrix, const ScalarArray &target) override;
-    ScalarArray lls_svd(const ScalarMatrix &matrix, const ScalarArray &target) override;
-    ScalarArray lls_dcsvd(const ScalarMatrix &matrix, const ScalarArray &target) override;
-    ScalarArray lse_grq(const ScalarMatrix &A, const ScalarMatrix &B, const ScalarArray &c, const ScalarArray &d) override;
+    OwnedScalarArray lls_qr(const ScalarMatrix &matrix, const ScalarArray &target) override;
+    OwnedScalarArray lls_orth(const ScalarMatrix &matrix, const ScalarArray &target) override;
+    OwnedScalarArray lls_svd(const ScalarMatrix &matrix, const ScalarArray &target) override;
+    OwnedScalarArray lls_dcsvd(const ScalarMatrix &matrix, const ScalarArray &target) override;
+    OwnedScalarArray lse_grq(const ScalarMatrix &A, const ScalarMatrix &B, const ScalarArray &c, const ScalarArray &d) override;
     ScalarMatrix glm_GQR(const ScalarMatrix &A, const ScalarMatrix &B, const ScalarArray &d) override;
     EigenDecomposition eigen_decomposition(const ScalarMatrix &matrix) override;
     SingularValueDecomposition svd(const ScalarMatrix &matrix) override;

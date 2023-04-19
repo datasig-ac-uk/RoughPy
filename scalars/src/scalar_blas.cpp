@@ -44,7 +44,7 @@ BlasInterface::~BlasInterface() = default;
 std::unique_ptr<BlasInterface> BlasInterface::clone() const {
     return std::unique_ptr<BlasInterface>();
 }
-ScalarArray BlasInterface::vector_axpy(const ScalarArray &x, const Scalar &a, const ScalarArray &y) {
+OwnedScalarArray BlasInterface::vector_axpy(const ScalarArray &x, const Scalar &a, const ScalarArray &y) {
     return ScalarArray();
 }
 Scalar BlasInterface::dot_product(const ScalarArray &lhs, const ScalarArray &rhs) {
@@ -59,7 +59,7 @@ Scalar BlasInterface::L2Norm(const ScalarArray &vector) {
 Scalar BlasInterface::LInfNorm(const ScalarArray &vector) {
     return Scalar();
 }
-ScalarArray BlasInterface::matrix_vector(const ScalarMatrix &matrix, const ScalarArray &vector) {
+OwnedScalarArray BlasInterface::matrix_vector(const ScalarMatrix &matrix, const ScalarArray &vector) {
     return ScalarArray();
 }
 ScalarMatrix BlasInterface::matrix_matrix(const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
@@ -68,19 +68,19 @@ ScalarMatrix BlasInterface::matrix_matrix(const ScalarMatrix &lhs, const ScalarM
 ScalarMatrix BlasInterface::solve_linear_system(const ScalarMatrix &coeff_matrix, const ScalarMatrix &target_matrix) {
     return ScalarMatrix(nullptr, 0, 0);
 }
-ScalarArray BlasInterface::lls_qr(const ScalarMatrix &matrix, const ScalarArray &target) {
+OwnedScalarArray BlasInterface::lls_qr(const ScalarMatrix &matrix, const ScalarArray &target) {
     return ScalarArray();
 }
-ScalarArray BlasInterface::lls_orth(const ScalarMatrix &matrix, const ScalarArray &target) {
+OwnedScalarArray BlasInterface::lls_orth(const ScalarMatrix &matrix, const ScalarArray &target) {
     return ScalarArray();
 }
-ScalarArray BlasInterface::lls_svd(const ScalarMatrix &matrix, const ScalarArray &target) {
+OwnedScalarArray BlasInterface::lls_svd(const ScalarMatrix &matrix, const ScalarArray &target) {
     return ScalarArray();
 }
-ScalarArray BlasInterface::lls_dcsvd(const ScalarMatrix &matrix, const ScalarArray &target) {
+OwnedScalarArray BlasInterface::lls_dcsvd(const ScalarMatrix &matrix, const ScalarArray &target) {
     return ScalarArray();
 }
-ScalarArray BlasInterface::lse_grq(const ScalarMatrix &A, const ScalarMatrix &B, const ScalarArray &c, const ScalarArray &d) {
+OwnedScalarArray BlasInterface::lse_grq(const ScalarMatrix &A, const ScalarMatrix &B, const ScalarArray &c, const ScalarArray &d) {
     return ScalarArray();
 }
 ScalarMatrix BlasInterface::glm_GQR(const ScalarMatrix &A, const ScalarMatrix &B, const ScalarArray &d) {
