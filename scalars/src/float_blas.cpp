@@ -138,6 +138,74 @@ ScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix, const ScalarArr
     }
     return result;
 }
+
+static constexpr MatrixLayout flip_layout(MatrixLayout layout) noexcept {
+    return layout == MatrixLayout::CStype ? MatrixLayout::FStype : MatrixLayout::CStype;
+}
+
+static void tfmm(ScalarMatrix& result, const ScalarMatrix& lhs, blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs) {
+    {
+        auto N = static_cast<blas::integer>(rhs.size());
+        cblas_scopy(N, rhs.raw_cast<const float *>(), 1, result.raw_cast<float *>(), 1);
+        result.layout(rhs.layout());
+    }
+    auto C = static_cast<blas::integer>(result.ncols());
+
+    auto layout = blas::to_blas_layout(lhs.layout());
+
+    // If rhs is row-major then we need to adjust incx to stride correctly in result.
+    blas::integer incx = (result.layout() == MatrixLayout::FStype) ? 1 : C;
+
+    auto *out_ptr = result.raw_cast<float *>();
+
+    for (blas::integer i = 0; i < C; ++i) {
+        cblas_stpmv(layout, lhs_uplo, blas::Blas_NoTrans, blas::Blas_DUnit, C, lhs.raw_cast<const float *>(), out_ptr + i, incx);
+    }
+}
+static void ftmm(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatrix &rhs, blas::BlasUpLo rhs_uplo) {
+    // Use AT = (T'A')'
+
+    ScalarMatrix right{
+        lhs.nrows(),
+        lhs.ncols(),
+        ScalarArray(lhs),
+        lhs.storage(),
+        flip_layout(lhs.layout())};
+
+    ScalarMatrix left{
+        rhs.nrows(),
+        rhs.ncols(),
+        ScalarArray(rhs),
+        rhs.storage(),
+        flip_layout(rhs.layout())};
+
+    tfmm(result, left, rhs_uplo == blas::Blas_Lo ? blas::Blas_Up : blas::Blas_Lo, right);
+    result.layout(flip_layout(result.layout()));
+}
+static void bfmm(ScalarMatrix &result, const ScalarMatrix &lhs, blas::integer band, const ScalarMatrix &rhs) {
+}
+static void fbmm(ScalarMatrix &result, const ScalarMatrix& lhs, const ScalarMatrix& rhs, blas::integer band) {
+    // Use the fact that AB = (B'A')'
+
+    ScalarMatrix right{
+        lhs.nrows(),
+        lhs.ncols(),
+        ScalarArray(lhs),
+        lhs.storage(),
+        flip_layout(lhs.layout())};
+
+    ScalarMatrix left{
+        rhs.nrows(),
+        rhs.ncols(),
+        ScalarArray(rhs),
+        rhs.storage(),
+        flip_layout(rhs.layout())};
+
+    bfmm(result, left, band, right);
+    result.layout(flip_layout(result.layout()));
+}
+
+
 static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
     auto M = static_cast<blas::integer>(lhs.nrows());
     auto K = static_cast<blas::integer>(lhs.ncols());
@@ -146,7 +214,9 @@ static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, co
     blas::BlasLayout layout;
     blas::BlasTranspose transa;
     blas::BlasTranspose transb;
-    blas::integer lda, ldb, ldc;
+    blas::integer lda;
+    blas::integer ldb;
+    blas::integer ldc;
 
     if (lhs.layout() == rhs.layout()) {
         layout = blas::to_blas_layout(lhs.layout());
@@ -191,16 +261,26 @@ static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, co
                 result.raw_cast<float*>(),
                 ldc);
             break;
-
-
+        case MatrixStorage::LowerTriangular:
+            ftmm(result, lhs, rhs, blas::Blas_Lo);
+            break;
+        case MatrixStorage::UpperTriangular:
+            ftmm(result, lhs, rhs, blas::Blas_Up);
+            break;
+        case MatrixStorage::Diagonal:
+            fbmm(result, lhs, rhs, 1);
+            break;
         default:
-            throw std::runtime_error("matrx-matrix multiplications of these formats is not currently supported");
+            throw std::runtime_error("matrix-matrix multiplications of these formats is not currently supported");
     }
 
 }
 
-static void triangular_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, blas::BlasUpLo layout, const ScalarMatrix &rhs){}
-static void banded_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, const deg_t band, const ScalarMatrix &rhs){}
+static void triangular_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, blas::BlasUpLo lhs_uplo, const ScalarMatrix &rhs) {
+}
+static void banded_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs, const deg_t band, const ScalarMatrix &rhs) {
+
+}
 
 ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
     assert(lhs.type() == rhs.type() && lhs.type() == type());
@@ -216,8 +296,10 @@ ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix &lhs, const ScalarMatri
             full_matrix_matrix(result, lhs, rhs);
             break;
         case MatrixStorage::UpperTriangular:
+            triangular_matrix_matrix(result, lhs, blas::Blas_Up, rhs);
+            break;
         case MatrixStorage::LowerTriangular:
-            triangular_matrix_matrix(result, lhs, blas::to_blas_uplo(lhs.storage()), rhs);
+            triangular_matrix_matrix(result, lhs, blas::Blas_Lo, rhs);
             break;
         case MatrixStorage::Diagonal:
             banded_matrix_matrix(result, lhs, 1, rhs);
