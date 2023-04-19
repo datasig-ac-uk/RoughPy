@@ -144,7 +144,7 @@ static py::object lie_increment_stream_from_increments(const py::object& data, c
 
     auto result = streams::Stream(
         streams::LieIncrementStream(
-            scalars::KeyScalarArray(buffer),
+            std::move(buffer).copy_or_move(),
             indices,
             {
                 md.width,

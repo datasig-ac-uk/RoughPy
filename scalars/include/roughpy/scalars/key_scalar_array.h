@@ -38,9 +38,12 @@ namespace scalars {
 
 class ROUGHPY_SCALARS_EXPORT KeyScalarArray : public ScalarArray {
 
+    static constexpr uint32_t keys_owning_flag = 1 << subtype_flag_offset;
+
     const key_type *p_keys = nullptr;
-    bool m_scalars_owned = false;
     bool m_keys_owned = true;
+
+    constexpr bool keys_owned() const noexcept { return (m_flags & keys_owning_flag) != 0; }
 
 public:
     KeyScalarArray() = default;
@@ -57,6 +60,8 @@ public:
     KeyScalarArray(const ScalarType *type, const void *begin, dimn_t count) noexcept;
 
     explicit operator OwnedScalarArray() &&noexcept;
+
+    KeyScalarArray copy_or_move() &&;
 
     KeyScalarArray &operator=(const ScalarArray &other) noexcept;
     KeyScalarArray &operator=(KeyScalarArray &&other) noexcept;

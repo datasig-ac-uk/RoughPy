@@ -33,21 +33,6 @@
 
 #include "scalar_type.h"
 
-rpy::scalars::ScalarArray::ScalarArray(const rpy::scalars::ScalarType *type, rpy::dimn_t size)
-    : ScalarPointer(type), m_size(0)
-{
-    if (p_type != nullptr && size > 0) {
-        ScalarPointer::operator=(p_type->allocate(size));
-        m_size = size;
-        m_flags |= flags::OwnedPointer;
-    }
-}
-
-rpy::scalars::ScalarArray::~ScalarArray() {
-    if (p_type != nullptr && p_data != nullptr && is_owning()) {
-        p_type->free(static_cast<ScalarPointer&>(*this), m_size);
-    }
-}
 
 rpy::scalars::ScalarArray::ScalarArray(rpy::scalars::ScalarArray &&other) noexcept
     : ScalarPointer(static_cast<ScalarPointer&&>(other)), m_size(other.m_size) {

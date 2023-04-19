@@ -63,15 +63,21 @@ enum IntegerSign : uint32_t {
 
 enum IntegerType : uint32_t {
     UnsignedInteger8    = Unsigned | 0 << 4 | SimpleInteger,    // (2**0) bytes
+    UnsignedInteger16   = Unsigned | 1 << 4 | SimpleInteger,    // (2**1) bytes
+    UnsignedInteger32   = Unsigned | 2 << 4 | SimpleInteger,    // (2**2) bytes
+    UnsignedInteger64   = Unsigned | 3 << 4 | SimpleInteger,    // (2**3) bytes
+    UnsignedSize        = Unsigned | 4 << 4 | SimpleInteger,    // Special
+//  UnsignedUnused      = Unsigned | 5 << 4 | SimpleInteger,
+//  UnsignedUnused      = Unsigned | 6 << 4 | SimpleInteger,
+//  UnsignedUnused      = Unsigned | 7 << 4 | SimpleInteger,
     SignedInteger8      =   Signed | 0 << 4 | SimpleInteger,    // (2**0) bytes
-    UnsignedInteger16   = Unsigned | 2 << 4 | SimpleInteger,    // (2**1) bytes
-    SignedInteger16     =   Signed | 2 << 4 | SimpleInteger,    // (2**1) bytes
-    UnsignedInteger32   = Unsigned | 3 << 4 | SimpleInteger,    // (2**2) bytes
-    SignedInteger32     =   Signed | 3 << 4 | SimpleInteger,    // (2**2) bytes
-    UnsignedInteger64   = Unsigned | 4 << 4 | SimpleInteger,    // (2**3) bytes
-    SignedInteger64     =   Signed | 4 << 4 | SimpleInteger,    // (2**3) bytes
-    UnsignedSize        = Unsigned | 7 << 4 | SimpleInteger,    // Special
-    SignedSize          =   Signed | 7 << 4 | SimpleInteger,    // Special
+    SignedInteger16     =   Signed | 1 << 4 | SimpleInteger,    // (2**1) bytes
+    SignedInteger32     =   Signed | 2 << 4 | SimpleInteger,    // (2**2) bytes
+    SignedInteger64     =   Signed | 3 << 4 | SimpleInteger,    // (2**3) bytes
+    SignedSize          =   Signed | 4 << 4 | SimpleInteger    // Special
+//  SignedUnused        =   Signed | 5 << 4 | SimpleInteger,
+//  SignedUnused        =   Signed | 6 << 4 | SimpleInteger,
+//  SignedUnused        =   Signed | 7 << 4 | SimpleInteger
 };
 
 
@@ -100,6 +106,9 @@ protected:
                                             | integer_bits_1
                                             | integer_bits_2
                                             | signed_flag;
+
+    static constexpr uint32_t subtype_flag_offset = 8;
+    static constexpr uint32_t subtype_flag_mask = 0xF << subtype_flag_offset;
 
 public:
 
