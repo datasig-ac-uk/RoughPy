@@ -30,11 +30,11 @@
 #include "BaseStream.h"
 #include "stream.h"
 
+#include "externally_sourced_stream.h"
 #include "function_stream.h"
 #include "lie_increment_stream.h"
-#include "piecewise_lie_stream.h"
+#include "piecewise_abelian_stream.h"
 #include "tick_stream.h"
-#include "externally_sourced_stream.h"
 
 using namespace rpy;
 using namespace rpy::python;

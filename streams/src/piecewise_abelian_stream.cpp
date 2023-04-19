@@ -29,7 +29,7 @@
 // Created by user on 10/03/23.
 //
 
-#include "piecewise_lie_stream.h"
+#include "piecewise_abelian_stream.h"
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -39,7 +39,7 @@ using rpy::algebra::Lie;
 using rpy::intervals::Interval;
 using rpy::intervals::RealInterval;
 
-PiecewiseLieStream::PiecewiseLieStream(std::vector<LiePiece> &&data, StreamMetadata &&md)
+PiecewiseAbelianStream::PiecewiseAbelianStream(std::vector<LiePiece> &&data, StreamMetadata &&md)
     : StreamInterface(std::move(md)), m_data(std::move(data)) {
 //    // first sort so we know the inf of each interval are in order
 //    auto sort_fun = [](const LiePiece &a, const LiePiece &b) {
@@ -119,10 +119,10 @@ PiecewiseLieStream::PiecewiseLieStream(std::vector<LiePiece> &&data, StreamMetad
 //        m_data.push_back(std::move(*it));
 //    }
 }
-bool PiecewiseLieStream::empty(const Interval &interval) const noexcept {
+bool PiecewiseAbelianStream::empty(const Interval &interval) const noexcept {
     return StreamInterface::empty(interval);
 }
-algebra::Lie PiecewiseLieStream::log_signature_impl(const Interval &domain, const Context &ctx) const {
+algebra::Lie PiecewiseAbelianStream::log_signature_impl(const Interval &domain, const Context &ctx) const {
     std::vector<algebra::Lie> lies;
     lies.reserve(4);
 

@@ -29,10 +29,10 @@
 // Created by user on 18/03/23.
 //
 
-#include "piecewise_lie_stream.h"
+#include "piecewise_abelian_stream.h"
 
+#include <roughpy/streams/piecewise_abelian_stream.h>
 #include <roughpy/streams/stream.h>
-#include <roughpy/streams/piecewise_lie_stream.h>
 
 #include "args/kwargs_to_path_metadata.h"
 #include "stream.h"
@@ -73,7 +73,7 @@ static py::object construct_piecewise_lie_stream(
     pmd.support = intervals::RealInterval(a, b);
 
     streams::Stream result(
-        streams::PiecewiseLieStream (
+        streams::PiecewiseAbelianStream(
             std::move(lies),
             {
                 pmd.width,
@@ -92,7 +92,7 @@ static py::object construct_piecewise_lie_stream(
 
 void python::init_piecewise_lie_stream(py::module_ &m) {
 
-    py::class_<streams::PiecewiseLieStream> klass(m, "PiecewiseLieStream", PW_LIE_STREAM_DOC);
+    py::class_<streams::PiecewiseAbelianStream> klass(m, "PiecewiseAbelianStream", PW_LIE_STREAM_DOC);
 
     klass.def_static("construct", &construct_piecewise_lie_stream);
 }

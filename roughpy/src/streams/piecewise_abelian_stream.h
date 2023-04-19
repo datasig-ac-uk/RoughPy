@@ -25,50 +25,21 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_STREAMS_PIECEWISE_LIE_STREAM_H_
-#define ROUGHPY_STREAMS_PIECEWISE_LIE_STREAM_H_
+//
+// Created by user on 18/03/23.
+//
 
+#ifndef ROUGHPY_ROUGHPY_SRC_STREAMS_PIECEWISE_ABELIAN_STREAM_H
+#define ROUGHPY_ROUGHPY_SRC_STREAMS_PIECEWISE_ABELIAN_STREAM_H
 
-#include "stream_base.h"
+#include "roughpy_module.h"
 
-#include <roughpy/core/implementation_types.h>
-#include <roughpy/algebra/lie.h>
-#include <roughpy/algebra/free_tensor.h>
-#include <roughpy/algebra/context.h>
+namespace rpy {
+namespace python {
 
-namespace rpy { namespace streams {
+void init_piecewise_lie_stream(py::module_ &m);
 
+}
+}// namespace rpy
 
-class PiecewiseLieStream : public StreamInterface {
-public:
-    using LiePiece = std::pair<intervals::RealInterval, algebra::Lie>;
-
-private:
-
-    std::vector<LiePiece> m_data;
-
-    static inline scalars::Scalar to_multiplier_upper(const intervals::RealInterval& interval, param_t param) {
-        assert(interval.inf() <= param && param <= interval.sup());
-        return scalars::Scalar((interval.sup() - param) / (interval.sup() - interval.inf()));
-    }
-    static inline scalars::Scalar to_multiplier_lower(const intervals::RealInterval& interval, param_t param) {
-        assert(interval.inf() <= param && param <= interval.sup());
-        return scalars::Scalar((param - interval.inf()) / (interval.sup() - interval.inf()));
-    }
-
-public:
-    PiecewiseLieStream(std::vector<LiePiece>&& arg, StreamMetadata&& md);
-
-
-    bool empty(const intervals::Interval& interval) const noexcept override;
-
-protected:
-    algebra::Lie log_signature_impl(const intervals::Interval& domain, const algebra::Context& ctx) const override;
-
-};
-
-
-}}
-
-
-#endif // ROUGHPY_STREAMS_PIECEWISE_LIE_STREAM_H_
+#endif//ROUGHPY_ROUGHPY_SRC_STREAMS_PIECEWISE_ABELIAN_STREAM_H

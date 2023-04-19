@@ -18,7 +18,7 @@ add_roughpy_lib(Streams
         src/lie_increment_stream.cpp
         src/dynamically_constructed_stream.cpp
         src/dyadic_caching_layer.cpp
-        src/piecewise_lie_stream.cpp
+        src/piecewise_abelian_stream.cpp
         src/tick_stream.cpp
         src/brownian_stream.cpp
         src/external_data_stream.cpp

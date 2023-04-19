@@ -82,8 +82,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/streams/function_stream.h
         src/streams/lie_increment_stream.h
         src/streams/lie_increment_stream.cpp
-        src/streams/piecewise_lie_stream.cpp
-        src/streams/piecewise_lie_stream.h
+        src/streams/piecewise_abelian_stream.cpp
+        src/streams/piecewise_abelian_stream.h
         src/streams/stream.cpp
         src/streams/stream.h
         src/streams/streams.cpp
