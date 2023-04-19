@@ -3,6 +3,7 @@
 
 #if @RPY_USE_MKL@
 #  include <mkl.h>
+#  include <mkl_spblas.h>
 #else
 #  include <cblas.h>
 #  include <lapack.h>
