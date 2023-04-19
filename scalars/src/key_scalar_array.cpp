@@ -42,7 +42,7 @@ KeyScalarArray::~KeyScalarArray() {
     if (p_data != nullptr && p_type != nullptr && is_owning()) {
         p_type->free(*this, m_size);
     }
-    if (m_keys_owned) {
+    if (keys_owned()) {
         delete[] p_keys;
     }
 }
@@ -95,14 +95,13 @@ KeyScalarArray &KeyScalarArray::operator=(const ScalarArray &other) noexcept {
         this->~KeyScalarArray();
         ScalarArray::operator=(other);
         m_flags &= ~flags::OwnedPointer;
-        m_keys_owned = false;
+        m_flags &= ~keys_owning_flag;
     }
     return *this;
 }
 KeyScalarArray &KeyScalarArray::operator=(KeyScalarArray &&other) noexcept {
     if (&other != this) {
         this->~KeyScalarArray();
-        m_keys_owned = other.m_keys_owned;
         p_keys = other.p_keys;
         ScalarArray::operator=(other);
         m_flags |= other.m_flags & owning_flag;
@@ -125,7 +124,7 @@ void KeyScalarArray::allocate_scalars(idimn_t count) {
 }
 void KeyScalarArray::allocate_keys(idimn_t count) {
     auto new_size = (count == -1) ? m_size : static_cast<dimn_t>(count);
-    if (p_keys != nullptr && m_keys_owned) {
+    if (p_keys != nullptr && keys_owned()) {
         delete[] p_keys;
     }
     if (new_size != 0) {

@@ -207,8 +207,26 @@ static PyObject* RPyContext_enter(PyObject* self) {
     return self;
 }
 
-static PyObject* RPyContext_exit(PyObject* self, PyObject* RPY_UNUSED) {
+static PyObject* RPyContext_exit(PyObject* self, PyObject* RPY_UNUSED_VAR) {
     Py_RETURN_NONE;
+}
+
+static const char* zero_lie_DOC = R"rpydoc(Get a new Lie with value zero)rpydoc";
+static PyObject* RPyContext_zero_lie(PyObject* self, PyObject* args, PyObject* kwargs) {
+    static const char* kwords[] = { "vtype", nullptr };
+    PyTypeObject* vtype_type = reinterpret_cast<PyTypeObject*>(py::type::of<VectorType>().ptr());
+
+    PyObject* py_vtype = nullptr;
+    if (PyArg_ParseTupleAndKeywords(args, kwargs, "|O!", const_cast<char**>(kwords), vtype_type, &py_vtype) == 0) {
+        return nullptr;
+    }
+
+    VectorType vtype = VectorType::Sparse;
+    if (py_vtype != nullptr) {
+        vtype = py::cast<VectorType>(py_vtype);
+    }
+
+    return python::cast_to_object(ctx_cast(self)->zero_lie(vtype));
 }
 
 #define ADD_METHOD(NAME, FLAGS) \
@@ -222,6 +240,7 @@ static PyMethodDef RPyContext_members[] = {
     ADD_METHOD(to_logsignature, METH_O),
     ADD_METHOD(lie_to_tensor, METH_O),
     ADD_METHOD(tensor_to_lie, METH_O),
+    ADD_METHOD(zero_lie, METH_VARARGS | METH_KEYWORDS),
     {"__enter__", (PyCFunction) &RPyContext_enter, METH_NOARGS, nullptr},
     {"__exit__", (PyCFunction) &RPyContext_exit, METH_VARARGS, nullptr},
     {nullptr, nullptr, 0, nullptr}};

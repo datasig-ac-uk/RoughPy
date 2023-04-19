@@ -41,7 +41,6 @@ class ROUGHPY_SCALARS_EXPORT KeyScalarArray : public ScalarArray {
     static constexpr uint32_t keys_owning_flag = 1 << subtype_flag_offset;
 
     const key_type *p_keys = nullptr;
-    bool m_keys_owned = true;
 
     constexpr bool keys_owned() const noexcept { return (m_flags & keys_owning_flag) != 0; }
 

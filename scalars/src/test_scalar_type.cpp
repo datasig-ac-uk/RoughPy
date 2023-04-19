@@ -67,7 +67,7 @@ TEST_F(ScalarTypeTests, BasicInfoFloat) {
 
     ASSERT_EQ(info.n_bytes, sizeof(float));
     ASSERT_EQ(info.alignment, alignof(float));
-    ASSERT_EQ(info.name, "float");
+    ASSERT_EQ(info.name, "SPReal");
     ASSERT_EQ(info.id, "f32");
 
     ASSERT_EQ(info.device.device_type, ScalarDeviceType::CPU);
@@ -83,7 +83,7 @@ TEST_F(ScalarTypeTests, BasicInfoDouble) {
 
     ASSERT_EQ(info.n_bytes, sizeof(double));
     ASSERT_EQ(info.alignment, alignof(double));
-    ASSERT_EQ(info.name, "double");
+    ASSERT_EQ(info.name, "DPReal");
     ASSERT_EQ(info.id, "f64");
 
     ASSERT_EQ(info.device.device_type, ScalarDeviceType::CPU);

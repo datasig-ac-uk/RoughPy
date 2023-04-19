@@ -63,13 +63,13 @@
 #ifdef RPY_CPP_17
 #define RPY_UNUSED [[maybe_unused]]
 #else
-#if defined(__GNUC__) || defined(__clang__)
-#   define RPY_UNUSED __attribute__((unused))
-#else
-#   define RPY_UNUSED
-#endif
-#endif
 
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#define RPY_UNUSED_VAR __attribute__((unused))
+#else
+#define RPY_UNUSED
+#endif
 
 #if defined(__GNUC__) || defined(__clang__)
 #    define RPY_UNREACHABLE() (__builtin_unreachable())

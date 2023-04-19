@@ -36,20 +36,7 @@ def test_tensor_size(width, depth):
     assert ctx.tensor_size(1) == 1 + width
 
 
-@pytest.mark.skip("not yet implemented")
-def test_make_tensor_unit(width, depth):
-    ctx = get_context(width, depth)
-
-    t = ctx.unit_tensor()
-
-    assert isinstance(t, FreeTensor)
-    assert t.width == width
-    assert t.max_degree == depth
-    assert t.size() == 1
-    assert t.degree() == 0
-
-
-@pytest.mark.skip("not yet implemented")
+# @pytest.mark.skip("not yet implemented")
 def test_make_zero_lie(width, depth):
     ctx = get_context(width, depth)
     l = ctx.zero_lie()
