@@ -8,7 +8,6 @@
 #include "stream.h"
 #include "dyadic_caching_layer.h"
 
-#include <boost/any.hpp>
 
 #include <memory>
 
