@@ -6,6 +6,7 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/platform.h>
 #include "stream.h"
+#include "dyadic_caching_layer.h"
 
 #include <boost/any.hpp>
 
@@ -87,13 +88,13 @@ public:
 
 
 
-class ROUGHPY_STREAMS_EXPORT ExternalDataStream : public StreamInterface {
+class ROUGHPY_STREAMS_EXPORT ExternalDataStream : public DyadicCachingLayer {
     std::unique_ptr<ExternalDataStreamSource> p_source;
 
 public:
     template <typename Source, typename=enable_if_t<is_base_of<ExternalDataStreamSource, Source>::value>>
     explicit ExternalDataStream(Source &&src, StreamMetadata md)
-        : StreamInterface(std::move(md)),
+        : DyadicCachingLayer(std::move(md)),
           p_source(new Source(std::forward<Source>(src)))
     {}
 
