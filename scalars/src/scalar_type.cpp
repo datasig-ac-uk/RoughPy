@@ -277,6 +277,6 @@ std::unique_ptr<RandomGenerator> ScalarType::get_rng(const string &bit_generator
     throw std::runtime_error("no random number generators are defined for this scalar type");
 }
 
-std::unique_ptr<ScalarBlas> ScalarType::get_blas() const {
+std::unique_ptr<BlasInterface> ScalarType::get_blas() const {
     throw std::runtime_error("No blas/lapack available for this scalar type");
 }

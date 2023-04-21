@@ -103,6 +103,7 @@ public:
 
     ScalarMatrix to_full() const;
     ScalarMatrix to_full(MatrixLayout layout) const;
+    void to_full(ScalarMatrix& into) const;
 
 };
 

@@ -123,6 +123,7 @@ public:
 
     }
 
+
 protected:
     ScalarImpl try_convert(ScalarPointer other) const {
         if (other.is_null()) {

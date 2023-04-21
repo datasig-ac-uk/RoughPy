@@ -30,7 +30,7 @@
 //
 
 #include "float_blas.h"
-#include "scalar_blas_impl.h"
+#include "scalar_blas_defs.h"
 
 #include "scalar.h"
 #include "scalar_array.h"
@@ -432,8 +432,8 @@ ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix &coeff_matrix, co
 
     switch (coeff_matrix.storage()) {
         case MatrixStorage::FullMatrix:
-            LAPACKE_sgetrs(blas::to_blas_layout(coeff_matrix.layout()), 'N', )
 
+            break;
     }
 
 

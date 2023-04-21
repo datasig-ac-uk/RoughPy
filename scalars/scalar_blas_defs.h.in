@@ -11,6 +11,13 @@
 
 #include "scalar_matrix.h"
 
+#if @RPY_USE_MKL@
+#  define EIGEN_USE_MKL_ALL
+#endif
+
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+
 namespace blas {
 
 #ifdef RPY_USE_MKL

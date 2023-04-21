@@ -14,7 +14,7 @@ option(RPY_SCALARS_SHARED "Build shared RoughPy scalars module" ON)
 
 set(RPY_USE_MKL ${MKL_FOUND})
 
-configure_file(scalar_blas_impl.h.in scalar_blas_impl.h @ONLY)
+configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
 add_roughpy_lib(Scalars
     SOURCES
         src/scalar_type.cpp
@@ -41,7 +41,8 @@ add_roughpy_lib(Scalars
         src/scalar_blas.cpp
         src/float_blas.cpp
         src/float_blas.h
-        ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_impl.h
+        src/scalar_blas_impl.h
+        ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
     PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/scalar_pointer.h

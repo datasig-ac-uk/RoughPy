@@ -61,8 +61,9 @@ find_package(CURL REQUIRED)
 # This package is c++17 so cannot be used if changing to a lower standard
 find_package(tomlplusplus CONFIG REQUIRED)
 
+set(MKL_LINK static)
+set(MKL_INTERFACE lp64)
 find_package(MKL CONFIG QUIET)
-
 
 add_subdirectory(external/libalgebra_lite)
 add_subdirectory(external/pybind11)

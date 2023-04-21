@@ -58,6 +58,8 @@ public:
     ScalarPointer allocate(std::size_t count) const override;
     void free(ScalarPointer pointer, std::size_t count) const override;
 
+    void swap(ScalarPointer lhs, ScalarPointer rhs) const override;
+
 protected:
 
     scalar_type try_convert(ScalarPointer other) const;

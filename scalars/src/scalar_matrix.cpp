@@ -110,19 +110,25 @@ rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::to_full(rpy::scalars::Mat
     }
 
     ScalarMatrix result(p_type, m_nrows, m_ncols, m_storage, layout);
+    to_full(result);
+    return result;
+}
+
+void rpy::scalars::ScalarMatrix::to_full(rpy::scalars::ScalarMatrix &into) const {
+    const auto layout = into.layout();
 
     ScalarPointer iptr(*this);
-    ScalarPointer optr(result);
+    ScalarPointer optr(into);
     switch (m_storage) {
         case MatrixStorage::FullMatrix:
             if (m_layout == layout) {
-                p_type->convert_copy(result.ptr(), iptr, m_size);
+                p_type->convert_copy(into.ptr(), iptr, m_size);
             } else {
                 auto blas = p_type->get_blas();
                 if (blas) {
-                    blas->transpose(result);
+                    blas->transpose(into);
                 } else {
-                    transpose_fallback(result);
+                    transpose_fallback(into);
                 }
             }
             break;
@@ -172,6 +178,4 @@ rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::to_full(rpy::scalars::Mat
             break;
         }
     }
-
-    return result;
 }

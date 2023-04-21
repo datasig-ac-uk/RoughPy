@@ -256,3 +256,25 @@ std::unique_ptr<RandomGenerator> RationalType::get_rng(const string &bit_generat
     ScalarType::get_rng(bit_generator, seed);
     RPY_UNREACHABLE();
 }
+void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const {
+
+    if (lhs.is_null() ^ rhs.is_null()) {
+        throw std::runtime_error("one of the pointers is null");
+    }
+
+    if (lhs.type() != rhs.type()) {
+        throw std::runtime_error("cannot swap scalars of different types");
+    }
+
+    if (lhs.type() != this && lhs.type() != nullptr) {
+        return lhs.type()->swap(lhs, rhs);
+    }
+
+    if (lhs.is_const() || rhs.is_const()) {
+        throw std::runtime_error("one or both of the scalars is const");
+    }
+
+    std::swap(
+        *lhs.raw_cast<scalar_type *>(),
+        *rhs.raw_cast<scalar_type *>());
+}
