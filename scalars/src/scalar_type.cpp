@@ -276,3 +276,7 @@ void rpy::scalars::register_conversion(const string &src_id, const string &dst_i
 std::unique_ptr<RandomGenerator> ScalarType::get_rng(const string &bit_generator, Slice<uint64_t> seed) const {
     throw std::runtime_error("no random number generators are defined for this scalar type");
 }
+
+std::unique_ptr<ScalarBlas> ScalarType::get_blas() const {
+    throw std::runtime_error("No blas/lapack available for this scalar type");
+}

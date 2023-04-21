@@ -46,6 +46,8 @@ BlasInterface::~BlasInterface() = default;
 std::unique_ptr<BlasInterface> BlasInterface::clone() const {
     return std::unique_ptr<BlasInterface>();
 }
+void BlasInterface::transpose(ScalarMatrix &matrix) const {
+}
 OwnedScalarArray BlasInterface::vector_axpy(const ScalarArray &x, const Scalar &a, const ScalarArray &y) {
     return OwnedScalarArray();
 }

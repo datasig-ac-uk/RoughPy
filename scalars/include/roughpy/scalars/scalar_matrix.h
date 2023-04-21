@@ -49,13 +49,15 @@ enum class MatrixLayout {
 class ROUGHPY_SCALARS_EXPORT ScalarMatrix
     : public scalars::ScalarArray {
 
-    MatrixStorage m_storage;
-    MatrixLayout m_layout;
-    deg_t m_nrows;
-    deg_t m_ncols;
+    MatrixStorage m_storage = MatrixStorage::FullMatrix;
+    MatrixLayout m_layout = MatrixLayout::CStype;
+    deg_t m_nrows = 0;
+    deg_t m_ncols = 0;
 
 
 public:
+
+    ScalarMatrix();
 
     ScalarMatrix(const ScalarType* type,
                  deg_t rows,
@@ -99,6 +101,8 @@ public:
     ScalarPointer data() const;
     ScalarPointer data();
 
+    ScalarMatrix to_full() const;
+    ScalarMatrix to_full(MatrixLayout layout) const;
 
 };
 

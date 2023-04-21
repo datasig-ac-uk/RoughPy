@@ -416,7 +416,32 @@ ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix &lhs, const ScalarMatri
     return result;
 }
 ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix &coeff_matrix, const ScalarMatrix &target_matrix) {
-    return BlasInterface::solve_linear_system(coeff_matrix, target_matrix);
+
+    if (coeff_matrix.nrows() != target_matrix.nrows()) {
+        throw std::invalid_argument("incompatible matrix dimensions");
+    }
+
+    if (coeff_matrix.nrows() < coeff_matrix.ncols()) {
+        throw std::invalid_argument("system is over-determined, used least squares instead");
+    }
+    if (coeff_matrix.nrows() > coeff_matrix.ncols()) {
+        throw std::invalid_argument("system is under-determined, no solution");
+    }
+
+    ScalarMatrix result = target_matrix.to_full();
+
+    switch (coeff_matrix.storage()) {
+        case MatrixStorage::FullMatrix:
+            LAPACKE_sgetrs(blas::to_blas_layout(coeff_matrix.layout()), 'N', )
+
+    }
+
+
+
+
+
+
+
 }
 OwnedScalarArray FloatBlas::lls_qr(const ScalarMatrix &matrix, const ScalarArray &target) {
     return BlasInterface::lls_qr(matrix, target);
@@ -441,4 +466,8 @@ EigenDecomposition FloatBlas::eigen_decomposition(const ScalarMatrix &matrix) {
 }
 SingularValueDecomposition FloatBlas::svd(const ScalarMatrix &matrix) {
     return BlasInterface::svd(matrix);
+}
+void FloatBlas::transpose(ScalarMatrix &matrix) const {
+    auto* ptr = matrix.raw_cast<float*>();
+
 }

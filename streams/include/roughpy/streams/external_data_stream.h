@@ -42,7 +42,7 @@ public:
     virtual void set_vtype(void* payload, algebra::VectorType vtype) const;
     virtual void set_resolution(void* payload, resolution_t resolution) const;
 
-    virtual void add_option(void *payload, const string& option, boost::any value) const;
+    virtual void add_option(void *payload, const string& option, void* value) const;
 
     virtual ExternalDataStreamConstructor get_constructor(const url& uri) const = 0;
     virtual Stream construct_stream(void * payload) const = 0;
@@ -75,7 +75,7 @@ public:
     void set_vtype(algebra::VectorType vtype);
     void set_resolution(resolution_t resolution);
 
-    void add_option(const string& option, const void* value);
+    void add_option(const string& option, void* value);
 
 
     Stream construct();

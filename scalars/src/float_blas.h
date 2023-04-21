@@ -42,7 +42,7 @@ class FloatBlas : public BlasInterface
 public:
     explicit FloatBlas(const ScalarType* ctype) : BlasInterface(ctype)
     {}
-
+    void transpose(ScalarMatrix &matrix) const override;
     OwnedScalarArray vector_axpy(const ScalarArray &x, const Scalar &a, const ScalarArray &y) override;
     Scalar dot_product(const ScalarArray &lhs, const ScalarArray &rhs) override;
     Scalar L1Norm(const ScalarArray &vector) override;

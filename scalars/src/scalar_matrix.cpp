@@ -34,6 +34,11 @@
 
 #include "scalar_type.h"
 #include "scalar.h"
+#include "scalar_blas.h"
+
+rpy::scalars::ScalarMatrix::ScalarMatrix() : ScalarArray()
+{
+}
 
 rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type, rpy::deg_t rows, rpy::deg_t cols, rpy::scalars::MatrixStorage storage, rpy::scalars::MatrixLayout layout)
     : ScalarArray(type, (void*) nullptr, 0),
@@ -69,4 +74,104 @@ rpy::scalars::ScalarPointer rpy::scalars::ScalarMatrix::data() const {
 }
 rpy::scalars::ScalarPointer rpy::scalars::ScalarMatrix::data() {
     return rpy::scalars::ScalarPointer();
+}
+rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::to_full() const {
+    return to_full(m_layout);
+}
+
+static void transpose_fallback(rpy::scalars::ScalarMatrix& matrix) {
+    const auto M = matrix.nrows();
+    const auto N = matrix.ncols();
+
+    const auto* type = matrix.type();
+    rpy::scalars::ScalarPointer ptr(matrix);
+    if (M == N) {
+        for (rpy::deg_t i=0; i<M; ++i) {
+            for (rpy::deg_t j=i+1; j<N; ++j) {
+                type->swap(ptr + static_cast<rpy::dimn_t>(i*N+j), ptr + static_cast<rpy::dimn_t>(j*N + i));
+            }
+        }
+    } else {
+        rpy::scalars::ScalarMatrix tmp(type, N, M, matrix.storage(), matrix.layout());
+
+        for (rpy::deg_t i=0; i<M; ++i) {
+            for (rpy::deg_t j=0; j<N; ++j) {
+                type->convert_copy(tmp + static_cast<rpy::dimn_t>(j*M+i), ptr + static_cast<rpy::dimn_t>(i*N+j), 1);
+            }
+        }
+
+        matrix = std::move(tmp);
+    }
+}
+
+rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::to_full(rpy::scalars::MatrixLayout layout) const {
+    if (p_type == nullptr) {
+        throw std::invalid_argument("cannot allocate matrix with no type");
+    }
+
+    ScalarMatrix result(p_type, m_nrows, m_ncols, m_storage, layout);
+
+    ScalarPointer iptr(*this);
+    ScalarPointer optr(result);
+    switch (m_storage) {
+        case MatrixStorage::FullMatrix:
+            if (m_layout == layout) {
+                p_type->convert_copy(result.ptr(), iptr, m_size);
+            } else {
+                auto blas = p_type->get_blas();
+                if (blas) {
+                    blas->transpose(result);
+                } else {
+                    transpose_fallback(result);
+                }
+            }
+            break;
+        case MatrixStorage::UpperTriangular: {
+            auto mindim = std::min(m_nrows, m_ncols);
+            dimn_t offset = 0;
+            switch (layout) {
+                case MatrixLayout::CStype:
+                    for (deg_t i = 0; i < mindim; ++i) {
+                        p_type->convert_copy(optr + static_cast<dimn_t>(i * (1 + m_ncols)), iptr + offset, m_ncols - i);
+                        offset += m_ncols;
+                    }
+                    break;
+                case MatrixLayout::FStype:
+                    for (deg_t i = 1; i <= mindim; ++i) {
+                        p_type->convert_copy(optr + static_cast<dimn_t>(i * m_nrows), iptr + offset, i);
+                        offset += i;
+                    }
+                    break;
+            }
+            break;
+        }
+        case MatrixStorage::LowerTriangular: {
+            auto mindim = std::min(m_nrows, m_ncols);
+            dimn_t offset = 0;
+            switch (layout) {
+                case MatrixLayout::CStype:
+                    for (deg_t i = 1; i <= mindim; ++i) {
+                        p_type->convert_copy(optr + static_cast<dimn_t>(i * m_ncols), iptr + offset, i);
+                        offset += i;
+                    }
+                    break;
+                case MatrixLayout::FStype:
+                    for (deg_t i = 0; i < mindim; ++i) {
+                        p_type->convert_copy(optr + static_cast<dimn_t>(i * (1 + m_nrows)), iptr + offset, m_ncols - i);
+                        offset += m_ncols - i;
+                    }
+            }
+            break;
+        }
+        case MatrixStorage::Diagonal: {
+            auto mindim = std::min(m_nrows, m_ncols);
+            auto stride = (layout == MatrixLayout::CStype) ? m_ncols : m_nrows;
+            for (deg_t i = 0; i < mindim; ++i) {
+                p_type->convert_copy(optr + static_cast<dimn_t>(i * (1 + stride)), iptr + static_cast<dimn_t>(i), 1);
+            }
+            break;
+        }
+    }
+
+    return result;
 }

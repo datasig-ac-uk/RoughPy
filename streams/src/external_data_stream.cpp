@@ -108,7 +108,7 @@ void streams::ExternalDataSourceFactory::set_vtype(void *payload, algebra::Vecto
 void streams::ExternalDataSourceFactory::set_resolution(void *payload, resolution_t resolution) const {
 }
 
-void streams::ExternalDataSourceFactory::add_option(void *payload, const string &option, boost::any value) const {
+void streams::ExternalDataSourceFactory::add_option(void *payload, const string &option, void* value) const {
 }
 
 streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(const streams::ExternalDataSourceFactory *factory, void *payload)
@@ -162,7 +162,7 @@ void streams::ExternalDataStreamConstructor::set_resolution(resolution_t resolut
     p_factory->set_resolution(p_payload, resolution);
 }
 
-void streams::ExternalDataStreamConstructor::add_option(const string &option, const void* value) {
+void streams::ExternalDataStreamConstructor::add_option(const string &option, void* value) {
     p_factory->add_option(p_payload, option, value);
 }
 streams::Stream streams::ExternalDataStreamConstructor::construct() {

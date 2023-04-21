@@ -49,3 +49,11 @@ return storage == rpy::scalars::MatrixStorage::UpperTriangular ? Blas_Up : Blas_
 }
 
 }
+
+
+namespace lapack {
+
+using integer = lapack_int;
+
+
+}

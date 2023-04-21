@@ -151,6 +151,14 @@ public:
      */
     virtual void free(ScalarPointer pointer, std::size_t count) const = 0;
 
+    /**
+     * @brief Swap the values at two scalar locations
+     * @param lhs Pointer to left hand scalar
+     * @param rhs Pointer to right hand scalar
+     */
+    virtual void swap(ScalarPointer lhs, ScalarPointer rhs) const = 0;
+
+
     virtual void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const = 0;
 
     /**
@@ -187,7 +195,6 @@ public:
      * @param id
      */
     virtual void convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count, const string &id) const;
-
 
     /**
      * @brief Parse a string into this scalar type
@@ -334,6 +341,14 @@ public:
      * @return Pointer to new RandomGenerator instance.
      */
     virtual std::unique_ptr<RandomGenerator> get_rng(const string& bit_generator="", Slice<uint64_t> seed={}) const;
+
+
+    /**
+     * @brief Get a new instance of a blas interface
+     * @return
+     */
+    virtual std::unique_ptr<BlasInterface> get_blas() const;
+
 };
 
 /**

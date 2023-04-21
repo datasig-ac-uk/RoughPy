@@ -32,6 +32,9 @@ public:
 
     std::unique_ptr<BlasInterface> clone() const;
 
+
+    virtual void transpose(ScalarMatrix& matrix) const;
+
     // BLAS
     // Level 1
     virtual OwnedScalarArray vector_axpy(const ScalarArray& x, const Scalar& a, const ScalarArray& y);

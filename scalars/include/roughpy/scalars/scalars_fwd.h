@@ -145,6 +145,7 @@ class KeyScalarArray;
 class ScalarStream;
 
 class RandomGenerator;
+class BlasInterface;
 
 template <typename T>
 inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
