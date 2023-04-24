@@ -41,6 +41,12 @@
 #   undef RPY_DEBUG
 #endif
 
+#ifdef RPY_DEBUG
+#  define RPY_ASSERT(ARG) assert(ARG)
+#else
+#  define RPY_ASSERT(ARG) (void) 0
+#endif
+
 #if defined(_MSC_VER) && defined(_MSVC_LANG)
 #   define RPY_CPP_VERSION _MSVC_LANG
 #else
