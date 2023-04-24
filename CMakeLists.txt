@@ -100,6 +100,7 @@ add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
 add_subdirectory(roughpy)
+add_subdirectory(device)
 
 if(ROUGHPY_BUILD_LA_CONTEXTS)
     add_subdirectory(la_context)
