@@ -29,6 +29,8 @@ add_roughpy_lib(Scalars
         src/key_scalar_array.cpp
         src/scalar_stream.cpp
         src/standard_scalar_type.h
+        src/half_type.h
+        src/half_type.cpp
         src/float_type.cpp
         src/float_type.h
         src/double_type.cpp

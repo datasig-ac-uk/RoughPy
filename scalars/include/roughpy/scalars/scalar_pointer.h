@@ -107,6 +107,9 @@ protected:
                                             | integer_bits_2
                                             | signed_flag;
 
+    static constexpr uint32_t integer_bits_offset = 4;
+    static constexpr uint32_t integer_bits_mask = integer_bits_0 | integer_bits_1 | integer_bits_2;
+
     static constexpr uint32_t subtype_flag_offset = 8;
     static constexpr uint32_t subtype_flag_mask = 0xF << subtype_flag_offset;
 
@@ -251,6 +254,26 @@ public:
      */
     const ScalarType *type() const noexcept {
         return p_type;
+    }
+
+    [[nodiscard]]
+    constexpr bool is_simple_integer() const noexcept {
+        return (m_flags & flags::SimpleInteger) != 0;
+    }
+
+    [[nodiscard]]
+    constexpr uint32_t simple_integer_bytes() const noexcept {
+        return (m_flags & integer_bits_mask) >> integer_bits_offset;
+    }
+
+    [[nodiscard]]
+    constexpr bool is_signed_integer() const noexcept {
+        return (m_flags & signed_flag) != 0;
+    }
+
+    [[nodiscard]]
+    constexpr flags::IntegerType simple_integer_config() const noexcept {
+        return static_cast<flags::IntegerType>(m_flags & (signed_flag | integer_bits_mask));
     }
 
     /**

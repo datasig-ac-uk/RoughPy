@@ -77,6 +77,10 @@ public:
     template <typename T>
     static const ScalarType *of();
 
+    template <typename T>
+    static const ScalarType* of(const ScalarDeviceInfo& device);
+
+
     /*
      * ScalarTypes objects should be unique for each configuration,
      * and should only ever be accessed via a pointer. The deleted
@@ -368,6 +372,10 @@ void register_type(const ScalarType *type);
 ROUGHPY_SCALARS_EXPORT
 const ScalarType *get_type(const string &id);
 
+
+ROUGHPY_SCALARS_EXPORT
+const ScalarType* get_type(const string& id, const ScalarDeviceInfo& device);
+
 /**
  * @brief Get a list of all registered ScalarTypes
  * @return vector of ScalarType pointers.
@@ -462,6 +470,11 @@ struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_scalar_type> {
 template <typename T>
 const ScalarType *ScalarType::of() {
     return dtl::scalar_type_holder<remove_cv_ref_t<T>>::get_type();
+}
+
+template <typename T>
+const ScalarType *ScalarType::of(const ScalarDeviceInfo &device) {
+    return get_type(type_id_of<T>(), device);
 }
 
 template <typename T>

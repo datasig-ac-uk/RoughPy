@@ -39,6 +39,9 @@
 #include "scalar_pointer.h"
 #include "scalar_type.h"
 
+
+
+
 using namespace rpy;
 using namespace rpy::scalars;
 
@@ -432,7 +435,7 @@ ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix &coeff_matrix, co
 
     switch (coeff_matrix.storage()) {
         case MatrixStorage::FullMatrix:
-
+            
             break;
     }
 
@@ -441,6 +444,7 @@ ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix &coeff_matrix, co
 
 
 
+    return result;
 
 }
 OwnedScalarArray FloatBlas::lls_qr(const ScalarMatrix &matrix, const ScalarArray &target) {

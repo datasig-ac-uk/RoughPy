@@ -43,6 +43,8 @@
 #include "random.h"
 #include "standard_random_generator.h"
 
+#include "float_type_import.h"
+
 namespace rpy {
 namespace scalars {
 
@@ -78,7 +80,7 @@ public:
                       alignof(ScalarImpl)}) {}
 
     Scalar from(long long int numerator, long long int denominator) const override {
-        return Scalar(this, ScalarImpl(numerator) / denominator);
+        return Scalar(this, ScalarImpl(numerator) / ScalarImpl(denominator));
     }
 
     ScalarPointer allocate(dimn_t size) const override {
@@ -164,7 +166,7 @@ public:
             const auto *in_end = in_begin + count;
             std::copy(in_begin, in_end, static_cast<ScalarImpl *>(out));
         } else {
-            auto cv = get_conversion(type->id(), this->id());
+            const auto& cv = get_conversion(type->id(), this->id());
             ScalarPointer out_ptr{this, out};
 
             cv(out_ptr, in, count);
@@ -222,12 +224,118 @@ public:
 
     void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const override {
         if (src.type() == nullptr) {
-            throw std::invalid_argument("source type cannot be null");
+            if (src.is_simple_integer()) {
+                throw std::runtime_error("no type associated with scalar value");
+            }
+            switch (src.simple_integer_config()) {
+                case flags::UnsignedInteger8:
+                    convert_copy_basic<uint8_t>(dst, src.cptr(), count);
+                    break;
+                case flags::UnsignedInteger16:
+                    convert_copy_basic<uint16_t>(dst, src.cptr(), count);
+                    break;
+                case flags::UnsignedInteger32:
+                    convert_copy_basic<uint32_t>(dst, src.cptr(), count);
+                    break;
+                case flags::UnsignedInteger64:
+                    convert_copy_basic<uint64_t>(dst, src.cptr(), count);
+                    break;
+                case flags::UnsignedSize:
+                    convert_copy_basic<dimn_t>(dst, src.cptr(), count);
+                    break;
+                case flags::SignedInteger8:
+                    convert_copy_basic<int8_t>(dst, src.cptr(), count);
+                    break;
+                case flags::SignedInteger16:
+                    convert_copy_basic<int16_t>(dst, src.cptr(), count);
+                    break;
+                case flags::SignedInteger32:
+                    convert_copy_basic<int32_t>(dst, src.cptr(), count);
+                    break;
+                case flags::SignedInteger64:
+                    convert_copy_basic<int64_t>(dst, src.cptr(), count);
+                    break;
+                case flags::SignedSize:
+                    convert_copy_basic<idimn_t>(dst, src.cptr(), count);
+                    break;
+            }
         }
         convert_copy(dst, src.cptr(), count, src.type()->id());
     }
     void convert_copy(void *out, const void *in, std::size_t count, BasicScalarInfo info) const override {
-        //TODO: Implement me
+
+        ScalarPointer optr(this, out);
+        switch(info.code) {
+            case ScalarTypeCode::Int:
+                switch (info.bits) {
+                    case 8:
+                        convert_copy_basic<int8_t>(optr, in, info.lanes*count);
+                        break;
+                    case 16:
+                        convert_copy_basic<int16_t>(optr, in, info.lanes*count);
+                        break;
+                    case 32:
+                        convert_copy_basic<int32_t>(optr, in, info.lanes*count);
+                        break;
+                    case 64:
+                        convert_copy_basic<int64_t>(optr, in, info.lanes*count);
+                        break;
+                    case 128:
+                    default:
+                        throw std::runtime_error("invalid bit configuration for integer type");
+                }
+                break;
+            case ScalarTypeCode::UInt:
+                switch (info.bits) {
+                    case 8:
+                        convert_copy_basic<uint8_t>(optr, in, info.lanes * count);
+                        break;
+                    case 16:
+                        convert_copy_basic<uint16_t>(optr, in, info.lanes * count);
+                        break;
+                    case 32:
+                        convert_copy_basic<uint32_t>(optr, in, info.lanes * count);
+                        break;
+                    case 64:
+                        convert_copy_basic<uint64_t>(optr, in, info.lanes * count);
+                        break;
+                    case 128:
+                    default:
+                        throw std::runtime_error("invalid bit configuration for integer type");
+                }
+                break;
+            case ScalarTypeCode::Float:
+                switch (info.bits) {
+                    case 16:
+                        convert_copy_basic<half>(optr, in, info.lanes*count);
+                        break;
+                    case 32:
+                        convert_copy_basic<float>(optr, in, info.lanes*count);
+                        break;
+                    case 64:
+                        convert_copy_basic<double>(optr, in, info.lanes*count);
+                        break;
+                    default:
+                        throw std::runtime_error("invalid bit configuration for float type");
+                }
+                break;
+            case ScalarTypeCode::BFloat:
+                switch (info.bits) {
+                    case 16:
+                        convert_copy_basic<bfloat16>(optr, in, info.lanes*count);
+                        break;
+                    default:
+                        throw std::runtime_error("invalid bit configuration for bfloat type");
+
+                }
+                break;
+            case ScalarTypeCode::Bool:
+            case ScalarTypeCode::OpaqueHandle: break;
+            case ScalarTypeCode::Complex:
+            default:
+                throw std::runtime_error("unsupported scalar type");
+        }
+
     }
     void assign(ScalarPointer target, long long int numerator, long long int denominator) const override {
         *target.raw_cast<ScalarImpl *>() = ScalarImpl(numerator) / denominator;

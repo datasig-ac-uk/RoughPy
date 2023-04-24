@@ -193,6 +193,12 @@ void rpy::scalars::register_type(const ScalarType *type) {
     entry = type;
 }
 const ScalarType *rpy::scalars::get_type(const string &id) {
+    // TODO: needs implementation
+    return nullptr;
+}
+
+const ScalarType *scalars::get_type(const string &id, const ScalarDeviceInfo &device) {
+    // TODO: Needs implementation
     return nullptr;
 }
 

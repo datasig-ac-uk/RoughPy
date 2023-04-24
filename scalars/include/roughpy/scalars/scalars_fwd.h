@@ -150,6 +150,17 @@ class BlasInterface;
 template <typename T>
 inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
 
+
+
+constexpr bool operator==(const ScalarDeviceInfo& lhs, const ScalarDeviceInfo& rhs) noexcept {
+    return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
+}
+
+constexpr bool operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept {
+    return lhs.code == rhs.code && lhs.bits == rhs.bits && lhs.lanes == rhs.lanes;
+}
+
+
 } // namespace scalars
 } // namespace rpy
 
