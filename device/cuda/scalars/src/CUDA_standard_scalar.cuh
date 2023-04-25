@@ -115,10 +115,10 @@ void CUDAScalarType<S>::swap(ScalarPointer lhs, ScalarPointer rhs) const {
 template <typename S>
 void CUDAScalarType<S>::convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const {
     const auto* host_type = ScalarType::of<S>();
-    RPY_ASSERT(!dst.is_null());
-    RPY_ASSERT(!dst.is_const());
-    RPY_ASSERT(!src.is_null());
-    RPY_ASSERT(count > 0);
+    RPY_DBG_ASSERT(!dst.is_null());
+    RPY_DBG_ASSERT(!dst.is_const());
+    RPY_DBG_ASSERT(!src.is_null());
+    RPY_DBG_ASSERT(count > 0);
 
     if (dst.type() == this && src.type() == this) {
         handle_error(copy_device_to_device(dst.ptr(), src.cptr(), count));
