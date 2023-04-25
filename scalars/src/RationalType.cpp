@@ -35,6 +35,8 @@
 #include <ostream>
 #include <utility>
 
+#include "float_type_import.h"
+
 using namespace rpy;
 using namespace rpy::scalars;
 
@@ -94,7 +96,94 @@ void RationalType::convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t cou
     }
     convert_copy(dst, src.ptr(), count, src.type()->id());
 }
+
+
+template<typename F>
+static inline void convert_copy_ext(ScalarPointer& out, const void* in, std::size_t count) {
+    const auto *iptr = static_cast<const F *>(in);
+    auto *optr = static_cast<rational_scalar_type *>(out.ptr());
+
+    for (dimn_t i = 0; i < count; ++i, ++iptr, ++optr) {
+        ::new (optr) rational_scalar_type(static_cast<float>(*iptr));
+    }
+}
+
+
 void RationalType::convert_copy(void *out, const void *in, std::size_t count, BasicScalarInfo info) const {
+
+    ScalarPointer optr(this, out);
+    switch (info.code) {
+        case ScalarTypeCode::Int:
+            switch (info.bits) {
+                case 8:
+                    convert_copy_basic<int8_t>(optr, in, info.lanes * count);
+                    break;
+                case 16:
+                    convert_copy_basic<int16_t>(optr, in, info.lanes * count);
+                    break;
+                case 32:
+                    convert_copy_basic<int32_t>(optr, in, info.lanes * count);
+                    break;
+                case 64:
+                    convert_copy_basic<int64_t>(optr, in, info.lanes * count);
+                    break;
+                case 128:
+                default:
+                    throw std::runtime_error("invalid bit configuration for integer type");
+            }
+            break;
+        case ScalarTypeCode::UInt:
+            switch (info.bits) {
+                case 8:
+                    convert_copy_basic<uint8_t>(optr, in, info.lanes * count);
+                    break;
+                case 16:
+                    convert_copy_basic<uint16_t>(optr, in, info.lanes * count);
+                    break;
+                case 32:
+                    convert_copy_basic<uint32_t>(optr, in, info.lanes * count);
+                    break;
+                case 64:
+                    convert_copy_basic<uint64_t>(optr, in, info.lanes * count);
+                    break;
+                case 128:
+                default:
+                    throw std::runtime_error("invalid bit configuration for integer type");
+            }
+            break;
+        case ScalarTypeCode::Float:
+            switch (info.bits) {
+                case 16:
+                    convert_copy_ext<half>(optr, in, info.lanes * count);
+                    break;
+                case 32:
+                    convert_copy_basic<float>(optr, in, info.lanes * count);
+                    break;
+                case 64:
+                    convert_copy_basic<double>(optr, in, info.lanes * count);
+                    break;
+                default:
+                    throw std::runtime_error("invalid bit configuration for float type");
+            }
+            break;
+        case ScalarTypeCode::BFloat:
+            switch (info.bits) {
+                case 16:
+                    convert_copy_ext<bfloat16>(optr, in, info.lanes * count);
+                    break;
+                default:
+                    throw std::runtime_error("invalid bit configuration for bfloat type");
+            }
+            break;
+        case ScalarTypeCode::Bool:
+        case ScalarTypeCode::OpaqueHandle: break;
+        case ScalarTypeCode::Complex:
+        default:
+            throw std::runtime_error("unsupported scalar type");
+    }
+
+
+
 }
 void RationalType::convert_copy(void *out, ScalarPointer in, std::size_t count) const {
     assert(out != nullptr);
