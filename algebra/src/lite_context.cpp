@@ -90,7 +90,7 @@ bool LiteContextMaker::can_get(deg_t width, deg_t depth, const scalars::ScalarTy
 
 context_pointer LiteContextMaker::create_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype, const ContextMaker::preference_list &preferences) const {
     auto idx = index_of_ctype(ctype);
-    assert(idx.has_value());
+    RPY_DBG_ASSERT(idx.has_value());
 
     switch (idx.value()) {
         case 0: return new LiteContext<lal::double_field>(width, depth);

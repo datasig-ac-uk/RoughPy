@@ -169,10 +169,10 @@ streams::TickStream::TickStream(scalars::ScalarStream &&raw_data,
 }
 
 algebra::Lie streams::TickStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
-    assert(dynamic_cast<const DyadicInterval*>(&interval) == &interval);
+    RPY_DBG_ASSERT(dynamic_cast<const DyadicInterval*>(&interval) == &interval);
     if (auto dil = smallest_dyadic_containing_all_events(static_cast<const DyadicInterval&>(interval), m_resolution)) {
         auto found = m_data.find(*dil);
-        assert(found != m_data.end());
+        RPY_DBG_ASSERT(found != m_data.end());
         return found->second;
     }
     return ctx.zero_lie(metadata().cached_vector_type);

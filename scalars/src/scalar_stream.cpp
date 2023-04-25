@@ -78,8 +78,8 @@ dimn_t ScalarStream::col_count(dimn_t i) const noexcept {
         return m_elts_per_row[0];
     }
 
-    assert(m_elts_per_row.size() > 1);
-    assert(i < m_elts_per_row.size());
+    RPY_DBG_ASSERT(m_elts_per_row.size() > 1);
+    RPY_DBG_ASSERT(i < m_elts_per_row.size());
     return m_elts_per_row[i];
 }
 
@@ -105,7 +105,7 @@ void ScalarStream::reserve_size(dimn_t num_rows) {
     m_stream.reserve(num_rows);
 }
 void ScalarStream::push_back(const ScalarPointer &data) {
-    assert(m_elts_per_row.size() == 1 && m_elts_per_row[0] > 0);
+    RPY_CHECK(m_elts_per_row.size() == 1 && m_elts_per_row[0] > 0);
     m_stream.push_back(data.ptr());
 }
 void ScalarStream::push_back(const ScalarArray &data) {

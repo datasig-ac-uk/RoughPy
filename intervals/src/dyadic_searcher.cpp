@@ -114,7 +114,7 @@ ScaledPredicate DyadicSearcher::rescale_to_unit_interval(const Interval &origina
     auto a = original.inf();
     auto b = original.sup();
 
-    assert(b > a);// a degenerate interval is going to be a pain
+    RPY_CHECK(b > a);// a degenerate interval is going to be a pain
 
     /*
      * The transformation of original onto the unit interval is given by

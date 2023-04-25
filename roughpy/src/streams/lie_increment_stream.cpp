@@ -97,8 +97,8 @@ static py::object lie_increment_stream_from_increments(const py::object& data, c
         }
     }
 
-    assert(buffer.size() == static_cast<dimn_t>(increment_size * num_increments));
-    assert(md.scalar_type != nullptr);
+    RPY_CHECK(buffer.size() == static_cast<dimn_t>(increment_size * num_increments));
+    RPY_CHECK(md.scalar_type != nullptr);
     if (!md.ctx) {
         if (md.width == 0 || md.depth == 0) {
             throw py::value_error("either ctx or both width and depth must be specified");

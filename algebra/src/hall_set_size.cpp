@@ -106,6 +106,6 @@ dimn_t HallSetSizeHelper::operator()(int k) {
         }
     }
 
-    assert(result % k == 0);
+    RPY_DBG_ASSERT(result % k == 0);
     return result / k;
 }

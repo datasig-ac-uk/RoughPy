@@ -90,7 +90,7 @@ streams::ExternalDataStreamConstructor streams::ExternalDataStream::get_factory_
 }
 
 void streams::ExternalDataSourceFactory::destroy_payload(void *&payload) const {
-    assert(payload == nullptr);
+    RPY_DBG_ASSERT(payload == nullptr);
 }
 
 void streams::ExternalDataSourceFactory::set_width(void *payload, deg_t width) const {
@@ -114,7 +114,7 @@ void streams::ExternalDataSourceFactory::add_option(void *payload, const string 
 streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(const streams::ExternalDataSourceFactory *factory, void *payload)
     : p_factory(factory), p_payload(payload)
 {
-    assert(p_factory != nullptr && p_payload != nullptr);
+    RPY_CHECK(p_factory != nullptr && p_payload != nullptr);
 }
 
 streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(streams::ExternalDataStreamConstructor &&other) noexcept

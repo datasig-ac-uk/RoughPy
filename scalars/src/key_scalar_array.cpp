@@ -58,7 +58,7 @@ KeyScalarArray::KeyScalarArray(const KeyScalarArray &other)
             std::copy(other.p_keys, other.p_keys + other.m_size, const_cast<key_type *>(p_keys));
         }
     } else {
-        assert(other.p_keys == nullptr);
+        RPY_DBG_ASSERT(other.p_keys == nullptr);
     }
 }
 KeyScalarArray::KeyScalarArray(KeyScalarArray &&other) noexcept
@@ -68,7 +68,7 @@ KeyScalarArray::KeyScalarArray(KeyScalarArray &&other) noexcept
     m_flags |= (other.m_flags & keys_owning_flag);
     other.p_keys = nullptr;
     other.p_data = nullptr;
-    assert(other.p_data == nullptr);
+    RPY_DBG_ASSERT(other.p_data == nullptr);
 }
 KeyScalarArray::KeyScalarArray(OwnedScalarArray &&sa) noexcept
     : ScalarArray(std::move(sa)) {

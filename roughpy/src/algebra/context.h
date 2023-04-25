@@ -51,7 +51,7 @@ PyObject* RPyContext_FromContext(algebra::context_pointer ctx);
 }
 
 inline const algebra::context_pointer &ctx_cast(PyObject *ctx) {
-    assert(ctx != nullptr && Py_TYPE(ctx) == &python::RPyContext_Type);
+    RPY_CHECK(ctx != nullptr && Py_TYPE(ctx) == &python::RPyContext_Type);
     return reinterpret_cast<RPyContext *>(ctx)->p_ctx;
 }
 

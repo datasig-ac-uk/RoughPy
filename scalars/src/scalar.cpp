@@ -176,9 +176,9 @@ ScalarPointer Scalar::to_mut_pointer() {
 }
 void Scalar::set_to_zero() {
     if (p_data == nullptr) {
-        assert(p_type != nullptr);
-        assert(!is_const());
-        assert(is_owning());
+        RPY_CHECK(p_type != nullptr);
+        RPY_CHECK(!is_const());
+        RPY_CHECK(is_owning());
         ScalarPointer::operator=(p_type->allocate(1));
         p_type->assign(to_mut_pointer(), 0, 1);
     }
@@ -191,7 +191,7 @@ scalar_t Scalar::to_scalar_t() const {
     if (is_interface()) {
         return static_cast<const ScalarInterface *>(p_data)->as_scalar();
     }
-    assert(p_type != nullptr);
+    RPY_CHECK(p_type != nullptr);
     return p_type->to_scalar_t(to_pointer());
 }
 Scalar Scalar::operator-() const {
@@ -238,9 +238,9 @@ Scalar Scalar::operator/(const Scalar &other) const {
         }                                                                             \
                                                                                       \
         if (p_type == nullptr) {                                                      \
-            assert(p_data == nullptr);                                                \
+            RPY_DBG_ASSERT(p_data == nullptr);                                                \
             /* We just established that other.p_data != nullptr */                    \
-            assert(other.p_type != nullptr);                                          \
+            RPY_DBG_ASSERT(other.p_type != nullptr);                                          \
             p_type = other.p_type;                                                    \
         }                                                                             \
         if (p_data == nullptr) {                                                      \
@@ -270,8 +270,8 @@ Scalar &Scalar::operator/=(const Scalar &other) {
         throw std::runtime_error("division by zero");
     }
     if (p_type == nullptr) {
-        assert(p_data == nullptr);
-        assert(other.p_type != nullptr);
+        RPY_DBG_ASSERT(p_data == nullptr);
+        RPY_DBG_ASSERT(other.p_type != nullptr);
         p_type = other.p_type;
     }
     if (p_data == nullptr) {

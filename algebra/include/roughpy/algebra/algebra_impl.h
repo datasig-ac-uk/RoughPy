@@ -59,7 +59,7 @@ algebra_cast(Interface &arg) noexcept {
     using access_t = copy_cv_t<ImplAccessLayer<Interface, Impl>, Interface>;
     static_assert(is_base_of<dtl::AlgebraInterfaceBase, Interface>::value,
                   "casting to algebra implementation is only possible for interfaces");
-//    assert(dynamic_cast<access_t*>(&arg) == std::addressof(arg));
+//    RPY_DBG_ASSERT(dynamic_cast<access_t*>(&arg) != nullptr);
     return static_cast<access_t&>(arg).get_data();
 }
 
@@ -153,8 +153,8 @@ using use_impl_t = conditional_t<
 
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 class AlgebraImplementation
-    : protected StorageModel<Impl>,
-      public ImplAccessLayer<Interface, Impl> {
+    : public ImplAccessLayer<Interface, Impl>,
+      protected StorageModel<Impl> {
     using storage_base_t = StorageModel<Impl>;
     using access_layer_t = ImplAccessLayer<Interface, Impl>;
 

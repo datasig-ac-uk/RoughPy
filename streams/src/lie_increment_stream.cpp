@@ -99,7 +99,7 @@ algebra::Lie LieIncrementStream::log_signature_impl(const intervals::Interval &i
         }
     }
 
-    assert(ctx.width() == md.width);
+    RPY_CHECK(ctx.width() == md.width);
     //    assert(ctx.depth() == md.depth);
 
     return ctx.log_signature(data);

@@ -54,7 +54,7 @@ public:
         return (r < 0) ? (r + abs(b)) : r;
     }
     static constexpr multiplier_t int_two_to_int_power(power_t exponent) {
-        assert(exponent >= 0);
+        RPY_DBG_ASSERT(exponent >= 0);
         return multiplier_t(1) << exponent;
     }
     static constexpr multiplier_t shift(multiplier_t k, power_t n) {

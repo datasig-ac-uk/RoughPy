@@ -66,11 +66,11 @@ static PyTypeObject PyScalarTypeBase_type = {
     .tp_methods = PyScalarTypeBase_methods};
 
 pybind11::handle python::get_scalar_metaclass() {
-    assert(PyType_Ready(&PyScalarMetaType_type) == 0);
+    RPY_CHECK(PyType_Ready(&PyScalarMetaType_type) == 0);
     return py::handle(reinterpret_cast<PyObject *>(&PyScalarMetaType_type));
 }
 pybind11::handle python::get_scalar_baseclass() {
-    assert(PyType_Ready(&PyScalarTypeBase_type) == 0);
+    RPY_CHECK(PyType_Ready(&PyScalarTypeBase_type) == 0);
     return pybind11::handle(reinterpret_cast<PyObject *>(&PyScalarTypeBase_type));
 }
 void python::PyScalarMetaType_dealloc(PyObject *arg) {

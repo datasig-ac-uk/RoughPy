@@ -47,7 +47,7 @@ using namespace rpy::scalars;
 
 OwnedScalarArray FloatBlas::vector_axpy(const ScalarArray &x, const Scalar &a, const ScalarArray &y) {
     const auto *type = BlasInterface::type();
-    assert(x.type() == type && y.type() == type);
+    RPY_CHECK(x.type() == type && y.type() == type);
     OwnedScalarArray result(type, y.size());
     type->convert_copy(result.ptr(), y, y.size());
 
@@ -58,7 +58,7 @@ OwnedScalarArray FloatBlas::vector_axpy(const ScalarArray &x, const Scalar &a, c
 Scalar FloatBlas::dot_product(const ScalarArray &lhs, const ScalarArray &rhs) {
     const auto *type = BlasInterface::type();
 
-    assert(lhs.type() == type && rhs.type() == type);
+    RPY_CHECK(lhs.type() == type && rhs.type() == type);
 
     auto N = static_cast<blas::integer>(lhs.size());
     auto result = cblas_sdot(N, lhs.raw_cast<const float *>(), 1,
@@ -71,14 +71,14 @@ Scalar FloatBlas::L1Norm(const ScalarArray &vector) {
     return {type(), result};
 }
 Scalar FloatBlas::L2Norm(const ScalarArray &vector) {
-    assert(vector.type() == type());
+    RPY_CHECK(vector.type() == type());
     float result = 0.0;
     auto N = static_cast<blas::integer>(vector.size());
     result = cblas_snrm2(N, vector.raw_cast<const float *>(), 1);
     return {type(), result};
 }
 Scalar FloatBlas::LInfNorm(const ScalarArray &vector) {
-    assert(vector.type() == type());
+    RPY_CHECK(vector.type() == type());
     auto N = static_cast<blas::integer>(vector.size());
     const auto *ptr = vector.raw_cast<const float *>();
     auto idx = cblas_isamax(N, ptr, 1);
@@ -86,7 +86,7 @@ Scalar FloatBlas::LInfNorm(const ScalarArray &vector) {
     return {type(), result};
 }
 OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix, const ScalarArray &vector) {
-    assert(matrix.type() == type() && vector.type() == type());
+    RPY_CHECK(matrix.type() == type() && vector.type() == type());
 
     auto M = static_cast<blas::integer>(matrix.nrows());
     auto N = static_cast<blas::integer>(matrix.ncols());
@@ -117,7 +117,7 @@ OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix, const Scal
             break;
         case MatrixStorage::LowerTriangular:
         case MatrixStorage::UpperTriangular:
-            assert(M == N);
+            RPY_CHECK(M == N);
             type()->convert_copy(result.ptr(), vector, vector.size());
             cblas_stpmv(layout,
                         blas::to_blas_uplo(matrix.storage()),
@@ -129,7 +129,7 @@ OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix, const Scal
                         1);
             break;
         case MatrixStorage::Diagonal:
-            assert(M == N);
+            RPY_CHECK(M == N);
             cblas_ssbmv(layout,
                         blas::Blas_Lo,
                         N,
@@ -191,7 +191,7 @@ static void ftmm(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatr
 static void dfmm(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
     // lhs is diagonal, so the result of multiplying is just scaling each
     // corresponding column of rhs.
-    assert(lhs.ncols() == rhs.nrows());
+    RPY_DBG_ASSERT(lhs.ncols() == rhs.nrows());
     auto M = static_cast<blas::integer>(rhs.nrows());
 
     blas::integer ldb;
@@ -317,7 +317,7 @@ static void tdmm(ScalarMatrix& result, const ScalarMatrix& lhs, blas::BlasUpLo l
 }
 
 static void ddmm(ScalarMatrix& result, const ScalarMatrix& lhs, const ScalarMatrix& rhs) {
-    assert(result.storage() == MatrixStorage::Diagonal);
+    RPY_DBG_ASSERT(result.storage() == MatrixStorage::Diagonal);
 
     auto* out_ptr = result.raw_cast<float*>();
     const auto* lhs_ptr = lhs.raw_cast<const float*>();
@@ -393,7 +393,7 @@ static void diagonal_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs
 }
 
 ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix &lhs, const ScalarMatrix &rhs) {
-    assert(lhs.type() == rhs.type() && lhs.type() == type());
+    RPY_DBG_ASSERT(lhs.type() == rhs.type() && lhs.type() == type());
 
     if (lhs.ncols() != rhs.nrows()) {
         throw std::invalid_argument("inner matrix dimensions must agree");

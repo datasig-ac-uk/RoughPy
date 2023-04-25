@@ -54,8 +54,8 @@ rpy::scalars::ScalarMatrix::ScalarMatrix(rpy::deg_t rows, rpy::deg_t cols, rpy::
     : ScalarArray(std::move(array)),
       m_nrows(rows), m_ncols(cols), m_layout(layout), m_storage(storage)
 {
-    assert(m_nrows >= 0 && m_ncols >= 0);
-    assert(m_nrows * m_ncols == m_size);
+    RPY_CHECK(m_nrows >= 0 && m_ncols >= 0);
+    RPY_CHECK(m_nrows * m_ncols == m_size);
 }
 rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::row(rpy::deg_t i) {
     return rpy::scalars::ScalarMatrix(nullptr, 0, 0);

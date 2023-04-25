@@ -220,7 +220,7 @@ static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
         return true;
     }
 
-    assert(shape != nullptr);
+    RPY_CHECK(shape != nullptr);
     options.shape.assign(shape, shape+ndim);
 
     idimn_t size = 1;
@@ -409,7 +409,7 @@ static arg_size_info compute_size_and_type(
     py::handle arg) {
     arg_size_info info = {0, 0};
 
-    assert(py::isinstance<py::sequence>(arg));
+    RPY_CHECK(py::isinstance<py::sequence>(arg));
 
     ground_data_type ground_type = ground_data_type::UnSet;
     compute_size_and_type_recurse(options, leaves, arg, ground_type, 0);
@@ -551,7 +551,7 @@ scalars::KeyScalarArray python::py_to_buffer(const py::handle &object, python::P
             }
         } else {
             auto *key_ptr = result.keys();
-            assert(size_info.num_values == 0 || key_ptr != nullptr);
+            RPY_DBG_ASSERT(size_info.num_values == 0 || key_ptr != nullptr);
             for (auto leaf : leaves) {
                 // Key-value
                 if (py::isinstance<py::dict>(leaf)) {

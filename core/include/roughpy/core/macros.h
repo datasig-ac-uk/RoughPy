@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,38 +33,37 @@
 #define ROUGHPY_CORE_MACROS_H
 
 #include <cassert>
-
+#include <stdexcept>
 
 #if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__)) && !defined(RPY_DEBUG)
-#   define RPY_DEBUG
+#define RPY_DEBUG
 #else
-#   undef RPY_DEBUG
+#undef RPY_DEBUG
 #endif
 
 #ifdef RPY_DEBUG
-#  define RPY_DBG_ASSERT(ARG) assert(ARG)
+#define RPY_DBG_ASSERT(ARG) assert(ARG)
 #else
-#  define RPY_DBG_ASSERT(ARG) (void) 0
+#define RPY_DBG_ASSERT(ARG) (void)0
 #endif
 
 #if defined(_MSC_VER) && defined(_MSVC_LANG)
-#   define RPY_CPP_VERSION _MSVC_LANG
+#define RPY_CPP_VERSION _MSVC_LANG
 #else
-#   define RPY_CPP_VERSION __cplusplus
+#define RPY_CPP_VERSION __cplusplus
 #endif
 
 #if RPY_CPP_VERSION >= 201403L
-#  define RPY_CPP_14
+#define RPY_CPP_14
 #else
-#  undef RPY_CPP_14
+#undef RPY_CPP_14
 #endif
 
 #if RPY_CPP_VERSION >= 201703L
-#  define RPY_CPP_17
+#define RPY_CPP_17
 #else
-#  undef RPY_CPP_17
+#undef RPY_CPP_17
 #endif
-
 
 #ifdef RPY_CPP_17
 #define RPY_UNUSED [[maybe_unused]]
@@ -78,67 +77,64 @@
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#    define RPY_UNREACHABLE() (__builtin_unreachable())
-#    define RPY_UNREACHABLE_RETURN(...) RPY_UNREACHABLE()
+#define RPY_UNREACHABLE() (__builtin_unreachable())
+#define RPY_UNREACHABLE_RETURN(...) RPY_UNREACHABLE()
 #elif defined(_MSC_VER)
-#    define RPY_UNREACHABLE() (__assume(false))
-#    define RPY_UNREACHABLE_RETURN(...) RPY_UNREACHABLE(); return __VA_ARGS__
+#define RPY_UNREACHABLE() (__assume(false))
+#define RPY_UNREACHABLE_RETURN(...) \
+    RPY_UNREACHABLE();              \
+    return __VA_ARGS__
 #else
-#    define RPY_UNREACHABLE()
-#    define RPY_UNREACHABLE_RETURN(...) RPY_UNREACHABLE(); return __VA_ARGS__
+#define RPY_UNREACHABLE()
+#define RPY_UNREACHABLE_RETURN(...) \
+    RPY_UNREACHABLE();              \
+    return __VA_ARGS__
 #endif
-
 
 // Macros that control optimisations
 
 #if defined(__OPTIMIZE__) || !defined(RPY_DEBUG)
-#   if defined(_WIN32) || defined(_WIN64)
-#       define RPY_INLINE_ALWAYS __forceinline
-#   elif defined(__GNUC__) || defined(__clang__)
-#       define RPY_INLINE_ALWAYS inline __attribute__((always_inline))
-#   else
-#       define RPY_INLINE_ALWAYS inline
-#   endif
+#if defined(_WIN32) || defined(_WIN64)
+#define RPY_INLINE_ALWAYS __forceinline
+#elif defined(__GNUC__) || defined(__clang__)
+#define RPY_INLINE_ALWAYS inline __attribute__((always_inline))
+#else
+#define RPY_INLINE_ALWAYS inline
+#endif
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
-#   define RPY_INLINE_NEVER __declspec(noinline)
+#define RPY_INLINE_NEVER __declspec(noinline)
 #elif defined(__GNUC__) || defined(__clang__)
-#   define RPY_INLINE_NEVER __attribute__((never_inline))
+#define RPY_INLINE_NEVER __attribute__((never_inline))
 #else
-#   define RPY_INLINE_NEVER
+#define RPY_INLINE_NEVER
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#   define RPY_RESTRICT(ARG) ARG __restrict__
+#define RPY_RESTRICT(ARG) ARG __restrict__
 #elif defined(_MSC_VER)
-#   define RPY_RESTRICT(ARG) ARG __restrict
+#define RPY_RESTRICT(ARG) ARG __restrict
 #endif
-
 
 #if defined(__GNUC__) || defined(__clang__)
-#   define RPY_LIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 1))
-#   define RPY_UNLIKELY(COND) (__builtin_expect(static_cast<boo>(COND), 0))
+#define RPY_LIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 1))
+#define RPY_UNLIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 0))
 #else
-#   define RPY_LIKEY(COND) (COND)
-#   define RPY_UNLIKELY(COND) (COND)
+#define RPY_LIKEY(COND) (COND)
+#define RPY_UNLIKELY(COND) (COND)
 #endif
 
-
-#define RPY_CHECK(EXPR)             \
-    if (RPY_UNLIKELY(!(EXPR))) {    \
-        throw std::runtime_error("failed check \"" + #EXPR + "\"");                                \
+#define RPY_CHECK(EXPR)                                             \
+    if (RPY_UNLIKELY(!(EXPR))) {                                    \
+        throw std::runtime_error(std::string("failed check \"") + #EXPR + "\""); \
     }
-
-
-
 
 #define RPY_STRINGIFY_IMPL(ARG) #ARG
 #define RPY_STRINGIFY(ARG) RPY_STRINGIFY_IMPL(ARG)
 
-#define RPY_JOIN_IMPL_IMPL(LHS, RHS) X ## Y
+#define RPY_JOIN_IMPL_IMPL(LHS, RHS) X##Y
 #define RPY_JOIN_IMPL(LHS, RHS) RPY_JOIN_IMPL_IMPL(LHS, RHS)
 #define RPY_JOIN(LHS, RHS) RPY_JOIN_IMPL(LHS, RHS)
-
 
 #endif//ROUGHPY_CORE_MACROS_H

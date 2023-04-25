@@ -39,7 +39,7 @@ using namespace rpy::streams;
 
 
 void streams::DynamicallyConstructedStream::refine_accuracy(DynamicallyConstructedStream::data_increment increment, resolution_t desired) const {
-    assert(increment->first.power() <= desired);
+    RPY_DBG_ASSERT(increment->first.power() <= desired);
 
     // get all the intervals in the tree "below" increment->first
     auto range = m_data_tree.equal_range(increment->first);
@@ -84,7 +84,7 @@ typename DynamicallyConstructedStream::data_increment streams::DynamicallyConstr
         } else {
             neighbour.shrink_to_contained_end();
         }
-        assert(neighbour != old_root->first);
+        RPY_DBG_ASSERT(neighbour != old_root->first);
 
         auto it_neighbour = insert_node(neighbour,
                                         make_neighbour_root_increment(neighbour),
@@ -158,8 +158,8 @@ void streams::DynamicallyConstructedStream::update_parents(DynamicallyConstructe
 DynamicallyConstructedStream::data_increment
 streams::DynamicallyConstructedStream::insert_children_and_refine(DynamicallyConstructedStream::data_increment leaf, DynamicallyConstructedStream::DyadicInterval interval) const {
 
-    assert(DataIncrement::is_leaf(leaf));
-    assert(leaf->first.contains(interval));
+    RPY_DBG_ASSERT(DataIncrement::is_leaf(leaf));
+    RPY_DBG_ASSERT(leaf->first.contains(interval));
 
     DyadicInterval left(leaf->first);
     DyadicInterval right(leaf->first);
@@ -171,7 +171,7 @@ streams::DynamicallyConstructedStream::insert_children_and_refine(DynamicallyCon
     auto it_left = insert_node(left, std::move(new_vals.first), left.power(), leaf);
     auto it_right = insert_node(right, std::move(new_vals.second), right.power(), it_left);
 
-    assert(it_left != leaf && it_right != leaf);
+    RPY_DBG_ASSERT(it_left != leaf && it_right != leaf);
 
     auto& left_incr = it_left->second;
     auto& right_incr = it_right->second;
@@ -220,7 +220,7 @@ algebra::Lie DynamicallyConstructedStream::log_signature(const intervals::Dyadic
     // If we're here, the root exists and may or may not contain the
     // interval of interest.
     root = expand_root_until_contains(root, interval);
-    assert(root->first.contains(interval));
+    RPY_DBG_ASSERT(root->first.contains(interval));
 
     // Now the root contains the interval of interest. Let's compute
     // what we need

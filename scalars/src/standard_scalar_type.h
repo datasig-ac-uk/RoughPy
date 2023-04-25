@@ -153,8 +153,8 @@ protected:
 
 public:
     void convert_copy(void *out, ScalarPointer in, dimn_t count) const override {
-        assert(out != nullptr);
-        assert(!in.is_null());
+        RPY_DBG_ASSERT(out != nullptr);
+        RPY_DBG_ASSERT(!in.is_null());
         const auto *type = in.type();
 
         if (type == nullptr) {
@@ -398,22 +398,22 @@ public:
         return Scalar(this, ScalarImpl(0));
     }
     void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const override {
-        assert(lhs);
+        RPY_DBG_ASSERT(lhs);
         auto *ptr = lhs.raw_cast<ScalarImpl *>();
         *ptr += try_convert(rhs);
     }
     void sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const override {
-        assert(lhs);
+        RPY_DBG_ASSERT(lhs);
         auto *ptr = lhs.raw_cast<ScalarImpl *>();
         *ptr -= try_convert(rhs);
     }
     void mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const override {
-        assert(lhs);
+        RPY_DBG_ASSERT(lhs);
         auto *ptr = lhs.raw_cast<ScalarImpl *>();
         *ptr *= try_convert(rhs);
     }
     void div_inplace(ScalarPointer lhs, ScalarPointer rhs) const override {
-        assert(lhs);
+        RPY_DBG_ASSERT(lhs);
         auto *ptr = lhs.raw_cast<ScalarImpl *>();
         if (rhs.is_null()) {
             throw std::runtime_error("division by zero");

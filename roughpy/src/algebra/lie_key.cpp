@@ -100,7 +100,7 @@ struct print_walker {
 };
 
 static typename python::PyLieKey::container_type trim_branch(const boost::container::small_vector_base<python::PyLieLetter> &tree, dimn_t start) {
-    assert(start == 0 || start == 1);
+    RPY_DBG_ASSERT(start == 0 || start == 1);
     if (tree.empty() || (tree.size() == 1 && start == 0)) {
         return {};
     }
@@ -155,14 +155,14 @@ python::PyLieKey::PyLieKey(deg_t width, const boost::container::small_vector_bas
 python::PyLieKey::PyLieKey(deg_t width, let_t left, let_t right)
     : m_width(width), m_data{PyLieLetter::from_letter(left), PyLieLetter::from_letter(right)}
 {
-    assert(left < right);
+    RPY_CHECK(left < right);
 }
 python::PyLieKey::PyLieKey(deg_t width, let_t left, const python::PyLieKey &right)
     : m_width(width), m_data { PyLieLetter::from_letter(left) }
 {
-    assert(m_width == right.m_width);
+    RPY_CHECK(m_width == right.m_width);
     m_data.insert(m_data.end(), right.m_data.begin(), right.m_data.end());
-    assert(!right.is_letter() || right.as_letter() > left);
+    RPY_CHECK(!right.is_letter() || right.as_letter() > left);
 }
 python::PyLieKey::PyLieKey(deg_t width, const python::PyLieKey &left, const python::PyLieKey &right)
     : m_width(left.width()), m_data{PyLieLetter::from_offset(2), PyLieLetter::from_offset(1 + left.degree())}  {
@@ -235,7 +235,7 @@ bool python::PyLieKey::is_letter() const noexcept {
     return m_data.size() == 1;
 }
 let_t python::PyLieKey::as_letter() const {
-    assert(is_letter());
+    RPY_CHECK(is_letter());
     return static_cast<let_t>(m_data[0]);
 }
 string python::PyLieKey::to_string() const {

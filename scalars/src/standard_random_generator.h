@@ -75,12 +75,12 @@ template <typename ScalarImpl, typename BitGenerator>
 StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(const ScalarType *stype, Slice<uint64_t> seed)
     : RandomGenerator(stype), m_seed {seed[0]}, m_generator(BitGenerator(seed[0]))
 {
-    assert(p_type = ScalarType::of<ScalarImpl>());
-    assert(seed.size() >= 1);
+    RPY_CHECK(p_type = ScalarType::of<ScalarImpl>());
+    RPY_CHECK(seed.size() >= 1);
 }
 template <typename ScalarImpl, typename BitGenerator>
 void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_seed(Slice<uint64_t> seed_data) {
-    assert(seed_data.size() >= 1);
+    RPY_CHECK(seed_data.size() >= 1);
 
     m_generator.seed(seed_data[0]);
     m_seed = {seed_data[0]};

@@ -40,8 +40,8 @@ using namespace rpy::streams;
 
 
 sf_count_t SoundFileDataSource::param_to_frame(param_t param) {
-    assert(static_cast<bool>(m_handle));
-    assert(param >= 0.0);
+    RPY_DBG_ASSERT(static_cast<bool>(m_handle));
+    RPY_DBG_ASSERT(param >= 0.0);
     auto sample_rate = static_cast<param_t>(m_handle.samplerate());
 
     auto seconds = (param - m_file_start) * m_time_param_scaling;
@@ -107,7 +107,7 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray &result,
     auto frame_begin = param_to_frame(interval.inf());
     auto frame_end = param_to_frame(interval.sup());
 
-    assert(frame_begin >= 0 && frame_begin <= frame_end && frame_end <= m_handle.frames());
+    RPY_CHECK(frame_begin >= 0 && frame_begin <= frame_end && frame_end <= m_handle.frames());
 
     auto frame_count = frame_end - frame_begin;
     auto seek_pos = m_handle.seek(frame_begin, SEEK_SET);

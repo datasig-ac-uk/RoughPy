@@ -48,11 +48,11 @@ private:
     std::vector<LiePiece> m_data;
 
     static inline scalars::Scalar to_multiplier_upper(const intervals::RealInterval& interval, param_t param) {
-        assert(interval.inf() <= param && param <= interval.sup());
+        RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((interval.sup() - param) / (interval.sup() - interval.inf()));
     }
     static inline scalars::Scalar to_multiplier_lower(const intervals::RealInterval& interval, param_t param) {
-        assert(interval.inf() <= param && param <= interval.sup());
+        RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((param - interval.inf()) / (interval.sup() - interval.inf()));
     }
 

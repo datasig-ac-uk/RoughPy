@@ -87,7 +87,7 @@ algebra::Lie DyadicCachingLayer::log_signature(const intervals::Interval &domain
     // For now, if the ctx depth is not the same as md depth just do the calculation without caching
     // be smarter about this in the future.
     const auto &md = DyadicCachingLayer::metadata();
-    assert(ctx.width() == md.width);
+    RPY_CHECK(ctx.width() == md.width);
     if (ctx.depth() != md.default_context->depth()) {
         return StreamInterface::log_signature(domain, resolution, ctx);
     }

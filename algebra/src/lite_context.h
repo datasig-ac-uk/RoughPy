@@ -254,7 +254,7 @@ void tensor_populate_vcd(VectorConstructionData& data, const TensorObject& arg) 
             key_array[i] = it->key();
             ++i;
         }
-        assert(i == sz);
+        RPY_DBG_ASSERT(i == sz);
     }
 
 }

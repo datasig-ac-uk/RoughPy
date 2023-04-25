@@ -50,7 +50,7 @@ DyadicInterval::DyadicInterval(Dyadic dyadic,
         multiplier_t pow = int_two_to_int_power(m_power - resolution);
         m_multiplier = one * (k1 * one - mod(k1 * one, pow));
         bool is_int = rebase(resolution);
-        assert(is_int);
+        RPY_CHECK(is_int);
     }
 }
 DyadicInterval::DyadicInterval(param_t val,
@@ -110,7 +110,7 @@ DyadicInterval &DyadicInterval::shrink_interval_right() {
     return *this;
 }
 DyadicInterval &DyadicInterval::shrink_interval_left(Dyadic::power_t arg) {
-    assert(arg >= 0);
+    RPY_DBG_ASSERT(arg >= 0);
     for (; arg > 0; --arg) {
         if (m_interval_type == IntervalType::Clopen) {
             *this = shrink_to_contained_end();

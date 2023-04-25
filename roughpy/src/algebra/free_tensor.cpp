@@ -135,7 +135,7 @@ static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs) {
         options.cleanup();
     }
 
-    assert(result.coeff_type() != nullptr);
+    RPY_DBG_ASSERT(result.coeff_type() != nullptr);
 
     return result;
 }

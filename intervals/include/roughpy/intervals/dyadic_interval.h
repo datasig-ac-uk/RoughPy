@@ -54,12 +54,12 @@ public:
     DyadicInterval() = default;
 
     explicit DyadicInterval(IntervalType itype) : Dyadic(), Interval(itype) {
-        assert(itype == IntervalType::Clopen || itype == IntervalType::Opencl);
+        RPY_DBG_ASSERT(itype == IntervalType::Clopen || itype == IntervalType::Opencl);
     }
     explicit DyadicInterval(Dyadic dyadic) : Dyadic(dyadic), Interval() {}
     DyadicInterval(Dyadic dyadic, IntervalType itype) : Dyadic(dyadic), Interval(itype) {}
     DyadicInterval(multiplier_t k, power_t n, IntervalType itype) : Dyadic(k, n), Interval(itype) {
-        assert(itype == IntervalType::Clopen || itype == IntervalType::Opencl);
+        RPY_DBG_ASSERT(itype == IntervalType::Clopen || itype == IntervalType::Opencl);
     }
     DyadicInterval(Dyadic dyadic, power_t resolution, IntervalType itype = IntervalType::Clopen);
     DyadicInterval(param_t val, power_t resolution, IntervalType itype = IntervalType::Clopen);

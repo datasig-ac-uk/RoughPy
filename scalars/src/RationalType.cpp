@@ -186,8 +186,8 @@ void RationalType::convert_copy(void *out, const void *in, std::size_t count, Ba
 
 }
 void RationalType::convert_copy(void *out, ScalarPointer in, std::size_t count) const {
-    assert(out != nullptr);
-    assert(!in.is_null());
+    RPY_DBG_ASSERT(out != nullptr);
+    RPY_DBG_ASSERT(!in.is_null());
     const auto *type = in.type();
 
     if (type == nullptr) {
@@ -247,22 +247,22 @@ Scalar RationalType::uminus(ScalarPointer arg) const {
     return Scalar(this, -try_convert(arg));
 }
 void RationalType::add_inplace(ScalarPointer lhs, ScalarPointer rhs) const {
-    assert(lhs);
+    RPY_CHECK(lhs);
     auto *ptr = lhs.raw_cast<scalar_type *>();
     *ptr += try_convert(rhs);
 }
 void RationalType::sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const {
-    assert(lhs);
+    RPY_CHECK(lhs);
     auto *ptr = lhs.raw_cast<scalar_type *>();
     *ptr -= try_convert(rhs);
 }
 void RationalType::mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const {
-    assert(lhs);
+    RPY_CHECK(lhs);
     auto *ptr = lhs.raw_cast<scalar_type *>();
     *ptr *= try_convert(rhs);
 }
 void RationalType::div_inplace(ScalarPointer lhs, ScalarPointer rhs) const {
-    assert(lhs);
+    RPY_CHECK(lhs);
     auto *ptr = lhs.raw_cast<scalar_type *>();
     if (rhs.is_null()) {
         throw std::runtime_error("division by zero");
