@@ -28,8 +28,44 @@
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_BUNDLE_IMPL_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_BUNDLE_IMPL_H_
 
+
+#include "algebra_bundle.h"
+#include "algebra_impl.h"
+
+
+
 namespace rpy {
 namespace algebra {
+
+template <typename Bundle>
+struct bundle_traits;
+
+template <typename Interface, typename BundleImpl, template <typename> class StorageModel>
+class AlgebraBundleImplementation
+    : protected StorageModel<BundleImpl>, public ImplAccessLayer<Interface, BundleImpl> {
+
+    using storage_base_t = StorageModel<BundleImpl>;
+    using access_layer_t = ImplAccessLayer<Interface, BundleImpl>;
+
+    using base_alg_t = typename Interface::base_t;
+    using fibre_alg_t = typename Interface::fibre_t;
+
+    using base_interface_t = typename Interface::base_interface_t;
+    using fibre_interface_t = typename Interface::fibre_interface_t;
+
+    using bundle_traits_t = bundle_traits<BundleImpl>;
+
+    using real_base_t = typename bundle_traits_t::base_type;
+    using real_fibre_t = typename bundle_traits_t::fibre_type;
+
+    using base_impl_t = AlgebraImplementation<base_interface_t, real_base_t, BorrowedStorageModel>;
+    using fibre_impl_t = AlgebraImplementation<fibre_interface_t, real_fibre_t, BorrowedStorageModel>;
+
+
+};
+
+
+
 
 }
 }
