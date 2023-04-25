@@ -42,9 +42,9 @@
 #endif
 
 #ifdef RPY_DEBUG
-#  define RPY_ASSERT(ARG) assert(ARG)
+#  define RPY_DBG_ASSERT(ARG) assert(ARG)
 #else
-#  define RPY_ASSERT(ARG) (void) 0
+#  define RPY_DBG_ASSERT(ARG) (void) 0
 #endif
 
 #if defined(_MSC_VER) && defined(_MSVC_LANG)
@@ -114,6 +114,22 @@
 #elif defined(_MSC_VER)
 #   define RPY_RESTRICT(ARG) ARG __restrict
 #endif
+
+
+#if defined(__GNUC__) || defined(__clang__)
+#   define RPY_LIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 1))
+#   define RPY_UNLIKELY(COND) (__builtin_expect(static_cast<boo>(COND), 0))
+#else
+#   define RPY_LIKEY(COND) (COND)
+#   define RPY_UNLIKELY(COND) (COND)
+#endif
+
+
+#define RPY_CHECK(EXPR)             \
+    if (RPY_UNLIKELY(!(EXPR))) {    \
+        throw std::runtime_error("failed check \"" + #EXPR + "\"");                                \
+    }
+
 
 
 
