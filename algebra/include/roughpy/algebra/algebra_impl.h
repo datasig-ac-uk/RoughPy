@@ -28,7 +28,6 @@
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_IMPL_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_IMPL_H_
 
-#include <boost/type_traits/copy_cv.hpp>
 
 #include <roughpy/core/traits.h>
 #include <roughpy/core/helpers.h>
