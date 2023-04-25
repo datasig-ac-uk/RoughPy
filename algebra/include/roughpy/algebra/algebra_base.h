@@ -42,6 +42,7 @@
 #include "context_fwd.h"
 #include "fallback_operations.h"
 
+
 namespace rpy {
 namespace algebra {
 
@@ -54,49 +55,45 @@ namespace dtl {
  * various places. If you define an algebra interface, it should derive
  * from the base AlgebraInterface, which publicly derives from this tag.
  */
-struct AlgebraInterfaceTag {};
-
-}// namespace dtl
-
-using UnspecifiedAlgebraType = dtl::AlgebraInterfaceTag *;
-
-/**
- * @brief Base interface for algebra types
- * @tparam Algebra The externally facing algebra that this interface will
- * be used in.
- */
-template <typename Algebra, typename BasisType>
-class AlgebraInterface : public dtl::AlgebraInterfaceTag {
-
+class ROUGHPY_ALGEBRA_EXPORT AlgebraInterfaceBase {
 protected:
     context_pointer p_ctx;
     VectorType m_vector_type;
     const scalars::ScalarType *p_coeff_type;
     ImplementationType m_impl_type;
 
-    explicit AlgebraInterface(context_pointer &&ctx,
-                              VectorType vtype,
-                              const scalars::ScalarType *stype,
-                              ImplementationType impl_type)
-        : p_ctx(ctx), m_vector_type(vtype), p_coeff_type(stype), m_impl_type(impl_type) {}
+    explicit AlgebraInterfaceBase(context_pointer&& ctx,
+                                 VectorType vtype,
+                                 const scalars::ScalarType* stype,
+                                 ImplementationType impl_type);
+
 
 public:
-    using algebra_t = Algebra;
-    using const_iterator = AlgebraIterator<algebra_t>;
-    using algebra_interface_t = AlgebraInterface;
-    using id_t = std::uintptr_t;
 
-    using basis_type = BasisType;
-    using key_type = typename BasisType::key_type;
+    virtual ~AlgebraInterfaceBase();
 
-    virtual ~AlgebraInterface() = default;
-
-    // Type information
-    id_t id() const noexcept;
     const context_pointer &context() const noexcept { return p_ctx; }
     ImplementationType impl_type() const noexcept { return m_impl_type; }
     VectorType storage_type() const noexcept { return m_vector_type; };
     const scalars::ScalarType *coeff_type() const noexcept { return p_coeff_type; };
+};
+
+
+template <typename Algebra, typename BasisType>
+class AlgebraBasicProperties : public AlgebraInterfaceBase {
+protected:
+    using AlgebraInterfaceBase::AlgebraInterfaceBase;
+
+public:
+    using algebra_t = Algebra;
+    using basis_t = BasisType;
+    using id_t = uintptr_t;
+
+
+//    virtual ~AlgebraBasicProperties() = default;
+
+    // Type information
+    id_t id() const noexcept;
 
     // Basic properties
     virtual dimn_t dimension() const = 0;
@@ -114,52 +111,141 @@ public:
     virtual Algebra borrow() const = 0;
     virtual Algebra borrow_mut() = 0;
 
-    //    virtual Algebra convert_from_iterator(AlgebraIterator begin, AlgebraIterator end) const = 0;
-
-    // Element access
-    virtual scalars::Scalar get(key_type key) const = 0;
-    virtual scalars::Scalar get_mut(key_type key) = 0;
-
-    // Iteration
-    virtual const_iterator begin() const = 0;
-    virtual const_iterator end() const = 0;
-
-    virtual optional<scalars::ScalarArray> dense_data() const;
-
     virtual void clear() = 0;
     virtual void assign(const Algebra &other) = 0;
-
-    // Arithmetic
-    virtual Algebra uminus() const = 0;
-    virtual Algebra add(const Algebra &other) const;
-    virtual Algebra sub(const Algebra &other) const;
-    virtual Algebra mul(const Algebra &other) const;
-    virtual Algebra smul(const scalars::Scalar &other) const;
-    virtual Algebra sdiv(const scalars::Scalar &other) const;
-
-    // Inplace arithmetic
-    virtual void add_inplace(const Algebra &other) = 0;
-    virtual void sub_inplace(const Algebra &other) = 0;
-    virtual void mul_inplace(const Algebra &other) = 0;
-    virtual void smul_inplace(const scalars::Scalar &other) = 0;
-    virtual void sdiv_inplace(const scalars::Scalar &other) = 0;
-
-    // Hybrid inplace arithmetic
-    virtual void add_scal_mul(const Algebra &rhs, const scalars::Scalar &scalar);
-    virtual void sub_scal_mul(const Algebra &rhs, const scalars::Scalar &scalar);
-    virtual void add_scal_div(const Algebra &rhs, const scalars::Scalar &scalar);
-    virtual void sub_scal_div(const Algebra &rhs, const scalars::Scalar &scalar);
-
-    virtual void add_mul(const Algebra &lhs, const Algebra &rhs);
-    virtual void sub_mul(const Algebra &lhs, const Algebra &rhs);
-    virtual void mul_smul(const Algebra &rhs, const scalars::Scalar &scalar);
-    virtual void mul_sdiv(const Algebra &rhs, const scalars::Scalar &scalar);
 
     // Display
     virtual std::ostream &print(std::ostream &os) const = 0;
 
     // Equality testing
     virtual bool equals(const Algebra &other) const = 0;
+};
+
+
+template <typename Base>
+class AlgebraElementAccess : public Base {
+protected:
+    using Base::Base;
+
+public:
+    using typename Base::algebra_t;
+    using typename Base::basis_t;
+
+
+    using key_type = typename basis_t::key_type;
+
+    // Element access
+    virtual scalars::Scalar get(key_type key) const = 0;
+    virtual scalars::Scalar get_mut(key_type key) = 0;
+};
+
+
+template <typename Base>
+class AlgebraIteratorMethods : public Base{
+protected:
+    using Base::Base;
+
+public:
+    using typename Base::algebra_t;
+
+
+    using const_iterator = AlgebraIterator<algebra_t>;
+
+    // Iteration
+    virtual const_iterator begin() const = 0;
+    virtual const_iterator end() const = 0;
+
+    virtual optional<scalars::ScalarArray> dense_data() const;
+};
+
+
+template <typename Base>
+class AlgebraArithmetic : public Base {
+protected:
+    using Base::Base;
+
+public:
+    using typename Base::algebra_t;
+
+    // Arithmetic
+    virtual algebra_t uminus() const = 0;
+    virtual algebra_t add(const algebra_t &other) const;
+    virtual algebra_t sub(const algebra_t &other) const;
+    virtual algebra_t mul(const algebra_t &other) const;
+    virtual algebra_t smul(const scalars::Scalar &other) const;
+    virtual algebra_t sdiv(const scalars::Scalar &other) const;
+
+    // Inplace arithmetic
+    virtual void add_inplace(const algebra_t &other) = 0;
+    virtual void sub_inplace(const algebra_t &other) = 0;
+    virtual void mul_inplace(const algebra_t &other) = 0;
+    virtual void smul_inplace(const scalars::Scalar &other) = 0;
+    virtual void sdiv_inplace(const scalars::Scalar &other) = 0;
+
+    // Hybrid inplace arithmetic
+    virtual void add_scal_mul(const algebra_t &rhs, const scalars::Scalar &scalar);
+    virtual void sub_scal_mul(const algebra_t &rhs, const scalars::Scalar &scalar);
+    virtual void add_scal_div(const algebra_t &rhs, const scalars::Scalar &scalar);
+    virtual void sub_scal_div(const algebra_t &rhs, const scalars::Scalar &scalar);
+
+    virtual void add_mul(const algebra_t &lhs, const algebra_t &rhs);
+    virtual void sub_mul(const algebra_t &lhs, const algebra_t &rhs);
+    virtual void mul_smul(const algebra_t &rhs, const scalars::Scalar &scalar);
+    virtual void mul_sdiv(const algebra_t &rhs, const scalars::Scalar &scalar);
+};
+
+
+template <typename A, typename B, template <typename> class... Bases>
+struct algebra_base_resolution;
+
+template <typename A, typename B, template <typename> class First,
+          template <typename> class... Remaining>
+struct algebra_base_resolution<A, B, First, Remaining...> {
+    using type = First<typename algebra_base_resolution<A, B, Remaining...>::type>;
+};
+
+template <typename A, typename B, template <typename> class Base>
+struct algebra_base_resolution<A, B, Base> {
+    using type = Base<AlgebraBasicProperties<A, B>>;
+};
+
+template <typename A, typename B>
+struct algebra_base_resolution<A, B> {
+    using type = AlgebraBasicProperties<A, B>;
+};
+
+}// namespace dtl
+
+using UnspecifiedAlgebraType = dtl::AlgebraInterfaceBase *;
+
+
+
+
+
+
+
+/**
+ * @brief Base interface for algebra types
+ * @tparam Algebra The externally facing algebra that this interface will
+ * be used in.
+ */
+template <typename Algebra, typename BasisType>
+class AlgebraInterface :
+    public dtl::algebra_base_resolution<Algebra, BasisType,
+                                        dtl::AlgebraArithmetic,
+                                        dtl::AlgebraIteratorMethods,
+                                        dtl::AlgebraElementAccess>::type
+{
+    using base_type = typename dtl::algebra_base_resolution<Algebra, BasisType,
+                                                            dtl::AlgebraArithmetic,
+                                                            dtl::AlgebraIteratorMethods,
+                                                            dtl::AlgebraElementAccess>::type;
+public:
+
+    using algebra_interface_t = AlgebraInterface;
+
+protected:
+    using base_type::base_type;
 };
 
 // Forward declarations of implementation templates
@@ -210,7 +296,7 @@ protected:
 public:
     using interface_t = Interface;
 
-    using basis_type = typename interface_t::basis_type;
+    using basis_type = typename interface_t::basis_t;
     using key_type = typename interface_t::key_type;
 
     using algebra_t = typename Interface::algebra_t;
@@ -313,95 +399,99 @@ public:
 // Definitions of all the member functions
 
 template <typename Algebra, typename BasisType>
-typename AlgebraInterface<Algebra, BasisType>::id_t AlgebraInterface<Algebra, BasisType>::id() const noexcept {
+typename dtl::AlgebraBasicProperties<Algebra, BasisType>::id_t dtl::AlgebraBasicProperties<Algebra, BasisType>::id() const noexcept {
     return 0;
 }
 template <typename Algebra, typename BasisType>
-optional<deg_t> AlgebraInterface<Algebra, BasisType>::degree() const {
+optional<deg_t> dtl::AlgebraBasicProperties<Algebra, BasisType>::degree() const {
     return optional<deg_t>();
 }
 template <typename Algebra, typename BasisType>
-optional<deg_t> AlgebraInterface<Algebra, BasisType>::width() const {
+optional<deg_t> dtl::AlgebraBasicProperties<Algebra, BasisType>::width() const {
     return optional<deg_t>();
 }
 template <typename Algebra, typename BasisType>
-optional<deg_t> AlgebraInterface<Algebra, BasisType>::depth() const {
+optional<deg_t> dtl::AlgebraBasicProperties<Algebra, BasisType>::depth() const {
     return optional<deg_t>();
 }
-template <typename Algebra, typename BasisType>
-optional<scalars::ScalarArray> AlgebraInterface<Algebra, BasisType>::dense_data() const {
-    return optional<scalars::ScalarArray>();
+
+template <typename Base>
+optional<scalars::ScalarArray> dtl::AlgebraIteratorMethods<Base>::dense_data() const {
+    return {};
 }
-template <typename Algebra, typename BasisType>
-Algebra AlgebraInterface<Algebra, BasisType>::add(const Algebra &other) const {
-    auto result = clone();
+
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t dtl::AlgebraArithmetic<Base>::add(const algebra_t &other) const {
+    auto result = this->clone();
     result->add_inplace(other);
     return result;
 }
-template <typename Algebra, typename BasisType>
-Algebra AlgebraInterface<Algebra, BasisType>::sub(const Algebra &other) const {
-    auto result = clone();
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t dtl::AlgebraArithmetic<Base>::sub(const algebra_t &other) const {
+    auto result = this->clone();
     result->sub_inplace(other);
     return result;
 }
-template <typename Algebra, typename BasisType>
-Algebra AlgebraInterface<Algebra, BasisType>::mul(const Algebra &other) const {
-    auto result = clone();
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t dtl::AlgebraArithmetic<Base>::mul(const algebra_t &other) const {
+    auto result = this->clone();
     result->mul_inplace(other);
     return result;
 }
-template <typename Algebra, typename BasisType>
-Algebra AlgebraInterface<Algebra, BasisType>::smul(const scalars::Scalar &other) const {
-    auto result = clone();
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t dtl::AlgebraArithmetic<Base>::smul(const scalars::Scalar &other) const {
+    auto result = this->clone();
     result->smul_inplace(other);
     return result;
 }
-template <typename Algebra, typename BasisType>
-Algebra AlgebraInterface<Algebra, BasisType>::sdiv(const scalars::Scalar &other) const {
-    auto result = clone();
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t dtl::AlgebraArithmetic<Base>::sdiv(const scalars::Scalar &other) const {
+    auto result = this->clone();
     result->sdiv_inplace(other);
     return result;
 }
-template <typename Algebra, typename BasisType>
-void AlgebraInterface<Algebra, BasisType>::add_scal_mul(const Algebra &rhs, const scalars::Scalar &scalar) {
+
+template <typename Base>
+void dtl::AlgebraArithmetic<Base>::add_scal_mul(const algebra_t &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.smul(scalar);
     add_inplace(tmp);
 }
-template <typename Algebra, typename BasisType>
-void AlgebraInterface<Algebra, BasisType>::sub_scal_mul(const Algebra &rhs, const scalars::Scalar &scalar) {
+template <typename Base>
+void dtl::AlgebraArithmetic<Base>::sub_scal_mul(const algebra_t &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.smul(scalar);
     sub_inplace(tmp);
 }
-template <typename Algebra, typename BasisType>
-void AlgebraInterface<Algebra, BasisType>::add_scal_div(const Algebra &rhs, const scalars::Scalar &scalar) {
+template <typename Base>
+void dtl::AlgebraArithmetic<Base>::add_scal_div(const algebra_t &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.sdiv(scalar);
     add_inplace(tmp);
 }
-template <typename Algebra, typename BasisType>
-void AlgebraInterface<Algebra, BasisType>::sub_scal_div(const Algebra &rhs, const scalars::Scalar &scalar) {
+template <typename Base>
+void dtl::AlgebraArithmetic<Base>::sub_scal_div(const algebra_t &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.sdiv(scalar);
     sub_inplace(tmp);
 }
-template <typename Algebra, typename BasisType>
-void AlgebraInterface<Algebra, BasisType>::add_mul(const Algebra &lhs, const Algebra &rhs) {
+template <typename Base>
+void dtl::AlgebraArithmetic<Base>::add_mul(const algebra_t &lhs, const algebra_t &rhs) {
     auto tmp = lhs.mul(rhs);
     add_inplace(tmp);
 }
-template <typename Algebra, typename BasisType>
-void AlgebraInterface<Algebra, BasisType>::sub_mul(const Algebra &lhs, const Algebra &rhs) {
+template <typename Base>
+void dtl::AlgebraArithmetic<Base>::sub_mul(const algebra_t &lhs, const algebra_t &rhs) {
     auto tmp = lhs.mul(rhs);
     sub_inplace(tmp);
 }
-template <typename Algebra, typename BasisType>
-void AlgebraInterface<Algebra, BasisType>::mul_smul(const Algebra &rhs, const scalars::Scalar &scalar) {
+template <typename Base>
+void dtl::AlgebraArithmetic<Base>::mul_smul(const algebra_t &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.smul(scalar);
     mul_inplace(tmp);
 }
-template <typename Algebra, typename BasisType>
-void AlgebraInterface<Algebra, BasisType>::mul_sdiv(const Algebra &rhs, const scalars::Scalar &scalar) {
+template <typename Base>
+void dtl::AlgebraArithmetic<Base>::mul_sdiv(const algebra_t &rhs, const scalars::Scalar &scalar) {
     auto tmp = rhs.sdiv(scalar);
     mul_inplace(tmp);
 }
+
 
 namespace dtl {
 

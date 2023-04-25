@@ -32,6 +32,8 @@
 #include "algebra_bundle.h"
 #include "algebra_impl.h"
 
+#include <roughpy/core/traits.h>
+
 
 
 namespace rpy {
@@ -47,6 +49,7 @@ class AlgebraBundleImplementation
     using storage_base_t = StorageModel<BundleImpl>;
     using access_layer_t = ImplAccessLayer<Interface, BundleImpl>;
 
+    using algebra_t = typename Interface::algebra_t;
     using base_alg_t = typename Interface::base_t;
     using fibre_alg_t = typename Interface::fibre_t;
 
@@ -60,6 +63,53 @@ class AlgebraBundleImplementation
 
     using base_impl_t = AlgebraImplementation<base_interface_t, real_base_t, BorrowedStorageModel>;
     using fibre_impl_t = AlgebraImplementation<fibre_interface_t, real_fibre_t, BorrowedStorageModel>;
+
+
+protected:
+    using storage_base_t ::data;
+
+public:
+
+    BundleImpl& get_data() noexcept override {
+        return data();
+    }
+
+    const BundleImpl& get_data() const noexcept override { return data(); }
+
+    BundleImpl&& take_data() override {
+        if RPY_IF_CONSTEXPR (is_same<storage_base_t, BorrowedStorageModel<BundleImpl>>::value) {
+            throw std::runtime_error("cannot take from a borrowed algebra");
+        } else {
+            return std::move(data());
+        }
+    }
+
+    template <typename... Args>
+    explicit AlgebraBundleImplementation(context_pointer&& ctx,
+                                         Args&&... args)
+        : storage_base_t(std::forward<Args>(args)...),
+          access_layer_t(std::move(ctx))
+    {}
+
+    dimn_t size() const override;
+    dimn_t dimension() const override;
+    bool is_zero() const override;
+    optional<deg_t> degree() const override;
+    optional<deg_t> width() const override;
+    optional<deg_t> depth() const override;
+
+    algebra_t clone() const override;
+    algebra_t zero_like() const override;
+
+    algebra_t borrow() const override;
+    algebra_t borrow_mut() override;
+
+    scalars::Scalar get(key_type key) const override;
+    scalars::Scalar get_mut(key_type key) override;
+
+
+    base_alg_t base() override;
+    fibre_alg_t fibre() override;
 
 
 };

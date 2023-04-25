@@ -35,16 +35,24 @@
 
 #include "context.h"
 
+using namespace rpy;
 using namespace rpy::algebra;
 
-void dtl::print_empty_algebra(std::ostream &os) {
+algebra::dtl::AlgebraInterfaceBase::AlgebraInterfaceBase(context_pointer &&ctx, VectorType vtype, const scalars::ScalarType *stype, ImplementationType impl_type)
+    : p_ctx(std::move(ctx)), m_vector_type(vtype), p_coeff_type(stype), m_impl_type(impl_type)
+{
+}
+
+algebra::dtl::AlgebraInterfaceBase::~AlgebraInterfaceBase() = default;
+
+void rpy::algebra::dtl::print_empty_algebra(std::ostream &os) {
     os << "{ }";
 }
 
-const rpy::scalars::ScalarType *dtl::context_to_scalars(context_pointer const &ptr) {
+const rpy::scalars::ScalarType *rpy::algebra::dtl::context_to_scalars(context_pointer const &ptr) {
     return ptr->ctype();
 }
 
-UnspecifiedAlgebraType dtl::try_create_new_empty(context_pointer ctx, AlgebraType alg_type)  {
+UnspecifiedAlgebraType rpy::algebra::dtl::try_create_new_empty(context_pointer ctx, AlgebraType alg_type)  {
     return nullptr;
 }

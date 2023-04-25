@@ -57,7 +57,7 @@ template <typename Impl, typename Interface>
 inline copy_cv_t<Impl, Interface> &
 algebra_cast(Interface &arg) noexcept {
     using access_t = copy_cv_t<ImplAccessLayer<Interface, Impl>, Interface>;
-    static_assert(is_base_of<dtl::AlgebraInterfaceTag, Interface>::value,
+    static_assert(is_base_of<dtl::AlgebraInterfaceBase, Interface>::value,
                   "casting to algebra implementation is only possible for interfaces");
 //    assert(dynamic_cast<access_t*>(&arg) == std::addressof(arg));
     return static_cast<access_t&>(arg).get_data();
@@ -158,11 +158,11 @@ class AlgebraImplementation
     using storage_base_t = StorageModel<Impl>;
     using access_layer_t = ImplAccessLayer<Interface, Impl>;
 
-    static_assert(is_base_of<dtl::AlgebraInterfaceTag, Interface>::value,
+    static_assert(is_base_of<dtl::AlgebraInterfaceBase, Interface>::value,
                   "algebra_interface must be an accessible base of Interface");
 
     using alg_info = algebra_info<typename Interface::algebra_t, Impl>;
-    using basis_traits = BasisInfo<typename Interface::basis_type, typename alg_info::basis_type>;
+    using basis_traits = BasisInfo<typename Interface::basis_t, typename alg_info::basis_type>;
 
 public:
     using interface_t = Interface;
@@ -612,6 +612,7 @@ template <typename Interface, typename Impl, template <typename> class StorageMo
 bool AlgebraImplementation<Interface, Impl, StorageModel>::equals(const algebra_t &other) const {
     return data() == static_cast<const Impl&>(convert_argument(other));
 }
+
 
 
 }// namespace algebra

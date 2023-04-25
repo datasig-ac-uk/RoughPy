@@ -34,6 +34,7 @@
 
 namespace rpy { namespace algebra {
 
+
 template class AlgebraInterface<Lie, LieBasis>;
 template class AlgebraBase<LieInterface>;
 
