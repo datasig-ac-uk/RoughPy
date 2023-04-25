@@ -3,8 +3,9 @@ Terry Lyons for core features and design
 
 RoughPy is substantially based on LibRDE (Terry Lyons, Stephen Buckley, Djalil Chafai, Greg Gyurkó,
 Arend Janssen, Sam Morley, and Philippa Rubin), Libalgebra (Terry Lyons, Stephen Buckley,
-Djalil Chafai, Greg Gyurkó, Arend Janssen, and Hao Ni), and Esig (Terry Lyons, Greg Gyurkó,
-Alexandru Cioba, Radoslaw Kowalski, David Maxwell, Nick Barlow, Roly Perera, and Sam Morley)
+Djalil Chafai, Greg Gyurkó, Arend Janssen, Hao Ni, Mike Giles, Sam Morley, and Philippa Rubin),
+and Esig (Terry Lyons, Greg Gyurkó, Alexandru Cioba, Radoslaw Kowalski, David Maxwell, Nick Barlow,
+Roly Perera, and Sam Morley)
 
 
 Institutions
