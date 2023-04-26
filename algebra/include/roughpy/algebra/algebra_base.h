@@ -243,6 +243,7 @@ class AlgebraInterface :
 public:
 
     using algebra_interface_t = AlgebraInterface;
+    using typename base_type::algebra_t;
 
 protected:
     using base_type::base_type;

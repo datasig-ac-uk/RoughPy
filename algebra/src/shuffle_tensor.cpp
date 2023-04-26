@@ -38,4 +38,7 @@ namespace rpy { namespace algebra {
 template class AlgebraInterface<ShuffleTensor, TensorBasis>;
 template class AlgebraBase<ShuffleTensorInterface>;
 
+template class BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
+template class AlgebraBundleBase<ShuffleTensorBundleInterface>;
+
 }}

@@ -29,6 +29,7 @@
 #define ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_
 
 #include "algebra_base.h"
+#include "algebra_bundle.h"
 
 #include "tensor_basis.h"
 
@@ -41,7 +42,7 @@ using ShuffleTensorInterface = AlgebraInterface<ShuffleTensor, TensorBasis>;
 
 extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBase<ShuffleTensorInterface>;
 
-class ShuffleTensor : public AlgebraBase<ShuffleTensorInterface>
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface>
 {
     using base_t = AlgebraBase<ShuffleTensorInterface>;
 public:
@@ -50,6 +51,24 @@ public:
 
     using base_t::base_t;
 
+};
+
+
+class ShuffleTensorBundle;
+
+extern template class ROUGHPY_ALGEBRA_EXPORT BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
+
+using ShuffleTensorBundleInterface = BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
+
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBundleBase<ShuffleTensorBundleInterface>;
+
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensorBundle : public AlgebraBundleBase<ShuffleTensorBundleInterface> {
+    using base_t = AlgebraBundleBase<ShuffleTensorBundleInterface>;
+public:
+
+    static constexpr AlgebraType s_alg_type = AlgebraType::ShuffleTensorBundle;
+
+    using base_t::base_t;
 };
 
 }

@@ -38,4 +38,8 @@ namespace rpy { namespace algebra {
 template class AlgebraInterface<Lie, LieBasis>;
 template class AlgebraBase<LieInterface>;
 
+
+template class BundleInterface<LieBundle, Lie, Lie>;
+template class AlgebraBundleBase<LieBundleInterface>;
+
 }}

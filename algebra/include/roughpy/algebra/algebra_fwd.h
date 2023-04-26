@@ -53,7 +53,10 @@ enum class VectorType {
 enum class AlgebraType : uint32_t {
     FreeTensor,
     ShuffleTensor,
-    Lie
+    Lie,
+    FreeTensorBundle,
+    ShuffleTensorBundle,
+    LieBundle
 };
 
 
@@ -74,7 +77,9 @@ class Basis;
 class FreeTensor;
 class Lie;
 class ShuffleTensor;
-
+class FreeTensorBundle;
+class LieBundle;
+class ShuffleTensorBundle;
 
 }
 }
