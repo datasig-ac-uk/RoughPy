@@ -42,6 +42,8 @@
 #include "float_type.h"
 #include "double_type.h"
 #include "RationalType.h"
+#include "half_type.h"
+#include "b_float_16_type.h"
 
 using namespace rpy;
 using namespace scalars;
@@ -143,6 +145,17 @@ const ScalarType* rpy::scalars::dtl::scalar_type_holder<rational_scalar_type>::g
     static const RationalType rtype;
     return &rtype;
 }
+
+const ScalarType* rpy::scalars::dtl::scalar_type_holder<half>::get_type() noexcept {
+    static const HalfType htype;
+    return &htype;
+}
+
+const ScalarType* rpy::scalars::dtl::scalar_type_holder<bfloat16>::get_type() noexcept {
+    static const BFloat16Type bf16type;
+    return &bf16type;
+}
+
 
 /*
  * All types should support conversion from the following,

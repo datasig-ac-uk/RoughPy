@@ -26,16 +26,16 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 21/04/23.
+// Created by user on 26/04/23.
 //
 
-#include "half_type.h"
-#include "scalar_type.h"
+#include "bfloat16_random_generator.h"
 
-using namespace rpy;
-using namespace rpy::scalars;
+namespace rpy {
+namespace scalars {
 
+template class StandardRandomGenerator<bfloat16, std::mt19937_64>;
+template class StandardRandomGenerator<bfloat16, pcg64>;
 
-HalfType::HalfType() : StandardScalarType<half>("f16", "HPReal")
-{
-}
+}// namespace scalars
+}// namespace rpy

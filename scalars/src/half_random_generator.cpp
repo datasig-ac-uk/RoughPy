@@ -26,21 +26,16 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 24/04/23.
+// Created by user on 26/04/23.
 //
 
-#ifndef ROUGHPY_SCALARS_SRC_FLOAT_TYPE_IMPORT_H
-#define ROUGHPY_SCALARS_SRC_FLOAT_TYPE_IMPORT_H
-
-#include <Eigen/Core>
+#include "half_random_generator.h"
 
 namespace rpy {
 namespace scalars {
 
-using Eigen::bfloat16;
-using Eigen::half;
+template class StandardRandomGenerator<half, std::mt19937_64>;
+template class StandardRandomGenerator<half, pcg64>;
 
 }// namespace scalars
 }// namespace rpy
-
-#endif//ROUGHPY_SCALARS_SRC_FLOAT_TYPE_IMPORT_H

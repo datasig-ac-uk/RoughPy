@@ -43,8 +43,6 @@
 #include "random.h"
 #include "standard_random_generator.h"
 
-#include "float_type_import.h"
-
 namespace rpy {
 namespace scalars {
 
@@ -338,7 +336,7 @@ public:
 
     }
     void assign(ScalarPointer target, long long int numerator, long long int denominator) const override {
-        *target.raw_cast<ScalarImpl *>() = ScalarImpl(numerator) / denominator;
+        *target.raw_cast<ScalarImpl *>() = ScalarImpl(numerator) / ScalarImpl(denominator);
     }
     scalar_t to_scalar_t(ScalarPointer arg) const override {
         return static_cast<scalar_t>(*arg.raw_cast<const ScalarImpl *>());

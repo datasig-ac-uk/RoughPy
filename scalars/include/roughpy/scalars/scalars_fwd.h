@@ -42,10 +42,13 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/implementation_types.h>
 
+#include <Eigen/Core>
+
 namespace rpy {
 namespace scalars {
 
-
+using Eigen::half;
+using Eigen::bfloat16;
 
 struct signed_size_type_marker {};
 struct unsigned_size_type_marker {};

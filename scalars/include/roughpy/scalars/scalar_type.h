@@ -425,6 +425,8 @@ ROUGHPY_MAKE_TYPE_ID_OF(unsigned long long, "u64");
 ROUGHPY_MAKE_TYPE_ID_OF(signed_size_type_marker, "isize");
 ROUGHPY_MAKE_TYPE_ID_OF(unsigned_size_type_marker, "usize");
 
+ROUGHPY_MAKE_TYPE_ID_OF(half, "f16");
+ROUGHPY_MAKE_TYPE_ID_OF(bfloat16, "bf16");
 ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
 ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
 ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational");
@@ -461,6 +463,19 @@ struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<double> {
 
 template <>
 struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_scalar_type> {
+    static const ScalarType* get_type() noexcept;
+};
+
+
+template <>
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<half> {
+    static const ScalarType* get_type() noexcept;
+};
+
+
+
+template <>
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<bfloat16> {
     static const ScalarType* get_type() noexcept;
 };
 

@@ -34,8 +34,7 @@
 
 #include "standard_scalar_type.h"
 
-
-#include "float_type_import.h"
+#include "half_random_generator.h"
 
 namespace rpy {
 namespace scalars {
@@ -43,9 +42,12 @@ namespace scalars {
 
 
 
-class HalfType /*: public StandardScalarType<half>  */{
+class HalfType : public StandardScalarType<half>  {
+public:
+
     HalfType();
 };
+
 
 
 }// namespace scalars

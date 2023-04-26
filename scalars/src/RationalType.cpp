@@ -35,8 +35,6 @@
 #include <ostream>
 #include <utility>
 
-#include "float_type_import.h"
-
 using namespace rpy;
 using namespace rpy::scalars;
 
