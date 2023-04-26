@@ -14,4 +14,6 @@ add_roughpy_lib(Core INTERFACE
         include/roughpy/core/macros.h
         include/roughpy/core/helpers.h
         include/roughpy/core/slice.h
+    DEFINITIONS
+        RPY_DBG_ASSERT_USE_EXCEPTIONS 1
         )

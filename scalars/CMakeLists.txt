@@ -8,8 +8,6 @@ project(RoughPyScalars
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
-find_package(Boost 1.64 CONFIG REQUIRED COMPONENTS headers)
-
 option(RPY_SCALARS_SHARED "Build shared RoughPy scalars module" ON)
 
 set(RPY_USE_MKL ${MKL_FOUND})
@@ -44,6 +42,12 @@ add_roughpy_lib(Scalars
         src/float_blas.cpp
         src/float_blas.h
         src/scalar_blas_impl.h
+        src/half_random_generator.cpp
+        src/half_random_generator.h
+        src/b_float_16_type.cpp
+        src/b_float_16_type.h
+        src/bfloat16_random_generator.cpp
+        src/bfloat16_random_generator.h
         ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
     PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
@@ -62,8 +66,9 @@ add_roughpy_lib(Scalars
     PUBLIC_DEPS
         RoughPy::Core
         Boost::boost
-        PCGRandom::pcg_random
         Eigen3::Eigen
+    PRIVATE_DEPS
+        PCGRandom::pcg_random
         "$<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,BLAS::BLAS LAPACK::LAPACK>"
     )
 

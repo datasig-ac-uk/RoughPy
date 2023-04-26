@@ -34,9 +34,7 @@
 #include <roughpy/core/helpers.h>
 
 
-#ifndef RPY_IF_CONSTEXPR
-#define RPY_IF_CONSTEXPR
-#endif
+
 
 namespace rpy { namespace scalars {
 

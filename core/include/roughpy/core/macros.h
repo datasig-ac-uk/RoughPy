@@ -35,16 +35,18 @@
 #include <cassert>
 #include <stdexcept>
 
+
+#define RPY_STRINGIFY_IMPL(ARG) #ARG
+#define RPY_STRINGIFY(ARG) RPY_STRINGIFY_IMPL(ARG)
+
+#define RPY_JOIN_IMPL_IMPL(LHS, RHS) X##Y
+#define RPY_JOIN_IMPL(LHS, RHS) RPY_JOIN_IMPL_IMPL(LHS, RHS)
+#define RPY_JOIN(LHS, RHS) RPY_JOIN_IMPL(LHS, RHS)
+
 #if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__)) && !defined(RPY_DEBUG)
 #define RPY_DEBUG
 #else
 #undef RPY_DEBUG
-#endif
-
-#ifdef RPY_DEBUG
-#define RPY_DBG_ASSERT(ARG) assert(ARG)
-#else
-#define RPY_DBG_ASSERT(ARG) (void)0
 #endif
 
 #if defined(_MSC_VER) && defined(_MSVC_LANG)
@@ -67,9 +69,13 @@
 
 #ifdef RPY_CPP_17
 #define RPY_UNUSED [[maybe_unused]]
+#define RPY_IF_CONSTEXPR constexpr
 #else
-
+#define RPY_UNUSED
+#define RPY_IF_CONSTEXPR
 #endif
+
+
 #if defined(__GNUC__) || defined(__clang__)
 #define RPY_UNUSED_VAR __attribute__((unused))
 #else
@@ -125,16 +131,28 @@
 #define RPY_UNLIKELY(COND) (COND)
 #endif
 
-#define RPY_CHECK(EXPR)                                             \
-    if (RPY_UNLIKELY(!(EXPR))) {                                    \
-        throw std::runtime_error(std::string("failed check \"") + #EXPR + "\""); \
-    }
+#define RPY_CHECK(EXPR)                                                              \
+    do {                                                                             \
+        if (RPY_UNLIKELY(!(EXPR))) {                                                 \
+            throw std::runtime_error(std::string("failed check \"") + #EXPR + "\""); \
+        }                                                                            \
+    } while (0)
 
-#define RPY_STRINGIFY_IMPL(ARG) #ARG
-#define RPY_STRINGIFY(ARG) RPY_STRINGIFY_IMPL(ARG)
+#ifdef RPY_DEBUG
+#ifdef RPY_DBG_ASSERT_USE_EXCEPTIONS
+#define RPY_DBG_ASSERT(ARG)                                                                    \
+    do {                                                                                       \
+        if (RPY_UNLIKEY(!(EXPR))) {                                                            \
+            throw std::runtime_error(std::string("failed debug assertion \"") + #EXPR + "\""); \
+        }                                                                                      \
+    } while (0)
+#else
+#define RPY_DBG_ASSERT(ARG) assert(ARG)
+#endif
+#else
+#define RPY_DBG_ASSERT(ARG) (void)0
+#endif
 
-#define RPY_JOIN_IMPL_IMPL(LHS, RHS) X##Y
-#define RPY_JOIN_IMPL(LHS, RHS) RPY_JOIN_IMPL_IMPL(LHS, RHS)
-#define RPY_JOIN(LHS, RHS) RPY_JOIN_IMPL(LHS, RHS)
+
 
 #endif//ROUGHPY_CORE_MACROS_H
