@@ -47,7 +47,7 @@ public:
 
     DeviceFreeTensor(scalars::ScalarArray&& data,
                      const DeviceContext* ctx)
-        : base_t(std::move(data), ctx, ctx->context()->get_tensor_basis())
+        : base_t(std::move(data), ctx)
     {}
 
     void mul_inplace(const algebra_t &other) override;
