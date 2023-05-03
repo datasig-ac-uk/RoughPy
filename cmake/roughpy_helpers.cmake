@@ -41,8 +41,8 @@ function(add_roughpy_lib _name)
     cmake_parse_arguments(
             ARG
             "STATIC;SHARED;INTERFACE"
-            "PVT_INCLUDE_DIR"
-            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS"
+            ""
+            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS"
             ${ARGN}
     )
 
@@ -54,14 +54,17 @@ function(add_roughpy_lib _name)
     _get_component_name(_component_name ${_component})
 
     if (NOT _lib_type STREQUAL INTERFACE)
-        if (ARG_PVT_INCLUDE_DIR)
-            set(_private_include_dir ${ARG_PVT_INCLUDE_DIR})
-        else ()
-            set(_private_include_path "include/roughpy/${_component}/")
+        set(_private_include_dirs "${CMAKE_CURRENT_LIST_DIR}/include/roughpy/${_component}/")
+        if (ARG_PVT_INCLUDE_DIRS)
+            foreach(_pth IN LISTS ARG_PVT_INCLUDE_DIRS)
+                list(APPEND _private_include_dirs ${CMAKE_CURRENT_LIST_DIR}/${_pth})
+            endforeach ()
         endif ()
-        if (NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${_private_include_path}")
-            message(FATAL_ERROR "The path ${_private_include_path} does not exist")
-        endif ()
+        foreach(_pth IN LISTS _private_include_dirs)
+            if (NOT EXISTS "${_pth}")
+                message(FATAL_ERROR "The path ${_pth} does not exist")
+            endif ()
+        endforeach ()
     endif ()
 
     add_library(${_real_name} ${_lib_type})
@@ -71,7 +74,7 @@ function(add_roughpy_lib _name)
     if (NOT ${_lib_type} STREQUAL INTERFACE)
         target_include_directories(${_real_name}
                 PRIVATE
-                "${_private_include_path}"
+                "${_private_include_dirs}"
                 PUBLIC
                 "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
                 "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
@@ -117,10 +120,59 @@ function(add_roughpy_lib _name)
         set_target_properties(${_real_name} PROPERTIES
                 POSITION_INDEPENDENT_CODE ON)
     endif ()
+endfunction()
 
+
+function(extend_roughpy_lib _name)
+    cmake_parse_arguments(
+            ARG
+            ""
+            ""
+            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS"
+            ${ARGN}
+    )
+
+    set(_real_name "RoughPy_${_name}")
+    cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
+    _get_component_name(_component_name ${_component})
+
+    get_target_property(_lib_type ${_real_name} TYPE)
+
+    if (ARG_SOURCES)
+        if (_lib_type STREQUAL "INTERFACE_LIBRARY")
+            target_sources(${_real_name} INTERFACE ${ARG_SOURCES})
+        else()
+            target_sources(${_real_name} PRIVATE ${ARG_SOURCES})
+        endif()
+    endif()
 
 endfunction()
 
+
+
+function(add_roughpy_algebra _name)
+
+    cmake_parse_arguments(
+            "ARG"
+            "DEVICE;BUNDLE;REQUIRED"
+            "BASIS_NAME;BASIS_FILE;INTERFACE_FILE;IMPLEMENTATION_FILE"
+            "BASIS_PROPERTIES"
+    )
+
+    # set up the names
+    set(_basis_name "${_name}Basis")
+    if (ARG_BASIS_NAME)
+        set(_basis_name "${ARG_BASIS_NAME}")
+    endif()
+
+    set(_interface_name "${_name}Interface")
+    set(_impl_name "${_name}Implementation")
+
+
+
+
+
+endfunction()
 
 function(add_roughpy_test _name)
     if (NOT ROUGHPY_BUILD_TESTS)
