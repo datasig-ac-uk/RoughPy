@@ -191,10 +191,12 @@ dtl::ConvertedArgument<BundleImpl> AlgebraBundleImplementation<Interface, Bundle
 }
 template <typename Interface, typename BundleImpl, template <typename> class StorageModel>
 dimn_t AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::size() const {
+    // TODO: use traits
     return data().size();
 }
 template <typename Interface, typename BundleImpl, template <typename> class StorageModel>
 dimn_t AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::dimension() const {
+    // TODO: use traits
     return data.dimension();
 }
 template <typename Interface, typename BundleImpl, template <typename> class StorageModel>
@@ -207,10 +209,12 @@ optional<deg_t> AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>
 }
 template <typename Interface, typename BundleImpl, template <typename> class StorageModel>
 optional<deg_t> AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::width() const {
+    // TODO: IMplementation needed
     return {};
 }
 template <typename Interface, typename BundleImpl, template <typename> class StorageModel>
 optional<deg_t> AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::depth() const {
+    // TODO: Implementation needed
     return {};
 }
 template <typename Interface, typename BundleImpl, template <typename> class StorageModel>

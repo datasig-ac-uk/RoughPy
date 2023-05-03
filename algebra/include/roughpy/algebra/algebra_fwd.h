@@ -39,7 +39,9 @@ namespace algebra {
 
 enum class ImplementationType {
     Owned,
-    Borrowed
+    Borrowed,
+    DeviceOwned,
+    DeviceBorrowed
 };
 
 enum class VectorType {
@@ -80,6 +82,13 @@ class ShuffleTensor;
 class FreeTensorBundle;
 class LieBundle;
 class ShuffleTensorBundle;
+
+
+template <typename Algebra>
+struct basis_setup_helper {
+    template <typename C>
+    static typename Algebra::basis_type get(const C& ctx);
+};
 
 }
 }

@@ -156,6 +156,8 @@ public:
 //        : p_impl(new typename PrimaryInterface::template impl_t<B>(basis))
 //    {}
 
+
+
     const basis_interface &instance() const noexcept { return *p_impl; }
 
     string key_to_string(const key_type &key) const noexcept {

@@ -41,6 +41,7 @@
 #include "algebra_iterator.h"
 #include "context_fwd.h"
 #include "fallback_operations.h"
+#include "basis.h"
 
 
 namespace rpy {
@@ -79,10 +80,24 @@ public:
 };
 
 
+
+
+
 template <typename Algebra, typename BasisType>
 class AlgebraBasicProperties : public AlgebraInterfaceBase {
 protected:
-    using AlgebraInterfaceBase::AlgebraInterfaceBase;
+
+    BasisType m_basis;
+
+    AlgebraBasicProperties(
+        context_pointer&& ctx,
+        VectorType vtype,
+        const scalars::ScalarType* stype,
+        ImplementationType impl_type
+        )
+        : AlgebraInterfaceBase(std::move(ctx), vtype, stype, impl_type),
+          m_basis(basis_setup_helper<Algebra>::get(*context()))
+    {}
 
 public:
     using algebra_t = Algebra;
@@ -94,6 +109,7 @@ public:
 
     // Type information
     id_t id() const noexcept;
+    const BasisType& basis() const noexcept { return m_basis; }
 
     // Basic properties
     virtual dimn_t dimension() const = 0;
@@ -283,18 +299,19 @@ ROUGHPY_ALGEBRA_EXPORT const scalars::ScalarType *context_to_scalars(const conte
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl = dtl::with_interface<Interface>::template type>
 class AlgebraBase {
 
+protected:
+
+    std::unique_ptr<Interface> p_impl;
+    friend class algebra_access<Interface>;
+
+    friend class algebra_access<typename Interface::algebra_interface_t>;
+public:
+
     explicit AlgebraBase(std::unique_ptr<Interface> impl)
         : p_impl(std::move(impl)) {}
     explicit AlgebraBase(Interface *impl)
         : p_impl(impl) {}
 
-protected:
-    std::unique_ptr<Interface> p_impl;
-
-    friend class algebra_access<Interface>;
-    friend class algebra_access<typename Interface::algebra_interface_t>;
-
-public:
     using interface_t = Interface;
 
     using basis_type = typename interface_t::basis_t;
@@ -511,6 +528,8 @@ AlgebraBase<Interface, DerivedImpl>::AlgebraBase(context_pointer ctx)
      * point to an object of type Interface, or a null pointer if this
      * construction is not possible.
      */
+    // TODO: this can leak if an exception occurs before construction is complete.
+    // Return a unique_ptr and play with the type afterwards
     p_impl = std::unique_ptr<Interface>(
         static_cast<Interface *>(dtl::try_create_new_empty(std::move(ctx), algebra_t::s_alg_type)));
 }

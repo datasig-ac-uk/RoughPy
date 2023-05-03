@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -42,17 +42,14 @@ using ShuffleTensorInterface = AlgebraInterface<ShuffleTensor, TensorBasis>;
 
 extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBase<ShuffleTensorInterface>;
 
-class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface>
-{
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface> {
     using base_t = AlgebraBase<ShuffleTensorInterface>;
-public:
 
+public:
     static constexpr AlgebraType s_alg_type = AlgebraType::ShuffleTensor;
 
     using base_t::base_t;
-
 };
-
 
 class ShuffleTensorBundle;
 
@@ -64,14 +61,25 @@ extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBundleBase<ShuffleTensorBund
 
 class ROUGHPY_ALGEBRA_EXPORT ShuffleTensorBundle : public AlgebraBundleBase<ShuffleTensorBundleInterface> {
     using base_t = AlgebraBundleBase<ShuffleTensorBundleInterface>;
-public:
 
+public:
     static constexpr AlgebraType s_alg_type = AlgebraType::ShuffleTensorBundle;
 
     using base_t::base_t;
 };
 
-}
+template <>
+template <typename C>
+typename ShuffleTensor::basis_type basis_setup_helper<ShuffleTensor>::get(const C &ctx) {
+    return ctx.get_tensor_basis();
 }
 
-#endif // ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_
+template <>
+template <typename C>
+typename ShuffleTensorBundle::basis_type basis_setup_helper<ShuffleTensorBundle>::get(const C &ctx) {
+    return ctx.get_tensor_basis();
+}
+}// namespace algebra
+}// namespace rpy
+
+#endif// ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_

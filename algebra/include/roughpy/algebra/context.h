@@ -162,6 +162,8 @@ public:
 
     virtual FreeTensor sig_derivative(const std::vector<DerivativeComputeInfo> &info,
                                       VectorType vtype) const = 0;
+
+
 };
 
 ROUGHPY_ALGEBRA_EXPORT
@@ -225,6 +227,21 @@ public:
 
 #define RPY_ALGEBRA_DECLARE_CTX_MAKER(MAKER, ...) \
     static RegisterMakerHelper<MAKER> rpy_static_algebra_maker_decl_##MAKER = RegisterMakerHelper<MAKER>(__VA_ARGS__)
+
+
+inline bool check_contexts_algebra_compatible(const Context& base, const Context& other) noexcept {
+    if (base.width() != other.width()) {
+        return false;
+    }
+
+    if (other.depth() < base.depth()) {
+        return false;
+    }
+
+    return true;
+}
+
+
 
 }// namespace algebra
 }// namespace rpy

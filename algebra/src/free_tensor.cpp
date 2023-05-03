@@ -30,6 +30,7 @@
 //
 
 #include "free_tensor.h"
+#include "context.h"
 
 using namespace rpy::algebra;
 

@@ -202,9 +202,10 @@ public:
     explicit AlgebraImplementation(context_pointer &&ctx, Args &&...args)
         : storage_base_t(std::forward<Args>(args)...),
           access_layer_t(std::move(ctx),
-                         alg_info ::vtype(),
+                         alg_info::vtype(),
                          alg_info::ctype(),
-                         storage_base_t::s_type)
+                         storage_base_t::s_type
+                         )
     {}
 
     dimn_t size() const override;

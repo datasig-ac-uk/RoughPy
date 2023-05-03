@@ -30,12 +30,15 @@
 
 #include "algebra_base.h"
 #include "algebra_bundle.h"
-#include "context.h"
+
 
 #include "tensor_basis.h"
 
+
 namespace rpy {
 namespace algebra {
+
+
 
 extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<FreeTensor, TensorBasis>;
 
@@ -113,6 +116,19 @@ public:
     FreeTensorBundle &fmexp(const FreeTensorBundle &other);
 
 };
+
+template <>
+template <typename C>
+typename FreeTensor::basis_type basis_setup_helper<FreeTensor>::get(const C &ctx) {
+    return ctx.get_tensor_basis();
+}
+
+template <>
+template <typename C>
+typename FreeTensorBundle::basis_type basis_setup_helper<FreeTensorBundle>::get(const C &ctx) {
+    return ctx.get_tensor_basis();
+}
+
 }// namespace algebra
 }// namespace rpy
 

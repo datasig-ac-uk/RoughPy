@@ -8,9 +8,6 @@ project(RoughPy_Algebra
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
-find_package(Boost 1.64 CONFIG REQUIRED COMPONENTS headers)
-
-
 
 if (NOT TARGET Libalgebra_lite::Libalgebra_lite)
     find_package(Libalgebra_Lite CONFIG REQUIRED)
@@ -57,6 +54,7 @@ add_roughpy_lib(Algebra
         include/roughpy/algebra/basis.h
         include/roughpy/algebra/basis_info.h
         include/roughpy/algebra/basis_impl.h
+        include/roughpy/algebra/bundle_info.h
         include/roughpy/algebra/lie_basis.h
         include/roughpy/algebra/tensor_basis.h
         include/roughpy/algebra/free_tensor.h

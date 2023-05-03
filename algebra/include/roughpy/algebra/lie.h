@@ -33,8 +33,10 @@
 
 #include "lie_basis.h"
 
+
 namespace rpy {
 namespace algebra {
+
 
 extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<Lie, LieBasis>;
 
@@ -50,6 +52,7 @@ public:
 
     using base_t::base_t;
 };
+
 
 class LieBundle;
 
@@ -68,6 +71,20 @@ public:
     using base_t::base_t;
 
 };
+
+
+template <>
+template <typename C>
+typename Lie::basis_type basis_setup_helper<Lie>::get(const C& ctx) {
+    return ctx.get_lie_basis();
+}
+
+template <>
+template <typename C>
+typename Lie::basis_type basis_setup_helper<LieBundle>::get(const C& ctx) {
+    return ctx.get_lie_basis();
+}
+
 
 }// namespace algebra
 }// namespace rpy
