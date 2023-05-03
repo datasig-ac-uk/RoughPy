@@ -1,19 +1,19 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+// Copyright (c) 2023 Datasig Developers. All rights reserved.
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,59 +25,50 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
-#define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+//
+// Created by user on 02/05/23.
+//
 
-#include "scalars_fwd.h"
-#include "roughpy_scalars_export.h"
+#include "device_free_tensor.h"
 
-#include <cassert>
+namespace rpy {
+namespace device {
 
-
-
-#include "scalar_pointer.h"
-
-namespace rpy { namespace scalars {
-
-class ROUGHPY_SCALARS_EXPORT ScalarArray : public ScalarPointer {
-
-protected:
-    dimn_t m_size = 0;
+void DeviceFreeTensor::mul_inplace(const algebra_t &other) {
+}
 
 
-public:
-
-    ScalarArray() = default;
-
-    explicit ScalarArray(const ScalarType *type)
-        : ScalarPointer(type)
-    {}
-    ScalarArray(const ScalarType *type, void* data, dimn_t size)
-        : ScalarPointer(type, data), m_size(size)
-    {}
 
 
-    ScalarArray(const ScalarType *type, const void* data, dimn_t size)
-        : ScalarPointer(type, data), m_size(size)
-    {}
-    ScalarArray(ScalarPointer begin, dimn_t size)
-        : ScalarPointer(begin), m_size(size) {}
+algebra::FreeTensor DeviceFreeTensor::exp() const {
+    return algebra::FreeTensor();
+}
+algebra::FreeTensor DeviceFreeTensor::log() const {
+    return algebra::FreeTensor();
+}
+algebra::FreeTensor DeviceFreeTensor::inverse() const {
+    return algebra::FreeTensor();
+}
+algebra::FreeTensor DeviceFreeTensor::antipode() const {
+    return algebra::FreeTensor();
+}
+void DeviceFreeTensor::fmexp(const algebra::FreeTensor &other) {
+}
+algebra::FreeTensor DeviceFreeTensor::mul(const algebra_t &other) const {
+    return AlgebraArithmetic::mul(other);
+}
+void DeviceFreeTensor::add_mul(const algebra_t &lhs, const algebra_t &rhs) {
+    AlgebraArithmetic::add_mul(lhs, rhs);
+}
+void DeviceFreeTensor::sub_mul(const algebra_t &lhs, const algebra_t &rhs) {
+    AlgebraArithmetic::sub_mul(lhs, rhs);
+}
+void DeviceFreeTensor::mul_smul(const algebra_t &rhs, const scalars::Scalar &scalar) {
+    AlgebraArithmetic::mul_smul(rhs, scalar);
+}
+void DeviceFreeTensor::mul_sdiv(const algebra_t &rhs, const scalars::Scalar &scalar) {
+    AlgebraArithmetic::mul_sdiv(rhs, scalar);
+}
 
-    ScalarArray(const ScalarArray &other) = default;
-    ScalarArray(ScalarArray &&other) noexcept;
-    ScalarArray &operator=(const ScalarArray &other) = default;
-    ScalarArray &operator=(ScalarArray &&other) noexcept;
-
-    RPY_NO_DISCARD
-    ScalarArray borrow() const noexcept;
-    RPY_NO_DISCARD
-    ScalarArray borrow_mut() noexcept;
-
-    using ScalarPointer::is_owning;
-
-    RPY_NO_DISCARD
-    constexpr dimn_t size() const noexcept { return m_size; }
-};
-}}
-
-#endif // ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+}// namespace device
+}// namespace rpy

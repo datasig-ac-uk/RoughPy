@@ -26,34 +26,41 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 22/04/23.
+// Created by user on 28/04/23.
 //
 
-#ifndef ROUGHPY_DEVICE_CUDA_CORE_CUH
-#define ROUGHPY_DEVICE_CUDA_CORE_CUH
+#ifndef ROUGHPY_DEVICE_KERNELS_BINARY_KERNEL_CUH
+#define ROUGHPY_DEVICE_KERNELS_BINARY_KERNEL_CUH
 
 
+#include <roughpy/core/macros.h>
 #include <roughpy/core/implementation_types.h>
+#include "roughpy/device/core.h"
 
-#include <cuda.h>
-
-#include "roughpy_cuda_export.h"
-
-#define RPY_DEVICE __device__
-#define RPY_HOST __host__
-#define RPY_DEVICE_HOST __device__ __host__
-#define RPY_KERNEL __global__
-
-#define RPY_SHARED_MEMORY __shared__
+namespace rpy { namespace device {
 
 
+template <typename S, typename Functor>
+RPY_KERNEL void binary_kernel(S* RPY_RESTRICT dst,
+                              const S* RPY_RESTRICT lhs,
+                              const S* RPY_RESTRICT rhs,
+                              dindex_t count,
+                              Functor&& fn
+                              )
+{
+    dindex_t offset = blockIdx.x*gridDim.x + threadIdx.x;
+    dindex_t stride = blockDim.x*gridDim.x;
+
+    for (dindex_t i=offset; i<count; i += stride) {
+        dst[i] = fn(lhs[i], rhs[i]);
+    }
 
 
-
-namespace rpy { namespace cuda {
-
+}
 
 
 }}
 
-#endif//ROUGHPY_DEVICE_CUDA_CORE_CUH
+
+
+#endif//ROUGHPY_DEVICE_KERNELS_BINARY_KERNEL_CUH

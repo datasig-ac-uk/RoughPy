@@ -52,6 +52,10 @@ const ScalarType *ScalarType::rational_type() const noexcept {
     return this;
 }
 
+const ScalarType *ScalarType::host_type() const noexcept {
+    return this;
+}
+
 const ScalarType *ScalarType::for_id(const string &id) {
     return ScalarType::of<double>();
 }

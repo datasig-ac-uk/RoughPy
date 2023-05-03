@@ -75,9 +75,11 @@ protected:
 
 public:
     template <typename T>
+    RPY_NO_DISCARD
     static const ScalarType *of();
 
     template <typename T>
+    RPY_NO_DISCARD
     static const ScalarType* of(const ScalarDeviceInfo& device);
 
 
@@ -99,6 +101,7 @@ public:
      * @param id Id to query
      * @return const pointer to appropriate scalar type
      */
+    RPY_NO_DISCARD
     static const ScalarType* for_id(const string& id);
 
     /**
@@ -107,31 +110,43 @@ public:
      * @param device Type and ID of the device for scalars.
      * @return const pointer to appropriate scalar type
      */
+    RPY_NO_DISCARD
     static const ScalarType* from_type_details(const BasicScalarInfo& details, const ScalarDeviceInfo& device);
 
     /**
      * @brief Get the unique internal ID string for this type
      * @return const reference to the ID string.
      */
+    RPY_NO_DISCARD
     const string &id() const noexcept { return m_info.id; }
 
     /**
      * @brief Get the extended scalar type information for this type.
      * @return ScalarTypeInfo struct containing the information.
      */
+    RPY_NO_DISCARD
     const ScalarTypeInfo &info() const noexcept { return m_info; }
 
     /**
      * @brief Get the size of a single scalar in bytes
      * @return number of bytes.
      */
+    RPY_NO_DISCARD
     int itemsize() const noexcept { return m_info.n_bytes; }
 
     /**
      * @brief Get the rational type associated with this scalar type
      * @return pointer to the rational type
      */
-    const ScalarType* rational_type() const noexcept;
+    RPY_NO_DISCARD
+    virtual const ScalarType* rational_type() const noexcept;
+
+    /**
+     * @brief Get the type of this scalar situated on host (CPU)
+     * @return pointer to the host type
+     */
+    RPY_NO_DISCARD
+    virtual const ScalarType* host_type() const noexcept;
 
     /**
      * @brief Create a new scalar from numerator and denominator
@@ -139,6 +154,7 @@ public:
      * @param denominator Integer denominator of result
      * @return new Scalar with value numerator/denominator (in the appropriate type)
      */
+    RPY_NO_DISCARD
     virtual Scalar from(long long numerator, long long denominator) const;
 
     /**
@@ -146,6 +162,7 @@ public:
      * @param count Number of scalars to allocate space
      * @return ScalarPointer pointing to the newly allocated raw memory.
      */
+    RPY_NO_DISCARD
     virtual ScalarPointer allocate(std::size_t count) const = 0;
 
     /**
@@ -205,6 +222,7 @@ public:
      * @param str string to be parsed
      * @return new Scalar containing parsed value
      */
+    RPY_NO_DISCARD
     virtual Scalar parse(string_view str) const;
 
 
@@ -212,18 +230,21 @@ public:
      * @brief Get the scalar whose value is one
      * @return new Scalar object
      */
+    RPY_NO_DISCARD
     virtual Scalar one() const;
 
     /**
      * @brief Get the scalar whose value is minus one
      * @return new Scalar object
      */
+    RPY_NO_DISCARD
     virtual Scalar mone() const;
 
     /**
      * @brief Get the scalar whose value is zero
      * @return new Scalar object
      */
+    RPY_NO_DISCARD
     virtual Scalar zero() const;
 
     /**
@@ -231,6 +252,7 @@ public:
      * @param arg pointer to value
      * @return scalar_t value close to arg in value
      */
+    RPY_NO_DISCARD
     virtual scalar_t to_scalar_t(ScalarPointer arg) const = 0;
 
     /**
@@ -246,6 +268,7 @@ public:
      * @param source ScalarPointer to source value
      * @return new Scalar object
      */
+    RPY_NO_DISCARD
     virtual Scalar copy(ScalarPointer source) const;
 
     /**
@@ -253,6 +276,7 @@ public:
      * @param arg ScalarPointer to source value
      * @return new Scalar whose value is -(*arg)
      */
+    RPY_NO_DISCARD
     virtual Scalar uminus(ScalarPointer arg) const = 0;
 
     /**
@@ -261,6 +285,7 @@ public:
      * @param rhs ScalarPointer to right value
      * @return new Scalar with sum of the two values
      */
+    RPY_NO_DISCARD
     virtual Scalar add(ScalarPointer lhs, ScalarPointer rhs) const;
 
     /**
@@ -269,6 +294,7 @@ public:
      * @param rhs ScalarPointer to right value
      * @return new Scalar with difference of the two values
      */
+    RPY_NO_DISCARD
     virtual Scalar sub(ScalarPointer lhs, ScalarPointer rhs) const;
 
     /**
@@ -277,6 +303,7 @@ public:
      * @param rhs ScalarPointer to right value
      * @return new Scalar with product of the two values
      */
+    RPY_NO_DISCARD
     virtual Scalar mul(ScalarPointer lhs, ScalarPointer rhs) const;
 
     /**
@@ -285,6 +312,7 @@ public:
      * @param rhs ScalarPointer to right value
      * @return new scalar with left value divided by right value
      */
+    RPY_NO_DISCARD
     virtual Scalar div(ScalarPointer lhs, ScalarPointer rhs) const;
 
     /**
@@ -320,6 +348,7 @@ public:
      * @param arg argument to test
      * @return bool, true if the scalar pointer points to zero
      */
+    RPY_NO_DISCARD
     virtual bool is_zero(ScalarPointer arg) const;
 
     /**
@@ -328,6 +357,7 @@ public:
      * @param rhs pointer to right value
      * @return bool, true if left == right
      */
+    RPY_NO_DISCARD
     virtual bool are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept = 0;
 
     /**
@@ -344,6 +374,7 @@ public:
      * @param seed Seed bits (as a slice/array) of uint64_t (regardless of bit generator's seed type).
      * @return Pointer to new RandomGenerator instance.
      */
+    RPY_NO_DISCARD
     virtual std::unique_ptr<RandomGenerator> get_rng(const string& bit_generator="", Slice<uint64_t> seed={}) const;
 
 
@@ -351,6 +382,7 @@ public:
      * @brief Get a new instance of a blas interface
      * @return
      */
+    RPY_NO_DISCARD
     virtual std::unique_ptr<BlasInterface> get_blas() const;
 
 };

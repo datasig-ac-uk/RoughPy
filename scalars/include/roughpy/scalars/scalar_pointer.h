@@ -231,8 +231,12 @@ public:
           m_flags(flags::SignedSize | flags::BorrowedPointer | flags::IsConst)
     {}
 
-
-
+    /**
+     * @brief Get the raw flags from this pointer
+     * @return uint32_t holding flags data
+     */
+    RPY_NO_DISCARD
+    constexpr uint32_t flags() const noexcept { return m_flags; }
 
     /**
      * @brief Get whether the pointer is const or not

@@ -120,9 +120,11 @@
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#define RPY_RESTRICT(ARG) ARG __restrict__
+#define RPY_RESTRICT __restrict__
 #elif defined(_MSC_VER)
-#define RPY_RESTRICT(ARG) ARG __restrict
+#define RPY_RESTRICT __restrict
+#else
+#define RPY_RESTRICT
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)

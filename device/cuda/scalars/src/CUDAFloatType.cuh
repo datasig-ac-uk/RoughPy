@@ -32,8 +32,8 @@
 #ifndef ROUGHPY_DEVICE_CUDA_SCALARS_SRC_CUDAFLOATTYPE_CUH
 #define ROUGHPY_DEVICE_CUDA_SCALARS_SRC_CUDAFLOATTYPE_CUH
 
-#include "cuda_core.cuh"
-
+#include <roughpy/device/device_core.h>
+#include "roughpy_cuda_export.h"
 #include "CUDA_standard_scalar.cuh"
 
 namespace rpy {

@@ -1,19 +1,19 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+// Copyright (c) 2023 Datasig Developers. All rights reserved.
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,59 +25,46 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
-#define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+//
+// Created by user on 02/05/23.
+//
 
-#include "scalars_fwd.h"
-#include "roughpy_scalars_export.h"
+#ifndef ROUGHPY_DEVICE_SRC_DEVICE_FREE_TENSOR_H
+#define ROUGHPY_DEVICE_SRC_DEVICE_FREE_TENSOR_H
 
-#include <cassert>
+#include "device_algebra_base.h"
 
+#include <roughpy/algebra/free_tensor.h>
 
+namespace rpy {
+namespace device {
 
-#include "scalar_pointer.h"
+class DeviceFreeTensor
+    : public DeviceAlgebraBase<algebra::FreeTensorInterface, DeviceFreeTensor> {
 
-namespace rpy { namespace scalars {
-
-class ROUGHPY_SCALARS_EXPORT ScalarArray : public ScalarPointer {
-
-protected:
-    dimn_t m_size = 0;
-
-
+    using base_t = DeviceAlgebraBase<algebra::FreeTensorInterface, DeviceFreeTensor>;
 public:
 
-    ScalarArray() = default;
-
-    explicit ScalarArray(const ScalarType *type)
-        : ScalarPointer(type)
-    {}
-    ScalarArray(const ScalarType *type, void* data, dimn_t size)
-        : ScalarPointer(type, data), m_size(size)
+    DeviceFreeTensor(scalars::ScalarArray&& data,
+                     const DeviceContext* ctx)
+        : base_t(std::move(data), ctx, ctx->context()->get_tensor_basis())
     {}
 
+    void mul_inplace(const algebra_t &other) override;
 
-    ScalarArray(const ScalarType *type, const void* data, dimn_t size)
-        : ScalarPointer(type, data), m_size(size)
-    {}
-    ScalarArray(ScalarPointer begin, dimn_t size)
-        : ScalarPointer(begin), m_size(size) {}
-
-    ScalarArray(const ScalarArray &other) = default;
-    ScalarArray(ScalarArray &&other) noexcept;
-    ScalarArray &operator=(const ScalarArray &other) = default;
-    ScalarArray &operator=(ScalarArray &&other) noexcept;
-
-    RPY_NO_DISCARD
-    ScalarArray borrow() const noexcept;
-    RPY_NO_DISCARD
-    ScalarArray borrow_mut() noexcept;
-
-    using ScalarPointer::is_owning;
-
-    RPY_NO_DISCARD
-    constexpr dimn_t size() const noexcept { return m_size; }
+    algebra_t mul(const algebra_t &other) const override;
+    void add_mul(const algebra_t &lhs, const algebra_t &rhs) override;
+    void sub_mul(const algebra_t &lhs, const algebra_t &rhs) override;
+    void mul_smul(const algebra_t &rhs, const scalars::Scalar &scalar) override;
+    void mul_sdiv(const algebra_t &rhs, const scalars::Scalar &scalar) override;
+    algebra::FreeTensor exp() const override;
+    algebra::FreeTensor log() const override;
+    algebra::FreeTensor inverse() const override;
+    algebra::FreeTensor antipode() const override;
+    void fmexp(const algebra::FreeTensor &other) override;
 };
-}}
 
-#endif // ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+}// namespace device
+}// namespace rpy
+
+#endif//ROUGHPY_DEVICE_SRC_DEVICE_FREE_TENSOR_H

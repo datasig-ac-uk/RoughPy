@@ -1,19 +1,19 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+// Copyright (c) 2023 Datasig Developers. All rights reserved.
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,59 +25,35 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
-#define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+//
+// Created by user on 28/04/23.
+//
 
-#include "scalars_fwd.h"
-#include "roughpy_scalars_export.h"
+#ifndef ROUGHPY_DEVICE_KERNELS_UNARY_KERNEL_CUH
+#define ROUGHPY_DEVICE_KERNELS_UNARY_KERNEL_CUH
 
-#include <cassert>
+#include "core.h"
+#include "functors.h"
+#include <roughpy/core/implementation_types.h>
+#include <roughpy/core/macros.h>
 
+namespace rpy {
+namespace device {
 
+template <typename S, typename Functor>
+RPY_KERNEL void unary_kernel(S *RPY_RESTRICT dst,
+                             const S *RPY_RESTRICT src,
+                             dindex_t count,
+                             Functor &&fn) {
+    dindex_t offset = blockIdx.x * gridDim.x + threadIdx.x;
+    dindex_t stride = blockDim.x * gridDim.x;
 
-#include "scalar_pointer.h"
+    for (dindex_t i = offset; i < count; i += stride) {
+        dst[i] = fn(src[i]);
+    }
+}
 
-namespace rpy { namespace scalars {
+}// namespace device
+}// namespace rpy
 
-class ROUGHPY_SCALARS_EXPORT ScalarArray : public ScalarPointer {
-
-protected:
-    dimn_t m_size = 0;
-
-
-public:
-
-    ScalarArray() = default;
-
-    explicit ScalarArray(const ScalarType *type)
-        : ScalarPointer(type)
-    {}
-    ScalarArray(const ScalarType *type, void* data, dimn_t size)
-        : ScalarPointer(type, data), m_size(size)
-    {}
-
-
-    ScalarArray(const ScalarType *type, const void* data, dimn_t size)
-        : ScalarPointer(type, data), m_size(size)
-    {}
-    ScalarArray(ScalarPointer begin, dimn_t size)
-        : ScalarPointer(begin), m_size(size) {}
-
-    ScalarArray(const ScalarArray &other) = default;
-    ScalarArray(ScalarArray &&other) noexcept;
-    ScalarArray &operator=(const ScalarArray &other) = default;
-    ScalarArray &operator=(ScalarArray &&other) noexcept;
-
-    RPY_NO_DISCARD
-    ScalarArray borrow() const noexcept;
-    RPY_NO_DISCARD
-    ScalarArray borrow_mut() noexcept;
-
-    using ScalarPointer::is_owning;
-
-    RPY_NO_DISCARD
-    constexpr dimn_t size() const noexcept { return m_size; }
-};
-}}
-
-#endif // ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+#endif // ROUGHPY_DEVICE_KERNELS_UNARY_KERNEL_CUH

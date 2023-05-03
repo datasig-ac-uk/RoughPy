@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_DEVICE_CUDA_SCALARS_SRC_CUDA_STANDARD_SCALAR_CUH
 #define ROUGHPY_DEVICE_CUDA_SCALARS_SRC_CUDA_STANDARD_SCALAR_CUH
 
-#include "cuda_core.cuh"
+#include <roughpy/device/device_core.h>
 
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
