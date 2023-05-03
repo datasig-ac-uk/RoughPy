@@ -21,6 +21,8 @@ include(cmake/roughpy_helpers.cmake)
 
 
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
+option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
+
 
 set(PYBIND11_FINDPYTHON ON)
 if (NOT PYTHON_FOUND AND SKBUILD)
@@ -100,7 +102,10 @@ add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
 add_subdirectory(roughpy)
+
+if(ROUGHPY_GENERATE_DEVICE_CODE)
 add_subdirectory(device)
+endif()
 
 if(ROUGHPY_BUILD_LA_CONTEXTS)
     add_subdirectory(la_context)
