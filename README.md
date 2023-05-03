@@ -2,6 +2,8 @@
 # RoughPy
 RoughPy is a package for working with streaming data as rough paths, and working with algebraic objects such as free tensors, shuffle tensors, and elements of the free Lie algebra.
 
+This library is currently in an alpha stage, and as such many features are still incomplete or not fully implemented. Please bear this in mind when looking at the source code.
+
 
 ## Installation
 Currently, RoughPy is only available as a source distribution. It should still be installable via pip, provided you have all the dependencies set up.
