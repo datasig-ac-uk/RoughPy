@@ -78,15 +78,13 @@ public:
     using const_iterator = algebra::AlgebraIterator<algebra_t>;
 
     DeviceAlgebraBase(scalars::ScalarArray&& data,
-                      const DeviceContext* ctx,
-                      basis_t&& basis
+                      const DeviceContext* ctx
                       )
         : Interface(ctx->context(),
                     algebra::VectorType::Dense,
                     ctx->ctype(),
                     data.is_owning() ? algebra::ImplementationType::DeviceOwned
-                                     : algebra::ImplementationType::DeviceBorrowed,
-                    std::move(basis)
+                                     : algebra::ImplementationType::DeviceBorrowed
                     ),
           m_data(std::move(data)), p_dctx(ctx)
     {}
