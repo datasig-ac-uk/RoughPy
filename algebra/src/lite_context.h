@@ -44,7 +44,6 @@
 #include "algebra_info.h"
 #include "algebra_iterator.h"
 #include "algebra_iterator_impl.h"
-#include "algebra_traits.h"
 #include "basis.h"
 #include "basis_impl.h"
 #include "context.h"
