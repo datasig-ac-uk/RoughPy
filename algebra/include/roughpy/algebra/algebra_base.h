@@ -359,6 +359,7 @@ public:
     dimn_t dimension() const;
     dimn_t size() const;
     bool is_zero() const;
+    context_pointer context() const noexcept;
     optional<deg_t> width() const;
     optional<deg_t> depth() const;
     optional<deg_t> degree() const;
@@ -518,6 +519,10 @@ UnspecifiedAlgebraType try_create_new_empty(context_pointer ctx, AlgebraType alg
 
 }// namespace dtl
 
+
+#define RPY_CHECK_CONTEXTS(OTHER) \
+    RPY_CHECK(context()->check_compatible(*(OTHER).context()))
+
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 AlgebraBase<Interface, DerivedImpl>::AlgebraBase(context_pointer ctx)
     : p_impl(nullptr) {
@@ -563,6 +568,11 @@ AlgebraBase<Interface, DerivedImpl> &AlgebraBase<Interface, DerivedImpl>::operat
     return *this;
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
+context_pointer AlgebraBase<Interface, DerivedImpl>::context() const noexcept {
+    return (p_impl) ? p_impl->context() : nullptr;
+}
+
+template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::borrow() const {
     if (p_impl) {
         return p_impl->borrow();
@@ -584,6 +594,8 @@ typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::add(const alg
         }
         return p_impl->clone();
     }
+    RPY_CHECK_CONTEXTS(rhs);
+
     if (is_equivalent_to_zero(*this)) {
         return rhs.p_impl->clone();
     }
@@ -597,6 +609,9 @@ typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::sub(const alg
         }
         return p_impl->clone();
     }
+
+    RPY_CHECK_CONTEXTS(rhs);
+
     if (is_equivalent_to_zero(*this)) {
         return rhs.p_impl->uminus();
     }
@@ -610,6 +625,9 @@ typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::mul(const alg
         }
         return p_impl->clone();
     }
+
+    RPY_CHECK_CONTEXTS(rhs);
+
     if (is_equivalent_to_zero(*this)) {
         return rhs.p_impl->clone();
     }
@@ -747,6 +765,7 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::add_inplace(
     if (is_equivalent_to_zero(*this)) {
         *this = algebra_t();
     }
+    RPY_CHECK_CONTEXTS(rhs);
     p_impl->add_inplace(rhs);
     return downcast(*this);
 }
@@ -758,6 +777,7 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::sub_inplace(
     if (is_equivalent_to_zero(*this)) {
         *this = algebra_t();
     }
+    RPY_CHECK_CONTEXTS(rhs);
     p_impl->sub_inplace(rhs);
     return downcast(*this);
 }
@@ -769,6 +789,7 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::mul_inplace(
     if (is_equivalent_to_zero(*this)) {
         *this = algebra_t();
     }
+    RPY_CHECK_CONTEXTS(rhs);
     p_impl->mul_inplace(rhs);
     return downcast(*this);
 }
@@ -793,6 +814,8 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::sdiv_inplace
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::add_scal_mul(const algebra_t &lhs, const scalars::Scalar &rhs) {
     if (!is_equivalent_to_zero(lhs) && rhs.is_zero()) {
+        RPY_CHECK_CONTEXTS(lhs);
+
         if (!is_equivalent_to_zero(*this)) {
             p_impl->add_scal_mul(lhs, rhs);
         } else {
@@ -804,6 +827,8 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::add_scal_mul
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::sub_scal_mul(const algebra_t &lhs, const scalars::Scalar &rhs) {
     if (!is_equivalent_to_zero(lhs) && rhs.is_zero()) {
+        RPY_CHECK_CONTEXTS(lhs);
+
         if (!is_equivalent_to_zero(*this)) {
             p_impl->sub_scal_mul(lhs, rhs);
         } else {
@@ -815,6 +840,8 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::sub_scal_mul
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::add_scal_div(const algebra_t &lhs, const scalars::Scalar &rhs) {
     if (!is_equivalent_to_zero(lhs)) {
+        RPY_CHECK_CONTEXTS(lhs);
+
         if (rhs.is_zero()) {
             throw std::invalid_argument("cannot divide by zero");
         }
@@ -829,6 +856,8 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::add_scal_div
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::sub_scal_div(const algebra_t &lhs, const scalars::Scalar &rhs) {
     if (!is_equivalent_to_zero(lhs)) {
+        RPY_CHECK_CONTEXTS(lhs);
+
         if (rhs.is_zero()) {
             throw std::invalid_argument("cannot divide by zero");
         }
@@ -844,6 +873,9 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::sub_scal_div
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::add_mul(const algebra_t &lhs, const algebra_t &rhs) {
     if (!is_equivalent_to_zero(lhs) && !is_equivalent_to_zero(rhs)) {
+        RPY_CHECK_CONTEXTS(lhs);
+        RPY_CHECK_CONTEXTS(rhs);
+
         if (is_equivalent_to_zero(*this)) {
             *this = lhs.mul(rhs);
         } else {
@@ -855,6 +887,9 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::add_mul(cons
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::sub_mul(const algebra_t &lhs, const algebra_t &rhs) {
     if (!is_equivalent_to_zero(lhs) && !is_equivalent_to_zero(rhs)) {
+        RPY_CHECK_CONTEXTS(lhs);
+        RPY_CHECK_CONTEXTS(rhs);
+
         if (is_equivalent_to_zero(*this)) {
             *this = lhs.mul(rhs).uminus();
         } else {
@@ -866,6 +901,8 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::sub_mul(cons
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::mul_smul(const algebra_t &lhs, const scalars::Scalar &rhs) {
     if (!is_equivalent_to_zero(lhs) && !rhs.is_zero()) {
+        RPY_CHECK_CONTEXTS(lhs);
+
         if (!is_equivalent_to_zero(*this)) {
             p_impl->mul_smul(lhs, rhs);
         }
@@ -877,6 +914,8 @@ typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::mul_smul(con
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t &AlgebraBase<Interface, DerivedImpl>::mul_sdiv(const algebra_t &lhs, const scalars::Scalar &rhs) {
     if (!is_equivalent_to_zero(lhs)) {
+        RPY_CHECK_CONTEXTS(lhs);
+
         if (rhs.is_zero()) {
             throw std::invalid_argument("cannot divide by zero");
         }
@@ -896,6 +935,11 @@ bool AlgebraBase<Interface, DerivedImpl>::operator==(const algebra_t &other) con
     if (is_equivalent_to_zero(other)) {
         return p_impl->is_zero();
     }
+
+    if (!context()->check_compatible(*other.context())) {
+        return false;
+    }
+
     return p_impl->equals(other);
 }
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
@@ -912,6 +956,8 @@ template <typename Interface, template <typename, template <typename> class> cla
 inline std::ostream &operator<<(std::ostream &os, const AlgebraBase<Interface, DerivedImpl> &alg) {
     return alg.print(os);
 }
+
+#undef RPY_CHECK_CONTEXTS
 
 }// namespace algebra
 }// namespace rpy
