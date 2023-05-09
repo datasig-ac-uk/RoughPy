@@ -95,7 +95,7 @@ dimn_t ContextBase::tensor_size(deg_t deg) const noexcept {
     return p_tensor_sizes[deg];
 }
 bool Context::check_compatible(const Context &other_ctx) const noexcept {
-    return false;
+    return width() == other_ctx.width();
 }
 FreeTensor Context::zero_free_tensor(VectorType vtype) const {
     return construct_free_tensor({ scalars::KeyScalarArray(), vtype });
