@@ -3,6 +3,8 @@
 
 #include <boost/multiprecision/@RPY_RATIONAL_HEADER@>
 
+#cmakedefine01 RPY_USING_GMP
+
 namespace rpy { namespace scalars {
 
 using rational_scalar_type = @RPY_RATIONAL_TYPE@;

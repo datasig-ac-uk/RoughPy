@@ -10,10 +10,12 @@ add_roughpy_lib(Platform STATIC
         include/roughpy/platform.h
         include/roughpy/platform/filesystem.h
         include/roughpy/platform/configuration.h
+        include/roughpy/platform/serialization.h
     PUBLIC_DEPS
         RoughPy::Core
         Boost::boost
         Boost::filesystem
         Boost::url
+        Boost::serialization
         Boost::disable_autolinking
     )

@@ -167,28 +167,27 @@ const ScalarType* rpy::scalars::dtl::scalar_type_holder<bfloat16>::get_type() no
  * The last 3 are commented out, because they are to be implemented
  * separately.
  */
-static const string reserved[] = {
-    "i32",  // int
-    "u32",  // unsigned int
-    "i64",  // long long
-    "u64",  // unsigned long long
-    //    "l",                // long
-    //    "L",                // unsigned long
-    "isize",// ssize_t
-    "usize",// size_t
-    "i16",  // short
-    "u16",  // unsigned short
-    "i8",   // char
-    "u8",   // unsigned char
-    //    "c",                // char
-    //    "e",                // float16
-    //    "g",                // float128
-    //    "O"                 // Object
+
+#define ADD_RES_PAIR(name, type, code)            \
+    pair<string, BasicScalarInfo>((name), {(code), CHAR_BIT*sizeof(type), 1})\
+
+static const pair<string, BasicScalarInfo> reserved[] = {
+    ADD_RES_PAIR("i32", int32_t, ScalarTypeCode::Int),
+    ADD_RES_PAIR("u32", uint32_t, ScalarTypeCode::UInt),
+    ADD_RES_PAIR("i64", int64_t, ScalarTypeCode::Int),
+    ADD_RES_PAIR("u64", uint64_t, ScalarTypeCode::UInt),
+    ADD_RES_PAIR("isize", idimn_t, ScalarTypeCode::Int),
+    ADD_RES_PAIR("usize", dimn_t, ScalarTypeCode::UInt),
+    ADD_RES_PAIR("i16", int16_t, ScalarTypeCode::Int),
+    ADD_RES_PAIR("u16", uint16_t, ScalarTypeCode::UInt),
+    ADD_RES_PAIR("i8", int8_t, ScalarTypeCode::Int),
+    ADD_RES_PAIR("u8", uint8_t, ScalarTypeCode::UInt)
 };
+
 static std::mutex s_scalar_type_cache_lock;
 static std::unordered_map<string, const ScalarType *> s_scalar_type_cache {
     {string("f32"), ScalarType::of<float>()},
-    {string("f64"), ScalarType::of<float>()}
+    {string("f64"), ScalarType::of<double>()}
 //    {string("rational"), ScalarType::of<float>()},
 };
 
@@ -197,7 +196,7 @@ void rpy::scalars::register_type(const ScalarType *type) {
 
     const auto& identifier = type->id();
     for (const auto& i : reserved) {
-        if (identifier == i) {
+        if (identifier == i.first) {
             throw std::runtime_error("cannot register identifier " + identifier + ", it is reserved");
         }
     }
@@ -211,12 +210,43 @@ void rpy::scalars::register_type(const ScalarType *type) {
 }
 const ScalarType *rpy::scalars::get_type(const string &id) {
     // TODO: needs implementation
-    return nullptr;
+
+    std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
+    auto found = s_scalar_type_cache.find(id);
+    if (found != s_scalar_type_cache.end()) {
+        return found->second;
+    }
+
+    for (const auto &rsv : reserved) {
+        if (id == rsv.first) {
+            return nullptr;
+        }
+    }
+
+    throw std::runtime_error("no type with id " + id);
 }
 
 const ScalarType *scalars::get_type(const string &id, const ScalarDeviceInfo &device) {
     // TODO: Needs implementation
     return nullptr;
+}
+
+BasicScalarInfo get_basic_info(string_view id) {
+
+    for (const auto& rsv : reserved) {
+        if (rsv.first == id) {
+            return rsv.second;
+        }
+    }
+
+    string ids(id);
+    std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
+    auto found = s_scalar_type_cache.find(ids);
+    if (found != s_scalar_type_cache.end()) {
+        return found->second->info().basic_info;
+    }
+
+    throw std::runtime_error("Unrecognised type id " + ids);
 }
 
 std::vector<const ScalarType *> rpy::scalars::list_types() {

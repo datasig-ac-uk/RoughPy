@@ -287,6 +287,11 @@ static void ffmm(ScalarMatrix& result, const ScalarMatrix& lhs, const ScalarMatr
 }
 
 static void ttmm(ScalarMatrix& result, const ScalarMatrix& lhs, blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs, blas::BlasUpLo rhs_uplo) {
+    /*
+     * If lhs and rhs are both upper (lower, respectively) triangular then result will also be
+     * upper (lower) triangular. Otherwise, the result is a full matrix.
+     */
+
 
 }
 

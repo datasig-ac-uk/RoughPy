@@ -54,7 +54,7 @@ if (DEFINED ENV{VIRTUAL_ENV})
 endif()
 
 
-find_package(Boost 1.81 REQUIRED COMPONENTS filesystem url)
+find_package(Boost 1.81 REQUIRED COMPONENTS filesystem url serialization)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 find_package(CURL REQUIRED)

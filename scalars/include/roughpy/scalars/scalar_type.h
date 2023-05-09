@@ -385,6 +385,24 @@ public:
     RPY_NO_DISCARD
     virtual std::unique_ptr<BlasInterface> get_blas() const;
 
+
+    /**
+     * @brief Produce a stream of raw bytes after any pointer resolution.
+     * @param ptr Input pointer
+     * @param count Number of elements to process
+     * @return Vector of bytes (char)
+     */
+    RPY_NO_DISCARD
+    virtual std::vector<byte> to_raw_bytes(const ScalarPointer& ptr, dimn_t count) const = 0;
+
+    /**
+     * @brief Read raw bytes into a scalar array.
+     * @param raw_bytes
+     * @return
+     */
+    RPY_NO_DISCARD
+    virtual ScalarPointer from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) const = 0;
+
 };
 
 /**
@@ -412,11 +430,14 @@ const ScalarType* get_type(const string& id, const ScalarDeviceInfo& device);
  * @brief Get a list of all registered ScalarTypes
  * @return vector of ScalarType pointers.
  */
-ROUGHPY_SCALARS_EXPORT
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
 std::vector<const ScalarType *> list_types();
 
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
+BasicScalarInfo get_basic_info(string_view id);
 
-ROUGHPY_SCALARS_EXPORT
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
 const conversion_function&
 get_conversion(const string& src_id, const string& dst_id);
 

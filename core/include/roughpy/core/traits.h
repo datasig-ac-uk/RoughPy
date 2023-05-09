@@ -32,6 +32,8 @@
 #ifndef ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
 #define ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
 
+#include "macros.h"
+
 #include <type_traits>
 
 #include <boost/call_traits.hpp>

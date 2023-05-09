@@ -65,6 +65,7 @@ add_roughpy_lib(Scalars
         include/roughpy/scalars.h
     PUBLIC_DEPS
         RoughPy::Core
+        RoughPy::Platform
         Boost::boost
         Eigen3::Eigen
     PRIVATE_DEPS
@@ -79,8 +80,10 @@ add_roughpy_lib(Scalars
 if (TARGET Bignum::Bignum)
     set(RPY_RATIONAL_HEADER "gmp.hpp")
     set(RPY_RATIONAL_TYPE "boost::multiprecision::mpq_rational")
+    set(RPY_USING_GMP ON)
     target_link_libraries(RoughPy_Scalars PUBLIC Bignum::Bignum)
 else()
+    set(RPY_USING_GMP OFF)
     set(RPY_RATIONAL_HEADER "cpp_int.hpp")
     set(RPY_RATIONAL_TYPE "boost::multiprecision::cpp_rational")
 endif()

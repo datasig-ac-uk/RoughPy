@@ -437,7 +437,30 @@ public:
     }
 
     std::unique_ptr<RandomGenerator> get_rng(const string &bit_generator, Slice<uint64_t> seed) const override;
+
+    std::vector<byte> to_raw_bytes(const ScalarPointer &ptr, dimn_t count) const override;
+    ScalarPointer from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) const override;
 };
+template <typename ScalarImpl>
+std::vector<byte> StandardScalarType<ScalarImpl>::to_raw_bytes(const ScalarPointer &ptr, dimn_t count) const {
+    RPY_CHECK(ptr.type() == this);
+    std::vector<byte> result(count * sizeof(ScalarImpl));
+
+    std::copy_n(ptr.raw_cast<const byte*>(), count*sizeof(ScalarImpl), result.data());
+
+    return result;
+}
+template <typename ScalarImpl>
+ScalarPointer StandardScalarType<ScalarImpl>::from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) const {
+
+    RPY_CHECK(count * sizeof(ScalarImpl) == raw_bytes.size());
+
+    auto optr = allocate(count);
+    auto* raw = optr.template raw_cast<char*>();
+
+    std::copy(raw_bytes.begin(), raw_bytes.end(), raw);
+    return optr;
+}
 
 inline uint64_t device_to_seed() {
     std::random_device rd;

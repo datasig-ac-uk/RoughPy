@@ -26,67 +26,46 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 17/04/23.
+// Created by user on 09/05/23.
 //
 
-#ifndef ROUGHPY_PLATFORM_CONFIGURATION_H
-#define ROUGHPY_PLATFORM_CONFIGURATION_H
+#ifndef ROUGHPY_PLATFORM_SERIALIZATION_H
+#define ROUGHPY_PLATFORM_SERIALIZATION_H
+#ifndef RPY_DISABLE_SERIALIZATION
 
-#include <roughpy/core/implementation_types.h>
-#include <roughpy/core/traits.h>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/split_free.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/array.hpp>
 
-#include <memory>
+/*
+ * For flexibility, and possibly later swapping out framework,
+ * define redefine the relevant macros here as RPY_SERIAL_*.
+ * pull in the access helper struct.
+ */
+
+#define RPY_STRONG_TYPEDEF BOOST_STRONG_TYPEDEF
+
+#define RPY_SERIAL_SPLIT_MEMBER() BOOST_SERIALIZATION_SPLIT_MEMBER()
+#define RPY_SERIAL_SPLIT_FREE(T) BOOST_SERIALIZATION_SPLIT_FREE(T)
+
+#define RPY_BEGIN_SERIALIZATION_NAMESPACE namespace boost { namespace serialization {
+#define RPY_END_SERIALIZATION_NAMESPACE }}
+
 
 namespace rpy {
 
-// Forward declaration
-class Configuration;
+using serialization_access = boost::serialization::access;
 
-/**
- * @brief Get a reference to the current configuration.
- * @return global configuration reference
- */
-const Configuration &get_config();
+namespace serial {
 
-/**
- * @brief Interface for getting RoughPy configuration settings.
- */
-class Configuration {
-
-    class State;
-
-    std::unique_ptr<State> p_state;
-
-    Configuration();
-    ~Configuration();
-
-    friend const Configuration& get_config();
-
-public:
-
-    [[nodiscard]]
-    string_view get_raw_config_value(string_view property) const;
-
-    template <typename T>
-    [[nodiscard]]
-    enable_if_t<is_constructible<T, string_view>::value, T> get_config_value(string_view property) const;
+using boost::serialization::base_object;
+using boost::serialization::make_array;
 
 
-    // TODO: In the future, this will include methods for finding runtime libraries like libcudart
-
-
-
-};
-
-
-
-
-template <typename T>
-enable_if_t<is_constructible<T, string_view>::value, T> Configuration::get_config_value(string_view property) const {
-    return T(get_raw_config_value(property));
+}
 }
 
-
-}// namespace rpy
-
-#endif//ROUGHPY_PLATFORM_CONFIGURATION_H
+#endif // RPY_DISABLE_SERIALIZATION
+#endif//ROUGHPY_PLATFORM_SERIALIZATION_H

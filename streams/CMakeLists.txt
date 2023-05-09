@@ -35,6 +35,7 @@ add_roughpy_lib(Streams
         include/roughpy/streams/tick_stream.h
         include/roughpy/streams/brownian_stream.h
         include/roughpy/streams/external_data_stream.h
+        include/roughpy/streams/piecewise_abelian_stream.h
     PUBLIC_DEPS
         RoughPy::Core
         RoughPy::Platform

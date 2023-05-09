@@ -29,7 +29,7 @@
 // Created by user on 17/04/23.
 //
 
-#include "../include/roughpy/platform/configuration.h"
+#include "configuration.h"
 
 
 using namespace rpy;
@@ -42,9 +42,7 @@ rpy::Configuration::Configuration()
     : p_state(new State)
 {
 }
-rpy::Configuration::~Configuration() {
-    delete p_state;
-}
+rpy::Configuration::~Configuration() = default;
 
 string_view Configuration::get_raw_config_value(string_view property) const {
     return std::string_view();

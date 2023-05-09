@@ -10,6 +10,8 @@
 #include <boost/url.hpp>
 #include <boost/url/parse.hpp>
 
+#include <boost/dll/shared_library.hpp>
+
 #include "platform/filesystem.h"
 #include "platform/configuration.h"
 
@@ -21,6 +23,9 @@ using boost::url_view;
 using boost::urls::parse_uri;
 using boost::urls::parse_uri_reference;
 using URIScheme = boost::urls::scheme;
+
+
+using boost::dll::shared_library;
 
 
 }

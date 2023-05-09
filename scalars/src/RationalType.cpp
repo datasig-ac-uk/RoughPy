@@ -34,6 +34,14 @@
 #include <algorithm>
 #include <ostream>
 #include <utility>
+#include <cmath>
+
+#if RPY_USING_GMP
+#include <gmp.h>
+#else
+#include <iterator>
+#endif
+#include <boost/endian.hpp>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -364,4 +372,98 @@ void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const {
     std::swap(
         *lhs.raw_cast<scalar_type *>(),
         *rhs.raw_cast<scalar_type *>());
+}
+std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr, dimn_t count) const {
+    const auto* raw = ptr.raw_cast<const rational_scalar_type*>();
+    std::vector<byte> result;
+    result.reserve(count * sizeof(rational_scalar_type));  // Should be a reasonable approximation of the final size
+
+    auto push_items = [&result](auto item) {
+#if RPY_USING_GMP
+        auto size = static_cast<int64_t>(item->_mp_size) * sizeof(mp_limb_t);
+        auto n_bytes = (size >= 0) ? size : -size;  // abs(size) is ambiguous?
+#else
+        auto size = static_cast<int64_t>(item.size());
+        auto n_bytes = size*sizeof(typename decltype(item)::limb_type);
+        size = item.sign() ? -n_bytes : n_bytes;
+#endif
+        const auto *sz_ptr = reinterpret_cast<const byte *>(&size);
+        for (int i = 0; i < sizeof(int64_t); ++i) {
+            result.push_back(sz_ptr[i]);
+        }
+
+#if RPY_USING_GMP
+        auto curr_size = result.size();
+        result.resize(curr_size + n_bytes);
+        auto* write = result.data() + curr_size;
+        size_t actually_written;
+        mpz_export(write, &actually_written, -1, sizeof(byte), -1, 0, item);
+        RPY_DBG_ASSERT(actually_written == n_bytes);
+#else
+        export_bits(item, std::back_inserter(result), CHAR_BIT, false);
+#endif
+    };
+
+    for (dimn_t i=0; i<count; ++i) {
+        const auto& item = raw[i].backend();
+#if RPY_USING_GMP
+        push_items(mpq_numref(item.data()));
+        push_items(mpq_denref(item.data()));
+#else
+        push_items(numerator(item));
+        push_items(denominator(item));
+#endif
+    }
+    return result;
+}
+
+ScalarPointer RationalType::from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) const {
+    // TODO: These implementations are probably not completely correct
+
+    ScalarPointer out = allocate(count);
+    auto* raw = out.raw_cast<rational_scalar_type*>();
+
+    dimn_t pos = 0;
+    const auto limit = raw_bytes.size();
+
+    auto unpack_limb = [&pos, &limit](auto& dst, const byte* src) {
+        RPY_CHECK(pos + sizeof(int64_t) <= limit);
+
+        int64_t size;
+        std::memcpy(&size, src, sizeof(int64_t));
+        pos += sizeof(int64_t);
+        if (size == 0) {
+            return;
+        }
+
+        auto n_bytes = abs(size);
+        src += sizeof(int64_t);
+        RPY_CHECK(pos + n_bytes <= limit);
+#if RPY_USING_GMP
+        mpz_import(dst, n_bytes, -1, sizeof(byte), -1, 0, src);
+#else
+        cpp_int tmp;
+        import_bits(tmp, src, src+n_bytes, CHAR_BIT, false);
+        dst = tmp.backend();
+#endif
+    };
+
+    const auto* src = raw_bytes.begin();
+    for (dimn_t i=0; i<count; ++i) {
+        auto& item = raw[i];
+        auto den = denominator(item);
+
+#if RPY_USING_GMP
+        auto* numref = mpq_numref(item.backend().data());
+        auto* denref = mpq_denref(item.backend().data());
+        unpack_limb(numref, src + pos);
+        unpack_limb(denref, src + pos);
+#else
+        unpack_limb(item.backend().num(), src + pos);
+        unpack_limb(item.backend().den(), src + pos);
+#endif
+    }
+
+
+    return out;
 }

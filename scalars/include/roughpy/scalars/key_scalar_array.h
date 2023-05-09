@@ -33,6 +33,8 @@
 #include "scalar_array.h"
 #include "scalar_type.h"
 
+#include <roughpy/platform/serialization.h>
+
 namespace rpy {
 namespace scalars {
 
@@ -72,8 +74,33 @@ public:
 
     void allocate_scalars(idimn_t count = -1);
     void allocate_keys(idimn_t count = -1);
+
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+    friend rpy::serialization_access;
+
+    RPY_SERIAL_SPLIT_MEMBER()
+
+    template <typename Ar>
+    void save(Ar& ar, const unsigned int /*version*/) const {
+        ar << serial::base_object<ScalarArray>(*this);
+        const auto key_count = p_keys != nullptr ? size() : 0;
+        ar << key_count;
+        ar << serial::make_array(p_keys, key_count);
+    }
+
+    template <typename Ar>
+    void load(Ar& ar, const unsigned int /*version*/) {
+        ar >> serial::base_object<ScalarArray>(*this);
+        auto key_count = 0;
+        ar >> key_count;
+        ar >> serial::make_array(p_keys, key_count);
+    }
+
+#endif
 };
 }// namespace scalars
 }// namespace rpy
+
 
 #endif// ROUGHPY_SCALARS_KEY_SCALAR_ARRAY_H_

@@ -33,9 +33,10 @@
 
 #include <cassert>
 
-
-
 #include "scalar_pointer.h"
+#include "scalar_type.h"
+
+#include <roughpy/platform/serialization.h>
 
 namespace rpy { namespace scalars {
 
@@ -77,6 +78,50 @@ public:
 
     RPY_NO_DISCARD
     constexpr dimn_t size() const noexcept { return m_size; }
+
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+    friend rpy::serialization_access;
+
+    RPY_SERIAL_SPLIT_MEMBER()
+
+    template <typename Ar>
+    void save(Ar& ar, const unsigned int /*version*/) const {
+        auto itemsize = 0;
+        if (p_type != nullptr) {
+            const auto* host_type = p_type->host_type();
+            ar << host_type->id();
+            itemsize = host_type->itemsize();
+        } else {
+            RPY_UNREACHABLE();
+        }
+
+        ar << m_size;
+        auto n_bytes = m_size * itemsize;
+        ar << serial::make_array(reinterpret_cast<const byte*>(p_data), n_bytes);
+    }
+
+    template <typename Ar>
+    void load(Ar& ar, const unsigned int /*version*/) {
+        std::string type_id;
+        ar >> type_id;
+        auto itemsize = 0;
+        dimn_t size;
+        ar >> size;
+
+        const auto* type = get_type(type_id);
+        if (type != nullptr) {
+            itemsize = type->itemsize();
+            ScalarPointer::operator=(type->allocate(size));
+        } else {
+            RPY_UNREACHABLE();
+        }
+
+        auto n_bytes = size * itemsize;
+        ar >> serial::make_array(raw_cast<byte*>(), n_bytes);
+    }
+
+#endif
 };
 }}
 

@@ -32,6 +32,8 @@
 
 #include "scalar_array.h"
 
+#include <roughpy/platform/serialization.h>
+
 namespace rpy { namespace scalars {
 
 class ROUGHPY_SCALARS_EXPORT OwnedScalarArray : public ScalarArray {
@@ -52,6 +54,16 @@ public:
     OwnedScalarArray &operator=(OwnedScalarArray &&other) noexcept;
 
     ~OwnedScalarArray();
+
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+    friend rpy::serialization_access;
+
+    template <typename Ar>
+    void serialize(Ar& ar, const unsigned int /*version */) {
+        ar & serial::base_object<ScalarArray>(*this);
+    }
+#endif
 };
 
 

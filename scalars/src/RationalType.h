@@ -106,6 +106,9 @@ public:
     bool is_zero(ScalarPointer arg) const override;
     void print(ScalarPointer arg, std::ostream &os) const override;
     std::unique_ptr<RandomGenerator> get_rng(const string &bit_generator, Slice<uint64_t> seed) const override;
+
+    std::vector<byte> to_raw_bytes(const ScalarPointer &ptr, dimn_t count) const override;
+    ScalarPointer from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) const override;
 };
 
 }// namespace scalars
