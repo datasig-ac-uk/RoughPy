@@ -75,6 +75,18 @@ public:
     FreeTensor inverse() const;
     FreeTensor antipode() const;
     FreeTensor &fmexp(const FreeTensor &other);
+
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+    friend rpy::serialization_access;
+
+    template <typename Ar>
+    void serialize(Ar &ar, const unsigned int /*version*/) {
+        ar &serial::base_object<base_t>(*this);
+    }
+
+#endif
+
 };
 
 extern template class ROUGHPY_ALGEBRA_EXPORT BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
@@ -91,6 +103,8 @@ public:
     virtual FreeTensorBundle inverse() const = 0;
     virtual FreeTensorBundle antipode() const = 0;
     virtual void fmexp(const FreeTensorBundle &other) = 0;
+
+
 };
 
 template <typename, template <typename> class>
@@ -115,6 +129,16 @@ public:
     FreeTensorBundle antipode() const;
     FreeTensorBundle &fmexp(const FreeTensorBundle &other);
 
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+    friend rpy::serialization_access;
+
+    template <typename Ar>
+    void serialize(Ar& ar, const unsigned int /*version*/) {
+        ar & serial::base_object<base_t>(*this);
+    }
+
+#endif
 };
 
 template <>

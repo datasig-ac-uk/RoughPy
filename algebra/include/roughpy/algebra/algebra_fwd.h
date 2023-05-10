@@ -65,7 +65,6 @@ enum class AlgebraType : uint32_t {
 template <typename Interface>
 struct algebra_access;
 
-
 template <typename Wrapper, typename Algebra>
 struct algebra_info;
 
@@ -75,6 +74,13 @@ class AlgebraIterator;
 template <typename PrimaryInterface>
 class Basis;
 
+namespace dtl {
+
+class AlgebraInterfaceBase;
+
+}
+using RawUnspecifiedAlgebraType = dtl::AlgebraInterfaceBase*;
+using UnspecifiedAlgebraType = dtl::AlgebraInterfaceBase *;
 
 class FreeTensor;
 class Lie;

@@ -31,14 +31,16 @@
 #include "algebra_base.h"
 #include "algebra_fwd.h"
 
+#include <roughpy/platform/serialization.h>
+
 namespace rpy {
 namespace algebra {
 
 template <typename Bundle, typename Base, typename Fibre>
 class ROUGHPY_ALGEBRA_EXPORT BundleInterface
     : public dtl::algebra_base_resolution<Bundle, typename Base::basis_type,
-                                   dtl::AlgebraArithmetic,
-                                   dtl::AlgebraElementAccess>::type {
+                                          dtl::AlgebraArithmetic,
+                                          dtl::AlgebraElementAccess>::type {
 public:
     using base_alg_t = Base;
     using fibre_alg_t = Fibre;
@@ -55,8 +57,8 @@ class AlgebraBundleBase {
     explicit AlgebraBundleBase(std::unique_ptr<BundleInterface> &&impl) : p_impl(std::move(impl)) {}
 
     explicit AlgebraBundleBase(BundleInterface *impl) : p_impl(impl) {}
-protected:
 
+protected:
     std::unique_ptr<BundleInterface> p_impl;
 
 public:
@@ -133,20 +135,60 @@ public:
 
     bool operator==(const algebra_t &other) const;
     bool operator!=(const algebra_t &other) const { return !operator==(other); }
+
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+    friend rpy::serialization_access;
+
+    RPY_SERIAL_SPLIT_MEMBER();
+
+    template <typename Ar>
+    void save(Ar &ar, const unsigned int /*version*/) const {
+        context_pointer ctx = (p_impl) ? p_impl->context() : nullptr;
+        auto spec = get_context_spec(ctx);
+        ar << spec.width;
+        ar << spec.depth;
+        ar << spec.stype_id;
+        ar << spec.backend;
+        ar << algebra_t::s_alg_type;
+        ar << alg_to_raw_bytes(ctx, algebra_t::s_alg_type, p_impl.get());
+    }
+
+    template <typename Ar>
+    void load(Ar &ar, const unsigned int /*version*/) {
+        BasicContextSpec spec;
+        ar >> spec.width;
+        ar >> spec.depth;
+        ar >> spec.stype_id;
+        ar >> spec.backend;
+
+        auto ctx = from_context_spec(spec);
+
+        AlgebraType atype;
+        ar >> atype;
+        std::vector<byte> raw_data;
+        ar >> raw_data;
+        UnspecifiedAlgebraType alg = alg_from_raw_bytes(ctx, atype, raw_data);
+
+        RPY_CHECK(algebra_t::s_alg_type == atype);
+        p_impl = std::unique_ptr<BundleInterface>(reinterpret_cast<BundleInterface *>(alg /*.release()*/));
+    }
+
+#endif
 };
 
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 AlgebraBundleBase<BundleInterface, DerivedImpl>::AlgebraBundleBase(const AlgebraBundleBase &other) {
     if (other.p_impl) {
-         *this = other.p_impl->clone();
+        *this = other.p_impl->clone();
     }
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 AlgebraBundleBase<BundleInterface, DerivedImpl> &AlgebraBundleBase<BundleInterface, DerivedImpl>::operator=(const AlgebraBundleBase &other) {
     if (&other != this) {
-         if (other.p_impl) {
-             *this = other->clone();
-         }
+        if (other.p_impl) {
+            *this = other->clone();
+        }
     }
     return downcast(*this);
 }
@@ -163,135 +205,135 @@ typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t AlgebraBundl
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 dimn_t AlgebraBundleBase<BundleInterface, DerivedImpl>::dimension() const {
     if (p_impl) {
-         return p_impl->dimension();
+        return p_impl->dimension();
     }
     return 0;
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 dimn_t AlgebraBundleBase<BundleInterface, DerivedImpl>::size() const {
     if (p_impl) {
-         return p_impl->size();
+        return p_impl->size();
     }
     return 0;
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 bool AlgebraBundleBase<BundleInterface, DerivedImpl>::is_zero() const {
     if (p_impl) {
-         return p_impl->is_zero();
+        return p_impl->is_zero();
     }
     return true;
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 optional<deg_t> AlgebraBundleBase<BundleInterface, DerivedImpl>::width() const {
     if (p_impl) {
-         return p_impl->width();
+        return p_impl->width();
     }
     return {};
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 optional<deg_t> AlgebraBundleBase<BundleInterface, DerivedImpl>::depth() const {
     if (p_impl) {
-         return p_impl->depth();
+        return p_impl->depth();
     }
     return {};
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 optional<deg_t> AlgebraBundleBase<BundleInterface, DerivedImpl>::degree() const {
     if (p_impl) {
-         return p_impl->degree();
+        return p_impl->degree();
     }
     return {};
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 VectorType AlgebraBundleBase<BundleInterface, DerivedImpl>::storage_type() const noexcept {
     if (p_impl) {
-         return p_impl->storage_type();
+        return p_impl->storage_type();
     }
     return VectorType::Sparse;
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 const scalars::ScalarType *AlgebraBundleBase<BundleInterface, DerivedImpl>::coeff_type() const noexcept {
     if (p_impl) {
-         return p_impl->coeff_type();
+        return p_impl->coeff_type();
     }
     return nullptr;
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 scalars::Scalar AlgebraBundleBase<BundleInterface, DerivedImpl>::operator[](key_type k) const {
     if (p_impl) {
-         return p_impl->get(k);
+        return p_impl->get(k);
     }
     return scalars::Scalar();
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 scalars::Scalar AlgebraBundleBase<BundleInterface, DerivedImpl>::operator[](key_type k) {
     if (p_impl) {
-         return p_impl->get_mut(k);
+        return p_impl->get_mut(k);
     }
     return scalars::Scalar();
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t AlgebraBundleBase<BundleInterface, DerivedImpl>::uminus() const {
     if (p_impl) {
-         return p_impl->uminus();
+        return p_impl->uminus();
     }
     return {};
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t AlgebraBundleBase<BundleInterface, DerivedImpl>::add(const algebra_t &rhs) const {
     if (!rhs.p_impl) {
-         if (!p_impl) {
-             return algebra_t();
-         }
-         return p_impl->clone();
+        if (!p_impl) {
+            return algebra_t();
+        }
+        return p_impl->clone();
     }
     if (!p_impl) {
-         return rhs->clone();
+        return rhs->clone();
     }
     return p_impl->add(rhs);
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t AlgebraBundleBase<BundleInterface, DerivedImpl>::sub(const algebra_t &rhs) const {
     if (!rhs.p_impl) {
-         if (!p_impl) {
-             return algebra_t();
-         }
-         return p_impl->clone();
+        if (!p_impl) {
+            return algebra_t();
+        }
+        return p_impl->clone();
     }
     if (!p_impl) {
-         return rhs->uminus();
+        return rhs->uminus();
     }
     return p_impl->sub(rhs);
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t AlgebraBundleBase<BundleInterface, DerivedImpl>::mul(const algebra_t &rhs) const {
     if (!p_impl || !rhs.p_impl) {
-         return algebra_t();
+        return algebra_t();
     }
     return p_impl->mul(rhs);
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t AlgebraBundleBase<BundleInterface, DerivedImpl>::smul(const scalars::Scalar &rhs) const {
     if (!p_impl) {
-         return algebra_t();
+        return algebra_t();
     }
     return p_impl->smul(rhs);
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t AlgebraBundleBase<BundleInterface, DerivedImpl>::sdiv(const scalars::Scalar &rhs) const {
     if (!p_impl) {
-         return algebra_t();
+        return algebra_t();
     }
     return p_impl->sdiv(rhs);
 }
 template <typename BundleInterface, template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &AlgebraBundleBase<BundleInterface, DerivedImpl>::add_inplace(const algebra_t &rhs) {
     if (rhs.p_impl) {
-         if (!p_impl) {
-             *this = rhs->clone();
-         } else {
-             p_impl->add_inplace(rhs);
-         }
+        if (!p_impl) {
+            *this = rhs->clone();
+        } else {
+            p_impl->add_inplace(rhs);
+        }
     }
     return downcast(*this);
 }
@@ -299,9 +341,9 @@ template <typename BundleInterface, template <typename, template <typename> clas
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_inplace(const algebra_t &rhs) {
     if (rhs.p_impl) {
         if (!p_impl) {
-             *this = rhs->uminus();
+            *this = rhs->uminus();
         } else {
-             p_impl->sub_inplace(rhs);
+            p_impl->sub_inplace(rhs);
         }
     }
     return downcast(*this);
@@ -310,7 +352,7 @@ template <typename BundleInterface, template <typename, template <typename> clas
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &AlgebraBundleBase<BundleInterface, DerivedImpl>::mul_inplace(const algebra_t &rhs) {
     if (p_impl) {
         if (rhs.p_impl) {
-             p_impl->mul_inplace(rhs);
+            p_impl->mul_inplace(rhs);
         } else {
             p_impl->clear();
         }
@@ -434,7 +476,7 @@ bool AlgebraBundleBase<BundleInterface, DerivedImpl>::operator==(const algebra_t
         return p_impl->equals(other);
     } else if (p_impl) {
         return p_impl->is_zero();
-    } else if (other.p_impl){
+    } else if (other.p_impl) {
         return other->is_zero();
     }
     return true;

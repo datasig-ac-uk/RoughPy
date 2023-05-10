@@ -51,6 +51,18 @@ public:
     static constexpr AlgebraType s_alg_type = AlgebraType::Lie;
 
     using base_t::base_t;
+
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+    friend rpy::serialization_access;
+
+    template <typename Ar>
+    void serialize(Ar &ar, const unsigned int /*version*/) {
+        ar &serial::base_object<base_t>(*this);
+    }
+
+#endif
+
 };
 
 
@@ -70,6 +82,16 @@ public:
 
     using base_t::base_t;
 
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+    friend rpy::serialization_access;
+
+    template <typename Ar>
+    void serialize(Ar &ar, const unsigned int /*version*/) {
+        ar &serial::base_object<base_t>(*this);
+    }
+
+#endif
 };
 
 

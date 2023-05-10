@@ -164,6 +164,11 @@ public:
                                       VectorType vtype) const = 0;
 
 
+    // Functions to aid serialization
+    virtual std::vector<byte> to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const;
+
+    virtual UnspecifiedAlgebraType from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const;
+
 };
 
 ROUGHPY_ALGEBRA_EXPORT

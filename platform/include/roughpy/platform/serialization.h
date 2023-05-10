@@ -31,29 +31,37 @@
 
 #ifndef ROUGHPY_PLATFORM_SERIALIZATION_H
 #define ROUGHPY_PLATFORM_SERIALIZATION_H
-#ifndef RPY_DISABLE_SERIALIZATION
 
+#ifndef RPY_DISABLE_SERIALIZATION
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/array.hpp>
+#include <boost/serialization/strong_typedef.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+#endif // RPY_DISABLE_SERIALIZATION
 
 /*
  * For flexibility, and possibly later swapping out framework,
  * define redefine the relevant macros here as RPY_SERIAL_*.
  * pull in the access helper struct.
  */
-
-#define RPY_STRONG_TYPEDEF BOOST_STRONG_TYPEDEF
-
+#ifndef RPY_DISABLE_SERIALIZATION
+#define RPY_STRONG_TYPEDEF(type, name) BOOST_STRONG_TYPEDEF(type, name)
 #define RPY_SERIAL_SPLIT_MEMBER() BOOST_SERIALIZATION_SPLIT_MEMBER()
 #define RPY_SERIAL_SPLIT_FREE(T) BOOST_SERIALIZATION_SPLIT_FREE(T)
+#define RPY_SERIAL_ASSUME_ABSTRACT(T) BOOST_SERIALIZATION_ASSUME_ABSTRACT(T)
+#else
+#define RPY_STRONG_TYPEDEF(type, name) typedef type name
+#define RPY_SERIAL_SPLIT_MEMBER()
+#define RPY_SERIAL_SPLIT_FREE(T)
+#define RPY_SERIAL_ASSUME_ABTRACT(T)
+#endif
 
-#define RPY_BEGIN_SERIALIZATION_NAMESPACE namespace boost { namespace serialization {
-#define RPY_END_SERIALIZATION_NAMESPACE }}
 
 
+#ifndef RPY_DISABLE_SERIALIZATION
 namespace rpy {
 
 using serialization_access = boost::serialization::access;

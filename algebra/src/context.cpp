@@ -42,6 +42,33 @@ using namespace rpy;
 using namespace rpy::algebra;
 
 
+BasicContextSpec rpy::algebra::get_context_spec(const context_pointer& ctx) {
+    if (!ctx) {
+        return { "", "", 0, 0 };
+    }
+    return { ctx->ctype()->id(), ctx->backend(), ctx->width(), ctx->depth() };
+}
+
+context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec) {
+    RPY_CHECK(spec.stype_id != "");
+
+    return get_context(spec.width, spec.depth, scalars::get_type(spec.stype_id), {{"backend", spec.backend}});
+}
+
+std::vector<byte> rpy::algebra::alg_to_raw_bytes(context_pointer ctx, AlgebraType atype, RawUnspecifiedAlgebraType alg) {
+    if (ctx) {
+        return ctx->to_raw_bytes(atype, alg);
+    }
+    return std::vector<byte>();
+}
+
+UnspecifiedAlgebraType rpy::algebra::alg_from_raw_bytes(context_pointer ctx, AlgebraType atype, Slice<byte> raw_data) {
+    if (ctx) {
+        return ctx->from_raw_bytes(atype, raw_data);
+    }
+    return nullptr;
+}
+
 ContextBase::ContextBase(
     deg_t width,
     deg_t depth,
@@ -223,4 +250,11 @@ const ContextMaker *rpy::algebra::register_context_maker(std::unique_ptr<Context
 
 bool ContextMaker::can_get(deg_t width, deg_t depth, const scalars::ScalarType *ctype, const preference_list &preferences) const {
     return false;
+}
+
+std::vector<byte> Context::to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const {
+    throw std::runtime_error("cannot generate raw byte representation");
+}
+UnspecifiedAlgebraType Context::from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const {
+    throw std::runtime_error("cannot load from raw bytes");
 }
