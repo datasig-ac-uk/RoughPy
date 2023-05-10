@@ -51,9 +51,26 @@
 
 #if defined(_MSC_VER) && defined(_MSVC_LANG)
 #define RPY_CPP_VERSION _MSVC_LANG
+#define RPY_MSVC
 #else
 #define RPY_CPP_VERSION __cplusplus
+#undef RPY_MSVC
 #endif
+
+#ifdef __GNUC__
+#define RPY_GCC
+#else
+#undef RPY_GCC
+#endif
+
+#ifdef __clang__
+#define RPY_CLANG
+#else
+#undef RPY_CLANG
+#endif
+
+
+
 
 #if RPY_CPP_VERSION >= 201403L
 #define RPY_CPP_14
@@ -78,16 +95,16 @@
 #endif
 
 
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(RPY_GCC) || defined(RPY_CLANG)
 #define RPY_UNUSED_VAR __attribute__((unused))
 #else
 #define RPY_UNUSED
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(RPY_GCC) || defined(RPY_CLANG)
 #define RPY_UNREACHABLE() (__builtin_unreachable())
 #define RPY_UNREACHABLE_RETURN(...) RPY_UNREACHABLE()
-#elif defined(_MSC_VER)
+#elif defined(RPY_MSVC)
 #define RPY_UNREACHABLE() (__assume(false))
 #define RPY_UNREACHABLE_RETURN(...) \
     RPY_UNREACHABLE();              \
@@ -111,23 +128,23 @@
 #endif
 #endif
 
-#if defined(_WIN32) || defined(_WIN64)
+#ifdef RPY_MSVC
 #define RPY_INLINE_NEVER __declspec(noinline)
-#elif defined(__GNUC__) || defined(__clang__)
+#elif defined(RPY_GCC) || defined(RPY_CLANG)
 #define RPY_INLINE_NEVER __attribute__((never_inline))
 #else
 #define RPY_INLINE_NEVER
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(RPY_GCC) || defined(RPY_CLANG)
 #define RPY_RESTRICT __restrict__
-#elif defined(_MSC_VER)
+#elif defined(RPY_MSVC)
 #define RPY_RESTRICT __restrict
 #else
 #define RPY_RESTRICT
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(RPY_GCC) || defined(RPY_CLANG)
 #define RPY_LIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 1))
 #define RPY_UNLIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 0))
 #else

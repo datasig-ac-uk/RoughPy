@@ -112,7 +112,8 @@ struct ScalarDeviceInfo {
  * configuration of a scalar.
  *
  * Based on, and compatible with, the DlDataType struct from the
- * DLPack array interchange protocol.
+ * DLPack array interchange protocol. The lanes parameter will
+ * usually be set to 1, and is not generally used by RoughPy.
  */
 struct BasicScalarInfo {
     ScalarTypeCode code;
@@ -153,7 +154,7 @@ class BlasInterface;
 template <typename T>
 inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
 
-
+using conversion_function = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
 
 constexpr bool operator==(const ScalarDeviceInfo& lhs, const ScalarDeviceInfo& rhs) noexcept {
     return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
@@ -163,6 +164,46 @@ constexpr bool operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs
     return lhs.code == rhs.code && lhs.bits == rhs.bits && lhs.lanes == rhs.lanes;
 }
 
+/**
+ * @brief Register a new type with the scalar type system
+ * @param type Pointer to newly created ScalarType
+ *
+ *
+ */
+ROUGHPY_SCALARS_EXPORT
+void register_type(const ScalarType *type);
+
+/**
+ * @brief Get a type registered with the scalar type system
+ * @param id Id string of type to be retrieved
+ * @return pointer to ScalarType representing id
+ */
+ROUGHPY_SCALARS_EXPORT
+const ScalarType *get_type(const string &id);
+
+ROUGHPY_SCALARS_EXPORT
+const ScalarType *get_type(const string &id, const ScalarDeviceInfo &device);
+
+/**
+ * @brief Get a list of all registered ScalarTypes
+ * @return vector of ScalarType pointers.
+ */
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
+std::vector<const ScalarType *> list_types();
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT const ScalarTypeInfo &
+get_scalar_info(string_view id);
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
+const std::string& id_from_basic_info(const BasicScalarInfo& info);
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT const conversion_function &
+get_conversion(const string &src_id, const string &dst_id);
+
+ROUGHPY_SCALARS_EXPORT
+void register_conversion(const string &src_id,
+                         const string &dst_id,
+                         conversion_function converter);
 
 } // namespace scalars
 } // namespace rpy

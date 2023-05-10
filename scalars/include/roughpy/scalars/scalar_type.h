@@ -44,8 +44,6 @@ namespace rpy {
 namespace scalars {
 
 
-using conversion_function = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
-
 namespace dtl {
 template <typename T>
 struct type_id_of_impl;
@@ -405,46 +403,6 @@ public:
 
 };
 
-/**
- * @brief Register a new type with the scalar type system
- * @param type Pointer to newly created ScalarType
- *
- *
- */
-ROUGHPY_SCALARS_EXPORT
-void register_type(const ScalarType *type);
-
-/**
- * @brief Get a type registered with the scalar type system
- * @param id Id string of type to be retrieved
- * @return pointer to ScalarType representing id
- */
-ROUGHPY_SCALARS_EXPORT
-const ScalarType *get_type(const string &id);
-
-
-ROUGHPY_SCALARS_EXPORT
-const ScalarType* get_type(const string& id, const ScalarDeviceInfo& device);
-
-/**
- * @brief Get a list of all registered ScalarTypes
- * @return vector of ScalarType pointers.
- */
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
-std::vector<const ScalarType *> list_types();
-
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
-BasicScalarInfo get_basic_info(string_view id);
-
-
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
-const conversion_function&
-get_conversion(const string& src_id, const string& dst_id);
-
-ROUGHPY_SCALARS_EXPORT
-void register_conversion(const string& src_id,
-                         const string& dst_id,
-                         conversion_function converter);
 
 
 inline bool operator==(const ScalarType &lhs, const ScalarType &rhs) noexcept {

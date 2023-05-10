@@ -33,6 +33,10 @@
 
 #include "scalar_type.h"
 
+#include <roughpy/core/alloc.h>
+
+using namespace rpy;
+
 
 rpy::scalars::ScalarArray::ScalarArray(rpy::scalars::ScalarArray &&other) noexcept
     : ScalarPointer(static_cast<ScalarPointer&&>(other)), m_size(other.m_size) {

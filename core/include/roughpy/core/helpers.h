@@ -32,9 +32,12 @@
 #include "traits.h"
 #include "macros.h"
 
+#include <bitset>
+#include <climits>
 #include <cstring>
 #include <iterator>
 #include <vector>
+
 
 namespace rpy {
 
@@ -68,15 +71,13 @@ bit_cast(From from) {
 
 
 
-// TODO: use popcount if available
+
 template <typename T>
-constexpr enable_if_t<is_integral<T>::value, size_t>
+RPY_NO_DISCARD
+inline enable_if_t<is_integral<T>::value, size_t>
 count_bits(T val) noexcept {
-#if defined(__GNUC__) || defined(CLANG)
-    return __builtin_popcount(val);
-#else
-    retunrn 0;
-#endif
+    // There might be optimisations using builtin popcount functions
+    return std::bitset<CHAR_BIT*sizeof(T)>(val).count();
 }
 
 

@@ -32,7 +32,7 @@
 
 #include <roughpy/core/traits.h>
 #include <roughpy/core/helpers.h>
-
+#include <roughpy/core/slice.h>
 
 
 
@@ -265,7 +265,7 @@ public:
 
     [[nodiscard]]
     constexpr uint32_t simple_integer_bytes() const noexcept {
-        return (m_flags & integer_bits_mask) >> integer_bits_offset;
+        return 1U << ((m_flags & integer_bits_mask) >> integer_bits_offset);
     }
 
     [[nodiscard]]
@@ -357,6 +357,16 @@ protected:
     constexpr bool is_owning() const noexcept { return (m_flags & owning_flag) != 0; }
 
     constexpr bool is_interface() const noexcept { return (m_flags & interface_flag) != 0; }
+
+protected:
+
+    RPY_NO_DISCARD
+    std::string get_type_id() const;
+
+    RPY_NO_DISCARD
+    std::vector<byte> to_raw_bytes(dimn_t count) const;
+
+    void update_from_bytes(const std::string &type_id, dimn_t count, Slice<byte> raw);
 
 };
 

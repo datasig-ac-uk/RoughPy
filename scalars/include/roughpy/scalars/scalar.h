@@ -39,6 +39,8 @@
 #include "scalar_pointer.h"
 #include "scalar_type.h"
 
+#include <roughpy/platform/serialization.h>
+
 namespace rpy {
 namespace scalars {
 
@@ -148,7 +150,34 @@ public:
     bool operator==(const Scalar &other) const noexcept;
     bool operator!=(const Scalar &other) const noexcept;
 
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+    friend rpy::serialization_access;
 
+    RPY_SERIAL_SPLIT_MEMBER()
+
+    template <typename Ar>
+    void save(Ar& ar, const unsigned int /*version*/) const {
+        ar << get_type_id();
+        if (is_interface()) {
+            auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
+            // p_type cannot be null if the data is an interface
+            ar << p_type->to_raw_bytes(ptr, 1);
+        } else {
+            ar << to_raw_bytes(1);
+        }
+    }
+
+    template <typename Ar>
+    void load(Ar& ar, const unsigned int /*version*/) {
+        std::string type_id;
+        ar >> type_id;
+        std::vector<byte> bytes;
+        ar >> bytes;
+        update_from_bytes(type_id, 1, bytes);
+    }
+
+#endif
 };
 
 ROUGHPY_SCALARS_EXPORT

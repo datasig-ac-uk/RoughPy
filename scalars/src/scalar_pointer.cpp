@@ -36,7 +36,7 @@
 #include "scalar_type.h"
 #include "scalar.h"
 
-
+using namespace rpy;
 using namespace rpy::scalars;
 
 void *ScalarPointer::ptr() {
@@ -103,4 +103,56 @@ ScalarPointer::difference_type ScalarPointer::operator-(const ScalarPointer &rig
     return static_cast<difference_type>(
                static_cast<const char*>(p_data) - static_cast<const char*>(right.p_data)
             ) / type->itemsize();
+}
+
+std::string rpy::scalars::ScalarPointer::get_type_id() const {
+    if (p_type != nullptr) {
+        return p_type->id();
+    }
+    RPY_CHECK(is_simple_integer());
+
+    BasicScalarInfo info{
+        is_signed_integer() ? ScalarTypeCode::Int : ScalarTypeCode::UInt,
+        static_cast<uint8_t>(CHAR_BIT * simple_integer_bytes()),
+        1};
+
+    return id_from_basic_info(info);
+}
+std::vector<byte> rpy::scalars::ScalarPointer::to_raw_bytes(dimn_t count) const {
+    if (p_type != nullptr) {
+        return p_type->to_raw_bytes(*this, count);
+    }
+
+    RPY_CHECK(is_simple_integer());
+
+    const auto n_bytes = count * simple_integer_bytes();
+    std::vector<byte> result(n_bytes);
+    std::memcpy(result.data(), p_data, n_bytes);
+    return result;
+}
+void rpy::scalars::ScalarPointer::update_from_bytes(const std::string &type_id, dimn_t count, Slice<byte> raw) {
+
+    const auto *type = get_type(type_id);
+    if (type != nullptr) {
+        RPY_CHECK(count * p_type->itemsize() == raw.size());
+        ScalarPointer::operator=(p_type->from_raw_bytes(raw, count));
+        return;
+    }
+
+    // null type but no error says simple integer.
+    const auto &info = get_scalar_info(type_id);
+    RPY_CHECK(count * info.n_bytes == raw.size());
+
+    p_data = std::aligned_alloc(info.alignment, raw.size());
+    std::memcpy(const_cast<void *>(p_data), raw.begin(), raw.size());
+
+    m_flags = flags::OwnedPointer;
+    if (info.basic_info.code == ScalarTypeCode::Int) {
+        m_flags |= flags::Signed;
+    }
+    auto order = static_cast<uint32_t>(count_bits(info.n_bytes));
+    RPY_DBG_ASSERT((1 << order) == info.n_bytes);
+    RPY_DBG_ASSERT(order <= 7);
+    m_flags |= (order << integer_bits_offset);
+    RPY_DBG_ASSERT(simple_integer_bytes() == info.n_bytes);
 }

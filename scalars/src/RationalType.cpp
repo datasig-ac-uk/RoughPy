@@ -348,8 +348,7 @@ void RationalType::print(ScalarPointer arg, std::ostream &os) const {
     }
 }
 std::unique_ptr<RandomGenerator> RationalType::get_rng(const string &bit_generator, Slice<uint64_t> seed) const {
-    ScalarType::get_rng(bit_generator, seed);
-    RPY_UNREACHABLE();
+    return ScalarType::get_rng(bit_generator, seed);
 }
 void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const {
 

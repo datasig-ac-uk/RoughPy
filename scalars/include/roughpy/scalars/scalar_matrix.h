@@ -31,6 +31,8 @@
 #include "scalars_fwd.h"
 #include "scalar_array.h"
 
+#include <roughpy/platform/serialization.h>
+
 namespace rpy { namespace scalars {
 
 enum class MatrixStorage {
@@ -105,6 +107,20 @@ public:
     ScalarMatrix to_full(MatrixLayout layout) const;
     void to_full(ScalarMatrix& into) const;
 
+#ifndef RPY_DISABLE_SERIALIZATION
+private:
+
+    template <typename Ar>
+    void serialize(Ar& ar, const unsigned int /*version*/) {
+        ar & m_storage;
+        ar & m_layout;
+        ar & m_nrows;
+        ar & m_ncols;
+        ar & serial::base_object<ScalarArray>(*this);
+    };
+
+
+#endif
 };
 
 
