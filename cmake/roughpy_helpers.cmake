@@ -196,7 +196,7 @@ function(add_roughpy_test _name)
     add_executable(${_tests_name} ${test_SRC} ${test_COMPONENT_SRCS})
 
     set(_deps)
-    foreach (_dep IN ${test_DEP})
+    foreach (_dep IN LISTS test_DEP)
         if (TARGET ${_dep})
             list(APPEND _deps ${_dep})
         elseif (MATCHES "^RoughPy_Testing::(.+)")
