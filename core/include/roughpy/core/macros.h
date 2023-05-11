@@ -43,6 +43,8 @@
 #define RPY_JOIN_IMPL(LHS, RHS) RPY_JOIN_IMPL_IMPL(LHS, RHS)
 #define RPY_JOIN(LHS, RHS) RPY_JOIN_IMPL(LHS, RHS)
 
+#define RPY_IDENTITY(ARG) ARG
+
 #if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__)) && !defined(RPY_DEBUG)
 #define RPY_DEBUG
 #else
