@@ -50,18 +50,13 @@ public:
 
     using base_t::base_t;
 
-#ifndef RPY_DISABLE_SERIALIZATION
-private:
-    friend rpy::serialization_access;
-
-    template <typename Ar>
-    void serialize(Ar &ar, const unsigned int /*version*/) {
-        ar &serial::base_object<base_t>(*this);
-    }
-
-#endif
+    RPY_SERIAL_SERIALIZE_FN();
 
 };
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor) {
+    RPY_SERIAL_SERIALIZE_BASE(base_t);
+}
 
 class ShuffleTensorBundle;
 
@@ -79,17 +74,13 @@ public:
 
     using base_t::base_t;
 
-#ifndef RPY_DISABLE_SERIALIZATION
-private:
-    friend rpy::serialization_access;
 
-    template <typename Ar>
-    void serialize(Ar &ar, const unsigned int /*version*/) {
-        ar &serial::base_object<base_t>(*this);
-    }
-
-#endif
+    RPY_SERIAL_SERIALIZE_FN();
 };
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensorBundle) {
+    RPY_SERIAL_SERIALIZE_BASE(base_t);
+}
 
 template <>
 template <typename C>

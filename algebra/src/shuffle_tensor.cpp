@@ -31,6 +31,7 @@
 
 #include "shuffle_tensor.h"
 #include "context.h"
+#include <roughpy/platform/serialization.h>
 
 
 namespace rpy { namespace algebra {
@@ -42,3 +43,7 @@ template class BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor
 template class AlgebraBundleBase<ShuffleTensorBundleInterface>;
 
 }}
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::ShuffleTensor
+#include <roughpy/platform/serialization_instantiations.inl>

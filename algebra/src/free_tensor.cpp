@@ -31,6 +31,7 @@
 
 #include "free_tensor.h"
 #include "context.h"
+#include <roughpy/platform/serialization.h>
 
 using namespace rpy::algebra;
 
@@ -105,3 +106,7 @@ FreeTensorBundle &FreeTensorBundle::fmexp(const FreeTensorBundle &other) {
     }
     return *this;
 }
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::FreeTensor
+#include <roughpy/platform/serialization_instantiations.inl>

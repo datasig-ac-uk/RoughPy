@@ -409,46 +409,9 @@ public:
     bool operator==(const algebra_t &other) const;
     bool operator!=(const algebra_t &other) const { return !operator==(other); }
 
-#ifndef RPY_DISABLE_SERIALIZATION
-private:
 
-    friend rpy::serialization_access;
-
-    RPY_SERIAL_SPLIT_MEMBER();
-
-    template <typename Ar>
-    void save(Ar& ar, const unsigned int /*version*/) const {
-        context_pointer ctx = (p_impl) ? p_impl->context() : nullptr;
-        auto spec = get_context_spec(ctx);
-        ar << spec.width;
-        ar << spec.depth;
-        ar << spec.stype_id;
-        ar << spec.backend;
-        ar << algebra_t::s_alg_type;
-        ar << alg_to_raw_bytes(ctx, algebra_t::s_alg_type, p_impl.get());
-    }
-
-    template <typename Ar>
-    void load(Ar& ar, const unsigned int /*version*/) {
-        BasicContextSpec spec;
-        ar >> spec.width;
-        ar >> spec.depth;
-        ar >> spec.stype_id;
-        ar >> spec.backend;
-
-        auto ctx = from_context_spec(spec);
-
-        AlgebraType atype;
-        ar >> atype;
-        std::vector<byte> raw_data;
-        ar >> raw_data;
-        UnspecifiedAlgebraType alg = alg_from_raw_bytes(ctx, atype, raw_data);
-
-        RPY_CHECK(algebra_t::s_alg_type == atype);
-        p_impl = std::unique_ptr<Interface>(reinterpret_cast<Interface*>(alg/*.release()*/));
-    }
-
-#endif
+    RPY_SERIAL_SAVE_FN();
+    RPY_SERIAL_LOAD_FN();
 };
 
 // Definitions of all the member functions
@@ -994,6 +957,45 @@ inline std::ostream &operator<<(std::ostream &os, const AlgebraBase<Interface, D
 }
 
 #undef RPY_CHECK_CONTEXTS
+
+template <typename Interface, template <typename, template <typename> class> class Derived>
+template <typename Archive>
+void AlgebraBase<Interface, Derived>::save(Archive &archive, const std::uint32_t RPY_UNUSED_VAR version) const {
+    context_pointer ctx = (p_impl) ? p_impl->context() : nullptr;
+    auto spec = get_context_spec(ctx);
+    RPY_SERIAL_SERIALIZE_NVP("width", spec.width);
+    RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
+    RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
+    RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
+    RPY_SERIAL_SERIALIZE_NVP("algebra_type", algebra_t::s_alg_type);
+    RPY_SERIAL_SERIALIZE_NVP("raw_data", alg_to_raw_bytes(ctx, algebra_t::s_alg_type, p_impl.get()));
+}
+
+
+template <typename Interface, template <typename, template <typename> class> class Derived>
+template <typename Archive>
+void AlgebraBase<Interface, Derived>::load(Archive& archive, const std::uint32_t RPY_UNUSED_VAR version) {
+    BasicContextSpec spec;
+    RPY_SERIAL_SERIALIZE_NVP("width", spec.width);
+    RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
+    RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
+    RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
+
+    auto ctx = from_context_spec(spec);
+
+    AlgebraType atype;
+    RPY_SERIAL_SERIALIZE_NVP("algebra_type", atype);
+    std::vector<byte> raw_data;
+    RPY_SERIAL_SERIALIZE_NVP("raw_data", raw_data);
+    UnspecifiedAlgebraType alg = alg_from_raw_bytes(ctx, atype, raw_data);
+
+    RPY_CHECK(algebra_t::s_alg_type == atype);
+    p_impl = std::unique_ptr<Interface>(reinterpret_cast<Interface*>(alg/*.release()*/));
+}
+
+
+
+
 
 }// namespace algebra
 }// namespace rpy

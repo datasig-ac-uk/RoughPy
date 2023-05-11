@@ -31,6 +31,7 @@
 
 #include "lie.h"
 #include "context.h"
+#include <roughpy/platform/serialization.h>
 
 namespace rpy { namespace algebra {
 
@@ -43,3 +44,8 @@ template class BundleInterface<LieBundle, Lie, Lie>;
 template class AlgebraBundleBase<LieBundleInterface>;
 
 }}
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::Lie
+#include <roughpy/platform/serialization_instantiations.inl>
