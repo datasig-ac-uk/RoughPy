@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,12 +28,13 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_MATRIX_H_
 #define ROUGHPY_SCALARS_SCALAR_MATRIX_H_
 
-#include "scalars_fwd.h"
 #include "scalar_array.h"
+#include "scalars_fwd.h"
 
 #include <roughpy/platform/serialization.h>
 
-namespace rpy { namespace scalars {
+namespace rpy {
+namespace scalars {
 
 enum class MatrixStorage {
     FullMatrix,
@@ -47,7 +48,6 @@ enum class MatrixLayout {
     FStype
 };
 
-
 class ROUGHPY_SCALARS_EXPORT ScalarMatrix
     : public scalars::ScalarArray {
 
@@ -56,44 +56,35 @@ class ROUGHPY_SCALARS_EXPORT ScalarMatrix
     deg_t m_nrows = 0;
     deg_t m_ncols = 0;
 
-
 public:
-
     ScalarMatrix();
 
-    ScalarMatrix(const ScalarType* type,
+    ScalarMatrix(const ScalarType *type,
                  deg_t rows,
                  deg_t cols,
-                 MatrixStorage=MatrixStorage::FullMatrix,
-                 MatrixLayout=MatrixLayout::CStype);
+                 MatrixStorage = MatrixStorage::FullMatrix,
+                 MatrixLayout = MatrixLayout::CStype);
 
     ScalarMatrix(deg_t rows,
                  deg_t cols,
-                 ScalarArray&& array,
-                 MatrixStorage storage=MatrixStorage::FullMatrix,
-                 MatrixLayout layout=MatrixLayout::CStype);
+                 ScalarArray &&array,
+                 MatrixStorage storage = MatrixStorage::FullMatrix,
+                 MatrixLayout layout = MatrixLayout::CStype);
 
-    [[nodiscard]]
-    constexpr deg_t nrows() const noexcept { return m_nrows; }
+    [[nodiscard]] constexpr deg_t nrows() const noexcept { return m_nrows; }
 
-    [[nodiscard]]
-    constexpr deg_t ncols() const noexcept { return m_ncols; }
+    [[nodiscard]] constexpr deg_t ncols() const noexcept { return m_ncols; }
 
-    [[nodiscard]]
-    constexpr MatrixStorage storage() const noexcept
-    { return m_storage; }
+    [[nodiscard]] constexpr MatrixStorage storage() const noexcept { return m_storage; }
 
     constexpr void storage(MatrixStorage new_storage) {
         //TODO: Check if htis requies allocaiton or something
         m_storage = new_storage;
     }
 
-    [[nodiscard]]
-    constexpr MatrixLayout layout() const noexcept
-    { return m_layout; }
+    [[nodiscard]] constexpr MatrixLayout layout() const noexcept { return m_layout; }
 
-    constexpr void layout(MatrixLayout new_layout) noexcept
-    { m_layout = new_layout; }
+    constexpr void layout(MatrixLayout new_layout) noexcept { m_layout = new_layout; }
 
     ScalarMatrix row(deg_t i);
     ScalarMatrix row(deg_t i) const;
@@ -105,32 +96,37 @@ public:
 
     ScalarMatrix to_full() const;
     ScalarMatrix to_full(MatrixLayout layout) const;
-    void to_full(ScalarMatrix& into) const;
+    void to_full(ScalarMatrix &into) const;
 
-//#ifndef RPY_DISABLE_SERIALIZATION
-//private:
-//
-//    template <typename Ar>
-//    void serialize(Ar& ar, const unsigned int /*version*/) {
-//        ar & m_storage;
-//        ar & m_layout;
-//        ar & m_nrows;
-//        ar & m_ncols;
-//        ar & serial::base_object<ScalarArray>(*this);
-//    };
-//
-//
-//#endif
+    //#ifndef RPY_DISABLE_SERIALIZATION
+    //private:
+    //
+    //    template <typename Ar>
+    //    void serialize(Ar& ar, const unsigned int /*version*/) {
+    //        ar & m_storage;
+    //        ar & m_layout;
+    //        ar & m_nrows;
+    //        ar & m_ncols;
+    //        ar & serial::base_object<ScalarArray>(*this);
+    //    };
+    //
+    //
+    //#endif
 
     RPY_SERIAL_SERIALIZE_FN();
 };
 
+RPY_SERIAL_SERIALIZE_FN_IMPL(ScalarMatrix) {
+    RPY_SERIAL_SERIALIZE_NVP("storage", m_storage);
+    RPY_SERIAL_SERIALIZE_NVP("layout", m_layout);
+    RPY_SERIAL_SERIALIZE_NVP("rows", m_nrows);
+    RPY_SERIAL_SERIALIZE_NVP("cols", m_ncols);
+    RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
+}
 
+}// namespace scalars
+}// namespace rpy
 
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::scalars::ScalarMatrix, rpy::serial::specialization::member_serialize)
 
-
-}}
-
-
-
-#endif // ROUGHPY_SCALARS_SCALAR_MATRIX_H_
+#endif// ROUGHPY_SCALARS_SCALAR_MATRIX_H_

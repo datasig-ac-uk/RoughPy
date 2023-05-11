@@ -179,3 +179,8 @@ void rpy::scalars::ScalarMatrix::to_full(rpy::scalars::ScalarMatrix &into) const
         }
     }
 }
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::ScalarMatrix
+#include <roughpy/platform/serialization_instantiations.inl>

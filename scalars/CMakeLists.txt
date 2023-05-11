@@ -100,6 +100,7 @@ add_roughpy_test(scalar
             src/test_float_blas.cpp
             src/test_scalar_array.cpp
             src/test_key_scalar_array.cpp
+            src/test_scalar_matrix.cpp
         DEP
             RoughPy::Platform
         )

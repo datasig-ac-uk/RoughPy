@@ -71,8 +71,8 @@
 #define RPY_SERIAL_SERIALIZE_NVP(N, V) archive(::cereal::make_nvp(N, V))
 #define RPY_SERIAL_SERIALIZE_BASE(B) archive(::cereal::base_class<B>(this))
 #define RPY_SERIAL_SERIALIZE_BYTES(NAME, P, N) archive(::cereal::make_nvp(NAME, ::cereal::binary_data(P, N)))
-#define RPY_SERIAL_SPECIALIZE_TYPES(T) \
-    CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(T, ::cereal::specialization::member_load_save)
+#define RPY_SERIAL_SPECIALIZE_TYPES(T, M) \
+    CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(T, M)
 #else
 #define RPY_SERIAL_CLASS_VERSION(T, V)
 #define RPY_SERIAL_SERIALISE_VAL(V) (void)0
@@ -118,6 +118,8 @@ namespace serial {
 using cereal::base_class;
 using cereal::make_nvp;
 using cereal::make_size_tag;
+
+using cereal::specialization;
 
 }// namespace serial
 
