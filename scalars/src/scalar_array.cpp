@@ -36,6 +36,7 @@
 #include <roughpy/core/alloc.h>
 
 using namespace rpy;
+using namespace rpy::scalars;
 
 
 rpy::scalars::ScalarArray::ScalarArray(rpy::scalars::ScalarArray &&other) noexcept
@@ -81,3 +82,22 @@ rpy::scalars::ScalarArray rpy::scalars::ScalarArray::borrow_mut() noexcept {
     auto flag = m_flags & ~owning_flag;
     return {{p_type, p_data, flag}, m_size};
 }
+
+
+
+
+//
+//BOOST_CLASS_EXPORT_IMPLEMENT(rpy::scalars::ScalarArray)
+//
+//
+//
+//#include <boost/archive/text_oarchive.hpp>
+//#include <boost/archive/text_iarchive.hpp>
+//
+//template void ScalarArray::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
+//template void ScalarArray::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::ScalarArray
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>

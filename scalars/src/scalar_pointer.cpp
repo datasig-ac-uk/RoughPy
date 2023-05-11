@@ -134,8 +134,8 @@ void rpy::scalars::ScalarPointer::update_from_bytes(const std::string &type_id, 
 
     const auto *type = get_type(type_id);
     if (type != nullptr) {
-        RPY_CHECK(count * p_type->itemsize() == raw.size());
-        ScalarPointer::operator=(p_type->from_raw_bytes(raw, count));
+        RPY_CHECK(count * type->itemsize() == raw.size());
+        ScalarPointer::operator=(type->from_raw_bytes(raw, count));
         return;
     }
 

@@ -54,7 +54,7 @@ if (DEFINED ENV{VIRTUAL_ENV})
 endif()
 
 
-find_package(Boost 1.81 REQUIRED COMPONENTS filesystem url serialization)
+find_package(Boost 1.81 REQUIRED COMPONENTS url)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 find_package(CURL REQUIRED)
@@ -94,6 +94,9 @@ if(NOT TARGET csv::csv)
             external/csv-parser/include)
 endif()
 
+set(BUILD_DOC OFF CACHE INTERNAL "disable cereal docs")
+set(BUILD_SANDBOX OFF CACHE INTERNAL "disable cereal sandbox examples")
+add_subdirectory(external/cereal)
 
 add_subdirectory(core)
 add_subdirectory(platform)

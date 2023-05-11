@@ -14,8 +14,7 @@ add_roughpy_lib(Platform STATIC
     PUBLIC_DEPS
         RoughPy::Core
         Boost::boost
-        Boost::filesystem
         Boost::url
-        Boost::serialization
         Boost::disable_autolinking
+        cereal::cereal
     )

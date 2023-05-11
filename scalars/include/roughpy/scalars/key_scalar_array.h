@@ -75,30 +75,51 @@ public:
     void allocate_scalars(idimn_t count = -1);
     void allocate_keys(idimn_t count = -1);
 
-#ifndef RPY_DISABLE_SERIALIZATION
-private:
-    friend rpy::serialization_access;
 
-    RPY_SERIAL_SPLIT_MEMBER()
 
-    template <typename Ar>
-    void save(Ar& ar, const unsigned int /*version*/) const {
-        ar << serial::base_object<ScalarArray>(*this);
-        const auto key_count = p_keys != nullptr ? size() : 0;
-        ar << key_count;
-        ar << serial::make_array(p_keys, key_count);
-    }
 
-    template <typename Ar>
-    void load(Ar& ar, const unsigned int /*version*/) {
-        ar >> serial::base_object<ScalarArray>(*this);
-        auto key_count = 0;
-        ar >> key_count;
-        ar >> serial::make_array(p_keys, key_count);
-    }
 
-#endif
+//    template <typename Ar>
+//    void save(Ar& ar, const unsigned int /*version*/) const {
+//        ar << serial::base_object<ScalarArray>(*this);
+//        const auto key_count = p_keys != nullptr ? size() : 0;
+//        ar << key_count;
+//        ar << serial::make_array(p_keys, key_count);
+//    }
+//
+//    template <typename Ar>
+//    void load(Ar& ar, const unsigned int /*version*/) {
+//        ar >> serial::base_object<ScalarArray>(*this);
+//        auto key_count = 0;
+//        ar >> key_count;
+//        ar >> serial::make_array(p_keys, key_count);
+//    }
+
+    RPY_SERIAL_SAVE_FN();
+    RPY_SERIAL_LOAD_FN();
+
+
 };
+
+RPY_SERIAL_SAVE_FN_IMPL(KeyScalarArray) {
+    RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
+    auto key_count = p_keys != nullptr ? size() : 0;
+    RPY_SERIAL_SERIALIZE_VAL(key_count);
+    Slice<key_type> keys (const_cast<key_type*>(p_keys), key_count);
+    RPY_SERIAL_SERIALIZE_NVP("keys", keys);
+}
+
+RPY_SERIAL_LOAD_FN_IMPL(KeyScalarArray) {
+    RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
+    dimn_t key_count;
+    RPY_SERIAL_SERIALIZE_VAL(key_count);
+
+    p_keys = new key_type[key_count];
+    Slice<key_type> key_slice(const_cast<key_type*>(p_keys), key_count);
+    RPY_SERIAL_SERIALIZE_NVP("keys", key_slice);
+    m_flags |= keys_owning_flag;
+}
+
 }// namespace scalars
 }// namespace rpy
 

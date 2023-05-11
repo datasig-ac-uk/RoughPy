@@ -30,7 +30,10 @@
 //
 
 #include "scalar.h"
+#include "scalar_pointer.h"
+#include "scalar_type.h"
 
+#include <roughpy/platform/serialization.h>
 #include <ostream>
 
 using namespace rpy;
@@ -309,3 +312,9 @@ std::ostream &rpy::scalars::operator<<(std::ostream &os, const Scalar &arg) {
 
     return os;
 }
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::Scalar
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>

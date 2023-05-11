@@ -107,20 +107,22 @@ public:
     ScalarMatrix to_full(MatrixLayout layout) const;
     void to_full(ScalarMatrix& into) const;
 
-#ifndef RPY_DISABLE_SERIALIZATION
-private:
+//#ifndef RPY_DISABLE_SERIALIZATION
+//private:
+//
+//    template <typename Ar>
+//    void serialize(Ar& ar, const unsigned int /*version*/) {
+//        ar & m_storage;
+//        ar & m_layout;
+//        ar & m_nrows;
+//        ar & m_ncols;
+//        ar & serial::base_object<ScalarArray>(*this);
+//    };
+//
+//
+//#endif
 
-    template <typename Ar>
-    void serialize(Ar& ar, const unsigned int /*version*/) {
-        ar & m_storage;
-        ar & m_layout;
-        ar & m_nrows;
-        ar & m_ncols;
-        ar & serial::base_object<ScalarArray>(*this);
-    };
-
-
-#endif
+    RPY_SERIAL_SERIALIZE_FN();
 };
 
 

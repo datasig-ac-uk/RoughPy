@@ -33,14 +33,30 @@
 #define ROUGHPY_PLATFORM_SERIALIZATION_H
 
 #ifndef RPY_DISABLE_SERIALIZATION
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/split_member.hpp>
-#include <boost/serialization/split_free.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/array.hpp>
-#include <boost/serialization/strong_typedef.hpp>
-#include <boost/serialization/assume_abstract.hpp>
-#endif // RPY_DISABLE_SERIALIZATION
+#include <cereal/access.hpp>
+#include <cereal/cereal.hpp>
+#include <cereal/specialize.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/optional.hpp>
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/tuple.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/utility.hpp>
+#include <cereal/types/variant.hpp>
+#include <cereal/types/vector.hpp>
+
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
+#include <cereal/archives/portable_binary.hpp>
+
+#endif// RPY_DISABLE_SERIALIZATION
+
+#include <roughpy/core/slice.h>
+
 
 /*
  * For flexibility, and possibly later swapping out framework,
@@ -48,32 +64,129 @@
  * pull in the access helper struct.
  */
 #ifndef RPY_DISABLE_SERIALIZATION
-#define RPY_STRONG_TYPEDEF(type, name) BOOST_STRONG_TYPEDEF(type, name)
-#define RPY_SERIAL_SPLIT_MEMBER() BOOST_SERIALIZATION_SPLIT_MEMBER()
-#define RPY_SERIAL_SPLIT_FREE(T) BOOST_SERIALIZATION_SPLIT_FREE(T)
-#define RPY_SERIAL_ASSUME_ABSTRACT(T) BOOST_SERIALIZATION_ASSUME_ABSTRACT(T)
+
+#define RPY_SERIAL_CLASS_VERSION(T, V) CEREAL_CLASS_VERSION(T, V)
+#define RPY_SERIAL_SERIALIZE_VAL(V) archive(CEREAL_NVP(V))
+#define RPY_SERIAL_SERIALIZE_SIZE(S) archive(::cereal::make_size_tag(S))
+#define RPY_SERIAL_SERIALIZE_NVP(N, V) archive(::cereal::make_nvp(N, V))
+#define RPY_SERIAL_SERIALIZE_BASE(B) archive(::cereal::base_class<B>(this))
+#define RPY_SERIAL_SERIALIZE_BYTES(NAME, P, N) archive(::cereal::make_nvp(NAME, ::cereal::binary_data(P, N)))
+#define RPY_SERIAL_SPECIALIZE_TYPES(T) \
+    CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(T, ::cereal::specialization::member_load_save)
 #else
-#define RPY_STRONG_TYPEDEF(type, name) typedef type name
-#define RPY_SERIAL_SPLIT_MEMBER()
-#define RPY_SERIAL_SPLIT_FREE(T)
-#define RPY_SERIAL_ASSUME_ABTRACT(T)
+#define RPY_SERIAL_CLASS_VERSION(T, V)
+#define RPY_SERIAL_SERIALISE_VAL(V) (void)0
+#define RPY_SERIAL_SERIALISE_SIZE(S) (void)0
+#define RPY_SERIAL_SERIALISE_NVP(N, V) (void)0
+#define RPY_SERIAL_SERIALIZE_BYTES(NAME, P, N) (void)0
+#define RPY_SERIAL_SPECIALIZE_TYPES(T)
 #endif
+
+#define RPY_SERIAL_SERIALIZE_FN() \
+    template <typename Archive>   \
+    void serialize(Archive& archive, const std::uint32_t version);
+
+#define RPY_SERIAL_LOAD_FN()    \
+    template <typename Archive> \
+    void load(Archive &archive, const std::uint32_t version)
+#define RPY_SERIAL_SAVE_FN()    \
+    template <typename Archive> \
+    void save(Archive &archive, const std::uint32_t version) const
+
+#define RPY_SERIAL_SERIALIZE_FN_IMPL(T) \
+    template <typename Archive>         \
+    void T::serialize(Archive& archive, const std::uint32_t RPY_UNUSED_VAR version)
+
+#define RPY_SERIAL_LOAD_FN_IMPL(T) \
+    template <typename Archive>    \
+    void T::load(Archive &archive, const std::uint32_t RPY_UNUSED_VAR version)
+
+#define RPY_SERIAL_SAVE_FN_IMPL(T) \
+    template <typename Archive>    \
+    void T::save(Archive &archive, const std::uint32_t RPY_UNUSED_VAR version) const
+
 
 
 
 #ifndef RPY_DISABLE_SERIALIZATION
 namespace rpy {
 
-using serialization_access = boost::serialization::access;
+using serialization_access = cereal::access;
 
 namespace serial {
 
-using boost::serialization::base_object;
-using boost::serialization::make_array;
+using cereal::base_class;
+using cereal::make_nvp;
+using cereal::make_size_tag;
 
+}// namespace serial
 
+namespace archives {
+
+using cereal::BinaryInputArchive;
+using cereal::BinaryOutputArchive;
+using cereal::JSONInputArchive;
+using cereal::JSONOutputArchive;
+using cereal::PortableBinaryInputArchive;
+using cereal::PortableBinaryOutputArchive;
+
+}// namespace archives
+
+using ByteSlice = Slice<byte>;
+
+#ifndef RYP_DISABLE_SERIALIZATION
+template <typename Archive, typename T>
+enable_if_t<::cereal::traits::is_output_serializable<::cereal::BinaryData<T>, Archive>::value
+            && is_arithmetic<T>::value>
+save(Archive& archive, const Slice<T>& data) {
+    archive(::cereal::make_size_tag(data.size()));
+    archive(::cereal::binary_data(data.begin(), data.size()));
 }
+
+
+template <typename Archive, typename T>
+enable_if_t<!::cereal::traits::is_output_serializable<::cereal::BinaryData<T>, Archive>::value
+            || !is_arithmetic<T>::value>
+save(Archive& archive, const Slice<T>& data) {
+    archive(::cereal::make_size_tag(data.size()));
+
+    for (const auto& item : data) {
+        archive(item);
+    }
 }
 
-#endif // RPY_DISABLE_SERIALIZATION
+
+template <typename Archive, typename T>
+enable_if_t<::cereal::traits::is_input_serializable<::cereal::BinaryData<T>, Archive>::value
+            && is_arithmetic<T>::value>
+load(Archive& archive, Slice<T>& data) {
+    dimn_t size;
+    archive(::cereal::make_size_tag(size));
+
+    RPY_CHECK(data.size() >= size);
+    archive(::cereal::binary_data(data.begin(), size));
+}
+
+
+template <typename Archive, typename T>
+enable_if_t<!::cereal::traits::is_input_serializable<::cereal::BinaryData<T>, Archive>::value
+            || !is_arithmetic<T>::value>
+load(Archive& archive, Slice<T>& data) {
+    dimn_t size;
+    archive(::cereal::make_size_tag(size));
+
+    RPY_CHECK(data.size() >= size);
+    auto* ptr = data.begin();
+    for (dimn_t i=0; i<size; ++i) {
+        archive(ptr[i]);
+    }
+}
+
+
+#endif
+
+
+}// namespace rpy
+
+#endif// RPY_DISABLE_SERIALIZATION
 #endif//ROUGHPY_PLATFORM_SERIALIZATION_H

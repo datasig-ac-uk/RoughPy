@@ -98,4 +98,8 @@ add_roughpy_test(scalar
             src/test_scalar.cpp
             src/test_scalar_type.cpp
             src/test_float_blas.cpp
+            src/test_scalar_array.cpp
+            src/test_key_scalar_array.cpp
+        DEP
+            RoughPy::Platform
         )

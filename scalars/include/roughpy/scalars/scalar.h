@@ -150,38 +150,64 @@ public:
     bool operator==(const Scalar &other) const noexcept;
     bool operator!=(const Scalar &other) const noexcept;
 
-#ifndef RPY_DISABLE_SERIALIZATION
-private:
-    friend rpy::serialization_access;
+//#ifndef RPY_DISABLE_SERIALIZATION
+//private:
+//    friend rpy::serialization_access;
+//
+//
+//    template <typename Ar>
+//    void save(Ar& ar, const unsigned int /*version*/) const {
+//        ar << get_type_id();
+//        if (is_interface()) {
+//            auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
+//            // p_type cannot be null if the data is an interface
+//            ar << p_type->to_raw_bytes(ptr, 1);
+//        } else {
+//            ar << to_raw_bytes(1);
+//        }
+//    }
+//
+//    template <typename Ar>
+//    void load(Ar& ar, const unsigned int /*version*/) {
+//        std::string type_id;
+//        ar >> type_id;
+//        std::vector<byte> bytes;
+//        ar >> bytes;
+//        update_from_bytes(type_id, 1, bytes);
+//    }
+//
+//#endif
 
-    RPY_SERIAL_SPLIT_MEMBER()
 
-    template <typename Ar>
-    void save(Ar& ar, const unsigned int /*version*/) const {
-        ar << get_type_id();
-        if (is_interface()) {
-            auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
-            // p_type cannot be null if the data is an interface
-            ar << p_type->to_raw_bytes(ptr, 1);
-        } else {
-            ar << to_raw_bytes(1);
-        }
-    }
+    RPY_SERIAL_SAVE_FN();
+    RPY_SERIAL_LOAD_FN();
 
-    template <typename Ar>
-    void load(Ar& ar, const unsigned int /*version*/) {
-        std::string type_id;
-        ar >> type_id;
-        std::vector<byte> bytes;
-        ar >> bytes;
-        update_from_bytes(type_id, 1, bytes);
-    }
-
-#endif
 };
 
 ROUGHPY_SCALARS_EXPORT
 std::ostream &operator<<(std::ostream &, const Scalar& arg);
+
+
+RPY_SERIAL_SAVE_FN_IMPL(Scalar) {
+    RPY_SERIAL_SERIALIZE_NVP("type_id", get_type_id());
+    if (is_interface()) {
+        auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
+        RPY_SERIAL_SERIALIZE_NVP("data", p_type->to_raw_bytes(ptr, 1));
+    } else {
+        RPY_SERIAL_SERIALIZE_NVP("data", to_raw_bytes(1));
+    }
+}
+
+RPY_SERIAL_LOAD_FN_IMPL(Scalar) {
+    string type_id;
+    RPY_SERIAL_SERIALIZE_NVP("type_id", type_id);
+
+    std::vector<byte> raw_bytes;
+    RPY_SERIAL_SERIALIZE_NVP("data", raw_bytes);
+    update_from_bytes(type_id, 1, raw_bytes);
+}
+
+
 
 namespace dtl {
 

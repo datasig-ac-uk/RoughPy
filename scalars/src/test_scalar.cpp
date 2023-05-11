@@ -34,7 +34,10 @@
 #include "scalar_type.h"
 #include "scalar.h"
 
+#include <sstream>
+#include <roughpy/platform/serialization.h>
 
+using namespace rpy;
 using namespace rpy::scalars;
 
 TEST(scalar, CreateFromDoubleTypeInference) {
@@ -233,4 +236,23 @@ TEST(scalar, EqualsDefaultFloatOneFalse) {
     Scalar rhs;
 
     ASSERT_FALSE(lhs == rhs);
+}
+
+
+
+TEST(Scalar, SerializeSimpleFloatValue) {
+    Scalar val(ScalarType::of<float>(), 1.0f);
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive out_ar(ss);
+        out_ar(val);
+    }
+
+    Scalar inval;
+    {
+        archives::JSONInputArchive in_ar(ss);
+        in_ar(inval);
+    }
+
+    ASSERT_EQ(val, inval);
 }

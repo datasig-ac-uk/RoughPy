@@ -178,3 +178,7 @@ KeyScalarArray KeyScalarArray::copy_or_move() && {
 
     return result;
 }
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::KeyScalarArray
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>
