@@ -179,3 +179,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(cons
     }
     return ctx.sig_derivative(info, md.cached_vector_type);
 }
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::Stream;
+#include <roughpy/platform/serialization_instantiations.inl>

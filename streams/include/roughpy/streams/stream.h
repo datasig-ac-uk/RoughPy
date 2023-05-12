@@ -31,6 +31,8 @@
 #include "roughpy_streams_export.h"
 #include "stream_base.h"
 
+#include <roughpy/platform/serialization.h>
+
 #include <memory>
 
 namespace rpy {
@@ -38,7 +40,6 @@ namespace streams {
 
 class ROUGHPY_STREAMS_EXPORT Stream {
     std::unique_ptr<const StreamInterface> p_impl;
-
 
 public:
     using FreeTensor = algebra::FreeTensor;
@@ -100,6 +101,9 @@ public:
 
     // Stream simplify_path(const Partition& partition,
     //                      resolution_t resolution) const;
+
+    RPY_SERIAL_SERIALIZE_FN();
+
 };
 
 template <typename Impl>
@@ -107,6 +111,11 @@ Stream::Stream(Impl &&impl)
     : p_impl(new remove_cv_t<Impl>(std::forward<Impl>(impl)))
 {
 }
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(Stream) {
+    RPY_SERIAL_SERIALIZE_NVP("impl", p_impl);
+}
+
 
 }// namespace streams
 }// namespace rpy

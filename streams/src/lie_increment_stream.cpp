@@ -122,3 +122,8 @@ bool LieIncrementStream::empty(const intervals::Interval &interval) const noexce
 //    std::cerr << ' ' << (begin == end) << '\n';
     return begin == end;
 }
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::LieIncrementStream
+#include <roughpy/platform/serialization_instantiations.inl>

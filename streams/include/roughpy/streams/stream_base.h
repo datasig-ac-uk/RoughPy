@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,7 +31,7 @@
 #include <roughpy/algebra/context.h>
 #include <roughpy/core/implementation_types.h>
 #include <roughpy/intervals/real_interval.h>
-
+#include <roughpy/platform/serialization.h>
 #include "roughpy/intervals/dyadic_interval.h"
 #include "roughpy_streams_export.h"
 
@@ -76,51 +76,51 @@ struct StreamMetadata {
  */
 class ROUGHPY_STREAMS_EXPORT StreamInterface {
     StreamMetadata m_metadata;
+
 public:
+    const StreamMetadata &metadata() const noexcept;
 
-    const StreamMetadata& metadata() const noexcept;
+    explicit StreamInterface(StreamMetadata md) : m_metadata(std::move(md)) {}
 
-    explicit StreamInterface(StreamMetadata md) : m_metadata(std::move(md))
-    {}
-
-    virtual bool empty(const intervals::Interval& interval) const noexcept;
+    virtual bool empty(const intervals::Interval &interval) const noexcept;
 
 protected:
     virtual algebra::Lie
-    log_signature_impl(const intervals::Interval& interval,
-                       const algebra::Context& ctx) const = 0;
+    log_signature_impl(const intervals::Interval &interval,
+                       const algebra::Context &ctx) const = 0;
 
 public:
+    virtual algebra::Lie
+    log_signature(const intervals::Interval &interval,
+                  const algebra::Context &ctx) const;
 
     virtual algebra::Lie
-    log_signature(const intervals::Interval& interval,
-                  const algebra::Context& ctx) const;
-
-    virtual algebra::Lie
-    log_signature(const intervals::DyadicInterval& interval,
+    log_signature(const intervals::DyadicInterval &interval,
                   resolution_t resolution,
-                  const algebra::Context& ctx) const;
+                  const algebra::Context &ctx) const;
 
     virtual algebra::Lie
-    log_signature(const intervals::Interval& interval,
+    log_signature(const intervals::Interval &interval,
                   resolution_t resolution,
-                  const algebra::Context& ctx) const;
+                  const algebra::Context &ctx) const;
 
     virtual algebra::FreeTensor
-    signature(const intervals::Interval& interval,
-              const algebra::Context& ctx) const;
+    signature(const intervals::Interval &interval,
+              const algebra::Context &ctx) const;
 
     virtual algebra::FreeTensor
-    signature(const intervals::Interval& interval,
+    signature(const intervals::Interval &interval,
               resolution_t resolution,
-              const algebra::Context& ctx) const;
+              const algebra::Context &ctx) const;
 
 protected:
-
     // TODO: add methods for batch computing signatures via a computation tree
 
+private:
+    RPY_SERIAL_ACCESS()
 
-
+    RPY_SERIAL_LOAD_FN();
+    RPY_SERIAL_SAVE_FN();
 };
 
 /**
@@ -132,10 +132,34 @@ public:
     virtual algebra::Lie base_point() const = 0;
 };
 
+RPY_SERIAL_LOAD_FN_IMPL(StreamInterface) {
+    RPY_SERIAL_SERIALIZE_NVP("width", m_metadata.width);
+    RPY_SERIAL_SERIALIZE_NVP("support", m_metadata.effective_support);
 
+    algebra::BasicContextSpec spec;
+    spec.width = m_metadata.width;
+    RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
+    RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
+    RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
+    m_metadata.default_context = algebra::from_context_spec(spec);
 
+    m_metadata.data_scalar_type = m_metadata.default_context->ctype();
+    RPY_SERIAL_SERIALIZE_NVP("vtype", m_metadata.cached_vector_type);
+    RPY_SERIAL_SERIALIZE_NVP("resolution", m_metadata.default_resolution);
+}
 
+RPY_SERIAL_SAVE_FN_IMPL(StreamInterface) {
+    RPY_SERIAL_SERIALIZE_NVP("width", m_metadata.width);
+    RPY_SERIAL_SERIALIZE_NVP("support", m_metadata.effective_support);
 
+    auto spec = algebra::get_context_spec(m_metadata.default_context);
+    RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
+    RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
+    RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
+
+    RPY_SERIAL_SERIALIZE_NVP("vtype", m_metadata.cached_vector_type);
+    RPY_SERIAL_SERIALIZE_NVP("resolution", m_metadata.default_resolution);
+}
 
 }// namespace streams
 }// namespace rpy

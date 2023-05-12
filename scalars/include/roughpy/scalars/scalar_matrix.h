@@ -71,18 +71,18 @@ public:
                  MatrixStorage storage = MatrixStorage::FullMatrix,
                  MatrixLayout layout = MatrixLayout::CStype);
 
-    [[nodiscard]] constexpr deg_t nrows() const noexcept { return m_nrows; }
+    RPY_NO_DISCARD constexpr deg_t nrows() const noexcept { return m_nrows; }
 
-    [[nodiscard]] constexpr deg_t ncols() const noexcept { return m_ncols; }
+    RPY_NO_DISCARD constexpr deg_t ncols() const noexcept { return m_ncols; }
 
-    [[nodiscard]] constexpr MatrixStorage storage() const noexcept { return m_storage; }
+    RPY_NO_DISCARD constexpr MatrixStorage storage() const noexcept { return m_storage; }
 
     constexpr void storage(MatrixStorage new_storage) {
         //TODO: Check if htis requies allocaiton or something
         m_storage = new_storage;
     }
 
-    [[nodiscard]] constexpr MatrixLayout layout() const noexcept { return m_layout; }
+    RPY_NO_DISCARD constexpr MatrixLayout layout() const noexcept { return m_layout; }
 
     constexpr void layout(MatrixLayout new_layout) noexcept { m_layout = new_layout; }
 
@@ -98,20 +98,6 @@ public:
     ScalarMatrix to_full(MatrixLayout layout) const;
     void to_full(ScalarMatrix &into) const;
 
-    //#ifndef RPY_DISABLE_SERIALIZATION
-    //private:
-    //
-    //    template <typename Ar>
-    //    void serialize(Ar& ar, const unsigned int /*version*/) {
-    //        ar & m_storage;
-    //        ar & m_layout;
-    //        ar & m_nrows;
-    //        ar & m_ncols;
-    //        ar & serial::base_object<ScalarArray>(*this);
-    //    };
-    //
-    //
-    //#endif
 
     RPY_SERIAL_SERIALIZE_FN();
 };

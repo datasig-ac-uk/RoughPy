@@ -31,7 +31,9 @@
 
 #include "stream_base.h"
 
+
 #include <iostream>
+
 using namespace rpy;
 using namespace rpy::streams;
 
@@ -72,3 +74,10 @@ algebra::FreeTensor StreamInterface::signature(const intervals::Interval &interv
 rpy::algebra::FreeTensor rpy::streams::StreamInterface::signature(const rpy::intervals::Interval &interval, rpy::streams::resolution_t resolution, const rpy::algebra::Context &ctx) const {
     return ctx.lie_to_tensor(log_signature(interval, resolution, ctx)).exp();
 }
+
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamInterface;
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>
