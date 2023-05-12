@@ -98,4 +98,8 @@ typename Lie::basis_type basis_setup_helper<LieBundle>::get(const C& ctx) {
 
 }// namespace algebra
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::Lie, rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::LieBundle, rpy::serial::specialization::member_serialize)
+
 #endif// ROUGHPY_ALGEBRA_LIE_H_

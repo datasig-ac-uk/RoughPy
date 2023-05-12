@@ -33,6 +33,9 @@
 
 #include "dyadic.h"
 
+#include <sstream>
+
+using namespace rpy;
 using namespace rpy::intervals;
 
 TEST(Dyadictests, test_rebase_dyadic_1) {
@@ -45,4 +48,25 @@ TEST(Dyadictests, test_rebase_dyadic_5) {
     Dyadic val{1, 0};
     val.rebase(5);
     ASSERT_TRUE(dyadic_equals(val, Dyadic{32, 5}));
+}
+
+
+
+TEST(Dyadic, TestSerialization) {
+    Dyadic ind(35, 128);
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive oarc(ss);
+        oarc(ind);
+    }
+
+
+    Dyadic outd;
+    {
+        archives::JSONInputArchive iarc(ss);
+        iarc(outd);
+    }
+
+
+    EXPECT_TRUE(dyadic_equals(ind, outd));
 }

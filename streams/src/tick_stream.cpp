@@ -199,3 +199,8 @@ algebra::FreeTensor streams::TickStream::signature(const intervals::Interval &in
 algebra::FreeTensor streams::TickStream::signature(const intervals::Interval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const {
     return StreamInterface::signature(interval, resolution, ctx);
 }
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::TickStream
+#include <roughpy/platform/serialization_instantiations.inl>

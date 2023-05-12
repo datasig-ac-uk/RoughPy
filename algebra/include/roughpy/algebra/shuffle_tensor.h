@@ -96,4 +96,7 @@ typename ShuffleTensorBundle::basis_type basis_setup_helper<ShuffleTensorBundle>
 }// namespace algebra
 }// namespace rpy
 
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensor, rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensorBundle, rpy::serial::specialization::member_serialize)
+
 #endif// ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_

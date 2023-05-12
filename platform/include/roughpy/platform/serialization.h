@@ -122,6 +122,19 @@
     template <typename Archive>    \
     void T::save(Archive &archive, const std::uint32_t RPY_UNUSED_VAR version) const
 
+#define RPY_SERIAL_SERIALIZE_FN_EXT(T)  \
+    template <typename Archive>         \
+    void serialize(Archive& archive, T& value, const std::uint32_t RPY_UNUSED_VAR version)
+
+#define RPY_SERIAL_LOAD_FN_EXT(T)       \
+    template <typename Archive>         \
+    void load(Archive& archive, T& value, const std::uint32_t RPY_UNUSED_VAR version)
+
+#define RPY_SERIAL_SAVE_FN_EXT(T)   \
+    template <typename Archive>     \
+    void save(Archive& archive, const T& value, const std::uint32_t RPY_UNUSED_VAR version)
+
+
 #ifndef RPY_DISABLE_SERIALIZATION
 namespace rpy {
 

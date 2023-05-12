@@ -30,6 +30,7 @@
 
 #include "roughpy_intervals_export.h"
 #include <roughpy/core/implementation_types.h>
+#include <roughpy/platform/serialization.h>
 
 #include <cassert>
 #include <cmath>
@@ -81,8 +82,9 @@ public:
 
     bool rebase(power_t resolution=std::numeric_limits<power_t>::lowest());
 
-
-
+private:
+    RPY_SERIAL_ACCESS();
+    RPY_SERIAL_SERIALIZE_FN();
 
 };
 
@@ -107,6 +109,10 @@ bool dyadic_equals(const Dyadic& lhs, const Dyadic& rhs);
 ROUGHPY_INTERVALS_EXPORT
 bool rational_equals(const Dyadic& lhs, const Dyadic& rhs);
 
+RPY_SERIAL_SERIALIZE_FN_IMPL(Dyadic) {
+    RPY_SERIAL_SERIALIZE_NVP("multiplier", m_multiplier);
+    RPY_SERIAL_SERIALIZE_NVP("power", m_power);
+}
 
 }}
 

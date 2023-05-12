@@ -146,4 +146,7 @@ typename FreeTensorBundle::basis_type basis_setup_helper<FreeTensorBundle>::get(
 }// namespace algebra
 }// namespace rpy
 
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensor, rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensorBundle, rpy::serial::specialization::member_serialize)
+
 #endif// ROUGHPY_ALGEBRA_FREE_TENSOR_H_

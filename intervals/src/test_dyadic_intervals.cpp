@@ -35,6 +35,9 @@
 #include "dyadic_interval.h"
 #include "real_interval.h"
 
+#include <sstream>
+
+using namespace rpy;
 using namespace rpy::intervals;
 
 TEST(DyadicIntervals, test_dincluded_end_Clopen) {
@@ -392,4 +395,22 @@ TEST(DyadicIntervals, shrink_to_omitted_end_Opencl) {
     DyadicInterval expected{Dyadic{-1, 1}, IntervalType::Opencl};
 
     ASSERT_EQ(start.shrink_to_omitted_end(), expected);
+}
+
+
+TEST(DyadicInterval, TestSerialization) {
+    DyadicInterval indi(143, 295);
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive oarc(ss);
+        oarc(indi);
+    }
+
+    DyadicInterval outdi;
+    {
+        archives::JSONInputArchive iarc(ss);
+        iarc(outdi);
+    }
+
+    EXPECT_EQ(indi, outdi);
 }

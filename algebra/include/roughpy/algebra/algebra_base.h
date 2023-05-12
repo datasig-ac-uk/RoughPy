@@ -409,7 +409,8 @@ public:
     bool operator==(const algebra_t &other) const;
     bool operator!=(const algebra_t &other) const { return !operator==(other); }
 
-
+private:
+    RPY_SERIAL_ACCESS();
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 };

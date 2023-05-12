@@ -31,6 +31,7 @@
 #include "dyadic.h"
 #include "interval.h"
 #include <roughpy/core/implementation_types.h>
+#include <roughpy/platform/serialization.h>
 
 #include <iosfwd>
 #include <vector>
@@ -98,6 +99,9 @@ public:
     DyadicInterval shift_back(multiplier_t arg = 1) const;
 
     DyadicInterval &advance() noexcept;
+
+
+    RPY_SERIAL_SERIALIZE_FN();
 };
 
 
@@ -111,6 +115,10 @@ std::vector<DyadicInterval> to_dyadic_intervals(const Interval& interval, typena
 ROUGHPY_INTERVALS_EXPORT
 bool operator<(const DyadicInterval& lhs, const DyadicInterval& rhs) noexcept;
 
+RPY_SERIAL_SERIALIZE_FN_IMPL(DyadicInterval) {
+    RPY_SERIAL_SERIALIZE_BASE(Dyadic);
+    RPY_SERIAL_SERIALIZE_NVP("type", m_interval_type);
+}
 
 }// namespace intervals
 }// namespace rpy

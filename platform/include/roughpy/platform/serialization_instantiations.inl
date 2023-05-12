@@ -30,16 +30,29 @@
 #endif
 
 
-
+#ifdef RPY_SERIAL_EXTERNAL
+#define ADD_ARCHIVE(ARCHIVE) \
+    namespace RPY_SERIAL_EXTERNAL {\
+    template void serialize(ARCHIVE &, RPY_SERIAL_IMPL_CLASSNAME &, const std::uint32_t); \
+    }
+#define ADD_LOAD(ARCHIVE)   \
+    namespace RPY_SERIAL_EXTERNAL {\
+    template void load(ARCHIVE &, RPY_SERIAL_IMPL_CLASSNAME &, const std::uint32_t); \
+    }
+#define ADD_SAVE(ARCHIVE) \
+    namespace RPY_SERIAL_EXTERNAL {\
+    template void save(ARCHIVE &, const RPY_SERIAL_IMPL_CLASSNAME &, const std::uint32_t); \
+    }
+#else
 #define ADD_ARCHIVE(ARCHIVE) \
     template void RPY_SERIAL_IMPL_CLASSNAME::serialize(ARCHIVE& ar, const std::uint32_t version)
 #define ADD_LOAD(ARCHIVE) \
     template void RPY_SERIAL_IMPL_CLASSNAME::load(ARCHIVE &ar, const std::uint32_t version)
 #define ADD_SAVE(ARCHIVE) \
     template void RPY_SERIAL_IMPL_CLASSNAME::save(ARCHIVE &ar, const std::uint32_t version) const
+#endif
 
-
-#ifdef RPY_SERIAL_DO_SPLIT
+#if defined(RPY_SERIAL_DO_SPLIT)
 ADD_SAVE(::cereal::BinaryOutputArchive);
 ADD_LOAD(::cereal::BinaryInputArchive);
 ADD_SAVE(::cereal::PortableBinaryOutputArchive);
@@ -60,4 +73,5 @@ ADD_ARCHIVE(::cereal::JSONInputArchive);
 #undef ADD_STORE
 #undef RPY_SERIAL_DO_SPLIT
 #undef RPY_SERIAL_IMPL_CLASSNAME
+#undef RPY_SERIAL_EXTERNAL
 #endif

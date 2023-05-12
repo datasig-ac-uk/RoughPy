@@ -34,3 +34,9 @@
 bool rpy::intervals::RealInterval::contains(const Interval &arg) const noexcept {
     return Interval::contains(arg);
 }
+
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::intervals::RealInterval
+#include <roughpy/platform/serialization_instantiations.inl>

@@ -30,6 +30,8 @@
 
 #include "interval.h"
 
+#include <roughpy/platform/serialization.h>
+
 #include <utility>
 
 namespace rpy { namespace intervals {
@@ -39,6 +41,13 @@ class ROUGHPY_INTERVALS_EXPORT RealInterval : public Interval {
     param_t m_sup = 1.0;
 
 public:
+
+    RealInterval() = default;
+    RealInterval(const RealInterval&) = default;
+    RealInterval(RealInterval&& ) noexcept = default;
+
+    RealInterval& operator=(const RealInterval&) = default;
+    RealInterval& operator=(RealInterval&&) noexcept = default;
 
     RealInterval(param_t inf, param_t sup,
                  IntervalType itype=IntervalType::Clopen)
@@ -65,7 +74,16 @@ public:
 
     bool contains(const Interval &arg) const noexcept override;
 
+
+
+    RPY_SERIAL_SERIALIZE_FN();
 };
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(RealInterval) {
+    RPY_SERIAL_SERIALIZE_NVP("type", m_interval_type);
+    RPY_SERIAL_SERIALIZE_NVP("inf", m_inf);
+    RPY_SERIAL_SERIALIZE_NVP("sup", m_sup);
+}
 
 
 }}

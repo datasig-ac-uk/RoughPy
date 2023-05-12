@@ -32,6 +32,7 @@
 
 #include <roughpy/intervals/dyadic_interval.h>
 #include <roughpy/scalars/scalar_stream.h>
+#include <roughpy/platform/serialization.h>
 
 
 #include <map>
@@ -56,6 +57,18 @@ class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface {
 
 public:
 
+    TickStream(std::vector<param_t>&& granular_times,
+               std::map<intervals::DyadicInterval, algebra::Lie>&& data,
+               resolution_t resolution,
+               intervals::IntervalType itype,
+               StreamMetadata&& md)
+        : StreamInterface(std::move(md)),
+          m_granular_times(std::move(granular_times)),
+          m_data(std::move(data)),
+          m_resolution(resolution),
+          m_itype(itype)
+    {}
+
     TickStream(scalars::ScalarStream&& raw_data,
                std::vector<const key_type*> raw_key_stream,
                std::vector<param_t> raw_timestamps,
@@ -71,9 +84,47 @@ public:
 
 protected:
     algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+
+
+public:
+
+    RPY_SERIAL_SERIALIZE_FN();
+
 };
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(TickStream) {
+    auto md = metadata();
+    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
+    RPY_SERIAL_SERIALIZE_NVP("granular_times", m_granular_times);
+    RPY_SERIAL_SERIALIZE_NVP("data", m_data);
+    RPY_SERIAL_SERIALIZE_NVP("resolution", m_resolution);
+    RPY_SERIAL_SERIALIZE_NVP("interval_type", m_itype);
+}
 
 }// namespace streams
 }// namespace rpy
+
+
+#ifndef RPY_DISABLE_SERIALIZATION
+RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::TickStream) {
+    using namespace rpy;
+    using namespace rpy::streams;
+
+    StreamMetadata metadata;
+    RPY_SERIAL_SERIALIZE_VAL(metadata);
+    std::vector<param_t> granular_times;
+    RPY_SERIAL_SERIALIZE_VAL(granular_times);
+    std::map<intervals::DyadicInterval, algebra::Lie> data;
+    RPY_SERIAL_SERIALIZE_VAL(data);
+    resolution_t resolution;
+    RPY_SERIAL_SERIALIZE_VAL(resolution);
+    intervals::IntervalType interval_type;
+    RPY_SERIAL_SERIALIZE_VAL(interval_type);
+
+    construct(std::move(granular_times), std::move(data), resolution, interval_type, std::move(metadata));
+}
+
+#endif
+
 
 #endif// ROUGHPY_STREAMS_TICK_STREAM_H_

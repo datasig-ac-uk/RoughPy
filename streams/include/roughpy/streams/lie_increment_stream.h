@@ -70,7 +70,8 @@ public:
 };
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream) {
-    RPY_SERIAL_SERIALIZE_NVP("metadata", metadata());
+    StreamMetadata md = metadata();
+    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
     RPY_SERIAL_SERIALIZE_NVP("buffer", m_buffer);
     RPY_SERIAL_SERIALIZE_NVP("mapping", m_mapping);
 

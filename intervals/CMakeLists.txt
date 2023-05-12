@@ -30,6 +30,7 @@ add_roughpy_lib(Intervals
             include/roughpy/intervals/segmentation.h
         PUBLIC_DEPS
             RoughPy::Core
+            RoughPy::Platform
         )
 
 
@@ -45,4 +46,5 @@ add_roughpy_test(Intervals
         SRC
             src/test_dyadic.cpp
             src/test_dyadic_intervals.cpp
+            src/test_real_interval.cpp
         LINK_COMPONENT)

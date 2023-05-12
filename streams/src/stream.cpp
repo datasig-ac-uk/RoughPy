@@ -181,5 +181,5 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(cons
 }
 
 
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::Stream;
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::Stream
 #include <roughpy/platform/serialization_instantiations.inl>

@@ -116,11 +116,7 @@ public:
 protected:
     // TODO: add methods for batch computing signatures via a computation tree
 
-private:
-    RPY_SERIAL_ACCESS()
 
-    RPY_SERIAL_LOAD_FN();
-    RPY_SERIAL_SAVE_FN();
 };
 
 /**
@@ -132,33 +128,35 @@ public:
     virtual algebra::Lie base_point() const = 0;
 };
 
-RPY_SERIAL_LOAD_FN_IMPL(StreamInterface) {
-    RPY_SERIAL_SERIALIZE_NVP("width", m_metadata.width);
-    RPY_SERIAL_SERIALIZE_NVP("support", m_metadata.effective_support);
+
+
+RPY_SERIAL_LOAD_FN_EXT(StreamMetadata) {
+    RPY_SERIAL_SERIALIZE_NVP("width", value.width);
+    RPY_SERIAL_SERIALIZE_NVP("support", value.effective_support);
 
     algebra::BasicContextSpec spec;
-    spec.width = m_metadata.width;
+    spec.width = value.width;
     RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
     RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
     RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
-    m_metadata.default_context = algebra::from_context_spec(spec);
+    value.default_context = algebra::from_context_spec(spec);
 
-    m_metadata.data_scalar_type = m_metadata.default_context->ctype();
-    RPY_SERIAL_SERIALIZE_NVP("vtype", m_metadata.cached_vector_type);
-    RPY_SERIAL_SERIALIZE_NVP("resolution", m_metadata.default_resolution);
+    value.data_scalar_type = value.default_context->ctype();
+    RPY_SERIAL_SERIALIZE_NVP("vtype", value.cached_vector_type);
+    RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
 }
 
-RPY_SERIAL_SAVE_FN_IMPL(StreamInterface) {
-    RPY_SERIAL_SERIALIZE_NVP("width", m_metadata.width);
-    RPY_SERIAL_SERIALIZE_NVP("support", m_metadata.effective_support);
+RPY_SERIAL_SAVE_FN_EXT(StreamMetadata) {
+    RPY_SERIAL_SERIALIZE_NVP("width", value.width);
+    RPY_SERIAL_SERIALIZE_NVP("support", value.effective_support);
 
-    auto spec = algebra::get_context_spec(m_metadata.default_context);
+    auto spec = algebra::get_context_spec(value.default_context);
     RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
     RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
     RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
 
-    RPY_SERIAL_SERIALIZE_NVP("vtype", m_metadata.cached_vector_type);
-    RPY_SERIAL_SERIALIZE_NVP("resolution", m_metadata.default_resolution);
+    RPY_SERIAL_SERIALIZE_NVP("vtype", value.cached_vector_type);
+    RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
 }
 
 }// namespace streams

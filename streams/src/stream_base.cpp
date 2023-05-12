@@ -75,9 +75,14 @@ rpy::algebra::FreeTensor rpy::streams::StreamInterface::signature(const rpy::int
     return ctx.lie_to_tensor(log_signature(interval, resolution, ctx)).exp();
 }
 
+//
+//
+//
+//#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamInterface
+//#define RPY_SERIAL_DO_SPLIT
+//#include <roughpy/platform/serialization_instantiations.inl>
 
-
-
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamInterface;
+#define RPY_SERIAL_IMPL_CLASSNAME StreamMetadata
+#define RPY_SERIAL_EXTERNAL rpy::streams
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>
