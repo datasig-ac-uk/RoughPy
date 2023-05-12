@@ -31,6 +31,7 @@
 #include "stream_base.h"
 #include "dynamically_constructed_stream.h"
 #include <roughpy/scalars/random.h>
+#include <roughpy/platform/serialization.h>
 
 #include <memory>
 
@@ -49,15 +50,49 @@ protected:
 
 public:
 
+    scalars::RandomGenerator& generator() noexcept { return *p_generator; }
+
     BrownianStream(std::unique_ptr<scalars::RandomGenerator> generator, StreamMetadata md)
         : DynamicallyConstructedStream(std::move(md)), p_generator(std::move(generator))
     {}
 
 
+    RPY_SERIAL_SERIALIZE_FN();
+
 };
 
+RPY_SERIAL_SERIALIZE_FN_IMPL(BrownianStream) {
+    auto md = metadata();
+    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
+    std::string generator = p_generator->get_type();
+    RPY_SERIAL_SERIALIZE_NVP("generator", generator);
+    auto state = p_generator->get_state();
+    RPY_SERIAL_SERIALIZE_NVP("state", state);
+}
 
 }
 }// namespace rpy
+
+RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::BrownianStream) {
+    using namespace rpy;
+    using namespace rpy::streams;
+
+    StreamMetadata md;
+    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
+
+    std::string generator;
+    RPY_SERIAL_SERIALIZE_VAL(generator);
+
+    std::string state;
+    RPY_SERIAL_SERIALIZE_VAL(state);
+    const auto *stype = md.data_scalar_type;
+
+    construct(stype->get_rng(generator), std::move(md));
+
+    construct->generator().set_state(state);
+}
+
+
+RPY_SERIAL_REGISTER_CLASS(rpy::streams::BrownianStream)
 
 #endif// ROUGHPY_STREAMS_BROWNIAN_STREAM_H_

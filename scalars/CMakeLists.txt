@@ -48,6 +48,8 @@ add_roughpy_lib(Scalars
         src/b_float_16_type.h
         src/bfloat16_random_generator.cpp
         src/bfloat16_random_generator.h
+        src/random_impl.cpp
+        src/random_impl.h
         ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
     PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h

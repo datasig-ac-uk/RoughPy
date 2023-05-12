@@ -39,9 +39,11 @@
 #include <mutex>
 #include <vector>
 #include <random>
+#include <sstream>
 
 
 #include <pcg_random.hpp>
+#include "random_impl.h"
 
 namespace rpy {
 namespace scalars {
@@ -68,9 +70,24 @@ public:
 
     void set_seed(Slice<uint64_t> seed_data) override;
     std::vector<uint64_t> get_seed() const override;
+    string get_type() const override;
+    string get_state() const override;
+
     OwnedScalarArray uniform_random_scalar(ScalarArray lower, ScalarArray upper, dimn_t count) const override;
     OwnedScalarArray normal_random(Scalar loc, Scalar scale, dimn_t count) const override;
+    void set_state(string_view state) override;
 };
+template <typename ScalarImpl, typename BitGenerator>
+string StandardRandomGenerator<ScalarImpl, BitGenerator>::get_state() const {
+    std::stringstream ss;
+    ss << m_generator;
+    return ss.str();
+}
+
+template <typename ScalarImpl, typename BitGenerator>
+string StandardRandomGenerator<ScalarImpl, BitGenerator>::get_type() const {
+    return std::string(dtl::rng_type_getter<BitGenerator>::name);
+}
 
 template <typename ScalarImpl, typename BitGenerator>
 StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(const ScalarType *stype, Slice<uint64_t> seed)
@@ -86,6 +103,12 @@ void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_seed(Slice<uint64_t>
     m_generator.seed(seed_data[0]);
     m_seed = {seed_data[0]};
 }
+template <typename ScalarImpl, typename BitGenerator>
+void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_state(string_view state) {
+    std::stringstream ss(string{state});
+    ss >> m_generator;
+}
+
 template <typename ScalarImpl, typename BitGenerator>
 std::vector<uint64_t> StandardRandomGenerator<ScalarImpl, BitGenerator>::get_seed() const {
     return {m_seed[0]};
