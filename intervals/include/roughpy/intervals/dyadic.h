@@ -68,7 +68,9 @@ public:
     {}
 
 
+    RPY_NO_DISCARD
     multiplier_t multiplier() const noexcept { return m_multiplier; }
+    RPY_NO_DISCARD
     power_t power() const noexcept { return m_power; }
 
     explicit operator param_t() const noexcept;

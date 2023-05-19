@@ -74,17 +74,19 @@ public:
     using Dyadic::multiplier;
     using Dyadic::power;
 
-    Dyadic dincluded_end() const;
-    Dyadic dexcluded_end() const;
-    Dyadic dinf() const;
-    Dyadic dsup() const;
+    RPY_NO_DISCARD Dyadic dincluded_end() const;
+    RPY_NO_DISCARD Dyadic dexcluded_end() const;
+    RPY_NO_DISCARD Dyadic dinf() const;
+    RPY_NO_DISCARD Dyadic dsup() const;
 
-    param_t inf() const override;
-    param_t sup() const override;
-    param_t included_end() const override;
-    param_t excluded_end() const override;
+    RPY_NO_DISCARD param_t inf() const override;
+    RPY_NO_DISCARD param_t sup() const override;
+    RPY_NO_DISCARD param_t included_end() const override;
+    RPY_NO_DISCARD param_t excluded_end() const override;
 
+    RPY_NO_DISCARD
     DyadicInterval shrink_to_contained_end(power_t arg = 1) const;
+    RPY_NO_DISCARD
     DyadicInterval shrink_to_omitted_end() const;
     DyadicInterval &shrink_interval_right();
     DyadicInterval &shrink_interval_left(power_t arg = 1);
@@ -95,7 +97,9 @@ public:
 
     DyadicInterval &flip_interval();
 
+    RPY_NO_DISCARD
     DyadicInterval shift_forward(multiplier_t arg = 1) const;
+    RPY_NO_DISCARD
     DyadicInterval shift_back(multiplier_t arg = 1) const;
 
     DyadicInterval &advance() noexcept;
