@@ -33,6 +33,8 @@
 #include <mutex>
 #include <map>
 
+#include <roughpy/platform/serialization.h>
+
 
 
 namespace rpy {
@@ -49,11 +51,16 @@ public:
 private:
     resolution_t m_accuracy;
     Lie m_lie;
-    data_increment m_sibling;
-    data_increment m_parent;
+    data_increment m_sibling = data_increment();
+    data_increment m_parent = data_increment();
 
 public:
-    DataIncrement(Lie &&val, resolution_t accuracy, data_increment sibling, data_increment parent)
+
+    DataIncrement() : m_accuracy(-1), m_lie(), m_sibling(), m_parent()
+    {}
+
+
+    DataIncrement(Lie &&val, resolution_t accuracy, data_increment sibling = data_increment(), data_increment parent = data_increment())
         : m_accuracy(accuracy), m_lie(std::move(val)),
           m_sibling(sibling), m_parent(parent) {}
 
@@ -122,9 +129,85 @@ public:
 
     algebra::Lie log_signature(const intervals::DyadicInterval &interval, resolution_t resolution, const algebra::Context &ctx) const override;
     algebra::Lie log_signature(const intervals::Interval &domain, resolution_t resolution, const algebra::Context &ctx) const override;
+
+protected:
+
+    template <typename Archive>
+    void store_cache(Archive& archive) const;
+
+    template <typename Archive>
+    void load_cache(Archive& archive, const algebra::Context& ctx);
+
 };
+
+namespace dtl {
+
+struct DataIncrementSafe {
+    intervals::DyadicInterval interval;
+    resolution_t resolution;
+    algebra::Lie content;
+    dimn_t sibling_idx = 0;
+    dimn_t parent_idx = 0;
+};
+
+RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe) {
+    RPY_SERIAL_SERIALIZE_NVP("interval", value.interval);
+    RPY_SERIAL_SERIALIZE_NVP("resolution", value.resolution);
+    RPY_SERIAL_SERIALIZE_NVP("content", value.content);
+    RPY_SERIAL_SERIALIZE_NVP("sibling_idx", value.sibling_idx);
+    RPY_SERIAL_SERIALIZE_NVP("parent_idx", value.parent_idx);
+}
+
+
+}
+
+
+template <typename Archive>
+void DynamicallyConstructedStream::store_cache(Archive &archive) const {
+    std::lock_guard<std::recursive_mutex> access(m_lock);
+    std::map<DyadicInterval, dimn_t> indices;
+    std::vector<dtl::DataIncrementSafe> linear_data;
+    linear_data.reserve(m_data_tree.size());
+
+    dimn_t index = 0;
+    for (const auto& item : m_data_tree) {
+        linear_data.push_back({item.first,
+                                 item.second.accuracy(),
+                                 item.second.lie()});
+        indices[item.first] = index++;
+    }
+
+    for (const auto& item : m_data_tree) {
+        auto& entry = linear_data[indices[item.first]];
+        entry.parent_idx = indices[item.second.parent()->first];
+        entry.sibling_idx = indices[item.second.sibling()->first];
+    }
+
+    RPY_SERIAL_SERIALIZE_NVP("cache_data", linear_data);
+}
+template <typename Archive>
+void DynamicallyConstructedStream::load_cache(Archive &archive, const algebra::Context &ctx) {
+    std::vector<dtl::DataIncrementSafe> linear_data;
+    RPY_SERIAL_SERIALIZE_NVP("cache_data", linear_data);
+
+    for (auto& item : linear_data) {
+        auto& entry = m_data_tree[item.interval];
+        entry.accuracy(item.resolution);
+        entry.lie(std::move(item.content));
+    }
+
+    for (auto& item : linear_data) {
+        auto& entry = m_data_tree[item.interval];
+        entry.parent(m_data_tree.find(linear_data[item.parent_idx].interval));
+        entry.sibling(m_data_tree.find(linear_data[item.sibling_idx].interval));
+    }
+
+}
 
 }// namespace streams
 }// namespace rpy
+
+RPY_SERIAL_CLASS_VERSION(rpy::streams::dtl::DataIncrementSafe, 0);
+
 
 #endif// ROUGHPY_STREAMS_DYNAMICALLY_CONSTRUCTED_STREAM_H_
