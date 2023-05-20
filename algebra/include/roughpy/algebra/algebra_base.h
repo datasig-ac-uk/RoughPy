@@ -517,6 +517,14 @@ namespace dtl {
 ROUGHPY_ALGEBRA_EXPORT
 UnspecifiedAlgebraType try_create_new_empty(context_pointer ctx, AlgebraType alg_type);
 
+template <typename Interface>
+std::unique_ptr<Interface> downcast_interface_ptr(UnspecifiedAlgebraType ptr) {
+    return std::unique_ptr<Interface>(
+        reinterpret_cast<Interface*>(ptr/*.release()*/)
+        );
+}
+
+
 }// namespace dtl
 
 
@@ -969,9 +977,35 @@ void AlgebraBase<Interface, Derived>::save(Archive &archive, const std::uint32_t
     RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
     RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
     RPY_SERIAL_SERIALIZE_NVP("algebra_type", algebra_t::s_alg_type);
-    RPY_SERIAL_SERIALIZE_NVP("raw_data", alg_to_raw_bytes(ctx, algebra_t::s_alg_type, p_impl.get()));
+
+    auto stype = storage_type();
+    RPY_SERIAL_SERIALIZE_NVP("storage_type", stype);
+    RPY_SERIAL_SERIALIZE_NVP("has_values", static_cast<bool>(p_impl));
+
+    if (p_impl) {
+        if (stype == VectorType::Dense) {
+            auto data = *this->dense_data();
+            RPY_SERIAL_SERIALIZE_NVP("dense_data", data);
+        } else {
+            auto sz = this->size();
+            RPY_SERIAL_SERIALIZE_SIZE(sz);
+
+            for (auto&& item : *this) {
+                RPY_SERIAL_SERIALIZE_BARE(std::make_pair(item.key(), item.value()));
+            }
+        }
+
+    }
+
 }
 
+namespace dtl {
+
+ROUGHPY_ALGEBRA_EXPORT
+UnspecifiedAlgebraType construct_dense_algebra(scalars::ScalarArray&& data, const context_pointer& ctx, AlgebraType atype);
+
+
+}
 
 template <typename Interface, template <typename, template <typename> class> class Derived>
 template <typename Archive>
@@ -986,12 +1020,34 @@ void AlgebraBase<Interface, Derived>::load(Archive& archive, const std::uint32_t
 
     AlgebraType atype;
     RPY_SERIAL_SERIALIZE_NVP("algebra_type", atype);
-    std::vector<byte> raw_data;
-    RPY_SERIAL_SERIALIZE_NVP("raw_data", raw_data);
-    UnspecifiedAlgebraType alg = alg_from_raw_bytes(ctx, atype, raw_data);
 
-    RPY_CHECK(algebra_t::s_alg_type == atype);
-    p_impl = std::unique_ptr<Interface>(reinterpret_cast<Interface*>(alg/*.release()*/));
+    VectorType vtype;
+    RPY_SERIAL_SERIALIZE_NVP("storage_type", vtype);
+
+    bool has_values;
+    RPY_SERIAL_SERIALIZE_VAL(has_values);
+
+    if (!has_values) {
+        return;
+    }
+
+    if (vtype == VectorType::Dense) {
+
+        scalars::ScalarArray tmp;
+        RPY_SERIAL_SERIALIZE_NVP("dense_data", tmp);
+        p_impl = dtl::downcast_interface_ptr<Interface>(dtl::construct_dense_algebra(std::move(tmp), ctx, atype));
+    } else {
+        p_impl = dtl::downcast_interface_ptr<Interface>(dtl::try_create_new_empty(ctx, atype));
+
+        dimn_t size;
+        RPY_SERIAL_SERIALIZE_SIZE(size);
+
+        for (dimn_t i=0; i<size; ++i) {
+            std::pair<typename Interface::key_type, scalars::Scalar> val;
+            RPY_SERIAL_SERIALIZE_BARE(val);
+            p_impl->get_mut(val.first) = val.second;
+        }
+    }
 }
 
 
