@@ -60,3 +60,8 @@ DynamicallyConstructedStream::Lie BrownianStream::make_new_root_increment(Dynami
 DynamicallyConstructedStream::Lie BrownianStream::make_neighbour_root_increment(DynamicallyConstructedStream::DyadicInterval neighbour_di) const {
    return gaussian_increment(*metadata().default_context, neighbour_di.sup() - neighbour_di.inf());
 }
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::BrownianStream
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>
