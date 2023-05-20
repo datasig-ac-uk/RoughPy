@@ -44,6 +44,8 @@ void StreamInterface::set_metadata(StreamMetadata &&md) noexcept {
     m_metadata = std::move(md);
 }
 
+StreamInterface::~StreamInterface() noexcept = default;
+
 bool StreamInterface::empty(const intervals::Interval &interval) const noexcept {
     if (interval.type() == intervals::IntervalType::Clopen) {
         return interval.sup() < m_metadata.effective_support.inf()

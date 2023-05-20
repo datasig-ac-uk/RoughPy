@@ -82,6 +82,7 @@ public:
 
     explicit StreamInterface(StreamMetadata md) : m_metadata(std::move(md)) {}
 
+    virtual ~StreamInterface() noexcept;
     virtual bool empty(const intervals::Interval &interval) const noexcept;
 
 protected:
