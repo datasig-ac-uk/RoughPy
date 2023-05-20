@@ -240,10 +240,11 @@ public:
     void assign(const algebra_t& arg) override;
 private:
 
-    template <typename B, typename=enable_if_t<is_detected<dtl::d_has_as_ptr_t, B>::value>>
-    optional<scalars::ScalarArray> dense_data_impl(const B& data) const;
+    template <typename B>
+    optional<scalars::ScalarArray> dense_data_impl(const B& data, integral_constant<bool, true>) const;
 
-    optional<scalars::ScalarArray> dense_data_impl(...) const;
+    template <typename B>
+    optional<scalars::ScalarArray> dense_data_impl(const B& data, integral_constant<bool, false>) const;
 
 public:
 
@@ -419,15 +420,17 @@ void AlgebraImplementation<Interface, Impl, StorageModel>::assign(const algebra_
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
 optional<scalars::ScalarArray> AlgebraImplementation<Interface, Impl, StorageModel>::dense_data() const {
-    return dense_data_impl(data().base_vector());
+    using tag = integral_constant<bool, is_detected<dtl::d_has_as_ptr_t, decltype(data().base_vector())>::value>;
+    return dense_data_impl(data().base_vector(), tag());
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
-template <typename B, typename>
-optional<scalars::ScalarArray> AlgebraImplementation<Interface, Impl, StorageModel>::dense_data_impl(const B &data) const {
+template <typename B>
+optional<scalars::ScalarArray> AlgebraImplementation<Interface, Impl, StorageModel>::dense_data_impl(const B &data, integral_constant<bool, true>) const {
     return scalars::ScalarArray{{Interface::coeff_type(), data.as_ptr()}, data.dimension()};
 }
 template <typename Interface, typename Impl, template <typename> class StorageModel>
-optional<scalars::ScalarArray> AlgebraImplementation<Interface, Impl, StorageModel>::dense_data_impl(...) const {
+template <typename B>
+optional<scalars::ScalarArray> AlgebraImplementation<Interface, Impl, StorageModel>::dense_data_impl(const B& data, integral_constant<bool, false>) const {
     return Interface::dense_data();
 }
 
