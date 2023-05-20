@@ -52,45 +52,62 @@ public:
 
     scalars::RandomGenerator& generator() noexcept { return *p_generator; }
 
+    BrownianStream() : DynamicallyConstructedStream({}), p_generator(nullptr) {}
+
     BrownianStream(std::unique_ptr<scalars::RandomGenerator> generator, StreamMetadata md)
         : DynamicallyConstructedStream(std::move(md)), p_generator(std::move(generator))
     {}
 
 
-    RPY_SERIAL_SERIALIZE_FN();
+    RPY_SERIAL_SAVE_FN();
+    RPY_SERIAL_LOAD_FN();
+
+    template <typename Archive>
+    void restore_cached(Archive& archive, const algebra::Context& ctx) {
+        load_cache(archive, ctx);
+    }
 
 };
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(BrownianStream) {
+RPY_SERIAL_SAVE_FN_IMPL(BrownianStream) {
     auto md = metadata();
     RPY_SERIAL_SERIALIZE_NVP("metadata", md);
     std::string generator = p_generator->get_type();
+    RPY_SERIAL_SERIALIZE_NVP("seed", p_generator->get_seed());
     RPY_SERIAL_SERIALIZE_NVP("generator", generator);
     auto state = p_generator->get_state();
     RPY_SERIAL_SERIALIZE_NVP("state", state);
+
+    this->store_cache(archive);
 }
 
-}
-}// namespace rpy
-
-RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::BrownianStream) {
-    using namespace rpy;
-    using namespace rpy::streams;
-
+RPY_SERIAL_LOAD_FN_IMPL(BrownianStream) {
     StreamMetadata md;
     RPY_SERIAL_SERIALIZE_NVP("metadata", md);
+    const auto *stype = md.data_scalar_type;
+    set_metadata(std::move(md));
 
     std::string generator;
     RPY_SERIAL_SERIALIZE_VAL(generator);
 
+    std::vector<uint64_t> seed;
+    RPY_SERIAL_SERIALIZE_VAL(seed);
+
     std::string state;
     RPY_SERIAL_SERIALIZE_VAL(state);
-    const auto *stype = md.data_scalar_type;
 
-    construct(stype->get_rng(generator), std::move(md));
+    RPY_DBG_ASSERT(stype != nullptr);
 
-    construct->generator().set_state(state);
+    p_generator = stype->get_rng(generator);
+    p_generator->set_seed(seed);
+    p_generator->set_state(state);
+    restore_cached(archive, *metadata().default_context);
+
+
 }
+
+}
+}// namespace rpy
 
 
 RPY_SERIAL_REGISTER_CLASS(rpy::streams::BrownianStream)
