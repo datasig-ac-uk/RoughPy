@@ -31,6 +31,7 @@
 
 #include "brownian_stream.h"
 #include <gtest/gtest.h>
+#include <sstream>
 
 using namespace rpy;
 
@@ -83,4 +84,44 @@ TEST_F(BrownianStreamTests, TestLogSignatureResolutions) {
 
     EXPECT_EQ(top, ctx->cbh(bottom_left, bottom_right, vtype));
 
+}
+
+
+TEST_F(BrownianStreamTests, Serialization) {
+
+    // Prime the cache with some values
+    DyadicInterval unit(0, 0);
+    auto first = bm.log_signature(unit, 5, *ctx);
+
+    DyadicInterval unit12(1, 0);
+    auto second = bm.log_signature(unit12, 8, *ctx);
+
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive oarch(ss);
+        oarch(bm);
+    }
+
+
+    streams::BrownianStream instream;
+    {
+        archives::JSONInputArchive iarch(ss);
+        iarch(instream);
+    }
+
+    auto first1 = instream.log_signature(unit, 5, *ctx);
+    ASSERT_EQ(first, first1);
+    auto second1 = instream.log_signature(unit12, 8, *ctx);
+    ASSERT_EQ(second, second1);
+
+    DyadicInterval twice(0, -1);
+    auto third = instream.log_signature(twice, 5, *ctx);
+
+    auto expected = bm.log_signature(twice, 5, *ctx);
+    ASSERT_EQ(third, expected);
+
+    DyadicInterval unit32(2, 0);
+    auto in_new = bm.log_signature(unit32, 2, *ctx);
+    auto out_new = instream.log_signature(unit32, 2, *ctx);
+    ASSERT_EQ(in_new, out_new);
 }
