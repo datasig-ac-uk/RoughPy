@@ -85,6 +85,9 @@ public:
     virtual bool empty(const intervals::Interval &interval) const noexcept;
 
 protected:
+
+    void set_metadata(StreamMetadata&& md) noexcept;
+
     virtual algebra::Lie
     log_signature_impl(const intervals::Interval &interval,
                        const algebra::Context &ctx) const = 0;
