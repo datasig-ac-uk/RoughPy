@@ -99,7 +99,7 @@ class MaybeOwned {
 
 public:
 
-    constexpr MaybeOwned(nullptr_t) : p_data(nullptr), m_state(IsOwned) {}
+    constexpr MaybeOwned(std::nullptr_t) : p_data(nullptr), m_state(IsOwned) {}
     constexpr MaybeOwned(T* ptr) : p_data(ptr), m_state(IsBorrowed) {}
 
     ~MaybeOwned() {

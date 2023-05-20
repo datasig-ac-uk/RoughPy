@@ -58,7 +58,7 @@ public:
 
     constexpr Slice(T &num) : p_data(&num), m_size(1) {}
 
-    constexpr Slice(nullptr_t) : p_data(nullptr), m_size(0) {}
+    constexpr Slice(std::nullptr_t) : p_data(nullptr), m_size(0) {}
 
     template <typename Container, typename = enable_if_t<is_same<typename Container::value_type, T>::value>>
     constexpr Slice(Container &container)
