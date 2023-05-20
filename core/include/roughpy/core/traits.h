@@ -48,6 +48,7 @@
 namespace rpy {
 
 using std::declval;
+using std::integral_constant;
 
 using std::is_array;
 using std::is_class;
