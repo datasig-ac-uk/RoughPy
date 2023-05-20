@@ -32,17 +32,16 @@
 #ifndef ROUGHPY_ROUGHPY_SRC_ROUGHPY_MODULE_H
 #define ROUGHPY_ROUGHPY_SRC_ROUGHPY_MODULE_H
 
+#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/functional.h>
 #include <roughpy/core/implementation_types.h>
 
-#if defined(__GNUC__) || defined(CLANG)
-#  define RPY_NO_EXPORT __attribute__((visibility("hidden")))
+#if defined(RPY_GCC)
+#define RPY_NO_EXPORT __attribute__((visibility("hidden")))
 #else
-#  define RPY_NO_EXPORT
+#define RPY_NO_EXPORT
 #endif
-
 
 #ifndef RPY_CPP_17
 // `boost::optional` as an example -- can be any `std::optional`-like container
@@ -50,20 +49,19 @@ namespace PYBIND11_NAMESPACE {
 namespace detail {
 template <typename T>
 struct type_caster<boost::optional<T>> : public optional_caster<boost::optional<T>> {};
-}}
+}// namespace detail
+}// namespace PYBIND11_NAMESPACE
 #endif
 
 namespace py = pybind11;
 namespace rpy { namespace RPY_NO_EXPORT python {
 
 template <typename T>
-inline PyObject* cast_to_object(T&& arg) noexcept {
+inline PyObject *cast_to_object(T &&arg) noexcept {
     return py::cast(std::forward<T>(arg)).release().ptr();
 }
 
-
-
-}}
-
+}// namespace RPY_NO_EXPORT python
+}// namespace rpy
 
 #endif//ROUGHPY_ROUGHPY_SRC_ROUGHPY_MODULE_H
