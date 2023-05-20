@@ -72,20 +72,21 @@
 #define RPY_SERIAL_SERIALIZE_BYTES(NAME, P, N) archive(::cereal::make_nvp(NAME, ::cereal::binary_data(P, N)))
 #define RPY_SERIAL_SPECIALIZE_TYPES(T, M) \
     CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(T, M)
+#define RPY_SERIAL_SERIALIZE_BARE(V) archive(V)
 #define RPY_SERIAL_REGISTER_CLASS(T) CEREAL_REGISTER_TYPE(T)
 
-#define RPY_SERIAL_LOAD_AND_CONSTRUCT(T)                                                     \
-    namespace cereal {                                                                       \
-    template <>                                                                              \
-    struct LoadAndConstruct<T> {                                                             \
-                                                                                             \
-        template <typename Archive>                                                          \
+#define RPY_SERIAL_LOAD_AND_CONSTRUCT(T)                                                                                  \
+    namespace cereal {                                                                                                    \
+    template <>                                                                                                           \
+    struct LoadAndConstruct<T> {                                                                                          \
+                                                                                                                          \
+        template <typename Archive>                                                                                       \
         static void load_and_construct(Archive &archive, ::cereal::construct<T> &construct); \
-    };                                                                                       \
-    }                                                                                        \
-                                                                                             \
-    template <typename Archive>                                                              \
-    void cereal::LoadAndConstruct<T>::load_and_construct(Archive &archive,                   \
+    };                                                                                                                    \
+    }                                                                                                                     \
+                                                                                                                          \
+    template <typename Archive>                                                                                           \
+    void cereal::LoadAndConstruct<T>::load_and_construct(Archive &archive,                                                \
                                                          ::cereal::construct<T> &construct)
 
 #else
