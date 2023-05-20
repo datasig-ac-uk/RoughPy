@@ -54,5 +54,10 @@ const rpy::scalars::ScalarType *rpy::algebra::dtl::context_to_scalars(context_po
 }
 
 UnspecifiedAlgebraType rpy::algebra::dtl::try_create_new_empty(context_pointer ctx, AlgebraType alg_type)  {
-    return nullptr;
+    return ctx->construct(alg_type, {});
+}
+
+UnspecifiedAlgebraType algebra::dtl::construct_dense_algebra(scalars::ScalarArray &&data, const context_pointer &ctx, AlgebraType atype) {
+    VectorConstructionData cdata { {std::move(data), nullptr}, VectorType::Dense };
+    return ctx->construct(atype, cdata);
 }
