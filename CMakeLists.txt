@@ -114,3 +114,20 @@ endif()
 if(ROUGHPY_BUILD_LA_CONTEXTS)
     add_subdirectory(la_context)
 endif()
+
+
+
+
+
+install(TARGETS
+        RoughPy_Core
+        RoughPy_Platform
+        RoughPy_Scalars
+        RoughPy_Intervals
+        RoughPy_Algebra
+        RoughPy_Streams
+        RoughPy_PyModule
+        RUNTIME DESTINATION roughpy
+        LIBRARY DESTINATION roughpy
+        ARCHIVE DESTINATION roughpy
+        )
