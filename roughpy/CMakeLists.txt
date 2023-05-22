@@ -122,10 +122,3 @@ get_target_property(RoughPy_Streams_VERSION RoughPy::Streams VERSION)
 
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)
-
-
-
-install(TARGETS RoughPy_PyModule
-        RUNTIME_DEPENDENCIES
-        LIBRARY DESTINATION roughpy
-        )

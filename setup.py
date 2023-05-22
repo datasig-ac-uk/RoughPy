@@ -1,6 +1,8 @@
 import io
 import os
 import fnmatch
+import sys
+import re
 
 from skbuild import setup
 from pathlib import Path
@@ -23,24 +25,38 @@ CMAKE_SETTINGS = []
 
 
 def filter_cmake_manifests(items: list[str]) -> list[str]:
-
     def _filter(item):
         item = str(item)
         if item.endswith(".pc"):
             return False
+
         if item.endswith(".cmake"):
             return False
+
         if item.endswith(".cpp"):
             return False
+
         if item.endswith(".h"):
             return False
-        if item == "librecombine.so":
+
+        if item.endswith(".a"):
             return False
-        if fnmatch.fnmatch(item, "librecombine.so.*.*"):
+
+        m = re.search(r"[a-zA-Z0-9_]+\.so\.\d+(?:\.\d+\.\d+)?$", item)
+        if m is not None:
             return False
+
+        # if item.endswith("recombine.so"):
+        #     return False
+
         return True
 
-    return list(filter(_filter, items))
+
+    manifest = list(filter(_filter, items))
+    with open("manifests.txt", "wt") as fp:
+        print(*manifest, sep='\n', file=fp)
+    return manifest
+
 
 setup(
     name="roughpy",

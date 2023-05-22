@@ -110,11 +110,10 @@ function(add_roughpy_lib _name)
             VISIBILITY_INLINES_HIDDEN ON
             VERSION "${PROJECT_VERSION}"
             )
-    if (_lib_type STREQUAL SHARED)
-        set_target_properties(${_real_name} PROPERTIES
-                SOVERSION ${PROJECT_VERSION_MAJOR})
-
-    endif ()
+#    if (_lib_type STREQUAL SHARED)
+#        set_target_properties(${_real_name} PROPERTIES
+#                SOVERSION ${PROJECT_VERSION_MAJOR})
+#    endif ()
 
     if (_lib_type STREQUAL STATIC)
         set_target_properties(${_real_name} PROPERTIES

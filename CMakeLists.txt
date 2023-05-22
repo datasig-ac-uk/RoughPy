@@ -118,19 +118,19 @@ endif()
 
 
 
-#
-#
-#install(TARGETS
-#        RoughPy_Core
-#        RoughPy_Platform
-#        RoughPy_Scalars
-#        RoughPy_Intervals
-#        RoughPy_Algebra
-#        RoughPy_Streams
-#        RoughPy_PyModule
-#        RUNTIME DESTINATION roughpy
-#        LIBRARY
-#            DESTINATION roughpy
-#            NAMELINK_SKIP
-#        ARCHIVE DESTINATION roughpy
-#        )
+
+
+install(TARGETS
+        RoughPy_Core
+        RoughPy_Platform
+        RoughPy_Scalars
+        RoughPy_Intervals
+        RoughPy_Algebra
+        RoughPy_Streams
+        RoughPy_PyModule
+        RUNTIME DESTINATION roughpy
+        LIBRARY
+            DESTINATION roughpy
+            NAMELINK_SKIP
+        ARCHIVE DESTINATION roughpy
+        )
