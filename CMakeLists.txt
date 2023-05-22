@@ -92,6 +92,7 @@ if(NOT TARGET csv::csv)
     add_library(csv::csv ALIAS csv)
     target_include_directories(csv INTERFACE
             external/csv-parser/include)
+    set_target_properties(csv PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
 set(BUILD_DOC OFF CACHE INTERNAL "disable cereal docs")
