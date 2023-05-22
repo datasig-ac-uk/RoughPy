@@ -26,7 +26,7 @@ option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 
 set(PYBIND11_FINDPYTHON ON)
 if (NOT PYTHON_FOUND AND SKBUILD)
-    cmake_path(GET "${PYTHON_EXECUTABLE}" PARENT_PATH _sk_env_dir)
+    cmake_path(GET PYTHON_EXECUTABLE PARENT_PATH _sk_env_dir)
     message(STATUS "SKBuild environment: ${_sk_env_dir}")
 
     # Some variables that are set might cause issues in the FindPython module,
