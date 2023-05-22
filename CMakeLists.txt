@@ -129,6 +129,8 @@ install(TARGETS
         RoughPy_Streams
         RoughPy_PyModule
         RUNTIME DESTINATION roughpy
-        LIBRARY DESTINATION roughpy
+        LIBRARY
+            DESTINATION roughpy
+            NAMELINK_ONLY
         ARCHIVE DESTINATION roughpy
         )
