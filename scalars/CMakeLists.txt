@@ -8,6 +8,9 @@ project(RoughPyScalars
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
 option(RPY_SCALARS_SHARED "Build shared RoughPy scalars module" ON)
 
 set(RPY_USE_MKL ${MKL_FOUND})
