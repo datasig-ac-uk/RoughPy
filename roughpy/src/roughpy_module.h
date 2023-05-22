@@ -54,7 +54,7 @@ struct type_caster<boost::optional<T>> : public optional_caster<boost::optional<
 #endif
 
 namespace py = pybind11;
-namespace rpy { namespace RPY_NO_EXPORT python {
+namespace rpy { namespace python {
 
 template <typename T>
 inline PyObject *cast_to_object(T &&arg) noexcept {
