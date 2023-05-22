@@ -59,7 +59,7 @@
 #undef RPY_MSVC
 #endif
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #define RPY_GCC
 #else
 #undef RPY_GCC
