@@ -131,6 +131,6 @@ install(TARGETS
         RUNTIME DESTINATION roughpy
         LIBRARY
             DESTINATION roughpy
-            NAMELINK_ONLY
+            NAMELINK_SKIP
         ARCHIVE DESTINATION roughpy
         )
