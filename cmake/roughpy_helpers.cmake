@@ -106,6 +106,7 @@ function(add_roughpy_lib _name)
     set_target_properties(${_real_name} PROPERTIES
             PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
             LINKER_LANGUAGE CXX
+            NO_SONAME ON
             CXX_DEFAULT_VISIBILITY hidden
             VISIBILITY_INLINES_HIDDEN ON
             VERSION "${PROJECT_VERSION}"
