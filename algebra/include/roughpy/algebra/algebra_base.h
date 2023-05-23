@@ -34,10 +34,10 @@
 #include <stdexcept>
 #include <type_traits>
 
-#include <roughpy/core/implementation_types.h>
+#include <roughpy/core/types.h>
+#include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
-#include <roughpy/platform/serialization.h>
 
 #include "algebra_iterator.h"
 #include "context_fwd.h"

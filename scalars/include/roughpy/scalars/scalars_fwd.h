@@ -40,7 +40,7 @@
 #include <type_traits>
 
 #include <roughpy/core/traits.h>
-#include <roughpy/core/implementation_types.h>
+#include <roughpy/core/types.h>
 
 #include <Eigen/Core>
 

@@ -28,12 +28,12 @@
 #ifndef ROUGHPY_STREAMS_STREAM_BASE_H_
 #define ROUGHPY_STREAMS_STREAM_BASE_H_
 
-#include <roughpy/algebra/context.h>
-#include <roughpy/core/implementation_types.h>
-#include <roughpy/intervals/real_interval.h>
-#include <roughpy/platform/serialization.h>
 #include "roughpy/intervals/dyadic_interval.h"
 #include "roughpy_streams_export.h"
+#include <roughpy/algebra/context.h>
+#include <roughpy/core/types.h>
+#include <roughpy/intervals/real_interval.h>
+#include <roughpy/platform/serialization.h>
 
 namespace rpy {
 namespace streams {

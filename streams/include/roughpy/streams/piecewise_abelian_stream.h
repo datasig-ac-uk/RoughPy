@@ -33,7 +33,7 @@
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/free_tensor.h>
 #include <roughpy/algebra/lie.h>
-#include <roughpy/core/implementation_types.h>
+#include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
 namespace rpy {

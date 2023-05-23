@@ -9,7 +9,7 @@ include(GNUInstallDirs)
 
 add_roughpy_lib(Core INTERFACE
     PUBLIC_HEADERS
-        include/roughpy/core/implementation_types.h
+        include/roughpy/core/types.h
         include/roughpy/core/traits.h
         include/roughpy/core/macros.h
         include/roughpy/core/helpers.h

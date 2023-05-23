@@ -32,8 +32,8 @@
 #ifndef ROUGHPY_PLATFORM_CONFIGURATION_H
 #define ROUGHPY_PLATFORM_CONFIGURATION_H
 
-#include <roughpy/core/implementation_types.h>
 #include <roughpy/core/traits.h>
+#include <roughpy/core/types.h>
 
 #include <memory>
 

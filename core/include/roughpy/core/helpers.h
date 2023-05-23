@@ -28,9 +28,9 @@
 #ifndef ROUGHPY_CORE_POINTER_HELPERS_H_
 #define ROUGHPY_CORE_POINTER_HELPERS_H_
 
-#include "implementation_types.h"
-#include "traits.h"
 #include "macros.h"
+#include "traits.h"
+#include "types.h"
 
 #include <bitset>
 #include <climits>

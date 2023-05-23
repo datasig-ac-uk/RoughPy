@@ -29,7 +29,7 @@
 #define ROUGHPY_INTERVALS_INTERVAL_H_
 
 #include "roughpy_intervals_export.h"
-#include <roughpy/core/implementation_types.h>
+#include <roughpy/core/types.h>
 
 #include <iosfwd>
 
