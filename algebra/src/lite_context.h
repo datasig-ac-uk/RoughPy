@@ -214,6 +214,7 @@ template <typename OutType, typename InType>
 OutType LiteContext<Coefficients>::convert_impl(const InType &arg, const lal::basis_pointer<typename OutType::basis_type> &basis, const std::shared_ptr<const typename OutType::multiplication_type> &mul) const {
     OutType result(basis, mul);
 
+    // TODO: Needs implementation
     if (arg->context() == this) {
 
     }
