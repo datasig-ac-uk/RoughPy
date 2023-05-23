@@ -476,19 +476,19 @@ typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Co
 
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::construct_impl(const VectorConstructionData &data, dtl::alg_type_tag<AlgebraType::FreeTensor>) const {
-#define RPY_SWITCH_FN(VTYPE) new FreeTensorImplementation<free_tensor_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<free_tensor_t<(VTYPE)>>(data, p_tbasis, p_ftmul))
+#define RPY_SWITCH_FN(VTYPE) UnspecifiedAlgebraType(new FreeTensorImplementation<free_tensor_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<free_tensor_t<(VTYPE)>>(data, p_tbasis, p_ftmul)))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::construct_impl(const VectorConstructionData &data, dtl::alg_type_tag<AlgebraType::ShuffleTensor>) const {
-#define RPY_SWITCH_FN(VTYPE) new AlgebraImplementation<ShuffleTensorInterface, shuffle_tensor_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<shuffle_tensor_t<(VTYPE)>>(data, p_tbasis, p_stmul))
+#define RPY_SWITCH_FN(VTYPE) UnspecifiedAlgebraType(new AlgebraImplementation<ShuffleTensorInterface, shuffle_tensor_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<shuffle_tensor_t<(VTYPE)>>(data, p_tbasis, p_stmul)))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::construct_impl(const VectorConstructionData &data, dtl::alg_type_tag<AlgebraType::Lie>) const {
-#define RPY_SWITCH_FN(VTYPE) new AlgebraImplementation<LieInterface, lie_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<lie_t<(VTYPE)>>(data, p_lbasis, p_liemul))
+#define RPY_SWITCH_FN(VTYPE) UnspecifiedAlgebraType(new AlgebraImplementation<LieInterface, lie_t<(VTYPE)>, OwnedStorageModel>(this, construct_impl<lie_t<(VTYPE)>>(data, p_lbasis, p_liemul)))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
 #undef RPY_SWITCH_FN
 }

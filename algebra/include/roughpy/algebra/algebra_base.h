@@ -520,7 +520,7 @@ UnspecifiedAlgebraType try_create_new_empty(context_pointer ctx, AlgebraType alg
 template <typename Interface>
 std::unique_ptr<Interface> downcast_interface_ptr(UnspecifiedAlgebraType ptr) {
     return std::unique_ptr<Interface>(
-        reinterpret_cast<Interface*>(ptr/*.release()*/)
+        reinterpret_cast<Interface*>(ptr.release())
         );
 }
 
@@ -541,10 +541,9 @@ AlgebraBase<Interface, DerivedImpl>::AlgebraBase(context_pointer ctx)
      * point to an object of type Interface, or a null pointer if this
      * construction is not possible.
      */
-    // TODO: this can leak if an exception occurs before construction is complete.
-    // Return a unique_ptr and play with the type afterwards
-    p_impl = std::unique_ptr<Interface>(
-        static_cast<Interface *>(dtl::try_create_new_empty(std::move(ctx), algebra_t::s_alg_type)));
+
+    p_impl = dtl::downcast_interface_ptr<Interface>(
+        dtl::try_create_new_empty(std::move(ctx), algebra_t::s_alg_type));
 }
 
 template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
