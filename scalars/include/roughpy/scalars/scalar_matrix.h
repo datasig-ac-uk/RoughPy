@@ -78,7 +78,7 @@ public:
     RPY_NO_DISCARD constexpr MatrixStorage storage() const noexcept { return m_storage; }
 
     constexpr void storage(MatrixStorage new_storage) {
-        //TODO: Check if htis requies allocaiton or something
+        //TODO: Check if this requires allocation or something
         m_storage = new_storage;
     }
 
