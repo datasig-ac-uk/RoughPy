@@ -28,7 +28,6 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
 
-#include "rational_type.h"
 #include "roughpy_scalars_export.h"
 #include "scalars_fwd.h"
 
@@ -441,6 +440,7 @@ ROUGHPY_MAKE_TYPE_ID_OF(bfloat16, "bf16");
 ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
 ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
 ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational");
+ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
 
 // Long is silly. On Win64 it is 32 bits (because, Microsoft) on Unix, it is 64 bits
 template <>
@@ -477,6 +477,10 @@ struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_scalar_type> {
     static const ScalarType* get_type() noexcept;
 };
 
+template <>
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_poly_scalar> {
+    static const ScalarType* get_type() noexcept;
+};
 
 template <>
 struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<half> {

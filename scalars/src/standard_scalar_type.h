@@ -68,14 +68,17 @@ class StandardScalarType : public ScalarType {
 
 public:
     explicit StandardScalarType(string id, string name)
-        : ScalarType({{ScalarTypeCode::Float,
-                       sizeof_bits<ScalarImpl>(),
-                       1U},
-                      {ScalarDeviceType::CPU, 0},
-                      std::move(name),
-                      std::move(id),
-                      sizeof(ScalarImpl),
-                      alignof(ScalarImpl)}) {}
+        : ScalarType({
+             std::move(name),
+             std::move(id),
+             sizeof(ScalarImpl),
+             alignof(ScalarImpl),
+             {ScalarTypeCode::Float,
+             sizeof_bits<ScalarImpl>(),
+             1U},
+             {ScalarDeviceType::CPU, 0}
+        })
+    {}
 
     Scalar from(long long int numerator, long long int denominator) const override {
         return Scalar(this, ScalarImpl(numerator) / ScalarImpl(denominator));

@@ -43,6 +43,7 @@
 #include "double_type.h"
 #include "float_type.h"
 #include "half_type.h"
+#include "rational_poly_scalar_type.h"
 
 using namespace rpy;
 using namespace scalars;
@@ -159,6 +160,12 @@ const ScalarType *rpy::scalars::dtl::scalar_type_holder<bfloat16>::get_type() no
     return &bf16type;
 }
 
+const ScalarType* rpy::scalars::dtl::scalar_type_holder<rational_poly_scalar>::get_type() noexcept {
+    static const RationalPolyScalarType rpolscaltype;
+    return &rpolscaltype;
+}
+
+
 /*
  * All types should support conversion from the following,
  * but these are not represented as scalar types by themselves.
@@ -167,7 +174,7 @@ const ScalarType *rpy::scalars::dtl::scalar_type_holder<bfloat16>::get_type() no
  */
 
 #define ADD_RES_PAIR(name, type, code) \
-    pair<string, ScalarTypeInfo>((name), {BasicScalarInfo({(code), CHAR_BIT * sizeof(type), 1}), {ScalarDeviceType::CPU, 0}, (name), (name), sizeof(type), alignof(type)})
+    pair<string, ScalarTypeInfo>((name), {(name), (name), sizeof(type), alignof(type), BasicScalarInfo({(code), CHAR_BIT * sizeof(type), 1}), {ScalarDeviceType::CPU, 0}})
 
 static const pair<string, ScalarTypeInfo> reserved[] = {
     ADD_RES_PAIR("i32", int32_t, ScalarTypeCode::Int),

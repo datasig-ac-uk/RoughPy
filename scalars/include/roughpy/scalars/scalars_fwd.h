@@ -34,23 +34,40 @@
 
 #include "roughpy_scalars_export.h"
 
-#include <cassert>
-#include <cstdint>
-#include <stdexcept>
-#include <type_traits>
 
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
+#include <libalgebra_lite/coefficients.h>
+#include <libalgebra_lite/polynomial.h>
 #include <Eigen/Core>
+
+#ifdef LAL_NO_USE_GMP
+#define RPY_USING_GMP 0
+#else
+#define RPY_USING_GMP 1
+#endif
+
 
 namespace rpy {
 namespace scalars {
 
+/// IEEE half-precision floating point type
 using Eigen::half;
+
+/// BFloat16 (truncated) floating point type
 using Eigen::bfloat16;
 
+/// Rational scalar type
+using rational_scalar_type = lal::rational_field::scalar_type;
+
+/// Polynomial (with rational coefficients) scalar type
+using rational_poly_scalar = lal::polynomial<lal::rational_field>;
+
+/// Marker for signed size type (ptrdiff_t)
 struct signed_size_type_marker {};
+
+/// Marker for unsigned size type (size_t)
 struct unsigned_size_type_marker {};
 
 /**
@@ -126,12 +143,12 @@ struct BasicScalarInfo {
  * @brief A collection of basic information for identifying a scalar type.
  */
 struct ScalarTypeInfo {
-    BasicScalarInfo basic_info;
-    ScalarDeviceInfo device;
     string name;
     string id;
     std::size_t n_bytes;
     std::size_t alignment;
+    BasicScalarInfo basic_info;
+    ScalarDeviceInfo device;
 };
 
 
