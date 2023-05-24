@@ -11,7 +11,7 @@ include(GenerateExportHeader)
 find_package(Boost 1.64 CONFIG REQUIRED COMPONENTS headers)
 
 
-add_roughpy_lib(Streams
+add_roughpy_lib(Streams STATIC
     SOURCES
         src/stream_base.cpp
         src/stream.cpp

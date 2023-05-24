@@ -8,15 +8,14 @@ project(RoughPyScalars
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+
 
 option(RPY_POLY_SCALARS "Build polynomial scalar types" ON)
 
 set(RPY_USE_MKL ${MKL_FOUND})
 
 configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
-add_roughpy_lib(Scalars SHARED
+add_roughpy_lib(Scalars STATIC
     SOURCES
         src/scalar_type.cpp
         src/scalar_pointer.cpp

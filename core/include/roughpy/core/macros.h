@@ -71,7 +71,50 @@
 #undef RPY_CLANG
 #endif
 
+#if defined(__linux__)
+#  define RPY_PLATFORM_LINUX 1
+#elif defined(__APPLE__) && defined(__MACH__)
+#  define RPY_PLATFORM_MACOS 1
+#elif defined(_WIN32)
+#  define RPY_PLATFORM_WINDOWS 1
+#endif
 
+
+#if defined(RPY_PLATFORM_WINDOWS) || defined(__CYGWIN__)
+#define RPY_COMPILING_DLL
+#endif
+
+#ifdef RPY_COMPILING_DLL
+#  if RPY_BUILDING_LIBRARY
+#    if defined(RPY_MSVC)
+#      define RPY_EXPORT __declspec(dllexport)
+#      define RPY_LOCAL
+#    else
+#      define RPY_EXPORT __attribute__((dllexport))
+#      define RPY_LOCAL
+#    endif
+#  else
+#    if defined(RPY_MSVC)
+#      define RPY_EXPORT __declspec(dllimport)
+#      define RPY_LOCAL
+#    else
+#      define RPY_EXPORT __attribute__((dllimport))
+#    endif
+#  endif
+#else
+#  if defined(RPY_GCC) || defined (RPY_CLANG)
+#    if defined(RPY_BUILDING_LIBRARY)
+#      define RPY_EXPORT __attribute__((visibility("default")))
+#      define RPY_LOCAL __attribute__((visibility("hidden")))
+#    else
+#      define RPY_EXPORT __attribute__((visibility("default")))
+#      define RPY_LOCAL __attribute__((visibility("hidden")))
+#    endif
+#  else
+#    define RPY_EXPORT
+#    define RPY_LOCAL
+#  endif
+#endif
 
 
 #if RPY_CPP_VERSION >= 201403L

@@ -38,6 +38,8 @@
 
 #include <boost/functional/hash.hpp>
 
+#include "lite_context.h"
+
 using namespace rpy;
 using namespace rpy::algebra;
 
@@ -221,6 +223,10 @@ context_pointer rpy::algebra::get_context(deg_t width, deg_t depth, const scalar
                             const std::vector<std::pair<string, string>> &preferences) {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
     auto& maker_list = get_context_maker_list();
+
+    if (maker_list.empty()) {
+        maker_list.emplace_back(new LiteContextMaker);
+    }
 
     std::vector<const ContextMaker*> found;
     found.reserve(maker_list.size());

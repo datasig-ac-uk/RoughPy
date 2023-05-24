@@ -17,7 +17,10 @@ endif()
 Python_add_library(RoughPy_PyModule MODULE WITH_SOABI)
 set_target_properties(RoughPy_PyModule PROPERTIES
         LIBRARY_OUTPUT_NAME _roughpy
-        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+        )
 
 
 target_sources(RoughPy_PyModule PRIVATE
