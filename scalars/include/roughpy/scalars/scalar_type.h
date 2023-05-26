@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -42,7 +42,6 @@
 namespace rpy {
 namespace scalars {
 
-
 namespace dtl {
 template <typename T>
 struct type_id_of_impl;
@@ -52,16 +51,11 @@ struct type_id_of_impl;
 template <typename T>
 inline const string &type_id_of() noexcept;
 
-
-
 struct RingCharacteristics {
-    unsigned is_field: 1;
-    unsigned is_ordered: 1;
-    unsigned has_sqrt: 1;
+    unsigned is_field : 1;
+    unsigned is_ordered : 1;
+    unsigned has_sqrt : 1;
 };
-
-
-
 
 class ROUGHPY_SCALARS_EXPORT ScalarType {
     ScalarTypeInfo m_info;
@@ -72,13 +66,10 @@ protected:
 
 public:
     template <typename T>
-    RPY_NO_DISCARD
-    static const ScalarType *of();
+    RPY_NO_DISCARD static const ScalarType *of();
 
     template <typename T>
-    RPY_NO_DISCARD
-    static const ScalarType* of(const ScalarDeviceInfo& device);
-
+    RPY_NO_DISCARD static const ScalarType *of(const ScalarDeviceInfo &device);
 
     /*
      * ScalarTypes objects should be unique for each configuration,
@@ -99,7 +90,7 @@ public:
      * @return const pointer to appropriate scalar type
      */
     RPY_NO_DISCARD
-    static const ScalarType* for_id(const string& id);
+    static const ScalarType *for_id(const string &id);
 
     /**
      * @brief Get the most appropriate scalar type for type info
@@ -108,7 +99,7 @@ public:
      * @return const pointer to appropriate scalar type
      */
     RPY_NO_DISCARD
-    static const ScalarType* from_type_details(const BasicScalarInfo& details, const ScalarDeviceInfo& device);
+    static const ScalarType *from_type_details(const BasicScalarInfo &details, const ScalarDeviceInfo &device);
 
     /**
      * @brief Get the unique internal ID string for this type
@@ -136,14 +127,14 @@ public:
      * @return pointer to the rational type
      */
     RPY_NO_DISCARD
-    virtual const ScalarType* rational_type() const noexcept;
+    virtual const ScalarType *rational_type() const noexcept;
 
     /**
      * @brief Get the type of this scalar situated on host (CPU)
      * @return pointer to the host type
      */
     RPY_NO_DISCARD
-    virtual const ScalarType* host_type() const noexcept;
+    virtual const ScalarType *host_type() const noexcept;
 
     /**
      * @brief Create a new scalar from numerator and denominator
@@ -175,7 +166,6 @@ public:
      * @param rhs Pointer to right hand scalar
      */
     virtual void swap(ScalarPointer lhs, ScalarPointer rhs) const = 0;
-
 
     virtual void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const = 0;
 
@@ -221,7 +211,6 @@ public:
      */
     RPY_NO_DISCARD
     virtual Scalar parse(string_view str) const;
-
 
     /**
      * @brief Get the scalar whose value is one
@@ -364,7 +353,6 @@ public:
      */
     virtual void print(ScalarPointer arg, std::ostream &os) const;
 
-
     /**
      * @brief Get a new random number generator for this scalar type
      * @param bit_generator Source of randomness used for generating random numbers
@@ -372,8 +360,7 @@ public:
      * @return Pointer to new RandomGenerator instance.
      */
     RPY_NO_DISCARD
-    virtual std::unique_ptr<RandomGenerator> get_rng(const string& bit_generator="", Slice<uint64_t> seed={}) const;
-
+    virtual std::unique_ptr<RandomGenerator> get_rng(const string &bit_generator = "", Slice<uint64_t> seed = {}) const;
 
     /**
      * @brief Get a new instance of a blas interface
@@ -382,7 +369,6 @@ public:
     RPY_NO_DISCARD
     virtual std::unique_ptr<BlasInterface> get_blas() const;
 
-
     /**
      * @brief Produce a stream of raw bytes after any pointer resolution.
      * @param ptr Input pointer
@@ -390,7 +376,7 @@ public:
      * @return Vector of bytes (char)
      */
     RPY_NO_DISCARD
-    virtual std::vector<byte> to_raw_bytes(const ScalarPointer& ptr, dimn_t count) const = 0;
+    virtual std::vector<byte> to_raw_bytes(const ScalarPointer &ptr, dimn_t count) const = 0;
 
     /**
      * @brief Read raw bytes into a scalar array.
@@ -399,10 +385,7 @@ public:
      */
     RPY_NO_DISCARD
     virtual ScalarPointer from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) const = 0;
-
 };
-
-
 
 inline bool operator==(const ScalarType &lhs, const ScalarType &rhs) noexcept {
     return std::addressof(lhs) == std::addressof(rhs);
@@ -415,13 +398,10 @@ inline bool operator!=(const ScalarType &lhs, const ScalarType &rhs) noexcept {
 
 namespace dtl {
 
-#define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)           \
-    template <>                                       \
-    struct type_id_of_impl<TYPE> {                    \
-        static const string &get_id() noexcept { \
-            static const string type_id(NAME);   \
-            return type_id;                           \
-        }                                             \
+#define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)               \
+    template <>                                           \
+    struct ROUGHPY_SCALARS_EXPORT type_id_of_impl<TYPE> { \
+        static const string &get_id() noexcept;           \
     }
 
 ROUGHPY_MAKE_TYPE_ID_OF(char, "i8");
@@ -453,7 +433,7 @@ struct type_id_of_impl<long>
 
 template <typename ScalarImpl>
 struct ROUGHPY_SCALARS_EXPORT scalar_type_holder {
-    static const ScalarType* get_type() noexcept { return nullptr; }
+    static const ScalarType *get_type() noexcept { return nullptr; }
 };
 
 //template <typename ScalarImpl>
@@ -464,36 +444,33 @@ struct ROUGHPY_SCALARS_EXPORT scalar_type_holder {
 
 template <>
 struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<float> {
-    static const ScalarType* get_type() noexcept;
+    static const ScalarType *get_type() noexcept;
 };
 
 template <>
 struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<double> {
-    static const ScalarType* get_type() noexcept;
+    static const ScalarType *get_type() noexcept;
 };
 
 template <>
 struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_scalar_type> {
-    static const ScalarType* get_type() noexcept;
+    static const ScalarType *get_type() noexcept;
 };
 
 template <>
 struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_poly_scalar> {
-    static const ScalarType* get_type() noexcept;
+    static const ScalarType *get_type() noexcept;
 };
 
 template <>
 struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<half> {
-    static const ScalarType* get_type() noexcept;
+    static const ScalarType *get_type() noexcept;
 };
-
-
 
 template <>
 struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<bfloat16> {
-    static const ScalarType* get_type() noexcept;
+    static const ScalarType *get_type() noexcept;
 };
-
 
 }// namespace dtl
 

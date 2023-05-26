@@ -37,9 +37,6 @@
 using namespace rpy;
 using namespace rpy::streams;
 
-const StreamMetadata &StreamInterface::metadata() const noexcept {
-    return m_metadata;
-}
 void StreamInterface::set_metadata(StreamMetadata &&md) noexcept {
     m_metadata = std::move(md);
 }

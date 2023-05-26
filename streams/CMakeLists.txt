@@ -26,6 +26,7 @@ add_roughpy_lib(Streams STATIC
         src/external_data_sources/csv_data_source.h
         src/external_data_sources/sound_file_data_source.cpp
         src/external_data_sources/sound_file_data_source.h
+        src/schema.cpp
     PUBLIC_HEADERS
         include/roughpy/streams/dyadic_caching_layer.h
         include/roughpy/streams/dynamically_constructed_stream.h
@@ -36,6 +37,7 @@ add_roughpy_lib(Streams STATIC
         include/roughpy/streams/brownian_stream.h
         include/roughpy/streams/external_data_stream.h
         include/roughpy/streams/piecewise_abelian_stream.h
+        include/roughpy/streams/schema.h
     PUBLIC_DEPS
         RoughPy::Core
         RoughPy::Platform
@@ -56,4 +58,5 @@ add_roughpy_test(Streams
         SRC
             src/test_lie_increment_stream.cpp
             src/test_brownian_stream.cpp
+            src/test_schema.cpp
         LINK_COMPONENT)

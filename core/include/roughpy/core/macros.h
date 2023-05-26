@@ -219,6 +219,7 @@
 #define RPY_DBG_ASSERT(ARG) (void)0
 #endif
 
+#define RPY_FALLTHROUGH (void) 0
 
 
 #endif//ROUGHPY_CORE_MACROS_H

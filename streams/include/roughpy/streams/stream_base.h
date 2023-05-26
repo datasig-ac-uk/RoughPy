@@ -35,6 +35,8 @@
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
 
+#include "schema.h"
+
 namespace rpy {
 namespace streams {
 
@@ -76,9 +78,11 @@ struct StreamMetadata {
  */
 class ROUGHPY_STREAMS_EXPORT StreamInterface {
     StreamMetadata m_metadata;
+    StreamSchema m_schema;
 
 public:
-    const StreamMetadata &metadata() const noexcept;
+    const StreamMetadata &metadata() const noexcept { return m_metadata; }
+    const StreamSchema& schema() const noexcept { return m_schema; }
 
     explicit StreamInterface(StreamMetadata md) : m_metadata(std::move(md)) {}
 

@@ -202,7 +202,9 @@ static const pair<string, ScalarTypeInfo> reserved[] = {
 static std::mutex s_scalar_type_cache_lock;
 static std::unordered_map<string, const ScalarType *> s_scalar_type_cache{
     {string("f32"), ScalarType::of<float>()},
-    {string("f64"), ScalarType::of<double>()}
+    {string("f64"), ScalarType::of<double>()},
+    {string("f16"), ScalarType::of<half>()},
+    {string("bf16"), ScalarType::of<bfloat16>()}
     //    {string("rational"), ScalarType::of<float>()},
 };
 
@@ -224,8 +226,6 @@ void rpy::scalars::register_type(const ScalarType *type) {
     entry = type;
 }
 const ScalarType *rpy::scalars::get_type(const string &id) {
-    // TODO: needs implementation
-
     std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
     auto found = s_scalar_type_cache.find(id);
     if (found != s_scalar_type_cache.end()) {
@@ -265,8 +265,41 @@ const ScalarTypeInfo& rpy::scalars::get_scalar_info(string_view id) {
 }
 
 std::vector<const ScalarType *> rpy::scalars::list_types() {
-    return std::vector<const ScalarType *>();
+    std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
+    std::vector<const ScalarType *> result;
+    result.reserve(s_scalar_type_cache.size());
+    for (const auto& [id, type] : s_scalar_type_cache) {
+        result.push_back(type);
+    }
+    return result;
 }
+
+#define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME) \
+    const string& rpy::scalars::dtl::type_id_of_impl<TYPE>::get_id() noexcept { \
+        static const string type_id (NAME);  \
+        return type_id;\
+    }
+
+ROUGHPY_MAKE_TYPE_ID_OF(char, "i8");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned char, "u8");
+ROUGHPY_MAKE_TYPE_ID_OF(short, "i16");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned short, "u16");
+ROUGHPY_MAKE_TYPE_ID_OF(int, "i32");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned int, "u32");
+ROUGHPY_MAKE_TYPE_ID_OF(long long, "i64");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned long long, "u64");
+ROUGHPY_MAKE_TYPE_ID_OF(signed_size_type_marker, "isize");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned_size_type_marker, "usize");
+
+ROUGHPY_MAKE_TYPE_ID_OF(half, "f16");
+ROUGHPY_MAKE_TYPE_ID_OF(bfloat16, "bf16");
+ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
+ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
+ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational");
+ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
+
+#undef ROUGHPY_MAKE_TYPE_ID_OF
+
 
 #define MAKE_CONVERSION_FUNCTION(SRC, DST, SRC_T, DST_T)                             \
     static void SRC##_to_##DST(ScalarPointer dst, ScalarPointer src, dimn_t count) { \

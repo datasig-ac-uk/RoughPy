@@ -92,6 +92,8 @@ using std::is_nothrow_default_constructible;
 using std::is_trivially_constructible;
 using std::is_trivially_default_constructible;
 
+using std::is_nothrow_constructible_v;
+
 using std::is_base_of;
 using std::is_convertible;
 using std::is_same;

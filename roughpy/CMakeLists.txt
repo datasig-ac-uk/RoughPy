@@ -20,6 +20,8 @@ set_target_properties(RoughPy_PyModule PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
+        C_STANDARD 11
+        C_STANDARD_REQUIRED ON
         )
 
 
