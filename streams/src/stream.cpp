@@ -35,11 +35,19 @@ using namespace rpy;
 using namespace streams;
 
 const algebra::Context& rpy::streams::Stream::get_default_context() const {
+    RPY_CHECK(p_impl);
     return *p_impl->metadata().default_context;
 }
-const rpy::streams::StreamMetadata &rpy::streams::Stream::metadata() const noexcept {
+const rpy::streams::StreamMetadata &rpy::streams::Stream::metadata() const {
+    RPY_CHECK(p_impl);
     return p_impl->metadata();
 }
+
+const StreamSchema &Stream::schema() const {
+    RPY_CHECK(p_impl);
+    return p_impl->schema();
+}
+
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature() const {
     const auto& md = metadata();
 
