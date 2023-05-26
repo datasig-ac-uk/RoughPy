@@ -181,7 +181,6 @@ public:
     using base_type::end;
     using base_type::size;
 
-public:
 
 
     static bool compare_labels(string_view item_label, string_view ref_label) noexcept;
@@ -206,7 +205,7 @@ public:
     RPY_NO_DISCARD
     const_iterator nth(dimn_t idx) const noexcept {
         RPY_DBG_ASSERT(idx < size());
-        return begin() + idx;
+        return begin() + static_cast<idimn_t>(idx);
     }
 
     RPY_NO_DISCARD
@@ -261,10 +260,12 @@ public:
 };
 
 RPY_SERIAL_SERIALIZE_FN_EXT(ChannelIncrementInfo) {
+    (void) value;
     RPY_SERIAL_SERIALIZE_NVP("data", 0);
 }
 
 RPY_SERIAL_SERIALIZE_FN_EXT(ChannelValueInfo) {
+    (void) value;
     RPY_SERIAL_SERIALIZE_NVP("data", 0);
 }
 
