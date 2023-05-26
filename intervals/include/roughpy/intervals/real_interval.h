@@ -68,10 +68,12 @@ public:
         : Interval(itype), m_inf(interval.inf()), m_sup(interval.sup())
     {}
 
-
+    RPY_NO_DISCARD
     param_t inf() const override { return m_inf; }
+    RPY_NO_DISCARD
     param_t sup() const override { return m_sup; }
 
+    RPY_NO_DISCARD
     bool contains(const Interval &arg) const noexcept override;
 
 

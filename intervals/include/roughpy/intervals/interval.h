@@ -57,20 +57,31 @@ public:
 
     virtual ~Interval() = default;
 
+    RPY_NO_DISCARD
     IntervalType type() const noexcept { return m_interval_type; }
 
+    RPY_NO_DISCARD
     virtual param_t inf() const = 0;
+    RPY_NO_DISCARD
     virtual param_t sup() const = 0;
 
+    RPY_NO_DISCARD
     virtual param_t included_end() const;
+    RPY_NO_DISCARD
     virtual param_t excluded_end() const;
 
+    RPY_NO_DISCARD
     virtual bool contains(param_t arg) const noexcept;
+    RPY_NO_DISCARD
     virtual bool is_associated(const Interval& arg) const noexcept;
+    RPY_NO_DISCARD
     virtual bool contains(const Interval& arg) const noexcept;
+    RPY_NO_DISCARD
     virtual bool intersects_with(const Interval& arg) const noexcept;
 
+    RPY_NO_DISCARD
     virtual bool operator==(const Interval& other) const;
+    RPY_NO_DISCARD
     virtual bool operator!=(const Interval& other) const;
 
 };

@@ -53,12 +53,16 @@ public:
 
     using key_type = typename basis_type::key_type;
 
+    RPY_NO_DISCARD
     const basis_type &basis() const { return m_basis; };
+    RPY_NO_DISCARD
     virtual key_type key() const noexcept = 0;
+    RPY_NO_DISCARD
     virtual scalars::Scalar value() const noexcept = 0;
 
     virtual std::shared_ptr<AlgebraIteratorInterface> clone() const = 0;
     virtual void advance() = 0;
+    RPY_NO_DISCARD
     virtual bool equals(const AlgebraIteratorInterface &other) const noexcept = 0;
 };
 
@@ -73,11 +77,16 @@ public:
     AlgebraIteratorItem(std::shared_ptr<AlgebraIteratorInterface<Algebra>> interface)
         : p_interface(std::move(interface)) {}
 
+    RPY_NO_DISCARD
     const basis_type &basis() const { return p_interface->basis(); }
+    RPY_NO_DISCARD
     key_type key() const noexcept { return p_interface->key(); }
+    RPY_NO_DISCARD
     scalars::Scalar value() const noexcept { return p_interface->value(); };
 
+    RPY_NO_DISCARD
     AlgebraIteratorItem *operator->() noexcept { return this; }
+    RPY_NO_DISCARD
     AlgebraIteratorItem &operator*() noexcept { return *this; }
 };
 
@@ -109,12 +118,18 @@ public:
     AlgebraIterator &operator=(const AlgebraIterator &arg);
     AlgebraIterator &operator=(AlgebraIterator &&arg) noexcept;
 
+    RPY_NO_DISCARD
     AlgebraIterator &operator++();
+    RPY_NO_DISCARD
     const AlgebraIterator operator++(int);
+    RPY_NO_DISCARD
     reference operator*() const;
+    RPY_NO_DISCARD
     pointer operator->() const;
 
+    RPY_NO_DISCARD
     bool operator==(const AlgebraIterator &other) const;
+    RPY_NO_DISCARD
     bool operator!=(const AlgebraIterator &other) const;
 };
 

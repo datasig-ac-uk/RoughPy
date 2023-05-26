@@ -75,9 +75,13 @@ public:
 
     virtual ~AlgebraInterfaceBase();
 
+    RPY_NO_DISCARD
     const context_pointer &context() const noexcept { return p_ctx; }
+    RPY_NO_DISCARD
     ImplementationType impl_type() const noexcept { return m_impl_type; }
+    RPY_NO_DISCARD
     VectorType storage_type() const noexcept { return m_vector_type; };
+    RPY_NO_DISCARD
     const scalars::ScalarType *coeff_type() const noexcept { return p_coeff_type; };
 };
 
@@ -109,32 +113,47 @@ public:
 //    virtual ~AlgebraBasicProperties() = default;
 
     // Type information
+    RPY_NO_DISCARD
     id_t id() const noexcept;
+    RPY_NO_DISCARD
     const BasisType& basis() const noexcept { return m_basis; }
 
     // Basic properties
+    RPY_NO_DISCARD
     virtual dimn_t dimension() const = 0;
+    RPY_NO_DISCARD
     virtual dimn_t size() const = 0;
+    RPY_NO_DISCARD
     virtual bool is_zero() const = 0;
+    RPY_NO_DISCARD
     virtual optional<deg_t> degree() const;
+    RPY_NO_DISCARD
     virtual optional<deg_t> width() const;
+    RPY_NO_DISCARD
     virtual optional<deg_t> depth() const;
 
     // Clone
+    RPY_NO_DISCARD
     virtual Algebra clone() const = 0;
+    RPY_NO_DISCARD
     virtual Algebra zero_like() const = 0;
 
     // Borrow
+    RPY_NO_DISCARD
     virtual Algebra borrow() const = 0;
+    RPY_NO_DISCARD
     virtual Algebra borrow_mut() = 0;
 
+    RPY_NO_DISCARD
     virtual void clear() = 0;
+    RPY_NO_DISCARD
     virtual void assign(const Algebra &other) = 0;
 
     // Display
     virtual std::ostream &print(std::ostream &os) const = 0;
 
     // Equality testing
+    RPY_NO_DISCARD
     virtual bool equals(const Algebra &other) const = 0;
 };
 
@@ -341,72 +360,117 @@ public:
         return algebra_t(std::move(ctx), new Wrapper(std::forward<Args>(args)...));
     }
 
+    RPY_NO_DISCARD
     algebra_t borrow() const;
+    RPY_NO_DISCARD
     algebra_t borrow_mut();
 
+    RPY_NO_DISCARD
     const Interface &operator*() const noexcept { return *p_impl; }
+    RPY_NO_DISCARD
     Interface &operator*() noexcept { return *p_impl; }
+    RPY_NO_DISCARD
     const Interface *operator->() const noexcept { return p_impl.get(); }
+    RPY_NO_DISCARD
     Interface *operator->() noexcept { return p_impl.get(); }
 
+    RPY_NO_DISCARD
     constexpr operator bool() const noexcept { return static_cast<bool>(p_impl); }
 
+    RPY_NO_DISCARD
     dimn_t dimension() const;
+    RPY_NO_DISCARD
     dimn_t size() const;
+    RPY_NO_DISCARD
     bool is_zero() const;
+    RPY_NO_DISCARD
     context_pointer context() const noexcept;
+    RPY_NO_DISCARD
     optional<deg_t> width() const;
+    RPY_NO_DISCARD
     optional<deg_t> depth() const;
+    RPY_NO_DISCARD
     optional<deg_t> degree() const;
 
+    RPY_NO_DISCARD
     VectorType storage_type() const noexcept;
+    RPY_NO_DISCARD
     const scalars::ScalarType *coeff_type() const noexcept;
 
+    RPY_NO_DISCARD
     scalars::Scalar operator[](key_type k) const;
+    RPY_NO_DISCARD
     scalars::Scalar operator[](key_type k);
 
+    RPY_NO_DISCARD
     const_iterator begin() const;
+    RPY_NO_DISCARD
     const_iterator end() const;
 
+    RPY_NO_DISCARD
     optional<scalars::ScalarArray> dense_data() const;
 
 protected:
+    RPY_NO_DISCARD
     static bool is_equivalent_to_zero(const AlgebraBase &arg) {
         // For the moment, we just check if the arg has a null-p_impl
         // In the future we might do something else.
         return arg.p_impl == nullptr;
     }
 
+    RPY_NO_DISCARD
     static algebra_t &downcast(AlgebraBase &arg) { return static_cast<algebra_t &>(arg); }
+    RPY_NO_DISCARD
     static const algebra_t &downcast(const AlgebraBase &arg) { return static_cast<const algebra_t &>(arg); }
 
 public:
+    RPY_NO_DISCARD
     algebra_t uminus() const;
+    RPY_NO_DISCARD
     algebra_t add(const algebra_t &rhs) const;
+    RPY_NO_DISCARD
     algebra_t sub(const algebra_t &rhs) const;
+    RPY_NO_DISCARD
     algebra_t mul(const algebra_t &rhs) const;
+    RPY_NO_DISCARD
     algebra_t smul(const scalars::Scalar &rhs) const;
+    RPY_NO_DISCARD
     algebra_t sdiv(const scalars::Scalar &rhs) const;
 
+    RPY_NO_DISCARD
     algebra_t &add_inplace(const algebra_t &rhs);
+    RPY_NO_DISCARD
     algebra_t &sub_inplace(const algebra_t &rhs);
+    RPY_NO_DISCARD
     algebra_t &mul_inplace(const algebra_t &rhs);
+    RPY_NO_DISCARD
     algebra_t &smul_inplace(const scalars::Scalar &rhs);
+    RPY_NO_DISCARD
     algebra_t &sdiv_inplace(const scalars::Scalar &rhs);
 
+    RPY_NO_DISCARD
     algebra_t &add_scal_mul(const algebra_t &lhs, const scalars::Scalar &rhs);
+    RPY_NO_DISCARD
     algebra_t &sub_scal_mul(const algebra_t &lhs, const scalars::Scalar &rhs);
+    RPY_NO_DISCARD
     algebra_t &add_scal_div(const algebra_t &lhs, const scalars::Scalar &rhs);
+    RPY_NO_DISCARD
     algebra_t &sub_scal_div(const algebra_t &lhs, const scalars::Scalar &rhs);
 
+    RPY_NO_DISCARD
     algebra_t &add_mul(const algebra_t &lhs, const algebra_t &rhs);
+    RPY_NO_DISCARD
     algebra_t &sub_mul(const algebra_t &lhs, const algebra_t &rhs);
+    RPY_NO_DISCARD
     algebra_t &mul_smul(const algebra_t &lhs, const scalars::Scalar &rhs);
+    RPY_NO_DISCARD
     algebra_t &mul_sdiv(const algebra_t &lhs, const scalars::Scalar &rhs);
 
     std::ostream &print(std::ostream &os) const;
 
+    RPY_NO_DISCARD
     bool operator==(const algebra_t &other) const;
+    RPY_NO_DISCARD
     bool operator!=(const algebra_t &other) const { return !operator==(other); }
 
 private:

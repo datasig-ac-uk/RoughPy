@@ -89,22 +89,33 @@ public:
         return p_data[i];
     }
 
+    RPY_NO_DISCARD
     constexpr bool empty() const noexcept { return p_data == nullptr || m_size == 0; }
 
+    RPY_NO_DISCARD
     constexpr std::size_t size() const noexcept {
         return m_size;
     }
 
+    RPY_NO_DISCARD
     constexpr T *begin() noexcept { return p_data; }
+    RPY_NO_DISCARD
     constexpr T *end() noexcept { return p_data + m_size; }
+    RPY_NO_DISCARD
     constexpr const T *begin() const { return p_data; }
+    RPY_NO_DISCARD
     constexpr const T *end() const { return p_data + m_size; }
 
+    RPY_NO_DISCARD
     constexpr std::reverse_iterator<T *> rbegin() noexcept { return std::reverse_iterator<T *>(p_data + m_size); }
+    RPY_NO_DISCARD
     constexpr std::reverse_iterator<T *> rend() noexcept { return std::reverse_iterator<T *>(p_data); }
+    RPY_NO_DISCARD
     constexpr std::reverse_iterator<const T *> rbegin() const noexcept { return std::reverse_iterator<const T *>(p_data + m_size); }
+    RPY_NO_DISCARD
     constexpr std::reverse_iterator<const T *> rend() const noexcept { return std::reverse_iterator<const T *>(p_data); }
 
+    RPY_NO_DISCARD
     operator std::vector<T>() const {
         std::vector<T> result;
         result.reserve(m_size);

@@ -65,6 +65,7 @@ public:
     DyadicInterval(Dyadic dyadic, power_t resolution, IntervalType itype = IntervalType::Clopen);
     DyadicInterval(param_t val, power_t resolution, IntervalType itype = IntervalType::Clopen);
 
+    RPY_NO_DISCARD
     multiplier_t unit() const noexcept {
         return (m_interval_type == IntervalType::Clopen) ? 1 : -1;
     }
@@ -92,7 +93,9 @@ public:
     DyadicInterval &shrink_interval_left(power_t arg = 1);
     DyadicInterval &expand_interval(power_t arg = 1);
 
+    RPY_NO_DISCARD
     bool contains(const DyadicInterval &other) const;
+    RPY_NO_DISCARD
     bool aligned() const;
 
     DyadicInterval &flip_interval();
