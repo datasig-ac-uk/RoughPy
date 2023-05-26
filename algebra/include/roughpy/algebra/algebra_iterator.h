@@ -118,7 +118,6 @@ public:
     AlgebraIterator &operator=(const AlgebraIterator &arg);
     AlgebraIterator &operator=(AlgebraIterator &&arg) noexcept;
 
-    RPY_NO_DISCARD
     AlgebraIterator &operator++();
     RPY_NO_DISCARD
     const AlgebraIterator operator++(int);
