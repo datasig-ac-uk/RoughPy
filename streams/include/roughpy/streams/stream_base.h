@@ -125,6 +125,10 @@ protected:
     // TODO: add methods for batch computing signatures via a computation tree
 
 
+public:
+
+//    RPY_SERIAL_SERIALIZE_FN();
+
 };
 
 /**
@@ -166,6 +170,14 @@ RPY_SERIAL_SAVE_FN_EXT(StreamMetadata) {
     RPY_SERIAL_SERIALIZE_NVP("vtype", value.cached_vector_type);
     RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
 }
+
+//RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface) {
+//    RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
+//    RPY_SERIAL_SERIALIZE_NVP("schema", m_schema);
+//}
+
+
+
 
 }// namespace streams
 }// namespace rpy

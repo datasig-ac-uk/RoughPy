@@ -72,6 +72,23 @@ StreamChannel::StreamChannel(StreamChannel &&arg) noexcept
             break;
     }
 }
+
+StreamChannel::StreamChannel(ChannelType type)
+    : m_type(type)
+{
+    switch (m_type) {
+        case ChannelType::Increment:
+            inplace_construct(&increment_info, ChannelIncrementInfo());
+            break;
+        case ChannelType::Value:
+            inplace_construct(&value_info, ChannelValueInfo());
+            break;
+        case ChannelType::Categorical:
+            inplace_construct(&categorical_info, ChannelCategoricalIncrementInfo());
+            break;
+    }
+}
+
 StreamChannel &StreamChannel::operator=(const StreamChannel &other) {
     if (&other != this) {
         this->~StreamChannel();
@@ -177,6 +194,22 @@ StreamChannel& StreamChannel::add_variant(string variant_label) {
 
     categorical_info.variants.push_back(std::move(variant_label));
     return *this;
+}
+
+std::vector<string> StreamChannel::get_variants() const {
+    std::vector<string> variants;
+    switch (m_type) {
+        case ChannelType::Increment:
+            break;
+        case ChannelType::Value:
+            variants.push_back("lead");
+            variants.push_back("lag");
+            break;
+        case ChannelType::Categorical:
+            variants = categorical_info.variants;
+            break;
+    }
+    return variants;
 }
 
 bool StreamSchema::compare_labels(string_view item_label, string_view ref_label) noexcept {
@@ -362,3 +395,25 @@ StreamChannel &StreamSchema::insert_value(string label) {
 StreamChannel &StreamSchema::insert_categorical(string label) {
     return insert(std::move(label), StreamChannel(ChannelCategoricalIncrementInfo()));
 }
+
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamChannel
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>
+
+#define RPY_SERIAL_EXTERNAL rpy::streams
+#define RPY_SERIAL_IMPL_CLASSNAME ChannelIncrementInfo
+#include <roughpy/platform/serialization_instantiations.inl>
+
+#define RPY_SERIAL_EXTERNAL rpy::streams
+#define RPY_SERIAL_IMPL_CLASSNAME ChannelValueInfo
+#include <roughpy/platform/serialization_instantiations.inl>
+
+#define RPY_SERIAL_EXTERNAL rpy::streams
+#define RPY_SERIAL_IMPL_CLASSNAME ChannelCategoricalIncrementInfo
+#include <roughpy/platform/serialization_instantiations.inl>
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamSchema
+#include <roughpy/platform/serialization_instantiations.inl>

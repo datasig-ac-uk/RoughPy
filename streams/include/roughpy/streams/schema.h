@@ -35,6 +35,8 @@
 #include <roughpy/core/types.h>
 #include <roughpy/core/traits.h>
 
+#include <roughpy/platform/serialization.h>
+
 #include <boost/container/flat_map.hpp>
 #include <variant>
 #include <vector>
@@ -110,6 +112,8 @@ public:
     StreamChannel(const StreamChannel& arg);
     StreamChannel(StreamChannel&& arg) noexcept;
 
+    explicit StreamChannel(ChannelType type);
+
     explicit StreamChannel(ChannelIncrementInfo&& info)
         : m_type(ChannelType::Increment), increment_info(std::move(info))
     {}
@@ -155,6 +159,11 @@ public:
 
     StreamChannel& add_variant(string variant_label);
 
+    RPY_NO_DISCARD
+    std::vector<string> get_variants() const;
+
+    RPY_SERIAL_SAVE_FN();
+    RPY_SERIAL_LOAD_FN();
 };
 
 class ROUGHPY_STREAMS_EXPORT StreamSchema
@@ -247,8 +256,57 @@ public:
     StreamChannel& insert_value(string label);
     StreamChannel& insert_categorical(string label);
 
-
+    RPY_SERIAL_SERIALIZE_FN();
 };
+
+RPY_SERIAL_SERIALIZE_FN_EXT(ChannelIncrementInfo) {
+    RPY_SERIAL_SERIALIZE_NVP("data", 0);
+}
+
+RPY_SERIAL_SERIALIZE_FN_EXT(ChannelValueInfo) {
+    RPY_SERIAL_SERIALIZE_NVP("data", 0);
+}
+
+RPY_SERIAL_SERIALIZE_FN_EXT(ChannelCategoricalIncrementInfo) {
+    RPY_SERIAL_SERIALIZE_NVP("variants", value.variants);
+}
+
+
+RPY_SERIAL_SAVE_FN_IMPL(StreamChannel) {
+    RPY_SERIAL_SERIALIZE_NVP("type", m_type);
+    switch (m_type) {
+        case ChannelType::Increment:
+            RPY_SERIAL_SERIALIZE_NVP("increment", increment_info);
+            break;
+        case ChannelType::Value:
+            RPY_SERIAL_SERIALIZE_NVP("value", value_info);
+            break;
+        case ChannelType::Categorical:
+            RPY_SERIAL_SERIALIZE_NVP("categorical", categorical_info);
+            break;
+    }
+}
+
+RPY_SERIAL_LOAD_FN_IMPL(StreamChannel) {
+    RPY_SERIAL_SERIALIZE_NVP("type", m_type);
+    switch (m_type) {
+        case ChannelType::Increment:
+            RPY_SERIAL_SERIALIZE_NVP("increment", increment_info);
+            break;
+        case ChannelType::Value:
+            RPY_SERIAL_SERIALIZE_NVP("value", value_info);
+            break;
+        case ChannelType::Categorical:
+            RPY_SERIAL_SERIALIZE_NVP("categorical", categorical_info);
+            break;
+    }
+}
+
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(StreamSchema) {
+    RPY_SERIAL_SERIALIZE_BARE(static_cast<base_type&>(*this));
+}
+
 
 }// namespace streams
 }// namespace rpy

@@ -33,6 +33,8 @@
 #include "schema.h"
 #include <gtest/gtest.h>
 
+#include <sstream>
+
 using namespace rpy;
 using namespace rpy::streams;
 
@@ -70,6 +72,65 @@ TEST(Schema, TestLabelCompareDifferentStrings) {
 TEST(Schema, TestLabelCompareEmptyRefString) {
     EXPECT_FALSE(StreamSchema::compare_labels("", ":test"));
 }
+
+TEST(Schema, TestStreamChannelIncrementSerialization) {
+    StreamChannel channel(ChannelType::Increment);
+
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive oarch(ss);
+        oarch(channel);
+    }
+
+    StreamChannel in_channel;
+    {
+        archives::JSONInputArchive iarch(ss);
+        iarch(in_channel);
+    }
+
+    EXPECT_EQ(in_channel.type(), channel.type());
+}
+
+TEST(Schema, TestStreamChannelValueSerialization) {
+    StreamChannel channel(ChannelType::Value);
+
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive oarch(ss);
+        oarch(channel);
+    }
+
+    StreamChannel in_channel;
+    {
+        archives::JSONInputArchive iarch(ss);
+        iarch(in_channel);
+    }
+
+    EXPECT_EQ(in_channel.type(), channel.type());
+}
+
+
+TEST(Schema, TestStreamChannelCategoricalSerialization) {
+    StreamChannel channel(ChannelType::Categorical);
+    channel.add_variant("first").add_variant("second");
+
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive oarch(ss);
+        oarch(channel);
+    }
+
+    StreamChannel in_channel;
+    {
+        archives::JSONInputArchive iarch(ss);
+        iarch(in_channel);
+    }
+
+    EXPECT_EQ(in_channel.type(), channel.type());
+    EXPECT_EQ(in_channel.get_variants(), channel.get_variants());
+}
+
+
 
 
 namespace {
