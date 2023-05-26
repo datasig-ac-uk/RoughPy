@@ -86,15 +86,23 @@ public:
 
     constexpr void layout(MatrixLayout new_layout) noexcept { m_layout = new_layout; }
 
+    RPY_NO_DISCARD
     ScalarMatrix row(deg_t i);
+    RPY_NO_DISCARD
     ScalarMatrix row(deg_t i) const;
+    RPY_NO_DISCARD
     ScalarMatrix col(deg_t i);
+    RPY_NO_DISCARD
     ScalarMatrix col(deg_t i) const;
 
+    RPY_NO_DISCARD
     ScalarPointer data() const;
+    RPY_NO_DISCARD
     ScalarPointer data();
 
+    RPY_NO_DISCARD
     ScalarMatrix to_full() const;
+    RPY_NO_DISCARD
     ScalarMatrix to_full(MatrixLayout layout) const;
     void to_full(ScalarMatrix &into) const;
 

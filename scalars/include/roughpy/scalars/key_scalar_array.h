@@ -62,14 +62,18 @@ public:
 
     explicit operator OwnedScalarArray() &&noexcept;
 
+    RPY_NO_DISCARD
     KeyScalarArray copy_or_move() &&;
 
     KeyScalarArray &operator=(const ScalarArray &other) noexcept;
     KeyScalarArray &operator=(KeyScalarArray &&other) noexcept;
     KeyScalarArray &operator=(OwnedScalarArray &&other) noexcept;
 
+    RPY_NO_DISCARD
     const key_type *keys() const noexcept { return p_keys; }
+    RPY_NO_DISCARD
     key_type *keys();
+    RPY_NO_DISCARD
     bool has_keys() const noexcept { return p_keys != nullptr; }
 
     void allocate_scalars(idimn_t count = -1);

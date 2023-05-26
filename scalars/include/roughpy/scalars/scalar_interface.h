@@ -44,19 +44,28 @@ class ROUGHPY_SCALARS_EXPORT ScalarInterface {
     public:
     virtual ~ScalarInterface() = default;
 
+    RPY_NO_DISCARD
     virtual const ScalarType *type() const noexcept = 0;
 
+    RPY_NO_DISCARD
     virtual bool is_const() const noexcept = 0;
+
+    RPY_NO_DISCARD
     virtual bool is_value() const noexcept = 0;
+    RPY_NO_DISCARD
     virtual bool is_zero() const noexcept = 0;
 
+    RPY_NO_DISCARD
     virtual scalar_t as_scalar() const = 0;
     virtual void assign(ScalarPointer) = 0;
     virtual void assign(const Scalar &other) = 0;
     virtual void assign(const void *data, const string &type_id) = 0;
 
+    RPY_NO_DISCARD
     virtual ScalarPointer to_pointer() = 0;
+    RPY_NO_DISCARD
     virtual ScalarPointer to_pointer() const noexcept = 0;
+    RPY_NO_DISCARD
     virtual Scalar uminus() const;
 
 
@@ -65,6 +74,7 @@ class ROUGHPY_SCALARS_EXPORT ScalarInterface {
     virtual void mul_inplace(const Scalar &other) = 0;
     virtual void div_inplace(const Scalar &other) = 0;
 
+    RPY_NO_DISCARD
     virtual bool equals(const Scalar &other) const noexcept;
 
     virtual std::ostream &print(std::ostream &os) const;
