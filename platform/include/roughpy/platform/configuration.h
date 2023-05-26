@@ -64,11 +64,11 @@ class Configuration {
 
 public:
 
-    [[nodiscard]]
+    RPY_NO_DISCARD
     string_view get_raw_config_value(string_view property) const;
 
     template <typename T>
-    [[nodiscard]]
+    RPY_NO_DISCARD
     enable_if_t<is_constructible<T, string_view>::value, T> get_config_value(string_view property) const;
 
 
@@ -82,6 +82,7 @@ public:
 
 
 template <typename T>
+RPY_NO_DISCARD
 enable_if_t<is_constructible<T, string_view>::value, T> Configuration::get_config_value(string_view property) const {
     return T(get_raw_config_value(property));
 }
