@@ -49,10 +49,14 @@ class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface {
 
     using DyadicInterval = intervals::DyadicInterval;
 
+    RPY_NO_DISCARD
     optional<DyadicInterval> smallest_dyadic_containing_all_events(const DyadicInterval& di, resolution_t resolution) const;
+    RPY_NO_DISCARD
     optional<DyadicInterval> smallest_dyadic_containing_all_negative_events() const;
+    RPY_NO_DISCARD
     optional<DyadicInterval> smallest_dyadic_containing_all_positive_events() const;
 
+    RPY_NO_DISCARD
     algebra::Lie recursive_logsig(DyadicInterval di);
 
 public:
@@ -76,13 +80,19 @@ public:
                StreamMetadata md,
                intervals::IntervalType itype=intervals::IntervalType::Clopen);
 
+    RPY_NO_DISCARD
     bool empty(const intervals::Interval &interval) const noexcept override;
+    RPY_NO_DISCARD
     algebra::Lie log_signature(const DyadicInterval &interval, resolution_t resolution, const algebra::Context &ctx) const override;
+    RPY_NO_DISCARD
     algebra::Lie log_signature(const intervals::Interval &interval, resolution_t resolution, const algebra::Context &ctx) const override;
+    RPY_NO_DISCARD
     algebra::FreeTensor signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+    RPY_NO_DISCARD
     algebra::FreeTensor signature(const intervals::Interval &interval, resolution_t resolution, const algebra::Context &ctx) const override;
 
 protected:
+    RPY_NO_DISCARD
     algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
 
 

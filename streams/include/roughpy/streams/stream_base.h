@@ -81,41 +81,50 @@ class ROUGHPY_STREAMS_EXPORT StreamInterface {
     StreamSchema m_schema;
 
 public:
+    RPY_NO_DISCARD
     const StreamMetadata &metadata() const noexcept { return m_metadata; }
+    RPY_NO_DISCARD
     const StreamSchema& schema() const noexcept { return m_schema; }
 
     explicit StreamInterface(StreamMetadata md) : m_metadata(std::move(md)) {}
 
     virtual ~StreamInterface() noexcept;
+    RPY_NO_DISCARD
     virtual bool empty(const intervals::Interval &interval) const noexcept;
 
 protected:
 
     void set_metadata(StreamMetadata&& md) noexcept;
 
+    RPY_NO_DISCARD
     virtual algebra::Lie
     log_signature_impl(const intervals::Interval &interval,
                        const algebra::Context &ctx) const = 0;
 
 public:
+    RPY_NO_DISCARD
     virtual algebra::Lie
     log_signature(const intervals::Interval &interval,
                   const algebra::Context &ctx) const;
 
+    RPY_NO_DISCARD
     virtual algebra::Lie
     log_signature(const intervals::DyadicInterval &interval,
                   resolution_t resolution,
                   const algebra::Context &ctx) const;
 
+    RPY_NO_DISCARD
     virtual algebra::Lie
     log_signature(const intervals::Interval &interval,
                   resolution_t resolution,
                   const algebra::Context &ctx) const;
 
+    RPY_NO_DISCARD
     virtual algebra::FreeTensor
     signature(const intervals::Interval &interval,
               const algebra::Context &ctx) const;
 
+    RPY_NO_DISCARD
     virtual algebra::FreeTensor
     signature(const intervals::Interval &interval,
               resolution_t resolution,

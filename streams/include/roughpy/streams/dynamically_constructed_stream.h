@@ -65,18 +65,23 @@ public:
           m_sibling(sibling), m_parent(parent) {}
 
     void lie(Lie &&new_lie) noexcept { m_lie = std::move(new_lie); }
+    RPY_NO_DISCARD
     const Lie &lie() const noexcept { return m_lie; }
 
     void accuracy(resolution_t new_accuracy) noexcept { m_accuracy = new_accuracy; }
+    RPY_NO_DISCARD
     resolution_t accuracy() const noexcept { return m_accuracy; }
 
     void sibling(data_increment sib) { m_sibling = sib; }
+    RPY_NO_DISCARD
     data_increment sibling() const { return m_sibling; }
     void parent(data_increment par) {
         m_parent = par;
     }
+    RPY_NO_DISCARD
     data_increment parent() const { return m_parent; }
 
+    RPY_NO_DISCARD
     static bool is_leaf(data_increment increment) noexcept {
         return increment->first.power() == increment->second.accuracy();
     }
@@ -98,12 +103,16 @@ private:
 
     void refine_accuracy(data_increment increment, resolution_t desired) const;
 
+    RPY_NO_DISCARD
     data_increment expand_root_until_contains(data_increment root, DyadicInterval di) const;
 
+    RPY_NO_DISCARD
     data_increment insert_node(DyadicInterval di, Lie&& value, resolution_t accuracy, data_increment hint) const;
 
+    RPY_NO_DISCARD
     data_increment insert_children_and_refine(data_increment leaf, DyadicInterval interval) const;
 
+    RPY_NO_DISCARD
     data_increment update_parent_accuracy(data_increment below) const;
 
     void update_parents(data_increment current) const;
@@ -115,8 +124,11 @@ protected:
     /// Safely get the lie value associated with an increment
     const Lie& lie_value(const_data_increment increment) noexcept;
 
+    RPY_NO_DISCARD
     virtual Lie make_new_root_increment(DyadicInterval di) const;
+    RPY_NO_DISCARD
     virtual Lie make_neighbour_root_increment(DyadicInterval neighbour_di) const;
+    RPY_NO_DISCARD
     virtual pair<Lie, Lie> compute_child_lie_increments(DyadicInterval left_di, DyadicInterval right_di, const Lie& parent_value) const;
 public:
     using StreamInterface::StreamInterface;
