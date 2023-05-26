@@ -244,3 +244,20 @@ TEST_F(SchemaTests, TestLabelOfChannelVariant) {
     EXPECT_EQ(schema.label_of_channel_variant(1, 1), "c:lag");
     EXPECT_EQ(schema.label_of_channel_variant(2, 0), "b");
 }
+
+TEST_F(SchemaTests, TestSerializationOfSchema) {
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive oarch(ss);
+        oarch(schema);
+    }
+
+    StreamSchema in_schema;
+    {
+        archives::JSONInputArchive iarch(ss);
+        iarch(in_schema);
+    }
+
+    EXPECT_EQ(in_schema.size(), schema.size());
+    EXPECT_EQ(in_schema.width(), schema.width());
+}

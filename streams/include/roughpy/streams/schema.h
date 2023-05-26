@@ -179,6 +179,7 @@ public:
     using base_type::reserve;
     using base_type::begin;
     using base_type::end;
+    using base_type::size;
 
 public:
 
