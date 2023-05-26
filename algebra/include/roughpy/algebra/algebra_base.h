@@ -144,9 +144,7 @@ public:
     RPY_NO_DISCARD
     virtual Algebra borrow_mut() = 0;
 
-    RPY_NO_DISCARD
     virtual void clear() = 0;
-    RPY_NO_DISCARD
     virtual void assign(const Algebra &other) = 0;
 
     // Display
