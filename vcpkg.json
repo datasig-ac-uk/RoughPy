@@ -36,5 +36,9 @@
     "name" : "tomlplusplus",
     "version>=" : "3.1.0",
     "$comment" : "    # this is heuristically generated, and may not be correct\n\n    find_package(tomlplusplus CONFIG REQUIRED)\n\n    target_link_libraries(main PRIVATE tomlplusplus::tomlplusplus)\n"
-  } ]
+  }, {
+    "name": "gtest",
+    "version>=": "1.13.0"
+  }
+                   ]
 }
