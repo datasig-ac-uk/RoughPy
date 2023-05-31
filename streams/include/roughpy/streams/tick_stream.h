@@ -34,6 +34,8 @@
 #include <roughpy/scalars/scalar_stream.h>
 #include <roughpy/platform/serialization.h>
 
+#include "stream_construction_helper.h"
+
 
 #include <map>
 #include <vector>
@@ -72,6 +74,12 @@ public:
           m_resolution(resolution),
           m_itype(itype)
     {}
+
+    TickStream(
+        StreamConstructionHelper&& helper,
+        StreamMetadata md,
+        resolution_t resolution
+    );
 
     TickStream(scalars::ScalarStream&& raw_data,
                std::vector<const key_type*> raw_key_stream,

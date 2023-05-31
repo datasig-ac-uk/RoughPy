@@ -168,6 +168,39 @@ streams::TickStream::TickStream(scalars::ScalarStream &&raw_data,
 
 }
 
+streams::TickStream::TickStream(
+    streams::StreamConstructionHelper &&helper,
+    streams::StreamMetadata md,
+    resolution_t resolution)
+    : StreamInterface(std::move(md)/*, helper.take_schema()*/),
+      m_resolution(resolution)
+{
+    std::set<param_t> index;
+    const auto& ctx = *metadata().default_context;
+    const auto itype = metadata().cached_vector_type;
+
+    for (auto&& item : helper.finalise()) {
+        const DyadicInterval di(item.first, m_resolution, m_itype);
+        index.insert(di.included_end());
+
+        auto& existing = m_data[di];
+        if (existing) {
+            existing = ctx.cbh(existing, item.second, itype);
+        } else {
+            existing = std::move(item.second);
+        }
+    }
+
+    m_granular_times.assign(index.begin(), index.end());
+
+    if (auto di_negative = smallest_dyadic_containing_all_negative_events()) {
+        recursive_logsig(*di_negative);
+    }
+    if (auto di_positive = smallest_dyadic_containing_all_positive_events()) {
+        recursive_logsig(*di_positive);
+    }
+}
+
 algebra::Lie streams::TickStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
     RPY_DBG_ASSERT(dynamic_cast<const DyadicInterval*>(&interval) == &interval);
     if (auto dil = smallest_dyadic_containing_all_events(static_cast<const DyadicInterval&>(interval), m_resolution)) {
