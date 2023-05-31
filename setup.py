@@ -42,9 +42,9 @@ def filter_cmake_manifests(items: list[str]) -> list[str]:
         if item.endswith(".a"):
             return False
 
-        # m = re.search(r"[a-zA-Z0-9_]+\.so\.\d+(?:\.\d+\.\d+)?$", item)
-        # if m is not None:
-        #     return False
+        m = re.search(r"[a-zA-Z0-9_]+\.so(?:\.\d+\.\d+\.\d+)?$", item)
+        if m is not None:
+            return False
 
         # if item.endswith("recombine.so"):
         #     return False
