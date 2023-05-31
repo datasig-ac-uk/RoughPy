@@ -89,7 +89,6 @@ if(NOT TARGET PCGRandom::pcg_random)
 endif()
 
 add_subdirectory(external/recombine)
-set_target_properties(recombine PROPERTIES NO_SONAME ON)
 
 add_subdirectory(external/libalgebra)
 
