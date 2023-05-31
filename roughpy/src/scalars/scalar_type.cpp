@@ -39,6 +39,7 @@ static PyMethodDef PyScalarMetaType_methods[] = {
     {nullptr, nullptr, 0, nullptr}};
 
 PyObject *PyScalarMetaType_call(PyObject *, PyObject *, PyObject *) {
+    // TODO: implement this?
     PyErr_SetString(PyExc_AssertionError, "doh");
     return nullptr;
 }

@@ -71,6 +71,9 @@ setup(
 
     include_package_data=True,
     packages=["roughpy"],
+    package_data={
+        "roughpy": ["py.typed"]
+    },
 
     cmake_process_manifest_hook=filter_cmake_manifests,
     cmake_args=CMAKE_SETTINGS,
