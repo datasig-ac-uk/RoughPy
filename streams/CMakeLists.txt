@@ -27,6 +27,7 @@ add_roughpy_lib(Streams STATIC
         src/external_data_sources/sound_file_data_source.cpp
         src/external_data_sources/sound_file_data_source.h
         src/schema.cpp
+        src/stream_construction_helper.cpp
     PUBLIC_HEADERS
         include/roughpy/streams/dyadic_caching_layer.h
         include/roughpy/streams/dynamically_constructed_stream.h
@@ -38,6 +39,7 @@ add_roughpy_lib(Streams STATIC
         include/roughpy/streams/external_data_stream.h
         include/roughpy/streams/piecewise_abelian_stream.h
         include/roughpy/streams/schema.h
+        include/roughpy/streams/stream_construction_helper.h
     PUBLIC_DEPS
         RoughPy::Core
         RoughPy::Platform

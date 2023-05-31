@@ -41,6 +41,7 @@
 #include <variant>
 #include <vector>
 
+#include "roughpy/scalars/key_scalar_array.h"
 #include "roughpy_streams_export.h"
 
 namespace rpy {

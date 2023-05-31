@@ -29,7 +29,6 @@
 // Created by user on 24/05/23.
 //
 
-
 #include "schema.h"
 #include <roughpy/core/macros.h>
 
@@ -39,12 +38,10 @@ using namespace rpy;
 using namespace rpy::streams;
 
 StreamChannel::StreamChannel()
-    : m_type(ChannelType::Increment), increment_info()
-{
+    : m_type(ChannelType::Increment), increment_info() {
 }
 StreamChannel::StreamChannel(const StreamChannel &arg)
-    : m_type(arg.m_type)
-{
+    : m_type(arg.m_type) {
     switch (m_type) {
         case ChannelType::Increment:
             inplace_construct(&increment_info, arg.increment_info);
@@ -58,8 +55,7 @@ StreamChannel::StreamChannel(const StreamChannel &arg)
     }
 }
 StreamChannel::StreamChannel(StreamChannel &&arg) noexcept
-    : m_type(arg.m_type)
-{
+    : m_type(arg.m_type) {
     switch (m_type) {
         case ChannelType::Increment:
             inplace_construct(&increment_info, arg.increment_info);
@@ -74,8 +70,7 @@ StreamChannel::StreamChannel(StreamChannel &&arg) noexcept
 }
 
 StreamChannel::StreamChannel(ChannelType type)
-    : m_type(type)
-{
+    : m_type(type) {
     switch (m_type) {
         case ChannelType::Increment:
             inplace_construct(&increment_info, ChannelIncrementInfo());
@@ -178,7 +173,7 @@ dimn_t StreamChannel::variant_id_of_label(string_view label) const {
     return static_cast<dimn_t>(it - categorical_info.variants.begin());
 }
 
-StreamChannel& StreamChannel::add_variant(string variant_label) {
+StreamChannel &StreamChannel::add_variant(string variant_label) {
     RPY_CHECK(m_type == ChannelType::Categorical);
 
     if (RPY_UNLIKELY(variant_label.empty())) {
@@ -186,8 +181,8 @@ StreamChannel& StreamChannel::add_variant(string variant_label) {
     }
 
     auto found = std::find(categorical_info.variants.begin(),
-                        categorical_info.variants.end(),
-                        variant_label);
+                           categorical_info.variants.end(),
+                           variant_label);
     if (found != categorical_info.variants.end()) {
         throw std::runtime_error("variant with label " + variant_label + " already exists");
     }
@@ -256,7 +251,7 @@ dimn_t StreamSchema::width_to_iterator(const_iterator end) const {
     return ndims;
 }
 typename StreamSchema::const_iterator StreamSchema::stream_dim_to_channel_it(dimn_t &stream_dim) const {
-    for (auto cit=begin(); cit != end(); ++cit) {
+    for (auto cit = begin(); cit != end(); ++cit) {
         const auto channel_width = channel_it_to_width(cit);
         if (stream_dim < channel_width) {
             return cit;
@@ -296,8 +291,6 @@ dimn_t StreamSchema::width() const {
     return width_to_iterator(end());
 }
 
-
-
 dimn_t StreamSchema::channel_to_stream_dim(dimn_t channel_no) const {
     RPY_CHECK(channel_no < size());
     return width_to_iterator(nth(channel_no));
@@ -312,12 +305,11 @@ dimn_t StreamSchema::channel_variant_to_stream_dim(dimn_t channel_no, dimn_t var
 }
 
 std::pair<dimn_t, dimn_t> StreamSchema::stream_dim_to_channel(dimn_t stream_dim) const {
-    std::pair<dimn_t, dimn_t> result (stream_dim, stream_dim);
+    std::pair<dimn_t, dimn_t> result(stream_dim, stream_dim);
     const auto channel_it = stream_dim_to_channel_it(result.second);
     result.first = static_cast<dimn_t>(channel_it - begin());
     return result;
 }
-
 
 string StreamSchema::label_from_channel_it(const_iterator channel_it, dimn_t variant_id) {
     return channel_it->first + channel_it->second.label_suffix(variant_id);
@@ -337,7 +329,7 @@ string StreamSchema::label_of_channel_variant(dimn_t channel_id, dimn_t channel_
     return label_from_channel_it(nth(channel_id), channel_variant);
 }
 
-dimn_t StreamSchema::label_to_stream_dim(const string& label) const {
+dimn_t StreamSchema::label_to_stream_dim(const string &label) const {
     auto channel = find(label);
     RPY_CHECK(channel != end());
 
@@ -395,7 +387,6 @@ StreamChannel &StreamSchema::insert_value(string label) {
 StreamChannel &StreamSchema::insert_categorical(string label) {
     return insert(std::move(label), StreamChannel(ChannelCategoricalIncrementInfo()));
 }
-
 
 
 
