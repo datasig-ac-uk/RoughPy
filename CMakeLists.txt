@@ -89,7 +89,6 @@ if(NOT TARGET PCGRandom::pcg_random)
 endif()
 
 add_subdirectory(external/recombine)
-
 add_subdirectory(external/libalgebra)
 
 add_subdirectory(external/csv-parser)
@@ -140,3 +139,7 @@ install(TARGETS
             NAMELINK_SKIP
         ARCHIVE DESTINATION roughpy
         )
+
+if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
+    install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)
+endif()
