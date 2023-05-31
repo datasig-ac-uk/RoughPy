@@ -46,8 +46,8 @@ def filter_cmake_manifests(items: list[str]) -> list[str]:
         # if m is not None:
         #     return False
 
-        # if item.endswith("recombine.so"):
-        #     return False
+        if item.endswith("recombine.so") or item.endswith("recombine.so.2.0.2"):
+            return False
 
         return True
 
