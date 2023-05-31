@@ -77,7 +77,7 @@ public:
 
     void add_option(const string& option, void* value);
 
-
+    RPY_NO_DISCARD
     Stream construct();
 
     operator bool () const noexcept { return p_factory != nullptr; }

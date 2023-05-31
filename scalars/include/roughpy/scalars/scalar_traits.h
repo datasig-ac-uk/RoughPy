@@ -42,10 +42,12 @@ public:
     using reference = T &;
     using const_reference = const T &;
 
+    RPY_NO_DISCARD
     static const ScalarType *get_type() noexcept {
         return ScalarType::of<T>();
     }
 
+    RPY_NO_DISCARD
     static Scalar make(value_type &&arg) {
         return Scalar(get_type(), std::move(arg));
     }
@@ -59,10 +61,12 @@ public:
     using reference = T &;
     using const_reference = const T &;
 
+    RPY_NO_DISCARD
     static const ScalarType *get_type() noexcept {
         return scalar_type_trait<T>::get_type();
     }
 
+    RPY_NO_DISCARD
     static Scalar make(reference arg) {
         return Scalar(ScalarPointer(get_type(), &arg));
     }
@@ -76,10 +80,12 @@ public:
     using reference = T &;
     using const_reference = const T &;
 
+    RPY_NO_DISCARD
     static const ScalarType *get_type() noexcept {
         return scalar_type_trait<T>::get_type();
     }
 
+    RPY_NO_DISCARD
     static Scalar make(const_reference arg) {
         return Scalar(ScalarPointer(get_type(), &arg));
     }

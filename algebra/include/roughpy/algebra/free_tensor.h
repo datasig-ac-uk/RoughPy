@@ -49,9 +49,13 @@ public:
 
     using algebra_interface_t::algebra_interface_t;
 
+    RPY_NO_DISCARD
     virtual FreeTensor exp() const = 0;
+    RPY_NO_DISCARD
     virtual FreeTensor log() const = 0;
+    RPY_NO_DISCARD
     virtual FreeTensor inverse() const = 0;
+    RPY_NO_DISCARD
     virtual FreeTensor antipode() const = 0;
     virtual void fmexp(const FreeTensor &other) = 0;
 };
@@ -70,9 +74,13 @@ public:
 
     static constexpr AlgebraType s_alg_type = AlgebraType::FreeTensor;
 
+    RPY_NO_DISCARD
     FreeTensor exp() const;
+    RPY_NO_DISCARD
     FreeTensor log() const;
+    RPY_NO_DISCARD
     FreeTensor inverse() const;
+    RPY_NO_DISCARD
     FreeTensor antipode() const;
     FreeTensor &fmexp(const FreeTensor &other);
 
@@ -92,9 +100,13 @@ public:
 
     using algebra_interface_t::algebra_interface_t;
 
+    RPY_NO_DISCARD
     virtual FreeTensorBundle exp() const = 0;
+    RPY_NO_DISCARD
     virtual FreeTensorBundle log() const = 0;
+    RPY_NO_DISCARD
     virtual FreeTensorBundle inverse() const = 0;
+    RPY_NO_DISCARD
     virtual FreeTensorBundle antipode() const = 0;
     virtual void fmexp(const FreeTensorBundle &other) = 0;
 
@@ -117,9 +129,13 @@ public:
 
     static constexpr AlgebraType s_alg_type = AlgebraType::FreeTensorBundle;
 
+    RPY_NO_DISCARD
     FreeTensorBundle exp() const;
+    RPY_NO_DISCARD
     FreeTensorBundle log() const;
+    RPY_NO_DISCARD
     FreeTensorBundle inverse() const;
+    RPY_NO_DISCARD
     FreeTensorBundle antipode() const;
     FreeTensorBundle &fmexp(const FreeTensorBundle &other);
 

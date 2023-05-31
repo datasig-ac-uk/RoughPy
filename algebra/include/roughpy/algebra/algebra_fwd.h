@@ -29,8 +29,9 @@
 #define ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
 
 #include "roughpy_algebra_export.h"
-#include <roughpy/core/implementation_types.h>
+#include <roughpy/core/types.h>
 
+#include <memory>
 
 
 namespace rpy {
@@ -80,7 +81,7 @@ class AlgebraInterfaceBase;
 
 }
 using RawUnspecifiedAlgebraType = dtl::AlgebraInterfaceBase*;
-using UnspecifiedAlgebraType = dtl::AlgebraInterfaceBase *;
+using UnspecifiedAlgebraType = std::unique_ptr<dtl::AlgebraInterfaceBase>;
 
 class FreeTensor;
 class Lie;

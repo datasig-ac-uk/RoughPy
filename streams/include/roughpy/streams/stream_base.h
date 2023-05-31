@@ -28,12 +28,14 @@
 #ifndef ROUGHPY_STREAMS_STREAM_BASE_H_
 #define ROUGHPY_STREAMS_STREAM_BASE_H_
 
-#include <roughpy/algebra/context.h>
-#include <roughpy/core/implementation_types.h>
-#include <roughpy/intervals/real_interval.h>
-#include <roughpy/platform/serialization.h>
 #include "roughpy/intervals/dyadic_interval.h"
 #include "roughpy_streams_export.h"
+#include <roughpy/algebra/context.h>
+#include <roughpy/core/types.h>
+#include <roughpy/intervals/real_interval.h>
+#include <roughpy/platform/serialization.h>
+
+#include "schema.h"
 
 namespace rpy {
 namespace streams {
@@ -76,42 +78,53 @@ struct StreamMetadata {
  */
 class ROUGHPY_STREAMS_EXPORT StreamInterface {
     StreamMetadata m_metadata;
+    StreamSchema m_schema;
 
 public:
-    const StreamMetadata &metadata() const noexcept;
+    RPY_NO_DISCARD
+    const StreamMetadata &metadata() const noexcept { return m_metadata; }
+    RPY_NO_DISCARD
+    const StreamSchema& schema() const noexcept { return m_schema; }
 
     explicit StreamInterface(StreamMetadata md) : m_metadata(std::move(md)) {}
 
     virtual ~StreamInterface() noexcept;
+    RPY_NO_DISCARD
     virtual bool empty(const intervals::Interval &interval) const noexcept;
 
 protected:
 
     void set_metadata(StreamMetadata&& md) noexcept;
 
+    RPY_NO_DISCARD
     virtual algebra::Lie
     log_signature_impl(const intervals::Interval &interval,
                        const algebra::Context &ctx) const = 0;
 
 public:
+    RPY_NO_DISCARD
     virtual algebra::Lie
     log_signature(const intervals::Interval &interval,
                   const algebra::Context &ctx) const;
 
+    RPY_NO_DISCARD
     virtual algebra::Lie
     log_signature(const intervals::DyadicInterval &interval,
                   resolution_t resolution,
                   const algebra::Context &ctx) const;
 
+    RPY_NO_DISCARD
     virtual algebra::Lie
     log_signature(const intervals::Interval &interval,
                   resolution_t resolution,
                   const algebra::Context &ctx) const;
 
+    RPY_NO_DISCARD
     virtual algebra::FreeTensor
     signature(const intervals::Interval &interval,
               const algebra::Context &ctx) const;
 
+    RPY_NO_DISCARD
     virtual algebra::FreeTensor
     signature(const intervals::Interval &interval,
               resolution_t resolution,
@@ -120,6 +133,10 @@ public:
 protected:
     // TODO: add methods for batch computing signatures via a computation tree
 
+
+public:
+
+//    RPY_SERIAL_SERIALIZE_FN();
 
 };
 
@@ -162,6 +179,14 @@ RPY_SERIAL_SAVE_FN_EXT(StreamMetadata) {
     RPY_SERIAL_SERIALIZE_NVP("vtype", value.cached_vector_type);
     RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
 }
+
+//RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface) {
+//    RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
+//    RPY_SERIAL_SERIALIZE_NVP("schema", m_schema);
+//}
+
+
+
 
 }// namespace streams
 }// namespace rpy

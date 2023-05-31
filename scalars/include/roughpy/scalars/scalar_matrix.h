@@ -78,7 +78,7 @@ public:
     RPY_NO_DISCARD constexpr MatrixStorage storage() const noexcept { return m_storage; }
 
     constexpr void storage(MatrixStorage new_storage) {
-        //TODO: Check if htis requies allocaiton or something
+        //TODO: Check if this requires allocation or something
         m_storage = new_storage;
     }
 
@@ -86,15 +86,23 @@ public:
 
     constexpr void layout(MatrixLayout new_layout) noexcept { m_layout = new_layout; }
 
+    RPY_NO_DISCARD
     ScalarMatrix row(deg_t i);
+    RPY_NO_DISCARD
     ScalarMatrix row(deg_t i) const;
+    RPY_NO_DISCARD
     ScalarMatrix col(deg_t i);
+    RPY_NO_DISCARD
     ScalarMatrix col(deg_t i) const;
 
+    RPY_NO_DISCARD
     ScalarPointer data() const;
+    RPY_NO_DISCARD
     ScalarPointer data();
 
+    RPY_NO_DISCARD
     ScalarMatrix to_full() const;
+    RPY_NO_DISCARD
     ScalarMatrix to_full(MatrixLayout layout) const;
     void to_full(ScalarMatrix &into) const;
 

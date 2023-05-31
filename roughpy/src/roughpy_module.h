@@ -35,7 +35,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <roughpy/core/implementation_types.h>
+#include <roughpy/core/types.h>
 
 #if defined(RPY_GCC)
 #define RPY_NO_EXPORT __attribute__((visibility("hidden")))
@@ -54,7 +54,7 @@ struct type_caster<boost::optional<T>> : public optional_caster<boost::optional<
 #endif
 
 namespace py = pybind11;
-namespace rpy { namespace RPY_NO_EXPORT python {
+namespace rpy { namespace python {
 
 template <typename T>
 inline PyObject *cast_to_object(T &&arg) noexcept {

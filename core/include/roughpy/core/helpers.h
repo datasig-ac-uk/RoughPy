@@ -28,9 +28,9 @@
 #ifndef ROUGHPY_CORE_POINTER_HELPERS_H_
 #define ROUGHPY_CORE_POINTER_HELPERS_H_
 
-#include "implementation_types.h"
-#include "traits.h"
 #include "macros.h"
+#include "traits.h"
+#include "types.h"
 
 #include <bitset>
 #include <climits>
@@ -54,6 +54,7 @@ namespace rpy {
 using std::bit_cast;
 #else
 template <typename To, typename From>
+RPY_NO_DISCARD
 enable_if_t<
     sizeof(To) == sizeof(From)
     && is_trivially_copyable<From>::value
@@ -114,8 +115,10 @@ public:
         return *this;
     }
 
+    RPY_NO_DISCARD
     operator T* () const noexcept { return p_data; }
 
+    RPY_NO_DISCARD
     operator bool() const noexcept { return p_data != nullptr; }
 
 };

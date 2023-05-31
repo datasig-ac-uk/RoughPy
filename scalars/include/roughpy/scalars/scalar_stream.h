@@ -41,6 +41,7 @@ class ROUGHPY_SCALARS_EXPORT ScalarStream {
     const ScalarType *p_type;
 
 public:
+    RPY_NO_DISCARD
     const ScalarType *type() const noexcept { return p_type; }
 
     ScalarStream();
@@ -51,10 +52,14 @@ public:
     ScalarStream(std::vector<const void *> &&stream, dimn_t row_elts, const ScalarType *type)
         : m_stream(stream), m_elts_per_row{row_elts}, p_type(type) {}
 
+    RPY_NO_DISCARD
     dimn_t col_count(dimn_t i = 0) const noexcept;
+    RPY_NO_DISCARD
     dimn_t row_count() const noexcept { return m_stream.size(); }
 
+    RPY_NO_DISCARD
     ScalarArray operator[](dimn_t row) const noexcept;
+    RPY_NO_DISCARD
     Scalar operator[](std::pair<dimn_t, dimn_t> index) const noexcept;
 
     void set_elts_per_row(dimn_t num_elts) noexcept;

@@ -80,39 +80,64 @@ public:
     AlgebraBundleBase &operator=(const AlgebraBundleBase &other);
     AlgebraBundleBase &operator=(AlgebraBundleBase &&other) noexcept = default;
 
+    RPY_NO_DISCARD
     algebra_t borrow() const;
+    RPY_NO_DISCARD
     algebra_t borrow_mut();
 
+    RPY_NO_DISCARD
     const BundleInterface &operator*() const noexcept { return *p_impl; }
+    RPY_NO_DISCARD
     BundleInterface &operator*() noexcept { return *p_impl; }
+    RPY_NO_DISCARD
     const BundleInterface *operator->() const noexcept { return p_impl.get(); }
+    RPY_NO_DISCARD
     BundleInterface *operator->() noexcept { return p_impl.get(); }
 
+    RPY_NO_DISCARD
     constexpr operator bool() const noexcept { return static_cast<bool>(p_impl); }
 
+    RPY_NO_DISCARD
     dimn_t dimension() const;
+    RPY_NO_DISCARD
     dimn_t size() const;
+    RPY_NO_DISCARD
     bool is_zero() const;
+    RPY_NO_DISCARD
     optional<deg_t> width() const;
+    RPY_NO_DISCARD
     optional<deg_t> depth() const;
+    RPY_NO_DISCARD
     optional<deg_t> degree() const;
 
+    RPY_NO_DISCARD
     VectorType storage_type() const noexcept;
+    RPY_NO_DISCARD
     const scalars::ScalarType *coeff_type() const noexcept;
 
+    RPY_NO_DISCARD
     scalars::Scalar operator[](key_type k) const;
+    RPY_NO_DISCARD
     scalars::Scalar operator[](key_type k);
 
 protected:
+    RPY_NO_DISCARD
     static algebra_t &downcast(AlgebraBundleBase &arg) { return static_cast<algebra_t &>(arg); }
+    RPY_NO_DISCARD
     static const algebra_t &downcast(const AlgebraBundleBase &arg) { return static_cast<const algebra_t &>(arg); }
 
 public:
+    RPY_NO_DISCARD
     algebra_t uminus() const;
+    RPY_NO_DISCARD
     algebra_t add(const algebra_t &rhs) const;
+    RPY_NO_DISCARD
     algebra_t sub(const algebra_t &rhs) const;
+    RPY_NO_DISCARD
     algebra_t mul(const algebra_t &rhs) const;
+    RPY_NO_DISCARD
     algebra_t smul(const scalars::Scalar &rhs) const;
+    RPY_NO_DISCARD
     algebra_t sdiv(const scalars::Scalar &rhs) const;
 
     algebra_t &add_inplace(const algebra_t &rhs);
@@ -133,7 +158,9 @@ public:
 
     std::ostream &print(std::ostream &os) const;
 
+    RPY_NO_DISCARD
     bool operator==(const algebra_t &other) const;
+    RPY_NO_DISCARD
     bool operator!=(const algebra_t &other) const { return !operator==(other); }
 
 //#ifndef RPY_DISABLE_SERIALIZATION

@@ -11,7 +11,7 @@ include(GenerateExportHeader)
 find_package(Boost 1.64 CONFIG REQUIRED COMPONENTS headers)
 
 
-add_roughpy_lib(Streams
+add_roughpy_lib(Streams STATIC
     SOURCES
         src/stream_base.cpp
         src/stream.cpp
@@ -26,6 +26,8 @@ add_roughpy_lib(Streams
         src/external_data_sources/csv_data_source.h
         src/external_data_sources/sound_file_data_source.cpp
         src/external_data_sources/sound_file_data_source.h
+        src/schema.cpp
+        src/stream_construction_helper.cpp
     PUBLIC_HEADERS
         include/roughpy/streams/dyadic_caching_layer.h
         include/roughpy/streams/dynamically_constructed_stream.h
@@ -36,6 +38,8 @@ add_roughpy_lib(Streams
         include/roughpy/streams/brownian_stream.h
         include/roughpy/streams/external_data_stream.h
         include/roughpy/streams/piecewise_abelian_stream.h
+        include/roughpy/streams/schema.h
+        include/roughpy/streams/stream_construction_helper.h
     PUBLIC_DEPS
         RoughPy::Core
         RoughPy::Platform
@@ -56,4 +60,5 @@ add_roughpy_test(Streams
         SRC
             src/test_lie_increment_stream.cpp
             src/test_brownian_stream.cpp
+            src/test_schema.cpp
         LINK_COMPONENT)

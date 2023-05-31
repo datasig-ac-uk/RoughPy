@@ -69,18 +69,22 @@ public:
     using StreamInterface::log_signature;
     using StreamInterface::signature;
 
+    RPY_NO_DISCARD
     algebra::Lie log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
 
+    RPY_NO_DISCARD
     algebra::Lie
     log_signature(const intervals::DyadicInterval &interval,
                   resolution_t resolution,
                   const algebra::Context &ctx) const override;
 
+    RPY_NO_DISCARD
     algebra::Lie
     log_signature(const intervals::Interval &domain,
                   resolution_t resolution,
                   const algebra::Context &ctx) const override;
 
+    RPY_NO_DISCARD
     algebra::FreeTensor signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
 };
 

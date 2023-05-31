@@ -1,8 +1,8 @@
 #ifndef ROUGHPY_DEVICE_MULTIARRAY_H_
 #define ROUGHPY_DEVICE_MULTIARRAY_H_
 
-#include <roughpy/core/implementation_types.h>
 #include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
 
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/free_tensor.h>

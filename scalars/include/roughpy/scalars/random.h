@@ -48,11 +48,16 @@ public:
     virtual void set_seed(Slice<uint64_t> seed_data) = 0;
     virtual void set_state(string_view state) = 0;
 
+    RPY_NO_DISCARD
     virtual std::vector<uint64_t> get_seed() const = 0;
+    RPY_NO_DISCARD
     virtual std::string get_type() const = 0;
+    RPY_NO_DISCARD
     virtual std::string get_state() const = 0;
 
+    RPY_NO_DISCARD
     virtual OwnedScalarArray uniform_random_scalar(ScalarArray lower, ScalarArray upper, dimn_t count) const = 0;
+    RPY_NO_DISCARD
     virtual OwnedScalarArray normal_random(Scalar loc, Scalar scale, dimn_t count) const = 0;
 };
 

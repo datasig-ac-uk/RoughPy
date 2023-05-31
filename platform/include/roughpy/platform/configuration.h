@@ -32,8 +32,8 @@
 #ifndef ROUGHPY_PLATFORM_CONFIGURATION_H
 #define ROUGHPY_PLATFORM_CONFIGURATION_H
 
-#include <roughpy/core/implementation_types.h>
 #include <roughpy/core/traits.h>
+#include <roughpy/core/types.h>
 
 #include <memory>
 
@@ -64,11 +64,11 @@ class Configuration {
 
 public:
 
-    [[nodiscard]]
+    RPY_NO_DISCARD
     string_view get_raw_config_value(string_view property) const;
 
     template <typename T>
-    [[nodiscard]]
+    RPY_NO_DISCARD
     enable_if_t<is_constructible<T, string_view>::value, T> get_config_value(string_view property) const;
 
 
@@ -82,6 +82,7 @@ public:
 
 
 template <typename T>
+RPY_NO_DISCARD
 enable_if_t<is_constructible<T, string_view>::value, T> Configuration::get_config_value(string_view property) const {
     return T(get_raw_config_value(property));
 }

@@ -8,12 +8,14 @@ project(RoughPyScalars
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
-option(RPY_SCALARS_SHARED "Build shared RoughPy scalars module" ON)
+
+
+option(RPY_POLY_SCALARS "Build polynomial scalar types" ON)
 
 set(RPY_USE_MKL ${MKL_FOUND})
 
 configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
-add_roughpy_lib(Scalars
+add_roughpy_lib(Scalars STATIC
     SOURCES
         src/scalar_type.cpp
         src/scalar_pointer.cpp
@@ -50,6 +52,8 @@ add_roughpy_lib(Scalars
         src/bfloat16_random_generator.h
         src/random_impl.cpp
         src/random_impl.h
+        src/rational_poly_scalar_type.cpp
+        src/rational_poly_scalar_type.h
         ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
     PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
@@ -70,6 +74,7 @@ add_roughpy_lib(Scalars
         RoughPy::Platform
         Boost::boost
         Eigen3::Eigen
+        Libalgebra_lite::Libalgebra_lite
     PRIVATE_DEPS
         PCGRandom::pcg_random
         "$<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,BLAS::BLAS LAPACK::LAPACK>"
@@ -90,7 +95,7 @@ else()
     set(RPY_RATIONAL_TYPE "boost::multiprecision::cpp_rational")
 endif()
 
-configure_file("src/rational_type.h.in" "rational_type.h" NO_SOURCE_PERMISSIONS @ONLY)
+#configure_file("src/rational_type.h.in" "rational_type.h" NO_SOURCE_PERMISSIONS @ONLY)
 
 
 add_roughpy_test(scalar

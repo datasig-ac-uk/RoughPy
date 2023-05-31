@@ -40,6 +40,7 @@ namespace rpy { namespace intervals {
 using predicate_t = std::function<bool(const Interval&)>;
 
 ROUGHPY_INTERVALS_EXPORT
+RPY_NO_DISCARD
 std::vector<RealInterval>
 segment(const Interval& interval,
         predicate_t predicate,

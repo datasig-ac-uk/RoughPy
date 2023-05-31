@@ -382,8 +382,8 @@ std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr, dimn_t co
         auto size = static_cast<int64_t>(item->_mp_size) * sizeof(mp_limb_t);
         auto n_bytes = (size >= 0) ? size : -size;  // abs(size) is ambiguous?
 #else
-        auto size = static_cast<int64_t>(item.size());
-        auto n_bytes = size*sizeof(typename decltype(item)::limb_type);
+        auto size = static_cast<int64_t>(item.backend().size());
+        auto n_bytes = size*sizeof(boost::multiprecision::limb_type);
         size = item.sign() ? -n_bytes : n_bytes;
 #endif
         const auto *sz_ptr = reinterpret_cast<const byte *>(&size);
@@ -404,11 +404,12 @@ std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr, dimn_t co
     };
 
     for (dimn_t i=0; i<count; ++i) {
-        const auto& item = raw[i].backend();
 #if RPY_USING_GMP
+        const auto &item = raw[i].backend();
         push_items(mpq_numref(item.data()));
         push_items(mpq_denref(item.data()));
 #else
+        const auto& item = raw[i];
         push_items(numerator(item));
         push_items(denominator(item));
 #endif
@@ -441,7 +442,7 @@ ScalarPointer RationalType::from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) 
 #if RPY_USING_GMP
         mpz_import(dst, n_bytes, -1, sizeof(byte), -1, 0, src);
 #else
-        cpp_int tmp;
+        boost::multiprecision::cpp_int tmp;
         import_bits(tmp, src, src+n_bytes, CHAR_BIT, false);
         dst = tmp.backend();
 #endif
@@ -459,7 +460,7 @@ ScalarPointer RationalType::from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) 
         unpack_limb(denref, src + pos);
 #else
         unpack_limb(item.backend().num(), src + pos);
-        unpack_limb(item.backend().den(), src + pos);
+        unpack_limb(item.backend().denom(), src + pos);
 #endif
     }
 

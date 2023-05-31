@@ -60,9 +60,11 @@ public:
         Slice<param_t> indices,
         StreamMetadata md);
 
+    RPY_NO_DISCARD
     bool empty(const intervals::Interval &interval) const noexcept override;
 
 protected:
+    RPY_NO_DISCARD
     algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
 
 public:

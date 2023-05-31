@@ -8,10 +8,9 @@ project(RoughPy_Intervals
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
-find_package(Boost 1.64 CONFIG REQUIRED COMPONENTS headers)
 
 
-add_roughpy_lib(Intervals
+add_roughpy_lib(Intervals STATIC
         SOURCES
             src/interval.cpp
             src/dyadic.cpp

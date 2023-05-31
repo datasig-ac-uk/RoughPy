@@ -39,7 +39,7 @@ using namespace rpy::streams;
 
 
 void streams::DynamicallyConstructedStream::refine_accuracy(DynamicallyConstructedStream::data_increment increment, resolution_t desired) const {
-    RPY_DBG_ASSERT(increment->first.power() <= desired);
+    RPY_DBG_ASSERT(increment->first.power() < desired);
     //
     //    // get all the intervals in the tree "below" increment->first
     //    auto range = m_data_tree.equal_range(increment->first);
@@ -72,7 +72,9 @@ void streams::DynamicallyConstructedStream::refine_accuracy(DynamicallyConstruct
     refined_end.shrink_interval_left(desired - increment->first.power());
 
     for (; refined_inc < refined_end; ++(++refined_inc)) {
-        auto leaf_above = --m_data_tree.equal_range(refined_inc).first;
+        auto range = m_data_tree.equal_range(refined_inc);
+        auto leaf_above = range.first;
+        --leaf_above;
 
         while (leaf_above->first.contains(refined_inc) && leaf_above->first != refined_inc) {
             leaf_above = insert_children_and_refine(leaf_above, refined_inc);
@@ -298,6 +300,11 @@ algebra::Lie DynamicallyConstructedStream::log_signature(const intervals::Dyadic
     // the desired interval.
     while (root->first != interval) {
         root = insert_children_and_refine(root, interval);
+    }
+
+    // Check again if we now have the interval required
+    if (root->first == interval && root->second.accuracy() >= resolution) {
+        return root->second.lie();
     }
 
     // Now refine the accuracy of our value until it meets our requirement

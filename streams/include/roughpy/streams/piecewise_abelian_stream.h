@@ -33,7 +33,7 @@
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/free_tensor.h>
 #include <roughpy/algebra/lie.h>
-#include <roughpy/core/implementation_types.h>
+#include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
 namespace rpy {
@@ -46,10 +46,12 @@ public:
 private:
     std::vector<LiePiece> m_data;
 
+    RPY_NO_DISCARD
     static inline scalars::Scalar to_multiplier_upper(const intervals::RealInterval &interval, param_t param) {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((interval.sup() - param) / (interval.sup() - interval.inf()));
     }
+    RPY_NO_DISCARD
     static inline scalars::Scalar to_multiplier_lower(const intervals::RealInterval &interval, param_t param) {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((param - interval.inf()) / (interval.sup() - interval.inf()));
@@ -58,9 +60,11 @@ private:
 public:
     PiecewiseAbelianStream(std::vector<LiePiece> &&arg, StreamMetadata &&md);
 
+    RPY_NO_DISCARD
     bool empty(const intervals::Interval &interval) const noexcept override;
 
 protected:
+    RPY_NO_DISCARD
     algebra::Lie log_signature_impl(const intervals::Interval &domain, const algebra::Context &ctx) const override;
 
 public:

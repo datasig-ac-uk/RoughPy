@@ -38,15 +38,15 @@
 #include <roughpy/scalars/key_scalar_array.h>
 
 namespace rpy {
-namespace RPY_NO_EXPORT python {
+namespace python {
 
 
-struct AlternativeKeyType {
+struct RPY_NO_EXPORT AlternativeKeyType {
     py::handle py_key_type;
     std::function<key_type(py::handle)> converter;
 };
 
-struct PyToBufferOptions {
+struct RPY_NO_EXPORT PyToBufferOptions {
     /// Scalar type to use. If null, will be set to the resulting type
     const scalars::ScalarType *type = nullptr;
 

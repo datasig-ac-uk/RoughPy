@@ -109,16 +109,19 @@ namespace dtl {
 
 template <typename Impl>
 class ConvertedArgument {
-    const Impl &m_ref;
     optional<Impl> m_holder;
+    const Impl *p_ref = nullptr;
 
 public:
     ConvertedArgument(Impl &&converted)
-        : m_holder(std::move(converted)), m_ref(m_holder.value()) {}
+        : m_holder(std::move(converted)) {
+        p_ref = &m_holder.value();
+    }
     ConvertedArgument(const Impl &same_type)
-        : m_holder(), m_ref(same_type) {}
+        : m_holder(), p_ref(&same_type) {}
     operator const Impl &() const noexcept {
-        return m_ref;
+        RPY_DBG_ASSERT(p_ref!=nullptr);
+        return *p_ref;
     }
 };
 
@@ -248,7 +251,7 @@ private:
 
 public:
 
-    optional<scalars::ScalarArray> dense_data() const;
+    optional<scalars::ScalarArray> dense_data() const override;
 
 private:
     /*

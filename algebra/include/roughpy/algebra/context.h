@@ -86,10 +86,14 @@ protected:
 public:
     virtual ~ContextBase();
 
+    RPY_NO_DISCARD
     deg_t width() const noexcept { return m_width; }
+    RPY_NO_DISCARD
     deg_t depth() const noexcept { return m_depth; }
 
+    RPY_NO_DISCARD
     dimn_t lie_size(deg_t deg) const noexcept;
+    RPY_NO_DISCARD
     dimn_t tensor_size(deg_t deg) const noexcept;
 };
 
@@ -112,33 +116,50 @@ protected:
 
 
 public:
-
+    RPY_NO_DISCARD
     const scalars::ScalarType *ctype() const noexcept { return p_ctype; }
+    RPY_NO_DISCARD
     const string &backend() const noexcept { return m_ctx_backend; }
 
+    RPY_NO_DISCARD
     virtual context_pointer get_alike(deg_t new_depth) const = 0;
+    RPY_NO_DISCARD
     virtual context_pointer get_alike(const scalars::ScalarType *new_ctype) const = 0;
+    RPY_NO_DISCARD
     virtual context_pointer get_alike(deg_t new_depth, const scalars::ScalarType *new_ctype) const = 0;
+    RPY_NO_DISCARD
     virtual context_pointer get_alike(deg_t new_width, deg_t new_depth, const scalars::ScalarType *new_ctype) const = 0;
 
+    RPY_NO_DISCARD
     virtual bool check_compatible(const Context &other_ctx) const noexcept;
 
+    RPY_NO_DISCARD
     virtual LieBasis get_lie_basis() const = 0;
+    RPY_NO_DISCARD
     virtual TensorBasis get_tensor_basis() const = 0;
 
+    RPY_NO_DISCARD
     virtual FreeTensor convert(const FreeTensor &arg, optional<VectorType> new_vec_type) const = 0;
+    RPY_NO_DISCARD
     virtual ShuffleTensor convert(const ShuffleTensor &arg, optional<VectorType> new_vec_type) const = 0;
+    RPY_NO_DISCARD
     virtual Lie convert(const Lie &arg, optional<VectorType> new_vec_type) const = 0;
 
+    RPY_NO_DISCARD
     virtual FreeTensor construct_free_tensor(const VectorConstructionData &arg) const = 0;
+    RPY_NO_DISCARD
     virtual ShuffleTensor construct_shuffle_tensor(const VectorConstructionData &arg) const = 0;
+    RPY_NO_DISCARD
     virtual Lie construct_lie(const VectorConstructionData &arg) const = 0;
 
+    RPY_NO_DISCARD
     virtual UnspecifiedAlgebraType construct(AlgebraType type, const VectorConstructionData& data) const = 0;
 
-
+    RPY_NO_DISCARD
     FreeTensor zero_free_tensor(VectorType vtype) const;
+    RPY_NO_DISCARD
     ShuffleTensor zero_shuffle_tensor(VectorType vtype) const;
+    RPY_NO_DISCARD
     Lie zero_lie(VectorType vtype) const;
 
 protected:
@@ -146,27 +167,37 @@ protected:
     void tensor_to_lie_fallback(Lie &result, const FreeTensor &arg) const;
 
 public:
+    RPY_NO_DISCARD
     virtual FreeTensor lie_to_tensor(const Lie &arg) const = 0;
+    RPY_NO_DISCARD
     virtual Lie tensor_to_lie(const FreeTensor &arg) const = 0;
 
 protected:
     void cbh_fallback(FreeTensor &collector, const std::vector<Lie> &lies) const;
 
 public:
+    RPY_NO_DISCARD
     virtual Lie cbh(const std::vector<Lie> &lies, VectorType vtype) const;
+    RPY_NO_DISCARD
     virtual Lie cbh(const Lie& left, const Lie& right, VectorType vtype) const;
 
+    RPY_NO_DISCARD
     virtual FreeTensor to_signature(const Lie &log_signature) const;
+    RPY_NO_DISCARD
     virtual FreeTensor signature(const SignatureData &data) const = 0;
+    RPY_NO_DISCARD
     virtual Lie log_signature(const SignatureData &data) const = 0;
 
+    RPY_NO_DISCARD
     virtual FreeTensor sig_derivative(const std::vector<DerivativeComputeInfo> &info,
                                       VectorType vtype) const = 0;
 
 
     // Functions to aid serialization
+    RPY_NO_DISCARD
     virtual std::vector<byte> to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const;
 
+    RPY_NO_DISCARD
     virtual UnspecifiedAlgebraType from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const;
 
 };

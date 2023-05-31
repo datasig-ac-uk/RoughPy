@@ -70,7 +70,7 @@ ADD_ARCHIVE(::cereal::JSONInputArchive);
 
 #undef ADD_ARCHIVE
 #undef ADD_LOAD
-#undef ADD_STORE
+#undef ADD_SAVE
 #undef RPY_SERIAL_DO_SPLIT
 #undef RPY_SERIAL_IMPL_CLASSNAME
 #undef RPY_SERIAL_EXTERNAL

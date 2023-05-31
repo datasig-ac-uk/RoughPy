@@ -125,14 +125,19 @@ public:
 
     using ScalarPointer::is_const;
     using ScalarPointer::type;
+    RPY_NO_DISCARD
     bool is_value() const noexcept;
+    RPY_NO_DISCARD
     bool is_zero() const noexcept;
 
+    RPY_NO_DISCARD
     ScalarPointer to_pointer() const noexcept;
+    RPY_NO_DISCARD
     ScalarPointer to_mut_pointer();
 
     void set_to_zero();
 
+    RPY_NO_DISCARD
     scalar_t to_scalar_t() const;
 
     Scalar operator-() const;

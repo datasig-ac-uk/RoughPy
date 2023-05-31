@@ -49,9 +49,9 @@ namespace scalars {
 template <typename T>
 constexpr std::uint8_t sizeof_bits() noexcept {
     return static_cast<std::uint8_t>(std::min(
-                                         static_cast<std::size_t>(std::numeric_limits<std::uint8_t>::max() / 8),
+                                         static_cast<std::size_t>(std::numeric_limits<std::uint8_t>::max() / CHAR_BIT),
                                          sizeof(T))
-                                     * 8U);
+                                     * CHAR_BIT);
 }
 
 template <typename ScalarImpl>
@@ -68,14 +68,17 @@ class StandardScalarType : public ScalarType {
 
 public:
     explicit StandardScalarType(string id, string name)
-        : ScalarType({{ScalarTypeCode::Float,
-                       sizeof_bits<ScalarImpl>(),
-                       1U},
-                      {ScalarDeviceType::CPU, 0},
-                      std::move(name),
-                      std::move(id),
-                      sizeof(ScalarImpl),
-                      alignof(ScalarImpl)}) {}
+        : ScalarType({
+             std::move(name),
+             std::move(id),
+             sizeof(ScalarImpl),
+             alignof(ScalarImpl),
+             {ScalarTypeCode::Float,
+             sizeof_bits<ScalarImpl>(),
+             1U},
+             {ScalarDeviceType::CPU, 0}
+        })
+    {}
 
     Scalar from(long long int numerator, long long int denominator) const override {
         return Scalar(this, ScalarImpl(numerator) / ScalarImpl(denominator));
@@ -266,51 +269,51 @@ public:
         switch(info.code) {
             case ScalarTypeCode::Int:
                 switch (info.bits) {
-                    case 8:
+                    case sizeof(int8_t)*CHAR_BIT:
                         convert_copy_basic<int8_t>(optr, in, info.lanes*count);
                         break;
-                    case 16:
+                    case sizeof(int16_t)*CHAR_BIT:
                         convert_copy_basic<int16_t>(optr, in, info.lanes*count);
                         break;
-                    case 32:
+                    case sizeof(int32_t)*CHAR_BIT:
                         convert_copy_basic<int32_t>(optr, in, info.lanes*count);
                         break;
-                    case 64:
+                    case sizeof(int64_t)*CHAR_BIT:
                         convert_copy_basic<int64_t>(optr, in, info.lanes*count);
                         break;
-                    case 128:
+//                    case 128:
                     default:
                         throw std::runtime_error("invalid bit configuration for integer type");
                 }
                 break;
             case ScalarTypeCode::UInt:
                 switch (info.bits) {
-                    case 8:
+                    case sizeof(uint8_t)*CHAR_BIT:
                         convert_copy_basic<uint8_t>(optr, in, info.lanes * count);
                         break;
-                    case 16:
+                    case sizeof(uint16_t)*CHAR_BIT:
                         convert_copy_basic<uint16_t>(optr, in, info.lanes * count);
                         break;
-                    case 32:
+                    case sizeof(uint32_t)*CHAR_BIT:
                         convert_copy_basic<uint32_t>(optr, in, info.lanes * count);
                         break;
-                    case 64:
+                    case sizeof(uint64_t)*CHAR_BIT:
                         convert_copy_basic<uint64_t>(optr, in, info.lanes * count);
                         break;
-                    case 128:
+//                    case 128:
                     default:
                         throw std::runtime_error("invalid bit configuration for integer type");
                 }
                 break;
             case ScalarTypeCode::Float:
                 switch (info.bits) {
-                    case 16:
+                    case sizeof(half)*CHAR_BIT:
                         convert_copy_basic<half>(optr, in, info.lanes*count);
                         break;
-                    case 32:
+                    case sizeof(float)*CHAR_BIT:
                         convert_copy_basic<float>(optr, in, info.lanes*count);
                         break;
-                    case 64:
+                    case sizeof(double)*CHAR_BIT:
                         convert_copy_basic<double>(optr, in, info.lanes*count);
                         break;
                     default:
@@ -319,7 +322,7 @@ public:
                 break;
             case ScalarTypeCode::BFloat:
                 switch (info.bits) {
-                    case 16:
+                    case sizeof(bfloat16)*CHAR_BIT:
                         convert_copy_basic<bfloat16>(optr, in, info.lanes*count);
                         break;
                     default:

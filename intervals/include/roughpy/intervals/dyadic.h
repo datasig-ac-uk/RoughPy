@@ -29,7 +29,7 @@
 #define ROUGHPY_INTERVALS_DYADIC_H_
 
 #include "roughpy_intervals_export.h"
-#include <roughpy/core/implementation_types.h>
+#include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
 #include <cassert>
@@ -50,14 +50,17 @@ protected:
     power_t m_power = 0;
 
 public:
+    RPY_NO_DISCARD
     static constexpr multiplier_t mod(multiplier_t a, multiplier_t b) {
         multiplier_t r = a % b;
         return (r < 0) ? (r + abs(b)) : r;
     }
+    RPY_NO_DISCARD
     static constexpr multiplier_t int_two_to_int_power(power_t exponent) {
         RPY_DBG_ASSERT(exponent >= 0);
         return multiplier_t(1) << exponent;
     }
+    RPY_NO_DISCARD
     static constexpr multiplier_t shift(multiplier_t k, power_t n) {
         return k * int_two_to_int_power(n);
     }
@@ -73,13 +76,16 @@ public:
     RPY_NO_DISCARD
     power_t power() const noexcept { return m_power; }
 
+    RPY_NO_DISCARD
     explicit operator param_t() const noexcept;
 
 
     Dyadic& move_forward(multiplier_t arg);
     Dyadic& operator++();
+    RPY_NO_DISCARD
     const Dyadic operator++(int);
     Dyadic& operator--();
+    RPY_NO_DISCARD
     const Dyadic operator--(int);
 
     bool rebase(power_t resolution=std::numeric_limits<power_t>::lowest());
