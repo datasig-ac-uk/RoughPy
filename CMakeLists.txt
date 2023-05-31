@@ -72,8 +72,7 @@ set(MKL_INTERFACE lp64)
 find_package(MKL CONFIG QUIET)
 
 add_subdirectory(external/libalgebra_lite)
-set_target_properties(Libalgebra_lite PROPERTIES
-        INSTALL_RPATH $ORIGIN)
+set_target_properties(Libalgebra_lite PROPERTIES NO_SONAME ON)
 
 add_subdirectory(external/pybind11)
 # DLPACK has an annoying feature where it tries to build a demo
@@ -90,6 +89,8 @@ if(NOT TARGET PCGRandom::pcg_random)
 endif()
 
 add_subdirectory(external/recombine)
+set_target_properties(recombine PROPERTIES NO_SONAME ON)
+
 add_subdirectory(external/libalgebra)
 
 add_subdirectory(external/csv-parser)
