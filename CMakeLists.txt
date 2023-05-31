@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 project(RoughPy VERSION 0.0.1)
 
-set(CMAKE_INSTALL_LIBDIR CACHE STRING "roughpy")
-set(CMAKE_INSTALL_BINDIR CACHE STRING "roughpy")
+set(CMAKE_INSTALL_LIBDIR "roughpy" CACHE STRING "install library dir")
+set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
