@@ -54,7 +54,7 @@ if (DEFINED ENV{VIRTUAL_ENV})
     list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}/lib")
 endif()
 
-
+set(Boost_NO_WARN_NEW_VERSIONS ON)
 find_package(Boost 1.81 REQUIRED COMPONENTS url)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
@@ -98,6 +98,7 @@ endif()
 
 set(BUILD_DOC OFF CACHE INTERNAL "disable cereal docs")
 set(BUILD_SANDBOX OFF CACHE INTERNAL "disable cereal sandbox examples")
+set(SKIP_PERFORMANCE_COMPARISON ON CACHE INTERNAL "disable building cereal performance tests")
 add_subdirectory(external/cereal)
 
 add_subdirectory(core)
