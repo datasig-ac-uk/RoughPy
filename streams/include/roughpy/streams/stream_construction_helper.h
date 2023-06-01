@@ -68,7 +68,7 @@ public:
 
     multimap_type finalise();
 
-    std::shared_ptr<StreamSchema> take_schema() && { return p_schema; }
+    std::shared_ptr<StreamSchema> take_schema() { return p_schema; }
 };
 
 template <typename T>
