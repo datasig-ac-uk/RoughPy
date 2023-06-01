@@ -62,8 +62,6 @@ set(Boost_NO_WARN_NEW_VERSIONS ON)
 find_package(Boost 1.81 REQUIRED COMPONENTS url)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
-find_package(CURL REQUIRED)
-
 
 # This package is c++17 so cannot be used if changing to a lower standard
 find_package(tomlplusplus CONFIG REQUIRED)
