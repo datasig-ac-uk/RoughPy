@@ -109,7 +109,9 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype) {
 
     type->tp_flags = (Py_TPFLAGS_DEFAULT
                       | Py_TPFLAGS_HEAPTYPE
+#if PY_VERSION_HEX >= 0x030A0000
                       | Py_TPFLAGS_DISALLOW_INSTANTIATION
+#endif
                       | Py_TPFLAGS_HAVE_GC);
     hto->ht_module = ht_module.release().ptr();
 
