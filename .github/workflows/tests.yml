@@ -27,7 +27,7 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -GNinja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       env:
-        CMAKE_TOOLCHAIN_FILE: ${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake
+        CMAKE_TOOLCHAIN_FILE: $VCPKG_INSTALLATION_ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Build
       # Build your program with the given configuration
