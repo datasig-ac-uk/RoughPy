@@ -58,19 +58,19 @@ algebra::Lie& StreamConstructionHelper::next_entry(param_t next_timestamp) {
     return m_entries.insert({next_timestamp, m_zero})->second;
 }
 
-void StreamConstructionHelper::add_categorical(dimn_t channel, dimn_t variant) {
+void StreamConstructionHelper::add_categorical(param_t timestamp, dimn_t channel, dimn_t variant) {
     auto idx = p_schema->channel_variant_to_stream_dim(channel, variant);
     auto key = static_cast<key_type>(idx + 1);
-    current()[key] += p_ctx->ctype()->one();
+    next_entry(timestamp)[key] += p_ctx->ctype()->one();
 }
-void StreamConstructionHelper::add_categorical(string_view channel, dimn_t variant) {
+void StreamConstructionHelper::add_categorical(param_t timestamp, string_view channel, dimn_t variant) {
     const auto found = p_schema->find(string(channel));
     RPY_CHECK(found != p_schema->end());
     RPY_CHECK(variant < found->second.num_variants());
     auto key = static_cast<key_type>(found - p_schema->begin()) + static_cast<key_type>(variant) + 1;
-    current()[key] += p_ctx->ctype()->one();
+    next_entry(timestamp)[key] += p_ctx->ctype()->one();
 }
-void StreamConstructionHelper::add_categorical(dimn_t channel, string_view variant) {
+void StreamConstructionHelper::add_categorical(param_t timestamp, dimn_t channel, string_view variant) {
     RPY_CHECK(channel < p_schema->size());
     const auto channel_item = p_schema->nth(channel);
 
@@ -79,7 +79,14 @@ void StreamConstructionHelper::add_categorical(dimn_t channel, string_view varia
     RPY_CHECK(found != variants.end());
 
     auto key = static_cast<key_type>(p_schema->channel_variant_to_stream_dim(channel, static_cast<dimn_t>(found - variants.begin())));
-    current()[key] += p_ctx->ctype()->one();
+    next_entry(timestamp)[key] += p_ctx->ctype()->one();
 }
-void StreamConstructionHelper::add_categorical(string_view channel, string_view variant) {
+void StreamConstructionHelper::add_categorical(param_t timestamp, string_view channel, string_view variant) {
+    auto idx = p_schema->label_to_stream_dim(string(channel) + ':' + string(variant));
+    next_entry(timestamp)[static_cast<key_type>(idx+1)] += p_ctx->ctype()->one();
+}
+typename StreamConstructionHelper::multimap_type StreamConstructionHelper::finalise() {
+    boost::container::flat_multimap<param_t, algebra::Lie> result;
+    result = std::move(m_entries);
+    return result;
 }

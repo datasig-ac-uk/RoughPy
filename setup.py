@@ -42,12 +42,12 @@ def filter_cmake_manifests(items: list[str]) -> list[str]:
         if item.endswith(".a"):
             return False
 
-        m = re.search(r"[a-zA-Z0-9_]+\.so\.\d+(?:\.\d+\.\d+)?$", item)
-        if m is not None:
-            return False
-
-        # if item.endswith("recombine.so"):
+        # m = re.search(r"[a-zA-Z0-9_]+\.so(?:\.\d+\.\d+\.\d+)?$", item)
+        # if m is not None:
         #     return False
+
+        if item.endswith("recombine.so") or item.endswith("recombine.so.2.0.2"):
+            return False
 
         return True
 
@@ -71,6 +71,9 @@ setup(
 
     include_package_data=True,
     packages=["roughpy"],
+    package_data={
+        "roughpy": ["py.typed"]
+    },
 
     cmake_process_manifest_hook=filter_cmake_manifests,
     cmake_args=CMAKE_SETTINGS,

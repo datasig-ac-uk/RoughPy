@@ -18,7 +18,10 @@ class StreamConstructionHelper {
     std::shared_ptr<StreamSchema> p_schema;
     algebra::context_pointer p_ctx;
     algebra::VectorType m_vtype = algebra::VectorType::Sparse;
-    boost::container::flat_multimap<param_t, algebra::Lie> m_entries;
+
+    using multimap_type = boost::container::flat_multimap<param_t, algebra::Lie>;
+
+    multimap_type m_entries;
     algebra::Lie m_zero;
 
     std::vector<key_type> m_dense_keys;
@@ -42,35 +45,72 @@ private:
         return (++m_entries.rbegin())->second;
     }
 
-public:
     algebra::Lie& next_entry(param_t next_timestamp);
+public:
 
 
     template <typename T>
-    void add_increment(dimn_t channel, T &&value);
+    void add_increment(param_t timestamp, dimn_t channel, T &&value);
 
     template <typename T>
-    void add_increment(string_view label, T &&value);
+    void add_increment(param_t timestamp, string_view label, T &&value);
 
     template <typename T>
-    void add_value(dimn_t channel, T &&value);
+    void add_value(param_t timestamp, dimn_t channel, T &&value);
 
     template <typename T>
-    void add_value(string_view label, T &&value);
+    void add_value(param_t timestamp, string_view label, T &&value);
 
-    template <typename T>
-    void add_categorical(dimn_t channel, T &&value);
+    void add_categorical(param_t timestamp, dimn_t channel, dimn_t variant);
+    void add_categorical(param_t timestamp, string_view channel, dimn_t variant);
+    void add_categorical(param_t timestamp, dimn_t channel, string_view variant);
+    void add_categorical(param_t timestmap, string_view channel, string_view variant);
 
-    template <typename T>
-    void add_categorical(string_view label, T &&value);
+    multimap_type finalise();
 
-    void add_categorical(dimn_t channel, dimn_t variant);
-    void add_categorical(string_view channel, dimn_t variant);
-    void add_categorical(dimn_t channel, string_view variant);
-    void add_categorical(string_view channel, string_view variant);
-
-    scalars::KeyScalarArray finalise() &&;
+    std::shared_ptr<StreamSchema> take_schema() && { return p_schema; }
 };
+
+template <typename T>
+void StreamConstructionHelper::add_increment(param_t timestamp, dimn_t channel, T &&value) {
+    auto key = static_cast<key_type>(p_schema->channel_to_stream_dim(channel)) + 1;
+    next_entry(timestamp)[key] += scalars::Scalar(std::forward<T>(value));
+}
+template <typename T>
+void StreamConstructionHelper::add_increment(param_t timestamp, string_view label, T &&value) {
+    auto key = static_cast<key_type>(p_schema->label_to_stream_dim(string(label))) + 1;
+    next_entry(timestamp)[key] += scalars::Scalar(std::forward<T>(value));
+}
+template <typename T>
+void StreamConstructionHelper::add_value(param_t timestamp, dimn_t channel, T &&value) {
+    auto lead_idx = p_schema->channel_variant_to_stream_dim(channel, 0);
+    auto lag_idx = p_schema->channel_variant_to_stream_dim(channel, 1);
+
+    scalars::Scalar current(std::forward<T>(value));
+
+    next_entry(timestamp)[static_cast<key_type>(lead_idx + 1)] += current - m_previous_values[lead_idx];
+    next_entry(timestamp)[static_cast<key_type>(lag_idx +1)] += current - m_previous_values[lag_idx];
+
+    m_previous_values[lead_idx] = current;
+    m_previous_values[lag_idx] = current;
+}
+template <typename T>
+void StreamConstructionHelper::add_value(param_t timestamp, string_view label, T &&value) {
+    const auto found = p_schema->find(string(label));
+    RPY_CHECK(found != p_schema->end());
+
+    auto lead_idx = found->second.variant_id_of_label("lead");
+    auto lag_idx = found->second.variant_id_of_label("lag");
+
+    scalars::Scalar current(std::forward<T>(value));
+
+    next_entry(timestamp)[static_cast<key_type>(lead_idx + 1)] += current - m_previous_values[lead_idx];
+    next_entry(timestamp)[static_cast<key_type>(lag_idx + 1)] += current - m_previous_values[lag_idx];
+
+    m_previous_values[lead_idx] = current;
+    m_previous_values[lag_idx] = current;
+}
+
 }// namespace streams
 }// namespace rpy
 

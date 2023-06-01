@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 project(RoughPy VERSION 0.0.1)
 
+set(CMAKE_INSTALL_LIBDIR "roughpy" CACHE STRING "install library dir")
+set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INSTALL_RPATH $ORIGIN)
@@ -8,7 +11,8 @@ set(CMAKE_INSTALL_RPATH $ORIGIN)
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
 
-if (ROUGHPY_BUILD_TESTS)
+find_package(GTest CONFIG QUIET)
+if (ROUGHPY_BUILD_TESTS AND GTest_FOUND)
     find_package(GTest CONFIG REQUIRED)
 
     if(NOT TARGET GTest::gtest)
@@ -69,6 +73,8 @@ set(MKL_INTERFACE lp64)
 find_package(MKL CONFIG QUIET)
 
 add_subdirectory(external/libalgebra_lite)
+#set_target_properties(Libalgebra_lite PROPERTIES NO_SONAME ON)
+
 add_subdirectory(external/pybind11)
 # DLPACK has an annoying feature where it tries to build a demo
 # library. Disable this here
@@ -135,3 +141,7 @@ install(TARGETS
             NAMELINK_SKIP
         ARCHIVE DESTINATION roughpy
         )
+
+if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
+    install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)
+endif()

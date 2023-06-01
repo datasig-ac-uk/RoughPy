@@ -1,7 +1,7 @@
 
 include(GNUInstallDirs)
 include(GenerateExportHeader)
-include(GoogleTest)
+include(GoogleTest OPTIONAL)
 
 
 function(_get_component_name _out_var _component)
