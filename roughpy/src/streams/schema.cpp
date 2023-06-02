@@ -113,8 +113,8 @@ void rpy::python::init_schema(py::module_ &m) {
                     }
                     break;
             }
-            return labels;
         }
+        return labels;
     });
 
 }

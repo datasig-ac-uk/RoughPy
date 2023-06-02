@@ -58,7 +58,6 @@ class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface {
     RPY_NO_DISCARD
     optional<DyadicInterval> smallest_dyadic_containing_all_positive_events() const;
 
-    RPY_NO_DISCARD
     algebra::Lie recursive_logsig(DyadicInterval di);
 
 public:
