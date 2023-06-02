@@ -36,5 +36,8 @@
   }, {
     "name" : "boost-thread",
     "version>=" : "1.82.0#1"
+  }, {
+    "name" : "boost-endian",
+    "version>=" : "1.82.0#1"
   } ]
 }
