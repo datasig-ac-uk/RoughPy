@@ -25,7 +25,7 @@ jobs:
     - name: Python dependencies
       run: python3.10 -m pip install numpy mkl
       env: | 
-        echo "$(basename $(python3.10 -c "import sysconfig; print(sysconfig.get_path('platstdlib'))" | tail -n 1)" >> $GITHUB_ENV
+        echo "prefix_lib_path=$(basename $(python3.10 -c "import sysconfig; print(sysconfig.get_path('platstdlib'))" | tail -n 1))" >> $GITHUB_ENV
       
     - name: configure-binary-caching
       run: |
@@ -44,6 +44,8 @@ jobs:
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+      env:
+        CMAKE_PREFIX_PATH: ${{ env.prefix_lib_path }}
 
     - name: Build
       # Build your program with the given configuration
