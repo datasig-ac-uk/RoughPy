@@ -112,7 +112,6 @@ private:
     RPY_NO_DISCARD
     data_increment insert_children_and_refine(data_increment leaf, DyadicInterval interval) const;
 
-    RPY_NO_DISCARD
     data_increment update_parent_accuracy(data_increment below) const;
 
     void update_parents(data_increment current) const;
