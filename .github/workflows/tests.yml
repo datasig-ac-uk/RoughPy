@@ -31,8 +31,12 @@ jobs:
           mkl-static \
           mkl-devel \
           intel-openmp \
-          ninja
+          ninja \
+          pytest
         echo "CMAKE_PREFIX_PATH=$(python3.10 -c 'import sysconfig; import os; print(os.path.dirname(sysconfig.get_path("platstdlib")))')" >> "$GITHUB_ENV"
+        pth="$(python -m site --user-site))")/roughpy.pth"
+        echo $pth
+        echo "import sys; sys.path.insert(0, '${{github.workspace}}')" >> $pth
        
     - name: configure-binary-caching
       run: |
@@ -64,9 +68,4 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: PyTests
-      run: |
-        pth="$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))")/roughpy.pth"
-        echo "import sys; sys.path.insert(0, '${{github.workspace}}')" >> $pth
-        echo $pth
-        python3.10 setup.py develop
-        pytest tests
+      run: pytest tests
