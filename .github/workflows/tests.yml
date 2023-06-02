@@ -25,7 +25,6 @@ jobs:
     - name: Python dependencies
       run: python3.10 -m pip install numpy mkl
       env: |
-        py_lib_path=dirname "$(python3.10 -c "import sysconfig; print(sysconfig.get_path('platstdlib'))" | tail -n 1)"
         echo "prefix_lib_path=$(dirname "$(python3.10 -c "import sysconfig; print(sysconfig.get_path('platstdlib'))" | tail -n 1)")" >> $GITHUB_ENV
       
     - name: configure-binary-caching
