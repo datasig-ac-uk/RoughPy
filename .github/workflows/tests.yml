@@ -65,7 +65,8 @@ jobs:
 
     - name: PyTests
       run: |
-        pth="$(python -c "import sysconfig; print(sysconfig.get_path('platlib'))")/roughpy.pth"
-        echo "import sys; sys.path.insert(0, ${{github.workspace}})" >> $pth
+        pth="$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))")/roughpy.pth"
+        echo "import sys; sys.path.insert(0, '${{github.workspace}}')" >> $pth
+        echo $pth
         python3.10 setup.py develop
         pytest tests
