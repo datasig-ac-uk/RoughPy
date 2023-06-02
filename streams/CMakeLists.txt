@@ -8,8 +8,6 @@ project(RoughPy_Streams
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
-find_package(Boost 1.64 CONFIG REQUIRED COMPONENTS headers)
-
 
 add_roughpy_lib(Streams STATIC
     SOURCES
