@@ -1,6 +1,7 @@
 [submodule "external/libalgebra_lite"]
 	path = external/libalgebra_lite
 	url = https://github.com/datasig-ac-uk/libalgebra-lite
+	branch = main
 [submodule "external/pybind11"]
 	path = external/pybind11
 	url = https://github.com/pybind/pybind11.git
