@@ -44,6 +44,36 @@ static const char* TICK_STREAM_DOC = R"rpydoc(Tick stream
 )rpydoc";
 
 
+static void populate_schema_dict(const std::shared_ptr<streams::StreamSchema>& schema, const py::dict& data) {
+    for (auto&& [key, datum] : data) {
+        streams::ChannelType type = rpy::streams::ChannelType::Increment;
+        string label;
+        if (hasattr(datum, "label")) {
+            label = getattr(datum, "label").cast<string>();
+        } else if (py::isinstance<py::dict>(datum) && datum.contains("label")) {
+            label = datum["label"].cast<string>();
+        }
+
+
+
+
+
+
+    }
+}
+
+static std::shared_ptr<streams::StreamSchema> parse_schema(const py::object& object) {
+    if (!py::isinstance<py::sequence>(object)) {
+        throw py::value_error("tick data must be provided as a sequence of ticks");
+    }
+
+    std::shared_ptr<streams::StreamSchema> schema(new streams::StreamSchema);
+
+
+    return schema;
+}
+
+
 static py::object construct(const py::object& data, const py::kwargs& kwargs) {
 
     auto pmd = python::kwargs_to_metadata(kwargs);

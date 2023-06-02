@@ -374,8 +374,8 @@ StreamChannel &StreamSchema::insert(string label, StreamChannel &&channel_data) 
     // Silly, but handle it gracefully.
 
     auto pos = find(label);
-    if (RPY_UNLIKELY(pos != end())) {
-        throw std::runtime_error("label '" + label + "' already defined in schema");
+    if (pos != end()) {
+        return pos->second;
     }
 
     return base_type::insert(pos, {std::move(label), std::move(channel_data)})->second;
