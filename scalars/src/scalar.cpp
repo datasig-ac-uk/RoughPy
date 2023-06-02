@@ -77,7 +77,7 @@ Scalar::Scalar(const ScalarType *type, scalar_t scal)
     p_type->convert_copy(const_cast<void *>(p_data), {scal_type, &scal}, 1);
 }
 Scalar::Scalar(const Scalar &other)
-    : ScalarPointer(other.p_type != nullptr ? ScalarPointer() : other.p_type->allocate(1)) {
+    : ScalarPointer(other.p_type == nullptr ? ScalarPointer() : other.p_type->allocate(1)) {
     if (p_type != nullptr) {
         p_type->convert_copy(to_mut_pointer(), other.to_pointer(), 1);
     }
