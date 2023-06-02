@@ -21,7 +21,7 @@ if (ROUGHPY_BUILD_TESTS AND GTest_FOUND)
 
     enable_testing()
 else()
-    set(ROUGHPY_BUILD_TESTS OFF CACHE INTERNAL)
+    set(ROUGHPY_BUILD_TESTS OFF CACHE INTERNAL "")
 endif()
 
 include(cmake/roughpy_helpers.cmake)
