@@ -35,7 +35,7 @@ jobs:
           -username "datasig-ac-uk" \
           -password "${{ secrets.GITHUB_TOKEN }}"
         mono `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
-          setapikey "${{ secrets.GITHUB_TOKEN }}"
+          setapikey "${{ secrets.GITHUB_TOKEN }}" \
           -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
 
     - name: Configure CMake
