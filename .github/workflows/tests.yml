@@ -64,6 +64,6 @@ jobs:
 
     - name: PyTests
       run: |
+        pip install pytest scikit-build
         python3.10 setup.py develop
-        pip install pytest
         pytest tests
