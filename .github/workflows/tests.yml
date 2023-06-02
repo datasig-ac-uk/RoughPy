@@ -29,6 +29,7 @@ jobs:
           numpy \
           mkl-include \
           mkl-static \
+          mkl-devel \
           intel-openmp \
           ninja
         echo "CMAKE_PREFIX_PATH=$(python3.10 -c 'import sysconfig; import os; print(os.path.dirname(sysconfig.get_path("platstdlib")))')" >> "$GITHUB_ENV"
