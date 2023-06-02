@@ -39,5 +39,8 @@
   }, {
     "name" : "boost-endian",
     "version>=" : "1.82.0#1"
+  }, {
+    "name" : "boost-dll",
+    "version>=" : "1.82.0#1"
   } ]
 }
