@@ -7,7 +7,6 @@ set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INSTALL_RPATH $ORIGIN)
-set(CMAKE_CXX_FLAGS -Wall)
 
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
