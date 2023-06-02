@@ -40,8 +40,6 @@
 namespace rpy {
 namespace streams {
 
-using resolution_t = int;
-using accuracy_t = param_t;
 
 /**
  * @brief Metadata associated with all path objects
@@ -78,15 +76,23 @@ struct StreamMetadata {
  */
 class ROUGHPY_STREAMS_EXPORT StreamInterface {
     StreamMetadata m_metadata;
-    StreamSchema m_schema;
+    std::shared_ptr<StreamSchema> p_schema;
 
 public:
     RPY_NO_DISCARD
     const StreamMetadata &metadata() const noexcept { return m_metadata; }
     RPY_NO_DISCARD
-    const StreamSchema& schema() const noexcept { return m_schema; }
+    const StreamSchema& schema() const noexcept { return *p_schema; }
 
-    explicit StreamInterface(StreamMetadata md) : m_metadata(std::move(md)) {}
+    explicit StreamInterface(StreamMetadata md, std::shared_ptr<StreamSchema> schema)
+        : m_metadata(std::move(md)), p_schema(std::move(schema))
+    {
+        RPY_DBG_ASSERT(p_schema);
+    }
+
+    explicit StreamInterface(StreamMetadata md)
+        : m_metadata(std::move(md)), p_schema(new StreamSchema(m_metadata.width))
+    {}
 
     virtual ~StreamInterface() noexcept;
     RPY_NO_DISCARD

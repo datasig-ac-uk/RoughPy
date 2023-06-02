@@ -43,7 +43,7 @@ struct PyStreamMetaData {
     algebra::context_pointer ctx;
     const scalars::ScalarType* scalar_type;
     optional<algebra::VectorType> vector_type;
-    streams::resolution_t resolution;
+    resolution_t resolution;
 };
 
 

@@ -203,6 +203,15 @@ private:
 
 public:
 
+    StreamSchema() = default;
+    StreamSchema(const StreamSchema&) = default;
+    StreamSchema(StreamSchema&&) noexcept = default;
+
+    explicit StreamSchema(dimn_t width);
+
+    StreamSchema& operator=(const StreamSchema&) = default;
+    StreamSchema& operator=(StreamSchema&&) noexcept = default;
+
     RPY_NO_DISCARD
     const_iterator nth(dimn_t idx) const noexcept {
         RPY_DBG_ASSERT(idx < size());

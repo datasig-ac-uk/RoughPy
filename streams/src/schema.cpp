@@ -121,6 +121,13 @@ StreamChannel &StreamChannel::operator=(StreamChannel &&other) noexcept {
     return *this;
 }
 
+StreamSchema::StreamSchema(dimn_t width) {
+    reserve(width);
+    for (dimn_t i=0; i < width; ++i) {
+        insert_increment(std::to_string(i));
+    }
+}
+
 StreamChannel::~StreamChannel() {
     switch (m_type) {
         case ChannelType::Increment:

@@ -67,6 +67,8 @@ using resolution_t = int;
 using dyadic_multiplier_t = int;
 using dyadic_depth_t = resolution_t;
 
+using accuracy_t = param_t;
+
 using std::string;
 using std::pair;
 

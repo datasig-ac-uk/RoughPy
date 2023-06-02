@@ -35,7 +35,7 @@
 #include <set>
 
 using namespace rpy;
-optional<streams::TickStream::DyadicInterval> streams::TickStream::smallest_dyadic_containing_all_events(const streams::TickStream::DyadicInterval &di, streams::resolution_t resolution) const {
+optional<streams::TickStream::DyadicInterval> streams::TickStream::smallest_dyadic_containing_all_events(const streams::TickStream::DyadicInterval &di, resolution_t resolution) const {
     // std::lower_bound returns an iterator pointing to the first element
     // in the range [first,last) which does not compare less than val
     auto be = std::lower_bound(m_granular_times.begin(), m_granular_times.end(), di.inf());
@@ -172,7 +172,7 @@ streams::TickStream::TickStream(
     streams::StreamConstructionHelper &&helper,
     streams::StreamMetadata md,
     resolution_t resolution)
-    : StreamInterface(std::move(md)/*, helper.take_schema()*/),
+    : StreamInterface(std::move(md), helper.take_schema()),
       m_resolution(resolution)
 {
     std::set<param_t> index;
@@ -220,16 +220,16 @@ bool streams::TickStream::empty(const intervals::Interval &interval) const noexc
     }
     return true;
 }
-algebra::Lie streams::TickStream::log_signature(const intervals::DyadicInterval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const {
+algebra::Lie streams::TickStream::log_signature(const intervals::DyadicInterval &interval, resolution_t resolution, const algebra::Context &ctx) const {
     return StreamInterface::log_signature(interval, resolution, ctx);
 }
-algebra::Lie streams::TickStream::log_signature(const intervals::Interval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const {
+algebra::Lie streams::TickStream::log_signature(const intervals::Interval &interval, resolution_t resolution, const algebra::Context &ctx) const {
     return StreamInterface::log_signature(interval, resolution, ctx);
 }
 algebra::FreeTensor streams::TickStream::signature(const intervals::Interval &interval, const algebra::Context &ctx) const {
     return StreamInterface::signature(interval, ctx);
 }
-algebra::FreeTensor streams::TickStream::signature(const intervals::Interval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const {
+algebra::FreeTensor streams::TickStream::signature(const intervals::Interval &interval, resolution_t resolution, const algebra::Context &ctx) const {
     return StreamInterface::signature(interval, resolution, ctx);
 }
 

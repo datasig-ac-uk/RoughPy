@@ -56,13 +56,13 @@ bool PyBaseStream::empty(const intervals::Interval &interval) const noexcept {
     PYBIND11_OVERRIDE(bool, streams::StreamInterface, empty, interval);
 }
 
-algebra::Lie PyBaseStream::log_signature(const intervals::DyadicInterval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const {
+algebra::Lie PyBaseStream::log_signature(const intervals::DyadicInterval &interval, resolution_t resolution, const algebra::Context &ctx) const {
     PYBIND11_OVERRIDE(algebra::Lie, streams::StreamInterface, log_signature, interval, resolution, ctx);
 }
-algebra::Lie PyBaseStream::log_signature(const intervals::Interval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const {
+algebra::Lie PyBaseStream::log_signature(const intervals::Interval &interval, resolution_t resolution, const algebra::Context &ctx) const {
     PYBIND11_OVERRIDE(algebra::Lie, streams::StreamInterface, log_signature, interval, resolution, ctx);
 }
-algebra::FreeTensor PyBaseStream::signature(const intervals::Interval &interval, streams::resolution_t resolution, const algebra::Context &ctx) const {
+algebra::FreeTensor PyBaseStream::signature(const intervals::Interval &interval, resolution_t resolution, const algebra::Context &ctx) const {
     PYBIND11_OVERRIDE(algebra::FreeTensor, streams::StreamInterface, signature, interval, resolution, ctx);
 }
 algebra::Lie PyBaseStream::log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const {

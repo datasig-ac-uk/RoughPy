@@ -56,11 +56,11 @@ algebra::Lie StreamInterface::log_signature(const intervals::Interval &interval,
     return log_signature_impl(interval, ctx);
 }
 
-rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(const rpy::intervals::DyadicInterval &interval, rpy::streams::resolution_t /* resolution*/, const rpy::algebra::Context &ctx) const {
+rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(const rpy::intervals::DyadicInterval &interval, rpy::resolution_t /* resolution*/, const rpy::algebra::Context &ctx) const {
     auto result = log_signature_impl(interval, ctx);
     return result;
 }
-rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(const rpy::intervals::Interval &interval, rpy::streams::resolution_t resolution, const rpy::algebra::Context &ctx) const {
+rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(const rpy::intervals::Interval &interval, rpy::resolution_t resolution, const rpy::algebra::Context &ctx) const {
     auto dissection = intervals::to_dyadic_intervals(interval, resolution);
     std::vector<algebra::Lie> lies;
     lies.reserve(dissection.size());
@@ -74,7 +74,7 @@ rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(const rpy::interv
 algebra::FreeTensor StreamInterface::signature(const intervals::Interval &interval, const algebra::Context &ctx) const {
     return ctx.lie_to_tensor(log_signature_impl(interval, ctx)).exp();
 }
-rpy::algebra::FreeTensor rpy::streams::StreamInterface::signature(const rpy::intervals::Interval &interval, rpy::streams::resolution_t resolution, const rpy::algebra::Context &ctx) const {
+rpy::algebra::FreeTensor rpy::streams::StreamInterface::signature(const rpy::intervals::Interval &interval, rpy::resolution_t resolution, const rpy::algebra::Context &ctx) const {
     return ctx.lie_to_tensor(log_signature(interval, resolution, ctx)).exp();
 }
 
