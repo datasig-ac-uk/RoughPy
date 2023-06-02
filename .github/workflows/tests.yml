@@ -24,6 +24,19 @@ jobs:
         
     - name: Python dependencies
       run: python3.10 -m pip install numpy
+      
+    - name: configure-binary-caching
+      run: |
+        mono `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
+          sources add \
+          -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
+          -storepasswordincleartext \
+          -name "GitHub" \
+          -username "datasig-ac-uk" \
+          -password "${{ secrets.GITHUB_TOKEN }}"
+        mono `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
+          setapikey "${{ secrets.GITHUB_TOKEN }}"
+          -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
