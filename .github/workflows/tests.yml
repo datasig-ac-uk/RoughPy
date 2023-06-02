@@ -25,7 +25,7 @@ jobs:
         
     - name: Python dependencies
       run: |
-        python3.10 -m pip install numpy mkl-devel
+        python3.10 -m pip install numpy mkl-devel mkl-static
         echo "prefix_lib_path=$(python3.10 -c 'import sysconfig; import os; print(os.path.dirname(sysconfig.get_path("platstdlib")))')" >> "$GITHUB_ENV"
        
     - name: configure-binary-caching
