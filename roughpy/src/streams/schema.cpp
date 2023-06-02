@@ -133,7 +133,7 @@ static std::shared_ptr<StreamSchema> parse_schema_from_seq_data(const py::sequen
 }
 
 
-std::shared_ptr<streams::StreamSchema> parse_schema(const py::object &data) {
+std::shared_ptr<streams::StreamSchema> rpy::python::parse_schema(const py::object &data) {
 
     if (py::isinstance<py::dict>(data)) {
         return parse_schema_from_dict_data(py::reinterpret_steal<py::dict>(data));
