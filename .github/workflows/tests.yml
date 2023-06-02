@@ -23,7 +23,9 @@ jobs:
         submodules: true
         
     - name: Python dependencies
-      run: python3.10 -m pip install numpy
+      run: python3.10 -m pip install numpy mkl
+      env: | 
+        echo "$(basename $(python3.10 -c "import sysconfig; print(sysconfig.get_path('platstdlib'))" | tail -n 1)" >> $GITHUB_ENV
       
     - name: configure-binary-caching
       run: |
