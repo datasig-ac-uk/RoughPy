@@ -42,5 +42,8 @@
   }, {
     "name" : "boost-dll",
     "version>=" : "1.82.0#1"
+  }, {
+    "name" : "gtest",
+    "version>=" : "1.13.0"
   } ]
 }
