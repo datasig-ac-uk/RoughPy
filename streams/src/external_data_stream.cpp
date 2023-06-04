@@ -32,6 +32,9 @@
 
 #include "external_data_stream.h"
 
+#include "external_data_sources/csv_data_source.h"
+#include "external_data_sources/sound_file_data_source.h"
+
 #include <vector>
 #include <memory>
 #include <mutex>
@@ -77,6 +80,13 @@ void streams::ExternalDataStream::register_factory(std::unique_ptr<const Externa
 }
 streams::ExternalDataStreamConstructor streams::ExternalDataStream::get_factory_for(const url& uri) {
     std::lock_guard<std::mutex> access(s_factory_guard);
+
+    if (s_factory_list.empty()) {
+        // Register defaults
+        s_factory_list.emplace_back(new SoundFileDataSourceFactory);
+
+    }
+
 
     ExternalDataStreamConstructor ctor;
     for (auto it=s_factory_list.rbegin(); it != s_factory_list.rend(); ++it) {

@@ -163,7 +163,6 @@ struct Payload {
 
 }
 
-static RegisterExternalDataSourceFactoryHelper<SoundFileDataSourceFactory> s_register_helper;
 ExternalDataStreamConstructor SoundFileDataSourceFactory::get_constructor(const url &uri) const {
     ExternalDataStreamConstructor ctor;
     if (!uri.has_scheme() || uri.scheme_id() == URIScheme::file) {
