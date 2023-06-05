@@ -3,7 +3,7 @@ requires = [
     "setuptools>=42",
     "wheel",
     "scikit-build",
-    "cmake",
+    "cmake==3.24",
     "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
     "mkl-devel",
@@ -29,6 +29,9 @@ test-command = ["pytest --capture=no {project}/tests"]
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel show {wheel} --ignore-in-wheel & delvewheel repair -w {dest_dir} --ignore-in-wheel {wheel}"
+
+[tool.cibuildwheel.macos]
+before-all = "brew install libomp"
 
 [tool.cibuildwheel.linux]
 before-all = [
