@@ -38,5 +38,5 @@ before-all = [
     "yum install -y curl zip unzip tar",
     "git clone https://github.com/Microsoft/vcpkg.git",
     "vcpkg/bootstrap-vcpkg.sh",
-    "export VCPKG_INSTALLATION_ROOT=$(pwd)/vcpkg"
     ]
+environment = { VCPKG_INSTALLATION_ROOT="{project}/vcpkg" }
