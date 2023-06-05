@@ -5,7 +5,9 @@ requires = [
     "scikit-build",
     "cmake",
     "ninja; platform_system!='Windows'",
-    "oldest-supported-numpy"
+    "oldest-supported-numpy",
+    "mkl-devel",
+    "mkl-static"
 ]
 build-backend = "setuptools.build_meta"
 
