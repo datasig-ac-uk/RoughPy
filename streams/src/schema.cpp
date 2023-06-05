@@ -367,7 +367,7 @@ dimn_t StreamSchema::label_to_stream_dim(const string &label) const {
 
 StreamChannel &StreamSchema::insert(string label, StreamChannel &&channel_data) {
     if (label.empty()) {
-        label = std::to_string(width());
+        label = std::to_string(size());
     }
 
     // Some users might have labelled their channels using numbers.

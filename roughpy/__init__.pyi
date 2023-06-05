@@ -15,7 +15,8 @@ from typing import (
     ClassVar,
     Sequence,
     Dict,
-    Final
+    Final,
+    List
 )
 
 class ScalarTypeMeta(type):
@@ -343,3 +344,15 @@ class LieIncrementStream: ...
 class FunctionStream: ...
 class PiecewiseAbelianStream: ...
 class ExternalDataStream: ...
+
+
+class StreamSchema:
+
+    @staticmethod
+    def from_data(data: Union[Dict[float, Union[str, float, int]], Sequence[tuple]]) -> StreamSchema:
+        ...
+
+    @staticmethod
+    def parse(schema: List[Dict[str, Union[str, List[str]]]]) -> StreamSchema: ...
+
+    def get_labels(self) -> list[str]: ...

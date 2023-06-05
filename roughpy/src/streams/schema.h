@@ -37,6 +37,7 @@
 
 namespace rpy { namespace python {
 
+std::shared_ptr<streams::StreamSchema> parse_schema_from_data(const py::object& data);
 std::shared_ptr<streams::StreamSchema> parse_schema(const py::object& data);
 
 
