@@ -76,7 +76,8 @@ jobs:
 
       - name: Build sdist
         run: |
-          python setup.py sdist
+          python -m pip install build
+          python -m build --sdist .
 
       - name: Check sdist
         run: |
