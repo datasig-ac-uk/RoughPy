@@ -40,4 +40,4 @@ before-all = [
     "git clone https://github.com/Microsoft/vcpkg.git",
     "vcpkg/bootstrap-vcpkg.sh",
     ]
-environment = { VCPKG_INSTALLATION_ROOT="{project}/vcpkg" }
+environment = { VCPKG_INSTALLATION_ROOT="vcpkg" }

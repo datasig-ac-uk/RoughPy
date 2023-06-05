@@ -4,6 +4,7 @@ import fnmatch
 import platform
 import sys
 import re
+import sysconfig
 
 from skbuild import setup
 from pathlib import Path
@@ -31,12 +32,23 @@ else:
     sp.run([f"vcpkg/bootstrap-vcpkg.{bootstrap_end}"], shell=True, check=True)
     vcpkg = Path("vcpkg", "scripts", "buildsystems", "vcpkg.cmake").resolve()
 
+prefix_path = []
+if "CMAKE_PREFIX_PATH" in os.environ:
+    prefix_path.extend(os.environ["CMAKE_PREFIX_PATH"].split(";"))
+
+
+env_head = Path(sysconfig.get_path("platstdlib")).parent
+prefix_path.append(str(env_head))
+
+
 CMAKE_SETTINGS = [
     "-DROUGHPY_BUILD_TESTS:BOOL=OFF",
     "-DROUGHPY_BUILD_LA_CONTEXTS:BOOL=OFF",  # Temporarily
     "-DROUGHPY_GENERATE_DEVICE_CODE:BOOL=OFF",  # Until it's finished
     f"-DCMAKE_TOOLCHAIN_FILE={vcpkg}"
+    f"-DCMAKE_PREFIX_PATH={';'.join(prefix_path)}"
 ]
+
 
 
 def filter_cmake_manifests(items):
