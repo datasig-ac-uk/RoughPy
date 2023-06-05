@@ -20,3 +20,10 @@ test-command = ["pytest --capture=no {project}/tests"]
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel show {wheel} --ignore-in-wheel & delvewheel repair -w {dest_dir} --ignore-in-wheel {wheel}"
+
+[tool.cibuildwheel.linux]
+before-all = [
+    "git clone https://github.com/Microsoft/vcpkg.git",
+    "vcpkg/bootstrap-vcpkg.sh",
+    "export VCPKG_INSTALLATION_ROOT=$(pwd)/vcpkg"
+    ]

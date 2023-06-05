@@ -23,13 +23,13 @@ DESCRIPTION += CHANGELOG_PATH.read_text()
 VERSION = "0.0.1"
 
 if "VCPKG_INSTALLATION_ROOT" in os.environ:
-    vcpkg = Path(os.environ["VCPKG_INSTALLATION_ROOT"], "scripts", "buildsystems", "vcpkg.json")
+    vcpkg = Path(os.environ["VCPKG_INSTALLATION_ROOT"], "scripts", "buildsystems", "vcpkg.cmake")
 else:
     import subprocess as sp
     sp.run(["git", "clone", "https://github.com/Microsoft/vcpkg.git"], check=True)
     bootstrap_end = "bat" if platform.system() == "Windows" else "sh"
     sp.run([f"vcpkg/bootstrap-vcpkg.{bootstrap_end}"], shell=True, check=True)
-    vcpkg = Path("vcpkg", "scripts", "buildsystems", "vcpkg.json").resolve()
+    vcpkg = Path("vcpkg", "scripts", "buildsystems", "vcpkg.cmake").resolve()
 
 CMAKE_SETTINGS = [
     "-DROUGHPY_BUILD_TESTS:BOOL=OFF",
