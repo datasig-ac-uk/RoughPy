@@ -12,7 +12,15 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
-skip = ["*-musl*", "pp*", "cp3{8,9,10}-*linux_i686"]
+skip = [
+    "*win32",
+    "*-musl*",
+    "pp*",
+    "*linux_i686",
+    "*arm64",
+    "*universal2"
+]
+build-verbosity=1
 
 test-requires = ["pytest", "numpy"]
 test-command = ["pytest --capture=no {project}/tests"]
