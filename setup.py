@@ -1,6 +1,7 @@
 import io
 import os
 import fnmatch
+import platform
 import sys
 import re
 
@@ -19,12 +20,26 @@ DESCRIPTION = README_PATH.read_text()
 DESCRIPTION += "\n\n\n## Changelog"
 DESCRIPTION += CHANGELOG_PATH.read_text()
 
-VERSION = "0.0.0"
+VERSION = "0.0.1"
 
-CMAKE_SETTINGS = []
+if "VCPKG_INSTALLATION_ROOT" in os.environ:
+    vcpkg = Path(os.environ["VCPKG_INSTALLATION_ROOT"], "scripts", "buildsystems", "vcpkg.json")
+else:
+    import subprocess as sp
+    sp.run(["git", "clone", "https://github.com/Microsoft/vcpkg.git"], check=True)
+    bootstrap_end = "bat" if platform.system() == "Windows" else "sh"
+    sp.run([f"vcpkg/bootstrap-vcpkg.{bootstrap_end}"], shell=True, check=True)
+    vcpkg = Path("vcpkg", "scripts", "buildsystems", "vcpkg.json").resolve()
+
+CMAKE_SETTINGS = [
+    "-DROUGHPY_BUILD_TESTS:BOOL=OFF",
+    "-DROUGHPY_BUILD_LA_CONTEXTS:BOOL=OFF",  # Temporarily
+    "-DROUGHPY_GENERATE_DEVICE_CODE:BOOL=OFF",  # Until it's finished
+    f"-DCMAKE_TOOLCHAIN_FILE={vcpkg}"
+]
 
 
-def filter_cmake_manifests(items: list[str]) -> list[str]:
+def filter_cmake_manifests(items):
     def _filter(item):
         item = str(item)
         if item.endswith(".pc"):
@@ -61,7 +76,7 @@ def filter_cmake_manifests(items: list[str]) -> list[str]:
 setup(
     name="roughpy",
     version=VERSION,
-    author="Terry Lyons, Terry Lyons, DataSig group",
+    author="The RoughPy Authors",
     author_email="info@datasig.ac.uk",
     license="BSD-3-Clause",
     keywords=["data", "streams", "rough paths", "signatures"],
