@@ -11,6 +11,7 @@ permissions:
 
 env:
   BUILD_TYPE: Release
+  VERBOSE: 1
   VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
 jobs:
