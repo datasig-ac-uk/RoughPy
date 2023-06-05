@@ -23,6 +23,7 @@ repair-wheel-command = "delvewheel show {wheel} --ignore-in-wheel & delvewheel r
 
 [tool.cibuildwheel.linux]
 before-all = [
+    "yum install curl zip unzip tar",
     "git clone https://github.com/Microsoft/vcpkg.git",
     "vcpkg/bootstrap-vcpkg.sh",
     "export VCPKG_INSTALLATION_ROOT=$(pwd)/vcpkg"
