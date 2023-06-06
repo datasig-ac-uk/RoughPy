@@ -40,7 +40,7 @@ jobs:
 
       - name: Configure vcpkg caching
         shell: bash
-        run: >
+        run: |
           ${{ matrix.mono }} `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
             sources add \
             -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
@@ -55,6 +55,10 @@ jobs:
 
       - name: Build and test
         uses: pypa/cibuildwheel@v2.13.0
+        env:
+          CIBW_ENVIRONMENT_MACOS: >
+            LD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/:$LD_LIBRARY_PATH
+            
 
       - uses: actions/upload-artifact@v3
         with:
