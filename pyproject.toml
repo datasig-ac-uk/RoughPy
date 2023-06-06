@@ -6,7 +6,7 @@ requires = [
     "cmake==3.24",
     "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
-    "mkl-devel; platform_machine in ['x86_64', 'AMD64', 'x86']",
+    "mkl-devel; platform_machine == 'x86_64' or platform_machine == 'x86'",
     "mkl-static"
 ]
 build-backend = "setuptools.build_meta"
