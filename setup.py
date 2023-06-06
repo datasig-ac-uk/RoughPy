@@ -59,7 +59,8 @@ CMAKE_SETTINGS = [
     "-DROUGHPY_BUILD_LA_CONTEXTS:BOOL=OFF",  # Temporarily
     "-DROUGHPY_GENERATE_DEVICE_CODE:BOOL=OFF",  # Until it's finished
     f"-DCMAKE_TOOLCHAIN_FILE={vcpkg}",
-    f"-DCMAKE_PREFIX_PATH={';'.join(prefix_path)}"
+    f"-DCMAKE_PREFIX_PATH={';'.join(prefix_path)}",
+    "-DVCPKG_BUILD_TYPE=release"
 ]
 
 
