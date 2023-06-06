@@ -56,10 +56,10 @@ try:
     # locate the cmake folder
     cmake_files = [f for f in mkl.files if f.name.endswith("cmake")]
     # should be {root}/lib/cmake/mkl/{f}
-    cmake = cmake_files[-1].locate().resolve().parent.parent
+    cmake = cmake_files[0].locate().resolve().parent.parent
     # append {root} to prefix_path
     prefix_path.append(str(cmake.parent.parent))
-    CMAKE_SETTINGS.append(f"-DMKL_DIR={prefix_path}")
+    CMAKE_SETTINGS.append(f"-DMKL_DIR={cmake}")
 
 except ilm.PackageNotFoundError:
     pass
