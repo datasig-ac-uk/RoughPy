@@ -42,7 +42,10 @@ try:
     mkl = ilm.distribution("mkl-devel")
 
     # locate the cmake folder
-    cmake = Path(mkl.locate_file("cmake"))
+    cmake_files = [f for f in mkl.files if f.suffix == "cmake"]
+    # should be {root}/cmake/mkl/{f}
+    cmake = cmake_files[0].locate().resolve().parent.parent
+    # append {root} to prefix_path
     prefix_path.append(str(cmake.parent))
 
 except ilm.PackageNotFoundError:
