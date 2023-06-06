@@ -32,7 +32,7 @@ repair-wheel-command = "delvewheel show {wheel} --ignore-in-wheel & delvewheel r
 
 [tool.cibuildwheel.macos]
 before-all = "brew install libomp pkg-config"
-environment = { CMAKE_PREFIX_PATH="/opt/local" }
+environment = { CMAKE_PREFIX_PATH="/opt/local", DYLD_LIBRARY_PATH="/opt/homebrew/Cellar/:${DYLD_LIBRARY_PATH}" }
 
 [tool.cibuildwheel.linux]
 before-all = [
