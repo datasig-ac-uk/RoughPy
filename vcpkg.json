@@ -45,5 +45,8 @@
   }, {
     "name" : "gtest",
     "version>=" : "1.13.0"
+  }, {
+    "name" : "gmp",
+    "version>=" : "6.2.1#18"
   } ]
 }
