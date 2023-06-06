@@ -36,7 +36,7 @@ else:
 
 prefix_path = []
 if "CMAKE_PREFIX_PATH" in os.environ:
-    prefix_path.extend(os.environ["CMAKE_PREFIX_PATH"].split(";"))
+    prefix_path.extend(os.environ["CMAKE_PREFIX_PATH"].split(os.pathsep))
 
 
 
@@ -62,13 +62,13 @@ try:
     CMAKE_SETTINGS.append(f"-DMKL_DIR={cmake}")
 
 except ilm.PackageNotFoundError:
-    pass
-
+    # pass
+    raise
 
 CMAKE_SETTINGS.append(
-    f"-DCMAKE_PREFIX_PATH={';'.join(prefix_path)}"
+    f"-DCMAKE_PREFIX_PATH={os.pathsep.join(prefix_path)}"
 )
-
+os.environ["CMAKE_PREFIX_PATH"] = os.pathsep.join(prefix_path)
 
 def filter_cmake_manifests(items):
     def _filter(item):
