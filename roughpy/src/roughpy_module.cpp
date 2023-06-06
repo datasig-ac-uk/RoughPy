@@ -52,6 +52,6 @@ PYBIND11_MODULE(_roughpy, m) {
     init_intervals(m);
     init_algebra(m);
     init_streams(m);
-    init_recombine(m);
+//    init_recombine(m);
 
 }

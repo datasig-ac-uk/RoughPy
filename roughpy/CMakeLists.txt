@@ -28,8 +28,8 @@ set_target_properties(RoughPy_PyModule PROPERTIES
 target_sources(RoughPy_PyModule PRIVATE
         src/roughpy_module.cpp
         src/roughpy_module.h
-        src/recombine.cpp
-        src/recombine.h
+#        src/recombine.cpp
+#        src/recombine.h
         src/algebra/algebra.h
         src/algebra/algebra.cpp
         src/algebra/algebra_iterator.cpp
@@ -110,7 +110,7 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         RoughPy::Streams
         pybind11::headers
         dlpack::dlpack
-        recombine::recombine
+#        recombine::recombine
         )
 
 if(ROUGHPY_LINK_NUMPY)

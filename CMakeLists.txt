@@ -95,7 +95,7 @@ if(NOT TARGET PCGRandom::pcg_random)
 endif()
 
 
-add_subdirectory(external/recombine)
+#add_subdirectory(external/recombine)
 
 set(LIBALGEBRA_NO_SERIALIZATION ON CACHE INTERNAL "")
 add_subdirectory(external/libalgebra)
@@ -124,7 +124,7 @@ add_subdirectory(streams)
 add_subdirectory(roughpy)
 
 if(ROUGHPY_GENERATE_DEVICE_CODE)
-add_subdirectory(device)
+    add_subdirectory(device)
 endif()
 
 if(ROUGHPY_BUILD_LA_CONTEXTS)
