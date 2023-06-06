@@ -241,9 +241,9 @@ const scalars::ScalarType *python::py_buffer_to_scalar_type(const py::buffer_inf
     return ScalarType::of<double>();
 }
 const scalars::ScalarType *python::py_type_to_scalar_type(const py::type &type) {
-    if (Py_Is(type.ptr(), reinterpret_cast<PyObject *>(&PyFloat_Type))) {
+    if (type.ptr() == reinterpret_cast<PyObject *>(&PyFloat_Type)) {
         return scalars::ScalarType::of<double>();
-    } else if (Py_Is(type.ptr(), reinterpret_cast<PyObject *>(&PyLong_Type))) {
+    } else if (type.ptr() == reinterpret_cast<PyObject *>(&PyLong_Type)) {
         return scalars::ScalarType::of<double>();
     }
 
@@ -278,7 +278,11 @@ void python::init_scalar_types(pybind11::module_ &m) {
     m.add_object("ScalarMeta", reinterpret_cast<PyObject *>(&PyScalarMetaType_type));
 
     Py_INCREF(&PyScalarMetaType_type);
+#if PY_VERSION_HEX >= 0x03090000
     Py_SET_TYPE(&PyScalarTypeBase_type, &PyScalarMetaType_type);
+#else
+    reinterpret_cast<PyObject *>(&PyScalarTypeBase_type)->ob_type = &PyScalarMetaType_type;
+#endif
     if (PyType_Ready(&PyScalarTypeBase_type) < 0) {
         pybind11::pybind11_fail(pybind11::detail::error_string());
     }
