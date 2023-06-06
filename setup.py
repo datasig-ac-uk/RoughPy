@@ -42,7 +42,7 @@ try:
     mkl = ilm.distribution("mkl-devel")
 
     # locate the cmake folder
-    cmake_files = [f for f in mkl.files if f.suffix == "cmake"]
+    cmake_files = [f for f in mkl.files if f.name.endswith("cmake")]
     # should be {root}/cmake/mkl/{f}
     cmake = cmake_files[0].locate().resolve().parent.parent
     # append {root} to prefix_path
