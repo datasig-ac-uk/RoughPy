@@ -65,7 +65,11 @@ static int resolution_converter(PyObject *object, void *out) {
         *reinterpret_cast<resolution_t *>(out) = -std::min(0, exponent - 1);
     } else if (Py_TYPE(object) == &PyLong_Type) {
         *reinterpret_cast<resolution_t *>(out) = PyLong_AsLong(object);
+#if PY_VERSION_HEX >= 0x030A0000
     } else if (Py_IsNone(object)) {
+#else
+    } else if (object == PyNone) {
+#endif
         // do nothing, use default
     } else {
         PyErr_SetString(PyExc_TypeError, "resolution should be either float or int");
