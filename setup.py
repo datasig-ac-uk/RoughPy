@@ -5,6 +5,8 @@ import platform
 import sys
 import re
 import sysconfig
+import importlib.metadata as ilm
+
 
 from skbuild import setup
 from pathlib import Path
@@ -36,9 +38,17 @@ prefix_path = []
 if "CMAKE_PREFIX_PATH" in os.environ:
     prefix_path.extend(os.environ["CMAKE_PREFIX_PATH"].split(";"))
 
+try:
+    mkl = ilm.distribution("mkl-devel")
 
-env_head = Path(sysconfig.get_path("platstdlib")).parent
-prefix_path.append(str(env_head))
+    # locate the cmake folder
+    cmake = Path(mkl.locate_file("cmake"))
+    prefix_path.append(str(cmake.parent))
+
+except ilm.PackageNotFoundError:
+    pass
+
+
 
 
 CMAKE_SETTINGS = [
