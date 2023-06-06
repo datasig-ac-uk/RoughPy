@@ -71,6 +71,11 @@ find_package(tomlplusplus CONFIG REQUIRED)
 set(MKL_LINK static)
 set(MKL_INTERFACE lp64)
 find_package(MKL CONFIG QUIET)
+if (NOT TARGET MKL::MKL)
+    find_package(BLAS REQUIRED)
+    find_package(LAPACK REQUIRED)
+endif()
+
 
 add_subdirectory(external/libalgebra_lite)
 #set_target_properties(Libalgebra_lite PROPERTIES NO_SONAME ON)
@@ -90,6 +95,8 @@ if(NOT TARGET PCGRandom::pcg_random)
 endif()
 
 add_subdirectory(external/recombine)
+
+set(LIBALGEBRA_NO_SERIALIZATION ON CACHE INTERNAL "")
 add_subdirectory(external/libalgebra)
 
 add_subdirectory(external/csv-parser)
