@@ -95,10 +95,6 @@ if(NOT TARGET PCGRandom::pcg_random)
 endif()
 
 
-if (APPLE)
-    add_compile_options("-Xclang -Xpreprocessor")
-endif()
-
 add_subdirectory(external/recombine)
 
 set(LIBALGEBRA_NO_SERIALIZATION ON CACHE INTERNAL "")
