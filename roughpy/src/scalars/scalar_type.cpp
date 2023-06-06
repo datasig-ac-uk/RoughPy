@@ -62,7 +62,12 @@ static PyTypeObject PyScalarTypeBase_type = {
         .tp_name = "_roughpy.ScalarTypeBase",
     .tp_basicsize = sizeof(python::PyScalarTypeBase),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_DISALLOW_INSTANTIATION,
+    .tp_flags = Py_TPFLAGS_DEFAULT
+                | Py_TPFLAGS_BASETYPE
+#if PY_VERSION_HEX >= 0x030A0000
+                | Py_TPFLAGS_DISALLOW_INSTANTIATION
+#endif
+    ,
     .tp_doc = PyDoc_STR("Base class for scalar type"),
     .tp_methods = PyScalarTypeBase_methods};
 
