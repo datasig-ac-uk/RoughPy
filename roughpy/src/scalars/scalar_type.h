@@ -91,7 +91,9 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype) {
     py::str ht_name(name);
     dtl::new_scalar_type_temps_manager tmp_manager;
 
+#if PY_VERSION_HEX >= 0x03090000
     py::object ht_module(m);
+#endif
 
     tmp_manager.ht_name = reinterpret_cast<char *>(PyMem_Malloc(name.size() + 1));
     if (tmp_manager.ht_name == nullptr) {
@@ -113,7 +115,9 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype) {
                       | Py_TPFLAGS_DISALLOW_INSTANTIATION
 #endif
                       | Py_TPFLAGS_HAVE_GC);
+#if PY_VERSION_HEX >= 0x03090000
     hto->ht_module = ht_module.release().ptr();
+#endif
 
     type->tp_as_async = &hto->as_async;
     type->tp_as_buffer = &hto->as_buffer;
