@@ -38,18 +38,6 @@ prefix_path = []
 if "CMAKE_PREFIX_PATH" in os.environ:
     prefix_path.extend(os.environ["CMAKE_PREFIX_PATH"].split(";"))
 
-try:
-    mkl = ilm.distribution("mkl-devel")
-
-    # locate the cmake folder
-    cmake_files = [f for f in mkl.files if f.name.endswith("cmake")]
-    # should be {root}/cmake/mkl/{f}
-    cmake = cmake_files[0].locate().resolve().parent.parent
-    # append {root} to prefix_path
-    prefix_path.append(str(cmake.parent))
-
-except ilm.PackageNotFoundError:
-    pass
 
 
 
@@ -59,10 +47,27 @@ CMAKE_SETTINGS = [
     "-DROUGHPY_BUILD_LA_CONTEXTS:BOOL=OFF",  # Temporarily
     "-DROUGHPY_GENERATE_DEVICE_CODE:BOOL=OFF",  # Until it's finished
     f"-DCMAKE_TOOLCHAIN_FILE={vcpkg}",
-    f"-DCMAKE_PREFIX_PATH={';'.join(prefix_path)}",
     "-DVCPKG_BUILD_TYPE=release"
 ]
 
+try:
+    mkl = ilm.distribution("mkl-devel")
+
+    # locate the cmake folder
+    cmake_files = [f for f in mkl.files if f.name.endswith("cmake")]
+    # should be {root}/cmake/mkl/{f}
+    cmake = cmake_files[-1].locate().resolve().parent.parent
+    # append {root} to prefix_path
+    prefix_path.append(str(cmake.parent))
+    CMAKE_SETTINGS.append(f"-DMKL_DIR={prefix_path}")
+
+except ilm.PackageNotFoundError:
+    pass
+
+
+CMAKE_SETTINGS.append(
+    f"-DCMAKE_PREFIX_PATH={';'.join(prefix_path)}"
+)
 
 
 def filter_cmake_manifests(items):
