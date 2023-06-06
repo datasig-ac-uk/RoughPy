@@ -68,7 +68,7 @@ static int resolution_converter(PyObject *object, void *out) {
 #if PY_VERSION_HEX >= 0x030A0000
     } else if (Py_IsNone(object)) {
 #else
-    } else if (object == PyNone) {
+    } else if (object == Py_None) {
 #endif
         // do nothing, use default
     } else {
