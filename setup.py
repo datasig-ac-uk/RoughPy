@@ -24,7 +24,7 @@ DESCRIPTION += CHANGELOG_PATH.read_text()
 VERSION = "0.0.1"
 
 if "VCPKG_INSTALLATION_ROOT" in os.environ:
-    vcpkg = Path(os.environ["VCPKG_INSTALLATION_ROOT"], "scripts", "buildsystems", "vcpkg.cmake")
+    vcpkg = Path(os.environ["VCPKG_INSTALLATION_ROOT"], "scripts", "buildsystems", "vcpkg.cmake").resolve()
 else:
     import subprocess as sp
     sp.run(["git", "clone", "https://github.com/Microsoft/vcpkg.git"], check=True)
