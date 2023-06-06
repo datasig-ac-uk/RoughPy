@@ -48,8 +48,15 @@ CMAKE_SETTINGS = [
     "-DROUGHPY_GENERATE_DEVICE_CODE:BOOL=OFF",  # Until it's finished
     f"-DCMAKE_TOOLCHAIN_FILE={vcpkg}",
     "-DVCPKG_BUILD_TYPE=release",
-    "--debug-find", "--debug-output"
+    # "--debug-find", "--debug-output"
 ]
+
+if platform.system() == "MacOs" and "CMAKE_OMP_ROOT" in os.environ:
+    CMAKE_SETTINGS.extend([
+        f"-DCMAKE_LIBRARY_PATH={os.environ['CMAKE_OMP_ROOT']}/lib",
+        f"-DCMAKE_INCLUDE_PATH={os.environ['CMAKE_OMP_ROOT']}/include",
+    ])
+
 
 try:
     mkl = ilm.distribution("mkl-devel")

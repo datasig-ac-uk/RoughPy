@@ -58,6 +58,7 @@ jobs:
         env:
           CIBW_ENVIRONMENT_MACOS: >
             LD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/:$LD_LIBRARY_PATH
+            CMAKE_OMP_ROOT=/usr/local/Cellar/libomp/16.0.4/
             
 
       - uses: actions/upload-artifact@v3
