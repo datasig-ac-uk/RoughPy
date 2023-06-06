@@ -6,8 +6,8 @@ requires = [
     "cmake==3.24",
     "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
-    "mkl-devel; platform_machine == 'x86_64' or platform_machine == 'x86'",
-    "mkl-static"
+    "mkl-devel; platform_machine == 'AMD64' or platform_machine == 'x86'",
+    "mkl-static; platform_machine == 'AMD64' or platform_machine == 'x86'"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -31,7 +31,10 @@ before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel show {wheel} --ignore-in-wheel & delvewheel repair -w {dest_dir} --ignore-in-wheel {wheel}"
 
 [tool.cibuildwheel.macos]
-before-all = "brew install libomp pkg-config"
+before-all = [
+    "brew reinstall libomp pkg-config",
+    "find -name libomp /opt/homebrew"
+    ]
 environment = { CMAKE_PREFIX_PATH="/opt/local:/opt/homebrew/opt:/opt/homebrew/Cellar/", DYLD_LIBRARY_PATH="/opt/homebrew/Cellar/:${DYLD_LIBRARY_PATH}" }
 
 [tool.cibuildwheel.linux]
