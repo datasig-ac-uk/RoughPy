@@ -170,7 +170,8 @@ template <typename Archive, typename T>
 enable_if_t<::cereal::traits::is_output_serializable<::cereal::BinaryData<T>, Archive>::value
             && is_arithmetic<T>::value>
 save(Archive &archive, const Slice<T> &data) {
-    archive(::cereal::make_size_tag(data.size()));
+    dimn_t size = data.size();
+    archive(::cereal::make_size_tag(size));
     archive(::cereal::binary_data(data.begin(), data.size()));
 }
 
@@ -178,7 +179,8 @@ template <typename Archive, typename T>
 enable_if_t<!::cereal::traits::is_output_serializable<::cereal::BinaryData<T>, Archive>::value
             || !is_arithmetic<T>::value>
 save(Archive &archive, const Slice<T> &data) {
-    archive(::cereal::make_size_tag(data.size()));
+    dimn_t size = data.size();
+    archive(::cereal::make_size_tag(size));
 
     for (const auto &item : data) {
         archive(item);
