@@ -127,5 +127,6 @@ RPY_SERIAL_LOAD_FN_IMPL(KeyScalarArray) {
 }// namespace scalars
 }// namespace rpy
 
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::scalars::KeyScalarArray, rpy::serial::specialization::member_load_save)
 
 #endif// ROUGHPY_SCALARS_KEY_SCALAR_ARRAY_H_
