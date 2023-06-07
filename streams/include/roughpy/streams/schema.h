@@ -303,12 +303,15 @@ RPY_SERIAL_LOAD_FN_IMPL(StreamChannel) {
     RPY_SERIAL_SERIALIZE_NVP("type", m_type);
     switch (m_type) {
         case ChannelType::Increment:
+            ::new (&increment_info) ChannelIncrementInfo;
             RPY_SERIAL_SERIALIZE_NVP("increment", increment_info);
             break;
         case ChannelType::Value:
+            ::new (&value_info) ChannelValueInfo;
             RPY_SERIAL_SERIALIZE_NVP("value", value_info);
             break;
         case ChannelType::Categorical:
+            ::new (&categorical_info) ChannelCategoricalIncrementInfo;
             RPY_SERIAL_SERIALIZE_NVP("categorical", categorical_info);
             break;
     }

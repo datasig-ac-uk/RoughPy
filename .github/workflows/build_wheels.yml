@@ -56,6 +56,8 @@ jobs:
       - name: Build and test
         uses: pypa/cibuildwheel@v2.13.0
         env:
+          CIBW_BEFOREALL_MACOS: |
+            brew install llvm libomp
           CIBW_ENVIRONMENT_MACOS: >
             LD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/:$LD_LIBRARY_PATH
             CMAKE_OMP_ROOT=/usr/local/Cellar/libomp/16.0.4/
