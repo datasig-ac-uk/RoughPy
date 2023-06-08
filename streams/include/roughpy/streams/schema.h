@@ -84,7 +84,7 @@ class StreamChannel {
     };
 
     template <typename T>
-    static void inplace_construct(void* address, T&& value) noexcept(is_nothrow_constructible_v<remove_cv_ref_t<T>, decltype(value)>){
+    static void inplace_construct(void* address, T&& value) noexcept(is_nothrow_constructible<remove_cv_ref_t<T>, decltype(value)>::value){
         ::new (address) remove_cv_ref_t<T>(std::forward<T>(value));
     }
 

@@ -45,7 +45,7 @@ rpy::Configuration::Configuration()
 rpy::Configuration::~Configuration() = default;
 
 string_view Configuration::get_raw_config_value(string_view property) const {
-    return std::string_view();
+    return string_view();
 }
 
 const Configuration &rpy::get_config() {
