@@ -35,7 +35,11 @@
 #include <string>
 
 #ifdef RPY_CPP_17
+#ifndef RPY_APPLE
 #include <optional>
+#else
+#include <boost/optional.hpp>
+#endif
 #include <string_view>
 #else
 #include <boost/optional.hpp>
