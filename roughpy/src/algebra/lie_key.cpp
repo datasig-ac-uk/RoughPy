@@ -177,8 +177,8 @@ static python::PyLieKey::container_type parse_key(const algebra::LieBasis &lbasi
     }
 
     auto keys = lbasis.parents(key);
-    auto left_key = keys.first.value();
-    auto right_key = keys.second.value();
+    auto left_key = *keys.first;
+    auto right_key = *keys.second;
 
 
 

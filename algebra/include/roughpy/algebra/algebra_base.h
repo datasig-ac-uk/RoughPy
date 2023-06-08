@@ -1052,7 +1052,8 @@ void AlgebraBase<Interface, Derived>::save(Archive &archive, const std::uint32_t
             RPY_SERIAL_SERIALIZE_SIZE(sz);
 
             for (auto&& item : *this) {
-                RPY_SERIAL_SERIALIZE_BARE(std::make_pair(item.key(), item.value()));
+                RPY_SERIAL_SERIALIZE_BARE(std::make_pair(item.key(), item
+                                                                         .value()));
             }
         }
 

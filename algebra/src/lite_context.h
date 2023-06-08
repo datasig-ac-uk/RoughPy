@@ -239,7 +239,7 @@ void tensor_populate_vcd(VectorConstructionData& data, const TensorObject& arg) 
 
     if (arg.storage_type() == VectorType::Dense) {
         // Simply borrow the data pointer
-        data.data = arg.dense_data().value();
+        data.data = *arg.dense_data();
     } else {
         // Construct key-value arrays to pass to construct_impl
         auto sz = arg.size();

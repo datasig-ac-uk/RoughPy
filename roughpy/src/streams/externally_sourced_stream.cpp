@@ -34,7 +34,7 @@ static py::object external_stream_constructor(string uri_string, const py::kwarg
         throw py::value_error("could not parse uri");
     }
 
-    auto uri = uri_result.value();
+    auto uri = *uri_result;
 
     auto factory = streams::ExternalDataStream::get_factory_for(uri);
 

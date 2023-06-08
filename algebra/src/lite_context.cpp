@@ -92,7 +92,7 @@ context_pointer LiteContextMaker::create_context(deg_t width, deg_t depth, const
     auto idx = index_of_ctype(ctype);
     RPY_DBG_ASSERT(idx.has_value());
 
-    switch (idx.value()) {
+    switch (*idx) {
         case 0: return new LiteContext<lal::double_field>(width, depth);
         case 1: return new LiteContext<lal::float_field>(width, depth);
         case 2: return new LiteContext<lal::rational_field>(width, depth);

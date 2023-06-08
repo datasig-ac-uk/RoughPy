@@ -128,8 +128,8 @@ void rpy::python::init_shuffle_tensor(py::module_ &m) {
 
     klass.def("__repr__", [](const ShuffleTensor &self) {
       std::stringstream ss;
-      ss << "ShuffleTensor(width=" << self.width().value()
-         << ", depth=" << self.depth().value();
+      ss << "ShuffleTensor(width=" << *self.width()
+         << ", depth=" << *self.depth();
       ss << ", ctype=" << self.coeff_type()->info().name << ')';
       return ss.str();
     });

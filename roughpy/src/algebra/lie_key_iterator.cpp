@@ -56,8 +56,8 @@ static python::PyLieKey to_py_lie_key(key_type k, const algebra::LieBasis &lbasi
         return python::PyLieKey(width, k);
     }
 
-    auto lparent = lbasis.lparent(k).value();
-    auto rparent = lbasis.rparent(k).value();
+    auto lparent = *lbasis.lparent(k);
+    auto rparent = *lbasis.rparent(k);
 
     if (lbasis.letter(lparent) && lbasis.letter(rparent)) {
         return python::PyLieKey(lbasis.width(), lparent, rparent);
