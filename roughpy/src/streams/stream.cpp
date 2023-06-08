@@ -237,7 +237,7 @@ static PyObject *signature(PyObject *self, PyObject *args, PyObject *kwargs) {
     algebra::FreeTensor result;
     try {
         if (sigargs.interval) {
-            result = stream->m_data.signature(sigargs.interval.value(), sigargs.resolution, *sigargs.ctx);
+            result = stream->m_data.signature(*sigargs.interval, sigargs.resolution, *sigargs.ctx);
         } else {
             result = stream->m_data.signature(sigargs.resolution, *sigargs.ctx);
         }
@@ -260,7 +260,7 @@ static PyObject *log_signature(PyObject *self, PyObject *args, PyObject *kwargs)
 
     algebra::Lie result;
     if (sigargs.interval) {
-        result = stream->m_data.log_signature(sigargs.interval.value(), sigargs.resolution, *sigargs.ctx);
+        result = stream->m_data.log_signature(*sigargs.interval, sigargs.resolution, *sigargs.ctx);
     } else {
         result = stream->m_data.log_signature(sigargs.resolution, *sigargs.ctx);
     }

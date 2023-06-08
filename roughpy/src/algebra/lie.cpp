@@ -101,8 +101,8 @@ void python::init_lie(py::module_ &m) {
 
     klass.def("__repr__", [](const Lie &self) {
       std::stringstream ss;
-      ss << "Lie(width=" << self.width().value()
-         << ", depth=" << self.depth().value();
+      ss << "Lie(width=" << *self.width()
+         << ", depth=" << *self.depth();
       ss << ", ctype=" << self.coeff_type()->info().name << ')';
       return ss.str();
     });

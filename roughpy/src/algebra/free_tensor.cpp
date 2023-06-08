@@ -164,8 +164,8 @@ void python::init_free_tensor(py::module_ &m) {
 
     klass.def("__repr__", [](const FreeTensor &self) {
         std::stringstream ss;
-        ss << "FreeTensor(width=" << self.width().value()
-           << ", depth=" << self.depth().value();
+        ss << "FreeTensor(width=" << *self.width()
+           << ", depth=" << *self.depth();
         ss << ", ctype=" << self.coeff_type()->info().name << ')';
         return ss.str();
     });
