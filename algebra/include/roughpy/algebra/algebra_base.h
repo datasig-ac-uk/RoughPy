@@ -1100,10 +1100,10 @@ void AlgebraBase<Interface, Derived>::load(Archive& archive, const std::uint32_t
     } else {
         p_impl = dtl::downcast_interface_ptr<Interface>(dtl::try_create_new_empty(ctx, atype));
 
-        dimn_t size;
+        serial::size_type size;
         RPY_SERIAL_SERIALIZE_SIZE(size);
 
-        for (dimn_t i=0; i<size; ++i) {
+        for (serial::size_type i=0; i<size; ++i) {
             std::pair<typename Interface::key_type, scalars::Scalar> val;
             RPY_SERIAL_SERIALIZE_BARE(val);
             p_impl->get_mut(val.first) = val.second;

@@ -137,6 +137,14 @@
     void save(Archive& archive, const T& value, const std::uint32_t RPY_UNUSED_VAR version)
 
 
+namespace rpy { namespace serial {
+#ifndef RPY_DISABLE_SERIALIZATION
+    using cereal::size_type;
+#else
+    using size_type = std::uint64_t;
+#endif
+}}
+
 #ifndef RPY_DISABLE_SERIALIZATION
 namespace rpy {
 
