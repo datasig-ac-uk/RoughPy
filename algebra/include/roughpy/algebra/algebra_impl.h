@@ -115,7 +115,7 @@ class ConvertedArgument {
 public:
     ConvertedArgument(Impl &&converted)
         : m_holder(std::move(converted)) {
-        p_ref = &m_holder.value();
+        p_ref = &*m_holder;
     }
     ConvertedArgument(const Impl &same_type)
         : m_holder(), p_ref(&same_type) {}

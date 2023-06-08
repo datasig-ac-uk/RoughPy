@@ -202,7 +202,7 @@ base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth) {
     for (const auto& maker : maker_list) {
         auto found = maker->get_base_context(width, depth);
         if (found.has_value()) {
-            return found.value();
+            return *found;
         }
     }
 

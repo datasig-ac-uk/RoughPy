@@ -9,7 +9,10 @@
 
 namespace rpy {
 namespace fs {
-#ifdef RPY_CPP_17
+
+
+// Macos 10.9 doesn't have the path type.
+#if defined(RPY_CPP_17) && !defined(RPY_PLATFORM_MACOS)
 using std::filesystem::path;
 
 using std::filesystem::absolute;
