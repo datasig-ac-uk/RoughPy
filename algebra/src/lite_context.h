@@ -533,14 +533,14 @@ TensorBasis LiteContext<Coefficients>::get_tensor_basis() const {
 
 template <typename Coefficients>
 FreeTensor LiteContext<Coefficients>::convert(const FreeTensor &arg, optional<VectorType> new_vec_type) const {
-    auto vtype = (new_vec_type.has_value()) ? new_vec_type.value() : arg.storage_type();
+    auto vtype = (new_vec_type.has_value()) ? *new_vec_type : arg.storage_type();
 #define RPY_SWITCH_FN(VTYPE) FreeTensor(this, convert_impl<(VTYPE)>(arg))
     RPY_MAKE_VTYPE_SWITCH(vtype)
 #undef RPY_SWITCH_FN
 }
 template <typename Coefficients>
 ShuffleTensor LiteContext<Coefficients>::convert(const ShuffleTensor &arg, optional<VectorType> new_vec_type) const {
-    auto vtype = (new_vec_type.has_value()) ? new_vec_type.value() : arg.storage_type();
+    auto vtype = (new_vec_type.has_value()) ? *new_vec_type : arg.storage_type();
 #define RPY_SWITCH_FN(VTYPE) ShuffleTensor(this, convert_impl<(VTYPE)>(arg))
     RPY_MAKE_VTYPE_SWITCH(vtype)
 #undef RPY_SWITCH_FN
