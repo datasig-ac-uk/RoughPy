@@ -170,8 +170,6 @@ template <typename Archive, typename T>
 enable_if_t<::cereal::traits::is_output_serializable<::cereal::BinaryData<T>, Archive>::value
             && is_arithmetic<T>::value>
 save(Archive &archive, const Slice<T> &data) {
-    dimn_t size = data.size();
-    archive(::cereal::make_size_tag(size));
     archive(::cereal::binary_data(data.begin(), data.size()));
 }
 
@@ -179,9 +177,6 @@ template <typename Archive, typename T>
 enable_if_t<!::cereal::traits::is_output_serializable<::cereal::BinaryData<T>, Archive>::value
             || !is_arithmetic<T>::value>
 save(Archive &archive, const Slice<T> &data) {
-    dimn_t size = data.size();
-    archive(::cereal::make_size_tag(size));
-
     for (const auto &item : data) {
         archive(item);
     }
@@ -191,23 +186,15 @@ template <typename Archive, typename T>
 enable_if_t<::cereal::traits::is_input_serializable<::cereal::BinaryData<T>, Archive>::value
             && is_arithmetic<T>::value>
 load(Archive &archive, Slice<T> &data) {
-    dimn_t size;
-    archive(::cereal::make_size_tag(size));
-
-    RPY_CHECK(data.size() >= size);
-    archive(::cereal::binary_data(data.begin(), size));
+    archive(::cereal::binary_data(data.begin(), data.size()));
 }
 
 template <typename Archive, typename T>
 enable_if_t<!::cereal::traits::is_input_serializable<::cereal::BinaryData<T>, Archive>::value
             || !is_arithmetic<T>::value>
 load(Archive &archive, Slice<T> &data) {
-    dimn_t size;
-    archive(::cereal::make_size_tag(size));
-
-    RPY_CHECK(data.size() >= size);
     auto *ptr = data.begin();
-    for (dimn_t i = 0; i < size; ++i) {
+    for (dimn_t i = 0; i < data.size(); ++i) {
         archive(ptr[i]);
     }
 }
