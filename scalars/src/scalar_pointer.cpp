@@ -31,6 +31,8 @@
 
 #include "scalar_pointer.h"
 
+#include <roughpy/core/alloc.h>
+
 #include <stdexcept>
 
 #include "scalar_type.h"
@@ -143,7 +145,7 @@ void rpy::scalars::ScalarPointer::update_from_bytes(const std::string &type_id, 
     const auto &info = get_scalar_info(type_id);
     RPY_CHECK(count * info.n_bytes == raw.size());
 
-    p_data = std::aligned_alloc(info.alignment, raw.size());
+    p_data = aligned_alloc(info.alignment, raw.size());
     std::memcpy(const_cast<void *>(p_data), raw.begin(), raw.size());
 
     m_flags = flags::OwnedPointer;
