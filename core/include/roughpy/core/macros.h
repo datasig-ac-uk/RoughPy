@@ -143,7 +143,7 @@
 #if defined(RPY_GCC) || defined(RPY_CLANG)
 #define RPY_UNUSED_VAR __attribute__((unused))
 #else
-#define RPY_UNUSED
+#define RPY_UNUSED_VAR
 #endif
 
 #if defined(RPY_GCC) || defined(RPY_CLANG)
