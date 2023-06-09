@@ -113,7 +113,7 @@ def filter_cmake_manifests(items):
 
 
 setup(
-    name="roughpy",
+    name="RoughPy",
     version=VERSION,
     author="The RoughPy Authors",
     author_email="info@datasig.ac.uk",
