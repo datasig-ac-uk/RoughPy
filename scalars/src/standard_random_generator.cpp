@@ -30,6 +30,16 @@
 //
 
 #include "standard_random_generator.h"
+#include <pcg_uint128.hpp>
+
+namespace pcg_extras {
+
+template <typename Uint, typename UintX2, typename I>
+constexpr uint_x4<Uint, UintX2> operator|(const uint_x4<Uint, UintX2>& lhs, const I& rhs) {
+    return lhs | static_cast<uint_x4<Uint, UintX2>>(rhs);
+}
+
+}
 
 namespace rpy {
 namespace scalars {
