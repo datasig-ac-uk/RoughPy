@@ -139,7 +139,7 @@ setup(
         "Topic :: Scientific/Engineering :: Mathematics",
         "License :: OSI Approved :: BSD License",
 
-        "Programming Language :: C++"
+        "Programming Language :: C++",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -149,7 +149,7 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX",
         "Operating System :: Unix",
-        "Operating System :: MaxOS"
+        "Operating System :: MacOS"
     ]
 
 )
