@@ -33,6 +33,7 @@
 
 #include <ostream>
 
+using namespace rpy;
 using namespace rpy::intervals;
 
 
