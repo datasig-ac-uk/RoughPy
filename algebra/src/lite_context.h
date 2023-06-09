@@ -357,7 +357,7 @@ typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Co
     // directly
     const auto& arg_context = arg->context();
     if (arg_context == this) {
-        return m_maps.template lie_to_tensor(algebra_cast<lie_t<VType>>(*arg));
+        return m_maps.lie_to_tensor(algebra_cast<lie_t<VType>>(*arg));
     }
 
     if (arg_context->width() != width()) {
@@ -372,14 +372,14 @@ typename LiteContext<Coefficients>::template lie_t<VType> LiteContext<Coefficien
 
     const auto& arg_context = arg->context();
     if (arg_context == this) {
-        return m_maps.template tensor_to_lie(algebra_cast<free_tensor_t<VType>>(*arg));
+        return m_maps.tensor_to_lie(algebra_cast<free_tensor_t<VType>>(*arg));
     }
 
     if (arg_context->width() != width()) {
         throw std::invalid_argument("cannot perform conversion on algebras with different bases");
     }
 
-    return m_maps.template tensor_to_lie(convert_impl<VType>(arg));
+    return m_maps.tensor_to_lie(convert_impl<VType>(arg));
 }
 template <typename Coefficients>
 template <VectorType VType>
