@@ -43,7 +43,17 @@
 
 
 #include <pcg_random.hpp>
+#include <pcg_uint128.hpp>
 #include "random_impl.h"
+
+namespace pcg_extras {
+
+template <typename Uint, typename UintX2, typename I>
+constexpr uint_x4<Uint, UintX2> operator|(const uint_x4<Uint, UintX2> &lhs, const I &rhs) {
+    return lhs | static_cast<uint_x4<Uint, UintX2>>(rhs);
+}
+
+}
 
 namespace rpy {
 namespace scalars {
