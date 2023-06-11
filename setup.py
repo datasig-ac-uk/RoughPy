@@ -28,8 +28,9 @@ VERSION = "0.0.1"
 if "VCPKG_INSTALLATION_ROOT" in os.environ:
     vcpkg = Path(os.environ["VCPKG_INSTALLATION_ROOT"], "scripts", "buildsystems", "vcpkg.cmake").resolve()
 else:
-    import subprocess as sp
-    sp.run(["git", "clone", "https://github.com/Microsoft/vcpkg.git"], check=True)
+    if not Path("vcpkg").exists():
+        import subprocess as sp
+        sp.run(["git", "clone", "https://github.com/Microsoft/vcpkg.git"])
     bootstrap_end = "bat" if platform.system() == "Windows" else "sh"
     sp.run([f"vcpkg/bootstrap-vcpkg.{bootstrap_end}"], shell=True, check=True)
     vcpkg = Path("vcpkg", "scripts", "buildsystems", "vcpkg.cmake").resolve()
