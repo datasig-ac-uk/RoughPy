@@ -1,3 +1,37 @@
+
+#[project]
+#name = "RoughPy"
+#version = "0.0.1"
+#author = "The RoughPy Authors"
+#author_email = "info@datasig.ac.uk"
+#license = "BSD-3-Clause"
+#keywords = [
+#    "data",
+#    "streams",
+#    "rough paths",
+#    "signatures"
+#]
+#
+#include_package_data = true
+#packages = ["roughpy"]
+#classifiers = [
+#    "Development Status :: 3 - Alpha",
+#    "Intended Audience :: Science/Research",
+#    "Intended Audience :: Developers",
+#    "Topic :: Scientific/Engineering :: Mathematics",
+#    "License :: OSI Approved :: BSD License",
+#    "Programming Language :: C++",
+#    "Programming Language :: Python :: 3",
+#    "Programming Language :: Python :: 3.8",
+#    "Programming Language :: Python :: 3.9",
+#    "Programming Language :: Python :: 3.10",
+#    "Programming Language :: Python :: 3.11",
+#    "Operating System :: Microsoft :: Windows",
+#    "Operating System :: POSIX",
+#    "Operating System :: Unix",
+#    "Operating System :: MacOS"
+#]
+
 [build-system]
 requires = [
     "setuptools>=42",
@@ -37,3 +71,4 @@ before-all = [
     "vcpkg/bootstrap-vcpkg.sh",
     ]
 environment = { VCPKG_INSTALLATION_ROOT="vcpkg" }
+repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
