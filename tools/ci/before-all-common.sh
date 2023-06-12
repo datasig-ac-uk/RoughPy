@@ -27,12 +27,13 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-if [ "$OSTYPE" == "linux-gnu"* ]; then
+echo $OSTYPE
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   yum install -y curl zip unziz tar mono
   MONO_EXE=mono
-elif [ "$OSTYPE" == "darwin"* ]; then
+elif [[ "$OSTYPE" == "darwin"* ]]; then
   MONO_EXE=mono
-elif [ "$OSTYPE" == "win32"* ]; then
+elif [[ "$OSTYPE" == "win32"* ]]; then
   MONO_EXE=""
 else
   exit 1
