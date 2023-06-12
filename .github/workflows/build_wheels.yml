@@ -66,7 +66,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
             auditwheel repair --exclude libiomp5.so  -w {dest_dir} {wheel}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: | 
-            delocate-wheel --require_archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}
+            delocate-wheel --require-archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
           CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK VCPKG_BINARY_SOURCES
             
