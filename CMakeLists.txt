@@ -89,6 +89,9 @@ execute_process(COMMAND ${Python_EXECUTABLE}
 if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
     message(STATUS "Adding MKL dir from pip-installed mkl: ${_python_mkl_dir}")
     list(APPEND CMAKE_PREFIX_PATH "${_python_mkl_dir}")
+    if (NOT MKL_ROOT)
+        set(MKL_ROOT "${_python_mkl_dir}")
+    endif()
     set(MKL_DIR "${_python_mkl_dir}")
 endif()
 

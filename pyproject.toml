@@ -41,7 +41,8 @@ requires = [
     "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
     "mkl-devel",
-    "mkl-static"
+    "mkl-static",
+    "intel_openmp"
 ]
 build-backend = "scikit_build_core.build"
 
