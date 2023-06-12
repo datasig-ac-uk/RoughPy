@@ -60,7 +60,9 @@ jobs:
         uses: pypa/cibuildwheel@v2.13.0
         env:
           CIBW_BUILD: cp310-${{ matrix.tag }}
+          CIBW_BEFOREALL_WINDOWS: pip install hatch
           CIBW_BEFOREALL_MACOS: |
+            pip install hatch
             brew install llvm libomp
           CIBW_ENVIRONMENT_MACOS: >
             LD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/:$LD_LIBRARY_PATH
@@ -69,6 +71,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
             auditwheel show {wheel} && auditwheel repair  -w {dest_dir} {wheel}
           SKBUILD_CMAKE_ARGS: --toolchain=${{ env.VCPKG_INSTALLATION_ROOT }}/scripts/buildsystems/vcpkg.cmake
+          CIBW_BUILD_FRONTEND: "hatch"
           
             
 

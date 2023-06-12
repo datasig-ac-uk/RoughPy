@@ -74,6 +74,7 @@ before-all = [
     "yum install -y curl zip unzip tar",
     "git clone https://github.com/Microsoft/vcpkg.git",
     "vcpkg/bootstrap-vcpkg.sh",
+    "pip install hatch"
     ]
 
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
