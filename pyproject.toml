@@ -64,6 +64,9 @@ build-verbosity=1
 
 test-requires = ["pytest", "numpy"]
 test-command = ["pytest --capture=no {project}/tests"]
+before-all = [
+    "bash tools/ci/before-all-common.sh"
+]
 
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
@@ -72,11 +75,10 @@ repair-wheel-command = "delvewheel show {wheel} --ignore-in-wheel & delvewheel r
 [tool.cibuildwheel.linux]
 before-all = [
     "yum install -y curl zip unzip tar",
-    "git clone https://github.com/Microsoft/vcpkg.git",
-    "vcpkg/bootstrap-vcpkg.sh",
+    "bash tools/ci/before-all-common.sh"
     ]
 
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
 
-[tool.cibuildwheel.linux.environment]
+[tool.cibuildwheel.environment]
 SKBUILD_CMAKE_ARGS = "--toolchain=vcpkg/scripts/buildsystems/vcpkg.cmake"
