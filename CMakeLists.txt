@@ -93,6 +93,18 @@ if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
         set(MKL_ROOT "${_python_mkl_dir}")
     endif()
     set(MKL_DIR "${_python_mkl_dir}")
+
+    if (WIN32)
+        execute_process(COMMAND ${Python_EXECUTABLE}
+                "./tools/python-intel-omp-dll-dir.py"
+                RESULT_VARIABLE _python_iomp_dir_found
+                OUTPUT_VARIABLE _python_iomp_dir
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+        if (NOT _python_iomp_dir_found)
+            set(ENV{CMPLR_ROOT} "${_python_iomp_dir}")
+        endif()
+    endif()
 endif()
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
