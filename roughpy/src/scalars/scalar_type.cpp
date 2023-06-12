@@ -45,7 +45,7 @@ PyObject *PyScalarMetaType_call(PyObject *, PyObject *, PyObject *) {
 }
 static PyTypeObject PyScalarMetaType_type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) "_roughpy.ScalarMeta", /* tp_name */
-    sizeof(python::PyScalarTypeBase),                             /* tp_basicsize */
+    sizeof(python::PyScalarMetaType),                             /* tp_basicsize */
     0,                                                            /* tp_itemsize */
     0,                                                            /* tp_dealloc */
     0,                                                            /* tp_vectorcall_offset */
