@@ -29,11 +29,11 @@
 
 echo $OSTYPE
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  yum install -y curl zip unziz tar mono
+  yum install -y curl zip unzip tar mono
   MONO_EXE=mono
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   MONO_EXE=mono
-elif [[ "$OSTYPE" == "win32"* ]]; then
+elif [[ "$OSTYPE" == "msys"* ]]; then
   MONO_EXE=""
 else
   exit 1

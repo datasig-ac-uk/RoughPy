@@ -74,7 +74,6 @@ repair-wheel-command = "delvewheel show {wheel} --ignore-in-wheel & delvewheel r
 
 [tool.cibuildwheel.linux]
 before-all = [
-    "yum install -y curl zip unzip tar",
     "bash tools/ci/before-all-common.sh"
     ]
 
