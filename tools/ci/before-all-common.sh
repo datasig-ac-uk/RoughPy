@@ -32,13 +32,13 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   yum install -y curl zip unzip tar
 
   # manylinux doesn't have mono, we'll have to install it
-  yum-config-manager --add-repo http://download.mono-project.com/repo/centos/
-  yum clean install
-  yum makecache
+  rpmkeys --import "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF"
+  su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo'
   yum install -y mono-complete
 
   MONO_EXE=mono
 elif [[ "$OSTYPE" == "darwin"* ]]; then
+  brew install libomp
   MONO_EXE=mono
 elif [[ "$OSTYPE" == "msys"* ]]; then
   MONO_EXE=""

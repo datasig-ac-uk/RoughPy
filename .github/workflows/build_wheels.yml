@@ -61,7 +61,6 @@ jobs:
         env:
           CIBW_BUILD: cp310-${{ matrix.tag }}
           CIBW_BEFOREALL_MACOS: >
-            brew install llvm libomp &&
             bash tools/ci/before-all-common.sh
           CIBW_ENVIRONMENT_MACOS: >
             LD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/:$LD_LIBRARY_PATH
