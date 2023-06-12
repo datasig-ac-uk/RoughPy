@@ -6,7 +6,10 @@ set(VCPKG_LIBRARY_LINKAGE static)
 
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 
-project(RoughPy VERSION 0.0.1)
+file(READ "VERSION" _rpy_version)
+string(STRIP "${_rpy_version}" _rpy_version)
+
+project(RoughPy VERSION ${_rpy_version})
 
 set(CMAKE_INSTALL_LIBDIR "roughpy" CACHE STRING "install library dir")
 set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")
@@ -187,7 +190,7 @@ install(FILES
         DESTINATION roughpy
         )
 
-
-if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
-    install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)
-endif()
+#
+#if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
+#    install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)
+#endif()

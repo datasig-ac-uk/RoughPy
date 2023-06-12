@@ -3,9 +3,10 @@ cmake_minimum_required(VERSION 3.21)
 
 
 project(RoughPy_PyModule
-        VERSION 0.0.1
+        VERSION ${RoughPy_VERSION}
         LANGUAGES CXX
         )
+message(STATUS "Adding RoughPy::PyModule version ${RoughPy_VERSION}")
 
 
 if(NOT TARGET pybind11::headers)
