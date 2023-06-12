@@ -42,7 +42,8 @@ requires = [
     "oldest-supported-numpy",
     "mkl-devel",
     "mkl-static",
-    "intel_openmp"
+    "intel_openmp; platform_system!='Windows'",
+    "tbb-devel; platform_system=='Windows'"
 ]
 build-backend = "scikit_build_core.build"
 
