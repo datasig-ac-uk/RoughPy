@@ -27,10 +27,13 @@ jobs:
         include:
           - os: windows-2019
             mono: ''
+            tag: "win_amd64"
           - os: ubuntu-20.04
             mono: 'mono'
+            tag: "manylinux_x86_64"
           - os: macos-11
             mono: 'mono'
+            tag: "macosx_x86_64"
 
     steps:
       - name: Checkout
@@ -56,12 +59,15 @@ jobs:
       - name: Build and test
         uses: pypa/cibuildwheel@v2.13.0
         env:
+          CIBW_BUILD: cp310-${{ matrix.tag }}
           CIBW_BEFOREALL_MACOS: |
             brew install llvm libomp
           CIBW_ENVIRONMENT_MACOS: >
             LD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/:$LD_LIBRARY_PATH
             CMAKE_OMP_ROOT=/usr/local/Cellar/libomp/16.0.4/
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
+            auditwheel show {wheel} && auditwheel repair --exclude libiomp5.so --exclude libLibalgebra_lite.so -w {dest_dir} {wheel}
             
 
       - uses: actions/upload-artifact@v3
