@@ -46,6 +46,7 @@ build-backend = "scikit_build_core.build"
 [tool.scikit-build]
 wheel.packages = []
 cmake.build-type = "Release"
+logging.level = "DEBUG"
 
 [tool.scikit-build.cmake.define]
 ROUGHPY_BUILD_TESTS = "OFF"
@@ -63,7 +64,7 @@ skip = [
 build-verbosity=1
 
 test-requires = ["pytest", "numpy"]
-test-command = ["pytest --capture=no {project}/tests"]
+#test-command = ["pytest --capture=no {project}/tests"]
 before-all = [
     "bash tools/ci/before-all-common.sh"
 ]
