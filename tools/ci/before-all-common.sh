@@ -27,5 +27,32 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+if [ "$OSTYPE" == "linux-gnu"* ]; then
+  yum install -y curl zip unziz tar mono
+  MONO_EXE=mono
+elif [ "$OSTYPE" == "darwin"* ]; then
+  MONO_EXE=mono
+elif [ "$OSTYPE" == "win32"* ]; then
+  MONO_EXE=""
+else
+  exit 1
+fi
+
 git clone https://github.com/Microsoft/vcpkg.git
-vcpkg/bootstrap-vcpkg.sh
+bash vcpkg/bootstrap-vcpkg.sh
+
+vcpkg_root=./vcpkg
+
+if [ -n "$GITHUB_TOK" ]; then
+  # If the token is defined, set up binary caching
+  $MONO_EXE `$vcpkg_root/vcpkg fetch nuget | tail -n 1` \
+    sources add \
+    -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
+    -storepasswordincleartext \
+    -name "GitHub" \
+    -username "datasig-ac-uk" \
+    -password "$GITHUB_TOK"
+  $MONO_EXE `$vcpkg_root/vcpkg fetch nuget | tail -n 1` \
+    setapikey "$GITHUB_TOK" \
+    -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
+fi

@@ -41,26 +41,26 @@ jobs:
         with:
           submodules: true
 
-      - name: Configure vcpkg caching
-        shell: bash
-        run: |
-          ${{ matrix.mono }} `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
-            sources add \
-            -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
-            -storepasswordincleartext \
-            -name "GitHub" \
-            -username "datasig-ac-uk" \
-            -password "${{ secrets.GITHUB_TOKEN }}"
-          ${{ matrix.mono }} `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
-            setapikey "${{ secrets.GITHUB_TOKEN }}" \
-            -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
-        if: runner.os != 'Linux'  # On Linux, the build is done in a docker container
+#      - name: Configure vcpkg caching
+#        shell: bash
+#        run: |
+#          ${{ matrix.mono }} `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
+#            sources add \
+#            -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
+#            -storepasswordincleartext \
+#            -name "GitHub" \
+#            -username "datasig-ac-uk" \
+#            -password "${{ secrets.GITHUB_TOKEN }}"
+#          ${{ matrix.mono }} `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
+#            setapikey "${{ secrets.GITHUB_TOKEN }}" \
+#            -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
+#        if: runner.os != 'Linux'  # On Linux, the build is done in a docker container
 
       - name: Build and test
         uses: pypa/cibuildwheel@v2.13.0
         env:
           CIBW_BUILD: cp310-${{ matrix.tag }}
-          CIBW_BEFOREALL_MACOS: |
+          CIBW_BEFOREALL_MACOS: >
             brew install llvm libomp &&
             bash tools/ci/before-all-common.sh
           CIBW_ENVIRONMENT_MACOS: >
@@ -69,7 +69,8 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
             auditwheel show {wheel} && auditwheel repair  -w {dest_dir} {wheel}
-
+          GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
+          CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK
             
 
       - uses: actions/upload-artifact@v3
