@@ -67,7 +67,9 @@ jobs:
             CMAKE_OMP_ROOT=/usr/local/Cellar/libomp/16.0.4/
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
-            auditwheel show {wheel} && auditwheel repair --exclude libiomp5.so --exclude libLibalgebra_lite.so -w {dest_dir} {wheel}
+            auditwheel show {wheel} && auditwheel repair  -w {dest_dir} {wheel}
+          SKBUILD_CMAKE_ARGS: --toolchain=${{ env.VCPKG_INSTALLATION_ROOT}}/scripts/buildsystems/vcpkg.cmake
+          
             
 
       - uses: actions/upload-artifact@v3

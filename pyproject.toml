@@ -1,49 +1,54 @@
 
-#[project]
-#name = "RoughPy"
-#version = "0.0.1"
-#author = "The RoughPy Authors"
-#author_email = "info@datasig.ac.uk"
-#license = "BSD-3-Clause"
-#keywords = [
-#    "data",
-#    "streams",
-#    "rough paths",
-#    "signatures"
-#]
-#
-#include_package_data = true
-#packages = ["roughpy"]
-#classifiers = [
-#    "Development Status :: 3 - Alpha",
-#    "Intended Audience :: Science/Research",
-#    "Intended Audience :: Developers",
-#    "Topic :: Scientific/Engineering :: Mathematics",
-#    "License :: OSI Approved :: BSD License",
-#    "Programming Language :: C++",
-#    "Programming Language :: Python :: 3",
-#    "Programming Language :: Python :: 3.8",
-#    "Programming Language :: Python :: 3.9",
-#    "Programming Language :: Python :: 3.10",
-#    "Programming Language :: Python :: 3.11",
-#    "Operating System :: Microsoft :: Windows",
-#    "Operating System :: POSIX",
-#    "Operating System :: Unix",
-#    "Operating System :: MacOS"
-#]
+[project]
+name = "RoughPy"
+version = "0.0.1"
+author = "The RoughPy Authors"
+author_email = "info@datasig.ac.uk"
+license = {file = "LICENSE.txt" }
+keywords = [
+    "data",
+    "streams",
+    "rough paths",
+    "signatures"
+]
+
+include_package_data = true
+packages = ["roughpy"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS"
+]
 
 [build-system]
 requires = [
-    "setuptools>=42",
-    "wheel",
-    "scikit-build",
-    "cmake==3.24",
+    "scikit-build-core",
     "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
     "mkl-devel",
     "mkl-static"
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "scikit_build_core.build"
+
+
+[tool.scikit-build]
+wheel.packages = []
+cmake.build-type = "Release"
+
+[tool.scikit-build.cmake.define]
+ROUGHPY_BUILD_TESTS = "OFF"
 
 [tool.cibuildwheel]
 skip = [
@@ -70,5 +75,8 @@ before-all = [
     "git clone https://github.com/Microsoft/vcpkg.git",
     "vcpkg/bootstrap-vcpkg.sh",
     ]
-environment = { VCPKG_INSTALLATION_ROOT="vcpkg" }
+
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.linux.environment]
+SKBUILD_CMAKE_ARGS = "--toolchain=vcpkg/scripts/buildsystems/vcpkg.cmake"

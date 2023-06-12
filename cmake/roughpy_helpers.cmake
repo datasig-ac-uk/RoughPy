@@ -490,4 +490,4 @@ set(RPY_CTYPE_DPReal double)
 set(RPY_CTYPE_SPReal float)
 
 
-define_property(TARGET PROPERTY CONTEXT_INSTANCE_HEADER)
+define_property(TARGET PROPERTY CONTEXT_INSTANCE_HEADER BRIEF_DOCS "Context header" FULL_DOCS "Docs ")

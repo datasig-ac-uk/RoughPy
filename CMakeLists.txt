@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 3.21)
+
+set(VCPKG_INSTALL_OPTIONS "--no-print-usage")
+set(VCPKG_BUILD_TYPE release)
+set(VCPKG_LIBRARY_LINKAGE static)
+
+message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+
 project(RoughPy VERSION 0.0.1)
 
 set(CMAKE_INSTALL_LIBDIR "roughpy" CACHE STRING "install library dir")
@@ -7,7 +14,7 @@ set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (LINUX)
-    set(CMAKE_INSTALL_RPATH $ORIGIN)
+    set(CMAKE_INSTALL_RPATH "$ORIGIN")
 elseif(APPLE)
 #    set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 #    set(CMAKE_MACOSX_RPATH ON)
@@ -155,8 +162,18 @@ install(TARGETS
         LIBRARY
             DESTINATION roughpy
             NAMELINK_SKIP
-        ARCHIVE DESTINATION roughpy
+        ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+        INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
         )
+
+install(FILES
+        roughpy/__init__.py
+        roughpy/__init__.pyi
+        roughpy/py.typed
+        roughpy/version.py
+        DESTINATION roughpy
+        )
+
 
 if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
     install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)

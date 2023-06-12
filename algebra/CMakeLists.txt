@@ -68,7 +68,6 @@ add_roughpy_lib(Algebra STATIC
         RoughPy::Core
         RoughPy::Scalars
         Boost::boost
-    PRIVATE_DEPS
         Libalgebra_lite::Libalgebra_lite
     )
 
