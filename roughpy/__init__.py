@@ -1,5 +1,37 @@
 
 
+import importlib.metadata as _ilm
+import os
+import platform
+
+from pathlib import Path
+
+
+def _add_dynload_location(path: Path):
+    if platform.system() == "Windows":
+        os.add_dll_directory(str(path))
+        return
+
+    if platform.system() == "Linux":
+        LD_LIB_PATH = "LD_LIBRARY_PATH"
+    elif platform.system() == "Darwin":
+        LD_LIB_PATH = "DYLD_LIBRARY_PATH"
+    else:
+        return
+
+    current_path = os.environ[LD_LIB_PATH] if LD_LIB_PATH in os.environ else ""
+    os.environ[LD_LIB_PATH] = f"str(path){os.pathsep}{current_path}"
+
+
+try:
+    iomp = _ilm.distribution("intel_openmp")
+    libs = [f for f in iomp.files if f.name.startswith("libiomp5")]
+    if libs:
+        _add_dynload_location(libs[0].locate().resolve().parent)
+except _ilm.PackageNotFoundError:
+    pass
+
+
 import roughpy._roughpy
 from roughpy._roughpy import *
 

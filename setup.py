@@ -108,8 +108,6 @@ def filter_cmake_manifests(items):
 
 
     manifest = list(filter(_filter, items))
-    with open("manifests.txt", "wt") as fp:
-        print(*manifest, sep='\n', file=fp)
     return manifest
 
 
@@ -133,7 +131,7 @@ setup(
     cmake_process_manifest_hook=filter_cmake_manifests,
     cmake_args=CMAKE_SETTINGS,
 
-    classifiers = [
+    classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
