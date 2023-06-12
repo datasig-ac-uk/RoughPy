@@ -70,7 +70,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
             auditwheel show {wheel} && auditwheel repair  -w {dest_dir} {wheel}
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
-          CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK
+          CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK VCPKG_BINARY_SOURCES
             
 
       - uses: actions/upload-artifact@v3
