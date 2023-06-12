@@ -67,6 +67,7 @@ test-command = ["pytest --capture=no {project}/tests"]
 before-all = [
     "bash tools/ci/before-all-common.sh"
 ]
+environment= "CMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake"
 
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
@@ -78,6 +79,3 @@ before-all = [
     ]
 
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
-
-[tool.cibuildwheel.environment]
-CMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake"

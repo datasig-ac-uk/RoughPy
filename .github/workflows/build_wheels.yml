@@ -62,9 +62,6 @@ jobs:
           CIBW_BUILD: cp310-${{ matrix.tag }}
           CIBW_BEFOREALL_MACOS: >
             bash tools/ci/before-all-common.sh
-          CIBW_ENVIRONMENT_MACOS: >
-            LD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/:$LD_LIBRARY_PATH
-            CMAKE_OMP_ROOT=/usr/local/Cellar/libomp/16.0.4/
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
             auditwheel show {wheel} && auditwheel repair  -w {dest_dir} {wheel}
