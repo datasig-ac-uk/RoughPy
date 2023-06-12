@@ -29,7 +29,14 @@
 
 echo $OSTYPE
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  yum install -y curl zip unzip tar mono
+  yum install -y curl zip unzip tar
+
+  # manylinux doesn't have mono, we'll have to install it
+  yum-config-manager --add-repo http://download.mono-project.com/repo/centos/
+  yum clean install
+  yum makecache
+  yum install -y mono-complete
+
   MONO_EXE=mono
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   MONO_EXE=mono

@@ -80,4 +80,4 @@ before-all = [
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.environment]
-SKBUILD_CMAKE_ARGS = "--toolchain=vcpkg/scripts/buildsystems/vcpkg.cmake"
+CMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake"
