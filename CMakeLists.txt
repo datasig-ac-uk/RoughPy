@@ -75,24 +75,18 @@ if (DEFINED ENV{VIRTUAL_ENV})
     list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}/lib")
 endif()
 
-set(Boost_NO_WARN_NEW_VERSIONS ON)
-find_package(Boost 1.81 REQUIRED COMPONENTS url)
-find_package(Eigen3 CONFIG REQUIRED)
-find_package(SndFile CONFIG REQUIRED)
-
-# This package is c++17 so cannot be used if changing to a lower standard
-find_package(tomlplusplus CONFIG REQUIRED)
-
-set(MKL_LINK static)
-set(MKL_INTERFACE lp64)
-find_package(MKL CONFIG REQUIRED)
-if (NOT TARGET MKL::MKL)
-    find_package(BLAS REQUIRED)
-    find_package(LAPACK REQUIRED)
+# Before we get too far, let's make use of Python's import
+# system to make sure MKL can be found if it was pip installed
+execute_process(${Python_EXECUTABLE}
+        "./tools/python-mkl-install-dir.py"
+        RESULT_VARIABLE _python_mkl_dir_found
+        OUTPUT_VARIABLE _python_mkl_dir
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+if (_python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
+    set(MKL_DIR "${_python_mkl_dir}")
 endif()
 
-
-add_subdirectory(external/libalgebra_lite)
 #set_target_properties(Libalgebra_lite PROPERTIES NO_SONAME ON)
 
 add_subdirectory(external/pybind11)
