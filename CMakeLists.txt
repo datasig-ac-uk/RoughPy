@@ -86,6 +86,7 @@ execute_process(COMMAND ${Python_EXECUTABLE}
         OUTPUT_VARIABLE _python_mkl_dir
         OUTPUT_STRIP_TRAILING_WHITESPACE
         )
+message(STATUS "pymkl_dir ${_python_mkl_dir}")
 if (_python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
     message(STATUS "Adding MKL dir from pip-installed mkl: ${_python_mkl_dir}")
     set(MKL_DIR "${_python_mkl_dir}")
