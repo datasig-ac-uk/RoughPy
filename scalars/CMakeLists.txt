@@ -75,9 +75,10 @@ add_roughpy_lib(Scalars STATIC
         Boost::boost
         Eigen3::Eigen
         Libalgebra_lite::Libalgebra_lite
+        "$<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,BLAS::BLAS LAPACK::LAPACK>"
     PRIVATE_DEPS
         PCGRandom::pcg_random
-        "$<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,BLAS::BLAS LAPACK::LAPACK>"
+
     )
 
 
