@@ -68,7 +68,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
             auditwheel show {wheel} && auditwheel repair  -w {dest_dir} {wheel}
-          SKBUILD_CMAKE_ARGS: --toolchain=${{ env.VCPKG_INSTALLATION_ROOT}}/scripts/buildsystems/vcpkg.cmake
+          SKBUILD_CMAKE_ARGS: --toolchain=${{ env.VCPKG_INSTALLATION_ROOT }}/scripts/buildsystems/vcpkg.cmake
           
             
 
