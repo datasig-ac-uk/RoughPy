@@ -45,8 +45,8 @@ build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
 wheel.packages = []
-cmake.build-type = "Release"
-logging.level = "DEBUG"
+cmake.build-type = "Debug"
+logging.level = "INFO"
 
 [tool.scikit-build.cmake.define]
 ROUGHPY_BUILD_TESTS = "OFF"

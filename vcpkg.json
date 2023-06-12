@@ -45,6 +45,9 @@
   }, {
     "name" : "gtest",
     "version>=" : "1.13.0"
-  }
-  ]
+  }, {
+    "name" : "mpir",
+    "version>=" : "2022-03-02#1",
+    "platform": "windows"
+  } ]
 }
