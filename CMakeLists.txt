@@ -113,11 +113,7 @@ find_package(tomlplusplus CONFIG REQUIRED)
 
 set(MKL_LINK static)
 set(MKL_INTERFACE lp64)
-if (WIN32)
-    # Windows is silly, and needs stub libraries for linking with
-    # Intel doesn't ship those with the python distribution. :@
-    set(MKL_THREADING tbb_thread)
-endif()
+
 find_package(MKL CONFIG REQUIRED)
 if (NOT TARGET MKL::MKL)
     find_package(BLAS REQUIRED)
