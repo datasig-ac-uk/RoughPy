@@ -97,18 +97,9 @@ if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
     set(MKL_DIR "${_python_mkl_dir}")
 
     if (WIN32)
-        execute_process(COMMAND ${Python_EXECUTABLE}
-                "./tools/python-get-binary-obj-path.py"
-                "--directory" "tbb-devel" "cmake/tbb/TBBConfig.cmake"
-                RESULT_VARIABLE _python_tbb_dir_found
-                OUTPUT_VARIABLE _python_tbb_dir
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                )
-        cmake_path(GET _python_tbb_dir PARENT_PATH _python_tbb_dir)
-        message(STATUS "Adding config from pip-installed tbb: ${_python_tbb_dir}")
-        list(APPEND CMAKE_PREFIX_PATH "${_python_tbb_dir}")
-        set(TBB_FIND_RELEASE_ONLY ON)
-        find_package(TBB CONFIG REQUIRED COMPONENTS tbb)
+        # Currently there is no way to get this working with threading
+        # on Windows using this distribution of MKL
+        set(MKL_THREADING sequential)
     endif()
 endif()
 
