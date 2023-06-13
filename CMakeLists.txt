@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 set(VCPKG_INSTALL_OPTIONS "--no-print-usage")
 set(VCPKG_BUILD_TYPE release)
 set(VCPKG_LIBRARY_LINKAGE static)
+set(VCPKG_CRT_LINKAGE static)
 
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 
