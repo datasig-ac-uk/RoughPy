@@ -81,12 +81,14 @@ endif()
 # Before we get too far, let's make use of Python's import
 # system to make sure MKL can be found if it was pip installed
 execute_process(COMMAND ${Python_EXECUTABLE}
-        "./tools/python-mkl-install-dir.py"
+        "./tools/python-get-binary-obj-path.py"
+        "--directory" "mkl-devel" "cmake/mkl/MKLConfig.cmake"
         RESULT_VARIABLE _python_mkl_dir_found
         OUTPUT_VARIABLE _python_mkl_dir
         OUTPUT_STRIP_TRAILING_WHITESPACE
         )
 if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
+    cmake_path(GET _python_mkl_dir PARENT_PATH _python_mkl_dir)
     message(STATUS "Adding MKL dir from pip-installed mkl: ${_python_mkl_dir}")
     list(APPEND CMAKE_PREFIX_PATH "${_python_mkl_dir}")
     if (NOT MKL_ROOT)
@@ -96,15 +98,15 @@ if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
 
     if (WIN32)
         execute_process(COMMAND ${Python_EXECUTABLE}
-                "./tools/python-intel-omp-dll-dir.py"
-                RESULT_VARIABLE _python_iomp_dir_found
-                OUTPUT_VARIABLE _python_iomp_dir
+                "./tools/python-get-binary-obj-path.py"
+                "--directory" "tbb-devel" "cmake/tbb/TBBConfig.cmake"
+                RESULT_VARIABLE _python_tbb_dir_found
+                OUTPUT_VARIABLE _python_tbb_dir
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                 )
-        message(STATUS "Adding iomp dir ${_python_iomp_dir}")
-        if (NOT _python_iomp_dir_found)
-            set(ENV{CMPLR_ROOT} "${_python_iomp_dir}")
-        endif()
+        cmake_path(GET _python_tbb_dir PARENT_PATH _python_tbb_dir)
+        list(APPEND CMAKE_PREFIX_PATH "${_python_tbb_dir}")
+        find_package(TBB CONFIG REQUIRED COMPONENTS tbb)
     endif()
 endif()
 
