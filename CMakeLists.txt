@@ -127,10 +127,11 @@ if (NOT TARGET MKL::MKL)
     find_package(LAPACK REQUIRED)
 endif()
 
-if (APPLE AND DEFINED MKL_OPENMP_LIBRARY AND MKL_OPENMP_LIBRARY)
+if (APPLE AND DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
 
     foreach (LANG IN ITEMS C CXX)
-        set(OpenMP_${LANG}_LIB_NAMES "${MKL_OPENMP_LIBRARY}" CACHE STRING "libomp location for OpenMP")
+        set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp=${MKL_OMP_LIBRARY}")
+        set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
     endforeach()
 
 endif()
