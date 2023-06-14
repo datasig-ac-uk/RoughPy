@@ -15,6 +15,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (LINUX)
     set(CMAKE_INSTALL_RPATH "$ORIGIN")
 elseif(APPLE)
+    execute_process(COMMAND "brew --prefix"
+            RESULT_VARIABLE _brew_prefix_found
+            OUTPUT_VARIABLE _brew_prefix
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+    if (_brew_prefix_found EQUAL 0)
+        message(STATUS "Adding brew prefix: ${_brew_prefix}")
+        list(APPEND CMAKE_PREFIX_PATH "${_brew_prefix}")
+    endif()
+
+
 #    set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 #    set(CMAKE_MACOSX_RPATH ON)
 #    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
@@ -115,6 +126,15 @@ if (NOT TARGET MKL::MKL)
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
 endif()
+
+if (APPLE AND DEFINED MKL_OPENMP_LIBRARY AND MKL_OPENMP_LIBRARY)
+
+    foreach (LANG IN ITEMS C CXX)
+        set(OpenMP_${LANG}_LIB_NAMES "${MKL_OPENMP_LIBRARY}" CACHE STRING "libomp location for OpenMP")
+    endforeach()
+
+endif()
+find_package(OpenMP REQUIRED COMPONENTS CXX)
 
 
 add_subdirectory(external/libalgebra_lite)

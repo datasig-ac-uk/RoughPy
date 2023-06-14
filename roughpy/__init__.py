@@ -23,6 +23,11 @@ def _add_dynload_location(path: Path):
     os.environ[LD_LIB_PATH] = f"str(path){os.pathsep}{current_path}"
 
 
+if platform.system() == "Windows":
+    LIBS_DIR = Path(__file__).parent.parent / "roughpy.libs"
+    if LIBS_DIR.exists():
+        os.add_dll_directory(str(LIBS_DIR))
+
 try:
     iomp = _ilm.distribution("intel_openmp")
     libs = [f for f in iomp.files if f.name.startswith("libiomp5")]
