@@ -20,8 +20,8 @@ elseif(APPLE)
             OUTPUT_VARIABLE _brew_prefix
             OUTPUT_STRIP_TRAILING_WHITESPACE
             )
-    if (_brew_prefix_found EQUAL 0)
-        message(STATUS "Adding brew prefix: ${_brew_prefix}")
+    message(STATUS "Adding brew prefix: ${_brew_prefix}")
+    if (_brew_prefix_found)
         list(APPEND CMAKE_PREFIX_PATH "${_brew_prefix}")
     endif()
 
