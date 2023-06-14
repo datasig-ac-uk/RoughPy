@@ -15,7 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (LINUX)
     set(CMAKE_INSTALL_RPATH "$ORIGIN")
 elseif(APPLE)
-    execute_process(COMMAND "brew --prefix"
+    execute_process(COMMAND "brew" "--prefix"
             RESULT_VARIABLE _brew_prefix_found
             OUTPUT_VARIABLE _brew_prefix
             OUTPUT_STRIP_TRAILING_WHITESPACE
