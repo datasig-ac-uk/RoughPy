@@ -133,6 +133,7 @@ if (APPLE AND DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
         set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp=${MKL_OMP_LIBRARY}")
         set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
     endforeach()
+    set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
 
 endif()
 find_package(OpenMP REQUIRED COMPONENTS CXX)
