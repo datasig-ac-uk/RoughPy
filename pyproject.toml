@@ -76,7 +76,7 @@ environment= "CMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake VCPK
 
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
-repair-wheel-command = "delvewheel repair -w {dest_dir} --ignore-in-wheel"
+repair-wheel-command = "delvewheel repair -w {dest_dir} --ignore-in-wheel {wheel}"
 
 
 [tool.cibuildwheel.linux]
