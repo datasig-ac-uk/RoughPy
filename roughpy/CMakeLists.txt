@@ -27,10 +27,10 @@ set_target_properties(RoughPy_PyModule PROPERTIES
 
 if (LINUX)
     set_target_properties(RoughPy_PyModule PROPERTIES
-            INSTALL_RPATH "$ORIGIN;$ORIGIN/../../../")
+            INSTALL_RPATH "$ORIGIN")
 elseif (APPLE)
-    set_target_properties(RoughPy_PyModule PROPERTIES
-            INSTALL_RPATH "@loader_path;@loader_path/../../..")
+#    set_target_properties(RoughPy_PyModule PROPERTIES
+#            INSTALL_RPATH "@loader_path;@loader_path/../../..")
 endif()
 
 target_sources(RoughPy_PyModule PRIVATE

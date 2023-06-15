@@ -27,10 +27,10 @@ elseif(APPLE)
 
 
 #    set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-#    set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_MACOSX_RPATH ON)
 #    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-    set(CMAKE_INSTALL_RPATH @loader_path)
-    set(CMAKE_INSTALL_NAME_DIR @rpath)
+#    set(CMAKE_INSTALL_RPATH @loader_path)
+#    set(CMAKE_INSTALL_NAME_DIR @rpath)
 endif()
 
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
@@ -211,6 +211,7 @@ install(TARGETS
             NAMELINK_SKIP
         ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
         INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+        RUNTIME_DEPENDENCIES
         )
 
 install(FILES
@@ -220,6 +221,7 @@ install(FILES
         roughpy/version.py
         DESTINATION roughpy
         )
+
 
 #
 #if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
