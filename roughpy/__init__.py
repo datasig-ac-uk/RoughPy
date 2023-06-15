@@ -31,6 +31,7 @@ if platform.system() == "Windows":
 try:
     iomp = _ilm.distribution("intel_openmp")
     libs = [f for f in iomp.files if f.name.startswith("libiomp5")]
+    print(f"adding lib: {libs}")
     if libs:
         _add_dynload_location(libs[0].locate().resolve().parent)
 except _ilm.PackageNotFoundError:
