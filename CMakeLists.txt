@@ -93,6 +93,7 @@ execute_process(COMMAND ${Python_EXECUTABLE}
         RESULT_VARIABLE _python_mkl_dir_found
         OUTPUT_VARIABLE _python_mkl_dir
         OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
         )
 if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
     cmake_path(GET _python_mkl_dir PARENT_PATH _python_mkl_dir)
@@ -143,10 +144,7 @@ add_subdirectory(external/libalgebra_lite)
 #set_target_properties(Libalgebra_lite PROPERTIES NO_SONAME ON)
 
 add_subdirectory(external/pybind11)
-# DLPACK has an annoying feature where it tries to build a demo
-# library. Disable this here
-set(BUILD_MOCK OFF CACHE BOOL INTERNAL)
-add_subdirectory(external/dlpack)
+
 
 # Make an imported target for PCG-CPP because it is a
 # makefile based project
@@ -205,12 +203,17 @@ install(TARGETS
         RoughPy_Algebra
         RoughPy_Streams
         RoughPy_PyModule
+        EXPORT RoughPy_EXPORTS
         RUNTIME DESTINATION roughpy
         LIBRARY
             DESTINATION roughpy
             NAMELINK_SKIP
         ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            EXCLUDE_FROM_ALL
         INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            EXCLUDE_FROM_ALL
         RUNTIME_DEPENDENCIES
         )
 
@@ -221,8 +224,15 @@ install(FILES
         roughpy/version.py
         DESTINATION roughpy
         )
-
-
+#
+#install(EXPORT RoughPy_EXPORTS
+#        DESTINATION roughpy
+#        NAMESPACE RoughPy
+#        FILE RoughPy.cmake
+#            COMPONENT Development
+#            EXCLUDE_FROM_ALL
+#        )
+#
 #
 #if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
 #    install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)

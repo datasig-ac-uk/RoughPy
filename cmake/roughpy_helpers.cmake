@@ -71,6 +71,9 @@ function(add_roughpy_lib _name)
     add_library(${_alias_name} ALIAS ${_real_name})
     message(STATUS "Adding library ${_alias_name} version ${PROJECT_VERSION}")
 
+    set_target_properties(${_real_name} PROPERTIES
+            EXPORT_NAME ${_name})
+
     if (NOT ${_lib_type} STREQUAL INTERFACE)
         target_include_directories(${_real_name}
                 PRIVATE

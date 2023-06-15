@@ -33,23 +33,22 @@
 #define ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_CSV_DATA_SOURCE_H
 
 #include "external_data_stream.h"
-#include <csv.hpp>
 
 namespace rpy {
 namespace streams {
 
-class CSVDataSource : public ExternalDataStreamSource {
-    csv::CSVReader m_reader;
-
-public:
-
-    explicit CSVDataSource(csv::CSVReader&& reader)
-        : m_reader(std::move(reader))
-    {}
-
-    dimn_t query(scalars::KeyScalarArray &result, const intervals::Interval &interval) override;
-};
-
+//class CSVDataSource : public ExternalDataStreamSource {
+//    csv::CSVReader m_reader;
+//
+//public:
+//
+//    explicit CSVDataSource(csv::CSVReader&& reader)
+//        : m_reader(std::move(reader))
+//    {}
+//
+//    dimn_t query(scalars::KeyScalarArray &result, const intervals::Interval &interval) override;
+//};
+//
 }// namespace streams
 }// namespace rpy
 

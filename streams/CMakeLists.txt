@@ -46,7 +46,6 @@ add_roughpy_lib(Streams STATIC
         RoughPy::Algebra
     PRIVATE_DEPS
         SndFile::sndfile
-        csv::csv
         )
 
 

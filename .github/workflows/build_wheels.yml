@@ -63,7 +63,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: >
             auditwheel show {wheel} &&
-            auditwheel repair --exclude libiomp5.so  -w {dest_dir} {wheel}
+            auditwheel repair -w {dest_dir} {wheel}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: > 
             delocate-wheel --require-archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"

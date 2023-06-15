@@ -31,9 +31,9 @@ classifiers = [
     "Operating System :: Unix",
     "Operating System :: MacOS"
 ]
-dependencies=[
-    "intel-openmp; platform_system!='Windows'"
-]
+#dependencies=[
+#    "intel-openmp; platform_system!='Windows'"
+#]
 
 [build-system]
 requires = [
@@ -75,7 +75,8 @@ environment= "CMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake VCPK
 
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
-repair-wheel-command = "delvewheel repair -w {dest_dir} --ignore-in-wheel --no-dll libiomp5 {wheel}"
+repair-wheel-command = "delvewheel repair -w {dest_dir} --ignore-in-wheel"
+
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"

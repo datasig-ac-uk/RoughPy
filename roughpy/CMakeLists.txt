@@ -117,7 +117,6 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         RoughPy::Algebra
         RoughPy::Streams
         pybind11::headers
-        dlpack::dlpack
 #        recombine::recombine
         )
 

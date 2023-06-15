@@ -30,7 +30,6 @@
 #include <sstream>
 
 #include <pybind11/operators.h>
-#include <dlpack/dlpack.h>
 
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
@@ -38,7 +37,7 @@
 #include <roughpy/scalars/scalar_array.h>
 
 #include "scalar_type.h"
-
+#include "dlpack.h"
 
 using namespace rpy;
 using namespace pybind11::literals;
