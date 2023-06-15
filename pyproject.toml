@@ -49,8 +49,7 @@ build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
 wheel.packages = []
-cmake.build-type = "Debug"
-logging.level = "INFO"
+cmake.build-type = "Release"
 
 [tool.scikit-build.cmake.define]
 ROUGHPY_BUILD_TESTS = "OFF"
@@ -65,13 +64,10 @@ skip = [
     "*universal2",
     "cp3{6,7}-*"
 ]
-build-verbosity=1
 
 test-requires = ["pytest", "numpy"]
-#test-command = ["pytest --capture=no {project}/tests"]
-before-all = [
-    "bash tools/ci/before-all-common.sh"
-]
+test-command = ["pytest --capture=no {project}/tests"]
+before-all = "bash tools/ci/before-all-common.sh"
 environment= "CMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake VCPKG_OVERLAY_TRIPLETS=./tools/ci/triplets"
 
 [tool.cibuildwheel.windows]
@@ -79,8 +75,4 @@ before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -w {dest_dir} --ignore-in-wheel --no-dll libiomp5 {wheel}"
 
 [tool.cibuildwheel.linux]
-before-all = [
-    "bash tools/ci/before-all-common.sh"
-    ]
-
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
