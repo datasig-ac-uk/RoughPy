@@ -6,25 +6,12 @@ import platform
 
 from pathlib import Path
 
-try:
-    import ctypes
-    from ctypes import util as ctypes_util
-except ImportError:
-    ctypes = None
-    ctypes_util = None
 
 
 def _add_dynload_location(path: Path):
     if platform.system() == "Windows":
         os.add_dll_directory(str(path))
         return
-
-    LD_LIB_PATH = "LD_LIBRARY_PATH"
-    current_path = os.environ.get(LD_LIB_PATH, "")
-    os.environ[LD_LIB_PATH] = f"str(path){os.pathsep}{current_path}"
-    if ctypes:
-        pth = ctypes_util.find_library("iomp5")
-        print(pth)
 
 
 
