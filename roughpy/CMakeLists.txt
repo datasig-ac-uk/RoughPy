@@ -23,9 +23,15 @@ set_target_properties(RoughPy_PyModule PROPERTIES
         VISIBILITY_INLINES_HIDDEN ON
         C_STANDARD 11
         C_STANDARD_REQUIRED ON
-        INSTALL_RPATH $<IF:$<BOOL:${APPLE}>,@loader_path,$ORIGIN>
         )
 
+if (LINUX)
+    set_target_properties(RoughPy_PyModule PROPERTIES
+            INSTALL_RPATH "$ORIGIN;$ORIGIN/../../../")
+elseif (APPLE)
+    set_target_properties(RoughPy_PyModule PROPERTIES
+            INSTALL_RPATH "@loader_path;@loader_path/../../..")
+endif()
 
 target_sources(RoughPy_PyModule PRIVATE
         src/roughpy_module.cpp

@@ -37,7 +37,7 @@ dependencies=[
 
 [build-system]
 requires = [
-    "scikit-build-core",
+    "scikit-build-core[pyproject]",
     "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
     "mkl-devel",

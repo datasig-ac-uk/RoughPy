@@ -6,21 +6,25 @@ import platform
 
 from pathlib import Path
 
+try:
+    import ctypes
+except ImportError:
+    ctypes = None
+
 
 def _add_dynload_location(path: Path):
     if platform.system() == "Windows":
         os.add_dll_directory(str(path))
         return
 
-    if platform.system() == "Linux":
-        LD_LIB_PATH = "LD_LIBRARY_PATH"
-    elif platform.system() == "Darwin":
-        LD_LIB_PATH = "DYLD_LIBRARY_PATH"
-    else:
-        return
-
-    current_path = os.environ[LD_LIB_PATH] if LD_LIB_PATH in os.environ else ""
+    LD_LIB_PATH = "LD_LIBRARY_PATH"
+    current_path = os.environ.get(LD_LIB_PATH, "")
     os.environ[LD_LIB_PATH] = f"str(path){os.pathsep}{current_path}"
+    if ctypes:
+        pth = ctypes.find_library("iomp5")
+        print(pth)
+
+
 
 
 if platform.system() == "Windows":
@@ -31,11 +35,11 @@ if platform.system() == "Windows":
 try:
     iomp = _ilm.distribution("intel-openmp")
     libs = [f for f in iomp.files if f.name.startswith("libiomp5")]
-    print(f"adding lib: {libs}")
     if libs:
         _add_dynload_location(libs[0].locate().resolve().parent)
+    del iomp
+    del libs
 except _ilm.PackageNotFoundError:
-    print("Dist not found")
     pass
 
 
