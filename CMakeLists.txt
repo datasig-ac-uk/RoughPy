@@ -234,6 +234,6 @@ install(FILES
 #        )
 #
 #
-#if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
-#    install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)
-#endif()
+if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
+    install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)
+endif()
