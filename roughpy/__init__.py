@@ -29,12 +29,13 @@ if platform.system() == "Windows":
         os.add_dll_directory(str(LIBS_DIR))
 
 try:
-    iomp = _ilm.distribution("intel_openmp")
+    iomp = _ilm.distribution("intel-openmp")
     libs = [f for f in iomp.files if f.name.startswith("libiomp5")]
     print(f"adding lib: {libs}")
     if libs:
         _add_dynload_location(libs[0].locate().resolve().parent)
 except _ilm.PackageNotFoundError:
+    print("Dist not found")
     pass
 
 

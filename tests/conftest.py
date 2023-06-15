@@ -2,6 +2,7 @@ import pytest
 
 from numpy.random import default_rng
 
+import roughpy
 from roughpy import _roughpy
 
 
