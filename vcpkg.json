@@ -48,6 +48,9 @@
   }, {
     "name" : "mpir",
     "version>=" : "2022-03-02#1",
-    "platform": "windows"
+    "platform" : "windows"
+  }, {
+    "name" : "pcg",
+    "version>=" : "2021-04-06"
   } ]
 }
