@@ -1,10 +1,8 @@
 import pytest
 
 from numpy.random import default_rng
-import os
-print(os.getcwd())
-import sys
-print(sys.path)
+
+
 
 
 import roughpy

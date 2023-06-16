@@ -1,0 +1,17 @@
+{
+  "name": "libalgebra-lite",
+  "version": "2023",
+  "description": "A dynamic library for computational algebra",
+  "homepage": "https://github.com/datasig-ac-uk/libalgebra-lite",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
