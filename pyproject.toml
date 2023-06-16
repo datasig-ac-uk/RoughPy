@@ -38,6 +38,7 @@ classifiers = [
 [build-system]
 requires = [
     "scikit-build-core[pyproject]",
+    "pybind11",
     "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
     "mkl-devel",
