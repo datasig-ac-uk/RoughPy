@@ -91,7 +91,7 @@ endif ()
 
 # Before we get too far, let's make use of Python's import
 # system to make sure MKL can be found if it was pip installed
-execute_process(COMMAND Python::Interpreter
+execute_process(COMMAND ${Python_EXECUTABLE}
         "./tools/python-get-binary-obj-path.py"
         "--directory" "mkl-devel" "cmake/mkl/MKLConfig.cmake"
         RESULT_VARIABLE _python_mkl_dir_found
@@ -122,7 +122,6 @@ if (NOT DEFINED pybind11_ROOT)
             OUTPUT_VARIABLE _python_pybind11_dir
             OUTPUT_STRIP_TRAILING_WHITESPACE
             )
-    message(STATUS "Pybind11 ${_python_pybind11_dir_found} ${_python_pybind11_dir}")
     if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
         message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
         set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
