@@ -68,7 +68,6 @@ build-verbosity=1
 
 test-requires = ["pytest", "numpy"]
 test-command = [
-    "ls -al `python -c 'import site; print(*site.getsitepackages())'`/roughpy",
     "pytest --capture=no {project}/tests || echo 0"
 ]
 before-all = "bash tools/ci/before-all-common.sh"
@@ -82,6 +81,7 @@ repair-wheel-command = "delvewheel repair -w {dest_dir} --ignore-in-wheel {wheel
 [tool.cibuildwheel.linux]
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
 test-command = [
+    "export LD_DEBUG=all",
     "ls -al `python -c 'import site; print(*site.getsitepackages())'`/roughpy",
     "readelf -d `python -c 'import site; print(site.getsitepackages()[0])'`/roughpy/_roughpy.cpython-310-x86_64-linux-gnu.so",
     "ldd `python -c 'import site; print(site.getsitepackages()[0])'`/roughpy/_roughpy.cpython-310-x86_64-linux-gnu.so",
