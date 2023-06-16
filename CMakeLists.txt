@@ -35,6 +35,8 @@ endif()
 
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
+option(ROUGHPY_BUILD_PYMODULE_INPLACE "Buildg the pymodule in the project roughpy directory" OFF)
+
 
 find_package(GTest CONFIG QUIET)
 if (ROUGHPY_BUILD_TESTS AND GTest_FOUND)

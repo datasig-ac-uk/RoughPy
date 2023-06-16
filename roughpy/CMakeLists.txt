@@ -18,12 +18,17 @@ endif()
 Python_add_library(RoughPy_PyModule MODULE WITH_SOABI)
 set_target_properties(RoughPy_PyModule PROPERTIES
         LIBRARY_OUTPUT_NAME _roughpy
-        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
         C_STANDARD 11
         C_STANDARD_REQUIRED ON
         )
+
+if (ROUGHPY_BUILD_PYMODULE_INPLACE)
+    set_target_properties(RoughPy_PyModule PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+endif()
+
 
 if (LINUX)
     set_target_properties(RoughPy_PyModule PROPERTIES
