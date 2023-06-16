@@ -78,7 +78,7 @@ add_roughpy_lib(Scalars STATIC
         "$<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,BLAS::BLAS LAPACK::LAPACK>"
     PRIVATE_DEPS
         PCGRandom::pcg_random
-
+        $<TARGET_NAME_IF_EXISTS:Bignum::Bignum>
     )
 
 
@@ -89,7 +89,6 @@ if (TARGET Bignum::Bignum)
     set(RPY_RATIONAL_HEADER "gmp.hpp")
     set(RPY_RATIONAL_TYPE "boost::multiprecision::mpq_rational")
     set(RPY_USING_GMP ON)
-    target_link_libraries(RoughPy_Scalars PUBLIC Bignum::Bignum)
 else()
     set(RPY_USING_GMP OFF)
     set(RPY_RATIONAL_HEADER "cpp_int.hpp")
