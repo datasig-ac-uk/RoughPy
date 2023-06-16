@@ -4,6 +4,8 @@ include(GenerateExportHeader)
 include(GoogleTest OPTIONAL)
 
 
+set(ROUGHPY_LIBS CACHE INTERNAL "")
+
 function(_get_component_name _out_var _component)
     string(SUBSTRING ${_component} 0 1 _first_letter)
     string(SUBSTRING ${_component} 1 -1 _remaining)
@@ -14,8 +16,8 @@ endfunction()
 
 
 function(_check_and_set_libtype _out _shared _static _interface)
-    if (_shared)
 
+    if (_shared)
         if (_static OR _interface)
             message(FATAL_ERROR "Library cannot be both SHARED and STATIC or INTERFACE")
         endif ()
@@ -69,7 +71,13 @@ function(add_roughpy_lib _name)
 
     add_library(${_real_name} ${_lib_type})
     add_library(${_alias_name} ALIAS ${_real_name})
-    message(STATUS "Adding library ${_alias_name} version ${PROJECT_VERSION}")
+    message(STATUS "Adding ${_lib_type} library ${_alias_name} version ${PROJECT_VERSION}")
+
+    if (ROUGHPY_LIBS)
+        set(ROUGHPY_LIBS "${ROUGHPY_LIBS};${_real_name}" CACHE INTERNAL "")
+    else()
+        set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "")
+    endif()
 
     set_target_properties(${_real_name} PROPERTIES
             EXPORT_NAME ${_name})

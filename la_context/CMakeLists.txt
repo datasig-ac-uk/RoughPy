@@ -13,7 +13,7 @@ if (NOT TARGET Libalgebra::Libalgebra)
 endif()
 
 
-add_roughpy_lib(LAContext
+add_roughpy_lib(LAContext SHARED
         SOURCES
             src/la_context.cpp
         PUBLIC_HEADERS

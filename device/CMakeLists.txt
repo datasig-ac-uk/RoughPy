@@ -6,7 +6,7 @@ project(RoughPy_Device VERSION 0.0.1
 
 
 
-add_roughpy_lib(Device STATIC
+add_roughpy_lib(Device SHARED
     PUBLIC_HEADERS
         include/roughpy/device/core.h
         include/roughpy/device/device_context.h

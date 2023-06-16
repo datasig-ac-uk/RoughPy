@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 
 file(READ "VERSION" _rpy_version)
 string(STRIP "${_rpy_version}" _rpy_version)
@@ -14,7 +15,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (LINUX)
     set(CMAKE_INSTALL_RPATH "$ORIGIN")
-elseif(APPLE)
+elseif (APPLE)
     execute_process(COMMAND "brew" "--prefix"
             RESULT_VARIABLE _brew_prefix_found
             OUTPUT_VARIABLE _brew_prefix
@@ -23,15 +24,15 @@ elseif(APPLE)
     message(STATUS "Adding brew prefix: ${_brew_prefix}")
     if (_brew_prefix_found)
         list(APPEND CMAKE_PREFIX_PATH "${_brew_prefix}")
-    endif()
+    endif ()
 
 
-#    set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+    #    set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
     set(CMAKE_MACOSX_RPATH ON)
-#    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-#    set(CMAKE_INSTALL_RPATH @loader_path)
-#    set(CMAKE_INSTALL_NAME_DIR @rpath)
-endif()
+    #    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+    #    set(CMAKE_INSTALL_RPATH @loader_path)
+    #    set(CMAKE_INSTALL_NAME_DIR @rpath)
+endif ()
 
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
@@ -42,14 +43,14 @@ find_package(GTest CONFIG QUIET)
 if (ROUGHPY_BUILD_TESTS AND GTest_FOUND)
     find_package(GTest CONFIG REQUIRED)
 
-    if(NOT TARGET GTest::gtest)
+    if (NOT TARGET GTest::gtest)
         message(FATAL_ERROR "GTest::gtest target not defined")
-    endif()
+    endif ()
 
     enable_testing()
-else()
+else ()
     set(ROUGHPY_BUILD_TESTS OFF CACHE INTERNAL "")
-endif()
+endif ()
 
 include(cmake/roughpy_helpers.cmake)
 
@@ -84,12 +85,13 @@ endif ()
 if (DEFINED ENV{VIRTUAL_ENV})
     # Put venv/lib on the prefix path so we can find
     # a pip installed MKL
+    message(STATUS "Adding python virtual environment to path")
     list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}/lib")
-endif()
+endif ()
 
 # Before we get too far, let's make use of Python's import
 # system to make sure MKL can be found if it was pip installed
-execute_process(COMMAND ${Python_EXECUTABLE}
+execute_process(COMMAND Python::Interpreter
         "./tools/python-get-binary-obj-path.py"
         "--directory" "mkl-devel" "cmake/mkl/MKLConfig.cmake"
         RESULT_VARIABLE _python_mkl_dir_found
@@ -103,15 +105,30 @@ if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
     list(APPEND CMAKE_PREFIX_PATH "${_python_mkl_dir}")
     if (NOT MKL_ROOT)
         set(MKL_ROOT "${_python_mkl_dir}")
-    endif()
+    endif ()
     set(MKL_DIR "${_python_mkl_dir}")
 
     if (WIN32)
         # Currently there is no way to get this working with threading
         # on Windows using this distribution of MKL
         set(MKL_THREADING sequential)
-    endif()
-endif()
+    endif ()
+endif ()
+if (NOT DEFINED pybind11_ROOT)
+    execute_process(COMMAND
+            "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
+            COMMAND_ECHO STDOUT
+            RESULT_VARIABLE _python_pybind11_dir_found
+            OUTPUT_VARIABLE _python_pybind11_dir
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+    message(STATUS "Pybind11 ${_python_pybind11_dir_found} ${_python_pybind11_dir}")
+    if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
+        message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
+        set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
+
+    endif ()
+endif ()
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 find_package(Boost 1.81 REQUIRED COMPONENTS url)
@@ -128,33 +145,37 @@ find_package(MKL CONFIG REQUIRED)
 if (NOT TARGET MKL::MKL)
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
-endif()
+endif ()
 
 if (APPLE AND DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
 
     foreach (LANG IN ITEMS C CXX)
         set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp=${MKL_OMP_LIB}")
         set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
-    endforeach()
+    endforeach ()
     set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
 
-endif()
+endif ()
 find_package(OpenMP REQUIRED COMPONENTS CXX)
+
+find_package(pybind11 REQUIRED)
+find_package(cereal REQUIRED)
+find_package(PCGRandom REQUIRED)
 
 
 add_subdirectory(external/libalgebra_lite)
 #set_target_properties(Libalgebra_lite PROPERTIES NO_SONAME ON)
 
-add_subdirectory(external/pybind11)
+#add_subdirectory(external/pybind11)
 
 
 # Make an imported target for PCG-CPP because it is a
 # makefile based project
-if(NOT TARGET PCGRandom::pcg_random)
-    add_library(PCGRandom::pcg_random IMPORTED INTERFACE)
-    target_include_directories(PCGRandom::pcg_random INTERFACE
-            external/pcg-cpp/include)
-endif()
+#if(NOT TARGET PCGRandom::pcg_random)
+#    add_library(PCGRandom::pcg_random IMPORTED INTERFACE)
+#    target_include_directories(PCGRandom::pcg_random INTERFACE
+#            external/pcg-cpp/include)
+#endif()
 
 
 #add_subdirectory(external/recombine)
@@ -162,20 +183,20 @@ endif()
 set(LIBALGEBRA_NO_SERIALIZATION ON CACHE INTERNAL "")
 add_subdirectory(external/libalgebra)
 
-add_subdirectory(external/csv-parser)
+#add_subdirectory(external/csv-parser)
 # The csv-parser CMakeLists.txt leaves much to be desired
 # Let's fix some of the problems now
-if(NOT TARGET csv::csv)
-    add_library(csv::csv ALIAS csv)
-    target_include_directories(csv INTERFACE
-            external/csv-parser/include)
-    set_target_properties(csv PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+#if(NOT TARGET csv::csv)
+#    add_library(csv::csv ALIAS csv)
+#    target_include_directories(csv INTERFACE
+#            external/csv-parser/include)
+#    set_target_properties(csv PROPERTIES POSITION_INDEPENDENT_CODE ON)
+#endif()
 
-set(BUILD_DOC OFF CACHE INTERNAL "disable cereal docs")
-set(BUILD_SANDBOX OFF CACHE INTERNAL "disable cereal sandbox examples")
-set(SKIP_PERFORMANCE_COMPARISON ON CACHE INTERNAL "disable building cereal performance tests")
-add_subdirectory(external/cereal)
+#set(BUILD_DOC OFF CACHE INTERNAL "disable cereal docs")
+#set(BUILD_SANDBOX OFF CACHE INTERNAL "disable cereal sandbox examples")
+#set(SKIP_PERFORMANCE_COMPARISON ON CACHE INTERNAL "disable building cereal performance tests")
+#add_subdirectory(external/cereal)
 
 add_subdirectory(core)
 add_subdirectory(platform)
@@ -185,16 +206,13 @@ add_subdirectory(algebra)
 add_subdirectory(streams)
 add_subdirectory(roughpy)
 
-if(ROUGHPY_GENERATE_DEVICE_CODE)
+if (ROUGHPY_GENERATE_DEVICE_CODE)
     add_subdirectory(device)
-endif()
+endif ()
 
-if(ROUGHPY_BUILD_LA_CONTEXTS)
+if (ROUGHPY_BUILD_LA_CONTEXTS)
     add_subdirectory(la_context)
-endif()
-
-
-
+endif ()
 
 
 install(TARGETS
@@ -208,14 +226,14 @@ install(TARGETS
         EXPORT RoughPy_EXPORTS
         RUNTIME DESTINATION roughpy
         LIBRARY
-            DESTINATION roughpy
-            NAMELINK_SKIP
+        DESTINATION roughpy
+        NAMELINK_SKIP
         ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
-            COMPONENT Development
-            EXCLUDE_FROM_ALL
+        COMPONENT Development
+        EXCLUDE_FROM_ALL
         INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
-            COMPONENT Development
-            EXCLUDE_FROM_ALL
+        COMPONENT Development
+        EXCLUDE_FROM_ALL
         RUNTIME_DEPENDENCIES
         )
 
@@ -238,4 +256,4 @@ install(FILES
 #
 if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
     install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)
-endif()
+endif ()
