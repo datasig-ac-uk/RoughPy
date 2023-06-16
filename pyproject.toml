@@ -47,6 +47,10 @@ requires = [
 build-backend = "scikit_build_core.build"
 
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+
 [tool.scikit-build]
 wheel.packages = []
 cmake.build-type = "Release"
@@ -68,7 +72,7 @@ build-verbosity=1
 
 test-requires = ["pytest", "numpy"]
 test-command = [
-    "pytest --capture=no {project}/tests || echo 0"
+    "pytest --capture=no {project}"
 ]
 before-all = "bash tools/ci/before-all-common.sh"
 environment= "CMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake VCPKG_OVERLAY_TRIPLETS=./tools/ci/triplets"
@@ -80,7 +84,3 @@ repair-wheel-command = "delvewheel repair -w {dest_dir} --ignore-in-wheel {wheel
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
-test-command = [
-    "export LD_DEBUG=lib",
-    "pytest --capture=no {project}/tests || echo 0"
-]

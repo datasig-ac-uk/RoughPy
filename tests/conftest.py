@@ -2,6 +2,10 @@ import pytest
 
 from numpy.random import default_rng
 
+import sys
+print(sys.path)
+
+
 import roughpy
 from roughpy import _roughpy
 
