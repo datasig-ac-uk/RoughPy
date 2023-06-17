@@ -42,7 +42,7 @@ static py::object external_stream_constructor(string uri_string, const py::kwarg
         }
 
         if (!uri_result) {
-            throw py::value_error("could not parse uri " + uri_string);
+            throw py::value_error("could not parse path " + uri_string);
         }
     }
 

@@ -31,9 +31,9 @@ import roughpy
 import os
 
 
-@pytest.fixture(params=["audio/test.flac", "audio/test.mp3", "audio/test.wav"])
+@pytest.fixture(params=["test.flac", "test.mp3", "test.wav"])
 def sound_file(request):
-    return os.path.join(os.path.dirname(__file__), request.param)
+    return os.path.join(os.path.dirname(__file__), "audio", request.param)
 
 
 @pytest.fixture
