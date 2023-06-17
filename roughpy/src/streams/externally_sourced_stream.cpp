@@ -34,7 +34,7 @@ static py::object external_stream_constructor(string uri_string, const py::kwarg
         try {
             auto path = fs::path(uri_string);
             if (fs::exists(path)) {
-                uri_string = fs::absolute(path);
+                uri_string = static_cast<string>(fs::absolute(path));
                 uri_result = parse_uri_reference("file:///"+uri_string);
             }
         } catch (...) {
