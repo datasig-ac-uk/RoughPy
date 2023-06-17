@@ -31,12 +31,19 @@ static py::object external_stream_constructor(string uri_string, const py::kwarg
     auto uri_result = parse_uri_reference(uri_string);
 
     if (!uri_result) {
-        uri_result = parse_uri_reference("file:///"+uri_string);
-
-        if (!uri_result || !fs::exists(uri_string)) {
-            throw py::value_error("could not parse uri");
+        try {
+            auto path = fs::path(uri_string);
+            if (fs::exists(path)) {
+                uri_string = fs::absolute(path);
+                uri_result = parse_uri_reference("file:///"+uri_string);
+            }
+        } catch (...) {
+            throw py::value_error("could not parse uri " + uri_string);
         }
 
+        if (!uri_result) {
+            throw py::value_error("could not parse uri " + uri_string);
+        }
     }
 
     auto uri = *uri_result;
