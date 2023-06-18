@@ -166,7 +166,7 @@ struct Payload {
 ExternalDataStreamConstructor SoundFileDataSourceFactory::get_constructor(const url &uri) const {
     ExternalDataStreamConstructor ctor;
     if (!uri.has_scheme() || uri.scheme_id() == URIScheme::file) {
-        const fs::path path(uri.path());
+        fs::path path(uri.path());
 #ifdef RPY_PLATFORM_WINDOWS
         path.make_preferred();
 #endif
