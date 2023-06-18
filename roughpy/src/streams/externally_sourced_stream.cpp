@@ -6,6 +6,7 @@
 #include "externally_sourced_stream.h"
 
 #include <roughpy/core/helpers.h>
+#include <roughpy/core/macros.h>
 #include <roughpy/streams/external_data_stream.h>
 #include <roughpy/streams/stream.h>
 #include <roughpy/platform.h>
@@ -14,6 +15,9 @@
 #include "scalars/scalars.h"
 #include "scalars/scalar_type.h"
 #include "stream.h"
+
+
+#include <algorithm>
 
 
 using namespace rpy;
@@ -32,9 +36,9 @@ static py::object external_stream_constructor(string uri_string, const py::kwarg
 
     if (!uri_result) {
 
-#ifdef RPY_PLATFORM_WINDOWS
+//#ifdef RPY_PLATFORM_WINDOWS
         std::replace(uri_string.begin(), uri_string.end(), '\\', '/');
-#endif
+//#endif
         try {
             auto path = fs::path(uri_string);
             if (fs::exists(path)) {

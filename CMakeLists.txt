@@ -5,6 +5,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 
 file(READ "VERSION" _rpy_version)
 string(STRIP "${_rpy_version}" _rpy_version)
+list(APPEND VPCKG_INSTALL_OPTIONS "--no-print-usage")
 
 project(RoughPy VERSION ${_rpy_version})
 
