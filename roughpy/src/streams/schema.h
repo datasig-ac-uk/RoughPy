@@ -33,12 +33,10 @@
 #define ROUGHPY_ROUGHPY_SRC_STREAMS_SCHEMA_H
 
 #include "roughpy_module.h"
-#include <roughpy/streams/schema.h>
 
 namespace rpy { namespace python {
 
-std::shared_ptr<streams::StreamSchema> parse_schema_from_data(const py::object& data);
-std::shared_ptr<streams::StreamSchema> parse_schema(const py::object& data);
+
 
 
 void init_schema(py::module_& m);

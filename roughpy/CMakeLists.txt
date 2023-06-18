@@ -74,6 +74,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/args/kwargs_to_vector_construction.h
         src/args/numpy.cpp
         src/args/numpy.h
+        src/args/parse_schema.cpp
+        src/args/parse_schema.h
         src/intervals/dyadic.h
         src/intervals/dyadic.cpp
         src/intervals/dyadic_interval.cpp

@@ -31,6 +31,7 @@
 #include "roughpy_module.h"
 
 #include <roughpy/streams/stream_base.h>
+#include <roughpy/streams/schema.h>
 
 namespace rpy {
 namespace python {
@@ -44,6 +45,7 @@ struct PyStreamMetaData {
     const scalars::ScalarType* scalar_type;
     optional<algebra::VectorType> vector_type;
     resolution_t resolution;
+    std::shared_ptr<streams::StreamSchema> schema;
 };
 
 

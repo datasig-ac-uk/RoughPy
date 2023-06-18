@@ -31,6 +31,7 @@
 #include "scalars/scalar_type.h"
 
 #include "numpy.h"
+#include "parse_schema.h"
 
 using namespace rpy;
 
@@ -43,8 +44,20 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
         nullptr,// context
         nullptr,// scalar type
         {},     // vector type
-        0       // default resolution
+        0,      // default resolution
+        nullptr // schema
     };
+
+    if (kwargs.contains("schema")) {
+        auto schema = kwargs["schema"];
+        if (py::isinstance<streams::StreamSchema>(schema)) {
+            md.schema = schema.cast<std::shared_ptr<streams::StreamSchema>>();
+        } else {
+            md.schema = parse_schema(schema);
+        }
+    }
+
+
 
     if (kwargs.contains("ctx")) {
         auto ctx = kwargs["ctx"];
@@ -54,31 +67,49 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
         md.ctx = python::ctx_cast(ctx.ptr());
         md.width = md.ctx->width();
         md.scalar_type = md.ctx->ctype();
-    } else {
 
-        if (kwargs.contains("width")) {
+        if (md.schema && md.schema->width() != md.width) {
+            md.width = static_cast<deg_t>(md.schema->width());
+            md.ctx = md.ctx->get_alike(md.width, md.ctx->depth(), md.scalar_type);
+        }
+
+    } else {
+        if (md.schema) {
+            md.width = static_cast<deg_t>(md.schema->width());
+        } else if (kwargs.contains("width")) {
             md.width = kwargs["width"].cast<rpy::deg_t>();
         }
+
         if (kwargs.contains("depth")) {
             md.depth = kwargs["depth"].cast<rpy::deg_t>();
         }
-        if (kwargs.contains("ctype")) {
-            md.scalar_type = python::py_arg_to_ctype(kwargs["ctype"]);
-        }
-#ifdef ROUGHPY_WITH_NUMPY
-        else if (kwargs.contains("dtype")) {
+        if (kwargs.contains("dtype")) {
             auto dtype = kwargs["dtype"];
+#ifdef ROUGHPY_WITH_NUMPY
             if (py::isinstance<py::dtype>(dtype)) {
                 md.scalar_type = npy_dtype_to_ctype(dtype);
             } else {
                 md.scalar_type = py_arg_to_ctype(dtype);
             }
-        }
+#else
+            md.scalar_type = py_arg_to_ctype(dtype);
 #endif
+        }
     }
 
     if (kwargs.contains("vtype")) {
         md.vector_type = kwargs["vtype"].cast<algebra::VectorType>();
+    }
+
+    if (kwargs.contains("resolution")) {
+        md.resolution = kwargs["resolution"].cast<resolution_t>();
+    }
+
+    if (kwargs.contains("support")) {
+        auto support = kwargs["support"];
+        if (!py::isinstance<intervals::Interval>(support)) {
+            md.support = intervals::RealInterval(support.cast<const intervals::Interval&>());
+        }
     }
 
     return md;
