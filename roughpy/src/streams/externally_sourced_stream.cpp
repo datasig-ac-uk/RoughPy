@@ -37,12 +37,12 @@ static py::object external_stream_constructor(string uri_string, const py::kwarg
     if (!uri_result) {
 
 //#ifdef RPY_PLATFORM_WINDOWS
-        std::replace(uri_string.begin(), uri_string.end(), '\\', '/');
 //#endif
         try {
             auto path = fs::path(uri_string);
             if (fs::exists(path)) {
                 uri_string = fs::absolute(path).string();
+                std::replace(uri_string.begin(), uri_string.end(), '\\', '/');
                 uri_result = parse_uri_reference(uri_string);
             }
         } catch (...) {
