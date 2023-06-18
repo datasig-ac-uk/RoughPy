@@ -73,7 +73,7 @@ build-verbosity=1
 
 test-requires = ["pytest", "numpy"]
 test-command = [
-    "pytest --capture=no {project}/tests"
+    "pytest {project}/tests"
 ]
 before-all = "bash tools/ci/before-all-common.sh"
 environment= "CMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake VCPKG_OVERLAY_TRIPLETS=./tools/ci/triplets"
