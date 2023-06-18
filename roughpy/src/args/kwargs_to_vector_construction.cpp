@@ -44,8 +44,8 @@ python::PyVectorConstructionHelper python::kwargs_to_construction_data(const pyb
         helper.ctype = helper.ctx->ctype();
         helper.ctype_requested = true;
     } else {
-        if (kwargs.contains("ctype")) {
-            helper.ctype = py_arg_to_ctype(kwargs["ctype"]);
+        if (kwargs.contains("dtype")) {
+            helper.ctype = py_arg_to_ctype(kwargs["dtype"]);
             helper.ctype_requested = true;
         }
 

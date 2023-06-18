@@ -9,14 +9,11 @@
 
 #include <boost/url.hpp>
 #include <boost/url/parse.hpp>
+
 #include <boost/dll/shared_library.hpp>
-#include <boost/log/trivial.hpp>
 
 #include "platform/filesystem.h"
 #include "platform/configuration.h"
-
-#define RPY_LOG(LEVEL) BOOST_LOG_TRIVIAL(LEVEL)
-
 
 namespace rpy {
 
@@ -29,7 +26,6 @@ using URIScheme = boost::urls::scheme;
 
 
 using boost::dll::shared_library;
-
 
 
 }

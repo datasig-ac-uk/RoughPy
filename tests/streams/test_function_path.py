@@ -21,7 +21,7 @@ def test_function_path_signature_calc_accuracy():
             return Lie(np.array([t - 0.5, t - 0.5]), ctx=ctx)
         return Lie(np.array([0.0, 0.0]), ctx=ctx)
 
-    p = path(func, width=2, depth=2, ctype=rp.DPReal)
+    p = path(func, width=2, depth=2, dtype=rp.DPReal)
 
     r1 = p.signature(0.0, 0.8, 1)
     expected1 = FreeTensor(np.array([1.0]), width=2, depth=2)
@@ -61,7 +61,7 @@ def test_fpath_known_signature_calc(width, depth, solution_signature):
     def func(t, ctx):
         return Lie(np.arange(1.0, width+1)*t, ctx=ctx)
 
-    p = path(func, width=width, depth=depth, ctype=rp.DPReal)
+    p = path(func, width=width, depth=depth, dtype=rp.DPReal)
 
 
     expected = FreeTensor(solution_signature(0.0, 2.0), ctx=p.ctx)
@@ -79,7 +79,7 @@ def deriv_function_path():
 
 
 def test_func_sig_deriv_s_width_3_depth_1_let_2_perturb(deriv_function_path):
-    p = path(deriv_function_path, width=3, depth=1, ctype=rp.DPReal)
+    p = path(deriv_function_path, width=3, depth=1, dtype=rp.DPReal)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), ctx=p.ctx)
     interval = RealInterval(0.0, 1.0)
 
@@ -91,7 +91,7 @@ def test_func_sig_deriv_s_width_3_depth_1_let_2_perturb(deriv_function_path):
 
 
 def test_func_sig_deriv_s_width_3_depth_2_let_2_perturb(deriv_function_path):
-    p = path(deriv_function_path, width=3, depth=2, ctype=rp.DPReal)
+    p = path(deriv_function_path, width=3, depth=2, dtype=rp.DPReal)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), ctx=p.ctx)
     interval = RealInterval(0.0, 1.0)
 
@@ -108,7 +108,7 @@ def test_func_sig_deriv_s_width_3_depth_2_let_2_perturb(deriv_function_path):
 
 
 def test_func_sig_deriv_m_width_3_depth_1_let_2_perturb(deriv_function_path):
-    p = path(deriv_function_path, width=3, depth=1, ctype=rp.DPReal)
+    p = path(deriv_function_path, width=3, depth=1, dtype=rp.DPReal)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), ctx=p.ctx)
     interval = RealInterval(0.0, 1.0)
 
@@ -121,7 +121,7 @@ def test_func_sig_deriv_m_width_3_depth_1_let_2_perturb(deriv_function_path):
 
 
 def test_func_sig_deriv_m_width_3_depth_2_let_2_perturb(deriv_function_path):
-    p = path(deriv_function_path, width=3, depth=2, ctype=rp.DPReal)
+    p = path(deriv_function_path, width=3, depth=2, dtype=rp.DPReal)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), ctx=p.ctx)
     interval = RealInterval(0.0, 1.0)
 
