@@ -167,6 +167,9 @@ ExternalDataStreamConstructor SoundFileDataSourceFactory::get_constructor(const 
     ExternalDataStreamConstructor ctor;
     if (!uri.has_scheme() || uri.scheme_id() == URIScheme::file) {
         const fs::path path(uri.path());
+#ifdef RPY_PLATFORM_WINDOWS
+        path.make_preferred();
+#endif
 
         if (exists(path) && is_regular_file(path)) {
 
