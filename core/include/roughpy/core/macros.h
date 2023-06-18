@@ -75,7 +75,7 @@
 #  define RPY_PLATFORM_LINUX 1
 #elif defined(__APPLE__) && defined(__MACH__)
 #  define RPY_PLATFORM_MACOS 1
-#elif defined(_WIN32)
+#elif defined(_WIN32) || defined(WIN32)
 #  define RPY_PLATFORM_WINDOWS 1
 #endif
 
