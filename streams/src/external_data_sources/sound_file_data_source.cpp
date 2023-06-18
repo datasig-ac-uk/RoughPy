@@ -174,7 +174,7 @@ ExternalDataStreamConstructor SoundFileDataSourceFactory::get_constructor(const 
         if (exists(path) && is_regular_file(path)) {
 
             auto* payload = new Payload {
-                SndfileHandle(uri.path())
+                SndfileHandle(path.c_str())
             };
 
             if (payload->handle.error() != 0) {
