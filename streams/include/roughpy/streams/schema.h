@@ -35,7 +35,9 @@
 #include <roughpy/core/types.h>
 #include <roughpy/core/traits.h>
 
+#include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/platform/serialization.h>
+
 
 #include <boost/container/flat_map.hpp>
 #include <variant>
@@ -50,14 +52,20 @@ namespace streams {
 enum struct ChannelType : uint8_t {
     Increment = 0,
     Value = 1,
-    Categorical = 2
+    Categorical = 2,
+    Lie = 3
 };
 
-struct ChannelIncrementInfo {};
-struct ChannelValueInfo {};
+struct IncrementChannelInfo {};
+struct ValueChannelInfo {};
 
-struct ChannelCategoricalIncrementInfo {
+struct CategoricalChannelInfo {
     std::vector<string> variants;
+};
+struct LieChannelInfo {
+    deg_t width;
+    deg_t depth;
+    algebra::VectorType vtype;
 };
 
 //struct StreamChannel {
@@ -78,9 +86,10 @@ struct ChannelCategoricalIncrementInfo {
 class StreamChannel {
     ChannelType m_type;
     union {
-        ChannelIncrementInfo increment_info;
-        ChannelValueInfo value_info;
-        ChannelCategoricalIncrementInfo categorical_info;
+        IncrementChannelInfo increment_info;
+        ValueChannelInfo value_info;
+        CategoricalChannelInfo categorical_info;
+        LieChannelInfo lie_info;
     };
 
     template <typename T>
@@ -102,6 +111,8 @@ public:
                 return 2;
             case ChannelType::Categorical:
                 return categorical_info.variants.size();
+            case ChannelType::Lie:
+                return lie_info.width;
         }
         RPY_UNREACHABLE();
     }
@@ -115,15 +126,15 @@ public:
 
     explicit StreamChannel(ChannelType type);
 
-    explicit StreamChannel(ChannelIncrementInfo&& info)
+    explicit StreamChannel(IncrementChannelInfo && info)
         : m_type(ChannelType::Increment), increment_info(std::move(info))
     {}
 
-    explicit StreamChannel(ChannelValueInfo&& info)
+    explicit StreamChannel(ValueChannelInfo && info)
         : m_type(ChannelType::Value), value_info(std::move(info))
     {}
 
-    explicit StreamChannel(ChannelCategoricalIncrementInfo&& info)
+    explicit StreamChannel(CategoricalChannelInfo && info)
         : m_type(ChannelType::Categorical), categorical_info(std::move(info))
     {}
 
@@ -133,14 +144,14 @@ public:
     StreamChannel& operator=(const StreamChannel& other);
     StreamChannel& operator=(StreamChannel&& other) noexcept;
 
-    StreamChannel& operator=(ChannelIncrementInfo&& info) {
+    StreamChannel& operator=(IncrementChannelInfo && info) {
         this->~StreamChannel();
         m_type = ChannelType::Increment;
         inplace_construct(&increment_info, std::move(info));
         return *this;
     }
 
-    StreamChannel& operator=(ChannelValueInfo&& info) {
+    StreamChannel& operator=(ValueChannelInfo && info) {
         this->~StreamChannel();
         m_type = ChannelType::Value;
         inplace_construct(&value_info, std::move(info));
@@ -148,7 +159,7 @@ public:
     }
 
 
-    StreamChannel& operator=(ChannelCategoricalIncrementInfo&& info) {
+    StreamChannel& operator=(CategoricalChannelInfo && info) {
         this->~StreamChannel();
         m_type = ChannelType::Categorical;
         inplace_construct(&categorical_info, std::move(info));
@@ -269,18 +280,24 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_SERIALIZE_FN_EXT(ChannelIncrementInfo) {
+RPY_SERIAL_SERIALIZE_FN_EXT(IncrementChannelInfo) {
     (void) value;
     RPY_SERIAL_SERIALIZE_NVP("data", 0);
 }
 
-RPY_SERIAL_SERIALIZE_FN_EXT(ChannelValueInfo) {
+RPY_SERIAL_SERIALIZE_FN_EXT(ValueChannelInfo) {
     (void) value;
     RPY_SERIAL_SERIALIZE_NVP("data", 0);
 }
 
-RPY_SERIAL_SERIALIZE_FN_EXT(ChannelCategoricalIncrementInfo) {
+RPY_SERIAL_SERIALIZE_FN_EXT(CategoricalChannelInfo) {
     RPY_SERIAL_SERIALIZE_NVP("variants", value.variants);
+}
+
+RPY_SERIAL_SERIALIZE_FN_EXT(LieChannelInfo) {
+    RPY_SERIAL_SERIALIZE_NVP("width", value.width);
+    RPY_SERIAL_SERIALIZE_NVP("depth", value.depth);
+    RPY_SERIAL_SERIALIZE_NVP("vector_type", value.vtype);
 }
 
 
@@ -296,6 +313,9 @@ RPY_SERIAL_SAVE_FN_IMPL(StreamChannel) {
         case ChannelType::Categorical:
             RPY_SERIAL_SERIALIZE_NVP("categorical", categorical_info);
             break;
+        case ChannelType::Lie:
+            RPY_SERIAL_SERIALIZE_NVP("lie", lie_info);
+            break;
     }
 }
 
@@ -303,16 +323,20 @@ RPY_SERIAL_LOAD_FN_IMPL(StreamChannel) {
     RPY_SERIAL_SERIALIZE_NVP("type", m_type);
     switch (m_type) {
         case ChannelType::Increment:
-            ::new (&increment_info) ChannelIncrementInfo;
+            ::new (&increment_info) IncrementChannelInfo;
             RPY_SERIAL_SERIALIZE_NVP("increment", increment_info);
             break;
         case ChannelType::Value:
-            ::new (&value_info) ChannelValueInfo;
+            ::new (&value_info) ValueChannelInfo;
             RPY_SERIAL_SERIALIZE_NVP("value", value_info);
             break;
         case ChannelType::Categorical:
-            ::new (&categorical_info) ChannelCategoricalIncrementInfo;
+            ::new (&categorical_info) CategoricalChannelInfo;
             RPY_SERIAL_SERIALIZE_NVP("categorical", categorical_info);
+            break;
+        case ChannelType::Lie:
+            ::new (&lie_info) LieChannelInfo;
+            RPY_SERIAL_SERIALIZE_NVP("lie", lie_info);
             break;
     }
 }

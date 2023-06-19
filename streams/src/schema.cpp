@@ -52,6 +52,9 @@ StreamChannel::StreamChannel(const StreamChannel &arg)
         case ChannelType::Categorical:
             inplace_construct(&categorical_info, arg.categorical_info);
             break;
+        case ChannelType::Lie:
+            inplace_construct(&lie_info, arg.lie_info);
+            break;
     }
 }
 StreamChannel::StreamChannel(StreamChannel &&arg) noexcept
@@ -66,6 +69,9 @@ StreamChannel::StreamChannel(StreamChannel &&arg) noexcept
         case ChannelType::Categorical:
             inplace_construct(&categorical_info, arg.categorical_info);
             break;
+        case ChannelType::Lie:
+            inplace_construct(&lie_info, arg.lie_info);
+            break;
     }
 }
 
@@ -73,13 +79,16 @@ StreamChannel::StreamChannel(ChannelType type)
     : m_type(type) {
     switch (m_type) {
         case ChannelType::Increment:
-            inplace_construct(&increment_info, ChannelIncrementInfo());
+            inplace_construct(&increment_info, IncrementChannelInfo());
             break;
         case ChannelType::Value:
-            inplace_construct(&value_info, ChannelValueInfo());
+            inplace_construct(&value_info, ValueChannelInfo());
             break;
         case ChannelType::Categorical:
-            inplace_construct(&categorical_info, ChannelCategoricalIncrementInfo());
+            inplace_construct(&categorical_info, CategoricalChannelInfo());
+            break;
+        case ChannelType::Lie:
+            inplace_construct(&lie_info, LieChannelInfo());
             break;
     }
 }
@@ -97,6 +106,9 @@ StreamChannel &StreamChannel::operator=(const StreamChannel &other) {
                 break;
             case ChannelType::Categorical:
                 inplace_construct(&categorical_info, other.categorical_info);
+                break;
+            case ChannelType::Lie:
+                inplace_construct(&lie_info, other.lie_info);
                 break;
         }
     }
@@ -116,6 +128,9 @@ StreamChannel &StreamChannel::operator=(StreamChannel &&other) noexcept {
             case ChannelType::Categorical:
                 inplace_construct(&categorical_info, std::move(other.categorical_info));
                 break;
+            case ChannelType::Lie:
+                inplace_construct(&lie_info, std::move(other.lie_info));
+                break;
         }
     }
     return *this;
@@ -131,13 +146,16 @@ StreamSchema::StreamSchema(dimn_t width) {
 StreamChannel::~StreamChannel() {
     switch (m_type) {
         case ChannelType::Increment:
-            increment_info.~ChannelIncrementInfo();
+            increment_info.~IncrementChannelInfo();
             break;
         case ChannelType::Value:
-            value_info.~ChannelValueInfo();
+            value_info.~ValueChannelInfo();
             break;
         case ChannelType::Categorical:
-            categorical_info.~ChannelCategoricalIncrementInfo();
+            categorical_info.~CategoricalChannelInfo();
+            break;
+        case ChannelType::Lie:
+            lie_info.~LieChannelInfo();
             break;
     }
 }
@@ -152,6 +170,9 @@ string StreamChannel::label_suffix(dimn_t variant_no) const {
         case ChannelType::Categorical:
             RPY_CHECK(variant_no < categorical_info.variants.size());
             return ":" + categorical_info.variants[variant_no];
+        case ChannelType::Lie:
+            RPY_CHECK(variant_no < lie_info.width);
+            return ":" + std::to_string(variant_no);
     }
     RPY_UNREACHABLE();
 }
@@ -170,6 +191,10 @@ dimn_t StreamChannel::variant_id_of_label(string_view label) const {
             }
         case ChannelType::Categorical:
             break;
+        case ChannelType::Lie:
+            deg_t i = std::stoi(string(label));
+            RPY_CHECK(i < lie_info.width);
+            return i;
     }
 
     auto it = std::find(categorical_info.variants.begin(), categorical_info.variants.end(), label);
@@ -209,6 +234,12 @@ std::vector<string> StreamChannel::get_variants() const {
             break;
         case ChannelType::Categorical:
             variants = categorical_info.variants;
+            break;
+        case ChannelType::Lie:
+            variants.reserve(lie_info.width);
+            for (deg_t i=0; i<lie_info.width; ++i) {
+                variants.push_back(std::to_string(i));
+            }
             break;
     }
     return variants;
@@ -386,13 +417,13 @@ StreamChannel &StreamSchema::insert(StreamChannel &&channel_data) {
 }
 
 StreamChannel &StreamSchema::insert_increment(string label) {
-    return insert(std::move(label), StreamChannel(ChannelIncrementInfo()));
+    return insert(std::move(label), StreamChannel(IncrementChannelInfo()));
 }
 StreamChannel &StreamSchema::insert_value(string label) {
-    return insert(std::move(label), StreamChannel(ChannelValueInfo()));
+    return insert(std::move(label), StreamChannel(ValueChannelInfo()));
 }
 StreamChannel &StreamSchema::insert_categorical(string label) {
-    return insert(std::move(label), StreamChannel(ChannelCategoricalIncrementInfo()));
+    return insert(std::move(label), StreamChannel(CategoricalChannelInfo()));
 }
 
 
@@ -402,15 +433,19 @@ StreamChannel &StreamSchema::insert_categorical(string label) {
 #include <roughpy/platform/serialization_instantiations.inl>
 
 #define RPY_SERIAL_EXTERNAL rpy::streams
-#define RPY_SERIAL_IMPL_CLASSNAME ChannelIncrementInfo
+#define RPY_SERIAL_IMPL_CLASSNAME IncrementChannelInfo
 #include <roughpy/platform/serialization_instantiations.inl>
 
 #define RPY_SERIAL_EXTERNAL rpy::streams
-#define RPY_SERIAL_IMPL_CLASSNAME ChannelValueInfo
+#define RPY_SERIAL_IMPL_CLASSNAME ValueChannelInfo
 #include <roughpy/platform/serialization_instantiations.inl>
 
 #define RPY_SERIAL_EXTERNAL rpy::streams
-#define RPY_SERIAL_IMPL_CLASSNAME ChannelCategoricalIncrementInfo
+#define RPY_SERIAL_IMPL_CLASSNAME CategoricalChannelInfo
+#include <roughpy/platform/serialization_instantiations.inl>
+
+#define RPY_SERIAL_EXTERNAL rpy::streams
+#define RPY_SERIAL_IMPL_CLASSNAME LieChannelInfo
 #include <roughpy/platform/serialization_instantiations.inl>
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamSchema
