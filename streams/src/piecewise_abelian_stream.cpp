@@ -123,6 +123,7 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(std::vector<LiePiece> &&data, Str
     std::shared_ptr<StreamSchema> schema;
     auto& info = schema->insert_lie("0");
     info.set_lie_info(meta.width, meta.default_context->depth(), meta.cached_vector_type);
+    set_schema(std::move(schema));
 }
 bool PiecewiseAbelianStream::empty(const Interval &interval) const noexcept {
     return StreamInterface::empty(interval);
