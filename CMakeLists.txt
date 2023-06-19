@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.21)
 
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
+list(APPEND VPCKG_INSTALL_OPTIONS "--no-print-usage")
 
 file(READ "VERSION.txt" _rpy_version)
-string(STRIP "${_rpy_version}" _rpy_version)
-list(APPEND VPCKG_INSTALL_OPTIONS "--no-print-usage")
+string(REGEX MATCH "^([0-9]+\\.[0-9]+\\.[0-9]+)" _rpy_version "${_rpy_version}")
+
 
 project(RoughPy VERSION ${_rpy_version})
 
