@@ -32,29 +32,30 @@ static const char* EXTERNALLY_SOURCED_STREAM_DOC = R"rpydoc(A stream that acquir
 static py::object external_stream_constructor(string uri_string, const py::kwargs& kwargs) {
     const auto pmd = python::kwargs_to_metadata(kwargs);
 
+    url uri;
     auto uri_result = parse_uri_reference(uri_string);
 
     if (!uri_result) {
 
         try {
             auto path = fs::path(uri_string);
-            uri_string = "file:///" + fs::absolute(path).string();
+            uri_string = fs::absolute(path).string();
 #ifdef RPY_PLATFORM_WINDOWS
             std::replace(uri_string.begin(), uri_string.end(), '\\', '/');
 #endif
             if (fs::exists(path)) {
-                uri_result = parse_uri_reference(uri_string);
+                uri = url();
+                uri.set_scheme_id(URIScheme::file);
+                uri.set_path(uri_string);
             }
         } catch (...) {
-            throw py::value_error("could not parse uri " + uri_string + " error code " + uri_result.error().message());
-        }
-
-        if (!uri_result) {
             throw py::value_error("could not parse path " + uri_string + " error code " + uri_result.error().message());
         }
+
+    } else {
+        uri = *uri_result;
     }
 
-    auto uri = *uri_result;
 
     auto factory = streams::ExternalDataStream::get_factory_for(uri);
 
