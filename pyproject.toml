@@ -73,6 +73,7 @@ ROUGHPY_BUILD_TESTS = "OFF"
 write_to = "VERSION.txt"
 tag_regex = "^(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$"
 version_scheme = "release-branch-semver"
+local_scheme = "no-local-scheme"
 
 [tool.cibuildwheel]
 skip = [
