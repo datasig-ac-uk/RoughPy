@@ -3,11 +3,40 @@
 //
 
 #include "parse_schema.h"
+#include <cctype>
 
 using namespace rpy;
 using namespace rpy::python;
 using namespace rpy::streams;
 
+streams::ChannelType rpy::python::string_to_channel_type(string channel_str) {
+    std::transform(channel_str.begin(), channel_str.end(), channel_str.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    if (channel_str == "increment") {
+        return streams::ChannelType::Increment;
+    } else if (channel_str == "value") {
+        return streams::ChannelType::Value;
+    } else if (channel_str == "categorical") {
+        return streams::ChannelType::Categorical;
+    } else if (channel_str == "lie") {
+        return streams::ChannelType::Lie;
+    } else {
+        throw py::value_error("expected increment, value, categorical, or lie for channel type");
+    }
+}
+
+streams::ChannelType py_to_channel_type(const py::object &arg) {
+    if (py::isinstance<streams::ChannelType>(arg)) {
+        return arg.cast<streams::ChannelType>();
+    }
+
+    if (py::isinstance<py::str>(arg)) {
+        return string_to_channel_type(arg.cast<string>());
+    }
+
+    throw py::type_error("no know conversion from " + arg.get_type().attr("__name__").cast<string>() + " to channel type");
+}
 
 static std::shared_ptr<StreamSchema> parse_schema_from_dict_data(const py::dict &dict_data) {
     std::shared_ptr<StreamSchema> result(new StreamSchema);

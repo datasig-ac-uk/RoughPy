@@ -58,6 +58,7 @@ inline void init_channel_item(py::module_& m) {
         .value("Increment", ChannelType::Increment)
         .value("Value", ChannelType::Value)
         .value("Categorical", ChannelType::Categorical)
+        .value("Lie", ChannelType::Lie)
         .export_values();
 
     py::class_<StreamChannel> cls(m, "StreamChannel");

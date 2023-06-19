@@ -11,6 +11,10 @@
 namespace rpy {
 namespace python {
 
+streams::ChannelType string_to_channel_type(string channel_str);
+
+streams::ChannelType py_to_channel_type(const py::object& arg);
+
 std::shared_ptr<streams::StreamSchema> parse_schema_from_data(const py::object &data);
 std::shared_ptr<streams::StreamSchema> parse_schema(const py::object &data);
 

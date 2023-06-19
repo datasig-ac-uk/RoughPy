@@ -27,6 +27,8 @@
 
 #include "kwargs_to_path_metadata.h"
 
+#include <memory>
+
 #include "algebra/context.h"
 #include "scalars/scalar_type.h"
 
@@ -48,6 +50,8 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
         nullptr // schema
     };
 
+    streams::ChannelType ch_type;
+
     if (kwargs.contains("schema")) {
         auto schema = kwargs["schema"];
         if (py::isinstance<streams::StreamSchema>(schema)) {
@@ -55,8 +59,64 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
         } else {
             md.schema = parse_schema(schema);
         }
-    }
+    } else if (kwargs.contains("channel_types")) {
+        auto channels = kwargs["channel_types"];
 
+        // homogeneous channel types
+        if (py::isinstance<streams::ChannelType>(channels)) {
+            ch_type = channels.cast<streams::ChannelType>();
+        } else if (py::isinstance<py::str>(channels)) {
+            ch_type = string_to_channel_type(channels.cast<string>());
+
+        // labelled heterogeneous channel types
+        } else if (py::isinstance<py::dict>(channels)) {
+            auto channel_dict = py::reinterpret_borrow<py::dict>(channels);
+            md.schema = std::make_shared<streams::StreamSchema>();
+
+            for (auto&& [label, item] : channel_dict) {
+                switch (python::py_to_channel_type(py::reinterpret_borrow<py::object>(item))) {
+                    case streams::ChannelType::Increment:
+                        md.schema->insert_increment(label.cast<string>());
+                        break;
+                    case streams::ChannelType::Value:
+                        md.schema->insert_value(label.cast<string>());
+                        break;
+                    case streams::ChannelType::Categorical:
+                        md.schema->insert_categorical(label.cast<string>());
+                        break;
+                    case streams::ChannelType::Lie:
+                        md.schema->insert_lie(label.cast<string>());
+                        break;
+                }
+            }
+
+        // unlabelled heterogeneous channel types
+        } else if (py::isinstance<py::sequence>(channels)) {
+            auto channel_list = py::reinterpret_borrow<py::sequence>(channels);
+            md.schema = std::make_shared<streams::StreamSchema>();
+
+            for (auto &&item : channel_list) {
+                switch (python::py_to_channel_type(py::reinterpret_borrow<py::object>(item))) {
+                    case streams::ChannelType::Increment:
+                        md.schema->insert_increment("");
+                        break;
+                    case streams::ChannelType::Value:
+                        md.schema->insert_value("");
+                        break;
+                    case streams::ChannelType::Categorical:
+                        md.schema->insert_categorical("");
+                        break;
+                    case streams::ChannelType::Lie:
+                        md.schema->insert_lie("");
+                        break;
+                }
+            }
+        }
+
+    // Unset channel to, assume homogeneous increments
+    } else {
+        ch_type = streams::ChannelType::Increment;
+    }
 
 
     if (kwargs.contains("ctx")) {
