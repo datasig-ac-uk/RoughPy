@@ -165,21 +165,17 @@ struct Payload {
 
 ExternalDataStreamConstructor SoundFileDataSourceFactory::get_constructor(const url &uri) const {
     ExternalDataStreamConstructor ctor;
-    std::cerr << "Trying sound file path with " << uri << '\n';
     if (!uri.has_scheme() || uri.scheme_id() == URIScheme::file) {
         fs::path path(uri.path());
 #ifdef RPY_PLATFORM_WINDOWS
         path.make_preferred();
 #endif
-        std::cerr << "The path is " << path << '\n';
         if (exists(path) && is_regular_file(path)) {
-            std::cerr << "Is fs path and exists" << '\n';
             auto* payload = new Payload {
                 SndfileHandle(path.c_str())
             };
 
             if (payload->handle.error() != 0) {
-                std::cerr << "Error happened " << payload->handle.error() << '\n';
                 delete payload;
                 return ctor;
             }
