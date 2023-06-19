@@ -138,6 +138,9 @@ public:
         : m_type(ChannelType::Categorical), categorical_info(std::move(info))
     {}
 
+    explicit StreamChannel(LieChannelInfo&& info)
+        : m_type(ChannelType::Lie), lie_info(std::move(info))
+    {}
 
     ~StreamChannel();
 
@@ -168,6 +171,8 @@ public:
 
     RPY_NO_DISCARD
     dimn_t variant_id_of_label(string_view label) const;
+
+    void set_lie_info(deg_t width, deg_t depth, algebra::VectorType vtype);
 
     StreamChannel& add_variant(string variant_label);
 
@@ -276,6 +281,7 @@ public:
     StreamChannel& insert_increment(string label);
     StreamChannel& insert_value(string label);
     StreamChannel& insert_categorical(string label);
+    StreamChannel& insert_lie(string label);
 
     RPY_SERIAL_SERIALIZE_FN();
 };

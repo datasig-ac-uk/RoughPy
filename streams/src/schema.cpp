@@ -177,6 +177,13 @@ string StreamChannel::label_suffix(dimn_t variant_no) const {
     RPY_UNREACHABLE();
 }
 
+void StreamChannel::set_lie_info(deg_t width, deg_t depth, algebra::VectorType vtype) {
+    RPY_CHECK(m_type == ChannelType::Lie);
+    lie_info.width = width;
+    lie_info.depth = depth;
+    lie_info.vtype = vtype;
+}
+
 dimn_t StreamChannel::variant_id_of_label(string_view label) const {
     switch (m_type) {
         case ChannelType::Increment:
@@ -425,8 +432,9 @@ StreamChannel &StreamSchema::insert_value(string label) {
 StreamChannel &StreamSchema::insert_categorical(string label) {
     return insert(std::move(label), StreamChannel(CategoricalChannelInfo()));
 }
-
-
+StreamChannel &StreamSchema::insert_lie(string label) {
+    return insert(std::move(label), StreamChannel(LieChannelInfo()));
+}
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamChannel
 #define RPY_SERIAL_DO_SPLIT
