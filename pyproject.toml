@@ -67,6 +67,7 @@ ROUGHPY_BUILD_TESTS = "OFF"
 
 [tool.setuptools_scm]
 write_to = "VERSION"
+fallback_version = "0.0.1"
 
 [tool.cibuildwheel]
 skip = [
