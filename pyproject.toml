@@ -70,7 +70,6 @@ ROUGHPY_BUILD_TESTS = "OFF"
 
 [tool.setuptools_scm]
 write_to = "VERSION.txt"
-fallback_version = "0.0.1"
 tag_regex = "^(?P<section>Releases/)?(?P<prefix>/v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$"
 
 [tool.cibuildwheel]

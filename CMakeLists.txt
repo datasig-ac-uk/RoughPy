@@ -5,7 +5,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 list(APPEND VPCKG_INSTALL_OPTIONS "--no-print-usage")
 
 file(READ "VERSION.txt" _rpy_version)
-string(REGEX MATCH "^([0-9]+\\.[0-9]+\\.[0-9]+)" _rpy_version "${_rpy_version}")
+string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" _rpy_version "${_rpy_version}")
 
 
 project(RoughPy VERSION ${_rpy_version})
