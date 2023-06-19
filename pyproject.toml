@@ -3,7 +3,8 @@
 name = "RoughPy"
 author = "The RoughPy Authors"
 author_email = "info@datasig.ac.uk"
-license = {file = "LICENSE.txt" }
+#license = {file = "LICENSE.txt" }
+license = { text = "BSD-3-Clause" }
 keywords = [
     "data",
     "streams",
