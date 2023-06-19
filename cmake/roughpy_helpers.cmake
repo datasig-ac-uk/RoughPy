@@ -5,6 +5,7 @@ include(GoogleTest OPTIONAL)
 
 
 set(ROUGHPY_LIBS CACHE INTERNAL "")
+set(ROUGHPY_RUNTIME_DEPS CACHE INTERNAL "")
 
 function(_get_component_name _out_var _component)
     string(SUBSTRING ${_component} 0 1 _first_letter)
@@ -35,9 +36,45 @@ function(_check_and_set_libtype _out _shared _static _interface)
     else ()
         set(${_out} SHARED PARENT_SCOPE)
     endif ()
-
-
 endfunction()
+
+function(_check_runtime_component _library _out_var)
+    get_target_property(_imported ${_library} IMPORTED)
+    if (_imported)
+        get_target_property(_imported_loc ${_library} IMPORTED_LOCATION)
+        set(${_out_var} ${_imported_loc} PARENT_SCOPE)
+    else()
+        get_target_property(_lib_out_name ${_library} LIBRARY_OUTPUT_NAME)
+        get_target_property(_lib_out_dir ${_library} LIBRARY_OUTPUT_DIRECTORY)
+
+        set(${_out_var} "${_lib_out_dir}/${_lib_out_name}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(_check_runtime_deps _deps)
+    set(_these_deps)
+    foreach (_dep IN LISTS _deps)
+        if (NOT _dep MATCHES RoughPy)
+            if ("$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "SHARED_LIBRARY"
+                    OR "$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "MODULE_LIBRARY")
+                _check_runtime_component(${_dep} ${_this_dep})
+                message(STATUS "Runtime dependency added: ${_this_dep}")
+                list(APPEND _these_deps ${_this_dep})
+            endif()
+
+            if (_dep MATCHES "MKL" AND DEFINED MKL_THREAD_LIB)
+                message(STATUS "Runtime dependency added: ${MKL_THREAD_LIB}")
+                list(APPEND _these_deps "${MKL_THREAD_LIB}")
+            endif()
+        endif()
+    endforeach()
+    if (ROUGHPY_RUNTIME_DEPS)
+        set(ROUGHPY_RUNTIME_DEPS "${ROUGHPY_RUNTIME_DEPS};${_these_deps}" CACHE INTERNAL "")
+    else()
+        set(ROUGHPY_RUNTIME_DEPS "${_these_deps}" CACHE INTERNAL "")
+    endif()
+endfunction()
+
 
 function(add_roughpy_lib _name)
     cmake_parse_arguments(
@@ -113,6 +150,9 @@ function(add_roughpy_lib _name)
         target_sources(${_real_name} INTERFACE ${ARG_PUBLIC_HEADERS})
         target_link_libraries(${_real_name} INTERFACE ${ARG_PUBLIC_DEPS})
     endif ()
+
+    _check_runtime_deps("${ARG_PUBLIC_DEPS}")
+    _check_runtime_deps("${ARG_PRIVATE_DEPS}")
 
     set_target_properties(${_real_name} PROPERTIES
             PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"

@@ -234,7 +234,6 @@ install(TARGETS
         INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
         COMPONENT Development
         EXCLUDE_FROM_ALL
-        RUNTIME_DEPENDENCIES
         )
 
 install(FILES
@@ -244,6 +243,9 @@ install(FILES
         roughpy/version.py
         DESTINATION roughpy
         )
+
+install(FILES ${ROUGHPY_RUNTIME_DEPS} DESTINATION roughpy)
+
 #
 #install(EXPORT RoughPy_EXPORTS
 #        DESTINATION roughpy
@@ -254,6 +256,6 @@ install(FILES
 #        )
 #
 #
-if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
-    install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)
-endif ()
+#if (TARGET MKL::MKL AND DEFINED MKL_THREAD_LIB)
+#    install(FILES ${MKL_THREAD_LIB} DESTINATION roughpy)
+#endif ()

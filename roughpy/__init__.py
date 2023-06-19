@@ -6,6 +6,10 @@ import platform
 
 from pathlib import Path
 
+try:
+    __version__ = _ilm.version("RoughPy")
+except _ilm.PackageNotFoundError:
+    __version__ = "0.0.0"
 
 
 def _add_dynload_location(path: Path):
