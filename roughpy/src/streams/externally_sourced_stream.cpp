@@ -38,7 +38,7 @@ static py::object external_stream_constructor(string uri_string, const py::kwarg
 
         try {
             auto path = fs::path(uri_string);
-            uri_string = fs::absolute(path).string();
+            uri_string = "file:///" + fs::absolute(path).string();
 #ifdef RPY_PLATFORM_WINDOWS
             std::replace(uri_string.begin(), uri_string.end(), '\\', '/');
 #endif
