@@ -30,6 +30,7 @@
 //
 
 #include "piecewise_abelian_stream.h"
+#include "schema.h"
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -120,8 +121,8 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(std::vector<LiePiece> &&data, Str
 //    }
 
     const auto& meta = metadata();
-    std::shared_ptr<StreamSchema> schema;
-    auto& info = schema->insert_lie("0");
+    auto schema = std::make_shared<streams::StreamSchema>();
+    auto& info = schema->insert_lie("");
     info.set_lie_info(meta.width, meta.default_context->depth(), meta.cached_vector_type);
     set_schema(std::move(schema));
 }

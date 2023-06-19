@@ -26,7 +26,7 @@ streams::ChannelType rpy::python::string_to_channel_type(string channel_str) {
     }
 }
 
-streams::ChannelType py_to_channel_type(const py::object &arg) {
+streams::ChannelType python::py_to_channel_type(const py::object &arg) {
     if (py::isinstance<streams::ChannelType>(arg)) {
         return arg.cast<streams::ChannelType>();
     }

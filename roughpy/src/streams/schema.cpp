@@ -55,10 +55,10 @@ public:
 inline void init_channel_item(py::module_& m) {
 
     py::enum_<ChannelType>(m, "ChannelType")
-        .value("Increment", ChannelType::Increment)
-        .value("Value", ChannelType::Value)
-        .value("Categorical", ChannelType::Categorical)
-        .value("Lie", ChannelType::Lie)
+        .value("IncrementChannel", ChannelType::Increment)
+        .value("ValueChannel", ChannelType::Value)
+        .value("CategoricalChannel", ChannelType::Categorical)
+        .value("LieChannel", ChannelType::Lie)
         .export_values();
 
     py::class_<StreamChannel> cls(m, "StreamChannel");

@@ -103,7 +103,6 @@ protected:
     void set_metadata(StreamMetadata&& md) noexcept;
 
     void set_schema(std::shared_ptr<StreamSchema> schema) noexcept {
-        RPY_DBG_ASSERT(!p_schema);
         p_schema = std::move(schema);
     }
 
