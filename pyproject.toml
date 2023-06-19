@@ -71,7 +71,7 @@ ROUGHPY_BUILD_TESTS = "OFF"
 
 [tool.setuptools_scm]
 write_to = "VERSION.txt"
-tag_regex = "^(?P<section>Releases/)?(?P<prefix>/v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$"
+#tag_regex = "^(?P<section>Releases/)?(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$"
 
 [tool.cibuildwheel]
 skip = [
