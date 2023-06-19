@@ -4,9 +4,13 @@ message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 list(APPEND VPCKG_INSTALL_OPTIONS "--no-print-usage")
 
-file(READ "VERSION.txt" _rpy_version)
-message(STATUS "Repository version ${_rpy_version}")
-string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" _rpy_version "${_rpy_version}")
+if (EXISTS "VERSION.txt")
+    file(READ "VERSION.txt" _rpy_version)
+    message(STATUS "Repository version ${_rpy_version}")
+    string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" _rpy_version "${_rpy_version}")
+else()
+    set(_rpy_version 0.0.1)
+endif()
 
 
 project(RoughPy VERSION ${_rpy_version})
