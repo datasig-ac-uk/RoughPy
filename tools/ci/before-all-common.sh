@@ -29,7 +29,7 @@
 
 echo $OSTYPE
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  yum install -y curl zip unzip tar
+  yum install -y curl zip unzip tar gmp-devel
 
   # manylinux doesn't have mono, we'll have to install it
   rpmkeys --import "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF"

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION.txt 3.21)
 
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
@@ -7,7 +7,7 @@ file(READ "VERSION.txt" _rpy_version)
 string(STRIP "${_rpy_version}" _rpy_version)
 list(APPEND VPCKG_INSTALL_OPTIONS "--no-print-usage")
 
-project(RoughPy VERSION ${_rpy_version})
+project(RoughPy VERSION.txt ${_rpy_version})
 
 set(CMAKE_INSTALL_LIBDIR "roughpy" CACHE STRING "install library dir")
 set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")
