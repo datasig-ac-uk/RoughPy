@@ -57,7 +57,7 @@ testpaths = ["tests"]
 [tool.scikit-build]
 wheel.packages = []
 cmake.build-type = "Release"
-metadata.version = { provider="version-from-path", provider-path="tools" }
+metadata.version = { provider="version_from_file", provider-path="tools" }
 metadata.readme.provider = "scikit_build_core.metadata.fancy_pypi_readme"
 
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
