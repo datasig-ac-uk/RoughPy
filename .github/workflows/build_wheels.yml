@@ -84,7 +84,7 @@ jobs:
       - name: Setup git tag
         if: github.event.ref_type != 'tag'
         run: |
-          tag=gh -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/datasig-ac-uk/roughpy/tags | jq '.[0].name'
+          tag=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/datasig-ac-uk/roughpy/tags | jq '.[0].name' | sed -e 's/^"//' -e 's/"$//')
           git tag -m "dummy-tag" -a $tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
