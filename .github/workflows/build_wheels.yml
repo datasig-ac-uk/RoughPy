@@ -27,7 +27,8 @@ jobs:
           python-version: "3.11"
 
       - name: Set version from ref
-        run: echo ${{ github.ref }} >> VERSION.txt
+        shell: bash
+        run: tee ${{ github.event.pull_request.head.label }} >> VERSION.txt
 
       - name: Build sdist
         run: |
