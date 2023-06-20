@@ -28,7 +28,7 @@ jobs:
 
       - name: Set version from ref
         shell: bash
-        run: echo $(git branch -r --contains "${{ github.sha }}") >> VERSION.txt
+        run: echo "${{ github.head_ref || github.ref_name }}" | tee VERSION.txt
 
       - name: Build sdist
         run: |
