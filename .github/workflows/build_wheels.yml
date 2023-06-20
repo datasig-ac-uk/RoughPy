@@ -28,7 +28,7 @@ jobs:
 
       - name: Set version from ref
         shell: bash
-        run: tee ${{ github.event.pull_request.head.label }} >> VERSION.txt
+        run: tee $(git branch -r --contains ${{ github.ref }}) >> VERSION.txt
 
       - name: Build sdist
         run: |
