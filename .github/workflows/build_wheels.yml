@@ -28,7 +28,7 @@ jobs:
 
       - name: Set version from ref
         shell: bash
-        run: echo "${{ github.head_ref || github.ref_name }}" | tee VERSION.txt
+        run: echo "${{ github.head_ref || github.ref_name }}" >> VERSION.txt
 
       - name: Build sdist
         run: |
@@ -76,20 +76,9 @@ jobs:
         with:
           submodules: true
 
-      #      - name: Configure vcpkg caching
-#        shell: bash
-#        run: |
-#          ${{ matrix.mono }} `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
-#            sources add \
-#            -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
-#            -storepasswordincleartext \
-#            -name "GitHub" \
-#            -username "datasig-ac-uk" \
-#            -password "${{ secrets.GITHUB_TOKEN }}"
-#          ${{ matrix.mono }} `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
-#            setapikey "${{ secrets.GITHUB_TOKEN }}" \
-#            -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
-#        if: runner.os != 'Linux'  # On Linux, the build is done in a docker container
+      - name: Set version from ref
+        shell: bash
+        run: echo "${{ github.head_ref || github.ref_name }}" >> VERSION.txt
 
       - name: Build and test
         uses: pypa/cibuildwheel@v2.13.0
