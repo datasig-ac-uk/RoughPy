@@ -26,6 +26,11 @@
 #  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
+import re
+
+from pathlib import Path
+
+
 __all__ = ["dynamic_metadata"]
 
 def __dir__() -> list[str]:
@@ -41,4 +46,20 @@ def dynamic_metadata(
 
     print(fields, settings)
 
-    return {"version": "0.0.1"}
+    if "regex" in settings:
+        regex = settings["regex"]
+    else:
+        regex = r"(?P<version>\d+\.\d+\.\d+)"
+
+    version_path = Path("VERSION.txt")
+    if version_path.exists():
+        version_text = version_path.read_text()
+
+        if (match := re.match(regex, version_text)) is not None:
+            version = match.group("version")
+        else:
+            raise ValueError("Could not get version from string " + version_text)
+    else:
+        version = "0.0.1"
+
+    return {"version": version}
