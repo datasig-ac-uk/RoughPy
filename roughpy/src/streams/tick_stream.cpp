@@ -62,12 +62,19 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
         schema = std::make_shared<streams::StreamSchema>();
     }
 
-    std::vector<param_t> indices;
-
     if (!schema->is_final()) {
         python::parse_data_into_schema(schema, data);
+        pmd.width = schema->width();
         schema->finalize();
     }
+    if (!pmd.ctx) {
+        if (pmd.width == 0 || pmd.depth == 0 || pmd.scalar_type == nullptr) {
+            throw py::value_error("either ctx or width, depth, and dtype must be provided");
+        }
+        pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type);
+    }
+
+
 
     helper_t helper(
         pmd.ctx,
@@ -104,7 +111,7 @@ void python::init_tick_stream(py::module_ &m) {
 
     py::class_<streams::TickStream> klass(m, "TickStream", TICK_STREAM_DOC);
 
-    klass.def_static("from", &construct, "data"_a);
+    klass.def_static("from_data", &construct, "data"_a);
 }
 
 /*
