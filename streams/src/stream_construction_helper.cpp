@@ -31,30 +31,26 @@
 
 #include "stream_construction_helper.h"
 
-
 using namespace rpy;
 using namespace rpy::streams;
 
 StreamConstructionHelper::StreamConstructionHelper(algebra::context_pointer ctx,
                                                    std::shared_ptr<StreamSchema> schema,
-                                                   dimn_t num_entries,
                                                    algebra::VectorType vtype)
     : p_schema(std::move(schema)),
       p_ctx(std::move(ctx)),
       m_vtype(vtype),
-      m_zero(p_ctx->zero_lie(vtype))
-{
-    m_entries.reserve(num_entries);
+      m_zero(p_ctx->zero_lie(vtype)) {
 
     const auto width = p_schema->width();
     m_previous_values.resize(width);
     m_dense_keys.reserve(width);
-    for (key_type k=1; k<=width; ++k) {
+    for (key_type k = 1; k <= width; ++k) {
         m_dense_keys.push_back(k);
     }
 }
 
-algebra::Lie& StreamConstructionHelper::next_entry(param_t next_timestamp) {
+algebra::Lie &StreamConstructionHelper::next_entry(param_t next_timestamp) {
     return m_entries.insert({next_timestamp, m_zero})->second;
 }
 
@@ -83,10 +79,18 @@ void StreamConstructionHelper::add_categorical(param_t timestamp, dimn_t channel
 }
 void StreamConstructionHelper::add_categorical(param_t timestamp, string_view channel, string_view variant) {
     auto idx = p_schema->label_to_stream_dim(string(channel) + ':' + string(variant));
-    next_entry(timestamp)[static_cast<key_type>(idx+1)] += p_ctx->ctype()->one();
+    next_entry(timestamp)[static_cast<key_type>(idx + 1)] += p_ctx->ctype()->one();
 }
 typename StreamConstructionHelper::multimap_type StreamConstructionHelper::finalise() {
     boost::container::flat_multimap<param_t, algebra::Lie> result;
     result = std::move(m_entries);
     return result;
+}
+
+optional<ChannelType> StreamConstructionHelper::type_of(string_view label) const {
+    auto found = p_schema->find(string(label));
+    if (found != p_schema->end()) {
+        return found->second.type();
+    }
+    return {};
 }

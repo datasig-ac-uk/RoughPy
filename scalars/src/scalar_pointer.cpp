@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,8 +35,8 @@
 
 #include <stdexcept>
 
-#include "scalar_type.h"
 #include "scalar.h"
+#include "scalar_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -45,10 +45,10 @@ void *ScalarPointer::ptr() {
     if (is_const()) {
         throw std::runtime_error("attempting to convert const pointer to non-const pointer");
     }
-    return const_cast<void*>(p_data);
+    return const_cast<void *>(p_data);
 }
 Scalar ScalarPointer::deref() const noexcept {
-    return Scalar(*this, (m_flags & ~owning_flag) | constness_flag) ;
+    return Scalar(*this, (m_flags & ~owning_flag) | constness_flag);
 }
 Scalar ScalarPointer::deref_mut() {
     if (is_const()) {
@@ -67,18 +67,18 @@ ScalarPointer ScalarPointer::operator+(ScalarPointer::size_type index) const noe
         return {};
     }
 
-    const auto* new_ptr = static_cast<const char*>(p_data) + index*p_type->itemsize();
-    return {p_type, static_cast<const void*>(new_ptr), m_flags & ~owning_flag};
+    const auto *new_ptr = static_cast<const char *>(p_data) + index * p_type->itemsize();
+    return {p_type, static_cast<const void *>(new_ptr), m_flags & ~owning_flag};
 }
 ScalarPointer &ScalarPointer::operator+=(ScalarPointer::size_type index) noexcept {
     if (p_data != nullptr && p_type != nullptr) {
-        p_data = static_cast<const char*>(p_data) + index * p_type->itemsize();
+        p_data = static_cast<const char *>(p_data) + index * p_type->itemsize();
     }
     return *this;
 }
-ScalarPointer& ScalarPointer::operator++() noexcept {
+ScalarPointer &ScalarPointer::operator++() noexcept {
     if (p_type != nullptr && p_data != nullptr) {
-        p_data = static_cast<const char*>(p_data) + p_type->itemsize();
+        p_data = static_cast<const char *>(p_data) + p_type->itemsize();
     }
     return *this;
 }
@@ -94,8 +94,8 @@ Scalar ScalarPointer::operator[](ScalarPointer::size_type index) {
     return (*this + index).deref_mut();
 }
 ScalarPointer::difference_type ScalarPointer::operator-(const ScalarPointer &right) const noexcept {
-    const ScalarType* type = p_type;
-    if (type == nullptr){
+    const ScalarType *type = p_type;
+    if (type == nullptr) {
         if (right.p_type != nullptr) {
             type = right.p_type;
         } else {
@@ -103,8 +103,8 @@ ScalarPointer::difference_type ScalarPointer::operator-(const ScalarPointer &rig
         }
     }
     return static_cast<difference_type>(
-               static_cast<const char*>(p_data) - static_cast<const char*>(right.p_data)
-            ) / type->itemsize();
+               static_cast<const char *>(p_data) - static_cast<const char *>(right.p_data))
+        / type->itemsize();
 }
 
 std::string rpy::scalars::ScalarPointer::get_type_id() const {

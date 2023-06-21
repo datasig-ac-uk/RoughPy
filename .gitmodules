@@ -2,23 +2,13 @@
 	path = external/libalgebra_lite
 	url = https://github.com/datasig-ac-uk/libalgebra-lite
 	branch = main
-[submodule "external/pybind11"]
-	path = external/pybind11
-	url = https://github.com/pybind/pybind11.git
-	branch = v2.10
-[submodule "external/pcg-cpp"]
-	path = external/pcg-cpp
-	url = https://github.com/imneme/pcg-cpp
+	update = merge
 [submodule "external/recombine"]
 	path = external/recombine
 	url = https://github.com/datasig-ac-uk/Recombine.git
+	update = merge
 [submodule "external/libalgebra"]
 	path = external/libalgebra
 	url = https://github.com/terrylyons/libalgebra
 	branch = develop
-[submodule "external/csv-parser"]
-	path = external/csv-parser
-	url = https://github.com/vincentlaucsb/csv-parser
-[submodule "external/cereal"]
-	path = external/cereal
-	url = https://github.com/USCiLab/cereal.git
+	update = merge

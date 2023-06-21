@@ -29,26 +29,23 @@
 // Created by user on 18/04/23.
 //
 
-
 #include "float_blas.h"
-#include <gtest/gtest.h>
 #include "scalar_type.h"
+#include <gtest/gtest.h>
 
 #include <vector>
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-
 namespace {
 
 class FloatBlasTests : public ::testing::Test {
-    const ScalarType* ctype;
+    const ScalarType *ctype;
     std::vector<float> a_data;
     std::vector<float> b_data;
 
 public:
-
     ScalarMatrix matA;
     ScalarMatrix matB;
 
@@ -56,22 +53,15 @@ public:
 
     FloatBlasTests()
         : ctype(ScalarType::of<float>()),
-          a_data {1.0F, 1.0F, 2.0F, 3.0F},
-          b_data {-1.0F, 2.0F, -2.0F, 3.0F},
+          a_data{1.0F, 1.0F, 2.0F, 3.0F},
+          b_data{-1.0F, 2.0F, -2.0F, 3.0F},
           matA(2, 2, ScalarArray(ctype, a_data.data(), 4)),
           matB(2, 2, ScalarArray(ctype, b_data.data(), 4)),
-          blas(new FloatBlas(ctype))
-    {
-
+          blas(new FloatBlas(ctype)) {
     }
-
-
-
 };
 
-
-}
-
+}// namespace
 
 TEST_F(FloatBlasTests, TestRowMajorByRowMajorFull) {
 
@@ -82,11 +72,10 @@ TEST_F(FloatBlasTests, TestRowMajorByRowMajorFull) {
      *  [2.0, 3.0]]  [-2.0, 3.0]]      [-8.0, 13.0]]
      */
 
-    auto* ptr = result.raw_cast<float*>();
+    auto *ptr = result.raw_cast<float *>();
 
     EXPECT_EQ(ptr[0], -3.0F);
-    EXPECT_EQ(ptr[1],  5.0F);
+    EXPECT_EQ(ptr[1], 5.0F);
     EXPECT_EQ(ptr[2], -8.0F);
     EXPECT_EQ(ptr[3], 13.0F);
-
 }

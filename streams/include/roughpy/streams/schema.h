@@ -32,12 +32,11 @@
 #ifndef ROUGHPY_STREAMS_SCHEMA_H
 #define ROUGHPY_STREAMS_SCHEMA_H
 
-#include <roughpy/core/types.h>
 #include <roughpy/core/traits.h>
+#include <roughpy/core/types.h>
 
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/platform/serialization.h>
-
 
 #include <boost/container/flat_map.hpp>
 #include <variant>
@@ -68,21 +67,17 @@ struct LieChannelInfo {
     algebra::VectorType vtype;
 };
 
-//struct StreamChannel {
-//    std::variant<ChannelIncrementInfo, ChannelValueInfo, ChannelCategoricalIncrementInfo>;
-//    ChannelType type;
-//    uint8_t RPY_UNUSED_VAR PADDING[7];
-//    union {
-//        ChannelIncrementInfo* increment_info;
-//        ChannelValueInfo* value_info;
-//        ChannelCategoricalIncrementInfo* categorical_increment_info;
-//    };
-//
-//
-//
-//};
-//
-
+/**
+ * @brief Abstract description of a single channel of data.
+ *
+ * A stream channel contains metadata about one particular channel of
+ * incoming raw data. The data can take one of four possible forms:
+ * increment data, value data, categorical data, or lie data. Each form
+ * of data has its own set of required and optional metadata, including
+ * the number and labels of a categorical variable. These objects are
+ * typically accessed via a schema, which maintains the collection of
+ * all channels associated with a stream.
+ */
 class StreamChannel {
     ChannelType m_type;
     union {
@@ -93,12 +88,11 @@ class StreamChannel {
     };
 
     template <typename T>
-    static void inplace_construct(void* address, T&& value) noexcept(is_nothrow_constructible<remove_cv_ref_t<T>, decltype(value)>::value){
+    static void inplace_construct(void *address, T &&value) noexcept(is_nothrow_constructible<remove_cv_ref_t<T>, decltype(value)>::value) {
         ::new (address) remove_cv_ref_t<T>(std::forward<T>(value));
     }
 
 public:
-
     RPY_NO_DISCARD
     ChannelType type() const noexcept { return m_type; }
 
@@ -121,48 +115,43 @@ public:
     string label_suffix(dimn_t variant_no) const;
 
     StreamChannel();
-    StreamChannel(const StreamChannel& arg);
-    StreamChannel(StreamChannel&& arg) noexcept;
+    StreamChannel(const StreamChannel &arg);
+    StreamChannel(StreamChannel &&arg) noexcept;
 
     explicit StreamChannel(ChannelType type);
 
-    explicit StreamChannel(IncrementChannelInfo && info)
-        : m_type(ChannelType::Increment), increment_info(std::move(info))
-    {}
+    explicit StreamChannel(IncrementChannelInfo &&info)
+        : m_type(ChannelType::Increment), increment_info(std::move(info)) {}
 
-    explicit StreamChannel(ValueChannelInfo && info)
-        : m_type(ChannelType::Value), value_info(std::move(info))
-    {}
+    explicit StreamChannel(ValueChannelInfo &&info)
+        : m_type(ChannelType::Value), value_info(std::move(info)) {}
 
-    explicit StreamChannel(CategoricalChannelInfo && info)
-        : m_type(ChannelType::Categorical), categorical_info(std::move(info))
-    {}
+    explicit StreamChannel(CategoricalChannelInfo &&info)
+        : m_type(ChannelType::Categorical), categorical_info(std::move(info)) {}
 
-    explicit StreamChannel(LieChannelInfo&& info)
-        : m_type(ChannelType::Lie), lie_info(std::move(info))
-    {}
+    explicit StreamChannel(LieChannelInfo &&info)
+        : m_type(ChannelType::Lie), lie_info(std::move(info)) {}
 
     ~StreamChannel();
 
-    StreamChannel& operator=(const StreamChannel& other);
-    StreamChannel& operator=(StreamChannel&& other) noexcept;
+    StreamChannel &operator=(const StreamChannel &other);
+    StreamChannel &operator=(StreamChannel &&other) noexcept;
 
-    StreamChannel& operator=(IncrementChannelInfo && info) {
+    StreamChannel &operator=(IncrementChannelInfo &&info) {
         this->~StreamChannel();
         m_type = ChannelType::Increment;
         inplace_construct(&increment_info, std::move(info));
         return *this;
     }
 
-    StreamChannel& operator=(ValueChannelInfo && info) {
+    StreamChannel &operator=(ValueChannelInfo &&info) {
         this->~StreamChannel();
         m_type = ChannelType::Value;
         inplace_construct(&value_info, std::move(info));
         return *this;
     }
 
-
-    StreamChannel& operator=(CategoricalChannelInfo && info) {
+    StreamChannel &operator=(CategoricalChannelInfo &&info) {
         this->~StreamChannel();
         m_type = ChannelType::Categorical;
         inplace_construct(&categorical_info, std::move(info));
@@ -174,7 +163,7 @@ public:
 
     void set_lie_info(deg_t width, deg_t depth, algebra::VectorType vtype);
 
-    StreamChannel& add_variant(string variant_label);
+    StreamChannel &add_variant(string variant_label);
 
     RPY_NO_DISCARD
     std::vector<string> get_variants() const;
@@ -183,22 +172,42 @@ public:
     RPY_SERIAL_LOAD_FN();
 };
 
+
+/**
+ * @brief An abstract description of the stream data.
+ *
+ * The schema has two core roles in a stream. The first is to function
+ * as a mapping between the incoming data channels and the dimensions
+ * of the stream. This is most important when constructing the stream
+ * from raw data, but can also come into effect at other points in the
+ * process. The second is to store additional metadata and conversion
+ * information between raw data values and normalised increment data
+ * used by the stream. This includes the mapping of raw time-stamp data
+ * from the raw (date)time stamp onto the streams rebased parametrisation.
+ *
+ * A secondary function of the schema is to calculate the width required
+ * of a stream context in order to fully accommodate the input raw data.
+ * For simple streams, where each individual channel contains increment
+ * data, this is a 1-1 mapping. However, categorical values must be expanded
+ * and other types of data might occupy multiple stream dimensions.
+ */
 class ROUGHPY_STREAMS_EXPORT StreamSchema
     : private std::vector<pair<string, StreamChannel>> {
     using base_type = std::vector<pair<string, StreamChannel>>;
 
+    bool m_is_final = false;
+
+
 public:
-    using typename base_type::value_type;
     using typename base_type::const_iterator;
     using typename base_type::iterator;
+    using typename base_type::value_type;
 
-    using base_type::emplace_back;
-    using base_type::reserve;
     using base_type::begin;
+    using base_type::emplace_back;
     using base_type::end;
+    using base_type::reserve;
     using base_type::size;
-
-
 
     static bool compare_labels(string_view item_label, string_view ref_label) noexcept;
 
@@ -218,15 +227,14 @@ private:
     const_iterator stream_dim_to_channel_it(dimn_t &stream_dim) const;
 
 public:
-
     StreamSchema() = default;
-    StreamSchema(const StreamSchema&) = default;
-    StreamSchema(StreamSchema&&) noexcept = default;
+    StreamSchema(const StreamSchema &) = default;
+    StreamSchema(StreamSchema &&) noexcept = default;
 
     explicit StreamSchema(dimn_t width);
 
-    StreamSchema& operator=(const StreamSchema&) = default;
-    StreamSchema& operator=(StreamSchema&&) noexcept = default;
+    StreamSchema &operator=(const StreamSchema &) = default;
+    StreamSchema &operator=(StreamSchema &&) noexcept = default;
 
     RPY_NO_DISCARD
     const_iterator nth(dimn_t idx) const noexcept {
@@ -234,14 +242,17 @@ public:
         return begin() + static_cast<idimn_t>(idx);
     }
 
+public:
     RPY_NO_DISCARD
-    iterator find(const string& label);
+    iterator find(const string &label);
 
     RPY_NO_DISCARD
-    const_iterator find(const string& label) const;
+    const_iterator find(const string &label) const;
+
+
 
     RPY_NO_DISCARD
-    bool contains(const string& label) const {
+    bool contains(const string &label) const {
         return find(label) != end();
     }
 
@@ -274,25 +285,29 @@ public:
     RPY_NO_DISCARD
     dimn_t label_to_stream_dim(const string &label) const;
 
-    StreamChannel& insert(string label, StreamChannel&& channel_data);
+    StreamChannel &insert(string label, StreamChannel &&channel_data);
 
-    StreamChannel& insert(StreamChannel&& channel_data);
+    StreamChannel &insert(StreamChannel &&channel_data);
 
-    StreamChannel& insert_increment(string label);
-    StreamChannel& insert_value(string label);
-    StreamChannel& insert_categorical(string label);
-    StreamChannel& insert_lie(string label);
+    StreamChannel &insert_increment(string label);
+    StreamChannel &insert_value(string label);
+    StreamChannel &insert_categorical(string label);
+    StreamChannel &insert_lie(string label);
+
+    RPY_NO_DISCARD
+    bool is_final() const noexcept { return m_is_final; }
+    void finalize() noexcept { m_is_final = true; }
 
     RPY_SERIAL_SERIALIZE_FN();
 };
 
 RPY_SERIAL_SERIALIZE_FN_EXT(IncrementChannelInfo) {
-    (void) value;
+    (void)value;
     RPY_SERIAL_SERIALIZE_NVP("data", 0);
 }
 
 RPY_SERIAL_SERIALIZE_FN_EXT(ValueChannelInfo) {
-    (void) value;
+    (void)value;
     RPY_SERIAL_SERIALIZE_NVP("data", 0);
 }
 
@@ -305,7 +320,6 @@ RPY_SERIAL_SERIALIZE_FN_EXT(LieChannelInfo) {
     RPY_SERIAL_SERIALIZE_NVP("depth", value.depth);
     RPY_SERIAL_SERIALIZE_NVP("vector_type", value.vtype);
 }
-
 
 RPY_SERIAL_SAVE_FN_IMPL(StreamChannel) {
     RPY_SERIAL_SERIALIZE_NVP("type", m_type);
@@ -347,15 +361,10 @@ RPY_SERIAL_LOAD_FN_IMPL(StreamChannel) {
     }
 }
 
-
 RPY_SERIAL_SERIALIZE_FN_IMPL(StreamSchema) {
-    RPY_SERIAL_SERIALIZE_BARE(static_cast<base_type&>(*this));
+    RPY_SERIAL_SERIALIZE_NVP("channels", static_cast<base_type&>(*this));
+    RPY_SERIAL_SERIALIZE_NVP("is_final", m_is_final);
 }
-
-
-
-
-
 
 }// namespace streams
 }// namespace rpy

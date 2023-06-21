@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,8 +34,8 @@
 #include <gtest/gtest.h>
 #include <random>
 
-#include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/owned_scalar_array.h>
+#include <roughpy/scalars/scalar_pointer.h>
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -47,23 +47,22 @@ inline void PrintTo(const Lie &arg, std::ostream *os) { arg.print(*os); }
 
 inline void PrintTo(const FreeTensor &arg, std::ostream *os) { arg.print(*os); }
 
-}
-}
+}// namespace algebra
+}// namespace rpy
 
 namespace {
 
 class RandomScalars {
     std::mt19937 rng;
     std::normal_distribution<double> dist;
-public:
 
-    const scalars::ScalarType* ctype;
+public:
+    const scalars::ScalarType *ctype;
 
     explicit RandomScalars(double std_dev)
         : ctype(scalars::ScalarType::of<double>()),
           rng(std::random_device()()),
-          dist(0.0, std_dev)
-    {}
+          dist(0.0, std_dev) {}
 
     scalars::OwnedScalarArray random_data(dimn_t count) {
         std::vector<double> tmp_data;
@@ -79,12 +78,11 @@ public:
 
         return result;
     }
-
 };
-
 
 class LieIncrementStreamTests : public ::testing::Test {
     RandomScalars gen;
+
 public:
     static constexpr deg_t width = 5;
     static constexpr deg_t depth = 2;
@@ -103,12 +101,10 @@ public:
               width,
               depth,
               gen.ctype,
-              {{"backend", "libalgebra_lite"}})
-              )
-    {}
+              {{"backend", "libalgebra_lite"}})) {}
 
-    scalars::OwnedScalarArray random_data(dimn_t rows, dimn_t cols=width) {
-        return gen.random_data(rows*cols);
+    scalars::OwnedScalarArray random_data(dimn_t rows, dimn_t cols = width) {
+        return gen.random_data(rows * cols);
     }
 
     std::vector<param_t> indices(deg_t num_increments) const {
@@ -127,11 +123,9 @@ public:
     }
 };
 
-
-}
+}// namespace
 
 TEST_F(LieIncrementStreamTests, TestLogSignatureSingleIncrement) {
-
 
     auto data = random_data(1);
     algebra::VectorConstructionData edata{

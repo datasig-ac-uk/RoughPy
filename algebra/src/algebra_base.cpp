@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -39,8 +39,7 @@ using namespace rpy;
 using namespace rpy::algebra;
 
 algebra::dtl::AlgebraInterfaceBase::AlgebraInterfaceBase(context_pointer &&ctx, VectorType vtype, const scalars::ScalarType *stype, ImplementationType impl_type)
-    : p_ctx(std::move(ctx)), m_vector_type(vtype), p_coeff_type(stype), m_impl_type(impl_type)
-{
+    : p_ctx(std::move(ctx)), m_vector_type(vtype), p_coeff_type(stype), m_impl_type(impl_type) {
 }
 
 algebra::dtl::AlgebraInterfaceBase::~AlgebraInterfaceBase() = default;
@@ -53,11 +52,11 @@ const rpy::scalars::ScalarType *rpy::algebra::dtl::context_to_scalars(context_po
     return ptr->ctype();
 }
 
-UnspecifiedAlgebraType rpy::algebra::dtl::try_create_new_empty(context_pointer ctx, AlgebraType alg_type)  {
+UnspecifiedAlgebraType rpy::algebra::dtl::try_create_new_empty(context_pointer ctx, AlgebraType alg_type) {
     return ctx->construct(alg_type, {});
 }
 
 UnspecifiedAlgebraType algebra::dtl::construct_dense_algebra(scalars::ScalarArray &&data, const context_pointer &ctx, AlgebraType atype) {
-    VectorConstructionData cdata { {std::move(data), nullptr}, VectorType::Dense };
+    VectorConstructionData cdata{{std::move(data), nullptr}, VectorType::Dense};
     return ctx->construct(atype, cdata);
 }

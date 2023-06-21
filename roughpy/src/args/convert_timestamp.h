@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -25,23 +25,21 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "segmentation.h"
+//
+// Created by user on 20/06/23.
+//
 
-#include <roughpy/intervals/segmentation.h>
+#ifndef ROUGHPY_ROUGHPY_SRC_ARGS_CONVERT_TIMESTAMP_H
+#define ROUGHPY_ROUGHPY_SRC_ARGS_CONVERT_TIMESTAMP_H
 
-using namespace rpy;
-using namespace rpy::intervals;
-using namespace pybind11::literals;
+#include "roughpy_module.h"
 
-static const char *SEGMENT_DOC = R"rpydoc(Perform dyadic segmentation on an interval.
-)rpydoc";
+namespace rpy { namespace python {
 
-void python::init_segmentation(py::module_ &m) {
+param_t convert_timestamp(const py::object& py_timestamp);
 
-    m.def("segment",
-          &segment,
-          "interval"_a,
-          "predicate"_a,
-          "max_depth"_a,
-          SEGMENT_DOC);
-}
+}}
+
+
+
+#endif//ROUGHPY_ROUGHPY_SRC_ARGS_CONVERT_TIMESTAMP_H

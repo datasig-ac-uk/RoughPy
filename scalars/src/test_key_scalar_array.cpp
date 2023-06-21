@@ -29,14 +29,12 @@
 // Created by user on 11/05/23.
 //
 
-
 #include <gtest/gtest.h>
 
 #include "key_scalar_array.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
-
 
 TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys) {
     std::vector<float> nums{1.0F, 2.0F, 3.0F};
@@ -47,8 +45,6 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys) {
         out_ar(sa);
     }
 
-
-
     KeyScalarArray sb;
     {
         archives::JSONInputArchive in_ar(ss);
@@ -63,11 +59,10 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys) {
     for (int i = 0; i < 3; ++i) {
         ASSERT_EQ(aptr[i], bptr[i]);
     }
-
 }
 TEST(KeyScalarArray, TestKeyScalarArraySerializeWidthKeys) {
     std::vector<float> nums{1.0F, 2.0F, 3.0F};
-    std::vector<key_type> keys {1UL, 2UL, 3UL};
+    std::vector<key_type> keys{1UL, 2UL, 3UL};
     KeyScalarArray sa(ScalarArray(ScalarType::of<float>(), nums.data(), 3), keys.data());
     std::stringstream ss;
     {
@@ -75,7 +70,6 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeWidthKeys) {
         out_ar(sa);
     }
 
-
     KeyScalarArray sb;
     {
         archives::JSONInputArchive in_ar(ss);
@@ -87,16 +81,14 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeWidthKeys) {
     const auto *aptr = sa.raw_cast<const float *>();
     const auto *bptr = sb.raw_cast<const float *>();
 
-    const auto* akeyptr = static_cast<const KeyScalarArray&>(sa).keys();
-    const auto* bkeyptr = sb.keys();
+    const auto *akeyptr = static_cast<const KeyScalarArray &>(sa).keys();
+    const auto *bkeyptr = sb.keys();
 
     ASSERT_NE(akeyptr, nullptr);
     ASSERT_NE(bkeyptr, nullptr);
-
 
     for (int i = 0; i < 3; ++i) {
         ASSERT_EQ(aptr[i], bptr[i]);
         ASSERT_EQ(akeyptr[i], bkeyptr[i]);
     }
-
 }

@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,13 +33,13 @@
 #include <roughpy/algebra/free_tensor.h>
 #include <roughpy/scalars/scalar.h>
 
-#include "args/numpy.h"
 #include "args/kwargs_to_vector_construction.h"
+#include "args/numpy.h"
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 
-#include "tensor_key.h"
 #include "setup_algebra_type.h"
+#include "tensor_key.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -146,7 +146,7 @@ void python::init_free_tensor(py::module_ &m) {
     options.disable_function_signatures();
 
     pybind11::class_<FreeTensor> klass(m, "FreeTensor", FREE_TENSOR_DOC);
-    klass.def(py::init(&construct_free_tensor), "data"_a=py::none());
+    klass.def(py::init(&construct_free_tensor), "data"_a = py::none());
 
     python::setup_algebra_type(klass);
 
@@ -154,13 +154,10 @@ void python::init_free_tensor(py::module_ &m) {
         return self[key];
     });
 
-
-
     klass.def("exp", &FreeTensor::exp);
     klass.def("log", &FreeTensor::log);
     klass.def("inverse", &FreeTensor::inverse);
     klass.def("fmexp", &FreeTensor::fmexp, "other"_a);
-
 
     klass.def("__repr__", [](const FreeTensor &self) {
         std::stringstream ss;
@@ -169,6 +166,4 @@ void python::init_free_tensor(py::module_ &m) {
         ss << ", ctype=" << self.coeff_type()->info().name << ')';
         return ss.str();
     });
-
-
 }

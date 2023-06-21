@@ -160,11 +160,10 @@ const ScalarType *rpy::scalars::dtl::scalar_type_holder<bfloat16>::get_type() no
     return &bf16type;
 }
 
-const ScalarType* rpy::scalars::dtl::scalar_type_holder<rational_poly_scalar>::get_type() noexcept {
+const ScalarType *rpy::scalars::dtl::scalar_type_holder<rational_poly_scalar>::get_type() noexcept {
     static const RationalPolyScalarType rpolscaltype;
     return &rpolscaltype;
 }
-
 
 /*
  * All types should support conversion from the following,
@@ -246,7 +245,7 @@ const ScalarType *scalars::get_type(const string &id, const ScalarDeviceInfo &de
     return nullptr;
 }
 
-const ScalarTypeInfo& rpy::scalars::get_scalar_info(string_view id) {
+const ScalarTypeInfo &rpy::scalars::get_scalar_info(string_view id) {
 
     for (const auto &rsv : reserved) {
         if (rsv.first == id) {
@@ -268,16 +267,16 @@ std::vector<const ScalarType *> rpy::scalars::list_types() {
     std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
     std::vector<const ScalarType *> result;
     result.reserve(s_scalar_type_cache.size());
-    for (const auto& [id, type] : s_scalar_type_cache) {
+    for (const auto &[id, type] : s_scalar_type_cache) {
         result.push_back(type);
     }
     return result;
 }
 
-#define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME) \
-    const string& rpy::scalars::dtl::type_id_of_impl<TYPE>::get_id() noexcept { \
-        static const string type_id (NAME);  \
-        return type_id;\
+#define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                     \
+    const string &rpy::scalars::dtl::type_id_of_impl<TYPE>::get_id() noexcept { \
+        static const string type_id(NAME);                                      \
+        return type_id;                                                         \
     }
 
 ROUGHPY_MAKE_TYPE_ID_OF(char, "i8");
@@ -299,7 +298,6 @@ ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational");
 ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
 
 #undef ROUGHPY_MAKE_TYPE_ID_OF
-
 
 #define MAKE_CONVERSION_FUNCTION(SRC, DST, SRC_T, DST_T)                             \
     static void SRC##_to_##DST(ScalarPointer dst, ScalarPointer src, dimn_t count) { \
@@ -381,7 +379,7 @@ std::unique_ptr<BlasInterface> ScalarType::get_blas() const {
     throw std::runtime_error("No blas/lapack available for this scalar type");
 }
 
-const std::string & rpy::scalars::id_from_basic_info(const BasicScalarInfo &info) {
+const std::string &rpy::scalars::id_from_basic_info(const BasicScalarInfo &info) {
     std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
 
     // Lanes are ignored in determining type.
@@ -418,9 +416,6 @@ const std::string & rpy::scalars::id_from_basic_info(const BasicScalarInfo &info
 
     RPY_UNREACHABLE();
 }
-
-
-
 
 #undef I8IDX
 #undef I16IDX

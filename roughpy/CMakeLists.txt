@@ -68,6 +68,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/algebra/tensor_key.h
         src/algebra/tensor_key_iterator.cpp
         src/algebra/tensor_key_iterator.h
+        src/args/convert_timestamp.cpp
+        src/args/convert_timestamp.h
         src/args/kwargs_to_path_metadata.h
         src/args/kwargs_to_path_metadata.cpp
         src/args/kwargs_to_vector_construction.cpp

@@ -35,7 +35,5 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-
-HalfType::HalfType() : StandardScalarType<half>("f16", "HPReal")
-{
+HalfType::HalfType() : StandardScalarType<half>("f16", "HPReal") {
 }

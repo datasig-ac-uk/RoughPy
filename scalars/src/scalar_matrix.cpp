@@ -29,21 +29,18 @@
 // Created by user on 12/04/23.
 //
 
-
 #include "scalar_matrix.h"
 
-#include "scalar_type.h"
 #include "scalar.h"
 #include "scalar_blas.h"
+#include "scalar_type.h"
 
-rpy::scalars::ScalarMatrix::ScalarMatrix() : ScalarArray()
-{
+rpy::scalars::ScalarMatrix::ScalarMatrix() : ScalarArray() {
 }
 
 rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type, rpy::deg_t rows, rpy::deg_t cols, rpy::scalars::MatrixStorage storage, rpy::scalars::MatrixLayout layout)
-    : ScalarArray(type, (void*) nullptr, 0),
-      m_nrows(rows), m_ncols(cols), m_layout(layout), m_storage(storage)
-{
+    : ScalarArray(type, (void *)nullptr, 0),
+      m_nrows(rows), m_ncols(cols), m_layout(layout), m_storage(storage) {
     if (p_type != nullptr && m_nrows > 0 && m_ncols > 0) {
         const auto size = m_nrows * m_ncols;
         ScalarPointer::operator=(p_type->allocate(size));
@@ -52,8 +49,7 @@ rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type, r
 }
 rpy::scalars::ScalarMatrix::ScalarMatrix(rpy::deg_t rows, rpy::deg_t cols, rpy::scalars::ScalarArray &&array, rpy::scalars::MatrixStorage storage, rpy::scalars::MatrixLayout layout)
     : ScalarArray(std::move(array)),
-      m_nrows(rows), m_ncols(cols), m_layout(layout), m_storage(storage)
-{
+      m_nrows(rows), m_ncols(cols), m_layout(layout), m_storage(storage) {
     RPY_CHECK(m_nrows >= 0 && m_ncols >= 0);
     RPY_CHECK(m_nrows * m_ncols == m_size);
 }
@@ -79,24 +75,24 @@ rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::to_full() const {
     return to_full(m_layout);
 }
 
-static void transpose_fallback(rpy::scalars::ScalarMatrix& matrix) {
+static void transpose_fallback(rpy::scalars::ScalarMatrix &matrix) {
     const auto M = matrix.nrows();
     const auto N = matrix.ncols();
 
-    const auto* type = matrix.type();
+    const auto *type = matrix.type();
     rpy::scalars::ScalarPointer ptr(matrix);
     if (M == N) {
-        for (rpy::deg_t i=0; i<M; ++i) {
-            for (rpy::deg_t j=i+1; j<N; ++j) {
-                type->swap(ptr + static_cast<rpy::dimn_t>(i*N+j), ptr + static_cast<rpy::dimn_t>(j*N + i));
+        for (rpy::deg_t i = 0; i < M; ++i) {
+            for (rpy::deg_t j = i + 1; j < N; ++j) {
+                type->swap(ptr + static_cast<rpy::dimn_t>(i * N + j), ptr + static_cast<rpy::dimn_t>(j * N + i));
             }
         }
     } else {
         rpy::scalars::ScalarMatrix tmp(type, N, M, matrix.storage(), matrix.layout());
 
-        for (rpy::deg_t i=0; i<M; ++i) {
-            for (rpy::deg_t j=0; j<N; ++j) {
-                type->convert_copy(tmp + static_cast<rpy::dimn_t>(j*M+i), ptr + static_cast<rpy::dimn_t>(i*N+j), 1);
+        for (rpy::deg_t i = 0; i < M; ++i) {
+            for (rpy::deg_t j = 0; j < N; ++j) {
+                type->convert_copy(tmp + static_cast<rpy::dimn_t>(j * M + i), ptr + static_cast<rpy::dimn_t>(i * N + j), 1);
             }
         }
 
@@ -179,8 +175,6 @@ void rpy::scalars::ScalarMatrix::to_full(rpy::scalars::ScalarMatrix &into) const
         }
     }
 }
-
-
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::ScalarMatrix
 #include <roughpy/platform/serialization_instantiations.inl>

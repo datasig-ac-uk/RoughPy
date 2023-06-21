@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,12 +34,10 @@ using namespace rpy;
 using namespace pybind11::literals;
 
 python::PyTensorKey::PyTensorKey(key_type key, deg_t width, deg_t depth)
-    : m_key(key), m_width(width), m_depth(depth)
-{
+    : m_key(key), m_width(width), m_depth(depth) {
 }
 python::PyTensorKey::PyTensorKey(algebra::TensorBasis basis, key_type key)
-    : m_key(key), m_width(basis.width()), m_depth(basis.depth())
-{
+    : m_key(key), m_width(basis.width()), m_depth(basis.depth()) {
 }
 
 python::PyTensorKey::operator key_type() const noexcept {

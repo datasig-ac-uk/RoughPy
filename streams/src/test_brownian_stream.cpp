@@ -44,9 +44,8 @@ public:
     static constexpr algebra::VectorType vtype = algebra::VectorType::Dense;
     std::size_t seed = 12345;
 
-    const scalars::ScalarType* ctype;
+    const scalars::ScalarType *ctype;
     algebra::context_pointer ctx;
-
 
     class BrownianHolder : public streams::BrownianStream {
     public:
@@ -55,21 +54,12 @@ public:
 
     BrownianHolder bm;
 
-
-
-
-
-
     BrownianStreamTests()
         : seed(12345),
           ctype(scalars::ScalarType::of<double>()),
           ctx(algebra::get_context(width, depth, ctype, {})),
-          bm(ctype->get_rng("pcg", seed), {width, {0.0, 1.0}, ctx, ctype, vtype, 1})
-    {}
-
+          bm(ctype->get_rng("pcg", seed), {width, {0.0, 1.0}, ctx, ctype, vtype, 1}) {}
 };
-
-
 
 TEST_F(BrownianStreamTests, TestLogSignatureResolutions) {
     DyadicInterval unit(0, 0);
@@ -83,9 +73,7 @@ TEST_F(BrownianStreamTests, TestLogSignatureResolutions) {
     auto bottom_right = bm.log_signature(right, 1, *ctx);
 
     EXPECT_EQ(top, ctx->cbh(bottom_left, bottom_right, vtype));
-
 }
-
 
 TEST_F(BrownianStreamTests, Serialization) {
 
@@ -101,7 +89,6 @@ TEST_F(BrownianStreamTests, Serialization) {
         archives::JSONOutputArchive oarch(ss);
         oarch(bm);
     }
-
 
     streams::BrownianStream instream;
     {

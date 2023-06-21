@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -90,19 +90,19 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width),
  * which eliminates one branch from the function.
  */
 static inline dimn_t power(deg_t base, int exp) {
-    if (exp == 1) return base;
-    return ((exp %2 == 1) ? base : 1)*power(base, exp/2)*power(base, exp/2);
+    if (exp == 1)
+        return base;
+    return ((exp % 2 == 1) ? base : 1) * power(base, exp / 2) * power(base, exp / 2);
 }
-
 
 dimn_t HallSetSizeHelper::operator()(int k) {
     dimn_t result = 0;
 
-    for (int i=1; i<=k; ++i) {
+    for (int i = 1; i <= k; ++i) {
         auto divs = div(k, i);
         if (divs.rem == 0) {
             auto comp = k / divs.quot;
-            result += static_cast<dimn_t>(m_mobius[divs.quot]*power(m_width, comp));
+            result += static_cast<dimn_t>(m_mobius[divs.quot] * power(m_width, comp));
         }
     }
 

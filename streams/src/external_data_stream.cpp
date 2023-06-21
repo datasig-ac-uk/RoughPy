@@ -29,39 +29,35 @@
 // Created by user on 13/04/23.
 //
 
-
 #include "external_data_stream.h"
 
 #include "external_data_sources/csv_data_source.h"
 #include "external_data_sources/sound_file_data_source.h"
 
-#include <vector>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 using namespace rpy;
-
 
 streams::ExternalDataStreamSource::~ExternalDataStreamSource() = default;
 
 streams::ExternalDataSourceFactory::~ExternalDataSourceFactory() = default;
 
-
 algebra::Lie streams::ExternalDataStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
     scalars::KeyScalarArray buffer(ctx.ctype());
     auto num_increments = p_source->query(buffer, interval);
 
-    algebra::SignatureData tmp {
+    algebra::SignatureData tmp{
         scalars::ScalarStream(ctx.ctype()),
-        std::vector<const key_type*>(),
-        metadata().cached_vector_type
-    };
+        std::vector<const key_type *>(),
+        metadata().cached_vector_type};
 
     tmp.data_stream.reserve_size(num_increments);
     const auto width = static_cast<dimn_t>(metadata().width);
 
     scalars::ScalarPointer buf_ptr(buffer);
-    for (dimn_t i=0; i<num_increments; ++i) {
+    for (dimn_t i = 0; i < num_increments; ++i) {
         tmp.data_stream.push_back({buf_ptr, width});
         buf_ptr += width;
     }
@@ -69,27 +65,23 @@ algebra::Lie streams::ExternalDataStream::log_signature_impl(const intervals::In
     return ctx.log_signature(tmp);
 }
 
-
 static std::mutex s_factory_guard;
 static std::vector<std::unique_ptr<const streams::ExternalDataSourceFactory>> s_factory_list;
-
 
 void streams::ExternalDataStream::register_factory(std::unique_ptr<const ExternalDataSourceFactory> &&factory) {
     std::lock_guard<std::mutex> access(s_factory_guard);
     s_factory_list.push_back(std::move(factory));
 }
-streams::ExternalDataStreamConstructor streams::ExternalDataStream::get_factory_for(const url& uri) {
+streams::ExternalDataStreamConstructor streams::ExternalDataStream::get_factory_for(const url &uri) {
     std::lock_guard<std::mutex> access(s_factory_guard);
 
     if (s_factory_list.empty()) {
         // Register defaults
         s_factory_list.emplace_back(new SoundFileDataSourceFactory);
-
     }
 
-
     ExternalDataStreamConstructor ctor;
-    for (auto it=s_factory_list.rbegin(); it != s_factory_list.rend(); ++it) {
+    for (auto it = s_factory_list.rbegin(); it != s_factory_list.rend(); ++it) {
         ctor = (*it)->get_constructor(uri);
         if (ctor) {
             return ctor;
@@ -118,18 +110,16 @@ void streams::ExternalDataSourceFactory::set_vtype(void *payload, algebra::Vecto
 void streams::ExternalDataSourceFactory::set_resolution(void *payload, resolution_t resolution) const {
 }
 
-void streams::ExternalDataSourceFactory::add_option(void *payload, const string &option, void* value) const {
+void streams::ExternalDataSourceFactory::add_option(void *payload, const string &option, void *value) const {
 }
 
 streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(const streams::ExternalDataSourceFactory *factory, void *payload)
-    : p_factory(factory), p_payload(payload)
-{
+    : p_factory(factory), p_payload(payload) {
     RPY_CHECK(p_factory != nullptr && p_payload != nullptr);
 }
 
 streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(streams::ExternalDataStreamConstructor &&other) noexcept
-    : p_factory(other.p_factory), p_payload(other.p_payload)
-{
+    : p_factory(other.p_factory), p_payload(other.p_payload) {
     other.p_factory = nullptr;
     other.p_payload = nullptr;
 }
@@ -172,11 +162,11 @@ void streams::ExternalDataStreamConstructor::set_resolution(resolution_t resolut
     p_factory->set_resolution(p_payload, resolution);
 }
 
-void streams::ExternalDataStreamConstructor::add_option(const string &option, void* value) {
+void streams::ExternalDataStreamConstructor::add_option(const string &option, void *value) {
     p_factory->add_option(p_payload, option, value);
 }
 streams::Stream streams::ExternalDataStreamConstructor::construct() {
-    auto* payload = p_payload;
+    auto *payload = p_payload;
     p_payload = nullptr;
     return p_factory->construct_stream(payload);
 }

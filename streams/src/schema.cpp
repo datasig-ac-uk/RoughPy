@@ -138,7 +138,7 @@ StreamChannel &StreamChannel::operator=(StreamChannel &&other) noexcept {
 
 StreamSchema::StreamSchema(dimn_t width) {
     reserve(width);
-    for (dimn_t i=0; i < width; ++i) {
+    for (dimn_t i = 0; i < width; ++i) {
         insert_increment(std::to_string(i));
     }
 }
@@ -215,7 +215,7 @@ dimn_t StreamChannel::variant_id_of_label(string_view label) const {
 StreamChannel &StreamChannel::add_variant(string variant_label) {
     RPY_CHECK(m_type == ChannelType::Categorical);
 
-    if (RPY_UNLIKELY(variant_label.empty())) {
+    if (variant_label.empty()) {
         variant_label = std::to_string(categorical_info.variants.size());
     }
 
@@ -244,7 +244,7 @@ std::vector<string> StreamChannel::get_variants() const {
             break;
         case ChannelType::Lie:
             variants.reserve(lie_info.width);
-            for (deg_t i=0; i<lie_info.width; ++i) {
+            for (deg_t i = 0; i < lie_info.width; ++i) {
                 variants.push_back(std::to_string(i));
             }
             break;
@@ -319,7 +319,10 @@ typename StreamSchema::const_iterator StreamSchema::find(const string &label) co
     return it_end;
 }
 
+
+
 typename StreamSchema::iterator StreamSchema::find(const string &label) {
+    RPY_CHECK(!m_is_final);
     auto it_current = begin();
     const auto it_end = end();
 
@@ -404,6 +407,7 @@ dimn_t StreamSchema::label_to_stream_dim(const string &label) const {
 }
 
 StreamChannel &StreamSchema::insert(string label, StreamChannel &&channel_data) {
+    RPY_CHECK(!m_is_final);
     if (label.empty()) {
         label = std::to_string(size());
     }

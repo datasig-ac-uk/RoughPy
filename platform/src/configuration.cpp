@@ -31,16 +31,13 @@
 
 #include "configuration.h"
 
-
 using namespace rpy;
 
 class Configuration::State {
-
 };
 
 rpy::Configuration::Configuration()
-    : p_state(new State)
-{
+    : p_state(new State) {
 }
 rpy::Configuration::~Configuration() = default;
 

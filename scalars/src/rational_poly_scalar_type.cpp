@@ -30,8 +30,8 @@
 //
 
 #include "rational_poly_scalar_type.h"
-#include "scalar_pointer.h"
 #include "scalar.h"
+#include "scalar_pointer.h"
 
 namespace rpy {
 namespace scalars {
@@ -42,7 +42,7 @@ const ScalarType *RationalPolyScalarType::host_type() const noexcept {
     return this;
 }
 Scalar RationalPolyScalarType::from(long long int numerator, long long int denominator) const {
-    return Scalar(this, rational_poly_scalar(rational_scalar_type(numerator)/rational_scalar_type(denominator)));
+    return Scalar(this, rational_poly_scalar(rational_scalar_type(numerator) / rational_scalar_type(denominator)));
 }
 ScalarPointer RationalPolyScalarType::allocate(std::size_t count) const {
     if (count == 1) {
@@ -67,9 +67,8 @@ void RationalPolyScalarType::swap(ScalarPointer lhs, ScalarPointer rhs) const {
     RPY_CHECK(!lhs.is_const() && !rhs.is_const());
 
     std::swap(
-        *lhs.raw_cast<rational_poly_scalar*>(),
-        *rhs.raw_cast<rational_poly_scalar*>()
-        );
+        *lhs.raw_cast<rational_poly_scalar *>(),
+        *rhs.raw_cast<rational_poly_scalar *>());
 }
 void RationalPolyScalarType::convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const {
 }

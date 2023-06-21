@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,9 +32,9 @@
 #include "RationalType.h"
 
 #include <algorithm>
+#include <cmath>
 #include <ostream>
 #include <utility>
-#include <cmath>
 
 #if RPY_USING_GMP
 #include <gmp.h>
@@ -46,10 +46,10 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-std::unique_ptr<RandomGenerator> RationalType::get_mt19937_generator(const ScalarType* type, Slice<uint64_t> seed) {
+std::unique_ptr<RandomGenerator> RationalType::get_mt19937_generator(const ScalarType *type, Slice<uint64_t> seed) {
     return nullptr;
 }
-std::unique_ptr<RandomGenerator> RationalType::get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed) {
+std::unique_ptr<RandomGenerator> RationalType::get_pcg_generator(const ScalarType *type, Slice<uint64_t> seed) {
     return std::unique_ptr<RandomGenerator>();
 }
 
@@ -103,9 +103,8 @@ void RationalType::convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t cou
     convert_copy(dst, src.ptr(), count, src.type()->id());
 }
 
-
-template<typename F>
-static inline void convert_copy_ext(ScalarPointer& out, const void* in, std::size_t count) {
+template <typename F>
+static inline void convert_copy_ext(ScalarPointer &out, const void *in, std::size_t count) {
     const auto *iptr = static_cast<const F *>(in);
     auto *optr = static_cast<rational_scalar_type *>(out.ptr());
 
@@ -113,7 +112,6 @@ static inline void convert_copy_ext(ScalarPointer& out, const void* in, std::siz
         ::new (optr) rational_scalar_type(static_cast<float>(*iptr));
     }
 }
-
 
 void RationalType::convert_copy(void *out, const void *in, std::size_t count, BasicScalarInfo info) const {
 
@@ -187,9 +185,6 @@ void RationalType::convert_copy(void *out, const void *in, std::size_t count, Ba
         default:
             throw std::runtime_error("unsupported scalar type");
     }
-
-
-
 }
 void RationalType::convert_copy(void *out, ScalarPointer in, std::size_t count) const {
     RPY_DBG_ASSERT(out != nullptr);
@@ -373,17 +368,17 @@ void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const {
         *rhs.raw_cast<scalar_type *>());
 }
 std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr, dimn_t count) const {
-    const auto* raw = ptr.raw_cast<const rational_scalar_type*>();
+    const auto *raw = ptr.raw_cast<const rational_scalar_type *>();
     std::vector<byte> result;
-    result.reserve(count * sizeof(rational_scalar_type));  // Should be a reasonable approximation of the final size
+    result.reserve(count * sizeof(rational_scalar_type));// Should be a reasonable approximation of the final size
 
     auto push_items = [&result](auto item) {
 #if RPY_USING_GMP
         auto size = static_cast<int64_t>(item->_mp_size) * sizeof(mp_limb_t);
-        auto n_bytes = (size >= 0) ? size : -size;  // abs(size) is ambiguous?
+        auto n_bytes = (size >= 0) ? size : -size;// abs(size) is ambiguous?
 #else
         auto size = static_cast<int64_t>(item.backend().size());
-        auto n_bytes = size*sizeof(boost::multiprecision::limb_type);
+        auto n_bytes = size * sizeof(boost::multiprecision::limb_type);
         size = item.sign() ? -n_bytes : n_bytes;
 #endif
         const auto *sz_ptr = reinterpret_cast<const byte *>(&size);
@@ -394,7 +389,7 @@ std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr, dimn_t co
 #if RPY_USING_GMP
         auto curr_size = result.size();
         result.resize(curr_size + n_bytes);
-        auto* write = result.data() + curr_size;
+        auto *write = result.data() + curr_size;
         size_t actually_written;
         mpz_export(write, &actually_written, -1, sizeof(byte), -1, 0, item);
         RPY_DBG_ASSERT(actually_written == n_bytes);
@@ -403,13 +398,13 @@ std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr, dimn_t co
 #endif
     };
 
-    for (dimn_t i=0; i<count; ++i) {
+    for (dimn_t i = 0; i < count; ++i) {
 #if RPY_USING_GMP
         const auto &item = raw[i].backend();
         push_items(mpq_numref(item.data()));
         push_items(mpq_denref(item.data()));
 #else
-        const auto& item = raw[i];
+        const auto &item = raw[i];
         push_items(numerator(item));
         push_items(denominator(item));
 #endif
@@ -421,12 +416,12 @@ ScalarPointer RationalType::from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) 
     // TODO: These implementations are probably not completely correct
 
     ScalarPointer out = allocate(count);
-    auto* raw = out.raw_cast<rational_scalar_type*>();
+    auto *raw = out.raw_cast<rational_scalar_type *>();
 
     dimn_t pos = 0;
     const auto limit = raw_bytes.size();
 
-    auto unpack_limb = [&pos, &limit](auto& dst, const byte* src) {
+    auto unpack_limb = [&pos, &limit](auto &dst, const byte *src) {
         RPY_CHECK(pos + sizeof(int64_t) <= limit);
 
         int64_t size;
@@ -443,19 +438,19 @@ ScalarPointer RationalType::from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) 
         mpz_import(dst, n_bytes, -1, sizeof(byte), -1, 0, src);
 #else
         boost::multiprecision::cpp_int tmp;
-        import_bits(tmp, src, src+n_bytes, CHAR_BIT, false);
+        import_bits(tmp, src, src + n_bytes, CHAR_BIT, false);
         dst = tmp.backend();
 #endif
     };
 
-    const auto* src = raw_bytes.begin();
-    for (dimn_t i=0; i<count; ++i) {
-        auto& item = raw[i];
+    const auto *src = raw_bytes.begin();
+    for (dimn_t i = 0; i < count; ++i) {
+        auto &item = raw[i];
         auto den = denominator(item);
 
 #if RPY_USING_GMP
-        auto* numref = mpq_numref(item.backend().data());
-        auto* denref = mpq_denref(item.backend().data());
+        auto *numref = mpq_numref(item.backend().data());
+        auto *denref = mpq_denref(item.backend().data());
         unpack_limb(numref, src + pos);
         unpack_limb(denref, src + pos);
 #else
@@ -463,7 +458,6 @@ ScalarPointer RationalType::from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) 
         unpack_limb(item.backend().denom(), src + pos);
 #endif
     }
-
 
     return out;
 }

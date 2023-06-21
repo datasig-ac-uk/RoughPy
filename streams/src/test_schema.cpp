@@ -29,7 +29,6 @@
 // Created by user on 25/05/23.
 //
 
-
 #include "schema.h"
 #include <gtest/gtest.h>
 
@@ -109,7 +108,6 @@ TEST(Schema, TestStreamChannelValueSerialization) {
     EXPECT_EQ(in_channel.type(), channel.type());
 }
 
-
 TEST(Schema, TestStreamChannelCategoricalSerialization) {
     StreamChannel channel(ChannelType::Categorical);
     channel.add_variant("first").add_variant("second");
@@ -130,30 +128,24 @@ TEST(Schema, TestStreamChannelCategoricalSerialization) {
     EXPECT_EQ(in_channel.get_variants(), channel.get_variants());
 }
 
-
-
-
 namespace {
 
 class SchemaTests : public ::testing::Test {
 protected:
-
     StreamSchema schema;
 
     SchemaTests() {
         schema.reserve(3);
         schema.insert_categorical("a")
-              .add_variant("first")
-              .add_variant("second")
-              .add_variant("third");
+            .add_variant("first")
+            .add_variant("second")
+            .add_variant("third");
         schema.insert_value("c");
         schema.insert_increment("b");
     }
-
 };
 
-} // namespace
-
+}// namespace
 
 TEST_F(SchemaTests, TestSchemaFind) {
     const auto end = schema.end();
@@ -172,7 +164,6 @@ TEST_F(SchemaTests, TestSchemaFind) {
     auto findb = schema.find("b");
     ASSERT_NE(findb, end);
     EXPECT_EQ(findb->first, "b");
-
 }
 
 TEST_F(SchemaTests, TestSchemaWidthCalculation) {

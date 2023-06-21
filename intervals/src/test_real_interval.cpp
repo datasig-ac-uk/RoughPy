@@ -2,7 +2,6 @@
 // Created by sam on 12/05/23.
 //
 
-
 #include <gtest/gtest.h>
 
 #include "real_interval.h"
@@ -11,7 +10,6 @@
 
 using namespace rpy;
 using namespace rpy::intervals;
-
 
 TEST(RealInterval, RealIntervalSerialization) {
 

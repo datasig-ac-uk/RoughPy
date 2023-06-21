@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Datasig Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -30,8 +30,8 @@
 //
 
 #include "schema.h"
-#include <roughpy/streams/schema.h>
 #include "args/parse_schema.h"
+#include <roughpy/streams/schema.h>
 
 using namespace rpy;
 using namespace rpy::python;
@@ -40,19 +40,14 @@ using namespace pybind11::literals;
 
 namespace {
 
-
 class PyChannelItem {
-    StreamChannel* ptr;
+    StreamChannel *ptr;
 
 public:
-
-    PyChannelItem(StreamChannel& item) : ptr(&item)
-    {}
-
-
+    PyChannelItem(StreamChannel &item) : ptr(&item) {}
 };
 
-inline void init_channel_item(py::module_& m) {
+inline void init_channel_item(py::module_ &m) {
 
     py::enum_<ChannelType>(m, "ChannelType")
         .value("IncrementChannel", ChannelType::Increment)
@@ -62,13 +57,9 @@ inline void init_channel_item(py::module_& m) {
         .export_values();
 
     py::class_<StreamChannel> cls(m, "StreamChannel");
-
 }
 
-
-}
-
-
+}// namespace
 
 void rpy::python::init_schema(py::module_ &m) {
 
@@ -77,30 +68,35 @@ void rpy::python::init_schema(py::module_ &m) {
     py::class_<StreamSchema, std::shared_ptr<StreamSchema>>
         cls(m, "StreamSchema");
 
-
     cls.def_static("from_data", &parse_schema_from_data, "data"_a);
     cls.def_static("parse", &parse_schema, "schema"_a);
 
     cls.def("width", &StreamSchema::width);
 
-    cls.def("insert_increment", [](StreamSchema* schema, string label) {
-        return &schema->insert_increment(std::move(label));
-    }, "label"_a, py::return_value_policy::reference_internal);
+    cls.def(
+        "insert_increment", [](StreamSchema *schema, string label) {
+            return &schema->insert_increment(std::move(label));
+        },
+        "label"_a, py::return_value_policy::reference_internal);
 
-    cls.def("insert_value", [](StreamSchema* schema, string label) {
-        return &schema->insert_value(std::move(label));
-    }, "label"_a, py::return_value_policy::reference_internal);
+    cls.def(
+        "insert_value", [](StreamSchema *schema, string label) {
+            return &schema->insert_value(std::move(label));
+        },
+        "label"_a, py::return_value_policy::reference_internal);
 
-    cls.def("insert_categorical", [](StreamSchema* schema, string label) {
-        return &schema->insert_categorical(std::move(label));
-    }, "label"_a, py::return_value_policy::reference_internal);
+    cls.def(
+        "insert_categorical", [](StreamSchema *schema, string label) {
+            return &schema->insert_categorical(std::move(label));
+        },
+        "label"_a, py::return_value_policy::reference_internal);
 
-    cls.def("get_labels", [](const StreamSchema* schema) {
+    cls.def("get_labels", [](const StreamSchema *schema) {
         py::list labels(schema->width());
-        auto* plist = labels.ptr();
+        auto *plist = labels.ptr();
         py::ssize_t i = 0;
-        for (auto&& item : *schema) {
-            switch(item.second.type()) {
+        for (auto &&item : *schema) {
+            switch (item.second.type()) {
                 case streams::ChannelType::Increment:
                     PyList_SET_ITEM(plist, i++, PyUnicode_FromString(item.first.c_str()));
                     break;
@@ -110,7 +106,7 @@ void rpy::python::init_schema(py::module_ &m) {
                     break;
                 case streams::ChannelType::Categorical:
                     auto nvariants = item.second.num_variants();
-                    for (dimn_t idx=0; idx<nvariants; ++idx) {
+                    for (dimn_t idx = 0; idx < nvariants; ++idx) {
                         PyList_SET_ITEM(plist, i++,
                                         PyUnicode_FromString((item.first + item.second.label_suffix(idx)).c_str()));
                     }
@@ -119,5 +115,4 @@ void rpy::python::init_schema(py::module_ &m) {
         }
         return labels;
     });
-
 }

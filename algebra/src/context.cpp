@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,8 +33,8 @@
 
 #include "hall_set_size.h"
 
-#include <unordered_map>
 #include <mutex>
+#include <unordered_map>
 
 #include <boost/functional/hash.hpp>
 
@@ -43,15 +43,14 @@
 using namespace rpy;
 using namespace rpy::algebra;
 
-
-BasicContextSpec rpy::algebra::get_context_spec(const context_pointer& ctx) {
+BasicContextSpec rpy::algebra::get_context_spec(const context_pointer &ctx) {
     if (!ctx) {
-        return { "", "", 0, 0 };
+        return {"", "", 0, 0};
     }
-    return { ctx->ctype()->id(), ctx->backend(), ctx->width(), ctx->depth() };
+    return {ctx->ctype()->id(), ctx->backend(), ctx->width(), ctx->depth()};
 }
 
-context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec) {
+context_pointer rpy::algebra::from_context_spec(const BasicContextSpec &spec) {
     RPY_CHECK(spec.stype_id != "");
 
     return get_context(spec.width, spec.depth, scalars::get_type(spec.stype_id), {{"backend", spec.backend}});
@@ -79,8 +78,7 @@ ContextBase::ContextBase(
     : m_width(width),
       m_depth(depth),
       p_lie_sizes(lie_sizes),
-      p_tensor_sizes(tensor_sizes)
-{
+      p_tensor_sizes(tensor_sizes) {
     if (!p_tensor_sizes) {
         auto *tsizes = new dimn_t[1 + m_depth];
         // Immediately give ownership to the MaybeOwned type so we don't leak
@@ -95,21 +93,19 @@ ContextBase::ContextBase(
 
     if (!p_lie_sizes) {
         HallSetSizeHelper helper(m_width, m_depth);
-        auto* lsizes = new dimn_t[1 + m_depth];
+        auto *lsizes = new dimn_t[1 + m_depth];
         // Immediately give ownership to the MaybeOwned type so we don't leak
         // memory.
         p_lie_sizes = lsizes;
         lsizes[0] = 0;
         lsizes[1] = m_width;
-        for (int i=2; i<=m_depth; ++i) {
-            lsizes[i] = helper(i)*lsizes[i-1];
+        for (int i = 2; i <= m_depth; ++i) {
+            lsizes[i] = helper(i) * lsizes[i - 1];
         }
     }
-
 }
 
 ContextBase::~ContextBase() = default;
-
 
 dimn_t ContextBase::lie_size(deg_t deg) const noexcept {
     if (deg < 0 || deg > m_depth) {
@@ -127,7 +123,7 @@ bool Context::check_compatible(const Context &other_ctx) const noexcept {
     return width() == other_ctx.width();
 }
 FreeTensor Context::zero_free_tensor(VectorType vtype) const {
-    return construct_free_tensor({ scalars::KeyScalarArray(), vtype });
+    return construct_free_tensor({scalars::KeyScalarArray(), vtype});
 }
 ShuffleTensor Context::zero_shuffle_tensor(VectorType vtype) const {
     return construct_shuffle_tensor({scalars::KeyScalarArray(), vtype});
@@ -176,7 +172,7 @@ Lie Context::cbh(const Lie &left, const Lie &right, VectorType vtype) const {
 
 static std::recursive_mutex s_context_lock;
 
-static std::vector<std::unique_ptr<ContextMaker>>& get_context_maker_list() {
+static std::vector<std::unique_ptr<ContextMaker>> &get_context_maker_list() {
     static std::vector<std::unique_ptr<ContextMaker>> list;
     return list;
 }
@@ -185,21 +181,16 @@ namespace {
 
 class ConcreteContextBase : public ContextBase {
 public:
-
-    ConcreteContextBase(deg_t width, deg_t depth) :
-        ContextBase(width, depth, nullptr, nullptr)
-    {}
-
+    ConcreteContextBase(deg_t width, deg_t depth) : ContextBase(width, depth, nullptr, nullptr) {}
 };
 
-}
-
+}// namespace
 
 base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth) {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
-    auto& maker_list = get_context_maker_list();
+    auto &maker_list = get_context_maker_list();
 
-    for (const auto& maker : maker_list) {
+    for (const auto &maker : maker_list) {
         auto found = maker->get_base_context(width, depth);
         if (found.has_value()) {
             return *found;
@@ -210,7 +201,7 @@ base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth) {
     // make a new one
     static std::vector<base_context_pointer> s_base_context_cache;
 
-    for (const auto& bcp : s_base_context_cache) {
+    for (const auto &bcp : s_base_context_cache) {
         if (bcp->width() == width && bcp->depth() == depth) {
             return bcp;
         }
@@ -220,17 +211,17 @@ base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth) {
     return s_base_context_cache.back();
 }
 context_pointer rpy::algebra::get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype,
-                            const std::vector<std::pair<string, string>> &preferences) {
+                                          const std::vector<std::pair<string, string>> &preferences) {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
-    auto& maker_list = get_context_maker_list();
+    auto &maker_list = get_context_maker_list();
 
     if (maker_list.empty()) {
         maker_list.emplace_back(new LiteContextMaker);
     }
 
-    std::vector<const ContextMaker*> found;
+    std::vector<const ContextMaker *> found;
     found.reserve(maker_list.size());
-    for (const auto& maker : maker_list) {
+    for (const auto &maker : maker_list) {
         if (maker->can_get(width, depth, ctype, preferences)) {
             found.push_back(maker.get());
         }
@@ -249,7 +240,7 @@ context_pointer rpy::algebra::get_context(deg_t width, deg_t depth, const scalar
 
 const ContextMaker *rpy::algebra::register_context_maker(std::unique_ptr<ContextMaker> maker) {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
-    auto& maker_list = get_context_maker_list();
+    auto &maker_list = get_context_maker_list();
     maker_list.push_back(std::move(maker));
     return maker_list.back().get();
 }
