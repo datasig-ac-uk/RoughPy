@@ -26,10 +26,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Set version from ref
-        shell: bash
-        run: echo "${{ github.head_ref || github.ref_name }}" >> VERSION.txt
-
       - name: Build sdist
         run: |
           python -m pip install build
@@ -76,10 +72,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Set version from ref
-        shell: bash
-        run: echo "${{ github.head_ref || github.ref_name }}" >> VERSION.txt
-
       - name: Build and test
         uses: pypa/cibuildwheel@v2.13.0
         env:
@@ -92,7 +84,6 @@ jobs:
             delocate-wheel --require-archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
           CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK VCPKG_BINARY_SOURCES
-            
 
       - uses: actions/upload-artifact@v3
         with:
@@ -126,6 +117,14 @@ jobs:
         with:
           name: wheels
           path: dist
+
+      - name: Create release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="$(head -n 1 VERSION.txt)"
+          gh release create -t $version --generate-notes $version dist/*
 
       - name: Publish
         run: |
