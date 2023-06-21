@@ -242,7 +242,7 @@ void handle_timestamp_pair(helper_t &helper, param_t timestamp, py::object tick_
     }
 }
 
-void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks) {
+inline void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks) {
     for (auto &&[it_time, it_value] : ticks) {
         auto timestamp = python::convert_timestamp(
             py::reinterpret_borrow<py::object>(it_time));
@@ -253,7 +253,7 @@ void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks) {
     }
 }
 
-void handle_tuple_sequence_tick_stream(helper_t &helper, const py::sequence &ticks) {
+inline void handle_tuple_sequence_tick_stream(helper_t &helper, const py::sequence &ticks) {
     for (auto &&it_value : ticks) {
         // Use sequence instead of tuple for inner items, to allow lists instead
         RPY_CHECK(py::isinstance<py::sequence>(it_value));
@@ -261,7 +261,6 @@ void handle_tuple_sequence_tick_stream(helper_t &helper, const py::sequence &tic
         auto len = py::len(inner);
 
         RPY_CHECK(len > 1 && len <= 4);
-
         auto timestamp = python::convert_timestamp(
             py::reinterpret_borrow<py::object>(inner[0]));
         auto right = inner[py::slice(1, {}, {})];
