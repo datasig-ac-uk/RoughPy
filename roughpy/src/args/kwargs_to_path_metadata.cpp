@@ -155,25 +155,7 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
         if (md.schema) {
             md.width = static_cast<deg_t>(md.schema->width());
         } else if (kwargs.contains("width")) {
-            auto nchannels = kwargs["width"].cast<rpy::deg_t>();
-            md.schema = std::make_shared<streams::StreamSchema>();
-            for (deg_t i = 0; i < nchannels; ++i) {
-                switch (ch_type) {
-                    case streams::ChannelType::Increment:
-                        md.schema->insert_increment("");
-                        break;
-                    case streams::ChannelType::Value:
-                        md.schema->insert_value("");
-                        break;
-                    case streams::ChannelType::Categorical:
-                        md.schema->insert_categorical("");
-                        break;
-                    case streams::ChannelType::Lie:
-                        md.schema->insert_lie("");
-                        break;
-                }
-            }
-            md.width = static_cast<deg_t>(md.schema->width());
+            md.width = kwargs["width"].cast<rpy::deg_t>();
         }
 
         if (kwargs.contains("depth")) {
