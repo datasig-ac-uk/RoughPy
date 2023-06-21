@@ -342,7 +342,7 @@ void handle_timestamp_pair(helper_t &helper, param_t timestamp, py::object tick_
 }
 
 inline void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks) {
-    for (auto [it_time, it_value] : ticks) {
+    for (auto &&[it_time, it_value] : ticks) {
         auto timestamp = python::convert_timestamp(
             py::reinterpret_borrow<py::object>(it_time));
 

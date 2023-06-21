@@ -229,6 +229,23 @@ StreamChannel &StreamChannel::add_variant(string variant_label) {
     categorical_info.variants.push_back(std::move(variant_label));
     return *this;
 }
+StreamChannel &StreamChannel::insert_variant(string variant_label) {
+    RPY_CHECK(m_type == ChannelType::Categorical);
+
+    if (variant_label.empty()) {
+        variant_label = std::to_string(categorical_info.variants.size());
+    }
+
+    auto var_begin = categorical_info.variants.begin();
+    auto var_end = categorical_info.variants.end();
+
+    auto found = std::find(var_begin, var_end, variant_label);
+    if (found == var_end) {
+        categorical_info.variants.push_back(std::move(variant_label));
+    }
+
+    return *this;
+}
 
 StreamChannel &StreamChannel::insert_variant(string variant_label) {
     RPY_CHECK(m_type == ChannelType::Categorical);
