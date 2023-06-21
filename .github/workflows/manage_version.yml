@@ -1,0 +1,35 @@
+name: Manage version file
+
+
+on:
+  pull_request_target:
+    branches:
+      - release/v[0-9]+.[0-9]+.[0-9]+**
+    types:
+      - opened
+
+
+
+jobs:
+  update_version:
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Write version file
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(echo ${{ github.head_ref }} | sed -e 's/.*release\//')
+          echo "VERSION=$version" >> $GITHUB_ENV
+          echo $version >> VERSION.txt
+          git add VERSION.txt
+          git commit -m "Updated VERSION.txt to $version"
+          git push
+
+          gh pr comment ${{ github.event.number  }} -F - <<- EOF
+            You've started the process of creating a new release for RoughPy.
+            I've written the version "$version" to VERSION.txt and updated
+            your PR branch accordingly.
+          EOF
