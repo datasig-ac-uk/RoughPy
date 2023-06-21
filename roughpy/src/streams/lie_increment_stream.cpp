@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,24 +28,23 @@
 #include "lie_increment_stream.h"
 
 #include <roughpy/core/helpers.h>
+#include <roughpy/scalars/key_scalar_array.h>
+#include <roughpy/scalars/owned_scalar_array.h>
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/owned_scalar_array.h>
-#include <roughpy/scalars/key_scalar_array.h>
 #include <roughpy/streams/lie_increment_stream.h>
 #include <roughpy/streams/stream.h>
 
 #include "args/kwargs_to_path_metadata.h"
-#include "scalars/scalars.h"
 #include "scalars/scalar_type.h"
+#include "scalars/scalars.h"
 #include "stream.h"
-
 
 using namespace rpy;
 using namespace rpy::python;
 using namespace pybind11::literals;
 
-static const char* LIE_INCR_STREAM_DOC = R"rpydoc(A basic stream type defined by a sequence of increments
+static const char *LIE_INCR_STREAM_DOC = R"rpydoc(A basic stream type defined by a sequence of increments
 of fixed size at specified time intervals.
 )rpydoc";
 
@@ -63,7 +62,7 @@ void buffer_to_indices(std::vector<param_t> &indices, const py::buffer_info &inf
     }
 }
 
-static py::object lie_increment_stream_from_increments(const py::object& data, const py::kwargs& kwargs) {
+static py::object lie_increment_stream_from_increments(const py::object &data, const py::kwargs &kwargs) {
     auto md = kwargs_to_metadata(kwargs);
 
     std::vector<param_t> indices;
@@ -140,39 +139,32 @@ static py::object lie_increment_stream_from_increments(const py::object& data, c
         throw py::value_error("mismatch between number of rows in data and number of indices");
     }
 
-
-
     auto result = streams::Stream(
         streams::LieIncrementStream(
             std::move(buffer).copy_or_move(),
             indices,
-            {
-                md.width,
-                md.support ? *md.support : intervals::RealInterval(0, 1),
-                md.ctx,
-                md.scalar_type,
-                md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
-                md.resolution
-            }));
+            {md.width,
+             md.support ? *md.support : intervals::RealInterval(0, 1),
+             md.ctx,
+             md.scalar_type,
+             md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
+             md.resolution}));
 
     if (options.cleanup) {
         options.cleanup();
     }
 
     return py::reinterpret_steal<py::object>(python::RPyStream_FromStream(std::move(result)));
-
 }
 
-static streams::Stream lie_increment_path_from_values(const py::object& data, const py::kwargs& kwargs) {
+static streams::Stream lie_increment_path_from_values(const py::object &data, const py::kwargs &kwargs) {
     throw std::runtime_error("Not implemented");
 }
-
 
 void python::init_lie_increment_stream(py::module_ &m) {
 
     py::class_<streams::LieIncrementStream> klass(m, "LieIncrementStream", LIE_INCR_STREAM_DOC);
 
     klass.def_static("from_increments", &lie_increment_stream_from_increments, "data"_a);
-//    klass.def_static("from_values", &lie_increment_path_from_values, "data"_a);
-
+    //    klass.def_static("from_values", &lie_increment_path_from_values, "data"_a);
 }

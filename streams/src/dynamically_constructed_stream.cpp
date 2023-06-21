@@ -36,8 +36,6 @@
 using namespace rpy;
 using namespace rpy::streams;
 
-
-
 void streams::DynamicallyConstructedStream::refine_accuracy(DynamicallyConstructedStream::data_increment increment, resolution_t desired) const {
     RPY_DBG_ASSERT(increment->first.power() < desired);
     //
@@ -79,7 +77,6 @@ void streams::DynamicallyConstructedStream::refine_accuracy(DynamicallyConstruct
         while (leaf_above->first.contains(refined_inc) && leaf_above->first != refined_inc) {
             leaf_above = insert_children_and_refine(leaf_above, refined_inc);
         }
-
 
         update_parents(leaf_above);
     }

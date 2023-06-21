@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,18 +32,15 @@
 
 #include "context.h"
 
-
 using namespace rpy;
 using namespace pybind11::literals;
-
 
 static const char *LKEY_ITERATOR_DOC = R"eadoc(Iterator over range of Hall set members.
 )eadoc";
 
-python::PyLieKeyIterator::PyLieKeyIterator(const py::object& ctx, key_type current, key_type end)
-    : m_current(current), m_end(end)
-{
-    if (!py::isinstance(ctx, reinterpret_cast<PyObject*>(&RPyContext_Type))) {
+python::PyLieKeyIterator::PyLieKeyIterator(const py::object &ctx, key_type current, key_type end)
+    : m_current(current), m_end(end) {
+    if (!py::isinstance(ctx, reinterpret_cast<PyObject *>(&RPyContext_Type))) {
         throw py::type_error("expected a Context object");
     }
     p_ctx = python::ctx_cast(ctx.ptr());
@@ -66,8 +63,8 @@ static python::PyLieKey to_py_lie_key(key_type k, const algebra::LieBasis &lbasi
         return python::PyLieKey(width, lparent, to_py_lie_key(rparent, lbasis));
     }
     return python::PyLieKey(width,
-                      to_py_lie_key(lparent, lbasis),
-                      to_py_lie_key(rparent, lbasis));
+                            to_py_lie_key(lparent, lbasis),
+                            to_py_lie_key(rparent, lbasis));
 }
 
 python::PyLieKey python::PyLieKeyIterator::next() {

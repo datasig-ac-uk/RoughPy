@@ -31,7 +31,6 @@ public:
 
     StreamConstructionHelper(algebra::context_pointer ctx,
                              std::shared_ptr<StreamSchema> schema,
-                             dimn_t num_entries,
                              algebra::VectorType vtype
                              );
 
@@ -48,6 +47,11 @@ private:
     algebra::Lie& next_entry(param_t next_timestamp);
 public:
 
+    StreamSchema& schema() noexcept { return *p_schema; }
+    const scalars::ScalarType* ctype() const noexcept { return p_ctx->ctype(); }
+
+    RPY_NO_DISCARD
+    optional<ChannelType> type_of(string_view label) const;
 
     template <typename T>
     void add_increment(param_t timestamp, dimn_t channel, T &&value);

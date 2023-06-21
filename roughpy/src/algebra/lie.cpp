@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,13 +29,13 @@
 
 #include <pybind11/operators.h>
 
-#include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/algebra/lie.h>
 #include <roughpy/algebra/context.h>
+#include <roughpy/algebra/lie.h>
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_type.h>
 
-#include "args/numpy.h"
 #include "args/kwargs_to_vector_construction.h"
+#include "args/numpy.h"
 #include "scalars/scalars.h"
 
 #include "lie_key.h"
@@ -91,20 +91,19 @@ void python::init_lie(py::module_ &m) {
     options.disable_function_signatures();
 
     pybind11::class_<Lie> klass(m, "Lie", LIE_DOC);
-    klass.def(py::init(&construct_lie), "data"_a=py::none());
+    klass.def(py::init(&construct_lie), "data"_a = py::none());
 
     setup_algebra_type(klass);
 
     klass.def("__getitem__", [](const Lie &self, key_type key) {
-      return self[key];
+        return self[key];
     });
 
     klass.def("__repr__", [](const Lie &self) {
-      std::stringstream ss;
-      ss << "Lie(width=" << *self.width()
-         << ", depth=" << *self.depth();
-      ss << ", ctype=" << self.coeff_type()->info().name << ')';
-      return ss.str();
+        std::stringstream ss;
+        ss << "Lie(width=" << *self.width()
+           << ", depth=" << *self.depth();
+        ss << ", ctype=" << self.coeff_type()->info().name << ')';
+        return ss.str();
     });
-
 }

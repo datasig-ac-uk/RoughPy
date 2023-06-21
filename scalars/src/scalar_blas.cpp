@@ -31,17 +31,16 @@
 
 #include "scalar_blas.h"
 
-#include "scalar.h"
-#include "scalar_type.h"
 #include "owned_scalar_array.h"
+#include "scalar.h"
 #include "scalar_array.h"
+#include "scalar_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
 
 BlasInterface::BlasInterface(const ScalarType *type)
-    : p_type(type)
-{}
+    : p_type(type) {}
 BlasInterface::~BlasInterface() = default;
 std::unique_ptr<BlasInterface> BlasInterface::clone() const {
     return std::unique_ptr<BlasInterface>();
@@ -93,8 +92,7 @@ ScalarMatrix BlasInterface::glm_GQR(const ScalarMatrix &A, const ScalarMatrix &B
 EigenDecomposition BlasInterface::eigen_decomposition(const ScalarMatrix &matrix) {
     return {
         ScalarMatrix(p_type, 0, 0),
-        ScalarMatrix(p_type, 0, 0)
-    };
+        ScalarMatrix(p_type, 0, 0)};
 }
 SingularValueDecomposition BlasInterface::svd(const ScalarMatrix &matrix) {
     return {

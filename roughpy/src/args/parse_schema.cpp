@@ -38,8 +38,7 @@ streams::ChannelType python::py_to_channel_type(const py::object &arg) {
     throw py::type_error("no know conversion from " + arg.get_type().attr("__name__").cast<string>() + " to channel type");
 }
 
-static std::shared_ptr<StreamSchema> parse_schema_from_dict_data(const py::dict &dict_data) {
-    std::shared_ptr<StreamSchema> result(new StreamSchema);
+static void parse_schema_from_dict_data(StreamSchema* result, const py::dict &dict_data) {
 
     for (auto &&[timestamp, datum] : dict_data) {
         if (py::isinstance<py::tuple>(datum)) {
@@ -74,11 +73,8 @@ static std::shared_ptr<StreamSchema> parse_schema_from_dict_data(const py::dict 
         }
     }
 
-    return result;
 }
-static std::shared_ptr<StreamSchema> parse_schema_from_seq_data(const py::sequence &sequence) {
-
-    std::shared_ptr<StreamSchema> result(new StreamSchema);
+static void parse_schema_from_seq_data(StreamSchema* schema, const py::sequence &sequence) {
 
     for (auto &&datum : sequence) {
         RPY_CHECK(py::isinstance<py::tuple>(datum));
@@ -90,19 +86,19 @@ static std::shared_ptr<StreamSchema> parse_schema_from_seq_data(const py::sequen
         if (len == 2) {
             /// (timestamp, value)
             if (py::isinstance<py::str>(item[1])) {
-                auto &cat = result->insert_categorical("");
+                auto &cat = schema->insert_categorical("");
                 cat.add_variant(item[1].cast<string>());
             } else {
-                result->insert_increment("");
+                schema->insert_increment("");
             }
         } else if (len == 3) {
             /// (timestamp, label, value)
             RPY_CHECK(py::isinstance<py::str>(item[1]));
             if (py::isinstance<py::str>(item[2])) {
-                auto &cat = result->insert_categorical(item[1].cast<string>());
+                auto &cat = schema->insert_categorical(item[1].cast<string>());
                 cat.add_variant(item[2].cast<string>());
             } else {
-                result->insert_increment(item[1].cast<string>());
+                schema->insert_increment(item[1].cast<string>());
             }
         } else if (len == 4) {
             RPY_CHECK(py::isinstance<py::str>(item[1]));
@@ -111,11 +107,11 @@ static std::shared_ptr<StreamSchema> parse_schema_from_seq_data(const py::sequen
             auto type = item[2].cast<string>();
 
             if (type == "increment") {
-                result->insert_increment(item[1].cast<string>());
+                schema->insert_increment(item[1].cast<string>());
             } else if (type == "value") {
-                result->insert_value(item[1].cast<string>());
+                schema->insert_value(item[1].cast<string>());
             } else if (type == "categorical") {
-                auto &cat = result->insert_categorical(item[1].cast<string>());
+                auto &cat = schema->insert_categorical(item[1].cast<string>());
                 cat.add_variant(item[3].cast<string>());
             } else {
                 throw py::value_error("unknown type " + type);
@@ -126,23 +122,26 @@ static std::shared_ptr<StreamSchema> parse_schema_from_seq_data(const py::sequen
         }
     }
 
-    return result;
 }
 
-std::shared_ptr<streams::StreamSchema> rpy::python::parse_schema_from_data(const py::object &data) {
-
+void python::parse_data_into_schema(std::shared_ptr<streams::StreamSchema> schema, const py::object &data) {
     if (py::isinstance<py::dict>(data)) {
-        return parse_schema_from_dict_data(py::reinterpret_borrow<py::dict>(data));
+        parse_schema_from_dict_data(schema.get(), py::reinterpret_borrow<py::dict>(data));
+    } else if (py::isinstance<py::sequence>(data)) {
+        parse_schema_from_seq_data(schema.get(), py::reinterpret_borrow<py::sequence>(data));
+    } else {
+        throw py::type_error("expected sequential data");
     }
-
-    if (py::isinstance<py::sequence>(data)) {
-        return parse_schema_from_seq_data(py::reinterpret_borrow<py::sequence>(data));
-    }
-
-    throw py::type_error("expected sequential data");
+}
+std::shared_ptr<streams::StreamSchema> rpy::python::parse_schema_from_data(const py::object &data) {
+    auto schema = std::make_shared<streams::StreamSchema>();
+    parse_data_into_schema(schema, data);
+    return schema;
 }
 
 void parse_schema_from_dict(StreamSchema &schema, const py::dict &data) {
+    (void) schema;
+    (void) data;
     throw std::runtime_error("not yet supported");
 }
 
@@ -192,26 +191,33 @@ void parse_schema_from_sequence(StreamSchema &schema, const py::sequence &data) 
             case rpy::streams::ChannelType::Value:
                 schema.insert_value(label);
                 break;
-            case rpy::streams::ChannelType::Categorical:
+            case rpy::streams::ChannelType::Categorical: {
                 auto &cat = schema.insert_categorical(label);
                 for (auto &&var : item["variants"]) {
                     cat.add_variant(var.cast<string>());
                 }
                 break;
+            }
+            case rpy::streams::ChannelType::Lie:
+                schema.insert_lie(label);
+                break;
         }
     }
 }
 
-std::shared_ptr<streams::StreamSchema> rpy::python::parse_schema(const py::object &data) {
-    std::shared_ptr<StreamSchema> result(new StreamSchema);
+void python::parse_into_schema(std::shared_ptr<streams::StreamSchema> schema, const py::object &data) {
 
     if (py::isinstance<py::dict>(data)) {
-        parse_schema_from_dict(*result, py::reinterpret_borrow<py::dict>(data));
+        parse_schema_from_dict(*schema, py::reinterpret_borrow<py::dict>(data));
     } else if (py::isinstance<py::sequence>(data)) {
-        parse_schema_from_sequence(*result, py::reinterpret_borrow<py::sequence>(data));
+        parse_schema_from_sequence(*schema, py::reinterpret_borrow<py::sequence>(data));
     } else {
         throw py::type_error("expected dict or sequence");
     }
+}
 
+std::shared_ptr<streams::StreamSchema> rpy::python::parse_schema(const py::object &data) {
+    auto result = std::make_shared<streams::StreamSchema>();
+    parse_into_schema(result, data);
     return result;
 }

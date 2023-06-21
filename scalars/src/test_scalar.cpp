@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,11 +31,11 @@
 
 #include <gtest/gtest.h>
 
-#include "scalar_type.h"
 #include "scalar.h"
+#include "scalar_type.h"
 
-#include <sstream>
 #include <roughpy/platform/serialization.h>
+#include <sstream>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -132,7 +132,6 @@ TEST(scalar, SubtractionSameType) {
     ASSERT_FLOAT_EQ(scalar_cast<float>(result), 3.142f - 2.718f);
 }
 
-
 TEST(scalar, MultiplicationSameType) {
     Scalar lhs(ScalarType::of<float>(), 3.142f);
     Scalar rhs(ScalarType::of<float>(), 2.718f);
@@ -141,7 +140,6 @@ TEST(scalar, MultiplicationSameType) {
 
     ASSERT_FLOAT_EQ(scalar_cast<float>(result), 3.142f * 2.718f);
 }
-
 
 TEST(scalar, DivisionSameType) {
     Scalar lhs(ScalarType::of<float>(), 3.142);
@@ -156,7 +154,7 @@ TEST(scalar, DivisionByDefaultThrows) {
     Scalar lhs(ScalarType::of<float>(), 3.142f);
     Scalar rhs;
 
-    ASSERT_THROW(lhs /rhs, std::runtime_error);
+    ASSERT_THROW(lhs / rhs, std::runtime_error);
 }
 
 TEST(scalar, DivisionByZeroSameTypeThrows) {
@@ -216,7 +214,6 @@ TEST(scalar, InplaceDivisionSameType) {
     ASSERT_FLOAT_EQ(scalar_cast<float>(lhs), 3.142f / 2.718f);
 }
 
-
 TEST(scalar, EqualsDefaultDefaultTrue) {
     Scalar lhs;
     Scalar rhs;
@@ -237,8 +234,6 @@ TEST(scalar, EqualsDefaultFloatOneFalse) {
 
     ASSERT_FALSE(lhs == rhs);
 }
-
-
 
 TEST(Scalar, SerializeSimpleFloatValue) {
     Scalar val(ScalarType::of<float>(), 1.0f);

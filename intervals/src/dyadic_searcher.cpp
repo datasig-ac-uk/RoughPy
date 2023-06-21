@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -110,7 +110,7 @@ void DyadicSearcher::expand(ScaledPredicate &predicate, DyadicInterval found_int
 
     m_seen[found.back().dsup()] = found.front().dinf();
 }
-ScaledPredicate DyadicSearcher::rescale_to_unit_interval(const Interval &original)  {
+ScaledPredicate DyadicSearcher::rescale_to_unit_interval(const Interval &original) {
     auto a = original.inf();
     auto b = original.sup();
 
@@ -138,7 +138,7 @@ void DyadicSearcher::get_next_dyadic(DyadicInterval &current) const {
     const auto itype = current.type();
 
     for (const auto &pair : m_seen) {
-        Dyadic current_dyadic {k, n};
+        Dyadic current_dyadic{k, n};
         /*
          * Seen pairs are of the form (sup, inf) rather than (inf, sup).
          * Check current.inf >= pair.inf, and if so that current.inf <= pair.sup.

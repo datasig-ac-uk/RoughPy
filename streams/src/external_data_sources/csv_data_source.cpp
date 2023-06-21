@@ -31,7 +31,6 @@
 
 #include "csv_data_source.h"
 
-
 using namespace rpy;
 using namespace rpy::streams;
 //dimn_t CSVDataSource::query(scalars::KeyScalarArray &result, const intervals::Interval &interval) {

@@ -33,15 +33,14 @@
 #include "scalar_pointer.h"
 #include "scalar_type.h"
 
-#include <roughpy/platform/serialization.h>
 #include <ostream>
+#include <roughpy/platform/serialization.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
 
 Scalar::Scalar(ScalarPointer other, uint32_t new_flags)
-    : ScalarPointer(other)
-{
+    : ScalarPointer(other) {
     m_flags = new_flags;
 }
 Scalar::Scalar(ScalarPointer data, flags::PointerType ptype)
@@ -241,9 +240,9 @@ Scalar Scalar::operator/(const Scalar &other) const {
         }                                                                             \
                                                                                       \
         if (p_type == nullptr) {                                                      \
-            RPY_DBG_ASSERT(p_data == nullptr);                                                \
+            RPY_DBG_ASSERT(p_data == nullptr);                                        \
             /* We just established that other.p_data != nullptr */                    \
-            RPY_DBG_ASSERT(other.p_type != nullptr);                                          \
+            RPY_DBG_ASSERT(other.p_type != nullptr);                                  \
             p_type = other.p_type;                                                    \
         }                                                                             \
         if (p_data == nullptr) {                                                      \
@@ -312,8 +311,6 @@ std::ostream &rpy::scalars::operator<<(std::ostream &os, const Scalar &arg) {
 
     return os;
 }
-
-
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::Scalar
 #define RPY_SERIAL_DO_SPLIT

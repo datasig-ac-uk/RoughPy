@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,7 +33,6 @@
 
 #include <algorithm>
 #include <list>
-
 
 #include "real_interval.h"
 
@@ -56,8 +55,7 @@ DyadicInterval::DyadicInterval(Dyadic dyadic,
 DyadicInterval::DyadicInterval(param_t val,
                                Dyadic::power_t resolution,
                                IntervalType itype)
-    : Dyadic(0, 0), Interval(itype)
-{
+    : Dyadic(0, 0), Interval(itype) {
     auto rescaled = ldexp(val, resolution);
     if (m_interval_type == IntervalType::Opencl) {
         m_multiplier = ceil(rescaled);
@@ -67,7 +65,7 @@ DyadicInterval::DyadicInterval(param_t val,
     m_power = resolution;
 }
 Dyadic DyadicInterval::dincluded_end() const {
-    return static_cast<const Dyadic&>(*this);
+    return static_cast<const Dyadic &>(*this);
 }
 Dyadic DyadicInterval::dexcluded_end() const {
     return Dyadic(m_multiplier + unit(), m_power);
@@ -213,7 +211,7 @@ std::vector<DyadicInterval> rpy::intervals::to_dyadic_intervals(const Interval &
 
 bool rpy::intervals::operator<(const DyadicInterval &lhs, const DyadicInterval &rhs) noexcept {
     if (lhs.type() != rhs.type()) {
-         return false;
+        return false;
     }
 
     auto lhs_k = lhs.multiplier();
@@ -224,20 +222,17 @@ bool rpy::intervals::operator<(const DyadicInterval &lhs, const DyadicInterval &
     auto unit = lhs.unit();
 
     if (lhs_n == rhs_n) {
-         return unit *(rhs_k - lhs_k) > 0;
+        return unit * (rhs_k - lhs_k) > 0;
     }
 
     if (lhs_n > rhs_n) {
-         rhs_k = Dyadic::shift(rhs_k, lhs_n - rhs_n);
-         return unit*(rhs_k - lhs_k) > 0;
+        rhs_k = Dyadic::shift(rhs_k, lhs_n - rhs_n);
+        return unit * (rhs_k - lhs_k) > 0;
     }
 
     lhs_k = Dyadic::shift(lhs_k, rhs_n - lhs_n);
-    return unit*(rhs_k - lhs_k) >= 0;
-
+    return unit * (rhs_k - lhs_k) >= 0;
 }
-
-
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::intervals::DyadicInterval
 #include <roughpy/platform/serialization_instantiations.inl>

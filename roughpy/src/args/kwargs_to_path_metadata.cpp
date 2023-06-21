@@ -68,12 +68,12 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
         } else if (py::isinstance<py::str>(channels)) {
             ch_type = string_to_channel_type(channels.cast<string>());
 
-        // labelled heterogeneous channel types
+            // labelled heterogeneous channel types
         } else if (py::isinstance<py::dict>(channels)) {
             auto channel_dict = py::reinterpret_borrow<py::dict>(channels);
             md.schema = std::make_shared<streams::StreamSchema>();
 
-            for (auto&& [label, item] : channel_dict) {
+            for (auto &&[label, item] : channel_dict) {
                 switch (python::py_to_channel_type(py::reinterpret_borrow<py::object>(item))) {
                     case streams::ChannelType::Increment:
                         md.schema->insert_increment(label.cast<string>());
@@ -90,7 +90,7 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
                 }
             }
 
-        // unlabelled heterogeneous channel types
+            // unlabelled heterogeneous channel types
         } else if (py::isinstance<py::sequence>(channels)) {
             auto channel_list = py::reinterpret_borrow<py::sequence>(channels);
             md.schema = std::make_shared<streams::StreamSchema>();
@@ -113,11 +113,10 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
             }
         }
 
-    // Unset channel to, assume homogeneous increments
+        // Unset channel to, assume homogeneous increments
     } else {
         ch_type = streams::ChannelType::Increment;
     }
-
 
     if (kwargs.contains("ctx")) {
         auto ctx = kwargs["ctx"];
@@ -156,7 +155,7 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
         if (md.schema) {
             md.width = static_cast<deg_t>(md.schema->width());
         } else if (kwargs.contains("width")) {
-            auto nchannels =  kwargs["width"].cast<rpy::deg_t>();
+            auto nchannels = kwargs["width"].cast<rpy::deg_t>();
             md.schema = std::make_shared<streams::StreamSchema>();
             for (deg_t i = 0; i < nchannels; ++i) {
                 switch (ch_type) {
@@ -205,7 +204,7 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
     if (kwargs.contains("support")) {
         auto support = kwargs["support"];
         if (!py::isinstance<intervals::Interval>(support)) {
-            md.support = intervals::RealInterval(support.cast<const intervals::Interval&>());
+            md.support = intervals::RealInterval(support.cast<const intervals::Interval &>());
         }
     }
 

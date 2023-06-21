@@ -170,10 +170,9 @@ KeyScalarArray KeyScalarArray::copy_or_move() && {
         result.p_keys = p_keys;
         p_keys = nullptr;
         result.m_flags |= keys_owning_flag;
-    }
-    else if (p_keys != nullptr) {
+    } else if (p_keys != nullptr) {
         result.allocate_keys();
-        std::copy_n(p_keys, m_size, const_cast<key_type*>(result.p_keys));
+        std::copy_n(p_keys, m_size, const_cast<key_type *>(result.p_keys));
     }
 
     return result;

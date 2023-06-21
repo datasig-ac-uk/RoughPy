@@ -31,18 +31,16 @@
 
 #include <gtest/gtest.h>
 
-
 #include <sstream>
 
-#include <roughpy/platform/serialization.h>
 #include "scalar_array.h"
+#include <roughpy/platform/serialization.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-
 TEST(ScalarArray, TestScalarArraySerialize) {
-    std::vector<float> nums { 1.0F, 2.0F, 3.0F };
+    std::vector<float> nums{1.0F, 2.0F, 3.0F};
     ScalarArray sa(ScalarType::of<float>(), nums.data(), 3);
     std::stringstream ss;
     {
@@ -58,10 +56,10 @@ TEST(ScalarArray, TestScalarArraySerialize) {
 
     ASSERT_EQ(sa.size(), sb.size());
     ASSERT_EQ(sa.type(), sb.type());
-    const auto* aptr = sa.raw_cast<const float*>();
-    const auto* bptr = sb.raw_cast<const float*>();
+    const auto *aptr = sa.raw_cast<const float *>();
+    const auto *bptr = sb.raw_cast<const float *>();
 
-    for (int i=0; i<3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         ASSERT_EQ(aptr[i], bptr[i]);
     }
 

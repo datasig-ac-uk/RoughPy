@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,13 +31,13 @@
 
 #include <pybind11/operators.h>
 
-#include <roughpy/scalars/scalar_pointer.h>
-#include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
+#include <roughpy/scalars/scalar_pointer.h>
+#include <roughpy/scalars/scalar_type.h>
 
-#include "scalar_type.h"
 #include "dlpack.h"
+#include "scalar_type.h"
 
 using namespace rpy;
 using namespace pybind11::literals;
@@ -45,10 +45,6 @@ using namespace pybind11::literals;
 static const char *SCALAR_DOC = R"edoc(
 A generic scalar value.
 )edoc";
-
-
-
-
 
 void python::assign_py_object_to_scalar(scalars::ScalarPointer ptr, pybind11::handle object) {
     if (py::isinstance<py::float_>(object)) {
@@ -62,15 +58,6 @@ void python::assign_py_object_to_scalar(scalars::ScalarPointer ptr, pybind11::ha
         throw py::value_error("bad conversion from " + tp.cast<string>() + " to " + ptr.type()->info().name);
     }
 }
-
-
-
-
-
-
-
-
-
 
 void python::init_scalars(pybind11::module_ &m) {
     using scalars::Scalar;
@@ -118,8 +105,6 @@ void python::init_scalars(pybind11::module_ &m) {
            << ")";
         return ss.str();
     });
-
-
 }
 
 /*
@@ -128,22 +113,22 @@ void python::init_scalars(pybind11::module_ &m) {
  * objects.
  */
 
-#define DOCASE(NAME) case static_cast<uint8_t>(scalars::ScalarTypeCode::NAME): type = scalars::ScalarTypeCode::NAME; break
+#define DOCASE(NAME) \
+    case static_cast<uint8_t>(scalars::ScalarTypeCode::NAME): type = scalars::ScalarTypeCode::NAME; break
 
 static const scalars::ScalarType *dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device) {
     using scalars::ScalarDeviceType;
 
     scalars::ScalarTypeCode type;
     switch (dtype.code) {
-            DOCASE(Float);
-            DOCASE(Int);
-            DOCASE(UInt);
-            DOCASE(OpaqueHandle);
-            DOCASE(BFloat);
-            DOCASE(Complex);
-            DOCASE(Bool);
+        DOCASE(Float);
+        DOCASE(Int);
+        DOCASE(UInt);
+        DOCASE(OpaqueHandle);
+        DOCASE(BFloat);
+        DOCASE(Complex);
+        DOCASE(Bool);
     }
-
 
     return scalars::ScalarType::from_type_details(
         {type, dtype.bits, dtype.lanes},
@@ -220,7 +205,7 @@ static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
     }
 
     RPY_CHECK(shape != nullptr);
-    options.shape.assign(shape, shape+ndim);
+    options.shape.assign(shape, shape + ndim);
 
     idimn_t size = 1;
     for (auto i = 0; i < ndim; ++i) {
@@ -234,12 +219,12 @@ static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
         scalars::ScalarPointer p(tensor_stype, data);
         dl_copy_strided(ndim, shape, strides, p, buffer + static_cast<dimn_t>(0));
     }
-//
-//    if (tensor->deleter != nullptr) {
-//        options.cleanup = [tensor]() {
-//            tensor->deleter(tensor);
-//        };
-//    }
+    //
+    //    if (tensor->deleter != nullptr) {
+    //        options.cleanup = [tensor]() {
+    //            tensor->deleter(tensor);
+    //        };
+    //    }
 
     return true;
 }
@@ -437,7 +422,6 @@ static arg_size_info compute_size_and_type(
 
     return info;
 }
-
 
 static void handle_sequence_tuple(scalars::ScalarPointer scalar_ptr, key_type *key_ptr, py::handle tpl_o, python::PyToBufferOptions &options) {
     auto tpl = py::reinterpret_borrow<py::tuple>(tpl_o);

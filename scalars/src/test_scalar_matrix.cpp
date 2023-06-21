@@ -29,7 +29,6 @@
 // Created by user on 11/05/23.
 //
 
-
 #include <gtest/gtest.h>
 
 #include "scalar_matrix.h"
@@ -39,10 +38,9 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-
 TEST(ScalarMatrix, ScalarMatrixSerialization) {
 
-    std::vector<float> src { 1.0F, 2.0F, 3.0F, 4.0F };
+    std::vector<float> src{1.0F, 2.0F, 3.0F, 4.0F};
 
     ScalarMatrix in_mat(2, 2, {ScalarType::of<float>(), src.data(), src.size()});
     std::stringstream ss;
@@ -50,7 +48,6 @@ TEST(ScalarMatrix, ScalarMatrixSerialization) {
         archives::JSONOutputArchive oarc(ss);
         oarc(in_mat);
     }
-
 
     ScalarMatrix out_mat;
     {
@@ -64,7 +61,7 @@ TEST(ScalarMatrix, ScalarMatrixSerialization) {
     EXPECT_EQ(out_mat.layout(), in_mat.layout());
     EXPECT_EQ(out_mat.storage(), in_mat.storage());
 
-    EXPECT_EQ(out_mat.size(), out_mat.nrows()*out_mat.ncols());
+    EXPECT_EQ(out_mat.size(), out_mat.nrows() * out_mat.ncols());
 
     const auto *aptr = in_mat.raw_cast<const float *>();
     const auto *bptr = out_mat.raw_cast<const float *>();
