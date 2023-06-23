@@ -41,9 +41,9 @@ namespace rpy {
 namespace scalars {
 namespace dtl {
 
-template <typename MapType, typename KeyType>
+template <typename Vector>
 class SparseMutableRefScalarImpl : public ScalarInterface {
-    using data_type = lal::dtl::sparse_mutable_reference<MapType, KeyType>;
+    using data_type = lal::dtl::sparse_mutable_reference<Vector>;
     using trait = scalar_type_trait<data_type>;
 
     data_type m_data;
@@ -53,7 +53,7 @@ public:
     explicit SparseMutableRefScalarImpl(data_type&& arg) : m_data(std::move(arg))
     {}
 
-    using value_type = typename MapType::mapped_type;
+    using value_type = typename data_type::scalar_type;
     using rational_type = typename trait::rational_type;
 
     const ScalarType *type() const noexcept override {
@@ -122,19 +122,20 @@ public:
 
 }// namespace dtl
 
-template <typename MapType, typename KeyType>
-class scalar_type_trait<lal::dtl::sparse_mutable_reference<MapType, KeyType>> {
+template <typename Vector>
+class scalar_type_trait<lal::dtl::sparse_mutable_reference<Vector>> {
+    using mutable_ref_type = lal::dtl::sparse_mutable_reference<Vector>;
 public:
-    using value_type = typename MapType::mapped_type;
+    using value_type = typename mutable_ref_type::scalar_type;
     using rational_type = typename lal::coefficient_trait<value_type>::rational_type;
-    using reference = lal::dtl::sparse_mutable_reference<MapType, KeyType>;
+    using reference = lal::dtl::sparse_mutable_reference<Vector>;
 
     static const ScalarType* get_type() noexcept {
         return ScalarType::of<value_type>();
     }
 
     static Scalar make(reference arg) {
-        return Scalar(new dtl::SparseMutableRefScalarImpl<MapType, KeyType>(std::move(arg)));
+        return Scalar(new dtl::SparseMutableRefScalarImpl<Vector>(std::move(arg)));
     }
 
 };

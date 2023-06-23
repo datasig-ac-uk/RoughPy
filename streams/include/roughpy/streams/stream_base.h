@@ -58,6 +58,7 @@ struct StreamMetadata {
     const scalars::ScalarType *data_scalar_type;
     algebra::VectorType cached_vector_type;
     resolution_t default_resolution;
+    intervals::IntervalType interval_type;
 };
 
 /**

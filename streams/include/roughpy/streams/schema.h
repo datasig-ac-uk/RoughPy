@@ -165,6 +165,13 @@ public:
 
     StreamChannel &add_variant(string variant_label);
 
+    /**
+     * @brief Insert a new variant if it doesn't already exist
+     * @param variant_label variant label to insert.
+     * @return referene to this channel.
+     */
+    StreamChannel& insert_variant(string variant_label);
+
     RPY_NO_DISCARD
     std::vector<string> get_variants() const;
 

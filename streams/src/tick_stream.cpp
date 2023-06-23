@@ -68,7 +68,7 @@ optional<streams::TickStream::DyadicInterval> streams::TickStream::smallest_dyad
     return {};
 }
 optional<streams::TickStream::DyadicInterval> streams::TickStream::smallest_dyadic_containing_all_negative_events() const {
-    auto zeu = (m_itype == intervals::IntervalType::Clopen)
+    auto zeu = (metadata().interval_type == intervals::IntervalType::Clopen)
         ? std::upper_bound(m_granular_times.begin(), m_granular_times.end(), param_t(0))
         : std::lower_bound(m_granular_times.begin(), m_granular_times.end(), param_t(0));
 
@@ -83,7 +83,7 @@ optional<streams::TickStream::DyadicInterval> streams::TickStream::smallest_dyad
     return {};
 }
 optional<streams::TickStream::DyadicInterval> streams::TickStream::smallest_dyadic_containing_all_positive_events() const {
-    const bool zero_negative = (DyadicInterval(0, m_resolution, m_itype).excluded_end() < 0);
+    const bool zero_negative = (DyadicInterval(0, m_resolution, metadata().interval_type).excluded_end() < 0);
     auto zeu = (zero_negative)
         ? std::upper_bound(m_granular_times.begin(), m_granular_times.end(), param_t(0))
         : std::lower_bound(m_granular_times.begin(), m_granular_times.end(), param_t(0));
@@ -129,7 +129,7 @@ streams::TickStream::TickStream(scalars::ScalarStream &&raw_data,
                                 resolution_t resolution,
                                 StreamMetadata md,
                                 intervals::IntervalType itype)
-    : StreamInterface(std::move(md)), m_resolution(resolution), m_itype(itype) {
+    : StreamInterface(std::move(md)), m_resolution(resolution) {
     {
         const auto size = raw_timestamps.size();
         const auto &smeta = metadata();
@@ -137,7 +137,7 @@ streams::TickStream::TickStream(scalars::ScalarStream &&raw_data,
         std::set<param_t> index;
 
         for (dimn_t i = 0; i < size; ++i) {
-            const DyadicInterval di(raw_timestamps[i], m_resolution, m_itype);
+            const DyadicInterval di(raw_timestamps[i], m_resolution, smeta.interval_type);
 
             const algebra::VectorConstructionData cdata{
                 {raw_data[i], raw_key_stream[i]},
@@ -173,15 +173,16 @@ streams::TickStream::TickStream(
       m_resolution(resolution) {
     std::set<param_t> index;
     const auto &ctx = *metadata().default_context;
-    const auto itype = metadata().cached_vector_type;
+    const auto &itype = metadata().interval_type;
+    const auto &vtype = metadata().cached_vector_type;
 
     for (auto &&item : helper.finalise()) {
-        const DyadicInterval di(item.first, m_resolution, m_itype);
+        const DyadicInterval di(item.first, m_resolution, itype);
         index.insert(di.included_end());
 
         auto &existing = m_data[di];
         if (existing) {
-            existing = ctx.cbh(existing, item.second, itype);
+            existing = ctx.cbh(existing, item.second, vtype);
         } else {
             existing = std::move(item.second);
         }
@@ -196,7 +197,6 @@ streams::TickStream::TickStream(
         recursive_logsig(*di_positive);
     }
 }
-
 algebra::Lie streams::TickStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
     RPY_DBG_ASSERT(dynamic_cast<const DyadicInterval *>(&interval) == &interval);
     if (auto dil = smallest_dyadic_containing_all_events(static_cast<const DyadicInterval &>(interval), m_resolution)) {

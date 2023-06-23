@@ -40,6 +40,11 @@
 #include "scalars/scalars.h"
 #include "streams/stream.h"
 
+#include "r_py_tick_construction_helper.h"
+
+#include <map>
+#include <set>
+
 using namespace rpy;
 using namespace pybind11::literals;
 using namespace std::literals::string_literals;
@@ -62,26 +67,47 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
         schema = std::make_shared<streams::StreamSchema>();
     }
 
-    if (!schema->is_final()) {
-        python::parse_data_into_schema(schema, data);
-        pmd.width = schema->width();
-        schema->finalize();
+    py::object parser;
+    if (kwargs.contains("parser")) {
+        parser = kwargs["parser"](schema);
+    } else {
+        auto tick_helpers_mod = py::module_::import("roughpy.streams.tick_stream");
+        parser = tick_helpers_mod.attr("StandardTickDataParser")(schema);
     }
+
+    parser.attr("parse_data")(data);
+
+    auto& helper = parser.attr("helper").cast<python::RPyTickConstructionHelper&>();
+
+    const auto& ticks = helper.ticks();
+    if (ticks.empty()) {
+        throw py::value_error("tick data cannot be empty");
+    }
+
+//    if (!schema->is_final()) {
+//        python::parse_data_into_schema(schema, data);
+//        pmd.width = schema->width();
+//        schema->finalize();
+//    }
     if (!pmd.ctx) {
+        pmd.width = schema->width();
         if (pmd.width == 0 || pmd.depth == 0 || pmd.scalar_type == nullptr) {
             throw py::value_error("either ctx or width, depth, and dtype must be provided");
         }
         pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type);
+    } else if (pmd.width != pmd.ctx->width()) {
+        // Recalibrate the width to match the data
+        pmd.ctx = pmd.ctx->get_alike(pmd.width, pmd.depth, pmd.scalar_type);
     }
 
+//    helper_t helper(
+//        pmd.ctx,
+//        schema,
+//        static_cast<bool>(pmd.vector_type)
+//            ? *pmd.vector_type
+//            : algebra::VectorType::Sparse);
 
-
-    helper_t helper(
-        pmd.ctx,
-        schema,
-        static_cast<bool>(pmd.vector_type) ? *pmd.vector_type : algebra::VectorType::Sparse);
-
-    parse_data_to_ticks(helper, data, kwargs);
+//    parse_data_to_ticks(helper, data, kwargs);
 
     //    python::PyToBufferOptions options;
     //    options.type = pmd.scalar_type;
@@ -93,21 +119,94 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
     //    scalars::ScalarStream stream(options.type);
     //    stream.reserve_size(options.shape.size());
 
-    auto result = streams::Stream(
-        streams::TickStream(
-            std::move(helper),
-            {pmd.width,
-             pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
-             pmd.ctx,
-             pmd.scalar_type,
-             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-             pmd.resolution},
-            pmd.resolution));
+//    auto result = streams::Stream(
+//        streams::TickStream(
+//            std::move(helper),
+//            {pmd.width,
+//             pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
+//             pmd.ctx,
+//             pmd.scalar_type,
+//             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
+//             pmd.resolution,
+//             pmd.interval_type
+//            },
+//            pmd.resolution));
+
+    streams::StreamMetadata meta{
+        pmd.width,
+        pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
+        pmd.ctx,
+        pmd.scalar_type,
+        pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
+        pmd.resolution,
+        pmd.interval_type};
+
+    std::set<param_t> index;
+    std::map<intervals::DyadicInterval, algebra::Lie> raw_data;
+
+    // For value types, we need to keep track of the last value that appeared
+    std::vector<algebra::Lie> previous_values(pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type));
+    for (const auto& tick : ticks) {
+        const intervals::DyadicInterval di(tick.timestamp, pmd.resolution, pmd.interval_type);
+
+        auto lie_elt = pmd.ctx->zero_lie(meta.cached_vector_type);
+
+        auto idx = schema->label_to_stream_dim(tick.label);
+        auto key = static_cast<key_type>(idx);
+        switch (tick.type) {
+            case streams::ChannelType::Increment:
+                lie_elt[key] += python::py_to_scalar(pmd.scalar_type, tick.data);
+                break;
+            case streams::ChannelType::Value: {
+                auto lag_key = key + 1;
+                const auto& prev_lead = previous_values[idx];
+                const auto& prev_lag = previous_values[idx+1];
+
+                auto lead = pmd.ctx->zero_lie(meta.cached_vector_type);
+                auto lag = pmd.ctx->zero_lie(meta.cached_vector_type);
+
+                lead[key] += python::py_to_scalar(pmd.scalar_type, tick.data);
+                lead[lag_key] += python::py_to_scalar(pmd.scalar_type, tick.data);
+
+                lie_elt = pmd.ctx->cbh(lead.sub(prev_lead), lag.sub(prev_lag), meta.cached_vector_type);
+
+                previous_values[idx] = std::move(lead);
+                previous_values[idx+1] = std::move(lag);
+
+                break;
+            }
+            case streams::ChannelType::Categorical: {
+                lie_elt[key] += pmd.scalar_type->one();
+                break;
+            }
+            case streams::ChannelType::Lie:
+                throw py::value_error("Lie tick types currently not allowed");
+        }
+
+        auto &existing = raw_data[di];
+        if (existing) {
+            existing = pmd.ctx->cbh(existing, lie_elt, meta.cached_vector_type);
+        } else {
+            existing = std::move(lie_elt);
+        }
+
+        index.insert(di.included_end());
+    }
+
+    streams::Stream result (streams::TickStream(
+        std::vector<param_t>(index.begin(), index.end()),
+        std::move(raw_data),
+        pmd.resolution,
+        pmd.schema,
+        std::move(meta)
+        ));
 
     return py::reinterpret_steal<py::object>(python::RPyStream_FromStream(std::move(result)));
 }
 
 void python::init_tick_stream(py::module_ &m) {
+
+    init_tick_construction_helper(m);
 
     py::class_<streams::TickStream> klass(m, "TickStream", TICK_STREAM_DOC);
 
@@ -138,7 +237,7 @@ inline void insert_increment(helper_t &helper,
                              param_t timestamp,
                              string_view label,
                              const py::object &value) {
-    scalars::Scalar val(helper.ctype());
+    scalars::Scalar val(helper.ctype(), 0);
     python::assign_py_object_to_scalar(val.to_mut_pointer(), value);
     helper.add_increment(timestamp, label, std::move(val));
 }
@@ -242,18 +341,19 @@ void handle_timestamp_pair(helper_t &helper, param_t timestamp, py::object tick_
     }
 }
 
-void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks) {
-    for (auto &&[it_time, it_value] : ticks) {
+inline void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks) {
+    for (auto [it_time, it_value] : ticks) {
         auto timestamp = python::convert_timestamp(
             py::reinterpret_borrow<py::object>(it_time));
 
+        auto value = py::reinterpret_borrow<py::object>(it_value);
         handle_timestamp_pair(helper,
                               timestamp,
-                              py::reinterpret_borrow<py::object>(it_value));
+                              std::move(value));
     }
 }
 
-void handle_tuple_sequence_tick_stream(helper_t &helper, const py::sequence &ticks) {
+inline void handle_tuple_sequence_tick_stream(helper_t &helper, const py::sequence &ticks) {
     for (auto &&it_value : ticks) {
         // Use sequence instead of tuple for inner items, to allow lists instead
         RPY_CHECK(py::isinstance<py::sequence>(it_value));
@@ -261,7 +361,6 @@ void handle_tuple_sequence_tick_stream(helper_t &helper, const py::sequence &tic
         auto len = py::len(inner);
 
         RPY_CHECK(len > 1 && len <= 4);
-
         auto timestamp = python::convert_timestamp(
             py::reinterpret_borrow<py::object>(inner[0]));
         auto right = inner[py::slice(1, {}, {})];

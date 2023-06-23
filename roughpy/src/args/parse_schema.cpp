@@ -196,17 +196,25 @@ inline void handle_data_tuple(StreamSchema* schema, const py::sequence& seq) {
  *
  */
 inline void handle_data_dict(StreamSchema* schema, const py::dict& data_dict) {
-    RPY_CHECK(data_dict.contains("label"));
-    RPY_CHECK(data_dict.contains("data"));
-    auto label = data_dict["label"].cast<string>();
-
-    if (data_dict.contains("type")) {
-        auto to_pass = py::make_tuple(data_dict["type"], data_dict["data"]);
-        handle_labeled_data(schema, std::move(label), std::move(to_pass));
-    } else {
-        auto to_pass = py::reinterpret_borrow<py::object>(data_dict["data"]);
-        handle_labeled_data(schema, std::move(label), std::move(to_pass));
+//    py::print(data_dict);
+//    RPY_CHECK(data_dict.contains("label"));
+//    RPY_CHECK(data_dict.contains("data"));
+//    auto label = data_dict["label"].cast<string>();
+//
+//    if (data_dict.contains("type")) {
+//        auto to_pass = py::make_tuple(data_dict["type"], data_dict["data"]);
+//        handle_labeled_data(schema, std::move(label), std::move(to_pass));
+//    } else {
+//        auto to_pass = py::reinterpret_borrow<py::object>(data_dict["data"]);
+//        handle_labeled_data(schema, std::move(label), std::move(to_pass));
+//    }
+    for (auto&& [label, value] : data_dict) {
+        auto true_label = label.cast<string>();
+        handle_labeled_data(schema,
+                            std::move(true_label),
+                            py::reinterpret_borrow<py::object>(value));
     }
+
 }
 
 void handle_timestamp_pair(StreamSchema *schema, py::object data) {
@@ -241,9 +249,15 @@ inline void handle_tuple_sequence(StreamSchema* schema, const py::sequence& data
         auto inner = py::reinterpret_borrow<py::sequence>(it_value);
         auto len = py::len(inner);
 
-        RPY_CHECK(len > 1 && len <= 4);
-        auto right = inner[py::slice(1, {}, {})];
-        handle_timestamp_pair(schema, right);
+        RPY_CHECK(len > 1);
+        if (len == 2) {
+            handle_timestamp_pair(schema, inner[1]);
+        } else if (len <= 4) {
+            auto right = inner[py::slice(1, {}, {})];
+            handle_timestamp_pair(schema, right);
+        } else {
+            throw py::value_error("expected tuple with no more than 4 elements");
+        }
     }
 }
 

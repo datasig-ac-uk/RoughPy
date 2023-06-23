@@ -88,8 +88,9 @@ typename StreamConstructionHelper::multimap_type StreamConstructionHelper::final
 }
 
 optional<ChannelType> StreamConstructionHelper::type_of(string_view label) const {
-    auto found = p_schema->find(string(label));
-    if (found != p_schema->end()) {
+    const auto& schema = *p_schema;
+    auto found = schema.find(string(label));
+    if (found != schema.end()) {
         return found->second.type();
     }
     return {};

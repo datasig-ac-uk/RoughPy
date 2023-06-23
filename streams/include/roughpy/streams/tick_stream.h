@@ -47,7 +47,6 @@ class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface {
     std::vector<param_t> m_granular_times;
     std::map<intervals::DyadicInterval, algebra::Lie> m_data;
     resolution_t m_resolution;
-    intervals::IntervalType m_itype;
 
     using DyadicInterval = intervals::DyadicInterval;
 
@@ -65,20 +64,28 @@ public:
     TickStream(std::vector<param_t>&& granular_times,
                std::map<intervals::DyadicInterval, algebra::Lie>&& data,
                resolution_t resolution,
-               intervals::IntervalType itype,
+               std::shared_ptr<streams::StreamSchema> schema,
                StreamMetadata&& md)
-        : StreamInterface(std::move(md)),
+        : StreamInterface(std::move(md), std::move(schema)),
           m_granular_times(std::move(granular_times)),
           m_data(std::move(data)),
-          m_resolution(resolution),
-          m_itype(itype)
-    {}
+          m_resolution(resolution)
+    {
+        if (auto di_negative = smallest_dyadic_containing_all_negative_events()) {
+            recursive_logsig(*di_negative);
+        }
+        if (auto di_positive = smallest_dyadic_containing_all_positive_events()) {
+            recursive_logsig(*di_positive);
+        }
+    }
 
     TickStream(
         StreamConstructionHelper&& helper,
         StreamMetadata md,
         resolution_t resolution
     );
+
+
 
     TickStream(scalars::ScalarStream&& raw_data,
                std::vector<const key_type*> raw_key_stream,
@@ -115,7 +122,6 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(TickStream) {
     RPY_SERIAL_SERIALIZE_NVP("granular_times", m_granular_times);
     RPY_SERIAL_SERIALIZE_NVP("data", m_data);
     RPY_SERIAL_SERIALIZE_NVP("resolution", m_resolution);
-    RPY_SERIAL_SERIALIZE_NVP("interval_type", m_itype);
 }
 
 }// namespace streams
