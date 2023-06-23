@@ -56,7 +56,10 @@ enum struct ChannelType : uint8_t {
 };
 
 struct IncrementChannelInfo {};
-struct ValueChannelInfo {};
+struct ValueChannelInfo {
+    bool lead_lag = false;
+};
+
 
 struct CategoricalChannelInfo {
     std::vector<string> variants;
@@ -102,7 +105,7 @@ public:
             case ChannelType::Increment:
                 return 1;
             case ChannelType::Value:
-                return 2;
+                return value_info.lead_lag ? 2 : 1;
             case ChannelType::Categorical:
                 return categorical_info.variants.size();
             case ChannelType::Lie:
@@ -162,6 +165,15 @@ public:
     dimn_t variant_id_of_label(string_view label) const;
 
     void set_lie_info(deg_t width, deg_t depth, algebra::VectorType vtype);
+    void set_lead_lag(bool new_value) {
+        RPY_CHECK(m_type == ChannelType::Value);
+        value_info.lead_lag = new_value;
+    }
+    RPY_NO_DISCARD
+    bool is_lead_lag() const {
+        RPY_CHECK(m_type == ChannelType::Value);
+        return value_info.lead_lag;
+    }
 
     StreamChannel &add_variant(string variant_label);
 
@@ -314,8 +326,7 @@ RPY_SERIAL_SERIALIZE_FN_EXT(IncrementChannelInfo) {
 }
 
 RPY_SERIAL_SERIALIZE_FN_EXT(ValueChannelInfo) {
-    (void)value;
-    RPY_SERIAL_SERIALIZE_NVP("data", 0);
+    RPY_SERIAL_SERIALIZE_NVP("lead_lag", value.lead_lag);
 }
 
 RPY_SERIAL_SERIALIZE_FN_EXT(CategoricalChannelInfo) {

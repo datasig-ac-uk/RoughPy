@@ -164,15 +164,18 @@ string StreamChannel::label_suffix(dimn_t variant_no) const {
     switch (m_type) {
         case ChannelType::Increment:
             return "";
-        case ChannelType::Value:
-            RPY_CHECK(variant_no < 2);
-            return (variant_no == 0) ? ":lead" : ":lag";
+        case ChannelType::Value: if (value_info.lead_lag) {
+                RPY_CHECK(variant_no < 2);
+                return (variant_no == 0) ? ":lead" : ":lag";
+            } else {
+                return "";
+            };
         case ChannelType::Categorical:
             RPY_CHECK(variant_no < categorical_info.variants.size());
             return ":" + categorical_info.variants[variant_no];
         case ChannelType::Lie:
             RPY_CHECK(variant_no < lie_info.width);
-            return ":" + std::to_string(variant_no);
+            return ":" + std::to_string(variant_no+1);
     }
     RPY_UNREACHABLE();
 }
@@ -189,12 +192,16 @@ dimn_t StreamChannel::variant_id_of_label(string_view label) const {
         case ChannelType::Increment:
             return 0;
         case ChannelType::Value:
-            if (label == "lead") {
-                return 0;
-            } else if (label == "lag") {
-                return 1;
+            if (value_info.lead_lag) {
+                if (label == "lead") {
+                    return 0;
+                } else if (label == "lag") {
+                    return 1;
+                } else {
+                    throw std::runtime_error("unrecognised variant label for type value");
+                }
             } else {
-                throw std::runtime_error("unrecognised variant label for type value");
+                return 0;
             }
         case ChannelType::Categorical:
             break;
@@ -252,9 +259,10 @@ std::vector<string> StreamChannel::get_variants() const {
     switch (m_type) {
         case ChannelType::Increment:
             break;
-        case ChannelType::Value:
-            variants.push_back("lead");
-            variants.push_back("lag");
+        case ChannelType::Value: if (value_info.lead_lag) {
+                variants.push_back("lead");
+                variants.push_back("lag");
+            }
             break;
         case ChannelType::Categorical:
             variants = categorical_info.variants;

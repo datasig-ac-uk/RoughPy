@@ -100,9 +100,12 @@ void rpy::python::init_schema(py::module_ &m) {
                 case streams::ChannelType::Increment:
                     PyList_SET_ITEM(plist, i++, PyUnicode_FromString(item.first.c_str()));
                     break;
-                case streams::ChannelType::Value:
-                    PyList_SET_ITEM(plist, i++, PyUnicode_FromString((item.first + item.second.label_suffix(0)).c_str()));
-                    PyList_SET_ITEM(plist, i++, PyUnicode_FromString((item.first + item.second.label_suffix(1)).c_str()));
+                case streams::ChannelType::Value: if (item.second.is_lead_lag()) {
+                        PyList_SET_ITEM(plist, i++, PyUnicode_FromString((item.first + item.second.label_suffix(0)).c_str()));
+                        PyList_SET_ITEM(plist, i++, PyUnicode_FromString((item.first + item.second.label_suffix(1)).c_str()));
+                    } else {
+                        PyList_SET_ITEM(plist, i++, PyUnicode_FromString(item.first.c_str()));
+                    }
                     break;
                 case streams::ChannelType::Categorical:
                     auto nvariants = item.second.num_variants();
