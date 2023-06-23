@@ -45,6 +45,7 @@ struct PyStreamMetaData {
     const scalars::ScalarType* scalar_type;
     optional<algebra::VectorType> vector_type;
     resolution_t resolution;
+    intervals::IntervalType interval_type;
     std::shared_ptr<streams::StreamSchema> schema;
 };
 

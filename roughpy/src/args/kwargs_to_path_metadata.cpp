@@ -40,14 +40,15 @@ using namespace rpy;
 python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwargs) {
 
     PyStreamMetaData md{
-        0,      // width
-        0,      // depth
-        {},     // support
-        nullptr,// context
-        nullptr,// scalar type
-        {},     // vector type
-        0,      // default resolution
-        nullptr // schema
+        0,                              // width
+        0,                              // depth
+        {},                             // support
+        nullptr,                        // context
+        nullptr,                        // scalar type
+        {},                             // vector type
+        0,                              // default resolution
+        intervals::IntervalType::Clopen,// interval type
+        nullptr                         // schema
     };
 
     streams::ChannelType ch_type;
@@ -189,6 +190,9 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
             md.support = intervals::RealInterval(support.cast<const intervals::Interval &>());
         }
     }
+
+    // TODO: Code for getting interval type
+
 
     return md;
 }
