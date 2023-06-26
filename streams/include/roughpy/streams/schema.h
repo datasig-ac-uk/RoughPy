@@ -57,7 +57,7 @@ enum struct ChannelType : uint8_t {
 
 struct IncrementChannelInfo {};
 struct ValueChannelInfo {
-    bool lead_lag = false;
+    bool lead_lag = true;
 };
 
 
