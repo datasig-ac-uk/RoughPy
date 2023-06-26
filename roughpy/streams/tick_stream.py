@@ -25,10 +25,10 @@
 #  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 #  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from roughpy._roughpy import TickStreamConstructionHelper, StreamSchema, ChannelType
-from typing import Optional, Any, NamedTuple, Union, Generator
 from abc import abstractmethod, ABC
-from functools import partial
+from typing import Optional, Any, NamedTuple
+
+from roughpy._roughpy import TickStreamConstructionHelper, StreamSchema, ChannelType
 
 
 class BaseTickDataParser(ABC):
@@ -50,23 +50,22 @@ class BaseTickDataParser(ABC):
     def parse_data(self, data: Any):
         pass
 
-    def convert_channel_type(self, type: Any) -> ChannelType:
+    def convert_channel_type(self, ch_type: Any) -> ChannelType:
 
-        if isinstance(type, ChannelType):
-            return type
+        if isinstance(ch_type, ChannelType):
+            return ch_type
 
-        if not isinstance(type, str):
-            raise TypeError(f"cannot convert {type.__name__} to channel type")
+        if not isinstance(ch_type, str):
+            raise TypeError(f"cannot convert {ch_type.__name__} to channel type")
 
-        if type == "increment":
+        if ch_type == "increment":
             return ChannelType.IncrementChannel
 
-        if type == "value":
+        if ch_type == "value":
             return ChannelType.ValueChannel
 
-        if type == "categorical":
+        if ch_type == "categorical":
             return ChannelType.CategoricalChannel
-
 
     def insert(self, item: TickItem):
         type = self.convert_channel_type(item.type)
@@ -77,7 +76,6 @@ class BaseTickDataParser(ABC):
             self.helper.add_value(item.label, item.timestamp, item.data)
         elif type == ChannelType.CategoricalChannel:
             self.helper.add_categorical(item.label, item.timestamp, item.data)
-
 
 
 class StandardTickDataParser(BaseTickDataParser):
@@ -91,16 +89,16 @@ class StandardTickDataParser(BaseTickDataParser):
               labels_remaining: list[str],
               current: Optional[dict]
               ):
-        yield from getattr(self, f"handle_{type(data).__name__}", self.handle_any)(data, labels_remaining, current or {})
+        yield from getattr(self, f"handle_{type(data).__name__}", self.handle_any)(data, labels_remaining,
+                                                                                   current or {})
 
     def handle_dict(self,
-                   data: dict,
-                   labels_remaining: list[str],
-                   current: dict
-                   ):
+                    data: dict,
+                    labels_remaining: list[str],
+                    current: dict
+                    ):
 
-        if (len(data) == len(labels_remaining)
-                and all(label in data for label in labels_remaining)):
+        if all(label in data for label in labels_remaining):
             yield self.TickItem(**current, **{label: data[label] for label in labels_remaining})
             return
 
@@ -113,9 +111,9 @@ class StandardTickDataParser(BaseTickDataParser):
             yield from self.visit(value, value_types, {key_type: key, **current})
 
     def handle_list(self,
-                    data,
-                    labels_remaining,
-                    current):
+                    data: Any,
+                    labels_remaining: list[str],
+                    current: dict):
         first_type, *remaining = labels_remaining
         if first_type == "data":
             yield self.TickItem(**current, data=data)
@@ -125,9 +123,9 @@ class StandardTickDataParser(BaseTickDataParser):
             yield from self.visit(value, labels_remaining, current)
 
     def handle_tuple(self,
-                     data,
-                     labels_remaining,
-                     current):
+                     data: Any,
+                     labels_remaining: list[str],
+                     current: dict):
         if len(data) == len(labels_remaining):
             yield self.TickItem(
                 **(current or {}), **dict(zip(labels_remaining, data))
@@ -140,9 +138,20 @@ class StandardTickDataParser(BaseTickDataParser):
         else:
             yield from self.visit(data[1:], other_labels, {**current, first_label: data[0]})
 
-
     def handle_any(self, data, labels_remaining, current):
-        if not len(labels_remaining) == 1:
-            raise ValueError("other types cannot be used for anything but data value")
 
-        yield self.TickItem(**(current or {}), data=data)
+        if len(labels_remaining) == 1:
+            yield self.TickItem(**current, data=data)
+            return
+
+        if "label" in labels_remaining or "timestamp" in labels_remaining:
+            raise ValueError("cannot infer timestamp or label from a single data value")
+
+        if isinstance(data, (float, int)):
+            # infer value type
+            yield self.TickItem(**current, type="increment", data=data)
+        elif isinstance(data, str):
+            # infer categorical
+            yield self.TickItem(**current, type="categorical", data=data)
+        else:
+            raise ValueError("other types cannot be used for anything but data value")
