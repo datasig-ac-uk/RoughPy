@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 list(APPEND VPCKG_INSTALL_OPTIONS "--no-print-usage")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (EXISTS "VERSION.txt")
     file(READ "VERSION.txt" _rpy_version)
