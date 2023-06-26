@@ -66,7 +66,7 @@ static py::object Brownian_from_generator(const py::args &args, const py::kwargs
 
     streams::StreamMetadata md{
         pmd.width,
-        pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
+        pmd.support ? *pmd.support : intervals::RealInterval(-std::numeric_limits<param_t>::infinity(), std::numeric_limits<param_t>::infinity()),
         pmd.ctx,
         pmd.scalar_type,
         pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
@@ -84,5 +84,5 @@ void rpy::python::init_brownian_stream(py::module_ &m) {
 
     py::class_<BrownianStream> klass(m, "BrownianStream", BROWNIAN_PATH_DOC);
 
-    klass.def_static("with_generator", Brownian_from_generator);
+    klass.def_static("with_generator", &Brownian_from_generator);
 }
