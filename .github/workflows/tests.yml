@@ -32,7 +32,8 @@ jobs:
           mkl-devel \
           intel-openmp \
           ninja \
-          pytest
+          pytest \
+          pybind11
         echo "CMAKE_PREFIX_PATH=$(python3.10 -c 'import sysconfig; import os; print(os.path.dirname(sysconfig.get_path("platstdlib")))')" >> "$GITHUB_ENV"
         pth="$(python -m site --user-site)/roughpy.pth"
         echo $pth
