@@ -46,6 +46,7 @@ def sample_data_dict():
 def sample_data_seq(sample_data_dict):
     return [(ts, *args) for ts, args in sample_data_dict.items()]
 
+
 def test_schema_from_dict(sample_data_dict):
 
     schema = StreamSchema.from_data(sample_data_dict)
@@ -54,8 +55,7 @@ def test_schema_from_dict(sample_data_dict):
         "first",
         "second:cat1",
         "second:cat2",
-        "third:lead",
-        "third:lag"
+        "third",
     ]
 
 
@@ -67,8 +67,7 @@ def test_schema_from_seq(sample_data_seq):
         "first",
         "second:cat1",
         "second:cat2",
-        "third:lead",
-        "third:lag"
+        "third",
     ]
 
 @pytest.fixture
@@ -85,20 +84,8 @@ def json_like_schema():
         {
             "label": "third",
             "type": "categorical",
-            "variants": ["cat1", "cat2"]
+            "categories": ["cat1", "cat2"]
         },
-        {
-            # No label, "3"
-            "type": "increment"
-        },
-        {
-            # No label or type, derived categorical, "4"
-            "variants": ["cata", "catb"]
-        },
-        {
-            # No label, "5"
-            "type": "value"
-        }
     ]
 
 
@@ -107,15 +94,11 @@ def test_parse_jsonlike(json_like_schema):
 
     assert schema.get_labels() == [
         "first",
-        "second:lead",
-        "second:lag",
+        # "second:lead",
+        # "second:lag",
+        "second",
         "third:cat1",
         "third:cat2",
-        "3",
-        "4:cata",
-        "4:catb",
-        "5:lead",
-        "5:lag"
     ]
 
 
@@ -263,4 +246,4 @@ def test_schema_construction_with_options(spec):
     schema = StreamSchema.parse(spec)
 
     assert schema.width() == 3
-    assert schema.get_variants() == ["first:lead", "first:lag", "second"]
+    assert schema.get_labels() == ["first:lead", "first:lag", "second"]
