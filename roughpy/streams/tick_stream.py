@@ -91,7 +91,6 @@ class StandardTickDataParser(BaseTickDataParser):
               labels_remaining: list[str],
               current: Optional[dict]
               ):
-        print("visit", data, labels_remaining)
         yield from getattr(self, f"handle_{type(data).__name__}", self.handle_any)(data, labels_remaining, current or {})
 
     def handle_dict(self,
@@ -99,7 +98,6 @@ class StandardTickDataParser(BaseTickDataParser):
                    labels_remaining: list[str],
                    current: dict
                    ):
-        print("handle dict", data)
 
         if (len(data) == len(labels_remaining)
                 and all(label in data for label in labels_remaining)):
@@ -118,7 +116,6 @@ class StandardTickDataParser(BaseTickDataParser):
                     data,
                     labels_remaining,
                     current):
-        print("handle list", data)
         first_type, *remaining = labels_remaining
         if first_type == "data":
             yield self.TickItem(**current, data=data)
@@ -131,7 +128,6 @@ class StandardTickDataParser(BaseTickDataParser):
                      data,
                      labels_remaining,
                      current):
-        print("handle tuple", data)
         if len(data) == len(labels_remaining):
             yield self.TickItem(
                 **(current or {}), **dict(zip(labels_remaining, data))
@@ -146,7 +142,6 @@ class StandardTickDataParser(BaseTickDataParser):
 
 
     def handle_any(self, data, labels_remaining, current):
-        print("handle any", data)
         if not len(labels_remaining) == 1:
             raise ValueError("other types cannot be used for anything but data value")
 
