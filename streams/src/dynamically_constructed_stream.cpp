@@ -71,6 +71,9 @@ void streams::DynamicallyConstructedStream::refine_accuracy(DynamicallyConstruct
 
     for (; refined_inc < refined_end; ++(++refined_inc)) {
         auto range = m_data_tree.equal_range(refined_inc);
+        if (range.first->first == refined_inc) {
+            continue;
+        }
         auto leaf_above = range.first;
         --leaf_above;
 
