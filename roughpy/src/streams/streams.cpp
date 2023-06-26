@@ -36,6 +36,7 @@
 #include "lie_increment_stream.h"
 #include "piecewise_abelian_stream.h"
 #include "tick_stream.h"
+#include "brownian_stream.h"
 
 using namespace rpy;
 using namespace rpy::python;
@@ -54,4 +55,5 @@ void python::init_streams(py::module_ &m) {
     init_function_stream(m);
     init_tick_stream(m);
     init_externally_sourced_stream(m);
+    init_brownian_stream(m);
 }
