@@ -31,7 +31,6 @@ import pytest
 
 from roughpy import TickStream, DPReal, RealInterval, Lie
 
-
 DATA_FORMATS = [
     {
         1.0: [
@@ -87,20 +86,54 @@ DATA_FORMATS = [
             "second": ("increment", 1.0),
         })
     ],
+    {
+        1.0: [
+            ("first", "increment", 1.0),
+            {
+                "label": "second",
+                "type": "increment",
+                "data": 1.0
+            }
+        ]
+    },
+    {
+        1.0: [
+            ("first", "increment", 1.0),
+            {
+                "second": ("increment", 1.0)
+            }
+        ]
+    },
+    {
+        1.0: [
+            ("first", "increment", 1.0),
+            {
+                "second": {
+                    "type": "increment",
+                    "data": 1.0
+                }
+            }
+        ]
+    },
+    {
+        1.0: {
+            "first": ("increment", 1.0),
+            "second": {
+                "type": "increment",
+                "data": 1.0
+            }
+        }
+    }
 
 
 
 ]
 
 
-@pytest.fixture(params=DATA_FORMATS)
-def tick_data(request):
-    return request.param
 
-
-
-def test_construct_tick_path_from_data(tick_data):
-    stream = TickStream.from_data(tick_data, width=2, depth=2, dtype=DPReal)
+@pytest.mark.parametrize("data", DATA_FORMATS)
+def test_construct_tick_path_from_data(data):
+    stream = TickStream.from_data(data, width=2, depth=2, dtype=DPReal)
 
     assert stream.width == 2
     lsig = stream.log_signature(RealInterval(0.0, 2.0), 2)
