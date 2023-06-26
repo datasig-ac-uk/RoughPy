@@ -38,74 +38,131 @@ streams::ChannelType python::py_to_channel_type(const py::object &arg) {
     throw py::type_error("no know conversion from " + arg.get_type().attr("__name__").cast<string>() + " to channel type");
 }
 
-void parse_schema_from_dict(StreamSchema &schema, const py::dict &data) {
-    (void) schema;
-    (void) data;
-    throw std::runtime_error("not yet supported");
+namespace {
+
+
+inline void insert_increment_to_schema(StreamSchema* schema, string label, py::dict RPY_UNUSED_VAR options) {
+    // No options for increment types at the moment
+    auto& RPY_UNUSED_VAR channel = schema->insert_increment(std::move(label));
+}
+inline void insert_value_to_schema(StreamSchema* schema, string label, py::dict options) {
+    auto& channel = schema->insert_value(std::move(label));
+
+    if (options.contains("lead_lag")) {
+        channel.set_lead_lag(options["lead_lag"].cast<bool>());
+    }
+}
+inline void insert_categorical_to_schema(StreamSchema* schema, string label, py::dict options) {
+    auto& channel = schema->insert_categorical(std::move(label));
+
+    if (options.contains("categories")) {
+        for (auto&& cat : options["categories"]) {
+            channel.insert_variant(cat.cast<string>());
+        }
+    }
+}
+inline void insert_lie_to_schema(StreamSchema* schema, string label, py::dict RPY_UNUSED_VAR options) {
+    auto& channel RPY_UNUSED_VAR = schema->insert_lie(std::move(label));
 }
 
-void parse_schema_from_sequence(StreamSchema &schema, const py::sequence &data) {
+inline void insert_item_to_schema(StreamSchema* schema, string label, ChannelType type, py::dict options) {
+    switch (type) {
+        case ChannelType::Increment:
+            insert_increment_to_schema(schema, std::move(label), std::move(options));
+            break;
+        case ChannelType::Value:
+            insert_value_to_schema(schema, std::move(label), std::move(options));
+            break;
+        case ChannelType::Categorical:
+            insert_categorical_to_schema(schema, std::move(label), std::move(options));
+            break;
+        case ChannelType::Lie:
+            insert_lie_to_schema(schema, std::move(label), std::move(options));
+            break;
+    }
+}
 
-    for (auto &&item : data) {
-        RPY_CHECK(py::isinstance<py::dict>(item));
+void handle_seq_item(StreamSchema* schema, string label, py::sequence data) {
 
-        auto has_variants = item.contains("variants");
-        ChannelType ctype = rpy::streams::ChannelType::Increment;
-        if (item.contains("type")) {
-            auto type = item["type"].cast<string>();
-            if (type == "increment") {
-                // Already set
-            } else if (type == "value") {
-                ctype = rpy::streams::ChannelType::Value;
-            } else if (type == "categorical" || has_variants) {
-                ctype = rpy::streams::ChannelType::Categorical;
-            } else {
-                throw py::value_error("unknown type " + type);
-            }
-        } else if (has_variants) {
-            ctype = rpy::streams::ChannelType::Categorical;
+    auto len = py::len(data);
+
+    RPY_CHECK(len > 1);
+    auto type = py_to_channel_type(data[0]);
+
+    if (len == 1) {
+        insert_item_to_schema(schema, std::move(label), type, py::dict());
+    } else if (len == 2) {
+        if (!py::isinstance<py::dict>(data[1])) {
+            throw py::type_error("options must be a dictionary if provided");
         }
+        insert_item_to_schema(schema, std::move(label), type, py::reinterpret_borrow<py::dict>(data[1]));
+    } else {
+        throw py::value_error("expected tuple (type [, options])");
+    }
 
-        if (has_variants) {
-            if (ctype != rpy::streams::ChannelType::Categorical) {
-                throw py::value_error("only categorical channels may have variants");
-            }
 
-            RPY_CHECK(py::isinstance<py::sequence>(item["variants"]));
+}
+
+void handle_dict_item(StreamSchema* schema, string label, py::dict data) {
+    /*
+     * The item contains a mapping of key -> values, which must include "type",
+     * along with any other options to be appended to the schema
+     */
+    if (!data.contains("type")) {
+        throw py::value_error("dict items must contain \"type\"");
+    }
+
+    auto type = py_to_channel_type(data["type"]);
+    // Everything remaining should be an option to be passed
+    auto data_copy = py::reinterpret_steal<py::dict>(PyDict_Copy(data.ptr()));
+    PyDict_DelItemString(data_copy.ptr(), "type");
+
+    insert_item_to_schema(schema, std::move(label), type, std::move(data_copy));
+}
+void handle_dict_item_no_label(StreamSchema* schema, py::dict data) {
+    if (!data.contains("label")) {
+        throw py::value_error("dict items in a schema must contain \"label\"");
+    }
+    auto data_copy = py::reinterpret_steal<py::dict>(PyDict_Copy(data.ptr()));
+
+    auto label = data_copy["label"].cast<string>();
+    PyDict_DelItemString(data_copy.ptr(), "label");
+
+    handle_dict_item(schema, std::move(label), std::move(data_copy));
+}
+
+void handle_seq_item_no_label(StreamSchema* schema, py::sequence data) {
+    RPY_CHECK(py::len(data) > 1);
+    handle_seq_item(schema, data[0].cast<string>(), data[py::slice(1, {}, {})]);
+}
+
+
+void handle_dict_schema(StreamSchema* schema, py::dict data) {
+    for (auto&& [label, item] : data) {
+        if (py::isinstance<py::dict>(item)) {
+            handle_dict_item(schema, label.cast<string>(), py::reinterpret_borrow<py::dict>(item));
+        } else if (py::isinstance<py::sequence>(item)) {
+            handle_seq_item(schema, label.cast<string>(), py::reinterpret_borrow<py::sequence>(item));
         } else {
-            if (ctype == rpy::streams::ChannelType::Categorical) {
-                throw py::value_error("categorical channels must have a sequence of variants");
-            }
-        }
-
-        string label;
-        if (item.contains("label")) {
-            label = item["label"].cast<string>();
-        }
-
-        switch (ctype) {
-            case rpy::streams::ChannelType::Increment:
-                schema.insert_increment(label);
-                break;
-            case rpy::streams::ChannelType::Value:
-                schema.insert_value(label);
-                break;
-            case rpy::streams::ChannelType::Categorical: {
-                auto &cat = schema.insert_categorical(label);
-                for (auto &&var : item["variants"]) {
-                    cat.add_variant(var.cast<string>());
-                }
-                break;
-            }
-            case rpy::streams::ChannelType::Lie:
-                schema.insert_lie(label);
-                break;
+            throw py::type_error("unsupported type in schema specification");
         }
     }
 }
 
+void handle_seq_schema(StreamSchema* schema, py::sequence data) {
 
-namespace {
+    for (auto&& item : data) {
+        if (py::isinstance<py::dict>(item)) {
+            handle_dict_item_no_label(schema, py::reinterpret_borrow<py::dict>(item));
+        } else if (py::isinstance<py::sequence>(item)) {
+            handle_seq_item_no_label(schema, py::reinterpret_borrow<py::sequence>(item));
+        } else {
+            throw py::type_error("unsupported type in schema specification");
+        }
+    }
+
+}
+
 
 void handle_timestamp_pair(StreamSchema *schema, py::object data);
 
@@ -262,38 +319,39 @@ inline void handle_tuple_sequence(StreamSchema* schema, const py::sequence& data
 }
 
 
-}
+} // namespace
+
 void python::parse_into_schema(std::shared_ptr<streams::StreamSchema> schema, const py::object &data) {
 
     if (py::isinstance<py::dict>(data)) {
-        parse_schema_from_dict(*schema, py::reinterpret_borrow<py::dict>(data));
+        handle_dict_schema(schema.get(), py::reinterpret_borrow<py::dict>(data));
     } else if (py::isinstance<py::sequence>(data)) {
-        parse_schema_from_sequence(*schema, py::reinterpret_borrow<py::sequence>(data));
+        handle_seq_schema(schema.get(), py::reinterpret_borrow<py::sequence>(data));
     } else {
         throw py::type_error("expected dict or sequence");
     }
 }
 
-void python::parse_data_into_schema(std::shared_ptr<streams::StreamSchema> schema, const py::object &data) {
-    if (py::isinstance<py::dict>(data)) {
-//        parse_schema_from_dict_data(schema.get(), py::reinterpret_borrow<py::dict>(data));
-        handle_dict_stream(schema.get(), py::reinterpret_borrow<py::dict>(data));
-    } else if (py::isinstance<py::sequence>(data)) {
-//        parse_schema_from_seq_data(schema.get(), py::reinterpret_borrow<py::sequence>(data));
-        handle_tuple_sequence(schema.get(), py::reinterpret_borrow<py::sequence>(data));
-    } else {
-        throw py::type_error("expected sequential data");
-    }
-}
-
+//void python::parse_data_into_schema(std::shared_ptr<streams::StreamSchema> schema, const py::object &data) {
+//    if (py::isinstance<py::dict>(data)) {
+////        parse_schema_from_dict_data(schema.get(), py::reinterpret_borrow<py::dict>(data));
+//        handle_dict_stream(schema.get(), py::reinterpret_borrow<py::dict>(data));
+//    } else if (py::isinstance<py::sequence>(data)) {
+////        parse_schema_from_seq_data(schema.get(), py::reinterpret_borrow<py::sequence>(data));
+//        handle_tuple_sequence(schema.get(), py::reinterpret_borrow<py::sequence>(data));
+//    } else {
+//        throw py::type_error("expected sequential data");
+//    }
+//}
+//
 std::shared_ptr<streams::StreamSchema> rpy::python::parse_schema(const py::object &data) {
     auto result = std::make_shared<streams::StreamSchema>();
     parse_into_schema(result, data);
     return result;
 }
 
-std::shared_ptr<streams::StreamSchema> rpy::python::parse_schema_from_data(const py::object &data) {
-    auto schema = std::make_shared<streams::StreamSchema>();
-    parse_data_into_schema(schema, data);
-    return schema;
-}
+//std::shared_ptr<streams::StreamSchema> rpy::python::parse_schema_from_data(const py::object &data) {
+//    auto schema = std::make_shared<streams::StreamSchema>();
+//    parse_data_into_schema(schema, data);
+//    return schema;
+//}
