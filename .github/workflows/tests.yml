@@ -58,9 +58,8 @@ jobs:
         cmake -GNinja -B ${{github.workspace}}/build \
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
           -DROUGHPY_BUILD_TESTS=ON \
-          -DROUGHPY_BUILD_PYMODULE_INPLACE=ON
-      env:
-        CMAKE_TOOLCHAIN_FILE: $VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+          -DROUGHPY_BUILD_PYMODULE_INPLACE=ON \
+          --toolchain=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
 
     - name: Build
       # Build your program with the given configuration
