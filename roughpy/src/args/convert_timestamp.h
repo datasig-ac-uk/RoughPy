@@ -32,11 +32,33 @@
 #ifndef ROUGHPY_ROUGHPY_SRC_ARGS_CONVERT_TIMESTAMP_H
 #define ROUGHPY_ROUGHPY_SRC_ARGS_CONVERT_TIMESTAMP_H
 
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
 #include "roughpy_module.h"
+
 
 namespace rpy { namespace python {
 
-param_t convert_timestamp(const py::object& py_timestamp);
+enum class PyDateTimeResolution : uint8_t {
+    Microseconds = 0,
+    Milliseconds,
+    Seconds,
+    Minutes,
+    Hours,
+    Days
+};
+
+struct PyDateTimeConversionOptions {
+    PyDateTimeResolution resolution;
+};
+
+
+void init_datetime(py::module_ &m);
+
+param_t convert_delta_from_datetimes(py::handle current, py::handle previous, const PyDateTimeConversionOptions& options);
+param_t convert_timedelta(py::handle py_timedelta, const PyDateTimeConversionOptions& options);
+
 
 }}
 
