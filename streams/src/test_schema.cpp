@@ -140,7 +140,7 @@ protected:
             .add_variant("first")
             .add_variant("second")
             .add_variant("third");
-        schema.insert_value("c");
+        schema.insert_value("c").set_lead_lag(true);
         schema.insert_increment("b");
     }
 };
