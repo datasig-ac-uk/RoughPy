@@ -75,7 +75,6 @@ jobs:
       - name: Build and test
         uses: pypa/cibuildwheel@v2.13.0
         env:
-          CIBW_BUILD: cp310-${{ matrix.tag }}
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: >
             auditwheel show {wheel} &&
