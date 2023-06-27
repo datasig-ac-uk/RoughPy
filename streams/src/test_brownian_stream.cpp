@@ -42,7 +42,7 @@ public:
     static constexpr deg_t width = 2;
     static constexpr deg_t depth = 2;
     static constexpr algebra::VectorType vtype = algebra::VectorType::Dense;
-    std::size_t seed = 12345;
+    uint64_t seed = 12345;
 
     const scalars::ScalarType *ctype;
     algebra::context_pointer ctx;
