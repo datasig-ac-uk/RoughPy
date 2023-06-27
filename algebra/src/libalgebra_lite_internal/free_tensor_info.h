@@ -54,7 +54,7 @@ struct algebra_info<FreeTensor, lal::free_tensor<Coeffs, VType, Storage>> {
     using wrapper_type = FreeTensor;
 
     /// The basis type of the implementation
-    using basis_type = typename lal::tensor_basis;
+    using basis_type = lal::tensor_basis;
 
     /// The roughpy key type used in the wrapper
     using key_type = typename TensorBasis::key_type;

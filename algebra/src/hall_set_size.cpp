@@ -79,7 +79,7 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width),
                 m_mobius[i] = -m_mobius[i];
             }
             // Mobius[i] = sign(Mobius[i])
-            m_mobius[i] = (0 < m_mobius[i]) - (m_mobius[i] < 0);
+            m_mobius[i] = static_cast<int>(0 < m_mobius[i]) - static_cast<int>(m_mobius[i] < 0);
         }
     }
 }
@@ -90,8 +90,9 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width),
  * which eliminates one branch from the function.
  */
 static inline dimn_t power(deg_t base, int exp) {
-    if (exp == 1)
+    if (exp == 1) {
         return base;
+    }
     return ((exp % 2 == 1) ? base : 1) * power(base, exp / 2) * power(base, exp / 2);
 }
 

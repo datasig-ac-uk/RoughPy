@@ -248,7 +248,8 @@ install(DIRECTORY roughpy
         DESTINATION .
         FILES_MATCHING
         PATTERN "*.py"
-        PATTERN "*.pyi")
+        PATTERN "*.pyi"
+        PATTERN "src/*" EXCLUDE)
 
 install(FILES ${ROUGHPY_RUNTIME_DEPS} DESTINATION roughpy)
 

@@ -279,23 +279,23 @@ std::vector<const ScalarType *> rpy::scalars::list_types() {
         return type_id;                                                         \
     }
 
-ROUGHPY_MAKE_TYPE_ID_OF(char, "i8");
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned char, "u8");
-ROUGHPY_MAKE_TYPE_ID_OF(short, "i16");
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned short, "u16");
-ROUGHPY_MAKE_TYPE_ID_OF(int, "i32");
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned int, "u32");
-ROUGHPY_MAKE_TYPE_ID_OF(long long, "i64");
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned long long, "u64");
-ROUGHPY_MAKE_TYPE_ID_OF(signed_size_type_marker, "isize");
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned_size_type_marker, "usize");
+ROUGHPY_MAKE_TYPE_ID_OF(char, "i8")
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned char, "u8")
+ROUGHPY_MAKE_TYPE_ID_OF(short, "i16")
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned short, "u16")
+ROUGHPY_MAKE_TYPE_ID_OF(int, "i32")
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned int, "u32")
+ROUGHPY_MAKE_TYPE_ID_OF(long long, "i64")
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned long long, "u64")
+ROUGHPY_MAKE_TYPE_ID_OF(signed_size_type_marker, "isize")
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned_size_type_marker, "usize")
 
-ROUGHPY_MAKE_TYPE_ID_OF(half, "f16");
-ROUGHPY_MAKE_TYPE_ID_OF(bfloat16, "bf16");
-ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
-ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
-ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational");
-ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
+ROUGHPY_MAKE_TYPE_ID_OF(half, "f16")
+ROUGHPY_MAKE_TYPE_ID_OF(bfloat16, "bf16")
+ROUGHPY_MAKE_TYPE_ID_OF(float, "f32")
+ROUGHPY_MAKE_TYPE_ID_OF(double, "f64")
+ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational")
+ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly")
 
 #undef ROUGHPY_MAKE_TYPE_ID_OF
 
