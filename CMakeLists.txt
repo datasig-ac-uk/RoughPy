@@ -245,7 +245,7 @@ install(TARGETS
 
 install(FILES roughpy/py.typed DESTINATION roughpy)
 install(DIRECTORY roughpy
-        DESTINATION roughpy
+        DESTINATION .
         FILES_MATCHING
         PATTERN "*.py"
         PATTERN "*.pyi")
