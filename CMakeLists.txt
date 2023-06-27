@@ -248,6 +248,8 @@ install(FILES
         roughpy/__init__.pyi
         roughpy/py.typed
         roughpy/version.py
+        roughpy/streams/tick_stream.py
+        roughpy/streams/__init__.py
         DESTINATION roughpy
         )
 
