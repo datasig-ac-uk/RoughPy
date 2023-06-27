@@ -28,6 +28,9 @@
 //
 // Created by user on 11/03/23.
 //
+// Python header first
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
 
 #include "roughpy_module.h"
 
