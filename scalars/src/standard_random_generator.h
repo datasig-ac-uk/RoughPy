@@ -115,7 +115,9 @@ void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_seed(Slice<uint64_t>
 }
 template <typename ScalarImpl, typename BitGenerator>
 void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_state(string_view state) {
-    std::stringstream ss(string{state});
+    // add a linebreak char to terminate the string to avoid a bug in the pcg stream
+    // read function
+    std::stringstream ss(string{state} + '\n');
     ss >> m_generator;
 }
 
