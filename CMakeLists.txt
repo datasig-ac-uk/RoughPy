@@ -100,7 +100,7 @@ endif ()
 # Before we get too far, let's make use of Python's import
 # system to make sure MKL can be found if it was pip installed
 execute_process(COMMAND ${Python_EXECUTABLE}
-        "./tools/python-get-binary-obj-path.py"
+        "${CMAKE_CURRENT_LIST_DIR}/tools/python-get-binary-obj-path.py"
         "--directory" "mkl-devel" "cmake/mkl/MKLConfig.cmake"
         RESULT_VARIABLE _python_mkl_dir_found
         OUTPUT_VARIABLE _python_mkl_dir
