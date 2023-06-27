@@ -108,6 +108,7 @@ add_roughpy_test(scalar
             src/test_scalar_array.cpp
             src/test_key_scalar_array.cpp
             src/test_scalar_matrix.cpp
+            src/test_pcg_standard_random.cpp
         DEP
             RoughPy::Platform
         )
