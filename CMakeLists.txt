@@ -243,15 +243,12 @@ install(TARGETS
         EXCLUDE_FROM_ALL
         )
 
-install(FILES
-        roughpy/__init__.py
-        roughpy/__init__.pyi
-        roughpy/py.typed
-        roughpy/version.py
-        roughpy/streams/tick_stream.py
-        roughpy/streams/__init__.py
+install(FILES roughpy/py.typed DESTINATION roughpy)
+install(DIRECTORY roughpy
         DESTINATION roughpy
-        )
+        FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "*.pyi")
 
 install(FILES ${ROUGHPY_RUNTIME_DEPS} DESTINATION roughpy)
 
