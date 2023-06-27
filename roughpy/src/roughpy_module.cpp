@@ -36,6 +36,7 @@
 #include "recombine.h"
 #include "scalars/scalars.h"
 #include "streams/streams.h"
+#include "args/convert_timestamp.h"
 
 #ifndef ROUGHPY_VERSION_STRING
 #define ROUGHPY_VERSION_STRING "1.0.0"
@@ -45,6 +46,7 @@ PYBIND11_MODULE(_roughpy, m) {
     using namespace rpy::python;
 
     m.add_object("__version__", py::str(ROUGHPY_VERSION_STRING));
+    init_datetime(m);
 
     init_scalars(m);
     init_intervals(m);

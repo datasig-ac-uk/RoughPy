@@ -46,6 +46,7 @@ void python::init_streams(py::module_ &m) {
     py::options options;
     options.disable_function_signatures();
 
+
     init_schema(m);
     init_base_stream(m);
     init_stream(m);

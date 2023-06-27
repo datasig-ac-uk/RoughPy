@@ -37,6 +37,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/streams/schema.h>
 #include <roughpy/streams/stream.h>
+#include "args/convert_timestamp.h"
 
 namespace rpy {
 namespace python {
@@ -54,6 +55,8 @@ class RPyTickConstructionHelper {
     std::vector<RPy_Tick> m_ticks;
     std::shared_ptr<streams::StreamSchema> p_schema;
     bool b_schema_only;
+    py::object m_reference_time;
+    PyDateTimeConversionOptions m_time_conversion_options;
 
 
 private:
