@@ -63,7 +63,7 @@
  * pull in the access helper struct.
  */
 #ifndef RPY_DISABLE_SERIALIZATION
-#define RPY_SERIAL_ACCESS() friend class ::cereal::access;
+#define RPY_SERIAL_ACCESS() friend class ::cereal::access
 #define RPY_SERIAL_CLASS_VERSION(T, V) CEREAL_CLASS_VERSION(T, V)
 #define RPY_SERIAL_SERIALIZE_VAL(V) archive(CEREAL_NVP(V))
 #define RPY_SERIAL_SERIALIZE_SIZE(S) archive(::cereal::make_size_tag(S))
@@ -103,7 +103,7 @@
 
 #define RPY_SERIAL_SERIALIZE_FN() \
     template <typename Archive>   \
-    void serialize(Archive &archive, const std::uint32_t version);
+    void serialize(Archive &archive, const std::uint32_t version)
 
 #define RPY_SERIAL_LOAD_FN()    \
     template <typename Archive> \

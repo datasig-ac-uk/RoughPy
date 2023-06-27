@@ -153,7 +153,7 @@ void rpy::scalars::ScalarPointer::update_from_bytes(const std::string &type_id, 
         m_flags |= flags::Signed;
     }
     auto order = static_cast<uint32_t>(count_bits(info.n_bytes));
-    RPY_DBG_ASSERT((1 << order) == info.n_bytes);
+    RPY_DBG_ASSERT((dimn_t(1) << order) == info.n_bytes);
     RPY_DBG_ASSERT(order <= 7);
     m_flags |= (order << integer_bits_offset);
     RPY_DBG_ASSERT(simple_integer_bytes() == info.n_bytes);

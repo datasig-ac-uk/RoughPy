@@ -40,7 +40,10 @@ rpy::scalars::ScalarMatrix::ScalarMatrix() : ScalarArray() {
 
 rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type, rpy::deg_t rows, rpy::deg_t cols, rpy::scalars::MatrixStorage storage, rpy::scalars::MatrixLayout layout)
     : ScalarArray(type, (void *)nullptr, 0),
-      m_nrows(rows), m_ncols(cols), m_layout(layout), m_storage(storage) {
+      m_storage(storage),
+      m_layout(layout),
+      m_nrows(rows),
+      m_ncols(cols) {
     if (p_type != nullptr && m_nrows > 0 && m_ncols > 0) {
         const auto size = m_nrows * m_ncols;
         ScalarPointer::operator=(p_type->allocate(size));
@@ -49,9 +52,12 @@ rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type, r
 }
 rpy::scalars::ScalarMatrix::ScalarMatrix(rpy::deg_t rows, rpy::deg_t cols, rpy::scalars::ScalarArray &&array, rpy::scalars::MatrixStorage storage, rpy::scalars::MatrixLayout layout)
     : ScalarArray(std::move(array)),
-      m_nrows(rows), m_ncols(cols), m_layout(layout), m_storage(storage) {
+      m_storage(storage),
+      m_layout(layout),
+      m_nrows(rows),
+      m_ncols(cols) {
     RPY_CHECK(m_nrows >= 0 && m_ncols >= 0);
-    RPY_CHECK(m_nrows * m_ncols == m_size);
+    RPY_CHECK(static_cast<dimn_t>(m_nrows) * static_cast<dimn_t>(m_ncols) == m_size);
 }
 rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::row(rpy::deg_t i) {
     return rpy::scalars::ScalarMatrix(nullptr, 0, 0);

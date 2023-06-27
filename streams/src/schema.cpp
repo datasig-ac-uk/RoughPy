@@ -174,7 +174,7 @@ string StreamChannel::label_suffix(dimn_t variant_no) const {
             RPY_CHECK(variant_no < categorical_info.variants.size());
             return ":" + categorical_info.variants[variant_no];
         case ChannelType::Lie:
-            RPY_CHECK(variant_no < lie_info.width);
+            RPY_CHECK(variant_no < static_cast<dimn_t>(lie_info.width));
             return ":" + std::to_string(variant_no+1);
     }
     RPY_UNREACHABLE();

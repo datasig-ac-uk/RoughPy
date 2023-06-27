@@ -39,7 +39,7 @@ using namespace rpy;
 using namespace rpy::algebra;
 
 algebra::dtl::AlgebraInterfaceBase::AlgebraInterfaceBase(context_pointer &&ctx, VectorType vtype, const scalars::ScalarType *stype, ImplementationType impl_type)
-    : p_ctx(std::move(ctx)), m_vector_type(vtype), p_coeff_type(stype), m_impl_type(impl_type) {
+    : p_ctx(std::move(ctx)), p_coeff_type(stype), m_vector_type(vtype),  m_impl_type(impl_type) {
 }
 
 algebra::dtl::AlgebraInterfaceBase::~AlgebraInterfaceBase() = default;

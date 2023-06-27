@@ -43,7 +43,7 @@ namespace {
 
 inline void insert_increment_to_schema(StreamSchema* schema, string label, py::dict RPY_UNUSED_VAR options) {
     // No options for increment types at the moment
-    auto& RPY_UNUSED_VAR channel = schema->insert_increment(std::move(label));
+    auto& channel RPY_UNUSED_VAR = schema->insert_increment(std::move(label));
 }
 inline void insert_value_to_schema(StreamSchema* schema, string label, py::dict options) {
     auto& channel = schema->insert_value(std::move(label));

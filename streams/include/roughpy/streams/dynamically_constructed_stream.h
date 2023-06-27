@@ -98,8 +98,8 @@ protected:
     using const_data_increment = typename data_tree_type::const_iterator;
 
 private:
-    mutable data_tree_type m_data_tree;
     mutable std::recursive_mutex m_lock;
+    mutable data_tree_type m_data_tree;
 
     void refine_accuracy(data_increment increment, resolution_t desired) const;
 

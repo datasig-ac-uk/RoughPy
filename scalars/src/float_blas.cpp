@@ -321,7 +321,7 @@ static void ddmm(ScalarMatrix &result, const ScalarMatrix &lhs, const ScalarMatr
     const auto *rhs_ptr = rhs.raw_cast<const float *>();
 
     // This is a silly simple case. just do the multiplication manually.
-    for (dimn_t i = 0; i < lhs.ncols(); ++i) {
+    for (deg_t i = 0; i < lhs.ncols(); ++i) {
         out_ptr[i] = lhs_ptr[i] * rhs_ptr[i];
     }
 }
@@ -425,16 +425,25 @@ ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix &coeff_matrix, co
 
     ScalarMatrix result = target_matrix.to_full();
 
-    switch (coeff_matrix.storage()) {
-        case MatrixStorage::FullMatrix:
-
-            break;
-    }
-
+//    switch (coeff_matrix.storage()) {
+//        case MatrixStorage::FullMatrix:
+//
+//            break;
+//    }
+//
     return result;
 }
 OwnedScalarArray FloatBlas::lls_qr(const ScalarMatrix &matrix, const ScalarArray &target) {
-    return BlasInterface::lls_qr(matrix, target);
+
+
+    switch (matrix.storage()) {
+        case MatrixStorage::FullMatrix: break;
+        case MatrixStorage::UpperTriangular:
+            break;
+        case MatrixStorage::LowerTriangular: break;
+        case MatrixStorage::Diagonal: break;
+    }
+    return {};
 }
 OwnedScalarArray FloatBlas::lls_orth(const ScalarMatrix &matrix, const ScalarArray &target) {
     return BlasInterface::lls_orth(matrix, target);
@@ -458,5 +467,4 @@ SingularValueDecomposition FloatBlas::svd(const ScalarMatrix &matrix) {
     return BlasInterface::svd(matrix);
 }
 void FloatBlas::transpose(ScalarMatrix &matrix) const {
-    auto *ptr = matrix.raw_cast<float *>();
 }

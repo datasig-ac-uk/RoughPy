@@ -382,7 +382,7 @@ std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr, dimn_t co
         size = item.sign() ? -n_bytes : n_bytes;
 #endif
         const auto *sz_ptr = reinterpret_cast<const byte *>(&size);
-        for (int i = 0; i < sizeof(int64_t); ++i) {
+        for (dimn_t i = 0; i < sizeof(int64_t); ++i) {
             result.push_back(sz_ptr[i]);
         }
 

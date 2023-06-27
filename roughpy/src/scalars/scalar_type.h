@@ -44,7 +44,7 @@ struct PyScalarMetaType {
 };
 
 struct PyScalarTypeBase {
-    PyObject_VAR_HEAD;
+    PyObject_VAR_HEAD
 };
 
 

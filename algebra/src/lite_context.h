@@ -91,8 +91,8 @@ protected:
 
 template <typename Coefficients>
 class LiteContext : private dtl::LiteContextBasisHolder, public Context {
-    LieBasis m_lie_basis;
     TensorBasis m_tensor_basis;
+    LieBasis m_lie_basis;
 
     using dtl::LiteContextBasisHolder::p_tbasis;
     using dtl::LiteContextBasisHolder::p_lbasis;
@@ -248,7 +248,7 @@ void tensor_populate_vcd(VectorConstructionData& data, const TensorObject& arg) 
 
         auto *key_array = data.data.keys();
 
-        auto i = 0;
+        dimn_t i = 0;
         for (auto &&it : arg) {
             data.data[i] = it->value();
             key_array[i] = it->key();
@@ -452,13 +452,11 @@ template <typename Coefficients>
 template <VectorType VType>
 typename LiteContext<Coefficients>::template free_tensor_t<VType> LiteContext<Coefficients>::sig_derivative_impl(const std::vector<DerivativeComputeInfo> &info) const {
     using tensor_type = free_tensor_t<VType>;
-    using lie_type = lie_t<VType>;
 
     if (info.empty()) {
         return tensor_type(p_tbasis, p_ftmul);
     }
 
-    using access = algebra_access<LieInterface>;
 
     tensor_type result(p_tbasis, p_ftmul);
 

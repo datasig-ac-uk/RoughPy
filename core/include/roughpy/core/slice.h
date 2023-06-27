@@ -76,7 +76,7 @@ public:
         is_integral<I>::value,
         const T &>
     operator[](I i) noexcept {
-        RPY_DBG_ASSERT(0 <= i && i < m_size);
+        RPY_DBG_ASSERT(0 <= i && static_cast<dimn_t>(i) < m_size);
         return p_data[i];
     }
 
@@ -85,7 +85,7 @@ public:
         is_integral<I>::value,
         T &>
     operator[](I i) const noexcept {
-        RPY_DBG_ASSERT(0 <= i && i < m_size);
+        RPY_DBG_ASSERT(0 <= i && static_cast<dimn_t>(i) < m_size);
         return p_data[i];
     }
 

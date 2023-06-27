@@ -60,9 +60,10 @@ public:
     const scalars::ScalarType *ctype;
 
     explicit RandomScalars(double std_dev)
-        : ctype(scalars::ScalarType::of<double>()),
-          rng(std::random_device()()),
-          dist(0.0, std_dev) {}
+        : rng(std::random_device()()),
+          dist(0.0, std_dev),
+          ctype(scalars::ScalarType::of<double>())
+    {}
 
     scalars::OwnedScalarArray random_data(dimn_t count) {
         std::vector<double> tmp_data;

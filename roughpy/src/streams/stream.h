@@ -37,7 +37,7 @@ namespace python {
 
 extern "C" {
 struct RPyStream {
-    PyObject_VAR_HEAD;
+    PyObject_VAR_HEAD
     streams::Stream m_data;
 };
 

@@ -286,7 +286,11 @@ static PyObject *RPyContext_repr(PyObject *self) {
 static PyObject *RPyContext_str(PyObject *self) {
     return RPyContext_repr(self);
 }
-static PyObject *RPyContext_new(PyObject *self, PyObject *args, PyObject *kwargs);
+
+RPY_UNUSED
+static PyObject *RPyContext_new(PyObject *self, PyObject *args, PyObject *kwargs) {
+    RPY_UNREACHABLE_RETURN();
+}
 
 static const char *CONTEXT_DOC = R"rpydoc()rpydoc";
 PyTypeObject rpy::python::RPyContext_Type = {

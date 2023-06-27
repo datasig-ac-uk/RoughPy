@@ -35,7 +35,7 @@ using namespace rpy;
 using namespace rpy::algebra;
 
 HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width), m_depth(depth) {
-    if (m_depth > m_mobius.size()) {
+    if (static_cast<dimn_t>(m_depth) > m_mobius.size()) {
         std::vector<bool> tmp;
         tmp.resize(m_depth / 2, true);
         tmp[0] = false;
@@ -66,15 +66,15 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width),
         auto old_size = static_cast<int>(m_mobius.size());
         m_mobius.resize(m_depth + 1, 1);
         for (auto &prime : primes) {
-            for (int i = (old_size / prime) + 1, m = i * prime; m <= m_depth; ++i) {
+            for (deg_t i = (old_size / prime) + 1, m = i * prime; m <= m_depth; ++i) {
                 m_mobius[m] *= -prime;
             }
             auto p2 = prime * prime;
-            for (int i = (old_size / p2) + 1, m = i * p2; m <= m_depth; ++i) {
+            for (deg_t i = (old_size / p2) + 1, m = i * p2; m <= m_depth; ++i) {
                 m_mobius[m] = 0;
             }
         }
-        for (int i = old_size + 1; i <= m_depth; ++i) {
+        for (deg_t i = old_size + 1; i <= m_depth; ++i) {
             if (abs(m_mobius[i]) != i) {
                 m_mobius[i] = -m_mobius[i];
             }
@@ -98,7 +98,7 @@ static inline dimn_t power(deg_t base, int exp) {
 dimn_t HallSetSizeHelper::operator()(int k) {
     dimn_t result = 0;
 
-    for (int i = 1; i <= k; ++i) {
+    for (deg_t i = 1; i <= k; ++i) {
         auto divs = div(k, i);
         if (divs.rem == 0) {
             auto comp = k / divs.quot;

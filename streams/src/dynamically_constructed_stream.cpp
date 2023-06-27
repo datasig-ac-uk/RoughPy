@@ -91,7 +91,6 @@ DynamicallyConstructedStream::data_increment streams::DynamicallyConstructedStre
     return it;
 }
 typename DynamicallyConstructedStream::data_increment streams::DynamicallyConstructedStream::expand_root_until_contains(data_increment root, DyadicInterval di) const {
-    const auto &md = metadata();
     while (!root->first.contains(di)) {
         auto old_root = root;
         DyadicInterval new_root(old_root->first);
@@ -247,7 +246,6 @@ streams::DynamicallyConstructedStream::insert_children_and_refine(DynamicallyCon
 
 algebra::Lie DynamicallyConstructedStream::log_signature(const intervals::DyadicInterval &interval, resolution_t resolution, const algebra::Context &ctx) const {
     std::lock_guard<std::recursive_mutex> access(m_lock);
-    const auto &md = metadata();
     const auto end = m_data_tree.end();
 
     auto found = m_data_tree.find(interval);

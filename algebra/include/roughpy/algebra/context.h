@@ -71,11 +71,11 @@ struct VectorConstructionData {
 
 class ROUGHPY_ALGEBRA_EXPORT ContextBase
     : public boost::intrusive_ref_counter<ContextBase> {
-    MaybeOwned<const dimn_t> p_lie_sizes;
-    MaybeOwned<const dimn_t> p_tensor_sizes;
-
     deg_t m_width;
     deg_t m_depth;
+
+    MaybeOwned<const dimn_t> p_lie_sizes;
+    MaybeOwned<const dimn_t> p_tensor_sizes;
 
 protected:
     ContextBase(deg_t width,

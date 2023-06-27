@@ -143,23 +143,23 @@ python::PyLieKey::PyLieKey(deg_t width)
     : m_width(width) {
 }
 python::PyLieKey::PyLieKey(deg_t width, let_t letter)
-    : m_width(width), m_data{PyLieLetter::from_letter(letter)} {
+    : m_data{PyLieLetter::from_letter(letter)}, m_width(width) {
 }
 python::PyLieKey::PyLieKey(deg_t width, const boost::container::small_vector_base<PyLieLetter> &data)
-    : m_width(width), m_data(data) {
+    : m_data(data), m_width(width){
 }
 python::PyLieKey::PyLieKey(deg_t width, let_t left, let_t right)
-    : m_width(width), m_data{PyLieLetter::from_letter(left), PyLieLetter::from_letter(right)} {
+    : m_data{PyLieLetter::from_letter(left), PyLieLetter::from_letter(right)}, m_width(width) {
     RPY_CHECK(left < right);
 }
 python::PyLieKey::PyLieKey(deg_t width, let_t left, const python::PyLieKey &right)
-    : m_width(width), m_data{PyLieLetter::from_letter(left)} {
+    : m_data{PyLieLetter::from_letter(left)}, m_width(width) {
     RPY_CHECK(m_width == right.m_width);
     m_data.insert(m_data.end(), right.m_data.begin(), right.m_data.end());
     RPY_CHECK(!right.is_letter() || right.as_letter() > left);
 }
 python::PyLieKey::PyLieKey(deg_t width, const python::PyLieKey &left, const python::PyLieKey &right)
-    : m_width(left.width()), m_data{PyLieLetter::from_offset(2), PyLieLetter::from_offset(1 + left.degree())} {
+    : m_data{PyLieLetter::from_offset(2), PyLieLetter::from_offset(1 + left.degree())}, m_width(left.width()) {
     m_data.insert(m_data.end(), left.m_data.begin(), left.m_data.end());
     m_data.insert(m_data.end(), right.m_data.begin(), right.m_data.end());
 }
@@ -216,10 +216,10 @@ static python::PyLieKey::container_type parse_key(const algebra::LieBasis &lbasi
 }
 
 python::PyLieKey::PyLieKey(const algebra::Context *ctx, key_type key)
-    : m_width(ctx->width()), m_data(parse_key(ctx->get_lie_basis(), key)) {
+    : m_data(parse_key(ctx->get_lie_basis(), key)), m_width(ctx->width()) {
 }
 python::PyLieKey::PyLieKey(algebra::LieBasis basis, key_type key)
-    : m_width(basis.width()), m_data(parse_key(basis, key)) {
+    : m_data(parse_key(basis, key)), m_width(basis.width()) {
 }
 bool python::PyLieKey::is_letter() const noexcept {
     return m_data.size() == 1;
@@ -256,8 +256,8 @@ namespace {
 
 class ToLieKeyHelper {
     using container_type = typename python::PyLieKey::container_type;
-    dimn_t size;
-    dimn_t current;
+    RPY_UNUSED dimn_t size;
+    RPY_UNUSED dimn_t current;
     deg_t width;
     let_t max_letter = 0;
 

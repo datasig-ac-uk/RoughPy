@@ -128,12 +128,15 @@ void rpy::python::init_schema(py::module_ &m) {
                         PyList_SET_ITEM(plist, i++, PyUnicode_FromString(item.first.c_str()));
                     }
                     break;
-                case streams::ChannelType::Categorical:
+                case streams::ChannelType::Categorical: {
                     auto nvariants = item.second.num_variants();
                     for (dimn_t idx = 0; idx < nvariants; ++idx) {
                         PyList_SET_ITEM(plist, i++,
                                         PyUnicode_FromString((item.first + item.second.label_suffix(idx)).c_str()));
                     }
+                    break;
+                }
+                case streams::ChannelType::Lie:
                     break;
             }
         }
