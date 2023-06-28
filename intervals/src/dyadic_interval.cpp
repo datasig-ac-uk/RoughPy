@@ -122,7 +122,7 @@ DyadicInterval &DyadicInterval::expand_interval(Dyadic::power_t arg) {
     *this = DyadicInterval{dincluded_end(), m_power - arg};
     return *this;
 }
-bool DyadicInterval::contains(const DyadicInterval &other) const {
+bool DyadicInterval::contains_dyadic(const DyadicInterval &other) const {
     if (other.m_interval_type != m_interval_type) {
         return false;
     }
@@ -185,7 +185,7 @@ std::vector<DyadicInterval> rpy::intervals::to_dyadic_intervals(const Interval &
     DyadicInterval begin{real.included_end(), tol, itype};
     DyadicInterval end{real.excluded_end(), tol, itype};
 
-    while (!begin.contains(end)) {
+    while (!begin.contains_dyadic(end)) {
         auto next{begin};
         next.expand_interval();
         if (!begin.aligned()) {
@@ -195,7 +195,7 @@ std::vector<DyadicInterval> rpy::intervals::to_dyadic_intervals(const Interval &
     }
 
     auto p = intervals.end();
-    for (auto next{end}; begin.contains(next.expand_interval());) {
+    for (auto next{end}; begin.contains_dyadic(next.expand_interval());) {
         if (!end.aligned()) {
             p = store_(p, next);
         }
