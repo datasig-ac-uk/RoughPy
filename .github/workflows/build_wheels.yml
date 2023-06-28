@@ -80,7 +80,6 @@ jobs:
             delocate-wheel --require-archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
           CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK VCPKG_BINARY_SOURCES
-          CMAKE_GENERATOR: Ninja
 
       - uses: actions/upload-artifact@v3
         with:
