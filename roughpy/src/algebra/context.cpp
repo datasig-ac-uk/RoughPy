@@ -106,7 +106,14 @@ static PyObject *RPyContext_compute_signature(PyObject *self, PyObject *args, Py
     options.allow_scalar = false;
     options.max_nested = 2;
 
-    auto buffer = python::py_to_buffer(py_data, options);
+    scalars::KeyScalarArray buffer;
+
+    try {
+        buffer = python::py_to_buffer(py_data, options);
+    } catch (std::exception& exc) {
+        PyErr_SetString(PyExc_RuntimeError, exc.what());
+        return nullptr;
+    }
 
     SignatureData request;
     request.vector_type = VectorType::Sparse;
@@ -129,7 +136,8 @@ static PyObject *RPyContext_compute_signature(PyObject *self, PyObject *args, Py
         }
 
         if (options.shape.empty() || options.shape.size() > 2) {
-            throw std::invalid_argument("invalid shape");
+            PyErr_SetString(PyExc_ValueError, "invalid shape");
+            return nullptr;
         }
 
         dimn_t width;
