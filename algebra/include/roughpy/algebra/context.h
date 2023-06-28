@@ -261,8 +261,9 @@ public:
     }
 };
 
-#define RPY_ALGEBRA_DECLARE_CTX_MAKER(MAKER, ...) \
-    static RegisterMakerHelper<MAKER> rpy_static_algebra_maker_decl_##MAKER = RegisterMakerHelper<MAKER>(__VA_ARGS__)
+
+#define RPY_ALGEBRA_DECLARE_CTX_MAKER(MAKER) \
+    static RegisterMakerHelper<MAKER> rpy_static_algebra_maker_decl_##MAKER = RegisterMakerHelper<MAKER>()
 
 
 inline bool check_contexts_algebra_compatible(const Context& base, const Context& other) noexcept {
