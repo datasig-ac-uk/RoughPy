@@ -36,11 +36,10 @@
 namespace rpy {
 namespace algebra {
 
-template class AlgebraInterface<ShuffleTensor, TensorBasis>;
-template class AlgebraBase<ShuffleTensorInterface>;
-
-template class BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
-template class AlgebraBundleBase<ShuffleTensorBundleInterface>;
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraIntefrace, ShuffleTensor, TensorBasis);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, ShuffleTensorInteface);
+RPY_INSTANTIATE_TEMPLATE(class, BundleInterface, ShuffleTensorBundle, ShuffleTensor, ShuffleTensor);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, ShuffleTensorBundleInterface);
 
 }// namespace algebra
 }// namespace rpy

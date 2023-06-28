@@ -36,11 +36,10 @@
 namespace rpy {
 namespace algebra {
 
-template class AlgebraInterface<Lie, LieBasis>;
-template class AlgebraBase<LieInterface>;
-
-template class BundleInterface<LieBundle, Lie, Lie>;
-template class AlgebraBundleBase<LieBundleInterface>;
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraInterface, Lie, LieBasis);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, LieInterface);
+RPY_INSTANTIATE_TEMPLATE(class, BundleInterface, LieBundle, Lie, Lie);
+RPY_INSTANTIATE_TEMPLATE(class, ALgebraBundleBase, LieBundleInterface);
 
 }// namespace algebra
 }// namespace rpy
