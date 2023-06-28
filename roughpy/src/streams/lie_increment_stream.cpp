@@ -132,10 +132,10 @@ static py::object lie_increment_stream_from_increments(const py::object &data, c
 
     if (indices.empty()) {
         indices.reserve(num_increments);
-        for (dimn_t i = 0; i < num_increments; ++i) {
+        for (idimn_t i = 0; i < num_increments; ++i) {
             indices.emplace_back(i);
         }
-    } else if (indices.size() != num_increments) {
+    } else if (static_cast<idimn_t>(indices.size()) != num_increments) {
         throw py::value_error("mismatch between number of rows in data and number of indices");
     }
 
@@ -157,6 +157,7 @@ static py::object lie_increment_stream_from_increments(const py::object &data, c
     return py::reinterpret_steal<py::object>(python::RPyStream_FromStream(std::move(result)));
 }
 
+RPY_UNUSED
 static streams::Stream lie_increment_path_from_values(const py::object &data, const py::kwargs &kwargs) {
     throw std::runtime_error("Not implemented");
 }

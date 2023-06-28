@@ -54,9 +54,9 @@ using helper_t = streams::StreamConstructionHelper;
 static const char *TICK_STREAM_DOC = R"rpydoc(Tick stream
 )rpydoc";
 
-static void parse_data_to_ticks(helper_t &helper,
-                                const py::handle &data,
-                                const py::kwargs &kwargs);
+//static void parse_data_to_ticks(helper_t &helper,
+//                                const py::handle &data,
+//                                const py::kwargs &kwargs);
 
 static py::object construct(const py::object &data, const py::kwargs &kwargs) {
 
