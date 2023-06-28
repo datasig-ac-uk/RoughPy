@@ -37,11 +37,11 @@ using namespace rpy::algebra;
 
 namespace rpy {
 namespace algebra {
-RPY_INSTANTIATE_TEMPLATE(class, AlgebraInterface, Freetensor, TensorBasis);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraInterface, FreeTensor, TensorBasis);
 RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, FreeTensorInterface, FreeTensorImplementation);
 
-RPY_INSTANTIATE_TEMPLATE(clsas, BundleInterface, FreeTensorBundle, FreeTensor, FreeTensor);
-RPY_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, FreeTensorBundleIntefrace, FreeTensorBundleImplementation);
+RPY_INSTANTIATE_TEMPLATE(class, BundleInterface, FreeTensorBundle, FreeTensor, FreeTensor);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, FreeTensorBundleInterface, FreeTensorBundleImplementation);
 }// namespace algebra
 }// namespace rpy
 

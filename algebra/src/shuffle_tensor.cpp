@@ -36,8 +36,8 @@
 namespace rpy {
 namespace algebra {
 
-RPY_INSTANTIATE_TEMPLATE(class, AlgebraIntefrace, ShuffleTensor, TensorBasis);
-RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, ShuffleTensorInteface);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraInterface, ShuffleTensor, TensorBasis);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, ShuffleTensorInterface);
 RPY_INSTANTIATE_TEMPLATE(class, BundleInterface, ShuffleTensorBundle, ShuffleTensor, ShuffleTensor);
 RPY_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, ShuffleTensorBundleInterface);
 
