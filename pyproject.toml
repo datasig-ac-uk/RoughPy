@@ -89,7 +89,8 @@ skip = [
     "*linux_i686",
     "*arm64",
     "*universal2",
-    "cp3{6,7}-*"
+    "cp3{6,7}-*",
+    "cp38-macos*"
 ]
 build-verbosity=1
 
