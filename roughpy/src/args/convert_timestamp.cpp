@@ -28,7 +28,7 @@ inline py::object get_py_reference_delta(rpy::python::PyDateTimeResolution resol
         case rpy::python::PyDateTimeResolution::Days:
             return py::reinterpret_steal<py::object>(PyDelta_FromDSU(1, 0, 0));
     }
-    RPY_UNREACHABLE_RETURN(nullptr);
+    RPY_UNREACHABLE_RETURN(py::object());
 }
 
 rpy::param_t pytimedelta_to_param(PyObject* py_time_delta, const options_t& options) {
