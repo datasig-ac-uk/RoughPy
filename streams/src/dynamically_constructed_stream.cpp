@@ -77,7 +77,7 @@ void streams::DynamicallyConstructedStream::refine_accuracy(DynamicallyConstruct
         auto leaf_above = range.first;
         --leaf_above;
 
-        while (leaf_above->first.contains(refined_inc) && leaf_above->first != refined_inc) {
+        while (leaf_above->first.contains_dyadic(refined_inc) && leaf_above->first != refined_inc) {
             leaf_above = insert_children_and_refine(leaf_above, refined_inc);
         }
 
@@ -91,7 +91,7 @@ DynamicallyConstructedStream::data_increment streams::DynamicallyConstructedStre
     return it;
 }
 typename DynamicallyConstructedStream::data_increment streams::DynamicallyConstructedStream::expand_root_until_contains(data_increment root, DyadicInterval di) const {
-    while (!root->first.contains(di)) {
+    while (!root->first.contains_dyadic(di)) {
         auto old_root = root;
         DyadicInterval new_root(old_root->first);
         new_root.expand_interval();
@@ -214,7 +214,7 @@ DynamicallyConstructedStream::data_increment
 streams::DynamicallyConstructedStream::insert_children_and_refine(DynamicallyConstructedStream::data_increment leaf, DynamicallyConstructedStream::DyadicInterval interval) const {
 
     RPY_DBG_ASSERT(DataIncrement::is_leaf(leaf));
-    RPY_DBG_ASSERT(leaf->first.contains(interval));
+    RPY_DBG_ASSERT(leaf->first.contains_dyadic(interval));
 
     DyadicInterval left(leaf->first);
     DyadicInterval right(leaf->first);
@@ -238,7 +238,7 @@ streams::DynamicallyConstructedStream::insert_children_and_refine(DynamicallyCon
 
     update_parents(it_left);
 
-    if (it_left->first.contains(interval)) {
+    if (it_left->first.contains_dyadic(interval)) {
         return it_left;
     }
     return it_right;
@@ -275,7 +275,7 @@ algebra::Lie DynamicallyConstructedStream::log_signature(const intervals::Dyadic
     // If we're here, the root exists and may or may not contain the
     // interval of interest.
     root = expand_root_until_contains(root, interval);
-    RPY_DBG_ASSERT(root->first.contains(interval));
+    RPY_DBG_ASSERT(root->first.contains_dyadic(interval));
 
     // Now the root contains the interval of interest. Let's compute
     // what we need
@@ -285,14 +285,14 @@ algebra::Lie DynamicallyConstructedStream::log_signature(const intervals::Dyadic
         auto left = ++root;
         auto right = left->second.sibling();
 
-        RPY_DBG_ASSERT(left->first.contains(interval) || right->first.contains(interval));
-        if (left->first.contains(interval)) {
+        RPY_DBG_ASSERT(left->first.contains_dyadic(interval) || right->first.contains_dyadic(interval));
+        if (left->first.contains_dyadic(interval)) {
             root = left;
         } else {
             root = right;
         }
     }
-    RPY_DBG_ASSERT(root->first.contains(interval) || root->first == interval);
+    RPY_DBG_ASSERT(root->first.contains_dyadic(interval) || root->first == interval);
 
     // First, compute all the children recursively until we reach
     // the desired interval.
