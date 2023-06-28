@@ -51,16 +51,16 @@ bash vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
 vcpkg_root=./vcpkg
 
-if [ -n "$GITHUB_TOK" ]; then
-  # If the token is defined, set up binary caching
-  $MONO_EXE `$vcpkg_root/vcpkg fetch nuget | tail -n 1` \
-    sources add \
-    -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
-    -storepasswordincleartext \
-    -name "GitHub" \
-    -username "datasig-ac-uk" \
-    -password "$GITHUB_TOK"
-  $MONO_EXE `$vcpkg_root/vcpkg fetch nuget | tail -n 1` \
-    setapikey "$GITHUB_TOK" \
-    -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
-fi
+#if [ -n "$GITHUB_TOK" ]; then
+#  # If the token is defined, set up binary caching
+#  $MONO_EXE `$vcpkg_root/vcpkg fetch nuget | tail -n 1` \
+#    sources add \
+#    -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
+#    -storepasswordincleartext \
+#    -name "GitHub" \
+#    -username "datasig-ac-uk" \
+#    -password "$GITHUB_TOK"
+#  $MONO_EXE `$vcpkg_root/vcpkg fetch nuget | tail -n 1` \
+#    setapikey "$GITHUB_TOK" \
+#    -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
+#fi
