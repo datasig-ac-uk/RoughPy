@@ -314,9 +314,9 @@ class AlgebraBase {
 protected:
 
     std::unique_ptr<Interface> p_impl;
-    friend class algebra_access<Interface>;
+    friend struct algebra_access<Interface>;
 
-    friend class algebra_access<typename Interface::algebra_interface_t>;
+    friend struct algebra_access<typename Interface::algebra_interface_t>;
 public:
 
     explicit AlgebraBase(std::unique_ptr<Interface> impl)
