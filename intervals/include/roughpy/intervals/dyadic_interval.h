@@ -94,7 +94,7 @@ public:
     DyadicInterval &expand_interval(power_t arg = 1);
 
     RPY_NO_DISCARD
-    bool contains(const DyadicInterval &other) const;
+    bool contains_dyadic(const DyadicInterval &other) const;
     RPY_NO_DISCARD
     bool aligned() const;
 
