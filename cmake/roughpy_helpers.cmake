@@ -320,7 +320,9 @@ function(add_roughpy_test_helper NAME)
             ${ARGS_DEPS})
 
     target_include_directories(${_lib_name} PRIVATE ${ARGS_INCLUDES})
-    target_compile_definitions(${_lib_name} PRIVATE ${ARGS_DEFN})
+    target_compile_definitions(${_lib_name}
+            PRIVATE ${ARGS_DEFN}
+            RPY_BUILDING_LIBRARY=1)
     target_compile_options(${_lib_name} PRIVATE ${ARGS_OPTS})
 endfunction()
 

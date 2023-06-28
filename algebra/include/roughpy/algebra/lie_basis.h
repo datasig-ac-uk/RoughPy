@@ -40,7 +40,7 @@ class ROUGHPY_ALGEBRA_EXPORT LieBasisInterface
 {
 };
 
-extern template class ROUGHPY_ALGEBRA_EXPORT Basis<LieBasisInterface>;
+RPY_EXPORT_TEMPLATE(class, Basis, LieBasisInterface);
 
 
 using LieBasis = Basis<LieBasisInterface>;

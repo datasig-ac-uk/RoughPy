@@ -46,7 +46,7 @@ public:
 };
 
 
-extern template class ROUGHPY_ALGEBRA_EXPORT Basis<TensorBasisInterface>;
+RPY_EXPORT_TEMPLATE(class, Basis, TensorBasisInterface);
 
 using TensorBasis = Basis<TensorBasisInterface>;
 
