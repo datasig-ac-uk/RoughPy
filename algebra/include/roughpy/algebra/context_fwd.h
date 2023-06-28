@@ -61,7 +61,7 @@ namespace algebra {
 
 struct SignatureData;
 struct DerivativeComputeInfo;
-class VectorConstructionData;
+struct VectorConstructionData;
 class ContextBase;
 class Context;
 
