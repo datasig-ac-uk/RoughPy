@@ -160,7 +160,7 @@
     RPY_UNREACHABLE();              \
     return __VA_ARGS__
 #else
-#define RPY_UNREACHABLE()
+#define RPY_UNREACHABLE() abort()
 #define RPY_UNREACHABLE_RETURN(...) \
     RPY_UNREACHABLE();              \
     return __VA_ARGS__

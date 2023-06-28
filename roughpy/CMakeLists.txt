@@ -24,6 +24,9 @@ set_target_properties(RoughPy_PyModule PROPERTIES
         C_STANDARD_REQUIRED ON
         )
 
+target_compile_definitions(RoughPy_PyModule PRIVATE
+        RPY_BUILDING_LIBRARY=1)
+
 if (ROUGHPY_BUILD_PYMODULE_INPLACE)
     set_target_properties(RoughPy_PyModule PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
