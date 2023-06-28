@@ -114,7 +114,7 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype) {
 #if PY_VERSION_HEX >= 0x030A0000
                       | Py_TPFLAGS_DISALLOW_INSTANTIATION
 #endif
-                      | Py_TPFLAGS_HAVE_GC);
+                      );
 #if PY_VERSION_HEX >= 0x03090000
     hto->ht_module = ht_module.release().ptr();
 #endif
