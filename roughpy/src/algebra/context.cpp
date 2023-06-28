@@ -297,7 +297,7 @@ static PyObject *RPyContext_str(PyObject *self) {
 
 RPY_UNUSED
 static PyObject *RPyContext_new(PyObject *self, PyObject *args, PyObject *kwargs) {
-    RPY_UNREACHABLE_RETURN();
+    RPY_UNREACHABLE_RETURN(nullptr);
 }
 
 static const char *CONTEXT_DOC = R"rpydoc()rpydoc";
