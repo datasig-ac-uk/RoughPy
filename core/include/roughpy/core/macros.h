@@ -227,13 +227,15 @@
 #define RPY_FALLTHROUGH (void)0
 
 #ifdef RPY_COMPILING_DLL
-#ifdef RPY_BUILDING_LIBRARY
-#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
-    extern template TYPE TMPL<__VA_ARGS__>
-#else
-#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
-    template TYPE RPY_EXPORT TMPL<__VA_ARGS__>
-#endif
+//#ifdef RPY_BUILDING_LIBRARY
+//#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
+//    extern template TYPE TMPL<__VA_ARGS__>
+//#else
+//#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
+//    template TYPE TMPL<__VA_ARGS__>
+//#endif
+#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...)
+    template TYPE TMPL<__VA_ARGS__>
 #else
 #define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
     extern template TYPE RPY_EXPORT TMPL<__VA_ARGS__>
