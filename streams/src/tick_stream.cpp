@@ -60,7 +60,7 @@ optional<streams::TickStream::DyadicInterval> streams::TickStream::smallest_dyad
             i = DyadicInterval(*(++be), resolution);
         }
 
-        for (; !i.contains(DyadicInterval(back.dincluded_end()));
+        for (; !i.contains_dyadic(DyadicInterval(back.dincluded_end()));
              j = i.expand_interval(), i = j) {};
         return i;
     }
@@ -76,7 +76,7 @@ optional<streams::TickStream::DyadicInterval> streams::TickStream::smallest_dyad
         DyadicInterval end(*(--zeu), m_resolution);
         DyadicInterval i(*m_granular_times.begin(), m_resolution);
         DyadicInterval j;
-        for (; !i.contains(end); j = i.expand_interval(), i = j) {};
+        for (; !i.contains_dyadic(end); j = i.expand_interval(), i = j) {};
 
         return i;
     }
@@ -92,7 +92,7 @@ optional<streams::TickStream::DyadicInterval> streams::TickStream::smallest_dyad
         DyadicInterval end(m_granular_times.back(), m_resolution);
         DyadicInterval i(*(zeu), m_resolution);
         DyadicInterval j;
-        for (; !i.contains(end); j = i.expand_interval(), i = j) {};
+        for (; !i.contains_dyadic(end); j = i.expand_interval(), i = j) {};
 
         return i;
     }
