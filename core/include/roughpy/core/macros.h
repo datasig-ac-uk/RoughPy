@@ -35,6 +35,12 @@
 #include <cassert>
 #include <stdexcept>
 
+#ifdef __has_feature
+#define RPY_HAS_FEATURE(FEAT) __has_feature(FEAT)
+#else
+#define RPY_HAS_FEATURE(FEAT) 0
+#endif
+
 
 #define RPY_STRINGIFY_IMPL(ARG) #ARG
 #define RPY_STRINGIFY(ARG) RPY_STRINGIFY_IMPL(ARG)
@@ -220,5 +226,30 @@
 
 #define RPY_FALLTHROUGH (void)0
 
+#ifdef RPY_COMPILING_DLL
+#ifdef RPY_BUILDING_LIBRARY
+#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
+    extern template TYPE TMPL<__VA_ARGS__>
+#else
+#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
+    template TYPE RPY_EXPORT TMPL<__VA_ARGS__>
+#endif
+#else
+#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
+    extern template TYPE RPY_EXPORT TMPL<__VA_ARGS__>
+#endif
+
+// Sanitizer supports
+#ifdef RPY_CLANG
+#define RPY_NO_UBSAN __attribute__((no_sanitize("undefined")))
+#else
+#define RPY_NO_UBSAN
+#endif
+
+#if RPY_HAS_FEATURE(address_sanitizer)
+#  define RPY_NO_ASAN __attribute__((no_sanitize("address")))
+#else
+#  define RPY_NO_ASAN
+#endif
 
 #endif//ROUGHPY_CORE_MACROS_H
