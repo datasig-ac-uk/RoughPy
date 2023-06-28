@@ -54,7 +54,7 @@ param_t Interval::excluded_end() const {
     }
     throw std::runtime_error("excluded_end is not valid for intervals that are not half open");
 }
-bool Interval::contains(param_t arg) const noexcept {
+bool Interval::contains_point(param_t arg) const noexcept {
     if (m_interval_type == IntervalType::Clopen) {
         return inf() <= arg && arg < sup();
     }
@@ -65,10 +65,10 @@ bool Interval::contains(param_t arg) const noexcept {
     return false;
 }
 bool Interval::is_associated(const Interval &arg) const noexcept {
-    return contains(arg.included_end());
+    return contains_point(arg.included_end());
 }
 bool Interval::contains(const Interval &arg) const noexcept {
-    return contains(arg.inf()) && contains(arg.sup());
+    return contains_point(arg.inf()) && contains_point(arg.sup());
 }
 bool Interval::intersects_with(const Interval &arg) const noexcept {
     auto lhs_inf = inf();
