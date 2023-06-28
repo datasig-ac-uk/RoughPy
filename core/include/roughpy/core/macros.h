@@ -235,7 +235,7 @@
 //    template TYPE TMPL<__VA_ARGS__>
 //#endif
 #define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
-    template TYPE TMPL<__VA_ARGS__>
+    extern template TYPE RPY_EXPORT_MACRO TMPL<__VA_ARGS__>
 #else
 #define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
     extern template TYPE RPY_EXPORT_MACRO TMPL<__VA_ARGS__>
