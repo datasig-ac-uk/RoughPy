@@ -71,13 +71,13 @@ void streams::DynamicallyConstructedStream::refine_accuracy(DynamicallyConstruct
 
     for (; refined_inc < refined_end; ++(++refined_inc)) {
         auto range = m_data_tree.equal_range(refined_inc);
-        if (range.first->first == refined_inc) {
+        if (dyadic_equals(range.first->first, refined_inc)) {
             continue;
         }
         auto leaf_above = range.first;
         --leaf_above;
 
-        while (leaf_above->first.contains_dyadic(refined_inc) && leaf_above->first != refined_inc) {
+        while (leaf_above->first.contains_dyadic(refined_inc) && !dyadic_equals(leaf_above->first, refined_inc)) {
             leaf_above = insert_children_and_refine(leaf_above, refined_inc);
         }
 
@@ -106,7 +106,7 @@ typename DynamicallyConstructedStream::data_increment streams::DynamicallyConstr
             RPY_DBG_ASSERT(dyadic_equals(old_root->first.dincluded_end(), neighbour.dexcluded_end()));
         }
 
-        RPY_DBG_ASSERT(neighbour != old_root->first);
+        RPY_DBG_ASSERT(!dyadic_equals(neighbour, old_root->first));
 
         auto it_neighbour = insert_node(neighbour,
                                         make_neighbour_root_increment(neighbour),
@@ -281,7 +281,7 @@ algebra::Lie DynamicallyConstructedStream::log_signature(const intervals::Dyadic
     // what we need
     // Walk down the tree until we get to a leaf that contains the
     // required interval or wr reach the required interval
-    while (root->first != interval && !DataIncrement::is_leaf(root)) {
+    while (!dyadic_equals(root->first, interval) && !DataIncrement::is_leaf(root)) {
         auto left = ++root;
         auto right = left->second.sibling();
 
@@ -292,16 +292,16 @@ algebra::Lie DynamicallyConstructedStream::log_signature(const intervals::Dyadic
             root = right;
         }
     }
-    RPY_DBG_ASSERT(root->first.contains_dyadic(interval) || root->first == interval);
+    RPY_DBG_ASSERT(root->first.contains_dyadic(interval) || dyadic_equals(root->first, interval));
 
     // First, compute all the children recursively until we reach
     // the desired interval.
-    while (root->first != interval) {
+    while (!dyadic_equals(root->first, interval)) {
         root = insert_children_and_refine(root, interval);
     }
 
     // Check again if we now have the interval required
-    if (root->first == interval && root->second.accuracy() >= resolution) {
+    if (dyadic_equals(root->first, interval) && root->second.accuracy() >= resolution) {
         return root->second.lie();
     }
 
