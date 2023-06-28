@@ -59,7 +59,7 @@ struct RingCharacteristics {
 
 class ROUGHPY_SCALARS_EXPORT ScalarType {
     ScalarTypeInfo m_info;
-    RingCharacteristics RPY_UNUSED_VAR m_characteristics;
+    RingCharacteristics m_characteristics RPY_UNUSED_VAR;
 
 protected:
     explicit ScalarType(ScalarTypeInfo info) : m_info(std::move(info)) {}
