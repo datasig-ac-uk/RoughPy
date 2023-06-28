@@ -57,7 +57,7 @@ void python::init_interval(py::module_ &m) {
     klass.def("intersects_with", &Interval::intersects_with, "other"_a);
 
     klass.def("contains",
-              static_cast<bool (Interval::*)(param_t) const noexcept>(&Interval::contains),
+              static_cast<bool (Interval::*)(param_t) const noexcept>(&Interval::contains_point),
               "arg"_a);
     klass.def("contains",
               static_cast<bool (Interval::*)(const Interval &) const noexcept>(&Interval::contains),
@@ -97,8 +97,8 @@ param_t python::PyInterval::included_end() const {
 param_t python::PyInterval::excluded_end() const {
     PYBIND11_OVERRIDE(param_t, Interval, excluded_end);
 }
-bool python::PyInterval::contains(param_t arg) const noexcept {
-    PYBIND11_OVERRIDE(bool, Interval, contains, arg);
+bool python::PyInterval::contains_point(param_t arg) const noexcept {
+    PYBIND11_OVERRIDE(bool, Interval, contains_point, arg);
 }
 bool python::PyInterval::is_associated(const Interval &arg) const noexcept {
     PYBIND11_OVERRIDE(bool, Interval, is_associated, arg);
