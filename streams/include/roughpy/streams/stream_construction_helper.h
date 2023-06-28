@@ -17,7 +17,7 @@ namespace streams {
 class StreamConstructionHelper {
     std::shared_ptr<StreamSchema> p_schema;
     algebra::context_pointer p_ctx;
-    algebra::VectorType m_vtype = algebra::VectorType::Sparse;
+    algebra::VectorType RPY_UNUSED_VAR m_vtype = algebra::VectorType::Sparse;
 
     using multimap_type = boost::container::flat_multimap<param_t, algebra::Lie>;
 
