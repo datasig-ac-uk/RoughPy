@@ -241,6 +241,8 @@
     extern template TYPE RPY_EXPORT_MACRO TMPL<__VA_ARGS__>
 #endif
 
+#define RPY_EXPORT_MACRO RPY_EXPORT
+
 // Sanitizer supports
 #ifdef RPY_CLANG
 #define RPY_NO_UBSAN __attribute__((no_sanitize("undefined")))
