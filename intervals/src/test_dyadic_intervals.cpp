@@ -182,43 +182,43 @@ TEST(DyadicIntervals, test_aligned_non_aligned) {
 TEST(DyadicIntervals, test_contains_unit_and_half) {
     DyadicInterval parent{Dyadic{0, 0}}, child{Dyadic{0, 1}};
 
-    ASSERT_TRUE(parent.contains(child));
+    ASSERT_TRUE(parent.contains_dyadic(child));
 }
 
 TEST(DyadicIntervals, test_contains_unit_and_half_compliment) {
     DyadicInterval parent{Dyadic{0, 0}}, child{Dyadic{1, 1}};
 
-    ASSERT_TRUE(parent.contains(child));
+    ASSERT_TRUE(parent.contains_dyadic(child));
 }
 
 TEST(DyadicIntervals, test_contains_unit_and_unit) {
     DyadicInterval parent{Dyadic{0, 0}}, child{Dyadic{0, 0}};
 
-    ASSERT_TRUE(parent.contains(child));
+    ASSERT_TRUE(parent.contains_dyadic(child));
 }
 
 TEST(DyadicIntervals, test_contains_unit_and_longer) {
     DyadicInterval parent{Dyadic{0, 0}}, child{Dyadic{0, -1}};
 
-    ASSERT_FALSE(parent.contains(child));
+    ASSERT_FALSE(parent.contains_dyadic(child));
 }
 
 TEST(DyadicIntervals, test_contains_unit_disjoint) {
     DyadicInterval parent{Dyadic{0, 0}}, child{Dyadic{1, 0}};
 
-    ASSERT_FALSE(parent.contains(child));
+    ASSERT_FALSE(parent.contains_dyadic(child));
 }
 
 TEST(DyadicIntervals, test_contains_unit_disjoint_and_shorter_right) {
     DyadicInterval parent{Dyadic{0, 0}}, child{Dyadic{2, 1}};
 
-    ASSERT_FALSE(parent.contains(child));
+    ASSERT_FALSE(parent.contains_dyadic(child));
 }
 
 TEST(DyadicIntervals, test_contains_unit_disjoint_and_shorter_left) {
     DyadicInterval parent{Dyadic{0, 0}}, child{Dyadic{-1, 1}};
 
-    ASSERT_FALSE(parent.contains(child));
+    ASSERT_FALSE(parent.contains_dyadic(child));
 }
 
 TEST(DyadicIntervals, test_to_dyadic_intervals_unit_interval_tol_1) {
