@@ -148,8 +148,9 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
             }
         }
 
-        if (md.schema->width() != md.width) {
-            md.width = static_cast<deg_t>(md.schema->width());
+        auto schema_width = static_cast<deg_t>(md.schema->width());
+        if (schema_width != md.width) {
+            md.width = schema_width;
             md.ctx = md.ctx->get_alike(md.width, md.ctx->depth(), md.scalar_type);
         }
     } else {

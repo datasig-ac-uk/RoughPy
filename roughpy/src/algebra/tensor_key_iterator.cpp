@@ -37,7 +37,7 @@ static const char *TKEY_ITERATOR_DOC = R"eadoc(Iterator over tensor words.
 )eadoc";
 
 python::PyTensorKeyIterator::PyTensorKeyIterator(deg_t width, deg_t depth, key_type current, key_type end)
-    : m_width(width), m_depth(depth), m_current(current), m_end(end) {
+    : m_current(current), m_end(end), m_width(width), m_depth(depth)  {
 }
 python::PyTensorKey python::PyTensorKeyIterator::next() {
     if (m_current >= m_end) {

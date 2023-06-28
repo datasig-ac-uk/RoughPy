@@ -136,7 +136,7 @@ static python::PyTensorKey construct_key(const py::args &args, const py::kwargs 
         depth = kwargs["depth"].cast<deg_t>();
     }
 
-    if (letters.size() > depth) {
+    if (letters.size() > static_cast<dimn_t>(depth)) {
         throw py::value_error("number of letters exceeds specified depth");
     }
 
