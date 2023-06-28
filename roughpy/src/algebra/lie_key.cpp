@@ -276,7 +276,6 @@ public:
     }
 
     container_type parse_single(const py::handle &obj) {
-        py::handle result;
         if (py::isinstance<py::list>(obj)) {
             return parse_list(obj);
         }
