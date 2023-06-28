@@ -42,12 +42,12 @@ using namespace pybind11::literals;
 
 namespace {
 
-class PyChannelItem {
-    StreamChannel *ptr;
-
-public:
-    PyChannelItem(StreamChannel &item) : ptr(&item) {}
-};
+//class PyChannelItem {
+//    StreamChannel *ptr;
+//
+//public:
+//    PyChannelItem(StreamChannel &item) : ptr(&item) {}
+//};
 
 inline void init_channel_item(py::module_ &m) {
 
