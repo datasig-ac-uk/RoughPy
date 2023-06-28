@@ -55,6 +55,7 @@ public:
 };
 
 template <typename Impl, typename Interface>
+RPY_NO_UBSAN
 inline copy_cv_t<Impl, Interface> &
 algebra_cast(Interface &arg) noexcept {
     using access_t = copy_cv_t<ImplAccessLayer<Interface, Impl>, Interface>;
