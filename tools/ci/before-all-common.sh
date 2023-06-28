@@ -47,7 +47,7 @@ else
 fi
 
 git clone https://github.com/Microsoft/vcpkg.git
-bash vcpkg/bootstrap-vcpkg.sh
+bash vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
 vcpkg_root=./vcpkg
 
