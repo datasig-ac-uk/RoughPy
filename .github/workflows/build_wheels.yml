@@ -57,13 +57,10 @@ jobs:
           - macos-11
         include:
           - os: windows-2019
-            mono: ''
             tag: "win_amd64"
           - os: ubuntu-20.04
-            mono: 'mono'
             tag: "manylinux_x86_64"
           - os: macos-11
-            mono: 'mono'
             tag: "macosx_x86_64"
 
     steps:
@@ -83,6 +80,7 @@ jobs:
             delocate-wheel --require-archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
           CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK VCPKG_BINARY_SOURCES
+          CMAKE_GENERATOR: Ninja
 
       - uses: actions/upload-artifact@v3
         with:
