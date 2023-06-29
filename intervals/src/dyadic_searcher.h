@@ -32,14 +32,14 @@
 #ifndef ROUGHPY_INTERVALS_SRC_DYADIC_SEARCHER_H
 #define ROUGHPY_INTERVALS_SRC_DYADIC_SEARCHER_H
 
-#include "intervals/segmentation.h"
+#include <roughpy/intervals/segmentation.h>
 
 #include <cassert>
 #include <deque>
 #include <map>
 #include <utility>
 
-#include "intervals/dyadic.h"
+#include <roughpy/intervals/dyadic.h>
 
 #include "scaled_predicate.h"
 

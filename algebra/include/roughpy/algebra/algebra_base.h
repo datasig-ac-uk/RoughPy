@@ -58,7 +58,7 @@ namespace dtl {
  * various places. If you define an algebra interface, it should derive
  * from the base AlgebraInterface, which publicly derives from this tag.
  */
-class ROUGHPY_ALGEBRA_EXPORT AlgebraInterfaceBase {
+class RPY_EXPORT AlgebraInterfaceBase {
 protected:
     context_pointer p_ctx;
     const scalars::ScalarType *p_coeff_type;
@@ -297,8 +297,8 @@ struct with_interface {
     using type = AlgebraImplementation<IFace, Impl, StorageModel>;
 };
 
-ROUGHPY_ALGEBRA_EXPORT void print_empty_algebra(std::ostream &os);
-ROUGHPY_ALGEBRA_EXPORT const scalars::ScalarType *context_to_scalars(const context_pointer &ptr);
+RPY_EXPORT void print_empty_algebra(std::ostream &os);
+RPY_EXPORT const scalars::ScalarType *context_to_scalars(const context_pointer &ptr);
 
 }// namespace dtl
 
@@ -576,7 +576,7 @@ void dtl::AlgebraArithmetic<Base>::mul_sdiv(const algebra_t &rhs, const scalars:
 
 namespace dtl {
 
-ROUGHPY_ALGEBRA_EXPORT
+RPY_EXPORT
 UnspecifiedAlgebraType try_create_new_empty(context_pointer ctx, AlgebraType alg_type);
 
 template <typename Interface>
@@ -1063,7 +1063,7 @@ void AlgebraBase<Interface, Derived>::save(Archive &archive, const std::uint32_t
 
 namespace dtl {
 
-ROUGHPY_ALGEBRA_EXPORT
+RPY_EXPORT
 UnspecifiedAlgebraType construct_dense_algebra(scalars::ScalarArray&& data, const context_pointer& ctx, AlgebraType atype);
 
 

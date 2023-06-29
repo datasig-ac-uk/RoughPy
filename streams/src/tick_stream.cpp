@@ -29,7 +29,7 @@
 // Created by user on 10/03/23.
 //
 
-#include "streams/tick_stream.h"
+#include <roughpy/streams/tick_stream.h>
 
 #include <set>
 #include <vector>

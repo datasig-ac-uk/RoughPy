@@ -32,10 +32,10 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_BASIS_INFO_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_BASIS_INFO_H
 
-#include "algebra/basis.h"
-#include "algebra/basis_impl.h"
-#include "algebra/basis_info.h"
-#include "algebra/tensor_basis.h"
+#include <roughpy/algebra/basis.h>
+#include <roughpy/algebra/basis_impl.h>
+#include <roughpy/algebra/basis_info.h>
+#include <roughpy/algebra/tensor_basis.h>
 
 #include <libalgebra_lite/tensor_basis.h>
 

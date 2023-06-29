@@ -38,13 +38,13 @@ namespace rpy {
 namespace algebra {
 
 
-RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraInterface, Lie, LieBasis);
+RPY_EXPORT_TEMPLATE(class, AlgebraInterface, Lie, LieBasis);
 
 using LieInterface = AlgebraInterface<Lie, LieBasis>;
 
-RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraBase, LieInterface);
+RPY_EXPORT_TEMPLATE(class, AlgebraBase, LieInterface);
 
-class ROUGHPY_ALGEBRA_EXPORT Lie : public AlgebraBase<LieInterface> {
+class RPY_EXPORT Lie : public AlgebraBase<LieInterface> {
     using base_t = AlgebraBase<LieInterface>;
 
 public:
@@ -62,13 +62,13 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(Lie) {
 
 class LieBundle;
 
-RPY_ALGEBRA_EXPORT_TEMPLATE(class, BundleInterface, LieBundle, Lie, Lie);
+RPY_EXPORT_TEMPLATE(class, BundleInterface, LieBundle, Lie, Lie);
 
 using LieBundleInterface = BundleInterface<LieBundle, Lie, Lie>;
 
-RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraBundleBase, LieBundleInterface);
+RPY_EXPORT_TEMPLATE(class, AlgebraBundleBase, LieBundleInterface);
 
-class ROUGHPY_ALGEBRA_EXPORT LieBundle : public AlgebraBundleBase<LieBundleInterface> {
+class RPY_EXPORT LieBundle : public AlgebraBundleBase<LieBundleInterface> {
     using base_t = AlgebraBundleBase<LieBundleInterface>;
 public:
 

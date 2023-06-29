@@ -31,7 +31,7 @@
 
 #include <gtest/gtest.h>
 
-#include "intervals/dyadic.h"
+#include <roughpy/intervals/dyadic.h>
 
 #include <sstream>
 

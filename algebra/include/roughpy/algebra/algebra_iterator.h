@@ -30,7 +30,6 @@
 
 #include "algebra_fwd.h"
 #include "basis.h"
-#include "roughpy_algebra_export.h"
 
 #include <roughpy/scalars/scalar.h>
 

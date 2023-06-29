@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_SCALARS_SRC_STANDARD_RANDOM_GENERATOR_H
 #define ROUGHPY_SCALARS_SRC_STANDARD_RANDOM_GENERATOR_H
 
-#include "scalars/random.h"
+#include <roughpy/scalars/random.h>
 
 
 #include <mutex>
@@ -40,7 +40,7 @@
 #include <random>
 #include <sstream>
 
-#include "scalars/scalar.h"
+#include <roughpy/scalars/scalar.h>
 
 #include <pcg_random.hpp>
 #include <pcg_uint128.hpp>

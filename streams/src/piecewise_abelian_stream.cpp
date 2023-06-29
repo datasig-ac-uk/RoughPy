@@ -29,8 +29,8 @@
 // Created by user on 10/03/23.
 //
 
-#include "streams/piecewise_abelian_stream.h"
-#include "streams/schema.h"
+#include <roughpy/streams/piecewise_abelian_stream.h>
+#include <roughpy/streams/schema.h>
 
 using namespace rpy;
 using namespace rpy::streams;

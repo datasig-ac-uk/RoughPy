@@ -39,7 +39,7 @@
 namespace rpy {
 namespace intervals {
 
-class ROUGHPY_INTERVALS_EXPORT DyadicInterval : public Dyadic, public Interval {
+class RPY_EXPORT DyadicInterval : public Dyadic, public Interval {
     using Dyadic::m_multiplier;
     using Dyadic::m_power;
 
@@ -112,14 +112,14 @@ public:
 };
 
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 std::ostream& operator<<(std::ostream& os, const DyadicInterval& di);
 
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 std::vector<DyadicInterval> to_dyadic_intervals(const Interval& interval, typename Dyadic::power_t tol, IntervalType itype=IntervalType::Clopen);
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 bool operator<(const DyadicInterval& lhs, const DyadicInterval& rhs) noexcept;
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(DyadicInterval) {

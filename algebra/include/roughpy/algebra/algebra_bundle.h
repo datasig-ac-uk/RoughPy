@@ -37,7 +37,7 @@ namespace rpy {
 namespace algebra {
 
 template <typename Bundle, typename Base, typename Fibre>
-class ROUGHPY_ALGEBRA_EXPORT BundleInterface
+class RPY_EXPORT BundleInterface
     : public dtl::algebra_base_resolution<Bundle, typename Base::basis_type,
                                           dtl::AlgebraArithmetic,
                                           dtl::AlgebraElementAccess>::type {

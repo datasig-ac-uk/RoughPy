@@ -29,7 +29,7 @@
 // Created by user on 30/05/23.
 //
 
-#include "streams/stream_construction_helper.h"
+#include <roughpy/streams/stream_construction_helper.h>
 
 using namespace rpy;
 using namespace rpy::streams;

@@ -29,20 +29,20 @@
 // Created by user on 06/03/23.
 //
 
-#include "algebra/shuffle_tensor.h"
-#include "algebra/context.h"
+#include <roughpy/algebra/shuffle_tensor.h>
+#include <roughpy/algebra/context.h>
 #include <roughpy/platform/serialization.h>
-#include "algebra/algebra_impl.h"
-#include "algebra/algebra_bundle_impl.h"
+#include <roughpy/algebra/algebra_impl.h>
+#include <roughpy/algebra/algebra_bundle_impl.h>
 
 namespace rpy {
 namespace algebra {
 
 
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, AlgebraInterface, ShuffleTensor, TensorBasis);
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, AlgebraBase, ShuffleTensorInterface);
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, BundleInterface, ShuffleTensorBundle, ShuffleTensor, ShuffleTensor);
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, ShuffleTensorBundleInterface);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraInterface, ShuffleTensor, TensorBasis);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, ShuffleTensorInterface);
+RPY_INSTANTIATE_TEMPLATE(class, BundleInterface, ShuffleTensorBundle, ShuffleTensor, ShuffleTensor);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, ShuffleTensorBundleInterface);
 
 }// namespace algebra
 }// namespace rpy

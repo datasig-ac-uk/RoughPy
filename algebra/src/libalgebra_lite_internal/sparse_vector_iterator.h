@@ -32,8 +32,8 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_SPARSE_VECTOR_ITERATOR_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_SPARSE_VECTOR_ITERATOR_H
 
-#include "algebra/algebra_iterator.h"
-#include "algebra/algebra_iterator_impl.h"
+#include <roughpy/algebra/algebra_iterator.h>
+#include <roughpy/algebra/algebra_iterator_impl.h>
 
 #include <libalgebra_lite/sparse_vector.h>
 

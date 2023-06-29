@@ -29,17 +29,17 @@
 // Created by user on 06/03/23.
 //
 
-#include "algebra/lie.h"
-#include "algebra/context.h"
+#include <roughpy/algebra/lie.h>
+#include <roughpy/algebra/context.h>
 #include <roughpy/platform/serialization.h>
 
 namespace rpy {
 namespace algebra {
 
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, AlgebraInterface, Lie, LieBasis);
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, AlgebraBase, LieInterface);
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, BundleInterface, LieBundle, Lie, Lie);
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, LieBundleInterface);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraInterface, Lie, LieBasis);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, LieInterface);
+RPY_INSTANTIATE_TEMPLATE(class, BundleInterface, LieBundle, Lie, Lie);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, LieBundleInterface);
 
 }// namespace algebra
 }// namespace rpy

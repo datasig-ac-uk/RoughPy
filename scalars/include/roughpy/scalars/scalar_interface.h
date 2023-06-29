@@ -29,9 +29,6 @@
 #define ROUGHPY_SCALARS_SCALAR_INTERFACE_H_
 
 #include "scalars_fwd.h"
-#include "roughpy_scalars_export.h"
-
-
 #include <iosfwd>
 
 #include "scalar_pointer.h"
@@ -39,7 +36,7 @@
 
 namespace rpy { namespace scalars {
 
-class ROUGHPY_SCALARS_EXPORT ScalarInterface {
+class RPY_EXPORT ScalarInterface {
 
     public:
     virtual ~ScalarInterface() = default;

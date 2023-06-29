@@ -30,8 +30,8 @@
 //
 
 #include "rational_poly_scalar_type.h"
-#include "scalars/scalar.h"
-#include "scalars/scalar_pointer.h"
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_pointer.h>
 
 namespace rpy {
 namespace scalars {

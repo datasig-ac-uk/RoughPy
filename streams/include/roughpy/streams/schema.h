@@ -43,7 +43,6 @@
 #include <vector>
 
 #include "roughpy/scalars/key_scalar_array.h"
-#include "roughpy_streams_export.h"
 
 namespace rpy {
 namespace streams {
@@ -210,7 +209,7 @@ public:
  * data, this is a 1-1 mapping. However, categorical values must be expanded
  * and other types of data might occupy multiple stream dimensions.
  */
-class ROUGHPY_STREAMS_EXPORT StreamSchema
+class RPY_EXPORT StreamSchema
     : private std::vector<pair<string, StreamChannel>> {
     using base_type = std::vector<pair<string, StreamChannel>>;
 

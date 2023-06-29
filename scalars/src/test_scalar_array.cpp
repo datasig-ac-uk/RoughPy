@@ -33,7 +33,7 @@
 
 #include <sstream>
 
-#include "scalars/scalar_array.h"
+#include <roughpy/scalars/scalar_array.h>
 #include <roughpy/platform/serialization.h>
 
 using namespace rpy;

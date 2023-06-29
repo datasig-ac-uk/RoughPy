@@ -189,7 +189,7 @@ public:
 
 };
 
-ROUGHPY_SCALARS_EXPORT
+RPY_EXPORT
 std::ostream &operator<<(std::ostream &, const Scalar& arg);
 
 

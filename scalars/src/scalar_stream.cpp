@@ -29,12 +29,12 @@
 // Created by user on 28/02/23.
 //
 
-#include "scalars/scalar_stream.h"
+#include <roughpy/scalars/scalar_stream.h>
 
-#include "scalars/scalar.h"
-#include "scalars/scalar_array.h"
-#include "scalars/scalar_pointer.h"
-#include "scalars/scalar_type.h"
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_array.h>
+#include <roughpy/scalars/scalar_pointer.h>
+#include <roughpy/scalars/scalar_type.h>
 
 using namespace rpy;
 using namespace rpy::scalars;

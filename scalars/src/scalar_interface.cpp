@@ -29,8 +29,8 @@
 // Created by user on 27/02/23.
 //
 
-#include "scalars/scalar_interface.h"
-#include "scalars/scalar.h"
+#include <roughpy/scalars/scalar_interface.h>
+#include <roughpy/scalars/scalar.h>
 
 using namespace rpy::scalars;
 

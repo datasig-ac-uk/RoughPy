@@ -28,7 +28,6 @@
 #ifndef ROUGHPY_STREAMS_STREAM_H_
 #define ROUGHPY_STREAMS_STREAM_H_
 
-#include "roughpy_streams_export.h"
 #include "stream_base.h"
 
 #include <roughpy/platform/serialization.h>
@@ -38,7 +37,7 @@
 namespace rpy {
 namespace streams {
 
-class ROUGHPY_STREAMS_EXPORT Stream {
+class RPY_EXPORT Stream {
     std::unique_ptr<const StreamInterface> p_impl;
 
 public:

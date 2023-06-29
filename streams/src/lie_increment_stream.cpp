@@ -29,7 +29,7 @@
 // Created by user on 10/03/23.
 //
 
-#include "streams/lie_increment_stream.h"
+#include <roughpy/streams/lie_increment_stream.h>
 
 using namespace rpy;
 using namespace rpy::streams;

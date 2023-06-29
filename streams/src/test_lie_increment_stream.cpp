@@ -29,7 +29,7 @@
 // Created by user on 16/03/23.
 //
 
-#include "streams/lie_increment_stream.h"
+#include <roughpy/streams/lie_increment_stream.h>
 
 #include <gtest/gtest.h>
 #include <random>

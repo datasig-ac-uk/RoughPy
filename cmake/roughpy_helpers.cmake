@@ -23,18 +23,18 @@ function(_check_and_set_libtype _out _shared _static _interface)
             message(FATAL_ERROR "Library cannot be both SHARED and STATIC or INTERFACE")
         endif ()
 
-        set(${_out} OBJECT PARENT_SCOPE)
+        set(${_out} SHARED PARENT_SCOPE)
 
     elseif (_static)
         if (_interface)
             message(FATAL_ERROR "Library cannot be both STATIC and INTERFACE")
         endif ()
 
-        set(${_out} OBJECT PARENT_SCOPE)
+        set(${_out} STATIC PARENT_SCOPE)
     elseif (_interface)
         set(${_out} INTERFACE PARENT_SCOPE)
     else ()
-        set(${_out} OBJECT PARENT_SCOPE)
+        set(${_out} SHARED PARENT_SCOPE)
     endif ()
 endfunction()
 
@@ -43,132 +43,91 @@ function(_check_runtime_component _library _out_var)
     if (_imported)
         get_target_property(_imported_loc ${_library} IMPORTED_LOCATION)
         set(${_out_var} ${_imported_loc} PARENT_SCOPE)
-    else()
+    else ()
         get_target_property(_lib_out_name ${_library} LIBRARY_OUTPUT_NAME)
         get_target_property(_lib_out_dir ${_library} LIBRARY_OUTPUT_DIRECTORY)
 
         set(${_out_var} "${_lib_out_dir}/${_lib_out_name}" PARENT_SCOPE)
-    endif()
+    endif ()
 endfunction()
 
-function(_check_runtime_deps _deps)
+function(_check_runtime_deps _out_var)
     set(_these_deps)
-    foreach (_dep IN LISTS _deps)
+    foreach (_dep IN LISTS ${ARGN})
         if (NOT _dep MATCHES RoughPy)
             if ("$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "SHARED_LIBRARY"
                     OR "$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "MODULE_LIBRARY")
                 _check_runtime_component(${_dep} ${_this_dep})
                 message(STATUS "Runtime dependency added: ${_this_dep}")
                 list(APPEND _these_deps ${_this_dep})
-            endif()
+            endif ()
 
             if (_dep MATCHES "MKL" AND DEFINED MKL_THREAD_LIB)
                 message(STATUS "Runtime dependency added: ${MKL_THREAD_LIB}")
                 list(APPEND _these_deps "${MKL_THREAD_LIB}")
-            endif()
-        endif()
-    endforeach()
-    if (ROUGHPY_RUNTIME_DEPS)
-        set(ROUGHPY_RUNTIME_DEPS "${ROUGHPY_RUNTIME_DEPS};${_these_deps}" CACHE INTERNAL "")
-    else()
-        set(ROUGHPY_RUNTIME_DEPS "${_these_deps}" CACHE INTERNAL "")
-    endif()
+            endif ()
+        endif ()
+    endforeach ()
+    set(_out_var ${_these_deps} PARENT_SCOPE)
 endfunction()
 
+function(add_roughpy_component _name)
 
-function(add_roughpy_lib _name)
     cmake_parse_arguments(
-            ARG
-            "STATIC;SHARED;INTERFACE"
+            "rpy"
+            "INTERFACE_ONLY"
             ""
-            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS;LINK_IF_AVAILABLE"
+            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS"
             ${ARGN}
     )
 
-    _check_and_set_libtype(_lib_type ${ARG_SHARED} ${ARG_STATIC} ${ARG_INTERFACE})
+    set(_ifc_lib "RoughPy_${_name}")
+    set(_impl_lib "RoughPy_${_name}_impl")
+    set(_ifc_alias_name "RoughPy::${_name}")
 
-    set(_real_name "RoughPy_${_name}")
-    set(_alias_name "RoughPy::${_name}")
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
     _get_component_name(_component_name ${_component})
 
-    if (NOT _lib_type STREQUAL INTERFACE)
-        set(_private_include_dirs "${CMAKE_CURRENT_LIST_DIR}/include/roughpy/${_component}/")
-        if (ARG_PVT_INCLUDE_DIRS)
-            foreach(_pth IN LISTS ARG_PVT_INCLUDE_DIRS)
-                list(APPEND _private_include_dirs ${CMAKE_CURRENT_LIST_DIR}/${_pth})
-            endforeach ()
-        endif ()
-        foreach(_pth IN LISTS _private_include_dirs)
-            if (NOT EXISTS "${_pth}")
-                message(FATAL_ERROR "The path ${_pth} does not exist")
-            endif ()
-        endforeach ()
-    endif ()
 
-    add_library(${_real_name} ${_lib_type})
-    add_library(${_alias_name} ALIAS ${_real_name})
-    message(STATUS "Adding ${_lib_type} library ${_alias_name} version ${PROJECT_VERSION}")
+    add_library(${_ifc_lib} INTERFACE EXCLUDE_FROM_ALL)
+    add_library(${_ifc_alias_name} ALIAS ${_ifc_lib})
 
-    if (ROUGHPY_LIBS)
-        set(ROUGHPY_LIBS "${ROUGHPY_LIBS};${_real_name}" CACHE INTERNAL "")
-    else()
-        set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "")
-    endif()
+    message(STATUS "Adding component ${_ifc_alias_name} version ${PROJECT_VERSION}")
 
-    set_target_properties(${_real_name} PROPERTIES
-            EXPORT_NAME ${_name})
-
-    if (NOT ${_lib_type} STREQUAL INTERFACE)
-        target_include_directories(${_real_name}
-                PRIVATE
-                "${_private_include_dirs}"
-                PUBLIC
-                "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-                "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-                )
-        generate_export_header(${_real_name})
-        target_sources(${_real_name}
-                PUBLIC
-                ${ARG_PUBLIC_HEADERS}
-                PRIVATE
-                ${ARG_SOURCES}
-                )
-        target_link_libraries(${_real_name}
-                PUBLIC
-                ${ARG_PUBLIC_DEPS}
-                PRIVATE
-                ${ARG_PRIVATE_DEPS}
-                )
-    else ()
-        target_include_directories(${_real_name} INTERFACE
-                "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-                "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-                )
-        target_sources(${_real_name} INTERFACE ${ARG_PUBLIC_HEADERS})
-        target_link_libraries(${_real_name} INTERFACE ${ARG_PUBLIC_DEPS})
-    endif ()
-
-    _check_runtime_deps("${ARG_PUBLIC_DEPS}")
-    _check_runtime_deps("${ARG_PRIVATE_DEPS}")
-
-    set_target_properties(${_real_name} PROPERTIES
-            PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
-            LINKER_LANGUAGE CXX
-            CXX_DEFAULT_VISIBILITY hidden
-            VISIBILITY_INLINES_HIDDEN ON
-            VERSION "${PROJECT_VERSION}"
+    set(_linker_languages CXX)
+    set_target_properties(${_ifc_lib} PROPERTIES
+            EXPORT_NAME "${_name}"
+            PUBLIC_HEADERS "${PUBLIC_HEADERS}"
+            LINKER_LANGUAGE "${_linker_languages}"
             )
-#    if (_lib_type STREQUAL SHARED)
-#        set_target_properties(${_real_name} PROPERTIES
-#                SOVERSION ${PROJECT_VERSION_MAJOR})
-#    endif ()
 
-    if (_lib_type STREQUAL STATIC OR _lib_type STREQUAL OBJECT)
-        set_target_properties(${_real_name} PROPERTIES
-                POSITION_INDEPENDENT_CODE ON)
+
+    target_include_directories(${_ifc_lib} INTERFACE
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+            )
+
+    target_link_libraries(${_ifc_lib} INTERFACE ${rpy_PUBLIC_DEPS})
+
+    _check_runtime_deps(_runtime_deps ${rpy_PUBLIC_DEPS} ${rpy_PRIVATE_DEPS})
+
+    if (_runtime_deps)
+        set_target_properties(${_ifc_lib} PROPERTIES RUNTIME_DEPENDENCIES ${_runtime_deps})
+    endif ()
+
+    if (NOT rpy_INTERFACE_ONLY)
+
+        add_library(${_impl_lib} INTERFACE EXCLUDE_FROM_ALL)
+        target_link_libraries(${_impl_lib}
+                INTERFACE ${_ifc_lib} ${rpy_PRIVATE_DEPS}
+                )
+        target_compile_definitions(${_impl_lib} INTERFACE ${rpy_DEFINITIONS})
+        target_include_directories(${_impl_lib} INTERFACE
+                ${rpy_PVT_INCLUDE_DIRS}
+                )
+
+        target_sources(${_impl_lib} INTERFACE ${rpy_PUBLIC_HEADERS} ${rpy_SOURCES})
     endif ()
 endfunction()
 
@@ -191,13 +150,12 @@ function(extend_roughpy_lib _name)
     if (ARG_SOURCES)
         if (_lib_type STREQUAL "INTERFACE_LIBRARY")
             target_sources(${_real_name} INTERFACE ${ARG_SOURCES})
-        else()
+        else ()
             target_sources(${_real_name} PRIVATE ${ARG_SOURCES})
-        endif()
-    endif()
+        endif ()
+    endif ()
 
 endfunction()
-
 
 
 function(add_roughpy_algebra _name)
@@ -213,13 +171,10 @@ function(add_roughpy_algebra _name)
     set(_basis_name "${_name}Basis")
     if (ARG_BASIS_NAME)
         set(_basis_name "${ARG_BASIS_NAME}")
-    endif()
+    endif ()
 
     set(_interface_name "${_name}Interface")
     set(_impl_name "${_name}Implementation")
-
-
-
 
 
 endfunction()
@@ -238,12 +193,14 @@ function(add_roughpy_test _name)
 
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
     _get_component_name(_component_name ${_component})
-    set(_header_dir include/roughpy/${_component})
+    set(_header_dir include/roughpy)
 
     set(_tests_name RoughPy_test_${_component}_${_name})
     message(DEBUG "Adding test ${_tests_name}")
 
     add_executable(${_tests_name} ${test_SRC} ${test_COMPONENT_SRCS})
+    target_compile_definitions(${_tests_name} PRIVATE
+            RPY_DISABLE_EXPORTS=1)
 
     set(_deps)
     foreach (_dep IN LISTS test_DEP)
@@ -262,16 +219,39 @@ function(add_roughpy_test _name)
 
     endforeach ()
 
-    target_link_libraries(${_tests_name} PRIVATE ${_deps} GTest::gtest_main)
+    target_link_libraries(${_tests_name} PRIVATE GTest::gtest_main)
+
+    foreach (_dep IN LISTS _deps)
+        if (NOT _dep MATCHES RoughPy)
+            target_link_libraries(${_tests_name} PRIVATE ${_dep})
+        else()
+            get_target_property(_dep_name ${_dep} NAME)
+            if (TARGET "${_dep_name}_impl")
+
+                target_link_libraries(${_tests_name} PRIVATE
+                    "${_dep_name}_impl")
+            endif()
+        endif()
+    endforeach()
 
     if (test_LINK_COMPONENT)
-        string(CONCAT _component_name "RoughPy_" "${_component_name}")
-
-        if (NOT TARGET ${_component_name})
+        if (NOT TARGET "RoughPy_${_component_name}_impl")
             message(FATAL_ERROR "The target ${_component_name} does not exist")
         endif ()
         message(DEBUG "Linking component target ${_component_name}")
-        target_link_libraries(${_tests_name} PRIVATE ${_component_name})
+        target_link_libraries(${_tests_name} PRIVATE "RoughPy_${_component_name}_impl")
+
+        get_target_property(_comp_deps "RoughPy_${_component_name}" INTERFACE_LINK_LIBRARIES)
+        foreach(_dep IN LISTS _comp_deps)
+            if(_dep MATCHES RoughPy)
+                get_target_property(_dep_name ${_dep} NAME)
+                if (TARGET "${_dep_name}_impl")
+                    target_link_libraries(${_tests_name} PRIVATE
+                        "${_dep_name}_impl")
+                endif()
+            endif()
+        endforeach()
+
     endif ()
 
 
@@ -325,7 +305,7 @@ function(add_roughpy_test_helper NAME)
 
     if (NOT WIN32)
         target_compile_definitions(${_lib_name} PRIVATE RPY_BUILDING_LIBRARY=1)
-    endif()
+    endif ()
     target_compile_options(${_lib_name} PRIVATE ${ARGS_OPTS})
 endfunction()
 

@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_SCALARS_SRC_RATIONAL_POLY_SCALAR_TYPE_H
 #define ROUGHPY_SCALARS_SRC_RATIONAL_POLY_SCALAR_TYPE_H
 
-#include "scalars/scalar_type.h"
+#include <roughpy/scalars/scalar_type.h>
 
 namespace rpy {
 namespace scalars {

@@ -29,7 +29,7 @@
 // Created by user on 13/04/23.
 //
 
-#include "streams/external_data_stream.h"
+#include <roughpy/streams/external_data_stream.h>
 
 #include "external_data_sources/csv_data_source.h"
 #include "external_data_sources/sound_file_data_source.h"

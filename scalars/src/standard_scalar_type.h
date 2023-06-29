@@ -32,15 +32,15 @@
 #ifndef ROUGHPY_SCALARS_SRC_STANDARD_SCALAR_TYPE_H
 #define ROUGHPY_SCALARS_SRC_STANDARD_SCALAR_TYPE_H
 
-#include "scalars/scalar.h"
+#include <roughpy/scalars/scalar.h>
 
 #include <limits>
 #include <ostream>
 #include <unordered_map>
 #include <utility>
 
-#include "scalars/random.h"
-#include "scalars/scalar_type.h"
+#include <roughpy/scalars/random.h>
+#include <roughpy/scalars/scalar_type.h>
 
 #include "standard_random_generator.h"
 

@@ -29,7 +29,7 @@
 // Created by user on 12/04/23.
 //
 
-#include "streams/brownian_stream.h"
+#include <roughpy/streams/brownian_stream.h>
 #include <gtest/gtest.h>
 #include <sstream>
 

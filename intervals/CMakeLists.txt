@@ -10,7 +10,7 @@ include(GenerateExportHeader)
 
 
 
-add_roughpy_lib(Intervals STATIC
+add_roughpy_component(Intervals
         SOURCES
             src/interval.cpp
             src/dyadic.cpp

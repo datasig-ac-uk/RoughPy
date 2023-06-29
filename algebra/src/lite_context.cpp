@@ -32,7 +32,7 @@
 #include "lite_context.h"
 #include <roughpy/core/macros.h>
 
-#include "algebra/context.h"
+#include <roughpy/algebra/context.h>
 
 #include <array>
 #include <unordered_map>

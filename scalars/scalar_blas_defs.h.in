@@ -9,7 +9,7 @@
 #  include <lapack.h>
 #endif
 
-#include "scalars/scalar_matrix.h"
+#include <roughpy/scalars/scalar_matrix.h>
 
 #if @RPY_USE_MKL@
 #  define EIGEN_USE_MKL_ALL

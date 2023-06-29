@@ -32,8 +32,8 @@
 #ifndef ROUGHPY_INTERVALS_SRC_SCALED_PREDICATE_H
 #define ROUGHPY_INTERVALS_SRC_SCALED_PREDICATE_H
 
-#include "intervals/segmentation.h"
-#include "intervals/dyadic_interval.h"
+#include <roughpy/intervals/segmentation.h>
+#include <roughpy/intervals/dyadic_interval.h>
 
 namespace rpy {
 namespace intervals {

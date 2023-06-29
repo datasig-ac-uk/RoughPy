@@ -32,11 +32,10 @@
 #ifndef ROUGHPY_SCALARS_SCALARS_PREDEF_H
 #define ROUGHPY_SCALARS_SCALARS_PREDEF_H
 
-#include "roughpy_scalars_export.h"
-
 
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/macros.h>
 
 #include <libalgebra_lite/coefficients.h>
 #include <libalgebra_lite/polynomial.h>
@@ -187,7 +186,7 @@ constexpr bool operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs
  *
  *
  */
-ROUGHPY_SCALARS_EXPORT
+RPY_EXPORT
 void register_type(const ScalarType *type);
 
 /**
@@ -195,29 +194,29 @@ void register_type(const ScalarType *type);
  * @param id Id string of type to be retrieved
  * @return pointer to ScalarType representing id
  */
-ROUGHPY_SCALARS_EXPORT
+RPY_EXPORT
 const ScalarType *get_type(const string &id);
 
-ROUGHPY_SCALARS_EXPORT
+RPY_EXPORT
 const ScalarType *get_type(const string &id, const ScalarDeviceInfo &device);
 
 /**
  * @brief Get a list of all registered ScalarTypes
  * @return vector of ScalarType pointers.
  */
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
+RPY_NO_DISCARD RPY_EXPORT
 std::vector<const ScalarType *> list_types();
 
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT const ScalarTypeInfo &
+RPY_NO_DISCARD RPY_EXPORT const ScalarTypeInfo &
 get_scalar_info(string_view id);
 
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
+RPY_NO_DISCARD RPY_EXPORT
 const std::string& id_from_basic_info(const BasicScalarInfo& info);
 
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT const conversion_function &
+RPY_NO_DISCARD RPY_EXPORT const conversion_function &
 get_conversion(const string &src_id, const string &dst_id);
 
-ROUGHPY_SCALARS_EXPORT
+RPY_EXPORT
 void register_conversion(const string &src_id,
                          const string &dst_id,
                          conversion_function converter);

@@ -29,23 +29,23 @@
 // Created by user on 05/03/23.
 //
 
-#include "algebra/free_tensor.h"
-#include "algebra/context.h"
+#include <roughpy/algebra/free_tensor.h>
+#include <roughpy/algebra/context.h>
 #include <roughpy/platform/serialization.h>
 
-#include "algebra/algebra_impl.h"
-#include "algebra/algebra_bundle_impl.h"
-#include "algebra/free_tensor_impl.h"
+#include <roughpy/algebra/algebra_impl.h>
+#include <roughpy/algebra/algebra_bundle_impl.h>
+#include <roughpy/algebra/free_tensor_impl.h>
 
 using namespace rpy::algebra;
 
 namespace rpy {
 namespace algebra {
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, AlgebraInterface, FreeTensor, TensorBasis);
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, AlgebraBase, FreeTensorInterface, FreeTensorImplementation);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraInterface, FreeTensor, TensorBasis);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, FreeTensorInterface, FreeTensorImplementation);
 
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, BundleInterface, FreeTensorBundle, FreeTensor, FreeTensor);
-RPY_ALGEBRA_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, FreeTensorBundleInterface, FreeTensorBundleImplementation);
+RPY_INSTANTIATE_TEMPLATE(class, BundleInterface, FreeTensorBundle, FreeTensor, FreeTensor);
+RPY_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, FreeTensorBundleInterface, FreeTensorBundleImplementation);
 }// namespace algebra
 }// namespace rpy
 
