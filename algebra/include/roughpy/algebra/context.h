@@ -202,12 +202,12 @@ public:
 
 };
 
-inline void intrusive_ptr_add_ref(const Context* ptr) {
-    intrusive_ptr_add_ref(static_cast<const ContextBase*>(ptr));
+inline void intrusive_ptr_add_ref(const ContextBase* ptr) {
+    intrusive_ptr_add_ref(static_cast<const boost::intrusive_ref_counter<ContextBase>*>(ptr));
 }
 
-inline void intrusive_ptr_release(const Context* ptr) {
-    intrusive_ptr_release(static_cast<const ContextBase*>(ptr));
+inline void intrusive_ptr_release(const ContextBase* ptr) {
+    intrusive_ptr_release(static_cast<const boost::intrusive_ref_counter<ContextBase>*>(ptr));
 }
 
 

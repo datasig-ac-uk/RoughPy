@@ -9,9 +9,9 @@ if (EXISTS "VERSION.txt")
     file(READ "VERSION.txt" _rpy_version)
     message(STATUS "Repository version ${_rpy_version}")
     string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" _rpy_version "${_rpy_version}")
-else()
+else ()
     set(_rpy_version 0.0.1)
-endif()
+endif ()
 
 
 project(RoughPy VERSION ${_rpy_version})
@@ -107,6 +107,7 @@ execute_process(COMMAND ${Python_EXECUTABLE}
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET
         )
+
 if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
     cmake_path(GET _python_mkl_dir PARENT_PATH _python_mkl_dir)
     message(STATUS "Adding MKL dir from pip-installed mkl: ${_python_mkl_dir}")
@@ -116,12 +117,9 @@ if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
     endif ()
     set(MKL_DIR "${_python_mkl_dir}")
 
-    if (WIN32)
-        # Currently there is no way to get this working with threading
-        # on Windows using this distribution of MKL
-        set(MKL_THREADING sequential)
-    endif ()
+
 endif ()
+
 if (NOT DEFINED pybind11_ROOT)
     execute_process(COMMAND
             "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
@@ -133,8 +131,13 @@ if (NOT DEFINED pybind11_ROOT)
     if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
         message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
         set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
-
     endif ()
+endif ()
+
+set(RPY_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+# TODO: handle this better
+if (DEFINED CMAKE_CXX_COMPILER_TARGET)
+    set(RPY_ARCH ${CMAKE_CXX_COMPILER_TARGET})
 endif ()
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
@@ -145,14 +148,45 @@ find_package(SndFile CONFIG REQUIRED)
 # This package is c++17 so cannot be used if changing to a lower standard
 find_package(tomlplusplus CONFIG REQUIRED)
 
-set(MKL_LINK static)
-set(MKL_INTERFACE lp64)
+message(STATUS "Target architecture ${RPY_ARCH}")
+if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64")
+    set(MKL_LINK static)
+    set(MKL_INTERFACE lp64)
+    if (WIN32)
+        # Currently there is no way to get this working with threading
+        # on Windows using this distribution of MKL
+        set(MKL_THREADING sequential)
+    else ()
+        set(MKL_THREADING intel_thread)
+    endif ()
 
-find_package(MKL CONFIG REQUIRED)
-if (NOT TARGET MKL::MKL)
+    find_package(MKL CONFIG)
+    if (TARGET MKL::MKL)
+        add_library(BLAS::BLAS ALIAS MKL::MKL)
+        add_library(LAPACK::LAPACK ALIAS MKL::MKL)
+
+        if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
+            foreach (LANG IN ITEMS C CXX)
+                set(OpenMP_${LANG}_LIB_NAMES ${MKL_OMP_LIB} CACHE STRING "Intel OpenMP runtime library")
+            endforeach ()
+        endif ()
+    else ()
+        set(BLA_SIZEOF_INTEGER 4)
+        set(BLA_STATIC ON)
+    endif ()
+elseif (APPLE)
+    set(BLA_VENDOR Apple)
+    set(BLA_SIZEOF_INTEGER 4)
+    set(BLA_STATIC ON)
+endif ()
+
+if (NOT TARGET BLAS::BLAS)
     find_package(BLAS REQUIRED)
+endif ()
+if (NOT TARGET LAPACK::LAPACK)
     find_package(LAPACK REQUIRED)
 endif ()
+
 
 if (APPLE AND DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
 
@@ -256,9 +290,9 @@ foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
     get_target_property(_lib_deps ${_rpy_lib} RUNTIME_DEPENDENCIES)
     if (_lib_deps)
         list(APPEND _runtime_deps "${_lib_deps}")
-#        install(FILES ${_lib_deps} DESTINATION roughpy)
-    endif()
-endforeach()
+        #        install(FILES ${_lib_deps} DESTINATION roughpy)
+    endif ()
+endforeach ()
 install(FILES ${_runtime_deps} DESTINATION roughpy)
 
 #
