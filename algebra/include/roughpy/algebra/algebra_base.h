@@ -31,7 +31,6 @@
 #include "algebra_fwd.h"
 
 #include <memory>
-#include <stdexcept>
 #include <type_traits>
 
 #include <roughpy/core/types.h>

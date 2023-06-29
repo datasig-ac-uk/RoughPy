@@ -66,8 +66,10 @@ struct VectorConstructionData;
 class ContextBase;
 class Context;
 
-using base_context_pointer = boost::intrusive_ptr<const ContextBase>;
-using context_pointer = boost::intrusive_ptr<const Context>;
+//using base_context_pointer = boost::intrusive_ptr<const ContextBase>;
+//using context_pointer = boost::intrusive_ptr<const Context>;
+using base_context_pointer = std::shared_ptr<const ContextBase>;
+using context_pointer = std::shared_ptr<const Context>;
 
 struct BasicContextSpec {
     string stype_id;

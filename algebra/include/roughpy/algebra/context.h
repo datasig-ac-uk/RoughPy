@@ -69,8 +69,8 @@ struct VectorConstructionData {
     VectorType vector_type = VectorType::Sparse;
 };
 
-class RPY_EXPORT ContextBase
-    : public boost::intrusive_ref_counter<ContextBase> {
+class RPY_EXPORT ContextBase // : public boost::intrusive_ref_counter<ContextBase>
+    {
     deg_t m_width;
     deg_t m_depth;
 
@@ -202,13 +202,6 @@ public:
 
 };
 
-inline void intrusive_ptr_add_ref(const ContextBase* ptr) {
-    intrusive_ptr_add_ref(static_cast<const boost::intrusive_ref_counter<ContextBase>*>(ptr));
-}
-
-inline void intrusive_ptr_release(const ContextBase* ptr) {
-    intrusive_ptr_release(static_cast<const boost::intrusive_ref_counter<ContextBase>*>(ptr));
-}
 
 
 RPY_EXPORT
