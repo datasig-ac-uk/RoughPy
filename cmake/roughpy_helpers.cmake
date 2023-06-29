@@ -23,18 +23,18 @@ function(_check_and_set_libtype _out _shared _static _interface)
             message(FATAL_ERROR "Library cannot be both SHARED and STATIC or INTERFACE")
         endif ()
 
-        set(${_out} SHARED PARENT_SCOPE)
+        set(${_out} OBJECT PARENT_SCOPE)
 
     elseif (_static)
         if (_interface)
             message(FATAL_ERROR "Library cannot be both STATIC and INTERFACE")
         endif ()
 
-        set(${_out} STATIC PARENT_SCOPE)
+        set(${_out} OBJECT PARENT_SCOPE)
     elseif (_interface)
         set(${_out} INTERFACE PARENT_SCOPE)
     else ()
-        set(${_out} SHARED PARENT_SCOPE)
+        set(${_out} OBJECT PARENT_SCOPE)
     endif ()
 endfunction()
 
@@ -166,7 +166,7 @@ function(add_roughpy_lib _name)
 #                SOVERSION ${PROJECT_VERSION_MAJOR})
 #    endif ()
 
-    if (_lib_type STREQUAL STATIC)
+    if (_lib_type STREQUAL STATIC OR _lib_type STREQUAL OBJECT)
         set_target_properties(${_real_name} PROPERTIES
                 POSITION_INDEPENDENT_CODE ON)
     endif ()
