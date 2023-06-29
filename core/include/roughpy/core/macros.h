@@ -226,7 +226,7 @@
 
 #define RPY_FALLTHROUGH (void)0
 
-#ifdef RPY_COMPILING_DLL
+#ifdef RPY_PLATFORM_WINDOWS
 #ifdef RPY_BUILDING_LIBRARY
 #define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
     extern template TYPE TMPL<__VA_ARGS__>
@@ -234,7 +234,7 @@
     template TYPE RPY_EXPORT_MACRO TMPL<__VA_ARGS__>
 #else
 #define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
-    template TYPE TMPL<__VA_ARGS__>
+    template TYPE RPY_EXPORT_MACRO TMPL<__VA_ARGS__>
 // RPY_INSTANTIATE_TEMPLATE should never be used in this context
 #undef RPY_INSTANTIATE_TEMPLATE
 #endif
