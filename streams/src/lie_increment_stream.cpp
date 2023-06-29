@@ -29,7 +29,7 @@
 // Created by user on 10/03/23.
 //
 
-#include "lie_increment_stream.h"
+#include "streams/lie_increment_stream.h"
 
 using namespace rpy;
 using namespace rpy::streams;

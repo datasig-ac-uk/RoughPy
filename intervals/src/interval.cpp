@@ -29,9 +29,8 @@
 // Created by user on 02/03/23.
 //
 
-#include "interval.h"
+#include "intervals/interval.h"
 #include <ostream>
-#include <stdexcept>
 
 using namespace rpy;
 using namespace rpy::intervals;

@@ -34,7 +34,7 @@
 
 #include <gtest/gtest.h>
 
-#include "context.h"
+#include "algebra/context.h"
 #include <roughpy/core/types.h>
 #include <roughpy/scalars/scalar_type.h>
 

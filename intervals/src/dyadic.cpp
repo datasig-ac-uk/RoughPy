@@ -29,7 +29,7 @@
 // Created by user on 02/03/23.
 //
 
-#include "dyadic.h"
+#include "intervals/dyadic.h"
 
 #include <ostream>
 

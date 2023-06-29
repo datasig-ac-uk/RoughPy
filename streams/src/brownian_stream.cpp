@@ -28,7 +28,7 @@
 //
 // Created by user on 24/03/23.
 //
-#include "brownian_stream.h"
+#include "streams/brownian_stream.h"
 
 #include <roughpy/algebra/lie.h>
 #include <roughpy/scalars/key_scalar_array.h>

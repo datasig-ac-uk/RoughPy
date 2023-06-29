@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_CSV_DATA_SOURCE_H
 #define ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_CSV_DATA_SOURCE_H
 
-#include "external_data_stream.h"
+#include "streams/external_data_stream.h"
 
 namespace rpy {
 namespace streams {

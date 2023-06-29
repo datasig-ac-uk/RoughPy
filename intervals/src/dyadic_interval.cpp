@@ -29,12 +29,12 @@
 // Created by user on 02/03/23.
 //
 
-#include "dyadic_interval.h"
+#include "intervals/dyadic_interval.h"
 
 #include <algorithm>
 #include <list>
 
-#include "real_interval.h"
+#include "intervals/real_interval.h"
 
 using namespace rpy;
 using namespace rpy::intervals;

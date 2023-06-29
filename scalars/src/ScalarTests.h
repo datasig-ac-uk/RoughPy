@@ -34,7 +34,7 @@
 
 #include <gtest/gtest.h>
 
-#include "scalar_type.h"
+#include "scalars/scalar_type.h"
 
 namespace rpy {
 namespace scalars {

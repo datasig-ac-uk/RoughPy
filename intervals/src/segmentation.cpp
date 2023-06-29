@@ -29,8 +29,8 @@
 // Created by user on 02/03/23.
 //
 
-#include "segmentation.h"
-#include "dyadic_interval.h"
+#include "intervals/segmentation.h"
+#include "intervals/dyadic_interval.h"
 
 #include "dyadic_searcher.h"
 

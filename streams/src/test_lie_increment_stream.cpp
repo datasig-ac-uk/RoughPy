@@ -29,7 +29,7 @@
 // Created by user on 16/03/23.
 //
 
-#include "lie_increment_stream.h"
+#include "streams/lie_increment_stream.h"
 
 #include <gtest/gtest.h>
 #include <random>

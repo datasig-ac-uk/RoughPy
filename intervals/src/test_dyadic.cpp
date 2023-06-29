@@ -31,7 +31,7 @@
 
 #include <gtest/gtest.h>
 
-#include "dyadic.h"
+#include "intervals/dyadic.h"
 
 #include <sstream>
 

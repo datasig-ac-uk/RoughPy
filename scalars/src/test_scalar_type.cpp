@@ -30,8 +30,8 @@
 //
 
 #include "ScalarTests.h"
-#include "scalar.h"
-#include "scalar_pointer.h"
+#include "scalars/scalar.h"
+#include "scalars/scalar_pointer.h"
 
 #include <vector>
 

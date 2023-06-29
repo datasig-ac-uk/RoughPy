@@ -32,14 +32,14 @@
 #ifndef ROUGHPY_INTERVALS_SRC_DYADIC_SEARCHER_H
 #define ROUGHPY_INTERVALS_SRC_DYADIC_SEARCHER_H
 
-#include "segmentation.h"
+#include "intervals/segmentation.h"
 
 #include <cassert>
 #include <deque>
 #include <map>
 #include <utility>
 
-#include "dyadic.h"
+#include "intervals/dyadic.h"
 
 #include "scaled_predicate.h"
 

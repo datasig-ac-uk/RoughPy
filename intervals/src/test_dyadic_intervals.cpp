@@ -31,8 +31,8 @@
 
 #include <gtest/gtest.h>
 
-#include "dyadic_interval.h"
-#include "real_interval.h"
+#include "intervals/dyadic_interval.h"
+#include "intervals/real_interval.h"
 
 #include <sstream>
 
