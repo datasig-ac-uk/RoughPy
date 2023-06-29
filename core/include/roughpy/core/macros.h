@@ -245,7 +245,7 @@
 #endif
 #else
 #define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
-    extern template TYPE TMPL<__VA_ARGS__>
+    extern template TYPE RPY_EXPORT TMPL<__VA_ARGS__>
 #define RPY_INSTANTIATE_TEMPLATE(TYPE, TMPL, ...) \
     template TYPE RPY_EXPORT TMPL<__VA_ARGS__>
 #endif
