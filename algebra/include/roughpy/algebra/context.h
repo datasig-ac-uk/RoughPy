@@ -202,6 +202,15 @@ public:
 
 };
 
+inline void intrusive_ptr_add_ref(context_pointer& ptr) {
+    intrusive_ptr_add_ref(static_cast<const ContextBase*>(ptr.get()));
+}
+
+inline void intrusive_ptr_release(context_pointer& ptr) {
+    intrusive_ptr_release(static_cast<const ContextBase*>(ptr.get()));
+}
+
+
 RPY_EXPORT
 base_context_pointer get_base_context(deg_t width, deg_t depth);
 
