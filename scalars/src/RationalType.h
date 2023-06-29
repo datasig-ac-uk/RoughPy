@@ -32,7 +32,8 @@
 #ifndef ROUGHPY_RATIONALTYPE_H
 #define ROUGHPY_RATIONALTYPE_H
 
-#include "scalars_fwd.h"
+#include "scalars/scalars_fwd.h"
+
 #include "standard_scalar_type.h"
 
 

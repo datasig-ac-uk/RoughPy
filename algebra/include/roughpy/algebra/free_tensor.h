@@ -30,15 +30,13 @@
 
 #include "algebra_base.h"
 #include "algebra_bundle.h"
-
-
 #include "tensor_basis.h"
 
 
 namespace rpy {
 namespace algebra {
 
-RPY_EXPORT_TEMPLATE(class, AlgebraInterface, FreeTensor, TensorBasis);
+RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraInterface, FreeTensor, TensorBasis);
 
 class ROUGHPY_ALGEBRA_EXPORT FreeTensorInterface
     : public AlgebraInterface<FreeTensor, TensorBasis> {
@@ -61,7 +59,6 @@ public:
 template <typename, template <typename> class>
 class FreeTensorImplementation;
 
-RPY_EXPORT_TEMPLATE(class, AlgebraBase, FreeTensorInterface, FreeTensorImplementation);
 
 class ROUGHPY_ALGEBRA_EXPORT FreeTensor
     : public AlgebraBase<FreeTensorInterface, FreeTensorImplementation> {
@@ -85,11 +82,12 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
+RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraBase, FreeTensorInterface, FreeTensorImplementation);
 RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensor) {
     RPY_SERIAL_SERIALIZE_BASE(base_t);
 }
 
-RPY_EXPORT_TEMPLATE(class, BundleInterface, FreeTensorBundle, FreeTensor, FreeTensor);
+RPY_ALGEBRA_EXPORT_TEMPLATE(class, BundleInterface, FreeTensorBundle, FreeTensor, FreeTensor);
 
 class ROUGHPY_ALGEBRA_EXPORT FreeTensorBundleInterface
     : public BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor> {
@@ -114,7 +112,7 @@ public:
 template <typename, template <typename> class>
 class FreeTensorBundleImplementation;
 
-RPY_EXPORT_TEMPLATE(class, AlgebraBundleBase, FreeTensorBundleInterface, FreeTensorBundleImplementation);
+RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraBundleBase, FreeTensorBundleInterface, FreeTensorBundleImplementation);
 
 class ROUGHPY_ALGEBRA_EXPORT FreeTensorBundle
     : public AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation>

@@ -29,9 +29,9 @@
 // Created by user on 26/02/23.
 //
 
-#include "scalar.h"
-#include "scalar_pointer.h"
-#include "scalar_type.h"
+#include "scalars/scalar.h"
+#include "scalars/scalar_pointer.h"
+#include "scalars/scalar_type.h"
 
 #include <ostream>
 #include <roughpy/platform/serialization.h>

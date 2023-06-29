@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_SHUFFLE_TENSOR_INFO_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_SHUFFLE_TENSOR_INFO_H
 
-#include "algebra_info.h"
+#include "algebra/algebra_info.h"
 #include "vector_type_helper.h"
 
 #include <roughpy/core/traits.h>

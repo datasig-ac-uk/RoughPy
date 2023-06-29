@@ -33,7 +33,7 @@
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_FREE_TENSOR_INFO_H
 
 
-#include "algebra_info.h"
+#include "algebra/algebra_info.h"
 #include "tensor_basis_info.h"
 
 #include "vector_type_helper.h"

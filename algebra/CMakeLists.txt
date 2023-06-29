@@ -13,7 +13,7 @@ if (NOT TARGET Libalgebra_lite::Libalgebra_lite)
     find_package(Libalgebra_Lite CONFIG REQUIRED)
 endif ()
 
-add_roughpy_lib(Algebra STATIC
+add_roughpy_lib(Algebra SHARED
     SOURCES
         src/basis.cpp
         src/algebra_base.cpp

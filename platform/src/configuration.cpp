@@ -29,7 +29,7 @@
 // Created by user on 17/04/23.
 //
 
-#include "configuration.h"
+#include "platform/configuration.h"
 
 using namespace rpy;
 

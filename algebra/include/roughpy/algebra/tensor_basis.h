@@ -46,7 +46,7 @@ public:
 };
 
 
-RPY_EXPORT_TEMPLATE(class, Basis, TensorBasisInterface);
+RPY_ALGEBRA_EXPORT_TEMPLATE(class, Basis, TensorBasisInterface);
 
 using TensorBasis = Basis<TensorBasisInterface>;
 

@@ -32,15 +32,19 @@
 #include "algebra_bundle.h"
 
 #include "tensor_basis.h"
+#include "algebra_impl.h"
+#include "algebra_bundle_impl.h"
+
+#include <roughpy/core/macros.h>
 
 namespace rpy {
 namespace algebra {
 
-RPY_EXPORT_TEMPLATE(class, AlgebraInterface, ShuffleTensor, TensorBasis);
+RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraInterface, ShuffleTensor, TensorBasis);
 
 using ShuffleTensorInterface = AlgebraInterface<ShuffleTensor, TensorBasis>;
 
-RPY_EXPORT_TEMPLATE(class, AlgebraBase, ShuffleTensorInterface);
+RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraBase, ShuffleTensorInterface);
 
 class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface> {
     using base_t = AlgebraBase<ShuffleTensorInterface>;
@@ -60,11 +64,11 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor) {
 
 class ShuffleTensorBundle;
 
-RPY_EXPORT_TEMPLATE(class, BundleInterface, ShuffleTensorBundle, ShuffleTensor, ShuffleTensor);
+RPY_ALGEBRA_EXPORT_TEMPLATE(class, BundleInterface, ShuffleTensorBundle, ShuffleTensor, ShuffleTensor);
 
 using ShuffleTensorBundleInterface = BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
 
-RPY_EXPORT_TEMPLATE(class, AlgebraBundleBase, ShuffleTensorBundleInterface);
+RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraBundleBase, ShuffleTensorBundleInterface);
 
 class ROUGHPY_ALGEBRA_EXPORT ShuffleTensorBundle : public AlgebraBundleBase<ShuffleTensorBundleInterface> {
     using base_t = AlgebraBundleBase<ShuffleTensorBundleInterface>;

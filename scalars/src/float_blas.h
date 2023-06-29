@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_SCALARS_SRC_FLOAT_BLAS_H
 #define ROUGHPY_SCALARS_SRC_FLOAT_BLAS_H
 
-#include "scalar_blas.h"
+#include "scalars/scalar_blas.h"
 
 namespace rpy {
 namespace scalars {

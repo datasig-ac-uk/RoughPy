@@ -29,14 +29,14 @@
 // Created by user on 26/02/23.
 //
 
-#include "scalar_type.h"
-
-#include "scalar.h"
-#include "scalar_pointer.h"
+#include "scalars/scalar_type.h"
 
 #include <mutex>
 #include <ostream>
 #include <unordered_map>
+
+#include "scalars/scalar.h"
+#include "scalars/scalar_pointer.h"
 
 #include "RationalType.h"
 #include "b_float_16_type.h"

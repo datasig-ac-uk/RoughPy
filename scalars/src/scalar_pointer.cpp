@@ -29,14 +29,13 @@
 // Created by user on 26/02/23.
 //
 
-#include "scalar_pointer.h"
+#include "scalars/scalar_pointer.h"
 
 #include <roughpy/core/alloc.h>
 
-#include <stdexcept>
 
-#include "scalar.h"
-#include "scalar_type.h"
+#include "scalars/scalar.h"
+#include "scalars/scalar_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;

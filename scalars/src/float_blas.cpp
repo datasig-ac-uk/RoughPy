@@ -32,12 +32,12 @@
 #include "float_blas.h"
 #include "scalar_blas_defs.h"
 
-#include "owned_scalar_array.h"
-#include "scalar.h"
-#include "scalar_array.h"
-#include "scalar_matrix.h"
-#include "scalar_pointer.h"
-#include "scalar_type.h"
+#include "scalars/owned_scalar_array.h"
+#include "scalars/scalar.h"
+#include "scalars/scalar_array.h"
+#include "scalars/scalar_matrix.h"
+#include "scalars/scalar_pointer.h"
+#include "scalars/scalar_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;

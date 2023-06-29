@@ -32,15 +32,16 @@
 #ifndef ROUGHPY_SCALARS_SRC_STANDARD_SCALAR_TYPE_H
 #define ROUGHPY_SCALARS_SRC_STANDARD_SCALAR_TYPE_H
 
-#include "scalar.h"
-#include "scalar_type.h"
+#include "scalars/scalar.h"
 
 #include <limits>
 #include <ostream>
 #include <unordered_map>
 #include <utility>
 
-#include "random.h"
+#include "scalars/random.h"
+#include "scalars/scalar_type.h"
+
 #include "standard_random_generator.h"
 
 namespace rpy {

@@ -29,9 +29,27 @@
 #define ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
 
 #include "roughpy_algebra_export.h"
+#include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
 #include <memory>
+
+#if defined(RPY_PLATFORM_WINDOWS)
+#ifdef RoughPy_Algebra_EXPORTS
+#  define RPY_ALGEBRA_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
+    extern template TYPE TMPL<__VA_ARGS__>
+#  define RPY_ALGEBRA_INSTANTIATE_TEMPLATE(TYPE, TMPL, ...) \
+    template TYPE ROUGHPY_ALGEBRA_EXPORT TMPL<__VA_ARGS__>
+#else
+#define RPY_ALGEBRA_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
+    template TYPE ROUGHPY_ALGEBRA_EXPORT TMPL<__VA_ARGS__>
+#endif
+#else
+#define RPY_ALGEBRA_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
+    extern template TYPE ROUGHPY_ALGEBRA_EXPORT TMPL<__VA_ARGS__>
+#define RPY_ALGEBRA_INSTANTIATE_TEMPLATE(TYPE, TMPL, ...) \
+    template TYPE TMPL<__VA_ARGS__>
+#endif
 
 
 namespace rpy {

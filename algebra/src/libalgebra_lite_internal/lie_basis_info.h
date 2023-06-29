@@ -32,11 +32,11 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LIE_BASIS_INFO_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LIE_BASIS_INFO_H
 
-#include "basis.h"
-#include "basis_impl.h"
-#include "basis_info.h"
+#include "algebra/basis.h"
+#include "algebra/basis_impl.h"
+#include "algebra/basis_info.h"
 
-#include "lie_basis.h"
+#include "algebra/lie_basis.h"
 
 #include <libalgebra_lite/hall_set.h>
 

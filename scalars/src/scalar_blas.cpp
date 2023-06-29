@@ -29,12 +29,12 @@
 // Created by user on 18/04/23.
 //
 
-#include "scalar_blas.h"
+#include "scalars/scalar_blas.h"
 
-#include "owned_scalar_array.h"
-#include "scalar.h"
-#include "scalar_array.h"
-#include "scalar_type.h"
+#include "scalars/owned_scalar_array.h"
+#include "scalars/scalar.h"
+#include "scalars/scalar_array.h"
+#include "scalars/scalar_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;

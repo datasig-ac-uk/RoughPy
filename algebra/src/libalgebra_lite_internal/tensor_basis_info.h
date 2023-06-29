@@ -32,10 +32,10 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_BASIS_INFO_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_BASIS_INFO_H
 
-#include "basis.h"
-#include "basis_impl.h"
-#include "basis_info.h"
-#include "tensor_basis.h"
+#include "algebra/basis.h"
+#include "algebra/basis_impl.h"
+#include "algebra/basis_info.h"
+#include "algebra/tensor_basis.h"
 
 #include <libalgebra_lite/tensor_basis.h>
 

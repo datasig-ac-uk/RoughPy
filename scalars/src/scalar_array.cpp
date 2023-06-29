@@ -29,9 +29,8 @@
 // Created by user on 28/02/23.
 //
 
-#include "scalar_array.h"
-
-#include "scalar_type.h"
+#include "scalars/scalar_array.h"
+#include "scalars/scalar_type.h"
 
 #include <roughpy/core/alloc.h>
 

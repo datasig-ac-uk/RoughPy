@@ -29,11 +29,11 @@
 // Created by user on 03/03/23.
 //
 
-#include "algebra_base.h"
+#include "algebra/algebra_base.h"
 
 #include <ostream>
 
-#include "context.h"
+#include "algebra/context.h"
 
 using namespace rpy;
 using namespace rpy::algebra;

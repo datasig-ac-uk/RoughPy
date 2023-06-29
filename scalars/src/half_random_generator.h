@@ -32,9 +32,9 @@
 #ifndef ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
 #define ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
 
-#include "random.h"
-#include "scalar.h"
-#include "scalar_type.h"
+#include "scalars/random.h"
+#include "scalars/scalar.h"
+#include "scalars/scalar_type.h"
 #include "random_impl.h"
 
 #include "standard_random_generator.h"
@@ -45,8 +45,6 @@
 #include <sstream>
 
 #include <pcg_random.hpp>
-#include <string>
-#include <string_view>
 
 namespace rpy {
 namespace scalars {

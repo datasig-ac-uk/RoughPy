@@ -28,7 +28,7 @@
 //
 // Created by user on 02/03/23.
 //
-#include "basis.h"
+#include "algebra/basis.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
