@@ -29,7 +29,7 @@
 // Created by user on 10/03/23.
 //
 
-#include "streams/dyadic_caching_layer.h"
+#include <roughpy/streams/dyadic_caching_layer.h>
 
 using namespace rpy;
 using namespace rpy::streams;

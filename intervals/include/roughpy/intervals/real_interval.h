@@ -36,7 +36,7 @@
 
 namespace rpy { namespace intervals {
 
-class ROUGHPY_INTERVALS_EXPORT RealInterval : public Interval {
+class RPY_EXPORT RealInterval : public Interval {
     param_t m_inf = 0.0;
     param_t m_sup = 1.0;
 

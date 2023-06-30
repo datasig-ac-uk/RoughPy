@@ -29,7 +29,7 @@
 // Created by user on 02/03/23.
 //
 
-#include "intervals/interval.h"
+#include <roughpy/intervals/interval.h>
 #include <ostream>
 
 using namespace rpy;

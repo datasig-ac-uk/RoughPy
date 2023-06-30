@@ -48,7 +48,7 @@ enum class MatrixLayout {
     FStype
 };
 
-class ROUGHPY_SCALARS_EXPORT ScalarMatrix
+class RPY_EXPORT ScalarMatrix
     : public scalars::ScalarArray {
 
     MatrixStorage m_storage = MatrixStorage::FullMatrix;

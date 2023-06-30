@@ -29,13 +29,13 @@
 #define ROUGHPY_SCALARS_RANDOM_H_
 
 #include "owned_scalar_array.h"
-#include "roughpy/core/helpers.h"
+#include <roughpy/core/helpers.h>
 #include "scalar_type.h"
 
 namespace rpy {
 namespace scalars {
 
-class ROUGHPY_SCALARS_EXPORT RandomGenerator {
+class RPY_EXPORT RandomGenerator {
 protected:
     const ScalarType *p_type;
 

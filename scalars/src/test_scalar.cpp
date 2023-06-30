@@ -31,8 +31,8 @@
 
 #include <gtest/gtest.h>
 
-#include "scalars/scalar.h"
-#include "scalars/scalar_type.h"
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_type.h>
 
 #include <roughpy/platform/serialization.h>
 #include <sstream>

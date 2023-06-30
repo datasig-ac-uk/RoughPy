@@ -34,7 +34,7 @@
 
 namespace rpy { namespace scalars {
 
-class ROUGHPY_SCALARS_EXPORT ScalarStream {
+class RPY_EXPORT ScalarStream {
     std::vector<const void *> m_stream;
     //    boost::container::small_vector<dimn_t, 1> m_elts_per_row;
     std::vector<dimn_t> m_elts_per_row;

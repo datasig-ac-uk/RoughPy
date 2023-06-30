@@ -36,7 +36,7 @@
 
 namespace rpy { namespace scalars {
 
-class ROUGHPY_SCALARS_EXPORT OwnedScalarArray : public ScalarArray {
+class RPY_EXPORT OwnedScalarArray : public ScalarArray {
 public:
     OwnedScalarArray() = default;
 

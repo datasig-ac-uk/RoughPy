@@ -38,7 +38,7 @@
 namespace rpy {
 namespace scalars {
 
-class ROUGHPY_SCALARS_EXPORT KeyScalarArray : public ScalarArray {
+class RPY_EXPORT KeyScalarArray : public ScalarArray {
 
     static constexpr uint32_t keys_owning_flag = 1 << subtype_flag_offset;
 

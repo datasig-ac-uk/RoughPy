@@ -29,7 +29,7 @@
 // Created by user on 24/05/23.
 //
 
-#include "streams/schema.h"
+#include <roughpy/streams/schema.h>
 #include <roughpy/core/macros.h>
 
 #include <algorithm>

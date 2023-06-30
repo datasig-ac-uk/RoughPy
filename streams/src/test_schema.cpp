@@ -29,7 +29,7 @@
 // Created by user on 25/05/23.
 //
 
-#include "streams/schema.h"
+#include <roughpy/streams/schema.h>
 #include <gtest/gtest.h>
 
 #include <sstream>

@@ -38,7 +38,7 @@
 namespace rpy {
 namespace streams {
 
-class ROUGHPY_STREAMS_EXPORT BrownianStream : public DynamicallyConstructedStream {
+class RPY_EXPORT BrownianStream : public DynamicallyConstructedStream {
     std::unique_ptr<scalars::RandomGenerator> p_generator;
 
     RPY_NO_DISCARD

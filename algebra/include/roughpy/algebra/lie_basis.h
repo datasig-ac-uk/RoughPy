@@ -33,14 +33,14 @@
 namespace rpy {
 namespace algebra {
 
-class ROUGHPY_ALGEBRA_EXPORT LieBasisInterface
+class RPY_EXPORT LieBasisInterface
     : public make_basis_interface<LieBasisInterface, rpy::key_type,
                                   OrderedBasisInterface,
                                   WordLikeBasisInterface>
 {
 };
 
-RPY_ALGEBRA_EXPORT_TEMPLATE(class, Basis, LieBasisInterface);
+RPY_EXPORT_TEMPLATE(class, Basis, LieBasisInterface);
 
 
 using LieBasis = Basis<LieBasisInterface>;

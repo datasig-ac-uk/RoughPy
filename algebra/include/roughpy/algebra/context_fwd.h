@@ -29,10 +29,11 @@
 #define ROUGHPY_ALGEBRA_CONTEXT_FWD_H_
 
 #include "algebra_fwd.h"
-#include <stdexcept>
+
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
 #include <roughpy/core/slice.h>
-#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #define RPY_MAKE_VTYPE_SWITCH(VTYPE)                            \
     switch (VTYPE) {                                            \
@@ -76,16 +77,16 @@ struct BasicContextSpec {
 };
 
 
-RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT
+RPY_NO_DISCARD RPY_EXPORT
 BasicContextSpec get_context_spec(const context_pointer & ctx);
 
-RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT
+RPY_NO_DISCARD RPY_EXPORT
 context_pointer from_context_spec(const BasicContextSpec& spec);
 
-RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT
+RPY_NO_DISCARD RPY_EXPORT
 std::vector<byte> alg_to_raw_bytes(context_pointer ctx, AlgebraType atype, RawUnspecifiedAlgebraType alg);
 
-RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT
+RPY_NO_DISCARD RPY_EXPORT
 UnspecifiedAlgebraType alg_from_raw_bytes(context_pointer ctx, AlgebraType atype, Slice<byte> raw_data);
 
 

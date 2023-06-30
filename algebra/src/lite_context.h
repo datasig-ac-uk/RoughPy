@@ -39,18 +39,18 @@
 #include <roughpy/scalars/scalar_stream.h>
 #include <roughpy/scalars/key_scalar_array.h>
 
-#include "algebra/algebra_base.h"
-#include "algebra/algebra_impl.h"
-#include "algebra/algebra_info.h"
-#include "algebra/algebra_iterator.h"
-#include "algebra/algebra_iterator_impl.h"
-#include "algebra/basis.h"
-#include "algebra/basis_impl.h"
-#include "algebra/context.h"
-#include "algebra/free_tensor.h"
-#include "algebra/free_tensor_impl.h"
-#include "algebra/lie.h"
-#include "algebra/shuffle_tensor.h"
+#include <roughpy/algebra/algebra_base.h>
+#include <roughpy/algebra/algebra_impl.h>
+#include <roughpy/algebra/algebra_info.h>
+#include <roughpy/algebra/algebra_iterator.h>
+#include <roughpy/algebra/algebra_iterator_impl.h>
+#include <roughpy/algebra/basis.h>
+#include <roughpy/algebra/basis_impl.h>
+#include <roughpy/algebra/context.h>
+#include <roughpy/algebra/free_tensor.h>
+#include <roughpy/algebra/free_tensor_impl.h>
+#include <roughpy/algebra/lie.h>
+#include <roughpy/algebra/shuffle_tensor.h>
 
 #include "libalgebra_lite_internal/dense_vector_iterator.h"
 #include "libalgebra_lite_internal/free_tensor_info.h"

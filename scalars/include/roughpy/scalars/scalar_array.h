@@ -28,10 +28,8 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 
-#include "roughpy_scalars_export.h"
 #include "scalars_fwd.h"
 
-#include <cassert>
 
 #include "scalar_pointer.h"
 #include "scalar_type.h"
@@ -41,7 +39,7 @@
 namespace rpy {
 namespace scalars {
 
-class ROUGHPY_SCALARS_EXPORT ScalarArray : public ScalarPointer {
+class RPY_EXPORT ScalarArray : public ScalarPointer {
 
 protected:
     dimn_t m_size = 0;

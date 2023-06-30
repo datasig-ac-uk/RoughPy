@@ -29,11 +29,11 @@
 // Created by user on 02/03/23.
 //
 
-#include "scalars/key_scalar_array.h"
+#include <roughpy/scalars/key_scalar_array.h>
 
-#include "scalars/owned_scalar_array.h"
-#include "scalars/scalar.h"
-#include "scalars/scalar_type.h"
+#include <roughpy/scalars/owned_scalar_array.h>
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_type.h>
 
 using namespace rpy;
 using namespace rpy::scalars;

@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_VECTOR_TYPE_HELPER_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_VECTOR_TYPE_HELPER_H
 
-#include "algebra/algebra_fwd.h"
+#include <roughpy/algebra/algebra_fwd.h>
 
 #include <libalgebra_lite/sparse_vector.h>
 #include <libalgebra_lite/dense_vector.h>

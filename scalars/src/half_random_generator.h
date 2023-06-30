@@ -32,9 +32,9 @@
 #ifndef ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
 #define ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
 
-#include "scalars/random.h"
-#include "scalars/scalar.h"
-#include "scalars/scalar_type.h"
+#include <roughpy/scalars/random.h>
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_type.h>
 #include "random_impl.h"
 
 #include "standard_random_generator.h"

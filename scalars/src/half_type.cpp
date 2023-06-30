@@ -30,7 +30,7 @@
 //
 
 #include "half_type.h"
-#include "scalars/scalar_type.h"
+#include <roughpy/scalars/scalar_type.h>
 
 using namespace rpy;
 using namespace rpy::scalars;

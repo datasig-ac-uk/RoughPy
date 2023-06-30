@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LIE_INFO_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LIE_INFO_H
 
-#include "algebra/algebra_info.h"
+#include <roughpy/algebra/algebra_info.h>
 #include "lie_basis_info.h"
 
 #include <roughpy/core/traits.h>

@@ -31,7 +31,7 @@
 
 #include <gtest/gtest.h>
 
-#include "scalars/key_scalar_array.h"
+#include <roughpy/scalars/key_scalar_array.h>
 
 using namespace rpy;
 using namespace rpy::scalars;

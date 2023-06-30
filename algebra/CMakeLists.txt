@@ -13,7 +13,7 @@ if (NOT TARGET Libalgebra_lite::Libalgebra_lite)
     find_package(Libalgebra_Lite CONFIG REQUIRED)
 endif ()
 
-add_roughpy_lib(Algebra SHARED
+add_roughpy_component(Algebra
     SOURCES
         src/basis.cpp
         src/algebra_base.cpp
@@ -44,11 +44,13 @@ add_roughpy_lib(Algebra SHARED
     PUBLIC_HEADERS
         include/roughpy/algebra/algebra_fwd.h
         include/roughpy/algebra/algebra_base.h
+        include/roughpy/algebra/algebra_base_impl.h
         include/roughpy/algebra/algebra_impl.h
         include/roughpy/algebra/algebra_info.h
         include/roughpy/algebra/algebra_iterator.h
         include/roughpy/algebra/algebra_iterator_impl.h
         include/roughpy/algebra/algebra_bundle.h
+        include/roughpy/algebra/algebra_bundle_base_impl.h
         include/roughpy/algebra/algebra_bundle_impl.h
         include/roughpy/algebra/linear_operator.h
         include/roughpy/algebra/basis.h

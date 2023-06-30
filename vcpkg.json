@@ -58,5 +58,8 @@
   }, {
     "name" : "boost-log",
     "version>=" : "1.82.0#1"
+  }, {
+    "name" : "boost-smart-ptr",
+    "version>=" : "1.82.0#2"
   } ]
 }

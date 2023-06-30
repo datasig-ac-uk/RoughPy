@@ -30,7 +30,7 @@
 //
 
 #include "float_blas.h"
-#include "scalars/scalar_type.h"
+#include <roughpy/scalars/scalar_type.h>
 #include <gtest/gtest.h>
 
 #include <vector>

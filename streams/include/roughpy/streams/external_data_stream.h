@@ -14,7 +14,7 @@
 namespace rpy { namespace streams {
 
 
-class ROUGHPY_STREAMS_EXPORT ExternalDataStreamSource {
+class RPY_EXPORT ExternalDataStreamSource {
 
 public:
 
@@ -26,7 +26,7 @@ public:
 
 class ExternalDataStreamConstructor;
 
-class ROUGHPY_STREAMS_EXPORT ExternalDataSourceFactory {
+class RPY_EXPORT ExternalDataSourceFactory {
 
 public:
 
@@ -49,7 +49,7 @@ public:
 
 };
 
-class ROUGHPY_STREAMS_EXPORT ExternalDataStreamConstructor {
+class RPY_EXPORT ExternalDataStreamConstructor {
     const ExternalDataSourceFactory* p_factory = nullptr;
     void* p_payload = nullptr;
 
@@ -87,7 +87,7 @@ public:
 
 
 
-class ROUGHPY_STREAMS_EXPORT ExternalDataStream : public DyadicCachingLayer {
+class RPY_EXPORT ExternalDataStream : public DyadicCachingLayer {
     std::unique_ptr<ExternalDataStreamSource> p_source;
 
 public:

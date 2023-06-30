@@ -19,7 +19,7 @@ struct SingularValueDecomposition {
     ScalarMatrix VHermitian;
 };
 
-class ROUGHPY_SCALARS_EXPORT BlasInterface {
+class RPY_EXPORT BlasInterface {
     const ScalarType* p_type;
 public:
 

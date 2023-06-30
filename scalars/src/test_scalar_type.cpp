@@ -30,8 +30,8 @@
 //
 
 #include "ScalarTests.h"
-#include "scalars/scalar.h"
-#include "scalars/scalar_pointer.h"
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_pointer.h>
 
 #include <vector>
 

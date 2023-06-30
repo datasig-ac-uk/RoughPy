@@ -31,7 +31,7 @@
 
 #include <gtest/gtest.h>
 
-#include "scalars/scalar_matrix.h"
+#include <roughpy/scalars/scalar_matrix.h>
 
 #include <sstream>
 

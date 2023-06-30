@@ -28,7 +28,6 @@
 #ifndef ROUGHPY_INTERVALS_INTERVAL_H_
 #define ROUGHPY_INTERVALS_INTERVAL_H_
 
-#include "roughpy_intervals_export.h"
 #include <roughpy/core/types.h>
 
 #include <iosfwd>
@@ -44,7 +43,7 @@ enum class IntervalType {
 };
 
 
-class ROUGHPY_INTERVALS_EXPORT Interval {
+class RPY_EXPORT Interval {
 protected:
     IntervalType m_interval_type = IntervalType::Clopen;
 
@@ -87,7 +86,7 @@ public:
 };
 
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 std::ostream& operator<<(std::ostream& os, const Interval& interval);
 
 

@@ -28,7 +28,6 @@
 #ifndef ROUGHPY_INTERVALS_DYADIC_H_
 #define ROUGHPY_INTERVALS_DYADIC_H_
 
-#include "roughpy_intervals_export.h"
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
@@ -40,7 +39,7 @@
 namespace rpy { namespace intervals {
 
 
-class ROUGHPY_INTERVALS_EXPORT Dyadic {
+class RPY_EXPORT Dyadic {
 public:
     using multiplier_t = dyadic_multiplier_t;
     using power_t = dyadic_depth_t;
@@ -96,25 +95,25 @@ private:
 
 };
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 bool operator<(const Dyadic& lhs, const Dyadic& rhs);
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 bool operator<=(const Dyadic& lhs, const Dyadic& rhs);
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 bool operator>(const Dyadic& lhs, const Dyadic& rhs);
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 bool operator>=(const Dyadic& lhs, const Dyadic& rhs);
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 std::ostream& operator<<(std::ostream& os, const Dyadic& arg);
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 bool dyadic_equals(const Dyadic& lhs, const Dyadic& rhs);
 
-ROUGHPY_INTERVALS_EXPORT
+RPY_EXPORT
 bool rational_equals(const Dyadic& lhs, const Dyadic& rhs);
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Dyadic) {

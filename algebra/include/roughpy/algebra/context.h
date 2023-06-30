@@ -41,14 +41,14 @@
 #include <roughpy/scalars/scalar_type.h>
 
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
-#include "lie_basis.h"
-#include "tensor_basis.h"
 #include "free_tensor.h"
 #include "lie.h"
+#include "lie_basis.h"
 #include "shuffle_tensor.h"
+#include "tensor_basis.h"
 
 namespace rpy {
 namespace algebra {
@@ -104,15 +104,13 @@ protected:
     explicit Context(
         deg_t width, deg_t depth,
         const scalars::ScalarType *ctype,
-        string&& context_backend,
+        string &&context_backend,
         const dimn_t *lie_sizes = nullptr,
         const dimn_t *tensor_sizes = nullptr)
         : ContextBase(width, depth, lie_sizes, tensor_sizes),
           p_ctype(ctype),
-          m_ctx_backend(std::move(context_backend))
-    {
+          m_ctx_backend(std::move(context_backend)) {
     }
-
 
 public:
     RPY_NO_DISCARD
@@ -152,7 +150,7 @@ public:
     virtual Lie construct_lie(const VectorConstructionData &arg) const = 0;
 
     RPY_NO_DISCARD
-    virtual UnspecifiedAlgebraType construct(AlgebraType type, const VectorConstructionData& data) const = 0;
+    virtual UnspecifiedAlgebraType construct(AlgebraType type, const VectorConstructionData &data) const = 0;
 
     RPY_NO_DISCARD
     FreeTensor zero_free_tensor(VectorType vtype) const;
@@ -178,7 +176,7 @@ public:
     RPY_NO_DISCARD
     virtual Lie cbh(const std::vector<Lie> &lies, VectorType vtype) const;
     RPY_NO_DISCARD
-    virtual Lie cbh(const Lie& left, const Lie& right, VectorType vtype) const;
+    virtual Lie cbh(const Lie &left, const Lie &right, VectorType vtype) const;
 
     RPY_NO_DISCARD
     virtual FreeTensor to_signature(const Lie &log_signature) const;
@@ -191,14 +189,12 @@ public:
     virtual FreeTensor sig_derivative(const std::vector<DerivativeComputeInfo> &info,
                                       VectorType vtype) const = 0;
 
-
     // Functions to aid serialization
     RPY_NO_DISCARD
     virtual std::vector<byte> to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const;
 
     RPY_NO_DISCARD
     virtual UnspecifiedAlgebraType from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const;
-
 };
 
 RPY_EXPORT
@@ -208,9 +204,7 @@ RPY_EXPORT
 context_pointer get_context(deg_t width, deg_t depth, const scalars::ScalarType *ctype,
                             const std::vector<std::pair<string, string>> &preferences = {});
 
-
-
-inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2) {
+inline void check_contexts_compatible(const Context &ctx1, const Context &ctx2) {
     if (&ctx1 == &ctx2) {
         // Early exit if both reference the same object.
         return;
@@ -220,8 +214,8 @@ inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2) 
         throw std::invalid_argument("contexts have incompatible width");
     }
 
-    const auto* ctype1 = ctx1.ctype();
-    const auto* ctype2 = ctx2.ctype();
+    const auto *ctype1 = ctx1.ctype();
+    const auto *ctype2 = ctx2.ctype();
     if (ctype1 == ctype2) {
         // Both are OK if the ctypes are identical
         return;
@@ -230,7 +224,6 @@ inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2) 
     // TODO: Check that ctypes are actually same type but potentially different locations
     // TODO: Alternatively, check that ctype1 is convertible to ctype2
 }
-
 
 class RPY_EXPORT ContextMaker {
 public:
@@ -260,12 +253,10 @@ public:
     }
 };
 
-
 #define RPY_ALGEBRA_DECLARE_CTX_MAKER(MAKER) \
     static RegisterMakerHelper<MAKER> rpy_static_algebra_maker_decl_##MAKER = RegisterMakerHelper<MAKER>()
 
-
-inline bool check_contexts_algebra_compatible(const Context& base, const Context& other) noexcept {
+inline bool check_contexts_algebra_compatible(const Context &base, const Context &other) noexcept {
     if (base.width() != other.width()) {
         return false;
     }
@@ -276,8 +267,6 @@ inline bool check_contexts_algebra_compatible(const Context& base, const Context
 
     return true;
 }
-
-
 
 }// namespace algebra
 }// namespace rpy

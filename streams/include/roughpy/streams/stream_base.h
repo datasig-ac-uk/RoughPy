@@ -29,7 +29,6 @@
 #define ROUGHPY_STREAMS_STREAM_BASE_H_
 
 #include "roughpy/intervals/dyadic_interval.h"
-#include "roughpy_streams_export.h"
 #include <roughpy/algebra/context.h>
 #include <roughpy/core/types.h>
 #include <roughpy/intervals/real_interval.h>
@@ -75,7 +74,7 @@ struct StreamMetadata {
  * from log signatures, rather than using the data to compute these
  * independently.)
  */
-class ROUGHPY_STREAMS_EXPORT StreamInterface {
+class RPY_EXPORT StreamInterface {
     StreamMetadata m_metadata;
     std::shared_ptr<StreamSchema> p_schema;
 
@@ -154,7 +153,7 @@ public:
 /**
  * @brief Subclass of `StreamInterface` for solutions of controlled differential equations.
  */
-class ROUGHPY_STREAMS_EXPORT SolutionStreamInterface : public StreamInterface {
+class RPY_EXPORT SolutionStreamInterface : public StreamInterface {
 public:
     using StreamInterface::StreamInterface;
     virtual algebra::Lie base_point() const = 0;

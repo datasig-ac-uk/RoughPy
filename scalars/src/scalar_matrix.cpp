@@ -29,11 +29,11 @@
 // Created by user on 12/04/23.
 //
 
-#include "scalars/scalar_matrix.h"
+#include <roughpy/scalars/scalar_matrix.h>
 
-#include "scalars/scalar.h"
-#include "scalars/scalar_blas.h"
-#include "scalars/scalar_type.h"
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_blas.h>
+#include <roughpy/scalars/scalar_type.h>
 
 rpy::scalars::ScalarMatrix::ScalarMatrix() : ScalarArray() {
 }

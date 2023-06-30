@@ -29,7 +29,7 @@
 // Created by user on 05/03/23.
 //
 
-#include "algebra/context.h"
+#include <roughpy/algebra/context.h>
 
 #include "hall_set_size.h"
 

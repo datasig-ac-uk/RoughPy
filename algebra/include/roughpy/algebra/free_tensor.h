@@ -36,9 +36,9 @@
 namespace rpy {
 namespace algebra {
 
-RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraInterface, FreeTensor, TensorBasis);
+RPY_EXPORT_TEMPLATE(class, AlgebraInterface, FreeTensor, TensorBasis);
 
-class ROUGHPY_ALGEBRA_EXPORT FreeTensorInterface
+class RPY_EXPORT FreeTensorInterface
     : public AlgebraInterface<FreeTensor, TensorBasis> {
 public:
     using algebra_interface_t = AlgebraInterface<FreeTensor, TensorBasis>;
@@ -60,7 +60,7 @@ template <typename, template <typename> class>
 class FreeTensorImplementation;
 
 
-class ROUGHPY_ALGEBRA_EXPORT FreeTensor
+class RPY_EXPORT FreeTensor
     : public AlgebraBase<FreeTensorInterface, FreeTensorImplementation> {
     using base_t = AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
 
@@ -82,14 +82,14 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraBase, FreeTensorInterface, FreeTensorImplementation);
+RPY_EXPORT_TEMPLATE(class, AlgebraBase, FreeTensorInterface, FreeTensorImplementation);
 RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensor) {
     RPY_SERIAL_SERIALIZE_BASE(base_t);
 }
 
-RPY_ALGEBRA_EXPORT_TEMPLATE(class, BundleInterface, FreeTensorBundle, FreeTensor, FreeTensor);
+RPY_EXPORT_TEMPLATE(class, BundleInterface, FreeTensorBundle, FreeTensor, FreeTensor);
 
-class ROUGHPY_ALGEBRA_EXPORT FreeTensorBundleInterface
+class RPY_EXPORT FreeTensorBundleInterface
     : public BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor> {
 public:
     using algebra_interface_t = BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
@@ -112,9 +112,9 @@ public:
 template <typename, template <typename> class>
 class FreeTensorBundleImplementation;
 
-RPY_ALGEBRA_EXPORT_TEMPLATE(class, AlgebraBundleBase, FreeTensorBundleInterface, FreeTensorBundleImplementation);
+RPY_EXPORT_TEMPLATE(class, AlgebraBundleBase, FreeTensorBundleInterface, FreeTensorBundleImplementation);
 
-class ROUGHPY_ALGEBRA_EXPORT FreeTensorBundle
+class RPY_EXPORT FreeTensorBundle
     : public AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation>
 {
     using base_t = AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation>;

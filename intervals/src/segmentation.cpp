@@ -29,8 +29,8 @@
 // Created by user on 02/03/23.
 //
 
-#include "intervals/segmentation.h"
-#include "intervals/dyadic_interval.h"
+#include <roughpy/intervals/segmentation.h>
+#include <roughpy/intervals/dyadic_interval.h>
 
 #include "dyadic_searcher.h"
 

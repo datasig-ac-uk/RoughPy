@@ -9,7 +9,7 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 
-add_roughpy_lib(Streams STATIC
+add_roughpy_component(Streams
     SOURCES
         src/stream_base.cpp
         src/stream.cpp

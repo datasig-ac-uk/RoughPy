@@ -55,13 +55,13 @@ function(_check_runtime_deps _out_var)
     set(_these_deps)
     foreach (_group IN LISTS ARGN)
         foreach (_dep IN LISTS _group)
-        if (NOT _dep MATCHES RoughPy)
-            if ("$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "SHARED_LIBRARY"
-                    OR "$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "MODULE_LIBRARY")
-                _check_runtime_component(${_dep} ${_this_dep})
-                message(STATUS "Runtime dependency added: ${_this_dep}")
-                list(APPEND _these_deps ${_this_dep})
-            endif ()
+            if (NOT _dep MATCHES RoughPy)
+                if ("$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "SHARED_LIBRARY"
+                        OR "$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "MODULE_LIBRARY")
+                    _check_runtime_component(${_dep} ${_this_dep})
+                    message(STATUS "Runtime dependency added: ${_this_dep}")
+                    list(APPEND _these_deps ${_this_dep})
+                endif ()
 
                 if (_dep MATCHES "MKL" AND DEFINED MKL_THREAD_LIB)
                     message(STATUS "Runtime dependency added: ${MKL_THREAD_LIB}")
@@ -141,10 +141,10 @@ function(add_roughpy_lib _name)
                 )
     else ()
         target_include_directories(${_real_name} INTERFACE
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-            )
+                "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+                "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+                )
         target_sources(${_real_name} INTERFACE ${ARG_PUBLIC_HEADERS})
         target_link_libraries(${_real_name} INTERFACE ${ARG_PUBLIC_DEPS})
     endif ()
@@ -189,10 +189,10 @@ function(extend_roughpy_lib _name)
     if (ARG_SOURCES)
         if (_lib_type STREQUAL "INTERFACE_LIBRARY")
             target_sources(${_real_name} INTERFACE ${ARG_SOURCES})
-        else ()
+        else()
             target_sources(${_real_name} PRIVATE ${ARG_SOURCES})
-        endif ()
-    endif ()
+        endif()
+    endif()
 
 endfunction()
 
@@ -210,10 +210,13 @@ function(add_roughpy_algebra _name)
     set(_basis_name "${_name}Basis")
     if (ARG_BASIS_NAME)
         set(_basis_name "${ARG_BASIS_NAME}")
-    endif ()
+    endif()
 
     set(_interface_name "${_name}Interface")
     set(_impl_name "${_name}Implementation")
+
+
+
 
 
 endfunction()
@@ -255,21 +258,6 @@ function(add_roughpy_test _name)
         endif ()
 
     endforeach ()
-
-    target_link_libraries(${_tests_name} PRIVATE GTest::gtest_main)
-
-    foreach (_dep IN LISTS _deps)
-        if (NOT _dep MATCHES RoughPy)
-            target_link_libraries(${_tests_name} PRIVATE ${_dep})
-        else()
-            get_target_property(_dep_name ${_dep} NAME)
-            if (TARGET "${_dep_name}_impl")
-
-                target_link_libraries(${_tests_name} PRIVATE
-                    "${_dep_name}_impl")
-            endif()
-        endif()
-    endforeach()
 
     target_link_libraries(${_tests_name} PRIVATE ${_deps} GTest::gtest_main)
 

@@ -29,7 +29,7 @@
 // Created by user on 09/03/23.
 //
 
-#include "streams/stream_base.h"
+#include <roughpy/streams/stream_base.h>
 
 
 using namespace rpy;

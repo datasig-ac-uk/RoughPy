@@ -28,7 +28,6 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
 
-#include "roughpy_scalars_export.h"
 #include "scalars_fwd.h"
 
 #include <roughpy/core/slice.h>
@@ -57,7 +56,7 @@ struct RingCharacteristics {
     unsigned has_sqrt : 1;
 };
 
-class ROUGHPY_SCALARS_EXPORT ScalarType {
+class RPY_EXPORT ScalarType {
     ScalarTypeInfo m_info;
     RingCharacteristics m_characteristics RPY_UNUSED_VAR;
 
@@ -400,7 +399,7 @@ namespace dtl {
 
 #define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)               \
     template <>                                           \
-    struct ROUGHPY_SCALARS_EXPORT type_id_of_impl<TYPE> { \
+    struct RPY_EXPORT type_id_of_impl<TYPE> { \
         static const string &get_id() noexcept;           \
     }
 
@@ -432,7 +431,7 @@ struct type_id_of_impl<long>
 #undef ROUGHPY_MAKE_TYPE_ID_OF
 
 template <typename ScalarImpl>
-struct ROUGHPY_SCALARS_EXPORT scalar_type_holder {
+struct RPY_EXPORT scalar_type_holder {
     static const ScalarType *get_type() noexcept { return nullptr; }
 };
 
@@ -443,32 +442,32 @@ struct ROUGHPY_SCALARS_EXPORT scalar_type_holder {
 //struct scalar_type_holder<const ScalarImpl &> : scalar_type_holder<ScalarImpl> {};
 
 template <>
-struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<float> {
+struct RPY_EXPORT scalar_type_holder<float> {
     static const ScalarType *get_type() noexcept;
 };
 
 template <>
-struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<double> {
+struct RPY_EXPORT scalar_type_holder<double> {
     static const ScalarType *get_type() noexcept;
 };
 
 template <>
-struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_scalar_type> {
+struct RPY_EXPORT scalar_type_holder<rational_scalar_type> {
     static const ScalarType *get_type() noexcept;
 };
 
 template <>
-struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_poly_scalar> {
+struct RPY_EXPORT scalar_type_holder<rational_poly_scalar> {
     static const ScalarType *get_type() noexcept;
 };
 
 template <>
-struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<half> {
+struct RPY_EXPORT scalar_type_holder<half> {
     static const ScalarType *get_type() noexcept;
 };
 
 template <>
-struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<bfloat16> {
+struct RPY_EXPORT scalar_type_holder<bfloat16> {
     static const ScalarType *get_type() noexcept;
 };
 
