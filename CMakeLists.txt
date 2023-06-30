@@ -290,9 +290,9 @@ foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
     get_target_property(_lib_deps ${_rpy_lib} RUNTIME_DEPENDENCIES)
     if (_lib_deps)
         list(APPEND _runtime_deps "${_lib_deps}")
-        #        install(FILES ${_lib_deps} DESTINATION roughpy)
-    endif ()
-endforeach ()
+#        install(FILES ${_lib_deps} DESTINATION roughpy)
+    endif()
+endforeach()
 install(FILES ${_runtime_deps} DESTINATION roughpy)
 
 #
