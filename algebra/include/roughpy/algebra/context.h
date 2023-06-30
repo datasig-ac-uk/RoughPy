@@ -201,8 +201,6 @@ public:
 
 };
 
-
-
 RPY_EXPORT
 base_context_pointer get_base_context(deg_t width, deg_t depth);
 
