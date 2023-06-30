@@ -44,11 +44,13 @@ add_roughpy_component(Algebra
     PUBLIC_HEADERS
         include/roughpy/algebra/algebra_fwd.h
         include/roughpy/algebra/algebra_base.h
+        include/roughpy/algebra/algebra_base_impl.h
         include/roughpy/algebra/algebra_impl.h
         include/roughpy/algebra/algebra_info.h
         include/roughpy/algebra/algebra_iterator.h
         include/roughpy/algebra/algebra_iterator_impl.h
         include/roughpy/algebra/algebra_bundle.h
+        include/roughpy/algebra/algebra_bundle_base_impl.h
         include/roughpy/algebra/algebra_bundle_impl.h
         include/roughpy/algebra/linear_operator.h
         include/roughpy/algebra/basis.h

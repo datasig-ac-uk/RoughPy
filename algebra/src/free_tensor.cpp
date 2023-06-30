@@ -36,6 +36,8 @@
 #include <roughpy/algebra/algebra_impl.h>
 #include <roughpy/algebra/algebra_bundle_impl.h>
 #include <roughpy/algebra/free_tensor_impl.h>
+#include <roughpy/algebra/algebra_base_impl.h>
+#include <roughpy/algebra/algebra_bundle_base_impl.h>
 
 using namespace rpy::algebra;
 
