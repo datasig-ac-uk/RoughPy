@@ -29,11 +29,10 @@
 #define ROUGHPY_ALGEBRA_CONTEXT_FWD_H_
 
 #include "algebra_fwd.h"
-
-#include <boost/smart_ptr/intrusive_ptr.hpp>
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <stdexcept>
 
 #include <roughpy/core/slice.h>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #define RPY_MAKE_VTYPE_SWITCH(VTYPE)                            \
     switch (VTYPE) {                                            \

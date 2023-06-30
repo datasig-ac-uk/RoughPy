@@ -233,6 +233,7 @@ inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2) 
     // TODO: Alternatively, check that ctype1 is convertible to ctype2
 }
 
+
 class RPY_EXPORT ContextMaker {
 public:
     using preference_list = std::vector<std::pair<string, string>>;
