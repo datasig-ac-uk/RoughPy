@@ -23,18 +23,18 @@ function(_check_and_set_libtype _out _shared _static _interface)
             message(FATAL_ERROR "Library cannot be both SHARED and STATIC or INTERFACE")
         endif ()
 
-        set(${_out} OBJECT PARENT_SCOPE)
+        set(${_out} SHARED PARENT_SCOPE)
 
     elseif (_static)
         if (_interface)
             message(FATAL_ERROR "Library cannot be both STATIC and INTERFACE")
         endif ()
 
-        set(${_out} OBJECT PARENT_SCOPE)
+        set(${_out} STATIC PARENT_SCOPE)
     elseif (_interface)
         set(${_out} INTERFACE PARENT_SCOPE)
     else ()
-        set(${_out} OBJECT PARENT_SCOPE)
+        set(${_out} SHARED PARENT_SCOPE)
     endif ()
 endfunction()
 
@@ -43,36 +43,34 @@ function(_check_runtime_component _library _out_var)
     if (_imported)
         get_target_property(_imported_loc ${_library} IMPORTED_LOCATION)
         set(${_out_var} ${_imported_loc} PARENT_SCOPE)
-    else()
+    else ()
         get_target_property(_lib_out_name ${_library} LIBRARY_OUTPUT_NAME)
         get_target_property(_lib_out_dir ${_library} LIBRARY_OUTPUT_DIRECTORY)
 
         set(${_out_var} "${_lib_out_dir}/${_lib_out_name}" PARENT_SCOPE)
-    endif()
+    endif ()
 endfunction()
 
-function(_check_runtime_deps _deps)
+function(_check_runtime_deps _out_var)
     set(_these_deps)
-    foreach (_dep IN LISTS _deps)
-        if (NOT _dep MATCHES RoughPy)
-            if ("$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "SHARED_LIBRARY"
-                    OR "$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "MODULE_LIBRARY")
-                _check_runtime_component(${_dep} ${_this_dep})
-                message(STATUS "Runtime dependency added: ${_this_dep}")
-                list(APPEND _these_deps ${_this_dep})
-            endif()
+    foreach (_group IN LISTS ARGN)
+        foreach (_dep IN LISTS _group)
+            if (NOT _dep MATCHES RoughPy)
+                if ("$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "SHARED_LIBRARY"
+                        OR "$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "MODULE_LIBRARY")
+                    _check_runtime_component(${_dep} ${_this_dep})
+                    message(STATUS "Runtime dependency added: ${_this_dep}")
+                    list(APPEND _these_deps ${_this_dep})
+                endif ()
 
-            if (_dep MATCHES "MKL" AND DEFINED MKL_THREAD_LIB)
-                message(STATUS "Runtime dependency added: ${MKL_THREAD_LIB}")
-                list(APPEND _these_deps "${MKL_THREAD_LIB}")
-            endif()
-        endif()
-    endforeach()
-    if (ROUGHPY_RUNTIME_DEPS)
-        set(ROUGHPY_RUNTIME_DEPS "${ROUGHPY_RUNTIME_DEPS};${_these_deps}" CACHE INTERNAL "")
-    else()
-        set(ROUGHPY_RUNTIME_DEPS "${_these_deps}" CACHE INTERNAL "")
-    endif()
+                if (_dep MATCHES "MKL" AND DEFINED MKL_THREAD_LIB)
+                    message(STATUS "Runtime dependency added: ${MKL_THREAD_LIB}")
+                    list(APPEND _these_deps "${MKL_THREAD_LIB}")
+                endif ()
+            endif ()
+        endforeach ()
+    endforeach ()
+    set(${_out_var} ${_these_deps} PARENT_SCOPE)
 endfunction()
 
 
@@ -191,13 +189,12 @@ function(extend_roughpy_lib _name)
     if (ARG_SOURCES)
         if (_lib_type STREQUAL "INTERFACE_LIBRARY")
             target_sources(${_real_name} INTERFACE ${ARG_SOURCES})
-        else()
+        else ()
             target_sources(${_real_name} PRIVATE ${ARG_SOURCES})
-        endif()
-    endif()
+        endif ()
+    endif ()
 
 endfunction()
-
 
 
 function(add_roughpy_algebra _name)
@@ -213,13 +210,10 @@ function(add_roughpy_algebra _name)
     set(_basis_name "${_name}Basis")
     if (ARG_BASIS_NAME)
         set(_basis_name "${ARG_BASIS_NAME}")
-    endif()
+    endif ()
 
     set(_interface_name "${_name}Interface")
     set(_impl_name "${_name}Implementation")
-
-
-
 
 
 endfunction()
@@ -238,7 +232,7 @@ function(add_roughpy_test _name)
 
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
     _get_component_name(_component_name ${_component})
-    set(_header_dir include/roughpy/${_component})
+    set(_header_dir include/roughpy)
 
     set(_tests_name RoughPy_test_${_component}_${_name})
     message(DEBUG "Adding test ${_tests_name}")
@@ -325,7 +319,7 @@ function(add_roughpy_test_helper NAME)
 
     if (NOT WIN32)
         target_compile_definitions(${_lib_name} PRIVATE RPY_BUILDING_LIBRARY=1)
-    endif()
+    endif ()
     target_compile_options(${_lib_name} PRIVATE ${ARGS_OPTS})
 endfunction()
 

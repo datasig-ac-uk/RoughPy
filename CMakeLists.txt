@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
-#list(APPEND VCPKG_INSTALL_OPTIONS "--no-print-usage")
+list(APPEND VPCKG_INSTALL_OPTIONS "--no-print-usage")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (EXISTS "VERSION.txt")
@@ -285,15 +285,7 @@ install(DIRECTORY roughpy
         PATTERN "*.pyi"
         PATTERN "src/*" EXCLUDE)
 
-set(_runtime_deps "")
-foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
-    get_target_property(_lib_deps ${_rpy_lib} RUNTIME_DEPENDENCIES)
-    if (_lib_deps)
-        list(APPEND _runtime_deps "{_lib_deps}")
-#        install(FILES ${_lib_deps} DESTINATION roughpy)
-    endif()
-endforeach()
-install(FILES ${_runtime_deps} DESTINATION roughpy)
+install(FILES ${ROUGHPY_RUNTIME_DEPS} DESTINATION roughpy)
 
 #
 #install(EXPORT RoughPy_EXPORTS
