@@ -255,3 +255,17 @@ std::vector<byte> Context::to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebra
 UnspecifiedAlgebraType Context::from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const {
     throw std::runtime_error("cannot load from raw bytes");
 }
+
+void rpy::algebra::intrusive_ptr_release(const rpy::algebra::Context *ptr) {
+    intrusive_ptr_release(static_cast<const boost::intrusive_ref_counter<ContextBase, boost::thread_safe_counter>*>(ptr));
+}
+void rpy::algebra::intrusive_ptr_release(const rpy::algebra::ContextBase *ptr) {
+    intrusive_ptr_release(static_cast<const boost::intrusive_ref_counter<ContextBase, boost::thread_safe_counter>*>(ptr));
+}
+
+void rpy::algebra::intrusive_ptr_add_ref(const rpy::algebra::Context *ptr) {
+    intrusive_ptr_add_ref(static_cast<const boost::intrusive_ref_counter<ContextBase, boost::thread_safe_counter> *>(ptr));
+}
+void rpy::algebra::intrusive_ptr_add_ref(const rpy::algebra::ContextBase *ptr) {
+    intrusive_ptr_add_ref(static_cast<const boost::intrusive_ref_counter<ContextBase, boost::thread_safe_counter> *>(ptr));
+}

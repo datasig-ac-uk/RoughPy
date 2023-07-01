@@ -89,6 +89,11 @@ std::vector<byte> alg_to_raw_bytes(context_pointer ctx, AlgebraType atype, RawUn
 RPY_NO_DISCARD RPY_EXPORT
 UnspecifiedAlgebraType alg_from_raw_bytes(context_pointer ctx, AlgebraType atype, Slice<byte> raw_data);
 
+void intrusive_ptr_release(const ContextBase* ptr);
+void intrusive_ptr_add_ref(const ContextBase* ptr);
+
+void intrusive_ptr_release(const Context* ptr);
+void intrusive_ptr_add_ref(const Context* ptr);
 
 }// namespace algebra
 }// namespace rpy
