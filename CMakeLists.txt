@@ -257,12 +257,6 @@ endif ()
 
 
 install(TARGETS
-        RoughPy_Core
-        RoughPy_Platform
-        RoughPy_Scalars
-        RoughPy_Intervals
-        RoughPy_Algebra
-        RoughPy_Streams
         RoughPy_PyModule
         EXPORT RoughPy_EXPORTS
         RUNTIME DESTINATION roughpy

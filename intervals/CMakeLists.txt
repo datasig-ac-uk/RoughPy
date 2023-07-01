@@ -27,7 +27,7 @@ add_roughpy_component(Intervals
             include/roughpy/intervals/dyadic_interval.h
             include/roughpy/intervals/real_interval.h
             include/roughpy/intervals/segmentation.h
-        PRIVATE_DEPS
+        NEEDS
             RoughPy::Core
             RoughPy::Platform
         )
@@ -46,4 +46,6 @@ add_roughpy_test(Intervals
             src/test_dyadic.cpp
             src/test_dyadic_intervals.cpp
             src/test_real_interval.cpp
-        LINK_COMPONENT)
+        NEEDS
+            RoughPy::Intervals
+        )

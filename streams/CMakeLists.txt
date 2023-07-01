@@ -38,14 +38,15 @@ add_roughpy_component(Streams
         include/roughpy/streams/piecewise_abelian_stream.h
         include/roughpy/streams/schema.h
         include/roughpy/streams/stream_construction_helper.h
-        PRIVATE_DEPS
+    PRIVATE_DEPS
+        SndFile::sndfile
+    NEEDS
         RoughPy::Core
         RoughPy::Platform
         RoughPy::Intervals
         RoughPy::Scalars
         RoughPy::Algebra
-        SndFile::sndfile
-        )
+    )
 
 
 
@@ -57,4 +58,6 @@ add_roughpy_test(Streams
             src/test_lie_increment_stream.cpp
             src/test_brownian_stream.cpp
             src/test_schema.cpp
-        LINK_COMPONENT)
+        NEEDS
+            RoughPy::Streams
+        )

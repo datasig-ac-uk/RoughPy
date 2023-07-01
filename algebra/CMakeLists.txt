@@ -66,12 +66,13 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/context.h
         include/roughpy/algebra/fallback_operations.h
-    PRIVATE_DEPS
-        RoughPy::Core
-        RoughPy::Scalars
     PUBLIC_DEPS
         Boost::boost
         Libalgebra_lite::Libalgebra_lite
+    NEEDS
+        RoughPy::Core
+        RoughPy::Platform
+        RoughPy::Scalars
     )
 
 
@@ -85,9 +86,10 @@ add_roughpy_test_helper(AlgebraMock STATIC
         )
 
 add_roughpy_test(algebra
-        SRC
+    SRC
         src/ContextFixture.cpp
         src/ContextFixture.h
         src/test_lie.cpp
-        LINK_COMPONENT
+    NEEDS
+        RoughPy::Algebra
         )

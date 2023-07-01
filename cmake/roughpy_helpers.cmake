@@ -74,9 +74,9 @@ function(_check_runtime_deps _out_var)
 endfunction()
 
 
+
 function(_split_rpy_deps _rpy_deps_var _nrpy_deps_var _deps_list)
     foreach (_dep IN LISTS ${_deps_list})
-        message(${_dep})
         if (_dep MATCHES "RoughPy")
             list(APPEND _rpy_deps ${_dep})
         else()
@@ -87,12 +87,52 @@ function(_split_rpy_deps _rpy_deps_var _nrpy_deps_var _deps_list)
     set(${_nrpy_deps_var} ${_nrpy_deps} PARENT_SCOPE)
 endfunction()
 
+
+function(target_link_components _target _visibility)
+    if (ARGC EQUAL 0)
+        message(FATAL_ERROR "Wrong number of arguments provided to target_link_components")
+    endif ()
+    if (NOT TARGET ${_target})
+        message(FATAL_ERROR "Target ${_target} does not exist")
+    endif ()
+
+
+    foreach (_component IN LISTS ARGN)
+
+        if (NOT _component MATCHES "^RoughPy")
+            set(_component "RoughPy_${_component}")
+        endif ()
+        if (NOT TARGET ${_component})
+            message(FATAL_ERROR "Component ${_component} is not a RoughPy component")
+        endif ()
+
+        get_target_property(_comp_type ${_component} TYPE)
+        if (NOT _comp_type STREQUAL "STATIC_LIBRARY")
+            target_link_libraries(${_target} ${_visibility} ${_component})
+        else ()
+            get_target_property(_include_dirs ${_component} INTERFACE_INCLUDE_DIRECTORIES)
+#            message("Including in ${_target}: ${_include_dirs}")
+            target_include_directories(${_target} ${_visibility} ${_include_dirs})
+
+            get_target_property(_link_libs ${_component} INTERFACE_LINK_LIBRARIES)
+#            message("Linking in ${_target}: ${_link_libs}")
+            target_link_libraries(${_target} ${_visibility} ${_link_libs})
+
+            target_link_libraries(${_target} PRIVATE ${_component})
+#                    $<LINK_LIBRARY:WHOLE_ARCHIVE,${_component}>)
+        endif ()
+    endforeach ()
+
+
+
+endfunction()
+
 function(add_roughpy_component _name)
     cmake_parse_arguments(
             ARG
             "STATIC;SHARED;INTERFACE"
             ""
-            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS;LINK_IF_AVAILABLE"
+            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS;NEEDS"
             ${ARGN}
     )
 
@@ -128,14 +168,13 @@ function(add_roughpy_component _name)
     message(STATUS "Adding ${_lib_type} library ${_alias_name} version ${PROJECT_VERSION}")
 
     if (ROUGHPY_LIBS)
-        set(ROUGHPY_LIBS "${ROUGHPY_LIBS};${_real_name}" CACHE INTERNAL "")
+        set(ROUGHPY_LIBS "${ROUGHPY_LIBS};${_real_name}" CACHE INTERNAL "" FORCE)
     else()
-        set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "")
+        set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "" FORCE)
     endif()
 
     _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps ARG_PUBLIC_DEPS)
     _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps ARG_PRIVATE_DEPS)
-
 
     set_target_properties(${_real_name} PROPERTIES
             EXPORT_NAME ${_name})
@@ -179,7 +218,6 @@ function(add_roughpy_component _name)
         set(_public PUBLIC)
     endif()
 
-
     target_include_directories(${_real_name} ${_public}
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
@@ -220,6 +258,9 @@ function(add_roughpy_component _name)
         set_target_properties(${_real_name} PROPERTIES
                 POSITION_INDEPENDENT_CODE ON)
     endif ()
+
+    target_link_components(${_real_name} ${_public} ${ARG_NEEDS})
+
 endfunction()
 
 
@@ -281,7 +322,7 @@ function(add_roughpy_test _name)
             test
             "LINK_COMPONENT"
             ""
-            "SRC;DEP;DEFN;COMPONENT_SRCS"
+            "SRC;DEP;DEFN;COMPONENT_SRCS;NEEDS"
             ${ARGN}
     )
 
@@ -290,7 +331,7 @@ function(add_roughpy_test _name)
     set(_header_dir include/roughpy)
 
     set(_tests_name RoughPy_test_${_component}_${_name})
-    message(DEBUG "Adding test ${_tests_name}")
+    message(STATUS "Adding test ${_tests_name}")
 
     add_executable(${_tests_name} ${test_SRC} ${test_COMPONENT_SRCS})
 
@@ -314,21 +355,12 @@ function(add_roughpy_test _name)
 
     target_link_libraries(${_tests_name} PRIVATE ${_deps} GTest::gtest_main)
 
-    if (test_LINK_COMPONENT)
-        string(CONCAT _component_name "RoughPy_" "${_component_name}")
-
-        if (NOT TARGET ${_component_name})
-            message(FATAL_ERROR "The target ${_component_name} does not exist")
-        endif ()
-        message(DEBUG "Linking component target ${_component_name}")
-        target_link_libraries(${_tests_name} PRIVATE ${_component_name})
-    endif ()
-
-
-    target_compile_definitions(${_tests_name} PRIVATE ${tests_DEFN})
+    target_compile_definitions(${_tests_name} PRIVATE ${test_DEFN})
     target_include_directories(${_tests_name} PRIVATE
             ${_header_dir}
             ${CMAKE_CURRENT_BINARY_DIR})
+
+    target_link_components(${_tests_name} PRIVATE ${test_NEEDS})
 
 
     gtest_discover_tests(${_tests_name})
