@@ -34,8 +34,6 @@
 #include <roughpy/platform/serialization.h>
 #include <roughpy/algebra/algebra_impl.h>
 #include <roughpy/algebra/algebra_bundle_impl.h>
-#include <roughpy/algebra/algebra_base_impl.h>
-#include <roughpy/algebra/algebra_bundle_base_impl.h>
 
 namespace rpy {
 namespace algebra {

@@ -235,8 +235,12 @@ function(add_roughpy_component _name)
         endif ()
     endforeach ()
 
-    _check_runtime_deps("${ARG_PUBLIC_DEPS}")
-    _check_runtime_deps("${ARG_PRIVATE_DEPS}")
+    unset(_runtime_deps)
+    _check_runtime_deps(_runtime_deps ${ARG_PUBLIC_DEPS} ${ARG_PRIVATE_DEPS})
+
+    if (_runtime_deps)
+        set_target_properties(${_real_name} PROPERTIES RUNTIME_DEPENDENCIES ${_runtime_deps})
+    endif()
 
     set_target_properties(${_real_name} PROPERTIES
             PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
