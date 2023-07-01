@@ -66,9 +66,10 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/context.h
         include/roughpy/algebra/fallback_operations.h
-    PUBLIC_DEPS
+    PRIVATE_DEPS
         RoughPy::Core
         RoughPy::Scalars
+    PUBLIC_DEPS
         Boost::boost
         Libalgebra_lite::Libalgebra_lite
     )

@@ -38,13 +38,12 @@ add_roughpy_component(Streams
         include/roughpy/streams/piecewise_abelian_stream.h
         include/roughpy/streams/schema.h
         include/roughpy/streams/stream_construction_helper.h
-    PUBLIC_DEPS
+        PRIVATE_DEPS
         RoughPy::Core
         RoughPy::Platform
         RoughPy::Intervals
         RoughPy::Scalars
         RoughPy::Algebra
-    PRIVATE_DEPS
         SndFile::sndfile
         )
 

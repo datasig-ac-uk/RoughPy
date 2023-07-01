@@ -11,8 +11,9 @@ add_roughpy_component(Platform
         include/roughpy/platform/filesystem.h
         include/roughpy/platform/configuration.h
         include/roughpy/platform/serialization.h
-    PUBLIC_DEPS
+    PRIVATE_DEPS
         RoughPy::Core
+    PUBLIC_DEPS
         Boost::boost
         Boost::url
         Boost::disable_autolinking

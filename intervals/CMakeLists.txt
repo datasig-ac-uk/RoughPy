@@ -27,7 +27,7 @@ add_roughpy_component(Intervals
             include/roughpy/intervals/dyadic_interval.h
             include/roughpy/intervals/real_interval.h
             include/roughpy/intervals/segmentation.h
-        PUBLIC_DEPS
+        PRIVATE_DEPS
             RoughPy::Core
             RoughPy::Platform
         )

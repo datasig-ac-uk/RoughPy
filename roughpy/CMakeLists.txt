@@ -127,11 +127,11 @@ target_include_directories(RoughPy_PyModule PRIVATE
 
 target_link_libraries(RoughPy_PyModule PRIVATE
         RoughPy_Core
-        RoughPy_Platform_impl
-        RoughPy_Scalars_impl
-        RoughPy_Intervals_impl
-        RoughPy_Algebra_impl
-        RoughPy_Streams_impl
+        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy_Platform>
+        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy_Scalars>
+        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy_Intervals>
+        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy_Algebra>
+        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy_Streams>
         pybind11::headers
 #        recombine::recombine
         )

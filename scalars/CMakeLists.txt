@@ -69,9 +69,10 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_matrix.h
         include/roughpy/scalars/scalar_blas.h
         include/roughpy/scalars.h
-    PUBLIC_DEPS
+    PRIVATE_DEPS
         RoughPy::Core
         RoughPy::Platform
+    PUBLIC_DEPS
         Boost::boost
         Eigen3::Eigen
         Libalgebra_lite::Libalgebra_lite
@@ -109,6 +110,4 @@ add_roughpy_test(scalar
             src/test_key_scalar_array.cpp
             src/test_scalar_matrix.cpp
             src/test_pcg_standard_random.cpp
-        DEP
-            RoughPy::Platform
         )
