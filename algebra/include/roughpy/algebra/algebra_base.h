@@ -507,7 +507,7 @@ RPY_EXPORT void check_contexts_compatible(const context_pointer& ref, const cont
 #define RPY_CHECK_CONTEXTS(OTHER) \
     RPY_CHECK(context()->check_compatible(*(OTHER).context()))
 #else
-#define RPY_CHECK_CONTEXTS(OTHER) dtl::check_contexts_compatible(context(), other.context())
+#define RPY_CHECK_CONTEXTS(OTHER) dtl::check_contexts_compatible(context(), (OTHER).context())
 #endif
 
 
