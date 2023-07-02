@@ -501,7 +501,7 @@ UnspecifiedAlgebraType construct_dense_algebra(scalars::ScalarArray&& data, cons
 
 }
 
-#ifndef RPY_COMP_MSVC
+#ifndef RPY_MSVC
 #define RPY_CHECK_CONTEXTS(OTHER) \
     RPY_CHECK(context()->check_compatible(*(OTHER).context()))
 #else
