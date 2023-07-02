@@ -498,14 +498,16 @@ namespace dtl {
 RPY_EXPORT
 UnspecifiedAlgebraType construct_dense_algebra(scalars::ScalarArray&& data, const context_pointer& ctx, AlgebraType atype);
 
-
+#ifdef RPY_MSVC
+RPY_EXPORT void check_contexts_compatible(const context_pointer& ref, const context_pointer& other);
+#endif
 }
 
 #ifndef RPY_MSVC
 #define RPY_CHECK_CONTEXTS(OTHER) \
     RPY_CHECK(context()->check_compatible(*(OTHER).context()))
 #else
-#define RPY_CHECK_CONTEXTS(OTHER) (void) 0
+#define RPY_CHECK_CONTEXTS(OTHER) dtl::check_contexts_compatible(context(), other.context())
 #endif
 
 

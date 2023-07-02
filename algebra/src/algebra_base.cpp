@@ -60,3 +60,10 @@ UnspecifiedAlgebraType algebra::dtl::construct_dense_algebra(scalars::ScalarArra
     VectorConstructionData cdata{{std::move(data), nullptr}, VectorType::Dense};
     return ctx->construct(atype, cdata);
 }
+
+
+#ifdef RPY_MSVC
+void check_contexts_compatible(const context_pointer& ref, const context_pointer& other) {
+    RPY_CHECK(context()->check_compatible(*(OTHER).context()))
+}
+#endif
