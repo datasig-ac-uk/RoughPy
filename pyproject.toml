@@ -41,7 +41,7 @@ dynamic = ["version", "readme"]
 requires = [
     "scikit-build-core[pyproject]",
     "pybind11",
-    "ninja",
+    "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
     "mkl-devel",
     "mkl-static",
