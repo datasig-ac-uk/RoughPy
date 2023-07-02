@@ -36,6 +36,7 @@
 namespace rpy {
 namespace algebra {
 
+
 //RPY_EXPORT_TEMPLATE(class, AlgebraInterface, FreeTensor, TensorBasis);
 
 class RPY_EXPORT FreeTensorInterface

@@ -29,6 +29,7 @@
 #define ROUGHPY_ALGEBRA_ALGEBRA_BASE_H_
 
 #include "algebra_fwd.h"
+#include "context_fwd.h"
 
 #include <memory>
 
@@ -38,7 +39,6 @@
 #include <roughpy/scalars/scalar_array.h>
 
 #include "algebra_iterator.h"
-#include "context_fwd.h"
 #include "fallback_operations.h"
 #include "basis.h"
 
