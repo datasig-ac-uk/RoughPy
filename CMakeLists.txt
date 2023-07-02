@@ -47,7 +47,7 @@ option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Buildg the pymodule in the project roughpy directory" OFF)
 
 if (MSVC)
-    add_compile_options(/permissive-)
+#    add_compile_options(/permissive-)
 endif()
 
 find_package(GTest CONFIG QUIET)
