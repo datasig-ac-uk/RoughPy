@@ -500,8 +500,14 @@ UnspecifiedAlgebraType construct_dense_algebra(scalars::ScalarArray&& data, cons
 
 
 }
+
+#ifndef RPY_COMP_MSVC
 #define RPY_CHECK_CONTEXTS(OTHER) \
     RPY_CHECK(context()->check_compatible(*(OTHER).context()))
+#else
+#define RPY_CHECK_CONTEXTS(OTHER) (void) 0
+#endif
+
 
 template <typename Algebra, typename BasisType>
 typename dtl::AlgebraBasicProperties<Algebra, BasisType>::id_t dtl::AlgebraBasicProperties<Algebra, BasisType>::id() const noexcept {
