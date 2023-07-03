@@ -28,10 +28,13 @@
 #ifndef ROUGHPY_ALGEBRA_LIE_H_
 #define ROUGHPY_ALGEBRA_LIE_H_
 
-#include "context.h"
 #include "lie_fwd.h"
 
 #include <roughpy/core/macros.h>
+
+#include "context.h"
+#include "algebra_base_impl.h"
+#include "algebra_bundle_base_impl.h"
 
 namespace rpy {
 namespace algebra {

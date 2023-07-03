@@ -8,7 +8,7 @@
 namespace rpy {
 namespace algebra {
 
-extern template class AlgebraInterface<ShuffleTensor, TensorBasis>;
+//extern template class AlgebraInterface<ShuffleTensor, TensorBasis>;
 
 class RPY_EXPORT ShuffleTensorInterface
     : public AlgebraInterface<ShuffleTensor, TensorBasis>
@@ -19,7 +19,7 @@ public:
     using base_t::base_t;
 };
 
-extern template class AlgebraBase<ShuffleTensorInterface>;
+//extern template class AlgebraBase<ShuffleTensorInterface>;
 
 class RPY_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface>
 {
@@ -35,15 +35,15 @@ public:
 
 class ShuffleTensorBundle;
 
-extern template class BundleInterface<ShuffleTensorBundle, ShuffleTensor,
-                                      ShuffleTensor>;
+//extern template class BundleInterface<ShuffleTensorBundle, ShuffleTensor,
+//                                      ShuffleTensor>;
 
 class RPY_EXPORT ShuffleTensorBundleInterface
     : public BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>
 {
 };
 
-extern template class AlgebraBundleBase<ShuffleTensorBundleInterface>;
+//extern template class AlgebraBundleBase<ShuffleTensorBundleInterface>;
 
 class RPY_EXPORT ShuffleTensorBundle
     : public AlgebraBundleBase<ShuffleTensorBundleInterface>

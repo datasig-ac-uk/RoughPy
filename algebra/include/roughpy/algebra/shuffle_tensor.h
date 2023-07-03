@@ -28,8 +28,11 @@
 #ifndef ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_
 #define ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_
 
-#include "context.h"
 #include "shuffle_tensor_fwd.h"
+
+#include "context.h"
+#include "algebra_base_impl.h"
+#include "algebra_bundle_base_impl.h"
 
 namespace rpy {
 namespace algebra {
