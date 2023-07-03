@@ -30,8 +30,8 @@
 //
 
 #include "float_blas.h"
-#include "scalar_type.h"
 #include <gtest/gtest.h>
+#include <roughpy/scalars/scalar_type.h>
 
 #include <vector>
 
@@ -40,7 +40,8 @@ using namespace rpy::scalars;
 
 namespace {
 
-class FloatBlasTests : public ::testing::Test {
+class FloatBlasTests : public ::testing::Test
+{
     const ScalarType *ctype;
     std::vector<float> a_data;
     std::vector<float> b_data;
@@ -52,18 +53,18 @@ public:
     std::unique_ptr<BlasInterface> blas;
 
     FloatBlasTests()
-        : ctype(ScalarType::of<float>()),
-          a_data{1.0F, 1.0F, 2.0F, 3.0F},
+        : ctype(ScalarType::of<float>()), a_data{1.0F, 1.0F, 2.0F, 3.0F},
           b_data{-1.0F, 2.0F, -2.0F, 3.0F},
           matA(2, 2, ScalarArray(ctype, a_data.data(), 4)),
           matB(2, 2, ScalarArray(ctype, b_data.data(), 4)),
-          blas(new FloatBlas(ctype)) {
-    }
+          blas(new FloatBlas(ctype))
+    {}
 };
 
 }// namespace
 
-TEST_F(FloatBlasTests, TestRowMajorByRowMajorFull) {
+TEST_F(FloatBlasTests, TestRowMajorByRowMajorFull)
+{
 
     auto result = blas->matrix_matrix(matA, matB);
 

@@ -39,7 +39,8 @@
 namespace rpy {
 namespace streams {
 
-class PiecewiseAbelianStream : public StreamInterface {
+class PiecewiseAbelianStream : public StreamInterface
+{
 public:
     using LiePiece = std::pair<intervals::RealInterval, algebra::Lie>;
 
@@ -47,14 +48,20 @@ private:
     std::vector<LiePiece> m_data;
 
     RPY_NO_DISCARD
-    static inline scalars::Scalar to_multiplier_upper(const intervals::RealInterval &interval, param_t param) {
+    static inline scalars::Scalar
+    to_multiplier_upper(const intervals::RealInterval &interval, param_t param)
+    {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
-        return scalars::Scalar((interval.sup() - param) / (interval.sup() - interval.inf()));
+        return scalars::Scalar((interval.sup() - param)
+                               / (interval.sup() - interval.inf()));
     }
     RPY_NO_DISCARD
-    static inline scalars::Scalar to_multiplier_lower(const intervals::RealInterval &interval, param_t param) {
+    static inline scalars::Scalar
+    to_multiplier_lower(const intervals::RealInterval &interval, param_t param)
+    {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
-        return scalars::Scalar((param - interval.inf()) / (interval.sup() - interval.inf()));
+        return scalars::Scalar((param - interval.inf())
+                               / (interval.sup() - interval.inf()));
     }
 
 public:
@@ -65,13 +72,15 @@ public:
 
 protected:
     RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval &domain, const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval &domain,
+                                    const algebra::Context &ctx) const override;
 
 public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(PiecewiseAbelianStream) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(PiecewiseAbelianStream)
+{
     RPY_SERIAL_SERIALIZE_NVP("metadata", metadata());
     RPY_SERIAL_SERIALIZE_NVP("data", m_data);
 }
@@ -79,9 +88,9 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(PiecewiseAbelianStream) {
 }// namespace streams
 }// namespace rpy
 
-
 #ifndef RPY_DISABLE_SERIALIZATION
-RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::PiecewiseAbelianStream) {
+RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::PiecewiseAbelianStream)
+{
     using namespace rpy;
     using namespace rpy::streams;
     using LiePiece = typename PiecewiseAbelianStream::LiePiece;

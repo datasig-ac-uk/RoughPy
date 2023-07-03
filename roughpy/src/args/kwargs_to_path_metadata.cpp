@@ -37,18 +37,20 @@
 
 using namespace rpy;
 
-python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwargs) {
+python::PyStreamMetaData
+python::kwargs_to_metadata(const pybind11::kwargs &kwargs)
+{
 
     PyStreamMetaData md{
-        0,                              // width
-        0,                              // depth
-        {},                             // support
-        nullptr,                        // context
-        nullptr,                        // scalar type
-        {},                             // vector type
-        0,                              // default resolution
-        intervals::IntervalType::Clopen,// interval type
-        nullptr                         // schema
+            0,                              // width
+            0,                              // depth
+            {},                             // support
+            nullptr,                        // context
+            nullptr,                        // scalar type
+            {},                             // vector type
+            0,                              // default resolution
+            intervals::IntervalType::Clopen,// interval type
+            nullptr                         // schema
     };
 
     streams::ChannelType ch_type;
@@ -75,7 +77,8 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
             md.schema = std::make_shared<streams::StreamSchema>();
 
             for (auto &&[label, item] : channel_dict) {
-                switch (python::py_to_channel_type(py::reinterpret_borrow<py::object>(item))) {
+                switch (python::py_to_channel_type(
+                        py::reinterpret_borrow<py::object>(item))) {
                     case streams::ChannelType::Increment:
                         md.schema->insert_increment(label.cast<string>());
                         break;
@@ -97,7 +100,8 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
             md.schema = std::make_shared<streams::StreamSchema>();
 
             for (auto &&item : channel_list) {
-                switch (python::py_to_channel_type(py::reinterpret_borrow<py::object>(item))) {
+                switch (python::py_to_channel_type(
+                        py::reinterpret_borrow<py::object>(item))) {
                     case streams::ChannelType::Increment:
                         md.schema->insert_increment("");
                         break;
@@ -121,7 +125,8 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
 
     if (kwargs.contains("ctx")) {
         auto ctx = kwargs["ctx"];
-        if (!py::isinstance(ctx, reinterpret_cast<PyObject *>(&RPyContext_Type))) {
+        if (!py::isinstance(ctx,
+                            reinterpret_cast<PyObject *>(&RPyContext_Type))) {
             throw py::type_error("expected a Context object");
         }
         md.ctx = python::ctx_cast(ctx.ptr());
@@ -148,9 +153,11 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
             }
         }
 
-        if (md.schema->width() != md.width) {
-            md.width = static_cast<deg_t>(md.schema->width());
-            md.ctx = md.ctx->get_alike(md.width, md.ctx->depth(), md.scalar_type);
+        auto schema_width = static_cast<deg_t>(md.schema->width());
+        if (schema_width != md.width) {
+            md.width = schema_width;
+            md.ctx = md.ctx->get_alike(md.width, md.ctx->depth(),
+                                       md.scalar_type);
         }
     } else {
         if (md.schema) {
@@ -187,12 +194,12 @@ python::PyStreamMetaData python::kwargs_to_metadata(const pybind11::kwargs &kwar
     if (kwargs.contains("support")) {
         auto support = kwargs["support"];
         if (!py::isinstance<intervals::Interval>(support)) {
-            md.support = intervals::RealInterval(support.cast<const intervals::Interval &>());
+            md.support = intervals::RealInterval(
+                    support.cast<const intervals::Interval &>());
         }
     }
 
     // TODO: Code for getting interval type
-
 
     return md;
 }

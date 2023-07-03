@@ -31,7 +31,8 @@ using namespace rpy;
 
 namespace {
 
-enum NpyDtypes : int {
+enum NpyDtypes : int
+{
     NPY_BOOL = 0,
     NPY_BYTE,
     NPY_UBYTE,
@@ -72,16 +73,13 @@ enum NpyDtypes : int {
 
 }// namespace
 
-const scalars::ScalarType *python::npy_dtype_to_ctype(pybind11::dtype dtype) {
+const scalars::ScalarType *python::npy_dtype_to_ctype(pybind11::dtype dtype)
+{
     const scalars::ScalarType *type = nullptr;
 
     switch (dtype.num()) {
-        case NPY_FLOAT:
-            type = scalars::ScalarType::of<float>();
-            break;
-        case NPY_DOUBLE:
-            type = scalars::ScalarType::of<double>();
-            break;
+        case NPY_FLOAT: type = scalars::ScalarType::of<float>(); break;
+        case NPY_DOUBLE: type = scalars::ScalarType::of<double>(); break;
         default:
             // Default behaviour, promote to double
             type = scalars::ScalarType::of<double>();
@@ -90,33 +88,23 @@ const scalars::ScalarType *python::npy_dtype_to_ctype(pybind11::dtype dtype) {
 
     return type;
 }
-pybind11::dtype python::ctype_to_npy_dtype(const scalars::ScalarType *type) {
-    if (type == scalars::ScalarType::of<double>()) {
-        return py::dtype("d");
-    }
-    if (type == scalars::ScalarType::of<float>()) {
-        return py::dtype("f");
-    }
+pybind11::dtype python::ctype_to_npy_dtype(const scalars::ScalarType *type)
+{
+    if (type == scalars::ScalarType::of<double>()) { return py::dtype("d"); }
+    if (type == scalars::ScalarType::of<float>()) { return py::dtype("f"); }
 
     throw py::type_error("unsupported data type");
 }
 
-string python::npy_dtype_to_identifier(pybind11::dtype dtype) {
+string python::npy_dtype_to_identifier(pybind11::dtype dtype)
+{
     string identifier;
 
     switch (dtype.num()) {
-        case NPY_FLOAT:
-            identifier = "f32";
-            break;
-        case NPY_DOUBLE:
-            identifier = "f64";
-            break;
-        case NPY_INT:
-            identifier = "i32";
-            break;
-        case NPY_UINT:
-            identifier = "u32";
-            break;
+        case NPY_FLOAT: identifier = "f32"; break;
+        case NPY_DOUBLE: identifier = "f64"; break;
+        case NPY_INT: identifier = "i32"; break;
+        case NPY_UINT: identifier = "u32"; break;
         case NPY_LONG: {
             if (sizeof(long) == sizeof(int)) {
                 identifier = "i32";
@@ -131,29 +119,16 @@ string python::npy_dtype_to_identifier(pybind11::dtype dtype) {
                 identifier = "u64";
             }
         } break;
-        case NPY_LONGLONG:
-            identifier = "i64";
-            break;
-        case NPY_ULONGLONG:
-            identifier = "u64";
-            break;
+        case NPY_LONGLONG: identifier = "i64"; break;
+        case NPY_ULONGLONG: identifier = "u64"; break;
 
         case NPY_BOOL:
-        case NPY_BYTE:
-            identifier = "i8";
-            break;
-        case NPY_UBYTE:
-            identifier = "u8";
-            break;
-        case NPY_SHORT:
-            identifier = "i16";
-            break;
-        case NPY_USHORT:
-            identifier = "u16";
-            break;
+        case NPY_BYTE: identifier = "i8"; break;
+        case NPY_UBYTE: identifier = "u8"; break;
+        case NPY_SHORT: identifier = "i16"; break;
+        case NPY_USHORT: identifier = "u16"; break;
 
-        default:
-            throw py::type_error("unsupported dtype");
+        default: throw py::type_error("unsupported dtype");
     }
 
     return identifier;

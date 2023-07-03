@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,24 +28,24 @@
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
 
-#include "roughpy_algebra_export.h"
+#include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
 #include <memory>
 
-
 namespace rpy {
 namespace algebra {
 
-
-enum class ImplementationType {
+enum class ImplementationType
+{
     Owned,
     Borrowed,
     DeviceOwned,
     DeviceBorrowed
 };
 
-enum class VectorType {
+enum class VectorType
+{
     Dense,
     Sparse
 };
@@ -53,7 +53,8 @@ enum class VectorType {
 /**
  * @brief Different algebra types required by RoughPy
  */
-enum class AlgebraType : uint32_t {
+enum class AlgebraType : uint32_t
+{
     FreeTensor,
     ShuffleTensor,
     Lie,
@@ -62,42 +63,35 @@ enum class AlgebraType : uint32_t {
     LieBundle
 };
 
+template <typename Interface> struct algebra_access;
 
-template <typename Interface>
-struct algebra_access;
+template <typename Wrapper, typename Algebra> struct algebra_info;
 
-template <typename Wrapper, typename Algebra>
-struct algebra_info;
+template <typename Algebra> class AlgebraIterator;
 
-template <typename Algebra>
-class AlgebraIterator;
-
-template <typename PrimaryInterface>
-class Basis;
+template <typename PrimaryInterface> class Basis;
 
 namespace dtl {
 
 class AlgebraInterfaceBase;
 
 }
-using RawUnspecifiedAlgebraType = dtl::AlgebraInterfaceBase*;
+using RawUnspecifiedAlgebraType = dtl::AlgebraInterfaceBase *;
 using UnspecifiedAlgebraType = std::unique_ptr<dtl::AlgebraInterfaceBase>;
 
 class FreeTensor;
+
 class Lie;
+
 class ShuffleTensor;
+
 class FreeTensorBundle;
+
 class LieBundle;
+
 class ShuffleTensorBundle;
 
+}// namespace algebra
+}// namespace rpy
 
-template <typename Algebra>
-struct basis_setup_helper {
-    template <typename C>
-    static typename Algebra::basis_type get(const C& ctx);
-};
-
-}
-}
-
-#endif // ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
+#endif// ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_

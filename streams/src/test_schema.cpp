@@ -29,21 +29,23 @@
 // Created by user on 25/05/23.
 //
 
-#include "schema.h"
 #include <gtest/gtest.h>
+#include <roughpy/streams/schema.h>
 
 #include <sstream>
 
 using namespace rpy;
 using namespace rpy::streams;
 
-TEST(Schema, TestLabelCompareEqual) {
+TEST(Schema, TestLabelCompareEqual)
+{
     string first("first");
 
     EXPECT_TRUE(StreamSchema::compare_labels(first, first));
 }
 
-TEST(Schema, TestLabelCompareDifferentLengths) {
+TEST(Schema, TestLabelCompareDifferentLengths)
+{
     string first("first");
     string first1("first:1");
 
@@ -53,14 +55,16 @@ TEST(Schema, TestLabelCompareDifferentLengths) {
     EXPECT_FALSE(StreamSchema::compare_labels(first1, first));
 }
 
-TEST(Schema, TestLabelCompareNonTerminatedCorrectly) {
+TEST(Schema, TestLabelCompareNonTerminatedCorrectly)
+{
     string first("first");
     string first1("first1");
 
     EXPECT_FALSE(StreamSchema::compare_labels(first, first1));
 }
 
-TEST(Schema, TestLabelCompareDifferentStrings) {
+TEST(Schema, TestLabelCompareDifferentStrings)
+{
     string first("first");
     string firnt("firnt");
 
@@ -68,11 +72,13 @@ TEST(Schema, TestLabelCompareDifferentStrings) {
     EXPECT_FALSE(StreamSchema::compare_labels(firnt, first));
 }
 
-TEST(Schema, TestLabelCompareEmptyRefString) {
+TEST(Schema, TestLabelCompareEmptyRefString)
+{
     EXPECT_FALSE(StreamSchema::compare_labels("", ":test"));
 }
 
-TEST(Schema, TestStreamChannelIncrementSerialization) {
+TEST(Schema, TestStreamChannelIncrementSerialization)
+{
     StreamChannel channel(ChannelType::Increment);
 
     std::stringstream ss;
@@ -90,7 +96,8 @@ TEST(Schema, TestStreamChannelIncrementSerialization) {
     EXPECT_EQ(in_channel.type(), channel.type());
 }
 
-TEST(Schema, TestStreamChannelValueSerialization) {
+TEST(Schema, TestStreamChannelValueSerialization)
+{
     StreamChannel channel(ChannelType::Value);
 
     std::stringstream ss;
@@ -108,7 +115,8 @@ TEST(Schema, TestStreamChannelValueSerialization) {
     EXPECT_EQ(in_channel.type(), channel.type());
 }
 
-TEST(Schema, TestStreamChannelCategoricalSerialization) {
+TEST(Schema, TestStreamChannelCategoricalSerialization)
+{
     StreamChannel channel(ChannelType::Categorical);
     channel.add_variant("first").add_variant("second");
 
@@ -130,24 +138,27 @@ TEST(Schema, TestStreamChannelCategoricalSerialization) {
 
 namespace {
 
-class SchemaTests : public ::testing::Test {
+class SchemaTests : public ::testing::Test
+{
 protected:
     StreamSchema schema;
 
-    SchemaTests() {
+    SchemaTests()
+    {
         schema.reserve(3);
         schema.insert_categorical("a")
-            .add_variant("first")
-            .add_variant("second")
-            .add_variant("third");
-        schema.insert_value("c");
+                .add_variant("first")
+                .add_variant("second")
+                .add_variant("third");
+        schema.insert_value("c").set_lead_lag(true);
         schema.insert_increment("b");
     }
 };
 
 }// namespace
 
-TEST_F(SchemaTests, TestSchemaFind) {
+TEST_F(SchemaTests, TestSchemaFind)
+{
     const auto end = schema.end();
     auto finda = schema.find("a");
     ASSERT_NE(finda, end);
@@ -166,17 +177,20 @@ TEST_F(SchemaTests, TestSchemaFind) {
     EXPECT_EQ(findb->first, "b");
 }
 
-TEST_F(SchemaTests, TestSchemaWidthCalculation) {
+TEST_F(SchemaTests, TestSchemaWidthCalculation)
+{
     EXPECT_EQ(schema.width(), 3 + 2 + 1);
 }
 
-TEST_F(SchemaTests, TestChannelToStreamDim) {
+TEST_F(SchemaTests, TestChannelToStreamDim)
+{
     EXPECT_EQ(schema.channel_to_stream_dim(0), 0);
     EXPECT_EQ(schema.channel_to_stream_dim(1), 3);
     EXPECT_EQ(schema.channel_to_stream_dim(2), 5);
 }
 
-TEST_F(SchemaTests, TestChannelVariantToStreamDim) {
+TEST_F(SchemaTests, TestChannelVariantToStreamDim)
+{
     EXPECT_EQ(schema.channel_variant_to_stream_dim(0, 0), 0);
     EXPECT_EQ(schema.channel_variant_to_stream_dim(0, 1), 1);
     EXPECT_EQ(schema.channel_variant_to_stream_dim(0, 2), 2);
@@ -185,7 +199,8 @@ TEST_F(SchemaTests, TestChannelVariantToStreamDim) {
     EXPECT_EQ(schema.channel_variant_to_stream_dim(2, 0), 5);
 }
 
-TEST_F(SchemaTests, TestStreamDimToChannel) {
+TEST_F(SchemaTests, TestStreamDimToChannel)
+{
     using pair_t = pair<dimn_t, dimn_t>;
     EXPECT_EQ(schema.stream_dim_to_channel(0), pair_t(0, 0));
     EXPECT_EQ(schema.stream_dim_to_channel(1), pair_t(0, 1));
@@ -195,24 +210,28 @@ TEST_F(SchemaTests, TestStreamDimToChannel) {
     EXPECT_EQ(schema.stream_dim_to_channel(5), pair_t(2, 0));
 }
 
-TEST_F(SchemaTests, TestLabelToStreamDimIncrement) {
+TEST_F(SchemaTests, TestLabelToStreamDimIncrement)
+{
     EXPECT_EQ(schema.label_to_stream_dim("b"), 5);
 }
 
-TEST_F(SchemaTests, TestLabelToStreamDimValue) {
+TEST_F(SchemaTests, TestLabelToStreamDimValue)
+{
     EXPECT_EQ(schema.label_to_stream_dim("c"), 3);
     EXPECT_EQ(schema.label_to_stream_dim("c:lead"), 3);
     EXPECT_EQ(schema.label_to_stream_dim("c:lag"), 4);
 }
 
-TEST_F(SchemaTests, TestLabelToStreamDimCategorical) {
+TEST_F(SchemaTests, TestLabelToStreamDimCategorical)
+{
     EXPECT_EQ(schema.label_to_stream_dim("a"), 0);
     EXPECT_EQ(schema.label_to_stream_dim("a:first"), 0);
     EXPECT_EQ(schema.label_to_stream_dim("a:second"), 1);
     EXPECT_EQ(schema.label_to_stream_dim("a:third"), 2);
 }
 
-TEST_F(SchemaTests, TestLabelOfStreamDim) {
+TEST_F(SchemaTests, TestLabelOfStreamDim)
+{
     EXPECT_EQ(schema.label_of_stream_dim(0), "a:first");
     EXPECT_EQ(schema.label_of_stream_dim(1), "a:second");
     EXPECT_EQ(schema.label_of_stream_dim(2), "a:third");
@@ -221,13 +240,15 @@ TEST_F(SchemaTests, TestLabelOfStreamDim) {
     EXPECT_EQ(schema.label_of_stream_dim(5), "b");
 }
 
-TEST_F(SchemaTests, TestLabelOfChannelId) {
+TEST_F(SchemaTests, TestLabelOfChannelId)
+{
     EXPECT_EQ(schema.label_of_channel_id(0), "a");
     EXPECT_EQ(schema.label_of_channel_id(1), "c");
     EXPECT_EQ(schema.label_of_channel_id(2), "b");
 }
 
-TEST_F(SchemaTests, TestLabelOfChannelVariant) {
+TEST_F(SchemaTests, TestLabelOfChannelVariant)
+{
     EXPECT_EQ(schema.label_of_channel_variant(0, 0), "a:first");
     EXPECT_EQ(schema.label_of_channel_variant(0, 1), "a:second");
     EXPECT_EQ(schema.label_of_channel_variant(0, 2), "a:third");
@@ -236,7 +257,8 @@ TEST_F(SchemaTests, TestLabelOfChannelVariant) {
     EXPECT_EQ(schema.label_of_channel_variant(2, 0), "b");
 }
 
-TEST_F(SchemaTests, TestSerializationOfSchema) {
+TEST_F(SchemaTests, TestSerializationOfSchema)
+{
     std::stringstream ss;
     {
         archives::JSONOutputArchive oarch(ss);

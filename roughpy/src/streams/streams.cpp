@@ -31,6 +31,7 @@
 #include "schema.h"
 #include "stream.h"
 
+#include "brownian_stream.h"
 #include "externally_sourced_stream.h"
 #include "function_stream.h"
 #include "lie_increment_stream.h"
@@ -40,7 +41,8 @@
 using namespace rpy;
 using namespace rpy::python;
 
-void python::init_streams(py::module_ &m) {
+void python::init_streams(py::module_ &m)
+{
 
     py::options options;
     options.disable_function_signatures();
@@ -54,4 +56,5 @@ void python::init_streams(py::module_ &m) {
     init_function_stream(m);
     init_tick_stream(m);
     init_externally_sourced_stream(m);
+    init_brownian_stream(m);
 }

@@ -28,12 +28,11 @@
 //
 // Created by user on 02/03/23.
 //
-#include "basis.h"
+#include <roughpy/algebra/basis.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
 
 namespace rpy {
-namespace algebra {
-}
+namespace algebra {}
 }// namespace rpy

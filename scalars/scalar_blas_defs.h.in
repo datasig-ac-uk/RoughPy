@@ -9,7 +9,7 @@
 #  include <lapack.h>
 #endif
 
-#include "scalar_matrix.h"
+#include <roughpy/scalars/scalar_matrix.h>
 
 #if @RPY_USE_MKL@
 #  define EIGEN_USE_MKL_ALL
@@ -18,7 +18,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
-namespace blas {
+namespace
+blas {
 
 #ifdef RPY_USE_MKL
 using integer = MKL_INT;

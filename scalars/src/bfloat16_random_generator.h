@@ -32,11 +32,10 @@
 #ifndef ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
 #define ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
 
-#include "random.h"
-#include "scalar.h"
-#include "scalar_type.h"
 #include "random_impl.h"
-
+#include <roughpy/scalars/random.h>
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_type.h>
 
 #include "standard_random_generator.h"
 
@@ -51,7 +50,8 @@ namespace rpy {
 namespace scalars {
 
 template <typename BitGenerator>
-class StandardRandomGenerator<bfloat16, BitGenerator> : public RandomGenerator {
+class StandardRandomGenerator<bfloat16, BitGenerator> : public RandomGenerator
+{
     using scalar_type = bfloat16;
     using bit_generator = BitGenerator;
 
@@ -65,80 +65,97 @@ public:
     StandardRandomGenerator(const StandardRandomGenerator &) = delete;
     StandardRandomGenerator(StandardRandomGenerator &&) noexcept = delete;
 
-    StandardRandomGenerator &operator=(const StandardRandomGenerator &) = delete;
-    StandardRandomGenerator &operator=(StandardRandomGenerator &&) noexcept = delete;
+    StandardRandomGenerator &operator=(const StandardRandomGenerator &)
+            = delete;
+    StandardRandomGenerator &operator=(StandardRandomGenerator &&) noexcept
+            = delete;
 
     void set_seed(Slice<uint64_t> seed_data) override;
     std::vector<uint64_t> get_seed() const override;
     string get_type() const override;
     string get_state() const override;
 
-    OwnedScalarArray uniform_random_scalar(ScalarArray lower, ScalarArray upper, dimn_t count) const override;
-    OwnedScalarArray normal_random(Scalar loc, Scalar scale, dimn_t count) const override;
+    OwnedScalarArray uniform_random_scalar(ScalarArray lower, ScalarArray upper,
+                                           dimn_t count) const override;
+    OwnedScalarArray normal_random(Scalar loc, Scalar scale,
+                                   dimn_t count) const override;
     void set_state(string_view state) override;
 };
+
 template <typename BitGenerator>
-string StandardRandomGenerator<bfloat16, BitGenerator>::get_state() const {
+string StandardRandomGenerator<bfloat16, BitGenerator>::get_state() const
+{
     std::stringstream ss;
     ss << m_generator;
     return ss.str();
 }
 template <typename BitGenerator>
-string StandardRandomGenerator<bfloat16, BitGenerator>::get_type() const {
+string StandardRandomGenerator<bfloat16, BitGenerator>::get_type() const
+{
     return std::string(dtl::rng_type_getter<BitGenerator>::name);
 }
 
 template <typename BitGenerator>
-StandardRandomGenerator<bfloat16, BitGenerator>::StandardRandomGenerator(const ScalarType *stype, Slice<uint64_t> seed)
-    : RandomGenerator(stype), m_seed{seed[0]}, m_generator(BitGenerator(seed[0])) {
+StandardRandomGenerator<bfloat16, BitGenerator>::StandardRandomGenerator(
+        const ScalarType *stype, Slice<uint64_t> seed)
+    : RandomGenerator(stype), m_seed{seed[0]},
+      m_generator(BitGenerator(seed[0]))
+{
     RPY_CHECK(p_type = ScalarType::of<half>());
     RPY_CHECK(seed.size() >= 1);
 }
 
 template <typename BitGenerator>
-void StandardRandomGenerator<bfloat16, BitGenerator>::set_seed(Slice<uint64_t> seed_data) {
+void StandardRandomGenerator<bfloat16, BitGenerator>::set_seed(
+        Slice<uint64_t> seed_data)
+{
     RPY_CHECK(seed_data.size() >= 1);
     m_generator.seed(seed_data[0]);
     m_seed = {seed_data[0]};
 }
-template <typename BitGenerator>
-void StandardRandomGenerator<bfloat16, BitGenerator>::set_state(string_view state) {
+template <typename BitGenerator> void
+StandardRandomGenerator<bfloat16, BitGenerator>::set_state(string_view state)
+{
     std::stringstream ss(string{state});
     ss >> m_generator;
 }
-template <typename BitGenerator>
-std::vector<uint64_t> StandardRandomGenerator<bfloat16, BitGenerator>::get_seed() const {
+template <typename BitGenerator> std::vector<uint64_t>
+StandardRandomGenerator<bfloat16, BitGenerator>::get_seed() const
+{
     return {m_seed[0]};
 }
-template <typename BitGenerator>
-OwnedScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::uniform_random_scalar(ScalarArray lower, ScalarArray upper, dimn_t count) const {
+template <typename BitGenerator> OwnedScalarArray
+StandardRandomGenerator<bfloat16, BitGenerator>::uniform_random_scalar(
+        ScalarArray lower, ScalarArray upper, dimn_t count) const
+{
     std::vector<std::uniform_real_distribution<float>> dists;
 
     RPY_CHECK(lower.size() == upper.size());
 
     dists.reserve(lower.size());
     for (dimn_t i = 0; i < lower.size(); ++i) {
-        dists.emplace_back(
-            static_cast<float>(scalar_cast<bfloat16>(lower[i])),
-            static_cast<float>(scalar_cast<bfloat16>(upper[i])));
+        dists.emplace_back(static_cast<float>(scalar_cast<bfloat16>(lower[i])),
+                           static_cast<float>(scalar_cast<bfloat16>(upper[i])));
     }
 
     OwnedScalarArray result(p_type, count * dists.size());
 
     auto *out = result.raw_cast<bfloat16 *>();
     for (dimn_t i = 0; i < count; ++i) {
-        for (auto &dist : dists) {
-            ::new (out++) bfloat16(dist(m_generator));
-        }
+        for (auto &dist : dists) { ::new (out++) bfloat16(dist(m_generator)); }
     }
 
     return result;
 }
 template <typename BitGenerator>
-OwnedScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::normal_random(Scalar loc, Scalar scale, dimn_t count) const {
+OwnedScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::normal_random(
+        Scalar loc, Scalar scale, dimn_t count) const
+{
 
     OwnedScalarArray result(p_type, count);
-    std::normal_distribution<float> dist(static_cast<float>(scalar_cast<bfloat16>(loc)), static_cast<float>(scalar_cast<bfloat16>(scale)));
+    std::normal_distribution<float> dist(
+            static_cast<float>(scalar_cast<bfloat16>(loc)),
+            static_cast<float>(scalar_cast<bfloat16>(scale)));
 
     auto *out = result.raw_cast<bfloat16 *>();
     for (dimn_t i = 0; i < count; ++i) {
@@ -149,6 +166,7 @@ OwnedScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::normal_random(
 }
 
 extern template class StandardRandomGenerator<bfloat16, std::mt19937_64>;
+
 extern template class StandardRandomGenerator<bfloat16, pcg64>;
 
 }// namespace scalars

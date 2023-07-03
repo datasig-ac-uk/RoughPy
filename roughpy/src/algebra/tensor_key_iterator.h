@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,32 +35,26 @@
 #include "context.h"
 #include "tensor_key.h"
 
-
 namespace rpy {
 namespace python {
 
-class PyTensorKeyIterator {
+class PyTensorKeyIterator
+{
     key_type m_current;
     key_type m_end;
     deg_t m_width;
     deg_t m_depth;
 
 public:
-
-    PyTensorKeyIterator(deg_t width,
-                        deg_t depth,
-                        key_type current=0,
-                        key_type end=std::numeric_limits<key_type>::max());
+    PyTensorKeyIterator(deg_t width, deg_t depth, key_type current = 0,
+                        key_type end = std::numeric_limits<key_type>::max());
 
     PyTensorKey next();
-
 };
 
+void init_tensor_key_iterator(py::module_ &m);
 
-void init_tensor_key_iterator(py::module_& m);
+}// namespace python
+}// namespace rpy
 
-
-} // namespace python
-} // namespace rpy
-
-#endif // RPY_PY_ALGEBRA_TENSOR_KEY_ITERATOR_H_
+#endif// RPY_PY_ALGEBRA_TENSOR_KEY_ITERATOR_H_

@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,37 +34,35 @@
 
 #include <utility>
 
-namespace rpy { namespace intervals {
+namespace rpy {
+namespace intervals {
 
-class ROUGHPY_INTERVALS_EXPORT RealInterval : public Interval {
+class RPY_EXPORT RealInterval : public Interval
+{
     param_t m_inf = 0.0;
     param_t m_sup = 1.0;
 
 public:
-
     RealInterval() = default;
-    RealInterval(const RealInterval&) = default;
-    RealInterval(RealInterval&& ) noexcept = default;
+    RealInterval(const RealInterval &) = default;
+    RealInterval(RealInterval &&) noexcept = default;
 
-    RealInterval& operator=(const RealInterval&) = default;
-    RealInterval& operator=(RealInterval&&) noexcept = default;
+    RealInterval &operator=(const RealInterval &) = default;
+    RealInterval &operator=(RealInterval &&) noexcept = default;
 
     RealInterval(param_t inf, param_t sup,
-                 IntervalType itype=IntervalType::Clopen)
+                 IntervalType itype = IntervalType::Clopen)
         : Interval(itype), m_inf(inf), m_sup(sup)
     {
-        if (m_inf > m_sup) {
-            std::swap(m_inf, m_sup);
-        }
+        if (m_inf > m_sup) { std::swap(m_inf, m_sup); }
     }
 
-    explicit RealInterval(const Interval& interval)
-        : Interval(interval.type()),
-          m_inf(interval.inf()),
+    explicit RealInterval(const Interval &interval)
+        : Interval(interval.type()), m_inf(interval.inf()),
           m_sup(interval.sup())
     {}
 
-    explicit RealInterval(const Interval& interval, IntervalType itype)
+    explicit RealInterval(const Interval &interval, IntervalType itype)
         : Interval(itype), m_inf(interval.inf()), m_sup(interval.sup())
     {}
 
@@ -76,19 +74,17 @@ public:
     RPY_NO_DISCARD
     bool contains(const Interval &arg) const noexcept override;
 
-
-
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(RealInterval) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(RealInterval)
+{
     RPY_SERIAL_SERIALIZE_NVP("type", m_interval_type);
     RPY_SERIAL_SERIALIZE_NVP("inf", m_inf);
     RPY_SERIAL_SERIALIZE_NVP("sup", m_sup);
 }
 
+}// namespace intervals
+}// namespace rpy
 
-}}
-
-
-#endif // ROUGHPY_INTERVALS_REAL_INTERVAL_H_
+#endif// ROUGHPY_INTERVALS_REAL_INTERVAL_H_

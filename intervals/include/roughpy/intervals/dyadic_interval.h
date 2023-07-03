@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -39,7 +39,8 @@
 namespace rpy {
 namespace intervals {
 
-class ROUGHPY_INTERVALS_EXPORT DyadicInterval : public Dyadic, public Interval {
+class RPY_EXPORT DyadicInterval : public Dyadic, public Interval
+{
     using Dyadic::m_multiplier;
     using Dyadic::m_power;
 
@@ -54,19 +55,29 @@ public:
 
     DyadicInterval() = default;
 
-    explicit DyadicInterval(IntervalType itype) : Dyadic(), Interval(itype) {
-        RPY_DBG_ASSERT(itype == IntervalType::Clopen || itype == IntervalType::Opencl);
+    explicit DyadicInterval(IntervalType itype) : Dyadic(), Interval(itype)
+    {
+        RPY_DBG_ASSERT(itype == IntervalType::Clopen
+                       || itype == IntervalType::Opencl);
     }
     explicit DyadicInterval(Dyadic dyadic) : Dyadic(dyadic), Interval() {}
-    DyadicInterval(Dyadic dyadic, IntervalType itype) : Dyadic(dyadic), Interval(itype) {}
-    DyadicInterval(multiplier_t k, power_t n, IntervalType itype) : Dyadic(k, n), Interval(itype) {
-        RPY_DBG_ASSERT(itype == IntervalType::Clopen || itype == IntervalType::Opencl);
+    DyadicInterval(Dyadic dyadic, IntervalType itype)
+        : Dyadic(dyadic), Interval(itype)
+    {}
+    DyadicInterval(multiplier_t k, power_t n, IntervalType itype)
+        : Dyadic(k, n), Interval(itype)
+    {
+        RPY_DBG_ASSERT(itype == IntervalType::Clopen
+                       || itype == IntervalType::Opencl);
     }
-    DyadicInterval(Dyadic dyadic, power_t resolution, IntervalType itype = IntervalType::Clopen);
-    DyadicInterval(param_t val, power_t resolution, IntervalType itype = IntervalType::Clopen);
+    DyadicInterval(Dyadic dyadic, power_t resolution,
+                   IntervalType itype = IntervalType::Clopen);
+    DyadicInterval(param_t val, power_t resolution,
+                   IntervalType itype = IntervalType::Clopen);
 
     RPY_NO_DISCARD
-    multiplier_t unit() const noexcept {
+    multiplier_t unit() const noexcept
+    {
         return (m_interval_type == IntervalType::Clopen) ? 1 : -1;
     }
 
@@ -94,7 +105,7 @@ public:
     DyadicInterval &expand_interval(power_t arg = 1);
 
     RPY_NO_DISCARD
-    bool contains(const DyadicInterval &other) const;
+    bool contains_dyadic(const DyadicInterval &other) const;
     RPY_NO_DISCARD
     bool aligned() const;
 
@@ -107,22 +118,22 @@ public:
 
     DyadicInterval &advance() noexcept;
 
-
     RPY_SERIAL_SERIALIZE_FN();
 };
 
+RPY_EXPORT
+std::ostream &operator<<(std::ostream &os, const DyadicInterval &di);
 
-ROUGHPY_INTERVALS_EXPORT
-std::ostream& operator<<(std::ostream& os, const DyadicInterval& di);
+RPY_EXPORT
+std::vector<DyadicInterval>
+to_dyadic_intervals(const Interval &interval, typename Dyadic::power_t tol,
+                    IntervalType itype = IntervalType::Clopen);
 
+RPY_EXPORT
+bool operator<(const DyadicInterval &lhs, const DyadicInterval &rhs) noexcept;
 
-ROUGHPY_INTERVALS_EXPORT
-std::vector<DyadicInterval> to_dyadic_intervals(const Interval& interval, typename Dyadic::power_t tol, IntervalType itype=IntervalType::Clopen);
-
-ROUGHPY_INTERVALS_EXPORT
-bool operator<(const DyadicInterval& lhs, const DyadicInterval& rhs) noexcept;
-
-RPY_SERIAL_SERIALIZE_FN_IMPL(DyadicInterval) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(DyadicInterval)
+{
     RPY_SERIAL_SERIALIZE_BASE(Dyadic);
     RPY_SERIAL_SERIALIZE_NVP("type", m_interval_type);
 }

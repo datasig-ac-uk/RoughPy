@@ -29,9 +29,9 @@
 // Created by user on 26/02/23.
 //
 
-#include "scalar.h"
-#include "scalar_pointer.h"
-#include "scalar_type.h"
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_pointer.h>
+#include <roughpy/scalars/scalar_type.h>
 
 #include <ostream>
 #include <roughpy/platform/serialization.h>
@@ -39,50 +39,57 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-Scalar::Scalar(ScalarPointer other, uint32_t new_flags)
-    : ScalarPointer(other) {
+Scalar::Scalar(ScalarPointer other, uint32_t new_flags) : ScalarPointer(other)
+{
     m_flags = new_flags;
 }
 Scalar::Scalar(ScalarPointer data, flags::PointerType ptype)
-    : ScalarPointer(data) {
+    : ScalarPointer(data)
+{
     m_flags |= ptype;
 }
 
-Scalar::Scalar(ScalarInterface *other) {
+Scalar::Scalar(ScalarInterface *other)
+{
     if (other == nullptr) {
         throw std::invalid_argument("scalar interface pointer cannot be null");
     }
     p_type = other->type();
     p_data = other;
-    m_flags |= flags::InterfacePointer | (other->is_const() ? flags::IsConst : flags::IsMutable);
+    m_flags |= flags::InterfacePointer
+            | (other->is_const() ? flags::IsConst : flags::IsMutable);
 }
-Scalar::Scalar(ScalarPointer ptr)
-    : ScalarPointer(ptr) {
+Scalar::Scalar(ScalarPointer ptr) : ScalarPointer(ptr)
+{
     if (p_data != nullptr && p_type == nullptr) {
         throw std::runtime_error("non-zero scalars must have a type");
     }
 }
 
 Scalar::Scalar(const ScalarType *type)
-    : ScalarPointer(type, static_cast<void *>(nullptr)) {
-}
+    : ScalarPointer(type, static_cast<void *>(nullptr))
+{}
 Scalar::Scalar(scalar_t scal)
-    : ScalarPointer(ScalarType::of<scalar_t>()->allocate(1)) {
+    : ScalarPointer(ScalarType::of<scalar_t>()->allocate(1))
+{
     p_type->convert_copy(to_mut_pointer(), {p_type, &scal}, 1);
 }
 Scalar::Scalar(const ScalarType *type, scalar_t scal)
-    : ScalarPointer(type->allocate(1)) {
+    : ScalarPointer(type->allocate(1))
+{
     const auto *scal_type = ScalarType::of<scalar_t>();
     p_type->convert_copy(const_cast<void *>(p_data), {scal_type, &scal}, 1);
 }
 Scalar::Scalar(const Scalar &other)
-    : ScalarPointer(other.p_type == nullptr ? ScalarPointer() : other.p_type->allocate(1)) {
+    : ScalarPointer(other.p_type == nullptr ? ScalarPointer()
+                                            : other.p_type->allocate(1))
+{
     if (p_type != nullptr) {
         p_type->convert_copy(to_mut_pointer(), other.to_pointer(), 1);
     }
 }
-Scalar::Scalar(Scalar &&other) noexcept
-    : ScalarPointer(std::move(other)) {
+Scalar::Scalar(Scalar &&other) noexcept : ScalarPointer(std::move(other))
+{
     /*
      * Since other might own its pointer, we need to make sure
      * the pointer is set to null before the destructor on other
@@ -91,7 +98,8 @@ Scalar::Scalar(Scalar &&other) noexcept
     other.p_data = nullptr;
 }
 
-Scalar::~Scalar() {
+Scalar::~Scalar()
+{
     if (p_data != nullptr) {
         if (is_interface()) {
             delete static_cast<ScalarInterface *>(const_cast<void *>(p_data));
@@ -102,20 +110,18 @@ Scalar::~Scalar() {
     }
 }
 
-bool Scalar::is_value() const noexcept {
-    if (p_data == nullptr) {
-        return true;
-    }
+bool Scalar::is_value() const noexcept
+{
+    if (p_data == nullptr) { return true; }
     if (is_interface()) {
         return static_cast<const ScalarInterface *>(p_data)->is_value();
     }
 
     return is_owning();
 }
-bool Scalar::is_zero() const noexcept {
-    if (p_data == nullptr) {
-        return true;
-    }
+bool Scalar::is_zero() const noexcept
+{
+    if (p_data == nullptr) { return true; }
     if (is_interface()) {
         return static_cast<const ScalarInterface *>(p_data)->is_zero();
     }
@@ -124,13 +130,15 @@ bool Scalar::is_zero() const noexcept {
     return p_type->is_zero(to_pointer());
 }
 
-Scalar &Scalar::operator=(const Scalar &other) {
+Scalar &Scalar::operator=(const Scalar &other)
+{
     if (is_const()) {
         throw std::runtime_error("Cannot cast to a const value");
     }
     if (this != std::addressof(other)) {
         if (is_interface()) {
-            auto *iface = static_cast<ScalarInterface *>(const_cast<void *>(p_data));
+            auto *iface = static_cast<ScalarInterface *>(
+                    const_cast<void *>(p_data));
             iface->assign(other.to_pointer());
         } else {
             p_type->convert_copy(to_mut_pointer(), other.to_pointer(), 1);
@@ -138,7 +146,8 @@ Scalar &Scalar::operator=(const Scalar &other) {
     }
     return *this;
 }
-Scalar &Scalar::operator=(Scalar &&other) noexcept {
+Scalar &Scalar::operator=(Scalar &&other) noexcept
+{
     if (this != std::addressof(other)) {
         if (p_type == nullptr || is_const()) {
             this->~Scalar();
@@ -149,7 +158,8 @@ Scalar &Scalar::operator=(Scalar &&other) noexcept {
             other.p_type = nullptr;
         } else {
             if (is_interface()) {
-                auto *iface = static_cast<ScalarInterface *>(const_cast<void *>(p_data));
+                auto *iface = static_cast<ScalarInterface *>(
+                        const_cast<void *>(p_data));
                 iface->assign(other.to_pointer());
             } else {
                 p_type->convert_copy(to_mut_pointer(), other.to_pointer(), 1);
@@ -160,13 +170,15 @@ Scalar &Scalar::operator=(Scalar &&other) noexcept {
     return *this;
 }
 
-ScalarPointer Scalar::to_pointer() const noexcept {
+ScalarPointer Scalar::to_pointer() const noexcept
+{
     if (is_interface()) {
         return static_cast<const ScalarInterface *>(p_data)->to_pointer();
     }
     return {p_type, p_data};
 }
-ScalarPointer Scalar::to_mut_pointer() {
+ScalarPointer Scalar::to_mut_pointer()
+{
     if (is_const()) {
         throw std::runtime_error("cannot get non-const pointer to const value");
     }
@@ -176,7 +188,8 @@ ScalarPointer Scalar::to_mut_pointer() {
     }
     return {p_type, ptr};
 }
-void Scalar::set_to_zero() {
+void Scalar::set_to_zero()
+{
     if (p_data == nullptr) {
         RPY_CHECK(p_type != nullptr);
         RPY_CHECK(!is_const());
@@ -186,33 +199,30 @@ void Scalar::set_to_zero() {
     }
     // TODO: look at the logic here.
 }
-scalar_t Scalar::to_scalar_t() const {
-    if (p_data == nullptr) {
-        return scalar_t(0);
-    }
+scalar_t Scalar::to_scalar_t() const
+{
+    if (p_data == nullptr) { return scalar_t(0); }
     if (is_interface()) {
         return static_cast<const ScalarInterface *>(p_data)->as_scalar();
     }
     RPY_CHECK(p_type != nullptr);
     return p_type->to_scalar_t(to_pointer());
 }
-Scalar Scalar::operator-() const {
-    if (p_data == nullptr) {
-        return Scalar(p_type);
-    }
+Scalar Scalar::operator-() const
+{
+    if (p_data == nullptr) { return Scalar(p_type); }
     if (is_interface()) {
         return static_cast<const ScalarInterface *>(p_data)->uminus();
     }
     return p_type->uminus(to_pointer());
 }
 
-#define RPY_SCALAR_OP(OP, MNAME)                                              \
-    Scalar Scalar::operator OP(const Scalar &other) const {                   \
-        const ScalarType *type = (p_type != nullptr) ? p_type : other.p_type; \
-        if (type == nullptr) {                                                \
-            return Scalar();                                                  \
-        }                                                                     \
-        return type->MNAME(to_pointer(), other.to_pointer());                 \
+#define RPY_SCALAR_OP(OP, MNAME)                                               \
+    Scalar Scalar::operator OP(const Scalar &other) const                      \
+    {                                                                          \
+        const ScalarType *type = (p_type != nullptr) ? p_type : other.p_type;  \
+        if (type == nullptr) { return Scalar(); }                              \
+        return type->MNAME(to_pointer(), other.to_pointer());                  \
     }
 
 RPY_SCALAR_OP(+, add)
@@ -221,11 +231,10 @@ RPY_SCALAR_OP(*, mul)
 
 #undef RPY_SCALAR_OP
 
-Scalar Scalar::operator/(const Scalar &other) const {
+Scalar Scalar::operator/(const Scalar &other) const
+{
     const ScalarType *type = (p_type != nullptr) ? p_type : other.p_type;
-    if (type == nullptr) {
-        return Scalar();
-    }
+    if (type == nullptr) { return Scalar(); }
     if (other.p_data == nullptr) {
         throw std::runtime_error("division by zero");
     }
@@ -233,40 +242,43 @@ Scalar Scalar::operator/(const Scalar &other) const {
     return type->div(to_pointer(), other.to_pointer());
 }
 
-#define RPY_SCALAR_IOP(OP, MNAME)                                                     \
-    Scalar &Scalar::operator OP(const Scalar &other) {                                \
-        if (is_const()) {                                                             \
-            throw std::runtime_error("performing inplace operation on const scalar"); \
-        }                                                                             \
-                                                                                      \
-        if (p_type == nullptr) {                                                      \
-            RPY_DBG_ASSERT(p_data == nullptr);                                        \
-            /* We just established that other.p_data != nullptr */                    \
-            RPY_DBG_ASSERT(other.p_type != nullptr);                                  \
-            p_type = other.p_type;                                                    \
-        }                                                                             \
-        if (p_data == nullptr) {                                                      \
-            if (p_type == nullptr) {                                                  \
-                p_type = other.p_type;                                                \
-            }                                                                         \
-            set_to_zero();                                                            \
-        }                                                                             \
-        if (is_interface()) {                                                         \
-            auto *iface = static_cast<ScalarInterface *>(const_cast<void *>(p_data)); \
-            iface->MNAME##_inplace(other);                                            \
-        } else {                                                                      \
-            p_type->MNAME##_inplace(to_mut_pointer(), other.to_pointer());            \
-        }                                                                             \
-        return *this;                                                                 \
+#define RPY_SCALAR_IOP(OP, MNAME)                                              \
+    Scalar &Scalar::operator OP(const Scalar &other)                           \
+    {                                                                          \
+        if (is_const()) {                                                      \
+            throw std::runtime_error(                                          \
+                    "performing inplace operation on const scalar");           \
+        }                                                                      \
+                                                                               \
+        if (p_type == nullptr) {                                               \
+            RPY_DBG_ASSERT(p_data == nullptr);                                 \
+            /* We just established that other.p_data != nullptr */             \
+            RPY_DBG_ASSERT(other.p_type != nullptr);                           \
+            p_type = other.p_type;                                             \
+        }                                                                      \
+        if (p_data == nullptr) {                                               \
+            if (p_type == nullptr) { p_type = other.p_type; }                  \
+            set_to_zero();                                                     \
+        }                                                                      \
+        if (is_interface()) {                                                  \
+            auto *iface = static_cast<ScalarInterface *>(                      \
+                    const_cast<void *>(p_data));                               \
+            iface->MNAME##_inplace(other);                                     \
+        } else {                                                               \
+            p_type->MNAME##_inplace(to_mut_pointer(), other.to_pointer());     \
+        }                                                                      \
+        return *this;                                                          \
     }
 
 RPY_SCALAR_IOP(+=, add)
 RPY_SCALAR_IOP(-=, sub)
 RPY_SCALAR_IOP(*=, mul)
 
-Scalar &Scalar::operator/=(const Scalar &other) {
+Scalar &Scalar::operator/=(const Scalar &other)
+{
     if (is_const()) {
-        throw std::runtime_error("performing inplace operation on const scalar");
+        throw std::runtime_error(
+                "performing inplace operation on const scalar");
     }
     if (other.p_data == nullptr) {
         throw std::runtime_error("division by zero");
@@ -277,32 +289,33 @@ Scalar &Scalar::operator/=(const Scalar &other) {
         p_type = other.p_type;
     }
     if (p_data == nullptr) {
-        if (p_type == nullptr) {
-            p_type = other.p_type->rational_type();
-        }
+        if (p_type == nullptr) { p_type = other.p_type->rational_type(); }
         set_to_zero();
     }
     if (is_interface()) {
-        auto *iface = static_cast<ScalarInterface *>(const_cast<void *>(p_data));
+        auto *iface
+                = static_cast<ScalarInterface *>(const_cast<void *>(p_data));
         iface->div_inplace(other);
     } else {
-        p_type->rational_type()->div_inplace(to_mut_pointer(), other.to_pointer());
+        p_type->rational_type()->div_inplace(to_mut_pointer(),
+                                             other.to_pointer());
     }
     return *this;
 }
 
 #undef RPY_SCALAR_IOP
 
-bool Scalar::operator==(const Scalar &rhs) const noexcept {
-    if (p_type == nullptr) {
-        return rhs.is_zero();
-    }
+bool Scalar::operator==(const Scalar &rhs) const noexcept
+{
+    if (p_type == nullptr) { return rhs.is_zero(); }
     return p_type->are_equal(to_pointer(), rhs.to_pointer());
 }
-bool Scalar::operator!=(const Scalar &rhs) const noexcept {
+bool Scalar::operator!=(const Scalar &rhs) const noexcept
+{
     return !operator==(rhs);
 }
-std::ostream &rpy::scalars::operator<<(std::ostream &os, const Scalar &arg) {
+std::ostream &rpy::scalars::operator<<(std::ostream &os, const Scalar &arg)
+{
     if (arg.type() == nullptr) {
         os << '0';
     } else {
@@ -314,4 +327,5 @@ std::ostream &rpy::scalars::operator<<(std::ostream &os, const Scalar &arg) {
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::Scalar
 #define RPY_SERIAL_DO_SPLIT
+
 #include <roughpy/platform/serialization_instantiations.inl>

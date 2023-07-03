@@ -13,8 +13,8 @@ if (NOT TARGET Libalgebra_lite::Libalgebra_lite)
     find_package(Libalgebra_Lite CONFIG REQUIRED)
 endif ()
 
-add_roughpy_lib(Algebra STATIC
-    SOURCES
+add_roughpy_component(Algebra
+        SOURCES
         src/basis.cpp
         src/algebra_base.cpp
         src/context.cpp
@@ -41,7 +41,7 @@ add_roughpy_lib(Algebra STATIC
         src/libalgebra_lite_internal/vector_type_helper.h
         src/tensor_basis.cpp
         src/lie_basis.cpp
-    PUBLIC_HEADERS
+        PUBLIC_HEADERS
         include/roughpy/algebra/algebra_fwd.h
         include/roughpy/algebra/algebra_base.h
         include/roughpy/algebra/algebra_impl.h
@@ -58,19 +58,25 @@ add_roughpy_lib(Algebra STATIC
         include/roughpy/algebra/lie_basis.h
         include/roughpy/algebra/tensor_basis.h
         include/roughpy/algebra/free_tensor.h
+        include/roughpy/algebra/free_tensor_fwd.h
         include/roughpy/algebra/free_tensor_impl.h
+        include/roughpy/algebra/lie_fwd.h
         include/roughpy/algebra/lie.h
+        include/roughpy/algebra/shuffle_tensor_fwd.h
         include/roughpy/algebra/shuffle_tensor.h
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/context.h
         include/roughpy/algebra/fallback_operations.h
+        include/roughpy/algebra/algebra_base_impl.h
+        include/roughpy/algebra/algebra_bundle_base_impl.h
     PUBLIC_DEPS
-        RoughPy::Core
-        RoughPy::Scalars
         Boost::boost
         Libalgebra_lite::Libalgebra_lite
-    )
-
+        NEEDS
+        RoughPy::Core
+        RoughPy::Platform
+        RoughPy::Scalars
+        )
 
 
 add_roughpy_test_helper(AlgebraMock STATIC
@@ -86,5 +92,6 @@ add_roughpy_test(algebra
         src/ContextFixture.cpp
         src/ContextFixture.h
         src/test_lie.cpp
-        LINK_COMPONENT
+        NEEDS
+        RoughPy::Algebra
         )

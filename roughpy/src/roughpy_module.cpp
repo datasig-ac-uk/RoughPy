@@ -28,23 +28,30 @@
 //
 // Created by user on 11/03/23.
 //
+// Python header first
+#define PY_SSIZE_T_CLEAN
+
+#include <Python.h>
 
 #include "roughpy_module.h"
 
 #include "algebra/algebra.h"
+#include "args/convert_timestamp.h"
 #include "intervals/intervals.h"
 #include "recombine.h"
 #include "scalars/scalars.h"
 #include "streams/streams.h"
 
 #ifndef ROUGHPY_VERSION_STRING
-#define ROUGHPY_VERSION_STRING "1.0.0"
+#  define ROUGHPY_VERSION_STRING "1.0.0"
 #endif
 
-PYBIND11_MODULE(_roughpy, m) {
+PYBIND11_MODULE(_roughpy, m)
+{
     using namespace rpy::python;
 
     m.add_object("__version__", py::str(ROUGHPY_VERSION_STRING));
+    init_datetime(m);
 
     init_scalars(m);
     init_intervals(m);

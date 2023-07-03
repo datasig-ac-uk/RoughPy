@@ -38,8 +38,8 @@
 namespace rpy {
 namespace algebra {
 
-template <typename Argument, typename Result>
-class LinearOperatorInterface {
+template <typename Argument, typename Result> class LinearOperatorInterface
+{
 
 public:
     using argument_type = Argument;
@@ -50,8 +50,8 @@ public:
     virtual result_type eval(const argument_type &arg) const;
 };
 
-template <typename Argument, typename Result>
-class LinearOperator {
+template <typename Argument, typename Result> class LinearOperator
+{
     using interface_type = LinearOperatorInterface<Argument, Result>;
     boost::intrusive_ptr<interface_type> p_impl;
 
@@ -60,10 +60,9 @@ public:
 };
 
 template <typename Argument, typename Result>
-Result LinearOperator<Argument, Result>::operator()(const Argument &arg) const {
-    if (p_impl) {
-        return p_impl->eval(arg);
-    }
+Result LinearOperator<Argument, Result>::operator()(const Argument &arg) const
+{
+    if (p_impl) { return p_impl->eval(arg); }
     return Result();
 }
 

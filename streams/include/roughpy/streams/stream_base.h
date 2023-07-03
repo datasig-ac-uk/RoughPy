@@ -29,8 +29,10 @@
 #define ROUGHPY_STREAMS_STREAM_BASE_H_
 
 #include "roughpy/intervals/dyadic_interval.h"
-#include "roughpy_streams_export.h"
 #include <roughpy/algebra/context.h>
+#include <roughpy/algebra/free_tensor.h>
+#include <roughpy/algebra/lie.h>
+#include <roughpy/algebra/shuffle_tensor.h>
 #include <roughpy/core/types.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
@@ -39,7 +41,6 @@
 
 namespace rpy {
 namespace streams {
-
 
 /**
  * @brief Metadata associated with all path objects
@@ -75,7 +76,8 @@ struct StreamMetadata {
  * from log signatures, rather than using the data to compute these
  * independently.)
  */
-class ROUGHPY_STREAMS_EXPORT StreamInterface {
+class RPY_EXPORT StreamInterface
+{
     StreamMetadata m_metadata;
     std::shared_ptr<StreamSchema> p_schema;
 
@@ -83,16 +85,18 @@ public:
     RPY_NO_DISCARD
     const StreamMetadata &metadata() const noexcept { return m_metadata; }
     RPY_NO_DISCARD
-    const StreamSchema& schema() const noexcept { return *p_schema; }
+    const StreamSchema &schema() const noexcept { return *p_schema; }
 
-    explicit StreamInterface(StreamMetadata md, std::shared_ptr<StreamSchema> schema)
+    explicit StreamInterface(StreamMetadata md,
+                             std::shared_ptr<StreamSchema> schema)
         : m_metadata(std::move(md)), p_schema(std::move(schema))
     {
         RPY_DBG_ASSERT(p_schema);
     }
 
     explicit StreamInterface(StreamMetadata md)
-        : m_metadata(std::move(md)), p_schema(new StreamSchema(m_metadata.width))
+        : m_metadata(std::move(md)),
+          p_schema(new StreamSchema(m_metadata.width))
     {}
 
     virtual ~StreamInterface() noexcept;
@@ -100,69 +104,61 @@ public:
     virtual bool empty(const intervals::Interval &interval) const noexcept;
 
 protected:
+    void set_metadata(StreamMetadata &&md) noexcept;
 
-    void set_metadata(StreamMetadata&& md) noexcept;
-
-    void set_schema(std::shared_ptr<StreamSchema> schema) noexcept {
+    void set_schema(std::shared_ptr<StreamSchema> schema) noexcept
+    {
         p_schema = std::move(schema);
     }
 
     RPY_NO_DISCARD
-    virtual algebra::Lie
-    log_signature_impl(const intervals::Interval &interval,
-                       const algebra::Context &ctx) const = 0;
+    virtual algebra::Lie log_signature_impl(const intervals::Interval &interval,
+                                            const algebra::Context &ctx) const
+            = 0;
 
 public:
     RPY_NO_DISCARD
-    virtual algebra::Lie
-    log_signature(const intervals::Interval &interval,
-                  const algebra::Context &ctx) const;
+    virtual algebra::Lie log_signature(const intervals::Interval &interval,
+                                       const algebra::Context &ctx) const;
 
     RPY_NO_DISCARD
     virtual algebra::Lie
     log_signature(const intervals::DyadicInterval &interval,
-                  resolution_t resolution,
-                  const algebra::Context &ctx) const;
+                  resolution_t resolution, const algebra::Context &ctx) const;
 
     RPY_NO_DISCARD
-    virtual algebra::Lie
-    log_signature(const intervals::Interval &interval,
-                  resolution_t resolution,
-                  const algebra::Context &ctx) const;
+    virtual algebra::Lie log_signature(const intervals::Interval &interval,
+                                       resolution_t resolution,
+                                       const algebra::Context &ctx) const;
 
     RPY_NO_DISCARD
-    virtual algebra::FreeTensor
-    signature(const intervals::Interval &interval,
-              const algebra::Context &ctx) const;
+    virtual algebra::FreeTensor signature(const intervals::Interval &interval,
+                                          const algebra::Context &ctx) const;
 
     RPY_NO_DISCARD
-    virtual algebra::FreeTensor
-    signature(const intervals::Interval &interval,
-              resolution_t resolution,
-              const algebra::Context &ctx) const;
+    virtual algebra::FreeTensor signature(const intervals::Interval &interval,
+                                          resolution_t resolution,
+                                          const algebra::Context &ctx) const;
 
 protected:
     // TODO: add methods for batch computing signatures via a computation tree
 
-
 public:
-
-//    RPY_SERIAL_SERIALIZE_FN();
-
+    //    RPY_SERIAL_SERIALIZE_FN();
 };
 
 /**
  * @brief Subclass of `StreamInterface` for solutions of controlled differential equations.
  */
-class ROUGHPY_STREAMS_EXPORT SolutionStreamInterface : public StreamInterface {
+class RPY_EXPORT SolutionStreamInterface : public StreamInterface
+{
 public:
     using StreamInterface::StreamInterface;
     virtual algebra::Lie base_point() const = 0;
 };
 
-
-
-RPY_SERIAL_LOAD_FN_EXT(StreamMetadata) {
+RPY_SERIAL_LOAD_FN_EXT(StreamMetadata)
+{
     RPY_SERIAL_SERIALIZE_NVP("width", value.width);
     RPY_SERIAL_SERIALIZE_NVP("support", value.effective_support);
 
@@ -178,7 +174,8 @@ RPY_SERIAL_LOAD_FN_EXT(StreamMetadata) {
     RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
 }
 
-RPY_SERIAL_SAVE_FN_EXT(StreamMetadata) {
+RPY_SERIAL_SAVE_FN_EXT(StreamMetadata)
+{
     RPY_SERIAL_SERIALIZE_NVP("width", value.width);
     RPY_SERIAL_SERIALIZE_NVP("support", value.effective_support);
 
@@ -195,9 +192,6 @@ RPY_SERIAL_SAVE_FN_EXT(StreamMetadata) {
 //    RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
 //    RPY_SERIAL_SERIALIZE_NVP("schema", m_schema);
 //}
-
-
-
 
 }// namespace streams
 }// namespace rpy

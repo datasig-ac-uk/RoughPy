@@ -30,32 +30,34 @@
 //
 
 #include "ScalarTests.h"
-#include "scalar.h"
-#include "scalar_pointer.h"
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_pointer.h>
 
 #include <vector>
 
 using ScalarTypeTests = rpy::scalars::testing::ScalarTests;
 using namespace rpy::scalars;
 
-class RAIIAlloc {
+class RAIIAlloc
+{
     ScalarPointer m_ptr;
     std::size_t m_count;
 
 public:
     RAIIAlloc(const ScalarType *type, std::size_t count)
-        : m_ptr(type->allocate(count)), m_count(count) {}
+        : m_ptr(type->allocate(count)), m_count(count)
+    {}
 
-    ~RAIIAlloc() {
-        if (m_ptr.type() != nullptr) {
-            m_ptr.type()->free(m_ptr, m_count);
-        }
+    ~RAIIAlloc()
+    {
+        if (m_ptr.type() != nullptr) { m_ptr.type()->free(m_ptr, m_count); }
     }
 
     constexpr operator ScalarPointer() const noexcept { return m_ptr; }
 };
 
-TEST_F(ScalarTypeTests, BasicInfoFloat) {
+TEST_F(ScalarTypeTests, BasicInfoFloat)
+{
     auto info = ftype->info();
 
     ASSERT_EQ(info.n_bytes, sizeof(float));
@@ -70,7 +72,8 @@ TEST_F(ScalarTypeTests, BasicInfoFloat) {
     ASSERT_EQ(info.basic_info.lanes, 1);
 }
 
-TEST_F(ScalarTypeTests, BasicInfoDouble) {
+TEST_F(ScalarTypeTests, BasicInfoDouble)
+{
     auto info = dtype->info();
 
     ASSERT_EQ(info.n_bytes, sizeof(double));
@@ -85,19 +88,22 @@ TEST_F(ScalarTypeTests, BasicInfoDouble) {
     ASSERT_EQ(info.basic_info.lanes, 1);
 }
 
-TEST_F(ScalarTypeTests, RationalTypeEqualForFloatingScalars) {
+TEST_F(ScalarTypeTests, RationalTypeEqualForFloatingScalars)
+{
     ASSERT_EQ(dtype->rational_type(), dtype);
     ASSERT_EQ(ftype->rational_type(), ftype);
 }
 
-TEST_F(ScalarTypeTests, AllocateGivesNonNull) {
+TEST_F(ScalarTypeTests, AllocateGivesNonNull)
+{
     RAIIAlloc alloced(dtype, 1);
     auto ptr = ScalarPointer(alloced);
 
     EXPECT_NE(ptr.cptr(), nullptr);
 }
 
-TEST_F(ScalarTypeTests, OneGivesCorrectValue) {
+TEST_F(ScalarTypeTests, OneGivesCorrectValue)
+{
     auto one = dtype->one();
     auto ptr = one.to_pointer();
 
@@ -105,7 +111,8 @@ TEST_F(ScalarTypeTests, OneGivesCorrectValue) {
     ASSERT_EQ(*ptr.raw_cast<const double *>(), 1.0);
 }
 
-TEST_F(ScalarTypeTests, ZeroGivesCorrectValue) {
+TEST_F(ScalarTypeTests, ZeroGivesCorrectValue)
+{
     auto zero = dtype->zero();
     auto ptr = zero.to_pointer();
 
@@ -113,7 +120,8 @@ TEST_F(ScalarTypeTests, ZeroGivesCorrectValue) {
     ASSERT_EQ(*ptr.raw_cast<const double *>(), 0.0);
 }
 
-TEST_F(ScalarTypeTests, MoneGivesCorrectValue) {
+TEST_F(ScalarTypeTests, MoneGivesCorrectValue)
+{
     auto mone = dtype->mone();
     auto ptr = mone.to_pointer();
 
@@ -121,14 +129,16 @@ TEST_F(ScalarTypeTests, MoneGivesCorrectValue) {
     ASSERT_EQ(*ptr.raw_cast<const double *>(), -1.0);
 }
 
-TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType) {
+TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType)
+{
 
     std::vector<std::int32_t> ints{1, 2, 3, 4, 5, 6};
 
     RAIIAlloc alloced(dtype, ints.size());
     ScalarPointer ptr(alloced);
 
-    dtype->convert_copy(ptr, ints.data(), ints.size(), type_id_of<std::int32_t>());
+    dtype->convert_copy(ptr, ints.data(), ints.size(),
+                        type_id_of<std::int32_t>());
 
     auto raw_ptr = ptr.raw_cast<const double *>();
     for (std::size_t i = 0; i < ints.size(); ++i) {
@@ -136,7 +146,8 @@ TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType) {
     }
 }
 
-TEST_F(ScalarTypeTests, CopyConvertFromScalarType) {
+TEST_F(ScalarTypeTests, CopyConvertFromScalarType)
+{
     std::vector<float> floats{1.01, 2.02, 3.03, 4.04, 5.05, 6.06};
 
     RAIIAlloc alloced(dtype, floats.size());
@@ -150,14 +161,16 @@ TEST_F(ScalarTypeTests, CopyConvertFromScalarType) {
     }
 }
 
-TEST_F(ScalarTypeTests, ToScalarFromFloat) {
+TEST_F(ScalarTypeTests, ToScalarFromFloat)
+{
     float val = 1.000001;// doesn't have an exact float representation
     auto dble = ftype->to_scalar_t({ftype, &val});
 
     ASSERT_FLOAT_EQ(dble, val);
 }
 
-TEST_F(ScalarTypeTests, AssignNumAndDenom) {
+TEST_F(ScalarTypeTests, AssignNumAndDenom)
+{
     double val = 0.0;
     dtype->assign({dtype, &val}, 1LL, 256LL);
 

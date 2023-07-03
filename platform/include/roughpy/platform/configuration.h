@@ -51,7 +51,8 @@ const Configuration &get_config();
 /**
  * @brief Interface for getting RoughPy configuration settings.
  */
-class Configuration {
+class Configuration
+{
 
     class State;
 
@@ -60,33 +61,25 @@ class Configuration {
     Configuration();
     ~Configuration();
 
-    friend const Configuration& get_config();
+    friend const Configuration &get_config();
 
 public:
-
     RPY_NO_DISCARD
     string_view get_raw_config_value(string_view property) const;
 
     template <typename T>
-    RPY_NO_DISCARD
-    enable_if_t<is_constructible<T, string_view>::value, T> get_config_value(string_view property) const;
-
+    RPY_NO_DISCARD enable_if_t<is_constructible<T, string_view>::value, T>
+    get_config_value(string_view property) const;
 
     // TODO: In the future, this will include methods for finding runtime libraries like libcudart
-
-
-
 };
 
-
-
-
 template <typename T>
-RPY_NO_DISCARD
-enable_if_t<is_constructible<T, string_view>::value, T> Configuration::get_config_value(string_view property) const {
+RPY_NO_DISCARD enable_if_t<is_constructible<T, string_view>::value, T>
+Configuration::get_config_value(string_view property) const
+{
     return T(get_raw_config_value(property));
 }
-
 
 }// namespace rpy
 

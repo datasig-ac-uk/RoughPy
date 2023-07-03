@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,11 +35,14 @@
 namespace rpy {
 namespace python {
 
-class RPY_NO_EXPORT FunctionStream : public streams::DynamicallyConstructedStream {
+class RPY_NO_EXPORT FunctionStream
+    : public streams::DynamicallyConstructedStream
+{
     py::object m_fn;
 
 public:
-    enum FunctionValueType {
+    enum FunctionValueType
+    {
         Value,
         Increment
     };
@@ -48,20 +51,22 @@ private:
     FunctionValueType m_val_type;
 
 public:
-    FunctionStream(py::object fn, FunctionValueType val_type, streams::StreamMetadata md);
-
+    FunctionStream(py::object fn, FunctionValueType val_type,
+                   streams::StreamMetadata md);
 
 protected:
-    algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval &interval,
+                                    const algebra::Context &ctx) const override;
 
-    pair<Lie, Lie> compute_child_lie_increments(DyadicInterval left_di, DyadicInterval right_di, const Lie &parent_value) const override;
+    pair<Lie, Lie>
+    compute_child_lie_increments(DyadicInterval left_di,
+                                 DyadicInterval right_di,
+                                 const Lie &parent_value) const override;
 };
 
+void init_function_stream(py::module_ &m);
 
-void init_function_stream(py::module_& m);
+}// namespace python
+}// namespace rpy
 
-
-} // namespace python
-} // namespace rpy
-
-#endif // RPY_PY_STREAMS_FUNCTION_PATH_H_
+#endif// RPY_PY_STREAMS_FUNCTION_PATH_H_

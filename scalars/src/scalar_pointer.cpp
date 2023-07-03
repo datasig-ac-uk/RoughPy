@@ -29,71 +29,79 @@
 // Created by user on 26/02/23.
 //
 
-#include "scalar_pointer.h"
+#include <roughpy/scalars/scalar_pointer.h>
 
 #include <roughpy/core/alloc.h>
 
-#include <stdexcept>
-
-#include "scalar.h"
-#include "scalar_type.h"
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_type.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-void *ScalarPointer::ptr() {
+void *ScalarPointer::ptr()
+{
     if (is_const()) {
-        throw std::runtime_error("attempting to convert const pointer to non-const pointer");
+        throw std::runtime_error(
+                "attempting to convert const pointer to non-const pointer");
     }
     return const_cast<void *>(p_data);
 }
-Scalar ScalarPointer::deref() const noexcept {
+Scalar ScalarPointer::deref() const noexcept
+{
     return Scalar(*this, (m_flags & ~owning_flag) | constness_flag);
 }
-Scalar ScalarPointer::deref_mut() {
+Scalar ScalarPointer::deref_mut()
+{
     if (is_const()) {
-        throw std::runtime_error("attempting to dereference const pointer to non-const value");
+        throw std::runtime_error(
+                "attempting to dereference const pointer to non-const value");
     }
     return Scalar(*this, m_flags & ~owning_flag);
 }
-Scalar ScalarPointer::operator*() {
-    return deref_mut();
-}
-Scalar ScalarPointer::operator*() const noexcept {
-    return deref();
-}
-ScalarPointer ScalarPointer::operator+(ScalarPointer::size_type index) const noexcept {
-    if (p_data == nullptr || p_type == nullptr) {
-        return {};
-    }
+Scalar ScalarPointer::operator*() { return deref_mut(); }
+Scalar ScalarPointer::operator*() const noexcept { return deref(); }
+ScalarPointer
+ScalarPointer::operator+(ScalarPointer::size_type index) const noexcept
+{
+    if (p_data == nullptr || p_type == nullptr) { return {}; }
 
-    const auto *new_ptr = static_cast<const char *>(p_data) + index * p_type->itemsize();
+    const auto *new_ptr
+            = static_cast<const char *>(p_data) + index * p_type->itemsize();
     return {p_type, static_cast<const void *>(new_ptr), m_flags & ~owning_flag};
 }
-ScalarPointer &ScalarPointer::operator+=(ScalarPointer::size_type index) noexcept {
+ScalarPointer &
+ScalarPointer::operator+=(ScalarPointer::size_type index) noexcept
+{
     if (p_data != nullptr && p_type != nullptr) {
         p_data = static_cast<const char *>(p_data) + index * p_type->itemsize();
     }
     return *this;
 }
-ScalarPointer &ScalarPointer::operator++() noexcept {
+ScalarPointer &ScalarPointer::operator++() noexcept
+{
     if (p_type != nullptr && p_data != nullptr) {
         p_data = static_cast<const char *>(p_data) + p_type->itemsize();
     }
     return *this;
 }
-const ScalarPointer ScalarPointer::operator++(int) noexcept {
+const ScalarPointer ScalarPointer::operator++(int) noexcept
+{
     ScalarPointer result(*this);
     this->operator++();
     return result;
 }
-Scalar ScalarPointer::operator[](ScalarPointer::size_type index) const noexcept {
+Scalar ScalarPointer::operator[](ScalarPointer::size_type index) const noexcept
+{
     return (*this + index).deref();
 }
-Scalar ScalarPointer::operator[](ScalarPointer::size_type index) {
+Scalar ScalarPointer::operator[](ScalarPointer::size_type index)
+{
     return (*this + index).deref_mut();
 }
-ScalarPointer::difference_type ScalarPointer::operator-(const ScalarPointer &right) const noexcept {
+ScalarPointer::difference_type
+ScalarPointer::operator-(const ScalarPointer &right) const noexcept
+{
     const ScalarType *type = p_type;
     if (type == nullptr) {
         if (right.p_type != nullptr) {
@@ -103,27 +111,25 @@ ScalarPointer::difference_type ScalarPointer::operator-(const ScalarPointer &rig
         }
     }
     return static_cast<difference_type>(
-               static_cast<const char *>(p_data) - static_cast<const char *>(right.p_data))
-        / type->itemsize();
+                   static_cast<const char *>(p_data)
+                   - static_cast<const char *>(right.p_data))
+            / type->itemsize();
 }
 
-std::string rpy::scalars::ScalarPointer::get_type_id() const {
-    if (p_type != nullptr) {
-        return p_type->id();
-    }
+std::string rpy::scalars::ScalarPointer::get_type_id() const
+{
+    if (p_type != nullptr) { return p_type->id(); }
     RPY_CHECK(is_simple_integer());
 
     BasicScalarInfo info{
-        is_signed_integer() ? ScalarTypeCode::Int : ScalarTypeCode::UInt,
-        static_cast<uint8_t>(CHAR_BIT * simple_integer_bytes()),
-        1};
+            is_signed_integer() ? ScalarTypeCode::Int : ScalarTypeCode::UInt,
+            static_cast<uint8_t>(CHAR_BIT * simple_integer_bytes()), 1};
 
     return id_from_basic_info(info);
 }
-std::vector<byte> rpy::scalars::ScalarPointer::to_raw_bytes(dimn_t count) const {
-    if (p_type != nullptr) {
-        return p_type->to_raw_bytes(*this, count);
-    }
+std::vector<byte> rpy::scalars::ScalarPointer::to_raw_bytes(dimn_t count) const
+{
+    if (p_type != nullptr) { return p_type->to_raw_bytes(*this, count); }
 
     RPY_CHECK(is_simple_integer());
 
@@ -132,7 +138,10 @@ std::vector<byte> rpy::scalars::ScalarPointer::to_raw_bytes(dimn_t count) const 
     std::memcpy(result.data(), p_data, n_bytes);
     return result;
 }
-void rpy::scalars::ScalarPointer::update_from_bytes(const std::string &type_id, dimn_t count, Slice<byte> raw) {
+void rpy::scalars::ScalarPointer::update_from_bytes(const std::string &type_id,
+                                                    dimn_t count,
+                                                    Slice<byte> raw)
+{
 
     const auto *type = get_type(type_id);
     if (type != nullptr) {
@@ -153,7 +162,7 @@ void rpy::scalars::ScalarPointer::update_from_bytes(const std::string &type_id, 
         m_flags |= flags::Signed;
     }
     auto order = static_cast<uint32_t>(count_bits(info.n_bytes));
-    RPY_DBG_ASSERT((1 << order) == info.n_bytes);
+    RPY_DBG_ASSERT((dimn_t(1) << order) == info.n_bytes);
     RPY_DBG_ASSERT(order <= 7);
     m_flags |= (order << integer_bits_offset);
     RPY_DBG_ASSERT(simple_integer_bytes() == info.n_bytes);

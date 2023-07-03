@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,24 +30,21 @@
 
 #include "roughpy_module.h"
 
-#include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/key_scalar_array.h>
+#include <roughpy/scalars/scalar_type.h>
 
 namespace rpy {
 namespace python {
 
-
 struct PyScalarMetaType {
     PyHeapTypeObject tp_hto;
-    char* ht_name;
-    const scalars::ScalarType* tp_ctype;
+    char *ht_name;
+    const scalars::ScalarType *tp_ctype;
 };
 
 struct PyScalarTypeBase {
-    PyObject_VAR_HEAD;
+    PyObject_VAR_HEAD
 };
-
-
 
 namespace dtl {
 
@@ -57,10 +54,9 @@ struct new_scalar_type_temps_manager {
     char *tp_doc = nullptr;
     PyScalarMetaType *cls = nullptr;
 
-    ~new_scalar_type_temps_manager() {
-        if (PyErr_Occurred()) {
-            Py_CLEAR(cls);
-        }
+    ~new_scalar_type_temps_manager()
+    {
+        if (PyErr_Occurred()) { Py_CLEAR(cls); }
 
         PyMem_Free(ht_name);
         PyMem_Free(ht_tpname);
@@ -73,12 +69,13 @@ struct new_scalar_type_temps_manager {
 py::handle get_scalar_metaclass();
 py::handle get_scalar_baseclass();
 
-extern "C" void PyScalarMetaType_dealloc(PyObject* arg);
+extern "C" void PyScalarMetaType_dealloc(PyObject *arg);
 
-void register_scalar_type(const scalars::ScalarType* ctype, py::handle py_type);
+void register_scalar_type(const scalars::ScalarType *ctype, py::handle py_type);
 py::object to_ctype_type(const scalars::ScalarType *type);
 
-inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype) {
+inline void make_scalar_type(py::module_ &m, const scalars::ScalarType *ctype)
+{
     py::object mcs = py::reinterpret_borrow<py::object>(get_scalar_metaclass());
 
     py::handle base = get_scalar_baseclass();
@@ -95,26 +92,25 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype) {
     py::object ht_module(m);
 #endif
 
-    tmp_manager.ht_name = reinterpret_cast<char *>(PyMem_Malloc(name.size() + 1));
+    tmp_manager.ht_name
+            = reinterpret_cast<char *>(PyMem_Malloc(name.size() + 1));
     if (tmp_manager.ht_name == nullptr) {
         PyErr_NoMemory();
         throw py::error_already_set();
     }
     memcpy(tmp_manager.ht_name, name.c_str(), name.size());
 
-    tmp_manager.cls = reinterpret_cast<PyScalarMetaType *>(mcs_tp->tp_alloc(mcs_tp, 0));
-    if (tmp_manager.cls == nullptr) {
-        throw py::error_already_set();
-    }
+    tmp_manager.cls
+            = reinterpret_cast<PyScalarMetaType *>(mcs_tp->tp_alloc(mcs_tp, 0));
+    if (tmp_manager.cls == nullptr) { throw py::error_already_set(); }
     auto *hto = reinterpret_cast<PyHeapTypeObject *>(&tmp_manager.cls->tp_hto);
     auto *type = &hto->ht_type;
 
-    type->tp_flags = (Py_TPFLAGS_DEFAULT
-                      | Py_TPFLAGS_HEAPTYPE
+    type->tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HEAPTYPE
 #if PY_VERSION_HEX >= 0x030A0000
                       | Py_TPFLAGS_DISALLOW_INSTANTIATION
 #endif
-                      | Py_TPFLAGS_HAVE_GC);
+    );
 #if PY_VERSION_HEX >= 0x03090000
     hto->ht_module = ht_module.release().ptr();
 #endif
@@ -152,30 +148,32 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype) {
     m.add_object(name.c_str(), h_class);
 }
 
-inline const scalars::ScalarType *to_stype_ptr(const py::handle &arg) {
+inline const scalars::ScalarType *to_stype_ptr(const py::handle &arg)
+{
     if (!py::isinstance(arg, get_scalar_metaclass())) {
         throw py::type_error("argument is not a valid scalar type");
     }
     return reinterpret_cast<PyScalarMetaType *>(arg.ptr())->tp_ctype;
 }
 
-char format_to_type_char(const string& fmt);
-string py_buffer_to_type_id(const py::buffer_info& info);
+char format_to_type_char(const string &fmt);
+string py_buffer_to_type_id(const py::buffer_info &info);
 
-const scalars::ScalarType* py_buffer_to_scalar_type(const py::buffer_info& info);
-const scalars::ScalarType* py_type_to_scalar_type(const py::type& type);
+const scalars::ScalarType *
+py_buffer_to_scalar_type(const py::buffer_info &info);
+const scalars::ScalarType *py_type_to_scalar_type(const py::type &type);
 const scalars::ScalarType *py_arg_to_ctype(const py::object &arg);
 
-py::type scalar_type_to_py_type(const scalars::ScalarType* type);
+py::type scalar_type_to_py_type(const scalars::ScalarType *type);
 
-inline string pytype_name(const py::type &type) {
+inline string pytype_name(const py::type &type)
+{
     return {reinterpret_cast<PyTypeObject *>(type.ptr())->tp_name};
 }
 
-void init_scalar_types(py::module_& m);
+void init_scalar_types(py::module_ &m);
 
+}// namespace python
+}// namespace rpy
 
-} // namespace python
-} // namespace rpy
-
-#endif // RPY_PY_SCALARS_SCALAR_TYPE_H_
+#endif// RPY_PY_SCALARS_SCALAR_TYPE_H_

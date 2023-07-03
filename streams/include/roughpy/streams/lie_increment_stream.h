@@ -40,43 +40,42 @@
 namespace rpy {
 namespace streams {
 
-class ROUGHPY_STREAMS_EXPORT LieIncrementStream : public DyadicCachingLayer {
+class RPY_EXPORT LieIncrementStream : public DyadicCachingLayer
+{
     scalars::KeyScalarArray m_buffer;
     boost::container::flat_map<param_t, dimn_t> m_mapping;
 
     using base_t = DyadicCachingLayer;
 
 public:
-    LieIncrementStream(
-        scalars::KeyScalarArray &&buffer,
-        boost::container::flat_map<param_t, dimn_t> &&mapping,
-        StreamMetadata &&md)
-        : DyadicCachingLayer(std::move(md)),
-          m_buffer(std::move(buffer)),
-          m_mapping(std::move(mapping)) {}
+    LieIncrementStream(scalars::KeyScalarArray &&buffer,
+                       boost::container::flat_map<param_t, dimn_t> &&mapping,
+                       StreamMetadata &&md)
+        : DyadicCachingLayer(std::move(md)), m_buffer(std::move(buffer)),
+          m_mapping(std::move(mapping))
+    {}
 
-    LieIncrementStream(
-        scalars::KeyScalarArray &&buffer,
-        Slice<param_t> indices,
-        StreamMetadata md);
+    LieIncrementStream(scalars::KeyScalarArray &&buffer, Slice<param_t> indices,
+                       StreamMetadata md);
 
     RPY_NO_DISCARD
     bool empty(const intervals::Interval &interval) const noexcept override;
 
 protected:
     RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval &interval,
+                                    const algebra::Context &ctx) const override;
 
 public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
+{
     StreamMetadata md = metadata();
     RPY_SERIAL_SERIALIZE_NVP("metadata", md);
     RPY_SERIAL_SERIALIZE_NVP("buffer", m_buffer);
     RPY_SERIAL_SERIALIZE_NVP("mapping", m_mapping);
-
 }
 
 }// namespace streams
@@ -84,7 +83,8 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream) {
 
 #ifndef RPY_DISABLE_SERIALIZATION
 
-RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::LieIncrementStream) {
+RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::LieIncrementStream)
+{
     using namespace rpy;
     using namespace rpy::streams;
 

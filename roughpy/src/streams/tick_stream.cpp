@@ -54,45 +54,45 @@ using helper_t = streams::StreamConstructionHelper;
 static const char *TICK_STREAM_DOC = R"rpydoc(Tick stream
 )rpydoc";
 
-static void parse_data_to_ticks(helper_t &helper,
-                                const py::handle &data,
-                                const py::kwargs &kwargs);
+//static void parse_data_to_ticks(helper_t &helper,
+//                                const py::handle &data,
+//                                const py::kwargs &kwargs);
 
-static py::object construct(const py::object &data, const py::kwargs &kwargs) {
+static py::object construct(const py::object &data, const py::kwargs &kwargs)
+{
 
     auto pmd = python::kwargs_to_metadata(kwargs);
     auto &schema = pmd.schema;
 
-    if (!schema) {
-        schema = std::make_shared<streams::StreamSchema>();
-    }
+    if (!schema) { schema = std::make_shared<streams::StreamSchema>(); }
 
     py::object parser;
     if (kwargs.contains("parser")) {
         parser = kwargs["parser"](schema);
     } else {
-        auto tick_helpers_mod = py::module_::import("roughpy.streams.tick_stream");
+        auto tick_helpers_mod
+                = py::module_::import("roughpy.streams.tick_stream");
         parser = tick_helpers_mod.attr("StandardTickDataParser")(schema);
     }
 
     parser.attr("parse_data")(data);
 
-    auto& helper = parser.attr("helper").cast<python::RPyTickConstructionHelper&>();
+    auto &helper
+            = parser.attr("helper").cast<python::RPyTickConstructionHelper &>();
 
-    const auto& ticks = helper.ticks();
-    if (ticks.empty()) {
-        throw py::value_error("tick data cannot be empty");
-    }
+    const auto &ticks = helper.ticks();
+    if (ticks.empty()) { throw py::value_error("tick data cannot be empty"); }
 
-//    if (!schema->is_final()) {
-//        python::parse_data_into_schema(schema, data);
-//        pmd.width = schema->width();
-//        schema->finalize();
-//    }
+    //    if (!schema->is_final()) {
+    //        python::parse_data_into_schema(schema, data);
+    //        pmd.width = schema->width();
+    //        schema->finalize();
+    //    }
     if (!pmd.ctx) {
         pmd.width = schema->width();
         if (pmd.width == 0 || pmd.depth == 0 || pmd.scalar_type == nullptr) {
-            throw py::value_error("either ctx or width, depth, and dtype must be provided");
+            throw py::value_error(
+                    "either ctx or width, depth, and dtype must be provided");
         }
         pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type);
     } else if (pmd.width != pmd.ctx->width()) {
@@ -100,14 +100,14 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
         pmd.ctx = pmd.ctx->get_alike(pmd.width, pmd.depth, pmd.scalar_type);
     }
 
-//    helper_t helper(
-//        pmd.ctx,
-//        schema,
-//        static_cast<bool>(pmd.vector_type)
-//            ? *pmd.vector_type
-//            : algebra::VectorType::Sparse);
+    //    helper_t helper(
+    //        pmd.ctx,
+    //        schema,
+    //        static_cast<bool>(pmd.vector_type)
+    //            ? *pmd.vector_type
+    //            : algebra::VectorType::Sparse);
 
-//    parse_data_to_ticks(helper, data, kwargs);
+    //    parse_data_to_ticks(helper, data, kwargs);
 
     //    python::PyToBufferOptions options;
     //    options.type = pmd.scalar_type;
@@ -119,35 +119,37 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
     //    scalars::ScalarStream stream(options.type);
     //    stream.reserve_size(options.shape.size());
 
-//    auto result = streams::Stream(
-//        streams::TickStream(
-//            std::move(helper),
-//            {pmd.width,
-//             pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
-//             pmd.ctx,
-//             pmd.scalar_type,
-//             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-//             pmd.resolution,
-//             pmd.interval_type
-//            },
-//            pmd.resolution));
+    //    auto result = streams::Stream(
+    //        streams::TickStream(
+    //            std::move(helper),
+    //            {pmd.width,
+    //             pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
+    //             pmd.ctx,
+    //             pmd.scalar_type,
+    //             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
+    //             pmd.resolution,
+    //             pmd.interval_type
+    //            },
+    //            pmd.resolution));
 
     streams::StreamMetadata meta{
-        pmd.width,
-        pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
-        pmd.ctx,
-        pmd.scalar_type,
-        pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-        pmd.resolution,
-        pmd.interval_type};
+            pmd.width,
+            pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
+            pmd.ctx,
+            pmd.scalar_type,
+            pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
+            pmd.resolution,
+            pmd.interval_type};
 
     std::set<param_t> index;
     std::map<intervals::DyadicInterval, algebra::Lie> raw_data;
 
     // For value types, we need to keep track of the last value that appeared
-    std::vector<algebra::Lie> previous_values(pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type));
-    for (const auto& tick : ticks) {
-        const intervals::DyadicInterval di(tick.timestamp, pmd.resolution, pmd.interval_type);
+    std::vector<algebra::Lie> previous_values(
+            pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type));
+    for (const auto &tick : ticks) {
+        const intervals::DyadicInterval di(tick.timestamp, pmd.resolution,
+                                           pmd.interval_type);
 
         auto lie_elt = pmd.ctx->zero_lie(meta.cached_vector_type);
 
@@ -155,23 +157,26 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
         auto key = static_cast<key_type>(idx);
         switch (tick.type) {
             case streams::ChannelType::Increment:
-                lie_elt[key] += python::py_to_scalar(pmd.scalar_type, tick.data);
+                lie_elt[key]
+                        += python::py_to_scalar(pmd.scalar_type, tick.data);
                 break;
             case streams::ChannelType::Value: {
                 auto lag_key = key + 1;
-                const auto& prev_lead = previous_values[idx];
-                const auto& prev_lag = previous_values[idx+1];
+                const auto &prev_lead = previous_values[idx];
+                const auto &prev_lag = previous_values[idx + 1];
 
                 auto lead = pmd.ctx->zero_lie(meta.cached_vector_type);
                 auto lag = pmd.ctx->zero_lie(meta.cached_vector_type);
 
                 lead[key] += python::py_to_scalar(pmd.scalar_type, tick.data);
-                lead[lag_key] += python::py_to_scalar(pmd.scalar_type, tick.data);
+                lead[lag_key]
+                        += python::py_to_scalar(pmd.scalar_type, tick.data);
 
-                lie_elt = pmd.ctx->cbh(lead.sub(prev_lead), lag.sub(prev_lag), meta.cached_vector_type);
+                lie_elt = pmd.ctx->cbh(lead.sub(prev_lead), lag.sub(prev_lag),
+                                       meta.cached_vector_type);
 
                 previous_values[idx] = std::move(lead);
-                previous_values[idx+1] = std::move(lag);
+                previous_values[idx + 1] = std::move(lag);
 
                 break;
             }
@@ -193,18 +198,16 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
         index.insert(di.included_end());
     }
 
-    streams::Stream result (streams::TickStream(
-        std::vector<param_t>(index.begin(), index.end()),
-        std::move(raw_data),
-        pmd.resolution,
-        pmd.schema,
-        std::move(meta)
-        ));
+    streams::Stream result(streams::TickStream(
+            std::vector<param_t>(index.begin(), index.end()),
+            std::move(raw_data), pmd.resolution, pmd.schema, std::move(meta)));
 
-    return py::reinterpret_steal<py::object>(python::RPyStream_FromStream(std::move(result)));
+    return py::reinterpret_steal<py::object>(
+            python::RPyStream_FromStream(std::move(result)));
 }
 
-void python::init_tick_stream(py::module_ &m) {
+void python::init_tick_stream(py::module_ &m)
+{
 
     init_tick_construction_helper(m);
 
@@ -232,155 +235,155 @@ void python::init_tick_stream(py::module_ &m) {
 namespace {
 
 using streams::ChannelType;
-
-inline void insert_increment(helper_t &helper,
-                             param_t timestamp,
-                             string_view label,
-                             const py::object &value) {
-    scalars::Scalar val(helper.ctype(), 0);
-    python::assign_py_object_to_scalar(val.to_mut_pointer(), value);
-    helper.add_increment(timestamp, label, std::move(val));
-}
-
-inline void insert_value(helper_t &helper,
-                         param_t timestamp,
-                         string_view label,
-                         const py::object &value) {
-    scalars::Scalar val(helper.ctype());
-    python::assign_py_object_to_scalar(val.to_mut_pointer(), value);
-    helper.add_value(timestamp, label, std::move(val));
-}
-
-inline void insert_categorical(helper_t &helper,
-                               param_t timestamp,
-                               string_view label,
-                               const py::object &value) {
-    helper.add_categorical(timestamp, label, value.cast<string>());
-}
-
-inline void insert_lie(helper_t &helper,
-                       param_t timestamp,
-                       string_view label,
-                       const py::object &value) {
-    helper.add_categorical(timestamp, label, value.cast<string>());
-}
-
-inline void handle_tick_value(helper_t &helper,
-                              param_t timestamp,
-                              string_view label,
-                              ChannelType type,
-                              const py::object &tick_value) {
-    switch (type) {
-        case ChannelType::Increment:
-            insert_increment(helper, timestamp, label, tick_value);
-            break;
-        case ChannelType::Value:
-            insert_value(helper, timestamp, label, tick_value);
-            break;
-        case ChannelType::Categorical:
-            insert_categorical(helper, timestamp, label, tick_value);
-            break;
-        case ChannelType::Lie:
-            insert_lie(helper, timestamp, label, tick_value);
-            break;
-    }
-}
-
-inline void handle_labeled_data(helper_t &helper,
-                                param_t timestamp,
-                                string_view label,
-                                const py::object &tick_value) {
-    auto type = helper.type_of(label);
-    if (!type) {
-        throw py::value_error("unexpected label " + string(label) + " in tick data");
-    }
-
-    handle_tick_value(helper, timestamp, label, *type, tick_value);
-}
-
-void handle_timestamp_pair(helper_t &helper, param_t timestamp, py::object tick_item) {
-    /*
-     * The tick object must be either:
-     *      - a label, value pair,
-     *      - a label, type, value triple,
-     *      - a label_value_list,
-     *      - a type, label_value_list pair,
-     *      - a dictionary of [label, value] pairs
-     */
-    if (py::isinstance<py::dict>(tick_item)) {
-        for (auto &&[label, tick_value] : py::reinterpret_steal<py::dict>(tick_item)) {
-            auto value = py::reinterpret_borrow<py::object>(tick_value);
-            handle_labeled_data(helper,
-                                timestamp,
-                                label.cast<string_view>(),
-                                value);
-        }
-    } else if (py::isinstance<py::tuple>(tick_item)) {
-        auto tuple_item = py::reinterpret_steal<py::tuple>(tick_item);
-        auto len = py::len(tuple_item);
-        auto label = tuple_item[0].cast<string>();
-
-        py::object value;
-        if (len == 2) {
-            value = py::reinterpret_borrow<py::object>(tuple_item[1]);
-        } else if (len == 3) {
-            value = py::reinterpret_borrow<py::object>(tuple_item[2]);
-        } else {
-            throw py::value_error("expected tuple (label, data) or (label, type, data)");
-        }
-
-        if (py::isinstance<py::sequence>(value)) {
-            for (auto&& tick_value : py::reinterpret_steal<py::sequence>(value)) {
-                auto inner = py::reinterpret_borrow<py::object>(tick_value);
-                handle_timestamp_pair(helper, timestamp, inner);
-            }
-        } else {
-            handle_labeled_data(helper, timestamp, label, value);
-        }
-
-    }
-}
-
-inline void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks) {
-    for (auto [it_time, it_value] : ticks) {
-        auto timestamp = python::convert_timestamp(
-            py::reinterpret_borrow<py::object>(it_time));
-
-        auto value = py::reinterpret_borrow<py::object>(it_value);
-        handle_timestamp_pair(helper,
-                              timestamp,
-                              std::move(value));
-    }
-}
-
-inline void handle_tuple_sequence_tick_stream(helper_t &helper, const py::sequence &ticks) {
-    for (auto &&it_value : ticks) {
-        // Use sequence instead of tuple for inner items, to allow lists instead
-        RPY_CHECK(py::isinstance<py::sequence>(it_value));
-        auto inner = py::reinterpret_borrow<py::sequence>(it_value);
-        auto len = py::len(inner);
-
-        RPY_CHECK(len > 1 && len <= 4);
-        auto timestamp = python::convert_timestamp(
-            py::reinterpret_borrow<py::object>(inner[0]));
-        auto right = inner[py::slice(1, {}, {})];
-        handle_timestamp_pair(helper, timestamp, right);
-    }
-}
+//
+//inline void insert_increment(helper_t &helper,
+//                             param_t timestamp,
+//                             string_view label,
+//                             const py::object &value) {
+//    scalars::Scalar val(helper.ctype(), 0);
+//    python::assign_py_object_to_scalar(val.to_mut_pointer(), value);
+//    helper.add_increment(timestamp, label, std::move(val));
+//}
+//
+//inline void insert_value(helper_t &helper,
+//                         param_t timestamp,
+//                         string_view label,
+//                         const py::object &value) {
+//    scalars::Scalar val(helper.ctype());
+//    python::assign_py_object_to_scalar(val.to_mut_pointer(), value);
+//    helper.add_value(timestamp, label, std::move(val));
+//}
+//
+//inline void insert_categorical(helper_t &helper,
+//                               param_t timestamp,
+//                               string_view label,
+//                               const py::object &value) {
+//    helper.add_categorical(timestamp, label, value.cast<string>());
+//}
+//
+//inline void insert_lie(helper_t &helper,
+//                       param_t timestamp,
+//                       string_view label,
+//                       const py::object &value) {
+//    helper.add_categorical(timestamp, label, value.cast<string>());
+//}
+//
+//inline void handle_tick_value(helper_t &helper,
+//                              param_t timestamp,
+//                              string_view label,
+//                              ChannelType type,
+//                              const py::object &tick_value) {
+//    switch (type) {
+//        case ChannelType::Increment:
+//            insert_increment(helper, timestamp, label, tick_value);
+//            break;
+//        case ChannelType::Value:
+//            insert_value(helper, timestamp, label, tick_value);
+//            break;
+//        case ChannelType::Categorical:
+//            insert_categorical(helper, timestamp, label, tick_value);
+//            break;
+//        case ChannelType::Lie:
+//            insert_lie(helper, timestamp, label, tick_value);
+//            break;
+//    }
+//}
+//
+//inline void handle_labeled_data(helper_t &helper,
+//                                param_t timestamp,
+//                                string_view label,
+//                                const py::object &tick_value) {
+//    auto type = helper.type_of(label);
+//    if (!type) {
+//        throw py::value_error("unexpected label " + string(label) + " in tick data");
+//    }
+//
+//    handle_tick_value(helper, timestamp, label, *type, tick_value);
+//}
+//
+//void handle_timestamp_pair(helper_t &helper, param_t timestamp, py::object tick_item) {
+//    /*
+//     * The tick object must be either:
+//     *      - a label, value pair,
+//     *      - a label, type, value triple,
+//     *      - a label_value_list,
+//     *      - a type, label_value_list pair,
+//     *      - a dictionary of [label, value] pairs
+//     */
+//    if (py::isinstance<py::dict>(tick_item)) {
+//        for (auto &&[label, tick_value] : py::reinterpret_steal<py::dict>(tick_item)) {
+//            auto value = py::reinterpret_borrow<py::object>(tick_value);
+//            handle_labeled_data(helper,
+//                                timestamp,
+//                                label.cast<string_view>(),
+//                                value);
+//        }
+//    } else if (py::isinstance<py::tuple>(tick_item)) {
+//        auto tuple_item = py::reinterpret_steal<py::tuple>(tick_item);
+//        auto len = py::len(tuple_item);
+//        auto label = tuple_item[0].cast<string>();
+//
+//        py::object value;
+//        if (len == 2) {
+//            value = py::reinterpret_borrow<py::object>(tuple_item[1]);
+//        } else if (len == 3) {
+//            value = py::reinterpret_borrow<py::object>(tuple_item[2]);
+//        } else {
+//            throw py::value_error("expected tuple (label, data) or (label, type, data)");
+//        }
+//
+//        if (py::isinstance<py::sequence>(value)) {
+//            for (auto&& tick_value : py::reinterpret_steal<py::sequence>(value)) {
+//                auto inner = py::reinterpret_borrow<py::object>(tick_value);
+//                handle_timestamp_pair(helper, timestamp, inner);
+//            }
+//        } else {
+//            handle_labeled_data(helper, timestamp, label, value);
+//        }
+//
+//    }
+//}
+//
+//inline void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks) {
+//    for (auto [it_time, it_value] : ticks) {
+//        auto timestamp = python::convert_timestamp(
+//            py::reinterpret_borrow<py::object>(it_time));
+//
+//        auto value = py::reinterpret_borrow<py::object>(it_value);
+//        handle_timestamp_pair(helper,
+//                              timestamp,
+//                              std::move(value));
+//    }
+//}
+//
+//inline void handle_tuple_sequence_tick_stream(helper_t &helper, const py::sequence &ticks) {
+//    for (auto &&it_value : ticks) {
+//        // Use sequence instead of tuple for inner items, to allow lists instead
+//        RPY_CHECK(py::isinstance<py::sequence>(it_value));
+//        auto inner = py::reinterpret_borrow<py::sequence>(it_value);
+//        auto len = py::len(inner);
+//
+//        RPY_CHECK(len > 1 && len <= 4);
+//        auto timestamp = python::convert_timestamp(
+//            py::reinterpret_borrow<py::object>(inner[0]));
+//        auto right = inner[py::slice(1, {}, {})];
+//        handle_timestamp_pair(helper, timestamp, right);
+//    }
+//}
 
 }// namespace
 
-void parse_data_to_ticks(helper_t &helper, const py::handle &data, const py::kwargs &kwargs) {
-
-    if (py::isinstance<py::dict>(data)) {
-        handle_dict_tick_stream(helper, py::reinterpret_borrow<py::dict>(data));
-    } else if (py::isinstance<py::sequence>(data)) {
-        handle_tuple_sequence_tick_stream(
-            helper,
-            py::reinterpret_borrow<py::sequence>(data)
-            );
-    } else {
-        throw py::type_error("expected dict or sequence of pairs");
-    }
-
-}
+//void parse_data_to_ticks(helper_t &helper, const py::handle &data, const py::kwargs &kwargs) {
+//
+//    if (py::isinstance<py::dict>(data)) {
+//        handle_dict_tick_stream(helper, py::reinterpret_borrow<py::dict>(data));
+//    } else if (py::isinstance<py::sequence>(data)) {
+//        handle_tuple_sequence_tick_stream(
+//            helper,
+//            py::reinterpret_borrow<py::sequence>(data)
+//            );
+//    } else {
+//        throw py::type_error("expected dict or sequence of pairs");
+//    }
+//
+//}

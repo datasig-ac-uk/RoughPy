@@ -2,15 +2,16 @@ cmake_minimum_required(VERSION 3.21)
 
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
-list(APPEND VPCKG_INSTALL_OPTIONS "--no-print-usage")
+#list(APPEND VCPKG_INSTALL_OPTIONS "--no-print-usage")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (EXISTS "VERSION.txt")
     file(READ "VERSION.txt" _rpy_version)
     message(STATUS "Repository version ${_rpy_version}")
     string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" _rpy_version "${_rpy_version}")
-else()
+else ()
     set(_rpy_version 0.0.1)
-endif()
+endif ()
 
 
 project(RoughPy VERSION ${_rpy_version})
@@ -45,6 +46,9 @@ option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" O
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Buildg the pymodule in the project roughpy directory" OFF)
 
+if (MSVC)
+    #    add_compile_options(/permissive-)
+endif ()
 
 find_package(GTest CONFIG QUIET)
 if (ROUGHPY_BUILD_TESTS AND GTest_FOUND)
@@ -99,13 +103,14 @@ endif ()
 # Before we get too far, let's make use of Python's import
 # system to make sure MKL can be found if it was pip installed
 execute_process(COMMAND ${Python_EXECUTABLE}
-        "./tools/python-get-binary-obj-path.py"
+        "${CMAKE_CURRENT_LIST_DIR}/tools/python-get-binary-obj-path.py"
         "--directory" "mkl-devel" "cmake/mkl/MKLConfig.cmake"
         RESULT_VARIABLE _python_mkl_dir_found
         OUTPUT_VARIABLE _python_mkl_dir
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET
         )
+
 if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
     cmake_path(GET _python_mkl_dir PARENT_PATH _python_mkl_dir)
     message(STATUS "Adding MKL dir from pip-installed mkl: ${_python_mkl_dir}")
@@ -115,12 +120,9 @@ if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
     endif ()
     set(MKL_DIR "${_python_mkl_dir}")
 
-    if (WIN32)
-        # Currently there is no way to get this working with threading
-        # on Windows using this distribution of MKL
-        set(MKL_THREADING sequential)
-    endif ()
+
 endif ()
+
 if (NOT DEFINED pybind11_ROOT)
     execute_process(COMMAND
             "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
@@ -132,8 +134,13 @@ if (NOT DEFINED pybind11_ROOT)
     if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
         message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
         set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
-
     endif ()
+endif ()
+
+set(RPY_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+# TODO: handle this better
+if (DEFINED CMAKE_CXX_COMPILER_TARGET)
+    set(RPY_ARCH ${CMAKE_CXX_COMPILER_TARGET})
 endif ()
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
@@ -144,24 +151,60 @@ find_package(SndFile CONFIG REQUIRED)
 # This package is c++17 so cannot be used if changing to a lower standard
 find_package(tomlplusplus CONFIG REQUIRED)
 
-set(MKL_LINK static)
-set(MKL_INTERFACE lp64)
+message(STATUS "Target architecture ${RPY_ARCH}")
+if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64")
+    if (RPY_ARCH STREQUAL "x86")
+        set(MKL_ARCH ia32)
+    else ()
+        set(MKL_ARCH intel64)
+        set(MKL_INTERFACE lp64)
+    endif ()
 
-find_package(MKL CONFIG REQUIRED)
-if (NOT TARGET MKL::MKL)
+    set(MKL_LINK static)
+    if (WIN32)
+        # Currently there is no way to get this working with threading
+        # on Windows using this distribution of MKL
+        set(MKL_THREADING sequential)
+    else ()
+        set(MKL_THREADING intel_thread)
+    endif ()
+
+    find_package(MKL CONFIG)
+    if (TARGET MKL::MKL)
+        add_library(BLAS::BLAS ALIAS MKL::MKL)
+        add_library(LAPACK::LAPACK ALIAS MKL::MKL)
+
+        #        if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
+        #            foreach (LANG IN ITEMS C CXX)
+        #                set(OpenMP_${LANG}_LIB_NAMES ${MKL_OMP_LIB} CACHE STRING "Intel OpenMP runtime library")
+        #            endforeach ()
+        #        endif ()
+        if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
+            foreach (LANG IN ITEMS C CXX)
+                if (APPLE)
+                    set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp=${MKL_OMP_LIB}")
+                endif ()
+                set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
+            endforeach ()
+            set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
+        endif ()
+    else ()
+        set(BLA_SIZEOF_INTEGER 4)
+        set(BLA_STATIC ON)
+    endif ()
+elseif (APPLE)
+    set(BLA_VENDOR Apple)
+    set(BLA_SIZEOF_INTEGER 4)
+    set(BLA_STATIC ON)
+endif ()
+
+if (NOT TARGET BLAS::BLAS)
     find_package(BLAS REQUIRED)
+endif ()
+if (NOT TARGET LAPACK::LAPACK)
     find_package(LAPACK REQUIRED)
 endif ()
 
-if (APPLE AND DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
-
-    foreach (LANG IN ITEMS C CXX)
-        set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp=${MKL_OMP_LIB}")
-        set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
-    endforeach ()
-    set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
-
-endif ()
 find_package(OpenMP REQUIRED COMPONENTS CXX)
 
 find_package(pybind11 REQUIRED)
@@ -222,12 +265,6 @@ endif ()
 
 
 install(TARGETS
-        RoughPy_Core
-        RoughPy_Platform
-        RoughPy_Scalars
-        RoughPy_Intervals
-        RoughPy_Algebra
-        RoughPy_Streams
         RoughPy_PyModule
         EXPORT RoughPy_EXPORTS
         RUNTIME DESTINATION roughpy
@@ -242,15 +279,23 @@ install(TARGETS
         EXCLUDE_FROM_ALL
         )
 
-install(FILES
-        roughpy/__init__.py
-        roughpy/__init__.pyi
-        roughpy/py.typed
-        roughpy/version.py
-        DESTINATION roughpy
-        )
+install(FILES roughpy/py.typed DESTINATION roughpy)
+install(DIRECTORY roughpy
+        DESTINATION .
+        FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "*.pyi"
+        PATTERN "src/*" EXCLUDE)
 
-install(FILES ${ROUGHPY_RUNTIME_DEPS} DESTINATION roughpy)
+set(_runtime_deps "")
+foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
+    get_target_property(_lib_deps ${_rpy_lib} RUNTIME_DEPENDENCIES)
+    if (_lib_deps)
+        list(APPEND _runtime_deps "${_lib_deps}")
+        #        install(FILES ${_lib_deps} DESTINATION roughpy)
+    endif ()
+endforeach ()
+install(FILES ${_runtime_deps} DESTINATION roughpy)
 
 #
 #install(EXPORT RoughPy_EXPORTS

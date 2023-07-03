@@ -29,21 +29,40 @@
 // Created by user on 06/03/23.
 //
 
-#include "shuffle_tensor.h"
-#include "context.h"
+#include <roughpy/algebra/algebra_bundle_impl.h>
+#include <roughpy/algebra/algebra_impl.h>
+#include <roughpy/algebra/context.h>
+#include <roughpy/algebra/shuffle_tensor.h>
 #include <roughpy/platform/serialization.h>
 
 namespace rpy {
 namespace algebra {
 
-template class AlgebraInterface<ShuffleTensor, TensorBasis>;
-template class AlgebraBase<ShuffleTensorInterface>;
+template class RPY_EXPORT_INSTANTIATION AlgebraInterface< ShuffleTensor, TensorBasis>;
 
-template class BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
-template class AlgebraBundleBase<ShuffleTensorBundleInterface>;
+template class RPY_EXPORT_INSTANTIATION AlgebraBase< ShuffleTensorInterface>;
+
+template class RPY_EXPORT_INSTANTIATION BundleInterface< ShuffleTensorBundle,
+                         ShuffleTensor, ShuffleTensor>;
+
+template class RPY_EXPORT_INSTANTIATION AlgebraBundleBase<
+                         ShuffleTensorBundleInterface>;
+
+template <> typename ShuffleTensor::basis_type
+basis_setup_helper<ShuffleTensor>::get(const context_pointer &ctx)
+{
+    return ctx->get_tensor_basis();
+}
+
+template <> typename ShuffleTensorBundle::basis_type
+basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer &ctx)
+{
+    return ctx->get_tensor_basis();
+}
 
 }// namespace algebra
 }// namespace rpy
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::ShuffleTensor
+
 #include <roughpy/platform/serialization_instantiations.inl>

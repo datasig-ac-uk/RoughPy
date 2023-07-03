@@ -29,34 +29,52 @@
 // Created by user on 03/03/23.
 //
 
-#include "algebra_base.h"
+#include <roughpy/algebra/algebra_base.h>
 
 #include <ostream>
 
-#include "context.h"
+#include <roughpy/algebra/context.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
 
-algebra::dtl::AlgebraInterfaceBase::AlgebraInterfaceBase(context_pointer &&ctx, VectorType vtype, const scalars::ScalarType *stype, ImplementationType impl_type)
-    : p_ctx(std::move(ctx)), m_vector_type(vtype), p_coeff_type(stype), m_impl_type(impl_type) {
-}
+algebra::dtl::AlgebraInterfaceBase::AlgebraInterfaceBase(
+        context_pointer &&ctx, VectorType vtype,
+        const scalars::ScalarType *stype, ImplementationType impl_type)
+    : p_ctx(std::move(ctx)), p_coeff_type(stype), m_vector_type(vtype),
+      m_impl_type(impl_type)
+{}
 
 algebra::dtl::AlgebraInterfaceBase::~AlgebraInterfaceBase() = default;
 
-void rpy::algebra::dtl::print_empty_algebra(std::ostream &os) {
-    os << "{ }";
-}
+void rpy::algebra::dtl::print_empty_algebra(std::ostream &os) { os << "{ }"; }
 
-const rpy::scalars::ScalarType *rpy::algebra::dtl::context_to_scalars(context_pointer const &ptr) {
+const rpy::scalars::ScalarType *
+rpy::algebra::dtl::context_to_scalars(context_pointer const &ptr)
+{
     return ptr->ctype();
 }
 
-UnspecifiedAlgebraType rpy::algebra::dtl::try_create_new_empty(context_pointer ctx, AlgebraType alg_type) {
+UnspecifiedAlgebraType
+rpy::algebra::dtl::try_create_new_empty(context_pointer ctx,
+                                        AlgebraType alg_type)
+{
     return ctx->construct(alg_type, {});
 }
 
-UnspecifiedAlgebraType algebra::dtl::construct_dense_algebra(scalars::ScalarArray &&data, const context_pointer &ctx, AlgebraType atype) {
+UnspecifiedAlgebraType
+algebra::dtl::construct_dense_algebra(scalars::ScalarArray &&data,
+                                      const context_pointer &ctx,
+                                      AlgebraType atype)
+{
     VectorConstructionData cdata{{std::move(data), nullptr}, VectorType::Dense};
     return ctx->construct(atype, cdata);
+}
+
+void rpy::algebra::dtl::check_contexts_compatible(const context_pointer &ref,
+                                                  const context_pointer &other)
+{
+    if (ref == other) { return; }
+
+    RPY_CHECK(ref->check_compatible(*other));
 }

@@ -12,8 +12,8 @@
 
 #include <boost/dll/shared_library.hpp>
 
-#include "platform/filesystem.h"
 #include "platform/configuration.h"
+#include "platform/filesystem.h"
 
 namespace rpy {
 
@@ -24,12 +24,8 @@ using boost::urls::parse_uri;
 using boost::urls::parse_uri_reference;
 using URIScheme = boost::urls::scheme;
 
-
 using boost::dll::shared_library;
 
-
-}
-
-
+}// namespace rpy
 
 #endif//ROUGHPY_PLATFORM_H

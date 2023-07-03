@@ -29,14 +29,14 @@
 // Created by user on 27/03/23.
 //
 
-#include "tensor_basis.h"
+#include <roughpy/algebra/tensor_basis.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
 
 namespace rpy {
 namespace algebra {
-template class Basis<TensorBasisInterface>;
+template class RPY_EXPORT_INSTANTIATION Basis< TensorBasisInterface>;
 }
 }// namespace rpy
 

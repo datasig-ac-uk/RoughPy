@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,7 +28,6 @@
 #ifndef ROUGHPY_STREAMS_STREAM_H_
 #define ROUGHPY_STREAMS_STREAM_H_
 
-#include "roughpy_streams_export.h"
 #include "stream_base.h"
 
 #include <roughpy/platform/serialization.h>
@@ -38,7 +37,8 @@
 namespace rpy {
 namespace streams {
 
-class ROUGHPY_STREAMS_EXPORT Stream {
+class RPY_EXPORT Stream
+{
     std::unique_ptr<const StreamInterface> p_impl;
 
 public:
@@ -51,8 +51,7 @@ public:
     using perturbation_t = std::pair<RealInterval, Lie>;
     using perturbation_list_t = std::vector<perturbation_t>;
 
-    template <typename Impl>
-    explicit Stream(Impl &&impl);
+    template <typename Impl> explicit Stream(Impl &&impl);
 
     RPY_NO_DISCARD
     const StreamMetadata &metadata() const;
@@ -61,7 +60,7 @@ public:
     const Context &get_default_context() const;
 
     RPY_NO_DISCARD
-    const StreamSchema& schema() const;
+    const StreamSchema &schema() const;
 
     RPY_NO_DISCARD
     Lie log_signature() const;
@@ -70,16 +69,13 @@ public:
     RPY_NO_DISCARD
     Lie log_signature(resolution_t resolution);
     RPY_NO_DISCARD
-    Lie log_signature(resolution_t resolution,
-                      const Context &ctx) const;
+    Lie log_signature(resolution_t resolution, const Context &ctx) const;
     RPY_NO_DISCARD
     Lie log_signature(const Interval &interval) const;
     RPY_NO_DISCARD
-    Lie log_signature(const Interval &interval,
-                      resolution_t resolution) const;
+    Lie log_signature(const Interval &interval, resolution_t resolution) const;
     RPY_NO_DISCARD
-    Lie log_signature(const Interval &interval,
-                      resolution_t resolution,
+    Lie log_signature(const Interval &interval, resolution_t resolution,
                       const Context &ctx) const;
 
     RPY_NO_DISCARD
@@ -89,16 +85,14 @@ public:
     RPY_NO_DISCARD
     FreeTensor signature(resolution_t resolution);
     RPY_NO_DISCARD
-    FreeTensor signature(resolution_t resolution,
-                         const Context &ctx) const;
+    FreeTensor signature(resolution_t resolution, const Context &ctx) const;
     RPY_NO_DISCARD
     FreeTensor signature(const Interval &interval) const;
     RPY_NO_DISCARD
     FreeTensor signature(const Interval &interval,
                          resolution_t resolution) const;
     RPY_NO_DISCARD
-    FreeTensor signature(const Interval &interval,
-                         resolution_t resolution,
+    FreeTensor signature(const Interval &interval, resolution_t resolution,
                          const Context &ctx) const;
 
     RPY_NO_DISCARD
@@ -129,19 +123,16 @@ public:
     //                      resolution_t resolution) const;
 
     RPY_SERIAL_SERIALIZE_FN();
-
 };
 
-template <typename Impl>
-Stream::Stream(Impl &&impl)
+template <typename Impl> Stream::Stream(Impl &&impl)
     : p_impl(new remove_cv_t<Impl>(std::forward<Impl>(impl)))
-{
-}
+{}
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(Stream) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(Stream)
+{
     RPY_SERIAL_SERIALIZE_NVP("impl", p_impl);
 }
-
 
 }// namespace streams
 }// namespace rpy

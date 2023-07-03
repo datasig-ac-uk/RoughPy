@@ -32,8 +32,8 @@ jobs:
           mkl-devel \
           intel-openmp \
           ninja \
-          pytest
-        echo "CMAKE_PREFIX_PATH=$(python3.10 -c 'import sysconfig; import os; print(os.path.dirname(sysconfig.get_path("platstdlib")))')" >> "$GITHUB_ENV"
+          pytest \
+          pybind11
         pth="$(python -m site --user-site)/roughpy.pth"
         echo $pth
         echo "import sys; sys.path.insert(0, '${{github.workspace}}')" >> $pth
@@ -55,7 +55,11 @@ jobs:
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: |
-        cmake -GNinja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+        cmake -GNinja -B ${{github.workspace}}/build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DROUGHPY_BUILD_TESTS=ON \
+          -DROUGHPY_BUILD_PYMODULE_INPLACE=ON \
+          --toolchain=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
 
     - name: Build
       # Build your program with the given configuration

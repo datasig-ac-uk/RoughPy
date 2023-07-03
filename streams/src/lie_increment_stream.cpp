@@ -29,17 +29,16 @@
 // Created by user on 10/03/23.
 //
 
-#include "lie_increment_stream.h"
+#include <roughpy/streams/lie_increment_stream.h>
 
 using namespace rpy;
 using namespace rpy::streams;
 
-LieIncrementStream::LieIncrementStream(
-    scalars::KeyScalarArray &&buffer,
-    Slice<param_t> indices,
-    StreamMetadata metadata)
-    : base_t(std::move(metadata)),
-      m_buffer(std::move(buffer)) {
+LieIncrementStream::LieIncrementStream(scalars::KeyScalarArray &&buffer,
+                                       Slice<param_t> indices,
+                                       StreamMetadata metadata)
+    : base_t(std::move(metadata)), m_buffer(std::move(buffer))
+{
     const auto &md = this->metadata();
     for (dimn_t i = 0; i < indices.size(); ++i) {
         m_mapping[indices[i]] = i * md.width;
@@ -48,17 +47,19 @@ LieIncrementStream::LieIncrementStream(
     //    std::cerr << m_mapping.begin()->first << ' ' << (--m_mapping.end())->first << '\n';
 }
 
-algebra::Lie LieIncrementStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
+algebra::Lie
+LieIncrementStream::log_signature_impl(const intervals::Interval &interval,
+                                       const algebra::Context &ctx) const
+{
 
     const auto &md = metadata();
     //    if (empty(interval)) {
     //        return ctx.zero_lie(md.cached_vector_type);
     //    }
 
-    rpy::algebra::SignatureData data{
-        scalars::ScalarStream(ctx.ctype()),
-        {},
-        md.cached_vector_type};
+    rpy::algebra::SignatureData data{scalars::ScalarStream(ctx.ctype()),
+                                     {},
+                                     md.cached_vector_type};
 
     if (m_mapping.size() == 1) {
         data.data_stream.set_elts_per_row(m_buffer.size());
@@ -69,25 +70,25 @@ algebra::Lie LieIncrementStream::log_signature_impl(const intervals::Interval &i
     }
 
     auto begin = (interval.type() == intervals::IntervalType::Opencl)
-        ? m_mapping.upper_bound(interval.inf())
-        : m_mapping.lower_bound(interval.inf());
+            ? m_mapping.upper_bound(interval.inf())
+            : m_mapping.lower_bound(interval.inf());
 
     auto end = (interval.type() == intervals::IntervalType::Opencl)
-        ? m_mapping.upper_bound(interval.sup())
-        : m_mapping.lower_bound(interval.sup());
+            ? m_mapping.upper_bound(interval.sup())
+            : m_mapping.lower_bound(interval.sup());
 
-    if (begin == end) {
-        return ctx.zero_lie(md.cached_vector_type);
-    }
+    if (begin == end) { return ctx.zero_lie(md.cached_vector_type); }
 
     data.data_stream.reserve_size(end - begin);
 
     for (auto it1 = begin, it = it1++; it1 != end; ++it, ++it1) {
-        data.data_stream.push_back({m_buffer[it->second].to_pointer(), it1->second - it->second});
+        data.data_stream.push_back(
+                {m_buffer[it->second].to_pointer(), it1->second - it->second});
     }
     // Case it = it1 - 1 and it1 == end
     --end;
-    data.data_stream.push_back({m_buffer[end->second].to_pointer(), m_buffer.size() - end->second});
+    data.data_stream.push_back({m_buffer[end->second].to_pointer(),
+                                m_buffer.size() - end->second});
 
     if (m_buffer.keys() != nullptr) {
         data.key_stream.reserve(end - begin);
@@ -102,7 +103,9 @@ algebra::Lie LieIncrementStream::log_signature_impl(const intervals::Interval &i
 
     return ctx.log_signature(data);
 }
-bool LieIncrementStream::empty(const intervals::Interval &interval) const noexcept {
+bool LieIncrementStream::empty(
+        const intervals::Interval &interval) const noexcept
+{
     //    std::cerr << "Checking " << interval;
     //    for (auto& item : m_mapping) {
     //        if (item.first >= interval.inf() && item.first < interval.sup()) {
@@ -110,16 +113,17 @@ bool LieIncrementStream::empty(const intervals::Interval &interval) const noexce
     //        }
     //    }
     auto begin = (interval.type() == intervals::IntervalType::Opencl)
-        ? m_mapping.upper_bound(interval.inf())
-        : m_mapping.lower_bound(interval.inf());
+            ? m_mapping.upper_bound(interval.inf())
+            : m_mapping.lower_bound(interval.inf());
 
     auto end = (interval.type() == intervals::IntervalType::Opencl)
-        ? m_mapping.upper_bound(interval.sup())
-        : m_mapping.lower_bound(interval.sup());
+            ? m_mapping.upper_bound(interval.sup())
+            : m_mapping.lower_bound(interval.sup());
 
     //    std::cerr << ' ' << (begin == end) << '\n';
     return begin == end;
 }
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::LieIncrementStream
+
 #include <roughpy/platform/serialization_instantiations.inl>

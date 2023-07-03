@@ -31,12 +31,13 @@
 
 #include <gtest/gtest.h>
 
-#include "key_scalar_array.h"
+#include <roughpy/scalars/key_scalar_array.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys) {
+TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys)
+{
     std::vector<float> nums{1.0F, 2.0F, 3.0F};
     KeyScalarArray sa(ScalarType::of<float>(), nums.data(), 3);
     std::stringstream ss;
@@ -56,14 +57,14 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys) {
     const auto *aptr = sa.raw_cast<const float *>();
     const auto *bptr = sb.raw_cast<const float *>();
 
-    for (int i = 0; i < 3; ++i) {
-        ASSERT_EQ(aptr[i], bptr[i]);
-    }
+    for (int i = 0; i < 3; ++i) { ASSERT_EQ(aptr[i], bptr[i]); }
 }
-TEST(KeyScalarArray, TestKeyScalarArraySerializeWidthKeys) {
+TEST(KeyScalarArray, TestKeyScalarArraySerializeWidthKeys)
+{
     std::vector<float> nums{1.0F, 2.0F, 3.0F};
     std::vector<key_type> keys{1UL, 2UL, 3UL};
-    KeyScalarArray sa(ScalarArray(ScalarType::of<float>(), nums.data(), 3), keys.data());
+    KeyScalarArray sa(ScalarArray(ScalarType::of<float>(), nums.data(), 3),
+                      keys.data());
     std::stringstream ss;
     {
         archives::JSONOutputArchive out_ar(ss);

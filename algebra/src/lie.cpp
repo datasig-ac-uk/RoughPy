@@ -29,21 +29,36 @@
 // Created by user on 06/03/23.
 //
 
-#include "lie.h"
-#include "context.h"
+#include <roughpy/algebra/context.h>
+#include <roughpy/algebra/lie.h>
 #include <roughpy/platform/serialization.h>
 
 namespace rpy {
 namespace algebra {
 
-template class AlgebraInterface<Lie, LieBasis>;
-template class AlgebraBase<LieInterface>;
+template class RPY_EXPORT_INSTANTIATION AlgebraInterface<Lie, LieBasis>;
 
-template class BundleInterface<LieBundle, Lie, Lie>;
-template class AlgebraBundleBase<LieBundleInterface>;
+template class RPY_EXPORT_INSTANTIATION AlgebraBase<LieInterface>;
+
+template class RPY_EXPORT_INSTANTIATION BundleInterface<LieBundle, Lie, Lie>;
+
+template class RPY_EXPORT_INSTANTIATION AlgebraBundleBase<LieBundleInterface>;
+
+template <> typename Lie::basis_type
+basis_setup_helper<Lie>::get(const context_pointer &ctx)
+{
+    return ctx->get_lie_basis();
+}
+
+template <> typename LieBundle::basis_type
+basis_setup_helper<LieBundle>::get(const context_pointer &ctx)
+{
+    return ctx->get_lie_basis();
+}
 
 }// namespace algebra
 }// namespace rpy
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::Lie
+
 #include <roughpy/platform/serialization_instantiations.inl>

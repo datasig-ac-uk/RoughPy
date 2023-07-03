@@ -29,17 +29,18 @@
 // Created by user on 28/02/23.
 //
 
-#include "scalar_array.h"
-
-#include "scalar_type.h"
+#include <roughpy/scalars/scalar_array.h>
+#include <roughpy/scalars/scalar_type.h>
 
 #include <roughpy/core/alloc.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-rpy::scalars::ScalarArray::ScalarArray(rpy::scalars::ScalarArray &&other) noexcept
-    : ScalarPointer(static_cast<ScalarPointer &&>(other)), m_size(other.m_size) {
+rpy::scalars::ScalarArray::ScalarArray(
+        rpy::scalars::ScalarArray &&other) noexcept
+    : ScalarPointer(static_cast<ScalarPointer &&>(other)), m_size(other.m_size)
+{
     /*
      * It doesn't really matter for this class, but various
      * derived classes will need to make sure that ownership
@@ -51,7 +52,9 @@ rpy::scalars::ScalarArray::ScalarArray(rpy::scalars::ScalarArray &&other) noexce
     other.p_data = nullptr;
     other.m_size = 0;
 }
-rpy::scalars::ScalarArray &rpy::scalars::ScalarArray::operator=(rpy::scalars::ScalarArray &&other) noexcept {
+rpy::scalars::ScalarArray &
+rpy::scalars::ScalarArray::operator=(rpy::scalars::ScalarArray &&other) noexcept
+{
     if (std::addressof(other) != this) {
         this->~ScalarArray();
 
@@ -72,12 +75,14 @@ rpy::scalars::ScalarArray &rpy::scalars::ScalarArray::operator=(rpy::scalars::Sc
     }
     return *this;
 }
-rpy::scalars::ScalarArray rpy::scalars::ScalarArray::borrow() const noexcept {
+rpy::scalars::ScalarArray rpy::scalars::ScalarArray::borrow() const noexcept
+{
     auto flag = m_flags & ~owning_flag;
     flag |= flags::IsConst;
     return {{p_type, p_data, flag}, m_size};
 }
-rpy::scalars::ScalarArray rpy::scalars::ScalarArray::borrow_mut() noexcept {
+rpy::scalars::ScalarArray rpy::scalars::ScalarArray::borrow_mut() noexcept
+{
     auto flag = m_flags & ~owning_flag;
     return {{p_type, p_data, flag}, m_size};
 }
@@ -95,4 +100,5 @@ rpy::scalars::ScalarArray rpy::scalars::ScalarArray::borrow_mut() noexcept {
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::ScalarArray
 #define RPY_SERIAL_DO_SPLIT
+
 #include <roughpy/platform/serialization_instantiations.inl>
