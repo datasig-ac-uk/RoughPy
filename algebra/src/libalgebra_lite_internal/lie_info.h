@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,8 +32,8 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LIE_INFO_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LIE_INFO_H
 
-#include <roughpy/algebra/algebra_info.h>
 #include "lie_basis_info.h"
+#include <roughpy/algebra/algebra_info.h>
 
 #include <roughpy/core/traits.h>
 #include <roughpy/scalars/scalar_type.h>
@@ -42,8 +42,8 @@
 
 #include "vector_type_helper.h"
 
-
-namespace rpy { namespace algebra {
+namespace rpy {
+namespace algebra {
 
 template <typename Coeffs, template <typename, typename> class VType,
           template <typename> class Storage>
@@ -58,7 +58,7 @@ struct algebra_info<Lie, lal::lie<Coeffs, VType, Storage>> {
     using basis_type = lal::hall_basis;
 
     /// The roughpy key type used in the wrapper
-    using key_type = typename LieBasis::key_type ;
+    using key_type = typename LieBasis::key_type;
 
     /// Basis traits for querying the basis
     using basis_traits = BasisInfo<LieBasis, basis_type>;
@@ -82,24 +82,37 @@ struct algebra_info<Lie, lal::lie<Coeffs, VType, Storage>> {
     using const_pointer = const scalar_type *;
 
     /// Get the rpy ScalarType for the scalars in this algebra
-    static const scalars::ScalarType *ctype() noexcept { return scalars::ScalarType::of<scalar_type>(); }
+    static const scalars::ScalarType *ctype() noexcept
+    {
+        return scalars::ScalarType::of<scalar_type>();
+    }
 
     /// Get the storage type for this algebra.
-    static constexpr VectorType vtype() noexcept { return dtl::vector_type_helper<VType>::vtype; }
+    static constexpr VectorType vtype() noexcept
+    {
+        return dtl::vector_type_helper<VType>::vtype;
+    }
 
     /// Get the basis for this algebra
-    static const basis_type &basis(const algebra_type &instance) noexcept { return instance.basis(); }
+    static const basis_type &basis(const algebra_type &instance) noexcept
+    {
+        return instance.basis();
+    }
 
     /// Get the maximum degree of non-zero elements in this algebra
-    static deg_t degree(const algebra_type &instance) noexcept { return instance.degree(); }
+    static deg_t degree(const algebra_type &instance) noexcept
+    {
+        return instance.degree();
+    }
 
     /// Create a new algebra instance with the same make-up as this argument
-    static algebra_type create_like(const algebra_type &instance) {
+    static algebra_type create_like(const algebra_type &instance)
+    {
         return algebra_type(instance.get_basis(), instance.multiplication());
     }
 };
 
-}}
-
+}// namespace algebra
+}// namespace rpy
 
 #endif//ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LIE_INFO_H

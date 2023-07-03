@@ -33,19 +33,20 @@
 
 using namespace rpy;
 
-class Configuration::State {
+class Configuration::State
+{
 };
 
-rpy::Configuration::Configuration()
-    : p_state(new State) {
-}
+rpy::Configuration::Configuration() : p_state(new State) {}
 rpy::Configuration::~Configuration() = default;
 
-string_view Configuration::get_raw_config_value(string_view property) const {
+string_view Configuration::get_raw_config_value(string_view property) const
+{
     return string_view();
 }
 
-const Configuration &rpy::get_config() {
+const Configuration &rpy::get_config()
+{
     static const Configuration config;
     return config;
 }

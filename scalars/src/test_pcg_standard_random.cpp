@@ -41,7 +41,8 @@ struct my_pcg64 : pcg64 {
     using pcg64::state_;
 };
 
-TEST(PCGGenTests, LoadFromTerminatedSStream) {
+TEST(PCGGenTests, LoadFromTerminatedSStream)
+{
 
     std::stringstream ss("5");
     ss.flags(std::ios_base::dec);
@@ -49,14 +50,16 @@ TEST(PCGGenTests, LoadFromTerminatedSStream) {
     EXPECT_EQ(in, '5');
     auto in2 = ss.get();
     EXPECT_EQ(in2, std::stringstream::traits_type::eof());
-
 }
 
-
-TEST(PCGenTests, LoadRandomState) {
-    std::stringstream ss("47026247687942121848144207491837523525 117397592171526113268558934119004209487 120436820235895678955951683610125339985\n"s);
+TEST(PCGenTests, LoadRandomState)
+{
+    std::stringstream ss(
+            "47026247687942121848144207491837523525 117397592171526113268558934119004209487 120436820235895678955951683610125339985\n"s);
     my_pcg64 gen;
     ss >> gen;
 
-    EXPECT_EQ(gen.state_, PCG_128BIT_CONSTANT(6528893107350212886ULL, 10831353900920016209ULL));
+    EXPECT_EQ(gen.state_,
+              PCG_128BIT_CONSTANT(6528893107350212886ULL,
+                                  10831353900920016209ULL));
 }

@@ -12,7 +12,8 @@ namespace algebra {
 extern template class AlgebraInterface<FreeTensor, TensorBasis>;
 
 class RPY_EXPORT FreeTensorInterface
-    : public AlgebraInterface<FreeTensor, TensorBasis> {
+    : public AlgebraInterface<FreeTensor, TensorBasis>
+{
 public:
     using algebra_interface_t = AlgebraInterface<FreeTensor, TensorBasis>;
 
@@ -29,13 +30,14 @@ public:
     virtual void fmexp(const FreeTensor &other) = 0;
 };
 
-template <typename, template <typename> class>
-class FreeTensorImplementation;
+template <typename, template <typename> class> class FreeTensorImplementation;
 
-extern template class AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
+extern template class AlgebraBase<FreeTensorInterface,
+                                  FreeTensorImplementation>;
 
 class RPY_EXPORT FreeTensor
-    : public AlgebraBase<FreeTensorInterface, FreeTensorImplementation> {
+    : public AlgebraBase<FreeTensorInterface, FreeTensorImplementation>
+{
     using base_t = AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
 
 public:
@@ -56,16 +58,16 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensor) {
-    RPY_SERIAL_SERIALIZE_BASE(base_t);
-}
+RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensor) { RPY_SERIAL_SERIALIZE_BASE(base_t); }
 
 extern template class BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
 
 class RPY_EXPORT FreeTensorBundleInterface
-    : public BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor> {
+    : public BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>
+{
 public:
-    using algebra_interface_t = BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
+    using algebra_interface_t
+            = BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
 
     using algebra_interface_t::algebra_interface_t;
 
@@ -83,11 +85,15 @@ public:
 template <typename, template <typename> class>
 class FreeTensorBundleImplementation;
 
-extern template class AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation>;
+extern template class AlgebraBundleBase<FreeTensorBundleInterface,
+                                        FreeTensorBundleImplementation>;
 
 class RPY_EXPORT FreeTensorBundle
-    : public AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation> {
-    using base_t = AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation>;
+    : public AlgebraBundleBase<FreeTensorBundleInterface,
+                               FreeTensorBundleImplementation>
+{
+    using base_t = AlgebraBundleBase<FreeTensorBundleInterface,
+                                     FreeTensorBundleImplementation>;
 
 public:
     using base_t::base_t;
@@ -107,14 +113,17 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensorBundle) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensorBundle)
+{
     RPY_SERIAL_SERIALIZE_BASE(base_t);
 }
 
 }// namespace algebra
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensor, rpy::serial::specialization::member_serialize)
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensorBundle, rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensor,
+                            rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensorBundle,
+                            rpy::serial::specialization::member_serialize)
 
 #endif// ROUGHPY_ALGEBRA_FREE_TENSOR_FWD_H_

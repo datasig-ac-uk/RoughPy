@@ -31,34 +31,44 @@
 
 #include <roughpy/streams/stream_base.h>
 
-
 using namespace rpy;
 using namespace rpy::streams;
 
-void StreamInterface::set_metadata(StreamMetadata &&md) noexcept {
+void StreamInterface::set_metadata(StreamMetadata &&md) noexcept
+{
     m_metadata = std::move(md);
 }
 
 StreamInterface::~StreamInterface() noexcept = default;
 
-bool StreamInterface::empty(const intervals::Interval &interval) const noexcept {
+bool StreamInterface::empty(const intervals::Interval &interval) const noexcept
+{
     if (interval.type() == intervals::IntervalType::Clopen) {
         return interval.sup() < m_metadata.effective_support.inf()
-            || interval.inf() >= m_metadata.effective_support.sup();
+                || interval.inf() >= m_metadata.effective_support.sup();
     }
     return interval.sup() <= m_metadata.effective_support.inf()
-        || interval.inf() > m_metadata.effective_support.sup();
+            || interval.inf() > m_metadata.effective_support.sup();
 }
 
-algebra::Lie StreamInterface::log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const {
+algebra::Lie StreamInterface::log_signature(const intervals::Interval &interval,
+                                            const algebra::Context &ctx) const
+{
     return log_signature_impl(interval, ctx);
 }
 
-rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(const rpy::intervals::DyadicInterval &interval, rpy::resolution_t /* resolution*/, const rpy::algebra::Context &ctx) const {
+rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(
+        const rpy::intervals::DyadicInterval &interval,
+        rpy::resolution_t /* resolution*/,
+        const rpy::algebra::Context &ctx) const
+{
     auto result = log_signature_impl(interval, ctx);
     return result;
 }
-rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(const rpy::intervals::Interval &interval, rpy::resolution_t resolution, const rpy::algebra::Context &ctx) const {
+rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(
+        const rpy::intervals::Interval &interval, rpy::resolution_t resolution,
+        const rpy::algebra::Context &ctx) const
+{
     auto dissection = intervals::to_dyadic_intervals(interval, resolution);
     std::vector<algebra::Lie> lies;
     lies.reserve(dissection.size());
@@ -69,10 +79,16 @@ rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(const rpy::interv
 
     return ctx.cbh(lies, m_metadata.cached_vector_type);
 }
-algebra::FreeTensor StreamInterface::signature(const intervals::Interval &interval, const algebra::Context &ctx) const {
+algebra::FreeTensor
+StreamInterface::signature(const intervals::Interval &interval,
+                           const algebra::Context &ctx) const
+{
     return ctx.lie_to_tensor(log_signature_impl(interval, ctx)).exp();
 }
-rpy::algebra::FreeTensor rpy::streams::StreamInterface::signature(const rpy::intervals::Interval &interval, rpy::resolution_t resolution, const rpy::algebra::Context &ctx) const {
+rpy::algebra::FreeTensor rpy::streams::StreamInterface::signature(
+        const rpy::intervals::Interval &interval, rpy::resolution_t resolution,
+        const rpy::algebra::Context &ctx) const
+{
     return ctx.lie_to_tensor(log_signature(interval, resolution, ctx)).exp();
 }
 
@@ -86,4 +102,5 @@ rpy::algebra::FreeTensor rpy::streams::StreamInterface::signature(const rpy::int
 #define RPY_SERIAL_IMPL_CLASSNAME StreamMetadata
 #define RPY_SERIAL_EXTERNAL rpy::streams
 #define RPY_SERIAL_DO_SPLIT
+
 #include <roughpy/platform/serialization_instantiations.inl>

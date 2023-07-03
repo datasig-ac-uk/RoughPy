@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -37,20 +37,24 @@
 
 #include <libalgebra_lite/sparse_vector.h>
 
-namespace rpy { namespace algebra {
+namespace rpy {
+namespace algebra {
 
 template <typename MapType, typename Iterator>
 struct iterator_helper_trait<lal::dtl::sparse_iterator<MapType, Iterator>> {
     using iter_t = lal::dtl::sparse_iterator<MapType, Iterator>;
 
-    static auto key(const iter_t& it) noexcept -> decltype(it->key()) {
+    static auto key(const iter_t &it) noexcept -> decltype(it->key())
+    {
         return it->key();
     }
-    static auto value(const iter_t& it) noexcept -> decltype(it->value()) {
+    static auto value(const iter_t &it) noexcept -> decltype(it->value())
+    {
         return it->value();
     }
 };
 
-}}
+}// namespace algebra
+}// namespace rpy
 
 #endif//ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_SPARSE_VECTOR_ITERATOR_H

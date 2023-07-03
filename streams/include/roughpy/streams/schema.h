@@ -47,18 +47,19 @@
 namespace rpy {
 namespace streams {
 
-enum struct ChannelType : uint8_t {
+enum struct ChannelType : uint8_t
+{
     Increment = 0,
     Value = 1,
     Categorical = 2,
     Lie = 3
 };
 
-struct IncrementChannelInfo {};
+struct IncrementChannelInfo {
+};
 struct ValueChannelInfo {
     bool lead_lag = false;
 };
-
 
 struct CategoricalChannelInfo {
     std::vector<string> variants;
@@ -80,9 +81,11 @@ struct LieChannelInfo {
  * typically accessed via a schema, which maintains the collection of
  * all channels associated with a stream.
  */
-class StreamChannel {
+class StreamChannel
+{
     ChannelType m_type;
-    union {
+    union
+    {
         IncrementChannelInfo increment_info;
         ValueChannelInfo value_info;
         CategoricalChannelInfo categorical_info;
@@ -90,7 +93,10 @@ class StreamChannel {
     };
 
     template <typename T>
-    static void inplace_construct(void *address, T &&value) noexcept(is_nothrow_constructible<remove_cv_ref_t<T>, decltype(value)>::value) {
+    static void inplace_construct(void *address, T &&value) noexcept(
+            is_nothrow_constructible<remove_cv_ref_t<T>,
+                                     decltype(value)>::value)
+    {
         ::new (address) remove_cv_ref_t<T>(std::forward<T>(value));
     }
 
@@ -98,17 +104,14 @@ public:
     RPY_NO_DISCARD
     ChannelType type() const noexcept { return m_type; }
 
-    RPY_NO_DISCARD dimn_t
-    num_variants() const {
+    RPY_NO_DISCARD dimn_t num_variants() const
+    {
         switch (m_type) {
-            case ChannelType::Increment:
-                return 1;
-            case ChannelType::Value:
-                return value_info.lead_lag ? 2 : 1;
+            case ChannelType::Increment: return 1;
+            case ChannelType::Value: return value_info.lead_lag ? 2 : 1;
             case ChannelType::Categorical:
                 return categorical_info.variants.size();
-            case ChannelType::Lie:
-                return lie_info.width;
+            case ChannelType::Lie: return lie_info.width;
         }
         RPY_UNREACHABLE();
     }
@@ -123,37 +126,44 @@ public:
     explicit StreamChannel(ChannelType type);
 
     explicit StreamChannel(IncrementChannelInfo &&info)
-        : m_type(ChannelType::Increment), increment_info(std::move(info)) {}
+        : m_type(ChannelType::Increment), increment_info(std::move(info))
+    {}
 
     explicit StreamChannel(ValueChannelInfo &&info)
-        : m_type(ChannelType::Value), value_info(std::move(info)) {}
+        : m_type(ChannelType::Value), value_info(std::move(info))
+    {}
 
     explicit StreamChannel(CategoricalChannelInfo &&info)
-        : m_type(ChannelType::Categorical), categorical_info(std::move(info)) {}
+        : m_type(ChannelType::Categorical), categorical_info(std::move(info))
+    {}
 
     explicit StreamChannel(LieChannelInfo &&info)
-        : m_type(ChannelType::Lie), lie_info(std::move(info)) {}
+        : m_type(ChannelType::Lie), lie_info(std::move(info))
+    {}
 
     ~StreamChannel();
 
     StreamChannel &operator=(const StreamChannel &other);
     StreamChannel &operator=(StreamChannel &&other) noexcept;
 
-    StreamChannel &operator=(IncrementChannelInfo &&info) {
+    StreamChannel &operator=(IncrementChannelInfo &&info)
+    {
         this->~StreamChannel();
         m_type = ChannelType::Increment;
         inplace_construct(&increment_info, std::move(info));
         return *this;
     }
 
-    StreamChannel &operator=(ValueChannelInfo &&info) {
+    StreamChannel &operator=(ValueChannelInfo &&info)
+    {
         this->~StreamChannel();
         m_type = ChannelType::Value;
         inplace_construct(&value_info, std::move(info));
         return *this;
     }
 
-    StreamChannel &operator=(CategoricalChannelInfo &&info) {
+    StreamChannel &operator=(CategoricalChannelInfo &&info)
+    {
         this->~StreamChannel();
         m_type = ChannelType::Categorical;
         inplace_construct(&categorical_info, std::move(info));
@@ -164,12 +174,14 @@ public:
     dimn_t variant_id_of_label(string_view label) const;
 
     void set_lie_info(deg_t width, deg_t depth, algebra::VectorType vtype);
-    void set_lead_lag(bool new_value) {
+    void set_lead_lag(bool new_value)
+    {
         RPY_CHECK(m_type == ChannelType::Value);
         value_info.lead_lag = new_value;
     }
     RPY_NO_DISCARD
-    bool is_lead_lag() const {
+    bool is_lead_lag() const
+    {
         RPY_CHECK(m_type == ChannelType::Value);
         return value_info.lead_lag;
     }
@@ -181,7 +193,7 @@ public:
      * @param variant_label variant label to insert.
      * @return referene to this channel.
      */
-    StreamChannel& insert_variant(string variant_label);
+    StreamChannel &insert_variant(string variant_label);
 
     RPY_NO_DISCARD
     std::vector<string> get_variants() const;
@@ -189,7 +201,6 @@ public:
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 };
-
 
 /**
  * @brief An abstract description of the stream data.
@@ -209,12 +220,11 @@ public:
  * data, this is a 1-1 mapping. However, categorical values must be expanded
  * and other types of data might occupy multiple stream dimensions.
  */
-class RPY_EXPORT StreamSchema
-    : private std::vector<pair<string, StreamChannel>> {
+class RPY_EXPORT StreamSchema : private std::vector<pair<string, StreamChannel>>
+{
     using base_type = std::vector<pair<string, StreamChannel>>;
 
     bool m_is_final = false;
-
 
 public:
     using typename base_type::const_iterator;
@@ -227,7 +237,8 @@ public:
     using base_type::reserve;
     using base_type::size;
 
-    static bool compare_labels(string_view item_label, string_view ref_label) noexcept;
+    static bool compare_labels(string_view item_label,
+                               string_view ref_label) noexcept;
 
 private:
     RPY_NO_DISCARD
@@ -255,7 +266,8 @@ public:
     StreamSchema &operator=(StreamSchema &&) noexcept = default;
 
     RPY_NO_DISCARD
-    const_iterator nth(dimn_t idx) const noexcept {
+    const_iterator nth(dimn_t idx) const noexcept
+    {
         RPY_DBG_ASSERT(idx < size());
         return begin() + static_cast<idimn_t>(idx);
     }
@@ -267,12 +279,8 @@ public:
     RPY_NO_DISCARD
     const_iterator find(const string &label) const;
 
-
-
     RPY_NO_DISCARD
-    bool contains(const string &label) const {
-        return find(label) != end();
-    }
+    bool contains(const string &label) const { return find(label) != end(); }
 
     RPY_NO_DISCARD
     dimn_t width() const;
@@ -281,14 +289,16 @@ public:
     dimn_t channel_to_stream_dim(dimn_t channel_no) const;
 
     RPY_NO_DISCARD
-    dimn_t channel_variant_to_stream_dim(dimn_t channel_no, dimn_t variant_no) const;
+    dimn_t channel_variant_to_stream_dim(dimn_t channel_no,
+                                         dimn_t variant_no) const;
 
     RPY_NO_DISCARD
     pair<dimn_t, dimn_t> stream_dim_to_channel(dimn_t stream_dim) const;
 
 private:
     RPY_NO_DISCARD
-    static string label_from_channel_it(const_iterator channel_it, dimn_t variant_id);
+    static string label_from_channel_it(const_iterator channel_it,
+                                        dimn_t variant_id);
 
 public:
     RPY_NO_DISCARD
@@ -298,7 +308,8 @@ public:
     string_view label_of_channel_id(dimn_t channel_id) const;
 
     RPY_NO_DISCARD
-    string label_of_channel_variant(dimn_t channel_id, dimn_t channel_variant) const;
+    string label_of_channel_variant(dimn_t channel_id,
+                                    dimn_t channel_variant) const;
 
     RPY_NO_DISCARD
     dimn_t label_to_stream_dim(const string &label) const;
@@ -319,26 +330,31 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_SERIALIZE_FN_EXT(IncrementChannelInfo) {
-    (void)value;
+RPY_SERIAL_SERIALIZE_FN_EXT(IncrementChannelInfo)
+{
+    (void) value;
     RPY_SERIAL_SERIALIZE_NVP("data", 0);
 }
 
-RPY_SERIAL_SERIALIZE_FN_EXT(ValueChannelInfo) {
+RPY_SERIAL_SERIALIZE_FN_EXT(ValueChannelInfo)
+{
     RPY_SERIAL_SERIALIZE_NVP("lead_lag", value.lead_lag);
 }
 
-RPY_SERIAL_SERIALIZE_FN_EXT(CategoricalChannelInfo) {
+RPY_SERIAL_SERIALIZE_FN_EXT(CategoricalChannelInfo)
+{
     RPY_SERIAL_SERIALIZE_NVP("variants", value.variants);
 }
 
-RPY_SERIAL_SERIALIZE_FN_EXT(LieChannelInfo) {
+RPY_SERIAL_SERIALIZE_FN_EXT(LieChannelInfo)
+{
     RPY_SERIAL_SERIALIZE_NVP("width", value.width);
     RPY_SERIAL_SERIALIZE_NVP("depth", value.depth);
     RPY_SERIAL_SERIALIZE_NVP("vector_type", value.vtype);
 }
 
-RPY_SERIAL_SAVE_FN_IMPL(StreamChannel) {
+RPY_SERIAL_SAVE_FN_IMPL(StreamChannel)
+{
     RPY_SERIAL_SERIALIZE_NVP("type", m_type);
     switch (m_type) {
         case ChannelType::Increment:
@@ -350,36 +366,36 @@ RPY_SERIAL_SAVE_FN_IMPL(StreamChannel) {
         case ChannelType::Categorical:
             RPY_SERIAL_SERIALIZE_NVP("categorical", categorical_info);
             break;
-        case ChannelType::Lie:
-            RPY_SERIAL_SERIALIZE_NVP("lie", lie_info);
-            break;
+        case ChannelType::Lie: RPY_SERIAL_SERIALIZE_NVP("lie", lie_info); break;
     }
 }
 
-RPY_SERIAL_LOAD_FN_IMPL(StreamChannel) {
+RPY_SERIAL_LOAD_FN_IMPL(StreamChannel)
+{
     RPY_SERIAL_SERIALIZE_NVP("type", m_type);
     switch (m_type) {
         case ChannelType::Increment:
-            ::new (&increment_info) IncrementChannelInfo;
+            new (&increment_info) IncrementChannelInfo;
             RPY_SERIAL_SERIALIZE_NVP("increment", increment_info);
             break;
         case ChannelType::Value:
-            ::new (&value_info) ValueChannelInfo;
+            new (&value_info) ValueChannelInfo;
             RPY_SERIAL_SERIALIZE_NVP("value", value_info);
             break;
         case ChannelType::Categorical:
-            ::new (&categorical_info) CategoricalChannelInfo;
+            new (&categorical_info) CategoricalChannelInfo;
             RPY_SERIAL_SERIALIZE_NVP("categorical", categorical_info);
             break;
         case ChannelType::Lie:
-            ::new (&lie_info) LieChannelInfo;
+            new (&lie_info) LieChannelInfo;
             RPY_SERIAL_SERIALIZE_NVP("lie", lie_info);
             break;
     }
 }
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(StreamSchema) {
-    RPY_SERIAL_SERIALIZE_NVP("channels", static_cast<base_type&>(*this));
+RPY_SERIAL_SERIALIZE_FN_IMPL(StreamSchema)
+{
+    RPY_SERIAL_SERIALIZE_NVP("channels", static_cast<base_type &>(*this));
     RPY_SERIAL_SERIALIZE_NVP("is_final", m_is_final);
 }
 

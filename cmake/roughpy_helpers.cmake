@@ -74,14 +74,13 @@ function(_check_runtime_deps _out_var)
 endfunction()
 
 
-
 function(_split_rpy_deps _rpy_deps_var _nrpy_deps_var _deps_list)
     foreach (_dep IN LISTS ${_deps_list})
         if (_dep MATCHES "RoughPy")
             list(APPEND _rpy_deps ${_dep})
-        else()
+        else ()
             list(APPEND _nrpy_deps ${_dep})
-        endif()
+        endif ()
     endforeach ()
     set(${_rpy_deps_var} ${_rpy_deps} PARENT_SCOPE)
     set(${_nrpy_deps_var} ${_nrpy_deps} PARENT_SCOPE)
@@ -111,18 +110,17 @@ function(target_link_components _target _visibility)
             target_link_libraries(${_target} ${_visibility} ${_component})
         else ()
             get_target_property(_include_dirs ${_component} INTERFACE_INCLUDE_DIRECTORIES)
-#            message("Including in ${_target}: ${_include_dirs}")
+            #            message("Including in ${_target}: ${_include_dirs}")
             target_include_directories(${_target} ${_visibility} ${_include_dirs})
 
             get_target_property(_link_libs ${_component} INTERFACE_LINK_LIBRARIES)
-#            message("Linking in ${_target}: ${_link_libs}")
+            #            message("Linking in ${_target}: ${_link_libs}")
             target_link_libraries(${_target} ${_visibility} ${_link_libs})
 
             target_link_libraries(${_target} PRIVATE ${_component})
-#                    $<LINK_LIBRARY:WHOLE_ARCHIVE,${_component}>)
+            #                    $<LINK_LIBRARY:WHOLE_ARCHIVE,${_component}>)
         endif ()
     endforeach ()
-
 
 
 endfunction()
@@ -136,12 +134,12 @@ function(add_roughpy_component _name)
             ${ARGN}
     )
 
-#    _check_and_set_libtype(_lib_type ${ARG_SHARED} ${ARG_STATIC} ${ARG_INTERFACE})
+    #    _check_and_set_libtype(_lib_type ${ARG_SHARED} ${ARG_STATIC} ${ARG_INTERFACE})
     if (ARG_INTERFACE)
         set(_lib_type INTERFACE)
-    else()
+    else ()
         set(_lib_type STATIC)
-    endif()
+    endif ()
 
 
     set(_real_name "RoughPy_${_name}")
@@ -152,11 +150,11 @@ function(add_roughpy_component _name)
     if (NOT _lib_type STREQUAL INTERFACE)
         set(_private_include_dirs "${CMAKE_CURRENT_LIST_DIR}/include/roughpy/${_component}/")
         if (ARG_PVT_INCLUDE_DIRS)
-            foreach(_pth IN LISTS ARG_PVT_INCLUDE_DIRS)
+            foreach (_pth IN LISTS ARG_PVT_INCLUDE_DIRS)
                 list(APPEND _private_include_dirs ${CMAKE_CURRENT_LIST_DIR}/${_pth})
             endforeach ()
         endif ()
-        foreach(_pth IN LISTS _private_include_dirs)
+        foreach (_pth IN LISTS _private_include_dirs)
             if (NOT EXISTS "${_pth}")
                 message(FATAL_ERROR "The path ${_pth} does not exist")
             endif ()
@@ -169,9 +167,9 @@ function(add_roughpy_component _name)
 
     if (ROUGHPY_LIBS)
         set(ROUGHPY_LIBS "${ROUGHPY_LIBS};${_real_name}" CACHE INTERNAL "" FORCE)
-    else()
+    else ()
         set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "" FORCE)
-    endif()
+    endif ()
 
     _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps ARG_PUBLIC_DEPS)
     _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps ARG_PRIVATE_DEPS)
@@ -195,13 +193,13 @@ function(add_roughpy_component _name)
                 ${_pvt_nrpy_deps}
                 )
 
-        foreach(_rpy_dep IN LISTS _pvt_rpy_deps)
+        foreach (_rpy_dep IN LISTS _pvt_rpy_deps)
             get_target_property(_dep_type ${_rpy_dep} TYPE)
             if (_dep_type STREQUAL "STATIC")
                 target_link_libraries(${_real_name} PRIVATE $<LINK_LIBRARY:WHOLE_ARCHIVE,${_rpy_dep}>)
-            else()
+            else ()
                 target_link_libraries(${_real_name} PRIVATE ${_rpy_dep})
-            endif()
+            endif ()
         endforeach ()
 
         target_compile_definitions(${_real_name} PRIVATE RPY_BUILDING_LIBRARY=1)
@@ -214,9 +212,9 @@ function(add_roughpy_component _name)
 
     if (_lib_type MATCHES "INTERFACE")
         set(_public INTERFACE)
-    else()
+    else ()
         set(_public PUBLIC)
-    endif()
+    endif ()
 
     target_include_directories(${_real_name} ${_public}
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
@@ -240,23 +238,23 @@ function(add_roughpy_component _name)
 
     if (_runtime_deps)
         set_target_properties(${_real_name} PROPERTIES RUNTIME_DEPENDENCIES ${_runtime_deps})
-    endif()
+    endif ()
 
     set_target_properties(${_real_name} PROPERTIES
             PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
             LINKER_LANGUAGE CXX
-#            CXX_DEFAULT_VISIBILITY hidden
-#            VISIBILITY_INLINES_HIDDEN ON
+            #            CXX_DEFAULT_VISIBILITY hidden
+            #            VISIBILITY_INLINES_HIDDEN ON
             VERSION "${PROJECT_VERSION}"
             )
-#    if (_lib_type STREQUAL SHARED)
-#        set_target_properties(${_real_name} PROPERTIES
-#                SOVERSION ${PROJECT_VERSION_MAJOR})
-#    endif ()
+    #    if (_lib_type STREQUAL SHARED)
+    #        set_target_properties(${_real_name} PROPERTIES
+    #                SOVERSION ${PROJECT_VERSION_MAJOR})
+    #    endif ()
 
-#    if (_lib_type STREQUAL STATIC)
-#        set_target_properties(${_real_name} PROPERTIES INTERFACE_LINK_LIBRARIES_DIRECT)
-#    endif ()
+    #    if (_lib_type STREQUAL STATIC)
+    #        set_target_properties(${_real_name} PROPERTIES INTERFACE_LINK_LIBRARIES_DIRECT)
+    #    endif ()
 
     if (_lib_type STREQUAL STATIC OR _lib_type STREQUAL OBJECT)
         set_target_properties(${_real_name} PROPERTIES
@@ -286,10 +284,10 @@ function(extend_roughpy_lib _name)
     if (ARG_SOURCES)
         if (_lib_type STREQUAL "INTERFACE_LIBRARY")
             target_sources(${_real_name} INTERFACE ${ARG_SOURCES})
-        else()
+        else ()
             target_sources(${_real_name} PRIVATE ${ARG_SOURCES})
-        endif()
-    endif()
+        endif ()
+    endif ()
 
 endfunction()
 
@@ -307,13 +305,10 @@ function(add_roughpy_algebra _name)
     set(_basis_name "${_name}Basis")
     if (ARG_BASIS_NAME)
         set(_basis_name "${ARG_BASIS_NAME}")
-    endif()
+    endif ()
 
     set(_interface_name "${_name}Interface")
     set(_impl_name "${_name}Implementation")
-
-
-
 
 
 endfunction()
@@ -343,7 +338,7 @@ function(add_roughpy_test _name)
     foreach (_dep IN LISTS test_DEP)
         if (TARGET ${_dep})
             list(APPEND _deps ${_dep})
-        elseif(_dep MATCHES "RoughPy::")
+        elseif (_dep MATCHES "RoughPy::")
         elseif (MATCHES "^RoughPy_Testing::(.+)")
             set(_real_dep "RoughPy_${_component_name}_Testing_${CMAKE_MATCH_1}")
             if (NOT TARGET ${_real_dep})

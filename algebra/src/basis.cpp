@@ -34,6 +34,5 @@ using namespace rpy;
 using namespace rpy::algebra;
 
 namespace rpy {
-namespace algebra {
-}
+namespace algebra {}
 }// namespace rpy

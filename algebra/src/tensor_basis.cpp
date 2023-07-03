@@ -36,7 +36,7 @@ using namespace rpy::algebra;
 
 namespace rpy {
 namespace algebra {
-RPY_INSTANTIATE_TEMPLATE(class, Basis, TensorBasisInterface);
+template class RPY_EXPORT_INSTANTIATION Basis< TensorBasisInterface>;
 }
 }// namespace rpy
 

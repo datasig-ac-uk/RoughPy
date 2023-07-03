@@ -36,32 +36,39 @@
 using namespace rpy;
 using namespace rpy::intervals;
 
-Dyadic::operator param_t() const noexcept {
+Dyadic::operator param_t() const noexcept
+{
     return ldexp(param_t(m_multiplier), -m_power);
 }
-Dyadic &Dyadic::move_forward(Dyadic::multiplier_t arg) {
+Dyadic &Dyadic::move_forward(Dyadic::multiplier_t arg)
+{
     m_multiplier += arg;
     return *this;
 }
-Dyadic &Dyadic::operator++() {
+Dyadic &Dyadic::operator++()
+{
     ++m_multiplier;
     return *this;
 }
-const Dyadic Dyadic::operator++(int) {
+const Dyadic Dyadic::operator++(int)
+{
     Dyadic result(*this);
     ++m_multiplier;
     return result;
 }
-Dyadic &Dyadic::operator--() {
+Dyadic &Dyadic::operator--()
+{
     --m_multiplier;
     return *this;
 }
-const Dyadic Dyadic::operator--(int) {
+const Dyadic Dyadic::operator--(int)
+{
     Dyadic result(*this);
     --m_multiplier;
     return result;
 }
-bool Dyadic::rebase(Dyadic::power_t resolution) {
+bool Dyadic::rebase(Dyadic::power_t resolution)
+{
     if (m_multiplier == 0) {
         m_power = resolution;
         return true;
@@ -89,57 +96,66 @@ bool Dyadic::rebase(Dyadic::power_t resolution) {
     return resolution == m_power;
 }
 
-bool rpy::intervals::operator<(const Dyadic &lhs, const Dyadic &rhs) {
+bool rpy::intervals::operator<(const Dyadic &lhs, const Dyadic &rhs)
+{
     auto lmul = lhs.multiplier();
     auto lpow = lhs.power();
     auto rmul = rhs.multiplier();
     auto rpow = rhs.power();
 
-    return (lpow <= rpow) ? (lmul < Dyadic::shift(rmul, rpow - lpow)) : Dyadic::shift(lmul, lpow - rpow) < rmul;
+    return (lpow <= rpow) ? (lmul < Dyadic::shift(rmul, rpow - lpow))
+                          : Dyadic::shift(lmul, lpow - rpow) < rmul;
 }
-bool rpy::intervals::operator<=(const Dyadic &lhs, const Dyadic &rhs) {
+bool rpy::intervals::operator<=(const Dyadic &lhs, const Dyadic &rhs)
+{
     auto lmul = lhs.multiplier();
     auto lpow = lhs.power();
     auto rmul = rhs.multiplier();
     auto rpow = rhs.power();
 
-    return (lpow <= rpow) ? (lmul <= Dyadic::shift(rmul, rpow - lpow)) : Dyadic::shift(lmul, lpow - rpow) <= rmul;
+    return (lpow <= rpow) ? (lmul <= Dyadic::shift(rmul, rpow - lpow))
+                          : Dyadic::shift(lmul, lpow - rpow) <= rmul;
 }
-bool rpy::intervals::operator>(const Dyadic &lhs, const Dyadic &rhs) {
+bool rpy::intervals::operator>(const Dyadic &lhs, const Dyadic &rhs)
+{
     auto lmul = lhs.multiplier();
     auto lpow = lhs.power();
     auto rmul = rhs.multiplier();
     auto rpow = rhs.power();
 
-    return (lpow <= rpow) ? (lmul > Dyadic::shift(rmul, rpow - lpow)) : Dyadic::shift(lmul, lpow - rpow) > rmul;
+    return (lpow <= rpow) ? (lmul > Dyadic::shift(rmul, rpow - lpow))
+                          : Dyadic::shift(lmul, lpow - rpow) > rmul;
 }
-bool rpy::intervals::operator>=(const Dyadic &lhs, const Dyadic &rhs) {
+bool rpy::intervals::operator>=(const Dyadic &lhs, const Dyadic &rhs)
+{
     auto lmul = lhs.multiplier();
     auto lpow = lhs.power();
     auto rmul = rhs.multiplier();
     auto rpow = rhs.power();
 
-    return (lpow <= rpow) ? (lmul >= Dyadic::shift(rmul, rpow - lpow)) : Dyadic::shift(lmul, lpow - rpow) >= rmul;
+    return (lpow <= rpow) ? (lmul >= Dyadic::shift(rmul, rpow - lpow))
+                          : Dyadic::shift(lmul, lpow - rpow) >= rmul;
 }
-std::ostream &rpy::intervals::operator<<(std::ostream &os, const Dyadic &arg) {
+std::ostream &rpy::intervals::operator<<(std::ostream &os, const Dyadic &arg)
+{
     return os << '(' << arg.multiplier() << ", " << arg.power() << ')';
 }
-bool rpy::intervals::dyadic_equals(const Dyadic &lhs, const Dyadic &rhs) {
+bool rpy::intervals::dyadic_equals(const Dyadic &lhs, const Dyadic &rhs)
+{
     return lhs.power() == rhs.power() && lhs.multiplier() == rhs.multiplier();
 }
-bool rpy::intervals::rational_equals(const Dyadic &lhs, const Dyadic &rhs) {
+bool rpy::intervals::rational_equals(const Dyadic &lhs, const Dyadic &rhs)
+{
     Dyadic::multiplier_t ratio;
-    if (lhs.multiplier() % rhs.multiplier() == 0 && (ratio = lhs.multiplier() / rhs.multiplier()) >= 1) {
+    if (lhs.multiplier() % rhs.multiplier() == 0
+        && (ratio = lhs.multiplier() / rhs.multiplier()) >= 1) {
         Dyadic::power_t rel_tolerance = lhs.power() - rhs.power();
-        if (rel_tolerance < 0) {
-            return false;
-        }
+        if (rel_tolerance < 0) { return false; }
         return ratio == Dyadic::int_two_to_int_power(rel_tolerance);
-    } else if (rhs.multiplier() % lhs.multiplier() == 0 && (ratio = rhs.multiplier() / lhs.multiplier()) >= 1) {
+    } else if (rhs.multiplier() % lhs.multiplier() == 0
+               && (ratio = rhs.multiplier() / lhs.multiplier()) >= 1) {
         Dyadic::power_t rel_tolerance = rhs.power() - lhs.power();
-        if (rel_tolerance < 0) {
-            return false;
-        }
+        if (rel_tolerance < 0) { return false; }
         return ratio == Dyadic::int_two_to_int_power(rel_tolerance);
     }
     return false;

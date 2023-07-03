@@ -35,5 +35,4 @@
 
 using LieTests = rpy::algebra::testing::ContextFixture;
 
-TEST_F(LieTests, LieAdditionDenseData) {
-}
+TEST_F(LieTests, LieAdditionDenseData) {}

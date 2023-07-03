@@ -18,7 +18,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
-namespace blas {
+namespace
+blas {
 
 #ifdef RPY_USE_MKL
 using integer = MKL_INT;

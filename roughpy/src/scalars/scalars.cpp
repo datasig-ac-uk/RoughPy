@@ -46,7 +46,9 @@ static const char *SCALAR_DOC = R"edoc(
 A generic scalar value.
 )edoc";
 
-void python::assign_py_object_to_scalar(scalars::ScalarPointer ptr, pybind11::handle object) {
+void python::assign_py_object_to_scalar(scalars::ScalarPointer ptr,
+                                        pybind11::handle object)
+{
     if (py::isinstance<py::float_>(object)) {
         *ptr = object.cast<double>();
     } else if (py::isinstance<py::int_>(object)) {
@@ -55,11 +57,13 @@ void python::assign_py_object_to_scalar(scalars::ScalarPointer ptr, pybind11::ha
         // TODO: other checks
 
         auto tp = py::type::of(object);
-        throw py::value_error("bad conversion from " + tp.cast<string>() + " to " + ptr.type()->info().name);
+        throw py::value_error("bad conversion from " + tp.cast<string>()
+                              + " to " + ptr.type()->info().name);
     }
 }
 
-void python::init_scalars(pybind11::module_ &m) {
+void python::init_scalars(pybind11::module_ &m)
+{
     using scalars::Scalar;
     py::options options;
     options.disable_function_signatures();
@@ -100,9 +104,8 @@ void python::init_scalars(pybind11::module_ &m) {
     });
     klass.def("__repr__", [](const Scalar &self) {
         std::stringstream ss;
-        ss << "Scalar(type=" << self.type()->info().name
-           << ", value approx " << self.to_scalar_t()
-           << ")";
+        ss << "Scalar(type=" << self.type()->info().name << ", value approx "
+           << self.to_scalar_t() << ")";
         return ss.str();
     });
 }
@@ -113,10 +116,14 @@ void python::init_scalars(pybind11::module_ &m) {
  * objects.
  */
 
-#define DOCASE(NAME) \
-    case static_cast<uint8_t>(scalars::ScalarTypeCode::NAME): type = scalars::ScalarTypeCode::NAME; break
+#define DOCASE(NAME)                                                           \
+    case static_cast<uint8_t>(scalars::ScalarTypeCode::NAME):                  \
+        type = scalars::ScalarTypeCode::NAME;                                  \
+        break
 
-static const scalars::ScalarType *dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device) {
+static const scalars::ScalarType *dlpack_dtype_to_scalar_type(DLDataType dtype,
+                                                              DLDevice device)
+{
     using scalars::ScalarDeviceType;
 
     scalars::ScalarTypeCode type;
@@ -131,17 +138,18 @@ static const scalars::ScalarType *dlpack_dtype_to_scalar_type(DLDataType dtype, 
     }
 
     return scalars::ScalarType::from_type_details(
-        {type, dtype.bits, dtype.lanes},
-        {static_cast<ScalarDeviceType>(device.device_type), device.device_id});
+            {type, dtype.bits, dtype.lanes},
+            {static_cast<ScalarDeviceType>(device.device_type),
+             device.device_id});
 }
 
 #undef DOCASE
 
-static inline void dl_copy_strided(std::int32_t ndim,
-                                   std::int64_t *shape,
+static inline void dl_copy_strided(std::int32_t ndim, std::int64_t *shape,
                                    std::int64_t *strides,
                                    scalars::ScalarPointer src,
-                                   scalars::ScalarPointer dst) {
+                                   scalars::ScalarPointer dst)
+{
     if (ndim == 1) {
         if (strides[0] == 1) {
             dst.type()->convert_copy(dst.ptr(), src, shape[0]);
@@ -155,16 +163,17 @@ static inline void dl_copy_strided(std::int32_t ndim,
         auto *next_stride = strides + 1;
 
         for (std::int64_t j = 0; j < shape[0]; ++j) {
-            dl_copy_strided(ndim - 1,
-                            next_shape,
-                            next_stride,
+            dl_copy_strided(ndim - 1, next_shape, next_stride,
                             src + static_cast<dimn_t>(j * strides[0]),
                             dst + static_cast<dimn_t>(j * shape[0]));
         }
     }
 }
 
-static inline void update_dtype_and_allocate(scalars::KeyScalarArray &result, python::PyToBufferOptions &options, idimn_t no_values, idimn_t no_keys) {
+static inline void update_dtype_and_allocate(scalars::KeyScalarArray &result,
+                                             python::PyToBufferOptions &options,
+                                             idimn_t no_values, idimn_t no_keys)
+{
 
     if (options.type != nullptr) {
         result = scalars::KeyScalarArray(options.type);
@@ -177,7 +186,8 @@ static inline void update_dtype_and_allocate(scalars::KeyScalarArray &result, py
 
 static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
                                    python::PyToBufferOptions &options,
-                                   const py::handle &object) {
+                                   const py::handle &object)
+{
     py::capsule dlpack;
     dlpack = object.attr("__dlpack__")();
 
@@ -193,7 +203,8 @@ static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
     auto *strides = dltensor.strides;
 
     // This function throws if no matching dtype is found
-    const auto *tensor_stype = dlpack_dtype_to_scalar_type(dltensor.dtype, dltensor.device);
+    const auto *tensor_stype
+            = dlpack_dtype_to_scalar_type(dltensor.dtype, dltensor.device);
     if (options.type == nullptr) {
         options.type = tensor_stype;
         buffer = scalars::KeyScalarArray(options.type);
@@ -208,16 +219,15 @@ static bool try_fill_buffer_dlpack(scalars::KeyScalarArray &buffer,
     options.shape.assign(shape, shape + ndim);
 
     idimn_t size = 1;
-    for (auto i = 0; i < ndim; ++i) {
-        size *= static_cast<idimn_t>(shape[i]);
-    }
+    for (auto i = 0; i < ndim; ++i) { size *= static_cast<idimn_t>(shape[i]); }
 
     if (strides == nullptr) {
         buffer = scalars::ScalarArray({options.type, data}, size);
     } else {
         buffer.allocate_scalars(size);
         scalars::ScalarPointer p(tensor_stype, data);
-        dl_copy_strided(ndim, shape, strides, p, buffer + static_cast<dimn_t>(0));
+        dl_copy_strided(ndim, shape, strides, p,
+                        buffer + static_cast<dimn_t>(0));
     }
     //
     //    if (tensor->deleter != nullptr) {
@@ -234,38 +244,42 @@ struct arg_size_info {
     idimn_t num_keys;
 };
 
-enum class ground_data_type {
+enum class ground_data_type
+{
     UnSet,
     Scalars,
     KeyValuePairs
 };
 
-static inline bool is_scalar(py::handle arg) {
+static inline bool is_scalar(py::handle arg)
+{
     return py::isinstance<py::int_>(arg) || py::isinstance<py::float_>(arg);
 }
 
-static inline bool is_key(py::handle arg, python::AlternativeKeyType *alternative) {
+static inline bool is_key(py::handle arg,
+                          python::AlternativeKeyType *alternative)
+{
     if (alternative != nullptr) {
-        return py::isinstance<py::int_>(arg) || py::isinstance(arg, alternative->py_key_type);
+        return py::isinstance<py::int_>(arg)
+                || py::isinstance(arg, alternative->py_key_type);
     }
-    if (py::isinstance<py::int_>(arg)) {
-        return true;
-    }
+    if (py::isinstance<py::int_>(arg)) { return true; }
     return false;
 }
 
-static inline bool is_kv_pair(py::handle arg, python::AlternativeKeyType *alternative) {
+static inline bool is_kv_pair(py::handle arg,
+                              python::AlternativeKeyType *alternative)
+{
     if (py::isinstance<py::tuple>(arg)) {
         auto tpl = py::reinterpret_borrow<py::tuple>(arg);
-        if (tpl.size() == 2) {
-            return is_key(tpl[0], alternative);
-        }
+        if (tpl.size() == 2) { return is_key(tpl[0], alternative); }
     }
     return false;
 }
 
 static void check_and_set_dtype(python::PyToBufferOptions &options,
-                                py::handle arg) {
+                                py::handle arg)
+{
     if (options.type == nullptr) {
         if (options.no_check_imported) {
             options.type = scalars::ScalarType::of<double>();
@@ -275,7 +289,9 @@ static void check_and_set_dtype(python::PyToBufferOptions &options,
     }
 }
 
-static bool check_ground_type(py::handle object, ground_data_type &ground_type, python::PyToBufferOptions &options) {
+static bool check_ground_type(py::handle object, ground_data_type &ground_type,
+                              python::PyToBufferOptions &options)
+{
     py::handle scalar;
     if (::is_scalar(object)) {
         if (ground_type == ground_data_type::UnSet) {
@@ -303,18 +319,19 @@ static bool check_ground_type(py::handle object, ground_data_type &ground_type, 
     return true;
 }
 
-static void compute_size_and_type_recurse(
-    python::PyToBufferOptions &options,
-    std::vector<py::object> &leaves,
-    const py::handle &object,
-    ground_data_type &ground_type,
-    dimn_t depth) {
+static void compute_size_and_type_recurse(python::PyToBufferOptions &options,
+                                          std::vector<py::object> &leaves,
+                                          const py::handle &object,
+                                          ground_data_type &ground_type,
+                                          dimn_t depth)
+{
 
     if (!py::isinstance<py::sequence>(object)) {
         throw py::type_error("unexpected type in array argument");
     }
     if (depth > options.max_nested) {
-        throw py::value_error("maximum nested array limit reached in this context");
+        throw py::value_error(
+                "maximum nested array limit reached in this context");
     }
 
     auto sequence = py::reinterpret_borrow<py::sequence>(object);
@@ -358,21 +375,21 @@ static void compute_size_and_type_recurse(
         leaves.push_back(std::move(sequence));
     } else if (py::isinstance<py::sequence>(item0)) {
         for (auto &&sibling : sequence) {
-            compute_size_and_type_recurse(options, leaves, sibling, ground_type, depth + 1);
+            compute_size_and_type_recurse(options, leaves, sibling, ground_type,
+                                          depth + 1);
         }
     } else if (py::isinstance<py::dict>(item0)) {
         auto dict = py::reinterpret_borrow<py::dict>(item0);
 
         if (depth == options.max_nested) {
-            throw py::value_error("maximum nested depth reached in this context");
+            throw py::value_error(
+                    "maximum nested depth reached in this context");
         }
         switch (ground_type) {
             case ground_data_type::UnSet:
                 ground_type = ground_data_type::KeyValuePairs;
-            case ground_data_type::KeyValuePairs:
-                break;
-            default:
-                throw py::type_error("mismatched types in array argument");
+            case ground_data_type::KeyValuePairs: break;
+            default: throw py::type_error("mismatched types in array argument");
         }
 
         if (!dict.empty()) {
@@ -387,10 +404,10 @@ static void compute_size_and_type_recurse(
     }
 }
 
-static arg_size_info compute_size_and_type(
-    python::PyToBufferOptions &options,
-    std::vector<py::object> &leaves,
-    py::handle arg) {
+static arg_size_info compute_size_and_type(python::PyToBufferOptions &options,
+                                           std::vector<py::object> &leaves,
+                                           py::handle arg)
+{
     arg_size_info info = {0, 0};
 
     RPY_CHECK(py::isinstance<py::sequence>(arg));
@@ -410,9 +427,7 @@ static arg_size_info compute_size_and_type(
         }
     } else {
         info.num_values = 1;
-        for (auto &shape_i : options.shape) {
-            info.num_values *= shape_i;
-        }
+        for (auto &shape_i : options.shape) { info.num_values *= shape_i; }
     }
 
     if (info.num_values == 0 || ground_type == ground_data_type::UnSet) {
@@ -423,10 +438,14 @@ static arg_size_info compute_size_and_type(
     return info;
 }
 
-static void handle_sequence_tuple(scalars::ScalarPointer scalar_ptr, key_type *key_ptr, py::handle tpl_o, python::PyToBufferOptions &options) {
+static void handle_sequence_tuple(scalars::ScalarPointer scalar_ptr,
+                                  key_type *key_ptr, py::handle tpl_o,
+                                  python::PyToBufferOptions &options)
+{
     auto tpl = py::reinterpret_borrow<py::tuple>(tpl_o);
     auto key = tpl[0];
-    if (options.alternative_key != nullptr && py::isinstance(key, options.alternative_key->py_key_type)) {
+    if (options.alternative_key != nullptr
+        && py::isinstance(key, options.alternative_key->py_key_type)) {
         *key_ptr = options.alternative_key->converter(key);
     } else {
         *key_ptr = key.cast<key_type>();
@@ -435,16 +454,16 @@ static void handle_sequence_tuple(scalars::ScalarPointer scalar_ptr, key_type *k
     python::assign_py_object_to_scalar(scalar_ptr, tpl[1]);
 }
 
-static void handle_dict(scalars::ScalarPointer &scalar_ptr,
-                        key_type *&key_ptr,
-                        python::PyToBufferOptions &options,
-                        py::handle dict_o) {
+static void handle_dict(scalars::ScalarPointer &scalar_ptr, key_type *&key_ptr,
+                        python::PyToBufferOptions &options, py::handle dict_o)
+{
 
     for (auto obj : py::reinterpret_borrow<py::dict>(dict_o)) {
         // dict iterator yields pairs [key, obj]
         // Expecting key-value tuples
         auto key = obj.first;
-        if (options.alternative_key != nullptr && py::isinstance(key, options.alternative_key->py_key_type)) {
+        if (options.alternative_key != nullptr
+            && py::isinstance(key, options.alternative_key->py_key_type)) {
             *(key_ptr++) = options.alternative_key->converter(key);
         } else {
             *(key_ptr++) = key.cast<key_type>();
@@ -454,11 +473,14 @@ static void handle_dict(scalars::ScalarPointer &scalar_ptr,
     }
 }
 
-scalars::KeyScalarArray python::py_to_buffer(const py::handle &object, python::PyToBufferOptions &options) {
+scalars::KeyScalarArray python::py_to_buffer(const py::handle &object,
+                                             python::PyToBufferOptions &options)
+{
     scalars::KeyScalarArray result(options.type);
 
     // First handle the single number cases
-    if (py::isinstance<py::float_>(object) || py::isinstance<py::int_>(object)) {
+    if (py::isinstance<py::float_>(object)
+        || py::isinstance<py::int_>(object)) {
         if (!options.allow_scalar) {
             throw py::value_error("scalar value not permitted in this context");
         }
@@ -497,7 +519,8 @@ scalars::KeyScalarArray python::py_to_buffer(const py::handle &object, python::P
 
         // The only way type can still be null is if there are no elements.
         if (options.type != nullptr) {
-            options.type->convert_copy(result, info.ptr, static_cast<dimn_t>(info.size), type_id);
+            options.type->convert_copy(result, info.ptr,
+                                       static_cast<dimn_t>(info.size), type_id);
             options.shape.assign(info.shape.begin(), info.shape.end());
         }
 
@@ -509,7 +532,8 @@ scalars::KeyScalarArray python::py_to_buffer(const py::handle &object, python::P
             auto kv = *dict_arg.begin();
             check_and_set_dtype(options, kv.second);
 
-            update_dtype_and_allocate(result, options, options.shape[0], options.shape[0]);
+            update_dtype_and_allocate(result, options, options.shape[0],
+                                      options.shape[0]);
 
             scalars::ScalarPointer ptr(result);
             key_type *key_ptr = result.keys();
@@ -520,7 +544,8 @@ scalars::KeyScalarArray python::py_to_buffer(const py::handle &object, python::P
         std::vector<py::object> leaves;
         auto size_info = compute_size_and_type(options, leaves, object);
 
-        update_dtype_and_allocate(result, options, size_info.num_values, size_info.num_keys);
+        update_dtype_and_allocate(result, options, size_info.num_values,
+                                  size_info.num_keys);
 
         scalars::ScalarPointer scalar_ptr(result);
 
@@ -540,8 +565,10 @@ scalars::KeyScalarArray python::py_to_buffer(const py::handle &object, python::P
                 if (py::isinstance<py::dict>(leaf)) {
                     handle_dict(scalar_ptr, key_ptr, options, leaf);
                 } else {
-                    for (auto obj : py::reinterpret_borrow<py::sequence>(leaf)) {
-                        handle_sequence_tuple(scalar_ptr++, key_ptr++, obj, options);
+                    for (auto obj :
+                         py::reinterpret_borrow<py::sequence>(leaf)) {
+                        handle_sequence_tuple(scalar_ptr++, key_ptr++, obj,
+                                              options);
                     }
                 }
             }
@@ -551,7 +578,9 @@ scalars::KeyScalarArray python::py_to_buffer(const py::handle &object, python::P
     return result;
 }
 
-scalars::Scalar python::py_to_scalar(const scalars::ScalarType *type, py::handle object) {
+scalars::Scalar python::py_to_scalar(const scalars::ScalarType *type,
+                                     py::handle object)
+{
     RPY_DBG_ASSERT(type != nullptr);
     scalars::Scalar result(type, 0);
     assign_py_object_to_scalar(result.to_mut_pointer(), object);

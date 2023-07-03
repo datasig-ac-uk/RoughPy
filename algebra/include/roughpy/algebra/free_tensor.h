@@ -34,18 +34,21 @@
 namespace rpy {
 namespace algebra {
 
-RPY_EXPORT_TEMPLATE(class, AlgebraInterface, FreeTensor, TensorBasis);
-RPY_EXPORT_TEMPLATE(class, AlgebraBase, FreeTensorInterface, FreeTensorImplementation);
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraInterface<FreeTensor, TensorBasis>;
 
-RPY_EXPORT_TEMPLATE(class, BundleInterface, FreeTensorBundle, FreeTensor, FreeTensor);
-RPY_EXPORT_TEMPLATE(class, AlgebraBundleBase, FreeTensorBundleInterface, FreeTensorBundleImplementation);
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBase< FreeTensorInterface,
+                    FreeTensorImplementation>;
 
-template <>
-RPY_EXPORT typename FreeTensor::basis_type
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE BundleInterface< FreeTensorBundle, FreeTensor,
+                    FreeTensor>;
+
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBundleBase< FreeTensorBundleInterface,
+                    FreeTensorBundleImplementation>;
+
+template <> RPY_EXPORT typename FreeTensor::basis_type
 basis_setup_helper<FreeTensor>::get(const context_pointer &ctx);
 
-template <>
-RPY_EXPORT typename FreeTensorBundle::basis_type
+template <> RPY_EXPORT typename FreeTensorBundle::basis_type
 basis_setup_helper<FreeTensorBundle>::get(const context_pointer &ctx);
 
 }// namespace algebra

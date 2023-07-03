@@ -29,8 +29,8 @@
 // Created by user on 02/03/23.
 //
 
-#include <roughpy/intervals/segmentation.h>
 #include <roughpy/intervals/dyadic_interval.h>
+#include <roughpy/intervals/segmentation.h>
 
 #include "dyadic_searcher.h"
 
@@ -41,8 +41,10 @@
 
 using namespace rpy::intervals;
 
-std::vector<RealInterval>
-rpy::intervals::segment(const Interval &interval, predicate_t predicate, dyadic_depth_t max_depth) {
+std::vector<RealInterval> rpy::intervals::segment(const Interval &interval,
+                                                  predicate_t predicate,
+                                                  dyadic_depth_t max_depth)
+{
     DyadicSearcher search(std::move(predicate), max_depth);
     return search(interval);
 }

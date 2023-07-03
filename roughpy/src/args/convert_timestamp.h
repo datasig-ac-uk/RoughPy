@@ -37,10 +37,11 @@
 
 #include "roughpy_module.h"
 
+namespace rpy {
+namespace python {
 
-namespace rpy { namespace python {
-
-enum class PyDateTimeResolution : uint8_t {
+enum class PyDateTimeResolution : uint8_t
+{
     Microseconds = 0,
     Milliseconds,
     Seconds,
@@ -53,15 +54,15 @@ struct PyDateTimeConversionOptions {
     PyDateTimeResolution resolution;
 };
 
-
 void init_datetime(py::module_ &m);
 
-param_t convert_delta_from_datetimes(py::handle current, py::handle previous, const PyDateTimeConversionOptions& options);
-param_t convert_timedelta(py::handle py_timedelta, const PyDateTimeConversionOptions& options);
+param_t
+convert_delta_from_datetimes(py::handle current, py::handle previous,
+                             const PyDateTimeConversionOptions &options);
+param_t convert_timedelta(py::handle py_timedelta,
+                          const PyDateTimeConversionOptions &options);
 
-
-}}
-
-
+}// namespace python
+}// namespace rpy
 
 #endif//ROUGHPY_ROUGHPY_SRC_ARGS_CONVERT_TIMESTAMP_H

@@ -58,41 +58,41 @@ static const char *TICK_STREAM_DOC = R"rpydoc(Tick stream
 //                                const py::handle &data,
 //                                const py::kwargs &kwargs);
 
-static py::object construct(const py::object &data, const py::kwargs &kwargs) {
+static py::object construct(const py::object &data, const py::kwargs &kwargs)
+{
 
     auto pmd = python::kwargs_to_metadata(kwargs);
     auto &schema = pmd.schema;
 
-    if (!schema) {
-        schema = std::make_shared<streams::StreamSchema>();
-    }
+    if (!schema) { schema = std::make_shared<streams::StreamSchema>(); }
 
     py::object parser;
     if (kwargs.contains("parser")) {
         parser = kwargs["parser"](schema);
     } else {
-        auto tick_helpers_mod = py::module_::import("roughpy.streams.tick_stream");
+        auto tick_helpers_mod
+                = py::module_::import("roughpy.streams.tick_stream");
         parser = tick_helpers_mod.attr("StandardTickDataParser")(schema);
     }
 
     parser.attr("parse_data")(data);
 
-    auto& helper = parser.attr("helper").cast<python::RPyTickConstructionHelper&>();
+    auto &helper
+            = parser.attr("helper").cast<python::RPyTickConstructionHelper &>();
 
-    const auto& ticks = helper.ticks();
-    if (ticks.empty()) {
-        throw py::value_error("tick data cannot be empty");
-    }
+    const auto &ticks = helper.ticks();
+    if (ticks.empty()) { throw py::value_error("tick data cannot be empty"); }
 
-//    if (!schema->is_final()) {
-//        python::parse_data_into_schema(schema, data);
-//        pmd.width = schema->width();
-//        schema->finalize();
-//    }
+    //    if (!schema->is_final()) {
+    //        python::parse_data_into_schema(schema, data);
+    //        pmd.width = schema->width();
+    //        schema->finalize();
+    //    }
     if (!pmd.ctx) {
         pmd.width = schema->width();
         if (pmd.width == 0 || pmd.depth == 0 || pmd.scalar_type == nullptr) {
-            throw py::value_error("either ctx or width, depth, and dtype must be provided");
+            throw py::value_error(
+                    "either ctx or width, depth, and dtype must be provided");
         }
         pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type);
     } else if (pmd.width != pmd.ctx->width()) {
@@ -100,14 +100,14 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
         pmd.ctx = pmd.ctx->get_alike(pmd.width, pmd.depth, pmd.scalar_type);
     }
 
-//    helper_t helper(
-//        pmd.ctx,
-//        schema,
-//        static_cast<bool>(pmd.vector_type)
-//            ? *pmd.vector_type
-//            : algebra::VectorType::Sparse);
+    //    helper_t helper(
+    //        pmd.ctx,
+    //        schema,
+    //        static_cast<bool>(pmd.vector_type)
+    //            ? *pmd.vector_type
+    //            : algebra::VectorType::Sparse);
 
-//    parse_data_to_ticks(helper, data, kwargs);
+    //    parse_data_to_ticks(helper, data, kwargs);
 
     //    python::PyToBufferOptions options;
     //    options.type = pmd.scalar_type;
@@ -119,35 +119,37 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
     //    scalars::ScalarStream stream(options.type);
     //    stream.reserve_size(options.shape.size());
 
-//    auto result = streams::Stream(
-//        streams::TickStream(
-//            std::move(helper),
-//            {pmd.width,
-//             pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
-//             pmd.ctx,
-//             pmd.scalar_type,
-//             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-//             pmd.resolution,
-//             pmd.interval_type
-//            },
-//            pmd.resolution));
+    //    auto result = streams::Stream(
+    //        streams::TickStream(
+    //            std::move(helper),
+    //            {pmd.width,
+    //             pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
+    //             pmd.ctx,
+    //             pmd.scalar_type,
+    //             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
+    //             pmd.resolution,
+    //             pmd.interval_type
+    //            },
+    //            pmd.resolution));
 
     streams::StreamMetadata meta{
-        pmd.width,
-        pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
-        pmd.ctx,
-        pmd.scalar_type,
-        pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-        pmd.resolution,
-        pmd.interval_type};
+            pmd.width,
+            pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
+            pmd.ctx,
+            pmd.scalar_type,
+            pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
+            pmd.resolution,
+            pmd.interval_type};
 
     std::set<param_t> index;
     std::map<intervals::DyadicInterval, algebra::Lie> raw_data;
 
     // For value types, we need to keep track of the last value that appeared
-    std::vector<algebra::Lie> previous_values(pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type));
-    for (const auto& tick : ticks) {
-        const intervals::DyadicInterval di(tick.timestamp, pmd.resolution, pmd.interval_type);
+    std::vector<algebra::Lie> previous_values(
+            pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type));
+    for (const auto &tick : ticks) {
+        const intervals::DyadicInterval di(tick.timestamp, pmd.resolution,
+                                           pmd.interval_type);
 
         auto lie_elt = pmd.ctx->zero_lie(meta.cached_vector_type);
 
@@ -155,23 +157,26 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
         auto key = static_cast<key_type>(idx);
         switch (tick.type) {
             case streams::ChannelType::Increment:
-                lie_elt[key] += python::py_to_scalar(pmd.scalar_type, tick.data);
+                lie_elt[key]
+                        += python::py_to_scalar(pmd.scalar_type, tick.data);
                 break;
             case streams::ChannelType::Value: {
                 auto lag_key = key + 1;
-                const auto& prev_lead = previous_values[idx];
-                const auto& prev_lag = previous_values[idx+1];
+                const auto &prev_lead = previous_values[idx];
+                const auto &prev_lag = previous_values[idx + 1];
 
                 auto lead = pmd.ctx->zero_lie(meta.cached_vector_type);
                 auto lag = pmd.ctx->zero_lie(meta.cached_vector_type);
 
                 lead[key] += python::py_to_scalar(pmd.scalar_type, tick.data);
-                lead[lag_key] += python::py_to_scalar(pmd.scalar_type, tick.data);
+                lead[lag_key]
+                        += python::py_to_scalar(pmd.scalar_type, tick.data);
 
-                lie_elt = pmd.ctx->cbh(lead.sub(prev_lead), lag.sub(prev_lag), meta.cached_vector_type);
+                lie_elt = pmd.ctx->cbh(lead.sub(prev_lead), lag.sub(prev_lag),
+                                       meta.cached_vector_type);
 
                 previous_values[idx] = std::move(lead);
-                previous_values[idx+1] = std::move(lag);
+                previous_values[idx + 1] = std::move(lag);
 
                 break;
             }
@@ -193,18 +198,16 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs) {
         index.insert(di.included_end());
     }
 
-    streams::Stream result (streams::TickStream(
-        std::vector<param_t>(index.begin(), index.end()),
-        std::move(raw_data),
-        pmd.resolution,
-        pmd.schema,
-        std::move(meta)
-        ));
+    streams::Stream result(streams::TickStream(
+            std::vector<param_t>(index.begin(), index.end()),
+            std::move(raw_data), pmd.resolution, pmd.schema, std::move(meta)));
 
-    return py::reinterpret_steal<py::object>(python::RPyStream_FromStream(std::move(result)));
+    return py::reinterpret_steal<py::object>(
+            python::RPyStream_FromStream(std::move(result)));
 }
 
-void python::init_tick_stream(py::module_ &m) {
+void python::init_tick_stream(py::module_ &m)
+{
 
     init_tick_construction_helper(m);
 

@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -92,7 +92,6 @@ using std::is_nothrow_default_constructible;
 using std::is_trivially_constructible;
 using std::is_trivially_default_constructible;
 
-
 using std::is_base_of;
 using std::is_convertible;
 using std::is_same;
@@ -139,38 +138,35 @@ using boost::void_t;
  *
  * Makes T a pointer if it isn't already a pointer.
  */
-template <typename T>
-using ensure_pointer = conditional_t<is_pointer<T>::value, T, add_pointer_t<T>>;
+template <typename T> using ensure_pointer
+        = conditional_t<is_pointer<T>::value, T, add_pointer_t<T>>;
 
 /**
  * @brief Get the most sensible parameter type for type T
  */
-template <typename T>
-using param_type_t = typename boost::call_traits<T>::param_type;
+template <typename T> using param_type_t =
+        typename boost::call_traits<T>::param_type;
 
 namespace dtl {
-template <typename... Ts>
-struct select_first_impl;
+template <typename... Ts> struct select_first_impl;
 
 template <typename First, typename... Ts>
 struct select_first_impl<First, Ts...> {
     using type = First;
 };
 
-
-
 }// namespace dtl
 
-template <typename... Ts>
-using select_first_t = typename dtl::select_first_impl<Ts...>::type;
+template <typename... Ts> using select_first_t =
+        typename dtl::select_first_impl<Ts...>::type;
 
 namespace dtl {
-struct EmptyBase {};
-}
+struct EmptyBase {
+};
+}// namespace dtl
 
-template <typename T, typename B=dtl::EmptyBase>
-using void_or_base = conditional_t<is_void<T>::value, B, T>;
-
+template <typename T, typename B = dtl::EmptyBase> using void_or_base
+        = conditional_t<is_void<T>::value, B, T>;
 
 }// namespace rpy
 

@@ -43,7 +43,9 @@ using namespace pybind11::literals;
 static const char *BROWNIAN_PATH_DOC = R"rpydoc(A Brownian motion stream.
 )rpydoc";
 
-static py::object Brownian_from_generator(const py::args &args, const py::kwargs &kwargs) {
+static py::object Brownian_from_generator(const py::args &args,
+                                          const py::kwargs &kwargs)
+{
 
     auto pmd = python::kwargs_to_metadata(kwargs);
 
@@ -51,36 +53,40 @@ static py::object Brownian_from_generator(const py::args &args, const py::kwargs
         pmd.scalar_type = scalars::ScalarType::of<double>();
     }
 
-    if (pmd.depth == 0) {
-        pmd.depth = 2;
-    }
+    if (pmd.depth == 0) { pmd.depth = 2; }
 
     if (pmd.ctx == nullptr) {
         if (pmd.width == 0) {
             throw std::invalid_argument("width must be provided");
         }
-        pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type, {});
+        pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type,
+                                       {});
     }
 
     // TODO: Fix this up properly.
 
     streams::StreamMetadata md{
-        pmd.width,
-        pmd.support ? *pmd.support : intervals::RealInterval(-std::numeric_limits<param_t>::infinity(), std::numeric_limits<param_t>::infinity()),
-        pmd.ctx,
-        pmd.scalar_type,
-        pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-        pmd.resolution};
+            pmd.width,
+            pmd.support ? *pmd.support
+                        : intervals::RealInterval(
+                                -std::numeric_limits<param_t>::infinity(),
+                                std::numeric_limits<param_t>::infinity()),
+            pmd.ctx,
+            pmd.scalar_type,
+            pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
+            pmd.resolution};
 
     // TODO: Finish this
 
     BrownianStream inner(pmd.scalar_type->get_rng(), std::move(md));
     Stream stream(std::move(inner));
 
-    return py::reinterpret_steal<py::object>(python::RPyStream_FromStream(std::move(stream)));
+    return py::reinterpret_steal<py::object>(
+            python::RPyStream_FromStream(std::move(stream)));
 }
 
-void rpy::python::init_brownian_stream(py::module_ &m) {
+void rpy::python::init_brownian_stream(py::module_ &m)
+{
 
     py::class_<BrownianStream> klass(m, "BrownianStream", BROWNIAN_PATH_DOC);
 

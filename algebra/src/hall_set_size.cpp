@@ -34,7 +34,9 @@
 using namespace rpy;
 using namespace rpy::algebra;
 
-HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width), m_depth(depth) {
+HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth)
+    : m_width(width), m_depth(depth)
+{
     if (static_cast<dimn_t>(m_depth) > m_mobius.size()) {
         std::vector<bool> tmp;
         tmp.resize(m_depth / 2, true);
@@ -49,9 +51,7 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width),
         std::vector<int> primes;
         primes.reserve(bound);
         for (int i = 2; i < bound; ++i) {
-            if (tmp[i]) {
-                primes.push_back(i);
-            }
+            if (tmp[i]) { primes.push_back(i); }
         }
 
         /*
@@ -66,7 +66,8 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width),
         auto old_size = static_cast<int>(m_mobius.size());
         m_mobius.resize(m_depth + 1, 1);
         for (auto &prime : primes) {
-            for (deg_t i = (old_size / prime) + 1, m = i * prime; m <= m_depth; ++i) {
+            for (deg_t i = (old_size / prime) + 1, m = i * prime; m <= m_depth;
+                 ++i) {
                 m_mobius[m] *= -prime;
             }
             auto p2 = prime * prime;
@@ -75,11 +76,10 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width),
             }
         }
         for (deg_t i = old_size + 1; i <= m_depth; ++i) {
-            if (abs(m_mobius[i]) != i) {
-                m_mobius[i] = -m_mobius[i];
-            }
+            if (abs(m_mobius[i]) != i) { m_mobius[i] = -m_mobius[i]; }
             // Mobius[i] = sign(Mobius[i])
-            m_mobius[i] = static_cast<int>(0 < m_mobius[i]) - static_cast<int>(m_mobius[i] < 0);
+            m_mobius[i] = static_cast<int>(0 < m_mobius[i])
+                    - static_cast<int>(m_mobius[i] < 0);
         }
     }
 }
@@ -89,21 +89,23 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth) : m_width(width),
  * the Lie algebra degree size. In that case, we cannot have an exponent of 0
  * which eliminates one branch from the function.
  */
-static inline dimn_t power(deg_t base, int exp) {
-    if (exp == 1) {
-        return base;
-    }
-    return ((exp % 2 == 1) ? base : 1) * power(base, exp / 2) * power(base, exp / 2);
+static inline dimn_t power(deg_t base, int exp)
+{
+    if (exp == 1) { return base; }
+    return ((exp % 2 == 1) ? base : 1) * power(base, exp / 2)
+            * power(base, exp / 2);
 }
 
-dimn_t HallSetSizeHelper::operator()(int k) {
+dimn_t HallSetSizeHelper::operator()(int k)
+{
     dimn_t result = 0;
 
     for (deg_t i = 1; i <= k; ++i) {
         auto divs = div(k, i);
         if (divs.rem == 0) {
             auto comp = k / divs.quot;
-            result += static_cast<dimn_t>(m_mobius[divs.quot] * power(m_width, comp));
+            result += static_cast<dimn_t>(m_mobius[divs.quot]
+                                          * power(m_width, comp));
         }
     }
 

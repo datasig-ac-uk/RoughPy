@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -52,40 +52,40 @@ namespace streams {
  * whole interval.
  *
  */
-class DyadicCachingLayer : public StreamInterface {
+class DyadicCachingLayer : public StreamInterface
+{
     mutable std::map<intervals::DyadicInterval, algebra::Lie> m_cache;
     mutable std::recursive_mutex m_compute_lock;
 
 public:
     using StreamInterface::StreamInterface;
 
-    DyadicCachingLayer(const DyadicCachingLayer&) = delete;
-    DyadicCachingLayer(DyadicCachingLayer&& other) noexcept;
+    DyadicCachingLayer(const DyadicCachingLayer &) = delete;
+    DyadicCachingLayer(DyadicCachingLayer &&other) noexcept;
 
-    DyadicCachingLayer& operator=(const DyadicCachingLayer&) = delete;
-    DyadicCachingLayer& operator=(DyadicCachingLayer&& other) noexcept;
-
+    DyadicCachingLayer &operator=(const DyadicCachingLayer &) = delete;
+    DyadicCachingLayer &operator=(DyadicCachingLayer &&other) noexcept;
 
     using StreamInterface::log_signature;
     using StreamInterface::signature;
 
     RPY_NO_DISCARD
-    algebra::Lie log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+    algebra::Lie log_signature(const intervals::Interval &interval,
+                               const algebra::Context &ctx) const override;
 
     RPY_NO_DISCARD
-    algebra::Lie
-    log_signature(const intervals::DyadicInterval &interval,
-                  resolution_t resolution,
-                  const algebra::Context &ctx) const override;
+    algebra::Lie log_signature(const intervals::DyadicInterval &interval,
+                               resolution_t resolution,
+                               const algebra::Context &ctx) const override;
 
     RPY_NO_DISCARD
-    algebra::Lie
-    log_signature(const intervals::Interval &domain,
-                  resolution_t resolution,
-                  const algebra::Context &ctx) const override;
+    algebra::Lie log_signature(const intervals::Interval &domain,
+                               resolution_t resolution,
+                               const algebra::Context &ctx) const override;
 
     RPY_NO_DISCARD
-    algebra::FreeTensor signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+    algebra::FreeTensor signature(const intervals::Interval &interval,
+                                  const algebra::Context &ctx) const override;
 };
 
 }// namespace streams

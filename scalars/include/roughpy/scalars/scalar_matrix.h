@@ -36,20 +36,22 @@
 namespace rpy {
 namespace scalars {
 
-enum class MatrixStorage {
+enum class MatrixStorage
+{
     FullMatrix,
     UpperTriangular,
     LowerTriangular,
     Diagonal
 };
 
-enum class MatrixLayout {
+enum class MatrixLayout
+{
     CStype,
     FStype
 };
 
-class RPY_EXPORT ScalarMatrix
-    : public scalars::ScalarArray {
+class RPY_EXPORT ScalarMatrix : public scalars::ScalarArray
+{
 
     MatrixStorage m_storage = MatrixStorage::FullMatrix;
     MatrixLayout m_layout = MatrixLayout::CStype;
@@ -59,15 +61,11 @@ class RPY_EXPORT ScalarMatrix
 public:
     ScalarMatrix();
 
-    ScalarMatrix(const ScalarType *type,
-                 deg_t rows,
-                 deg_t cols,
+    ScalarMatrix(const ScalarType *type, deg_t rows, deg_t cols,
                  MatrixStorage = MatrixStorage::FullMatrix,
                  MatrixLayout = MatrixLayout::CStype);
 
-    ScalarMatrix(deg_t rows,
-                 deg_t cols,
-                 ScalarArray &&array,
+    ScalarMatrix(deg_t rows, deg_t cols, ScalarArray &&array,
                  MatrixStorage storage = MatrixStorage::FullMatrix,
                  MatrixLayout layout = MatrixLayout::CStype);
 
@@ -75,16 +73,26 @@ public:
 
     RPY_NO_DISCARD constexpr deg_t ncols() const noexcept { return m_ncols; }
 
-    RPY_NO_DISCARD constexpr MatrixStorage storage() const noexcept { return m_storage; }
+    RPY_NO_DISCARD constexpr MatrixStorage storage() const noexcept
+    {
+        return m_storage;
+    }
 
-    constexpr void storage(MatrixStorage new_storage) {
+    constexpr void storage(MatrixStorage new_storage)
+    {
         //TODO: Check if this requires allocation or something
         m_storage = new_storage;
     }
 
-    RPY_NO_DISCARD constexpr MatrixLayout layout() const noexcept { return m_layout; }
+    RPY_NO_DISCARD constexpr MatrixLayout layout() const noexcept
+    {
+        return m_layout;
+    }
 
-    constexpr void layout(MatrixLayout new_layout) noexcept { m_layout = new_layout; }
+    constexpr void layout(MatrixLayout new_layout) noexcept
+    {
+        m_layout = new_layout;
+    }
 
     RPY_NO_DISCARD
     ScalarMatrix row(deg_t i);
@@ -106,11 +114,11 @@ public:
     ScalarMatrix to_full(MatrixLayout layout) const;
     void to_full(ScalarMatrix &into) const;
 
-
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(ScalarMatrix) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(ScalarMatrix)
+{
     RPY_SERIAL_SERIALIZE_NVP("storage", m_storage);
     RPY_SERIAL_SERIALIZE_NVP("layout", m_layout);
     RPY_SERIAL_SERIALIZE_NVP("rows", m_nrows);
@@ -121,6 +129,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(ScalarMatrix) {
 }// namespace scalars
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::scalars::ScalarMatrix, rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::scalars::ScalarMatrix,
+                            rpy::serial::specialization::member_serialize)
 
 #endif// ROUGHPY_SCALARS_SCALAR_MATRIX_H_

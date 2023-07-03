@@ -8,13 +8,13 @@ project(RoughPy_Core
 include(GNUInstallDirs)
 
 add_roughpy_component(Core INTERFACE
-    PUBLIC_HEADERS
+        PUBLIC_HEADERS
         include/roughpy/core/types.h
         include/roughpy/core/traits.h
         include/roughpy/core/macros.h
         include/roughpy/core/helpers.h
         include/roughpy/core/slice.h
         include/roughpy/core/alloc.h
-    DEFINITIONS
+        DEFINITIONS
         RPY_DBG_ASSERT_USE_EXCEPTIONS 1
         )

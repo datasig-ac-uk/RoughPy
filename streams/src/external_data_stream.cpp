@@ -44,14 +44,15 @@ streams::ExternalDataStreamSource::~ExternalDataStreamSource() = default;
 
 streams::ExternalDataSourceFactory::~ExternalDataSourceFactory() = default;
 
-algebra::Lie streams::ExternalDataStream::log_signature_impl(const intervals::Interval &interval, const algebra::Context &ctx) const {
+algebra::Lie streams::ExternalDataStream::log_signature_impl(
+        const intervals::Interval &interval, const algebra::Context &ctx) const
+{
     scalars::KeyScalarArray buffer(ctx.ctype());
     auto num_increments = p_source->query(buffer, interval);
 
-    algebra::SignatureData tmp{
-        scalars::ScalarStream(ctx.ctype()),
-        std::vector<const key_type *>(),
-        metadata().cached_vector_type};
+    algebra::SignatureData tmp{scalars::ScalarStream(ctx.ctype()),
+                               std::vector<const key_type *>(),
+                               metadata().cached_vector_type};
 
     tmp.data_stream.reserve_size(num_increments);
     const auto width = static_cast<dimn_t>(metadata().width);
@@ -66,13 +67,18 @@ algebra::Lie streams::ExternalDataStream::log_signature_impl(const intervals::In
 }
 
 static std::mutex s_factory_guard;
-static std::vector<std::unique_ptr<const streams::ExternalDataSourceFactory>> s_factory_list;
+static std::vector<std::unique_ptr<const streams::ExternalDataSourceFactory>>
+        s_factory_list;
 
-void streams::ExternalDataStream::register_factory(std::unique_ptr<const ExternalDataSourceFactory> &&factory) {
+void streams::ExternalDataStream::register_factory(
+        std::unique_ptr<const ExternalDataSourceFactory> &&factory)
+{
     std::lock_guard<std::mutex> access(s_factory_guard);
     s_factory_list.push_back(std::move(factory));
 }
-streams::ExternalDataStreamConstructor streams::ExternalDataStream::get_factory_for(const url &uri) {
+streams::ExternalDataStreamConstructor
+streams::ExternalDataStream::get_factory_for(const url &uri)
+{
     std::lock_guard<std::mutex> access(s_factory_guard);
 
     if (s_factory_list.empty()) {
@@ -83,53 +89,69 @@ streams::ExternalDataStreamConstructor streams::ExternalDataStream::get_factory_
     ExternalDataStreamConstructor ctor;
     for (auto it = s_factory_list.rbegin(); it != s_factory_list.rend(); ++it) {
         ctor = (*it)->get_constructor(uri);
-        if (ctor) {
-            return ctor;
-        }
+        if (ctor) { return ctor; }
     }
 
     return ctor;
 }
 
-void streams::ExternalDataSourceFactory::destroy_payload(void *&payload) const {
+void streams::ExternalDataSourceFactory::destroy_payload(void *&payload) const
+{
     RPY_DBG_ASSERT(payload == nullptr);
 }
 
-void streams::ExternalDataSourceFactory::set_width(void *payload, deg_t width) const {
-}
-void streams::ExternalDataSourceFactory::set_depth(void *payload, deg_t depth) const {
-}
-void streams::ExternalDataSourceFactory::set_ctype(void *payload, const scalars::ScalarType *ctype) const {
-}
-void streams::ExternalDataSourceFactory::set_context(void *payload, algebra::context_pointer ctx) const {
-}
-void streams::ExternalDataSourceFactory::set_support(void *payload, intervals::RealInterval support) const {
-}
-void streams::ExternalDataSourceFactory::set_vtype(void *payload, algebra::VectorType vtype) const {
-}
-void streams::ExternalDataSourceFactory::set_resolution(void *payload, resolution_t resolution) const {
-}
+void streams::ExternalDataSourceFactory::set_width(void *payload,
+                                                   deg_t width) const
+{}
+void streams::ExternalDataSourceFactory::set_depth(void *payload,
+                                                   deg_t depth) const
+{}
+void streams::ExternalDataSourceFactory::set_ctype(
+        void *payload, const scalars::ScalarType *ctype) const
+{}
+void streams::ExternalDataSourceFactory::set_context(
+        void *payload, algebra::context_pointer ctx) const
+{}
+void streams::ExternalDataSourceFactory::set_support(
+        void *payload, intervals::RealInterval support) const
+{}
+void streams::ExternalDataSourceFactory::set_vtype(
+        void *payload, algebra::VectorType vtype) const
+{}
+void streams::ExternalDataSourceFactory::set_resolution(
+        void *payload, resolution_t resolution) const
+{}
 
-void streams::ExternalDataSourceFactory::add_option(void *payload, const string &option, void *value) const {
-}
+void streams::ExternalDataSourceFactory::add_option(void *payload,
+                                                    const string &option,
+                                                    void *value) const
+{}
 
-streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(const streams::ExternalDataSourceFactory *factory, void *payload)
-    : p_factory(factory), p_payload(payload) {
+streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(
+        const streams::ExternalDataSourceFactory *factory, void *payload)
+    : p_factory(factory), p_payload(payload)
+{
     RPY_CHECK(p_factory != nullptr && p_payload != nullptr);
 }
 
-streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(streams::ExternalDataStreamConstructor &&other) noexcept
-    : p_factory(other.p_factory), p_payload(other.p_payload) {
+streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(
+        streams::ExternalDataStreamConstructor &&other) noexcept
+    : p_factory(other.p_factory), p_payload(other.p_payload)
+{
     other.p_factory = nullptr;
     other.p_payload = nullptr;
 }
 
-streams::ExternalDataStreamConstructor::~ExternalDataStreamConstructor() {
+streams::ExternalDataStreamConstructor::~ExternalDataStreamConstructor()
+{
     if (p_factory != nullptr && p_payload != nullptr) {
         p_factory->destroy_payload(p_payload);
     }
 }
-streams::ExternalDataStreamConstructor &streams::ExternalDataStreamConstructor::operator=(streams::ExternalDataStreamConstructor &&other) noexcept {
+streams::ExternalDataStreamConstructor &
+streams::ExternalDataStreamConstructor::operator=(
+        streams::ExternalDataStreamConstructor &&other) noexcept
+{
     if (this != &other) {
         this->~ExternalDataStreamConstructor();
         p_factory = other.p_factory;
@@ -140,32 +162,47 @@ streams::ExternalDataStreamConstructor &streams::ExternalDataStreamConstructor::
     return *this;
 }
 
-void streams::ExternalDataStreamConstructor::set_width(deg_t width) {
+void streams::ExternalDataStreamConstructor::set_width(deg_t width)
+{
     p_factory->set_width(p_payload, width);
 }
-void streams::ExternalDataStreamConstructor::set_depth(deg_t depth) {
+void streams::ExternalDataStreamConstructor::set_depth(deg_t depth)
+{
     p_factory->set_depth(p_payload, depth);
 }
-void streams::ExternalDataStreamConstructor::set_ctype(const scalars::ScalarType *ctype) {
+void streams::ExternalDataStreamConstructor::set_ctype(
+        const scalars::ScalarType *ctype)
+{
     p_factory->set_ctype(p_payload, ctype);
 }
-void streams::ExternalDataStreamConstructor::set_context(algebra::context_pointer ctx) {
+void streams::ExternalDataStreamConstructor::set_context(
+        algebra::context_pointer ctx)
+{
     p_factory->set_context(p_payload, std::move(ctx));
 }
-void streams::ExternalDataStreamConstructor::set_support(intervals::RealInterval support) {
+void streams::ExternalDataStreamConstructor::set_support(
+        intervals::RealInterval support)
+{
     p_factory->set_support(p_payload, std::move(support));
 }
-void streams::ExternalDataStreamConstructor::set_vtype(algebra::VectorType vtype) {
+void streams::ExternalDataStreamConstructor::set_vtype(
+        algebra::VectorType vtype)
+{
     p_factory->set_vtype(p_payload, vtype);
 }
-void streams::ExternalDataStreamConstructor::set_resolution(resolution_t resolution) {
+void streams::ExternalDataStreamConstructor::set_resolution(
+        resolution_t resolution)
+{
     p_factory->set_resolution(p_payload, resolution);
 }
 
-void streams::ExternalDataStreamConstructor::add_option(const string &option, void *value) {
+void streams::ExternalDataStreamConstructor::add_option(const string &option,
+                                                        void *value)
+{
     p_factory->add_option(p_payload, option, value);
 }
-streams::Stream streams::ExternalDataStreamConstructor::construct() {
+streams::Stream streams::ExternalDataStreamConstructor::construct()
+{
     auto *payload = p_payload;
     p_payload = nullptr;
     return p_factory->construct_stream(payload);

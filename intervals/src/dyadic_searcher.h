@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -47,47 +47,48 @@ namespace rpy {
 namespace intervals {
 
 struct DyadicRealStrictLess {
-    bool operator()(const Dyadic& lhs, const Dyadic& rhs) const noexcept {
+    bool operator()(const Dyadic &lhs, const Dyadic &rhs) const noexcept
+    {
         auto max = std::max(lhs.power(), rhs.power());
-        return (lhs.multiplier() << (max - lhs.power())) < (rhs.multiplier() << (max - rhs.power()));
+        return (lhs.multiplier() << (max - lhs.power()))
+                < (rhs.multiplier() << (max - rhs.power()));
     }
 };
 
 struct DyadicRealStrictGreater {
-    bool operator()(const Dyadic& lhs, const Dyadic& rhs) const noexcept {
+    bool operator()(const Dyadic &lhs, const Dyadic &rhs) const noexcept
+    {
         auto max = std::max(lhs.power(), rhs.power());
-        return (lhs.multiplier() << (max - lhs.power())) > (rhs.multiplier() << (max - rhs.power()));
+        return (lhs.multiplier() << (max - lhs.power()))
+                > (rhs.multiplier() << (max - rhs.power()));
     }
 };
 
-class DyadicSearcher {
+class DyadicSearcher
+{
     predicate_t m_predicate;
     std::map<Dyadic, Dyadic, DyadicRealStrictGreater> m_seen;
     dyadic_depth_t m_max_depth;
 
 protected:
-
-    void expand_left(ScaledPredicate& predicate, std::deque<DyadicInterval>& current) const;
-    void expand_right(ScaledPredicate& predicate, std::deque<DyadicInterval>& current) const;
-    void expand(ScaledPredicate& predicate, DyadicInterval found_interval);
+    void expand_left(ScaledPredicate &predicate,
+                     std::deque<DyadicInterval> &current) const;
+    void expand_right(ScaledPredicate &predicate,
+                      std::deque<DyadicInterval> &current) const;
+    void expand(ScaledPredicate &predicate, DyadicInterval found_interval);
 
 public:
-
-    DyadicSearcher(predicate_t&& predicate, dyadic_depth_t max_depth)
+    DyadicSearcher(predicate_t &&predicate, dyadic_depth_t max_depth)
         : m_predicate(std::move(predicate)), m_max_depth(max_depth)
     {}
 
 private:
-
-    ScaledPredicate rescale_to_unit_interval(const Interval& original);
-    void get_next_dyadic(DyadicInterval& current) const;
-    std::vector<RealInterval> find_in_unit_interval(ScaledPredicate& predicate);
+    ScaledPredicate rescale_to_unit_interval(const Interval &original);
+    void get_next_dyadic(DyadicInterval &current) const;
+    std::vector<RealInterval> find_in_unit_interval(ScaledPredicate &predicate);
 
 public:
-
-    std::vector<RealInterval> operator()(const Interval& original);
-
-
+    std::vector<RealInterval> operator()(const Interval &original);
 };
 
 }// namespace intervals

@@ -36,11 +36,10 @@
 #include <stdexcept>
 
 #ifdef __has_feature
-#define RPY_HAS_FEATURE(FEAT) __has_feature(FEAT)
+#  define RPY_HAS_FEATURE(FEAT) __has_feature(FEAT)
 #else
-#define RPY_HAS_FEATURE(FEAT) 0
+#  define RPY_HAS_FEATURE(FEAT) 0
 #endif
-
 
 #define RPY_STRINGIFY_IMPL(ARG) #ARG
 #define RPY_STRINGIFY(ARG) RPY_STRINGIFY_IMPL(ARG)
@@ -51,211 +50,212 @@
 
 #define RPY_IDENTITY(ARG) ARG
 
-#if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__)) && !defined(RPY_DEBUG)
-#define RPY_DEBUG
+#if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__))            \
+        && !defined(RPY_DEBUG)
+#  define RPY_DEBUG
 #else
-#undef RPY_DEBUG
+#  undef RPY_DEBUG
 #endif
 
 #if defined(_MSC_VER) && defined(_MSVC_LANG)
-#define RPY_CPP_VERSION _MSVC_LANG
-#define RPY_MSVC
+#  define RPY_CPP_VERSION _MSVC_LANG
+#  define RPY_MSVC
 #else
-#define RPY_CPP_VERSION __cplusplus
-#undef RPY_MSVC
+#  define RPY_CPP_VERSION __cplusplus
+#  undef RPY_MSVC
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
-#define RPY_GCC
+#  define RPY_GCC
 #else
-#undef RPY_GCC
+#  undef RPY_GCC
 #endif
 
 #ifdef __clang__
-#define RPY_CLANG
+#  define RPY_CLANG
 #else
-#undef RPY_CLANG
+#  undef RPY_CLANG
 #endif
 
 #if defined(__linux__)
-#define RPY_PLATFORM_LINUX 1
+#  define RPY_PLATFORM_LINUX 1
 #elif defined(__APPLE__) && defined(__MACH__)
-#define RPY_PLATFORM_MACOS 1
+#  define RPY_PLATFORM_MACOS 1
 #elif defined(_WIN32) || defined(WIN32)
-#define RPY_PLATFORM_WINDOWS 1
+#  define RPY_PLATFORM_WINDOWS 1
 #endif
 
 #if defined(RPY_PLATFORM_WINDOWS) || defined(__CYGWIN__)
-#define RPY_COMPILING_DLL
+#  define RPY_COMPILING_DLL
 #endif
 
 #ifndef RPY_DISABLE_EXPORTS
-#ifdef RPY_COMPILING_DLL
-#if RPY_BUILDING_LIBRARY
-#if defined(RPY_MSVC)
-#define RPY_EXPORT __declspec(dllexport)
-#define RPY_LOCAL
+#  ifdef RPY_COMPILING_DLL
+#    if RPY_BUILDING_LIBRARY
+#      if defined(RPY_MSVC)
+#        define RPY_EXPORT __declspec(dllexport)
+#        define RPY_LOCAL
+#      else
+#        define RPY_EXPORT __attribute__((dllexport))
+#        define RPY_LOCAL
+#      endif
+#    else
+#      if defined(RPY_MSVC)
+#        define RPY_EXPORT __declspec(dllimport)
+#        define RPY_LOCAL
+#      else
+#        define RPY_EXPORT __attribute__((dllimport))
+#      endif
+#    endif
+#  else
+#    if defined(RPY_GCC) || defined(RPY_CLANG)
+#      if defined(RPY_BUILDING_LIBRARY)
+#        define RPY_EXPORT __attribute__((visibility("default")))
+#        define RPY_LOCAL __attribute__((visibility("hidden")))
+#      else
+#        define RPY_EXPORT __attribute__((visibility("default")))
+#        define RPY_LOCAL __attribute__((visibility("hidden")))
+#      endif
+#    else
+#      define RPY_EXPORT
+#      define RPY_LOCAL
+#    endif
+#  endif
 #else
-#define RPY_EXPORT __attribute__((dllexport))
-#define RPY_LOCAL
-#endif
-#else
-#if defined(RPY_MSVC)
-#define RPY_EXPORT __declspec(dllimport)
-#define RPY_LOCAL
-#else
-#define RPY_EXPORT __attribute__((dllimport))
-#endif
-#endif
-#else
-#if defined(RPY_GCC) || defined(RPY_CLANG)
-#if defined(RPY_BUILDING_LIBRARY)
-#define RPY_EXPORT __attribute__((visibility("default")))
-#define RPY_LOCAL __attribute__((visibility("hidden")))
-#else
-#define RPY_EXPORT __attribute__((visibility("default")))
-#define RPY_LOCAL __attribute__((visibility("hidden")))
-#endif
-#else
-#define RPY_EXPORT
-#define RPY_LOCAL
-#endif
-#endif
-#else
-#define RPY_EXPORT
-#define RPY_LOCAL
+#  define RPY_EXPORT
+#  define RPY_LOCAL
 #endif
 
 #if RPY_CPP_VERSION >= 201403L
-#define RPY_CPP_14
+#  define RPY_CPP_14
 #else
-#undef RPY_CPP_14
+#  undef RPY_CPP_14
 #endif
 
 #if RPY_CPP_VERSION >= 201703L
-#define RPY_CPP_17
+#  define RPY_CPP_17
 #else
-#undef RPY_CPP_17
+#  undef RPY_CPP_17
 #endif
 
 #ifdef RPY_CPP_17
-#define RPY_UNUSED [[maybe_unused]]
-#define RPY_NO_DISCARD [[nodiscard]]
-#define RPY_NO_RETURN [[noreturn]]
-#define RPY_IF_CONSTEXPR constexpr
+#  define RPY_UNUSED [[maybe_unused]]
+#  define RPY_NO_DISCARD [[nodiscard]]
+#  define RPY_NO_RETURN [[noreturn]]
+#  define RPY_IF_CONSTEXPR constexpr
 #else
-#define RPY_UNUSED
-#define RPY_NO_DISCARD
-#define RPY_IF_CONSTEXPR
-#define RPY_NO_RETURN
+#  define RPY_UNUSED
+#  define RPY_NO_DISCARD
+#  define RPY_IF_CONSTEXPR
+#  define RPY_NO_RETURN
 #endif
 
 #if defined(RPY_GCC) || defined(RPY_CLANG)
-#define RPY_UNUSED_VAR __attribute__((unused))
+#  define RPY_UNUSED_VAR __attribute__((unused))
 #else
-#define RPY_UNUSED_VAR
+#  define RPY_UNUSED_VAR
 #endif
 
 #if defined(RPY_GCC) || defined(RPY_CLANG)
-#define RPY_UNREACHABLE() (__builtin_unreachable())
-#define RPY_UNREACHABLE_RETURN(...) RPY_UNREACHABLE()
+#  define RPY_UNREACHABLE() (__builtin_unreachable())
+#  define RPY_UNREACHABLE_RETURN(...) RPY_UNREACHABLE()
 #elif defined(RPY_MSVC)
-#define RPY_UNREACHABLE() (__assume(false))
-#define RPY_UNREACHABLE_RETURN(...) \
-    RPY_UNREACHABLE();              \
-    return __VA_ARGS__
+#  define RPY_UNREACHABLE() (__assume(false))
+#  define RPY_UNREACHABLE_RETURN(...)                                          \
+      RPY_UNREACHABLE();                                                       \
+      return __VA_ARGS__
 #else
-#define RPY_UNREACHABLE() abort()
-#define RPY_UNREACHABLE_RETURN(...) \
-    RPY_UNREACHABLE();              \
-    return __VA_ARGS__
+#  define RPY_UNREACHABLE() abort()
+#  define RPY_UNREACHABLE_RETURN(...)                                          \
+      RPY_UNREACHABLE();                                                       \
+      return __VA_ARGS__
 #endif
 
 // Macros that control optimisations
 
 #if defined(__OPTIMIZE__) || !defined(RPY_DEBUG)
-#if defined(_WIN32) || defined(_WIN64)
-#define RPY_INLINE_ALWAYS __forceinline
-#elif defined(__GNUC__) || defined(__clang__)
-#define RPY_INLINE_ALWAYS inline __attribute__((always_inline))
-#else
-#define RPY_INLINE_ALWAYS inline
-#endif
+#  if defined(_WIN32) || defined(_WIN64)
+#    define RPY_INLINE_ALWAYS __forceinline
+#  elif defined(__GNUC__) || defined(__clang__)
+#    define RPY_INLINE_ALWAYS inline __attribute__((always_inline))
+#  else
+#    define RPY_INLINE_ALWAYS inline
+#  endif
 #endif
 
 #ifdef RPY_MSVC
-#define RPY_INLINE_NEVER __declspec(noinline)
+#  define RPY_INLINE_NEVER __declspec(noinline)
 #elif defined(RPY_GCC) || defined(RPY_CLANG)
-#define RPY_INLINE_NEVER __attribute__((never_inline))
+#  define RPY_INLINE_NEVER __attribute__((never_inline))
 #else
-#define RPY_INLINE_NEVER
+#  define RPY_INLINE_NEVER
 #endif
 
 #if defined(RPY_GCC) || defined(RPY_CLANG)
-#define RPY_RESTRICT __restrict__
+#  define RPY_RESTRICT __restrict__
 #elif defined(RPY_MSVC)
-#define RPY_RESTRICT __restrict
+#  define RPY_RESTRICT __restrict
 #else
-#define RPY_RESTRICT
+#  define RPY_RESTRICT
 #endif
 
 #if defined(RPY_GCC) || defined(RPY_CLANG)
-#define RPY_LIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 1))
-#define RPY_UNLIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 0))
+#  define RPY_LIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 1))
+#  define RPY_UNLIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 0))
 #else
-#define RPY_LIKEY(COND) (COND)
-#define RPY_UNLIKELY(COND) (COND)
+#  define RPY_LIKEY(COND) (COND)
+#  define RPY_UNLIKELY(COND) (COND)
 #endif
 
-#define RPY_CHECK(EXPR)                                                              \
-    do {                                                                             \
-        if (RPY_UNLIKELY(!(EXPR))) {                                                 \
-            throw std::runtime_error(std::string("failed check \"") + #EXPR + "\""); \
-        }                                                                            \
+#define RPY_CHECK(EXPR)                                                        \
+    do {                                                                       \
+        if (RPY_UNLIKELY(!(EXPR))) {                                           \
+            throw std::runtime_error(std::string("failed check \"") + #EXPR    \
+                                     + "\"");                                  \
+        }                                                                      \
     } while (0)
 
 #ifdef RPY_DEBUG
-#ifdef RPY_DBG_ASSERT_USE_EXCEPTIONS
-#define RPY_DBG_ASSERT(ARG)                                                                    \
-    do {                                                                                       \
-        if (RPY_UNLIKEY(!(EXPR))) {                                                            \
-            throw std::runtime_error(std::string("failed debug assertion \"") + #EXPR + "\""); \
-        }                                                                                      \
-    } while (0)
+#  ifdef RPY_DBG_ASSERT_USE_EXCEPTIONS
+#    define RPY_DBG_ASSERT(ARG)                                                \
+        do {                                                                   \
+            if (RPY_UNLIKEY(!(EXPR))) {                                        \
+                throw std::runtime_error(                                      \
+                        std::string("failed debug assertion \"") + #EXPR       \
+                        + "\"");                                               \
+            }                                                                  \
+        } while (0)
+#  else
+#    define RPY_DBG_ASSERT(ARG) assert(ARG)
+#  endif
 #else
-#define RPY_DBG_ASSERT(ARG) assert(ARG)
-#endif
-#else
-#define RPY_DBG_ASSERT(ARG) (void)0
+#  define RPY_DBG_ASSERT(ARG) (void) 0
 #endif
 
-#define RPY_FALLTHROUGH (void)0
+#define RPY_FALLTHROUGH (void) 0
 
 #if defined(RPY_PLATFORM_WINDOWS)
-#ifdef RPY_BUILDING_LIBRARY
-#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
-    template TYPE RPY_EXPORT TMPL<__VA_ARGS__>
-#define RPY_INSTANTIATE_TEMPLATE(TYPE, TMPL, ...) \
-    template TYPE TMPL<__VA_ARGS__>
+#  if RPY_BUILDING_LIBRARY
+#    define RPY_TEMPLATE_EXTERN
+#    define RPY_EXPORT_TEMPLATE
+#    define RPY_EXPORT_INSTANTIATION RPY_EXPORT
+#  else
+#    define RPY_TEMPLATE_EXTERN
+#    define RPY_EXPORT_TEMPLATE RPY_EXPORT
+#    define RPY_EXPORT_INSTANTIATION
+#  endif
 #else
-#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
-    template TYPE RPY_EXPORT TMPL<__VA_ARGS__>
-// RPY_INSTANTIATE_TEMPLATE should never be used in this context
-#undef RPY_INSTANTIATE_TEMPLATE
-#endif
-#else
-#define RPY_EXPORT_TEMPLATE(TYPE, TMPL, ...) \
-    extern template TYPE RPY_EXPORT TMPL<__VA_ARGS__>
-#define RPY_INSTANTIATE_TEMPLATE(TYPE, TMPL, ...) \
-    template TYPE TMPL<__VA_ARGS__>
+#  define RPY_TEMPLATE_EXTERN extern
+#  define RPY_EXPORT_TEMPLATE
+#  define RPY_EXPORT_INSTANTIATION RPY_EXPORT
 #endif
 
 
 // Sanitizer supports
 #ifdef RPY_CLANG
-#define RPY_NO_UBSAN __attribute__((no_sanitize("undefined")))
+#  define RPY_NO_UBSAN __attribute__((no_sanitize("undefined")))
 #else
-#define RPY_NO_UBSAN
+#  define RPY_NO_UBSAN
 #endif
 
 #if RPY_HAS_FEATURE(address_sanitizer)

@@ -14,7 +14,7 @@ if (NOT TARGET Libalgebra_lite::Libalgebra_lite)
 endif ()
 
 add_roughpy_component(Algebra
-    SOURCES
+        SOURCES
         src/basis.cpp
         src/algebra_base.cpp
         src/context.cpp
@@ -41,7 +41,7 @@ add_roughpy_component(Algebra
         src/libalgebra_lite_internal/vector_type_helper.h
         src/tensor_basis.cpp
         src/lie_basis.cpp
-    PUBLIC_HEADERS
+        PUBLIC_HEADERS
         include/roughpy/algebra/algebra_fwd.h
         include/roughpy/algebra/algebra_base.h
         include/roughpy/algebra/algebra_impl.h
@@ -67,16 +67,14 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/context.h
         include/roughpy/algebra/fallback_operations.h
-    PUBLIC_DEPS
+        PUBLIC_DEPS
         Boost::boost
         Libalgebra_lite::Libalgebra_lite
-    NEEDS
+        NEEDS
         RoughPy::Core
         RoughPy::Platform
         RoughPy::Scalars
-    )
-
-
+        )
 
 
 add_roughpy_test_helper(AlgebraMock STATIC
@@ -88,10 +86,10 @@ add_roughpy_test_helper(AlgebraMock STATIC
         )
 
 add_roughpy_test(algebra
-    SRC
+        SRC
         src/ContextFixture.cpp
         src/ContextFixture.h
         src/test_lie.cpp
-    NEEDS
+        NEEDS
         RoughPy::Algebra
         )

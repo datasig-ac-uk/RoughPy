@@ -31,7 +31,8 @@
 
 #include <roughpy/intervals/real_interval.h>
 
-bool rpy::intervals::RealInterval::contains(const Interval &arg) const noexcept {
+bool rpy::intervals::RealInterval::contains(const Interval &arg) const noexcept
+{
     return Interval::contains(arg);
 }
 

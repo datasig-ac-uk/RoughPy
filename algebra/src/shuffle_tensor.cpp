@@ -29,28 +29,34 @@
 // Created by user on 06/03/23.
 //
 
-#include <roughpy/algebra/shuffle_tensor.h>
-#include <roughpy/algebra/context.h>
-#include <roughpy/platform/serialization.h>
-#include <roughpy/algebra/algebra_impl.h>
 #include <roughpy/algebra/algebra_bundle_impl.h>
+#include <roughpy/algebra/algebra_impl.h>
+#include <roughpy/algebra/context.h>
+#include <roughpy/algebra/shuffle_tensor.h>
+#include <roughpy/platform/serialization.h>
 
 namespace rpy {
 namespace algebra {
 
+template class RPY_EXPORT_INSTANTIATION AlgebraInterface< ShuffleTensor, TensorBasis>;
 
-RPY_INSTANTIATE_TEMPLATE(class, AlgebraInterface, ShuffleTensor, TensorBasis);
-RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, ShuffleTensorInterface);
-RPY_INSTANTIATE_TEMPLATE(class, BundleInterface, ShuffleTensorBundle, ShuffleTensor, ShuffleTensor);
-RPY_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, ShuffleTensorBundleInterface);
+template class RPY_EXPORT_INSTANTIATION AlgebraBase< ShuffleTensorInterface>;
+
+template class RPY_EXPORT_INSTANTIATION BundleInterface< ShuffleTensorBundle,
+                         ShuffleTensor, ShuffleTensor>;
+
+template class RPY_EXPORT_INSTANTIATION AlgebraBundleBase<
+                         ShuffleTensorBundleInterface>;
 
 template <> typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx) {
+basis_setup_helper<ShuffleTensor>::get(const context_pointer &ctx)
+{
     return ctx->get_tensor_basis();
 }
 
 template <> typename ShuffleTensorBundle::basis_type
-basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer& ctx) {
+basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer &ctx)
+{
     return ctx->get_tensor_basis();
 }
 
@@ -58,4 +64,5 @@ basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer& ctx) {
 }// namespace rpy
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::ShuffleTensor
+
 #include <roughpy/platform/serialization_instantiations.inl>

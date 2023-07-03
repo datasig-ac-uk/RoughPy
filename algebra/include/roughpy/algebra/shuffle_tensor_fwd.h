@@ -11,7 +11,8 @@ namespace algebra {
 extern template class AlgebraInterface<ShuffleTensor, TensorBasis>;
 
 class RPY_EXPORT ShuffleTensorInterface
-    : public AlgebraInterface<ShuffleTensor, TensorBasis> {
+    : public AlgebraInterface<ShuffleTensor, TensorBasis>
+{
     using base_t = AlgebraInterface<ShuffleTensor, TensorBasis>;
 
 public:
@@ -20,7 +21,8 @@ public:
 
 extern template class AlgebraBase<ShuffleTensorInterface>;
 
-class RPY_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface> {
+class RPY_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface>
+{
     using base_t = AlgebraBase<ShuffleTensorInterface>;
 
 public:
@@ -33,14 +35,19 @@ public:
 
 class ShuffleTensorBundle;
 
-extern template class BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
+extern template class BundleInterface<ShuffleTensorBundle, ShuffleTensor,
+                                      ShuffleTensor>;
 
 class RPY_EXPORT ShuffleTensorBundleInterface
-    : public BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor> {};
+    : public BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>
+{
+};
 
 extern template class AlgebraBundleBase<ShuffleTensorBundleInterface>;
 
-class RPY_EXPORT ShuffleTensorBundle : public AlgebraBundleBase<ShuffleTensorBundleInterface> {
+class RPY_EXPORT ShuffleTensorBundle
+    : public AlgebraBundleBase<ShuffleTensorBundleInterface>
+{
     using base_t = AlgebraBundleBase<ShuffleTensorBundleInterface>;
 
 public:
@@ -53,7 +60,9 @@ public:
 
 }// namespace algebra
 }// namespace rpy
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensor, rpy::serial::specialization::member_serialize)
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensorBundle, rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensor,
+                            rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensorBundle,
+                            rpy::serial::specialization::member_serialize)
 
 #endif// ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_FWD_H_

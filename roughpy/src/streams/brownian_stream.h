@@ -34,11 +34,12 @@
 
 #include "roughpy_module.h"
 
-namespace rpy { namespace python {
+namespace rpy {
+namespace python {
 
-void init_brownian_stream(py::module_& m);
+void init_brownian_stream(py::module_ &m);
 
-
-}}
+}
+}// namespace rpy
 
 #endif//ROUGHPY_ROUGHPY_SRC_STREAMS_BROWNIAN_STREAM_H

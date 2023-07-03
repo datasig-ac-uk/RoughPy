@@ -35,6 +35,7 @@ namespace rpy {
 namespace scalars {
 
 template class StandardRandomGenerator<half, std::mt19937_64>;
+
 template class StandardRandomGenerator<half, pcg64>;
 
 }// namespace scalars

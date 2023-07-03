@@ -28,33 +28,30 @@
 #ifndef ROUGHPY_ALGEBRA_LIE_H_
 #define ROUGHPY_ALGEBRA_LIE_H_
 
-#include "lie_fwd.h"
 #include "context.h"
+#include "lie_fwd.h"
 
+#include <roughpy/core/macros.h>
 
 namespace rpy {
 namespace algebra {
 
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraInterface<Lie, LieBasis>;
 
-RPY_EXPORT_TEMPLATE(class, AlgebraInterface, Lie, LieBasis);
-RPY_EXPORT_TEMPLATE(class, AlgebraBase, LieInterface);
-RPY_EXPORT_TEMPLATE(class, BundleInterface, LieBundle, Lie, Lie);
-RPY_EXPORT_TEMPLATE(class, AlgebraBundleBase, LieBundleInterface);
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBase< LieInterface>;
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(Lie) {
-    RPY_SERIAL_SERIALIZE_BASE(base_t);
-}
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE BundleInterface< LieBundle, Lie, Lie>;
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(LieBundle) {
-    RPY_SERIAL_SERIALIZE_BASE(base_t);
-}
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBundleBase< LieBundleInterface>;
 
-template <>
-RPY_EXPORT typename Lie::basis_type
+RPY_SERIAL_SERIALIZE_FN_IMPL(Lie) { RPY_SERIAL_SERIALIZE_BASE(base_t); }
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(LieBundle) { RPY_SERIAL_SERIALIZE_BASE(base_t); }
+
+template <> RPY_EXPORT typename Lie::basis_type
 basis_setup_helper<Lie>::get(const context_pointer &ctx);
 
-template <>
-RPY_EXPORT typename LieBundle::basis_type
+template <> RPY_EXPORT typename LieBundle::basis_type
 basis_setup_helper<LieBundle>::get(const context_pointer &ctx);
 
 }// namespace algebra

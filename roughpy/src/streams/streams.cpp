@@ -31,21 +31,21 @@
 #include "schema.h"
 #include "stream.h"
 
+#include "brownian_stream.h"
 #include "externally_sourced_stream.h"
 #include "function_stream.h"
 #include "lie_increment_stream.h"
 #include "piecewise_abelian_stream.h"
 #include "tick_stream.h"
-#include "brownian_stream.h"
 
 using namespace rpy;
 using namespace rpy::python;
 
-void python::init_streams(py::module_ &m) {
+void python::init_streams(py::module_ &m)
+{
 
     py::options options;
     options.disable_function_signatures();
-
 
     init_schema(m);
     init_base_stream(m);

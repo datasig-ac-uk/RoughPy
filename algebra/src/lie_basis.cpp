@@ -37,7 +37,7 @@ using namespace rpy::algebra;
 namespace rpy {
 namespace algebra {
 
-RPY_INSTANTIATE_TEMPLATE(class, Basis, LieBasisInterface);
+template class RPY_EXPORT_INSTANTIATION Basis< LieBasisInterface>;
 
 }
 }// namespace rpy

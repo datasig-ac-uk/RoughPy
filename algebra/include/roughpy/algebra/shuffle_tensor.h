@@ -28,33 +28,36 @@
 #ifndef ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_
 #define ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_
 
-#include "shuffle_tensor_fwd.h"
 #include "context.h"
+#include "shuffle_tensor_fwd.h"
 
 namespace rpy {
 namespace algebra {
 
-RPY_EXPORT_TEMPLATE(class, AlgebraInterface, ShuffleTensor, TensorBasis);
-RPY_EXPORT_TEMPLATE(class, AlgebraBase, ShuffleTensorInterface);
-RPY_EXPORT_TEMPLATE(class, BundleInterface, ShuffleTensorBundle, ShuffleTensor, ShuffleTensor);
-RPY_EXPORT_TEMPLATE(class, AlgebraBundleBase, ShuffleTensorBundleInterface);
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraInterface<ShuffleTensor, TensorBasis>;
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor) {
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBase< ShuffleTensorInterface>;
+
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE BundleInterface< ShuffleTensorBundle, ShuffleTensor,
+                    ShuffleTensor>;
+
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBundleBase< ShuffleTensorBundleInterface>;
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor)
+{
     RPY_SERIAL_SERIALIZE_BASE(base_t);
 }
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensorBundle) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensorBundle)
+{
     RPY_SERIAL_SERIALIZE_BASE(base_t);
 }
 
+template <> RPY_EXPORT typename ShuffleTensor::basis_type
+basis_setup_helper<ShuffleTensor>::get(const context_pointer &ctx);
 
-template <>
-RPY_EXPORT typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx);
-
-template <>
-RPY_EXPORT typename ShuffleTensorBundle::basis_type
-basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer& ctx);
+template <> RPY_EXPORT typename ShuffleTensorBundle::basis_type
+basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer &ctx);
 
 }// namespace algebra
 }// namespace rpy

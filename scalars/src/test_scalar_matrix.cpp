@@ -38,11 +38,13 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-TEST(ScalarMatrix, ScalarMatrixSerialization) {
+TEST(ScalarMatrix, ScalarMatrixSerialization)
+{
 
     std::vector<float> src{1.0F, 2.0F, 3.0F, 4.0F};
 
-    ScalarMatrix in_mat(2, 2, {ScalarType::of<float>(), src.data(), src.size()});
+    ScalarMatrix in_mat(2, 2,
+                        {ScalarType::of<float>(), src.data(), src.size()});
     std::stringstream ss;
     {
         archives::JSONOutputArchive oarc(ss);
@@ -69,7 +71,5 @@ TEST(ScalarMatrix, ScalarMatrixSerialization) {
     ASSERT_NE(aptr, nullptr);
     ASSERT_NE(bptr, nullptr);
 
-    for (int i = 0; i < 4; ++i) {
-        ASSERT_EQ(aptr[i], bptr[i]);
-    }
+    for (int i = 0; i < 4; ++i) { ASSERT_EQ(aptr[i], bptr[i]); }
 }
