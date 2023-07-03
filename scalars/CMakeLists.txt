@@ -72,7 +72,8 @@ add_roughpy_component(Scalars
         Boost::boost
         Eigen3::Eigen
         Libalgebra_lite::Libalgebra_lite
-        "$<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,BLAS::BLAS LAPACK::LAPACK>"
+        BLAS::BLAS
+        LAPACK::LAPACK
         PRIVATE_DEPS
         PCGRandom::pcg_random
         $<TARGET_NAME_IF_EXISTS:Bignum::Bignum>

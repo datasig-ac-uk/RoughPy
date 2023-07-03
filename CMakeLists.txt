@@ -153,8 +153,14 @@ find_package(tomlplusplus CONFIG REQUIRED)
 
 message(STATUS "Target architecture ${RPY_ARCH}")
 if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64")
+    if (RPY_ARCH STREQUAL "x86")
+        set(MKL_ARCH ia32)
+    else ()
+        set(MKL_ARCH intel64)
+        set(MKL_INTERFACE lp64)
+    endif ()
+
     set(MKL_LINK static)
-    set(MKL_INTERFACE lp64)
     if (WIN32)
         # Currently there is no way to get this working with threading
         # on Windows using this distribution of MKL
@@ -173,6 +179,15 @@ if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64")
         #                set(OpenMP_${LANG}_LIB_NAMES ${MKL_OMP_LIB} CACHE STRING "Intel OpenMP runtime library")
         #            endforeach ()
         #        endif ()
+        if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
+            foreach (LANG IN ITEMS C CXX)
+                if (APPLE)
+                    set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp=${MKL_OMP_LIB}")
+                endif ()
+                set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
+            endforeach ()
+            set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
+        endif ()
     else ()
         set(BLA_SIZEOF_INTEGER 4)
         set(BLA_STATIC ON)
@@ -190,16 +205,6 @@ if (NOT TARGET LAPACK::LAPACK)
     find_package(LAPACK REQUIRED)
 endif ()
 
-
-if (APPLE AND DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
-
-    foreach (LANG IN ITEMS C CXX)
-        set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp=${MKL_OMP_LIB}")
-        set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
-    endforeach ()
-    set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
-
-endif ()
 find_package(OpenMP REQUIRED COMPONENTS CXX)
 
 find_package(pybind11 REQUIRED)
