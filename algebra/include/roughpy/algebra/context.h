@@ -44,11 +44,11 @@
 #include <string>
 #include <vector>
 
-#include "free_tensor.h"
-#include "lie.h"
 #include "lie_basis.h"
-#include "shuffle_tensor.h"
 #include "tensor_basis.h"
+#include "free_tensor_fwd.h"
+#include "lie_fwd.h"
+#include "shuffle_tensor_fwd.h"
 
 namespace rpy {
 namespace algebra {

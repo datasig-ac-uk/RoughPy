@@ -99,7 +99,7 @@ protected:
         ImplementationType impl_type
         )
         : AlgebraInterfaceBase(std::move(ctx), vtype, stype, impl_type),
-          m_basis(basis_setup_helper<Algebra>::get(*context()))
+          m_basis(basis_setup_helper<Algebra>::get(context()))
     {}
 
 public:

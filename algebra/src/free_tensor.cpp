@@ -111,5 +111,18 @@ FreeTensorBundle &FreeTensorBundle::fmexp(const FreeTensorBundle &other) {
     return *this;
 }
 
+template <>
+typename FreeTensor::basis_type
+basis_setup_helper<FreeTensor>::get(const context_pointer& ctx) {
+    return ctx->get_tensor_basis();
+}
+
+template <>
+typename FreeTensorBundle::basis_type
+basis_setup_helper<FreeTensorBundle>::get(const context_pointer& ctx) {
+    return ctx->get_tensor_basis();
+}
+
+
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::FreeTensor
 #include <roughpy/platform/serialization_instantiations.inl>

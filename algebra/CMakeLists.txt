@@ -58,8 +58,11 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/lie_basis.h
         include/roughpy/algebra/tensor_basis.h
         include/roughpy/algebra/free_tensor.h
+        include/roughpy/algebra/free_tensor_fwd.h
         include/roughpy/algebra/free_tensor_impl.h
+        include/roughpy/algebra/lie_fwd.h
         include/roughpy/algebra/lie.h
+        include/roughpy/algebra/shuffle_tensor_fwd.h
         include/roughpy/algebra/shuffle_tensor.h
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/context.h

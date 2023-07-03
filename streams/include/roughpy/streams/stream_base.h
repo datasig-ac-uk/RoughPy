@@ -30,9 +30,13 @@
 
 #include "roughpy/intervals/dyadic_interval.h"
 #include <roughpy/algebra/context.h>
+#include <roughpy/algebra/free_tensor.h>
+#include <roughpy/algebra/lie.h>
+#include <roughpy/algebra/shuffle_tensor.h>
 #include <roughpy/core/types.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
+
 
 #include "schema.h"
 

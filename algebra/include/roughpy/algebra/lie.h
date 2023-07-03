@@ -28,78 +28,35 @@
 #ifndef ROUGHPY_ALGEBRA_LIE_H_
 #define ROUGHPY_ALGEBRA_LIE_H_
 
-#include "algebra_base.h"
-#include "algebra_bundle.h"
-
-#include "lie_basis.h"
+#include "lie_fwd.h"
+#include "context.h"
 
 
 namespace rpy {
 namespace algebra {
 
 
-//RPY_EXPORT_TEMPLATE(class, AlgebraInterface, Lie, LieBasis);
-
-using LieInterface = AlgebraInterface<Lie, LieBasis>;
-
-//RPY_EXPORT_TEMPLATE(class, AlgebraBase, LieInterface);
-
-class RPY_EXPORT Lie : public AlgebraBase<LieInterface> {
-    using base_t = AlgebraBase<LieInterface>;
-
-public:
-    static constexpr AlgebraType s_alg_type = AlgebraType::Lie;
-
-    using base_t::base_t;
-
-    RPY_SERIAL_SERIALIZE_FN();
-
-};
+RPY_EXPORT_TEMPLATE(class, AlgebraInterface, Lie, LieBasis);
+RPY_EXPORT_TEMPLATE(class, AlgebraBase, LieInterface);
+RPY_EXPORT_TEMPLATE(class, BundleInterface, LieBundle, Lie, Lie);
+RPY_EXPORT_TEMPLATE(class, AlgebraBundleBase, LieBundleInterface);
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Lie) {
     RPY_SERIAL_SERIALIZE_BASE(base_t);
 }
-
-class LieBundle;
-
-//RPY_EXPORT_TEMPLATE(class, BundleInterface, LieBundle, Lie, Lie);
-
-using LieBundleInterface = BundleInterface<LieBundle, Lie, Lie>;
-
-//RPY_EXPORT_TEMPLATE(class, AlgebraBundleBase, LieBundleInterface);
-
-class RPY_EXPORT LieBundle : public AlgebraBundleBase<LieBundleInterface> {
-    using base_t = AlgebraBundleBase<LieBundleInterface>;
-public:
-
-    static constexpr AlgebraType s_alg_type = AlgebraType::LieBundle;
-
-    using base_t::base_t;
-
-    RPY_SERIAL_SERIALIZE_FN();
-};
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(LieBundle) {
     RPY_SERIAL_SERIALIZE_BASE(base_t);
 }
 
 template <>
-template <typename C>
-typename Lie::basis_type basis_setup_helper<Lie>::get(const C& ctx) {
-    return ctx.get_lie_basis();
-}
+RPY_EXPORT typename Lie::basis_type
+basis_setup_helper<Lie>::get(const context_pointer &ctx);
 
 template <>
-template <typename C>
-typename Lie::basis_type basis_setup_helper<LieBundle>::get(const C& ctx) {
-    return ctx.get_lie_basis();
-}
-
+RPY_EXPORT typename LieBundle::basis_type
+basis_setup_helper<LieBundle>::get(const context_pointer &ctx);
 
 }// namespace algebra
 }// namespace rpy
-
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::Lie, rpy::serial::specialization::member_serialize)
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::LieBundle, rpy::serial::specialization::member_serialize)
-
 #endif// ROUGHPY_ALGEBRA_LIE_H_

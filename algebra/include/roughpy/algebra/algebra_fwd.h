@@ -90,11 +90,7 @@ class LieBundle;
 class ShuffleTensorBundle;
 
 
-template <typename Algebra>
-struct basis_setup_helper {
-    template <typename C>
-    static typename Algebra::basis_type get(const C& ctx);
-};
+
 
 }
 }

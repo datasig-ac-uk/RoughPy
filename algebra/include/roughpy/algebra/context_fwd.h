@@ -95,6 +95,11 @@ void intrusive_ptr_add_ref(const ContextBase* ptr);
 void intrusive_ptr_release(const Context* ptr);
 void intrusive_ptr_add_ref(const Context* ptr);
 
+template <typename Algebra>
+struct basis_setup_helper {
+    static typename Algebra::basis_type get(const context_pointer &ctx);
+};
+
 }// namespace algebra
 }// namespace rpy
 

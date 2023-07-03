@@ -41,6 +41,18 @@ RPY_INSTANTIATE_TEMPLATE(class, AlgebraBase, LieInterface);
 RPY_INSTANTIATE_TEMPLATE(class, BundleInterface, LieBundle, Lie, Lie);
 RPY_INSTANTIATE_TEMPLATE(class, AlgebraBundleBase, LieBundleInterface);
 
+
+template <> typename Lie::basis_type
+basis_setup_helper<Lie>::get(const context_pointer& ctx) {
+    return ctx->get_lie_basis();
+}
+
+template <> typename LieBundle::basis_type
+basis_setup_helper<LieBundle>::get(const context_pointer& ctx) {
+    return ctx->get_lie_basis();
+}
+
+
 }// namespace algebra
 }// namespace rpy
 
