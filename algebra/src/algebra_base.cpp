@@ -62,8 +62,10 @@ UnspecifiedAlgebraType algebra::dtl::construct_dense_algebra(scalars::ScalarArra
 }
 
 
-#ifdef RPY_MSVC
-void check_contexts_compatible(const context_pointer& ref, const context_pointer& other) {
+void rpy::algebra::dtl::check_contexts_compatible(const context_pointer& ref, const context_pointer& other) {
+    if (ref == other) {
+        return;
+    }
+
     RPY_CHECK(ref->check_compatible(*other));
 }
-#endif
