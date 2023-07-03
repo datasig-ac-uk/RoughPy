@@ -59,20 +59,20 @@
 
 #if defined(_MSC_VER) && defined(_MSVC_LANG)
 #  define RPY_CPP_VERSION _MSVC_LANG
-#  define RPY_MSVC
+#  define RPY_MSVC _MSC_VER
 #else
 #  define RPY_CPP_VERSION __cplusplus
 #  undef RPY_MSVC
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
-#  define RPY_GCC
+#  define RPY_GCC __GNUC__
 #else
 #  undef RPY_GCC
 #endif
 
 #ifdef __clang__
-#  define RPY_CLANG
+#  define RPY_CLANG __clang__
 #else
 #  undef RPY_CLANG
 #endif
@@ -108,7 +108,7 @@
 #      endif
 #    endif
 #  else
-#    if defined(RPY_GCC) || defined(RPY_CLANG)
+#    if (defined(RPY_GCC) && RPY_GCC >= 4) || defined(RPY_CLANG)
 #      if defined(RPY_BUILDING_LIBRARY)
 #        define RPY_EXPORT __attribute__((visibility("default")))
 #        define RPY_LOCAL __attribute__((visibility("hidden")))
