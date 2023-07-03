@@ -9,34 +9,41 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 
-add_roughpy_component(Intervals
+
+add_roughpy_lib(Intervals STATIC
         SOURCES
-        src/interval.cpp
-        src/dyadic.cpp
-        src/dyadic_interval.cpp
-        src/real_interval.cpp
-        src/segmentation.cpp
-        src/scaled_predicate.cpp
-        src/scaled_predicate.h
-        src/dyadic_searcher.cpp
-        src/dyadic_searcher.h
+            src/interval.cpp
+            src/dyadic.cpp
+            src/dyadic_interval.cpp
+            src/real_interval.cpp
+            src/segmentation.cpp
+            src/scaled_predicate.cpp
+            src/scaled_predicate.h
+            src/dyadic_searcher.cpp
+            src/dyadic_searcher.h
         PUBLIC_HEADERS
-        include/roughpy/intervals/interval.h
-        include/roughpy/intervals/dyadic.h
-        include/roughpy/intervals/dyadic_interval.h
-        include/roughpy/intervals/real_interval.h
-        include/roughpy/intervals/segmentation.h
-        NEEDS
-        RoughPy::Core
-        RoughPy::Platform
+            include/roughpy/intervals/interval.h
+            include/roughpy/intervals/dyadic.h
+            include/roughpy/intervals/dyadic_interval.h
+            include/roughpy/intervals/real_interval.h
+            include/roughpy/intervals/segmentation.h
+        PUBLIC_DEPS
+            RoughPy::Core
+            RoughPy::Platform
         )
+
+
+
+
+
+
+
+
 
 
 add_roughpy_test(Intervals
         SRC
-        src/test_dyadic.cpp
-        src/test_dyadic_intervals.cpp
-        src/test_real_interval.cpp
-        NEEDS
-        RoughPy::Intervals
-        )
+            src/test_dyadic.cpp
+            src/test_dyadic_intervals.cpp
+            src/test_real_interval.cpp
+        LINK_COMPONENT)

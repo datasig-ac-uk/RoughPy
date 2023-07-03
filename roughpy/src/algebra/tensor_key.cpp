@@ -34,43 +34,48 @@ using namespace rpy;
 using namespace pybind11::literals;
 
 python::PyTensorKey::PyTensorKey(key_type key, deg_t width, deg_t depth)
-    : m_key(key), m_width(width), m_depth(depth)
-{}
+    : m_key(key), m_width(width), m_depth(depth) {
+}
 python::PyTensorKey::PyTensorKey(algebra::TensorBasis basis, key_type key)
-    : m_key(key), m_width(basis.width()), m_depth(basis.depth())
-{}
+    : m_key(key), m_width(basis.width()), m_depth(basis.depth()) {
+}
 
-python::PyTensorKey::operator key_type() const noexcept { return m_key; }
-string python::PyTensorKey::to_string() const
-{
+python::PyTensorKey::operator key_type() const noexcept {
+    return m_key;
+}
+string python::PyTensorKey::to_string() const {
     std::stringstream ss;
     ss << '(';
     bool not_first = false;
     for (auto letter : to_letters()) {
-        if (not_first) { ss << ','; }
+        if (not_first) {
+            ss << ',';
+        }
         ss << letter;
         not_first = true;
     }
     ss << ')';
     return ss.str();
 }
-python::PyTensorKey python::PyTensorKey::lparent() const
-{
+python::PyTensorKey python::PyTensorKey::lparent() const {
     return python::PyTensorKey(0, 0, 0);
 }
-python::PyTensorKey python::PyTensorKey::rparent() const
-{
+python::PyTensorKey python::PyTensorKey::rparent() const {
     return python::PyTensorKey(0, 0, 0);
 }
-bool python::PyTensorKey::is_letter() const
-{
+bool python::PyTensorKey::is_letter() const {
     return 1 <= m_key && m_key <= static_cast<key_type>(m_width);
 }
-deg_t python::PyTensorKey::width() const { return m_width; }
-deg_t python::PyTensorKey::depth() const { return m_depth; }
-deg_t python::PyTensorKey::degree() const { return m_depth; }
-std::vector<let_t> python::PyTensorKey::to_letters() const
-{
+deg_t python::PyTensorKey::width() const {
+    return m_width;
+}
+deg_t python::PyTensorKey::depth() const {
+    return m_depth;
+}
+deg_t python::PyTensorKey::degree() const {
+    return m_depth;
+}
+std::vector<let_t> python::PyTensorKey::to_letters() const {
     std::vector<let_t> letters;
     letters.reserve(m_depth);
     auto tmp = m_key;
@@ -82,19 +87,14 @@ std::vector<let_t> python::PyTensorKey::to_letters() const
     std::reverse(letters.begin(), letters.end());
     return letters;
 }
-bool python::PyTensorKey::equals(
-        const python::PyTensorKey &other) const noexcept
-{
+bool python::PyTensorKey::equals(const python::PyTensorKey &other) const noexcept {
     return m_width == other.m_width && m_key == other.m_key;
 }
-bool python::PyTensorKey::less(const python::PyTensorKey &other) const noexcept
-{
+bool python::PyTensorKey::less(const python::PyTensorKey &other) const noexcept {
     return m_key < other.m_key;
 }
 
-static python::PyTensorKey construct_key(const py::args &args,
-                                         const py::kwargs &kwargs)
-{
+static python::PyTensorKey construct_key(const py::args &args, const py::kwargs &kwargs) {
     std::vector<let_t> letters;
 
     if (args.empty() && kwargs.contains("index")) {
@@ -102,8 +102,7 @@ static python::PyTensorKey construct_key(const py::args &args,
         auto depth = kwargs["depth"].cast<deg_t>();
         auto index = kwargs["index"].cast<key_type>();
 
-        auto max_idx = (python::maths::power(dimn_t(width), depth + 1) - 1)
-                / (dimn_t(width) - 1);
+        auto max_idx = (python::maths::power(dimn_t(width), depth + 1) - 1) / (dimn_t(width) - 1);
         if (index >= max_idx) {
             throw py::value_error("provided index exceeds maximum");
         }
@@ -113,10 +112,14 @@ static python::PyTensorKey construct_key(const py::args &args,
 
     if (!args.empty() && py::isinstance<py::sequence>(args[0])) {
         letters.reserve(py::len(args[0]));
-        for (auto arg : args[0]) { letters.push_back(arg.cast<let_t>()); }
+        for (auto arg : args[0]) {
+            letters.push_back(arg.cast<let_t>());
+        }
     } else {
         letters.reserve(py::len(args));
-        for (auto arg : args) { letters.push_back(arg.cast<let_t>()); }
+        for (auto arg : args) {
+            letters.push_back(arg.cast<let_t>());
+        }
     }
 
     deg_t width = 0;
@@ -129,9 +132,11 @@ static python::PyTensorKey construct_key(const py::args &args,
         width = *max_elt;
     }
 
-    if (kwargs.contains("depth")) { depth = kwargs["depth"].cast<deg_t>(); }
+    if (kwargs.contains("depth")) {
+        depth = kwargs["depth"].cast<deg_t>();
+    }
 
-    if (letters.size() > static_cast<dimn_t>(depth)) {
+    if (letters.size() > depth) {
         throw py::value_error("number of letters exceeds specified depth");
     }
 
@@ -149,16 +154,14 @@ static python::PyTensorKey construct_key(const py::args &args,
     return python::PyTensorKey(result, width, depth);
 }
 
-void python::init_py_tensor_key(py::module_ &m)
-{
+void python::init_py_tensor_key(py::module_ &m) {
     py::class_<PyTensorKey> klass(m, "TensorKey");
     klass.def(py::init(&construct_key));
 
     klass.def_property_readonly("width", &PyTensorKey::width);
     klass.def_property_readonly("max_degree", &PyTensorKey::depth);
 
-    klass.def("degree",
-              [](const PyTensorKey &key) { return key.to_letters().size(); });
+    klass.def("degree", [](const PyTensorKey &key) { return key.to_letters().size(); });
 
     klass.def("__str__", &PyTensorKey::to_string);
     klass.def("__repr__", &PyTensorKey::to_string);

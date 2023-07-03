@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-//
+// 
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-//
+// 
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-//
+// 
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-//
+// 
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-//
+// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,19 +32,22 @@
 #ifndef ROUGHPY_SCALARS_SCALARS_PREDEF_H
 #define ROUGHPY_SCALARS_SCALARS_PREDEF_H
 
-#include <roughpy/core/macros.h>
+#include "roughpy_scalars_export.h"
+
+
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
-#include <Eigen/Core>
 #include <libalgebra_lite/coefficients.h>
 #include <libalgebra_lite/polynomial.h>
+#include <Eigen/Core>
 
 #ifdef LAL_NO_USE_GMP
-#  define RPY_USING_GMP 0
+#define RPY_USING_GMP 0
 #else
-#  define RPY_USING_GMP 1
+#define RPY_USING_GMP 1
 #endif
+
 
 namespace rpy {
 namespace scalars {
@@ -62,12 +65,10 @@ using rational_scalar_type = lal::rational_field::scalar_type;
 using rational_poly_scalar = lal::polynomial<lal::rational_field>;
 
 /// Marker for signed size type (ptrdiff_t)
-struct signed_size_type_marker {
-};
+struct signed_size_type_marker {};
 
 /// Marker for unsigned size type (size_t)
-struct unsigned_size_type_marker {
-};
+struct unsigned_size_type_marker {};
 
 /**
  * @brief Code for different device types
@@ -77,8 +78,7 @@ struct unsigned_size_type_marker {
  * device types that scalar data may be allocated on. This code goes
  * with a 32bit integer device ID, which is implementation specific.
  */
-enum class ScalarDeviceType : int32_t
-{
+enum class ScalarDeviceType : int32_t {
     CPU = 1,
     CUDA = 2,
     CUDAHost = 3,
@@ -104,8 +104,7 @@ enum class ScalarDeviceType : int32_t
  * data. Some of these types might not be compatible with
  * this library.
  */
-enum class ScalarTypeCode : uint8_t
-{
+enum class ScalarTypeCode : uint8_t {
     Int = 0U,
     UInt = 1U,
     Float = 2U,
@@ -139,6 +138,7 @@ struct BasicScalarInfo {
     std::uint16_t lanes;
 };
 
+
 /**
  * @brief A collection of basic information for identifying a scalar type.
  */
@@ -151,44 +151,34 @@ struct ScalarTypeInfo {
     ScalarDeviceInfo device;
 };
 
+
+
 // Forward declarations
 
 class ScalarType;
-
 class ScalarInterface;
 
 class ScalarPointer;
-
 class Scalar;
-
 class ScalarArray;
-
 class OwnedScalarArray;
-
 class KeyScalarArray;
-
 class ScalarStream;
 
 class RandomGenerator;
-
 class BlasInterface;
 
-template <typename T> inline remove_cv_ref_t<T> scalar_cast(const Scalar &arg);
+template <typename T>
+inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
 
-using conversion_function
-        = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
+using conversion_function = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
 
-constexpr bool operator==(const ScalarDeviceInfo &lhs,
-                          const ScalarDeviceInfo &rhs) noexcept
-{
+constexpr bool operator==(const ScalarDeviceInfo& lhs, const ScalarDeviceInfo& rhs) noexcept {
     return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
 }
 
-constexpr bool operator==(const BasicScalarInfo &lhs,
-                          const BasicScalarInfo &rhs) noexcept
-{
-    return lhs.code == rhs.code && lhs.bits == rhs.bits
-            && lhs.lanes == rhs.lanes;
+constexpr bool operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept {
+    return lhs.code == rhs.code && lhs.bits == rhs.bits && lhs.lanes == rhs.lanes;
 }
 
 /**
@@ -197,7 +187,7 @@ constexpr bool operator==(const BasicScalarInfo &lhs,
  *
  *
  */
-RPY_EXPORT
+ROUGHPY_SCALARS_EXPORT
 void register_type(const ScalarType *type);
 
 /**
@@ -205,31 +195,35 @@ void register_type(const ScalarType *type);
  * @param id Id string of type to be retrieved
  * @return pointer to ScalarType representing id
  */
-RPY_EXPORT
+ROUGHPY_SCALARS_EXPORT
 const ScalarType *get_type(const string &id);
 
-RPY_EXPORT
+ROUGHPY_SCALARS_EXPORT
 const ScalarType *get_type(const string &id, const ScalarDeviceInfo &device);
 
 /**
  * @brief Get a list of all registered ScalarTypes
  * @return vector of ScalarType pointers.
  */
-RPY_NO_DISCARD RPY_EXPORT std::vector<const ScalarType *> list_types();
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
+std::vector<const ScalarType *> list_types();
 
-RPY_NO_DISCARD RPY_EXPORT const ScalarTypeInfo &get_scalar_info(string_view id);
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT const ScalarTypeInfo &
+get_scalar_info(string_view id);
 
-RPY_NO_DISCARD RPY_EXPORT const std::string &
-id_from_basic_info(const BasicScalarInfo &info);
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT
+const std::string& id_from_basic_info(const BasicScalarInfo& info);
 
-RPY_NO_DISCARD RPY_EXPORT const conversion_function &
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT const conversion_function &
 get_conversion(const string &src_id, const string &dst_id);
 
-RPY_EXPORT
-void register_conversion(const string &src_id, const string &dst_id,
+ROUGHPY_SCALARS_EXPORT
+void register_conversion(const string &src_id,
+                         const string &dst_id,
                          conversion_function converter);
 
-}// namespace scalars
-}// namespace rpy
+} // namespace scalars
+} // namespace rpy
 
-#endif//ROUGHPY_SCALARS_SCALARS_PREDEF_H
+
+#endif //ROUGHPY_SCALARS_SCALARS_PREDEF_H

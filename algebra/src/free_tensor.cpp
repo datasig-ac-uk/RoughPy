@@ -29,95 +29,83 @@
 // Created by user on 05/03/23.
 //
 
-#include <roughpy/algebra/context.h>
-#include <roughpy/algebra/free_tensor.h>
+#include "free_tensor.h"
+#include "context.h"
 #include <roughpy/platform/serialization.h>
-
-#include <roughpy/algebra/algebra_bundle_impl.h>
-#include <roughpy/algebra/algebra_impl.h>
-#include <roughpy/algebra/free_tensor_impl.h>
 
 using namespace rpy::algebra;
 
 namespace rpy {
 namespace algebra {
-template class RPY_EXPORT_INSTANTIATION AlgebraInterface< FreeTensor, TensorBasis>;
+template class AlgebraInterface<FreeTensor, TensorBasis>;
+template class AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
 
-template class RPY_EXPORT_INSTANTIATION AlgebraBase< FreeTensorInterface,
-                         FreeTensorImplementation>;
-
-template class RPY_EXPORT_INSTANTIATION BundleInterface< FreeTensorBundle, FreeTensor,
-                         FreeTensor>;
-
-template class RPY_EXPORT_INSTANTIATION AlgebraBundleBase< FreeTensorBundleInterface,
-                         FreeTensorBundleImplementation>;
+template class BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
+template class AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation>;
 }// namespace algebra
 }// namespace rpy
 
-FreeTensor FreeTensor::exp() const
-{
-    if (p_impl) { return p_impl->exp(); }
+FreeTensor FreeTensor::exp() const {
+    if (p_impl) {
+        return p_impl->exp();
+    }
     return {};
 }
-FreeTensor FreeTensor::log() const
-{
-    if (p_impl) { return p_impl->log(); }
+FreeTensor FreeTensor::log() const {
+    if (p_impl) {
+        return p_impl->log();
+    }
     return {};
 }
-FreeTensor FreeTensor::inverse() const
-{
-    if (p_impl) { return p_impl->inverse(); }
+FreeTensor FreeTensor::inverse() const {
+    if (p_impl) {
+        return p_impl->inverse();
+    }
     return {};
 }
-FreeTensor FreeTensor::antipode() const
-{
-    if (p_impl) { return p_impl->antipode(); }
+FreeTensor FreeTensor::antipode() const {
+    if (p_impl) {
+        return p_impl->antipode();
+    }
     return {};
 }
-FreeTensor &FreeTensor::fmexp(const FreeTensor &other)
-{
-    if (p_impl && !is_equivalent_to_zero(other)) { p_impl->fmexp(other); }
+FreeTensor &FreeTensor::fmexp(const FreeTensor &other) {
+    if (p_impl && !is_equivalent_to_zero(other)) {
+        p_impl->fmexp(other);
+    }
     return *this;
 }
 
-FreeTensorBundle FreeTensorBundle::exp() const
-{
-    if (p_impl) { return p_impl->exp(); }
+FreeTensorBundle FreeTensorBundle::exp() const {
+    if (p_impl) {
+        return p_impl->exp();
+    }
     return FreeTensorBundle();
 }
-FreeTensorBundle FreeTensorBundle::log() const
-{
-    if (p_impl) { return p_impl->log(); }
+FreeTensorBundle FreeTensorBundle::log() const {
+    if (p_impl) {
+        return p_impl->log();
+    }
     return FreeTensorBundle();
 }
-FreeTensorBundle FreeTensorBundle::inverse() const
-{
-    if (p_impl) { return p_impl->inverse(); }
+FreeTensorBundle FreeTensorBundle::inverse() const {
+    if (p_impl) {
+        return p_impl->inverse();
+    }
     return FreeTensorBundle();
 }
-FreeTensorBundle FreeTensorBundle::antipode() const
-{
-    if (p_impl) { return p_impl->antipode(); }
+FreeTensorBundle FreeTensorBundle::antipode() const {
+    if (p_impl) {
+        return p_impl->antipode();
+    }
     return FreeTensorBundle();
 }
-FreeTensorBundle &FreeTensorBundle::fmexp(const FreeTensorBundle &other)
-{
-    if (p_impl && other.p_impl) { p_impl->fmexp(other); }
+FreeTensorBundle &FreeTensorBundle::fmexp(const FreeTensorBundle &other) {
+    if (p_impl && other.p_impl) {
+        p_impl->fmexp(other);
+    }
     return *this;
-}
-
-template <> typename FreeTensor::basis_type
-basis_setup_helper<FreeTensor>::get(const context_pointer &ctx)
-{
-    return ctx->get_tensor_basis();
-}
-
-template <> typename FreeTensorBundle::basis_type
-basis_setup_helper<FreeTensorBundle>::get(const context_pointer &ctx)
-{
-    return ctx->get_tensor_basis();
 }
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::FreeTensor
-
 #include <roughpy/platform/serialization_instantiations.inl>

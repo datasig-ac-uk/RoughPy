@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-//
+// 
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-//
+// 
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-//
+// 
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-//
+// 
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-//
+// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,8 +35,7 @@
 namespace rpy {
 namespace python {
 
-class PyLieLetter
-{
+class PyLieLetter {
     dimn_t m_data = 0;
 
     constexpr explicit PyLieLetter(dimn_t raw) : m_data(raw) {}
@@ -44,28 +43,33 @@ class PyLieLetter
 public:
     PyLieLetter() = default;
 
-    static constexpr PyLieLetter from_letter(let_t letter)
-    {
+    static constexpr PyLieLetter from_letter(let_t letter) {
         return PyLieLetter(1 + (dimn_t(letter) << 1));
     }
 
-    static constexpr PyLieLetter from_offset(dimn_t offset)
-    {
+    static constexpr PyLieLetter from_offset(dimn_t offset) {
         return PyLieLetter(offset << 1);
     }
 
-    constexpr bool is_offset() const noexcept { return (m_data & 1) == 0; }
+    constexpr bool is_offset() const noexcept {
+        return (m_data & 1) == 0;
+    }
 
-    explicit operator let_t() const noexcept { return let_t(m_data >> 1); }
+    explicit operator let_t() const noexcept {
+        return let_t(m_data >> 1);
+    }
 
-    explicit constexpr operator dimn_t() const noexcept { return m_data >> 1; }
+    explicit constexpr operator dimn_t() const noexcept {
+        return m_data >> 1;
+    }
 
     friend std::ostream &operator<<(std::ostream &os, const PyLieLetter &let);
 };
 
-std::ostream &operator<<(std::ostream &os, const PyLieLetter &let);
+std::ostream& operator<<(std::ostream& os, const PyLieLetter& let);
 
-}// namespace python
-}// namespace rpy
 
-#endif// RPY_PY_ALGEBRA_LIE_LETTER_H_
+} // namespace python
+} // namespace rpy
+
+#endif // RPY_PY_ALGEBRA_LIE_LETTER_H_

@@ -7,5 +7,6 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-BFloat16Type::BFloat16Type() : StandardScalarType<bfloat16>("bf16", "bfloat16")
-{}
+BFloat16Type::BFloat16Type()
+    : StandardScalarType<bfloat16>("bf16", "bfloat16") {
+}

@@ -28,41 +28,75 @@
 #ifndef ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_
 #define ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_
 
-#include "shuffle_tensor_fwd.h"
+#include "algebra_base.h"
+#include "algebra_bundle.h"
 
-#include "context.h"
-#include "algebra_base_impl.h"
-#include "algebra_bundle_base_impl.h"
+#include "tensor_basis.h"
 
 namespace rpy {
 namespace algebra {
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraInterface<ShuffleTensor, TensorBasis>;
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<ShuffleTensor, TensorBasis>;
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBase< ShuffleTensorInterface>;
+using ShuffleTensorInterface = AlgebraInterface<ShuffleTensor, TensorBasis>;
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE BundleInterface< ShuffleTensorBundle, ShuffleTensor,
-                    ShuffleTensor>;
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBase<ShuffleTensorInterface>;
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBundleBase< ShuffleTensorBundleInterface>;
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface> {
+    using base_t = AlgebraBase<ShuffleTensorInterface>;
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor)
-{
+public:
+    static constexpr AlgebraType s_alg_type = AlgebraType::ShuffleTensor;
+
+    using base_t::base_t;
+
+    RPY_SERIAL_SERIALIZE_FN();
+
+};
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor) {
     RPY_SERIAL_SERIALIZE_BASE(base_t);
 }
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensorBundle)
-{
+class ShuffleTensorBundle;
+
+extern template class ROUGHPY_ALGEBRA_EXPORT BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
+
+using ShuffleTensorBundleInterface = BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
+
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBundleBase<ShuffleTensorBundleInterface>;
+
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensorBundle : public AlgebraBundleBase<ShuffleTensorBundleInterface> {
+    using base_t = AlgebraBundleBase<ShuffleTensorBundleInterface>;
+
+public:
+    static constexpr AlgebraType s_alg_type = AlgebraType::ShuffleTensorBundle;
+
+    using base_t::base_t;
+
+
+    RPY_SERIAL_SERIALIZE_FN();
+};
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensorBundle) {
     RPY_SERIAL_SERIALIZE_BASE(base_t);
 }
 
-template <> RPY_EXPORT typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer &ctx);
+template <>
+template <typename C>
+typename ShuffleTensor::basis_type basis_setup_helper<ShuffleTensor>::get(const C &ctx) {
+    return ctx.get_tensor_basis();
+}
 
-template <> RPY_EXPORT typename ShuffleTensorBundle::basis_type
-basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer &ctx);
-
+template <>
+template <typename C>
+typename ShuffleTensorBundle::basis_type basis_setup_helper<ShuffleTensorBundle>::get(const C &ctx) {
+    return ctx.get_tensor_basis();
+}
 }// namespace algebra
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensor, rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensorBundle, rpy::serial::specialization::member_serialize)
 
 #endif// ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_H_

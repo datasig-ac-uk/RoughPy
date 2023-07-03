@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-//
+// 
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-//
+// 
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-//
+// 
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-//
+// 
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-//
+// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -39,7 +39,8 @@
 namespace rpy {
 namespace algebra {
 
-template <typename Wrapper, typename Algebra> struct algebra_info {
+template <typename Wrapper, typename Algebra>
+struct algebra_info {
     /// The actual type of the algebra implementation
     using algebra_type = Algebra;
 
@@ -75,27 +76,21 @@ template <typename Wrapper, typename Algebra> struct algebra_info {
 
     /// Get the rpy ScalarType for the scalars in this algebra
     static const scalars::ScalarType *ctype() noexcept
-    {
-        return scalars::ScalarType::of<scalar_type>();
-    }
+    { return scalars::ScalarType::of<scalar_type>(); }
 
     /// Get the storage type for this algebra.
     static constexpr VectorType vtype() noexcept { return VectorType::Sparse; }
 
     /// Get the basis for this algebra
-    static const basis_type &basis(const Algebra &instance) noexcept
-    {
-        return instance.basis();
-    }
+    static const basis_type &basis(const Algebra &instance) noexcept { return instance.basis(); }
 
     /// Get the maximum degree of non-zero elements in this algebra
-    static deg_t degree(const Algebra &instance) noexcept
-    {
-        return instance.degree();
-    }
+    static deg_t degree(const Algebra &instance) noexcept { return instance.degree(); }
 
     /// Create a new algebra instance with the same make-up as this argument
-    static Algebra create_like(const Algebra &instance) { return Algebra(); }
+    static Algebra create_like(const Algebra &instance) {
+        return Algebra();
+    }
 };
 }// namespace algebra
 }// namespace rpy

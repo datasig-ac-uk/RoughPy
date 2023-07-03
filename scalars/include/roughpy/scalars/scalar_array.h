@@ -28,7 +28,10 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 
+#include "roughpy_scalars_export.h"
 #include "scalars_fwd.h"
+
+#include <cassert>
 
 #include "scalar_pointer.h"
 #include "scalar_type.h"
@@ -38,8 +41,7 @@
 namespace rpy {
 namespace scalars {
 
-class RPY_EXPORT ScalarArray : public ScalarPointer
-{
+class ROUGHPY_SCALARS_EXPORT ScalarArray : public ScalarPointer {
 
 protected:
     dimn_t m_size = 0;
@@ -47,17 +49,15 @@ protected:
 public:
     ScalarArray() = default;
 
-    explicit ScalarArray(const ScalarType *type) : ScalarPointer(type) {}
+    explicit ScalarArray(const ScalarType *type)
+        : ScalarPointer(type) {}
     ScalarArray(const ScalarType *type, void *data, dimn_t size)
-        : ScalarPointer(type, data), m_size(size)
-    {}
+        : ScalarPointer(type, data), m_size(size) {}
 
     ScalarArray(const ScalarType *type, const void *data, dimn_t size)
-        : ScalarPointer(type, data), m_size(size)
-    {}
+        : ScalarPointer(type, data), m_size(size) {}
     ScalarArray(ScalarPointer begin, dimn_t size)
-        : ScalarPointer(begin), m_size(size)
-    {}
+        : ScalarPointer(begin), m_size(size) {}
 
     ScalarArray(const ScalarArray &other) = default;
     ScalarArray(ScalarArray &&other) noexcept;
@@ -76,18 +76,17 @@ public:
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
+
 };
 
-RPY_SERIAL_SAVE_FN_IMPL(ScalarArray)
-{
+RPY_SERIAL_SAVE_FN_IMPL(ScalarArray) {
     RPY_SERIAL_SERIALIZE_NVP("type_id", get_type_id());
     RPY_SERIAL_SERIALIZE_NVP("size", m_size);
     auto bytes = to_raw_bytes(m_size);
     RPY_SERIAL_SERIALIZE_NVP("raw_data", bytes);
 }
 
-RPY_SERIAL_LOAD_FN_IMPL(ScalarArray)
-{
+RPY_SERIAL_LOAD_FN_IMPL(ScalarArray) {
     string type_id;
     RPY_SERIAL_SERIALIZE_NVP("type_id", type_id);
     RPY_SERIAL_SERIALIZE_NVP("size", m_size);
@@ -99,5 +98,6 @@ RPY_SERIAL_LOAD_FN_IMPL(ScalarArray)
 
 }// namespace scalars
 }// namespace rpy
+
 
 #endif// ROUGHPY_SCALARS_SCALAR_ARRAY_H_

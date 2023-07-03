@@ -30,9 +30,10 @@
 //
 
 #include "half_type.h"
-#include <roughpy/scalars/scalar_type.h>
+#include "scalar_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-HalfType::HalfType() : StandardScalarType<half>("f16", "HPReal") {}
+HalfType::HalfType() : StandardScalarType<half>("f16", "HPReal") {
+}

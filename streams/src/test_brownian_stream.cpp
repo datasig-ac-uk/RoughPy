@@ -29,27 +29,25 @@
 // Created by user on 12/04/23.
 //
 
+#include "brownian_stream.h"
 #include <gtest/gtest.h>
-#include <roughpy/streams/brownian_stream.h>
 #include <sstream>
 
 using namespace rpy;
 
 using rpy::intervals::DyadicInterval;
 
-class BrownianStreamTests : public ::testing::Test
-{
+class BrownianStreamTests : public ::testing::Test {
 public:
     static constexpr deg_t width = 2;
     static constexpr deg_t depth = 2;
     static constexpr algebra::VectorType vtype = algebra::VectorType::Dense;
-    uint64_t seed = 12345;
+    std::size_t seed = 12345;
 
     const scalars::ScalarType *ctype;
     algebra::context_pointer ctx;
 
-    class BrownianHolder : public streams::BrownianStream
-    {
+    class BrownianHolder : public streams::BrownianStream {
     public:
         using streams::BrownianStream::BrownianStream;
     };
@@ -57,15 +55,13 @@ public:
     BrownianHolder bm;
 
     BrownianStreamTests()
-        : seed(12345), ctype(scalars::ScalarType::of<double>()),
+        : seed(12345),
+          ctype(scalars::ScalarType::of<double>()),
           ctx(algebra::get_context(width, depth, ctype, {})),
-          bm(ctype->get_rng("pcg", seed),
-             {width, {0.0, 1.0}, ctx, ctype, vtype, 1})
-    {}
+          bm(ctype->get_rng("pcg", seed), {width, {0.0, 1.0}, ctx, ctype, vtype, 1}) {}
 };
 
-TEST_F(BrownianStreamTests, TestLogSignatureResolutions)
-{
+TEST_F(BrownianStreamTests, TestLogSignatureResolutions) {
     DyadicInterval unit(0, 0);
 
     auto top = bm.log_signature(unit, 1, *ctx);
@@ -79,8 +75,7 @@ TEST_F(BrownianStreamTests, TestLogSignatureResolutions)
     EXPECT_EQ(top, ctx->cbh(bottom_left, bottom_right, vtype));
 }
 
-TEST_F(BrownianStreamTests, Serialization)
-{
+TEST_F(BrownianStreamTests, Serialization) {
 
     // Prime the cache with some values
     DyadicInterval unit(0, 0);

@@ -39,11 +39,16 @@
 namespace rpy {
 namespace scalars {
 
-class HalfType : public StandardScalarType<half>
-{
+
+
+
+class HalfType : public StandardScalarType<half>  {
 public:
+
     HalfType();
 };
+
+
 
 }// namespace scalars
 }// namespace rpy

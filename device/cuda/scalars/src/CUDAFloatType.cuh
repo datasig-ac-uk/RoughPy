@@ -33,13 +33,13 @@
 #define ROUGHPY_DEVICE_CUDA_SCALARS_SRC_CUDAFLOATTYPE_CUH
 
 #include <roughpy/device/device_core.h>
-
+#include "roughpy_cuda_export.h"
 #include "CUDA_standard_scalar.cuh"
 
 namespace rpy {
 namespace scalars {
 
-class RPY_EXPORT CUDAFloatType : public CUDAScalarType<float> {
+class ROUGHPY_CUDA_EXPORT CUDAFloatType : public CUDAScalarType<float> {
 
 };
 

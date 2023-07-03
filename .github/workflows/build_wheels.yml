@@ -10,8 +10,7 @@ on:
 env:
   BUILD_TYPE: Release
   VERBOSE: 1
-#  VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite;nuget,GitHub,readwrite'
-  VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+  VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
 jobs:
   build_sdist:
@@ -58,10 +57,13 @@ jobs:
           - macos-11
         include:
           - os: windows-2019
+            mono: ''
             tag: "win_amd64"
           - os: ubuntu-20.04
+            mono: 'mono'
             tag: "manylinux_x86_64"
           - os: macos-11
+            mono: 'mono'
             tag: "macosx_x86_64"
 
     steps:
@@ -70,16 +72,10 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup gha caching for vcpkg
-        uses: actions/github-script@v6
-        with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
       - name: Build and test
         uses: pypa/cibuildwheel@v2.13.0
         env:
+          CIBW_BUILD: cp310-${{ matrix.tag }}
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: >
             auditwheel show {wheel} &&
@@ -87,7 +83,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: > 
             delocate-wheel --require-archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
-          CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK VCPKG_BINARY_SOURCES ACTIONS_CACHE_URL ACTIONS_RUNTIME_TOKEN
+          CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK VCPKG_BINARY_SOURCES
 
       - uses: actions/upload-artifact@v3
         with:

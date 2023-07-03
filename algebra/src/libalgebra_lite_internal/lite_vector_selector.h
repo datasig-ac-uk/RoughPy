@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-//
+// 
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-//
+// 
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-//
+// 
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-//
+// 
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-//
+// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LITE_VECTOR_SELECTOR_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LITE_VECTOR_SELECTOR_H
 
-#include <roughpy/algebra/algebra_fwd.h>
+#include "algebra_fwd.h"
 
 #include <libalgebra_lite/dense_vector.h>
 #include <libalgebra_lite/free_tensor.h>
@@ -45,32 +45,36 @@ namespace rpy {
 namespace algebra {
 namespace dtl {
 
-template <typename VT> using storage_type = lal::dtl::standard_storage<VT>;
+template <typename VT>
+using storage_type = lal::dtl::standard_storage<VT>;
 
-template <VectorType> struct vector_type_selector;
+template <VectorType>
+struct vector_type_selector;
 
-template <> struct vector_type_selector<VectorType::Dense> {
+template <>
+struct vector_type_selector<VectorType::Dense> {
 
-    template <typename C> using free_tensor
-            = lal::free_tensor<C, lal::dense_vector, storage_type>;
+    template <typename C>
+    using free_tensor = lal::free_tensor<C, lal::dense_vector, storage_type>;
 
-    template <typename C> using shuffle_tensor
-            = lal::shuffle_tensor<C, lal::dense_vector, storage_type>;
+    template <typename C>
+    using shuffle_tensor = lal::shuffle_tensor<C, lal::dense_vector, storage_type>;
 
-    template <typename C> using lie
-            = lal::lie<C, lal::dense_vector, storage_type>;
+    template <typename C>
+    using lie = lal::lie<C, lal::dense_vector, storage_type>;
 };
 
-template <> struct vector_type_selector<VectorType::Sparse> {
+template <>
+struct vector_type_selector<VectorType::Sparse> {
 
-    template <typename C> using free_tensor
-            = lal::free_tensor<C, lal::sparse_vector, storage_type>;
+    template <typename C>
+    using free_tensor = lal::free_tensor<C, lal::sparse_vector, storage_type>;
 
-    template <typename C> using shuffle_tensor
-            = lal::shuffle_tensor<C, lal::sparse_vector, storage_type>;
+    template <typename C>
+    using shuffle_tensor = lal::shuffle_tensor<C, lal::sparse_vector, storage_type>;
 
-    template <typename C> using lie
-            = lal::lie<C, lal::sparse_vector, storage_type>;
+    template <typename C>
+    using lie = lal::lie<C, lal::sparse_vector, storage_type>;
 };
 
 }// namespace dtl

@@ -6,7 +6,7 @@ find_path(PCGRandom_INCLUDE_DIRS NAMES pcg_random.hpp)
 find_package_handle_standard_args(PCGRandom
         FOUND_VAR PCGRandom_FOUND
         REQUIRED_VARS PCGRandom_INCLUDE_DIRS
-        )
+)
 
 
 if (PCGRandom_FOUND AND NOT TARGET PCGRandom::pcg_random)
@@ -16,4 +16,4 @@ if (PCGRandom_FOUND AND NOT TARGET PCGRandom::pcg_random)
             INTERFACE_INCLUDE_DIRECTORIES "${PCGRandom_INCLUDE_DIRS}"
             )
 
-endif ()
+endif()

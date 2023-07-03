@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-//
+// 
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-//
+// 
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-//
+// 
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-//
+// 
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-//
+// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,7 +34,7 @@
 
 #include <gtest/gtest.h>
 
-#include <roughpy/algebra/context.h>
+#include "context.h"
 #include <roughpy/core/types.h>
 #include <roughpy/scalars/scalar_type.h>
 
@@ -42,17 +42,18 @@ namespace rpy {
 namespace algebra {
 namespace testing {
 
-class ContextFixture : public ::testing::Test
-{
+class ContextFixture : public ::testing::Test {
     static constexpr deg_t width = 5;
     static constexpr deg_t depth = 5;
 
-    const scalars::ScalarType *stype;
+    const scalars::ScalarType* stype;
 
     context_pointer ctx;
 
 public:
     ContextFixture();
+
+
 };
 
 }// namespace testing

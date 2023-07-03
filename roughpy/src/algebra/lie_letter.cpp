@@ -31,8 +31,6 @@
 
 using namespace rpy;
 
-std::ostream &python::operator<<(std::ostream &os,
-                                 const python::PyLieLetter &let)
-{
+std::ostream &python::operator<<(std::ostream &os, const python::PyLieLetter &let) {
     return os << let.m_data;
 }

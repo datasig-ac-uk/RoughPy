@@ -28,32 +28,141 @@
 #ifndef ROUGHPY_ALGEBRA_FREE_TENSOR_H_
 #define ROUGHPY_ALGEBRA_FREE_TENSOR_H_
 
-#include "free_tensor_fwd.h"
+#include "algebra_base.h"
+#include "algebra_bundle.h"
 
-#include "context.h"
-#include "algebra_base_impl.h"
-#include "algebra_bundle_base_impl.h"
+
+#include "tensor_basis.h"
+
 
 namespace rpy {
 namespace algebra {
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraInterface<FreeTensor, TensorBasis>;
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBase< FreeTensorInterface,
-                    FreeTensorImplementation>;
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE BundleInterface< FreeTensorBundle, FreeTensor,
-                    FreeTensor>;
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<FreeTensor, TensorBasis>;
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBundleBase< FreeTensorBundleInterface,
-                    FreeTensorBundleImplementation>;
+class ROUGHPY_ALGEBRA_EXPORT FreeTensorInterface
+    : public AlgebraInterface<FreeTensor, TensorBasis> {
+public:
+    using algebra_interface_t = AlgebraInterface<FreeTensor, TensorBasis>;
 
-template <> RPY_EXPORT typename FreeTensor::basis_type
-basis_setup_helper<FreeTensor>::get(const context_pointer &ctx);
+    using algebra_interface_t::algebra_interface_t;
 
-template <> RPY_EXPORT typename FreeTensorBundle::basis_type
-basis_setup_helper<FreeTensorBundle>::get(const context_pointer &ctx);
+    RPY_NO_DISCARD
+    virtual FreeTensor exp() const = 0;
+    RPY_NO_DISCARD
+    virtual FreeTensor log() const = 0;
+    RPY_NO_DISCARD
+    virtual FreeTensor inverse() const = 0;
+    RPY_NO_DISCARD
+    virtual FreeTensor antipode() const = 0;
+    virtual void fmexp(const FreeTensor &other) = 0;
+};
+
+template <typename, template <typename> class>
+class FreeTensorImplementation;
+
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
+
+class ROUGHPY_ALGEBRA_EXPORT FreeTensor
+    : public AlgebraBase<FreeTensorInterface, FreeTensorImplementation> {
+    using base_t = AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
+
+public:
+    using base_t::base_t;
+
+    static constexpr AlgebraType s_alg_type = AlgebraType::FreeTensor;
+
+    RPY_NO_DISCARD
+    FreeTensor exp() const;
+    RPY_NO_DISCARD
+    FreeTensor log() const;
+    RPY_NO_DISCARD
+    FreeTensor inverse() const;
+    RPY_NO_DISCARD
+    FreeTensor antipode() const;
+    FreeTensor &fmexp(const FreeTensor &other);
+
+    RPY_SERIAL_SERIALIZE_FN();
+};
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensor) {
+    RPY_SERIAL_SERIALIZE_BASE(base_t);
+}
+
+extern template class ROUGHPY_ALGEBRA_EXPORT BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
+
+class ROUGHPY_ALGEBRA_EXPORT FreeTensorBundleInterface
+    : public BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor> {
+public:
+    using algebra_interface_t = BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
+
+    using algebra_interface_t::algebra_interface_t;
+
+    RPY_NO_DISCARD
+    virtual FreeTensorBundle exp() const = 0;
+    RPY_NO_DISCARD
+    virtual FreeTensorBundle log() const = 0;
+    RPY_NO_DISCARD
+    virtual FreeTensorBundle inverse() const = 0;
+    RPY_NO_DISCARD
+    virtual FreeTensorBundle antipode() const = 0;
+    virtual void fmexp(const FreeTensorBundle &other) = 0;
+
+
+};
+
+template <typename, template <typename> class>
+class FreeTensorBundleImplementation;
+
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation>;
+
+class ROUGHPY_ALGEBRA_EXPORT FreeTensorBundle
+    : public AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation>
+{
+    using base_t = AlgebraBundleBase<FreeTensorBundleInterface, FreeTensorBundleImplementation>;
+
+public:
+
+    using base_t::base_t;
+
+    static constexpr AlgebraType s_alg_type = AlgebraType::FreeTensorBundle;
+
+    RPY_NO_DISCARD
+    FreeTensorBundle exp() const;
+    RPY_NO_DISCARD
+    FreeTensorBundle log() const;
+    RPY_NO_DISCARD
+    FreeTensorBundle inverse() const;
+    RPY_NO_DISCARD
+    FreeTensorBundle antipode() const;
+    FreeTensorBundle &fmexp(const FreeTensorBundle &other);
+
+    RPY_SERIAL_SERIALIZE_FN();
+};
+
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensorBundle) {
+    RPY_SERIAL_SERIALIZE_BASE(base_t);
+}
+
+template <>
+template <typename C>
+typename FreeTensor::basis_type basis_setup_helper<FreeTensor>::get(const C &ctx) {
+    return ctx.get_tensor_basis();
+}
+
+template <>
+template <typename C>
+typename FreeTensorBundle::basis_type basis_setup_helper<FreeTensorBundle>::get(const C &ctx) {
+    return ctx.get_tensor_basis();
+}
 
 }// namespace algebra
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensor, rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensorBundle, rpy::serial::specialization::member_serialize)
+
 #endif// ROUGHPY_ALGEBRA_FREE_TENSOR_H_

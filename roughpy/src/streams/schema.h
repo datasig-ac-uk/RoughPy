@@ -34,12 +34,16 @@
 
 #include "roughpy_module.h"
 
-namespace rpy {
-namespace python {
+namespace rpy { namespace python {
 
-void init_schema(py::module_ &m);
 
-}
-}// namespace rpy
+
+
+void init_schema(py::module_& m);
+
+
+}}
+
+
 
 #endif//ROUGHPY_ROUGHPY_SRC_STREAMS_SCHEMA_H

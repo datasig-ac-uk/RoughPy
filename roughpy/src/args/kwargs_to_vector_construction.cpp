@@ -32,9 +32,7 @@
 
 using namespace rpy;
 
-python::PyVectorConstructionHelper
-python::kwargs_to_construction_data(const pybind11::kwargs &kwargs)
-{
+python::PyVectorConstructionHelper python::kwargs_to_construction_data(const pybind11::kwargs &kwargs) {
 
     PyVectorConstructionHelper helper;
 
@@ -75,8 +73,7 @@ python::kwargs_to_construction_data(const pybind11::kwargs &kwargs)
     }
 
     if (helper.width != 0 && helper.depth != 0 && helper.ctype != nullptr) {
-        helper.ctx = algebra::get_context(helper.width, helper.depth,
-                                          helper.ctype);
+        helper.ctx = algebra::get_context(helper.width, helper.depth, helper.ctype);
     }
 
     return helper;

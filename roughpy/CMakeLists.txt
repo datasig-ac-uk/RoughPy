@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 
+
 project(RoughPy_PyModule
         VERSION ${RoughPy_VERSION}
         LANGUAGES CXX
@@ -8,9 +9,10 @@ project(RoughPy_PyModule
 message(STATUS "Adding RoughPy::PyModule version ${RoughPy_VERSION}")
 
 
-if (NOT TARGET pybind11::headers)
+if(NOT TARGET pybind11::headers)
     find_package(Pybind11 CONFIG REQUIRED)
-endif ()
+endif()
+
 
 
 Python_add_library(RoughPy_PyModule MODULE WITH_SOABI)
@@ -22,13 +24,10 @@ set_target_properties(RoughPy_PyModule PROPERTIES
         C_STANDARD_REQUIRED ON
         )
 
-target_compile_definitions(RoughPy_PyModule PRIVATE
-        RPY_BUILDING_LIBRARY=1)
-
 if (ROUGHPY_BUILD_PYMODULE_INPLACE)
     set_target_properties(RoughPy_PyModule PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-endif ()
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+endif()
 
 
 if (LINUX)
@@ -37,13 +36,13 @@ if (LINUX)
 elseif (APPLE)
     set_target_properties(RoughPy_PyModule PROPERTIES
             INSTALL_RPATH "@loader_path;@loader_path/../../..")
-endif ()
+endif()
 
 target_sources(RoughPy_PyModule PRIVATE
         src/roughpy_module.cpp
         src/roughpy_module.h
-        #        src/recombine.cpp
-        #        src/recombine.h
+#        src/recombine.cpp
+#        src/recombine.h
         src/algebra/algebra.h
         src/algebra/algebra.cpp
         src/algebra/algebra_iterator.cpp
@@ -124,25 +123,19 @@ target_include_directories(RoughPy_PyModule PRIVATE
         )
 
 target_link_libraries(RoughPy_PyModule PRIVATE
-        pybind11::headers
-        #        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy::Streams>
-        #        recombine::recombine
-        )
-
-target_link_components(RoughPy_PyModule PRIVATE
-        RoughPy::Core
-        RoughPy::Platform
         RoughPy::Scalars
         RoughPy::Intervals
         RoughPy::Algebra
         RoughPy::Streams
+        pybind11::headers
+#        recombine::recombine
         )
 
-if (ROUGHPY_LINK_NUMPY)
+if(ROUGHPY_LINK_NUMPY)
     target_link_libraries(RoughPy_PyModule PRIVATE Python::NumPy)
     target_compile_definitions(RoughPy_PyModule PRIVATE
-            ROUGHPY_WITH_NUMPY)
-endif ()
+        ROUGHPY_WITH_NUMPY)
+endif()
 
 
 get_target_property(RoughPy_Core_VERSION RoughPy::Core VERSION)

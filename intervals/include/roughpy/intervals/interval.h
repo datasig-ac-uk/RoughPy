@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-//
+// 
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-//
+// 
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-//
+// 
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-//
+// 
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-//
+// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,33 +28,37 @@
 #ifndef ROUGHPY_INTERVALS_INTERVAL_H_
 #define ROUGHPY_INTERVALS_INTERVAL_H_
 
+#include "roughpy_intervals_export.h"
 #include <roughpy/core/types.h>
 
 #include <iosfwd>
 
-namespace rpy {
-namespace intervals {
+namespace rpy { namespace intervals {
 
-enum class IntervalType
-{
+
+
+
+enum class IntervalType {
     Clopen,
     Opencl
 };
 
-class RPY_EXPORT Interval
-{
+
+class ROUGHPY_INTERVALS_EXPORT Interval {
 protected:
     IntervalType m_interval_type = IntervalType::Clopen;
 
 public:
+
     Interval() = default;
 
-    explicit Interval(IntervalType itype) : m_interval_type(itype) {}
+    explicit Interval(IntervalType itype) : m_interval_type(itype)
+    {}
 
     virtual ~Interval() = default;
 
     RPY_NO_DISCARD
-    inline IntervalType type() const noexcept { return m_interval_type; }
+    IntervalType type() const noexcept { return m_interval_type; }
 
     RPY_NO_DISCARD
     virtual param_t inf() const = 0;
@@ -67,24 +71,26 @@ public:
     virtual param_t excluded_end() const;
 
     RPY_NO_DISCARD
-    virtual bool contains_point(param_t arg) const noexcept;
+    virtual bool contains(param_t arg) const noexcept;
     RPY_NO_DISCARD
-    virtual bool is_associated(const Interval &arg) const noexcept;
+    virtual bool is_associated(const Interval& arg) const noexcept;
     RPY_NO_DISCARD
-    virtual bool contains(const Interval &arg) const noexcept;
+    virtual bool contains(const Interval& arg) const noexcept;
     RPY_NO_DISCARD
-    virtual bool intersects_with(const Interval &arg) const noexcept;
+    virtual bool intersects_with(const Interval& arg) const noexcept;
 
     RPY_NO_DISCARD
-    virtual bool operator==(const Interval &other) const;
+    virtual bool operator==(const Interval& other) const;
     RPY_NO_DISCARD
-    virtual bool operator!=(const Interval &other) const;
+    virtual bool operator!=(const Interval& other) const;
+
 };
 
-RPY_EXPORT
-std::ostream &operator<<(std::ostream &os, const Interval &interval);
 
-}// namespace intervals
-}// namespace rpy
+ROUGHPY_INTERVALS_EXPORT
+std::ostream& operator<<(std::ostream& os, const Interval& interval);
 
-#endif// ROUGHPY_INTERVALS_INTERVAL_H_
+
+}}
+
+#endif // ROUGHPY_INTERVALS_INTERVAL_H_

@@ -9,13 +9,14 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 
+
 option(RPY_POLY_SCALARS "Build polynomial scalar types" ON)
 
 set(RPY_USE_MKL ${MKL_FOUND})
 
 configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
-add_roughpy_component(Scalars
-        SOURCES
+add_roughpy_lib(Scalars STATIC
+    SOURCES
         src/scalar_type.cpp
         src/scalar_pointer.cpp
         src/scalar_interface.cpp
@@ -54,7 +55,7 @@ add_roughpy_component(Scalars
         src/rational_poly_scalar_type.cpp
         src/rational_poly_scalar_type.h
         ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
-        PUBLIC_HEADERS
+    PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/scalar_pointer.h
         include/roughpy/scalars/scalar.h
@@ -68,44 +69,45 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_matrix.h
         include/roughpy/scalars/scalar_blas.h
         include/roughpy/scalars.h
-        PUBLIC_DEPS
+    PUBLIC_DEPS
+        RoughPy::Core
+        RoughPy::Platform
         Boost::boost
         Eigen3::Eigen
         Libalgebra_lite::Libalgebra_lite
-        BLAS::BLAS
-        LAPACK::LAPACK
-        PRIVATE_DEPS
+        "$<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,BLAS::BLAS LAPACK::LAPACK>"
+    PRIVATE_DEPS
         PCGRandom::pcg_random
         $<TARGET_NAME_IF_EXISTS:Bignum::Bignum>
-        NEEDS
-        RoughPy::Core
-        RoughPy::Platform
-        )
+    )
+
+
+
 
 
 if (TARGET Bignum::Bignum)
     set(RPY_RATIONAL_HEADER "gmp.hpp")
     set(RPY_RATIONAL_TYPE "boost::multiprecision::mpq_rational")
     set(RPY_USING_GMP ON)
-else ()
+else()
     set(RPY_USING_GMP OFF)
     set(RPY_RATIONAL_HEADER "cpp_int.hpp")
     set(RPY_RATIONAL_TYPE "boost::multiprecision::cpp_rational")
-endif ()
+endif()
 
 #configure_file("src/rational_type.h.in" "rational_type.h" NO_SOURCE_PERMISSIONS @ONLY)
 
 
 add_roughpy_test(scalar
+        LINK_COMPONENT
         SRC
-        src/ScalarTests.h
-        src/test_scalar.cpp
-        src/test_scalar_type.cpp
-        src/test_float_blas.cpp
-        src/test_scalar_array.cpp
-        src/test_key_scalar_array.cpp
-        src/test_scalar_matrix.cpp
-        src/test_pcg_standard_random.cpp
-        NEEDS
-        RoughPy::Scalars
+            src/ScalarTests.h
+            src/test_scalar.cpp
+            src/test_scalar_type.cpp
+            src/test_float_blas.cpp
+            src/test_scalar_array.cpp
+            src/test_key_scalar_array.cpp
+            src/test_scalar_matrix.cpp
+        DEP
+            RoughPy::Platform
         )

@@ -45,8 +45,7 @@ using namespace rpy;
 using namespace rpy::algebra;
 using namespace pybind11::literals;
 
-static const char *FREE_TENSOR_DOC
-        = R"eadoc(Element of the (truncated) tensor algebra.
+static const char *FREE_TENSOR_DOC = R"eadoc(Element of the (truncated) tensor algebra.
 
 A :class:`tensor` object supports arithmetic operators, providing both objects are compatible,
 along with comparison operators. The multiplication operator for this class is the free tensor
@@ -85,16 +84,15 @@ degree, up to the maximum. The :class:`~esig_paths.algebra_context` class provid
 tensor algebra_old up to a given degree.
 )eadoc";
 
-static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs)
-{
+static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs) {
     auto helper = python::kwargs_to_construction_data(kwargs);
 
     auto py_key_type = py::type::of<python::PyTensorKey>();
     python::AlternativeKeyType alt{
-            py_key_type, [](py::handle py_key) -> key_type {
-                return static_cast<key_type>(
-                        py_key.cast<python::PyTensorKey>());
-            }};
+        py_key_type,
+        [](py::handle py_key) -> key_type {
+            return static_cast<key_type>(py_key.cast<python::PyTensorKey>());
+        }};
 
     python::PyToBufferOptions options;
     options.type = helper.ctype;
@@ -115,8 +113,7 @@ static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs)
 
     if (!helper.ctx) {
         if (helper.width == 0 || helper.depth == 0) {
-            throw py::value_error(
-                    "you must provide either context or both width and depth");
+            throw py::value_error("you must provide either context or both width and depth");
         }
         helper.ctx = get_context(helper.width, helper.depth, helper.ctype, {});
     }
@@ -132,18 +129,18 @@ static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs)
         }
     }
 
-    auto result = helper.ctx->construct_free_tensor(
-            {std::move(buffer), helper.vtype});
+    auto result = helper.ctx->construct_free_tensor({std::move(buffer), helper.vtype});
 
-    if (options.cleanup) { options.cleanup(); }
+    if (options.cleanup) {
+        options.cleanup();
+    }
 
     RPY_DBG_ASSERT(result.coeff_type() != nullptr);
 
     return result;
 }
 
-void python::init_free_tensor(py::module_ &m)
-{
+void python::init_free_tensor(py::module_ &m) {
 
     py::options options;
     options.disable_function_signatures();
@@ -153,8 +150,9 @@ void python::init_free_tensor(py::module_ &m)
 
     python::setup_algebra_type(klass);
 
-    klass.def("__getitem__",
-              [](const FreeTensor &self, key_type key) { return self[key]; });
+    klass.def("__getitem__", [](const FreeTensor &self, key_type key) {
+        return self[key];
+    });
 
     klass.def("exp", &FreeTensor::exp);
     klass.def("log", &FreeTensor::log);

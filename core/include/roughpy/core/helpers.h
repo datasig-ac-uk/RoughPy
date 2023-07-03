@@ -1,19 +1,19 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
-//
+// 
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-//
+// 
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-//
+// 
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-//
+// 
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-//
+// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -38,7 +38,9 @@
 #include <iterator>
 #include <vector>
 
+
 namespace rpy {
+
 
 /**
  * @brief Cast the bit value from a value of type From to a value
@@ -52,66 +54,83 @@ namespace rpy {
 using std::bit_cast;
 #else
 template <typename To, typename From>
-RPY_NO_DISCARD enable_if_t<sizeof(To) == sizeof(From)
-                                   && is_trivially_copyable<From>::value
-                                   && is_trivially_copyable<To>::value
-                                   && is_default_constructible<To>::value,
-                           To>
-bit_cast(From from)
-{
+RPY_NO_DISCARD
+enable_if_t<
+    sizeof(To) == sizeof(From)
+    && is_trivially_copyable<From>::value
+    && is_trivially_copyable<To>::value
+    && is_default_constructible<To>::value
+    , To>
+bit_cast(From from) {
     To to;
-    memcpy(static_cast<void *>(std::addressof(to)),
-           static_cast<const void *>(std::addressof(from)), sizeof(To));
+    memcpy(static_cast<void*>(std::addressof(to)),
+           static_cast<const void*>(std::addressof(from)),
+           sizeof(To));
     return to;
 }
 #endif
 
+
+
+
 template <typename T>
-RPY_NO_DISCARD inline enable_if_t<is_integral<T>::value, size_t>
-count_bits(T val) noexcept
-{
+RPY_NO_DISCARD
+inline enable_if_t<is_integral<T>::value, size_t>
+count_bits(T val) noexcept {
     // There might be optimisations using builtin popcount functions
-    return std::bitset<CHAR_BIT * sizeof(T)>(val).count();
+    return std::bitset<CHAR_BIT*sizeof(T)>(val).count();
 }
+
+
+
 
 /**
  * @brief
  * @tparam T
  */
-template <typename T> class MaybeOwned
-{
-    enum State
-    {
+template <typename T>
+class MaybeOwned {
+    enum State {
         IsOwned,
         IsBorrowed
     };
 
-    T *p_data;
+    T* p_data;
     State m_state;
 
 public:
-    constexpr MaybeOwned(std::nullptr_t) : p_data(nullptr), m_state(IsOwned) {}
-    constexpr MaybeOwned(T *ptr) : p_data(ptr), m_state(IsBorrowed) {}
 
-    ~MaybeOwned()
-    {
-        if (m_state == IsOwned) { delete[] p_data; }
+    constexpr MaybeOwned(std::nullptr_t) : p_data(nullptr), m_state(IsOwned) {}
+    constexpr MaybeOwned(T* ptr) : p_data(ptr), m_state(IsBorrowed) {}
+
+    ~MaybeOwned() {
+        if (m_state == IsOwned) {
+            delete[] p_data;
+        }
     }
 
-    constexpr MaybeOwned &operator=(T *ptr)
-    {
+    constexpr MaybeOwned& operator=(T* ptr) {
         p_data = ptr;
         m_state = IsOwned;
         return *this;
     }
 
     RPY_NO_DISCARD
-    operator T *() const noexcept { return p_data; }
+    operator T* () const noexcept { return p_data; }
 
     RPY_NO_DISCARD
     operator bool() const noexcept { return p_data != nullptr; }
+
 };
 
-}// namespace rpy
 
-#endif// ROUGHPY_CORE_POINTER_HELPERS_H_
+
+
+
+
+
+
+
+}
+
+#endif // ROUGHPY_CORE_POINTER_HELPERS_H_

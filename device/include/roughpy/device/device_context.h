@@ -9,13 +9,13 @@
 #include <roughpy/algebra/lie.h>
 #include <roughpy/algebra/shuffle_tensor.h>
 
-
+#include "roughpy_device_export.h"
 
 
 namespace rpy {
 namespace device {
 
-class RPY_EXPORT DeviceContext {
+class ROUGHPY_DEVICE_EXPORT DeviceContext {
     algebra::context_pointer p_base;
     scalars::ScalarDeviceInfo m_device;
 

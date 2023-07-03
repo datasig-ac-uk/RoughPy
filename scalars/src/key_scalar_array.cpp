@@ -29,42 +29,41 @@
 // Created by user on 02/03/23.
 //
 
-#include <roughpy/scalars/key_scalar_array.h>
+#include "key_scalar_array.h"
 
-#include <roughpy/scalars/owned_scalar_array.h>
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_type.h>
+#include "owned_scalar_array.h"
+#include "scalar.h"
+#include "scalar_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-KeyScalarArray::~KeyScalarArray()
-{
+KeyScalarArray::~KeyScalarArray() {
     if (p_data != nullptr && p_type != nullptr && is_owning()) {
         p_type->free(*this, m_size);
     }
-    if (keys_owned()) { delete[] p_keys; }
+    if (keys_owned()) {
+        delete[] p_keys;
+    }
 }
 
 KeyScalarArray::KeyScalarArray(const KeyScalarArray &other)
-    : ScalarArray(other.type()->allocate(other.size()), other.size())
-{
+    : ScalarArray(other.type()->allocate(other.size()), other.size()) {
 
     if (other.p_data != nullptr) {
         p_type->convert_copy(const_cast<void *>(p_data), other, m_size);
 
         if (p_keys != nullptr) {
             allocate_keys();
-            std::copy(other.p_keys, other.p_keys + other.m_size,
-                      const_cast<key_type *>(p_keys));
+            std::copy(other.p_keys, other.p_keys + other.m_size, const_cast<key_type *>(p_keys));
         }
     } else {
         RPY_DBG_ASSERT(other.p_keys == nullptr);
     }
 }
 KeyScalarArray::KeyScalarArray(KeyScalarArray &&other) noexcept
-    : ScalarArray(other), p_keys(other.p_keys)
-{
+    : ScalarArray(other),
+      p_keys(other.p_keys) {
     m_flags |= (other.m_flags & owning_flag);
     m_flags |= (other.m_flags & keys_owning_flag);
     other.p_keys = nullptr;
@@ -72,33 +71,26 @@ KeyScalarArray::KeyScalarArray(KeyScalarArray &&other) noexcept
     RPY_DBG_ASSERT(other.p_data == nullptr);
 }
 KeyScalarArray::KeyScalarArray(OwnedScalarArray &&sa) noexcept
-    : ScalarArray(std::move(sa))
-{
+    : ScalarArray(std::move(sa)) {
     m_flags |= flags::OwnedPointer;
 }
 KeyScalarArray::KeyScalarArray(ScalarArray base, const key_type *keys)
-    : ScalarArray(base), p_keys(keys)
-{
+    : ScalarArray(base), p_keys(keys) {
     m_flags &= ~flags::OwnedPointer;
     m_flags &= ~keys_owning_flag;
 }
-KeyScalarArray::KeyScalarArray(const ScalarType *type) noexcept
-    : ScalarArray(type)
-{}
+KeyScalarArray::KeyScalarArray(const ScalarType *type) noexcept : ScalarArray(type) {
+}
 KeyScalarArray::KeyScalarArray(const ScalarType *type, dimn_t n) noexcept
-    : ScalarArray(type)
-{
+    : ScalarArray(type) {
     allocate_scalars(static_cast<idimn_t>(n));
 }
 
-KeyScalarArray::KeyScalarArray(const ScalarType *type, const void *begin,
-                               dimn_t count) noexcept
-    : ScalarArray(type, begin, count)
-{
+KeyScalarArray::KeyScalarArray(const ScalarType *type, const void *begin, dimn_t count) noexcept
+    : ScalarArray(type, begin, count) {
     m_flags &= ~flags::OwnedPointer;
 }
-KeyScalarArray &KeyScalarArray::operator=(const ScalarArray &other) noexcept
-{
+KeyScalarArray &KeyScalarArray::operator=(const ScalarArray &other) noexcept {
     if (&other != this) {
         this->~KeyScalarArray();
         ScalarArray::operator=(other);
@@ -107,8 +99,7 @@ KeyScalarArray &KeyScalarArray::operator=(const ScalarArray &other) noexcept
     }
     return *this;
 }
-KeyScalarArray &KeyScalarArray::operator=(KeyScalarArray &&other) noexcept
-{
+KeyScalarArray &KeyScalarArray::operator=(KeyScalarArray &&other) noexcept {
     if (&other != this) {
         this->~KeyScalarArray();
         p_keys = other.p_keys;
@@ -118,25 +109,24 @@ KeyScalarArray &KeyScalarArray::operator=(KeyScalarArray &&other) noexcept
     }
     return *this;
 }
-KeyScalarArray &KeyScalarArray::operator=(OwnedScalarArray &&other) noexcept
-{
+KeyScalarArray &KeyScalarArray::operator=(OwnedScalarArray &&other) noexcept {
     this->~KeyScalarArray();
     ScalarArray::operator=(std::move(other));
     m_flags |= flags::OwnedPointer;
     return *this;
 }
-void KeyScalarArray::allocate_scalars(idimn_t count)
-{
+void KeyScalarArray::allocate_scalars(idimn_t count) {
     auto new_size = (count == -1) ? m_size : static_cast<dimn_t>(count);
     if (new_size != 0) {
         ScalarArray::operator=({p_type->allocate(new_size), new_size});
         m_flags |= flags::OwnedPointer;
     }
 }
-void KeyScalarArray::allocate_keys(idimn_t count)
-{
+void KeyScalarArray::allocate_keys(idimn_t count) {
     auto new_size = (count == -1) ? m_size : static_cast<dimn_t>(count);
-    if (p_keys != nullptr && keys_owned()) { delete[] p_keys; }
+    if (p_keys != nullptr && keys_owned()) {
+        delete[] p_keys;
+    }
     if (new_size != 0) {
         p_keys = new key_type[new_size];
     } else {
@@ -144,14 +134,14 @@ void KeyScalarArray::allocate_keys(idimn_t count)
     }
     m_flags |= keys_owning_flag;
 }
-key_type *KeyScalarArray::keys()
-{
-    if (keys_owned()) { return const_cast<key_type *>(p_keys); }
+key_type *KeyScalarArray::keys() {
+    if (keys_owned()) {
+        return const_cast<key_type *>(p_keys);
+    }
     throw std::runtime_error("borrowed keys are not mutable");
 }
 
-KeyScalarArray::operator OwnedScalarArray() && noexcept
-{
+KeyScalarArray::operator OwnedScalarArray() && noexcept {
     auto result = OwnedScalarArray(p_type, p_data, m_size);
     p_type = nullptr;
     p_data = nullptr;
@@ -159,8 +149,7 @@ KeyScalarArray::operator OwnedScalarArray() && noexcept
     return result;
 }
 
-KeyScalarArray KeyScalarArray::copy_or_move() &&
-{
+KeyScalarArray KeyScalarArray::copy_or_move() && {
     if (is_owning() && keys_owned()) {
         return KeyScalarArray(std::move(*this));
     }
@@ -191,5 +180,4 @@ KeyScalarArray KeyScalarArray::copy_or_move() &&
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::KeyScalarArray
 #define RPY_SERIAL_DO_SPLIT
-
 #include <roughpy/platform/serialization_instantiations.inl>

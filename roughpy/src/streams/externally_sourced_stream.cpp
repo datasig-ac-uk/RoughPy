@@ -21,13 +21,10 @@ using namespace rpy;
 using namespace rpy::streams;
 using namespace pybind11::literals;
 
-static const char *EXTERNALLY_SOURCED_STREAM_DOC
-        = R"rpydoc(A stream that acquires its data dynamically from an external source.
+static const char *EXTERNALLY_SOURCED_STREAM_DOC = R"rpydoc(A stream that acquires its data dynamically from an external source.
 )rpydoc";
 
-static py::object external_stream_constructor(string uri_string,
-                                              const py::kwargs &kwargs)
-{
+static py::object external_stream_constructor(string uri_string, const py::kwargs &kwargs) {
     const auto pmd = python::kwargs_to_metadata(kwargs);
 
     url uri;
@@ -47,9 +44,7 @@ static py::object external_stream_constructor(string uri_string,
                 uri.set_path(uri_string);
             }
         } catch (...) {
-            throw py::value_error("could not parse path " + uri_string
-                                  + " error code "
-                                  + uri_result.error().message());
+            throw py::value_error("could not parse path " + uri_string + " error code " + uri_result.error().message());
         }
 
     } else {
@@ -71,24 +66,36 @@ static py::object external_stream_constructor(string uri_string,
     //        pmd.resolution
     //    });
 
-    if (pmd.width != 0) { factory.set_width(pmd.width); }
-    if (pmd.depth != 0) { factory.set_depth(pmd.depth); }
-    if (pmd.scalar_type != nullptr) { factory.set_ctype(pmd.scalar_type); }
-    if (pmd.ctx) { factory.set_context(pmd.ctx); }
-    if (pmd.resolution != 0) { factory.set_resolution(pmd.resolution); }
-    if (pmd.support) { factory.set_support(*pmd.support); }
-    if (pmd.vector_type) { factory.set_vtype(*pmd.vector_type); }
+    if (pmd.width != 0) {
+        factory.set_width(pmd.width);
+    }
+    if (pmd.depth != 0) {
+        factory.set_depth(pmd.depth);
+    }
+    if (pmd.scalar_type != nullptr) {
+        factory.set_ctype(pmd.scalar_type);
+    }
+    if (pmd.ctx) {
+        factory.set_context(pmd.ctx);
+    }
+    if (pmd.resolution != 0) {
+        factory.set_resolution(pmd.resolution);
+    }
+    if (pmd.support) {
+        factory.set_support(*pmd.support);
+    }
+    if (pmd.vector_type) {
+        factory.set_vtype(*pmd.vector_type);
+    }
 
     PyObject *py_stream = python::RPyStream_FromStream(factory.construct());
 
     return py::reinterpret_steal<py::object>(py_stream);
 }
 
-void python::init_externally_sourced_stream(py::module_ &m)
-{
+void python::init_externally_sourced_stream(py::module_ &m) {
 
-    py::class_<ExternalDataStream> klass(m, "ExternalDataStream",
-                                         EXTERNALLY_SOURCED_STREAM_DOC);
+    py::class_<ExternalDataStream> klass(m, "ExternalDataStream", EXTERNALLY_SOURCED_STREAM_DOC);
 
     klass.def_static("from_uri", external_stream_constructor, "uri"_a);
 }

@@ -39,9 +39,9 @@
 namespace rpy {
 namespace scalars {
 
-class BFloat16Type : public StandardScalarType<bfloat16>
-{
+class BFloat16Type : public StandardScalarType<bfloat16> {
 public:
+
     BFloat16Type();
 };
 

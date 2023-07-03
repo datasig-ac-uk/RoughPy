@@ -32,26 +32,27 @@
 #ifndef ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
 #define ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
 
+#include "random.h"
+#include "scalar.h"
+#include "scalar_type.h"
 #include "random_impl.h"
-#include <roughpy/scalars/random.h>
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_type.h>
 
 #include "standard_random_generator.h"
 
-#include <mutex>
 #include <random>
-#include <sstream>
+#include <mutex>
 #include <vector>
+#include <sstream>
 
 #include <pcg_random.hpp>
+#include <string>
+#include <string_view>
 
 namespace rpy {
 namespace scalars {
 
 template <typename BitGenerator>
-class StandardRandomGenerator<half, BitGenerator> : public RandomGenerator
-{
+class StandardRandomGenerator<half, BitGenerator> : public RandomGenerator {
     using scalar_type = half;
     using bit_generator = BitGenerator;
 
@@ -65,10 +66,9 @@ public:
     StandardRandomGenerator(const StandardRandomGenerator &) = delete;
     StandardRandomGenerator(StandardRandomGenerator &&) noexcept = delete;
 
-    StandardRandomGenerator &operator=(const StandardRandomGenerator &)
-            = delete;
-    StandardRandomGenerator &operator=(StandardRandomGenerator &&) noexcept
-            = delete;
+    StandardRandomGenerator &operator=(const StandardRandomGenerator &) = delete;
+    StandardRandomGenerator &operator=(StandardRandomGenerator &&) noexcept = delete;
+
 
     void set_seed(Slice<uint64_t> seed_data) override;
     void set_state(string_view state) override;
@@ -76,89 +76,77 @@ public:
     string get_type() const override;
     string get_state() const override;
 
-    OwnedScalarArray uniform_random_scalar(ScalarArray lower, ScalarArray upper,
-                                           dimn_t count) const override;
-    OwnedScalarArray normal_random(Scalar loc, Scalar scale,
-                                   dimn_t count) const override;
+    OwnedScalarArray uniform_random_scalar(ScalarArray lower, ScalarArray upper, dimn_t count) const override;
+    OwnedScalarArray normal_random(Scalar loc, Scalar scale, dimn_t count) const override;
 };
-
 template <typename BitGenerator>
-void StandardRandomGenerator<half, BitGenerator>::set_state(string_view state)
-{
+void StandardRandomGenerator<half, BitGenerator>::set_state(string_view state) {
     std::stringstream ss(string{state});
     ss >> m_generator;
 }
 template <typename BitGenerator>
-string StandardRandomGenerator<half, BitGenerator>::get_state() const
-{
+string StandardRandomGenerator<half, BitGenerator>::get_state() const {
     std::stringstream ss;
     ss << m_generator;
     return ss.str();
 }
 
 template <typename BitGenerator>
-StandardRandomGenerator<half, BitGenerator>::StandardRandomGenerator(
-        const ScalarType *stype, Slice<uint64_t> seed)
-    : RandomGenerator(stype), m_seed{seed[0]},
-      m_generator(BitGenerator(seed[0]))
+StandardRandomGenerator<half, BitGenerator>::StandardRandomGenerator(const ScalarType *stype, Slice<uint64_t> seed)
+    : RandomGenerator(stype), m_seed{seed[0]}, m_generator(BitGenerator(seed[0]))
 {
     RPY_CHECK(p_type = ScalarType::of<half>());
     RPY_CHECK(seed.size() >= 1);
 }
 
-template <typename BitGenerator> void
-StandardRandomGenerator<half, BitGenerator>::set_seed(Slice<uint64_t> seed_data)
-{
+template <typename BitGenerator>
+void StandardRandomGenerator<half, BitGenerator>::set_seed(Slice<uint64_t> seed_data) {
     RPY_CHECK(seed_data.size() >= 1);
     m_generator.seed(seed_data[0]);
     m_seed = {seed_data[0]};
 }
-template <typename BitGenerator> std::vector<uint64_t>
-StandardRandomGenerator<half, BitGenerator>::get_seed() const
-{
+template <typename BitGenerator>
+std::vector<uint64_t> StandardRandomGenerator<half, BitGenerator>::get_seed() const {
     return {m_seed[0]};
 }
 template <typename BitGenerator>
-std::string StandardRandomGenerator<half, BitGenerator>::get_type() const
-{
+std::string StandardRandomGenerator<half, BitGenerator>::get_type() const {
     return std::string(dtl::rng_type_getter<BitGenerator>::name);
 }
 
-template <typename BitGenerator> OwnedScalarArray
-StandardRandomGenerator<half, BitGenerator>::uniform_random_scalar(
-        ScalarArray lower, ScalarArray upper, dimn_t count) const
-{
+template <typename BitGenerator>
+OwnedScalarArray StandardRandomGenerator<half, BitGenerator>::uniform_random_scalar(ScalarArray lower, ScalarArray upper, dimn_t count) const {
     std::vector<std::uniform_real_distribution<float>> dists;
 
     RPY_CHECK(lower.size() == upper.size());
 
     dists.reserve(lower.size());
-    for (dimn_t i = 0; i < lower.size(); ++i) {
-        dists.emplace_back(static_cast<float>(scalar_cast<half>(lower[i])),
-                           static_cast<float>(scalar_cast<half>(upper[i])));
+    for (dimn_t i=0; i<lower.size(); ++i) {
+        dists.emplace_back(
+            static_cast<float>(scalar_cast<half>(lower[i])),
+            static_cast<float>(scalar_cast<half>(upper[i]))
+            );
     }
 
-    OwnedScalarArray result(p_type, count * dists.size());
+    OwnedScalarArray result(p_type, count*dists.size());
 
-    auto *out = result.raw_cast<half *>();
-    for (dimn_t i = 0; i < count; ++i) {
-        for (auto &dist : dists) { ::new (out++) half(dist(m_generator)); }
+    auto* out = result.raw_cast<half*>();
+    for (dimn_t i=0; i<count; ++i) {
+        for (auto& dist : dists) {
+            ::new (out++) half(dist(m_generator));
+        }
     }
 
     return result;
 }
-template <typename BitGenerator> OwnedScalarArray
-StandardRandomGenerator<half, BitGenerator>::normal_random(Scalar loc,
-                                                           Scalar scale,
-                                                           dimn_t count) const
-{
+template <typename BitGenerator>
+OwnedScalarArray StandardRandomGenerator<half, BitGenerator>::normal_random(Scalar loc, Scalar scale, dimn_t count) const {
 
     OwnedScalarArray result(p_type, count);
-    std::normal_distribution<float> dist(scalar_cast<half>(loc),
-                                         scalar_cast<half>(scale));
+    std::normal_distribution<float> dist(scalar_cast<half>(loc), scalar_cast<half>(scale));
 
-    auto *out = result.raw_cast<half *>();
-    for (dimn_t i = 0; i < count; ++i) {
+    auto* out = result.raw_cast<half*>();
+    for (dimn_t i=0; i<count; ++i) {
         ::new (out++) half(dist(m_generator));
     }
 
@@ -166,8 +154,8 @@ StandardRandomGenerator<half, BitGenerator>::normal_random(Scalar loc,
 }
 
 extern template class StandardRandomGenerator<half, std::mt19937_64>;
-
 extern template class StandardRandomGenerator<half, pcg64>;
+
 
 }// namespace scalars
 }// namespace rpy
