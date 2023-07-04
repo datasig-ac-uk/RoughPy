@@ -141,6 +141,20 @@ StreamChannel& StreamChannel::operator=(StreamChannel&& other) noexcept
     return *this;
 }
 
+SchemaContext::~SchemaContext() = default;
+
+
+
+intervals::RealInterval
+SchemaContext::convert_parameter_interval(const intervals::Interval& arg) const
+{
+    return {
+        m_param_offset + m_param_scaling*arg.inf(),
+        m_param_offset + m_param_scaling*arg.sup(),
+        arg.type()
+    };
+}
+
 StreamSchema::StreamSchema(dimn_t width)
 {
     reserve(width);

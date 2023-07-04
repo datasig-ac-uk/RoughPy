@@ -37,9 +37,13 @@
 #include <roughpy/core/types.h>
 
 #include <roughpy/algebra/algebra_fwd.h>
+#include <roughpy/intervals/interval.h>
+#include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
 
 #include <boost/container/flat_map.hpp>
+
+#include <functional>
 #include <variant>
 #include <vector>
 
@@ -203,6 +207,26 @@ public:
     RPY_SERIAL_LOAD_FN();
 };
 
+class RPY_EXPORT SchemaContext
+{
+    param_t m_param_offset = 0.0;
+    param_t m_param_scaling = 1.0;
+
+public:
+    virtual ~SchemaContext();
+
+    RPY_NO_DISCARD
+    intervals::RealInterval
+    reparametrize(const intervals::RealInterval& arg) const {
+        return {m_param_offset + m_param_scaling * arg.inf(),
+                m_param_offset + m_param_scaling * arg.sup(), arg.type()};
+    }
+
+    RPY_NO_DISCARD
+    virtual intervals::RealInterval
+    convert_parameter_interval(const intervals::Interval& arg) const;
+};
+
 /**
  * @brief An abstract description of the stream data.
  *
@@ -226,6 +250,8 @@ class RPY_EXPORT StreamSchema : private std::vector<pair<string, StreamChannel>>
     using base_type = std::vector<pair<string, StreamChannel>>;
 
     bool m_is_final = false;
+
+    std::unique_ptr<SchemaContext> p_context;
 
 public:
     using typename base_type::const_iterator;
@@ -271,6 +297,17 @@ public:
     {
         RPY_DBG_ASSERT(idx < size());
         return begin() + static_cast<idimn_t>(idx);
+    }
+
+    RPY_NO_DISCARD
+    SchemaContext* context() const noexcept { return p_context.get(); }
+
+    template <typename Context, typename... Args>
+    enable_if_t<is_base_of<SchemaContext, Context>::value>
+    init_context(Args&&... args)
+    {
+        RPY_DBG_ASSERT(!p_context);
+        p_context = std::make_unique<Context>(std::forward<Args>(args)...);
     }
 
 public:
