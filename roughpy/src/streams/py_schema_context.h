@@ -53,8 +53,13 @@ public:
           m_dt_conversion(std::move(conversion_options))
     {}
 
+    RPY_NO_DISCARD
     intervals::RealInterval
     convert_parameter_interval(const intervals::Interval& arg) const override;
+
+    void set_reference_dt(py::object dt_reference);
+    void set_dt_timescale(PyDateTimeResolution timescale);
+
 };
 
 }// namespace python

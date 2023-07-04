@@ -141,14 +141,6 @@ StreamChannel& StreamChannel::operator=(StreamChannel&& other) noexcept
     return *this;
 }
 
-SchemaContext::~SchemaContext() = default;
-
-intervals::RealInterval
-SchemaContext::convert_parameter_interval(const intervals::Interval& arg) const
-{
-    return {m_param_offset + m_param_scaling * arg.inf(),
-            m_param_offset + m_param_scaling * arg.sup(), arg.type()};
-}
 
 StreamSchema::StreamSchema(dimn_t width)
 {
@@ -293,6 +285,71 @@ std::vector<string> StreamChannel::get_variants() const
             break;
     }
     return variants;
+}
+
+string StaticChannel::label_suffix(dimn_t index) const
+{
+    switch (m_type) {
+        case StaticChannelType::Value: return {};
+        case StaticChannelType::Categorical: {
+            return categorical_info.variants[index];
+        }
+    }
+}
+dimn_t StaticChannel::num_variants() const noexcept
+{
+    switch (m_type) {
+        case StaticChannelType::Value: return 1;
+        case StaticChannelType::Categorical:
+            return categorical_info.variants.size();
+    }
+}
+std::vector<string> StaticChannel::get_variants() const
+{
+    switch (m_type) {
+        case StaticChannelType::Value: return {};
+        case StaticChannelType::Categorical: return categorical_info.variants;
+    }
+}
+dimn_t StaticChannel::variant_id_of_label(const string& label) const
+{
+    switch (m_type) {
+        case StaticChannelType::Value: return 0;
+        case StaticChannelType::Categorical: {
+            const auto begin = categorical_info.variants.begin();
+            const auto end = categorical_info.variants.end();
+            const auto found = std::find(begin, end, label);
+            if (found == end) {
+                throw std::runtime_error("label " + label
+                                         + " not a valid "
+                                           "variant of this "
+                                           "channel");
+            }
+            return static_cast<dimn_t>(found - begin);
+        }
+    }
+}
+StaticChannel& StaticChannel::insert_variant(string new_variant)
+{
+    RPY_CHECK(m_type == StaticChannelType::Categorical);
+    const auto begin = categorical_info.variants.begin();
+    const auto end = categorical_info.variants.end();
+    const auto found = std::find(begin, end, new_variant);
+    if (found == end) {
+        categorical_info.variants.push_back(std::move(new_variant));
+    }
+    return *this;
+}
+StaticChannel& StaticChannel::add_variant(string new_variant)
+{
+    RPY_CHECK(m_type == StaticChannelType::Categorical);
+    const auto begin = categorical_info.variants.begin();
+    const auto end = categorical_info.variants.end();
+    const auto found = std::find(begin, end, new_variant);
+
+    RPY_CHECK(found == end);
+    categorical_info.variants.push_back(std::move(new_variant));
+    return *this;
 }
 
 bool StreamSchema::compare_labels(string_view item_label,

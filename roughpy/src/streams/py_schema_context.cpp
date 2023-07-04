@@ -26,3 +26,17 @@ intervals::RealInterval python::PySchemaContext::convert_parameter_interval(
     }
     return SchemaContext::convert_parameter_interval(arg);
 }
+
+void python::PySchemaContext::set_reference_dt(py::object dt_reference) {
+    m_dt_reference = std::move(dt_reference);
+}
+void python::PySchemaContext::set_dt_timescale(
+        python::PyDateTimeResolution timescale)
+{
+    if (!m_dt_conversion) {
+        m_dt_conversion = PyDateTimeConversionOptions{ timescale };
+    } else {
+        m_dt_conversion->resolution = timescale;
+    }
+
+}

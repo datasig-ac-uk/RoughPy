@@ -40,6 +40,7 @@
 #include <roughpy/intervals/interval.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/scalars/key_scalar_array.h>
 
 #include <boost/container/flat_map.hpp>
 
@@ -47,7 +48,7 @@
 #include <variant>
 #include <vector>
 
-#include "roughpy/scalars/key_scalar_array.h"
+#include "schema_context.h"
 
 namespace rpy {
 namespace streams {
@@ -57,7 +58,13 @@ enum struct ChannelType : uint8_t
     Increment = 0,
     Value = 1,
     Categorical = 2,
-    Lie = 3
+    Lie = 3,
+};
+
+enum struct StaticChannelType : uint8_t
+{
+    Value = 0,
+    Categorical = 1
 };
 
 struct IncrementChannelInfo {
@@ -86,7 +93,7 @@ struct LieChannelInfo {
  * typically accessed via a schema, which maintains the collection of
  * all channels associated with a stream.
  */
-class StreamChannel
+class RPY_EXPORT StreamChannel
 {
     ChannelType m_type;
     union
@@ -207,26 +214,48 @@ public:
     RPY_SERIAL_LOAD_FN();
 };
 
-class RPY_EXPORT SchemaContext
+class RPY_EXPORT StaticChannel
 {
-    param_t m_param_offset = 0.0;
-    param_t m_param_scaling = 1.0;
-
-public:
-    virtual ~SchemaContext();
-
-    RPY_NO_DISCARD
-    intervals::RealInterval
-    reparametrize(const intervals::RealInterval& arg) const
+    StaticChannelType m_type;
+    union
     {
-        return {m_param_offset + m_param_scaling * arg.inf(),
-                m_param_offset + m_param_scaling * arg.sup(), arg.type()};
+        ValueChannelInfo value_info;
+        CategoricalChannelInfo categorical_info;
+    };
+
+    template <typename T>
+    static void inplace_construct(void* address, T&& value) noexcept(
+            is_nothrow_constructible<remove_cv_ref_t<T>,
+                                     decltype(value)>::value)
+    {
+        ::new (address) remove_cv_ref_t<T>(std::forward<T>(value));
     }
 
+public:
     RPY_NO_DISCARD
-    virtual intervals::RealInterval
-    convert_parameter_interval(const intervals::Interval& arg) const;
+    StaticChannelType type() const noexcept { return m_type; }
+
+    RPY_NO_DISCARD
+    string label_suffix(dimn_t index) const;
+
+    RPY_NO_DISCARD
+    dimn_t num_variants() const noexcept;
+
+    RPY_NO_DISCARD
+    std::vector<string> get_variants() const;
+
+    RPY_NO_DISCARD
+    dimn_t variant_id_of_label(const string& label) const;
+
+    StaticChannel& insert_variant(string new_variant);
+
+    StaticChannel& add_variant(string new_variant);
+
+    RPY_SERIAL_LOAD_FN();
+    RPY_SERIAL_SAVE_FN();
 };
+
+
 
 /**
  * @brief An abstract description of the stream data.
@@ -249,6 +278,7 @@ public:
 class RPY_EXPORT StreamSchema : private std::vector<pair<string, StreamChannel>>
 {
     using base_type = std::vector<pair<string, StreamChannel>>;
+    std::vector<std::pair<string, StaticChannel>>;
 
     bool m_is_final = false;
 
@@ -435,6 +465,15 @@ RPY_SERIAL_LOAD_FN_IMPL(StreamChannel)
             break;
     }
 }
+
+RPY_SERIAL_LOAD_FN_IMPL(StaticChannel) {
+
+}
+
+RPY_SERIAL_SAVE_FN_IMPL(StreamChannel) {
+
+}
+
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(StreamSchema)
 {
