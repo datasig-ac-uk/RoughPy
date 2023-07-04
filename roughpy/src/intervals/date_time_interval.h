@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -26,29 +26,44 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "intervals.h"
+//
+// Created by user on 04/07/23.
+//
 
-#include "dyadic.h"
-#include "dyadic_interval.h"
-#include "interval.h"
-#include "real_interval.h"
-#include "segmentation.h"
-#include "date_time_interval.h"
+#ifndef ROUGHPY_ROUGHPY_SRC_INTERVALS_DATE_TIME_INTERVAL_H_
+#define ROUGHPY_ROUGHPY_SRC_INTERVALS_DATE_TIME_INTERVAL_H_
 
-using namespace rpy;
+#include <roughpy/intervals/interval.h>
 
-void python::init_intervals(pybind11::module_& m)
+#include "args/convert_timestamp.h"
+#include "roughpy_module.h"
+
+namespace rpy {
+namespace python {
+
+class DateTimeInterval : public intervals::Interval
 {
+    py::object m_dt_begin;
+    py::object m_dt_end;
 
-    py::enum_<intervals::IntervalType>(m, "IntervalType")
-            .value("Clopen", intervals::IntervalType::Clopen)
-            //        .value("Opencl", intervals::IntervalType::Opencl)
-            .export_values();
+public:
+    DateTimeInterval(py::object dt_begin, py::object dt_end);
 
-    init_interval(m);
-    init_real_interval(m);
-    init_dyadic(m);
-    init_dyadic_interval(m);
-    init_datetime_interval(m);
-    init_segmentation(m);
-}
+    // It will be unusual for these methods to be used to get the
+    // inf and sup of the parameter interval.
+    param_t inf() const override;
+    param_t sup() const override;
+
+    RPY_NO_DISCARD
+    py::object dt_inf() const { return m_dt_begin; }
+    RPY_NO_DISCARD
+    py::object dt_sup() const { return m_dt_end; };
+};
+
+void init_datetime_interval(py::module_& m);
+
+
+}// namespace python
+}// namespace rpy
+
+#endif// ROUGHPY_ROUGHPY_SRC_INTERVALS_DATE_TIME_INTERVAL_H_
