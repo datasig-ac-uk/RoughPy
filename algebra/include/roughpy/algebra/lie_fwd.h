@@ -9,7 +9,7 @@
 namespace rpy {
 namespace algebra {
 
-//extern template class AlgebraInterface<Lie, LieBasis>;
+// extern template class AlgebraInterface<Lie, LieBasis>;
 
 class RPY_EXPORT LieInterface : public AlgebraInterface<Lie, LieBasis>
 {
@@ -19,7 +19,7 @@ public:
     using base_t::base_t;
 };
 
-//extern template class AlgebraBase<LieInterface>;
+// extern template class AlgebraBase<LieInterface>;
 
 class RPY_EXPORT Lie : public AlgebraBase<LieInterface>
 {
@@ -35,7 +35,7 @@ public:
 
 class LieBundle;
 
-//extern template class BundleInterface<LieBundle, Lie, Lie>;
+// extern template class BundleInterface<LieBundle, Lie, Lie>;
 
 class RPY_EXPORT LieBundleInterface
     : public BundleInterface<LieBundle, Lie, Lie>
@@ -46,7 +46,7 @@ public:
     using base_t::base_t;
 };
 
-//extern template class AlgebraBundleBase<LieBundleInterface>;
+// extern template class AlgebraBundleBase<LieBundleInterface>;
 
 class RPY_EXPORT LieBundle : public AlgebraBundleBase<LieBundleInterface>
 {

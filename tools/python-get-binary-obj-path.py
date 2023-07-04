@@ -26,14 +26,10 @@
 #  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
-import os
-import sys
 import importlib.metadata as ilm
-
 from argparse import ArgumentParser
-from fnmatch import fnmatch
 from pathlib import Path
-from typing import Optional, List, Callable, Iterable, Generator
+from typing import Callable, Iterable, Generator
 
 CMAKE_LIST_SEP = ';'
 
@@ -55,7 +51,6 @@ def _flatten(gens: Iterable[Generator[Path]]) -> Generator[Path]:
 
 
 def _trim_to_path_dir(path: Path, fragment: Path) -> Path:
-
     prefix = path
     for l, _ in zip(path.parents, fragment.parents):
         prefix = l
@@ -71,12 +66,14 @@ def _trim_to_directory(paths: Generator[Path], pat: Path) -> Generator[Path]:
 def make_name_matcher(name: str) -> Matcher:
     def matcher(path: ilm.PackagePath) -> bool:
         return path.stem == name
+
     return matcher
 
 
 def make_fragment_matcher(fragment: str) -> Matcher:
     def matcher(path: ilm.PackagePath) -> bool:
         return path.match(fragment)
+
     return matcher
 
 

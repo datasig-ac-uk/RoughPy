@@ -28,7 +28,6 @@
 
 import pytest
 
-
 from roughpy import TickStream, DPReal, RealInterval, Lie
 
 DATA_FORMATS = [
@@ -125,10 +124,7 @@ DATA_FORMATS = [
         }
     }
 
-
-
 ]
-
 
 
 @pytest.mark.parametrize("data", DATA_FORMATS)

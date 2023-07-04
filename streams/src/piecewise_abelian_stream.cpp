@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 10/03/23.
@@ -59,23 +60,29 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(std::vector<LiePiece> &&data,
     //        auto next_i = next->first.inf(), next_s = next->first.sup();
     //        if (next_i < curr_s) {
     //            /*
-    //         * If the interval of the next piece overlaps with the current piece interval
-    //         * then we need to do a little hacking/slashing to make sure our data is correct.
+    //         * If the interval of the next piece overlaps with the current
+    //         piece interval
+    //         * then we need to do a little hacking/slashing to make sure our
+    //         data is correct.
     //         */
     //            RealInterval new_curr_interval(curr_i, next_i);
     //            auto new_lie = compute_lie_piece(*it, new_curr_interval);
     //            it->first = new_curr_interval;
     //            it->second.sub_inplace(new_lie);
-    //            m_data.emplace_back(std::move(new_curr_interval), std::move(new_lie));
+    //            m_data.emplace_back(std::move(new_curr_interval),
+    //            std::move(new_lie));
     //            /*
-    //         * At this stage the part [a---[b has been sorted , so we need to decide what the next
-    //         * iteration will look like. This means separating the intersecting parts of [b---a)
+    //         * At this stage the part [a---[b has been sorted , so we need to
+    //         decide what the next
+    //         * iteration will look like. This means separating the
+    //         intersecting parts of [b---a)
     //         * and on a)---b) (if it exists).
     //         */
     //
     //            if (curr_s < next_s) {
     //                // [a---[b--a)----b)
-    //                // it->second is going to be replaced by the part on [b--a) and
+    //                // it->second is going to be replaced by the part on
+    //                [b--a) and
     //                // next->second replace by the part on a)----b)
     //                RealInterval next_curr_interval(next_i, curr_s);
     //                new_lie = compute_lie_piece(*next, next_curr_interval);
@@ -85,14 +92,15 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(std::vector<LiePiece> &&data,
     //                next->first = RealInterval(curr_s, next_s);
     //                next->second.sub_inplace(new_lie);
     //
-    //                // Increment next so the next iteration checks the interaction of the new it with next++
+    //                // Increment next so the next iteration checks the
+    //                interaction of the new it with next++
     //                // Do not increment it yet.
     //                ++next;
     //                continue;
     //            } else if (curr_s == next_s) {
     //                // [a---[b-------ab)
-    //                // it->second is to be discarded, next->second replaced by part on [b----ab).
-    //                next->second.add_inplace(it->second);
+    //                // it->second is to be discarded, next->second replaced by
+    //                part on [b----ab). next->second.add_inplace(it->second);
     //            } else {
     //                // [a---[b---b)---a)
     //                // it->second replaced by part on [b---b)
@@ -104,14 +112,15 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(std::vector<LiePiece> &&data,
     //                next->first = RealInterval(next_s, curr_s);
     //                next->second.sub_inplace(new_lie);
     //
-    //                // Increment next so the next iteration checks the interaction of the new it with next++
+    //                // Increment next so the next iteration checks the
+    //                interaction of the new it with next++
     //                // Do not increment it yet.
     //                ++next;
     //                continue;
     //            }
     //        } else {
-    //            // Here the intervals of definition are disjoint, so we can just push onto m_data.
-    //            m_data.push_back(std::move(*it));
+    //            // Here the intervals of definition are disjoint, so we can
+    //            just push onto m_data. m_data.push_back(std::move(*it));
     //        }
     //
     //        if (++it == next) {
@@ -142,8 +151,8 @@ PiecewiseAbelianStream::log_signature_impl(const Interval &domain,
 
     auto a = domain.inf(), b = domain.sup();
     for (const auto &piece : m_data) {
-        // data is in order, so if we are already past the end of the request interval,
-        // then we are done so break.
+        // data is in order, so if we are already past the end of the request
+        // interval, then we are done so break.
         auto pa = piece.first.inf(), pb = piece.first.sup();
         if (pa >= b) {
             // [-----) [p----p)

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 02/03/23.
@@ -47,7 +48,8 @@
 namespace rpy {
 namespace scalars {
 
-template <typename T> constexpr std::uint8_t sizeof_bits() noexcept
+template <typename T>
+constexpr std::uint8_t sizeof_bits() noexcept
 {
     return static_cast<std::uint8_t>(
             std::min(static_cast<std::size_t>(
@@ -57,7 +59,8 @@ template <typename T> constexpr std::uint8_t sizeof_bits() noexcept
             * CHAR_BIT);
 }
 
-template <typename ScalarImpl> class StandardScalarType : public ScalarType
+template <typename ScalarImpl>
+class StandardScalarType : public ScalarType
 {
 
     using rng_getter
@@ -474,7 +477,8 @@ public:
                                  dimn_t count) const override;
 };
 
-template <typename ScalarImpl> std::vector<byte>
+template <typename ScalarImpl>
+std::vector<byte>
 StandardScalarType<ScalarImpl>::to_raw_bytes(const ScalarPointer &ptr,
                                              dimn_t count) const
 {
@@ -486,7 +490,8 @@ StandardScalarType<ScalarImpl>::to_raw_bytes(const ScalarPointer &ptr,
 
     return result;
 }
-template <typename ScalarImpl> ScalarPointer
+template <typename ScalarImpl>
+ScalarPointer
 StandardScalarType<ScalarImpl>::from_raw_bytes(Slice<byte> raw_bytes,
                                                dimn_t count) const
 {
@@ -509,7 +514,8 @@ inline uint64_t device_to_seed()
     return result;
 }
 
-template <typename ScalarImpl> std::unique_ptr<RandomGenerator>
+template <typename ScalarImpl>
+std::unique_ptr<RandomGenerator>
 StandardScalarType<ScalarImpl>::get_mt19937_generator(const ScalarType *type,
                                                       Slice<uint64_t> seed)
 {
@@ -523,7 +529,8 @@ StandardScalarType<ScalarImpl>::get_mt19937_generator(const ScalarType *type,
             new StandardRandomGenerator<ScalarImpl, std::mt19937_64>(type,
                                                                      seed)};
 }
-template <typename ScalarImpl> std::unique_ptr<RandomGenerator>
+template <typename ScalarImpl>
+std::unique_ptr<RandomGenerator>
 StandardScalarType<ScalarImpl>::get_pcg_generator(const ScalarType *type,
                                                   Slice<uint64_t> seed)
 {
@@ -536,7 +543,8 @@ StandardScalarType<ScalarImpl>::get_pcg_generator(const ScalarType *type,
             new StandardRandomGenerator<ScalarImpl, pcg64>(type, seed)};
 }
 
-template <typename ScalarImpl> std::unique_ptr<RandomGenerator>
+template <typename ScalarImpl>
+std::unique_ptr<RandomGenerator>
 StandardScalarType<ScalarImpl>::get_rng(const string &bit_generator,
                                         Slice<uint64_t> seed) const
 {
@@ -553,4 +561,4 @@ StandardScalarType<ScalarImpl>::get_rng(const string &bit_generator,
 }// namespace scalars
 }// namespace rpy
 
-#endif//ROUGHPY_SCALARS_SRC_STANDARD_SCALAR_TYPE_H
+#endif// ROUGHPY_SCALARS_SRC_STANDARD_SCALAR_TYPE_H

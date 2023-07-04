@@ -17,7 +17,8 @@
 namespace rpy {
 namespace scalars {
 
-template <typename S> class ScalarBlasImpl : public BlasInterface
+template <typename S>
+class ScalarBlasImpl : public BlasInterface
 {
     using MatrixCM
             = Eigen::Matrix<S, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>;
@@ -95,8 +96,9 @@ OwnedScalarArray ScalarBlasImpl<S>::vector_axpy(const ScalarArray &x,
 
     return {};
 }
-template <typename S> Scalar
-ScalarBlasImpl<S>::dot_product(const ScalarArray &lhs, const ScalarArray &rhs)
+template <typename S>
+Scalar ScalarBlasImpl<S>::dot_product(const ScalarArray &lhs,
+                                      const ScalarArray &rhs)
 {
     return BlasInterface::dot_product(lhs, rhs);
 }
@@ -127,7 +129,8 @@ ScalarMatrix ScalarBlasImpl<S>::matrix_matrix(const ScalarMatrix &lhs,
 {
     return from_matrix(to_matrix(lhs) * to_matrix(rhs));
 }
-template <typename S> ScalarMatrix
+template <typename S>
+ScalarMatrix
 ScalarBlasImpl<S>::solve_linear_system(const ScalarMatrix &coeff_matrix,
                                        const ScalarMatrix &target_matrix)
 {
@@ -135,8 +138,9 @@ ScalarBlasImpl<S>::solve_linear_system(const ScalarMatrix &coeff_matrix,
     auto result = coeff.householderQr().solve(to_matrix(target_matrix));
     return from_matrix(result);
 }
-template <typename S> OwnedScalarArray
-ScalarBlasImpl<S>::lls_qr(const ScalarMatrix &matrix, const ScalarArray &target)
+template <typename S>
+OwnedScalarArray ScalarBlasImpl<S>::lls_qr(const ScalarMatrix &matrix,
+                                           const ScalarArray &target)
 {
     return BlasInterface::lls_qr(matrix, target);
 }
@@ -158,7 +162,8 @@ OwnedScalarArray ScalarBlasImpl<S>::lls_dcsvd(const ScalarMatrix &matrix,
 {
     return BlasInterface::lls_dcsvd(matrix, target);
 }
-template <typename S> OwnedScalarArray
+template <typename S>
+OwnedScalarArray
 ScalarBlasImpl<S>::lse_grq(const ScalarMatrix &A, const ScalarMatrix &B,
                            const ScalarArray &c, const ScalarArray &d)
 {
@@ -171,7 +176,8 @@ ScalarMatrix ScalarBlasImpl<S>::glm_GQR(const ScalarMatrix &A,
 {
     return BlasInterface::glm_GQR(A, B, d);
 }
-template <typename S> EigenDecomposition
+template <typename S>
+EigenDecomposition
 ScalarBlasImpl<S>::eigen_decomposition(const ScalarMatrix &matrix)
 {
     return BlasInterface::eigen_decomposition(matrix);
@@ -185,4 +191,4 @@ SingularValueDecomposition ScalarBlasImpl<S>::svd(const ScalarMatrix &matrix)
 }// namespace scalars
 }// namespace rpy
 
-#endif//ROUGHPY_SCALAR_BLAS_IMPL_H
+#endif// ROUGHPY_SCALAR_BLAS_IMPL_H

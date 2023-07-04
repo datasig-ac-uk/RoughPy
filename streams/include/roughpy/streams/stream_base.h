@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_STREAM_BASE_H_
 #define ROUGHPY_STREAMS_STREAM_BASE_H_
@@ -47,10 +48,10 @@ namespace streams {
  *
  * This struct holds various pieces of data about the space in which a path
  * lies: the underlying vector space dimension; the type of coefficients; the
- * effective support of the path (where the values of the path are concentrated);
- * the truncation depth for signatures and log-signatures; how the data is stored
- * in the path; and the storage model for the free tensor signatures and Lie log-
- * signatures.
+ * effective support of the path (where the values of the path are
+ * concentrated); the truncation depth for signatures and log-signatures; how
+ * the data is stored in the path; and the storage model for the free tensor
+ * signatures and Lie log- signatures.
  */
 struct StreamMetadata {
     deg_t width;
@@ -70,10 +71,10 @@ struct StreamMetadata {
  * a free tensor or Lie element. This base class has establishes this interface
  * and also acts as a holder for the stream metadata.
  *
- * Stream implementations should implement the `log_signature_impl` virtual function
- * (taking `interval` and `context` arguments) that is used to implement the
- * other flavours of computation methods. (Note that signatures a computed
- * from log signatures, rather than using the data to compute these
+ * Stream implementations should implement the `log_signature_impl` virtual
+ * function (taking `interval` and `context` arguments) that is used to
+ * implement the other flavours of computation methods. (Note that signatures a
+ * computed from log signatures, rather than using the data to compute these
  * independently.)
  */
 class RPY_EXPORT StreamInterface
@@ -148,7 +149,8 @@ public:
 };
 
 /**
- * @brief Subclass of `StreamInterface` for solutions of controlled differential equations.
+ * @brief Subclass of `StreamInterface` for solutions of controlled differential
+ * equations.
  */
 class RPY_EXPORT SolutionStreamInterface : public StreamInterface
 {
@@ -188,10 +190,10 @@ RPY_SERIAL_SAVE_FN_EXT(StreamMetadata)
     RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
 }
 
-//RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface) {
-//    RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
-//    RPY_SERIAL_SERIALIZE_NVP("schema", m_schema);
-//}
+// RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface) {
+//     RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
+//     RPY_SERIAL_SERIALIZE_NVP("schema", m_schema);
+// }
 
 }// namespace streams
 }// namespace rpy

@@ -8,14 +8,18 @@
 
 #include "vector_type_helper.h"
 
-namespace rpy { namespace algebra {
+namespace rpy {
+namespace algebra {
 
 template <typename Coeffs, alg::DEG Width, alg::DEG Depth,
           /*template <typename, typename, typename...> class VType,*/
           typename... Args>
-struct algebra_info<ShuffleTensor, alg::shuffle_tensor<Coeffs, Width, Depth, /*VType,*/ Args...>> {
+struct algebra_info<
+        ShuffleTensor,
+        alg::shuffle_tensor<Coeffs, Width, Depth, /*VType,*/ Args...>> {
     /// The actual type of the algebra implementation
-    using algebra_type = alg::shuffle_tensor<Coeffs, Width, Depth, /*VType,*/ Args...>;
+    using algebra_type
+            = alg::shuffle_tensor<Coeffs, Width, Depth, /*VType,*/ Args...>;
 
     /// The wrapping roughpy algebra type
     using wrapper_type = ShuffleTensor;
@@ -48,27 +52,38 @@ struct algebra_info<ShuffleTensor, alg::shuffle_tensor<Coeffs, Width, Depth, /*V
     using const_pointer = const scalar_type *;
 
     /// Get the rpy ScalarType for the scalars in this algebra
-    static const scalars::ScalarType *ctype() noexcept { return scalars::ScalarType::of<scalar_type>(); }
+    static const scalars::ScalarType *ctype() noexcept
+    {
+        return scalars::ScalarType::of<scalar_type>();
+    }
 
     /// Get the storage type for this algebra.
-    static constexpr VectorType vtype() noexcept {
+    static constexpr VectorType vtype() noexcept
+    {
         return VectorType::Dense;
-//        return dtl::la_vector_type_helper<VType>::vtype;
+        //        return dtl::la_vector_type_helper<VType>::vtype;
     }
 
     /// Get the basis for this algebra
-    static const basis_type &basis(const algebra_type &instance) noexcept { return instance.basis; }
+    static const basis_type &basis(const algebra_type &instance) noexcept
+    {
+        return instance.basis;
+    }
 
     /// Get the maximum degree of non-zero elements in this algebra
-    static deg_t degree(const algebra_type &instance) noexcept { return instance.degree(); }
+    static deg_t degree(const algebra_type &instance) noexcept
+    {
+        return instance.degree();
+    }
 
     /// Create a new algebra instance with the same make-up as this argument
-    static algebra_type create_like(const algebra_type &instance) {
+    static algebra_type create_like(const algebra_type &instance)
+    {
         return algebra_type();
     }
 };
 
+}// namespace algebra
+}// namespace rpy
 
-}}
-
-#endif // ROUGHPY_LA_CONTEXT_SHUFFLE_TENSOR_INFO_H_
+#endif// ROUGHPY_LA_CONTEXT_SHUFFLE_TENSOR_INFO_H_

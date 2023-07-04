@@ -27,4 +27,4 @@ std::shared_ptr<streams::StreamSchema> parse_schema(const py::object &data);
 }// namespace python
 }// namespace rpy
 
-#endif//ROUGHPY_PARSE_SCHEMA_H
+#endif// ROUGHPY_PARSE_SCHEMA_H

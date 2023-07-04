@@ -15,4 +15,4 @@ void init_externally_sourced_stream(py::module_ &m);
 }
 }// namespace rpy
 
-#endif//ROUGHPY_EXTERNALLY_SOURCED_STREAM_H
+#endif// ROUGHPY_EXTERNALLY_SOURCED_STREAM_H

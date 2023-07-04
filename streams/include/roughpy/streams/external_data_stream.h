@@ -113,7 +113,8 @@ protected:
                                     const algebra::Context &ctx) const override;
 };
 
-template <typename Source> class RegisterExternalDataSourceFactoryHelper
+template <typename Source>
+class RegisterExternalDataSourceFactoryHelper
 {
 public:
     template <typename... Args>

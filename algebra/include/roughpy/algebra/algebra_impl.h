@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_IMPL_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_IMPL_H_
@@ -42,8 +43,8 @@
 namespace rpy {
 namespace algebra {
 
-template <typename Interface, typename Impl> class ImplAccessLayer
-    : public Interface
+template <typename Interface, typename Impl>
+class ImplAccessLayer : public Interface
 {
 protected:
     using Interface::Interface;
@@ -66,14 +67,16 @@ algebra_cast(Interface &arg) noexcept
     return static_cast<access_t &>(arg).get_data();
 }
 
-template <typename Impl> class OwnedStorageModel
+template <typename Impl>
+class OwnedStorageModel
 {
     Impl m_data;
 
 protected:
     static constexpr ImplementationType s_type = ImplementationType::Owned;
 
-    template <typename... Args> explicit OwnedStorageModel(Args &&...args)
+    template <typename... Args>
+    explicit OwnedStorageModel(Args &&...args)
         : m_data(std::forward<Args>(args)...)
     {}
     explicit OwnedStorageModel(Impl &&arg) : m_data(std::move(arg)) {}
@@ -91,7 +94,8 @@ protected:
 template <typename Impl, typename Interface>
 Impl &&take_algebra(typename Interface::algebra_t &&arg) noexcept;
 
-template <typename Impl> class BorrowedStorageModel
+template <typename Impl>
+class BorrowedStorageModel
 {
     Impl *p_data;
 
@@ -113,7 +117,8 @@ protected:
 
 namespace dtl {
 
-template <typename Impl> class ConvertedArgument
+template <typename Impl>
+class ConvertedArgument
 {
     optional<Impl> m_holder;
     const Impl *p_ref = nullptr;
@@ -131,11 +136,12 @@ public:
     }
 };
 
-template <typename T> using d_has_as_ptr_t
-        = decltype(declval<const T &>().as_ptr());
+template <typename T>
+using d_has_as_ptr_t = decltype(declval<const T &>().as_ptr());
 
 #define RPY_HAS_FUSED_OP_CHECKER(NAME)                                         \
-    template <typename T> using d_##NAME = decltype(declval<T &>().NAME())
+    template <typename T>                                                      \
+    using d_##NAME = decltype(declval<T &>().NAME())
 
 RPY_HAS_FUSED_OP_CHECKER(add_scal_prod);
 RPY_HAS_FUSED_OP_CHECKER(sub_scal_prod);
@@ -153,9 +159,9 @@ struct no_implementation {
 struct has_implementation {
 };
 
-template <template <typename> class MF, typename T> using use_impl_t
-        = conditional_t<is_detected<MF, T>::value, has_implementation,
-                        no_implementation>;
+template <template <typename> class MF, typename T>
+using use_impl_t = conditional_t<is_detected<MF, T>::value, has_implementation,
+                                 no_implementation>;
 
 }// namespace dtl
 
@@ -241,10 +247,12 @@ public:
     void assign(const algebra_t &arg) override;
 
 private:
-    template <typename B> optional<scalars::ScalarArray>
+    template <typename B>
+    optional<scalars::ScalarArray>
     dense_data_impl(const B &data, integral_constant<bool, true>) const;
 
-    template <typename B> optional<scalars::ScalarArray>
+    template <typename B>
+    optional<scalars::ScalarArray>
     dense_data_impl(const B &data, integral_constant<bool, false>) const;
 
 public:
@@ -252,10 +260,10 @@ public:
 
 private:
     /*
-     * The true implementation of operations needs a check of whether the corresponding
-     * operation/function is defined for Impl. We're assuming that, at a minimum, Impl
-     * has the standard arithmetic operations. But the fused operations need not be
-     * defined.
+     * The true implementation of operations needs a check of whether the
+     * corresponding operation/function is defined for Impl. We're assuming
+     * that, at a minimum, Impl has the standard arithmetic operations. But the
+     * fused operations need not be defined.
      */
 protected:
     dtl::ConvertedArgument<Impl> convert_argument(const algebra_t &arg) const;
@@ -480,7 +488,8 @@ AlgebraImplementation<Interface, Impl, StorageModel>::dense_data() const
 }
 template <typename Interface, typename Impl,
           template <typename> class StorageModel>
-template <typename B> optional<scalars::ScalarArray>
+template <typename B>
+optional<scalars::ScalarArray>
 AlgebraImplementation<Interface, Impl, StorageModel>::dense_data_impl(
         const B &data, integral_constant<bool, true>) const
 {
@@ -489,7 +498,8 @@ AlgebraImplementation<Interface, Impl, StorageModel>::dense_data_impl(
 }
 template <typename Interface, typename Impl,
           template <typename> class StorageModel>
-template <typename B> optional<scalars::ScalarArray>
+template <typename B>
+optional<scalars::ScalarArray>
 AlgebraImplementation<Interface, Impl, StorageModel>::dense_data_impl(
         const B &data, integral_constant<bool, false>) const
 {
@@ -702,12 +712,14 @@ AlgebraImplementation<Interface, Impl, StorageModel>::sdiv(
 
 namespace ADL_FORCE {
 
-template <typename T, typename S> void add_assign(T &left, const S &right)
+template <typename T, typename S>
+void add_assign(T &left, const S &right)
 {
     left += static_cast<const T &>(right);
 }
 
-template <typename T, typename S> void sub_assign(T &left, const S &right)
+template <typename T, typename S>
+void sub_assign(T &left, const S &right)
 {
     left -= static_cast<const T &>(right);
 }

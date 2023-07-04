@@ -26,9 +26,11 @@
 #  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import pytest
-import roughpy
 import os
+
+import pytest
+
+import roughpy
 
 
 @pytest.fixture(params=["test.flac", "test.mp3", "test.wav"])

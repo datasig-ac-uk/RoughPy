@@ -11,7 +11,7 @@ using std::free;
 using std::malloc;
 using std::realloc;
 
-//using std::aligned_alloc;
+// using std::aligned_alloc;
 
 using boost::alignment::aligned_alloc;
 using boost::alignment::aligned_free;

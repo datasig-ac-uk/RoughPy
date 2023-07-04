@@ -39,41 +39,47 @@ optional<deg_t> dtl::AlgebraBasicProperties<Algebra, BasisType>::depth() const
     return optional<deg_t>();
 }
 
-template <typename Base> optional<scalars::ScalarArray>
+template <typename Base>
+optional<scalars::ScalarArray>
 dtl::AlgebraIteratorMethods<Base>::dense_data() const
 {
     return {};
 }
 
-template <typename Base> typename dtl::AlgebraArithmetic<Base>::algebra_t
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t
 dtl::AlgebraArithmetic<Base>::add(const algebra_t &other) const
 {
     auto result = this->clone();
     result->add_inplace(other);
     return result;
 }
-template <typename Base> typename dtl::AlgebraArithmetic<Base>::algebra_t
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t
 dtl::AlgebraArithmetic<Base>::sub(const algebra_t &other) const
 {
     auto result = this->clone();
     result->sub_inplace(other);
     return result;
 }
-template <typename Base> typename dtl::AlgebraArithmetic<Base>::algebra_t
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t
 dtl::AlgebraArithmetic<Base>::mul(const algebra_t &other) const
 {
     auto result = this->clone();
     result->mul_inplace(other);
     return result;
 }
-template <typename Base> typename dtl::AlgebraArithmetic<Base>::algebra_t
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t
 dtl::AlgebraArithmetic<Base>::smul(const scalars::Scalar &other) const
 {
     auto result = this->clone();
     result->smul_inplace(other);
     return result;
 }
-template <typename Base> typename dtl::AlgebraArithmetic<Base>::algebra_t
+template <typename Base>
+typename dtl::AlgebraArithmetic<Base>::algebra_t
 dtl::AlgebraArithmetic<Base>::sdiv(const scalars::Scalar &other) const
 {
     auto result = this->clone();
@@ -616,7 +622,8 @@ inline std::ostream &operator<<(std::ostream &os,
 #undef RPY_CHECK_CONTEXTS
 template <typename Interface,
           template <typename, template <typename> class> class Derived>
-template <typename Archive> void AlgebraBase<Interface, Derived>::save(
+template <typename Archive>
+void AlgebraBase<Interface, Derived>::save(
         Archive &archive, const std::uint32_t RPY_UNUSED_VAR version) const
 {
     context_pointer ctx = (p_impl) ? p_impl->context() : nullptr;
@@ -649,7 +656,8 @@ template <typename Archive> void AlgebraBase<Interface, Derived>::save(
 
 template <typename Interface,
           template <typename, template <typename> class> class Derived>
-template <typename Archive> void AlgebraBase<Interface, Derived>::load(
+template <typename Archive>
+void AlgebraBase<Interface, Derived>::load(
         Archive &archive, const std::uint32_t RPY_UNUSED_VAR version)
 {
     BasicContextSpec spec;

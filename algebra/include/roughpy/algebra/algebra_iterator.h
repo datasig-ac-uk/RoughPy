@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_ITERATOR_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_ITERATOR_H_
@@ -38,7 +39,8 @@
 namespace rpy {
 namespace algebra {
 
-template <typename Algebra> class AlgebraIteratorInterface
+template <typename Algebra>
+class AlgebraIteratorInterface
 {
     typename Algebra::basis_type m_basis;
 
@@ -68,7 +70,8 @@ public:
             = 0;
 };
 
-template <typename Algebra> class AlgebraIteratorItem
+template <typename Algebra>
+class AlgebraIteratorItem
 {
     std::shared_ptr<AlgebraIteratorInterface<Algebra>> p_interface;
 
@@ -94,7 +97,8 @@ public:
     AlgebraIteratorItem &operator*() noexcept { return *this; }
 };
 
-template <typename Algebra> class AlgebraIterator
+template <typename Algebra>
+class AlgebraIterator
 {
 public:
     using interface_type = AlgebraIteratorInterface<Algebra>;
@@ -146,7 +150,8 @@ template <typename Algebra>
 AlgebraIterator<Algebra>::AlgebraIterator(AlgebraIterator &&arg) noexcept
     : p_interface(std::move(arg.p_interface)), m_tag(arg.m_tag)
 {}
-template <typename Algebra> AlgebraIterator<Algebra> &
+template <typename Algebra>
+AlgebraIterator<Algebra> &
 AlgebraIterator<Algebra>::operator=(const AlgebraIterator &arg)
 {
     if (&arg != this) {
@@ -159,7 +164,8 @@ AlgebraIterator<Algebra>::operator=(const AlgebraIterator &arg)
     m_tag = arg.m_tag;
     return *this;
 }
-template <typename Algebra> AlgebraIterator<Algebra> &
+template <typename Algebra>
+AlgebraIterator<Algebra> &
 AlgebraIterator<Algebra>::operator=(AlgebraIterator &&arg) noexcept
 {
     if (&arg != this) { p_interface = std::move(arg.p_interface); }
@@ -179,7 +185,8 @@ const AlgebraIterator<Algebra> AlgebraIterator<Algebra>::operator++(int)
     if (p_interface) { p_interface->advance(); }
     return result;
 }
-template <typename Algebra> typename AlgebraIterator<Algebra>::reference
+template <typename Algebra>
+typename AlgebraIterator<Algebra>::reference
 AlgebraIterator<Algebra>::operator*() const
 {
     if (!p_interface) {
@@ -188,7 +195,8 @@ AlgebraIterator<Algebra>::operator*() const
     }
     return {p_interface};
 }
-template <typename Algebra> typename AlgebraIterator<Algebra>::pointer
+template <typename Algebra>
+typename AlgebraIterator<Algebra>::pointer
 AlgebraIterator<Algebra>::operator->() const
 {
     if (!p_interface) {

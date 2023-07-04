@@ -1,11 +1,8 @@
-import math
-
 import pytest
-import numpy as np
 from numpy.testing import assert_array_almost_equal
 
-import roughpy
-from roughpy import RealInterval, Lie, FreeTensor, PiecewiseAbelianStream, Stream, get_context, VectorType, DPReal
+from roughpy import RealInterval, Lie, PiecewiseAbelianStream, get_context, VectorType, DPReal
+
 # skip = True
 skip = False
 
@@ -20,7 +17,7 @@ def count(request):
 
 @pytest.fixture
 def piecewise_intervals(count):
-    return [RealInterval(float(i), float(i+1)) for i in range(count)]
+    return [RealInterval(float(i), float(i + 1)) for i in range(count)]
 
 
 @pytest.fixture
@@ -34,6 +31,7 @@ def piecewise_lie_data(piecewise_intervals, rng):
 @pytest.fixture
 def piecewise_lie(piecewise_lie_data):
     return PiecewiseAbelianStream.construct(piecewise_lie_data, width=WIDTH, depth=DEPTH)
+
 
 @pytest.mark.skipif(skip, reason="path type not available")
 def test_log_signature_full_data(piecewise_lie_data):

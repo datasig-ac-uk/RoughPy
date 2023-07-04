@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_CORE_SLICE_H_
 #define ROUGHPY_CORE_SLICE_H_
@@ -48,7 +49,8 @@ namespace rpy {
  *
  * @tparam T Type of data
  */
-template <typename T> class Slice
+template <typename T>
+class Slice
 {
     T *p_data = nullptr;
     std::size_t m_size = 0;
@@ -67,8 +69,8 @@ public:
         : p_data(container.data()), m_size(container.size())
     {}
 
-    template <std::size_t N> constexpr Slice(T (&array)[N])
-        : p_data(array), m_size(N)
+    template <std::size_t N>
+    constexpr Slice(T (&array)[N]) : p_data(array), m_size(N)
     {}
 
     constexpr Slice(T *ptr, std::size_t N) : p_data(ptr), m_size(N) {}
@@ -81,7 +83,8 @@ public:
         return p_data[i];
     }
 
-    template <typename I> constexpr enable_if_t<is_integral<I>::value, T &>
+    template <typename I>
+    constexpr enable_if_t<is_integral<I>::value, T &>
     operator[](I i) const noexcept
     {
         RPY_DBG_ASSERT(0 <= i && static_cast<dimn_t>(i) < m_size);

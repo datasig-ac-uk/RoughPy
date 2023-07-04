@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "tick_stream.h"
 #include "intervals/interval.h"
@@ -54,9 +55,9 @@ using helper_t = streams::StreamConstructionHelper;
 static const char *TICK_STREAM_DOC = R"rpydoc(Tick stream
 )rpydoc";
 
-//static void parse_data_to_ticks(helper_t &helper,
-//                                const py::handle &data,
-//                                const py::kwargs &kwargs);
+// static void parse_data_to_ticks(helper_t &helper,
+//                                 const py::handle &data,
+//                                 const py::kwargs &kwargs);
 
 static py::object construct(const py::object &data, const py::kwargs &kwargs)
 {
@@ -126,9 +127,8 @@ static py::object construct(const py::object &data, const py::kwargs &kwargs)
     //             pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
     //             pmd.ctx,
     //             pmd.scalar_type,
-    //             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-    //             pmd.resolution,
-    //             pmd.interval_type
+    //             pmd.vector_type ? *pmd.vector_type :
+    //             algebra::VectorType::Dense, pmd.resolution, pmd.interval_type
     //            },
     //            pmd.resolution));
 
@@ -219,8 +219,9 @@ void python::init_tick_stream(py::module_ &m)
 /*
  * Tick data comes as a sequence of values of type:
  *   TickData := Tuple[TimeStamp, TickItem]                     (time, data)
- *             | Tuple[TimeStamp, String, TickItem]             (time, label, data)
- *             | Tuple[TimeStamp, String, DataType, TickValue]  (time, label, type, data)
+ *             | Tuple[TimeStamp, String, TickItem]             (time, label,
+ * data) | Tuple[TimeStamp, String, DataType, TickValue]  (time, label, type,
+ * data)
  *
  *   TickItem := TickValue
  *             | Tuple[String, TickValue]
@@ -236,7 +237,7 @@ namespace {
 
 using streams::ChannelType;
 //
-//inline void insert_increment(helper_t &helper,
+// inline void insert_increment(helper_t &helper,
 //                             param_t timestamp,
 //                             string_view label,
 //                             const py::object &value) {
@@ -245,7 +246,7 @@ using streams::ChannelType;
 //    helper.add_increment(timestamp, label, std::move(val));
 //}
 //
-//inline void insert_value(helper_t &helper,
+// inline void insert_value(helper_t &helper,
 //                         param_t timestamp,
 //                         string_view label,
 //                         const py::object &value) {
@@ -254,21 +255,21 @@ using streams::ChannelType;
 //    helper.add_value(timestamp, label, std::move(val));
 //}
 //
-//inline void insert_categorical(helper_t &helper,
+// inline void insert_categorical(helper_t &helper,
 //                               param_t timestamp,
 //                               string_view label,
 //                               const py::object &value) {
 //    helper.add_categorical(timestamp, label, value.cast<string>());
 //}
 //
-//inline void insert_lie(helper_t &helper,
+// inline void insert_lie(helper_t &helper,
 //                       param_t timestamp,
 //                       string_view label,
 //                       const py::object &value) {
 //    helper.add_categorical(timestamp, label, value.cast<string>());
 //}
 //
-//inline void handle_tick_value(helper_t &helper,
+// inline void handle_tick_value(helper_t &helper,
 //                              param_t timestamp,
 //                              string_view label,
 //                              ChannelType type,
@@ -289,19 +290,21 @@ using streams::ChannelType;
 //    }
 //}
 //
-//inline void handle_labeled_data(helper_t &helper,
+// inline void handle_labeled_data(helper_t &helper,
 //                                param_t timestamp,
 //                                string_view label,
 //                                const py::object &tick_value) {
 //    auto type = helper.type_of(label);
 //    if (!type) {
-//        throw py::value_error("unexpected label " + string(label) + " in tick data");
+//        throw py::value_error("unexpected label " + string(label) + " in tick
+//        data");
 //    }
 //
 //    handle_tick_value(helper, timestamp, label, *type, tick_value);
 //}
 //
-//void handle_timestamp_pair(helper_t &helper, param_t timestamp, py::object tick_item) {
+// void handle_timestamp_pair(helper_t &helper, param_t timestamp, py::object
+// tick_item) {
 //    /*
 //     * The tick object must be either:
 //     *      - a label, value pair,
@@ -311,7 +314,8 @@ using streams::ChannelType;
 //     *      - a dictionary of [label, value] pairs
 //     */
 //    if (py::isinstance<py::dict>(tick_item)) {
-//        for (auto &&[label, tick_value] : py::reinterpret_steal<py::dict>(tick_item)) {
+//        for (auto &&[label, tick_value] :
+//        py::reinterpret_steal<py::dict>(tick_item)) {
 //            auto value = py::reinterpret_borrow<py::object>(tick_value);
 //            handle_labeled_data(helper,
 //                                timestamp,
@@ -329,11 +333,13 @@ using streams::ChannelType;
 //        } else if (len == 3) {
 //            value = py::reinterpret_borrow<py::object>(tuple_item[2]);
 //        } else {
-//            throw py::value_error("expected tuple (label, data) or (label, type, data)");
+//            throw py::value_error("expected tuple (label, data) or (label,
+//            type, data)");
 //        }
 //
 //        if (py::isinstance<py::sequence>(value)) {
-//            for (auto&& tick_value : py::reinterpret_steal<py::sequence>(value)) {
+//            for (auto&& tick_value :
+//            py::reinterpret_steal<py::sequence>(value)) {
 //                auto inner = py::reinterpret_borrow<py::object>(tick_value);
 //                handle_timestamp_pair(helper, timestamp, inner);
 //            }
@@ -344,7 +350,8 @@ using streams::ChannelType;
 //    }
 //}
 //
-//inline void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks) {
+// inline void handle_dict_tick_stream(helper_t &helper, const py::dict &ticks)
+// {
 //    for (auto [it_time, it_value] : ticks) {
 //        auto timestamp = python::convert_timestamp(
 //            py::reinterpret_borrow<py::object>(it_time));
@@ -356,12 +363,13 @@ using streams::ChannelType;
 //    }
 //}
 //
-//inline void handle_tuple_sequence_tick_stream(helper_t &helper, const py::sequence &ticks) {
+// inline void handle_tuple_sequence_tick_stream(helper_t &helper, const
+// py::sequence &ticks) {
 //    for (auto &&it_value : ticks) {
-//        // Use sequence instead of tuple for inner items, to allow lists instead
-//        RPY_CHECK(py::isinstance<py::sequence>(it_value));
-//        auto inner = py::reinterpret_borrow<py::sequence>(it_value);
-//        auto len = py::len(inner);
+//        // Use sequence instead of tuple for inner items, to allow lists
+//        instead RPY_CHECK(py::isinstance<py::sequence>(it_value)); auto inner
+//        = py::reinterpret_borrow<py::sequence>(it_value); auto len =
+//        py::len(inner);
 //
 //        RPY_CHECK(len > 1 && len <= 4);
 //        auto timestamp = python::convert_timestamp(
@@ -373,17 +381,19 @@ using streams::ChannelType;
 
 }// namespace
 
-//void parse_data_to_ticks(helper_t &helper, const py::handle &data, const py::kwargs &kwargs) {
+// void parse_data_to_ticks(helper_t &helper, const py::handle &data, const
+// py::kwargs &kwargs) {
 //
-//    if (py::isinstance<py::dict>(data)) {
-//        handle_dict_tick_stream(helper, py::reinterpret_borrow<py::dict>(data));
-//    } else if (py::isinstance<py::sequence>(data)) {
-//        handle_tuple_sequence_tick_stream(
-//            helper,
-//            py::reinterpret_borrow<py::sequence>(data)
-//            );
-//    } else {
-//        throw py::type_error("expected dict or sequence of pairs");
-//    }
+//     if (py::isinstance<py::dict>(data)) {
+//         handle_dict_tick_stream(helper,
+//         py::reinterpret_borrow<py::dict>(data));
+//     } else if (py::isinstance<py::sequence>(data)) {
+//         handle_tuple_sequence_tick_stream(
+//             helper,
+//             py::reinterpret_borrow<py::sequence>(data)
+//             );
+//     } else {
+//         throw py::type_error("expected dict or sequence of pairs");
+//     }
 //
-//}
+// }

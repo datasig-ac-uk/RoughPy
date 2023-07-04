@@ -27,20 +27,19 @@
 from __future__ import annotations
 
 import re
-
 from pathlib import Path
-
 
 __all__ = ["dynamic_metadata"]
 
+
 def __dir__() -> list[str]:
     return __all__
+
 
 def dynamic_metadata(
         fields: frozenset[str],
         settings: dict[str, object] | None
 ) -> dict[str, str | dict[str, str | None]]:
-
     if "version" not in fields:
         raise ValueError("This plugin gets the version")
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Datasig Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 26/04/23.
@@ -106,14 +107,16 @@ StandardRandomGenerator<half, BitGenerator>::StandardRandomGenerator(
     RPY_CHECK(seed.size() >= 1);
 }
 
-template <typename BitGenerator> void
-StandardRandomGenerator<half, BitGenerator>::set_seed(Slice<uint64_t> seed_data)
+template <typename BitGenerator>
+void StandardRandomGenerator<half, BitGenerator>::set_seed(
+        Slice<uint64_t> seed_data)
 {
     RPY_CHECK(seed_data.size() >= 1);
     m_generator.seed(seed_data[0]);
     m_seed = {seed_data[0]};
 }
-template <typename BitGenerator> std::vector<uint64_t>
+template <typename BitGenerator>
+std::vector<uint64_t>
 StandardRandomGenerator<half, BitGenerator>::get_seed() const
 {
     return {m_seed[0]};
@@ -124,7 +127,8 @@ std::string StandardRandomGenerator<half, BitGenerator>::get_type() const
     return std::string(dtl::rng_type_getter<BitGenerator>::name);
 }
 
-template <typename BitGenerator> OwnedScalarArray
+template <typename BitGenerator>
+OwnedScalarArray
 StandardRandomGenerator<half, BitGenerator>::uniform_random_scalar(
         ScalarArray lower, ScalarArray upper, dimn_t count) const
 {
@@ -147,10 +151,9 @@ StandardRandomGenerator<half, BitGenerator>::uniform_random_scalar(
 
     return result;
 }
-template <typename BitGenerator> OwnedScalarArray
-StandardRandomGenerator<half, BitGenerator>::normal_random(Scalar loc,
-                                                           Scalar scale,
-                                                           dimn_t count) const
+template <typename BitGenerator>
+OwnedScalarArray StandardRandomGenerator<half, BitGenerator>::normal_random(
+        Scalar loc, Scalar scale, dimn_t count) const
 {
 
     OwnedScalarArray result(p_type, count);
@@ -172,4 +175,4 @@ extern template class StandardRandomGenerator<half, pcg64>;
 }// namespace scalars
 }// namespace rpy
 
-#endif//ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
+#endif// ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H

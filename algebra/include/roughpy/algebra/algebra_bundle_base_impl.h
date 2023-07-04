@@ -11,7 +11,8 @@
 #include "algebra_base.h"
 #include "context.h"
 
-namespace rpy { namespace algebra {
+namespace rpy {
+namespace algebra {
 
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
@@ -389,7 +390,7 @@ bool AlgebraBundleBase<BundleInterface, DerivedImpl>::operator==(
     return true;
 }
 
+}// namespace algebra
+}// namespace rpy
 
-}}
-
-#endif // ROUGHPY_ALGEBRA_ALGEBRA_BUNDLE_BASE_IMPL_H_
+#endif// ROUGHPY_ALGEBRA_ALGEBRA_BUNDLE_BASE_IMPL_H_

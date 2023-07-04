@@ -245,7 +245,7 @@ inline void handle_labeled_data(StreamSchema *schema, string label,
         if (type == ChannelType::Categorical) {
             found->second.insert_variant(std::move(variant));
         }
-        //TODO: add checks for other data types
+        // TODO: add checks for other data types
     } else {
         switch (type) {
             case ChannelType::Increment:
@@ -289,10 +289,12 @@ inline void handle_data_dict(StreamSchema *schema, const py::dict &data_dict)
     //    auto label = data_dict["label"].cast<string>();
     //
     //    if (data_dict.contains("type")) {
-    //        auto to_pass = py::make_tuple(data_dict["type"], data_dict["data"]);
-    //        handle_labeled_data(schema, std::move(label), std::move(to_pass));
+    //        auto to_pass = py::make_tuple(data_dict["type"],
+    //        data_dict["data"]); handle_labeled_data(schema, std::move(label),
+    //        std::move(to_pass));
     //    } else {
-    //        auto to_pass = py::reinterpret_borrow<py::object>(data_dict["data"]);
+    //        auto to_pass =
+    //        py::reinterpret_borrow<py::object>(data_dict["data"]);
     //        handle_labeled_data(schema, std::move(label), std::move(to_pass));
     //    }
     for (auto &&[label, value] : data_dict) {
@@ -368,13 +370,18 @@ void python::parse_into_schema(std::shared_ptr<streams::StreamSchema> schema,
     }
 }
 
-//void python::parse_data_into_schema(std::shared_ptr<streams::StreamSchema> schema, const py::object &data) {
-//    if (py::isinstance<py::dict>(data)) {
-////        parse_schema_from_dict_data(schema.get(), py::reinterpret_borrow<py::dict>(data));
-//        handle_dict_stream(schema.get(), py::reinterpret_borrow<py::dict>(data));
+// void python::parse_data_into_schema(std::shared_ptr<streams::StreamSchema>
+// schema, const py::object &data) {
+//     if (py::isinstance<py::dict>(data)) {
+////        parse_schema_from_dict_data(schema.get(),
+///py::reinterpret_borrow<py::dict>(data));
+//        handle_dict_stream(schema.get(),
+//        py::reinterpret_borrow<py::dict>(data));
 //    } else if (py::isinstance<py::sequence>(data)) {
-////        parse_schema_from_seq_data(schema.get(), py::reinterpret_borrow<py::sequence>(data));
-//        handle_tuple_sequence(schema.get(), py::reinterpret_borrow<py::sequence>(data));
+////        parse_schema_from_seq_data(schema.get(),
+///py::reinterpret_borrow<py::sequence>(data));
+//        handle_tuple_sequence(schema.get(),
+//        py::reinterpret_borrow<py::sequence>(data));
 //    } else {
 //        throw py::type_error("expected sequential data");
 //    }
@@ -388,8 +395,9 @@ rpy::python::parse_schema(const py::object &data)
     return result;
 }
 
-//std::shared_ptr<streams::StreamSchema> rpy::python::parse_schema_from_data(const py::object &data) {
-//    auto schema = std::make_shared<streams::StreamSchema>();
-//    parse_data_into_schema(schema, data);
-//    return schema;
-//}
+// std::shared_ptr<streams::StreamSchema>
+// rpy::python::parse_schema_from_data(const py::object &data) {
+//     auto schema = std::make_shared<streams::StreamSchema>();
+//     parse_data_into_schema(schema, data);
+//     return schema;
+// }

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_BASIS_H_
 #define ROUGHPY_ALGEBRA_BASIS_H_
@@ -39,7 +40,8 @@ namespace rpy {
 namespace algebra {
 
 namespace dtl {
-template <typename T, typename PrimaryInterface> class BasisImplementation;
+template <typename T, typename PrimaryInterface>
+class BasisImplementation;
 }
 
 template <typename Derived, typename KeyType = rpy::key_type>
@@ -49,7 +51,8 @@ class BasisInterface
 public:
     using key_type = KeyType;
 
-    template <typename T> using impl_t = dtl::BasisImplementation<T, Derived>;
+    template <typename T>
+    using impl_t = dtl::BasisImplementation<T, Derived>;
 
     using mixin_t = void;
 
@@ -63,15 +66,16 @@ public:
 };
 
 namespace dtl {
-template <typename Derived, typename Base> class OrderedBasisMixin;
+template <typename Derived, typename Base>
+class OrderedBasisMixin;
 
 template <typename T, typename Derived, typename Base>
 class OrderedBasisImplementationMixin;
 
 }// namespace dtl
 
-template <typename Derived, typename Base> class OrderedBasisInterface
-    : public void_or_base<Base>
+template <typename Derived, typename Base>
+class OrderedBasisInterface : public void_or_base<Base>
 {
 
 public:
@@ -79,7 +83,8 @@ public:
 
     using mixin_t = dtl::OrderedBasisMixin<Derived, typename Base::mixin_t>;
 
-    template <typename T> using impl_t = dtl::OrderedBasisImplementationMixin<
+    template <typename T>
+    using impl_t = dtl::OrderedBasisImplementationMixin<
             T, Derived, typename Base::template impl_t<T>>;
 
     virtual ~OrderedBasisInterface() = default;
@@ -91,22 +96,24 @@ public:
 };
 
 namespace dtl {
-template <typename Derived, typename Base> class WordLikeBasisMixin;
+template <typename Derived, typename Base>
+class WordLikeBasisMixin;
 
 template <typename T, typename Derived, typename Base>
 class WordLikeBasisImplementationMixin;
 
 }// namespace dtl
 
-template <typename Derived, typename Base> class WordLikeBasisInterface
-    : public void_or_base<Base>
+template <typename Derived, typename Base>
+class WordLikeBasisInterface : public void_or_base<Base>
 {
 public:
     using typename Base::key_type;
 
     using mixin_t = dtl::WordLikeBasisMixin<Derived, typename Base::mixin_t>;
 
-    template <typename T> using impl_t = dtl::WordLikeBasisImplementationMixin<
+    template <typename T>
+    using impl_t = dtl::WordLikeBasisImplementationMixin<
             T, Derived, typename Base::template impl_t<T>>;
 
     RPY_NO_DISCARD
@@ -141,8 +148,8 @@ public:
     virtual bool letter(const key_type &key) const = 0;
 };
 
-template <typename PrimaryInterface> class Basis
-    : public PrimaryInterface::mixin_t
+template <typename PrimaryInterface>
+class Basis : public PrimaryInterface::mixin_t
 {
     using basis_interface = PrimaryInterface;
     static_assert(is_base_of<BasisInterface<PrimaryInterface,
@@ -155,7 +162,8 @@ template <typename PrimaryInterface> class Basis
 public:
     using key_type = typename basis_interface::key_type;
 
-    template <typename B> explicit Basis(const B *basis)
+    template <typename B>
+    explicit Basis(const B *basis)
         : p_impl(new typename PrimaryInterface::template impl_t<B>(basis))
     {}
 
@@ -194,7 +202,8 @@ using make_basis_interface =
 
 namespace dtl {
 
-template <typename Derived, typename Base> class OrderedBasisMixin : public Base
+template <typename Derived, typename Base>
+class OrderedBasisMixin : public Base
 {
 
     RPY_NO_DISCARD
@@ -219,7 +228,8 @@ public:
     }
 };
 
-template <typename Derived, typename Base> class WordLikeBasisMixin
+template <typename Derived, typename Base>
+class WordLikeBasisMixin
 {
 
     RPY_NO_DISCARD

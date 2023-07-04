@@ -1,5 +1,6 @@
-import math
 import itertools
+import math
+
 import pytest
 
 from roughpy import Dyadic

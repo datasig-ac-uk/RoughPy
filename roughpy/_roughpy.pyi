@@ -1,17 +1,10 @@
-
-import typing
 import enum
-import datetime
 
 from abc import abstractmethod, ABC
 from typing import (
-    Literal,
     Any,
     Union,
-    TypeVar,
-    Generic,
     overload,
-    ClassVar,
     Sequence,
     Dict,
     Final,
@@ -443,10 +436,20 @@ class Stream: ...
 
 
 class LieIncrementStream: ...
+
+
 class FunctionStream: ...
+
+
 class PiecewiseAbelianStream: ...
+
+
 class ExternalDataStream: ...
+
+
 class BrownianStream: ...
+
+
 class TickStream:
     @staticmethod
     def from_data(data: Any, **kwargs): ...
@@ -462,8 +465,6 @@ class StreamSchema:
     def parse(schema: List[Dict[str, Union[str, List[str]]]]) -> StreamSchema: ...
 
     def get_labels(self) -> list[str]: ...
-
-
 
 
 class TickStreamConstructionHelper:

@@ -31,7 +31,6 @@ import pytest
 from roughpy import StreamSchema
 
 
-
 @pytest.fixture
 def sample_data_dict():
     return {
@@ -42,13 +41,13 @@ def sample_data_dict():
         5.0: ("third", "value", 1.0),
     }
 
+
 @pytest.fixture
 def sample_data_seq(sample_data_dict):
     return [(ts, *args) for ts, args in sample_data_dict.items()]
 
 
 def test_schema_from_dict(sample_data_dict):
-
     schema = StreamSchema.from_data(sample_data_dict)
 
     assert schema.get_labels() == [
@@ -60,7 +59,6 @@ def test_schema_from_dict(sample_data_dict):
 
 
 def test_schema_from_seq(sample_data_seq):
-
     schema = StreamSchema.from_data(sample_data_seq)
 
     assert schema.get_labels() == [
@@ -69,6 +67,7 @@ def test_schema_from_seq(sample_data_seq):
         "second:cat2",
         "third",
     ]
+
 
 @pytest.fixture
 def json_like_schema():

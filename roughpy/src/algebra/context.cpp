@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "context.h"
 
@@ -367,33 +368,38 @@ PyTypeObject rpy::python::RPyContext_Type = {
 };
 }
 
-//#ifdef ROUGHPY_WITH_NUMPY
-//static FreeTensor context_compute_signature_numpy_darray(const python::PyContext &ctx,
-//                                                         const py::array_t<double, py::array::forcecast> &array) {
-//    assert(array.ndim() == 2);
-//    auto shape = array.shape();
+// #ifdef ROUGHPY_WITH_NUMPY
+// static FreeTensor context_compute_signature_numpy_darray(const
+// python::PyContext &ctx,
+//                                                          const
+//                                                          py::array_t<double,
+//                                                          py::array::forcecast>
+//                                                          &array) {
+//     assert(array.ndim() == 2);
+//     auto shape = array.shape();
 //
-//    const auto n_increments = shape[0];
-//    const auto width = shape[1];
+//     const auto n_increments = shape[0];
+//     const auto width = shape[1];
 //
-//    assert(width == ctx->width());
+//     assert(width == ctx->width());
 //
-//    const auto *ctype = ctx->ctype();
-//    SignatureData request;
-//    request.data_stream.set_ctype(ctype);
-//    request.data_stream.set_elts_per_row(width);
-//    request.data_stream.reserve_size(n_increments);
-//    for (dimn_t i = 0; i < n_increments; ++i) {
-//        request.data_stream.push_back(scalars::ScalarPointer(ctype, array.data(i, 0)));
-//    }
-//    request.vector_type = VectorType::Dense;
+//     const auto *ctype = ctx->ctype();
+//     SignatureData request;
+//     request.data_stream.set_ctype(ctype);
+//     request.data_stream.set_elts_per_row(width);
+//     request.data_stream.reserve_size(n_increments);
+//     for (dimn_t i = 0; i < n_increments; ++i) {
+//         request.data_stream.push_back(scalars::ScalarPointer(ctype,
+//         array.data(i, 0)));
+//     }
+//     request.vector_type = VectorType::Dense;
 //
-//    auto sig = ctx->signature(request);
+//     auto sig = ctx->signature(request);
 //
-//    return sig;
-//    //    return ctx->signature(request);
-//}
-//#endif
+//     return sig;
+//     //    return ctx->signature(request);
+// }
+// #endif
 
 PyObject *python::RPyContext_FromContext(algebra::context_pointer ctx)
 {
@@ -407,7 +413,7 @@ static py::handle py_get_context(deg_t width, deg_t depth,
                                  const py::object &ctype,
                                  const py::kwargs &kwargs)
 {
-    //TODO: Make this accept extra arguments.
+    // TODO: Make this accept extra arguments.
     return python::RPyContext_FromContext(
             get_context(width, depth, python::to_stype_ptr(ctype), {}));
 }

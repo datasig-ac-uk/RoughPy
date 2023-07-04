@@ -1,8 +1,6 @@
-
 import pytest
 
 from roughpy import RealInterval, IntervalType
-
 
 
 @pytest.fixture(params=[IntervalType.Clopen])
@@ -76,6 +74,7 @@ def test_intersects_with_fails_common_endpoints_same_type(interval_type):
 
     # [-1.0, 0.0) [0.0, 1.0) or (-1.0, 0.0] (0.0, 1.0]
     assert not i1.intersects_with(i2)
+
 
 @pytest.mark.skip("OpenCL disabled")
 def test_intersects_with_fails_common_endpoint_opposite_type():

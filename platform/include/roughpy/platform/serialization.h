@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Datasig Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 09/05/23.
@@ -78,7 +79,8 @@
 
 #  define RPY_SERIAL_LOAD_AND_CONSTRUCT(T)                                     \
       namespace cereal {                                                       \
-      template <> struct LoadAndConstruct<T> {                                 \
+      template <>                                                              \
+      struct LoadAndConstruct<T> {                                             \
                                                                                \
           template <typename Archive>                                          \
           static void load_and_construct(Archive &archive,                     \
@@ -114,8 +116,9 @@
     void save(Archive &archive, const std::uint32_t version) const
 
 #define RPY_SERIAL_SERIALIZE_FN_IMPL(T)                                        \
-    template <typename Archive> void T::serialize(                             \
-            Archive &archive, const std::uint32_t RPY_UNUSED_VAR version)
+    template <typename Archive>                                                \
+    void T::serialize(Archive &archive,                                        \
+                      const std::uint32_t RPY_UNUSED_VAR version)
 
 #define RPY_SERIAL_LOAD_FN_IMPL(T)                                             \
     template <typename Archive>                                                \
@@ -222,4 +225,4 @@ load(Archive &archive, Slice<T> &data)
 }// namespace rpy
 
 #endif// RPY_DISABLE_SERIALIZATION
-#endif//ROUGHPY_PLATFORM_SERIALIZATION_H
+#endif// ROUGHPY_PLATFORM_SERIALIZATION_H

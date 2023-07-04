@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Datasig Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 26/04/23.
@@ -113,18 +114,21 @@ void StandardRandomGenerator<bfloat16, BitGenerator>::set_seed(
     m_generator.seed(seed_data[0]);
     m_seed = {seed_data[0]};
 }
-template <typename BitGenerator> void
-StandardRandomGenerator<bfloat16, BitGenerator>::set_state(string_view state)
+template <typename BitGenerator>
+void StandardRandomGenerator<bfloat16, BitGenerator>::set_state(
+        string_view state)
 {
     std::stringstream ss(string{state});
     ss >> m_generator;
 }
-template <typename BitGenerator> std::vector<uint64_t>
+template <typename BitGenerator>
+std::vector<uint64_t>
 StandardRandomGenerator<bfloat16, BitGenerator>::get_seed() const
 {
     return {m_seed[0]};
 }
-template <typename BitGenerator> OwnedScalarArray
+template <typename BitGenerator>
+OwnedScalarArray
 StandardRandomGenerator<bfloat16, BitGenerator>::uniform_random_scalar(
         ScalarArray lower, ScalarArray upper, dimn_t count) const
 {
@@ -172,4 +176,4 @@ extern template class StandardRandomGenerator<bfloat16, pcg64>;
 }// namespace scalars
 }// namespace rpy
 
-#endif//ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H
+#endif// ROUGHPY_SCALARS_SRC_HALF_RANDOM_GENERATOR_H

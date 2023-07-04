@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
@@ -42,11 +43,13 @@ namespace rpy {
 namespace scalars {
 
 namespace dtl {
-template <typename T> struct type_id_of_impl;
+template <typename T>
+struct type_id_of_impl;
 
 }
 
-template <typename T> inline const string &type_id_of() noexcept;
+template <typename T>
+inline const string &type_id_of() noexcept;
 
 struct RingCharacteristics {
     unsigned is_field : 1;
@@ -63,7 +66,8 @@ protected:
     explicit ScalarType(ScalarTypeInfo info) : m_info(std::move(info)) {}
 
 public:
-    template <typename T> RPY_NO_DISCARD static const ScalarType *of();
+    template <typename T>
+    RPY_NO_DISCARD static const ScalarType *of();
 
     template <typename T>
     RPY_NO_DISCARD static const ScalarType *of(const ScalarDeviceInfo &device);
@@ -138,7 +142,8 @@ public:
      * @brief Create a new scalar from numerator and denominator
      * @param numerator Integer numerator of result
      * @param denominator Integer denominator of result
-     * @return new Scalar with value numerator/denominator (in the appropriate type)
+     * @return new Scalar with value numerator/denominator (in the appropriate
+     * type)
      */
     RPY_NO_DISCARD
     virtual Scalar from(long long numerator, long long denominator) const;
@@ -153,7 +158,8 @@ public:
 
     /**
      * @brief Free a previously allocated block of memory
-     * @param pointer ScalarPointer pointing to the beginning of the allocated block
+     * @param pointer ScalarPointer pointing to the beginning of the allocated
+     * block
      * @param count Number of scalars to be freed.
      */
     virtual void free(ScalarPointer pointer, std::size_t count) const = 0;
@@ -249,7 +255,8 @@ public:
     virtual scalar_t to_scalar_t(ScalarPointer arg) const = 0;
 
     /**
-     * @brief assign the rational value numerator/denominator to the target scalar
+     * @brief assign the rational value numerator/denominator to the target
+     * scalar
      * @param target ScalarPointer to old value
      * @param numerator numerator of rational
      * @param denominator denominator of rational
@@ -365,8 +372,10 @@ public:
 
     /**
      * @brief Get a new random number generator for this scalar type
-     * @param bit_generator Source of randomness used for generating random numbers
-     * @param seed Seed bits (as a slice/array) of uint64_t (regardless of bit generator's seed type).
+     * @param bit_generator Source of randomness used for generating random
+     * numbers
+     * @param seed Seed bits (as a slice/array) of uint64_t (regardless of bit
+     * generator's seed type).
      * @return Pointer to new RandomGenerator instance.
      */
     RPY_NO_DISCARD
@@ -416,7 +425,8 @@ inline bool operator!=(const ScalarType &lhs, const ScalarType &rhs) noexcept
 namespace dtl {
 
 #define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                    \
-    template <> struct RPY_EXPORT type_id_of_impl<TYPE> {                      \
+    template <>                                                                \
+    struct RPY_EXPORT type_id_of_impl<TYPE> {                                  \
         static const string &get_id() noexcept;                                \
     }
 
@@ -452,8 +462,10 @@ ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational");
 
 ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
 
-// Long is silly. On Win64 it is 32 bits (because, Microsoft) on Unix, it is 64 bits
-template <> struct type_id_of_impl<long>
+// Long is silly. On Win64 it is 32 bits (because, Microsoft) on Unix, it is 64
+// bits
+template <>
+struct type_id_of_impl<long>
     : public std::conditional_t<(sizeof(long) == sizeof(int)),
                                 type_id_of_impl<int>,
                                 type_id_of_impl<long long>> {
@@ -461,43 +473,52 @@ template <> struct type_id_of_impl<long>
 
 #undef ROUGHPY_MAKE_TYPE_ID_OF
 
-template <typename ScalarImpl> struct RPY_EXPORT scalar_type_holder {
+template <typename ScalarImpl>
+struct RPY_EXPORT scalar_type_holder {
     static const ScalarType *get_type() noexcept { return nullptr; }
 };
 
-//template <typename ScalarImpl>
-//struct scalar_type_holder<ScalarImpl &> : scalar_type_holder<ScalarImpl> {};
+// template <typename ScalarImpl>
+// struct scalar_type_holder<ScalarImpl &> : scalar_type_holder<ScalarImpl> {};
 //
-//template <typename ScalarImpl>
-//struct scalar_type_holder<const ScalarImpl &> : scalar_type_holder<ScalarImpl> {};
+// template <typename ScalarImpl>
+// struct scalar_type_holder<const ScalarImpl &> :
+// scalar_type_holder<ScalarImpl> {};
 
-template <> struct RPY_EXPORT scalar_type_holder<float> {
+template <>
+struct RPY_EXPORT scalar_type_holder<float> {
     static const ScalarType *get_type() noexcept;
 };
 
-template <> struct RPY_EXPORT scalar_type_holder<double> {
+template <>
+struct RPY_EXPORT scalar_type_holder<double> {
     static const ScalarType *get_type() noexcept;
 };
 
-template <> struct RPY_EXPORT scalar_type_holder<rational_scalar_type> {
+template <>
+struct RPY_EXPORT scalar_type_holder<rational_scalar_type> {
     static const ScalarType *get_type() noexcept;
 };
 
-template <> struct RPY_EXPORT scalar_type_holder<rational_poly_scalar> {
+template <>
+struct RPY_EXPORT scalar_type_holder<rational_poly_scalar> {
     static const ScalarType *get_type() noexcept;
 };
 
-template <> struct RPY_EXPORT scalar_type_holder<half> {
+template <>
+struct RPY_EXPORT scalar_type_holder<half> {
     static const ScalarType *get_type() noexcept;
 };
 
-template <> struct RPY_EXPORT scalar_type_holder<bfloat16> {
+template <>
+struct RPY_EXPORT scalar_type_holder<bfloat16> {
     static const ScalarType *get_type() noexcept;
 };
 
 }// namespace dtl
 
-template <typename T> const ScalarType *ScalarType::of()
+template <typename T>
+const ScalarType *ScalarType::of()
 {
     return dtl::scalar_type_holder<remove_cv_ref_t<T>>::get_type();
 }
@@ -508,7 +529,8 @@ const ScalarType *ScalarType::of(const ScalarDeviceInfo &device)
     return get_type(type_id_of<T>(), device);
 }
 
-template <typename T> inline const string &type_id_of() noexcept
+template <typename T>
+inline const string &type_id_of() noexcept
 {
     return dtl::type_id_of_impl<T>::get_id();
 }

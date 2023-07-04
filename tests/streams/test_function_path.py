@@ -1,18 +1,19 @@
-import itertools
 import functools
+import itertools
 import operator
 
-import pytest
-
 import numpy as np
+import pytest
 from numpy.testing import assert_array_almost_equal
 
 skip = True
-from roughpy import RealInterval, FreeTensor, Lie, Stream
+from roughpy import RealInterval, FreeTensor, Lie
 import roughpy as rp
+
 
 def path(*args, **kwargs):
     return rp.FunctionStream.from_function(*args, **kwargs)
+
 
 # @pytest.mark.skipif(skip, reason="path type not available")
 def test_function_path_signature_calc_accuracy():
@@ -57,12 +58,10 @@ def solution_signature(width, depth, tensor_size):
 
 
 def test_fpath_known_signature_calc(width, depth, solution_signature):
-
     def func(t, ctx):
-        return Lie(np.arange(1.0, width+1)*t, ctx=ctx)
+        return Lie(np.arange(1.0, width + 1) * t, ctx=ctx)
 
     p = path(func, width=width, depth=depth, dtype=rp.DPReal)
-
 
     expected = FreeTensor(solution_signature(0.0, 2.0), ctx=p.ctx)
     assert_array_almost_equal(p.signature(0.0, 2.0, 0.0), expected)
@@ -98,10 +97,10 @@ def test_func_sig_deriv_s_width_3_depth_2_let_2_perturb(deriv_function_path):
     d = p.signature_derivative(interval, perturbation, 1)
 
     expected = FreeTensor(np.array([0.0, 0.0, 1.0, 0.0,
-                                  0.0, 0.1, 0.0,
-                                  0.1, 0.4, 0.3,
-                                  0.0, 0.3, 0.0
-                                  ]), ctx=p.ctx)
+                                    0.0, 0.1, 0.0,
+                                    0.1, 0.4, 0.3,
+                                    0.0, 0.3, 0.0
+                                    ]), ctx=p.ctx)
 
     assert_array_almost_equal(p.log_signature(interval, 1), np.array([0.2, 0.4, 0.6, 0.0, 0.0, 0.0]))
     assert_array_almost_equal(d, expected)
@@ -128,10 +127,10 @@ def test_func_sig_deriv_m_width_3_depth_2_let_2_perturb(deriv_function_path):
     d = p.signature_derivative([(interval, perturbation)], 1)
 
     expected = FreeTensor(np.array([0.0, 0.0, 1.0, 0.0,
-                                  0.0, 0.1, 0.0,
-                                  0.1, 0.4, 0.3,
-                                  0.0, 0.3, 0.0
-                                  ]), ctx=p.ctx)
+                                    0.0, 0.1, 0.0,
+                                    0.1, 0.4, 0.3,
+                                    0.0, 0.3, 0.0
+                                    ]), ctx=p.ctx)
 
     assert_array_almost_equal(d, expected)
     # assert d == expected

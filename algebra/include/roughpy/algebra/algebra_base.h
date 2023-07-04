@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_BASE_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_BASE_H_
@@ -82,8 +83,8 @@ public:
     };
 };
 
-template <typename Algebra, typename BasisType> class AlgebraBasicProperties
-    : public AlgebraInterfaceBase
+template <typename Algebra, typename BasisType>
+class AlgebraBasicProperties : public AlgebraInterfaceBase
 {
 protected:
     BasisType m_basis;
@@ -145,7 +146,8 @@ public:
     virtual bool equals(const Algebra &other) const = 0;
 };
 
-template <typename Base> class AlgebraElementAccess : public Base
+template <typename Base>
+class AlgebraElementAccess : public Base
 {
 protected:
     using Base::Base;
@@ -161,7 +163,8 @@ public:
     virtual scalars::Scalar get_mut(key_type key) = 0;
 };
 
-template <typename Base> class AlgebraIteratorMethods : public Base
+template <typename Base>
+class AlgebraIteratorMethods : public Base
 {
 protected:
     using Base::Base;
@@ -178,7 +181,8 @@ public:
     virtual optional<scalars::ScalarArray> dense_data() const;
 };
 
-template <typename Base> class AlgebraArithmetic : public Base
+template <typename Base>
+class AlgebraArithmetic : public Base
 {
 protected:
     using Base::Base;
@@ -232,7 +236,8 @@ struct algebra_base_resolution<A, B, Base> {
     using type = Base<AlgebraBasicProperties<A, B>>;
 };
 
-template <typename A, typename B> struct algebra_base_resolution<A, B> {
+template <typename A, typename B>
+struct algebra_base_resolution<A, B> {
     using type = AlgebraBasicProperties<A, B>;
 };
 
@@ -243,7 +248,8 @@ template <typename A, typename B> struct algebra_base_resolution<A, B> {
  * @tparam Algebra The externally facing algebra that this interface will
  * be used in.
  */
-template <typename Algebra, typename BasisType> class AlgebraInterface
+template <typename Algebra, typename BasisType>
+class AlgebraInterface
     : public dtl::algebra_base_resolution<
               Algebra, BasisType, dtl::AlgebraArithmetic,
               dtl::AlgebraIteratorMethods, dtl::AlgebraElementAccess>::type
@@ -261,9 +267,11 @@ protected:
 };
 
 // Forward declarations of implementation templates
-template <typename> class OwnedStorageModel;
+template <typename>
+class OwnedStorageModel;
 
-template <typename> class BorrowedStorageModel;
+template <typename>
+class BorrowedStorageModel;
 
 template <typename, typename, template <typename> class>
 class AlgebraImplementation;
@@ -276,9 +284,10 @@ using select_owned_or_borrowed_t = conditional_t<
         Wrapper<remove_cv_t<remove_pointer_t<Impl>>, BorrowedStorageModel>,
         Wrapper<remove_cv_ref_t<Impl>, OwnedStorageModel>>;
 
-template <typename IFace> struct with_interface {
-    template <typename Impl, template <typename> class StorageModel> using type
-            = AlgebraImplementation<IFace, Impl, StorageModel>;
+template <typename IFace>
+struct with_interface {
+    template <typename Impl, template <typename> class StorageModel>
+    using type = AlgebraImplementation<IFace, Impl, StorageModel>;
 };
 
 RPY_EXPORT void print_empty_algebra(std::ostream &os);
@@ -503,10 +512,6 @@ UnspecifiedAlgebraType construct_dense_algebra(scalars::ScalarArray &&data,
 RPY_EXPORT void check_contexts_compatible(const context_pointer &ref,
                                           const context_pointer &other);
 }// namespace dtl
-
-
-
-
 
 }// namespace algebra
 }// namespace rpy

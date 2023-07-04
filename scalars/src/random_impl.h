@@ -12,13 +12,16 @@ namespace rpy {
 namespace scalars {
 namespace dtl {
 
-template <typename> struct rng_type_getter;
+template <typename>
+struct rng_type_getter;
 
-template <> struct rng_type_getter<std::mt19937_64> {
+template <>
+struct rng_type_getter<std::mt19937_64> {
     static const char *name;
 };
 
-template <> struct rng_type_getter<pcg64> {
+template <>
+struct rng_type_getter<pcg64> {
     static const char *name;
 };
 
@@ -26,4 +29,4 @@ template <> struct rng_type_getter<pcg64> {
 }// namespace scalars
 }// namespace rpy
 
-#endif//ROUGHPY_RANDOM_IMPL_H
+#endif// ROUGHPY_RANDOM_IMPL_H

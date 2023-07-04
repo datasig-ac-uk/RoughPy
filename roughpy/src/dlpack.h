@@ -128,7 +128,8 @@ typedef struct {
     DLDeviceType device_type;
     /*!
      * \brief The device index.
-     * For vanilla CPU memory, pinned memory, or managed memory, this is set to 0.
+     * For vanilla CPU memory, pinned memory, or managed memory, this is set to
+     * 0.
      */
     int32_t device_id;
 } DLDevice;
@@ -146,7 +147,8 @@ typedef enum
     kDLFloat = 2U,
     /*!
      * \brief Opaque handle type, reserved for testing purposes.
-     * Frameworks need to agree on the handle data type for the exchange to be well-defined.
+     * Frameworks need to agree on the handle data type for the exchange to be
+     * well-defined.
      */
     kDLOpaqueHandle = 3U,
     /*! \brief bfloat16 */
@@ -161,16 +163,17 @@ typedef enum
 } DLDataTypeCode;
 
 /*!
- * \brief The data type the tensor can hold. The data type is assumed to follow the
- * native endian-ness. An explicit error message should be raised when attempting to
- * export an array with non-native endianness
+ * \brief The data type the tensor can hold. The data type is assumed to follow
+ * the native endian-ness. An explicit error message should be raised when
+ * attempting to export an array with non-native endianness
  *
  *  Examples
  *   - float: type_code = 2, bits = 32, lanes = 1
  *   - float4(vectorized 4 float): type_code = 2, bits = 32, lanes = 4
  *   - int8: type_code = 0, bits = 8, lanes = 1
  *   - std::complex<float>: type_code = 5, bits = 64, lanes = 1
- *   - bool: type_code = 6, bits = 8, lanes = 1 (as per common array library convention, the underlying storage size of bool is 8 bits)
+ *   - bool: type_code = 6, bits = 8, lanes = 1 (as per common array library
+ * convention, the underlying storage size of bool is 8 bits)
  */
 typedef struct {
     /*!
@@ -193,8 +196,8 @@ typedef struct {
 typedef struct {
     /*!
      * \brief The data pointer points to the allocated data. This will be CUDA
-     * device pointer or cl_mem handle in OpenCL. It may be opaque on some device
-     * types. This pointer is always aligned to 256 bytes as in CUDA. The
+     * device pointer or cl_mem handle in OpenCL. It may be opaque on some
+     * device types. This pointer is always aligned to 256 bytes as in CUDA. The
      * `byte_offset` field should be used to point to the beginning of the data.
      *
      * Note that as of Nov 2021, multiply libraries (CuPy, PyTorch, TensorFlow,
@@ -259,8 +262,8 @@ typedef struct DLManagedTensor {
     /*!
      * \brief Destructor - this should be called
      * to destruct the manager_ctx  which backs the DLManagedTensor. It can be
-     * NULL if there is no way for the caller to provide a reasonable destructor.
-     * The destructors deletes the argument self as well.
+     * NULL if there is no way for the caller to provide a reasonable
+     * destructor. The destructors deletes the argument self as well.
      */
     void (*deleter)(struct DLManagedTensor *self);
 } DLManagedTensor;
@@ -295,9 +298,10 @@ struct DLManagedTensorVersioned {
     /*!
      * \brief Destructor.
      *
-     * This should be called to destruct manager_ctx which holds the DLManagedTensorVersioned.
-     * It can be NULL if there is no way for the caller to provide a reasonable
-     * destructor. The destructors deletes the argument self as well.
+     * This should be called to destruct manager_ctx which holds the
+     * DLManagedTensorVersioned. It can be NULL if there is no way for the
+     * caller to provide a reasonable destructor. The destructors deletes the
+     * argument self as well.
      */
     void (*deleter)(struct DLManagedTensorVersioned *self);
     /*!

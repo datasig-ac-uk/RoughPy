@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_H_
 #define ROUGHPY_SCALARS_SCALAR_H_
@@ -73,7 +74,8 @@ public:
                      static_cast<long long>(denominator));
     }
 
-    template <typename ScalarArg> Scalar(const ScalarType *type, ScalarArg arg)
+    template <typename ScalarArg>
+    Scalar(const ScalarType *type, ScalarArg arg)
     {
         const auto *scalar_arg_type = ScalarType::of<ScalarArg>();
         if (scalar_arg_type != nullptr) {
@@ -157,33 +159,34 @@ public:
     bool operator==(const Scalar &other) const noexcept;
     bool operator!=(const Scalar &other) const noexcept;
 
-    //#ifndef RPY_DISABLE_SERIALIZATION
-    //private:
-    //    friend rpy::serialization_access;
+    // #ifndef RPY_DISABLE_SERIALIZATION
+    // private:
+    //     friend rpy::serialization_access;
     //
     //
-    //    template <typename Ar>
-    //    void save(Ar& ar, const unsigned int /*version*/) const {
-    //        ar << get_type_id();
-    //        if (is_interface()) {
-    //            auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
-    //            // p_type cannot be null if the data is an interface
-    //            ar << p_type->to_raw_bytes(ptr, 1);
-    //        } else {
-    //            ar << to_raw_bytes(1);
-    //        }
-    //    }
+    //     template <typename Ar>
+    //     void save(Ar& ar, const unsigned int /*version*/) const {
+    //         ar << get_type_id();
+    //         if (is_interface()) {
+    //             auto ptr = static_cast<const
+    //             ScalarInterface*>(p_data)->to_pointer();
+    //             // p_type cannot be null if the data is an interface
+    //             ar << p_type->to_raw_bytes(ptr, 1);
+    //         } else {
+    //             ar << to_raw_bytes(1);
+    //         }
+    //     }
     //
-    //    template <typename Ar>
-    //    void load(Ar& ar, const unsigned int /*version*/) {
-    //        std::string type_id;
-    //        ar >> type_id;
-    //        std::vector<byte> bytes;
-    //        ar >> bytes;
-    //        update_from_bytes(type_id, 1, bytes);
-    //    }
+    //     template <typename Ar>
+    //     void load(Ar& ar, const unsigned int /*version*/) {
+    //         std::string type_id;
+    //         ar >> type_id;
+    //         std::vector<byte> bytes;
+    //         ar >> bytes;
+    //         update_from_bytes(type_id, 1, bytes);
+    //     }
     //
-    //#endif
+    // #endif
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
@@ -215,7 +218,8 @@ RPY_SERIAL_LOAD_FN_IMPL(Scalar)
 
 namespace dtl {
 
-template <typename T> struct type_of_T_defined {
+template <typename T>
+struct type_of_T_defined {
     static T cast(ScalarPointer scalar)
     {
         const auto *tp = ScalarType::of<T>();
@@ -231,7 +235,8 @@ template <typename T> struct type_of_T_defined {
     }
 };
 
-template <typename T> struct type_of_T_not_defined {
+template <typename T>
+struct type_of_T_not_defined {
     static T cast(ScalarPointer scalar)
     {
         T result;

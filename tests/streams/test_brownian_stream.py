@@ -27,8 +27,8 @@
 
 import pytest
 from numpy.testing import assert_array_almost_equal
-from roughpy import BrownianStream, DPReal, DyadicInterval
 
+from roughpy import BrownianStream, DPReal, DyadicInterval
 
 CONFIGURATIONS = [
     (2, 2),
@@ -36,6 +36,7 @@ CONFIGURATIONS = [
     (5, 2),
     (10, 2)
 ]
+
 
 @pytest.mark.parametrize("config", CONFIGURATIONS)
 def test_brownian_stream_signature_multiplicative(config):
@@ -49,4 +50,4 @@ def test_brownian_stream_signature_multiplicative(config):
     right = stream.signature(di2, 5)
     top = stream.signature(di3, 5)
 
-    assert_array_almost_equal(left*right, top), f"!={top-left*right}"
+    assert_array_almost_equal(left * right, top), f"!={top - left * right}"
