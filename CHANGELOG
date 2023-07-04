@@ -1,3 +1,7 @@
+Version 0.0.3-alpha:
+  - Added datetime interval support.
+  - Integrated schema reparametrisation into stream signature methods
+
 Version 0.0.2-alpha:
   - Added datetime and timedelta object support to tick data parsing
   - Expanded build system to include more versions of Python
