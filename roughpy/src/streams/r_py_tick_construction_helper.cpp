@@ -9,6 +9,8 @@
 #include "args/convert_timestamp.h"
 #include "args/parse_schema.h"
 
+#include "py_schema_context.h"
+
 using namespace rpy;
 using namespace rpy::streams;
 using namespace pybind11::literals;
@@ -30,6 +32,9 @@ python::RPyTickConstructionHelper::RPyTickConstructionHelper(
       m_reference_time(py::none()),
       m_time_conversion_options{PyDateTimeResolution::Seconds}
 {
+    if (!p_schema->is_final() && p_schema->context() == nullptr) {
+        p_schema->init_context<PySchemaContext>(m_time_conversion_options);
+    }
     RPY_CHECK(!schema_only || !p_schema->is_final());
 }
 
@@ -60,13 +65,10 @@ void python::RPyTickConstructionHelper::fail_data_none()
     throw py::value_error("data cannot be None when constructing stream");
 }
 
-void python::RPyTickConstructionHelper::add_increment(const py::str& label,
-                                                      py::object timestamp,
-                                                      py::object data,
-                                                      const py::kwargs& kwargs)
+void python::RPyTickConstructionHelper::add_tick(
+        string label, py::object timestamp, py::object data,
+        streams::ChannelType type, const py::kwargs& RPY_UNUSED_VAR kwargs)
 {
-    auto lbl = label.cast<string>();
-    if (!p_schema->is_final()) { add_increment_to_schema(lbl, kwargs); }
 
     if (b_schema_only) {
         // Do Nothing
@@ -76,12 +78,24 @@ void python::RPyTickConstructionHelper::add_increment(const py::str& label,
         fail_data_none();
     } else {
         if (m_reference_time.is_none()) { m_reference_time = timestamp; }
-        m_ticks.push_back({lbl,
+        m_ticks.push_back({label,
                            python::convert_delta_from_datetimes(
                                    timestamp, m_reference_time,
                                    m_time_conversion_options),
-                           std::move(data), ChannelType::Increment});
+                           std::move(data), type});
     }
+}
+
+void python::RPyTickConstructionHelper::add_increment(const py::str& label,
+                                                      py::object timestamp,
+                                                      py::object data,
+                                                      const py::kwargs& kwargs)
+{
+    auto lbl = label.cast<string>();
+    if (!p_schema->is_final()) { add_increment_to_schema(lbl, kwargs); }
+
+    add_tick(std::move(lbl), std::move(timestamp), std::move(data),
+             streams::ChannelType::Increment, kwargs);
 }
 void python::RPyTickConstructionHelper::add_value(const py::str& label,
                                                   py::object timestamp,
@@ -91,20 +105,8 @@ void python::RPyTickConstructionHelper::add_value(const py::str& label,
     auto lbl = label.cast<string>();
     if (!p_schema->is_final()) { add_value_to_schema(lbl, kwargs); }
 
-    if (b_schema_only) {
-        // Do Nothing
-    } else if (timestamp.is_none()) {
-        fail_timestamp_none();
-    } else if (data.is_none()) {
-        fail_data_none();
-    } else {
-        if (m_reference_time.is_none()) { m_reference_time = timestamp; }
-        m_ticks.push_back({lbl,
-                           python::convert_delta_from_datetimes(
-                                   timestamp, m_reference_time,
-                                   m_time_conversion_options),
-                           std::move(data), ChannelType::Value});
-    }
+    add_tick(std::move(lbl), std::move(timestamp), std::move(data),
+             streams::ChannelType::Value, kwargs);
 }
 void python::RPyTickConstructionHelper::add_categorical(
         const py::str& label, py::object timestamp, py::object variant,
@@ -115,21 +117,8 @@ void python::RPyTickConstructionHelper::add_categorical(
         add_categorical_to_schema(lbl, variant, kwargs);
     }
 
-    if (b_schema_only) {
-        // Do Nothing
-    } else if (timestamp.is_none()) {
-        fail_timestamp_none();
-    } else if (variant.is_none()) {
-        throw py::value_error(
-                "variant cannot be None when constructing stream");
-    } else {
-        if (m_reference_time.is_none()) { m_reference_time = timestamp; }
-        m_ticks.push_back({lbl,
-                           python::convert_delta_from_datetimes(
-                                   timestamp, m_reference_time,
-                                   m_time_conversion_options),
-                           std::move(variant), ChannelType::Categorical});
-    }
+    add_tick(label.cast<string>(), std::move(timestamp), std::move(variant),
+             streams::ChannelType::Categorical, kwargs);
 }
 
 void python::init_tick_construction_helper(py::module_& m)

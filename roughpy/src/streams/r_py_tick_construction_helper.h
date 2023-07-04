@@ -56,6 +56,7 @@ class RPyTickConstructionHelper
     std::shared_ptr<streams::StreamSchema> p_schema;
     bool b_schema_only;
     py::object m_reference_time;
+
     PyDateTimeConversionOptions m_time_conversion_options;
 
 private:
@@ -76,6 +77,11 @@ public:
     explicit RPyTickConstructionHelper(
             std::shared_ptr<streams::StreamSchema> schema, bool schema_only);
 
+private:
+    void add_tick(string label, py::object timestamp, py::object data,
+                  streams::ChannelType type, const py::kwargs& kwargs);
+
+public:
     void add_increment(const py::str& label, py::object timestamp,
                        py::object data, const py::kwargs& kwargs);
     void add_value(const py::str& label, py::object timestamp, py::object data,
