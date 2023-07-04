@@ -27,9 +27,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "tick_stream.h"
-#include "intervals/interval.h"
-#include "roughpy/algebra/lie.h"
 
+#include <map>
+#include <set>
+
+#include <roughpy/intervals/interval.h>
+#include <roughpy/algebra/lie.h>
 #include <roughpy/streams/stream.h>
 #include <roughpy/streams/stream_construction_helper.h>
 #include <roughpy/streams/tick_stream.h>
@@ -40,11 +43,8 @@
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 #include "streams/stream.h"
-
 #include "r_py_tick_construction_helper.h"
 
-#include <map>
-#include <set>
 
 using namespace rpy;
 using namespace pybind11::literals;
