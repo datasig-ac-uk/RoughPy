@@ -76,7 +76,6 @@ add_roughpy_component(Scalars
         LAPACK::LAPACK
         PRIVATE_DEPS
         PCGRandom::pcg_random
-        $<TARGET_NAME_IF_EXISTS:Bignum::Bignum>
         NEEDS
         RoughPy::Core
         RoughPy::Platform
