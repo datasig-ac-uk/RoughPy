@@ -41,6 +41,11 @@
 namespace rpy {
 namespace python {
 
+bool is_py_datetime(py::handle object) noexcept;
+bool is_py_date(py::handle object) noexcept;
+bool is_py_time(py::handle object) noexcept;
+
+
 enum class PyDateTimeResolution : uint8_t
 {
     Microseconds = 0,

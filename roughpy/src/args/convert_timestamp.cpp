@@ -9,6 +9,16 @@
 
 #include "numpy.h"
 
+bool rpy::python::is_py_datetime(py::handle object) noexcept {
+    return static_cast<bool>(PyDateTime_Check(object.ptr()));
+}
+bool rpy::python::is_py_date(py::handle object) noexcept {
+    return static_cast<bool>(PyDate_Check(object.ptr()));
+}
+bool rpy::python::is_py_time(py::handle object) noexcept {
+    return static_cast<bool>(PyTime_Check(object.ptr()));
+}
+
 namespace {
 
 using options_t = rpy::python::PyDateTimeConversionOptions;
@@ -107,5 +117,8 @@ rpy::param_t rpy::python::convert_timedelta(
 {
     return 0;
 }
+
+
+
 
 void rpy::python::init_datetime(py::module_& m) { PyDateTime_IMPORT; }
