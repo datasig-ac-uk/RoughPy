@@ -366,6 +366,7 @@ public:
     bool is_final() const noexcept { return m_is_final; }
     void finalize() noexcept { m_is_final = true; }
 
+    RPY_NO_DISCARD
     intervals::RealInterval
     adjust_interval(const intervals::Interval& arg) const;
 
