@@ -94,14 +94,10 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         rpy::resolution_t resolution,
         const rpy::streams::Stream::Context& ctx) const
 {
-    const auto* param_context = p_impl->schema().context();
-    if (param_context != nullptr) {
-        return p_impl->log_signature(
-                param_context->convert_parameter_interval(interval), resolution,
-                ctx);
-    }
+    const auto& schema = p_impl->schema();
 
-    return p_impl->log_signature(interval, resolution, ctx);
+    return p_impl->log_signature(schema.adjust_interval(interval), resolution,
+                                 ctx);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature() const
 {
@@ -147,14 +143,8 @@ rpy::streams::Stream::signature(const rpy::streams::Stream::Interval& interval,
                                 rpy::resolution_t resolution,
                                 const rpy::streams::Stream::Context& ctx) const
 {
-    const auto* param_context = p_impl->schema().context();
-    if (param_context != nullptr) {
-        return p_impl->signature(
-                param_context->convert_parameter_interval(interval), resolution,
-                ctx);
-    }
-
-    return p_impl->signature(interval, resolution, ctx);
+    const auto& schema = p_impl->schema();
+    return p_impl->signature(schema.adjust_interval(interval), resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         const rpy::streams::Stream::Interval& domain,
