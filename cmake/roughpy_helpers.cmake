@@ -59,7 +59,7 @@ function(_check_runtime_deps _out_var)
                 if ("$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "SHARED_LIBRARY"
                         OR "$<TARGET_PROPERTY:${_dep},TYPE>" STREQUAL "MODULE_LIBRARY")
                     _check_runtime_component(${_dep} ${_this_dep})
-                    message(STATUS "Runtime dependency added: ${_this_dep}")
+                    message(STATUS "Runtime dependency added: ${_name}")
                     list(APPEND _these_deps ${_this_dep})
                 endif ()
 
