@@ -57,7 +57,7 @@ public:
     using key_type = typename basis_type::key_type;
 
     RPY_NO_DISCARD
-    const basis_type &basis() const { return m_basis; };
+    const basis_type& basis() const { return m_basis; };
     RPY_NO_DISCARD
     virtual key_type key() const noexcept = 0;
     RPY_NO_DISCARD
@@ -66,7 +66,7 @@ public:
     virtual std::shared_ptr<AlgebraIteratorInterface> clone() const = 0;
     virtual void advance() = 0;
     RPY_NO_DISCARD
-    virtual bool equals(const AlgebraIteratorInterface &other) const noexcept
+    virtual bool equals(const AlgebraIteratorInterface& other) const noexcept
             = 0;
 };
 
@@ -85,16 +85,16 @@ public:
     {}
 
     RPY_NO_DISCARD
-    const basis_type &basis() const { return p_interface->basis(); }
+    const basis_type& basis() const { return p_interface->basis(); }
     RPY_NO_DISCARD
     key_type key() const noexcept { return p_interface->key(); }
     RPY_NO_DISCARD
     scalars::Scalar value() const noexcept { return p_interface->value(); };
 
     RPY_NO_DISCARD
-    AlgebraIteratorItem *operator->() noexcept { return this; }
+    AlgebraIteratorItem* operator->() noexcept { return this; }
     RPY_NO_DISCARD
-    AlgebraIteratorItem &operator*() noexcept { return *this; }
+    AlgebraIteratorItem& operator*() noexcept { return *this; }
 };
 
 template <typename Algebra>
@@ -120,13 +120,13 @@ public:
     {}
 
     AlgebraIterator() = default;
-    AlgebraIterator(const AlgebraIterator &arg);
-    AlgebraIterator(AlgebraIterator &&arg) noexcept;
+    AlgebraIterator(const AlgebraIterator& arg);
+    AlgebraIterator(AlgebraIterator&& arg) noexcept;
 
-    AlgebraIterator &operator=(const AlgebraIterator &arg);
-    AlgebraIterator &operator=(AlgebraIterator &&arg) noexcept;
+    AlgebraIterator& operator=(const AlgebraIterator& arg);
+    AlgebraIterator& operator=(AlgebraIterator&& arg) noexcept;
 
-    AlgebraIterator &operator++();
+    AlgebraIterator& operator++();
     RPY_NO_DISCARD
     const AlgebraIterator operator++(int);
     RPY_NO_DISCARD
@@ -135,24 +135,24 @@ public:
     pointer operator->() const;
 
     RPY_NO_DISCARD
-    bool operator==(const AlgebraIterator &other) const;
+    bool operator==(const AlgebraIterator& other) const;
     RPY_NO_DISCARD
-    bool operator!=(const AlgebraIterator &other) const;
+    bool operator!=(const AlgebraIterator& other) const;
 };
 
 template <typename Algebra>
-AlgebraIterator<Algebra>::AlgebraIterator(const AlgebraIterator &arg)
+AlgebraIterator<Algebra>::AlgebraIterator(const AlgebraIterator& arg)
     : m_tag(arg.m_tag)
 {
     if (arg.p_interface) { p_interface = arg.p_interface->clone(); }
 }
 template <typename Algebra>
-AlgebraIterator<Algebra>::AlgebraIterator(AlgebraIterator &&arg) noexcept
+AlgebraIterator<Algebra>::AlgebraIterator(AlgebraIterator&& arg) noexcept
     : p_interface(std::move(arg.p_interface)), m_tag(arg.m_tag)
 {}
 template <typename Algebra>
-AlgebraIterator<Algebra> &
-AlgebraIterator<Algebra>::operator=(const AlgebraIterator &arg)
+AlgebraIterator<Algebra>&
+AlgebraIterator<Algebra>::operator=(const AlgebraIterator& arg)
 {
     if (&arg != this) {
         if (arg.p_interface) {
@@ -165,15 +165,15 @@ AlgebraIterator<Algebra>::operator=(const AlgebraIterator &arg)
     return *this;
 }
 template <typename Algebra>
-AlgebraIterator<Algebra> &
-AlgebraIterator<Algebra>::operator=(AlgebraIterator &&arg) noexcept
+AlgebraIterator<Algebra>&
+AlgebraIterator<Algebra>::operator=(AlgebraIterator&& arg) noexcept
 {
     if (&arg != this) { p_interface = std::move(arg.p_interface); }
     m_tag = arg.m_tag;
     return *this;
 }
 template <typename Algebra>
-AlgebraIterator<Algebra> &AlgebraIterator<Algebra>::operator++()
+AlgebraIterator<Algebra>& AlgebraIterator<Algebra>::operator++()
 {
     if (p_interface) { p_interface->advance(); }
     return *this;
@@ -205,14 +205,14 @@ AlgebraIterator<Algebra>::operator->() const
     return {p_interface};
 }
 template <typename Algebra>
-bool AlgebraIterator<Algebra>::operator==(const AlgebraIterator &other) const
+bool AlgebraIterator<Algebra>::operator==(const AlgebraIterator& other) const
 {
     if (!p_interface || !other.p_interface) { return false; }
     if (m_tag != other.m_tag) { return false; }
     return p_interface->equals(*other.p_interface);
 }
 template <typename Algebra>
-bool AlgebraIterator<Algebra>::operator!=(const AlgebraIterator &other) const
+bool AlgebraIterator<Algebra>::operator!=(const AlgebraIterator& other) const
 {
     if (!p_interface || !other.p_interface) { return true; }
     if (m_tag != other.m_tag) { return true; }

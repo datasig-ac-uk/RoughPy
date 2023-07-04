@@ -45,12 +45,12 @@ using namespace rpy;
 using namespace rpy::algebra;
 
 template <typename Algebra, typename KeyType>
-static void init_iterator(py::module_ &m, const char *iter_name)
+static void init_iterator(py::module_& m, const char* iter_name)
 {
 
     py::class_<AlgebraIteratorItem<Algebra>> klass(m, iter_name);
 
-    klass.def("key", [](const AlgebraIteratorItem<Algebra> &item) {
+    klass.def("key", [](const AlgebraIteratorItem<Algebra>& item) {
         return KeyType(item.basis(), item.key());
     });
     klass.def("value", &AlgebraIteratorItem<Algebra>::value);
@@ -59,7 +59,7 @@ static void init_iterator(py::module_ &m, const char *iter_name)
 #define MAKE_ITERATOR_TYPE(ALG, KEY)                                           \
     init_iterator<ALG, KEY>(m, RPY_STRINGIFY(ALG##IteratorItem))
 
-void python::init_algebra_iterator(py::module_ &m)
+void python::init_algebra_iterator(py::module_& m)
 {
 
     MAKE_ITERATOR_TYPE(Lie, PyLieKey);

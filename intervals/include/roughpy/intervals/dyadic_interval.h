@@ -101,37 +101,37 @@ public:
     DyadicInterval shrink_to_contained_end(power_t arg = 1) const;
     RPY_NO_DISCARD
     DyadicInterval shrink_to_omitted_end() const;
-    DyadicInterval &shrink_interval_right();
-    DyadicInterval &shrink_interval_left(power_t arg = 1);
-    DyadicInterval &expand_interval(power_t arg = 1);
+    DyadicInterval& shrink_interval_right();
+    DyadicInterval& shrink_interval_left(power_t arg = 1);
+    DyadicInterval& expand_interval(power_t arg = 1);
 
     RPY_NO_DISCARD
-    bool contains_dyadic(const DyadicInterval &other) const;
+    bool contains_dyadic(const DyadicInterval& other) const;
     RPY_NO_DISCARD
     bool aligned() const;
 
-    DyadicInterval &flip_interval();
+    DyadicInterval& flip_interval();
 
     RPY_NO_DISCARD
     DyadicInterval shift_forward(multiplier_t arg = 1) const;
     RPY_NO_DISCARD
     DyadicInterval shift_back(multiplier_t arg = 1) const;
 
-    DyadicInterval &advance() noexcept;
+    DyadicInterval& advance() noexcept;
 
     RPY_SERIAL_SERIALIZE_FN();
 };
 
 RPY_EXPORT
-std::ostream &operator<<(std::ostream &os, const DyadicInterval &di);
+std::ostream& operator<<(std::ostream& os, const DyadicInterval& di);
 
 RPY_EXPORT
 std::vector<DyadicInterval>
-to_dyadic_intervals(const Interval &interval, typename Dyadic::power_t tol,
+to_dyadic_intervals(const Interval& interval, typename Dyadic::power_t tol,
                     IntervalType itype = IntervalType::Clopen);
 
 RPY_EXPORT
-bool operator<(const DyadicInterval &lhs, const DyadicInterval &rhs) noexcept;
+bool operator<(const DyadicInterval& lhs, const DyadicInterval& rhs) noexcept;
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(DyadicInterval)
 {

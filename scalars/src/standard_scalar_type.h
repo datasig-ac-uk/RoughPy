@@ -64,13 +64,13 @@ class StandardScalarType : public ScalarType
 {
 
     using rng_getter
-            = std::unique_ptr<RandomGenerator> (*)(const ScalarType *type,
+            = std::unique_ptr<RandomGenerator> (*)(const ScalarType* type,
                                                    Slice<uint64_t>);
 
     static std::unique_ptr<RandomGenerator>
-    get_mt19937_generator(const ScalarType *type, Slice<uint64_t> seed);
+    get_mt19937_generator(const ScalarType* type, Slice<uint64_t> seed);
     static std::unique_ptr<RandomGenerator>
-    get_pcg_generator(const ScalarType *type, Slice<uint64_t> seed);
+    get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed);
 
     std::unordered_map<string, rng_getter> m_rng_getters{
             {"mt19937", &get_mt19937_generator},
@@ -132,7 +132,7 @@ public:
             throw std::runtime_error("one or both of the scalars is const");
         }
 
-        std::swap(*lhs.raw_cast<ScalarImpl *>(), *rhs.raw_cast<ScalarImpl *>());
+        std::swap(*lhs.raw_cast<ScalarImpl*>(), *rhs.raw_cast<ScalarImpl*>());
     }
 
 protected:
@@ -143,7 +143,7 @@ protected:
             return *other.template raw_cast<const ScalarImpl>();
         }
 
-        const ScalarType *type = other.type();
+        const ScalarType* type = other.type();
         if (type == nullptr) {
             throw std::runtime_error("null type for non-zero value");
         }
@@ -161,22 +161,22 @@ protected:
     }
 
 public:
-    void convert_copy(void *out, ScalarPointer in, dimn_t count) const override
+    void convert_copy(void* out, ScalarPointer in, dimn_t count) const override
     {
         RPY_DBG_ASSERT(out != nullptr);
         RPY_DBG_ASSERT(!in.is_null());
-        const auto *type = in.type();
+        const auto* type = in.type();
 
         if (type == nullptr) {
             throw std::runtime_error("null type for non-zero value");
         }
 
         if (type == this) {
-            const auto *in_begin = in.template raw_cast<const ScalarImpl>();
-            const auto *in_end = in_begin + count;
-            std::copy(in_begin, in_end, static_cast<ScalarImpl *>(out));
+            const auto* in_begin = in.template raw_cast<const ScalarImpl>();
+            const auto* in_end = in_begin + count;
+            std::copy(in_begin, in_end, static_cast<ScalarImpl*>(out));
         } else {
-            const auto &cv = get_conversion(type->id(), this->id());
+            const auto& cv = get_conversion(type->id(), this->id());
             ScalarPointer out_ptr{this, out};
 
             cv(out_ptr, in, count);
@@ -185,11 +185,11 @@ public:
 
 private:
     template <typename Basic>
-    void convert_copy_basic(ScalarPointer &out, const void *in,
+    void convert_copy_basic(ScalarPointer& out, const void* in,
                             dimn_t count) const noexcept
     {
-        const auto *iptr = static_cast<const Basic *>(in);
-        auto *optr = static_cast<ScalarImpl *>(out.ptr());
+        const auto* iptr = static_cast<const Basic*>(in);
+        auto* optr = static_cast<ScalarImpl*>(out.ptr());
 
         for (dimn_t i = 0; i < count; ++i, ++iptr, ++optr) {
             ::new (optr) ScalarImpl(*iptr);
@@ -197,8 +197,8 @@ private:
     }
 
 public:
-    void convert_copy(ScalarPointer out, const void *in, dimn_t count,
-                      const string &type_id) const override
+    void convert_copy(ScalarPointer out, const void* in, dimn_t count,
+                      const string& type_id) const override
     {
         if (type_id == "f64") {
             return convert_copy_basic<double>(out, in, count);
@@ -227,7 +227,7 @@ public:
         }
 
         // If we're here, then it is a non-standard type
-        const auto &conversion = get_conversion(type_id, this->id());
+        const auto& conversion = get_conversion(type_id, this->id());
         conversion(out, {nullptr, in}, count);
     }
 
@@ -274,7 +274,7 @@ public:
         }
         convert_copy(dst, src.cptr(), count, src.type()->id());
     }
-    void convert_copy(void *out, const void *in, std::size_t count,
+    void convert_copy(void* out, const void* in, std::size_t count,
                       BasicScalarInfo info) const override
     {
 
@@ -365,12 +365,12 @@ public:
     void assign(ScalarPointer target, long long int numerator,
                 long long int denominator) const override
     {
-        *target.raw_cast<ScalarImpl *>()
+        *target.raw_cast<ScalarImpl*>()
                 = ScalarImpl(numerator) / ScalarImpl(denominator);
     }
     scalar_t to_scalar_t(ScalarPointer arg) const override
     {
-        return static_cast<scalar_t>(*arg.raw_cast<const ScalarImpl *>());
+        return static_cast<scalar_t>(*arg.raw_cast<const ScalarImpl*>());
     }
 
     Scalar copy(ScalarPointer arg) const override
@@ -385,19 +385,19 @@ public:
     {
         if (!lhs) { return copy(rhs); }
         return Scalar(this,
-                      *lhs.raw_cast<const ScalarImpl *>() + try_convert(rhs));
+                      *lhs.raw_cast<const ScalarImpl*>() + try_convert(rhs));
     }
     Scalar sub(ScalarPointer lhs, ScalarPointer rhs) const override
     {
         if (!lhs) { return uminus(rhs); }
         return Scalar(this,
-                      *lhs.raw_cast<const ScalarImpl *>() - try_convert(rhs));
+                      *lhs.raw_cast<const ScalarImpl*>() - try_convert(rhs));
     }
     Scalar mul(ScalarPointer lhs, ScalarPointer rhs) const override
     {
         if (!lhs) { return zero(); }
         return Scalar(this,
-                      *lhs.raw_cast<const ScalarImpl *>() * try_convert(rhs));
+                      *lhs.raw_cast<const ScalarImpl*>() * try_convert(rhs));
     }
     Scalar div(ScalarPointer lhs, ScalarPointer rhs) const override
     {
@@ -411,12 +411,12 @@ public:
         }
 
         return Scalar(this,
-                      static_cast<ScalarImpl>(
-                              *lhs.raw_cast<const ScalarImpl *>() / crhs));
+                      static_cast<ScalarImpl>(*lhs.raw_cast<const ScalarImpl*>()
+                                              / crhs));
     }
     bool are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept override
     {
-        return *lhs.raw_cast<const ScalarImpl *>() == try_convert(rhs);
+        return *lhs.raw_cast<const ScalarImpl*>() == try_convert(rhs);
     }
 
     Scalar one() const override { return Scalar(this, ScalarImpl(1)); }
@@ -425,25 +425,25 @@ public:
     void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const override
     {
         RPY_DBG_ASSERT(lhs);
-        auto *ptr = lhs.raw_cast<ScalarImpl *>();
+        auto* ptr = lhs.raw_cast<ScalarImpl*>();
         *ptr += try_convert(rhs);
     }
     void sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const override
     {
         RPY_DBG_ASSERT(lhs);
-        auto *ptr = lhs.raw_cast<ScalarImpl *>();
+        auto* ptr = lhs.raw_cast<ScalarImpl*>();
         *ptr -= try_convert(rhs);
     }
     void mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const override
     {
         RPY_DBG_ASSERT(lhs);
-        auto *ptr = lhs.raw_cast<ScalarImpl *>();
+        auto* ptr = lhs.raw_cast<ScalarImpl*>();
         *ptr *= try_convert(rhs);
     }
     void div_inplace(ScalarPointer lhs, ScalarPointer rhs) const override
     {
         RPY_DBG_ASSERT(lhs);
-        auto *ptr = lhs.raw_cast<ScalarImpl *>();
+        auto* ptr = lhs.raw_cast<ScalarImpl*>();
         if (rhs.is_null()) { throw std::runtime_error("division by zero"); }
 
         auto crhs = try_convert(rhs);
@@ -457,21 +457,21 @@ public:
     bool is_zero(ScalarPointer arg) const override
     {
         return !static_cast<bool>(arg)
-                || *arg.raw_cast<const ScalarImpl *>() == ScalarImpl(0);
+                || *arg.raw_cast<const ScalarImpl*>() == ScalarImpl(0);
     }
-    void print(ScalarPointer arg, std::ostream &os) const override
+    void print(ScalarPointer arg, std::ostream& os) const override
     {
         if (!arg) {
             os << 0.0;
         } else {
-            os << *arg.raw_cast<const ScalarImpl *>();
+            os << *arg.raw_cast<const ScalarImpl*>();
         }
     }
 
     std::unique_ptr<RandomGenerator>
-    get_rng(const string &bit_generator, Slice<uint64_t> seed) const override;
+    get_rng(const string& bit_generator, Slice<uint64_t> seed) const override;
 
-    std::vector<byte> to_raw_bytes(const ScalarPointer &ptr,
+    std::vector<byte> to_raw_bytes(const ScalarPointer& ptr,
                                    dimn_t count) const override;
     ScalarPointer from_raw_bytes(Slice<byte> raw_bytes,
                                  dimn_t count) const override;
@@ -479,13 +479,13 @@ public:
 
 template <typename ScalarImpl>
 std::vector<byte>
-StandardScalarType<ScalarImpl>::to_raw_bytes(const ScalarPointer &ptr,
+StandardScalarType<ScalarImpl>::to_raw_bytes(const ScalarPointer& ptr,
                                              dimn_t count) const
 {
     RPY_CHECK(ptr.type() == this);
     std::vector<byte> result(count * sizeof(ScalarImpl));
 
-    std::copy_n(ptr.raw_cast<const byte *>(), count * sizeof(ScalarImpl),
+    std::copy_n(ptr.raw_cast<const byte*>(), count * sizeof(ScalarImpl),
                 result.data());
 
     return result;
@@ -499,7 +499,7 @@ StandardScalarType<ScalarImpl>::from_raw_bytes(Slice<byte> raw_bytes,
     RPY_CHECK(count * sizeof(ScalarImpl) == raw_bytes.size());
 
     auto optr = allocate(count);
-    auto *raw = optr.template raw_cast<char *>();
+    auto* raw = optr.template raw_cast<char*>();
 
     std::copy(raw_bytes.begin(), raw_bytes.end(), raw);
     return optr;
@@ -516,7 +516,7 @@ inline uint64_t device_to_seed()
 
 template <typename ScalarImpl>
 std::unique_ptr<RandomGenerator>
-StandardScalarType<ScalarImpl>::get_mt19937_generator(const ScalarType *type,
+StandardScalarType<ScalarImpl>::get_mt19937_generator(const ScalarType* type,
                                                       Slice<uint64_t> seed)
 {
     if (seed.empty()) {
@@ -531,7 +531,7 @@ StandardScalarType<ScalarImpl>::get_mt19937_generator(const ScalarType *type,
 }
 template <typename ScalarImpl>
 std::unique_ptr<RandomGenerator>
-StandardScalarType<ScalarImpl>::get_pcg_generator(const ScalarType *type,
+StandardScalarType<ScalarImpl>::get_pcg_generator(const ScalarType* type,
                                                   Slice<uint64_t> seed)
 {
     if (seed.empty()) {
@@ -545,7 +545,7 @@ StandardScalarType<ScalarImpl>::get_pcg_generator(const ScalarType *type,
 
 template <typename ScalarImpl>
 std::unique_ptr<RandomGenerator>
-StandardScalarType<ScalarImpl>::get_rng(const string &bit_generator,
+StandardScalarType<ScalarImpl>::get_rng(const string& bit_generator,
                                         Slice<uint64_t> seed) const
 {
     if (bit_generator.empty()) {

@@ -97,61 +97,61 @@ class LAContext : public Context
                              lie_t<VType>>;
 
     template <typename OutType, typename InType>
-    OutType convert_impl(const InType &arg) const;
+    OutType convert_impl(const InType& arg) const;
 
     template <typename OutType>
-    OutType construct_impl(const VectorConstructionData &data) const;
+    OutType construct_impl(const VectorConstructionData& data) const;
 
     template <VectorType VType>
-    free_tensor_t<VType> convert_impl(const FreeTensor &arg) const;
+    free_tensor_t<VType> convert_impl(const FreeTensor& arg) const;
 
     template <VectorType VType>
-    shuffle_tensor_t<VType> convert_impl(const ShuffleTensor &arg) const;
+    shuffle_tensor_t<VType> convert_impl(const ShuffleTensor& arg) const;
 
     template <VectorType VType>
-    lie_t<VType> convert_impl(const Lie &arg) const;
+    lie_t<VType> convert_impl(const Lie& arg) const;
 
     template <VectorType VType>
-    free_tensor_t<VType> lie_to_tensor_impl(const Lie &arg) const;
+    free_tensor_t<VType> lie_to_tensor_impl(const Lie& arg) const;
 
     template <VectorType VType>
-    lie_t<VType> tensor_to_lie_impl(const FreeTensor &arg) const;
+    lie_t<VType> tensor_to_lie_impl(const FreeTensor& arg) const;
 
     template <VectorType VType>
-    lie_t<VType> cbh_impl(const std::vector<Lie> &lies) const;
+    lie_t<VType> cbh_impl(const std::vector<Lie>& lies) const;
 
     template <VectorType VType>
-    free_tensor_t<VType> compute_signature(const SignatureData &data) const;
+    free_tensor_t<VType> compute_signature(const SignatureData& data) const;
 
     template <VectorType VType>
-    free_tensor_t<VType> Ad_x_n(deg_t n, const free_tensor_t<VType> &x,
-                                const free_tensor_t<VType> &y) const;
-
-    template <VectorType VType>
-    free_tensor_t<VType>
-    derive_series_compute(const free_tensor_t<VType> &increment,
-                          const free_tensor_t<VType> &perturbation) const;
+    free_tensor_t<VType> Ad_x_n(deg_t n, const free_tensor_t<VType>& x,
+                                const free_tensor_t<VType>& y) const;
 
     template <VectorType VType>
     free_tensor_t<VType>
-    sig_derivative_single(const free_tensor_t<VType> &signature,
-                          const free_tensor_t<VType> &increment,
-                          const free_tensor_t<VType> &perturbation) const;
+    derive_series_compute(const free_tensor_t<VType>& increment,
+                          const free_tensor_t<VType>& perturbation) const;
 
     template <VectorType VType>
     free_tensor_t<VType>
-    sig_derivative_impl(const std::vector<DerivativeComputeInfo> &info) const;
+    sig_derivative_single(const free_tensor_t<VType>& signature,
+                          const free_tensor_t<VType>& increment,
+                          const free_tensor_t<VType>& perturbation) const;
+
+    template <VectorType VType>
+    free_tensor_t<VType>
+    sig_derivative_impl(const std::vector<DerivativeComputeInfo>& info) const;
 
     UnspecifiedAlgebraType
-    construct_impl(const VectorConstructionData &data,
+    construct_impl(const VectorConstructionData& data,
                    dtl::la_alg_type_tag<AlgebraType::FreeTensor>) const;
 
     UnspecifiedAlgebraType
-    construct_impl(const VectorConstructionData &data,
+    construct_impl(const VectorConstructionData& data,
                    dtl::la_alg_type_tag<AlgebraType::ShuffleTensor>) const;
 
     UnspecifiedAlgebraType
-    construct_impl(const VectorConstructionData &data,
+    construct_impl(const VectorConstructionData& data,
                    dtl::la_alg_type_tag<AlgebraType::Lie>) const;
 
 public:
@@ -162,41 +162,41 @@ public:
 
     context_pointer get_alike(deg_t new_depth) const override;
     context_pointer
-    get_alike(const scalars::ScalarType *new_ctype) const override;
+    get_alike(const scalars::ScalarType* new_ctype) const override;
     context_pointer
     get_alike(deg_t new_depth,
-              const scalars::ScalarType *new_ctype) const override;
+              const scalars::ScalarType* new_ctype) const override;
     context_pointer
     get_alike(deg_t new_width, deg_t new_depth,
-              const scalars::ScalarType *new_ctype) const override;
+              const scalars::ScalarType* new_ctype) const override;
     LieBasis get_lie_basis() const override;
     TensorBasis get_tensor_basis() const override;
-    FreeTensor convert(const FreeTensor &arg,
+    FreeTensor convert(const FreeTensor& arg,
                        optional<VectorType> new_vec_type) const override;
-    ShuffleTensor convert(const ShuffleTensor &arg,
+    ShuffleTensor convert(const ShuffleTensor& arg,
                           optional<VectorType> new_vec_type) const override;
-    Lie convert(const Lie &arg,
+    Lie convert(const Lie& arg,
                 optional<VectorType> new_vec_type) const override;
     FreeTensor
-    construct_free_tensor(const VectorConstructionData &arg) const override;
+    construct_free_tensor(const VectorConstructionData& arg) const override;
     ShuffleTensor
-    construct_shuffle_tensor(const VectorConstructionData &arg) const override;
-    Lie construct_lie(const VectorConstructionData &arg) const override;
+    construct_shuffle_tensor(const VectorConstructionData& arg) const override;
+    Lie construct_lie(const VectorConstructionData& arg) const override;
     UnspecifiedAlgebraType
     construct(AlgebraType type,
-              const VectorConstructionData &data) const override;
-    FreeTensor lie_to_tensor(const Lie &arg) const override;
-    Lie tensor_to_lie(const FreeTensor &arg) const override;
-    FreeTensor signature(const SignatureData &data) const override;
-    Lie log_signature(const SignatureData &data) const override;
-    FreeTensor sig_derivative(const std::vector<DerivativeComputeInfo> &info,
+              const VectorConstructionData& data) const override;
+    FreeTensor lie_to_tensor(const Lie& arg) const override;
+    Lie tensor_to_lie(const FreeTensor& arg) const override;
+    FreeTensor signature(const SignatureData& data) const override;
+    Lie log_signature(const SignatureData& data) const override;
+    FreeTensor sig_derivative(const std::vector<DerivativeComputeInfo>& info,
                               VectorType vtype) const override;
 };
 
 template <deg_t Width, deg_t Depth, typename Coefficients>
 template <typename OutType, typename InType>
 OutType
-LAContext<Width, Depth, Coefficients>::convert_impl(const InType &arg) const
+LAContext<Width, Depth, Coefficients>::convert_impl(const InType& arg) const
 {
     OutType result;
 
@@ -205,14 +205,14 @@ LAContext<Width, Depth, Coefficients>::convert_impl(const InType &arg) const
 template <deg_t Width, deg_t Depth, typename Coefficients>
 template <typename OutType>
 OutType LAContext<Width, Depth, Coefficients>::construct_impl(
-        const VectorConstructionData &data) const
+        const VectorConstructionData& data) const
 {
     OutType result;
 
     if (data.data.is_null()) { return result; }
 
-    const auto &basis = OutType::basis;
-    const scalar_type *data_ptr;
+    const auto& basis = OutType::basis;
+    const scalar_type* data_ptr;
 
     const auto size = data.data.size();
     std::vector<scalar_type> tmp;
@@ -226,7 +226,7 @@ OutType LAContext<Width, Depth, Coefficients>::construct_impl(
 
     if (data.data.has_keys()) {
         // Sparse data
-        const auto *keys = data.data.keys();
+        const auto* keys = data.data.keys();
 
         for (dimn_t i = 0; i < size; ++i) {
             result[basis.index_to_key(keys[i])] = data_ptr[i];
@@ -247,7 +247,7 @@ OutType LAContext<Width, Depth, Coefficients>::construct_impl(
 template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::free_tensor_t<VType>
-LAContext<Width, Depth, Coefficients>::convert_impl(const FreeTensor &arg) const
+LAContext<Width, Depth, Coefficients>::convert_impl(const FreeTensor& arg) const
 {
     free_tensor_t<VType> result;
     return result;
@@ -256,7 +256,7 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::shuffle_tensor_t<VType>
 LAContext<Width, Depth, Coefficients>::convert_impl(
-        const ShuffleTensor &arg) const
+        const ShuffleTensor& arg) const
 {
     shuffle_tensor_t<VType> result;
     return result;
@@ -264,7 +264,7 @@ LAContext<Width, Depth, Coefficients>::convert_impl(
 template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::lie_t<VType>
-LAContext<Width, Depth, Coefficients>::convert_impl(const Lie &arg) const
+LAContext<Width, Depth, Coefficients>::convert_impl(const Lie& arg) const
 {
     lie_t<VType> result;
     return result;
@@ -272,10 +272,10 @@ LAContext<Width, Depth, Coefficients>::convert_impl(const Lie &arg) const
 template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::free_tensor_t<VType>
-LAContext<Width, Depth, Coefficients>::lie_to_tensor_impl(const Lie &arg) const
+LAContext<Width, Depth, Coefficients>::lie_to_tensor_impl(const Lie& arg) const
 {
 
-    const auto &arg_context = arg->context();
+    const auto& arg_context = arg->context();
     if (arg_context == this) {
         maps_t<VType> maps;
         return maps.l2t(algebra_cast<lie_t<VType>>(*arg));
@@ -292,9 +292,9 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::lie_t<VType>
 LAContext<Width, Depth, Coefficients>::tensor_to_lie_impl(
-        const FreeTensor &arg) const
+        const FreeTensor& arg) const
 {
-    const auto &arg_context = arg->context();
+    const auto& arg_context = arg->context();
 
     maps_t<VType> maps;
     if (arg_context == this) {
@@ -312,12 +312,12 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::lie_t<VType>
 LAContext<Width, Depth, Coefficients>::cbh_impl(
-        const std::vector<Lie> &lies) const
+        const std::vector<Lie>& lies) const
 {
     maps_t<VType> maps;
     free_tensor_t<VType> collector;
     collector[typename free_tensor_t<VType>::KEY()] = scalar_type(1);
-    for (const auto &lie : lies) {
+    for (const auto& lie : lies) {
         collector.fmexp_inplace(lie_to_tensor_impl<VType>(lie));
     }
 
@@ -327,7 +327,7 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::free_tensor_t<VType>
 LAContext<Width, Depth, Coefficients>::compute_signature(
-        const SignatureData &data) const
+        const SignatureData& data) const
 {
     free_tensor_t<VType> result;
     result[typename free_tensor_t<VType>::KEY()] = scalar_type(1);
@@ -336,7 +336,7 @@ LAContext<Width, Depth, Coefficients>::compute_signature(
 
     for (dimn_t i = 0; i < nrows; ++i) {
         auto row = data.data_stream[i];
-        const auto *keys
+        const auto* keys
                 = data.key_stream.empty() ? nullptr : data.key_stream[i];
         VectorConstructionData row_cdata{scalars::KeyScalarArray(row, keys),
                                          VType};
@@ -354,8 +354,8 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::free_tensor_t<VType>
 LAContext<Width, Depth, Coefficients>::Ad_x_n(
-        deg_t n, const LAContext::free_tensor_t<VType> &x,
-        const LAContext::free_tensor_t<VType> &y) const
+        deg_t n, const LAContext::free_tensor_t<VType>& x,
+        const LAContext::free_tensor_t<VType>& y) const
 {
     auto tmp = x * y - y * x;
     while (--n) { tmp = x * tmp - tmp * x; }
@@ -365,8 +365,8 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::free_tensor_t<VType>
 LAContext<Width, Depth, Coefficients>::derive_series_compute(
-        const LAContext::free_tensor_t<VType> &increment,
-        const LAContext::free_tensor_t<VType> &perturbation) const
+        const LAContext::free_tensor_t<VType>& increment,
+        const LAContext::free_tensor_t<VType>& perturbation) const
 {
     free_tensor_t<VType> result(perturbation);
 
@@ -389,9 +389,9 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::free_tensor_t<VType>
 LAContext<Width, Depth, Coefficients>::sig_derivative_single(
-        const LAContext::free_tensor_t<VType> &signature,
-        const LAContext::free_tensor_t<VType> &increment,
-        const LAContext::free_tensor_t<VType> &perturbation) const
+        const LAContext::free_tensor_t<VType>& signature,
+        const LAContext::free_tensor_t<VType>& increment,
+        const LAContext::free_tensor_t<VType>& perturbation) const
 {
     return signature * derive_series_compute<VType>(increment, perturbation);
 }
@@ -399,12 +399,12 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::free_tensor_t<VType>
 LAContext<Width, Depth, Coefficients>::sig_derivative_impl(
-        const std::vector<DerivativeComputeInfo> &info) const
+        const std::vector<DerivativeComputeInfo>& info) const
 {
     free_tensor_t<VType> result;
 
     if (!info.empty()) {
-        for (const auto &data : info) {
+        for (const auto& data : info) {
             auto tincr = lie_to_tensor_impl<VType>(data.logsig_of_interval);
             auto tperturb = lie_to_tensor_impl<VType>(data.perturbation);
             auto sig = exp(tincr);
@@ -418,7 +418,7 @@ LAContext<Width, Depth, Coefficients>::sig_derivative_impl(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 UnspecifiedAlgebraType LAContext<Width, Depth, Coefficients>::construct_impl(
-        const VectorConstructionData &data,
+        const VectorConstructionData& data,
         dtl::la_alg_type_tag<AlgebraType::FreeTensor>) const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
@@ -429,7 +429,7 @@ UnspecifiedAlgebraType LAContext<Width, Depth, Coefficients>::construct_impl(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 UnspecifiedAlgebraType LAContext<Width, Depth, Coefficients>::construct_impl(
-        const VectorConstructionData &data,
+        const VectorConstructionData& data,
         dtl::la_alg_type_tag<AlgebraType::ShuffleTensor>) const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
@@ -441,7 +441,7 @@ UnspecifiedAlgebraType LAContext<Width, Depth, Coefficients>::construct_impl(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 UnspecifiedAlgebraType LAContext<Width, Depth, Coefficients>::construct_impl(
-        const VectorConstructionData &data,
+        const VectorConstructionData& data,
         dtl::la_alg_type_tag<AlgebraType::Lie>) const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
@@ -467,13 +467,13 @@ LAContext<Width, Depth, Coefficients>::get_alike(deg_t new_depth) const
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 context_pointer LAContext<Width, Depth, Coefficients>::get_alike(
-        const scalars::ScalarType *new_ctype) const
+        const scalars::ScalarType* new_ctype) const
 {
     return get_context(Width, Depth, new_ctype, {{"backend", "libalgebra"}});
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 context_pointer LAContext<Width, Depth, Coefficients>::get_alike(
-        deg_t new_depth, const scalars::ScalarType *new_ctype) const
+        deg_t new_depth, const scalars::ScalarType* new_ctype) const
 {
     return get_context(Width, new_depth, new_ctype,
                        {{"backend", "libalgebra"}});
@@ -481,7 +481,7 @@ context_pointer LAContext<Width, Depth, Coefficients>::get_alike(
 template <deg_t Width, deg_t Depth, typename Coefficients>
 context_pointer LAContext<Width, Depth, Coefficients>::get_alike(
         deg_t new_width, deg_t new_depth,
-        const scalars::ScalarType *new_ctype) const
+        const scalars::ScalarType* new_ctype) const
 {
     return get_context(new_width, new_depth, new_ctype,
                        {{"backend", "libalgebra"}});
@@ -498,7 +498,7 @@ TensorBasis LAContext<Width, Depth, Coefficients>::get_tensor_basis() const
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 FreeTensor LAContext<Width, Depth, Coefficients>::convert(
-        const FreeTensor &arg, optional<VectorType> new_vec_type) const
+        const FreeTensor& arg, optional<VectorType> new_vec_type) const
 {
     auto vtype = (new_vec_type.has_value()) ? new_vec_type.value()
                                             : arg.storage_type();
@@ -508,7 +508,7 @@ FreeTensor LAContext<Width, Depth, Coefficients>::convert(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 ShuffleTensor LAContext<Width, Depth, Coefficients>::convert(
-        const ShuffleTensor &arg, optional<VectorType> new_vec_type) const
+        const ShuffleTensor& arg, optional<VectorType> new_vec_type) const
 {
     auto vtype = (new_vec_type.has_value()) ? new_vec_type.value()
                                             : arg.storage_type();
@@ -518,7 +518,7 @@ ShuffleTensor LAContext<Width, Depth, Coefficients>::convert(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 Lie LAContext<Width, Depth, Coefficients>::convert(
-        const Lie &arg, optional<VectorType> new_vec_type) const
+        const Lie& arg, optional<VectorType> new_vec_type) const
 {
     auto vtype = (new_vec_type.has_value()) ? new_vec_type.value()
                                             : arg.storage_type();
@@ -528,7 +528,7 @@ Lie LAContext<Width, Depth, Coefficients>::convert(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 FreeTensor LAContext<Width, Depth, Coefficients>::construct_free_tensor(
-        const VectorConstructionData &arg) const
+        const VectorConstructionData& arg) const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
     FreeTensor(this, construct_impl<free_tensor_t<(VTYPE)>>(arg))
@@ -537,7 +537,7 @@ FreeTensor LAContext<Width, Depth, Coefficients>::construct_free_tensor(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 ShuffleTensor LAContext<Width, Depth, Coefficients>::construct_shuffle_tensor(
-        const VectorConstructionData &arg) const
+        const VectorConstructionData& arg) const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
     ShuffleTensor(this, construct_impl<shuffle_tensor_t<(VTYPE)>>(arg))
@@ -546,7 +546,7 @@ ShuffleTensor LAContext<Width, Depth, Coefficients>::construct_shuffle_tensor(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 Lie LAContext<Width, Depth, Coefficients>::construct_lie(
-        const VectorConstructionData &arg) const
+        const VectorConstructionData& arg) const
 {
 #define RPY_SWITCH_FN(VTYPE) Lie(this, construct_impl<lie_t<(VTYPE)>>(arg))
     RPY_MAKE_VTYPE_SWITCH(arg.vector_type)
@@ -554,7 +554,7 @@ Lie LAContext<Width, Depth, Coefficients>::construct_lie(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 UnspecifiedAlgebraType LAContext<Width, Depth, Coefficients>::construct(
-        AlgebraType type, const VectorConstructionData &data) const
+        AlgebraType type, const VectorConstructionData& data) const
 {
 #define RPY_SWITCH_FN(ATYPE)                                                   \
     construct_impl(data, dtl::la_alg_type_tag<(ATYPE)>())
@@ -563,7 +563,7 @@ UnspecifiedAlgebraType LAContext<Width, Depth, Coefficients>::construct(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 FreeTensor
-LAContext<Width, Depth, Coefficients>::lie_to_tensor(const Lie &arg) const
+LAContext<Width, Depth, Coefficients>::lie_to_tensor(const Lie& arg) const
 {
 #define RPY_SWITCH_FN(VTYPE) FreeTensor(this, lie_to_tensor_impl<(VTYPE)>(arg))
     RPY_MAKE_VTYPE_SWITCH(arg.storage_type())
@@ -571,7 +571,7 @@ LAContext<Width, Depth, Coefficients>::lie_to_tensor(const Lie &arg) const
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 Lie LAContext<Width, Depth, Coefficients>::tensor_to_lie(
-        const FreeTensor &arg) const
+        const FreeTensor& arg) const
 {
 #define RPY_SWITCH_FN(VTYPE) Lie(this, tensor_to_lie_impl<(VTYPE)>(arg))
     RPY_MAKE_VTYPE_SWITCH(arg.storage_type())
@@ -579,7 +579,7 @@ Lie LAContext<Width, Depth, Coefficients>::tensor_to_lie(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 FreeTensor LAContext<Width, Depth, Coefficients>::signature(
-        const SignatureData &data) const
+        const SignatureData& data) const
 {
 #define RPY_SWITCH_FN(VTYPE) FreeTensor(this, compute_signature<(VTYPE)>(data))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
@@ -587,13 +587,13 @@ FreeTensor LAContext<Width, Depth, Coefficients>::signature(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 Lie LAContext<Width, Depth, Coefficients>::log_signature(
-        const SignatureData &data) const
+        const SignatureData& data) const
 {
     return tensor_to_lie(signature(data).log());
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 FreeTensor LAContext<Width, Depth, Coefficients>::sig_derivative(
-        const std::vector<DerivativeComputeInfo> &info, VectorType vtype) const
+        const std::vector<DerivativeComputeInfo>& info, VectorType vtype) const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
     FreeTensor(this, sig_derivative_impl<(VTYPE)>(info))

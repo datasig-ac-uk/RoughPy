@@ -42,7 +42,7 @@
 
 using namespace rpy::intervals;
 
-std::vector<RealInterval> rpy::intervals::segment(const Interval &interval,
+std::vector<RealInterval> rpy::intervals::segment(const Interval& interval,
                                                   predicate_t predicate,
                                                   dyadic_depth_t max_depth)
 {

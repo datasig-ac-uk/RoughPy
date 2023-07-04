@@ -41,11 +41,11 @@ using namespace rpy;
 using namespace streams;
 using namespace pybind11::literals;
 
-static const char *BROWNIAN_PATH_DOC = R"rpydoc(A Brownian motion stream.
+static const char* BROWNIAN_PATH_DOC = R"rpydoc(A Brownian motion stream.
 )rpydoc";
 
-static py::object Brownian_from_generator(const py::args &args,
-                                          const py::kwargs &kwargs)
+static py::object Brownian_from_generator(const py::args& args,
+                                          const py::kwargs& kwargs)
 {
 
     auto pmd = python::kwargs_to_metadata(kwargs);
@@ -86,7 +86,7 @@ static py::object Brownian_from_generator(const py::args &args,
             python::RPyStream_FromStream(std::move(stream)));
 }
 
-void rpy::python::init_brownian_stream(py::module_ &m)
+void rpy::python::init_brownian_stream(py::module_& m)
 {
 
     py::class_<BrownianStream> klass(m, "BrownianStream", BROWNIAN_PATH_DOC);

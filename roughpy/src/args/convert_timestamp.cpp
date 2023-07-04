@@ -35,15 +35,15 @@ get_py_reference_delta(rpy::python::PyDateTimeResolution resolution)
     RPY_UNREACHABLE_RETURN(py::object());
 }
 
-rpy::param_t pytimedelta_to_param(PyObject *py_time_delta,
-                                  const options_t &options)
+rpy::param_t pytimedelta_to_param(PyObject* py_time_delta,
+                                  const options_t& options)
 {
     rpy::param_t result;
     if (PyDelta_Check(py_time_delta)) {
         // Python datetime object
         auto reference = get_py_reference_delta(options.resolution);
-        auto *py_reference = reference.ptr();
-        auto *normalised_delta
+        auto* py_reference = reference.ptr();
+        auto* normalised_delta
                 = PyNumber_TrueDivide(py_time_delta, py_reference);
         if (normalised_delta == nullptr) { throw py::error_already_set(); }
         result = PyFloat_AsDouble(normalised_delta);
@@ -69,7 +69,7 @@ py::object generic_to_timestamp(py::handle generic_timestamp)
 
     // Integers should be considered as seconds since POSIX epoch
     if (PyLong_Check(generic_timestamp.ptr())) {
-        auto *pdt = PyDateTime_FromTimestamp(generic_timestamp.ptr());
+        auto* pdt = PyDateTime_FromTimestamp(generic_timestamp.ptr());
         if (pdt == nullptr) { throw py::error_already_set(); }
         return py::reinterpret_steal<py::object>(pdt);
     }
@@ -87,7 +87,7 @@ py::object generic_to_timestamp(py::handle generic_timestamp)
 
 rpy::param_t rpy::python::convert_delta_from_datetimes(
         py::handle current, py::handle previous,
-        const rpy::python::PyDateTimeConversionOptions &options)
+        const rpy::python::PyDateTimeConversionOptions& options)
 {
 
     if (py::isinstance<py::float_>(current)
@@ -103,9 +103,9 @@ rpy::param_t rpy::python::convert_delta_from_datetimes(
 }
 rpy::param_t rpy::python::convert_timedelta(
         py::handle py_timedelta,
-        const rpy::python::PyDateTimeConversionOptions &options)
+        const rpy::python::PyDateTimeConversionOptions& options)
 {
     return 0;
 }
 
-void rpy::python::init_datetime(py::module_ &m) { PyDateTime_IMPORT; }
+void rpy::python::init_datetime(py::module_& m) { PyDateTime_IMPORT; }

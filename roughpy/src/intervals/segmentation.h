@@ -34,7 +34,7 @@
 namespace rpy {
 namespace python {
 
-void init_segmentation(py::module_ &m);
+void init_segmentation(py::module_& m);
 
 }// namespace python
 }// namespace rpy

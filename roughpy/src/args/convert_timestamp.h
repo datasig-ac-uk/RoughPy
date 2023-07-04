@@ -55,13 +55,13 @@ struct PyDateTimeConversionOptions {
     PyDateTimeResolution resolution;
 };
 
-void init_datetime(py::module_ &m);
+void init_datetime(py::module_& m);
 
 param_t
 convert_delta_from_datetimes(py::handle current, py::handle previous,
-                             const PyDateTimeConversionOptions &options);
+                             const PyDateTimeConversionOptions& options);
 param_t convert_timedelta(py::handle py_timedelta,
-                          const PyDateTimeConversionOptions &options);
+                          const PyDateTimeConversionOptions& options);
 
 }// namespace python
 }// namespace rpy

@@ -38,7 +38,7 @@
 namespace rpy {
 namespace python {
 
-void init_piecewise_lie_stream(py::module_ &m);
+void init_piecewise_lie_stream(py::module_& m);
 
 }
 }// namespace rpy

@@ -57,7 +57,7 @@ struct StreamMetadata {
     deg_t width;
     intervals::RealInterval effective_support;
     algebra::context_pointer default_context;
-    const scalars::ScalarType *data_scalar_type;
+    const scalars::ScalarType* data_scalar_type;
     algebra::VectorType cached_vector_type;
     resolution_t default_resolution;
     intervals::IntervalType interval_type;
@@ -84,9 +84,9 @@ class RPY_EXPORT StreamInterface
 
 public:
     RPY_NO_DISCARD
-    const StreamMetadata &metadata() const noexcept { return m_metadata; }
+    const StreamMetadata& metadata() const noexcept { return m_metadata; }
     RPY_NO_DISCARD
-    const StreamSchema &schema() const noexcept { return *p_schema; }
+    const StreamSchema& schema() const noexcept { return *p_schema; }
 
     explicit StreamInterface(StreamMetadata md,
                              std::shared_ptr<StreamSchema> schema)
@@ -102,10 +102,10 @@ public:
 
     virtual ~StreamInterface() noexcept;
     RPY_NO_DISCARD
-    virtual bool empty(const intervals::Interval &interval) const noexcept;
+    virtual bool empty(const intervals::Interval& interval) const noexcept;
 
 protected:
-    void set_metadata(StreamMetadata &&md) noexcept;
+    void set_metadata(StreamMetadata&& md) noexcept;
 
     void set_schema(std::shared_ptr<StreamSchema> schema) noexcept
     {
@@ -113,33 +113,33 @@ protected:
     }
 
     RPY_NO_DISCARD
-    virtual algebra::Lie log_signature_impl(const intervals::Interval &interval,
-                                            const algebra::Context &ctx) const
+    virtual algebra::Lie log_signature_impl(const intervals::Interval& interval,
+                                            const algebra::Context& ctx) const
             = 0;
 
 public:
     RPY_NO_DISCARD
-    virtual algebra::Lie log_signature(const intervals::Interval &interval,
-                                       const algebra::Context &ctx) const;
+    virtual algebra::Lie log_signature(const intervals::Interval& interval,
+                                       const algebra::Context& ctx) const;
 
     RPY_NO_DISCARD
     virtual algebra::Lie
-    log_signature(const intervals::DyadicInterval &interval,
-                  resolution_t resolution, const algebra::Context &ctx) const;
+    log_signature(const intervals::DyadicInterval& interval,
+                  resolution_t resolution, const algebra::Context& ctx) const;
 
     RPY_NO_DISCARD
-    virtual algebra::Lie log_signature(const intervals::Interval &interval,
+    virtual algebra::Lie log_signature(const intervals::Interval& interval,
                                        resolution_t resolution,
-                                       const algebra::Context &ctx) const;
+                                       const algebra::Context& ctx) const;
 
     RPY_NO_DISCARD
-    virtual algebra::FreeTensor signature(const intervals::Interval &interval,
-                                          const algebra::Context &ctx) const;
+    virtual algebra::FreeTensor signature(const intervals::Interval& interval,
+                                          const algebra::Context& ctx) const;
 
     RPY_NO_DISCARD
-    virtual algebra::FreeTensor signature(const intervals::Interval &interval,
+    virtual algebra::FreeTensor signature(const intervals::Interval& interval,
                                           resolution_t resolution,
-                                          const algebra::Context &ctx) const;
+                                          const algebra::Context& ctx) const;
 
 protected:
     // TODO: add methods for batch computing signatures via a computation tree

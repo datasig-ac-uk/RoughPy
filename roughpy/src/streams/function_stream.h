@@ -56,16 +56,16 @@ public:
                    streams::StreamMetadata md);
 
 protected:
-    algebra::Lie log_signature_impl(const intervals::Interval &interval,
-                                    const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval& interval,
+                                    const algebra::Context& ctx) const override;
 
     pair<Lie, Lie>
     compute_child_lie_increments(DyadicInterval left_di,
                                  DyadicInterval right_di,
-                                 const Lie &parent_value) const override;
+                                 const Lie& parent_value) const override;
 };
 
-void init_function_stream(py::module_ &m);
+void init_function_stream(py::module_& m);
 
 }// namespace python
 }// namespace rpy

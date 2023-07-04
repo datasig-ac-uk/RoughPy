@@ -53,7 +53,7 @@ class RPY_EXPORT TickStream : public StreamInterface
 
     RPY_NO_DISCARD
     optional<DyadicInterval>
-    smallest_dyadic_containing_all_events(const DyadicInterval &di,
+    smallest_dyadic_containing_all_events(const DyadicInterval& di,
                                           resolution_t resolution) const;
     RPY_NO_DISCARD
     optional<DyadicInterval>
@@ -65,11 +65,11 @@ class RPY_EXPORT TickStream : public StreamInterface
     algebra::Lie recursive_logsig(DyadicInterval di);
 
 public:
-    TickStream(std::vector<param_t> &&granular_times,
-               std::map<intervals::DyadicInterval, algebra::Lie> &&data,
+    TickStream(std::vector<param_t>&& granular_times,
+               std::map<intervals::DyadicInterval, algebra::Lie>&& data,
                resolution_t resolution,
                std::shared_ptr<streams::StreamSchema> schema,
-               StreamMetadata &&md)
+               StreamMetadata&& md)
         : StreamInterface(std::move(md), std::move(schema)),
           m_granular_times(std::move(granular_times)), m_data(std::move(data)),
           m_resolution(resolution)
@@ -84,37 +84,37 @@ public:
         }
     }
 
-    TickStream(StreamConstructionHelper &&helper, StreamMetadata md,
+    TickStream(StreamConstructionHelper&& helper, StreamMetadata md,
                resolution_t resolution);
 
-    TickStream(scalars::ScalarStream &&raw_data,
-               std::vector<const key_type *> raw_key_stream,
+    TickStream(scalars::ScalarStream&& raw_data,
+               std::vector<const key_type*> raw_key_stream,
                std::vector<param_t> raw_timestamps, resolution_t resolution,
                StreamMetadata md,
                intervals::IntervalType itype = intervals::IntervalType::Clopen);
 
     RPY_NO_DISCARD
-    bool empty(const intervals::Interval &interval) const noexcept override;
+    bool empty(const intervals::Interval& interval) const noexcept override;
     RPY_NO_DISCARD
-    algebra::Lie log_signature(const DyadicInterval &interval,
+    algebra::Lie log_signature(const DyadicInterval& interval,
                                resolution_t resolution,
-                               const algebra::Context &ctx) const override;
+                               const algebra::Context& ctx) const override;
     RPY_NO_DISCARD
-    algebra::Lie log_signature(const intervals::Interval &interval,
+    algebra::Lie log_signature(const intervals::Interval& interval,
                                resolution_t resolution,
-                               const algebra::Context &ctx) const override;
+                               const algebra::Context& ctx) const override;
     RPY_NO_DISCARD
-    algebra::FreeTensor signature(const intervals::Interval &interval,
-                                  const algebra::Context &ctx) const override;
+    algebra::FreeTensor signature(const intervals::Interval& interval,
+                                  const algebra::Context& ctx) const override;
     RPY_NO_DISCARD
-    algebra::FreeTensor signature(const intervals::Interval &interval,
+    algebra::FreeTensor signature(const intervals::Interval& interval,
                                   resolution_t resolution,
-                                  const algebra::Context &ctx) const override;
+                                  const algebra::Context& ctx) const override;
 
 protected:
     RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval &interval,
-                                    const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval& interval,
+                                    const algebra::Context& ctx) const override;
 
 public:
     RPY_SERIAL_SERIALIZE_FN();

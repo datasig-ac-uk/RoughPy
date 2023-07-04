@@ -48,7 +48,7 @@ StreamConstructionHelper::StreamConstructionHelper(
     for (key_type k = 1; k <= width; ++k) { m_dense_keys.push_back(k); }
 }
 
-algebra::Lie &StreamConstructionHelper::next_entry(param_t next_timestamp)
+algebra::Lie& StreamConstructionHelper::next_entry(param_t next_timestamp)
 {
     return m_entries.insert({next_timestamp, m_zero})->second;
 }
@@ -105,7 +105,7 @@ StreamConstructionHelper::finalise()
 
 optional<ChannelType> StreamConstructionHelper::type_of(string_view label) const
 {
-    const auto &schema = *p_schema;
+    const auto& schema = *p_schema;
     auto found = schema.find(string(label));
     if (found != schema.end()) { return found->second.type(); }
     return {};

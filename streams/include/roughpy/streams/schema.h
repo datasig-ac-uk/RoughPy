@@ -94,7 +94,7 @@ class StreamChannel
     };
 
     template <typename T>
-    static void inplace_construct(void *address, T &&value) noexcept(
+    static void inplace_construct(void* address, T&& value) noexcept(
             is_nothrow_constructible<remove_cv_ref_t<T>,
                                      decltype(value)>::value)
     {
@@ -121,33 +121,33 @@ public:
     string label_suffix(dimn_t variant_no) const;
 
     StreamChannel();
-    StreamChannel(const StreamChannel &arg);
-    StreamChannel(StreamChannel &&arg) noexcept;
+    StreamChannel(const StreamChannel& arg);
+    StreamChannel(StreamChannel&& arg) noexcept;
 
     explicit StreamChannel(ChannelType type);
 
-    explicit StreamChannel(IncrementChannelInfo &&info)
+    explicit StreamChannel(IncrementChannelInfo&& info)
         : m_type(ChannelType::Increment), increment_info(std::move(info))
     {}
 
-    explicit StreamChannel(ValueChannelInfo &&info)
+    explicit StreamChannel(ValueChannelInfo&& info)
         : m_type(ChannelType::Value), value_info(std::move(info))
     {}
 
-    explicit StreamChannel(CategoricalChannelInfo &&info)
+    explicit StreamChannel(CategoricalChannelInfo&& info)
         : m_type(ChannelType::Categorical), categorical_info(std::move(info))
     {}
 
-    explicit StreamChannel(LieChannelInfo &&info)
+    explicit StreamChannel(LieChannelInfo&& info)
         : m_type(ChannelType::Lie), lie_info(std::move(info))
     {}
 
     ~StreamChannel();
 
-    StreamChannel &operator=(const StreamChannel &other);
-    StreamChannel &operator=(StreamChannel &&other) noexcept;
+    StreamChannel& operator=(const StreamChannel& other);
+    StreamChannel& operator=(StreamChannel&& other) noexcept;
 
-    StreamChannel &operator=(IncrementChannelInfo &&info)
+    StreamChannel& operator=(IncrementChannelInfo&& info)
     {
         this->~StreamChannel();
         m_type = ChannelType::Increment;
@@ -155,7 +155,7 @@ public:
         return *this;
     }
 
-    StreamChannel &operator=(ValueChannelInfo &&info)
+    StreamChannel& operator=(ValueChannelInfo&& info)
     {
         this->~StreamChannel();
         m_type = ChannelType::Value;
@@ -163,7 +163,7 @@ public:
         return *this;
     }
 
-    StreamChannel &operator=(CategoricalChannelInfo &&info)
+    StreamChannel& operator=(CategoricalChannelInfo&& info)
     {
         this->~StreamChannel();
         m_type = ChannelType::Categorical;
@@ -187,14 +187,14 @@ public:
         return value_info.lead_lag;
     }
 
-    StreamChannel &add_variant(string variant_label);
+    StreamChannel& add_variant(string variant_label);
 
     /**
      * @brief Insert a new variant if it doesn't already exist
      * @param variant_label variant label to insert.
      * @return referene to this channel.
      */
-    StreamChannel &insert_variant(string variant_label);
+    StreamChannel& insert_variant(string variant_label);
 
     RPY_NO_DISCARD
     std::vector<string> get_variants() const;
@@ -254,17 +254,17 @@ private:
      * variant_id after call
      * @return const_iterator to the channel
      */
-    const_iterator stream_dim_to_channel_it(dimn_t &stream_dim) const;
+    const_iterator stream_dim_to_channel_it(dimn_t& stream_dim) const;
 
 public:
     StreamSchema() = default;
-    StreamSchema(const StreamSchema &) = default;
-    StreamSchema(StreamSchema &&) noexcept = default;
+    StreamSchema(const StreamSchema&) = default;
+    StreamSchema(StreamSchema&&) noexcept = default;
 
     explicit StreamSchema(dimn_t width);
 
-    StreamSchema &operator=(const StreamSchema &) = default;
-    StreamSchema &operator=(StreamSchema &&) noexcept = default;
+    StreamSchema& operator=(const StreamSchema&) = default;
+    StreamSchema& operator=(StreamSchema&&) noexcept = default;
 
     RPY_NO_DISCARD
     const_iterator nth(dimn_t idx) const noexcept
@@ -275,13 +275,13 @@ public:
 
 public:
     RPY_NO_DISCARD
-    iterator find(const string &label);
+    iterator find(const string& label);
 
     RPY_NO_DISCARD
-    const_iterator find(const string &label) const;
+    const_iterator find(const string& label) const;
 
     RPY_NO_DISCARD
-    bool contains(const string &label) const { return find(label) != end(); }
+    bool contains(const string& label) const { return find(label) != end(); }
 
     RPY_NO_DISCARD
     dimn_t width() const;
@@ -313,16 +313,16 @@ public:
                                     dimn_t channel_variant) const;
 
     RPY_NO_DISCARD
-    dimn_t label_to_stream_dim(const string &label) const;
+    dimn_t label_to_stream_dim(const string& label) const;
 
-    StreamChannel &insert(string label, StreamChannel &&channel_data);
+    StreamChannel& insert(string label, StreamChannel&& channel_data);
 
-    StreamChannel &insert(StreamChannel &&channel_data);
+    StreamChannel& insert(StreamChannel&& channel_data);
 
-    StreamChannel &insert_increment(string label);
-    StreamChannel &insert_value(string label);
-    StreamChannel &insert_categorical(string label);
-    StreamChannel &insert_lie(string label);
+    StreamChannel& insert_increment(string label);
+    StreamChannel& insert_value(string label);
+    StreamChannel& insert_categorical(string label);
+    StreamChannel& insert_lie(string label);
 
     RPY_NO_DISCARD
     bool is_final() const noexcept { return m_is_final; }
@@ -396,7 +396,7 @@ RPY_SERIAL_LOAD_FN_IMPL(StreamChannel)
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(StreamSchema)
 {
-    RPY_SERIAL_SERIALIZE_NVP("channels", static_cast<base_type &>(*this));
+    RPY_SERIAL_SERIALIZE_NVP("channels", static_cast<base_type&>(*this));
     RPY_SERIAL_SERIALIZE_NVP("is_final", m_is_final);
 }
 

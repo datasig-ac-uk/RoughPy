@@ -47,11 +47,11 @@ struct iterator_helper_trait<
     using iter_t
             = lal::dtl::dense_vector_iterator<Basis, Coefficients, Iterator>;
 
-    static auto key(const iter_t &it) noexcept -> decltype(it->key())
+    static auto key(const iter_t& it) noexcept -> decltype(it->key())
     {
         return it->key();
     }
-    static auto value(const iter_t &it) noexcept -> decltype(it->value())
+    static auto value(const iter_t& it) noexcept -> decltype(it->value())
     {
         return it->value();
     }
@@ -63,11 +63,11 @@ struct iterator_helper_trait<
     using iter_t = lal::dtl::dense_vector_const_iterator<Basis, Coefficients,
                                                          Iterator>;
 
-    static auto key(const iter_t &it) noexcept -> decltype(it->key())
+    static auto key(const iter_t& it) noexcept -> decltype(it->key())
     {
         return it->key();
     }
-    static auto value(const iter_t &it) noexcept -> decltype(it->value())
+    static auto value(const iter_t& it) noexcept -> decltype(it->value())
     {
         return it->value();
     }

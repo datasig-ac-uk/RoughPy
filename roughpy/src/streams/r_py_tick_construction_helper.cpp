@@ -34,20 +34,20 @@ python::RPyTickConstructionHelper::RPyTickConstructionHelper(
 }
 
 void python::RPyTickConstructionHelper::add_increment_to_schema(
-        string label, const py::kwargs &RPY_UNUSED_VAR kwargs)
+        string label, const py::kwargs& RPY_UNUSED_VAR kwargs)
 {
     p_schema->insert_increment(std::move(label));
 }
 void python::RPyTickConstructionHelper::add_value_to_schema(
-        string label, const py::kwargs &RPY_UNUSED_VAR kwargs)
+        string label, const py::kwargs& RPY_UNUSED_VAR kwargs)
 {
     p_schema->insert_value(std::move(label));
 }
 void python::RPyTickConstructionHelper::add_categorical_to_schema(
         string label, py::object variant,
-        const py::kwargs &RPY_UNUSED_VAR kwargs)
+        const py::kwargs& RPY_UNUSED_VAR kwargs)
 {
-    auto &channel = p_schema->insert_categorical(std::move(label));
+    auto& channel = p_schema->insert_categorical(std::move(label));
     if (!variant.is_none()) { channel.insert_variant(variant.cast<string>()); }
 }
 
@@ -60,10 +60,10 @@ void python::RPyTickConstructionHelper::fail_data_none()
     throw py::value_error("data cannot be None when constructing stream");
 }
 
-void python::RPyTickConstructionHelper::add_increment(const py::str &label,
+void python::RPyTickConstructionHelper::add_increment(const py::str& label,
                                                       py::object timestamp,
                                                       py::object data,
-                                                      const py::kwargs &kwargs)
+                                                      const py::kwargs& kwargs)
 {
     auto lbl = label.cast<string>();
     if (!p_schema->is_final()) { add_increment_to_schema(lbl, kwargs); }
@@ -83,10 +83,10 @@ void python::RPyTickConstructionHelper::add_increment(const py::str &label,
                            std::move(data), ChannelType::Increment});
     }
 }
-void python::RPyTickConstructionHelper::add_value(const py::str &label,
+void python::RPyTickConstructionHelper::add_value(const py::str& label,
                                                   py::object timestamp,
                                                   py::object data,
-                                                  const py::kwargs &kwargs)
+                                                  const py::kwargs& kwargs)
 {
     auto lbl = label.cast<string>();
     if (!p_schema->is_final()) { add_value_to_schema(lbl, kwargs); }
@@ -107,8 +107,8 @@ void python::RPyTickConstructionHelper::add_value(const py::str &label,
     }
 }
 void python::RPyTickConstructionHelper::add_categorical(
-        const py::str &label, py::object timestamp, py::object variant,
-        const py::kwargs &kwargs)
+        const py::str& label, py::object timestamp, py::object variant,
+        const py::kwargs& kwargs)
 {
     auto lbl = label.cast<string>();
     if (!p_schema->is_final()) {
@@ -132,7 +132,7 @@ void python::RPyTickConstructionHelper::add_categorical(
     }
 }
 
-void python::init_tick_construction_helper(py::module_ &m)
+void python::init_tick_construction_helper(py::module_& m)
 {
     using helper_t = python::RPyTickConstructionHelper;
 

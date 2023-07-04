@@ -49,23 +49,23 @@ class RPY_EXPORT LieIncrementStream : public DyadicCachingLayer
     using base_t = DyadicCachingLayer;
 
 public:
-    LieIncrementStream(scalars::KeyScalarArray &&buffer,
-                       boost::container::flat_map<param_t, dimn_t> &&mapping,
-                       StreamMetadata &&md)
+    LieIncrementStream(scalars::KeyScalarArray&& buffer,
+                       boost::container::flat_map<param_t, dimn_t>&& mapping,
+                       StreamMetadata&& md)
         : DyadicCachingLayer(std::move(md)), m_buffer(std::move(buffer)),
           m_mapping(std::move(mapping))
     {}
 
-    LieIncrementStream(scalars::KeyScalarArray &&buffer, Slice<param_t> indices,
+    LieIncrementStream(scalars::KeyScalarArray&& buffer, Slice<param_t> indices,
                        StreamMetadata md);
 
     RPY_NO_DISCARD
-    bool empty(const intervals::Interval &interval) const noexcept override;
+    bool empty(const intervals::Interval& interval) const noexcept override;
 
 protected:
     RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval &interval,
-                                    const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval& interval,
+                                    const algebra::Context& ctx) const override;
 
 public:
     RPY_SERIAL_SERIALIZE_FN();

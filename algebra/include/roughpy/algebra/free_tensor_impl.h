@@ -60,31 +60,31 @@ public:
     RPY_NO_DISCARD FreeTensor log() const override;
     RPY_NO_DISCARD FreeTensor inverse() const override;
     RPY_NO_DISCARD FreeTensor antipode() const override;
-    void fmexp(const FreeTensor &other) override;
+    void fmexp(const FreeTensor& other) override;
 };
 
 namespace dtl {
 
 template <typename Tensor>
-Tensor exp_wrapper(const Tensor &arg)
+Tensor exp_wrapper(const Tensor& arg)
 {
     return exp(arg);
 }
 
 template <typename Tensor>
-Tensor log_wrapper(const Tensor &arg)
+Tensor log_wrapper(const Tensor& arg)
 {
     return log(arg);
 }
 
 template <typename Tensor>
-Tensor inverse_wrapper(const Tensor &arg)
+Tensor inverse_wrapper(const Tensor& arg)
 {
     return inverse(arg);
 }
 
 template <typename Tensor>
-Tensor antipode_wrapper(const Tensor &arg)
+Tensor antipode_wrapper(const Tensor& arg)
 {
     return antipode(arg);
 }
@@ -117,7 +117,7 @@ FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::antipode() const
 }
 template <typename FTImpl, template <typename> class StorageModel>
 void FreeTensorImplementation<FTImpl, StorageModel>::fmexp(
-        const FreeTensor &other)
+        const FreeTensor& other)
 {
     base_t::data().fmexp_inplace(
             FreeTensorImplementation::convert_argument(other));
@@ -138,7 +138,7 @@ public:
     FreeTensorBundle log() const override;
     FreeTensorBundle inverse() const override;
     FreeTensorBundle antipode() const override;
-    void fmexp(const FreeTensorBundle &other) override;
+    void fmexp(const FreeTensorBundle& other) override;
 };
 
 template <typename FTBImpl, template <typename> class StorageModel>
@@ -171,7 +171,7 @@ FreeTensorBundleImplementation<FTBImpl, StorageModel>::antipode() const
 }
 template <typename FTBImpl, template <typename> class StorageModel>
 void FreeTensorBundleImplementation<FTBImpl, StorageModel>::fmexp(
-        const FreeTensorBundle &other)
+        const FreeTensorBundle& other)
 {
     base_t::data().fmexp_inplace(
             FreeTensorBundleImplementation::convert_argument(other));

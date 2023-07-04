@@ -47,7 +47,7 @@ using namespace rpy;
 using namespace rpy::algebra;
 using namespace pybind11::literals;
 
-static const char *SHUFFLE_TENSOR_DOC
+static const char* SHUFFLE_TENSOR_DOC
         = R"eadoc(Element of the shuffle tensor algebra.
 )eadoc";
 
@@ -106,7 +106,7 @@ static ShuffleTensor construct_shuffle(py::object data, py::kwargs kwargs)
     return result;
 }
 
-void rpy::python::init_shuffle_tensor(py::module_ &m)
+void rpy::python::init_shuffle_tensor(py::module_& m)
 {
     py::options options;
     options.disable_function_signatures();
@@ -115,22 +115,22 @@ void rpy::python::init_shuffle_tensor(py::module_ &m)
     klass.def(py::init(&construct_shuffle), "data"_a = py::none());
     setup_algebra_type(klass);
 
-    klass.def("__getitem__", [](const ShuffleTensor &self, key_type key) {
+    klass.def("__getitem__", [](const ShuffleTensor& self, key_type key) {
         return self[key];
     });
 
     klass.def(
             "__matmul__",
-            [](const ShuffleTensor &shuf, const FreeTensor &arg) {
+            [](const ShuffleTensor& shuf, const FreeTensor& arg) {
                 auto result = shuf->coeff_type()->zero();
-                for (auto &&item : shuf) {
+                for (auto&& item : shuf) {
                     result += item.value() * arg[item.key()];
                 }
                 return result;
             },
             py::is_operator());
 
-    klass.def("__repr__", [](const ShuffleTensor &self) {
+    klass.def("__repr__", [](const ShuffleTensor& self) {
         std::stringstream ss;
         ss << "ShuffleTensor(width=" << *self.width()
            << ", depth=" << *self.depth();

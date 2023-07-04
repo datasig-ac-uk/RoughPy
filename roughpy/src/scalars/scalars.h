@@ -47,7 +47,7 @@ struct RPY_NO_EXPORT AlternativeKeyType {
 
 struct RPY_NO_EXPORT PyToBufferOptions {
     /// Scalar type to use. If null, will be set to the resulting type
-    const scalars::ScalarType *type = nullptr;
+    const scalars::ScalarType* type = nullptr;
 
     /// Maximum number of nested objects to search. Set to 0 for no recursion.
     dimn_t max_nested = 0;
@@ -66,18 +66,18 @@ struct RPY_NO_EXPORT PyToBufferOptions {
     std::function<void()> cleanup = nullptr;
 
     /// Alternative acceptable key_type/conversion pair
-    AlternativeKeyType *alternative_key = nullptr;
+    AlternativeKeyType* alternative_key = nullptr;
 };
 
-scalars::KeyScalarArray py_to_buffer(const py::handle &arg,
-                                     PyToBufferOptions &options);
+scalars::KeyScalarArray py_to_buffer(const py::handle& arg,
+                                     PyToBufferOptions& options);
 
 void assign_py_object_to_scalar(scalars::ScalarPointer ptr, py::handle object);
 
-scalars::Scalar py_to_scalar(const scalars::ScalarType *type,
+scalars::Scalar py_to_scalar(const scalars::ScalarType* type,
                              py::handle object);
 
-void init_scalars(py::module_ &m);
+void init_scalars(py::module_& m);
 
 }// namespace python
 }// namespace rpy

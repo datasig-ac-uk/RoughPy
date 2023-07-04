@@ -61,10 +61,10 @@ public:
 
     explicit constexpr operator dimn_t() const noexcept { return m_data >> 1; }
 
-    friend std::ostream &operator<<(std::ostream &os, const PyLieLetter &let);
+    friend std::ostream& operator<<(std::ostream& os, const PyLieLetter& let);
 };
 
-std::ostream &operator<<(std::ostream &os, const PyLieLetter &let);
+std::ostream& operator<<(std::ostream& os, const PyLieLetter& let);
 
 }// namespace python
 }// namespace rpy

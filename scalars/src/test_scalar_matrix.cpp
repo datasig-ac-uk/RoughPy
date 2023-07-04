@@ -66,8 +66,8 @@ TEST(ScalarMatrix, ScalarMatrixSerialization)
 
     EXPECT_EQ(out_mat.size(), out_mat.nrows() * out_mat.ncols());
 
-    const auto *aptr = in_mat.raw_cast<const float *>();
-    const auto *bptr = out_mat.raw_cast<const float *>();
+    const auto* aptr = in_mat.raw_cast<const float*>();
+    const auto* bptr = out_mat.raw_cast<const float*>();
 
     ASSERT_NE(aptr, nullptr);
     ASSERT_NE(bptr, nullptr);

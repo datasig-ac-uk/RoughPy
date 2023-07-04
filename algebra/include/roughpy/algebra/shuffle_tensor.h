@@ -62,11 +62,11 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensorBundle)
 
 template <>
 RPY_EXPORT typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer &ctx);
+basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx);
 
 template <>
 RPY_EXPORT typename ShuffleTensorBundle::basis_type
-basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer &ctx);
+basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer& ctx);
 
 }// namespace algebra
 }// namespace rpy

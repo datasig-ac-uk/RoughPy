@@ -47,7 +47,7 @@ class Configuration;
  * @brief Get a reference to the current configuration.
  * @return global configuration reference
  */
-const Configuration &get_config();
+const Configuration& get_config();
 
 /**
  * @brief Interface for getting RoughPy configuration settings.
@@ -62,7 +62,7 @@ class Configuration
     Configuration();
     ~Configuration();
 
-    friend const Configuration &get_config();
+    friend const Configuration& get_config();
 
 public:
     RPY_NO_DISCARD

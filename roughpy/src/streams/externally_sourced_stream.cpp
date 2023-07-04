@@ -21,12 +21,12 @@ using namespace rpy;
 using namespace rpy::streams;
 using namespace pybind11::literals;
 
-static const char *EXTERNALLY_SOURCED_STREAM_DOC
+static const char* EXTERNALLY_SOURCED_STREAM_DOC
         = R"rpydoc(A stream that acquires its data dynamically from an external source.
 )rpydoc";
 
 static py::object external_stream_constructor(string uri_string,
-                                              const py::kwargs &kwargs)
+                                              const py::kwargs& kwargs)
 {
     const auto pmd = python::kwargs_to_metadata(kwargs);
 
@@ -79,12 +79,12 @@ static py::object external_stream_constructor(string uri_string,
     if (pmd.support) { factory.set_support(*pmd.support); }
     if (pmd.vector_type) { factory.set_vtype(*pmd.vector_type); }
 
-    PyObject *py_stream = python::RPyStream_FromStream(factory.construct());
+    PyObject* py_stream = python::RPyStream_FromStream(factory.construct());
 
     return py::reinterpret_steal<py::object>(py_stream);
 }
 
-void python::init_externally_sourced_stream(py::module_ &m)
+void python::init_externally_sourced_stream(py::module_& m)
 {
 
     py::class_<ExternalDataStream> klass(m, "ExternalDataStream",

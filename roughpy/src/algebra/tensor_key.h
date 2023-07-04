@@ -76,11 +76,11 @@ public:
     deg_t degree() const;
     std::vector<let_t> to_letters() const;
 
-    bool equals(const PyTensorKey &other) const noexcept;
-    bool less(const PyTensorKey &other) const noexcept;
+    bool equals(const PyTensorKey& other) const noexcept;
+    bool less(const PyTensorKey& other) const noexcept;
 };
 
-void init_py_tensor_key(py::module_ &m);
+void init_py_tensor_key(py::module_& m);
 
 }// namespace python
 }// namespace rpy

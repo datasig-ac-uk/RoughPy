@@ -61,14 +61,13 @@ class StandardRandomGenerator<bfloat16, BitGenerator> : public RandomGenerator
     mutable std::mutex m_lock;
 
 public:
-    StandardRandomGenerator(const ScalarType *stype, Slice<uint64_t> seed);
+    StandardRandomGenerator(const ScalarType* stype, Slice<uint64_t> seed);
 
-    StandardRandomGenerator(const StandardRandomGenerator &) = delete;
-    StandardRandomGenerator(StandardRandomGenerator &&) noexcept = delete;
+    StandardRandomGenerator(const StandardRandomGenerator&) = delete;
+    StandardRandomGenerator(StandardRandomGenerator&&) noexcept = delete;
 
-    StandardRandomGenerator &operator=(const StandardRandomGenerator &)
-            = delete;
-    StandardRandomGenerator &operator=(StandardRandomGenerator &&) noexcept
+    StandardRandomGenerator& operator=(const StandardRandomGenerator&) = delete;
+    StandardRandomGenerator& operator=(StandardRandomGenerator&&) noexcept
             = delete;
 
     void set_seed(Slice<uint64_t> seed_data) override;
@@ -98,7 +97,7 @@ string StandardRandomGenerator<bfloat16, BitGenerator>::get_type() const
 
 template <typename BitGenerator>
 StandardRandomGenerator<bfloat16, BitGenerator>::StandardRandomGenerator(
-        const ScalarType *stype, Slice<uint64_t> seed)
+        const ScalarType* stype, Slice<uint64_t> seed)
     : RandomGenerator(stype), m_seed{seed[0]},
       m_generator(BitGenerator(seed[0]))
 {
@@ -144,9 +143,9 @@ StandardRandomGenerator<bfloat16, BitGenerator>::uniform_random_scalar(
 
     OwnedScalarArray result(p_type, count * dists.size());
 
-    auto *out = result.raw_cast<bfloat16 *>();
+    auto* out = result.raw_cast<bfloat16*>();
     for (dimn_t i = 0; i < count; ++i) {
-        for (auto &dist : dists) { ::new (out++) bfloat16(dist(m_generator)); }
+        for (auto& dist : dists) { ::new (out++) bfloat16(dist(m_generator)); }
     }
 
     return result;
@@ -161,7 +160,7 @@ OwnedScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::normal_random(
             static_cast<float>(scalar_cast<bfloat16>(loc)),
             static_cast<float>(scalar_cast<bfloat16>(scale)));
 
-    auto *out = result.raw_cast<bfloat16 *>();
+    auto* out = result.raw_cast<bfloat16*>();
     for (dimn_t i = 0; i < count; ++i) {
         ::new (out++) bfloat16(dist(m_generator));
     }

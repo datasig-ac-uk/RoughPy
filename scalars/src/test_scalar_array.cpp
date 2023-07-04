@@ -58,8 +58,8 @@ TEST(ScalarArray, TestScalarArraySerialize)
 
     ASSERT_EQ(sa.size(), sb.size());
     ASSERT_EQ(sa.type(), sb.type());
-    const auto *aptr = sa.raw_cast<const float *>();
-    const auto *bptr = sb.raw_cast<const float *>();
+    const auto* aptr = sa.raw_cast<const float*>();
+    const auto* bptr = sb.raw_cast<const float*>();
 
     for (int i = 0; i < 3; ++i) { ASSERT_EQ(aptr[i], bptr[i]); }
 

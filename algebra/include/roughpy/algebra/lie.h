@@ -58,11 +58,11 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(LieBundle) { RPY_SERIAL_SERIALIZE_BASE(base_t); }
 
 template <>
 RPY_EXPORT typename Lie::basis_type
-basis_setup_helper<Lie>::get(const context_pointer &ctx);
+basis_setup_helper<Lie>::get(const context_pointer& ctx);
 
 template <>
 RPY_EXPORT typename LieBundle::basis_type
-basis_setup_helper<LieBundle>::get(const context_pointer &ctx);
+basis_setup_helper<LieBundle>::get(const context_pointer& ctx);
 
 }// namespace algebra
 }// namespace rpy

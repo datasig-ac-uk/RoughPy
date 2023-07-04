@@ -57,12 +57,12 @@ public:
     using typename PrimaryInterface::key_type;
 
     template <typename... Args>
-    explicit BasisImplementation(Args &&...args)
+    explicit BasisImplementation(Args&&... args)
         : m_impl(basis_traits::construct(std::forward<Args>(args)...))
     {}
 
     string key_to_string(
-            const typename PrimaryInterface::key_type &key) const override;
+            const typename PrimaryInterface::key_type& key) const override;
     dimn_t dimension() const noexcept override;
 };
 
@@ -78,7 +78,7 @@ public:
     using key_type = typename Derived::key_type;
 
     key_type index_to_key(dimn_t index) const override;
-    dimn_t key_to_index(const key_type &key) const override;
+    dimn_t key_to_index(const key_type& key) const override;
 };
 
 template <typename T, typename Derived, typename Base>
@@ -94,19 +94,19 @@ public:
 
     deg_t width() const noexcept override;
     deg_t depth() const noexcept override;
-    deg_t degree(const key_type &key) const noexcept override;
+    deg_t degree(const key_type& key) const noexcept override;
     deg_t size(deg_t degree) const noexcept override;
-    let_t first_letter(const key_type &key) const noexcept override;
+    let_t first_letter(const key_type& key) const noexcept override;
     dimn_t start_of_degree(deg_t degree) const noexcept override;
     pair<optional<key_type>, optional<key_type>>
-    parents(const key_type &key) const override;
+    parents(const key_type& key) const override;
     key_type key_of_letter(let_t letter) const noexcept override;
-    bool letter(const key_type &key) const override;
+    bool letter(const key_type& key) const override;
 };
 
 template <typename T, typename PrimaryInterface>
 string BasisImplementation<T, PrimaryInterface>::key_to_string(
-        const typename PrimaryInterface::key_type &key) const
+        const typename PrimaryInterface::key_type& key) const
 {
     return basis_traits::key_to_string(m_impl, key);
 }
@@ -125,7 +125,7 @@ OrderedBasisImplementationMixin<T, Derived, Base>::index_to_key(
 }
 template <typename T, typename Derived, typename Base>
 dimn_t OrderedBasisImplementationMixin<T, Derived, Base>::key_to_index(
-        const key_type &key) const
+        const key_type& key) const
 {
     return basis_traits::key_to_index(m_impl, key);
 }
@@ -142,7 +142,7 @@ deg_t WordLikeBasisImplementationMixin<T, Derived, Base>::depth() const noexcept
 }
 template <typename T, typename Derived, typename Base>
 deg_t WordLikeBasisImplementationMixin<T, Derived, Base>::degree(
-        const key_type &key) const noexcept
+        const key_type& key) const noexcept
 {
     return basis_traits::degree(m_impl, key);
 }
@@ -154,7 +154,7 @@ deg_t WordLikeBasisImplementationMixin<T, Derived, Base>::size(
 }
 template <typename T, typename Derived, typename Base>
 let_t WordLikeBasisImplementationMixin<T, Derived, Base>::first_letter(
-        const key_type &key) const noexcept
+        const key_type& key) const noexcept
 {
     return basis_traits::first_letter(m_impl, key);
 }
@@ -167,7 +167,7 @@ dimn_t WordLikeBasisImplementationMixin<T, Derived, Base>::start_of_degree(
 template <typename T, typename Derived, typename Base>
 pair<optional<typename Derived::key_type>, optional<typename Derived::key_type>>
 WordLikeBasisImplementationMixin<T, Derived, Base>::parents(
-        const key_type &key) const
+        const key_type& key) const
 {
     return basis_traits::parents(m_impl, key);
 }
@@ -180,7 +180,7 @@ WordLikeBasisImplementationMixin<T, Derived, Base>::key_of_letter(
 }
 template <typename T, typename Derived, typename Base>
 bool WordLikeBasisImplementationMixin<T, Derived, Base>::letter(
-        const key_type &key) const
+        const key_type& key) const
 {
     return basis_traits::letter(m_impl, key);
 }

@@ -36,8 +36,8 @@
 using namespace rpy::scalars;
 
 Scalar ScalarInterface::uminus() const { return Scalar(); }
-bool ScalarInterface::equals(const Scalar &other) const noexcept
+bool ScalarInterface::equals(const Scalar& other) const noexcept
 {
     return false;
 }
-std::ostream &ScalarInterface::print(std::ostream &os) const { return os; }
+std::ostream& ScalarInterface::print(std::ostream& os) const { return os; }

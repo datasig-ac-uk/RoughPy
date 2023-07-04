@@ -41,30 +41,30 @@ class scalar_type_trait
 public:
     using value_type = T;
     using rational_type = T;
-    using reference = T &;
-    using const_reference = const T &;
+    using reference = T&;
+    using const_reference = const T&;
 
     RPY_NO_DISCARD
-    static const ScalarType *get_type() noexcept { return ScalarType::of<T>(); }
+    static const ScalarType* get_type() noexcept { return ScalarType::of<T>(); }
 
     RPY_NO_DISCARD
-    static Scalar make(value_type &&arg)
+    static Scalar make(value_type&& arg)
     {
         return Scalar(get_type(), std::move(arg));
     }
 };
 
 template <typename T>
-class scalar_type_trait<T &>
+class scalar_type_trait<T&>
 {
 public:
     using value_type = T;
     using rational_type = T;
-    using reference = T &;
-    using const_reference = const T &;
+    using reference = T&;
+    using const_reference = const T&;
 
     RPY_NO_DISCARD
-    static const ScalarType *get_type() noexcept
+    static const ScalarType* get_type() noexcept
     {
         return scalar_type_trait<T>::get_type();
     }
@@ -77,16 +77,16 @@ public:
 };
 
 template <typename T>
-class scalar_type_trait<const T &>
+class scalar_type_trait<const T&>
 {
 public:
     using value_type = T;
     using rational_type = T;
-    using reference = T &;
-    using const_reference = const T &;
+    using reference = T&;
+    using const_reference = const T&;
 
     RPY_NO_DISCARD
-    static const ScalarType *get_type() noexcept
+    static const ScalarType* get_type() noexcept
     {
         return scalar_type_trait<T>::get_type();
     }

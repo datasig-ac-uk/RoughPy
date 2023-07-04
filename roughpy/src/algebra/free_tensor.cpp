@@ -46,7 +46,7 @@ using namespace rpy;
 using namespace rpy::algebra;
 using namespace pybind11::literals;
 
-static const char *FREE_TENSOR_DOC
+static const char* FREE_TENSOR_DOC
         = R"eadoc(Element of the (truncated) tensor algebra.
 
 A :class:`tensor` object supports arithmetic operators, providing both objects are compatible,
@@ -143,7 +143,7 @@ static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs)
     return result;
 }
 
-void python::init_free_tensor(py::module_ &m)
+void python::init_free_tensor(py::module_& m)
 {
 
     py::options options;
@@ -155,14 +155,14 @@ void python::init_free_tensor(py::module_ &m)
     python::setup_algebra_type(klass);
 
     klass.def("__getitem__",
-              [](const FreeTensor &self, key_type key) { return self[key]; });
+              [](const FreeTensor& self, key_type key) { return self[key]; });
 
     klass.def("exp", &FreeTensor::exp);
     klass.def("log", &FreeTensor::log);
     klass.def("inverse", &FreeTensor::inverse);
     klass.def("fmexp", &FreeTensor::fmexp, "other"_a);
 
-    klass.def("__repr__", [](const FreeTensor &self) {
+    klass.def("__repr__", [](const FreeTensor& self) {
         std::stringstream ss;
         ss << "FreeTensor(width=" << *self.width()
            << ", depth=" << *self.depth();

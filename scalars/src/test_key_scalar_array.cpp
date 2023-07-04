@@ -55,8 +55,8 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys)
 
     ASSERT_EQ(sa.size(), sb.size());
     ASSERT_EQ(sa.type(), sb.type());
-    const auto *aptr = sa.raw_cast<const float *>();
-    const auto *bptr = sb.raw_cast<const float *>();
+    const auto* aptr = sa.raw_cast<const float*>();
+    const auto* bptr = sb.raw_cast<const float*>();
 
     for (int i = 0; i < 3; ++i) { ASSERT_EQ(aptr[i], bptr[i]); }
 }
@@ -80,11 +80,11 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeWidthKeys)
 
     ASSERT_EQ(sa.size(), sb.size());
     ASSERT_EQ(sa.type(), sb.type());
-    const auto *aptr = sa.raw_cast<const float *>();
-    const auto *bptr = sb.raw_cast<const float *>();
+    const auto* aptr = sa.raw_cast<const float*>();
+    const auto* bptr = sb.raw_cast<const float*>();
 
-    const auto *akeyptr = static_cast<const KeyScalarArray &>(sa).keys();
-    const auto *bkeyptr = sb.keys();
+    const auto* akeyptr = static_cast<const KeyScalarArray&>(sa).keys();
+    const auto* bkeyptr = sb.keys();
 
     ASSERT_NE(akeyptr, nullptr);
     ASSERT_NE(bkeyptr, nullptr);

@@ -45,11 +45,11 @@ class RPY_EXPORT RealInterval : public Interval
 
 public:
     RealInterval() = default;
-    RealInterval(const RealInterval &) = default;
-    RealInterval(RealInterval &&) noexcept = default;
+    RealInterval(const RealInterval&) = default;
+    RealInterval(RealInterval&&) noexcept = default;
 
-    RealInterval &operator=(const RealInterval &) = default;
-    RealInterval &operator=(RealInterval &&) noexcept = default;
+    RealInterval& operator=(const RealInterval&) = default;
+    RealInterval& operator=(RealInterval&&) noexcept = default;
 
     RealInterval(param_t inf, param_t sup,
                  IntervalType itype = IntervalType::Clopen)
@@ -58,12 +58,12 @@ public:
         if (m_inf > m_sup) { std::swap(m_inf, m_sup); }
     }
 
-    explicit RealInterval(const Interval &interval)
+    explicit RealInterval(const Interval& interval)
         : Interval(interval.type()), m_inf(interval.inf()),
           m_sup(interval.sup())
     {}
 
-    explicit RealInterval(const Interval &interval, IntervalType itype)
+    explicit RealInterval(const Interval& interval, IntervalType itype)
         : Interval(itype), m_inf(interval.inf()), m_sup(interval.sup())
     {}
 
@@ -73,7 +73,7 @@ public:
     param_t sup() const override { return m_sup; }
 
     RPY_NO_DISCARD
-    bool contains(const Interval &arg) const noexcept override;
+    bool contains(const Interval& arg) const noexcept override;
 
     RPY_SERIAL_SERIALIZE_FN();
 };

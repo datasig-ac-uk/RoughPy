@@ -61,7 +61,7 @@ namespace rpy {
 namespace python {
 
 template <typename T>
-inline PyObject *cast_to_object(T &&arg) noexcept
+inline PyObject* cast_to_object(T&& arg) noexcept
 {
     return py::cast(std::forward<T>(arg)).release().ptr();
 }

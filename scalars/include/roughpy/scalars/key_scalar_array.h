@@ -44,7 +44,7 @@ class RPY_EXPORT KeyScalarArray : public ScalarArray
 
     static constexpr uint32_t keys_owning_flag = 1 << subtype_flag_offset;
 
-    const key_type *p_keys = nullptr;
+    const key_type* p_keys = nullptr;
 
     constexpr bool keys_owned() const noexcept
     {
@@ -55,15 +55,15 @@ public:
     KeyScalarArray() = default;
     ~KeyScalarArray();
 
-    KeyScalarArray(const KeyScalarArray &other);
-    KeyScalarArray(KeyScalarArray &&other) noexcept;
+    KeyScalarArray(const KeyScalarArray& other);
+    KeyScalarArray(KeyScalarArray&& other) noexcept;
 
-    explicit KeyScalarArray(OwnedScalarArray &&sa) noexcept;
-    KeyScalarArray(ScalarArray base, const key_type *keys);
+    explicit KeyScalarArray(OwnedScalarArray&& sa) noexcept;
+    KeyScalarArray(ScalarArray base, const key_type* keys);
 
-    explicit KeyScalarArray(const ScalarType *type) noexcept;
-    explicit KeyScalarArray(const ScalarType *type, dimn_t n) noexcept;
-    KeyScalarArray(const ScalarType *type, const void *begin,
+    explicit KeyScalarArray(const ScalarType* type) noexcept;
+    explicit KeyScalarArray(const ScalarType* type, dimn_t n) noexcept;
+    KeyScalarArray(const ScalarType* type, const void* begin,
                    dimn_t count) noexcept;
 
     explicit operator OwnedScalarArray() && noexcept;
@@ -71,14 +71,14 @@ public:
     RPY_NO_DISCARD
     KeyScalarArray copy_or_move() &&;
 
-    KeyScalarArray &operator=(const ScalarArray &other) noexcept;
-    KeyScalarArray &operator=(KeyScalarArray &&other) noexcept;
-    KeyScalarArray &operator=(OwnedScalarArray &&other) noexcept;
+    KeyScalarArray& operator=(const ScalarArray& other) noexcept;
+    KeyScalarArray& operator=(KeyScalarArray&& other) noexcept;
+    KeyScalarArray& operator=(OwnedScalarArray&& other) noexcept;
 
     RPY_NO_DISCARD
-    const key_type *keys() const noexcept { return p_keys; }
+    const key_type* keys() const noexcept { return p_keys; }
     RPY_NO_DISCARD
-    key_type *keys();
+    key_type* keys();
     RPY_NO_DISCARD
     bool has_keys() const noexcept { return p_keys != nullptr; }
 
@@ -110,7 +110,7 @@ RPY_SERIAL_SAVE_FN_IMPL(KeyScalarArray)
     RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
     auto key_count = p_keys != nullptr ? size() : 0;
     RPY_SERIAL_SERIALIZE_VAL(key_count);
-    Slice<key_type> keys(const_cast<key_type *>(p_keys), key_count);
+    Slice<key_type> keys(const_cast<key_type*>(p_keys), key_count);
     RPY_SERIAL_SERIALIZE_NVP("keys", keys);
 }
 
@@ -121,7 +121,7 @@ RPY_SERIAL_LOAD_FN_IMPL(KeyScalarArray)
     RPY_SERIAL_SERIALIZE_VAL(key_count);
 
     p_keys = new key_type[key_count];
-    Slice<key_type> key_slice(const_cast<key_type *>(p_keys), key_count);
+    Slice<key_type> key_slice(const_cast<key_type*>(p_keys), key_count);
     RPY_SERIAL_SERIALIZE_NVP("keys", key_slice);
     m_flags |= keys_owning_flag;
 }

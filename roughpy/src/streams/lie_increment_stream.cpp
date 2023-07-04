@@ -45,19 +45,19 @@ using namespace rpy;
 using namespace rpy::python;
 using namespace pybind11::literals;
 
-static const char *LIE_INCR_STREAM_DOC
+static const char* LIE_INCR_STREAM_DOC
         = R"rpydoc(A basic stream type defined by a sequence of increments
 of fixed size at specified time intervals.
 )rpydoc";
 
-void buffer_to_indices(std::vector<param_t> &indices,
-                       const py::buffer_info &info)
+void buffer_to_indices(std::vector<param_t>& indices,
+                       const py::buffer_info& info)
 {
     auto count = info.size;
-    const auto *ptr = info.ptr;
+    const auto* ptr = info.ptr;
 
     indices.resize(count);
-    auto *dst = indices.data();
+    auto* dst = indices.data();
     if (info.format[0] == 'd') {
         memcpy(dst, ptr, count * sizeof(double));
     } else {
@@ -68,8 +68,8 @@ void buffer_to_indices(std::vector<param_t> &indices,
     }
 }
 
-static py::object lie_increment_stream_from_increments(const py::object &data,
-                                                       const py::kwargs &kwargs)
+static py::object lie_increment_stream_from_increments(const py::object& data,
+                                                       const py::kwargs& kwargs)
 {
     auto md = kwargs_to_metadata(kwargs);
 
@@ -164,13 +164,13 @@ static py::object lie_increment_stream_from_increments(const py::object &data,
 }
 
 RPY_UNUSED
-static streams::Stream lie_increment_path_from_values(const py::object &data,
-                                                      const py::kwargs &kwargs)
+static streams::Stream lie_increment_path_from_values(const py::object& data,
+                                                      const py::kwargs& kwargs)
 {
     throw std::runtime_error("Not implemented");
 }
 
-void python::init_lie_increment_stream(py::module_ &m)
+void python::init_lie_increment_stream(py::module_& m)
 {
 
     py::class_<streams::LieIncrementStream> klass(m, "LieIncrementStream",

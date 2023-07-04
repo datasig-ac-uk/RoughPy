@@ -45,11 +45,11 @@ template <typename MapType, typename Iterator>
 struct iterator_helper_trait<lal::dtl::sparse_iterator<MapType, Iterator>> {
     using iter_t = lal::dtl::sparse_iterator<MapType, Iterator>;
 
-    static auto key(const iter_t &it) noexcept -> decltype(it->key())
+    static auto key(const iter_t& it) noexcept -> decltype(it->key())
     {
         return it->key();
     }
-    static auto value(const iter_t &it) noexcept -> decltype(it->value())
+    static auto value(const iter_t& it) noexcept -> decltype(it->value())
     {
         return it->value();
     }

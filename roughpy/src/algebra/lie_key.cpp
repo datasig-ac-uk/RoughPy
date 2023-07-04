@@ -37,11 +37,11 @@
 using namespace rpy;
 
 template <typename LeftFn, typename RightFn>
-static void walk_tree(const python::PyLieLetter *tree, LeftFn left_visitor,
+static void walk_tree(const python::PyLieLetter* tree, LeftFn left_visitor,
                       RightFn right_visitor)
 {
-    const auto *left = tree;
-    const auto *right = ++tree;
+    const auto* left = tree;
+    const auto* right = ++tree;
 
     left_visitor(*left);
     right_visitor(*right);
@@ -56,13 +56,13 @@ static void walk_tree(const python::PyLieLetter *tree, LeftFn left_visitor,
 }
 
 template <typename Fn>
-static void walk_tree(const python::PyLieLetter *tree, Fn visitor)
+static void walk_tree(const python::PyLieLetter* tree, Fn visitor)
 {
     walk_tree(tree, visitor, visitor);
 }
 
-static bool branches_equal(const python::PyLieLetter *lhs,
-                           const python::PyLieLetter *rhs)
+static bool branches_equal(const python::PyLieLetter* lhs,
+                           const python::PyLieLetter* rhs)
 {
     if (!lhs->is_offset() && !rhs->is_offset()) {
         return static_cast<let_t>(*lhs) == static_cast<let_t>(*rhs);
@@ -78,7 +78,7 @@ static bool branches_equal(const python::PyLieLetter *lhs,
 
 struct print_walker {
 
-    using pointer = const python::PyLieLetter *;
+    using pointer = const python::PyLieLetter*;
     std::stringstream ss;
 
     print_walker() : ss() {}
@@ -110,7 +110,7 @@ struct print_walker {
 };
 
 static typename python::PyLieKey::container_type trim_branch(
-        const boost::container::small_vector_base<python::PyLieLetter> &tree,
+        const boost::container::small_vector_base<python::PyLieLetter>& tree,
         dimn_t start)
 {
     RPY_DBG_ASSERT(start == 0 || start == 1);
@@ -126,7 +126,7 @@ static typename python::PyLieKey::container_type trim_branch(
     dimn_t size = 0;
 
     auto visitor
-            = [&new_tree, &current, &size](const python::PyLieLetter &node) {
+            = [&new_tree, &current, &size](const python::PyLieLetter& node) {
                   ++current;
                   if (node.is_offset()) {
                       // Each offset points to a pair further down the tree
@@ -152,7 +152,7 @@ python::PyLieKey::PyLieKey(deg_t width, let_t letter)
 {}
 python::PyLieKey::PyLieKey(
         deg_t width,
-        const boost::container::small_vector_base<PyLieLetter> &data)
+        const boost::container::small_vector_base<PyLieLetter>& data)
     : m_data(data), m_width(width)
 {}
 python::PyLieKey::PyLieKey(deg_t width, let_t left, let_t right)
@@ -162,15 +162,15 @@ python::PyLieKey::PyLieKey(deg_t width, let_t left, let_t right)
     RPY_CHECK(left < right);
 }
 python::PyLieKey::PyLieKey(deg_t width, let_t left,
-                           const python::PyLieKey &right)
+                           const python::PyLieKey& right)
     : m_data{PyLieLetter::from_letter(left)}, m_width(width)
 {
     RPY_CHECK(m_width == right.m_width);
     m_data.insert(m_data.end(), right.m_data.begin(), right.m_data.end());
     RPY_CHECK(!right.is_letter() || right.as_letter() > left);
 }
-python::PyLieKey::PyLieKey(deg_t width, const python::PyLieKey &left,
-                           const python::PyLieKey &right)
+python::PyLieKey::PyLieKey(deg_t width, const python::PyLieKey& left,
+                           const python::PyLieKey& right)
     : m_data{PyLieLetter::from_offset(2),
              PyLieLetter::from_offset(1 + left.degree())},
       m_width(left.width())
@@ -180,7 +180,7 @@ python::PyLieKey::PyLieKey(deg_t width, const python::PyLieKey &left,
 }
 
 static python::PyLieKey::container_type
-parse_key(const algebra::LieBasis &lbasis, key_type key)
+parse_key(const algebra::LieBasis& lbasis, key_type key)
 {
     using namespace rpy::python;
     if (lbasis.letter(key)) {
@@ -234,7 +234,7 @@ parse_key(const algebra::LieBasis &lbasis, key_type key)
     return result;
 }
 
-python::PyLieKey::PyLieKey(const algebra::Context *ctx, key_type key)
+python::PyLieKey::PyLieKey(const algebra::Context* ctx, key_type key)
     : m_data(parse_key(ctx->get_lie_basis(), key)), m_width(ctx->width())
 {}
 python::PyLieKey::PyLieKey(algebra::LieBasis basis, key_type key)
@@ -268,12 +268,12 @@ deg_t python::PyLieKey::degree() const
 {
     return std::count_if(
             m_data.begin(), m_data.end(),
-            [](const PyLieLetter &letter) { return !letter.is_offset(); });
+            [](const PyLieLetter& letter) { return !letter.is_offset(); });
 }
-bool python::PyLieKey::equals(const python::PyLieKey &other) const noexcept
+bool python::PyLieKey::equals(const python::PyLieKey& other) const noexcept
 {
-    const auto *lptr = m_data.data();
-    const auto *rptr = other.m_data.data();
+    const auto* lptr = m_data.data();
+    const auto* rptr = other.m_data.data();
     return branches_equal(lptr, rptr) && branches_equal(++lptr, ++rptr);
 }
 
@@ -290,7 +290,7 @@ class ToLieKeyHelper
 public:
     explicit ToLieKeyHelper(deg_t w) : size(2), current(0), width(w) {}
 
-    container_type parse_list(const py::handle &obj)
+    container_type parse_list(const py::handle& obj)
     {
         if (py::len(obj) != 2) {
             throw py::value_error(
@@ -303,7 +303,7 @@ public:
         return parse_pair(left, right);
     }
 
-    container_type parse_single(const py::handle &obj)
+    container_type parse_single(const py::handle& obj)
     {
         if (py::isinstance<py::list>(obj)) { return parse_list(obj); }
         if (py::isinstance<py::int_>(obj)) {
@@ -314,7 +314,7 @@ public:
         throw py::type_error("items must be either int or lists");
     }
 
-    container_type parse_pair(const py::handle &left, const py::handle &right)
+    container_type parse_pair(const py::handle& left, const py::handle& right)
     {
 
         auto left_tree = parse_single(left);
@@ -346,7 +346,7 @@ public:
         return result;
     }
 
-    container_type operator()(const py::handle &obj)
+    container_type operator()(const py::handle& obj)
     {
         if (!py::isinstance<py::list>(obj)) {
             throw py::type_error("expected a list with exactly two elements");
@@ -370,8 +370,8 @@ public:
 
 }// namespace
 
-static python::PyLieKey make_lie_key(const py::args &args,
-                                     const py::kwargs &kwargs)
+static python::PyLieKey make_lie_key(const py::args& args,
+                                     const py::kwargs& kwargs)
 {
     deg_t width = 0;
 
@@ -397,7 +397,7 @@ static python::PyLieKey make_lie_key(const py::args &args,
 
     return python::PyLieKey(helper.get_width(), helper(args[0]));
 }
-void python::init_py_lie_key(py::module_ &m)
+void python::init_py_lie_key(py::module_& m)
 {
     py::class_<PyLieKey> klass(m, "LieKey");
     klass.def(py::init(&make_lie_key));

@@ -74,9 +74,9 @@ enum NpyDtypes : int
 
 }// namespace
 
-const scalars::ScalarType *python::npy_dtype_to_ctype(pybind11::dtype dtype)
+const scalars::ScalarType* python::npy_dtype_to_ctype(pybind11::dtype dtype)
 {
-    const scalars::ScalarType *type = nullptr;
+    const scalars::ScalarType* type = nullptr;
 
     switch (dtype.num()) {
         case NPY_FLOAT: type = scalars::ScalarType::of<float>(); break;
@@ -89,7 +89,7 @@ const scalars::ScalarType *python::npy_dtype_to_ctype(pybind11::dtype dtype)
 
     return type;
 }
-pybind11::dtype python::ctype_to_npy_dtype(const scalars::ScalarType *type)
+pybind11::dtype python::ctype_to_npy_dtype(const scalars::ScalarType* type)
 {
     if (type == scalars::ScalarType::of<double>()) { return py::dtype("d"); }
     if (type == scalars::ScalarType::of<float>()) { return py::dtype("f"); }

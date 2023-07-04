@@ -27,7 +27,7 @@ public:
     virtual FreeTensor inverse() const = 0;
     RPY_NO_DISCARD
     virtual FreeTensor antipode() const = 0;
-    virtual void fmexp(const FreeTensor &other) = 0;
+    virtual void fmexp(const FreeTensor& other) = 0;
 };
 
 template <typename, template <typename> class>
@@ -54,7 +54,7 @@ public:
     FreeTensor inverse() const;
     RPY_NO_DISCARD
     FreeTensor antipode() const;
-    FreeTensor &fmexp(const FreeTensor &other);
+    FreeTensor& fmexp(const FreeTensor& other);
 
     RPY_SERIAL_SERIALIZE_FN();
 };
@@ -81,7 +81,7 @@ public:
     virtual FreeTensorBundle inverse() const = 0;
     RPY_NO_DISCARD
     virtual FreeTensorBundle antipode() const = 0;
-    virtual void fmexp(const FreeTensorBundle &other) = 0;
+    virtual void fmexp(const FreeTensorBundle& other) = 0;
 };
 
 template <typename, template <typename> class>
@@ -110,7 +110,7 @@ public:
     FreeTensorBundle inverse() const;
     RPY_NO_DISCARD
     FreeTensorBundle antipode() const;
-    FreeTensorBundle &fmexp(const FreeTensorBundle &other);
+    FreeTensorBundle& fmexp(const FreeTensorBundle& other);
 
     RPY_SERIAL_SERIALIZE_FN();
 };

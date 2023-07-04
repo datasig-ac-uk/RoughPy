@@ -55,12 +55,12 @@ public:
     explicit PyLieKey(deg_t width, let_t letter);
     explicit PyLieKey(
             deg_t width,
-            const boost::container::small_vector_base<PyLieLetter> &data);
+            const boost::container::small_vector_base<PyLieLetter>& data);
     explicit PyLieKey(deg_t width, let_t left, let_t right);
-    explicit PyLieKey(deg_t width, let_t left, const PyLieKey &right);
-    explicit PyLieKey(deg_t width, const PyLieKey &left, const PyLieKey &right);
+    explicit PyLieKey(deg_t width, let_t left, const PyLieKey& right);
+    explicit PyLieKey(deg_t width, const PyLieKey& left, const PyLieKey& right);
     explicit PyLieKey(algebra::LieBasis basis, key_type key);
-    PyLieKey(const algebra::Context *ctx, key_type key);
+    PyLieKey(const algebra::Context* ctx, key_type key);
 
     deg_t width() const noexcept { return m_width; }
 
@@ -72,10 +72,10 @@ public:
 
     deg_t degree() const;
 
-    bool equals(const PyLieKey &other) const noexcept;
+    bool equals(const PyLieKey& other) const noexcept;
 };
 
-void init_py_lie_key(py::module_ &m);
+void init_py_lie_key(py::module_& m);
 
 }// namespace python
 }// namespace rpy

@@ -50,7 +50,7 @@
 using namespace rpy;
 using namespace rpy::streams;
 
-static const char *STREAM_DOC = R"rpydoc(
+static const char* STREAM_DOC = R"rpydoc(
 A stream is an abstract stream of data viewed as a rough path.
 )rpydoc";
 
@@ -60,15 +60,15 @@ struct SigArgs {
     algebra::context_pointer ctx;
 };
 
-static int resolution_converter(PyObject *object, void *out)
+static int resolution_converter(PyObject* object, void* out)
 {
     if (Py_TYPE(object) == &PyFloat_Type) {
         auto tmp = PyFloat_AsDouble(object);
         int exponent;
         frexp(tmp, &exponent);
-        *reinterpret_cast<resolution_t *>(out) = -std::min(0, exponent - 1);
+        *reinterpret_cast<resolution_t*>(out) = -std::min(0, exponent - 1);
     } else if (Py_TYPE(object) == &PyLong_Type) {
-        *reinterpret_cast<resolution_t *>(out) = PyLong_AsLong(object);
+        *reinterpret_cast<resolution_t*>(out) = PyLong_AsLong(object);
 #if PY_VERSION_HEX >= 0x030A0000
     } else if (Py_IsNone(object)) {
 #else
@@ -83,22 +83,22 @@ static int resolution_converter(PyObject *object, void *out)
     return 1;
 }
 
-static int parse_sig_args(PyObject *args, PyObject *kwargs,
-                          const StreamMetadata *smeta, SigArgs *sigargs)
+static int parse_sig_args(PyObject* args, PyObject* kwargs,
+                          const StreamMetadata* smeta, SigArgs* sigargs)
 {
-    static const char *kwords[]
+    static const char* kwords[]
             = {"interval_or_inf", "sup",   "resolution", "ctx",
                "depth",           "dtype", nullptr};
 
-    PyObject *interval_or_inf;
+    PyObject* interval_or_inf;
     resolution_t resolution = smeta->default_resolution;
-    PyObject *ctx = nullptr;
-    PyObject *py_sup = nullptr;
-    PyObject *dtype = nullptr;
+    PyObject* ctx = nullptr;
+    PyObject* py_sup = nullptr;
+    PyObject* dtype = nullptr;
     deg_t depth = 0;
 
     auto result = PyArg_ParseTupleAndKeywords(
-            args, kwargs, "|OOO&$O!iO", const_cast<char **>(kwords),
+            args, kwargs, "|OOO&$O!iO", const_cast<char**>(kwords),
             &interval_or_inf, &py_sup, &resolution_converter, &resolution,
             &python::RPyContext_Type, &ctx, &depth, &dtype);
     if (result == 0) { return -1; }
@@ -149,7 +149,7 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs,
             sigargs->interval = intervals::RealInterval(inf, sup);
         }
     } else if (Py_TYPE(interval_or_inf)
-               == (PyTypeObject *) py::type::of<intervals::RealInterval>()
+               == (PyTypeObject*) py::type::of<intervals::RealInterval>()
                           .ptr()) {
         if (py_sup != nullptr) {
             if (resolution_converter(py_sup, &sigargs->resolution) == 0) {
@@ -158,9 +158,9 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs,
         }
 
         sigargs->interval = py::handle(interval_or_inf)
-                                    .cast<const intervals::RealInterval &>();
+                                    .cast<const intervals::RealInterval&>();
     } else if (Py_TYPE(interval_or_inf)
-               == (PyTypeObject *) py::type::of<intervals::DyadicInterval>()
+               == (PyTypeObject*) py::type::of<intervals::DyadicInterval>()
                           .ptr()) {
         if (py_sup != nullptr) {
             if (resolution_converter(py_sup, &sigargs->resolution) == 0) {
@@ -170,9 +170,9 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs,
 
         sigargs->interval = intervals::RealInterval(
                 py::handle(interval_or_inf)
-                        .cast<const intervals::DyadicInterval &>());
+                        .cast<const intervals::DyadicInterval&>());
     } else if (Py_TYPE(interval_or_inf)
-               == (PyTypeObject *) py::type::of<intervals::Interval>().ptr()) {
+               == (PyTypeObject*) py::type::of<intervals::Interval>().ptr()) {
         if (py_sup != nullptr) {
             if (resolution_converter(py_sup, &sigargs->resolution) == 0) {
                 return -1;
@@ -180,8 +180,7 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs,
         }
 
         sigargs->interval = intervals::RealInterval(
-                py::handle(interval_or_inf)
-                        .cast<const intervals::Interval &>());
+                py::handle(interval_or_inf).cast<const intervals::Interval&>());
     } else {
         PyErr_SetString(PyExc_TypeError,
                         "unexpected type for argument interval_or_inf");
@@ -195,13 +194,13 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs,
             return 0;
         }
 
-        const scalars::ScalarType *ctype = smeta->data_scalar_type;
+        const scalars::ScalarType* ctype = smeta->data_scalar_type;
         if (dtype != nullptr) {
             if (Py_TYPE(dtype)
-                == (PyTypeObject *) python::get_scalar_metaclass().ptr()) {
-                ctype = ((python::PyScalarMetaType *) dtype)->tp_ctype;
+                == (PyTypeObject*) python::get_scalar_metaclass().ptr()) {
+                ctype = ((python::PyScalarMetaType*) dtype)->tp_ctype;
             } else if (Py_TYPE(dtype) == &PyUnicode_Type) {
-                const auto *dtype_str = PyUnicode_AsUTF8(dtype);
+                const auto* dtype_str = PyUnicode_AsUTF8(dtype);
                 ctype = scalars::get_type(dtype_str);
                 if (ctype == nullptr) {
                     PyErr_SetString(PyExc_TypeError,
@@ -240,12 +239,12 @@ static int parse_sig_args(PyObject *args, PyObject *kwargs,
 
 extern "C" {
 
-static const char *SIGNATURE_DOC
+static const char* SIGNATURE_DOC
         = R"rpydoc(Compute the signature of the stream over an interval.)rpydoc";
-static PyObject *signature(PyObject *self, PyObject *args, PyObject *kwargs)
+static PyObject* signature(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     SigArgs sigargs;
-    auto *stream = (python::RPyStream *) self;
+    auto* stream = (python::RPyStream*) self;
 
     if (parse_sig_args(args, kwargs, &stream->m_data.metadata(), &sigargs)
         < 0) {
@@ -260,7 +259,7 @@ static PyObject *signature(PyObject *self, PyObject *args, PyObject *kwargs)
         } else {
             result = stream->m_data.signature(sigargs.resolution, *sigargs.ctx);
         }
-    } catch (std::exception &err) {
+    } catch (std::exception& err) {
         PyErr_SetString(PyExc_RuntimeError, err.what());
         return nullptr;
     }
@@ -268,12 +267,12 @@ static PyObject *signature(PyObject *self, PyObject *args, PyObject *kwargs)
     return py::cast(std::move(result)).release().ptr();
 }
 
-static const char *LOGSIGNATURE_DOC
+static const char* LOGSIGNATURE_DOC
         = R"rpydoc(Compute the log signature of the stream over an interval.)rpydoc";
-static PyObject *log_signature(PyObject *self, PyObject *args, PyObject *kwargs)
+static PyObject* log_signature(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     SigArgs sigargs;
-    auto *stream = (python::RPyStream *) self;
+    auto* stream = (python::RPyStream*) self;
 
     if (parse_sig_args(args, kwargs, &stream->m_data.metadata(), &sigargs)
         < 0) {
@@ -291,33 +290,33 @@ static PyObject *log_signature(PyObject *self, PyObject *args, PyObject *kwargs)
     return py::cast(result).release().ptr();
 }
 
-static const char *SIG_DERIV_DOC
+static const char* SIG_DERIV_DOC
         = R"rpydoc(Compute the derivative of a signature calculation with respect
 to a perturbation of the underlying path.
 )rpydoc";
-static PyObject *sig_deriv(PyObject *self, PyObject *args, PyObject *kwargs)
+static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs)
 {
-    static const char *kwords[]
+    static const char* kwords[]
             = {"interval", "perturbation", "resolution", "depth", nullptr};
 
-    const auto &stream = reinterpret_cast<python::RPyStream *>(self)->m_data;
+    const auto& stream = reinterpret_cast<python::RPyStream*>(self)->m_data;
 
-    PyObject *arg;
-    PyObject *second_arg = nullptr;
+    PyObject* arg;
+    PyObject* second_arg = nullptr;
     rpy::resolution_t resolution = stream.metadata().default_resolution;
     deg_t depth = -1;
     auto ctx = stream.metadata().default_context;
 
     auto parse_result = PyArg_ParseTupleAndKeywords(
-            args, kwargs, "O|Oi$i", const_cast<char **>(kwords), &arg,
+            args, kwargs, "O|Oi$i", const_cast<char**>(kwords), &arg,
             &second_arg, &resolution, &depth);
     if (!static_cast<bool>(parse_result)) { return nullptr; }
 
     if (depth != -1) { ctx = ctx->get_alike(depth); }
 
-    auto *interval_type = reinterpret_cast<PyTypeObject *>(
+    auto* interval_type = reinterpret_cast<PyTypeObject*>(
             py::type::of<intervals::Interval>().ptr());
-    auto *lie_type = reinterpret_cast<PyTypeObject *>(
+    auto* lie_type = reinterpret_cast<PyTypeObject*>(
             py::type::of<algebra::Lie>().ptr());
 
     if (second_arg != nullptr && Py_TYPE(second_arg) == &PyLong_Type) {
@@ -326,13 +325,13 @@ static PyObject *sig_deriv(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     algebra::FreeTensor result;
-    if (PyObject_IsInstance(arg, (PyObject *) interval_type)
+    if (PyObject_IsInstance(arg, (PyObject*) interval_type)
         && second_arg != nullptr && Py_TYPE(second_arg) == lie_type) {
 
-        const auto &interval
-                = py::handle(arg).cast<const intervals::Interval &>();
-        const auto &perturbation
-                = py::handle(second_arg).cast<const algebra::Lie &>();
+        const auto& interval
+                = py::handle(arg).cast<const intervals::Interval&>();
+        const auto& perturbation
+                = py::handle(second_arg).cast<const algebra::Lie&>();
 
         result = stream.signature_derivative(interval, perturbation, resolution,
                                              *ctx);
@@ -346,8 +345,8 @@ static PyObject *sig_deriv(PyObject *self, PyObject *args, PyObject *kwargs)
                                         &py_perturbation.ptr());
         if (!static_cast<bool>(parse_result)) { return nullptr; }
 
-        const auto &interval = py_interval.cast<const intervals::Interval &>();
-        const auto &perturbation = py_perturbation.cast<const algebra::Lie &>();
+        const auto& interval = py_interval.cast<const intervals::Interval&>();
+        const auto& perturbation = py_perturbation.cast<const algebra::Lie&>();
 
         result = stream.signature_derivative(interval, perturbation, resolution,
                                              *ctx);
@@ -358,7 +357,7 @@ static PyObject *sig_deriv(PyObject *self, PyObject *args, PyObject *kwargs)
         perturbations.reserve(n_perturbations);
 
         for (Py_ssize_t i = 0; i < n_perturbations; ++i) {
-            PyObject *item = PySequence_ITEM(arg, i);
+            PyObject* item = PySequence_ITEM(arg, i);
 
             if (!static_cast<bool>(PySequence_Check(item))
                 || PySequence_Length(item) != 2) {
@@ -377,8 +376,8 @@ static PyObject *sig_deriv(PyObject *self, PyObject *args, PyObject *kwargs)
 
             perturbations.emplace_back(
                     intervals::RealInterval(
-                            py_interval.cast<const intervals::Interval &>()),
-                    py_perturbation.cast<algebra::Lie &>()->borrow_mut());
+                            py_interval.cast<const intervals::Interval&>()),
+                    py_perturbation.cast<algebra::Lie&>()->borrow_mut());
         }
 
         result = stream.signature_derivative(perturbations, resolution, *ctx);
@@ -400,33 +399,33 @@ static PyMethodDef RPyStream_members[]
             METH_VARARGS | METH_KEYWORDS, SIG_DERIV_DOC},
            {nullptr, nullptr, 0, nullptr}};
 
-static PyObject *width_getter(PyObject *self)
+static PyObject* width_getter(PyObject* self)
 {
-    return PyLong_FromUnsignedLong(reinterpret_cast<python::RPyStream *>(self)
+    return PyLong_FromUnsignedLong(reinterpret_cast<python::RPyStream*>(self)
                                            ->m_data.metadata()
                                            .width);
 }
 
-static PyObject *ctype_getter(PyObject *self)
+static PyObject* ctype_getter(PyObject* self)
 {
-    return python::to_ctype_type(reinterpret_cast<python::RPyStream *>(self)
+    return python::to_ctype_type(reinterpret_cast<python::RPyStream*>(self)
                                          ->m_data.metadata()
                                          .data_scalar_type)
             .release()
             .ptr();
 }
 
-static PyObject *ctx_getter(PyObject *self)
+static PyObject* ctx_getter(PyObject* self)
 {
     return python::RPyContext_FromContext(
-            reinterpret_cast<python::RPyStream *>(self)
+            reinterpret_cast<python::RPyStream*>(self)
                     ->m_data.metadata()
                     .default_context);
 }
 
-static PyObject *support_getter(PyObject *self)
+static PyObject* support_getter(PyObject* self)
 {
-    return py::cast(reinterpret_cast<python::RPyStream *>(self)
+    return py::cast(reinterpret_cast<python::RPyStream*>(self)
                             ->m_data.metadata()
                             .effective_support)
             .release()
@@ -440,15 +439,15 @@ static PyGetSetDef RPyStream_getset[]
            {"support", (getter) support_getter, nullptr, nullptr, nullptr},
            {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
-static PyObject *RPyStream_repr(PyObject *self)
+static PyObject* RPyStream_repr(PyObject* self)
 {
     std::stringstream ss;
     ss << "Stream(width="
-       << reinterpret_cast<python::RPyStream *>(self)->m_data.metadata().width
+       << reinterpret_cast<python::RPyStream*>(self)->m_data.metadata().width
        << ')';
     return PyUnicode_FromString(ss.str().c_str());
 }
-static PyObject *RPyStream_str(PyObject *self) { return RPyStream_repr(self); }
+static PyObject* RPyStream_str(PyObject* self) { return RPyStream_repr(self); }
 
 PyTypeObject rpy::python::RPyStream_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0) "_roughpy.Stream", /* tp_name */
@@ -468,7 +467,7 @@ PyTypeObject rpy::python::RPyStream_Type = {
         (reprfunc) RPyStream_str,                 /* tp_str */
         nullptr,                                  /* tp_getattro */
         (setattrofunc) nullptr,                   /* tp_setattro */
-        (PyBufferProcs *) nullptr,                /* tp_as_buffer */
+        (PyBufferProcs*) nullptr,                 /* tp_as_buffer */
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
         STREAM_DOC,                               /* tp_doc */
         nullptr,                                  /* tp_traverse */
@@ -491,22 +490,22 @@ PyTypeObject rpy::python::RPyStream_Type = {
 };
 }
 
-PyObject *python::RPyStream_FromStream(Stream &&stream)
+PyObject* python::RPyStream_FromStream(Stream&& stream)
 {
-    auto *py_stream = RPyStream_Type.tp_alloc(&RPyStream_Type, 0);
+    auto* py_stream = RPyStream_Type.tp_alloc(&RPyStream_Type, 0);
     if (py_stream == nullptr) { return nullptr; }
 
-    auto *dst = &reinterpret_cast<python::RPyStream *>(py_stream)->m_data;
+    auto* dst = &reinterpret_cast<python::RPyStream*>(py_stream)->m_data;
 
     ::new (dst) Stream(std::move(stream));
 
-    return reinterpret_cast<PyObject *>(py_stream);
+    return reinterpret_cast<PyObject*>(py_stream);
 }
 
-void python::init_stream(py::module_ &m)
+void python::init_stream(py::module_& m)
 {
 
     if (PyType_Ready(&RPyStream_Type) < 0) { throw py::error_already_set(); }
 
-    m.add_object("Stream", (PyObject *) &RPyStream_Type);
+    m.add_object("Stream", (PyObject*) &RPyStream_Type);
 }

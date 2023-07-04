@@ -75,10 +75,10 @@ struct BasicContextSpec {
 };
 
 RPY_NO_DISCARD RPY_EXPORT BasicContextSpec
-get_context_spec(const context_pointer &ctx);
+get_context_spec(const context_pointer& ctx);
 
 RPY_NO_DISCARD RPY_EXPORT context_pointer
-from_context_spec(const BasicContextSpec &spec);
+from_context_spec(const BasicContextSpec& spec);
 
 RPY_NO_DISCARD RPY_EXPORT std::vector<byte>
 alg_to_raw_bytes(context_pointer ctx, AlgebraType atype,
@@ -87,15 +87,15 @@ alg_to_raw_bytes(context_pointer ctx, AlgebraType atype,
 RPY_NO_DISCARD RPY_EXPORT UnspecifiedAlgebraType alg_from_raw_bytes(
         context_pointer ctx, AlgebraType atype, Slice<byte> raw_data);
 
-void intrusive_ptr_release(const ContextBase *ptr);
-void intrusive_ptr_add_ref(const ContextBase *ptr);
+void intrusive_ptr_release(const ContextBase* ptr);
+void intrusive_ptr_add_ref(const ContextBase* ptr);
 
-void intrusive_ptr_release(const Context *ptr);
-void intrusive_ptr_add_ref(const Context *ptr);
+void intrusive_ptr_release(const Context* ptr);
+void intrusive_ptr_add_ref(const Context* ptr);
 
 template <typename Algebra>
 struct basis_setup_helper {
-    static typename Algebra::basis_type get(const context_pointer &ctx);
+    static typename Algebra::basis_type get(const context_pointer& ctx);
 };
 
 }// namespace algebra

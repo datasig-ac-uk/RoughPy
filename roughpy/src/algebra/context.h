@@ -44,16 +44,16 @@ struct RPyContext {
 
 extern PyTypeObject RPyContext_Type;
 
-PyObject *RPyContext_FromContext(algebra::context_pointer ctx);
+PyObject* RPyContext_FromContext(algebra::context_pointer ctx);
 }
 
-inline const algebra::context_pointer &ctx_cast(PyObject *ctx)
+inline const algebra::context_pointer& ctx_cast(PyObject* ctx)
 {
     RPY_CHECK(ctx != nullptr && Py_TYPE(ctx) == &python::RPyContext_Type);
-    return reinterpret_cast<RPyContext *>(ctx)->p_ctx;
+    return reinterpret_cast<RPyContext*>(ctx)->p_ctx;
 }
 
-void init_context(py::module_ &m);
+void init_context(py::module_& m);
 
 }// namespace python
 }// namespace rpy

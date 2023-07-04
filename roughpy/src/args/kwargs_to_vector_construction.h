@@ -45,7 +45,7 @@ struct PyVectorConstructionHelper {
     deg_t width = 0;
     deg_t depth = 0;
     /// Coefficient type
-    const scalars::ScalarType *ctype = nullptr;
+    const scalars::ScalarType* ctype = nullptr;
     /// Vector type to be requested
     algebra::VectorType vtype = algebra::VectorType::Dense;
     /// flags for saying if the user explicitly requested ctype and vtype
@@ -55,7 +55,7 @@ struct PyVectorConstructionHelper {
 };
 
 PyVectorConstructionHelper
-kwargs_to_construction_data(const py::kwargs &kwargs);
+kwargs_to_construction_data(const py::kwargs& kwargs);
 
 }// namespace python
 }// namespace rpy

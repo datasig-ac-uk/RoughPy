@@ -76,7 +76,7 @@ FreeTensor FreeTensor::antipode() const
     if (p_impl) { return p_impl->antipode(); }
     return {};
 }
-FreeTensor &FreeTensor::fmexp(const FreeTensor &other)
+FreeTensor& FreeTensor::fmexp(const FreeTensor& other)
 {
     if (p_impl && !is_equivalent_to_zero(other)) { p_impl->fmexp(other); }
     return *this;
@@ -102,7 +102,7 @@ FreeTensorBundle FreeTensorBundle::antipode() const
     if (p_impl) { return p_impl->antipode(); }
     return FreeTensorBundle();
 }
-FreeTensorBundle &FreeTensorBundle::fmexp(const FreeTensorBundle &other)
+FreeTensorBundle& FreeTensorBundle::fmexp(const FreeTensorBundle& other)
 {
     if (p_impl && other.p_impl) { p_impl->fmexp(other); }
     return *this;
@@ -110,14 +110,14 @@ FreeTensorBundle &FreeTensorBundle::fmexp(const FreeTensorBundle &other)
 
 template <>
 typename FreeTensor::basis_type
-basis_setup_helper<FreeTensor>::get(const context_pointer &ctx)
+basis_setup_helper<FreeTensor>::get(const context_pointer& ctx)
 {
     return ctx->get_tensor_basis();
 }
 
 template <>
 typename FreeTensorBundle::basis_type
-basis_setup_helper<FreeTensorBundle>::get(const context_pointer &ctx)
+basis_setup_helper<FreeTensorBundle>::get(const context_pointer& ctx)
 {
     return ctx->get_tensor_basis();
 }

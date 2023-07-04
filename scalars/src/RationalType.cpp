@@ -51,13 +51,13 @@ using namespace rpy;
 using namespace rpy::scalars;
 
 std::unique_ptr<RandomGenerator>
-RationalType::get_mt19937_generator(const ScalarType *type,
+RationalType::get_mt19937_generator(const ScalarType* type,
                                     Slice<uint64_t> seed)
 {
     return nullptr;
 }
 std::unique_ptr<RandomGenerator>
-RationalType::get_pcg_generator(const ScalarType *type, Slice<uint64_t> seed)
+RationalType::get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed)
 {
     return std::unique_ptr<RandomGenerator>();
 }
@@ -91,7 +91,7 @@ RationalType::scalar_type RationalType::try_convert(ScalarPointer other) const
         return *other.template raw_cast<const scalar_type>();
     }
 
-    const ScalarType *type = other.type();
+    const ScalarType* type = other.type();
     if (type == nullptr) {
         throw std::runtime_error("null type for non-zero value");
     }
@@ -118,18 +118,18 @@ void RationalType::convert_copy(ScalarPointer dst, ScalarPointer src,
 }
 
 template <typename F>
-static inline void convert_copy_ext(ScalarPointer &out, const void *in,
+static inline void convert_copy_ext(ScalarPointer& out, const void* in,
                                     std::size_t count)
 {
-    const auto *iptr = static_cast<const F *>(in);
-    auto *optr = static_cast<rational_scalar_type *>(out.ptr());
+    const auto* iptr = static_cast<const F*>(in);
+    auto* optr = static_cast<rational_scalar_type*>(out.ptr());
 
     for (dimn_t i = 0; i < count; ++i, ++iptr, ++optr) {
         ::new (optr) rational_scalar_type(static_cast<float>(*iptr));
     }
 }
 
-void RationalType::convert_copy(void *out, const void *in, std::size_t count,
+void RationalType::convert_copy(void* out, const void* in, std::size_t count,
                                 BasicScalarInfo info) const
 {
 
@@ -207,21 +207,21 @@ void RationalType::convert_copy(void *out, const void *in, std::size_t count,
         default: throw std::runtime_error("unsupported scalar type");
     }
 }
-void RationalType::convert_copy(void *out, ScalarPointer in,
+void RationalType::convert_copy(void* out, ScalarPointer in,
                                 std::size_t count) const
 {
     RPY_DBG_ASSERT(out != nullptr);
     RPY_DBG_ASSERT(!in.is_null());
-    const auto *type = in.type();
+    const auto* type = in.type();
 
     if (type == nullptr) {
         throw std::runtime_error("null type for non-zero value");
     }
 
     if (type == this) {
-        const auto *in_begin = in.template raw_cast<const scalar_type>();
-        const auto *in_end = in_begin + count;
-        std::copy(in_begin, in_end, static_cast<scalar_type *>(out));
+        const auto* in_begin = in.template raw_cast<const scalar_type>();
+        const auto* in_end = in_begin + count;
+        std::copy(in_begin, in_end, static_cast<scalar_type*>(out));
     } else {
         auto cv = get_conversion(type->id(), this->id());
         ScalarPointer out_ptr{this, out};
@@ -230,8 +230,8 @@ void RationalType::convert_copy(void *out, ScalarPointer in,
     }
 }
 
-void RationalType::convert_copy(ScalarPointer out, const void *in,
-                                std::size_t count, const string &type_id) const
+void RationalType::convert_copy(ScalarPointer out, const void* in,
+                                std::size_t count, const string& type_id) const
 {
     if (type_id == "f64") {
         return convert_copy_basic<double>(out, in, count);
@@ -260,17 +260,17 @@ void RationalType::convert_copy(ScalarPointer out, const void *in,
     }
 
     // If we're here, then it is a non-standard type
-    const auto &conversion = get_conversion(type_id, this->id());
+    const auto& conversion = get_conversion(type_id, this->id());
     conversion(out, {nullptr, in}, count);
 }
 scalar_t RationalType::to_scalar_t(ScalarPointer arg) const
 {
-    return static_cast<scalar_t>(*arg.raw_cast<const scalar_type *>());
+    return static_cast<scalar_t>(*arg.raw_cast<const scalar_type*>());
 }
 void RationalType::assign(ScalarPointer target, long long int numerator,
                           long long int denominator) const
 {
-    *target.raw_cast<scalar_type *>() = scalar_type(numerator) / denominator;
+    *target.raw_cast<scalar_type*>() = scalar_type(numerator) / denominator;
 }
 Scalar RationalType::uminus(ScalarPointer arg) const
 {
@@ -279,25 +279,25 @@ Scalar RationalType::uminus(ScalarPointer arg) const
 void RationalType::add_inplace(ScalarPointer lhs, ScalarPointer rhs) const
 {
     RPY_CHECK(lhs);
-    auto *ptr = lhs.raw_cast<scalar_type *>();
+    auto* ptr = lhs.raw_cast<scalar_type*>();
     *ptr += try_convert(rhs);
 }
 void RationalType::sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const
 {
     RPY_CHECK(lhs);
-    auto *ptr = lhs.raw_cast<scalar_type *>();
+    auto* ptr = lhs.raw_cast<scalar_type*>();
     *ptr -= try_convert(rhs);
 }
 void RationalType::mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const
 {
     RPY_CHECK(lhs);
-    auto *ptr = lhs.raw_cast<scalar_type *>();
+    auto* ptr = lhs.raw_cast<scalar_type*>();
     *ptr *= try_convert(rhs);
 }
 void RationalType::div_inplace(ScalarPointer lhs, ScalarPointer rhs) const
 {
     RPY_CHECK(lhs);
-    auto *ptr = lhs.raw_cast<scalar_type *>();
+    auto* ptr = lhs.raw_cast<scalar_type*>();
     if (rhs.is_null()) { throw std::runtime_error("division by zero"); }
 
     auto crhs = try_convert(rhs);
@@ -311,7 +311,7 @@ void RationalType::div_inplace(ScalarPointer lhs, ScalarPointer rhs) const
 bool RationalType::are_equal(ScalarPointer lhs,
                              ScalarPointer rhs) const noexcept
 {
-    return *lhs.raw_cast<const scalar_type *>() == try_convert(rhs);
+    return *lhs.raw_cast<const scalar_type*>() == try_convert(rhs);
 }
 Scalar RationalType::from(long long int numerator,
                           long long int denominator) const
@@ -319,7 +319,7 @@ Scalar RationalType::from(long long int numerator,
     return Scalar(this, scalar_type(numerator) / denominator);
 }
 void RationalType::convert_fill(ScalarPointer out, ScalarPointer in,
-                                dimn_t count, const string &id) const
+                                dimn_t count, const string& id) const
 {
     ScalarType::convert_fill(out, in, count, id);
 }
@@ -333,20 +333,17 @@ Scalar RationalType::copy(ScalarPointer arg) const
 Scalar RationalType::add(ScalarPointer lhs, ScalarPointer rhs) const
 {
     if (!lhs) { return copy(rhs); }
-    return Scalar(this,
-                  *lhs.raw_cast<const scalar_type *>() + try_convert(rhs));
+    return Scalar(this, *lhs.raw_cast<const scalar_type*>() + try_convert(rhs));
 }
 Scalar RationalType::sub(ScalarPointer lhs, ScalarPointer rhs) const
 {
     if (!lhs) { return uminus(rhs); }
-    return Scalar(this,
-                  *lhs.raw_cast<const scalar_type *>() - try_convert(rhs));
+    return Scalar(this, *lhs.raw_cast<const scalar_type*>() - try_convert(rhs));
 }
 Scalar RationalType::mul(ScalarPointer lhs, ScalarPointer rhs) const
 {
     if (!lhs) { return zero(); }
-    return Scalar(this,
-                  *lhs.raw_cast<const scalar_type *>() * try_convert(rhs));
+    return Scalar(this, *lhs.raw_cast<const scalar_type*>() * try_convert(rhs));
 }
 Scalar RationalType::div(ScalarPointer lhs, ScalarPointer rhs) const
 {
@@ -360,24 +357,24 @@ Scalar RationalType::div(ScalarPointer lhs, ScalarPointer rhs) const
     }
 
     return Scalar(this,
-                  static_cast<scalar_type>(*lhs.raw_cast<const scalar_type *>()
+                  static_cast<scalar_type>(*lhs.raw_cast<const scalar_type*>()
                                            / crhs));
 }
 bool RationalType::is_zero(ScalarPointer arg) const
 {
     return !static_cast<bool>(arg)
-            || *arg.raw_cast<const scalar_type *>() == scalar_type(0);
+            || *arg.raw_cast<const scalar_type*>() == scalar_type(0);
 }
-void RationalType::print(ScalarPointer arg, std::ostream &os) const
+void RationalType::print(ScalarPointer arg, std::ostream& os) const
 {
     if (!arg) {
         os << 0.0;
     } else {
-        os << *arg.raw_cast<const scalar_type *>();
+        os << *arg.raw_cast<const scalar_type*>();
     }
 }
 std::unique_ptr<RandomGenerator>
-RationalType::get_rng(const string &bit_generator, Slice<uint64_t> seed) const
+RationalType::get_rng(const string& bit_generator, Slice<uint64_t> seed) const
 {
     return ScalarType::get_rng(bit_generator, seed);
 }
@@ -400,12 +397,12 @@ void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const
         throw std::runtime_error("one or both of the scalars is const");
     }
 
-    std::swap(*lhs.raw_cast<scalar_type *>(), *rhs.raw_cast<scalar_type *>());
+    std::swap(*lhs.raw_cast<scalar_type*>(), *rhs.raw_cast<scalar_type*>());
 }
-std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr,
+std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer& ptr,
                                              dimn_t count) const
 {
-    const auto *raw = ptr.raw_cast<const rational_scalar_type *>();
+    const auto* raw = ptr.raw_cast<const rational_scalar_type*>();
     std::vector<byte> result;
     result.reserve(
             count
@@ -421,7 +418,7 @@ std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr,
         auto n_bytes = size * sizeof(boost::multiprecision::limb_type);
         size = item.sign() ? -n_bytes : n_bytes;
 #endif
-        const auto *sz_ptr = reinterpret_cast<const byte *>(&size);
+        const auto* sz_ptr = reinterpret_cast<const byte*>(&size);
         for (dimn_t i = 0; i < sizeof(int64_t); ++i) {
             result.push_back(sz_ptr[i]);
         }
@@ -429,7 +426,7 @@ std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr,
 #if RPY_USING_GMP
         auto curr_size = result.size();
         result.resize(curr_size + n_bytes);
-        auto *write = result.data() + curr_size;
+        auto* write = result.data() + curr_size;
         size_t actually_written;
         mpz_export(write, &actually_written, -1, sizeof(byte), -1, 0, item);
         RPY_DBG_ASSERT(actually_written == n_bytes);
@@ -440,11 +437,11 @@ std::vector<byte> RationalType::to_raw_bytes(const ScalarPointer &ptr,
 
     for (dimn_t i = 0; i < count; ++i) {
 #if RPY_USING_GMP
-        const auto &item = raw[i].backend();
+        const auto& item = raw[i].backend();
         push_items(mpq_numref(item.data()));
         push_items(mpq_denref(item.data()));
 #else
-        const auto &item = raw[i];
+        const auto& item = raw[i];
         push_items(numerator(item));
         push_items(denominator(item));
 #endif
@@ -458,12 +455,12 @@ ScalarPointer RationalType::from_raw_bytes(Slice<byte> raw_bytes,
     // TODO: These implementations are probably not completely correct
 
     ScalarPointer out = allocate(count);
-    auto *raw = out.raw_cast<rational_scalar_type *>();
+    auto* raw = out.raw_cast<rational_scalar_type*>();
 
     dimn_t pos = 0;
     const auto limit = raw_bytes.size();
 
-    auto unpack_limb = [&pos, &limit](auto &dst, const byte *src) {
+    auto unpack_limb = [&pos, &limit](auto& dst, const byte* src) {
         RPY_CHECK(pos + sizeof(int64_t) <= limit);
 
         int64_t size;
@@ -483,14 +480,14 @@ ScalarPointer RationalType::from_raw_bytes(Slice<byte> raw_bytes,
 #endif
     };
 
-    const auto *src = raw_bytes.begin();
+    const auto* src = raw_bytes.begin();
     for (dimn_t i = 0; i < count; ++i) {
-        auto &item = raw[i];
+        auto& item = raw[i];
         auto den = denominator(item);
 
 #if RPY_USING_GMP
-        auto *numref = mpq_numref(item.backend().data());
-        auto *denref = mpq_denref(item.backend().data());
+        auto* numref = mpq_numref(item.backend().data());
+        auto* denref = mpq_denref(item.backend().data());
         unpack_limb(numref, src + pos);
         unpack_limb(denref, src + pos);
 #else

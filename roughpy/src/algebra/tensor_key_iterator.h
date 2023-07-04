@@ -53,7 +53,7 @@ public:
     PyTensorKey next();
 };
 
-void init_tensor_key_iterator(py::module_ &m);
+void init_tensor_key_iterator(py::module_& m);
 
 }// namespace python
 }// namespace rpy

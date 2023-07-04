@@ -48,7 +48,7 @@ class ContextFixture : public ::testing::Test
     static constexpr deg_t width = 5;
     static constexpr deg_t depth = 5;
 
-    const scalars::ScalarType *stype;
+    const scalars::ScalarType* stype;
 
     context_pointer ctx;
 

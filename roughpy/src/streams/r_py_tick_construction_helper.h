@@ -59,10 +59,10 @@ class RPyTickConstructionHelper
     PyDateTimeConversionOptions m_time_conversion_options;
 
 private:
-    void add_increment_to_schema(string label, const py::kwargs &kwargs);
-    void add_value_to_schema(string label, const py::kwargs &kwargs);
+    void add_increment_to_schema(string label, const py::kwargs& kwargs);
+    void add_value_to_schema(string label, const py::kwargs& kwargs);
     void add_categorical_to_schema(string label, py::object variant,
-                                   const py::kwargs &kwargs);
+                                   const py::kwargs& kwargs);
 
     RPY_NO_RETURN
     void fail_timestamp_none();
@@ -76,22 +76,22 @@ public:
     explicit RPyTickConstructionHelper(
             std::shared_ptr<streams::StreamSchema> schema, bool schema_only);
 
-    void add_increment(const py::str &label, py::object timestamp,
-                       py::object data, const py::kwargs &kwargs);
-    void add_value(const py::str &label, py::object timestamp, py::object data,
-                   const py::kwargs &kwargs);
-    void add_categorical(const py::str &label, py::object timestamp,
-                         py::object variant, const py::kwargs &kwargs);
+    void add_increment(const py::str& label, py::object timestamp,
+                       py::object data, const py::kwargs& kwargs);
+    void add_value(const py::str& label, py::object timestamp, py::object data,
+                   const py::kwargs& kwargs);
+    void add_categorical(const py::str& label, py::object timestamp,
+                         py::object variant, const py::kwargs& kwargs);
     //    void add_lie(const py::str& label, const py::kwargs& kwargs);
 
-    const std::shared_ptr<streams::StreamSchema> &schema() const noexcept
+    const std::shared_ptr<streams::StreamSchema>& schema() const noexcept
     {
         return p_schema;
     }
-    const std::vector<RPy_Tick> &ticks() const noexcept { return m_ticks; }
+    const std::vector<RPy_Tick>& ticks() const noexcept { return m_ticks; }
 };
 
-void init_tick_construction_helper(py::module_ &m);
+void init_tick_construction_helper(py::module_& m);
 
 }// namespace python
 }// namespace rpy

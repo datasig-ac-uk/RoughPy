@@ -37,7 +37,7 @@
 using namespace rpy;
 using namespace pybind11::literals;
 
-static const char *FUNC_STREAM_DOC
+static const char* FUNC_STREAM_DOC
         = R"rpydoc(A stream generated dynamically by calling a function.
 )rpydoc";
 
@@ -49,8 +49,8 @@ python::FunctionStream::FunctionStream(
 {}
 
 algebra::Lie
-python::FunctionStream::log_signature_impl(const intervals::Interval &interval,
-                                           const algebra::Context &ctx) const
+python::FunctionStream::log_signature_impl(const intervals::Interval& interval,
+                                           const algebra::Context& ctx) const
 {
     py::gil_scoped_acquire gil;
 
@@ -70,9 +70,9 @@ pair<algebra::Lie, algebra::Lie>
 python::FunctionStream::compute_child_lie_increments(
         streams::DynamicallyConstructedStream::DyadicInterval left_di,
         streams::DynamicallyConstructedStream::DyadicInterval right_di,
-        const streams::DynamicallyConstructedStream::Lie &parent_value) const
+        const streams::DynamicallyConstructedStream::Lie& parent_value) const
 {
-    const auto &md = metadata();
+    const auto& md = metadata();
 
     return {log_signature_impl(left_di, *md.default_context),
             log_signature_impl(right_di, *md.default_context)};
@@ -97,13 +97,13 @@ static py::object from_function(py::object fn, py::kwargs kwargs)
             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
             pmd.resolution};
 
-    PyObject *stream = python::RPyStream_FromStream(streams::Stream(
+    PyObject* stream = python::RPyStream_FromStream(streams::Stream(
             python::FunctionStream(std::move(fn), python::FunctionStream::Value,
                                    std::move(md))));
     return py::reinterpret_steal<py::object>(stream);
 }
 
-void python::init_function_stream(py::module_ &m)
+void python::init_function_stream(py::module_& m)
 {
 
     py::class_<FunctionStream> klass(m, "FunctionStream", FUNC_STREAM_DOC);

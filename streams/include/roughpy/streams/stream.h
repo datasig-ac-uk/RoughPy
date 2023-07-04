@@ -53,73 +53,73 @@ public:
     using perturbation_list_t = std::vector<perturbation_t>;
 
     template <typename Impl>
-    explicit Stream(Impl &&impl);
+    explicit Stream(Impl&& impl);
 
     RPY_NO_DISCARD
-    const StreamMetadata &metadata() const;
+    const StreamMetadata& metadata() const;
 
     RPY_NO_DISCARD
-    const Context &get_default_context() const;
+    const Context& get_default_context() const;
 
     RPY_NO_DISCARD
-    const StreamSchema &schema() const;
+    const StreamSchema& schema() const;
 
     RPY_NO_DISCARD
     Lie log_signature() const;
     RPY_NO_DISCARD
-    Lie log_signature(const Context &ctx) const;
+    Lie log_signature(const Context& ctx) const;
     RPY_NO_DISCARD
     Lie log_signature(resolution_t resolution);
     RPY_NO_DISCARD
-    Lie log_signature(resolution_t resolution, const Context &ctx) const;
+    Lie log_signature(resolution_t resolution, const Context& ctx) const;
     RPY_NO_DISCARD
-    Lie log_signature(const Interval &interval) const;
+    Lie log_signature(const Interval& interval) const;
     RPY_NO_DISCARD
-    Lie log_signature(const Interval &interval, resolution_t resolution) const;
+    Lie log_signature(const Interval& interval, resolution_t resolution) const;
     RPY_NO_DISCARD
-    Lie log_signature(const Interval &interval, resolution_t resolution,
-                      const Context &ctx) const;
+    Lie log_signature(const Interval& interval, resolution_t resolution,
+                      const Context& ctx) const;
 
     RPY_NO_DISCARD
     FreeTensor signature() const;
     RPY_NO_DISCARD
-    FreeTensor signature(const Context &ctx) const;
+    FreeTensor signature(const Context& ctx) const;
     RPY_NO_DISCARD
     FreeTensor signature(resolution_t resolution);
     RPY_NO_DISCARD
-    FreeTensor signature(resolution_t resolution, const Context &ctx) const;
+    FreeTensor signature(resolution_t resolution, const Context& ctx) const;
     RPY_NO_DISCARD
-    FreeTensor signature(const Interval &interval) const;
+    FreeTensor signature(const Interval& interval) const;
     RPY_NO_DISCARD
-    FreeTensor signature(const Interval &interval,
+    FreeTensor signature(const Interval& interval,
                          resolution_t resolution) const;
     RPY_NO_DISCARD
-    FreeTensor signature(const Interval &interval, resolution_t resolution,
-                         const Context &ctx) const;
+    FreeTensor signature(const Interval& interval, resolution_t resolution,
+                         const Context& ctx) const;
 
     RPY_NO_DISCARD
-    FreeTensor signature_derivative(const Interval &domain,
-                                    const Lie &perturbation) const;
+    FreeTensor signature_derivative(const Interval& domain,
+                                    const Lie& perturbation) const;
     RPY_NO_DISCARD
-    FreeTensor signature_derivative(const Interval &domain,
-                                    const Lie &perturbation,
-                                    const Context &ctx) const;
+    FreeTensor signature_derivative(const Interval& domain,
+                                    const Lie& perturbation,
+                                    const Context& ctx) const;
     RPY_NO_DISCARD
-    FreeTensor signature_derivative(const Interval &domain,
-                                    const Lie &perturbation,
+    FreeTensor signature_derivative(const Interval& domain,
+                                    const Lie& perturbation,
                                     resolution_t resolution) const;
     RPY_NO_DISCARD
-    FreeTensor signature_derivative(const Interval &domain,
-                                    const Lie &perturbation,
+    FreeTensor signature_derivative(const Interval& domain,
+                                    const Lie& perturbation,
                                     resolution_t resolution,
-                                    const Context &ctx) const;
+                                    const Context& ctx) const;
     RPY_NO_DISCARD
-    FreeTensor signature_derivative(const perturbation_list_t &perturbations,
+    FreeTensor signature_derivative(const perturbation_list_t& perturbations,
                                     resolution_t resolution) const;
     RPY_NO_DISCARD
-    FreeTensor signature_derivative(const perturbation_list_t &perturbations,
+    FreeTensor signature_derivative(const perturbation_list_t& perturbations,
                                     resolution_t resolution,
-                                    const Context &ctx) const;
+                                    const Context& ctx) const;
 
     // Stream simplify_path(const Partition& partition,
     //                      resolution_t resolution) const;
@@ -128,7 +128,7 @@ public:
 };
 
 template <typename Impl>
-Stream::Stream(Impl &&impl)
+Stream::Stream(Impl&& impl)
     : p_impl(new remove_cv_t<Impl>(std::forward<Impl>(impl)))
 {}
 

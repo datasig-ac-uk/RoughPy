@@ -35,12 +35,12 @@
 using namespace rpy;
 using namespace rpy::streams;
 
-LieIncrementStream::LieIncrementStream(scalars::KeyScalarArray &&buffer,
+LieIncrementStream::LieIncrementStream(scalars::KeyScalarArray&& buffer,
                                        Slice<param_t> indices,
                                        StreamMetadata metadata)
     : base_t(std::move(metadata)), m_buffer(std::move(buffer))
 {
-    const auto &md = this->metadata();
+    const auto& md = this->metadata();
     for (dimn_t i = 0; i < indices.size(); ++i) {
         m_mapping[indices[i]] = i * md.width;
     }
@@ -50,11 +50,11 @@ LieIncrementStream::LieIncrementStream(scalars::KeyScalarArray &&buffer,
 }
 
 algebra::Lie
-LieIncrementStream::log_signature_impl(const intervals::Interval &interval,
-                                       const algebra::Context &ctx) const
+LieIncrementStream::log_signature_impl(const intervals::Interval& interval,
+                                       const algebra::Context& ctx) const
 {
 
-    const auto &md = metadata();
+    const auto& md = metadata();
     //    if (empty(interval)) {
     //        return ctx.zero_lie(md.cached_vector_type);
     //    }
@@ -106,7 +106,7 @@ LieIncrementStream::log_signature_impl(const intervals::Interval &interval,
     return ctx.log_signature(data);
 }
 bool LieIncrementStream::empty(
-        const intervals::Interval &interval) const noexcept
+        const intervals::Interval& interval) const noexcept
 {
     //    std::cerr << "Checking " << interval;
     //    for (auto& item : m_mapping) {

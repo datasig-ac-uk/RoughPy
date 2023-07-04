@@ -41,7 +41,7 @@ using namespace rpy::streams;
 StreamChannel::StreamChannel()
     : m_type(ChannelType::Increment), increment_info()
 {}
-StreamChannel::StreamChannel(const StreamChannel &arg) : m_type(arg.m_type)
+StreamChannel::StreamChannel(const StreamChannel& arg) : m_type(arg.m_type)
 {
     switch (m_type) {
         case ChannelType::Increment:
@@ -58,7 +58,7 @@ StreamChannel::StreamChannel(const StreamChannel &arg) : m_type(arg.m_type)
             break;
     }
 }
-StreamChannel::StreamChannel(StreamChannel &&arg) noexcept : m_type(arg.m_type)
+StreamChannel::StreamChannel(StreamChannel&& arg) noexcept : m_type(arg.m_type)
 {
     switch (m_type) {
         case ChannelType::Increment:
@@ -94,7 +94,7 @@ StreamChannel::StreamChannel(ChannelType type) : m_type(type)
     }
 }
 
-StreamChannel &StreamChannel::operator=(const StreamChannel &other)
+StreamChannel& StreamChannel::operator=(const StreamChannel& other)
 {
     if (&other != this) {
         this->~StreamChannel();
@@ -116,7 +116,7 @@ StreamChannel &StreamChannel::operator=(const StreamChannel &other)
     }
     return *this;
 }
-StreamChannel &StreamChannel::operator=(StreamChannel &&other) noexcept
+StreamChannel& StreamChannel::operator=(StreamChannel&& other) noexcept
 {
     if (&other != this) {
         this->~StreamChannel();
@@ -225,7 +225,7 @@ dimn_t StreamChannel::variant_id_of_label(string_view label) const
     return static_cast<dimn_t>(it - categorical_info.variants.begin());
 }
 
-StreamChannel &StreamChannel::add_variant(string variant_label)
+StreamChannel& StreamChannel::add_variant(string variant_label)
 {
     RPY_CHECK(m_type == ChannelType::Categorical);
 
@@ -243,7 +243,7 @@ StreamChannel &StreamChannel::add_variant(string variant_label)
     categorical_info.variants.push_back(std::move(variant_label));
     return *this;
 }
-StreamChannel &StreamChannel::insert_variant(string variant_label)
+StreamChannel& StreamChannel::insert_variant(string variant_label)
 {
     RPY_CHECK(m_type == ChannelType::Categorical);
 
@@ -324,7 +324,7 @@ dimn_t StreamSchema::width_to_iterator(const_iterator end) const
     return ndims;
 }
 typename StreamSchema::const_iterator
-StreamSchema::stream_dim_to_channel_it(dimn_t &stream_dim) const
+StreamSchema::stream_dim_to_channel_it(dimn_t& stream_dim) const
 {
     for (auto cit = begin(); cit != end(); ++cit) {
         const auto channel_width = channel_it_to_width(cit);
@@ -335,7 +335,7 @@ StreamSchema::stream_dim_to_channel_it(dimn_t &stream_dim) const
 }
 
 typename StreamSchema::const_iterator
-StreamSchema::find(const string &label) const
+StreamSchema::find(const string& label) const
 {
     auto it_current = begin();
     const auto it_end = end();
@@ -347,7 +347,7 @@ StreamSchema::find(const string &label) const
     return it_end;
 }
 
-typename StreamSchema::iterator StreamSchema::find(const string &label)
+typename StreamSchema::iterator StreamSchema::find(const string& label)
 {
     RPY_CHECK(!m_is_final);
     auto it_current = begin();
@@ -411,7 +411,7 @@ string StreamSchema::label_of_channel_variant(dimn_t channel_id,
     return label_from_channel_it(nth(channel_id), channel_variant);
 }
 
-dimn_t StreamSchema::label_to_stream_dim(const string &label) const
+dimn_t StreamSchema::label_to_stream_dim(const string& label) const
 {
     auto channel = find(label);
     RPY_CHECK(channel != end());
@@ -439,7 +439,7 @@ dimn_t StreamSchema::label_to_stream_dim(const string &label) const
     return result;
 }
 
-StreamChannel &StreamSchema::insert(string label, StreamChannel &&channel_data)
+StreamChannel& StreamSchema::insert(string label, StreamChannel&& channel_data)
 {
     RPY_CHECK(!m_is_final);
     if (label.empty()) { label = std::to_string(size()); }
@@ -454,24 +454,24 @@ StreamChannel &StreamSchema::insert(string label, StreamChannel &&channel_data)
             ->second;
 }
 
-StreamChannel &StreamSchema::insert(StreamChannel &&channel_data)
+StreamChannel& StreamSchema::insert(StreamChannel&& channel_data)
 {
     return insert(std::to_string(width()), std::move(channel_data));
 }
 
-StreamChannel &StreamSchema::insert_increment(string label)
+StreamChannel& StreamSchema::insert_increment(string label)
 {
     return insert(std::move(label), StreamChannel(IncrementChannelInfo()));
 }
-StreamChannel &StreamSchema::insert_value(string label)
+StreamChannel& StreamSchema::insert_value(string label)
 {
     return insert(std::move(label), StreamChannel(ValueChannelInfo()));
 }
-StreamChannel &StreamSchema::insert_categorical(string label)
+StreamChannel& StreamSchema::insert_categorical(string label)
 {
     return insert(std::move(label), StreamChannel(CategoricalChannelInfo()));
 }
-StreamChannel &StreamSchema::insert_lie(string label)
+StreamChannel& StreamSchema::insert_lie(string label)
 {
     return insert(std::move(label), StreamChannel(LieChannelInfo()));
 }

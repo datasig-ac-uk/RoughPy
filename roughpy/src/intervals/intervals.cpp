@@ -36,7 +36,7 @@
 
 using namespace rpy;
 
-void python::init_intervals(pybind11::module_ &m)
+void python::init_intervals(pybind11::module_& m)
 {
 
     py::enum_<intervals::IntervalType>(m, "IntervalType")

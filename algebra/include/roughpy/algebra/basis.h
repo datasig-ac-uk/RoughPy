@@ -59,7 +59,7 @@ public:
     virtual ~BasisInterface() = default;
 
     RPY_NO_DISCARD
-    virtual string key_to_string(const key_type &key) const = 0;
+    virtual string key_to_string(const key_type& key) const = 0;
 
     RPY_NO_DISCARD
     virtual dimn_t dimension() const noexcept = 0;
@@ -92,7 +92,7 @@ public:
     RPY_NO_DISCARD
     virtual key_type index_to_key(dimn_t index) const = 0;
     RPY_NO_DISCARD
-    virtual dimn_t key_to_index(const key_type &key) const = 0;
+    virtual dimn_t key_to_index(const key_type& key) const = 0;
 };
 
 namespace dtl {
@@ -121,31 +121,31 @@ public:
     RPY_NO_DISCARD
     virtual deg_t depth() const noexcept = 0;
     RPY_NO_DISCARD
-    virtual deg_t degree(const key_type &key) const noexcept = 0;
+    virtual deg_t degree(const key_type& key) const noexcept = 0;
     RPY_NO_DISCARD
     virtual deg_t size(deg_t degree) const noexcept = 0;
     RPY_NO_DISCARD
-    virtual let_t first_letter(const key_type &key) const noexcept = 0;
+    virtual let_t first_letter(const key_type& key) const noexcept = 0;
 
     RPY_NO_DISCARD
     virtual dimn_t start_of_degree(deg_t degree) const noexcept = 0;
     RPY_NO_DISCARD
     virtual pair<optional<key_type>, optional<key_type>>
-    parents(const key_type &key) const = 0;
+    parents(const key_type& key) const = 0;
     RPY_NO_DISCARD
-    optional<key_type> lparent(const key_type &key) const
+    optional<key_type> lparent(const key_type& key) const
     {
         return parents(key).first;
     }
     RPY_NO_DISCARD
-    optional<key_type> rparent(const key_type &key) const
+    optional<key_type> rparent(const key_type& key) const
     {
         return parents(key).second;
     }
     RPY_NO_DISCARD
     virtual key_type key_of_letter(let_t letter) const noexcept = 0;
     RPY_NO_DISCARD
-    virtual bool letter(const key_type &key) const = 0;
+    virtual bool letter(const key_type& key) const = 0;
 };
 
 template <typename PrimaryInterface>
@@ -163,7 +163,7 @@ public:
     using key_type = typename basis_interface::key_type;
 
     template <typename B>
-    explicit Basis(const B *basis)
+    explicit Basis(const B* basis)
         : p_impl(new typename PrimaryInterface::template impl_t<B>(basis))
     {}
 
@@ -176,10 +176,10 @@ public:
     ~Basis() = default;
 
     RPY_NO_DISCARD
-    const basis_interface &instance() const noexcept { return *p_impl; }
+    const basis_interface& instance() const noexcept { return *p_impl; }
 
     RPY_NO_DISCARD
-    string key_to_string(const key_type &key) const noexcept
+    string key_to_string(const key_type& key) const noexcept
     {
         return instance().key_to_string(key);
     }
@@ -207,9 +207,9 @@ class OrderedBasisMixin : public Base
 {
 
     RPY_NO_DISCARD
-    const Derived &instance() const noexcept
+    const Derived& instance() const noexcept
     {
-        return static_cast<const Basis<Derived> *>(this)->instance();
+        return static_cast<const Basis<Derived>*>(this)->instance();
     }
 
 public:
@@ -222,7 +222,7 @@ public:
     }
 
     RPY_NO_DISCARD
-    dimn_t key_to_index(const key_type &key) const
+    dimn_t key_to_index(const key_type& key) const
     {
         return instance().key_to_index(key);
     }
@@ -233,9 +233,9 @@ class WordLikeBasisMixin
 {
 
     RPY_NO_DISCARD
-    const Derived &instance() const noexcept
+    const Derived& instance() const noexcept
     {
-        return static_cast<const Basis<Derived> *>(this)->instance();
+        return static_cast<const Basis<Derived>*>(this)->instance();
     }
 
 public:
@@ -246,14 +246,14 @@ public:
     RPY_NO_DISCARD
     deg_t depth() const noexcept { return instance().depth(); }
     RPY_NO_DISCARD
-    deg_t degree(const key_type &key) const noexcept
+    deg_t degree(const key_type& key) const noexcept
     {
         return instance().degree(key);
     }
     RPY_NO_DISCARD
     deg_t size(deg_t degree) const noexcept { return instance().size(degree); }
     RPY_NO_DISCARD
-    let_t first_letter(const key_type &key) const noexcept
+    let_t first_letter(const key_type& key) const noexcept
     {
         return instance().first_letter(key);
     }
@@ -264,17 +264,17 @@ public:
     }
     RPY_NO_DISCARD
     pair<optional<key_type>, optional<key_type>>
-    parents(const key_type &key) const
+    parents(const key_type& key) const
     {
         return instance().parents(key);
     }
     RPY_NO_DISCARD
-    optional<key_type> lparent(const key_type &key) const
+    optional<key_type> lparent(const key_type& key) const
     {
         return instance().lparent(key);
     }
     RPY_NO_DISCARD
-    optional<key_type> rparent(const key_type &key) const
+    optional<key_type> rparent(const key_type& key) const
     {
         return instance().rparent(key);
     }
@@ -284,7 +284,7 @@ public:
         return instance().key_of_letter(letter);
     }
     RPY_NO_DISCARD
-    bool letter(const key_type &key) const { return instance().letter(key); }
+    bool letter(const key_type& key) const { return instance().letter(key); }
 };
 
 template <typename Derived, typename KeyType,

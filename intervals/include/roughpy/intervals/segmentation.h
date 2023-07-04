@@ -38,11 +38,11 @@
 namespace rpy {
 namespace intervals {
 
-using predicate_t = std::function<bool(const Interval &)>;
+using predicate_t = std::function<bool(const Interval&)>;
 
 RPY_NO_DISCARD
 RPY_EXPORT
-std::vector<RealInterval> segment(const Interval &interval,
+std::vector<RealInterval> segment(const Interval& interval,
                                   predicate_t predicate,
                                   dyadic_depth_t max_depth);
 

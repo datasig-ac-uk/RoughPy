@@ -17,15 +17,15 @@ namespace algebra {
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
 AlgebraBundleBase<BundleInterface, DerivedImpl>::AlgebraBundleBase(
-        const AlgebraBundleBase &other)
+        const AlgebraBundleBase& other)
 {
     if (other.p_impl) { *this = other.p_impl->clone(); }
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-AlgebraBundleBase<BundleInterface, DerivedImpl> &
+AlgebraBundleBase<BundleInterface, DerivedImpl>&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::operator=(
-        const AlgebraBundleBase &other)
+        const AlgebraBundleBase& other)
 {
     if (&other != this) {
         if (other.p_impl) { *this = other->clone(); }
@@ -100,7 +100,7 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::storage_type() const noexcept
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-const scalars::ScalarType *
+const scalars::ScalarType*
 AlgebraBundleBase<BundleInterface, DerivedImpl>::coeff_type() const noexcept
 {
     if (p_impl) { return p_impl->coeff_type(); }
@@ -133,7 +133,7 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::uminus() const
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t
-AlgebraBundleBase<BundleInterface, DerivedImpl>::add(const algebra_t &rhs) const
+AlgebraBundleBase<BundleInterface, DerivedImpl>::add(const algebra_t& rhs) const
 {
     if (!rhs.p_impl) {
         if (!p_impl) { return algebra_t(); }
@@ -145,7 +145,7 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::add(const algebra_t &rhs) const
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t
-AlgebraBundleBase<BundleInterface, DerivedImpl>::sub(const algebra_t &rhs) const
+AlgebraBundleBase<BundleInterface, DerivedImpl>::sub(const algebra_t& rhs) const
 {
     if (!rhs.p_impl) {
         if (!p_impl) { return algebra_t(); }
@@ -157,7 +157,7 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::sub(const algebra_t &rhs) const
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t
-AlgebraBundleBase<BundleInterface, DerivedImpl>::mul(const algebra_t &rhs) const
+AlgebraBundleBase<BundleInterface, DerivedImpl>::mul(const algebra_t& rhs) const
 {
     if (!p_impl || !rhs.p_impl) { return algebra_t(); }
     return p_impl->mul(rhs);
@@ -166,7 +166,7 @@ template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t
 AlgebraBundleBase<BundleInterface, DerivedImpl>::smul(
-        const scalars::Scalar &rhs) const
+        const scalars::Scalar& rhs) const
 {
     if (!p_impl) { return algebra_t(); }
     return p_impl->smul(rhs);
@@ -175,16 +175,16 @@ template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
 typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t
 AlgebraBundleBase<BundleInterface, DerivedImpl>::sdiv(
-        const scalars::Scalar &rhs) const
+        const scalars::Scalar& rhs) const
 {
     if (!p_impl) { return algebra_t(); }
     return p_impl->sdiv(rhs);
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::add_inplace(
-        const algebra_t &rhs)
+        const algebra_t& rhs)
 {
     if (rhs.p_impl) {
         if (!p_impl) {
@@ -197,9 +197,9 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::add_inplace(
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_inplace(
-        const algebra_t &rhs)
+        const algebra_t& rhs)
 {
     if (rhs.p_impl) {
         if (!p_impl) {
@@ -212,9 +212,9 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_inplace(
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::mul_inplace(
-        const algebra_t &rhs)
+        const algebra_t& rhs)
 {
     if (p_impl) {
         if (rhs.p_impl) {
@@ -227,27 +227,27 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::mul_inplace(
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::smul_inplace(
-        const scalars::Scalar &rhs)
+        const scalars::Scalar& rhs)
 {
     if (p_impl) { p_impl->smul_inplace(rhs); }
     return downcast(*this);
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::sdiv_inplace(
-        const scalars::Scalar &rhs)
+        const scalars::Scalar& rhs)
 {
     if (p_impl) { p_impl->sdiv_inplace(rhs); }
     return downcast(*this);
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::add_scal_mul(
-        const algebra_t &lhs, const scalars::Scalar &rhs)
+        const algebra_t& lhs, const scalars::Scalar& rhs)
 {
     if (lhs.p_impl) {
         if (p_impl) {
@@ -260,9 +260,9 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::add_scal_mul(
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_scal_mul(
-        const algebra_t &lhs, const scalars::Scalar &rhs)
+        const algebra_t& lhs, const scalars::Scalar& rhs)
 {
     if (lhs.p_impl) {
         if (p_impl) {
@@ -275,9 +275,9 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_scal_mul(
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::add_scal_div(
-        const algebra_t &lhs, const scalars::Scalar &rhs)
+        const algebra_t& lhs, const scalars::Scalar& rhs)
 {
     if (lhs.p_impl) {
         if (p_impl) {
@@ -290,9 +290,9 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::add_scal_div(
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_scal_div(
-        const algebra_t &lhs, const scalars::Scalar &rhs)
+        const algebra_t& lhs, const scalars::Scalar& rhs)
 {
     if (lhs.p_impl) {
         if (p_impl) {
@@ -305,9 +305,9 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_scal_div(
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
-AlgebraBundleBase<BundleInterface, DerivedImpl>::add_mul(const algebra_t &lhs,
-                                                         const algebra_t &rhs)
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
+AlgebraBundleBase<BundleInterface, DerivedImpl>::add_mul(const algebra_t& lhs,
+                                                         const algebra_t& rhs)
 {
     if (lhs.p_impl && rhs.p_impl) {
         if (p_impl) {
@@ -320,9 +320,9 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::add_mul(const algebra_t &lhs,
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
-AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_mul(const algebra_t &lhs,
-                                                         const algebra_t &rhs)
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
+AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_mul(const algebra_t& lhs,
+                                                         const algebra_t& rhs)
 {
     if (lhs.p_impl && rhs.p_impl) {
         if (p_impl) {
@@ -335,9 +335,9 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::sub_mul(const algebra_t &lhs,
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::mul_smul(
-        const algebra_t &lhs, const scalars::Scalar &rhs)
+        const algebra_t& lhs, const scalars::Scalar& rhs)
 {
     if (p_impl) {
         if (lhs.p_impl) {
@@ -350,9 +350,9 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::mul_smul(
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t &
+typename AlgebraBundleBase<BundleInterface, DerivedImpl>::algebra_t&
 AlgebraBundleBase<BundleInterface, DerivedImpl>::mul_sdiv(
-        const algebra_t &lhs, const scalars::Scalar &rhs)
+        const algebra_t& lhs, const scalars::Scalar& rhs)
 {
     if (p_impl) {
         if (lhs.p_impl) {
@@ -365,8 +365,8 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::mul_sdiv(
 }
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
-std::ostream &
-AlgebraBundleBase<BundleInterface, DerivedImpl>::print(std::ostream &os) const
+std::ostream&
+AlgebraBundleBase<BundleInterface, DerivedImpl>::print(std::ostream& os) const
 {
     if (p_impl) {
         p_impl->print(os);
@@ -378,7 +378,7 @@ AlgebraBundleBase<BundleInterface, DerivedImpl>::print(std::ostream &os) const
 template <typename BundleInterface,
           template <typename, template <typename> class> class DerivedImpl>
 bool AlgebraBundleBase<BundleInterface, DerivedImpl>::operator==(
-        const algebra_t &other) const
+        const algebra_t& other) const
 {
     if (p_impl && other.p_impl) {
         return p_impl->equals(other);

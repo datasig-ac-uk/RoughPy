@@ -43,55 +43,55 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-OwnedScalarArray FloatBlas::vector_axpy(const ScalarArray &x, const Scalar &a,
-                                        const ScalarArray &y)
+OwnedScalarArray FloatBlas::vector_axpy(const ScalarArray& x, const Scalar& a,
+                                        const ScalarArray& y)
 {
-    const auto *type = BlasInterface::type();
+    const auto* type = BlasInterface::type();
     RPY_CHECK(x.type() == type && y.type() == type);
     OwnedScalarArray result(type, y.size());
     type->convert_copy(result.ptr(), y, y.size());
 
     auto N = static_cast<blas::integer>(y.size());
-    cblas_saxpy(N, scalar_cast<float>(a), x.raw_cast<const float *>(), 1,
-                result.raw_cast<float *>(), 1);
+    cblas_saxpy(N, scalar_cast<float>(a), x.raw_cast<const float*>(), 1,
+                result.raw_cast<float*>(), 1);
     return result;
 }
-Scalar FloatBlas::dot_product(const ScalarArray &lhs, const ScalarArray &rhs)
+Scalar FloatBlas::dot_product(const ScalarArray& lhs, const ScalarArray& rhs)
 {
-    const auto *type = BlasInterface::type();
+    const auto* type = BlasInterface::type();
 
     RPY_CHECK(lhs.type() == type && rhs.type() == type);
 
     auto N = static_cast<blas::integer>(lhs.size());
-    auto result = cblas_sdot(N, lhs.raw_cast<const float *>(), 1,
-                             rhs.raw_cast<const float *>(), 1);
+    auto result = cblas_sdot(N, lhs.raw_cast<const float*>(), 1,
+                             rhs.raw_cast<const float*>(), 1);
     return {type, result};
 }
-Scalar FloatBlas::L1Norm(const ScalarArray &vector)
+Scalar FloatBlas::L1Norm(const ScalarArray& vector)
 {
     auto N = static_cast<blas::integer>(vector.size());
-    auto result = cblas_sasum(N, vector.raw_cast<const float *>(), 1);
+    auto result = cblas_sasum(N, vector.raw_cast<const float*>(), 1);
     return {type(), result};
 }
-Scalar FloatBlas::L2Norm(const ScalarArray &vector)
+Scalar FloatBlas::L2Norm(const ScalarArray& vector)
 {
     RPY_CHECK(vector.type() == type());
     float result = 0.0;
     auto N = static_cast<blas::integer>(vector.size());
-    result = cblas_snrm2(N, vector.raw_cast<const float *>(), 1);
+    result = cblas_snrm2(N, vector.raw_cast<const float*>(), 1);
     return {type(), result};
 }
-Scalar FloatBlas::LInfNorm(const ScalarArray &vector)
+Scalar FloatBlas::LInfNorm(const ScalarArray& vector)
 {
     RPY_CHECK(vector.type() == type());
     auto N = static_cast<blas::integer>(vector.size());
-    const auto *ptr = vector.raw_cast<const float *>();
+    const auto* ptr = vector.raw_cast<const float*>();
     auto idx = cblas_isamax(N, ptr, 1);
     auto result = ptr[idx];
     return {type(), result};
 }
-OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix,
-                                          const ScalarArray &vector)
+OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix& matrix,
+                                          const ScalarArray& vector)
 {
     RPY_CHECK(matrix.type() == type() && vector.type() == type());
 
@@ -109,9 +109,9 @@ OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix,
     switch (matrix.storage()) {
         case MatrixStorage::FullMatrix:
             cblas_sgemv(layout, blas::Blas_NoTrans, M, N, 1.0F,
-                        matrix.raw_cast<const float *>(), 1,
-                        vector.raw_cast<const float *>(), 1, 0.0F,
-                        result.raw_cast<float *>(), 1);
+                        matrix.raw_cast<const float*>(), 1,
+                        vector.raw_cast<const float*>(), 1, 0.0F,
+                        result.raw_cast<float*>(), 1);
             break;
         case MatrixStorage::LowerTriangular:
         case MatrixStorage::UpperTriangular:
@@ -119,15 +119,15 @@ OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix &matrix,
             type()->convert_copy(result.ptr(), vector, vector.size());
             cblas_stpmv(layout, blas::to_blas_uplo(matrix.storage()),
                         blas::Blas_NoTrans, blas::Blas_DNoUnit, N,
-                        matrix.raw_cast<const float *>(),
-                        result.raw_cast<float *>(), 1);
+                        matrix.raw_cast<const float*>(),
+                        result.raw_cast<float*>(), 1);
             break;
         case MatrixStorage::Diagonal:
             RPY_CHECK(M == N);
             cblas_ssbmv(layout, blas::Blas_Lo, N, 1, 1.0F,
-                        matrix.raw_cast<const float *>(), 1,
-                        vector.raw_cast<const float *>(), 1, 0.0F,
-                        result.raw_cast<float *>(), 1);
+                        matrix.raw_cast<const float*>(), 1,
+                        vector.raw_cast<const float*>(), 1, 0.0F,
+                        result.raw_cast<float*>(), 1);
             break;
     }
     return result;
@@ -139,13 +139,13 @@ static constexpr MatrixLayout flip_layout(MatrixLayout layout) noexcept
                                           : MatrixLayout::CStype;
 }
 
-static void tfmm(ScalarMatrix &result, const ScalarMatrix &lhs,
-                 blas::BlasUpLo lhs_uplo, const ScalarMatrix &rhs)
+static void tfmm(ScalarMatrix& result, const ScalarMatrix& lhs,
+                 blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs)
 {
     {
         auto N = static_cast<blas::integer>(rhs.size());
-        cblas_scopy(N, rhs.raw_cast<const float *>(), 1,
-                    result.raw_cast<float *>(), 1);
+        cblas_scopy(N, rhs.raw_cast<const float*>(), 1,
+                    result.raw_cast<float*>(), 1);
         result.layout(rhs.layout());
     }
     auto C = static_cast<blas::integer>(result.ncols());
@@ -156,15 +156,15 @@ static void tfmm(ScalarMatrix &result, const ScalarMatrix &lhs,
     // result.
     blas::integer incx = (result.layout() == MatrixLayout::FStype) ? 1 : C;
 
-    auto *out_ptr = result.raw_cast<float *>();
+    auto* out_ptr = result.raw_cast<float*>();
 
     for (blas::integer i = 0; i < C; ++i) {
         cblas_stpmv(layout, lhs_uplo, blas::Blas_NoTrans, blas::Blas_DUnit, C,
-                    lhs.raw_cast<const float *>(), out_ptr + i, incx);
+                    lhs.raw_cast<const float*>(), out_ptr + i, incx);
     }
 }
-static void ftmm(ScalarMatrix &result, const ScalarMatrix &lhs,
-                 const ScalarMatrix &rhs, blas::BlasUpLo rhs_uplo)
+static void ftmm(ScalarMatrix& result, const ScalarMatrix& lhs,
+                 const ScalarMatrix& rhs, blas::BlasUpLo rhs_uplo)
 {
     // Use AT = (T'A')'
 
@@ -178,8 +178,8 @@ static void ftmm(ScalarMatrix &result, const ScalarMatrix &lhs,
          rhs_uplo == blas::Blas_Lo ? blas::Blas_Up : blas::Blas_Lo, right);
     result.layout(flip_layout(result.layout()));
 }
-static void dfmm(ScalarMatrix &result, const ScalarMatrix &lhs,
-                 const ScalarMatrix &rhs)
+static void dfmm(ScalarMatrix& result, const ScalarMatrix& lhs,
+                 const ScalarMatrix& rhs)
 {
     // lhs is diagonal, so the result of multiplying is just scaling each
     // corresponding column of rhs.
@@ -195,17 +195,17 @@ static void dfmm(ScalarMatrix &result, const ScalarMatrix &lhs,
 
     result.layout(rhs.layout());
 
-    auto *out_ptr = result.raw_cast<float *>();
+    auto* out_ptr = result.raw_cast<float*>();
     // LHS is packed, containing M = N values in a flat vector.
-    const auto *lhs_ptr = lhs.raw_cast<const float *>();
-    const auto *rhs_ptr = rhs.raw_cast<const float *>();
+    const auto* lhs_ptr = lhs.raw_cast<const float*>();
+    const auto* rhs_ptr = rhs.raw_cast<const float*>();
 
     for (blas::integer i = 0; i < ldb; ++i) {
         cblas_saxpy(M, lhs_ptr[i], rhs_ptr + i, ldb, out_ptr + i, ldb);
     }
 }
-static void fdmm(ScalarMatrix &result, const ScalarMatrix &lhs,
-                 const ScalarMatrix &rhs)
+static void fdmm(ScalarMatrix& result, const ScalarMatrix& lhs,
+                 const ScalarMatrix& rhs)
 {
     // Use the fact that AB = (B'A')'
 
@@ -219,8 +219,8 @@ static void fdmm(ScalarMatrix &result, const ScalarMatrix &lhs,
     result.layout(flip_layout(result.layout()));
 }
 
-static void ffmm(ScalarMatrix &result, const ScalarMatrix &lhs,
-                 const ScalarMatrix &rhs)
+static void ffmm(ScalarMatrix& result, const ScalarMatrix& lhs,
+                 const ScalarMatrix& rhs)
 {
     auto M = static_cast<blas::integer>(lhs.nrows());
     auto K = static_cast<blas::integer>(lhs.ncols());
@@ -260,13 +260,12 @@ static void ffmm(ScalarMatrix &result, const ScalarMatrix &lhs,
     }
 
     cblas_sgemm(layout, transa, transb, M, N, K, 1.0F,
-                lhs.raw_cast<const float *>(), lda,
-                rhs.raw_cast<const float *>(), ldb, 0.0F,
-                result.raw_cast<float *>(), ldc);
+                lhs.raw_cast<const float*>(), lda, rhs.raw_cast<const float*>(),
+                ldb, 0.0F, result.raw_cast<float*>(), ldc);
 }
 
-static void ttmm(ScalarMatrix &result, const ScalarMatrix &lhs,
-                 blas::BlasUpLo lhs_uplo, const ScalarMatrix &rhs,
+static void ttmm(ScalarMatrix& result, const ScalarMatrix& lhs,
+                 blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs,
                  blas::BlasUpLo rhs_uplo)
 {
     /*
@@ -276,15 +275,15 @@ static void ttmm(ScalarMatrix &result, const ScalarMatrix &lhs,
      */
 }
 
-static void dtmm(ScalarMatrix &result, const ScalarMatrix &lhs,
-                 const ScalarMatrix &rhs, blas::BlasUpLo rhs_uplo)
+static void dtmm(ScalarMatrix& result, const ScalarMatrix& lhs,
+                 const ScalarMatrix& rhs, blas::BlasUpLo rhs_uplo)
 {
     // There is no BLAS routine for this so we're going to have to do it
     // ourselves.
 }
 
-static void tdmm(ScalarMatrix &result, const ScalarMatrix &lhs,
-                 blas::BlasUpLo lhs_uplo, const ScalarMatrix &rhs)
+static void tdmm(ScalarMatrix& result, const ScalarMatrix& lhs,
+                 blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs)
 {
     // Uss the fact that TD = (D'T')' = (DT')'
     const auto old_storage = result.storage();
@@ -305,14 +304,14 @@ static void tdmm(ScalarMatrix &result, const ScalarMatrix &lhs,
     result.storage(old_storage);
 }
 
-static void ddmm(ScalarMatrix &result, const ScalarMatrix &lhs,
-                 const ScalarMatrix &rhs)
+static void ddmm(ScalarMatrix& result, const ScalarMatrix& lhs,
+                 const ScalarMatrix& rhs)
 {
     RPY_DBG_ASSERT(result.storage() == MatrixStorage::Diagonal);
 
-    auto *out_ptr = result.raw_cast<float *>();
-    const auto *lhs_ptr = lhs.raw_cast<const float *>();
-    const auto *rhs_ptr = rhs.raw_cast<const float *>();
+    auto* out_ptr = result.raw_cast<float*>();
+    const auto* lhs_ptr = lhs.raw_cast<const float*>();
+    const auto* rhs_ptr = rhs.raw_cast<const float*>();
 
     // This is a silly simple case. just do the multiplication manually.
     for (deg_t i = 0; i < lhs.ncols(); ++i) {
@@ -320,8 +319,8 @@ static void ddmm(ScalarMatrix &result, const ScalarMatrix &lhs,
     }
 }
 
-static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs,
-                               const ScalarMatrix &rhs)
+static void full_matrix_matrix(ScalarMatrix& result, const ScalarMatrix& lhs,
+                               const ScalarMatrix& rhs)
 {
 
     switch (rhs.storage()) {
@@ -339,10 +338,10 @@ static void full_matrix_matrix(ScalarMatrix &result, const ScalarMatrix &lhs,
     }
 }
 
-static void triangular_matrix_matrix(ScalarMatrix &result,
-                                     const ScalarMatrix &lhs,
+static void triangular_matrix_matrix(ScalarMatrix& result,
+                                     const ScalarMatrix& lhs,
                                      blas::BlasUpLo lhs_uplo,
-                                     const ScalarMatrix &rhs)
+                                     const ScalarMatrix& rhs)
 {
 
     switch (rhs.storage()) {
@@ -359,9 +358,9 @@ static void triangular_matrix_matrix(ScalarMatrix &result,
                                      "formats is currently unsupported");
     }
 }
-static void diagonal_matrix_matrix(ScalarMatrix &result,
-                                   const ScalarMatrix &lhs,
-                                   const ScalarMatrix &rhs)
+static void diagonal_matrix_matrix(ScalarMatrix& result,
+                                   const ScalarMatrix& lhs,
+                                   const ScalarMatrix& rhs)
 {
     switch (rhs.storage()) {
         case MatrixStorage::FullMatrix: dfmm(result, lhs, rhs); break;
@@ -378,8 +377,8 @@ static void diagonal_matrix_matrix(ScalarMatrix &result,
     }
 }
 
-ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix &lhs,
-                                      const ScalarMatrix &rhs)
+ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix& lhs,
+                                      const ScalarMatrix& rhs)
 {
     RPY_DBG_ASSERT(lhs.type() == rhs.type() && lhs.type() == type());
 
@@ -406,8 +405,8 @@ ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix &lhs,
 
     return result;
 }
-ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix &coeff_matrix,
-                                            const ScalarMatrix &target_matrix)
+ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix& coeff_matrix,
+                                            const ScalarMatrix& target_matrix)
 {
 
     if (coeff_matrix.nrows() != target_matrix.nrows()) {
@@ -432,8 +431,8 @@ ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix &coeff_matrix,
     //
     return result;
 }
-OwnedScalarArray FloatBlas::lls_qr(const ScalarMatrix &matrix,
-                                   const ScalarArray &target)
+OwnedScalarArray FloatBlas::lls_qr(const ScalarMatrix& matrix,
+                                   const ScalarArray& target)
 {
 
     switch (matrix.storage()) {
@@ -444,38 +443,38 @@ OwnedScalarArray FloatBlas::lls_qr(const ScalarMatrix &matrix,
     }
     return {};
 }
-OwnedScalarArray FloatBlas::lls_orth(const ScalarMatrix &matrix,
-                                     const ScalarArray &target)
+OwnedScalarArray FloatBlas::lls_orth(const ScalarMatrix& matrix,
+                                     const ScalarArray& target)
 {
     return BlasInterface::lls_orth(matrix, target);
 }
-OwnedScalarArray FloatBlas::lls_svd(const ScalarMatrix &matrix,
-                                    const ScalarArray &target)
+OwnedScalarArray FloatBlas::lls_svd(const ScalarMatrix& matrix,
+                                    const ScalarArray& target)
 {
     return BlasInterface::lls_svd(matrix, target);
 }
-OwnedScalarArray FloatBlas::lls_dcsvd(const ScalarMatrix &matrix,
-                                      const ScalarArray &target)
+OwnedScalarArray FloatBlas::lls_dcsvd(const ScalarMatrix& matrix,
+                                      const ScalarArray& target)
 {
     return BlasInterface::lls_dcsvd(matrix, target);
 }
-OwnedScalarArray FloatBlas::lse_grq(const ScalarMatrix &A,
-                                    const ScalarMatrix &B, const ScalarArray &c,
-                                    const ScalarArray &d)
+OwnedScalarArray FloatBlas::lse_grq(const ScalarMatrix& A,
+                                    const ScalarMatrix& B, const ScalarArray& c,
+                                    const ScalarArray& d)
 {
     return BlasInterface::lse_grq(A, B, c, d);
 }
-ScalarMatrix FloatBlas::glm_GQR(const ScalarMatrix &A, const ScalarMatrix &B,
-                                const ScalarArray &d)
+ScalarMatrix FloatBlas::glm_GQR(const ScalarMatrix& A, const ScalarMatrix& B,
+                                const ScalarArray& d)
 {
     return BlasInterface::glm_GQR(A, B, d);
 }
-EigenDecomposition FloatBlas::eigen_decomposition(const ScalarMatrix &matrix)
+EigenDecomposition FloatBlas::eigen_decomposition(const ScalarMatrix& matrix)
 {
     return BlasInterface::eigen_decomposition(matrix);
 }
-SingularValueDecomposition FloatBlas::svd(const ScalarMatrix &matrix)
+SingularValueDecomposition FloatBlas::svd(const ScalarMatrix& matrix)
 {
     return BlasInterface::svd(matrix);
 }
-void FloatBlas::transpose(ScalarMatrix &matrix) const {}
+void FloatBlas::transpose(ScalarMatrix& matrix) const {}

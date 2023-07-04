@@ -45,13 +45,13 @@ class RationalType : public ScalarType
     using scalar_type = rational_scalar_type;
 
     using rng_getter
-            = std::unique_ptr<RandomGenerator> (*)(const ScalarType *type,
+            = std::unique_ptr<RandomGenerator> (*)(const ScalarType* type,
                                                    Slice<uint64_t>);
 
     static std::unique_ptr<RandomGenerator>
-    get_mt19937_generator(const ScalarType *type, Slice<uint64_t> seed);
+    get_mt19937_generator(const ScalarType* type, Slice<uint64_t> seed);
     static std::unique_ptr<RandomGenerator>
-    get_pcg_generator(const ScalarType *type, Slice<uint64_t> seed);
+    get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed);
 
     std::unordered_map<string, rng_getter> m_rng_getters{
             {"mt19937", &get_mt19937_generator},
@@ -71,18 +71,18 @@ protected:
 public:
     void convert_copy(ScalarPointer dst, ScalarPointer src,
                       dimn_t count) const override;
-    void convert_copy(void *out, const void *in, std::size_t count,
+    void convert_copy(void* out, const void* in, std::size_t count,
                       BasicScalarInfo info) const override;
-    void convert_copy(void *out, ScalarPointer in,
+    void convert_copy(void* out, ScalarPointer in,
                       std::size_t count) const override;
 
 private:
     template <typename Basic>
-    void convert_copy_basic(ScalarPointer &out, const void *in,
+    void convert_copy_basic(ScalarPointer& out, const void* in,
                             dimn_t count) const noexcept
     {
-        const auto *iptr = static_cast<const Basic *>(in);
-        auto *optr = static_cast<scalar_type *>(out.ptr());
+        const auto* iptr = static_cast<const Basic*>(in);
+        auto* optr = static_cast<scalar_type*>(out.ptr());
 
         for (dimn_t i = 0; i < count; ++i, ++iptr, ++optr) {
             ::new (optr) scalar_type(*iptr);
@@ -90,8 +90,8 @@ private:
     }
 
 public:
-    void convert_copy(ScalarPointer out, const void *in, std::size_t count,
-                      const string &id) const override;
+    void convert_copy(ScalarPointer out, const void* in, std::size_t count,
+                      const string& id) const override;
     scalar_t to_scalar_t(ScalarPointer arg) const override;
     void assign(ScalarPointer target, long long int numerator,
                 long long int denominator) const override;
@@ -106,7 +106,7 @@ public:
     Scalar from(long long int numerator,
                 long long int denominator) const override;
     void convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count,
-                      const string &id) const override;
+                      const string& id) const override;
     Scalar one() const override;
     Scalar mone() const override;
     Scalar zero() const override;
@@ -116,11 +116,11 @@ public:
     Scalar mul(ScalarPointer lhs, ScalarPointer rhs) const override;
     Scalar div(ScalarPointer lhs, ScalarPointer rhs) const override;
     bool is_zero(ScalarPointer arg) const override;
-    void print(ScalarPointer arg, std::ostream &os) const override;
+    void print(ScalarPointer arg, std::ostream& os) const override;
     std::unique_ptr<RandomGenerator>
-    get_rng(const string &bit_generator, Slice<uint64_t> seed) const override;
+    get_rng(const string& bit_generator, Slice<uint64_t> seed) const override;
 
-    std::vector<byte> to_raw_bytes(const ScalarPointer &ptr,
+    std::vector<byte> to_raw_bytes(const ScalarPointer& ptr,
                                    dimn_t count) const override;
     ScalarPointer from_raw_bytes(Slice<byte> raw_bytes,
                                  dimn_t count) const override;

@@ -36,11 +36,11 @@
 
 namespace rpy {
 namespace scalars {
-const ScalarType *RationalPolyScalarType::rational_type() const noexcept
+const ScalarType* RationalPolyScalarType::rational_type() const noexcept
 {
     return ScalarType::of<rational_scalar_type>();
 }
-const ScalarType *RationalPolyScalarType::host_type() const noexcept
+const ScalarType* RationalPolyScalarType::host_type() const noexcept
 {
     return this;
 }
@@ -80,25 +80,25 @@ void RationalPolyScalarType::swap(ScalarPointer lhs, ScalarPointer rhs) const
     RPY_CHECK(lhs.type() == this);
     RPY_CHECK(!lhs.is_const() && !rhs.is_const());
 
-    std::swap(*lhs.raw_cast<rational_poly_scalar *>(),
-              *rhs.raw_cast<rational_poly_scalar *>());
+    std::swap(*lhs.raw_cast<rational_poly_scalar*>(),
+              *rhs.raw_cast<rational_poly_scalar*>());
 }
 void RationalPolyScalarType::convert_copy(ScalarPointer dst, ScalarPointer src,
                                           dimn_t count) const
 {}
-void RationalPolyScalarType::convert_copy(void *out, const void *in,
+void RationalPolyScalarType::convert_copy(void* out, const void* in,
                                           std::size_t count,
                                           BasicScalarInfo info) const
 {}
-void RationalPolyScalarType::convert_copy(void *out, ScalarPointer in,
+void RationalPolyScalarType::convert_copy(void* out, ScalarPointer in,
                                           std::size_t count) const
 {}
-void RationalPolyScalarType::convert_copy(ScalarPointer out, const void *in,
+void RationalPolyScalarType::convert_copy(ScalarPointer out, const void* in,
                                           std::size_t count,
-                                          const string &id) const
+                                          const string& id) const
 {}
 void RationalPolyScalarType::convert_fill(ScalarPointer out, ScalarPointer in,
-                                          dimn_t count, const string &id) const
+                                          dimn_t count, const string& id) const
 {
     ScalarType::convert_fill(out, in, count, id);
 }
@@ -162,12 +162,12 @@ bool RationalPolyScalarType::are_equal(ScalarPointer lhs,
 {
     return false;
 }
-void RationalPolyScalarType::print(ScalarPointer arg, std::ostream &os) const
+void RationalPolyScalarType::print(ScalarPointer arg, std::ostream& os) const
 {
     ScalarType::print(arg, os);
 }
 std::unique_ptr<RandomGenerator>
-RationalPolyScalarType::get_rng(const string &bit_generator,
+RationalPolyScalarType::get_rng(const string& bit_generator,
                                 Slice<uint64_t> seed) const
 {
     throw std::runtime_error("no rng for rational polynomial scalars");
@@ -177,7 +177,7 @@ std::unique_ptr<BlasInterface> RationalPolyScalarType::get_blas() const
     throw std::runtime_error(
             "no blas implementation for rational polynomial scalars");
 }
-std::vector<byte> RationalPolyScalarType::to_raw_bytes(const ScalarPointer &ptr,
+std::vector<byte> RationalPolyScalarType::to_raw_bytes(const ScalarPointer& ptr,
                                                        dimn_t count) const
 {
     return std::vector<byte>();

@@ -39,8 +39,8 @@ using namespace rpy;
 using namespace rpy::scalars;
 
 rpy::scalars::ScalarArray::ScalarArray(
-        rpy::scalars::ScalarArray &&other) noexcept
-    : ScalarPointer(static_cast<ScalarPointer &&>(other)), m_size(other.m_size)
+        rpy::scalars::ScalarArray&& other) noexcept
+    : ScalarPointer(static_cast<ScalarPointer&&>(other)), m_size(other.m_size)
 {
     /*
      * It doesn't really matter for this class, but various
@@ -53,8 +53,8 @@ rpy::scalars::ScalarArray::ScalarArray(
     other.p_data = nullptr;
     other.m_size = 0;
 }
-rpy::scalars::ScalarArray &
-rpy::scalars::ScalarArray::operator=(rpy::scalars::ScalarArray &&other) noexcept
+rpy::scalars::ScalarArray&
+rpy::scalars::ScalarArray::operator=(rpy::scalars::ScalarArray&& other) noexcept
 {
     if (std::addressof(other) != this) {
         this->~ScalarArray();

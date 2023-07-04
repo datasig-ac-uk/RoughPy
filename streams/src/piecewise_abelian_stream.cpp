@@ -41,8 +41,8 @@ using rpy::algebra::Lie;
 using rpy::intervals::Interval;
 using rpy::intervals::RealInterval;
 
-PiecewiseAbelianStream::PiecewiseAbelianStream(std::vector<LiePiece> &&data,
-                                               StreamMetadata &&md)
+PiecewiseAbelianStream::PiecewiseAbelianStream(std::vector<LiePiece>&& data,
+                                               StreamMetadata&& md)
     : StreamInterface(std::move(md)), m_data(std::move(data))
 {
     //    // first sort so we know the inf of each interval are in order
@@ -131,26 +131,26 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(std::vector<LiePiece> &&data,
     //        m_data.push_back(std::move(*it));
     //    }
 
-    const auto &meta = metadata();
+    const auto& meta = metadata();
     auto schema = std::make_shared<streams::StreamSchema>();
-    auto &info = schema->insert_lie("");
+    auto& info = schema->insert_lie("");
     info.set_lie_info(meta.width, meta.default_context->depth(),
                       meta.cached_vector_type);
     set_schema(std::move(schema));
 }
-bool PiecewiseAbelianStream::empty(const Interval &interval) const noexcept
+bool PiecewiseAbelianStream::empty(const Interval& interval) const noexcept
 {
     return StreamInterface::empty(interval);
 }
 algebra::Lie
-PiecewiseAbelianStream::log_signature_impl(const Interval &domain,
-                                           const Context &ctx) const
+PiecewiseAbelianStream::log_signature_impl(const Interval& domain,
+                                           const Context& ctx) const
 {
     std::vector<algebra::Lie> lies;
     lies.reserve(4);
 
     auto a = domain.inf(), b = domain.sup();
-    for (const auto &piece : m_data) {
+    for (const auto& piece : m_data) {
         // data is in order, so if we are already past the end of the request
         // interval, then we are done so break.
         auto pa = piece.first.inf(), pb = piece.first.sup();
@@ -174,6 +174,6 @@ PiecewiseAbelianStream::log_signature_impl(const Interval &domain,
         }
     }
 
-    const auto &md = metadata();
+    const auto& md = metadata();
     return ctx.cbh(lies, md.cached_vector_type);
 }

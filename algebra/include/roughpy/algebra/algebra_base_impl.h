@@ -48,7 +48,7 @@ dtl::AlgebraIteratorMethods<Base>::dense_data() const
 
 template <typename Base>
 typename dtl::AlgebraArithmetic<Base>::algebra_t
-dtl::AlgebraArithmetic<Base>::add(const algebra_t &other) const
+dtl::AlgebraArithmetic<Base>::add(const algebra_t& other) const
 {
     auto result = this->clone();
     result->add_inplace(other);
@@ -56,7 +56,7 @@ dtl::AlgebraArithmetic<Base>::add(const algebra_t &other) const
 }
 template <typename Base>
 typename dtl::AlgebraArithmetic<Base>::algebra_t
-dtl::AlgebraArithmetic<Base>::sub(const algebra_t &other) const
+dtl::AlgebraArithmetic<Base>::sub(const algebra_t& other) const
 {
     auto result = this->clone();
     result->sub_inplace(other);
@@ -64,7 +64,7 @@ dtl::AlgebraArithmetic<Base>::sub(const algebra_t &other) const
 }
 template <typename Base>
 typename dtl::AlgebraArithmetic<Base>::algebra_t
-dtl::AlgebraArithmetic<Base>::mul(const algebra_t &other) const
+dtl::AlgebraArithmetic<Base>::mul(const algebra_t& other) const
 {
     auto result = this->clone();
     result->mul_inplace(other);
@@ -72,7 +72,7 @@ dtl::AlgebraArithmetic<Base>::mul(const algebra_t &other) const
 }
 template <typename Base>
 typename dtl::AlgebraArithmetic<Base>::algebra_t
-dtl::AlgebraArithmetic<Base>::smul(const scalars::Scalar &other) const
+dtl::AlgebraArithmetic<Base>::smul(const scalars::Scalar& other) const
 {
     auto result = this->clone();
     result->smul_inplace(other);
@@ -80,7 +80,7 @@ dtl::AlgebraArithmetic<Base>::smul(const scalars::Scalar &other) const
 }
 template <typename Base>
 typename dtl::AlgebraArithmetic<Base>::algebra_t
-dtl::AlgebraArithmetic<Base>::sdiv(const scalars::Scalar &other) const
+dtl::AlgebraArithmetic<Base>::sdiv(const scalars::Scalar& other) const
 {
     auto result = this->clone();
     result->sdiv_inplace(other);
@@ -88,57 +88,57 @@ dtl::AlgebraArithmetic<Base>::sdiv(const scalars::Scalar &other) const
 }
 
 template <typename Base>
-void dtl::AlgebraArithmetic<Base>::add_scal_mul(const algebra_t &rhs,
-                                                const scalars::Scalar &scalar)
+void dtl::AlgebraArithmetic<Base>::add_scal_mul(const algebra_t& rhs,
+                                                const scalars::Scalar& scalar)
 {
     auto tmp = rhs.smul(scalar);
     add_inplace(tmp);
 }
 template <typename Base>
-void dtl::AlgebraArithmetic<Base>::sub_scal_mul(const algebra_t &rhs,
-                                                const scalars::Scalar &scalar)
+void dtl::AlgebraArithmetic<Base>::sub_scal_mul(const algebra_t& rhs,
+                                                const scalars::Scalar& scalar)
 {
     auto tmp = rhs.smul(scalar);
     sub_inplace(tmp);
 }
 template <typename Base>
-void dtl::AlgebraArithmetic<Base>::add_scal_div(const algebra_t &rhs,
-                                                const scalars::Scalar &scalar)
+void dtl::AlgebraArithmetic<Base>::add_scal_div(const algebra_t& rhs,
+                                                const scalars::Scalar& scalar)
 {
     auto tmp = rhs.sdiv(scalar);
     add_inplace(tmp);
 }
 template <typename Base>
-void dtl::AlgebraArithmetic<Base>::sub_scal_div(const algebra_t &rhs,
-                                                const scalars::Scalar &scalar)
+void dtl::AlgebraArithmetic<Base>::sub_scal_div(const algebra_t& rhs,
+                                                const scalars::Scalar& scalar)
 {
     auto tmp = rhs.sdiv(scalar);
     sub_inplace(tmp);
 }
 template <typename Base>
-void dtl::AlgebraArithmetic<Base>::add_mul(const algebra_t &lhs,
-                                           const algebra_t &rhs)
+void dtl::AlgebraArithmetic<Base>::add_mul(const algebra_t& lhs,
+                                           const algebra_t& rhs)
 {
     auto tmp = lhs.mul(rhs);
     add_inplace(tmp);
 }
 template <typename Base>
-void dtl::AlgebraArithmetic<Base>::sub_mul(const algebra_t &lhs,
-                                           const algebra_t &rhs)
+void dtl::AlgebraArithmetic<Base>::sub_mul(const algebra_t& lhs,
+                                           const algebra_t& rhs)
 {
     auto tmp = lhs.mul(rhs);
     sub_inplace(tmp);
 }
 template <typename Base>
-void dtl::AlgebraArithmetic<Base>::mul_smul(const algebra_t &rhs,
-                                            const scalars::Scalar &scalar)
+void dtl::AlgebraArithmetic<Base>::mul_smul(const algebra_t& rhs,
+                                            const scalars::Scalar& scalar)
 {
     auto tmp = rhs.smul(scalar);
     mul_inplace(tmp);
 }
 template <typename Base>
-void dtl::AlgebraArithmetic<Base>::mul_sdiv(const algebra_t &rhs,
-                                            const scalars::Scalar &scalar)
+void dtl::AlgebraArithmetic<Base>::mul_sdiv(const algebra_t& rhs,
+                                            const scalars::Scalar& scalar)
 {
     auto tmp = rhs.sdiv(scalar);
     mul_inplace(tmp);
@@ -163,19 +163,19 @@ AlgebraBase<Interface, DerivedImpl>::AlgebraBase(context_pointer ctx)
 
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-AlgebraBase<Interface, DerivedImpl>::AlgebraBase(const AlgebraBase &other)
+AlgebraBase<Interface, DerivedImpl>::AlgebraBase(const AlgebraBase& other)
 {
     if (other.p_impl) { *this = other.p_impl->clone(); }
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-AlgebraBase<Interface, DerivedImpl>::AlgebraBase(AlgebraBase &&other) noexcept
+AlgebraBase<Interface, DerivedImpl>::AlgebraBase(AlgebraBase&& other) noexcept
     : p_impl(std::move(other.p_impl))
 {}
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-AlgebraBase<Interface, DerivedImpl> &
-AlgebraBase<Interface, DerivedImpl>::operator=(const AlgebraBase &other)
+AlgebraBase<Interface, DerivedImpl>&
+AlgebraBase<Interface, DerivedImpl>::operator=(const AlgebraBase& other)
 {
     if (&other != this) {
         if (other.p_impl) {
@@ -188,8 +188,8 @@ AlgebraBase<Interface, DerivedImpl>::operator=(const AlgebraBase &other)
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-AlgebraBase<Interface, DerivedImpl> &
-AlgebraBase<Interface, DerivedImpl>::operator=(AlgebraBase &&other) noexcept
+AlgebraBase<Interface, DerivedImpl>&
+AlgebraBase<Interface, DerivedImpl>::operator=(AlgebraBase&& other) noexcept
 {
     if (&other != this) { p_impl = std::move(other.p_impl); }
     return *this;
@@ -219,7 +219,7 @@ typename Interface::algebra_t AlgebraBase<Interface, DerivedImpl>::borrow_mut()
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t
-AlgebraBase<Interface, DerivedImpl>::add(const algebra_t &rhs) const
+AlgebraBase<Interface, DerivedImpl>::add(const algebra_t& rhs) const
 {
     if (is_equivalent_to_zero(rhs)) {
         if (is_equivalent_to_zero(*this)) { return algebra_t(); }
@@ -233,7 +233,7 @@ AlgebraBase<Interface, DerivedImpl>::add(const algebra_t &rhs) const
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t
-AlgebraBase<Interface, DerivedImpl>::sub(const algebra_t &rhs) const
+AlgebraBase<Interface, DerivedImpl>::sub(const algebra_t& rhs) const
 {
     if (is_equivalent_to_zero(rhs)) {
         if (is_equivalent_to_zero(*this)) { return algebra_t(); }
@@ -248,7 +248,7 @@ AlgebraBase<Interface, DerivedImpl>::sub(const algebra_t &rhs) const
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t
-AlgebraBase<Interface, DerivedImpl>::mul(const algebra_t &rhs) const
+AlgebraBase<Interface, DerivedImpl>::mul(const algebra_t& rhs) const
 {
     if (is_equivalent_to_zero(rhs)) {
         if (is_equivalent_to_zero(*this)) { return algebra_t(); }
@@ -312,7 +312,7 @@ VectorType AlgebraBase<Interface, DerivedImpl>::storage_type() const noexcept
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-const scalars::ScalarType *
+const scalars::ScalarType*
 AlgebraBase<Interface, DerivedImpl>::coeff_type() const noexcept
 {
     if (p_impl) { return p_impl->coeff_type(); }
@@ -368,7 +368,7 @@ AlgebraBase<Interface, DerivedImpl>::uminus() const
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t
-AlgebraBase<Interface, DerivedImpl>::smul(const scalars::Scalar &rhs) const
+AlgebraBase<Interface, DerivedImpl>::smul(const scalars::Scalar& rhs) const
 {
     if (is_equivalent_to_zero(*this)) { return algebra_t(); }
     if (rhs.is_zero()) { return p_impl->zero_like(); }
@@ -378,7 +378,7 @@ AlgebraBase<Interface, DerivedImpl>::smul(const scalars::Scalar &rhs) const
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
 typename Interface::algebra_t
-AlgebraBase<Interface, DerivedImpl>::sdiv(const scalars::Scalar &rhs) const
+AlgebraBase<Interface, DerivedImpl>::sdiv(const scalars::Scalar& rhs) const
 {
     if (is_equivalent_to_zero(*this)) { return algebra_t(); }
     if (rhs.is_zero()) { throw std::invalid_argument("cannot divide by zero"); }
@@ -388,8 +388,8 @@ AlgebraBase<Interface, DerivedImpl>::sdiv(const scalars::Scalar &rhs) const
 
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::add_inplace(const algebra_t &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::add_inplace(const algebra_t& rhs)
 {
     if (is_equivalent_to_zero(rhs)) { return downcast(*this); }
     if (is_equivalent_to_zero(*this)) { *this = algebra_t(); }
@@ -399,8 +399,8 @@ AlgebraBase<Interface, DerivedImpl>::add_inplace(const algebra_t &rhs)
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::sub_inplace(const algebra_t &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::sub_inplace(const algebra_t& rhs)
 {
     if (is_equivalent_to_zero(rhs)) { return downcast(*this); }
     if (is_equivalent_to_zero(*this)) { *this = algebra_t(); }
@@ -410,8 +410,8 @@ AlgebraBase<Interface, DerivedImpl>::sub_inplace(const algebra_t &rhs)
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::mul_inplace(const algebra_t &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::mul_inplace(const algebra_t& rhs)
 {
     if (is_equivalent_to_zero(rhs)) { return downcast(*this); }
     if (is_equivalent_to_zero(*this)) { *this = algebra_t(); }
@@ -421,16 +421,16 @@ AlgebraBase<Interface, DerivedImpl>::mul_inplace(const algebra_t &rhs)
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::smul_inplace(const scalars::Scalar &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::smul_inplace(const scalars::Scalar& rhs)
 {
     if (!is_equivalent_to_zero(*this)) { p_impl->smul_inplace(rhs); }
     return downcast(*this);
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::sdiv_inplace(const scalars::Scalar &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::sdiv_inplace(const scalars::Scalar& rhs)
 {
     if (!is_equivalent_to_zero(*this)) {
         if (rhs.is_zero()) {
@@ -443,9 +443,9 @@ AlgebraBase<Interface, DerivedImpl>::sdiv_inplace(const scalars::Scalar &rhs)
 
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::add_scal_mul(const algebra_t &lhs,
-                                                  const scalars::Scalar &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::add_scal_mul(const algebra_t& lhs,
+                                                  const scalars::Scalar& rhs)
 {
     if (!is_equivalent_to_zero(lhs) && rhs.is_zero()) {
         RPY_CHECK_CONTEXTS(lhs);
@@ -460,9 +460,9 @@ AlgebraBase<Interface, DerivedImpl>::add_scal_mul(const algebra_t &lhs,
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::sub_scal_mul(const algebra_t &lhs,
-                                                  const scalars::Scalar &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::sub_scal_mul(const algebra_t& lhs,
+                                                  const scalars::Scalar& rhs)
 {
     if (!is_equivalent_to_zero(lhs) && rhs.is_zero()) {
         RPY_CHECK_CONTEXTS(lhs);
@@ -477,9 +477,9 @@ AlgebraBase<Interface, DerivedImpl>::sub_scal_mul(const algebra_t &lhs,
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::add_scal_div(const algebra_t &lhs,
-                                                  const scalars::Scalar &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::add_scal_div(const algebra_t& lhs,
+                                                  const scalars::Scalar& rhs)
 {
     if (!is_equivalent_to_zero(lhs)) {
         RPY_CHECK_CONTEXTS(lhs);
@@ -497,9 +497,9 @@ AlgebraBase<Interface, DerivedImpl>::add_scal_div(const algebra_t &lhs,
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::sub_scal_div(const algebra_t &lhs,
-                                                  const scalars::Scalar &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::sub_scal_div(const algebra_t& lhs,
+                                                  const scalars::Scalar& rhs)
 {
     if (!is_equivalent_to_zero(lhs)) {
         RPY_CHECK_CONTEXTS(lhs);
@@ -518,9 +518,9 @@ AlgebraBase<Interface, DerivedImpl>::sub_scal_div(const algebra_t &lhs,
 
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::add_mul(const algebra_t &lhs,
-                                             const algebra_t &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::add_mul(const algebra_t& lhs,
+                                             const algebra_t& rhs)
 {
     if (!is_equivalent_to_zero(lhs) && !is_equivalent_to_zero(rhs)) {
         RPY_CHECK_CONTEXTS(lhs);
@@ -536,9 +536,9 @@ AlgebraBase<Interface, DerivedImpl>::add_mul(const algebra_t &lhs,
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::sub_mul(const algebra_t &lhs,
-                                             const algebra_t &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::sub_mul(const algebra_t& lhs,
+                                             const algebra_t& rhs)
 {
     if (!is_equivalent_to_zero(lhs) && !is_equivalent_to_zero(rhs)) {
         RPY_CHECK_CONTEXTS(lhs);
@@ -554,9 +554,9 @@ AlgebraBase<Interface, DerivedImpl>::sub_mul(const algebra_t &lhs,
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::mul_smul(const algebra_t &lhs,
-                                              const scalars::Scalar &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::mul_smul(const algebra_t& lhs,
+                                              const scalars::Scalar& rhs)
 {
     if (!is_equivalent_to_zero(lhs) && !rhs.is_zero()) {
         RPY_CHECK_CONTEXTS(lhs);
@@ -569,9 +569,9 @@ AlgebraBase<Interface, DerivedImpl>::mul_smul(const algebra_t &lhs,
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-typename Interface::algebra_t &
-AlgebraBase<Interface, DerivedImpl>::mul_sdiv(const algebra_t &lhs,
-                                              const scalars::Scalar &rhs)
+typename Interface::algebra_t&
+AlgebraBase<Interface, DerivedImpl>::mul_sdiv(const algebra_t& lhs,
+                                              const scalars::Scalar& rhs)
 {
     if (!is_equivalent_to_zero(lhs)) {
         RPY_CHECK_CONTEXTS(lhs);
@@ -588,7 +588,7 @@ AlgebraBase<Interface, DerivedImpl>::mul_sdiv(const algebra_t &lhs,
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
 bool AlgebraBase<Interface, DerivedImpl>::operator==(
-        const algebra_t &other) const
+        const algebra_t& other) const
 {
     if (is_equivalent_to_zero(*this)) {
         return is_equivalent_to_zero(other) || other->is_zero();
@@ -601,7 +601,7 @@ bool AlgebraBase<Interface, DerivedImpl>::operator==(
 }
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-std::ostream &AlgebraBase<Interface, DerivedImpl>::print(std::ostream &os) const
+std::ostream& AlgebraBase<Interface, DerivedImpl>::print(std::ostream& os) const
 {
     if (is_equivalent_to_zero(*this)) {
         dtl::print_empty_algebra(os);
@@ -613,8 +613,8 @@ std::ostream &AlgebraBase<Interface, DerivedImpl>::print(std::ostream &os) const
 
 template <typename Interface,
           template <typename, template <typename> class> class DerivedImpl>
-inline std::ostream &operator<<(std::ostream &os,
-                                const AlgebraBase<Interface, DerivedImpl> &alg)
+inline std::ostream& operator<<(std::ostream& os,
+                                const AlgebraBase<Interface, DerivedImpl>& alg)
 {
     return alg.print(os);
 }
@@ -624,7 +624,7 @@ template <typename Interface,
           template <typename, template <typename> class> class Derived>
 template <typename Archive>
 void AlgebraBase<Interface, Derived>::save(
-        Archive &archive, const std::uint32_t RPY_UNUSED_VAR version) const
+        Archive& archive, const std::uint32_t RPY_UNUSED_VAR version) const
 {
     context_pointer ctx = (p_impl) ? p_impl->context() : nullptr;
     auto spec = get_context_spec(ctx);
@@ -646,7 +646,7 @@ void AlgebraBase<Interface, Derived>::save(
             auto sz = this->size();
             RPY_SERIAL_SERIALIZE_SIZE(sz);
 
-            for (auto &&item : *this) {
+            for (auto&& item : *this) {
                 RPY_SERIAL_SERIALIZE_BARE(
                         std::make_pair(item.key(), item.value()));
             }
@@ -658,7 +658,7 @@ template <typename Interface,
           template <typename, template <typename> class> class Derived>
 template <typename Archive>
 void AlgebraBase<Interface, Derived>::load(
-        Archive &archive, const std::uint32_t RPY_UNUSED_VAR version)
+        Archive& archive, const std::uint32_t RPY_UNUSED_VAR version)
 {
     BasicContextSpec spec;
     RPY_SERIAL_SERIALIZE_NVP("width", spec.width);

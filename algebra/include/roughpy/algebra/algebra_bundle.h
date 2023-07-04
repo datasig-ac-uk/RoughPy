@@ -59,11 +59,11 @@ template <typename BundleInterface,
 class AlgebraBundleBase
 {
 
-    explicit AlgebraBundleBase(std::unique_ptr<BundleInterface> &&impl)
+    explicit AlgebraBundleBase(std::unique_ptr<BundleInterface>&& impl)
         : p_impl(std::move(impl))
     {}
 
-    explicit AlgebraBundleBase(BundleInterface *impl) : p_impl(impl) {}
+    explicit AlgebraBundleBase(BundleInterface* impl) : p_impl(impl) {}
 
 protected:
     std::unique_ptr<BundleInterface> p_impl;
@@ -81,11 +81,11 @@ public:
 
     AlgebraBundleBase() : p_impl(nullptr) {}
 
-    AlgebraBundleBase(const AlgebraBundleBase &other);
-    AlgebraBundleBase(AlgebraBundleBase &&other) noexcept = default;
+    AlgebraBundleBase(const AlgebraBundleBase& other);
+    AlgebraBundleBase(AlgebraBundleBase&& other) noexcept = default;
 
-    AlgebraBundleBase &operator=(const AlgebraBundleBase &other);
-    AlgebraBundleBase &operator=(AlgebraBundleBase &&other) noexcept = default;
+    AlgebraBundleBase& operator=(const AlgebraBundleBase& other);
+    AlgebraBundleBase& operator=(AlgebraBundleBase&& other) noexcept = default;
 
     RPY_NO_DISCARD
     algebra_t borrow() const;
@@ -93,13 +93,13 @@ public:
     algebra_t borrow_mut();
 
     RPY_NO_DISCARD
-    const BundleInterface &operator*() const noexcept { return *p_impl; }
+    const BundleInterface& operator*() const noexcept { return *p_impl; }
     RPY_NO_DISCARD
-    BundleInterface &operator*() noexcept { return *p_impl; }
+    BundleInterface& operator*() noexcept { return *p_impl; }
     RPY_NO_DISCARD
-    const BundleInterface *operator->() const noexcept { return p_impl.get(); }
+    const BundleInterface* operator->() const noexcept { return p_impl.get(); }
     RPY_NO_DISCARD
-    BundleInterface *operator->() noexcept { return p_impl.get(); }
+    BundleInterface* operator->() noexcept { return p_impl.get(); }
 
     RPY_NO_DISCARD
     constexpr operator bool() const noexcept
@@ -123,7 +123,7 @@ public:
     RPY_NO_DISCARD
     VectorType storage_type() const noexcept;
     RPY_NO_DISCARD
-    const scalars::ScalarType *coeff_type() const noexcept;
+    const scalars::ScalarType* coeff_type() const noexcept;
 
     RPY_NO_DISCARD
     scalars::Scalar operator[](key_type k) const;
@@ -132,52 +132,52 @@ public:
 
 protected:
     RPY_NO_DISCARD
-    static algebra_t &downcast(AlgebraBundleBase &arg)
+    static algebra_t& downcast(AlgebraBundleBase& arg)
     {
-        return static_cast<algebra_t &>(arg);
+        return static_cast<algebra_t&>(arg);
     }
     RPY_NO_DISCARD
-    static const algebra_t &downcast(const AlgebraBundleBase &arg)
+    static const algebra_t& downcast(const AlgebraBundleBase& arg)
     {
-        return static_cast<const algebra_t &>(arg);
+        return static_cast<const algebra_t&>(arg);
     }
 
 public:
     RPY_NO_DISCARD
     algebra_t uminus() const;
     RPY_NO_DISCARD
-    algebra_t add(const algebra_t &rhs) const;
+    algebra_t add(const algebra_t& rhs) const;
     RPY_NO_DISCARD
-    algebra_t sub(const algebra_t &rhs) const;
+    algebra_t sub(const algebra_t& rhs) const;
     RPY_NO_DISCARD
-    algebra_t mul(const algebra_t &rhs) const;
+    algebra_t mul(const algebra_t& rhs) const;
     RPY_NO_DISCARD
-    algebra_t smul(const scalars::Scalar &rhs) const;
+    algebra_t smul(const scalars::Scalar& rhs) const;
     RPY_NO_DISCARD
-    algebra_t sdiv(const scalars::Scalar &rhs) const;
+    algebra_t sdiv(const scalars::Scalar& rhs) const;
 
-    algebra_t &add_inplace(const algebra_t &rhs);
-    algebra_t &sub_inplace(const algebra_t &rhs);
-    algebra_t &mul_inplace(const algebra_t &rhs);
-    algebra_t &smul_inplace(const scalars::Scalar &rhs);
-    algebra_t &sdiv_inplace(const scalars::Scalar &rhs);
+    algebra_t& add_inplace(const algebra_t& rhs);
+    algebra_t& sub_inplace(const algebra_t& rhs);
+    algebra_t& mul_inplace(const algebra_t& rhs);
+    algebra_t& smul_inplace(const scalars::Scalar& rhs);
+    algebra_t& sdiv_inplace(const scalars::Scalar& rhs);
 
-    algebra_t &add_scal_mul(const algebra_t &lhs, const scalars::Scalar &rhs);
-    algebra_t &sub_scal_mul(const algebra_t &lhs, const scalars::Scalar &rhs);
-    algebra_t &add_scal_div(const algebra_t &lhs, const scalars::Scalar &rhs);
-    algebra_t &sub_scal_div(const algebra_t &lhs, const scalars::Scalar &rhs);
+    algebra_t& add_scal_mul(const algebra_t& lhs, const scalars::Scalar& rhs);
+    algebra_t& sub_scal_mul(const algebra_t& lhs, const scalars::Scalar& rhs);
+    algebra_t& add_scal_div(const algebra_t& lhs, const scalars::Scalar& rhs);
+    algebra_t& sub_scal_div(const algebra_t& lhs, const scalars::Scalar& rhs);
 
-    algebra_t &add_mul(const algebra_t &lhs, const algebra_t &rhs);
-    algebra_t &sub_mul(const algebra_t &lhs, const algebra_t &rhs);
-    algebra_t &mul_smul(const algebra_t &lhs, const scalars::Scalar &rhs);
-    algebra_t &mul_sdiv(const algebra_t &lhs, const scalars::Scalar &rhs);
+    algebra_t& add_mul(const algebra_t& lhs, const algebra_t& rhs);
+    algebra_t& sub_mul(const algebra_t& lhs, const algebra_t& rhs);
+    algebra_t& mul_smul(const algebra_t& lhs, const scalars::Scalar& rhs);
+    algebra_t& mul_sdiv(const algebra_t& lhs, const scalars::Scalar& rhs);
 
-    std::ostream &print(std::ostream &os) const;
+    std::ostream& print(std::ostream& os) const;
 
     RPY_NO_DISCARD
-    bool operator==(const algebra_t &other) const;
+    bool operator==(const algebra_t& other) const;
     RPY_NO_DISCARD
-    bool operator!=(const algebra_t &other) const { return !operator==(other); }
+    bool operator!=(const algebra_t& other) const { return !operator==(other); }
 
     // #ifndef RPY_DISABLE_SERIALIZATION
     // private:
