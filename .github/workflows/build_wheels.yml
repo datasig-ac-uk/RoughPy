@@ -102,8 +102,7 @@ jobs:
     if: |  
       github.event_name == 'pull_request' &&
       github.event.action == 'closed' &&
-      github.event.pull_request.merged &&
-      contains(github.ref, 'release')
+      github.event.pull_request.merged
 
     steps:
       - name: Setup Python
