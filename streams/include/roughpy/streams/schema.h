@@ -289,7 +289,7 @@ public:
 
     explicit StreamSchema(dimn_t width);
 
-    StreamSchema& operator=(const StreamSchema&) = default;
+    StreamSchema& operator=(const StreamSchema&) = delete;
     StreamSchema& operator=(StreamSchema&&) noexcept = default;
 
     RPY_NO_DISCARD

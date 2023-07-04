@@ -80,21 +80,27 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         const rpy::streams::Stream::Interval& interval) const
 {
     const auto& md = metadata();
-    return p_impl->log_signature(interval, md.default_resolution,
-                                 *md.default_context);
+    return log_signature(interval, md.default_resolution, *md.default_context);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         const rpy::streams::Stream::Interval& interval,
         rpy::resolution_t resolution) const
 {
     const auto& md = metadata();
-    return p_impl->log_signature(interval, resolution, *md.default_context);
+    return log_signature(interval, resolution, *md.default_context);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         const rpy::streams::Stream::Interval& interval,
         rpy::resolution_t resolution,
         const rpy::streams::Stream::Context& ctx) const
 {
+    const auto* param_context = p_impl->schema().context();
+    if (param_context != nullptr) {
+        return p_impl->log_signature(
+                param_context->convert_parameter_interval(interval), resolution,
+                ctx);
+    }
+
     return p_impl->log_signature(interval, resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature() const
@@ -127,21 +133,27 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature(
         const rpy::streams::Stream::Interval& interval) const
 {
     const auto& md = metadata();
-    return p_impl->signature(interval, md.default_resolution,
-                             *md.default_context);
+    return signature(interval, md.default_resolution, *md.default_context);
 }
 rpy::streams::Stream::FreeTensor
 rpy::streams::Stream::signature(const rpy::streams::Stream::Interval& interval,
                                 rpy::resolution_t resolution) const
 {
     const auto& md = metadata();
-    return p_impl->signature(interval, resolution, *md.default_context);
+    return signature(interval, resolution, *md.default_context);
 }
 rpy::streams::Stream::FreeTensor
 rpy::streams::Stream::signature(const rpy::streams::Stream::Interval& interval,
                                 rpy::resolution_t resolution,
                                 const rpy::streams::Stream::Context& ctx) const
 {
+    const auto* param_context = p_impl->schema().context();
+    if (param_context != nullptr) {
+        return p_impl->signature(
+                param_context->convert_parameter_interval(interval), resolution,
+                ctx);
+    }
+
     return p_impl->signature(interval, resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
@@ -173,6 +185,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         rpy::resolution_t resolution) const
 {
     const auto& md = metadata();
+
     algebra::DerivativeComputeInfo info{
             log_signature(domain, resolution, *md.default_context),
             perturbation};
