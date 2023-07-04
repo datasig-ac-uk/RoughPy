@@ -217,7 +217,8 @@ public:
 
     RPY_NO_DISCARD
     intervals::RealInterval
-    reparametrize(const intervals::RealInterval& arg) const {
+    reparametrize(const intervals::RealInterval& arg) const
+    {
         return {m_param_offset + m_param_scaling * arg.inf(),
                 m_param_offset + m_param_scaling * arg.sup(), arg.type()};
     }
@@ -284,7 +285,7 @@ private:
 
 public:
     StreamSchema() = default;
-    StreamSchema(const StreamSchema&) = default;
+    StreamSchema(const StreamSchema&) = delete;
     StreamSchema(StreamSchema&&) noexcept = default;
 
     explicit StreamSchema(dimn_t width);
@@ -364,6 +365,9 @@ public:
     RPY_NO_DISCARD
     bool is_final() const noexcept { return m_is_final; }
     void finalize() noexcept { m_is_final = true; }
+
+    intervals::RealInterval
+    adjust_interval(const intervals::Interval& arg) const;
 
     RPY_SERIAL_SERIALIZE_FN();
 };

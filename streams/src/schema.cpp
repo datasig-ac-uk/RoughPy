@@ -143,16 +143,11 @@ StreamChannel& StreamChannel::operator=(StreamChannel&& other) noexcept
 
 SchemaContext::~SchemaContext() = default;
 
-
-
 intervals::RealInterval
 SchemaContext::convert_parameter_interval(const intervals::Interval& arg) const
 {
-    return {
-        m_param_offset + m_param_scaling*arg.inf(),
-        m_param_offset + m_param_scaling*arg.sup(),
-        arg.type()
-    };
+    return {m_param_offset + m_param_scaling * arg.inf(),
+            m_param_offset + m_param_scaling * arg.sup(), arg.type()};
 }
 
 StreamSchema::StreamSchema(dimn_t width)
@@ -466,6 +461,13 @@ StreamChannel& StreamSchema::insert(string label, StreamChannel&& channel_data)
 
     return base_type::insert(pos, {std::move(label), std::move(channel_data)})
             ->second;
+}
+
+intervals::RealInterval
+StreamSchema::adjust_interval(const intervals::Interval& arg) const
+{
+    if (p_context) { return p_context->convert_parameter_interval(arg); }
+    return intervals::RealInterval(arg);
 }
 
 StreamChannel& StreamSchema::insert(StreamChannel&& channel_data)
