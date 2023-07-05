@@ -366,6 +366,7 @@ string StaticChannel::label_suffix(dimn_t index) const
             return categorical_info.variants[index];
         }
     }
+    RPY_UNREACHABLE_RETURN({});
 }
 dimn_t StaticChannel::num_variants() const noexcept
 {
