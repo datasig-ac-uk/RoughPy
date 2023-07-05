@@ -1,6 +1,8 @@
-Version 0.0.3-alpha:
+Version 0.0.3:
   - Added datetime interval support.
   - Integrated schema reparametrisation into stream signature methods
+  - Fixed bug in names of scalar types, names now display correctly
+
 
 Version 0.0.2-alpha:
   - Added datetime and timedelta object support to tick data parsing
