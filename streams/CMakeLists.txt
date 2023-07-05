@@ -27,6 +27,7 @@ add_roughpy_component(Streams
         src/schema.cpp
         src/schema_context.cpp
         src/stream_construction_helper.cpp
+        src/channels.cpp
     PUBLIC_HEADERS
         include/roughpy/streams/dyadic_caching_layer.h
         include/roughpy/streams/dynamically_constructed_stream.h
@@ -40,6 +41,7 @@ add_roughpy_component(Streams
         include/roughpy/streams/schema.h
         include/roughpy/streams/schema_context.h
         include/roughpy/streams/stream_construction_helper.h
+        include/roughpy/streams/channels.h
     PRIVATE_DEPS
         SndFile::sndfile
     NEEDS

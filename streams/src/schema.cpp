@@ -38,318 +38,10 @@
 using namespace rpy;
 using namespace rpy::streams;
 
-StreamChannel::StreamChannel()
-    : m_type(ChannelType::Increment), increment_info()
-{}
-StreamChannel::StreamChannel(const StreamChannel& arg) : m_type(arg.m_type)
-{
-    switch (m_type) {
-        case ChannelType::Increment:
-            inplace_construct(&increment_info, arg.increment_info);
-            break;
-        case ChannelType::Value:
-            inplace_construct(&value_info, arg.value_info);
-            break;
-        case ChannelType::Categorical:
-            inplace_construct(&categorical_info, arg.categorical_info);
-            break;
-        case ChannelType::Lie:
-            inplace_construct(&lie_info, arg.lie_info);
-            break;
-    }
-}
-StreamChannel::StreamChannel(StreamChannel&& arg) noexcept : m_type(arg.m_type)
-{
-    switch (m_type) {
-        case ChannelType::Increment:
-            inplace_construct(&increment_info, arg.increment_info);
-            break;
-        case ChannelType::Value:
-            inplace_construct(&value_info, arg.value_info);
-            break;
-        case ChannelType::Categorical:
-            inplace_construct(&categorical_info, arg.categorical_info);
-            break;
-        case ChannelType::Lie:
-            inplace_construct(&lie_info, arg.lie_info);
-            break;
-    }
-}
-
-StreamChannel::StreamChannel(ChannelType type) : m_type(type)
-{
-    switch (m_type) {
-        case ChannelType::Increment:
-            inplace_construct(&increment_info, IncrementChannelInfo());
-            break;
-        case ChannelType::Value:
-            inplace_construct(&value_info, ValueChannelInfo());
-            break;
-        case ChannelType::Categorical:
-            inplace_construct(&categorical_info, CategoricalChannelInfo());
-            break;
-        case ChannelType::Lie:
-            inplace_construct(&lie_info, LieChannelInfo());
-            break;
-    }
-}
-
-StreamChannel& StreamChannel::operator=(const StreamChannel& other)
-{
-    if (&other != this) {
-        this->~StreamChannel();
-        m_type = other.m_type;
-        switch (m_type) {
-            case ChannelType::Increment:
-                inplace_construct(&increment_info, other.increment_info);
-                break;
-            case ChannelType::Value:
-                inplace_construct(&value_info, other.value_info);
-                break;
-            case ChannelType::Categorical:
-                inplace_construct(&categorical_info, other.categorical_info);
-                break;
-            case ChannelType::Lie:
-                inplace_construct(&lie_info, other.lie_info);
-                break;
-        }
-    }
-    return *this;
-}
-StreamChannel& StreamChannel::operator=(StreamChannel&& other) noexcept
-{
-    if (&other != this) {
-        this->~StreamChannel();
-        m_type = other.m_type;
-        switch (m_type) {
-            case ChannelType::Increment:
-                inplace_construct(&increment_info,
-                                  std::move(other.increment_info));
-                break;
-            case ChannelType::Value:
-                inplace_construct(&value_info, std::move(other.value_info));
-                break;
-            case ChannelType::Categorical:
-                inplace_construct(&categorical_info,
-                                  std::move(other.categorical_info));
-                break;
-            case ChannelType::Lie:
-                inplace_construct(&lie_info, std::move(other.lie_info));
-                break;
-        }
-    }
-    return *this;
-}
-
-
 StreamSchema::StreamSchema(dimn_t width)
 {
     reserve(width);
     for (dimn_t i = 0; i < width; ++i) { insert_increment(std::to_string(i)); }
-}
-
-StreamChannel::~StreamChannel()
-{
-    switch (m_type) {
-        case ChannelType::Increment:
-            increment_info.~IncrementChannelInfo();
-            break;
-        case ChannelType::Value: value_info.~ValueChannelInfo(); break;
-        case ChannelType::Categorical:
-            categorical_info.~CategoricalChannelInfo();
-            break;
-        case ChannelType::Lie: lie_info.~LieChannelInfo(); break;
-    }
-}
-
-string StreamChannel::label_suffix(dimn_t variant_no) const
-{
-    switch (m_type) {
-        case ChannelType::Increment: return "";
-        case ChannelType::Value:
-            if (value_info.lead_lag) {
-                RPY_CHECK(variant_no < 2);
-                return (variant_no == 0) ? ":lead" : ":lag";
-            } else {
-                return "";
-            };
-        case ChannelType::Categorical:
-            RPY_CHECK(variant_no < categorical_info.variants.size());
-            return ":" + categorical_info.variants[variant_no];
-        case ChannelType::Lie:
-            RPY_CHECK(variant_no < static_cast<dimn_t>(lie_info.width));
-            return ":" + std::to_string(variant_no + 1);
-    }
-    RPY_UNREACHABLE();
-}
-
-void StreamChannel::set_lie_info(deg_t width, deg_t depth,
-                                 algebra::VectorType vtype)
-{
-    RPY_CHECK(m_type == ChannelType::Lie);
-    lie_info.width = width;
-    lie_info.depth = depth;
-    lie_info.vtype = vtype;
-}
-
-dimn_t StreamChannel::variant_id_of_label(string_view label) const
-{
-    switch (m_type) {
-        case ChannelType::Increment: return 0;
-        case ChannelType::Value:
-            if (value_info.lead_lag) {
-                if (label == "lead") {
-                    return 0;
-                } else if (label == "lag") {
-                    return 1;
-                } else {
-                    throw std::runtime_error(
-                            "unrecognised variant label for type value");
-                }
-            } else {
-                return 0;
-            }
-        case ChannelType::Categorical: break;
-        case ChannelType::Lie:
-            deg_t i = std::stoi(string(label));
-            RPY_CHECK(i < lie_info.width);
-            return i;
-    }
-
-    auto it = std::find(categorical_info.variants.begin(),
-                        categorical_info.variants.end(), label);
-    if (it == categorical_info.variants.end()) {
-        throw std::runtime_error(
-                "unrecognised variant label for type categorical");
-    }
-
-    return static_cast<dimn_t>(it - categorical_info.variants.begin());
-}
-
-StreamChannel& StreamChannel::add_variant(string variant_label)
-{
-    RPY_CHECK(m_type == ChannelType::Categorical);
-
-    if (variant_label.empty()) {
-        variant_label = std::to_string(categorical_info.variants.size());
-    }
-
-    auto found = std::find(categorical_info.variants.begin(),
-                           categorical_info.variants.end(), variant_label);
-    if (found != categorical_info.variants.end()) {
-        throw std::runtime_error("variant with label " + variant_label
-                                 + " already exists");
-    }
-
-    categorical_info.variants.push_back(std::move(variant_label));
-    return *this;
-}
-StreamChannel& StreamChannel::insert_variant(string variant_label)
-{
-    RPY_CHECK(m_type == ChannelType::Categorical);
-
-    if (variant_label.empty()) {
-        variant_label = std::to_string(categorical_info.variants.size());
-    }
-
-    auto var_begin = categorical_info.variants.begin();
-    auto var_end = categorical_info.variants.end();
-
-    auto found = std::find(var_begin, var_end, variant_label);
-    if (found == var_end) {
-        categorical_info.variants.push_back(std::move(variant_label));
-    }
-
-    return *this;
-}
-
-std::vector<string> StreamChannel::get_variants() const
-{
-    std::vector<string> variants;
-    switch (m_type) {
-        case ChannelType::Increment: break;
-        case ChannelType::Value:
-            if (value_info.lead_lag) {
-                variants.push_back("lead");
-                variants.push_back("lag");
-            }
-            break;
-        case ChannelType::Categorical:
-            variants = categorical_info.variants;
-            break;
-        case ChannelType::Lie:
-            variants.reserve(lie_info.width);
-            for (deg_t i = 0; i < lie_info.width; ++i) {
-                variants.push_back(std::to_string(i));
-            }
-            break;
-    }
-    return variants;
-}
-
-string StaticChannel::label_suffix(dimn_t index) const
-{
-    switch (m_type) {
-        case StaticChannelType::Value: return {};
-        case StaticChannelType::Categorical: {
-            return categorical_info.variants[index];
-        }
-    }
-}
-dimn_t StaticChannel::num_variants() const noexcept
-{
-    switch (m_type) {
-        case StaticChannelType::Value: return 1;
-        case StaticChannelType::Categorical:
-            return categorical_info.variants.size();
-    }
-}
-std::vector<string> StaticChannel::get_variants() const
-{
-    switch (m_type) {
-        case StaticChannelType::Value: return {};
-        case StaticChannelType::Categorical: return categorical_info.variants;
-    }
-}
-dimn_t StaticChannel::variant_id_of_label(const string& label) const
-{
-    switch (m_type) {
-        case StaticChannelType::Value: return 0;
-        case StaticChannelType::Categorical: {
-            const auto begin = categorical_info.variants.begin();
-            const auto end = categorical_info.variants.end();
-            const auto found = std::find(begin, end, label);
-            if (found == end) {
-                throw std::runtime_error("label " + label
-                                         + " not a valid "
-                                           "variant of this "
-                                           "channel");
-            }
-            return static_cast<dimn_t>(found - begin);
-        }
-    }
-}
-StaticChannel& StaticChannel::insert_variant(string new_variant)
-{
-    RPY_CHECK(m_type == StaticChannelType::Categorical);
-    const auto begin = categorical_info.variants.begin();
-    const auto end = categorical_info.variants.end();
-    const auto found = std::find(begin, end, new_variant);
-    if (found == end) {
-        categorical_info.variants.push_back(std::move(new_variant));
-    }
-    return *this;
-}
-StaticChannel& StaticChannel::add_variant(string new_variant)
-{
-    RPY_CHECK(m_type == StaticChannelType::Categorical);
-    const auto begin = categorical_info.variants.begin();
-    const auto end = categorical_info.variants.end();
-    const auto found = std::find(begin, end, new_variant);
-
-    RPY_CHECK(found == end);
-    categorical_info.variants.push_back(std::move(new_variant));
-    return *this;
 }
 
 bool StreamSchema::compare_labels(string_view item_label,
@@ -423,6 +115,30 @@ typename StreamSchema::iterator StreamSchema::find(const string& label)
         if (compare_labels(it_current->first, label)) { return it_current; }
     }
 
+    return it_end;
+}
+
+typename StreamSchema::static_iterator
+StreamSchema::find_static(const string& label)
+{
+    RPY_CHECK(!m_is_final);
+    auto it_current = m_static_channels.begin();
+    const auto it_end = m_static_channels.end();
+
+    for (; it_current != it_end; ++it_current) {
+        if (compare_labels(it_current->first, label)) { return it_current; }
+    }
+    return it_end;
+}
+typename StreamSchema::static_const_iterator
+StreamSchema::find_static(const string& label) const
+{
+    auto it_current = m_static_channels.cbegin();
+    const auto it_end = m_static_channels.cend();
+
+    for (; it_current != it_end; ++it_current) {
+        if (compare_labels(it_current->first, label)) { return it_current; }
+    }
     return it_end;
 }
 
@@ -549,30 +265,30 @@ StreamChannel& StreamSchema::insert_lie(string label)
     return insert(std::move(label), StreamChannel(LieChannelInfo()));
 }
 
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamChannel
-#define RPY_SERIAL_DO_SPLIT
+StaticChannel& StreamSchema::insert_static_value(string label)
+{
+    auto found = find_static(label);
+    auto end = end_static();
 
-#include <roughpy/platform/serialization_instantiations.inl>
+    if (found != end) { return found->second; }
 
-#define RPY_SERIAL_EXTERNAL rpy::streams
-#define RPY_SERIAL_IMPL_CLASSNAME IncrementChannelInfo
+    return m_static_channels
+            .insert(end, {std::move(label), StaticChannel(ValueChannelInfo())})
+            ->second;
+}
+StaticChannel& StreamSchema::insert_static_categorical(string label)
+{
 
-#include <roughpy/platform/serialization_instantiations.inl>
+    auto found = find_static(label);
+    auto end = end_static();
 
-#define RPY_SERIAL_EXTERNAL rpy::streams
-#define RPY_SERIAL_IMPL_CLASSNAME ValueChannelInfo
+    if (found != end) { return found->second; }
 
-#include <roughpy/platform/serialization_instantiations.inl>
-
-#define RPY_SERIAL_EXTERNAL rpy::streams
-#define RPY_SERIAL_IMPL_CLASSNAME CategoricalChannelInfo
-
-#include <roughpy/platform/serialization_instantiations.inl>
-
-#define RPY_SERIAL_EXTERNAL rpy::streams
-#define RPY_SERIAL_IMPL_CLASSNAME LieChannelInfo
-
-#include <roughpy/platform/serialization_instantiations.inl>
+    return m_static_channels
+            .insert(end,
+                    {std::move(label), StaticChannel(CategoricalChannelInfo())})
+            ->second;
+}
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamSchema
 

@@ -1,4 +1,6 @@
 
+include_guard()
+
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 include(GoogleTest OPTIONAL)
