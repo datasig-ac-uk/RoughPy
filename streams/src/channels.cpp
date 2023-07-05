@@ -139,34 +139,7 @@ StreamChannel& StreamChannel::operator=(StreamChannel&& other) noexcept
     return *this;
 }
 
-StaticChannel::StaticChannel() : m_type(StaticChannelType::Value)
-{
-    inplace_construct(&value_info, ValueChannelInfo());
-}
-StaticChannel::StaticChannel(const StaticChannel& other) : m_type(other.m_type)
-{
-    switch (m_type) {
-        case StaticChannelType::Value:
-            inplace_construct(&value_info, other.value_info);
-            break;
-        case StaticChannelType::Categorical:
-            inplace_construct(&categorical_info, other.categorical_info);
-            break;
-    }
-}
-StaticChannel::StaticChannel(StaticChannel&& other) noexcept
-    : m_type(other.m_type)
-{
-    switch (m_type) {
-        case StaticChannelType::Value:
-            inplace_construct(&value_info, std::move(other.value_info));
-            break;
-        case StaticChannelType::Categorical:
-            inplace_construct(&categorical_info,
-                              std::move(other.categorical_info));
-            break;
-    }
-}
+
 
 StreamChannel::~StreamChannel()
 {
@@ -182,39 +155,7 @@ StreamChannel::~StreamChannel()
     }
 }
 
-StaticChannel& StaticChannel::operator=(const StaticChannel& other)
-{
-    if (&other != this) {
-        this->~StaticChannel();
-        m_type = other.m_type;
-        switch (m_type) {
-            case StaticChannelType::Value:
-                inplace_construct(&value_info, other.value_info);
-                break;
-            case StaticChannelType::Categorical:
-                inplace_construct(&categorical_info, other.categorical_info);
-                break;
-        }
-    }
-    return *this;
-}
-StaticChannel& StaticChannel::operator=(StaticChannel&& other) noexcept
-{
-    if (&other != this) {
-        this->~StaticChannel();
-        m_type = other.m_type;
-        switch (m_type) {
-            case StaticChannelType::Value:
-                inplace_construct(&value_info, std::move(other.value_info));
-                break;
-            case StaticChannelType::Categorical:
-                inplace_construct(&categorical_info,
-                                  std::move(other.categorical_info));
-                break;
-        }
-    }
-    return *this;
-}
+
 
 string StreamChannel::label_suffix(dimn_t variant_no) const
 {
@@ -234,7 +175,7 @@ string StreamChannel::label_suffix(dimn_t variant_no) const
             RPY_CHECK(variant_no < static_cast<dimn_t>(lie_info.width));
             return ":" + std::to_string(variant_no + 1);
     }
-    RPY_UNREACHABLE();
+    RPY_UNREACHABLE_RETURN({});
 }
 
 void StreamChannel::set_lie_info(deg_t width, deg_t depth,
@@ -345,6 +286,35 @@ std::vector<string> StreamChannel::get_variants() const
 // Static channel
 ///////////////////////////////////////////////////////////////////////////////
 
+StaticChannel::StaticChannel() : m_type(StaticChannelType::Value)
+{
+    inplace_construct(&value_info, ValueChannelInfo());
+}
+StaticChannel::StaticChannel(const StaticChannel& other) : m_type(other.m_type)
+{
+    switch (m_type) {
+        case StaticChannelType::Value:
+            inplace_construct(&value_info, other.value_info);
+            break;
+        case StaticChannelType::Categorical:
+            inplace_construct(&categorical_info, other.categorical_info);
+            break;
+    }
+}
+
+StaticChannel::StaticChannel(StaticChannel&& other) noexcept
+        : m_type(other.m_type)
+{
+    switch (m_type) {
+        case StaticChannelType::Value:
+            inplace_construct(&value_info, std::move(other.value_info));
+            break;
+        case StaticChannelType::Categorical:
+            inplace_construct(&categorical_info,
+                              std::move(other.categorical_info));
+            break;
+    }
+}
 StaticChannel::~StaticChannel()
 {
     switch (m_type) {
@@ -355,6 +325,39 @@ StaticChannel::~StaticChannel()
     }
 }
 
+StaticChannel& StaticChannel::operator=(const StaticChannel& other)
+{
+    if (&other != this) {
+        this->~StaticChannel();
+        m_type = other.m_type;
+        switch (m_type) {
+            case StaticChannelType::Value:
+                inplace_construct(&value_info, other.value_info);
+                break;
+            case StaticChannelType::Categorical:
+                inplace_construct(&categorical_info, other.categorical_info);
+                break;
+        }
+    }
+    return *this;
+}
+StaticChannel& StaticChannel::operator=(StaticChannel&& other) noexcept
+{
+    if (&other != this) {
+        this->~StaticChannel();
+        m_type = other.m_type;
+        switch (m_type) {
+            case StaticChannelType::Value:
+                inplace_construct(&value_info, std::move(other.value_info));
+                break;
+            case StaticChannelType::Categorical:
+                inplace_construct(&categorical_info,
+                                  std::move(other.categorical_info));
+                break;
+        }
+    }
+    return *this;
+}
 string StaticChannel::label_suffix(dimn_t index) const
 {
     switch (m_type) {
@@ -398,6 +401,7 @@ dimn_t StaticChannel::variant_id_of_label(const string& label) const
             return static_cast<dimn_t>(found - begin);
         }
     }
+    RPY_UNREACHABLE_RETURN(0);
 }
 StaticChannel& StaticChannel::insert_variant(string new_variant)
 {
