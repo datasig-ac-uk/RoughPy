@@ -93,13 +93,14 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype)
     py::object ht_module(m);
 #endif
 
+    dimn_t no_letters = name.size() + 1;
     tmp_manager.ht_name
-            = reinterpret_cast<char*>(PyMem_Malloc(name.size() + 1));
+            = reinterpret_cast<char*>(PyMem_Malloc(no_letters));
     if (tmp_manager.ht_name == nullptr) {
         PyErr_NoMemory();
         throw py::error_already_set();
     }
-    memcpy(tmp_manager.ht_name, name.c_str(), name.size());
+    memcpy(tmp_manager.ht_name, name.c_str(), no_letters);
 
     tmp_manager.cls
             = reinterpret_cast<PyScalarMetaType*>(mcs_tp->tp_alloc(mcs_tp, 0));
