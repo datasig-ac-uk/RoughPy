@@ -35,8 +35,9 @@ namespace rpy {
 namespace algebra {
 
 class RPY_EXPORT LieBasisInterface
-    : public make_basis_interface<LieBasisInterface, rpy::key_type,
-                                  OrderedBasisInterface, WordLikeBasisInterface>
+    : public make_basis_interface<
+              LieBasisInterface, rpy::key_type, OrderedBasisInterface,
+              WordLikeBasisInterface>
 {
 };
 

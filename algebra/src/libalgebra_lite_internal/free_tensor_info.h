@@ -44,8 +44,9 @@
 namespace rpy {
 namespace algebra {
 
-template <typename Coeffs, template <typename, typename> class VType,
-          template <typename> class Storage>
+template <
+        typename Coeffs, template <typename, typename> class VType,
+        template <typename> class Storage>
 struct algebra_info<FreeTensor, lal::free_tensor<Coeffs, VType, Storage>> {
 
     /// The actual type of the algebra implementation

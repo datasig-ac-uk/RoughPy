@@ -66,13 +66,15 @@ void DeviceFreeTensor::sub_mul(const algebra_t& lhs, const algebra_t& rhs)
 {
     AlgebraArithmetic::sub_mul(lhs, rhs);
 }
-void DeviceFreeTensor::mul_smul(const algebra_t& rhs,
-                                const scalars::Scalar& scalar)
+void DeviceFreeTensor::mul_smul(
+        const algebra_t& rhs, const scalars::Scalar& scalar
+)
 {
     AlgebraArithmetic::mul_smul(rhs, scalar);
 }
-void DeviceFreeTensor::mul_sdiv(const algebra_t& rhs,
-                                const scalars::Scalar& scalar)
+void DeviceFreeTensor::mul_sdiv(
+        const algebra_t& rhs, const scalars::Scalar& scalar
+)
 {
     AlgebraArithmetic::mul_sdiv(rhs, scalar);
 }

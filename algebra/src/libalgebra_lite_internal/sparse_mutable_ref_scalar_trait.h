@@ -88,7 +88,8 @@ public:
     ScalarPointer to_pointer() override
     {
         throw std::runtime_error(
-                "cannot get non-const pointer to proxy reference type");
+                "cannot get non-const pointer to proxy reference type"
+        );
     }
     ScalarPointer to_pointer() const noexcept override
     {
@@ -120,8 +121,9 @@ public:
     void div_inplace(const Scalar& other) override
     {
         rational_type tmp(1);
-        type()->rational_type()->convert_copy({type()->rational_type(), &tmp},
-                                              other.to_pointer(), 1);
+        type()->rational_type()->convert_copy(
+                {type()->rational_type(), &tmp}, other.to_pointer(), 1
+        );
         m_data /= tmp;
     }
 
@@ -151,8 +153,8 @@ public:
 
     static Scalar make(reference arg)
     {
-        return Scalar(
-                new dtl::SparseMutableRefScalarImpl<Vector>(std::move(arg)));
+        return Scalar(new dtl::SparseMutableRefScalarImpl<Vector>(std::move(arg)
+        ));
     }
 };
 

@@ -3,7 +3,7 @@ import pytest
 from numpy.testing import assert_array_equal
 
 import roughpy
-from roughpy import Lie, get_context, DPReal
+from roughpy import DPReal, Lie, get_context
 
 
 @pytest.fixture

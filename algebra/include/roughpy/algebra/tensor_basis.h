@@ -37,8 +37,9 @@ namespace rpy {
 namespace algebra {
 
 class RPY_EXPORT TensorBasisInterface
-    : public make_basis_interface<TensorBasisInterface, rpy::key_type,
-                                  OrderedBasisInterface, WordLikeBasisInterface>
+    : public make_basis_interface<
+              TensorBasisInterface, rpy::key_type, OrderedBasisInterface,
+              WordLikeBasisInterface>
 {
 public:
     ~TensorBasisInterface() override;

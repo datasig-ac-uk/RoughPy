@@ -60,9 +60,13 @@ public:
 
 }// namespace algebra
 }// namespace rpy
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensor,
-                            rpy::serial::specialization::member_serialize)
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::ShuffleTensorBundle,
-                            rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::ShuffleTensor,
+        rpy::serial::specialization::member_serialize
+)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::ShuffleTensorBundle,
+        rpy::serial::specialization::member_serialize
+)
 
 #endif// ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_FWD_H_

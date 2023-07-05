@@ -51,7 +51,8 @@ def solution_signature(width, depth, tensor_size):
 
             for data in itertools.product(letters, repeat=d):
                 idx += 1
-                rv[idx] = factor * functools.reduce(operator.mul, data, 1) * (b - a) ** d
+                rv[idx] = factor * functools.reduce(operator.mul, data, 1) * (
+                            b - a) ** d
         return rv
 
     return sig_func
@@ -102,7 +103,8 @@ def test_func_sig_deriv_s_width_3_depth_2_let_2_perturb(deriv_function_path):
                                     0.0, 0.3, 0.0
                                     ]), ctx=p.ctx)
 
-    assert_array_almost_equal(p.log_signature(interval, 1), np.array([0.2, 0.4, 0.6, 0.0, 0.0, 0.0]))
+    assert_array_almost_equal(p.log_signature(interval, 1),
+                              np.array([0.2, 0.4, 0.6, 0.0, 0.0, 0.0]))
     assert_array_almost_equal(d, expected)
 
 

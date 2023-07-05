@@ -79,8 +79,8 @@ public:
     using basis_type = typename Algebra::basis_type;
     using key_type = typename Algebra::key_type;
 
-    AlgebraIteratorItem(
-            std::shared_ptr<AlgebraIteratorInterface<Algebra>> interface)
+    AlgebraIteratorItem(std::shared_ptr<AlgebraIteratorInterface<Algebra>>
+                                interface)
         : p_interface(std::move(interface))
     {}
 
@@ -114,8 +114,9 @@ public:
     using difference_type = std::ptrdiff_t;
     using iterator_category = std::forward_iterator_tag;
 
-    AlgebraIterator(std::shared_ptr<interface_type> interface,
-                    std::uintptr_t tag)
+    AlgebraIterator(
+            std::shared_ptr<interface_type> interface, std::uintptr_t tag
+    )
         : p_interface(std::move(interface)), m_tag(tag)
     {}
 
@@ -190,8 +191,8 @@ typename AlgebraIterator<Algebra>::reference
 AlgebraIterator<Algebra>::operator*() const
 {
     if (!p_interface) {
-        throw std::runtime_error(
-                "attempting to dereference an invalid iterator");
+        throw std::runtime_error("attempting to dereference an invalid iterator"
+        );
     }
     return {p_interface};
 }

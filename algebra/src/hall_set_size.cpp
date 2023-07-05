@@ -105,8 +105,9 @@ dimn_t HallSetSizeHelper::operator()(int k)
         auto divs = div(k, i);
         if (divs.rem == 0) {
             auto comp = k / divs.quot;
-            result += static_cast<dimn_t>(m_mobius[divs.quot]
-                                          * power(m_width, comp));
+            result += static_cast<dimn_t>(
+                    m_mobius[divs.quot] * power(m_width, comp)
+            );
         }
     }
 

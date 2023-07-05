@@ -91,11 +91,11 @@ class FreeTensorBundleImplementation;
 //                                         FreeTensorBundleImplementation>;
 
 class RPY_EXPORT FreeTensorBundle
-    : public AlgebraBundleBase<FreeTensorBundleInterface,
-                               FreeTensorBundleImplementation>
+    : public AlgebraBundleBase<
+              FreeTensorBundleInterface, FreeTensorBundleImplementation>
 {
-    using base_t = AlgebraBundleBase<FreeTensorBundleInterface,
-                                     FreeTensorBundleImplementation>;
+    using base_t = AlgebraBundleBase<
+            FreeTensorBundleInterface, FreeTensorBundleImplementation>;
 
 public:
     using base_t::base_t;
@@ -123,9 +123,12 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensorBundle)
 }// namespace algebra
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensor,
-                            rpy::serial::specialization::member_serialize)
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensorBundle,
-                            rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::FreeTensor, rpy::serial::specialization::member_serialize
+)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::FreeTensorBundle,
+        rpy::serial::specialization::member_serialize
+)
 
 #endif// ROUGHPY_ALGEBRA_FREE_TENSOR_FWD_H_

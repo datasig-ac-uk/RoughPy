@@ -39,9 +39,9 @@ namespace algebra {
 
 template <typename Bundle, typename Base, typename Fibre>
 class RPY_EXPORT BundleInterface
-    : public dtl::algebra_base_resolution<Bundle, typename Base::basis_type,
-                                          dtl::AlgebraArithmetic,
-                                          dtl::AlgebraElementAccess>::type
+    : public dtl::algebra_base_resolution<
+              Bundle, typename Base::basis_type, dtl::AlgebraArithmetic,
+              dtl::AlgebraElementAccess>::type
 {
 public:
     using base_alg_t = Base;
@@ -53,9 +53,10 @@ public:
     virtual fibre_alg_t fibre() = 0;
 };
 
-template <typename BundleInterface,
-          template <typename, template <typename> class> class DerivedImpl
-          = dtl::with_interface<BundleInterface>::template type>
+template <
+        typename BundleInterface,
+        template <typename, template <typename> class> class DerivedImpl
+        = dtl::with_interface<BundleInterface>::template type>
 class AlgebraBundleBase
 {
 

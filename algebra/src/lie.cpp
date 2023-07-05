@@ -46,8 +46,8 @@ template class RPY_EXPORT_INSTANTIATION BundleInterface<LieBundle, Lie, Lie>;
 template class RPY_EXPORT_INSTANTIATION AlgebraBundleBase<LieBundleInterface>;
 
 template <>
-typename Lie::basis_type
-basis_setup_helper<Lie>::get(const context_pointer& ctx)
+typename Lie::basis_type basis_setup_helper<Lie>::get(const context_pointer& ctx
+)
 {
     return ctx->get_lie_basis();
 }

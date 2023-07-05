@@ -94,42 +94,48 @@ Tensor antipode_wrapper(const Tensor& arg)
 template <typename FTImpl, template <typename> class StorageModel>
 FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::exp() const
 {
-    return FreeTensor(FreeTensorInterface::p_ctx,
-                      dtl::exp_wrapper(base_t::data()));
+    return FreeTensor(
+            FreeTensorInterface::p_ctx, dtl::exp_wrapper(base_t::data())
+    );
 }
 template <typename FTImpl, template <typename> class StorageModel>
 FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::log() const
 {
-    return FreeTensor(FreeTensorInterface::p_ctx,
-                      dtl::log_wrapper(base_t::data()));
+    return FreeTensor(
+            FreeTensorInterface::p_ctx, dtl::log_wrapper(base_t::data())
+    );
 }
 template <typename FTImpl, template <typename> class StorageModel>
 FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::inverse() const
 {
-    return FreeTensor(FreeTensorInterface::p_ctx,
-                      dtl::inverse_wrapper(base_t::data()));
+    return FreeTensor(
+            FreeTensorInterface::p_ctx, dtl::inverse_wrapper(base_t::data())
+    );
 }
 template <typename FTImpl, template <typename> class StorageModel>
 FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::antipode() const
 {
-    return FreeTensor(FreeTensorInterface::p_ctx,
-                      dtl::antipode_wrapper(base_t::data()));
+    return FreeTensor(
+            FreeTensorInterface::p_ctx, dtl::antipode_wrapper(base_t::data())
+    );
 }
 template <typename FTImpl, template <typename> class StorageModel>
 void FreeTensorImplementation<FTImpl, StorageModel>::fmexp(
-        const FreeTensor& other)
+        const FreeTensor& other
+)
 {
     base_t::data().fmexp_inplace(
-            FreeTensorImplementation::convert_argument(other));
+            FreeTensorImplementation::convert_argument(other)
+    );
 }
 
 template <typename FTBImpl, template <typename> class StorageModel>
 class FreeTensorBundleImplementation
-    : public AlgebraBundleImplementation<FreeTensorBundleInterface, FTBImpl,
-                                         StorageModel>
+    : public AlgebraBundleImplementation<
+              FreeTensorBundleInterface, FTBImpl, StorageModel>
 {
-    using base_t = AlgebraBundleImplementation<FreeTensorBundleInterface,
-                                               FTBImpl, StorageModel>;
+    using base_t = AlgebraBundleImplementation<
+            FreeTensorBundleInterface, FTBImpl, StorageModel>;
 
 public:
     using base_t::base_t;
@@ -145,36 +151,44 @@ template <typename FTBImpl, template <typename> class StorageModel>
 FreeTensorBundle
 FreeTensorBundleImplementation<FTBImpl, StorageModel>::exp() const
 {
-    return FreeTensorBundle(FreeTensorBundleInterface::p_ctx,
-                            dtl::exp_wrapper(base_t::data()));
+    return FreeTensorBundle(
+            FreeTensorBundleInterface::p_ctx, dtl::exp_wrapper(base_t::data())
+    );
 }
 template <typename FTBImpl, template <typename> class StorageModel>
 FreeTensorBundle
 FreeTensorBundleImplementation<FTBImpl, StorageModel>::log() const
 {
-    return FreeTensorBundle(FreeTensorBundleInterface::p_ctx,
-                            dtl::log_wrapper(base_t::data()));
+    return FreeTensorBundle(
+            FreeTensorBundleInterface::p_ctx, dtl::log_wrapper(base_t::data())
+    );
 }
 template <typename FTBImpl, template <typename> class StorageModel>
 FreeTensorBundle
 FreeTensorBundleImplementation<FTBImpl, StorageModel>::inverse() const
 {
-    return FreeTensorBundle(FreeTensorBundleInterface::p_ctx,
-                            dtl::inverse_wrapper(base_t::data()));
+    return FreeTensorBundle(
+            FreeTensorBundleInterface::p_ctx,
+            dtl::inverse_wrapper(base_t::data())
+    );
 }
 template <typename FTBImpl, template <typename> class StorageModel>
 FreeTensorBundle
 FreeTensorBundleImplementation<FTBImpl, StorageModel>::antipode() const
 {
-    return FreeTensorBundle(FreeTensorBundleInterface::p_ctx,
-                            dtl::antipode_wrapper(base_t::data()));
+    return FreeTensorBundle(
+            FreeTensorBundleInterface::p_ctx,
+            dtl::antipode_wrapper(base_t::data())
+    );
 }
 template <typename FTBImpl, template <typename> class StorageModel>
 void FreeTensorBundleImplementation<FTBImpl, StorageModel>::fmexp(
-        const FreeTensorBundle& other)
+        const FreeTensorBundle& other
+)
 {
     base_t::data().fmexp_inplace(
-            FreeTensorBundleImplementation::convert_argument(other));
+            FreeTensorBundleImplementation::convert_argument(other)
+    );
 }
 
 }// namespace algebra

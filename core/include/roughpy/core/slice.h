@@ -62,9 +62,10 @@ public:
 
     constexpr Slice(std::nullptr_t) : p_data(nullptr), m_size(0) {}
 
-    template <typename Container,
-              typename
-              = enable_if_t<is_same<typename Container::value_type, T>::value>>
+    template <
+            typename Container,
+            typename
+            = enable_if_t<is_same<typename Container::value_type, T>::value>>
     constexpr Slice(Container& container)
         : p_data(container.data()), m_size(container.size())
     {}
@@ -76,16 +77,16 @@ public:
     constexpr Slice(T* ptr, std::size_t N) : p_data(ptr), m_size(N) {}
 
     template <typename I>
-    constexpr enable_if_t<is_integral<I>::value, const T&>
-    operator[](I i) noexcept
+    constexpr enable_if_t<is_integral<I>::value, const T&> operator[](I i
+    ) noexcept
     {
         RPY_DBG_ASSERT(0 <= i && static_cast<dimn_t>(i) < m_size);
         return p_data[i];
     }
 
     template <typename I>
-    constexpr enable_if_t<is_integral<I>::value, T&>
-    operator[](I i) const noexcept
+    constexpr enable_if_t<is_integral<I>::value, T&> operator[](I i
+    ) const noexcept
     {
         RPY_DBG_ASSERT(0 <= i && static_cast<dimn_t>(i) < m_size);
         return p_data[i];

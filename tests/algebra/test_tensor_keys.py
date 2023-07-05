@@ -32,7 +32,8 @@ def test_TensorKey_str_n_letters(width, depth):
 
 
 @pytest.mark.parametrize("wdth, dpth, lttrs",
-                         [(w, d, np.arange(1, w + 1)) for w in range(2, 6) for d in range(2, 6)])
+                         [(w, d, np.arange(1, w + 1)) for w in range(2, 6) for d
+                          in range(2, 6)])
 def test_TensorKey_width_derivation(wdth, dpth, lttrs, rng):
     letters = np.concatenate([[wdth], rng.choice(lttrs, size=(dpth - 1,))])
     rng.shuffle(letters)

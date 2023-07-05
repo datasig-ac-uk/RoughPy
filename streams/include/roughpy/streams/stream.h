@@ -127,7 +127,7 @@ public:
                     resolution_t resolution) const
     {
         const auto& md = metadata();
-        simplify(partition, resolution, *md.default_context);
+        return simplify(partition, resolution, *md.default_context);
     }
 
     Stream simplify(const intervals::Partition& partition,

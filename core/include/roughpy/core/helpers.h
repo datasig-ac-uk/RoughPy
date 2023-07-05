@@ -53,11 +53,11 @@ namespace rpy {
 using std::bit_cast;
 #else
 template <typename To, typename From>
-RPY_NO_DISCARD enable_if_t<sizeof(To) == sizeof(From)
-                                   && is_trivially_copyable<From>::value
-                                   && is_trivially_copyable<To>::value
-                                   && is_default_constructible<To>::value,
-                           To>
+RPY_NO_DISCARD enable_if_t<
+        sizeof(To) == sizeof(From) && is_trivially_copyable<From>::value
+                && is_trivially_copyable<To>::value
+                && is_default_constructible<To>::value,
+        To>
 bit_cast(From from)
 {
     To to;

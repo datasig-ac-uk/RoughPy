@@ -42,8 +42,10 @@ namespace rpy {
 namespace device {
 
 template <typename S, typename Functor>
-RPY_KERNEL void unary_kernel(S* RPY_RESTRICT dst, const S* RPY_RESTRICT src,
-                             dindex_t count, Functor&& fn)
+RPY_KERNEL void unary_kernel(
+        S* RPY_RESTRICT dst, const S* RPY_RESTRICT src, dindex_t count,
+        Functor&& fn
+)
 {
     dindex_t offset = blockIdx.x * gridDim.x + threadIdx.x;
     dindex_t stride = blockDim.x * gridDim.x;

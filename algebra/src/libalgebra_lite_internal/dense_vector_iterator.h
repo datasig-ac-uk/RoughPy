@@ -60,8 +60,8 @@ struct iterator_helper_trait<
 template <typename Basis, typename Coefficients, typename Iterator>
 struct iterator_helper_trait<
         lal::dtl::dense_vector_const_iterator<Basis, Coefficients, Iterator>> {
-    using iter_t = lal::dtl::dense_vector_const_iterator<Basis, Coefficients,
-                                                         Iterator>;
+    using iter_t = lal::dtl::dense_vector_const_iterator<
+            Basis, Coefficients, Iterator>;
 
     static auto key(const iter_t& it) noexcept -> decltype(it->key())
     {

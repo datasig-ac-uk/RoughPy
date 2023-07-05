@@ -43,10 +43,11 @@
 namespace rpy {
 namespace algebra {
 
-template <typename Coeffs, template <typename, typename> class VType,
-          template <typename> class Storage>
-struct algebra_info<ShuffleTensor,
-                    lal::shuffle_tensor<Coeffs, VType, Storage>> {
+template <
+        typename Coeffs, template <typename, typename> class VType,
+        template <typename> class Storage>
+struct algebra_info<
+        ShuffleTensor, lal::shuffle_tensor<Coeffs, VType, Storage>> {
     /// The actual type of the algebra implementation
     using algebra_type = lal::shuffle_tensor<Coeffs, VType, Storage>;
 

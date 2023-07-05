@@ -82,7 +82,8 @@ public:
     std::shared_ptr<interface_type> clone() const override
     {
         return std::shared_ptr<interface_type>(
-                new AlgebraIteratorImplementation(m_iter, p_basis));
+                new AlgebraIteratorImplementation(m_iter, p_basis)
+        );
     }
     void advance() override { ++m_iter; }
     bool equals(const interface_type& other) const noexcept override

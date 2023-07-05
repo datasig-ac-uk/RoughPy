@@ -59,16 +59,16 @@ struct BasisInfo {
     // The conversion methods are required, they are used in the trait
     // and in the algebra wrapper
     /// Conversion from impl_key_type to our_key_type
-    static our_key_type convert_from_impl(storage_t basis,
-                                          const impl_key_type& arg)
+    static our_key_type
+    convert_from_impl(storage_t basis, const impl_key_type& arg)
     {
         // The default is to take the index of arg as the return
         return basis->key_to_index(arg);
     }
 
     /// Conversion from our_key_type to impl_key_type
-    static impl_key_type convert_to_impl(storage_t basis,
-                                         const our_key_type& arg)
+    static impl_key_type
+    convert_to_impl(storage_t basis, const our_key_type& arg)
     {
         // Default is to treat rpy keys as the index of impl keys
         return basis->index_to_key(arg);

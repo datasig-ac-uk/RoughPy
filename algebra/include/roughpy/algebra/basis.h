@@ -152,10 +152,14 @@ template <typename PrimaryInterface>
 class Basis : public PrimaryInterface::mixin_t
 {
     using basis_interface = PrimaryInterface;
-    static_assert(is_base_of<BasisInterface<PrimaryInterface,
-                                            typename basis_interface::key_type>,
-                             basis_interface>::value,
-                  "Primary template must be an instance of BasisInterface");
+    static_assert(
+            is_base_of<
+                    BasisInterface<
+                            PrimaryInterface,
+                            typename basis_interface::key_type>,
+                    basis_interface>::value,
+            "Primary template must be an instance of BasisInterface"
+    );
 
     boost::intrusive_ptr<const basis_interface> p_impl;
 
@@ -189,16 +193,17 @@ public:
 };
 
 namespace dtl {
-template <typename Derived, typename KeyType,
-          template <typename, typename> class... Interfaces>
+template <
+        typename Derived, typename KeyType,
+        template <typename, typename> class... Interfaces>
 struct make_basis_interface_impl;
 }
 
-template <typename Derived, typename KeyType,
-          template <typename, typename> class... Interfaces>
-using make_basis_interface =
-        typename dtl::make_basis_interface_impl<Derived, KeyType,
-                                                Interfaces...>::type;
+template <
+        typename Derived, typename KeyType,
+        template <typename, typename> class... Interfaces>
+using make_basis_interface = typename dtl::make_basis_interface_impl<
+        Derived, KeyType, Interfaces...>::type;
 
 namespace dtl {
 
@@ -263,8 +268,8 @@ public:
         return instance().start_of_degree(degree);
     }
     RPY_NO_DISCARD
-    pair<optional<key_type>, optional<key_type>>
-    parents(const key_type& key) const
+    pair<optional<key_type>, optional<key_type>> parents(const key_type& key
+    ) const
     {
         return instance().parents(key);
     }
@@ -287,11 +292,12 @@ public:
     bool letter(const key_type& key) const { return instance().letter(key); }
 };
 
-template <typename Derived, typename KeyType,
-          template <typename, typename> class FirstInterface,
-          template <typename, typename> class... Interfaces>
-struct make_basis_interface_impl<Derived, KeyType, FirstInterface,
-                                 Interfaces...> {
+template <
+        typename Derived, typename KeyType,
+        template <typename, typename> class FirstInterface,
+        template <typename, typename> class... Interfaces>
+struct make_basis_interface_impl<
+        Derived, KeyType, FirstInterface, Interfaces...> {
     using next_t = make_basis_interface_impl<Derived, KeyType, Interfaces...>;
     using type = FirstInterface<Derived, typename next_t::type>;
 };

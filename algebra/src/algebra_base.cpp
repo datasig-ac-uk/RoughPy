@@ -41,7 +41,8 @@ using namespace rpy::algebra;
 
 algebra::dtl::AlgebraInterfaceBase::AlgebraInterfaceBase(
         context_pointer&& ctx, VectorType vtype,
-        const scalars::ScalarType* stype, ImplementationType impl_type)
+        const scalars::ScalarType* stype, ImplementationType impl_type
+)
     : p_ctx(std::move(ctx)), p_coeff_type(stype), m_vector_type(vtype),
       m_impl_type(impl_type)
 {}
@@ -56,24 +57,28 @@ rpy::algebra::dtl::context_to_scalars(context_pointer const& ptr)
     return ptr->ctype();
 }
 
-UnspecifiedAlgebraType
-rpy::algebra::dtl::try_create_new_empty(context_pointer ctx,
-                                        AlgebraType alg_type)
+UnspecifiedAlgebraType rpy::algebra::dtl::try_create_new_empty(
+        context_pointer ctx, AlgebraType alg_type
+)
 {
     return ctx->construct(alg_type, {});
 }
 
-UnspecifiedAlgebraType
-algebra::dtl::construct_dense_algebra(scalars::ScalarArray&& data,
-                                      const context_pointer& ctx,
-                                      AlgebraType atype)
+UnspecifiedAlgebraType algebra::dtl::construct_dense_algebra(
+        scalars::ScalarArray&& data, const context_pointer& ctx,
+        AlgebraType atype
+)
 {
-    VectorConstructionData cdata{{std::move(data), nullptr}, VectorType::Dense};
+    VectorConstructionData cdata{
+            {std::move(data), nullptr},
+            VectorType::Dense
+    };
     return ctx->construct(atype, cdata);
 }
 
-void rpy::algebra::dtl::check_contexts_compatible(const context_pointer& ref,
-                                                  const context_pointer& other)
+void rpy::algebra::dtl::check_contexts_compatible(
+        const context_pointer& ref, const context_pointer& other
+)
 {
     if (ref == other) { return; }
 
