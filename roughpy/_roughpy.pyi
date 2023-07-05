@@ -31,6 +31,9 @@ class DPReal(ScalarTypeBase):
 class Rational(ScalarTypeBase):
     ...
 
+class HPReal(ScalarTypeBase): ...
+class BFloat16(ScalarTypeBase): ...
+
 
 class Scalar:
 

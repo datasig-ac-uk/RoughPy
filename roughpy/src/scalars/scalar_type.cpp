@@ -350,4 +350,6 @@ void python::init_scalar_types(pybind11::module_& m)
     make_scalar_type(m, scalars::ScalarType::of<double>());
     make_scalar_type(m,
                      scalars::ScalarType::of<scalars::rational_scalar_type>());
+    make_scalar_type(m, scalars::ScalarType::of<scalars::half>());
+    make_scalar_type(m, scalars::ScalarType::of<scalars::bfloat16>());
 }

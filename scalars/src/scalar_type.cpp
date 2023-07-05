@@ -225,8 +225,8 @@ static std::unordered_map<string, const ScalarType*> s_scalar_type_cache{
         {string("f32"), ScalarType::of<float>()},
         {string("f64"), ScalarType::of<double>()},
         {string("f16"), ScalarType::of<half>()},
-        {string("bf16"), ScalarType::of<bfloat16>()}
-        //    {string("rational"), ScalarType::of<float>()},
+        {string("bf16"), ScalarType::of<bfloat16>()},
+        {string("rational"), ScalarType::of<rational_scalar_type>()}
 };
 
 void rpy::scalars::register_type(const ScalarType* type)

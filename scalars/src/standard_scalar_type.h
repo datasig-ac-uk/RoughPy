@@ -86,8 +86,14 @@ public:
                       {ScalarDeviceType::CPU, 0}})
     {}
 
-    explicit StandardScalarType(ScalarTypeInfo info)
-            : ScalarType(std::move(info))
+    explicit StandardScalarType(const ScalarTypeInfo& info)
+        : ScalarType(ScalarTypeInfo(info))
+    {}
+
+    explicit StandardScalarType(string name, string id, std::size_t size,
+                                std::size_t align, BasicScalarInfo basic_info,
+                                ScalarDeviceInfo device_info)
+        : ScalarType({name, id, size, align, basic_info, device_info})
     {}
 
     Scalar from(long long int numerator,
