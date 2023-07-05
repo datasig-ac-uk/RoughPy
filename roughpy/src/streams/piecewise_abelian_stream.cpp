@@ -47,7 +47,8 @@ static const char* PW_LIE_STREAM_DOC
 
 static py::object construct_piecewise_lie_stream(
         std::vector<std::pair<intervals::RealInterval, algebra::Lie>> lies,
-        const py::kwargs& kwargs)
+        const py::kwargs& kwargs
+)
 {
 
     auto pmd = python::kwargs_to_metadata(kwargs);
@@ -76,17 +77,20 @@ static py::object construct_piecewise_lie_stream(
              pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
              pmd.ctx, pmd.scalar_type,
              pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-             pmd.resolution}));
+             pmd.resolution}
+    ));
 
     return py::reinterpret_steal<py::object>(
-            python::RPyStream_FromStream(std::move(result)));
+            python::RPyStream_FromStream(std::move(result))
+    );
 }
 
 void python::init_piecewise_lie_stream(py::module_& m)
 {
 
     py::class_<streams::PiecewiseAbelianStream> klass(
-            m, "PiecewiseAbelianStream", PW_LIE_STREAM_DOC);
+            m, "PiecewiseAbelianStream", PW_LIE_STREAM_DOC
+    );
 
     klass.def_static("construct", &construct_piecewise_lie_stream);
 }

@@ -9,13 +9,16 @@
 
 #include "numpy.h"
 
-bool rpy::python::is_py_datetime(py::handle object) noexcept {
+bool rpy::python::is_py_datetime(py::handle object) noexcept
+{
     return static_cast<bool>(PyDateTime_Check(object.ptr()));
 }
-bool rpy::python::is_py_date(py::handle object) noexcept {
+bool rpy::python::is_py_date(py::handle object) noexcept
+{
     return static_cast<bool>(PyDate_Check(object.ptr()));
 }
-bool rpy::python::is_py_time(py::handle object) noexcept {
+bool rpy::python::is_py_time(py::handle object) noexcept
+{
     return static_cast<bool>(PyTime_Check(object.ptr()));
 }
 
@@ -30,23 +33,23 @@ get_py_reference_delta(rpy::python::PyDateTimeResolution resolution)
         case rpy::python::PyDateTimeResolution::Microseconds:
             return py::reinterpret_steal<py::object>(PyDelta_FromDSU(0, 0, 1));
         case rpy::python::PyDateTimeResolution::Milliseconds:
-            return py::reinterpret_steal<py::object>(
-                    PyDelta_FromDSU(0, 0, 1000));
+            return py::reinterpret_steal<py::object>(PyDelta_FromDSU(0, 0, 1000)
+            );
         case rpy::python::PyDateTimeResolution::Seconds:
             return py::reinterpret_steal<py::object>(PyDelta_FromDSU(0, 1, 0));
         case rpy::python::PyDateTimeResolution::Minutes:
             return py::reinterpret_steal<py::object>(PyDelta_FromDSU(0, 60, 0));
         case rpy::python::PyDateTimeResolution::Hours:
-            return py::reinterpret_steal<py::object>(
-                    PyDelta_FromDSU(0, 3600, 0));
+            return py::reinterpret_steal<py::object>(PyDelta_FromDSU(0, 3600, 0)
+            );
         case rpy::python::PyDateTimeResolution::Days:
             return py::reinterpret_steal<py::object>(PyDelta_FromDSU(1, 0, 0));
     }
     RPY_UNREACHABLE_RETURN(py::object());
 }
 
-rpy::param_t pytimedelta_to_param(PyObject* py_time_delta,
-                                  const options_t& options)
+rpy::param_t
+pytimedelta_to_param(PyObject* py_time_delta, const options_t& options)
 {
     rpy::param_t result;
     if (PyDelta_Check(py_time_delta)) {
@@ -87,7 +90,8 @@ py::object generic_to_timestamp(py::handle generic_timestamp)
     // str objects should be parsed as if an ISO-8601 datetime string
     if (PyUnicode_Check(generic_timestamp.ptr())) {
         throw py::type_error(
-                "currently conversion from ISO-8601 strings is not supported");
+                "currently conversion from ISO-8601 strings is not supported"
+        );
     }
 
     throw py::type_error("unsupported type for conversion to datetime");
@@ -97,7 +101,8 @@ py::object generic_to_timestamp(py::handle generic_timestamp)
 
 rpy::param_t rpy::python::convert_delta_from_datetimes(
         py::handle current, py::handle previous,
-        const rpy::python::PyDateTimeConversionOptions& options)
+        const rpy::python::PyDateTimeConversionOptions& options
+)
 {
 
     if (py::isinstance<py::float_>(current)
@@ -113,12 +118,10 @@ rpy::param_t rpy::python::convert_delta_from_datetimes(
 }
 rpy::param_t rpy::python::convert_timedelta(
         py::handle py_timedelta,
-        const rpy::python::PyDateTimeConversionOptions& options)
+        const rpy::python::PyDateTimeConversionOptions& options
+)
 {
     return 0;
 }
-
-
-
 
 void rpy::python::init_datetime(py::module_& m) { PyDateTime_IMPORT; }

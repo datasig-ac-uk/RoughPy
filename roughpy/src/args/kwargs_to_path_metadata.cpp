@@ -79,7 +79,8 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
 
             for (auto&& [label, item] : channel_dict) {
                 switch (python::py_to_channel_type(
-                        py::reinterpret_borrow<py::object>(item))) {
+                        py::reinterpret_borrow<py::object>(item)
+                )) {
                     case streams::ChannelType::Increment:
                         md.schema->insert_increment(label.cast<string>());
                         break;
@@ -102,7 +103,8 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
 
             for (auto&& item : channel_list) {
                 switch (python::py_to_channel_type(
-                        py::reinterpret_borrow<py::object>(item))) {
+                        py::reinterpret_borrow<py::object>(item)
+                )) {
                     case streams::ChannelType::Increment:
                         md.schema->insert_increment("");
                         break;
@@ -126,8 +128,9 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
 
     if (kwargs.contains("ctx")) {
         auto ctx = kwargs["ctx"];
-        if (!py::isinstance(ctx,
-                            reinterpret_cast<PyObject*>(&RPyContext_Type))) {
+        if (!py::isinstance(
+                    ctx, reinterpret_cast<PyObject*>(&RPyContext_Type)
+            )) {
             throw py::type_error("expected a Context object");
         }
         md.ctx = python::ctx_cast(ctx.ptr());
@@ -157,8 +160,9 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
         auto schema_width = static_cast<deg_t>(md.schema->width());
         if (schema_width != md.width) {
             md.width = schema_width;
-            md.ctx = md.ctx->get_alike(md.width, md.ctx->depth(),
-                                       md.scalar_type);
+            md.ctx = md.ctx->get_alike(
+                    md.width, md.ctx->depth(), md.scalar_type
+            );
         }
     } else {
         if (md.schema) {
@@ -196,7 +200,8 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
         auto support = kwargs["support"];
         if (!py::isinstance<intervals::Interval>(support)) {
             md.support = intervals::RealInterval(
-                    support.cast<const intervals::Interval&>());
+                    support.cast<const intervals::Interval&>()
+            );
         }
     }
 

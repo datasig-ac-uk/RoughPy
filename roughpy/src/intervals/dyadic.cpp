@@ -50,8 +50,9 @@ void python::init_dyadic(py::module_& m)
     klass.def(py::init<multiplier_t>(), "k"_a);
     klass.def(py::init<multiplier_t, power_t>(), "k"_a, "n"_a);
 
-    klass.def("__float__",
-              [](const Dyadic& dia) { return static_cast<param_t>(dia); });
+    klass.def("__float__", [](const Dyadic& dia) {
+        return static_cast<param_t>(dia);
+    });
 
     klass.def("rebase", &Dyadic::rebase, "resolution"_a);
     klass.def("__str__", [](const Dyadic& dia) {

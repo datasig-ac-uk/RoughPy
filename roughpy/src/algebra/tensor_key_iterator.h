@@ -47,8 +47,10 @@ class PyTensorKeyIterator
     deg_t m_depth;
 
 public:
-    PyTensorKeyIterator(deg_t width, deg_t depth, key_type current = 0,
-                        key_type end = std::numeric_limits<key_type>::max());
+    PyTensorKeyIterator(
+            deg_t width, deg_t depth, key_type current = 0,
+            key_type end = std::numeric_limits<key_type>::max()
+    );
 
     PyTensorKey next();
 };

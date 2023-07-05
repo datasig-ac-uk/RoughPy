@@ -69,13 +69,13 @@ struct RPY_NO_EXPORT PyToBufferOptions {
     AlternativeKeyType* alternative_key = nullptr;
 };
 
-scalars::KeyScalarArray py_to_buffer(const py::handle& arg,
-                                     PyToBufferOptions& options);
+scalars::KeyScalarArray
+py_to_buffer(const py::handle& arg, PyToBufferOptions& options);
 
 void assign_py_object_to_scalar(scalars::ScalarPointer ptr, py::handle object);
 
-scalars::Scalar py_to_scalar(const scalars::ScalarType* type,
-                             py::handle object);
+scalars::Scalar
+py_to_scalar(const scalars::ScalarType* type, py::handle object);
 
 void init_scalars(py::module_& m);
 

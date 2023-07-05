@@ -92,7 +92,8 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
         pmd.width = schema->width();
         if (pmd.width == 0 || pmd.depth == 0 || pmd.scalar_type == nullptr) {
             throw py::value_error(
-                    "either ctx or width, depth, and dtype must be provided");
+                    "either ctx or width, depth, and dtype must be provided"
+            );
         }
         pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type);
     } else if (pmd.width != pmd.ctx->width()) {
@@ -145,10 +146,12 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
 
     // For value types, we need to keep track of the last value that appeared
     std::vector<algebra::Lie> previous_values(
-            pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type));
+            pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type)
+    );
     for (const auto& tick : ticks) {
-        const intervals::DyadicInterval di(tick.timestamp, pmd.resolution,
-                                           pmd.interval_type);
+        const intervals::DyadicInterval di(
+                tick.timestamp, pmd.resolution, pmd.interval_type
+        );
 
         auto lie_elt = pmd.ctx->zero_lie(meta.cached_vector_type);
 
@@ -176,9 +179,10 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
                     lead[lag_key]
                             += python::py_to_scalar(pmd.scalar_type, tick.data);
 
-                    lie_elt = pmd.ctx->cbh(lead.sub(prev_lead),
-                                           lag.sub(prev_lag),
-                                           meta.cached_vector_type);
+                    lie_elt = pmd.ctx->cbh(
+                            lead.sub(prev_lead), lag.sub(prev_lag),
+                            meta.cached_vector_type
+                    );
 
                     previous_values[idx] = std::move(lead);
                     previous_values[idx + 1] = std::move(lag);
@@ -216,10 +220,12 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
 
     streams::Stream result(streams::TickStream(
             std::vector<param_t>(index.begin(), index.end()),
-            std::move(raw_data), pmd.resolution, pmd.schema, std::move(meta)));
+            std::move(raw_data), pmd.resolution, pmd.schema, std::move(meta)
+    ));
 
     return py::reinterpret_steal<py::object>(
-            python::RPyStream_FromStream(std::move(result)));
+            python::RPyStream_FromStream(std::move(result))
+    );
 }
 
 void python::init_tick_stream(py::module_& m)

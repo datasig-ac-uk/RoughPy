@@ -59,7 +59,6 @@ public:
 
     void set_reference_dt(py::object dt_reference);
     void set_dt_timescale(PyDateTimeResolution timescale);
-
 };
 
 }// namespace python

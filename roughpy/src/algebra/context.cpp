@@ -56,8 +56,8 @@ static PyObject* RPyContext_tensor_size(PyObject* self, PyObject* degree)
     return PyLong_FromSize_t(ctx_cast(self)->tensor_size(deg));
 }
 static const char* cbh_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_cbh(PyObject* self, PyObject* args,
-                                PyObject* kwargs)
+static PyObject*
+RPyContext_cbh(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static const char* kwords[] = {"lies", "vec_type", nullptr};
     const auto& ctx = ctx_cast(self);
@@ -67,7 +67,8 @@ static PyObject* RPyContext_cbh(PyObject* self, PyObject* args,
 
     if (!PyArg_ParseTupleAndKeywords(
                 args, kwargs, "O|O!", const_cast<char**>(kwords), &py_lies,
-                py::type::of<VectorType>().ptr(), &vtype)) {
+                py::type::of<VectorType>().ptr(), &vtype
+        )) {
         return nullptr;
     }
 
@@ -85,7 +86,8 @@ static PyObject* RPyContext_cbh(PyObject* self, PyObject* args,
             return python::cast_to_object(ctx->zero_lie(VectorType::Sparse));
         }
         return python::cast_to_object(
-                ctx->zero_lie(py::handle(vtype).cast<VectorType>()));
+                ctx->zero_lie(py::handle(vtype).cast<VectorType>())
+        );
     }
 
     VectorType vtp = VectorType::Sparse;
@@ -94,8 +96,8 @@ static PyObject* RPyContext_cbh(PyObject* self, PyObject* args,
     return python::cast_to_object(ctx->cbh(lies, vtp));
 }
 static const char* compute_signature_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_compute_signature(PyObject* self, PyObject* args,
-                                              PyObject* kwargs)
+static PyObject*
+RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static const char* kwords[] = {"data", "vtype", nullptr};
     const auto& ctx = ctx_cast(self);
@@ -105,7 +107,8 @@ static PyObject* RPyContext_compute_signature(PyObject* self, PyObject* args,
 
     if (!PyArg_ParseTupleAndKeywords(
                 args, kwargs, "O|O!", const_cast<char**>(kwords), py_data.ptr(),
-                py::type::of<VectorType>().ptr(), py_vtype.ptr())) {
+                py::type::of<VectorType>().ptr(), py_vtype.ptr()
+        )) {
         return nullptr;
     }
 
@@ -157,7 +160,8 @@ static PyObject* RPyContext_compute_signature(PyObject* self, PyObject* args,
         request.data_stream.reserve_size(n_increments);
         for (dimn_t i = 0; i < n_increments; ++i) {
             request.data_stream.push_back(
-                    {ctype, p_buffer + i * width * itemsize});
+                    {ctype, p_buffer + i * width * itemsize}
+            );
         }
     } else {
         request.data_stream.reserve_size(options.shape.size());
@@ -166,8 +170,10 @@ static PyObject* RPyContext_compute_signature(PyObject* self, PyObject* args,
 
         auto n_increments = options.shape.size();
         for (dimn_t i = 0; i < n_increments; ++i) {
-            request.data_stream.push_back(
-                    {{ctype, p_buffer}, static_cast<dimn_t>(options.shape[i])});
+            request.data_stream.push_back({
+                    {ctype, p_buffer},
+                    static_cast<dimn_t>(options.shape[i])
+            });
             request.key_stream.push_back(p_keys);
             p_buffer += options.shape[i] * itemsize;
             p_keys += options.shape[i];
@@ -202,8 +208,8 @@ static PyObject* RPyContext_lie_to_tensor(PyObject* self, PyObject* arg)
     }
 
     const auto& ctx = ctx_cast(self);
-    return python::cast_to_object(
-            ctx->lie_to_tensor(py_lie.cast<const Lie&>()));
+    return python::cast_to_object(ctx->lie_to_tensor(py_lie.cast<const Lie&>())
+    );
 }
 static const char* tensor_to_lie_DOC = R"rpydoc()rpydoc";
 static PyObject* RPyContext_tensor_to_lie(PyObject* self, PyObject* arg)
@@ -216,7 +222,8 @@ static PyObject* RPyContext_tensor_to_lie(PyObject* self, PyObject* arg)
 
     const auto& ctx = ctx_cast(self);
     return python::cast_to_object(
-            ctx->tensor_to_lie(py_ft.cast<const FreeTensor&>()));
+            ctx->tensor_to_lie(py_ft.cast<const FreeTensor&>())
+    );
 }
 
 static PyObject* RPyContext_enter(PyObject* self) { return self; }
@@ -228,17 +235,18 @@ static PyObject* RPyContext_exit(PyObject* self, PyObject* RPY_UNUSED_VAR)
 
 static const char* zero_lie_DOC
         = R"rpydoc(Get a new Lie with value zero)rpydoc";
-static PyObject* RPyContext_zero_lie(PyObject* self, PyObject* args,
-                                     PyObject* kwargs)
+static PyObject*
+RPyContext_zero_lie(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static const char* kwords[] = {"vtype", nullptr};
     PyTypeObject* vtype_type
             = reinterpret_cast<PyTypeObject*>(py::type::of<VectorType>().ptr());
 
     PyObject* py_vtype = nullptr;
-    if (PyArg_ParseTupleAndKeywords(args, kwargs, "|O!",
-                                    const_cast<char**>(kwords), vtype_type,
-                                    &py_vtype)
+    if (PyArg_ParseTupleAndKeywords(
+                args, kwargs, "|O!", const_cast<char**>(kwords), vtype_type,
+                &py_vtype
+        )
         == 0) {
         return nullptr;
     }
@@ -254,18 +262,19 @@ static PyObject* RPyContext_zero_lie(PyObject* self, PyObject* args,
         #NAME, (PyCFunction) &RPyContext_##NAME, (FLAGS), NAME##_DOC           \
     }
 
-static PyMethodDef RPyContext_members[]
-        = {ADD_METHOD(lie_size, METH_O),
-           ADD_METHOD(tensor_size, METH_O),
-           ADD_METHOD(cbh, METH_VARARGS | METH_KEYWORDS),
-           ADD_METHOD(compute_signature, METH_VARARGS | METH_KEYWORDS),
-           ADD_METHOD(to_logsignature, METH_O),
-           ADD_METHOD(lie_to_tensor, METH_O),
-           ADD_METHOD(tensor_to_lie, METH_O),
-           ADD_METHOD(zero_lie, METH_VARARGS | METH_KEYWORDS),
-           {"__enter__", (PyCFunction) &RPyContext_enter, METH_NOARGS, nullptr},
-           {"__exit__", (PyCFunction) &RPyContext_exit, METH_VARARGS, nullptr},
-           {nullptr, nullptr, 0, nullptr}};
+static PyMethodDef RPyContext_members[] = {
+        ADD_METHOD(lie_size, METH_O),
+        ADD_METHOD(tensor_size, METH_O),
+        ADD_METHOD(cbh, METH_VARARGS | METH_KEYWORDS),
+        ADD_METHOD(compute_signature, METH_VARARGS | METH_KEYWORDS),
+        ADD_METHOD(to_logsignature, METH_O),
+        ADD_METHOD(lie_to_tensor, METH_O),
+        ADD_METHOD(tensor_to_lie, METH_O),
+        ADD_METHOD(zero_lie, METH_VARARGS | METH_KEYWORDS),
+        {"__enter__", (PyCFunction) &RPyContext_enter,  METH_NOARGS, nullptr},
+        { "__exit__",  (PyCFunction) &RPyContext_exit, METH_VARARGS, nullptr},
+        {    nullptr,                         nullptr,            0, nullptr}
+};
 
 #undef ADD_METHOD
 
@@ -295,13 +304,14 @@ static PyObject* RPyContext_tensor_basis_getter(PyObject* self)
         #NAME, (getter) &RPyContext_##NAME##_getter, nullptr, nullptr, nullptr \
     }
 
-static PyGetSetDef RPyContext_getset[]
-        = {ADD_GETSET(width),
-           ADD_GETSET(depth),
-           ADD_GETSET(ctype),
-           ADD_GETSET(lie_basis),
-           ADD_GETSET(tensor_basis),
-           {nullptr, nullptr, nullptr, nullptr, nullptr}};
+static PyGetSetDef RPyContext_getset[] = {
+        ADD_GETSET(width),
+        ADD_GETSET(depth),
+        ADD_GETSET(ctype),
+        ADD_GETSET(lie_basis),
+        ADD_GETSET(tensor_basis),
+        {nullptr, nullptr, nullptr, nullptr, nullptr}
+};
 
 #undef ADD_GETSET
 
@@ -319,8 +329,8 @@ static PyObject* RPyContext_str(PyObject* self)
 }
 
 RPY_UNUSED
-static PyObject* RPyContext_new(PyObject* self, PyObject* args,
-                                PyObject* kwargs)
+static PyObject*
+RPyContext_new(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     RPY_UNREACHABLE_RETURN(nullptr);
 }
@@ -403,18 +413,21 @@ PyTypeObject rpy::python::RPyContext_Type = {
 PyObject* python::RPyContext_FromContext(algebra::context_pointer ctx)
 {
     auto* new_ctx = reinterpret_cast<RPyContext*>(
-            RPyContext_Type.tp_alloc(&RPyContext_Type, 0));
+            RPyContext_Type.tp_alloc(&RPyContext_Type, 0)
+    );
     new_ctx->p_ctx = std::move(ctx);
     return reinterpret_cast<PyObject*>(new_ctx);
 }
 
-static py::handle py_get_context(deg_t width, deg_t depth,
-                                 const py::object& ctype,
-                                 const py::kwargs& kwargs)
+static py::handle py_get_context(
+        deg_t width, deg_t depth, const py::object& ctype,
+        const py::kwargs& kwargs
+)
 {
     // TODO: Make this accept extra arguments.
     return python::RPyContext_FromContext(
-            get_context(width, depth, python::to_stype_ptr(ctype), {}));
+            get_context(width, depth, python::to_stype_ptr(ctype), {})
+    );
 }
 
 void python::init_context(py::module_& m)

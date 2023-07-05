@@ -54,8 +54,8 @@ struct PyVectorConstructionHelper {
     /// Data type provided
 };
 
-PyVectorConstructionHelper
-kwargs_to_construction_data(const py::kwargs& kwargs);
+PyVectorConstructionHelper kwargs_to_construction_data(const py::kwargs& kwargs
+);
 
 }// namespace python
 }// namespace rpy

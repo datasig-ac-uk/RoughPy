@@ -62,8 +62,8 @@ static Lie construct_lie(py::object data, py::kwargs kwargs)
 
     if (helper.ctype == nullptr) {
         if (options.type == nullptr) {
-            throw py::value_error(
-                    "could not deduce an appropriate scalar_type");
+            throw py::value_error("could not deduce an appropriate scalar_type"
+            );
         }
         helper.ctype = options.type;
     }
@@ -75,7 +75,8 @@ static Lie construct_lie(py::object data, py::kwargs kwargs)
     if (!helper.ctx) {
         if (helper.width == 0 || helper.depth == 0) {
             throw py::value_error(
-                    "you must provide either context or both width and depth");
+                    "you must provide either context or both width and depth"
+            );
         }
         helper.ctx = get_context(helper.width, helper.depth, helper.ctype, {});
     }
@@ -98,8 +99,9 @@ void python::init_lie(py::module_& m)
 
     setup_algebra_type(klass);
 
-    klass.def("__getitem__",
-              [](const Lie& self, key_type key) { return self[key]; });
+    klass.def("__getitem__", [](const Lie& self, key_type key) {
+        return self[key];
+    });
 
     klass.def("__repr__", [](const Lie& self) {
         std::stringstream ss;

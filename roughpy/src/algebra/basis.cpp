@@ -54,18 +54,20 @@ static void wordlike_basis_setup(py::module_& m, const char* name)
             [](const T& self, dimn_t index) {
                 return K(self, self.index_to_key(index));
             },
-            "index"_a);
+            "index"_a
+    );
     basis.def(
             "key_to_index",
             [](const T& self, const python::PyLieKey& key) {
                 return self.key_to_index(0);
             },
-            "key"_a);
+            "key"_a
+    );
 
     basis.def(
             "parents",
-            [](const T& self, const K& key) { return self.parents(0); },
-            "key"_a);
+            [](const T& self, const K& key) { return self.parents(0); }, "key"_a
+    );
     basis.def("size", &T::size);
 }
 

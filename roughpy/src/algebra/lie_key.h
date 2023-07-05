@@ -55,7 +55,8 @@ public:
     explicit PyLieKey(deg_t width, let_t letter);
     explicit PyLieKey(
             deg_t width,
-            const boost::container::small_vector_base<PyLieLetter>& data);
+            const boost::container::small_vector_base<PyLieLetter>& data
+    );
     explicit PyLieKey(deg_t width, let_t left, let_t right);
     explicit PyLieKey(deg_t width, let_t left, const PyLieKey& right);
     explicit PyLieKey(deg_t width, const PyLieKey& left, const PyLieKey& right);

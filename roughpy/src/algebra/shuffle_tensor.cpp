@@ -58,8 +58,8 @@ static ShuffleTensor construct_shuffle(py::object data, py::kwargs kwargs)
     auto py_key_type = py::type::of<python::PyTensorKey>();
     python::AlternativeKeyType alt{
             py_key_type, [](py::handle py_key) -> key_type {
-                return static_cast<key_type>(
-                        py_key.cast<python::PyTensorKey>());
+                return static_cast<key_type>(py_key.cast<python::PyTensorKey>()
+                );
             }};
 
     python::PyToBufferOptions options;
@@ -82,7 +82,8 @@ static ShuffleTensor construct_shuffle(py::object data, py::kwargs kwargs)
     if (!helper.ctx) {
         if (helper.width == 0 || helper.depth == 0) {
             throw py::value_error(
-                    "you must provide either context or both width and depth");
+                    "you must provide either context or both width and depth"
+            );
         }
         helper.ctx = get_context(helper.width, helper.depth, helper.ctype, {});
     }
@@ -99,7 +100,8 @@ static ShuffleTensor construct_shuffle(py::object data, py::kwargs kwargs)
     }
 
     auto result = helper.ctx->construct_shuffle_tensor(
-            {std::move(buffer), helper.vtype});
+            {std::move(buffer), helper.vtype}
+    );
 
     if (options.cleanup) { options.cleanup(); }
 
@@ -128,7 +130,8 @@ void rpy::python::init_shuffle_tensor(py::module_& m)
                 }
                 return result;
             },
-            py::is_operator());
+            py::is_operator()
+    );
 
     klass.def("__repr__", [](const ShuffleTensor& self) {
         std::stringstream ss;

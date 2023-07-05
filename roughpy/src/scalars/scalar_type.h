@@ -94,8 +94,7 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype)
 #endif
 
     dimn_t no_letters = name.size() + 1;
-    tmp_manager.ht_name
-            = reinterpret_cast<char*>(PyMem_Malloc(no_letters));
+    tmp_manager.ht_name = reinterpret_cast<char*>(PyMem_Malloc(no_letters));
     if (tmp_manager.ht_name == nullptr) {
         PyErr_NoMemory();
         throw py::error_already_set();
@@ -108,11 +107,12 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype)
     auto* hto = reinterpret_cast<PyHeapTypeObject*>(&tmp_manager.cls->tp_hto);
     auto* type = &hto->ht_type;
 
-    type->tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HEAPTYPE
+    type->tp_flags
+            = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HEAPTYPE
 #if PY_VERSION_HEX >= 0x030A0000
-                      | Py_TPFLAGS_DISALLOW_INSTANTIATION
+               | Py_TPFLAGS_DISALLOW_INSTANTIATION
 #endif
-    );
+            );
 #if PY_VERSION_HEX >= 0x03090000
     hto->ht_module = ht_module.release().ptr();
 #endif
@@ -161,8 +161,8 @@ inline const scalars::ScalarType* to_stype_ptr(const py::handle& arg)
 char format_to_type_char(const string& fmt);
 string py_buffer_to_type_id(const py::buffer_info& info);
 
-const scalars::ScalarType*
-py_buffer_to_scalar_type(const py::buffer_info& info);
+const scalars::ScalarType* py_buffer_to_scalar_type(const py::buffer_info& info
+);
 const scalars::ScalarType* py_type_to_scalar_type(const py::type& type);
 const scalars::ScalarType* py_arg_to_ctype(const py::object& arg);
 
