@@ -371,6 +371,7 @@ dimn_t StaticChannel::num_variants() const noexcept
         case StaticChannelType::Categorical:
             return categorical_info.variants.size();
     }
+    RPY_UNREACHABLE_RETURN(0);
 }
 std::vector<string> StaticChannel::get_variants() const
 {
@@ -378,6 +379,7 @@ std::vector<string> StaticChannel::get_variants() const
         case StaticChannelType::Value: return {};
         case StaticChannelType::Categorical: return categorical_info.variants;
     }
+    RPY_UNREACHABLE_RETURN({});
 }
 dimn_t StaticChannel::variant_id_of_label(const string& label) const
 {
