@@ -86,6 +86,10 @@ public:
                       {ScalarDeviceType::CPU, 0}})
     {}
 
+    explicit StandardScalarType(ScalarTypeInfo info)
+            : ScalarType(std::move(info))
+    {}
+
     Scalar from(long long int numerator,
                 long long int denominator) const override
     {
