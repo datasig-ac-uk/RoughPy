@@ -28,6 +28,9 @@
 
 #include <roughpy/streams/stream.h>
 
+#include <roughpy/intervals/partition.h>
+#include <roughpy/streams/piecewise_abelian_stream.h>
+
 using namespace rpy;
 using namespace streams;
 
@@ -214,6 +217,28 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
                 {log_signature(pert.first, resolution, ctx), pert.second});
     }
     return ctx.sig_derivative(info, md.cached_vector_type);
+}
+
+Stream Stream::simplify(const intervals::Partition& partition,
+                        resolution_t resolution,
+                        const Stream::Context& ctx) const
+{
+    using LiePiece = typename PiecewiseAbelianStream::LiePiece;
+
+    std::vector<LiePiece> pieces;
+    const auto partition_size = partition.size();
+    pieces.reserve(partition_size);
+
+    for (dimn_t i = 0; i < partition_size; ++i) {
+        const auto interval = partition[i];
+        pieces.emplace_back(interval, log_signature(interval, resolution, ctx));
+    }
+
+    StreamMetadata new_md(metadata());
+    new_md.default_resolution = resolution;
+    new_md.default_context = &ctx;
+
+    return Stream(PiecewiseAbelianStream(std::move(pieces), std::move(new_md)));
 }
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::Stream

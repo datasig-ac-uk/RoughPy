@@ -32,6 +32,8 @@
 #include "stream_base.h"
 
 #include <roughpy/platform/serialization.h>
+#include <roughpy/intervals/interval.h>
+#include <roughpy/intervals/partition.h>
 
 #include <memory>
 
@@ -121,8 +123,15 @@ public:
                                     resolution_t resolution,
                                     const Context& ctx) const;
 
-    // Stream simplify_path(const Partition& partition,
-    //                      resolution_t resolution) const;
+    Stream simplify(const intervals::Partition& partition,
+                    resolution_t resolution) const
+    {
+        const auto& md = metadata();
+        simplify(partition, resolution, *md.default_context);
+    }
+
+    Stream simplify(const intervals::Partition& partition,
+                    resolution_t resolution, const Context& ctx) const;
 
     RPY_SERIAL_SERIALIZE_FN();
 };
