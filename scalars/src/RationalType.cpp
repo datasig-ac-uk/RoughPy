@@ -62,7 +62,27 @@ RationalType::get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed)
     return std::unique_ptr<RandomGenerator>();
 }
 
-RationalType::RationalType() : ScalarType({}) {}
+
+static const ScalarTypeInfo rational_scalar_type_info {
+        "Rational",
+        "rational",
+        sizeof(rational_scalar_type),
+        alignof(rational_scalar_type),
+        {
+                ScalarTypeCode::OpaqueHandle,
+                0,
+                0,
+        },
+        {
+                ScalarDeviceType::CPU,
+                0
+        }
+};
+
+
+RationalType::RationalType()
+    : ScalarType(rational_scalar_type_info)
+{}
 ScalarPointer RationalType::allocate(std::size_t count) const
 {
     if (count == 1) {
