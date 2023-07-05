@@ -67,6 +67,8 @@ private:
 
 public:
     PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md);
+    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md,
+                           std::shared_ptr<StreamSchema> schema);
 
     RPY_NO_DISCARD
     bool empty(const intervals::Interval& interval) const noexcept override;
