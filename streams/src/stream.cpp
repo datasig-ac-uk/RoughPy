@@ -55,58 +55,66 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature() const
 {
     const auto& md = metadata();
 
-    return p_impl->log_signature(md.effective_support, md.default_resolution,
-                                 *md.default_context);
+    return p_impl->log_signature(
+            md.effective_support, md.default_resolution, *md.default_context
+    );
 }
-rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
-        const rpy::streams::Stream::Context& ctx) const
+rpy::streams::Stream::Lie
+rpy::streams::Stream::log_signature(const rpy::streams::Stream::Context& ctx
+) const
 {
     const auto& md = metadata();
-    return p_impl->log_signature(md.effective_support, md.default_resolution,
-                                 ctx);
+    return p_impl->log_signature(
+            md.effective_support, md.default_resolution, ctx
+    );
 }
 rpy::streams::Stream::Lie
 rpy::streams::Stream::log_signature(rpy::resolution_t resolution)
 {
     const auto& md = metadata();
-    return p_impl->log_signature(md.effective_support, resolution,
-                                 *md.default_context);
+    return p_impl->log_signature(
+            md.effective_support, resolution, *md.default_context
+    );
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
-        rpy::resolution_t resolution,
-        const rpy::streams::Stream::Context& ctx) const
+        rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
+) const
 {
     const auto& md = metadata();
     return p_impl->log_signature(md.effective_support, resolution, ctx);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
-        const rpy::streams::Stream::Interval& interval) const
+        const rpy::streams::Stream::Interval& interval
+) const
 {
     const auto& md = metadata();
     return log_signature(interval, md.default_resolution, *md.default_context);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         const rpy::streams::Stream::Interval& interval,
-        rpy::resolution_t resolution) const
+        rpy::resolution_t resolution
+) const
 {
     const auto& md = metadata();
     return log_signature(interval, resolution, *md.default_context);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         const rpy::streams::Stream::Interval& interval,
-        rpy::resolution_t resolution,
-        const rpy::streams::Stream::Context& ctx) const
+        rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
+) const
 {
     const auto& schema = p_impl->schema();
 
-    return p_impl->log_signature(schema.adjust_interval(interval), resolution,
-                                 ctx);
+    return p_impl->log_signature(
+            schema.adjust_interval(interval), resolution, ctx
+    );
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature() const
 {
     const auto& md = metadata();
-    return p_impl->signature(md.effective_support, md.default_resolution,
-                             *md.default_context);
+    return p_impl->signature(
+            md.effective_support, md.default_resolution, *md.default_context
+    );
 }
 rpy::streams::Stream::FreeTensor
 rpy::streams::Stream::signature(const rpy::streams::Stream::Context& ctx) const
@@ -118,53 +126,59 @@ rpy::streams::Stream::FreeTensor
 rpy::streams::Stream::signature(rpy::resolution_t resolution)
 {
     const auto& md = metadata();
-    return p_impl->signature(md.effective_support, resolution,
-                             *md.default_context);
+    return p_impl->signature(
+            md.effective_support, resolution, *md.default_context
+    );
 }
-rpy::streams::Stream::FreeTensor
-rpy::streams::Stream::signature(rpy::resolution_t resolution,
-                                const rpy::streams::Stream::Context& ctx) const
+rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature(
+        rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
+) const
 {
     const auto& md = metadata();
     return p_impl->signature(md.effective_support, resolution, ctx);
 }
-rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature(
-        const rpy::streams::Stream::Interval& interval) const
+rpy::streams::Stream::FreeTensor
+rpy::streams::Stream::signature(const rpy::streams::Stream::Interval& interval
+) const
 {
     const auto& md = metadata();
     return signature(interval, md.default_resolution, *md.default_context);
 }
-rpy::streams::Stream::FreeTensor
-rpy::streams::Stream::signature(const rpy::streams::Stream::Interval& interval,
-                                rpy::resolution_t resolution) const
+rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature(
+        const rpy::streams::Stream::Interval& interval,
+        rpy::resolution_t resolution
+) const
 {
     const auto& md = metadata();
     return signature(interval, resolution, *md.default_context);
 }
-rpy::streams::Stream::FreeTensor
-rpy::streams::Stream::signature(const rpy::streams::Stream::Interval& interval,
-                                rpy::resolution_t resolution,
-                                const rpy::streams::Stream::Context& ctx) const
+rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature(
+        const rpy::streams::Stream::Interval& interval,
+        rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
+) const
 {
     const auto& schema = p_impl->schema();
     return p_impl->signature(schema.adjust_interval(interval), resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         const rpy::streams::Stream::Interval& domain,
-        const rpy::streams::Stream::Lie& perturbation) const
+        const rpy::streams::Stream::Lie& perturbation
+) const
 {
     const auto& md = metadata();
     algebra::DerivativeComputeInfo info{
             log_signature(domain, md.default_resolution, *md.default_context),
             perturbation};
 
-    return md.default_context->sig_derivative({std::move(info)},
-                                              md.cached_vector_type);
+    return md.default_context->sig_derivative(
+            {std::move(info)}, md.cached_vector_type
+    );
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         const rpy::streams::Stream::Interval& domain,
         const rpy::streams::Stream::Lie& perturbation,
-        const rpy::streams::Stream::Context& ctx) const
+        const rpy::streams::Stream::Context& ctx
+) const
 {
     const auto& md = metadata();
     algebra::DerivativeComputeInfo info{
@@ -175,7 +189,8 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         const rpy::streams::Stream::Interval& domain,
         const rpy::streams::Stream::Lie& perturbation,
-        rpy::resolution_t resolution) const
+        rpy::resolution_t resolution
+) const
 {
     const auto& md = metadata();
 
@@ -183,45 +198,48 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
             log_signature(domain, resolution, *md.default_context),
             perturbation};
 
-    return md.default_context->sig_derivative({std::move(info)},
-                                              md.cached_vector_type);
+    return md.default_context->sig_derivative(
+            {std::move(info)}, md.cached_vector_type
+    );
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         const rpy::streams::Stream::Interval& domain,
         const rpy::streams::Stream::Lie& perturbation,
-        rpy::resolution_t resolution,
-        const rpy::streams::Stream::Context& ctx) const
+        rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
+) const
 {
     const auto& md = metadata();
-    algebra::DerivativeComputeInfo info{log_signature(domain, resolution, ctx),
-                                        perturbation};
+    algebra::DerivativeComputeInfo info{
+            log_signature(domain, resolution, ctx), perturbation};
     return ctx.sig_derivative({std::move(info)}, md.cached_vector_type);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         const rpy::streams::Stream::perturbation_list_t& perturbations,
-        rpy::resolution_t resolution) const
+        rpy::resolution_t resolution
+) const
 {
     const auto& md = metadata();
     return signature_derivative(perturbations, resolution, *md.default_context);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         const rpy::streams::Stream::perturbation_list_t& perturbations,
-        rpy::resolution_t resolution,
-        const rpy::streams::Stream::Context& ctx) const
+        rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
+) const
 {
     const auto& md = metadata();
     std::vector<algebra::DerivativeComputeInfo> info;
     info.reserve(perturbations.size());
     for (auto&& pert : perturbations) {
-        info.push_back(
-                {log_signature(pert.first, resolution, ctx), pert.second});
+        info.push_back({log_signature(pert.first, resolution, ctx), pert.second}
+        );
     }
     return ctx.sig_derivative(info, md.cached_vector_type);
 }
 
-Stream Stream::simplify(const intervals::Partition& partition,
-                        resolution_t resolution,
-                        const Stream::Context& ctx) const
+Stream Stream::simplify(
+        const intervals::Partition& partition, resolution_t resolution,
+        const Stream::Context& ctx
+) const
 {
     using LiePiece = typename PiecewiseAbelianStream::LiePiece;
 
@@ -238,7 +256,9 @@ Stream Stream::simplify(const intervals::Partition& partition,
     new_md.default_resolution = resolution;
     new_md.default_context = &ctx;
 
-    return Stream(PiecewiseAbelianStream(std::move(pieces), std::move(new_md)));
+    return Stream(PiecewiseAbelianStream(
+            std::move(pieces), std::move(new_md), p_impl->get_schema()
+    ));
 }
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::Stream

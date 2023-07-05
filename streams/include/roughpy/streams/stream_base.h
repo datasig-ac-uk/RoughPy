@@ -103,7 +103,10 @@ public:
     virtual ~StreamInterface() noexcept;
     RPY_NO_DISCARD
     virtual bool empty(const intervals::Interval& interval) const noexcept;
-
+    std::shared_ptr<StreamSchema> get_schema() const noexcept
+    {
+        return p_schema;
+    }
 protected:
     void set_metadata(StreamMetadata&& md) noexcept;
 
@@ -111,6 +114,8 @@ protected:
     {
         p_schema = std::move(schema);
     }
+
+
 
     RPY_NO_DISCARD
     virtual algebra::Lie log_signature_impl(const intervals::Interval& interval,
