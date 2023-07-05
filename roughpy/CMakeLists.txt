@@ -89,6 +89,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/intervals/interval.cpp
         src/intervals/intervals.cpp
         src/intervals/intervals.h
+        src/intervals/partition.cpp
+        src/intervals/partition.h
         src/intervals/real_interval.cpp
         src/intervals/real_interval.h
         src/intervals/segmentation.cpp

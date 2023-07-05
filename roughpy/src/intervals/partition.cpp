@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -26,31 +26,55 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "intervals.h"
+//
+// Created by user on 05/07/23.
+//
 
-#include "dyadic.h"
-#include "dyadic_interval.h"
-#include "interval.h"
-#include "real_interval.h"
-#include "segmentation.h"
-#include "date_time_interval.h"
 #include "partition.h"
 
 using namespace rpy;
+using namespace intervals;
+using namespace pybind11::literals;
 
-void python::init_intervals(pybind11::module_& m)
+PyDoc_VAR(PyPartition_doc) = R"rpydoc(Partition of an interval in the real line.
+)rpydoc";
+
+namespace {
+
+Partition partition_py_ctor(const RealInterval& interval,
+                            const py::iterable& py_intermediates)
+{
+    std::vector<param_t> intermediates;
+    for (auto&& mid : py_intermediates) {
+        intermediates.push_back(mid.cast<param_t>());
+    }
+
+    return Partition(interval, std::move(intermediates));
+}
+
+}// namespace
+
+void python::init_partition(py::module_& m)
 {
 
-    py::enum_<intervals::IntervalType>(m, "IntervalType")
-            .value("Clopen", intervals::IntervalType::Clopen)
-            //        .value("Opencl", intervals::IntervalType::Opencl)
-            .export_values();
+    py::class_<Partition, Interval> cls(m, "Partition");
 
-    init_interval(m);
-    init_real_interval(m);
-    init_dyadic(m);
-    init_dyadic_interval(m);
-    init_partition(m);
-    init_datetime_interval(m);
-    init_segmentation(m);
+    cls.def(py::init<RealInterval>(), "interval"_a);
+    cls.def(py::init(&partition_py_ctor), "interval"_a, "intermediates"_a);
+
+    cls.def("__len__", &Partition::size);
+    cls.def("__getitem__", &Partition::operator[], "index"_a);
+    cls.def("refine_midpoints", &Partition::refine_midpoints);
+    cls.def("mesh", &Partition::mesh);
+    cls.def("intermediates", &Partition::intermediates);
+    cls.def("insert_intermediate", &Partition::insert_intermediate);
+    cls.def("merge", &Partition::merge);
+
+    cls.def("__str__", [](const Partition& self) {
+        std::stringstream ss;
+        for (dimn_t i=0; i<self.size(); ++i) {
+            ss << self[i];
+        }
+        return ss.str();
+    });
 }

@@ -24,6 +24,11 @@ public:
     explicit Partition(RealInterval base);
     explicit Partition(RealInterval base, Slice<param_t> intermediate_points);
 
+    Partition(RealInterval base, std::vector<param_t>&& intermediates)
+        : RealInterval(std::move(base)),
+          m_intermediate_points(std::move(intermediates))
+    {}
+
     RPY_NO_DISCARD
     Partition refine_midpoints() const;
 
@@ -45,8 +50,6 @@ public:
 
     RPY_NO_DISCARD
     Partition merge(const Partition& other) const;
-
-
 };
 
 }// namespace intervals
