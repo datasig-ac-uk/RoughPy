@@ -4,6 +4,8 @@
 #include <boost/align/aligned_alloc.hpp>
 #include <cstdlib>
 
+#include "traits.h"
+
 namespace rpy {
 
 using std::calloc;
@@ -15,6 +17,15 @@ using std::realloc;
 
 using boost::alignment::aligned_alloc;
 using boost::alignment::aligned_free;
+
+
+template <typename T, typename... Args>
+constexpr void construct_inplace(T* dst, Args&&... args)
+    noexcept(is_nothrow_constructible<T, Args...>::value)
+{
+    ::new (static_cast<void*>(dst)) T(std::forward<Args>(args)...);
+}
+
 
 }// namespace rpy
 

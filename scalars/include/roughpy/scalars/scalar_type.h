@@ -100,8 +100,9 @@ public:
      * @return const pointer to appropriate scalar type
      */
     RPY_NO_DISCARD
-    static const ScalarType* from_type_details(const BasicScalarInfo& details,
-                                               const ScalarDeviceInfo& device);
+    static const ScalarType* from_type_details(
+            const BasicScalarInfo& details, const ScalarDeviceInfo& device
+    );
 
     /**
      * @brief Get the unique internal ID string for this type
@@ -171,8 +172,8 @@ public:
      */
     virtual void swap(ScalarPointer lhs, ScalarPointer rhs) const = 0;
 
-    virtual void convert_copy(ScalarPointer dst, ScalarPointer src,
-                              dimn_t count) const
+    virtual void
+    convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const
             = 0;
 
     /**
@@ -182,9 +183,9 @@ public:
      * @param count number of scalars to copy
      * @param info BasicScalarInfo information about the input scalar type
      */
-    virtual void convert_copy(void* out, const void* in, std::size_t count,
-                              BasicScalarInfo info) const
-            = 0;
+    virtual void convert_copy(
+            void* out, const void* in, std::size_t count, BasicScalarInfo info
+    ) const = 0;
 
     /**
      * @brief Copy count scalars from in to out, converting as necessary
@@ -192,8 +193,8 @@ public:
      * @param in ScalarPointer to source data
      * @param count number of scalars to copy
      */
-    virtual void convert_copy(void* out, ScalarPointer in,
-                              std::size_t count) const
+    virtual void
+    convert_copy(void* out, ScalarPointer in, std::size_t count) const
             = 0;
 
     /**
@@ -203,9 +204,10 @@ public:
      * @param count number of scalars to copy
      * @param id ID of scalar type for source data
      */
-    virtual void convert_copy(ScalarPointer out, const void* in,
-                              std::size_t count, const string& id) const
-            = 0;
+    virtual void convert_copy(
+            ScalarPointer out, const void* in, std::size_t count,
+            const string& id
+    ) const = 0;
 
     /**
      * @brief
@@ -214,8 +216,9 @@ public:
      * @param count
      * @param id
      */
-    virtual void convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count,
-                              const string& id) const;
+    virtual void convert_fill(
+            ScalarPointer out, ScalarPointer in, dimn_t count, const string& id
+    ) const;
 
     /**
      * @brief Parse a string into this scalar type
@@ -261,9 +264,9 @@ public:
      * @param numerator numerator of rational
      * @param denominator denominator of rational
      */
-    virtual void assign(ScalarPointer target, long long numerator,
-                        long long denominator) const
-            = 0;
+    virtual void
+    assign(ScalarPointer target, long long numerator, long long denominator
+    ) const = 0;
 
     /**
      * @brief Create a copy of a scalar value
@@ -396,9 +399,8 @@ public:
      * @return Vector of bytes (char)
      */
     RPY_NO_DISCARD
-    virtual std::vector<byte> to_raw_bytes(const ScalarPointer& ptr,
-                                           dimn_t count) const
-            = 0;
+    virtual std::vector<byte>
+    to_raw_bytes(const ScalarPointer& ptr, dimn_t count) const = 0;
 
     /**
      * @brief Read raw bytes into a scalar array.
@@ -406,8 +408,8 @@ public:
      * @return
      */
     RPY_NO_DISCARD
-    virtual ScalarPointer from_raw_bytes(Slice<byte> raw_bytes,
-                                         dimn_t count) const
+    virtual ScalarPointer
+    from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) const
             = 0;
 };
 
@@ -466,9 +468,9 @@ ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
 // bits
 template <>
 struct type_id_of_impl<long>
-    : public std::conditional_t<(sizeof(long) == sizeof(int)),
-                                type_id_of_impl<int>,
-                                type_id_of_impl<long long>> {
+    : public std::conditional_t<
+              (sizeof(long) == sizeof(int)), type_id_of_impl<int>,
+              type_id_of_impl<long long>> {
 };
 
 #undef ROUGHPY_MAKE_TYPE_ID_OF
@@ -533,6 +535,30 @@ template <typename T>
 inline const string& type_id_of() noexcept
 {
     return dtl::type_id_of_impl<T>::get_id();
+}
+
+template <typename T>
+RPY_NO_DISCARD inline enable_if_t<is_default_constructible<T>::value, T>
+try_convert(ScalarPointer arg, const ScalarType* type = nullptr)
+{
+    if (type == nullptr) { type = ScalarType::of<T>(); }
+
+    if (arg.is_null()) { return T(0); }
+    const auto* arg_type = arg.type();
+    if (arg_type == nullptr) {
+        throw std::runtime_error("null type for non-zero value");
+    }
+
+    auto cv = get_conversion(arg_type->id(), type->id());
+    if (!cv) {
+        throw std::runtime_error(
+                "no known conversion from " + arg_type->info().name
+                + " to type " + type->info().name
+        );
+    }
+    T result;
+    cv({type, &result}, arg, 1);
+    return result;
 }
 
 }// namespace scalars

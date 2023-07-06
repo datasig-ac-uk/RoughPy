@@ -40,6 +40,7 @@ namespace scalars {
 
 class RationalPolyScalarType : public ScalarType
 {
+    using scalar_type = rational_poly_scalar;
 
 public:
     explicit RationalPolyScalarType()
