@@ -59,6 +59,9 @@ using Eigen::bfloat16;
 /// Rational scalar type
 using rational_scalar_type = lal::rational_field::scalar_type;
 
+/// Monomial key-type of polynomials
+using monomial = lal::monomial;
+
 /// Polynomial (with rational coefficients) scalar type
 using rational_poly_scalar = lal::polynomial<lal::rational_field>;
 
