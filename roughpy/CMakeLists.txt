@@ -95,8 +95,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/intervals/real_interval.h
         src/intervals/segmentation.cpp
         src/intervals/segmentation.h
-        src/scalars/r_py_monomial.cpp
-        src/scalars/r_py_monomial.h
+        src/scalars/r_py_polynomial.cpp
+        src/scalars/r_py_polynomial.h
         src/scalars/scalar_type.h
         src/scalars/scalar_type.cpp
         src/scalars/scalars.cpp

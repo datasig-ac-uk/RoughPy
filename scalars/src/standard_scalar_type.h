@@ -42,6 +42,7 @@
 
 #include <roughpy/scalars/random.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/conversion.h>
 
 #include "standard_random_generator.h"
 

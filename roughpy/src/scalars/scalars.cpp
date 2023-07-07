@@ -38,8 +38,8 @@
 #include <roughpy/scalars/scalar_type.h>
 
 #include "dlpack.h"
+#include "r_py_polynomial.h"
 #include "scalar_type.h"
-#include "r_py_monomial.h"
 
 using namespace rpy;
 using namespace pybind11::literals;

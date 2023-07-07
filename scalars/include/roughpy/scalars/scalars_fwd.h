@@ -39,7 +39,9 @@
 
 #include <Eigen/Core>
 #include <libalgebra_lite/coefficients.h>
+#include <libalgebra_lite/packed_integer.h>
 #include <libalgebra_lite/polynomial.h>
+#include <libalgebra_lite/polynomial_basis.h>
 
 #ifdef LAL_NO_USE_GMP
 #  define RPY_USING_GMP 0

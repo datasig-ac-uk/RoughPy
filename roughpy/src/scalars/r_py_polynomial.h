@@ -35,8 +35,28 @@
 #include "roughpy_module.h"
 #include <roughpy/scalars/scalars_fwd.h>
 
+struct RPyMonomial {
+    PyObject_VAR_HEAD rpy::scalars::monomial m_data;
+};
+extern PyTypeObject RPyMonomial_Type;
+
+PyObject* PyMonomial_FromIndeterminate(rpy::scalars::indeterminate_type indet);
+PyObject* PyMonomial_FromMonomial(rpy::scalars::monomial arg);
+
+rpy::scalars::monomial PyMonomial_AsMonomial(PyObject* py_monomial);
+
+struct RPyPolynomial {
+    PyObject_VAR_HEAD
+    rpy::scalars::rational_poly_scalar m_data;
+};
+
+extern PyTypeObject RPyPolynomial_Type;
+
+
 namespace rpy {
 namespace python {
+
+
 
 void init_monomial(py::module_& m);
 
