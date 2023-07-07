@@ -39,6 +39,7 @@
 
 #include "dlpack.h"
 #include "scalar_type.h"
+#include "r_py_monomial.h"
 
 using namespace rpy;
 using namespace pybind11::literals;
@@ -73,6 +74,7 @@ void python::init_scalars(pybind11::module_& m)
     options.disable_function_signatures();
 
     python::init_scalar_types(m);
+    python::init_monomial(m);
 
     py::class_<Scalar> klass(m, "Scalar", SCALAR_DOC);
 

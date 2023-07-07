@@ -62,6 +62,9 @@ using rational_scalar_type = lal::rational_field::scalar_type;
 /// Monomial key-type of polynomials
 using monomial = lal::monomial;
 
+/// Indeterminate type for monomials
+using indeterminate_type = typename monomial::letter_type;
+
 /// Polynomial (with rational coefficients) scalar type
 using rational_poly_scalar = lal::polynomial<lal::rational_field>;
 
@@ -183,14 +186,14 @@ inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
 using conversion_function
         = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
 
-constexpr bool operator==(const ScalarDeviceInfo& lhs,
-                          const ScalarDeviceInfo& rhs) noexcept
+constexpr bool
+operator==(const ScalarDeviceInfo& lhs, const ScalarDeviceInfo& rhs) noexcept
 {
     return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
 }
 
-constexpr bool operator==(const BasicScalarInfo& lhs,
-                          const BasicScalarInfo& rhs) noexcept
+constexpr bool
+operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept
 {
     return lhs.code == rhs.code && lhs.bits == rhs.bits
             && lhs.lanes == rhs.lanes;
@@ -231,8 +234,10 @@ RPY_NO_DISCARD RPY_EXPORT const conversion_function&
 get_conversion(const string& src_id, const string& dst_id);
 
 RPY_EXPORT
-void register_conversion(const string& src_id, const string& dst_id,
-                         conversion_function converter);
+void register_conversion(
+        const string& src_id, const string& dst_id,
+        conversion_function converter
+);
 
 }// namespace scalars
 }// namespace rpy
