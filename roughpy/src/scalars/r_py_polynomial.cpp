@@ -39,6 +39,13 @@
 using namespace rpy;
 using namespace python;
 
+namespace {
+
+using poly_t = scalars::rational_poly_scalar;
+using rat_t = scalars::rational_scalar_type;
+
+}// namespace
+
 extern "C" {
 
 // New
@@ -68,12 +75,12 @@ monomial_ass_subscript(PyObject* self, PyObject* index, PyObject* arg);
 static PyObject* monomial_mul(PyObject* self, PyObject* other);
 static PyObject* monomial_inplace_mul(PyObject* self, PyObject* other);
 static PyObject* monomial_pow(PyObject* self, PyObject* other, PyObject*);
-static PyObject* monomial_divmod(PyObject* self, PyObject* other);
+static PyObject* monomial_floordiv(PyObject* self, PyObject* other);
 static PyObject* monomial_rem(PyObject* self, PyObject* other);
 static PyObject* monomial_inplace_rem(PyObject* self, PyObject* other);
 static PyObject*
 monomial_inplace_pow(PyObject* self, PyObject* other, PyObject*);
-static PyObject* monomial_inplace_divmod(PyObject* self, PyObject* other);
+static PyObject* monomial_inplace_floordiv(PyObject* self, PyObject* other);
 
 static PyObject* monomial_add(PyObject* self, PyObject* other);
 static PyObject* monomial_sub(PyObject* self, PyObject* other);
@@ -105,46 +112,47 @@ static PyMappingMethods RPyMonomial_mapping{
         monomial_len, monomial_subscript, monomial_ass_subscript};
 
 static PyNumberMethods RPyMonomial_number{
-        (binaryfunc) monomial_add,            /* nb_add */
-        (binaryfunc) monomial_sub,            /* nb_subtract */
-        (binaryfunc) monomial_mul,            /* nb_multiply */
-        (binaryfunc) monomial_rem,            /* nb_remainder */
-        (binaryfunc) monomial_divmod,         /* nb_divmod */
-        (ternaryfunc) monomial_pow,           /* nb_power */
-        nullptr,                              /* nb_negative */
-        nullptr,                              /* nb_positive */
-        nullptr,                              /* nb_absolute */
-        (inquiry) monomial_bool,              /* nb_bool */
-        nullptr,                              /* nb_invert */
-        nullptr,                              /* nb_lshift */
-        nullptr,                              /* nb_rshift */
-        nullptr,                              /* nb_and */
-        nullptr,                              /* nb_xor */
-        nullptr,                              /* nb_or */
-        nullptr,                              /* nb_int */
-        nullptr,                              /* nb_reserved */
-        nullptr,                              /* nb_float */
-        (binaryfunc) monomial_inplace_add,    /* nb_inplace_add */
-        (binaryfunc) monomial_inplace_sub,    /* nb_inplace_subtract */
-        (binaryfunc) monomial_inplace_mul,    /* nb_inplace_multiply */
-        (binaryfunc) monomial_inplace_rem,    /* nb_inplace_remainder */
-        (ternaryfunc) monomial_inplace_pow,   /* nb_inplace_power */
-        nullptr,                              /* nb_inplace_lshift */
-        nullptr,                              /* nb_inplace_rshift */
-        nullptr,                              /* nb_inplace_and */
-        nullptr,                              /* nb_inplace_xor */
-        nullptr,                              /* nb_inplace_or */
-        (binaryfunc) monomial_divmod,         /* nb_floor_divide */
-        (binaryfunc) monomial_div,            /* nb_true_divide */
-        (binaryfunc) monomial_inplace_divmod, /* nb_inplace_floor_divide */
-        (binaryfunc) monomial_inplace_div,    /* nb_inplace_true_div */
-        nullptr,                              /* nb_index */
-        nullptr,                              /* nb_matrix_multiply */
-        nullptr                               /* nb_inplace_matrix_multiply */
+        (binaryfunc) monomial_add,              /* nb_add */
+        (binaryfunc) monomial_sub,              /* nb_subtract */
+        (binaryfunc) monomial_mul,              /* nb_multiply */
+        (binaryfunc) monomial_rem,              /* nb_remainder */
+        nullptr,                                /* nb_divmod */
+        (ternaryfunc) monomial_pow,             /* nb_power */
+        nullptr,                                /* nb_negative */
+        nullptr,                                /* nb_positive */
+        nullptr,                                /* nb_absolute */
+        (inquiry) monomial_bool,                /* nb_bool */
+        nullptr,                                /* nb_invert */
+        nullptr,                                /* nb_lshift */
+        nullptr,                                /* nb_rshift */
+        nullptr,                                /* nb_and */
+        nullptr,                                /* nb_xor */
+        nullptr,                                /* nb_or */
+        nullptr,                                /* nb_int */
+        nullptr,                                /* nb_reserved */
+        nullptr,                                /* nb_float */
+        (binaryfunc) monomial_inplace_add,      /* nb_inplace_add */
+        (binaryfunc) monomial_inplace_sub,      /* nb_inplace_subtract */
+        (binaryfunc) monomial_inplace_mul,      /* nb_inplace_multiply */
+        (binaryfunc) monomial_inplace_rem,      /* nb_inplace_remainder */
+        (ternaryfunc) monomial_inplace_pow,     /* nb_inplace_power */
+        nullptr,                                /* nb_inplace_lshift */
+        nullptr,                                /* nb_inplace_rshift */
+        nullptr,                                /* nb_inplace_and */
+        nullptr,                                /* nb_inplace_xor */
+        nullptr,                                /* nb_inplace_or */
+        (binaryfunc) monomial_floordiv,         /* nb_floor_divide */
+        (binaryfunc) monomial_div,              /* nb_true_divide */
+        (binaryfunc) monomial_inplace_floordiv, /* nb_inplace_floor_divide */
+        (binaryfunc) monomial_inplace_div,      /* nb_inplace_true_div */
+        nullptr,                                /* nb_index */
+        nullptr,                                /* nb_matrix_multiply */
+        nullptr                                 /* nb_inplace_matrix_multiply */
 };
 
 PyTypeObject RPyMonomial_Type = {
-        PyVarObject_HEAD_INIT(nullptr, 0) "_roughpy.Monomial", /* tp_name */
+        PyVarObject_HEAD_INIT(nullptr, 0)    //
+        "_roughpy.Monomial",                 /* tp_name */
         sizeof(RPyMonomial),                 /* tp_basicsize */
         0,                                   /* tp_itemsize */
         nullptr,                             /* tp_dealloc */
@@ -220,12 +228,12 @@ polynomial_ass_subscript(PyObject* self, PyObject* index, PyObject* arg);
 static PyObject* polynomial_mul(PyObject* self, PyObject* other);
 static PyObject* polynomial_inplace_mul(PyObject* self, PyObject* other);
 static PyObject* polynomial_pow(PyObject* self, PyObject* other, PyObject*);
-static PyObject* polynomial_divmod(PyObject* self, PyObject* other);
+static PyObject* polynomial_floordiv(PyObject* self, PyObject* other);
 static PyObject* polynomial_rem(PyObject* self, PyObject* other);
 static PyObject* polynomial_inplace_rem(PyObject* self, PyObject* other);
 static PyObject*
 polynomial_inplace_pow(PyObject* self, PyObject* other, PyObject*);
-static PyObject* polynomial_inplace_divmod(PyObject* self, PyObject* other);
+static PyObject* polynomial_inplace_floordiv(PyObject* self, PyObject* other);
 
 static PyObject* polynomial_add(PyObject* self, PyObject* other);
 static PyObject* polynomial_sub(PyObject* self, PyObject* other);
@@ -254,46 +262,47 @@ static PyMappingMethods RPyPolynomial_mapping{
         polynomial_len, polynomial_subscript, polynomial_ass_subscript};
 
 static PyNumberMethods RPyPolynomial_number{
-        (binaryfunc) polynomial_add,            /* nb_add */
-        (binaryfunc) polynomial_sub,            /* nb_subtract */
-        (binaryfunc) polynomial_mul,            /* nb_multiply */
-        (binaryfunc) polynomial_rem,            /* nb_remainder */
-        (binaryfunc) polynomial_divmod,         /* nb_divmod */
-        (ternaryfunc) polynomial_pow,           /* nb_power */
-        nullptr,                                /* nb_negative */
-        nullptr,                                /* nb_positive */
-        nullptr,                                /* nb_absolute */
-        nullptr,                                /* nb_bool */
-        nullptr,                                /* nb_invert */
-        nullptr,                                /* nb_lshift */
-        nullptr,                                /* nb_rshift */
-        nullptr,                                /* nb_and */
-        nullptr,                                /* nb_xor */
-        nullptr,                                /* nb_or */
-        nullptr,                                /* nb_int */
-        nullptr,                                /* nb_reserved */
-        nullptr,                                /* nb_float */
-        (binaryfunc) polynomial_inplace_add,    /* nb_inplace_add */
-        (binaryfunc) polynomial_inplace_sub,    /* nb_inplace_subtract */
-        (binaryfunc) polynomial_inplace_mul,    /* nb_inplace_multiply */
-        (binaryfunc) polynomial_inplace_rem,    /* nb_inplace_remainder */
-        (ternaryfunc) polynomial_inplace_pow,   /* nb_inplace_power */
-        nullptr,                                /* nb_inplace_lshift */
-        nullptr,                                /* nb_inplace_rshift */
-        nullptr,                                /* nb_inplace_and */
-        nullptr,                                /* nb_inplace_xor */
-        nullptr,                                /* nb_inplace_or */
-        (binaryfunc) polynomial_divmod,         /* nb_floor_divide */
-        (binaryfunc) polynomial_div,            /* nb_true_divide */
-        (binaryfunc) polynomial_inplace_divmod, /* nb_inplace_floor_divide */
-        (binaryfunc) polynomial_inplace_div,    /* nb_inplace_true_div */
-        nullptr,                                /* nb_index */
-        nullptr,                                /* nb_matrix_multiply */
-        nullptr                                 /* nb_inplace_matrix_multiply */
+        (binaryfunc) polynomial_add,              /* nb_add */
+        (binaryfunc) polynomial_sub,              /* nb_subtract */
+        (binaryfunc) polynomial_mul,              /* nb_multiply */
+        (binaryfunc) polynomial_rem,              /* nb_remainder */
+        nullptr,                                  /* nb_divmod */
+        (ternaryfunc) polynomial_pow,             /* nb_power */
+        nullptr,                                  /* nb_negative */
+        nullptr,                                  /* nb_positive */
+        nullptr,                                  /* nb_absolute */
+        nullptr,                                  /* nb_bool */
+        nullptr,                                  /* nb_invert */
+        nullptr,                                  /* nb_lshift */
+        nullptr,                                  /* nb_rshift */
+        nullptr,                                  /* nb_and */
+        nullptr,                                  /* nb_xor */
+        nullptr,                                  /* nb_or */
+        nullptr,                                  /* nb_int */
+        nullptr,                                  /* nb_reserved */
+        nullptr,                                  /* nb_float */
+        (binaryfunc) polynomial_inplace_add,      /* nb_inplace_add */
+        (binaryfunc) polynomial_inplace_sub,      /* nb_inplace_subtract */
+        (binaryfunc) polynomial_inplace_mul,      /* nb_inplace_multiply */
+        (binaryfunc) polynomial_inplace_rem,      /* nb_inplace_remainder */
+        (ternaryfunc) polynomial_inplace_pow,     /* nb_inplace_power */
+        nullptr,                                  /* nb_inplace_lshift */
+        nullptr,                                  /* nb_inplace_rshift */
+        nullptr,                                  /* nb_inplace_and */
+        nullptr,                                  /* nb_inplace_xor */
+        nullptr,                                  /* nb_inplace_or */
+        (binaryfunc) polynomial_floordiv,         /* nb_floor_divide */
+        (binaryfunc) polynomial_div,              /* nb_true_divide */
+        (binaryfunc) polynomial_inplace_floordiv, /* nb_inplace_floor_divide */
+        (binaryfunc) polynomial_inplace_div,      /* nb_inplace_true_div */
+        nullptr,                                  /* nb_index */
+        nullptr,                                  /* nb_matrix_multiply */
+        nullptr /* nb_inplace_matrix_multiply */
 };
 
 PyTypeObject RPyPolynomial_Type = {
-        PyVarObject_HEAD_INIT(nullptr, 0) "_roughpy.Polynomial", /* tp_name */
+        PyVarObject_HEAD_INIT(nullptr, 0)      //
+        "_roughpy.Polynomial",                 /* tp_name */
         sizeof(RPyPolynomial),                 /* tp_basicsize */
         0,                                     /* tp_itemsize */
         nullptr,                               /* tp_dealloc */
@@ -565,6 +574,14 @@ int monomial_ass_subscript(PyObject* self, PyObject* index, PyObject* arg)
 
     return 0;
 }
+
+static inline py::type get_py_rational()
+{
+    return py::reinterpret_borrow<py::type>(
+            py::module_::import("fractions").attr("Fraction")
+    );
+}
+
 PyObject* monomial_mul(PyObject* self, PyObject* other)
 {
     if (Py_TYPE(self) == &RPyMonomial_Type
@@ -573,6 +590,51 @@ PyObject* monomial_mul(PyObject* self, PyObject* other)
         const auto& rhs = reinterpret_cast<RPyMonomial*>(other)->m_data;
         return PyMonomial_FromMonomial(lhs * rhs);
     }
+
+    /*
+     * If only one of the arguments is a monomial, then it must be a
+     * scalar*monomial or monomial*scalar type operation. Since these
+     * operations commute, we handle both simultaneously.
+     */
+    scalars::monomial* mon;
+    PyObject* scalar;
+    if (Py_TYPE(self) == &RPyMonomial_Type) {
+        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+        scalar = other;
+    } else {
+        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        scalar = self;
+    }
+
+    if (PyLong_Check(scalar)) {
+        rat_t multiplier(PyLong_AsLongLong(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(*mon, multiplier));
+    }
+
+    if (PyFloat_Check(scalar)) {
+        rat_t multiplier(PyFloat_AsDouble(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(*mon, multiplier));
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+
+            return PyPolynomial_FromPolynomial(poly_t(*mon, rat_t(numr, denr)));
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
+    // We might want to support other types in the future.
 
     // If one of the operands is not a monomial, then the result will be a
     // polynomial.
@@ -588,8 +650,51 @@ PyObject* monomial_inplace_mul(PyObject* self, PyObject* other)
         return self;
     }
 
-    // Inplace multiplication doesn't work if one of the operands is not a
-    // monomial
+    /*
+     * If only one of the arguments is a monomial, then it must be a
+     * scalar*monomial or monomial*scalar type operation. Since these
+     * operations commute, we handle both simultaneously.
+     */
+    scalars::monomial* mon;
+    PyObject* scalar;
+    if (Py_TYPE(self) == &RPyMonomial_Type) {
+        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+        scalar = other;
+    } else {
+        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        scalar = self;
+    }
+
+    if (PyLong_Check(scalar)) {
+        rat_t multiplier(PyLong_AsLongLong(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(*mon, multiplier));
+    }
+
+    if (PyFloat_Check(scalar)) {
+        rat_t multiplier(PyFloat_AsDouble(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(*mon, multiplier));
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+
+            return PyPolynomial_FromPolynomial(poly_t(*mon, rat_t(numr, denr)));
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
+    // We might want to support other types in the future.
+
     return Py_NotImplemented;
 }
 PyObject* monomial_pow(PyObject* self, PyObject* other, PyObject*)
@@ -610,7 +715,7 @@ PyObject* monomial_pow(PyObject* self, PyObject* other, PyObject*)
 
     return Py_NotImplemented;
 }
-PyObject* monomial_divmod(PyObject* self, PyObject* other)
+PyObject* monomial_floordiv(PyObject* self, PyObject* other)
 {
     return Py_NotImplemented;
 }
@@ -638,7 +743,7 @@ PyObject* monomial_inplace_pow(PyObject* self, PyObject* other, PyObject*)
 
     return Py_NotImplemented;
 }
-PyObject* monomial_inplace_divmod(PyObject* self, PyObject* other)
+PyObject* monomial_inplace_floordiv(PyObject* self, PyObject* other)
 {
     return Py_NotImplemented;
 }
@@ -654,6 +759,53 @@ PyObject* monomial_add(PyObject* self, PyObject* other)
         );
         result[rhs] += scalars::rational_scalar_type(1);
         return PyPolynomial_FromPolynomial(std::move(result));
+    }
+
+    /*
+     * For add/sub, we can add a scalar to a monomial to get a polynomial.
+     * These operations are commutative, so we can use the same trick as for
+     * mul and do both at the same time.
+     */
+    scalars::monomial* mon;
+    PyObject* scalar;
+    if (Py_TYPE(self) == &RPyMonomial_Type) {
+        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+        scalar = other;
+    } else {
+        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        scalar = self;
+    }
+    poly_t result(*mon, rat_t(1));
+
+    if (PyLong_Check(scalar)) {
+        rat_t multiplier(PyLong_AsLongLong(scalar));
+        result += poly_t(multiplier);
+        return PyPolynomial_FromPolynomial(std::move(result));
+    }
+
+    if (PyFloat_Check(scalar)) {
+        rat_t multiplier(PyFloat_AsDouble(scalar));
+        result += poly_t(multiplier);
+        return PyPolynomial_FromPolynomial(std::move(result));
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+            result += poly_t(rat_t(numr, denr));
+
+            return PyPolynomial_FromPolynomial(std::move(result));
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
     }
 
     return Py_NotImplemented;
@@ -672,10 +824,113 @@ PyObject* monomial_sub(PyObject* self, PyObject* other)
         return PyPolynomial_FromPolynomial(std::move(result));
     }
 
+    /*
+     * For add/sub, we can add a scalar to a monomial to get a polynomial.
+     * These operations are commutative, so we can use the same trick as for
+     * mul and do both at the same time.
+     */
+    scalars::monomial* mon;
+    PyObject* scalar;
+    if (Py_TYPE(self) == &RPyMonomial_Type) {
+        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+        scalar = other;
+    } else {
+        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        scalar = self;
+    }
+    poly_t result(*mon, rat_t(1));
+
+    if (PyLong_Check(scalar)) {
+        rat_t multiplier(PyLong_AsLongLong(scalar));
+        result -= poly_t(multiplier);
+        return PyPolynomial_FromPolynomial(std::move(result));
+    }
+
+    if (PyFloat_Check(scalar)) {
+        rat_t multiplier(PyFloat_AsDouble(scalar));
+        result -= poly_t(multiplier);
+        return PyPolynomial_FromPolynomial(std::move(result));
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+            result -= poly_t(rat_t(numr, denr));
+
+            return PyPolynomial_FromPolynomial(std::move(result));
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
     return Py_NotImplemented;
 }
 PyObject* monomial_div(PyObject* self, PyObject* other)
 {
+    /*
+     * Only the left hand argument can be a monomial, in which case it is a
+     * monomial / scalar type operation.
+     */
+    if (Py_TYPE(self) != &RPyMonomial_Type
+        || Py_TYPE(other) == &RPyMonomial_Type) {
+        return Py_NotImplemented;
+    }
+
+    scalars::monomial* mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+    PyObject* scalar = other;
+
+    if (PyLong_Check(scalar)) {
+        rat_t multiplier(PyLong_AsLongLong(scalar));
+        if (multiplier == rat_t(0)) {
+            PyErr_SetString(PyExc_ArithmeticError, "division by zero");
+            return nullptr;
+        }
+
+        return PyPolynomial_FromPolynomial(poly_t(*mon, multiplier));
+    }
+
+    if (PyFloat_Check(scalar)) {
+        rat_t multiplier(PyFloat_AsDouble(scalar));
+        if (multiplier == rat_t(0)) {
+            PyErr_SetString(PyExc_ArithmeticError, "division by zero");
+            return nullptr;
+        }
+
+        multiplier = rat_t(1) / multiplier;
+        return PyPolynomial_FromPolynomial(poly_t(*mon, multiplier));
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+            if (numr == 0) {
+                PyErr_SetString(PyExc_ArithmeticError, "division by zero");
+                return nullptr;
+            }
+
+            return PyPolynomial_FromPolynomial(poly_t(*mon, rat_t(denr, numr)));
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
+    // We might want to support other types in the future
     return Py_NotImplemented;
 }
 PyObject* monomial_inplace_add(PyObject* self, PyObject* other)
@@ -691,6 +946,56 @@ PyObject* monomial_inplace_add(PyObject* self, PyObject* other)
         result[rhs] += scalars::rational_scalar_type(1);
         return PyPolynomial_FromPolynomial(std::move(result));
     }
+
+    /*
+     * For add/sub, we can add a scalar to a monomial to get a polynomial.
+     * These operations are commutative, so we can use the same trick as for
+     * mul and do both at the same time.
+     */
+    scalars::monomial* mon;
+    PyObject* scalar;
+    if (Py_TYPE(self) == &RPyMonomial_Type) {
+        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+        scalar = other;
+    } else {
+        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        scalar = self;
+    }
+    poly_t result(*mon, rat_t(1));
+
+    if (PyLong_Check(scalar)) {
+        rat_t multiplier(PyLong_AsLongLong(scalar));
+        result += poly_t(multiplier);
+        return PyPolynomial_FromPolynomial(std::move(result));
+    }
+
+    if (PyFloat_Check(scalar)) {
+        rat_t multiplier(PyFloat_AsDouble(scalar));
+        result += poly_t(multiplier);
+        return PyPolynomial_FromPolynomial(std::move(result));
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+            result += poly_t(rat_t(numr, denr));
+
+            return PyPolynomial_FromPolynomial(std::move(result));
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
+    // We might want to support other types in the future.
+
     return Py_NotImplemented;
 }
 PyObject* monomial_inplace_sub(PyObject* self, PyObject* other)
@@ -706,6 +1011,54 @@ PyObject* monomial_inplace_sub(PyObject* self, PyObject* other)
         result[rhs] -= scalars::rational_scalar_type(1);
         return PyPolynomial_FromPolynomial(std::move(result));
     }
+
+    /*
+     * For add/sub, we can add a scalar to a monomial to get a polynomial.
+     * These operations are commutative, so we can use the same trick as for
+     * mul and do both at the same time.
+     */
+    scalars::monomial* mon;
+    PyObject* scalar;
+    if (Py_TYPE(self) == &RPyMonomial_Type) {
+        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+        scalar = other;
+    } else {
+        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        scalar = self;
+    }
+    poly_t result(*mon, rat_t(1));
+
+    if (PyLong_Check(scalar)) {
+        rat_t multiplier(PyLong_AsLongLong(scalar));
+        result -= poly_t(multiplier);
+        return PyPolynomial_FromPolynomial(std::move(result));
+    }
+
+    if (PyFloat_Check(scalar)) {
+        rat_t multiplier(PyFloat_AsDouble(scalar));
+        result -= poly_t(multiplier);
+        return PyPolynomial_FromPolynomial(std::move(result));
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+            result -= poly_t(rat_t(numr, denr));
+
+            return PyPolynomial_FromPolynomial(std::move(result));
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
     return Py_NotImplemented;
 }
 PyObject* monomial_inplace_div(PyObject* self, PyObject* other)
@@ -733,7 +1086,6 @@ PyObject* monomial_degree(PyObject* self)
 }
 PyObject* PyMonomial_FromIndeterminate(scalars::indeterminate_type indet)
 {
-
     auto* obj = reinterpret_cast<RPyMonomial*>(
             RPyMonomial_Type.tp_alloc(&RPyMonomial_Type, 0)
     );
@@ -861,7 +1213,7 @@ PyObject* polynomial_pow(PyObject* self, PyObject* other, PyObject*)
 {
     return Py_NotImplemented;
 }
-PyObject* polynomial_divmod(PyObject* self, PyObject* other)
+PyObject* polynomial_floordiv(PyObject* self, PyObject* other)
 {
     return Py_NotImplemented;
 }
@@ -877,7 +1229,7 @@ PyObject* polynomial_inplace_pow(PyObject* self, PyObject* other, PyObject*)
 {
     return Py_NotImplemented;
 }
-PyObject* polynomial_inplace_divmod(PyObject* self, PyObject* other)
+PyObject* polynomial_inplace_floordiv(PyObject* self, PyObject* other)
 {
     return Py_NotImplemented;
 }
