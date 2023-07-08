@@ -364,6 +364,23 @@ void python::init_monomial(py::module_& m)
     m.add_object("PolynomialScalar", (PyObject*) &RPyPolynomial_Type);
 }
 
+static inline bool is_monomial(PyObject* obj) noexcept
+{
+    return Py_TYPE(obj) == &RPyMonomial_Type;
+}
+static inline bool is_polynomial(PyObject* obj) noexcept
+{
+    return Py_TYPE(obj) == &RPyPolynomial_Type;
+}
+static inline scalars::monomial& cast_mon(PyObject* obj) noexcept
+{
+    return reinterpret_cast<RPyMonomial*>(obj)->m_data;
+}
+static inline poly_t& cast_poly(PyObject* obj) noexcept
+{
+    return reinterpret_cast<RPyPolynomial*>(obj)->m_data;
+}
+
 static bool insert_from_pair(scalars::monomial& monomial, PyObject* item)
 {
     auto* first = PyTuple_GetItem(item, 0);
@@ -508,10 +525,9 @@ Py_hash_t monomial_hash(PyObject* RPY_UNUSED_VAR self)
 }
 PyObject* monomial_rich_compare(PyObject* self, PyObject* other, int cmp)
 {
-    if (Py_TYPE(self) == &RPyMonomial_Type
-        && Py_TYPE(other) == &RPyMonomial_Type) {
-        const auto& lhs = reinterpret_cast<RPyMonomial*>(self)->m_data;
-        const auto& rhs = reinterpret_cast<RPyMonomial*>(other)->m_data;
+    if (is_monomial(self) && is_monomial(other)) {
+        const auto& lhs = cast_mon(self);
+        const auto& rhs = cast_mon(other);
 
         switch (cmp) {
             case Py_EQ: return PyBool_FromLong(static_cast<long>(lhs == rhs));
@@ -533,13 +549,10 @@ PyObject* monomial_rich_compare(PyObject* self, PyObject* other, int cmp)
 
     return Py_NotImplemented;
 }
-Py_ssize_t monomial_len(PyObject* self)
-{
-    return reinterpret_cast<RPyMonomial*>(self)->m_data.type();
-}
+Py_ssize_t monomial_len(PyObject* self) { return cast_mon(self).type(); }
 PyObject* monomial_subscript(PyObject* self, PyObject* index)
 {
-    const auto& mon = reinterpret_cast<RPyMonomial*>(self)->m_data;
+    const auto& mon = cast_mon(self);
     if (!PyUnicode_Check(index)) {
         PyErr_SetString(PyExc_TypeError, "index should be a string");
         return nullptr;
@@ -552,7 +565,7 @@ PyObject* monomial_subscript(PyObject* self, PyObject* index)
 }
 int monomial_ass_subscript(PyObject* self, PyObject* index, PyObject* arg)
 {
-    auto& mon = reinterpret_cast<RPyMonomial*>(self)->m_data;
+    auto& mon = cast_mon(self);
     if (!PyUnicode_Check(index)) {
         PyErr_SetString(PyExc_TypeError, "index should be a string");
         return -1;
@@ -582,12 +595,44 @@ static inline py::type get_py_rational()
     );
 }
 
+static inline bool py_scalar_to_rat(rat_t& result, PyObject* scalar) noexcept
+{
+    if (PyLong_Check(scalar)) {
+        result = rat_t(PyLong_AsLongLong(scalar));
+        return true;
+    }
+    if (PyFloat_Check(scalar)) {
+        result = rat_t(PyFloat_AsDouble(scalar));
+        return true;
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+
+            result = rat_t(numr, denr);
+        }
+        return true;
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
+    return false;
+}
+
 PyObject* monomial_mul(PyObject* self, PyObject* other)
 {
-    if (Py_TYPE(self) == &RPyMonomial_Type
-        && Py_TYPE(other) == &RPyMonomial_Type) {
-        const auto& lhs = reinterpret_cast<RPyMonomial*>(self)->m_data;
-        const auto& rhs = reinterpret_cast<RPyMonomial*>(other)->m_data;
+    if (is_monomial(self) && is_monomial(other)) {
+        const auto& lhs = cast_mon(self);
+        const auto& rhs = cast_mon(other);
         return PyMonomial_FromMonomial(lhs * rhs);
     }
 
@@ -598,11 +643,11 @@ PyObject* monomial_mul(PyObject* self, PyObject* other)
      */
     scalars::monomial* mon;
     PyObject* scalar;
-    if (Py_TYPE(self) == &RPyMonomial_Type) {
-        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+    if (is_monomial(self)) {
+        mon = &cast_mon(self);
         scalar = other;
     } else {
-        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        mon = &cast_mon(other);
         scalar = self;
     }
 
@@ -642,10 +687,9 @@ PyObject* monomial_mul(PyObject* self, PyObject* other)
 }
 PyObject* monomial_inplace_mul(PyObject* self, PyObject* other)
 {
-    if (Py_TYPE(self) == &RPyMonomial_Type
-        && Py_TYPE(other) == &RPyMonomial_Type) {
-        auto& lhs = reinterpret_cast<RPyMonomial*>(self)->m_data;
-        const auto& rhs = reinterpret_cast<RPyMonomial*>(other)->m_data;
+    if (is_monomial(self) && is_monomial(other)) {
+        auto& lhs = cast_mon(self);
+        const auto& rhs = cast_mon(other);
         lhs *= rhs;
         return self;
     }
@@ -657,11 +701,11 @@ PyObject* monomial_inplace_mul(PyObject* self, PyObject* other)
      */
     scalars::monomial* mon;
     PyObject* scalar;
-    if (Py_TYPE(self) == &RPyMonomial_Type) {
-        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+    if (is_monomial(self)) {
+        mon = &cast_mon(self);
         scalar = other;
     } else {
-        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        mon = &cast_mon(other);
         scalar = self;
     }
 
@@ -699,8 +743,8 @@ PyObject* monomial_inplace_mul(PyObject* self, PyObject* other)
 }
 PyObject* monomial_pow(PyObject* self, PyObject* other, PyObject*)
 {
-    if (Py_TYPE(self) == &RPyMonomial_Type && PyLong_Check(other)) {
-        const auto& lhs = reinterpret_cast<RPyMonomial*>(self)->m_data;
+    if (is_monomial(self) && PyLong_Check(other)) {
+        const auto& lhs = cast_mon(self);
         auto power = static_cast<deg_t>(PyLong_AsLong(other));
 
         if (power < 0) {
@@ -709,7 +753,7 @@ PyObject* monomial_pow(PyObject* self, PyObject* other, PyObject*)
         }
 
         auto* result = PyMonomial_FromMonomial(lhs);
-        auto& result_mon = reinterpret_cast<RPyMonomial*>(result)->m_data;
+        auto& result_mon = cast_mon(result);
         for (auto& comp : result_mon) { comp.second += power; }
     }
 
@@ -729,8 +773,8 @@ PyObject* monomial_inplace_rem(PyObject* self, PyObject* other)
 }
 PyObject* monomial_inplace_pow(PyObject* self, PyObject* other, PyObject*)
 {
-    if (Py_TYPE(self) == &RPyMonomial_Type && PyLong_Check(other)) {
-        auto& lhs = reinterpret_cast<RPyMonomial*>(self)->m_data;
+    if (is_monomial(self) && PyLong_Check(other)) {
+        auto& lhs = cast_mon(self);
         auto power = static_cast<deg_t>(PyLong_AsLong(other));
 
         if (power < 0) {
@@ -749,10 +793,9 @@ PyObject* monomial_inplace_floordiv(PyObject* self, PyObject* other)
 }
 PyObject* monomial_add(PyObject* self, PyObject* other)
 {
-    if (Py_TYPE(self) == &RPyMonomial_Type
-        && Py_TYPE(other) == &RPyMonomial_Type) {
-        const auto& lhs = reinterpret_cast<RPyMonomial*>(self)->m_data;
-        const auto& rhs = reinterpret_cast<RPyMonomial*>(other)->m_data;
+    if (is_monomial(self) && is_monomial(other)) {
+        const auto& lhs = cast_mon(self);
+        const auto& rhs = cast_mon(other);
 
         scalars::rational_poly_scalar result(
                 lhs, scalars::rational_scalar_type(1)
@@ -768,11 +811,11 @@ PyObject* monomial_add(PyObject* self, PyObject* other)
      */
     scalars::monomial* mon;
     PyObject* scalar;
-    if (Py_TYPE(self) == &RPyMonomial_Type) {
-        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+    if (is_monomial(self)) {
+        mon = &cast_mon(self);
         scalar = other;
     } else {
-        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        mon = &cast_mon(other);
         scalar = self;
     }
     poly_t result(*mon, rat_t(1));
@@ -812,10 +855,9 @@ PyObject* monomial_add(PyObject* self, PyObject* other)
 }
 PyObject* monomial_sub(PyObject* self, PyObject* other)
 {
-    if (Py_TYPE(self) == &RPyMonomial_Type
-        && Py_TYPE(other) == &RPyMonomial_Type) {
-        const auto& lhs = reinterpret_cast<RPyMonomial*>(self)->m_data;
-        const auto& rhs = reinterpret_cast<RPyMonomial*>(other)->m_data;
+    if (is_monomial(self) && is_monomial(other)) {
+        const auto& lhs = cast_mon(self);
+        const auto& rhs = cast_mon(other);
 
         scalars::rational_poly_scalar result(
                 lhs, scalars::rational_scalar_type(1)
@@ -831,11 +873,11 @@ PyObject* monomial_sub(PyObject* self, PyObject* other)
      */
     scalars::monomial* mon;
     PyObject* scalar;
-    if (Py_TYPE(self) == &RPyMonomial_Type) {
-        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+    if (is_monomial(self)) {
+        mon = &cast_mon(self);
         scalar = other;
     } else {
-        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        mon = &cast_mon(other);
         scalar = self;
     }
     poly_t result(*mon, rat_t(1));
@@ -879,12 +921,11 @@ PyObject* monomial_div(PyObject* self, PyObject* other)
      * Only the left hand argument can be a monomial, in which case it is a
      * monomial / scalar type operation.
      */
-    if (Py_TYPE(self) != &RPyMonomial_Type
-        || Py_TYPE(other) == &RPyMonomial_Type) {
+    if (Py_TYPE(self) != &RPyMonomial_Type || is_monomial(other)) {
         return Py_NotImplemented;
     }
 
-    scalars::monomial* mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+    scalars::monomial* mon = &cast_mon(self);
     PyObject* scalar = other;
 
     if (PyLong_Check(scalar)) {
@@ -935,10 +976,9 @@ PyObject* monomial_div(PyObject* self, PyObject* other)
 }
 PyObject* monomial_inplace_add(PyObject* self, PyObject* other)
 {
-    if (Py_TYPE(self) == &RPyMonomial_Type
-        && Py_TYPE(other) == &RPyMonomial_Type) {
-        auto& lhs = reinterpret_cast<RPyMonomial*>(self)->m_data;
-        const auto& rhs = reinterpret_cast<RPyMonomial*>(other)->m_data;
+    if (is_monomial(self) && is_monomial(other)) {
+        auto& lhs = cast_mon(self);
+        const auto& rhs = cast_mon(other);
 
         scalars::rational_poly_scalar result(
                 lhs, scalars::rational_scalar_type(1)
@@ -954,11 +994,11 @@ PyObject* monomial_inplace_add(PyObject* self, PyObject* other)
      */
     scalars::monomial* mon;
     PyObject* scalar;
-    if (Py_TYPE(self) == &RPyMonomial_Type) {
-        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+    if (is_monomial(self)) {
+        mon = &cast_mon(self);
         scalar = other;
     } else {
-        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        mon = &cast_mon(other);
         scalar = self;
     }
     poly_t result(*mon, rat_t(1));
@@ -1000,10 +1040,9 @@ PyObject* monomial_inplace_add(PyObject* self, PyObject* other)
 }
 PyObject* monomial_inplace_sub(PyObject* self, PyObject* other)
 {
-    if (Py_TYPE(self) == &RPyMonomial_Type
-        && Py_TYPE(other) == &RPyMonomial_Type) {
-        const auto& lhs = reinterpret_cast<RPyMonomial*>(self)->m_data;
-        const auto& rhs = reinterpret_cast<RPyMonomial*>(other)->m_data;
+    if (is_monomial(self) && is_monomial(other)) {
+        const auto& lhs = cast_mon(self);
+        const auto& rhs = cast_mon(other);
 
         scalars::rational_poly_scalar result(
                 lhs, scalars::rational_scalar_type(1)
@@ -1019,11 +1058,11 @@ PyObject* monomial_inplace_sub(PyObject* self, PyObject* other)
      */
     scalars::monomial* mon;
     PyObject* scalar;
-    if (Py_TYPE(self) == &RPyMonomial_Type) {
-        mon = &reinterpret_cast<RPyMonomial*>(self)->m_data;
+    if (is_monomial(self)) {
+        mon = &cast_mon(self);
         scalar = other;
     } else {
-        mon = &reinterpret_cast<RPyMonomial*>(other)->m_data;
+        mon = &cast_mon(other);
         scalar = self;
     }
     poly_t result(*mon, rat_t(1));
@@ -1063,18 +1102,71 @@ PyObject* monomial_inplace_sub(PyObject* self, PyObject* other)
 }
 PyObject* monomial_inplace_div(PyObject* self, PyObject* other)
 {
+    /*
+     * Only the left hand argument can be a monomial, in which case it is a
+     * monomial / scalar type operation.
+     */
+    if (!is_monomial(self) || is_monomial(other)) { return Py_NotImplemented; }
+
+    scalars::monomial* mon = &cast_mon(self);
+    PyObject* scalar = other;
+
+    if (PyLong_Check(scalar)) {
+        rat_t multiplier(PyLong_AsLongLong(scalar));
+        if (multiplier == rat_t(0)) {
+            PyErr_SetString(PyExc_ArithmeticError, "division by zero");
+            return nullptr;
+        }
+
+        return PyPolynomial_FromPolynomial(poly_t(*mon, multiplier));
+    }
+
+    if (PyFloat_Check(scalar)) {
+        rat_t multiplier(PyFloat_AsDouble(scalar));
+        if (multiplier == rat_t(0)) {
+            PyErr_SetString(PyExc_ArithmeticError, "division by zero");
+            return nullptr;
+        }
+
+        multiplier = rat_t(1) / multiplier;
+        return PyPolynomial_FromPolynomial(poly_t(*mon, multiplier));
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+            if (numr == 0) {
+                PyErr_SetString(PyExc_ArithmeticError, "division by zero");
+                return nullptr;
+            }
+
+            return PyPolynomial_FromPolynomial(poly_t(*mon, rat_t(denr, numr)));
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
+    // We might want to support other types in the future
     return Py_NotImplemented;
 }
 PyObject* monomial_str(PyObject* self)
 {
-    const auto& obj = reinterpret_cast<RPyMonomial*>(self)->m_data;
+    const auto& obj = cast_mon(self);
     std::stringstream ss;
     ss << obj;
     return PyUnicode_FromString(ss.str().c_str());
 }
 PyObject* monomial_repr(PyObject* self)
 {
-    const auto& obj = reinterpret_cast<RPyMonomial*>(self)->m_data;
+    const auto& obj = cast_mon(self);
     std::stringstream ss;
     ss << obj;
     return PyUnicode_FromFormat("Monomial(%s)", ss.str().c_str());
@@ -1113,7 +1205,7 @@ scalars::monomial PyMonomial_AsMonomial(PyObject* py_monomial)
         throw std::invalid_argument("");
     }
 
-    return reinterpret_cast<RPyMonomial*>(py_monomial)->m_data;
+    return cast_mon(py_monomial);
 }
 bool indeterminate_from_string(
         PyObject* py_string, scalars::indeterminate_type& out
@@ -1172,23 +1264,68 @@ PyObject* PyMonomial_FromPyString(PyObject* py_string)
     return reinterpret_cast<PyObject*>(obj);
 }
 
+static inline bool fill_poly_from_dict(poly_t& result, PyObject* dict_data)
+{
+
+    return true;
+}
+
 PyObject* polynomial_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented");
-    return nullptr;
+    poly_t result;
+
+    auto nargs = PyTuple_Size(args);
+    rat_t scalar;
+    if (nargs == 1) {
+        /*
+         * Single argument can be a scalar, a monomial, or a dict.
+         */
+        auto* arg = PyTuple_GetItem(args, 0);
+        Py_INCREF(arg);
+        if (PyDict_Check(arg)) {
+            if (!fill_poly_from_dict(result, arg)) {
+                Py_DECREF(arg);
+                return nullptr;
+            }
+        } else if (is_monomial(arg)) {
+            const auto& monomial = cast_mon(arg);
+            try {
+                result = poly_t(monomial, rat_t(1));
+            } catch (std::exception& exc) {
+                Py_DECREF(arg);
+                PyErr_SetString(PyExc_RuntimeError, exc.what());
+                return nullptr;
+            }
+        } else if (py_scalar_to_rat(scalar, arg)) {
+            result = poly_t(std::move(scalar));
+        }
+    }
+
+    return PyPolynomial_FromPolynomial(std::move(result));
 }
-void polynomial_finalize(PyObject* self)
-{
-    reinterpret_cast<RPyPolynomial*>(self)->m_data.~polynomial();
-}
+void polynomial_finalize(PyObject* self) { cast_poly(self).~polynomial(); }
 PyObject* polynomial_rich_compare(PyObject* self, PyObject* other, int cmp)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented");
-    return nullptr;
+    if (is_polynomial(self) && is_polynomial(other)) {
+        const auto& lhs = cast_poly(self);
+        const auto& rhs = cast_poly(other);
+
+        switch (cmp) {
+            case Py_EQ: return PyBool_FromLong(static_cast<long>(lhs == rhs));
+            case Py_NE: return PyBool_FromLong(static_cast<long>(lhs != rhs));
+            case Py_LT:
+            case Py_LE:
+            case Py_GE:
+            case Py_GT: return Py_NotImplemented;
+            default: RPY_UNREACHABLE();
+        }
+    }
+
+    return Py_NotImplemented;
 }
 Py_ssize_t polynomial_len(PyObject* self)
 {
-    const auto& obj = reinterpret_cast<RPyPolynomial*>(self)->m_data;
+    const auto& obj = cast_poly(self);
     return static_cast<Py_ssize_t>(obj.size());
 }
 PyObject* polynomial_subscript(PyObject* self, PyObject* index)
@@ -1203,10 +1340,107 @@ int polynomial_ass_subscript(PyObject* self, PyObject* index, PyObject* arg)
 }
 PyObject* polynomial_mul(PyObject* self, PyObject* other)
 {
+    bool lhs_poly = is_polynomial(self);
+    bool rhs_poly = is_polynomial(other);
+
+    if (lhs_poly && rhs_poly) {
+        const auto& lhs = cast_poly(self);
+        const auto& rhs = cast_poly(other);
+        return PyPolynomial_FromPolynomial(lhs * rhs);
+    }
+
+    /*
+     * As above, all the operations are commutative, so we only need
+     * to extract the polynomial argument and the scalar/monomial argument
+     * and then operate on those in the same way.
+     */
+    const auto& poly = lhs_poly ? cast_poly(self) : cast_poly(other);
+    PyObject* scalar = lhs_poly ? other : self;
+
+    if (is_monomial(scalar)) {
+        const auto& mon = cast_mon(scalar);
+        return PyPolynomial_FromPolynomial(poly * poly_t(mon, rat_t(1)));
+    }
+    if (PyLong_Check(scalar)) {
+        rat_t val(PyLong_AsLongLong(scalar));
+        return PyPolynomial_FromPolynomial(val * poly);
+    }
+    if (PyFloat_Check(scalar)) {
+        rat_t val(PyFloat_AsDouble(scalar));
+        return PyPolynomial_FromPolynomial(val * poly);
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+
+            return PyPolynomial_FromPolynomial(rat_t(denr, numr) * poly);
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
     return Py_NotImplemented;
 }
 PyObject* polynomial_inplace_mul(PyObject* self, PyObject* other)
 {
+    bool lhs_poly = is_polynomial(self);
+    bool rhs_poly = is_polynomial(other);
+
+    if (lhs_poly && rhs_poly) {
+        auto& lhs = cast_poly(self);
+        const auto& rhs = cast_poly(other);
+        lhs *= rhs;
+        return self;
+    }
+
+    /*
+     * As above, all the operations are commutative, so we only need
+     * to extract the polynomial argument and the scalar/monomial argument
+     * and then operate on those in the same way.
+     */
+    const auto& poly = lhs_poly ? cast_poly(self) : cast_poly(other);
+    PyObject* scalar = lhs_poly ? other : self;
+
+    if (is_monomial(scalar)) {
+        const auto& mon = cast_mon(scalar);
+        return PyPolynomial_FromPolynomial(poly * poly_t(mon, rat_t(1)));
+    }
+    if (PyLong_Check(scalar)) {
+        rat_t val(PyLong_AsLongLong(scalar));
+        return PyPolynomial_FromPolynomial(val * poly);
+    }
+    if (PyFloat_Check(scalar)) {
+        rat_t val(PyFloat_AsDouble(scalar));
+        return PyPolynomial_FromPolynomial(val * poly);
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+
+            return PyPolynomial_FromPolynomial(rat_t(denr, numr) * poly);
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
     return Py_NotImplemented;
 }
 PyObject* polynomial_pow(PyObject* self, PyObject* other, PyObject*)
@@ -1235,22 +1469,256 @@ PyObject* polynomial_inplace_floordiv(PyObject* self, PyObject* other)
 }
 PyObject* polynomial_add(PyObject* self, PyObject* other)
 {
+    bool lhs_poly = is_polynomial(self);
+    bool rhs_poly = is_polynomial(other);
+
+    if (lhs_poly && rhs_poly) {
+        const auto& lhs = cast_poly(self);
+        const auto& rhs = cast_poly(other);
+        return PyPolynomial_FromPolynomial(lhs + rhs);
+    }
+
+    /*
+     * As above, all the operations are commutative, so we only need
+     * to extract the polynomial argument and the scalar/monomial argument
+     * and then operate on those in the same way.
+     */
+    const auto& poly = lhs_poly ? cast_poly(self) : cast_poly(other);
+    PyObject* scalar = lhs_poly ? other : self;
+
+    if (is_monomial(scalar)) {
+        const auto& mon = cast_mon(scalar);
+        return PyPolynomial_FromPolynomial(poly + poly_t(mon, rat_t(1)));
+    }
+    if (PyLong_Check(scalar)) {
+        rat_t val(PyLong_AsLongLong(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(val) + poly);
+    }
+    if (PyFloat_Check(scalar)) {
+        rat_t val(PyFloat_AsDouble(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(val) + poly);
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+
+            return PyPolynomial_FromPolynomial(
+                    poly_t(rat_t(denr, numr)) + poly
+            );
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
     return Py_NotImplemented;
 }
 PyObject* polynomial_sub(PyObject* self, PyObject* other)
 {
+    bool lhs_poly = is_polynomial(self);
+    bool rhs_poly = is_polynomial(other);
+
+    if (lhs_poly && rhs_poly) {
+        const auto& lhs = cast_poly(self);
+        const auto& rhs = cast_poly(other);
+        return PyPolynomial_FromPolynomial(lhs - rhs);
+    }
+
+    /*
+     * As above, all the operations are commutative, so we only need
+     * to extract the polynomial argument and the scalar/monomial argument
+     * and then operate on those in the same way.
+     */
+    const auto& poly = lhs_poly ? cast_poly(self) : cast_poly(other);
+    PyObject* scalar = lhs_poly ? other : self;
+
+    if (is_monomial(scalar)) {
+        const auto& mon = cast_mon(scalar);
+        return PyPolynomial_FromPolynomial(poly - poly_t(mon, rat_t(1)));
+    }
+    if (PyLong_Check(scalar)) {
+        rat_t val(PyLong_AsLongLong(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(val) - poly);
+    }
+    if (PyFloat_Check(scalar)) {
+        rat_t val(PyFloat_AsDouble(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(val) - poly);
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+
+            return PyPolynomial_FromPolynomial(
+                    poly_t(rat_t(denr, numr)) - poly
+            );
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
     return Py_NotImplemented;
 }
 PyObject* polynomial_div(PyObject* self, PyObject* other)
 {
+    // Only division by a scalar (rational) is supported for polynomials.
+    if (!is_polynomial(self) || is_polynomial(other) || is_monomial(other)) {
+        return Py_NotImplemented;
+    }
+    const auto& poly = cast_poly(self);
+    if (PyLong_Check(other)) {
+        rat_t val(PyLong_AsLongLong(other));
+        return PyPolynomial_FromPolynomial(poly / val);
+    }
+    if (PyFloat_Check(other)) {
+        rat_t val(PyFloat_AsDouble(other));
+        return PyPolynomial_FromPolynomial(poly / val);
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(other, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(other, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(other, "denominator")
+            );
+
+            return PyPolynomial_FromPolynomial(poly / rat_t(denr, numr));
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
     return Py_NotImplemented;
 }
 PyObject* polynomial_inplace_add(PyObject* self, PyObject* other)
 {
+    bool lhs_poly = is_polynomial(self);
+    bool rhs_poly = is_polynomial(other);
+
+    if (lhs_poly && rhs_poly) {
+        auto& lhs = cast_poly(self);
+        const auto& rhs = cast_poly(other);
+        lhs += rhs;
+        return self;
+    }
+
+    /*
+     * As above, all the operations are commutative, so we only need
+     * to extract the polynomial argument and the scalar/monomial argument
+     * and then operate on those in the same way.
+     */
+    const auto& poly = lhs_poly ? cast_poly(self) : cast_poly(other);
+    PyObject* scalar = lhs_poly ? other : self;
+
+    if (is_monomial(scalar)) {
+        const auto& mon = cast_mon(scalar);
+        return PyPolynomial_FromPolynomial(poly + poly_t(mon, rat_t(1)));
+    }
+    if (PyLong_Check(scalar)) {
+        rat_t val(PyLong_AsLongLong(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(val) + poly);
+    }
+    if (PyFloat_Check(scalar)) {
+        rat_t val(PyFloat_AsDouble(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(val) + poly);
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+
+            return PyPolynomial_FromPolynomial(
+                    poly_t(rat_t(denr, numr)) + poly
+            );
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
     return Py_NotImplemented;
 }
 PyObject* polynomial_inplace_sub(PyObject* self, PyObject* other)
 {
+    bool lhs_poly = is_polynomial(self);
+    bool rhs_poly = is_polynomial(other);
+
+    if (lhs_poly && rhs_poly) {
+        auto& lhs = cast_poly(self);
+        const auto& rhs = cast_poly(other);
+        lhs -= rhs;
+        return self;
+    }
+
+    // TODO: this is wrong, the order does matter here!
+    /*
+     * As above, all the operations are commutative, so we only need
+     * to extract the polynomial argument and the scalar/monomial argument
+     * and then operate on those in the same way.
+     */
+    const auto& poly = lhs_poly ? cast_poly(self) : cast_poly(other);
+    PyObject* scalar = lhs_poly ? other : self;
+
+    if (is_monomial(scalar)) {
+        const auto& mon = cast_mon(scalar);
+        return PyPolynomial_FromPolynomial(poly - poly_t(mon, rat_t(1)));
+    }
+    if (PyLong_Check(scalar)) {
+        rat_t val(PyLong_AsLongLong(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(val) - poly);
+    }
+    if (PyFloat_Check(scalar)) {
+        rat_t val(PyFloat_AsDouble(scalar));
+        return PyPolynomial_FromPolynomial(poly_t(val) - poly);
+    }
+
+    try {
+        auto fraction = get_py_rational();
+        if (py::isinstance(scalar, fraction)) {
+            auto numr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "numerator")
+            );
+            auto denr = PyLong_AsLongLong(
+                    PyObject_GetAttrString(scalar, "denominator")
+            );
+
+            return PyPolynomial_FromPolynomial(
+                    poly_t(rat_t(denr, numr)) - poly
+            );
+        }
+    } catch (py::error_already_set&) {
+        // If the error state is set, then clear it. This isn't really an
+        // error.
+        PyErr_Clear();
+    }
+
     return Py_NotImplemented;
 }
 PyObject* polynomial_inplace_div(PyObject* self, PyObject* other)
@@ -1259,21 +1727,21 @@ PyObject* polynomial_inplace_div(PyObject* self, PyObject* other)
 }
 PyObject* polynomial_str(PyObject* self)
 {
-    const auto& obj = reinterpret_cast<RPyMonomial*>(self)->m_data;
+    const auto& obj = cast_mon(self);
     std::stringstream ss;
     ss << obj;
     return PyUnicode_FromString(ss.str().c_str());
 }
 PyObject* polynomial_repr(PyObject* self)
 {
-    const auto& obj = reinterpret_cast<RPyMonomial*>(self)->m_data;
+    const auto& obj = cast_mon(self);
     std::stringstream ss;
     ss << obj;
     return PyUnicode_FromString(ss.str().c_str());
 }
 PyObject* polynomial_degree(PyObject* self)
 {
-    const auto& obj = reinterpret_cast<RPyMonomial*>(self)->m_data;
+    const auto& obj = cast_mon(self);
     return PyLong_FromLong(obj.degree());
 }
 
