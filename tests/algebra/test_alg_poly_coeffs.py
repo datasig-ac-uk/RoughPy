@@ -38,3 +38,10 @@ def test_construct_tensor_poly_coeffs():
     ft = FreeTensor(data, width=2, depth=2, dtype=roughpy.RationalPoly)
 
     assert str(ft) == "{ { 1(x0) }() { 1(x1) }(1) { 1(x2) }(2) }"
+
+
+def test_exp_log_roundtrip_poly_coeffs():
+    data = [0, 1*Monomial('x1'), 1*Monomial('x2')]
+    ft = FreeTensor(data, width=2, depth=2, dtype=roughpy.RationalPoly)
+
+    assert ft.exp().log() == ft

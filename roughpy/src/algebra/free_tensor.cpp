@@ -164,12 +164,13 @@ void python::init_free_tensor(py::module_& m)
     klass.def("log", &FreeTensor::log);
 //    klass.def("inverse", &FreeTensor::inverse);
     klass.def("fmexp", &FreeTensor::fmexp, "other"_a);
-
+//
     klass.def("__repr__", [](const FreeTensor& self) {
         std::stringstream ss;
         ss << "FreeTensor(width=" << *self.width()
            << ", depth=" << *self.depth();
         ss << ", ctype=" << self.coeff_type()->info().name << ')';
+//        self->print(ss);
         return ss.str();
     });
 }

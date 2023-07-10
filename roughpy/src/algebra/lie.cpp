@@ -107,6 +107,7 @@ void python::init_lie(py::module_& m)
         std::stringstream ss;
         ss << "Lie(width=" << *self.width() << ", depth=" << *self.depth();
         ss << ", ctype=" << self.coeff_type()->info().name << ')';
+//        self->print(ss);
         return ss.str();
     });
 }
