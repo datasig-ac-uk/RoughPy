@@ -57,26 +57,25 @@ def test_shuffle_product_poly_coeffs():
     expected_data = [
         1 * Monomial('x0') * Monomial('y0'),
         Monomial('x0') * Monomial('y1')
-            + Monomial('x1') * Monomial('y0'),
+        + Monomial('x1') * Monomial('y0'),
         Monomial('x0') * Monomial('y2')
-            + Monomial('x2') * Monomial('y0'),
+        + Monomial('x2') * Monomial('y0'),
         Monomial(['x0', 'y3'])
-            + 2 * Monomial(['x1', 'y1'])
-            + Monomial(['x3', 'y0']),
+        + 2 * Monomial(['x1', 'y1'])
+        + Monomial(['x3', 'y0']),
         Monomial(['x0', 'y4'])
-            + Monomial(['x1', 'y2'])
-            + Monomial(['y1', 'x2'])
-            + Monomial(['x4', 'y0']),
+        + Monomial(['x1', 'y2'])
+        + Monomial(['y1', 'x2'])
+        + Monomial(['x4', 'y0']),
         Monomial(['x0', 'y5'])
-            + Monomial(['x2', 'y1'])
-            + Monomial(['y2', 'x1'])
-            + Monomial(['x5', 'y0']),
+        + Monomial(['x2', 'y1'])
+        + Monomial(['y2', 'x1'])
+        + Monomial(['x5', 'y0']),
         Monomial(['x0', 'y6'])
-            + 2 * Monomial(['x2', 'y2'])
-            + Monomial(['x6', 'y0'])
+        + 2 * Monomial(['x2', 'y2'])
+        + Monomial(['x6', 'y0'])
     ]
-
     expected = ShuffleTensor(expected_data, width=2, depth=2,
                              dtype=roughpy.RationalPoly)
 
-    assert result == expected, f"{result} != {expected}"
+    assert result == expected, f"{expected - result} != 0"
