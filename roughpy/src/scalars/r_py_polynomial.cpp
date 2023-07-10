@@ -84,6 +84,9 @@ static PyObject*
 monomial_inplace_pow(PyObject* self, PyObject* other, PyObject*);
 static PyObject* monomial_inplace_floordiv(PyObject* self, PyObject* other);
 
+static PyObject* monomial_neg(PyObject* self);
+static PyObject* monomial_pos(PyObject* self);
+
 static PyObject* monomial_add(PyObject* self, PyObject* other);
 static PyObject* monomial_sub(PyObject* self, PyObject* other);
 static PyObject* monomial_div(PyObject* self, PyObject* other);
@@ -120,8 +123,8 @@ static PyNumberMethods RPyMonomial_number{
         (binaryfunc) monomial_rem,              /* nb_remainder */
         nullptr,                                /* nb_divmod */
         (ternaryfunc) monomial_pow,             /* nb_power */
-        nullptr,                                /* nb_negative */
-        nullptr,                                /* nb_positive */
+        monomial_neg,                           /* nb_negative */
+        monomial_pos,                           /* nb_positive */
         nullptr,                                /* nb_absolute */
         (inquiry) monomial_bool,                /* nb_bool */
         nullptr,                                /* nb_invert */
@@ -237,6 +240,9 @@ static PyObject*
 polynomial_inplace_pow(PyObject* self, PyObject* other, PyObject*);
 static PyObject* polynomial_inplace_floordiv(PyObject* self, PyObject* other);
 
+static PyObject* polynomial_neg(PyObject* self);
+static PyObject* polynomial_pos(PyObject* self);
+
 static PyObject* polynomial_add(PyObject* self, PyObject* other);
 static PyObject* polynomial_sub(PyObject* self, PyObject* other);
 static PyObject* polynomial_div(PyObject* self, PyObject* other);
@@ -270,10 +276,10 @@ static PyNumberMethods RPyPolynomial_number{
         (binaryfunc) polynomial_rem,              /* nb_remainder */
         nullptr,                                  /* nb_divmod */
         (ternaryfunc) polynomial_pow,             /* nb_power */
-        nullptr,                                  /* nb_negative */
-        nullptr,                                  /* nb_positive */
+        polynomial_neg,                           /* nb_negative */
+        polynomial_pos,                           /* nb_positive */
         nullptr,                                  /* nb_absolute */
-        nullptr,                                  /* nb_bool */
+        polynomial_bool,                          /* nb_bool */
         nullptr,                                  /* nb_invert */
         nullptr,                                  /* nb_lshift */
         nullptr,                                  /* nb_rshift */
@@ -724,6 +730,16 @@ PyObject* monomial_inplace_floordiv(PyObject* self, PyObject* other)
 {
     return Py_NotImplemented;
 }
+
+PyObject* monomial_neg(PyObject* self)
+{
+    return PyPolynomial_FromPolynomial(poly_t(cast_mon(self), rat_t(-1)));
+}
+PyObject* monomial_pos(PyObject* self)
+{
+    return PyPolynomial_FromPolynomial(poly_t(cast_mon(self), rat_t(1)));
+}
+
 PyObject* monomial_add(PyObject* self, PyObject* other)
 {
 
@@ -1130,6 +1146,10 @@ Py_ssize_t polynomial_len(PyObject* self)
     const auto& obj = cast_poly(self);
     return static_cast<Py_ssize_t>(obj.size());
 }
+int polynomial_bool(PyObject* self)
+{
+    return static_cast<int>(!cast_poly(self).empty());
+}
 PyObject* polynomial_subscript(PyObject* self, PyObject* index)
 {
     PyErr_SetString(PyExc_NotImplementedError, "not implemented");
@@ -1261,6 +1281,16 @@ PyObject* polynomial_inplace_floordiv(PyObject* self, PyObject* other)
 {
     return Py_NotImplemented;
 }
+
+PyObject* polynomial_neg(PyObject* self)
+{
+    return PyPolynomial_FromPolynomial(-cast_poly(self));
+}
+PyObject* polynomial_pos(PyObject* self)
+{
+    return PyPolynomial_FromPolynomial(poly_t(cast_poly(self)));
+}
+
 PyObject* polynomial_add(PyObject* self, PyObject* other)
 {
     bool lhs_poly = is_polynomial(self);
