@@ -87,7 +87,7 @@ private:
 public:
     scalar_t as_scalar() const override
     {
-        convert_to_scalar_t(static_cast<const value_type&>(m_data));
+        return convert_to_scalar_t(static_cast<const value_type&>(m_data));
     }
     void assign(ScalarPointer pointer) override
     {
