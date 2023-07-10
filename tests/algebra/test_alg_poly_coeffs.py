@@ -28,7 +28,7 @@
 import pytest
 
 import roughpy
-from roughpy import FreeTensor, Monomial
+from roughpy import FreeTensor, ShuffleTensor, Monomial
 
 
 
@@ -45,3 +45,21 @@ def test_exp_log_roundtrip_poly_coeffs():
     ft = FreeTensor(data, width=2, depth=2, dtype=roughpy.RationalPoly)
 
     assert ft.exp().log() == ft
+
+
+def test_shuffle_product_poly_coeffs():
+    lhs = ShuffleTensor([1*Monomial(f"x{i}") for i in range(7)], width=2,
+                        depth=2, dtype=roughpy.RationalPoly)
+    rhs = ShuffleTensor([1*Monomial(f"y{i}") for i in range(7)], width=2,
+                        depth=2, dtype=roughpy.RationalPoly)
+
+    result = lhs*rhs
+
+    expected_data = [
+       Monomial('x0')*Monomial('y0'),
+       Monomial('x0')*Monomial('y1') + Monomial('x1')*Monomial('y0'),
+       Monomial('x0')*Monomial('y2') + Monomial('x2')*Monomial('y0'),
+    ]
+
+    assert result == ShuffleTensor(expected_data, width=2, depth=2,
+                                   dtype=roughpy.RationalPoly)
