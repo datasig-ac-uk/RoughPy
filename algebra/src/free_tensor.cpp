@@ -66,11 +66,11 @@ FreeTensor FreeTensor::log() const
     if (p_impl) { return p_impl->log(); }
     return {};
 }
-FreeTensor FreeTensor::inverse() const
-{
-    if (p_impl) { return p_impl->inverse(); }
-    return {};
-}
+//FreeTensor FreeTensor::inverse() const
+//{
+//    if (p_impl) { return p_impl->inverse(); }
+//    return {};
+//}
 FreeTensor FreeTensor::antipode() const
 {
     if (p_impl) { return p_impl->antipode(); }
@@ -92,11 +92,11 @@ FreeTensorBundle FreeTensorBundle::log() const
     if (p_impl) { return p_impl->log(); }
     return FreeTensorBundle();
 }
-FreeTensorBundle FreeTensorBundle::inverse() const
-{
-    if (p_impl) { return p_impl->inverse(); }
-    return FreeTensorBundle();
-}
+//FreeTensorBundle FreeTensorBundle::inverse() const
+//{
+//    if (p_impl) { return p_impl->inverse(); }
+//    return FreeTensorBundle();
+//}
 FreeTensorBundle FreeTensorBundle::antipode() const
 {
     if (p_impl) { return p_impl->antipode(); }

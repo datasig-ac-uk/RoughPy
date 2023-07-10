@@ -48,9 +48,10 @@ static std::unordered_map<
         boost::hash<std::tuple<deg_t, deg_t, const scalars::ScalarType*>>>
         s_lite_context_cache;
 
-static std::array<const scalars::ScalarType*, 3> s_lite_context_allowed_ctypes
+static std::array<const scalars::ScalarType*, 4> s_lite_context_allowed_ctypes
         = {scalars::ScalarType::of<double>(), scalars::ScalarType::of<float>(),
-           scalars::ScalarType::of<typename lal::rational_field::scalar_type>(
+           scalars::ScalarType::of<typename lal::rational_field::scalar_type>(),
+           scalars::ScalarType::of<typename lal::polynomial_ring::scalar_type>(
            )};
 
 static optional<std::ptrdiff_t> index_of_ctype(const scalars::ScalarType* ctype
@@ -99,6 +100,7 @@ context_pointer LiteContextMaker::create_context(
         case 0: return new LiteContext<lal::double_field>(width, depth);
         case 1: return new LiteContext<lal::float_field>(width, depth);
         case 2: return new LiteContext<lal::rational_field>(width, depth);
+        case 3: return new LiteContext<lal::polynomial_ring>(width, depth);
     }
 
     RPY_UNREACHABLE();

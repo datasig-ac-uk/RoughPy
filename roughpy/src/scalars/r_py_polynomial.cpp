@@ -36,6 +36,8 @@
 
 #include <roughpy/core/alloc.h>
 
+#include "scalars.h"
+
 using namespace rpy;
 using namespace python;
 
@@ -589,12 +591,7 @@ int monomial_ass_subscript(PyObject* self, PyObject* index, PyObject* arg)
     return 0;
 }
 
-static inline py::type get_py_rational()
-{
-    return py::reinterpret_borrow<py::type>(
-            py::module_::import("fractions").attr("Fraction")
-    );
-}
+
 
 static inline bool py_scalar_to_rat(rat_t& result, PyObject* scalar) noexcept
 {

@@ -237,6 +237,12 @@ void RationalPolyScalarType::convert_copy(
         ScalarPointer out, const void* in, std::size_t count, const string& id
 ) const
 {
+    if (id == this->id()) {
+        const auto* in_begin = reinterpret_cast<const scalar_type*>(in);
+        const auto* in_end = in_begin + count;
+        std::copy(in_begin, in_end, out.template raw_cast<scalar_type*>());
+        return;
+    }
 
     if (id == "f64") {
         return convert_copy_ext<double>(out, in, count);

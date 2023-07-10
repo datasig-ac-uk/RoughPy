@@ -68,9 +68,26 @@ public:
     {
         return static_cast<const value_type&>(m_data) == value_type(0);
     }
+
+private:
+    template <typename T>
+    static enable_if_t<is_convertible<const T&, scalar_t>::value, scalar_t>
+    convert_to_scalar_t(const T& arg)
+    {
+        return static_cast<scalar_t>(arg);
+    }
+
+    template <typename T>
+    static enable_if_t<!is_convertible<const T&, scalar_t>::value, scalar_t>
+    convert_to_scalar_t(const T&)
+    {
+        throw std::runtime_error("cannot convert to scalar_t");
+    }
+
+public:
     scalar_t as_scalar() const override
     {
-        return scalar_t(static_cast<const value_type&>(m_data));
+        convert_to_scalar_t(static_cast<const value_type&>(m_data));
     }
     void assign(ScalarPointer pointer) override
     {

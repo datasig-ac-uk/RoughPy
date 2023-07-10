@@ -502,7 +502,7 @@ LiteContext<Coefficients>::derive_series_compute(
 
     auto ad_x = commutator(increment, t_perturbation);
     for (deg_t d = 1; d <= depth; ++d) {
-        factor *= typename Coefficients::scalar_type(d + 1);
+        factor *= typename Coefficients::rational_type(d + 1);
         if (d % 2 == 0) {
             result.add_scal_div(ad_x, factor);
         } else {
@@ -783,6 +783,8 @@ extern template class LiteContext<lal::float_field>;
 extern template class LiteContext<lal::double_field>;
 
 extern template class LiteContext<lal::rational_field>;
+
+extern template class LiteContext<lal::polynomial_ring>;
 
 }// namespace algebra
 }// namespace rpy

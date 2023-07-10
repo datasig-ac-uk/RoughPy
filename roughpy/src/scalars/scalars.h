@@ -69,6 +69,20 @@ struct RPY_NO_EXPORT PyToBufferOptions {
     AlternativeKeyType* alternative_key = nullptr;
 };
 
+inline py::type get_py_rational()
+{
+    return py::reinterpret_borrow<py::type>(
+            py::module_::import("fractions").attr("Fraction")
+    );
+}
+
+inline py::type get_py_decimal() {
+    return py::reinterpret_borrow<py::type>(
+                py::module_::import("decimal").attr("Decimal")
+                );
+}
+
+
 scalars::KeyScalarArray
 py_to_buffer(const py::handle& arg, PyToBufferOptions& options);
 

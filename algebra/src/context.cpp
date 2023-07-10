@@ -242,13 +242,13 @@ context_pointer rpy::algebra::get_context(
 
     if (found.empty()) {
         throw std::invalid_argument("cannot find a context maker for the "
-                                    "width, depth, ctype, and preferences set");
+                                    "width, depth, dtype, and preferences set");
     }
 
     if (found.size() > 1) {
         throw std::invalid_argument(
                 "found multiple context maker candidates for specified width, "
-                "depth, ctype, and preferences set"
+                "depth, dtype, and preferences set"
         );
     }
 

@@ -56,6 +56,8 @@ void python::assign_py_object_to_scalar(
         *ptr = object.cast<double>();
     } else if (py::isinstance<py::int_>(object)) {
         *ptr = object.cast<long long>();
+    } else if (RPyPolynomial_Check(object.ptr())) {
+        *ptr = RPyPolynomial_cast(object.ptr());
     } else {
         // TODO: other checks
 
@@ -265,7 +267,11 @@ enum class ground_data_type
 
 static inline bool is_scalar(py::handle arg)
 {
-    return py::isinstance<py::int_>(arg) || py::isinstance<py::float_>(arg);
+    return (
+        py::isinstance<py::int_>(arg)
+        || py::isinstance<py::float_>(arg)
+        || RPyPolynomial_Check(arg.ptr())
+    );
 }
 
 static inline bool

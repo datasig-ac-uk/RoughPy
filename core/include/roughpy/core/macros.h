@@ -249,8 +249,8 @@
 #  endif
 #else
 #  define RPY_TEMPLATE_EXTERN extern
-#  define RPY_EXPORT_TEMPLATE
-#  define RPY_EXPORT_INSTANTIATION RPY_EXPORT
+#  define RPY_EXPORT_TEMPLATE RPY_EXPORT
+#  define RPY_EXPORT_INSTANTIATION
 #endif
 
 // Sanitizer supports

@@ -58,7 +58,7 @@ public:
 
     RPY_NO_DISCARD FreeTensor exp() const override;
     RPY_NO_DISCARD FreeTensor log() const override;
-    RPY_NO_DISCARD FreeTensor inverse() const override;
+//    RPY_NO_DISCARD FreeTensor inverse() const override;
     RPY_NO_DISCARD FreeTensor antipode() const override;
     void fmexp(const FreeTensor& other) override;
 };
@@ -105,13 +105,13 @@ FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::log() const
             FreeTensorInterface::p_ctx, dtl::log_wrapper(base_t::data())
     );
 }
-template <typename FTImpl, template <typename> class StorageModel>
-FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::inverse() const
-{
-    return FreeTensor(
-            FreeTensorInterface::p_ctx, dtl::inverse_wrapper(base_t::data())
-    );
-}
+//template <typename FTImpl, template <typename> class StorageModel>
+//FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::inverse() const
+//{
+//    return FreeTensor(
+//            FreeTensorInterface::p_ctx, dtl::inverse_wrapper(base_t::data())
+//    );
+//}
 template <typename FTImpl, template <typename> class StorageModel>
 FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::antipode() const
 {
@@ -142,7 +142,7 @@ public:
 
     FreeTensorBundle exp() const override;
     FreeTensorBundle log() const override;
-    FreeTensorBundle inverse() const override;
+//    FreeTensorBundle inverse() const override;
     FreeTensorBundle antipode() const override;
     void fmexp(const FreeTensorBundle& other) override;
 };
@@ -163,15 +163,15 @@ FreeTensorBundleImplementation<FTBImpl, StorageModel>::log() const
             FreeTensorBundleInterface::p_ctx, dtl::log_wrapper(base_t::data())
     );
 }
-template <typename FTBImpl, template <typename> class StorageModel>
-FreeTensorBundle
-FreeTensorBundleImplementation<FTBImpl, StorageModel>::inverse() const
-{
-    return FreeTensorBundle(
-            FreeTensorBundleInterface::p_ctx,
-            dtl::inverse_wrapper(base_t::data())
-    );
-}
+//template <typename FTBImpl, template <typename> class StorageModel>
+//FreeTensorBundle
+//FreeTensorBundleImplementation<FTBImpl, StorageModel>::inverse() const
+//{
+//    return FreeTensorBundle(
+//            FreeTensorBundleInterface::p_ctx,
+//            dtl::inverse_wrapper(base_t::data())
+//    );
+//}
 template <typename FTBImpl, template <typename> class StorageModel>
 FreeTensorBundle
 FreeTensorBundleImplementation<FTBImpl, StorageModel>::antipode() const
