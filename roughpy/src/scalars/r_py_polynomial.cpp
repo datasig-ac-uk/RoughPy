@@ -166,7 +166,7 @@ PyTypeObject RPyMonomial_Type = {
         &RPyMonomial_number,                 /* tp_as_number */
         0,                                   /* tp_as_sequence */
         &RPyMonomial_mapping,                /* tp_as_mapping */
-        (hashfunc) monomial_hash,                             /* tp_hash */
+        (hashfunc) monomial_hash,            /* tp_hash */
         0,                                   /* tp_call */
         (reprfunc) monomial_str,             /* tp_str */
         0,                                   /* tp_getattro */
@@ -591,8 +591,6 @@ int monomial_ass_subscript(PyObject* self, PyObject* index, PyObject* arg)
     return 0;
 }
 
-
-
 static inline bool py_scalar_to_rat(rat_t& result, PyObject* scalar) noexcept
 {
     if (PyLong_Check(scalar)) {
@@ -635,7 +633,6 @@ PyObject* monomial_mul(PyObject* self, PyObject* other)
         return PyMonomial_FromMonomial(lhs * rhs);
     }
 
-
     rat_t scalar;
     if (self_mon) {
         if (py_scalar_to_rat(scalar, other)) {
@@ -674,7 +671,6 @@ PyObject* monomial_inplace_mul(PyObject* self, PyObject* other)
             return PyPolynomial_FromPolynomial(poly_t(cast_mon(other), scalar));
         }
     }
-
 
     return Py_NotImplemented;
 }
@@ -730,6 +726,7 @@ PyObject* monomial_inplace_floordiv(PyObject* self, PyObject* other)
 }
 PyObject* monomial_add(PyObject* self, PyObject* other)
 {
+
     bool self_mon = is_monomial(self);
     if (self_mon && is_monomial(other)) {
         const auto& lhs = cast_mon(self);
