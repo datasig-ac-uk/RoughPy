@@ -35,6 +35,7 @@
 #include <sstream>
 
 #include <roughpy/core/alloc.h>
+#include <roughpy/scalars/scalar.h>
 
 #include "scalars.h"
 
@@ -1152,13 +1153,59 @@ int polynomial_bool(PyObject* self)
 }
 PyObject* polynomial_subscript(PyObject* self, PyObject* index)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented");
+    const auto& poly = cast_poly(self);
+    if (is_monomial(index)) {
+        return py::cast(scalars::Scalar(
+                                scalars::ScalarType::of<rat_t>(),
+                                poly[cast_mon(index)]
+                        ))
+                .release()
+                .ptr();
+    }
+
+    PyErr_SetString(
+            PyExc_TypeError,
+            "polynomial index must be monomial or "
+            "str"
+    );
     return nullptr;
 }
 int polynomial_ass_subscript(PyObject* self, PyObject* index, PyObject* arg)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented");
-    return 0;
+    auto& poly = cast_poly(self);
+    scalars::monomial monomial;
+
+    if (is_monomial(index)) {
+        monomial = cast_mon(index);
+    } else if (PyUnicode_Check(index)) {
+        scalars::indeterminate_type indet(0, 0);
+        if (!indeterminate_from_string(index, indet)) {
+            PyErr_SetString(
+                    PyExc_ValueError,
+                    "could not parse string to "
+                    "monomial"
+            );
+            return -1;
+        }
+
+        monomial = scalars::monomial(indet);
+    }
+
+    rat_t newarg;
+    if (py_scalar_to_rat(newarg, arg)) {
+        PyErr_SetString(PyExc_ValueError, "could not parse value");
+        return -1;
+    }
+
+    if (newarg != rat_t(0)) {
+        poly[monomial] = newarg;
+        return 0;
+    }
+
+    PyErr_SetString(
+            PyExc_TypeError, "polynomial index must be monomial or str"
+    );
+    return -1;
 }
 PyObject* polynomial_mul(PyObject* self, PyObject* other)
 {
