@@ -615,8 +615,8 @@ static inline bool py_scalar_to_rat(rat_t& result, PyObject* scalar) noexcept
             );
 
             result = rat_t(numr, denr);
+            return true;
         }
-        return true;
     } catch (py::error_already_set&) {
         // If the error state is set, then clear it. This isn't really an
         // error.
