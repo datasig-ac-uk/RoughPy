@@ -1279,24 +1279,24 @@ PyObject* polynomial_add(PyObject* self, PyObject* other)
         const auto& poly = cast_poly(self);
         if (is_monomial(other)) {
             const auto& mon = cast_mon(other);
-            return PyPolynomial_FromPolynomial(poly - poly_t(mon, rat_t(1)));
+            return PyPolynomial_FromPolynomial(poly + poly_t(mon, rat_t(1)));
         }
 
         rat_t scalar;
         if (py_scalar_to_rat(scalar, other)) {
-            return PyPolynomial_FromPolynomial(poly - poly_t(scalar));
+            return PyPolynomial_FromPolynomial(poly + poly_t(scalar));
         }
     } else {
         const auto& poly = cast_poly(other);
 
         if (is_monomial(self)) {
             const auto& mon = cast_mon(self);
-            return PyPolynomial_FromPolynomial(poly_t(mon, rat_t(1)) - poly);
+            return PyPolynomial_FromPolynomial(poly_t(mon, rat_t(1)) + poly);
         }
 
         rat_t scalar;
         if (py_scalar_to_rat(scalar, self)) {
-            return PyPolynomial_FromPolynomial(poly_t(scalar) - poly);
+            return PyPolynomial_FromPolynomial(poly_t(scalar) + poly);
         }
     }
     return Py_NotImplemented;
