@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 03/03/23.
@@ -39,40 +40,45 @@ using namespace rpy;
 using namespace rpy::algebra;
 
 algebra::dtl::AlgebraInterfaceBase::AlgebraInterfaceBase(
-        context_pointer &&ctx, VectorType vtype,
-        const scalars::ScalarType *stype, ImplementationType impl_type)
+        context_pointer&& ctx, VectorType vtype,
+        const scalars::ScalarType* stype, ImplementationType impl_type
+)
     : p_ctx(std::move(ctx)), p_coeff_type(stype), m_vector_type(vtype),
       m_impl_type(impl_type)
 {}
 
 algebra::dtl::AlgebraInterfaceBase::~AlgebraInterfaceBase() = default;
 
-void rpy::algebra::dtl::print_empty_algebra(std::ostream &os) { os << "{ }"; }
+void rpy::algebra::dtl::print_empty_algebra(std::ostream& os) { os << "{ }"; }
 
-const rpy::scalars::ScalarType *
-rpy::algebra::dtl::context_to_scalars(context_pointer const &ptr)
+const rpy::scalars::ScalarType*
+rpy::algebra::dtl::context_to_scalars(context_pointer const& ptr)
 {
     return ptr->ctype();
 }
 
-UnspecifiedAlgebraType
-rpy::algebra::dtl::try_create_new_empty(context_pointer ctx,
-                                        AlgebraType alg_type)
+UnspecifiedAlgebraType rpy::algebra::dtl::try_create_new_empty(
+        context_pointer ctx, AlgebraType alg_type
+)
 {
     return ctx->construct(alg_type, {});
 }
 
-UnspecifiedAlgebraType
-algebra::dtl::construct_dense_algebra(scalars::ScalarArray &&data,
-                                      const context_pointer &ctx,
-                                      AlgebraType atype)
+UnspecifiedAlgebraType algebra::dtl::construct_dense_algebra(
+        scalars::ScalarArray&& data, const context_pointer& ctx,
+        AlgebraType atype
+)
 {
-    VectorConstructionData cdata{{std::move(data), nullptr}, VectorType::Dense};
+    VectorConstructionData cdata{
+            {std::move(data), nullptr},
+            VectorType::Dense
+    };
     return ctx->construct(atype, cdata);
 }
 
-void rpy::algebra::dtl::check_contexts_compatible(const context_pointer &ref,
-                                                  const context_pointer &other)
+void rpy::algebra::dtl::check_contexts_compatible(
+        const context_pointer& ref, const context_pointer& other
+)
 {
     if (ref == other) { return; }
 

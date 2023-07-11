@@ -35,33 +35,33 @@ public:
                              algebra::VectorType vtype);
 
 private:
-    algebra::Lie &current() { return m_entries.rbegin()->second; }
-    algebra::Lie &previous()
+    algebra::Lie& current() { return m_entries.rbegin()->second; }
+    algebra::Lie& previous()
     {
         if (RPY_UNLIKELY(m_entries.size() < 2)) { return m_zero; }
         return (++m_entries.rbegin())->second;
     }
 
-    algebra::Lie &next_entry(param_t next_timestamp);
+    algebra::Lie& next_entry(param_t next_timestamp);
 
 public:
-    StreamSchema &schema() noexcept { return *p_schema; }
-    const scalars::ScalarType *ctype() const noexcept { return p_ctx->ctype(); }
+    StreamSchema& schema() noexcept { return *p_schema; }
+    const scalars::ScalarType* ctype() const noexcept { return p_ctx->ctype(); }
 
     RPY_NO_DISCARD
     optional<ChannelType> type_of(string_view label) const;
 
     template <typename T>
-    void add_increment(param_t timestamp, dimn_t channel, T &&value);
+    void add_increment(param_t timestamp, dimn_t channel, T&& value);
 
     template <typename T>
-    void add_increment(param_t timestamp, string_view label, T &&value);
+    void add_increment(param_t timestamp, string_view label, T&& value);
 
     template <typename T>
-    void add_value(param_t timestamp, dimn_t channel, T &&value);
+    void add_value(param_t timestamp, dimn_t channel, T&& value);
 
     template <typename T>
-    void add_value(param_t timestamp, string_view label, T &&value);
+    void add_value(param_t timestamp, string_view label, T&& value);
 
     void add_categorical(param_t timestamp, dimn_t channel, dimn_t variant);
     void add_categorical(param_t timestamp, string_view channel,
@@ -78,7 +78,7 @@ public:
 
 template <typename T>
 void StreamConstructionHelper::add_increment(param_t timestamp, dimn_t channel,
-                                             T &&value)
+                                             T&& value)
 {
     auto key = static_cast<key_type>(p_schema->channel_to_stream_dim(channel))
             + 1;
@@ -86,7 +86,7 @@ void StreamConstructionHelper::add_increment(param_t timestamp, dimn_t channel,
 }
 template <typename T>
 void StreamConstructionHelper::add_increment(param_t timestamp,
-                                             string_view label, T &&value)
+                                             string_view label, T&& value)
 {
     auto key = static_cast<key_type>(
                        p_schema->label_to_stream_dim(string(label)))
@@ -95,7 +95,7 @@ void StreamConstructionHelper::add_increment(param_t timestamp,
 }
 template <typename T>
 void StreamConstructionHelper::add_value(param_t timestamp, dimn_t channel,
-                                         T &&value)
+                                         T&& value)
 {
     auto lead_idx = p_schema->channel_variant_to_stream_dim(channel, 0);
     auto lag_idx = p_schema->channel_variant_to_stream_dim(channel, 1);
@@ -112,7 +112,7 @@ void StreamConstructionHelper::add_value(param_t timestamp, dimn_t channel,
 }
 template <typename T>
 void StreamConstructionHelper::add_value(param_t timestamp, string_view label,
-                                         T &&value)
+                                         T&& value)
 {
     const auto found = p_schema->find(string(label));
     RPY_CHECK(found != p_schema->end());

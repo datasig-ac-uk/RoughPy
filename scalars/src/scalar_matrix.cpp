@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 12/04/23.
@@ -37,11 +38,11 @@
 
 rpy::scalars::ScalarMatrix::ScalarMatrix() : ScalarArray() {}
 
-rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type,
+rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType* type,
                                          rpy::deg_t rows, rpy::deg_t cols,
                                          rpy::scalars::MatrixStorage storage,
                                          rpy::scalars::MatrixLayout layout)
-    : ScalarArray(type, (void *) nullptr, 0), m_storage(storage),
+    : ScalarArray(type, (void*) nullptr, 0), m_storage(storage),
       m_layout(layout), m_nrows(rows), m_ncols(cols)
 {
     if (p_type != nullptr && m_nrows > 0 && m_ncols > 0) {
@@ -51,7 +52,7 @@ rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type,
     }
 }
 rpy::scalars::ScalarMatrix::ScalarMatrix(rpy::deg_t rows, rpy::deg_t cols,
-                                         rpy::scalars::ScalarArray &&array,
+                                         rpy::scalars::ScalarArray&& array,
                                          rpy::scalars::MatrixStorage storage,
                                          rpy::scalars::MatrixLayout layout)
     : ScalarArray(std::move(array)), m_storage(storage), m_layout(layout),
@@ -90,12 +91,12 @@ rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::to_full() const
     return to_full(m_layout);
 }
 
-static void transpose_fallback(rpy::scalars::ScalarMatrix &matrix)
+static void transpose_fallback(rpy::scalars::ScalarMatrix& matrix)
 {
     const auto M = matrix.nrows();
     const auto N = matrix.ncols();
 
-    const auto *type = matrix.type();
+    const auto* type = matrix.type();
     rpy::scalars::ScalarPointer ptr(matrix);
     if (M == N) {
         for (rpy::deg_t i = 0; i < M; ++i) {
@@ -132,7 +133,7 @@ rpy::scalars::ScalarMatrix::to_full(rpy::scalars::MatrixLayout layout) const
     return result;
 }
 
-void rpy::scalars::ScalarMatrix::to_full(rpy::scalars::ScalarMatrix &into) const
+void rpy::scalars::ScalarMatrix::to_full(rpy::scalars::ScalarMatrix& into) const
 {
     const auto layout = into.layout();
 

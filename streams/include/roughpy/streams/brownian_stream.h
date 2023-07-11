@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_BROWNIAN_STREAM_H_
 #define ROUGHPY_STREAMS_BROWNIAN_STREAM_H_
@@ -43,13 +44,13 @@ class RPY_EXPORT BrownianStream : public DynamicallyConstructedStream
     std::unique_ptr<scalars::RandomGenerator> p_generator;
 
     RPY_NO_DISCARD
-    algebra::Lie gaussian_increment(const algebra::Context &ctx,
+    algebra::Lie gaussian_increment(const algebra::Context& ctx,
                                     param_t length) const;
 
 protected:
     RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval &interval,
-                                    const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval& interval,
+                                    const algebra::Context& ctx) const override;
     RPY_NO_DISCARD
     Lie make_new_root_increment(DyadicInterval di) const override;
     RPY_NO_DISCARD
@@ -59,11 +60,11 @@ protected:
     pair<Lie, Lie>
     compute_child_lie_increments(DyadicInterval left_di,
                                  DyadicInterval right_di,
-                                 const Lie &parent_value) const override;
+                                 const Lie& parent_value) const override;
 
 public:
     RPY_NO_DISCARD
-    scalars::RandomGenerator &generator() noexcept { return *p_generator; }
+    scalars::RandomGenerator& generator() noexcept { return *p_generator; }
 
     BrownianStream() : DynamicallyConstructedStream({}), p_generator(nullptr) {}
 
@@ -77,7 +78,7 @@ public:
     RPY_SERIAL_LOAD_FN();
 
     template <typename Archive>
-    void restore_cached(Archive &archive, const algebra::Context &ctx)
+    void restore_cached(Archive& archive, const algebra::Context& ctx)
     {
         load_cache(archive, ctx);
     }
@@ -100,7 +101,7 @@ RPY_SERIAL_LOAD_FN_IMPL(BrownianStream)
 {
     StreamMetadata md;
     RPY_SERIAL_SERIALIZE_NVP("metadata", md);
-    const auto *stype = md.data_scalar_type;
+    const auto* stype = md.data_scalar_type;
     set_metadata(std::move(md));
 
     std::string generator;

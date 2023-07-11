@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_CORE_POINTER_HELPERS_H_
 #define ROUGHPY_CORE_POINTER_HELPERS_H_
@@ -52,16 +53,16 @@ namespace rpy {
 using std::bit_cast;
 #else
 template <typename To, typename From>
-RPY_NO_DISCARD enable_if_t<sizeof(To) == sizeof(From)
-                                   && is_trivially_copyable<From>::value
-                                   && is_trivially_copyable<To>::value
-                                   && is_default_constructible<To>::value,
-                           To>
+RPY_NO_DISCARD enable_if_t<
+        sizeof(To) == sizeof(From) && is_trivially_copyable<From>::value
+                && is_trivially_copyable<To>::value
+                && is_default_constructible<To>::value,
+        To>
 bit_cast(From from)
 {
     To to;
-    memcpy(static_cast<void *>(std::addressof(to)),
-           static_cast<const void *>(std::addressof(from)), sizeof(To));
+    memcpy(static_cast<void*>(std::addressof(to)),
+           static_cast<const void*>(std::addressof(from)), sizeof(To));
     return to;
 }
 #endif
@@ -78,7 +79,8 @@ count_bits(T val) noexcept
  * @brief
  * @tparam T
  */
-template <typename T> class MaybeOwned
+template <typename T>
+class MaybeOwned
 {
     enum State
     {
@@ -86,19 +88,19 @@ template <typename T> class MaybeOwned
         IsBorrowed
     };
 
-    T *p_data;
+    T* p_data;
     State m_state;
 
 public:
     constexpr MaybeOwned(std::nullptr_t) : p_data(nullptr), m_state(IsOwned) {}
-    constexpr MaybeOwned(T *ptr) : p_data(ptr), m_state(IsBorrowed) {}
+    constexpr MaybeOwned(T* ptr) : p_data(ptr), m_state(IsBorrowed) {}
 
     ~MaybeOwned()
     {
         if (m_state == IsOwned) { delete[] p_data; }
     }
 
-    constexpr MaybeOwned &operator=(T *ptr)
+    constexpr MaybeOwned& operator=(T* ptr)
     {
         p_data = ptr;
         m_state = IsOwned;
@@ -106,7 +108,7 @@ public:
     }
 
     RPY_NO_DISCARD
-    operator T *() const noexcept { return p_data; }
+    operator T*() const noexcept { return p_data; }
 
     RPY_NO_DISCARD
     operator bool() const noexcept { return p_data != nullptr; }

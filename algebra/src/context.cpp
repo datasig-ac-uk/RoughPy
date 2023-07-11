@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 05/03/23.
@@ -43,43 +44,49 @@
 using namespace rpy;
 using namespace rpy::algebra;
 
-BasicContextSpec rpy::algebra::get_context_spec(const context_pointer &ctx)
+BasicContextSpec rpy::algebra::get_context_spec(const context_pointer& ctx)
 {
     if (!ctx) { return {"", "", 0, 0}; }
     return {ctx->ctype()->id(), ctx->backend(), ctx->width(), ctx->depth()};
 }
 
-context_pointer rpy::algebra::from_context_spec(const BasicContextSpec &spec)
+context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)
 {
     RPY_CHECK(spec.stype_id != "");
 
-    return get_context(spec.width, spec.depth, scalars::get_type(spec.stype_id),
-                       {{"backend", spec.backend}});
+    return get_context(
+            spec.width, spec.depth, scalars::get_type(spec.stype_id),
+            {
+                    {"backend", spec.backend}
+    }
+    );
 }
 
-std::vector<byte> rpy::algebra::alg_to_raw_bytes(context_pointer ctx,
-                                                 AlgebraType atype,
-                                                 RawUnspecifiedAlgebraType alg)
+std::vector<byte> rpy::algebra::alg_to_raw_bytes(
+        context_pointer ctx, AlgebraType atype, RawUnspecifiedAlgebraType alg
+)
 {
     if (ctx) { return ctx->to_raw_bytes(atype, alg); }
     return std::vector<byte>();
 }
 
-UnspecifiedAlgebraType rpy::algebra::alg_from_raw_bytes(context_pointer ctx,
-                                                        AlgebraType atype,
-                                                        Slice<byte> raw_data)
+UnspecifiedAlgebraType rpy::algebra::alg_from_raw_bytes(
+        context_pointer ctx, AlgebraType atype, Slice<byte> raw_data
+)
 {
     if (ctx) { return ctx->from_raw_bytes(atype, raw_data); }
     return nullptr;
 }
 
-ContextBase::ContextBase(deg_t width, deg_t depth, const dimn_t *lie_sizes,
-                         const dimn_t *tensor_sizes)
+ContextBase::ContextBase(
+        deg_t width, deg_t depth, const dimn_t* lie_sizes,
+        const dimn_t* tensor_sizes
+)
     : m_width(width), m_depth(depth), p_lie_sizes(lie_sizes),
       p_tensor_sizes(tensor_sizes)
 {
     if (!p_tensor_sizes) {
-        auto *tsizes = new dimn_t[1 + m_depth];
+        auto* tsizes = new dimn_t[1 + m_depth];
         // Immediately give ownership to the MaybeOwned type so we don't leak
         // memory.
         p_tensor_sizes = tsizes;
@@ -92,7 +99,7 @@ ContextBase::ContextBase(deg_t width, deg_t depth, const dimn_t *lie_sizes,
 
     if (!p_lie_sizes) {
         HallSetSizeHelper helper(m_width, m_depth);
-        auto *lsizes = new dimn_t[1 + m_depth];
+        auto* lsizes = new dimn_t[1 + m_depth];
         // Immediately give ownership to the MaybeOwned type so we don't leak
         // memory.
         p_lie_sizes = lsizes;
@@ -116,7 +123,7 @@ dimn_t ContextBase::tensor_size(deg_t deg) const noexcept
     if (deg < 0 || deg > m_depth) { deg = m_depth; }
     return p_tensor_sizes[deg];
 }
-bool Context::check_compatible(const Context &other_ctx) const noexcept
+bool Context::check_compatible(const Context& other_ctx) const noexcept
 {
     return width() == other_ctx.width();
 }
@@ -132,30 +139,30 @@ Lie Context::zero_lie(VectorType vtype) const
 {
     return construct_lie({scalars::KeyScalarArray(), vtype});
 }
-FreeTensor Context::to_signature(const Lie &log_signature) const
+FreeTensor Context::to_signature(const Lie& log_signature) const
 {
     return lie_to_tensor(log_signature).exp();
 }
 
-void Context::lie_to_tensor_fallback(FreeTensor &result, const Lie &arg) const
+void Context::lie_to_tensor_fallback(FreeTensor& result, const Lie& arg) const
 {
-    //TODO: Implement
+    // TODO: Implement
 }
-void Context::tensor_to_lie_fallback(Lie &result, const FreeTensor &arg) const
+void Context::tensor_to_lie_fallback(Lie& result, const FreeTensor& arg) const
 {
-    //TODO: Implement
+    // TODO: Implement
 }
-void Context::cbh_fallback(FreeTensor &collector,
-                           const std::vector<Lie> &lies) const
+void Context::cbh_fallback(FreeTensor& collector, const std::vector<Lie>& lies)
+        const
 {
-    for (const auto &alie : lies) {
+    for (const auto& alie : lies) {
         if (alie.dimension() != 0) {
             collector.fmexp(this->lie_to_tensor(alie));
         }
     }
 }
 
-Lie Context::cbh(const std::vector<Lie> &lies, VectorType vtype) const
+Lie Context::cbh(const std::vector<Lie>& lies, VectorType vtype) const
 {
     if (lies.size() == 1) { return convert(lies[0], vtype); }
 
@@ -166,7 +173,7 @@ Lie Context::cbh(const std::vector<Lie> &lies, VectorType vtype) const
 
     return tensor_to_lie(collector.log());
 }
-Lie Context::cbh(const Lie &left, const Lie &right, VectorType vtype) const
+Lie Context::cbh(const Lie& left, const Lie& right, VectorType vtype) const
 {
     FreeTensor tmp = lie_to_tensor(left).exp();
     tmp.fmexp(lie_to_tensor(right));
@@ -176,7 +183,7 @@ Lie Context::cbh(const Lie &left, const Lie &right, VectorType vtype) const
 
 static std::recursive_mutex s_context_lock;
 
-static std::vector<std::unique_ptr<ContextMaker>> &get_context_maker_list()
+static std::vector<std::unique_ptr<ContextMaker>>& get_context_maker_list()
 {
     static std::vector<std::unique_ptr<ContextMaker>> list;
     return list;
@@ -197,9 +204,9 @@ public:
 base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth)
 {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
-    auto &maker_list = get_context_maker_list();
+    auto& maker_list = get_context_maker_list();
 
-    for (const auto &maker : maker_list) {
+    for (const auto& maker : maker_list) {
         auto found = maker->get_base_context(width, depth);
         if (found.has_value()) { return *found; }
     }
@@ -208,7 +215,7 @@ base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth)
     // make a new one
     static std::vector<base_context_pointer> s_base_context_cache;
 
-    for (const auto &bcp : s_base_context_cache) {
+    for (const auto& bcp : s_base_context_cache) {
         if (bcp->width() == width && bcp->depth() == depth) { return bcp; }
     }
 
@@ -216,17 +223,18 @@ base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth)
     return s_base_context_cache.back();
 }
 context_pointer rpy::algebra::get_context(
-        deg_t width, deg_t depth, const scalars::ScalarType *ctype,
-        const std::vector<std::pair<string, string>> &preferences)
+        deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+        const std::vector<std::pair<string, string>>& preferences
+)
 {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
-    auto &maker_list = get_context_maker_list();
+    auto& maker_list = get_context_maker_list();
 
     if (maker_list.empty()) { maker_list.emplace_back(new LiteContextMaker); }
 
-    std::vector<const ContextMaker *> found;
+    std::vector<const ContextMaker*> found;
     found.reserve(maker_list.size());
-    for (const auto &maker : maker_list) {
+    for (const auto& maker : maker_list) {
         if (maker->can_get(width, depth, ctype, preferences)) {
             found.push_back(maker.get());
         }
@@ -234,67 +242,69 @@ context_pointer rpy::algebra::get_context(
 
     if (found.empty()) {
         throw std::invalid_argument("cannot find a context maker for the "
-                                    "width, depth, ctype, and preferences set");
+                                    "width, depth, dtype, and preferences set");
     }
 
     if (found.size() > 1) {
         throw std::invalid_argument(
                 "found multiple context maker candidates for specified width, "
-                "depth, ctype, and preferences set");
+                "depth, dtype, and preferences set"
+        );
     }
 
     return found[0]->get_context(width, depth, ctype, preferences);
 }
 
-const ContextMaker *
+const ContextMaker*
 rpy::algebra::register_context_maker(std::unique_ptr<ContextMaker> maker)
 {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
-    auto &maker_list = get_context_maker_list();
+    auto& maker_list = get_context_maker_list();
     maker_list.push_back(std::move(maker));
     return maker_list.back().get();
 }
 
-bool ContextMaker::can_get(deg_t width, deg_t depth,
-                           const scalars::ScalarType *ctype,
-                           const preference_list &preferences) const
+bool ContextMaker::can_get(
+        deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+        const preference_list& preferences
+) const
 {
     return false;
 }
 
-std::vector<byte> Context::to_raw_bytes(AlgebraType atype,
-                                        RawUnspecifiedAlgebraType alg) const
+std::vector<byte>
+Context::to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const
 {
     throw std::runtime_error("cannot generate raw byte representation");
 }
-UnspecifiedAlgebraType Context::from_raw_bytes(AlgebraType atype,
-                                               Slice<byte> raw_bytes) const
+UnspecifiedAlgebraType
+Context::from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const
 {
     throw std::runtime_error("cannot load from raw bytes");
 }
 
-void rpy::algebra::intrusive_ptr_release(const rpy::algebra::Context *ptr)
+void rpy::algebra::intrusive_ptr_release(const rpy::algebra::Context* ptr)
 {
-    intrusive_ptr_release(
-            static_cast<const boost::intrusive_ref_counter<
-                    ContextBase, boost::thread_safe_counter> *>(ptr));
+    intrusive_ptr_release(static_cast<const boost::intrusive_ref_counter<
+                                  ContextBase, boost::thread_safe_counter>*>(ptr
+    ));
 }
-void rpy::algebra::intrusive_ptr_release(const rpy::algebra::ContextBase *ptr)
+void rpy::algebra::intrusive_ptr_release(const rpy::algebra::ContextBase* ptr)
 {
-    intrusive_ptr_release(
-            static_cast<const boost::intrusive_ref_counter<
-                    ContextBase, boost::thread_safe_counter> *>(ptr));
+    intrusive_ptr_release(static_cast<const boost::intrusive_ref_counter<
+                                  ContextBase, boost::thread_safe_counter>*>(ptr
+    ));
 }
 
-void rpy::algebra::intrusive_ptr_add_ref(const rpy::algebra::Context *ptr)
+void rpy::algebra::intrusive_ptr_add_ref(const rpy::algebra::Context* ptr)
 {
-    intrusive_ptr_add_ref(
-            static_cast<const boost::intrusive_ref_counter<
-                    ContextBase, boost::thread_safe_counter> *>(ptr));
+    intrusive_ptr_add_ref(static_cast<const boost::intrusive_ref_counter<
+                                  ContextBase, boost::thread_safe_counter>*>(ptr
+    ));
 }
-void rpy::algebra::intrusive_ptr_add_ref(const rpy::algebra::ContextBase *ptr)
+void rpy::algebra::intrusive_ptr_add_ref(const rpy::algebra::ContextBase* ptr)
 {
-    intrusive_ptr_add_ref(
-            static_cast<const boost::intrusive_ref_counter<
-                    ContextBase, boost::thread_safe_counter> *>(ptr));
+    intrusive_ptr_add_ref(static_cast<const boost::intrusive_ref_counter<
+                                  ContextBase, boost::thread_safe_counter>*>(ptr
+    ));
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 10/03/23.
@@ -37,7 +38,7 @@
 using namespace rpy;
 optional<streams::TickStream::DyadicInterval>
 streams::TickStream::smallest_dyadic_containing_all_events(
-        const streams::TickStream::DyadicInterval &di,
+        const streams::TickStream::DyadicInterval& di,
         resolution_t resolution) const
 {
     // std::lower_bound returns an iterator pointing to the first element
@@ -118,11 +119,11 @@ streams::TickStream::smallest_dyadic_containing_all_positive_events() const
 algebra::Lie
 streams::TickStream::recursive_logsig(streams::TickStream::DyadicInterval di)
 {
-    const auto &md = metadata();
-    const algebra::Context &ctx = *md.default_context;
+    const auto& md = metadata();
+    const algebra::Context& ctx = *md.default_context;
 
     if (auto pdi1 = smallest_dyadic_containing_all_events(di, m_resolution)) {
-        auto &it = m_data[*pdi1];
+        auto& it = m_data[*pdi1];
         if (!it.is_zero()) { return it; }
 
         std::vector<algebra::Lie> v;
@@ -139,8 +140,8 @@ streams::TickStream::recursive_logsig(streams::TickStream::DyadicInterval di)
 
     return ctx.zero_lie(md.cached_vector_type);
 }
-streams::TickStream::TickStream(scalars::ScalarStream &&raw_data,
-                                std::vector<const key_type *> raw_key_stream,
+streams::TickStream::TickStream(scalars::ScalarStream&& raw_data,
+                                std::vector<const key_type*> raw_key_stream,
                                 std::vector<param_t> raw_timestamps,
                                 resolution_t resolution, StreamMetadata md,
                                 intervals::IntervalType itype)
@@ -148,8 +149,8 @@ streams::TickStream::TickStream(scalars::ScalarStream &&raw_data,
 {
     {
         const auto size = raw_timestamps.size();
-        const auto &smeta = metadata();
-        const auto &ctx = *smeta.default_context;
+        const auto& smeta = metadata();
+        const auto& ctx = *smeta.default_context;
         std::set<param_t> index;
 
         for (dimn_t i = 0; i < size; ++i) {
@@ -161,7 +162,7 @@ streams::TickStream::TickStream(scalars::ScalarStream &&raw_data,
                     smeta.cached_vector_type};
             auto new_lie = ctx.construct_lie(cdata);
 
-            auto &existing = m_data[di];
+            auto& existing = m_data[di];
             if (existing) {
                 existing = ctx.cbh(existing, new_lie, smeta.cached_vector_type);
             } else {
@@ -182,22 +183,22 @@ streams::TickStream::TickStream(scalars::ScalarStream &&raw_data,
     }
 }
 
-streams::TickStream::TickStream(streams::StreamConstructionHelper &&helper,
+streams::TickStream::TickStream(streams::StreamConstructionHelper&& helper,
                                 streams::StreamMetadata md,
                                 resolution_t resolution)
     : StreamInterface(std::move(md), helper.take_schema()),
       m_resolution(resolution)
 {
     std::set<param_t> index;
-    const auto &ctx = *metadata().default_context;
-    const auto &itype = metadata().interval_type;
-    const auto &vtype = metadata().cached_vector_type;
+    const auto& ctx = *metadata().default_context;
+    const auto& itype = metadata().interval_type;
+    const auto& vtype = metadata().cached_vector_type;
 
-    for (auto &&item : helper.finalise()) {
+    for (auto&& item : helper.finalise()) {
         const DyadicInterval di(item.first, m_resolution, itype);
         index.insert(di.included_end());
 
-        auto &existing = m_data[di];
+        auto& existing = m_data[di];
         if (existing) {
             existing = ctx.cbh(existing, item.second, vtype);
         } else {
@@ -215,13 +216,12 @@ streams::TickStream::TickStream(streams::StreamConstructionHelper &&helper,
     }
 }
 algebra::Lie
-streams::TickStream::log_signature_impl(const intervals::Interval &interval,
-                                        const algebra::Context &ctx) const
+streams::TickStream::log_signature_impl(const intervals::Interval& interval,
+                                        const algebra::Context& ctx) const
 {
-    RPY_DBG_ASSERT(dynamic_cast<const DyadicInterval *>(&interval)
-                   == &interval);
+    RPY_DBG_ASSERT(dynamic_cast<const DyadicInterval*>(&interval) == &interval);
     if (auto dil = smallest_dyadic_containing_all_events(
-                static_cast<const DyadicInterval &>(interval), m_resolution)) {
+                static_cast<const DyadicInterval&>(interval), m_resolution)) {
         auto found = m_data.find(*dil);
         RPY_DBG_ASSERT(found != m_data.end());
         return found->second;
@@ -229,11 +229,11 @@ streams::TickStream::log_signature_impl(const intervals::Interval &interval,
     return ctx.zero_lie(metadata().cached_vector_type);
 }
 bool streams::TickStream::empty(
-        const intervals::Interval &interval) const noexcept
+        const intervals::Interval& interval) const noexcept
 {
     auto dissection = intervals::to_dyadic_intervals(interval, m_resolution);
 
-    for (auto &di : dissection) {
+    for (auto& di : dissection) {
         if (smallest_dyadic_containing_all_events(di, m_resolution)) {
             return false;
         }
@@ -241,29 +241,29 @@ bool streams::TickStream::empty(
     return true;
 }
 algebra::Lie
-streams::TickStream::log_signature(const intervals::DyadicInterval &interval,
+streams::TickStream::log_signature(const intervals::DyadicInterval& interval,
                                    resolution_t resolution,
-                                   const algebra::Context &ctx) const
+                                   const algebra::Context& ctx) const
 {
     return StreamInterface::log_signature(interval, resolution, ctx);
 }
 algebra::Lie
-streams::TickStream::log_signature(const intervals::Interval &interval,
+streams::TickStream::log_signature(const intervals::Interval& interval,
                                    resolution_t resolution,
-                                   const algebra::Context &ctx) const
+                                   const algebra::Context& ctx) const
 {
     return StreamInterface::log_signature(interval, resolution, ctx);
 }
 algebra::FreeTensor
-streams::TickStream::signature(const intervals::Interval &interval,
-                               const algebra::Context &ctx) const
+streams::TickStream::signature(const intervals::Interval& interval,
+                               const algebra::Context& ctx) const
 {
     return StreamInterface::signature(interval, ctx);
 }
 algebra::FreeTensor
-streams::TickStream::signature(const intervals::Interval &interval,
+streams::TickStream::signature(const intervals::Interval& interval,
                                resolution_t resolution,
-                               const algebra::Context &ctx) const
+                               const algebra::Context& ctx) const
 {
     return StreamInterface::signature(interval, resolution, ctx);
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_DYNAMICALLY_CONSTRUCTED_STREAM_H_
 #define ROUGHPY_STREAMS_DYNAMICALLY_CONSTRUCTED_STREAM_H_
@@ -57,16 +58,16 @@ private:
 public:
     DataIncrement() : m_accuracy(-1), m_lie(), m_sibling(), m_parent() {}
 
-    DataIncrement(Lie &&val, resolution_t accuracy,
+    DataIncrement(Lie&& val, resolution_t accuracy,
                   data_increment sibling = data_increment(),
                   data_increment parent = data_increment())
         : m_accuracy(accuracy), m_lie(std::move(val)), m_sibling(sibling),
           m_parent(parent)
     {}
 
-    void lie(Lie &&new_lie) noexcept { m_lie = std::move(new_lie); }
+    void lie(Lie&& new_lie) noexcept { m_lie = std::move(new_lie); }
     RPY_NO_DISCARD
-    const Lie &lie() const noexcept { return m_lie; }
+    const Lie& lie() const noexcept { return m_lie; }
 
     void accuracy(resolution_t new_accuracy) noexcept
     {
@@ -111,7 +112,7 @@ private:
                                               DyadicInterval di) const;
 
     RPY_NO_DISCARD
-    data_increment insert_node(DyadicInterval di, Lie &&value,
+    data_increment insert_node(DyadicInterval di, Lie&& value,
                                resolution_t accuracy,
                                data_increment hint) const;
 
@@ -125,11 +126,11 @@ private:
 
 protected:
     /// Safely update the given increment with the new values and accuracy
-    void update_increment(data_increment increment, Lie &&new_value,
+    void update_increment(data_increment increment, Lie&& new_value,
                           resolution_t resolution) const;
 
     /// Safely get the lie value associated with an increment
-    const Lie &lie_value(const_data_increment increment) noexcept;
+    const Lie& lie_value(const_data_increment increment) noexcept;
 
     RPY_NO_DISCARD
     virtual Lie make_new_root_increment(DyadicInterval di) const;
@@ -140,28 +141,29 @@ protected:
     virtual pair<Lie, Lie>
     compute_child_lie_increments(DyadicInterval left_di,
                                  DyadicInterval right_di,
-                                 const Lie &parent_value) const;
+                                 const Lie& parent_value) const;
 
 public:
     using StreamInterface::StreamInterface;
 
-    DynamicallyConstructedStream(DynamicallyConstructedStream &&other) noexcept
-        : StreamInterface(static_cast<StreamInterface &&>(other)), m_lock(),
+    DynamicallyConstructedStream(DynamicallyConstructedStream&& other) noexcept
+        : StreamInterface(static_cast<StreamInterface&&>(other)), m_lock(),
           m_data_tree(std::move(other.m_data_tree))
     {}
 
-    algebra::Lie log_signature(const intervals::DyadicInterval &interval,
+    algebra::Lie log_signature(const intervals::DyadicInterval& interval,
                                resolution_t resolution,
-                               const algebra::Context &ctx) const override;
-    algebra::Lie log_signature(const intervals::Interval &domain,
+                               const algebra::Context& ctx) const override;
+    algebra::Lie log_signature(const intervals::Interval& domain,
                                resolution_t resolution,
-                               const algebra::Context &ctx) const override;
+                               const algebra::Context& ctx) const override;
 
 protected:
-    template <typename Archive> void store_cache(Archive &archive) const;
+    template <typename Archive>
+    void store_cache(Archive& archive) const;
 
     template <typename Archive>
-    void load_cache(Archive &archive, const algebra::Context &ctx);
+    void load_cache(Archive& archive, const algebra::Context& ctx);
 };
 
 namespace dtl {
@@ -186,7 +188,7 @@ RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe)
 }// namespace dtl
 
 template <typename Archive>
-void DynamicallyConstructedStream::store_cache(Archive &archive) const
+void DynamicallyConstructedStream::store_cache(Archive& archive) const
 {
     std::lock_guard<std::recursive_mutex> access(m_lock);
     std::map<DyadicInterval, dimn_t> indices;
@@ -194,14 +196,14 @@ void DynamicallyConstructedStream::store_cache(Archive &archive) const
     linear_data.reserve(m_data_tree.size());
 
     dimn_t index = 0;
-    for (const auto &item : m_data_tree) {
+    for (const auto& item : m_data_tree) {
         linear_data.push_back(
                 {item.first, item.second.accuracy(), item.second.lie()});
         indices[item.first] = index++;
     }
 
-    for (const auto &item : m_data_tree) {
-        auto &entry = linear_data[indices[item.first]];
+    for (const auto& item : m_data_tree) {
+        auto& entry = linear_data[indices[item.first]];
         entry.parent_idx = indices[item.second.parent()->first];
         entry.sibling_idx = indices[item.second.sibling()->first];
     }
@@ -209,20 +211,20 @@ void DynamicallyConstructedStream::store_cache(Archive &archive) const
     RPY_SERIAL_SERIALIZE_NVP("cache_data", linear_data);
 }
 template <typename Archive>
-void DynamicallyConstructedStream::load_cache(Archive &archive,
-                                              const algebra::Context &ctx)
+void DynamicallyConstructedStream::load_cache(Archive& archive,
+                                              const algebra::Context& ctx)
 {
     std::vector<dtl::DataIncrementSafe> linear_data;
     RPY_SERIAL_SERIALIZE_NVP("cache_data", linear_data);
 
-    for (auto &item : linear_data) {
-        auto &entry = m_data_tree[item.interval];
+    for (auto& item : linear_data) {
+        auto& entry = m_data_tree[item.interval];
         entry.accuracy(item.resolution);
         entry.lie(std::move(item.content));
     }
 
-    for (auto &item : linear_data) {
-        auto &entry = m_data_tree[item.interval];
+    for (auto& item : linear_data) {
+        auto& entry = m_data_tree[item.interval];
         entry.parent(m_data_tree.find(linear_data[item.parent_idx].interval));
         entry.sibling(m_data_tree.find(linear_data[item.sibling_idx].interval));
     }

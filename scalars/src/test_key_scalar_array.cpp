@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Datasig Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 11/05/23.
@@ -54,8 +55,8 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys)
 
     ASSERT_EQ(sa.size(), sb.size());
     ASSERT_EQ(sa.type(), sb.type());
-    const auto *aptr = sa.raw_cast<const float *>();
-    const auto *bptr = sb.raw_cast<const float *>();
+    const auto* aptr = sa.raw_cast<const float*>();
+    const auto* bptr = sb.raw_cast<const float*>();
 
     for (int i = 0; i < 3; ++i) { ASSERT_EQ(aptr[i], bptr[i]); }
 }
@@ -79,11 +80,11 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeWidthKeys)
 
     ASSERT_EQ(sa.size(), sb.size());
     ASSERT_EQ(sa.type(), sb.type());
-    const auto *aptr = sa.raw_cast<const float *>();
-    const auto *bptr = sb.raw_cast<const float *>();
+    const auto* aptr = sa.raw_cast<const float*>();
+    const auto* bptr = sb.raw_cast<const float*>();
 
-    const auto *akeyptr = static_cast<const KeyScalarArray &>(sa).keys();
-    const auto *bkeyptr = sb.keys();
+    const auto* akeyptr = static_cast<const KeyScalarArray&>(sa).keys();
+    const auto* bkeyptr = sb.keys();
 
     ASSERT_NE(akeyptr, nullptr);
     ASSERT_NE(bkeyptr, nullptr);

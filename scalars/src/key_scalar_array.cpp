@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 02/03/23.
@@ -46,23 +47,23 @@ KeyScalarArray::~KeyScalarArray()
     if (keys_owned()) { delete[] p_keys; }
 }
 
-KeyScalarArray::KeyScalarArray(const KeyScalarArray &other)
+KeyScalarArray::KeyScalarArray(const KeyScalarArray& other)
     : ScalarArray(other.type()->allocate(other.size()), other.size())
 {
 
     if (other.p_data != nullptr) {
-        p_type->convert_copy(const_cast<void *>(p_data), other, m_size);
+        p_type->convert_copy(const_cast<void*>(p_data), other, m_size);
 
         if (p_keys != nullptr) {
             allocate_keys();
             std::copy(other.p_keys, other.p_keys + other.m_size,
-                      const_cast<key_type *>(p_keys));
+                      const_cast<key_type*>(p_keys));
         }
     } else {
         RPY_DBG_ASSERT(other.p_keys == nullptr);
     }
 }
-KeyScalarArray::KeyScalarArray(KeyScalarArray &&other) noexcept
+KeyScalarArray::KeyScalarArray(KeyScalarArray&& other) noexcept
     : ScalarArray(other), p_keys(other.p_keys)
 {
     m_flags |= (other.m_flags & owning_flag);
@@ -71,33 +72,33 @@ KeyScalarArray::KeyScalarArray(KeyScalarArray &&other) noexcept
     other.p_data = nullptr;
     RPY_DBG_ASSERT(other.p_data == nullptr);
 }
-KeyScalarArray::KeyScalarArray(OwnedScalarArray &&sa) noexcept
+KeyScalarArray::KeyScalarArray(OwnedScalarArray&& sa) noexcept
     : ScalarArray(std::move(sa))
 {
     m_flags |= flags::OwnedPointer;
 }
-KeyScalarArray::KeyScalarArray(ScalarArray base, const key_type *keys)
+KeyScalarArray::KeyScalarArray(ScalarArray base, const key_type* keys)
     : ScalarArray(base), p_keys(keys)
 {
     m_flags &= ~flags::OwnedPointer;
     m_flags &= ~keys_owning_flag;
 }
-KeyScalarArray::KeyScalarArray(const ScalarType *type) noexcept
+KeyScalarArray::KeyScalarArray(const ScalarType* type) noexcept
     : ScalarArray(type)
 {}
-KeyScalarArray::KeyScalarArray(const ScalarType *type, dimn_t n) noexcept
+KeyScalarArray::KeyScalarArray(const ScalarType* type, dimn_t n) noexcept
     : ScalarArray(type)
 {
     allocate_scalars(static_cast<idimn_t>(n));
 }
 
-KeyScalarArray::KeyScalarArray(const ScalarType *type, const void *begin,
+KeyScalarArray::KeyScalarArray(const ScalarType* type, const void* begin,
                                dimn_t count) noexcept
     : ScalarArray(type, begin, count)
 {
     m_flags &= ~flags::OwnedPointer;
 }
-KeyScalarArray &KeyScalarArray::operator=(const ScalarArray &other) noexcept
+KeyScalarArray& KeyScalarArray::operator=(const ScalarArray& other) noexcept
 {
     if (&other != this) {
         this->~KeyScalarArray();
@@ -107,7 +108,7 @@ KeyScalarArray &KeyScalarArray::operator=(const ScalarArray &other) noexcept
     }
     return *this;
 }
-KeyScalarArray &KeyScalarArray::operator=(KeyScalarArray &&other) noexcept
+KeyScalarArray& KeyScalarArray::operator=(KeyScalarArray&& other) noexcept
 {
     if (&other != this) {
         this->~KeyScalarArray();
@@ -118,7 +119,7 @@ KeyScalarArray &KeyScalarArray::operator=(KeyScalarArray &&other) noexcept
     }
     return *this;
 }
-KeyScalarArray &KeyScalarArray::operator=(OwnedScalarArray &&other) noexcept
+KeyScalarArray& KeyScalarArray::operator=(OwnedScalarArray&& other) noexcept
 {
     this->~KeyScalarArray();
     ScalarArray::operator=(std::move(other));
@@ -144,9 +145,9 @@ void KeyScalarArray::allocate_keys(idimn_t count)
     }
     m_flags |= keys_owning_flag;
 }
-key_type *KeyScalarArray::keys()
+key_type* KeyScalarArray::keys()
 {
-    if (keys_owned()) { return const_cast<key_type *>(p_keys); }
+    if (keys_owned()) { return const_cast<key_type*>(p_keys); }
     throw std::runtime_error("borrowed keys are not mutable");
 }
 
@@ -171,7 +172,7 @@ KeyScalarArray KeyScalarArray::copy_or_move() &&
         p_data = nullptr;
         result.m_flags |= flags::OwnedPointer;
     } else if (p_type != nullptr && p_data != nullptr && m_size > 0) {
-        p_type->convert_copy(const_cast<void *>(result.p_data), *this, m_size);
+        p_type->convert_copy(const_cast<void*>(result.p_data), *this, m_size);
         m_flags = 0;
         p_type = nullptr;
         p_data = nullptr;
@@ -183,7 +184,7 @@ KeyScalarArray KeyScalarArray::copy_or_move() &&
         result.m_flags |= keys_owning_flag;
     } else if (p_keys != nullptr) {
         result.allocate_keys();
-        std::copy_n(p_keys, m_size, const_cast<key_type *>(result.p_keys));
+        std::copy_n(p_keys, m_size, const_cast<key_type*>(result.p_keys));
     }
 
     return result;

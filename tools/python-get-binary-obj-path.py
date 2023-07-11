@@ -1,6 +1,7 @@
 #  Copyright (c) 2023 Datasig Developers. All rights reserved.
 #
-#  Redistribution and use in source and binary forms, with or without modification,
+#  Redistribution and use in source and binary forms, with or without
+#  modification,
 #  are permitted provided that the following conditions are met:
 #
 #  1. Redistributions of source code must retain the above copyright notice,
@@ -18,7 +19,8 @@
 #  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 #  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 #  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+#  OR CONSEQUENTIAL
 #  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 #  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 #  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
@@ -26,14 +28,10 @@
 #  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
-import os
-import sys
 import importlib.metadata as ilm
-
 from argparse import ArgumentParser
-from fnmatch import fnmatch
 from pathlib import Path
-from typing import Optional, List, Callable, Iterable, Generator
+from typing import Callable, Generator, Iterable
 
 CMAKE_LIST_SEP = ';'
 
@@ -55,7 +53,6 @@ def _flatten(gens: Iterable[Generator[Path]]) -> Generator[Path]:
 
 
 def _trim_to_path_dir(path: Path, fragment: Path) -> Path:
-
     prefix = path
     for l, _ in zip(path.parents, fragment.parents):
         prefix = l
@@ -71,12 +68,14 @@ def _trim_to_directory(paths: Generator[Path], pat: Path) -> Generator[Path]:
 def make_name_matcher(name: str) -> Matcher:
     def matcher(path: ilm.PackagePath) -> bool:
         return path.stem == name
+
     return matcher
 
 
 def make_fragment_matcher(fragment: str) -> Matcher:
     def matcher(path: ilm.PackagePath) -> bool:
         return path.match(fragment)
+
     return matcher
 
 

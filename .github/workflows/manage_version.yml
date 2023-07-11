@@ -2,7 +2,7 @@ name: Manage version file
 
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - release/v[0-9]+.[0-9]+.[0-9]+**
     types:

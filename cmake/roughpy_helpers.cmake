@@ -1,4 +1,6 @@
 
+include_guard()
+
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 include(GoogleTest OPTIONAL)
@@ -59,7 +61,7 @@ function(_check_runtime_deps _out_var)
 
                 if (_imported AND (_type STREQUAL "SHARED_LIBRARY" OR _type STREQUAL "MODULE_LIBRARY"))
                     _check_runtime_component(${_name} _this_dep)
-                    message(STATUS "Runtime dependency added: ${_this_dep}")
+                    message(STATUS "Runtime dependency added: ${_name}")
                     list(APPEND _these_deps ${_this_dep})
                 endif ()
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_CORE_SLICE_H_
 #define ROUGHPY_CORE_SLICE_H_
@@ -48,41 +49,44 @@ namespace rpy {
  *
  * @tparam T Type of data
  */
-template <typename T> class Slice
+template <typename T>
+class Slice
 {
-    T *p_data = nullptr;
+    T* p_data = nullptr;
     std::size_t m_size = 0;
 
 public:
     constexpr Slice() = default;
 
-    constexpr Slice(T &num) : p_data(&num), m_size(1) {}
+    constexpr Slice(T& num) : p_data(&num), m_size(1) {}
 
     constexpr Slice(std::nullptr_t) : p_data(nullptr), m_size(0) {}
 
-    template <typename Container,
-              typename
-              = enable_if_t<is_same<typename Container::value_type, T>::value>>
-    constexpr Slice(Container &container)
+    template <
+            typename Container,
+            typename
+            = enable_if_t<is_same<typename Container::value_type, T>::value>>
+    constexpr Slice(Container& container)
         : p_data(container.data()), m_size(container.size())
     {}
 
-    template <std::size_t N> constexpr Slice(T (&array)[N])
-        : p_data(array), m_size(N)
+    template <std::size_t N>
+    constexpr Slice(T (&array)[N]) : p_data(array), m_size(N)
     {}
 
-    constexpr Slice(T *ptr, std::size_t N) : p_data(ptr), m_size(N) {}
+    constexpr Slice(T* ptr, std::size_t N) : p_data(ptr), m_size(N) {}
 
     template <typename I>
-    constexpr enable_if_t<is_integral<I>::value, const T &>
-    operator[](I i) noexcept
+    constexpr enable_if_t<is_integral<I>::value, const T&> operator[](I i
+    ) noexcept
     {
         RPY_DBG_ASSERT(0 <= i && static_cast<dimn_t>(i) < m_size);
         return p_data[i];
     }
 
-    template <typename I> constexpr enable_if_t<is_integral<I>::value, T &>
-    operator[](I i) const noexcept
+    template <typename I>
+    constexpr enable_if_t<is_integral<I>::value, T&> operator[](I i
+    ) const noexcept
     {
         RPY_DBG_ASSERT(0 <= i && static_cast<dimn_t>(i) < m_size);
         return p_data[i];
@@ -98,33 +102,33 @@ public:
     constexpr std::size_t size() const noexcept { return m_size; }
 
     RPY_NO_DISCARD
-    constexpr T *begin() noexcept { return p_data; }
+    constexpr T* begin() noexcept { return p_data; }
     RPY_NO_DISCARD
-    constexpr T *end() noexcept { return p_data + m_size; }
+    constexpr T* end() noexcept { return p_data + m_size; }
     RPY_NO_DISCARD
-    constexpr const T *begin() const { return p_data; }
+    constexpr const T* begin() const { return p_data; }
     RPY_NO_DISCARD
-    constexpr const T *end() const { return p_data + m_size; }
+    constexpr const T* end() const { return p_data + m_size; }
 
     RPY_NO_DISCARD
-    constexpr std::reverse_iterator<T *> rbegin() noexcept
+    constexpr std::reverse_iterator<T*> rbegin() noexcept
     {
-        return std::reverse_iterator<T *>(p_data + m_size);
+        return std::reverse_iterator<T*>(p_data + m_size);
     }
     RPY_NO_DISCARD
-    constexpr std::reverse_iterator<T *> rend() noexcept
+    constexpr std::reverse_iterator<T*> rend() noexcept
     {
-        return std::reverse_iterator<T *>(p_data);
+        return std::reverse_iterator<T*>(p_data);
     }
     RPY_NO_DISCARD
-    constexpr std::reverse_iterator<const T *> rbegin() const noexcept
+    constexpr std::reverse_iterator<const T*> rbegin() const noexcept
     {
-        return std::reverse_iterator<const T *>(p_data + m_size);
+        return std::reverse_iterator<const T*>(p_data + m_size);
     }
     RPY_NO_DISCARD
-    constexpr std::reverse_iterator<const T *> rend() const noexcept
+    constexpr std::reverse_iterator<const T*> rend() const noexcept
     {
-        return std::reverse_iterator<const T *>(p_data);
+        return std::reverse_iterator<const T*>(p_data);
     }
 
     RPY_NO_DISCARD

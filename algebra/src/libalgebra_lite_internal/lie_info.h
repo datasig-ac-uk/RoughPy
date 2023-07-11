@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 07/03/23.
@@ -45,8 +46,9 @@
 namespace rpy {
 namespace algebra {
 
-template <typename Coeffs, template <typename, typename> class VType,
-          template <typename> class Storage>
+template <
+        typename Coeffs, template <typename, typename> class VType,
+        template <typename> class Storage>
 struct algebra_info<Lie, lal::lie<Coeffs, VType, Storage>> {
     /// The actual type of the algebra implementation
     using algebra_type = lal::lie<Coeffs, VType, Storage>;
@@ -70,19 +72,19 @@ struct algebra_info<Lie, lal::lie<Coeffs, VType, Storage>> {
     using rational_type = typename Coeffs::rational_type;
 
     /// Reference type - currently unused
-    using reference = scalar_type &;
+    using reference = scalar_type&;
 
     /// Const reference type - currently unused
-    using const_reference = const scalar_type &;
+    using const_reference = const scalar_type&;
 
     /// Pointer type - currently unused
-    using pointer = scalar_type *;
+    using pointer = scalar_type*;
 
     /// Const pointer type - currently unused
-    using const_pointer = const scalar_type *;
+    using const_pointer = const scalar_type*;
 
     /// Get the rpy ScalarType for the scalars in this algebra
-    static const scalars::ScalarType *ctype() noexcept
+    static const scalars::ScalarType* ctype() noexcept
     {
         return scalars::ScalarType::of<scalar_type>();
     }
@@ -94,19 +96,19 @@ struct algebra_info<Lie, lal::lie<Coeffs, VType, Storage>> {
     }
 
     /// Get the basis for this algebra
-    static const basis_type &basis(const algebra_type &instance) noexcept
+    static const basis_type& basis(const algebra_type& instance) noexcept
     {
         return instance.basis();
     }
 
     /// Get the maximum degree of non-zero elements in this algebra
-    static deg_t degree(const algebra_type &instance) noexcept
+    static deg_t degree(const algebra_type& instance) noexcept
     {
         return instance.degree();
     }
 
     /// Create a new algebra instance with the same make-up as this argument
-    static algebra_type create_like(const algebra_type &instance)
+    static algebra_type create_like(const algebra_type& instance)
     {
         return algebra_type(instance.get_basis(), instance.multiplication());
     }
@@ -115,4 +117,4 @@ struct algebra_info<Lie, lal::lie<Coeffs, VType, Storage>> {
 }// namespace algebra
 }// namespace rpy
 
-#endif//ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LIE_INFO_H
+#endif// ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_LIE_INFO_H

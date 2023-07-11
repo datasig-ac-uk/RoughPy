@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_CONTEXT_FWD_H_
 #define ROUGHPY_ALGEBRA_CONTEXT_FWD_H_
@@ -74,26 +75,28 @@ struct BasicContextSpec {
 };
 
 RPY_NO_DISCARD RPY_EXPORT BasicContextSpec
-get_context_spec(const context_pointer &ctx);
+get_context_spec(const context_pointer& ctx);
 
 RPY_NO_DISCARD RPY_EXPORT context_pointer
-from_context_spec(const BasicContextSpec &spec);
+from_context_spec(const BasicContextSpec& spec);
 
-RPY_NO_DISCARD RPY_EXPORT std::vector<byte>
-alg_to_raw_bytes(context_pointer ctx, AlgebraType atype,
-                 RawUnspecifiedAlgebraType alg);
+RPY_NO_DISCARD RPY_EXPORT std::vector<byte> alg_to_raw_bytes(
+        context_pointer ctx, AlgebraType atype, RawUnspecifiedAlgebraType alg
+);
 
 RPY_NO_DISCARD RPY_EXPORT UnspecifiedAlgebraType alg_from_raw_bytes(
-        context_pointer ctx, AlgebraType atype, Slice<byte> raw_data);
+        context_pointer ctx, AlgebraType atype, Slice<byte> raw_data
+);
 
-void intrusive_ptr_release(const ContextBase *ptr);
-void intrusive_ptr_add_ref(const ContextBase *ptr);
+void intrusive_ptr_release(const ContextBase* ptr);
+void intrusive_ptr_add_ref(const ContextBase* ptr);
 
-void intrusive_ptr_release(const Context *ptr);
-void intrusive_ptr_add_ref(const Context *ptr);
+void intrusive_ptr_release(const Context* ptr);
+void intrusive_ptr_add_ref(const Context* ptr);
 
-template <typename Algebra> struct basis_setup_helper {
-    static typename Algebra::basis_type get(const context_pointer &ctx);
+template <typename Algebra>
+struct basis_setup_helper {
+    static typename Algebra::basis_type get(const context_pointer& ctx);
 };
 
 }// namespace algebra

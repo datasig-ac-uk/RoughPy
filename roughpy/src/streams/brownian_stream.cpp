@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 12/04/23.
@@ -40,11 +41,11 @@ using namespace rpy;
 using namespace streams;
 using namespace pybind11::literals;
 
-static const char *BROWNIAN_PATH_DOC = R"rpydoc(A Brownian motion stream.
+static const char* BROWNIAN_PATH_DOC = R"rpydoc(A Brownian motion stream.
 )rpydoc";
 
-static py::object Brownian_from_generator(const py::args &args,
-                                          const py::kwargs &kwargs)
+static py::object
+Brownian_from_generator(const py::args& args, const py::kwargs& kwargs)
 {
 
     auto pmd = python::kwargs_to_metadata(kwargs);
@@ -59,8 +60,9 @@ static py::object Brownian_from_generator(const py::args &args,
         if (pmd.width == 0) {
             throw std::invalid_argument("width must be provided");
         }
-        pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type,
-                                       {});
+        pmd.ctx = algebra::get_context(
+                pmd.width, pmd.depth, pmd.scalar_type, {}
+        );
     }
 
     // TODO: Fix this up properly.
@@ -70,7 +72,8 @@ static py::object Brownian_from_generator(const py::args &args,
             pmd.support ? *pmd.support
                         : intervals::RealInterval(
                                 -std::numeric_limits<param_t>::infinity(),
-                                std::numeric_limits<param_t>::infinity()),
+                                std::numeric_limits<param_t>::infinity()
+                        ),
             pmd.ctx,
             pmd.scalar_type,
             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
@@ -82,10 +85,11 @@ static py::object Brownian_from_generator(const py::args &args,
     Stream stream(std::move(inner));
 
     return py::reinterpret_steal<py::object>(
-            python::RPyStream_FromStream(std::move(stream)));
+            python::RPyStream_FromStream(std::move(stream))
+    );
 }
 
-void rpy::python::init_brownian_stream(py::module_ &m)
+void rpy::python::init_brownian_stream(py::module_& m)
 {
 
     py::class_<BrownianStream> klass(m, "BrownianStream", BROWNIAN_PATH_DOC);

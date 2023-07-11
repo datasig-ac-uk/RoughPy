@@ -1,8 +1,8 @@
 name: Build Wheels
 
 on:
-  push:
-    branches: [ "main" ]
+#  push:
+#    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -99,7 +99,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: [ build_wheels, build_sdist ]
-
+    if: |
+      github.event.pull_request.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      startsWith(github.head_ref, 'release/')
 
     steps:
       - name: Setup Python
@@ -128,7 +131,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           version="$(ls dist | grep -Po '(?<=roughpy-).+(?=\.tar\.gz)')"
-          gh release create -t $version --generate-notes $version dist/*
+          gh release -R ${{ github.repository }} create -t $version --generate-notes $version dist/*
 
       - name: Publish
         run: |

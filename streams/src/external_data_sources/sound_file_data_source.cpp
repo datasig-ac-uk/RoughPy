@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 13/04/23.
@@ -49,17 +50,17 @@ sf_count_t SoundFileDataSource::param_to_frame(param_t param)
     return static_cast<sf_count_t>(std::ceil(seconds * sample_rate));
 }
 
-void SoundFileDataSource::read_direct_float(scalars::ScalarPointer &ptr,
+void SoundFileDataSource::read_direct_float(scalars::ScalarPointer& ptr,
                                             sf_count_t num_frames)
 {
-    m_handle.readf(ptr.raw_cast<float *>(), num_frames);
+    m_handle.readf(ptr.raw_cast<float*>(), num_frames);
 }
-void SoundFileDataSource::read_direct_double(scalars::ScalarPointer &ptr,
+void SoundFileDataSource::read_direct_double(scalars::ScalarPointer& ptr,
                                              sf_count_t num_frames)
 {
-    m_handle.readf(ptr.raw_cast<double *>(), num_frames);
+    m_handle.readf(ptr.raw_cast<double*>(), num_frames);
 }
-void SoundFileDataSource::read_convert_raw(scalars::ScalarPointer &ptr,
+void SoundFileDataSource::read_convert_raw(scalars::ScalarPointer& ptr,
                                            sf_count_t num_frames)
 {
     const auto num_elements = num_frames * m_handle.channels();
@@ -68,12 +69,12 @@ void SoundFileDataSource::read_convert_raw(scalars::ScalarPointer &ptr,
     ptr.type()->convert_copy(ptr, buffer.data(), num_elements, "i8");
 }
 
-void SoundFileDataSource::select_and_convert_read2(scalars::ScalarPointer &ptr,
+void SoundFileDataSource::select_and_convert_read2(scalars::ScalarPointer& ptr,
                                                    sf_count_t num_frames)
 {
-    const auto *ctype = ptr.type();
+    const auto* ctype = ptr.type();
 
-    const auto &info = ctype->info();
+    const auto& info = ctype->info();
     if (info.basic_info.code == scalars::ScalarTypeCode::Float) {
         // float and double handle earlier, handle smaller and larger.
         if (info.basic_info.bits < 32) {
@@ -86,7 +87,7 @@ void SoundFileDataSource::select_and_convert_read2(scalars::ScalarPointer &ptr,
     }
 }
 
-void SoundFileDataSource::select_and_convert_read(scalars::ScalarPointer &ptr,
+void SoundFileDataSource::select_and_convert_read(scalars::ScalarPointer& ptr,
                                                   sf_count_t num_frames)
 {
 
@@ -99,18 +100,18 @@ void SoundFileDataSource::select_and_convert_read(scalars::ScalarPointer &ptr,
     }
 }
 
-SoundFileDataSource::SoundFileDataSource(const url &uri)
+SoundFileDataSource::SoundFileDataSource(const url& uri)
     : m_handle(uri.path().c_str())
 {}
 
-SoundFileDataSource::SoundFileDataSource(SndfileHandle &&handle)
+SoundFileDataSource::SoundFileDataSource(SndfileHandle&& handle)
     : m_handle(std::move(handle))
 {}
 
-dimn_t SoundFileDataSource::query(scalars::KeyScalarArray &result,
-                                  const intervals::Interval &interval)
+dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
+                                  const intervals::Interval& interval)
 {
-    const auto *ctype = result.type();
+    const auto* ctype = result.type();
 
     auto frame_begin = param_to_frame(interval.inf());
     auto frame_end = param_to_frame(interval.sup());
@@ -124,7 +125,7 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray &result,
 
     result.allocate_scalars(frame_count * m_handle.channels());
 
-    const auto &sinfo = ctype->info();
+    const auto& sinfo = ctype->info();
 
     if (sinfo.device.device_type == scalars::ScalarDeviceType::CPU) {
         if (sinfo.basic_info.code == scalars::ScalarTypeCode::Float) {
@@ -161,7 +162,7 @@ struct Payload {
     SndfileHandle handle;
     optional<deg_t> width;
     optional<deg_t> depth;
-    const scalars::ScalarType *ctype;
+    const scalars::ScalarType* ctype;
     algebra::context_pointer ctx;
     optional<intervals::RealInterval> support;
     optional<algebra::VectorType> vtype;
@@ -171,7 +172,7 @@ struct Payload {
 }// namespace
 
 ExternalDataStreamConstructor
-SoundFileDataSourceFactory::get_constructor(const url &uri) const
+SoundFileDataSourceFactory::get_constructor(const url& uri) const
 {
     ExternalDataStreamConstructor ctor;
     if (!uri.has_scheme() || uri.scheme_id() == URIScheme::file) {
@@ -180,7 +181,7 @@ SoundFileDataSourceFactory::get_constructor(const url &uri) const
         path.make_preferred();
 #endif
         if (exists(path) && is_regular_file(path)) {
-            auto *payload = new Payload{SndfileHandle(path.c_str())};
+            auto* payload = new Payload{SndfileHandle(path.c_str())};
 
             if (payload->handle.error() != 0) {
                 delete payload;
@@ -193,9 +194,9 @@ SoundFileDataSourceFactory::get_constructor(const url &uri) const
 
     return ctor;
 }
-Stream SoundFileDataSourceFactory::construct_stream(void *payload) const
+Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
 {
-    auto *pl = reinterpret_cast<Payload *>(payload);
+    auto* pl = reinterpret_cast<Payload*>(payload);
 
     StreamMetadata meta{0,       intervals::RealInterval(0, 1), nullptr,
                         nullptr, algebra::VectorType::Dense,    10};
@@ -267,42 +268,42 @@ Stream SoundFileDataSourceFactory::construct_stream(void *payload) const
     return Stream(std::move(inner));
 }
 
-void SoundFileDataSourceFactory::destroy_payload(void *&payload) const
+void SoundFileDataSourceFactory::destroy_payload(void*& payload) const
 {
-    delete reinterpret_cast<Payload *>(payload);
+    delete reinterpret_cast<Payload*>(payload);
     payload = nullptr;
 }
 
-void SoundFileDataSourceFactory::set_width(void *payload, deg_t width) const
+void SoundFileDataSourceFactory::set_width(void* payload, deg_t width) const
 {
-    reinterpret_cast<Payload *>(payload)->width = width;
+    reinterpret_cast<Payload*>(payload)->width = width;
 }
-void SoundFileDataSourceFactory::set_depth(void *payload, deg_t depth) const
+void SoundFileDataSourceFactory::set_depth(void* payload, deg_t depth) const
 {
-    reinterpret_cast<Payload *>(payload)->depth = depth;
+    reinterpret_cast<Payload*>(payload)->depth = depth;
 }
 void SoundFileDataSourceFactory::set_ctype(
-        void *payload, const scalars::ScalarType *ctype) const
+        void* payload, const scalars::ScalarType* ctype) const
 {
-    reinterpret_cast<Payload *>(payload)->ctype = ctype;
+    reinterpret_cast<Payload*>(payload)->ctype = ctype;
 }
-void SoundFileDataSourceFactory::set_context(void *payload,
+void SoundFileDataSourceFactory::set_context(void* payload,
                                              algebra::context_pointer ctx) const
 {
-    reinterpret_cast<Payload *>(payload)->ctx = std::move(ctx);
+    reinterpret_cast<Payload*>(payload)->ctx = std::move(ctx);
 }
 void SoundFileDataSourceFactory::set_support(
-        void *payload, intervals::RealInterval support) const
+        void* payload, intervals::RealInterval support) const
 {
-    reinterpret_cast<Payload *>(payload)->support = support;
+    reinterpret_cast<Payload*>(payload)->support = support;
 }
-void SoundFileDataSourceFactory::set_vtype(void *payload,
+void SoundFileDataSourceFactory::set_vtype(void* payload,
                                            algebra::VectorType vtype) const
 {
-    reinterpret_cast<Payload *>(payload)->vtype = vtype;
+    reinterpret_cast<Payload*>(payload)->vtype = vtype;
 }
-void SoundFileDataSourceFactory::set_resolution(void *payload,
+void SoundFileDataSourceFactory::set_resolution(void* payload,
                                                 resolution_t resolution) const
 {
-    reinterpret_cast<Payload *>(payload)->resolution = resolution;
+    reinterpret_cast<Payload*>(payload)->resolution = resolution;
 }

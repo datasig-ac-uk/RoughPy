@@ -1,6 +1,7 @@
 #  Copyright (c) 2023 Datasig Developers. All rights reserved.
 #
-#  Redistribution and use in source and binary forms, with or without modification,
+#  Redistribution and use in source and binary forms, with or without
+#  modification,
 #  are permitted provided that the following conditions are met:
 #
 #  1. Redistributions of source code must retain the above copyright notice,
@@ -18,7 +19,8 @@
 #  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 #  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 #  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+#  OR CONSEQUENTIAL
 #  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 #  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 #  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
@@ -31,7 +33,6 @@ import pytest
 from roughpy import StreamSchema
 
 
-
 @pytest.fixture
 def sample_data_dict():
     return {
@@ -42,13 +43,13 @@ def sample_data_dict():
         5.0: ("third", "value", 1.0),
     }
 
+
 @pytest.fixture
 def sample_data_seq(sample_data_dict):
     return [(ts, *args) for ts, args in sample_data_dict.items()]
 
 
 def test_schema_from_dict(sample_data_dict):
-
     schema = StreamSchema.from_data(sample_data_dict)
 
     assert schema.get_labels() == [
@@ -60,7 +61,6 @@ def test_schema_from_dict(sample_data_dict):
 
 
 def test_schema_from_seq(sample_data_seq):
-
     schema = StreamSchema.from_data(sample_data_seq)
 
     assert schema.get_labels() == [
@@ -69,6 +69,7 @@ def test_schema_from_seq(sample_data_seq):
         "second:cat2",
         "third",
     ]
+
 
 @pytest.fixture
 def json_like_schema():

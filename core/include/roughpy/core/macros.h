@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 04/03/23.
@@ -203,15 +204,16 @@
 #  define RPY_LIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 1))
 #  define RPY_UNLIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 0))
 #else
-#  define RPY_LIKEY(COND) (COND)
+#  define RPY_LIKELY(COND) (COND)
 #  define RPY_UNLIKELY(COND) (COND)
 #endif
 
 #define RPY_CHECK(EXPR)                                                        \
     do {                                                                       \
         if (RPY_UNLIKELY(!(EXPR))) {                                           \
-            throw std::runtime_error(std::string("failed check \"") + #EXPR    \
-                                     + "\"");                                  \
+            throw std::runtime_error(                                          \
+                    std::string("failed check \"") + #EXPR + "\""              \
+            );                                                                 \
         }                                                                      \
     } while (0)
 
@@ -222,7 +224,8 @@
             if (RPY_UNLIKEY(!(EXPR))) {                                        \
                 throw std::runtime_error(                                      \
                         std::string("failed debug assertion \"") + #EXPR       \
-                        + "\"");                                               \
+                        + "\""                                                 \
+                );                                                             \
             }                                                                  \
         } while (0)
 #  else
@@ -246,10 +249,9 @@
 #  endif
 #else
 #  define RPY_TEMPLATE_EXTERN extern
-#  define RPY_EXPORT_TEMPLATE
-#  define RPY_EXPORT_INSTANTIATION RPY_EXPORT
+#  define RPY_EXPORT_TEMPLATE RPY_EXPORT
+#  define RPY_EXPORT_INSTANTIATION
 #endif
-
 
 // Sanitizer supports
 #ifdef RPY_CLANG
@@ -264,4 +266,4 @@
 #  define RPY_NO_ASAN
 #endif
 
-#endif//ROUGHPY_CORE_MACROS_H
+#endif// ROUGHPY_CORE_MACROS_H

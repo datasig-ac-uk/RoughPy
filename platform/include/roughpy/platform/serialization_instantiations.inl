@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Datasig Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 #ifndef RPY_DISABLE_SERIALIZATION
 #  ifndef RPY_SERIAL_IMPL_CLASSNAME
 #    error "class name not set"
@@ -32,29 +33,29 @@
 #  ifdef RPY_SERIAL_EXTERNAL
 #    define ADD_ARCHIVE(ARCHIVE)                                               \
         namespace RPY_SERIAL_EXTERNAL {                                        \
-        template void serialize(ARCHIVE &, RPY_SERIAL_IMPL_CLASSNAME &,        \
+        template void serialize(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&,          \
                                 const std::uint32_t);                          \
         }
 #    define ADD_LOAD(ARCHIVE)                                                  \
         namespace RPY_SERIAL_EXTERNAL {                                        \
-        template void load(ARCHIVE &, RPY_SERIAL_IMPL_CLASSNAME &,             \
+        template void load(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&,               \
                            const std::uint32_t);                               \
         }
 #    define ADD_SAVE(ARCHIVE)                                                  \
         namespace RPY_SERIAL_EXTERNAL {                                        \
-        template void save(ARCHIVE &, const RPY_SERIAL_IMPL_CLASSNAME &,       \
+        template void save(ARCHIVE&, const RPY_SERIAL_IMPL_CLASSNAME&,         \
                            const std::uint32_t);                               \
         }
 #  else
 #    define ADD_ARCHIVE(ARCHIVE)                                               \
         template void RPY_SERIAL_IMPL_CLASSNAME::serialize(                    \
-                ARCHIVE &ar, const std::uint32_t version)
+                ARCHIVE& ar, const std::uint32_t version)
 #    define ADD_LOAD(ARCHIVE)                                                  \
         template void RPY_SERIAL_IMPL_CLASSNAME::load(                         \
-                ARCHIVE &ar, const std::uint32_t version)
+                ARCHIVE& ar, const std::uint32_t version)
 #    define ADD_SAVE(ARCHIVE)                                                  \
         template void RPY_SERIAL_IMPL_CLASSNAME::save(                         \
-                ARCHIVE &ar, const std::uint32_t version) const
+                ARCHIVE& ar, const std::uint32_t version) const
 #  endif
 
 #  if defined(RPY_SERIAL_DO_SPLIT)

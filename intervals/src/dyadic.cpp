@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 02/03/23.
@@ -40,12 +41,12 @@ Dyadic::operator param_t() const noexcept
 {
     return ldexp(param_t(m_multiplier), -m_power);
 }
-Dyadic &Dyadic::move_forward(Dyadic::multiplier_t arg)
+Dyadic& Dyadic::move_forward(Dyadic::multiplier_t arg)
 {
     m_multiplier += arg;
     return *this;
 }
-Dyadic &Dyadic::operator++()
+Dyadic& Dyadic::operator++()
 {
     ++m_multiplier;
     return *this;
@@ -56,7 +57,7 @@ const Dyadic Dyadic::operator++(int)
     ++m_multiplier;
     return result;
 }
-Dyadic &Dyadic::operator--()
+Dyadic& Dyadic::operator--()
 {
     --m_multiplier;
     return *this;
@@ -84,19 +85,19 @@ bool Dyadic::rebase(Dyadic::power_t resolution)
 
     power_t rel_resolution{m_power - resolution};
 
-    // starting at relative resolution find the first n in decreasing order so that 2^n divides k
-    // 2^0 always divides k so the action stops
+    // starting at relative resolution find the first n in decreasing order so
+    // that 2^n divides k 2^0 always divides k so the action stops
     power_t r = rel_resolution;
     for (; (m_multiplier % int_two_to_int_power(r)) != 0; --r) {}
 
     power_t offset = r;
     m_multiplier /= int_two_to_int_power(offset);
     m_power -= offset;
-    //pr();
+    // pr();
     return resolution == m_power;
 }
 
-bool rpy::intervals::operator<(const Dyadic &lhs, const Dyadic &rhs)
+bool rpy::intervals::operator<(const Dyadic& lhs, const Dyadic& rhs)
 {
     auto lmul = lhs.multiplier();
     auto lpow = lhs.power();
@@ -106,7 +107,7 @@ bool rpy::intervals::operator<(const Dyadic &lhs, const Dyadic &rhs)
     return (lpow <= rpow) ? (lmul < Dyadic::shift(rmul, rpow - lpow))
                           : Dyadic::shift(lmul, lpow - rpow) < rmul;
 }
-bool rpy::intervals::operator<=(const Dyadic &lhs, const Dyadic &rhs)
+bool rpy::intervals::operator<=(const Dyadic& lhs, const Dyadic& rhs)
 {
     auto lmul = lhs.multiplier();
     auto lpow = lhs.power();
@@ -116,7 +117,7 @@ bool rpy::intervals::operator<=(const Dyadic &lhs, const Dyadic &rhs)
     return (lpow <= rpow) ? (lmul <= Dyadic::shift(rmul, rpow - lpow))
                           : Dyadic::shift(lmul, lpow - rpow) <= rmul;
 }
-bool rpy::intervals::operator>(const Dyadic &lhs, const Dyadic &rhs)
+bool rpy::intervals::operator>(const Dyadic& lhs, const Dyadic& rhs)
 {
     auto lmul = lhs.multiplier();
     auto lpow = lhs.power();
@@ -126,7 +127,7 @@ bool rpy::intervals::operator>(const Dyadic &lhs, const Dyadic &rhs)
     return (lpow <= rpow) ? (lmul > Dyadic::shift(rmul, rpow - lpow))
                           : Dyadic::shift(lmul, lpow - rpow) > rmul;
 }
-bool rpy::intervals::operator>=(const Dyadic &lhs, const Dyadic &rhs)
+bool rpy::intervals::operator>=(const Dyadic& lhs, const Dyadic& rhs)
 {
     auto lmul = lhs.multiplier();
     auto lpow = lhs.power();
@@ -136,15 +137,15 @@ bool rpy::intervals::operator>=(const Dyadic &lhs, const Dyadic &rhs)
     return (lpow <= rpow) ? (lmul >= Dyadic::shift(rmul, rpow - lpow))
                           : Dyadic::shift(lmul, lpow - rpow) >= rmul;
 }
-std::ostream &rpy::intervals::operator<<(std::ostream &os, const Dyadic &arg)
+std::ostream& rpy::intervals::operator<<(std::ostream& os, const Dyadic& arg)
 {
     return os << '(' << arg.multiplier() << ", " << arg.power() << ')';
 }
-bool rpy::intervals::dyadic_equals(const Dyadic &lhs, const Dyadic &rhs)
+bool rpy::intervals::dyadic_equals(const Dyadic& lhs, const Dyadic& rhs)
 {
     return lhs.power() == rhs.power() && lhs.multiplier() == rhs.multiplier();
 }
-bool rpy::intervals::rational_equals(const Dyadic &lhs, const Dyadic &rhs)
+bool rpy::intervals::rational_equals(const Dyadic& lhs, const Dyadic& rhs)
 {
     Dyadic::multiplier_t ratio;
     if (lhs.multiplier() % rhs.multiplier() == 0
