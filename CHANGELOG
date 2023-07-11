@@ -6,6 +6,8 @@ Version 0.0.3:
   - Added half precision float and bfloat16 to py module
   - Added real partition class and Python interface.
   - Implemented simplify method on Streams.
+  - Added polynomial coefficients
+  - started an examples folder
 
 Version 0.0.2-alpha:
   - Added datetime and timedelta object support to tick data parsing.
