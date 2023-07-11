@@ -102,7 +102,7 @@ jobs:
     if: |
       github.event.pull_request.action == 'closed' &&
       github.event.pull_request.merged == true &&
-      startsWith(github.head_ref, 'releases/')
+      startsWith(github.head_ref, 'release/')
 
     steps:
       - name: Setup Python
