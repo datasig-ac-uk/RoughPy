@@ -204,7 +204,7 @@
 #  define RPY_LIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 1))
 #  define RPY_UNLIKELY(COND) (__builtin_expect(static_cast<bool>(COND), 0))
 #else
-#  define RPY_LIKEY(COND) (COND)
+#  define RPY_LIKELY(COND) (COND)
 #  define RPY_UNLIKELY(COND) (COND)
 #endif
 
