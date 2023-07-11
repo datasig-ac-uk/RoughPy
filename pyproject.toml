@@ -82,7 +82,8 @@ path = "CHANGELOG"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
 # Literal TOML strings (single quotes) need no escaping of backslashes.
 pattern = '\[(.+?)\]\(((?!https?://)\S+?)\)'
-replacement = '[\1](https://github.com/datasig-ac-uk/roughpy/tree/main\g<2>)'
+replacement = '[\1](https://github.com/datasig-ac-uk/roughpy/tree/main/\g<2>)'
+
 [tool.scikit-build.cmake.define]
 ROUGHPY_BUILD_TESTS = "OFF"
 
