@@ -557,7 +557,7 @@ PyObject* monomial_rich_compare(PyObject* self, PyObject* other, int cmp)
         }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 Py_ssize_t monomial_len(PyObject* self) { return cast_mon(self).type(); }
 PyObject* monomial_subscript(PyObject* self, PyObject* index)
@@ -655,7 +655,7 @@ PyObject* monomial_mul(PyObject* self, PyObject* other)
 
     // If one of the operands is not a monomial, then the result will be a
     // polynomial.
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_inplace_mul(PyObject* self, PyObject* other)
 {
@@ -679,7 +679,7 @@ PyObject* monomial_inplace_mul(PyObject* self, PyObject* other)
         }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_pow(PyObject* self, PyObject* other, PyObject*)
 {
@@ -697,19 +697,19 @@ PyObject* monomial_pow(PyObject* self, PyObject* other, PyObject*)
         for (auto& comp : result_mon) { comp.second += power; }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_floordiv(PyObject* self, PyObject* other)
 {
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_rem(PyObject* self, PyObject* other)
 {
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_inplace_rem(PyObject* self, PyObject* other)
 {
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_inplace_pow(PyObject* self, PyObject* other, PyObject*)
 {
@@ -725,11 +725,11 @@ PyObject* monomial_inplace_pow(PyObject* self, PyObject* other, PyObject*)
         for (auto& comp : lhs) { comp.second += power; }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_inplace_floordiv(PyObject* self, PyObject* other)
 {
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 
 PyObject* monomial_neg(PyObject* self)
@@ -771,7 +771,7 @@ PyObject* monomial_add(PyObject* self, PyObject* other)
         }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_sub(PyObject* self, PyObject* other)
 {
@@ -802,7 +802,7 @@ PyObject* monomial_sub(PyObject* self, PyObject* other)
         }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_div(PyObject* self, PyObject* other)
 {
@@ -810,7 +810,7 @@ PyObject* monomial_div(PyObject* self, PyObject* other)
      * Only the left hand argument can be a monomial, in which case it is a
      * monomial / scalar type operation.
      */
-    if (!is_monomial(self) || is_monomial(other)) { return Py_NotImplemented; }
+    if (!is_monomial(self) || is_monomial(other)) { Py_RETURN_NOTIMPLEMENTED; }
 
     rat_t scalar;
     if (py_scalar_to_rat(scalar, other)) {
@@ -823,7 +823,7 @@ PyObject* monomial_div(PyObject* self, PyObject* other)
     }
 
     // We might want to support other types in the future
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_inplace_add(PyObject* self, PyObject* other)
 {
@@ -856,7 +856,7 @@ PyObject* monomial_inplace_add(PyObject* self, PyObject* other)
 
     // We might want to support other types in the future.
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_inplace_sub(PyObject* self, PyObject* other)
 {
@@ -891,7 +891,7 @@ PyObject* monomial_inplace_sub(PyObject* self, PyObject* other)
         }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_inplace_div(PyObject* self, PyObject* other)
 {
@@ -899,7 +899,7 @@ PyObject* monomial_inplace_div(PyObject* self, PyObject* other)
      * Only the left hand argument can be a monomial, in which case it is a
      * monomial / scalar type operation.
      */
-    if (!is_monomial(self) || is_monomial(other)) { return Py_NotImplemented; }
+    if (!is_monomial(self) || is_monomial(other)) { Py_RETURN_NOTIMPLEMENTED; }
 
     const auto& mon = cast_mon(self);
 
@@ -915,7 +915,7 @@ PyObject* monomial_inplace_div(PyObject* self, PyObject* other)
     }
 
     // We might want to support other types in the future
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* monomial_str(PyObject* self)
 {
@@ -1135,12 +1135,12 @@ PyObject* polynomial_rich_compare(PyObject* self, PyObject* other, int cmp)
             case Py_LT:
             case Py_LE:
             case Py_GE:
-            case Py_GT: return Py_NotImplemented;
+            case Py_GT: Py_RETURN_NOTIMPLEMENTED;
             default: RPY_UNREACHABLE();
         }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 Py_ssize_t polynomial_len(PyObject* self)
 {
@@ -1243,7 +1243,7 @@ PyObject* polynomial_mul(PyObject* self, PyObject* other)
         }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_inplace_mul(PyObject* self, PyObject* other)
 {
@@ -1271,7 +1271,7 @@ PyObject* polynomial_inplace_mul(PyObject* self, PyObject* other)
             return self;
         }
 
-        return Py_NotImplemented;
+        Py_RETURN_NOTIMPLEMENTED;
     }
 
     const auto& poly = cast_poly(other);
@@ -1286,12 +1286,12 @@ PyObject* polynomial_inplace_mul(PyObject* self, PyObject* other)
         return PyPolynomial_FromPolynomial(poly_t(scalar) * poly);
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_pow(PyObject* self, PyObject* other, PyObject*)
 {
     const auto& poly = cast_poly(self);
-    if (!PyLong_Check(other)) { return Py_NotImplemented; }
+    if (!PyLong_Check(other)) { Py_RETURN_NOTIMPLEMENTED; }
 
     long power = PyLong_AsLong(other);
     if (power < 0) {
@@ -1310,23 +1310,23 @@ PyObject* polynomial_pow(PyObject* self, PyObject* other, PyObject*)
 }
 PyObject* polynomial_floordiv(PyObject* self, PyObject* other)
 {
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_rem(PyObject* self, PyObject* other)
 {
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_inplace_rem(PyObject* self, PyObject* other)
 {
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_inplace_pow(PyObject* self, PyObject* other, PyObject*)
 {
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_inplace_floordiv(PyObject* self, PyObject* other)
 {
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 
 PyObject* polynomial_neg(PyObject* self)
@@ -1373,7 +1373,7 @@ PyObject* polynomial_add(PyObject* self, PyObject* other)
             return PyPolynomial_FromPolynomial(poly_t(scalar) + poly);
         }
     }
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_sub(PyObject* self, PyObject* other)
 {
@@ -1411,13 +1411,13 @@ PyObject* polynomial_sub(PyObject* self, PyObject* other)
         }
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_div(PyObject* self, PyObject* other)
 {
     // Only division by a scalar (rational) is supported for polynomials.
     if (!is_polynomial(self) || is_polynomial(other) || is_monomial(other)) {
-        return Py_NotImplemented;
+        Py_RETURN_NOTIMPLEMENTED;
     }
     const auto& poly = cast_poly(self);
     rat_t scalar;
@@ -1430,7 +1430,7 @@ PyObject* polynomial_div(PyObject* self, PyObject* other)
         return PyPolynomial_FromPolynomial(poly / scalar);
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_inplace_add(PyObject* self, PyObject* other)
 {
@@ -1458,7 +1458,7 @@ PyObject* polynomial_inplace_add(PyObject* self, PyObject* other)
             return self;
         }
 
-        return Py_NotImplemented;
+        Py_RETURN_NOTIMPLEMENTED;
     }
 
     const auto& poly = cast_poly(other);
@@ -1473,7 +1473,7 @@ PyObject* polynomial_inplace_add(PyObject* self, PyObject* other)
         return PyPolynomial_FromPolynomial(poly_t(scalar) + poly);
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_inplace_sub(PyObject* self, PyObject* other)
 {
@@ -1501,7 +1501,7 @@ PyObject* polynomial_inplace_sub(PyObject* self, PyObject* other)
             return self;
         }
 
-        return Py_NotImplemented;
+        Py_RETURN_NOTIMPLEMENTED;
     }
 
     const auto& poly = cast_poly(other);
@@ -1516,7 +1516,7 @@ PyObject* polynomial_inplace_sub(PyObject* self, PyObject* other)
         return PyPolynomial_FromPolynomial(poly_t(scalar) - poly);
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_inplace_div(PyObject* self, PyObject* other)
 {
@@ -1538,7 +1538,7 @@ PyObject* polynomial_inplace_div(PyObject* self, PyObject* other)
         return self;
     }
 
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 PyObject* polynomial_str(PyObject* self)
 {
