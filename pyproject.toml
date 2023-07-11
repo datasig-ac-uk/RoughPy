@@ -70,8 +70,19 @@ regex = "^(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$"
 content-type = "text/markdown"
 
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = "# Changelog\n\n"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
 path = "CHANGELOG"
 
+# From the documentation
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+# Literal TOML strings (single quotes) need no escaping of backslashes.
+pattern = '\[(.+?)\]\(((?!https?://)\S+?)\)'
+replacement = '[\1](https://github.com/datasig-ac-uk/roughpy/tree/main\g<2>)'
 [tool.scikit-build.cmake.define]
 ROUGHPY_BUILD_TESTS = "OFF"
 
