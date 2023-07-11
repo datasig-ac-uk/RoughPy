@@ -49,7 +49,7 @@ public:
 
     virtual ~LinearOperatorInterface();
 
-    virtual result_type eval(const argument_type &arg) const;
+    virtual result_type eval(const argument_type& arg) const;
 };
 
 template <typename Argument, typename Result>
@@ -59,11 +59,11 @@ class LinearOperator
     boost::intrusive_ptr<interface_type> p_impl;
 
 public:
-    Result operator()(const Argument &arg) const;
+    Result operator()(const Argument& arg) const;
 };
 
 template <typename Argument, typename Result>
-Result LinearOperator<Argument, Result>::operator()(const Argument &arg) const
+Result LinearOperator<Argument, Result>::operator()(const Argument& arg) const
 {
     if (p_impl) { return p_impl->eval(arg); }
     return Result();

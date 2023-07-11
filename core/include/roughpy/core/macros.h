@@ -211,8 +211,9 @@
 #define RPY_CHECK(EXPR)                                                        \
     do {                                                                       \
         if (RPY_UNLIKELY(!(EXPR))) {                                           \
-            throw std::runtime_error(std::string("failed check \"") + #EXPR    \
-                                     + "\"");                                  \
+            throw std::runtime_error(                                          \
+                    std::string("failed check \"") + #EXPR + "\""              \
+            );                                                                 \
         }                                                                      \
     } while (0)
 
@@ -223,7 +224,8 @@
             if (RPY_UNLIKEY(!(EXPR))) {                                        \
                 throw std::runtime_error(                                      \
                         std::string("failed debug assertion \"") + #EXPR       \
-                        + "\"");                                               \
+                        + "\""                                                 \
+                );                                                             \
             }                                                                  \
         } while (0)
 #  else
@@ -247,8 +249,8 @@
 #  endif
 #else
 #  define RPY_TEMPLATE_EXTERN extern
-#  define RPY_EXPORT_TEMPLATE
-#  define RPY_EXPORT_INSTANTIATION RPY_EXPORT
+#  define RPY_EXPORT_TEMPLATE RPY_EXPORT
+#  define RPY_EXPORT_INSTANTIATION
 #endif
 
 // Sanitizer supports

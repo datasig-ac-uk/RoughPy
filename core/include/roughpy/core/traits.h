@@ -46,6 +46,8 @@
 #include <boost/type_traits/is_detected.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
 
+#include <boost/container_hash/hash.hpp>
+
 namespace rpy {
 
 using std::declval;
@@ -169,6 +171,8 @@ struct EmptyBase {
 
 template <typename T, typename B = dtl::EmptyBase>
 using void_or_base = conditional_t<is_void<T>::value, B, T>;
+
+using boost::hash;
 
 }// namespace rpy
 

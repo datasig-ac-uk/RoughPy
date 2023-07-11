@@ -6,7 +6,8 @@ import pytest
 from roughpy import Dyadic
 
 
-@pytest.mark.parametrize("k, n", itertools.product(range(-10, 10), range(0, 10)))
+@pytest.mark.parametrize("k, n",
+                         itertools.product(range(-10, 10), range(0, 10)))
 def test_dyadic_to_float(k, n):
     d = Dyadic(k, n)
     assert float(d) == math.ldexp(k, -n)

@@ -38,7 +38,7 @@
 namespace rpy {
 namespace python {
 
-void init_schema(py::module_ &m);
+void init_schema(py::module_& m);
 
 }
 }// namespace rpy

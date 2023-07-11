@@ -38,11 +38,11 @@
 
 rpy::scalars::ScalarMatrix::ScalarMatrix() : ScalarArray() {}
 
-rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type,
+rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType* type,
                                          rpy::deg_t rows, rpy::deg_t cols,
                                          rpy::scalars::MatrixStorage storage,
                                          rpy::scalars::MatrixLayout layout)
-    : ScalarArray(type, (void *) nullptr, 0), m_storage(storage),
+    : ScalarArray(type, (void*) nullptr, 0), m_storage(storage),
       m_layout(layout), m_nrows(rows), m_ncols(cols)
 {
     if (p_type != nullptr && m_nrows > 0 && m_ncols > 0) {
@@ -52,7 +52,7 @@ rpy::scalars::ScalarMatrix::ScalarMatrix(const rpy::scalars::ScalarType *type,
     }
 }
 rpy::scalars::ScalarMatrix::ScalarMatrix(rpy::deg_t rows, rpy::deg_t cols,
-                                         rpy::scalars::ScalarArray &&array,
+                                         rpy::scalars::ScalarArray&& array,
                                          rpy::scalars::MatrixStorage storage,
                                          rpy::scalars::MatrixLayout layout)
     : ScalarArray(std::move(array)), m_storage(storage), m_layout(layout),
@@ -91,12 +91,12 @@ rpy::scalars::ScalarMatrix rpy::scalars::ScalarMatrix::to_full() const
     return to_full(m_layout);
 }
 
-static void transpose_fallback(rpy::scalars::ScalarMatrix &matrix)
+static void transpose_fallback(rpy::scalars::ScalarMatrix& matrix)
 {
     const auto M = matrix.nrows();
     const auto N = matrix.ncols();
 
-    const auto *type = matrix.type();
+    const auto* type = matrix.type();
     rpy::scalars::ScalarPointer ptr(matrix);
     if (M == N) {
         for (rpy::deg_t i = 0; i < M; ++i) {
@@ -133,7 +133,7 @@ rpy::scalars::ScalarMatrix::to_full(rpy::scalars::MatrixLayout layout) const
     return result;
 }
 
-void rpy::scalars::ScalarMatrix::to_full(rpy::scalars::ScalarMatrix &into) const
+void rpy::scalars::ScalarMatrix::to_full(rpy::scalars::ScalarMatrix& into) const
 {
     const auto layout = into.layout();
 

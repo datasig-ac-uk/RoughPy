@@ -44,9 +44,9 @@ struct RPyStream {
 extern PyTypeObject RPyStream_Type;
 }
 
-PyObject *RPyStream_FromStream(streams::Stream &&stream);
+PyObject* RPyStream_FromStream(streams::Stream&& stream);
 
-void init_stream(py::module_ &m);
+void init_stream(py::module_& m);
 
 }// namespace python
 }// namespace rpy

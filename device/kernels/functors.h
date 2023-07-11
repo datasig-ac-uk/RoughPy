@@ -68,7 +68,7 @@ class LeftScalarMul
 public:
     RPY_DEVICE_HOST explicit LeftScalarMul(S value) : m_val(value) {}
 
-    RPY_DEVICE_HOST RPY_STRONG_INLINE S operator()(const S &x) const noexcept
+    RPY_DEVICE_HOST RPY_STRONG_INLINE S operator()(const S& x) const noexcept
     {
         return m_val * x;
     }
@@ -82,7 +82,7 @@ class RightScalarMul
 public:
     RPY_DEVICE_HOST explicit RightScalarMul(S value) : m_val(value) {}
 
-    RPY_DEVICE_HOST RPY_STRONG_INLINE S operator()(const S &x) const noexcept
+    RPY_DEVICE_HOST RPY_STRONG_INLINE S operator()(const S& x) const noexcept
     {
         return x * m_val;
     }
@@ -96,8 +96,8 @@ class AddLeftScalarMul
 public:
     RPY_DEVICE_HOST explicit AddLeftScalarMul(S value) : m_val(value) {}
 
-    RPY_DEVICE_HOST RPY_STRONG_INLINE S operator()(const S &x,
-                                                   const S &y) const noexcept
+    RPY_DEVICE_HOST RPY_STRONG_INLINE S
+    operator()(const S& x, const S& y) const noexcept
     {
         return x + m_val * y;
     }
@@ -111,8 +111,8 @@ class SubLeftScalarMul
 public:
     RPY_DEVICE_HOST explicit SubLeftScalarMul(S value) : m_val(value) {}
 
-    RPY_DEVICE_HOST RPY_STRONG_INLINE S operator()(const S &x,
-                                                   const S &y) const noexcept
+    RPY_DEVICE_HOST RPY_STRONG_INLINE S
+    operator()(const S& x, const S& y) const noexcept
     {
         return x - m_val * y;
     }
@@ -126,8 +126,8 @@ class AddRightScalarMul
 public:
     RPY_DEVICE_HOST explicit AddRightScalarMul(S value) : m_val(value) {}
 
-    RPY_DEVICE_HOST RPY_STRONG_INLINE S operator()(const S &x,
-                                                   const S &y) const noexcept
+    RPY_DEVICE_HOST RPY_STRONG_INLINE S
+    operator()(const S& x, const S& y) const noexcept
     {
         return x + y * m_val;
     }
@@ -141,8 +141,8 @@ class SubRightScalarMul
 public:
     RPY_DEVICE_HOST explicit SubRightScalarMul(S value) : m_val(value) {}
 
-    RPY_DEVICE_HOST RPY_STRONG_INLINE S operator()(const S &x,
-                                                   const S &y) const noexcept
+    RPY_DEVICE_HOST RPY_STRONG_INLINE S
+    operator()(const S& x, const S& y) const noexcept
     {
         return x - y * m_val;
     }

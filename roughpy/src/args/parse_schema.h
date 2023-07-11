@@ -13,16 +13,18 @@ namespace python {
 
 streams::ChannelType string_to_channel_type(string channel_str);
 
-streams::ChannelType py_to_channel_type(const py::object &arg);
+streams::ChannelType py_to_channel_type(const py::object& arg);
 
-void parse_data_into_schema(std::shared_ptr<streams::StreamSchema> schema,
-                            const py::object &data);
-void parse_into_schema(std::shared_ptr<streams::StreamSchema> schema,
-                       const py::object &data);
+void parse_data_into_schema(
+        std::shared_ptr<streams::StreamSchema> schema, const py::object& data
+);
+void parse_into_schema(
+        std::shared_ptr<streams::StreamSchema> schema, const py::object& data
+);
 
 std::shared_ptr<streams::StreamSchema>
-parse_schema_from_data(const py::object &data);
-std::shared_ptr<streams::StreamSchema> parse_schema(const py::object &data);
+parse_schema_from_data(const py::object& data);
+std::shared_ptr<streams::StreamSchema> parse_schema(const py::object& data);
 
 }// namespace python
 }// namespace rpy

@@ -40,7 +40,7 @@ namespace algebra {
 template <alg::DEG Width, alg::DEG Depth>
 struct BasisInfo<TensorBasis, alg::tensor_basis<Width, Depth>> {
     /// Type that should be stored in the basis implementation
-    using storage_t = const alg::tensor_basis<Width, Depth> *;
+    using storage_t = const alg::tensor_basis<Width, Depth>*;
 
     /// The key type that is handled internally in roughpy
     using our_key_type = typename TensorBasis ::key_type;
@@ -62,7 +62,7 @@ struct BasisInfo<TensorBasis, alg::tensor_basis<Width, Depth>> {
     // and in the algebra wrapper
     /// Conversion from impl_key_type to our_key_type
     static our_key_type convert_from_impl(storage_t basis,
-                                          const impl_key_type &arg)
+                                          const impl_key_type& arg)
     {
         // The default is to take the index of arg as the return
         return basis->key_to_index(arg);
@@ -70,7 +70,7 @@ struct BasisInfo<TensorBasis, alg::tensor_basis<Width, Depth>> {
 
     /// Conversion from our_key_type to impl_key_type
     static impl_key_type convert_to_impl(storage_t basis,
-                                         const our_key_type &arg)
+                                         const our_key_type& arg)
     {
         // Default is to treat rpy keys as the index of impl keys
         return basis->index_to_key(arg);
@@ -83,7 +83,7 @@ struct BasisInfo<TensorBasis, alg::tensor_basis<Width, Depth>> {
      */
 
     /// Generate a string representation of the key
-    static std::string key_to_string(storage_t basis, const our_key_type &key)
+    static std::string key_to_string(storage_t basis, const our_key_type& key)
     {
         return basis->key2string(convert_to_impl(basis, key));
     }
@@ -104,7 +104,7 @@ struct BasisInfo<TensorBasis, alg::tensor_basis<Width, Depth>> {
     }
 
     /// Get the index of key in the basis total order
-    static dimn_t key_to_index(storage_t basis, const our_key_type &key)
+    static dimn_t key_to_index(storage_t basis, const our_key_type& key)
     {
         return basis->key_to_index(convert_to_impl(basis, key));
     }
@@ -129,7 +129,7 @@ struct BasisInfo<TensorBasis, alg::tensor_basis<Width, Depth>> {
     static deg_t depth(storage_t basis) { return Depth; }
 
     /// Get the length of a key as a word
-    static deg_t degree(storage_t basis, const our_key_type &key)
+    static deg_t degree(storage_t basis, const our_key_type& key)
     {
         return basis->degree(convert_to_impl(basis, key));
     }
@@ -149,7 +149,7 @@ struct BasisInfo<TensorBasis, alg::tensor_basis<Width, Depth>> {
 
     /// Get the parents of a key according to the basis composition
     static pair<optional<our_key_type>, optional<our_key_type>>
-    parents(storage_t basis, const our_key_type &key)
+    parents(storage_t basis, const our_key_type& key)
     {
         auto tmpkey = convert_to_impl(basis, key);
         return {convert_from_impl(basis, basis->lparent(tmpkey)),
@@ -157,7 +157,7 @@ struct BasisInfo<TensorBasis, alg::tensor_basis<Width, Depth>> {
     }
 
     /// Get the first letter of the key as a word
-    static let_t first_letter(storage_t basis, const our_key_type &key)
+    static let_t first_letter(storage_t basis, const our_key_type& key)
     {
         return basis->getletter(convert_to_impl(basis, key));
     }
@@ -169,7 +169,7 @@ struct BasisInfo<TensorBasis, alg::tensor_basis<Width, Depth>> {
     }
 
     /// Determine whether a key represents a single letter
-    static bool letter(storage_t basis, const our_key_type &key)
+    static bool letter(storage_t basis, const our_key_type& key)
     {
         return basis->letter(convert_to_impl(basis, key));
     }

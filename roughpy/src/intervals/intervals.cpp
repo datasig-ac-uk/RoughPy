@@ -33,10 +33,12 @@
 #include "interval.h"
 #include "real_interval.h"
 #include "segmentation.h"
+#include "date_time_interval.h"
+#include "partition.h"
 
 using namespace rpy;
 
-void python::init_intervals(pybind11::module_ &m)
+void python::init_intervals(pybind11::module_& m)
 {
 
     py::enum_<intervals::IntervalType>(m, "IntervalType")
@@ -48,5 +50,7 @@ void python::init_intervals(pybind11::module_ &m)
     init_real_interval(m);
     init_dyadic(m);
     init_dyadic_interval(m);
+    init_partition(m);
+    init_datetime_interval(m);
     init_segmentation(m);
 }

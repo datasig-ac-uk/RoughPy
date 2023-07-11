@@ -42,7 +42,7 @@ using namespace rpy::scalars;
 
 ScalarStream::ScalarStream() : m_stream(), m_elts_per_row(0), p_type(nullptr) {}
 
-ScalarStream::ScalarStream(const ScalarType *type)
+ScalarStream::ScalarStream(const ScalarType* type)
     : m_stream(), m_elts_per_row(0), p_type(type)
 {}
 ScalarStream::ScalarStream(ScalarPointer base, std::vector<dimn_t> shape)
@@ -54,7 +54,7 @@ ScalarStream::ScalarStream(ScalarPointer base, std::vector<dimn_t> shape)
             throw std::runtime_error("strides cannot be empty");
         }
 
-        const auto *ptr = static_cast<const char *>(base.ptr());
+        const auto* ptr = static_cast<const char*>(base.ptr());
         const auto itemsize = p_type->itemsize();
 
         dimn_t rows = shape[0];
@@ -103,12 +103,12 @@ void ScalarStream::set_elts_per_row(dimn_t num_elts) noexcept
     }
 }
 void ScalarStream::reserve_size(dimn_t num_rows) { m_stream.reserve(num_rows); }
-void ScalarStream::push_back(const ScalarPointer &data)
+void ScalarStream::push_back(const ScalarPointer& data)
 {
     RPY_CHECK(m_elts_per_row.size() == 1 && m_elts_per_row[0] > 0);
     m_stream.push_back(data.ptr());
 }
-void ScalarStream::push_back(const ScalarArray &data)
+void ScalarStream::push_back(const ScalarArray& data)
 {
     if (m_elts_per_row.size() == 1) {
         m_stream.push_back(data.ptr());
@@ -123,7 +123,7 @@ void ScalarStream::push_back(const ScalarArray &data)
     }
 }
 
-void ScalarStream::set_ctype(const scalars::ScalarType *type) noexcept
+void ScalarStream::set_ctype(const scalars::ScalarType* type) noexcept
 {
     m_stream.clear();
     p_type = type;

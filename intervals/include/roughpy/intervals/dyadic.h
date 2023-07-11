@@ -82,11 +82,11 @@ public:
     RPY_NO_DISCARD
     explicit operator param_t() const noexcept;
 
-    Dyadic &move_forward(multiplier_t arg);
-    Dyadic &operator++();
+    Dyadic& move_forward(multiplier_t arg);
+    Dyadic& operator++();
     RPY_NO_DISCARD
     const Dyadic operator++(int);
-    Dyadic &operator--();
+    Dyadic& operator--();
     RPY_NO_DISCARD
     const Dyadic operator--(int);
 
@@ -98,25 +98,25 @@ private:
 };
 
 RPY_EXPORT
-bool operator<(const Dyadic &lhs, const Dyadic &rhs);
+bool operator<(const Dyadic& lhs, const Dyadic& rhs);
 
 RPY_EXPORT
-bool operator<=(const Dyadic &lhs, const Dyadic &rhs);
+bool operator<=(const Dyadic& lhs, const Dyadic& rhs);
 
 RPY_EXPORT
-bool operator>(const Dyadic &lhs, const Dyadic &rhs);
+bool operator>(const Dyadic& lhs, const Dyadic& rhs);
 
 RPY_EXPORT
-bool operator>=(const Dyadic &lhs, const Dyadic &rhs);
+bool operator>=(const Dyadic& lhs, const Dyadic& rhs);
 
 RPY_EXPORT
-std::ostream &operator<<(std::ostream &os, const Dyadic &arg);
+std::ostream& operator<<(std::ostream& os, const Dyadic& arg);
 
 RPY_EXPORT
-bool dyadic_equals(const Dyadic &lhs, const Dyadic &rhs);
+bool dyadic_equals(const Dyadic& lhs, const Dyadic& rhs);
 
 RPY_EXPORT
-bool rational_equals(const Dyadic &lhs, const Dyadic &rhs);
+bool rational_equals(const Dyadic& lhs, const Dyadic& rhs);
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Dyadic)
 {

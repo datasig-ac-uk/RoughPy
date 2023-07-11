@@ -35,7 +35,7 @@
 namespace rpy {
 namespace device {
 
-void DeviceFreeTensor::mul_inplace(const algebra_t &other) {}
+void DeviceFreeTensor::mul_inplace(const algebra_t& other) {}
 
 algebra::FreeTensor DeviceFreeTensor::exp() const
 {
@@ -53,26 +53,28 @@ algebra::FreeTensor DeviceFreeTensor::antipode() const
 {
     return algebra::FreeTensor();
 }
-void DeviceFreeTensor::fmexp(const algebra::FreeTensor &other) {}
-algebra::FreeTensor DeviceFreeTensor::mul(const algebra_t &other) const
+void DeviceFreeTensor::fmexp(const algebra::FreeTensor& other) {}
+algebra::FreeTensor DeviceFreeTensor::mul(const algebra_t& other) const
 {
     return AlgebraArithmetic::mul(other);
 }
-void DeviceFreeTensor::add_mul(const algebra_t &lhs, const algebra_t &rhs)
+void DeviceFreeTensor::add_mul(const algebra_t& lhs, const algebra_t& rhs)
 {
     AlgebraArithmetic::add_mul(lhs, rhs);
 }
-void DeviceFreeTensor::sub_mul(const algebra_t &lhs, const algebra_t &rhs)
+void DeviceFreeTensor::sub_mul(const algebra_t& lhs, const algebra_t& rhs)
 {
     AlgebraArithmetic::sub_mul(lhs, rhs);
 }
-void DeviceFreeTensor::mul_smul(const algebra_t &rhs,
-                                const scalars::Scalar &scalar)
+void DeviceFreeTensor::mul_smul(
+        const algebra_t& rhs, const scalars::Scalar& scalar
+)
 {
     AlgebraArithmetic::mul_smul(rhs, scalar);
 }
-void DeviceFreeTensor::mul_sdiv(const algebra_t &rhs,
-                                const scalars::Scalar &scalar)
+void DeviceFreeTensor::mul_sdiv(
+        const algebra_t& rhs, const scalars::Scalar& scalar
+)
 {
     AlgebraArithmetic::mul_sdiv(rhs, scalar);
 }

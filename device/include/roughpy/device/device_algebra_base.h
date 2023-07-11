@@ -67,9 +67,9 @@ protected:
     using key_type = typename basis_t::key_type;
 
     scalars::ScalarArray m_data;
-    const DeviceContext *p_dctx;
+    const DeviceContext* p_dctx;
 
-    dtl::PossiblyConverted try_convert(const algebra_t &arg) const;
+    dtl::PossiblyConverted try_convert(const algebra_t& arg) const;
 
     dtl::PossiblyConverted borrow_on_host() const;
 
@@ -78,11 +78,12 @@ protected:
 public:
     using const_iterator = algebra::AlgebraIterator<algebra_t>;
 
-    DeviceAlgebraBase(scalars::ScalarArray &&data, const DeviceContext *ctx)
-        : Interface(ctx->context(), algebra::VectorType::Dense, ctx->ctype(),
-                    data.is_owning()
-                            ? algebra::ImplementationType::DeviceOwned
-                            : algebra::ImplementationType::DeviceBorrowed),
+    DeviceAlgebraBase(scalars::ScalarArray&& data, const DeviceContext* ctx)
+        : Interface(
+                ctx->context(), algebra::VectorType::Dense, ctx->ctype(),
+                data.is_owning() ? algebra::ImplementationType::DeviceOwned
+                                 : algebra::ImplementationType::DeviceBorrowed
+        ),
           m_data(std::move(data)), p_dctx(ctx)
     {}
 
@@ -97,11 +98,11 @@ public:
     algebra_t borrow_mut() override;
 
     void clear() override;
-    void assign(const algebra_t &other) override;
+    void assign(const algebra_t& other) override;
 
-    std::ostream &print(std::ostream &os) const override;
+    std::ostream& print(std::ostream& os) const override;
 
-    bool equals(const algebra_t &other) const override;
+    bool equals(const algebra_t& other) const override;
 
     scalars::Scalar get(key_type key) const override;
     scalars::Scalar get_mut(key_type key) override;
@@ -112,26 +113,26 @@ public:
     optional<scalars::ScalarArray> dense_data() const override;
 
     algebra_t uminus() const override;
-    algebra_t add(const algebra_t &other) const override;
-    algebra_t sub(const algebra_t &other) const override;
+    algebra_t add(const algebra_t& other) const override;
+    algebra_t sub(const algebra_t& other) const override;
     //    algebra_t mul(const algebra_t& other) const override;
-    algebra_t smul(const scalars::Scalar &other) const override;
-    algebra_t sdiv(const scalars::Scalar &other) const override;
+    algebra_t smul(const scalars::Scalar& other) const override;
+    algebra_t sdiv(const scalars::Scalar& other) const override;
 
-    void add_inplace(const algebra_t &other) override;
-    void sub_inplace(const algebra_t &other) override;
+    void add_inplace(const algebra_t& other) override;
+    void sub_inplace(const algebra_t& other) override;
     //    void mul_inplace(const algebra_t& other) override;
-    void smul_inplace(const scalars::Scalar &other) override;
-    void sdiv_inplace(const scalars::Scalar &other) override;
+    void smul_inplace(const scalars::Scalar& other) override;
+    void sdiv_inplace(const scalars::Scalar& other) override;
 
-    void add_scal_mul(const algebra_t &rhs,
-                      const scalars::Scalar &scalar) override;
-    void sub_scal_mul(const algebra_t &rhs,
-                      const scalars::Scalar &scalar) override;
-    void add_scal_div(const algebra_t &rhs,
-                      const scalars::Scalar &scalar) override;
-    void sub_scal_div(const algebra_t &rhs,
-                      const scalars::Scalar &scalar) override;
+    void
+    add_scal_mul(const algebra_t& rhs, const scalars::Scalar& scalar) override;
+    void
+    sub_scal_mul(const algebra_t& rhs, const scalars::Scalar& scalar) override;
+    void
+    add_scal_div(const algebra_t& rhs, const scalars::Scalar& scalar) override;
+    void
+    sub_scal_div(const algebra_t& rhs, const scalars::Scalar& scalar) override;
 
     //    void add_mul(const algebra_t& lhs, const algebra_t& rhs) override;
     //    void sub_mul(const algebra_t& lhs, const algebra_t& rhs) override;
@@ -143,9 +144,9 @@ public:
 
 template <typename Interface, typename Derived>
 dtl::PossiblyConverted
-DeviceAlgebraBase<Interface, Derived>::try_convert(const algebra_t &arg) const
+DeviceAlgebraBase<Interface, Derived>::try_convert(const algebra_t& arg) const
 {
-    const auto *type = p_dctx->ctype();
+    const auto* type = p_dctx->ctype();
 
     auto dense_data_op = arg.dense_data();
     RPY_CHECK(dense_data_op.has_value());
@@ -169,13 +170,15 @@ dtl::PossiblyConverted
 DeviceAlgebraBase<Interface, Derived>::borrow_on_host() const
 {
     if (p_dctx != nullptr && m_data) {
-        const auto *type = m_data.type();
-        const auto *host_type = type->host_type();
+        const auto* type = m_data.type();
+        const auto* host_type = type->host_type();
         const auto size = m_data.size();
 
         dtl::PossiblyConverted result(host_type->allocate(size), size);
-        type->convert_copy(scalars::ScalarPointer(result),
-                           scalars::ScalarPointer(m_data), size);
+        type->convert_copy(
+                scalars::ScalarPointer(result), scalars::ScalarPointer(m_data),
+                size
+        );
         return result;
     }
     return {};
@@ -184,7 +187,7 @@ template <typename Interface, typename Derived>
 void DeviceAlgebraBase<Interface, Derived>::resize(dimn_t new_size)
 {
     RPY_CHECK(new_size >= m_data.size());
-    const auto *type = p_dctx->ctype();
+    const auto* type = p_dctx->ctype();
 
     scalars::ScalarArray array(type->allocate(new_size), new_size);
     type->convert_copy(array, m_data, m_data.size());
@@ -213,9 +216,10 @@ DeviceAlgebraBase<Interface, Derived>::clone() const
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     if (m_data) {
-        const auto *type = m_data.type();
-        scalars::ScalarArray new_data(type->allocate(m_data.size()),
-                                      m_data.size());
+        const auto* type = m_data.type();
+        scalars::ScalarArray new_data(
+                type->allocate(m_data.size()), m_data.size()
+        );
         p_dctx->unary_op(new_data, m_data, DeviceContext::Clone, {});
         return algebra_t(new Derived(std::move(new_data), p_dctx));
     }
@@ -247,11 +251,11 @@ void DeviceAlgebraBase<Interface, Derived>::clear()
     if (m_data) { p_dctx->ctype()->assign(m_data, 0, 1); }
 }
 template <typename Interface, typename Derived>
-void DeviceAlgebraBase<Interface, Derived>::assign(const algebra_t &other)
+void DeviceAlgebraBase<Interface, Derived>::assign(const algebra_t& other)
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     RPY_CHECK(!m_data.is_const());
-    const auto *type = p_dctx->ctype();
+    const auto* type = p_dctx->ctype();
 
     const auto other_data = try_convert(other);
     const auto size = other_data.size();
@@ -265,14 +269,14 @@ void DeviceAlgebraBase<Interface, Derived>::assign(const algebra_t &other)
     p_dctx->unary_op(m_data, other_data, DeviceContext::Clone, {});
 }
 template <typename Interface, typename Derived>
-std::ostream &
-DeviceAlgebraBase<Interface, Derived>::print(std::ostream &os) const
+std::ostream& DeviceAlgebraBase<Interface, Derived>::print(std::ostream& os
+) const
 {
     os << "{ ";
     if (m_data) {
         const auto borrowed = borrow_on_host();
-        const auto *type = borrowed.type();
-        const auto &basis = Interface::basis();
+        const auto* type = borrowed.type();
+        const auto& basis = Interface::basis();
 
         scalars::ScalarPointer ptr(borrowed);
         for (dimn_t idx = 0; idx < borrowed.size(); ++idx, ++ptr) {
@@ -284,7 +288,7 @@ DeviceAlgebraBase<Interface, Derived>::print(std::ostream &os) const
     return os;
 }
 template <typename Interface, typename Derived>
-bool DeviceAlgebraBase<Interface, Derived>::equals(const algebra_t &other) const
+bool DeviceAlgebraBase<Interface, Derived>::equals(const algebra_t& other) const
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     const auto other_data = try_convert(other);
@@ -325,9 +329,10 @@ DeviceAlgebraBase<Interface, Derived>::uminus() const
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     if (m_data) {
-        const auto *type = m_data.type();
-        scalars::ScalarArray new_data(type->allocate(m_data.size()),
-                                      m_data.size());
+        const auto* type = m_data.type();
+        scalars::ScalarArray new_data(
+                type->allocate(m_data.size()), m_data.size()
+        );
         p_dctx->unary_op(new_data, m_data, DeviceContext::UMinus, {});
         return algebra_t(new Derived(std::move(new_data), p_dctx));
     }
@@ -335,11 +340,11 @@ DeviceAlgebraBase<Interface, Derived>::uminus() const
 }
 template <typename Interface, typename Derived>
 typename DeviceAlgebraBase<Interface, Derived>::algebra_t
-DeviceAlgebraBase<Interface, Derived>::add(const algebra_t &other) const
+DeviceAlgebraBase<Interface, Derived>::add(const algebra_t& other) const
 {
     // TODO: Clean this up
     RPY_DBG_ASSERT(p_dctx != nullptr);
-    const auto *type = p_dctx->ctype();
+    const auto* type = p_dctx->ctype();
 
     if (!m_data || m_data.size() == 0) {
         auto other_dd = other.dense_data();
@@ -365,10 +370,10 @@ DeviceAlgebraBase<Interface, Derived>::add(const algebra_t &other) const
 }
 template <typename Interface, typename Derived>
 typename DeviceAlgebraBase<Interface, Derived>::algebra_t
-DeviceAlgebraBase<Interface, Derived>::sub(const algebra_t &other) const
+DeviceAlgebraBase<Interface, Derived>::sub(const algebra_t& other) const
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
-    const auto *type = p_dctx->ctype();
+    const auto* type = p_dctx->ctype();
 
     if (other.dimension() == 0) { return clone(); }
     const auto other_data = try_convert(other);
@@ -388,13 +393,14 @@ DeviceAlgebraBase<Interface, Derived>::sub(const algebra_t &other) const
 }
 template <typename Interface, typename Derived>
 typename DeviceAlgebraBase<Interface, Derived>::algebra_t
-DeviceAlgebraBase<Interface, Derived>::smul(const scalars::Scalar &other) const
+DeviceAlgebraBase<Interface, Derived>::smul(const scalars::Scalar& other) const
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     if (m_data) {
-        const auto *type = m_data.type();
-        scalars::ScalarArray new_data(type->allocate(m_data.size()),
-                                      m_data.size());
+        const auto* type = m_data.type();
+        scalars::ScalarArray new_data(
+                type->allocate(m_data.size()), m_data.size()
+        );
         p_dctx->unary_op(new_data, m_data, DeviceContext::SMul, other);
         return algebra_t(new Derived(std::move(new_data), p_dctx));
     }
@@ -402,19 +408,20 @@ DeviceAlgebraBase<Interface, Derived>::smul(const scalars::Scalar &other) const
 }
 template <typename Interface, typename Derived>
 typename DeviceAlgebraBase<Interface, Derived>::algebra_t
-DeviceAlgebraBase<Interface, Derived>::sdiv(const scalars::Scalar &other) const
+DeviceAlgebraBase<Interface, Derived>::sdiv(const scalars::Scalar& other) const
 {
     if (p_dctx != nullptr && m_data) {
-        const auto *type = m_data.type();
-        scalars::ScalarArray new_data(type->allocate(m_data.size()),
-                                      m_data.size());
+        const auto* type = m_data.type();
+        scalars::ScalarArray new_data(
+                type->allocate(m_data.size()), m_data.size()
+        );
         p_dctx->unary_op(new_data, m_data, DeviceContext::SDiv, other);
         return algebra_t(new Derived(std::move(new_data), p_dctx));
     }
     return algebra_t(Interface::context());
 }
 template <typename Interface, typename Derived>
-void DeviceAlgebraBase<Interface, Derived>::add_inplace(const algebra_t &other)
+void DeviceAlgebraBase<Interface, Derived>::add_inplace(const algebra_t& other)
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     RPY_CHECK(!m_data.is_const());
@@ -424,11 +431,12 @@ void DeviceAlgebraBase<Interface, Derived>::add_inplace(const algebra_t &other)
 
     if (m_data.size() < size) { resize(size); }
 
-    p_dctx->inplace_binary_op(m_data, other_data, DeviceContext::InplaceAdd, {},
-                              {});
+    p_dctx->inplace_binary_op(
+            m_data, other_data, DeviceContext::InplaceAdd, {}, {}
+    );
 }
 template <typename Interface, typename Derived>
-void DeviceAlgebraBase<Interface, Derived>::sub_inplace(const algebra_t &other)
+void DeviceAlgebraBase<Interface, Derived>::sub_inplace(const algebra_t& other)
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     RPY_CHECK(!m_data.is_const());
@@ -438,12 +446,14 @@ void DeviceAlgebraBase<Interface, Derived>::sub_inplace(const algebra_t &other)
 
     if (m_data.size() < size) { resize(size); }
 
-    p_dctx->inplace_binary_op(m_data, other_data, DeviceContext::InplaceSub, {},
-                              {});
+    p_dctx->inplace_binary_op(
+            m_data, other_data, DeviceContext::InplaceSub, {}, {}
+    );
 }
 template <typename Interface, typename Derived>
 void DeviceAlgebraBase<Interface, Derived>::smul_inplace(
-        const scalars::Scalar &other)
+        const scalars::Scalar& other
+)
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     RPY_CHECK(!m_data.is_const());
@@ -454,7 +464,8 @@ void DeviceAlgebraBase<Interface, Derived>::smul_inplace(
 }
 template <typename Interface, typename Derived>
 void DeviceAlgebraBase<Interface, Derived>::sdiv_inplace(
-        const scalars::Scalar &other)
+        const scalars::Scalar& other
+)
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     if (m_data) {
@@ -463,7 +474,8 @@ void DeviceAlgebraBase<Interface, Derived>::sdiv_inplace(
 }
 template <typename Interface, typename Derived>
 void DeviceAlgebraBase<Interface, Derived>::add_scal_mul(
-        const algebra_t &rhs, const scalars::Scalar &scalar)
+        const algebra_t& rhs, const scalars::Scalar& scalar
+)
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     RPY_CHECK(!m_data.is_const());
@@ -473,12 +485,14 @@ void DeviceAlgebraBase<Interface, Derived>::add_scal_mul(
 
     if (m_data.size() < size) { resize(size); }
 
-    p_dctx->inplace_binary_op(m_data, other_data, DeviceContext::InplaceAddSMul,
-                              {}, scalar);
+    p_dctx->inplace_binary_op(
+            m_data, other_data, DeviceContext::InplaceAddSMul, {}, scalar
+    );
 }
 template <typename Interface, typename Derived>
 void DeviceAlgebraBase<Interface, Derived>::sub_scal_mul(
-        const algebra_t &rhs, const scalars::Scalar &scalar)
+        const algebra_t& rhs, const scalars::Scalar& scalar
+)
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     RPY_CHECK(!m_data.is_const());
@@ -488,12 +502,14 @@ void DeviceAlgebraBase<Interface, Derived>::sub_scal_mul(
 
     if (m_data.size() < size) { resize(size); }
 
-    p_dctx->inplace_binary_op(m_data, other_data, DeviceContext::InplaceSubSMul,
-                              {}, scalar);
+    p_dctx->inplace_binary_op(
+            m_data, other_data, DeviceContext::InplaceSubSMul, {}, scalar
+    );
 }
 template <typename Interface, typename Derived>
 void DeviceAlgebraBase<Interface, Derived>::add_scal_div(
-        const algebra_t &rhs, const scalars::Scalar &scalar)
+        const algebra_t& rhs, const scalars::Scalar& scalar
+)
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     RPY_CHECK(!m_data.is_const());
@@ -503,12 +519,14 @@ void DeviceAlgebraBase<Interface, Derived>::add_scal_div(
 
     if (m_data.size() < size) { resize(size); }
 
-    p_dctx->inplace_binary_op(m_data, other_data, DeviceContext::InplaceAddSDiv,
-                              {}, scalar);
+    p_dctx->inplace_binary_op(
+            m_data, other_data, DeviceContext::InplaceAddSDiv, {}, scalar
+    );
 }
 template <typename Interface, typename Derived>
 void DeviceAlgebraBase<Interface, Derived>::sub_scal_div(
-        const algebra_t &rhs, const scalars::Scalar &scalar)
+        const algebra_t& rhs, const scalars::Scalar& scalar
+)
 {
     RPY_DBG_ASSERT(p_dctx != nullptr);
     RPY_CHECK(!m_data.is_const());
@@ -518,8 +536,9 @@ void DeviceAlgebraBase<Interface, Derived>::sub_scal_div(
 
     if (m_data.size() < size) { resize(size); }
 
-    p_dctx->inplace_binary_op(m_data, other_data, DeviceContext::InplaceSubSDiv,
-                              {}, scalar);
+    p_dctx->inplace_binary_op(
+            m_data, other_data, DeviceContext::InplaceSubSDiv, {}, scalar
+    );
 }
 
 }// namespace device

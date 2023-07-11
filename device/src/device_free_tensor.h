@@ -48,22 +48,22 @@ class DeviceFreeTensor
             = DeviceAlgebraBase<algebra::FreeTensorInterface, DeviceFreeTensor>;
 
 public:
-    DeviceFreeTensor(scalars::ScalarArray &&data, const DeviceContext *ctx)
+    DeviceFreeTensor(scalars::ScalarArray&& data, const DeviceContext* ctx)
         : base_t(std::move(data), ctx)
     {}
 
-    void mul_inplace(const algebra_t &other) override;
+    void mul_inplace(const algebra_t& other) override;
 
-    algebra_t mul(const algebra_t &other) const override;
-    void add_mul(const algebra_t &lhs, const algebra_t &rhs) override;
-    void sub_mul(const algebra_t &lhs, const algebra_t &rhs) override;
-    void mul_smul(const algebra_t &rhs, const scalars::Scalar &scalar) override;
-    void mul_sdiv(const algebra_t &rhs, const scalars::Scalar &scalar) override;
+    algebra_t mul(const algebra_t& other) const override;
+    void add_mul(const algebra_t& lhs, const algebra_t& rhs) override;
+    void sub_mul(const algebra_t& lhs, const algebra_t& rhs) override;
+    void mul_smul(const algebra_t& rhs, const scalars::Scalar& scalar) override;
+    void mul_sdiv(const algebra_t& rhs, const scalars::Scalar& scalar) override;
     algebra::FreeTensor exp() const override;
     algebra::FreeTensor log() const override;
     algebra::FreeTensor inverse() const override;
     algebra::FreeTensor antipode() const override;
-    void fmexp(const algebra::FreeTensor &other) override;
+    void fmexp(const algebra::FreeTensor& other) override;
 };
 
 }// namespace device

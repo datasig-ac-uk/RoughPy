@@ -52,14 +52,14 @@ template class RPY_EXPORT_INSTANTIATION
 
 template <>
 typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer &ctx)
+basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx)
 {
     return ctx->get_tensor_basis();
 }
 
 template <>
 typename ShuffleTensorBundle::basis_type
-basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer &ctx)
+basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer& ctx)
 {
     return ctx->get_tensor_basis();
 }

@@ -36,22 +36,23 @@
 using namespace rpy;
 using namespace pybind11::literals;
 
-static const char *LKEY_ITERATOR_DOC
+static const char* LKEY_ITERATOR_DOC
         = R"eadoc(Iterator over range of Hall set members.
 )eadoc";
 
-python::PyLieKeyIterator::PyLieKeyIterator(const py::object &ctx,
-                                           key_type current, key_type end)
+python::PyLieKeyIterator::PyLieKeyIterator(
+        const py::object& ctx, key_type current, key_type end
+)
     : m_current(current), m_end(end)
 {
-    if (!py::isinstance(ctx, reinterpret_cast<PyObject *>(&RPyContext_Type))) {
+    if (!py::isinstance(ctx, reinterpret_cast<PyObject*>(&RPyContext_Type))) {
         throw py::type_error("expected a Context object");
     }
     p_ctx = python::ctx_cast(ctx.ptr());
 }
 
-static python::PyLieKey to_py_lie_key(key_type k,
-                                      const algebra::LieBasis &lbasis)
+static python::PyLieKey
+to_py_lie_key(key_type k, const algebra::LieBasis& lbasis)
 {
     auto width = lbasis.width();
 
@@ -66,8 +67,10 @@ static python::PyLieKey to_py_lie_key(key_type k,
     if (lbasis.letter(lparent)) {
         return python::PyLieKey(width, lparent, to_py_lie_key(rparent, lbasis));
     }
-    return python::PyLieKey(width, to_py_lie_key(lparent, lbasis),
-                            to_py_lie_key(rparent, lbasis));
+    return python::PyLieKey(
+            width, to_py_lie_key(lparent, lbasis),
+            to_py_lie_key(rparent, lbasis)
+    );
 }
 
 python::PyLieKey python::PyLieKeyIterator::next()
@@ -78,14 +81,16 @@ python::PyLieKey python::PyLieKeyIterator::next()
     return to_py_lie_key(current, p_ctx->get_lie_basis());
 }
 
-void python::init_lie_key_iterator(py::module_ &m)
+void python::init_lie_key_iterator(py::module_& m)
 {
     py::class_<PyLieKeyIterator> klass(m, "LieKeyIterator", LKEY_ITERATOR_DOC);
     klass.def(py::init<py::object>(), "context"_a);
     klass.def(py::init<py::object, key_type>(), "context"_a, "start_key"_a);
-    klass.def(py::init<py::object, key_type, key_type>(), "context"_a,
-              "start_key"_a, "end_key"_a);
+    klass.def(
+            py::init<py::object, key_type, key_type>(), "context"_a,
+            "start_key"_a, "end_key"_a
+    );
 
-    klass.def("__iter__", [](PyLieKeyIterator &self) { return self; });
+    klass.def("__iter__", [](PyLieKeyIterator& self) { return self; });
     klass.def("__next__", &PyLieKeyIterator::next);
 }

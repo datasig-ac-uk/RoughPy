@@ -36,12 +36,12 @@ using namespace rpy;
 using namespace pybind11::literals;
 
 static void recombine_wrapper(dimn_t stCubatureDimension, dimn_t dimension,
-                              dimn_t no_locations, dimn_t *pno_kept_locations,
-                              const void **ppLocationBuffer,
-                              scalar_t *pdWeightBuffer, idimn_t *pKeptLocations,
-                              scalar_t *pNewWeights)
+                              dimn_t no_locations, dimn_t* pno_kept_locations,
+                              const void** ppLocationBuffer,
+                              scalar_t* pdWeightBuffer, idimn_t* pKeptLocations,
+                              scalar_t* pNewWeights)
 {
-    auto &no_kept_locations = *pno_kept_locations;
+    auto& no_kept_locations = *pno_kept_locations;
     auto iNoDimensionsToCubature
             = RdToPowersCubatureDimension(dimension, stCubatureDimension);
     if (no_locations == 0) {
@@ -57,11 +57,11 @@ static void recombine_wrapper(dimn_t stCubatureDimension, dimn_t dimension,
     CMultiDimensionalBufferHelper sConditioning{dimension, stCubatureDimension};
 
     sCloud in{dimn_t(no_locations), pdWeightBuffer,
-              const_cast<void *>(static_cast<const void *>(ppLocationBuffer)),
+              const_cast<void*>(static_cast<const void*>(ppLocationBuffer)),
               &sConditioning};
 
     sRCloudInfo out{iNoDimensionsToCubature, pNewWeights,
-                    (dimn_t *) pKeptLocations, nullptr};
+                    (dimn_t*) pKeptLocations, nullptr};
 
     sRecombineInterface data{&in, &out, iNoDimensionsToCubature, &RdToPowers,
                              nullptr};
@@ -71,9 +71,9 @@ static void recombine_wrapper(dimn_t stCubatureDimension, dimn_t dimension,
     no_kept_locations = data.pOutCloudInfo->No_KeptLocations;
 }
 
-static py::tuple py_recombine(const py::object &data,
-                              const py::object &src_locs,
-                              const py::object &src_weights, deg_t degree)
+static py::tuple py_recombine(const py::object& data,
+                              const py::object& src_locs,
+                              const py::object& src_weights, deg_t degree)
 {
 
     python::PyToBufferOptions options;
@@ -85,7 +85,7 @@ static py::tuple py_recombine(const py::object &data,
 
     auto buffer = python::py_to_buffer(data, options);
 
-    const auto &shape = options.shape;
+    const auto& shape = options.shape;
     const auto ndim = shape.size();
 
     if (ndim < 2 || buffer.size() == 0) {
@@ -98,7 +98,7 @@ static py::tuple py_recombine(const py::object &data,
     return py::tuple();
 }
 
-void python::init_recombine(pybind11::module_ &m)
+void python::init_recombine(pybind11::module_& m)
 {
 
     m.def("recombine", &py_recombine, "data"_a, "src_locations"_a = py::none(),

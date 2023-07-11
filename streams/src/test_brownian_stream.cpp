@@ -46,7 +46,7 @@ public:
     static constexpr algebra::VectorType vtype = algebra::VectorType::Dense;
     uint64_t seed = 12345;
 
-    const scalars::ScalarType *ctype;
+    const scalars::ScalarType* ctype;
     algebra::context_pointer ctx;
 
     class BrownianHolder : public streams::BrownianStream

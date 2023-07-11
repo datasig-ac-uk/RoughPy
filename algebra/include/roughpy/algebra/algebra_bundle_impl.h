@@ -40,8 +40,9 @@ namespace algebra {
 template <typename Bundle>
 struct bundle_traits;
 
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 class AlgebraBundleImplementation
     : protected StorageModel<BundleImpl>,
       public ImplAccessLayer<Interface, BundleImpl>
@@ -62,10 +63,10 @@ class AlgebraBundleImplementation
     using real_base_t = typename bundle_traits_t::base_type;
     using real_fibre_t = typename bundle_traits_t::fibre_type;
 
-    using base_impl_t = AlgebraImplementation<base_interface_t, real_base_t,
-                                              BorrowedStorageModel>;
-    using fibre_impl_t = AlgebraImplementation<fibre_interface_t, real_fibre_t,
-                                               BorrowedStorageModel>;
+    using base_impl_t = AlgebraImplementation<
+            base_interface_t, real_base_t, BorrowedStorageModel>;
+    using fibre_impl_t = AlgebraImplementation<
+            fibre_interface_t, real_fibre_t, BorrowedStorageModel>;
 
     using scalar_type = typename bundle_traits_t::scalar_type;
     using rational_type = typename bundle_traits_t::rational_type;
@@ -74,11 +75,11 @@ protected:
     using storage_base_t::data;
 
 public:
-    BundleImpl &get_data() noexcept override { return data(); }
+    BundleImpl& get_data() noexcept override { return data(); }
 
-    const BundleImpl &get_data() const noexcept override { return data(); }
+    const BundleImpl& get_data() const noexcept override { return data(); }
 
-    BundleImpl &&take_data() override
+    BundleImpl&& take_data() override
     {
         if RPY_IF_CONSTEXPR (is_same<storage_base_t,
                                      BorrowedStorageModel<BundleImpl>>::value) {
@@ -89,14 +90,14 @@ public:
     }
 
     template <typename... Args>
-    explicit AlgebraBundleImplementation(context_pointer &&ctx, Args &&...args)
+    explicit AlgebraBundleImplementation(context_pointer&& ctx, Args&&... args)
         : storage_base_t(std::forward<Args>(args)...),
           access_layer_t(std::move(ctx))
     {}
 
 protected:
-    dtl::ConvertedArgument<BundleImpl>
-    convert_argument(const algebra_t &arg) const;
+    dtl::ConvertedArgument<BundleImpl> convert_argument(const algebra_t& arg
+    ) const;
 
 public:
     dimn_t size() const override;
@@ -118,506 +119,652 @@ public:
     base_alg_t base() override;
     fibre_alg_t fibre() override;
 
-    std::ostream &print(std::ostream &os) const override;
+    std::ostream& print(std::ostream& os) const override;
 
-    bool equals(const algebra_t &other) const override;
+    bool equals(const algebra_t& other) const override;
 
     algebra_t uminus() const override;
-    algebra_t add(const algebra_t &other) const override;
-    algebra_t sub(const algebra_t &other) const override;
-    algebra_t mul(const algebra_t &other) const override;
-    algebra_t smul(const scalars::Scalar &other) const override;
-    algebra_t sdiv(const scalars::Scalar &other) const override;
+    algebra_t add(const algebra_t& other) const override;
+    algebra_t sub(const algebra_t& other) const override;
+    algebra_t mul(const algebra_t& other) const override;
+    algebra_t smul(const scalars::Scalar& other) const override;
+    algebra_t sdiv(const scalars::Scalar& other) const override;
 
-    void add_inplace(const algebra_t &other) override;
-    void sub_inplace(const algebra_t &other) override;
-    void mul_inplace(const algebra_t &other) override;
-    void smul_inplace(const scalars::Scalar &other) override;
-    void sdiv_inplace(const scalars::Scalar &other) override;
+    void add_inplace(const algebra_t& other) override;
+    void sub_inplace(const algebra_t& other) override;
+    void mul_inplace(const algebra_t& other) override;
+    void smul_inplace(const scalars::Scalar& other) override;
+    void sdiv_inplace(const scalars::Scalar& other) override;
 
 private:
-    void add_scal_mul_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                           dtl::no_implementation);
-    void sub_scal_mul_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                           dtl::no_implementation);
-    void add_scal_div_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                           dtl::no_implementation);
-    void sub_scal_div_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                           dtl::no_implementation);
+    void add_scal_mul_impl(
+            const algebra_t& arg, const scalars::Scalar& scalar,
+            dtl::no_implementation
+    );
+    void sub_scal_mul_impl(
+            const algebra_t& arg, const scalars::Scalar& scalar,
+            dtl::no_implementation
+    );
+    void add_scal_div_impl(
+            const algebra_t& arg, const scalars::Scalar& scalar,
+            dtl::no_implementation
+    );
+    void sub_scal_div_impl(
+            const algebra_t& arg, const scalars::Scalar& scalar,
+            dtl::no_implementation
+    );
 
-    void add_mul_impl(const algebra_t &lhs, const algebra_t &rhs,
-                      dtl::no_implementation);
-    void sub_mul_impl(const algebra_t &lhs, const algebra_t &rhs,
-                      dtl::no_implementation);
+    void add_mul_impl(
+            const algebra_t& lhs, const algebra_t& rhs, dtl::no_implementation
+    );
+    void sub_mul_impl(
+            const algebra_t& lhs, const algebra_t& rhs, dtl::no_implementation
+    );
 
-    void mul_smul_impl(const algebra_t &lhs, const scalars::Scalar &rhs,
-                       dtl::no_implementation);
-    void mul_sdiv_impl(const algebra_t &lhs, const scalars::Scalar &rhs,
-                       dtl::no_implementation);
+    void mul_smul_impl(
+            const algebra_t& lhs, const scalars::Scalar& rhs,
+            dtl::no_implementation
+    );
+    void mul_sdiv_impl(
+            const algebra_t& lhs, const scalars::Scalar& rhs,
+            dtl::no_implementation
+    );
 
-    void add_scal_mul_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                           dtl::has_implementation);
-    void sub_scal_mul_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                           dtl::has_implementation);
-    void add_scal_div_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                           dtl::has_implementation);
-    void sub_scal_div_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                           dtl::has_implementation);
+    void add_scal_mul_impl(
+            const algebra_t& arg, const scalars::Scalar& scalar,
+            dtl::has_implementation
+    );
+    void sub_scal_mul_impl(
+            const algebra_t& arg, const scalars::Scalar& scalar,
+            dtl::has_implementation
+    );
+    void add_scal_div_impl(
+            const algebra_t& arg, const scalars::Scalar& scalar,
+            dtl::has_implementation
+    );
+    void sub_scal_div_impl(
+            const algebra_t& arg, const scalars::Scalar& scalar,
+            dtl::has_implementation
+    );
 
-    void add_mul_impl(const algebra_t &lhs, const algebra_t &rhs,
-                      dtl::has_implementation);
-    void sub_mul_impl(const algebra_t &lhs, const algebra_t &rhs,
-                      dtl::has_implementation);
+    void add_mul_impl(
+            const algebra_t& lhs, const algebra_t& rhs, dtl::has_implementation
+    );
+    void sub_mul_impl(
+            const algebra_t& lhs, const algebra_t& rhs, dtl::has_implementation
+    );
 
-    void mul_smul_impl(const algebra_t &lhs, const scalars::Scalar &rhs,
-                       dtl::has_implementation);
-    void mul_sdiv_impl(const algebra_t &lhs, const scalars::Scalar &rhs,
-                       dtl::has_implementation);
+    void mul_smul_impl(
+            const algebra_t& lhs, const scalars::Scalar& rhs,
+            dtl::has_implementation
+    );
+    void mul_sdiv_impl(
+            const algebra_t& lhs, const scalars::Scalar& rhs,
+            dtl::has_implementation
+    );
 
 public:
-    void add_scal_mul(const algebra_t &rhs,
-                      const scalars::Scalar &scalar) override;
-    void sub_scal_mul(const algebra_t &rhs,
-                      const scalars::Scalar &scalar) override;
-    void add_scal_div(const algebra_t &rhs,
-                      const scalars::Scalar &scalar) override;
-    void sub_scal_div(const algebra_t &rhs,
-                      const scalars::Scalar &scalar) override;
+    void
+    add_scal_mul(const algebra_t& rhs, const scalars::Scalar& scalar) override;
+    void
+    sub_scal_mul(const algebra_t& rhs, const scalars::Scalar& scalar) override;
+    void
+    add_scal_div(const algebra_t& rhs, const scalars::Scalar& scalar) override;
+    void
+    sub_scal_div(const algebra_t& rhs, const scalars::Scalar& scalar) override;
 
-    void add_mul(const algebra_t &lhs, const algebra_t &rhs) override;
-    void sub_mul(const algebra_t &lhs, const algebra_t &rhs) override;
-    void mul_smul(const algebra_t &lhs, const scalars::Scalar &rhs) override;
-    void mul_sdiv(const algebra_t &lhs, const scalars::Scalar &rhs) override;
+    void add_mul(const algebra_t& lhs, const algebra_t& rhs) override;
+    void sub_mul(const algebra_t& lhs, const algebra_t& rhs) override;
+    void mul_smul(const algebra_t& lhs, const scalars::Scalar& rhs) override;
+    void mul_sdiv(const algebra_t& lhs, const scalars::Scalar& rhs) override;
 };
 
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 dtl::ConvertedArgument<BundleImpl>
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        convert_argument(const algebra_t &arg) const
+        convert_argument(const algebra_t& arg) const
 {
     RPY_CHECK(this->context() == arg->context());
     if (this->storage_type() == arg->storage_type()) {
-        return algebra_cast<const BundleImpl &>(*arg);
+        return algebra_cast<const BundleImpl&>(*arg);
     }
     return take_algebra<BundleImpl, Interface>(
-            this->context()->convert(arg, this->storage_type()));
+            this->context()->convert(arg, this->storage_type())
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 dimn_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::size() const
 {
     // TODO: use traits
     return data().size();
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 dimn_t
-AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::dimension()
-        const
+AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::dimension(
+) const
 {
     // TODO: use traits
     return data.dimension();
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-bool AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::is_zero()
-        const
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+bool AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::is_zero(
+) const
 {
     return data().dimension() == 0
             || data() == bundle_traits_t::zero_like(data());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 optional<deg_t>
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::degree() const
 {
     return bundle_traits_t::degree(data());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 optional<deg_t>
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::width() const
 {
     // TODO: IMplementation needed
     return {};
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 optional<deg_t>
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::depth() const
 {
     // TODO: Implementation needed
     return {};
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::clone() const
 {
     return algebra_t(Interface::context(), data());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
-AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::zero_like()
-        const
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
+AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::zero_like(
+) const
 {
     return bundle_traits_t::zero_like(data());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::borrow() const
 {
     return algebra_t(Interface::context());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::borrow_mut()
 {
     return algebra_t(Interface::context(), &data());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 scalars::Scalar
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::get(
-        key_type key) const
+        key_type key
+) const
 {
     // TODO: needs implementation
     return scalars::Scalar();
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 scalars::Scalar
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::get_mut(
-        key_type key)
+        key_type key
+)
 {
     // TODO: Needs implementation
     return scalars::Scalar();
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::base_alg_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::base_alg_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::base()
 {
     return base_alg_t(Interface::context(), &data().base());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::fibre_alg_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::fibre_alg_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::fibre()
 {
     return fibre_alg_t(Interface::context(), &data().fibre());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-std::ostream &
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+std::ostream&
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::print(
-        std::ostream &os) const
+        std::ostream& os
+) const
 {
     return os << data();
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 bool AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::equals(
-        const algebra_t &other) const
+        const algebra_t& other
+) const
 {
-    return data() == static_cast<const BundleImpl &>(convert_argument(other));
+    return data() == static_cast<const BundleImpl&>(convert_argument(other));
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::uminus() const
 {
     return algebra_t(Interface::context(), -data());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::add(
-        const algebra_t &other) const
+        const algebra_t& other
+) const
 {
     std::plus<BundleImpl> plus;
-    return algebra_t(Interface::context(),
-                     plus(data(), convert_argument(other)));
+    return algebra_t(
+            Interface::context(), plus(data(), convert_argument(other))
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::sub(
-        const algebra_t &other) const
+        const algebra_t& other
+) const
 {
     std::minus<BundleImpl> minus;
-    return algebra_t(Interface::context(),
-                     minus(data(), convert_argument(other)));
+    return algebra_t(
+            Interface::context(), minus(data(), convert_argument(other))
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::mul(
-        const algebra_t &other) const
+        const algebra_t& other
+) const
 {
     std::multiplies<BundleImpl> mul;
-    return algebra_t(Interface::context(),
-                     mul(data(), convert_argument(other)));
+    return algebra_t(
+            Interface::context(), mul(data(), convert_argument(other))
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::smul(
-        const scalars::Scalar &other) const
+        const scalars::Scalar& other
+) const
 {
-    return algebra_t(Interface::context(),
-                     data() * scalars::scalar_cast<scalar_type>(other));
+    return algebra_t(
+            Interface::context(),
+            data() * scalars::scalar_cast<scalar_type>(other)
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-typename AlgebraBundleImplementation<Interface, BundleImpl,
-                                     StorageModel>::algebra_t
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+typename AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::algebra_t
 AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::sdiv(
-        const scalars::Scalar &other) const
+        const scalars::Scalar& other
+) const
 {
-    return algebra_t(Interface::context(),
-                     data() / scalars::scalar_cast<rational_type>(other));
+    return algebra_t(
+            Interface::context(),
+            data() / scalars::scalar_cast<rational_type>(other)
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        add_inplace(const algebra_t &other)
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+void AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::add_inplace(const algebra_t& other
+)
 {
     ADL_FORCE::add_assign(data(), convert_argument(other));
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sub_inplace(const algebra_t &other)
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+void AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::sub_inplace(const algebra_t& other
+)
 {
     ADL_FORCE::sub_assign(data(), convert_argument(other));
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
-void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        mul_inplace(const algebra_t &other)
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
+void AlgebraBundleImplementation<
+        Interface, BundleImpl, StorageModel>::mul_inplace(const algebra_t& other
+)
 {
-    data() *= static_cast<const BundleImpl &>(convert_argument(other));
+    data() *= static_cast<const BundleImpl&>(convert_argument(other));
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        smul_inplace(const scalars::Scalar &other)
+        smul_inplace(const scalars::Scalar& other)
 {
     data() *= scalars::scalar_cast<scalar_type>(other);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sdiv_inplace(const scalars::Scalar &other)
+        sdiv_inplace(const scalars::Scalar& other)
 {
     data() /= scalars::scalar_cast<rational_type>(other);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        add_scal_mul_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                          dtl::no_implementation)
+        add_scal_mul_impl(
+                const algebra_t& arg, const scalars::Scalar& scalar,
+                dtl::no_implementation
+        )
 {
     Interface::add_scal_mul(arg, scalar);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sub_scal_mul_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                          dtl::no_implementation)
+        sub_scal_mul_impl(
+                const algebra_t& arg, const scalars::Scalar& scalar,
+                dtl::no_implementation
+        )
 {
     Interface::sub_scal_mul(arg, scalar);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        add_scal_div_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                          dtl::no_implementation)
+        add_scal_div_impl(
+                const algebra_t& arg, const scalars::Scalar& scalar,
+                dtl::no_implementation
+        )
 {
     Interface::add_scal_div(arg, scalar);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sub_scal_div_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                          dtl::no_implementation)
+        sub_scal_div_impl(
+                const algebra_t& arg, const scalars::Scalar& scalar,
+                dtl::no_implementation
+        )
 {
     Interface::sub_scal_div(arg, scalar);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        add_mul_impl(const algebra_t &lhs, const algebra_t &rhs,
-                     dtl::no_implementation)
+        add_mul_impl(
+                const algebra_t& lhs, const algebra_t& rhs,
+                dtl::no_implementation
+        )
 {
     Interface::add_mul(lhs, rhs);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sub_mul_impl(const algebra_t &lhs, const algebra_t &rhs,
-                     dtl::no_implementation)
+        sub_mul_impl(
+                const algebra_t& lhs, const algebra_t& rhs,
+                dtl::no_implementation
+        )
 {
     Interface::sub_mul(lhs, rhs);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        mul_smul_impl(const algebra_t &lhs, const scalars::Scalar &rhs,
-                      dtl::no_implementation)
+        mul_smul_impl(
+                const algebra_t& lhs, const scalars::Scalar& rhs,
+                dtl::no_implementation
+        )
 {
     Interface::mul_smul(lhs, rhs);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        mul_sdiv_impl(const algebra_t &lhs, const scalars::Scalar &rhs,
-                      dtl::no_implementation)
+        mul_sdiv_impl(
+                const algebra_t& lhs, const scalars::Scalar& rhs,
+                dtl::no_implementation
+        )
 {
     Interface::mul_sdiv(lhs, rhs);
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        add_scal_mul_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                          dtl::has_implementation)
+        add_scal_mul_impl(
+                const algebra_t& arg, const scalars::Scalar& scalar,
+                dtl::has_implementation
+        )
 {
-    data().add_scal_prod(convert_argument(arg),
-                         scalars::scalar_cast<scalar_type>(scalar));
+    data().add_scal_prod(
+            convert_argument(arg), scalars::scalar_cast<scalar_type>(scalar)
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sub_scal_mul_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                          dtl::has_implementation)
+        sub_scal_mul_impl(
+                const algebra_t& arg, const scalars::Scalar& scalar,
+                dtl::has_implementation
+        )
 {
-    data().sub_scal_prod(convert_argument(arg),
-                         scalars::scalar_cast<scalar_type>(scalar));
+    data().sub_scal_prod(
+            convert_argument(arg), scalars::scalar_cast<scalar_type>(scalar)
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        add_scal_div_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                          dtl::has_implementation)
+        add_scal_div_impl(
+                const algebra_t& arg, const scalars::Scalar& scalar,
+                dtl::has_implementation
+        )
 {
-    data().add_scal_div(convert_argument(arg),
-                        scalars::scalar_cast<rational_type>(scalar));
+    data().add_scal_div(
+            convert_argument(arg), scalars::scalar_cast<rational_type>(scalar)
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sub_scal_div_impl(const algebra_t &arg, const scalars::Scalar &scalar,
-                          dtl::has_implementation)
+        sub_scal_div_impl(
+                const algebra_t& arg, const scalars::Scalar& scalar,
+                dtl::has_implementation
+        )
 {
-    data().sub_scal_sub(convert_argument(arg),
-                        scalars::scalar_cast<rational_type>(scalar));
+    data().sub_scal_sub(
+            convert_argument(arg), scalars::scalar_cast<rational_type>(scalar)
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        add_mul_impl(const algebra_t &lhs, const algebra_t &rhs,
-                     dtl::has_implementation)
+        add_mul_impl(
+                const algebra_t& lhs, const algebra_t& rhs,
+                dtl::has_implementation
+        )
 {}
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sub_mul_impl(const algebra_t &lhs, const algebra_t &rhs,
-                     dtl::has_implementation)
+        sub_mul_impl(
+                const algebra_t& lhs, const algebra_t& rhs,
+                dtl::has_implementation
+        )
 {
     data().add_mul(convert_argument(lhs), convert_argument(rhs));
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        mul_smul_impl(const algebra_t &lhs, const scalars::Scalar &rhs,
-                      dtl::has_implementation)
+        mul_smul_impl(
+                const algebra_t& lhs, const scalars::Scalar& rhs,
+                dtl::has_implementation
+        )
 {
     data().sub_mul(convert_argument(lhs), convert_argument(rhs));
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        mul_sdiv_impl(const algebra_t &lhs, const scalars::Scalar &rhs,
-                      dtl::has_implementation)
+        mul_sdiv_impl(
+                const algebra_t& lhs, const scalars::Scalar& rhs,
+                dtl::has_implementation
+        )
 {
-    data().mul_scal_prod(convert_argument(lhs),
-                         scalars::scalar_cast<scalar_type>(rhs));
+    data().mul_scal_prod(
+            convert_argument(lhs), scalars::scalar_cast<scalar_type>(rhs)
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        add_scal_mul(const algebra_t &rhs, const scalars::Scalar &scalar)
+        add_scal_mul(const algebra_t& rhs, const scalars::Scalar& scalar)
 {
-    add_scal_mul_impl(rhs, scalar,
-                      dtl::use_impl_t<dtl::d_add_scal_prod, BundleImpl>());
+    add_scal_mul_impl(
+            rhs, scalar, dtl::use_impl_t<dtl::d_add_scal_prod, BundleImpl>()
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sub_scal_mul(const algebra_t &rhs, const scalars::Scalar &scalar)
+        sub_scal_mul(const algebra_t& rhs, const scalars::Scalar& scalar)
 {
-    sub_scal_mul_impl(rhs, scalar,
-                      dtl::use_impl_t<dtl::d_sub_scal_prod, BundleImpl>());
+    sub_scal_mul_impl(
+            rhs, scalar, dtl::use_impl_t<dtl::d_sub_scal_prod, BundleImpl>()
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        add_scal_div(const algebra_t &rhs, const scalars::Scalar &scalar)
+        add_scal_div(const algebra_t& rhs, const scalars::Scalar& scalar)
 {
-    add_scal_div_impl(rhs, scalar,
-                      dtl::use_impl_t<dtl::d_add_scal_div, BundleImpl>());
+    add_scal_div_impl(
+            rhs, scalar, dtl::use_impl_t<dtl::d_add_scal_div, BundleImpl>()
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::
-        sub_scal_div(const algebra_t &rhs, const scalars::Scalar &scalar)
+        sub_scal_div(const algebra_t& rhs, const scalars::Scalar& scalar)
 {
-    sub_scal_div_impl(rhs, scalar,
-                      dtl::use_impl_t<dtl::d_sub_scal_div, BundleImpl>());
+    sub_scal_div_impl(
+            rhs, scalar, dtl::use_impl_t<dtl::d_sub_scal_div, BundleImpl>()
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::add_mul(
-        const algebra_t &lhs, const algebra_t &rhs)
+        const algebra_t& lhs, const algebra_t& rhs
+)
 {
     add_mul_impl(lhs, rhs, dtl::use_impl_t<dtl::d_add_mul, BundleImpl>());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::sub_mul(
-        const algebra_t &lhs, const algebra_t &rhs)
+        const algebra_t& lhs, const algebra_t& rhs
+)
 {
     sub_mul_impl(lhs, rhs, dtl::use_impl_t<dtl::d_sub_mul, BundleImpl>());
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::mul_smul(
-        const algebra_t &lhs, const scalars::Scalar &rhs)
+        const algebra_t& lhs, const scalars::Scalar& rhs
+)
 {
-    mul_smul_impl(lhs, rhs,
-                  dtl::use_impl_t<dtl::d_mul_scal_prod, BundleImpl>());
+    mul_smul_impl(
+            lhs, rhs, dtl::use_impl_t<dtl::d_mul_scal_prod, BundleImpl>()
+    );
 }
-template <typename Interface, typename BundleImpl,
-          template <typename> class StorageModel>
+template <
+        typename Interface, typename BundleImpl,
+        template <typename> class StorageModel>
 void AlgebraBundleImplementation<Interface, BundleImpl, StorageModel>::mul_sdiv(
-        const algebra_t &lhs, const scalars::Scalar &rhs)
+        const algebra_t& lhs, const scalars::Scalar& rhs
+)
 {
     mul_sdiv_impl(lhs, rhs, dtl::use_impl_t<dtl::d_mul_scal_div, BundleImpl>());
 }

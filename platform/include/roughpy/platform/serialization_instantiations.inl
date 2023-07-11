@@ -33,29 +33,29 @@
 #  ifdef RPY_SERIAL_EXTERNAL
 #    define ADD_ARCHIVE(ARCHIVE)                                               \
         namespace RPY_SERIAL_EXTERNAL {                                        \
-        template void serialize(ARCHIVE &, RPY_SERIAL_IMPL_CLASSNAME &,        \
+        template void serialize(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&,          \
                                 const std::uint32_t);                          \
         }
 #    define ADD_LOAD(ARCHIVE)                                                  \
         namespace RPY_SERIAL_EXTERNAL {                                        \
-        template void load(ARCHIVE &, RPY_SERIAL_IMPL_CLASSNAME &,             \
+        template void load(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&,               \
                            const std::uint32_t);                               \
         }
 #    define ADD_SAVE(ARCHIVE)                                                  \
         namespace RPY_SERIAL_EXTERNAL {                                        \
-        template void save(ARCHIVE &, const RPY_SERIAL_IMPL_CLASSNAME &,       \
+        template void save(ARCHIVE&, const RPY_SERIAL_IMPL_CLASSNAME&,         \
                            const std::uint32_t);                               \
         }
 #  else
 #    define ADD_ARCHIVE(ARCHIVE)                                               \
         template void RPY_SERIAL_IMPL_CLASSNAME::serialize(                    \
-                ARCHIVE &ar, const std::uint32_t version)
+                ARCHIVE& ar, const std::uint32_t version)
 #    define ADD_LOAD(ARCHIVE)                                                  \
         template void RPY_SERIAL_IMPL_CLASSNAME::load(                         \
-                ARCHIVE &ar, const std::uint32_t version)
+                ARCHIVE& ar, const std::uint32_t version)
 #    define ADD_SAVE(ARCHIVE)                                                  \
         template void RPY_SERIAL_IMPL_CLASSNAME::save(                         \
-                ARCHIVE &ar, const std::uint32_t version) const
+                ARCHIVE& ar, const std::uint32_t version) const
 #  endif
 
 #  if defined(RPY_SERIAL_DO_SPLIT)

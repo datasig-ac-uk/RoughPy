@@ -48,14 +48,15 @@ class PyLieKeyIterator
     algebra::context_pointer p_ctx;
 
 public:
-    explicit PyLieKeyIterator(const py::object &ctx, key_type current = 1,
-                              key_type end
-                              = std::numeric_limits<key_type>::max());
+    explicit PyLieKeyIterator(
+            const py::object& ctx, key_type current = 1,
+            key_type end = std::numeric_limits<key_type>::max()
+    );
 
     PyLieKey next();
 };
 
-void init_lie_key_iterator(py::module_ &m);
+void init_lie_key_iterator(py::module_& m);
 
 }// namespace python
 }// namespace rpy

@@ -29,6 +29,7 @@ add_roughpy_component(Algebra
         src/float_lite_context.cpp
         src/double_lite_context.cpp
         src/rational_lite_context.cpp
+        src/rational_poly_lite_context.cpp
         src/libalgebra_lite_internal/dense_vector_iterator.h
         src/libalgebra_lite_internal/free_tensor_info.h
         src/libalgebra_lite_internal/lie_basis_info.h

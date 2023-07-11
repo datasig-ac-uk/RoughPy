@@ -42,14 +42,14 @@ struct PyStreamMetaData {
     deg_t depth;
     optional<intervals::RealInterval> support;
     algebra::context_pointer ctx;
-    const scalars::ScalarType *scalar_type;
+    const scalars::ScalarType* scalar_type;
     optional<algebra::VectorType> vector_type;
     resolution_t resolution;
     intervals::IntervalType interval_type;
     std::shared_ptr<streams::StreamSchema> schema;
 };
 
-PyStreamMetaData kwargs_to_metadata(const py::kwargs &kwargs);
+PyStreamMetaData kwargs_to_metadata(const py::kwargs& kwargs);
 
 }// namespace python
 }// namespace rpy

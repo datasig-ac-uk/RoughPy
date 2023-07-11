@@ -70,20 +70,20 @@ public:
     RPY_NO_DISCARD
     virtual bool contains_point(param_t arg) const noexcept;
     RPY_NO_DISCARD
-    virtual bool is_associated(const Interval &arg) const noexcept;
+    virtual bool is_associated(const Interval& arg) const noexcept;
     RPY_NO_DISCARD
-    virtual bool contains(const Interval &arg) const noexcept;
+    virtual bool contains(const Interval& arg) const noexcept;
     RPY_NO_DISCARD
-    virtual bool intersects_with(const Interval &arg) const noexcept;
+    virtual bool intersects_with(const Interval& arg) const noexcept;
 
     RPY_NO_DISCARD
-    virtual bool operator==(const Interval &other) const;
+    virtual bool operator==(const Interval& other) const;
     RPY_NO_DISCARD
-    virtual bool operator!=(const Interval &other) const;
+    virtual bool operator!=(const Interval& other) const;
 };
 
 RPY_EXPORT
-std::ostream &operator<<(std::ostream &os, const Interval &interval);
+std::ostream& operator<<(std::ostream& os, const Interval& interval);
 
 }// namespace intervals
 }// namespace rpy

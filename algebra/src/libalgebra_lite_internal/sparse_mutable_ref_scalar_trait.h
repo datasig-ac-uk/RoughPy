@@ -51,14 +51,14 @@ class SparseMutableRefScalarImpl : public ScalarInterface
     data_type m_data;
 
 public:
-    explicit SparseMutableRefScalarImpl(data_type &&arg)
+    explicit SparseMutableRefScalarImpl(data_type&& arg)
         : m_data(std::move(arg))
     {}
 
     using value_type = typename data_type::scalar_type;
     using rational_type = typename trait::rational_type;
 
-    const ScalarType *type() const noexcept override
+    const ScalarType* type() const noexcept override
     {
         return ScalarType::of<value_type>();
     }
@@ -66,68 +66,87 @@ public:
     bool is_value() const noexcept override { return false; }
     bool is_zero() const noexcept override
     {
-        return static_cast<const value_type &>(m_data) == value_type(0);
+        return static_cast<const value_type&>(m_data) == value_type(0);
     }
+
+private:
+    template <typename T>
+    static enable_if_t<is_convertible<const T&, scalar_t>::value, scalar_t>
+    convert_to_scalar_t(const T& arg)
+    {
+        return static_cast<scalar_t>(arg);
+    }
+
+    template <typename T>
+    static enable_if_t<!is_convertible<const T&, scalar_t>::value, scalar_t>
+    convert_to_scalar_t(const T&)
+    {
+        throw std::runtime_error("cannot convert to scalar_t");
+    }
+
+public:
     scalar_t as_scalar() const override
     {
-        return scalar_t(static_cast<const value_type &>(m_data));
+        return convert_to_scalar_t(static_cast<const value_type&>(m_data));
     }
     void assign(ScalarPointer pointer) override
     {
-        value_type tmp = static_cast<const value_type &>(m_data);
+        value_type tmp = static_cast<const value_type&>(m_data);
         type()->convert_copy({type(), &tmp}, pointer, 1);
         m_data = tmp;
     }
-    void assign(const Scalar &other) override { assign(other.to_pointer()); }
-    void assign(const void *data, const string &type_id) override
+    void assign(const Scalar& other) override { assign(other.to_pointer()); }
+    void assign(const void* data, const string& type_id) override
     {
-        value_type tmp = static_cast<const value_type &>(m_data);
+        value_type tmp = static_cast<const value_type&>(m_data);
         type()->convert_copy({type(), &tmp}, data, 1, type_id);
         m_data = tmp;
     }
     ScalarPointer to_pointer() override
     {
         throw std::runtime_error(
-                "cannot get non-const pointer to proxy reference type");
+                "cannot get non-const pointer to proxy reference type"
+        );
     }
     ScalarPointer to_pointer() const noexcept override
     {
-        return {type(), &static_cast<const value_type &>(m_data)};
+        return {type(), &static_cast<const value_type&>(m_data)};
     }
 
 private:
     template <typename F>
-    void inplace_function(const Scalar &other, F &&f)
+    void inplace_function(const Scalar& other, F&& f)
     {
         value_type tmp(0);
         type()->convert_copy({type(), &tmp}, other.to_pointer(), 1);
-        m_data = f(static_cast<const value_type &>(m_data), tmp);
+        m_data = f(static_cast<const value_type&>(m_data), tmp);
     }
 
 public:
-    void add_inplace(const Scalar &other) override
+    void add_inplace(const Scalar& other) override
     {
         inplace_function(other, std::plus<value_type>());
     }
-    void sub_inplace(const Scalar &other) override
+    void sub_inplace(const Scalar& other) override
     {
         inplace_function(other, std::minus<value_type>());
     }
-    void mul_inplace(const Scalar &other) override
+    void mul_inplace(const Scalar& other) override
     {
         inplace_function(other, std::multiplies<value_type>());
     }
-    void div_inplace(const Scalar &other) override
+    void div_inplace(const Scalar& other) override
     {
         rational_type tmp(1);
-        type()->rational_type()->convert_copy({type()->rational_type(), &tmp},
-                                              other.to_pointer(), 1);
+        type()->rational_type()->convert_copy(
+                {type()->rational_type(), &tmp}, other.to_pointer(), 1
+        );
         m_data /= tmp;
     }
 
-    std::ostream &print(std::ostream &os) const override
+    std::ostream& print(std::ostream& os) const override
     {
-        return os << static_cast<const value_type &>(m_data);
+        return os << static_cast<const value_type&>(m_data);
     }
 };
 
@@ -144,15 +163,15 @@ public:
             typename lal::coefficient_trait<value_type>::rational_type;
     using reference = lal::dtl::sparse_mutable_reference<Vector>;
 
-    static const ScalarType *get_type() noexcept
+    static const ScalarType* get_type() noexcept
     {
         return ScalarType::of<value_type>();
     }
 
     static Scalar make(reference arg)
     {
-        return Scalar(
-                new dtl::SparseMutableRefScalarImpl<Vector>(std::move(arg)));
+        return Scalar(new dtl::SparseMutableRefScalarImpl<Vector>(std::move(arg)
+        ));
     }
 };
 

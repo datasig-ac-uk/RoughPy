@@ -56,7 +56,7 @@ namespace python {
  * @param klass pybind11 class_ instance to set up
  */
 template <typename Alg, typename... Args>
-void setup_algebra_type(py::class_<Alg, Args...> &klass)
+void setup_algebra_type(py::class_<Alg, Args...>& klass)
 {
 
     using namespace pybind11::literals;
@@ -69,15 +69,18 @@ void setup_algebra_type(py::class_<Alg, Args...> &klass)
      * Use lambda wrapping functions because there is an issue with "noexcept"
      * modifier on these methods in C++17 mode.
      */
-    klass.def_property_readonly("width",
-                                [](const Alg &arg) { return arg.width(); });
-    klass.def_property_readonly("max_degree",
-                                [](const Alg &arg) { return arg.depth(); });
-    klass.def_property_readonly("dtype", [](const Alg &arg) {
+    klass.def_property_readonly("width", [](const Alg& arg) {
+        return arg.width();
+    });
+    klass.def_property_readonly("max_degree", [](const Alg& arg) {
+        return arg.depth();
+    });
+    klass.def_property_readonly("dtype", [](const Alg& arg) {
         return to_ctype_type(arg.coeff_type());
     });
-    klass.def_property_readonly(
-            "storage_type", [](const Alg &arg) { return arg.storage_type(); });
+    klass.def_property_readonly("storage_type", [](const Alg& arg) {
+        return arg.storage_type();
+    });
 
     // setup dynamic properties
     klass.def("size", &Alg::size);
@@ -88,10 +91,11 @@ void setup_algebra_type(py::class_<Alg, Args...> &klass)
 
     klass.def(
             "__iter__",
-            [](const Alg &self) {
+            [](const Alg& self) {
                 return py::make_iterator(self.begin(), self.end());
             },
-            py::keep_alive<0, 1>());
+            py::keep_alive<0, 1>()
+    );
 
     // setup arithmetic
     klass.def("__neg__", &Alg::uminus, py::is_operator());
@@ -103,46 +107,53 @@ void setup_algebra_type(py::class_<Alg, Args...> &klass)
     klass.def("__mul__", &Alg::mul, py::is_operator());
     klass.def(
             "__rmul__",
-            [](const Alg &self, const scalars::Scalar &other) {
+            [](const Alg& self, const scalars::Scalar& other) {
                 return self.smul(other);
             },
-            py::is_operator());
+            py::is_operator()
+    );
     klass.def(
             "__mul__",
-            [](const Alg &self, scalar_t arg) {
+            [](const Alg& self, scalar_t arg) {
                 return self.smul(scalars::Scalar(arg));
             },
-            py::is_operator());
+            py::is_operator()
+    );
     klass.def(
             "__rmul__",
-            [](const Alg &self, scalar_t arg) {
+            [](const Alg& self, scalar_t arg) {
                 return self.smul(scalars::Scalar(arg));
             },
-            py::is_operator());
+            py::is_operator()
+    );
     klass.def(
             "__mul__",
-            [](const Alg &self, long long arg) {
+            [](const Alg& self, long long arg) {
                 return self.smul(scalars::Scalar(self.coeff_type(), arg, 1LL));
             },
-            py::is_operator());
+            py::is_operator()
+    );
     klass.def(
             "__rmul__",
-            [](const Alg &self, long long arg) {
+            [](const Alg& self, long long arg) {
                 return self.smul(scalars::Scalar(self.coeff_type(), arg, 1LL));
             },
-            py::is_operator());
+            py::is_operator()
+    );
     klass.def(
             "__truediv__",
-            [](const Alg &self, scalar_t arg) {
+            [](const Alg& self, scalar_t arg) {
                 return self.sdiv(scalars::Scalar(arg));
             },
-            py::is_operator());
+            py::is_operator()
+    );
     klass.def(
             "__truediv__",
-            [](const Alg &self, long long arg) {
+            [](const Alg& self, long long arg) {
                 return self.sdiv(scalars::Scalar(self.coeff_type(), arg, 1LL));
             },
-            py::is_operator());
+            py::is_operator()
+    );
 
     klass.def("__iadd__", &Alg::add_inplace, py::is_operator());
     klass.def("__isub__", &Alg::sub_inplace, py::is_operator());
@@ -152,30 +163,36 @@ void setup_algebra_type(py::class_<Alg, Args...> &klass)
 
     klass.def(
             "__imul__",
-            [](Alg &self, scalar_t arg) {
+            [](Alg& self, scalar_t arg) {
                 return self.smul_inplace(scalars::Scalar(arg));
             },
-            py::is_operator());
+            py::is_operator()
+    );
     klass.def(
             "__imul__",
-            [](Alg &self, long long arg) {
+            [](Alg& self, long long arg) {
                 return self.smul_inplace(
-                        scalars::Scalar(self.coeff_type(), arg, 1LL));
+                        scalars::Scalar(self.coeff_type(), arg, 1LL)
+                );
             },
-            py::is_operator());
+            py::is_operator()
+    );
     klass.def(
             "__itruediv__",
-            [](Alg &self, scalar_t arg) {
+            [](Alg& self, scalar_t arg) {
                 return self.sdiv_inplace(scalars::Scalar(arg));
             },
-            py::is_operator());
+            py::is_operator()
+    );
     klass.def(
             "__itruediv__",
-            [](Alg &self, long long arg) {
+            [](Alg& self, long long arg) {
                 return self.sdiv_inplace(
-                        scalars::Scalar(self.coeff_type(), arg, 1LL));
+                        scalars::Scalar(self.coeff_type(), arg, 1LL)
+                );
             },
-            py::is_operator());
+            py::is_operator()
+    );
 
     // setup fused inplace ops
     klass.def("add_scal_mul", &Alg::add_scal_mul, "other"_a, "scalar"_a);
@@ -189,7 +206,7 @@ void setup_algebra_type(py::class_<Alg, Args...> &klass)
     klass.def("mul_sdiv", &Alg::mul_sdiv, "other"_a, "scalar"_a);
 
     // setup string function
-    klass.def("__str__", [](const Alg &self) {
+    klass.def("__str__", [](const Alg& self) {
         std::stringstream ss;
         self.print(ss);
         return ss.str();
@@ -201,15 +218,16 @@ void setup_algebra_type(py::class_<Alg, Args...> &klass)
 
     // setup conversion to numpy array
 #ifdef ROUGHPY_WITH_NUMPY
-    klass.def("__array__", [](const Alg &self) {
+    klass.def("__array__", [](const Alg& self) {
         //        py::dtype dtype = dtype_from(self.coeff_type());
         py::dtype dtype = ctype_to_npy_dtype(self.coeff_type());
 
         auto dense_data = self.dense_data();
         if (dense_data) {
             const auto dense_data_inner = *dense_data;
-            return py::array(dtype, {dense_data_inner.size()}, {},
-                             dense_data_inner.ptr());
+            return py::array(
+                    dtype, {dense_data_inner.size()}, {}, dense_data_inner.ptr()
+            );
         }
         return py::array(dtype);
     });

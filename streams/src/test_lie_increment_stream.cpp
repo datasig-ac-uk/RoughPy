@@ -44,9 +44,9 @@ using namespace rpy::streams;
 namespace rpy {
 namespace algebra {
 
-inline void PrintTo(const Lie &arg, std::ostream *os) { arg.print(*os); }
+inline void PrintTo(const Lie& arg, std::ostream* os) { arg.print(*os); }
 
-inline void PrintTo(const FreeTensor &arg, std::ostream *os) { arg.print(*os); }
+inline void PrintTo(const FreeTensor& arg, std::ostream* os) { arg.print(*os); }
 
 }// namespace algebra
 }// namespace rpy
@@ -59,7 +59,7 @@ class RandomScalars
     std::normal_distribution<double> dist;
 
 public:
-    const scalars::ScalarType *ctype;
+    const scalars::ScalarType* ctype;
 
     explicit RandomScalars(double std_dev)
         : rng(std::random_device()()), dist(0.0, std_dev),

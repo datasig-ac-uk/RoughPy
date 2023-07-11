@@ -47,12 +47,12 @@ template <typename S>
 class CUDAScalarType : public ScalarType
 {
 
-    void copy_to_device(void *dp_dst, const void *hp_src, dimn_t count) const;
-    void copy_from_device(void *hp_dst, const void *dp_src, dimn_t count) const;
-    void copy_device_to_device(void *dp_dst, const void *dp_src,
-                               dimn_t count) const;
+    void copy_to_device(void* dp_dst, const void* hp_src, dimn_t count) const;
+    void copy_from_device(void* hp_dst, const void* dp_src, dimn_t count) const;
+    void
+    copy_device_to_device(void* dp_dst, const void* dp_src, dimn_t count) const;
 
-    inline bool check_types(const ScalarType *other) const
+    inline bool check_types(const ScalarType* other) const
     {
         return other == this;
     }
@@ -65,60 +65,71 @@ public:
     ScalarPointer allocate(std::size_t count) const override;
     void free(ScalarPointer pointer, std::size_t count) const override;
     void swap(ScalarPointer lhs, ScalarPointer rhs) const override;
-    void convert_copy(ScalarPointer dst, ScalarPointer src,
-                      dimn_t count) const override;
-    void convert_copy(void *out, const void *in, std::size_t count,
-                      BasicScalarInfo info) const override;
-    void convert_copy(void *out, ScalarPointer in,
-                      std::size_t count) const override;
-    void convert_copy(ScalarPointer out, const void *in, std::size_t count,
-                      const string &id) const override;
+    void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count)
+            const override;
+    void convert_copy(
+            void* out, const void* in, std::size_t count, BasicScalarInfo info
+    ) const override;
+    void
+    convert_copy(void* out, ScalarPointer in, std::size_t count) const override;
+    void convert_copy(
+            ScalarPointer out, const void* in, std::size_t count,
+            const string& id
+    ) const override;
 
     scalar_t to_scalar_t(ScalarPointer arg) const override;
-    void assign(ScalarPointer target, long long int numerator,
-                long long int denominator) const override;
+    void
+    assign(ScalarPointer target, long long int numerator,
+           long long int denominator) const override;
     Scalar uminus(ScalarPointer arg) const override;
     void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const override;
     void sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const override;
     void mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const override;
     void div_inplace(ScalarPointer lhs, ScalarPointer rhs) const override;
-    bool are_equal(ScalarPointer lhs,
-                   ScalarPointer rhs) const noexcept override;
+    bool
+    are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept override;
 };
 
 template <typename S>
-void CUDAScalarType<S>::copy_to_device(void *dp_dst, const void *hp_src,
-                                       dimn_t count) const
+void CUDAScalarType<S>::copy_to_device(
+        void* dp_dst, const void* hp_src, dimn_t count
+) const
 {
-    handle_error(cudaMemcpy(dp_dst, hp_src, count * sizeof(S),
-                            cudaMemcpyHostToDevice));
+    handle_error(cudaMemcpy(
+            dp_dst, hp_src, count * sizeof(S), cudaMemcpyHostToDevice
+    ));
 }
 template <typename S>
-void CUDAScalarType<S>::copy_from_device(void *hp_dst, const void *dp_src,
-                                         dimn_t count) const
+void CUDAScalarType<S>::copy_from_device(
+        void* hp_dst, const void* dp_src, dimn_t count
+) const
 {
-    handle_error(cudaMemcpy(hp_dst, dp_src, count * sizeof(S),
-                            cudaMemcpyDeviceToHost));
+    handle_error(cudaMemcpy(
+            hp_dst, dp_src, count * sizeof(S), cudaMemcpyDeviceToHost
+    ));
 }
 template <typename S>
-void CUDAScalarType<S>::copy_device_to_device(void *dp_dst, const void *dp_src,
-                                              dimn_t count) const
+void CUDAScalarType<S>::copy_device_to_device(
+        void* dp_dst, const void* dp_src, dimn_t count
+) const
 {
-    handle_error(cudaMemcpy(dp_dst, dp_src, count * sizeof(S),
-                            cudaMemcpyDeviceToDevice));
+    handle_error(cudaMemcpy(
+            dp_dst, dp_src, count * sizeof(S), cudaMemcpyDeviceToDevice
+    ));
 }
 
 template <typename S>
 ScalarPointer CUDAScalarType<S>::allocate(std::size_t count) const
 {
-    S *rptr;
-    handle_error(cudaMalloc((void **) &rptr, count));
+    S* rptr;
+    handle_error(cudaMalloc((void**) &rptr, count));
 
     return ScalarPointer(this, rptr, flags::OwnedPointer);
 }
 template <typename S>
-void CUDAScalarType<S>::free(ScalarPointer pointer,
-                             std::size_t RPY_UNUSED_VAR count) const
+void CUDAScalarType<S>::free(
+        ScalarPointer pointer, std::size_t RPY_UNUSED_VAR count
+) const
 {
     handle_error(cudaFree(pointer.ptr()));
 }
@@ -126,10 +137,11 @@ template <typename S>
 void CUDAScalarType<S>::swap(ScalarPointer lhs, ScalarPointer rhs) const
 {}
 template <typename S>
-void CUDAScalarType<S>::convert_copy(ScalarPointer dst, ScalarPointer src,
-                                     dimn_t count) const
+void CUDAScalarType<S>::convert_copy(
+        ScalarPointer dst, ScalarPointer src, dimn_t count
+) const
 {
-    const auto *host_type = ScalarType::of<S>();
+    const auto* host_type = ScalarType::of<S>();
     RPY_DBG_ASSERT(!dst.is_null());
     RPY_DBG_ASSERT(!dst.is_const());
     RPY_DBG_ASSERT(!src.is_null());
@@ -167,25 +179,27 @@ void CUDAScalarType<S>::convert_copy(ScalarPointer dst, ScalarPointer src,
     }
 }
 template <typename S>
-void CUDAScalarType<S>::convert_copy(void *out, const void *in,
-                                     std::size_t count,
-                                     BasicScalarInfo info) const
+void CUDAScalarType<S>::convert_copy(
+        void* out, const void* in, std::size_t count, BasicScalarInfo info
+) const
 {}
 template <typename S>
-void CUDAScalarType<S>::convert_copy(void *out, ScalarPointer in,
-                                     std::size_t count) const
+void CUDAScalarType<S>::convert_copy(
+        void* out, ScalarPointer in, std::size_t count
+) const
 {
     convert_copy({this, out}, in, count);
 }
 template <typename S>
-void CUDAScalarType<S>::convert_copy(ScalarPointer out, const void *in,
-                                     std::size_t count, const string &id) const
+void CUDAScalarType<S>::convert_copy(
+        ScalarPointer out, const void* in, std::size_t count, const string& id
+) const
 {
 
     if (out.type() != this) {
         return out.type()->convert_copy(out, in, count, id);
     }
-    const auto *host_type = ScalarType::of<S>();
+    const auto* host_type = ScalarType::of<S>();
 
     std::vector<S> tmp(count);
     host_type->convert_copy({host_type, tmp.data()}, in, count, id);
@@ -201,8 +215,9 @@ scalar_t CUDAScalarType<S>::to_scalar_t(ScalarPointer arg) const
     return scalar_t(tmp);
 }
 template <typename S>
-void CUDAScalarType<S>::assign(ScalarPointer target, long long int numerator,
-                               long long int denominator) const
+void CUDAScalarType<S>::assign(
+        ScalarPointer target, long long int numerator, long long int denominator
+) const
 {
 
     S tmp(numerator);
@@ -213,7 +228,7 @@ void CUDAScalarType<S>::assign(ScalarPointer target, long long int numerator,
 template <typename S>
 Scalar CUDAScalarType<S>::uminus(ScalarPointer arg) const
 {
-    S *ptr;
+    S* ptr;
 
     return Scalar();
 }
@@ -230,8 +245,8 @@ template <typename S>
 void CUDAScalarType<S>::div_inplace(ScalarPointer lhs, ScalarPointer rhs) const
 {}
 template <typename S>
-bool CUDAScalarType<S>::are_equal(ScalarPointer lhs,
-                                  ScalarPointer rhs) const noexcept
+bool CUDAScalarType<S>::are_equal(ScalarPointer lhs, ScalarPointer rhs)
+        const noexcept
 {
     return false;
 }

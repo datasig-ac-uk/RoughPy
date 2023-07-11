@@ -37,33 +37,33 @@
 
 using namespace rpy::scalars;
 
-OwnedScalarArray::OwnedScalarArray(const ScalarType *type) : ScalarArray(type)
+OwnedScalarArray::OwnedScalarArray(const ScalarType* type) : ScalarArray(type)
 {}
-OwnedScalarArray::OwnedScalarArray(const ScalarArray &other)
+OwnedScalarArray::OwnedScalarArray(const ScalarArray& other)
     : ScalarArray(other.type()->allocate(other.size()), other.size())
 {
     if (other.ptr() != nullptr) {
-        p_type->convert_copy(const_cast<void *>(p_data),
-                             static_cast<const ScalarPointer &>(other),
+        p_type->convert_copy(const_cast<void*>(p_data),
+                             static_cast<const ScalarPointer&>(other),
                              other.size());
     }
 }
-OwnedScalarArray::OwnedScalarArray(const OwnedScalarArray &other)
+OwnedScalarArray::OwnedScalarArray(const OwnedScalarArray& other)
     : ScalarArray(other.type()->allocate(other.size()), other.size())
 {
-    p_type->convert_copy(const_cast<void *>(p_data),
-                         static_cast<const ScalarPointer &>(other),
+    p_type->convert_copy(const_cast<void*>(p_data),
+                         static_cast<const ScalarPointer&>(other),
                          other.size());
 }
 
-OwnedScalarArray::OwnedScalarArray(const ScalarType *type, dimn_t size)
+OwnedScalarArray::OwnedScalarArray(const ScalarType* type, dimn_t size)
     : ScalarArray(type->allocate(size), size)
 {}
 
-OwnedScalarArray::OwnedScalarArray(const Scalar &value, dimn_t count)
+OwnedScalarArray::OwnedScalarArray(const Scalar& value, dimn_t count)
     : ScalarArray()
 {
-    const auto *type = value.type();
+    const auto* type = value.type();
     if (type != nullptr) {
         ScalarPointer::operator=(type->allocate(count));
         m_size = count;
@@ -73,7 +73,7 @@ OwnedScalarArray::OwnedScalarArray(const Scalar &value, dimn_t count)
     }
 }
 
-OwnedScalarArray::OwnedScalarArray(const ScalarType *type, const void *data,
+OwnedScalarArray::OwnedScalarArray(const ScalarType* type, const void* data,
                                    dimn_t count)
     : ScalarArray(type)
 {
@@ -83,7 +83,7 @@ OwnedScalarArray::OwnedScalarArray(const ScalarType *type, const void *data,
 
     ScalarPointer::operator=(type->allocate(count));
     m_size = count;
-    type->convert_copy(const_cast<void *>(p_data), {nullptr, data}, count);
+    type->convert_copy(const_cast<void*>(p_data), {nullptr, data}, count);
 }
 
 OwnedScalarArray::~OwnedScalarArray()
@@ -95,20 +95,20 @@ OwnedScalarArray::~OwnedScalarArray()
     }
 }
 
-OwnedScalarArray::OwnedScalarArray(OwnedScalarArray &&other) noexcept
+OwnedScalarArray::OwnedScalarArray(OwnedScalarArray&& other) noexcept
     : ScalarArray(other)
 {
     other.p_data = nullptr;// Take ownership
     other.m_size = 0;
 }
-OwnedScalarArray &OwnedScalarArray::operator=(const ScalarArray &other)
+OwnedScalarArray& OwnedScalarArray::operator=(const ScalarArray& other)
 {
     if (&other != this) {
         this->~OwnedScalarArray();
         if (other.size() > 0) {
             ScalarPointer::operator=(other.type()->allocate(other.size()));
             m_size = other.size();
-            p_type->convert_copy(const_cast<void *>(p_data), other, m_size);
+            p_type->convert_copy(const_cast<void*>(p_data), other, m_size);
         } else {
             p_data = nullptr;
             m_size = 0;
@@ -117,7 +117,7 @@ OwnedScalarArray &OwnedScalarArray::operator=(const ScalarArray &other)
     }
     return *this;
 }
-OwnedScalarArray &OwnedScalarArray::operator=(OwnedScalarArray &&other) noexcept
+OwnedScalarArray& OwnedScalarArray::operator=(OwnedScalarArray&& other) noexcept
 {
     if (&other != this) {
         ScalarPointer::operator=(other);

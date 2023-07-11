@@ -63,13 +63,19 @@ public:
 }// namespace algebra
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::LieInterface,
-                            rpy::serial::specialization::member_serialize);
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::Lie,
-                            rpy::serial::specialization::member_serialize)
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::LieBundleInterface,
-                            rpy::serial::specialization::member_serialize);
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::LieBundle,
-                            rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::LieInterface,
+        rpy::serial::specialization::member_serialize
+);
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::Lie, rpy::serial::specialization::member_serialize
+)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::LieBundleInterface,
+        rpy::serial::specialization::member_serialize
+);
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::LieBundle, rpy::serial::specialization::member_serialize
+)
 
 #endif// ROUGHPY_ALGEBRA_LIE_FWD_H_

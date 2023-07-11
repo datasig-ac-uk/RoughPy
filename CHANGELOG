@@ -1,8 +1,19 @@
+Version 0.0.3:
+  - Added datetime interval support.
+  - Integrated schema reparametrisation into stream signature methods.
+  - Fixed bug in names of scalar types, names now display correctly.
+  - Fixed bfloat16 given wrong scalar type code.
+  - Added half precision float and bfloat16 to py module
+  - Added real partition class and Python interface.
+  - Implemented simplify method on Streams.
+  - Added polynomial coefficients
+  - started an examples folder
+
 Version 0.0.2-alpha:
-  - Added datetime and timedelta object support to tick data parsing
-  - Expanded build system to include more versions of Python
+  - Added datetime and timedelta object support to tick data parsing.
+  - Expanded build system to include more versions of Python.
   - Stabilised compilation on all three platforms.
-  - Fixed numerous bugs in the build system
+  - Fixed numerous bugs in the build system.
 
 Version 0.0.1-alpha:
-  - First alpha release
+  - First alpha release.

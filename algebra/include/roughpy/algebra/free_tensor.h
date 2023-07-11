@@ -52,11 +52,11 @@ RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBundleBase<
 
 template <>
 RPY_EXPORT typename FreeTensor::basis_type
-basis_setup_helper<FreeTensor>::get(const context_pointer &ctx);
+basis_setup_helper<FreeTensor>::get(const context_pointer& ctx);
 
 template <>
 RPY_EXPORT typename FreeTensorBundle::basis_type
-basis_setup_helper<FreeTensorBundle>::get(const context_pointer &ctx);
+basis_setup_helper<FreeTensorBundle>::get(const context_pointer& ctx);
 
 }// namespace algebra
 }// namespace rpy

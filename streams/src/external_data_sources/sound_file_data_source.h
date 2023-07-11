@@ -51,13 +51,13 @@ class SoundFileDataSource : public ExternalDataStreamSource
 
     sf_count_t param_to_frame(param_t param);
 
-    void read_direct_float(scalars::ScalarPointer &ptr, sf_count_t num_frames);
-    void read_direct_double(scalars::ScalarPointer &ptr, sf_count_t num_frames);
+    void read_direct_float(scalars::ScalarPointer& ptr, sf_count_t num_frames);
+    void read_direct_double(scalars::ScalarPointer& ptr, sf_count_t num_frames);
 
-    void read_convert_raw(scalars::ScalarPointer &ptr, sf_count_t num_frames);
+    void read_convert_raw(scalars::ScalarPointer& ptr, sf_count_t num_frames);
 
     template <typename T>
-    void read_convert(scalars::ScalarPointer &ptr, sf_count_t num_frames)
+    void read_convert(scalars::ScalarPointer& ptr, sf_count_t num_frames)
     {
         const auto num_elements = num_frames * m_handle.channels();
         std::vector<T> buffer(num_elements);
@@ -66,37 +66,37 @@ class SoundFileDataSource : public ExternalDataStreamSource
                                  scalars::type_id_of<T>());
     }
 
-    void select_and_convert_read2(scalars::ScalarPointer &ptr,
+    void select_and_convert_read2(scalars::ScalarPointer& ptr,
                                   sf_count_t num_frames);
-    void select_and_convert_read(scalars::ScalarPointer &ptr,
+    void select_and_convert_read(scalars::ScalarPointer& ptr,
                                  sf_count_t num_frames);
 
 public:
-    explicit SoundFileDataSource(const url &uri);
-    explicit SoundFileDataSource(SndfileHandle &&handle);
+    explicit SoundFileDataSource(const url& uri);
+    explicit SoundFileDataSource(SndfileHandle&& handle);
 
-    dimn_t query(scalars::KeyScalarArray &result,
-                 const intervals::Interval &interval) override;
+    dimn_t query(scalars::KeyScalarArray& result,
+                 const intervals::Interval& interval) override;
 };
 
 class SoundFileDataSourceFactory : public ExternalDataSourceFactory
 {
 
 public:
-    void set_width(void *payload, deg_t width) const override;
-    void set_depth(void *payload, deg_t depth) const override;
-    void set_ctype(void *payload,
-                   const scalars::ScalarType *ctype) const override;
-    void set_context(void *payload,
+    void set_width(void* payload, deg_t width) const override;
+    void set_depth(void* payload, deg_t depth) const override;
+    void set_ctype(void* payload,
+                   const scalars::ScalarType* ctype) const override;
+    void set_context(void* payload,
                      algebra::context_pointer ctx) const override;
-    void set_support(void *payload,
+    void set_support(void* payload,
                      intervals::RealInterval support) const override;
-    void set_vtype(void *payload, algebra::VectorType vtype) const override;
-    void set_resolution(void *payload, resolution_t resolution) const override;
-    void destroy_payload(void *&payload) const override;
+    void set_vtype(void* payload, algebra::VectorType vtype) const override;
+    void set_resolution(void* payload, resolution_t resolution) const override;
+    void destroy_payload(void*& payload) const override;
     ExternalDataStreamConstructor
-    get_constructor(const url &uri) const override;
-    Stream construct_stream(void *payload) const override;
+    get_constructor(const url& uri) const override;
+    Stream construct_stream(void* payload) const override;
 };
 
 }// namespace streams

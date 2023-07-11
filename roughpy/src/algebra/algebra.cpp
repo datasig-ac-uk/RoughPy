@@ -41,7 +41,7 @@
 #include "tensor_key.h"
 #include "tensor_key_iterator.h"
 
-void rpy::python::init_algebra(pybind11::module_ &m)
+void rpy::python::init_algebra(pybind11::module_& m)
 {
 
     py::enum_<algebra::VectorType>(m, "VectorType")

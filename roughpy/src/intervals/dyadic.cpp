@@ -36,10 +36,10 @@ using namespace rpy;
 using namespace rpy::intervals;
 using namespace pybind11::literals;
 
-static const char *DYADIC_DOC = R"edoc(A dyadic rational number.
+static const char* DYADIC_DOC = R"edoc(A dyadic rational number.
 )edoc";
 
-void python::init_dyadic(py::module_ &m)
+void python::init_dyadic(py::module_& m)
 {
     using multiplier_t = typename Dyadic::multiplier_t;
     using power_t = typename Dyadic::power_t;
@@ -50,16 +50,17 @@ void python::init_dyadic(py::module_ &m)
     klass.def(py::init<multiplier_t>(), "k"_a);
     klass.def(py::init<multiplier_t, power_t>(), "k"_a, "n"_a);
 
-    klass.def("__float__",
-              [](const Dyadic &dia) { return static_cast<param_t>(dia); });
+    klass.def("__float__", [](const Dyadic& dia) {
+        return static_cast<param_t>(dia);
+    });
 
     klass.def("rebase", &Dyadic::rebase, "resolution"_a);
-    klass.def("__str__", [](const Dyadic &dia) {
+    klass.def("__str__", [](const Dyadic& dia) {
         std::stringstream ss;
         ss << dia;
         return ss.str();
     });
-    klass.def("__repr__", [](const Dyadic &dia) {
+    klass.def("__repr__", [](const Dyadic& dia) {
         std::stringstream ss;
         ss << "Dyadic" << dia;
         return ss.str();
@@ -76,7 +77,7 @@ void python::init_dyadic(py::module_ &m)
     klass.def(py::self > py::self);
     klass.def(py::self >= py::self);
 
-    klass.def("__iadd__", [](Dyadic &dia, multiplier_t val) {
+    klass.def("__iadd__", [](Dyadic& dia, multiplier_t val) {
         return dia.move_forward(val);
     });
 }

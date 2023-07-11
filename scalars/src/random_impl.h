@@ -17,12 +17,12 @@ struct rng_type_getter;
 
 template <>
 struct rng_type_getter<std::mt19937_64> {
-    static const char *name;
+    static const char* name;
 };
 
 template <>
 struct rng_type_getter<pcg64> {
-    static const char *name;
+    static const char* name;
 };
 
 }// namespace dtl

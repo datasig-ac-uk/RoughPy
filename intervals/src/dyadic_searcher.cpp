@@ -36,8 +36,8 @@
 
 using namespace rpy::intervals;
 
-void DyadicSearcher::expand_left(ScaledPredicate &predicate,
-                                 std::deque<DyadicInterval> &current) const
+void DyadicSearcher::expand_left(ScaledPredicate& predicate,
+                                 std::deque<DyadicInterval>& current) const
 {
     auto di = current.front();
     bool is_aligned = di.aligned();
@@ -77,8 +77,8 @@ void DyadicSearcher::expand_left(ScaledPredicate &predicate,
          */
     }
 }
-void DyadicSearcher::expand_right(ScaledPredicate &predicate,
-                                  std::deque<DyadicInterval> &current) const
+void DyadicSearcher::expand_right(ScaledPredicate& predicate,
+                                  std::deque<DyadicInterval>& current) const
 {
     auto di = current.back();
     /*
@@ -109,7 +109,7 @@ void DyadicSearcher::expand_right(ScaledPredicate &predicate,
          */
     }
 }
-void DyadicSearcher::expand(ScaledPredicate &predicate,
+void DyadicSearcher::expand(ScaledPredicate& predicate,
                             DyadicInterval found_interval)
 {
     std::deque<DyadicInterval> found{std::move(found_interval)};
@@ -119,7 +119,7 @@ void DyadicSearcher::expand(ScaledPredicate &predicate,
     m_seen[found.back().dsup()] = found.front().dinf();
 }
 ScaledPredicate
-DyadicSearcher::rescale_to_unit_interval(const Interval &original)
+DyadicSearcher::rescale_to_unit_interval(const Interval& original)
 {
     auto a = original.inf();
     auto b = original.sup();
@@ -139,7 +139,7 @@ DyadicSearcher::rescale_to_unit_interval(const Interval &original)
 
     return {m_predicate, a, (b - a)};
 }
-void DyadicSearcher::get_next_dyadic(DyadicInterval &current) const
+void DyadicSearcher::get_next_dyadic(DyadicInterval& current) const
 {
     DyadicRealStrictLess diless;
     DyadicRealStrictGreater digreater;
@@ -148,7 +148,7 @@ void DyadicSearcher::get_next_dyadic(DyadicInterval &current) const
     const auto n = current.power();
     const auto itype = current.type();
 
-    for (const auto &pair : m_seen) {
+    for (const auto& pair : m_seen) {
         Dyadic current_dyadic{k, n};
         /*
          * Seen pairs are of the form (sup, inf) rather than (inf, sup).
@@ -207,7 +207,7 @@ void DyadicSearcher::get_next_dyadic(DyadicInterval &current) const
     current = {k, n, itype};
 }
 std::vector<RealInterval>
-DyadicSearcher::find_in_unit_interval(ScaledPredicate &predicate)
+DyadicSearcher::find_in_unit_interval(ScaledPredicate& predicate)
 {
     //    assert(!predicate(dyadic_interval(0, 0)));
     m_seen.clear();
@@ -236,14 +236,14 @@ DyadicSearcher::find_in_unit_interval(ScaledPredicate &predicate)
     }
     std::vector<RealInterval> result;
     result.reserve(m_seen.size());
-    for (const auto &pair : m_seen) {
+    for (const auto& pair : m_seen) {
         result.emplace_back(static_cast<double>(pair.second),
                             static_cast<double>(pair.first));
     }
     std::reverse(result.begin(), result.end());
     return result;
 }
-std::vector<RealInterval> DyadicSearcher::operator()(const Interval &original)
+std::vector<RealInterval> DyadicSearcher::operator()(const Interval& original)
 {
     if (m_predicate(original)) {
         // If the original interval is good, there is nothing to do.
@@ -255,7 +255,7 @@ std::vector<RealInterval> DyadicSearcher::operator()(const Interval &original)
 
     std::vector<RealInterval> result;
     result.reserve(found.size());
-    for (const auto &itvl : found) {
+    for (const auto& itvl : found) {
         result.emplace_back(predicate.unscale(itvl));
     }
     return result;

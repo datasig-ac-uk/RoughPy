@@ -91,7 +91,7 @@ void streams::DynamicallyConstructedStream::refine_accuracy(
 DynamicallyConstructedStream::data_increment
 streams::DynamicallyConstructedStream::insert_node(
         DynamicallyConstructedStream::DyadicInterval di,
-        DynamicallyConstructedStream::Lie &&value, resolution_t accuracy,
+        DynamicallyConstructedStream::Lie&& value, resolution_t accuracy,
         DynamicallyConstructedStream::data_increment hint) const
 {
     DataIncrement new_incr(std::move(value), accuracy, m_data_tree.end(),
@@ -141,7 +141,7 @@ streams::DynamicallyConstructedStream::expand_root_until_contains(
 }
 
 void DynamicallyConstructedStream::update_increment(
-        data_increment increment, Lie &&new_value,
+        data_increment increment, Lie&& new_value,
         resolution_t resolution) const
 {
 
@@ -152,7 +152,7 @@ void DynamicallyConstructedStream::update_increment(
     increment->second.accuracy(resolution);
 }
 
-const DynamicallyConstructedStream::Lie &
+const DynamicallyConstructedStream::Lie&
 streams::DynamicallyConstructedStream::lie_value(
         DynamicallyConstructedStream::const_data_increment increment) noexcept
 {
@@ -164,7 +164,7 @@ DynamicallyConstructedStream::data_increment
 streams::DynamicallyConstructedStream::update_parent_accuracy(
         DynamicallyConstructedStream::data_increment below) const
 {
-    const auto &md = metadata();
+    const auto& md = metadata();
     auto parent = below->second.parent();
     if (parent != m_data_tree.end()) {
         // We're not at the root, so parent has a sibling
@@ -200,7 +200,7 @@ void streams::DynamicallyConstructedStream::update_parents(
     //        top = update_parent_accuracy(below);
     //        std::cout << top->first << ' ' << below->first << '\n';
     //    }
-    const auto &md = metadata();
+    const auto& md = metadata();
     auto root = m_data_tree.begin();
 
     while (current != root) {
@@ -249,8 +249,8 @@ streams::DynamicallyConstructedStream::insert_children_and_refine(
 
     RPY_DBG_ASSERT(it_left != leaf && it_right != leaf);
 
-    auto &left_incr = it_left->second;
-    auto &right_incr = it_right->second;
+    auto& left_incr = it_left->second;
+    auto& right_incr = it_right->second;
 
     left_incr.sibling(it_right);
     left_incr.parent(leaf);
@@ -264,8 +264,8 @@ streams::DynamicallyConstructedStream::insert_children_and_refine(
 }
 
 algebra::Lie DynamicallyConstructedStream::log_signature(
-        const intervals::DyadicInterval &interval, resolution_t resolution,
-        const algebra::Context &ctx) const
+        const intervals::DyadicInterval& interval, resolution_t resolution,
+        const algebra::Context& ctx) const
 {
     std::lock_guard<std::recursive_mutex> access(m_lock);
     const auto end = m_data_tree.end();
@@ -335,11 +335,11 @@ algebra::Lie DynamicallyConstructedStream::log_signature(
     return root->second.lie();
 }
 algebra::Lie
-DynamicallyConstructedStream::log_signature(const intervals::Interval &domain,
+DynamicallyConstructedStream::log_signature(const intervals::Interval& domain,
                                             resolution_t resolution,
-                                            const algebra::Context &ctx) const
+                                            const algebra::Context& ctx) const
 {
-    const auto &md = metadata();
+    const auto& md = metadata();
 
     if (empty(domain)) { return ctx.zero_lie(md.cached_vector_type); }
 
@@ -347,7 +347,7 @@ DynamicallyConstructedStream::log_signature(const intervals::Interval &domain,
     std::vector<Lie> lies;
     lies.reserve(dyadic_dissection.size());
 
-    for (const auto &itvl : dyadic_dissection) {
+    for (const auto& itvl : dyadic_dissection) {
         lies.push_back(log_signature(itvl, resolution, ctx));
     }
 
@@ -370,9 +370,9 @@ pair<algebra::Lie, algebra::Lie>
 streams::DynamicallyConstructedStream::compute_child_lie_increments(
         DynamicallyConstructedStream::DyadicInterval left_di,
         DynamicallyConstructedStream::DyadicInterval right_di,
-        const DynamicallyConstructedStream::Lie &parent_value) const
+        const DynamicallyConstructedStream::Lie& parent_value) const
 {
-    const auto &md = metadata();
+    const auto& md = metadata();
     auto half = md.data_scalar_type->from(1, 2);
     return pair<Lie, Lie>(parent_value.smul(half), parent_value.smul(half));
 }

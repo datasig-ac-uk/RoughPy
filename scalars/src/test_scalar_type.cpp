@@ -45,7 +45,7 @@ class RAIIAlloc
     std::size_t m_count;
 
 public:
-    RAIIAlloc(const ScalarType *type, std::size_t count)
+    RAIIAlloc(const ScalarType* type, std::size_t count)
         : m_ptr(type->allocate(count)), m_count(count)
     {}
 
@@ -109,7 +109,7 @@ TEST_F(ScalarTypeTests, OneGivesCorrectValue)
     auto ptr = one.to_pointer();
 
     ASSERT_NE(ptr.cptr(), nullptr);
-    ASSERT_EQ(*ptr.raw_cast<const double *>(), 1.0);
+    ASSERT_EQ(*ptr.raw_cast<const double*>(), 1.0);
 }
 
 TEST_F(ScalarTypeTests, ZeroGivesCorrectValue)
@@ -118,7 +118,7 @@ TEST_F(ScalarTypeTests, ZeroGivesCorrectValue)
     auto ptr = zero.to_pointer();
 
     ASSERT_NE(ptr.cptr(), nullptr);
-    ASSERT_EQ(*ptr.raw_cast<const double *>(), 0.0);
+    ASSERT_EQ(*ptr.raw_cast<const double*>(), 0.0);
 }
 
 TEST_F(ScalarTypeTests, MoneGivesCorrectValue)
@@ -127,7 +127,7 @@ TEST_F(ScalarTypeTests, MoneGivesCorrectValue)
     auto ptr = mone.to_pointer();
 
     ASSERT_NE(ptr.cptr(), nullptr);
-    ASSERT_EQ(*ptr.raw_cast<const double *>(), -1.0);
+    ASSERT_EQ(*ptr.raw_cast<const double*>(), -1.0);
 }
 
 TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType)
@@ -141,7 +141,7 @@ TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType)
     dtype->convert_copy(ptr, ints.data(), ints.size(),
                         type_id_of<std::int32_t>());
 
-    auto raw_ptr = ptr.raw_cast<const double *>();
+    auto raw_ptr = ptr.raw_cast<const double*>();
     for (std::size_t i = 0; i < ints.size(); ++i) {
         ASSERT_EQ(raw_ptr[i], static_cast<double>(ints[i]));
     }
@@ -156,7 +156,7 @@ TEST_F(ScalarTypeTests, CopyConvertFromScalarType)
 
     dtype->convert_copy(ptr, {ftype, floats.data()}, floats.size());
 
-    auto raw_ptr = ptr.raw_cast<const double *>();
+    auto raw_ptr = ptr.raw_cast<const double*>();
     for (std::size_t i = 0; i < floats.size(); ++i) {
         ASSERT_EQ(raw_ptr[i], static_cast<double>(floats[i]));
     }

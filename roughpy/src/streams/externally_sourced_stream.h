@@ -10,7 +10,7 @@
 namespace rpy {
 namespace python {
 
-void init_externally_sourced_stream(py::module_ &m);
+void init_externally_sourced_stream(py::module_& m);
 
 }
 }// namespace rpy

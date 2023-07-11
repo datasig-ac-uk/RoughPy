@@ -1,7 +1,9 @@
 # Generated from CLion C/C++ Code Style settings
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: Right
+
 AlignConsecutiveAssignments: None
 AlignOperands: DontAlign
 AllowAllArgumentsOnNextLine: false
@@ -45,7 +47,7 @@ MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 ObjCSpaceAfterProperty: false
 ObjCSpaceBeforeProtocolList: true
-PointerAlignment: Right
+PointerAlignment: Left
 ReflowComments: true
 SpaceAfterCStyleCast: true
 SpaceAfterLogicalNot: false

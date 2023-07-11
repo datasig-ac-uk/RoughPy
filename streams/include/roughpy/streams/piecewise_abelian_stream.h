@@ -50,7 +50,7 @@ private:
 
     RPY_NO_DISCARD
     static inline scalars::Scalar
-    to_multiplier_upper(const intervals::RealInterval &interval, param_t param)
+    to_multiplier_upper(const intervals::RealInterval& interval, param_t param)
     {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((interval.sup() - param)
@@ -58,7 +58,7 @@ private:
     }
     RPY_NO_DISCARD
     static inline scalars::Scalar
-    to_multiplier_lower(const intervals::RealInterval &interval, param_t param)
+    to_multiplier_lower(const intervals::RealInterval& interval, param_t param)
     {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((param - interval.inf())
@@ -66,15 +66,17 @@ private:
     }
 
 public:
-    PiecewiseAbelianStream(std::vector<LiePiece> &&arg, StreamMetadata &&md);
+    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md);
+    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md,
+                           std::shared_ptr<StreamSchema> schema);
 
     RPY_NO_DISCARD
-    bool empty(const intervals::Interval &interval) const noexcept override;
+    bool empty(const intervals::Interval& interval) const noexcept override;
 
 protected:
     RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval &domain,
-                                    const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval& domain,
+                                    const algebra::Context& ctx) const override;
 
 public:
     RPY_SERIAL_SERIALIZE_FN();

@@ -34,7 +34,7 @@
 using namespace rpy;
 
 python::PyVectorConstructionHelper
-python::kwargs_to_construction_data(const pybind11::kwargs &kwargs)
+python::kwargs_to_construction_data(const pybind11::kwargs& kwargs)
 {
 
     PyVectorConstructionHelper helper;
@@ -68,7 +68,7 @@ python::kwargs_to_construction_data(const pybind11::kwargs &kwargs)
     }
 
     if (kwargs.contains("keys")) {
-        const auto &arg = kwargs["keys"];
+        const auto& arg = kwargs["keys"];
         if (py::isinstance<key_type>(arg)) {
         } else if (py::isinstance<py::buffer>(arg)) {
             auto key_info = arg.cast<py::buffer>().request();
@@ -76,8 +76,9 @@ python::kwargs_to_construction_data(const pybind11::kwargs &kwargs)
     }
 
     if (helper.width != 0 && helper.depth != 0 && helper.ctype != nullptr) {
-        helper.ctx = algebra::get_context(helper.width, helper.depth,
-                                          helper.ctype);
+        helper.ctx = algebra::get_context(
+                helper.width, helper.depth, helper.ctype
+        );
     }
 
     return helper;

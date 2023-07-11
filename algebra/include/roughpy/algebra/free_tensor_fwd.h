@@ -23,11 +23,11 @@ public:
     virtual FreeTensor exp() const = 0;
     RPY_NO_DISCARD
     virtual FreeTensor log() const = 0;
-    RPY_NO_DISCARD
-    virtual FreeTensor inverse() const = 0;
+//    RPY_NO_DISCARD
+//    virtual FreeTensor inverse() const = 0;
     RPY_NO_DISCARD
     virtual FreeTensor antipode() const = 0;
-    virtual void fmexp(const FreeTensor &other) = 0;
+    virtual void fmexp(const FreeTensor& other) = 0;
 };
 
 template <typename, template <typename> class>
@@ -50,11 +50,11 @@ public:
     FreeTensor exp() const;
     RPY_NO_DISCARD
     FreeTensor log() const;
-    RPY_NO_DISCARD
-    FreeTensor inverse() const;
+//    RPY_NO_DISCARD
+//    FreeTensor inverse() const;
     RPY_NO_DISCARD
     FreeTensor antipode() const;
-    FreeTensor &fmexp(const FreeTensor &other);
+    FreeTensor& fmexp(const FreeTensor& other);
 
     RPY_SERIAL_SERIALIZE_FN();
 };
@@ -77,11 +77,11 @@ public:
     virtual FreeTensorBundle exp() const = 0;
     RPY_NO_DISCARD
     virtual FreeTensorBundle log() const = 0;
-    RPY_NO_DISCARD
-    virtual FreeTensorBundle inverse() const = 0;
+//    RPY_NO_DISCARD
+//    virtual FreeTensorBundle inverse() const = 0;
     RPY_NO_DISCARD
     virtual FreeTensorBundle antipode() const = 0;
-    virtual void fmexp(const FreeTensorBundle &other) = 0;
+    virtual void fmexp(const FreeTensorBundle& other) = 0;
 };
 
 template <typename, template <typename> class>
@@ -91,11 +91,11 @@ class FreeTensorBundleImplementation;
 //                                         FreeTensorBundleImplementation>;
 
 class RPY_EXPORT FreeTensorBundle
-    : public AlgebraBundleBase<FreeTensorBundleInterface,
-                               FreeTensorBundleImplementation>
+    : public AlgebraBundleBase<
+              FreeTensorBundleInterface, FreeTensorBundleImplementation>
 {
-    using base_t = AlgebraBundleBase<FreeTensorBundleInterface,
-                                     FreeTensorBundleImplementation>;
+    using base_t = AlgebraBundleBase<
+            FreeTensorBundleInterface, FreeTensorBundleImplementation>;
 
 public:
     using base_t::base_t;
@@ -106,11 +106,11 @@ public:
     FreeTensorBundle exp() const;
     RPY_NO_DISCARD
     FreeTensorBundle log() const;
-    RPY_NO_DISCARD
-    FreeTensorBundle inverse() const;
+//    RPY_NO_DISCARD
+//    FreeTensorBundle inverse() const;
     RPY_NO_DISCARD
     FreeTensorBundle antipode() const;
-    FreeTensorBundle &fmexp(const FreeTensorBundle &other);
+    FreeTensorBundle& fmexp(const FreeTensorBundle& other);
 
     RPY_SERIAL_SERIALIZE_FN();
 };
@@ -123,9 +123,12 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensorBundle)
 }// namespace algebra
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensor,
-                            rpy::serial::specialization::member_serialize)
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::FreeTensorBundle,
-                            rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::FreeTensor, rpy::serial::specialization::member_serialize
+)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::FreeTensorBundle,
+        rpy::serial::specialization::member_serialize
+)
 
 #endif// ROUGHPY_ALGEBRA_FREE_TENSOR_FWD_H_

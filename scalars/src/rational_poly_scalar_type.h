@@ -34,12 +34,14 @@
 #define ROUGHPY_SCALARS_SRC_RATIONAL_POLY_SCALAR_TYPE_H
 
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/conversion.h>
 
 namespace rpy {
 namespace scalars {
 
 class RationalPolyScalarType : public ScalarType
 {
+    using scalar_type = rational_poly_scalar;
 
 public:
     explicit RationalPolyScalarType()
@@ -53,8 +55,8 @@ public:
         })
     {}
 
-    const ScalarType *rational_type() const noexcept override;
-    const ScalarType *host_type() const noexcept override;
+    const ScalarType* rational_type() const noexcept override;
+    const ScalarType* host_type() const noexcept override;
     Scalar from(long long int numerator,
                 long long int denominator) const override;
     ScalarPointer allocate(std::size_t count) const override;
@@ -62,14 +64,14 @@ public:
     void swap(ScalarPointer lhs, ScalarPointer rhs) const override;
     void convert_copy(ScalarPointer dst, ScalarPointer src,
                       dimn_t count) const override;
-    void convert_copy(void *out, const void *in, std::size_t count,
+    void convert_copy(void* out, const void* in, std::size_t count,
                       BasicScalarInfo info) const override;
-    void convert_copy(void *out, ScalarPointer in,
+    void convert_copy(void* out, ScalarPointer in,
                       std::size_t count) const override;
-    void convert_copy(ScalarPointer out, const void *in, std::size_t count,
-                      const string &id) const override;
+    void convert_copy(ScalarPointer out, const void* in, std::size_t count,
+                      const string& id) const override;
     void convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count,
-                      const string &id) const override;
+                      const string& id) const override;
     Scalar parse(string_view str) const override;
     Scalar one() const override;
     Scalar mone() const override;
@@ -90,11 +92,11 @@ public:
     bool is_zero(ScalarPointer arg) const override;
     bool are_equal(ScalarPointer lhs,
                    ScalarPointer rhs) const noexcept override;
-    void print(ScalarPointer arg, std::ostream &os) const override;
+    void print(ScalarPointer arg, std::ostream& os) const override;
     std::unique_ptr<RandomGenerator>
-    get_rng(const string &bit_generator, Slice<uint64_t> seed) const override;
+    get_rng(const string& bit_generator, Slice<uint64_t> seed) const override;
     std::unique_ptr<BlasInterface> get_blas() const override;
-    std::vector<byte> to_raw_bytes(const ScalarPointer &ptr,
+    std::vector<byte> to_raw_bytes(const ScalarPointer& ptr,
                                    dimn_t count) const override;
     ScalarPointer from_raw_bytes(Slice<byte> raw_bytes,
                                  dimn_t count) const override;

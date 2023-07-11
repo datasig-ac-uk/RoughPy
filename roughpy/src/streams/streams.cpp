@@ -42,7 +42,7 @@
 using namespace rpy;
 using namespace rpy::python;
 
-void python::init_streams(py::module_ &m)
+void python::init_streams(py::module_& m)
 {
 
     py::options options;

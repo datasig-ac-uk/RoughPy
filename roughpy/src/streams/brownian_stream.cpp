@@ -41,11 +41,11 @@ using namespace rpy;
 using namespace streams;
 using namespace pybind11::literals;
 
-static const char *BROWNIAN_PATH_DOC = R"rpydoc(A Brownian motion stream.
+static const char* BROWNIAN_PATH_DOC = R"rpydoc(A Brownian motion stream.
 )rpydoc";
 
-static py::object Brownian_from_generator(const py::args &args,
-                                          const py::kwargs &kwargs)
+static py::object
+Brownian_from_generator(const py::args& args, const py::kwargs& kwargs)
 {
 
     auto pmd = python::kwargs_to_metadata(kwargs);
@@ -60,8 +60,9 @@ static py::object Brownian_from_generator(const py::args &args,
         if (pmd.width == 0) {
             throw std::invalid_argument("width must be provided");
         }
-        pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type,
-                                       {});
+        pmd.ctx = algebra::get_context(
+                pmd.width, pmd.depth, pmd.scalar_type, {}
+        );
     }
 
     // TODO: Fix this up properly.
@@ -71,7 +72,8 @@ static py::object Brownian_from_generator(const py::args &args,
             pmd.support ? *pmd.support
                         : intervals::RealInterval(
                                 -std::numeric_limits<param_t>::infinity(),
-                                std::numeric_limits<param_t>::infinity()),
+                                std::numeric_limits<param_t>::infinity()
+                        ),
             pmd.ctx,
             pmd.scalar_type,
             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
@@ -83,10 +85,11 @@ static py::object Brownian_from_generator(const py::args &args,
     Stream stream(std::move(inner));
 
     return py::reinterpret_steal<py::object>(
-            python::RPyStream_FromStream(std::move(stream)));
+            python::RPyStream_FromStream(std::move(stream))
+    );
 }
 
-void rpy::python::init_brownian_stream(py::module_ &m)
+void rpy::python::init_brownian_stream(py::module_& m)
 {
 
     py::class_<BrownianStream> klass(m, "BrownianStream", BROWNIAN_PATH_DOC);

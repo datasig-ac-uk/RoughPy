@@ -66,7 +66,7 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth)
 
         auto old_size = static_cast<int>(m_mobius.size());
         m_mobius.resize(m_depth + 1, 1);
-        for (auto &prime : primes) {
+        for (auto& prime : primes) {
             for (deg_t i = (old_size / prime) + 1, m = i * prime; m <= m_depth;
                  ++i) {
                 m_mobius[m] *= -prime;
@@ -105,8 +105,9 @@ dimn_t HallSetSizeHelper::operator()(int k)
         auto divs = div(k, i);
         if (divs.rem == 0) {
             auto comp = k / divs.quot;
-            result += static_cast<dimn_t>(m_mobius[divs.quot]
-                                          * power(m_width, comp));
+            result += static_cast<dimn_t>(
+                    m_mobius[divs.quot] * power(m_width, comp)
+            );
         }
     }
 

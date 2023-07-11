@@ -67,7 +67,7 @@ DyadicInterval::DyadicInterval(param_t val, Dyadic::power_t resolution,
 }
 Dyadic DyadicInterval::dincluded_end() const
 {
-    return static_cast<const Dyadic &>(*this);
+    return static_cast<const Dyadic&>(*this);
 }
 Dyadic DyadicInterval::dexcluded_end() const
 {
@@ -97,13 +97,13 @@ param_t DyadicInterval::excluded_end() const
 DyadicInterval
 DyadicInterval::shrink_to_contained_end(Dyadic::power_t arg) const
 {
-    return {static_cast<const Dyadic &>(*this), arg + m_power, m_interval_type};
+    return {static_cast<const Dyadic&>(*this), arg + m_power, m_interval_type};
 }
 DyadicInterval DyadicInterval::shrink_to_omitted_end() const
 {
     return shrink_to_contained_end().flip_interval();
 }
-DyadicInterval &DyadicInterval::shrink_interval_right()
+DyadicInterval& DyadicInterval::shrink_interval_right()
 {
     if (m_interval_type == IntervalType::Opencl) {
         *this = shrink_to_contained_end();
@@ -112,7 +112,7 @@ DyadicInterval &DyadicInterval::shrink_interval_right()
     }
     return *this;
 }
-DyadicInterval &DyadicInterval::shrink_interval_left(Dyadic::power_t arg)
+DyadicInterval& DyadicInterval::shrink_interval_left(Dyadic::power_t arg)
 {
     RPY_DBG_ASSERT(arg >= 0);
     for (; arg > 0; --arg) {
@@ -124,12 +124,12 @@ DyadicInterval &DyadicInterval::shrink_interval_left(Dyadic::power_t arg)
     }
     return *this;
 }
-DyadicInterval &DyadicInterval::expand_interval(Dyadic::power_t arg)
+DyadicInterval& DyadicInterval::expand_interval(Dyadic::power_t arg)
 {
     *this = DyadicInterval{dincluded_end(), m_power - arg};
     return *this;
 }
-bool DyadicInterval::contains_dyadic(const DyadicInterval &other) const
+bool DyadicInterval::contains_dyadic(const DyadicInterval& other) const
 {
     if (other.m_interval_type != m_interval_type) { return false; }
     if (other.m_power >= m_power) {
@@ -146,12 +146,12 @@ bool DyadicInterval::contains_dyadic(const DyadicInterval &other) const
 }
 bool DyadicInterval::aligned() const
 {
-    DyadicInterval parent{static_cast<const Dyadic &>(*this), m_power - 1,
+    DyadicInterval parent{static_cast<const Dyadic&>(*this), m_power - 1,
                           m_interval_type};
     return operator==(
-            DyadicInterval{static_cast<const Dyadic &>(parent), m_power});
+            DyadicInterval{static_cast<const Dyadic&>(parent), m_power});
 }
-DyadicInterval &DyadicInterval::flip_interval()
+DyadicInterval& DyadicInterval::flip_interval()
 {
     if ((m_multiplier % 2) == 0) {
         m_multiplier += unit();
@@ -172,31 +172,31 @@ DyadicInterval DyadicInterval::shift_back(Dyadic::multiplier_t arg) const
     tmp.m_multiplier += unit() * arg;
     return tmp;
 }
-DyadicInterval &DyadicInterval::advance() noexcept
+DyadicInterval& DyadicInterval::advance() noexcept
 {
     m_multiplier += unit();
     return *this;
 }
 
-std::ostream &rpy::intervals::operator<<(std::ostream &os,
-                                         const DyadicInterval &di)
+std::ostream& rpy::intervals::operator<<(std::ostream& os,
+                                         const DyadicInterval& di)
 {
-    return os << static_cast<const Interval &>(di);
+    return os << static_cast<const Interval&>(di);
 }
 
 std::vector<DyadicInterval>
-rpy::intervals::to_dyadic_intervals(const Interval &interval,
+rpy::intervals::to_dyadic_intervals(const Interval& interval,
                                     Dyadic::power_t tol, IntervalType itype)
 {
     using iterator = std::list<DyadicInterval>::iterator;
     std::list<DyadicInterval> intervals;
 
-    auto store_move = [&](DyadicInterval &b) {
+    auto store_move = [&](DyadicInterval& b) {
         intervals.push_back(b.shrink_to_omitted_end());
         b.advance();
     };
 
-    auto store_ = [&](iterator &p, DyadicInterval &e) -> iterator {
+    auto store_ = [&](iterator& p, DyadicInterval& e) -> iterator {
         return intervals.insert(p, e.shrink_to_contained_end());
     };
 
@@ -223,8 +223,8 @@ rpy::intervals::to_dyadic_intervals(const Interval &interval,
     return {intervals.begin(), intervals.end()};
 }
 
-bool rpy::intervals::operator<(const DyadicInterval &lhs,
-                               const DyadicInterval &rhs) noexcept
+bool rpy::intervals::operator<(const DyadicInterval& lhs,
+                               const DyadicInterval& rhs) noexcept
 {
     if (lhs.type() != rhs.type()) { return false; }
 

@@ -38,7 +38,7 @@
 namespace rpy {
 namespace python {
 
-void init_algebra(py::module_ &m);
+void init_algebra(py::module_& m);
 
 }
 }// namespace rpy

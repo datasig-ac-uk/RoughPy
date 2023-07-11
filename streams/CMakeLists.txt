@@ -10,7 +10,7 @@ include(GenerateExportHeader)
 
 
 add_roughpy_component(Streams
-        SOURCES
+    SOURCES
         src/stream_base.cpp
         src/stream.cpp
         src/lie_increment_stream.cpp
@@ -25,8 +25,10 @@ add_roughpy_component(Streams
         src/external_data_sources/sound_file_data_source.cpp
         src/external_data_sources/sound_file_data_source.h
         src/schema.cpp
+        src/schema_context.cpp
         src/stream_construction_helper.cpp
-        PUBLIC_HEADERS
+        src/channels.cpp
+    PUBLIC_HEADERS
         include/roughpy/streams/dyadic_caching_layer.h
         include/roughpy/streams/dynamically_constructed_stream.h
         include/roughpy/streams/lie_increment_stream.h
@@ -37,10 +39,12 @@ add_roughpy_component(Streams
         include/roughpy/streams/external_data_stream.h
         include/roughpy/streams/piecewise_abelian_stream.h
         include/roughpy/streams/schema.h
+        include/roughpy/streams/schema_context.h
         include/roughpy/streams/stream_construction_helper.h
-        PRIVATE_DEPS
+        include/roughpy/streams/channels.h
+    PRIVATE_DEPS
         SndFile::sndfile
-        NEEDS
+    NEEDS
         RoughPy::Core
         RoughPy::Platform
         RoughPy::Intervals

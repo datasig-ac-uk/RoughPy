@@ -39,10 +39,10 @@ namespace scalars {
 class RPY_EXPORT RandomGenerator
 {
 protected:
-    const ScalarType *p_type;
+    const ScalarType* p_type;
 
 public:
-    explicit RandomGenerator(const ScalarType *type) : p_type(type) {}
+    explicit RandomGenerator(const ScalarType* type) : p_type(type) {}
 
     virtual ~RandomGenerator() = default;
 

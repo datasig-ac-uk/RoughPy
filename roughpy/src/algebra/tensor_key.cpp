@@ -83,18 +83,18 @@ std::vector<let_t> python::PyTensorKey::to_letters() const
     std::reverse(letters.begin(), letters.end());
     return letters;
 }
-bool python::PyTensorKey::equals(
-        const python::PyTensorKey &other) const noexcept
+bool python::PyTensorKey::equals(const python::PyTensorKey& other
+) const noexcept
 {
     return m_width == other.m_width && m_key == other.m_key;
 }
-bool python::PyTensorKey::less(const python::PyTensorKey &other) const noexcept
+bool python::PyTensorKey::less(const python::PyTensorKey& other) const noexcept
 {
     return m_key < other.m_key;
 }
 
-static python::PyTensorKey construct_key(const py::args &args,
-                                         const py::kwargs &kwargs)
+static python::PyTensorKey
+construct_key(const py::args& args, const py::kwargs& kwargs)
 {
     std::vector<let_t> letters;
 
@@ -150,7 +150,7 @@ static python::PyTensorKey construct_key(const py::args &args,
     return python::PyTensorKey(result, width, depth);
 }
 
-void python::init_py_tensor_key(py::module_ &m)
+void python::init_py_tensor_key(py::module_& m)
 {
     py::class_<PyTensorKey> klass(m, "TensorKey");
     klass.def(py::init(&construct_key));
@@ -158,8 +158,9 @@ void python::init_py_tensor_key(py::module_ &m)
     klass.def_property_readonly("width", &PyTensorKey::width);
     klass.def_property_readonly("max_degree", &PyTensorKey::depth);
 
-    klass.def("degree",
-              [](const PyTensorKey &key) { return key.to_letters().size(); });
+    klass.def("degree", [](const PyTensorKey& key) {
+        return key.to_letters().size();
+    });
 
     klass.def("__str__", &PyTensorKey::to_string);
     klass.def("__repr__", &PyTensorKey::to_string);

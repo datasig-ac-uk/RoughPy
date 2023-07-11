@@ -62,11 +62,11 @@ class RPY_EXPORT ScalarMatrix : public scalars::ScalarArray
 public:
     ScalarMatrix();
 
-    ScalarMatrix(const ScalarType *type, deg_t rows, deg_t cols,
+    ScalarMatrix(const ScalarType* type, deg_t rows, deg_t cols,
                  MatrixStorage = MatrixStorage::FullMatrix,
                  MatrixLayout = MatrixLayout::CStype);
 
-    ScalarMatrix(deg_t rows, deg_t cols, ScalarArray &&array,
+    ScalarMatrix(deg_t rows, deg_t cols, ScalarArray&& array,
                  MatrixStorage storage = MatrixStorage::FullMatrix,
                  MatrixLayout layout = MatrixLayout::CStype);
 
@@ -113,7 +113,7 @@ public:
     ScalarMatrix to_full() const;
     RPY_NO_DISCARD
     ScalarMatrix to_full(MatrixLayout layout) const;
-    void to_full(ScalarMatrix &into) const;
+    void to_full(ScalarMatrix& into) const;
 
     RPY_SERIAL_SERIALIZE_FN();
 };

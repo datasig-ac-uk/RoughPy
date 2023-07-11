@@ -34,7 +34,7 @@
 namespace rpy {
 namespace python {
 
-void init_intervals(py::module_ &m);
+void init_intervals(py::module_& m);
 
 }// namespace python
 }// namespace rpy

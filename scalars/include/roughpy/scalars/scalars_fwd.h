@@ -39,7 +39,9 @@
 
 #include <Eigen/Core>
 #include <libalgebra_lite/coefficients.h>
+#include <libalgebra_lite/packed_integer.h>
 #include <libalgebra_lite/polynomial.h>
+#include <libalgebra_lite/polynomial_basis.h>
 
 #ifdef LAL_NO_USE_GMP
 #  define RPY_USING_GMP 0
@@ -58,6 +60,12 @@ using Eigen::bfloat16;
 
 /// Rational scalar type
 using rational_scalar_type = lal::rational_field::scalar_type;
+
+/// Monomial key-type of polynomials
+using monomial = lal::monomial;
+
+/// Indeterminate type for monomials
+using indeterminate_type = typename monomial::letter_type;
 
 /// Polynomial (with rational coefficients) scalar type
 using rational_poly_scalar = lal::polynomial<lal::rational_field>;
@@ -175,19 +183,19 @@ class RandomGenerator;
 class BlasInterface;
 
 template <typename T>
-inline remove_cv_ref_t<T> scalar_cast(const Scalar &arg);
+inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
 
 using conversion_function
         = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
 
-constexpr bool operator==(const ScalarDeviceInfo &lhs,
-                          const ScalarDeviceInfo &rhs) noexcept
+constexpr bool
+operator==(const ScalarDeviceInfo& lhs, const ScalarDeviceInfo& rhs) noexcept
 {
     return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
 }
 
-constexpr bool operator==(const BasicScalarInfo &lhs,
-                          const BasicScalarInfo &rhs) noexcept
+constexpr bool
+operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept
 {
     return lhs.code == rhs.code && lhs.bits == rhs.bits
             && lhs.lanes == rhs.lanes;
@@ -200,7 +208,7 @@ constexpr bool operator==(const BasicScalarInfo &lhs,
  *
  */
 RPY_EXPORT
-void register_type(const ScalarType *type);
+void register_type(const ScalarType* type);
 
 /**
  * @brief Get a type registered with the scalar type system
@@ -208,28 +216,30 @@ void register_type(const ScalarType *type);
  * @return pointer to ScalarType representing id
  */
 RPY_EXPORT
-const ScalarType *get_type(const string &id);
+const ScalarType* get_type(const string& id);
 
 RPY_EXPORT
-const ScalarType *get_type(const string &id, const ScalarDeviceInfo &device);
+const ScalarType* get_type(const string& id, const ScalarDeviceInfo& device);
 
 /**
  * @brief Get a list of all registered ScalarTypes
  * @return vector of ScalarType pointers.
  */
-RPY_NO_DISCARD RPY_EXPORT std::vector<const ScalarType *> list_types();
+RPY_NO_DISCARD RPY_EXPORT std::vector<const ScalarType*> list_types();
 
-RPY_NO_DISCARD RPY_EXPORT const ScalarTypeInfo &get_scalar_info(string_view id);
+RPY_NO_DISCARD RPY_EXPORT const ScalarTypeInfo& get_scalar_info(string_view id);
 
-RPY_NO_DISCARD RPY_EXPORT const std::string &
-id_from_basic_info(const BasicScalarInfo &info);
+RPY_NO_DISCARD RPY_EXPORT const std::string&
+id_from_basic_info(const BasicScalarInfo& info);
 
-RPY_NO_DISCARD RPY_EXPORT const conversion_function &
-get_conversion(const string &src_id, const string &dst_id);
+RPY_NO_DISCARD RPY_EXPORT const conversion_function&
+get_conversion(const string& src_id, const string& dst_id);
 
 RPY_EXPORT
-void register_conversion(const string &src_id, const string &dst_id,
-                         conversion_function converter);
+void register_conversion(
+        const string& src_id, const string& dst_id,
+        conversion_function converter
+);
 
 }// namespace scalars
 }// namespace rpy

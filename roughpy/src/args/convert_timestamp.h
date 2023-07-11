@@ -41,6 +41,10 @@
 namespace rpy {
 namespace python {
 
+bool is_py_datetime(py::handle object) noexcept;
+bool is_py_date(py::handle object) noexcept;
+bool is_py_time(py::handle object) noexcept;
+
 enum class PyDateTimeResolution : uint8_t
 {
     Microseconds = 0,
@@ -55,13 +59,15 @@ struct PyDateTimeConversionOptions {
     PyDateTimeResolution resolution;
 };
 
-void init_datetime(py::module_ &m);
+void init_datetime(py::module_& m);
 
-param_t
-convert_delta_from_datetimes(py::handle current, py::handle previous,
-                             const PyDateTimeConversionOptions &options);
-param_t convert_timedelta(py::handle py_timedelta,
-                          const PyDateTimeConversionOptions &options);
+param_t convert_delta_from_datetimes(
+        py::handle current, py::handle previous,
+        const PyDateTimeConversionOptions& options
+);
+param_t convert_timedelta(
+        py::handle py_timedelta, const PyDateTimeConversionOptions& options
+);
 
 }// namespace python
 }// namespace rpy

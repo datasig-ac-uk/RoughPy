@@ -39,14 +39,14 @@ using namespace rpy;
 using namespace rpy::intervals;
 using namespace pybind11::literals;
 
-static const char *DYADIC_INTERVAL_DOC = R"edoc(A dyadic interval.
+static const char* DYADIC_INTERVAL_DOC = R"edoc(A dyadic interval.
 )edoc";
 
-static const char *TO_DYADIC_INT_DOC
+static const char* TO_DYADIC_INT_DOC
         = R"edoc(Dissect an interval into a partition of dyadic intervals.
 )edoc";
 
-void python::init_dyadic_interval(py::module_ &m)
+void python::init_dyadic_interval(py::module_& m)
 {
     using multiplier_t = typename Dyadic::multiplier_t;
     using power_t = typename Dyadic::power_t;

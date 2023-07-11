@@ -48,22 +48,22 @@ protected:
 public:
     ScalarArray() = default;
 
-    explicit ScalarArray(const ScalarType *type) : ScalarPointer(type) {}
-    ScalarArray(const ScalarType *type, void *data, dimn_t size)
+    explicit ScalarArray(const ScalarType* type) : ScalarPointer(type) {}
+    ScalarArray(const ScalarType* type, void* data, dimn_t size)
         : ScalarPointer(type, data), m_size(size)
     {}
 
-    ScalarArray(const ScalarType *type, const void *data, dimn_t size)
+    ScalarArray(const ScalarType* type, const void* data, dimn_t size)
         : ScalarPointer(type, data), m_size(size)
     {}
     ScalarArray(ScalarPointer begin, dimn_t size)
         : ScalarPointer(begin), m_size(size)
     {}
 
-    ScalarArray(const ScalarArray &other) = default;
-    ScalarArray(ScalarArray &&other) noexcept;
-    ScalarArray &operator=(const ScalarArray &other) = default;
-    ScalarArray &operator=(ScalarArray &&other) noexcept;
+    ScalarArray(const ScalarArray& other) = default;
+    ScalarArray(ScalarArray&& other) noexcept;
+    ScalarArray& operator=(const ScalarArray& other) = default;
+    ScalarArray& operator=(ScalarArray&& other) noexcept;
 
     RPY_NO_DISCARD
     ScalarArray borrow() const noexcept;

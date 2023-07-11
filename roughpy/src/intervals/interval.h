@@ -48,12 +48,12 @@ private:
     param_t included_end() const override;
     param_t excluded_end() const override;
     bool contains_point(param_t arg) const noexcept override;
-    bool is_associated(const Interval &arg) const noexcept override;
-    bool contains(const Interval &arg) const noexcept override;
-    bool intersects_with(const Interval &arg) const noexcept override;
+    bool is_associated(const Interval& arg) const noexcept override;
+    bool contains(const Interval& arg) const noexcept override;
+    bool intersects_with(const Interval& arg) const noexcept override;
 };
 
-void init_interval(py::module_ &m);
+void init_interval(py::module_& m);
 
 }// namespace python
 }// namespace rpy

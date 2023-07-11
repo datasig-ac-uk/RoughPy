@@ -50,41 +50,41 @@ class Scalar : private ScalarPointer
 
 public:
     Scalar() = default;
-    Scalar(const Scalar &other);
-    Scalar(Scalar &&other) noexcept;
-    explicit Scalar(const ScalarType *type);
+    Scalar(const Scalar& other);
+    Scalar(Scalar&& other) noexcept;
+    explicit Scalar(const ScalarType* type);
 
     explicit Scalar(scalar_t arg);
     explicit Scalar(ScalarPointer ptr);
-    explicit Scalar(ScalarInterface *interface_ptr);
+    explicit Scalar(ScalarInterface* interface_ptr);
     Scalar(ScalarPointer ptr, flags::PointerType ptype);
-    Scalar(const ScalarType *type, scalar_t arg);
+    Scalar(const ScalarType* type, scalar_t arg);
 
     Scalar(ScalarPointer other, uint32_t new_flags);
 
     template <typename I, typename J,
               typename = std::enable_if_t<std::is_integral<I>::value
                                           && std::is_integral<J>::value>>
-    Scalar(const ScalarType *type, I numerator, J denominator)
+    Scalar(const ScalarType* type, I numerator, J denominator)
     {
         if (type == nullptr) { type = get_type("rational"); }
         ScalarPointer::operator=(type->allocate(1));
-        type->assign(static_cast<const ScalarPointer &>(*this),
+        type->assign(static_cast<const ScalarPointer&>(*this),
                      static_cast<long long>(numerator),
                      static_cast<long long>(denominator));
     }
 
     template <typename ScalarArg>
-    Scalar(const ScalarType *type, ScalarArg arg)
+    Scalar(const ScalarType* type, ScalarArg arg)
     {
-        const auto *scalar_arg_type = ScalarType::of<ScalarArg>();
+        const auto* scalar_arg_type = ScalarType::of<ScalarArg>();
         if (scalar_arg_type != nullptr) {
             if (type == nullptr) { type = scalar_arg_type; }
             ScalarPointer::operator=(type->allocate(1));
             type->convert_copy(to_mut_pointer(),
                                {scalar_arg_type, std::addressof(arg)}, 1);
         } else {
-            const auto &id = type_id_of<ScalarArg>();
+            const auto& id = type_id_of<ScalarArg>();
             if (type == nullptr) { type = ScalarType::for_id(id); }
             ScalarPointer::operator=(type->allocate(1));
             type->convert_copy(to_mut_pointer(), &arg, 1, id);
@@ -93,13 +93,13 @@ public:
 
     ~Scalar();
 
-    Scalar &operator=(const Scalar &other);
-    Scalar &operator=(Scalar &&other) noexcept;
+    Scalar& operator=(const Scalar& other);
+    Scalar& operator=(Scalar&& other) noexcept;
 
     template <typename T,
               typename
               = std::enable_if_t<!std::is_same<Scalar, std::decay_t<T>>::value>>
-    Scalar &operator=(T arg)
+    Scalar& operator=(T arg)
     {
         if (p_type == nullptr) {
             p_type = ScalarType::of<std::decay_t<T>>();
@@ -115,12 +115,12 @@ public:
             ScalarPointer::operator=(p_type->allocate(1));
         }
 
-        const auto &type_id = type_id_of<T>();
+        const auto& type_id = type_id_of<T>();
         if ((m_flags & interface_flag) != 0) {
-            static_cast<ScalarInterface *>(const_cast<void *>(p_data))
+            static_cast<ScalarInterface*>(const_cast<void*>(p_data))
                     ->assign(std::addressof(arg), type_id);
         } else {
-            p_type->convert_copy(static_cast<const ScalarPointer &>(*this),
+            p_type->convert_copy(static_cast<const ScalarPointer&>(*this),
                                  std::addressof(arg), 1, type_id);
         }
 
@@ -146,18 +146,18 @@ public:
 
     Scalar operator-() const;
 
-    Scalar operator+(const Scalar &other) const;
-    Scalar operator-(const Scalar &other) const;
-    Scalar operator*(const Scalar &other) const;
-    Scalar operator/(const Scalar &other) const;
+    Scalar operator+(const Scalar& other) const;
+    Scalar operator-(const Scalar& other) const;
+    Scalar operator*(const Scalar& other) const;
+    Scalar operator/(const Scalar& other) const;
 
-    Scalar &operator+=(const Scalar &other);
-    Scalar &operator-=(const Scalar &other);
-    Scalar &operator*=(const Scalar &other);
-    Scalar &operator/=(const Scalar &other);
+    Scalar& operator+=(const Scalar& other);
+    Scalar& operator-=(const Scalar& other);
+    Scalar& operator*=(const Scalar& other);
+    Scalar& operator/=(const Scalar& other);
 
-    bool operator==(const Scalar &other) const noexcept;
-    bool operator!=(const Scalar &other) const noexcept;
+    bool operator==(const Scalar& other) const noexcept;
+    bool operator!=(const Scalar& other) const noexcept;
 
     // #ifndef RPY_DISABLE_SERIALIZATION
     // private:
@@ -193,13 +193,13 @@ public:
 };
 
 RPY_EXPORT
-std::ostream &operator<<(std::ostream &, const Scalar &arg);
+std::ostream& operator<<(std::ostream&, const Scalar& arg);
 
 RPY_SERIAL_SAVE_FN_IMPL(Scalar)
 {
     RPY_SERIAL_SERIALIZE_NVP("type_id", get_type_id());
     if (is_interface()) {
-        auto ptr = static_cast<const ScalarInterface *>(p_data)->to_pointer();
+        auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
         RPY_SERIAL_SERIALIZE_NVP("data", p_type->to_raw_bytes(ptr, 1));
     } else {
         RPY_SERIAL_SERIALIZE_NVP("data", to_raw_bytes(1));
@@ -222,10 +222,10 @@ template <typename T>
 struct type_of_T_defined {
     static T cast(ScalarPointer scalar)
     {
-        const auto *tp = ScalarType::of<T>();
-        if (tp == scalar.type()) { return *scalar.raw_cast<const T *>(); }
+        const auto* tp = ScalarType::of<T>();
+        if (tp == scalar.type()) { return *scalar.raw_cast<const T*>(); }
         if (tp == scalar.type()->rational_type()) {
-            return *scalar.raw_cast<const T *>();
+            return *scalar.raw_cast<const T*>();
         }
 
         T result;
@@ -249,7 +249,7 @@ struct type_of_T_not_defined {
 }// namespace dtl
 
 template <typename T>
-inline remove_cv_ref_t<T> scalar_cast(const Scalar &scalar)
+inline remove_cv_ref_t<T> scalar_cast(const Scalar& scalar)
 {
     if (scalar.is_zero()) { return T(0); }
     using bare_t = remove_cv_ref_t<T>;

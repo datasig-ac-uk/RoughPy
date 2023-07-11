@@ -61,32 +61,32 @@ class DyadicCachingLayer : public StreamInterface
 public:
     using StreamInterface::StreamInterface;
 
-    DyadicCachingLayer(const DyadicCachingLayer &) = delete;
-    DyadicCachingLayer(DyadicCachingLayer &&other) noexcept;
+    DyadicCachingLayer(const DyadicCachingLayer&) = delete;
+    DyadicCachingLayer(DyadicCachingLayer&& other) noexcept;
 
-    DyadicCachingLayer &operator=(const DyadicCachingLayer &) = delete;
-    DyadicCachingLayer &operator=(DyadicCachingLayer &&other) noexcept;
+    DyadicCachingLayer& operator=(const DyadicCachingLayer&) = delete;
+    DyadicCachingLayer& operator=(DyadicCachingLayer&& other) noexcept;
 
     using StreamInterface::log_signature;
     using StreamInterface::signature;
 
     RPY_NO_DISCARD
-    algebra::Lie log_signature(const intervals::Interval &interval,
-                               const algebra::Context &ctx) const override;
+    algebra::Lie log_signature(const intervals::Interval& interval,
+                               const algebra::Context& ctx) const override;
 
     RPY_NO_DISCARD
-    algebra::Lie log_signature(const intervals::DyadicInterval &interval,
+    algebra::Lie log_signature(const intervals::DyadicInterval& interval,
                                resolution_t resolution,
-                               const algebra::Context &ctx) const override;
+                               const algebra::Context& ctx) const override;
 
     RPY_NO_DISCARD
-    algebra::Lie log_signature(const intervals::Interval &domain,
+    algebra::Lie log_signature(const intervals::Interval& domain,
                                resolution_t resolution,
-                               const algebra::Context &ctx) const override;
+                               const algebra::Context& ctx) const override;
 
     RPY_NO_DISCARD
-    algebra::FreeTensor signature(const intervals::Interval &interval,
-                                  const algebra::Context &ctx) const override;
+    algebra::FreeTensor signature(const intervals::Interval& interval,
+                                  const algebra::Context& ctx) const override;
 };
 
 }// namespace streams

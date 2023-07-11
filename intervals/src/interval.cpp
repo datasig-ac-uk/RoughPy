@@ -61,15 +61,15 @@ bool Interval::contains_point(param_t arg) const noexcept
 
     return false;
 }
-bool Interval::is_associated(const Interval &arg) const noexcept
+bool Interval::is_associated(const Interval& arg) const noexcept
 {
     return contains_point(arg.included_end());
 }
-bool Interval::contains(const Interval &arg) const noexcept
+bool Interval::contains(const Interval& arg) const noexcept
 {
     return contains_point(arg.inf()) && contains_point(arg.sup());
 }
-bool Interval::intersects_with(const Interval &arg) const noexcept
+bool Interval::intersects_with(const Interval& arg) const noexcept
 {
     auto lhs_inf = inf();
     auto lhs_sup = sup();
@@ -93,18 +93,18 @@ bool Interval::intersects_with(const Interval &arg) const noexcept
     }
     return false;
 }
-bool Interval::operator==(const Interval &other) const
+bool Interval::operator==(const Interval& other) const
 {
     return m_interval_type == other.m_interval_type && inf() == other.inf()
             && sup() == other.sup();
 }
-bool Interval::operator!=(const Interval &other) const
+bool Interval::operator!=(const Interval& other) const
 {
     return !operator==(other);
 }
 
-std::ostream &rpy::intervals::operator<<(std::ostream &os,
-                                         const Interval &interval)
+std::ostream& rpy::intervals::operator<<(std::ostream& os,
+                                         const Interval& interval)
 {
     if (interval.type() == IntervalType::Clopen) {
         os << '[';

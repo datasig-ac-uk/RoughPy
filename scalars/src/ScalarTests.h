@@ -44,8 +44,8 @@ namespace testing {
 class ScalarTests : public ::testing::Test
 {
 public:
-    const scalars::ScalarType *dtype;
-    const scalars::ScalarType *ftype;
+    const scalars::ScalarType* dtype;
+    const scalars::ScalarType* ftype;
 
     ScalarTests()
         : dtype(ScalarType::of<double>()), ftype(ScalarType::of<float>())

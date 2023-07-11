@@ -41,18 +41,18 @@ namespace intervals {
 
 class ScaledPredicate
 {
-    predicate_t &m_func;
+    predicate_t& m_func;
     param_t m_shift;
     param_t m_scale;
 
 public:
-    ScaledPredicate(predicate_t &predicate, param_t shift, param_t scale)
+    ScaledPredicate(predicate_t& predicate, param_t shift, param_t scale)
         : m_func(predicate), m_shift(shift), m_scale(scale)
     {}
 
-    RealInterval unscale(const Interval &interval) const;
+    RealInterval unscale(const Interval& interval) const;
 
-    bool operator()(const Interval &interval) const;
+    bool operator()(const Interval& interval) const;
 };
 
 }// namespace intervals

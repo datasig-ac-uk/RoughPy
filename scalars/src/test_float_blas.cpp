@@ -43,7 +43,7 @@ namespace {
 
 class FloatBlasTests : public ::testing::Test
 {
-    const ScalarType *ctype;
+    const ScalarType* ctype;
     std::vector<float> a_data;
     std::vector<float> b_data;
 
@@ -74,7 +74,7 @@ TEST_F(FloatBlasTests, TestRowMajorByRowMajorFull)
      *  [2.0, 3.0]]  [-2.0, 3.0]]      [-8.0, 13.0]]
      */
 
-    auto *ptr = result.raw_cast<float *>();
+    auto* ptr = result.raw_cast<float*>();
 
     EXPECT_EQ(ptr[0], -3.0F);
     EXPECT_EQ(ptr[1], 5.0F);

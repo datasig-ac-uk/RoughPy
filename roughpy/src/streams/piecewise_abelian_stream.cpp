@@ -41,13 +41,14 @@
 using namespace rpy;
 using namespace pybind11::literals;
 
-static const char *PW_LIE_STREAM_DOC
+static const char* PW_LIE_STREAM_DOC
         = R"rpydoc(A stream formed of a sequence of interval-Lie pairs.
 )rpydoc";
 
 static py::object construct_piecewise_lie_stream(
         std::vector<std::pair<intervals::RealInterval, algebra::Lie>> lies,
-        const py::kwargs &kwargs)
+        const py::kwargs& kwargs
+)
 {
 
     auto pmd = python::kwargs_to_metadata(kwargs);
@@ -63,7 +64,7 @@ static py::object construct_piecewise_lie_stream(
     using nl = std::numeric_limits<param_t>;
     param_t a = nl::infinity();
     param_t b = -nl::infinity();
-    for (auto &piece : lies) {
+    for (auto& piece : lies) {
         if (piece.first.inf() < a) { a = piece.first.inf(); }
         if (piece.first.sup() > b) { b = piece.first.sup(); }
     }
@@ -76,17 +77,20 @@ static py::object construct_piecewise_lie_stream(
              pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
              pmd.ctx, pmd.scalar_type,
              pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-             pmd.resolution}));
+             pmd.resolution}
+    ));
 
     return py::reinterpret_steal<py::object>(
-            python::RPyStream_FromStream(std::move(result)));
+            python::RPyStream_FromStream(std::move(result))
+    );
 }
 
-void python::init_piecewise_lie_stream(py::module_ &m)
+void python::init_piecewise_lie_stream(py::module_& m)
 {
 
     py::class_<streams::PiecewiseAbelianStream> klass(
-            m, "PiecewiseAbelianStream", PW_LIE_STREAM_DOC);
+            m, "PiecewiseAbelianStream", PW_LIE_STREAM_DOC
+    );
 
     klass.def_static("construct", &construct_piecewise_lie_stream);
 }

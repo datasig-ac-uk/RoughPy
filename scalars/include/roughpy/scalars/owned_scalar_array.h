@@ -43,19 +43,19 @@ class RPY_EXPORT OwnedScalarArray : public ScalarArray
 public:
     OwnedScalarArray() = default;
 
-    OwnedScalarArray(const OwnedScalarArray &other);
-    OwnedScalarArray(OwnedScalarArray &&other) noexcept;
+    OwnedScalarArray(const OwnedScalarArray& other);
+    OwnedScalarArray(OwnedScalarArray&& other) noexcept;
 
-    explicit OwnedScalarArray(const ScalarType *type);
-    OwnedScalarArray(const ScalarType *type, dimn_t size);
-    OwnedScalarArray(const Scalar &value, dimn_t count);
-    explicit OwnedScalarArray(const ScalarArray &other);
+    explicit OwnedScalarArray(const ScalarType* type);
+    OwnedScalarArray(const ScalarType* type, dimn_t size);
+    OwnedScalarArray(const Scalar& value, dimn_t count);
+    explicit OwnedScalarArray(const ScalarArray& other);
 
-    explicit OwnedScalarArray(const ScalarType *type, const void *data,
+    explicit OwnedScalarArray(const ScalarType* type, const void* data,
                               dimn_t count);
 
-    OwnedScalarArray &operator=(const ScalarArray &other);
-    OwnedScalarArray &operator=(OwnedScalarArray &&other) noexcept;
+    OwnedScalarArray& operator=(const ScalarArray& other);
+    OwnedScalarArray& operator=(OwnedScalarArray&& other) noexcept;
 
     ~OwnedScalarArray();
 

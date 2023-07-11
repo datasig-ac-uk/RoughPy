@@ -49,7 +49,7 @@ namespace algebra {
 template <>
 struct BasisInfo<LieBasis, lal::hall_basis> {
     /// Type that should be stored in the basis implementation
-    using storage_t = const lal::hall_basis *;
+    using storage_t = const lal::hall_basis*;
 
     /// The key type that is handled internally in roughpy
     using our_key_type = typename LieBasis::key_type;
@@ -70,16 +70,16 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
     // The conversion methods are required, they are used in the trait
     // and in the algebra wrapper
     /// Conversion from impl_key_type to our_key_type
-    static our_key_type convert_from_impl(storage_t basis,
-                                          const impl_key_type &arg)
+    static our_key_type
+    convert_from_impl(storage_t basis, const impl_key_type& arg)
     {
         // The default is to take the index of arg as the return
         return basis->key_to_index(arg);
     }
 
     /// Conversion from our_key_type to impl_key_type
-    static impl_key_type convert_to_impl(storage_t basis,
-                                         const our_key_type &arg)
+    static impl_key_type
+    convert_to_impl(storage_t basis, const our_key_type& arg)
     {
         // Default is to treat rpy keys as the index of impl keys
         return basis->index_to_key(arg);
@@ -92,7 +92,7 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
      */
 
     /// Generate a string representation of the key
-    static string key_to_string(storage_t basis, const our_key_type &key)
+    static string key_to_string(storage_t basis, const our_key_type& key)
     {
         std::stringstream ss;
         basis->print_key(ss, convert_to_impl(basis, key));
@@ -118,7 +118,7 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
     }
 
     /// Get the index of key in the basis total order
-    static dimn_t key_to_index(storage_t basis, const our_key_type &key)
+    static dimn_t key_to_index(storage_t basis, const our_key_type& key)
     {
         return basis->key_to_index(convert_to_impl(basis, key));
     }
@@ -143,7 +143,7 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
     static deg_t depth(storage_t basis) { return basis->depth(); }
 
     /// Get the length of a key as a word
-    static deg_t degree(storage_t basis, const our_key_type &key)
+    static deg_t degree(storage_t basis, const our_key_type& key)
     {
         return basis->degree(convert_to_impl(basis, key));
     }
@@ -163,7 +163,7 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
 
     /// Get the parents of a key according to the basis composition
     static pair<optional<our_key_type>, optional<our_key_type>>
-    parents(storage_t basis, const our_key_type &key)
+    parents(storage_t basis, const our_key_type& key)
     {
         auto parents_pair = basis->parents(convert_to_impl(basis, key));
         return {convert_from_impl(basis, parents_pair.first),
@@ -171,7 +171,7 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
     }
 
     /// Get the first letter of the key as a word
-    static let_t first_letter(storage_t basis, const our_key_type &key)
+    static let_t first_letter(storage_t basis, const our_key_type& key)
     {
         return basis->first_letter(convert_to_impl(basis, key));
     }
@@ -183,7 +183,7 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
     }
 
     /// Determine whether a key represents a single letter
-    static bool letter(storage_t basis, const our_key_type &key)
+    static bool letter(storage_t basis, const our_key_type& key)
     {
         return basis->letter(convert_to_impl(basis, key));
     }

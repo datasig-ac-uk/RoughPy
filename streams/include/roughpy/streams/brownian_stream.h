@@ -44,13 +44,13 @@ class RPY_EXPORT BrownianStream : public DynamicallyConstructedStream
     std::unique_ptr<scalars::RandomGenerator> p_generator;
 
     RPY_NO_DISCARD
-    algebra::Lie gaussian_increment(const algebra::Context &ctx,
+    algebra::Lie gaussian_increment(const algebra::Context& ctx,
                                     param_t length) const;
 
 protected:
     RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval &interval,
-                                    const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval& interval,
+                                    const algebra::Context& ctx) const override;
     RPY_NO_DISCARD
     Lie make_new_root_increment(DyadicInterval di) const override;
     RPY_NO_DISCARD
@@ -60,11 +60,11 @@ protected:
     pair<Lie, Lie>
     compute_child_lie_increments(DyadicInterval left_di,
                                  DyadicInterval right_di,
-                                 const Lie &parent_value) const override;
+                                 const Lie& parent_value) const override;
 
 public:
     RPY_NO_DISCARD
-    scalars::RandomGenerator &generator() noexcept { return *p_generator; }
+    scalars::RandomGenerator& generator() noexcept { return *p_generator; }
 
     BrownianStream() : DynamicallyConstructedStream({}), p_generator(nullptr) {}
 
@@ -78,7 +78,7 @@ public:
     RPY_SERIAL_LOAD_FN();
 
     template <typename Archive>
-    void restore_cached(Archive &archive, const algebra::Context &ctx)
+    void restore_cached(Archive& archive, const algebra::Context& ctx)
     {
         load_cache(archive, ctx);
     }
@@ -101,7 +101,7 @@ RPY_SERIAL_LOAD_FN_IMPL(BrownianStream)
 {
     StreamMetadata md;
     RPY_SERIAL_SERIALIZE_NVP("metadata", md);
-    const auto *stype = md.data_scalar_type;
+    const auto* stype = md.data_scalar_type;
     set_metadata(std::move(md));
 
     std::string generator;

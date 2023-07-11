@@ -220,7 +220,7 @@ typedef struct {
      * }
      * \endcode
      */
-    void *data;
+    void* data;
     /*! \brief The device of the tensor */
     DLDevice device;
     /*! \brief Number of dimensions */
@@ -228,12 +228,12 @@ typedef struct {
     /*! \brief The data type of the pointer*/
     DLDataType dtype;
     /*! \brief The shape of the tensor */
-    int64_t *shape;
+    int64_t* shape;
     /*!
      * \brief strides of the tensor (in number of elements, not bytes)
      *  can be NULL, indicating tensor is compact and row-majored.
      */
-    int64_t *strides;
+    int64_t* strides;
     /*! \brief The offset in bytes to the beginning pointer to data */
     uint64_t byte_offset;
 } DLTensor;
@@ -258,14 +258,14 @@ typedef struct DLManagedTensor {
     /*! \brief the context of the original host framework of DLManagedTensor in
      *   which DLManagedTensor is used in the framework. It can also be NULL.
      */
-    void *manager_ctx;
+    void* manager_ctx;
     /*!
      * \brief Destructor - this should be called
      * to destruct the manager_ctx  which backs the DLManagedTensor. It can be
      * NULL if there is no way for the caller to provide a reasonable
      * destructor. The destructors deletes the argument self as well.
      */
-    void (*deleter)(struct DLManagedTensor *self);
+    void (*deleter)(struct DLManagedTensor* self);
 } DLManagedTensor;
 
 // bit masks used in in the DLManagedTensorVersioned
@@ -294,7 +294,7 @@ struct DLManagedTensorVersioned {
      * Stores DLManagedTensorVersioned is used in the
      * framework. It can also be NULL.
      */
-    void *manager_ctx;
+    void* manager_ctx;
     /*!
      * \brief Destructor.
      *
@@ -303,7 +303,7 @@ struct DLManagedTensorVersioned {
      * caller to provide a reasonable destructor. The destructors deletes the
      * argument self as well.
      */
-    void (*deleter)(struct DLManagedTensorVersioned *self);
+    void (*deleter)(struct DLManagedTensorVersioned* self);
     /*!
      * \brief Additional bitmask flags information about the tensor.
      *
