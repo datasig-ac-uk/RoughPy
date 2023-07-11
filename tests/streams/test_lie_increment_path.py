@@ -2,17 +2,16 @@ import functools
 import itertools
 import operator
 
-import pytest
 import numpy as np
+import pytest
 from numpy.testing import assert_array_almost_equal
 
-import roughpy
-from roughpy import Stream, LieIncrementStream
 from roughpy import FreeTensor, Lie, RealInterval
+from roughpy import LieIncrementStream
+
 
 def path(*args, **kwargs):
     return LieIncrementStream.from_increments(*args, **kwargs)
-
 
 
 @pytest.fixture(params=[0, 1, 5, 10, 20, 50, 100])
@@ -28,6 +27,7 @@ def tick_indices(length):
 @pytest.fixture
 def tick_data(rng, length, width):
     return rng.normal(0.0, 1.0, size=(length, width))
+
 
 # @pytest.fixture
 # def tick_data_w_indices(rng, tick_indices, width, length):
@@ -49,7 +49,8 @@ def tick_data(rng, length, width):
 #     assert p.domain() == RealInterval(-float("inf"), float("inf"))
 
 
-@pytest.mark.parametrize("data", [np.array([]), np.array([[]]), np.array([[], []])])
+@pytest.mark.parametrize("data",
+                         [np.array([]), np.array([[]]), np.array([[], []])])
 def test_path_creation_odd_data(data):
     p = path(data, width=2, depth=2)
 
@@ -58,24 +59,24 @@ def test_path_creation_odd_data(data):
 
 # def test_path_creation_flat_length_1_path(width):
 #     width + 1 because we do not supply indices
-    # data = np.array([1.0] * (width + 1))
-    # p = path(data, width=width, depth=2)
-    #
-    # assert p.width == width
-    # assert p.depth == 2
-    # needs fix for broadcasting to the correct shape in function
-    # assert data.shape == (width+1,)
+# data = np.array([1.0] * (width + 1))
+# p = path(data, width=width, depth=2)
+#
+# assert p.width == width
+# assert p.depth == 2
+# needs fix for broadcasting to the correct shape in function
+# assert data.shape == (width+1,)
 
 
 # def test_path_creation_flat_length_1_path_no_depth(width):
 #     width + 1 because we do not supply indices
-    # data = np.array([1.0] * (width + 1))
-    # p = path(data, width=width)
-    #
-    # assert p.width == width
-    # assert p.depth == 2
-    # needs fix for broadcasting to the correct shape in function
-    # assert data.shape == (width+1,)
+# data = np.array([1.0] * (width + 1))
+# p = path(data, width=width)
+#
+# assert p.width == width
+# assert p.depth == 2
+# needs fix for broadcasting to the correct shape in function
+# assert data.shape == (width+1,)
 
 
 # @pytest.mark.skip("Broken?")
@@ -149,30 +150,37 @@ def solution_signature(width, depth, tensor_size):
 
             for data in itertools.product(letters, repeat=d):
                 idx += 1
-                rv[idx] = factor * functools.reduce(operator.mul, data, 1) * (b - a) ** d
+                rv[idx] = factor * functools.reduce(operator.mul, data, 1) * (
+                            b - a) ** d
         return rv
 
     return sig_func
 
 
-def test_tpath_known_signature_calc(width, depth, t_values, known_path_data, solution_signature):
+def test_tpath_known_signature_calc(width, depth, t_values, known_path_data,
+                                    solution_signature):
     p = path(known_path_data, indices=t_values, width=width, depth=depth)
 
-    expected = FreeTensor(solution_signature(0.0, 2.0), width=width, depth=depth)
+    expected = FreeTensor(solution_signature(0.0, 2.0), width=width,
+                          depth=depth)
     assert_array_almost_equal(p.signature(0.0, 3.125), expected)
 
 
-def test_tpath_known_signature_calc_with_context(width, depth, t_values, known_path_data,
-                                        solution_signature):
+def test_tpath_known_signature_calc_with_context(width, depth, t_values,
+                                                 known_path_data,
+                                                 solution_signature):
     p = path(known_path_data, indices=t_values, width=width, depth=2)
 
-    expected = FreeTensor(solution_signature(0.0, 2.0), width=width, depth=depth)
+    expected = FreeTensor(solution_signature(0.0, 2.0), width=width,
+                          depth=depth)
     assert_array_almost_equal(
         np.array(p.signature(0.0, 3.125, depth=depth)),
         np.array(expected))
 
+
 def test_tick_sig_deriv_width_3_depth_1_let_2_perturb():
-    p = path(np.array([[0.2, 0.4, 0.6]]), indices=np.array([0.0]), width=3, depth=1)
+    p = path(np.array([[0.2, 0.4, 0.6]]), indices=np.array([0.0]), width=3,
+             depth=1)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), width=3, depth=1)
     interval = RealInterval(0.0, 1.0)
 
@@ -182,41 +190,47 @@ def test_tick_sig_deriv_width_3_depth_1_let_2_perturb():
 
     assert d == expected, f"expected {expected} but got {d}"
 
+
 def test_tick_sig_deriv_width_3_depth_2_let_2_perturb():
-    p = path(np.array([[0.2, 0.4, 0.6]]), indices=np.array([0.0]), width=3, depth=2)
+    p = path(np.array([[0.2, 0.4, 0.6]]), indices=np.array([0.0]), width=3,
+             depth=2)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), width=3, depth=2)
     interval = RealInterval(0.0, 1.0)
 
     d = p.signature_derivative(interval, perturbation, 1)
 
     expected = FreeTensor(np.array([0.0, 0.0, 1.0, 0.0,
-                                  0.0, 0.1, 0.0,
-                                  0.1, 0.4, 0.3,
-                                  0.0, 0.3, 0.0
-                                  ]), width=3, depth=2)
+                                    0.0, 0.1, 0.0,
+                                    0.1, 0.4, 0.3,
+                                    0.0, 0.3, 0.0
+                                    ]), width=3, depth=2)
 
     assert d == expected, f"expected {expected} but got {d}"
 
+
 def test_tick_sig_deriv_width_3_depth_2_let_2_perturb_with_context():
-    p = path(np.array([[0.2, 0.4, 0.6]]), indices=np.array([0.0]), width=3, depth=2)
+    p = path(np.array([[0.2, 0.4, 0.6]]), indices=np.array([0.0]), width=3,
+             depth=2)
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), width=3, depth=2)
     interval = RealInterval(0.0, 1.0)
 
     d = p.signature_derivative(interval, perturbation, 1, depth=2)
 
     expected = FreeTensor(np.array([0.0, 0.0, 1.0, 0.0,
-                                  0.0, 0.1, 0.0,
-                                  0.1, 0.4, 0.3,
-                                  0.0, 0.3, 0.0
-                                  ]), width=3, depth=2)
+                                    0.0, 0.1, 0.0,
+                                    0.1, 0.4, 0.3,
+                                    0.0, 0.3, 0.0
+                                    ]), width=3, depth=2)
 
     assert d == expected, f"expected {expected} but got {d}"
+
 
 def test_tick_path_sig_derivative(width, depth, tick_data, tick_indices, rng):
     p = path(tick_data, indices=tick_indices, width=width, depth=depth)
 
     def lie():
-        return Lie(rng.uniform(0.0, 1.0, size=(width,)), width=width, depth=depth)
+        return Lie(rng.uniform(0.0, 1.0, size=(width,)), width=width,
+                   depth=depth)
 
     perturbations = [
         (RealInterval(0.0, 0.3), lie()),

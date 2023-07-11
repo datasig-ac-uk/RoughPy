@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_INTERVALS_REAL_INTERVAL_H_
 #define ROUGHPY_INTERVALS_REAL_INTERVAL_H_
@@ -44,11 +45,11 @@ class RPY_EXPORT RealInterval : public Interval
 
 public:
     RealInterval() = default;
-    RealInterval(const RealInterval &) = default;
-    RealInterval(RealInterval &&) noexcept = default;
+    RealInterval(const RealInterval&) = default;
+    RealInterval(RealInterval&&) noexcept = default;
 
-    RealInterval &operator=(const RealInterval &) = default;
-    RealInterval &operator=(RealInterval &&) noexcept = default;
+    RealInterval& operator=(const RealInterval&) = default;
+    RealInterval& operator=(RealInterval&&) noexcept = default;
 
     RealInterval(param_t inf, param_t sup,
                  IntervalType itype = IntervalType::Clopen)
@@ -57,12 +58,12 @@ public:
         if (m_inf > m_sup) { std::swap(m_inf, m_sup); }
     }
 
-    explicit RealInterval(const Interval &interval)
+    explicit RealInterval(const Interval& interval)
         : Interval(interval.type()), m_inf(interval.inf()),
           m_sup(interval.sup())
     {}
 
-    explicit RealInterval(const Interval &interval, IntervalType itype)
+    explicit RealInterval(const Interval& interval, IntervalType itype)
         : Interval(itype), m_inf(interval.inf()), m_sup(interval.sup())
     {}
 
@@ -72,7 +73,7 @@ public:
     param_t sup() const override { return m_sup; }
 
     RPY_NO_DISCARD
-    bool contains(const Interval &arg) const noexcept override;
+    bool contains(const Interval& arg) const noexcept override;
 
     RPY_SERIAL_SERIALIZE_FN();
 };

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_POINTER_H_
 #define ROUGHPY_SCALARS_SCALAR_POINTER_H_
@@ -108,14 +109,14 @@ protected:
 
 public:
 protected:
-    const ScalarType *p_type = nullptr;
-    const void *p_data = nullptr;
+    const ScalarType* p_type = nullptr;
+    const void* p_data = nullptr;
     uint32_t m_flags = 0;
 
     //    Constness m_constness = IsMutable;
 
 public:
-    ScalarPointer(const ScalarType *type, const void *data, Constness constness)
+    ScalarPointer(const ScalarType* type, const void* data, Constness constness)
         : p_type(type), p_data(data),
           m_flags(flags::BorrowedPointer | constness)
     {}
@@ -125,114 +126,114 @@ public:
 
     ScalarPointer() = default;
 
-    ScalarPointer(const ScalarType *type, void *data, uint32_t flag)
+    ScalarPointer(const ScalarType* type, void* data, uint32_t flag)
         : p_type(type), p_data(data), m_flags(flag)
     {}
 
-    ScalarPointer(const ScalarType *type, const void *data, uint32_t flag)
+    ScalarPointer(const ScalarType* type, const void* data, uint32_t flag)
         : p_type(type), p_data(data), m_flags(flag)
     {}
 
-    explicit ScalarPointer(const ScalarType *type) : p_type(type) {}
+    explicit ScalarPointer(const ScalarType* type) : p_type(type) {}
 
-    ScalarPointer(const ScalarType *type, void *ptr)
+    ScalarPointer(const ScalarType* type, void* ptr)
         : p_type(type), p_data(ptr),
           m_flags(flags::BorrowedPointer | flags::IsMutable)
     {}
-    ScalarPointer(const ScalarType *type, const void *ptr)
+    ScalarPointer(const ScalarType* type, const void* ptr)
         : p_type(type), p_data(ptr),
           m_flags(flags::BorrowedPointer | flags::IsConst)
     {}
 
-    explicit ScalarPointer(uint8_t *ptr)
+    explicit ScalarPointer(uint8_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::UnsignedInteger8 | flags::BorrowedPointer
                   | flags::IsMutable)
     {}
 
-    explicit ScalarPointer(const uint8_t *ptr)
+    explicit ScalarPointer(const uint8_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::UnsignedInteger8 | flags::BorrowedPointer
                   | flags::IsConst)
     {}
 
-    explicit ScalarPointer(int8_t *ptr)
+    explicit ScalarPointer(int8_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::SignedInteger8 | flags::BorrowedPointer
                   | flags::IsMutable)
     {}
 
-    explicit ScalarPointer(const int8_t *ptr)
+    explicit ScalarPointer(const int8_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::SignedInteger8 | flags::BorrowedPointer
                   | flags::IsConst)
     {}
 
-    explicit ScalarPointer(uint16_t *ptr)
+    explicit ScalarPointer(uint16_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::UnsignedInteger16 | flags::BorrowedPointer
                   | flags::IsMutable)
     {}
 
-    explicit ScalarPointer(const uint16_t *ptr)
+    explicit ScalarPointer(const uint16_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::UnsignedInteger16 | flags::BorrowedPointer
                   | flags::IsConst)
     {}
 
-    explicit ScalarPointer(int16_t *ptr)
+    explicit ScalarPointer(int16_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::SignedInteger16 | flags::BorrowedPointer
                   | flags::IsMutable)
     {}
 
-    explicit ScalarPointer(const int16_t *ptr)
+    explicit ScalarPointer(const int16_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::SignedInteger16 | flags::BorrowedPointer
                   | flags::IsConst)
     {}
 
-    explicit ScalarPointer(uint32_t *ptr)
+    explicit ScalarPointer(uint32_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::UnsignedInteger32 | flags::BorrowedPointer
                   | flags::IsMutable)
     {}
 
-    explicit ScalarPointer(const uint32_t *ptr)
+    explicit ScalarPointer(const uint32_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::UnsignedInteger32 | flags::BorrowedPointer
                   | flags::IsConst)
     {}
 
-    explicit ScalarPointer(int32_t *ptr)
+    explicit ScalarPointer(int32_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::SignedInteger32 | flags::BorrowedPointer
                   | flags::IsMutable)
     {}
 
-    explicit ScalarPointer(const int32_t *ptr)
+    explicit ScalarPointer(const int32_t* ptr)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::SignedInteger32 | flags::BorrowedPointer
                   | flags::IsConst)
     {}
 
-    explicit ScalarPointer(size_t *ptr, unsigned_size_type_marker)
+    explicit ScalarPointer(size_t* ptr, unsigned_size_type_marker)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::UnsignedSize | flags::BorrowedPointer
                   | flags::IsMutable)
     {}
 
-    explicit ScalarPointer(const size_t *ptr, unsigned_size_type_marker)
+    explicit ScalarPointer(const size_t* ptr, unsigned_size_type_marker)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::UnsignedSize | flags::BorrowedPointer | flags::IsConst)
     {}
 
-    explicit ScalarPointer(ptrdiff_t *ptr, signed_size_type_marker)
+    explicit ScalarPointer(ptrdiff_t* ptr, signed_size_type_marker)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::SignedSize | flags::BorrowedPointer | flags::IsMutable)
     {}
 
-    explicit ScalarPointer(const ptrdiff_t *ptr, signed_size_type_marker)
+    explicit ScalarPointer(const ptrdiff_t* ptr, signed_size_type_marker)
         : p_type(nullptr), p_data(ptr),
           m_flags(flags::SignedSize | flags::BorrowedPointer | flags::IsConst)
     {}
@@ -263,7 +264,7 @@ public:
      * @return pointer to type object
      */
     RPY_NO_DISCARD
-    const ScalarType *type() const noexcept { return p_type; }
+    const ScalarType* type() const noexcept { return p_type; }
 
     RPY_NO_DISCARD
     constexpr bool is_simple_integer() const noexcept
@@ -295,21 +296,21 @@ public:
      * @return const raw pointer to underlying data
      */
     RPY_NO_DISCARD
-    const void *ptr() const noexcept { return p_data; }
+    const void* ptr() const noexcept { return p_data; }
 
     /**
      * @brief Get the raw pointer contained held
      * @return const raw pointer to underlying data
      */
     RPY_NO_DISCARD
-    const void *cptr() const noexcept { return p_data; }
+    const void* cptr() const noexcept { return p_data; }
 
     /**
      * @brief Get the mutable raw pointer held
      * @return mutable raw pointer to underlying data
      */
     RPY_NO_DISCARD
-    void *ptr();
+    void* ptr();
 
     /**
      * @brief Cast the pointer to a const raw type
@@ -336,7 +337,7 @@ public:
             throw std::runtime_error(
                     "cannot cast const pointer to non-const pointer");
         }
-        return static_cast<ensure_pointer<T>>(const_cast<void *>(p_data));
+        return static_cast<ensure_pointer<T>>(const_cast<void*>(p_data));
     }
 
     /**
@@ -365,9 +366,9 @@ public:
 
     RPY_NO_DISCARD
     ScalarPointer operator+(size_type index) const noexcept;
-    ScalarPointer &operator+=(size_type index) noexcept;
+    ScalarPointer& operator+=(size_type index) noexcept;
 
-    ScalarPointer &operator++() noexcept;
+    ScalarPointer& operator++() noexcept;
     RPY_NO_DISCARD
     const ScalarPointer operator++(int) noexcept;
 
@@ -377,7 +378,7 @@ public:
     Scalar operator[](size_type index);
 
     RPY_NO_DISCARD
-    difference_type operator-(const ScalarPointer &right) const noexcept;
+    difference_type operator-(const ScalarPointer& right) const noexcept;
 
 protected:
     RPY_NO_DISCARD
@@ -399,18 +400,18 @@ protected:
     RPY_NO_DISCARD
     std::vector<byte> to_raw_bytes(dimn_t count) const;
 
-    void update_from_bytes(const std::string &type_id, dimn_t count,
+    void update_from_bytes(const std::string& type_id, dimn_t count,
                            Slice<byte> raw);
 };
 
 RPY_NO_DISCARD
-inline bool operator==(const ScalarPointer &left, const ScalarPointer &right)
+inline bool operator==(const ScalarPointer& left, const ScalarPointer& right)
 {
     return left.type() == right.type() && left.ptr() == right.ptr();
 }
 
 RPY_NO_DISCARD
-inline bool operator!=(const ScalarPointer &left, const ScalarPointer &right)
+inline bool operator!=(const ScalarPointer& left, const ScalarPointer& right)
 {
     return left.type() != right.type() || left.ptr() != right.ptr();
 }

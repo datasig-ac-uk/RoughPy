@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 26/02/23.
@@ -48,16 +49,16 @@
 using namespace rpy;
 using namespace scalars;
 
-const ScalarType *ScalarType::rational_type() const noexcept { return this; }
+const ScalarType* ScalarType::rational_type() const noexcept { return this; }
 
-const ScalarType *ScalarType::host_type() const noexcept { return this; }
+const ScalarType* ScalarType::host_type() const noexcept { return this; }
 
-const ScalarType *ScalarType::for_id(const string &id)
+const ScalarType* ScalarType::for_id(const string& id)
 {
     return ScalarType::of<double>();
 }
-const ScalarType *ScalarType::from_type_details(const BasicScalarInfo &details,
-                                                const ScalarDeviceInfo &device)
+const ScalarType* ScalarType::from_type_details(const BasicScalarInfo& details,
+                                                const ScalarDeviceInfo& device)
 {
     return ScalarType::of<double>();
 }
@@ -70,20 +71,20 @@ Scalar ScalarType::from(long long int numerator,
     return {result, flags::OwnedPointer};
 }
 void ScalarType::convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count,
-                              const string &id) const
+                              const string& id) const
 {
     if (!id.empty()) {
         try {
-            const auto &conversion = get_conversion(id, this->id());
+            const auto& conversion = get_conversion(id, this->id());
             conversion(out, in, count);
             return;
-        } catch (std::runtime_error &) {}
+        } catch (std::runtime_error&) {}
     }
 
     convert_copy(out, in, 1);
 
     auto isize = itemsize();
-    auto *out_p = out.raw_cast<char *>();
+    auto* out_p = out.raw_cast<char*>();
     for (dimn_t i = 1; i < count; ++i) {
         out_p += isize;
         convert_copy({this, out_p}, out, 1);
@@ -132,47 +133,47 @@ bool ScalarType::is_zero(ScalarPointer arg) const
 {
     return arg.is_null() || are_equal(arg, zero().to_pointer());
 }
-void ScalarType::print(ScalarPointer arg, std::ostream &os) const
+void ScalarType::print(ScalarPointer arg, std::ostream& os) const
 {
     os << to_scalar_t(arg);
 }
 
-const ScalarType *
+const ScalarType*
 rpy::scalars::dtl::scalar_type_holder<float>::get_type() noexcept
 {
     static const FloatType ftype;
     return &ftype;
 }
 
-const ScalarType *
+const ScalarType*
 rpy::scalars::dtl::scalar_type_holder<double>::get_type() noexcept
 {
     static const DoubleType dtype;
     return &dtype;
 }
 
-const ScalarType *
+const ScalarType*
 rpy::scalars::dtl::scalar_type_holder<rational_scalar_type>::get_type() noexcept
 {
     static const RationalType rtype;
     return &rtype;
 }
 
-const ScalarType *
+const ScalarType*
 rpy::scalars::dtl::scalar_type_holder<half>::get_type() noexcept
 {
     static const HalfType htype;
     return &htype;
 }
 
-const ScalarType *
+const ScalarType*
 rpy::scalars::dtl::scalar_type_holder<bfloat16>::get_type() noexcept
 {
     static const BFloat16Type bf16type;
     return &bf16type;
 }
 
-const ScalarType *
+const ScalarType*
 rpy::scalars::dtl::scalar_type_holder<rational_poly_scalar>::get_type() noexcept
 {
     static const RationalPolyScalarType rpolscaltype;
@@ -220,27 +221,27 @@ static const pair<string, ScalarTypeInfo> reserved[]
 #define U64IDX 3
 
 static std::mutex s_scalar_type_cache_lock;
-static std::unordered_map<string, const ScalarType *> s_scalar_type_cache{
+static std::unordered_map<string, const ScalarType*> s_scalar_type_cache{
         {string("f32"), ScalarType::of<float>()},
         {string("f64"), ScalarType::of<double>()},
         {string("f16"), ScalarType::of<half>()},
-        {string("bf16"), ScalarType::of<bfloat16>()}
-        //    {string("rational"), ScalarType::of<float>()},
+        {string("bf16"), ScalarType::of<bfloat16>()},
+        {string("rational"), ScalarType::of<rational_scalar_type>()}
 };
 
-void rpy::scalars::register_type(const ScalarType *type)
+void rpy::scalars::register_type(const ScalarType* type)
 {
     std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
 
-    const auto &identifier = type->id();
-    for (const auto &i : reserved) {
+    const auto& identifier = type->id();
+    for (const auto& i : reserved) {
         if (identifier == i.first) {
             throw std::runtime_error("cannot register identifier " + identifier
                                      + ", it is reserved");
         }
     }
 
-    auto &entry = s_scalar_type_cache[identifier];
+    auto& entry = s_scalar_type_cache[identifier];
     if (entry != nullptr) {
         throw std::runtime_error("type with id " + identifier
                                  + " is already registered");
@@ -248,30 +249,30 @@ void rpy::scalars::register_type(const ScalarType *type)
 
     entry = type;
 }
-const ScalarType *rpy::scalars::get_type(const string &id)
+const ScalarType* rpy::scalars::get_type(const string& id)
 {
     std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
     auto found = s_scalar_type_cache.find(id);
     if (found != s_scalar_type_cache.end()) { return found->second; }
 
-    for (const auto &rsv : reserved) {
+    for (const auto& rsv : reserved) {
         if (id == rsv.first) { return nullptr; }
     }
 
     throw std::runtime_error("no type with id " + id);
 }
 
-const ScalarType *scalars::get_type(const string &id,
-                                    const ScalarDeviceInfo &device)
+const ScalarType* scalars::get_type(const string& id,
+                                    const ScalarDeviceInfo& device)
 {
     // TODO: Needs implementation
     return nullptr;
 }
 
-const ScalarTypeInfo &rpy::scalars::get_scalar_info(string_view id)
+const ScalarTypeInfo& rpy::scalars::get_scalar_info(string_view id)
 {
 
-    for (const auto &rsv : reserved) {
+    for (const auto& rsv : reserved) {
         if (rsv.first == id) { return rsv.second; }
     }
 
@@ -283,19 +284,19 @@ const ScalarTypeInfo &rpy::scalars::get_scalar_info(string_view id)
     throw std::runtime_error("Unrecognised type id " + ids);
 }
 
-std::vector<const ScalarType *> rpy::scalars::list_types()
+std::vector<const ScalarType*> rpy::scalars::list_types()
 {
     std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
-    std::vector<const ScalarType *> result;
+    std::vector<const ScalarType*> result;
     result.reserve(s_scalar_type_cache.size());
-    for (const auto &[id, type] : s_scalar_type_cache) {
+    for (const auto& [id, type] : s_scalar_type_cache) {
         result.push_back(type);
     }
     return result;
 }
 
 #define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                    \
-    const string &rpy::scalars::dtl::type_id_of_impl<TYPE>::get_id() noexcept  \
+    const string& rpy::scalars::dtl::type_id_of_impl<TYPE>::get_id() noexcept  \
     {                                                                          \
         static const string type_id(NAME);                                     \
         return type_id;                                                        \
@@ -325,8 +326,8 @@ ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly")
     static void SRC##_to_##DST(ScalarPointer dst, ScalarPointer src,           \
                                dimn_t count)                                   \
     {                                                                          \
-        const auto *src_p = src.raw_cast<const SRC_T>();                       \
-        auto *dst_p = dst.raw_cast<DST_T>();                                   \
+        const auto* src_p = src.raw_cast<const SRC_T>();                       \
+        auto* dst_p = dst.raw_cast<DST_T>();                                   \
                                                                                \
         for (dimn_t i = 0; i < count; ++i) {                                   \
             ::new (dst_p++) DST_T(src_p[i]);                                   \
@@ -364,14 +365,14 @@ static std::unordered_map<string, conversion_function> s_conversion_cache{
 
 #undef ADD_DEF_CONV
 
-static inline string type_ids_to_key(const string &src_type,
-                                     const string &dst_type)
+static inline string type_ids_to_key(const string& src_type,
+                                     const string& dst_type)
 {
     return src_type + "->" + dst_type;
 }
 
-const conversion_function &rpy::scalars::get_conversion(const string &src_id,
-                                                        const string &dst_id)
+const conversion_function& rpy::scalars::get_conversion(const string& src_id,
+                                                        const string& dst_id)
 {
     std::lock_guard<std::mutex> access(s_conversion_lock);
 
@@ -381,13 +382,13 @@ const conversion_function &rpy::scalars::get_conversion(const string &src_id,
     throw std::runtime_error("no conversion function from " + src_id + " to "
                              + dst_id);
 }
-void rpy::scalars::register_conversion(const string &src_id,
-                                       const string &dst_id,
+void rpy::scalars::register_conversion(const string& src_id,
+                                       const string& dst_id,
                                        conversion_function converter)
 {
     std::lock_guard<std::mutex> access(s_conversion_lock);
 
-    auto &found = s_conversion_cache[type_ids_to_key(src_id, dst_id)];
+    auto& found = s_conversion_cache[type_ids_to_key(src_id, dst_id)];
     if (found != nullptr) {
         throw std::runtime_error("conversion from " + src_id + " to " + dst_id
                                  + " already registered");
@@ -397,7 +398,7 @@ void rpy::scalars::register_conversion(const string &src_id,
 }
 
 std::unique_ptr<RandomGenerator>
-ScalarType::get_rng(const string &bit_generator, Slice<uint64_t> seed) const
+ScalarType::get_rng(const string& bit_generator, Slice<uint64_t> seed) const
 {
     throw std::runtime_error(
             "no random number generators are defined for this scalar type");
@@ -408,7 +409,7 @@ std::unique_ptr<BlasInterface> ScalarType::get_blas() const
     throw std::runtime_error("No blas/lapack available for this scalar type");
 }
 
-const std::string &rpy::scalars::id_from_basic_info(const BasicScalarInfo &info)
+const std::string& rpy::scalars::id_from_basic_info(const BasicScalarInfo& info)
 {
     std::lock_guard<std::mutex> access(s_scalar_type_cache_lock);
 

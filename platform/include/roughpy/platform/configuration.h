@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Datasig Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 17/04/23.
@@ -46,7 +47,7 @@ class Configuration;
  * @brief Get a reference to the current configuration.
  * @return global configuration reference
  */
-const Configuration &get_config();
+const Configuration& get_config();
 
 /**
  * @brief Interface for getting RoughPy configuration settings.
@@ -61,7 +62,7 @@ class Configuration
     Configuration();
     ~Configuration();
 
-    friend const Configuration &get_config();
+    friend const Configuration& get_config();
 
 public:
     RPY_NO_DISCARD
@@ -71,7 +72,8 @@ public:
     RPY_NO_DISCARD enable_if_t<is_constructible<T, string_view>::value, T>
     get_config_value(string_view property) const;
 
-    // TODO: In the future, this will include methods for finding runtime libraries like libcudart
+    // TODO: In the future, this will include methods for finding runtime
+    // libraries like libcudart
 };
 
 template <typename T>
@@ -83,4 +85,4 @@ Configuration::get_config_value(string_view property) const
 
 }// namespace rpy
 
-#endif//ROUGHPY_PLATFORM_CONFIGURATION_H
+#endif// ROUGHPY_PLATFORM_CONFIGURATION_H

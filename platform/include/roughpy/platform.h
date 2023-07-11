@@ -28,4 +28,4 @@ using boost::dll::shared_library;
 
 }// namespace rpy
 
-#endif//ROUGHPY_PLATFORM_H
+#endif// ROUGHPY_PLATFORM_H

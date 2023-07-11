@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "kwargs_to_vector_construction.h"
 
@@ -33,7 +34,7 @@
 using namespace rpy;
 
 python::PyVectorConstructionHelper
-python::kwargs_to_construction_data(const pybind11::kwargs &kwargs)
+python::kwargs_to_construction_data(const pybind11::kwargs& kwargs)
 {
 
     PyVectorConstructionHelper helper;
@@ -67,7 +68,7 @@ python::kwargs_to_construction_data(const pybind11::kwargs &kwargs)
     }
 
     if (kwargs.contains("keys")) {
-        const auto &arg = kwargs["keys"];
+        const auto& arg = kwargs["keys"];
         if (py::isinstance<key_type>(arg)) {
         } else if (py::isinstance<py::buffer>(arg)) {
             auto key_info = arg.cast<py::buffer>().request();
@@ -75,8 +76,9 @@ python::kwargs_to_construction_data(const pybind11::kwargs &kwargs)
     }
 
     if (helper.width != 0 && helper.depth != 0 && helper.ctype != nullptr) {
-        helper.ctx = algebra::get_context(helper.width, helper.depth,
-                                          helper.ctype);
+        helper.ctx = algebra::get_context(
+                helper.width, helper.depth, helper.ctype
+        );
     }
 
     return helper;

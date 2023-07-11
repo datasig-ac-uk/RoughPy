@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 26/02/23.
@@ -39,13 +40,13 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-void *ScalarPointer::ptr()
+void* ScalarPointer::ptr()
 {
     if (is_const()) {
         throw std::runtime_error(
                 "attempting to convert const pointer to non-const pointer");
     }
-    return const_cast<void *>(p_data);
+    return const_cast<void*>(p_data);
 }
 Scalar ScalarPointer::deref() const noexcept
 {
@@ -66,22 +67,22 @@ ScalarPointer::operator+(ScalarPointer::size_type index) const noexcept
 {
     if (p_data == nullptr || p_type == nullptr) { return {}; }
 
-    const auto *new_ptr
-            = static_cast<const char *>(p_data) + index * p_type->itemsize();
-    return {p_type, static_cast<const void *>(new_ptr), m_flags & ~owning_flag};
+    const auto* new_ptr
+            = static_cast<const char*>(p_data) + index * p_type->itemsize();
+    return {p_type, static_cast<const void*>(new_ptr), m_flags & ~owning_flag};
 }
-ScalarPointer &
+ScalarPointer&
 ScalarPointer::operator+=(ScalarPointer::size_type index) noexcept
 {
     if (p_data != nullptr && p_type != nullptr) {
-        p_data = static_cast<const char *>(p_data) + index * p_type->itemsize();
+        p_data = static_cast<const char*>(p_data) + index * p_type->itemsize();
     }
     return *this;
 }
-ScalarPointer &ScalarPointer::operator++() noexcept
+ScalarPointer& ScalarPointer::operator++() noexcept
 {
     if (p_type != nullptr && p_data != nullptr) {
-        p_data = static_cast<const char *>(p_data) + p_type->itemsize();
+        p_data = static_cast<const char*>(p_data) + p_type->itemsize();
     }
     return *this;
 }
@@ -100,9 +101,9 @@ Scalar ScalarPointer::operator[](ScalarPointer::size_type index)
     return (*this + index).deref_mut();
 }
 ScalarPointer::difference_type
-ScalarPointer::operator-(const ScalarPointer &right) const noexcept
+ScalarPointer::operator-(const ScalarPointer& right) const noexcept
 {
-    const ScalarType *type = p_type;
+    const ScalarType* type = p_type;
     if (type == nullptr) {
         if (right.p_type != nullptr) {
             type = right.p_type;
@@ -111,8 +112,8 @@ ScalarPointer::operator-(const ScalarPointer &right) const noexcept
         }
     }
     return static_cast<difference_type>(
-                   static_cast<const char *>(p_data)
-                   - static_cast<const char *>(right.p_data))
+                   static_cast<const char*>(p_data)
+                   - static_cast<const char*>(right.p_data))
             / type->itemsize();
 }
 
@@ -138,12 +139,12 @@ std::vector<byte> rpy::scalars::ScalarPointer::to_raw_bytes(dimn_t count) const
     std::memcpy(result.data(), p_data, n_bytes);
     return result;
 }
-void rpy::scalars::ScalarPointer::update_from_bytes(const std::string &type_id,
+void rpy::scalars::ScalarPointer::update_from_bytes(const std::string& type_id,
                                                     dimn_t count,
                                                     Slice<byte> raw)
 {
 
-    const auto *type = get_type(type_id);
+    const auto* type = get_type(type_id);
     if (type != nullptr) {
         RPY_CHECK(count * type->itemsize() == raw.size());
         ScalarPointer::operator=(type->from_raw_bytes(raw, count));
@@ -151,11 +152,11 @@ void rpy::scalars::ScalarPointer::update_from_bytes(const std::string &type_id,
     }
 
     // null type but no error says simple integer.
-    const auto &info = get_scalar_info(type_id);
+    const auto& info = get_scalar_info(type_id);
     RPY_CHECK(count * info.n_bytes == raw.size());
 
     p_data = aligned_alloc(info.alignment, raw.size());
-    std::memcpy(const_cast<void *>(p_data), raw.begin(), raw.size());
+    std::memcpy(const_cast<void*>(p_data), raw.begin(), raw.size());
 
     m_flags = flags::OwnedPointer;
     if (info.basic_info.code == ScalarTypeCode::Int) {

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 03/03/23.
@@ -47,7 +48,7 @@ namespace rpy {
 namespace intervals {
 
 struct DyadicRealStrictLess {
-    bool operator()(const Dyadic &lhs, const Dyadic &rhs) const noexcept
+    bool operator()(const Dyadic& lhs, const Dyadic& rhs) const noexcept
     {
         auto max = std::max(lhs.power(), rhs.power());
         return (lhs.multiplier() << (max - lhs.power()))
@@ -56,7 +57,7 @@ struct DyadicRealStrictLess {
 };
 
 struct DyadicRealStrictGreater {
-    bool operator()(const Dyadic &lhs, const Dyadic &rhs) const noexcept
+    bool operator()(const Dyadic& lhs, const Dyadic& rhs) const noexcept
     {
         auto max = std::max(lhs.power(), rhs.power());
         return (lhs.multiplier() << (max - lhs.power()))
@@ -71,27 +72,27 @@ class DyadicSearcher
     dyadic_depth_t m_max_depth;
 
 protected:
-    void expand_left(ScaledPredicate &predicate,
-                     std::deque<DyadicInterval> &current) const;
-    void expand_right(ScaledPredicate &predicate,
-                      std::deque<DyadicInterval> &current) const;
-    void expand(ScaledPredicate &predicate, DyadicInterval found_interval);
+    void expand_left(ScaledPredicate& predicate,
+                     std::deque<DyadicInterval>& current) const;
+    void expand_right(ScaledPredicate& predicate,
+                      std::deque<DyadicInterval>& current) const;
+    void expand(ScaledPredicate& predicate, DyadicInterval found_interval);
 
 public:
-    DyadicSearcher(predicate_t &&predicate, dyadic_depth_t max_depth)
+    DyadicSearcher(predicate_t&& predicate, dyadic_depth_t max_depth)
         : m_predicate(std::move(predicate)), m_max_depth(max_depth)
     {}
 
 private:
-    ScaledPredicate rescale_to_unit_interval(const Interval &original);
-    void get_next_dyadic(DyadicInterval &current) const;
-    std::vector<RealInterval> find_in_unit_interval(ScaledPredicate &predicate);
+    ScaledPredicate rescale_to_unit_interval(const Interval& original);
+    void get_next_dyadic(DyadicInterval& current) const;
+    std::vector<RealInterval> find_in_unit_interval(ScaledPredicate& predicate);
 
 public:
-    std::vector<RealInterval> operator()(const Interval &original);
+    std::vector<RealInterval> operator()(const Interval& original);
 };
 
 }// namespace intervals
 }// namespace rpy
 
-#endif//ROUGHPY_INTERVALS_SRC_DYADIC_SEARCHER_H
+#endif// ROUGHPY_INTERVALS_SRC_DYADIC_SEARCHER_H

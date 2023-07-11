@@ -79,6 +79,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/args/numpy.h
         src/args/parse_schema.cpp
         src/args/parse_schema.h
+        src/intervals/date_time_interval.cpp
+        src/intervals/date_time_interval.h
         src/intervals/dyadic.h
         src/intervals/dyadic.cpp
         src/intervals/dyadic_interval.cpp
@@ -87,10 +89,14 @@ target_sources(RoughPy_PyModule PRIVATE
         src/intervals/interval.cpp
         src/intervals/intervals.cpp
         src/intervals/intervals.h
+        src/intervals/partition.cpp
+        src/intervals/partition.h
         src/intervals/real_interval.cpp
         src/intervals/real_interval.h
         src/intervals/segmentation.cpp
         src/intervals/segmentation.h
+        src/scalars/r_py_polynomial.cpp
+        src/scalars/r_py_polynomial.h
         src/scalars/scalar_type.h
         src/scalars/scalar_type.cpp
         src/scalars/scalars.cpp
@@ -109,6 +115,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/streams/piecewise_abelian_stream.h
         src/streams/r_py_tick_construction_helper.cpp
         src/streams/r_py_tick_construction_helper.h
+        src/streams/py_schema_context.cpp
+        src/streams/py_schema_context.h
         src/streams/schema.cpp
         src/streams/schema.h
         src/streams/stream.cpp

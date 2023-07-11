@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_PIECEWISE_LIE_STREAM_H_
 #define ROUGHPY_STREAMS_PIECEWISE_LIE_STREAM_H_
@@ -49,7 +50,7 @@ private:
 
     RPY_NO_DISCARD
     static inline scalars::Scalar
-    to_multiplier_upper(const intervals::RealInterval &interval, param_t param)
+    to_multiplier_upper(const intervals::RealInterval& interval, param_t param)
     {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((interval.sup() - param)
@@ -57,7 +58,7 @@ private:
     }
     RPY_NO_DISCARD
     static inline scalars::Scalar
-    to_multiplier_lower(const intervals::RealInterval &interval, param_t param)
+    to_multiplier_lower(const intervals::RealInterval& interval, param_t param)
     {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((param - interval.inf())
@@ -65,15 +66,17 @@ private:
     }
 
 public:
-    PiecewiseAbelianStream(std::vector<LiePiece> &&arg, StreamMetadata &&md);
+    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md);
+    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md,
+                           std::shared_ptr<StreamSchema> schema);
 
     RPY_NO_DISCARD
-    bool empty(const intervals::Interval &interval) const noexcept override;
+    bool empty(const intervals::Interval& interval) const noexcept override;
 
 protected:
     RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval &domain,
-                                    const algebra::Context &ctx) const override;
+    algebra::Lie log_signature_impl(const intervals::Interval& domain,
+                                    const algebra::Context& ctx) const override;
 
 public:
     RPY_SERIAL_SERIALIZE_FN();

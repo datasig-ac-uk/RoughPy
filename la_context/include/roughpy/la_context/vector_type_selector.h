@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 //
 
 //
@@ -35,17 +36,18 @@
 
 #include <roughpy/algebra/algebra_fwd.h>
 
-#include <libalgebra/vector.h>
 #include <libalgebra/dense_vector.h>
-#include <libalgebra/sparse_vector.h>
 #include <libalgebra/lie.h>
+#include <libalgebra/sparse_vector.h>
 #include <libalgebra/tensor.h>
+#include <libalgebra/vector.h>
 
-namespace rpy { namespace algebra { namespace dtl {
+namespace rpy {
+namespace algebra {
+namespace dtl {
 
 template <VectorType VType>
 struct LAVectorSelector;
-
 
 template <>
 struct LAVectorSelector<VectorType::Dense> {
@@ -53,12 +55,13 @@ struct LAVectorSelector<VectorType::Dense> {
     using lie_t = alg::lie<C, W, D, alg::vectors::dense_vector>;
 
     template <deg_t W, deg_t D, typename C>
-    using ftensor_t = alg::free_tensor<C, W, D, alg::vectors::dense_vector,
-                                       alg::traditional_free_tensor_multiplication>;
+    using ftensor_t
+            = alg::free_tensor<C, W, D, alg::vectors::dense_vector,
+                               alg::traditional_free_tensor_multiplication>;
 
     template <deg_t W, deg_t D, typename C>
-    using stensor_t = alg::shuffle_tensor<C, W, D/*, alg::vectors::dense_vector*/>;
-
+    using stensor_t
+            = alg::shuffle_tensor<C, W, D /*, alg::vectors::dense_vector*/>;
 };
 
 template <>
@@ -67,16 +70,17 @@ struct LAVectorSelector<VectorType::Sparse> {
     using lie_t = alg::lie<C, W, D, alg::vectors::sparse_vector>;
 
     template <deg_t W, deg_t D, typename C>
-    using ftensor_t = alg::free_tensor<C, W, D, alg::vectors::sparse_vector,
-                                       alg::traditional_free_tensor_multiplication>;
+    using ftensor_t
+            = alg::free_tensor<C, W, D, alg::vectors::sparse_vector,
+                               alg::traditional_free_tensor_multiplication>;
 
     template <deg_t W, deg_t D, typename C>
-    using stensor_t = alg::shuffle_tensor<C, W, D /*, alg::vectors::sparse_vector*/>;
+    using stensor_t
+            = alg::shuffle_tensor<C, W, D /*, alg::vectors::sparse_vector*/>;
 };
 
+}// namespace dtl
+}// namespace algebra
+}// namespace rpy
 
-
-}}}
-
-
-#endif//ROUGHPY_LA_CONTEXT_INCLUDE_ROUGHPY_LA_CONTEXT_VECTOR_TYPE_SELECTOR_H
+#endif// ROUGHPY_LA_CONTEXT_INCLUDE_ROUGHPY_LA_CONTEXT_VECTOR_TYPE_SELECTOR_H

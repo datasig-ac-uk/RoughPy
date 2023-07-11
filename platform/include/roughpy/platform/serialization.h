@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Datasig Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 09/05/23.
@@ -78,17 +79,18 @@
 
 #  define RPY_SERIAL_LOAD_AND_CONSTRUCT(T)                                     \
       namespace cereal {                                                       \
-      template <> struct LoadAndConstruct<T> {                                 \
+      template <>                                                              \
+      struct LoadAndConstruct<T> {                                             \
                                                                                \
           template <typename Archive>                                          \
-          static void load_and_construct(Archive &archive,                     \
-                                         ::cereal::construct<T> &construct);   \
+          static void load_and_construct(Archive& archive,                     \
+                                         ::cereal::construct<T>& construct);   \
       };                                                                       \
       }                                                                        \
                                                                                \
       template <typename Archive>                                              \
       void cereal::LoadAndConstruct<T>::load_and_construct(                    \
-              Archive &archive, ::cereal::construct<T> &construct)
+              Archive& archive, ::cereal::construct<T>& construct)
 
 #else
 #  define RPY_SERIAL_ACCESS()
@@ -104,41 +106,42 @@
 
 #define RPY_SERIAL_SERIALIZE_FN()                                              \
     template <typename Archive>                                                \
-    void serialize(Archive &archive, const std::uint32_t version)
+    void serialize(Archive& archive, const std::uint32_t version)
 
 #define RPY_SERIAL_LOAD_FN()                                                   \
     template <typename Archive>                                                \
-    void load(Archive &archive, const std::uint32_t version)
+    void load(Archive& archive, const std::uint32_t version)
 #define RPY_SERIAL_SAVE_FN()                                                   \
     template <typename Archive>                                                \
-    void save(Archive &archive, const std::uint32_t version) const
+    void save(Archive& archive, const std::uint32_t version) const
 
 #define RPY_SERIAL_SERIALIZE_FN_IMPL(T)                                        \
-    template <typename Archive> void T::serialize(                             \
-            Archive &archive, const std::uint32_t RPY_UNUSED_VAR version)
+    template <typename Archive>                                                \
+    void T::serialize(Archive& archive,                                        \
+                      const std::uint32_t RPY_UNUSED_VAR version)
 
 #define RPY_SERIAL_LOAD_FN_IMPL(T)                                             \
     template <typename Archive>                                                \
-    void T::load(Archive &archive, const std::uint32_t RPY_UNUSED_VAR version)
+    void T::load(Archive& archive, const std::uint32_t RPY_UNUSED_VAR version)
 
 #define RPY_SERIAL_SAVE_FN_IMPL(T)                                             \
     template <typename Archive>                                                \
-    void T::save(Archive &archive, const std::uint32_t RPY_UNUSED_VAR version) \
+    void T::save(Archive& archive, const std::uint32_t RPY_UNUSED_VAR version) \
             const
 
 #define RPY_SERIAL_SERIALIZE_FN_EXT(T)                                         \
     template <typename Archive>                                                \
-    void serialize(Archive &archive, T &value,                                 \
+    void serialize(Archive& archive, T& value,                                 \
                    const std::uint32_t RPY_UNUSED_VAR version)
 
 #define RPY_SERIAL_LOAD_FN_EXT(T)                                              \
     template <typename Archive>                                                \
-    void load(Archive &archive, T &value,                                      \
+    void load(Archive& archive, T& value,                                      \
               const std::uint32_t RPY_UNUSED_VAR version)
 
 #define RPY_SERIAL_SAVE_FN_EXT(T)                                              \
     template <typename Archive>                                                \
-    void save(Archive &archive, const T &value,                                \
+    void save(Archive& archive, const T& value,                                \
               const std::uint32_t RPY_UNUSED_VAR version)
 
 namespace rpy {
@@ -184,7 +187,7 @@ template <typename Archive, typename T>
 enable_if_t<::cereal::traits::is_output_serializable<::cereal::BinaryData<T>,
                                                      Archive>::value
             && is_arithmetic<T>::value>
-save(Archive &archive, const Slice<T> &data)
+save(Archive& archive, const Slice<T>& data)
 {
     archive(::cereal::binary_data(data.begin(), data.size()));
 }
@@ -193,16 +196,16 @@ template <typename Archive, typename T>
 enable_if_t<!::cereal::traits::is_output_serializable<::cereal::BinaryData<T>,
                                                       Archive>::value
             || !is_arithmetic<T>::value>
-save(Archive &archive, const Slice<T> &data)
+save(Archive& archive, const Slice<T>& data)
 {
-    for (const auto &item : data) { archive(item); }
+    for (const auto& item : data) { archive(item); }
 }
 
 template <typename Archive, typename T>
 enable_if_t<::cereal::traits::is_input_serializable<::cereal::BinaryData<T>,
                                                     Archive>::value
             && is_arithmetic<T>::value>
-load(Archive &archive, Slice<T> &data)
+load(Archive& archive, Slice<T>& data)
 {
     archive(::cereal::binary_data(data.begin(), data.size()));
 }
@@ -211,9 +214,9 @@ template <typename Archive, typename T>
 enable_if_t<!::cereal::traits::is_input_serializable<::cereal::BinaryData<T>,
                                                      Archive>::value
             || !is_arithmetic<T>::value>
-load(Archive &archive, Slice<T> &data)
+load(Archive& archive, Slice<T>& data)
 {
-    auto *ptr = data.begin();
+    auto* ptr = data.begin();
     for (dimn_t i = 0; i < data.size(); ++i) { archive(ptr[i]); }
 }
 
@@ -222,4 +225,4 @@ load(Archive &archive, Slice<T> &data)
 }// namespace rpy
 
 #endif// RPY_DISABLE_SERIALIZATION
-#endif//ROUGHPY_PLATFORM_SERIALIZATION_H
+#endif// ROUGHPY_PLATFORM_SERIALIZATION_H

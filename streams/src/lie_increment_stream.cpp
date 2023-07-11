@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 10/03/23.
@@ -34,25 +35,26 @@
 using namespace rpy;
 using namespace rpy::streams;
 
-LieIncrementStream::LieIncrementStream(scalars::KeyScalarArray &&buffer,
+LieIncrementStream::LieIncrementStream(scalars::KeyScalarArray&& buffer,
                                        Slice<param_t> indices,
                                        StreamMetadata metadata)
     : base_t(std::move(metadata)), m_buffer(std::move(buffer))
 {
-    const auto &md = this->metadata();
+    const auto& md = this->metadata();
     for (dimn_t i = 0; i < indices.size(); ++i) {
         m_mapping[indices[i]] = i * md.width;
     }
 
-    //    std::cerr << m_mapping.begin()->first << ' ' << (--m_mapping.end())->first << '\n';
+    //    std::cerr << m_mapping.begin()->first << ' ' <<
+    //    (--m_mapping.end())->first << '\n';
 }
 
 algebra::Lie
-LieIncrementStream::log_signature_impl(const intervals::Interval &interval,
-                                       const algebra::Context &ctx) const
+LieIncrementStream::log_signature_impl(const intervals::Interval& interval,
+                                       const algebra::Context& ctx) const
 {
 
-    const auto &md = metadata();
+    const auto& md = metadata();
     //    if (empty(interval)) {
     //        return ctx.zero_lie(md.cached_vector_type);
     //    }
@@ -104,7 +106,7 @@ LieIncrementStream::log_signature_impl(const intervals::Interval &interval,
     return ctx.log_signature(data);
 }
 bool LieIncrementStream::empty(
-        const intervals::Interval &interval) const noexcept
+        const intervals::Interval& interval) const noexcept
 {
     //    std::cerr << "Checking " << interval;
     //    for (auto& item : m_mapping) {

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 20/03/23.
@@ -48,8 +49,8 @@
 namespace pcg_extras {
 
 template <typename Uint, typename UintX2, typename I>
-constexpr uint_x4<Uint, UintX2> operator|(const uint_x4<Uint, UintX2> &lhs,
-                                          const I &rhs)
+constexpr uint_x4<Uint, UintX2> operator|(const uint_x4<Uint, UintX2>& lhs,
+                                          const I& rhs)
 {
     return lhs | static_cast<uint_x4<Uint, UintX2>>(rhs);
 }
@@ -71,13 +72,12 @@ class StandardRandomGenerator : public RandomGenerator
     mutable std::mutex m_lock;
 
 public:
-    StandardRandomGenerator(const ScalarType *stype, Slice<uint64_t> seed);
+    StandardRandomGenerator(const ScalarType* stype, Slice<uint64_t> seed);
 
-    StandardRandomGenerator(const StandardRandomGenerator &) = delete;
-    StandardRandomGenerator(StandardRandomGenerator &&) noexcept = delete;
-    StandardRandomGenerator &operator=(const StandardRandomGenerator &)
-            = delete;
-    StandardRandomGenerator &operator=(StandardRandomGenerator &&) noexcept
+    StandardRandomGenerator(const StandardRandomGenerator&) = delete;
+    StandardRandomGenerator(StandardRandomGenerator&&) noexcept = delete;
+    StandardRandomGenerator& operator=(const StandardRandomGenerator&) = delete;
+    StandardRandomGenerator& operator=(StandardRandomGenerator&&) noexcept
             = delete;
 
     void set_seed(Slice<uint64_t> seed_data) override;
@@ -108,7 +108,7 @@ string StandardRandomGenerator<ScalarImpl, BitGenerator>::get_type() const
 
 template <typename ScalarImpl, typename BitGenerator>
 StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
-        const ScalarType *stype, Slice<uint64_t> seed)
+        const ScalarType* stype, Slice<uint64_t> seed)
     : RandomGenerator(stype), m_seed{seed[0]},
       m_generator(BitGenerator(seed[0]))
 {
@@ -124,21 +124,24 @@ void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_seed(
     m_generator.seed(seed_data[0]);
     m_seed = {seed_data[0]};
 }
-template <typename ScalarImpl, typename BitGenerator> void
-StandardRandomGenerator<ScalarImpl, BitGenerator>::set_state(string_view state)
+template <typename ScalarImpl, typename BitGenerator>
+void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_state(
+        string_view state)
 {
-    // add a linebreak char to terminate the string to avoid a bug in the pcg stream
-    // read function
+    // add a linebreak char to terminate the string to avoid a bug in the pcg
+    // stream read function
     std::stringstream ss(string{state} + '\n');
     ss >> m_generator;
 }
 
-template <typename ScalarImpl, typename BitGenerator> std::vector<uint64_t>
+template <typename ScalarImpl, typename BitGenerator>
+std::vector<uint64_t>
 StandardRandomGenerator<ScalarImpl, BitGenerator>::get_seed() const
 {
     return {m_seed[0]};
 }
-template <typename ScalarImpl, typename BitGenerator> OwnedScalarArray
+template <typename ScalarImpl, typename BitGenerator>
+OwnedScalarArray
 StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
         ScalarArray lower, ScalarArray upper, dimn_t count) const
 {
@@ -158,16 +161,17 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
 
     OwnedScalarArray result(p_type, count * dists.size());
 
-    auto *out = result.raw_cast<scalar_type *>();
+    auto* out = result.raw_cast<scalar_type*>();
     for (dimn_t i = 0; i < count; ++i) {
-        for (auto &dist : dists) {
+        for (auto& dist : dists) {
             ::new (out++) scalar_type(dist(m_generator));
         }
     }
 
     return result;
 }
-template <typename ScalarImpl, typename BitGenerator> OwnedScalarArray
+template <typename ScalarImpl, typename BitGenerator>
+OwnedScalarArray
 StandardRandomGenerator<ScalarImpl, BitGenerator>::normal_random(
         Scalar loc, Scalar scale, dimn_t count) const
 {
@@ -175,7 +179,7 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::normal_random(
     std::normal_distribution<ScalarImpl> dist(scalar_cast<scalar_type>(loc),
                                               scalar_cast<scalar_type>(scale));
 
-    auto *out = result.raw_cast<scalar_type *>();
+    auto* out = result.raw_cast<scalar_type*>();
     for (dimn_t i = 0; i < count; ++i) {
         ::new (out++) scalar_type(dist(m_generator));
     }
@@ -194,4 +198,4 @@ extern template class StandardRandomGenerator<double, pcg64>;
 }// namespace scalars
 }// namespace rpy
 
-#endif//ROUGHPY_SCALARS_SRC_STANDARD_RANDOM_GENERATOR_H
+#endif// ROUGHPY_SCALARS_SRC_STANDARD_RANDOM_GENERATOR_H

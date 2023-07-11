@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 03/04/23.
@@ -32,29 +33,29 @@
 #ifndef ROUGHPY_LA_CONTEXT_INCLUDE_ROUGHPY_LA_CONTEXT_VECTOR_TYPE_HELPER_H
 #define ROUGHPY_LA_CONTEXT_INCLUDE_ROUGHPY_LA_CONTEXT_VECTOR_TYPE_HELPER_H
 
-#include <roughpy/algebra/algebra_fwd.h>
 #include <libalgebra/dense_vector.h>
 #include <libalgebra/sparse_vector.h>
+#include <roughpy/algebra/algebra_fwd.h>
 
-namespace rpy { namespace algebra { namespace dtl {
+namespace rpy {
+namespace algebra {
+namespace dtl {
 
 template <template <typename, typename, typename...> class VType>
 struct la_vector_type_helper;
-
 
 template <>
 struct la_vector_type_helper<alg::vectors::dense_vector> {
     static constexpr VectorType vtype = VectorType::Dense;
 };
 
-
 template <>
 struct la_vector_type_helper<alg::vectors::sparse_vector> {
     static constexpr VectorType vtype = VectorType::Sparse;
 };
 
+}// namespace dtl
+}// namespace algebra
+}// namespace rpy
 
-}}}
-
-
-#endif//ROUGHPY_LA_CONTEXT_INCLUDE_ROUGHPY_LA_CONTEXT_VECTOR_TYPE_HELPER_H
+#endif// ROUGHPY_LA_CONTEXT_INCLUDE_ROUGHPY_LA_CONTEXT_VECTOR_TYPE_HELPER_H

@@ -1,6 +1,7 @@
 #  Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 #
-#  Redistribution and use in source and binary forms, with or without modification,
+#  Redistribution and use in source and binary forms, with or without
+#  modification,
 #  are permitted provided that the following conditions are met:
 #
 #  1. Redistributions of source code must retain the above copyright notice,
@@ -18,7 +19,8 @@
 #  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 #  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 #  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+#  OR CONSEQUENTIAL
 #  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 #  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 #  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
@@ -27,20 +29,19 @@
 from __future__ import annotations
 
 import re
-
 from pathlib import Path
-
 
 __all__ = ["dynamic_metadata"]
 
+
 def __dir__() -> list[str]:
     return __all__
+
 
 def dynamic_metadata(
         fields: frozenset[str],
         settings: dict[str, object] | None
 ) -> dict[str, str | dict[str, str | None]]:
-
     if "version" not in fields:
         raise ValueError("This plugin gets the version")
 
@@ -58,7 +59,8 @@ def dynamic_metadata(
         if (match := re.match(regex, version_text)) is not None:
             version = match.group("version")
         else:
-            raise ValueError("Could not get version from string " + version_text)
+            raise ValueError(
+                "Could not get version from string " + version_text)
     else:
         version = "0.0.1"
 

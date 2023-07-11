@@ -5,6 +5,5 @@
 #include "CudaDeviceContext.cuh"
 
 namespace rpy {
-namespace device {
-}// namespace device
+namespace device {}// namespace device
 }// namespace rpy

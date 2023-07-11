@@ -29,6 +29,7 @@ add_roughpy_component(Algebra
         src/float_lite_context.cpp
         src/double_lite_context.cpp
         src/rational_lite_context.cpp
+        src/rational_poly_lite_context.cpp
         src/libalgebra_lite_internal/dense_vector_iterator.h
         src/libalgebra_lite_internal/free_tensor_info.h
         src/libalgebra_lite_internal/lie_basis_info.h
@@ -69,7 +70,7 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/fallback_operations.h
         include/roughpy/algebra/algebra_base_impl.h
         include/roughpy/algebra/algebra_bundle_base_impl.h
-    PUBLIC_DEPS
+        PUBLIC_DEPS
         Boost::boost
         Libalgebra_lite::Libalgebra_lite
         NEEDS

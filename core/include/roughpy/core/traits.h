@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 03/03/23.
@@ -44,6 +45,8 @@
 #include <boost/type_traits/detected_or.hpp>
 #include <boost/type_traits/is_detected.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
+
+#include <boost/container_hash/hash.hpp>
 
 namespace rpy {
 
@@ -138,17 +141,18 @@ using boost::void_t;
  *
  * Makes T a pointer if it isn't already a pointer.
  */
-template <typename T> using ensure_pointer
-        = conditional_t<is_pointer<T>::value, T, add_pointer_t<T>>;
+template <typename T>
+using ensure_pointer = conditional_t<is_pointer<T>::value, T, add_pointer_t<T>>;
 
 /**
  * @brief Get the most sensible parameter type for type T
  */
-template <typename T> using param_type_t =
-        typename boost::call_traits<T>::param_type;
+template <typename T>
+using param_type_t = typename boost::call_traits<T>::param_type;
 
 namespace dtl {
-template <typename... Ts> struct select_first_impl;
+template <typename... Ts>
+struct select_first_impl;
 
 template <typename First, typename... Ts>
 struct select_first_impl<First, Ts...> {
@@ -157,17 +161,19 @@ struct select_first_impl<First, Ts...> {
 
 }// namespace dtl
 
-template <typename... Ts> using select_first_t =
-        typename dtl::select_first_impl<Ts...>::type;
+template <typename... Ts>
+using select_first_t = typename dtl::select_first_impl<Ts...>::type;
 
 namespace dtl {
 struct EmptyBase {
 };
 }// namespace dtl
 
-template <typename T, typename B = dtl::EmptyBase> using void_or_base
-        = conditional_t<is_void<T>::value, B, T>;
+template <typename T, typename B = dtl::EmptyBase>
+using void_or_base = conditional_t<is_void<T>::value, B, T>;
+
+using boost::hash;
 
 }// namespace rpy
 
-#endif//ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
+#endif// ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H

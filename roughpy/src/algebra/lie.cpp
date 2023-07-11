@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "lie.h"
 
@@ -45,7 +46,7 @@ using namespace rpy;
 using namespace rpy::algebra;
 using namespace pybind11::literals;
 
-static const char *LIE_DOC = R"edoc(
+static const char* LIE_DOC = R"edoc(
 Element of the free Lie algebra.
 )edoc";
 
@@ -61,8 +62,8 @@ static Lie construct_lie(py::object data, py::kwargs kwargs)
 
     if (helper.ctype == nullptr) {
         if (options.type == nullptr) {
-            throw py::value_error(
-                    "could not deduce an appropriate scalar_type");
+            throw py::value_error("could not deduce an appropriate scalar_type"
+            );
         }
         helper.ctype = options.type;
     }
@@ -74,7 +75,8 @@ static Lie construct_lie(py::object data, py::kwargs kwargs)
     if (!helper.ctx) {
         if (helper.width == 0 || helper.depth == 0) {
             throw py::value_error(
-                    "you must provide either context or both width and depth");
+                    "you must provide either context or both width and depth"
+            );
         }
         helper.ctx = get_context(helper.width, helper.depth, helper.ctype, {});
     }
@@ -86,7 +88,7 @@ static Lie construct_lie(py::object data, py::kwargs kwargs)
     return result;
 }
 
-void python::init_lie(py::module_ &m)
+void python::init_lie(py::module_& m)
 {
 
     py::options options;
@@ -97,13 +99,15 @@ void python::init_lie(py::module_ &m)
 
     setup_algebra_type(klass);
 
-    klass.def("__getitem__",
-              [](const Lie &self, key_type key) { return self[key]; });
+    klass.def("__getitem__", [](const Lie& self, key_type key) {
+        return self[key];
+    });
 
-    klass.def("__repr__", [](const Lie &self) {
+    klass.def("__repr__", [](const Lie& self) {
         std::stringstream ss;
         ss << "Lie(width=" << *self.width() << ", depth=" << *self.depth();
         ss << ", ctype=" << self.coeff_type()->info().name << ')';
+//        self->print(ss);
         return ss.str();
     });
 }

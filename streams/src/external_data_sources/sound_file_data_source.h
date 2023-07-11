@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 13/04/23.
@@ -50,13 +51,13 @@ class SoundFileDataSource : public ExternalDataStreamSource
 
     sf_count_t param_to_frame(param_t param);
 
-    void read_direct_float(scalars::ScalarPointer &ptr, sf_count_t num_frames);
-    void read_direct_double(scalars::ScalarPointer &ptr, sf_count_t num_frames);
+    void read_direct_float(scalars::ScalarPointer& ptr, sf_count_t num_frames);
+    void read_direct_double(scalars::ScalarPointer& ptr, sf_count_t num_frames);
 
-    void read_convert_raw(scalars::ScalarPointer &ptr, sf_count_t num_frames);
+    void read_convert_raw(scalars::ScalarPointer& ptr, sf_count_t num_frames);
 
     template <typename T>
-    void read_convert(scalars::ScalarPointer &ptr, sf_count_t num_frames)
+    void read_convert(scalars::ScalarPointer& ptr, sf_count_t num_frames)
     {
         const auto num_elements = num_frames * m_handle.channels();
         std::vector<T> buffer(num_elements);
@@ -65,40 +66,40 @@ class SoundFileDataSource : public ExternalDataStreamSource
                                  scalars::type_id_of<T>());
     }
 
-    void select_and_convert_read2(scalars::ScalarPointer &ptr,
+    void select_and_convert_read2(scalars::ScalarPointer& ptr,
                                   sf_count_t num_frames);
-    void select_and_convert_read(scalars::ScalarPointer &ptr,
+    void select_and_convert_read(scalars::ScalarPointer& ptr,
                                  sf_count_t num_frames);
 
 public:
-    explicit SoundFileDataSource(const url &uri);
-    explicit SoundFileDataSource(SndfileHandle &&handle);
+    explicit SoundFileDataSource(const url& uri);
+    explicit SoundFileDataSource(SndfileHandle&& handle);
 
-    dimn_t query(scalars::KeyScalarArray &result,
-                 const intervals::Interval &interval) override;
+    dimn_t query(scalars::KeyScalarArray& result,
+                 const intervals::Interval& interval) override;
 };
 
 class SoundFileDataSourceFactory : public ExternalDataSourceFactory
 {
 
 public:
-    void set_width(void *payload, deg_t width) const override;
-    void set_depth(void *payload, deg_t depth) const override;
-    void set_ctype(void *payload,
-                   const scalars::ScalarType *ctype) const override;
-    void set_context(void *payload,
+    void set_width(void* payload, deg_t width) const override;
+    void set_depth(void* payload, deg_t depth) const override;
+    void set_ctype(void* payload,
+                   const scalars::ScalarType* ctype) const override;
+    void set_context(void* payload,
                      algebra::context_pointer ctx) const override;
-    void set_support(void *payload,
+    void set_support(void* payload,
                      intervals::RealInterval support) const override;
-    void set_vtype(void *payload, algebra::VectorType vtype) const override;
-    void set_resolution(void *payload, resolution_t resolution) const override;
-    void destroy_payload(void *&payload) const override;
+    void set_vtype(void* payload, algebra::VectorType vtype) const override;
+    void set_resolution(void* payload, resolution_t resolution) const override;
+    void destroy_payload(void*& payload) const override;
     ExternalDataStreamConstructor
-    get_constructor(const url &uri) const override;
-    Stream construct_stream(void *payload) const override;
+    get_constructor(const url& uri) const override;
+    Stream construct_stream(void* payload) const override;
 };
 
 }// namespace streams
 }// namespace rpy
 
-#endif//ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_SOUND_FILE_DATA_SOURCE_H
+#endif// ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_SOUND_FILE_DATA_SOURCE_H

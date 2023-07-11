@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_BUNDLE_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_BUNDLE_H_
@@ -38,9 +39,9 @@ namespace algebra {
 
 template <typename Bundle, typename Base, typename Fibre>
 class RPY_EXPORT BundleInterface
-    : public dtl::algebra_base_resolution<Bundle, typename Base::basis_type,
-                                          dtl::AlgebraArithmetic,
-                                          dtl::AlgebraElementAccess>::type
+    : public dtl::algebra_base_resolution<
+              Bundle, typename Base::basis_type, dtl::AlgebraArithmetic,
+              dtl::AlgebraElementAccess>::type
 {
 public:
     using base_alg_t = Base;
@@ -52,17 +53,18 @@ public:
     virtual fibre_alg_t fibre() = 0;
 };
 
-template <typename BundleInterface,
-          template <typename, template <typename> class> class DerivedImpl
-          = dtl::with_interface<BundleInterface>::template type>
+template <
+        typename BundleInterface,
+        template <typename, template <typename> class> class DerivedImpl
+        = dtl::with_interface<BundleInterface>::template type>
 class AlgebraBundleBase
 {
 
-    explicit AlgebraBundleBase(std::unique_ptr<BundleInterface> &&impl)
+    explicit AlgebraBundleBase(std::unique_ptr<BundleInterface>&& impl)
         : p_impl(std::move(impl))
     {}
 
-    explicit AlgebraBundleBase(BundleInterface *impl) : p_impl(impl) {}
+    explicit AlgebraBundleBase(BundleInterface* impl) : p_impl(impl) {}
 
 protected:
     std::unique_ptr<BundleInterface> p_impl;
@@ -80,11 +82,11 @@ public:
 
     AlgebraBundleBase() : p_impl(nullptr) {}
 
-    AlgebraBundleBase(const AlgebraBundleBase &other);
-    AlgebraBundleBase(AlgebraBundleBase &&other) noexcept = default;
+    AlgebraBundleBase(const AlgebraBundleBase& other);
+    AlgebraBundleBase(AlgebraBundleBase&& other) noexcept = default;
 
-    AlgebraBundleBase &operator=(const AlgebraBundleBase &other);
-    AlgebraBundleBase &operator=(AlgebraBundleBase &&other) noexcept = default;
+    AlgebraBundleBase& operator=(const AlgebraBundleBase& other);
+    AlgebraBundleBase& operator=(AlgebraBundleBase&& other) noexcept = default;
 
     RPY_NO_DISCARD
     algebra_t borrow() const;
@@ -92,13 +94,13 @@ public:
     algebra_t borrow_mut();
 
     RPY_NO_DISCARD
-    const BundleInterface &operator*() const noexcept { return *p_impl; }
+    const BundleInterface& operator*() const noexcept { return *p_impl; }
     RPY_NO_DISCARD
-    BundleInterface &operator*() noexcept { return *p_impl; }
+    BundleInterface& operator*() noexcept { return *p_impl; }
     RPY_NO_DISCARD
-    const BundleInterface *operator->() const noexcept { return p_impl.get(); }
+    const BundleInterface* operator->() const noexcept { return p_impl.get(); }
     RPY_NO_DISCARD
-    BundleInterface *operator->() noexcept { return p_impl.get(); }
+    BundleInterface* operator->() noexcept { return p_impl.get(); }
 
     RPY_NO_DISCARD
     constexpr operator bool() const noexcept
@@ -122,7 +124,7 @@ public:
     RPY_NO_DISCARD
     VectorType storage_type() const noexcept;
     RPY_NO_DISCARD
-    const scalars::ScalarType *coeff_type() const noexcept;
+    const scalars::ScalarType* coeff_type() const noexcept;
 
     RPY_NO_DISCARD
     scalars::Scalar operator[](key_type k) const;
@@ -131,97 +133,99 @@ public:
 
 protected:
     RPY_NO_DISCARD
-    static algebra_t &downcast(AlgebraBundleBase &arg)
+    static algebra_t& downcast(AlgebraBundleBase& arg)
     {
-        return static_cast<algebra_t &>(arg);
+        return static_cast<algebra_t&>(arg);
     }
     RPY_NO_DISCARD
-    static const algebra_t &downcast(const AlgebraBundleBase &arg)
+    static const algebra_t& downcast(const AlgebraBundleBase& arg)
     {
-        return static_cast<const algebra_t &>(arg);
+        return static_cast<const algebra_t&>(arg);
     }
 
 public:
     RPY_NO_DISCARD
     algebra_t uminus() const;
     RPY_NO_DISCARD
-    algebra_t add(const algebra_t &rhs) const;
+    algebra_t add(const algebra_t& rhs) const;
     RPY_NO_DISCARD
-    algebra_t sub(const algebra_t &rhs) const;
+    algebra_t sub(const algebra_t& rhs) const;
     RPY_NO_DISCARD
-    algebra_t mul(const algebra_t &rhs) const;
+    algebra_t mul(const algebra_t& rhs) const;
     RPY_NO_DISCARD
-    algebra_t smul(const scalars::Scalar &rhs) const;
+    algebra_t smul(const scalars::Scalar& rhs) const;
     RPY_NO_DISCARD
-    algebra_t sdiv(const scalars::Scalar &rhs) const;
+    algebra_t sdiv(const scalars::Scalar& rhs) const;
 
-    algebra_t &add_inplace(const algebra_t &rhs);
-    algebra_t &sub_inplace(const algebra_t &rhs);
-    algebra_t &mul_inplace(const algebra_t &rhs);
-    algebra_t &smul_inplace(const scalars::Scalar &rhs);
-    algebra_t &sdiv_inplace(const scalars::Scalar &rhs);
+    algebra_t& add_inplace(const algebra_t& rhs);
+    algebra_t& sub_inplace(const algebra_t& rhs);
+    algebra_t& mul_inplace(const algebra_t& rhs);
+    algebra_t& smul_inplace(const scalars::Scalar& rhs);
+    algebra_t& sdiv_inplace(const scalars::Scalar& rhs);
 
-    algebra_t &add_scal_mul(const algebra_t &lhs, const scalars::Scalar &rhs);
-    algebra_t &sub_scal_mul(const algebra_t &lhs, const scalars::Scalar &rhs);
-    algebra_t &add_scal_div(const algebra_t &lhs, const scalars::Scalar &rhs);
-    algebra_t &sub_scal_div(const algebra_t &lhs, const scalars::Scalar &rhs);
+    algebra_t& add_scal_mul(const algebra_t& lhs, const scalars::Scalar& rhs);
+    algebra_t& sub_scal_mul(const algebra_t& lhs, const scalars::Scalar& rhs);
+    algebra_t& add_scal_div(const algebra_t& lhs, const scalars::Scalar& rhs);
+    algebra_t& sub_scal_div(const algebra_t& lhs, const scalars::Scalar& rhs);
 
-    algebra_t &add_mul(const algebra_t &lhs, const algebra_t &rhs);
-    algebra_t &sub_mul(const algebra_t &lhs, const algebra_t &rhs);
-    algebra_t &mul_smul(const algebra_t &lhs, const scalars::Scalar &rhs);
-    algebra_t &mul_sdiv(const algebra_t &lhs, const scalars::Scalar &rhs);
+    algebra_t& add_mul(const algebra_t& lhs, const algebra_t& rhs);
+    algebra_t& sub_mul(const algebra_t& lhs, const algebra_t& rhs);
+    algebra_t& mul_smul(const algebra_t& lhs, const scalars::Scalar& rhs);
+    algebra_t& mul_sdiv(const algebra_t& lhs, const scalars::Scalar& rhs);
 
-    std::ostream &print(std::ostream &os) const;
+    std::ostream& print(std::ostream& os) const;
 
     RPY_NO_DISCARD
-    bool operator==(const algebra_t &other) const;
+    bool operator==(const algebra_t& other) const;
     RPY_NO_DISCARD
-    bool operator!=(const algebra_t &other) const { return !operator==(other); }
+    bool operator!=(const algebra_t& other) const { return !operator==(other); }
 
-    //#ifndef RPY_DISABLE_SERIALIZATION
-    //private:
-    //    friend rpy::serialization_access;
+    // #ifndef RPY_DISABLE_SERIALIZATION
+    // private:
+    //     friend rpy::serialization_access;
     //
-    //    RPY_SERIAL_SPLIT_MEMBER();
+    //     RPY_SERIAL_SPLIT_MEMBER();
     //
-    //    template <typename Ar>
-    //    void save(Ar &ar, const unsigned int /*version*/) const {
-    //        context_pointer ctx = (p_impl) ? p_impl->context() : nullptr;
-    //        auto spec = get_context_spec(ctx);
-    //        ar << spec.width;
-    //        ar << spec.depth;
-    //        ar << spec.stype_id;
-    //        ar << spec.backend;
-    //        ar << algebra_t::s_alg_type;
-    //        ar << alg_to_raw_bytes(ctx, algebra_t::s_alg_type, p_impl.get());
-    //    }
+    //     template <typename Ar>
+    //     void save(Ar &ar, const unsigned int /*version*/) const {
+    //         context_pointer ctx = (p_impl) ? p_impl->context() : nullptr;
+    //         auto spec = get_context_spec(ctx);
+    //         ar << spec.width;
+    //         ar << spec.depth;
+    //         ar << spec.stype_id;
+    //         ar << spec.backend;
+    //         ar << algebra_t::s_alg_type;
+    //         ar << alg_to_raw_bytes(ctx, algebra_t::s_alg_type, p_impl.get());
+    //     }
     //
-    //    template <typename Ar>
-    //    void load(Ar &ar, const unsigned int /*version*/) {
-    //        BasicContextSpec spec;
-    //        ar >> spec.width;
-    //        ar >> spec.depth;
-    //        ar >> spec.stype_id;
-    //        ar >> spec.backend;
+    //     template <typename Ar>
+    //     void load(Ar &ar, const unsigned int /*version*/) {
+    //         BasicContextSpec spec;
+    //         ar >> spec.width;
+    //         ar >> spec.depth;
+    //         ar >> spec.stype_id;
+    //         ar >> spec.backend;
     //
-    //        auto ctx = from_context_spec(spec);
+    //         auto ctx = from_context_spec(spec);
     //
-    //        AlgebraType atype;
-    //        ar >> atype;
-    //        std::vector<byte> raw_data;
-    //        ar >> raw_data;
-    //        UnspecifiedAlgebraType alg = alg_from_raw_bytes(ctx, atype, raw_data);
+    //         AlgebraType atype;
+    //         ar >> atype;
+    //         std::vector<byte> raw_data;
+    //         ar >> raw_data;
+    //         UnspecifiedAlgebraType alg = alg_from_raw_bytes(ctx, atype,
+    //         raw_data);
     //
-    //        RPY_CHECK(algebra_t::s_alg_type == atype);
-    //        p_impl = std::unique_ptr<BundleInterface>(reinterpret_cast<BundleInterface *>(alg /*.release()*/));
-    //    }
+    //         RPY_CHECK(algebra_t::s_alg_type == atype);
+    //         p_impl =
+    //         std::unique_ptr<BundleInterface>(reinterpret_cast<BundleInterface
+    //         *>(alg /*.release()*/));
+    //     }
     //
-    //#endif
+    // #endif
 
     RPY_SERIAL_LOAD_FN();
     RPY_SERIAL_SAVE_FN();
 };
-
 
 }// namespace algebra
 }// namespace rpy

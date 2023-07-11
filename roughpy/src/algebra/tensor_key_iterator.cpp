@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "tensor_key_iterator.h"
 
@@ -33,11 +34,12 @@
 using namespace rpy;
 using namespace pybind11::literals;
 
-static const char *TKEY_ITERATOR_DOC = R"eadoc(Iterator over tensor words.
+static const char* TKEY_ITERATOR_DOC = R"eadoc(Iterator over tensor words.
 )eadoc";
 
-python::PyTensorKeyIterator::PyTensorKeyIterator(deg_t width, deg_t depth,
-                                                 key_type current, key_type end)
+python::PyTensorKeyIterator::PyTensorKeyIterator(
+        deg_t width, deg_t depth, key_type current, key_type end
+)
     : m_current(current), m_end(end), m_width(width), m_depth(depth)
 {}
 python::PyTensorKey python::PyTensorKeyIterator::next()
@@ -48,26 +50,33 @@ python::PyTensorKey python::PyTensorKeyIterator::next()
     return PyTensorKey(current, m_width, m_depth);
 }
 
-void python::init_tensor_key_iterator(py::module_ &m)
+void python::init_tensor_key_iterator(py::module_& m)
 {
 
-    py::class_<PyTensorKeyIterator> klass(m, "TensorKeyIterator",
-                                          TKEY_ITERATOR_DOC);
+    py::class_<PyTensorKeyIterator> klass(
+            m, "TensorKeyIterator", TKEY_ITERATOR_DOC
+    );
 
-    klass.def(py::init([](const PyTensorKey &start_key) {
-                  return PyTensorKeyIterator(start_key.width(),
-                                             start_key.depth(),
-                                             static_cast<key_type>(start_key));
-              }),
-              "start_key"_a);
-    klass.def(py::init([](const PyTensorKey &start_key,
-                          const PyTensorKey &end_key) {
-                  return PyTensorKeyIterator(start_key.width(),
-                                             start_key.depth(),
-                                             static_cast<key_type>(start_key),
-                                             static_cast<key_type>(end_key));
-              }),
-              "start_key"_a, "end_key"_a);
-    klass.def("__iter__", [](PyTensorKeyIterator &self) { return self; });
+    klass.def(
+            py::init([](const PyTensorKey& start_key) {
+                return PyTensorKeyIterator(
+                        start_key.width(), start_key.depth(),
+                        static_cast<key_type>(start_key)
+                );
+            }),
+            "start_key"_a
+    );
+    klass.def(
+            py::init([](const PyTensorKey& start_key,
+                        const PyTensorKey& end_key) {
+                return PyTensorKeyIterator(
+                        start_key.width(), start_key.depth(),
+                        static_cast<key_type>(start_key),
+                        static_cast<key_type>(end_key)
+                );
+            }),
+            "start_key"_a, "end_key"_a
+    );
+    klass.def("__iter__", [](PyTensorKeyIterator& self) { return self; });
     klass.def("__next__", &PyTensorKeyIterator::next);
 }

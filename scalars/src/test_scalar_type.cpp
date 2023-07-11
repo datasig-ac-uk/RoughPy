@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by sam on 13/03/23.
@@ -44,7 +45,7 @@ class RAIIAlloc
     std::size_t m_count;
 
 public:
-    RAIIAlloc(const ScalarType *type, std::size_t count)
+    RAIIAlloc(const ScalarType* type, std::size_t count)
         : m_ptr(type->allocate(count)), m_count(count)
     {}
 
@@ -108,7 +109,7 @@ TEST_F(ScalarTypeTests, OneGivesCorrectValue)
     auto ptr = one.to_pointer();
 
     ASSERT_NE(ptr.cptr(), nullptr);
-    ASSERT_EQ(*ptr.raw_cast<const double *>(), 1.0);
+    ASSERT_EQ(*ptr.raw_cast<const double*>(), 1.0);
 }
 
 TEST_F(ScalarTypeTests, ZeroGivesCorrectValue)
@@ -117,7 +118,7 @@ TEST_F(ScalarTypeTests, ZeroGivesCorrectValue)
     auto ptr = zero.to_pointer();
 
     ASSERT_NE(ptr.cptr(), nullptr);
-    ASSERT_EQ(*ptr.raw_cast<const double *>(), 0.0);
+    ASSERT_EQ(*ptr.raw_cast<const double*>(), 0.0);
 }
 
 TEST_F(ScalarTypeTests, MoneGivesCorrectValue)
@@ -126,7 +127,7 @@ TEST_F(ScalarTypeTests, MoneGivesCorrectValue)
     auto ptr = mone.to_pointer();
 
     ASSERT_NE(ptr.cptr(), nullptr);
-    ASSERT_EQ(*ptr.raw_cast<const double *>(), -1.0);
+    ASSERT_EQ(*ptr.raw_cast<const double*>(), -1.0);
 }
 
 TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType)
@@ -140,7 +141,7 @@ TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType)
     dtype->convert_copy(ptr, ints.data(), ints.size(),
                         type_id_of<std::int32_t>());
 
-    auto raw_ptr = ptr.raw_cast<const double *>();
+    auto raw_ptr = ptr.raw_cast<const double*>();
     for (std::size_t i = 0; i < ints.size(); ++i) {
         ASSERT_EQ(raw_ptr[i], static_cast<double>(ints[i]));
     }
@@ -155,7 +156,7 @@ TEST_F(ScalarTypeTests, CopyConvertFromScalarType)
 
     dtype->convert_copy(ptr, {ftype, floats.data()}, floats.size());
 
-    auto raw_ptr = ptr.raw_cast<const double *>();
+    auto raw_ptr = ptr.raw_cast<const double*>();
     for (std::size_t i = 0; i < floats.size(); ++i) {
         ASSERT_EQ(raw_ptr[i], static_cast<double>(floats[i]));
     }

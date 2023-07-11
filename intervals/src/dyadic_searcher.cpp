@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 03/03/23.
@@ -35,8 +36,8 @@
 
 using namespace rpy::intervals;
 
-void DyadicSearcher::expand_left(ScaledPredicate &predicate,
-                                 std::deque<DyadicInterval> &current) const
+void DyadicSearcher::expand_left(ScaledPredicate& predicate,
+                                 std::deque<DyadicInterval>& current) const
 {
     auto di = current.front();
     bool is_aligned = di.aligned();
@@ -52,8 +53,9 @@ void DyadicSearcher::expand_left(ScaledPredicate &predicate,
         }
     }
     /*
-     * At this stage, we should be in the situation where predicate(di) is false.
-     * So we should split the interval in half, and check the right hand interval.
+     * At this stage, we should be in the situation where predicate(di) is
+     * false. So we should split the interval in half, and check the right hand
+     * interval.
      */
     while (di.power() < m_max_depth) {
         DyadicInterval left(di);
@@ -75,8 +77,8 @@ void DyadicSearcher::expand_left(ScaledPredicate &predicate,
          */
     }
 }
-void DyadicSearcher::expand_right(ScaledPredicate &predicate,
-                                  std::deque<DyadicInterval> &current) const
+void DyadicSearcher::expand_right(ScaledPredicate& predicate,
+                                  std::deque<DyadicInterval>& current) const
 {
     auto di = current.back();
     /*
@@ -107,7 +109,7 @@ void DyadicSearcher::expand_right(ScaledPredicate &predicate,
          */
     }
 }
-void DyadicSearcher::expand(ScaledPredicate &predicate,
+void DyadicSearcher::expand(ScaledPredicate& predicate,
                             DyadicInterval found_interval)
 {
     std::deque<DyadicInterval> found{std::move(found_interval)};
@@ -117,7 +119,7 @@ void DyadicSearcher::expand(ScaledPredicate &predicate,
     m_seen[found.back().dsup()] = found.front().dinf();
 }
 ScaledPredicate
-DyadicSearcher::rescale_to_unit_interval(const Interval &original)
+DyadicSearcher::rescale_to_unit_interval(const Interval& original)
 {
     auto a = original.inf();
     auto b = original.sup();
@@ -137,7 +139,7 @@ DyadicSearcher::rescale_to_unit_interval(const Interval &original)
 
     return {m_predicate, a, (b - a)};
 }
-void DyadicSearcher::get_next_dyadic(DyadicInterval &current) const
+void DyadicSearcher::get_next_dyadic(DyadicInterval& current) const
 {
     DyadicRealStrictLess diless;
     DyadicRealStrictGreater digreater;
@@ -146,12 +148,13 @@ void DyadicSearcher::get_next_dyadic(DyadicInterval &current) const
     const auto n = current.power();
     const auto itype = current.type();
 
-    for (const auto &pair : m_seen) {
+    for (const auto& pair : m_seen) {
         Dyadic current_dyadic{k, n};
         /*
          * Seen pairs are of the form (sup, inf) rather than (inf, sup).
-         * Check current.inf >= pair.inf, and if so that current.inf <= pair.sup.
-         * In this case, we can skip to the first interval I with I.sup < pair.inf.
+         * Check current.inf >= pair.inf, and if so that current.inf <=
+         * pair.sup. In this case, we can skip to the first interval I with
+         * I.sup < pair.inf.
          */
         if (!diless(current_dyadic, pair.second)) {
             /*
@@ -162,25 +165,26 @@ void DyadicSearcher::get_next_dyadic(DyadicInterval &current) const
 
                 if (n < pair.second.power()) {
                     /*
-                     * First case, when pair.inf has higher resolution than current.
-                     * This case is much more likely to be the case.
-                     * In this case, first get the parent of pair.inf in the
-                     * resolution of current. Then find the interval to the left.
+                     * First case, when pair.inf has higher resolution than
+                     * current. This case is much more likely to be the case. In
+                     * this case, first get the parent of pair.inf in the
+                     * resolution of current. Then find the interval to the
+                     * left.
                      */
                     k = (pair.second.multiplier() >> (pair.second.power() - n));
                 } else if (n > pair.second.power()) {
                     /*
-                     * Second case, when pair.inf has a lower resolution than current.
-                     * This case is unlikely but still possible.
-                     * In this case, rebase pair.info to the resolution of current,
+                     * Second case, when pair.inf has a lower resolution than
+                     * current. This case is unlikely but still possible. In
+                     * this case, rebase pair.info to the resolution of current,
                      * and then decrement.
                      */
                     k = (pair.second.multiplier() << (n - pair.second.power()));
                 } else {
                     /*
-                     * Third case, when pair.inf and current have the same resolution.
-                     * Very unlikely, but still possible.
-                     * In this case, just decrement pair.inf.
+                     * Third case, when pair.inf and current have the same
+                     * resolution. Very unlikely, but still possible. In this
+                     * case, just decrement pair.inf.
                      */
                     k = pair.second.multiplier();
                 }
@@ -195,15 +199,15 @@ void DyadicSearcher::get_next_dyadic(DyadicInterval &current) const
     }
 
     /*
-     * If we got here then either next < pair.inf for all of the pairs we've seen
-     * or, next >= pair.sup for all of the intervals.
+     * If we got here then either next < pair.inf for all of the pairs we've
+     * seen or, next >= pair.sup for all of the intervals.
      */
     --k;
 
     current = {k, n, itype};
 }
 std::vector<RealInterval>
-DyadicSearcher::find_in_unit_interval(ScaledPredicate &predicate)
+DyadicSearcher::find_in_unit_interval(ScaledPredicate& predicate)
 {
     //    assert(!predicate(dyadic_interval(0, 0)));
     m_seen.clear();
@@ -232,14 +236,14 @@ DyadicSearcher::find_in_unit_interval(ScaledPredicate &predicate)
     }
     std::vector<RealInterval> result;
     result.reserve(m_seen.size());
-    for (const auto &pair : m_seen) {
+    for (const auto& pair : m_seen) {
         result.emplace_back(static_cast<double>(pair.second),
                             static_cast<double>(pair.first));
     }
     std::reverse(result.begin(), result.end());
     return result;
 }
-std::vector<RealInterval> DyadicSearcher::operator()(const Interval &original)
+std::vector<RealInterval> DyadicSearcher::operator()(const Interval& original)
 {
     if (m_predicate(original)) {
         // If the original interval is good, there is nothing to do.
@@ -251,7 +255,7 @@ std::vector<RealInterval> DyadicSearcher::operator()(const Interval &original)
 
     std::vector<RealInterval> result;
     result.reserve(found.size());
-    for (const auto &itvl : found) {
+    for (const auto& itvl : found) {
         result.emplace_back(predicate.unscale(itvl));
     }
     return result;

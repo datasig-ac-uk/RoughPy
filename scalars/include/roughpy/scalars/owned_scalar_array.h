@@ -1,7 +1,7 @@
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_OWNED_SCALAR_ARRAY_H_
 #define ROUGHPY_SCALARS_OWNED_SCALAR_ARRAY_H_
@@ -42,19 +43,19 @@ class RPY_EXPORT OwnedScalarArray : public ScalarArray
 public:
     OwnedScalarArray() = default;
 
-    OwnedScalarArray(const OwnedScalarArray &other);
-    OwnedScalarArray(OwnedScalarArray &&other) noexcept;
+    OwnedScalarArray(const OwnedScalarArray& other);
+    OwnedScalarArray(OwnedScalarArray&& other) noexcept;
 
-    explicit OwnedScalarArray(const ScalarType *type);
-    OwnedScalarArray(const ScalarType *type, dimn_t size);
-    OwnedScalarArray(const Scalar &value, dimn_t count);
-    explicit OwnedScalarArray(const ScalarArray &other);
+    explicit OwnedScalarArray(const ScalarType* type);
+    OwnedScalarArray(const ScalarType* type, dimn_t size);
+    OwnedScalarArray(const Scalar& value, dimn_t count);
+    explicit OwnedScalarArray(const ScalarArray& other);
 
-    explicit OwnedScalarArray(const ScalarType *type, const void *data,
+    explicit OwnedScalarArray(const ScalarType* type, const void* data,
                               dimn_t count);
 
-    OwnedScalarArray &operator=(const ScalarArray &other);
-    OwnedScalarArray &operator=(OwnedScalarArray &&other) noexcept;
+    OwnedScalarArray& operator=(const ScalarArray& other);
+    OwnedScalarArray& operator=(OwnedScalarArray&& other) noexcept;
 
     ~OwnedScalarArray();
 

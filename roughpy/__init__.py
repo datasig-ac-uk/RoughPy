@@ -1,5 +1,3 @@
-
-
 import importlib.metadata as _ilm
 import os
 import platform
@@ -18,8 +16,6 @@ def _add_dynload_location(path: Path):
         return
 
 
-
-
 if platform.system() == "Windows":
     LIBS_DIR = Path(__file__).parent.parent / "roughpy.libs"
     if LIBS_DIR.exists():
@@ -34,7 +30,6 @@ try:
     del libs
 except _ilm.PackageNotFoundError:
     pass
-
 
 import roughpy._roughpy
 from roughpy._roughpy import *
