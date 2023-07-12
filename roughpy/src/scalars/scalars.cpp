@@ -84,6 +84,9 @@ void python::init_scalars(pybind11::module_& m)
         return scalar_type_to_py_type(self.type());
     });
 
+    RPY_WARNING_PUSH
+    RPY_CLANG_DISABLE_WARNING(-Wself-assign-overloaded)
+
     klass.def(-py::self);
     klass.def(py::self + py::self);
     klass.def(py::self - py::self);
@@ -116,6 +119,8 @@ void python::init_scalars(pybind11::module_& m)
            << self.to_scalar_t() << ")";
         return ss.str();
     });
+
+    RPY_WARNING_POP
 }
 
 /*
@@ -267,11 +272,8 @@ enum class ground_data_type
 
 static inline bool is_scalar(py::handle arg)
 {
-    return (
-        py::isinstance<py::int_>(arg)
-        || py::isinstance<py::float_>(arg)
-        || RPyPolynomial_Check(arg.ptr())
-    );
+    return (py::isinstance<py::int_>(arg) || py::isinstance<py::float_>(arg)
+            || RPyPolynomial_Check(arg.ptr()));
 }
 
 static inline bool
