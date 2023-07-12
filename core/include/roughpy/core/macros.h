@@ -349,7 +349,9 @@ check_fail(const char* msg, const char* filename, int lineno, const char* func)
 #define RPY_CHECK_1(EXPR) RPY_CHECK_2(EXPR, "failed check \"" #EXPR "\"")
 
 #define RPY_CHECK_CNT_IMPL(_1, _2, _3, COUNT, ...) COUNT
-#define RPY_CHECK_CNT(...) RPY_CHECK_CNT_IMPL(__VA_ARGS__, 3, 2, 1)
+// Always pass one more argument than expected, so clang doesn't complain about
+// empty parameter packs.
+#define RPY_CHECK_CNT(...) RPY_CHECK_CNT_IMPL(__VA_ARGS__, 3, 2, 1, 0)
 #define RPY_CHECK_SEL(NUM) RPY_JOIN(RPY_CHECK_, NUM)
 
 #define RPY_CHECK(...) RPY_CHECK_SEL(RPY_CHECK_CNT(__VA_ARGS__))(__VA_ARGS__)
