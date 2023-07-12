@@ -246,8 +246,8 @@ function(add_roughpy_component _name)
     set_target_properties(${_real_name} PROPERTIES
             PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
             LINKER_LANGUAGE CXX
-            #            CXX_DEFAULT_VISIBILITY hidden
-            #            VISIBILITY_INLINES_HIDDEN ON
+            CXX_DEFAULT_VISIBILITY hidden
+            VISIBILITY_INLINES_HIDDEN ON
             VERSION "${PROJECT_VERSION}"
             )
     #    if (_lib_type STREQUAL SHARED)

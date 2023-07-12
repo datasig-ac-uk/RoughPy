@@ -34,11 +34,14 @@
 
 #include <roughpy/platform/serialization.h>
 
+RPY_WARNING_PUSH
+RPY_MSVC_DISABLE_WARNING(4661)
+
 namespace rpy {
 namespace algebra {
 
 template <typename Bundle, typename Base, typename Fibre>
-class RPY_EXPORT BundleInterface
+class  BundleInterface
     : public dtl::algebra_base_resolution<
               Bundle, typename Base::basis_type, dtl::AlgebraArithmetic,
               dtl::AlgebraElementAccess>::type
@@ -229,4 +232,7 @@ public:
 
 }// namespace algebra
 }// namespace rpy
+
+RPY_WARNING_POP
+
 #endif// ROUGHPY_ALGEBRA_ALGEBRA_BUNDLE_H_

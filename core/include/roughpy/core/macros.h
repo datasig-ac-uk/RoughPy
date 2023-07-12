@@ -172,6 +172,13 @@
       return __VA_ARGS__
 #endif
 
+
+#ifdef RPY_MSVC
+#  define RPY_PRAGMA(ARG) __pragma(ARG)
+#else
+#  define RPY_PRAGMA(ARG) _Pragma(RPY_STRINGIFY(ARG))
+#endif
+
 // Macros that control optimisations
 
 #if defined(__OPTIMIZE__) || !defined(RPY_DEBUG)
@@ -265,5 +272,42 @@
 #else
 #  define RPY_NO_ASAN
 #endif
+
+// Warning and error control
+#if defined(RPY_MSVC)
+#  define RPY_WARNING_PUSH RPY_PRAGMA(warning(push))
+#  define RPY_WARNING_POP RPY_PRAGMA(warning(pop))
+#elif defined(RPY_GCC)
+#  define RPY_WARNING_PUSH RPY_PRAGMA(GCC diagnostic push)
+#  define RPY_WARNING_POP RPY_PRAGMA(GCC diagnostic pop)
+#elif define(RPY_CLANG)
+#  define RPY_WARNING_PUSH RPY_PRAGMA(clang diagnostic push)
+#  define RPY_WARNING_POP RPY_PRAGMA(clang diagnostic pop)
+#else
+#  define RPY_WARNING_PUSH
+#  define RPY_WARNING_POP
+#endif
+
+#ifdef RPY_MSVC
+#  define RPY_MSVC_DISABLE_WARNING(ARG) \
+      RPY_PRAGMA(warning(disable: ARG))
+#else
+#  define RPY_MSVC_DISABLE_WARNING(ARG)
+#endif
+
+#ifdef RPY_GCC
+#  define RPY_GCC_DISABLE_WARNING(ARG) \
+      RPY_PRAGMA(GCC diagnostic ignored RPY_STRINGIFY(ARG))
+#else
+#  define RPY_GCC_DISABLE_WARNING(ARG)
+#endif
+
+#ifdef RPY_CLANG
+#  define RPY_CLANG_DISABLE_WARNING(ARG) \
+      RPY_PRAGMA(clang diagnostic ignored RPY_STRINGIFY(ARG))
+#else
+#  define RPY_CLANG_DISABLE_WARNING(ARG)
+#endif
+
 
 #endif// ROUGHPY_CORE_MACROS_H
