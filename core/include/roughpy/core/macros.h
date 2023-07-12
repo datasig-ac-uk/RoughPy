@@ -280,7 +280,7 @@
 #elif defined(RPY_GCC)
 #  define RPY_WARNING_PUSH RPY_PRAGMA(GCC diagnostic push)
 #  define RPY_WARNING_POP RPY_PRAGMA(GCC diagnostic pop)
-#elif define(RPY_CLANG)
+#elif defined(RPY_CLANG)
 #  define RPY_WARNING_PUSH RPY_PRAGMA(clang diagnostic push)
 #  define RPY_WARNING_POP RPY_PRAGMA(clang diagnostic pop)
 #else
