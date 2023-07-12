@@ -36,16 +36,34 @@
 #include <cassert>
 #include <stdexcept>
 
+#ifdef __has_builtin
+#  define RPY_HAS_BUILTIN(x) __has_builtin(x)
+#else
+#  define RPY_HAS_BUILTIN(x) 0
+#endif
+
 #ifdef __has_feature
 #  define RPY_HAS_FEATURE(FEAT) __has_feature(FEAT)
 #else
 #  define RPY_HAS_FEATURE(FEAT) 0
 #endif
 
+#ifdef __has_cpp_attribute
+#  define RPY_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#else
+#  define RPY_HAS_CPP_ATTRIBUTE(x) 0
+#endif
+
+#ifdef __has_include
+#  define RPY_HAS_INCLUDE(x) __has_include(x)
+#else
+#  define RPY_HAS_INCLUDE(x) 0
+#endif
+
 #define RPY_STRINGIFY_IMPL(ARG) #ARG
 #define RPY_STRINGIFY(ARG) RPY_STRINGIFY_IMPL(ARG)
 
-#define RPY_JOIN_IMPL_IMPL(LHS, RHS) X##Y
+#define RPY_JOIN_IMPL_IMPL(LHS, RHS) LHS##RHS
 #define RPY_JOIN_IMPL(LHS, RHS) RPY_JOIN_IMPL_IMPL(LHS, RHS)
 #define RPY_JOIN(LHS, RHS) RPY_JOIN_IMPL(LHS, RHS)
 
@@ -172,7 +190,6 @@
       return __VA_ARGS__
 #endif
 
-
 #ifdef RPY_MSVC
 #  define RPY_PRAGMA(ARG) __pragma(ARG)
 #else
@@ -189,6 +206,8 @@
 #  else
 #    define RPY_INLINE_ALWAYS inline
 #  endif
+#else
+#  define RPY_INLINE_ALWAYS inline
 #endif
 
 #ifdef RPY_MSVC
@@ -213,33 +232,6 @@
 #else
 #  define RPY_LIKELY(COND) (COND)
 #  define RPY_UNLIKELY(COND) (COND)
-#endif
-
-#define RPY_CHECK(EXPR)                                                        \
-    do {                                                                       \
-        if (RPY_UNLIKELY(!(EXPR))) {                                           \
-            throw std::runtime_error(                                          \
-                    std::string("failed check \"") + #EXPR + "\""              \
-            );                                                                 \
-        }                                                                      \
-    } while (0)
-
-#ifdef RPY_DEBUG
-#  ifdef RPY_DBG_ASSERT_USE_EXCEPTIONS
-#    define RPY_DBG_ASSERT(ARG)                                                \
-        do {                                                                   \
-            if (RPY_UNLIKEY(!(EXPR))) {                                        \
-                throw std::runtime_error(                                      \
-                        std::string("failed debug assertion \"") + #EXPR       \
-                        + "\""                                                 \
-                );                                                             \
-            }                                                                  \
-        } while (0)
-#  else
-#    define RPY_DBG_ASSERT(ARG) assert(ARG)
-#  endif
-#else
-#  define RPY_DBG_ASSERT(ARG) (void) 0
 #endif
 
 #define RPY_FALLTHROUGH (void) 0
@@ -289,24 +281,83 @@
 #endif
 
 #ifdef RPY_MSVC
-#  define RPY_MSVC_DISABLE_WARNING(ARG) \
-      RPY_PRAGMA(warning(disable: ARG))
+#  define RPY_MSVC_DISABLE_WARNING(ARG) RPY_PRAGMA(warning(disable : ARG))
 #else
 #  define RPY_MSVC_DISABLE_WARNING(ARG)
 #endif
 
 #ifdef RPY_GCC
-#  define RPY_GCC_DISABLE_WARNING(ARG) \
+#  define RPY_GCC_DISABLE_WARNING(ARG)                                         \
       RPY_PRAGMA(GCC diagnostic ignored RPY_STRINGIFY(ARG))
 #else
 #  define RPY_GCC_DISABLE_WARNING(ARG)
 #endif
 
 #ifdef RPY_CLANG
-#  define RPY_CLANG_DISABLE_WARNING(ARG) \
+#  define RPY_CLANG_DISABLE_WARNING(ARG)                                       \
       RPY_PRAGMA(clang diagnostic ignored RPY_STRINGIFY(ARG))
 #else
 #  define RPY_CLANG_DISABLE_WARNING(ARG)
+#endif
+
+#if defined(RPY_GCC)
+#  define RPY_FUNC_NAME __PRETTY_FUNCTION__
+#elif defined(RPY_CLANG)
+#  define RPY_FUNC_NAME __builtin_FUNCTION()
+#elif defined(RPY_MSVC)
+#  define RPY_FUNC_NAME __FUNCTION__
+#else
+#  define RPY_FUNC_NAME static_cast<const char*>(0)
+#endif
+
+/*
+ * Check macro definition.
+ *
+ * This macro checks that the given expression evaluates to true (under the
+ * assumption that it will usually be true), and throws an error if this
+ * evaluates to false.
+ *
+ * Optionally, one can provide a message string literal that will be used
+ * instead of the default, and an optional error type. The default error type
+ * is a std::runtime_error.
+ */
+namespace rpy {
+namespace errors {
+template <typename E>
+RPY_NO_RETURN RPY_INLINE_ALWAYS void
+check_fail(const char* msg, const char* filename, int lineno, const char* func)
+{
+    throw E(std::string(msg) + " at lineno " + std::to_string(lineno) + " in "
+            + filename + " in function " + func);
+}
+}// namespace errors
+}// namespace rpy
+
+// Dispatch the check macro on the number of arguments
+// See: https://stackoverflow.com/a/16683147/9225581
+#define RPY_CHECK_3(EXPR, MSG, TYPE)                                           \
+    do {                                                                       \
+        if (RPY_UNLIKELY(!(EXPR))) {                                           \
+            ::rpy::errors::check_fail<TYPE>(                                   \
+                    MSG, __FILE__, __LINE__, RPY_FUNC_NAME                     \
+            );                                                                 \
+        }                                                                      \
+    } while (0)
+
+#define RPY_CHECK_2(EXPR, MSG) RPY_CHECK_3(EXPR, MSG, std::runtime_error)
+
+#define RPY_CHECK_1(EXPR) RPY_CHECK_2(EXPR, "failed check \"" #EXPR "\"")
+
+#define RPY_CHECK_CNT_IMPL(_1, _2, _3, COUNT, ...) COUNT
+#define RPY_CHECK_CNT(...) RPY_CHECK_CNT_IMPL(__VA_ARGS__, 3, 2, 1)
+#define RPY_CHECK_SEL(NUM) RPY_JOIN(RPY_CHECK_, NUM)
+
+#define RPY_CHECK(...) RPY_CHECK_SEL(RPY_CHECK_CNT(__VA_ARGS__))(__VA_ARGS__)
+
+#ifdef RPY_DEBUG
+#  define RPY_DBG_ASSERT(ARG) assert(ARG)
+#else
+#  define RPY_DBG_ASSERT(ARG) (void) 0
 #endif
 
 
