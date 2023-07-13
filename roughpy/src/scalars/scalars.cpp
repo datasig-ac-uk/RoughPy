@@ -227,6 +227,7 @@ static bool try_fill_buffer_dlpack(
         options.type = tensor_stype;
         buffer = scalars::KeyScalarArray(options.type);
     }
+    RPY_DBG_ASSERT(options.type != nullptr);
 
     if (data == nullptr) {
         // The array is empty, empty result.
@@ -240,7 +241,13 @@ static bool try_fill_buffer_dlpack(
     for (auto i = 0; i < ndim; ++i) { size *= static_cast<idimn_t>(shape[i]); }
 
     if (strides == nullptr) {
-        buffer = scalars::ScalarArray({options.type, data}, size);
+        if (options.type == tensor_stype) {
+            buffer = scalars::ScalarArray({options.type, data}, size);
+        } else {
+            buffer.allocate_scalars(size);
+            options.type->convert_copy(buffer,
+                                       {tensor_stype, data}, size);
+        }
     } else {
         buffer.allocate_scalars(size);
         scalars::ScalarPointer p(tensor_stype, data);
