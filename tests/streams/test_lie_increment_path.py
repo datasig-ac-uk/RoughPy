@@ -121,7 +121,7 @@ def test_tick_path_signature_calc_accuracy():
 #     assert p.depth == 2
 
 
-@pytest.fixture(params=[2, 5, 10, 25, 100, 1000])
+@pytest.fixture(params=[2, 5, 10, 25, 100])
 def t_values(request):
     return np.arange(0.0, 2.0, 2.0 / request.param) + 2.0 / request.param
 

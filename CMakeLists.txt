@@ -13,8 +13,9 @@ else ()
     set(_rpy_version 0.0.1)
 endif ()
 
-
 project(RoughPy VERSION ${_rpy_version})
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(CMAKE_INSTALL_LIBDIR "roughpy" CACHE STRING "install library dir")
 set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")

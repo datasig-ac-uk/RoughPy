@@ -162,6 +162,7 @@ void python::init_free_tensor(py::module_& m)
 
     klass.def("exp", &FreeTensor::exp);
     klass.def("log", &FreeTensor::log);
+    klass.def("antipode", &FreeTensor::antipode);
 //    klass.def("inverse", &FreeTensor::inverse);
     klass.def("fmexp", &FreeTensor::fmexp, "other"_a);
 //

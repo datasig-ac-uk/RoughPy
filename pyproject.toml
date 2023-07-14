@@ -43,9 +43,9 @@ requires = [
     "pybind11",
     "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
-    "mkl-devel",
-    "mkl-static",
-    "intel-openmp; platform_system!='Windows'"
+    "mkl-devel; platform_machine in 'x86_64 x86 AMD64'",
+    "mkl-static; platform_machine in 'x86_64 x86 AMD64'",
+    "intel-openmp; platform_machine in 'x86_64 x86' and platform_system!='Windows'"
 ]
 build-backend = "scikit_build_core.build"
 
@@ -56,6 +56,8 @@ testpaths = ["tests"]
 
 [tool.scikit-build]
 wheel.packages = []
+cmake.verbose = true
+logging.level = "INFO"
 cmake.build-type = "Release"
 experimental=true
 metadata.readme.provider = "scikit_build_core.metadata.fancy_pypi_readme"
@@ -82,7 +84,8 @@ path = "CHANGELOG"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
 # Literal TOML strings (single quotes) need no escaping of backslashes.
 pattern = '\[(.+?)\]\(((?!https?://)\S+?)\)'
-replacement = '[\1](https://github.com/datasig-ac-uk/roughpy/tree/main\g<2>)'
+replacement = '[\1](https://github.com/datasig-ac-uk/roughpy/tree/main/\g<2>)'
+
 [tool.scikit-build.cmake.define]
 ROUGHPY_BUILD_TESTS = "OFF"
 

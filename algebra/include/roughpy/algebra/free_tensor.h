@@ -38,6 +38,9 @@
 namespace rpy {
 namespace algebra {
 
+RPY_WARNING_PUSH
+RPY_GCC_DISABLE_WARNING(-Wattributes)
+
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         AlgebraInterface<FreeTensor, TensorBasis>;
 
@@ -49,6 +52,8 @@ RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
 
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBundleBase<
         FreeTensorBundleInterface, FreeTensorBundleImplementation>;
+
+RPY_WARNING_POP
 
 template <>
 RPY_EXPORT typename FreeTensor::basis_type

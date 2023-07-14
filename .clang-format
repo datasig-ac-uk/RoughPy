@@ -3,7 +3,19 @@ BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: BlockIndent
 AlignArrayOfStructures: Right
-
+AttributeMacros: [
+  'RPY_UNUSED',
+  'RPY_NO_DISCARD',
+  'RPY_NO_RETURN',
+  'RPY_UNUSED_VAR',
+  'RPY_INLINE_ALWAYS',
+  'RPY_INLINE_NEVER',
+  'RPY_RESTRICT',
+  'RPY_EXPORT',
+  'RPY_NO_UBSAN',
+  'RPY_NO_ASAN',
+  'RPY_EXPORT_TEMPLATE'
+]
 AlignConsecutiveAssignments: None
 AlignOperands: DontAlign
 AllowAllArgumentsOnNextLine: false
@@ -67,3 +79,8 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 TabWidth: 4
 UseTab: Never
+WhitespaceSensitiveMacros: [
+  "RPY_STRINGIFY",
+  "RPY_GCC_DISABLE_WARNING",
+  "RPY_CLANG_DISABLE_WARNING"
+]
