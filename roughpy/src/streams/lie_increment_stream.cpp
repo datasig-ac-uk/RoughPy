@@ -122,6 +122,9 @@ static py::object lie_increment_stream_from_increments(
         md.ctx = algebra::get_context(md.width, md.depth, md.scalar_type);
     }
 
+    auto effective_support
+            = intervals::RealInterval::right_unbounded(0.0, md.interval_type);
+
     if (kwargs.contains("indices")) {
         auto indices_arg = kwargs["indices"];
 
@@ -146,6 +149,11 @@ static py::object lie_increment_stream_from_increments(
         } else if (py::isinstance<py::sequence>(indices_arg)) {
             indices = indices_arg.cast<std::vector<param_t>>();
         }
+
+        auto minmax = std::minmax_element(indices.begin(), indices.end());
+        effective_support = intervals::RealInterval(
+                *minmax.first, *minmax.second, md.interval_type
+        );
     }
 
     if (indices.empty()) {
@@ -160,11 +168,11 @@ static py::object lie_increment_stream_from_increments(
 
     auto result = streams::Stream(streams::LieIncrementStream(
             std::move(buffer).copy_or_move(), indices,
-            {md.width, md.support ? *md.support : intervals::RealInterval(0, 1),
-             md.ctx, md.scalar_type,
+            {md.width, effective_support, md.ctx, md.scalar_type,
              md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
              md.resolution}
     ));
+    if (md.support) { result.restrict_to(*md.support); }
 
     if (options.cleanup) { options.cleanup(); }
 
@@ -173,8 +181,7 @@ static py::object lie_increment_stream_from_increments(
     );
 }
 
-RPY_UNUSED
-static streams::Stream
+RPY_UNUSED static streams::Stream
 lie_increment_path_from_values(const py::object& data, const py::kwargs& kwargs)
 {
     throw std::runtime_error("Not implemented");
