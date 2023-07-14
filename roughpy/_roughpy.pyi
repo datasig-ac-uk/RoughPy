@@ -725,21 +725,36 @@ class Stream:
 
 class LieIncrementStream:
 
-    @classmethod
-    def from_increments(cls, increments: ArrayLike, **kwargs: Any) -> Stream:
+    @staticmethod
+    def from_increments(increments: ArrayLike, **kwargs: Any) -> Stream:
         ...
 
 
-class FunctionStream: ...
+class FunctionStream:
+
+    @staticmethod
+    def from_function(function: Callable[[float], ArrayLike]) -> Stream:
+        ...
 
 
-class PiecewiseAbelianStream: ...
+class PiecewiseAbelianStream:
+
+    @staticmethod
+    def construct(lies: List[(RealInterval, Lie)], **kwargs: Any) -> Stream: ...
 
 
-class ExternalDataStream: ...
+
+class ExternalDataStream:
+
+    @staticmethod
+    def from_uri(uri: str, **kwargs: Any) -> Stream: ...
 
 
-class BrownianStream: ...
+class BrownianStream:
+
+    @staticmethod
+    def with_generator(generator: str, **kwargs: Any) -> Stream: ...
+
 
 
 class TickStream:
