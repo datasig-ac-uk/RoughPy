@@ -1,6 +1,9 @@
 Version 0.0.4:
   - Overhauled the RPY_CHECK macro so it now gives much better contextual
   information.
+  - Readme updated to reflect PyPI installation with wheels.
+  - Antipode is now implemented in libalgebra_lite, and exposed to Python.
+
 
 Version 0.0.3:
   - Added datetime interval support.
