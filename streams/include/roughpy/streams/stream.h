@@ -42,7 +42,6 @@ namespace streams {
 
 class RPY_EXPORT Stream
 {
-    std::unique_ptr<const StreamInterface> p_impl;
 
 public:
     using FreeTensor = algebra::FreeTensor;
@@ -54,8 +53,21 @@ public:
     using perturbation_t = std::pair<RealInterval, Lie>;
     using perturbation_list_t = std::vector<perturbation_t>;
 
+private:
+    std::shared_ptr<const StreamInterface> p_impl;
+    RealInterval m_support;
+
+public:
+
     template <typename Impl>
     explicit Stream(Impl&& impl);
+
+    void restrict_to(RealInterval interval){
+        m_support = std::move(interval);
+    }
+
+    RPY_NO_DISCARD
+    const RealInterval& support() const noexcept { return m_support; }
 
     RPY_NO_DISCARD
     const StreamMetadata& metadata() const;
@@ -138,12 +150,14 @@ public:
 
 template <typename Impl>
 Stream::Stream(Impl&& impl)
-    : p_impl(new remove_cv_t<Impl>(std::forward<Impl>(impl)))
+    : p_impl(new remove_cv_t<Impl>(std::forward<Impl>(impl))),
+      m_support(p_impl->metadata().effective_support)
 {}
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Stream)
 {
     RPY_SERIAL_SERIALIZE_NVP("impl", p_impl);
+    RPY_SERIAL_SERIALIZE_NVP("support", m_support);
 }
 
 }// namespace streams
