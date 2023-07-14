@@ -51,8 +51,9 @@ public:
     RealInterval& operator=(const RealInterval&) = default;
     RealInterval& operator=(RealInterval&&) noexcept = default;
 
-    RealInterval(param_t inf, param_t sup,
-                 IntervalType itype = IntervalType::Clopen)
+    RealInterval(
+            param_t inf, param_t sup, IntervalType itype = IntervalType::Clopen
+    )
         : Interval(itype), m_inf(inf), m_sup(sup)
     {
         if (m_inf > m_sup) { std::swap(m_inf, m_sup); }
@@ -67,13 +68,26 @@ public:
         : Interval(itype), m_inf(interval.inf()), m_sup(interval.sup())
     {}
 
-    RPY_NO_DISCARD
-    param_t inf() const override { return m_inf; }
-    RPY_NO_DISCARD
-    param_t sup() const override { return m_sup; }
+    static RealInterval unbounded() noexcept
+    {
+        return {-std::numeric_limits<param_t>::infinity(),
+                std::numeric_limits<param_t>::infinity()};
+    }
 
-    RPY_NO_DISCARD
-    bool contains(const Interval& arg) const noexcept override;
+    static RealInterval left_unbounded(param_t sup) noexcept
+    {
+        return {-std::numeric_limits<param_t>::infinity(), sup};
+    }
+
+    static RealInterval right_unbounded(param_t inf) noexcept
+    {
+        return {inf, std::numeric_limits<param_t>::infinity()};
+    }
+
+    RPY_NO_DISCARD param_t inf() const override { return m_inf; }
+    RPY_NO_DISCARD param_t sup() const override { return m_sup; }
+
+    RPY_NO_DISCARD bool contains(const Interval& arg) const noexcept override;
 
     RPY_SERIAL_SERIALIZE_FN();
 };
