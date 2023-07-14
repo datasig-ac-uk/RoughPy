@@ -546,9 +546,8 @@ static PyObject* ctx_getter(PyObject* self)
 
 static PyObject* support_getter(PyObject* self)
 {
-    return py::cast(reinterpret_cast<python::RPyStream*>(self)
-                            ->m_data.metadata()
-                            .effective_support)
+    return py::cast(reinterpret_cast<python::RPyStream*>(self)->m_data.support()
+    )
             .release()
             .ptr();
 }
