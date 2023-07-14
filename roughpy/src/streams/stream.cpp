@@ -572,10 +572,11 @@ static PyObject* RPyStream_repr(PyObject* self)
 static PyObject* RPyStream_str(PyObject* self) { return RPyStream_repr(self); }
 
 PyTypeObject rpy::python::RPyStream_Type = {
-        PyVarObject_HEAD_INIT(nullptr, 0) "_roughpy.Stream", /* tp_name */
-        sizeof(python::RPyStream),                           /* tp_basicsize */
-        0,                                                   /* tp_itemsize */
-        nullptr,                                             /* tp_dealloc */
+        PyVarObject_HEAD_INIT(nullptr, 0)         //
+        "_roughpy.Stream",                        /* tp_name */
+        sizeof(python::RPyStream),                /* tp_basicsize */
+        0,                                        /* tp_itemsize */
+        nullptr,                                  /* tp_dealloc */
         0,                                        /* tp_vectorcall_offset */
         (getattrfunc) nullptr,                    /* tp_getattr */
         (setattrfunc) nullptr,                    /* tp_setattr */
