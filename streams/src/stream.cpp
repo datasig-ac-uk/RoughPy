@@ -58,6 +58,16 @@ void Stream::restrict_to(const Stream::Interval& interval) {
     }
 }
 
+Stream Stream::restrict(const Stream::Interval& interval) const
+{
+    RealInterval support(interval);
+    if (p_impl) {
+        support = p_impl->schema().adjust_interval(interval);
+    }
+
+    return { p_impl, support };
+}
+
 const algebra::Context& rpy::streams::Stream::get_default_context() const
 {
     RPY_CHECK(p_impl);
@@ -158,7 +168,6 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature(
         rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
 ) const
 {
-    const auto& md = metadata();
     return p_impl->signature(m_support, resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor
