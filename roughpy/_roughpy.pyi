@@ -1,16 +1,11 @@
 import enum
+from abc import ABC, abstractmethod
+from datetime import date, datetime, time
+from fractions import Fraction
+from typing import (Any, Callable, Dict, Final, Iterator, List, Optional,
+                    Sequence, Tuple, Union, overload)
 
-from abc import abstractmethod, ABC
-from typing import (
-    Any,
-    Union,
-    overload,
-    Sequence,
-    Dict,
-    Final,
-    List
-)
-
+from numpy.typing import ArrayLike
 
 class ScalarTypeMeta(type):
     ...
@@ -31,7 +26,10 @@ class DPReal(ScalarTypeBase):
 class Rational(ScalarTypeBase):
     ...
 
+
 class HPReal(ScalarTypeBase): ...
+
+
 class BFloat16(ScalarTypeBase): ...
 
 
@@ -67,12 +65,131 @@ class Scalar:
     def __repr__(self) -> str: ...
 
 
-ScalarLike = Union[Scalar, float, int]
+ScalarLike = Union[Scalar, float, int, Fraction]
+
+
+class Monomial:
+    def __init__(self,
+                 string: Union[
+                     None, List[str], List[Tuple[str, int]], Dict[str, int]]
+                 ):
+        ...
+
+    @overload
+    def __init__(self, symbol: str, power: int): ...
+
+    def degree(self) -> int: ...
+
+    def __len__(self) -> int: ...
+
+    def __getitem__(self, item: str) -> int: ...
+
+    def __setitem__(self, key: str, value: int): ...
+
+    def __str__(self) -> str: ...
+
+    def __repr__(self) -> str: ...
+
+    def __add__(self, other: Monomial) -> PolynomialScalar: ...
+
+    def __sub__(self, other: Monomial) -> PolynomialScalar: ...
+
+    def __mul__(self, other: Monomial) -> Monomial: ...
+
+    @overload
+    def __mul__(self, other: ScalarLike) -> PolynomialScalar: ...
+
+    def __pow__(self, exponent: int, modulo=None) -> Monomial: ...
+
+    def __pos__(self) -> PolynomialScalar: ...
+
+    def __neg__(self) -> PolynomialScalar: ...
+
+    def __bool__(self) -> bool: ...
+
+    def __iadd__(self, other: Monomial) -> PolynomialScalar: ...
+
+    def __isub__(self, other: Monomial) -> PolynomialScalar: ...
+
+    def __imul__(self, other: Monomial) -> Monomial: ...
+
+    @overload
+    def __imul__(self, other: ScalarLike) -> PolynomialScalar: ...
+
+    def __ipow__(self, other: int) -> Monomial: ...
+
+    def __hash__(self): ...
+
+    def __eq__(self, other: Monomial) -> bool: ...
+
+    def __ne__(self, other: Monomial) -> bool: ...
+
+    def __le__(self, other: Monomial) -> bool: ...
+
+    def __lt__(self, other: Monomial) -> bool: ...
+
+    def __ge__(self, other: Monomial) -> bool: ...
+
+    def __gt__(self, other: Monomial) -> bool: ...
+
+
+class PolynomialScalar:
+
+    def __init__(self, monomial: Monomial): ...
+
+    def __str__(self) -> str: ...
+
+    def __repr__(self) -> str: ...
+
+    def __len__(self) -> int: ...
+
+    def __getitem__(self, item: Monomial) -> ScalarLike: ...
+
+    def __setitem__(self, item: Monomial, value: ScalarLike): ...
+
+    def degree(self) -> int: ...
+
+    def __pos__(self) -> PolynomialScalar: ...
+
+    def __neg__(self) -> PolynomialScalar: ...
+
+    def __bool__(self): ...
+
+    def __add__(self, other: Union[ScalarLike, Monomial]) -> PolynomialScalar:
+        ...
+
+    def __sub__(self, other: Union[ScalarLike, Monomial]) -> PolynomialScalar:
+        ...
+
+    def __mul__(self, other: Union[ScalarLike, Monomial]) -> PolynomialScalar:
+        ...
+
+    def __truediv__(self, other: Union[int, float, Fraction]) -> \
+            PolynomialScalar: ...
+
+    def __pow__(self, power: int, modulo=None) -> PolynomialScalar: ...
+
+    def __iadd__(self, other: Union[ScalarLike, Monomial]) -> \
+            PolynomialScalar: ...
+
+    def __isub__(self, other: Union[ScalarLike, Monomial]) -> \
+            PolynomialScalar: ...
+
+    def __imul__(self, other: Union[ScalarLike, Monomial]) -> \
+            PolynomialScalar: ...
+
+    def __idiv__(self, other: Union[int, float, Fraction]) -> \
+            PolynomialScalar: ...
+
+    def __eq__(self, other: PolynomialScalar) -> bool: ...
+
+    def __ne__(self, other: PolynomialScalar) -> bool: ...
 
 
 class IntervalType(enum.Enum):
     Clopen = ...
-    # Opencl = ...   # Currently disabled until support is added in the underlying library
+    # Opencl = ...   # Currently disabled until support is added in the
+    # underlying library
 
 
 class Interval(ABC):
@@ -161,14 +278,56 @@ class DyadicInterval(Interval, Dyadic):
     @staticmethod
     def to_dyadic_intervals(interval: Interval,
                             resolution: int,
-                            interval_type: IntervalType) -> Sequence[Interval]: ...
+                            interval_type: IntervalType) -> Sequence[
+        Interval]: ...
 
     @overload
     @staticmethod
     def to_dyadic_intervals(inf: float,
                             sup: float,
                             resolution: int,
-                            interval_type: IntervalType) -> Sequence[Interval]: ...
+                            interval_type: IntervalType) -> Sequence[
+        Interval]: ...
+
+
+DateTimeLike = Union[datetime, date, time]
+
+
+class DateTimeInterval(Interval):
+    def __init__(self, begin: DateTimeLike, end: DateTimeLike): ...
+
+    def inf(self) -> float: ...
+
+    def sup(self) -> float: ...
+
+
+class Partition(Interval):
+    def inf(self) -> float: ...
+
+    def sup(self) -> float: ...
+
+    def __len__(self) -> int: ...
+
+    def __getitem__(self, index: int) -> RealInterval: ...
+
+    def __str__(self) -> str: ...
+
+    def refine_midpoints(self) -> Partition: ...
+
+    def mesh(self) -> float: ...
+
+    def intermediates(self) -> List[float]: ...
+
+    def insert_intermediate(self, new_intermediate: float): ...
+
+    def merge(self, other: Partition) -> Partition: ...
+
+
+IntervalPredicate = Callable[[Interval], bool]
+
+
+def segment(interval: Interval, predicate: IntervalPredicate,
+            max_depth: int) -> List[RealInterval]: ...
 
 
 class VectorType(enum.Enum):
@@ -203,8 +362,57 @@ class LieKeyIterator:
     def __next__(self) -> LieKey: ...
 
 
+class TensorBasis:
+    width: Final[int]
+    depth: Final[int]
+    dimension: Final[int]
+
+    def index_to_key(self, index: int) -> TensorKey: ...
+
+    def key_to_index(self, key: TensorKey) -> int: ...
+
+    def size(self, degree: int) -> int: ...
+
+
+class LieBasis:
+    width: Final[int]
+    depth: Final[int]
+    dimension: Final[int]
+
+    def index_to_key(self, index: int) -> TensorKey: ...
+
+    def key_to_index(self, key: TensorKey) -> int: ...
+
+    def size(self, degree: int) -> int: ...
+
+
 class Context:
-    ...
+    width: Final[int]
+    depth: Final[int]
+    ctype: Final[ScalarTypeMeta]
+    lie_basis: Final[LieBasis]
+    tensor_basis: Final[TensorBasis]
+
+    def lie_size(self, degree: int) -> int: ...
+
+    def tensor_size(self, degree: int) -> int: ...
+
+    def cbh(self, lies: Sequence[Lie], vec_type: Optional[VectorType] = None) \
+            -> Lie: ...
+
+    def compute_signature(self, data: Any, **kwargs: Any) -> FreeTensor: ...
+
+    def to_logsignature(self, signature: FreeTensor) -> Lie: ...
+
+    def lie_to_tensor(self, lie: Lie) -> FreeTensor: ...
+
+    def tensor_to_lie(self, tensor: FreeTensor) -> Lie: ...
+
+    def zero_lie(self, *args: Any, **kwargs: Any) -> Lie: ...
+
+    def __enter__(self): ...
+
+    def __exit__(self, exc_type, exc_val, exc_tb): ...
 
 
 def get_context(width: int,
@@ -246,7 +454,7 @@ class Lie:
 
     def degree(self) -> int: ...
 
-    def __iter__(self): ...
+    def __iter__(self) -> Iterator[LieIteratorItem]: ...
 
     def __neg__(self) -> Lie: ...
 
@@ -313,7 +521,7 @@ class FreeTensor:
 
     def degree(self) -> int: ...
 
-    def __iter__(self): ...
+    def __iter__(self) -> Iterator[FreeTensorIteratorItem]: ...
 
     def __neg__(self) -> FreeTensor: ...
 
@@ -367,6 +575,12 @@ class FreeTensor:
 
     def __getitem__(self, item: TensorKey) -> Scalar: ...
 
+    def exp(self) -> FreeTensor: ...
+
+    def log(self) -> FreeTensor: ...
+
+    def antipode(self) -> FreeTensor: ...
+
 
 class ShuffleTensor:
     width: Final[int] = ...
@@ -380,7 +594,7 @@ class ShuffleTensor:
 
     def degree(self) -> int: ...
 
-    def __iter__(self): ...
+    def __iter__(self) -> Iterator[ShuffleTensorIteratorItem]: ...
 
     def __neg__(self) -> ShuffleTensor: ...
 
@@ -435,10 +649,85 @@ class ShuffleTensor:
     def __getitem__(self, item: TensorKey) -> Scalar: ...
 
 
-class Stream: ...
+class Stream:
+    width: Final[int]
+    dtype: Final[ScalarTypeMeta]
+    ctx: Final[Context]
+    support: [RealInterval]
+
+    def __repr__(self): ...
+
+    def __str__(self): ...
+
+    def restrict(self, interval: Interval) -> Stream: ...
+
+    def simplify(self,
+                 partition: Partition,
+                 resolution: Optional[int]=None,
+                 ctx: Optional[Context]=None,
+                 depth: Optional[int]=None
+                 ) -> Stream: ...
+
+    def log_signature(self,
+                      interval: Interval,
+                      resolution: Union[int, float, None] = None,
+                      *,
+                      context: Optional[Context] = None,
+                      depth: Optional[int] = None,
+                      dtype: Optional[ScalarTypeMeta] = None
+                      ) -> Lie: ...
+
+    @overload
+    def log_signature(self,
+                      inf: float,
+                      sup: float,
+                      resolution: Union[int, float, None],
+                      *,
+                      context: Optional[Context],
+                      depth: Optional[int] = None,
+                      dtype: Optional[ScalarTypeMeta] = None
+                      ) -> Lie: ...
+
+    def signature(self,
+                      interval: Interval,
+                      resolution: Union[int, float, None] = None,
+                      *,
+                      context: Optional[Context] = None,
+                      depth: Optional[int] = None,
+                      dtype: Optional[ScalarTypeMeta] = None
+                      ) -> FreeTensor: ...
+
+    @overload
+    def signature(self,
+                      inf: float,
+                      sup: float,
+                      resolution: Union[int, float, None],
+                      *,
+                      context: Optional[Context],
+                      depth: Optional[int] = None,
+                      dtype: Optional[ScalarTypeMeta] = None
+                      ) -> FreeTensor: ...
 
 
-class LieIncrementStream: ...
+    def signature_derivative(self,
+                             interval: Interval,
+                             perturbation: Lie,
+                             resolution: Optional[int]=None,
+                             depth: Optional[int]=None
+                             ) -> FreeTensor: ...
+
+    @overload
+    def signature_derivative(self,
+                             perturbations: List[Tuple[Interval, Lie]],
+                             resolution: Optional[int]=None,
+                             depth: Optional[int]=None
+                             ) -> FreeTensor: ...
+
+class LieIncrementStream:
+
+    @classmethod
+    def from_increments(cls, increments: ArrayLike, **kwargs: Any) -> Stream:
+        ...
 
 
 class FunctionStream: ...
@@ -455,17 +744,19 @@ class BrownianStream: ...
 
 class TickStream:
     @staticmethod
-    def from_data(data: Any, **kwargs): ...
+    def from_data(data: Any, **kwargs: Any): ...
 
 
 class StreamSchema:
 
     @staticmethod
-    def from_data(data: Union[Dict[float, Union[str, float, int]], Sequence[tuple]]) -> StreamSchema:
+    def from_data(data: Union[
+        Dict[float, Union[str, float, int]], Sequence[tuple]]) -> StreamSchema:
         ...
 
     @staticmethod
-    def parse(schema: List[Dict[str, Union[str, List[str]]]]) -> StreamSchema: ...
+    def parse(
+            schema: List[Dict[str, Union[str, List[str]]]]) -> StreamSchema: ...
 
     def get_labels(self) -> list[str]: ...
 
