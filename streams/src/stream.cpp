@@ -34,6 +34,30 @@
 using namespace rpy;
 using namespace streams;
 
+bool Stream::check_support_and_trim(Stream::RealInterval& domain) const noexcept
+{
+    if (domain.sup() < m_support.inf() || domain.inf() > m_support.sup()) {
+        // The intervals don't intersect, return false
+        return false;
+    }
+
+    // Intervals do intersect, trim domain so it is a subset of m_support
+    domain = RealInterval(
+            std::max(domain.inf(), m_support.inf()),
+            std::min(domain.sup(), m_support.sup()), domain.type()
+    );
+
+    return true;
+}
+
+void Stream::restrict_to(const Stream::Interval& interval) {
+    if (p_impl) {
+        m_support = p_impl->schema().adjust_interval(interval);
+    } else {
+        m_support = RealInterval(interval);
+    }
+}
+
 const algebra::Context& rpy::streams::Stream::get_default_context() const
 {
     RPY_CHECK(p_impl);
@@ -56,7 +80,7 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature() const
     const auto& md = metadata();
 
     return p_impl->log_signature(
-            md.effective_support, md.default_resolution, *md.default_context
+            m_support, md.default_resolution, *md.default_context
     );
 }
 rpy::streams::Stream::Lie
@@ -64,30 +88,27 @@ rpy::streams::Stream::log_signature(const rpy::streams::Stream::Context& ctx
 ) const
 {
     const auto& md = metadata();
-    return p_impl->log_signature(
-            md.effective_support, md.default_resolution, ctx
-    );
+    return p_impl->log_signature(m_support, md.default_resolution, ctx);
 }
 rpy::streams::Stream::Lie
 rpy::streams::Stream::log_signature(rpy::resolution_t resolution)
 {
     const auto& md = metadata();
-    return p_impl->log_signature(
-            md.effective_support, resolution, *md.default_context
-    );
+    return p_impl->log_signature(m_support, resolution, *md.default_context);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
 ) const
 {
     const auto& md = metadata();
-    return p_impl->log_signature(md.effective_support, resolution, ctx);
+    return p_impl->log_signature(m_support, resolution, ctx);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         const rpy::streams::Stream::Interval& interval
 ) const
 {
     const auto& md = metadata();
+
     return log_signature(interval, md.default_resolution, *md.default_context);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
@@ -96,6 +117,7 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
 ) const
 {
     const auto& md = metadata();
+
     return log_signature(interval, resolution, *md.default_context);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
@@ -103,39 +125,41 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
 ) const
 {
+    const auto& md = metadata();
     const auto& schema = p_impl->schema();
 
-    return p_impl->log_signature(
-            schema.adjust_interval(interval), resolution, ctx
-    );
+    RealInterval query_interval(schema.adjust_interval(interval));
+    if (!check_support_and_trim(query_interval)) {
+        return ctx.zero_lie(md.cached_vector_type);
+    }
+
+    return p_impl->log_signature(query_interval, resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature() const
 {
     const auto& md = metadata();
     return p_impl->signature(
-            md.effective_support, md.default_resolution, *md.default_context
+            m_support, md.default_resolution, *md.default_context
     );
 }
 rpy::streams::Stream::FreeTensor
 rpy::streams::Stream::signature(const rpy::streams::Stream::Context& ctx) const
 {
     const auto& md = metadata();
-    return p_impl->signature(md.effective_support, md.default_resolution, ctx);
+    return p_impl->signature(m_support, md.default_resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor
 rpy::streams::Stream::signature(rpy::resolution_t resolution)
 {
     const auto& md = metadata();
-    return p_impl->signature(
-            md.effective_support, resolution, *md.default_context
-    );
+    return p_impl->signature(m_support, resolution, *md.default_context);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature(
         rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
 ) const
 {
     const auto& md = metadata();
-    return p_impl->signature(md.effective_support, resolution, ctx);
+    return p_impl->signature(m_support, resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor
 rpy::streams::Stream::signature(const rpy::streams::Stream::Interval& interval
@@ -158,7 +182,11 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature(
 ) const
 {
     const auto& schema = p_impl->schema();
-    return p_impl->signature(schema.adjust_interval(interval), resolution, ctx);
+
+    RealInterval query_interval(schema.adjust_interval(interval));
+    if (!check_support_and_trim(query_interval)) { return unit_tensor(ctx); }
+
+    return p_impl->signature(query_interval, resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         const rpy::streams::Stream::Interval& domain,

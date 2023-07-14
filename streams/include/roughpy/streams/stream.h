@@ -42,7 +42,6 @@ namespace streams {
 
 class RPY_EXPORT Stream
 {
-
 public:
     using FreeTensor = algebra::FreeTensor;
     using Lie = algebra::Lie;
@@ -57,14 +56,28 @@ private:
     std::shared_ptr<const StreamInterface> p_impl;
     RealInterval m_support;
 
+    RPY_NO_DISCARD
+    FreeTensor unit_tensor(const Context& ctx) const {
+        auto result = ctx.zero_free_tensor(metadata().cached_vector_type);
+        result[0] = scalars::Scalar(1);
+        return result;
+    }
+
+    RPY_NO_DISCARD
+    Lie zero_lie(const Context& ctx) const {
+        return ctx.zero_lie(metadata().cached_vector_type);
+    }
+
+
+    RPY_NO_DISCARD
+    bool check_support_and_trim(RealInterval& domain) const noexcept;
+
 public:
 
     template <typename Impl>
     explicit Stream(Impl&& impl);
 
-    void restrict_to(RealInterval interval){
-        m_support = std::move(interval);
-    }
+    void restrict_to(const Interval& interval);
 
     RPY_NO_DISCARD
     const RealInterval& support() const noexcept { return m_support; }
