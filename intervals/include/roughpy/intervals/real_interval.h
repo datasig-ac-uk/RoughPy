@@ -74,14 +74,18 @@ public:
                 std::numeric_limits<param_t>::infinity()};
     }
 
-    static RealInterval left_unbounded(param_t sup) noexcept
+    static RealInterval left_unbounded(
+            param_t sup = 0.0, IntervalType itype = IntervalType::Clopen
+    ) noexcept
     {
-        return {-std::numeric_limits<param_t>::infinity(), sup};
+        return {-std::numeric_limits<param_t>::infinity(), sup, itype};
     }
 
-    static RealInterval right_unbounded(param_t inf) noexcept
+    static RealInterval right_unbounded(
+            param_t inf = 0.0, IntervalType itype = IntervalType::Clopen
+    ) noexcept
     {
-        return {inf, std::numeric_limits<param_t>::infinity()};
+        return {inf, std::numeric_limits<param_t>::infinity(), itype};
     }
 
     RPY_NO_DISCARD param_t inf() const override { return m_inf; }
