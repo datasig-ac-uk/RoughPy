@@ -426,3 +426,11 @@ def test_coeff_and_vec_type(width, depth, data1, coeff_type, vec_type):
 
     assert t.storage_type == vec_type
     assert t.dtype == coeff_type
+
+
+def test_antipode(width, depth, data1, coeff_type, vec_type):
+    t = FreeTensor(data1, width=width, depth=depth, dtype=coeff_type,
+                   vector_type=vec_type)
+
+    result = t.antipode().antipode()
+    assert result == t, f"{result} {t} {result - t}"

@@ -38,6 +38,9 @@
 namespace rpy {
 namespace algebra {
 
+RPY_WARNING_PUSH
+RPY_GCC_DISABLE_WARNING(-Wattributes)
+
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         AlgebraInterface<ShuffleTensor, TensorBasis>;
 
@@ -49,6 +52,9 @@ RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
 
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         AlgebraBundleBase<ShuffleTensorBundleInterface>;
+
+RPY_WARNING_POP
+
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor)
 {

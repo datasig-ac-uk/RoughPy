@@ -84,6 +84,9 @@ void python::init_scalars(pybind11::module_& m)
         return scalar_type_to_py_type(self.type());
     });
 
+    RPY_WARNING_PUSH
+    RPY_CLANG_DISABLE_WARNING(-Wself-assign-overloaded)
+
     klass.def(-py::self);
     klass.def(py::self + py::self);
     klass.def(py::self - py::self);
@@ -116,6 +119,8 @@ void python::init_scalars(pybind11::module_& m)
            << self.to_scalar_t() << ")";
         return ss.str();
     });
+
+    RPY_WARNING_POP
 }
 
 /*
@@ -222,6 +227,7 @@ static bool try_fill_buffer_dlpack(
         options.type = tensor_stype;
         buffer = scalars::KeyScalarArray(options.type);
     }
+    RPY_DBG_ASSERT(options.type != nullptr);
 
     if (data == nullptr) {
         // The array is empty, empty result.
@@ -235,7 +241,13 @@ static bool try_fill_buffer_dlpack(
     for (auto i = 0; i < ndim; ++i) { size *= static_cast<idimn_t>(shape[i]); }
 
     if (strides == nullptr) {
-        buffer = scalars::ScalarArray({options.type, data}, size);
+        if (options.type == tensor_stype) {
+            buffer = scalars::ScalarArray({options.type, data}, size);
+        } else {
+            buffer.allocate_scalars(size);
+            options.type->convert_copy(buffer,
+                                       {tensor_stype, data}, size);
+        }
     } else {
         buffer.allocate_scalars(size);
         scalars::ScalarPointer p(tensor_stype, data);
@@ -267,11 +279,8 @@ enum class ground_data_type
 
 static inline bool is_scalar(py::handle arg)
 {
-    return (
-        py::isinstance<py::int_>(arg)
-        || py::isinstance<py::float_>(arg)
-        || RPyPolynomial_Check(arg.ptr())
-    );
+    return (py::isinstance<py::int_>(arg) || py::isinstance<py::float_>(arg)
+            || RPyPolynomial_Check(arg.ptr()));
 }
 
 static inline bool

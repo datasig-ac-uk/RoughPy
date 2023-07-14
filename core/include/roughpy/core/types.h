@@ -36,16 +36,8 @@
 #include <utility>
 
 #ifdef RPY_CPP_17
-#  ifndef RPY_APPLE
-
-#    include <optional>
-
-#  else
-#    include <boost/optional.hpp>
-#  endif
-
+#  include <optional>
 #  include <string_view>
-
 #else
 #  include <boost/optional.hpp>
 #  include <boost/utility/string_view.hpp>
