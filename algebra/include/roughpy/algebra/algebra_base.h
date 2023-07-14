@@ -43,6 +43,10 @@
 #include "basis.h"
 #include "fallback_operations.h"
 
+
+RPY_WARNING_PUSH
+RPY_MSVC_DISABLE_WARNING(4661)
+
 namespace rpy {
 namespace algebra {
 
@@ -55,7 +59,7 @@ namespace dtl {
  * various places. If you define an algebra interface, it should derive
  * from the base AlgebraInterface, which publicly derives from this tag.
  */
-class RPY_EXPORT AlgebraInterfaceBase
+class AlgebraInterfaceBase
 {
 protected:
     context_pointer p_ctx;
@@ -528,5 +532,7 @@ RPY_EXPORT void check_contexts_compatible(
 
 }// namespace algebra
 }// namespace rpy
+
+RPY_WARNING_POP
 
 #endif// ROUGHPY_ALGEBRA_ALGEBRA_BASE_H_

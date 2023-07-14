@@ -93,9 +93,15 @@ static py::object from_function(py::object fn, py::kwargs kwargs)
 
     // TODO: Fix this up properly.
 
+    intervals::RealInterval effective_support =
+            intervals::RealInterval::unbounded();
+    if (pmd.support) {
+        effective_support = *pmd.support;
+    }
+
     streams::StreamMetadata md{
             pmd.width,
-            pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
+            effective_support,
             pmd.ctx,
             pmd.scalar_type,
             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,

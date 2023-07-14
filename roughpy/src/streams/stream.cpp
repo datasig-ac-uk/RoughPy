@@ -482,6 +482,29 @@ simplify_stream(PyObject* self, PyObject* args, PyObject* kwargs)
     return python::RPyStream_FromStream(stream.simplify(partition, resolution));
 }
 
+static const char RESTRICT_DOC[] = R"rpydoc(Create a new stream with the same
+ data but restricted to a given interval.)rpydoc";
+static PyObject* restrict(PyObject* self, PyObject* args, PyObject* kwargs)
+{
+    static const char* kwords[] = {"interval", nullptr};
+
+    PyObject* py_interval;
+
+    if (PyArg_ParseTupleAndKeywords(
+                args, kwargs, "O", const_cast<char**>(kwords), &py_interval
+        )
+        == 0) {
+        return nullptr;
+    }
+
+    intervals::RealInterval ivl(py::cast<const intervals::Interval&>(py_interval
+    ));
+
+    const auto& stream = reinterpret_cast<python::RPyStream*>(self)->m_data;
+
+    return python::RPyStream_FromStream(stream.restrict(ivl));
+}
+
 static PyMethodDef RPyStream_members[] = {
         {           "signature",       (PyCFunction) &signature,METH_VARARGS | METH_KEYWORDS,
          SIGNATURE_DOC                                                                                            },
@@ -491,6 +514,8 @@ static PyMethodDef RPyStream_members[] = {
          METH_VARARGS | METH_KEYWORDS,       SIG_DERIV_DOC                                                        },
         {            "simplify", (PyCFunction) &simplify_stream,
          METH_VARARGS | METH_KEYWORDS, SIMPLIFY_STREAM_DOC                                                        },
+        {            "restrict",        (PyCFunction)& restrict, METH_VARARGS | METH_KEYWORDS,
+         RESTRICT_DOC                                                                                             },
         {               nullptr,                        nullptr,                            0,             nullptr}
 };
 
@@ -521,9 +546,8 @@ static PyObject* ctx_getter(PyObject* self)
 
 static PyObject* support_getter(PyObject* self)
 {
-    return py::cast(reinterpret_cast<python::RPyStream*>(self)
-                            ->m_data.metadata()
-                            .effective_support)
+    return py::cast(reinterpret_cast<python::RPyStream*>(self)->m_data.support()
+    )
             .release()
             .ptr();
 }
@@ -547,10 +571,11 @@ static PyObject* RPyStream_repr(PyObject* self)
 static PyObject* RPyStream_str(PyObject* self) { return RPyStream_repr(self); }
 
 PyTypeObject rpy::python::RPyStream_Type = {
-        PyVarObject_HEAD_INIT(nullptr, 0) "_roughpy.Stream", /* tp_name */
-        sizeof(python::RPyStream),                           /* tp_basicsize */
-        0,                                                   /* tp_itemsize */
-        nullptr,                                             /* tp_dealloc */
+        PyVarObject_HEAD_INIT(nullptr, 0)         //
+        "_roughpy.Stream",                        /* tp_name */
+        sizeof(python::RPyStream),                /* tp_basicsize */
+        0,                                        /* tp_itemsize */
+        nullptr,                                  /* tp_dealloc */
         0,                                        /* tp_vectorcall_offset */
         (getattrfunc) nullptr,                    /* tp_getattr */
         (setattrfunc) nullptr,                    /* tp_setattr */
