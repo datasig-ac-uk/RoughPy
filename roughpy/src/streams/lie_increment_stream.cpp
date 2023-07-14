@@ -148,12 +148,17 @@ static py::object lie_increment_stream_from_increments(
             }
         } else if (py::isinstance<py::sequence>(indices_arg)) {
             indices = indices_arg.cast<std::vector<param_t>>();
+        } else {
+            throw py::type_error("unexpected type provided to 'indices' "
+                                 "argument");
         }
 
-        auto minmax = std::minmax_element(indices.begin(), indices.end());
-        effective_support = intervals::RealInterval(
-                *minmax.first, *minmax.second, md.interval_type
-        );
+        if (!indices.empty()) {
+            auto minmax = std::minmax_element(indices.begin(), indices.end());
+            effective_support = intervals::RealInterval(
+                    *minmax.first, *minmax.second + 1.0, md.interval_type
+            );
+        }
     }
 
     if (indices.empty()) {
