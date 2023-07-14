@@ -6,19 +6,29 @@ This library is currently in an alpha stage, and as such many features are still
 
 
 ## Installation
-Currently, RoughPy is only available as a source distribution. It should still be installable via pip, provided you have all the dependencies set up.
-Use 
+RoughPy can be installed from PyPI using `pip` on Windows, Linux, and MacOS (Intel based Mac only, sorry not Apple Silicon support yet). Simply run
 ```
-pip install https://github.com/datasig-ac-uk/roughpy
+pip install roughpy
 ```
-The compilation process is quite long - there is a lot to build. For the full release, we will add prebuilt binaries for major platforms.
-The following packages are required to build RoughPy:
- - Boost (at least version 1.81, components system threads filesystem serialization)
- - libsndfile
- - Eigen3
- - (More to be added)
+to get the latest version.
 
-Microsoft vcpkg can be used to install these dependencies - see the vcpkg.json file for the requirements.
+Alternatively, the wheel files can be downloaded from the [Releases](https://github.com/datasig-ac-uk/RoughPy/releases) page.
+
+### Installing from source
+RoughPy can be installed from source, although this is not the recommended way to install.
+The build system requires [vcpkg](https://github.com/Microsoft/vcpkg) in order to obtain the necessary dependencies (except for MKL on x86 platforms, which is installed via pip).
+You will need to make sure that vcpkg is available on your system before attempting to build RoughPy.
+The following commands should be sufficient to set up the environment for building RoughPy:
+```bash
+git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
+tools/vcpkg/bootstrap-vcpkg.sh
+export CMAKE_TOOLCHAIN_FILE=$(pwd)/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+With this environment variable set, you should now be able to pip install either using the PyPI source distribution (using the `--no-binary :all:` flag), or directly from GitHub:
+```bash
+pip install https://github.com/datasig-ac-uk/RoughPy.git
+```
+It will take some time to build.
 
 ## Usage
 Following the NumPy (and related) convention, we import RoughPy under the alias `rp` as follows:
