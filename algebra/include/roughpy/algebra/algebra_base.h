@@ -398,6 +398,19 @@ public:
     }
 
     RPY_NO_DISCARD
+    explicit inline operator const Interface*() const noexcept
+    {
+        return p_impl.get();
+    }
+
+    RPY_NO_DISCARD
+    explicit inline operator Interface*() noexcept
+    {
+        return p_impl.get();
+    }
+
+
+    RPY_NO_DISCARD
     dimn_t dimension() const;
     RPY_NO_DISCARD
     dimn_t size() const;

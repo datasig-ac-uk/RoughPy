@@ -226,7 +226,59 @@ public:
     FreeTensor sig_derivative(
             const std::vector<DerivativeComputeInfo>& info, VectorType vtype
     ) const override;
+
+    UnspecifiedAlgebraType free_multiply(
+            const ConstRawUnspecifiedAlgebraType left,
+            const ConstRawUnspecifiedAlgebraType right
+    ) const override;
+    UnspecifiedAlgebraType shuffle_multiply(
+            ConstRawUnspecifiedAlgebraType left,
+            ConstRawUnspecifiedAlgebraType right
+    ) const override;
+    UnspecifiedAlgebraType half_shuffle_multiply(
+            ConstRawUnspecifiedAlgebraType left,
+            ConstRawUnspecifiedAlgebraType right
+    ) const override;
+    UnspecifiedAlgebraType adjoint_to_left_multiply_by(
+            ConstRawUnspecifiedAlgebraType multiplier,
+            ConstRawUnspecifiedAlgebraType argument
+    ) const override;
 };
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::free_multiply(
+        const ConstRawUnspecifiedAlgebraType left,
+        const ConstRawUnspecifiedAlgebraType right
+) const
+{
+
+
+
+
+}
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::shuffle_multiply(
+        ConstRawUnspecifiedAlgebraType left,
+        ConstRawUnspecifiedAlgebraType right
+) const
+{
+    return Context::shuffle_multiply(left, right);
+}
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::half_shuffle_multiply(
+        ConstRawUnspecifiedAlgebraType left,
+        ConstRawUnspecifiedAlgebraType right
+) const
+{
+    return Context::half_shuffle_multiply(left, right);
+}
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::adjoint_to_left_multiply_by(
+        ConstRawUnspecifiedAlgebraType multiplier,
+        ConstRawUnspecifiedAlgebraType argument
+) const
+{
+    return Context::adjoint_to_left_multiply_by(multiplier, argument);
+}
 
 class LiteContextMaker : public ContextMaker
 {

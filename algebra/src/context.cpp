@@ -308,3 +308,36 @@ void rpy::algebra::intrusive_ptr_add_ref(const rpy::algebra::ContextBase* ptr)
                                   ContextBase, boost::thread_safe_counter>*>(ptr
     ));
 }
+
+UnspecifiedAlgebraType Context::free_multiply(
+        const ConstRawUnspecifiedAlgebraType left,
+        const ConstRawUnspecifiedAlgebraType right
+) const
+{
+    throw std::runtime_error("free tensor multiply is not implemented for "
+                                         "arbitrary types with this backend");
+}
+UnspecifiedAlgebraType Context::shuffle_multiply(
+        ConstRawUnspecifiedAlgebraType left,
+        ConstRawUnspecifiedAlgebraType right
+) const
+{
+    throw std::runtime_error("shuffle multiply is not implemented for "
+                                         "arbitrary types with this backend");
+}
+UnspecifiedAlgebraType Context::half_shuffle_multiply(
+        ConstRawUnspecifiedAlgebraType left,
+        ConstRawUnspecifiedAlgebraType right
+) const
+{
+    throw std::runtime_error("half shuffle multiply is not implemented for "
+                             "arbitrary types with this backend");
+}
+UnspecifiedAlgebraType Context::adjoint_to_left_multiply_by(
+        ConstRawUnspecifiedAlgebraType multiplier,
+        ConstRawUnspecifiedAlgebraType argument
+) const
+{
+    throw std::runtime_error("adjoint of left multiply is not implemented for "
+                             "arbitrary types with this backend");
+}
