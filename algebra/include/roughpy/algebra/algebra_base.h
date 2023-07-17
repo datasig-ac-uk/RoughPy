@@ -327,6 +327,10 @@ public:
     explicit AlgebraBase(std::unique_ptr<Interface> impl)
         : p_impl(std::move(impl))
     {}
+    explicit AlgebraBase(UnspecifiedAlgebraType&& impl)
+            : p_impl(reinterpret_cast<Interface*>(impl.release()))
+    {}
+
     explicit AlgebraBase(Interface* impl) : p_impl(impl) {}
 
     using interface_t = Interface;
