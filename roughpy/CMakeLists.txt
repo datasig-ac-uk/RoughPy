@@ -52,6 +52,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/algebra/basis.h
         src/algebra/context.cpp
         src/algebra/context.h
+        src/algebra/free_multiply_funcs.cpp
+        src/algebra/free_multiply_funcs.h
         src/algebra/free_tensor.h
         src/algebra/free_tensor.cpp
         src/algebra/lie.cpp

@@ -40,6 +40,7 @@
 #include "shuffle_tensor.h"
 #include "tensor_key.h"
 #include "tensor_key_iterator.h"
+#include "free_multiply_funcs.h"
 
 void rpy::python::init_algebra(pybind11::module_& m)
 {
@@ -59,4 +60,7 @@ void rpy::python::init_algebra(pybind11::module_& m)
     init_free_tensor(m);
     init_shuffle_tensor(m);
     init_lie(m);
+
+    init_free_multiply_funcs(m);
+
 }
