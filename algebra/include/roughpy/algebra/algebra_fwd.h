@@ -82,6 +82,7 @@ class AlgebraInterfaceBase;
 
 }
 using RawUnspecifiedAlgebraType = dtl::AlgebraInterfaceBase*;
+using ConstRawUnspecifiedAlgebraType = const dtl::AlgebraInterfaceBase*;
 using UnspecifiedAlgebraType = std::unique_ptr<dtl::AlgebraInterfaceBase>;
 
 class FreeTensor;
