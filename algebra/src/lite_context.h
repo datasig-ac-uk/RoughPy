@@ -227,22 +227,22 @@ public:
             const std::vector<DerivativeComputeInfo>& info, VectorType vtype
     ) const override;
 
-    UnspecifiedAlgebraType free_multiply(
-            const ConstRawUnspecifiedAlgebraType left,
-            const ConstRawUnspecifiedAlgebraType right
-    ) const override;
-    UnspecifiedAlgebraType shuffle_multiply(
-            ConstRawUnspecifiedAlgebraType left,
-            ConstRawUnspecifiedAlgebraType right
-    ) const override;
-    UnspecifiedAlgebraType half_shuffle_multiply(
-            ConstRawUnspecifiedAlgebraType left,
-            ConstRawUnspecifiedAlgebraType right
-    ) const override;
-    UnspecifiedAlgebraType adjoint_to_left_multiply_by(
-            ConstRawUnspecifiedAlgebraType multiplier,
-            ConstRawUnspecifiedAlgebraType argument
-    ) const override;
+//    UnspecifiedAlgebraType free_multiply(
+//            const ConstRawUnspecifiedAlgebraType left,
+//            const ConstRawUnspecifiedAlgebraType right
+//    ) const override;
+//    UnspecifiedAlgebraType shuffle_multiply(
+//            ConstRawUnspecifiedAlgebraType left,
+//            ConstRawUnspecifiedAlgebraType right
+//    ) const override;
+//    UnspecifiedAlgebraType half_shuffle_multiply(
+//            ConstRawUnspecifiedAlgebraType left,
+//            ConstRawUnspecifiedAlgebraType right
+//    ) const override;
+//    UnspecifiedAlgebraType adjoint_to_left_multiply_by(
+//            ConstRawUnspecifiedAlgebraType multiplier,
+//            ConstRawUnspecifiedAlgebraType argument
+//    ) const override;
 };
 //template <typename Coefficients>
 //UnspecifiedAlgebraType LiteContext<Coefficients>::free_multiply(
