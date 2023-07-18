@@ -24,7 +24,9 @@ git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
 tools/vcpkg/bootstrap-vcpkg.sh
 export CMAKE_TOOLCHAIN_FILE=$(pwd)/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 ```
-With this environment variable set, you should now be able to pip install either using the PyPI source distribution (using the `--no-binary :all:` flag), or directly from GitHub:
+With this environment variable set, you should now be able to pip install 
+either using the PyPI source distribution (using the `--no-binary :roughpy:` 
+flag), or directly from GitHub:
 ```bash
 pip install https://github.com/datasig-ac-uk/RoughPy.git
 ```
