@@ -27,7 +27,7 @@ py::object free_multiply(const py::object& left, const py::object& right)
         } else if (py::isinstance<algebra::ShuffleTensor>(right)) {
             right_raw = &*right.cast<const algebra::ShuffleTensor&>();
         } else {
-            throw std::runtime_error("argument 'right' must be of type "
+            RPY_THROW(std::runtime_error,"argument 'right' must be of type "
                                      "FreeTensor or ShuffleTensor");
         }
     } else if (py::isinstance<algebra::ShuffleTensor>(left)) {
@@ -40,11 +40,11 @@ py::object free_multiply(const py::object& left, const py::object& right)
         } else if (py::isinstance<algebra::ShuffleTensor>(right)) {
             right_raw = &*right.cast<const algebra::ShuffleTensor&>();
         } else {
-            throw std::runtime_error("argument 'right' must be of type "
+            RPY_THROW(std::runtime_error,"argument 'right' must be of type "
                                      "FreeTensor or ShuffleTensor");
         }
     } else {
-        throw std::runtime_error("argument 'left' must be of type FreeTensor "
+        RPY_THROW(std::runtime_error,"argument 'left' must be of type FreeTensor "
                                  "or ShuffleTensor");
     }
 
@@ -57,7 +57,7 @@ py::object free_multiply(const py::object& left, const py::object& right)
             return py::cast(algebra::FreeTensor(std::move(result_ptr)));
         case algebra::AlgebraType::ShuffleTensor:
             return py::cast(algebra::ShuffleTensor(std::move(result_ptr)));
-        default: throw std::runtime_error("unexpected result algebra type");
+        default: RPY_THROW(std::runtime_error, "unexpected result algebra type");
     }
 
     RPY_UNREACHABLE_RETURN(py::none());
@@ -79,7 +79,7 @@ py::object shuffle_multiply(const py::object& left, const py::object& right)
         } else if (py::isinstance<algebra::ShuffleTensor>(right)) {
             right_raw = &*right.cast<const algebra::ShuffleTensor&>();
         } else {
-            throw std::runtime_error("argument 'right' must be of type "
+            RPY_THROW(std::runtime_error,"argument 'right' must be of type "
                                      "FreeTensor or ShuffleTensor");
         }
     } else if (py::isinstance<algebra::ShuffleTensor>(left)) {
@@ -92,11 +92,11 @@ py::object shuffle_multiply(const py::object& left, const py::object& right)
         } else if (py::isinstance<algebra::ShuffleTensor>(right)) {
             right_raw = &*right.cast<const algebra::ShuffleTensor&>();
         } else {
-            throw std::runtime_error("argument 'right' must be of type "
+            RPY_THROW(std::runtime_error,"argument 'right' must be of type "
                                      "FreeTensor or ShuffleTensor");
         }
     } else {
-        throw std::runtime_error("argument 'left' must be of type FreeTensor "
+        RPY_THROW(std::runtime_error,"argument 'left' must be of type FreeTensor "
                                  "or ShuffleTensor");
     }
 
@@ -109,7 +109,7 @@ py::object shuffle_multiply(const py::object& left, const py::object& right)
             return py::cast(algebra::FreeTensor(std::move(result_ptr)));
         case algebra::AlgebraType::ShuffleTensor:
             return py::cast(algebra::ShuffleTensor(std::move(result_ptr)));
-        default: throw std::runtime_error("unexpected result algebra type");
+        default: RPY_THROW(std::runtime_error, "unexpected result algebra type");
     }
 
     RPY_UNREACHABLE_RETURN(py::none());
@@ -132,7 +132,7 @@ half_shuffle_multiply(const py::object& left, const py::object& right)
         } else if (py::isinstance<algebra::ShuffleTensor>(right)) {
             right_raw = &*right.cast<const algebra::ShuffleTensor&>();
         } else {
-            throw std::runtime_error("argument 'right' must be of type "
+            RPY_THROW(std::runtime_error,"argument 'right' must be of type "
                                      "FreeTensor or ShuffleTensor");
         }
     } else if (py::isinstance<algebra::ShuffleTensor>(left)) {
@@ -145,11 +145,11 @@ half_shuffle_multiply(const py::object& left, const py::object& right)
         } else if (py::isinstance<algebra::ShuffleTensor>(right)) {
             right_raw = &*right.cast<const algebra::ShuffleTensor&>();
         } else {
-            throw std::runtime_error("argument 'right' must be of type "
+            RPY_THROW(std::runtime_error,"argument 'right' must be of type "
                                      "FreeTensor or ShuffleTensor");
         }
     } else {
-        throw std::runtime_error("argument 'left' must be of type FreeTensor "
+        RPY_THROW(std::runtime_error,"argument 'left' must be of type FreeTensor "
                                  "or ShuffleTensor");
     }
 
@@ -162,7 +162,7 @@ half_shuffle_multiply(const py::object& left, const py::object& right)
             return py::cast(algebra::FreeTensor(std::move(result_ptr)));
         case algebra::AlgebraType::ShuffleTensor:
             return py::cast(algebra::ShuffleTensor(std::move(result_ptr)));
-        default: throw std::runtime_error("unexpected result algebra type");
+        default: RPY_THROW(std::runtime_error, "unexpected result algebra type");
     }
 
     RPY_UNREACHABLE_RETURN(py::none());
@@ -185,7 +185,7 @@ adjoint_to_free_multiply(const py::object& multiplier, const py::object& arg)
         } else if (py::isinstance<algebra::ShuffleTensor>(arg)) {
             arg_raw = &*arg.cast<const algebra::ShuffleTensor&>();
         } else {
-            throw std::runtime_error("argument 'right' must be of type "
+            RPY_THROW(std::runtime_error,"argument 'right' must be of type "
                                      "FreeTensor or ShuffleTensor");
         }
     } else if (py::isinstance<algebra::ShuffleTensor>(multiplier)) {
@@ -199,11 +199,11 @@ adjoint_to_free_multiply(const py::object& multiplier, const py::object& arg)
         } else if (py::isinstance<algebra::ShuffleTensor>(arg)) {
             arg_raw = &*arg.cast<const algebra::ShuffleTensor&>();
         } else {
-            throw std::runtime_error("argument 'right' must be of type "
+            RPY_THROW(std::runtime_error,"argument 'right' must be of type "
                                      "FreeTensor or ShuffleTensor");
         }
     } else {
-        throw std::runtime_error("argument 'left' must be of type FreeTensor "
+        RPY_THROW(std::runtime_error,"argument 'left' must be of type FreeTensor "
                                  "or ShuffleTensor");
     }
 
@@ -216,7 +216,7 @@ adjoint_to_free_multiply(const py::object& multiplier, const py::object& arg)
             return py::cast(algebra::FreeTensor(std::move(result_ptr)));
         case algebra::AlgebraType::ShuffleTensor:
             return py::cast(algebra::ShuffleTensor(std::move(result_ptr)));
-        default: throw std::runtime_error("unexpected result algebra type");
+        default: RPY_THROW(std::runtime_error, "unexpected result algebra type");
     }
 
     RPY_UNREACHABLE_RETURN(py::none());

@@ -109,7 +109,7 @@ protected:
     Impl& data()
     {
         if (is_const<Impl>::value) {
-            throw std::runtime_error("cannot get mutable data from const object"
+            RPY_THROW(std::runtime_error,"cannot get mutable data from const object"
             );
         }
         return *p_data;
@@ -211,7 +211,7 @@ public:
     Impl&& take_data() override
     {
         if (is_same<storage_base_t, BorrowedStorageModel<Impl>>::value) {
-            throw std::runtime_error("cannot take from a borrowed algebra");
+            RPY_THROW(std::runtime_error, "cannot take from a borrowed algebra");
         }
         return std::move(data());
     }
@@ -583,7 +583,7 @@ AlgebraImplementation<Interface, Impl, StorageModel>::convert_argument(
                 this->context()->convert(arg, this->storage_type())
         );
     }
-    throw std::invalid_argument("cannot convert argument");
+    RPY_THROW(std::invalid_argument, "cannot convert argument");
 }
 
 template <

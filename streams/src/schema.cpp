@@ -89,7 +89,7 @@ StreamSchema::stream_dim_to_channel_it(dimn_t& stream_dim) const
         if (stream_dim < channel_width) { return cit; }
         stream_dim -= channel_width;
     }
-    throw std::runtime_error("stream dimension exceeds width");
+    RPY_THROW(std::runtime_error, "stream dimension exceeds width");
 }
 
 typename StreamSchema::const_iterator

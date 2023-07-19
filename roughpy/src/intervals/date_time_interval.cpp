@@ -15,13 +15,13 @@ python::DateTimeInterval::DateTimeInterval(py::object dt_begin,
       m_dt_end(std::move(dt_end))
 {
     if (Py_TYPE(m_dt_begin.ptr()) != Py_TYPE(m_dt_end.ptr())) {
-        throw py::type_error("both begin and end objects must have the same "
+        RPY_THROW(py::type_error,"both begin and end objects must have the same "
                              "type");
     }
 
     if (!is_py_datetime(m_dt_begin) || !is_py_date(m_dt_begin)
         || !is_py_time(m_dt_begin)) {
-        throw py::type_error("begin and end must be datetime, data, or time "
+        RPY_THROW(py::type_error,"begin and end must be datetime, data, or time "
                              "objects");
     }
 }

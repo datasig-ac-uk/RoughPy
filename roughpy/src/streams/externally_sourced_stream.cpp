@@ -47,7 +47,7 @@ external_stream_constructor(string uri_string, const py::kwargs& kwargs)
                 uri.set_path(uri_string);
             }
         } catch (...) {
-            throw py::value_error(
+            RPY_THROW(py::value_error,
                     "could not parse path " + uri_string + " error code "
                     + uri_result.error().message()
             );
@@ -60,7 +60,7 @@ external_stream_constructor(string uri_string, const py::kwargs& kwargs)
     auto factory = streams::ExternalDataStream::get_factory_for(uri);
 
     if (!factory) {
-        throw py::value_error("The uri " + uri_string + " is not supported");
+        RPY_THROW(py::value_error, "The uri " + uri_string + " is not supported");
     }
 
     //    factory.add_metadata({

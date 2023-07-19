@@ -69,7 +69,7 @@ OwnedScalarArray::OwnedScalarArray(const Scalar& value, dimn_t count)
         m_size = count;
         type->convert_fill(*this, value.to_pointer(), count, "");
     } else {
-        throw std::runtime_error("scalar value has invalid type");
+        RPY_THROW(std::runtime_error, "scalar value has invalid type");
     }
 }
 
@@ -78,7 +78,7 @@ OwnedScalarArray::OwnedScalarArray(const ScalarType* type, const void* data,
     : ScalarArray(type)
 {
     if (type == nullptr) {
-        throw std::invalid_argument("cannot construct array with invalid type");
+        RPY_THROW(std::invalid_argument, "cannot construct array with invalid type");
     }
 
     ScalarPointer::operator=(type->allocate(count));

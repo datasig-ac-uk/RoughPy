@@ -46,7 +46,7 @@ python::PyLieKeyIterator::PyLieKeyIterator(
     : m_current(current), m_end(end)
 {
     if (!py::isinstance(ctx, reinterpret_cast<PyObject*>(&RPyContext_Type))) {
-        throw py::type_error("expected a Context object");
+        RPY_THROW(py::type_error, "expected a Context object");
     }
     p_ctx = python::ctx_cast(ctx.ptr());
 }

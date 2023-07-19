@@ -3,6 +3,8 @@ Version 0.0.5:
   multiplication between pairs of tensors (of either kind).
   - Added free function for applying the adjoint of left free tensor
   multiplication to arbitrary tensors.
+  - Improved exception usage, messages now include filename, lineno, and
+  function name to help locate c++ exceptions passed through to Python.
 
 Version 0.0.4:
   - Overhauled the RPY_CHECK macro so it now gives much better contextual

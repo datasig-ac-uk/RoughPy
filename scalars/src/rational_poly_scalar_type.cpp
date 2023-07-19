@@ -115,7 +115,7 @@ void RationalPolyScalarType::convert_copy(
 ) const
 {
     if (src.type() == nullptr) {
-        throw std::invalid_argument("source type cannot be null");
+        RPY_THROW(std::invalid_argument, "source type cannot be null");
     }
     convert_copy(dst, src.ptr(), count, src.type()->id());
 }
@@ -154,7 +154,7 @@ void RationalPolyScalarType::convert_copy(
                     break;
                 case 128:
                 default:
-                    throw std::runtime_error(
+                    RPY_THROW(std::runtime_error,
                             "invalid bit configuration for integer type"
                     );
             }
@@ -175,7 +175,7 @@ void RationalPolyScalarType::convert_copy(
                     break;
                 case 128:
                 default:
-                    throw std::runtime_error(
+                    RPY_THROW(std::runtime_error,
                             "invalid bit configuration for integer type"
                     );
             }
@@ -192,7 +192,7 @@ void RationalPolyScalarType::convert_copy(
                     convert_copy_ext<double>(optr, in, info.lanes * count);
                     break;
                 default:
-                    throw std::runtime_error(
+                    RPY_THROW(std::runtime_error,
                             "invalid bit configuration for float type"
                     );
             }
@@ -203,7 +203,7 @@ void RationalPolyScalarType::convert_copy(
                     //                    convert_copy_ext<bfloat16>(optr, in,
                     //                    info.lanes * count); break;
                 default:
-                    throw std::runtime_error(
+                    RPY_THROW(std::runtime_error,
                             "invalid bit configuration for bfloat type"
                     );
             }
@@ -211,7 +211,7 @@ void RationalPolyScalarType::convert_copy(
         case ScalarTypeCode::Bool:
         case ScalarTypeCode::OpaqueHandle: break;
         case ScalarTypeCode::Complex:
-        default: throw std::runtime_error("unsupported scalar type");
+        default: RPY_THROW(std::runtime_error, "unsupported scalar type");
     }
 }
 void RationalPolyScalarType::convert_copy(
@@ -343,12 +343,12 @@ Scalar RationalPolyScalarType::mul(ScalarPointer lhs, ScalarPointer rhs) const
 Scalar RationalPolyScalarType::div(ScalarPointer lhs, ScalarPointer rhs) const
 {
     if (!lhs) { return zero(); }
-    if (rhs.is_null()) { throw std::runtime_error("division by zero"); }
+    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
     auto divisor = try_convert<rational_scalar_type>(rhs);
 
     if (divisor == rational_scalar_type(0)) {
-        throw std::runtime_error("division by zero");
+        RPY_THROW(std::runtime_error, "division by zero");
     }
 
     return Scalar(this, *lhs.template raw_cast<scalar_type>() / divisor);
@@ -380,12 +380,12 @@ void RationalPolyScalarType::div_inplace(ScalarPointer lhs, ScalarPointer rhs)
     RPY_CHECK(lhs);
     auto* ptr = lhs.raw_cast<scalar_type*>();
 
-    if (rhs.is_null()) { throw std::runtime_error("division by zero"); }
+    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
     auto divisor = try_convert<rational_scalar_type>(rhs);
 
     if (divisor == rational_scalar_type(0)) {
-        throw std::runtime_error("division by zero");
+        RPY_THROW(std::runtime_error, "division by zero");
     }
 
     *ptr /= divisor;
@@ -412,11 +412,11 @@ std::unique_ptr<RandomGenerator> RationalPolyScalarType::get_rng(
         const string& bit_generator, Slice<uint64_t> seed
 ) const
 {
-    throw std::runtime_error("no rng for rational polynomial scalars");
+    RPY_THROW(std::runtime_error, "no rng for rational polynomial scalars");
 }
 std::unique_ptr<BlasInterface> RationalPolyScalarType::get_blas() const
 {
-    throw std::runtime_error(
+    RPY_THROW(std::runtime_error,
             "no blas implementation for rational polynomial scalars"
     );
 }
@@ -424,13 +424,13 @@ std::vector<byte> RationalPolyScalarType::to_raw_bytes(
         const ScalarPointer& ptr, dimn_t count
 ) const
 {
-    throw std::runtime_error("not implemented");
+    RPY_THROW(std::runtime_error, "not implemented");
 }
 ScalarPointer RationalPolyScalarType::from_raw_bytes(
         Slice<byte> raw_bytes, dimn_t count
 ) const
 {
-    throw std::runtime_error("not implemented");
+    RPY_THROW(std::runtime_error, "not implemented");
 }
 }// namespace scalars
 }// namespace rpy

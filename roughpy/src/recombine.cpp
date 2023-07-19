@@ -89,7 +89,7 @@ static py::tuple py_recombine(const py::object& data,
     const auto ndim = shape.size();
 
     if (ndim < 2 || buffer.size() == 0) {
-        throw py::value_error("malformed data");
+        RPY_THROW(py::value_error, "malformed data");
     }
 
     auto no_data_points = shape[0];

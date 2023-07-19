@@ -962,7 +962,7 @@ PyObject* PyMonomial_FromMonomial(scalars::monomial arg)
 scalars::monomial PyMonomial_AsMonomial(PyObject* py_monomial)
 {
     if (Py_TYPE(py_monomial) != &RPyMonomial_Type) {
-        throw std::invalid_argument("");
+        RPY_THROW(std::invalid_argument, "");
     }
 
     return cast_mon(py_monomial);

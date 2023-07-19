@@ -104,7 +104,7 @@ static py::object lie_increment_stream_from_increments(
         if (options.type != nullptr) {
             md.scalar_type = options.type;
         } else {
-            throw py::type_error("unable to deduce suitable scalar type");
+            RPY_THROW(py::type_error, "unable to deduce suitable scalar type");
         }
     }
 
@@ -115,7 +115,7 @@ static py::object lie_increment_stream_from_increments(
     RPY_CHECK(md.scalar_type != nullptr);
     if (!md.ctx) {
         if (md.width == 0 || md.depth == 0) {
-            throw py::value_error(
+            RPY_THROW(py::value_error,
                     "either ctx or both width and depth must be specified"
             );
         }
@@ -137,7 +137,7 @@ static py::object lie_increment_stream_from_increments(
             auto icol = indices_arg.cast<idimn_t>();
             if (icol < 0) { icol += increment_size; }
             if (icol < 0 || icol >= increment_size) {
-                throw py::value_error("index out of bounds");
+                RPY_THROW(py::value_error, "index out of bounds");
             }
 
             indices.reserve(num_increments);
@@ -149,7 +149,7 @@ static py::object lie_increment_stream_from_increments(
         } else if (py::isinstance<py::sequence>(indices_arg)) {
             indices = indices_arg.cast<std::vector<param_t>>();
         } else {
-            throw py::type_error("unexpected type provided to 'indices' "
+            RPY_THROW(py::type_error,"unexpected type provided to 'indices' "
                                  "argument");
         }
 
@@ -167,7 +167,7 @@ static py::object lie_increment_stream_from_increments(
             indices.emplace_back(i);
         }
     } else if (static_cast<idimn_t>(indices.size()) != num_increments) {
-        throw py::value_error("mismatch between number of rows in data and "
+        RPY_THROW(py::value_error,"mismatch between number of rows in data and "
                               "number of indices");
     }
 
@@ -189,7 +189,7 @@ static py::object lie_increment_stream_from_increments(
 RPY_UNUSED static streams::Stream
 lie_increment_path_from_values(const py::object& data, const py::kwargs& kwargs)
 {
-    throw std::runtime_error("Not implemented");
+    RPY_THROW(std::runtime_error, "Not implemented");
 }
 
 void python::init_lie_increment_stream(py::module_& m)

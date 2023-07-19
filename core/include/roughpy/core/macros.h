@@ -325,9 +325,18 @@ namespace rpy {
 namespace errors {
 
 template <typename E>
-RPY_NO_RETURN RPY_INLINE_ALWAYS void
-throw_exception(const char* msg, const char* filename, int lineno, const
-                char* func)
+RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
+        std::string msg, const char* filename, int lineno, const char* func
+)
+{
+    throw E(msg + " at lineno " + std::to_string(lineno) + " in " + filename
+            + " in function " + func);
+}
+
+template <typename E>
+RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
+        const char* msg, const char* filename, int lineno, const char* func
+)
 {
     throw E(std::string(msg) + " at lineno " + std::to_string(lineno) + " in "
             + filename + " in function " + func);
@@ -335,8 +344,6 @@ throw_exception(const char* msg, const char* filename, int lineno, const
 
 }// namespace errors
 }// namespace rpy
-
-
 
 // Dispatch the check macro on the number of arguments
 // See: https://stackoverflow.com/a/16683147/9225581
@@ -361,21 +368,21 @@ throw_exception(const char* msg, const char* filename, int lineno, const
 
 #define RPY_CHECK(...) RPY_CHECK_SEL(RPY_CHECK_CNT(__VA_ARGS__))(__VA_ARGS__)
 
-#define RPY_THROW_2(EXC_TYPE, MSG) \
-    ::rpy::errors::throw_exception<EXC_TYPE>(MSG, __FILE__, __LINE__, \
-                                             RPY_FUNC_NAME)
+#define RPY_THROW_2(EXC_TYPE, MSG)                                             \
+    ::rpy::errors::throw_exception<EXC_TYPE>(                                  \
+            MSG, __FILE__, __LINE__, RPY_FUNC_NAME                             \
+    )
 #define RPY_THROW_1(MSG) RPY_THROW_2(std::runtime_error, MSG)
 
 #define RPY_THROW_SEL(NUM) RPY_JOIN(RPY_THROW_, NUM)
 #define RPY_THROW_CNT_IMPL(_1, _2, COUNT, ...) COUNT
 #define RPY_THROW_CNT(...) RPY_THROW_CNT_IMPL(__VA_ARGS__, 2, 1, 0)
-#define RPY_THROW(...) RPY_THROW_SEL(RPY_CHECK_CNT(__VA_ARGS__))(__VA_ARGS__)
+#define RPY_THROW(...) RPY_THROW_SEL(RPY_THROW_CNT(__VA_ARGS__))(__VA_ARGS__)
 
 #ifdef RPY_DEBUG
 #  define RPY_DBG_ASSERT(ARG) assert(ARG)
 #else
 #  define RPY_DBG_ASSERT(ARG) (void) 0
 #endif
-
 
 #endif// ROUGHPY_CORE_MACROS_H

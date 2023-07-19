@@ -239,7 +239,7 @@ inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2)
     }
 
     if (ctx1.width() != ctx2.width()) {
-        throw std::invalid_argument("contexts have incompatible width");
+        RPY_THROW(std::invalid_argument, "contexts have incompatible width");
     }
 
     const auto* ctype1 = ctx1.ctype();

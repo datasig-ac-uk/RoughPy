@@ -125,7 +125,7 @@ rpy::scalars::ScalarMatrix
 rpy::scalars::ScalarMatrix::to_full(rpy::scalars::MatrixLayout layout) const
 {
     if (p_type == nullptr) {
-        throw std::invalid_argument("cannot allocate matrix with no type");
+        RPY_THROW(std::invalid_argument, "cannot allocate matrix with no type");
     }
 
     ScalarMatrix result(p_type, m_nrows, m_ncols, m_storage, layout);

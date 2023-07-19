@@ -42,7 +42,7 @@
         case VectorType::Sparse: return RPY_SWITCH_FN(VectorType::Sparse);     \
         default:                                                               \
             RPY_UNREACHABLE();                                                 \
-            throw std::invalid_argument("invalid vector type");                \
+            RPY_THROW(std::invalid_argument, "invalid vector type");                \
     }
 
 #define RPY_MAKE_ALGTYPE_SWITCH(ALGTYPE)                                       \
@@ -60,7 +60,7 @@
             return RPY_SWITCH_FN(AlgebraType::LieBundle);                      \
         default:                                                               \
             RPY_UNREACHABLE();                                                 \
-            throw std::invalid_argument("invalid algebra type");               \
+            RPY_THROW(std::invalid_argument, "invalid algebra type");               \
     }
 
 namespace rpy {

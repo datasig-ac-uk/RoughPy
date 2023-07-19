@@ -165,7 +165,7 @@ void python::register_scalar_type(
 {
     auto& found = ctype_type_cache[ctype];
     if (static_cast<bool>(found)) {
-        throw std::runtime_error("ctype already registered");
+        RPY_THROW(std::runtime_error, "ctype already registered");
     }
 
     found = py::reinterpret_borrow<py::object>(py_type);
@@ -174,11 +174,14 @@ void python::register_scalar_type(
 py::object python::to_ctype_type(const scalars::ScalarType* type)
 {
     // The GIL must be held because we're working with Python objects anyway.
-    if (type == nullptr) { throw std::runtime_error("no matching ctype"); }
+    if (type == nullptr) { RPY_THROW(std::runtime_error, "no matching ctype"); }
     const auto found = ctype_type_cache.find(type);
     if (found != ctype_type_cache.end()) { return found->second; }
 
-    throw std::runtime_error("no matching ctype for type " + type->info().name);
+    RPY_THROW(
+            std::runtime_error,
+            "no matching ctype for type " + type->info().name
+    );
 }
 
 char python::format_to_type_char(const string& fmt)
@@ -189,7 +192,7 @@ char python::format_to_type_char(const string& fmt)
         switch (chr) {
             case '<':// little-endian
 #if BOOST_ENDIAN_BIG_BYTE || BOOST_ENDIAN_BIG_WORD
-                throw std::runtime_error(
+                RPY_THROW(std::runtime_error,
                         "non-native byte ordering not supported"
                 );
 #else
@@ -197,7 +200,7 @@ char python::format_to_type_char(const string& fmt)
 #endif
             case '>':// big-endian
 #if BOOST_ENDIAN_LITTLE_BYTE || BOOST_ENDIAN_LITTLE_WORD
-                throw std::runtime_error(
+                RPY_THROW(std::runtime_error, 
                         "non-native byte ordering not supported"
                 );
 #else
@@ -210,7 +213,7 @@ char python::format_to_type_char(const string& fmt)
 #endif
             case '!':// network ( = big-endian )
 #if BOOST_ENDIAN_LITTLE_BYTE || BOOST_ENDIAN_LITTLE_WORD
-                throw std::runtime_error(
+                RPY_THROW(std::runtime_error,
                         "non-native byte ordering not supported"
                 );
 #else
@@ -271,7 +274,7 @@ string python::py_buffer_to_type_id(const py::buffer_info& info)
         case 'b':
         case 'c': format = type_id_of<char>(); break;
         case 'B': format = type_id_of<unsigned char>(); break;
-        default: throw std::runtime_error("Unrecognised data format");
+        default: RPY_THROW(std::runtime_error, "Unrecognised data format");
     }
 
     return format;
@@ -288,7 +291,7 @@ python::py_buffer_to_scalar_type(const py::buffer_info& info)
         case 'f': return ScalarType::of<float>();
         case 'd': return ScalarType::of<double>();
         default:
-            throw py::type_error(
+            RPY_THROW(py::type_error,
                     "no matching type for buffer type " + string(&python_format)
             );
     }
@@ -304,7 +307,7 @@ const scalars::ScalarType* python::py_type_to_scalar_type(const py::type& type)
         return scalars::ScalarType::of<double>();
     }
 
-    throw py::type_error(
+    RPY_THROW(py::type_error,
             "no matching scalar type for type " + pytype_name(type)
     );
 }
@@ -329,7 +332,7 @@ py::type python::scalar_type_to_py_type(const scalars::ScalarType* type)
         );
     }
 
-    throw py::type_error("no matching type for type " + type->info().name);
+    RPY_THROW(py::type_error, "no matching type for type " + type->info().name);
 }
 
 void python::init_scalar_types(pybind11::module_& m)

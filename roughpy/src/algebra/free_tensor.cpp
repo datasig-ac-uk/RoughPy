@@ -105,7 +105,7 @@ static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs)
 
     if (helper.ctype == nullptr) {
         if (options.type == nullptr) {
-            throw py::value_error("could not deduce appropriate scalar type");
+            RPY_THROW(py::value_error, "could not deduce appropriate scalar type");
         }
         helper.ctype = options.type;
     }
@@ -116,7 +116,7 @@ static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs)
 
     if (!helper.ctx) {
         if (helper.width == 0 || helper.depth == 0) {
-            throw py::value_error(
+            RPY_THROW(py::value_error,
                     "you must provide either context or both width and depth"
             );
         }

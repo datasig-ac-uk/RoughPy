@@ -106,7 +106,7 @@ construct_key(const py::args& args, const py::kwargs& kwargs)
         auto max_idx = (python::maths::power(dimn_t(width), depth + 1) - 1)
                 / (dimn_t(width) - 1);
         if (index >= max_idx) {
-            throw py::value_error("provided index exceeds maximum");
+            RPY_THROW(py::value_error, "provided index exceeds maximum");
         }
 
         return python::PyTensorKey(index, width, depth);
@@ -133,11 +133,11 @@ construct_key(const py::args& args, const py::kwargs& kwargs)
     if (kwargs.contains("depth")) { depth = kwargs["depth"].cast<deg_t>(); }
 
     if (letters.size() > static_cast<dimn_t>(depth)) {
-        throw py::value_error("number of letters exceeds specified depth");
+        RPY_THROW(py::value_error, "number of letters exceeds specified depth");
     }
 
     if (!letters.empty() && *max_elt > width) {
-        throw py::value_error("letter value exceeds alphabet size");
+        RPY_THROW(py::value_error, "letter value exceeds alphabet size");
     }
 
     key_type result = 0;

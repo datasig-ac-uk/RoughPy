@@ -20,12 +20,12 @@ try_convert(ScalarPointer arg, const ScalarType* type = nullptr)
     if (arg.is_null()) { return T(0); }
     const auto* arg_type = arg.type();
     if (arg_type == nullptr) {
-        throw std::runtime_error("null type for non-zero value");
+        RPY_THROW(std::runtime_error, "null type for non-zero value");
     }
 
     auto cv = get_conversion(arg_type->id(), type->id());
     if (!cv) {
-        throw std::runtime_error(
+        RPY_THROW(std::runtime_error,
                 "no known conversion from " + arg_type->info().name
                 + " to type " + type->info().name
         );

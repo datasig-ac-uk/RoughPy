@@ -40,14 +40,14 @@ param_t Interval::included_end() const
 {
     if (m_interval_type == IntervalType::Clopen) { return inf(); }
     if (m_interval_type == IntervalType::Opencl) { return sup(); }
-    throw std::runtime_error(
+    RPY_THROW(std::runtime_error,
             "included_end is not valid for intervals that are not half open");
 }
 param_t Interval::excluded_end() const
 {
     if (m_interval_type == IntervalType::Clopen) { return sup(); }
     if (m_interval_type == IntervalType::Opencl) { return inf(); }
-    throw std::runtime_error(
+    RPY_THROW(std::runtime_error,
             "excluded_end is not valid for intervals that are not half open");
 }
 bool Interval::contains_point(param_t arg) const noexcept

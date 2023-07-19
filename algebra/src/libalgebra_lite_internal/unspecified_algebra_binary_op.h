@@ -67,7 +67,7 @@ class UnspecifiedFunctionInvoker<CasterType, Context, Current, Remaining...>
             Previous&&... previous
     )
     {
-        throw std::runtime_error("this operation is not defined for these "
+        RPY_THROW(std::runtime_error,"this operation is not defined for these "
                                  "types");
     }
     template <typename Operation, typename... Previous>
@@ -171,7 +171,7 @@ class UnspecifiedFunctionInvoker<CasterType, Context, Last>
             Previous&&... previous
     )
     {
-        throw std::runtime_error("this operation is not defined for these "
+        RPY_THROW(std::runtime_error,"this operation is not defined for these "
                                  "types");
     }
 

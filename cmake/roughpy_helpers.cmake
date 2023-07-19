@@ -501,7 +501,7 @@ bool algebra::${_class_name}Maker::can_get(deg_t width, deg_t depth, const scala
 algebra::context_pointer algebra::${_class_name}Maker::get_context(deg_t width, deg_t depth, const scalars::ScalarType* ctype, const preference_list& preferences) const {
     auto found = s_la_contexts.find(std::make_tuple(width, depth, ctype));
     if (found == s_la_contexts.end()) {
-        throw std::runtime_error(\"cannot get context\");
+        RPY_THROW(std::runtime_error, \"cannot get context\");
     }
     return found->second;
 }

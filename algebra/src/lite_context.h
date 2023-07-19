@@ -470,7 +470,7 @@ LiteContext<Coefficients>::lie_to_tensor_impl(const Lie& arg) const
     }
 
     if (arg_context->width() != width()) {
-        throw std::invalid_argument(
+        RPY_THROW(std::invalid_argument,
                 "cannot perform conversion on algebras with different bases"
         );
     }
@@ -489,7 +489,7 @@ LiteContext<Coefficients>::tensor_to_lie_impl(const FreeTensor& arg) const
     }
 
     if (arg_context->width() != width()) {
-        throw std::invalid_argument(
+        RPY_THROW(std::invalid_argument,
                 "cannot perform conversion on algebras with different bases"
         );
     }
@@ -656,21 +656,21 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
         construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::FreeTensorBundle>)
                 const
 {
-    throw std::runtime_error("not implemented for FreeTensorBundle");
+    RPY_THROW(std::runtime_error, "not implemented for FreeTensorBundle");
 }
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::
         construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::ShuffleTensorBundle>)
                 const
 {
-    throw std::runtime_error("not implemented for ShuffleTensorBundle");
+    RPY_THROW(std::runtime_error, "not implemented for ShuffleTensorBundle");
 }
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::
         construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::LieBundle>)
                 const
 {
-    throw std::runtime_error("not implemented for LieBundle");
+    RPY_THROW(std::runtime_error, "not implemented for LieBundle");
 }
 
 template <typename Coefficients>

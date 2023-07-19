@@ -417,7 +417,7 @@ typename Interface::algebra_t
 AlgebraBase<Interface, DerivedImpl>::sdiv(const scalars::Scalar& rhs) const
 {
     if (is_equivalent_to_zero(*this)) { return algebra_t(); }
-    if (rhs.is_zero()) { throw std::invalid_argument("cannot divide by zero"); }
+    if (rhs.is_zero()) { RPY_THROW(std::invalid_argument, "cannot divide by zero"); }
     // The implementation should perform the necessary scalar casting
     return p_impl->sdiv(rhs);
 }
@@ -475,7 +475,7 @@ AlgebraBase<Interface, DerivedImpl>::sdiv_inplace(const scalars::Scalar& rhs)
 {
     if (!is_equivalent_to_zero(*this)) {
         if (rhs.is_zero()) {
-            throw std::invalid_argument("cannot divide by zero");
+            RPY_THROW(std::invalid_argument, "cannot divide by zero");
         }
         p_impl->sdiv_inplace(rhs);
     }
@@ -532,7 +532,7 @@ AlgebraBase<Interface, DerivedImpl>::add_scal_div(
         RPY_CHECK_CONTEXTS(lhs);
 
         if (rhs.is_zero()) {
-            throw std::invalid_argument("cannot divide by zero");
+            RPY_THROW(std::invalid_argument, "cannot divide by zero");
         }
         if (!is_equivalent_to_zero(*this)) {
             p_impl->add_scal_div(lhs, rhs);
@@ -554,7 +554,7 @@ AlgebraBase<Interface, DerivedImpl>::sub_scal_div(
         RPY_CHECK_CONTEXTS(lhs);
 
         if (rhs.is_zero()) {
-            throw std::invalid_argument("cannot divide by zero");
+            RPY_THROW(std::invalid_argument, "cannot divide by zero");
         }
         if (!is_equivalent_to_zero(*this)) {
             p_impl->sub_scal_div(lhs, rhs);
@@ -630,7 +630,7 @@ typename Interface::algebra_t& AlgebraBase<Interface, DerivedImpl>::mul_sdiv(
         RPY_CHECK_CONTEXTS(lhs);
 
         if (rhs.is_zero()) {
-            throw std::invalid_argument("cannot divide by zero");
+            RPY_THROW(std::invalid_argument, "cannot divide by zero");
         }
         if (!is_equivalent_to_zero(*this)) { p_impl->mul_sdiv(lhs, rhs); }
     } else if (!is_equivalent_to_zero(*this)) {

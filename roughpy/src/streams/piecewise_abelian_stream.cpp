@@ -55,7 +55,7 @@ static py::object construct_piecewise_lie_stream(
 
     if (!pmd.ctx) {
         if (pmd.width == 0 || pmd.depth == 0 || !pmd.scalar_type) {
-            throw py::value_error("cannot deduce width/depth/ctype");
+            RPY_THROW(py::value_error, "cannot deduce width/depth/ctype");
         }
         pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type);
     }

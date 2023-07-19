@@ -241,12 +241,12 @@ context_pointer rpy::algebra::get_context(
     }
 
     if (found.empty()) {
-        throw std::invalid_argument("cannot find a context maker for the "
+        RPY_THROW(std::invalid_argument,"cannot find a context maker for the "
                                     "width, depth, dtype, and preferences set");
     }
 
     if (found.size() > 1) {
-        throw std::invalid_argument(
+        RPY_THROW(std::invalid_argument,
                 "found multiple context maker candidates for specified width, "
                 "depth, dtype, and preferences set"
         );
@@ -275,12 +275,12 @@ bool ContextMaker::can_get(
 std::vector<byte>
 Context::to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const
 {
-    throw std::runtime_error("cannot generate raw byte representation");
+    RPY_THROW(std::runtime_error, "cannot generate raw byte representation");
 }
 UnspecifiedAlgebraType
 Context::from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const
 {
-    throw std::runtime_error("cannot load from raw bytes");
+    RPY_THROW(std::runtime_error, "cannot load from raw bytes");
 }
 
 void rpy::algebra::intrusive_ptr_release(const rpy::algebra::Context* ptr)
@@ -314,7 +314,7 @@ UnspecifiedAlgebraType Context::free_multiply(
         const ConstRawUnspecifiedAlgebraType right
 ) const
 {
-    throw std::runtime_error("free tensor multiply is not implemented for "
+    RPY_THROW(std::runtime_error,"free tensor multiply is not implemented for "
                                          "arbitrary types with this backend");
 }
 UnspecifiedAlgebraType Context::shuffle_multiply(
@@ -322,7 +322,7 @@ UnspecifiedAlgebraType Context::shuffle_multiply(
         ConstRawUnspecifiedAlgebraType right
 ) const
 {
-    throw std::runtime_error("shuffle multiply is not implemented for "
+    RPY_THROW(std::runtime_error,"shuffle multiply is not implemented for "
                                          "arbitrary types with this backend");
 }
 UnspecifiedAlgebraType Context::half_shuffle_multiply(
@@ -330,7 +330,7 @@ UnspecifiedAlgebraType Context::half_shuffle_multiply(
         ConstRawUnspecifiedAlgebraType right
 ) const
 {
-    throw std::runtime_error("half shuffle multiply is not implemented for "
+    RPY_THROW(std::runtime_error,"half shuffle multiply is not implemented for "
                              "arbitrary types with this backend");
 }
 UnspecifiedAlgebraType Context::adjoint_to_left_multiply_by(
@@ -338,6 +338,6 @@ UnspecifiedAlgebraType Context::adjoint_to_left_multiply_by(
         ConstRawUnspecifiedAlgebraType argument
 ) const
 {
-    throw std::runtime_error("adjoint of left multiply is not implemented for "
+    RPY_THROW(std::runtime_error,"adjoint of left multiply is not implemented for "
                              "arbitrary types with this backend");
 }

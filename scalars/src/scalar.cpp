@@ -53,7 +53,7 @@ Scalar::Scalar(ScalarPointer data, flags::PointerType ptype)
 Scalar::Scalar(ScalarInterface* other)
 {
     if (other == nullptr) {
-        throw std::invalid_argument("scalar interface pointer cannot be null");
+        RPY_THROW(std::invalid_argument, "scalar interface pointer cannot be null");
     }
     p_type = other->type();
     p_data = other;
@@ -63,7 +63,7 @@ Scalar::Scalar(ScalarInterface* other)
 Scalar::Scalar(ScalarPointer ptr) : ScalarPointer(ptr)
 {
     if (p_data != nullptr && p_type == nullptr) {
-        throw std::runtime_error("non-zero scalars must have a type");
+        RPY_THROW(std::runtime_error, "non-zero scalars must have a type");
     }
 }
 
@@ -134,7 +134,7 @@ bool Scalar::is_zero() const noexcept
 Scalar& Scalar::operator=(const Scalar& other)
 {
     if (is_const()) {
-        throw std::runtime_error("Cannot cast to a const value");
+        RPY_THROW(std::runtime_error, "Cannot cast to a const value");
     }
     if (this != std::addressof(other)) {
         if (is_interface()) {
@@ -181,7 +181,7 @@ ScalarPointer Scalar::to_pointer() const noexcept
 ScalarPointer Scalar::to_mut_pointer()
 {
     if (is_const()) {
-        throw std::runtime_error("cannot get non-const pointer to const value");
+        RPY_THROW(std::runtime_error, "cannot get non-const pointer to const value");
     }
     auto* ptr = const_cast<void*>(p_data);
     if (is_interface()) {
@@ -237,7 +237,7 @@ Scalar Scalar::operator/(const Scalar& other) const
     const ScalarType* type = (p_type != nullptr) ? p_type : other.p_type;
     if (type == nullptr) { return Scalar(); }
     if (other.p_data == nullptr) {
-        throw std::runtime_error("division by zero");
+        RPY_THROW(std::runtime_error, "division by zero");
     }
 
     return type->div(to_pointer(), other.to_pointer());
@@ -247,7 +247,7 @@ Scalar Scalar::operator/(const Scalar& other) const
     Scalar& Scalar::operator OP(const Scalar& other)                           \
     {                                                                          \
         if (is_const()) {                                                      \
-            throw std::runtime_error(                                          \
+            RPY_THROW(std::runtime_error,                                          \
                     "performing inplace operation on const scalar");           \
         }                                                                      \
                                                                                \
@@ -278,11 +278,11 @@ RPY_SCALAR_IOP(*=, mul)
 Scalar& Scalar::operator/=(const Scalar& other)
 {
     if (is_const()) {
-        throw std::runtime_error(
+        RPY_THROW(std::runtime_error,
                 "performing inplace operation on const scalar");
     }
     if (other.p_data == nullptr) {
-        throw std::runtime_error("division by zero");
+        RPY_THROW(std::runtime_error, "division by zero");
     }
     if (p_type == nullptr) {
         RPY_DBG_ASSERT(p_data == nullptr);

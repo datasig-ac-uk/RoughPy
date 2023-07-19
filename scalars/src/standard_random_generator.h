@@ -149,7 +149,7 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
     std::vector<std::uniform_real_distribution<scalar_type>> dists;
 
     if (lower.size() != upper.size()) {
-        throw std::invalid_argument(
+        RPY_THROW(std::invalid_argument,
                 "mismatch dimensions between lower and upper limits");
     }
 

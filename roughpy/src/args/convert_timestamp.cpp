@@ -66,7 +66,7 @@ pytimedelta_to_param(PyObject* py_time_delta, const options_t& options)
     } else if (PyFloat_Check(py_time_delta)) {
         result = PyFloat_AsDouble(py_time_delta);
     } else {
-        throw py::type_error("expected datetime, int, or float");
+        RPY_THROW(py::type_error, "expected datetime, int, or float");
     }
 
     return result;
@@ -89,12 +89,12 @@ py::object generic_to_timestamp(py::handle generic_timestamp)
 
     // str objects should be parsed as if an ISO-8601 datetime string
     if (PyUnicode_Check(generic_timestamp.ptr())) {
-        throw py::type_error(
+        RPY_THROW(py::type_error,
                 "currently conversion from ISO-8601 strings is not supported"
         );
     }
 
-    throw py::type_error("unsupported type for conversion to datetime");
+    RPY_THROW(py::type_error, "unsupported type for conversion to datetime");
 }
 
 }// namespace

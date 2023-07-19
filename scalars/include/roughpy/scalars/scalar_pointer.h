@@ -334,7 +334,7 @@ public:
     RPY_NO_DISCARD ensure_pointer<T> raw_cast()
     {
         if (is_const()) {
-            throw std::runtime_error(
+            RPY_THROW(std::runtime_error,
                     "cannot cast const pointer to non-const pointer");
         }
         return static_cast<ensure_pointer<T>>(const_cast<void*>(p_data));
