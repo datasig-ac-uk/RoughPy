@@ -40,7 +40,9 @@
     switch (VTYPE) {                                                           \
         case VectorType::Dense: return RPY_SWITCH_FN(VectorType::Dense);       \
         case VectorType::Sparse: return RPY_SWITCH_FN(VectorType::Sparse);     \
-        default: throw std::invalid_argument("invalid vector type");           \
+        default:                                                               \
+            RPY_UNREACHABLE();                                                 \
+            throw std::invalid_argument("invalid vector type");                \
     }
 
 #define RPY_MAKE_ALGTYPE_SWITCH(ALGTYPE)                                       \
@@ -50,7 +52,15 @@
         case AlgebraType::Lie: return RPY_SWITCH_FN(AlgebraType::Lie);         \
         case AlgebraType::ShuffleTensor:                                       \
             return RPY_SWITCH_FN(AlgebraType::ShuffleTensor);                  \
-        default: throw std::invalid_argument("invalid algebra type");          \
+        case AlgebraType::FreeTensorBundle:                                    \
+            return RPY_SWITCH_FN(AlgebraType::FreeTensorBundle);               \
+        case AlgebraType::ShuffleTensorBundle:                                 \
+            return RPY_SWITCH_FN(AlgebraType::ShuffleTensorBundle);            \
+        case AlgebraType::LieBundle:                                           \
+            return RPY_SWITCH_FN(AlgebraType::LieBundle);                      \
+        default:                                                               \
+            RPY_UNREACHABLE();                                                 \
+            throw std::invalid_argument("invalid algebra type");               \
     }
 
 namespace rpy {

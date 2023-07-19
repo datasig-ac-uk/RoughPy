@@ -1,3 +1,9 @@
+Version 0.0.5:
+  - Added free functions for performing free-tensor, shuffle, half-shuffle
+  multiplication between pairs of tensors (of either kind).
+  - Added free function for applying the adjoint of left free tensor
+  multiplication to arbitrary tensors.
+
 Version 0.0.4:
   - Overhauled the RPY_CHECK macro so it now gives much better contextual
   information.

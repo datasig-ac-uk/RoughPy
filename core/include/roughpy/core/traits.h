@@ -52,6 +52,8 @@ namespace rpy {
 
 using std::declval;
 using std::integral_constant;
+using std::move;
+using std::forward;
 
 using std::is_array;
 using std::is_class;
@@ -132,8 +134,12 @@ using boost::is_detected;
 
 #ifdef RPY_CPP_17
 using std::void_t;
+using std::invoke_result_t;
 #else
 using boost::void_t;
+
+template <typename F, typename... ArgTypes>
+using invoke_result_t = std::result_of_t<F(ArgTypes...)>;
 #endif
 
 /**

@@ -51,6 +51,9 @@ enum class VectorType
     Sparse
 };
 
+template <VectorType>
+struct vector_type_tag {};
+
 /**
  * @brief Different algebra types required by RoughPy
  */
@@ -63,6 +66,9 @@ enum class AlgebraType : uint32_t
     ShuffleTensorBundle,
     LieBundle
 };
+
+template <AlgebraType>
+struct algebra_type_tag {};
 
 template <typename Interface>
 struct algebra_access;
