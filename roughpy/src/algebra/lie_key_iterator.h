@@ -45,11 +45,11 @@ class PyLieKeyIterator
 {
     key_type m_current;
     key_type m_end;
-    algebra::context_pointer p_ctx;
+    algebra::LieBasis m_basis;
 
 public:
     explicit PyLieKeyIterator(
-            const py::object& ctx, key_type current = 1,
+            algebra::LieBasis basis, key_type current = 1,
             key_type end = std::numeric_limits<key_type>::max()
     );
 

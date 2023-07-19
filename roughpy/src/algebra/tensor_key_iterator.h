@@ -43,12 +43,11 @@ class PyTensorKeyIterator
 {
     key_type m_current;
     key_type m_end;
-    deg_t m_width;
-    deg_t m_depth;
+    algebra::TensorBasis m_basis;
 
 public:
     PyTensorKeyIterator(
-            deg_t width, deg_t depth, key_type current = 0,
+            algebra::TensorBasis basis, key_type current = 0,
             key_type end = std::numeric_limits<key_type>::max()
     );
 

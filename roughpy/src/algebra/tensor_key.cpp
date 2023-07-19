@@ -27,6 +27,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "tensor_key.h"
+#include <roughpy/algebra/context.h>
 
 #include <algorithm>
 #include <sstream>
@@ -34,11 +35,9 @@
 using namespace rpy;
 using namespace pybind11::literals;
 
-python::PyTensorKey::PyTensorKey(key_type key, deg_t width, deg_t depth)
-    : m_key(key), m_width(width), m_depth(depth)
-{}
+
 python::PyTensorKey::PyTensorKey(algebra::TensorBasis basis, key_type key)
-    : m_key(key), m_width(basis.width()), m_depth(basis.depth())
+    : m_key(key), m_basis(move(basis))
 {}
 
 python::PyTensorKey::operator key_type() const noexcept { return m_key; }
@@ -57,28 +56,30 @@ string python::PyTensorKey::to_string() const
 }
 python::PyTensorKey python::PyTensorKey::lparent() const
 {
-    return python::PyTensorKey(0, 0, 0);
+    return python::PyTensorKey(m_basis, 0);
 }
 python::PyTensorKey python::PyTensorKey::rparent() const
 {
-    return python::PyTensorKey(0, 0, 0);
+    return python::PyTensorKey(m_basis, 0);
 }
 bool python::PyTensorKey::is_letter() const
 {
-    return 1 <= m_key && m_key <= static_cast<key_type>(m_width);
+    return 1 <= m_key && m_key <= static_cast<key_type>(m_basis.width());
 }
-deg_t python::PyTensorKey::width() const { return m_width; }
-deg_t python::PyTensorKey::depth() const { return m_depth; }
-deg_t python::PyTensorKey::degree() const { return m_depth; }
+deg_t python::PyTensorKey::width() const { return m_basis.width(); }
+deg_t python::PyTensorKey::depth() const { return m_basis.depth(); }
+deg_t python::PyTensorKey::degree() const { return m_basis.depth(); }
 std::vector<let_t> python::PyTensorKey::to_letters() const
 {
     std::vector<let_t> letters;
-    letters.reserve(m_depth);
+    const auto width = m_basis.width();
+    const auto depth = m_basis.depth();
+    letters.reserve(depth);
     auto tmp = m_key;
     while (tmp) {
         tmp -= 1;
-        letters.push_back(1 + (tmp % m_width));
-        tmp /= m_width;
+        letters.push_back(1 + (tmp % width));
+        tmp /= width;
     }
     std::reverse(letters.begin(), letters.end());
     return letters;
@@ -86,7 +87,7 @@ std::vector<let_t> python::PyTensorKey::to_letters() const
 bool python::PyTensorKey::equals(const python::PyTensorKey& other
 ) const noexcept
 {
-    return m_width == other.m_width && m_key == other.m_key;
+    return m_basis.width() == other.m_basis.width() && m_key == other.m_key;
 }
 bool python::PyTensorKey::less(const python::PyTensorKey& other) const noexcept
 {
@@ -109,7 +110,9 @@ construct_key(const py::args& args, const py::kwargs& kwargs)
             RPY_THROW(py::value_error, "provided index exceeds maximum");
         }
 
-        return python::PyTensorKey(index, width, depth);
+        auto ctx = algebra::get_context(width, depth,
+                                        scalars::ScalarType::of<float>());
+        return python::PyTensorKey(ctx->get_tensor_basis(), index);
     }
 
     if (!args.empty() && py::isinstance<py::sequence>(args[0])) {
@@ -147,7 +150,10 @@ construct_key(const py::args& args, const py::kwargs& kwargs)
         result += key_type(letter);
     }
 
-    return python::PyTensorKey(result, width, depth);
+    auto ctx = algebra::get_context(
+            width, depth, scalars::ScalarType::of<float>()
+    );
+    return python::PyTensorKey(ctx->get_tensor_basis(), result);
 }
 
 void python::init_py_tensor_key(py::module_& m)

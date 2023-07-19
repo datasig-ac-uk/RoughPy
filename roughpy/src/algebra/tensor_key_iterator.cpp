@@ -38,16 +38,16 @@ static const char* TKEY_ITERATOR_DOC = R"eadoc(Iterator over tensor words.
 )eadoc";
 
 python::PyTensorKeyIterator::PyTensorKeyIterator(
-        deg_t width, deg_t depth, key_type current, key_type end
+        algebra::TensorBasis basis, key_type current, key_type end
 )
-    : m_current(current), m_end(end), m_width(width), m_depth(depth)
+    : m_current(current), m_end(end), m_basis(basis)
 {}
 python::PyTensorKey python::PyTensorKeyIterator::next()
 {
     if (m_current >= m_end) { throw py::stop_iteration(); }
     auto current = m_current;
     ++m_current;
-    return PyTensorKey(current, m_width, m_depth);
+    return PyTensorKey(m_basis, current);
 }
 
 void python::init_tensor_key_iterator(py::module_& m)
@@ -60,7 +60,7 @@ void python::init_tensor_key_iterator(py::module_& m)
     klass.def(
             py::init([](const PyTensorKey& start_key) {
                 return PyTensorKeyIterator(
-                        start_key.width(), start_key.depth(),
+                        start_key.basis(),
                         static_cast<key_type>(start_key)
                 );
             }),
@@ -70,7 +70,7 @@ void python::init_tensor_key_iterator(py::module_& m)
             py::init([](const PyTensorKey& start_key,
                         const PyTensorKey& end_key) {
                 return PyTensorKeyIterator(
-                        start_key.width(), start_key.depth(),
+                        start_key.basis(),
                         static_cast<key_type>(start_key),
                         static_cast<key_type>(end_key)
                 );

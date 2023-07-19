@@ -76,9 +76,9 @@ static void wordlike_basis_setup(py::module_& m, const char* name)
     );
     basis.def("size", &T::size);
 
-//    basis.def("__iter__", [](const T& self) {
-//        return KIter(self);
-//    });
+    basis.def("__iter__", [](const T& self) {
+        return KIter(self);
+    });
 }
 
 void python::init_basis(py::module_& m)
