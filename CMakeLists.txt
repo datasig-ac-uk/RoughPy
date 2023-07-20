@@ -45,19 +45,6 @@ endif ()
 # Load the helper functions
 include(cmake/roughpy_helpers.cmake)
 
-# On apple, try to use homebrew to locate the few system libraries that we need.
-if (APPLE)
-    execute_process(COMMAND "brew" "--prefix"
-            RESULT_VARIABLE _brew_prefix_found
-            OUTPUT_VARIABLE _brew_prefix
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            )
-    message(STATUS "Adding brew prefix: ${_brew_prefix}")
-    if (_brew_prefix_found)
-        list(APPEND CMAKE_PREFIX_PATH "${_brew_prefix}")
-    endif ()
-endif()
-
 # We need to provide some help to make sure we find the correct version of
 # Python. Ideally, if we're using Scikit-Build-Core to build the library (via
 # pip) and the Python executable is provided via the PYTHON_EXECUTABLE cache
@@ -100,8 +87,6 @@ if (ROUGHPY_LINK_NUMPY)
 endif ()
 
 find_package(Python 3.8 REQUIRED COMPONENTS ${PYTHON_COMPONENTS_NEEDED})
-
-
 
 
 
@@ -209,6 +194,14 @@ endif ()
 if (NOT TARGET LAPACK::LAPACK)
     find_package(LAPACK REQUIRED)
 endif ()
+
+if (APPLE AND NOT DEFINED MKL_OMP_LIB)
+    get_brew_prefix(_libomp_prefix libomp VERBOSE)
+
+    if (_libomp_prefix AND EXISTS ${_libomp_prefix})
+        list(APPEND CMAKE_PREFIX_PATH ${_libomp_prefix})
+    endif()
+endif()
 
 find_package(OpenMP REQUIRED COMPONENTS CXX)
 
