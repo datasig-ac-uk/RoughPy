@@ -9,5 +9,4 @@ def test_lie_basis_iteration():
 
     keys = list(basis)
 
-    print(*keys)
     assert len(keys) == 3
