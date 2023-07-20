@@ -233,6 +233,7 @@ public:
     intervals::RealInterval
     adjust_interval(const intervals::Interval& arg) const;
 
+    RPY_NO_DISCARD
     lie_key label_to_lie_key(const string& label);
 
     RPY_SERIAL_SERIALIZE_FN();
