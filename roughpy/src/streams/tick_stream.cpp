@@ -81,7 +81,9 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
             = parser.attr("helper").cast<python::RPyTickConstructionHelper&>();
 
     const auto& ticks = helper.ticks();
-    if (ticks.empty()) { RPY_THROW(py::value_error, "tick data cannot be empty"); }
+    if (ticks.empty()) {
+        RPY_THROW(py::value_error, "tick data cannot be empty");
+    }
 
     //    if (!schema->is_final()) {
     //        python::parse_data_into_schema(schema, data);
@@ -91,7 +93,8 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
     if (!pmd.ctx) {
         pmd.width = schema->width();
         if (pmd.width == 0 || pmd.depth == 0 || pmd.scalar_type == nullptr) {
-            RPY_THROW(py::value_error,
+            RPY_THROW(
+                    py::value_error,
                     "either ctx or width, depth, and dtype must be provided"
             );
         }
@@ -205,7 +208,9 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
                 break;
             }
             case streams::ChannelType::Lie:
-                RPY_THROW(py::value_error, "Lie tick types currently not allowed");
+                RPY_THROW(
+                        py::value_error, "Lie tick types currently not allowed"
+                );
         }
 
         auto& existing = raw_data[di];
@@ -318,8 +323,8 @@ using streams::ChannelType;
 //                                const py::object &tick_value) {
 //    auto type = helper.type_of(label);
 //    if (!type) {
-//        RPY_THROW(py::value_error,"unexpected label " + string(label) + " in tick
-//        data");
+//        RPY_THROW(py::value_error,"unexpected label " + string(label) + " in
+//        tick data");
 //    }
 //
 //    handle_tick_value(helper, timestamp, label, *type, tick_value);
