@@ -37,6 +37,7 @@
 #include <roughpy/core/types.h>
 
 #include <roughpy/algebra/algebra_fwd.h>
+#include <roughpy/algebra/lie_basis.h>
 #include <roughpy/intervals/interval.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
@@ -89,6 +90,7 @@ public:
     using static_iterator = typename static_vec_type::iterator;
     using static_const_iterator = typename static_vec_type::const_iterator;
     using typename base_type::value_type;
+    using lie_key = typename algebra::LieBasis::key_type;
 
     using base_type::begin;
     using base_type::emplace_back;
@@ -230,6 +232,8 @@ public:
     RPY_NO_DISCARD
     intervals::RealInterval
     adjust_interval(const intervals::Interval& arg) const;
+
+    lie_key label_to_lie_key(const string& label);
 
     RPY_SERIAL_SERIALIZE_FN();
 };

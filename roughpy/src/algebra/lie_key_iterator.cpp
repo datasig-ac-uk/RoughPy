@@ -45,6 +45,10 @@ python::PyLieKeyIterator::PyLieKeyIterator(
 )
     : m_current(current), m_end(end), m_basis(move(basis))
 {
+    auto dim = m_basis.dimension();
+    if (m_end > m_basis.dimension()) {
+        m_end = static_cast<key_type>(dim);
+    }
 }
 
 static python::PyLieKey

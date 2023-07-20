@@ -44,8 +44,9 @@ StreamSchema::StreamSchema(dimn_t width)
     for (dimn_t i = 0; i < width; ++i) { insert_increment(std::to_string(i)); }
 }
 
-bool StreamSchema::compare_labels(string_view item_label,
-                                  string_view ref_label) noexcept
+bool StreamSchema::compare_labels(
+        string_view item_label, string_view ref_label
+) noexcept
 {
 
     // If the reference label is shorter than item_label it cannot
@@ -92,8 +93,8 @@ StreamSchema::stream_dim_to_channel_it(dimn_t& stream_dim) const
     RPY_THROW(std::runtime_error, "stream dimension exceeds width");
 }
 
-typename StreamSchema::const_iterator
-StreamSchema::find(const string& label) const
+typename StreamSchema::const_iterator StreamSchema::find(const string& label
+) const
 {
     auto it_current = begin();
     const auto it_end = end();
@@ -149,8 +150,9 @@ dimn_t StreamSchema::channel_to_stream_dim(dimn_t channel_no) const
     RPY_CHECK(channel_no < size());
     return width_to_iterator(nth(channel_no));
 }
-dimn_t StreamSchema::channel_variant_to_stream_dim(dimn_t channel_no,
-                                                   dimn_t variant_no) const
+dimn_t StreamSchema::channel_variant_to_stream_dim(
+        dimn_t channel_no, dimn_t variant_no
+) const
 {
     RPY_CHECK(channel_no < size());
     auto it = nth(channel_no);
@@ -160,8 +162,8 @@ dimn_t StreamSchema::channel_variant_to_stream_dim(dimn_t channel_no,
     return so_far + variant_no;
 }
 
-std::pair<dimn_t, dimn_t>
-StreamSchema::stream_dim_to_channel(dimn_t stream_dim) const
+std::pair<dimn_t, dimn_t> StreamSchema::stream_dim_to_channel(dimn_t stream_dim
+) const
 {
     std::pair<dimn_t, dimn_t> result(stream_dim, stream_dim);
     const auto channel_it = stream_dim_to_channel_it(result.second);
@@ -169,8 +171,9 @@ StreamSchema::stream_dim_to_channel(dimn_t stream_dim) const
     return result;
 }
 
-string StreamSchema::label_from_channel_it(const_iterator channel_it,
-                                           dimn_t variant_id)
+string StreamSchema::label_from_channel_it(
+        const_iterator channel_it, dimn_t variant_id
+)
 {
     return channel_it->first + channel_it->second.label_suffix(variant_id);
 }
@@ -186,8 +189,9 @@ string_view StreamSchema::label_of_channel_id(dimn_t channel_id) const
     RPY_CHECK(channel_id < size());
     return nth(channel_id)->first;
 }
-string StreamSchema::label_of_channel_variant(dimn_t channel_id,
-                                              dimn_t channel_variant) const
+string StreamSchema::label_of_channel_variant(
+        dimn_t channel_id, dimn_t channel_variant
+) const
 {
     RPY_CHECK(channel_id < size());
     return label_from_channel_it(nth(channel_id), channel_variant);
@@ -216,7 +220,8 @@ dimn_t StreamSchema::label_to_stream_dim(const string& label) const
     }
 
     const string_view variant_label(
-            &*variant_begin, static_cast<dimn_t>(label.end() - variant_begin));
+            &*variant_begin, static_cast<dimn_t>(label.end() - variant_begin)
+    );
     result += channel->second.variant_id_of_label(variant_label);
     return result;
 }
@@ -288,6 +293,12 @@ StaticChannel& StreamSchema::insert_static_categorical(string label)
             .insert(end,
                     {std::move(label), StaticChannel(CategoricalChannelInfo())})
             ->second;
+}
+typename StreamSchema::lie_key
+StreamSchema::label_to_lie_key(const string& label)
+{
+    auto idx = label_to_stream_dim(label);
+    return static_cast<lie_key>(idx) + 1;
 }
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamSchema

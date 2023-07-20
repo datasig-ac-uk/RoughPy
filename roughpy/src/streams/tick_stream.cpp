@@ -159,7 +159,7 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
         RPY_DBG_ASSERT(channel_it != schema->end());
         auto& channel = channel_it->second;
         auto idx = schema->label_to_stream_dim(tick.label);
-        auto key = static_cast<key_type>(idx);
+        auto key = schema->label_to_lie_key(tick.label);
         switch (tick.type) {
             case streams::ChannelType::Increment:
                 lie_elt[key]

@@ -72,7 +72,8 @@ static void wordlike_basis_setup(py::module_& m, const char* name)
 
     basis.def(
             "parents",
-            [](const T& self, const K& key) { return self.parents(0); }, "key"_a
+            [](const T& self, const K& key) { return self.parents(0); },
+            "key"_a
     );
     basis.def("size", &T::size);
 

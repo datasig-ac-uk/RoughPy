@@ -5,6 +5,7 @@ Version 0.0.5:
   multiplication to arbitrary tensors.
   - Improved exception usage, messages now include filename, lineno, and
   function name to help locate c++ exceptions passed through to Python.
+  - Basis objects in Python are now iterable.
 
 Version 0.0.4:
   - Overhauled the RPY_CHECK macro so it now gives much better contextual

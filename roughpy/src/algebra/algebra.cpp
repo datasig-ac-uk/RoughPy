@@ -33,6 +33,7 @@
 #include "algebra.h"
 
 #include "algebra_iterator.h"
+#include "basis.h"
 #include "free_tensor.h"
 #include "lie.h"
 #include "lie_key.h"
@@ -54,6 +55,7 @@ void rpy::python::init_algebra(pybind11::module_& m)
     init_py_lie_key(m);
     init_tensor_key_iterator(m);
     init_lie_key_iterator(m);
+    init_basis(m);
     init_context(m);
     init_algebra_iterator(m);
 
