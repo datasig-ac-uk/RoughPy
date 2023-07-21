@@ -119,6 +119,7 @@ void python::init_scalars(pybind11::module_& m)
            << self.to_scalar_t() << ")";
         return ss.str();
     });
+    klass.def("to_float", &Scalar::to_scalar_t);
 
     RPY_WARNING_POP
 }

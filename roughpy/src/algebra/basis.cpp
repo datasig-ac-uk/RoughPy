@@ -42,7 +42,7 @@ using namespace rpy::algebra;
 using namespace pybind11::literals;
 
 template <typename T, typename K, typename KIter>
-static void wordlike_basis_setup(py::module_& m, const char* name)
+static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
 {
 
     py::class_<T> basis(m, name);
@@ -80,6 +80,8 @@ static void wordlike_basis_setup(py::module_& m, const char* name)
     basis.def("__iter__", [](const T& self) {
         return KIter(self);
     });
+
+    return basis;
 }
 
 void python::init_basis(py::module_& m)
@@ -88,5 +90,8 @@ void python::init_basis(py::module_& m)
     wordlike_basis_setup<TensorBasis, PyTensorKey, PyTensorKeyIterator>(
             m, "TensorBasis"
     );
-    wordlike_basis_setup<LieBasis, PyLieKey, PyLieKeyIterator>(m, "LieBasis");
+
+    wordlike_basis_setup<LieBasis, PyLieKey, PyLieKeyIterator>(
+            m, "LieBasis"
+    );
 }

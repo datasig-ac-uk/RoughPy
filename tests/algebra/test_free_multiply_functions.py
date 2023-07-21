@@ -64,17 +64,14 @@ def test_adjoint_of_left_multiplication(tensor_data, tensor_context):
 
     result = rp.adjoint_to_free_multiply(t1, t2)
 
-    expected = np.zeros_like(t1)
-    expected[0] = np.dot(d1, d2)
+    expected_data = np.zeros(tensor_context.tensor_size(tensor_context.depth))
+    for entry in t2:
+        key = entry.key()
+        for i in range(key.degree()+1):
+            left, right = entry.key().split_n(i)
+            expected_data[right.to_index()] += d1[left.to_index()]*entry.value().to_float()
 
-    for prefix_degree in range(1, depth):
-        for deg in range(prefix_degree, depth+1):
-            out_deg = deg - prefix_degree
 
-            for i in range(sizes[prefix_degree], sizes[prefix_degree+1]):
-                jstart = i*width**out_deg
-
-                expected[sizes[out_deg]:sizes[out_deg+1]] \
-                    += d1[i]*d2[jstart:jstart+width**out_deg]
-
+    expected = rp.FreeTensor(expected_data, ctx=tensor_context)
     assert_array_equal(result, expected)
+    #assert result.size() == t1.size()

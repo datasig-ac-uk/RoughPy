@@ -71,6 +71,7 @@ public:
     deg_t width() const;
     deg_t depth() const;
     algebra::TensorBasis basis() const { return m_basis; }
+    pair<PyTensorKey, PyTensorKey> split_n(deg_t n) const;
 
     deg_t degree() const;
     std::vector<let_t> to_letters() const;

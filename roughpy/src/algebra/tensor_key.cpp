@@ -62,6 +62,31 @@ python::PyTensorKey python::PyTensorKey::rparent() const
 {
     return python::PyTensorKey(m_basis, 0);
 }
+pair<python::PyTensorKey, python::PyTensorKey>
+python::PyTensorKey::split_n(deg_t n) const
+{
+    if (m_key == 0) {
+        return std::make_pair(PyTensorKey(m_basis, 0), PyTensorKey(m_basis, 0));
+    }
+    if (n <= 0) {
+        return std::make_pair(PyTensorKey(m_basis, 0), *this);
+    }
+    if (n >= m_basis.depth()) {
+        return std::make_pair(*this, PyTensorKey(m_basis, 0));
+    }
+
+    auto width = m_basis.width();
+    //TODO: needs better implementation
+    key_type shift = 1;
+    for (deg_t i=0; i<n; ++i) {
+        shift *= width;
+    }
+    auto left = (m_key - 1) / shift;
+    auto right = 1 + ((m_key - 1) % shift);
+
+    return std::make_pair(PyTensorKey(m_basis, left), PyTensorKey(m_basis, right));
+
+}
 bool python::PyTensorKey::is_letter() const
 {
     return 1 <= m_key && m_key <= static_cast<key_type>(m_basis.width());
@@ -164,9 +189,13 @@ void python::init_py_tensor_key(py::module_& m)
     klass.def_property_readonly("width", &PyTensorKey::width);
     klass.def_property_readonly("max_degree", &PyTensorKey::depth);
 
+    klass.def("to_index", [](const PyTensorKey& key) {
+        return static_cast<key_type>(key);
+    });
     klass.def("degree", [](const PyTensorKey& key) {
         return key.to_letters().size();
     });
+    klass.def("split_n", &PyTensorKey::split_n, "n"_a);
 
     klass.def("__str__", &PyTensorKey::to_string);
     klass.def("__repr__", &PyTensorKey::to_string);
