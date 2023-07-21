@@ -35,6 +35,8 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <string>
+#include <sstream>
 
 #ifdef __has_builtin
 #  define RPY_HAS_BUILTIN(x) __has_builtin(x)
@@ -329,8 +331,15 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         std::string msg, const char* filename, int lineno, const char* func
 )
 {
-    throw E(msg + " at lineno " + std::to_string(lineno) + " in " + filename
-            + " in function " + func);
+    std::stringstream ss;
+    ss << msg
+       << " at lineno "
+       << lineno
+       << " in "
+       << filename
+       << " in function "
+       << func;
+    throw E(ss.str());
 }
 
 template <typename E>
@@ -338,8 +347,15 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const char* msg, const char* filename, int lineno, const char* func
 )
 {
-    throw E(std::string(msg) + " at lineno " + std::to_string(lineno) + " in "
-            + filename + " in function " + func);
+    std::stringstream ss;
+    ss << msg
+       << " at lineno "
+       << lineno
+       << " in "
+       << filename
+       << " in function "
+       << func;
+    throw E(ss.str());
 }
 
 }// namespace errors
