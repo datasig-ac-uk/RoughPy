@@ -65,7 +65,7 @@ const ScalarType* ScalarType::from_type_details(const BasicScalarInfo& details,
 Scalar ScalarType::from(long long int numerator,
                         long long int denominator) const
 {
-    if (denominator == 0) { throw std::invalid_argument("division by zero"); }
+    if (denominator == 0) { RPY_THROW(std::invalid_argument, "division by zero"); }
     auto result = allocate(1);
     assign(result, numerator, denominator);
     return {result, flags::OwnedPointer};
@@ -92,7 +92,7 @@ void ScalarType::convert_fill(ScalarPointer out, ScalarPointer in, dimn_t count,
 }
 Scalar ScalarType::parse(string_view str) const
 {
-    throw std::runtime_error("could not parse string");
+    RPY_THROW(std::runtime_error, "could not parse string");
 }
 Scalar ScalarType::one() const { return from(1, 1); }
 Scalar ScalarType::mone() const { return from(-1, 1); }
@@ -236,14 +236,14 @@ void rpy::scalars::register_type(const ScalarType* type)
     const auto& identifier = type->id();
     for (const auto& i : reserved) {
         if (identifier == i.first) {
-            throw std::runtime_error("cannot register identifier " + identifier
+            RPY_THROW(std::runtime_error,"cannot register identifier " + identifier
                                      + ", it is reserved");
         }
     }
 
     auto& entry = s_scalar_type_cache[identifier];
     if (entry != nullptr) {
-        throw std::runtime_error("type with id " + identifier
+        RPY_THROW(std::runtime_error,"type with id " + identifier
                                  + " is already registered");
     }
 
@@ -259,7 +259,7 @@ const ScalarType* rpy::scalars::get_type(const string& id)
         if (id == rsv.first) { return nullptr; }
     }
 
-    throw std::runtime_error("no type with id " + id);
+    RPY_THROW(std::runtime_error, "no type with id " + id);
 }
 
 const ScalarType* scalars::get_type(const string& id,
@@ -281,7 +281,7 @@ const ScalarTypeInfo& rpy::scalars::get_scalar_info(string_view id)
     auto found = s_scalar_type_cache.find(ids);
     if (found != s_scalar_type_cache.end()) { return found->second->info(); }
 
-    throw std::runtime_error("Unrecognised type id " + ids);
+    RPY_THROW(std::runtime_error, "Unrecognised type id " + ids);
 }
 
 std::vector<const ScalarType*> rpy::scalars::list_types()
@@ -379,7 +379,7 @@ const conversion_function& rpy::scalars::get_conversion(const string& src_id,
     auto found = s_conversion_cache.find(type_ids_to_key(src_id, dst_id));
     if (found != s_conversion_cache.end()) { return found->second; }
 
-    throw std::runtime_error("no conversion function from " + src_id + " to "
+    RPY_THROW(std::runtime_error,"no conversion function from " + src_id + " to "
                              + dst_id);
 }
 void rpy::scalars::register_conversion(const string& src_id,
@@ -390,7 +390,7 @@ void rpy::scalars::register_conversion(const string& src_id,
 
     auto& found = s_conversion_cache[type_ids_to_key(src_id, dst_id)];
     if (found != nullptr) {
-        throw std::runtime_error("conversion from " + src_id + " to " + dst_id
+        RPY_THROW(std::runtime_error,"conversion from " + src_id + " to " + dst_id
                                  + " already registered");
     } else {
         found = std::move(converter);
@@ -400,13 +400,13 @@ void rpy::scalars::register_conversion(const string& src_id,
 std::unique_ptr<RandomGenerator>
 ScalarType::get_rng(const string& bit_generator, Slice<uint64_t> seed) const
 {
-    throw std::runtime_error(
+    RPY_THROW(std::runtime_error,
             "no random number generators are defined for this scalar type");
 }
 
 std::unique_ptr<BlasInterface> ScalarType::get_blas() const
 {
-    throw std::runtime_error("No blas/lapack available for this scalar type");
+    RPY_THROW(std::runtime_error, "No blas/lapack available for this scalar type");
 }
 
 const std::string& rpy::scalars::id_from_basic_info(const BasicScalarInfo& info)
@@ -422,7 +422,7 @@ const std::string& rpy::scalars::id_from_basic_info(const BasicScalarInfo& info)
                 case 16: return reserved[I16IDX].second.id;
                 case 32: return reserved[I32IDX].second.id;
                 case 64: return reserved[I64IDX].second.id;
-                default: throw std::runtime_error("unsupported integer type");
+                default: RPY_THROW(std::runtime_error, "unsupported integer type");
             }
         case ScalarTypeCode::UInt:
             switch (info.bits) {
@@ -430,15 +430,15 @@ const std::string& rpy::scalars::id_from_basic_info(const BasicScalarInfo& info)
                 case 16: return reserved[U16IDX].second.id;
                 case 32: return reserved[U32IDX].second.id;
                 case 64: return reserved[U64IDX].second.id;
-                default: throw std::runtime_error("unsupported integer type");
+                default: RPY_THROW(std::runtime_error, "unsupported integer type");
             }
         case ScalarTypeCode::Float:
             switch (info.bits) {
                 case 32: return ScalarType::of<float>()->id();
                 case 64: return ScalarType::of<double>()->id();
-                default: throw std::runtime_error("unsupported float type");
+                default: RPY_THROW(std::runtime_error, "unsupported float type");
             }
-        default: throw std::runtime_error("unsupported scalar type");
+        default: RPY_THROW(std::runtime_error, "unsupported scalar type");
     }
 
     RPY_UNREACHABLE();

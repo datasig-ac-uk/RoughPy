@@ -36,6 +36,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <string>
+#include <sstream>
 
 #ifdef __has_builtin
 #  define RPY_HAS_BUILTIN(x) __has_builtin(x)
@@ -60,6 +61,18 @@
 #else
 #  define RPY_HAS_INCLUDE(x) 0
 #endif
+
+/*
+ * MSVC has a bug where it treats __VA_ARGS__ as a single token in argument
+ * lists. To combat this, we use RPY_INVOKE_VA to invoke the overload macro with
+ * the __VA_ARGS__ in the token stream so that proper expansion occurs.
+ * See: https://stackoverflow.com/a/9338429
+ */
+#define RPY_INVOKE_VA(X, Y) X Y
+
+#define RPY_COUNT_ARGS_1(_4, _3, _2, _1, count, ...) count
+#define RPY_COUNT_ARGS(...) \
+    RPY_INVOKE_VA(RPY_COUNT_ARGS_1, (__VA_ARGS__, 4, 3, 2, 1, 0))
 
 #define RPY_STRINGIFY_IMPL(ARG) #ARG
 #define RPY_STRINGIFY(ARG) RPY_STRINGIFY_IMPL(ARG)
@@ -324,13 +337,39 @@
  */
 namespace rpy {
 namespace errors {
+
 template <typename E>
-RPY_NO_RETURN RPY_INLINE_ALWAYS void
-check_fail(const char* msg, const char* filename, int lineno, const char* func)
+RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
+        std::string msg, const char* filename, int lineno, const char* func
+)
 {
-    throw E(std::string(msg) + " at lineno " + std::to_string(lineno) + " in "
-            + filename + " in function " + func);
+    std::stringstream ss;
+    ss << msg
+       << " at lineno "
+       << lineno
+       << " in "
+       << filename
+       << " in function "
+       << func;
+    throw E(ss.str());
 }
+
+template <typename E>
+RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
+        const char* msg, const char* filename, int lineno, const char* func
+)
+{
+    std::stringstream ss;
+    ss << msg
+       << " at lineno "
+       << lineno
+       << " in "
+       << filename
+       << " in function "
+       << func;
+    throw E(ss.str());
+}
+
 }// namespace errors
 }// namespace rpy
 
@@ -339,7 +378,7 @@ check_fail(const char* msg, const char* filename, int lineno, const char* func)
 #define RPY_CHECK_3(EXPR, MSG, TYPE)                                           \
     do {                                                                       \
         if (RPY_UNLIKELY(!(EXPR))) {                                           \
-            ::rpy::errors::check_fail<TYPE>(                                   \
+            ::rpy::errors::throw_exception<TYPE>(                              \
                     MSG, __FILE__, __LINE__, RPY_FUNC_NAME                     \
             );                                                                 \
         }                                                                      \
@@ -355,13 +394,27 @@ check_fail(const char* msg, const char* filename, int lineno, const char* func)
 #define RPY_CHECK_CNT(...) RPY_CHECK_CNT_IMPL(__VA_ARGS__, 3, 2, 1, 0)
 #define RPY_CHECK_SEL(NUM) RPY_JOIN(RPY_CHECK_, NUM)
 
-#define RPY_CHECK(...) RPY_CHECK_SEL(RPY_CHECK_CNT(__VA_ARGS__))(__VA_ARGS__)
+#define RPY_CHECK(...) RPY_INVOKE_VA( \
+    RPY_CHECK_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), \
+    (__VA_ARGS__))
+
+#define RPY_THROW_2(EXC_TYPE, MSG)                                             \
+    ::rpy::errors::throw_exception<EXC_TYPE>(                                  \
+            MSG, __FILE__, __LINE__, RPY_FUNC_NAME                             \
+    )
+#define RPY_THROW_1(MSG) RPY_THROW_2(std::runtime_error, MSG)
+
+#define RPY_THROW_SEL(NUM) RPY_JOIN(RPY_THROW_, NUM)
+#define RPY_THROW_CNT_IMPL(_1, _2, COUNT, ...) COUNT
+#define RPY_THROW_CNT(...) RPY_THROW_CNT_IMPL(__VA_ARGS__, 2, 1, 0)
+#define RPY_THROW(...) RPY_INVOKE_VA( \
+    RPY_THROW_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), \
+    (__VA_ARGS__))
 
 #ifdef RPY_DEBUG
 #  define RPY_DBG_ASSERT(ARG) assert(ARG)
 #else
 #  define RPY_DBG_ASSERT(ARG) (void) 0
 #endif
-
 
 #endif// ROUGHPY_CORE_MACROS_H

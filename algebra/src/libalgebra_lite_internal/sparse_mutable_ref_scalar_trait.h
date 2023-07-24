@@ -81,7 +81,7 @@ private:
     static enable_if_t<!is_convertible<const T&, scalar_t>::value, scalar_t>
     convert_to_scalar_t(const T&)
     {
-        throw std::runtime_error("cannot convert to scalar_t");
+        RPY_THROW(std::runtime_error, "cannot convert to scalar_t");
     }
 
 public:
@@ -104,7 +104,7 @@ public:
     }
     ScalarPointer to_pointer() override
     {
-        throw std::runtime_error(
+        RPY_THROW(std::runtime_error,
                 "cannot get non-const pointer to proxy reference type"
         );
     }

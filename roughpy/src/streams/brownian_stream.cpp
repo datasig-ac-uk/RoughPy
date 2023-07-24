@@ -58,7 +58,7 @@ Brownian_from_generator(const py::args& args, const py::kwargs& kwargs)
 
     if (pmd.ctx == nullptr) {
         if (pmd.width == 0) {
-            throw std::invalid_argument("width must be provided");
+            RPY_THROW(std::invalid_argument, "width must be provided");
         }
         pmd.ctx = algebra::get_context(
                 pmd.width, pmd.depth, pmd.scalar_type, {}

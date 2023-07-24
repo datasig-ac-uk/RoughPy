@@ -94,7 +94,7 @@ pybind11::dtype python::ctype_to_npy_dtype(const scalars::ScalarType* type)
     if (type == scalars::ScalarType::of<double>()) { return py::dtype("d"); }
     if (type == scalars::ScalarType::of<float>()) { return py::dtype("f"); }
 
-    throw py::type_error("unsupported data type");
+    RPY_THROW(py::type_error, "unsupported data type");
 }
 
 string python::npy_dtype_to_identifier(pybind11::dtype dtype)
@@ -129,7 +129,7 @@ string python::npy_dtype_to_identifier(pybind11::dtype dtype)
         case NPY_SHORT: identifier = "i16"; break;
         case NPY_USHORT: identifier = "u16"; break;
 
-        default: throw py::type_error("unsupported dtype");
+        default: RPY_THROW(py::type_error, "unsupported dtype");
     }
 
     return identifier;

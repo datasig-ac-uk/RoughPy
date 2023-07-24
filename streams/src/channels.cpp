@@ -198,7 +198,7 @@ dimn_t StreamChannel::variant_id_of_label(string_view label) const
                 } else if (label == "lag") {
                     return 1;
                 } else {
-                    throw std::runtime_error(
+                    RPY_THROW(std::runtime_error,
                             "unrecognised variant label for type value");
                 }
             } else {
@@ -214,7 +214,7 @@ dimn_t StreamChannel::variant_id_of_label(string_view label) const
     auto it = std::find(categorical_info.variants.begin(),
                         categorical_info.variants.end(), label);
     if (it == categorical_info.variants.end()) {
-        throw std::runtime_error(
+        RPY_THROW(std::runtime_error,
                 "unrecognised variant label for type categorical");
     }
 
@@ -232,7 +232,7 @@ StreamChannel& StreamChannel::add_variant(string variant_label)
     auto found = std::find(categorical_info.variants.begin(),
                            categorical_info.variants.end(), variant_label);
     if (found != categorical_info.variants.end()) {
-        throw std::runtime_error("variant with label " + variant_label
+        RPY_THROW(std::runtime_error,"variant with label " + variant_label
                                  + " already exists");
     }
 
@@ -394,7 +394,7 @@ dimn_t StaticChannel::variant_id_of_label(const string& label) const
             const auto end = categorical_info.variants.end();
             const auto found = std::find(begin, end, label);
             if (found == end) {
-                throw std::runtime_error("label " + label
+                RPY_THROW(std::runtime_error,"label " + label
                                          + " not a valid "
                                            "variant of this "
                                            "channel");

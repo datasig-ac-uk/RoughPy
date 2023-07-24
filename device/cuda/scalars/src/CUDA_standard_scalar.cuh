@@ -158,7 +158,7 @@ void CUDAScalarType<S>::convert_copy(
 
         if (src.type() == nullptr) {
             if (!src.is_simple_integer()) {
-                throw std::runtime_error("unknown scalar type, cannot convert");
+                RPY_THROW(std::runtime_error, "unknown scalar type, cannot convert");
             }
 
             host_type->convert_copy({host_type, tmp.data()}, src, count);
@@ -173,7 +173,7 @@ void CUDAScalarType<S>::convert_copy(
         dst.type()->convert_copy(dst, {host_type, tmp.data()}, count);
     } else {
         if (dst.type() == nullptr) {
-            throw std::runtime_error("destination type is null");
+            RPY_THROW(std::runtime_error, "destination type is null");
         }
         dst.type()->convert_copy(dst, src, count);
     }

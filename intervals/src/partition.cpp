@@ -117,7 +117,7 @@ RealInterval Partition::operator[](dimn_t i) const
 void Partition::insert_intermediate(param_t new_intermediate)
 {
     if (!contains_point(new_intermediate)) {
-        throw std::invalid_argument("provided intermediate does not lie "
+        RPY_THROW(std::invalid_argument,"provided intermediate does not lie "
                                     "within the interval");
     }
 

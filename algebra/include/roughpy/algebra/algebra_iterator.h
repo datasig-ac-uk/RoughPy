@@ -191,7 +191,7 @@ typename AlgebraIterator<Algebra>::reference
 AlgebraIterator<Algebra>::operator*() const
 {
     if (!p_interface) {
-        throw std::runtime_error("attempting to dereference an invalid iterator"
+        RPY_THROW(std::runtime_error,"attempting to dereference an invalid iterator"
         );
     }
     return {p_interface};
@@ -201,7 +201,7 @@ typename AlgebraIterator<Algebra>::pointer
 AlgebraIterator<Algebra>::operator->() const
 {
     if (!p_interface) {
-        throw std::runtime_error("cannot dereference an invalid iterator");
+        RPY_THROW(std::runtime_error, "cannot dereference an invalid iterator");
     }
     return {p_interface};
 }

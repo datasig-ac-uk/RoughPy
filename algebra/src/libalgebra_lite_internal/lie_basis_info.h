@@ -74,7 +74,7 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
     convert_from_impl(storage_t basis, const impl_key_type& arg)
     {
         // The default is to take the index of arg as the return
-        return basis->key_to_index(arg);
+        return 1 + static_cast<our_key_type>(basis->key_to_index(arg));
     }
 
     /// Conversion from our_key_type to impl_key_type
@@ -82,7 +82,7 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
     convert_to_impl(storage_t basis, const our_key_type& arg)
     {
         // Default is to treat rpy keys as the index of impl keys
-        return basis->index_to_key(arg);
+        return basis->index_to_key(static_cast<dimn_t>(arg) - 1);
     }
 
     /*

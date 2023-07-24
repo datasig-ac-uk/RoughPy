@@ -99,7 +99,7 @@ OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix& matrix,
     auto N = static_cast<blas::integer>(matrix.ncols());
 
     if (N != static_cast<blas::integer>(vector.size())) {
-        throw std::invalid_argument("inner matrix dimensions must agree");
+        RPY_THROW(std::invalid_argument, "inner matrix dimensions must agree");
     }
 
     const auto layout = blas::to_blas_layout(matrix.layout());
@@ -333,7 +333,7 @@ static void full_matrix_matrix(ScalarMatrix& result, const ScalarMatrix& lhs,
             break;
         case MatrixStorage::Diagonal: fdmm(result, lhs, rhs); break;
         default:
-            throw std::runtime_error("matrix-matrix multiplications of these "
+            RPY_THROW(std::runtime_error,"matrix-matrix multiplications of these "
                                      "formats is not currently supported");
     }
 }
@@ -354,7 +354,7 @@ static void triangular_matrix_matrix(ScalarMatrix& result,
             break;
         case MatrixStorage::Diagonal: tdmm(result, lhs, lhs_uplo, rhs); break;
         default:
-            throw std::runtime_error("matrix-matrix multiplications of these "
+            RPY_THROW(std::runtime_error,"matrix-matrix multiplications of these "
                                      "formats is currently unsupported");
     }
 }
@@ -372,7 +372,7 @@ static void diagonal_matrix_matrix(ScalarMatrix& result,
             break;
         case MatrixStorage::Diagonal: ddmm(result, lhs, rhs); break;
         default:
-            throw std::runtime_error("matrix-matrix multiplications of these "
+            RPY_THROW(std::runtime_error,"matrix-matrix multiplications of these "
                                      "formats is currently unsupported");
     }
 }
@@ -383,7 +383,7 @@ ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix& lhs,
     RPY_DBG_ASSERT(lhs.type() == rhs.type() && lhs.type() == type());
 
     if (lhs.ncols() != rhs.nrows()) {
-        throw std::invalid_argument("inner matrix dimensions must agree");
+        RPY_THROW(std::invalid_argument, "inner matrix dimensions must agree");
     };
 
     ScalarMatrix result(type(), lhs.nrows(), rhs.ncols());
@@ -410,15 +410,15 @@ ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix& coeff_matrix,
 {
 
     if (coeff_matrix.nrows() != target_matrix.nrows()) {
-        throw std::invalid_argument("incompatible matrix dimensions");
+        RPY_THROW(std::invalid_argument, "incompatible matrix dimensions");
     }
 
     if (coeff_matrix.nrows() < coeff_matrix.ncols()) {
-        throw std::invalid_argument(
+        RPY_THROW(std::invalid_argument,
                 "system is over-determined, used least squares instead");
     }
     if (coeff_matrix.nrows() > coeff_matrix.ncols()) {
-        throw std::invalid_argument("system is under-determined, no solution");
+        RPY_THROW(std::invalid_argument, "system is under-determined, no solution");
     }
 
     ScalarMatrix result = target_matrix.to_full();

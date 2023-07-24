@@ -148,7 +148,7 @@ void KeyScalarArray::allocate_keys(idimn_t count)
 key_type* KeyScalarArray::keys()
 {
     if (keys_owned()) { return const_cast<key_type*>(p_keys); }
-    throw std::runtime_error("borrowed keys are not mutable");
+    RPY_THROW(std::runtime_error, "borrowed keys are not mutable");
 }
 
 KeyScalarArray::operator OwnedScalarArray() && noexcept

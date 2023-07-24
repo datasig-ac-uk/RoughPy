@@ -41,14 +41,14 @@ static const char* LKEY_ITERATOR_DOC
 )eadoc";
 
 python::PyLieKeyIterator::PyLieKeyIterator(
-        const py::object& ctx, key_type current, key_type end
+        algebra::LieBasis basis, key_type current, key_type end
 )
-    : m_current(current), m_end(end)
+    : m_current(current), m_end(end), m_basis(move(basis))
 {
-    if (!py::isinstance(ctx, reinterpret_cast<PyObject*>(&RPyContext_Type))) {
-        throw py::type_error("expected a Context object");
+    auto dim = m_basis.dimension();
+    if (m_end > m_basis.dimension()) {
+        m_end = static_cast<key_type>(dim);
     }
-    p_ctx = python::ctx_cast(ctx.ptr());
 }
 
 static python::PyLieKey
@@ -78,18 +78,23 @@ python::PyLieKey python::PyLieKeyIterator::next()
     if (m_current > m_end) { throw py::stop_iteration(); }
     auto current = m_current;
     ++m_current;
-    return to_py_lie_key(current, p_ctx->get_lie_basis());
+    return to_py_lie_key(current, m_basis);
 }
 
 void python::init_lie_key_iterator(py::module_& m)
 {
     py::class_<PyLieKeyIterator> klass(m, "LieKeyIterator", LKEY_ITERATOR_DOC);
-    klass.def(py::init<py::object>(), "context"_a);
-    klass.def(py::init<py::object, key_type>(), "context"_a, "start_key"_a);
-    klass.def(
-            py::init<py::object, key_type, key_type>(), "context"_a,
-            "start_key"_a, "end_key"_a
-    );
+//    klass.def(py::init<py::object>(), "context"_a);
+//    klass.def(py::init<py::object, key_type>(), "context"_a, "start_key"_a);
+//    klass.def(
+//            py::init<py::object, key_type, key_type>(), "context"_a,
+//            "start_key"_a, "end_key"_a
+//    );
+    klass.def(py::init<algebra::LieBasis>(), "basis"_a);
+    klass.def(py::init<algebra::LieBasis, key_type>(), "basis"_a,
+            "start_key"_a);
+    klass.def(py::init<algebra::LieBasis, key_type, key_type>(), "basis"_a,
+            "start_key"_a, "end_key"_a);
 
     klass.def("__iter__", [](PyLieKeyIterator& self) { return self; });
     klass.def("__next__", &PyLieKeyIterator::next);

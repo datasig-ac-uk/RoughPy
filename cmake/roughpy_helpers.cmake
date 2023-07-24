@@ -9,6 +9,54 @@ include(GoogleTest OPTIONAL)
 set(ROUGHPY_LIBS CACHE INTERNAL "")
 set(ROUGHPY_RUNTIME_DEPS CACHE INTERNAL "")
 
+
+function(get_brew_prefix _out_var _package)
+
+    cmake_parse_arguments(
+            ""
+            "VERBOSE"
+            "BREW_EXECUTABLE"
+            ""
+            ${ARGN}
+    )
+
+    set(_executable brew)
+    if (_BREW_EXECUTABLE)
+        set(_executable "${_BREW_EXECUTABLE}")
+    elseif (DEFINED ROUGHPY_HOMEBREW_EXECUTABLE)
+        set(_executable "${ROUGHPY_HOMEBREW_EXECUTABLE}")
+    elseif (DEFINED ENV{ROUGHPY_HOMEBREW_EXECUTABLE})
+        set(_executable "$ENV{ROUGHPY_HOMEBREW_EXECUTABLE}")
+    endif ()
+
+    if (NOT _VERBOSE AND ENV{VERBOSE})
+        set(_VERBOSE ON)
+    endif ()
+
+    set(_verbosity_flag "")
+    if (_VERBOSE)
+        set(_verbosity_flag "ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE")
+    endif ()
+    message(DEBUG "Locating ${_package} brew installation prefix")
+
+    execute_process(COMMANDS ${_executable}
+            "--prefix" "${_package}"
+            RESULT_VARIABLE _result
+            OUTPUT_VARIABLE _out
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ${_verbosity_flat}
+            )
+
+    if (_result EQUAL 0)
+        message(STATUS "Brew located ${_package} at ${_out}")
+        set(${_out_var} "${_out}" PARENT_SCOPE)
+    else ()
+        message(DEBUG "Could not locate ${_package} using Brew")
+        set(${_out_var} "${_out_var}-NOTFOUND")
+    endif ()
+endfunction()
+
+
 function(_get_component_name _out_var _component)
     string(SUBSTRING ${_component} 0 1 _first_letter)
     string(SUBSTRING ${_component} 1 -1 _remaining)
@@ -501,7 +549,7 @@ bool algebra::${_class_name}Maker::can_get(deg_t width, deg_t depth, const scala
 algebra::context_pointer algebra::${_class_name}Maker::get_context(deg_t width, deg_t depth, const scalars::ScalarType* ctype, const preference_list& preferences) const {
     auto found = s_la_contexts.find(std::make_tuple(width, depth, ctype));
     if (found == s_la_contexts.end()) {
-        throw std::runtime_error(\"cannot get context\");
+        RPY_THROW(std::runtime_error, \"cannot get context\");
     }
     return found->second;
 }

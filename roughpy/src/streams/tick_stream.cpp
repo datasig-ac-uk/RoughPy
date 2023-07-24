@@ -81,7 +81,9 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
             = parser.attr("helper").cast<python::RPyTickConstructionHelper&>();
 
     const auto& ticks = helper.ticks();
-    if (ticks.empty()) { throw py::value_error("tick data cannot be empty"); }
+    if (ticks.empty()) {
+        RPY_THROW(py::value_error, "tick data cannot be empty");
+    }
 
     //    if (!schema->is_final()) {
     //        python::parse_data_into_schema(schema, data);
@@ -91,7 +93,8 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
     if (!pmd.ctx) {
         pmd.width = schema->width();
         if (pmd.width == 0 || pmd.depth == 0 || pmd.scalar_type == nullptr) {
-            throw py::value_error(
+            RPY_THROW(
+                    py::value_error,
                     "either ctx or width, depth, and dtype must be provided"
             );
         }
@@ -159,7 +162,7 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
         RPY_DBG_ASSERT(channel_it != schema->end());
         auto& channel = channel_it->second;
         auto idx = schema->label_to_stream_dim(tick.label);
-        auto key = static_cast<key_type>(idx);
+        auto key = schema->label_to_lie_key(tick.label);
         switch (tick.type) {
             case streams::ChannelType::Increment:
                 lie_elt[key]
@@ -205,7 +208,9 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
                 break;
             }
             case streams::ChannelType::Lie:
-                throw py::value_error("Lie tick types currently not allowed");
+                RPY_THROW(
+                        py::value_error, "Lie tick types currently not allowed"
+                );
         }
 
         auto& existing = raw_data[di];
@@ -318,8 +323,8 @@ using streams::ChannelType;
 //                                const py::object &tick_value) {
 //    auto type = helper.type_of(label);
 //    if (!type) {
-//        throw py::value_error("unexpected label " + string(label) + " in tick
-//        data");
+//        RPY_THROW(py::value_error,"unexpected label " + string(label) + " in
+//        tick data");
 //    }
 //
 //    handle_tick_value(helper, timestamp, label, *type, tick_value);
@@ -355,7 +360,7 @@ using streams::ChannelType;
 //        } else if (len == 3) {
 //            value = py::reinterpret_borrow<py::object>(tuple_item[2]);
 //        } else {
-//            throw py::value_error("expected tuple (label, data) or (label,
+//            RPY_THROW(py::value_error,"expected tuple (label, data) or (label,
 //            type, data)");
 //        }
 //
@@ -415,7 +420,7 @@ using streams::ChannelType;
 //             py::reinterpret_borrow<py::sequence>(data)
 //             );
 //     } else {
-//         throw py::type_error("expected dict or sequence of pairs");
+//         RPY_THROW(py::type_error, "expected dict or sequence of pairs");
 //     }
 //
 // }

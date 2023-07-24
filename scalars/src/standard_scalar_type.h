@@ -128,11 +128,11 @@ public:
     {
 
         if (lhs.is_null() ^ rhs.is_null()) {
-            throw std::runtime_error("one of the pointers is null");
+            RPY_THROW(std::runtime_error, "one of the pointers is null");
         }
 
         if (lhs.type() != rhs.type()) {
-            throw std::runtime_error("cannot swap scalars of different types");
+            RPY_THROW(std::runtime_error, "cannot swap scalars of different types");
         }
 
         if (lhs.type() != this && lhs.type() != nullptr) {
@@ -140,7 +140,7 @@ public:
         }
 
         if (lhs.is_const() || rhs.is_const()) {
-            throw std::runtime_error("one or both of the scalars is const");
+            RPY_THROW(std::runtime_error, "one or both of the scalars is const");
         }
 
         std::swap(*lhs.raw_cast<ScalarImpl*>(), *rhs.raw_cast<ScalarImpl*>());
@@ -156,7 +156,7 @@ protected:
 
         const ScalarType* type = other.type();
         if (type == nullptr) {
-            throw std::runtime_error("null type for non-zero value");
+            RPY_THROW(std::runtime_error, "null type for non-zero value");
         }
 
         auto cv = get_conversion(type->id(), this->id());
@@ -167,7 +167,7 @@ protected:
             return result;
         }
 
-        throw std::runtime_error("could not convert " + type->info().name
+        RPY_THROW(std::runtime_error,"could not convert " + type->info().name
                                  + " to scalar type " + info().name);
     }
 
@@ -179,7 +179,7 @@ public:
         const auto* type = in.type();
 
         if (type == nullptr) {
-            throw std::runtime_error("null type for non-zero value");
+            RPY_THROW(std::runtime_error, "null type for non-zero value");
         }
 
         if (type == this) {
@@ -247,7 +247,7 @@ public:
     {
         if (src.type() == nullptr) {
             if (src.is_simple_integer()) {
-                throw std::runtime_error(
+                RPY_THROW(std::runtime_error,
                         "no type associated with scalar value");
             }
             switch (src.simple_integer_config()) {
@@ -311,7 +311,7 @@ public:
                         break;
                         //                    case 128:
                     default:
-                        throw std::runtime_error(
+                        RPY_THROW(std::runtime_error,
                                 "invalid bit configuration for integer type");
                 }
                 break;
@@ -335,7 +335,7 @@ public:
                         break;
                         //                    case 128:
                     default:
-                        throw std::runtime_error(
+                        RPY_THROW(std::runtime_error,
                                 "invalid bit configuration for integer type");
                 }
                 break;
@@ -352,7 +352,7 @@ public:
                                                    info.lanes * count);
                         break;
                     default:
-                        throw std::runtime_error(
+                        RPY_THROW(std::runtime_error,
                                 "invalid bit configuration for float type");
                 }
                 break;
@@ -363,14 +363,14 @@ public:
                                                      info.lanes * count);
                         break;
                     default:
-                        throw std::runtime_error(
+                        RPY_THROW(std::runtime_error,
                                 "invalid bit configuration for bfloat type");
                 }
                 break;
             case ScalarTypeCode::Bool:
             case ScalarTypeCode::OpaqueHandle: break;
             case ScalarTypeCode::Complex:
-            default: throw std::runtime_error("unsupported scalar type");
+            default: RPY_THROW(std::runtime_error, "unsupported scalar type");
         }
     }
     void assign(ScalarPointer target, long long int numerator,
@@ -413,12 +413,12 @@ public:
     Scalar div(ScalarPointer lhs, ScalarPointer rhs) const override
     {
         if (!lhs) { return zero(); }
-        if (rhs.is_null()) { throw std::runtime_error("division by zero"); }
+        if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
         auto crhs = try_convert(rhs);
 
         if (crhs == ScalarImpl(0)) {
-            throw std::runtime_error("division by zero");
+            RPY_THROW(std::runtime_error, "division by zero");
         }
 
         return Scalar(this,
@@ -455,12 +455,12 @@ public:
     {
         RPY_DBG_ASSERT(lhs);
         auto* ptr = lhs.raw_cast<ScalarImpl*>();
-        if (rhs.is_null()) { throw std::runtime_error("division by zero"); }
+        if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
         auto crhs = try_convert(rhs);
 
         if (crhs == ScalarImpl(0)) {
-            throw std::runtime_error("division by zero");
+            RPY_THROW(std::runtime_error, "division by zero");
         }
 
         *ptr /= crhs;

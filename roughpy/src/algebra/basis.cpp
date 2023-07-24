@@ -33,17 +33,23 @@
 #include <roughpy/algebra/tensor_basis.h>
 
 #include "lie_key.h"
+#include "lie_key_iterator.h"
 #include "tensor_key.h"
+#include "tensor_key_iterator.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
 using namespace pybind11::literals;
 
-template <typename T, typename K>
-static void wordlike_basis_setup(py::module_& m, const char* name)
+template <typename T, typename K, typename KIter>
+static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
 {
 
     py::class_<T> basis(m, name);
+
+//    basis.def(py::init<deg_t, deg_t>([](deg_t width, deg_t depth) {
+//
+//         }));
 
     basis.def_property_readonly("width", &T::width);
     basis.def_property_readonly("depth", &T::depth);
@@ -66,14 +72,26 @@ static void wordlike_basis_setup(py::module_& m, const char* name)
 
     basis.def(
             "parents",
-            [](const T& self, const K& key) { return self.parents(0); }, "key"_a
+            [](const T& self, const K& key) { return self.parents(0); },
+            "key"_a
     );
     basis.def("size", &T::size);
+
+    basis.def("__iter__", [](const T& self) {
+        return KIter(self);
+    });
+
+    return basis;
 }
 
 void python::init_basis(py::module_& m)
 {
 
-    wordlike_basis_setup<TensorBasis, PyTensorKey>(m, "TensorBasis");
-    wordlike_basis_setup<LieBasis, PyLieKey>(m, "LieBasis");
+    wordlike_basis_setup<TensorBasis, PyTensorKey, PyTensorKeyIterator>(
+            m, "TensorBasis"
+    );
+
+    wordlike_basis_setup<LieBasis, PyLieKey, PyLieKeyIterator>(
+            m, "LieBasis"
+    );
 }

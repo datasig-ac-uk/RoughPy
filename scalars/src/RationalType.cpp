@@ -105,7 +105,7 @@ RationalType::scalar_type RationalType::try_convert(ScalarPointer other) const
 
     const ScalarType* type = other.type();
     if (type == nullptr) {
-        throw std::runtime_error("null type for non-zero value");
+        RPY_THROW(std::runtime_error, "null type for non-zero value");
     }
 
     auto cv = get_conversion(type->id(), this->id());
@@ -116,7 +116,7 @@ RationalType::scalar_type RationalType::try_convert(ScalarPointer other) const
         return result;
     }
 
-    throw std::runtime_error("could not convert " + type->info().name
+    RPY_THROW(std::runtime_error,"could not convert " + type->info().name
                              + " to scalar type " + info().name);
 }
 
@@ -124,7 +124,7 @@ void RationalType::convert_copy(ScalarPointer dst, ScalarPointer src,
                                 dimn_t count) const
 {
     if (src.type() == nullptr) {
-        throw std::invalid_argument("source type cannot be null");
+        RPY_THROW(std::invalid_argument, "source type cannot be null");
     }
     convert_copy(dst, src.ptr(), count, src.type()->id());
 }
@@ -163,7 +163,7 @@ void RationalType::convert_copy(void* out, const void* in, std::size_t count,
                     break;
                 case 128:
                 default:
-                    throw std::runtime_error(
+                    RPY_THROW(std::runtime_error,
                             "invalid bit configuration for integer type");
             }
             break;
@@ -183,7 +183,7 @@ void RationalType::convert_copy(void* out, const void* in, std::size_t count,
                     break;
                 case 128:
                 default:
-                    throw std::runtime_error(
+                    RPY_THROW(std::runtime_error,
                             "invalid bit configuration for integer type");
             }
             break;
@@ -199,7 +199,7 @@ void RationalType::convert_copy(void* out, const void* in, std::size_t count,
                     convert_copy_basic<double>(optr, in, info.lanes * count);
                     break;
                 default:
-                    throw std::runtime_error(
+                    RPY_THROW(std::runtime_error,
                             "invalid bit configuration for float type");
             }
             break;
@@ -209,14 +209,14 @@ void RationalType::convert_copy(void* out, const void* in, std::size_t count,
                     convert_copy_ext<bfloat16>(optr, in, info.lanes * count);
                     break;
                 default:
-                    throw std::runtime_error(
+                    RPY_THROW(std::runtime_error,
                             "invalid bit configuration for bfloat type");
             }
             break;
         case ScalarTypeCode::Bool:
         case ScalarTypeCode::OpaqueHandle: break;
         case ScalarTypeCode::Complex:
-        default: throw std::runtime_error("unsupported scalar type");
+        default: RPY_THROW(std::runtime_error, "unsupported scalar type");
     }
 }
 void RationalType::convert_copy(void* out, ScalarPointer in,
@@ -227,7 +227,7 @@ void RationalType::convert_copy(void* out, ScalarPointer in,
     const auto* type = in.type();
 
     if (type == nullptr) {
-        throw std::runtime_error("null type for non-zero value");
+        RPY_THROW(std::runtime_error, "null type for non-zero value");
     }
 
     if (type == this) {
@@ -310,12 +310,12 @@ void RationalType::div_inplace(ScalarPointer lhs, ScalarPointer rhs) const
 {
     RPY_CHECK(lhs);
     auto* ptr = lhs.raw_cast<scalar_type*>();
-    if (rhs.is_null()) { throw std::runtime_error("division by zero"); }
+    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
     auto crhs = try_convert(rhs);
 
     if (crhs == scalar_type(0)) {
-        throw std::runtime_error("division by zero");
+        RPY_THROW(std::runtime_error, "division by zero");
     }
 
     *ptr /= crhs;
@@ -360,12 +360,12 @@ Scalar RationalType::mul(ScalarPointer lhs, ScalarPointer rhs) const
 Scalar RationalType::div(ScalarPointer lhs, ScalarPointer rhs) const
 {
     if (!lhs) { return zero(); }
-    if (rhs.is_null()) { throw std::runtime_error("division by zero"); }
+    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
     auto crhs = try_convert(rhs);
 
     if (crhs == scalar_type(0)) {
-        throw std::runtime_error("division by zero");
+        RPY_THROW(std::runtime_error, "division by zero");
     }
 
     return Scalar(this,
@@ -394,11 +394,11 @@ void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const
 {
 
     if (lhs.is_null() ^ rhs.is_null()) {
-        throw std::runtime_error("one of the pointers is null");
+        RPY_THROW(std::runtime_error, "one of the pointers is null");
     }
 
     if (lhs.type() != rhs.type()) {
-        throw std::runtime_error("cannot swap scalars of different types");
+        RPY_THROW(std::runtime_error, "cannot swap scalars of different types");
     }
 
     if (lhs.type() != this && lhs.type() != nullptr) {
@@ -406,7 +406,7 @@ void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const
     }
 
     if (lhs.is_const() || rhs.is_const()) {
-        throw std::runtime_error("one or both of the scalars is const");
+        RPY_THROW(std::runtime_error, "one or both of the scalars is const");
     }
 
     std::swap(*lhs.raw_cast<scalar_type*>(), *rhs.raw_cast<scalar_type*>());

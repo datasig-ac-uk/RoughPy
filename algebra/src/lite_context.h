@@ -53,6 +53,8 @@
 #include <roughpy/algebra/lie.h>
 #include <roughpy/algebra/shuffle_tensor.h>
 
+#include "libalgebra_lite_internal/algebra_type_caster.h"
+#include "libalgebra_lite_internal/algebra_type_helper.h"
 #include "libalgebra_lite_internal/dense_vector_iterator.h"
 #include "libalgebra_lite_internal/free_tensor_info.h"
 #include "libalgebra_lite_internal/lie_basis_info.h"
@@ -62,6 +64,7 @@
 #include "libalgebra_lite_internal/sparse_mutable_ref_scalar_trait.h"
 #include "libalgebra_lite_internal/sparse_vector_iterator.h"
 #include "libalgebra_lite_internal/tensor_basis_info.h"
+#include "libalgebra_lite_internal/unspecified_algebra_binary_op.h"
 
 #include <libalgebra_lite/coefficients.h>
 #include <libalgebra_lite/maps.h>
@@ -71,9 +74,6 @@ namespace rpy {
 namespace algebra {
 
 namespace dtl {
-template <AlgebraType ATYpe>
-struct alg_type_tag {
-};
 
 class LiteContextBasisHolder
 {
@@ -114,6 +114,28 @@ public:
 
 private:
     lal::maps m_maps;
+
+    template <AlgebraType AType, VectorType VType>
+    using arg_type_caster = algebra_type_caster<
+            Coefficients, algebra_type_tag<AType>, vector_type_tag<VType>>;
+
+    using binary_invoker = UnspecifiedFunctionInvoker<
+            arg_type_caster, LiteContext, ConstRawUnspecifiedAlgebraType,
+            ConstRawUnspecifiedAlgebraType>;
+
+    template <typename T>
+    RPY_NO_UBSAN static const T&
+    unspecified_cast(ConstRawUnspecifiedAlgebraType arg)
+    {
+        using info = dtl::alg_details_of<T>;
+        RPY_CHECK(arg != nullptr);
+        RPY_CHECK(arg->alg_type() == info::alg_type);
+        RPY_CHECK(arg->storage_type() == info::vec_type);
+        const auto* interface_ptr
+                = reinterpret_cast<const typename info::interface_type*>(arg);
+
+        return algebra_cast<T, typename info::interface_type>(*interface_ptr);
+    }
 
     template <typename OutType, typename InType>
     OutType convert_impl(
@@ -178,13 +200,22 @@ private:
     sig_derivative_impl(const std::vector<DerivativeComputeInfo>& info) const;
 
     UnspecifiedAlgebraType
-    construct_impl(const VectorConstructionData& data, dtl::alg_type_tag<AlgebraType::FreeTensor>)
+    construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::FreeTensor>)
             const;
     UnspecifiedAlgebraType
-    construct_impl(const VectorConstructionData& data, dtl::alg_type_tag<AlgebraType::ShuffleTensor>)
+    construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::ShuffleTensor>)
             const;
     UnspecifiedAlgebraType
-    construct_impl(const VectorConstructionData& data, dtl::alg_type_tag<AlgebraType::Lie>)
+    construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::Lie>)
+            const;
+    UnspecifiedAlgebraType
+    construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::FreeTensorBundle>)
+            const;
+    UnspecifiedAlgebraType
+    construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::ShuffleTensorBundle>)
+            const;
+    UnspecifiedAlgebraType
+    construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::LieBundle>)
             const;
 
 public:
@@ -225,6 +256,36 @@ public:
     Lie log_signature(const SignatureData& data) const override;
     FreeTensor sig_derivative(
             const std::vector<DerivativeComputeInfo>& info, VectorType vtype
+    ) const override;
+
+private:
+    template <typename Left, typename Right, typename FreeFunctionWrapper>
+    UnspecifiedAlgebraType algebra_free_multiply_func_impl2(
+            const Left& left, const Right& right, FreeFunctionWrapper&& wrapper
+    ) const
+    {
+        using OutType = decltype(wrapper(left, right));
+        using impl_t =
+                typename dtl::alg_details_of<OutType>::implementation_type;
+        return UnspecifiedAlgebraType(new impl_t(this, wrapper(left, right)));
+    }
+
+public:
+    UnspecifiedAlgebraType free_multiply(
+            ConstRawUnspecifiedAlgebraType left,
+            ConstRawUnspecifiedAlgebraType right
+    ) const override;
+    UnspecifiedAlgebraType shuffle_multiply(
+            ConstRawUnspecifiedAlgebraType left,
+            ConstRawUnspecifiedAlgebraType right
+    ) const override;
+    UnspecifiedAlgebraType half_shuffle_multiply(
+            ConstRawUnspecifiedAlgebraType left,
+            ConstRawUnspecifiedAlgebraType right
+    ) const override;
+    UnspecifiedAlgebraType adjoint_to_left_multiply_by(
+            ConstRawUnspecifiedAlgebraType multiplier,
+            ConstRawUnspecifiedAlgebraType argument
     ) const override;
 };
 
@@ -409,7 +470,7 @@ LiteContext<Coefficients>::lie_to_tensor_impl(const Lie& arg) const
     }
 
     if (arg_context->width() != width()) {
-        throw std::invalid_argument(
+        RPY_THROW(std::invalid_argument,
                 "cannot perform conversion on algebras with different bases"
         );
     }
@@ -428,7 +489,7 @@ LiteContext<Coefficients>::tensor_to_lie_impl(const FreeTensor& arg) const
     }
 
     if (arg_context->width() != width()) {
-        throw std::invalid_argument(
+        RPY_THROW(std::invalid_argument,
                 "cannot perform conversion on algebras with different bases"
         );
     }
@@ -550,7 +611,7 @@ LiteContext<Coefficients>::sig_derivative_impl(
 
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::
-        construct_impl(const VectorConstructionData& data, dtl::alg_type_tag<AlgebraType::FreeTensor>)
+        construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::FreeTensor>)
                 const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
@@ -564,7 +625,7 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
 }
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::
-        construct_impl(const VectorConstructionData& data, dtl::alg_type_tag<AlgebraType::ShuffleTensor>)
+        construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::ShuffleTensor>)
                 const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
@@ -579,7 +640,7 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
 }
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::
-        construct_impl(const VectorConstructionData& data, dtl::alg_type_tag<AlgebraType::Lie>)
+        construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::Lie>)
                 const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
@@ -589,6 +650,27 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
     ))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
 #undef RPY_SWITCH_FN
+}
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::
+        construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::FreeTensorBundle>)
+                const
+{
+    RPY_THROW(std::runtime_error, "not implemented for FreeTensorBundle");
+}
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::
+        construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::ShuffleTensorBundle>)
+                const
+{
+    RPY_THROW(std::runtime_error, "not implemented for ShuffleTensorBundle");
+}
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::
+        construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::LieBundle>)
+                const
+{
+    RPY_THROW(std::runtime_error, "not implemented for LieBundle");
 }
 
 template <typename Coefficients>
@@ -737,7 +819,7 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::construct(
         AlgebraType type, const VectorConstructionData& data
 ) const
 {
-#define RPY_SWITCH_FN(ATYPE) construct_impl(data, dtl::alg_type_tag<ATYPE>())
+#define RPY_SWITCH_FN(ATYPE) construct_impl(data, algebra_type_tag<ATYPE>())
     RPY_MAKE_ALGTYPE_SWITCH(type)
 #undef RPY_SWITCH_FN
 }
@@ -776,6 +858,111 @@ FreeTensor LiteContext<Coefficients>::sig_derivative(
 #define RPY_SWITCH_FN(VTYPE) FreeTensor(this, sig_derivative_impl<VTYPE>(info))
     RPY_MAKE_VTYPE_SWITCH(vtype)
 #undef RPY_SWITCH_FN
+}
+
+namespace wrappers {
+
+struct FreeMultiply {
+    template <typename L, typename R>
+    auto operator()(const L& left, const R& right) const
+            -> decltype(lal::free_tensor_multiply(left, right))
+    {
+        return lal::free_tensor_multiply(left, right);
+    }
+    template <AlgebraType Type>
+    using compatible = integral_constant<
+            bool,
+            Type == AlgebraType::FreeTensor
+                    || Type == AlgebraType::ShuffleTensor>;
+};
+struct ShuffleMultiply {
+
+    template <typename L, typename R>
+    auto operator()(const L& left, const R& right) const
+            -> decltype(lal::shuffle_multiply(left, right))
+    {
+        return lal::shuffle_multiply(left, right);
+    }
+    template <AlgebraType Type>
+    using compatible = integral_constant<
+            bool,
+            Type == AlgebraType::FreeTensor
+                    || Type == AlgebraType::ShuffleTensor>;
+};
+
+struct HalfShuffleMultiply {
+
+    template <typename L, typename R>
+    auto operator()(const L& left, const R& right) const
+            -> decltype(lal::half_shuffle_multiply(left, right))
+    {
+        return lal::half_shuffle_multiply(left, right);
+    }
+    template <AlgebraType Type>
+    using compatible = integral_constant<
+            bool,
+            Type == AlgebraType::FreeTensor
+                    || Type == AlgebraType::ShuffleTensor>;
+};
+
+struct AdjointFreeMultiply {
+
+    template <typename M, typename A>
+    auto operator()(const M& multiplier, const A& arg) const
+            -> decltype(lal::left_free_tensor_multiply_adjoint(multiplier, arg))
+    {
+        return lal::left_free_tensor_multiply_adjoint(multiplier, arg);
+    }
+
+    template <AlgebraType Type>
+    using compatible = integral_constant<
+            bool,
+            Type == AlgebraType::FreeTensor
+                    || Type == AlgebraType::ShuffleTensor>;
+};
+
+}// namespace wrappers
+
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::free_multiply(
+        ConstRawUnspecifiedAlgebraType left,
+        ConstRawUnspecifiedAlgebraType right
+) const
+{
+    return binary_invoker::eval(
+            this, wrappers::FreeMultiply(), move(left), move(right)
+    );
+}
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::shuffle_multiply(
+        ConstRawUnspecifiedAlgebraType left,
+        ConstRawUnspecifiedAlgebraType right
+) const
+{
+    return binary_invoker::eval(
+            this, wrappers::ShuffleMultiply(), move(left), move(right)
+    );
+}
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::half_shuffle_multiply(
+        ConstRawUnspecifiedAlgebraType left,
+        ConstRawUnspecifiedAlgebraType right
+) const
+{
+    return binary_invoker::eval(
+            this, wrappers::HalfShuffleMultiply(), move(left), move(right)
+    );
+}
+template <typename Coefficients>
+UnspecifiedAlgebraType LiteContext<Coefficients>::adjoint_to_left_multiply_by(
+        ConstRawUnspecifiedAlgebraType multiplier,
+        ConstRawUnspecifiedAlgebraType argument
+) const
+{
+    return binary_invoker::eval(
+            this, wrappers::AdjointFreeMultiply(), move(multiplier),
+            move(argument)
+    );
 }
 
 extern template class LiteContext<lal::float_field>;

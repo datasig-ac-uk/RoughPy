@@ -153,7 +153,7 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype)
 inline const scalars::ScalarType* to_stype_ptr(const py::handle& arg)
 {
     if (!py::isinstance(arg, get_scalar_metaclass())) {
-        throw py::type_error("argument is not a valid scalar type");
+        RPY_THROW(py::type_error, "argument is not a valid scalar type");
     }
     return reinterpret_cast<PyScalarMetaType*>(arg.ptr())->tp_ctype;
 }

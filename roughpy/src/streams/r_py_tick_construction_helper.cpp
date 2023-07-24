@@ -62,11 +62,11 @@ void python::RPyTickConstructionHelper::add_categorical_to_schema(
 
 void python::RPyTickConstructionHelper::fail_timestamp_none()
 {
-    throw py::value_error("timestamp cannot be None when constructing stream");
+    RPY_THROW(py::value_error, "timestamp cannot be None when constructing stream");
 }
 void python::RPyTickConstructionHelper::fail_data_none()
 {
-    throw py::value_error("data cannot be None when constructing stream");
+    RPY_THROW(py::value_error, "data cannot be None when constructing stream");
 }
 
 void python::RPyTickConstructionHelper::add_tick(

@@ -83,7 +83,7 @@ public:
     {
         if RPY_IF_CONSTEXPR (is_same<storage_base_t,
                                      BorrowedStorageModel<BundleImpl>>::value) {
-            throw std::runtime_error("cannot take from a borrowed algebra");
+            RPY_THROW(std::runtime_error, "cannot take from a borrowed algebra");
         } else {
             return std::move(data());
         }

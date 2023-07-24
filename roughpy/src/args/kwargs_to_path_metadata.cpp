@@ -131,7 +131,7 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
         if (!py::isinstance(
                     ctx, reinterpret_cast<PyObject*>(&RPyContext_Type)
             )) {
-            throw py::type_error("expected a Context object");
+            RPY_THROW(py::type_error, "expected a Context object");
         }
         md.ctx = python::ctx_cast(ctx.ptr());
         md.width = md.ctx->width();

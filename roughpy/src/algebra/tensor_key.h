@@ -56,12 +56,10 @@ constexpr I log(I arg, B base) noexcept
 class PyTensorKey
 {
     key_type m_key;
-    deg_t m_width;
-    deg_t m_depth;
+    algebra::TensorBasis m_basis;
 
 public:
     explicit PyTensorKey(algebra::TensorBasis basis, key_type key);
-    explicit PyTensorKey(key_type key, deg_t width, deg_t depth);
 
     explicit operator key_type() const noexcept;
 
@@ -72,6 +70,8 @@ public:
 
     deg_t width() const;
     deg_t depth() const;
+    algebra::TensorBasis basis() const { return m_basis; }
+    pair<PyTensorKey, PyTensorKey> split_n(deg_t n) const;
 
     deg_t degree() const;
     std::vector<let_t> to_letters() const;

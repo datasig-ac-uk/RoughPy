@@ -121,7 +121,7 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
 
     auto frame_count = frame_end - frame_begin;
     auto seek_pos = m_handle.seek(frame_begin, SEEK_SET);
-    if (seek_pos == -1) { throw std::runtime_error("invalid seek"); }
+    if (seek_pos == -1) { RPY_THROW(std::runtime_error, "invalid seek"); }
 
     result.allocate_scalars(frame_count * m_handle.channels());
 
@@ -204,7 +204,7 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
     if (pl->width) {
         auto width = *pl->width;
         if (width != pl->handle.channels()) {
-            throw std::invalid_argument(
+            RPY_THROW(std::invalid_argument,
                     "requested width does not match number of channels");
         }
         meta.width = width;
@@ -244,7 +244,7 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
             meta.default_context = algebra::get_context(
                     meta.width, *pl->depth, meta.data_scalar_type, {});
         } else {
-            throw std::invalid_argument(
+            RPY_THROW(std::invalid_argument,
                     "insufficient information to get context");
         }
     }

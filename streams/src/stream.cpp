@@ -110,7 +110,7 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         rpy::resolution_t resolution, const rpy::streams::Stream::Context& ctx
 ) const
 {
-    const auto& md = metadata();
+//    const auto& md = metadata();
     return p_impl->log_signature(m_support, resolution, ctx);
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
@@ -297,6 +297,9 @@ Stream Stream::simplify(
             std::move(pieces), std::move(new_md), p_impl->get_schema()
     ));
 }
+
+
+
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::Stream
 

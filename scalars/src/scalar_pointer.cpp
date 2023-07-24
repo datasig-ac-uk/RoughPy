@@ -43,7 +43,7 @@ using namespace rpy::scalars;
 void* ScalarPointer::ptr()
 {
     if (is_const()) {
-        throw std::runtime_error(
+        RPY_THROW(std::runtime_error,
                 "attempting to convert const pointer to non-const pointer");
     }
     return const_cast<void*>(p_data);
@@ -55,7 +55,7 @@ Scalar ScalarPointer::deref() const noexcept
 Scalar ScalarPointer::deref_mut()
 {
     if (is_const()) {
-        throw std::runtime_error(
+        RPY_THROW(std::runtime_error,
                 "attempting to dereference const pointer to non-const value");
     }
     return Scalar(*this, m_flags & ~owning_flag);

@@ -25,7 +25,7 @@ streams::ChannelType rpy::python::string_to_channel_type(string channel_str)
     } else if (channel_str == "lie") {
         return streams::ChannelType::Lie;
     } else {
-        throw py::value_error("expected increment, value, categorical, or lie "
+        RPY_THROW(py::value_error,"expected increment, value, categorical, or lie "
                               "for channel type");
     }
 }
@@ -40,7 +40,7 @@ streams::ChannelType python::py_to_channel_type(const py::object& arg)
         return string_to_channel_type(arg.cast<string>());
     }
 
-    throw py::type_error(
+    RPY_THROW(py::type_error,
             "no know conversion from "
             + arg.get_type().attr("__name__").cast<string>()
             + " to channel type"
@@ -122,14 +122,14 @@ void handle_seq_item(StreamSchema* schema, string label, py::sequence data)
         insert_item_to_schema(schema, std::move(label), type, py::dict());
     } else if (len == 2) {
         if (!py::isinstance<py::dict>(data[1])) {
-            throw py::type_error("options must be a dictionary if provided");
+            RPY_THROW(py::type_error, "options must be a dictionary if provided");
         }
         insert_item_to_schema(
                 schema, std::move(label), type,
                 py::reinterpret_borrow<py::dict>(data[1])
         );
     } else {
-        throw py::value_error("expected tuple (type [, options])");
+        RPY_THROW(py::value_error, "expected tuple , type [, options])");
     }
 }
 
@@ -140,7 +140,7 @@ void handle_dict_item(StreamSchema* schema, string label, py::dict data)
      * along with any other options to be appended to the schema
      */
     if (!data.contains("type")) {
-        throw py::value_error("dict items must contain \"type\"");
+        RPY_THROW(py::value_error, "dict items must contain \"type\"");
     }
 
     auto type = py_to_channel_type(data["type"]);
@@ -153,7 +153,7 @@ void handle_dict_item(StreamSchema* schema, string label, py::dict data)
 void handle_dict_item_no_label(StreamSchema* schema, py::dict data)
 {
     if (!data.contains("label")) {
-        throw py::value_error("dict items in a schema must contain \"label\"");
+        RPY_THROW(py::value_error, "dict items in a schema must contain \"label\"");
     }
     auto data_copy = py::reinterpret_steal<py::dict>(PyDict_Copy(data.ptr()));
 
@@ -183,7 +183,7 @@ void handle_dict_schema(StreamSchema* schema, py::dict data)
                     py::reinterpret_borrow<py::sequence>(item)
             );
         } else {
-            throw py::type_error("unsupported type in schema specification");
+            RPY_THROW(py::type_error, "unsupported type in schema specification");
         }
     }
 }
@@ -201,7 +201,7 @@ void handle_seq_schema(StreamSchema* schema, py::sequence data)
                     schema, py::reinterpret_borrow<py::sequence>(item)
             );
         } else {
-            throw py::type_error("unsupported type in schema specification");
+            RPY_THROW(py::type_error, "unsupported type in schema specification");
         }
     }
 }
@@ -342,7 +342,7 @@ void handle_seq_schema(StreamSchema* schema, py::sequence data)
 //            handle_timestamp_pair(schema, std::move(inner));
 //        }
 //    } else {
-//        throw py::value_error("expected dict, tuple, or other sequence");
+//        RPY_THROW(py::value_error, "expected dict, tuple, or other sequence");
 //    }
 //}
 //
@@ -370,7 +370,7 @@ void handle_seq_schema(StreamSchema* schema, py::sequence data)
 //            auto right = inner[py::slice(1, {}, {})];
 //            handle_timestamp_pair(schema, right);
 //        } else {
-//            throw py::value_error("expected tuple with no more than 4 elements"
+//            RPY_THROW(py::value_error,"expected tuple with no more than 4 elements"
 //            );
 //        }
 //    }
@@ -392,7 +392,7 @@ void python::parse_into_schema(
                 schema.get(), py::reinterpret_borrow<py::sequence>(data)
         );
     } else {
-        throw py::type_error("expected dict or sequence");
+        RPY_THROW(py::type_error, "expected dict or sequence");
     }
 }
 
@@ -409,7 +409,7 @@ void python::parse_into_schema(
 //        handle_tuple_sequence(schema.get(),
 //        py::reinterpret_borrow<py::sequence>(data));
 //    } else {
-//        throw py::type_error("expected sequential data");
+//        RPY_THROW(py::type_error, "expected sequential data");
 //    }
 //}
 //

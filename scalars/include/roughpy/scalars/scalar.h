@@ -105,7 +105,7 @@ public:
             p_type = ScalarType::of<std::decay_t<T>>();
         } else {
             if (is_const()) {
-                throw std::runtime_error(
+                RPY_THROW(std::runtime_error,
                         "attempting to assign value to const scalar");
             }
         }

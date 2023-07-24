@@ -66,10 +66,14 @@ protected:
     const scalars::ScalarType* p_coeff_type;
     VectorType m_vector_type;
     ImplementationType m_impl_type;
+    AlgebraType m_alg_type;
 
     explicit AlgebraInterfaceBase(
-            context_pointer&& ctx, VectorType vtype,
-            const scalars::ScalarType* stype, ImplementationType impl_type
+            context_pointer&& ctx,
+            VectorType vtype,
+            const scalars::ScalarType* stype,
+            ImplementationType impl_type,
+            AlgebraType alg_type
     );
 
 public:
@@ -86,6 +90,9 @@ public:
     {
         return p_coeff_type;
     };
+    RPY_NO_DISCARD
+    AlgebraType alg_type() const noexcept { return m_alg_type; }
+
 };
 
 template <typename Algebra, typename BasisType>
@@ -95,10 +102,13 @@ protected:
     BasisType m_basis;
 
     AlgebraBasicProperties(
-            context_pointer&& ctx, VectorType vtype,
-            const scalars::ScalarType* stype, ImplementationType impl_type
+            context_pointer&& ctx,
+            VectorType vtype,
+            const scalars::ScalarType* stype,
+            ImplementationType impl_type
     )
-        : AlgebraInterfaceBase(std::move(ctx), vtype, stype, impl_type),
+        : AlgebraInterfaceBase(std::move(ctx), vtype, stype, impl_type,
+                               Algebra::s_alg_type),
           m_basis(basis_setup_helper<Algebra>::get(context()))
     {}
 
@@ -327,6 +337,10 @@ public:
     explicit AlgebraBase(std::unique_ptr<Interface> impl)
         : p_impl(std::move(impl))
     {}
+    explicit AlgebraBase(UnspecifiedAlgebraType&& impl)
+            : p_impl(reinterpret_cast<Interface*>(impl.release()))
+    {}
+
     explicit AlgebraBase(Interface* impl) : p_impl(impl) {}
 
     using interface_t = Interface;
@@ -396,6 +410,19 @@ public:
     {
         return static_cast<bool>(p_impl);
     }
+
+    RPY_NO_DISCARD
+    explicit inline operator const Interface*() const noexcept
+    {
+        return p_impl.get();
+    }
+
+    RPY_NO_DISCARD
+    explicit inline operator Interface*() noexcept
+    {
+        return p_impl.get();
+    }
+
 
     RPY_NO_DISCARD
     dimn_t dimension() const;

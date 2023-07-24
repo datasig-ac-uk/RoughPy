@@ -62,7 +62,7 @@ void python::assign_py_object_to_scalar(
         // TODO: other checks
 
         auto tp = py::type::of(object);
-        throw py::value_error(
+        RPY_THROW(py::value_error,
                 "bad conversion from " + tp.cast<string>() + " to "
                 + ptr.type()->info().name
         );
@@ -119,6 +119,7 @@ void python::init_scalars(pybind11::module_& m)
            << self.to_scalar_t() << ")";
         return ss.str();
     });
+    klass.def("to_float", &Scalar::to_scalar_t);
 
     RPY_WARNING_POP
 }
@@ -197,7 +198,7 @@ static inline void update_dtype_and_allocate(
         result.allocate_scalars(no_values);
         result.allocate_keys(no_keys);
     } else if (no_values > 0) {
-        throw py::type_error("unable to deduce a suitable scalar type");
+        RPY_THROW(py::type_error, "unable to deduce a suitable scalar type");
     }
 }
 
@@ -211,7 +212,7 @@ static bool try_fill_buffer_dlpack(
 
     auto* tensor = reinterpret_cast<DLManagedTensor*>(dlpack.get_pointer());
     if (tensor == nullptr) {
-        throw py::value_error("__dlpack__ returned invalid object");
+        RPY_THROW(py::value_error, "__dlpack__ returned invalid object");
     }
 
     auto& dltensor = tensor->dl_tensor;
@@ -326,14 +327,14 @@ static bool check_ground_type(
         if (ground_type == ground_data_type::UnSet) {
             ground_type = ground_data_type::Scalars;
         } else if (ground_type != ground_data_type::Scalars) {
-            throw py::value_error("inconsistent scalar/key-scalar-pair data");
+            RPY_THROW(py::value_error, "inconsistent scalar/key-scalar-pair data");
         }
         scalar = object;
     } else if (is_kv_pair(object, options.alternative_key)) {
         if (ground_type == ground_data_type::UnSet) {
             ground_type = ground_data_type::KeyValuePairs;
         } else if (ground_type != ground_data_type::KeyValuePairs) {
-            throw py::value_error("inconsistent scalar/key-scalar-pair data");
+            RPY_THROW(py::value_error, "inconsistent scalar/key-scalar-pair data");
         }
         scalar = object.cast<py::tuple>()[1];
     } else {
@@ -355,10 +356,10 @@ static void compute_size_and_type_recurse(
 {
 
     if (!py::isinstance<py::sequence>(object)) {
-        throw py::type_error("unexpected type in array argument");
+        RPY_THROW(py::type_error, "unexpected type in array argument");
     }
     if (depth > options.max_nested) {
-        throw py::value_error(
+        RPY_THROW(py::value_error,
                 "maximum nested array limit reached in this context"
         );
     }
@@ -374,7 +375,7 @@ static void compute_size_and_type_recurse(
         // We have visited this depth before,
         // check our length is consistent with the others
         if (length != options.shape[depth]) {
-            throw py::value_error("ragged arrays are not supported");
+            RPY_THROW(py::value_error, "ragged arrays are not supported");
         }
     }
 
@@ -412,14 +413,14 @@ static void compute_size_and_type_recurse(
         auto dict = py::reinterpret_borrow<py::dict>(item0);
 
         if (depth == options.max_nested) {
-            throw py::value_error("maximum nested depth reached in this context"
+            RPY_THROW(py::value_error,"maximum nested depth reached in this context"
             );
         }
         switch (ground_type) {
             case ground_data_type::UnSet:
                 ground_type = ground_data_type::KeyValuePairs;
             case ground_data_type::KeyValuePairs: break;
-            default: throw py::type_error("mismatched types in array argument");
+            default: RPY_THROW(py::type_error, "mismatched types in array argument");
         }
 
         if (!dict.empty()) {
@@ -430,7 +431,7 @@ static void compute_size_and_type_recurse(
         leaves.push_back(dict);
 
     } else {
-        throw py::type_error("unexpected type in array argument");
+        RPY_THROW(py::type_error, "unexpected type in array argument");
     }
 }
 
@@ -517,7 +518,7 @@ scalars::KeyScalarArray python::py_to_buffer(
     if (py::isinstance<py::float_>(object)
         || py::isinstance<py::int_>(object)) {
         if (!options.allow_scalar) {
-            throw py::value_error("scalar value not permitted in this context");
+            RPY_THROW(py::value_error, "scalar value not permitted in this context");
         }
 
         check_and_set_dtype(options, object);

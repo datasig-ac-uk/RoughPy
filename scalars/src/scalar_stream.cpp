@@ -49,9 +49,9 @@ ScalarStream::ScalarStream(ScalarPointer base, std::vector<dimn_t> shape)
 {
     if (!base.is_null()) {
         p_type = base.type();
-        if (p_type == nullptr) { throw std::runtime_error("missing type"); }
+        if (p_type == nullptr) { RPY_THROW(std::runtime_error, "missing type"); }
         if (shape.empty()) {
-            throw std::runtime_error("strides cannot be empty");
+            RPY_THROW(std::runtime_error, "strides cannot be empty");
         }
 
         const auto* ptr = static_cast<const char*>(base.ptr());

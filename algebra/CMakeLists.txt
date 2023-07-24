@@ -30,6 +30,8 @@ add_roughpy_component(Algebra
         src/double_lite_context.cpp
         src/rational_lite_context.cpp
         src/rational_poly_lite_context.cpp
+        src/libalgebra_lite_internal/algebra_type_caster.h
+        src/libalgebra_lite_internal/algebra_type_helper.h
         src/libalgebra_lite_internal/dense_vector_iterator.h
         src/libalgebra_lite_internal/free_tensor_info.h
         src/libalgebra_lite_internal/lie_basis_info.h
@@ -39,6 +41,8 @@ add_roughpy_component(Algebra
         src/libalgebra_lite_internal/sparse_mutable_ref_scalar_trait.h
         src/libalgebra_lite_internal/sparse_vector_iterator.h
         src/libalgebra_lite_internal/tensor_basis_info.h
+        src/libalgebra_lite_internal/unspecified_algebra_binary_op.h
+        src/libalgebra_lite_internal/vector_storage_type.h
         src/libalgebra_lite_internal/vector_type_helper.h
         src/tensor_basis.cpp
         src/lie_basis.cpp

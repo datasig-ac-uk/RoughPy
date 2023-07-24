@@ -282,7 +282,7 @@ LAContext<Width, Depth, Coefficients>::lie_to_tensor_impl(const Lie& arg) const
     }
 
     if (arg_context->width() != width()) {
-        throw std::invalid_argument(
+        RPY_THROW(std::invalid_argument,
                 "cannot perform conversion on algebras with different bases");
     }
 
@@ -302,7 +302,7 @@ LAContext<Width, Depth, Coefficients>::tensor_to_lie_impl(
     }
 
     if (arg_context->width() != width()) {
-        throw std::invalid_argument(
+        RPY_THROW(std::invalid_argument,
                 "cannot perform conversion on algebras with different bases");
     }
 
