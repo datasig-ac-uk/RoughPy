@@ -41,7 +41,12 @@ python::PyTensorKeyIterator::PyTensorKeyIterator(
         algebra::TensorBasis basis, key_type current, key_type end
 )
     : m_current(current), m_end(end), m_basis(basis)
-{}
+{
+    auto dim = m_basis.dimension();
+    if (m_end >= dim) {
+        m_end = dim;
+    }
+}
 python::PyTensorKey python::PyTensorKeyIterator::next()
 {
     if (m_current >= m_end) { throw py::stop_iteration(); }
