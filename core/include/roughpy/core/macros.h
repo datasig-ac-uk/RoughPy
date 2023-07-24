@@ -35,6 +35,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <string>
 
 #ifdef __has_builtin
 #  define RPY_HAS_BUILTIN(x) __has_builtin(x)

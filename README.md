@@ -1,4 +1,7 @@
-![RoughPy Logo](branding/logo/logo_square_white.jpg)
+<center>
+  <img src="https://raw.githubusercontent.com/datasig-ac-uk/RoughPy/main/branding/logo/logo_square_white.jpg">
+</center><br>
+
 # RoughPy
 RoughPy is a package for working with streaming data as rough paths, and working with algebraic objects such as free tensors, shuffle tensors, and elements of the free Lie algebra.
 
@@ -24,7 +27,9 @@ git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
 tools/vcpkg/bootstrap-vcpkg.sh
 export CMAKE_TOOLCHAIN_FILE=$(pwd)/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 ```
-With this environment variable set, you should now be able to pip install either using the PyPI source distribution (using the `--no-binary :all:` flag), or directly from GitHub:
+With this environment variable set, you should now be able to pip install 
+either using the PyPI source distribution (using the `--no-binary :roughpy:` 
+flag), or directly from GitHub:
 ```bash
 pip install https://github.com/datasig-ac-uk/RoughPy.git
 ```
