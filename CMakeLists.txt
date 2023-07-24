@@ -13,7 +13,6 @@ else ()
     set(_rpy_version 0.0.1)
 endif ()
 
-
 project(RoughPy VERSION ${_rpy_version})
 
 include(CMakeDependentOption)
