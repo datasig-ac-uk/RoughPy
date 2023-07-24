@@ -69,10 +69,10 @@ python::PyTensorKey::split_n(deg_t n) const
         return std::make_pair(PyTensorKey(m_basis, 0), PyTensorKey(m_basis, 0));
     }
     if (n <= 0) {
-        return std::make_pair(PyTensorKey(m_basis, 0), *this);
+        return std::make_pair(*this,PyTensorKey(m_basis, 0));
     }
     if (n >= m_basis.depth()) {
-        return std::make_pair(*this, PyTensorKey(m_basis, 0));
+        return std::make_pair(PyTensorKey(m_basis, 0), *this);
     }
 
     auto width = m_basis.width();
