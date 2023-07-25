@@ -190,6 +190,9 @@ public:
     const basis_interface& instance() const noexcept { return *p_impl; }
 
     RPY_NO_DISCARD
+    constexpr operator bool() const noexcept { return static_cast<bool>(p_impl); }
+
+    RPY_NO_DISCARD
     string key_to_string(const key_type& key) const noexcept
     {
         return instance().key_to_string(key);
