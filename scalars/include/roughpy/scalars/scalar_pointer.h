@@ -238,79 +238,74 @@ public:
           m_flags(flags::SignedSize | flags::BorrowedPointer | flags::IsConst)
     {}
 
+
     /**
      * @brief Get the raw flags from this pointer
      * @return uint32_t holding flags data
      */
-    RPY_NO_DISCARD
-    constexpr uint32_t flags() const noexcept { return m_flags; }
+    RPY_NO_DISCARD constexpr uint32_t flags() const noexcept { return m_flags; }
 
     /**
      * @brief Get whether the pointer is const or not
      * @return bool, true if pointer is const
      */
-    RPY_NO_DISCARD
-    bool is_const() const noexcept { return (m_flags & constness_flag) != 0; }
+    RPY_NO_DISCARD bool is_const() const noexcept
+    {
+        return (m_flags & constness_flag) != 0;
+    }
 
     /**
      * @brief Get whether the pointer is the null pointer
      * @return bool, true if the underlying raw pointer is null
      */
-    RPY_NO_DISCARD
-    bool is_null() const noexcept { return p_data == nullptr; }
+    RPY_NO_DISCARD bool is_null() const noexcept { return p_data == nullptr; }
 
     /**
      * @brief Get a pointer to the type of this scalar
      * @return pointer to type object
      */
-    RPY_NO_DISCARD
-    const ScalarType* type() const noexcept { return p_type; }
+    RPY_NO_DISCARD const ScalarType* type() const noexcept { return p_type; }
 
-    RPY_NO_DISCARD
-    constexpr bool is_simple_integer() const noexcept
+    RPY_NO_DISCARD constexpr bool is_simple_integer() const noexcept
     {
         return (m_flags & flags::SimpleInteger) != 0;
     }
 
-    RPY_NO_DISCARD
-    constexpr uint32_t simple_integer_bytes() const noexcept
+    RPY_NO_DISCARD constexpr uint32_t simple_integer_bytes() const noexcept
     {
         return 1U << ((m_flags & integer_bits_mask) >> integer_bits_offset);
     }
 
-    RPY_NO_DISCARD
-    constexpr bool is_signed_integer() const noexcept
+    RPY_NO_DISCARD constexpr bool is_signed_integer() const noexcept
     {
         return (m_flags & signed_flag) != 0;
     }
 
-    RPY_NO_DISCARD
-    constexpr flags::IntegerType simple_integer_config() const noexcept
+    RPY_NO_DISCARD constexpr flags::IntegerType
+    simple_integer_config() const noexcept
     {
         return static_cast<flags::IntegerType>(
-                m_flags & (signed_flag | integer_bits_mask));
+                m_flags & (signed_flag | integer_bits_mask)
+        );
     }
 
     /**
      * @brief Get the raw pointer contained held
      * @return const raw pointer to underlying data
      */
-    RPY_NO_DISCARD
-    const void* ptr() const noexcept { return p_data; }
+    RPY_NO_DISCARD const void* ptr() const noexcept { return p_data; }
 
     /**
      * @brief Get the raw pointer contained held
      * @return const raw pointer to underlying data
      */
-    RPY_NO_DISCARD
-    const void* cptr() const noexcept { return p_data; }
+    RPY_NO_DISCARD const void* cptr() const noexcept { return p_data; }
 
     /**
      * @brief Get the mutable raw pointer held
      * @return mutable raw pointer to underlying data
      */
-    RPY_NO_DISCARD
-    void* ptr();
+    RPY_NO_DISCARD void* ptr();
 
     /**
      * @brief Cast the pointer to a const raw type
@@ -328,14 +323,17 @@ public:
      * @tparam T Type to cast to
      * @return pointer to underlying type of T
      */
-    template <typename T,
-              typename = std::enable_if_t<
-                      !std::is_const<std::remove_pointer_t<T>>::value>>
+    template <
+            typename T,
+            typename
+            = std::enable_if_t<!std::is_const<std::remove_pointer_t<T>>::value>>
     RPY_NO_DISCARD ensure_pointer<T> raw_cast()
     {
         if (is_const()) {
-            RPY_THROW(std::runtime_error,
-                    "cannot cast const pointer to non-const pointer");
+            RPY_THROW(
+                    std::runtime_error,
+                    "cannot cast const pointer to non-const pointer"
+            );
         }
         return static_cast<ensure_pointer<T>>(const_cast<void*>(p_data));
     }
@@ -344,74 +342,65 @@ public:
      * @brief Dereference to get a scalar value
      * @return new Scalar object referencing the pointed to data
      */
-    RPY_NO_DISCARD
-    Scalar deref() const noexcept;
+    RPY_NO_DISCARD Scalar deref() const noexcept;
 
     /**
      * @brief Dereference to a scalar type mutably
      * @return new Scalar object mutably referencing te pointed to data
      */
-    RPY_NO_DISCARD
-    Scalar deref_mut();
+    RPY_NO_DISCARD Scalar deref_mut();
 
     // Pointer-like operations
 
-    RPY_NO_DISCARD
-    constexpr operator bool() const noexcept { return p_data != nullptr; }
+    RPY_NO_DISCARD constexpr operator bool() const noexcept
+    {
+        return p_data != nullptr;
+    }
 
-    RPY_NO_DISCARD
-    Scalar operator*();
-    RPY_NO_DISCARD
-    Scalar operator*() const noexcept;
+    RPY_NO_DISCARD Scalar operator*();
+    RPY_NO_DISCARD Scalar operator*() const noexcept;
 
-    RPY_NO_DISCARD
-    ScalarPointer operator+(size_type index) const noexcept;
+    RPY_NO_DISCARD ScalarPointer operator+(size_type index) const noexcept;
     ScalarPointer& operator+=(size_type index) noexcept;
 
     ScalarPointer& operator++() noexcept;
-    RPY_NO_DISCARD
-    const ScalarPointer operator++(int) noexcept;
+    RPY_NO_DISCARD const ScalarPointer operator++(int) noexcept;
 
-    RPY_NO_DISCARD
-    Scalar operator[](size_type index) const noexcept;
-    RPY_NO_DISCARD
-    Scalar operator[](size_type index);
+    RPY_NO_DISCARD Scalar operator[](size_type index) const noexcept;
+    RPY_NO_DISCARD Scalar operator[](size_type index);
 
-    RPY_NO_DISCARD
-    difference_type operator-(const ScalarPointer& right) const noexcept;
+    RPY_NO_DISCARD difference_type operator-(const ScalarPointer& right
+    ) const noexcept;
 
 protected:
-    RPY_NO_DISCARD
-    constexpr bool is_owning() const noexcept
+    RPY_NO_DISCARD constexpr bool is_owning() const noexcept
     {
         return (m_flags & owning_flag) != 0;
     }
 
-    RPY_NO_DISCARD
-    constexpr bool is_interface() const noexcept
+    RPY_NO_DISCARD constexpr bool is_interface() const noexcept
     {
         return (m_flags & interface_flag) != 0;
     }
 
 protected:
-    RPY_NO_DISCARD
-    std::string get_type_id() const;
+    RPY_NO_DISCARD std::string get_type_id() const;
 
-    RPY_NO_DISCARD
-    std::vector<byte> to_raw_bytes(dimn_t count) const;
+    RPY_NO_DISCARD std::vector<byte> to_raw_bytes(dimn_t count) const;
 
-    void update_from_bytes(const std::string& type_id, dimn_t count,
-                           Slice<byte> raw);
+    void update_from_bytes(
+            const std::string& type_id, dimn_t count, Slice<byte> raw
+    );
 };
 
-RPY_NO_DISCARD
-inline bool operator==(const ScalarPointer& left, const ScalarPointer& right)
+RPY_NO_DISCARD inline bool
+operator==(const ScalarPointer& left, const ScalarPointer& right)
 {
     return left.type() == right.type() && left.ptr() == right.ptr();
 }
 
-RPY_NO_DISCARD
-inline bool operator!=(const ScalarPointer& left, const ScalarPointer& right)
+RPY_NO_DISCARD inline bool
+operator!=(const ScalarPointer& left, const ScalarPointer& right)
 {
     return left.type() != right.type() || left.ptr() != right.ptr();
 }
