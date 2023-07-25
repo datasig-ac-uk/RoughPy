@@ -285,7 +285,7 @@ public:
     simple_integer_config() const noexcept
     {
         return static_cast<flags::IntegerType>(
-                m_flags & (signed_flag | integer_bits_mask)
+                m_flags & (flags::SimpleInteger | signed_flag | integer_bits_mask)
         );
     }
 
