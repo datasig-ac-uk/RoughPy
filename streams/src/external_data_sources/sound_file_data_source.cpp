@@ -157,13 +157,12 @@ dimn_t SoundFileDataSource::query_impl(
         return 0;
     }
 
-    auto seek_pos = m_handle.seek(frame_begin, SEEK_SET);
-
     // If we're at the beginning of time, skip the first reading
     if (frame_begin == 0) {
         ++frame_begin;
     }
 
+    auto seek_pos = m_handle.seek(frame_begin-1, SEEK_SET);
     m_handle.readf(previous.data(), 1);
 
     RPY_CHECK(frame_begin > 0 && frame_begin <= frame_end
@@ -191,7 +190,7 @@ dimn_t SoundFileDataSource::query_impl(
          *      5) Repeat.
          */
 
-        m_handle.readf(working.data(), 1);
+        m_handle.readf(current.data(), 1);
         dimn_t i=0;
         // I really wish C++ had enumerate iterators!
         for (const auto& [_, chan] : schema) {
