@@ -190,7 +190,21 @@ public:
 
     RPY_NO_DISCARD
     dimn_t dimension() const noexcept { return instance().dimension(); }
+
+
+    friend bool operator==(const Basis& left, const Basis& right) noexcept
+    {
+        return left.p_impl == right.p_impl;
+    }
+
+    friend bool operator!=(const Basis& left, const Basis& right) noexcept
+    {
+        return left.p_impl != right.p_impl;
+    }
+
 };
+
+
 
 namespace dtl {
 template <
