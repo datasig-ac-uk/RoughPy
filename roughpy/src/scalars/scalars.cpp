@@ -62,9 +62,10 @@ void python::assign_py_object_to_scalar(
         // TODO: other checks
 
         auto tp = py::type::of(object);
-        RPY_THROW(py::value_error,
+        RPY_THROW(
+                py::value_error,
                 "bad conversion from " + tp.cast<string>() + " to "
-                + ptr.type()->info().name
+                        + ptr.type()->info().name
         );
     }
 }
@@ -246,8 +247,7 @@ static bool try_fill_buffer_dlpack(
             buffer = scalars::ScalarArray({options.type, data}, size);
         } else {
             buffer.allocate_scalars(size);
-            options.type->convert_copy(buffer,
-                                       {tensor_stype, data}, size);
+            options.type->convert_copy(buffer, {tensor_stype, data}, size);
         }
     } else {
         buffer.allocate_scalars(size);
@@ -327,14 +327,18 @@ static bool check_ground_type(
         if (ground_type == ground_data_type::UnSet) {
             ground_type = ground_data_type::Scalars;
         } else if (ground_type != ground_data_type::Scalars) {
-            RPY_THROW(py::value_error, "inconsistent scalar/key-scalar-pair data");
+            RPY_THROW(
+                    py::value_error, "inconsistent scalar/key-scalar-pair data"
+            );
         }
         scalar = object;
     } else if (is_kv_pair(object, options.alternative_key)) {
         if (ground_type == ground_data_type::UnSet) {
             ground_type = ground_data_type::KeyValuePairs;
         } else if (ground_type != ground_data_type::KeyValuePairs) {
-            RPY_THROW(py::value_error, "inconsistent scalar/key-scalar-pair data");
+            RPY_THROW(
+                    py::value_error, "inconsistent scalar/key-scalar-pair data"
+            );
         }
         scalar = object.cast<py::tuple>()[1];
     } else {
@@ -359,7 +363,8 @@ static void compute_size_and_type_recurse(
         RPY_THROW(py::type_error, "unexpected type in array argument");
     }
     if (depth > options.max_nested) {
-        RPY_THROW(py::value_error,
+        RPY_THROW(
+                py::value_error,
                 "maximum nested array limit reached in this context"
         );
     }
@@ -413,14 +418,17 @@ static void compute_size_and_type_recurse(
         auto dict = py::reinterpret_borrow<py::dict>(item0);
 
         if (depth == options.max_nested) {
-            RPY_THROW(py::value_error,"maximum nested depth reached in this context"
+            RPY_THROW(
+                    py::value_error,
+                    "maximum nested depth reached in this context"
             );
         }
         switch (ground_type) {
             case ground_data_type::UnSet:
                 ground_type = ground_data_type::KeyValuePairs;
             case ground_data_type::KeyValuePairs: break;
-            default: RPY_THROW(py::type_error, "mismatched types in array argument");
+            default:
+                RPY_THROW(py::type_error, "mismatched types in array argument");
         }
 
         if (!dict.empty()) {
@@ -518,7 +526,10 @@ scalars::KeyScalarArray python::py_to_buffer(
     if (py::isinstance<py::float_>(object)
         || py::isinstance<py::int_>(object)) {
         if (!options.allow_scalar) {
-            RPY_THROW(py::value_error, "scalar value not permitted in this context");
+            RPY_THROW(
+                    py::value_error,
+                    "scalar value not permitted in this context"
+            );
         }
 
         check_and_set_dtype(options, object);
