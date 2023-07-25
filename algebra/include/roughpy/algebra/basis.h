@@ -176,8 +176,15 @@ public:
     //        : p_impl(new typename PrimaryInterface::template impl_t<B>(basis))
     //    {}
 
+    Basis() = default;
+    Basis(const Basis&) = default;
+    Basis(Basis&&) noexcept = default;
+
     RPY_NO_UBSAN
     ~Basis() = default;
+
+    Basis& operator=(const Basis&) = default;
+    Basis& operator=(Basis&&) noexcept = default;
 
     RPY_NO_DISCARD
     const basis_interface& instance() const noexcept { return *p_impl; }
