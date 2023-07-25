@@ -45,25 +45,26 @@ class PyLieKey
 {
 public:
     using container_type = boost::container::small_vector<PyLieLetter, 2>;
+    using basis_type = algebra::LieBasis;
 
 private:
     container_type m_data;
-    deg_t m_width;
+    basis_type m_basis;
 
 public:
-    explicit PyLieKey(deg_t width);
-    explicit PyLieKey(deg_t width, let_t letter);
+    explicit PyLieKey(basis_type basis);
+    explicit PyLieKey(basis_type basis, let_t letter);
     explicit PyLieKey(
-            deg_t width,
+            basis_type basis,
             const boost::container::small_vector_base<PyLieLetter>& data
     );
-    explicit PyLieKey(deg_t width, let_t left, let_t right);
-    explicit PyLieKey(deg_t width, let_t left, const PyLieKey& right);
-    explicit PyLieKey(deg_t width, const PyLieKey& left, const PyLieKey& right);
+    explicit PyLieKey(basis_type basis, let_t left, let_t right);
+    explicit PyLieKey(basis_type basis, let_t left, const PyLieKey& right);
+    explicit PyLieKey(basis_type basis, const PyLieKey& left, const PyLieKey& right);
     explicit PyLieKey(algebra::LieBasis basis, key_type key);
     PyLieKey(const algebra::Context* ctx, key_type key);
 
-    deg_t width() const noexcept { return m_width; }
+    deg_t width() const noexcept { return m_basis.width(); }
 
     bool is_letter() const noexcept;
     let_t as_letter() const;
@@ -75,6 +76,11 @@ public:
 
     bool equals(const PyLieKey& other) const noexcept;
 };
+
+PyLieKey
+parse_lie_key(const algebra::LieBasis& basis,
+              const py::args& args,
+              const py::kwargs& kwargs);
 
 void init_py_lie_key(py::module_& m);
 

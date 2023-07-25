@@ -56,19 +56,19 @@ to_py_lie_key(key_type k, const algebra::LieBasis& lbasis)
 {
     auto width = lbasis.width();
 
-    if (lbasis.letter(k)) { return python::PyLieKey(width, k); }
+    if (lbasis.letter(k)) { return python::PyLieKey(lbasis, k); }
 
     auto lparent = *lbasis.lparent(k);
     auto rparent = *lbasis.rparent(k);
 
     if (lbasis.letter(lparent) && lbasis.letter(rparent)) {
-        return python::PyLieKey(lbasis.width(), lparent, rparent);
+        return python::PyLieKey(lbasis, lparent, rparent);
     }
     if (lbasis.letter(lparent)) {
-        return python::PyLieKey(width, lparent, to_py_lie_key(rparent, lbasis));
+        return python::PyLieKey(lbasis, lparent, to_py_lie_key(rparent, lbasis));
     }
     return python::PyLieKey(
-            width, to_py_lie_key(lparent, lbasis),
+            lbasis, to_py_lie_key(lparent, lbasis),
             to_py_lie_key(rparent, lbasis)
     );
 }
