@@ -246,7 +246,7 @@ public:
                       dimn_t count) const override
     {
         if (src.type() == nullptr) {
-            if (src.is_simple_integer()) {
+            if (!src.is_simple_integer()) {
                 RPY_THROW(std::runtime_error,
                         "no type associated with scalar value");
             }
@@ -282,8 +282,9 @@ public:
                     convert_copy_basic<idimn_t>(dst, src.cptr(), count);
                     break;
             }
+        } else {
+            convert_copy(dst, src.cptr(), count, src.type()->id());
         }
-        convert_copy(dst, src.cptr(), count, src.type()->id());
     }
     void convert_copy(void* out, const void* in, std::size_t count,
                       BasicScalarInfo info) const override
