@@ -19,8 +19,9 @@ class RPY_EXPORT ExternalDataStreamSource
 public:
     virtual ~ExternalDataStreamSource();
 
-    virtual dimn_t query(scalars::KeyScalarArray& result,
-                         const intervals::Interval& interval)
+    virtual dimn_t
+    query(scalars::KeyScalarArray& result, const intervals::Interval& interval,
+          const StreamSchema& schema)
             = 0;
 };
 
@@ -36,16 +37,16 @@ public:
 
     virtual void set_width(void* payload, deg_t width) const;
     virtual void set_depth(void* payload, deg_t depth) const;
-    virtual void set_ctype(void* payload,
-                           const scalars::ScalarType* ctype) const;
+    virtual void
+    set_ctype(void* payload, const scalars::ScalarType* ctype) const;
     virtual void set_context(void* payload, algebra::context_pointer ctx) const;
-    virtual void set_support(void* payload,
-                             intervals::RealInterval support) const;
+    virtual void
+    set_support(void* payload, intervals::RealInterval support) const;
     virtual void set_vtype(void* payload, algebra::VectorType vtype) const;
     virtual void set_resolution(void* payload, resolution_t resolution) const;
 
-    virtual void add_option(void* payload, const string& option,
-                            void* value) const;
+    virtual void
+    add_option(void* payload, const string& option, void* value) const;
 
     virtual ExternalDataStreamConstructor get_constructor(const url& uri) const
             = 0;
@@ -62,11 +63,12 @@ public:
 
     ExternalDataStreamConstructor(const ExternalDataStreamConstructor& other)
             = delete;
-    ExternalDataStreamConstructor(
-            ExternalDataStreamConstructor&& other) noexcept;
+    ExternalDataStreamConstructor(ExternalDataStreamConstructor&& other
+    ) noexcept;
 
-    ExternalDataStreamConstructor(const ExternalDataSourceFactory* factory,
-                                  void* payload);
+    ExternalDataStreamConstructor(
+            const ExternalDataSourceFactory* factory, void* payload
+    );
     ~ExternalDataStreamConstructor();
 
     ExternalDataStreamConstructor&
@@ -85,8 +87,7 @@ public:
 
     void add_option(const string& option, void* value);
 
-    RPY_NO_DISCARD
-    Stream construct();
+    RPY_NO_DISCARD Stream construct();
 
     operator bool() const noexcept { return p_factory != nullptr; }
 };
@@ -96,21 +97,24 @@ class RPY_EXPORT ExternalDataStream : public DyadicCachingLayer
     std::unique_ptr<ExternalDataStreamSource> p_source;
 
 public:
-    template <typename Source,
-              typename = enable_if_t<
-                      is_base_of<ExternalDataStreamSource, Source>::value>>
+    template <
+            typename Source,
+            typename
+            = enable_if_t<is_base_of<ExternalDataStreamSource, Source>::value>>
     explicit ExternalDataStream(Source&& src, StreamMetadata md)
         : DyadicCachingLayer(std::move(md)),
           p_source(new Source(std::forward<Source>(src)))
     {}
 
-    static void register_factory(
-            std::unique_ptr<const ExternalDataSourceFactory>&& factory);
+    static void
+    register_factory(std::unique_ptr<const ExternalDataSourceFactory>&& factory
+    );
     static ExternalDataStreamConstructor get_factory_for(const url& uri);
 
 protected:
-    algebra::Lie log_signature_impl(const intervals::Interval& interval,
-                                    const algebra::Context& ctx) const override;
+    algebra::Lie log_signature_impl(
+            const intervals::Interval& interval, const algebra::Context& ctx
+    ) const override;
 };
 
 template <typename Source>
@@ -122,7 +126,9 @@ public:
     {
         ExternalDataStream::register_factory(
                 std::unique_ptr<const ExternalDataSourceFactory>(
-                        new Source(std::forward<Args>(args)...)));
+                        new Source(std::forward<Args>(args)...)
+                )
+        );
     }
 };
 

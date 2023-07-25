@@ -49,7 +49,7 @@ algebra::Lie streams::ExternalDataStream::log_signature_impl(
         const intervals::Interval& interval, const algebra::Context& ctx) const
 {
     scalars::KeyScalarArray buffer(ctx.ctype());
-    auto num_increments = p_source->query(buffer, interval);
+    auto num_increments = p_source->query(buffer, interval, schema());
 
     algebra::SignatureData tmp{scalars::ScalarStream(ctx.ctype()),
                                std::vector<const key_type*>(),
