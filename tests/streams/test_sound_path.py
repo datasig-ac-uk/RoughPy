@@ -61,3 +61,12 @@ def test_sound_stream_support_deduction(sound_stream):
 def test_sound_stream_logsig(sound_stream):
     lsig = sound_stream.log_signature(5)
     assert lsig.size() == sound_stream.ctx.lie_size(2)
+
+def test_sound_stream_value_channels_logsig(sound_file):
+    sound_stream = roughpy.ExternalDataStream.from_uri(
+        sound_file,
+        channel_types=[roughpy.ValueChannel, roughpy.ValueChannel],
+        depth=2
+    )
+    lsig = sound_stream.log_signature(5)
+    assert lsig.size() == sound_stream.ctx.lie_size(2)
