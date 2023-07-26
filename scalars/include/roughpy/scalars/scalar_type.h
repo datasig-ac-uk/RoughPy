@@ -321,14 +321,14 @@ public:
     virtual Scalar div(ScalarPointer lhs, ScalarPointer rhs) const;
 
     /**
-     * @brief Add right value to left inplcae
+     * @brief Add right value to left inplace
      * @param lhs ScalarPointer to left value
      * @param rhs ScalarPointer to right value
      */
     virtual void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
 
     /**
-     * @brief Subract right value from left value inplace
+     * @brief Subtract right value from left value inplace
      * @param lhs ScalarPointer to left value
      * @param rhs ScalarPointer to right value
      */
