@@ -1,3 +1,8 @@
+Version 0.0.6:
+  - Externally sourced streams (sound-file streams) now support setting channel
+  types/schema in factory function.
+  - Added option for customising file name macro in exception throws
+
 Version 0.0.5:
   - Added free functions for performing free-tensor, shuffle, half-shuffle
   multiplication between pairs of tensors (of either kind).
