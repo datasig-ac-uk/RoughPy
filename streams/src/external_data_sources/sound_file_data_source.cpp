@@ -238,28 +238,43 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
      * This should dramatically simplify the code.
      */
     auto format = m_handle.format() & SF_FORMAT_SUBMASK;
-
-    switch (format) {
-        case SF_FORMAT_PCM_16:
-            return query_impl<int16_t>(result, interval, schema);
-        case SF_FORMAT_PCM_32:
-            return query_impl<int32_t>(result, interval, schema);
-        case SF_FORMAT_FLOAT:
-            return query_impl<float>(result, interval, schema);
-        case SF_FORMAT_DOUBLE:
-            return query_impl<double>(result, interval, schema);
-        default:
-            break;
-    }
-
+//
+//    switch (format) {
+//        case SF_FORMAT_PCM_16:
+//            return query_impl<int16_t>(result, interval, schema);
+//        case SF_FORMAT_PCM_32:
+//            return query_impl<int32_t>(result, interval, schema);
+//        case SF_FORMAT_FLOAT:
+//            return query_impl<float>(result, interval, schema);
+//        case SF_FORMAT_DOUBLE:
+//            return query_impl<double>(result, interval, schema);
+//        default:
+//            break;
+//    }
+//
     const auto* ctype = result.type();
     /*
      * If we made it here, we need to decide, based on ctype whether to use
      * floats or doubles for the working type.
-     * TODO: Implement this properly;
      */
-
-    return query_impl<float>(result, interval, schema);
+    auto info = ctype->info();
+    switch (info.basic_info.code) {
+        case scalars::ScalarTypeCode::Float:
+            if (info.basic_info.bits > 16) {
+                return query_impl<double>(result, interval, schema);
+            } else {
+                return query_impl<float>(result, interval, schema);
+            }
+        case scalars::ScalarTypeCode::Int:
+        case scalars::ScalarTypeCode::UInt:
+        case scalars::ScalarTypeCode::BFloat:
+        case scalars::ScalarTypeCode::OpaqueHandle:
+            return query_impl<double>(result, interval, schema);
+        case scalars::ScalarTypeCode::Complex:
+        case scalars::ScalarTypeCode::Bool:
+            RPY_THROW(std::runtime_error, "no conversion to complex or bool "
+                                          "types");
+    }
 
 }
 
@@ -274,6 +289,7 @@ struct Payload {
     optional<intervals::RealInterval> support;
     optional<algebra::VectorType> vtype;
     optional<resolution_t> resolution;
+    std::shared_ptr<StreamSchema> schema;
 };
 
 }// namespace
@@ -367,8 +383,17 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
         meta.effective_support = intervals::RealInterval(0.0, length);
     }
 
+    if (!pl->schema) {
+        pl->schema = std::make_shared<StreamSchema>(meta.width);
+    }
+
+    // Let the library handle normalisation
+    pl->handle.command(SFC_SET_NORM_FLOAT, nullptr, SF_TRUE);
+    pl->handle.command(SFC_SET_NORM_DOUBLE, nullptr, SF_TRUE);
+
     ExternalDataStream inner(SoundFileDataSource(std::move(pl->handle)),
-                             std::move(meta));
+                             std::move(meta),
+                             std::move(pl->schema));
 
     destroy_payload(payload);
 
@@ -413,4 +438,10 @@ void SoundFileDataSourceFactory::set_resolution(void* payload,
                                                 resolution_t resolution) const
 {
     reinterpret_cast<Payload*>(payload)->resolution = resolution;
+}
+void SoundFileDataSourceFactory::set_schema(
+        void* payload, std::shared_ptr<StreamSchema> schema
+) const
+{
+    reinterpret_cast<Payload*>(payload)->schema = std::move(schema);
 }

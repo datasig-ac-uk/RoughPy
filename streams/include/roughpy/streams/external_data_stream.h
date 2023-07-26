@@ -44,6 +44,8 @@ public:
     set_support(void* payload, intervals::RealInterval support) const;
     virtual void set_vtype(void* payload, algebra::VectorType vtype) const;
     virtual void set_resolution(void* payload, resolution_t resolution) const;
+    virtual void set_schema(void* payload, std::shared_ptr<StreamSchema>
+            schema) const;
 
     virtual void
     add_option(void* payload, const string& option, void* value) const;
@@ -84,6 +86,7 @@ public:
     void set_support(intervals::RealInterval support);
     void set_vtype(algebra::VectorType vtype);
     void set_resolution(resolution_t resolution);
+    void set_schema(std::shared_ptr<StreamSchema> schema);
 
     void add_option(const string& option, void* value);
 
@@ -103,6 +106,16 @@ public:
             = enable_if_t<is_base_of<ExternalDataStreamSource, Source>::value>>
     explicit ExternalDataStream(Source&& src, StreamMetadata md)
         : DyadicCachingLayer(std::move(md)),
+          p_source(new Source(std::forward<Source>(src)))
+    {}
+
+    template <
+            typename Source,
+            typename
+            = enable_if_t<is_base_of<ExternalDataStreamSource, Source>::value>>
+    explicit ExternalDataStream(Source&& src, StreamMetadata md,
+                                std::shared_ptr<StreamSchema> schema)
+        : DyadicCachingLayer(std::move(md), std::move(schema)),
           p_source(new Source(std::forward<Source>(src)))
     {}
 

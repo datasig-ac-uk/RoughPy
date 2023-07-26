@@ -122,6 +122,10 @@ void streams::ExternalDataSourceFactory::set_vtype(
 void streams::ExternalDataSourceFactory::set_resolution(
         void* payload, resolution_t resolution) const
 {}
+void streams::ExternalDataSourceFactory::set_schema(
+        void* payload, std::shared_ptr<StreamSchema> schema
+) const
+{}
 
 void streams::ExternalDataSourceFactory::add_option(void* payload,
                                                     const string& option,
@@ -195,6 +199,12 @@ void streams::ExternalDataStreamConstructor::set_resolution(
         resolution_t resolution)
 {
     p_factory->set_resolution(p_payload, resolution);
+}
+void streams::ExternalDataStreamConstructor::set_schema(
+        std::shared_ptr<StreamSchema> schema
+)
+{
+    p_factory->set_schema(p_payload, std::move(schema));
 }
 
 void streams::ExternalDataStreamConstructor::add_option(const string& option,
