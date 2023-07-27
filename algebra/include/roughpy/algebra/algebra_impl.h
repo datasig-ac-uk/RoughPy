@@ -404,7 +404,7 @@ template <
 bool AlgebraImplementation<Interface, Impl, StorageModel>::is_zero() const
 {
     // TODO: Replace with better, type aware implementation.
-    return data.size() > 0;
+    return data().size() > 0;
 }
 template <
         typename Interface, typename Impl,
