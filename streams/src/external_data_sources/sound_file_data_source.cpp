@@ -33,11 +33,33 @@
 #include "sound_file_data_source.h"
 
 #include <roughpy/platform/filesystem.h>
+#include <roughpy/scalars/owned_scalar_array.h>
 
 #include <cmath>
 
 using namespace rpy;
 using namespace rpy::streams;
+
+template <typename T>
+static scalars::ScalarPointer to_sp(T* ptr)
+{
+    return scalars::ScalarPointer(scalars::ScalarType::of<T>(), ptr);
+}
+
+template <>
+scalars::ScalarPointer to_sp<int32_t>(int32_t* ptr)
+{
+    return scalars::ScalarPointer(ptr);
+}
+
+template <>
+scalars::ScalarPointer to_sp<int16_t>(int16_t* ptr)
+{
+    return scalars::ScalarPointer(ptr);
+}
+
+
+
 
 sf_count_t SoundFileDataSource::param_to_frame(param_t param)
 {
@@ -100,6 +122,101 @@ void SoundFileDataSource::select_and_convert_read(scalars::ScalarPointer& ptr,
     }
 }
 
+
+template <typename T>
+dimn_t SoundFileDataSource::query_impl(
+        scalars::KeyScalarArray& result, const intervals::Interval& interval,
+        const StreamSchema& schema
+)
+{
+    /*
+     * Soooo, we need to deal with the schema in the room. We need to difference
+     * any channel marked as values, and discard the first value if necessary.
+     * Now things get complicated quickly if something other than this fairly
+     * simple transform is applied. We'll pretend that doesn't happen for now.
+     *
+     */
+    const auto* ctype = result.type();
+
+
+    // At some point, we might want to avoid skipping the first readings.
+//    bool has_values = true;
+
+    auto width = schema.width();
+
+    std::vector<T> working(width);
+    std::vector<T> previous(m_handle.channels());
+    std::vector<T> current(m_handle.channels());
+
+
+    auto frame_begin = param_to_frame(interval.inf());
+    auto frame_end = param_to_frame(interval.sup());
+
+    if (frame_begin == frame_end) {
+        // TODO: Check that this is the correct handling
+        return 0;
+    }
+
+    // If we're at the beginning of time, skip the first reading
+    if (frame_begin == 0) {
+        ++frame_begin;
+    }
+
+    auto seek_pos = m_handle.seek(frame_begin-1, SEEK_SET);
+    m_handle.readf(previous.data(), 1);
+
+    RPY_CHECK(frame_begin > 0 && frame_begin <= frame_end
+                  && frame_end <= m_handle.frames());
+
+    auto frame_count = frame_end - frame_begin;
+
+    if (seek_pos == -1) { RPY_THROW(std::runtime_error, "invalid seek"); }
+
+    result.allocate_scalars(frame_count * width);
+
+    auto stride = ctype->itemsize() * width;
+    char* write_ptr = result.raw_cast<char*>();
+
+    for (sf_count_t row_idx=0; row_idx < frame_count; ++row_idx) {
+        /*
+         * Process is as follows:
+         *      1) Read the data into current.
+         *      2) For each channel, write then current value (for increments)
+         *         or the differenced value (for values) into the corresponding
+         *         slot of working.
+         *      3) Swap previous and current - next time around we'll overwrite
+         *         the old previous values.
+         *      4) convert-copy the working array into the result array.
+         *      5) Repeat.
+         */
+
+        m_handle.readf(current.data(), 1);
+        dimn_t i=0;
+        // I really wish C++ had enumerate iterators!
+        for (const auto& [_, chan] : schema) {
+            auto out_idx = schema.channel_to_stream_dim(i);
+
+            if (chan.type() == ChannelType::Value) {
+                working[out_idx] = current[i] - previous[i];
+            } else {
+                working[out_idx] = current[i];
+            }
+
+            ++i;
+        }
+        std::swap(current, previous);
+
+        ctype->convert_copy(scalars::ScalarPointer(ctype, write_ptr),
+                            to_sp(working.data()), width);
+
+        write_ptr += stride;
+    }
+
+    return static_cast<dimn_t>(frame_count);
+}
+
+
+
 SoundFileDataSource::SoundFileDataSource(const url& uri)
     : m_handle(uri.path().c_str())
 {}
@@ -109,51 +226,57 @@ SoundFileDataSource::SoundFileDataSource(SndfileHandle&& handle)
 {}
 
 dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
-                                  const intervals::Interval& interval)
+                                  const intervals::Interval& interval,
+                                  const StreamSchema& schema)
 {
+    /*
+     * The actual implementation is dispatched to an appropriate
+     * working type via query_impl. For instance, if the channel values are
+     * held as 16/32-bit integers, floats, or doubles, we use the appropriate
+     * integer/float type. Otherwise, we boost up to either float or double,
+     * depending on whether the stream scalar types are floats or doubles.
+     * This should dramatically simplify the code.
+     */
+    auto format = m_handle.format() & SF_FORMAT_SUBMASK;
+//
+//    switch (format) {
+//        case SF_FORMAT_PCM_16:
+//            return query_impl<int16_t>(result, interval, schema);
+//        case SF_FORMAT_PCM_32:
+//            return query_impl<int32_t>(result, interval, schema);
+//        case SF_FORMAT_FLOAT:
+//            return query_impl<float>(result, interval, schema);
+//        case SF_FORMAT_DOUBLE:
+//            return query_impl<double>(result, interval, schema);
+//        default:
+//            break;
+//    }
+//
     const auto* ctype = result.type();
-
-    auto frame_begin = param_to_frame(interval.inf());
-    auto frame_end = param_to_frame(interval.sup());
-
-    RPY_CHECK(frame_begin >= 0 && frame_begin <= frame_end
-              && frame_end <= m_handle.frames());
-
-    auto frame_count = frame_end - frame_begin;
-    auto seek_pos = m_handle.seek(frame_begin, SEEK_SET);
-    if (seek_pos == -1) { RPY_THROW(std::runtime_error, "invalid seek"); }
-
-    result.allocate_scalars(frame_count * m_handle.channels());
-
-    const auto& sinfo = ctype->info();
-
-    if (sinfo.device.device_type == scalars::ScalarDeviceType::CPU) {
-        if (sinfo.basic_info.code == scalars::ScalarTypeCode::Float) {
-            if (sinfo.basic_info.bits == 32) {
-                read_direct_float(result, frame_count);
-            } else if (sinfo.basic_info.bits == 64) {
-                read_direct_double(result, frame_count);
+    /*
+     * If we made it here, we need to decide, based on ctype whether to use
+     * floats or doubles for the working type.
+     */
+    auto info = ctype->info();
+    switch (info.basic_info.code) {
+        case scalars::ScalarTypeCode::Float:
+            if (info.basic_info.bits > 16) {
+                return query_impl<double>(result, interval, schema);
             } else {
-                select_and_convert_read(result, frame_count);
+                return query_impl<float>(result, interval, schema);
             }
-        } else {
-            select_and_convert_read(result, frame_count);
-        }
-    } else {
-        if (sinfo.basic_info.code == scalars::ScalarTypeCode::Float) {
-            if (sinfo.basic_info.bits == 32) {
-                read_convert<float>(result, frame_count);
-            } else if (sinfo.basic_info.bits == 64) {
-                read_convert<double>(result, frame_count);
-            } else {
-                select_and_convert_read(result, frame_count);
-            }
-        } else {
-            select_and_convert_read(result, frame_count);
-        }
+        case scalars::ScalarTypeCode::Int:
+        case scalars::ScalarTypeCode::UInt:
+        case scalars::ScalarTypeCode::BFloat:
+        case scalars::ScalarTypeCode::OpaqueHandle:
+            return query_impl<double>(result, interval, schema);
+        case scalars::ScalarTypeCode::Complex:
+        case scalars::ScalarTypeCode::Bool:
+            RPY_THROW(std::runtime_error, "no conversion to complex or bool "
+                                          "types");
     }
 
-    return static_cast<dimn_t>(frame_count);
+    RPY_UNREACHABLE_RETURN(0);
 }
 
 namespace {
@@ -167,6 +290,7 @@ struct Payload {
     optional<intervals::RealInterval> support;
     optional<algebra::VectorType> vtype;
     optional<resolution_t> resolution;
+    std::shared_ptr<StreamSchema> schema;
 };
 
 }// namespace
@@ -260,8 +384,17 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
         meta.effective_support = intervals::RealInterval(0.0, length);
     }
 
+    if (!pl->schema) {
+        pl->schema = std::make_shared<StreamSchema>(meta.width);
+    }
+
+    // Let the library handle normalisation
+    pl->handle.command(SFC_SET_NORM_FLOAT, nullptr, SF_TRUE);
+    pl->handle.command(SFC_SET_NORM_DOUBLE, nullptr, SF_TRUE);
+
     ExternalDataStream inner(SoundFileDataSource(std::move(pl->handle)),
-                             std::move(meta));
+                             std::move(meta),
+                             std::move(pl->schema));
 
     destroy_payload(payload);
 
@@ -306,4 +439,10 @@ void SoundFileDataSourceFactory::set_resolution(void* payload,
                                                 resolution_t resolution) const
 {
     reinterpret_cast<Payload*>(payload)->resolution = resolution;
+}
+void SoundFileDataSourceFactory::set_schema(
+        void* payload, std::shared_ptr<StreamSchema> schema
+) const
+{
+    reinterpret_cast<Payload*>(payload)->schema = std::move(schema);
 }

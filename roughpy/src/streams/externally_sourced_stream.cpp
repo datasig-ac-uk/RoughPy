@@ -79,6 +79,7 @@ external_stream_constructor(string uri_string, const py::kwargs& kwargs)
     if (pmd.resolution != 0) { factory.set_resolution(pmd.resolution); }
     if (pmd.support) { factory.set_support(*pmd.support); }
     if (pmd.vector_type) { factory.set_vtype(*pmd.vector_type); }
+    if (pmd.schema) { factory.set_schema(pmd.schema); }
 
     PyObject* py_stream = python::RPyStream_FromStream(factory.construct());
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Datasig Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -33,6 +33,7 @@
 #include "rational_poly_scalar_type.h"
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_pointer.h>
+#include <roughpy/scalars/scalar_type_helper.h>
 
 #include <roughpy/core/alloc.h>
 
@@ -154,7 +155,8 @@ void RationalPolyScalarType::convert_copy(
                     break;
                 case 128:
                 default:
-                    RPY_THROW(std::runtime_error,
+                    RPY_THROW(
+                            std::runtime_error,
                             "invalid bit configuration for integer type"
                     );
             }
@@ -175,7 +177,8 @@ void RationalPolyScalarType::convert_copy(
                     break;
                 case 128:
                 default:
-                    RPY_THROW(std::runtime_error,
+                    RPY_THROW(
+                            std::runtime_error,
                             "invalid bit configuration for integer type"
                     );
             }
@@ -192,7 +195,8 @@ void RationalPolyScalarType::convert_copy(
                     convert_copy_ext<double>(optr, in, info.lanes * count);
                     break;
                 default:
-                    RPY_THROW(std::runtime_error,
+                    RPY_THROW(
+                            std::runtime_error,
                             "invalid bit configuration for float type"
                     );
             }
@@ -203,7 +207,8 @@ void RationalPolyScalarType::convert_copy(
                     //                    convert_copy_ext<bfloat16>(optr, in,
                     //                    info.lanes * count); break;
                 default:
-                    RPY_THROW(std::runtime_error,
+                    RPY_THROW(
+                            std::runtime_error,
                             "invalid bit configuration for bfloat type"
                     );
             }
@@ -416,7 +421,8 @@ std::unique_ptr<RandomGenerator> RationalPolyScalarType::get_rng(
 }
 std::unique_ptr<BlasInterface> RationalPolyScalarType::get_blas() const
 {
-    RPY_THROW(std::runtime_error,
+    RPY_THROW(
+            std::runtime_error,
             "no blas implementation for rational polynomial scalars"
     );
 }
@@ -431,6 +437,44 @@ ScalarPointer RationalPolyScalarType::from_raw_bytes(
 ) const
 {
     RPY_THROW(std::runtime_error, "not implemented");
+}
+void RationalPolyScalarType::add_into(
+        ScalarPointer& dst, const ScalarPointer& lhs, const ScalarPointer& rhs,
+        dimn_t count, const uint64_t* mask
+) const
+{
+    impl_helpers::binary_into_buffer<rational_poly_scalar>(
+            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l + r; }
+    );
+}
+void RationalPolyScalarType::sub_into(
+        ScalarPointer& dst, const ScalarPointer& lhs, const ScalarPointer& rhs,
+        dimn_t count, const uint64_t* mask
+) const
+{
+    impl_helpers::binary_into_buffer<rational_poly_scalar>(
+            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l - r; }
+    );
+}
+void RationalPolyScalarType::mul_into(
+        ScalarPointer& dst, const ScalarPointer& lhs, const ScalarPointer& rhs,
+        dimn_t count, const uint64_t* mask
+) const
+{
+    impl_helpers::binary_into_buffer<rational_poly_scalar>(
+            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l * r; }
+    );
+}
+void RationalPolyScalarType::div_into(
+        ScalarPointer& dst, const ScalarPointer& lhs, const ScalarPointer& rhs,
+        dimn_t count, const uint64_t* mask
+) const
+{
+    RPY_THROW(std::runtime_error, "Not implemented");
+    //    impl_helpers::binary_into_buffer<rational_poly_scalar>(
+    //            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l / r;
+    //            }
+    //    );
 }
 }// namespace scalars
 }// namespace rpy
