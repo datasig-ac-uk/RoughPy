@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 project(RoughPyScalars
         VERSION 0.0.1
         LANGUAGES CXX
-        )
+)
 
 include(GNUInstallDirs)
 include(GenerateExportHeader)
@@ -67,6 +67,7 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/random.h
         include/roughpy/scalars/scalar_matrix.h
         include/roughpy/scalars/scalar_blas.h
+        include/roughpy/scalars/scalar_type_helper.h
         include/roughpy/scalars.h
         PUBLIC_DEPS
         Boost::boost
@@ -79,7 +80,7 @@ add_roughpy_component(Scalars
         NEEDS
         RoughPy::Core
         RoughPy::Platform
-        )
+)
 
 
 if (TARGET Bignum::Bignum)
@@ -107,4 +108,4 @@ add_roughpy_test(scalar
         src/test_pcg_standard_random.cpp
         NEEDS
         RoughPy::Scalars
-        )
+)
