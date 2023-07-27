@@ -176,11 +176,21 @@ public:
     //        : p_impl(new typename PrimaryInterface::template impl_t<B>(basis))
     //    {}
 
+    Basis() = default;
+    Basis(const Basis&) = default;
+    Basis(Basis&&) noexcept = default;
+
     RPY_NO_UBSAN
     ~Basis() = default;
 
+    Basis& operator=(const Basis&) = default;
+    Basis& operator=(Basis&&) noexcept = default;
+
     RPY_NO_DISCARD
     const basis_interface& instance() const noexcept { return *p_impl; }
+
+    RPY_NO_DISCARD
+    constexpr operator bool() const noexcept { return static_cast<bool>(p_impl); }
 
     RPY_NO_DISCARD
     string key_to_string(const key_type& key) const noexcept
@@ -190,7 +200,21 @@ public:
 
     RPY_NO_DISCARD
     dimn_t dimension() const noexcept { return instance().dimension(); }
+
+
+    friend bool operator==(const Basis& left, const Basis& right) noexcept
+    {
+        return left.p_impl == right.p_impl;
+    }
+
+    friend bool operator!=(const Basis& left, const Basis& right) noexcept
+    {
+        return left.p_impl != right.p_impl;
+    }
+
 };
+
+
 
 namespace dtl {
 template <

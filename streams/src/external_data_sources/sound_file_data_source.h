@@ -71,12 +71,19 @@ class SoundFileDataSource : public ExternalDataStreamSource
     void select_and_convert_read(scalars::ScalarPointer& ptr,
                                  sf_count_t num_frames);
 
+    template <typename T>
+    dimn_t query_impl(scalars::KeyScalarArray& result,
+                      const intervals::Interval& interval,
+                      const StreamSchema& schema);
+
 public:
     explicit SoundFileDataSource(const url& uri);
     explicit SoundFileDataSource(SndfileHandle&& handle);
 
     dimn_t query(scalars::KeyScalarArray& result,
-                 const intervals::Interval& interval) override;
+                 const intervals::Interval& interval,
+                 const StreamSchema& schema
+                 ) override;
 };
 
 class SoundFileDataSourceFactory : public ExternalDataSourceFactory
@@ -93,11 +100,15 @@ public:
                      intervals::RealInterval support) const override;
     void set_vtype(void* payload, algebra::VectorType vtype) const override;
     void set_resolution(void* payload, resolution_t resolution) const override;
+    void set_schema(void* payload, std::shared_ptr<StreamSchema> schema)
+            const override;
     void destroy_payload(void*& payload) const override;
     ExternalDataStreamConstructor
     get_constructor(const url& uri) const override;
     Stream construct_stream(void* payload) const override;
 };
+
+
 
 }// namespace streams
 }// namespace rpy

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -31,6 +31,7 @@
 
 #include "scalars_fwd.h"
 
+#include <roughpy/core/alloc.h>
 #include <roughpy/core/slice.h>
 
 #include <functional>
@@ -67,10 +68,11 @@ protected:
 
 public:
     template <typename T>
-    RPY_NO_DISCARD static const ScalarType* of();
+    RPY_NO_DISCARD inline static const ScalarType* of();
 
     template <typename T>
-    RPY_NO_DISCARD static const ScalarType* of(const ScalarDeviceInfo& device);
+    RPY_NO_DISCARD inline static const ScalarType*
+    of(const ScalarDeviceInfo& device);
 
     /*
      * ScalarTypes objects should be unique for each configuration,
@@ -90,8 +92,7 @@ public:
      * @param id Id to query
      * @return const pointer to appropriate scalar type
      */
-    RPY_NO_DISCARD
-    static const ScalarType* for_id(const string& id);
+    RPY_NO_DISCARD static const ScalarType* for_id(const string& id);
 
     /**
      * @brief Get the most appropriate scalar type for type info
@@ -99,8 +100,7 @@ public:
      * @param device Type and ID of the device for scalars.
      * @return const pointer to appropriate scalar type
      */
-    RPY_NO_DISCARD
-    static const ScalarType* from_type_details(
+    RPY_NO_DISCARD static const ScalarType* from_type_details(
             const BasicScalarInfo& details, const ScalarDeviceInfo& device
     );
 
@@ -108,36 +108,34 @@ public:
      * @brief Get the unique internal ID string for this type
      * @return const reference to the ID string.
      */
-    RPY_NO_DISCARD
-    const string& id() const noexcept { return m_info.id; }
+    RPY_NO_DISCARD const string& id() const noexcept { return m_info.id; }
 
     /**
      * @brief Get the extended scalar type information for this type.
      * @return ScalarTypeInfo struct containing the information.
      */
-    RPY_NO_DISCARD
-    const ScalarTypeInfo& info() const noexcept { return m_info; }
+    RPY_NO_DISCARD const ScalarTypeInfo& info() const noexcept
+    {
+        return m_info;
+    }
 
     /**
      * @brief Get the size of a single scalar in bytes
      * @return number of bytes.
      */
-    RPY_NO_DISCARD
-    int itemsize() const noexcept { return m_info.n_bytes; }
+    RPY_NO_DISCARD int itemsize() const noexcept { return m_info.n_bytes; }
 
     /**
      * @brief Get the rational type associated with this scalar type
      * @return pointer to the rational type
      */
-    RPY_NO_DISCARD
-    virtual const ScalarType* rational_type() const noexcept;
+    RPY_NO_DISCARD virtual const ScalarType* rational_type() const noexcept;
 
     /**
      * @brief Get the type of this scalar situated on host (CPU)
      * @return pointer to the host type
      */
-    RPY_NO_DISCARD
-    virtual const ScalarType* host_type() const noexcept;
+    RPY_NO_DISCARD virtual const ScalarType* host_type() const noexcept;
 
     /**
      * @brief Create a new scalar from numerator and denominator
@@ -146,16 +144,15 @@ public:
      * @return new Scalar with value numerator/denominator (in the appropriate
      * type)
      */
-    RPY_NO_DISCARD
-    virtual Scalar from(long long numerator, long long denominator) const;
+    RPY_NO_DISCARD virtual Scalar
+    from(long long numerator, long long denominator) const;
 
     /**
      * @brief Allocate new scalars in memory
      * @param count Number of scalars to allocate space
      * @return ScalarPointer pointing to the newly allocated raw memory.
      */
-    RPY_NO_DISCARD
-    virtual ScalarPointer allocate(std::size_t count) const = 0;
+    RPY_NO_DISCARD virtual ScalarPointer allocate(std::size_t count) const = 0;
 
     /**
      * @brief Free a previously allocated block of memory
@@ -225,37 +222,32 @@ public:
      * @param str string to be parsed
      * @return new Scalar containing parsed value
      */
-    RPY_NO_DISCARD
-    virtual Scalar parse(string_view str) const;
+    RPY_NO_DISCARD virtual Scalar parse(string_view str) const;
 
     /**
      * @brief Get the scalar whose value is one
      * @return new Scalar object
      */
-    RPY_NO_DISCARD
-    virtual Scalar one() const;
+    RPY_NO_DISCARD virtual Scalar one() const;
 
     /**
      * @brief Get the scalar whose value is minus one
      * @return new Scalar object
      */
-    RPY_NO_DISCARD
-    virtual Scalar mone() const;
+    RPY_NO_DISCARD virtual Scalar mone() const;
 
     /**
      * @brief Get the scalar whose value is zero
      * @return new Scalar object
      */
-    RPY_NO_DISCARD
-    virtual Scalar zero() const;
+    RPY_NO_DISCARD virtual Scalar zero() const;
 
     /**
      * @brief Get the closest scalar_t value to a given scalar
      * @param arg pointer to value
      * @return scalar_t value close to arg in value
      */
-    RPY_NO_DISCARD
-    virtual scalar_t to_scalar_t(ScalarPointer arg) const = 0;
+    RPY_NO_DISCARD virtual scalar_t to_scalar_t(ScalarPointer arg) const = 0;
 
     /**
      * @brief assign the rational value numerator/denominator to the target
@@ -273,16 +265,14 @@ public:
      * @param source ScalarPointer to source value
      * @return new Scalar object
      */
-    RPY_NO_DISCARD
-    virtual Scalar copy(ScalarPointer source) const;
+    RPY_NO_DISCARD virtual Scalar copy(ScalarPointer source) const;
 
     /**
      * @brief Get the scalar whose value is minus given value
      * @param arg ScalarPointer to source value
      * @return new Scalar whose value is -(*arg)
      */
-    RPY_NO_DISCARD
-    virtual Scalar uminus(ScalarPointer arg) const = 0;
+    RPY_NO_DISCARD virtual Scalar uminus(ScalarPointer arg) const = 0;
 
     /**
      * @brief Add one scalar value to another
@@ -290,8 +280,8 @@ public:
      * @param rhs ScalarPointer to right value
      * @return new Scalar with sum of the two values
      */
-    RPY_NO_DISCARD
-    virtual Scalar add(ScalarPointer lhs, ScalarPointer rhs) const;
+    RPY_NO_DISCARD virtual Scalar
+    add(ScalarPointer lhs, ScalarPointer rhs) const;
 
     /**
      * @brief Subract one scalar value to another
@@ -299,8 +289,8 @@ public:
      * @param rhs ScalarPointer to right value
      * @return new Scalar with difference of the two values
      */
-    RPY_NO_DISCARD
-    virtual Scalar sub(ScalarPointer lhs, ScalarPointer rhs) const;
+    RPY_NO_DISCARD virtual Scalar
+    sub(ScalarPointer lhs, ScalarPointer rhs) const;
 
     /**
      * @brief Multiply two scalar values
@@ -308,8 +298,8 @@ public:
      * @param rhs ScalarPointer to right value
      * @return new Scalar with product of the two values
      */
-    RPY_NO_DISCARD
-    virtual Scalar mul(ScalarPointer lhs, ScalarPointer rhs) const;
+    RPY_NO_DISCARD virtual Scalar
+    mul(ScalarPointer lhs, ScalarPointer rhs) const;
 
     /**
      * @brief Divide one scalar value by another
@@ -317,18 +307,18 @@ public:
      * @param rhs ScalarPointer to right value
      * @return new scalar with left value divided by right value
      */
-    RPY_NO_DISCARD
-    virtual Scalar div(ScalarPointer lhs, ScalarPointer rhs) const;
+    RPY_NO_DISCARD virtual Scalar
+    div(ScalarPointer lhs, ScalarPointer rhs) const;
 
     /**
-     * @brief Add right value to left inplcae
+     * @brief Add right value to left inplace
      * @param lhs ScalarPointer to left value
      * @param rhs ScalarPointer to right value
      */
     virtual void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
 
     /**
-     * @brief Subract right value from left value inplace
+     * @brief Subtract right value from left value inplace
      * @param lhs ScalarPointer to left value
      * @param rhs ScalarPointer to right value
      */
@@ -349,12 +339,43 @@ public:
     virtual void div_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
 
     /**
+     * @brief Compute the sum of two scalar arrays componentwise, with optional
+     * mask
+     * @param dst Destination to write result
+     * @param lhs Left hand side input,
+     * @param rhs Right hand side input
+     * @param count Number of elements to add
+     * @param mask Mask to apply, use nullptr for no mask. Otherwise, this
+     * must must be a pointer to at least ceil(count / 64) uint64_ts where each
+     * bit denotes a flag, set 1 for perform operation on corresponding elements
+     * and 0 for not operation.
+     */
+    virtual void add_into(
+            ScalarPointer& dst, const ScalarPointer& lhs,
+            const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
+    ) const = 0;
+
+    virtual void sub_into(
+            ScalarPointer& dst, const ScalarPointer& lhs,
+            const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
+    ) const = 0;
+
+    virtual void mul_into(
+            ScalarPointer& dst, const ScalarPointer& lhs,
+            const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
+    ) const = 0;
+
+    virtual void div_into(
+            ScalarPointer& dst, const ScalarPointer& lhs,
+            const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
+    ) const = 0;
+
+    /**
      * @brief Test if the given value is equal to zero
      * @param arg argument to test
      * @return bool, true if the scalar pointer points to zero
      */
-    RPY_NO_DISCARD
-    virtual bool is_zero(ScalarPointer arg) const;
+    RPY_NO_DISCARD virtual bool is_zero(ScalarPointer arg) const;
 
     /**
      * @brief Test if two scalars are equal
@@ -362,8 +383,8 @@ public:
      * @param rhs pointer to right value
      * @return bool, true if left == right
      */
-    RPY_NO_DISCARD
-    virtual bool are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept
+    RPY_NO_DISCARD virtual bool
+    are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept
             = 0;
 
     /**
@@ -381,16 +402,14 @@ public:
      * generator's seed type).
      * @return Pointer to new RandomGenerator instance.
      */
-    RPY_NO_DISCARD
-    virtual std::unique_ptr<RandomGenerator>
+    RPY_NO_DISCARD virtual std::unique_ptr<RandomGenerator>
     get_rng(const string& bit_generator = "", Slice<uint64_t> seed = {}) const;
 
     /**
      * @brief Get a new instance of a blas interface
      * @return
      */
-    RPY_NO_DISCARD
-    virtual std::unique_ptr<BlasInterface> get_blas() const;
+    RPY_NO_DISCARD virtual std::unique_ptr<BlasInterface> get_blas() const;
 
     /**
      * @brief Produce a stream of raw bytes after any pointer resolution.
@@ -398,8 +417,7 @@ public:
      * @param count Number of elements to process
      * @return Vector of bytes (char)
      */
-    RPY_NO_DISCARD
-    virtual std::vector<byte>
+    RPY_NO_DISCARD virtual std::vector<byte>
     to_raw_bytes(const ScalarPointer& ptr, dimn_t count) const = 0;
 
     /**
@@ -407,8 +425,7 @@ public:
      * @param raw_bytes
      * @return
      */
-    RPY_NO_DISCARD
-    virtual ScalarPointer
+    RPY_NO_DISCARD virtual ScalarPointer
     from_raw_bytes(Slice<byte> raw_bytes, dimn_t count) const
             = 0;
 };
@@ -520,7 +537,7 @@ struct RPY_EXPORT scalar_type_holder<bfloat16> {
 }// namespace dtl
 
 template <typename T>
-const ScalarType* ScalarType::of()
+inline const ScalarType* ScalarType::of()
 {
     return dtl::scalar_type_holder<remove_cv_ref_t<T>>::get_type();
 }
@@ -536,7 +553,6 @@ inline const string& type_id_of() noexcept
 {
     return dtl::type_id_of_impl<T>::get_id();
 }
-
 
 }// namespace scalars
 }// namespace rpy

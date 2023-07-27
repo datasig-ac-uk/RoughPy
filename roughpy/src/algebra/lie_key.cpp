@@ -153,36 +153,37 @@ static typename python::PyLieKey::container_type trim_branch(
     return new_tree;
 }
 
-python::PyLieKey::PyLieKey(deg_t width) : m_width(width) {}
-python::PyLieKey::PyLieKey(deg_t width, let_t letter)
-    : m_data{PyLieLetter::from_letter(letter)}, m_width(width)
+python::PyLieKey::PyLieKey(basis_type basis) : m_basis(std::move(basis)) {}
+python::PyLieKey::PyLieKey(basis_type basis, let_t letter)
+    : m_data{PyLieLetter::from_letter(letter)}, m_basis(std::move(basis))
 {}
 python::PyLieKey::PyLieKey(
-        deg_t width,
+        basis_type basis,
         const boost::container::small_vector_base<PyLieLetter>& data
 )
-    : m_data(data), m_width(width)
+    : m_data(data), m_basis(std::move(basis))
 {}
-python::PyLieKey::PyLieKey(deg_t width, let_t left, let_t right)
+python::PyLieKey::PyLieKey(basis_type basis, let_t left, let_t right)
     : m_data{PyLieLetter::from_letter(left), PyLieLetter::from_letter(right)},
-      m_width(width)
+      m_basis(std::move(basis))
 {
     RPY_CHECK(left < right);
 }
 python::PyLieKey::PyLieKey(
-        deg_t width, let_t left, const python::PyLieKey& right
+        basis_type basis, let_t left, const python::PyLieKey& right
 )
-    : m_data{PyLieLetter::from_letter(left)}, m_width(width)
+    : m_data{PyLieLetter::from_letter(left)}, m_basis(std::move(basis))
 {
-    RPY_CHECK(m_width == right.m_width);
+    RPY_CHECK(m_basis == right.m_basis);
     m_data.insert(m_data.end(), right.m_data.begin(), right.m_data.end());
     RPY_CHECK(!right.is_letter() || right.as_letter() > left);
 }
 python::PyLieKey::PyLieKey(
-        deg_t width, const python::PyLieKey& left, const python::PyLieKey& right
+        basis_type basis, const python::PyLieKey& left,
+        const python::PyLieKey& right
 )
     : m_data{PyLieLetter::from_offset(2), PyLieLetter::from_offset(1 + left.degree())},
-      m_width(left.width())
+      m_basis(std::move(basis))
 {
     m_data.insert(m_data.end(), left.m_data.begin(), left.m_data.end());
     m_data.insert(m_data.end(), right.m_data.begin(), right.m_data.end());
@@ -244,10 +245,11 @@ parse_key(const algebra::LieBasis& lbasis, key_type key)
 }
 
 python::PyLieKey::PyLieKey(const algebra::Context* ctx, key_type key)
-    : m_data(parse_key(ctx->get_lie_basis(), key)), m_width(ctx->width())
+    : m_data(parse_key(ctx->get_lie_basis(), key)),
+      m_basis(ctx->get_lie_basis())
 {}
 python::PyLieKey::PyLieKey(algebra::LieBasis basis, key_type key)
-    : m_data(parse_key(basis, key)), m_width(basis.width())
+    : m_data(parse_key(basis, key)), m_basis(std::move(basis))
 {}
 bool python::PyLieKey::is_letter() const noexcept { return m_data.size() == 1; }
 let_t python::PyLieKey::as_letter() const
@@ -267,11 +269,11 @@ string python::PyLieKey::to_string() const
 }
 python::PyLieKey python::PyLieKey::lparent() const
 {
-    return PyLieKey(m_width, trim_branch(m_data, 0));
+    return PyLieKey(m_basis, trim_branch(m_data, 0));
 }
 python::PyLieKey python::PyLieKey::rparent() const
 {
-    return PyLieKey(m_width, trim_branch(m_data, 1));
+    return PyLieKey(m_basis, trim_branch(m_data, 1));
 }
 deg_t python::PyLieKey::degree() const
 {
@@ -294,16 +296,22 @@ class ToLieKeyHelper
     using container_type = typename python::PyLieKey::container_type;
     RPY_UNUSED dimn_t size;
     RPY_UNUSED dimn_t current;
+    algebra::LieBasis basis;
     deg_t width;
+    deg_t depth = 0;
     let_t max_letter = 0;
 
 public:
-    explicit ToLieKeyHelper(deg_t w) : size(2), current(0), width(w) {}
+    explicit ToLieKeyHelper(algebra::LieBasis b, deg_t w)
+        : basis(std::move(b)), size(2), current(0), width(w)
+    {}
 
     container_type parse_list(const py::handle& obj)
     {
         if (py::len(obj) != 2) {
-            RPY_THROW(py::value_error,"list items must contain exactly two elements"
+            RPY_THROW(
+                    py::value_error,
+                    "list items must contain exactly two elements"
             );
         }
 
@@ -318,7 +326,8 @@ public:
         if (py::isinstance<py::list>(obj)) { return parse_list(obj); }
         if (py::isinstance<py::int_>(obj)) {
             auto as_let = obj.cast<let_t>();
-            if (as_let > max_letter) { max_letter = as_let; }
+            if (basis)
+                if (as_let > max_letter) { max_letter = as_let; }
             return container_type{python::PyLieLetter::from_letter(as_let)};
         }
         RPY_THROW(py::type_error, "items must be either int or lists");
@@ -359,7 +368,9 @@ public:
     container_type operator()(const py::handle& obj)
     {
         if (!py::isinstance<py::list>(obj)) {
-            RPY_THROW(py::type_error, "expected a list with exactly two elements");
+            RPY_THROW(
+                    py::type_error, "expected a list with exactly two elements"
+            );
         }
         if (py::len(obj) != 2) {
             RPY_THROW(py::value_error, "expected list with exactly 2 elements");
@@ -376,6 +387,12 @@ public:
         }
         return width;
     }
+
+    algebra::LieBasis get_basis() const {
+        RPY_CHECK(basis);
+
+        return basis;
+    }
 };
 
 }// namespace
@@ -384,28 +401,49 @@ static python::PyLieKey
 make_lie_key(const py::args& args, const py::kwargs& kwargs)
 {
     deg_t width = 0;
+    deg_t depth = 0;
 
-    if (kwargs.contains("width")) { width = kwargs["width"].cast<deg_t>(); }
+    if (args.empty()) {
+        RPY_THROW(py::value_error, "argument cannot be empty");
+    }
+    algebra::LieBasis basis;
+    if (kwargs.contains("basis")) {
+        basis = kwargs["basis"].cast<algebra::LieBasis>();
 
-    if (args.empty()) { RPY_THROW(py::value_error, "argument cannot be empty"); }
+        width = basis.width();
+        depth = basis.depth();
+    } else if (kwargs.contains("width") && kwargs.contains("depth")) {
+        width = kwargs["width"].cast<deg_t>();
+        depth = kwargs["depth"].cast<deg_t>();
+
+        basis = algebra::get_context(
+                width,
+                depth,
+                scalars::ScalarType::of<float>()
+                )->get_lie_basis();
+    } else {
+        RPY_THROW(py::value_error,
+                  "Either a basis or width/depth must be provided");
+    }
+
+    RPY_DBG_ASSERT(basis);
+
 
     if (py::isinstance<py::int_>(args[0])) {
         auto letter = args[0].cast<let_t>();
-        if (width != 0 && letter > width) {
+        if (letter > width) {
             RPY_THROW(py::value_error, "letter exceeds width");
-        } else {
-            width = deg_t(letter);
         }
-        return python::PyLieKey(width, letter);
+        return python::PyLieKey(std::move(basis), letter);
     }
 
     if (!py::isinstance<py::list>(args[0])) {
         RPY_THROW(py::type_error, "expected int or list");
     }
 
-    ToLieKeyHelper helper(width);
+    ToLieKeyHelper helper(basis, width);
 
-    return python::PyLieKey(helper.get_width(), helper(args[0]));
+    return python::PyLieKey(helper.get_basis(), helper(args[0]));
 }
 void python::init_py_lie_key(py::module_& m)
 {
@@ -413,4 +451,21 @@ void python::init_py_lie_key(py::module_& m)
     klass.def(py::init(&make_lie_key));
 
     klass.def("__str__", &PyLieKey::to_string);
+}
+
+python::PyLieKey
+python::parse_lie_key(const algebra::LieBasis& basis, const py::args& args, const py::kwargs&)
+{
+    auto len = py::len(args);
+    if (args.empty() || len > 1) {
+        RPY_THROW(py::value_error, "expected a letter or list");
+    }
+
+    if (py::isinstance<py::int_>(args[0])) {
+        auto letter = args[0].cast<let_t>();
+        return PyLieKey(basis, letter);
+    }
+
+    ToLieKeyHelper helper(basis, basis.width());
+    return PyLieKey(basis, helper(args[0]));
 }
