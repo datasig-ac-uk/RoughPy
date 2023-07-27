@@ -325,7 +325,7 @@
 #endif
 
 #if defined(RPY_GCC)
-#  define RPY_FILE_NAME _FILE__
+#  define RPY_FILE_NAME __FILE__
 #elif defined(RPY_CLANG)
 #  define RPY_FILE_NAME __FILE__
 #elif defined(RPY_MSVC)
