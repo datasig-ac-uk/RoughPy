@@ -276,6 +276,7 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
                                           "types");
     }
 
+    RPY_UNREACHABLE_RETURN(0);
 }
 
 namespace {
