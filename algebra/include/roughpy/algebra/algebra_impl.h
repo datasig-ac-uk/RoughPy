@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -109,7 +109,9 @@ protected:
     Impl& data()
     {
         if (is_const<Impl>::value) {
-            RPY_THROW(std::runtime_error,"cannot get mutable data from const object"
+            RPY_THROW(
+                    std::runtime_error,
+                    "cannot get mutable data from const object"
             );
         }
         return *p_data;
@@ -211,7 +213,9 @@ public:
     Impl&& take_data() override
     {
         if (is_same<storage_base_t, BorrowedStorageModel<Impl>>::value) {
-            RPY_THROW(std::runtime_error, "cannot take from a borrowed algebra");
+            RPY_THROW(
+                    std::runtime_error, "cannot take from a borrowed algebra"
+            );
         }
         return std::move(data());
     }
@@ -399,7 +403,8 @@ template <
         template <typename> class StorageModel>
 bool AlgebraImplementation<Interface, Impl, StorageModel>::is_zero() const
 {
-    return false;
+    // TODO: Replace with better, type aware implementation.
+    return data.size() > 0;
 }
 template <
         typename Interface, typename Impl,
