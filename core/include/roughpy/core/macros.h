@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -325,9 +325,9 @@
 #endif
 
 #if defined(RPY_GCC)
-#  define RPY_FILE_NAME __FILE_NAME__
+#  define RPY_FILE_NAME _FILE__
 #elif defined(RPY_CLANG)
-#  define RPY_FILE_NAME __builtin_FILE()
+#  define RPY_FILE_NAME __FILE__
 #elif defined(RPY_MSVC)
 #  define RPY_FILE_NAME __FILE__
 #else
