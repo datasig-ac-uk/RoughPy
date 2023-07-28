@@ -1,3 +1,14 @@
+Version 0.0.7:
+  - Overhaul the (internal) ScalarType API:
+    . the overloads of convert_copy have been removed in favour of the variant that takes two ScalarPointers;
+    . the single versions of add(_inplace) and friends have been replaced with more flexible add_into;
+      batch compute methods and friends;
+    . replaced single value uminus with uminus into with similar signature to to add_into and friends;
+    . removed single value copy method;
+  - Added constructor for ScalarPointer from type_id and pointer.
+
+
+
 Version 0.0.6:
   - Externally sourced streams (sound-file streams) now support setting channel
   types/schema in factory function.
