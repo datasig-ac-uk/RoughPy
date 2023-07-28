@@ -104,30 +104,7 @@ Scalar ScalarType::copy(ScalarPointer source) const
 
     return {result, flags::OwnedPointer};
 }
-Scalar ScalarType::add(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    auto result = copy(lhs);
-    add_inplace(result.to_mut_pointer(), rhs);
-    return result;
-}
-Scalar ScalarType::sub(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    auto result = copy(lhs);
-    sub_inplace(result.to_mut_pointer(), rhs);
-    return result;
-}
-Scalar ScalarType::mul(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    auto result = copy(lhs);
-    mul_inplace(result.to_mut_pointer(), rhs);
-    return result;
-}
-Scalar ScalarType::div(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    auto result = copy(lhs);
-    div_inplace(result.to_mut_pointer(), rhs);
-    return result;
-}
+
 
 bool ScalarType::is_zero(ScalarPointer arg) const
 {

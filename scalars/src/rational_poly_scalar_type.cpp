@@ -130,7 +130,7 @@ convert_copy_ext(ScalarPointer& out, const void* in, dimn_t count)
     }
 }
 //
-//void RationalPolyScalarType::convert_copy(
+// void RationalPolyScalarType::convert_copy(
 //        void* out, const void* in, std::size_t count, BasicScalarInfo info
 //) const
 //{
@@ -256,83 +256,8 @@ Scalar RationalPolyScalarType::copy(ScalarPointer source) const
 {
     return Scalar(this, ::try_convert(source));
 }
-Scalar RationalPolyScalarType::uminus(ScalarPointer arg) const
-{
-    return Scalar(this, -::try_convert(arg));
-}
-Scalar RationalPolyScalarType::add(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    RPY_DBG_ASSERT(lhs.type() == this);
-    if (!lhs) { return copy(rhs); }
-    return Scalar(
-            this, *lhs.raw_cast<const scalar_type*>() + ::try_convert(rhs)
-    );
-}
-Scalar RationalPolyScalarType::sub(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return uminus(rhs); }
-    return Scalar(
-            this, *lhs.raw_cast<const scalar_type*>() - ::try_convert(rhs)
-    );
-}
-Scalar RationalPolyScalarType::mul(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return zero(); }
-    return Scalar(
-            this,
-            *lhs.template raw_cast<const scalar_type*>() * ::try_convert(rhs)
-    );
-}
-Scalar RationalPolyScalarType::div(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return zero(); }
-    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
-    auto divisor = try_convert<rational_scalar_type>(rhs);
 
-    if (divisor == rational_scalar_type(0)) {
-        RPY_THROW(std::runtime_error, "division by zero");
-    }
-
-    return Scalar(this, *lhs.template raw_cast<scalar_type>() / divisor);
-}
-void RationalPolyScalarType::add_inplace(ScalarPointer lhs, ScalarPointer rhs)
-        const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    *ptr += ::try_convert(rhs);
-}
-void RationalPolyScalarType::sub_inplace(ScalarPointer lhs, ScalarPointer rhs)
-        const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    *ptr -= ::try_convert(rhs);
-}
-void RationalPolyScalarType::mul_inplace(ScalarPointer lhs, ScalarPointer rhs)
-        const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    *ptr *= ::try_convert(rhs);
-}
-void RationalPolyScalarType::div_inplace(ScalarPointer lhs, ScalarPointer rhs)
-        const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-
-    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
-
-    auto divisor = try_convert<rational_scalar_type>(rhs);
-
-    if (divisor == rational_scalar_type(0)) {
-        RPY_THROW(std::runtime_error, "division by zero");
-    }
-
-    *ptr /= divisor;
-}
 bool RationalPolyScalarType::is_zero(ScalarPointer arg) const
 {
     return !static_cast<bool>(arg)
@@ -413,6 +338,15 @@ void RationalPolyScalarType::div_into(
     //            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l / r;
     //            }
     //    );
+}
+void RationalPolyScalarType::uminus_into(
+        ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
+        const uint64_t* mask
+) const
+{
+    impl_helpers::unary_into_buffer<rational_poly_scalar>(
+            dst, arg, count, mask, [](auto s) { return -s; }
+    );
 }
 }// namespace scalars
 }// namespace rpy

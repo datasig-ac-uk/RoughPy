@@ -239,75 +239,23 @@ public:
      * @param arg ScalarPointer to source value
      * @return new Scalar whose value is -(*arg)
      */
-    RPY_NO_DISCARD virtual Scalar uminus(ScalarPointer arg) const = 0;
+    //RPY_NO_DISCARD virtual Scalar uminus(ScalarPointer arg) const = 0;
 
     /**
-     * @brief Add one scalar value to another
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     * @return new Scalar with sum of the two values
+     * @brief Compute the unary minus of all values in an array and write the result to dst.
+     * @param dst
+     * @param arg
+     * @param count
+     * @param mask
      */
-    RPY_NO_DISCARD virtual Scalar
-    add(ScalarPointer lhs, ScalarPointer rhs) const;
+    virtual void uminus_into(
+            ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
+            const uint64_t* mask
+    ) const = 0;
 
     /**
-     * @brief Subract one scalar value to another
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     * @return new Scalar with difference of the two values
-     */
-    RPY_NO_DISCARD virtual Scalar
-    sub(ScalarPointer lhs, ScalarPointer rhs) const;
-
-    /**
-     * @brief Multiply two scalar values
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     * @return new Scalar with product of the two values
-     */
-    RPY_NO_DISCARD virtual Scalar
-    mul(ScalarPointer lhs, ScalarPointer rhs) const;
-
-    /**
-     * @brief Divide one scalar value by another
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     * @return new scalar with left value divided by right value
-     */
-    RPY_NO_DISCARD virtual Scalar
-    div(ScalarPointer lhs, ScalarPointer rhs) const;
-
-    /**
-     * @brief Add right value to left inplace
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     */
-    virtual void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
-
-    /**
-     * @brief Subtract right value from left value inplace
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     */
-    virtual void sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
-
-    /**
-     * @brief Multiply left value by right value inplace
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     */
-    virtual void mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
-
-    /**
-     * @brief Divide left value by right value inplace
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     */
-    virtual void div_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
-
-    /**
-     * @brief Compute the sum of two scalar arrays componentwise, with optional
-     * mask
+     * @brief Compute the difference of two scalar arrays componentwise, with
+     * optional mask
      * @param dst Destination to write result
      * @param lhs Left hand side input,
      * @param rhs Right hand side input
@@ -322,16 +270,52 @@ public:
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
     ) const = 0;
 
+    /**
+     * @brief Compute the sum of two scalar arrays componentwise, with optional
+     * mask
+     * @param dst Destination to write result
+     * @param lhs Left hand side input,
+     * @param rhs Right hand side input
+     * @param count Number of elements to add
+     * @param mask Mask to apply, use nullptr for no mask. Otherwise, this
+     * must must be a pointer to at least ceil(count / 64) uint64_ts where each
+     * bit denotes a flag, set 1 for perform operation on corresponding elements
+     * and 0 for not operation.
+     */
     virtual void sub_into(
             ScalarPointer& dst, const ScalarPointer& lhs,
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
     ) const = 0;
 
+    /**
+     * @brief Compute the product of two scalar arrays componentwise, with
+     * optional mask
+     * @param dst Destination to write result
+     * @param lhs Left hand side input,
+     * @param rhs Right hand side input
+     * @param count Number of elements to add
+     * @param mask Mask to apply, use nullptr for no mask. Otherwise, this
+     * must must be a pointer to at least ceil(count / 64) uint64_ts where each
+     * bit denotes a flag, set 1 for perform operation on corresponding elements
+     * and 0 for not operation.
+     */
     virtual void mul_into(
             ScalarPointer& dst, const ScalarPointer& lhs,
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
     ) const = 0;
 
+    /**
+     * @brief Compute the divison of values in lhs by those in rhs
+     * componentwise, with optional mask
+     * @param dst Destination to write result
+     * @param lhs Left hand side input,
+     * @param rhs Right hand side input
+     * @param count Number of elements to add
+     * @param mask Mask to apply, use nullptr for no mask. Otherwise, this
+     * must must be a pointer to at least ceil(count / 64) uint64_ts where each
+     * bit denotes a flag, set 1 for perform operation on corresponding elements
+     * and 0 for not operation.
+     */
     virtual void div_into(
             ScalarPointer& dst, const ScalarPointer& lhs,
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask

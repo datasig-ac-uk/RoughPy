@@ -91,11 +91,8 @@ public:
     void
     assign(ScalarPointer target, long long int numerator,
            long long int denominator) const override;
-    Scalar uminus(ScalarPointer arg) const override;
-    void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const override;
-    void sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const override;
-    void mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const override;
-    void div_inplace(ScalarPointer lhs, ScalarPointer rhs) const override;
+//    Scalar uminus(ScalarPointer arg) const override;
+
     bool
     are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept override;
 
@@ -108,15 +105,16 @@ public:
     Scalar mone() const override;
     Scalar zero() const override;
     Scalar copy(ScalarPointer source) const override;
-    Scalar add(ScalarPointer lhs, ScalarPointer rhs) const override;
-    Scalar sub(ScalarPointer lhs, ScalarPointer rhs) const override;
-    Scalar mul(ScalarPointer lhs, ScalarPointer rhs) const override;
-    Scalar div(ScalarPointer lhs, ScalarPointer rhs) const override;
+
     bool is_zero(ScalarPointer arg) const override;
     void print(ScalarPointer arg, std::ostream& os) const override;
     std::unique_ptr<RandomGenerator>
     get_rng(const string& bit_generator, Slice<uint64_t> seed) const override;
 
+    void uminus_into(
+            ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
+            const uint64_t* mask
+    ) const override;
     void add_into(
             ScalarPointer& dst, const ScalarPointer& lhs,
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask

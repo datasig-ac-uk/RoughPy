@@ -158,42 +158,8 @@ void RationalType::assign(
 {
     *target.raw_cast<scalar_type*>() = scalar_type(numerator) / denominator;
 }
-Scalar RationalType::uminus(ScalarPointer arg) const
-{
-    return Scalar(this, -impl_helpers::try_convert<rational_scalar_type>(arg));
-}
-void RationalType::add_inplace(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    *ptr += impl_helpers::try_convert<rational_scalar_type>(rhs);
-}
-void RationalType::sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    *ptr -= impl_helpers::try_convert<rational_scalar_type>(rhs);
-}
-void RationalType::mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    *ptr *= impl_helpers::try_convert<rational_scalar_type>(rhs);
-}
-void RationalType::div_inplace(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
-    auto crhs = impl_helpers::try_convert<rational_scalar_type>(rhs);
 
-    if (crhs == scalar_type(0)) {
-        RPY_THROW(std::runtime_error, "division by zero");
-    }
-
-    *ptr /= crhs;
-}
 bool RationalType::are_equal(ScalarPointer lhs, ScalarPointer rhs)
         const noexcept
 {
@@ -217,37 +183,7 @@ Scalar RationalType::copy(ScalarPointer arg) const
 {
     return Scalar(this, impl_helpers::try_convert<rational_scalar_type>(arg));
 }
-Scalar RationalType::add(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return copy(rhs); }
-    return Scalar(this, *lhs.raw_cast<const scalar_type*>() + impl_helpers::try_convert<rational_scalar_type>(rhs));
-}
-Scalar RationalType::sub(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return uminus(rhs); }
-    return Scalar(this, *lhs.raw_cast<const scalar_type*>() - impl_helpers::try_convert<rational_scalar_type>(rhs));
-}
-Scalar RationalType::mul(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return zero(); }
-    return Scalar(this, *lhs.raw_cast<const scalar_type*>() * impl_helpers::try_convert<rational_scalar_type>(rhs));
-}
-Scalar RationalType::div(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return zero(); }
-    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
-    auto crhs = impl_helpers::try_convert<rational_scalar_type>(rhs);
-
-    if (crhs == scalar_type(0)) {
-        RPY_THROW(std::runtime_error, "division by zero");
-    }
-
-    return Scalar(
-            this,
-            static_cast<scalar_type>(*lhs.raw_cast<const scalar_type*>() / crhs)
-    );
-}
 bool RationalType::is_zero(ScalarPointer arg) const
 {
     return !static_cast<bool>(arg)
@@ -421,4 +357,13 @@ void RationalType::div_into(
     impl_helpers::binary_into_buffer<rational_scalar_type>(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l / r; }
     );
+}
+void RationalType::uminus_into(
+        ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
+        const uint64_t* mask
+) const
+{
+    impl_helpers::unary_into_buffer<rational_scalar_type>(
+            dst, arg, count, mask, [](auto s) { return -s; }
+            );
 }

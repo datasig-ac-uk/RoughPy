@@ -77,9 +77,7 @@ template <typename S>
 inline void
 copy_convert(ScalarPointer& dst, const ScalarPointer& src, dimn_t count)
 {
-    if (count == 0) {
-        return;
-    }
+    if (count == 0) { return; }
     RPY_CHECK(!src.is_null());
     RPY_CHECK(!dst.is_null());
 
@@ -157,6 +155,115 @@ copy_convert(ScalarPointer& dst, const ScalarPointer& src, dimn_t count)
         // table get_conversion throws if no suitable conversion is found.
         const auto& conversion = get_conversion(src.type()->id(), type->id());
         conversion(dst, src, count);
+    }
+}
+
+template <typename S, typename F>
+inline void unary_into_buffer_optimised(
+        S* RPY_RESTRICT dptr, const S* RPY_RESTRICT sptr, const dimn_t count,
+        const dimn_t block_count, const uint64_t* mask, F&& func
+)
+{
+
+    for (dimn_t block_idx=0; block_idx<block_count; ++block_idx) {
+        auto block_mask = (mask == nullptr) ? ~dimn_t(0) : mask[block_idx];
+        // 64*block is always a valid address while block < block_count
+        const auto start_idx = 64 * block_idx;
+        const auto number = std::min(count - start_idx, dimn_t(64));
+
+        auto* bdptr = dptr + start_idx;
+
+        /*
+         * Hopefully the compiler will do 2 things here:
+         *  - optimise away the call to func;
+         *  - replace this inner loop with vector add + masked store
+         *  instructions. Since the block is 64 elements wide it should be
+         *  able to do a pretty good job with this.
+         */
+        if (sptr == nullptr) {
+
+            for (dimn_t i = 0; i < number; ++i) {
+                if (block_mask & 1) { bdptr[i] = func(bdptr[i]); }
+                block_mask >>= 1;
+            }
+        } else {
+            const auto* bsptr = sptr + start_idx;
+
+            for (dimn_t i = 0; i < number; ++i) {
+                if (block_mask & 1) { bdptr[i] = func(bsptr[i]); }
+                block_mask >>= 1;
+            }
+        }
+    }
+}
+
+template <typename S, typename F>
+inline void unary_into_buffer(
+        ScalarPointer& dst, const ScalarPointer& src, const dimn_t count,
+        const uint64_t* mask, F&& func
+)
+{
+    if (count == 0) { return; }
+
+    RPY_CHECK(!dst.is_null());
+
+    // dst.type() is assumed to be the reference type
+    const auto* type = dst.type();
+    RPY_DBG_ASSERT(type == ScalarType::of<S>());
+
+    // Round up
+    auto block_count = (count + 63) / 64;
+
+    auto* dptr = dst.template raw_cast<S*>();
+
+    if (src.type() == type) {
+        // Use an optimised version.
+        unary_into_buffer_optimised(
+                dptr, src.raw_cast<const S*>(), count, block_count, mask,
+                std::forward<F>(func)
+        );
+        return;
+    }
+
+    /*
+     * What we want to do here is essentially the following loop
+     *
+     * for (dimn_t i=0; i<count; ++i) {
+     *     if (mask[i/64] & 1) {
+     *         dptr[i] = func(try_convert(sptr[i]));
+     *     }
+     *     mask[i/64] >>= 1;
+     * }
+     *
+     * but this is going to be horrendously inefficient. Since we anyway need to
+     * block by the mask size (64), we can use this to our advantage and
+     * temporarily convert_copy 64 values at a time, and then apply the function
+     * as if everything were native.
+     */
+
+    for (dimn_t block_idx = 0; block_idx < block_count; ++block_idx) {
+        const auto block_start = 64 * block_idx;
+        const auto block_size = std::min(count - 64 * block_idx, dimn_t(64));
+        auto block_mask = (mask == nullptr) ? ~dimn_t(0) : mask[block_idx];
+
+        auto* block_dst = dptr + block_start;
+
+        std::vector<S> buffer(64);
+        if (!src.is_null()) {
+            type->convert_copy({type, buffer.data()}, src + block_idx*64, block_size);
+        } else {
+            buffer.assign(block_dst, block_dst+block_size);
+        }
+
+        /*
+         * The beauty of this approach is that it doesn't matter if sptr is
+         * null, since we always fill it with the correct values for that case.
+         * This is a bit wasteful, but it will always work.
+         */
+        for (dimn_t i = 0; i < block_size; ++i) {
+            if (block_mask & 1) { block_dst[i] = func(buffer[i]); }
+            block_mask >>= 1;
+        }
     }
 }
 
