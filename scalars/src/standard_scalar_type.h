@@ -393,7 +393,13 @@ void StandardScalarType<ScalarImpl>::div_into(
 ) const
 {
     impl_helpers::binary_into_buffer<ScalarImpl>(
-            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l + r; }
+            dst, lhs, rhs, count, mask,
+            [](auto l, auto r) {
+                if (r == decltype(r)(0)) {
+                    RPY_THROW(std::runtime_error, "division by zero");
+                }
+                return l / r;
+            }
     );
 }
 
