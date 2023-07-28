@@ -174,39 +174,6 @@ public:
             = 0;
 
     /**
-     * @brief Copy count scalars from in to out, converting as necessary
-     * @param out raw pointer to output
-     * @param in raw pointer to input
-     * @param count number of scalars to copy
-     * @param info BasicScalarInfo information about the input scalar type
-     */
-    virtual void convert_copy(
-            void* out, const void* in, std::size_t count, BasicScalarInfo info
-    ) const = 0;
-
-    /**
-     * @brief Copy count scalars from in to out, converting as necessary
-     * @param out raw pointer to destination
-     * @param in ScalarPointer to source data
-     * @param count number of scalars to copy
-     */
-    virtual void
-    convert_copy(void* out, ScalarPointer in, std::size_t count) const
-            = 0;
-
-    /**
-     * @brief Copy count scalars from in to out, converting as necessary
-     * @param out ScalarPointer to destination data
-     * @param in raw pointer to source data
-     * @param count number of scalars to copy
-     * @param id ID of scalar type for source data
-     */
-    virtual void convert_copy(
-            ScalarPointer out, const void* in, std::size_t count,
-            const string& id
-    ) const = 0;
-
-    /**
      * @brief
      * @param out
      * @param in

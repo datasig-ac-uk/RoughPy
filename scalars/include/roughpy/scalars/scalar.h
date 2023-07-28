@@ -87,7 +87,7 @@ public:
             const auto& id = type_id_of<ScalarArg>();
             if (type == nullptr) { type = ScalarType::for_id(id); }
             ScalarPointer::operator=(type->allocate(1));
-            type->convert_copy(to_mut_pointer(), &arg, 1, id);
+            type->convert_copy(to_mut_pointer(), {id, &arg}, 1);
         }
     }
 
@@ -115,13 +115,14 @@ public:
             ScalarPointer::operator=(p_type->allocate(1));
         }
 
-        const auto& type_id = type_id_of<T>();
         if ((m_flags & interface_flag) != 0) {
             static_cast<ScalarInterface*>(const_cast<void*>(p_data))
-                    ->assign(std::addressof(arg), type_id);
+                    ->assign(std::addressof(arg), type_id_of<T>());
         } else {
-            p_type->convert_copy(static_cast<const ScalarPointer&>(*this),
-                                 std::addressof(arg), 1, type_id);
+            const auto& type_id = type_id_of<T>();
+            p_type->convert_copy(static_cast<ScalarPointer&>(*this),
+                                 {type_id, std::addressof(arg)}, 1);
+
         }
 
         return *this;
@@ -240,7 +241,7 @@ struct type_of_T_not_defined {
     static T cast(ScalarPointer scalar)
     {
         T result;
-        scalar.type()->convert_copy({nullptr, &result}, scalar.ptr(), 1,
+        scalar.type()->convert_copy({nullptr, &result}, scalar, 1,
                                     type_id_of<T>());
         return result;
     }

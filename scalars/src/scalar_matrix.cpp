@@ -142,7 +142,7 @@ void rpy::scalars::ScalarMatrix::to_full(rpy::scalars::ScalarMatrix& into) const
     switch (m_storage) {
         case MatrixStorage::FullMatrix:
             if (m_layout == layout) {
-                p_type->convert_copy(into.ptr(), iptr, m_size);
+                p_type->convert_copy(into, iptr, m_size);
             } else {
                 auto blas = p_type->get_blas();
                 if (blas) {

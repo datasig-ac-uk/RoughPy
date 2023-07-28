@@ -71,11 +71,6 @@ protected:
 public:
     void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count)
             const override;
-    void convert_copy(
-            void* out, const void* in, std::size_t count, BasicScalarInfo info
-    ) const override;
-    void
-    convert_copy(void* out, ScalarPointer in, std::size_t count) const override;
 
 private:
     template <typename Basic>
@@ -91,10 +86,7 @@ private:
     }
 
 public:
-    void convert_copy(
-            ScalarPointer out, const void* in, std::size_t count,
-            const string& id
-    ) const override;
+
     scalar_t to_scalar_t(ScalarPointer arg) const override;
     void
     assign(ScalarPointer target, long long int numerator,

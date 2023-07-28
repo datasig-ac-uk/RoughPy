@@ -64,15 +64,7 @@ public:
     void swap(ScalarPointer lhs, ScalarPointer rhs) const override;
     void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count)
             const override;
-    void convert_copy(
-            void* out, const void* in, std::size_t count, BasicScalarInfo info
-    ) const override;
-    void
-    convert_copy(void* out, ScalarPointer in, std::size_t count) const override;
-    void convert_copy(
-            ScalarPointer out, const void* in, std::size_t count,
-            const string& id
-    ) const override;
+
     void convert_fill(
             ScalarPointer out, ScalarPointer in, dimn_t count, const string& id
     ) const override;

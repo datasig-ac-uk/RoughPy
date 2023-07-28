@@ -77,6 +77,12 @@ template <typename S>
 inline void
 copy_convert(ScalarPointer& dst, const ScalarPointer& src, dimn_t count)
 {
+    if (count == 0) {
+        return;
+    }
+    RPY_CHECK(!src.is_null());
+    RPY_CHECK(!dst.is_null());
+
     // dst type taken as reference type. If this is not the case,
     // the caller should instead call dst.type()->convert_copy(dst, src, count)
     const auto* type = dst.type();
@@ -84,7 +90,8 @@ copy_convert(ScalarPointer& dst, const ScalarPointer& src, dimn_t count)
     auto* dst_ptr = dst.template raw_cast<S*>();
 
     if (src.type() == nullptr) {
-        switch (src.simple_integer_config()) {
+        auto cfg = src.simple_integer_config();
+        switch (cfg) {
             case flags::UnsignedInteger8:
                 copy_convert_basic(
                         dst_ptr, src.template raw_cast<const uint8_t*>(), count
@@ -142,6 +149,9 @@ copy_convert(ScalarPointer& dst, const ScalarPointer& src, dimn_t count)
                         "type of the source"
                 );
         }
+    } else if (src.type() == type) {
+        // If both types are the same, then std::copy will do just fine
+        std::copy_n(src.raw_cast<const S*>(), count, dst_ptr);
     } else {
         // If it isn't a simple type, look for a conversion function from the
         // table get_conversion throws if no suitable conversion is found.

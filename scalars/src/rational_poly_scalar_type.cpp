@@ -115,10 +115,7 @@ void RationalPolyScalarType::convert_copy(
         ScalarPointer dst, ScalarPointer src, dimn_t count
 ) const
 {
-    if (src.type() == nullptr) {
-        RPY_THROW(std::invalid_argument, "source type cannot be null");
-    }
-    convert_copy(dst, src.ptr(), count, src.type()->id());
+    impl_helpers::copy_convert<rational_poly_scalar>(dst, src, count);
 }
 
 template <typename F>
@@ -132,153 +129,94 @@ convert_copy_ext(ScalarPointer& out, const void* in, dimn_t count)
         construct_inplace<rational_poly_scalar>(optr, *iptr);
     }
 }
+//
+//void RationalPolyScalarType::convert_copy(
+//        void* out, const void* in, std::size_t count, BasicScalarInfo info
+//) const
+//{
+//    ScalarPointer optr(this, out);
+//    switch (info.code) {
+//        case ScalarTypeCode::Int:
+//            switch (info.bits) {
+//                case 8:
+//                    convert_copy_ext<int8_t>(optr, in, info.lanes * count);
+//                    break;
+//                case 16:
+//                    convert_copy_ext<int16_t>(optr, in, info.lanes * count);
+//                    break;
+//                case 32:
+//                    convert_copy_ext<int32_t>(optr, in, info.lanes * count);
+//                    break;
+//                case 64:
+//                    convert_copy_ext<int64_t>(optr, in, info.lanes * count);
+//                    break;
+//                case 128:
+//                default:
+//                    RPY_THROW(
+//                            std::runtime_error,
+//                            "invalid bit configuration for integer type"
+//                    );
+//            }
+//            break;
+//        case ScalarTypeCode::UInt:
+//            switch (info.bits) {
+//                case 8:
+//                    convert_copy_ext<uint8_t>(optr, in, info.lanes * count);
+//                    break;
+//                case 16:
+//                    convert_copy_ext<uint16_t>(optr, in, info.lanes * count);
+//                    break;
+//                case 32:
+//                    convert_copy_ext<uint32_t>(optr, in, info.lanes * count);
+//                    break;
+//                case 64:
+//                    convert_copy_ext<uint64_t>(optr, in, info.lanes * count);
+//                    break;
+//                case 128:
+//                default:
+//                    RPY_THROW(
+//                            std::runtime_error,
+//                            "invalid bit configuration for integer type"
+//                    );
+//            }
+//            break;
+//        case ScalarTypeCode::Float:
+//            switch (info.bits) {
+//                    //                case 16:
+//                    //                    convert_copy_ext<half>(optr, in,
+//                    //                    info.lanes * count); break;
+//                case 32:
+//                    convert_copy_ext<float>(optr, in, info.lanes * count);
+//                    break;
+//                case 64:
+//                    convert_copy_ext<double>(optr, in, info.lanes * count);
+//                    break;
+//                default:
+//                    RPY_THROW(
+//                            std::runtime_error,
+//                            "invalid bit configuration for float type"
+//                    );
+//            }
+//            break;
+//        case ScalarTypeCode::BFloat:
+//            switch (info.bits) {
+//                    //                case 16:
+//                    //                    convert_copy_ext<bfloat16>(optr, in,
+//                    //                    info.lanes * count); break;
+//                default:
+//                    RPY_THROW(
+//                            std::runtime_error,
+//                            "invalid bit configuration for bfloat type"
+//                    );
+//            }
+//            break;
+//        case ScalarTypeCode::Bool:
+//        case ScalarTypeCode::OpaqueHandle: break;
+//        case ScalarTypeCode::Complex:
+//        default: RPY_THROW(std::runtime_error, "unsupported scalar type");
+//    }
+//}
 
-void RationalPolyScalarType::convert_copy(
-        void* out, const void* in, std::size_t count, BasicScalarInfo info
-) const
-{
-    ScalarPointer optr(this, out);
-    switch (info.code) {
-        case ScalarTypeCode::Int:
-            switch (info.bits) {
-                case 8:
-                    convert_copy_ext<int8_t>(optr, in, info.lanes * count);
-                    break;
-                case 16:
-                    convert_copy_ext<int16_t>(optr, in, info.lanes * count);
-                    break;
-                case 32:
-                    convert_copy_ext<int32_t>(optr, in, info.lanes * count);
-                    break;
-                case 64:
-                    convert_copy_ext<int64_t>(optr, in, info.lanes * count);
-                    break;
-                case 128:
-                default:
-                    RPY_THROW(
-                            std::runtime_error,
-                            "invalid bit configuration for integer type"
-                    );
-            }
-            break;
-        case ScalarTypeCode::UInt:
-            switch (info.bits) {
-                case 8:
-                    convert_copy_ext<uint8_t>(optr, in, info.lanes * count);
-                    break;
-                case 16:
-                    convert_copy_ext<uint16_t>(optr, in, info.lanes * count);
-                    break;
-                case 32:
-                    convert_copy_ext<uint32_t>(optr, in, info.lanes * count);
-                    break;
-                case 64:
-                    convert_copy_ext<uint64_t>(optr, in, info.lanes * count);
-                    break;
-                case 128:
-                default:
-                    RPY_THROW(
-                            std::runtime_error,
-                            "invalid bit configuration for integer type"
-                    );
-            }
-            break;
-        case ScalarTypeCode::Float:
-            switch (info.bits) {
-                    //                case 16:
-                    //                    convert_copy_ext<half>(optr, in,
-                    //                    info.lanes * count); break;
-                case 32:
-                    convert_copy_ext<float>(optr, in, info.lanes * count);
-                    break;
-                case 64:
-                    convert_copy_ext<double>(optr, in, info.lanes * count);
-                    break;
-                default:
-                    RPY_THROW(
-                            std::runtime_error,
-                            "invalid bit configuration for float type"
-                    );
-            }
-            break;
-        case ScalarTypeCode::BFloat:
-            switch (info.bits) {
-                    //                case 16:
-                    //                    convert_copy_ext<bfloat16>(optr, in,
-                    //                    info.lanes * count); break;
-                default:
-                    RPY_THROW(
-                            std::runtime_error,
-                            "invalid bit configuration for bfloat type"
-                    );
-            }
-            break;
-        case ScalarTypeCode::Bool:
-        case ScalarTypeCode::OpaqueHandle: break;
-        case ScalarTypeCode::Complex:
-        default: RPY_THROW(std::runtime_error, "unsupported scalar type");
-    }
-}
-void RationalPolyScalarType::convert_copy(
-        void* out, ScalarPointer in, std::size_t count
-) const
-{
-    RPY_DBG_ASSERT(out != nullptr);
-    RPY_DBG_ASSERT(!in.is_null());
-    const auto* type = in.type();
-    RPY_CHECK(type != nullptr);
-
-    if (type == this) {
-        const auto* in_begin = in.template raw_cast<const scalar_type>();
-        const auto* in_end = in_begin + count;
-        std::copy(in_begin, in_end, static_cast<scalar_type*>(out));
-    } else {
-        auto cv = get_conversion(type->id(), this->id());
-        ScalarPointer out_ptr{this, out};
-        cv(out_ptr, in, count);
-    }
-}
-void RationalPolyScalarType::convert_copy(
-        ScalarPointer out, const void* in, std::size_t count, const string& id
-) const
-{
-    if (id == this->id()) {
-        const auto* in_begin = reinterpret_cast<const scalar_type*>(in);
-        const auto* in_end = in_begin + count;
-        std::copy(in_begin, in_end, out.template raw_cast<scalar_type*>());
-        return;
-    }
-
-    if (id == "f64") {
-        return convert_copy_ext<double>(out, in, count);
-    } else if (id == "f32") {
-        return convert_copy_ext<float>(out, in, count);
-    } else if (id == "i32") {
-        return convert_copy_ext<int>(out, in, count);
-    } else if (id == "u32") {
-        return convert_copy_ext<unsigned int>(out, in, count);
-    } else if (id == "i64") {
-        return convert_copy_ext<long long>(out, in, count);
-    } else if (id == "u64") {
-        return convert_copy_ext<unsigned long long>(out, in, count);
-    } else if (id == "isize") {
-        return convert_copy_ext<std::ptrdiff_t>(out, in, count);
-    } else if (id == "usize") {
-        return convert_copy_ext<std::size_t>(out, in, count);
-    } else if (id == "i16") {
-        return convert_copy_ext<short>(out, in, count);
-    } else if (id == "u16") {
-        return convert_copy_ext<unsigned short>(out, in, count);
-    } else if (id == "i8") {
-        return convert_copy_ext<char>(out, in, count);
-    } else if (id == "u8") {
-        return convert_copy_ext<unsigned char>(out, in, count);
-    }
-
-    // If we're here, then it is a non-standard type
-    const auto& conversion = get_conversion(id, this->id());
-    conversion(out, {nullptr, in}, count);
-}
 void RationalPolyScalarType::convert_fill(
         ScalarPointer out, ScalarPointer in, dimn_t count, const string& id
 ) const

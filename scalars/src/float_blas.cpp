@@ -49,7 +49,7 @@ OwnedScalarArray FloatBlas::vector_axpy(const ScalarArray& x, const Scalar& a,
     const auto* type = BlasInterface::type();
     RPY_CHECK(x.type() == type && y.type() == type);
     OwnedScalarArray result(type, y.size());
-    type->convert_copy(result.ptr(), y, y.size());
+    type->convert_copy(result, y, y.size());
 
     auto N = static_cast<blas::integer>(y.size());
     cblas_saxpy(N, scalar_cast<float>(a), x.raw_cast<const float*>(), 1,
@@ -116,7 +116,7 @@ OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix& matrix,
         case MatrixStorage::LowerTriangular:
         case MatrixStorage::UpperTriangular:
             RPY_CHECK(M == N);
-            type()->convert_copy(result.ptr(), vector, vector.size());
+            type()->convert_copy(result, vector, vector.size());
             cblas_stpmv(layout, blas::to_blas_uplo(matrix.storage()),
                         blas::Blas_NoTrans, blas::Blas_DNoUnit, N,
                         matrix.raw_cast<const float*>(),
