@@ -25,7 +25,6 @@ ThreadState rpy::platform::get_thread_state()
             s_enable_omp_threading.load(std::memory_order_relaxed)};
 }
 
-bool rpy::platform::threading_available() { return true; }
 
 void rpy::platform::set_num_threads(int num_threads)
 {

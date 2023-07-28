@@ -5,24 +5,23 @@
 #ifndef ROUGHPY_PLATFORM_THREADS_H
 #define ROUGHPY_PLATFORM_THREADS_H
 
-#include <roughpy/core/types.h>
-#include <roughpy/core/macros.h>
 #include <roughpy/core/alloc.h>
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
 
-
-#if defined(_OPENMP)
-#define RPY_THREADING_OPENMP 1
+#define RPY_ALLOW_THREADING
+#if defined(_OPENMP) && defined(RPY_ALLOW_THREADING)
+#  define RPY_THREADING_OPENMP 1
 #endif
 
+namespace rpy {
+namespace platform {
 
-namespace rpy { namespace platform {
-
-enum struct ThreadBackend {
-    Disabled=0,
-    OpenMP=1
+enum struct ThreadBackend
+{
+    Disabled = 0,
+    OpenMP = 1
 };
-
-
 
 struct ThreadState {
     /// The threading library responsible for managing multi-threaded
@@ -39,21 +38,22 @@ struct ThreadState {
     bool is_enabled;
 };
 
-RPY_NO_DISCARD RPY_EXPORT
-ThreadState get_thread_state();
+RPY_NO_DISCARD RPY_EXPORT ThreadState get_thread_state();
 
-RPY_NO_DISCARD RPY_EXPORT
-bool threading_available();
+RPY_NO_DISCARD RPY_EXPORT constexpr bool threading_available()
+{
+#ifndef RPY_ALLOW_THREADING
+    return false;
+#else
+    return true;
+#endif
+}
 
-RPY_EXPORT
-void set_num_threads(int num_threads);
+RPY_EXPORT void set_num_threads(int num_threads);
 
-RPY_EXPORT
-void set_threading_enabled(bool state);
+RPY_EXPORT void set_threading_enabled(bool state);
 
-
-}}
-
-
+}// namespace platform
+}// namespace rpy
 
 #endif// ROUGHPY_PLATFORMS_THREADS_H
