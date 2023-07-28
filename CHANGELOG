@@ -8,6 +8,8 @@ Version 0.0.7:
   - Added constructor for ScalarPointer from type_id and pointer.
   - Implementations of ScalarType methods that are essentially the same for all types are implemented
     in a common implementation layer.
+  - Added threading support in platform
+  - add_into and friends have threading support if available and enabled.
 
 
 
