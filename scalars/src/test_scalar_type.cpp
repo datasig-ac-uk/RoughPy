@@ -138,8 +138,7 @@ TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType)
     RAIIAlloc alloced(dtype, ints.size());
     ScalarPointer ptr(alloced);
 
-    dtype->convert_copy(ptr, ints.data(), ints.size(),
-                        type_id_of<std::int32_t>());
+    dtype->convert_copy(ptr, ScalarPointer(ints.data()), ints.size());
 
     auto raw_ptr = ptr.raw_cast<const double*>();
     for (std::size_t i = 0; i < ints.size(); ++i) {

@@ -77,7 +77,7 @@ public:
 
         scalars::OwnedScalarArray result(ctype, count);
         scalars::ScalarPointer src(ctype, tmp_data.data());
-        ctype->convert_copy(result.ptr(), src, count);
+        ctype->convert_copy(result, src, count);
 
         return result;
     }
@@ -149,7 +149,7 @@ TEST_F(LieIncrementStreamTests, TestLogSignatureTwoIncrementsDepth1)
     algebra::VectorConstructionData edata{scalars::KeyScalarArray(ctx->ctype()),
                                           algebra::VectorType::Dense};
     edata.data.allocate_scalars(width);
-    edata.data.type()->convert_copy(edata.data.ptr(), data, width);
+    edata.data.type()->convert_copy(edata.data, data, width);
     for (int i = 0; i < width; ++i) { edata.data[i] += data[i + width]; }
 
     auto idx = indices(2);
