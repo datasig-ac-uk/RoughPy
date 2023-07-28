@@ -76,7 +76,6 @@ public:
     void
     assign(ScalarPointer target, long long int numerator,
            long long int denominator) const override;
-    Scalar copy(ScalarPointer source) const override;
 //    Scalar uminus(ScalarPointer arg) const override;
 
     void uminus_into(

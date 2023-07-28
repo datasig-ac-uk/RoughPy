@@ -289,14 +289,6 @@ public:
         return static_cast<scalar_t>(*arg.raw_cast<const ScalarImpl*>());
     }
 
-    Scalar copy(ScalarPointer arg) const override
-    {
-        return Scalar(this, impl_helpers::try_convert<ScalarImpl>(arg));
-    }
-//    Scalar uminus(ScalarPointer arg) const override
-//    {
-//        return Scalar(this, -impl_helpers::try_convert<ScalarImpl>(arg));
-//    }
 
     void uminus_into(
             ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,

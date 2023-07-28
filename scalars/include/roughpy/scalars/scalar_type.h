@@ -227,22 +227,10 @@ public:
     assign(ScalarPointer target, long long numerator, long long denominator
     ) const = 0;
 
-    /**
-     * @brief Create a copy of a scalar value
-     * @param source ScalarPointer to source value
-     * @return new Scalar object
-     */
-    RPY_NO_DISCARD virtual Scalar copy(ScalarPointer source) const;
 
     /**
-     * @brief Get the scalar whose value is minus given value
-     * @param arg ScalarPointer to source value
-     * @return new Scalar whose value is -(*arg)
-     */
-    //RPY_NO_DISCARD virtual Scalar uminus(ScalarPointer arg) const = 0;
-
-    /**
-     * @brief Compute the unary minus of all values in an array and write the result to dst.
+     * @brief Compute the unary minus of all values in an array and write the
+     * result to dst.
      * @param dst
      * @param arg
      * @param count

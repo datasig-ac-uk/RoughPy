@@ -252,10 +252,6 @@ void RationalPolyScalarType::assign(
             rational_scalar_type(numerator) / rational_scalar_type(denominator)
     );
 }
-Scalar RationalPolyScalarType::copy(ScalarPointer source) const
-{
-    return Scalar(this, ::try_convert(source));
-}
 
 
 bool RationalPolyScalarType::is_zero(ScalarPointer arg) const

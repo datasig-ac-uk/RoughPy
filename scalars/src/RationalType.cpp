@@ -179,10 +179,7 @@ void RationalType::convert_fill(
 Scalar RationalType::one() const { return Scalar(this, scalar_type(1)); }
 Scalar RationalType::mone() const { return Scalar(this, scalar_type(-1)); }
 Scalar RationalType::zero() const { return Scalar(this, scalar_type(0)); }
-Scalar RationalType::copy(ScalarPointer arg) const
-{
-    return Scalar(this, impl_helpers::try_convert<rational_scalar_type>(arg));
-}
+
 
 bool RationalType::is_zero(ScalarPointer arg) const
 {

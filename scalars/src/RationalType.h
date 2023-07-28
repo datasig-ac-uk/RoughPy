@@ -104,7 +104,6 @@ public:
     Scalar one() const override;
     Scalar mone() const override;
     Scalar zero() const override;
-    Scalar copy(ScalarPointer source) const override;
 
     bool is_zero(ScalarPointer arg) const override;
     void print(ScalarPointer arg, std::ostream& os) const override;

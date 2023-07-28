@@ -97,13 +97,7 @@ Scalar ScalarType::parse(string_view str) const
 Scalar ScalarType::one() const { return from(1, 1); }
 Scalar ScalarType::mone() const { return from(-1, 1); }
 Scalar ScalarType::zero() const { return from(0, 1); }
-Scalar ScalarType::copy(ScalarPointer source) const
-{
-    auto result = allocate(1);
-    convert_copy(result, source, 1);
 
-    return {result, flags::OwnedPointer};
-}
 
 
 bool ScalarType::is_zero(ScalarPointer arg) const
