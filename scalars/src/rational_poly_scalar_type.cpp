@@ -115,7 +115,7 @@ void RationalPolyScalarType::convert_copy(
         ScalarPointer dst, ScalarPointer src, dimn_t count
 ) const
 {
-    impl_helpers::copy_convert<rational_poly_scalar>(dst, src, count);
+    helper::copy_convert(dst, src, count);
 }
 
 template <typename F>
@@ -302,7 +302,7 @@ void RationalPolyScalarType::add_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_poly_scalar>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l + r; }
     );
 }
@@ -311,7 +311,7 @@ void RationalPolyScalarType::sub_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_poly_scalar>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l - r; }
     );
 }
@@ -320,7 +320,7 @@ void RationalPolyScalarType::mul_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_poly_scalar>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l * r; }
     );
 }
@@ -330,7 +330,7 @@ void RationalPolyScalarType::div_into(
 ) const
 {
     RPY_THROW(std::runtime_error, "Not implemented");
-    //    impl_helpers::binary_into_buffer<rational_poly_scalar>(
+    //    helper::binary_into_buffer(
     //            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l / r;
     //            }
     //    );
@@ -340,7 +340,7 @@ void RationalPolyScalarType::uminus_into(
         const uint64_t* mask
 ) const
 {
-    impl_helpers::unary_into_buffer<rational_poly_scalar>(
+    helper::unary_into_buffer(
             dst, arg, count, mask, [](auto s) { return -s; }
     );
 }

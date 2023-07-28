@@ -35,17 +35,20 @@
 
 #include <roughpy/scalars/conversion.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/scalar_type_helper.h>
 
 namespace rpy {
 namespace scalars {
 
-class RationalPolyScalarType : public ScalarType
+class RationalPolyScalarType
+    : public impl_helpers::ScalarTypeHelper<rational_poly_scalar>
 {
+    using helper = impl_helpers::ScalarTypeHelper<rational_poly_scalar>;
     using scalar_type = rational_poly_scalar;
 
 public:
     explicit RationalPolyScalarType()
-        : ScalarType({
+        : helper({
                 string("RationalPoly"),
                 string("RationalPoly"),
                 sizeof(rational_poly_scalar),
@@ -76,7 +79,7 @@ public:
     void
     assign(ScalarPointer target, long long int numerator,
            long long int denominator) const override;
-//    Scalar uminus(ScalarPointer arg) const override;
+    //    Scalar uminus(ScalarPointer arg) const override;
 
     void uminus_into(
             ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,

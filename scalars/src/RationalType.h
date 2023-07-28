@@ -34,14 +34,17 @@
 #define ROUGHPY_RATIONALTYPE_H
 
 #include <roughpy/scalars/scalars_fwd.h>
+#include <roughpy/scalars/scalar_type_helper.h>
 
 #include "standard_scalar_type.h"
 
 namespace rpy {
 namespace scalars {
 
-class RationalType : public ScalarType
+class RationalType : public impl_helpers::ScalarTypeHelper<rational_scalar_type>
 {
+    using helper = impl_helpers::ScalarTypeHelper<rational_scalar_type>;
+
     using scalar_type = rational_scalar_type;
 
     using rng_getter = std::unique_ptr<

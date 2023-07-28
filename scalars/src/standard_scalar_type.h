@@ -65,8 +65,9 @@ constexpr std::uint8_t sizeof_bits() noexcept
 }
 
 template <typename ScalarImpl>
-class StandardScalarType : public ScalarType
+class StandardScalarType : public impl_helpers::ScalarTypeHelper<ScalarImpl>
 {
+    using helper = impl_helpers::ScalarTypeHelper<ScalarImpl>;
 
     using rng_getter = std::unique_ptr<
             RandomGenerator> (*)(const ScalarType* type, Slice<uint64_t>);
@@ -83,7 +84,7 @@ class StandardScalarType : public ScalarType
 
 public:
     explicit StandardScalarType(string id, string name)
-        : ScalarType({
+        : helper({
                 std::move(name),
                 std::move(id),
                 sizeof(ScalarImpl),
@@ -94,14 +95,14 @@ public:
     {}
 
     explicit StandardScalarType(const ScalarTypeInfo& info)
-        : ScalarType(ScalarTypeInfo(info))
+        : helper(ScalarTypeInfo(info))
     {}
 
     explicit StandardScalarType(
             string name, string id, std::size_t size, std::size_t align,
             BasicScalarInfo basic_info, ScalarDeviceInfo device_info
     )
-        : ScalarType({name, id, size, align, basic_info, device_info})
+        : helper({name, id, size, align, basic_info, device_info})
     {}
 
     Scalar
@@ -163,7 +164,7 @@ public:
     void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count)
             const override
     {
-        impl_helpers::copy_convert<ScalarImpl>(dst, src, count);
+        helper::copy_convert(dst, src, count);
     }
     //    void convert_copy(
     //            void* out, const void* in, std::size_t count, BasicScalarInfo
@@ -315,7 +316,7 @@ public:
     bool are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept override
     {
         return *lhs.raw_cast<const ScalarImpl*>()
-                == impl_helpers::try_convert<ScalarImpl>(rhs);
+                == helper::try_convert(rhs);
     }
 
     Scalar one() const override { return Scalar(this, ScalarImpl(1)); }
@@ -351,7 +352,7 @@ void StandardScalarType<ScalarImpl>::uminus_into(
         const uint64_t* mask
 ) const
 {
-    impl_helpers::unary_into_buffer<ScalarImpl>(
+    helper::unary_into_buffer(
             dst, arg, count, mask, [](auto s) { return -s; }
     );
 }
@@ -362,7 +363,7 @@ void StandardScalarType<ScalarImpl>::add_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<ScalarImpl>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l + r; }
     );
 }
@@ -372,7 +373,7 @@ void StandardScalarType<ScalarImpl>::sub_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<ScalarImpl>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l - r; }
     );
 }
@@ -382,7 +383,7 @@ void StandardScalarType<ScalarImpl>::mul_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<ScalarImpl>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l * r; }
     );
 }
@@ -392,7 +393,7 @@ void StandardScalarType<ScalarImpl>::div_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<ScalarImpl>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask,
             [](auto l, auto r) {
                 if (r == decltype(r)(0)) {

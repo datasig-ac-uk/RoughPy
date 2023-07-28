@@ -65,7 +65,7 @@ RationalType::get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed)
 }
 
 RationalType::RationalType()
-    : ScalarType({
+    : helper({
             "Rational",
             "rational",
             sizeof(rational_scalar_type),
@@ -133,7 +133,7 @@ void RationalType::convert_copy(
         ScalarPointer dst, ScalarPointer src, dimn_t count
 ) const
 {
-    impl_helpers::copy_convert<rational_scalar_type>(dst, src, count);
+    helper::copy_convert(dst, src, count);
 }
 
 template <typename F>
@@ -163,7 +163,7 @@ void RationalType::assign(
 bool RationalType::are_equal(ScalarPointer lhs, ScalarPointer rhs)
         const noexcept
 {
-    return *lhs.raw_cast<const scalar_type*>() == impl_helpers::try_convert<rational_scalar_type>(rhs);
+    return *lhs.raw_cast<const scalar_type*>() == helper::try_convert(rhs);
 }
 Scalar
 RationalType::from(long long int numerator, long long int denominator) const
@@ -324,7 +324,7 @@ void RationalType::add_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_scalar_type>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l + r; }
     );
 }
@@ -333,7 +333,7 @@ void RationalType::sub_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_scalar_type>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l - r; }
     );
 }
@@ -342,7 +342,7 @@ void RationalType::mul_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_scalar_type>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l * r; }
     );
 }
@@ -351,8 +351,13 @@ void RationalType::div_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_scalar_type>(
-            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l / r; }
+    helper::binary_into_buffer(
+            dst, lhs, rhs, count, mask, [](auto l, auto r) {
+                if (r == decltype(r)(0)) {
+                    RPY_THROW(std::runtime_error, "division by zero");
+                }
+                return l / r;
+            }
     );
 }
 void RationalType::uminus_into(
@@ -360,7 +365,7 @@ void RationalType::uminus_into(
         const uint64_t* mask
 ) const
 {
-    impl_helpers::unary_into_buffer<rational_scalar_type>(
+    helper::unary_into_buffer(
             dst, arg, count, mask, [](auto s) { return -s; }
             );
 }

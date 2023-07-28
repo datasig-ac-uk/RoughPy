@@ -6,6 +6,8 @@ Version 0.0.7:
     . replaced single value uminus with uminus into with similar signature to to add_into and friends;
     . removed single value copy method;
   - Added constructor for ScalarPointer from type_id and pointer.
+  - Implementations of ScalarType methods that are essentially the same for all types are implemented
+    in a common implementation layer.
 
 
 
