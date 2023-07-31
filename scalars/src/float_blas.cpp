@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Datasig Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -33,6 +33,8 @@
 #include "float_blas.h"
 #include "scalar_blas_defs.h"
 
+#include <algorithm>
+
 #include <roughpy/scalars/owned_scalar_array.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
@@ -43,32 +45,46 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-OwnedScalarArray FloatBlas::vector_axpy(const ScalarArray& x, const Scalar& a,
-                                        const ScalarArray& y)
+void FloatBlas::check_and_report_errors(matrix_dim_t info) const
 {
+    if (info == 0) { return; }
+
+    RPY_THROW(std::runtime_error, "BLAS/LAPACK encountered an error");
+}
+
+OwnedScalarArray FloatBlas::vector_axpy(
+        const ScalarArray& x, const Scalar& a, const ScalarArray& y
+)
+{
+    auto guard = lock();
     const auto* type = BlasInterface::type();
     RPY_CHECK(x.type() == type && y.type() == type);
     OwnedScalarArray result(type, y.size());
     type->convert_copy(result, y, y.size());
 
     auto N = static_cast<blas::integer>(y.size());
-    cblas_saxpy(N, scalar_cast<float>(a), x.raw_cast<const float*>(), 1,
-                result.raw_cast<float*>(), 1);
+    cblas_saxpy(
+            N, scalar_cast<float>(a), x.raw_cast<const float*>(), 1,
+            result.raw_cast<float*>(), 1
+    );
     return result;
 }
 Scalar FloatBlas::dot_product(const ScalarArray& lhs, const ScalarArray& rhs)
 {
+    auto guard = lock();
     const auto* type = BlasInterface::type();
 
     RPY_CHECK(lhs.type() == type && rhs.type() == type);
 
     auto N = static_cast<blas::integer>(lhs.size());
-    auto result = cblas_sdot(N, lhs.raw_cast<const float*>(), 1,
-                             rhs.raw_cast<const float*>(), 1);
+    auto result = cblas_sdot(
+            N, lhs.raw_cast<const float*>(), 1, rhs.raw_cast<const float*>(), 1
+    );
     return {type, result};
 }
 Scalar FloatBlas::L1Norm(const ScalarArray& vector)
 {
+    auto guard = lock();
     auto N = static_cast<blas::integer>(vector.size());
     auto result = cblas_sasum(N, vector.raw_cast<const float*>(), 1);
     return {type(), result};
@@ -90,391 +106,506 @@ Scalar FloatBlas::LInfNorm(const ScalarArray& vector)
     auto result = ptr[idx];
     return {type(), result};
 }
-OwnedScalarArray FloatBlas::matrix_vector(const ScalarMatrix& matrix,
-                                          const ScalarArray& vector)
+
+void FloatBlas::transpose(ScalarMatrix& matrix) const {}
+
+void FloatBlas::gemv(
+        ScalarMatrix& y, const ScalarMatrix& A, const ScalarMatrix& x,
+        const Scalar& alpha, const Scalar& beta
+)
 {
-    RPY_CHECK(matrix.type() == type() && vector.type() == type());
+    auto guard = lock();
+    type_check(A);
+    type_check(x);
+    const float alp = scalar_cast<float>(alpha);
+    const float bet = scalar_cast<float>(beta);
 
-    auto M = static_cast<blas::integer>(matrix.nrows());
-    auto N = static_cast<blas::integer>(matrix.ncols());
+    blas::integer m = A.nrows();
+    blas::integer n = A.ncols();
+    blas::integer lda = A.leading_dimension();
 
-    if (N != static_cast<blas::integer>(vector.size())) {
-        RPY_THROW(std::invalid_argument, "inner matrix dimensions must agree");
-    }
-
-    const auto layout = blas::to_blas_layout(matrix.layout());
-    OwnedScalarArray result(type(), M);
-
-    // TODO: fix lda/ldb values
-    switch (matrix.storage()) {
-        case MatrixStorage::FullMatrix:
-            cblas_sgemv(layout, blas::Blas_NoTrans, M, N, 1.0F,
-                        matrix.raw_cast<const float*>(), 1,
-                        vector.raw_cast<const float*>(), 1, 0.0F,
-                        result.raw_cast<float*>(), 1);
-            break;
-        case MatrixStorage::LowerTriangular:
-        case MatrixStorage::UpperTriangular:
-            RPY_CHECK(M == N);
-            type()->convert_copy(result, vector, vector.size());
-            cblas_stpmv(layout, blas::to_blas_uplo(matrix.storage()),
-                        blas::Blas_NoTrans, blas::Blas_DNoUnit, N,
-                        matrix.raw_cast<const float*>(),
-                        result.raw_cast<float*>(), 1);
-            break;
-        case MatrixStorage::Diagonal:
-            RPY_CHECK(M == N);
-            cblas_ssbmv(layout, blas::Blas_Lo, N, 1, 1.0F,
-                        matrix.raw_cast<const float*>(), 1,
-                        vector.raw_cast<const float*>(), 1, 0.0F,
-                        result.raw_cast<float*>(), 1);
-            break;
-    }
-    return result;
-}
-
-static constexpr MatrixLayout flip_layout(MatrixLayout layout) noexcept
-{
-    return layout == MatrixLayout::CStype ? MatrixLayout::FStype
-                                          : MatrixLayout::CStype;
-}
-
-static void tfmm(ScalarMatrix& result, const ScalarMatrix& lhs,
-                 blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs)
-{
-    {
-        auto N = static_cast<blas::integer>(rhs.size());
-        cblas_scopy(N, rhs.raw_cast<const float*>(), 1,
-                    result.raw_cast<float*>(), 1);
-        result.layout(rhs.layout());
-    }
-    auto C = static_cast<blas::integer>(result.ncols());
-
-    auto layout = blas::to_blas_layout(lhs.layout());
-
-    // If rhs is row-major then we need to adjust incx to stride correctly in
-    // result.
-    blas::integer incx = (result.layout() == MatrixLayout::FStype) ? 1 : C;
-
-    auto* out_ptr = result.raw_cast<float*>();
-
-    for (blas::integer i = 0; i < C; ++i) {
-        cblas_stpmv(layout, lhs_uplo, blas::Blas_NoTrans, blas::Blas_DUnit, C,
-                    lhs.raw_cast<const float*>(), out_ptr + i, incx);
-    }
-}
-static void ftmm(ScalarMatrix& result, const ScalarMatrix& lhs,
-                 const ScalarMatrix& rhs, blas::BlasUpLo rhs_uplo)
-{
-    // Use AT = (T'A')'
-
-    ScalarMatrix right{lhs.nrows(), lhs.ncols(), ScalarArray(lhs),
-                       lhs.storage(), flip_layout(lhs.layout())};
-
-    ScalarMatrix left{rhs.nrows(), rhs.ncols(), ScalarArray(rhs), rhs.storage(),
-                      flip_layout(rhs.layout())};
-
-    tfmm(result, left,
-         rhs_uplo == blas::Blas_Lo ? blas::Blas_Up : blas::Blas_Lo, right);
-    result.layout(flip_layout(result.layout()));
-}
-static void dfmm(ScalarMatrix& result, const ScalarMatrix& lhs,
-                 const ScalarMatrix& rhs)
-{
-    // lhs is diagonal, so the result of multiplying is just scaling each
-    // corresponding column of rhs.
-    RPY_DBG_ASSERT(lhs.ncols() == rhs.nrows());
-    auto M = static_cast<blas::integer>(rhs.nrows());
-
-    blas::integer ldb;
-    if (rhs.layout() == MatrixLayout::CStype) {
-        ldb = static_cast<blas::integer>(rhs.ncols());
+    blas::integer incx;
+    blas::integer n_eqns;
+    if (x.layout() == MatrixLayout::RowMajor) {
+        incx = x.ncols();
+        n_eqns = x.nrows();
     } else {
-        ldb = 1;
+        incx = x.nrows();
+        n_eqns = x.ncols();
     }
 
-    result.layout(rhs.layout());
+    /*
+     * We're assuming that the vectors are stored contiguously so that incx
+     * is simply the number of columns/rows depending on whether it is row
+     * major or column major.
+     */
+    matrix_product_check(n, incx);
 
-    auto* out_ptr = result.raw_cast<float*>();
-    // LHS is packed, containing M = N values in a flat vector.
-    const auto* lhs_ptr = lhs.raw_cast<const float*>();
-    const auto* rhs_ptr = rhs.raw_cast<const float*>();
+    /*
+     * For now, we shall assume that we don't want to transpose the matrix A.
+     * In the future we might want to consider transposing based on whether
+     * the matrix is in row major or column major format.
+     */
+    blas::BlasTranspose transa = blas::Blas_NoTrans;
 
-    for (blas::integer i = 0; i < ldb; ++i) {
-        cblas_saxpy(M, lhs_ptr[i], rhs_ptr + i, ldb, out_ptr + i, ldb);
+    blas::BlasLayout layout = A.layout() == MatrixLayout::RowMajor
+            ? blas::Blas_RowMajor
+            : blas::Blas_ColMajor;
+
+    blas::integer incy;
+    if (y.type() == nullptr || y.is_null()) {
+        /*
+         * Type is null, so it hasn't been
+         * initialized yet. Allocate a new empty matrix of the correct size.
+         */
+        y = ScalarMatrix(type(), m, n_eqns, MatrixLayout::ColumnMajor);
+        incy = m;
+    } else {
+        type_check(y);
+        blas::integer n_eqs_check;
+        if (y.layout() == MatrixLayout::RowMajor) {
+            incy = y.ncols();
+            n_eqs_check = y.nrows();
+        } else {
+            incy = y.nrows();
+            n_eqs_check = y.ncols();
+        }
+
+        RPY_CHECK(incy == incx && n_eqs_check == n_eqns);
     }
+
+    cblas_sgemv(
+            layout, transa, m, n, alp, A.raw_cast<const float*>(), lda,
+            x.raw_cast<const float*>(), incx, bet, y.raw_cast<float*>(), incy
+    );
 }
-static void fdmm(ScalarMatrix& result, const ScalarMatrix& lhs,
-                 const ScalarMatrix& rhs)
+void FloatBlas::gemm(
+        ScalarMatrix& C, const ScalarMatrix& A, const ScalarMatrix& B,
+        const Scalar& alpha, const Scalar& beta
+)
 {
-    // Use the fact that AB = (B'A')'
+    auto guard = lock();
+    type_check(A);
+    type_check(B);
+    const auto alp = scalar_cast<float>(alpha);
+    const auto bet = scalar_cast<float>(beta);
 
-    ScalarMatrix right{lhs.nrows(), lhs.ncols(), ScalarArray(lhs),
-                       lhs.storage(), flip_layout(lhs.layout())};
+    blas::integer m = A.nrows();
+    blas::integer n = B.ncols();
+    blas::integer k = A.ncols();
 
-    ScalarMatrix left{rhs.nrows(), rhs.ncols(), ScalarArray(rhs), rhs.storage(),
-                      flip_layout(rhs.layout())};
-
-    dfmm(result, left, right);
-    result.layout(flip_layout(result.layout()));
-}
-
-static void ffmm(ScalarMatrix& result, const ScalarMatrix& lhs,
-                 const ScalarMatrix& rhs)
-{
-    auto M = static_cast<blas::integer>(lhs.nrows());
-    auto K = static_cast<blas::integer>(lhs.ncols());
-    auto N = static_cast<blas::integer>(rhs.ncols());
+    const auto lda = A.leading_dimension();
+    const auto ldb = B.leading_dimension();
+    blas::integer ldc;// initialized below
 
     blas::BlasLayout layout;
     blas::BlasTranspose transa;
     blas::BlasTranspose transb;
-    blas::integer lda;
-    blas::integer ldb;
-    blas::integer ldc;
 
-    if (lhs.layout() == rhs.layout()) {
-        layout = blas::to_blas_layout(lhs.layout());
-        result.layout(lhs.layout());
-        transa = blas::Blas_NoTrans;
-        transb = blas::Blas_NoTrans;
-        lda = (layout == blas::Blas_ColMajor) ? M : K;
-        ldb = (layout == blas::Blas_ColMajor) ? K : N;
-        ldc = (layout == blas::Blas_ColMajor) ? M : N;
-    } else if (lhs.layout() == MatrixLayout::CStype) {
-        layout = blas::Blas_RowMajor;
-        result.layout(MatrixLayout::CStype);
-        transa = blas::Blas_NoTrans;
-        transb = blas::Blas_Trans;
-        lda = K;
-        ldb = K;
-        ldc = N;
-    } else {
-        layout = blas::Blas_ColMajor;
-        result.layout(MatrixLayout::FStype);
-        transa = blas::Blas_NoTrans;
-        transb = blas::Blas_Trans;
-        lda = M;
-        ldb = N;
-        ldc = M;
-    }
-
-    cblas_sgemm(layout, transa, transb, M, N, K, 1.0F,
-                lhs.raw_cast<const float*>(), lda, rhs.raw_cast<const float*>(),
-                ldb, 0.0F, result.raw_cast<float*>(), ldc);
-}
-
-static void ttmm(ScalarMatrix& result, const ScalarMatrix& lhs,
-                 blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs,
-                 blas::BlasUpLo rhs_uplo)
-{
     /*
-     * If lhs and rhs are both upper (lower, respectively) triangular then
-     * result will also be upper (lower) triangular. Otherwise, the result is a
-     * full matrix.
+     * If C is initialized, we use C.layout() to determine whether A and B
+     * need to be transposed or not. If C is not initialized, we use A.layout()
+     * to set the layout of C and determine whether we should transpose B.
      */
-}
+    if (C.type() == nullptr || C.is_null()) {
+        // Allocate a new result matrix with dimensions m by n
+        C = ScalarMatrix(type(), m, n, A.layout());
+        ldc = C.leading_dimension();
+        layout = blas::to_blas_layout(A.layout());
+        transa = blas::Blas_NoTrans;
+        transb = (B.layout() == A.layout()) ? blas::Blas_NoTrans
+                                            : blas::Blas_Trans;
+    } else {
+        type_check(C);
+        RPY_CHECK(C.nrows() == m && C.ncols() == n);
 
-static void dtmm(ScalarMatrix& result, const ScalarMatrix& lhs,
-                 const ScalarMatrix& rhs, blas::BlasUpLo rhs_uplo)
-{
-    // There is no BLAS routine for this so we're going to have to do it
-    // ourselves.
-}
+        ldc = C.leading_dimension();
+        layout = blas::to_blas_layout(C.layout());
 
-static void tdmm(ScalarMatrix& result, const ScalarMatrix& lhs,
-                 blas::BlasUpLo lhs_uplo, const ScalarMatrix& rhs)
-{
-    // Uss the fact that TD = (D'T')' = (DT')'
-    const auto old_storage = result.storage();
-    const auto old_layout = result.layout();
+        transa = (A.layout() == C.layout()) ? blas::Blas_NoTrans
+                                            : blas::Blas_Trans;
 
-    ScalarMatrix right{lhs.nrows(), lhs.ncols(), ScalarArray(lhs),
-                       lhs.storage() == MatrixStorage::UpperTriangular
-                               ? MatrixStorage::LowerTriangular
-                               : MatrixStorage::UpperTriangular,
-                       flip_layout(lhs.layout())};
-
-    result.layout(right.layout());
-    result.storage(right.storage());
-
-    dtmm(result, rhs, right,
-         lhs_uplo == blas::Blas_Up ? blas::Blas_Lo : blas::Blas_Up);
-    result.layout(old_layout);
-    result.storage(old_storage);
-}
-
-static void ddmm(ScalarMatrix& result, const ScalarMatrix& lhs,
-                 const ScalarMatrix& rhs)
-{
-    RPY_DBG_ASSERT(result.storage() == MatrixStorage::Diagonal);
-
-    auto* out_ptr = result.raw_cast<float*>();
-    const auto* lhs_ptr = lhs.raw_cast<const float*>();
-    const auto* rhs_ptr = rhs.raw_cast<const float*>();
-
-    // This is a silly simple case. just do the multiplication manually.
-    for (deg_t i = 0; i < lhs.ncols(); ++i) {
-        out_ptr[i] = lhs_ptr[i] * rhs_ptr[i];
+        transb = (B.layout() == C.layout()) ? blas::Blas_NoTrans
+                                            : blas::Blas_Trans;
     }
+
+    cblas_sgemm(
+            layout, transa, transb, m, n, k, alp, A.raw_cast<const float*>(),
+            lda, B.raw_cast<const float*>(), ldb, bet, C.raw_cast<float*>(), ldc
+    );
 }
-
-static void full_matrix_matrix(ScalarMatrix& result, const ScalarMatrix& lhs,
-                               const ScalarMatrix& rhs)
+void FloatBlas::gesv(ScalarMatrix& A, ScalarMatrix& B)
 {
+    auto guard = lock();
+    // Solving A*X = B, solution written to B
+    type_check(A);
+    type_check(B);
 
-    switch (rhs.storage()) {
-        case MatrixStorage::FullMatrix: ffmm(result, lhs, rhs); break;
-        case MatrixStorage::LowerTriangular:
-            ftmm(result, lhs, rhs, blas::Blas_Lo);
-            break;
-        case MatrixStorage::UpperTriangular:
-            ftmm(result, lhs, rhs, blas::Blas_Up);
-            break;
-        case MatrixStorage::Diagonal: fdmm(result, lhs, rhs); break;
-        default:
-            RPY_THROW(std::runtime_error,"matrix-matrix multiplications of these "
-                                     "formats is not currently supported");
+    blas::integer n = A.nrows();
+    RPY_CHECK(A.ncols() == n);
+    blas::integer nrhs = B.ncols();
+    matrix_product_check(n, B.nrows());
+
+    const auto layout = blas::to_blas_layout(A.layout());
+    const auto lda = A.leading_dimension();
+    const auto ldb = B.leading_dimension();
+    const auto ldx = ldb;// Assuming X and B have the same shape
+
+    LAPACKE_sgesv(
+            layout, n, nrhs, A.raw_cast<float*>(), B.raw_cast<float*>(), lda,
+            ldb, ldx
+    );
+}
+EigenDecomposition FloatBlas::syev(ScalarMatrix& A, bool eigenvectors)
+{
+    auto guard = lock();
+    const auto layout = blas::to_blas_layout(A.layout());
+    const char jobz = eigenvectors ? 'V' : 'N';
+    const char range = 'A';
+    const char uplo = 'U';// ?
+
+    const auto n = A.nrows();
+    const auto lda = A.leading_dimension();
+    const float* vl = nullptr;
+    const float* vu = nullptr;
+    const blas::integer* il = nullptr;
+    const blas::integer* iu = nullptr;
+
+    const float abstol = 0.0;// will be replaced by n*eps*||A||.
+    blas::integer m = 0;
+
+    EigenDecomposition result;
+    result.Lambda = ScalarMatrix(type(), n, 1, MatrixLayout::ColumnMajor);
+
+    blas::integer ldz = 1;
+    float* vs = nullptr;
+    if (eigenvectors) {
+        result.U = ScalarMatrix(type(), n, n, A.layout());
+        vs = result.U.raw_cast<float*>();
+        ldz = result.U.leading_dimension();
     }
+
+    std::vector<blas::integer> isuppz(2 * n);
+
+    LAPACKE_ssyevr(
+            layout, jobz, range, uplo, n, A.raw_cast<float*>(), lda, vl, vu, il,
+            iu, abstol, &m, result.Lambda.raw_cast<float*>(), vs, ldz,
+            isuppz.data()
+    );
 }
 
-static void triangular_matrix_matrix(ScalarMatrix& result,
-                                     const ScalarMatrix& lhs,
-                                     blas::BlasUpLo lhs_uplo,
-                                     const ScalarMatrix& rhs)
+EigenDecomposition FloatBlas::gees(ScalarMatrix& A, bool eigenvectors)
 {
+    auto guard = lock();
+    type_check(A);
+    RPY_CHECK(!A.is_null());
+    RPY_CHECK(A.ncols() == A.nrows());
 
-    switch (rhs.storage()) {
-        case MatrixStorage::FullMatrix: tfmm(result, lhs, lhs_uplo, rhs); break;
-        case MatrixStorage::UpperTriangular:
-            ttmm(result, lhs, lhs_uplo, rhs, blas::Blas_Up);
-            break;
-        case MatrixStorage::LowerTriangular:
-            ttmm(result, lhs, lhs_uplo, rhs, blas::Blas_Lo);
-            break;
-        case MatrixStorage::Diagonal: tdmm(result, lhs, lhs_uplo, rhs); break;
-        default:
-            RPY_THROW(std::runtime_error,"matrix-matrix multiplications of these "
-                                     "formats is currently unsupported");
+    const auto layout = blas::to_blas_layout(A.layout());
+    const auto n = A.nrows();
+    const auto lda = A.leading_dimension();
+
+    const auto jobvs = eigenvectors ? 'V' : 'N';
+    const auto sort = 'N';
+    LAPACK_S_SELECT2 select = nullptr;
+
+    EigenDecomposition result;
+
+    blas::integer sdim = 0;
+    float* vs = nullptr;
+    blas::integer ldvs = 1;
+    if (eigenvectors) {
+        result.U = ScalarMatrix(type(), n, n, A.layout());
+        ldvs = n;
+        vs = result.U.raw_cast<float*>();
     }
-}
-static void diagonal_matrix_matrix(ScalarMatrix& result,
-                                   const ScalarMatrix& lhs,
-                                   const ScalarMatrix& rhs)
-{
-    switch (rhs.storage()) {
-        case MatrixStorage::FullMatrix: dfmm(result, lhs, rhs); break;
-        case MatrixStorage::LowerTriangular:
-            dtmm(result, lhs, rhs, blas::Blas_Lo);
-            break;
-        case MatrixStorage::UpperTriangular:
-            dtmm(result, lhs, rhs, blas::Blas_Up);
-            break;
-        case MatrixStorage::Diagonal: ddmm(result, lhs, rhs); break;
-        default:
-            RPY_THROW(std::runtime_error,"matrix-matrix multiplications of these "
-                                     "formats is currently unsupported");
-    }
-}
 
-ScalarMatrix FloatBlas::matrix_matrix(const ScalarMatrix& lhs,
-                                      const ScalarMatrix& rhs)
-{
-    RPY_DBG_ASSERT(lhs.type() == rhs.type() && lhs.type() == type());
+    /*
+     * The eigenvalues of a real, non-symmetric matrix can be complex, so
+     * write the real/imaginary parts into two temporary buffers. Afterwards,
+     * we can choose whether the result vector has type float or
+     * complex<float> depending on whether any of the eigenvalues are complex.
+     */
+    std::vector<float> ev_real(n);
+    std::vector<float> ev_imag(n);
 
-    if (lhs.ncols() != rhs.nrows()) {
-        RPY_THROW(std::invalid_argument, "inner matrix dimensions must agree");
-    };
+    LAPACKE_sgees(
+            layout, jobvs, sort, select, n, A.raw_cast<float*>(), lda, &sdim,
+            ev_real.data(), ev_imag.data(), vs, ldvs
+    );
 
-    ScalarMatrix result(type(), lhs.nrows(), rhs.ncols());
+    bool any_complex = std::any_of(ev_imag.begin(), ev_imag.end(), [](float v) {
+        return v != 0.0f;
+    });
 
-    switch (lhs.storage()) {
-        case MatrixStorage::FullMatrix:
-            full_matrix_matrix(result, lhs, rhs);
-            break;
-        case MatrixStorage::UpperTriangular:
-            triangular_matrix_matrix(result, lhs, blas::Blas_Up, rhs);
-            break;
-        case MatrixStorage::LowerTriangular:
-            triangular_matrix_matrix(result, lhs, blas::Blas_Lo, rhs);
-            break;
-        case MatrixStorage::Diagonal:
-            diagonal_matrix_matrix(result, lhs, rhs);
-            break;
+    if (any_complex) {
+        result.Lambda = ScalarMatrix(type(), n, 1);
+        ////// TODO: Implement complex number stuff
+    } else {
+        result.Lambda = ScalarMatrix(type(), n, 1);
+        std::copy_n(ev_real.begin(), n, result.Lambda.raw_cast<float*>());
     }
 
     return result;
 }
-ScalarMatrix FloatBlas::solve_linear_system(const ScalarMatrix& coeff_matrix,
-                                            const ScalarMatrix& target_matrix)
+SingularValueDecomposition
+FloatBlas::gesvd(ScalarMatrix& A, bool return_U, bool return_VT)
 {
+    auto guard = lock();
+    type_check(A);
+    RPY_CHECK(!A.is_null());
 
-    if (coeff_matrix.nrows() != target_matrix.nrows()) {
-        RPY_THROW(std::invalid_argument, "incompatible matrix dimensions");
+    const auto layout = blas::to_blas_layout(A.layout());
+    const auto m = A.nrows();
+    const auto n = A.ncols();
+    const auto lda = A.leading_dimension();
+
+    blas::integer ldu = 1;
+    blas::integer ldvt = 1;
+    char jobu = 'N';
+    char jobvt = 'N';
+
+    SingularValueDecomposition result;
+    result.Sigma = ScalarMatrix(type(), n, 1, MatrixLayout::ColumnMajor);
+
+    float* u = nullptr;
+    float* vt = nullptr;
+
+    if (return_U) {
+        jobu = 'A';
+        result.U = ScalarMatrix(type(), m, m);
+        ldu = m;
+        u = result.U.raw_cast<float*>();
     }
 
-    if (coeff_matrix.nrows() < coeff_matrix.ncols()) {
-        RPY_THROW(std::invalid_argument,
-                "system is over-determined, used least squares instead");
-    }
-    if (coeff_matrix.nrows() > coeff_matrix.ncols()) {
-        RPY_THROW(std::invalid_argument, "system is under-determined, no solution");
+    if (return_VT) {
+        jobvt = 'A';
+        result.VHermitian = ScalarMatrix(type(), n, n);
+        ldvt = n;
+        vt = result.VHermitian.raw_cast<float*>();
     }
 
-    ScalarMatrix result = target_matrix.to_full();
+    m_workspace.clear();
+    m_workspace.resize(std::min(m, n) - 2);
 
-    //    switch (coeff_matrix.storage()) {
-    //        case MatrixStorage::FullMatrix:
-    //
-    //            break;
-    //    }
-    //
+    auto info = LAPACKE_sgesvd(
+            layout, jobu, jobvt, m, n, A.raw_cast<float*>(), lda,
+            result.Sigma.raw_cast<float*>(), u, ldu, vt, ldvt,
+            m_workspace.data()
+    );
+
+    // Handle errors that might have happened in LAPACK
+    check_and_report_errors(info);
+
     return result;
 }
-OwnedScalarArray FloatBlas::lls_qr(const ScalarMatrix& matrix,
-                                   const ScalarArray& target)
+SingularValueDecomposition
+FloatBlas::gesdd(ScalarMatrix& A, bool return_U, bool return_VT)
 {
+    auto guard = lock();
+    type_check(A);
+    RPY_CHECK(!A.is_null());
 
-    switch (matrix.storage()) {
-        case MatrixStorage::FullMatrix: break;
-        case MatrixStorage::UpperTriangular: break;
-        case MatrixStorage::LowerTriangular: break;
-        case MatrixStorage::Diagonal: break;
+    const auto layout = blas::to_blas_layout(A.layout());
+    const auto m = A.nrows();
+    const auto n = A.ncols();
+    const auto lda = A.leading_dimension();
+
+    blas::integer ldu = 1;
+    blas::integer ldvt = 1;
+    char jobz = 'N';
+
+    SingularValueDecomposition result;
+    result.Sigma = ScalarMatrix(type(), n, 1, MatrixLayout::ColumnMajor);
+
+    float* u = nullptr;
+    float* vt = nullptr;
+
+    /*
+     * Unlike sgesvd, we can either get both U and VT or neither. We maintain
+     * the same interface though, but just populate both if either are
+     * requested.
+     */
+    if (return_U || return_VT) {
+        jobz = 'A';
+        result.U = ScalarMatrix(type(), m, m);
+        ldu = m;
+        u = result.U.raw_cast<float*>();
+        result.VHermitian = ScalarMatrix(type(), n, n);
+        ldvt = n;
+        vt = result.VHermitian.raw_cast<float*>();
     }
-    return {};
+
+    auto info = LAPACKE_sgesdd(
+            layout, jobz, m, n, A.raw_cast<float*>(), lda,
+            result.Sigma.raw_cast<float*>(), u, ldu, vt, ldvt
+    );
+
+    // Handle errors that might have happened in LAPACK
+    check_and_report_errors(info);
+
+    return result;
 }
-OwnedScalarArray FloatBlas::lls_orth(const ScalarMatrix& matrix,
-                                     const ScalarArray& target)
+void FloatBlas::gels(ScalarMatrix& A, ScalarMatrix& b)
 {
-    return BlasInterface::lls_orth(matrix, target);
+    auto guard = lock();
+    type_check(A);
+    type_check(b);
+    RPY_CHECK(!A.is_null());
+    RPY_CHECK(!b.is_null());
+
+    const auto layout = blas::to_blas_layout(A.layout());
+    const auto m = A.nrows();
+    const auto n = A.ncols();
+    const auto lda = A.leading_dimension();
+
+    /*
+     * For now we assume that we don't need to transpose A for this
+     * calculation. In the future, we might want to consider changing this to
+     * account for difference between matrix layouts.
+     */
+    blas::BlasTranspose trans = blas::Blas_NoTrans;
+    blas::integer nrhs;
+    blas::integer ldb;
+
+    if (b.layout() == MatrixLayout::RowMajor) {
+        nrhs = b.nrows();
+        ldb = b.ncols();
+    } else {
+        nrhs = b.ncols();
+        ldb = b.nrows();
+    }
+
+    auto info = LAPACKE_sgels(
+            layout, trans, m, n, nrhs, A.raw_cast<float*>(), lda,
+            b.raw_cast<float*>(), ldb
+    );
+
+    check_and_report_errors(info);
 }
-OwnedScalarArray FloatBlas::lls_svd(const ScalarMatrix& matrix,
-                                    const ScalarArray& target)
+ScalarMatrix FloatBlas::gelsy(ScalarMatrix& A, ScalarMatrix& b)
 {
-    return BlasInterface::lls_svd(matrix, target);
+    auto guard = lock();
+    type_check(A);
+    type_check(b);
+    RPY_CHECK(!A.is_null());
+    RPY_CHECK(!b.is_null());
+
+    const auto layout = blas::to_blas_layout(A.layout());
+    const auto m = A.nrows();
+    const auto n = A.ncols();
+    const auto lda = A.leading_dimension();
+
+    /*
+     * For now we assume that we don't need to transpose A for this
+     * calculation. In the future, we might want to consider changing this to
+     * account for difference between matrix layouts.
+     */
+    blas::BlasTranspose trans = blas::Blas_NoTrans;
+    blas::integer nrhs;
+    blas::integer ldb;
+
+    if (b.layout() == MatrixLayout::RowMajor) {
+        nrhs = b.nrows();
+        ldb = b.ncols();
+    } else {
+        nrhs = b.ncols();
+        ldb = b.nrows();
+    }
+
+    std::vector<blas::integer> pivots(n);
+    // rcond on 0 forces use of machine precision.
+    float rcond = 0.0f;
+    blas::integer rank = 0;
+
+    auto info = LAPACKE_sgelsy(
+            layout, m, n, nrhs, A.raw_cast<float*>(), lda, b.raw_cast<float*>(),
+            ldb, pivots.data(), rcond, &rank
+    );
+
+    check_and_report_errors(info);
 }
-OwnedScalarArray FloatBlas::lls_dcsvd(const ScalarMatrix& matrix,
-                                      const ScalarArray& target)
+ScalarMatrix FloatBlas::gelss(ScalarMatrix& A, ScalarMatrix& b)
 {
-    return BlasInterface::lls_dcsvd(matrix, target);
+    auto guard = lock();
+    type_check(A);
+    type_check(b);
+    RPY_CHECK(!A.is_null());
+    RPY_CHECK(!b.is_null());
+
+    const auto layout = blas::to_blas_layout(A.layout());
+    const auto m = A.nrows();
+    const auto n = A.ncols();
+    const auto lda = A.leading_dimension();
+
+    /*
+     * For now we assume that we don't need to transpose A for this
+     * calculation. In the future, we might want to consider changing this to
+     * account for difference between matrix layouts.
+     */
+    blas::BlasTranspose trans = blas::Blas_NoTrans;
+    blas::integer nrhs;
+    blas::integer ldb;
+
+    if (b.layout() == MatrixLayout::RowMajor) {
+        nrhs = b.nrows();
+        ldb = b.ncols();
+    } else {
+        nrhs = b.ncols();
+        ldb = b.nrows();
+    }
+
+    std::vector<blas::integer> pivots(n);
+    // rcond on 0 forces use of machine precision.
+    float rcond = 0.0f;
+    blas::integer rank = 0;
+
+    auto info = LAPACKE_sgelss(
+            layout, m, n, nrhs, A.raw_cast<float*>(), lda, b.raw_cast<float*>(),
+            ldb, pivots.data(), rcond, &rank
+    );
+
+    check_and_report_errors(info);
 }
-OwnedScalarArray FloatBlas::lse_grq(const ScalarMatrix& A,
-                                    const ScalarMatrix& B, const ScalarArray& c,
-                                    const ScalarArray& d)
+ScalarMatrix FloatBlas::gelsd(ScalarMatrix& A, ScalarMatrix& b)
 {
-    return BlasInterface::lse_grq(A, B, c, d);
+    auto guard = lock();
+    type_check(A);
+    type_check(b);
+    RPY_CHECK(!A.is_null());
+    RPY_CHECK(!b.is_null());
+
+    const auto layout = blas::to_blas_layout(A.layout());
+    const auto m = A.nrows();
+    const auto n = A.ncols();
+    const auto lda = A.leading_dimension();
+
+    /*
+     * For now we assume that we don't need to transpose A for this
+     * calculation. In the future, we might want to consider changing this to
+     * account for difference between matrix layouts.
+     */
+    blas::BlasTranspose trans = blas::Blas_NoTrans;
+    blas::integer nrhs;
+    blas::integer ldb;
+
+    if (b.layout() == MatrixLayout::RowMajor) {
+        nrhs = b.nrows();
+        ldb = b.ncols();
+    } else {
+        nrhs = b.ncols();
+        ldb = b.nrows();
+    }
+
+    std::vector<blas::integer> pivots(n);
+    // rcond on 0 forces use of machine precision.
+    float rcond = 0.0f;
+    blas::integer rank = 0;
+
+    auto info = LAPACKE_sgelsd(
+            layout, m, n, nrhs, A.raw_cast<float*>(), lda, b.raw_cast<float*>(),
+            ldb, pivots.data(), rcond, &rank
+    );
+
+    check_and_report_errors(info);
 }
-ScalarMatrix FloatBlas::glm_GQR(const ScalarMatrix& A, const ScalarMatrix& B,
-                                const ScalarArray& d)
-{
-    return BlasInterface::glm_GQR(A, B, d);
-}
-EigenDecomposition FloatBlas::eigen_decomposition(const ScalarMatrix& matrix)
-{
-    return BlasInterface::eigen_decomposition(matrix);
-}
-SingularValueDecomposition FloatBlas::svd(const ScalarMatrix& matrix)
-{
-    return BlasInterface::svd(matrix);
-}
-void FloatBlas::transpose(ScalarMatrix& matrix) const {}

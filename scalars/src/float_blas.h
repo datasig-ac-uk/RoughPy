@@ -1,7 +1,7 @@
-// Copyright (c) 2023 Datasig Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 17/04/23.
@@ -40,40 +39,39 @@ namespace scalars {
 
 class FloatBlas : public BlasInterface
 {
+    float m_tolerance = std::numeric_limits<float>::epsilon();
+    std::vector<float> m_workspace;
+
+    void check_and_report_errors(matrix_dim_t info) const;
+
 public:
     explicit FloatBlas(const ScalarType* ctype) : BlasInterface(ctype) {}
     void transpose(ScalarMatrix& matrix) const override;
-    OwnedScalarArray vector_axpy(const ScalarArray& x, const Scalar& a,
-                                 const ScalarArray& y) override;
+    OwnedScalarArray vector_axpy(
+            const ScalarArray& x, const Scalar& a, const ScalarArray& y
+    ) override;
     Scalar dot_product(const ScalarArray& lhs, const ScalarArray& rhs) override;
     Scalar L1Norm(const ScalarArray& vector) override;
     Scalar L2Norm(const ScalarArray& vector) override;
     Scalar LInfNorm(const ScalarArray& vector) override;
-    OwnedScalarArray matrix_vector(const ScalarMatrix& matrix,
-                                   const ScalarArray& vector) override;
 
-private:
-public:
-    ScalarMatrix matrix_matrix(const ScalarMatrix& lhs,
-                               const ScalarMatrix& rhs) override;
-    ScalarMatrix
-    solve_linear_system(const ScalarMatrix& coeff_matrix,
-                        const ScalarMatrix& target_matrix) override;
-    OwnedScalarArray lls_qr(const ScalarMatrix& matrix,
-                            const ScalarArray& target) override;
-    OwnedScalarArray lls_orth(const ScalarMatrix& matrix,
-                              const ScalarArray& target) override;
-    OwnedScalarArray lls_svd(const ScalarMatrix& matrix,
-                             const ScalarArray& target) override;
-    OwnedScalarArray lls_dcsvd(const ScalarMatrix& matrix,
-                               const ScalarArray& target) override;
-    OwnedScalarArray lse_grq(const ScalarMatrix& A, const ScalarMatrix& B,
-                             const ScalarArray& c,
-                             const ScalarArray& d) override;
-    ScalarMatrix glm_GQR(const ScalarMatrix& A, const ScalarMatrix& B,
-                         const ScalarArray& d) override;
-    EigenDecomposition eigen_decomposition(const ScalarMatrix& matrix) override;
-    SingularValueDecomposition svd(const ScalarMatrix& matrix) override;
+    void
+    gemv(ScalarMatrix& y, const ScalarMatrix& A, const ScalarMatrix& x,
+         const Scalar& alpha, const Scalar& beta) override;
+    void
+    gemm(ScalarMatrix& C, const ScalarMatrix& A, const ScalarMatrix& B,
+         const Scalar& alpha, const Scalar& beta) override;
+    void gesv(ScalarMatrix& A, ScalarMatrix& B) override;
+    EigenDecomposition syev(ScalarMatrix& A, bool eigenvectors) override;
+    EigenDecomposition gees(ScalarMatrix& A, bool eigenvectors) override;
+    SingularValueDecomposition
+    gesvd(ScalarMatrix& A, bool return_U, bool return_VT) override;
+    SingularValueDecomposition
+    gesdd(ScalarMatrix& A, bool return_U, bool return_VT) override;
+    void gels(ScalarMatrix& A, ScalarMatrix& b) override;
+    ScalarMatrix gelsy(ScalarMatrix& A, ScalarMatrix& b) override;
+    ScalarMatrix gelss(ScalarMatrix& A, ScalarMatrix& b) override;
+    ScalarMatrix gelsd(ScalarMatrix& A, ScalarMatrix& b) override;
 };
 
 }// namespace scalars
