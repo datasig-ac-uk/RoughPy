@@ -19,13 +19,20 @@
 #include <Eigen/Sparse>
 
 namespace
+rpy {
+namespace
 blas {
 
 #ifdef RPY_USE_MKL
 using integer = MKL_INT;
+using complex32 = MKL_Complex8;
+using complex64 = MKL_Complex16;
 #else
 using integer = blasint;
 #endif
+
+
+
 
 using BlasLayout = CBLAS_LAYOUT;
 using BlasTranspose = CBLAS_TRANSPOSE;
@@ -60,4 +67,5 @@ namespace lapack {
 using integer = lapack_int;
 
 
+}
 }

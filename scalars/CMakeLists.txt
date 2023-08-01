@@ -36,6 +36,7 @@ add_roughpy_component(Scalars
         src/double_type.h
         src/RationalType.cpp
         src/RationalType.h
+        src/standard_linalg.h
         src/standard_random_generator.cpp
         src/standard_random_generator.h
         src/scalar_matrix.cpp

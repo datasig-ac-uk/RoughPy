@@ -1,7 +1,7 @@
-// Copyright (c) 2023 Datasig Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 18/04/23.
@@ -40,85 +39,69 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
+// TODO: The definitions here are just to stop crashes. Needs work!
+
 BlasInterface::BlasInterface(const ScalarType* type) : p_type(type) {}
 BlasInterface::~BlasInterface() = default;
+
 std::unique_ptr<BlasInterface> BlasInterface::clone() const
 {
     return std::unique_ptr<BlasInterface>();
 }
 void BlasInterface::transpose(ScalarMatrix& matrix) const {}
-OwnedScalarArray BlasInterface::vector_axpy(const ScalarArray& x,
-                                            const Scalar& a,
-                                            const ScalarArray& y)
+OwnedScalarArray BlasInterface::vector_axpy(
+        const ScalarArray& x, const Scalar& a, const ScalarArray& y
+)
 {
     return OwnedScalarArray();
 }
-Scalar BlasInterface::dot_product(const ScalarArray& lhs,
-                                  const ScalarArray& rhs)
+Scalar
+BlasInterface::dot_product(const ScalarArray& lhs, const ScalarArray& rhs)
 {
     return Scalar();
 }
 Scalar BlasInterface::L1Norm(const ScalarArray& vector) { return Scalar(); }
 Scalar BlasInterface::L2Norm(const ScalarArray& vector) { return Scalar(); }
 Scalar BlasInterface::LInfNorm(const ScalarArray& vector) { return Scalar(); }
-OwnedScalarArray BlasInterface::matrix_vector(const ScalarMatrix& matrix,
-                                              const ScalarArray& vector)
+void BlasInterface::gemv(
+        ScalarMatrix& y, const ScalarMatrix& A, const ScalarMatrix& x,
+        const Scalar& alpha, const Scalar& beta
+)
+{}
+void BlasInterface::gemm(
+        ScalarMatrix& C, const ScalarMatrix& A, const ScalarMatrix& B,
+        const Scalar& alpha, const Scalar& beta
+)
+{}
+void BlasInterface::gesv(ScalarMatrix& A, ScalarMatrix& B) {}
+EigenDecomposition BlasInterface::syev(ScalarMatrix& A, bool eigenvectors)
 {
-    return OwnedScalarArray();
+    return EigenDecomposition();
 }
-ScalarMatrix BlasInterface::matrix_matrix(const ScalarMatrix& lhs,
-                                          const ScalarMatrix& rhs)
+EigenDecomposition BlasInterface::gees(ScalarMatrix& A, bool eigenvectors)
 {
-    return ScalarMatrix(nullptr, 0, 0);
+    return EigenDecomposition();
 }
-ScalarMatrix
-BlasInterface::solve_linear_system(const ScalarMatrix& coeff_matrix,
-                                   const ScalarMatrix& target_matrix)
+SingularValueDecomposition
+BlasInterface::gesvd(ScalarMatrix& A, bool return_U, bool return_VT)
 {
-    return ScalarMatrix(nullptr, 0, 0);
+    return SingularValueDecomposition();
 }
-OwnedScalarArray BlasInterface::lls_qr(const ScalarMatrix& matrix,
-                                       const ScalarArray& target)
+SingularValueDecomposition
+BlasInterface::gesdd(ScalarMatrix& A, bool return_U, bool return_VT)
 {
-    return OwnedScalarArray();
+    return SingularValueDecomposition();
 }
-OwnedScalarArray BlasInterface::lls_orth(const ScalarMatrix& matrix,
-                                         const ScalarArray& target)
+void BlasInterface::gels(ScalarMatrix& A, ScalarMatrix& b) {}
+ScalarMatrix BlasInterface::gelsy(ScalarMatrix& A, ScalarMatrix& b)
 {
-    return OwnedScalarArray();
+    return ScalarMatrix();
 }
-OwnedScalarArray BlasInterface::lls_svd(const ScalarMatrix& matrix,
-                                        const ScalarArray& target)
+ScalarMatrix BlasInterface::gelss(ScalarMatrix& A, ScalarMatrix& b)
 {
-    return OwnedScalarArray();
+    return ScalarMatrix();
 }
-OwnedScalarArray BlasInterface::lls_dcsvd(const ScalarMatrix& matrix,
-                                          const ScalarArray& target)
+ScalarMatrix BlasInterface::gelsd(ScalarMatrix& A, ScalarMatrix& b)
 {
-    return OwnedScalarArray();
-}
-OwnedScalarArray BlasInterface::lse_grq(const ScalarMatrix& A,
-                                        const ScalarMatrix& B,
-                                        const ScalarArray& c,
-                                        const ScalarArray& d)
-{
-    return OwnedScalarArray();
-}
-ScalarMatrix BlasInterface::glm_GQR(const ScalarMatrix& A,
-                                    const ScalarMatrix& B, const ScalarArray& d)
-{
-    return ScalarMatrix(nullptr, 0, 0);
-}
-EigenDecomposition
-BlasInterface::eigen_decomposition(const ScalarMatrix& matrix)
-{
-    return {ScalarMatrix(p_type, 0, 0), ScalarMatrix(p_type, 0, 0)};
-}
-SingularValueDecomposition BlasInterface::svd(const ScalarMatrix& matrix)
-{
-    return {
-            ScalarMatrix(p_type, 0, 0),
-            ScalarMatrix(p_type, 0, 0),
-            ScalarMatrix(p_type, 0, 0),
-    };
+    return ScalarMatrix();
 }
