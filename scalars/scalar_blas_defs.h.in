@@ -25,10 +25,14 @@ blas {
 
 #ifdef RPY_USE_MKL
 using integer = MKL_INT;
+using logical = MKL_INT;
 using complex32 = MKL_Complex8;
 using complex64 = MKL_Complex16;
 #else
 using integer = blasint;
+using logical = blasint;
+using complex32 = struct { float; float; };
+using complex64 = struct { double; double; };
 #endif
 
 
