@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,21 +18,22 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "scalar_blas_defs.h"
 #include <roughpy/scalars/scalars_fwd.h>
 
-#include <roughpy/scalars/scalar_blas.h>
-#include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/owned_scalar_array.h>
 #include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_array.h>
+#include <roughpy/scalars/scalar_blas.h>
+
+#include <sstream>
 
 #define RPY_BLAS_FUNC(NAME) NAME
 #define RPY_LAPACK_FUNC(NAME) NAME
@@ -85,58 +86,6 @@ struct blas_funcs {
          scalar* RPY_RESTRICT C, const integer ldc) noexcept;
 };
 
-template <>
-struct blas_funcs<scalars::float_complex, double> {
-    using scalar = scalars::float_complex;
-    using abs_scalar = float;
-
-    // Level 1 functions
-    inline static void
-    axpy(const integer n, const scalar& alpha, const scalar* RPY_RESTRICT x,
-         const integer incx, scalar* RPY_RESTRICT y,
-         const integer incy) noexcept
-    {}
-
-    inline static scalar
-    dot(const integer n, const scalar* RPY_RESTRICT x, const integer incx,
-        const scalar* RPY_RESTRICT y, const integer incy) noexcept
-    {}
-
-    inline static abs_scalar
-    asum(const integer n, const scalar* RPY_RESTRICT x,
-         const integer incx) noexcept
-    {}
-
-    inline static abs_scalar
-    nrm2(const integer n, const scalar* RPY_RESTRICT x,
-         const integer incx) noexcept
-    {}
-
-    inline static integer
-    iamax(const integer n, const scalar* RPY_RESTRICT x,
-          const integer incx) noexcept
-    {}
-
-    // Level 2
-
-    inline static void
-    gemv(BlasTranspose trans, const integer m, const integer n,
-         const scalar& alpha, const scalar* RPY_RESTRICT A, const integer lda,
-         const scalar* RPY_RESTRICT x, const integer incx, const scalar& beta,
-         scalar* RPY_RESTRICT y, const integer incy) noexcept
-    {}
-
-    // Level 3
-
-    inline static void
-    gemm(BlasTranspose transa, BlasTranspose transb, const integer m,
-         const integer n, const integer k, const scalar& alpha,
-         const scalar* RPY_RESTRICT A, const integer lda,
-         const scalar* RPY_RESTRICT B, const integer ldb, const scalar& beta,
-         scalar* RPY_RESTRICT C, const integer ldc)
-    {}
-};
-
 }// namespace blas
 
 namespace lapack {
@@ -154,70 +103,62 @@ struct lapack_funcs : lapack_func_workspace<S, R> {
     using real_scalar = R;
 
     static inline void
-    gesv(const integer n, const integer nrhs, scalar* RPY_RESTRICT A,
-         const integer lda, integer* RPY_RESTRICT ipiv, scalar* RPY_RESTRICT B,
-         const integer ldb, integer& info) noexcept;
+    handle_illegal_parameter_error(const char* method, integer arg)
+    {
+        std::stringstream ss;
+        ss << "invalid argument " << arg << " in call to " << method;
+        RPY_THROW(std::invalid_argument, ss.str());
+    }
 
-    static inline void
+    inline void
+    gesv(const integer n, const integer nrhs, scalar* A, const integer lda,
+         integer* ipiv, scalar* B, const integer ldb);
+
+    inline void
     syev(const char* jobz, blas::BlasUpLo uplo, const integer n,
-         scalar* RPY_RESTRICT A, const integer lda, real_scalar* RPY_RESTRICT w,
-         scalar* RPY_RESTRICT work, const integer* RPY_RESTRICT lwork,
-         real_scalar* RPY_RESTRICT rwork, integer& info) noexcept;
+         scalar* RPY_RESTRICT A, const integer lda,
+         real_scalar* RPY_RESTRICT w);
 
-    static inline void
+    inline void
     geev(const char* joblv, const char* jobvr, const integer n,
          scalar* RPY_RESTRICT A, const integer lda, scalar* RPY_RESTRICT wr,
          scalar* RPY_RESTRICT RPY_UNUSED_VAR wi, scalar* RPY_RESTRICT vl,
-         const integer ldvl, scalar* RPY_RESTRICT vr, const integer ldvr,
-         scalar* RPY_RESTRICT work, const integer* RPY_RESTRICT lwork,
-         real_scalar* RPY_RESTRICT rwork, integer& info) noexcept;
+         const integer ldvl, scalar* RPY_RESTRICT vr, const integer ldvr);
 
-    static inline void
+    inline void
     gesvd(const char* jobu, const char* jobvt, const integer m, const integer n,
           scalar* RPY_RESTRICT A, const integer lda,
           real_scalar* RPY_RESTRICT s, scalar* RPY_RESTRICT u,
-          const integer ldu, scalar* RPY_RESTRICT vt, const integer ldvt,
-          scalar* RPY_RESTRICT work, const integer* RPY_RESTRICT lwork,
-          real_scalar* RPY_UNUSED_VAR rwork, integer& info) noexcept;
+          const integer ldu, scalar* RPY_RESTRICT vt, const integer ldvt);
 
-    static inline void
+    inline void
     gesdd(const char* jobz, const integer m, const integer n,
           scalar* RPY_RESTRICT A, const integer lda,
           real_scalar* RPY_RESTRICT s, scalar* RPY_RESTRICT u,
-          const integer ldu, scalar* RPY_RESTRICT vt, const integer ldvt,
-          scalar* RPY_RESTRICT work, const integer* RPY_RESTRICT lwork,
-          integer* RPY_RESTRICT iwork, real_scalar* RPY_RESTRICT rwork,
-          integer& info) noexcept;
+          const integer ldu, scalar* RPY_RESTRICT vt, const integer ldvt);
 
-    static inline void
+    inline void
     gels(blas::BlasTranspose trans, const integer m, const integer n,
          const integer nrhs, scalar* RPY_RESTRICT A, const integer lda,
-         scalar* RPY_RESTRICT B, const integer ldb, scalar* RPY_RESTRICT work,
-         const integer* RPY_RESTRICT lwork, integer& info) noexcept;
+         scalar* RPY_RESTRICT B, const integer ldb);
 
-    static inline void
+    inline void
     gelsy(const integer m, const integer n, const integer nrhs,
           scalar* RPY_RESTRICT A, const integer lda, scalar* RPY_RESTRICT B,
           const integer ldb, integer* RPY_RESTRICT jpvt,
-          const real_scalar& rcond, integer& rank, scalar* RPY_RESTRICT work,
-          const integer* RPY_RESTRICT lwork, real_scalar* RPY_RESTRICT rwork,
-          integer& info) noexcept;
+          const real_scalar& rcond, integer& rank);
 
-    static inline void
+    inline void
     gelss(const integer m, const integer n, const integer nrhs,
           scalar* RPY_RESTRICT A, const integer lda, scalar* RPY_RESTRICT B,
           const integer ldb, real_scalar* RPY_RESTRICT s,
-          const real_scalar& rcond, integer& rank, scalar* RPY_RESTRICT work,
-          const integer* RPY_RESTRICT lwork, real_scalar* RPY_RESTRICT rwork,
-          integer& info) noexcept;
+          const real_scalar& rcond, integer& rank);
 
-    static inline void
+    inline void
     gelsd(const integer m, const integer n, const integer nrhs,
           scalar* RPY_RESTRICT A, const integer lda, scalar* RPY_RESTRICT B,
           const integer ldb, real_scalar* RPY_RESTRICT s,
-          const real_scalar& rcond, integer& rank, scalar* RPY_RESTRICT work,
-          const integer* RPY_RESTRICT lwork, real_scalar* RPY_RESTRICT rwork,
-          integer* RPY_RESTRICT iwork, integer& info) noexcept;
+          const real_scalar& rcond, integer& rank);
 };
 
 }// namespace lapack
@@ -231,13 +172,13 @@ class StandardLinearAlgebra : public BlasInterface,
 {
 
     using blas = ::rpy::blas::blas_funcs<S, R>;
-    using lapack  = ::rpy::lapack::lapack_funcs<S, R>;
+    using lapack = ::rpy::lapack::lapack_funcs<S, R>;
 
     using integer = ::rpy::blas::integer;
     using logical = ::rpy::blas::logical;
 
-    using typename blas::scalar;
     using typename blas::abs_scalar;
+    using typename blas::scalar;
     using typename lapack::real_scalar;
 
     using BlasLayout = ::rpy::blas::BlasLayout;
@@ -277,11 +218,11 @@ public:
         type->convert_copy(result, y, y.size());
 
         auto N = static_cast<integer>(y.size());
-        const auto alpha = scalar_cast<float>(a);
+        const auto alpha = scalar_cast<scalar>(a);
 
         blas::axpy(
-                N, alpha, x.raw_cast<const float*>(), 1,
-                result.raw_cast<float*>(), 1
+                N, alpha, x.raw_cast<const scalar*>(), 1,
+                result.raw_cast<scalar*>(), 1
         );
         return result;
     }
@@ -294,7 +235,8 @@ public:
 
         auto N = static_cast<integer>(lhs.size());
         auto result = blas::dot(
-                N, lhs.raw_cast<const float*>(), 1, rhs.raw_cast<const float*>(), 1
+                N, lhs.raw_cast<const scalar*>(), 1,
+                rhs.raw_cast<const scalar*>(), 1
         );
         return {type, result};
     }
@@ -302,7 +244,7 @@ public:
     {
         auto guard = lock();
         auto N = static_cast<integer>(vector.size());
-        auto result = blas::asum(N, vector.raw_cast<const float*>(), 1);
+        auto result = blas::asum(N, vector.raw_cast<const scalar*>(), 1);
         return {type(), result};
     }
     Scalar L2Norm(const ScalarArray& vector) override
@@ -310,14 +252,14 @@ public:
         RPY_CHECK(vector.type() == type());
         float result = 0.0;
         auto N = static_cast<integer>(vector.size());
-        result = blas::nrm2(N, vector.raw_cast<const float*>(), 1);
+        result = blas::nrm2(N, vector.raw_cast<const scalar*>(), 1);
         return {type(), result};
     }
     Scalar LInfNorm(const ScalarArray& vector) override
     {
         RPY_CHECK(vector.type() == type());
         auto N = static_cast<integer>(vector.size());
-        const auto* ptr = vector.raw_cast<const float*>();
+        const auto* ptr = vector.raw_cast<const scalar*>();
         auto idx = blas::iamax(N, ptr, 1);
         auto result = ptr[idx];
         return {type(), result};
@@ -326,12 +268,11 @@ public:
     gemv(ScalarMatrix& y, const ScalarMatrix& A, const ScalarMatrix& x,
          const Scalar& alpha, const Scalar& beta) override
     {
-
         auto guard = lock();
         type_check(A);
         type_check(x);
-        const float alp = scalar_cast<float>(alpha);
-        const float bet = scalar_cast<float>(beta);
+        const auto alp = scalar_cast<scalar>(alpha);
+        const auto bet = scalar_cast<scalar>(beta);
 
         integer m = A.nrows();
         integer n = A.ncols();
@@ -348,28 +289,28 @@ public:
         }
 
         /*
-     * We're assuming that the vectors are stored contiguously so that incx
-     * is simply the number of columns/rows depending on whether it is row
-     * major or column major.
+         * We're assuming that the vectors are stored contiguously so that incx
+         * is simply the number of columns/rows depending on whether it is row
+         * major or column major.
          */
         matrix_product_check(n, incx);
 
         /*
-     * For now, we shall assume that we don't want to transpose the matrix A.
-     * In the future we might want to consider transposing based on whether
-     * the matrix is in row major or column major format.
+         * For now, we shall assume that we don't want to transpose the matrix
+         * A. In the future we might want to consider transposing based on
+         * whether the matrix is in row major or column major format.
          */
         BlasTranspose transa = blas::Blas_NoTrans;
 
         BlasLayout layout = A.layout() == MatrixLayout::RowMajor
-                                  ? blas::Blas_RowMajor
-                                  : blas::Blas_ColMajor;
+                ? blas::Blas_RowMajor
+                : blas::Blas_ColMajor;
 
         integer incy;
         if (y.type() == nullptr || y.is_null()) {
             /*
-         * Type is null, so it hasn't been
-         * initialized yet. Allocate a new empty matrix of the correct size.
+             * Type is null, so it hasn't been
+             * initialized yet. Allocate a new empty matrix of the correct size.
              */
             y = ScalarMatrix(type(), m, n_eqns, MatrixLayout::ColumnMajor);
             incy = m;
@@ -387,45 +328,286 @@ public:
             RPY_CHECK(incy == incx && n_eqs_check == n_eqns);
         }
 
-        cblas_sgemv(
-                layout, transa, m, n, alp, A.raw_cast<const float*>(), lda,
-                x.raw_cast<const float*>(), incx, bet, y.raw_cast<float*>(), incy
+        blas::gemv(
+                layout, transa, m, n, alp, A.raw_cast<const scalar*>(), lda,
+                x.raw_cast<const scalar*>(), incx, bet, y.raw_cast<scalar*>(),
+                incy
         );
     }
     void
     gemm(ScalarMatrix& C, const ScalarMatrix& A, const ScalarMatrix& B,
          const Scalar& alpha, const Scalar& beta) override
     {
+        auto guard = lock();
+        type_check(A);
+        type_check(B);
+        const auto alp = scalar_cast<scalar>(alpha);
+        const auto bet = scalar_cast<scalar>(beta);
+
+        integer m = A.nrows();
+        integer n = B.ncols();
+        integer k = A.ncols();
+
+        const auto lda = A.leading_dimension();
+        const auto ldb = B.leading_dimension();
+        integer ldc;// initialized below
+
+        BlasLayout layout;
+        BlasTranspose transa;
+        BlasTranspose transb;
+
+        /*
+         * If C is initialized, we use C.layout() to determine whether A and B
+         * need to be transposed or not. If C is not initialized, we use
+         * A.layout() to set the layout of C and determine whether we should
+         * transpose B.
+         */
+        if (C.type() == nullptr || C.is_null()) {
+            // Allocate a new result matrix with dimensions m by n
+            C = ScalarMatrix(type(), m, n, A.layout());
+            ldc = C.leading_dimension();
+            layout = blas::to_blas_layout(A.layout());
+            transa = blas::Blas_NoTrans;
+            transb = (B.layout() == A.layout()) ? blas::Blas_NoTrans
+                                                : blas::Blas_Trans;
+        } else {
+            type_check(C);
+            RPY_CHECK(C.nrows() == m && C.ncols() == n);
+
+            ldc = C.leading_dimension();
+            //            layout = to_blas_layout(C.layout());
+
+            transa = (A.layout() == C.layout()) ? blas::Blas_NoTrans
+                                                : blas::Blas_Trans;
+
+            transb = (B.layout() == C.layout()) ? blas::Blas_NoTrans
+                                                : blas::Blas_Trans;
+        }
+
+        blas::gemm(
+                layout, transa, transb, m, n, k, alp,
+                A.raw_cast<const scalar*>(), lda, B.raw_cast<const scalar*>(),
+                ldb, bet, C.raw_cast<scalar*>(), ldc
+        );
     }
     void gesv(ScalarMatrix& A, ScalarMatrix& B) override
     {
+        auto guard = lock();
+        // Solving A*X = B, solution written to B
+        type_check(A);
+        type_check(B);
+
+        integer n = A.nrows();
+        RPY_CHECK(A.ncols() == n);
+        integer nrhs = B.ncols();
+        matrix_product_check(n, B.nrows());
+
+        const auto layout = blas::to_blas_layout(A.layout());
+        const auto lda = A.leading_dimension();
+        const auto ldb = B.leading_dimension();
+        const auto ldx = ldb;// Assuming X and B have the same shape
+
+        lapack::gesv(
+                layout, n, nrhs, A.raw_cast<scalar*>(), B.raw_cast<scalar*>(),
+                lda, ldb
+        );
     }
     EigenDecomposition syev(ScalarMatrix& A, bool eigenvectors) override
     {
+        auto guard = lock();
+        const auto layout = blas::to_blas_layout(A.layout());
+        const char jobz = eigenvectors ? 'V' : 'N';
+        const char range = 'A';
+        const char uplo = 'U';// ?
+
+        const auto n = A.nrows();
+        const auto lda = A.leading_dimension();
+        const scalar* vl = nullptr;
+        const scalar* vu = nullptr;
+        const integer* il = nullptr;
+        const integer* iu = nullptr;
+
+        const float abstol = 0.0;// will be replaced by n*eps*||A||.
+        integer m = 0;
+
+        EigenDecomposition result;
+        result.Lambda = ScalarMatrix(type(), n, 1, MatrixLayout::ColumnMajor);
+
+        integer ldz = 1;
+        scalar* vs = nullptr;
+        if (eigenvectors) {
+            result.U = ScalarMatrix(type(), n, n, A.layout());
+            vs = result.U.raw_cast<scalar*>();
+            ldz = result.U.leading_dimension();
+        }
+
+        std::vector<integer> isuppz(2 * n);
+
+        lapack::syevr(
+                layout, jobz, range, uplo, n, A.raw_cast<scalar*>(), lda, vl,
+                vu, il, iu, abstol, &m, result.Lambda.raw_cast<scalar*>(), vs,
+                ldz, isuppz.data()
+        );
     }
     EigenDecomposition gees(ScalarMatrix& A, bool eigenvectors) override
     {
+        auto guard = lock();
+        type_check(A);
+        RPY_CHECK(!A.is_null());
+        RPY_CHECK(A.ncols() == A.nrows());
+
+        const auto layout = blas::to_blas_layout(A.layout());
+        const auto n = A.nrows();
+        const auto lda = A.leading_dimension();
+
+        const auto jobvs = eigenvectors ? 'V' : 'N';
+        const auto sort = 'N';
+        LAPACK_S_SELECT2 select = nullptr;
+
+        EigenDecomposition result;
+
+        integer sdim = 0;
+        scalar* vs = nullptr;
+        integer ldvs = 1;
+        if (eigenvectors) {
+            result.U = ScalarMatrix(type(), n, n, A.layout());
+            ldvs = n;
+            vs = result.U.raw_cast<scalar*>();
+        }
+
+        /*
+         * The eigenvalues of a real, non-symmetric matrix can be complex, so
+         * write the real/imaginary parts into two temporary buffers.
+         * Afterwards, we can choose whether the result vector has type float or
+         * complex<float> depending on whether any of the eigenvalues are
+         * complex.
+         */
+        std::vector<scalar> ev_real(n);
+        std::vector<scalar> ev_imag(n);
+
+        lapack::gees(
+                layout, jobvs, sort, select, n, A.raw_cast<scalar*>(), lda,
+                &sdim, ev_real.data(), ev_imag.data(), vs, ldvs
+        );
+
+        bool any_complex = std::any_of(
+                ev_imag.begin(), ev_imag.end(),
+                [](const scalar& v) { return v != 0.0f; }
+        );
+
+        if (any_complex) {
+            result.Lambda = ScalarMatrix(type(), n, 1);
+            ////// TODO: Implement complex number stuff
+        } else {
+            result.Lambda = ScalarMatrix(type(), n, 1);
+            std::copy_n(ev_real.begin(), n, result.Lambda.raw_cast<scalar*>());
+        }
+
+        return result;
     }
     SingularValueDecomposition
     gesvd(ScalarMatrix& A, bool return_U, bool return_VT) override
     {
+        auto guard = lock();
+        type_check(A);
+        RPY_CHECK(!A.is_null());
+
+        const auto layout = blas::to_blas_layout(A.layout());
+        const auto m = A.nrows();
+        const auto n = A.ncols();
+        const auto lda = A.leading_dimension();
+
+        integer ldu = 1;
+        integer ldvt = 1;
+        char jobu = 'N';
+        char jobvt = 'N';
+
+        SingularValueDecomposition result;
+        result.Sigma = ScalarMatrix(type(), n, 1, MatrixLayout::ColumnMajor);
+
+        scalar* u = nullptr;
+        scalar* vt = nullptr;
+
+        if (return_U) {
+            jobu = 'A';
+            result.U = ScalarMatrix(type(), m, m);
+            ldu = m;
+            u = result.U.raw_cast<scalar*>();
+        }
+
+        if (return_VT) {
+            jobvt = 'A';
+            result.VHermitian = ScalarMatrix(type(), n, n);
+            ldvt = n;
+            vt = result.VHermitian.raw_cast<scalar*>();
+        }
+
+        //        m_workspace.clear();
+        //        m_workspace.resize(std::min(m, n) - 2);
+
+        auto info = lapack::gesvd(
+                layout, jobu, jobvt, m, n, A.raw_cast<scalar*>(), lda,
+                result.Sigma.raw_cast<scalar*>(), u, ldu, vt, ldvt
+                //                m_workspace.data()
+        );
+
+        // Handle errors that might have happened in LAPACK
+        check_and_report_errors(info);
+
+        return result;
     }
     SingularValueDecomposition
     gesdd(ScalarMatrix& A, bool return_U, bool return_VT) override
     {
+        auto guard = lock();
+        type_check(A);
+        RPY_CHECK(!A.is_null());
+
+        const auto layout = blas::to_blas_layout(A.layout());
+        const auto m = A.nrows();
+        const auto n = A.ncols();
+        const auto lda = A.leading_dimension();
+
+        integer ldu = 1;
+        integer ldvt = 1;
+        char jobz = 'N';
+
+        SingularValueDecomposition result;
+        result.Sigma = ScalarMatrix(type(), n, 1, MatrixLayout::ColumnMajor);
+
+        scalar* u = nullptr;
+        scalar* vt = nullptr;
+
+        /*
+         * Unlike sgesvd, we can either get both U and VT or neither. We
+         * maintain the same interface though, but just populate both if either
+         * are requested.
+         */
+        if (return_U || return_VT) {
+            jobz = 'A';
+            result.U = ScalarMatrix(type(), m, m);
+            ldu = m;
+            u = result.U.raw_cast<scalar*>();
+            result.VHermitian = ScalarMatrix(type(), n, n);
+            ldvt = n;
+            vt = result.VHermitian.raw_cast<scalar*>();
+        }
+
+        integer info = 0;
+        lapack::gesdd(
+                layout, jobz, m, n, A.raw_cast<scalar*>(), lda,
+                result.Sigma.raw_cast<scalar*>(), u, ldu, vt, ldvt, info
+        );
+
+        // Handle errors that might have happened in LAPACK
+        // check_and_report_errors(info);
+
+        return result;
     }
-    void gels(ScalarMatrix& A, ScalarMatrix& b) override
-    {
-    }
-    ScalarMatrix gelsy(ScalarMatrix& A, ScalarMatrix& b) override
-    {
-    }
-    ScalarMatrix gelss(ScalarMatrix& A, ScalarMatrix& b) override
-    {
-    }
-    ScalarMatrix gelsd(ScalarMatrix& A, ScalarMatrix& b) override
-    {
-    }
+    void gels(ScalarMatrix& A, ScalarMatrix& b) override {}
+    ScalarMatrix gelsy(ScalarMatrix& A, ScalarMatrix& b) override {}
+    ScalarMatrix gelss(ScalarMatrix& A, ScalarMatrix& b) override {}
+    ScalarMatrix gelsd(ScalarMatrix& A, ScalarMatrix& b) override {}
 };
 
 }// namespace scalars
@@ -742,486 +924,1066 @@ namespace lapack {
 
 template <>
 struct lapack_func_workspace<float, float> {
-    std::vector<float> m_workspace;
+    std::vector<float> m_work;
     std::vector<integer> m_iwork;
-    std::vector<integer> m_lwork;
-    std::vector<float> m_rwork;
+    integer lwork;
+
+    void reset_workspace() {
+        lwork = -1;
+        m_work.resize(1);
+        m_iwork.resize(1);
+    }
+
+    void resize_workspace(bool iwork=false)
+    {
+        lwork = static_cast<integer>(m_work[0]);
+        m_work.resize(lwork);
+        if (iwork) {
+            m_iwork.resize(m_iwork[0]);
+        }
+    }
 };
 
 template <>
 struct lapack_func_workspace<double, double> {
-    std::vector<double> m_workspace;
+    std::vector<double> m_work;
     std::vector<integer> m_iwork;
-    std::vector<integer> m_lwork;
-    std::vector<double> m_rwork;
+    integer lwork;
+
+    void reset_workspace() {
+        lwork = -1;
+        m_work.resize(1);
+        m_iwork.resize(1);
+    }
+    void resize_workspace(bool iwork=false)
+    {
+        lwork = static_cast<integer>(m_work[0]);
+        m_work.resize(lwork);
+        if (iwork) {
+            m_iwork.resize(m_iwork[0]);
+        }
+    }
 };
 
 template <>
 struct lapack_func_workspace<scalars::float_complex, float> {
-    std::vector<scalars::float_complex> m_workspace;
-    std::vector<integer> m_iwork;
-    std::vector<integer> m_lwork;
+    std::vector<complex32> m_work;
     std::vector<float> m_rwork;
+    std::vector<integer> m_iwork;
+    integer lwork;
+
+    void reset_workspace() {
+        lwork = -1;
+        m_work.resize(1);
+        m_iwork.resize(1);
+        m_rwork.resize(1);
+    }
+
+    void resize_workspace(bool rwork=false, bool iwork=false)
+    {
+        lwork = static_cast<integer>(m_work[0].real);
+        m_work.resize(lwork);
+        if (iwork) {
+            m_iwork.resize(m_iwork[0]);
+        }
+        if (rwork) {
+            m_rwork.resize(static_cast<integer>(m_rwork[0]));
+        }
+    }
 };
 
 template <>
 struct lapack_func_workspace<scalars::double_complex, double> {
-    std::vector<scalars::double_complex> m_workspace;
-    std::vector<integer> m_iwork;
-    std::vector<integer> m_lwork;
+    std::vector<complex64> m_work;
     std::vector<double> m_rwork;
+    std::vector<integer> m_iwork;
+    integer lwork;
+
+    void reset_workspace() {
+        lwork = -1;
+        m_work.resize(1);
+        m_iwork.resize(1);
+        m_rwork.resize(1);
+    }
+
+    void resize_workspace(bool rwork=false, bool iwork=false)
+    {
+        lwork = static_cast<integer>(m_work[0].real);
+        m_work.resize(lwork);
+        if (iwork) {
+            m_iwork.resize(m_iwork[0]);
+        }
+        if (rwork) {
+            m_rwork.resize(static_cast<integer>(m_rwork[0]));
+        }
+    }
 };
 
 template <>
 void lapack_funcs<float, float>::gesv(
         const integer n, const integer nrhs, float* A, const integer lda,
-        integer* ipiv, float* B, const integer ldb, integer& info
-) noexcept
+        integer* ipiv, float* B, const integer ldb
+)
 {
+    integer info = 0;
     RPY_LAPACK_FUNC(sgesv)(&n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gesv", -info);
+    } else if (info > 0) {
+        std::stringstream ss;
+        ss << "component" << info
+           << " on the diagonal of U is zero so the matrix is singular";
+        RPY_THROW(std::runtime_error, ss.str());
+    }
 }
 template <>
 void lapack_funcs<float, float>::syev(
         const char* jobz, blas::BlasUpLo uplo, const integer n, float* A,
-        const integer lda, float* w, float* work, const integer* lwork,
-        float* rwork, integer& info
-) noexcept
+        const integer lda, float* w
+)
 {
+    const auto* uplo_ = reinterpret_cast<const char*>(&uplo);
+    integer info = 0;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(ssyev)
-    (jobz, reinterpret_cast<const char*>(&uplo), &n, A, &lda, w, work, lwork,
-     &info);
+    (jobz, uplo_, &n, A, &lda, w, m_work.data(), &lwork, &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(ssyev)
+    (jobz, uplo_, &n, A, &lda, w, m_work.data(), &lwork, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("syev", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "the eigenvalues failed to converge");
+    }
 }
 template <>
 void lapack_funcs<float, float>::geev(
-        const char* joblv, const char* jobvr, const integer n, float* A,
+        const char* jobvl, const char* jobvr, const integer n, float* A,
         const integer lda, float* wr, float* wi, float* vl, const integer ldvl,
-        float* vr, const integer ldvr, float* work, const integer* lwork,
-        float* rwork, integer& info
-) noexcept
+        float* vr, const integer ldvr
+)
 {
+    integer info = 0;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(sgeev)
-    (joblv, jobvr, &n, A, &lda, wr, wi, vl, &ldvl, vr, &ldvr, work, lwork,
-     &info);
+    (jobvl, jobvr, &n, A, &lda, wr, wi, vl, &ldvl, vr, &ldvr, m_work.data(),
+     &lwork, &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(sgeev)
+    (jobvl, jobvr, &n, A, &lda, wr, wi, vl, &ldvl, vr, &ldvr, m_work.data(),
+     &lwork, &info);
+
+    if (info < 0) {
+        handle_illegal_parameter_error("geev", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "the eigenvalues failed to converge");
+    }
 }
 template <>
 void lapack_funcs<float, float>::gesvd(
         const char* jobu, const char* jobvt, const integer m, const integer n,
         float* A, const integer lda, float* s, float* u, const integer ldu,
-        float* vt, const integer ldvt, float* work, const integer* lwork,
-        float* rwork, integer& info
-) noexcept
+        float* vt, const integer ldvt
+)
 {
+    integer info = 0;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(sgesvd)
-    (jobu, jobvt, &m, &n, A, &lda, s, u, &ldu, vt, &ldvt, work, lwork, &info);
+    (jobu, jobvt, &m, &n, A, &lda, s, u, &ldu, vt, &ldvt, m_work.data(), &lwork,
+     &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(sgesvd)
+    (jobu, jobvt, &m, &n, A, &lda, s, u, &ldu, vt, &ldvt, m_work.data(), &lwork,
+     &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gesvd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "singular values failed to converge");
+    }
 }
 template <>
 void lapack_funcs<float, float>::gesdd(
         const char* jobz, const integer m, const integer n, float* A,
         const integer lda, float* s, float* u, const integer ldu, float* vt,
-        const integer ldvt, float* work, const integer* lwork, integer* iwork,
-        float* rwork, integer& info
-) noexcept
+        const integer ldvt
+)
 {
+    integer info = 0;
+    auto* a = A;
+    auto* u_ = u;
+    auto* vt_ = vt;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(sgesdd)
-    (jobz, &m, &n, A, &lda, s, u, &ldu, vt, &ldvt, work, lwork, iwork, &info);
+    (jobz, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(), &lwork,
+     m_iwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(sgesdd)
+    (jobz, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(), &lwork,
+     m_iwork.data(), &info);
+    if (info == -4) {
+        RPY_THROW(std::invalid_argument, "matrix A contains a NaN value");
+    } else if (info < 0) {
+        handle_illegal_parameter_error("gesdd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "singular values failed to converge");
+    }
 }
 template <>
 void lapack_funcs<float, float>::gels(
         blas::BlasTranspose trans, const integer m, const integer n,
         const integer nrhs, float* A, const integer lda, float* B,
-        const integer ldb, float* work, const integer* lwork, integer& info
-) noexcept
+        const integer ldb
+)
 {
+    integer info = 0;
+    const auto* trans_ = reinterpret_cast<const char*>(&trans);
+    auto* a = A;
+    auto* b = B;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(sgels)
-    (reinterpret_cast<const char*>(trans), &m, &n, &nrhs, A, &lda, B, &ldb,
-     work, lwork, &info);
+    (trans_, &m, &n, &nrhs, a, &lda, b, &ldb, m_work.data(), &lwork, &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(sgels)
+    (trans_, &m, &n, &nrhs, a, &lda, b, &ldb, m_work.data(), &lwork, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gels", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "matrix does not have full rank");
+    }
 }
 template <>
 void lapack_funcs<float, float>::gelsy(
         const integer m, const integer n, const integer nrhs, float* A,
         const integer lda, float* B, const integer ldb, integer* jpvt,
-        const float& rcond, integer& rank, float* work, const integer* lwork,
-        float* rwork, integer& info
-) noexcept
+        const float& rcond, integer& rank
+)
 {
+    integer info = 0;
+    auto* a = A;
+    auto* b = B;
+    auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(sgelsy)
-    (&m, &n, &nrhs, A, &lda, B, &ldb, jpvt, &rcond, &rank, work, lwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, rcond_, &rank, m_work.data(),
+     &lwork, &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(sgelsy)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, rcond_, &rank, m_work.data(),
+     &lwork, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelsy", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "matrix does not have full rank");
+    }
 }
 template <>
 void lapack_funcs<float, float>::gelss(
         const integer m, const integer n, const integer nrhs, float* A,
         const integer lda, float* B, const integer ldb, float* s,
-        const float& rcond, integer& rank, float* work, const integer* lwork,
-        float* rwork, integer& info
-) noexcept
+        const float& rcond, integer& rank
+)
 {
+    integer info = 0;
+    auto* a = A;
+    auto* b = B;
+    const auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(sgelss)
-    (&m, &n, &nrhs, A, &lda, B, &ldb, s, &rcond, &rank, work, lwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(sgelss)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelss", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "algorithm for computing svd failed");
+    }
 }
 template <>
 void lapack_funcs<float, float>::gelsd(
         const integer m, const integer n, const integer nrhs, float* A,
         const integer lda, float* B, const integer ldb, float* s,
-        const float& rcond, integer& rank, float* work, const integer* lwork,
-        float* rwork, integer* iwork, integer& info
-) noexcept
+        const float& rcond, integer& rank
+)
 {
+    integer info = 0;
+
+    auto* a = A;
+    auto* b = B;
+    const auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(sgelsd)
-    (&m, &n, &nrhs, A, &lda, B, &ldb, s, &rcond, &rank, work, lwork, iwork,
-     &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_iwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(sgelsd)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_iwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelsd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "algorithm for computing svd failed");
+    }
 }
 
 template <>
 void lapack_funcs<double, double>::gesv(
         const integer n, const integer nrhs, double* A, const integer lda,
-        integer* ipiv, double* B, const integer ldb, integer& info
-) noexcept
+        integer* ipiv, double* B, const integer ldb
+)
 {
+    integer info = 0;
     RPY_LAPACK_FUNC(dgesv)(&n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gesv", -info);
+    } else if (info > 0) {
+        std::stringstream ss;
+        ss << "component" << info
+           << " on the diagonal of U is zero so the matrix is singular";
+        RPY_THROW(std::runtime_error, ss.str());
+    }
 }
 template <>
 void lapack_funcs<double, double>::syev(
         const char* jobz, blas::BlasUpLo uplo, const integer n, double* A,
-        const integer lda, double* w, double* work, const integer* lwork,
-        double* rwork, integer& info
-) noexcept
+        const integer lda, double* w
+)
 {
+    const auto* uplo_ = reinterpret_cast<const char*>(&uplo);
+    integer info = 0;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(dsyev)
-    (jobz, reinterpret_cast<const char*>(&uplo), &n, A, &lda, w, work, lwork,
-     &info);
+    (jobz, uplo_, &n, A, &lda, w, m_work.data(), &lwork, &info);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(dsyev)
+    (jobz, uplo_, &n, A, &lda, w, m_work.data(), &lwork, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("syev", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "the eigenvalues failed to converge");
+    }
 }
 template <>
 void lapack_funcs<double, double>::geev(
-        const char* joblv, const char* jobvr, const integer n, double* A,
+        const char* jobvl, const char* jobvr, const integer n, double* A,
         const integer lda, double* wr, double* wi, double* vl,
-        const integer ldvl, double* vr, const integer ldvr, double* work,
-        const integer* lwork, double* rwork, integer& info
-) noexcept
+        const integer ldvl, double* vr, const integer ldvr
+)
 {
+    integer info = 0;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(dgeev)
-    (joblv, jobvr, &n, A, &lda, wr, wi, vl, &ldvl, vr, &ldvr, work, lwork,
-     &info);
+    (jobvl, jobvr, &n, A, &lda, wr, wi, vl, &ldvl, vr, &ldvr, m_work.data(),
+     &lwork, &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(dgeev)
+    (jobvl, jobvr, &n, A, &lda, wr, wi, vl, &ldvl, vr, &ldvr, m_work.data(),
+     &lwork, &info);
+
+    if (info < 0) {
+        handle_illegal_parameter_error("geev", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "the eigenvalues failed to converge");
+    }
 }
 template <>
 void lapack_funcs<double, double>::gesvd(
         const char* jobu, const char* jobvt, const integer m, const integer n,
         double* A, const integer lda, double* s, double* u, const integer ldu,
-        double* vt, const integer ldvt, double* work, const integer* lwork,
-        double* rwork, integer& info
-) noexcept
+        double* vt, const integer ldvt
+)
 {
+    integer info = 0;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(dgesvd)
-    (jobu, jobvt, &m, &n, A, &lda, s, u, &ldu, vt, &ldvt, work, lwork, &info);
+    (jobu, jobvt, &m, &n, A, &lda, s, u, &ldu, vt, &ldvt, m_work.data(), &lwork,
+     &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(dgesvd)
+    (jobu, jobvt, &m, &n, A, &lda, s, u, &ldu, vt, &ldvt, m_work.data(), &lwork,
+     &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gesvd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "singular values failed to converge");
+    }
 }
 template <>
 void lapack_funcs<double, double>::gesdd(
         const char* jobz, const integer m, const integer n, double* A,
         const integer lda, double* s, double* u, const integer ldu, double* vt,
-        const integer ldvt, double* work, const integer* lwork, integer* iwork,
-        double* rwork, integer& info
-) noexcept
+        const integer ldvt
+)
 {
+    integer info = 0;
+    auto* a = A;
+    auto* u_ = u;
+    auto* vt_ = vt;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(dgesdd)
-    (jobz, &m, &n, A, &lda, s, u, &ldu, vt, &ldvt, work, lwork, iwork, &info);
+    (jobz, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(), &lwork,
+     m_iwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(dgesdd)
+    (jobz, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(), &lwork,
+     m_iwork.data(), &info);
+    if (info == -4) {
+        RPY_THROW(std::invalid_argument, "matrix A contains a NaN value");
+    } else if (info < 0) {
+        handle_illegal_parameter_error("gesdd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "singular values failed to converge");
+    }
 }
 template <>
 void lapack_funcs<double, double>::gels(
         blas::BlasTranspose trans, const integer m, const integer n,
         const integer nrhs, double* A, const integer lda, double* B,
-        const integer ldb, double* work, const integer* lwork, integer& info
-) noexcept
+        const integer ldb
+)
 {
+    integer info = 0;
+    const auto* trans_ = reinterpret_cast<const char*>(&trans);
+    auto* a = A;
+    auto* b = B;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(dgels)
-    (reinterpret_cast<const char*>(trans), &m, &n, &nrhs, A, &lda, B, &ldb,
-     work, lwork, &info);
+    (trans_, &m, &n, &nrhs, a, &lda, b, &ldb, m_work.data(), &lwork, &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(dgels)
+    (trans_, &m, &n, &nrhs, a, &lda, b, &ldb, m_work.data(), &lwork, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gels", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "matrix does not have full rank");
+    }
 }
 template <>
 void lapack_funcs<double, double>::gelsy(
         const integer m, const integer n, const integer nrhs, double* A,
         const integer lda, double* B, const integer ldb, integer* jpvt,
-        const double& rcond, integer& rank, double* work, const integer* lwork,
-        double* rwork, integer& info
-) noexcept
+        const double& rcond, integer& rank
+)
 {
+    integer info = 0;
+    auto* a = A;
+    auto* b = B;
+    auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(dgelsy)
-    (&m, &n, &nrhs, A, &lda, B, &ldb, jpvt, &rcond, &rank, work, lwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, rcond_, &rank, m_work.data(),
+     &lwork, &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(dgelsy)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, rcond_, &rank, m_work.data(),
+     &lwork, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelsy", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "matrix does not have full rank");
+    }
 }
 template <>
 void lapack_funcs<double, double>::gelss(
         const integer m, const integer n, const integer nrhs, double* A,
         const integer lda, double* B, const integer ldb, double* s,
-        const double& rcond, integer& rank, double* work, const integer* lwork,
-        double* rwork, integer& info
-) noexcept
+        const double& rcond, integer& rank
+)
 {
+    integer info = 0;
+    auto* a = A;
+    auto* b = B;
+    const auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(dgelss)
-    (&m, &n, &nrhs, A, &lda, B, &ldb, s, &rcond, &rank, work, lwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(dgelss)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelss", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "algorithm for computing svd failed");
+    }
 }
 template <>
 void lapack_funcs<double, double>::gelsd(
         const integer m, const integer n, const integer nrhs, double* A,
         const integer lda, double* B, const integer ldb, double* s,
-        const double& rcond, integer& rank, double* work, const integer* lwork,
-        double* rwork, integer* iwork, integer& info
-) noexcept
+        const double& rcond, integer& rank
+)
 {
+    integer info = 0;
+
+    auto* a = A;
+    auto* b = B;
+    const auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(dgelsd)
-    (&m, &n, &nrhs, A, &lda, B, &ldb, s, &rcond, &rank, work, lwork, iwork,
-     &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_iwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(dgelsd)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_iwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelsd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "algorithm for computing svd failed");
+    }
 }
 
 template <>
 void lapack_funcs<scalars::float_complex, float>::gesv(
         const integer n, const integer nrhs, scalars::float_complex* A,
         const integer lda, integer* ipiv, scalars::float_complex* B,
-        const integer ldb, integer& info
-) noexcept
+        const integer ldb
+)
 {
+    integer info = 0;
     RPY_LAPACK_FUNC(cgesv)
     (&n, &nrhs, reinterpret_cast<complex32*>(A), &lda, ipiv,
      reinterpret_cast<complex32*>(B), &ldb, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gesv", -info);
+    } else if (info > 0) {
+        std::stringstream ss;
+        ss << "component" << info
+           << " on the diagonal of U is zero so the matrix is singular";
+        RPY_THROW(std::runtime_error, ss.str());
+    }
 }
 template <>
 void lapack_funcs<scalars::float_complex, float>::syev(
         const char* jobz, blas::BlasUpLo uplo, const integer n,
-        scalars::float_complex* A, const integer lda, float* w,
-        scalars::float_complex* work, const integer* lwork, float* rwork,
-        integer& info
-) noexcept
+        scalars::float_complex* A, const integer lda, float* w
+)
 {
+    const auto* uplo_ = reinterpret_cast<const char*>(&uplo);
+    auto* a = reinterpret_cast<complex32*>(A);
+
+    integer info = 0;
+    reset_workspace();
     RPY_LAPACK_FUNC(cheev)
-    (jobz, reinterpret_cast<const char*>(&uplo), &n,
-     reinterpret_cast<complex32*>(A), &lda, w,
-     reinterpret_cast<complex32*>(work), lwork, rwork, &info);
+    (jobz, uplo_, &n, a, &lda, w, m_work.data(), &lwork, m_rwork.data(), &info);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(cheev)
+    (jobz, uplo_, &n, a, &lda, w, m_work.data(), &lwork, m_rwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("syev", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "the eigenvalues failed to converge");
+    }
 }
 template <>
 void lapack_funcs<scalars::float_complex, float>::geev(
-        const char* joblv, const char* jobvr, const integer n,
+        const char* jobvl, const char* jobvr, const integer n,
         scalars::float_complex* A, const integer lda,
-        scalars::float_complex* wr, scalars::float_complex* wi,
+        scalars::float_complex* wr, scalars::float_complex* RPY_UNUSED_VAR wi,
         scalars::float_complex* vl, const integer ldvl,
-        scalars::float_complex* vr, const integer ldvr,
-        scalars::float_complex* work, const integer* lwork, float* rwork,
-        integer& info
-) noexcept
+        scalars::float_complex* vr, const integer ldvr
+)
 {
+    integer info = 0;
+
+    auto* a = reinterpret_cast<complex32*>(A);
+    auto* w = reinterpret_cast<complex32*>(wr);
+    auto* vl_ = reinterpret_cast<complex32*>(vl);
+    auto* vr_ = reinterpret_cast<complex32*>(vr);
+
+    reset_workspace();
     RPY_LAPACK_FUNC(cgeev)
-    (joblv, jobvr, &n, reinterpret_cast<complex32*>(A), &lda,
-     reinterpret_cast<complex32*>(wr), reinterpret_cast<complex32*>(vl), &ldvl,
-     reinterpret_cast<complex32*>(vr), &ldvr,
-     reinterpret_cast<complex32*>(work), lwork, rwork, &info);
+    (jobvl, jobvr, &n, a, &lda, w, vl_, &ldvl, vr_, &ldvr, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(cgeev)
+    (jobvl, jobvr, &n, a, &lda, w, vl_, &ldvl, vr_, &ldvr, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+
+    if (info < 0) {
+        handle_illegal_parameter_error("geev", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "the eigenvalues failed to converge");
+    }
 }
 template <>
 void lapack_funcs<scalars::float_complex, float>::gesvd(
         const char* jobu, const char* jobvt, const integer m, const integer n,
         scalars::float_complex* A, const integer lda, float* s,
         scalars::float_complex* u, const integer ldu,
-        scalars::float_complex* vt, const integer ldvt,
-        scalars::float_complex* work, const integer* lwork, float* rwork,
-        integer& info
-) noexcept
+        scalars::float_complex* vt, const integer ldvt
+)
 {
+    integer info = 0;
+
+    auto* a = reinterpret_cast<complex32*>(A);
+    auto* u_ = reinterpret_cast<complex32*>(u);
+    auto* vt_ = reinterpret_cast<complex32*>(vt);
+
+    reset_workspace();
     RPY_LAPACK_FUNC(cgesvd)
-    (jobu, jobvt, &m, &n, reinterpret_cast<complex32*>(A), &lda, s,
-     reinterpret_cast<complex32*>(u), &ldu, reinterpret_cast<complex32*>(vt),
-     &ldvt, reinterpret_cast<complex32*>(work), lwork, rwork, &info);
+    (jobu, jobvt, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(cgesvd)
+    (jobu, jobvt, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gesvd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "singular values failed to converge");
+    }
 }
 template <>
 void lapack_funcs<scalars::float_complex, float>::gesdd(
         const char* jobz, const integer m, const integer n,
         scalars::float_complex* A, const integer lda, float* s,
         scalars::float_complex* u, const integer ldu,
-        scalars::float_complex* vt, const integer ldvt,
-        scalars::float_complex* work, const integer* lwork, integer* iwork,
-        float* rwork, integer& info
-) noexcept
+        scalars::float_complex* vt, const integer ldvt
+)
 {
+    integer info = 0;
+    auto* a = reinterpret_cast<complex32*>(A);
+    auto* u_ = reinterpret_cast<complex32*>(u);
+    auto* vt_ = reinterpret_cast<complex32*>(vt);
+
+    reset_workspace();
     RPY_LAPACK_FUNC(cgesdd)
-    (jobz, &m, &n, reinterpret_cast<complex32*>(A), &lda, s,
-     reinterpret_cast<complex32*>(u), &ldu, reinterpret_cast<complex32*>(vt),
-     &ldvt, reinterpret_cast<complex32*>(work), lwork, rwork, iwork, &info);
+    (jobz, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(), &lwork,
+     m_rwork.data(), m_iwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true, true);
+
+
+    RPY_LAPACK_FUNC(cgesdd)
+    (jobz, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(), &lwork,
+     m_rwork.data(), m_iwork.data(), &info);
+    if (info == -4) {
+        RPY_THROW(std::invalid_argument, "matrix A contains a NaN value");
+    } else if (info < 0) {
+        handle_illegal_parameter_error("gesdd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "singular values failed to converge");
+    }
 }
 template <>
 void lapack_funcs<scalars::float_complex, float>::gels(
         blas::BlasTranspose trans, const integer m, const integer n,
         const integer nrhs, scalars::float_complex* A, const integer lda,
-        scalars::float_complex* B, const integer ldb,
-        scalars::float_complex* work, const integer* lwork, integer& info
-) noexcept
+        scalars::float_complex* B, const integer ldb
+)
 {
+    integer info = 0;
+    const auto* trans_ = reinterpret_cast<const char*>(&trans);
+    auto* a = reinterpret_cast<complex32*>(A);
+    auto* b = reinterpret_cast<complex32*>(B);
+
+    reset_workspace();
     RPY_LAPACK_FUNC(cgels)
-    (reinterpret_cast<const char*>(trans), &m, &n, &nrhs,
-     reinterpret_cast<complex32*>(A), &lda, reinterpret_cast<complex32*>(B),
-     &ldb, reinterpret_cast<complex32*>(work), lwork, &info);
+    (trans_, &m, &n, &nrhs, a, &lda, b, &ldb, m_work.data(), &lwork, &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(cgels)
+    (trans_, &m, &n, &nrhs, a, &lda, b, &ldb, m_work.data(), &lwork, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gels", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "matrix does not have full rank");
+    }
 }
 template <>
 void lapack_funcs<scalars::float_complex, float>::gelsy(
         const integer m, const integer n, const integer nrhs,
         scalars::float_complex* A, const integer lda, scalars::float_complex* B,
-        const integer ldb, integer* jpvt, const float& rcond, integer& rank,
-        scalars::float_complex* work, const integer* lwork, float* rwork,
-        integer& info
-) noexcept
+        const integer ldb, integer* jpvt, const float& rcond, integer& rank
+)
 {
+    integer info = 0;
+    auto* a = reinterpret_cast<complex32*>(A);
+    auto* b = reinterpret_cast<complex32*>(B);
+    auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(cgelsy)
-    (&m, &n, &nrhs, reinterpret_cast<complex32*>(A), &lda,
-     reinterpret_cast<complex32*>(B), &ldb, jpvt, &rcond, &rank,
-     reinterpret_cast<complex32*>(work), lwork, rwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, rcond_, &rank, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(cgelsy)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, rcond_, &rank, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelsy", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "matrix does not have full rank");
+    }
 }
 template <>
 void lapack_funcs<scalars::float_complex, float>::gelss(
         const integer m, const integer n, const integer nrhs,
         scalars::float_complex* A, const integer lda, scalars::float_complex* B,
-        const integer ldb, float* s, const float& rcond, integer& rank,
-        scalars::float_complex* work, const integer* lwork, float* rwork,
-        integer& info
-) noexcept
+        const integer ldb, float* s, const float& rcond, integer& rank
+)
 {
+    integer info = 0;
+    auto* a = reinterpret_cast<complex32*>(A);
+    auto* b = reinterpret_cast<complex32*>(B);
+    const auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(cgelss)
-    (&m, &n, &nrhs, reinterpret_cast<complex32*>(A), &lda,
-     reinterpret_cast<complex32*>(B), &ldb, s, &rcond, &rank,
-     reinterpret_cast<complex32*>(work), lwork, rwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_rwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(cgelss)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_rwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelss", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "algorithm for computing svd failed");
+    }
 }
 template <>
 void lapack_funcs<scalars::float_complex, float>::gelsd(
         const integer m, const integer n, const integer nrhs,
         scalars::float_complex* A, const integer lda, scalars::float_complex* B,
-        const integer ldb, float* s, const float& rcond, integer& rank,
-        scalars::float_complex* work, const integer* lwork, float* rwork,
-        integer* iwork, integer& info
-) noexcept
+        const integer ldb, float* s, const float& rcond, integer& rank
+)
 {
+    integer info = 0;
+
+    auto* a = reinterpret_cast<complex32*>(A);
+    auto* b = reinterpret_cast<complex32*>(B);
+    const auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(cgelsd)
-    (&m, &n, &nrhs, reinterpret_cast<complex32*>(A), &lda,
-     reinterpret_cast<complex32*>(B), &ldb, s, &rcond, &rank,
-     reinterpret_cast<complex32*>(work), lwork, rwork, iwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_rwork.data(), m_iwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true, true);
+
+    RPY_LAPACK_FUNC(cgelsd)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_rwork.data(), m_iwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelsd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "algorithm for computing svd failed");
+    }
 }
 
 template <>
 void lapack_funcs<scalars::double_complex, double>::gesv(
         const integer n, const integer nrhs, scalars::double_complex* A,
         const integer lda, integer* ipiv, scalars::double_complex* B,
-        const integer ldb, integer& info
-) noexcept
+        const integer ldb
+)
 {
+    integer info = 0;
     RPY_LAPACK_FUNC(zgesv)
     (&n, &nrhs, reinterpret_cast<complex64*>(A), &lda, ipiv,
      reinterpret_cast<complex64*>(B), &ldb, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gesv", -info);
+    } else if (info > 0) {
+        std::stringstream ss;
+        ss << "component" << info
+           << " on the diagonal of U is zero so the matrix is singular";
+        RPY_THROW(std::runtime_error, ss.str());
+    }
 }
 template <>
 void lapack_funcs<scalars::double_complex, double>::syev(
         const char* jobz, blas::BlasUpLo uplo, const integer n,
-        scalars::double_complex* A, const integer lda, double* w,
-        scalars::double_complex* work, const integer* lwork, double* rwork,
-        integer& info
-) noexcept
+        scalars::double_complex* A, const integer lda, double* w
+)
 {
+    const auto* uplo_ = reinterpret_cast<const char*>(&uplo);
+    auto* a = reinterpret_cast<complex64*>(A);
+
+    integer info = 0;
+    reset_workspace();
     RPY_LAPACK_FUNC(zheev)
-    (jobz, reinterpret_cast<const char*>(&uplo), &n,
-     reinterpret_cast<complex64*>(A), &lda, w,
-     reinterpret_cast<complex64*>(work), lwork, rwork, &info);
+    (jobz, uplo_, &n, a, &lda, w, m_work.data(), &lwork, m_rwork.data(), &info);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(zheev)
+    (jobz, uplo_, &n, a, &lda, w, m_work.data(), &lwork, m_rwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("syev", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "the eigenvalues failed to converge");
+    }
 }
 template <>
 void lapack_funcs<scalars::double_complex, double>::geev(
-        const char* joblv, const char* jobvr, const integer n,
+        const char* jobvl, const char* jobvr, const integer n,
         scalars::double_complex* A, const integer lda,
-        scalars::double_complex* wr, scalars::double_complex* wi,
+        scalars::double_complex* wr, scalars::double_complex* RPY_UNUSED_VAR wi,
         scalars::double_complex* vl, const integer ldvl,
-        scalars::double_complex* vr, const integer ldvr,
-        scalars::double_complex* work, const integer* lwork, double* rwork,
-        integer& info
-) noexcept
+        scalars::double_complex* vr, const integer ldvr
+)
 {
+    integer info = 0;
+
+    auto* a = reinterpret_cast<complex64*>(A);
+    auto* w = reinterpret_cast<complex64*>(wr);
+    auto* vl_ = reinterpret_cast<complex64*>(vl);
+    auto* vr_ = reinterpret_cast<complex64*>(vr);
+
+    reset_workspace();
     RPY_LAPACK_FUNC(zgeev)
-    (joblv, jobvr, &n, reinterpret_cast<complex64*>(A), &lda,
-     reinterpret_cast<complex64*>(wr), reinterpret_cast<complex64*>(vl), &ldvl,
-     reinterpret_cast<complex64*>(vr), &ldvr,
-     reinterpret_cast<complex64*>(work), lwork, rwork, &info);
+    (jobvl, jobvr, &n, a, &lda, w, vl_, &ldvl, vr_, &ldvr, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(zgeev)
+    (jobvl, jobvr, &n, a, &lda, w, vl_, &ldvl, vr_, &ldvr, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+
+    if (info < 0) {
+        handle_illegal_parameter_error("geev", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "the eigenvalues failed to converge");
+    }
 }
 template <>
 void lapack_funcs<scalars::double_complex, double>::gesvd(
         const char* jobu, const char* jobvt, const integer m, const integer n,
         scalars::double_complex* A, const integer lda, double* s,
         scalars::double_complex* u, const integer ldu,
-        scalars::double_complex* vt, const integer ldvt,
-        scalars::double_complex* work, const integer* lwork, double* rwork,
-        integer& info
-) noexcept
+        scalars::double_complex* vt, const integer ldvt
+)
 {
+    integer info = 0;
+
+    auto* a = reinterpret_cast<complex64*>(A);
+    auto* u_ = reinterpret_cast<complex64*>(u);
+    auto* vt_ = reinterpret_cast<complex64*>(vt);
+
+    reset_workspace();
     RPY_LAPACK_FUNC(zgesvd)
-    (jobu, jobvt, &m, &n, reinterpret_cast<complex64*>(A), &lda, s,
-     reinterpret_cast<complex64*>(u), &ldu, reinterpret_cast<complex64*>(vt),
-     &ldvt, reinterpret_cast<complex64*>(work), lwork, rwork, &info);
+    (jobu, jobvt, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(zgesvd)
+    (jobu, jobvt, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gesvd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "singular values failed to converge");
+    }
 }
 template <>
 void lapack_funcs<scalars::double_complex, double>::gesdd(
         const char* jobz, const integer m, const integer n,
         scalars::double_complex* A, const integer lda, double* s,
         scalars::double_complex* u, const integer ldu,
-        scalars::double_complex* vt, const integer ldvt,
-        scalars::double_complex* work, const integer* lwork, integer* iwork,
-        double* rwork, integer& info
-) noexcept
+        scalars::double_complex* vt, const integer ldvt
+)
 {
+    integer info = 0;
+    auto* a = reinterpret_cast<complex64*>(A);
+    auto* u_ = reinterpret_cast<complex64*>(u);
+    auto* vt_ = reinterpret_cast<complex64*>(vt);
+
+    reset_workspace();
     RPY_LAPACK_FUNC(zgesdd)
-    (jobz, &m, &n, reinterpret_cast<complex64*>(A), &lda, s,
-     reinterpret_cast<complex64*>(u), &ldu, reinterpret_cast<complex64*>(vt),
-     &ldvt, reinterpret_cast<complex64*>(work), lwork, rwork, iwork, &info);
+    (jobz, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(), &lwork,
+     m_rwork.data(), m_iwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true, true);
+
+    RPY_LAPACK_FUNC(zgesdd)
+    (jobz, &m, &n, a, &lda, s, u_, &ldu, vt_, &ldvt, m_work.data(), &lwork,
+     m_rwork.data(), m_iwork.data(), &info);
+    if (info == -4) {
+        RPY_THROW(std::invalid_argument, "matrix A contains a NaN value");
+    } else if (info < 0) {
+        handle_illegal_parameter_error("gesdd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "singular values failed to converge");
+    }
 }
 template <>
 void lapack_funcs<scalars::double_complex, double>::gels(
         blas::BlasTranspose trans, const integer m, const integer n,
         const integer nrhs, scalars::double_complex* A, const integer lda,
-        scalars::double_complex* B, const integer ldb,
-        scalars::double_complex* work, const integer* lwork, integer& info
-) noexcept
+        scalars::double_complex* B, const integer ldb
+)
 {
+    integer info = 0;
+    const auto* trans_ = reinterpret_cast<const char*>(&trans);
+    auto* a = reinterpret_cast<complex64*>(A);
+    auto* b = reinterpret_cast<complex64*>(B);
+
+    reset_workspace();
     RPY_LAPACK_FUNC(zgels)
-    (reinterpret_cast<const char*>(trans), &m, &n, &nrhs,
-     reinterpret_cast<complex64*>(A), &lda, reinterpret_cast<complex64*>(B),
-     &ldb, reinterpret_cast<complex64*>(work), lwork, &info);
+    (trans_, &m, &n, &nrhs, a, &lda, b, &ldb, m_work.data(), &lwork, &info);
+    RPY_CHECK(info == 0);
+    resize_workspace();
+
+    RPY_LAPACK_FUNC(zgels)
+    (trans_, &m, &n, &nrhs, a, &lda, b, &ldb, m_work.data(), &lwork, &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gels", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "matrix does not have full rank");
+    }
 }
 template <>
 void lapack_funcs<scalars::double_complex, double>::gelsy(
         const integer m, const integer n, const integer nrhs,
         scalars::double_complex* A, const integer lda,
         scalars::double_complex* B, const integer ldb, integer* jpvt,
-        const double& rcond, integer& rank, scalars::double_complex* work,
-        const integer* lwork, double* rwork, integer& info
-) noexcept
+        const double& rcond, integer& rank
+)
 {
+    integer info = 0;
+    auto* a = reinterpret_cast<complex64*>(A);
+    auto* b = reinterpret_cast<complex64*>(B);
+    auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(zgelsy)
-    (&m, &n, &nrhs, reinterpret_cast<complex64*>(A), &lda,
-     reinterpret_cast<complex64*>(B), &ldb, jpvt, &rcond, &rank,
-     reinterpret_cast<complex64*>(work), lwork, rwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, rcond_, &rank, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(zgelsy)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, rcond_, &rank, m_work.data(),
+     &lwork, m_rwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelsy", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "matrix does not have full rank");
+    }
 }
 template <>
 void lapack_funcs<scalars::double_complex, double>::gelss(
         const integer m, const integer n, const integer nrhs,
         scalars::double_complex* A, const integer lda,
         scalars::double_complex* B, const integer ldb, double* s,
-        const double& rcond, integer& rank, scalars::double_complex* work,
-        const integer* lwork, double* rwork, integer& info
-) noexcept
+        const double& rcond, integer& rank
+)
 {
+    integer info = 0;
+    auto* a = reinterpret_cast<complex64*>(A);
+    auto* b = reinterpret_cast<complex64*>(B);
+    const auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(zgelss)
-    (&m, &n, &nrhs, reinterpret_cast<complex64*>(A), &lda,
-     reinterpret_cast<complex64*>(B), &ldb, s, &rcond, &rank,
-     reinterpret_cast<complex64*>(work), lwork, rwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_rwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true);
+
+    RPY_LAPACK_FUNC(zgelss)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_rwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelss", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "algorithm for computing svd failed");
+    }
 }
 template <>
 void lapack_funcs<scalars::double_complex, double>::gelsd(
         const integer m, const integer n, const integer nrhs,
         scalars::double_complex* A, const integer lda,
         scalars::double_complex* B, const integer ldb, double* s,
-        const double& rcond, integer& rank, scalars::double_complex* work,
-        const integer* lwork, double* rwork, integer* iwork, integer& info
-) noexcept
+        const double& rcond, integer& rank
+)
 {
+    integer info = 0;
+
+    auto* a = reinterpret_cast<complex64*>(A);
+    auto* b = reinterpret_cast<complex64*>(B);
+    const auto* rcond_ = &rcond;
+
+    reset_workspace();
     RPY_LAPACK_FUNC(zgelsd)
-    (&m, &n, &nrhs, reinterpret_cast<complex64*>(A), &lda,
-     reinterpret_cast<complex64*>(B), &ldb, s, &rcond, &rank,
-     reinterpret_cast<complex64*>(work), lwork, rwork, iwork, &info);
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_rwork.data(), m_iwork.data(), &info);
+    RPY_CHECK(info == 0);
+    resize_workspace(true, true);
+
+    RPY_LAPACK_FUNC(zgelsd)
+    (&m, &n, &nrhs, a, &lda, b, &ldb, s, rcond_, &rank, m_work.data(), &lwork,
+     m_rwork.data(), m_iwork.data(), &info);
+    if (info < 0) {
+        handle_illegal_parameter_error("gelsd", -info);
+    } else if (info > 0) {
+        RPY_THROW(std::runtime_error, "algorithm for computing svd failed");
+    }
 }
 
 }// namespace lapack
