@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
@@ -53,18 +52,24 @@ template <typename T>
 inline const string& type_id_of() noexcept;
 
 struct RingCharacteristics {
-    unsigned is_field : 1;
-    unsigned is_ordered : 1;
-    unsigned has_sqrt : 1;
+    bool is_field           : 1;
+    bool is_ordered         : 1;
+    bool has_sqrt           : 1;
+    bool is_complex         : 1;
+    unsigned int            : 28;
 };
 
 class RPY_EXPORT ScalarType
 {
     ScalarTypeInfo m_info;
-    RingCharacteristics m_characteristics RPY_UNUSED_VAR;
+    RingCharacteristics m_characteristics;
 
 protected:
-    explicit ScalarType(ScalarTypeInfo info) : m_info(std::move(info)) {}
+    /**
+     * @brief Constructor for Scalar types, must be called by derived types
+     * @param info Scalar type info
+     */
+    explicit ScalarType(ScalarTypeInfo info);
 
 public:
     template <typename T>
@@ -117,6 +122,11 @@ public:
     RPY_NO_DISCARD const ScalarTypeInfo& info() const noexcept
     {
         return m_info;
+    }
+
+    RPY_NO_DISCARD const RingCharacteristics& characteristics() const noexcept
+    {
+        return m_characteristics;
     }
 
     /**
@@ -382,6 +392,22 @@ inline bool operator!=(const ScalarType& lhs, const ScalarType& rhs) noexcept
 
 namespace dtl {
 
+template <typename T>
+struct type_id_of_impl {
+    static const string& get_id() {
+        /*
+         * The fallback implementation gets the type id by looking for the
+         * type and querying for the id. This should not fail unless no type
+         * is associated with T, since all the cases where ScalarType::of<T>
+         * () is allowed to be nullptr are integer types, which are
+         * overloaded below.
+         */
+        const auto* type = ScalarType::of<T>();
+        RPY_CHECK(type != nullptr);
+        return type->id();
+    }
+};
+
 #define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                    \
     template <>                                                                \
     struct RPY_EXPORT type_id_of_impl<TYPE> {                                  \
@@ -428,6 +454,7 @@ struct type_id_of_impl<long>
               (sizeof(long) == sizeof(int)), type_id_of_impl<int>,
               type_id_of_impl<long long>> {
 };
+
 
 #undef ROUGHPY_MAKE_TYPE_ID_OF
 

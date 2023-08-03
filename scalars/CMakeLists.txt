@@ -38,6 +38,14 @@ add_roughpy_component(Scalars
         src/key_scalar_array.cpp
         src/scalar_stream.cpp
         src/standard_scalar_type.h
+        src/standard_linalg.h
+        src/standard_random_generator.cpp
+        src/standard_random_generator.h
+        src/scalar_matrix.cpp
+        src/scalar_blas.cpp
+        src/random_impl.cpp
+        src/random_impl.h
+        src/scalar_blas_impl.h
         src/scalar_implementations/half/half_type.h
         src/scalar_implementations/half/half_type.cpp
         src/scalar_implementations/float/float_type.cpp
@@ -46,22 +54,14 @@ add_roughpy_component(Scalars
         src/scalar_implementations/double/double_type.h
         src/scalar_implementations/rational/RationalType.cpp
         src/scalar_implementations/rational/RationalType.h
-        src/standard_linalg.h
-        src/standard_random_generator.cpp
-        src/standard_random_generator.h
-        src/scalar_matrix.cpp
-        src/scalar_blas.cpp
         src/scalar_implementations/float/float_blas.cpp
         src/scalar_implementations/float/float_blas.h
-        src/scalar_blas_impl.h
         src/scalar_implementations/half/half_random_generator.cpp
         src/scalar_implementations/half/half_random_generator.h
         src/scalar_implementations/bfloat16/b_float_16_type.cpp
         src/scalar_implementations/bfloat16/b_float_16_type.h
         src/scalar_implementations/bfloat16/bfloat16_random_generator.cpp
         src/scalar_implementations/bfloat16/bfloat16_random_generator.h
-        src/random_impl.cpp
-        src/random_impl.h
         src/scalar_implementations/rational_poly/rational_poly_scalar_type.cpp
         src/scalar_implementations/rational_poly/rational_poly_scalar_type.h
         src/scalar_implementations/double/double_lin_alg.cpp
