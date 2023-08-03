@@ -1,3 +1,6 @@
+#ifndef ROUGHPY_SCALARS_SCALAR_BLAS_DEFS
+#define ROUGHPY_SCALARS_SCALAR_BLAS_DEFS
+
 
 #cmakedefine RPY_USE_MKL
 
@@ -64,7 +67,8 @@ constexpr auto Blas_Left = BlasSide::CblasLeft;
 constexpr auto Blas_Right = BlasSide::CblasRight;
 
 constexpr BlasLayout to_blas_layout(rpy::scalars::MatrixLayout layout) noexcept {
-return layout == rpy::scalars::MatrixLayout::CStype ? Blas_RowMajor : Blas_ColMajor;
+return layout == rpy::scalars::MatrixLayout::RowMajor ? Blas_RowMajor :
+Blas_ColMajor;
 }
 
 }
@@ -77,3 +81,6 @@ using integer = lapack_int;
 
 }
 }
+
+
+#endif // ROUGHPY_SCALARS_SCALAR_BLAS_DEFS

@@ -31,15 +31,15 @@
 #include "blas.h"
 
 #define RPY_BLA_SPRX z
-#undef RPY_BLA_SUFF
-#define RPY_BLA_SUFF u
+#define RPY_BLA_RPRX d
+
 
 using rpy::blas::complex64;
 
-static constexpr complex64
+static constexpr const void*
 convert_scalar(const rpy::scalars::double_complex& arg)
 {
-    return {arg.real(), arg.imag()};
+    return &arg;
 }
 namespace rpy {
 namespace scalars {
@@ -63,10 +63,14 @@ blas_funcs<double_complex, double>::dot(
         const integer incy
 ) noexcept
 {
-    return RPY_BLA_CALL(
-            dotc, RPY_BLA_INT_ARG(n), RPY_BLA_CPT_ARG(x), RPY_BLA_INT_ARG(incx),
-            RPY_BLA_CPT_ARG(y), RPY_BLA_INT_ARG(incy)
+    scalar result;
+    RPY_BLA_CALL(
+            dotc_sub, RPY_BLA_INT_ARG(n), RPY_BLA_CPT_ARG(x), RPY_BLA_INT_ARG
+            (incx),
+            RPY_BLA_CPT_ARG(y), RPY_BLA_INT_ARG(incy),
+            &result
     );
+    return result;
 }
 template <>
 typename blas_funcs<double_complex, double>::abs_scalar
@@ -74,8 +78,10 @@ blas_funcs<double_complex, double>::asum(
         const integer n, const scalar* x, const integer incx
 ) noexcept
 {
-    return RPY_BLA_CALL(
-            asum, RPY_BLA_INT_ARG(n), RPY_BLA_CPT_ARG(x), RPY_BLA_INT_ARG(incx)
+    return RPY_BLA_CALL_(
+            RPY_BLAS_FUNC_(RPY_JOIN(RPY_JOIN(RPY_BLA_RPRX, RPY_BLA_SPRX), asum)
+            ),
+            RPY_BLA_INT_ARG(n), RPY_BLA_CPT_ARG(x), RPY_BLA_INT_ARG(incx)
     );
 }
 template <>
@@ -84,8 +90,10 @@ blas_funcs<double_complex, double>::nrm2(
         const integer n, const scalar* x, const integer incx
 ) noexcept
 {
-    return RPY_BLA_CALL(
-            nrm2, RPY_BLA_INT_ARG(n), RPY_BLA_CPT_ARG(x), RPY_BLA_INT_ARG(incx)
+    return RPY_BLA_CALL_(
+            RPY_BLAS_FUNC_(RPY_JOIN(RPY_JOIN(RPY_BLA_RPRX, RPY_BLA_SPRX), nrm2)
+            ),
+            RPY_BLA_INT_ARG(n), RPY_BLA_CPT_ARG(x), RPY_BLA_INT_ARG(incx)
     );
 }
 template <>

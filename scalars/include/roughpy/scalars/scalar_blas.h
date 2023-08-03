@@ -106,7 +106,7 @@ public:
      * @param alpha
      * @param beta
      */
-    RPY_NO_DISCARD virtual void
+    virtual void
     gemv(ScalarMatrix& y, const ScalarMatrix& A, const ScalarMatrix& x,
          const Scalar& alpha, const Scalar& beta);
     // Level 3
@@ -119,7 +119,7 @@ public:
      * @param alpha
      * @param beta
      */
-    RPY_NO_DISCARD virtual void
+    virtual void
     gemm(ScalarMatrix& C, const ScalarMatrix& A, const ScalarMatrix& B,
          const Scalar& alpha, const Scalar& beta);
 
@@ -130,7 +130,7 @@ public:
      * @param A Matrix of coefficients
      * @param B Target vector(s)
      */
-    RPY_NO_DISCARD virtual void gesv(ScalarMatrix& A, ScalarMatrix& B);
+    virtual void gesv(ScalarMatrix& A, ScalarMatrix& B);
 
     //    RPY_NO_DISCARD virtual QRFactorization geqrf(const ScalarMatrix&
     //    matrix); RPY_NO_DISCARD virtual QRFactorization geqpf(const
@@ -188,7 +188,7 @@ public:
      * @param x
      * @return
      */
-    RPY_NO_DISCARD virtual void gels(ScalarMatrix& A, ScalarMatrix& b);
+    virtual void gels(ScalarMatrix& A, ScalarMatrix& b);
 
     /**
      * @brief Compute the least squares solution to A*x=B by minimizing

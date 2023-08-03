@@ -85,6 +85,12 @@ struct blas_funcs {
     using abs_scalar = R;
     using bla_scalar = BlasScalar<S>;
 
+    constexpr BlasLayout to_blas_layout(MatrixLayout layout) {
+        return layout == rpy::scalars::MatrixLayout::RowMajor
+                ? BlasLayout::CblasRowMajor
+                : BlasLayout::CblasColMajor;
+    }
+
     // Level 1 functions
     static void
     axpy(const integer n, const scalar& alpha, const scalar* RPY_RESTRICT x,

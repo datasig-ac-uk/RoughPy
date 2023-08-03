@@ -17,7 +17,15 @@ configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
 add_roughpy_component(Scalars
         SOURCES
         src/linear_algebra/blas.h
+        src/linear_algebra/blas_complex_double.cpp
+        src/linear_algebra/blas_complex_float.cpp
+        src/linear_algebra/blas_double.cpp
+        src/linear_algebra/blas_float.cpp
         src/linear_algebra/lapack.h
+        src/linear_algebra/lapack_complex_double.cpp
+        src/linear_algebra/lapack_complex_float.cpp
+        src/linear_algebra/lapack_double.cpp
+        src/linear_algebra/lapack_float.cpp
         src/scalar_type.cpp
         src/scalar_pointer.cpp
         src/scalar_interface.cpp

@@ -66,6 +66,9 @@ class StandardLinearAlgebra : public BlasInterface,
     using BlasSide = ::rpy::blas::BlasSide;
 
 public:
+
+    using BlasInterface::BlasInterface;
+
     void transpose(ScalarMatrix& matrix) const override
     {
         BlasInterface::transpose(matrix);
@@ -163,11 +166,7 @@ public:
          * A. In the future we might want to consider transposing based on
          * whether the matrix is in row major or column major format.
          */
-        BlasTranspose transa = blas::Blas_NoTrans;
-
-        BlasLayout layout = A.layout() == MatrixLayout::RowMajor
-                ? blas::Blas_RowMajor
-                : blas::Blas_ColMajor;
+        BlasTranspose transa = BlasTranspose::CblasNoTrans;
 
         integer incy;
         if (y.type() == nullptr || y.is_null()) {
@@ -192,9 +191,9 @@ public:
         }
 
         blas::gemv(
-                layout, transa, m, n, alp, A.raw_cast<const scalar*>(), lda,
-                x.raw_cast<const scalar*>(), incx, bet, y.raw_cast<scalar*>(),
-                incy
+                blas::to_blas_layout(A.layout()), transa, m, n, alp,
+                A.raw_cast<const scalar*>(), lda, x.raw_cast<const scalar*>(),
+                incx, bet, y.raw_cast<scalar*>(), incy
         );
     }
     void
@@ -230,9 +229,9 @@ public:
             C = ScalarMatrix(type(), m, n, A.layout());
             ldc = C.leading_dimension();
             layout = blas::to_blas_layout(A.layout());
-            transa = blas::Blas_NoTrans;
-            transb = (B.layout() == A.layout()) ? blas::Blas_NoTrans
-                                                : blas::Blas_Trans;
+            transa = BlasTranspose::CblasNoTrans;
+            transb = (B.layout() == A.layout()) ? BlasTranspose::CblasNoTrans
+                                                : BlasTranspose::CblasTrans;
         } else {
             type_check(C);
             RPY_CHECK(C.nrows() == m && C.ncols() == n);
@@ -240,11 +239,11 @@ public:
             ldc = C.leading_dimension();
             //            layout = to_blas_layout(C.layout());
 
-            transa = (A.layout() == C.layout()) ? blas::Blas_NoTrans
-                                                : blas::Blas_Trans;
+            transa = (A.layout() == C.layout()) ? BlasTranspose::CblasNoTrans
+                                                : BlasTranspose::CblasTrans;
 
-            transb = (B.layout() == C.layout()) ? blas::Blas_NoTrans
-                                                : blas::Blas_Trans;
+            transb = (B.layout() == C.layout()) ? BlasTranspose::CblasNoTrans
+                                                : BlasTranspose::CblasTrans;
         }
 
         blas::gemm(
@@ -271,6 +270,7 @@ public:
         std::vector<integer> ipiv(n);
 
         lapack::gesv(
+                blas::to_blas_layout(A.layout()),
                 n, nrhs, A.raw_cast<scalar*>(), lda, ipiv.data(),
                 B.raw_cast<scalar*>(), ldb
         );
@@ -279,7 +279,7 @@ public:
     {
         auto guard = lock();
         const char jobz = eigenvectors ? 'V' : 'N';
-        const char uplo = 'U';// ?
+        auto uplo = BlasUpLo::CblasUpper;
 
         const auto n = A.nrows();
         const auto lda = A.leading_dimension();
@@ -296,7 +296,8 @@ public:
         //        }
 
         lapack::syev(
-                jobz, uplo, n, A.raw_cast<scalar*>(), lda,
+                blas::to_blas_layout(A.layout()),
+                &jobz, uplo, n, A.raw_cast<scalar*>(), lda,
                 result.Lambda.raw_cast<scalar*>()
         );
         if (eigenvectors) { result.U = A; }
@@ -313,8 +314,8 @@ public:
         const auto n = A.nrows();
         const auto lda = A.leading_dimension();
 
-        const auto jobvs = eigenvectors ? 'V' : 'N';
-        const auto sort = 'N';
+        const auto jobvl = eigenvectors ? 'V' : 'N';
+        const auto jobvr = 'N';
         LAPACK_S_SELECT2 select = nullptr;
 
         EigenDecomposition result;
@@ -340,7 +341,8 @@ public:
         std::vector<scalar> vr;
 
         lapack::geev(
-                jobvs, 'N', n, A.raw_cast<scalar*>(), lda, &sdim,
+                blas::to_blas_layout(A.layout()),
+                &jobvl, &jobvr, n, A.raw_cast<scalar*>(), lda,
                 ev_real.data(), ev_imag.data(), vl.data(), ldvl, nullptr, ldvr
         );
 
@@ -415,7 +417,8 @@ public:
         }
 
         lapack::gesvd(
-                jobu, jobvt, m, n, A.raw_cast<scalar*>(), lda,
+                blas::to_blas_layout(A.layout()),
+                &jobu, &jobvt, m, n, A.raw_cast<scalar*>(), lda,
                 result.Sigma.raw_cast<scalar*>(), u, ldu, vt, ldvt
         );
 
@@ -459,7 +462,8 @@ public:
         }
 
         lapack::gesdd(
-                jobz, m, n, A.raw_cast<scalar*>(), lda,
+                blas::to_blas_layout(A.layout()),
+                &jobz, m, n, A.raw_cast<scalar*>(), lda,
                 result.Sigma.raw_cast<scalar*>(), u, ldu, vt, ldvt
         );
 
@@ -493,6 +497,7 @@ public:
         }
 
         lapack::gels(
+                blas::to_blas_layout(A.layout()),
                 trans, m, n, nrhs, A.raw_cast<scalar*>(), lda,
                 b.raw_cast<scalar*>(), ldb
         );
@@ -559,8 +564,7 @@ StandardLinearAlgebra<S, R>::gelss(ScalarMatrix& A, ScalarMatrix& b)
     scalar rcond = 0;
     integer rank = 0;
 
-    lapack::gelss(A.layout(), m, n, )
-
+    //    lapack::gelss(A.layout(), m, n, )
 }
 template <typename S, typename R>
 ScalarMatrix

@@ -32,47 +32,19 @@
 #ifndef ROUGHPY_SCALARS_SRC_FLOAT_BLAS_H
 #define ROUGHPY_SCALARS_SRC_FLOAT_BLAS_H
 
-#include <roughpy/scalars/scalar_blas.h>
+#include "standard_linalg.h"
 
 namespace rpy {
 namespace scalars {
 
-class FloatBlas : public BlasInterface
+extern template class StandardLinearAlgebra<float, float>;
+
+class FloatBlas : public StandardLinearAlgebra<float, float>
 {
-    float m_tolerance = std::numeric_limits<float>::epsilon();
-    std::vector<float> m_workspace;
-
-    void check_and_report_errors(matrix_dim_t info) const;
-
 public:
-    explicit FloatBlas(const ScalarType* ctype) : BlasInterface(ctype) {}
-    void transpose(ScalarMatrix& matrix) const override;
-    OwnedScalarArray vector_axpy(
-            const ScalarArray& x, const Scalar& a, const ScalarArray& y
-    ) override;
-    Scalar dot_product(const ScalarArray& lhs, const ScalarArray& rhs) override;
-    Scalar L1Norm(const ScalarArray& vector) override;
-    Scalar L2Norm(const ScalarArray& vector) override;
-    Scalar LInfNorm(const ScalarArray& vector) override;
-
-    void
-    gemv(ScalarMatrix& y, const ScalarMatrix& A, const ScalarMatrix& x,
-         const Scalar& alpha, const Scalar& beta) override;
-    void
-    gemm(ScalarMatrix& C, const ScalarMatrix& A, const ScalarMatrix& B,
-         const Scalar& alpha, const Scalar& beta) override;
-    void gesv(ScalarMatrix& A, ScalarMatrix& B) override;
-    EigenDecomposition syev(ScalarMatrix& A, bool eigenvectors) override;
-    EigenDecomposition geev(ScalarMatrix& A, bool eigenvectors) override;
-    SingularValueDecomposition
-    gesvd(ScalarMatrix& A, bool return_U, bool return_VT) override;
-    SingularValueDecomposition
-    gesdd(ScalarMatrix& A, bool return_U, bool return_VT) override;
-    void gels(ScalarMatrix& A, ScalarMatrix& b) override;
-    ScalarMatrix gelsy(ScalarMatrix& A, ScalarMatrix& b) override;
-    ScalarMatrix gelss(ScalarMatrix& A, ScalarMatrix& b) override;
-    ScalarMatrix gelsd(ScalarMatrix& A, ScalarMatrix& b) override;
+    using StandardLinearAlgebra<float, float>::StandardLinearAlgebra;
 };
+
 
 }// namespace scalars
 }// namespace rpy
