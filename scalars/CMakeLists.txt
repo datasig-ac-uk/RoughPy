@@ -66,6 +66,10 @@ add_roughpy_component(Scalars
         src/scalar_implementations/rational_poly/rational_poly_scalar_type.h
         src/scalar_implementations/double/double_lin_alg.cpp
         src/scalar_implementations/double/double_lin_alg.h
+        #src/scalar_implementations/complex_double/complex_double_type.cpp
+        #src/scalar_implementations/complex_double/complex_double_type.h
+        #src/scalar_implementations/complex_float/complex_float_type.cpp
+        #src/scalar_implementations/complex_float/complex_float_type.h
         ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
         PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
