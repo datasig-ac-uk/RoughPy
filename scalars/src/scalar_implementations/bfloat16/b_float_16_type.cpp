@@ -26,27 +26,21 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 17/04/23.
+// Created by user on 26/04/23.
 //
 
-#ifndef ROUGHPY_SCALARS_SRC_FLOAT_BLAS_H
-#define ROUGHPY_SCALARS_SRC_FLOAT_BLAS_H
+#include "b_float_16_type.h"
 
-#include "standard_linalg.h"
+#include <string>
+#include <utility>
 
-namespace rpy {
-namespace scalars {
+using namespace rpy;
+using namespace rpy::scalars;
 
-extern template class StandardLinearAlgebra<float, float>;
-
-class FloatBlas : public StandardLinearAlgebra<float, float>
-{
-public:
-    using StandardLinearAlgebra<float, float>::StandardLinearAlgebra;
-};
-
-
-}// namespace scalars
-}// namespace rpy
-
-#endif// ROUGHPY_SCALARS_SRC_FLOAT_BLAS_H
+BFloat16Type::BFloat16Type()
+    : StandardScalarType<bfloat16>(
+            string("BFloat16"), string("bf16"), sizeof(bfloat16),
+            alignof(bfloat16),
+            {ScalarTypeCode::BFloat, sizeof(bfloat16) * CHAR_BIT, 1U},
+            {ScalarDeviceType::CPU, 0})
+{}

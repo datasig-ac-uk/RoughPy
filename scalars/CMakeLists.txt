@@ -38,32 +38,34 @@ add_roughpy_component(Scalars
         src/key_scalar_array.cpp
         src/scalar_stream.cpp
         src/standard_scalar_type.h
-        src/half_type.h
-        src/half_type.cpp
-        src/float_type.cpp
-        src/float_type.h
-        src/double_type.cpp
-        src/double_type.h
-        src/RationalType.cpp
-        src/RationalType.h
+        src/scalar_implementations/half/half_type.h
+        src/scalar_implementations/half/half_type.cpp
+        src/scalar_implementations/float/float_type.cpp
+        src/scalar_implementations/float/float_type.h
+        src/scalar_implementations/double/double_type.cpp
+        src/scalar_implementations/double/double_type.h
+        src/scalar_implementations/rational/RationalType.cpp
+        src/scalar_implementations/rational/RationalType.h
         src/standard_linalg.h
         src/standard_random_generator.cpp
         src/standard_random_generator.h
         src/scalar_matrix.cpp
         src/scalar_blas.cpp
-        src/float_blas.cpp
-        src/float_blas.h
+        src/scalar_implementations/float/float_blas.cpp
+        src/scalar_implementations/float/float_blas.h
         src/scalar_blas_impl.h
-        src/half_random_generator.cpp
-        src/half_random_generator.h
-        src/b_float_16_type.cpp
-        src/b_float_16_type.h
-        src/bfloat16_random_generator.cpp
-        src/bfloat16_random_generator.h
+        src/scalar_implementations/half/half_random_generator.cpp
+        src/scalar_implementations/half/half_random_generator.h
+        src/scalar_implementations/bfloat16/b_float_16_type.cpp
+        src/scalar_implementations/bfloat16/b_float_16_type.h
+        src/scalar_implementations/bfloat16/bfloat16_random_generator.cpp
+        src/scalar_implementations/bfloat16/bfloat16_random_generator.h
         src/random_impl.cpp
         src/random_impl.h
-        src/rational_poly_scalar_type.cpp
-        src/rational_poly_scalar_type.h
+        src/scalar_implementations/rational_poly/rational_poly_scalar_type.cpp
+        src/scalar_implementations/rational_poly/rational_poly_scalar_type.h
+        src/scalar_implementations/double/double_lin_alg.cpp
+        src/scalar_implementations/double/double_lin_alg.h
         ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
         PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h

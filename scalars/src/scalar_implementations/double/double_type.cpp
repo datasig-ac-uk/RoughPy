@@ -26,57 +26,17 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 18/04/23.
+// Created by user on 02/03/23.
 //
 
-#include "scalar_implementations/float/float_blas.h"
-#include <gtest/gtest.h>
-#include <roughpy/scalars/scalar_type.h>
+#include "double_type.h"
+#include "double_lin_alg.h"
 
-#include <vector>
-
-using namespace rpy;
 using namespace rpy::scalars;
 
-namespace {
+DoubleType::DoubleType() : StandardScalarType<double>("f64", "DPReal") {}
 
-class FloatBlasTests : public ::testing::Test
+std::unique_ptr<BlasInterface> DoubleType::get_blas() const
 {
-    const ScalarType* ctype;
-    std::vector<float> a_data;
-    std::vector<float> b_data;
-
-public:
-    ScalarMatrix matA;
-    ScalarMatrix matB;
-
-    std::unique_ptr<BlasInterface> blas;
-
-    FloatBlasTests()
-        : ctype(ScalarType::of<float>()), a_data{1.0F, 1.0F, 2.0F, 3.0F},
-          b_data{-1.0F, 2.0F, -2.0F, 3.0F},
-          matA(2, 2, ScalarArray(ctype, a_data.data(), 4)),
-          matB(2, 2, ScalarArray(ctype, b_data.data(), 4)),
-          blas(new StandardLinearAlgebra<float, float>(ctype))
-    {}
-};
-
-}// namespace
-
-TEST_F(FloatBlasTests, TestRowMajorByRowMajorFull)
-{
-    ScalarMatrix result;
-    blas->gemm(result, matA, matB, Scalar(1), Scalar(1));
-
-    /*
-     * [[1.0, 1.0]  [[-1.0, 2.0]   =  [[-3.0,  5.0]
-     *  [2.0, 3.0]]  [-2.0, 3.0]]      [-8.0, 13.0]]
-     */
-
-    auto* ptr = result.raw_cast<float*>();
-
-    EXPECT_EQ(ptr[0], -3.0F);
-    EXPECT_EQ(ptr[1], 5.0F);
-    EXPECT_EQ(ptr[2], -8.0F);
-    EXPECT_EQ(ptr[3], 13.0F);
+    return std::make_unique<StandardLinearAlgebra<double, double>>(this);
 }
