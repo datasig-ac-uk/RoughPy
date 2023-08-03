@@ -16,6 +16,8 @@ set(RPY_USE_MKL ${MKL_FOUND})
 configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
 add_roughpy_component(Scalars
         SOURCES
+        src/linear_algebra/blas.h
+        src/linear_algebra/lapack.h
         src/scalar_type.cpp
         src/scalar_pointer.cpp
         src/scalar_interface.cpp

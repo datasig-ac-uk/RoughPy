@@ -78,7 +78,7 @@ EigenDecomposition BlasInterface::syev(ScalarMatrix& A, bool eigenvectors)
 {
     return EigenDecomposition();
 }
-EigenDecomposition BlasInterface::gees(ScalarMatrix& A, bool eigenvectors)
+EigenDecomposition BlasInterface::geev(ScalarMatrix& A, bool eigenvectors)
 {
     return EigenDecomposition();
 }

@@ -63,7 +63,7 @@ public:
          const Scalar& alpha, const Scalar& beta) override;
     void gesv(ScalarMatrix& A, ScalarMatrix& B) override;
     EigenDecomposition syev(ScalarMatrix& A, bool eigenvectors) override;
-    EigenDecomposition gees(ScalarMatrix& A, bool eigenvectors) override;
+    EigenDecomposition geev(ScalarMatrix& A, bool eigenvectors) override;
     SingularValueDecomposition
     gesvd(ScalarMatrix& A, bool return_U, bool return_VT) override;
     SingularValueDecomposition
