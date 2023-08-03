@@ -537,7 +537,6 @@ template <typename S, typename R>
 ScalarMatrix
 StandardLinearAlgebra<S, R>::gelss(ScalarMatrix& A, ScalarMatrix& b)
 {
-
     auto guard = lock();
     type_check(A);
     type_check(b);
@@ -560,17 +559,70 @@ StandardLinearAlgebra<S, R>::gelss(ScalarMatrix& A, ScalarMatrix& b)
         ldb = b.nrows();
     }
 
+    std::vector<real_scalar> singular_vals(std::min(m, n));
     std::vector<integer> pivots(n);
-    scalar rcond = 0;
+    real_scalar rcond = 0;
     integer rank = 0;
 
+    lapack::gelss(
+            blas::to_blas_layout(A.layout()),
+            m,
+            n,
+            nrhs,
+            A.raw_cast<scalar*>(),
+            lda,
+            b.raw_cast<scalar*>(),
+            ldb,
+            singular_vals.data(),
+            rcond,
+            rank
+            );
     //    lapack::gelss(A.layout(), m, n, )
 }
 template <typename S, typename R>
 ScalarMatrix
 StandardLinearAlgebra<S, R>::gelsd(ScalarMatrix& A, ScalarMatrix& b)
 {
-    return BlasInterface::gelsd(A, b);
+    auto guard = lock();
+    type_check(A);
+    type_check(b);
+    RPY_CHECK(!A.is_null());
+    RPY_CHECK(!b.is_null());
+
+    const auto m = A.nrows();
+    const auto n = A.ncols();
+    const auto lda = A.leading_dimension();
+
+    integer nrhs;
+    integer ldb;
+    BlasTranspose trans;
+
+    if (b.layout() == MatrixLayout::RowMajor) {
+        nrhs = b.nrows();
+        ldb = b.ncols();
+    } else {
+        nrhs = b.ncols();
+        ldb = b.nrows();
+    }
+
+    std::vector<real_scalar> singular_vals(std::min(m, n));
+    std::vector<integer> pivots(n);
+    real_scalar rcond = 0;
+    integer rank = 0;
+
+    lapack::gelsd(
+            blas::to_blas_layout(A.layout()),
+            m,
+            n,
+            nrhs,
+            A.raw_cast<scalar*>(),
+            lda,
+            b.raw_cast<scalar*>(),
+            ldb,
+            singular_vals.data(),
+            rcond,
+            rank
+    );
 }
 
 }// namespace scalars
