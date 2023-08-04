@@ -217,6 +217,10 @@ static bool try_fill_buffer_dlpack(
     }
 
     auto& dltensor = tensor->dl_tensor;
+
+    RPY_CHECK(dltensor.device.device_type == kDLCPU,
+              "no device support is currently available");
+
     auto* data = reinterpret_cast<char*>(dltensor.data);
     auto ndim = dltensor.ndim;
     auto* shape = dltensor.shape;
@@ -243,12 +247,8 @@ static bool try_fill_buffer_dlpack(
     for (auto i = 0; i < ndim; ++i) { size *= static_cast<idimn_t>(shape[i]); }
 
     if (strides == nullptr) {
-        if (options.type == tensor_stype) {
-            buffer = scalars::ScalarArray({options.type, data}, size);
-        } else {
-            buffer.allocate_scalars(size);
-            options.type->convert_copy(buffer, {tensor_stype, data}, size);
-        }
+        buffer.allocate_scalars(size);
+        options.type->convert_copy(buffer, {tensor_stype, data}, size);
     } else {
         buffer.allocate_scalars(size);
         scalars::ScalarPointer p(tensor_stype, data);
@@ -556,10 +556,7 @@ scalars::KeyScalarArray python::py_to_buffer(
     if (py::hasattr(object, "__dlpack__")) {
         // If we used the dlpack interface, then the result is
         // already constructed.
-        if (try_fill_buffer_dlpack(result, options, object)) {
-            return result;
-        }
-
+        if (try_fill_buffer_dlpack(result, options, object)) { return result; }
     }
 
     if (py::isinstance<py::buffer>(object)) {
@@ -583,7 +580,6 @@ scalars::KeyScalarArray python::py_to_buffer(
         }
 
         return result;
-
     }
 
     if (py::isinstance<py::dict>(object)) {
@@ -645,9 +641,10 @@ scalars::KeyScalarArray python::py_to_buffer(
         return result;
     }
 
-
-    RPY_THROW(std::invalid_argument,
-              "could not parse argument to a valid scalar type");
+    RPY_THROW(
+            std::invalid_argument,
+            "could not parse argument to a valid scalar type"
+    );
 }
 
 scalars::Scalar
