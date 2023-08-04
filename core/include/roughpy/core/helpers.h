@@ -75,6 +75,11 @@ count_bits(T val) noexcept
     return std::bitset<CHAR_BIT * sizeof(T)>(val).count();
 }
 
+RPY_NO_DISCARD constexpr size_t static_log2p1(size_t value) noexcept
+{
+    return (value == 0) ? 0 : 1 + static_log2p1(value >> 1);
+}
+
 /**
  * @brief
  * @tparam T
@@ -107,11 +112,9 @@ public:
         return *this;
     }
 
-    RPY_NO_DISCARD
-    operator T*() const noexcept { return p_data; }
+    RPY_NO_DISCARD operator T*() const noexcept { return p_data; }
 
-    RPY_NO_DISCARD
-    operator bool() const noexcept { return p_data != nullptr; }
+    RPY_NO_DISCARD operator bool() const noexcept { return p_data != nullptr; }
 };
 
 }// namespace rpy

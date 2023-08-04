@@ -115,7 +115,7 @@ RPY_SERIAL_LOAD_FN_IMPL(BrownianStream)
 
     RPY_DBG_ASSERT(stype != nullptr);
 
-    p_generator = stype->get_rng(generator);
+    p_generator = stype->get_rng(generator, {});
     p_generator->set_seed(seed);
     p_generator->set_state(state);
     restore_cached(archive, *metadata().default_context);

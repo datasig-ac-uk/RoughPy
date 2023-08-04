@@ -1,3 +1,31 @@
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+// this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
+// and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors
+// may be used to endorse or promote products derived from this software without
+// specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 //
 // Created by sam on 21/04/23.
 //
@@ -34,10 +62,12 @@ class ScalarBlasImpl : public BlasInterface
 
         const auto* type = arg.type();
 
-        if (arg.layout() != MatrixLayout::FStype) {
-            ScalarMatrix tmp(arg.nrows(), arg.ncols(),
-                             ScalarArray(type, optr, arg.size()),
-                             MatrixStorage::FullMatrix, MatrixLayout::FStype);
+        if (arg.layout() != MatrixLayout::ColumnMajor) {
+            ScalarMatrix tmp(
+                    arg.nrows(), arg.ncols(),
+                    ScalarArray(type, optr, arg.size()),
+                    MatrixStorage::FullMatrix, MatrixLayout::ColumnMajor
+            );
             arg.to_full(tmp);
         } else {
             type->convert_copy(optr, arg, arg.size());
@@ -47,40 +77,45 @@ class ScalarBlasImpl : public BlasInterface
 
     ScalarMatrix from_matrix(const MatrixCM& arg) const
     {
-        ScalarMatrix result(type(), arg.rows(), arg.cols(),
-                            MatrixStorage::FullMatrix, MatrixLayout::FStype);
+        ScalarMatrix result(
+                type(), arg.rows(), arg.cols(), MatrixStorage::FullMatrix,
+                MatrixLayout::ColumnMajor
+        );
         type()->convert_copy(result, {type(), arg.data()}, arg.size());
         return result;
     }
 
 public:
     void transpose(ScalarMatrix& matrix) const override;
-    OwnedScalarArray vector_axpy(const ScalarArray& x, const Scalar& a,
-                                 const ScalarArray& y) override;
+    OwnedScalarArray vector_axpy(
+            const ScalarArray& x, const Scalar& a, const ScalarArray& y
+    ) override;
     Scalar dot_product(const ScalarArray& lhs, const ScalarArray& rhs) override;
     Scalar L1Norm(const ScalarArray& vector) override;
     Scalar L2Norm(const ScalarArray& vector) override;
     Scalar LInfNorm(const ScalarArray& vector) override;
-    OwnedScalarArray matrix_vector(const ScalarMatrix& matrix,
-                                   const ScalarArray& vector) override;
-    ScalarMatrix matrix_matrix(const ScalarMatrix& lhs,
-                               const ScalarMatrix& rhs) override;
+    OwnedScalarArray matrix_vector(
+            const ScalarMatrix& matrix, const ScalarArray& vector
+    ) override;
     ScalarMatrix
-    solve_linear_system(const ScalarMatrix& coeff_matrix,
-                        const ScalarMatrix& target_matrix) override;
-    OwnedScalarArray lls_qr(const ScalarMatrix& matrix,
-                            const ScalarArray& target) override;
-    OwnedScalarArray lls_orth(const ScalarMatrix& matrix,
-                              const ScalarArray& target) override;
-    OwnedScalarArray lls_svd(const ScalarMatrix& matrix,
-                             const ScalarArray& target) override;
-    OwnedScalarArray lls_dcsvd(const ScalarMatrix& matrix,
-                               const ScalarArray& target) override;
-    OwnedScalarArray lse_grq(const ScalarMatrix& A, const ScalarMatrix& B,
-                             const ScalarArray& c,
-                             const ScalarArray& d) override;
-    ScalarMatrix glm_GQR(const ScalarMatrix& A, const ScalarMatrix& B,
-                         const ScalarArray& d) override;
+    matrix_matrix(const ScalarMatrix& lhs, const ScalarMatrix& rhs) override;
+    ScalarMatrix solve_linear_system(
+            const ScalarMatrix& coeff_matrix, const ScalarMatrix& target_matrix
+    ) override;
+    OwnedScalarArray
+    lls_qr(const ScalarMatrix& matrix, const ScalarArray& target) override;
+    OwnedScalarArray
+    lls_orth(const ScalarMatrix& matrix, const ScalarArray& target) override;
+    OwnedScalarArray
+    lls_svd(const ScalarMatrix& matrix, const ScalarArray& target) override;
+    OwnedScalarArray
+    lls_dcsvd(const ScalarMatrix& matrix, const ScalarArray& target) override;
+    OwnedScalarArray
+    lse_grq(const ScalarMatrix& A, const ScalarMatrix& B, const ScalarArray& c,
+            const ScalarArray& d) override;
+    ScalarMatrix
+    glm_GQR(const ScalarMatrix& A, const ScalarMatrix& B,
+            const ScalarArray& d) override;
     EigenDecomposition eigen_decomposition(const ScalarMatrix& matrix) override;
     SingularValueDecomposition svd(const ScalarMatrix& matrix) override;
 };
@@ -89,16 +124,16 @@ template <typename S>
 void ScalarBlasImpl<S>::transpose(ScalarMatrix& matrix) const
 {}
 template <typename S>
-OwnedScalarArray ScalarBlasImpl<S>::vector_axpy(const ScalarArray& x,
-                                                const Scalar& a,
-                                                const ScalarArray& y)
+OwnedScalarArray ScalarBlasImpl<S>::vector_axpy(
+        const ScalarArray& x, const Scalar& a, const ScalarArray& y
+)
 {
 
     return {};
 }
 template <typename S>
-Scalar ScalarBlasImpl<S>::dot_product(const ScalarArray& lhs,
-                                      const ScalarArray& rhs)
+Scalar
+ScalarBlasImpl<S>::dot_product(const ScalarArray& lhs, const ScalarArray& rhs)
 {
     return BlasInterface::dot_product(lhs, rhs);
 }
@@ -118,61 +153,67 @@ Scalar ScalarBlasImpl<S>::LInfNorm(const ScalarArray& vector)
     return BlasInterface::LInfNorm(vector);
 }
 template <typename S>
-OwnedScalarArray ScalarBlasImpl<S>::matrix_vector(const ScalarMatrix& matrix,
-                                                  const ScalarArray& vector)
+OwnedScalarArray ScalarBlasImpl<S>::matrix_vector(
+        const ScalarMatrix& matrix, const ScalarArray& vector
+)
 {
     return BlasInterface::matrix_vector(matrix, vector);
 }
 template <typename S>
-ScalarMatrix ScalarBlasImpl<S>::matrix_matrix(const ScalarMatrix& lhs,
-                                              const ScalarMatrix& rhs)
+ScalarMatrix ScalarBlasImpl<S>::matrix_matrix(
+        const ScalarMatrix& lhs, const ScalarMatrix& rhs
+)
 {
     return from_matrix(to_matrix(lhs) * to_matrix(rhs));
 }
 template <typename S>
-ScalarMatrix
-ScalarBlasImpl<S>::solve_linear_system(const ScalarMatrix& coeff_matrix,
-                                       const ScalarMatrix& target_matrix)
+ScalarMatrix ScalarBlasImpl<S>::solve_linear_system(
+        const ScalarMatrix& coeff_matrix, const ScalarMatrix& target_matrix
+)
 {
     auto coeff = to_matrix(coeff_matrix);
     auto result = coeff.householderQr().solve(to_matrix(target_matrix));
     return from_matrix(result);
 }
 template <typename S>
-OwnedScalarArray ScalarBlasImpl<S>::lls_qr(const ScalarMatrix& matrix,
-                                           const ScalarArray& target)
+OwnedScalarArray
+ScalarBlasImpl<S>::lls_qr(const ScalarMatrix& matrix, const ScalarArray& target)
 {
     return BlasInterface::lls_qr(matrix, target);
 }
 template <typename S>
-OwnedScalarArray ScalarBlasImpl<S>::lls_orth(const ScalarMatrix& matrix,
-                                             const ScalarArray& target)
+OwnedScalarArray ScalarBlasImpl<S>::lls_orth(
+        const ScalarMatrix& matrix, const ScalarArray& target
+)
 {
     return BlasInterface::lls_orth(matrix, target);
 }
 template <typename S>
-OwnedScalarArray ScalarBlasImpl<S>::lls_svd(const ScalarMatrix& matrix,
-                                            const ScalarArray& target)
+OwnedScalarArray ScalarBlasImpl<S>::lls_svd(
+        const ScalarMatrix& matrix, const ScalarArray& target
+)
 {
     return BlasInterface::lls_svd(matrix, target);
 }
 template <typename S>
-OwnedScalarArray ScalarBlasImpl<S>::lls_dcsvd(const ScalarMatrix& matrix,
-                                              const ScalarArray& target)
+OwnedScalarArray ScalarBlasImpl<S>::lls_dcsvd(
+        const ScalarMatrix& matrix, const ScalarArray& target
+)
 {
     return BlasInterface::lls_dcsvd(matrix, target);
 }
 template <typename S>
-OwnedScalarArray
-ScalarBlasImpl<S>::lse_grq(const ScalarMatrix& A, const ScalarMatrix& B,
-                           const ScalarArray& c, const ScalarArray& d)
+OwnedScalarArray ScalarBlasImpl<S>::lse_grq(
+        const ScalarMatrix& A, const ScalarMatrix& B, const ScalarArray& c,
+        const ScalarArray& d
+)
 {
     return BlasInterface::lse_grq(A, B, c, d);
 }
 template <typename S>
-ScalarMatrix ScalarBlasImpl<S>::glm_GQR(const ScalarMatrix& A,
-                                        const ScalarMatrix& B,
-                                        const ScalarArray& d)
+ScalarMatrix ScalarBlasImpl<S>::glm_GQR(
+        const ScalarMatrix& A, const ScalarMatrix& B, const ScalarArray& d
+)
 {
     return BlasInterface::glm_GQR(A, B, d);
 }

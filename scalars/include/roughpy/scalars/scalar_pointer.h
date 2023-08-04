@@ -115,6 +115,8 @@ protected:
 
     //    Constness m_constness = IsMutable;
 
+    void set_type_and_flags_from_id(const string& type_id);
+
 public:
     ScalarPointer(const ScalarType* type, const void* data, Constness constness)
         : p_type(type), p_data(data),
@@ -125,6 +127,19 @@ public:
     using difference_type = std::ptrdiff_t;
 
     ScalarPointer() = default;
+
+    ScalarPointer(const string& type_id, const void* data)
+            : p_type(nullptr), p_data(data),
+              m_flags(flags::BorrowedPointer | flags::IsConst)
+    {
+        set_type_and_flags_from_id(type_id);
+    }
+    ScalarPointer(const string& type_id, void* data)
+            : p_type(nullptr), p_data(data),
+              m_flags(flags::BorrowedPointer | flags::IsMutable)
+    {
+        set_type_and_flags_from_id(type_id);
+    }
 
     ScalarPointer(const ScalarType* type, void* data, uint32_t flag)
         : p_type(type), p_data(data), m_flags(flag)
@@ -238,7 +253,6 @@ public:
           m_flags(flags::SignedSize | flags::BorrowedPointer | flags::IsConst)
     {}
 
-
     /**
      * @brief Get the raw flags from this pointer
      * @return uint32_t holding flags data
@@ -285,7 +299,8 @@ public:
     simple_integer_config() const noexcept
     {
         return static_cast<flags::IntegerType>(
-                m_flags & (flags::SimpleInteger | signed_flag | integer_bits_mask)
+                m_flags
+                & (flags::SimpleInteger | signed_flag | integer_bits_mask)
         );
     }
 
