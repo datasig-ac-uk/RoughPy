@@ -63,7 +63,8 @@ public:
     from(long long int numerator, long long int denominator) const override;
     ScalarPointer allocate(std::size_t count) const override;
     void free(ScalarPointer pointer, std::size_t count) const override;
-    void swap(ScalarPointer lhs, ScalarPointer rhs) const override;
+    void
+    swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count) const override;
     void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count)
             const override;
 

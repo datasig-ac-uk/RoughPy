@@ -135,7 +135,7 @@ public:
         }
     }
 
-    void swap(ScalarPointer lhs, ScalarPointer rhs) const override
+    void swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count) const override
     {
 
         if (lhs.is_null() ^ rhs.is_null()) {
@@ -149,7 +149,7 @@ public:
         }
 
         if (lhs.type() != this && lhs.type() != nullptr) {
-            return lhs.type()->swap(lhs, rhs);
+            return lhs.type()->swap(lhs, rhs, 0);
         }
 
         if (lhs.is_const() || rhs.is_const()) {
@@ -158,7 +158,12 @@ public:
             );
         }
 
-        std::swap(*lhs.raw_cast<ScalarImpl*>(), *rhs.raw_cast<ScalarImpl*>());
+        auto* lptr = lhs.raw_cast<ScalarImpl*>();
+        auto* rptr = rhs.raw_cast<ScalarImpl*>();
+        for (dimn_t i=0; i<count; ++i) {
+            std::swap(lptr[i], rptr[i]);
+        }
+
     }
 
     void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count)

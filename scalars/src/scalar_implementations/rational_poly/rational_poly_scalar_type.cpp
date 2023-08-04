@@ -95,7 +95,9 @@ void RationalPolyScalarType::free(ScalarPointer pointer, std::size_t count)
         }
     }
 }
-void RationalPolyScalarType::swap(ScalarPointer lhs, ScalarPointer rhs) const
+void RationalPolyScalarType::swap(
+        ScalarPointer lhs, ScalarPointer rhs, dimn_t count
+) const
 {
     RPY_CHECK(!(lhs.is_null() ^ rhs.is_null()));
     RPY_CHECK(
@@ -105,10 +107,13 @@ void RationalPolyScalarType::swap(ScalarPointer lhs, ScalarPointer rhs) const
     RPY_CHECK(lhs.type() == this);
     RPY_CHECK(!lhs.is_const() && !rhs.is_const());
 
-    std::swap(
-            *lhs.raw_cast<rational_poly_scalar*>(),
-            *rhs.raw_cast<rational_poly_scalar*>()
-    );
+    auto* lptr = lhs.raw_cast<scalar_type*>();
+    auto* rptr = rhs.raw_cast<scalar_type*>();
+
+    for (dimn_t i=0; i<count; ++i) {
+        std::swap(lptr[i], rptr[i]);
+    }
+
 }
 void RationalPolyScalarType::convert_copy(
         ScalarPointer dst, ScalarPointer src, dimn_t count

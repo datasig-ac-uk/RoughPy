@@ -101,7 +101,7 @@ static void transpose_fallback(rpy::scalars::ScalarMatrix& matrix)
             for (rpy::deg_t j = i + 1; j < N; ++j) {
                 type->swap(
                         ptr + static_cast<rpy::dimn_t>(i * N + j),
-                        ptr + static_cast<rpy::dimn_t>(j * N + i)
+                        ptr + static_cast<rpy::dimn_t>(j * N + i), 1
                 );
             }
         }

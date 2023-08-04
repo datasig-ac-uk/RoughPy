@@ -198,7 +198,8 @@ RationalType::get_rng(const string& bit_generator, Slice<uint64_t> seed) const
 {
     return ScalarType::get_rng(bit_generator, seed);
 }
-void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const
+void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count)
+        const
 {
 
     if (lhs.is_null() ^ rhs.is_null()) {
@@ -210,14 +211,19 @@ void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const
     }
 
     if (lhs.type() != this && lhs.type() != nullptr) {
-        return lhs.type()->swap(lhs, rhs);
+        return lhs.type()->swap(lhs, rhs, 0);
     }
 
     if (lhs.is_const() || rhs.is_const()) {
         RPY_THROW(std::runtime_error, "one or both of the scalars is const");
     }
 
-    std::swap(*lhs.raw_cast<scalar_type*>(), *rhs.raw_cast<scalar_type*>());
+    auto* lptr = lhs.raw_cast<scalar_type*>();
+    auto* rptr = rhs.raw_cast<scalar_type*>();
+
+    for (dimn_t i=0; i<count; ++i) {
+        std::swap(lptr[i], rptr[i]);
+    }
 }
 std::vector<byte>
 RationalType::to_raw_bytes(const ScalarPointer& ptr, dimn_t count) const

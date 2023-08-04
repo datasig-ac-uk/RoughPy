@@ -48,6 +48,8 @@
 using namespace rpy;
 using namespace scalars;
 
+ScalarType::~ScalarType() = default;
+
 const ScalarType* ScalarType::rational_type() const noexcept { return this; }
 
 const ScalarType* ScalarType::host_type() const noexcept { return this; }

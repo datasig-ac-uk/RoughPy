@@ -90,7 +90,7 @@ public:
     ScalarType& operator=(const ScalarType&) = delete;
     ScalarType& operator=(ScalarType&&) noexcept = delete;
 
-    virtual ~ScalarType() = default;
+    virtual ~ScalarType();
 
     /**
      * @brief Get the most appropriate scalar type for type id
@@ -177,7 +177,7 @@ public:
      * @param lhs Pointer to left hand scalar
      * @param rhs Pointer to right hand scalar
      */
-    virtual void swap(ScalarPointer lhs, ScalarPointer rhs) const = 0;
+    virtual void swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count) const = 0;
 
     virtual void
     convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const
@@ -352,7 +352,7 @@ public:
      * @return Pointer to new RandomGenerator instance.
      */
     RPY_NO_DISCARD virtual std::unique_ptr<RandomGenerator>
-    get_rng(const string& bit_generator = "", Slice<uint64_t> seed = {}) const;
+    get_rng(const string& bit_generator, Slice<uint64_t> seed) const;
 
     /**
      * @brief Get a new instance of a blas interface
