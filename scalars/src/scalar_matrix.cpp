@@ -47,7 +47,7 @@ rpy::scalars::ScalarMatrix::ScalarMatrix(
 {
     if (p_type != nullptr && m_nrows > 0 && m_ncols > 0) {
         const auto size = m_nrows * m_ncols;
-        ScalarPointer::operator=(p_type->allocate(size));
+        ScalarArray::operator=(ScalarArray(p_type->allocate(size), size));
         m_size = size;
     }
 }

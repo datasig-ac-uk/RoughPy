@@ -115,11 +115,11 @@ public:
     {
         if (size == 1) {
             return ScalarPointer(
-                    this, new ScalarImpl, flags::IsMutable | flags::OwnedPointer
+                    this, new ScalarImpl {}, flags::IsMutable | flags::OwnedPointer
             );
         } else {
             return ScalarPointer(
-                    this, new ScalarImpl[size],
+                    this, new ScalarImpl[size] {},
                     flags::IsMutable | flags::OwnedPointer
             );
         }

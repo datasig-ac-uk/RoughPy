@@ -37,8 +37,7 @@
 #include "linear_algebra/blas.h"
 #include "linear_algebra/lapack.h"
 
-#define RPY_BLAS_FUNC(NAME) NAME
-#define RPY_LAPACK_FUNC(NAME) NAME
+
 
 namespace rpy {
 namespace scalars {
