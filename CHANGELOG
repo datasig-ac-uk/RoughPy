@@ -10,8 +10,6 @@ Version 0.0.7:
     in a common implementation layer.
   - Added threading support in platform
   - add_into and friends have threading support if available and enabled.
-  - ScalarTypes are now self-registering, rather than requiring a manual call to
-   register_type.
   - Added default implementation of type_id_of so that non-specialized types
   look for a ScalarType object.
   - Greatly simplified the design of ScalarMatrix - it now only supports full,

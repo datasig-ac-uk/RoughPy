@@ -193,14 +193,16 @@ static const pair<string, ScalarTypeInfo> reserved[]
 #define U64IDX 3
 
 static std::mutex s_scalar_type_cache_lock;
-static std::unordered_map<string, const ScalarType*> s_scalar_type_cache; // {
-//        {string("f32"), ScalarType::of<float>()},
-//        {string("f64"), ScalarType::of<double>()},
-//        {string("f16"), ScalarType::of<half>()},
-//        {string("bf16"), ScalarType::of<bfloat16>()},
-//        {string("rational"), ScalarType::of<rational_scalar_type>()},
-//        { string("RationalPoly"), ScalarType::of<rational_poly_scalar>()}
-//};
+static std::unordered_map<string, const ScalarType*> s_scalar_type_cache  {
+        {string("f32"), ScalarType::of<float>()},
+        {string("f64"), ScalarType::of<double>()},
+        {string("f16"), ScalarType::of<half>()},
+        {string("bf16"), ScalarType::of<bfloat16>()},
+        {string("rational"), ScalarType::of<rational_scalar_type>()},
+        { string("RationalPoly"), ScalarType::of<rational_poly_scalar>()}
+//        { string("cf32"), ScalarType::of<float_complex>() },
+//        { string("cf64"), ScalarType::of<double_complex>() }
+};
 
 void rpy::scalars::register_type(const ScalarType* type)
 {
@@ -373,7 +375,6 @@ void rpy::scalars::register_conversion(const string& src_id,
 ScalarType::ScalarType(ScalarTypeInfo info)
  : m_info(std::move(info))
 {
-    register_type(this);
 }
 
 std::unique_ptr<RandomGenerator>
