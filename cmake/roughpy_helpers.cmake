@@ -199,7 +199,9 @@ function(add_roughpy_component _name)
     _get_component_name(_component_name ${_component})
 
     if (NOT _lib_type STREQUAL INTERFACE)
-        set(_private_include_dirs "${CMAKE_CURRENT_LIST_DIR}/include/roughpy/${_component}/")
+        set(_private_include_dirs
+                "${CMAKE_CURRENT_LIST_DIR}/include/roughpy/${_component}/"
+                "${CMAKE_CURRENT_LIST_DIR}/src")
         if (ARG_PVT_INCLUDE_DIRS)
             foreach (_pth IN LISTS ARG_PVT_INCLUDE_DIRS)
                 list(APPEND _private_include_dirs ${CMAKE_CURRENT_LIST_DIR}/${_pth})

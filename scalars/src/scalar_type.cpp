@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 26/02/23.
@@ -39,15 +38,17 @@
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_pointer.h>
 
-#include "RationalType.h"
-#include "b_float_16_type.h"
-#include "double_type.h"
-#include "float_type.h"
-#include "half_type.h"
-#include "rational_poly_scalar_type.h"
+#include "scalar_implementations/bfloat16/b_float_16_type.h"
+#include "scalar_implementations/double/double_type.h"
+#include "scalar_implementations/float/float_type.h"
+#include "scalar_implementations/half/half_type.h"
+#include "scalar_implementations/rational/RationalType.h"
+#include "scalar_implementations/rational_poly/rational_poly_scalar_type.h"
 
 using namespace rpy;
 using namespace scalars;
+
+ScalarType::~ScalarType() = default;
 
 const ScalarType* ScalarType::rational_type() const noexcept { return this; }
 
@@ -135,37 +136,8 @@ Scalar ScalarType::parse(string_view str) const
 Scalar ScalarType::one() const { return from(1, 1); }
 Scalar ScalarType::mone() const { return from(-1, 1); }
 Scalar ScalarType::zero() const { return from(0, 1); }
-Scalar ScalarType::copy(ScalarPointer source) const
-{
-    auto result = allocate(1);
-    convert_copy(result, source, 1);
 
-    return {result, flags::OwnedPointer};
-}
-Scalar ScalarType::add(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    auto result = copy(lhs);
-    add_inplace(result.to_mut_pointer(), rhs);
-    return result;
-}
-Scalar ScalarType::sub(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    auto result = copy(lhs);
-    sub_inplace(result.to_mut_pointer(), rhs);
-    return result;
-}
-Scalar ScalarType::mul(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    auto result = copy(lhs);
-    mul_inplace(result.to_mut_pointer(), rhs);
-    return result;
-}
-Scalar ScalarType::div(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    auto result = copy(lhs);
-    div_inplace(result.to_mut_pointer(), rhs);
-    return result;
-}
+
 
 bool ScalarType::is_zero(ScalarPointer arg) const
 {
@@ -259,12 +231,16 @@ static const pair<string, ScalarTypeInfo> reserved[]
 #define U64IDX 3
 
 static std::mutex s_scalar_type_cache_lock;
-static std::unordered_map<string, const ScalarType*> s_scalar_type_cache{
-        {     string("f32"),                ScalarType::of<float>()},
-        {     string("f64"),               ScalarType::of<double>()},
-        {     string("f16"),                 ScalarType::of<half>()},
-        {    string("bf16"),             ScalarType::of<bfloat16>()},
-        {string("rational"), ScalarType::of<rational_scalar_type>()}
+
+static std::unordered_map<string, const ScalarType*> s_scalar_type_cache  {
+        {string("f32"), ScalarType::of<float>()},
+        {string("f64"), ScalarType::of<double>()},
+        {string("f16"), ScalarType::of<half>()},
+        {string("bf16"), ScalarType::of<bfloat16>()},
+        {string("rational"), ScalarType::of<rational_scalar_type>()},
+        { string("RationalPoly"), ScalarType::of<rational_poly_scalar>()}
+//        { string("cf32"), ScalarType::of<float_complex>() },
+//        { string("cf64"), ScalarType::of<double_complex>() }
 };
 
 void rpy::scalars::register_type(const ScalarType* type)
@@ -445,6 +421,11 @@ void rpy::scalars::register_conversion(
     } else {
         found = std::move(converter);
     }
+}
+
+ScalarType::ScalarType(ScalarTypeInfo info)
+ : m_info(std::move(info))
+{
 }
 
 std::unique_ptr<RandomGenerator>

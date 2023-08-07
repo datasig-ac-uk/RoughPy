@@ -55,7 +55,7 @@ void python::assign_py_object_to_scalar(
     if (py::isinstance<py::float_>(object)) {
         *ptr = object.cast<double>();
     } else if (py::isinstance<py::int_>(object)) {
-        *ptr = object.cast<long long>();
+        *ptr = object.cast<int64_t>();
     } else if (RPyPolynomial_Check(object.ptr())) {
         *ptr = RPyPolynomial_cast(object.ptr());
     } else {
@@ -168,7 +168,7 @@ static inline void dl_copy_strided(
 {
     if (ndim == 1) {
         if (strides[0] == 1) {
-            dst.type()->convert_copy(dst.ptr(), src, shape[0]);
+            dst.type()->convert_copy(dst, src, shape[0]);
         } else {
             for (std::int64_t i = 0; i < shape[0]; ++i) {
                 dst[i] = src[i * strides[0]];
@@ -574,7 +574,8 @@ scalars::KeyScalarArray python::py_to_buffer(
         // The only way type can still be null is if there are no elements.
         if (options.type != nullptr) {
             options.type->convert_copy(
-                    result, info.ptr, static_cast<dimn_t>(info.size), type_id
+                    result, {scalars::get_type(type_id), info.ptr},
+                    static_cast<dimn_t>(info.size)
             );
             options.shape.assign(info.shape.begin(), info.shape.end());
         }

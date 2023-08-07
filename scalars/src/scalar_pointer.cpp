@@ -40,11 +40,56 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
+static inline void set_int_bits_flags(uint32_t& flag, const string& type_id) {
+    switch (type_id[1]) {
+        case '8': // [iu]8
+            break;
+        case '1': // [iu]16 or [iu]128?
+            RPY_CHECK(type_id.size() >= 3);
+            if (type_id[2] == '6') {
+                flag |= (1 << 4);
+            } else {
+                RPY_THROW(std::runtime_error,
+                          "i128/u128 not currently supported");
+            }
+            break;
+        case '3': // [iu]32
+            flag |= (2 << 4);
+            break;
+        case '6': // [iu]64
+            flag |= (3 << 4);
+            break;
+        case 's': // [iu]size
+            flag |= (4 << 4);
+            break;
+        default:
+            RPY_THROW(std::invalid_argument,
+                      "The type id " + type_id + " is not supported");
+    }
+}
+
+
+void ScalarPointer::set_type_and_flags_from_id(const string& type_id) {
+    RPY_CHECK(type_id.size() >= 2);
+    if (type_id[0] == 'i') {
+        m_flags |= flags::SimpleInteger | flags::Signed;
+        set_int_bits_flags(m_flags, type_id);
+    } else if (type_id[0] == 'u') {
+        m_flags |= flags::SimpleInteger | flags::Unsigned;
+        set_int_bits_flags(m_flags, type_id);
+    } else {
+        p_type = get_type(type_id);
+    }
+}
+
+
 void* ScalarPointer::ptr()
 {
     if (is_const()) {
-        RPY_THROW(std::runtime_error,
-                "attempting to convert const pointer to non-const pointer");
+        RPY_THROW(
+                std::runtime_error,
+                "attempting to convert const pointer to non-const pointer"
+        );
     }
     return const_cast<void*>(p_data);
 }
@@ -55,15 +100,17 @@ Scalar ScalarPointer::deref() const noexcept
 Scalar ScalarPointer::deref_mut()
 {
     if (is_const()) {
-        RPY_THROW(std::runtime_error,
-                "attempting to dereference const pointer to non-const value");
+        RPY_THROW(
+                std::runtime_error,
+                "attempting to dereference const pointer to non-const value"
+        );
     }
     return Scalar(*this, m_flags & ~owning_flag);
 }
 Scalar ScalarPointer::operator*() { return deref_mut(); }
 Scalar ScalarPointer::operator*() const noexcept { return deref(); }
-ScalarPointer
-ScalarPointer::operator+(ScalarPointer::size_type index) const noexcept
+ScalarPointer ScalarPointer::operator+(ScalarPointer::size_type index
+) const noexcept
 {
     if (p_data == nullptr || p_type == nullptr) { return {}; }
 
@@ -71,8 +118,8 @@ ScalarPointer::operator+(ScalarPointer::size_type index) const noexcept
             = static_cast<const char*>(p_data) + index * p_type->itemsize();
     return {p_type, static_cast<const void*>(new_ptr), m_flags & ~owning_flag};
 }
-ScalarPointer&
-ScalarPointer::operator+=(ScalarPointer::size_type index) noexcept
+ScalarPointer& ScalarPointer::operator+=(ScalarPointer::size_type index
+) noexcept
 {
     if (p_data != nullptr && p_type != nullptr) {
         p_data = static_cast<const char*>(p_data) + index * p_type->itemsize();
@@ -113,8 +160,8 @@ ScalarPointer::operator-(const ScalarPointer& right) const noexcept
     }
     return static_cast<difference_type>(
                    static_cast<const char*>(p_data)
-                   - static_cast<const char*>(right.p_data))
-            / type->itemsize();
+                   - static_cast<const char*>(right.p_data)
+           ) / type->itemsize();
 }
 
 std::string rpy::scalars::ScalarPointer::get_type_id() const
@@ -139,9 +186,9 @@ std::vector<byte> rpy::scalars::ScalarPointer::to_raw_bytes(dimn_t count) const
     std::memcpy(result.data(), p_data, n_bytes);
     return result;
 }
-void rpy::scalars::ScalarPointer::update_from_bytes(const std::string& type_id,
-                                                    dimn_t count,
-                                                    Slice<byte> raw)
+void rpy::scalars::ScalarPointer::update_from_bytes(
+        const std::string& type_id, dimn_t count, Slice<byte> raw
+)
 {
 
     const auto* type = get_type(type_id);

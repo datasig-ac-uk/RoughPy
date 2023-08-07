@@ -52,7 +52,7 @@ KeyScalarArray::KeyScalarArray(const KeyScalarArray& other)
 {
 
     if (other.p_data != nullptr) {
-        p_type->convert_copy(const_cast<void*>(p_data), other, m_size);
+        p_type->convert_copy({p_type, const_cast<void*>(p_data)}, other, m_size);
 
         if (p_keys != nullptr) {
             allocate_keys();
@@ -172,7 +172,7 @@ KeyScalarArray KeyScalarArray::copy_or_move() &&
         p_data = nullptr;
         result.m_flags |= flags::OwnedPointer;
     } else if (p_type != nullptr && p_data != nullptr && m_size > 0) {
-        p_type->convert_copy(const_cast<void*>(result.p_data), *this, m_size);
+        p_type->convert_copy({p_type, const_cast<void*>(result.p_data)}, *this, m_size);
         m_flags = 0;
         p_type = nullptr;
         p_data = nullptr;

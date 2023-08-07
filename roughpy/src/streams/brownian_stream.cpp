@@ -81,7 +81,7 @@ Brownian_from_generator(const py::args& args, const py::kwargs& kwargs)
 
     // TODO: Finish this
 
-    BrownianStream inner(pmd.scalar_type->get_rng(), std::move(md));
+    BrownianStream inner(pmd.scalar_type->get_rng("", {}), std::move(md));
     Stream stream(std::move(inner));
 
     return py::reinterpret_steal<py::object>(

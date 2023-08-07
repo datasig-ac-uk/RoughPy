@@ -1,3 +1,6 @@
+#ifndef ROUGHPY_SCALARS_SCALAR_BLAS_DEFS
+#define ROUGHPY_SCALARS_SCALAR_BLAS_DEFS
+
 
 #cmakedefine RPY_USE_MKL
 
@@ -6,7 +9,7 @@
 #  include <mkl_spblas.h>
 #else
 #  include <cblas.h>
-#  include <lapack.h>
+#  include <lapacke.h>
 #endif
 
 #include <roughpy/scalars/scalar_matrix.h>
@@ -19,13 +22,28 @@
 #include <Eigen/Sparse>
 
 namespace
+rpy {
+namespace
 blas {
 
 #ifdef RPY_USE_MKL
 using integer = MKL_INT;
+using logical = MKL_INT;
+using complex32 = MKL_Complex8;
+using complex64 = MKL_Complex16;
+
 #else
 using integer = blasint;
+using logical = blasint;
+using complex32 = struct { float; float; };
+using complex64 = struct { double; double; };
+
+#define RPY_SIMATECOPY
+
 #endif
+
+
+
 
 using BlasLayout = CBLAS_LAYOUT;
 using BlasTranspose = CBLAS_TRANSPOSE;
@@ -49,11 +67,8 @@ constexpr auto Blas_Left = BlasSide::CblasLeft;
 constexpr auto Blas_Right = BlasSide::CblasRight;
 
 constexpr BlasLayout to_blas_layout(rpy::scalars::MatrixLayout layout) noexcept {
-return layout == rpy::scalars::MatrixLayout::CStype ? Blas_RowMajor : Blas_ColMajor;
-}
-
-constexpr BlasUpLo to_blas_uplo(rpy::scalars::MatrixStorage storage) noexcept {
-return storage == rpy::scalars::MatrixStorage::UpperTriangular ? Blas_Up : Blas_Lo;
+return layout == rpy::scalars::MatrixLayout::RowMajor ? Blas_RowMajor :
+Blas_ColMajor;
 }
 
 }
@@ -65,3 +80,7 @@ using integer = lapack_int;
 
 
 }
+}
+
+
+#endif // ROUGHPY_SCALARS_SCALAR_BLAS_DEFS

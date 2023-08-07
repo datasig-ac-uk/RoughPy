@@ -65,8 +65,9 @@ constexpr std::uint8_t sizeof_bits() noexcept
 }
 
 template <typename ScalarImpl>
-class StandardScalarType : public ScalarType
+class StandardScalarType : public impl_helpers::ScalarTypeHelper<ScalarImpl>
 {
+    using helper = impl_helpers::ScalarTypeHelper<ScalarImpl>;
 
     using rng_getter = std::unique_ptr<
             RandomGenerator> (*)(const ScalarType* type, Slice<uint64_t>);
@@ -83,7 +84,7 @@ class StandardScalarType : public ScalarType
 
 public:
     explicit StandardScalarType(string id, string name)
-        : ScalarType({
+        : helper({
                 std::move(name),
                 std::move(id),
                 sizeof(ScalarImpl),
@@ -94,14 +95,14 @@ public:
     {}
 
     explicit StandardScalarType(const ScalarTypeInfo& info)
-        : ScalarType(ScalarTypeInfo(info))
+        : helper(ScalarTypeInfo(info))
     {}
 
     explicit StandardScalarType(
             string name, string id, std::size_t size, std::size_t align,
             BasicScalarInfo basic_info, ScalarDeviceInfo device_info
     )
-        : ScalarType({name, id, size, align, basic_info, device_info})
+        : helper({name, id, size, align, basic_info, device_info})
     {}
 
     Scalar
@@ -114,11 +115,11 @@ public:
     {
         if (size == 1) {
             return ScalarPointer(
-                    this, new ScalarImpl, flags::IsMutable | flags::OwnedPointer
+                    this, new ScalarImpl {}, flags::IsMutable | flags::OwnedPointer
             );
         } else {
             return ScalarPointer(
-                    this, new ScalarImpl[size],
+                    this, new ScalarImpl[size] {},
                     flags::IsMutable | flags::OwnedPointer
             );
         }
@@ -134,7 +135,7 @@ public:
         }
     }
 
-    void swap(ScalarPointer lhs, ScalarPointer rhs) const override
+    void swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count) const override
     {
 
         if (lhs.is_null() ^ rhs.is_null()) {
@@ -148,7 +149,7 @@ public:
         }
 
         if (lhs.type() != this && lhs.type() != nullptr) {
-            return lhs.type()->swap(lhs, rhs);
+            return lhs.type()->swap(lhs, rhs, 0);
         }
 
         if (lhs.is_const() || rhs.is_const()) {
@@ -157,263 +158,131 @@ public:
             );
         }
 
-        std::swap(*lhs.raw_cast<ScalarImpl*>(), *rhs.raw_cast<ScalarImpl*>());
-    }
-
-protected:
-    ScalarImpl try_convert(ScalarPointer other) const
-    {
-        if (other.is_null()) { return ScalarImpl(0); }
-        if (other.type() == this) {
-            return *other.template raw_cast<const ScalarImpl>();
+        auto* lptr = lhs.raw_cast<ScalarImpl*>();
+        auto* rptr = rhs.raw_cast<ScalarImpl*>();
+        for (dimn_t i=0; i<count; ++i) {
+            std::swap(lptr[i], rptr[i]);
         }
 
-        const ScalarType* type = other.type();
-        if (type == nullptr) {
-            RPY_THROW(std::runtime_error, "null type for non-zero value");
-        }
-
-        auto cv = get_conversion(type->id(), this->id());
-        if (cv) {
-            ScalarImpl result;
-            ScalarPointer result_ptr{this, &result};
-            cv(result_ptr, other, 1);
-            return result;
-        }
-
-        RPY_THROW(
-                std::runtime_error,
-                "could not convert " + type->info().name + " to scalar type "
-                        + info().name
-        );
-    }
-
-public:
-    void convert_copy(void* out, ScalarPointer in, dimn_t count) const override
-    {
-        RPY_DBG_ASSERT(out != nullptr);
-        RPY_DBG_ASSERT(!in.is_null());
-        const auto* type = in.type();
-
-        if (type == nullptr) {
-            RPY_THROW(std::runtime_error, "null type for non-zero value");
-        }
-
-        if (type == this) {
-            const auto* in_begin = in.template raw_cast<const ScalarImpl>();
-            const auto* in_end = in_begin + count;
-            std::copy(in_begin, in_end, static_cast<ScalarImpl*>(out));
-        } else {
-            const auto& cv = get_conversion(type->id(), this->id());
-            ScalarPointer out_ptr{this, out};
-
-            cv(out_ptr, in, count);
-        }
-    }
-
-private:
-    template <typename Basic>
-    void convert_copy_basic(ScalarPointer& out, const void* in, dimn_t count)
-            const noexcept
-    {
-        const auto* iptr = static_cast<const Basic*>(in);
-        auto* optr = static_cast<ScalarImpl*>(out.ptr());
-
-        for (dimn_t i = 0; i < count; ++i, ++iptr, ++optr) {
-            ::new (optr) ScalarImpl(*iptr);
-        }
-    }
-
-public:
-    void convert_copy(
-            ScalarPointer out, const void* in, dimn_t count,
-            const string& type_id
-    ) const override
-    {
-        if (type_id == "f64") {
-            return convert_copy_basic<double>(out, in, count);
-        } else if (type_id == "f32") {
-            return convert_copy_basic<float>(out, in, count);
-        } else if (type_id == "i32") {
-            return convert_copy_basic<int>(out, in, count);
-        } else if (type_id == "u32") {
-            return convert_copy_basic<unsigned int>(out, in, count);
-        } else if (type_id == "i64") {
-            return convert_copy_basic<long long>(out, in, count);
-        } else if (type_id == "u64") {
-            return convert_copy_basic<unsigned long long>(out, in, count);
-        } else if (type_id == "isize") {
-            return convert_copy_basic<std::ptrdiff_t>(out, in, count);
-        } else if (type_id == "usize") {
-            return convert_copy_basic<std::size_t>(out, in, count);
-        } else if (type_id == "i16") {
-            return convert_copy_basic<short>(out, in, count);
-        } else if (type_id == "u16") {
-            return convert_copy_basic<unsigned short>(out, in, count);
-        } else if (type_id == "i8") {
-            return convert_copy_basic<char>(out, in, count);
-        } else if (type_id == "u8") {
-            return convert_copy_basic<unsigned char>(out, in, count);
-        }
-
-        // If we're here, then it is a non-standard type
-        const auto& conversion = get_conversion(type_id, this->id());
-        conversion(out, {nullptr, in}, count);
     }
 
     void convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count)
             const override
     {
-        if (src.type() == nullptr) {
-            if (!src.is_simple_integer()) {
-                RPY_THROW(
-                        std::runtime_error,
-                        "no type associated with scalar value"
-                );
-            }
-            switch (src.simple_integer_config()) {
-                case flags::UnsignedInteger8:
-                    convert_copy_basic<uint8_t>(dst, src.cptr(), count);
-                    break;
-                case flags::UnsignedInteger16:
-                    convert_copy_basic<uint16_t>(dst, src.cptr(), count);
-                    break;
-                case flags::UnsignedInteger32:
-                    convert_copy_basic<uint32_t>(dst, src.cptr(), count);
-                    break;
-                case flags::UnsignedInteger64:
-                    convert_copy_basic<uint64_t>(dst, src.cptr(), count);
-                    break;
-                case flags::UnsignedSize:
-                    convert_copy_basic<dimn_t>(dst, src.cptr(), count);
-                    break;
-                case flags::SignedInteger8:
-                    convert_copy_basic<int8_t>(dst, src.cptr(), count);
-                    break;
-                case flags::SignedInteger16:
-                    convert_copy_basic<int16_t>(dst, src.cptr(), count);
-                    break;
-                case flags::SignedInteger32:
-                    convert_copy_basic<int32_t>(dst, src.cptr(), count);
-                    break;
-                case flags::SignedInteger64:
-                    convert_copy_basic<int64_t>(dst, src.cptr(), count);
-                    break;
-                case flags::SignedSize:
-                    convert_copy_basic<idimn_t>(dst, src.cptr(), count);
-                    break;
-            }
-        } else {
-            convert_copy(dst, src.cptr(), count, src.type()->id());
-        }
+        helper::copy_convert(dst, src, count);
     }
-    void convert_copy(
-            void* out, const void* in, std::size_t count, BasicScalarInfo info
-    ) const override
-    {
-
-        ScalarPointer optr(this, out);
-        switch (info.code) {
-            case ScalarTypeCode::Int:
-                switch (info.bits) {
-                    case sizeof(int8_t) * CHAR_BIT:
-                        convert_copy_basic<int8_t>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                    case sizeof(int16_t) * CHAR_BIT:
-                        convert_copy_basic<int16_t>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                    case sizeof(int32_t) * CHAR_BIT:
-                        convert_copy_basic<int32_t>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                    case sizeof(int64_t) * CHAR_BIT:
-                        convert_copy_basic<int64_t>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                        //                    case 128:
-                    default:
-                        RPY_THROW(
-                                std::runtime_error,
-                                "invalid bit configuration for integer type"
-                        );
-                }
-                break;
-            case ScalarTypeCode::UInt:
-                switch (info.bits) {
-                    case sizeof(uint8_t) * CHAR_BIT:
-                        convert_copy_basic<uint8_t>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                    case sizeof(uint16_t) * CHAR_BIT:
-                        convert_copy_basic<uint16_t>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                    case sizeof(uint32_t) * CHAR_BIT:
-                        convert_copy_basic<uint32_t>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                    case sizeof(uint64_t) * CHAR_BIT:
-                        convert_copy_basic<uint64_t>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                        //                    case 128:
-                    default:
-                        RPY_THROW(
-                                std::runtime_error,
-                                "invalid bit configuration for integer type"
-                        );
-                }
-                break;
-            case ScalarTypeCode::Float:
-                switch (info.bits) {
-                    case sizeof(half) * CHAR_BIT:
-                        convert_copy_basic<half>(optr, in, info.lanes * count);
-                        break;
-                    case sizeof(float) * CHAR_BIT:
-                        convert_copy_basic<float>(optr, in, info.lanes * count);
-                        break;
-                    case sizeof(double) * CHAR_BIT:
-                        convert_copy_basic<double>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                    default:
-                        RPY_THROW(
-                                std::runtime_error,
-                                "invalid bit configuration for float type"
-                        );
-                }
-                break;
-            case ScalarTypeCode::BFloat:
-                switch (info.bits) {
-                    case sizeof(bfloat16) * CHAR_BIT:
-                        convert_copy_basic<bfloat16>(
-                                optr, in, info.lanes * count
-                        );
-                        break;
-                    default:
-                        RPY_THROW(
-                                std::runtime_error,
-                                "invalid bit configuration for bfloat type"
-                        );
-                }
-                break;
-            case ScalarTypeCode::Bool:
-            case ScalarTypeCode::OpaqueHandle: break;
-            case ScalarTypeCode::Complex:
-            default: RPY_THROW(std::runtime_error, "unsupported scalar type");
-        }
-    }
+    //    void convert_copy(
+    //            void* out, const void* in, std::size_t count, BasicScalarInfo
+    //            info
+    //    ) const override
+    //    {
+    //
+    //        ScalarPointer optr(this, out);
+    //        switch (info.code) {
+    //            case ScalarTypeCode::Int:
+    //                switch (info.bits) {
+    //                    case sizeof(int8_t) * CHAR_BIT:
+    //                        convert_copy_basic<int8_t>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                    case sizeof(int16_t) * CHAR_BIT:
+    //                        convert_copy_basic<int16_t>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                    case sizeof(int32_t) * CHAR_BIT:
+    //                        convert_copy_basic<int32_t>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                    case sizeof(int64_t) * CHAR_BIT:
+    //                        convert_copy_basic<int64_t>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                        //                    case 128:
+    //                    default:
+    //                        RPY_THROW(
+    //                                std::runtime_error,
+    //                                "invalid bit configuration for integer
+    //                                type"
+    //                        );
+    //                }
+    //                break;
+    //            case ScalarTypeCode::UInt:
+    //                switch (info.bits) {
+    //                    case sizeof(uint8_t) * CHAR_BIT:
+    //                        convert_copy_basic<uint8_t>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                    case sizeof(uint16_t) * CHAR_BIT:
+    //                        convert_copy_basic<uint16_t>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                    case sizeof(uint32_t) * CHAR_BIT:
+    //                        convert_copy_basic<uint32_t>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                    case sizeof(uint64_t) * CHAR_BIT:
+    //                        convert_copy_basic<uint64_t>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                        //                    case 128:
+    //                    default:
+    //                        RPY_THROW(
+    //                                std::runtime_error,
+    //                                "invalid bit configuration for integer
+    //                                type"
+    //                        );
+    //                }
+    //                break;
+    //            case ScalarTypeCode::Float:
+    //                switch (info.bits) {
+    //                    case sizeof(half) * CHAR_BIT:
+    //                        convert_copy_basic<half>(optr, in, info.lanes *
+    //                        count); break;
+    //                    case sizeof(float) * CHAR_BIT:
+    //                        convert_copy_basic<float>(optr, in, info.lanes *
+    //                        count); break;
+    //                    case sizeof(double) * CHAR_BIT:
+    //                        convert_copy_basic<double>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                    default:
+    //                        RPY_THROW(
+    //                                std::runtime_error,
+    //                                "invalid bit configuration for float type"
+    //                        );
+    //                }
+    //                break;
+    //            case ScalarTypeCode::BFloat:
+    //                switch (info.bits) {
+    //                    case sizeof(bfloat16) * CHAR_BIT:
+    //                        convert_copy_basic<bfloat16>(
+    //                                optr, in, info.lanes * count
+    //                        );
+    //                        break;
+    //                    default:
+    //                        RPY_THROW(
+    //                                std::runtime_error,
+    //                                "invalid bit configuration for bfloat
+    //                                type"
+    //                        );
+    //                }
+    //                break;
+    //            case ScalarTypeCode::Bool:
+    //            case ScalarTypeCode::OpaqueHandle: break;
+    //            case ScalarTypeCode::Complex:
+    //            default: RPY_THROW(std::runtime_error, "unsupported scalar
+    //            type");
+    //        }
+    //    }
     void
     assign(ScalarPointer target, long long int numerator,
            long long int denominator) const override
@@ -426,72 +295,12 @@ public:
         return static_cast<scalar_t>(*arg.raw_cast<const ScalarImpl*>());
     }
 
-    Scalar copy(ScalarPointer arg) const override
-    {
-        return Scalar(this, try_convert(arg));
-    }
-    Scalar uminus(ScalarPointer arg) const override
-    {
-        return Scalar(this, -try_convert(arg));
-    }
-    Scalar add(ScalarPointer lhs, ScalarPointer rhs) const override
-    {
-        if (!lhs) { return copy(rhs); }
-        return Scalar(
-                this, *lhs.raw_cast<const ScalarImpl*>() + try_convert(rhs)
-        );
-    }
-    Scalar sub(ScalarPointer lhs, ScalarPointer rhs) const override
-    {
-        if (!lhs) { return uminus(rhs); }
-        return Scalar(
-                this, *lhs.raw_cast<const ScalarImpl*>() - try_convert(rhs)
-        );
-    }
-    Scalar mul(ScalarPointer lhs, ScalarPointer rhs) const override
-    {
-        if (!lhs) { return zero(); }
-        return Scalar(
-                this, *lhs.raw_cast<const ScalarImpl*>() * try_convert(rhs)
-        );
-    }
-    Scalar div(ScalarPointer lhs, ScalarPointer rhs) const override
-    {
-        if (!lhs) { return zero(); }
-        if (rhs.is_null()) {
-            RPY_THROW(std::runtime_error, "division by zero");
-        }
 
-        auto crhs = try_convert(rhs);
+    void uminus_into(
+            ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
+            const uint64_t* mask
+    ) const override;
 
-        if (crhs == ScalarImpl(0)) {
-            RPY_THROW(std::runtime_error, "division by zero");
-        }
-
-        return Scalar(
-                this,
-                static_cast<ScalarImpl>(
-                        *lhs.raw_cast<const ScalarImpl*>() / crhs
-                )
-        );
-    }
-
-private:
-    template <typename F>
-    static void op_into_opt(
-            ScalarImpl* RPY_RESTRICT dptr, const ScalarImpl* RPY_RESTRICT lptr,
-            const ScalarImpl* RPY_RESTRICT rptr, dimn_t count,
-            const uint64_t* mask, F&& func
-    )
-    {}
-
-    template <typename F>
-    static void
-    op_into(ScalarPointer& dst, const ScalarPointer& lhs,
-            const ScalarPointer& rhs, dimn_t count, const uint64_t* mask,
-            F&& func);
-
-public:
     void add_into(
             ScalarPointer& dst, const ScalarPointer& lhs,
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
@@ -511,46 +320,14 @@ public:
 
     bool are_equal(ScalarPointer lhs, ScalarPointer rhs) const noexcept override
     {
-        return *lhs.raw_cast<const ScalarImpl*>() == try_convert(rhs);
+        return *lhs.raw_cast<const ScalarImpl*>()
+                == helper::try_convert(rhs);
     }
 
     Scalar one() const override { return Scalar(this, ScalarImpl(1)); }
     Scalar mone() const override { return Scalar(this, ScalarImpl(-1)); }
     Scalar zero() const override { return Scalar(this, ScalarImpl(0)); }
-    void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const override
-    {
-        RPY_DBG_ASSERT(lhs);
-        auto* ptr = lhs.raw_cast<ScalarImpl*>();
-        *ptr += try_convert(rhs);
-    }
-    void sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const override
-    {
-        RPY_DBG_ASSERT(lhs);
-        auto* ptr = lhs.raw_cast<ScalarImpl*>();
-        *ptr -= try_convert(rhs);
-    }
-    void mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const override
-    {
-        RPY_DBG_ASSERT(lhs);
-        auto* ptr = lhs.raw_cast<ScalarImpl*>();
-        *ptr *= try_convert(rhs);
-    }
-    void div_inplace(ScalarPointer lhs, ScalarPointer rhs) const override
-    {
-        RPY_DBG_ASSERT(lhs);
-        auto* ptr = lhs.raw_cast<ScalarImpl*>();
-        if (rhs.is_null()) {
-            RPY_THROW(std::runtime_error, "division by zero");
-        }
 
-        auto crhs = try_convert(rhs);
-
-        if (crhs == ScalarImpl(0)) {
-            RPY_THROW(std::runtime_error, "division by zero");
-        }
-
-        *ptr /= crhs;
-    }
     bool is_zero(ScalarPointer arg) const override
     {
         return !static_cast<bool>(arg)
@@ -575,12 +352,15 @@ public:
 };
 
 template <typename ScalarImpl>
-template <typename F>
-void StandardScalarType<ScalarImpl>::op_into(
-        ScalarPointer& dst, const ScalarPointer& lhs, const ScalarPointer& rhs,
-        dimn_t count, const uint64_t* mask, F&& func
-)
-{}
+void StandardScalarType<ScalarImpl>::uminus_into(
+        ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
+        const uint64_t* mask
+) const
+{
+    helper::unary_into_buffer(
+            dst, arg, count, mask, [](auto s) { return -s; }
+    );
+}
 
 template <typename ScalarImpl>
 void StandardScalarType<ScalarImpl>::add_into(
@@ -588,7 +368,7 @@ void StandardScalarType<ScalarImpl>::add_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<ScalarImpl>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l + r; }
     );
 }
@@ -598,7 +378,7 @@ void StandardScalarType<ScalarImpl>::sub_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<ScalarImpl>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l - r; }
     );
 }
@@ -608,7 +388,7 @@ void StandardScalarType<ScalarImpl>::mul_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<ScalarImpl>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l * r; }
     );
 }
@@ -618,8 +398,14 @@ void StandardScalarType<ScalarImpl>::div_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<ScalarImpl>(
-            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l + r; }
+    helper::binary_into_buffer(
+            dst, lhs, rhs, count, mask,
+            [](auto l, auto r) {
+                if (r == decltype(r)(0)) {
+                    RPY_THROW(std::runtime_error, "division by zero");
+                }
+                return l / r;
+            }
     );
 }
 

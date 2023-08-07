@@ -53,7 +53,9 @@ Scalar::Scalar(ScalarPointer data, flags::PointerType ptype)
 Scalar::Scalar(ScalarInterface* other)
 {
     if (other == nullptr) {
-        RPY_THROW(std::invalid_argument, "scalar interface pointer cannot be null");
+        RPY_THROW(
+                std::invalid_argument, "scalar interface pointer cannot be null"
+        );
     }
     p_type = other->type();
     p_data = other;
@@ -79,11 +81,13 @@ Scalar::Scalar(const ScalarType* type, scalar_t scal)
     : ScalarPointer(type->allocate(1))
 {
     const auto* scal_type = ScalarType::of<scalar_t>();
-    p_type->convert_copy(const_cast<void*>(p_data), {scal_type, &scal}, 1);
+    p_type->convert_copy(to_mut_pointer(), {scal_type, &scal}, 1);
 }
 Scalar::Scalar(const Scalar& other)
-    : ScalarPointer(other.p_type == nullptr ? ScalarPointer()
-                                            : other.p_type->allocate(1))
+    : ScalarPointer(
+            other.p_type == nullptr ? ScalarPointer()
+                                    : other.p_type->allocate(1)
+    )
 {
     if (p_type != nullptr) {
         p_type->convert_copy(to_mut_pointer(), other.to_pointer(), 1);
@@ -159,8 +163,9 @@ Scalar& Scalar::operator=(Scalar&& other) noexcept
             other.p_type = nullptr;
         } else {
             if (is_interface()) {
-                auto* iface = static_cast<ScalarInterface*>(
-                        const_cast<void*>(p_data));
+                auto* iface
+                        = static_cast<ScalarInterface*>(const_cast<void*>(p_data
+                        ));
                 iface->assign(other.to_pointer());
             } else {
                 p_type->convert_copy(to_mut_pointer(), other.to_pointer(), 1);
@@ -181,7 +186,10 @@ ScalarPointer Scalar::to_pointer() const noexcept
 ScalarPointer Scalar::to_mut_pointer()
 {
     if (is_const()) {
-        RPY_THROW(std::runtime_error, "cannot get non-const pointer to const value");
+        RPY_THROW(
+                std::runtime_error,
+                "cannot get non-const pointer to const value"
+        );
     }
     auto* ptr = const_cast<void*>(p_data);
     if (is_interface()) {
@@ -215,7 +223,9 @@ Scalar Scalar::operator-() const
     if (is_interface()) {
         return static_cast<const ScalarInterface*>(p_data)->uminus();
     }
-    return p_type->uminus(to_pointer());
+    Scalar result(p_type, 0);
+    p_type->uminus_into(result, *this, 1, nullptr);
+    return result;
 }
 
 #define RPY_SCALAR_OP(OP, MNAME)                                               \
@@ -223,7 +233,11 @@ Scalar Scalar::operator-() const
     {                                                                          \
         const ScalarType* type = (p_type != nullptr) ? p_type : other.p_type;  \
         if (type == nullptr) { return Scalar(); }                              \
-        return type->MNAME(to_pointer(), other.to_pointer());                  \
+        Scalar result(type, 0);                                                \
+        type->MNAME##_into(                                                    \
+                result, to_pointer(), other.to_pointer(), 1, nullptr           \
+        );                                                                     \
+        return result;                                                         \
     }
 
 RPY_SCALAR_OP(+, add)
@@ -239,16 +253,19 @@ Scalar Scalar::operator/(const Scalar& other) const
     if (other.p_data == nullptr) {
         RPY_THROW(std::runtime_error, "division by zero");
     }
-
-    return type->div(to_pointer(), other.to_pointer());
+    Scalar result(type, 0);
+    type->div_into(result, to_pointer(), other.to_pointer(), 1, nullptr);
+    return result;
 }
 
 #define RPY_SCALAR_IOP(OP, MNAME)                                              \
     Scalar& Scalar::operator OP(const Scalar& other)                           \
     {                                                                          \
         if (is_const()) {                                                      \
-            RPY_THROW(std::runtime_error,                                          \
-                    "performing inplace operation on const scalar");           \
+            RPY_THROW(                                                         \
+                    std::runtime_error,                                        \
+                    "performing inplace operation on const scalar"             \
+            );                                                                 \
         }                                                                      \
                                                                                \
         if (p_type == nullptr) {                                               \
@@ -262,11 +279,14 @@ Scalar Scalar::operator/(const Scalar& other) const
             set_to_zero();                                                     \
         }                                                                      \
         if (is_interface()) {                                                  \
-            auto* iface = static_cast<ScalarInterface*>(                       \
-                    const_cast<void*>(p_data));                                \
+            auto* iface                                                        \
+                    = static_cast<ScalarInterface*>(const_cast<void*>(p_data)  \
+                    );                                                         \
             iface->MNAME##_inplace(other);                                     \
         } else {                                                               \
-            p_type->MNAME##_inplace(to_mut_pointer(), other.to_pointer());     \
+            p_type->MNAME##_into(                                              \
+                    *this, ScalarPointer(), other.to_pointer(), 1, nullptr     \
+            );                                                                 \
         }                                                                      \
         return *this;                                                          \
     }
@@ -278,8 +298,10 @@ RPY_SCALAR_IOP(*=, mul)
 Scalar& Scalar::operator/=(const Scalar& other)
 {
     if (is_const()) {
-        RPY_THROW(std::runtime_error,
-                "performing inplace operation on const scalar");
+        RPY_THROW(
+                std::runtime_error,
+                "performing inplace operation on const scalar"
+        );
     }
     if (other.p_data == nullptr) {
         RPY_THROW(std::runtime_error, "division by zero");
@@ -297,8 +319,9 @@ Scalar& Scalar::operator/=(const Scalar& other)
         auto* iface = static_cast<ScalarInterface*>(const_cast<void*>(p_data));
         iface->div_inplace(other);
     } else {
-        p_type->rational_type()->div_inplace(to_mut_pointer(),
-                                             other.to_pointer());
+        p_type->rational_type()->div_into(
+                *this, ScalarPointer(), other.to_pointer(), 1, nullptr
+        );
     }
     return *this;
 }

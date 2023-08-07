@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by sam on 13/03/23.
@@ -37,7 +36,7 @@
 #include <ostream>
 #include <utility>
 
-#include <roughpy/scalars/scalar_type_helper.h>
+#include "scalar_type_helper.h"
 
 #if RPY_USING_GMP
 #  include <gmp.h>
@@ -65,7 +64,7 @@ RationalType::get_pcg_generator(const ScalarType* type, Slice<uint64_t> seed)
 }
 
 RationalType::RationalType()
-    : ScalarType({
+    : helper({
             "Rational",
             "rational",
             sizeof(rational_scalar_type),
@@ -133,10 +132,7 @@ void RationalType::convert_copy(
         ScalarPointer dst, ScalarPointer src, dimn_t count
 ) const
 {
-    if (src.type() == nullptr) {
-        RPY_THROW(std::invalid_argument, "source type cannot be null");
-    }
-    convert_copy(dst, src.ptr(), count, src.type()->id());
+    helper::copy_convert(dst, src, count);
 }
 
 template <typename F>
@@ -151,151 +147,6 @@ convert_copy_ext(ScalarPointer& out, const void* in, std::size_t count)
     }
 }
 
-void RationalType::convert_copy(
-        void* out, const void* in, std::size_t count, BasicScalarInfo info
-) const
-{
-
-    ScalarPointer optr(this, out);
-    switch (info.code) {
-        case ScalarTypeCode::Int:
-            switch (info.bits) {
-                case 8:
-                    convert_copy_basic<int8_t>(optr, in, info.lanes * count);
-                    break;
-                case 16:
-                    convert_copy_basic<int16_t>(optr, in, info.lanes * count);
-                    break;
-                case 32:
-                    convert_copy_basic<int32_t>(optr, in, info.lanes * count);
-                    break;
-                case 64:
-                    convert_copy_basic<int64_t>(optr, in, info.lanes * count);
-                    break;
-                case 128:
-                default:
-                    RPY_THROW(
-                            std::runtime_error,
-                            "invalid bit configuration for integer type"
-                    );
-            }
-            break;
-        case ScalarTypeCode::UInt:
-            switch (info.bits) {
-                case 8:
-                    convert_copy_basic<uint8_t>(optr, in, info.lanes * count);
-                    break;
-                case 16:
-                    convert_copy_basic<uint16_t>(optr, in, info.lanes * count);
-                    break;
-                case 32:
-                    convert_copy_basic<uint32_t>(optr, in, info.lanes * count);
-                    break;
-                case 64:
-                    convert_copy_basic<uint64_t>(optr, in, info.lanes * count);
-                    break;
-                case 128:
-                default:
-                    RPY_THROW(
-                            std::runtime_error,
-                            "invalid bit configuration for integer type"
-                    );
-            }
-            break;
-        case ScalarTypeCode::Float:
-            switch (info.bits) {
-                case 16:
-                    convert_copy_ext<half>(optr, in, info.lanes * count);
-                    break;
-                case 32:
-                    convert_copy_basic<float>(optr, in, info.lanes * count);
-                    break;
-                case 64:
-                    convert_copy_basic<double>(optr, in, info.lanes * count);
-                    break;
-                default:
-                    RPY_THROW(
-                            std::runtime_error,
-                            "invalid bit configuration for float type"
-                    );
-            }
-            break;
-        case ScalarTypeCode::BFloat:
-            switch (info.bits) {
-                case 16:
-                    convert_copy_ext<bfloat16>(optr, in, info.lanes * count);
-                    break;
-                default:
-                    RPY_THROW(
-                            std::runtime_error,
-                            "invalid bit configuration for bfloat type"
-                    );
-            }
-            break;
-        case ScalarTypeCode::Bool:
-        case ScalarTypeCode::OpaqueHandle: break;
-        case ScalarTypeCode::Complex:
-        default: RPY_THROW(std::runtime_error, "unsupported scalar type");
-    }
-}
-void RationalType::convert_copy(void* out, ScalarPointer in, std::size_t count)
-        const
-{
-    RPY_DBG_ASSERT(out != nullptr);
-    RPY_DBG_ASSERT(!in.is_null());
-    const auto* type = in.type();
-
-    if (type == nullptr) {
-        RPY_THROW(std::runtime_error, "null type for non-zero value");
-    }
-
-    if (type == this) {
-        const auto* in_begin = in.template raw_cast<const scalar_type>();
-        const auto* in_end = in_begin + count;
-        std::copy(in_begin, in_end, static_cast<scalar_type*>(out));
-    } else {
-        auto cv = get_conversion(type->id(), this->id());
-        ScalarPointer out_ptr{this, out};
-
-        cv(out_ptr, in, count);
-    }
-}
-
-void RationalType::convert_copy(
-        ScalarPointer out, const void* in, std::size_t count,
-        const string& type_id
-) const
-{
-    if (type_id == "f64") {
-        return convert_copy_basic<double>(out, in, count);
-    } else if (type_id == "f32") {
-        return convert_copy_basic<float>(out, in, count);
-    } else if (type_id == "i32") {
-        return convert_copy_basic<int>(out, in, count);
-    } else if (type_id == "u32") {
-        return convert_copy_basic<unsigned int>(out, in, count);
-    } else if (type_id == "i64") {
-        return convert_copy_basic<long long>(out, in, count);
-    } else if (type_id == "u64") {
-        return convert_copy_basic<unsigned long long>(out, in, count);
-    } else if (type_id == "isize") {
-        return convert_copy_basic<std::ptrdiff_t>(out, in, count);
-    } else if (type_id == "usize") {
-        return convert_copy_basic<std::size_t>(out, in, count);
-    } else if (type_id == "i16") {
-        return convert_copy_basic<short>(out, in, count);
-    } else if (type_id == "u16") {
-        return convert_copy_basic<unsigned short>(out, in, count);
-    } else if (type_id == "i8") {
-        return convert_copy_basic<char>(out, in, count);
-    } else if (type_id == "u8") {
-        return convert_copy_basic<unsigned char>(out, in, count);
-    }
-
-    // If we're here, then it is a non-standard type
-    const auto& conversion = get_conversion(type_id, this->id());
-    conversion(out, {nullptr, in}, count);
-}
 scalar_t RationalType::to_scalar_t(ScalarPointer arg) const
 {
     return static_cast<scalar_t>(*arg.raw_cast<const scalar_type*>());
@@ -306,46 +157,12 @@ void RationalType::assign(
 {
     *target.raw_cast<scalar_type*>() = scalar_type(numerator) / denominator;
 }
-Scalar RationalType::uminus(ScalarPointer arg) const
-{
-    return Scalar(this, -try_convert(arg));
-}
-void RationalType::add_inplace(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    *ptr += try_convert(rhs);
-}
-void RationalType::sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    *ptr -= try_convert(rhs);
-}
-void RationalType::mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    *ptr *= try_convert(rhs);
-}
-void RationalType::div_inplace(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    RPY_CHECK(lhs);
-    auto* ptr = lhs.raw_cast<scalar_type*>();
-    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
-    auto crhs = try_convert(rhs);
 
-    if (crhs == scalar_type(0)) {
-        RPY_THROW(std::runtime_error, "division by zero");
-    }
-
-    *ptr /= crhs;
-}
 bool RationalType::are_equal(ScalarPointer lhs, ScalarPointer rhs)
         const noexcept
 {
-    return *lhs.raw_cast<const scalar_type*>() == try_convert(rhs);
+    return *lhs.raw_cast<const scalar_type*>() == helper::try_convert(rhs);
 }
 Scalar
 RationalType::from(long long int numerator, long long int denominator) const
@@ -361,41 +178,8 @@ void RationalType::convert_fill(
 Scalar RationalType::one() const { return Scalar(this, scalar_type(1)); }
 Scalar RationalType::mone() const { return Scalar(this, scalar_type(-1)); }
 Scalar RationalType::zero() const { return Scalar(this, scalar_type(0)); }
-Scalar RationalType::copy(ScalarPointer arg) const
-{
-    return Scalar(this, try_convert(arg));
-}
-Scalar RationalType::add(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return copy(rhs); }
-    return Scalar(this, *lhs.raw_cast<const scalar_type*>() + try_convert(rhs));
-}
-Scalar RationalType::sub(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return uminus(rhs); }
-    return Scalar(this, *lhs.raw_cast<const scalar_type*>() - try_convert(rhs));
-}
-Scalar RationalType::mul(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return zero(); }
-    return Scalar(this, *lhs.raw_cast<const scalar_type*>() * try_convert(rhs));
-}
-Scalar RationalType::div(ScalarPointer lhs, ScalarPointer rhs) const
-{
-    if (!lhs) { return zero(); }
-    if (rhs.is_null()) { RPY_THROW(std::runtime_error, "division by zero"); }
 
-    auto crhs = try_convert(rhs);
 
-    if (crhs == scalar_type(0)) {
-        RPY_THROW(std::runtime_error, "division by zero");
-    }
-
-    return Scalar(
-            this,
-            static_cast<scalar_type>(*lhs.raw_cast<const scalar_type*>() / crhs)
-    );
-}
 bool RationalType::is_zero(ScalarPointer arg) const
 {
     return !static_cast<bool>(arg)
@@ -414,7 +198,8 @@ RationalType::get_rng(const string& bit_generator, Slice<uint64_t> seed) const
 {
     return ScalarType::get_rng(bit_generator, seed);
 }
-void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const
+void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count)
+        const
 {
 
     if (lhs.is_null() ^ rhs.is_null()) {
@@ -426,14 +211,19 @@ void RationalType::swap(ScalarPointer lhs, ScalarPointer rhs) const
     }
 
     if (lhs.type() != this && lhs.type() != nullptr) {
-        return lhs.type()->swap(lhs, rhs);
+        return lhs.type()->swap(lhs, rhs, 0);
     }
 
     if (lhs.is_const() || rhs.is_const()) {
         RPY_THROW(std::runtime_error, "one or both of the scalars is const");
     }
 
-    std::swap(*lhs.raw_cast<scalar_type*>(), *rhs.raw_cast<scalar_type*>());
+    auto* lptr = lhs.raw_cast<scalar_type*>();
+    auto* rptr = rhs.raw_cast<scalar_type*>();
+
+    for (dimn_t i=0; i<count; ++i) {
+        std::swap(lptr[i], rptr[i]);
+    }
 }
 std::vector<byte>
 RationalType::to_raw_bytes(const ScalarPointer& ptr, dimn_t count) const
@@ -539,7 +329,7 @@ void RationalType::add_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_scalar_type>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l + r; }
     );
 }
@@ -548,7 +338,7 @@ void RationalType::sub_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_scalar_type>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l - r; }
     );
 }
@@ -557,7 +347,7 @@ void RationalType::mul_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_scalar_type>(
+    helper::binary_into_buffer(
             dst, lhs, rhs, count, mask, [](auto l, auto r) { return l * r; }
     );
 }
@@ -566,7 +356,21 @@ void RationalType::div_into(
         dimn_t count, const uint64_t* mask
 ) const
 {
-    impl_helpers::binary_into_buffer<rational_scalar_type>(
-            dst, lhs, rhs, count, mask, [](auto l, auto r) { return l / r; }
+    helper::binary_into_buffer(
+            dst, lhs, rhs, count, mask, [](auto l, auto r) {
+                if (r == decltype(r)(0)) {
+                    RPY_THROW(std::runtime_error, "division by zero");
+                }
+                return l / r;
+            }
     );
+}
+void RationalType::uminus_into(
+        ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
+        const uint64_t* mask
+) const
+{
+    helper::unary_into_buffer(
+            dst, arg, count, mask, [](auto s) { return -s; }
+            );
 }

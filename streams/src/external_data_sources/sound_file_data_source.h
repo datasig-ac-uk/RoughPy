@@ -51,26 +51,6 @@ class SoundFileDataSource : public ExternalDataStreamSource
 
     sf_count_t param_to_frame(param_t param);
 
-    void read_direct_float(scalars::ScalarPointer& ptr, sf_count_t num_frames);
-    void read_direct_double(scalars::ScalarPointer& ptr, sf_count_t num_frames);
-
-    void read_convert_raw(scalars::ScalarPointer& ptr, sf_count_t num_frames);
-
-    template <typename T>
-    void read_convert(scalars::ScalarPointer& ptr, sf_count_t num_frames)
-    {
-        const auto num_elements = num_frames * m_handle.channels();
-        std::vector<T> buffer(num_elements);
-        m_handle.readf(buffer.data(), num_frames);
-        ptr.type()->convert_copy(ptr, buffer.data(), num_elements,
-                                 scalars::type_id_of<T>());
-    }
-
-    void select_and_convert_read2(scalars::ScalarPointer& ptr,
-                                  sf_count_t num_frames);
-    void select_and_convert_read(scalars::ScalarPointer& ptr,
-                                 sf_count_t num_frames);
-
     template <typename T>
     dimn_t query_impl(scalars::KeyScalarArray& result,
                       const intervals::Interval& interval,
