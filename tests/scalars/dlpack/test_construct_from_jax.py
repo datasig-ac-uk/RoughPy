@@ -41,11 +41,6 @@ class TestJaxArrayCreation:
         lsig24 = stream.log_signature(rp.RealInterval(2, 4))
         lsig46 = stream.log_signature(rp.RealInterval(4, 6))
 
-        print(lsig01)
-        print(lsig12)
-        print(lsig24)
-        print(lsig46)
-
         assert_array_equal(np.array(lsig01)[:6], array[0, :])
         assert not np.any(np.isnan(lsig12))
         assert not np.any(np.isnan(lsig24))
