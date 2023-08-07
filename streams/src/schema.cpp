@@ -256,6 +256,13 @@ StreamSchema::label_to_lie_key(const string& label)
     auto idx = label_to_stream_dim(label);
     return static_cast<lie_key>(idx) + 1;
 }
+typename StreamSchema::lie_key StreamSchema::time_channel_to_lie_key() const
+{
+    RPY_CHECK(p_parameterization);
+    RPY_CHECK(p_parameterization->needs_adding());
+
+    return static_cast<lie_key>(width_to_iterator(end())) + 1;
+}
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamSchema
 

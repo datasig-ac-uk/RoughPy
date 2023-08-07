@@ -190,6 +190,8 @@ public:
 
     RPY_NO_DISCARD lie_key label_to_lie_key(const string& label);
 
+    RPY_NO_DISCARD lie_key time_channel_to_lie_key() const;
+
     RPY_SERIAL_SERIALIZE_FN();
 };
 
