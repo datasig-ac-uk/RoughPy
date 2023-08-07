@@ -60,7 +60,7 @@ inline void init_channel_item(py::module_& m)
             .value("LieChannel", ChannelType::Lie)
             .export_values();
 
-    py::class_<StreamChannel> cls(m, "StreamChannel");
+    //py::class_<StreamChannel, std::shared_ptr<StreamChannel>> cls(m, "StreamChannel");
 }
 
 std::shared_ptr<StreamSchema>

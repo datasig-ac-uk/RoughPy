@@ -119,7 +119,13 @@ typename StreamSchema::iterator StreamSchema::find(const string& label)
     return it_end;
 }
 
-dimn_t StreamSchema::width() const { return width_to_iterator(end()); }
+dimn_t StreamSchema::width() const {
+    auto channels_width = width_to_iterator(end());
+    if (p_parameterization && p_parameterization->needs_adding()) {
+        channels_width += 1;
+    }
+    return channels_width;
+}
 
 dimn_t StreamSchema::channel_to_stream_dim(dimn_t channel_no) const
 {
@@ -222,7 +228,7 @@ StreamChannel& StreamSchema::insert(
 intervals::RealInterval
 StreamSchema::adjust_interval(const intervals::Interval& arg) const
 {
-    if (p_context) { return p_context->convert_parameter_interval(arg); }
+    if (p_parameterization) { return p_parameterization->convert_parameter_interval(arg); }
     return intervals::RealInterval(arg);
 }
 

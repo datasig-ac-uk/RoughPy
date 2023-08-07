@@ -74,13 +74,13 @@ namespace streams {
  * and other types of data might occupy multiple stream dimensions.
  */
 class RPY_EXPORT StreamSchema
-    : private std::vector<pair<string, std::unique_ptr<StreamChannel>>>
+    : private std::vector<pair<string, std::shared_ptr<StreamChannel>>>
 {
-    using base_type = std::vector<pair<string, std::unique_ptr<StreamChannel>>>;
+    using base_type = std::vector<pair<string, std::shared_ptr<StreamChannel>>>;
 
     bool m_is_final = false;
 
-    std::unique_ptr<Parameterization> p_context;
+    std::unique_ptr<Parameterization> p_parameterization;
 
 public:
     using typename base_type::const_iterator;
@@ -126,17 +126,18 @@ public:
         return begin() + static_cast<idimn_t>(idx);
     }
 
-    RPY_NO_DISCARD Parameterization* context() const noexcept
+    RPY_NO_DISCARD Parameterization* parametrization() const noexcept
     {
-        return p_context.get();
+        return p_parameterization.get();
     }
 
     template <typename Context, typename... Args>
     enable_if_t<is_base_of<Parameterization, Context>::value>
     init_context(Args&&... args)
     {
-        RPY_DBG_ASSERT(!p_context);
-        p_context = std::make_unique<Context>(std::forward<Args>(args)...);
+        RPY_DBG_ASSERT(!p_parameterization);
+        p_parameterization
+                = std::make_unique<Context>(std::forward<Args>(args)...);
     }
 
 public:

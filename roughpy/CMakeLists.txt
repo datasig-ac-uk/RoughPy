@@ -117,8 +117,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/streams/piecewise_abelian_stream.h
         src/streams/r_py_tick_construction_helper.cpp
         src/streams/r_py_tick_construction_helper.h
-        src/streams/py_schema_context.cpp
-        src/streams/py_schema_context.h
+        src/streams/py_parametrization.cpp
+        src/streams/py_parametrization.h
         src/streams/schema.cpp
         src/streams/schema.h
         src/streams/stream.cpp

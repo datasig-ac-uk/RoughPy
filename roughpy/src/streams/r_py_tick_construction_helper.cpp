@@ -9,7 +9,7 @@
 #include "args/convert_timestamp.h"
 #include "args/parse_schema.h"
 
-#include "py_schema_context.h"
+#include "py_parametrization.h"
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -33,7 +33,7 @@ python::RPyTickConstructionHelper::RPyTickConstructionHelper(
       m_reference_time(py::none()),
       m_time_conversion_options{PyDateTimeResolution::Seconds}
 {
-    if (!p_schema->is_final() && p_schema->context() == nullptr) {
+    if (!p_schema->is_final() && p_schema->parametrization() == nullptr) {
         p_schema->init_context<PySchemaContext>(m_time_conversion_options);
     }
     RPY_CHECK(!schema_only || !p_schema->is_final());

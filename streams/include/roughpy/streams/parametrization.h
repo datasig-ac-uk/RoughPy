@@ -28,6 +28,11 @@ public:
         return b_add_to_channels || (m_is_channel >= 0);
     }
 
+    RPY_NO_DISCARD bool needs_adding() const noexcept
+    {
+        return b_add_to_channels && m_is_channel < 0;
+    }
+
     RPY_NO_DISCARD intervals::RealInterval
     reparametrize(const intervals::RealInterval& arg) const
     {
