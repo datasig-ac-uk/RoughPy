@@ -18,6 +18,7 @@ Version 0.0.7:
   MKL/BLAS+LAPACK.
   - Added function to query ring characteristics of a ScalarType - currently
   unused.
+  - Implemented the `from_type_details` function for scalar types. This fixes a bug when constructing objects using the dlpack protocol.
 
 
 
