@@ -217,6 +217,10 @@ static bool try_fill_buffer_dlpack(
     }
 
     auto& dltensor = tensor->dl_tensor;
+
+    RPY_CHECK(dltensor.device.device_type == kDLCPU,
+              "no device support is currently available");
+
     auto* data = reinterpret_cast<char*>(dltensor.data);
     auto ndim = dltensor.ndim;
     auto* shape = dltensor.shape;
@@ -243,12 +247,8 @@ static bool try_fill_buffer_dlpack(
     for (auto i = 0; i < ndim; ++i) { size *= static_cast<idimn_t>(shape[i]); }
 
     if (strides == nullptr) {
-        if (options.type == tensor_stype) {
-            buffer = scalars::ScalarArray({options.type, data}, size);
-        } else {
-            buffer.allocate_scalars(size);
-            options.type->convert_copy(buffer, {tensor_stype, data}, size);
-        }
+        buffer.allocate_scalars(size);
+        options.type->convert_copy(buffer, {tensor_stype, data}, size);
     } else {
         buffer.allocate_scalars(size);
         scalars::ScalarPointer p(tensor_stype, data);
@@ -536,7 +536,10 @@ scalars::KeyScalarArray python::py_to_buffer(
         update_dtype_and_allocate(result, options, 1, 0);
 
         assign_py_object_to_scalar(result, object);
-    } else if (is_kv_pair(object, options.alternative_key)) {
+        return result;
+    }
+
+    if (is_kv_pair(object, options.alternative_key)) {
         /*
          * Now for tuples of length 2, which we expect to be a kv-pair
          */
@@ -547,12 +550,16 @@ scalars::KeyScalarArray python::py_to_buffer(
         update_dtype_and_allocate(result, options, 1, 1);
 
         handle_sequence_tuple(result, result.keys(), object, options);
-    } else if (py::hasattr(object, "__dlpack__")) {
+        return result;
+    }
+
+    if (py::hasattr(object, "__dlpack__")) {
         // If we used the dlpack interface, then the result is
         // already constructed.
-        try_fill_buffer_dlpack(result, options, object);
+        if (try_fill_buffer_dlpack(result, options, object)) { return result; }
+    }
 
-    } else if (py::isinstance<py::buffer>(object)) {
+    if (py::isinstance<py::buffer>(object)) {
         // Fall back to the buffer protocol
         auto info = py::reinterpret_borrow<py::buffer>(object).request();
         auto type_id = py_buffer_to_type_id(info);
@@ -573,7 +580,10 @@ scalars::KeyScalarArray python::py_to_buffer(
             options.shape.assign(info.shape.begin(), info.shape.end());
         }
 
-    } else if (py::isinstance<py::dict>(object)) {
+        return result;
+    }
+
+    if (py::isinstance<py::dict>(object)) {
         auto dict_arg = py::reinterpret_borrow<py::dict>(object);
         options.shape.push_back(static_cast<idimn_t>(dict_arg.size()));
 
@@ -590,7 +600,10 @@ scalars::KeyScalarArray python::py_to_buffer(
 
             handle_dict(ptr, key_ptr, options, dict_arg);
         }
-    } else if (py::isinstance<py::sequence>(object)) {
+        return result;
+    }
+
+    if (py::isinstance<py::sequence>(object)) {
         std::vector<py::object> leaves;
         auto size_info = compute_size_and_type(options, leaves, object);
 
@@ -625,9 +638,14 @@ scalars::KeyScalarArray python::py_to_buffer(
                 }
             }
         }
+
+        return result;
     }
 
-    return result;
+    RPY_THROW(
+            std::invalid_argument,
+            "could not parse argument to a valid scalar type"
+    );
 }
 
 scalars::Scalar
