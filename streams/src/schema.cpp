@@ -120,12 +120,17 @@ typename StreamSchema::iterator StreamSchema::find(const string& label)
 }
 
 dimn_t StreamSchema::width() const {
-    auto channels_width = width_to_iterator(end());
+    auto channels_width = width_without_param();
     if (p_parameterization && p_parameterization->needs_adding()) {
         channels_width += 1;
     }
     return channels_width;
 }
+dimn_t StreamSchema::width_without_param() const {
+    return width_to_iterator(end());
+}
+
+
 
 dimn_t StreamSchema::channel_to_stream_dim(dimn_t channel_no) const
 {

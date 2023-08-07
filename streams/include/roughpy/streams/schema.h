@@ -151,6 +151,7 @@ public:
     }
 
     RPY_NO_DISCARD dimn_t width() const;
+    RPY_NO_DISCARD dimn_t width_without_param() const;
 
     RPY_NO_DISCARD dimn_t channel_to_stream_dim(dimn_t channel_no) const;
 
