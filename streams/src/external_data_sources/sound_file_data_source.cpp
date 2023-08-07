@@ -147,7 +147,7 @@ dimn_t SoundFileDataSource::query_impl(
         for (const auto& [_, chan] : schema) {
             auto out_idx = schema.channel_to_stream_dim(i);
 
-            if (chan.type() == ChannelType::Value) {
+            if (chan->type() == ChannelType::Value) {
                 working[out_idx] = current[i] - previous[i];
             } else {
                 working[out_idx] = current[i];

@@ -27,7 +27,7 @@ intervals::RealInterval python::PySchemaContext::convert_parameter_interval(
 
         return reparametrize({inf, sup, arg.type()});
     }
-    return SchemaContext::convert_parameter_interval(arg);
+    return Parameterization::convert_parameter_interval(arg);
 }
 
 void python::PySchemaContext::set_reference_dt(py::object dt_reference)

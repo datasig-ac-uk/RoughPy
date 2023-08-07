@@ -130,19 +130,19 @@ void rpy::python::init_schema(py::module_& m)
         auto* plist = labels.ptr();
         py::ssize_t i = 0;
         for (auto&& item : *schema) {
-            switch (item.second.type()) {
+            switch (item.second->type()) {
                 case streams::ChannelType::Increment:
                     PyList_SET_ITEM(
                             plist, i++, PyUnicode_FromString(item.first.c_str())
                     );
                     break;
                 case streams::ChannelType::Value:
-                    if (item.second.is_lead_lag()) {
+                    if (item.second->is_lead_lag()) {
                         PyList_SET_ITEM(
                                 plist, i++,
                                 PyUnicode_FromString(
                                         (item.first
-                                         + item.second.label_suffix(0))
+                                         + item.second->label_suffix(0))
                                                 .c_str()
                                 )
                         );
@@ -150,7 +150,7 @@ void rpy::python::init_schema(py::module_& m)
                                 plist, i++,
                                 PyUnicode_FromString(
                                         (item.first
-                                         + item.second.label_suffix(1))
+                                         + item.second->label_suffix(1))
                                                 .c_str()
                                 )
                         );
@@ -162,13 +162,13 @@ void rpy::python::init_schema(py::module_& m)
                     }
                     break;
                 case streams::ChannelType::Categorical: {
-                    auto nvariants = item.second.num_variants();
+                    auto nvariants = item.second->num_variants();
                     for (dimn_t idx = 0; idx < nvariants; ++idx) {
                         PyList_SET_ITEM(
                                 plist, i++,
                                 PyUnicode_FromString(
                                         (item.first
-                                         + item.second.label_suffix(idx))
+                                         + item.second->label_suffix(idx))
                                                 .c_str()
                                 )
                         );
@@ -178,6 +178,7 @@ void rpy::python::init_schema(py::module_& m)
                 case streams::ChannelType::Lie: break;
             }
         }
+        RPY_CHECK(i == schema->width());
         return labels;
     });
 }
