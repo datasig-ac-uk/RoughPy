@@ -43,5 +43,6 @@ RPY_SERIAL_SPECIALIZE_TYPES(
         rpy::serial::specialization::member_serialize
 )
 
+RPY_SERIAL_REGISTER_CLASS(rpy::streams::LeadLaggableChannel)
 
 #endif// ROUGHPY_STREAMS_LEAD_LAGGABLE_CHANNEL_H

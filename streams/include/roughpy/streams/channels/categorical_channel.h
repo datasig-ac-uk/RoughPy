@@ -45,6 +45,7 @@ RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::CategoricalChannel,
                             rpy::serial::specialization::member_serialize)
 
 
+RPY_SERIAL_REGISTER_CLASS(rpy::streams::CategoricalChannel)
 
 #endif// ROUGHPY_STREAMS_CATEGORICAL_CHANNEL_H
 

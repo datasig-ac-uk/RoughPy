@@ -32,5 +32,6 @@ RPY_SERIAL_SPECIALIZE_TYPES(
         rpy::serial::specialization::member_serialize
 )
 
+RPY_SERIAL_REGISTER_CLASS(rpy::streams::ValueChannel)
 
 #endif// ROUGHPY_STREAMS_VALUE_CHANNEL_H
