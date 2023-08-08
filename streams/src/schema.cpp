@@ -124,7 +124,7 @@ typename StreamSchema::iterator StreamSchema::find(const string& label)
 
 dimn_t StreamSchema::width() const {
     auto channels_width = width_without_param();
-    if (p_parameterization && p_parameterization->needs_adding()) {
+    if (p_parameterization->needs_adding()) {
         channels_width += 1;
     }
     return channels_width;
@@ -236,8 +236,7 @@ StreamChannel& StreamSchema::insert(
 intervals::RealInterval
 StreamSchema::adjust_interval(const intervals::Interval& arg) const
 {
-    if (p_parameterization) { return p_parameterization->convert_parameter_interval(arg); }
-    return intervals::RealInterval(arg);
+    return p_parameterization->convert_parameter_interval(arg);
 }
 
 
