@@ -111,7 +111,7 @@ private:
     const_iterator stream_dim_to_channel_it(dimn_t& stream_dim) const;
 
 public:
-    StreamSchema() = default;
+    StreamSchema();
     StreamSchema(const StreamSchema&) = delete;
     StreamSchema(StreamSchema&&) noexcept = default;
 

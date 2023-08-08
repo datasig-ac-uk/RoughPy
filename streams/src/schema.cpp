@@ -38,6 +38,9 @@
 using namespace rpy;
 using namespace rpy::streams;
 
+StreamSchema::StreamSchema() : p_parameterization(new Parameterization)
+{}
+
 StreamSchema::StreamSchema(dimn_t width)
 {
     reserve(width);
