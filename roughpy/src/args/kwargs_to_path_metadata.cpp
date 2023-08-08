@@ -137,6 +137,26 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
         md.width = md.ctx->width();
         md.scalar_type = md.ctx->ctype();
 
+        if (!md.schema) {
+            md.schema = std::make_shared<streams::StreamSchema>();
+            for (deg_t i = 0; i < md.width; ++i) {
+                switch (ch_type) {
+                    case streams::ChannelType::Increment:
+                        md.schema->insert_increment("");
+                        break;
+                    case streams::ChannelType::Value:
+                        md.schema->insert_value("");
+                        break;
+                    case streams::ChannelType::Categorical:
+                        md.schema->insert_categorical("");
+                        break;
+                    case streams::ChannelType::Lie:
+                        md.schema->insert_lie("");
+                        break;
+                }
+            }
+        }
+
         auto schema_width = static_cast<deg_t>(md.schema->width());
         if (schema_width != md.width) {
             md.width = schema_width;
@@ -165,26 +185,6 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
 #else
             md.scalar_type = py_arg_to_ctype(dtype);
 #endif
-        }
-    }
-
-    if (!md.schema) {
-        md.schema = std::make_shared<streams::StreamSchema>();
-        for (deg_t i = 0; i < md.width; ++i) {
-            switch (ch_type) {
-                case streams::ChannelType::Increment:
-                    md.schema->insert_increment("");
-                    break;
-                case streams::ChannelType::Value:
-                    md.schema->insert_value("");
-                    break;
-                case streams::ChannelType::Categorical:
-                    md.schema->insert_categorical("");
-                    break;
-                case streams::ChannelType::Lie:
-                    md.schema->insert_lie("");
-                    break;
-            }
         }
     }
 
