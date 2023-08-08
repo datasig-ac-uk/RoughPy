@@ -139,11 +139,13 @@ static py::object lie_increment_stream_from_increments(
             if (icol < 0 || icol >= increment_size) {
                 RPY_THROW(py::value_error, "index out of bounds");
             }
+            RPY_CHECK(icol < buffer.size());
 
             indices.reserve(num_increments);
-            for (idimn_t i = 0; i < num_increments; ++i) {
+            indices.push_back(buffer[icol].to_scalar_t());
+            for (idimn_t i = 1; i < num_increments; ++i) {
                 indices.push_back(static_cast<param_t>(
-                        buffer[i * increment_size + icol].to_scalar_t()
+                        indices.back() + buffer[i * increment_size + icol].to_scalar_t()
                 ));
             }
         } else if (py::isinstance<py::sequence>(indices_arg)) {
@@ -171,11 +173,17 @@ static py::object lie_increment_stream_from_increments(
                               "number of indices");
     }
 
+    if (!md.schema) {
+        md.schema = std::make_shared<streams::StreamSchema>(md.width);
+    }
+
+
     auto result = streams::Stream(streams::LieIncrementStream(
-            std::move(buffer).copy_or_move(), indices,
+            buffer, indices,
             {md.width, effective_support, md.ctx, md.scalar_type,
              md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
-             md.resolution}
+             md.resolution},
+            md.schema
     ));
     if (md.support) { result.restrict_to(*md.support); }
 
