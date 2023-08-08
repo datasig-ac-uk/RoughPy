@@ -42,6 +42,7 @@ StreamSchema::StreamSchema() : p_parameterization(new Parameterization)
 {}
 
 StreamSchema::StreamSchema(dimn_t width)
+    : p_parameterization(new Parameterization)
 {
     reserve(width);
     for (dimn_t i = 0; i < width; ++i) { insert_increment(std::to_string(i)); }
