@@ -9,6 +9,5 @@
 
 
 
-RPY_SERIAL_REGISTER_CLASS(rpy::streams::LieChannel)
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::LieChannel
 #include <roughpy/platform/serialization_instantiations.inl>

@@ -48,6 +48,5 @@ bool LeadLaggableChannel::is_lead_lag() const
     return m_use_leadlag;
 }
 
-RPY_SERIAL_REGISTER_CLASS(LeadLaggableChannel)
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::LeadLaggableChannel
 #include <roughpy/platform/serialization_instantiations.inl>
