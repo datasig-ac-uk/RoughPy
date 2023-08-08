@@ -15,7 +15,7 @@ set(RPY_USE_MKL ${MKL_FOUND})
 
 configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
 add_roughpy_component(Scalars
-        SOURCES
+    SOURCES
         src/linear_algebra/blas.h
         src/linear_algebra/blas_complex_double.cpp
         src/linear_algebra/blas_complex_float.cpp
@@ -71,13 +71,14 @@ add_roughpy_component(Scalars
         #src/scalar_implementations/complex_float/complex_float_type.cpp
         #src/scalar_implementations/complex_float/complex_float_type.h
         ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
-        PUBLIC_HEADERS
+    PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/scalar_pointer.h
         include/roughpy/scalars/scalar.h
         include/roughpy/scalars/scalar_type.h
         include/roughpy/scalars/scalar_interface.h
         include/roughpy/scalars/scalar_array.h
+        include/roughpy/scalars/scalar_stream.h
         include/roughpy/scalars/owned_scalar_array.h
         include/roughpy/scalars/key_scalar_array.h
         include/roughpy/scalars/scalar_traits.h
@@ -86,15 +87,15 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_blas.h
         include/roughpy/scalars/scalar_type_helper.h
         include/roughpy/scalars.h
-        PUBLIC_DEPS
+    PUBLIC_DEPS
         Boost::boost
         Eigen3::Eigen
         Libalgebra_lite::Libalgebra_lite
         BLAS::BLAS
         LAPACK::LAPACK
-        PRIVATE_DEPS
+    PRIVATE_DEPS
         PCGRandom::pcg_random
-        NEEDS
+    NEEDS
         RoughPy::Core
         RoughPy::Platform
 )
