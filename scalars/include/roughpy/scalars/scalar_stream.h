@@ -38,9 +38,10 @@ namespace scalars {
 
 class RPY_EXPORT ScalarStream
 {
+protected:
     std::vector<const void*> m_stream;
-    //    boost::container::small_vector<dimn_t, 1> m_elts_per_row;
-    std::vector<dimn_t> m_elts_per_row;
+    boost::container::small_vector<dimn_t, 1> m_elts_per_row;
+//    std::vector<dimn_t> m_elts_per_row;
     const ScalarType* p_type;
 
 public:

@@ -46,6 +46,7 @@ add_roughpy_component(Scalars
         src/random_impl.cpp
         src/random_impl.h
         src/scalar_blas_impl.h
+        src/key_scalar_stream.cpp
         src/scalar_implementations/half/half_type.h
         src/scalar_implementations/half/half_type.cpp
         src/scalar_implementations/float/float_type.cpp
@@ -86,6 +87,7 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_matrix.h
         include/roughpy/scalars/scalar_blas.h
         include/roughpy/scalars/scalar_type_helper.h
+        include/roughpy/scalars/key_scalar_stream.h
         include/roughpy/scalars.h
     PUBLIC_DEPS
         Boost::boost
