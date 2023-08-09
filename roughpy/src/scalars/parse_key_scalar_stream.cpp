@@ -223,7 +223,7 @@ void buffer_to_stream(
             result.data_stream.set_elts_per_row(tmp_shape[1]);
 
             scalars::ScalarPointer sptr(result.data_buffer);
-            for (dimn_t i=0; i<tmp_shape[0]; ++i) {
+            for (dimn_t i = 0; i < tmp_shape[0]; ++i) {
                 result.data_stream.push_back(sptr);
                 sptr += tmp_shape[1];
             }
@@ -249,7 +249,106 @@ void dl_to_stream(
 
     RPY_CHECK(tensor.device.device_type == kDLCPU);
     RPY_CHECK(tensor.ndim == 1 || tensor.ndim == 2);
+    RPY_CHECK(tensor.dtype.lanes == 1);
 
     const auto* type
             = python::dlpack_dtype_to_scalar_type(tensor.dtype, tensor.device);
+
+    bool borrow = true;
+    if (options.type == nullptr) {
+        if (type != nullptr) {
+            options.type = type;
+        } else {
+            options.type = scalars::ScalarType::of<double>();
+            borrow = false;
+        }
+    } else {
+        borrow &= options.type == type;
+    }
+
+    // Check if the array is C-contiguous
+    const auto itemsize = tensor.dtype.bits / 8;
+    auto size = 1;
+    for (int64_t i=0; i<tensor.ndim; ++i) {
+        size *= tensor.shape[i];
+    }
+
+    borrow &= tensor.strides == nullptr;
+
+    if (borrow) {
+        if (tensor.ndim == 1) {
+            result.data_stream.set_elts_per_row(tensor.shape[0]);
+            result.data_stream.reserve_size(1);
+            result.data_stream.push_back({options.type, tensor.data});
+        } else {
+            const auto num_increments = static_cast<dimn_t>(tensor.shape[0]);
+            result.data_stream.set_elts_per_row(tensor.shape[1]);
+            result.data_stream.reserve_size(num_increments);
+
+            const auto* ptr = static_cast<const char*>(tensor.data);
+            const auto stride = tensor.shape[0] * itemsize;
+            for (dimn_t i = 0; i < num_increments; ++i) {
+                result.data_stream.push_back({options.type, ptr});
+                ptr += stride;
+            }
+        }
+    } else {
+        std::vector<char> tmp(size * itemsize);
+        py::ssize_t out_strides[2]{};
+        py::ssize_t in_strides[2] {};
+        dimn_t tmp_shape[2]{};
+        out_strides[tensor.ndim - 1] = itemsize;
+        bool transposed = tensor.ndim == 2 && tensor.shape[0] < tensor.shape[1];
+        if (tensor.ndim == 2) {
+            if (transposed) {
+                out_strides[0] = tensor.shape[1];
+                tmp_shape[0] = tensor.shape[1];
+                tmp_shape[1] = tensor.shape[0];
+            } else {
+                out_strides[0] = tensor.shape[0];
+                tmp_shape[0] = tensor.shape[0];
+                tmp_shape[1] = tensor.shape[1];
+            }
+            if (tensor.strides != nullptr) {
+                in_strides[0] = tensor.strides[0];
+                in_strides[1] = tensor.strides[1];
+            } else {
+                in_strides[0] = tensor.shape[0];
+                in_strides[1] = tensor.shape[1];
+            }
+
+        }
+
+        // TODO: We can't use tensor. objects because they are the wrong type.
+        stride_copy(
+                tmp.data(), tensor.data, itemsize, tensor.ndim,
+                tensor.shape, tensor.strides, out_strides
+        );
+
+        // Now that we're C-contiguous, convert_copy into the result.
+        result.data_buffer = KeyScalarArray(options.type);
+        result.data_buffer.allocate_scalars(size);
+        options.type->convert_copy(
+                result.data_buffer, {type, tmp.data()}, size  // TODO: This isn't right
+        );
+
+        if (tensor.ndim == 1) {
+            result.data_stream.reserve_size(1);
+            result.data_stream.set_elts_per_row(size);
+            result.data_stream.push_back({options.type, tmp.data()});
+        } else {
+            // shape[0] increments of size shape[1]
+            RPY_DBG_ASSERT(
+                    tensor.shape[0] * tensor.shape[1] == size
+            );
+            result.data_stream.reserve_size(tmp_shape[0]);
+            result.data_stream.set_elts_per_row(tmp_shape[1]);
+
+            scalars::ScalarPointer sptr(result.data_buffer);
+            for (dimn_t i = 0; i < tmp_shape[0]; ++i) {
+                result.data_stream.push_back(sptr);
+                sptr += tmp_shape[1];
+            }
+        }
+    }
 }
