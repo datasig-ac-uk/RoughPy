@@ -23,6 +23,7 @@ class RPY_EXPORT KeyScalarStream : public ScalarStream {
 public:
 
     KeyScalarStream();
+    KeyScalarStream(const ScalarType* type);
     KeyScalarStream(const KeyScalarStream&);
     KeyScalarStream(KeyScalarStream&&) noexcept;
 

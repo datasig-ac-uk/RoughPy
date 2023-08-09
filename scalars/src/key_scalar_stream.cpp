@@ -17,7 +17,8 @@ KeyScalarStream& KeyScalarStream::operator=(const KeyScalarStream&) = default;
 KeyScalarStream& KeyScalarStream::operator=(KeyScalarStream&&) noexcept
         = default;
 
-
+KeyScalarStream::KeyScalarStream(const ScalarType* type) : ScalarStream(type)
+{}
 
 void KeyScalarStream::reserve_size(dimn_t num_rows)
 {

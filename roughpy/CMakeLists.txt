@@ -81,6 +81,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/args/numpy.h
         src/args/parse_schema.cpp
         src/args/parse_schema.h
+        src/args/strided_copy.cpp
+        src/args/strided_copy.h
         src/intervals/date_time_interval.cpp
         src/intervals/date_time_interval.h
         src/intervals/dyadic.h
@@ -97,6 +99,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/intervals/real_interval.h
         src/intervals/segmentation.cpp
         src/intervals/segmentation.h
+        src/scalars/parse_key_scalar_stream.cpp
+        src/scalars/parse_key_scalar_stream.h
         src/scalars/r_py_polynomial.cpp
         src/scalars/r_py_polynomial.h
         src/scalars/scalar_type.h
