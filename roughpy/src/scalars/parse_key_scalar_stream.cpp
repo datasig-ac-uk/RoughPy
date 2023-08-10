@@ -27,6 +27,65 @@ inline void dl_to_stream(
 
 }// namespace
 
+#define DLTHROW(type, bits) \
+    RPY_THROW(std::runtime_error, std::to_string(bits) + " bit " #type " is not supported")
+
+string python::dl_to_type_id(const DLDataType& dtype, const DLDevice& RPY_UNUSED_VAR device)
+{
+    RPY_CHECK(dtype.lanes == 1);
+    switch (dtype.code) {
+        case kDLFloat:
+            switch (dtype.bits) {
+                case 16:
+                    return scalars::type_id_of<scalars::half>();
+                case 32:
+                    return scalars::type_id_of<float>();
+                case 64:
+                    return scalars::type_id_of<double>();
+                default:
+                    DLTHROW(float, dtype.bits);
+            }
+        case kDLInt:
+            switch (dtype.bits) {
+                case 8:
+                    return scalars::type_id_of<char>();
+                case 16:
+                    return scalars::type_id_of<short>();
+                case 32:
+                    return scalars::type_id_of<int>();
+                case 64:
+                    return scalars::type_id_of<long long>();
+                default:
+                    DLTHROW(int, dtype.bits);
+            }
+        case kDLUInt:
+            switch (dtype.bits) {
+                case 8: return scalars::type_id_of<unsigned char>();
+                case 16: return scalars::type_id_of<unsigned short>();
+                case 32: return scalars::type_id_of<unsigned int>();
+                case 64: return scalars::type_id_of<unsingned long long>();
+                default: DLTHROW(uint, dtype.bits);
+            }
+        case kDLBfloat:
+            if (dtype.bits == 16) {
+                return scalars::type_id_of<scalars::bfloat16>();
+            } else {
+                DLTHROW(bfloat, dtype.bits);
+            }
+        case kDLComplex:
+            DLTHROW(complex, dtype.bits);
+        case kDLOpaqueHandle:
+            DLTHROW(opaquehandle, dtype.bits);
+        case kDLBool:
+            DLTHROW(bool, dtype.bits);
+    }
+
+}
+
+#undef DLTHROW
+
+
+
 python::ParsedKeyScalarStream python::parse_key_scalar_stream(
         const py::object& data, rpy::python::PyToBufferOptions& options
 )
@@ -253,22 +312,17 @@ void dl_to_stream(
 
     const auto* type
             = python::dlpack_dtype_to_scalar_type(tensor.dtype, tensor.device);
+    const auto type_id = dl_to_type_id(tensor.dtype, tensor.device);
 
-    bool borrow = true;
     if (options.type == nullptr) {
-        if (type != nullptr) {
-            options.type = type;
-        } else {
-            options.type = scalars::ScalarType::of<double>();
-            borrow = false;
-        }
-    } else {
-        borrow &= options.type == type;
+        options.type = scalars::ScalarType::for_id(type_id);
     }
+
+    bool borrow = options.type->id() == type_id;
 
     // Check if the array is C-contiguous
     const auto itemsize = tensor.dtype.bits / 8;
-    auto size = 1;
+    int64_t size = 1;
     for (int64_t i=0; i<tensor.ndim; ++i) {
         size *= tensor.shape[i];
     }
@@ -296,18 +350,19 @@ void dl_to_stream(
         std::vector<char> tmp(size * itemsize);
         py::ssize_t out_strides[2]{};
         py::ssize_t in_strides[2] {};
-        dimn_t tmp_shape[2]{};
+        py::ssize_t in_shape[2] {};
+        dimn_t out_shape[2]{};
         out_strides[tensor.ndim - 1] = itemsize;
         bool transposed = tensor.ndim == 2 && tensor.shape[0] < tensor.shape[1];
         if (tensor.ndim == 2) {
             if (transposed) {
                 out_strides[0] = tensor.shape[1];
-                tmp_shape[0] = tensor.shape[1];
-                tmp_shape[1] = tensor.shape[0];
+                out_shape[0] = tensor.shape[1];
+                out_shape[1] = tensor.shape[0];
             } else {
                 out_strides[0] = tensor.shape[0];
-                tmp_shape[0] = tensor.shape[0];
-                tmp_shape[1] = tensor.shape[1];
+                out_shape[0] = tensor.shape[0];
+                out_shape[1] = tensor.shape[1];
             }
             if (tensor.strides != nullptr) {
                 in_strides[0] = tensor.strides[0];
@@ -317,19 +372,20 @@ void dl_to_stream(
                 in_strides[1] = tensor.shape[1];
             }
 
+            in_shape[1] = tensor.shape[1];
         }
+        in_shape[0] = tensor.shape[0];
 
-        // TODO: We can't use tensor. objects because they are the wrong type.
         stride_copy(
                 tmp.data(), tensor.data, itemsize, tensor.ndim,
-                tensor.shape, tensor.strides, out_strides
+                in_shape, in_strides, out_strides
         );
 
         // Now that we're C-contiguous, convert_copy into the result.
         result.data_buffer = KeyScalarArray(options.type);
         result.data_buffer.allocate_scalars(size);
         options.type->convert_copy(
-                result.data_buffer, {type, tmp.data()}, size  // TODO: This isn't right
+                result.data_buffer, {type_id, tmp.data()}, size
         );
 
         if (tensor.ndim == 1) {
@@ -341,13 +397,13 @@ void dl_to_stream(
             RPY_DBG_ASSERT(
                     tensor.shape[0] * tensor.shape[1] == size
             );
-            result.data_stream.reserve_size(tmp_shape[0]);
-            result.data_stream.set_elts_per_row(tmp_shape[1]);
+            result.data_stream.reserve_size(out_shape[0]);
+            result.data_stream.set_elts_per_row(out_shape[1]);
 
             scalars::ScalarPointer sptr(result.data_buffer);
-            for (dimn_t i = 0; i < tmp_shape[0]; ++i) {
+            for (dimn_t i = 0; i < out_shape[0]; ++i) {
                 result.data_stream.push_back(sptr);
-                sptr += tmp_shape[1];
+                sptr += out_shape[1];
             }
         }
     }

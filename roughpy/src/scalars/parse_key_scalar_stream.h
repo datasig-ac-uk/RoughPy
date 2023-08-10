@@ -25,6 +25,8 @@ struct ParsedKeyScalarStream {
 
 };
 
+string dl_to_type_id(const DLDataType& dtype, const DLDevice& device);
+
 
 RPY_NO_DISCARD
 ParsedKeyScalarStream
