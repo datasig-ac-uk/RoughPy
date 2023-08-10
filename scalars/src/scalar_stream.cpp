@@ -32,10 +32,13 @@
 
 #include <roughpy/scalars/scalar_stream.h>
 
+#include <algorithm>
+
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
+
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -79,6 +82,15 @@ dimn_t ScalarStream::col_count(dimn_t i) const noexcept
     RPY_DBG_ASSERT(m_elts_per_row.size() > 1);
     RPY_DBG_ASSERT(i < m_elts_per_row.size());
     return m_elts_per_row[i];
+}
+
+dimn_t ScalarStream::max_row_size() const noexcept {
+    if (m_elts_per_row.empty()) { return 0; }
+    if (m_elts_per_row.size() == 1) { return m_elts_per_row[0]; }
+
+    auto max_elt = std::max_element(m_elts_per_row.begin(), m_elts_per_row.end());
+
+    return *max_elt;
 }
 
 ScalarArray ScalarStream::operator[](dimn_t row) const noexcept

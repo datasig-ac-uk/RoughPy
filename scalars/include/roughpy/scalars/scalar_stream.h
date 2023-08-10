@@ -63,6 +63,8 @@ public:
     RPY_NO_DISCARD
     dimn_t row_count() const noexcept { return m_stream.size(); }
 
+    RPY_NO_DISCARD dimn_t max_row_size() const noexcept;
+
     RPY_NO_DISCARD
     ScalarArray operator[](dimn_t row) const noexcept;
     RPY_NO_DISCARD
