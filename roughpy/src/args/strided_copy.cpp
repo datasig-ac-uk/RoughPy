@@ -25,7 +25,7 @@ void rpy::python::stride_copy(
         }
     } else {
         for (py::ssize_t i=0; i<shape_in[0]; ++i) {
-            for (py::ssize_t j=0; j<shape_in[1]; ++i) {
+            for (py::ssize_t j=0; j<shape_in[1]; ++j) {
                 std::memcpy(
                         dptr + i*strides_in[0] + j*strides_in[1],
                         dptr + i*strides_out[0] + j*strides_out[1],
