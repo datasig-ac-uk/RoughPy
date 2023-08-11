@@ -118,11 +118,13 @@ void ScalarStream::reserve_size(dimn_t num_rows) { m_stream.reserve(num_rows); }
 void ScalarStream::push_back(const ScalarPointer& data)
 {
     RPY_CHECK(m_elts_per_row.size() == 1 && m_elts_per_row[0] > 0);
+    RPY_DBG_ASSERT(!data.is_null());
     m_stream.push_back(data.ptr());
 }
 void ScalarStream::push_back(const ScalarArray& data)
 {
     if (m_elts_per_row.size() == 1) {
+        RPY_DBG_ASSERT(!data.is_null());
         m_stream.push_back(data.ptr());
         if (data.size() != m_elts_per_row[0]) {
             m_elts_per_row.reserve(m_stream.size() + 1);
