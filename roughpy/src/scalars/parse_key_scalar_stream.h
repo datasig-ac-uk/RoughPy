@@ -22,17 +22,16 @@ struct ParsedKeyScalarStream {
 
     /// Buffer holding key/scalar data if a copy had to be made
     scalars::KeyScalarArray data_buffer;
-
 };
 
 string dl_to_type_id(const DLDataType& dtype, const DLDevice& device);
 
+void parse_key_scalar_stream(
+        ParsedKeyScalarStream& result, const py::object& data,
+        PyToBufferOptions& options
+);
 
-RPY_NO_DISCARD
-ParsedKeyScalarStream
-parse_key_scalar_stream(const py::object& data, PyToBufferOptions& options);
-
-}
+}// namespace python
 }// namespace rpy
 
 #endif// ROUGHPY_PARSE_KEY_SCALAR_STREAM_H

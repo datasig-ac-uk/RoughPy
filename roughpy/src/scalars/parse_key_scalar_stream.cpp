@@ -13,19 +13,17 @@ using namespace rpy::python;
 using rpy::scalars::KeyScalarArray;
 using rpy::scalars::KeyScalarStream;
 
-namespace {
 
-inline void buffer_to_stream(
+static inline void buffer_to_stream(
         ParsedKeyScalarStream& result, const py::buffer_info& buf_info,
         PyToBufferOptions& options
 );
 
-inline void dl_to_stream(
+static inline void dl_to_stream(
         ParsedKeyScalarStream& result, const py::object& dl_object,
         PyToBufferOptions& options
 );
 
-}// namespace
 
 #define DLTHROW(type, bits) \
     RPY_THROW(std::runtime_error, std::to_string(bits) + " bit " #type " is not supported")
@@ -63,7 +61,7 @@ string python::dl_to_type_id(const DLDataType& dtype, const DLDevice& RPY_UNUSED
                 case 8: return scalars::type_id_of<unsigned char>();
                 case 16: return scalars::type_id_of<unsigned short>();
                 case 32: return scalars::type_id_of<unsigned int>();
-                case 64: return scalars::type_id_of<unsingned long long>();
+                case 64: return scalars::type_id_of<unsigned long long>();
                 default: DLTHROW(uint, dtype.bits);
             }
         case kDLBfloat:
@@ -80,18 +78,18 @@ string python::dl_to_type_id(const DLDataType& dtype, const DLDevice& RPY_UNUSED
             DLTHROW(bool, dtype.bits);
     }
 
+    RPY_UNREACHABLE_RETURN({});
 }
 
 #undef DLTHROW
 
 
 
-python::ParsedKeyScalarStream python::parse_key_scalar_stream(
+void python::parse_key_scalar_stream(ParsedKeyScalarStream& result,
         const py::object& data, rpy::python::PyToBufferOptions& options
 )
 {
 
-    ParsedKeyScalarStream result;
 
     /*
      * A key-data stream should not represent a single (key-)scalar value,
@@ -186,7 +184,6 @@ python::ParsedKeyScalarStream python::parse_key_scalar_stream(
         );
     }
 
-    return result;
 }
 
 void buffer_to_stream(
@@ -306,17 +303,25 @@ void dl_to_stream(
     RPY_CHECK(dltensor != nullptr);
     auto& tensor = dltensor->dl_tensor;
 
+    const auto type_id = dl_to_type_id(tensor.dtype, tensor.device);
+
+    if (tensor.ndim == 0 || tensor.shape[0] == 0 || tensor.ndim > 1 && tensor.shape[1] == 0) {
+        if (options.type == nullptr) {
+            options.type = scalars::ScalarType::for_id(type_id);
+        }
+        return;
+    }
+
     RPY_CHECK(tensor.device.device_type == kDLCPU);
     RPY_CHECK(tensor.ndim == 1 || tensor.ndim == 2);
     RPY_CHECK(tensor.dtype.lanes == 1);
 
-    const auto* type
-            = python::dlpack_dtype_to_scalar_type(tensor.dtype, tensor.device);
-    const auto type_id = dl_to_type_id(tensor.dtype, tensor.device);
-
     if (options.type == nullptr) {
         options.type = scalars::ScalarType::for_id(type_id);
+
     }
+    result.data_stream = KeyScalarStream(options.type);
+    result.data_buffer = KeyScalarArray(options.type);
 
     bool borrow = options.type->id() == type_id;
 
@@ -340,9 +345,8 @@ void dl_to_stream(
             result.data_stream.reserve_size(num_increments);
 
             const auto* ptr = static_cast<const char*>(tensor.data);
-            const auto stride = tensor.shape[0] * itemsize;
+            const auto stride = tensor.shape[1] * itemsize;
             for (dimn_t i = 0; i < num_increments; ++i) {
-                result.data_stream.push_back({options.type, ptr});
                 ptr += stride;
             }
         }
@@ -354,13 +358,15 @@ void dl_to_stream(
         dimn_t out_shape[2]{};
         out_strides[tensor.ndim - 1] = itemsize;
         bool transposed = tensor.ndim == 2 && tensor.shape[0] < tensor.shape[1];
+
+        in_shape[0] = tensor.shape[0];
         if (tensor.ndim == 2) {
             if (transposed) {
-                out_strides[0] = tensor.shape[1];
+                out_strides[0] = tensor.shape[1]*itemsize;
                 out_shape[0] = tensor.shape[1];
                 out_shape[1] = tensor.shape[0];
             } else {
-                out_strides[0] = tensor.shape[0];
+                out_strides[0] = tensor.shape[0]*itemsize;
                 out_shape[0] = tensor.shape[0];
                 out_shape[1] = tensor.shape[1];
             }
@@ -368,13 +374,12 @@ void dl_to_stream(
                 in_strides[0] = tensor.strides[0];
                 in_strides[1] = tensor.strides[1];
             } else {
-                in_strides[0] = tensor.shape[0];
-                in_strides[1] = tensor.shape[1];
+                in_strides[0] = tensor.shape[1]*itemsize;
+                in_strides[1] = itemsize;
             }
 
             in_shape[1] = tensor.shape[1];
         }
-        in_shape[0] = tensor.shape[0];
 
         stride_copy(
                 tmp.data(), tensor.data, itemsize, tensor.ndim,
