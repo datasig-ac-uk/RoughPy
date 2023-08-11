@@ -252,7 +252,6 @@ void dl_to_stream(
         return;
     }
 
-    RPY_CHECK(tensor.device.device_type == kDLCPU);
     RPY_CHECK(tensor.ndim == 1 || tensor.ndim == 2);
     RPY_CHECK(tensor.dtype.lanes == 1);
 
