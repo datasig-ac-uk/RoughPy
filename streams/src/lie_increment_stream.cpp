@@ -105,6 +105,51 @@ LieIncrementStream::LieIncrementStream(
     }
 }
 
+LieIncrementStream::LieIncrementStream(
+        const scalars::KeyScalarStream& ks_stream, Slice<param_t> indices,
+        StreamMetadata mdarg, std::shared_ptr<StreamSchema> schema_arg
+)
+    : DyadicCachingLayer(std::move(mdarg), std::move(schema_arg))
+{
+    using scalars::Scalar;
+    RPY_CHECK(indices.size() == ks_stream.row_count());
+
+    const auto& md = this->metadata();
+    const auto& ctx = *md.default_context;
+
+    const auto& sch = this->schema();
+    const auto* param = sch.parametrization();
+    const bool param_needs_adding = param != nullptr && param->needs_adding();
+    const key_type param_slot
+            = (param_needs_adding) ? sch.time_channel_to_lie_key() : 0;
+
+    m_data.reserve(indices.size());
+    param_t previous_param = 0.0;
+
+    for (dimn_t i=0; i<indices.size(); ++i) {
+        const auto& index = indices[i];
+
+        algebra::VectorConstructionData cdata {
+                ks_stream[i],
+                md.cached_vector_type
+        };
+
+        auto [it, inserted]
+                = m_data.try_emplace(index, ctx.construct_lie(cdata));
+
+
+        if (inserted && param_needs_adding) {
+            /*
+             * We've inserted a new element, so we should now add the param
+             * value if it is needed.
+             */
+            it->second[param_slot] = Scalar(index - previous_param);
+        }
+        previous_param = index;
+
+    }
+}
+
 algebra::Lie LieIncrementStream::log_signature_impl(
         const intervals::Interval& interval, const algebra::Context& ctx
 ) const

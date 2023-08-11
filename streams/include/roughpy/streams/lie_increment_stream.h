@@ -37,6 +37,7 @@
 #include <roughpy/core/helpers.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/key_scalar_array.h>
+#include <roughpy/scalars/key_scalar_stream.h>
 
 namespace rpy {
 namespace streams {
@@ -58,6 +59,11 @@ public:
             const scalars::KeyScalarArray& buffer, Slice<param_t> indices,
             StreamMetadata md, std::shared_ptr<StreamSchema> schema
     );
+
+    explicit LieIncrementStream(
+            const scalars::KeyScalarStream& ks_stream, Slice<param_t> indices,
+            StreamMetadata md, std::shared_ptr<StreamSchema> schema
+            );
 
     RPY_NO_DISCARD bool empty(const intervals::Interval& interval
     ) const noexcept override;
