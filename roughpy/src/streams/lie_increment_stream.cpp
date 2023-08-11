@@ -86,7 +86,8 @@ static py::object lie_increment_stream_from_increments(
     options.allow_scalar = false;
 
     //    auto buffer = python::py_to_buffer(data, options);
-    auto ks_stream = python::parse_key_scalar_stream(data, options);
+    python::ParsedKeyScalarStream ks_stream;
+    python::parse_key_scalar_stream(ks_stream, data, options);
 
     if (md.scalar_type == nullptr) {
         if (options.type != nullptr) {
@@ -113,7 +114,6 @@ static py::object lie_increment_stream_from_increments(
 
     dimn_t num_increments = ks_stream.data_stream.row_count();
 
-    RPY_CHECK(num_increments > 0);
 
     auto effective_support
             = intervals::RealInterval::right_unbounded(0.0, md.interval_type);
@@ -198,7 +198,7 @@ static py::object lie_increment_stream_from_increments(
     }
 
     auto result = streams::Stream(streams::LieIncrementStream(
-            ks_stream, indices,
+            ks_stream.data_stream, indices,
             {md.width, effective_support, md.ctx, md.scalar_type,
              md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
              md.resolution},
