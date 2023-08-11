@@ -4,7 +4,7 @@
 
 #cmakedefine RPY_USE_MKL
 
-#if @RPY_USE_MKL@
+#ifdef RPY_USE_MKL
 #  include <mkl.h>
 #  include <mkl_spblas.h>
 #else
@@ -14,7 +14,7 @@
 
 #include <roughpy/scalars/scalar_matrix.h>
 
-#if @RPY_USE_MKL@
+#ifdef RPY_USE_MKL
 #  define EIGEN_USE_MKL_ALL
 #endif
 
