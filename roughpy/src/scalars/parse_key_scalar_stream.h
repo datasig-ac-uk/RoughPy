@@ -24,7 +24,6 @@ struct ParsedKeyScalarStream {
     scalars::KeyScalarArray data_buffer;
 };
 
-string dl_to_type_id(const DLDataType& dtype, const DLDevice& device);
 
 void parse_key_scalar_stream(
         ParsedKeyScalarStream& result, const py::object& data,

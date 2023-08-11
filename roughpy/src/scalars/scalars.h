@@ -121,9 +121,6 @@ inline bool is_kv_pair(py::handle arg, python::AlternativeKeyType* alternative)
     return false;
 }
 
-const scalars::ScalarType*
-dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device);
-
 
 scalars::KeyScalarArray
 py_to_buffer(const py::handle& arg, PyToBufferOptions& options);

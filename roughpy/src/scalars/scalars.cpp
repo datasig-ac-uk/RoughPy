@@ -41,6 +41,8 @@
 #include "r_py_polynomial.h"
 #include "scalar_type.h"
 
+#include "args/dlpack_helpers.h"
+
 using namespace rpy;
 using namespace rpy::python;
 using namespace pybind11::literals;
@@ -132,35 +134,7 @@ void python::init_scalars(pybind11::module_& m)
  * objects.
  */
 
-#define DOCASE(NAME)                                                           \
-    case static_cast<uint8_t>(scalars::ScalarTypeCode::NAME):                  \
-        type = scalars::ScalarTypeCode::NAME;                                  \
-        break
 
-const scalars::ScalarType*
-python::dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
-{
-    using scalars::ScalarDeviceType;
-
-    scalars::ScalarTypeCode type;
-    switch (dtype.code) {
-        DOCASE(Float);
-        DOCASE(Int);
-        DOCASE(UInt);
-        DOCASE(OpaqueHandle);
-        DOCASE(BFloat);
-        DOCASE(Complex);
-        DOCASE(Bool);
-    }
-
-    return scalars::ScalarType::from_type_details(
-            {type, dtype.bits, dtype.lanes},
-            {static_cast<ScalarDeviceType>(device.device_type),
-             device.device_id}
-    );
-}
-
-#undef DOCASE
 
 static inline void dl_copy_strided(
         std::int32_t ndim, std::int64_t* shape, std::int64_t* strides,
@@ -228,8 +202,9 @@ static bool try_fill_buffer_dlpack(
     auto* strides = dltensor.strides;
 
     // This function throws if no matching dtype is found
+
     const auto* tensor_stype
-            = dlpack_dtype_to_scalar_type(dltensor.dtype, dltensor.device);
+            = python::scalar_type_of_dl_info(dltensor.dtype, dltensor.device);
     if (options.type == nullptr) {
         options.type = tensor_stype;
         buffer = scalars::KeyScalarArray(options.type);

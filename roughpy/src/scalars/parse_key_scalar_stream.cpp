@@ -5,7 +5,7 @@
 #include "parse_key_scalar_stream.h"
 #include "args/numpy.h"
 #include "args/strided_copy.h"
-#include "dlpack.h"
+#include "args/dlpack_helpers.h"
 
 using namespace rpy;
 using namespace rpy::python;
@@ -23,66 +23,6 @@ static inline void dl_to_stream(
         ParsedKeyScalarStream& result, const py::object& dl_object,
         PyToBufferOptions& options
 );
-
-
-#define DLTHROW(type, bits) \
-    RPY_THROW(std::runtime_error, std::to_string(bits) + " bit " #type " is not supported")
-
-string python::dl_to_type_id(const DLDataType& dtype, const DLDevice& RPY_UNUSED_VAR device)
-{
-    RPY_CHECK(dtype.lanes == 1);
-    switch (dtype.code) {
-        case kDLFloat:
-            switch (dtype.bits) {
-                case 16:
-                    return scalars::type_id_of<scalars::half>();
-                case 32:
-                    return scalars::type_id_of<float>();
-                case 64:
-                    return scalars::type_id_of<double>();
-                default:
-                    DLTHROW(float, dtype.bits);
-            }
-        case kDLInt:
-            switch (dtype.bits) {
-                case 8:
-                    return scalars::type_id_of<char>();
-                case 16:
-                    return scalars::type_id_of<short>();
-                case 32:
-                    return scalars::type_id_of<int>();
-                case 64:
-                    return scalars::type_id_of<long long>();
-                default:
-                    DLTHROW(int, dtype.bits);
-            }
-        case kDLUInt:
-            switch (dtype.bits) {
-                case 8: return scalars::type_id_of<unsigned char>();
-                case 16: return scalars::type_id_of<unsigned short>();
-                case 32: return scalars::type_id_of<unsigned int>();
-                case 64: return scalars::type_id_of<unsigned long long>();
-                default: DLTHROW(uint, dtype.bits);
-            }
-        case kDLBfloat:
-            if (dtype.bits == 16) {
-                return scalars::type_id_of<scalars::bfloat16>();
-            } else {
-                DLTHROW(bfloat, dtype.bits);
-            }
-        case kDLComplex:
-            DLTHROW(complex, dtype.bits);
-        case kDLOpaqueHandle:
-            DLTHROW(opaquehandle, dtype.bits);
-        case kDLBool:
-            DLTHROW(bool, dtype.bits);
-    }
-
-    RPY_UNREACHABLE_RETURN({});
-}
-
-#undef DLTHROW
-
 
 
 void python::parse_key_scalar_stream(ParsedKeyScalarStream& result,
@@ -303,12 +243,12 @@ void dl_to_stream(
     RPY_CHECK(dltensor != nullptr);
     auto& tensor = dltensor->dl_tensor;
 
-    const auto type_id = dl_to_type_id(tensor.dtype, tensor.device);
+    const auto type_id = python::type_id_for_dl_info(tensor.dtype, tensor.device);
+    if (options.type == nullptr) {
+        options.type = scalars::ScalarType::for_id(type_id);
+    }
 
     if (tensor.ndim == 0 || tensor.shape[0] == 0 || tensor.ndim > 1 && tensor.shape[1] == 0) {
-        if (options.type == nullptr) {
-            options.type = scalars::ScalarType::for_id(type_id);
-        }
         return;
     }
 
@@ -316,10 +256,6 @@ void dl_to_stream(
     RPY_CHECK(tensor.ndim == 1 || tensor.ndim == 2);
     RPY_CHECK(tensor.dtype.lanes == 1);
 
-    if (options.type == nullptr) {
-        options.type = scalars::ScalarType::for_id(type_id);
-
-    }
     result.data_stream = KeyScalarStream(options.type);
     result.data_buffer = KeyScalarArray(options.type);
 
@@ -347,6 +283,7 @@ void dl_to_stream(
             const auto* ptr = static_cast<const char*>(tensor.data);
             const auto stride = tensor.shape[1] * itemsize;
             for (dimn_t i = 0; i < num_increments; ++i) {
+                result.data_stream.push_back({options.type, ptr});
                 ptr += stride;
             }
         }
