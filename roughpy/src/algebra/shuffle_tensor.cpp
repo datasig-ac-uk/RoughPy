@@ -103,7 +103,6 @@ static ShuffleTensor construct_shuffle(py::object data, py::kwargs kwargs)
             {std::move(buffer), helper.vtype}
     );
 
-    if (options.cleanup) { options.cleanup(); }
 
     return result;
 }
