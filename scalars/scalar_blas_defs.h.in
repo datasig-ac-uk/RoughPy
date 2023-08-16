@@ -1,7 +1,7 @@
 
 #cmakedefine RPY_USE_MKL
 
-#if @RPY_USE_MKL@
+#ifdef RPY_USE_MKL
 #  include <mkl.h>
 #  include <mkl_spblas.h>
 #else
@@ -11,7 +11,7 @@
 
 #include <roughpy/scalars/scalar_matrix.h>
 
-#if @RPY_USE_MKL@
+#ifdef RPY_USE_MKL
 #  define EIGEN_USE_MKL_ALL
 #endif
 
@@ -24,9 +24,17 @@ blas {
 #ifdef RPY_USE_MKL
 using integer = MKL_INT;
 #else
-using integer = blasint;
+using integer = int;
 #endif
 
+enum CBLAS_LAYOUT {CblasRowMajor=101, CblasColMajor=102};
+enum CBLAS_TRANSPOSE {CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113};
+enum CBLAS_UPLO {CblasUpper=121, CblasLower=122};
+enum CBLAS_DIAG {CblasNonUnit=131, CblasUnit=132};
+enum CBLAS_SIDE {CblasLeft=141, CblasRight=142};
+enum CBLAS_STORAGE {CblasPacked=151};
+enum CBLAS_IDENTIFIER {CblasAMatrix=161, CblasBMatrix=162};
+enum CBLAS_OFFSET {CblasRowOffset=171, CblasColOffset=172, CblasFixOffset=173};
 using BlasLayout = CBLAS_LAYOUT;
 using BlasTranspose = CBLAS_TRANSPOSE;
 using BlasUpLo = CBLAS_UPLO;
@@ -61,7 +69,7 @@ return storage == rpy::scalars::MatrixStorage::UpperTriangular ? Blas_Up : Blas_
 
 namespace lapack {
 
-using integer = lapack_int;
+using integer = int;
 
 
 }

@@ -39,7 +39,7 @@ function(get_brew_prefix _out_var _package)
     endif ()
     message(DEBUG "Locating ${_package} brew installation prefix")
 
-    execute_process(COMMANDS ${_executable}
+    execute_process(COMMAND ${_executable}
             "--prefix" "${_package}"
             RESULT_VARIABLE _result
             OUTPUT_VARIABLE _out
