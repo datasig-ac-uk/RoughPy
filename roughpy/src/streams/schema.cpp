@@ -41,6 +41,130 @@ using namespace rpy::python;
 using namespace rpy::streams;
 using namespace pybind11::literals;
 
+namespace rpy {
+namespace python {
+class RPY_LOCAL RPyStreamChannel : public StreamChannel
+{
+public:
+    using StreamChannel::StreamChannel;
+
+    dimn_t num_variants() const override
+    {
+        PYBIND11_OVERRIDE(dimn_t, StreamChannel, num_variants);
+    }
+    string label_suffix(dimn_t variant_no) const override
+    {
+        PYBIND11_OVERRIDE(string, StreamChannel, label_suffix, variant_no);
+    }
+    dimn_t variant_id_of_label(string_view label) const override
+    {
+        PYBIND11_OVERRIDE(dimn_t, StreamChannel, variant_id_of_label, label);
+    }
+    void
+    set_lie_info(deg_t width, deg_t depth, algebra::VectorType vtype) override
+    {
+        if (type() == ChannelType::Lie) {
+            PYBIND11_OVERRIDE(
+                    void, StreamChannel, set_lie_info, width, depth, vtype
+            );
+        } else {
+            RPY_THROW(
+                    std::runtime_error,
+                    "set_lie_info should only be used for Lie-type channels"
+            );
+        }
+    }
+
+    StreamChannel& add_variant(string variant_label) override
+    {
+        if (type() == ChannelType::Categorical) {
+            PYBIND11_OVERRIDE(
+                    StreamChannel&, StreamChannel, add_variant, variant_label
+            );
+        } else {
+            RPY_THROW(
+                    std::runtime_error,
+                    "only categorical channels can have variants"
+            );
+        }
+    }
+    StreamChannel& insert_variant(string variant_label) override
+    {
+        if (type() == ChannelType::Categorical) {
+            PYBIND11_OVERRIDE(
+                    StreamChannel&, StreamChannel, insert_variant, variant_label
+            );
+        } else {
+            RPY_THROW(
+                    std::runtime_error,
+                    "only categorical channels can have variants"
+            );
+        }
+    }
+    const std::vector<string>& get_variants() const override
+    {
+        if (type() == ChannelType::Categorical) {
+            PYBIND11_OVERRIDE(const std::vector<string>&, StreamChannel, get_variants);
+        } else {
+            RPY_THROW(
+                    std::runtime_error,
+                    "only categorical channels can have variants"
+            );
+        }
+    }
+};
+
+
+class RPY_LOCAL RPyLeadLaggableChannel : public LeadLaggableChannel
+{
+public:
+
+    using LeadLaggableChannel::LeadLaggableChannel;
+
+    dimn_t num_variants() const override
+    {
+        PYBIND11_OVERRIDE(dimn_t, LeadLaggableChannel, num_variants);
+    }
+    string label_suffix(dimn_t variant_no) const override
+    {
+        PYBIND11_OVERRIDE(string, LeadLaggableChannel, label_suffix, variant_no);
+    }
+    dimn_t variant_id_of_label(string_view label) const override
+    {
+        PYBIND11_OVERRIDE(dimn_t, LeadLaggableChannel, variant_id_of_label, label);
+    }
+    const std::vector<string>& get_variants() const override
+    {
+        PYBIND11_OVERRIDE(const std::vector<string>&, LeadLaggableChannel, get_variants);
+    }
+    void set_lead_lag(bool new_value) override
+    {
+        PYBIND11_OVERRIDE(void, LeadLaggableChannel, set_lead_lag, new_value);
+    }
+    bool is_lead_lag() const override
+    {
+        PYBIND11_OVERRIDE(bool, LeadLaggableChannel, is_lead_lag);
+    }
+    void
+    set_lie_info(deg_t width, deg_t depth, algebra::VectorType vtype) override
+    {
+        RPY_THROW(std::runtime_error, "set_lie_info is only available for Lie-type channels");
+    }
+    StreamChannel& add_variant(string variant_label) override
+    {
+        RPY_THROW(std::runtime_error, "variants are only available for categorical channels");
+    }
+    StreamChannel& insert_variant(string variant_label) override
+    {
+        RPY_THROW(std::runtime_error, "variants are only available for categorical channels");
+    }
+};
+
+
+
+}// namespace python
+}// namespace rpy
+
 namespace {
 
 // class PyChannelItem {
@@ -60,7 +184,8 @@ inline void init_channel_item(py::module_& m)
             .value("LieChannel", ChannelType::Lie)
             .export_values();
 
-    //py::class_<StreamChannel, std::shared_ptr<StreamChannel>> cls(m, "StreamChannel");
+    // py::class_<StreamChannel, std::shared_ptr<StreamChannel>> cls(m,
+    // "StreamChannel");
 }
 
 std::shared_ptr<StreamSchema>
