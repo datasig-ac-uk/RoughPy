@@ -42,7 +42,7 @@
 namespace rpy {
 namespace python {
 
-class PySchemaContext : public streams::SchemaContext
+class PySchemaContext : public streams::Parameterization
 {
     py::object m_dt_reference;
     optional<PyDateTimeConversionOptions> m_dt_conversion{};

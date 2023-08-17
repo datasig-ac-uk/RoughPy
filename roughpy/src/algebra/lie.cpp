@@ -83,7 +83,6 @@ static Lie construct_lie(py::object data, py::kwargs kwargs)
 
     auto result = helper.ctx->construct_lie({std::move(buffer), helper.vtype});
 
-    if (options.cleanup) { options.cleanup(); }
 
     return result;
 }

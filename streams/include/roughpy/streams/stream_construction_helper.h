@@ -117,8 +117,8 @@ void StreamConstructionHelper::add_value(param_t timestamp, string_view label,
     const auto found = p_schema->find(string(label));
     RPY_CHECK(found != p_schema->end());
 
-    auto lead_idx = found->second.variant_id_of_label("lead");
-    auto lag_idx = found->second.variant_id_of_label("lag");
+    auto lead_idx = found->second->variant_id_of_label("lead");
+    auto lag_idx = found->second->variant_id_of_label("lag");
 
     scalars::Scalar current(std::forward<T>(value));
 

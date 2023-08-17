@@ -34,7 +34,7 @@ class TestJaxArrayCreation:
                [-0.6642682, -0.12166289, 1.04914618, -1.01415539, -1.58841276, -2.54356289]
         ])
 
-        stream = rp.LieIncrementStream.from_increments(np.array(array), width=6, depth=2, dtype="float32")
+        stream = rp.LieIncrementStream.from_increments(np.array(array), width=6, depth=2, dtype=rp.SPReal)
 
         lsig01 = stream.log_signature(rp.RealInterval(0, 1))
         lsig12 = stream.log_signature(rp.RealInterval(1, 2))

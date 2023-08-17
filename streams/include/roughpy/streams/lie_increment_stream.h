@@ -37,35 +37,41 @@
 #include <roughpy/core/helpers.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/key_scalar_array.h>
+#include <roughpy/scalars/key_scalar_stream.h>
 
 namespace rpy {
 namespace streams {
 
 class RPY_EXPORT LieIncrementStream : public DyadicCachingLayer
 {
-    scalars::KeyScalarArray m_buffer;
-    boost::container::flat_map<param_t, dimn_t> m_mapping;
-
     using base_t = DyadicCachingLayer;
 
 public:
-    LieIncrementStream(scalars::KeyScalarArray&& buffer,
-                       boost::container::flat_map<param_t, dimn_t>&& mapping,
-                       StreamMetadata&& md)
-        : DyadicCachingLayer(std::move(md)), m_buffer(std::move(buffer)),
-          m_mapping(std::move(mapping))
-    {}
+    using Lie = algebra::Lie;
 
-    LieIncrementStream(scalars::KeyScalarArray&& buffer, Slice<param_t> indices,
-                       StreamMetadata md);
+private:
+    boost::container::flat_map<param_t, Lie> m_data;
 
-    RPY_NO_DISCARD
-    bool empty(const intervals::Interval& interval) const noexcept override;
+public:
+    using DyadicCachingLayer::DyadicCachingLayer;
+
+    LieIncrementStream(
+            const scalars::KeyScalarArray& buffer, Slice<param_t> indices,
+            StreamMetadata md, std::shared_ptr<StreamSchema> schema
+    );
+
+    explicit LieIncrementStream(
+            const scalars::KeyScalarStream& ks_stream, Slice<param_t> indices,
+            StreamMetadata md, std::shared_ptr<StreamSchema> schema
+            );
+
+    RPY_NO_DISCARD bool empty(const intervals::Interval& interval
+    ) const noexcept override;
 
 protected:
-    RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval& interval,
-                                    const algebra::Context& ctx) const override;
+    RPY_NO_DISCARD algebra::Lie log_signature_impl(
+            const intervals::Interval& interval, const algebra::Context& ctx
+    ) const override;
 
 public:
     RPY_SERIAL_SERIALIZE_FN();
@@ -75,8 +81,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 {
     StreamMetadata md = metadata();
     RPY_SERIAL_SERIALIZE_NVP("metadata", md);
-    RPY_SERIAL_SERIALIZE_NVP("buffer", m_buffer);
-    RPY_SERIAL_SERIALIZE_NVP("mapping", m_mapping);
+    RPY_SERIAL_SERIALIZE_NVP("data", m_data);
 }
 
 }// namespace streams
@@ -91,12 +96,10 @@ RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::LieIncrementStream)
 
     StreamMetadata md;
     RPY_SERIAL_SERIALIZE_NVP("metadata", md);
-    scalars::KeyScalarArray buffer;
-    RPY_SERIAL_SERIALIZE_VAL(buffer);
-    boost::container::flat_map<param_t, dimn_t> mapping;
-    RPY_SERIAL_SERIALIZE_VAL(mapping);
+    boost::container::flat_map<param_t, algebra::Lie> data;
+    RPY_SERIAL_SERIALIZE_VAL(data);
 
-    construct(std::move(buffer), std::move(mapping), std::move(md));
+    construct(std::move(md));
 }
 
 #endif
