@@ -102,19 +102,19 @@ public:
     const DeviceInfo& info() const noexcept { return m_info; }
 
     RPY_NO_DISCARD
-    virtual const fs::path& runtime_library() const noexcept = 0;
+    virtual optional<fs::path> runtime_library() const noexcept = 0;
 
 
-    virtual void launch_kernel(const void* kernel,
-                               const void* launch_config,
-                               void** args
-                               ) = 0;
+//    virtual void launch_kernel(const void* kernel,
+//                               const void* launch_config,
+//                               void** args
+//                               ) = 0;
 
 
 };
 
 
-
+std::shared_ptr<DeviceHandle> get_cpu_device_handle() noexcept;
 
 
 

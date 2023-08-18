@@ -8,6 +8,8 @@ add_roughpy_component(Platform
         src/configuration.cpp
         src/threading/openmp_threading.cpp
         src/device.cpp
+        src/cpu_device/CPUDevice.cpp
+        src/cpu_device/CPUDevice.h
     PUBLIC_HEADERS
         include/roughpy/platform.h
         include/roughpy/platform/filesystem.h
