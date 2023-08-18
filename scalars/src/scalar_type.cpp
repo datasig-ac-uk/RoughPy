@@ -48,6 +48,9 @@
 using namespace rpy;
 using namespace scalars;
 
+using rpy::platform::DeviceInfo;
+using rpy::platform::DeviceType;
+
 ScalarType::~ScalarType() = default;
 
 const ScalarType* ScalarType::rational_type() const noexcept { return this; }
@@ -59,10 +62,10 @@ const ScalarType* ScalarType::for_id(const string& id)
     return ScalarType::of<double>();
 }
 const ScalarType* ScalarType::from_type_details(
-        const BasicScalarInfo& details, const ScalarDeviceInfo& device
+        const BasicScalarInfo& details, const DeviceInfo& device
 )
 {
-    RPY_CHECK(device.device_type == ScalarDeviceType::CPU);
+    RPY_CHECK(device.device_type == DeviceType::CPU);
 
     switch (details.code) {
         case ScalarTypeCode::Int: RPY_FALLTHROUGH;
@@ -205,7 +208,7 @@ rpy::scalars::dtl::scalar_type_holder<rational_poly_scalar>::get_type() noexcept
              sizeof(type),                                                     \
              alignof(type),                                                    \
              BasicScalarInfo({(code), CHAR_BIT * sizeof(type), 1}),            \
-             {ScalarDeviceType::CPU, 0}})
+             {DeviceType::CPU, 0}})
 
 static const pair<string, ScalarTypeInfo> reserved[]
         = {ADD_RES_PAIR("i32", int32_t, ScalarTypeCode::Int),
@@ -282,7 +285,7 @@ const ScalarType* rpy::scalars::get_type(const string& id)
 }
 
 const ScalarType*
-scalars::get_type(const string& id, const ScalarDeviceInfo& device)
+scalars::get_type(const string& id, const DeviceInfo& device)
 {
     // TODO: Needs implementation
     return nullptr;

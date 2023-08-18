@@ -139,7 +139,7 @@ void python::init_scalars(pybind11::module_& m)
 static const scalars::ScalarType*
 dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
 {
-    using scalars::ScalarDeviceType;
+    using platform::DeviceType;
 
     scalars::ScalarTypeCode type;
     switch (dtype.code) {
@@ -154,7 +154,7 @@ dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
 
     return scalars::ScalarType::from_type_details(
             {type, dtype.bits, dtype.lanes},
-            {static_cast<ScalarDeviceType>(device.device_type),
+            {static_cast<DeviceType>(device.device_type),
              device.device_id}
     );
 }

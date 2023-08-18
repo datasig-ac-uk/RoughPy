@@ -32,9 +32,15 @@
 #ifndef ROUGHPY_SCALARS_SRC_RATIONAL_POLY_SCALAR_TYPE_H
 #define ROUGHPY_SCALARS_SRC_RATIONAL_POLY_SCALAR_TYPE_H
 
+#include <roughpy/platform/device.h>
+
 #include "conversion.h"
 #include "scalar_type.h"
 #include "scalar_type_helper.h"
+
+
+using rpy::platform::DeviceType;
+using rpy::platform::DeviceInfo;
 
 namespace rpy {
 namespace scalars {
@@ -53,7 +59,7 @@ public:
                 sizeof(rational_poly_scalar),
                 alignof(rational_poly_scalar),
                 {ScalarTypeCode::OpaqueHandle, 0, 0},
-                {ScalarDeviceType::CPU, 0},
+                {DeviceType::CPU, 0},
     })
     {}
 

@@ -4,21 +4,24 @@ cmake_minimum_required(VERSION 3.21)
 project(Roughpy_Platform VERSION 0.0.1)
 
 add_roughpy_component(Platform
-        SOURCES
+    SOURCES
         src/configuration.cpp
         src/threading/openmp_threading.cpp
-        PUBLIC_HEADERS
+        src/device.cpp
+    PUBLIC_HEADERS
         include/roughpy/platform.h
         include/roughpy/platform/filesystem.h
         include/roughpy/platform/configuration.h
         include/roughpy/platform/serialization.h
         include/roughpy/platform/threads.h
-        PUBLIC_DEPS
+        include/roughpy/platform/device.h
+    PUBLIC_DEPS
         Boost::boost
         Boost::url
         Boost::disable_autolinking
         cereal::cereal
         OpenMP::OpenMP_CXX
-        NEEDS
+    NEEDS
         RoughPy::Core
-        )
+    )
+
