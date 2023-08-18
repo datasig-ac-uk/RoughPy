@@ -12,6 +12,10 @@ Welcome to RoughPy's documentation!
 
 
 
+.. doxygennamespace:: rpy::algebra
+   :project: RoughPy
+
+
 Indices and tables
 ==================
 
