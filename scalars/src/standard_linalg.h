@@ -526,6 +526,9 @@ public:
             ldb = b.nrows();
             trans = BlasTranspose::CblasNoTrans;
         }
+
+
+        return {};
     }
     ScalarMatrix gelss(ScalarMatrix& A, ScalarMatrix& b) override;
 
