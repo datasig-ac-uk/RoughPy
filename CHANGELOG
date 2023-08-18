@@ -18,6 +18,7 @@ Version 0.0.7:
   MKL/BLAS+LAPACK.
   - Added function to query ring characteristics of a ScalarType - currently
   unused.
+  - Added KeyScalarStream for constructing streams from array-like data more easily.
   - Implemented the `from_type_details` function for scalar types. This fixes a bug when constructing objects using the dlpack protocol.
 
 

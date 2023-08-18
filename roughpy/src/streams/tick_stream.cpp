@@ -169,7 +169,7 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
                         += python::py_to_scalar(pmd.scalar_type, tick.data);
                 break;
             case streams::ChannelType::Value:
-                if (channel.is_lead_lag()) {
+                if (channel->is_lead_lag()) {
                     auto lag_key = key + 1;
                     const auto& prev_lead = previous_values[idx];
                     const auto& prev_lag = previous_values[idx + 1];

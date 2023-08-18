@@ -176,9 +176,15 @@ protected:
     void
     cbh_fallback(FreeTensor& collector, const std::vector<Lie>& lies) const;
 
+    void
+    cbh_fallback(FreeTensor& collector, Slice<const Lie*> lies) const;
+
 public:
     RPY_NO_DISCARD virtual Lie
     cbh(const std::vector<Lie>& lies, VectorType vtype) const;
+    RPY_NO_DISCARD virtual Lie
+    cbh(Slice<const Lie*> lies, VectorType vtype) const;
+
     RPY_NO_DISCARD virtual Lie
     cbh(const Lie& left, const Lie& right, VectorType vtype) const;
 

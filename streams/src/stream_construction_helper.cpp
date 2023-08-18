@@ -66,7 +66,7 @@ void StreamConstructionHelper::add_categorical(param_t timestamp,
 {
     const auto found = p_schema->find(string(channel));
     RPY_CHECK(found != p_schema->end());
-    RPY_CHECK(variant < found->second.num_variants());
+    RPY_CHECK(variant < found->second->num_variants());
     auto key = static_cast<key_type>(found - p_schema->begin())
             + static_cast<key_type>(variant) + 1;
     next_entry(timestamp)[key] += p_ctx->ctype()->one();
@@ -78,7 +78,7 @@ void StreamConstructionHelper::add_categorical(param_t timestamp,
     RPY_CHECK(channel < p_schema->size());
     const auto channel_item = p_schema->nth(channel);
 
-    const auto variants = channel_item->second.get_variants();
+    const auto& variants = channel_item->second->get_variants();
     const auto found = std::find(variants.begin(), variants.end(), variant);
     RPY_CHECK(found != variants.end());
 
@@ -107,6 +107,6 @@ optional<ChannelType> StreamConstructionHelper::type_of(string_view label) const
 {
     const auto& schema = *p_schema;
     auto found = schema.find(string(label));
-    if (found != schema.end()) { return found->second.type(); }
+    if (found != schema.end()) { return found->second->type(); }
     return {};
 }

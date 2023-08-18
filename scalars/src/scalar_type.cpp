@@ -59,7 +59,14 @@ const ScalarType* ScalarType::host_type() const noexcept { return this; }
 
 const ScalarType* ScalarType::for_id(const string& id)
 {
-    return ScalarType::of<double>();
+    try {
+        const auto* type = get_type(id);
+        if (type) { return type; }
+        return ScalarType::of<double>();
+    } catch (std::exception&) {
+        return ScalarType::of<double>();
+    }
+    // TODO: needs more thorough implementation
 }
 const ScalarType* ScalarType::from_type_details(
         const BasicScalarInfo& details, const DeviceInfo& device

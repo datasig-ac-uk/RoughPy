@@ -37,12 +37,28 @@
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
 
+#include "r_py_polynomial.h"
+
+#include "dlpack.h"
+
 namespace rpy {
 namespace python {
 
 struct RPY_NO_EXPORT AlternativeKeyType {
     py::handle py_key_type;
     std::function<key_type(py::handle)> converter;
+};
+
+struct ArgSizeInfo {
+    idimn_t num_values;
+    idimn_t num_keys;
+};
+
+enum class GroundDataType
+{
+    UnSet,
+    Scalars,
+    KeyValuePairs
 };
 
 struct RPY_NO_EXPORT PyToBufferOptions {
@@ -62,9 +78,6 @@ struct RPY_NO_EXPORT PyToBufferOptions {
     /// All Python types will (try) to be converted to double.
     bool no_check_imported = false;
 
-    /// cleanup function to be called when we're finished with the data
-    std::function<void()> cleanup = nullptr;
-
     /// Alternative acceptable key_type/conversion pair
     AlternativeKeyType* alternative_key = nullptr;
 };
@@ -76,10 +89,36 @@ inline py::type get_py_rational()
     );
 }
 
-inline py::type get_py_decimal() {
+inline py::type get_py_decimal()
+{
     return py::reinterpret_borrow<py::type>(
-                py::module_::import("decimal").attr("Decimal")
-                );
+            py::module_::import("decimal").attr("Decimal")
+    );
+}
+
+inline bool is_scalar(py::handle arg)
+{
+    return (py::isinstance<py::int_>(arg) || py::isinstance<py::float_>(arg)
+            || RPyPolynomial_Check(arg.ptr()));
+}
+
+inline bool is_key(py::handle arg, python::AlternativeKeyType* alternative)
+{
+    if (alternative != nullptr) {
+        return py::isinstance<py::int_>(arg)
+                || py::isinstance(arg, alternative->py_key_type);
+    }
+    if (py::isinstance<py::int_>(arg)) { return true; }
+    return false;
+}
+
+inline bool is_kv_pair(py::handle arg, python::AlternativeKeyType* alternative)
+{
+    if (py::isinstance<py::tuple>(arg)) {
+        auto tpl = py::reinterpret_borrow<py::tuple>(arg);
+        if (tpl.size() == 2) { return is_key(tpl[0], alternative); }
+    }
+    return false;
 }
 
 
@@ -90,6 +129,11 @@ void assign_py_object_to_scalar(scalars::ScalarPointer ptr, py::handle object);
 
 scalars::Scalar
 py_to_scalar(const scalars::ScalarType* type, py::handle object);
+
+ArgSizeInfo compute_size_and_type(
+        python::PyToBufferOptions& options, std::vector<py::object>& leaves,
+        py::handle arg
+);
 
 void init_scalars(py::module_& m);
 

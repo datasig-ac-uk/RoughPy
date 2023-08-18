@@ -38,9 +38,10 @@ namespace scalars {
 
 class RPY_EXPORT ScalarStream
 {
+protected:
     std::vector<const void*> m_stream;
-    //    boost::container::small_vector<dimn_t, 1> m_elts_per_row;
-    std::vector<dimn_t> m_elts_per_row;
+    boost::container::small_vector<dimn_t, 1> m_elts_per_row;
+//    std::vector<dimn_t> m_elts_per_row;
     const ScalarType* p_type;
 
 public:
@@ -61,6 +62,8 @@ public:
     dimn_t col_count(dimn_t i = 0) const noexcept;
     RPY_NO_DISCARD
     dimn_t row_count() const noexcept { return m_stream.size(); }
+
+    RPY_NO_DISCARD dimn_t max_row_size() const noexcept;
 
     RPY_NO_DISCARD
     ScalarArray operator[](dimn_t row) const noexcept;

@@ -80,7 +80,7 @@ TEST(Schema, TestLabelCompareEmptyRefString)
 
 TEST(Schema, TestStreamChannelIncrementSerialization)
 {
-    StreamChannel channel(ChannelType::Increment);
+    IncrementChannel channel;
 
     std::stringstream ss;
     {
@@ -88,7 +88,7 @@ TEST(Schema, TestStreamChannelIncrementSerialization)
         oarch(channel);
     }
 
-    StreamChannel in_channel;
+    IncrementChannel in_channel;
     {
         archives::JSONInputArchive iarch(ss);
         iarch(in_channel);
@@ -99,7 +99,7 @@ TEST(Schema, TestStreamChannelIncrementSerialization)
 
 TEST(Schema, TestStreamChannelValueSerialization)
 {
-    StreamChannel channel(ChannelType::Value);
+    ValueChannel channel;
 
     std::stringstream ss;
     {
@@ -107,7 +107,7 @@ TEST(Schema, TestStreamChannelValueSerialization)
         oarch(channel);
     }
 
-    StreamChannel in_channel;
+    ValueChannel in_channel;
     {
         archives::JSONInputArchive iarch(ss);
         iarch(in_channel);
@@ -118,7 +118,7 @@ TEST(Schema, TestStreamChannelValueSerialization)
 
 TEST(Schema, TestStreamChannelCategoricalSerialization)
 {
-    StreamChannel channel(ChannelType::Categorical);
+    CategoricalChannel channel;
     channel.add_variant("first").add_variant("second");
 
     std::stringstream ss;
@@ -127,7 +127,7 @@ TEST(Schema, TestStreamChannelCategoricalSerialization)
         oarch(channel);
     }
 
-    StreamChannel in_channel;
+    CategoricalChannel in_channel;
     {
         archives::JSONInputArchive iarch(ss);
         iarch(in_channel);
