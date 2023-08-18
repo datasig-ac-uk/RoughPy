@@ -39,6 +39,9 @@
 using ScalarTypeTests = rpy::scalars::testing::ScalarTests;
 using namespace rpy::scalars;
 
+using rpy::platform::DeviceType;
+using rpy::platform::DeviceInfo;
+
 class RAIIAlloc
 {
     ScalarPointer m_ptr;
@@ -66,7 +69,7 @@ TEST_F(ScalarTypeTests, BasicInfoFloat)
     ASSERT_EQ(info.name, "SPReal");
     ASSERT_EQ(info.id, "f32");
 
-    ASSERT_EQ(info.device.device_type, ScalarDeviceType::CPU);
+    ASSERT_EQ(info.device.device_type, DeviceType::CPU);
     ASSERT_EQ(info.device.device_id, 0);
     ASSERT_EQ(info.basic_info.bits, sizeof(float) * 8);
     ASSERT_EQ(info.basic_info.code, ScalarTypeCode::Float);
@@ -82,7 +85,7 @@ TEST_F(ScalarTypeTests, BasicInfoDouble)
     ASSERT_EQ(info.name, "DPReal");
     ASSERT_EQ(info.id, "f64");
 
-    ASSERT_EQ(info.device.device_type, ScalarDeviceType::CPU);
+    ASSERT_EQ(info.device.device_type, DeviceType::CPU);
     ASSERT_EQ(info.device.device_id, 0);
     ASSERT_EQ(info.basic_info.bits, sizeof(double) * 8);
     ASSERT_EQ(info.basic_info.code, ScalarTypeCode::Float);

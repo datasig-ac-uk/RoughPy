@@ -134,7 +134,35 @@ void python::init_scalars(pybind11::module_& m)
  * objects.
  */
 
+#define DOCASE(NAME)                                                           \
+    case static_cast<uint8_t>(scalars::ScalarTypeCode::NAME):                  \
+        type = scalars::ScalarTypeCode::NAME;                                  \
+        break
 
+static const scalars::ScalarType*
+dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
+{
+    using platform::DeviceType;
+
+    scalars::ScalarTypeCode type;
+    switch (dtype.code) {
+        DOCASE(Float);
+        DOCASE(Int);
+        DOCASE(UInt);
+        DOCASE(OpaqueHandle);
+        DOCASE(BFloat);
+        DOCASE(Complex);
+        DOCASE(Bool);
+    }
+
+    return scalars::ScalarType::from_type_details(
+            {type, dtype.bits, dtype.lanes},
+            {static_cast<DeviceType>(device.device_type),
+             device.device_id}
+    );
+}
+
+#undef DOCASE
 
 static inline void dl_copy_strided(
         std::int32_t ndim, std::int64_t* shape, std::int64_t* strides,

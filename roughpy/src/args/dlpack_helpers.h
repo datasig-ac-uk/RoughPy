@@ -23,13 +23,13 @@ convert_to_dl_typecode(scalars::ScalarTypeCode code) noexcept {
     return static_cast<uint8_t>(code);
 }
 
-constexpr scalars::ScalarDeviceType
+constexpr platform::DeviceType
 convert_from_dl_device_type(DLDeviceType type) noexcept {
-    return static_cast<scalars::ScalarDeviceType>(type);
+    return static_cast<platform::DeviceType>(type);
 }
 
 constexpr DLDeviceType
-convert_to_dl_device_type(scalars::ScalarDeviceType type) noexcept
+convert_to_dl_device_type(platform::DeviceType type) noexcept
 {
     return static_cast<DLDeviceType>(type);
 }
@@ -53,7 +53,7 @@ convert_to_dl_datatype(const scalars::BasicScalarInfo& info) noexcept
     };
 }
 
-constexpr scalars::ScalarDeviceInfo
+constexpr platform::DeviceInfo
 convert_from_dl_device_info(const DLDevice& device) noexcept
 {
     return {
@@ -63,7 +63,7 @@ convert_from_dl_device_info(const DLDevice& device) noexcept
 }
 
 constexpr DLDevice
-convert_to_dl_device_info(const scalars::ScalarDeviceInfo& device) noexcept {
+convert_to_dl_device_info(const platform::DeviceInfo& device) noexcept {
     return {
         convert_to_dl_device_type(device.device_type),
         device.device_id

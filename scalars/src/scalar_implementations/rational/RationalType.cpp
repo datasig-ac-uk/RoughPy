@@ -73,7 +73,7 @@ RationalType::RationalType()
                                     ScalarTypeCode::OpaqueHandle,
                                     0, 0,
                                     },
-            {       ScalarDeviceType::CPU, 0   }
+            {       DeviceType::CPU, 0   }
 })
 {}
 ScalarPointer RationalType::allocate(std::size_t count) const
