@@ -134,8 +134,11 @@ void python::init_scalars(pybind11::module_& m)
  * objects.
  */
 
+#define DOCASE(NAME)                                                           \
+    case static_cast<uint8_t>(scalars::ScalarTypeCode::NAME):                  \
+        type = scalars::ScalarTypeCode::NAME;                                  \
+        break
 
-d
 static const scalars::ScalarType*
 dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
 {
