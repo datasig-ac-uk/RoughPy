@@ -35,6 +35,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include <roughpy/platform/device.h>
 
 #include <complex>
 
@@ -93,32 +94,6 @@ struct unsigned_size_type_marker {
 };
 
 /**
- * @brief Code for different device types
- *
- * These codes are chosen to be compatible with the DLPack
- * array interchange protocol. They enumerate the various different
- * device types that scalar data may be allocated on. This code goes
- * with a 32bit integer device ID, which is implementation specific.
- */
-enum class ScalarDeviceType : int32_t
-{
-    CPU = 1,
-    CUDA = 2,
-    CUDAHost = 3,
-    OpenCL = 4,
-    Vulkan = 7,
-    Metal = 8,
-    VPI = 9,
-    ROCM = 10,
-    ROCMHost = 11,
-    ExtDev = 12,
-    CUDAManaged = 13,
-    OneAPI = 14,
-    WebGPU = 15,
-    Hexagon = 16
-};
-
-/**
  * @brief Type codes for different scalar types.
  *
  * These are chosen to be compatible with the DLPack
@@ -138,15 +113,6 @@ enum class ScalarTypeCode : uint8_t
     Bool = 6U
 };
 
-/**
- * @brief Device type/id pair to identify a device
- *
- *
- */
-struct ScalarDeviceInfo {
-    ScalarDeviceType device_type;
-    std::int32_t device_id;
-};
 
 /**
  * @brief Basic information for identifying the type, size, and
@@ -168,10 +134,10 @@ struct BasicScalarInfo {
 struct ScalarTypeInfo {
     string name;
     string id;
-    std::size_t n_bytes;
-    std::size_t alignment;
+    size_t n_bytes;
+    size_t alignment;
     BasicScalarInfo basic_info;
-    ScalarDeviceInfo device;
+    platform::DeviceInfo device;
 };
 
 // Forward declarations
@@ -202,11 +168,6 @@ inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
 using conversion_function
         = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
 
-constexpr bool
-operator==(const ScalarDeviceInfo& lhs, const ScalarDeviceInfo& rhs) noexcept
-{
-    return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
-}
 
 constexpr bool
 operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept
@@ -233,7 +194,7 @@ RPY_EXPORT
 const ScalarType* get_type(const string& id);
 
 RPY_EXPORT
-const ScalarType* get_type(const string& id, const ScalarDeviceInfo& device);
+const ScalarType* get_type(const string& id, const platform::DeviceInfo& device);
 
 /**
  * @brief Get a list of all registered ScalarTypes

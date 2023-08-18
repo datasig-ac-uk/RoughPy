@@ -40,12 +40,16 @@
 #include <unordered_map>
 #include <utility>
 
+#include <roughpy/platform/device.h>
 #include <roughpy/scalars/conversion.h>
 #include <roughpy/scalars/random.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/scalar_type_helper.h>
 
 #include "standard_random_generator.h"
+
+using rpy::platform::DeviceType;
+using rpy::platform::DeviceInfo;
 
 namespace rpy {
 namespace scalars {
@@ -90,7 +94,7 @@ public:
                 sizeof(ScalarImpl),
                 alignof(ScalarImpl),
                 {ScalarTypeCode::Float, sizeof_bits<ScalarImpl>(), 1U},
-                {ScalarDeviceType::CPU, 0}
+                {DeviceType::CPU, 0}
     })
     {}
 
@@ -100,7 +104,7 @@ public:
 
     explicit StandardScalarType(
             string name, string id, std::size_t size, std::size_t align,
-            BasicScalarInfo basic_info, ScalarDeviceInfo device_info
+            BasicScalarInfo basic_info, DeviceInfo device_info
     )
         : helper({name, id, size, align, basic_info, device_info})
     {}
