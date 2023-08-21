@@ -36,6 +36,9 @@ using namespace streams;
 
 Parameterization::~Parameterization() = default;
 
+param_t Parameterization::start_param() const noexcept { return 0.0; }
+
+
 intervals::RealInterval
 Parameterization::convert_parameter_interval(const intervals::Interval& arg) const
 {
