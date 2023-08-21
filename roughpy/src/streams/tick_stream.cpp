@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tick_stream.h"
 
@@ -151,6 +150,11 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
     std::vector<algebra::Lie> previous_values(
             pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type)
     );
+
+    const bool param_needs_adding = schema->parametrization()->needs_adding();
+    const auto time_key = schema->time_channel_to_lie_key();
+    auto previous_time = schema->parametrization()->start_param();
+
     for (const auto& tick : ticks) {
         const intervals::DyadicInterval di(
                 tick.timestamp, pmd.resolution, pmd.interval_type
@@ -163,6 +167,7 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
         auto& channel = channel_it->second;
         auto idx = schema->label_to_stream_dim(tick.label);
         auto key = schema->label_to_lie_key(tick.label);
+
         switch (tick.type) {
             case streams::ChannelType::Increment:
                 lie_elt[key]
@@ -212,6 +217,13 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
                         py::value_error, "Lie tick types currently not allowed"
                 );
         }
+
+        auto current_time = tick.timestamp;
+        if (schema->parametrization()->needs_adding()) {
+            lie_elt[time_key] = current_time - previous_time;
+        }
+        previous_time = current_time;
+
 
         auto& existing = raw_data[di];
         if (existing) {
