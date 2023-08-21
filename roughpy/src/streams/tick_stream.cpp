@@ -219,7 +219,7 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
         }
 
         auto current_time = tick.timestamp;
-        if (schema->parametrization()->needs_adding()) {
+        if (param_needs_adding) {
             lie_elt[time_key] = current_time - previous_time;
         }
         previous_time = current_time;
