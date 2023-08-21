@@ -179,6 +179,11 @@ void python::RPyTickConstructionHelper::add_categorical(
     );
 }
 
+void python::RPyTickConstructionHelper::add_time_channel() noexcept {
+    RPY_DBG_ASSERT(p_schema->parametrization() != nullptr);
+    p_schema->parametrization()->add_as_channel();
+}
+
 void python::init_tick_construction_helper(py::module_& m)
 {
     using helper_t = python::RPyTickConstructionHelper;
@@ -191,6 +196,7 @@ void python::init_tick_construction_helper(py::module_& m)
             py::init<std::shared_ptr<StreamSchema>, bool>(), "schema"_a,
             "schema_only"_a = false
     );
+    klass.def("add_time_channel", &helper_t::add_time_channel);
 
     klass.def(
             "add_increment", &helper_t::add_increment, "label"_a,

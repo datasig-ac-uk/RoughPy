@@ -106,6 +106,11 @@ public:
         return p_schema;
     }
     const std::vector<RPy_Tick>& ticks() noexcept;
+
+
+
+    void add_time_channel() noexcept;
+
 };
 
 void init_tick_construction_helper(py::module_& m);
