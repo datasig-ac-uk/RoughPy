@@ -25,6 +25,9 @@ Version 0.0.7:
    data correctly.
   - Change implementation of `LieIncrementStream` to allow adding the parameter
   channel during construction.
+  - Change implementation of `TickStream` to allow adding parameter channel
+  during construction.
+
 
 
 
