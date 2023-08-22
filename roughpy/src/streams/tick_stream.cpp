@@ -36,13 +36,12 @@
 #include <roughpy/streams/stream_construction_helper.h>
 #include <roughpy/streams/tick_stream.h>
 
-#include "args/convert_timestamp.h"
 #include "args/kwargs_to_path_metadata.h"
-#include "args/parse_schema.h"
 #include "r_py_tick_construction_helper.h"
-#include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 #include "streams/stream.h"
+
+#include "schema_finalization.h"
 
 using namespace rpy;
 using namespace pybind11::literals;
@@ -89,19 +88,11 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
     //        pmd.width = schema->width();
     //        schema->finalize();
     //    }
-    if (!pmd.ctx) {
-        pmd.width = schema->width();
-        if (pmd.width == 0 || pmd.depth == 0 || pmd.scalar_type == nullptr) {
-            RPY_THROW(
-                    py::value_error,
-                    "either ctx or width, depth, and dtype must be provided"
-            );
-        }
-        pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type);
-    } else if (pmd.width != pmd.ctx->width()) {
-        // Recalibrate the width to match the data
-        pmd.ctx = pmd.ctx->get_alike(pmd.width, pmd.depth, pmd.scalar_type);
-    }
+
+
+    python::finalize_schema(*schema, pmd);
+
+
 
     //    helper_t helper(
     //        pmd.ctx,
@@ -155,6 +146,8 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
     const auto time_key = schema->time_channel_to_lie_key();
     auto previous_time = schema->parametrization()->start_param();
 
+    const auto& cschema = *schema;
+
     for (const auto& tick : ticks) {
         const intervals::DyadicInterval di(
                 tick.timestamp, pmd.resolution, pmd.interval_type
@@ -162,11 +155,11 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
 
         auto lie_elt = pmd.ctx->zero_lie(meta.cached_vector_type);
 
-        auto channel_it = schema->find(tick.label);
+        auto channel_it = cschema.find(tick.label);
         RPY_DBG_ASSERT(channel_it != schema->end());
         auto& channel = channel_it->second;
-        auto idx = schema->label_to_stream_dim(tick.label);
-        auto key = schema->label_to_lie_key(tick.label);
+        auto idx = cschema.label_to_stream_dim(tick.label);
+        auto key = cschema.label_to_lie_key(tick.label);
 
         switch (tick.type) {
             case streams::ChannelType::Increment:

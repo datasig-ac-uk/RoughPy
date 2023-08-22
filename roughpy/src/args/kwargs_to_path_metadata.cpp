@@ -50,7 +50,8 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
             {},                             // vector type
             0,                              // default resolution
             intervals::IntervalType::Clopen,// interval type
-            nullptr                         // schema
+            nullptr,                        // schema
+            false                           // include_param_as_data
     };
 
     streams::ChannelType ch_type;
@@ -204,6 +205,7 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
         }
 
         md.schema->parametrization()->add_as_channel();
+        md.include_param_as_data = true;
     }
 
     if (kwargs.contains("vtype")) {

@@ -127,6 +127,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/streams/py_parametrization.h
         src/streams/schema.cpp
         src/streams/schema.h
+        src/streams/schema_finalization.cpp
+        src/streams/schema_finalization.h
         src/streams/stream.cpp
         src/streams/stream.h
         src/streams/streams.cpp

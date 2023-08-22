@@ -25,33 +25,32 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef RPY_PY_ARGS_KWARGS_TO_PATH_METADATA_H_
-#define RPY_PY_ARGS_KWARGS_TO_PATH_METADATA_H_
+//
+// Created by user on 22/08/23.
+//
+
+#ifndef ROUGHPY_ROUGHPY_SRC_STREAMS_SCHEMA_FINALIZATION_H_
+#define ROUGHPY_ROUGHPY_SRC_STREAMS_SCHEMA_FINALIZATION_H_
 
 #include "roughpy_module.h"
 
-#include <roughpy/streams/schema.h>
-#include <roughpy/streams/stream_base.h>
+#include "args/kwargs_to_path_metadata.h"
 
-namespace rpy {
-namespace python {
 
-struct PyStreamMetaData {
-    deg_t width;
-    deg_t depth;
-    optional<intervals::RealInterval> support;
-    algebra::context_pointer ctx;
-    const scalars::ScalarType* scalar_type;
-    optional<algebra::VectorType> vector_type;
-    resolution_t resolution;
-    intervals::IntervalType interval_type;
-    std::shared_ptr<streams::StreamSchema> schema;
-    bool include_param_as_data;
-};
+namespace rpy { namespace python {
 
-PyStreamMetaData kwargs_to_metadata(const py::kwargs& kwargs);
+/**
+ * @brief Check and finalize the schema, performing any last minute setup.
+ * @param schema Schema to finalize
+ * @param pmd Stream metadata parsed from keyword arguments.
+ */
+void finalize_schema(streams::StreamSchema& schema,
+                     PyStreamMetaData& pmd);
 
-}// namespace python
-}// namespace rpy
 
-#endif// RPY_PY_ARGS_KWARGS_TO_PATH_METADATA_H_
+
+}}
+
+
+
+#endif// ROUGHPY_ROUGHPY_SRC_STREAMS_SCHEMA_FINALIZATION_H_
