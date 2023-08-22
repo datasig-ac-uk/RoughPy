@@ -133,7 +133,12 @@ dimn_t StreamSchema::width_without_param() const {
     return width_to_iterator(end());
 }
 
-
+const scalars::ScalarType*
+StreamSchema::get_most_appropriate_scalar_type() const
+{
+    // Replace this with more sound logic based on channel data types.
+    return scalars::ScalarType::of<double>();
+}
 
 dimn_t StreamSchema::channel_to_stream_dim(dimn_t channel_no) const
 {
@@ -258,7 +263,7 @@ StreamChannel& StreamSchema::insert_lie(string label)
 }
 
 typename StreamSchema::lie_key
-StreamSchema::label_to_lie_key(const string& label)
+StreamSchema::label_to_lie_key(const string& label) const
 {
     auto idx = label_to_stream_dim(label);
     return static_cast<lie_key>(idx) + 1;
