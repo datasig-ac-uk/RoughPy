@@ -44,8 +44,7 @@ namespace rpy { namespace python {
  * @param schema Schema to finalize
  * @param pmd Stream metadata parsed from keyword arguments.
  */
-void finalize_schema(streams::StreamSchema& schema,
-                     PyStreamMetaData& pmd);
+void finalize_schema(PyStreamMetaData& pmd);
 
 
 

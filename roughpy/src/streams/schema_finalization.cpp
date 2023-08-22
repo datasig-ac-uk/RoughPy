@@ -59,10 +59,10 @@ last_minute_setup(streams::StreamSchema& schema, PyStreamMetaData& pmd)
     schema.finalize();
 }
 
-void python::finalize_schema(
-        streams::StreamSchema& schema, PyStreamMetaData& pmd
-)
+void python::finalize_schema(PyStreamMetaData& pmd)
 {
+    auto& schema = *pmd.schema;
+
     // does nothing it the schema is already final.
     last_minute_setup(schema, pmd);
 

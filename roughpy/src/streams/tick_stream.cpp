@@ -60,17 +60,16 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
 {
 
     auto pmd = python::kwargs_to_metadata(kwargs);
-    auto& schema = pmd.schema;
 
-    if (!schema) { schema = std::make_shared<streams::StreamSchema>(); }
+    if (!pmd.schema) { pmd.schema = std::make_shared<streams::StreamSchema>(); }
 
     py::object parser;
     if (kwargs.contains("parser")) {
-        parser = kwargs["parser"](schema);
+        parser = kwargs["parser"](pmd.schema);
     } else {
         auto tick_helpers_mod
                 = py::module_::import("roughpy.streams.tick_stream");
-        parser = tick_helpers_mod.attr("StandardTickDataParser")(schema);
+        parser = tick_helpers_mod.attr("StandardTickDataParser")(pmd.schema);
     }
 
     parser.attr("parse_data")(data);
@@ -90,9 +89,9 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
     //    }
 
 
-    python::finalize_schema(*schema, pmd);
+    python::finalize_schema(pmd);
 
-
+    const auto& schema = *pmd.schema;
 
     //    helper_t helper(
     //        pmd.ctx,
@@ -142,11 +141,10 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
             pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type)
     );
 
-    const bool param_needs_adding = schema->parametrization()->needs_adding();
-    const auto time_key = schema->time_channel_to_lie_key();
-    auto previous_time = schema->parametrization()->start_param();
+    const bool param_needs_adding = schema.parametrization()->needs_adding();
+    const auto time_key = schema.time_channel_to_lie_key();
+    auto previous_time = schema.parametrization()->start_param();
 
-    const auto& cschema = *schema;
 
     for (const auto& tick : ticks) {
         const intervals::DyadicInterval di(
@@ -155,11 +153,11 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
 
         auto lie_elt = pmd.ctx->zero_lie(meta.cached_vector_type);
 
-        auto channel_it = cschema.find(tick.label);
-        RPY_DBG_ASSERT(channel_it != schema->end());
+        auto channel_it = schema.find(tick.label);
+        RPY_DBG_ASSERT(channel_it != schema.end());
         auto& channel = channel_it->second;
-        auto idx = cschema.label_to_stream_dim(tick.label);
-        auto key = cschema.label_to_lie_key(tick.label);
+        auto idx = schema.label_to_stream_dim(tick.label);
+        auto key = schema.label_to_lie_key(tick.label);
 
         switch (tick.type) {
             case streams::ChannelType::Increment:
