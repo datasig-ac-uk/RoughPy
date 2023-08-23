@@ -218,7 +218,6 @@ if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64" AND NOT
         if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
             if (APPLE)
                 foreach (LANG IN ITEMS C CXX)
-                    set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp")
                     set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
                 endforeach ()
             endif ()
