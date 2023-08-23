@@ -207,7 +207,7 @@ if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64" AND NOT
         # on Windows using this distribution of MKL
         set(MKL_THREADING tbb_thread)
     else ()
-        set(MKL_THREADING tbb_thread)
+        set(MKL_THREADING intel_thread)
     endif ()
 
     find_package(MKL CONFIG)
