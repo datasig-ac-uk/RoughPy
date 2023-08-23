@@ -6,7 +6,7 @@ project(Roughpy_Platform VERSION 0.0.1)
 add_roughpy_component(Platform
     SOURCES
         src/configuration.cpp
-        src/threading/openmp_threading.cpp
+#        src/threading/openmp_threading.cpp
         src/device.cpp
         src/cpu_device/CPUDevice.cpp
         src/cpu_device/CPUDevice.h
@@ -22,8 +22,6 @@ add_roughpy_component(Platform
         Boost::url
         Boost::disable_autolinking
         cereal::cereal
-        OpenMP::OpenMP_CXX
     NEEDS
         RoughPy::Core
     )
-
