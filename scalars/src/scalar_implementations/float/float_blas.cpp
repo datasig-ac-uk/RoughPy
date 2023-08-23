@@ -35,7 +35,9 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
+namespace rpy { namespace scalars {
 template class StandardLinearAlgebra<float, float>;
+}}
 
 //
 //void FloatBlas::check_and_report_errors(matrix_dim_t info) const
