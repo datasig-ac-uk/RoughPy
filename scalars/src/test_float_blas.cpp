@@ -1,7 +1,7 @@
-// Copyright (c) 2023 Datasig Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,19 +18,18 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 18/04/23.
 //
 
-#include "float_blas.h"
+#include "scalar_implementations/float/float_blas.h"
 #include <gtest/gtest.h>
 #include <roughpy/scalars/scalar_type.h>
 
@@ -58,7 +57,7 @@ public:
           b_data{-1.0F, 2.0F, -2.0F, 3.0F},
           matA(2, 2, ScalarArray(ctype, a_data.data(), 4)),
           matB(2, 2, ScalarArray(ctype, b_data.data(), 4)),
-          blas(new FloatBlas(ctype))
+          blas(new StandardLinearAlgebra<float, float>(ctype))
     {}
 };
 
@@ -66,8 +65,8 @@ public:
 
 TEST_F(FloatBlasTests, TestRowMajorByRowMajorFull)
 {
-
-    auto result = blas->matrix_matrix(matA, matB);
+    ScalarMatrix result;
+    blas->gemm(result, matA, matB, Scalar(1), Scalar(1));
 
     /*
      * [[1.0, 1.0]  [[-1.0, 2.0]   =  [[-3.0,  5.0]

@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tick_stream.h"
 
@@ -37,13 +36,12 @@
 #include <roughpy/streams/stream_construction_helper.h>
 #include <roughpy/streams/tick_stream.h>
 
-#include "args/convert_timestamp.h"
 #include "args/kwargs_to_path_metadata.h"
-#include "args/parse_schema.h"
 #include "r_py_tick_construction_helper.h"
-#include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 #include "streams/stream.h"
+
+#include "schema_finalization.h"
 
 using namespace rpy;
 using namespace pybind11::literals;
@@ -62,17 +60,16 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
 {
 
     auto pmd = python::kwargs_to_metadata(kwargs);
-    auto& schema = pmd.schema;
 
-    if (!schema) { schema = std::make_shared<streams::StreamSchema>(); }
+    if (!pmd.schema) { pmd.schema = std::make_shared<streams::StreamSchema>(); }
 
     py::object parser;
     if (kwargs.contains("parser")) {
-        parser = kwargs["parser"](schema);
+        parser = kwargs["parser"](pmd.schema);
     } else {
         auto tick_helpers_mod
                 = py::module_::import("roughpy.streams.tick_stream");
-        parser = tick_helpers_mod.attr("StandardTickDataParser")(schema);
+        parser = tick_helpers_mod.attr("StandardTickDataParser")(pmd.schema);
     }
 
     parser.attr("parse_data")(data);
@@ -90,19 +87,11 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
     //        pmd.width = schema->width();
     //        schema->finalize();
     //    }
-    if (!pmd.ctx) {
-        pmd.width = schema->width();
-        if (pmd.width == 0 || pmd.depth == 0 || pmd.scalar_type == nullptr) {
-            RPY_THROW(
-                    py::value_error,
-                    "either ctx or width, depth, and dtype must be provided"
-            );
-        }
-        pmd.ctx = algebra::get_context(pmd.width, pmd.depth, pmd.scalar_type);
-    } else if (pmd.width != pmd.ctx->width()) {
-        // Recalibrate the width to match the data
-        pmd.ctx = pmd.ctx->get_alike(pmd.width, pmd.depth, pmd.scalar_type);
-    }
+
+
+    python::finalize_schema(pmd);
+
+    const auto& schema = *pmd.schema;
 
     //    helper_t helper(
     //        pmd.ctx,
@@ -151,6 +140,12 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
     std::vector<algebra::Lie> previous_values(
             pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type)
     );
+
+    const bool param_needs_adding = schema.parametrization()->needs_adding();
+    const auto time_key = schema.time_channel_to_lie_key();
+    auto previous_time = schema.parametrization()->start_param();
+
+
     for (const auto& tick : ticks) {
         const intervals::DyadicInterval di(
                 tick.timestamp, pmd.resolution, pmd.interval_type
@@ -158,18 +153,19 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
 
         auto lie_elt = pmd.ctx->zero_lie(meta.cached_vector_type);
 
-        auto channel_it = schema->find(tick.label);
-        RPY_DBG_ASSERT(channel_it != schema->end());
+        auto channel_it = schema.find(tick.label);
+        RPY_DBG_ASSERT(channel_it != schema.end());
         auto& channel = channel_it->second;
-        auto idx = schema->label_to_stream_dim(tick.label);
-        auto key = schema->label_to_lie_key(tick.label);
+        auto idx = schema.label_to_stream_dim(tick.label);
+        auto key = schema.label_to_lie_key(tick.label);
+
         switch (tick.type) {
             case streams::ChannelType::Increment:
                 lie_elt[key]
                         += python::py_to_scalar(pmd.scalar_type, tick.data);
                 break;
             case streams::ChannelType::Value:
-                if (channel.is_lead_lag()) {
+                if (channel->is_lead_lag()) {
                     auto lag_key = key + 1;
                     const auto& prev_lead = previous_values[idx];
                     const auto& prev_lag = previous_values[idx + 1];
@@ -212,6 +208,13 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
                         py::value_error, "Lie tick types currently not allowed"
                 );
         }
+
+        auto current_time = tick.timestamp;
+        if (param_needs_adding) {
+            lie_elt[time_key] = current_time - previous_time;
+        }
+        previous_time = current_time;
+
 
         auto& existing = raw_data[di];
         if (existing) {

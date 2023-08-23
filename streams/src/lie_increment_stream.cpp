@@ -35,94 +35,158 @@
 using namespace rpy;
 using namespace rpy::streams;
 
-LieIncrementStream::LieIncrementStream(scalars::KeyScalarArray&& buffer,
-                                       Slice<param_t> indices,
-                                       StreamMetadata metadata)
-    : base_t(std::move(metadata)), m_buffer(std::move(buffer))
+LieIncrementStream::LieIncrementStream(
+        const scalars::KeyScalarArray& buffer, Slice<param_t> indices,
+        StreamMetadata metadata, std::shared_ptr<StreamSchema> schema
+)
+    : base_t(std::move(metadata), std::move(schema))
 {
-    const auto& md = this->metadata();
-    for (dimn_t i = 0; i < indices.size(); ++i) {
-        m_mapping[indices[i]] = i * md.width;
-    }
+    using scalars::Scalar;
 
-    //    std::cerr << m_mapping.begin()->first << ' ' <<
-    //    (--m_mapping.end())->first << '\n';
+    const auto& md = this->metadata();
+    const auto& ctx = *md.default_context;
+
+    const auto& sch = this->schema();
+    const auto* param = sch.parametrization();
+    const bool param_needs_adding = param != nullptr && param->needs_adding();
+    const key_type param_slot
+            = (param_needs_adding) ? sch.time_channel_to_lie_key() : 0;
+
+    m_data.reserve(indices.size());
+
+    if (!buffer.is_null()) {
+        if (buffer.has_keys()) {
+            /*
+             * The data is sparse, so we need to do some careful checking to make
+             * sure we pick out individual increments.
+             * TODO: Need key-scalar stream to implement this properly.
+             */
+            RPY_THROW(
+                    std::runtime_error,
+                    "creating a Lie increment stream with sparse data is not "
+                    "currently supported"
+            );
+
+        } else {
+            /*
+             * The data is dense. The only tricky part for this case is dealing with
+             * adding the "time" channel if it is given.
+             *
+             * Until we construct the relevant support mechanisms, we assume that
+             * the provided increments have degree 1.
+             * TODO: Add support for key-scalar streams.
+             */
+
+            const auto width = sch.width_without_param();
+
+            const char* dptr = buffer.raw_cast<const char*>();
+            const auto stride = buffer.type()->itemsize() * width;
+            param_t previous_param = 0.0;
+            for (auto index : indices) {
+
+                algebra::VectorConstructionData cdata{
+                        scalars::KeyScalarArray(buffer.type(), dptr, width),
+                        md.cached_vector_type};
+
+                auto [it, inserted]
+                        = m_data.try_emplace(index, ctx.construct_lie(cdata));
+
+                if (inserted && param_needs_adding) {
+                    /*
+                     * We've inserted a new element, so we should now add the param
+                     * value if it is needed.
+                     */
+                    it->second[param_slot] = Scalar(index - previous_param);
+                }
+                previous_param = index;
+                dptr += stride;
+            }
+        }
+    }
 }
 
-algebra::Lie
-LieIncrementStream::log_signature_impl(const intervals::Interval& interval,
-                                       const algebra::Context& ctx) const
+LieIncrementStream::LieIncrementStream(
+        const scalars::KeyScalarStream& ks_stream, Slice<param_t> indices,
+        StreamMetadata mdarg, std::shared_ptr<StreamSchema> schema_arg
+)
+    : DyadicCachingLayer(std::move(mdarg), std::move(schema_arg))
+{
+    using scalars::Scalar;
+    RPY_CHECK(indices.size() == ks_stream.row_count());
+
+    const auto& md = this->metadata();
+    const auto& ctx = *md.default_context;
+
+    const auto& sch = this->schema();
+    const auto* param = sch.parametrization();
+    const bool param_needs_adding = param != nullptr && param->needs_adding();
+    const key_type param_slot
+            = (param_needs_adding) ? sch.time_channel_to_lie_key() : 0;
+
+    m_data.reserve(indices.size());
+    param_t previous_param = 0.0;
+
+    for (dimn_t i=0; i<indices.size(); ++i) {
+        const auto& index = indices[i];
+
+        algebra::VectorConstructionData cdata {
+                ks_stream[i],
+                md.cached_vector_type
+        };
+
+        auto [it, inserted]
+                = m_data.try_emplace(index, ctx.construct_lie(cdata));
+
+
+        if (inserted && param_needs_adding) {
+            /*
+             * We've inserted a new element, so we should now add the param
+             * value if it is needed.
+             */
+            it->second[param_slot] = Scalar(index - previous_param);
+        }
+        previous_param = index;
+
+    }
+}
+
+algebra::Lie LieIncrementStream::log_signature_impl(
+        const intervals::Interval& interval, const algebra::Context& ctx
+) const
 {
 
     const auto& md = metadata();
-    //    if (empty(interval)) {
-    //        return ctx.zero_lie(md.cached_vector_type);
-    //    }
-
-    rpy::algebra::SignatureData data{scalars::ScalarStream(ctx.ctype()),
-                                     {},
-                                     md.cached_vector_type};
-
-    if (m_mapping.size() == 1) {
-        data.data_stream.set_elts_per_row(m_buffer.size());
-    } else if (m_mapping.size() > 1) {
-        auto row1 = (++m_mapping.begin())->second;
-        auto row0 = m_mapping.begin()->second;
-        data.data_stream.set_elts_per_row(row1 - row0);
-    }
 
     auto begin = (interval.type() == intervals::IntervalType::Opencl)
-            ? m_mapping.upper_bound(interval.inf())
-            : m_mapping.lower_bound(interval.inf());
+            ? m_data.upper_bound(interval.inf())
+            : m_data.lower_bound(interval.inf());
 
     auto end = (interval.type() == intervals::IntervalType::Opencl)
-            ? m_mapping.upper_bound(interval.sup())
-            : m_mapping.lower_bound(interval.sup());
+            ? m_data.upper_bound(interval.sup())
+            : m_data.lower_bound(interval.sup());
 
     if (begin == end) { return ctx.zero_lie(md.cached_vector_type); }
 
-    data.data_stream.reserve_size(end - begin);
+    std::vector<const Lie*> lies;
+    lies.reserve(static_cast<dimn_t>(end - begin));
 
-    for (auto it1 = begin, it = it1++; it1 != end; ++it, ++it1) {
-        data.data_stream.push_back(
-                {m_buffer[it->second].to_pointer(), it1->second - it->second});
-    }
-    // Case it = it1 - 1 and it1 == end
-    --end;
-    data.data_stream.push_back({m_buffer[end->second].to_pointer(),
-                                m_buffer.size() - end->second});
-
-    if (m_buffer.keys() != nullptr) {
-        data.key_stream.reserve(end - begin);
-        ++end;
-        for (auto it = begin; it != end; ++it) {
-            data.key_stream.push_back(m_buffer.keys() + it->second);
-        }
+    for (auto it = begin; it != end; ++it) {
+        lies.push_back(&it->second);
     }
 
-    RPY_CHECK(ctx.width() == md.width);
-    //    assert(ctx.depth() == md.depth);
-
-    return ctx.log_signature(data);
+    return ctx.cbh(lies, md.cached_vector_type);
 }
-bool LieIncrementStream::empty(
-        const intervals::Interval& interval) const noexcept
+bool LieIncrementStream::empty(const intervals::Interval& interval
+) const noexcept
 {
-    //    std::cerr << "Checking " << interval;
-    //    for (auto& item : m_mapping) {
-    //        if (item.first >= interval.inf() && item.first < interval.sup()) {
-    //            std::cerr << ' ' << item.first << ", " << item.second << ';';
-    //        }
-    //    }
     auto begin = (interval.type() == intervals::IntervalType::Opencl)
-            ? m_mapping.upper_bound(interval.inf())
-            : m_mapping.lower_bound(interval.inf());
+            ? m_data.upper_bound(interval.inf())
+            : m_data.lower_bound(interval.inf());
 
     auto end = (interval.type() == intervals::IntervalType::Opencl)
-            ? m_mapping.upper_bound(interval.sup())
-            : m_mapping.lower_bound(interval.sup());
+            ? m_data.upper_bound(interval.sup())
+            : m_data.lower_bound(interval.sup());
 
-    //    std::cerr << ' ' << (begin == end) << '\n';
     return begin == end;
 }
 

@@ -54,7 +54,7 @@ def dynamic_metadata(
 
     version_path = Path("VERSION.txt")
     if version_path.exists():
-        version_text = version_path.read_text()
+        version_text = version_path.read_text().strip()
 
         if (match := re.match(regex, version_text)) is not None:
             version = match.group("version")
@@ -64,4 +64,4 @@ def dynamic_metadata(
     else:
         version = "0.0.1"
 
-    return {"version": version}
+    return version

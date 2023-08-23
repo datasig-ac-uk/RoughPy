@@ -216,13 +216,12 @@ if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64" AND NOT
         add_library(LAPACK::LAPACK ALIAS MKL::MKL)
 
         if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
-            if (APPLE)
-                foreach (LANG IN ITEMS C CXX)
-                    set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp=${MKL_OMP_LIB}")
-                    set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
-                endforeach ()
-            endif ()
-            set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
+#            if (APPLE)
+#                foreach (LANG IN ITEMS C CXX)
+#                    set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
+#                endforeach ()
+#            endif ()
+#            set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
         endif ()
     else ()
         set(BLA_SIZEOF_INTEGER 4)
@@ -241,15 +240,23 @@ if (NOT TARGET LAPACK::LAPACK)
     find_package(LAPACK REQUIRED)
 endif ()
 
-if (APPLE AND NOT DEFINED MKL_OMP_LIB)
-    get_brew_prefix(_libomp_prefix libomp VERBOSE)
+#if (APPLE AND NOT DEFINED MKL_OMP_LIB)
+#    get_brew_prefix(_libomp_prefix libomp VERBOSE)
+#
+#    if (_libomp_prefix AND EXISTS ${_libomp_prefix})
+#        list(APPEND CMAKE_PREFIX_PATH ${_libomp_prefix})
+#    endif()
+#endif()
+#
+#find_package(OpenMP REQUIRED COMPONENTS CXX)
 
-    if (_libomp_prefix AND EXISTS ${_libomp_prefix})
-        list(APPEND CMAKE_PREFIX_PATH ${_libomp_prefix})
-    endif()
-endif()
-
-find_package(OpenMP REQUIRED COMPONENTS CXX)
+#if (MSVC)
+#    # MSVC has openmp from the stone ages, so add the experimental flag
+#    get_target_property(_omp_flags OpenMP::OpenMP_CXX INTERFACE_COMPILE_OPTIONS)
+#    string(REPLACE "/openmp" "/openmp:experimental" _omp_flags "${_omp_flags}")
+#    set_target_properties(OpenMP::OpenMP_CXX PROPERTIES
+#            INTERFACE_COMPILE_OPTIONS "${_omp_flags}")
+#endif()
 
 find_package(pybind11 REQUIRED)
 find_package(cereal REQUIRED)

@@ -25,10 +25,21 @@ add_roughpy_component(Streams
         src/external_data_sources/sound_file_data_source.cpp
         src/external_data_sources/sound_file_data_source.h
         src/schema.cpp
-        src/schema_context.cpp
+        src/parametrization.cpp
         src/stream_construction_helper.cpp
-        src/channels.cpp
+        src/channels/categorical_channel.cpp
+        src/channels/stream_channel.cpp
+        src/channels/increment_channel.cpp
+        src/channels/value_channel.cpp
+        src/channels/lie_channel.cpp
+        src/channels/lead_laggable_channel.cpp
     PUBLIC_HEADERS
+        include/roughpy/streams/channels/stream_channel.h
+        include/roughpy/streams/channels/increment_channel.h
+        include/roughpy/streams/channels/value_channel.h
+        include/roughpy/streams/channels/categorical_channel.h
+        include/roughpy/streams/channels/lie_channel.h
+        include/roughpy/streams/channels/lead_laggable_channel.h
         include/roughpy/streams/dyadic_caching_layer.h
         include/roughpy/streams/dynamically_constructed_stream.h
         include/roughpy/streams/lie_increment_stream.h
@@ -39,7 +50,7 @@ add_roughpy_component(Streams
         include/roughpy/streams/external_data_stream.h
         include/roughpy/streams/piecewise_abelian_stream.h
         include/roughpy/streams/schema.h
-        include/roughpy/streams/schema_context.h
+        include/roughpy/streams/parametrization.h
         include/roughpy/streams/stream_construction_helper.h
         include/roughpy/streams/channels.h
     PRIVATE_DEPS

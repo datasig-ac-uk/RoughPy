@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -37,52 +37,43 @@
 namespace rpy {
 namespace scalars {
 
-enum class MatrixStorage
-{
-    FullMatrix,
-    UpperTriangular,
-    LowerTriangular,
-    Diagonal
-};
+using matrix_dim_t = int;
 
 enum class MatrixLayout
 {
-    CStype,
-    FStype
+    RowMajor,
+    ColumnMajor
 };
 
 class RPY_EXPORT ScalarMatrix : public scalars::ScalarArray
 {
-
-    MatrixStorage m_storage = MatrixStorage::FullMatrix;
-    MatrixLayout m_layout = MatrixLayout::CStype;
-    deg_t m_nrows = 0;
-    deg_t m_ncols = 0;
+    MatrixLayout m_layout = MatrixLayout::RowMajor;
+    matrix_dim_t m_nrows = 0;
+    matrix_dim_t m_ncols = 0;
 
 public:
     ScalarMatrix();
 
-    ScalarMatrix(const ScalarType* type, deg_t rows, deg_t cols,
-                 MatrixStorage = MatrixStorage::FullMatrix,
-                 MatrixLayout = MatrixLayout::CStype);
+    ScalarMatrix(
+            const ScalarType* type, matrix_dim_t rows, matrix_dim_t cols,
+            MatrixLayout = MatrixLayout::RowMajor
+    );
 
-    ScalarMatrix(deg_t rows, deg_t cols, ScalarArray&& array,
-                 MatrixStorage storage = MatrixStorage::FullMatrix,
-                 MatrixLayout layout = MatrixLayout::CStype);
+    ScalarMatrix(
+            matrix_dim_t rows, matrix_dim_t cols, ScalarArray&& array,
+            MatrixLayout layout = MatrixLayout::RowMajor
+    );
 
-    RPY_NO_DISCARD constexpr deg_t nrows() const noexcept { return m_nrows; }
+    ~ScalarMatrix();
 
-    RPY_NO_DISCARD constexpr deg_t ncols() const noexcept { return m_ncols; }
-
-    RPY_NO_DISCARD constexpr MatrixStorage storage() const noexcept
+    RPY_NO_DISCARD constexpr matrix_dim_t nrows() const noexcept
     {
-        return m_storage;
+        return m_nrows;
     }
 
-    constexpr void storage(MatrixStorage new_storage)
+    RPY_NO_DISCARD constexpr matrix_dim_t ncols() const noexcept
     {
-        // TODO: Check if this requires allocation or something
-        m_storage = new_storage;
+        return m_ncols;
     }
 
     RPY_NO_DISCARD constexpr MatrixLayout layout() const noexcept
@@ -95,32 +86,24 @@ public:
         m_layout = new_layout;
     }
 
-    RPY_NO_DISCARD
-    ScalarMatrix row(deg_t i);
-    RPY_NO_DISCARD
-    ScalarMatrix row(deg_t i) const;
-    RPY_NO_DISCARD
-    ScalarMatrix col(deg_t i);
-    RPY_NO_DISCARD
-    ScalarMatrix col(deg_t i) const;
+    RPY_NO_DISCARD constexpr matrix_dim_t leading_dimension() const noexcept
+    {
+        return (m_layout == MatrixLayout::RowMajor) ? m_ncols : m_nrows;
+    }
 
-    RPY_NO_DISCARD
-    ScalarPointer data() const;
-    RPY_NO_DISCARD
-    ScalarPointer data();
+    RPY_NO_DISCARD ScalarMatrix row(matrix_dim_t i);
+    RPY_NO_DISCARD ScalarMatrix row(matrix_dim_t i) const;
+    RPY_NO_DISCARD ScalarMatrix col(matrix_dim_t i);
+    RPY_NO_DISCARD ScalarMatrix col(matrix_dim_t i) const;
 
-    RPY_NO_DISCARD
-    ScalarMatrix to_full() const;
-    RPY_NO_DISCARD
-    ScalarMatrix to_full(MatrixLayout layout) const;
-    void to_full(ScalarMatrix& into) const;
+    RPY_NO_DISCARD ScalarPointer data() const;
+    RPY_NO_DISCARD ScalarPointer data();
 
     RPY_SERIAL_SERIALIZE_FN();
 };
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(ScalarMatrix)
 {
-    RPY_SERIAL_SERIALIZE_NVP("storage", m_storage);
     RPY_SERIAL_SERIALIZE_NVP("layout", m_layout);
     RPY_SERIAL_SERIALIZE_NVP("rows", m_nrows);
     RPY_SERIAL_SERIALIZE_NVP("cols", m_ncols);
@@ -130,7 +113,9 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(ScalarMatrix)
 }// namespace scalars
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::scalars::ScalarMatrix,
-                            rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::scalars::ScalarMatrix,
+        rpy::serial::specialization::member_serialize
+)
 
 #endif// ROUGHPY_SCALARS_SCALAR_MATRIX_H_

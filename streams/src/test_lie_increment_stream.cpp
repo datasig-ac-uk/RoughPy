@@ -77,7 +77,7 @@ public:
 
         scalars::OwnedScalarArray result(ctype, count);
         scalars::ScalarPointer src(ctype, tmp_data.data());
-        ctype->convert_copy(result.ptr(), src, count);
+        ctype->convert_copy(result, src, count);
 
         return result;
     }
@@ -92,12 +92,17 @@ public:
     static constexpr deg_t depth = 2;
     algebra::context_pointer ctx;
 
-    StreamMetadata md{width, intervals::RealInterval(0.0, 1.0), ctx,
-                      ctx->ctype(), algebra::VectorType::Dense};
+    StreamMetadata md{
+            width, intervals::RealInterval(0.0, 1.0), ctx, ctx->ctype(),
+            algebra::VectorType::Dense};
 
     LieIncrementStreamTests()
-        : gen(1.0), ctx(algebra::get_context(width, depth, gen.ctype,
-                                             {{"backend", "libalgebra_lite"}}))
+        : gen(1.0), ctx(algebra::get_context(
+                            width, depth, gen.ctype,
+                            {
+                                    {"backend", "libalgebra_lite"}
+    }
+                    ))
     {}
 
     scalars::OwnedScalarArray random_data(dimn_t rows, dimn_t cols = width)
@@ -131,7 +136,9 @@ TEST_F(LieIncrementStreamTests, TestLogSignatureSingleIncrement)
             algebra::VectorType::Dense};
     auto idx = indices(1);
     const streams::LieIncrementStream path(
-            scalars::KeyScalarArray(std::move(data)), idx, md);
+            scalars::KeyScalarArray(std::move(data)), idx, md,
+            std::make_shared<streams::StreamSchema>(ctx->width())
+    );
 
     auto ctx1 = ctx->get_alike(1);
     auto lsig = path.log_signature(intervals::RealInterval(0.0, 1.0), 1, *ctx1);
@@ -146,15 +153,17 @@ TEST_F(LieIncrementStreamTests, TestLogSignatureTwoIncrementsDepth1)
 
     auto data = random_data(2);
 
-    algebra::VectorConstructionData edata{scalars::KeyScalarArray(ctx->ctype()),
-                                          algebra::VectorType::Dense};
+    algebra::VectorConstructionData edata{
+            scalars::KeyScalarArray(ctx->ctype()), algebra::VectorType::Dense};
     edata.data.allocate_scalars(width);
-    edata.data.type()->convert_copy(edata.data.ptr(), data, width);
+    edata.data.type()->convert_copy(edata.data, data, width);
     for (int i = 0; i < width; ++i) { edata.data[i] += data[i + width]; }
 
     auto idx = indices(2);
-    const LieIncrementStream path(scalars::KeyScalarArray(std::move(data)), idx,
-                                  md);
+    const LieIncrementStream path(
+            scalars::KeyScalarArray(std::move(data)), idx, md,
+            std::make_shared<streams::StreamSchema>(ctx->width())
+    );
 
     auto ctx1 = ctx->get_alike(1);
 
