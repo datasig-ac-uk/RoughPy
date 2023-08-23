@@ -251,6 +251,13 @@ endif()
 
 find_package(OpenMP REQUIRED COMPONENTS CXX)
 
+if (MSVC)
+    # MSVC has openmp from the stone ages, so add the experimental flag
+    get_target_property(_omp_flags OpenMP::CXX INTERFACE_COMPILE_OPTIONS)
+    string(REPLACE "/openmp" "/openmp:experimental" _omp_flags "${_omp_flags}")
+    set_target_properties(OpenMP::CXX INTERFACE_COMPILE_OPTIONS "${_omp_flags}")
+endif()
+
 find_package(pybind11 REQUIRED)
 find_package(cereal REQUIRED)
 find_package(PCGRandom REQUIRED)
