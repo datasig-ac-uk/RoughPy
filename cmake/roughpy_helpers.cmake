@@ -340,7 +340,10 @@ function(add_roughpy_component _name)
 
 
     set_target_properties(${_real_name} PROPERTIES
-            EXPORT_NAME ${_name})
+            EXPORT_NAME ${_name}
+            CXX_STANDARD 17
+            CXX_STANDARD_REQUIRED ON
+    )
 
     if (NOT ${_lib_type} STREQUAL "INTERFACE")
         target_include_directories(${_real_name}
