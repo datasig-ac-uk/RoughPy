@@ -625,6 +625,7 @@ StandardLinearAlgebra<S, R>::gelsd(ScalarMatrix& A, ScalarMatrix& b)
             rcond,
             rank
     );
+    return {};
 }
 
 }// namespace scalars

@@ -26,22 +26,30 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 04/07/23.
+// Created by user on 22/08/23.
 //
 
-#include <roughpy/streams/parametrization.h>
+#ifndef ROUGHPY_ROUGHPY_SRC_STREAMS_SCHEMA_FINALIZATION_H_
+#define ROUGHPY_ROUGHPY_SRC_STREAMS_SCHEMA_FINALIZATION_H_
 
-using namespace rpy;
-using namespace streams;
+#include "roughpy_module.h"
 
-Parameterization::~Parameterization() = default;
-
-param_t Parameterization::start_param() const noexcept { return 0.0; }
+#include "args/kwargs_to_path_metadata.h"
 
 
-intervals::RealInterval
-Parameterization::convert_parameter_interval(const intervals::Interval& arg) const
-{
-    return {m_param_offset + m_param_scaling * arg.inf(),
-            m_param_offset + m_param_scaling * arg.sup(), arg.type()};
-}
+namespace rpy { namespace python {
+
+/**
+ * @brief Check and finalize the schema, performing any last minute setup.
+ * @param schema Schema to finalize
+ * @param pmd Stream metadata parsed from keyword arguments.
+ */
+void finalize_schema(PyStreamMetaData& pmd);
+
+
+
+}}
+
+
+
+#endif// ROUGHPY_ROUGHPY_SRC_STREAMS_SCHEMA_FINALIZATION_H_
