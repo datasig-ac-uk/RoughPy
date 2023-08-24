@@ -77,7 +77,7 @@ public:
 
     template <typename T>
     RPY_NO_DISCARD inline static const ScalarType*
-    of(const platform::DeviceInfo& device);
+    of(const device::DeviceInfo& device);
 
     /*
      * ScalarTypes objects should be unique for each configuration,
@@ -106,7 +106,7 @@ public:
      * @return const pointer to appropriate scalar type
      */
     RPY_NO_DISCARD static const ScalarType* from_type_details(
-            const BasicScalarInfo& details, const platform::DeviceInfo& device
+            const BasicScalarInfo& details, const device::DeviceInfo& device
     );
 
     /**
@@ -509,7 +509,7 @@ inline const ScalarType* ScalarType::of()
 }
 
 template <typename T>
-const ScalarType* ScalarType::of(const platform::DeviceInfo& device)
+const ScalarType* ScalarType::of(const device::DeviceInfo& device)
 {
     return get_type(type_id_of<T>(), device);
 }

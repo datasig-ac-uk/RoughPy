@@ -26,16 +26,11 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by sam on 17/08/23.
+// Created by user on 24/08/23.
 //
 
-#ifndef ROUGHPY_DEVICE_H
-#define ROUGHPY_DEVICE_H
-
-#include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
-
-#include "filesystem.h"
+#ifndef ROUGHPY_DEVICE_MACROS_H_
+#define ROUGHPY_DEVICE_MACROS_H_
 
 #if defined(__NVCC__)
 #  include <cuda.h>
@@ -65,96 +60,5 @@
 #  define RPY_STRONG_INLINE
 
 #endif
-namespace rpy { namespace platform {
 
-using dindex_t = int;
-using dsize_t = unsigned int;
-
-
-/**
- * @brief Code for different device types
- *
- * These codes are chosen to be compatible with the DLPack
- * array interchange protocol. They enumerate the various different
- * device types that scalar data may be allocated on. This code goes
- * with a 32bit integer device ID, which is implementation specific.
- */
-enum DeviceType : int32_t {
-    CPU = 1,
-    CUDA = 2,
-    CUDAHost = 3,
-    OpenCL = 4,
-    Vulkan = 7,
-    Metal = 8,
-    VPI = 9,
-    ROCM = 10,
-    ROCMHost = 11,
-    ExtDev = 12,
-    CUDAManaged = 13,
-    OneAPI = 14,
-    WebGPU = 15,
-    Hexagon = 16
-};
-
-/**
- * @brief Device type/id pair to identify a device
- *
- *
- */
-struct DeviceInfo {
-    DeviceType device_type;
-    int32_t device_id;
-};
-
-
-namespace dtl {
-
-class CLDeviceInfo;
-
-} // namespace dtl
-
-
-
-class RPY_EXPORT DeviceHandle {
-    DeviceInfo m_info;
-
-    std::unique_ptr<dtl::CLDeviceInfo> p_device_info;
-
-public:
-
-    virtual ~DeviceHandle();
-
-    explicit DeviceHandle(DeviceInfo info);
-
-    explicit DeviceHandle(DeviceType type, int32_t device_id);
-
-    RPY_NO_DISCARD
-    const DeviceInfo& info() const noexcept { return m_info; }
-//
-//    RPY_NO_DISCARD
-//    virtual optional<fs::path> runtime_library() const noexcept = 0;
-
-
-//    virtual void launch_kernel(const void* kernel,
-//                               const void* launch_config,
-//                               void** args
-//                               ) = 0;
-
-
-};
-
-
-std::shared_ptr<DeviceHandle> get_cpu_device_handle() noexcept;
-
-
-
-constexpr bool
-operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
-{
-    return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
-}
-
-}}
-
-
-#endif// ROUGHPY_DEVICE_H
+#endif// ROUGHPY_DEVICE_MACROS_H_
