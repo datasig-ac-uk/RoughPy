@@ -100,6 +100,7 @@ add_roughpy_component(Scalars
     NEEDS
         RoughPy::Core
         RoughPy::Platform
+        RoughPy::Device
 )
 
 

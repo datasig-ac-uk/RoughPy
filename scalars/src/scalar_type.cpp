@@ -48,8 +48,8 @@
 using namespace rpy;
 using namespace scalars;
 
-using rpy::platform::DeviceInfo;
-using rpy::platform::DeviceType;
+using rpy::device::DeviceInfo;
+using rpy::device::DeviceType;
 
 ScalarType::~ScalarType() = default;
 

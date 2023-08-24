@@ -273,15 +273,13 @@ add_subdirectory(external/libalgebra_lite)
 
 add_subdirectory(core)
 add_subdirectory(platform)
+add_subdirectory(device)
 add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
 add_subdirectory(roughpy)
 
-if (ROUGHPY_GENERATE_DEVICE_CODE)
-    add_subdirectory(device)
-endif ()
 
 if (ROUGHPY_BUILD_LA_CONTEXTS)
     set(LIBALGEBRA_NO_SERIALIZATION ON CACHE INTERNAL "")

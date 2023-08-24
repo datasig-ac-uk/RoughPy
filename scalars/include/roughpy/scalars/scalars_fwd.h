@@ -35,7 +35,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
-#include <roughpy/platform/device.h>
+#include <roughpy/device/core.h>
 
 #include <complex>
 
@@ -137,7 +137,7 @@ struct ScalarTypeInfo {
     size_t n_bytes;
     size_t alignment;
     BasicScalarInfo basic_info;
-    platform::DeviceInfo device;
+    device::DeviceInfo device;
 };
 
 // Forward declarations
@@ -194,7 +194,7 @@ RPY_EXPORT
 const ScalarType* get_type(const string& id);
 
 RPY_EXPORT
-const ScalarType* get_type(const string& id, const platform::DeviceInfo& device);
+const ScalarType* get_type(const string& id, const device::DeviceInfo& device);
 
 /**
  * @brief Get a list of all registered ScalarTypes

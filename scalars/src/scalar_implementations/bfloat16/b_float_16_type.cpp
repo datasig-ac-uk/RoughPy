@@ -31,7 +31,7 @@
 
 #include "b_float_16_type.h"
 
-#include <roughpy/platform/device.h>
+#include <roughpy/device/core.h>
 
 #include <string>
 #include <utility>
@@ -44,5 +44,5 @@ BFloat16Type::BFloat16Type()
             string("BFloat16"), string("bf16"), sizeof(bfloat16),
             alignof(bfloat16),
             {ScalarTypeCode::BFloat, sizeof(bfloat16) * CHAR_BIT, 1U},
-            {platform::DeviceType::CPU, 0})
+            {device::DeviceType::CPU, 0})
 {}
