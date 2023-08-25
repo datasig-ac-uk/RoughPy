@@ -80,6 +80,26 @@ struct DeviceInfo {
 };
 
 
+struct Dim3 {
+    dsize_t x;
+    dsize_t y;
+    dsize_t z;
+
+    template <typename I1=dsize_t, typename I2=dsize_t, typename I3=dsize_t>
+    explicit Dim3(I1 i1=1, I2 i2=1, I3 i3=1)
+        : x(i1), y(i2), z(i3)
+    {}
+
+};
+
+
+struct KernelLaunchParams {
+    Dim3 grid_work_size;
+    Dim3 block_work_size;
+    optional<Dim3> offsets_size;
+    optional<dsize_t> dynamic_shared_memory;
+};
+
 
 class RPY_EXPORT DeviceHandle;
 class RPY_EXPORT Kernel;
