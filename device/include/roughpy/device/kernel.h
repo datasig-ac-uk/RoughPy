@@ -29,4 +29,21 @@
 #define ROUGHPY_DEVICE_KERNEL_H_
 
 
+namespace rpy { namespace device {
+
+
+
+
+
+class Kernel  {
+
+public:
+
+    virtual ~Kernel();
+
+
+};
+
+}}
+
 #endif // ROUGHPY_DEVICE_KERNEL_H_
