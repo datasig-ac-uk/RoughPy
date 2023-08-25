@@ -62,6 +62,10 @@ public:
     RuntimeLibrary& operator=(RuntimeLibrary&&) noexcept = delete;
 
     using base_t::location;
+
+protected:
+    using base_t::get;
+    using base_t::get_alias;
 };
 
 namespace dtl {

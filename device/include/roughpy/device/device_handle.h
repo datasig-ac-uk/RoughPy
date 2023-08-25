@@ -70,6 +70,10 @@ public:
     virtual void copy_from_device(
             void* h_dst_raw, const void* d_src_raw, dimn_t count
     ) const = 0;
+
+
+    virtual Kernel* get_kernel(string_view name) const = 0;
+
 };
 
 constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept

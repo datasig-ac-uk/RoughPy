@@ -13,6 +13,8 @@ add_roughpy_component(Device
         include/roughpy/device/kernel.h
         SOURCES
         src/device.cpp
+        src/opencl/open_cl_runtime_library.cpp
+        src/opencl/open_cl_runtime_library.h
         NEEDS
         RoughPy::Core
         RoughPy::Platform
