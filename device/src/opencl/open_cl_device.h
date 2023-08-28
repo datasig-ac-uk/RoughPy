@@ -20,8 +20,15 @@ class OpenCLDevice : public DeviceHandle
     OpenCLRuntimeLibrary* p_runtime;
 
 
-
-
+public:
+    optional<fs::path> runtime_library() const noexcept override;
+    void* raw_allocate(dimn_t size, dimn_t alignment) const override;
+    void raw_dealloc(void* d_raw_pointer, dimn_t size) const override;
+    void copy_to_device(void* d_dst_raw, const void* h_src_raw, dimn_t count)
+            const override;
+    void copy_from_device(void* h_dst_raw, const void* d_src_raw, dimn_t count)
+            const override;
+    Kernel* get_kernel(string_view name) const override;
 };
 
 }// namespace device
