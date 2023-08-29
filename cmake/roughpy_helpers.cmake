@@ -176,12 +176,123 @@ function(target_link_components _target _visibility)
 
 endfunction()
 
+function(_parse_defs_for_configure _args)
+
+    list(LENGTH _args _arg_len)
+    while (_arg_len GREATER 2) 
+        list(POP_FRONT _args _var_name)
+        list(POP_FRONT _args _var_val)
+
+        set(${_var_name} "${_var_val}" PARENT_SCOPE)
+        math(EXPR _arg_len "${_arg_len} - 2")
+    endwhile()
+
+    if (_arg_len EQUAL 1)
+        message(FATAL_ERROR "arguments to DEFINE must be <NAME> <VALUE> pairs")
+    endif()
+
+endfunction()
+
+
+function(_do_configure_file _tgt _path_in _path_out _defines _atonly_flag
+        _is_public)
+    if (_defines)
+        _parse_defs_for_configure("${_defines}")
+    endif()
+
+    if (_atonly_flag)
+        set(_atonly "@ONLY")
+    else()
+        set(_atonly "")
+    endif()
+
+    configure_file(${_path_in} ${_path_out} ${_atonly})
+
+    target_sources(${_tgt} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/${_path_out})
+
+endfunction()
+
+
+function(_configure_file _tgt _args)
+    set(flag_params "ATONLY;IS_PUBLIC")
+    set(single_arg_params "IN;OUT")
+    set(multi_arg_params "DEFINE")
+
+    list(POP_FRONT _args _sanity_check)
+    if (NOT _sanity_check STREQUAL "FILE")
+        message(FATAL_ERROR "Invalid arguments to configure")
+    endif()
+
+
+    list (LENGTH _args _nargs)
+    while (_nargs GREATER 0)
+        list(FIND _args "FILE" _next_pos)
+        list(SUBLIST _args 0 ${_next_pos} file_args)
+        if (NOT _next_pos EQUAL -1)
+            list(SUBLIST _args ${_next_pos} -1 _args)
+            list(POP_FRONT _args)
+        else()
+            set(_args "")
+        endif()
+
+        cmake_parse_arguments(
+            "FILE" 
+            "${flag_args}" 
+            "${single_arg_params}" 
+            "${multi_arg_params}"
+            "${file_args}"
+        )
+
+#        cmake_path(IS_ABSOLUTE FILE_IN _is_absolute)
+#        if (_is_absolute)
+#            set(_path_in "${FILE_IN}")
+#        else()
+#            set(_path_in "${CMAKE_CURRENT_LIST_DIR}/${FILE_IN}")
+#        endif()
+
+        cmake_path(ABSOLUTE_PATH FILE_IN OUTPUT_VARIABLE _path_in)
+        set(_path_out "${FILE_OUT}")
+
+        if (NOT EXISTS ${_path_in})
+            message(FATAL_ERROR "The source file ${_path_in} does not exist")
+        endif()
+
+        message(STATUS "generating file \"${_path_out}\" from \"${_path_in}\"")
+        _do_configure_file("${_tgt}"
+                "${_path_in}"
+                "${_path_out}"
+                "${FILE_DEFINE}"
+                "${FILE_ATONLY}"
+                "${FILE_IS_PUBLIC}")
+
+        list(LENGTH _args _nargs)
+
+    endwhile()
+    
+
+
+endfunction()
+
+
 function(add_roughpy_component _name)
+
+    set(flag_params "STATIC" "SHARED" "INTERFACE")
+    set(single_arg_params "")
+    set(multi_arg_params 
+        "SOURCES"
+        "PUBLIC_DEPS"
+        "PRIVATE_DEPS"
+        "DEFINITIONS"
+        "CONFIGURE"
+        "PUBLIC_HEADERS"
+        "PVT_INCLUDE_DIRS"
+        "NEEDS")
+
     cmake_parse_arguments(
             ARG
-            "STATIC;SHARED;INTERFACE"
-            ""
-            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS;NEEDS"
+            "${flag_params}"
+            "${single_arg_params}"
+            "${multi_arg_params}"
             ${ARGN}
     )
 
@@ -227,6 +338,7 @@ function(add_roughpy_component _name)
     _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps ARG_PUBLIC_DEPS)
     _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps ARG_PRIVATE_DEPS)
 
+
     set_target_properties(${_real_name} PROPERTIES
             EXPORT_NAME ${_name})
 
@@ -262,6 +374,10 @@ function(add_roughpy_component _name)
 
         target_sources(${_real_name} INTERFACE ${ARG_PUBLIC_HEADERS})
     endif ()
+
+    if (ARG_CONFIGURE)
+        _configure_file(${_real_name} "${ARG_CONFIGURE}")
+    endif()
 
     if (_lib_type MATCHES "INTERFACE")
         set(_public INTERFACE)
