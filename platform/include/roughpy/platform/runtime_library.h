@@ -32,10 +32,13 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
+#include "filesystem.h"
+
+#if defined(RPY_HAS_STD_FILESYSTEM) && RPY_HAS_STD_FILESYSTEM
 #define BOOST_DLL_USE_STD_FS
+#endif
 #include <boost/dll/shared_library.hpp>
 
-#include "filesystem.h"
 
 namespace rpy {
 namespace platform {
