@@ -7,10 +7,14 @@ project(RoughPy_Device VERSION 0.0.1
 
 add_roughpy_component(Device
         PUBLIC_HEADERS
+        include/roughpy/device/buffer.h
         include/roughpy/device/core.h
         include/roughpy/device/macros.h
         include/roughpy/device/device_handle.h
+        include/roughpy/device/event.h
         include/roughpy/device/kernel.h
+        include/roughpy/device/macros.h
+        include/roughpy/device/queue.h
         SOURCES
         src/opencl/open_cl_device.cpp
         src/opencl/open_cl_device.h
