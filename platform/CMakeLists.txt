@@ -13,7 +13,6 @@ check_include_file_cxx(filesystem RPY_HAS_STD_FILESYSTEM)
 add_roughpy_component(Platform
     SOURCES
         src/configuration.cpp
-#        src/threading/openmp_threading.cpp
         src/runtime_library.cpp
     PUBLIC_HEADERS
         include/roughpy/platform.h
