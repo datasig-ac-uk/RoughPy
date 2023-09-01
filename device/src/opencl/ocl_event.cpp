@@ -26,35 +26,53 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by sam on 17/08/23.
+// Created by user on 31/08/23.
 //
 
-#include <roughpy/device/device_handle.h>
+#include "ocl_event.h"
 
-#include <roughpy/device/buffer.h>
-#include <roughpy/device/event.h>
-#include <roughpy/device/kernel.h>
-#include <roughpy/device/queue.h>
-
-using namespace rpy;
-using namespace rpy::device;
-
-
-DeviceHandle::DeviceHandle()  {
-
-}
-
-
-DeviceHandle::~DeviceHandle() = default;
-
-optional<fs::path> DeviceHandle::runtime_library() const noexcept
+namespace rpy {
+namespace device {
+void* OCLEventInterface::clone(void* content) const
 {
-    return {};
+    auto errcode = p_runtime->clRetainEvent(event(content));
+    RPY_CHECK(errcode == CL_SUCCESS);
+    return content;
 }
+void OCLEventInterface::clear(void* content) const
+{
+    auto ecode = p_runtime->clReleaseEvent(event(content));
+    RPY_CHECK(ecode == CL_SUCCESS);
+}
+void OCLEventInterface::wait(void* content) {
+    auto ev = event(content);
+    auto ecode = p_runtime->clWaitForEvents(1, &ev);
+    RPY_CHECK(ecode == CL_SUCCESS);
+}
+EventStatus OCLEventInterface::status(void* content)
+{
+    cl_int raw_status;
+    auto ecode = p_runtime->clGetEventInfo(event(content),
+                              CL_EVENT_COMMAND_EXECUTION_STATUS,
+                              sizeof(raw_status),
+                              &raw_status,
+                              nullptr
+                              );
+    RPY_CHECK(ecode == CL_SUCCESS);
 
-DeviceInfo device::DeviceHandle::info() const noexcept {
-    return {
-        DeviceType::CPU,
-        0
-    };
+    switch (raw_status) {
+        case CL_COMPLETE:
+            return EventStatus::CompletedSuccessfully;
+        case CL_QUEUED:
+            return EventStatus::Queued;
+        case CL_SUBMITTED:
+            return EventStatus::Submitted;
+        case CL_RUNNING:
+            return EventStatus::Running;
+        default:
+            return EventStatus::Error;
+    }
+
 }
+}// namespace device
+}// namespace rpy

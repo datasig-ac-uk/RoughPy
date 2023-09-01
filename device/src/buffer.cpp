@@ -26,35 +26,41 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by sam on 17/08/23.
+// Created by user on 29/08/23.
 //
 
-#include <roughpy/device/device_handle.h>
-
 #include <roughpy/device/buffer.h>
-#include <roughpy/device/event.h>
-#include <roughpy/device/kernel.h>
-#include <roughpy/device/queue.h>
 
 using namespace rpy;
 using namespace rpy::device;
 
-
-DeviceHandle::DeviceHandle()  {
-
-}
-
-
-DeviceHandle::~DeviceHandle() = default;
-
-optional<fs::path> DeviceHandle::runtime_library() const noexcept
+BufferMode BufferInterface::mode(void* content) const
 {
-    return {};
+    return BufferMode::Read;
 }
 
-DeviceInfo device::DeviceHandle::info() const noexcept {
-    return {
-        DeviceType::CPU,
-        0
-    };
+dimn_t BufferInterface::size(void* content) const { return 0; }
+void* BufferInterface::ptr(void* content) const {
+    return nullptr;
+}
+
+BufferMode Buffer::mode() const
+{
+    if (interface() == nullptr || content() == nullptr) {
+        return BufferMode::Read;
+    }
+    return interface()->mode(content());
+}
+
+dimn_t Buffer::size() const
+{
+    if (interface() == nullptr || content() == nullptr) { return 0; }
+    return interface()->size(content());
+}
+
+void* Buffer::ptr() {
+    if (interface() == nullptr || content() == nullptr) {
+        return nullptr;
+    }
+    return interface()->ptr(content());
 }

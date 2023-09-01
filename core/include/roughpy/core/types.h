@@ -58,6 +58,7 @@ using std::uint64_t;
 using let_t = uint16_t;
 using dimn_t = std::size_t;
 using idimn_t = std::ptrdiff_t;
+using hash_t = std::size_t;
 using deg_t = int;
 using key_type = std::size_t;
 using param_t = double;

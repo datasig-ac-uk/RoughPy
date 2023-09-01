@@ -26,35 +26,32 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by sam on 17/08/23.
+// Created by user on 31/08/23.
 //
 
-#include <roughpy/device/device_handle.h>
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_QUEUE_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_QUEUE_H_
 
-#include <roughpy/device/buffer.h>
-#include <roughpy/device/event.h>
-#include <roughpy/device/kernel.h>
 #include <roughpy/device/queue.h>
+#include "open_cl_runtime_library.h"
 
-using namespace rpy;
-using namespace rpy::device;
+namespace rpy {
+namespace device {
 
-
-DeviceHandle::DeviceHandle()  {
-
-}
-
-
-DeviceHandle::~DeviceHandle() = default;
-
-optional<fs::path> DeviceHandle::runtime_library() const noexcept
+class OCLQueueInterface : public QueueInterface
 {
-    return {};
-}
+    const OpenCLRuntimeLibrary* p_runtime;
+    static inline cl_command_queue queue(void* content) noexcept
+    {
+        return static_cast<cl_command_queue>(content);
+    }
 
-DeviceInfo device::DeviceHandle::info() const noexcept {
-    return {
-        DeviceType::CPU,
-        0
-    };
-}
+public:
+    void* clone(void* content) const override;
+    void clear(void* content) const override;
+};
+
+}// namespace device
+}// namespace rpy
+
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_QUEUE_H_

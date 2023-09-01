@@ -26,35 +26,71 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by sam on 17/08/23.
+// Created by user on 31/08/23.
 //
 
-#include <roughpy/device/device_handle.h>
-
-#include <roughpy/device/buffer.h>
-#include <roughpy/device/event.h>
-#include <roughpy/device/kernel.h>
-#include <roughpy/device/queue.h>
+#include "ocl_buffer.h"
 
 using namespace rpy;
 using namespace rpy::device;
 
+#define CL_MEM_MODE_MASK \
+    CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY | CL_MEM_READ_WRITE
 
-DeviceHandle::DeviceHandle()  {
-
-}
-
-
-DeviceHandle::~DeviceHandle() = default;
-
-optional<fs::path> DeviceHandle::runtime_library() const noexcept
+OCLBufferInterface::OCLBufferInterface(const OpenCLRuntimeLibrary* runtime)
+    : p_runtime(runtime)
 {
-    return {};
+
 }
 
-DeviceInfo device::DeviceHandle::info() const noexcept {
-    return {
-        DeviceType::CPU,
-        0
-    };
+BufferMode OCLBufferInterface::mode(void* content) const
+{
+    cl_int raw_mode;
+    auto ecode = p_runtime->clGetMemObjectInfo(
+            buffer(content),
+            CL_MEM_FLAGS,
+            sizeof(cl_int),
+            &raw_mode,
+            nullptr
+            );
+    RPY_CHECK(ecode == CL_SUCCESS);
+
+    switch ( raw_mode & CL_MEM_MODE_MASK) {
+        case CL_MEM_READ_ONLY:
+            return BufferMode::Read;
+        case CL_MEM_WRITE_ONLY:
+            return BufferMode::Write;
+        case CL_MEM_READ_WRITE:
+            return BufferMode::ReadWrite;
+        default:
+            RPY_THROW(std::runtime_error, "invalid mode for memory buffer");
+    }
+}
+dimn_t OCLBufferInterface::size(void* content) const
+{
+    dimn_t raw_size;
+    auto ecode = p_runtime->clGetMemObjectInfo(
+            buffer(content),
+            CL_MEM_SIZE,
+            sizeof(raw_size),
+            &raw_size,
+            nullptr
+            );
+    RPY_CHECK(ecode == CL_SUCCESS);
+    return raw_size;
+}
+void* OCLBufferInterface::ptr(void* content) const
+{
+    return BufferInterface::ptr(content);
+}
+void* OCLBufferInterface::clone(void* content) const
+{
+
+
+}
+void OCLBufferInterface::clear(void* content) const
+{
+    auto ret = p_runtime->clReleaseMemObject(buffer(content));
+    RPY_CHECK(ret == CL_SUCCESS);
+    delete static_cast<Data*>(content);
 }

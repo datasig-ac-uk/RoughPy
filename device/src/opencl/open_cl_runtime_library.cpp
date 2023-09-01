@@ -31,14 +31,26 @@
 
 #include "open_cl_runtime_library.h"
 
+
+#include "open_cl_device.h"
+
+
+#include <vector>
+
 using namespace rpy;
 using namespace rpy::device;
 
+#define SET_CL_FUN(name)                                                       \
+    do {                                                                       \
+        if (RPY_LIKELY(has(#name))) {                                          \
+            name = get<cl::F##name>(#name);                                    \
+        } else {                                                               \
+            name = nullptr;                                                    \
+        }                                                                      \
+    } while (0)
 
-#define SET_CL_FUN(name) name = get<cl::F ## name>(#name)
-
-
-void OpenCLRuntimeLibrary::load_symbols() {
+void OpenCLRuntimeLibrary::load_symbols()
+{
 
     SET_CL_FUN(clGetPlatformIDs);
     SET_CL_FUN(clGetPlatformInfo);
@@ -264,21 +276,92 @@ void OpenCLRuntimeLibrary::load_symbols() {
 #ifdef CL_VERSION_1_2
     SET_CL_FUN(clGetExtensionFunctionAddressForPlatform);
 #endif
-
-
-
-
 }
 
-
 #undef SET_CL_FUN
+
+static constexpr cl_uint s_max_num_platforms = 16;
+static constexpr cl_uint s_max_num_devices = 16;
 
 OpenCLRuntimeLibrary::OpenCLRuntimeLibrary(const fs::path& path)
     : platform::RuntimeLibrary(path)
 {
+    RPY_CHECK(is_loaded());
     load_symbols();
 }
-const char* OpenCLRuntimeLibrary::get_version() const noexcept
+string_view OpenCLRuntimeLibrary::get_version() const noexcept { return {}; }
+
+std::shared_ptr<DeviceHandle> OpenCLRuntimeLibrary::get_device(DeviceInfo info
+) const
 {
-    return nullptr;
+    std::lock_guard<std::mutex> access(m_lock);
+    auto& entry = m_device_cache[info];
+    if (!entry) {
+
+        cl_device_type search_type;
+        switch (info.device_type) {
+            case CPU:
+                search_type = CL_DEVICE_TYPE_CPU;
+                break;
+            case CUDA: RPY_FALLTHROUGH;
+            case CUDAHost: RPY_FALLTHROUGH;
+            case CUDAManaged: RPY_FALLTHROUGH;
+            case Metal: RPY_FALLTHROUGH;
+            case ROCM: RPY_FALLTHROUGH;
+            case ROCMHost: RPY_FALLTHROUGH;
+            case Vulkan: RPY_FALLTHROUGH;
+            case WebGPU:
+                search_type = CL_DEVICE_TYPE_GPU;
+                break;
+            case ExtDev:
+                RPY_THROW(std::runtime_error, "ExtDev is not supported");
+            case VPI: RPY_FALLTHROUGH;
+            case Hexagon:
+                search_type = CL_DEVICE_TYPE_ACCELERATOR;
+                break;
+            case OpenCL: RPY_FALLTHROUGH;
+            case OneAPI:
+                search_type = CL_DEVICE_TYPE_DEFAULT;
+        }
+
+
+        cl_int rc;
+        cl_uint num_platforms = 0;
+        std::vector<cl_platform_id> plats(s_max_num_platforms);
+        rc = clGetPlatformIDs(s_max_num_platforms, plats.data(), &num_platforms);
+
+        RPY_CHECK(rc == CL_SUCCESS);
+
+        std::vector<cl_device_id> devices(s_max_num_devices);
+        std::vector<cl_device_id> candidates;
+        candidates.reserve(s_max_num_devices);
+        for (cl_uint i=0; i<num_platforms; ++i) {
+            auto id = plats[i];
+            cl_uint num_devices;
+            rc = clGetDeviceIDs(id, search_type, s_max_num_devices,
+                                devices.data(), &num_devices);
+            if (rc != CL_SUCCESS || num_devices == 0) {
+                continue;
+            }
+
+            for (cl_uint dev_idx=0; dev_idx < num_devices; ++dev_idx) {
+                const auto& dev = devices[dev_idx];
+                cl_bool is_available;
+                rc = clGetDeviceInfo(dev, CL_DEVICE_AVAILABLE,
+                                     sizeof(is_available),
+                                     &is_available, nullptr);
+                if (rc != CL_SUCCESS || !is_available) { continue; }
+
+                // Other checks?
+                candidates.push_back(dev);
+            }
+        }
+
+        if (candidates.empty()) {
+            RPY_THROW(std::runtime_error, "could not find appropriate device");
+        }
+
+        entry = std::make_shared<OpenCLDevice>(this, candidates[0]);
+    }
+    return entry;
 }

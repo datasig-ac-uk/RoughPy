@@ -26,35 +26,61 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by sam on 17/08/23.
+// Created by user on 31/08/23.
 //
 
-#include <roughpy/device/device_handle.h>
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_
 
 #include <roughpy/device/buffer.h>
-#include <roughpy/device/event.h>
-#include <roughpy/device/kernel.h>
-#include <roughpy/device/queue.h>
 
-using namespace rpy;
-using namespace rpy::device;
+#include "open_cl_runtime_library.h"
+#include "open_cl_device.h"
 
+namespace rpy {
+namespace device {
 
-DeviceHandle::DeviceHandle()  {
-
-}
-
-
-DeviceHandle::~DeviceHandle() = default;
-
-optional<fs::path> DeviceHandle::runtime_library() const noexcept
+class OCLBufferInterface : public BufferInterface
 {
-    return {};
-}
+    const OpenCLRuntimeLibrary* p_runtime;
 
-DeviceInfo device::DeviceHandle::info() const noexcept {
-    return {
-        DeviceType::CPU,
-        0
+    struct Data {
+        cl_mem buffer;
+        boost::intrusive_ptr<OpenCLDevice> device;
     };
-}
+
+public:
+
+    static void* create_data(cl_mem buffer,
+                             boost::intrusive_ptr<OpenCLDevice> device)
+            noexcept {
+        return new Data { buffer, std::move(device) };
+    }
+
+private:
+
+    static inline cl_mem buffer(void* content) noexcept {
+        return static_cast<Data*>(content)->buffer;
+    }
+
+    static inline boost::intrusive_ptr<OpenCLDevice>& device(void* content)
+            noexcept
+    {
+        return static_cast<Data*>(content)->device;
+    }
+
+public:
+
+    explicit OCLBufferInterface(const OpenCLRuntimeLibrary* runtime);
+
+    BufferMode mode(void* content) const override;
+    dimn_t size(void* content) const override;
+    void* ptr(void* content) const override;
+    void* clone(void* content) const override;
+    void clear(void* content) const override;
+};
+
+}// namespace device
+}// namespace rpy
+
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_

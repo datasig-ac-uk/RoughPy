@@ -43,6 +43,16 @@ using dindex_t = int;
 using dsize_t = unsigned int;
 
 
+enum class DeviceCategory : int32_t  {
+    CPU = 0,
+    GPU = 1,
+    FPGA = 2,
+    DSP = 3,
+    AIP = 4,
+    Other = 5
+};
+
+
 /**
  * @brief Code for different device types
  *
@@ -101,16 +111,36 @@ struct KernelLaunchParams {
 };
 
 
+enum class EventStatus : int8_t {
+    CompletedSuccessfully = 0,
+    Queued = 1,
+    Submitted = 2,
+    Running = 4,
+    Error = 8
+};
+
+
+class RPY_EXPORT BufferInterface;
+class RPY_EXPORT EventInterface;
+class RPY_EXPORT KernelInterface;
+class RPY_EXPORT QueueInterface;
+
+
 class RPY_EXPORT DeviceHandle;
 class RPY_EXPORT Kernel;
-class RPY_EXPORT MaskedUnaryKernel;
-class RPY_EXPORT MaskedBinaryKernel;
+class RPY_EXPORT Queue;
 
 
 
 RPY_NO_DISCARD RPY_EXPORT
 std::shared_ptr<DeviceHandle> get_device(DeviceType device_type,
                                          int32_t device_id);
+
+
+constexpr hash_t hash_value(const DeviceInfo& info) noexcept {
+    return (static_cast<hash_t>(info.device_type) << (sizeof(hash_t) / 2))
+            | static_cast<hash_t>(info.device_id);
+}
 
 
 }// namespace device

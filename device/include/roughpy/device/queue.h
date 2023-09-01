@@ -28,5 +28,24 @@
 #ifndef ROUGHPY_DEVICE_QUEUE_H_
 #define ROUGHPY_DEVICE_QUEUE_H_
 
+#include "core.h"
+#include "device_object_base.h"
+
+namespace rpy { namespace device {
+
+class QueueInterface : public dtl::InterfaceBase {
+
+
+};
+
+
+class Queue : public dtl::ObjectBase<QueueInterface, Queue>
+{
+};
+
+}}
+
+
+
 
 #endif // ROUGHPY_DEVICE_QUEUE_H_

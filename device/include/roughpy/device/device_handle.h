@@ -33,46 +33,71 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/platform/filesystem.h>
 
-namespace rpy { namespace device {
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
-class RPY_EXPORT DeviceHandle
+#include <memory>
+
+
+namespace rpy {
+namespace device {
+
+class RPY_EXPORT DeviceHandle : public
+                                boost::intrusive_ref_counter<DeviceHandle>
 {
-    DeviceInfo m_info;
+    const BufferInterface* p_buffer_interface;
+    const EventInterface* p_event_interface;
+    const KernelInterface* p_kernel_interface;
+    const QueueInterface* p_queue_interface;
+
+protected:
+    RPY_NO_DISCARD const BufferInterface* buffer_interface() const noexcept
+    {
+        RPY_DBG_ASSERT(p_buffer_interface);
+        return p_buffer_interface;
+    }
+    RPY_NO_DISCARD const EventInterface* event_interface() const noexcept
+    {
+        RPY_DBG_ASSERT(p_event_interface);
+        return p_event_interface;
+    }
+    RPY_NO_DISCARD const KernelInterface* kernel_interface() const noexcept
+    {
+        RPY_DBG_ASSERT(p_kernel_interface);
+        return p_kernel_interface;
+    }
+    RPY_NO_DISCARD const QueueInterface* queue_interface() const noexcept
+    {
+        RPY_DBG_ASSERT(p_queue_interface);
+        return p_queue_interface;
+    }
 
 public:
-    virtual ~DeviceHandle();
+    DeviceHandle();
 
-    explicit DeviceHandle(DeviceInfo info) : m_info(std::move(info)) {}
-
-    explicit DeviceHandle(DeviceType type, int32_t device_id)
-            : m_info {type, device_id}
+    DeviceHandle(
+            const BufferInterface* buffer_iface,
+            const EventInterface* event_iface,
+            const KernelInterface* kernel_iface,
+            const QueueInterface* queue_iface
+    )
+        : p_buffer_interface(buffer_iface),
+          p_event_interface(event_iface),
+          p_kernel_interface(kernel_iface),
+          p_queue_interface(queue_iface)
     {}
 
-    RPY_NO_DISCARD const DeviceInfo& info() const noexcept { return m_info; }
-    //
-    RPY_NO_DISCARD
-    virtual optional<fs::path> runtime_library() const noexcept;
+
+    virtual ~DeviceHandle();
+
+    RPY_NO_DISCARD virtual DeviceInfo info() const noexcept;
+
+    RPY_NO_DISCARD virtual optional<fs::path> runtime_library() const noexcept;
 
     //    virtual void launch_kernel(const void* kernel,
     //                               const void* launch_config,
     //                               void** args
     //                               ) = 0;
-
-    RPY_NO_DISCARD virtual void*
-    raw_allocate(dimn_t size, dimn_t alignment) const = 0;
-
-    virtual void raw_dealloc(void* d_raw_pointer, dimn_t size) const = 0;
-
-    virtual void
-    copy_to_device(void* d_dst_raw, const void* h_src_raw, dimn_t count)
-            const = 0;
-
-    virtual void copy_from_device(
-            void* h_dst_raw, const void* d_src_raw, dimn_t count
-    ) const = 0;
-
-
-    virtual Kernel* get_kernel(string_view name) const = 0;
 
 };
 
@@ -81,10 +106,7 @@ constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
     return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
 }
 
+}// namespace device
+}// namespace rpy
 
-
-}}
-
-
-
-#endif // ROUGHPY_DEVICE_DEVICE_HANDLE_H_
+#endif// ROUGHPY_DEVICE_DEVICE_HANDLE_H_

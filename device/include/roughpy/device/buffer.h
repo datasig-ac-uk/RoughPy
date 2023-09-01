@@ -29,18 +29,54 @@
 #define ROUGHPY_DEVICE_BUFFER_H_
 
 #include "core.h"
+#include "device_object_base.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
 
-namespace rpy {
-namespace device {
+namespace rpy { namespace device {
+
+enum class BufferMode {
+    None = 0,
+    Read = 1,
+    Write = 2,
+    ReadWrite = 3
+};
 
 
+class BufferInterface : public dtl::InterfaceBase {
+public:
 
-}
-}
+    RPY_NO_DISCARD
+    virtual BufferMode mode(void* content) const;
+
+    RPY_NO_DISCARD
+    virtual dimn_t size(void* content) const;
+
+    RPY_NO_DISCARD
+    virtual void* ptr(void* content) const;
+
+};
+
+class Buffer : public dtl::ObjectBase<BufferInterface, Buffer> {
+    using base_t = dtl::ObjectBase<BufferInterface, Buffer>;
+public:
+
+    using base_t::base_t;
+
+    RPY_NO_DISCARD
+    dimn_t size() const;
+
+    RPY_NO_DISCARD
+    BufferMode mode() const;
+
+    RPY_NO_DISCARD
+    void* ptr();
+
+};
+
+}}
 
 
 #endif // ROUGHPY_DEVICE_BUFFER_H_

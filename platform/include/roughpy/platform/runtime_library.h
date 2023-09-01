@@ -68,6 +68,8 @@ public:
 
 protected:
     using base_t::get;
+    using base_t::has;
+    using base_t::is_loaded;
     using base_t::get_alias;
 };
 

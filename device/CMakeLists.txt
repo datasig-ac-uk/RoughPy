@@ -11,6 +11,7 @@ add_roughpy_component(Device
         include/roughpy/device/core.h
         include/roughpy/device/macros.h
         include/roughpy/device/device_handle.h
+        include/roughpy/device/device_object_base.h
         include/roughpy/device/event.h
         include/roughpy/device/kernel.h
         include/roughpy/device/macros.h
@@ -18,12 +19,22 @@ add_roughpy_component(Device
         SOURCES
         src/opencl/open_cl_device.cpp
         src/opencl/open_cl_device.h
+        src/opencl/ocl_buffer.cpp
+        src/opencl/ocl_buffer.h
+        src/opencl/ocl_event.cpp
+        src/opencl/ocl_event.h
+        src/opencl/ocl_queue.cpp
+        src/opencl/ocl_queue.h
         src/opencl/open_cl_kernel.cpp
         src/opencl/open_cl_kernel.h
         src/opencl/open_cl_runtime_library.cpp
         src/opencl/open_cl_runtime_library.h
+        src/buffer.cpp
         src/device.cpp
+        src/device_object_base.cpp
+        src/event.cpp
         src/kernel.cpp
+        src/queue.cpp
         NEEDS
         RoughPy::Core
         RoughPy::Platform

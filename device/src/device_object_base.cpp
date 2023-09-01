@@ -26,35 +26,15 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by sam on 17/08/23.
+// Created by user on 30/08/23.
 //
 
-#include <roughpy/device/device_handle.h>
-
-#include <roughpy/device/buffer.h>
-#include <roughpy/device/event.h>
-#include <roughpy/device/kernel.h>
-#include <roughpy/device/queue.h>
+#include <roughpy/device/device_object_base.h>
 
 using namespace rpy;
 using namespace rpy::device;
 
+device::dtl::InterfaceBase::~InterfaceBase() = default;
+void* device::dtl::InterfaceBase::clone(void* content) const { return content; }
 
-DeviceHandle::DeviceHandle()  {
-
-}
-
-
-DeviceHandle::~DeviceHandle() = default;
-
-optional<fs::path> DeviceHandle::runtime_library() const noexcept
-{
-    return {};
-}
-
-DeviceInfo device::DeviceHandle::info() const noexcept {
-    return {
-        DeviceType::CPU,
-        0
-    };
-}
+void device::dtl::InterfaceBase::clear(void* content) const {}

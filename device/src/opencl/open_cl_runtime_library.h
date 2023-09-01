@@ -34,15 +34,28 @@
 
 #include <roughpy/platform/runtime_library.h>
 
+#include <roughpy/device/buffer.h>
+#include <roughpy/device/device_handle.h>
+#include <roughpy/device/event.h>
+#include <roughpy/device/kernel.h>
+#include <roughpy/device/queue.h>
+
 #include <CL/cl.h>
+#include <CL/cl_ext.h>
 #include <CL/cl_gl.h>
 #include <CL/cl_platform.h>
+
+#include <mutex>
+#include <unordered_map>
+
+#include <boost/functional/hash.hpp>
 
 namespace rpy {
 namespace device {
 
 namespace cl {
 
+extern "C" {
 /* Platform API */
 typedef cl_int(CL_API_CALL*
                        FclGetPlatformIDs)(cl_uint, cl_platform_id*, cl_uint*)
@@ -576,6 +589,7 @@ typedef void*(CL_API_CALL*
         CL_API_SUFFIX__VERSION_1_2;
 
 #endif
+}// extern "C"
 
 }// namespace cl
 
@@ -583,12 +597,45 @@ typedef void*(CL_API_CALL*
 
 class OpenCLRuntimeLibrary : public platform::RuntimeLibrary
 {
+    mutable std::unordered_map<
+            DeviceInfo, std::shared_ptr<DeviceHandle>, boost::hash<DeviceInfo>>
+            m_device_cache;
+    mutable std::mutex m_lock;
+
+    std::unique_ptr<const BufferInterface> p_buffer_interface;
+    std::unique_ptr<const EventInterface> p_event_interface;
+    std::unique_ptr<const KernelInterface> p_kernel_interface;
+    std::unique_ptr<const QueueInterface> p_queue_interface;
+
     void load_symbols();
 
 public:
     explicit OpenCLRuntimeLibrary(const fs::path& path);
 
-    const char* get_version() const noexcept;
+    RPY_NO_DISCARD const BufferInterface* buffer_interface() const noexcept
+    {
+        RPY_DBG_ASSERT(p_buffer_interface);
+        return p_buffer_interface.get();
+    }
+    RPY_NO_DISCARD const EventInterface* event_interface() const noexcept
+    {
+        RPY_DBG_ASSERT(p_event_interface);
+        return p_event_interface.get();
+    }
+    RPY_NO_DISCARD const KernelInterface* kernel_interface() const noexcept
+    {
+        RPY_DBG_ASSERT(p_kernel_interface);
+        return p_kernel_interface.get();
+    }
+    RPY_NO_DISCARD const QueueInterface* queue_interface() const noexcept
+    {
+        RPY_DBG_ASSERT(p_queue_interface);
+        return p_queue_interface.get();
+    }
+
+    string_view get_version() const noexcept;
+
+    std::shared_ptr<DeviceHandle> get_device(DeviceInfo info) const;
 
     DECL_CL_FUN(clGetPlatformIDs);
     DECL_CL_FUN(clGetPlatformInfo);

@@ -29,4 +29,36 @@
 #define ROUGHPY_DEVICE_EVENT_H_
 
 
+#include "core.h"
+
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+#include "device_object_base.h"
+
+namespace rpy { namespace device {
+
+class RPY_EXPORT EventInterface : public dtl::InterfaceBase {
+public:
+
+    virtual void wait(void* content);
+
+    virtual EventStatus status(void* content);
+
+};
+
+class Event {
+
+public:
+
+    void wait();
+
+    EventStatus status() const;
+
+};
+
+
+}}
+
+
+
 #endif // ROUGHPY_DEVICE_EVENT_H_

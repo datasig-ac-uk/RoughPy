@@ -28,19 +28,58 @@
 #ifndef ROUGHPY_DEVICE_KERNEL_H_
 #define ROUGHPY_DEVICE_KERNEL_H_
 
+#include "device_object_base.h"
+
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+#include <roughpy/core/slice.h>
+
+#include "core.h"
+#include "event.h"
+
 
 namespace rpy { namespace device {
 
 
+class RPY_EXPORT KernelInterface : public dtl::InterfaceBase {
 
-
-
-class Kernel  {
 
 public:
 
-    virtual ~Kernel();
+    RPY_NO_DISCARD
+    virtual string_view name(void* content) const;
 
+    RPY_NO_DISCARD
+    virtual dimn_t num_args(void* content) const;
+
+    virtual Event launch_kernel_async(void* content,
+                                      Queue queue,
+                                      Slice<void*> args,
+                                      Slice<dimn_t> arg_sizes,
+                                      const KernelLaunchParams& params) const;
+
+
+
+    virtual void launch_kernel_sync(void* content,
+                                    Queue queue,
+                                    Slice<void*> args,
+                                    Slice<dimn_t> arg_sizes,
+                                    const KernelLaunchParams& params) const;
+
+
+
+};
+
+
+class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel> {
+
+public:
+
+    RPY_NO_DISCARD
+    string_view name() const;
+
+    RPY_NO_DISCARD
+    dimn_t num_args() const;
 
 };
 

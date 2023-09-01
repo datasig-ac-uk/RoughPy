@@ -25,36 +25,70 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by sam on 17/08/23.
-//
+#ifndef ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
+#define ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
 
-#include <roughpy/device/device_handle.h>
+#include "core.h"
 
-#include <roughpy/device/buffer.h>
-#include <roughpy/device/event.h>
-#include <roughpy/device/kernel.h>
-#include <roughpy/device/queue.h>
+#include <roughpy/core/macros.h>
+#include <roughpy/core/traits.h>
+#include <roughpy/core/types.h>
 
-using namespace rpy;
-using namespace rpy::device;
+namespace rpy {
+namespace device {
+namespace dtl {
 
-
-DeviceHandle::DeviceHandle()  {
-
-}
-
-
-DeviceHandle::~DeviceHandle() = default;
-
-optional<fs::path> DeviceHandle::runtime_library() const noexcept
+class RPY_EXPORT InterfaceBase
 {
-    return {};
+public:
+    virtual ~InterfaceBase();
+
+    RPY_NO_DISCARD
+    virtual void* clone(void* content) const;
+
+    virtual void clear(void* content) const;
+};
+
+template <typename Interface, typename Derived>
+class ObjectBase
+{
+    static_assert(
+            is_base_of<InterfaceBase, Interface>::value,
+            "Interface must be derived from InterfaceBase"
+    );
+
+    using interface_type = Interface;
+
+    const interface_type* p_interface;
+    void* p_content;
+
+public:
+    ObjectBase() : p_content(nullptr), p_interface(nullptr) {}
+
+    explicit ObjectBase(
+            const interface_type* interface, void* content = nullptr
+    )
+        : p_interface(interface), p_content(content)
+    {}
+
+    RPY_NO_DISCARD
+    void* content() const noexcept { return p_content; }
+    RPY_NO_DISCARD
+    const interface_type* interface() const noexcept { return p_interface; }
+
+    RPY_NO_DISCARD
+    Derived clone() const;
+};
+
+template <typename Interface, typename Derived>
+Derived ObjectBase<Interface, Derived>::clone() const
+{
+    RPY_CHECK(p_interface != nullptr);
+    return Derived(p_interface, p_interface->clone(p_content));
 }
 
-DeviceInfo device::DeviceHandle::info() const noexcept {
-    return {
-        DeviceType::CPU,
-        0
-    };
-}
+}// namespace dtl
+}// namespace device
+}// namespace rpy
+
+#endif// ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
