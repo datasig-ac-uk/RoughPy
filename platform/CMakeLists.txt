@@ -3,9 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 
 project(Roughpy_Platform VERSION 0.0.1)
 
-include(CheckIncludeFileCXX)
 
-check_include_file_cxx(filesystem RPY_HAS_STD_FILESYSTEM)
 
 
 
