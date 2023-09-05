@@ -25,8 +25,16 @@ add_roughpy_component(Platform
     PUBLIC_DEPS
         Boost::boost
         Boost::url
+        Boost::system
         Boost::disable_autolinking
         cereal::cereal
+    DEPENDENCIES
+        PUBLIC
+            Boost::boost
+            Boost::url
+            Boost::system
+            Boost::disable_autolinking
+            Boost::filesystem IF NOT RPY_HAS_STD_FILESYSTEM
     CONFIGURE
         FILE
             IN available_libraries.h.in
