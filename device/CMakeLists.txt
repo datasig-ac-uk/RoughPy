@@ -41,3 +41,7 @@ add_roughpy_component(Device
         PRIVATE_DEPS
         OpenCL::OpenCL
         )
+
+
+
+add_subdirectory(src/opencl/kernels)
