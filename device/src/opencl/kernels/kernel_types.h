@@ -32,6 +32,9 @@
 #ifndef ROUGHPY_DEVICE_SRC_OPENCL_KERNELS_KERNEL_TYPES_H_
 #define ROUGHPY_DEVICE_SRC_OPENCL_KERNELS_KERNEL_TYPES_H_
 
+#define RPY_JOIN(X, Y) X ## Y
+
+
 #ifdef __OPENCL_C_VERSION__
 #  define RPY_KERNEL __kernel
 #  define RPY_ADDR_GLOBL __global
@@ -82,6 +85,10 @@ extern size_t get_local_linear_id();
 inline float float_fma(float x, float y, float z) { return fmaf(x, y, z); }
 inline double double_fma(float x, float y, float z) { return fma(x, y, z); }
 //extern half half_fma(half, half, half);
+
+
+extern int max(int, int);
+extern int min(int, int);
 
 #endif
 
