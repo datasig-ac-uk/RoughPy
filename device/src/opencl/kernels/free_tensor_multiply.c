@@ -31,10 +31,6 @@
 
 #include "kernel_types.h"
 
-inline float identity_float(float x) { return x; }
-
-// #define TYPE float
-// #define OP identity_float
 
 #define identity(x) (x)
 #define uminus(x) -(x)
