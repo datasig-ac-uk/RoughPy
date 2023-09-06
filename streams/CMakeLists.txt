@@ -53,7 +53,7 @@ add_roughpy_component(Streams
         include/roughpy/streams/parametrization.h
         include/roughpy/streams/stream_construction_helper.h
         include/roughpy/streams/channels.h
-    PRIVATE_DEPS
+    DEPENDENCIES PRIVATE
         SndFile::sndfile
     NEEDS
         RoughPy::Core
