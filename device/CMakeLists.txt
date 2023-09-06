@@ -19,7 +19,7 @@ add_roughpy_lib(Device SHARED
         src/device_algebra_base.cpp
         src/device_free_tensor.cpp
         src/device_free_tensor.h
-        PUBLIC_DEPS
+        NEEDS
         RoughPy::Core
         RoughPy::Scalars
         RoughPy::Algebra

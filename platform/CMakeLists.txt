@@ -22,12 +22,6 @@ add_roughpy_component(Platform
         include/roughpy/platform/serialization.h
         include/roughpy/platform/threads.h
         include/roughpy/platform/device.h
-    PUBLIC_DEPS
-        Boost::boost
-        Boost::url
-        Boost::system
-        Boost::disable_autolinking
-        cereal::cereal
     DEPENDENCIES
         PUBLIC
             Boost::boost
@@ -35,6 +29,7 @@ add_roughpy_component(Platform
             Boost::system
             Boost::disable_autolinking
             Boost::filesystem IF NOT RPY_HAS_STD_FILESYSTEM
+            cereal::cereal
     CONFIGURE
         FILE
             IN available_libraries.h.in

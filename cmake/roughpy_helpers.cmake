@@ -430,6 +430,12 @@ function(add_roughpy_component _name)
                 message(FATAL_ERROR "The path ${_pth} does not exist")
             endif ()
         endforeach ()
+    else()
+        if (_private_deps)
+            message(FATAL_ERROR
+                    "INTERFACE library cannot have private dependencies")
+        endif()
+
     endif ()
 
     add_library(${_real_name} ${_lib_type})
@@ -442,8 +448,8 @@ function(add_roughpy_component _name)
         set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "" FORCE)
     endif ()
 
-    _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps ARG_PUBLIC_DEPS)
-    _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps ARG_PRIVATE_DEPS)
+    _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps _interface_deps)
+    _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps _private_deps)
 
 
     set_target_properties(${_real_name} PROPERTIES
