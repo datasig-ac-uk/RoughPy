@@ -33,14 +33,14 @@
 #define ROUGHPY_DEVICE_SRC_OPENCL_OCL_QUEUE_H_
 
 #include <roughpy/device/queue.h>
-#include "open_cl_runtime_library.h"
+
+#include "opencl_headers.h"
 
 namespace rpy {
 namespace device {
 
 class OCLQueueInterface : public QueueInterface
 {
-    const OpenCLRuntimeLibrary* p_runtime;
     static inline cl_command_queue queue(void* content) noexcept
     {
         return static_cast<cl_command_queue>(content);
@@ -50,6 +50,12 @@ public:
     void* clone(void* content) const override;
     void clear(void* content) const override;
 };
+
+
+namespace cl {
+RPY_NO_DISCARD const OCLQueueInterface* queue_interface() noexcept;
+}
+
 
 }// namespace device
 }// namespace rpy

@@ -29,28 +29,19 @@
 // Created by sam on 25/08/23.
 //
 
-#ifndef ROUGHPY_OPEN_CL_KERNEL_H
-#define ROUGHPY_OPEN_CL_KERNEL_H
+#ifndef ROUGHPY_OCL_KERNEL_H
+#define ROUGHPY_OCL_KERNEL_H
 
 #include <roughpy/device/core.h>
 #include <roughpy/device/kernel.h>
 
 #include "open_cl_device.h"
-#include "open_cl_runtime_library.h"
 
 namespace rpy {
 namespace device {
 
 
 class OCLKernelInterface : public KernelInterface{
-    const OpenCLRuntimeLibrary* p_runtime;
-    cl::FclCloneKernel clone_impl;
-    cl::FclReleaseKernel release_impl;
-    cl::FclGetKernelInfo info_impl;
-    cl::FclGetKernelArgInfo arg_info_impl;
-    cl::FclSetKernelArg set_arg_impl;
-    cl::FclGetKernelWorkGroupInfo wginfo_impl;
-    cl::FclEnqueueNDRangeKernel enqueue_impl;
 
     struct Data {
         cl_kernel kernel;
@@ -79,7 +70,7 @@ private:
 
     inline cl_uint nargs(cl_kernel kernel) const {
         cl_uint ret;
-        cl_int errcode = info_impl(kernel, CL_KERNEL_NUM_ARGS,
+        cl_int errcode = ::clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS,
                                    sizeof(cl_uint), &ret, nullptr);
         RPY_CHECK(errcode == CL_SUCCESS);
         return ret;
@@ -87,7 +78,7 @@ private:
 
     inline cl_context context(cl_kernel kernel) const {
         cl_context ctx = nullptr;
-        auto errcode = info_impl(kernel, CL_KERNEL_CONTEXT,
+        auto errcode = ::clGetKernelInfo(kernel, CL_KERNEL_CONTEXT,
                                  sizeof(ctx), &ctx, nullptr);
         RPY_CHECK(errcode == CL_SUCCESS);
         return ctx;
@@ -95,7 +86,7 @@ private:
 
     inline cl_program program(cl_kernel kernel) const {
         cl_program prog = nullptr;
-        auto errcode = info_impl(kernel, CL_KERNEL_PROGRAM, sizeof(prog),
+        auto errcode = ::clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(prog),
                                  &prog, nullptr);
         RPY_CHECK(errcode == CL_SUCCESS);
         return prog;
@@ -131,7 +122,6 @@ private:
     }
 
 public:
-    explicit OCLKernelInterface(const OpenCLRuntimeLibrary* runtime);
 
     void* clone(void* content) const override;
     void clear(void* content) const override;
@@ -149,8 +139,11 @@ public:
 
 };
 
+namespace cl {
+RPY_NO_DISCARD const OCLKernelInterface* kernel_interface() noexcept;
+}
 
 }// namespace device
 }// namespace rpy
 
-#endif// ROUGHPY_OPEN_CL_KERNEL_H
+#endif// ROUGHPY_OCL_KERNEL_H

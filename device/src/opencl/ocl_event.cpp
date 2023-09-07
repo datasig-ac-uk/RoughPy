@@ -35,24 +35,24 @@ namespace rpy {
 namespace device {
 void* OCLEventInterface::clone(void* content) const
 {
-    auto errcode = p_runtime->clRetainEvent(event(content));
+    auto errcode = ::clRetainEvent(event(content));
     RPY_CHECK(errcode == CL_SUCCESS);
     return content;
 }
 void OCLEventInterface::clear(void* content) const
 {
-    auto ecode = p_runtime->clReleaseEvent(event(content));
+    auto ecode = ::clReleaseEvent(event(content));
     RPY_CHECK(ecode == CL_SUCCESS);
 }
 void OCLEventInterface::wait(void* content) {
     auto ev = event(content);
-    auto ecode = p_runtime->clWaitForEvents(1, &ev);
+    auto ecode = ::clWaitForEvents(1, &ev);
     RPY_CHECK(ecode == CL_SUCCESS);
 }
 EventStatus OCLEventInterface::status(void* content)
 {
     cl_int raw_status;
-    auto ecode = p_runtime->clGetEventInfo(event(content),
+    auto ecode = ::clGetEventInfo(event(content),
                               CL_EVENT_COMMAND_EXECUTION_STATUS,
                               sizeof(raw_status),
                               &raw_status,
@@ -73,6 +73,11 @@ EventStatus OCLEventInterface::status(void* content)
             return EventStatus::Error;
     }
 
+}
+
+const OCLEventInterface* cl::event_interface() noexcept {
+    static const OCLEventInterface iface;
+    return &iface;
 }
 }// namespace device
 }// namespace rpy

@@ -52,6 +52,7 @@ public:
     RPY_NO_DISCARD
     virtual dimn_t num_args(void* content) const;
 
+    RPY_NO_DISCARD
     virtual Event launch_kernel_async(void* content,
                                       Queue queue,
                                       Slice<void*> args,

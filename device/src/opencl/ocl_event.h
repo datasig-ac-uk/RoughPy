@@ -34,14 +34,13 @@
 
 #include <roughpy/device/event.h>
 
-#include "open_cl_runtime_library.h"
+#include "opencl_headers.h"
 
 namespace rpy {
 namespace device {
 
 class OCLEventInterface : public EventInterface
 {
-    const OpenCLRuntimeLibrary* p_runtime;
 
     static inline cl_event event(void* content) noexcept {
         return static_cast<cl_event>(content);
@@ -54,6 +53,12 @@ public:
 
     EventStatus status(void* content) override;
 };
+
+
+namespace cl {
+RPY_NO_DISCARD
+const OCLEventInterface* event_interface() noexcept;
+}
 
 }// namespace device
 }// namespace rpy

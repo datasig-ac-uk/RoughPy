@@ -36,19 +36,19 @@
 #include <roughpy/device/device_handle.h>
 #include <roughpy/device/kernel.h>
 
-#include "open_cl_runtime_library.h"
 
 #include <unordered_map>
 #include <vector>
 
 #include <roughpy/device/queue.h>
 
+#include "opencl_headers.h"
+
 namespace rpy {
 namespace device {
 
 class OpenCLDevice : public DeviceHandle
 {
-    const OpenCLRuntimeLibrary* p_runtime;
     cl_device_id m_device;
     int32_t m_device_id;
 
@@ -60,16 +60,17 @@ class OpenCLDevice : public DeviceHandle
     std::unordered_map<string, cl_kernel> m_kernels;
 
 public:
-    OpenCLDevice(const OpenCLRuntimeLibrary* rt_lib, cl_device_id device);
+    explicit OpenCLDevice(cl_device_id device);
     ~OpenCLDevice() override;
 
     optional<fs::path> runtime_library() const noexcept override;
     DeviceInfo info() const noexcept override;
 
-    cl_command_queue cl_default_queue() const noexcept
+    cl_command_queue default_queue() const noexcept
     {
         return m_default_queue;
     }
+    cl_context context() const noexcept { return m_ctx; }
 
 };
 

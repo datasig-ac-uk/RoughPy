@@ -31,22 +31,20 @@
 
 #include "ocl_buffer.h"
 
+#include "opencl_headers.h"
+
 using namespace rpy;
 using namespace rpy::device;
 
 #define CL_MEM_MODE_MASK \
-    CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY | CL_MEM_READ_WRITE
+    (CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY | CL_MEM_READ_WRITE)
 
-OCLBufferInterface::OCLBufferInterface(const OpenCLRuntimeLibrary* runtime)
-    : p_runtime(runtime)
-{
 
-}
 
 BufferMode OCLBufferInterface::mode(void* content) const
 {
     cl_int raw_mode;
-    auto ecode = p_runtime->clGetMemObjectInfo(
+    auto ecode = ::clGetMemObjectInfo(
             buffer(content),
             CL_MEM_FLAGS,
             sizeof(cl_int),
@@ -69,7 +67,7 @@ BufferMode OCLBufferInterface::mode(void* content) const
 dimn_t OCLBufferInterface::size(void* content) const
 {
     dimn_t raw_size;
-    auto ecode = p_runtime->clGetMemObjectInfo(
+    auto ecode = ::clGetMemObjectInfo(
             buffer(content),
             CL_MEM_SIZE,
             sizeof(raw_size),
@@ -81,16 +79,51 @@ dimn_t OCLBufferInterface::size(void* content) const
 }
 void* OCLBufferInterface::ptr(void* content) const
 {
-    return BufferInterface::ptr(content);
+    return const_cast<void*>(static_cast<const void*>(this));
 }
 void* OCLBufferInterface::clone(void* content) const
 {
+    dimn_t buf_size = size(content);
 
+    cl_int ecode;
+    cl_mem new_buffer = ::clCreateBuffer(
+            device(content)->context(),
+            CL_MEM_ALLOC_HOST_PTR,
+            buf_size,
+            nullptr,
+            &ecode
+            );
+    RPY_CHECK(new_buffer != nullptr);
 
+    cl_event event;
+    ecode = ::clEnqueueCopyBuffer(
+            device(content)->default_queue(),
+            buffer(content),
+            new_buffer,
+            0,
+            0,
+            buf_size,
+            0,
+            nullptr,
+            &event
+            );
+    RPY_CHECK(ecode == CL_SUCCESS);
+
+    ::clWaitForEvents(1, &event);
+
+    return create_data(new_buffer, device(content));
 }
 void OCLBufferInterface::clear(void* content) const
 {
-    auto ret = p_runtime->clReleaseMemObject(buffer(content));
+    auto ret = ::clReleaseMemObject(buffer(content));
     RPY_CHECK(ret == CL_SUCCESS);
     delete static_cast<Data*>(content);
 }
+
+const OCLBufferInterface* cl::buffer_interface() noexcept {
+    static const OCLBufferInterface iface;
+    return &iface;
+}
+
+
+

@@ -37,4 +37,5 @@ using namespace rpy::device;
 device::dtl::InterfaceBase::~InterfaceBase() = default;
 void* device::dtl::InterfaceBase::clone(void* content) const { return content; }
 
+
 void device::dtl::InterfaceBase::clear(void* content) const {}

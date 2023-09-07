@@ -29,17 +29,23 @@
 // Created by sam on 25/08/23.
 //
 
-#include "open_cl_kernel.h"
+#include "ocl_kernel.h"
+
+#include "opencl_headers.h"
+
+#include "ocl_buffer.h"
+#include "ocl_queue.h"
+#include "ocl_event.h"
 
 
 using namespace rpy;
 using namespace device;
 
-OCLKernelInterface::OCLKernelInterface(const OpenCLRuntimeLibrary* runtime) {}
+
 void* OCLKernelInterface::clone(void* content) const
 {
     cl_int ecode = CL_SUCCESS;
-    cl_kernel new_kernel = clone_impl(ker(content),
+    cl_kernel new_kernel = ::clCloneKernel(ker(content),
                                       &ecode);
     RPY_CHECK(ecode == CL_SUCCESS);
     return new Data { new_kernel, dev(content) };
@@ -47,13 +53,13 @@ void* OCLKernelInterface::clone(void* content) const
 void OCLKernelInterface::clear(void* content) const
 {
     auto* as_data = static_cast<Data*>(content);
-    release_impl(as_data->kernel);
+    ::clReleaseKernel(as_data->kernel);
     delete as_data;
 }
 string_view OCLKernelInterface::name(void* content) const
 {
     char* k_name;
-    auto errcode = info_impl(ker(content),
+    auto errcode = ::clGetKernelInfo(ker(content),
                              CL_KERNEL_CONTEXT,
                              sizeof(k_name), &k_name, nullptr);
     RPY_CHECK(errcode == CL_SUCCESS);
@@ -80,7 +86,7 @@ Event OCLKernelInterface::launch_kernel_async(
 #ifdef RPY_DEBUG
 
 #endif
-        set_arg_impl(kernel, i, arg_sizes[i], args[i]);
+        ::clSetKernelArg(kernel, i, arg_sizes[i], args[i]);
     }
 
     cl_uint work_dim = 1;
@@ -104,14 +110,14 @@ Event OCLKernelInterface::launch_kernel_async(
 
     cl_command_queue command_queue;
     if (queue.interface() != nullptr && queue.content() != nullptr) {
-        RPY_CHECK(queue.interface() == p_runtime->queue_interface());
+        RPY_CHECK(queue.interface() == cl::queue_interface());
         command_queue = static_cast<cl_command_queue>(queue.content());
     } else {
-        command_queue = device->cl_default_queue();
+        command_queue = device->default_queue();
     }
 
     cl_event event;
-    cl_int ecode = enqueue_impl(
+    cl_int ecode = ::clEnqueueNDRangeKernel(
             command_queue, /* kernel */
             kernel,        /* kernel */
             work_dim,      /* work_dim */
@@ -125,5 +131,10 @@ Event OCLKernelInterface::launch_kernel_async(
 
     handle_launch_error(ecode);
 
+    return Event { cl::event_interface(), event };
+}
 
+const OCLKernelInterface* cl::kernel_interface() noexcept {
+    static const OCLKernelInterface iface;
+    return &iface;
 }

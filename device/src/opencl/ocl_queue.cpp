@@ -35,11 +35,17 @@ using namespace rpy;
 using namespace rpy::device;
 void* OCLQueueInterface::clone(void* content) const
 {
-    auto ret = p_runtime->clRetainCommandQueue(queue(content));
+    auto ret = ::clRetainCommandQueue(queue(content));
     RPY_CHECK(ret == CL_SUCCESS);
     return content;
 }
 void OCLQueueInterface::clear(void* content) const
 {
-    auto ret = p_runtime->clReleaseCommandQueue(queue(content));
+    auto ret = ::clReleaseCommandQueue(queue(content));
+    RPY_CHECK(ret == CL_SUCCESS);
+}
+
+const OCLQueueInterface* cl::queue_interface() noexcept {
+    static const OCLQueueInterface iface;
+    return &iface;
 }

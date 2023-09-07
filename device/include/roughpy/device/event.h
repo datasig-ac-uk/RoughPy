@@ -46,9 +46,12 @@ public:
 
 };
 
-class Event {
-
+class Event : public dtl::ObjectBase<EventInterface, Event> {
+    using base_t = dtl::ObjectBase<EventInterface, Event>;
 public:
+
+    using base_t::base_t;
+
 
     void wait();
 

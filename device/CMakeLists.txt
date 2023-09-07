@@ -25,14 +25,14 @@ add_roughpy_component(Device
         src/opencl/ocl_event.h
         src/opencl/ocl_queue.cpp
         src/opencl/ocl_queue.h
-        src/opencl/open_cl_kernel.cpp
-        src/opencl/open_cl_kernel.h
-        src/opencl/open_cl_runtime_library.cpp
-        src/opencl/open_cl_runtime_library.h
+    src/opencl/ocl_kernel.cpp
+    src/opencl/ocl_kernel.h
+        src/opencl/opencl_headers.h
         src/buffer.cpp
         src/device.cpp
         src/device_object_base.cpp
         src/event.cpp
+        src/get_device.cpp
         src/kernel.cpp
         src/queue.cpp
         NEEDS

@@ -41,6 +41,12 @@ class QueueInterface : public dtl::InterfaceBase {
 
 class Queue : public dtl::ObjectBase<QueueInterface, Queue>
 {
+    using base_t = dtl::ObjectBase<QueueInterface, Queue>;
+
+public:
+    using base_t::base_t;
+
+
 };
 
 }}

@@ -36,5 +36,10 @@
 using namespace rpy;
 using namespace rpy::device;
 
-Event::~Event() {}
-void Event::wait() {}
+void Event::wait() {
+
+}
+EventStatus Event::status() const {
+    return EventStatus::Error;
+}
+

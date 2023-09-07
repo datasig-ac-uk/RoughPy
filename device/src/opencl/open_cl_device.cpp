@@ -31,9 +31,20 @@
 
 #include "open_cl_device.h"
 
+#include <roughpy/core/types.h>
+
 #include <algorithm>
 #include <mutex>
 #include <vector>
+
+#include "opencl_headers.h"
+
+#include "ocl_buffer.h"
+#include "ocl_event.h"
+#include "ocl_kernel.h"
+#include "ocl_queue.h"
+
+using namespace rpy;
 
 static std::vector<cl_device_id> s_device_list;
 static std::mutex s_device_lock;
@@ -59,18 +70,15 @@ static void set_device_id(cl_device_id device, int32_t& id) {
 }
 
 
-rpy::device::OpenCLDevice::OpenCLDevice(
-        const rpy::device::OpenCLRuntimeLibrary* rt_lib, cl_device_id device
-)
-    : DeviceHandle(rt_lib->buffer_interface(), rt_lib->event_interface(),
-                   rt_lib->kernel_interface(), rt_lib->queue_interface()),
-      p_runtime(rt_lib),
+rpy::device::OpenCLDevice::OpenCLDevice(cl_device_id device)
+    : DeviceHandle(cl::buffer_interface(), cl::event_interface(),
+                   cl::kernel_interface(), cl::queue_interface()),
       m_device(device)
 {
       set_device_id(m_device, m_device_id);
       cl_int errcode = CL_SUCCESS;
 
-      m_ctx = p_runtime->clCreateContext(
+      m_ctx = ::clCreateContext(
               nullptr,
               1,
               &m_device,
@@ -78,7 +86,18 @@ rpy::device::OpenCLDevice::OpenCLDevice(
               nullptr,
               &errcode
               );
+      RPY_CHECK(m_ctx != nullptr);
       RPY_CHECK(errcode == CL_SUCCESS);
+
+
+      m_default_queue = ::clCreateCommandQueueWithProperties(
+              m_ctx,
+              m_device,
+              nullptr,
+              &errcode
+              );
+      RPY_CHECK(m_default_queue != nullptr);
+
 
 }
 
@@ -93,8 +112,8 @@ rpy::device::DeviceInfo rpy::device::OpenCLDevice::info() const noexcept
     return { DeviceType::OpenCL, m_device_id };
 }
 
-std::optional<std::filesystem::path>
+optional<fs::path>
 rpy::device::OpenCLDevice::runtime_library() const noexcept
 {
-    return p_runtime->location();
+    return {};
 }
