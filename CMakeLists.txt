@@ -16,6 +16,7 @@ endif ()
 project(RoughPy VERSION ${_rpy_version})
 
 include(CMakeDependentOption)
+include(CheckIncludeFileCXX)
 
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
@@ -156,8 +157,23 @@ if (DEFINED CMAKE_CXX_COMPILER_TARGET)
     set(RPY_ARCH ${CMAKE_CXX_COMPILER_TARGET})
 endif ()
 
+
+# We use C++17 standard library headers. If these aren't available for some
+# reason, we can fall back to Boost versions but this is obviously not desirable
+check_include_file_cxx(filesystem RPY_HAS_STD_FILESYSTEM)
+check_include_file_cxx(optional RPY_HAS_STD_OPTIONAL)
+
+
+
 set(Boost_NO_WARN_NEW_VERSIONS ON)
-find_package(Boost 1.81 REQUIRED COMPONENTS url)
+set(RYP_BOOST_VERSION 1.81)
+find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS url system)
+
+if (NOT RPY_HAS_STD_FILESYSTEM)
+    find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS filesystem)
+endif()
+
+
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 
@@ -223,6 +239,7 @@ if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64" AND NOT
 #            endif ()
 #            set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
         endif ()
+        set(RPY_USE_MKL ON CACHE INTERNAL "")
     else ()
         set(BLA_SIZEOF_INTEGER 4)
         set(BLA_STATIC ON)
@@ -231,6 +248,7 @@ elseif (APPLE)
     set(BLA_VENDOR Apple)
     set(BLA_SIZEOF_INTEGER 4)
     set(BLA_STATIC ON)
+    set(RPY_USE_ACCELERATE ON CACHE INTERNAL "")
 endif ()
 
 if (NOT TARGET BLAS::BLAS)

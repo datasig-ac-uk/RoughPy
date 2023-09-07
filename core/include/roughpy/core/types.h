@@ -31,6 +31,7 @@
 #include "macros.h"
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 #include <memory>

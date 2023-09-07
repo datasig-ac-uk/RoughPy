@@ -89,14 +89,15 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_type_helper.h
         include/roughpy/scalars/key_scalar_stream.h
         include/roughpy/scalars.h
-    PUBLIC_DEPS
-        Boost::boost
-        Eigen3::Eigen
-        Libalgebra_lite::Libalgebra_lite
-        BLAS::BLAS
-        LAPACK::LAPACK
-    PRIVATE_DEPS
-        PCGRandom::pcg_random
+    DEPENDENCIES
+        PUBLIC
+            Boost::boost
+            Eigen3::Eigen
+            Libalgebra_lite::Libalgebra_lite
+            BLAS::BLAS
+            LAPACK::LAPACK
+        PRIVATE
+            PCGRandom::pcg_random
     NEEDS
         RoughPy::Core
         RoughPy::Platform
