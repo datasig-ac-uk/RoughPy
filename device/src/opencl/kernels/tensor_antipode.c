@@ -69,8 +69,29 @@ MAKE_ANTIPODE_KERNEL_TILED_LEVEL(float, nonsigning)
 MAKE_ANTIPODE_KERNEL_TILED_LEVEL(double, signing)
 MAKE_ANTIPODE_KERNEL_TILED_LEVEL(double, nonsigning)
 
-
 #undef MAKE_ANTIPODE_KERNEL_TILED_LEVEL
+#undef signing
 
+#define signing(x) (idx > 0) ? -(x) : (x)
 
+#define MAKE_ANTIPODE_KERNEL_TILED_LEVEL01(TYPE, OP)                           \
+    RPY_KERNEL void antipode_tiled_level01_##TYPE##_##OP(                      \
+            RPY_ADDR_GLOBL TYPE* dst, RPY_ADDR_GLOBL const TYPE* src,          \
+            RPY_ADDR_CONST const size_t* levels                                \
+    )                                                                          \
+    {                                                                          \
+        size_t idx = get_global_id(0);                                         \
+        dst[idx] = OP(src[idx]);                                               \
+    }
 
+MAKE_ANTIPODE_KERNEL_TILED_LEVEL01(float, signing)
+MAKE_ANTIPODE_KERNEL_TILED_LEVEL01(float, nonsigning)
+
+MAKE_ANTIPODE_KERNEL_TILED_LEVEL01(double, signing)
+MAKE_ANTIPODE_KERNEL_TILED_LEVEL01(double, nonsigning)
+
+#undef signing
+#undef nonsigning
+#undef MAKE_ANTIPODE_KERNEL_TILED_LEVEL01
+#undef TILE_WIDTH
+#undef MID_STRIDE
