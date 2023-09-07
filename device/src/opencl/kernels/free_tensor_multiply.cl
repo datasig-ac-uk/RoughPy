@@ -30,6 +30,7 @@
 //
 
 #include "kernel_types.h"
+#include "tensor_index_functions.h"
 
 #define identity(x) (x)
 #define uminus(x) -(x)
@@ -38,13 +39,7 @@
 #define MID_STRIDE levels[mid_deg]
 #define OFFSET(L, I) offsets[L] + I
 
-static inline size_t
-split_index(const size_t at, const size_t left, RPY_ADDR_PRIVT size_t* right)
-{
-    size_t div = left / at;
-    *right = left - div * at;
-    return div;
-}
+
 
 #define FTM_TILED_BODY(TYPE, OP)                                               \
     const int mid_deg = out_degree - 2 * tile_letters;                         \

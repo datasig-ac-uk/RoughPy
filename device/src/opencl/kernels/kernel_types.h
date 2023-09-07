@@ -58,6 +58,7 @@ inline double double_fma(float x, float y, float z) { return fma(x, y, z); }
 typedef unsigned short ushort;
 typedef unsigned uint;
 typedef unsigned long ulong;
+typedef uint cl_mem_fence_flags;
 
 typedef uint16_t half;
 
@@ -69,6 +70,9 @@ typedef uint16_t half;
 #  define RPY_ACC_RO
 #  define RPY_ACC_WO
 #  define RPY_ACC_RW
+#  define CLK_GLOBAL_MEM_FENCE 0
+#  define CLK_LOCAL_MEM_FENCE 0
+#  define CLK_IMAGE_MEM_FENCE 0
 
 extern uint get_work_dim();
 extern size_t get_global_size(uint);
@@ -87,8 +91,15 @@ inline double double_fma(float x, float y, float z) { return fma(x, y, z); }
 //extern half half_fma(half, half, half);
 
 
+
 extern int max(int, int);
 extern int min(int, int);
+
+
+extern void barrier(cl_mem_fence_flags);
+extern void work_group_barrier(cl_mem_fence_flags);
+
+
 
 #endif
 

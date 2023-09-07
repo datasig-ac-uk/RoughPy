@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 
 project(RoughPy_Device VERSION 0.0.1
-        LANGUAGES CXX)
+        LANGUAGES C CXX)
 
 
 add_roughpy_component(Device
@@ -25,8 +25,8 @@ add_roughpy_component(Device
         src/opencl/ocl_event.h
         src/opencl/ocl_queue.cpp
         src/opencl/ocl_queue.h
-    src/opencl/ocl_kernel.cpp
-    src/opencl/ocl_kernel.h
+        src/opencl/ocl_kernel.cpp
+        src/opencl/ocl_kernel.h
         src/opencl/opencl_headers.h
         src/buffer.cpp
         src/device.cpp
@@ -42,6 +42,13 @@ add_roughpy_component(Device
         OpenCL::OpenCL
         )
 
+add_library(RoughPy_OCL_Kernels STATIC EXCLUDE_FROM_ALL
+src/opencl/kernels/free_tensor_multiply.cl
+src/opencl/kernels/kernel_types.h
+src/opencl/kernels/masked_binary.cl
+src/opencl/kernels/masked_unary.cl
+src/opencl/kernels/tensor_antipode.c
 
 
-add_subdirectory(src/opencl/kernels)
+)
+set_target_properties(RoughPy_OCL_Kernels PROPERTIES LINKER_LANGUAGE C)
