@@ -76,8 +76,7 @@ MAKE_ANTIPODE_KERNEL_TILED_LEVEL(double, nonsigning)
 
 #define MAKE_ANTIPODE_KERNEL_TILED_LEVEL01(TYPE, OP)                           \
     RPY_KERNEL void antipode_tiled_level01_##TYPE##_##OP(                      \
-            RPY_ADDR_GLOBL TYPE* dst, RPY_ADDR_GLOBL const TYPE* src,          \
-            RPY_ADDR_CONST const size_t* levels                                \
+            RPY_ADDR_GLOBL TYPE* dst, RPY_ADDR_GLOBL const TYPE* src          \
     )                                                                          \
     {                                                                          \
         size_t idx = get_global_id(0);                                         \
