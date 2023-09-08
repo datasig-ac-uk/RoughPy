@@ -47,6 +47,9 @@
 namespace rpy {
 namespace device {
 
+
+
+
 class OpenCLDevice : public DeviceHandle
 {
     cl_device_id m_device;

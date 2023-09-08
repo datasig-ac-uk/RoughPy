@@ -101,6 +101,7 @@ extern void work_group_barrier(cl_mem_fence_flags);
 
 
 
+
 #endif
 
 typedef unsigned mask_kt;

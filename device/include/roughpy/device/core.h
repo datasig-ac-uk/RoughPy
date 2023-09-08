@@ -32,7 +32,12 @@
 #include <roughpy/core/types.h>
 
 
+#include <boost/uuid/uuid.hpp>
+
+
 #include "macros.h"
+
+
 
 
 namespace rpy {
@@ -51,6 +56,33 @@ enum class DeviceCategory : int32_t  {
     AIP = 4,
     Other = 5
 };
+
+
+enum class DeviceIdType : int32_t {
+    None = 0,
+    UUID = 1,
+    PCI  = 2
+};
+
+struct PCIBusInfo {
+    uint32_t pci_domain;
+    uint32_t pci_bus;
+    uint32_t pci_device;
+    uint32_t pci_function;
+};
+
+struct DeviceSpecification {
+    DeviceCategory category;
+    DeviceIdType id_type;
+
+    union {
+        boost::uuids::uuid uuid;
+        PCIBusInfo pci;
+    };
+
+};
+
+
 
 
 /**
@@ -132,9 +164,24 @@ class RPY_EXPORT Queue;
 
 
 
+
+
+/**
+ * @brief Get a new device handle from an existing DeviceInfo
+ * @param info
+ * @return pointer to DeviceHandle
+ */
 RPY_NO_DISCARD RPY_EXPORT
-std::shared_ptr<DeviceHandle> get_device(DeviceType device_type,
-                                         int32_t device_id);
+boost::intrusive_ptr<DeviceHandle> get_device(DeviceInfo device_info);
+
+/**
+ * @brief Get a new device handle from a specification
+ * @param spec
+ * @return
+ */
+RPY_NO_DISCARD RPY_EXPORT
+boost::intrusive_ptr<DeviceHandle> get_device(DeviceSpecification spec);
+
 
 
 constexpr hash_t hash_value(const DeviceInfo& info) noexcept {

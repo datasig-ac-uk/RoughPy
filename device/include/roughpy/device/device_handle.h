@@ -106,6 +106,8 @@ constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
     return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
 }
 
+
+
 }// namespace device
 }// namespace rpy
 
