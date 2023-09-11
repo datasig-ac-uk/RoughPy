@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 03/03/23.
@@ -52,8 +51,6 @@ namespace rpy {
 
 using std::declval;
 using std::integral_constant;
-using std::move;
-using std::forward;
 
 using std::is_array;
 using std::is_class;
@@ -132,15 +129,29 @@ using boost::remove_cv_ref_t;
 
 using boost::is_detected;
 
-#ifdef RPY_CPP_17
+
+#if defined(__cpp_lib_void_t) && __cpp_lib_void_t >= 201411L
 using std::void_t;
-using std::invoke_result_t;
 #else
 using boost::void_t;
+#endif
 
+
+#if defined(__cpp_lib_is_invocable) && __cpp_lib_is_invocable >= 201703L
+using std::invoke_result_t;
+#else
 template <typename F, typename... ArgTypes>
 using invoke_result_t = std::result_of_t<F(ArgTypes...)>;
 #endif
+
+
+#if defined(__cpp_lib_as_const) && __cpp_lib_as_const >= 201510L
+using std::as_const;
+#else
+template <typename T>
+constexpr add_const_t<T>& as_const(T& t) noexcept { return t; }
+#endif
+
 
 /**
  * @brief Ensure that the type T is a pointer.

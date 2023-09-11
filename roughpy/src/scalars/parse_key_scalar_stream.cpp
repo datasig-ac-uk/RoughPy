@@ -30,16 +30,15 @@
 //
 
 #include "parse_key_scalar_stream.h"
+#include "args/dlpack_helpers.h"
 #include "args/numpy.h"
 #include "args/strided_copy.h"
-#include "args/dlpack_helpers.h"
 
 using namespace rpy;
 using namespace rpy::python;
 
 using rpy::scalars::KeyScalarArray;
 using rpy::scalars::KeyScalarStream;
-
 
 static inline void buffer_to_stream(
         ParsedKeyScalarStream& result, const py::buffer_info& buf_info,
@@ -51,12 +50,11 @@ static inline void dl_to_stream(
         PyToBufferOptions& options
 );
 
-
-void python::parse_key_scalar_stream(ParsedKeyScalarStream& result,
-        const py::object& data, rpy::python::PyToBufferOptions& options
+void python::parse_key_scalar_stream(
+        ParsedKeyScalarStream& result, const py::object& data,
+        rpy::python::PyToBufferOptions& options
 )
 {
-
 
     /*
      * A key-data stream should not represent a single (key-)scalar value,
@@ -116,7 +114,7 @@ void python::parse_key_scalar_stream(ParsedKeyScalarStream& result,
             }
 
             RPY_CHECK(check == buf_size);
-        } else if (options.shape.size() != 2 || options.shape[0] * options.shape[1] != buf_size) {
+        } else if (options.shape.size() != 2 || (options.shape[0] * options.shape[1] != static_cast<idimn_t>(buf_size))) {
             result.data_stream.reserve_size(options.shape.size());
             scalars::ScalarPointer sptr(result.data_buffer);
             dimn_t check = 0;
@@ -150,7 +148,6 @@ void python::parse_key_scalar_stream(ParsedKeyScalarStream& result,
                 "could not parse argument to a valid scalar array type"
         );
     }
-
 }
 
 void buffer_to_stream(
@@ -271,13 +268,13 @@ void dl_to_stream(
     RPY_CHECK(dltensor != nullptr);
     auto& tensor = dltensor->dl_tensor;
 
-    const auto type_id = python::type_id_for_dl_info(tensor.dtype, tensor.device);
+    const auto type_id
+            = python::type_id_for_dl_info(tensor.dtype, tensor.device);
     if (options.type == nullptr) {
         options.type = scalars::ScalarType::for_id(type_id);
     }
 
-    if (tensor.ndim == 0
-        || tensor.shape[0] == 0
+    if (tensor.ndim == 0 || tensor.shape[0] == 0
         || (tensor.ndim > 1 && tensor.shape[1] == 0)) {
         return;
     }
@@ -293,9 +290,7 @@ void dl_to_stream(
     // Check if the array is C-contiguous
     const auto itemsize = tensor.dtype.bits / 8;
     int64_t size = 1;
-    for (int64_t i=0; i<tensor.ndim; ++i) {
-        size *= tensor.shape[i];
-    }
+    for (int64_t i = 0; i < tensor.ndim; ++i) { size *= tensor.shape[i]; }
 
     borrow &= tensor.strides == nullptr;
 
@@ -319,8 +314,8 @@ void dl_to_stream(
     } else {
         std::vector<char> tmp(size * itemsize);
         py::ssize_t out_strides[2]{};
-        py::ssize_t in_strides[2] {};
-        py::ssize_t in_shape[2] {};
+        py::ssize_t in_strides[2]{};
+        py::ssize_t in_shape[2]{};
         dimn_t out_shape[2]{};
         out_strides[tensor.ndim - 1] = itemsize;
         bool transposed = tensor.ndim == 2 && tensor.shape[0] < tensor.shape[1];
@@ -334,13 +329,13 @@ void dl_to_stream(
                 out_shape[0] = tensor.shape[0];
                 out_shape[1] = tensor.shape[1];
             }
-            out_strides[0] = out_shape[1]*itemsize;
+            out_strides[0] = out_shape[1] * itemsize;
 
             if (tensor.strides != nullptr) {
-                in_strides[0] = tensor.strides[0]*itemsize;
-                in_strides[1] = tensor.strides[1]*itemsize;
+                in_strides[0] = tensor.strides[0] * itemsize;
+                in_strides[1] = tensor.strides[1] * itemsize;
             } else {
-                in_strides[0] = tensor.shape[1]*itemsize;
+                in_strides[0] = tensor.shape[1] * itemsize;
                 in_strides[1] = itemsize;
             }
 
@@ -348,9 +343,8 @@ void dl_to_stream(
         }
 
         stride_copy(
-                tmp.data(), tensor.data, itemsize, tensor.ndim,
-                in_shape, in_strides, out_strides,
-                transposed
+                tmp.data(), tensor.data, itemsize, tensor.ndim, in_shape,
+                in_strides, out_strides, transposed
         );
 
         // Now that we're C-contiguous, convert_copy into the result.
@@ -366,9 +360,7 @@ void dl_to_stream(
             result.data_stream.push_back({options.type, tmp.data()});
         } else {
             // shape[0] increments of size shape[1]
-            RPY_DBG_ASSERT(
-                    tensor.shape[0] * tensor.shape[1] == size
-            );
+            RPY_DBG_ASSERT(tensor.shape[0] * tensor.shape[1] == size);
             result.data_stream.reserve_size(out_shape[0]);
             result.data_stream.set_elts_per_row(out_shape[1]);
 
