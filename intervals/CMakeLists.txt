@@ -12,6 +12,7 @@ include(GenerateExportHeader)
 add_roughpy_component(Intervals
         SOURCES
         src/interval.cpp
+        src/interval_union.cpp
         src/dyadic.cpp
         src/dyadic_interval.cpp
         src/real_interval.cpp
