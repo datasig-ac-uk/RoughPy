@@ -37,6 +37,7 @@
 #include "traits.h"
 #include "types.h"
 
+#include <algorithm>
 #include <iterator>
 #include <vector>
 
@@ -126,6 +127,11 @@ public:
         base_t::push_back(0);
         base_t::push_back(0);
         return dtl::BranchProxy<I>(leaf_node);
+    }
+
+    RPY_NO_DISCARD
+    dimn_t num_leaves() const noexcept {
+        return std::count_if(base_t::cbegin(), base_t::cend(), is_leaf);
     }
 
 };

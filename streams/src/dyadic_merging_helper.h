@@ -25,68 +25,56 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_STREAMS_COMPUTE_TREE_H_
-#define ROUGHPY_STREAMS_COMPUTE_TREE_H_
+//
+// Created by user on 11/09/23.
+//
 
-#include <roughpy/core/flat_tree.h>
+#ifndef ROUGHPY_STREAMS_SRC_DYADIC_MERGING_HELPER_H_
+#define ROUGHPY_STREAMS_SRC_DYADIC_MERGING_HELPER_H_
+
 #include <roughpy/core/macros.h>
-#include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
-
-#include <roughpy/platform/serialization.h>
-
-#include <roughpy/algebra/lie.h>
-
 #include <roughpy/intervals/dyadic_interval.h>
-#include <roughpy/intervals/interval.h>
 #include <roughpy/intervals/real_interval.h>
 
-#include <boost/container_hash/hash.hpp>
-
-#include <vector>
+#include <list>
 
 namespace rpy {
 namespace streams {
 
-class DyadicComputationTree
+struct IntegerRange {
+    dyadic_multiplier_t lower;
+    dyadic_multiplier_t upper;
+};
+
+class DyadicMergingHelper
 {
-    using dyadic_list_t = std::vector<intervals::DyadicInterval>;
-    using dyadic_iterator = typename dyadic_list_t::const_iterator;
-
-    std::vector<intervals::DyadicInterval> m_dyadics;
-
-    struct Entry {
-        dyadic_iterator begin;
-        dyadic_iterator end;
-    };
-
-    using mapping_t = std::unordered_map<
-            intervals::RealInterval,
-            Entry,
-            boost::hash<intervals::RealInterval>>;
-
-    const std::vector<intervals::RealInterval>& m_queries;
-    mapping_t m_mapping;
+    std::list<IntegerRange> m_ranges;
     resolution_t m_resolution;
 
-
-    dyadic_multiplier_t granular_distance(param_t begin, param_t end) const
-            noexcept {
-        return (intervals::DyadicInterval(end, m_resolution).multiplier()
-                - intervals::DyadicInterval(begin, m_resolution).multiplier());
+    IntegerRange interval_to_range(const intervals::RealInterval& ivl
+    ) const noexcept
+    {
+        using intervals::DyadicInterval;
+        return {DyadicInterval(ivl.inf(), m_resolution).multiplier(),
+                // One past the end
+                DyadicInterval(ivl.sup(), m_resolution).multiplier()
+        };
     }
 
 public:
-    explicit DyadicComputationTree(
-            const std::vector<intervals::RealInterval>& queries,
-            resolution_t dyadic_resolution
-    );
+    explicit DyadicMergingHelper(resolution_t resolution)
+        : m_resolution(resolution)
+    {}
 
+    RPY_NO_DISCARD IntegerRange insert(intervals::RealInterval interval);
 
+    RPY_NO_DISCARD std::vector<intervals::DyadicInterval> to_dyadics();
 
+    RPY_NO_DISCARD dyadic_multiplier_t offset_to(dyadic_multiplier_t val);
 };
 
 }// namespace streams
 }// namespace rpy
 
-#endif// ROUGHPY_STREAMS_COMPUTE_TREE_H_
+#endif// ROUGHPY_STREAMS_SRC_DYADIC_MERGING_HELPER_H_

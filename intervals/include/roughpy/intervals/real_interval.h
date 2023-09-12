@@ -108,6 +108,16 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(RealInterval)
 RealInterval interval_union(Slice<const RealInterval> ivls);
 
 
+inline std::size_t hash_value(const RealInterval& interval) noexcept {
+    std::size_t seed = 0;
+    boost::hash<param_t> param_hash;
+
+    boost::hash_combine(seed, param_hash(interval.inf()));
+    boost::hash_combine(seed, param_hash(interval.sup()));
+
+    return seed;
+}
+
 }// namespace intervals
 }// namespace rpy
 

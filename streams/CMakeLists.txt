@@ -24,6 +24,9 @@ add_roughpy_component(Streams
         src/external_data_sources/csv_data_source.h
         src/external_data_sources/sound_file_data_source.cpp
         src/external_data_sources/sound_file_data_source.h
+        src/compute_tree.cpp
+        src/dyadic_merging_helper.cpp
+        src/dyadic_merging_helper.h
         src/schema.cpp
         src/parametrization.cpp
         src/stream_construction_helper.cpp
@@ -40,6 +43,7 @@ add_roughpy_component(Streams
         include/roughpy/streams/channels/categorical_channel.h
         include/roughpy/streams/channels/lie_channel.h
         include/roughpy/streams/channels/lead_laggable_channel.h
+        include/roughpy/streams/compute_tree.h
         include/roughpy/streams/dyadic_caching_layer.h
         include/roughpy/streams/dynamically_constructed_stream.h
         include/roughpy/streams/lie_increment_stream.h
@@ -69,6 +73,7 @@ add_roughpy_test(Streams
         src/test_lie_increment_stream.cpp
         src/test_brownian_stream.cpp
         src/test_schema.cpp
+        src/test_dyadic_merging_helper.cpp
         NEEDS
         RoughPy::Streams
         )
