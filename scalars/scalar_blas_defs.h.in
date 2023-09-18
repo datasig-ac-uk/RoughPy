@@ -3,10 +3,19 @@
 
 
 #cmakedefine RPY_USE_MKL
+#cmakedefine RPY_USE_ACCELERATE
+#cmakedefine RPY_LAPACK_ILP64
 
 #ifdef RPY_USE_MKL
 #  include <mkl.h>
 #  include <mkl_spblas.h>
+#  define EIGEN_USE_MKL_ALL
+#elif defined(RPY_USE_ACCELERATE)
+#  define ACCELERATE_NEW_LAPACK
+#  ifdef RPY_LAPACK_ILP64
+#    define ACCELERATE_LAPACK_ILP64
+#  endif
+#  include <Accelerate/Accelerate.h>
 #else
 #  include <cblas.h>
 #  include <lapacke.h>
@@ -14,9 +23,6 @@
 
 #include <roughpy/scalars/scalar_matrix.h>
 
-#ifdef RPY_USE_MKL
-#  define EIGEN_USE_MKL_ALL
-#endif
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>

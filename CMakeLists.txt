@@ -228,6 +228,7 @@ if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64" AND NOT
 
     find_package(MKL CONFIG)
     if (TARGET MKL::MKL)
+        set(RPY_USE_MKL ON CACHE INTERNAL "BLAS/LAPACK provided by mkl")
         add_library(BLAS::BLAS ALIAS MKL::MKL)
         add_library(LAPACK::LAPACK ALIAS MKL::MKL)
 
@@ -241,10 +242,12 @@ if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64" AND NOT
         endif ()
         set(RPY_USE_MKL ON CACHE INTERNAL "")
     else ()
+        set(RPY_USE_MKL OFF CACHE INTERNAL "BLAS/LAPACK not provided by mkl")
         set(BLA_SIZEOF_INTEGER 4)
         set(BLA_STATIC ON)
     endif ()
 elseif (APPLE)
+    set(RPY_USE_ACCELERATE ON CACHE INTERNAL "BLAS/LAPACK provided by Accelerate")
     set(BLA_VENDOR Apple)
     set(BLA_SIZEOF_INTEGER 4)
     set(BLA_STATIC ON)
