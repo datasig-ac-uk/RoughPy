@@ -33,6 +33,7 @@
 
 
 #include <boost/uuid/uuid.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 
 #include "macros.h"
