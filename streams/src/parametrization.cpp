@@ -29,17 +29,18 @@
 // Created by user on 04/07/23.
 //
 
-#include <roughpy/streams/schema_context.h>
-
-
+#include <roughpy/streams/parametrization.h>
 
 using namespace rpy;
 using namespace streams;
 
-SchemaContext::~SchemaContext() = default;
+Parameterization::~Parameterization() = default;
+
+param_t Parameterization::start_param() const noexcept { return 0.0; }
+
 
 intervals::RealInterval
-SchemaContext::convert_parameter_interval(const intervals::Interval& arg) const
+Parameterization::convert_parameter_interval(const intervals::Interval& arg) const
 {
     return {m_param_offset + m_param_scaling * arg.inf(),
             m_param_offset + m_param_scaling * arg.sup(), arg.type()};

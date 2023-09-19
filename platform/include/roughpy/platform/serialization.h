@@ -76,6 +76,8 @@
       CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(T, M)
 #  define RPY_SERIAL_SERIALIZE_BARE(V) archive(V)
 #  define RPY_SERIAL_REGISTER_CLASS(T) CEREAL_REGISTER_TYPE(T)
+#  define RPY_SERIAL_FORCE_DYNAMIC_INIT(LIB) CEREAL_FORCE_DYNAMIC_INIT(LIB)
+#  define RPY_SERIAL_DYNAMIC_INIT(LIB) CEREAL_REGISTER_DYNAMIC_INIT(LIB)
 
 #  define RPY_SERIAL_LOAD_AND_CONSTRUCT(T)                                     \
       namespace cereal {                                                       \
@@ -102,6 +104,8 @@
 #  define RPY_SERIAL_SPECIALIZE_TYPES(T)
 #  define RPY_SERIAL_REGISTER_CLASS(T)
 #  define RPY_SERIAL_SERIALIZE_BARE(V) (void) 0
+#  define RPY_SERIAL_FORCE_DYNAMIC_INIT(LIB)
+#  define RPY_SERIAL_DYNAMIC_INIT(LIB)
 #endif
 
 #define RPY_SERIAL_SERIALIZE_FN()                                              \

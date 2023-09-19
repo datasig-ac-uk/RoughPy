@@ -41,7 +41,10 @@
 #include "r_py_polynomial.h"
 #include "scalar_type.h"
 
+#include "args/dlpack_helpers.h"
+
 using namespace rpy;
+using namespace rpy::python;
 using namespace pybind11::literals;
 
 static const char* SCALAR_DOC = R"edoc(
@@ -139,7 +142,7 @@ void python::init_scalars(pybind11::module_& m)
 static const scalars::ScalarType*
 dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
 {
-    using scalars::ScalarDeviceType;
+    using platform::DeviceType;
 
     scalars::ScalarTypeCode type;
     switch (dtype.code) {
@@ -154,7 +157,7 @@ dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
 
     return scalars::ScalarType::from_type_details(
             {type, dtype.bits, dtype.lanes},
-            {static_cast<ScalarDeviceType>(device.device_type),
+            {static_cast<DeviceType>(device.device_type),
              device.device_id}
     );
 }
@@ -227,8 +230,9 @@ static bool try_fill_buffer_dlpack(
     auto* strides = dltensor.strides;
 
     // This function throws if no matching dtype is found
+
     const auto* tensor_stype
-            = dlpack_dtype_to_scalar_type(dltensor.dtype, dltensor.device);
+            = python::scalar_type_of_dl_info(dltensor.dtype, dltensor.device);
     if (options.type == nullptr) {
         options.type = tensor_stype;
         buffer = scalars::KeyScalarArray(options.type);
@@ -266,44 +270,7 @@ static bool try_fill_buffer_dlpack(
     return true;
 }
 
-struct arg_size_info {
-    idimn_t num_values;
-    idimn_t num_keys;
-};
 
-enum class ground_data_type
-{
-    UnSet,
-    Scalars,
-    KeyValuePairs
-};
-
-static inline bool is_scalar(py::handle arg)
-{
-    return (py::isinstance<py::int_>(arg) || py::isinstance<py::float_>(arg)
-            || RPyPolynomial_Check(arg.ptr()));
-}
-
-static inline bool
-is_key(py::handle arg, python::AlternativeKeyType* alternative)
-{
-    if (alternative != nullptr) {
-        return py::isinstance<py::int_>(arg)
-                || py::isinstance(arg, alternative->py_key_type);
-    }
-    if (py::isinstance<py::int_>(arg)) { return true; }
-    return false;
-}
-
-static inline bool
-is_kv_pair(py::handle arg, python::AlternativeKeyType* alternative)
-{
-    if (py::isinstance<py::tuple>(arg)) {
-        auto tpl = py::reinterpret_borrow<py::tuple>(arg);
-        if (tpl.size() == 2) { return is_key(tpl[0], alternative); }
-    }
-    return false;
-}
 
 static void
 check_and_set_dtype(python::PyToBufferOptions& options, py::handle arg)
@@ -318,24 +285,24 @@ check_and_set_dtype(python::PyToBufferOptions& options, py::handle arg)
 }
 
 static bool check_ground_type(
-        py::handle object, ground_data_type& ground_type,
+        py::handle object, GroundDataType& ground_type,
         python::PyToBufferOptions& options
 )
 {
     py::handle scalar;
-    if (::is_scalar(object)) {
-        if (ground_type == ground_data_type::UnSet) {
-            ground_type = ground_data_type::Scalars;
-        } else if (ground_type != ground_data_type::Scalars) {
+    if (python::is_scalar(object)) {
+        if (ground_type == GroundDataType::UnSet) {
+            ground_type = GroundDataType::Scalars;
+        } else if (ground_type != GroundDataType::Scalars) {
             RPY_THROW(
                     py::value_error, "inconsistent scalar/key-scalar-pair data"
             );
         }
         scalar = object;
     } else if (is_kv_pair(object, options.alternative_key)) {
-        if (ground_type == ground_data_type::UnSet) {
-            ground_type = ground_data_type::KeyValuePairs;
-        } else if (ground_type != ground_data_type::KeyValuePairs) {
+        if (ground_type == GroundDataType::UnSet) {
+            ground_type = GroundDataType::KeyValuePairs;
+        } else if (ground_type != GroundDataType::KeyValuePairs) {
             RPY_THROW(
                     py::value_error, "inconsistent scalar/key-scalar-pair data"
             );
@@ -355,7 +322,7 @@ static bool check_ground_type(
 
 static void compute_size_and_type_recurse(
         python::PyToBufferOptions& options, std::vector<py::object>& leaves,
-        const py::handle& object, ground_data_type& ground_type, dimn_t depth
+        const py::handle& object, GroundDataType& ground_type, dimn_t depth
 )
 {
 
@@ -376,7 +343,7 @@ static void compute_size_and_type_recurse(
         // We've not visited this depth before,
         // add our length to the list
         options.shape.push_back(length);
-    } else if (ground_type == ground_data_type::Scalars) {
+    } else if (ground_type == GroundDataType::Scalars) {
         // We have visited this depth before,
         // check our length is consistent with the others
         if (length != options.shape[depth]) {
@@ -424,9 +391,9 @@ static void compute_size_and_type_recurse(
             );
         }
         switch (ground_type) {
-            case ground_data_type::UnSet:
-                ground_type = ground_data_type::KeyValuePairs;
-            case ground_data_type::KeyValuePairs: break;
+            case GroundDataType::UnSet:
+                ground_type = GroundDataType::KeyValuePairs;
+            case GroundDataType::KeyValuePairs: break;
             default:
                 RPY_THROW(py::type_error, "mismatched types in array argument");
         }
@@ -443,19 +410,19 @@ static void compute_size_and_type_recurse(
     }
 }
 
-static arg_size_info compute_size_and_type(
+ArgSizeInfo python::compute_size_and_type(
         python::PyToBufferOptions& options, std::vector<py::object>& leaves,
         py::handle arg
 )
 {
-    arg_size_info info = {0, 0};
+    ArgSizeInfo info = {0, 0};
 
     RPY_CHECK(py::isinstance<py::sequence>(arg));
 
-    ground_data_type ground_type = ground_data_type::UnSet;
+    GroundDataType ground_type = GroundDataType::UnSet;
     compute_size_and_type_recurse(options, leaves, arg, ground_type, 0);
 
-    if (ground_type == ground_data_type::KeyValuePairs) {
+    if (ground_type == GroundDataType::KeyValuePairs) {
         options.shape.clear();
 
         for (const auto& obj : leaves) {
@@ -470,7 +437,7 @@ static arg_size_info compute_size_and_type(
         for (auto& shape_i : options.shape) { info.num_values *= shape_i; }
     }
 
-    if (info.num_values == 0 || ground_type == ground_data_type::UnSet) {
+    if (info.num_values == 0 || ground_type == GroundDataType::UnSet) {
         options.shape.clear();
         leaves.clear();
     }
@@ -536,10 +503,7 @@ scalars::KeyScalarArray python::py_to_buffer(
         update_dtype_and_allocate(result, options, 1, 0);
 
         assign_py_object_to_scalar(result, object);
-        return result;
-    }
-
-    if (is_kv_pair(object, options.alternative_key)) {
+    } else if (is_kv_pair(object, options.alternative_key)) {
         /*
          * Now for tuples of length 2, which we expect to be a kv-pair
          */
@@ -550,16 +514,11 @@ scalars::KeyScalarArray python::py_to_buffer(
         update_dtype_and_allocate(result, options, 1, 1);
 
         handle_sequence_tuple(result, result.keys(), object, options);
-        return result;
-    }
-
-    if (py::hasattr(object, "__dlpack__")) {
+    } else if (py::hasattr(object, "__dlpack__")) {
         // If we used the dlpack interface, then the result is
         // already constructed.
-        if (try_fill_buffer_dlpack(result, options, object)) { return result; }
-    }
-
-    if (py::isinstance<py::buffer>(object)) {
+        try_fill_buffer_dlpack(result, options, object);
+    } else if (py::isinstance<py::buffer>(object)) {
         // Fall back to the buffer protocol
         auto info = py::reinterpret_borrow<py::buffer>(object).request();
         auto type_id = py_buffer_to_type_id(info);
@@ -580,10 +539,7 @@ scalars::KeyScalarArray python::py_to_buffer(
             options.shape.assign(info.shape.begin(), info.shape.end());
         }
 
-        return result;
-    }
-
-    if (py::isinstance<py::dict>(object)) {
+    } else if (py::isinstance<py::dict>(object)) {
         auto dict_arg = py::reinterpret_borrow<py::dict>(object);
         options.shape.push_back(static_cast<idimn_t>(dict_arg.size()));
 
@@ -600,10 +556,7 @@ scalars::KeyScalarArray python::py_to_buffer(
 
             handle_dict(ptr, key_ptr, options, dict_arg);
         }
-        return result;
-    }
-
-    if (py::isinstance<py::sequence>(object)) {
+    } else if (py::isinstance<py::sequence>(object)) {
         std::vector<py::object> leaves;
         auto size_info = compute_size_and_type(options, leaves, object);
 
@@ -638,14 +591,14 @@ scalars::KeyScalarArray python::py_to_buffer(
                 }
             }
         }
-
-        return result;
+    } else {
+        RPY_THROW(
+                std::invalid_argument,
+                "could not parse argument to a valid scalar array type"
+        );
     }
 
-    RPY_THROW(
-            std::invalid_argument,
-            "could not parse argument to a valid scalar type"
-    );
+    return result;
 }
 
 scalars::Scalar

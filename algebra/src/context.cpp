@@ -161,6 +161,14 @@ void Context::cbh_fallback(FreeTensor& collector, const std::vector<Lie>& lies)
         }
     }
 }
+void Context::cbh_fallback(FreeTensor& collector, Slice<const Lie*> lies) const
+{
+    for (const auto* alie : lies) {
+        if (alie->dimension() != 0) {
+            collector.fmexp(this->lie_to_tensor(*alie));
+        }
+    }
+}
 
 Lie Context::cbh(const std::vector<Lie>& lies, VectorType vtype) const
 {
@@ -173,6 +181,19 @@ Lie Context::cbh(const std::vector<Lie>& lies, VectorType vtype) const
 
     return tensor_to_lie(collector.log());
 }
+Lie Context::cbh(Slice<const Lie*> lies, VectorType vtype) const {
+    if (lies.size() == 1) {
+        return convert(*lies[0], vtype);
+    }
+
+    FreeTensor collector = zero_free_tensor(vtype);
+    collector[0] = scalars::Scalar(1);
+
+    cbh_fallback(collector, lies);
+
+    return tensor_to_lie(collector.log());
+}
+
 Lie Context::cbh(const Lie& left, const Lie& right, VectorType vtype) const
 {
     FreeTensor tmp = lie_to_tensor(left).exp();
@@ -241,12 +262,16 @@ context_pointer rpy::algebra::get_context(
     }
 
     if (found.empty()) {
-        RPY_THROW(std::invalid_argument,"cannot find a context maker for the "
-                                    "width, depth, dtype, and preferences set");
+        RPY_THROW(
+                std::invalid_argument,
+                "cannot find a context maker for the "
+                "width, depth, dtype, and preferences set"
+        );
     }
 
     if (found.size() > 1) {
-        RPY_THROW(std::invalid_argument,
+        RPY_THROW(
+                std::invalid_argument,
                 "found multiple context maker candidates for specified width, "
                 "depth, dtype, and preferences set"
         );
@@ -314,30 +339,42 @@ UnspecifiedAlgebraType Context::free_multiply(
         const ConstRawUnspecifiedAlgebraType right
 ) const
 {
-    RPY_THROW(std::runtime_error,"free tensor multiply is not implemented for "
-                                         "arbitrary types with this backend");
+    RPY_THROW(
+            std::runtime_error,
+            "free tensor multiply is not implemented for "
+            "arbitrary types with this backend"
+    );
 }
 UnspecifiedAlgebraType Context::shuffle_multiply(
         ConstRawUnspecifiedAlgebraType left,
         ConstRawUnspecifiedAlgebraType right
 ) const
 {
-    RPY_THROW(std::runtime_error,"shuffle multiply is not implemented for "
-                                         "arbitrary types with this backend");
+    RPY_THROW(
+            std::runtime_error,
+            "shuffle multiply is not implemented for "
+            "arbitrary types with this backend"
+    );
 }
 UnspecifiedAlgebraType Context::half_shuffle_multiply(
         ConstRawUnspecifiedAlgebraType left,
         ConstRawUnspecifiedAlgebraType right
 ) const
 {
-    RPY_THROW(std::runtime_error,"half shuffle multiply is not implemented for "
-                             "arbitrary types with this backend");
+    RPY_THROW(
+            std::runtime_error,
+            "half shuffle multiply is not implemented for "
+            "arbitrary types with this backend"
+    );
 }
 UnspecifiedAlgebraType Context::adjoint_to_left_multiply_by(
         ConstRawUnspecifiedAlgebraType multiplier,
         ConstRawUnspecifiedAlgebraType argument
 ) const
 {
-    RPY_THROW(std::runtime_error,"adjoint of left multiply is not implemented for "
-                             "arbitrary types with this backend");
+    RPY_THROW(
+            std::runtime_error,
+            "adjoint of left multiply is not implemented for "
+            "arbitrary types with this backend"
+    );
 }

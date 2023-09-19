@@ -16,6 +16,7 @@ endif ()
 project(RoughPy VERSION ${_rpy_version})
 
 include(CMakeDependentOption)
+include(CheckIncludeFileCXX)
 
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
@@ -156,8 +157,23 @@ if (DEFINED CMAKE_CXX_COMPILER_TARGET)
     set(RPY_ARCH ${CMAKE_CXX_COMPILER_TARGET})
 endif ()
 
+
+# We use C++17 standard library headers. If these aren't available for some
+# reason, we can fall back to Boost versions but this is obviously not desirable
+check_include_file_cxx(filesystem RPY_HAS_STD_FILESYSTEM)
+check_include_file_cxx(optional RPY_HAS_STD_OPTIONAL)
+
+
+
 set(Boost_NO_WARN_NEW_VERSIONS ON)
-find_package(Boost 1.81 REQUIRED COMPONENTS url)
+set(RYP_BOOST_VERSION 1.81)
+find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS url system)
+
+if (NOT RPY_HAS_STD_FILESYSTEM)
+    find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS filesystem)
+endif()
+
+
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 
@@ -212,23 +228,25 @@ if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64" AND NOT
 
     find_package(MKL CONFIG)
     if (TARGET MKL::MKL)
+        set(RPY_USE_MKL ON CACHE INTERNAL "BLAS/LAPACK provided by mkl")
         add_library(BLAS::BLAS ALIAS MKL::MKL)
         add_library(LAPACK::LAPACK ALIAS MKL::MKL)
 
         if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
-            if (APPLE)
-                foreach (LANG IN ITEMS C CXX)
-                    set(OpenMP_${LANG}_FLAGS "-XPreprocessor -fopenmp=${MKL_OMP_LIB}")
-                    set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
-                endforeach ()
-            endif ()
-            set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
+#            if (APPLE)
+#                foreach (LANG IN ITEMS C CXX)
+#                    set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
+#                endforeach ()
+#            endif ()
+#            set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
         endif ()
     else ()
+        set(RPY_USE_MKL OFF CACHE INTERNAL "BLAS/LAPACK not provided by mkl")
         set(BLA_SIZEOF_INTEGER 4)
         set(BLA_STATIC ON)
     endif ()
 elseif (APPLE)
+    set(RPY_USE_ACCELERATE ON CACHE INTERNAL "BLAS/LAPACK provided by Accelerate")
     set(BLA_VENDOR Apple)
     set(BLA_SIZEOF_INTEGER 4)
     set(BLA_STATIC ON)
@@ -241,15 +259,23 @@ if (NOT TARGET LAPACK::LAPACK)
     find_package(LAPACK REQUIRED)
 endif ()
 
-if (APPLE AND NOT DEFINED MKL_OMP_LIB)
-    get_brew_prefix(_libomp_prefix libomp VERBOSE)
+#if (APPLE AND NOT DEFINED MKL_OMP_LIB)
+#    get_brew_prefix(_libomp_prefix libomp VERBOSE)
+#
+#    if (_libomp_prefix AND EXISTS ${_libomp_prefix})
+#        list(APPEND CMAKE_PREFIX_PATH ${_libomp_prefix})
+#    endif()
+#endif()
+#
+#find_package(OpenMP REQUIRED COMPONENTS CXX)
 
-    if (_libomp_prefix AND EXISTS ${_libomp_prefix})
-        list(APPEND CMAKE_PREFIX_PATH ${_libomp_prefix})
-    endif()
-endif()
-
-find_package(OpenMP REQUIRED COMPONENTS CXX)
+#if (MSVC)
+#    # MSVC has openmp from the stone ages, so add the experimental flag
+#    get_target_property(_omp_flags OpenMP::OpenMP_CXX INTERFACE_COMPILE_OPTIONS)
+#    string(REPLACE "/openmp" "/openmp:experimental" _omp_flags "${_omp_flags}")
+#    set_target_properties(OpenMP::OpenMP_CXX PROPERTIES
+#            INTERFACE_COMPILE_OPTIONS "${_omp_flags}")
+#endif()
 
 find_package(pybind11 REQUIRED)
 find_package(cereal REQUIRED)

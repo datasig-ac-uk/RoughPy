@@ -11,11 +11,13 @@ include(GenerateExportHeader)
 
 option(RPY_POLY_SCALARS "Build polynomial scalar types" ON)
 
-set(RPY_USE_MKL ${MKL_FOUND})
+if (BLA_SIZEOF_INTEGER EQUAL 8 OR MKL_INTERFACE STREQUAL ilp64)
+    set(RPY_LAPACK_USE_ILP64 1)
+endif()
 
-configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
+#configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
 add_roughpy_component(Scalars
-        SOURCES
+    SOURCES
         src/linear_algebra/blas.h
         src/linear_algebra/blas_complex_double.cpp
         src/linear_algebra/blas_complex_float.cpp
@@ -46,6 +48,7 @@ add_roughpy_component(Scalars
         src/random_impl.cpp
         src/random_impl.h
         src/scalar_blas_impl.h
+        src/key_scalar_stream.cpp
         src/scalar_implementations/half/half_type.h
         src/scalar_implementations/half/half_type.cpp
         src/scalar_implementations/float/float_type.cpp
@@ -71,13 +74,14 @@ add_roughpy_component(Scalars
         #src/scalar_implementations/complex_float/complex_float_type.cpp
         #src/scalar_implementations/complex_float/complex_float_type.h
         ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
-        PUBLIC_HEADERS
+    PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/scalar_pointer.h
         include/roughpy/scalars/scalar.h
         include/roughpy/scalars/scalar_type.h
         include/roughpy/scalars/scalar_interface.h
         include/roughpy/scalars/scalar_array.h
+        include/roughpy/scalars/scalar_stream.h
         include/roughpy/scalars/owned_scalar_array.h
         include/roughpy/scalars/key_scalar_array.h
         include/roughpy/scalars/scalar_traits.h
@@ -85,16 +89,23 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_matrix.h
         include/roughpy/scalars/scalar_blas.h
         include/roughpy/scalars/scalar_type_helper.h
+        include/roughpy/scalars/key_scalar_stream.h
         include/roughpy/scalars.h
-        PUBLIC_DEPS
-        Boost::boost
-        Eigen3::Eigen
-        Libalgebra_lite::Libalgebra_lite
-        BLAS::BLAS
-        LAPACK::LAPACK
-        PRIVATE_DEPS
-        PCGRandom::pcg_random
-        NEEDS
+    DEPENDENCIES
+        PUBLIC
+            Boost::boost
+            Eigen3::Eigen
+            Libalgebra_lite::Libalgebra_lite
+            BLAS::BLAS
+            LAPACK::LAPACK
+        PRIVATE
+            PCGRandom::pcg_random
+    CONFIGURE
+        FILE
+            IN scalar_blas_defs.h.in
+            OUT scalar_blas_defs.h
+            ATONLY
+    NEEDS
         RoughPy::Core
         RoughPy::Platform
 )

@@ -1,7 +1,37 @@
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+// this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
+// and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors
+// may be used to endorse or promote products derived from this software without
+// specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #ifndef ROUGHPY_PLATFORM_FILESYSTEM_H_
 #define ROUGHPY_PLATFORM_FILESYSTEM_H_
 
-#ifdef RPY_CPP_17
+#include "available_libraries.h"
+
+
+#if defined(RPY_HAS_STD_FILESYSTEM) && RPY_HAS_STD_FILESYSTEM
 #  include <filesystem>
 #else
 #  include <boost/filesystem.hpp>
@@ -10,40 +40,10 @@
 namespace rpy {
 namespace fs {
 
-#if defined(RPY_CPP_17)
-using std::filesystem::path;
-
-using std::filesystem::absolute;
-using std::filesystem::canonical;
-using std::filesystem::copy;
-using std::filesystem::create_directory;
-using std::filesystem::current_path;
-using std::filesystem::equivalent;
-using std::filesystem::exists;
-using std::filesystem::file_size;
-using std::filesystem::is_directory;
-using std::filesystem::is_regular_file;
-using std::filesystem::permissions;
-using std::filesystem::remove;
-using std::filesystem::rename;
-
+#if defined(RPY_HAS_STD_FILESYSTEM) && RPY_HAS_STD_FILESYSTEM
+using namespace std::filesystem;
 #else
-using boost::filesystem::path;
-
-using boost::filesystem::absolute;
-using boost::filesystem::canonical;
-using boost::filesystem::copy;
-using boost::filesystem::create_directory;
-using boost::filesystem::current_path;
-using boost::filesystem::equivalent;
-using boost::filesystem::exists;
-using boost::filesystem::file_size;
-using boost::filesystem::is_directory;
-using boost::filesystem::is_regular_file;
-using boost::filesystem::permissions;
-using boost::filesystem::remove;
-using boost::filesystem::rename;
-
+using namespace boost::filesystem;
 #endif
 }// namespace fs
 }// namespace rpy

@@ -18,8 +18,15 @@ Version 0.0.7:
   MKL/BLAS+LAPACK.
   - Added function to query ring characteristics of a ScalarType - currently
   unused.
+  - Added KeyScalarStream for constructing streams from array-like data more easily.
   - Implemented the `from_type_details` function for scalar types. This fixes a bug when constructing objects using the dlpack protocol.
-
+  - Overhaul constructor for `LieIncrementStream`s from increment data to reduce
+   number of copies (if possible) and to handle non-contiguous or oddly shaped
+   data correctly.
+  - Change implementation of `LieIncrementStream` to allow adding the parameter
+  channel during construction.
+  - Change implementation of `TickStream` to allow adding parameter channel
+  during construction.
 
 
 

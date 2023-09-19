@@ -45,7 +45,7 @@ function(get_brew_prefix _out_var _package)
             OUTPUT_VARIABLE _out
             OUTPUT_STRIP_TRAILING_WHITESPACE
             ${_verbosity_flat}
-            )
+    )
 
     if (_result EQUAL 0)
         message(STATUS "Brew located ${_package} at ${_out}")
@@ -176,12 +176,228 @@ function(target_link_components _target _visibility)
 
 endfunction()
 
+function(_parse_defs_for_configure _args)
+
+    list(LENGTH _args _arg_len)
+    while (_arg_len GREATER 2)
+        list(POP_FRONT _args _var_name)
+        list(POP_FRONT _args _var_val)
+
+        set(${_var_name} "${_var_val}" PARENT_SCOPE)
+        math(EXPR _arg_len "${_arg_len} - 2")
+    endwhile ()
+
+    if (_arg_len EQUAL 1)
+        message(FATAL_ERROR "arguments to DEFINE must be <NAME> <VALUE> pairs")
+    endif ()
+
+endfunction()
+
+
+function(_do_configure_file _tgt _path_in _path_out _defines _atonly_flag
+        _is_public)
+    if (_defines)
+        _parse_defs_for_configure("${_defines}")
+    endif ()
+
+    if (_atonly_flag)
+        set(_atonly "@ONLY")
+    else ()
+        set(_atonly "")
+    endif ()
+
+    configure_file(${_path_in} ${_path_out} ${_atonly})
+
+    target_sources(${_tgt} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/${_path_out})
+
+endfunction()
+
+
+function(_configure_file _tgt _args)
+    set(flag_params "ATONLY;IS_PUBLIC")
+    set(single_arg_params "IN;OUT")
+    set(multi_arg_params "DEFINE")
+
+    list(POP_FRONT _args _sanity_check)
+    if (NOT _sanity_check STREQUAL "FILE")
+        message(FATAL_ERROR "Invalid arguments to configure")
+    endif ()
+
+
+    list(LENGTH _args _nargs)
+    while (_nargs GREATER 0)
+        list(FIND _args "FILE" _next_pos)
+        list(SUBLIST _args 0 ${_next_pos} file_args)
+        if (NOT _next_pos EQUAL -1)
+            list(SUBLIST _args ${_next_pos} -1 _args)
+            list(POP_FRONT _args)
+        else ()
+            set(_args "")
+        endif ()
+
+        cmake_parse_arguments(
+                "FILE"
+                "${flag_args}"
+                "${single_arg_params}"
+                "${multi_arg_params}"
+                "${file_args}"
+        )
+
+        #        cmake_path(IS_ABSOLUTE FILE_IN _is_absolute)
+        #        if (_is_absolute)
+        #            set(_path_in "${FILE_IN}")
+        #        else()
+        #            set(_path_in "${CMAKE_CURRENT_LIST_DIR}/${FILE_IN}")
+        #        endif()
+
+        cmake_path(ABSOLUTE_PATH FILE_IN OUTPUT_VARIABLE _path_in)
+        set(_path_out "${FILE_OUT}")
+
+        if (NOT EXISTS ${_path_in})
+            message(FATAL_ERROR "The source file ${_path_in} does not exist")
+        endif ()
+
+        message(STATUS "generating file \"${_path_out}\" from \"${_path_in}\"")
+        _do_configure_file("${_tgt}"
+                "${_path_in}"
+                "${_path_out}"
+                "${FILE_DEFINE}"
+                "${FILE_ATONLY}"
+                "${FILE_IS_PUBLIC}")
+
+        list(LENGTH _args _nargs)
+
+    endwhile ()
+
+
+endfunction()
+
+function(_parse_dependencies _private_var _interface_var)
+
+    set(flag_params "")
+    set(single_arg_params "")
+    set(multi_arg_params "PUBLIC;PRIVATE;INTERFACE")
+    cmake_parse_arguments("DEP"
+            "${flag_params}"
+            "${single_arg_params}"
+            "${multi_arg_params}"
+            ${ARGN}
+    )
+
+    # First do the public dependencies
+    while (DEP_PUBLIC)
+        unset(_next)
+        list(POP_FRONT DEP_PUBLIC _dep)
+        if (DEP_PUBLIC)
+            list(GET DEP_PUBLIC 0 _next)
+        endif ()
+
+        if (_next STREQUAL "IF")
+            # Dependency is conditional
+            set(_negate OFF)
+
+            list(POP_FRONT DEP_PUBLIC) # get rid of IF
+            list(POP_FRONT DEP_PUBLIC _condition)
+            if (_condition STREQUAL "NOT")
+                list(POP_FRONT DEP_PUBLIC _condition)
+                set(_negate ON)
+            endif ()
+
+            if ((_negate AND NOT ${_condition})
+                    OR (NOT _negate AND ${_condition}))
+                # public deps get added to both private and interface lists
+                list(APPEND _interface_libs "${_dep}")
+                list(APPEND _private_libs "${_dep}")
+            endif ()
+        else ()
+            # unconditional dependency
+            # public deps get added to both private and interface lists
+            list(APPEND _interface_libs "${_dep}")
+            list(APPEND _private_libs "${_dep}")
+        endif ()
+    endwhile ()
+
+    # Next the private dependencies
+    while (DEP_PRIVATE)
+        unset(_next)
+        list(POP_FRONT DEP_PRIVATE _dep)
+        if (DEP_PRIVATE)
+            list(GET DEP_PRIVATE 0 _next)
+        endif ()
+        if (_next STREQUAL "IF")
+            # Dependency is conditional
+            set(_negate OFF)
+
+            list(POP_FRONT DEP_PRIVATE) # get rid of IF
+            list(POP_FRONT DEP_PRIVATE _condition)
+            if (_condition STREQUAL "NOT")
+                list(POP_FRONT DEP_PRIVATE _condition)
+                set(_negate ON)
+            endif ()
+
+            if ((_negate AND NOT "${_condition}")
+                    OR (NOT _negate AND "${_condition}"))
+                list(APPEND _private_libs "${_dep}")
+            endif ()
+        else ()
+            # unconditional dependency
+            list(APPEND _private_libs "${_dep}")
+        endif ()
+    endwhile ()
+
+    # And finally the interface dependencies
+    while (DEP_INTERFACE)
+        unset(_next)
+        list(POP_FRONT DEP_INTERFACE _dep)
+        if (DEP_PUBLIC)
+            list(GET DEP_PUBLIC 0 _next)
+        endif ()
+        if (_next STREQUAL "IF")
+            # Dependency is conditional
+            set(_negate OFF)
+
+            list(POP_FRONT DEP_INTERFACE) # get rid of IF
+            list(POP_FRONT DEP_INTERFACE _condition)
+            if (_condition STREQUAL "NOT")
+                list(POP_FRONT DEP_INTERFACE _condition)
+                set(_negate ON)
+            endif ()
+
+            if ((_negate AND NOT "${_condition}") OR (
+                    NOT _negate AND "${_condition}"))
+                list(APPEND _private_libs "${_dep}")
+            endif ()
+        else ()
+            # unconditional dependency
+            list(APPEND _private_libs "${_dep}")
+        endif ()
+    endwhile ()
+
+    set(${_private_var} "${_private_libs}" PARENT_SCOPE)
+    set(${_interface_var} "${_interface_libs}" PARENT_SCOPE)
+endfunction()
+
+
 function(add_roughpy_component _name)
+
+    set(flag_params "STATIC" "SHARED" "INTERFACE")
+    set(single_arg_params "")
+    set(multi_arg_params
+            "SOURCES"
+            "DEPENDENCIES"
+            "PUBLIC_DEPS"
+            "PRIVATE_DEPS"
+            "DEFINITIONS"
+            "CONFIGURE"
+            "PUBLIC_HEADERS"
+            "PVT_INCLUDE_DIRS"
+            "NEEDS")
+
     cmake_parse_arguments(
             ARG
-            "STATIC;SHARED;INTERFACE"
-            ""
-            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS;NEEDS"
+            "${flag_params}"
+            "${single_arg_params}"
+            "${multi_arg_params}"
             ${ARGN}
     )
 
@@ -192,6 +408,7 @@ function(add_roughpy_component _name)
         set(_lib_type STATIC)
     endif ()
 
+    _parse_dependencies(_private_deps _interface_deps "${ARG_DEPENDENCIES}")
 
     set(_real_name "RoughPy_${_name}")
     set(_alias_name "RoughPy::${_name}")
@@ -207,11 +424,18 @@ function(add_roughpy_component _name)
                 list(APPEND _private_include_dirs ${CMAKE_CURRENT_LIST_DIR}/${_pth})
             endforeach ()
         endif ()
+
         foreach (_pth IN LISTS _private_include_dirs)
             if (NOT EXISTS "${_pth}")
                 message(FATAL_ERROR "The path ${_pth} does not exist")
             endif ()
         endforeach ()
+    else()
+        if (_private_deps)
+            message(FATAL_ERROR
+                    "INTERFACE library cannot have private dependencies")
+        endif()
+
     endif ()
 
     add_library(${_real_name} ${_lib_type})
@@ -224,8 +448,9 @@ function(add_roughpy_component _name)
         set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "" FORCE)
     endif ()
 
-    _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps ARG_PUBLIC_DEPS)
-    _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps ARG_PRIVATE_DEPS)
+    _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps _interface_deps)
+    _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps _private_deps)
+
 
     set_target_properties(${_real_name} PROPERTIES
             EXPORT_NAME ${_name})
@@ -234,17 +459,17 @@ function(add_roughpy_component _name)
         target_include_directories(${_real_name}
                 PRIVATE
                 "${_private_include_dirs}"
-                )
+        )
         target_sources(${_real_name}
                 PUBLIC
                 ${ARG_PUBLIC_HEADERS}
                 PRIVATE
                 ${ARG_SOURCES}
-                )
+        )
         target_link_libraries(${_real_name}
                 PRIVATE
                 ${_pvt_nrpy_deps}
-                )
+        )
 
         foreach (_rpy_dep IN LISTS _pvt_rpy_deps)
             get_target_property(_dep_type ${_rpy_dep} TYPE)
@@ -263,6 +488,10 @@ function(add_roughpy_component _name)
         target_sources(${_real_name} INTERFACE ${ARG_PUBLIC_HEADERS})
     endif ()
 
+    if (ARG_CONFIGURE)
+        _configure_file(${_real_name} "${ARG_CONFIGURE}")
+    endif ()
+
     if (_lib_type MATCHES "INTERFACE")
         set(_public INTERFACE)
     else ()
@@ -273,7 +502,7 @@ function(add_roughpy_component _name)
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
             "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-            )
+    )
 
     target_link_libraries(${_real_name} ${_public} ${_pub_nrpy_deps})
     foreach (_rpy_dep IN LISTS _pub_rpy_deps)
@@ -299,7 +528,7 @@ function(add_roughpy_component _name)
             CXX_DEFAULT_VISIBILITY hidden
             VISIBILITY_INLINES_HIDDEN ON
             VERSION "${PROJECT_VERSION}"
-            )
+    )
     #    if (_lib_type STREQUAL SHARED)
     #        set_target_properties(${_real_name} PROPERTIES
     #                SOVERSION ${PROJECT_VERSION_MAJOR})
@@ -566,12 +795,12 @@ optional<algebra::base_context_pointer> algebra::${_class_name}Maker::get_base_c
 }
 
 "
-                )
+        )
 
         target_sources(${_target} PRIVATE
                 ${_header_name}
                 ${_bin_dir}/${_class_name}Maker.cpp
-                )
+        )
     endif ()
 
 
@@ -598,7 +827,7 @@ extern template class ${_export_name} ${_class_name}<${_width}, ${_depth}, ${RPY
     file(APPEND "${_bin_dir}/${_inline_config_names}"
             "{{${_width}, ${_depth}, scalars::ScalarType::of<${RPY_CTYPE_${_ctype}}>()}, new rpy::algebra::${_class_name}<${_width}, ${_depth}, ${RPY_LA_CTYPE_${_ctype}}>()},
 "
-            )
+    )
 
 
 endfunction()

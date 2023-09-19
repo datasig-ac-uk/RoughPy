@@ -73,6 +73,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/algebra/tensor_key_iterator.h
         src/args/convert_timestamp.cpp
         src/args/convert_timestamp.h
+        src/args/dlpack_helpers.cpp
+        src/args/dlpack_helpers.h
         src/args/kwargs_to_path_metadata.h
         src/args/kwargs_to_path_metadata.cpp
         src/args/kwargs_to_vector_construction.cpp
@@ -81,6 +83,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/args/numpy.h
         src/args/parse_schema.cpp
         src/args/parse_schema.h
+        src/args/strided_copy.cpp
+        src/args/strided_copy.h
         src/intervals/date_time_interval.cpp
         src/intervals/date_time_interval.h
         src/intervals/dyadic.h
@@ -97,6 +101,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/intervals/real_interval.h
         src/intervals/segmentation.cpp
         src/intervals/segmentation.h
+        src/scalars/parse_key_scalar_stream.cpp
+        src/scalars/parse_key_scalar_stream.h
         src/scalars/r_py_polynomial.cpp
         src/scalars/r_py_polynomial.h
         src/scalars/scalar_type.h
@@ -117,10 +123,12 @@ target_sources(RoughPy_PyModule PRIVATE
         src/streams/piecewise_abelian_stream.h
         src/streams/r_py_tick_construction_helper.cpp
         src/streams/r_py_tick_construction_helper.h
-        src/streams/py_schema_context.cpp
-        src/streams/py_schema_context.h
+        src/streams/py_parametrization.cpp
+        src/streams/py_parametrization.h
         src/streams/schema.cpp
         src/streams/schema.h
+        src/streams/schema_finalization.cpp
+        src/streams/schema_finalization.h
         src/streams/stream.cpp
         src/streams/stream.h
         src/streams/streams.cpp

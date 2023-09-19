@@ -526,6 +526,9 @@ public:
             ldb = b.nrows();
             trans = BlasTranspose::CblasNoTrans;
         }
+
+
+        return {};
     }
     ScalarMatrix gelss(ScalarMatrix& A, ScalarMatrix& b) override;
 
@@ -622,6 +625,7 @@ StandardLinearAlgebra<S, R>::gelsd(ScalarMatrix& A, ScalarMatrix& b)
             rcond,
             rank
     );
+    return {};
 }
 
 }// namespace scalars
