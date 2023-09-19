@@ -36,7 +36,7 @@
 #include "ocl_buffer.h"
 #include "ocl_queue.h"
 #include "ocl_event.h"
-
+#include "handle_errors.h"
 
 using namespace rpy;
 using namespace device;
@@ -47,7 +47,9 @@ void* OCLKernelInterface::clone(void* content) const
     cl_int ecode = CL_SUCCESS;
     cl_kernel new_kernel = ::clCloneKernel(ker(content),
                                       &ecode);
-    RPY_CHECK(ecode == CL_SUCCESS);
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
     return new Data { new_kernel, dev(content) };
 }
 void OCLKernelInterface::clear(void* content) const
@@ -62,7 +64,9 @@ string_view OCLKernelInterface::name(void* content) const
     auto errcode = ::clGetKernelInfo(ker(content),
                              CL_KERNEL_CONTEXT,
                              sizeof(k_name), &k_name, nullptr);
-    RPY_CHECK(errcode == CL_SUCCESS);
+    if (errcode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(errcode);
+    }
     return {k_name};
 }
 dimn_t OCLKernelInterface::num_args(void* content) const
@@ -129,7 +133,9 @@ Event OCLKernelInterface::launch_kernel_async(
             &event         /* event */
     );
 
-    handle_launch_error(ecode);
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
 
     return Event { cl::event_interface(), event };
 }

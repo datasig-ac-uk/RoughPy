@@ -30,7 +30,7 @@
 //
 
 #include "ocl_buffer.h"
-
+#include "handle_errors.h"
 #include "opencl_headers.h"
 
 using namespace rpy;
@@ -51,7 +51,9 @@ BufferMode OCLBufferInterface::mode(void* content) const
             &raw_mode,
             nullptr
             );
-    RPY_CHECK(ecode == CL_SUCCESS);
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
 
     switch ( raw_mode & CL_MEM_MODE_MASK) {
         case CL_MEM_READ_ONLY:
@@ -74,7 +76,9 @@ dimn_t OCLBufferInterface::size(void* content) const
             &raw_size,
             nullptr
             );
-    RPY_CHECK(ecode == CL_SUCCESS);
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
     return raw_size;
 }
 void* OCLBufferInterface::ptr(void* content) const
@@ -93,7 +97,9 @@ void* OCLBufferInterface::clone(void* content) const
             nullptr,
             &ecode
             );
-    RPY_CHECK(new_buffer != nullptr);
+    if (new_buffer == nullptr) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
 
     cl_event event;
     ecode = ::clEnqueueCopyBuffer(
@@ -107,7 +113,9 @@ void* OCLBufferInterface::clone(void* content) const
             nullptr,
             &event
             );
-    RPY_CHECK(ecode == CL_SUCCESS);
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
 
     ::clWaitForEvents(1, &event);
 
@@ -116,7 +124,9 @@ void* OCLBufferInterface::clone(void* content) const
 void OCLBufferInterface::clear(void* content) const
 {
     auto ret = ::clReleaseMemObject(buffer(content));
-    RPY_CHECK(ret == CL_SUCCESS);
+    if (ret != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ret);
+    }
     delete static_cast<Data*>(content);
 }
 

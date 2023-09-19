@@ -36,6 +36,7 @@
 #include <roughpy/device/kernel.h>
 
 #include "open_cl_device.h"
+#include "handle_errors.h"
 
 namespace rpy {
 namespace device {
@@ -72,7 +73,9 @@ private:
         cl_uint ret;
         cl_int errcode = ::clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS,
                                    sizeof(cl_uint), &ret, nullptr);
-        RPY_CHECK(errcode == CL_SUCCESS);
+        if (errcode != CL_SUCCESS) {
+            RPY_HANDLE_OCL_ERROR(errcode);
+        }
         return ret;
     }
 
@@ -80,7 +83,9 @@ private:
         cl_context ctx = nullptr;
         auto errcode = ::clGetKernelInfo(kernel, CL_KERNEL_CONTEXT,
                                  sizeof(ctx), &ctx, nullptr);
-        RPY_CHECK(errcode == CL_SUCCESS);
+        if (errcode != CL_SUCCESS) {
+            RPY_HANDLE_OCL_ERROR(errcode);
+        }
         return ctx;
     }
 
@@ -88,38 +93,13 @@ private:
         cl_program prog = nullptr;
         auto errcode = ::clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(prog),
                                  &prog, nullptr);
-        RPY_CHECK(errcode == CL_SUCCESS);
+        if (errcode != CL_SUCCESS) {
+            RPY_HANDLE_OCL_ERROR(errcode);
+        }
+
         return prog;
     }
 
-    static inline void handle_launch_error(cl_int errcode) {
-        switch (errcode) {
-            case CL_SUCCESS:
-                return;
-            case CL_INVALID_PROGRAM_EXECUTABLE: RPY_FALLTHROUGH;
-            case CL_INVALID_COMMAND_QUEUE: RPY_FALLTHROUGH;
-            case CL_INVALID_KERNEL: RPY_FALLTHROUGH;
-            case CL_INVALID_CONTEXT: RPY_FALLTHROUGH;
-            case CL_INVALID_KERNEL_ARGS: RPY_FALLTHROUGH;
-            case CL_INVALID_WORK_DIMENSION: RPY_FALLTHROUGH;
-            case CL_INVALID_GLOBAL_WORK_SIZE: RPY_FALLTHROUGH;
-            case CL_INVALID_GLOBAL_OFFSET: RPY_FALLTHROUGH;
-            case CL_INVALID_WORK_GROUP_SIZE: RPY_FALLTHROUGH;
-            case CL_INVALID_WORK_ITEM_SIZE: RPY_FALLTHROUGH;
-            case CL_MISALIGNED_SUB_BUFFER_OFFSET: RPY_FALLTHROUGH;
-            case CL_DEVICE_MEM_BASE_ADDR_ALIGN: RPY_FALLTHROUGH;
-            case CL_INVALID_IMAGE_SIZE: RPY_FALLTHROUGH;
-            case CL_DEVICE_MAX_READ_IMAGE_ARGS: RPY_FALLTHROUGH;
-            case CL_MEM_OBJECT_ALLOCATION_FAILURE: RPY_FALLTHROUGH;
-            case CL_INVALID_EVENT_WAIT_LIST: RPY_FALLTHROUGH;
-            case CL_INVALID_OPERATION: RPY_FALLTHROUGH;
-            case CL_OUT_OF_RESOURCES: RPY_FALLTHROUGH;
-            case CL_OUT_OF_HOST_MEMORY: RPY_FALLTHROUGH;
-            default:
-                RPY_THROW(std::runtime_error, "kernel launch unsuccessful");
-        }
-        RPY_UNREACHABLE_RETURN((void) 0);
-    }
 
 public:
 

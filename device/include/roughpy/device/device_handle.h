@@ -28,7 +28,7 @@
 #ifndef ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 #define ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 
-#include "core.h"
+
 
 #include <roughpy/core/traits.h>
 #include <roughpy/platform/filesystem.h>
@@ -37,6 +37,12 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
 #include <memory>
+
+#include "core.h"
+#include "buffer.h"
+#include "event.h"
+#include "kernel.h"
+#include "queue.h"
 
 
 namespace rpy {
@@ -98,6 +104,11 @@ public:
     //                               const void* launch_config,
     //                               void** args
     //                               ) = 0;
+
+
+    RPY_NO_DISCARD virtual Buffer raw_alloc(dimn_t count, dimn_t alignment) const;
+
+    virtual void raw_free(Buffer buffer) const;
 
 };
 

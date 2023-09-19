@@ -75,6 +75,8 @@ public:
     }
     cl_context context() const noexcept { return m_ctx; }
 
+    virtual Buffer raw_alloc(dimn_t count, dimn_t alignment) const;
+    virtual void raw_free(Buffer buffer) const;
 };
 
 }// namespace device

@@ -58,3 +58,9 @@ DeviceInfo device::DeviceHandle::info() const noexcept {
         0
     };
 }
+
+Buffer DeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
+{
+    return Buffer();
+}
+void DeviceHandle::raw_free(Buffer buffer) const {}

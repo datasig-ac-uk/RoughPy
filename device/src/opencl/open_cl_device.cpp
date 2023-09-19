@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by sam on 25/08/23.
@@ -43,13 +44,15 @@
 #include "ocl_event.h"
 #include "ocl_kernel.h"
 #include "ocl_queue.h"
+#include "handle_errors.h"
 
 using namespace rpy;
 
 static std::vector<cl_device_id> s_device_list;
 static std::mutex s_device_lock;
 
-static void set_device_id(cl_device_id device, int32_t& id) {
+static void set_device_id(cl_device_id device, int32_t& id)
+{
     std::lock_guard<std::mutex> access(s_device_lock);
 
     if (s_device_list.empty()) {
@@ -69,39 +72,33 @@ static void set_device_id(cl_device_id device, int32_t& id) {
     }
 }
 
-
 rpy::device::OpenCLDevice::OpenCLDevice(cl_device_id device)
-    : DeviceHandle(cl::buffer_interface(), cl::event_interface(),
-                   cl::kernel_interface(), cl::queue_interface()),
+    : DeviceHandle(
+            cl::buffer_interface(), cl::event_interface(),
+            cl::kernel_interface(), cl::queue_interface()
+    ),
       m_device(device)
 {
-      set_device_id(m_device, m_device_id);
-      cl_int errcode = CL_SUCCESS;
+    set_device_id(m_device, m_device_id);
+    cl_int errcode = CL_SUCCESS;
 
-      m_ctx = ::clCreateContext(
-              nullptr,
-              1,
-              &m_device,
-              nullptr,
-              nullptr,
-              &errcode
-              );
-      RPY_CHECK(m_ctx != nullptr);
-      RPY_CHECK(errcode == CL_SUCCESS);
+    m_ctx = ::clCreateContext(
+            nullptr, 1, &m_device, nullptr, nullptr, &errcode
+    );
+    if (m_ctx == nullptr) {
+        RPY_HANDLE_OCL_ERROR(errcode);
+    }
 
-
-      m_default_queue = ::clCreateCommandQueueWithProperties(
-              m_ctx,
-              m_device,
-              nullptr,
-              &errcode
-              );
-      RPY_CHECK(m_default_queue != nullptr);
-
-
+    m_default_queue = ::clCreateCommandQueueWithProperties(
+            m_ctx, m_device, nullptr, &errcode
+    );
+    if (m_default_queue == nullptr) {
+        RPY_HANDLE_OCL_ERROR(errcode);
+    }
 }
 
-rpy::device::OpenCLDevice::~OpenCLDevice() {
+rpy::device::OpenCLDevice::~OpenCLDevice()
+{
     std::lock_guard<std::mutex> access(s_device_lock);
     RPY_CHECK(s_device_list.size() > static_cast<dimn_t>(m_device_id));
     s_device_list[m_device_id] = cl_device_id();
@@ -109,11 +106,29 @@ rpy::device::OpenCLDevice::~OpenCLDevice() {
 
 rpy::device::DeviceInfo rpy::device::OpenCLDevice::info() const noexcept
 {
-    return { DeviceType::OpenCL, m_device_id };
+    return {DeviceType::OpenCL, m_device_id};
 }
 
-optional<fs::path>
-rpy::device::OpenCLDevice::runtime_library() const noexcept
+optional<fs::path> rpy::device::OpenCLDevice::runtime_library() const noexcept
 {
     return {};
+}
+device::Buffer
+device::OpenCLDevice::raw_alloc(dimn_t count, dimn_t alignment) const
+{
+    cl_int ecode = CL_SUCCESS;
+    auto new_mem
+            = clCreateBuffer(m_ctx, CL_MEM_READ_WRITE, count, nullptr, &ecode);
+    if (new_mem != nullptr) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
+
+    return Buffer{
+            OpenCLDevice::buffer_interface(), OCLBufferInterface::create_data(new_mem, this)};
+}
+void device::OpenCLDevice::raw_free(device::Buffer buffer) const
+{
+    RPY_CHECK(buffer.interface() == OpenCLDevice::buffer_interface());
+    cl_mem raw_buf = OCLBufferInterface::take_buffer(buffer.content());
+    clReleaseMemObject(raw_buf);
 }

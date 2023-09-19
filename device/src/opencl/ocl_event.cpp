@@ -30,6 +30,7 @@
 //
 
 #include "ocl_event.h"
+#include "handle_errors.h"
 
 namespace rpy {
 namespace device {
@@ -58,7 +59,9 @@ EventStatus OCLEventInterface::status(void* content)
                               &raw_status,
                               nullptr
                               );
-    RPY_CHECK(ecode == CL_SUCCESS);
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
 
     switch (raw_status) {
         case CL_COMPLETE:
@@ -79,5 +82,6 @@ const OCLEventInterface* cl::event_interface() noexcept {
     static const OCLEventInterface iface;
     return &iface;
 }
+
 }// namespace device
 }// namespace rpy

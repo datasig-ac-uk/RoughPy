@@ -30,19 +30,24 @@
 //
 
 #include "ocl_queue.h"
+#include "handle_errors.h"
 
 using namespace rpy;
 using namespace rpy::device;
 void* OCLQueueInterface::clone(void* content) const
 {
     auto ret = ::clRetainCommandQueue(queue(content));
-    RPY_CHECK(ret == CL_SUCCESS);
+    if (ret != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ret);
+    }
     return content;
 }
 void OCLQueueInterface::clear(void* content) const
 {
     auto ret = ::clReleaseCommandQueue(queue(content));
-    RPY_CHECK(ret == CL_SUCCESS);
+    if (ret != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ret);
+    }
 }
 
 const OCLQueueInterface* cl::queue_interface() noexcept {

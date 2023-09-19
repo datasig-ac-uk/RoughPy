@@ -49,15 +49,22 @@ class OCLBufferInterface : public BufferInterface
 
     struct Data {
         cl_mem buffer;
-        boost::intrusive_ptr<OpenCLDevice> device;
+        boost::intrusive_ptr<const OpenCLDevice> device;
     };
 
 public:
     static void* create_data(
-            cl_mem buffer, boost::intrusive_ptr<OpenCLDevice> device
+            cl_mem buffer, boost::intrusive_ptr<const OpenCLDevice> device
     ) noexcept
     {
         return new Data{buffer, std::move(device)};
+    }
+
+    static cl_mem take_buffer(void* content) noexcept {
+        auto* data = static_cast<Data*>(content);
+        cl_mem buff = data->buffer;
+        data->buffer = nullptr;
+        return buff;
     }
 
 private:
@@ -66,7 +73,7 @@ private:
         return static_cast<Data*>(content)->buffer;
     }
 
-    static inline boost::intrusive_ptr<OpenCLDevice>& device(void* content
+    static inline boost::intrusive_ptr<const OpenCLDevice>& device(void* content
     ) noexcept
     {
         return static_cast<Data*>(content)->device;
