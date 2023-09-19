@@ -431,7 +431,7 @@ OutType LiteContext<Coefficients>::construct_impl(
     std::vector<scalar_type> tmp;
     if (data.data.type() != ctype()) {
         tmp.resize(data.data.size());
-        ctype()->convert_copy(tmp.data(), data.data, size);
+        ctype()->convert_copy({ctype(), tmp.data()}, data.data, size);
         data_ptr = tmp.data();
     } else {
         data_ptr = data.data.raw_cast<const scalar_type>();

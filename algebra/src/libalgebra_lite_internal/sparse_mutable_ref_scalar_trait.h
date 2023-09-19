@@ -99,12 +99,15 @@ public:
     void assign(const void* data, const string& type_id) override
     {
         value_type tmp = static_cast<const value_type&>(m_data);
-        type()->convert_copy({type(), &tmp}, data, 1, type_id);
+        type()->convert_copy(
+                {type(), &tmp}, {scalars::get_type(type_id), data}, 1
+        );
         m_data = tmp;
     }
     ScalarPointer to_pointer() override
     {
-        RPY_THROW(std::runtime_error,
+        RPY_THROW(
+                std::runtime_error,
                 "cannot get non-const pointer to proxy reference type"
         );
     }

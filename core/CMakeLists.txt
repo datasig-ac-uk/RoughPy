@@ -17,4 +17,6 @@ add_roughpy_component(Core INTERFACE
         include/roughpy/core/alloc.h
         DEFINITIONS
         RPY_DBG_ASSERT_USE_EXCEPTIONS 1
+        DEPENDENCIES INTERFACE
+            Boost::boost
         )

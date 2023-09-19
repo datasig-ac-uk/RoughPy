@@ -11,11 +11,23 @@ include(GenerateExportHeader)
 
 option(RPY_POLY_SCALARS "Build polynomial scalar types" ON)
 
-set(RPY_USE_MKL ${MKL_FOUND})
+if (BLA_SIZEOF_INTEGER EQUAL 8 OR MKL_INTERFACE STREQUAL ilp64)
+    set(RPY_LAPACK_USE_ILP64 1)
+endif()
 
-configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
+#configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
 add_roughpy_component(Scalars
-        SOURCES
+    SOURCES
+        src/linear_algebra/blas.h
+        src/linear_algebra/blas_complex_double.cpp
+        src/linear_algebra/blas_complex_float.cpp
+        src/linear_algebra/blas_double.cpp
+        src/linear_algebra/blas_float.cpp
+        src/linear_algebra/lapack.h
+        src/linear_algebra/lapack_complex_double.cpp
+        src/linear_algebra/lapack_complex_float.cpp
+        src/linear_algebra/lapack_double.cpp
+        src/linear_algebra/lapack_float.cpp
         src/scalar_type.cpp
         src/scalar_pointer.cpp
         src/scalar_interface.cpp
@@ -28,39 +40,48 @@ add_roughpy_component(Scalars
         src/key_scalar_array.cpp
         src/scalar_stream.cpp
         src/standard_scalar_type.h
-        src/half_type.h
-        src/half_type.cpp
-        src/float_type.cpp
-        src/float_type.h
-        src/double_type.cpp
-        src/double_type.h
-        src/RationalType.cpp
-        src/RationalType.h
+        src/standard_linalg.h
         src/standard_random_generator.cpp
         src/standard_random_generator.h
         src/scalar_matrix.cpp
         src/scalar_blas.cpp
-        src/float_blas.cpp
-        src/float_blas.h
-        src/scalar_blas_impl.h
-        src/half_random_generator.cpp
-        src/half_random_generator.h
-        src/b_float_16_type.cpp
-        src/b_float_16_type.h
-        src/bfloat16_random_generator.cpp
-        src/bfloat16_random_generator.h
         src/random_impl.cpp
         src/random_impl.h
-        src/rational_poly_scalar_type.cpp
-        src/rational_poly_scalar_type.h
+        src/scalar_blas_impl.h
+        src/key_scalar_stream.cpp
+        src/scalar_implementations/half/half_type.h
+        src/scalar_implementations/half/half_type.cpp
+        src/scalar_implementations/float/float_type.cpp
+        src/scalar_implementations/float/float_type.h
+        src/scalar_implementations/double/double_type.cpp
+        src/scalar_implementations/double/double_type.h
+        src/scalar_implementations/rational/RationalType.cpp
+        src/scalar_implementations/rational/RationalType.h
+        src/scalar_implementations/float/float_blas.cpp
+        src/scalar_implementations/float/float_blas.h
+        src/scalar_implementations/half/half_random_generator.cpp
+        src/scalar_implementations/half/half_random_generator.h
+        src/scalar_implementations/bfloat16/b_float_16_type.cpp
+        src/scalar_implementations/bfloat16/b_float_16_type.h
+        src/scalar_implementations/bfloat16/bfloat16_random_generator.cpp
+        src/scalar_implementations/bfloat16/bfloat16_random_generator.h
+        src/scalar_implementations/rational_poly/rational_poly_scalar_type.cpp
+        src/scalar_implementations/rational_poly/rational_poly_scalar_type.h
+        src/scalar_implementations/double/double_lin_alg.cpp
+        src/scalar_implementations/double/double_lin_alg.h
+        #src/scalar_implementations/complex_double/complex_double_type.cpp
+        #src/scalar_implementations/complex_double/complex_double_type.h
+        #src/scalar_implementations/complex_float/complex_float_type.cpp
+        #src/scalar_implementations/complex_float/complex_float_type.h
         ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
-        PUBLIC_HEADERS
+    PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/scalar_pointer.h
         include/roughpy/scalars/scalar.h
         include/roughpy/scalars/scalar_type.h
         include/roughpy/scalars/scalar_interface.h
         include/roughpy/scalars/scalar_array.h
+        include/roughpy/scalars/scalar_stream.h
         include/roughpy/scalars/owned_scalar_array.h
         include/roughpy/scalars/key_scalar_array.h
         include/roughpy/scalars/scalar_traits.h
@@ -68,16 +89,23 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_matrix.h
         include/roughpy/scalars/scalar_blas.h
         include/roughpy/scalars/scalar_type_helper.h
+        include/roughpy/scalars/key_scalar_stream.h
         include/roughpy/scalars.h
-        PUBLIC_DEPS
-        Boost::boost
-        Eigen3::Eigen
-        Libalgebra_lite::Libalgebra_lite
-        BLAS::BLAS
-        LAPACK::LAPACK
-        PRIVATE_DEPS
-        PCGRandom::pcg_random
-        NEEDS
+    DEPENDENCIES
+        PUBLIC
+            Boost::boost
+            Eigen3::Eigen
+            Libalgebra_lite::Libalgebra_lite
+            BLAS::BLAS
+            LAPACK::LAPACK
+        PRIVATE
+            PCGRandom::pcg_random
+    CONFIGURE
+        FILE
+            IN scalar_blas_defs.h.in
+            OUT scalar_blas_defs.h
+            ATONLY
+    NEEDS
         RoughPy::Core
         RoughPy::Platform
 )

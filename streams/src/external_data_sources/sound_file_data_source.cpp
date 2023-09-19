@@ -72,55 +72,6 @@ sf_count_t SoundFileDataSource::param_to_frame(param_t param)
     return static_cast<sf_count_t>(std::ceil(seconds * sample_rate));
 }
 
-void SoundFileDataSource::read_direct_float(scalars::ScalarPointer& ptr,
-                                            sf_count_t num_frames)
-{
-    m_handle.readf(ptr.raw_cast<float*>(), num_frames);
-}
-void SoundFileDataSource::read_direct_double(scalars::ScalarPointer& ptr,
-                                             sf_count_t num_frames)
-{
-    m_handle.readf(ptr.raw_cast<double*>(), num_frames);
-}
-void SoundFileDataSource::read_convert_raw(scalars::ScalarPointer& ptr,
-                                           sf_count_t num_frames)
-{
-    const auto num_elements = num_frames * m_handle.channels();
-    std::vector<int8_t> buffer(num_elements);
-    m_handle.readRaw(buffer.data(), num_elements);
-    ptr.type()->convert_copy(ptr, buffer.data(), num_elements, "i8");
-}
-
-void SoundFileDataSource::select_and_convert_read2(scalars::ScalarPointer& ptr,
-                                                   sf_count_t num_frames)
-{
-    const auto* ctype = ptr.type();
-
-    const auto& info = ctype->info();
-    if (info.basic_info.code == scalars::ScalarTypeCode::Float) {
-        // float and double handle earlier, handle smaller and larger.
-        if (info.basic_info.bits < 32) {
-            read_convert<float>(ptr, num_frames);
-        } else {
-            read_convert<double>(ptr, num_frames);
-        }
-    } else {
-        read_convert<double>(ptr, num_frames);
-    }
-}
-
-void SoundFileDataSource::select_and_convert_read(scalars::ScalarPointer& ptr,
-                                                  sf_count_t num_frames)
-{
-
-    switch (m_handle.format() & SF_FORMAT_SUBMASK) {
-        case SF_FORMAT_PCM_16: read_convert<int16_t>(ptr, num_frames); break;
-        case SF_FORMAT_PCM_32: read_convert<int32_t>(ptr, num_frames); break;
-        case SF_FORMAT_FLOAT: read_convert<float>(ptr, num_frames); break;
-        case SF_FORMAT_DOUBLE: read_convert<double>(ptr, num_frames); break;
-        default: select_and_convert_read2(ptr, num_frames);
-    }
-}
 
 
 template <typename T>
@@ -196,7 +147,7 @@ dimn_t SoundFileDataSource::query_impl(
         for (const auto& [_, chan] : schema) {
             auto out_idx = schema.channel_to_stream_dim(i);
 
-            if (chan.type() == ChannelType::Value) {
+            if (chan->type() == ChannelType::Value) {
                 working[out_idx] = current[i] - previous[i];
             } else {
                 working[out_idx] = current[i];

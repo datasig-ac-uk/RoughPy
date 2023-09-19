@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
@@ -53,18 +52,24 @@ template <typename T>
 inline const string& type_id_of() noexcept;
 
 struct RingCharacteristics {
-    unsigned is_field : 1;
-    unsigned is_ordered : 1;
-    unsigned has_sqrt : 1;
+    bool is_field           : 1;
+    bool is_ordered         : 1;
+    bool has_sqrt           : 1;
+    bool is_complex         : 1;
+    unsigned int            : 28;
 };
 
 class RPY_EXPORT ScalarType
 {
     ScalarTypeInfo m_info;
-    RingCharacteristics m_characteristics RPY_UNUSED_VAR;
+    RingCharacteristics m_characteristics;
 
 protected:
-    explicit ScalarType(ScalarTypeInfo info) : m_info(std::move(info)) {}
+    /**
+     * @brief Constructor for Scalar types, must be called by derived types
+     * @param info Scalar type info
+     */
+    explicit ScalarType(ScalarTypeInfo info);
 
 public:
     template <typename T>
@@ -72,7 +77,7 @@ public:
 
     template <typename T>
     RPY_NO_DISCARD inline static const ScalarType*
-    of(const ScalarDeviceInfo& device);
+    of(const platform::DeviceInfo& device);
 
     /*
      * ScalarTypes objects should be unique for each configuration,
@@ -85,7 +90,7 @@ public:
     ScalarType& operator=(const ScalarType&) = delete;
     ScalarType& operator=(ScalarType&&) noexcept = delete;
 
-    virtual ~ScalarType() = default;
+    virtual ~ScalarType();
 
     /**
      * @brief Get the most appropriate scalar type for type id
@@ -101,7 +106,7 @@ public:
      * @return const pointer to appropriate scalar type
      */
     RPY_NO_DISCARD static const ScalarType* from_type_details(
-            const BasicScalarInfo& details, const ScalarDeviceInfo& device
+            const BasicScalarInfo& details, const platform::DeviceInfo& device
     );
 
     /**
@@ -117,6 +122,11 @@ public:
     RPY_NO_DISCARD const ScalarTypeInfo& info() const noexcept
     {
         return m_info;
+    }
+
+    RPY_NO_DISCARD const RingCharacteristics& characteristics() const noexcept
+    {
+        return m_characteristics;
     }
 
     /**
@@ -167,44 +177,11 @@ public:
      * @param lhs Pointer to left hand scalar
      * @param rhs Pointer to right hand scalar
      */
-    virtual void swap(ScalarPointer lhs, ScalarPointer rhs) const = 0;
+    virtual void swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count) const = 0;
 
     virtual void
     convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const
             = 0;
-
-    /**
-     * @brief Copy count scalars from in to out, converting as necessary
-     * @param out raw pointer to output
-     * @param in raw pointer to input
-     * @param count number of scalars to copy
-     * @param info BasicScalarInfo information about the input scalar type
-     */
-    virtual void convert_copy(
-            void* out, const void* in, std::size_t count, BasicScalarInfo info
-    ) const = 0;
-
-    /**
-     * @brief Copy count scalars from in to out, converting as necessary
-     * @param out raw pointer to destination
-     * @param in ScalarPointer to source data
-     * @param count number of scalars to copy
-     */
-    virtual void
-    convert_copy(void* out, ScalarPointer in, std::size_t count) const
-            = 0;
-
-    /**
-     * @brief Copy count scalars from in to out, converting as necessary
-     * @param out ScalarPointer to destination data
-     * @param in raw pointer to source data
-     * @param count number of scalars to copy
-     * @param id ID of scalar type for source data
-     */
-    virtual void convert_copy(
-            ScalarPointer out, const void* in, std::size_t count,
-            const string& id
-    ) const = 0;
 
     /**
      * @brief
@@ -260,87 +237,23 @@ public:
     assign(ScalarPointer target, long long numerator, long long denominator
     ) const = 0;
 
-    /**
-     * @brief Create a copy of a scalar value
-     * @param source ScalarPointer to source value
-     * @return new Scalar object
-     */
-    RPY_NO_DISCARD virtual Scalar copy(ScalarPointer source) const;
 
     /**
-     * @brief Get the scalar whose value is minus given value
-     * @param arg ScalarPointer to source value
-     * @return new Scalar whose value is -(*arg)
+     * @brief Compute the unary minus of all values in an array and write the
+     * result to dst.
+     * @param dst
+     * @param arg
+     * @param count
+     * @param mask
      */
-    RPY_NO_DISCARD virtual Scalar uminus(ScalarPointer arg) const = 0;
+    virtual void uminus_into(
+            ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
+            const uint64_t* mask
+    ) const = 0;
 
     /**
-     * @brief Add one scalar value to another
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     * @return new Scalar with sum of the two values
-     */
-    RPY_NO_DISCARD virtual Scalar
-    add(ScalarPointer lhs, ScalarPointer rhs) const;
-
-    /**
-     * @brief Subract one scalar value to another
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     * @return new Scalar with difference of the two values
-     */
-    RPY_NO_DISCARD virtual Scalar
-    sub(ScalarPointer lhs, ScalarPointer rhs) const;
-
-    /**
-     * @brief Multiply two scalar values
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     * @return new Scalar with product of the two values
-     */
-    RPY_NO_DISCARD virtual Scalar
-    mul(ScalarPointer lhs, ScalarPointer rhs) const;
-
-    /**
-     * @brief Divide one scalar value by another
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     * @return new scalar with left value divided by right value
-     */
-    RPY_NO_DISCARD virtual Scalar
-    div(ScalarPointer lhs, ScalarPointer rhs) const;
-
-    /**
-     * @brief Add right value to left inplace
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     */
-    virtual void add_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
-
-    /**
-     * @brief Subtract right value from left value inplace
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     */
-    virtual void sub_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
-
-    /**
-     * @brief Multiply left value by right value inplace
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     */
-    virtual void mul_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
-
-    /**
-     * @brief Divide left value by right value inplace
-     * @param lhs ScalarPointer to left value
-     * @param rhs ScalarPointer to right value
-     */
-    virtual void div_inplace(ScalarPointer lhs, ScalarPointer rhs) const = 0;
-
-    /**
-     * @brief Compute the sum of two scalar arrays componentwise, with optional
-     * mask
+     * @brief Compute the difference of two scalar arrays componentwise, with
+     * optional mask
      * @param dst Destination to write result
      * @param lhs Left hand side input,
      * @param rhs Right hand side input
@@ -355,16 +268,52 @@ public:
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
     ) const = 0;
 
+    /**
+     * @brief Compute the sum of two scalar arrays componentwise, with optional
+     * mask
+     * @param dst Destination to write result
+     * @param lhs Left hand side input,
+     * @param rhs Right hand side input
+     * @param count Number of elements to add
+     * @param mask Mask to apply, use nullptr for no mask. Otherwise, this
+     * must must be a pointer to at least ceil(count / 64) uint64_ts where each
+     * bit denotes a flag, set 1 for perform operation on corresponding elements
+     * and 0 for not operation.
+     */
     virtual void sub_into(
             ScalarPointer& dst, const ScalarPointer& lhs,
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
     ) const = 0;
 
+    /**
+     * @brief Compute the product of two scalar arrays componentwise, with
+     * optional mask
+     * @param dst Destination to write result
+     * @param lhs Left hand side input,
+     * @param rhs Right hand side input
+     * @param count Number of elements to add
+     * @param mask Mask to apply, use nullptr for no mask. Otherwise, this
+     * must must be a pointer to at least ceil(count / 64) uint64_ts where each
+     * bit denotes a flag, set 1 for perform operation on corresponding elements
+     * and 0 for not operation.
+     */
     virtual void mul_into(
             ScalarPointer& dst, const ScalarPointer& lhs,
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
     ) const = 0;
 
+    /**
+     * @brief Compute the divison of values in lhs by those in rhs
+     * componentwise, with optional mask
+     * @param dst Destination to write result
+     * @param lhs Left hand side input,
+     * @param rhs Right hand side input
+     * @param count Number of elements to add
+     * @param mask Mask to apply, use nullptr for no mask. Otherwise, this
+     * must must be a pointer to at least ceil(count / 64) uint64_ts where each
+     * bit denotes a flag, set 1 for perform operation on corresponding elements
+     * and 0 for not operation.
+     */
     virtual void div_into(
             ScalarPointer& dst, const ScalarPointer& lhs,
             const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
@@ -403,7 +352,7 @@ public:
      * @return Pointer to new RandomGenerator instance.
      */
     RPY_NO_DISCARD virtual std::unique_ptr<RandomGenerator>
-    get_rng(const string& bit_generator = "", Slice<uint64_t> seed = {}) const;
+    get_rng(const string& bit_generator, Slice<uint64_t> seed) const;
 
     /**
      * @brief Get a new instance of a blas interface
@@ -442,6 +391,22 @@ inline bool operator!=(const ScalarType& lhs, const ScalarType& rhs) noexcept
 // Implementation of type getting mechanics
 
 namespace dtl {
+
+template <typename T>
+struct type_id_of_impl {
+    static const string& get_id() {
+        /*
+         * The fallback implementation gets the type id by looking for the
+         * type and querying for the id. This should not fail unless no type
+         * is associated with T, since all the cases where ScalarType::of<T>
+         * () is allowed to be nullptr are integer types, which are
+         * overloaded below.
+         */
+        const auto* type = ScalarType::of<T>();
+        RPY_CHECK(type != nullptr);
+        return type->id();
+    }
+};
 
 #define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                    \
     template <>                                                                \
@@ -489,6 +454,7 @@ struct type_id_of_impl<long>
               (sizeof(long) == sizeof(int)), type_id_of_impl<int>,
               type_id_of_impl<long long>> {
 };
+
 
 #undef ROUGHPY_MAKE_TYPE_ID_OF
 
@@ -543,7 +509,7 @@ inline const ScalarType* ScalarType::of()
 }
 
 template <typename T>
-const ScalarType* ScalarType::of(const ScalarDeviceInfo& device)
+const ScalarType* ScalarType::of(const platform::DeviceInfo& device)
 {
     return get_type(type_id_of<T>(), device);
 }

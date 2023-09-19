@@ -1,7 +1,7 @@
-// Copyright (c) 2023 Datasig Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 24/05/23.
@@ -38,7 +37,11 @@
 using namespace rpy;
 using namespace rpy::streams;
 
+StreamSchema::StreamSchema() : p_parameterization(new Parameterization)
+{}
+
 StreamSchema::StreamSchema(dimn_t width)
+    : p_parameterization(new Parameterization)
 {
     reserve(width);
     for (dimn_t i = 0; i < width; ++i) { insert_increment(std::to_string(i)); }
@@ -71,7 +74,7 @@ bool StreamSchema::compare_labels(
 
 dimn_t StreamSchema::channel_it_to_width(const_iterator channel_it) const
 {
-    return channel_it->second.num_variants();
+    return channel_it->second->num_variants();
 }
 
 dimn_t StreamSchema::width_to_iterator(const_iterator end) const
@@ -119,31 +122,23 @@ typename StreamSchema::iterator StreamSchema::find(const string& label)
     return it_end;
 }
 
-typename StreamSchema::static_iterator
-StreamSchema::find_static(const string& label)
-{
-    RPY_CHECK(!m_is_final);
-    auto it_current = m_static_channels.begin();
-    const auto it_end = m_static_channels.end();
-
-    for (; it_current != it_end; ++it_current) {
-        if (compare_labels(it_current->first, label)) { return it_current; }
+dimn_t StreamSchema::width() const {
+    auto channels_width = width_without_param();
+    if (p_parameterization->needs_adding()) {
+        channels_width += 1;
     }
-    return it_end;
+    return channels_width;
 }
-typename StreamSchema::static_const_iterator
-StreamSchema::find_static(const string& label) const
-{
-    auto it_current = m_static_channels.cbegin();
-    const auto it_end = m_static_channels.cend();
-
-    for (; it_current != it_end; ++it_current) {
-        if (compare_labels(it_current->first, label)) { return it_current; }
-    }
-    return it_end;
+dimn_t StreamSchema::width_without_param() const {
+    return width_to_iterator(end());
 }
 
-dimn_t StreamSchema::width() const { return width_to_iterator(end()); }
+const scalars::ScalarType*
+StreamSchema::get_most_appropriate_scalar_type() const
+{
+    // Replace this with more sound logic based on channel data types.
+    return scalars::ScalarType::of<double>();
+}
 
 dimn_t StreamSchema::channel_to_stream_dim(dimn_t channel_no) const
 {
@@ -158,7 +153,7 @@ dimn_t StreamSchema::channel_variant_to_stream_dim(
     auto it = nth(channel_no);
 
     auto so_far = width_to_iterator(it);
-    RPY_CHECK(variant_no < it->second.num_variants());
+    RPY_CHECK(variant_no < it->second->num_variants());
     return so_far + variant_no;
 }
 
@@ -175,7 +170,7 @@ string StreamSchema::label_from_channel_it(
         const_iterator channel_it, dimn_t variant_id
 )
 {
-    return channel_it->first + channel_it->second.label_suffix(variant_id);
+    return channel_it->first + channel_it->second->label_suffix(variant_id);
 }
 
 string StreamSchema::label_of_stream_dim(dimn_t stream_dim) const
@@ -222,11 +217,13 @@ dimn_t StreamSchema::label_to_stream_dim(const string& label) const
     const string_view variant_label(
             &*variant_begin, static_cast<dimn_t>(label.end() - variant_begin)
     );
-    result += channel->second.variant_id_of_label(variant_label);
+    result += channel->second->variant_id_of_label(variant_label);
     return result;
 }
 
-StreamChannel& StreamSchema::insert(string label, StreamChannel&& channel_data)
+StreamChannel& StreamSchema::insert(
+        string label, std::unique_ptr<StreamChannel>&& channel_data
+)
 {
     RPY_CHECK(!m_is_final);
     if (label.empty()) { label = std::to_string(size()); }
@@ -235,70 +232,50 @@ StreamChannel& StreamSchema::insert(string label, StreamChannel&& channel_data)
     // Silly, but handle it gracefully.
 
     auto pos = find(label);
-    if (pos != end()) { return pos->second; }
+    if (pos != end()) { return *pos->second; }
 
-    return base_type::insert(pos, {std::move(label), std::move(channel_data)})
-            ->second;
+    return *base_type::insert(pos, {std::move(label), std::move(channel_data)})
+                    ->second;
 }
 
 intervals::RealInterval
 StreamSchema::adjust_interval(const intervals::Interval& arg) const
 {
-    if (p_context) { return p_context->convert_parameter_interval(arg); }
-    return intervals::RealInterval(arg);
+    return p_parameterization->convert_parameter_interval(arg);
 }
 
-StreamChannel& StreamSchema::insert(StreamChannel&& channel_data)
-{
-    return insert(std::to_string(width()), std::move(channel_data));
-}
 
 StreamChannel& StreamSchema::insert_increment(string label)
 {
-    return insert(std::move(label), StreamChannel(IncrementChannelInfo()));
+    return insert(std::move(label), std::make_unique<IncrementChannel>());
 }
 StreamChannel& StreamSchema::insert_value(string label)
 {
-    return insert(std::move(label), StreamChannel(ValueChannelInfo()));
+    return insert(std::move(label), std::make_unique<ValueChannel>());
 }
 StreamChannel& StreamSchema::insert_categorical(string label)
 {
-    return insert(std::move(label), StreamChannel(CategoricalChannelInfo()));
+    return insert(std::move(label), std::make_unique<CategoricalChannel>());
 }
 StreamChannel& StreamSchema::insert_lie(string label)
 {
-    return insert(std::move(label), StreamChannel(LieChannelInfo()));
+    return insert(std::move(label), std::make_unique<LieChannel>());
 }
 
-StaticChannel& StreamSchema::insert_static_value(string label)
-{
-    auto found = find_static(label);
-    auto end = end_static();
-
-    if (found != end) { return found->second; }
-
-    return m_static_channels
-            .insert(end, {std::move(label), StaticChannel(ValueChannelInfo())})
-            ->second;
-}
-StaticChannel& StreamSchema::insert_static_categorical(string label)
-{
-
-    auto found = find_static(label);
-    auto end = end_static();
-
-    if (found != end) { return found->second; }
-
-    return m_static_channels
-            .insert(end,
-                    {std::move(label), StaticChannel(CategoricalChannelInfo())})
-            ->second;
-}
 typename StreamSchema::lie_key
-StreamSchema::label_to_lie_key(const string& label)
+StreamSchema::label_to_lie_key(const string& label) const
 {
     auto idx = label_to_stream_dim(label);
     return static_cast<lie_key>(idx) + 1;
+}
+typename StreamSchema::lie_key StreamSchema::time_channel_to_lie_key() const
+{
+    if (!p_parameterization->needs_adding()) {
+        return lie_key();
+    }
+    RPY_CHECK(p_parameterization);
+
+    return static_cast<lie_key>(width_to_iterator(end())) + 1;
 }
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamSchema

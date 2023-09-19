@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lie_increment_stream.h"
 
@@ -37,6 +36,7 @@
 #include <roughpy/streams/stream.h>
 
 #include "args/kwargs_to_path_metadata.h"
+#include "scalars/parse_key_scalar_stream.h"
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 #include "stream.h"
@@ -84,21 +84,9 @@ static py::object lie_increment_stream_from_increments(
     options.max_nested = 2;
     options.allow_scalar = false;
 
-    auto buffer = python::py_to_buffer(data, options);
-
-    idimn_t increment_size = 0;
-    idimn_t num_increments = 0;
-
-    if (options.shape.empty()) {
-        increment_size = static_cast<idimn_t>(buffer.size());
-        num_increments = 1;
-    } else if (options.shape.size() == 1) {
-        increment_size = options.shape[0];
-        num_increments = 1;
-    } else {
-        increment_size = options.shape[1];
-        num_increments = options.shape[0];
-    }
+    //    auto buffer = python::py_to_buffer(data, options);
+    python::ParsedKeyScalarStream ks_stream;
+    python::parse_key_scalar_stream(ks_stream, data, options);
 
     if (md.scalar_type == nullptr) {
         if (options.type != nullptr) {
@@ -108,19 +96,23 @@ static py::object lie_increment_stream_from_increments(
         }
     }
 
-    RPY_CHECK(
-            buffer.size()
-            == static_cast<dimn_t>(increment_size * num_increments)
-    );
     RPY_CHECK(md.scalar_type != nullptr);
     if (!md.ctx) {
+        if (md.width == 0) {
+            md.width = static_cast<deg_t>(ks_stream.data_stream.max_row_size());
+        }
+
         if (md.width == 0 || md.depth == 0) {
-            RPY_THROW(py::value_error,
+            RPY_THROW(
+                    py::value_error,
                     "either ctx or both width and depth must be specified"
             );
         }
         md.ctx = algebra::get_context(md.width, md.depth, md.scalar_type);
     }
+
+    dimn_t num_increments = ks_stream.data_stream.row_count();
+
 
     auto effective_support
             = intervals::RealInterval::right_unbounded(0.0, md.interval_type);
@@ -134,23 +126,51 @@ static py::object lie_increment_stream_from_increments(
             buffer_to_indices(indices, info);
         } else if (py::isinstance<py::int_>(indices_arg)) {
             // Interpret this as a column in the data;
-            auto icol = indices_arg.cast<idimn_t>();
-            if (icol < 0) { icol += increment_size; }
-            if (icol < 0 || icol >= increment_size) {
-                RPY_THROW(py::value_error, "index out of bounds");
-            }
+            auto icol = indices_arg.cast<dimn_t>();
 
             indices.reserve(num_increments);
-            for (idimn_t i = 0; i < num_increments; ++i) {
-                indices.push_back(static_cast<param_t>(
-                        buffer[i * increment_size + icol].to_scalar_t()
-                ));
+
+            auto add_index = [&indices](param_t val) {
+                if (indices.empty()) {
+                    indices.push_back(val);
+                } else {
+                    indices.push_back(indices.back() + val);
+                }
+            };
+
+            for (dimn_t i = 0; i < num_increments; ++i) {
+                auto row = ks_stream.data_stream[i];
+
+                if (row.has_keys()) {
+
+                    const auto* begin = row.keys();
+                    const auto* end = begin + row.size();
+
+                    auto found = std::find(begin, end, icol + 1);
+
+                    if (found == end) {
+                        RPY_THROW(
+                                std::invalid_argument,
+                                "cannot find index column in provided data"
+                        );
+                    }
+
+                    const auto pos = static_cast<dimn_t>(found - begin);
+
+                    add_index(row[pos].to_scalar_t());
+                } else {
+                    RPY_CHECK(icol < row.size());
+                    add_index(row[icol].to_scalar_t());
+                }
             }
         } else if (py::isinstance<py::sequence>(indices_arg)) {
             indices = indices_arg.cast<std::vector<param_t>>();
         } else {
-            RPY_THROW(py::type_error,"unexpected type provided to 'indices' "
-                                 "argument");
+            RPY_THROW(
+                    py::type_error,
+                    "unexpected type provided to 'indices' "
+                    "argument"
+            );
         }
 
         if (!indices.empty()) {
@@ -163,23 +183,27 @@ static py::object lie_increment_stream_from_increments(
 
     if (indices.empty()) {
         indices.reserve(num_increments);
-        for (idimn_t i = 0; i < num_increments; ++i) {
-            indices.emplace_back(i);
-        }
-    } else if (static_cast<idimn_t>(indices.size()) != num_increments) {
-        RPY_THROW(py::value_error,"mismatch between number of rows in data and "
-                              "number of indices");
+        for (dimn_t i = 0; i < num_increments; ++i) { indices.emplace_back(i); }
+    } else if (indices.size() != num_increments) {
+        RPY_THROW(
+                py::value_error,
+                "mismatch between number of rows in data and "
+                "number of indices"
+        );
+    }
+
+    if (!md.schema) {
+        md.schema = std::make_shared<streams::StreamSchema>(md.width);
     }
 
     auto result = streams::Stream(streams::LieIncrementStream(
-            std::move(buffer).copy_or_move(), indices,
+            ks_stream.data_stream, indices,
             {md.width, effective_support, md.ctx, md.scalar_type,
              md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
-             md.resolution}
+             md.resolution},
+            md.schema
     ));
     if (md.support) { result.restrict_to(*md.support); }
-
-    if (options.cleanup) { options.cleanup(); }
 
     return py::reinterpret_steal<py::object>(
             python::RPyStream_FromStream(std::move(result))
