@@ -33,6 +33,8 @@
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/slice.h>
 
+#include <roughpy/device/device_handle.h>
+
 #include <functional>
 #include <iosfwd>
 #include <string>
@@ -52,17 +54,18 @@ template <typename T>
 inline const string& type_id_of() noexcept;
 
 struct RingCharacteristics {
-    bool is_field           : 1;
-    bool is_ordered         : 1;
-    bool has_sqrt           : 1;
-    bool is_complex         : 1;
-    unsigned int            : 28;
+    bool is_field : 1;
+    bool is_ordered : 1;
+    bool has_sqrt : 1;
+    bool is_complex : 1;
+    unsigned int : 28;
 };
 
 class RPY_EXPORT ScalarType
 {
     ScalarTypeInfo m_info;
     RingCharacteristics m_characteristics;
+    boost::intrusive_ptr<const device::DeviceHandle> p_device_handle;
 
 protected:
     /**
@@ -130,6 +133,16 @@ public:
     }
 
     /**
+     * @brief Get the handle to the underlying device for this scalar type
+     * @return Pointer to the device handle
+     */
+    RPY_NO_DISCARD boost::intrusive_ptr<const device::DeviceHandle>
+    device() const noexcept
+    {
+        return p_device_handle;
+    }
+
+    /**
      * @brief Get the size of a single scalar in bytes
      * @return number of bytes.
      */
@@ -177,7 +190,8 @@ public:
      * @param lhs Pointer to left hand scalar
      * @param rhs Pointer to right hand scalar
      */
-    virtual void swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count) const = 0;
+    virtual void swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count) const
+            = 0;
 
     virtual void
     convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const
@@ -236,7 +250,6 @@ public:
     virtual void
     assign(ScalarPointer target, long long numerator, long long denominator
     ) const = 0;
-
 
     /**
      * @brief Compute the unary minus of all values in an array and write the
@@ -303,7 +316,7 @@ public:
     ) const = 0;
 
     /**
-     * @brief Compute the divison of values in lhs by those in rhs
+     * @brief Compute the division of values in lhs by those in rhs
      * componentwise, with optional mask
      * @param dst Destination to write result
      * @param lhs Left hand side input,
@@ -394,7 +407,8 @@ namespace dtl {
 
 template <typename T>
 struct type_id_of_impl {
-    static const string& get_id() {
+    static const string& get_id()
+    {
         /*
          * The fallback implementation gets the type id by looking for the
          * type and querying for the id. This should not fail unless no type
@@ -454,7 +468,6 @@ struct type_id_of_impl<long>
               (sizeof(long) == sizeof(int)), type_id_of_impl<int>,
               type_id_of_impl<long long>> {
 };
-
 
 #undef ROUGHPY_MAKE_TYPE_ID_OF
 

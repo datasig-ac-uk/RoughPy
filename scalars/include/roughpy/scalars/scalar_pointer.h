@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_POINTER_H_
 #define ROUGHPY_SCALARS_SCALAR_POINTER_H_
@@ -51,7 +50,8 @@ enum PointerType : uint32_t
     BorrowedPointer = 0,
     OwnedPointer = 2,
     InterfacePointer = 4,
-    SimpleInteger = 8
+    SimpleInteger = 8,
+    DeviceBuffer = 16
 };
 
 enum IntegerSign : uint32_t
@@ -80,7 +80,23 @@ enum IntegerType : uint32_t
     //  SignedUnused        =   Signed | 7 << 4 | SimpleInteger
 };
 
+namespace {
+enum ScalarFlags : uint32_t {
+    Const           = 1 << 0,
+    Owned           = 1 << 1,
+    Interface       = 1 << 2,
+    DeviceBuffer    = 1 << 3,
+    SimpleInteger   = 1 << 4,
+    Signed          = 1 << 5,
+};
+}
+
+
 }// namespace flags
+
+
+
+
 
 class ScalarPointer
 {
@@ -112,6 +128,7 @@ protected:
     const ScalarType* p_type = nullptr;
     const void* p_data = nullptr;
     uint32_t m_flags = 0;
+    uint32_t m_extra = 0;
 
     //    Constness m_constness = IsMutable;
 
