@@ -64,6 +64,10 @@ public:
             Slice<dimn_t> arg_sizes, const KernelLaunchParams& params
     ) const override;
 
+    virtual void launch_kernel_sync(
+            void* content, Queue queue, Slice<void*> args,
+            Slice<dimn_t> arg_sizes, const KernelLaunchParams& params
+    ) const;
 };
 
 }// namespace device

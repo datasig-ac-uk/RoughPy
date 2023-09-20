@@ -59,3 +59,19 @@ rpy::device::Event rpy::device::CPUKernelInterface::launch_kernel_async(
         );
     }
 }
+void device::CPUKernelInterface::launch_kernel_sync(
+        void* content, Queue queue, Slice<void*> args, Slice<dimn_t> arg_sizes,
+        const KernelLaunchParams& params
+) const
+{
+    if (is_cl_kernel(content)) {
+        cl::kernel_interface()->launch_kernel_sync(
+                cl_kernel(content), queue, args, arg_sizes, params
+                );
+    } else {
+
+    }
+
+
+
+}
