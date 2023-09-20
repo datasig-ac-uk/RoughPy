@@ -17,6 +17,17 @@ add_roughpy_component(Device
     include/roughpy/device/macros.h
     include/roughpy/device/queue.h
     SOURCES
+    src/cpu/cpu_buffer.cpp
+    src/cpu/cpu_buffer.h
+    src/cpu/cpu_device.cpp
+    src/cpu/cpu_device.h
+    src/cpu/cpu_event.cpp
+    src/cpu/cpu_event.h
+    src/cpu/cpu_kernel.cpp
+    src/cpu/cpu_kernel.h
+    src/cpu/cpu_queue.cpp
+    src/cpu/cpu_queue.cpp
+    src/cpu/cpu_queue.h
     src/opencl/open_cl_device.cpp
     src/opencl/open_cl_device.h
     src/opencl/ocl_buffer.cpp

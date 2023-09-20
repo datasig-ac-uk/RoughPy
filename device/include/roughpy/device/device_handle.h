@@ -57,22 +57,22 @@ class RPY_EXPORT DeviceHandle : public
     const QueueInterface* p_queue_interface;
 
 protected:
-    RPY_NO_DISCARD const BufferInterface* buffer_interface() const noexcept
+    RPY_NO_DISCARD virtual const BufferInterface* buffer_interface() const noexcept
     {
         RPY_DBG_ASSERT(p_buffer_interface);
         return p_buffer_interface;
     }
-    RPY_NO_DISCARD const EventInterface* event_interface() const noexcept
+    RPY_NO_DISCARD virtual const EventInterface* event_interface() const noexcept
     {
         RPY_DBG_ASSERT(p_event_interface);
         return p_event_interface;
     }
-    RPY_NO_DISCARD const KernelInterface* kernel_interface() const noexcept
+    RPY_NO_DISCARD virtual const KernelInterface* kernel_interface() const noexcept
     {
         RPY_DBG_ASSERT(p_kernel_interface);
         return p_kernel_interface;
     }
-    RPY_NO_DISCARD const QueueInterface* queue_interface() const noexcept
+    RPY_NO_DISCARD virtual const QueueInterface* queue_interface() const noexcept
     {
         RPY_DBG_ASSERT(p_queue_interface);
         return p_queue_interface;

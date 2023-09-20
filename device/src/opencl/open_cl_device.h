@@ -35,12 +35,12 @@
 #include <roughpy/device/core.h>
 #include <roughpy/device/device_handle.h>
 #include <roughpy/device/kernel.h>
+#include <roughpy/device/queue.h>
+
 
 
 #include <unordered_map>
 #include <vector>
-
-#include <roughpy/device/queue.h>
 
 #include "opencl_headers.h"
 

@@ -33,13 +33,16 @@
 #ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_
 #define ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_
 
+#include <roughpy/device/core.h>
 #include <roughpy/device/buffer.h>
+#include <roughpy/device/device_handle.h>
 
 #include "open_cl_device.h"
 
 #include "opencl_headers.h"
 
 #include <utility>
+
 
 namespace rpy {
 namespace device {
