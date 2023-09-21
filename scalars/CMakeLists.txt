@@ -11,9 +11,11 @@ include(GenerateExportHeader)
 
 option(RPY_POLY_SCALARS "Build polynomial scalar types" ON)
 
-set(RPY_USE_MKL ${MKL_FOUND})
+if (BLA_SIZEOF_INTEGER EQUAL 8 OR MKL_INTERFACE STREQUAL ilp64)
+    set(RPY_LAPACK_USE_ILP64 1)
+endif()
 
-configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
+#configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
 add_roughpy_component(Scalars
     SOURCES
         src/linear_algebra/blas.h
@@ -89,14 +91,20 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_type_helper.h
         include/roughpy/scalars/key_scalar_stream.h
         include/roughpy/scalars.h
-    PUBLIC_DEPS
-        Boost::boost
-        Eigen3::Eigen
-        Libalgebra_lite::Libalgebra_lite
-        BLAS::BLAS
-        LAPACK::LAPACK
-    PRIVATE_DEPS
-        PCGRandom::pcg_random
+    DEPENDENCIES
+        PUBLIC
+            Boost::boost
+            Eigen3::Eigen
+            Libalgebra_lite::Libalgebra_lite
+            BLAS::BLAS
+            LAPACK::LAPACK
+        PRIVATE
+            PCGRandom::pcg_random
+    CONFIGURE
+        FILE
+            IN scalar_blas_defs.h.in
+            OUT scalar_blas_defs.h
+            ATONLY
     NEEDS
         RoughPy::Core
         RoughPy::Platform

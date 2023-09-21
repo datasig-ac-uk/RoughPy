@@ -74,7 +74,7 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/fallback_operations.h
         include/roughpy/algebra/algebra_base_impl.h
         include/roughpy/algebra/algebra_bundle_base_impl.h
-        PUBLIC_DEPS
+        DEPENDENCIES PUBLIC
         Boost::boost
         Libalgebra_lite::Libalgebra_lite
         NEEDS
