@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_STREAM_BASE_H_
 #define ROUGHPY_STREAMS_STREAM_BASE_H_
@@ -150,19 +149,9 @@ protected:
     // TODO: add methods for batch computing signatures via a computation tree
 
 public:
-    //    RPY_SERIAL_SERIALIZE_FN();
+        RPY_SERIAL_SERIALIZE_FN();
 };
 
-/**
- * @brief Subclass of `StreamInterface` for solutions of controlled differential
- * equations.
- */
-class RPY_EXPORT SolutionStreamInterface : public StreamInterface
-{
-public:
-    using StreamInterface::StreamInterface;
-    virtual algebra::Lie base_point() const = 0;
-};
 
 RPY_SERIAL_LOAD_FN_EXT(StreamMetadata)
 {
@@ -195,12 +184,15 @@ RPY_SERIAL_SAVE_FN_EXT(StreamMetadata)
     RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
 }
 
-// RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface) {
-//     RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
-//     RPY_SERIAL_SERIALIZE_NVP("schema", m_schema);
-// }
+ RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface) {
+     RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
+     RPY_SERIAL_SERIALIZE_NVP("schema", p_schema);
+ }
 
 }// namespace streams
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::StreamInterface,
+                            rpy::serial::specialization::member_serialize)
 
 #endif// ROUGHPY_STREAMS_STREAM_BASE_H_
