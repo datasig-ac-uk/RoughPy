@@ -165,8 +165,7 @@ protected:
     void load_cache(Archive& archive, const algebra::Context& ctx);
 
 public:
-    RPY_SERIAL_LOAD_FN();
-    RPY_SERIAL_SAVE_FN();
+    RPY_SERIAL_SERIALIZE_FN();
 };
 
 namespace dtl {
@@ -190,14 +189,8 @@ RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe)
 
 }// namespace dtl
 
-RPY_SERIAL_LOAD_FN_IMPL(DynamicallyConstructedStream) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(DynamicallyConstructedStream) {
     RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-    load_cache(archive, *metadata().default_context);
-}
-
-RPY_SERIAL_SAVE_FN_IMPL(DynamicallyConstructedStream) {
-    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-    store_cache(archive);
 }
 
 template <typename Archive>
@@ -247,7 +240,7 @@ void DynamicallyConstructedStream::load_cache(Archive& archive,
 }// namespace rpy
 
 RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::DynamicallyConstructedStream,
-                            rpy::serial::specialization::member_load_save)
+                            rpy::serial::specialization::member_serialize)
 RPY_SERIAL_CLASS_VERSION(rpy::streams::dtl::DataIncrementSafe, 0);
 
 
