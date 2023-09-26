@@ -94,7 +94,7 @@ RPY_SERIAL_SAVE_FN_IMPL(BrownianStream)
     auto state = p_generator->get_state();
     RPY_SERIAL_SERIALIZE_NVP("state", state);
 
-    this->store_cache(archive);
+//    this->store_cache(archive);
 }
 
 RPY_SERIAL_LOAD_FN_IMPL(BrownianStream)
@@ -120,7 +120,10 @@ RPY_SERIAL_LOAD_FN_IMPL(BrownianStream)
     p_generator = stype->get_rng(generator, {});
     p_generator->set_seed(seed);
     p_generator->set_state(state);
-    restore_cached(archive, *metadata().default_context);
+//    restore_cached(archive, *metadata().default_context);
+
+
+
 }
 
 }// namespace streams
