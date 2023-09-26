@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_
 #define ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_
@@ -58,8 +57,16 @@ class DyadicCachingLayer : public StreamInterface
     mutable std::map<intervals::DyadicInterval, algebra::Lie> m_cache;
     mutable std::recursive_mutex m_compute_lock;
 
+
 public:
     using StreamInterface::StreamInterface;
+
+protected:
+
+    DyadicCachingLayer() : StreamInterface(), m_cache(), m_compute_lock() {}
+
+
+public:
 
     DyadicCachingLayer(const DyadicCachingLayer&) = delete;
     DyadicCachingLayer(DyadicCachingLayer&& other) noexcept;
@@ -87,7 +94,24 @@ public:
     RPY_NO_DISCARD
     algebra::FreeTensor signature(const intervals::Interval& interval,
                                   const algebra::Context& ctx) const override;
+
+
+    RPY_SERIAL_LOAD_FN();
+    RPY_SERIAL_SAVE_FN();
+
 };
+
+RPY_SERIAL_LOAD_FN_IMPL(DyadicCachingLayer) {
+    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
+
+
+}
+
+RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer) {
+    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
+
+}
+
 
 }// namespace streams
 }// namespace rpy
