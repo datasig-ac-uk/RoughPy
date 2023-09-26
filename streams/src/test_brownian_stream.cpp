@@ -104,7 +104,6 @@ TEST_F(BrownianStreamTests, Serialization)
         oarch(bm);
     }
 
-    std::cout << ss.str() << '\n';
 
     BrownianHolder instream;
     {

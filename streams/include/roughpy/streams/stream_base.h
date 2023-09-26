@@ -106,7 +106,11 @@ public:
     {
         return p_schema;
     }
+
 protected:
+
+    StreamInterface() : m_metadata(), p_schema() {}
+
     void set_metadata(StreamMetadata&& md) noexcept;
 
     void set_schema(std::shared_ptr<StreamSchema> schema) noexcept

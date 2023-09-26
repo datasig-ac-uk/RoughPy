@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 13/04/23.
@@ -64,6 +63,10 @@ public:
                  const intervals::Interval& interval,
                  const StreamSchema& schema
                  ) override;
+
+
+    RPY_SERIAL_LOAD_FN();
+    RPY_SERIAL_SAVE_FN();
 };
 
 class SoundFileDataSourceFactory : public ExternalDataSourceFactory
@@ -88,9 +91,23 @@ public:
     Stream construct_stream(void* payload) const override;
 };
 
+RPY_SERIAL_SAVE_FN_IMPL(SoundFileDataSource) {
+
+}
+
+RPY_SERIAL_LOAD_FN_IMPL(SoundFileDataSource) {
+
+}
+
+
 
 
 }// namespace streams
 }// namespace rpy
+
+RPY_SERIAL_REGISTER_CLASS(rpy::streams::SoundFileDataSource)
+RPY_SERIAL_CLASS_RELATION(rpy::streams::ExternalDataStreamSource,
+                          rpy::streams::SoundFileDataSource)
+
 
 #endif// ROUGHPY_STREAMS_SRC_EXTERNAL_DATA_SOURCES_SOUND_FILE_DATA_SOURCE_H
