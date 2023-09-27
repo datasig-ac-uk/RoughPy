@@ -96,8 +96,8 @@ add_roughpy_component(Scalars
             Boost::boost
             Eigen3::Eigen
             Libalgebra_lite::Libalgebra_lite
-            BLAS::BLAS
-            LAPACK::LAPACK
+            BLAS::BLAS IF NOT ROUGHPY_DISABLE_BLAS
+            LAPACK::LAPACK IF NOT ROUGHPY_DISABLE_BLAS
         PRIVATE
             PCGRandom::pcg_random
     CONFIGURE

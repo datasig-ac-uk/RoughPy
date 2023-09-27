@@ -34,12 +34,15 @@
 
 #include "../../standard_linalg.h"
 
+#ifndef ROUGHPY_DISABLE_BLAS
 namespace rpy {
 namespace scalars {
+
 
 extern template class StandardLinearAlgebra<float, float>;
 
 }// namespace scalars
 }// namespace rpy
 
+#endif
 #endif// ROUGHPY_SCALARS_SRC_FLOAT_BLAS_H

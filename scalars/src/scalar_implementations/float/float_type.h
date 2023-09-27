@@ -33,6 +33,7 @@
 #define ROUGHPY_SCALARS_SRC_FLOAT_TYPE_H
 
 #include "../../standard_scalar_type.h"
+#include "scalar_blas_defs.h"
 
 namespace rpy {
 namespace scalars {
@@ -42,7 +43,9 @@ class FloatType : public StandardScalarType<float>
 public:
     FloatType();
 
+#ifndef ROUGHPY_DISABLE_BLAS
     std::unique_ptr<BlasInterface> get_blas() const override;
+#endif
 };
 
 }// namespace scalars
