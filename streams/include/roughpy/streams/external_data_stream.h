@@ -34,6 +34,7 @@
 #include "stream.h"
 #include <roughpy/core/traits.h>
 #include <roughpy/platform.h>
+#include <roughpy/platform/serialization.h>
 
 #include <memory>
 
@@ -50,7 +51,13 @@ public:
     query(scalars::KeyScalarArray& result, const intervals::Interval& interval,
           const StreamSchema& schema)
             = 0;
+
+
+    RPY_SERIAL_SERIALIZE_FN();
 };
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(ExternalDataStreamSource) {}
+
 
 class ExternalDataStreamConstructor;
 
