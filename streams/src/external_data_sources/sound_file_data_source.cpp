@@ -165,10 +165,12 @@ dimn_t SoundFileDataSource::query_impl(
     return static_cast<dimn_t>(frame_count);
 }
 
-
+SoundFileDataSource::SoundFileDataSource(const fs::path& path)
+    : m_path(path), m_handle(m_path.c_str())
+{}
 
 SoundFileDataSource::SoundFileDataSource(const url& uri)
-    : m_handle(uri.path().c_str())
+    : m_path(uri.path()), m_handle(m_path.c_str())
 {}
 
 SoundFileDataSource::SoundFileDataSource(SndfileHandle&& handle)
