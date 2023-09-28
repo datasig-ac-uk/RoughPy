@@ -195,7 +195,6 @@ TEST_F(LieIncrementStreamTests, TestSerializeAndDeserialize) {
         oarch(path);
     }
 
-    std::cout << ss.str() << '\n';
 
     streams::LieIncrementStream loaded;
     {
