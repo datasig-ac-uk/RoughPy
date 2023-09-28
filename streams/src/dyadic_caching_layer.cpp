@@ -32,6 +32,12 @@
 
 #include <roughpy/streams/dyadic_caching_layer.h>
 
+#include <boost/interprocess/sync/scoped_lock.hpp>
+#include <boost/interprocess/sync/sharable_lock.hpp>
+
+
+#include <fstream>
+
 using namespace rpy;
 using namespace rpy::streams;
 
@@ -120,4 +126,32 @@ DyadicCachingLayer::signature(const intervals::Interval& interval,
                               const algebra::Context& ctx) const
 {
     return signature(interval, metadata().default_resolution, ctx);
+}
+
+void DyadicCachingLayer::load_cache() const {
+    std::lock_guard<std::recursive_mutex> access(m_compute_lock);
+    auto path = get_config().stream_cache_dir() / to_string(m_cache_id);
+
+    if (!exists(path)) {
+        return;
+    }
+
+    boost::interprocess::sharable_lock<boost::interprocess::file_lock> fs_access(m_file_lock);
+
+    std::ifstream file_stream(path);
+    archives::BinaryInputArchive iar(file_stream);
+
+    iar(m_cache);
+}
+
+void DyadicCachingLayer::dump_cache() const {
+    std::lock_guard<std::recursive_mutex> access(m_compute_lock);
+    auto path = get_config().stream_cache_dir() / to_string(m_cache_id);
+
+    boost::interprocess::scoped_lock<boost::interprocess::file_lock> fs_access(m_file_lock);
+
+    std::ofstream file_stream(path);
+    archives::BinaryOutputArchive oar(file_stream);
+
+    oar(m_cache);
 }
