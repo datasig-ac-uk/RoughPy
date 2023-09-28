@@ -97,6 +97,8 @@ public:
                                   const algebra::Context& ctx) const override;
 
 
+    const uuids::uuid& cache_id() const noexcept { return m_cache_id; }
+
     RPY_SERIAL_LOAD_FN();
     RPY_SERIAL_SAVE_FN();
 
