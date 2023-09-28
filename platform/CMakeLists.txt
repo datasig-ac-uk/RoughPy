@@ -26,7 +26,6 @@ add_roughpy_component(Platform
     DEPENDENCIES
         PUBLIC
             Boost::boost
-            Boost::url
             Boost::system
             Boost::disable_autolinking
             Boost::filesystem IF NOT RPY_HAS_STD_FILESYSTEM

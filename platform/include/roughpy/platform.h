@@ -7,10 +7,16 @@
 
 #include <roughpy/core/helpers.h>
 
+#include <boost/dll/shared_library.hpp>
 #include <boost/url.hpp>
 #include <boost/url/parse.hpp>
 
-#include <boost/dll/shared_library.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/name_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 
 #include "platform/configuration.h"
 #include "platform/filesystem.h"
@@ -25,6 +31,9 @@ using boost::urls::parse_uri_reference;
 using URIScheme = boost::urls::scheme;
 
 using boost::dll::shared_library;
+
+
+namespace uuids = boost::uuids;
 
 }// namespace rpy
 

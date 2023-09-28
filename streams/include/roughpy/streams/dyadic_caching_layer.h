@@ -31,8 +31,11 @@
 #include <map>
 #include <mutex>
 
+#include <roughpy/platform.h>
 #include <roughpy/algebra/lie.h>
 #include <roughpy/intervals/dyadic_interval.h>
+
+#include <boost/interprocess/sync/file_lock.hpp>
 
 #include "stream_base.h"
 
@@ -57,13 +60,19 @@ class DyadicCachingLayer : public StreamInterface
     mutable std::map<intervals::DyadicInterval, algebra::Lie> m_cache;
     mutable std::recursive_mutex m_compute_lock;
 
+    uuids::uuid m_cache_id;
+    mutable boost::interprocess::file_lock m_file_lock;
 
 public:
     using StreamInterface::StreamInterface;
 
 protected:
 
-    DyadicCachingLayer() : StreamInterface(), m_cache(), m_compute_lock() {}
+    DyadicCachingLayer()
+        : StreamInterface(), m_cache(), m_compute_lock(),
+          m_cache_id(uuids::random_generator()()),
+          m_file_lock(to_string(m_cache_id).c_str())
+    {}
 
 
 public:
@@ -99,17 +108,26 @@ public:
     RPY_SERIAL_LOAD_FN();
     RPY_SERIAL_SAVE_FN();
 
+protected:
+
+    void load_cache() const;
+    void dump_cache() const;
+
 };
 
 RPY_SERIAL_LOAD_FN_IMPL(DyadicCachingLayer) {
     RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-
-
+    string tmp;
+    RPY_SERIAL_SERIALIZE_NVP("cache_id", tmp);
+    m_cache_id = uuids::string_generator()(tmp);
+    m_file_lock = boost::interprocess::file_lock(tmp.c_str());
+    load_cache();
 }
 
 RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer) {
     RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-
+    RPY_SERIAL_SERIALIZE_NVP("cache_id", to_string(m_cache_id));
+    dump_cache();
 }
 
 
