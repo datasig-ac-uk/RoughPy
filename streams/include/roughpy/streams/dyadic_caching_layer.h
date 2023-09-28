@@ -61,21 +61,13 @@ class DyadicCachingLayer : public StreamInterface
     mutable std::recursive_mutex m_compute_lock;
 
     uuids::uuid m_cache_id;
-    mutable boost::interprocess::file_lock m_file_lock;
 
 public:
     using StreamInterface::StreamInterface;
 
-protected:
 
-    DyadicCachingLayer()
-        : StreamInterface(), m_cache(), m_compute_lock(),
-          m_cache_id(uuids::random_generator()()),
-          m_file_lock(to_string(m_cache_id).c_str())
-    {}
+    DyadicCachingLayer();
 
-
-public:
 
     DyadicCachingLayer(const DyadicCachingLayer&) = delete;
     DyadicCachingLayer(DyadicCachingLayer&& other) noexcept;
@@ -120,7 +112,6 @@ RPY_SERIAL_LOAD_FN_IMPL(DyadicCachingLayer) {
     string tmp;
     RPY_SERIAL_SERIALIZE_NVP("cache_id", tmp);
     m_cache_id = uuids::string_generator()(tmp);
-    m_file_lock = boost::interprocess::file_lock(tmp.c_str());
     load_cache();
 }
 
@@ -133,4 +124,8 @@ RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer) {
 
 }// namespace streams
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(::rpy::streams::DyadicCachingLayer,
+                            rpy::serial::specialization::member_load_save)
+
 #endif// ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_
