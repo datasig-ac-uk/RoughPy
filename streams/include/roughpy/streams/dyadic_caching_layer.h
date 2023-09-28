@@ -61,21 +61,13 @@ class DyadicCachingLayer : public StreamInterface
     mutable std::recursive_mutex m_compute_lock;
 
     uuids::uuid m_cache_id;
-    mutable boost::interprocess::file_lock m_file_lock;
 
 public:
     using StreamInterface::StreamInterface;
 
-protected:
 
-    DyadicCachingLayer()
-        : StreamInterface(), m_cache(), m_compute_lock(),
-          m_cache_id(uuids::random_generator()()),
-          m_file_lock(to_string(m_cache_id).c_str())
-    {}
+    DyadicCachingLayer();
 
-
-public:
 
     DyadicCachingLayer(const DyadicCachingLayer&) = delete;
     DyadicCachingLayer(DyadicCachingLayer&& other) noexcept;
