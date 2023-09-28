@@ -65,8 +65,8 @@ public:
             StreamMetadata md, std::shared_ptr<StreamSchema> schema
             );
 
-    RPY_NO_DISCARD bool empty(const intervals::Interval& interval
-    ) const noexcept override;
+    RPY_NO_DISCARD bool
+    empty(const intervals::Interval& interval) const noexcept override;
 
 protected:
     RPY_NO_DISCARD algebra::Lie log_signature_impl(
