@@ -41,6 +41,18 @@
 using namespace rpy;
 using namespace rpy::streams;
 
+DyadicCachingLayer::DyadicCachingLayer()
+    : StreamInterface(), m_cache(), m_compute_lock(),
+          m_cache_id(uuids::random_generator()())
+{
+//    auto path = get_config().stream_cache_dir() / to_string(m_cache_id);
+//    {
+//        std::ofstream fs(path);
+//    }
+//
+//    m_file_lock = boost::interprocess::file_lock(path.c_str());
+}
+
 DyadicCachingLayer::DyadicCachingLayer(DyadicCachingLayer&& other) noexcept
     : StreamInterface(static_cast<StreamInterface&&>(other))
 {
@@ -136,7 +148,7 @@ void DyadicCachingLayer::load_cache() const {
         return;
     }
 
-    boost::interprocess::sharable_lock<boost::interprocess::file_lock> fs_access(m_file_lock);
+//    boost::interprocess::sharable_lock<boost::interprocess::file_lock> fs_access(m_file_lock);
 
     std::ifstream file_stream(path);
     archives::BinaryInputArchive iar(file_stream);
@@ -146,9 +158,16 @@ void DyadicCachingLayer::load_cache() const {
 
 void DyadicCachingLayer::dump_cache() const {
     std::lock_guard<std::recursive_mutex> access(m_compute_lock);
-    auto path = get_config().stream_cache_dir() / to_string(m_cache_id);
+    if (m_cache.empty()) { return; }
 
-    boost::interprocess::scoped_lock<boost::interprocess::file_lock> fs_access(m_file_lock);
+    auto path = get_config().stream_cache_dir();
+    if (!exists(path)) {
+        create_directories(path);
+    }
+    path /= to_string(m_cache_id);
+
+
+//    boost::interprocess::scoped_lock<boost::interprocess::file_lock> fs_access(m_file_lock);
 
     std::ofstream file_stream(path);
     archives::BinaryOutputArchive oar(file_stream);

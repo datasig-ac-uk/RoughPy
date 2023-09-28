@@ -79,8 +79,7 @@ public:
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 {
-    StreamMetadata md = metadata();
-    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
+    RPY_SERIAL_SERIALIZE_BASE(DyadicCachingLayer);
     RPY_SERIAL_SERIALIZE_NVP("data", m_data);
 }
 
@@ -89,20 +88,22 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 
 #ifndef RPY_DISABLE_SERIALIZATION
 
-RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::LieIncrementStream)
-{
-    using namespace rpy;
-    using namespace rpy::streams;
-
-    StreamMetadata md;
-    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
-    boost::container::flat_map<param_t, algebra::Lie> data;
-    RPY_SERIAL_SERIALIZE_VAL(data);
-
-    construct(std::move(md));
-}
-
+//RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::LieIncrementStream)
+//{
+//    using namespace rpy;
+//    using namespace rpy::streams;
+//
+//    StreamMetadata md;
+//    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
+//    boost::container::flat_map<param_t, algebra::Lie> data;
+//    RPY_SERIAL_SERIALIZE_VAL(data);
+//
+//    construct(std::move(md));
+//}
+//
 #endif
 RPY_SERIAL_REGISTER_CLASS(rpy::streams::LieIncrementStream)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::LieIncrementStream,
+                            rpy::serial::specialization::member_serialize)
 
 #endif// ROUGHPY_STREAMS_LIE_INCREMENT_STREAM_H_
