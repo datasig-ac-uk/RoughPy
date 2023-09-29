@@ -508,10 +508,20 @@ static PyObject* restrict(PyObject* self, PyObject* args, PyObject* kwargs)
 
 static PyObject* stream_getstate(PyObject* self, PyObject* RPY_UNUSED_VAR args)
 {
+    PyObject* data;
+
+    std::stringstream ss;
+    {
+        rpy::archives::BinaryOutputArchive oar(ss);
+        oar(reinterpret_cast<python::RPyStream*>(self)->m_data);
+    }
+
+    auto s = ss.str();
+    data = PyByteArray_FromStringAndSize(s.data(),
+                                         static_cast<Py_ssize_t>(s.size()));
 
 
-
-
+    return Py_BuildValue("{sO}", "data", data);
 }
 
 static PyObject* stream_setstate(PyObject* self, PyObject* args)
@@ -525,15 +535,14 @@ static PyObject* stream_setstate(PyObject* self, PyObject* args)
         return nullptr;
     }
 
-    rpy::streams::Stream stream;
     {
         std::string raw(PyByteArray_AS_STRING(data), PyByteArray_GET_SIZE(data));
         std::stringstream ss(raw);
         rpy::archives::BinaryInputArchive iar(ss);
-        iar(stream);
+        iar(reinterpret_cast<python::RPyStream*>(self)->m_data);
     }
 
-    return python::RPyStream_FromStream(std::move(stream));
+    Py_RETURN_NONE;
 }
 
 
