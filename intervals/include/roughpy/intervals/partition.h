@@ -21,6 +21,8 @@ private:
     intermediates_t m_intermediate_points;
 
 public:
+    Partition() = default;
+
     explicit Partition(RealInterval base);
     explicit Partition(RealInterval base, Slice<param_t> intermediate_points);
 
@@ -51,6 +53,26 @@ public:
     RPY_NO_DISCARD
     Partition merge(const Partition& other) const;
 
+
+    RPY_NO_DISCARD
+    bool operator=(const Partition& other) const noexcept {
+        if (static_cast<const RealInterval&>(*this) != other) {
+            return false;
+        }
+        if (m_intermediate_points.size() != other.m_intermediate_points.size()) {
+            return false;
+        }
+
+        auto lit = m_intermediate_points.begin();
+        auto lend = m_intermediate_points.end();
+        auto rit = other.m_intermediate_points.begin();
+
+        for (; lit != lend; ++lit, ++rit) {
+            if (*lit != *rit) { return false; }
+        }
+        return true;
+    }
+
     RPY_SERIAL_SERIALIZE_FN();
 };
 
@@ -58,6 +80,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(Partition) {
     RPY_SERIAL_SERIALIZE_BASE(RealInterval);
     RPY_SERIAL_SERIALIZE_NVP("intermediate_points", m_intermediate_points);
 }
+
 
 }// namespace intervals
 }// namespace rpy
