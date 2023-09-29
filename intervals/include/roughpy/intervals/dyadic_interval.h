@@ -34,7 +34,7 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
-#include <iosfwd>
+#include <ostream>
 #include <vector>
 
 namespace rpy {
@@ -135,11 +135,14 @@ bool operator<(const DyadicInterval& lhs, const DyadicInterval& rhs) noexcept;
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(DyadicInterval)
 {
+    RPY_SERIAL_SERIALIZE_BASE(Interval);
     RPY_SERIAL_SERIALIZE_BASE(Dyadic);
-    RPY_SERIAL_SERIALIZE_NVP("type", m_interval_type);
 }
 
 }// namespace intervals
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(::rpy::intervals::DyadicInterval,
+                            ::rpy::serial::specialization::member_serialize);
 
 #endif// ROUGHPY_INTERVALS_DYADIC_INTERVAL_H_

@@ -50,9 +50,19 @@ public:
 
     RPY_NO_DISCARD
     Partition merge(const Partition& other) const;
+
+    RPY_SERIAL_SERIALIZE_FN();
 };
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(Partition) {
+    RPY_SERIAL_SERIALIZE_BASE(RealInterval);
+    RPY_SERIAL_SERIALIZE_NVP("intermediate_points", m_intermediate_points);
+}
 
 }// namespace intervals
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(::rpy::intervals::Partition,
+                            ::rpy::serial::specialization::member_serialize);
 
 #endif// ROUGHPY_INTERVALS_PARTITION_H_
