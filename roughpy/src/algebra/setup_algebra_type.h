@@ -40,7 +40,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
-#include <rougphy/platform/serialization.h>
+#include <roughpy/platform/serialization.h>
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/scalars/scalar.h>
 
