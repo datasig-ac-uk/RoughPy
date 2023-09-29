@@ -32,6 +32,9 @@
 
 #include "partition.h"
 
+#include <pybind11/stl.h>
+#include <pybind11/operators.h>
+
 using namespace rpy;
 using namespace intervals;
 using namespace pybind11::literals;
@@ -77,4 +80,30 @@ void python::init_partition(py::module_& m)
         }
         return ss.str();
     });
+
+    cls.def(py::pickle(
+            [](const Partition& value) -> py::tuple {
+                return py::make_tuple(
+                        value.type(),
+                        value.inf(),
+                        value.sup(),
+                        value.intermediates()
+                        );
+            },
+            [](py::tuple state) -> Partition {
+                if (state.size() != 4) {
+                    throw std::runtime_error("invalid state");
+                }
+
+                return Partition(
+                        RealInterval(state[1].cast<param_t>(),
+                        state[2].cast<param_t>(),
+                        state[0].cast<intervals::IntervalType>()),
+                        state[3].cast<typename Partition::intermediates_t>()
+                        );
+            }
+            ));
+
+
+    cls.def(py::self == py::self);
 }
