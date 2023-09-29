@@ -30,8 +30,9 @@
 #define ROUGHPY_INTERVALS_INTERVAL_H_
 
 #include <roughpy/core/types.h>
+#include <roughpy/platform/serialization.h>
 
-#include <iosfwd>
+#include <ostream>
 
 namespace rpy {
 namespace intervals {
@@ -80,10 +81,17 @@ public:
     virtual bool operator==(const Interval& other) const;
     RPY_NO_DISCARD
     virtual bool operator!=(const Interval& other) const;
+
+    RPY_SERIAL_SERIALIZE_FN();
+
 };
 
 RPY_EXPORT
 std::ostream& operator<<(std::ostream& os, const Interval& interval);
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(Interval) {
+    RPY_SERIAL_SERIALIZE_NVP("type", m_interval_type);
+}
 
 }// namespace intervals
 }// namespace rpy
