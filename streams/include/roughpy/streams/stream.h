@@ -77,6 +77,9 @@ private:
     {}
 
 public:
+
+    Stream() = default;
+
     template <typename Impl>
     explicit Stream(Impl&& impl);
 
