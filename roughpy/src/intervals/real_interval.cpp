@@ -64,4 +64,26 @@ void python::init_real_interval(py::module_& m)
         ss << ')';
         return ss.str();
     });
+
+
+    klass.def(py::pickle(
+            [](const RealInterval& value) -> py::tuple {
+                return py::make_tuple(
+                        value.type(),
+                        value.inf(),
+                        value.sup()
+                        );
+            },
+            [](py::tuple state) -> RealInterval {
+                if (state.size() != 3) {
+                    throw std::runtime_error("invalid state");
+                }
+
+                return RealInterval(
+                        state[1].cast<param_t>(),
+                        state[2].cast<param_t>(),
+                        state[0].cast<intervals::IntervalType>()
+                        );
+            }
+            ));
 }
