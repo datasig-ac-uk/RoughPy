@@ -98,12 +98,15 @@ public:
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(RealInterval)
 {
-    RPY_SERIAL_SERIALIZE_NVP("type", m_interval_type);
+    RPY_SERIAL_SERIALIZE_BASE(Interval);
     RPY_SERIAL_SERIALIZE_NVP("inf", m_inf);
     RPY_SERIAL_SERIALIZE_NVP("sup", m_sup);
 }
 
 }// namespace intervals
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(::rpy::intervals::RealInterval,
+                            rpy::serial::specialization::member_serialize);
 
 #endif// ROUGHPY_INTERVALS_REAL_INTERVAL_H_
