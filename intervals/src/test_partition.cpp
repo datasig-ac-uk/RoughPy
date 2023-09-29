@@ -259,3 +259,22 @@ TEST(Partitions, TestMergeEqualWithInterlevedIntermediates) {
     EXPECT_EQ(intermediates[2], 0.4);
     EXPECT_EQ(intermediates[3], 0.6);
 }
+
+TEST(Partitions, TestSerialization) {
+    Partition outpart(RealInterval(0.0, 1.0), {0.2, 0.4});
+
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive oarch(ss);
+        oarch(outpart);
+    }
+
+
+    Partition inpart;
+    {
+        archives::JSONInputArchive iarch(ss);
+        iarch(inpart);
+    }
+
+    EXPECT_EQ(outpart, inpart);
+}
