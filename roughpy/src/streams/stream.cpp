@@ -505,6 +505,38 @@ static PyObject* restrict(PyObject* self, PyObject* args, PyObject* kwargs)
     return python::RPyStream_FromStream(stream.restrict(ivl));
 }
 
+
+static PyObject* stream_getstate(PyObject* self, PyObject* RPY_UNUSED_VAR args)
+{
+
+
+
+
+}
+
+static PyObject* stream_setstate(PyObject* self, PyObject* args)
+{
+    PyByteArrayObject* data;
+    int version = 1;
+
+    if (!PyArg_ParseTuple(args, "(iO!):__setstate__",
+                          &version,
+                          &PyByteArray_Type, &data)) {
+        return nullptr;
+    }
+
+    rpy::streams::Stream stream;
+    {
+        std::string raw(PyByteArray_AS_STRING(data), PyByteArray_GET_SIZE(data));
+        std::stringstream ss(raw);
+        rpy::archives::BinaryInputArchive iar(ss);
+        iar(stream);
+    }
+
+    return python::RPyStream_FromStream(std::move(stream));
+}
+
+
 static PyMethodDef RPyStream_members[] = {
         {           "signature",       (PyCFunction) &signature,METH_VARARGS | METH_KEYWORDS,
          SIGNATURE_DOC                                                                                            },
@@ -516,6 +548,8 @@ static PyMethodDef RPyStream_members[] = {
          METH_VARARGS | METH_KEYWORDS, SIMPLIFY_STREAM_DOC                                                        },
         {            "restrict",        (PyCFunction)& restrict, METH_VARARGS | METH_KEYWORDS,
          RESTRICT_DOC                                                                                             },
+        { "__getstate__", (PyCFunction) stream_getstate, METH_VARARGS, nullptr},
+        { "__setstate__", (PyCFunction) stream_setstate, METH_VARARGS, nullptr},
         {               nullptr,                        nullptr,                            0,             nullptr}
 };
 
