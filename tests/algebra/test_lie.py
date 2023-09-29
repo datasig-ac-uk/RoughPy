@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
@@ -183,3 +185,12 @@ def test_Lie_imul(width):
     expected = Lie(exp_data, width=width)
     l1 *= l2
     assert l1 == expected
+
+
+def test_Lie_pikle_roundtrip():
+
+    l = Lie(np.array([0.5, 0.6, 0.7]), width=3, depth=2, dtype=DPReal)
+
+    l2 = pickle.loads(pickle.dumps(l))
+
+    assert l == l2
