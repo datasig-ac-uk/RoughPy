@@ -249,3 +249,7 @@ Partition Partition::merge(const Partition& other) const
 
     return result;
 }
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME ::rpy::intervals::Partition
+#include <roughpy/platform/serialization_instantiations.inl>
