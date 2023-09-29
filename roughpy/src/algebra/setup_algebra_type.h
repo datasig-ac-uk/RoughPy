@@ -40,6 +40,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
+#include <rougphy/platform/serialization.h>
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/scalars/scalar.h>
 
@@ -233,6 +234,33 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
         return py::array(dtype);
     });
 #endif
+
+    klass.def(py::pickle(
+            [](const Alg& value) -> py::tuple {
+                std::stringstream ss;
+                {
+                    rpy::archives::BinaryOutputArchive oar(ss);
+                    oar(value);
+                }
+
+                return py::make_tuple(
+                        py::bytearray(ss.str())
+                        );
+            },
+            [](py::tuple state) -> Alg {
+                if (state.size() != 1) {
+                    throw std::runtime_error("invalid state");
+                }
+
+                Alg result;
+                {
+                    std::stringstream ss(state[0].cast<string>());
+                    rpy::archives::BinaryInputArchive iar(ss);
+                    iar(result);
+                }
+                return result;
+            }
+            ));
 
     // TODO: DLpack interface
 }
