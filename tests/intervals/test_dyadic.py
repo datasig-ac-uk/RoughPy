@@ -1,5 +1,6 @@
 import itertools
 import math
+import pickle
 
 import pytest
 
@@ -21,3 +22,13 @@ def test_rebase_dyadic(n):
     assert float(d) == 1.0
     assert d.n == n
     assert d.k == 1 << n
+
+
+
+def test_pickle_roundtrip():
+    d = Dyadic(17, 4)
+
+    data = pickle.dumps(d)
+    d2 = pickle.loads(data)
+
+    assert Dyadic.dyadic_equals(d, d2)

@@ -27,6 +27,7 @@ add_roughpy_component(Platform
         PUBLIC
             Boost::boost
             Boost::system
+            Boost::url
             Boost::disable_autolinking
             Boost::filesystem IF NOT RPY_HAS_STD_FILESYSTEM
             cereal::cereal
