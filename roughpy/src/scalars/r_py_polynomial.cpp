@@ -950,7 +950,7 @@ PyObject* monomial_repr(PyObject* self)
     ss << obj;
     return PyUnicode_FromFormat("Monomial(%s)", ss.str().c_str());
 }
-PyObject* monomial_degree(PyObject* self)
+PyObject* monomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
     PyErr_SetString(PyExc_NotImplementedError, "not implemented");
     return nullptr;
@@ -1582,7 +1582,7 @@ PyObject* polynomial_repr(PyObject* self)
     ss << obj;
     return PyUnicode_FromString(ss.str().c_str());
 }
-PyObject* polynomial_degree(PyObject* self)
+PyObject* polynomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
     const auto& obj = cast_poly(self);
     return PyLong_FromLong(obj.degree());
