@@ -7,7 +7,7 @@ import numpy as np
 from roughpy import LieIncrementStream, DPReal
 
 
-@pytest.mark.xfail("currently not implemented correctly")
+# @pytest.mark.xfail("currently not implemented correctly")
 def test_stream_pickle_roundtrip():
 
     data = np.array([
