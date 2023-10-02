@@ -657,6 +657,11 @@ static PyObject* RPyStream_repr(PyObject* self)
 }
 static PyObject* RPyStream_str(PyObject* self) { return RPyStream_repr(self); }
 
+static void RPyStream_finalize(PyObject* self)
+{
+    reinterpret_cast<python::RPyStream*>(self)->m_data.~Stream();
+}
+
 static PyObject*
 RPyStream_new(PyTypeObject* subtype, PyObject* args, PyObject* kwargs)
 {
@@ -742,6 +747,17 @@ PyTypeObject rpy::python::RPyStream_Type = {
         (initproc) nullptr,                       /* tp_init */
         nullptr,                                  /* tp_alloc */
         (newfunc) RPyStream_new,                  /* tp_new */
+        nullptr,                                  /* tp_free */
+        nullptr,                                  /* tp_is_gc */
+        nullptr,                                  /* tp_bases */
+        nullptr,                                  /* tp_mro */
+        nullptr,                                  /* tp_cache */
+        nullptr,                                  /* tp_subclasses */
+        nullptr,                                  /* tp_weaklist */
+        nullptr,                                  /* tp_del */
+        0,                                        /* tp_version_tag */
+        (destructor) RPyStream_finalize,          /* tp_finalize */
+        nullptr                                   /* tp_vectorcall */
 };
 }// extern "C"
 
