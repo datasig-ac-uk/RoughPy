@@ -162,14 +162,59 @@
 #define RPY_SERIAL_LOAD_FN_EXT(T)                                              \
     template <typename Archive>                                                \
     void load(                                                                 \
-            Archive& archive, T& value,                                        \
+            Archive& archive,                                                  \
+            T& value,                                                          \
             const std::uint32_t RPY_UNUSED_VAR version                         \
     )
 
 #define RPY_SERIAL_SAVE_FN_EXT(T)                                              \
     template <typename Archive>                                                \
     void save(                                                                 \
-            Archive& archive, const T& value,                                  \
+            Archive& archive,                                                  \
+            const T& value,                                                    \
+            const std::uint32_t RPY_UNUSED_VAR version                         \
+    )
+
+#define RPY_SERIAL_EXT_LIB_SERIALIZE_FN(T)                                     \
+    namespace cereal {                                                         \
+    template <typename Archive>                                                \
+    void serialize(                                                            \
+            Archive& archive,                                                  \
+            T& value,                                                          \
+            const std::uint32_t RPY_UNUSED_VAR version                         \
+    );                                                                         \
+    }                                                                          \
+    template <typename Archive>                                                \
+    void cereal::serialize(                                                    \
+            Archive& archive,                                                  \
+            T& value,                                                          \
+            const std::uint32_t version                                        \
+    )
+
+#define RPY_SERIAL_EXT_LIB_SAVE_FN(T)                                          \
+    namespace cereal {                                                         \
+    template <typename Archive>                                                \
+    void                                                                       \
+    save(Archive& archive,                                                     \
+         const T& value,                                                       \
+         const std::uint32_t RPY_UNUSED_VAR version);                          \
+    }                                                                          \
+    template <typename Archive>                                                \
+    void cereal::save(                                                         \
+            Archive& archive,                                                  \
+            const T& value,                                                    \
+            const std::uint32_t version                                        \
+    )
+
+#define RPY_SERIAL_EXT_LIB_LOAD_FN(T)                                          \
+    namespace cereal {                                                         \
+    template <typename Archive>                                                \
+    void load(Archive& archive, T& value, const std::uint32_t version);        \
+    }                                                                          \
+    template <typename Archive>                                                \
+    void cereal::load(                                                         \
+            Archive& archive,                                                  \
+            T& value,                                                          \
             const std::uint32_t RPY_UNUSED_VAR version                         \
     )
 
@@ -322,7 +367,6 @@ void load(
 
 }// namespace fs
 #  endif
-
 
 }// namespace rpy
 
