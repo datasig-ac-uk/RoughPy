@@ -95,7 +95,8 @@
                                                                                \
           template <typename Archive>                                          \
           static void load_and_construct(                                      \
-                  Archive& archive, ::cereal::construct<T>& construct,         \
+                  Archive& archive,                                            \
+                  ::cereal::construct<T>& construct,                           \
                   const std::uint32_t version                                  \
           );                                                                   \
       };                                                                       \
@@ -103,7 +104,8 @@
                                                                                \
       template <typename Archive>                                              \
       void cereal::LoadAndConstruct<T>::load_and_construct(                    \
-              Archive& archive, ::cereal::construct<T>& construct,             \
+              Archive& archive,                                                \
+              ::cereal::construct<T>& construct,                               \
               const std::uint32_t version                                      \
       )
 
@@ -136,7 +138,8 @@
 #define RPY_SERIAL_SERIALIZE_FN_IMPL(T)                                        \
     template <typename Archive>                                                \
     void T::serialize(                                                         \
-            Archive& archive, const std::uint32_t RPY_UNUSED_VAR version       \
+            Archive& archive,                                                  \
+            const std::uint32_t RPY_UNUSED_VAR version                         \
     )
 
 #define RPY_SERIAL_LOAD_FN_IMPL(T)                                             \
@@ -151,21 +154,67 @@
 #define RPY_SERIAL_SERIALIZE_FN_EXT(T)                                         \
     template <typename Archive>                                                \
     void serialize(                                                            \
-            Archive& archive, T& value,                                        \
+            Archive& archive,                                                  \
+            T& value,                                                          \
             const std::uint32_t RPY_UNUSED_VAR version                         \
     )
 
 #define RPY_SERIAL_LOAD_FN_EXT(T)                                              \
     template <typename Archive>                                                \
     void load(                                                                 \
-            Archive& archive, T& value,                                        \
+            Archive& archive,                                                  \
+            T& value,                                                          \
             const std::uint32_t RPY_UNUSED_VAR version                         \
     )
 
 #define RPY_SERIAL_SAVE_FN_EXT(T)                                              \
     template <typename Archive>                                                \
     void save(                                                                 \
-            Archive& archive, const T& value,                                  \
+            Archive& archive,                                                  \
+            const T& value,                                                    \
+            const std::uint32_t RPY_UNUSED_VAR version                         \
+    )
+
+#define RPY_SERIAL_EXT_LIB_SERIALIZE_FN(T)                                     \
+    namespace cereal {                                                         \
+    template <typename Archive>                                                \
+    void serialize(                                                            \
+            Archive& archive,                                                  \
+            T& value,                                                          \
+            const std::uint32_t RPY_UNUSED_VAR version                         \
+    );                                                                         \
+    }                                                                          \
+    template <typename Archive>                                                \
+    void cereal::serialize(                                                    \
+            Archive& archive,                                                  \
+            T& value,                                                          \
+            const std::uint32_t version                                        \
+    )
+
+#define RPY_SERIAL_EXT_LIB_SAVE_FN(T)                                          \
+    namespace cereal {                                                         \
+    template <typename Archive>                                                \
+    void                                                                       \
+    save(Archive& archive,                                                     \
+         const T& value,                                                       \
+         const std::uint32_t RPY_UNUSED_VAR version);                          \
+    }                                                                          \
+    template <typename Archive>                                                \
+    void cereal::save(                                                         \
+            Archive& archive,                                                  \
+            const T& value,                                                    \
+            const std::uint32_t version                                        \
+    )
+
+#define RPY_SERIAL_EXT_LIB_LOAD_FN(T)                                          \
+    namespace cereal {                                                         \
+    template <typename Archive>                                                \
+    void load(Archive& archive, T& value, const std::uint32_t version);        \
+    }                                                                          \
+    template <typename Archive>                                                \
+    void cereal::load(                                                         \
+            Archive& archive,                                                  \
+            T& value,                                                          \
             const std::uint32_t RPY_UNUSED_VAR version                         \
     )
 
@@ -210,8 +259,8 @@ using ByteSlice = Slice<byte>;
 #  ifndef RYP_DISABLE_SERIALIZATION
 template <typename Archive, typename T>
 enable_if_t<
-        ::cereal::traits::is_output_serializable<
-                ::cereal::BinaryData<T>, Archive>::value
+        ::cereal::traits::
+                is_output_serializable<::cereal::BinaryData<T>, Archive>::value
         && is_arithmetic<T>::value>
 save(Archive& archive, const Slice<T>& data)
 {
@@ -220,8 +269,8 @@ save(Archive& archive, const Slice<T>& data)
 
 template <typename Archive, typename T>
 enable_if_t<
-        !::cereal::traits::is_output_serializable<
-                ::cereal::BinaryData<T>, Archive>::value
+        !::cereal::traits::
+                is_output_serializable<::cereal::BinaryData<T>, Archive>::value
         || !is_arithmetic<T>::value>
 save(Archive& archive, const Slice<T>& data)
 {
@@ -230,8 +279,8 @@ save(Archive& archive, const Slice<T>& data)
 
 template <typename Archive, typename T>
 enable_if_t<
-        ::cereal::traits::is_input_serializable<
-                ::cereal::BinaryData<T>, Archive>::value
+        ::cereal::traits::
+                is_input_serializable<::cereal::BinaryData<T>, Archive>::value
         && is_arithmetic<T>::value>
 load(Archive& archive, Slice<T>& data)
 {
@@ -240,8 +289,8 @@ load(Archive& archive, Slice<T>& data)
 
 template <typename Archive, typename T>
 enable_if_t<
-        !::cereal::traits::is_input_serializable<
-                ::cereal::BinaryData<T>, Archive>::value
+        !::cereal::traits::
+                is_input_serializable<::cereal::BinaryData<T>, Archive>::value
         || !is_arithmetic<T>::value>
 load(Archive& archive, Slice<T>& data)
 {
@@ -252,7 +301,8 @@ load(Archive& archive, Slice<T>& data)
 namespace fs {
 template <typename Archive>
 void save(
-        Archive& archive, const path& value,
+        Archive& archive,
+        const path& value,
         const std::uint32_t RPY_UNUSED_VAR version
 )
 {
@@ -261,7 +311,8 @@ void save(
 
 template <typename Archive>
 void load(
-        Archive& archive, path& value,
+        Archive& archive,
+        path& value,
         const std::uint32_t RPY_UNUSED_VAR version
 )
 {
@@ -270,9 +321,8 @@ void load(
     value = path(tmp);
 }
 
-}
+}// namespace fs
 #  endif
-
 
 }// namespace rpy
 
