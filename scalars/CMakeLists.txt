@@ -33,6 +33,7 @@ add_roughpy_component(Scalars
         src/scalar_interface.cpp
         src/scalar.cpp
         src/scalar_pointer.cpp
+        src/scalar_serialization.cpp
         src/scalar.cpp
         src/scalar_interface.cpp
         src/scalar_array.cpp
