@@ -35,7 +35,9 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/helpers.h>
 #include <roughpy/platform/device.h>
+#include <roughpy/platform/serialization.h>
 
 #include <complex>
 
@@ -75,7 +77,6 @@ using float_complex = std::complex<float>;
 /// double precision complex float
 using double_complex = std::complex<double>;
 
-
 /// Monomial key-type of polynomials
 using monomial = lal::monomial;
 
@@ -112,7 +113,6 @@ enum class ScalarTypeCode : uint8_t
     Complex = 5U,
     Bool = 6U
 };
-
 
 /**
  * @brief Basic information for identifying the type, size, and
@@ -168,7 +168,6 @@ inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
 using conversion_function
         = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
 
-
 constexpr bool
 operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept
 {
@@ -182,19 +181,17 @@ operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept
  *
  *
  */
-RPY_EXPORT
-void register_type(const ScalarType* type);
+RPY_EXPORT void register_type(const ScalarType* type);
 
 /**
  * @brief Get a type registered with the scalar type system
  * @param id Id string of type to be retrieved
  * @return pointer to ScalarType representing id
  */
-RPY_EXPORT
-const ScalarType* get_type(const string& id);
+RPY_EXPORT const ScalarType* get_type(const string& id);
 
-RPY_EXPORT
-const ScalarType* get_type(const string& id, const platform::DeviceInfo& device);
+RPY_EXPORT const ScalarType*
+get_type(const string& id, const platform::DeviceInfo& device);
 
 /**
  * @brief Get a list of all registered ScalarTypes
@@ -210,13 +207,91 @@ id_from_basic_info(const BasicScalarInfo& info);
 RPY_NO_DISCARD RPY_EXPORT const conversion_function&
 get_conversion(const string& src_id, const string& dst_id);
 
-RPY_EXPORT
-void register_conversion(
-        const string& src_id, const string& dst_id,
+RPY_EXPORT void register_conversion(
+        const string& src_id,
+        const string& dst_id,
         conversion_function converter
 );
 
 }// namespace scalars
 }// namespace rpy
+
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::half) {
+    using namespace ::rpy;
+    using namespace ::rpy::scalars;
+
+    uint16_t tmp;
+    RPY_SERIAL_SERIALIZE_NVP("value", tmp);
+    value = bit_cast<half>(tmp);
+}
+
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::half) {
+    using namespace ::rpy;
+    using namespace ::rpy::scalars;
+    RPY_SERIAL_SERIALIZE_NVP("value", bit_cast<uint16_t>(value));
+}
+
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::bfloat16) {
+    using namespace ::rpy;
+    using namespace ::rpy::scalars;
+
+    uint16_t tmp;
+    RPY_SERIAL_SERIALIZE_NVP("value", tmp);
+    value = bit_cast<bfloat16>(tmp);
+}
+
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::bfloat16) {
+    using namespace ::rpy;
+    using namespace ::rpy::scalars;
+    RPY_SERIAL_SERIALIZE_NVP("value", bit_cast<uint16_t>(value));
+}
+
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::indeterminate_type)
+{
+    using namespace ::rpy::scalars;
+    using packed_type = typename indeterminate_type::packed_type;
+    using integral_type = typename indeterminate_type::integral_type;
+
+    packed_type symbol;
+    RPY_SERIAL_SERIALIZE_VAL(symbol);
+
+    integral_type index;
+    RPY_SERIAL_SERIALIZE_VAL(index);
+
+    value = indeterminate_type(symbol, index);
+}
+
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::indeterminate_type)
+{
+    using namespace ::rpy::scalars;
+    using packed_type = typename indeterminate_type::packed_type;
+    using integral_type = typename indeterminate_type::integral_type;
+    RPY_SERIAL_SERIALIZE_NVP("symbol", static_cast<packed_type>(value));
+    RPY_SERIAL_SERIALIZE_NVP("index", static_cast<integral_type>(value));
+}
+
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::monomial)
+{
+    using namespace ::rpy::scalars;
+
+    RPY_SERIAL_SERIALIZE_SIZE(value.type());
+
+    for (const auto& entry : value) {
+        RPY_SERIAL_SERIALIZE_VAL(entry);
+    }
+}
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial) {
+    using namespace ::rpy;
+    using namespace ::rpy::scalars;
+
+    size_t count;
+    RPY_SERIAL_SERIALIZE_SIZE(count);
+
+    pair<indeterminate_type, deg_t> entry(indeterminate_type(0, 0), 0);
+    for (size_t i=0; i<count; ++i) {
+        RPY_SERIAL_SERIALIZE_VAL(entry);
+        value[entry.first] = entry.second;
+    }
+}
 
 #endif// ROUGHPY_SCALARS_SCALARS_PREDEF_H
