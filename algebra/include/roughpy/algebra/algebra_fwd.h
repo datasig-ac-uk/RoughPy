@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,19 +18,19 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+#include <roughpy/platform/serialization.h>
 
 #include <memory>
 
@@ -45,7 +45,7 @@ enum class ImplementationType
     DeviceBorrowed
 };
 
-enum class VectorType
+enum class VectorType : uint16_t
 {
     Dense,
     Sparse
@@ -57,7 +57,7 @@ struct vector_type_tag {};
 /**
  * @brief Different algebra types required by RoughPy
  */
-enum class AlgebraType : uint32_t
+enum class AlgebraType : uint16_t
 {
     FreeTensor,
     ShuffleTensor,
@@ -103,7 +103,35 @@ class LieBundle;
 
 class ShuffleTensorBundle;
 
+
+RPY_SERIAL_SAVE_FN_EXT(VectorType) {
+    RPY_SERIAL_SERIALIZE_BARE(static_cast<uint16_t>(value));
+}
+
+RPY_SERIAL_LOAD_FN_EXT(VectorType) {
+    uint16_t tmp;
+    RPY_SERIAL_SERIALIZE_BARE(tmp);
+    value = static_cast<VectorType>(tmp);
+}
+
+
+RPY_SERIAL_SAVE_FN_EXT(AlgebraType) {
+    RPY_SERIAL_SERIALIZE_BARE(static_cast<uint16_t>(value));
+}
+
+RPY_SERIAL_LOAD_FN_EXT(AlgebraType) {
+    uint16_t tmp;
+    RPY_SERIAL_SERIALIZE_BARE(tmp);
+    value = static_cast<AlgebraType>(tmp);
+}
+
 }// namespace algebra
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::VectorType,
+                            rpy::serial::specialization::non_member_load_save);
+
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::AlgebraType,
+                            rpy::serial::specialization::non_member_load_save);
 
 #endif// ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_
