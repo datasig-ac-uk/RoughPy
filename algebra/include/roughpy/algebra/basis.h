@@ -126,6 +126,8 @@ public:
     virtual deg_t size(deg_t degree) const noexcept = 0;
     RPY_NO_DISCARD
     virtual let_t first_letter(const key_type& key) const noexcept = 0;
+    RPY_NO_DISCARD
+    virtual let_t to_letter(const key_type& key) const noexcept = 0;
 
     RPY_NO_DISCARD
     virtual dimn_t start_of_degree(deg_t degree) const noexcept = 0;
@@ -285,6 +287,9 @@ public:
     let_t first_letter(const key_type& key) const noexcept
     {
         return instance().first_letter(key);
+    }
+    RPY_NO_DISCARD let_t to_letter(const key_type& key) const noexcept {
+        return instance().to_letter(key);
     }
     RPY_NO_DISCARD
     dimn_t start_of_degree(deg_t degree) const noexcept

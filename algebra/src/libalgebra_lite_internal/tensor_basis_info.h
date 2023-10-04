@@ -171,6 +171,10 @@ struct BasisInfo<TensorBasis, lal::tensor_basis> {
         return basis->first_letter(convert_to_impl(basis, key));
     }
 
+    static let_t to_letter(storage_t basis, const our_key_type& key) {
+        return basis->to_letter(convert_to_impl(basis, key));
+    }
+
     /// Get the key type that represents letter
     static our_key_type key_of_letter(storage_t basis, let_t letter)
     {
