@@ -37,7 +37,6 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
-#include <roughpy/core/helpers.h>
 #include <roughpy/platform/device.h>
 #include <roughpy/platform/serialization.h>
 
@@ -219,38 +218,340 @@ RPY_EXPORT void register_conversion(
 
 }// namespace scalars
 }// namespace rpy
+//
+//RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::half)
+//{
+//    using namespace ::rpy;
+//    using namespace ::rpy::scalars;
+//
+//    uint16_t tmp;
+//    RPY_SERIAL_SERIALIZE_NVP("value", tmp);
+//    value = bit_cast<half>(tmp);
+//}
+//
+//RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::half)
+//{
+//    using namespace ::rpy;
+//    using namespace ::rpy::scalars;
+//    RPY_SERIAL_SERIALIZE_NVP("value", bit_cast<uint16_t>(value));
+//}
+//
+//RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::bfloat16)
+//{
+//    using namespace ::rpy;
+//    using namespace ::rpy::scalars;
+//
+//    uint16_t tmp;
+//    RPY_SERIAL_SERIALIZE_NVP("value", tmp);
+//    value = bit_cast<bfloat16>(tmp);
+//}
+//
+//RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::bfloat16)
+//{
+//    using namespace ::rpy;
+//    using namespace ::rpy::scalars;
+//    RPY_SERIAL_SERIALIZE_NVP("value", bit_cast<uint16_t>(value));
+//}
+//
+/*
+ * Here's the deal with rationals. Both GMP rationals and cpp_int rationals,
+ * the two implementations available through libalgebra-lite, store a pair of
+ * arbitrary precision integers as the numerator and denominator. The
+ * integers are an array of "limbs" that store the bits of the magnitude in
+ * little-endian order. The GMP implementation encodes the sign in the number
+ * of limbs, while the cpp_int implementation has a separate bool member.
+ *
+ * To serialize we can just save the sign, number of bytes per limb, number
+ * of limbs, and then the sequence of bytes from the limb array.
+ *
+ * To deserialize, we need to load the sign and number of bytes/limbs, and then
+ * work out how many limbs need to be allocated to accommodate the integer.
+ */
 
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::half) {
-    using namespace ::rpy;
-    using namespace ::rpy::scalars;
+namespace rpy {
+namespace scalars {
+namespace dtl {
 
-    uint16_t tmp;
-    RPY_SERIAL_SERIALIZE_NVP("value", tmp);
-    value = bit_cast<half>(tmp);
+template <typename Integer>
+class MPIntegerSerializationHelper
+{
+    Integer* ptr;
+
+public:
+    MPIntegerSerializationHelper(Integer* p) : ptr(p) {}
+    MPIntegerSerializationHelper(Integer& p) : ptr(&p) {}
+
+private:
+    using ptr_t = conditional_t<is_const<Integer>::value, const char*, char*>;
+
+#if RPY_USING_GMP
+    using limbs_t = mp_limb_t;
+#else
+    using limbs_t = boost::multiprecision::limb_type;
+#endif
+
+    ptr_t limbs() const noexcept
+    {
+#if RPY_USING_GMP
+        return reinterpret_cast<ptr_t>(mpz_limbs_read(ptr));
+#else
+        return reinterpret_cast<ptr_t>(ptr->limbs());
+#endif
+    }
+
+    bool is_negative() const noexcept
+    {
+#if RPY_USING_GMP
+        return mpz_sgn(ptr) < 0;
+#else
+        return ptr->sign();
+#endif
+    }
+
+    dimn_t size() const noexcept
+    {
+#if RPY_USING_GMP
+        return static_cast<dimn_t>(mpz_size(ptr));
+#else
+        return ptr->size();
+#endif
+    }
+
+    void resize(dimn_t new_size) noexcept
+    {
+#if RPY_USING_GMP
+        mpz_limbs_write(ptr, static_cast<mp_size_t>(new_size));
+#else
+        ptr->reszie(new_size, new_size);
+#endif
+    }
+
+    void finalize(dimn_t size, bool isneg) noexcept
+    {
+#if RPY_USING_GMP
+        mpz_limbs_finish(
+                ptr,
+                isneg ? -static_cast<mp_size_t>(size)
+                      : static_cast<mp_size_t>(size)
+        );
+#else
+        ptr->sign(isneg);
+#endif
+    }
+
+    dimn_t nbytes() const noexcept { return size() * sizeof(limbs_t); }
+
+public:
+    RPY_SERIAL_SAVE_FN()
+    {
+        RPY_SERIAL_SERIALIZE_NVP("is_negative", is_negative());
+        RPY_SERIAL_SERIALIZE_SIZE(nbytes());
+        RPY_SERIAL_SERIALIZE_BYTES("data", limbs(), nbytes());
+    }
+
+    RPY_SERIAL_LOAD_FN()
+    {
+        bool is_negative;
+        dimn_t size;
+
+        RPY_SERIAL_SERIALIZE_VAL(is_negative);
+        RPY_SERIAL_SERIALIZE_SIZE(size);
+
+        if (size > 0) {
+            auto n_limbs = (size + sizeof(limbs_t) - 1) / sizeof(limbs_t);
+            resize(n_limbs);
+            RPY_SERIAL_SERIALIZE_BYTES("data", limbs(), size);
+        }
+    }
+};
+}// namespace dtl
+}// namespace scalars
+}// namespace rpy
+//
+//RPY_SERIAL_EXT_LIB_SAVE_FN(rpy::scalars::rational_scalar_type)
+//{
+//    using namespace rpy;
+//    using namespace rpy::scalars;
+//    const auto& backend = value.backend();
+//
+//#if RPY_USING_GMP
+//    using helper_t = rpy::scalars::dtl::MPIntegerSerializationHelper<
+//            remove_pointer_t<mpz_srcptr>>;
+//
+//    RPY_SERIAL_SERIALIZE_NVP("numerator", helper_t(mpq_numref(backend.data())));
+//    RPY_SERIAL_SERIALIZE_NVP(
+//            "denominator",
+//            helper_t(mpq_denref(backend.data()))
+//    );
+//
+//    //    mpz_srcptr ptrs[]
+//    //            = {mpq_numref(backend.data()), mpq_denref(backend.data())};
+//    //    int64_t nbytes;
+//    //    mp_size_t size;
+//    //    const char* limb_bytes;
+//    //    for (int j = 0; j < 2; ++j) {
+//    //        size = mpz_size(ptrs[j]);
+//    //        nbytes = mpz_sgn(ptrs[j]) * size * sizeof(mp_limb_t);
+//    //        RPY_SERIAL_SERIALIZE_BARE(nbytes);
+//    //        limb_bytes = reinterpret_cast<const
+//    //        char*>(mpz_limbs_read(ptrs[j]));
+//    //
+//    //        for (idimn_t i = 0; i < size; ++i) {
+//    //            for (int b = 0; b < sizeof(mp_limb_t); ++b) {
+//    //                RPY_SERIAL_SERIALIZE_BARE(*(limb_bytes++));
+//    //            }
+//    //        }
+//    //    }
+//
+//#else
+//    const auto& num = backend.num();
+//    RPY_SERIAL_SERIALIZE_NVP(
+//            "numerator",
+//            ::rpy::dtl::mp_integer_holder(
+//                    num.sign() ? -1 : 1,
+//                    num.size(),
+//                    num.limbs()
+//            )
+//    );
+//
+//    const auto& denom = backend.denom();
+//    RPY_SERIAL_SERIALIZE_NVP(
+//            "denominator",
+//            ::rpy::dtl::mp_integer_holder(
+//                    denom.sign() ? -1 : 1,
+//                    denom.size(),
+//                    denom.limbs()
+//            )
+//    );
+//
+//#endif
+//}
+
+
+namespace cereal {
+
+template <typename Archive>
+void save(
+        Archive& archive,
+        const ::rpy::scalars::rational_scalar_type& value
+) {
+    using namespace rpy;
+    using namespace rpy::scalars;
+
+    const auto& backend = value.backend();
+    using helper_t = rpy::scalars::dtl::MPIntegerSerializationHelper<
+            remove_pointer_t<mpz_srcptr>>;
+
+    RPY_SERIAL_SERIALIZE_NVP("numerator", helper_t(mpq_numref(backend.data())));
+    RPY_SERIAL_SERIALIZE_NVP(
+            "denominator",
+            helper_t(mpq_denref(backend.data()))
+    );
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::half) {
-    using namespace ::rpy;
-    using namespace ::rpy::scalars;
-    RPY_SERIAL_SERIALIZE_NVP("value", bit_cast<uint16_t>(value));
+template <typename Archive>
+void load(
+        Archive& archive,
+        ::rpy::scalars::rational_scalar_type& value
+) {
+    using namespace rpy;
+    using namespace rpy::scalars;
+
+    auto& backend = value.backend();
+
+    using helper_t = rpy::scalars::dtl::MPIntegerSerializationHelper<
+            remove_pointer_t<mpz_ptr>>;
+
+    RPY_SERIAL_SERIALIZE_NVP("numerator", helper_t(mpq_numref(backend.data())));
+    RPY_SERIAL_SERIALIZE_NVP(
+            "denominator",
+            helper_t(mpq_denref(backend.data()))
+    );
+
+
+
 }
 
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::bfloat16) {
-    using namespace ::rpy;
-    using namespace ::rpy::scalars;
 
-    uint16_t tmp;
-    RPY_SERIAL_SERIALIZE_NVP("value", tmp);
-    value = bit_cast<bfloat16>(tmp);
+
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::bfloat16) {
-    using namespace ::rpy;
-    using namespace ::rpy::scalars;
-    RPY_SERIAL_SERIALIZE_NVP("value", bit_cast<uint16_t>(value));
-}
 
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::indeterminate_type)
+//
+//RPY_SERIAL_EXT_LIB_LOAD_FN(rpy::scalars::rational_scalar_type)
+//{
+//    using namespace rpy;
+//    using namespace rpy::scalars;
+//    auto& backend = value.backend();
+//
+//#if RPY_USING_GMP
+//
+//    using helper_t = rpy::scalars::dtl::MPIntegerSerializationHelper<
+//            remove_pointer_t<mpz_ptr>>;
+//
+//    RPY_SERIAL_SERIALIZE_NVP("numerator", helper_t(mpq_numref(backend.data())));
+//    RPY_SERIAL_SERIALIZE_NVP(
+//            "denominator",
+//            helper_t(mpq_denref(backend.data()))
+//    );
+//
+////    mpz_ptr ptrs[] = {mpq_numref(backend.data()), mpq_denref(backend.data())};
+////    int64_t signed_bytes;
+////    mp_size_t limbs = 0;
+////    bool is_negative = false;
+////    char* limb_bytes;
+////    int b = 0;
+////
+////    for (int j = 0; j < 2; ++j) {
+////        RPY_SERIAL_SERIALIZE_BARE(signed_bytes);
+////        if (signed_bytes == 0) { continue; }
+////        is_negative = signed_bytes < 0;
+////
+////        limbs = static_cast<mp_size_t>(
+////                (abs(signed_bytes) + sizeof(mp_limb_t) - 1) /
+////                sizeof(mp_limb_t)
+////        );
+////
+////        limb_bytes = reinterpret_cast<char*>(mpz_limbs_write(ptrs[j], limbs));
+////
+////        for (idimn_t limb_i = 0; limb_i < abs(signed_bytes); ++limb_i) {
+////            for (b = 0; b < sizeof(mp_limb_t); ++b) {
+////                RPY_SERIAL_SERIALIZE_BARE(*(limb_bytes++));
+////            }
+////        }
+////
+////        for (; b < sizeof(mp_limb_t); ++b) { *(limb_bytes++) = 0; }
+////
+////        mpz_limbs_finish(ptrs[j], is_negative ? -limbs : limbs);
+////    }
+////
+//#else
+//    using limb_t = boost::multiprecision::limb_type;
+//
+//    auto& num = backend.num();
+//    auto num_holder = rpy::dtl::mp_integer_holder<limb_t>([&num](int64_t n_limbs
+//                                                          ) {
+//        num.resize(static_cast<size_t>(n_limbs), static_cast<size_t>(n_limbs));
+//        return num.limbs();
+//    });
+//    RPY_SERIAL_SERIALIZE_NVP("numerator", num_holder);
+//    num.sign(num_holder.is_negative());
+//
+//    auto& denom = backend.num();
+//    auto denom_holder
+//            = rpy::dtl::mp_integer_holder<limb_t>([&denom](int64_t n_limbs) {
+//                  denom.resize(
+//                          static_cast<size_t>(n_limbs),
+//                          static_cast<size_t>(n_limbs)
+//                  );
+//                  return denom.limbs();
+//              });
+//    RPY_SERIAL_SERIALIZE_NVP("denominator", denom_holder);
+//    denom.sign(denom_holder.is_negative());
+//#endif
+//}
+
+RPY_SERIAL_EXT_LIB_LOAD_FN(rpy::scalars::indeterminate_type)
 {
     using namespace ::rpy::scalars;
     using packed_type = typename indeterminate_type::packed_type;
@@ -264,38 +565,37 @@ RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::indeterminate_type)
 
     value = indeterminate_type(symbol, index);
 }
-
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::indeterminate_type)
-{
-    using namespace ::rpy::scalars;
-    using packed_type = typename indeterminate_type::packed_type;
-    using integral_type = typename indeterminate_type::integral_type;
-    RPY_SERIAL_SERIALIZE_NVP("symbol", static_cast<packed_type>(value));
-    RPY_SERIAL_SERIALIZE_NVP("index", static_cast<integral_type>(value));
-}
-
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::monomial)
-{
-    using namespace ::rpy::scalars;
-
-    RPY_SERIAL_SERIALIZE_SIZE(value.type());
-
-    for (const auto& entry : value) {
-        RPY_SERIAL_SERIALIZE_VAL(entry);
-    }
-}
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial) {
-    using namespace ::rpy;
-    using namespace ::rpy::scalars;
-
-    size_t count;
-    RPY_SERIAL_SERIALIZE_SIZE(count);
-
-    pair<indeterminate_type, deg_t> entry(indeterminate_type(0, 0), 0);
-    for (size_t i=0; i<count; ++i) {
-        RPY_SERIAL_SERIALIZE_VAL(entry);
-        value[entry.first] = entry.second;
-    }
-}
+//
+//RPY_SERIAL_EXT_LIB_SAVE_FN(rpy::scalars::indeterminate_type)
+//{
+//    using namespace ::rpy::scalars;
+//    using packed_type = typename indeterminate_type::packed_type;
+//    using integral_type = typename indeterminate_type::integral_type;
+//    RPY_SERIAL_SERIALIZE_NVP("symbol", static_cast<packed_type>(value));
+//    RPY_SERIAL_SERIALIZE_NVP("index", static_cast<integral_type>(value));
+//}
+//
+//RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::monomial)
+//{
+//    using namespace ::rpy::scalars;
+//
+//    RPY_SERIAL_SERIALIZE_SIZE(value.type());
+//
+//    for (const auto& entry : value) { RPY_SERIAL_SERIALIZE_VAL(entry); }
+//}
+//RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial)
+//{
+//    using namespace ::rpy;
+//    using namespace ::rpy::scalars;
+//
+//    size_t count;
+//    RPY_SERIAL_SERIALIZE_SIZE(count);
+//
+//    pair<indeterminate_type, deg_t> entry(indeterminate_type(0, 0), 0);
+//    for (size_t i = 0; i < count; ++i) {
+//        RPY_SERIAL_SERIALIZE_VAL(entry);
+//        value[entry.first] = entry.second;
+//    }
+//}
 
 #endif// ROUGHPY_SCALARS_SCALARS_PREDEF_H
