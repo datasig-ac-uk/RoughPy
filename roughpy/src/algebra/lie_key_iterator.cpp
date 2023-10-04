@@ -43,7 +43,7 @@ static const char* LKEY_ITERATOR_DOC
 python::PyLieKeyIterator::PyLieKeyIterator(
         algebra::LieBasis basis, key_type current, key_type end
 )
-    : m_current(current), m_end(end), m_basis(move(basis))
+    : m_current(current), m_end(end), m_basis(std::move(basis))
 {
     auto dim = m_basis.dimension();
     if (m_end > m_basis.dimension()) {
@@ -54,8 +54,6 @@ python::PyLieKeyIterator::PyLieKeyIterator(
 static python::PyLieKey
 to_py_lie_key(key_type k, const algebra::LieBasis& lbasis)
 {
-    auto width = lbasis.width();
-
     if (lbasis.letter(k)) { return python::PyLieKey(lbasis, k); }
 
     auto lparent = *lbasis.lparent(k);
@@ -75,10 +73,10 @@ to_py_lie_key(key_type k, const algebra::LieBasis& lbasis)
 
 python::PyLieKey python::PyLieKeyIterator::next()
 {
-    if (m_current > m_end) { throw py::stop_iteration(); }
+     if (m_current > m_end) { throw py::stop_iteration(); }
     auto current = m_current;
     ++m_current;
-    return to_py_lie_key(current, m_basis);
+    return python::PyLieKey(m_basis, current);
 }
 
 void python::init_lie_key_iterator(py::module_& m)
