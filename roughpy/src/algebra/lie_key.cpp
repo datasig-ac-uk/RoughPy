@@ -194,7 +194,7 @@ parse_key(const algebra::LieBasis& lbasis, key_type key)
 {
     using namespace rpy::python;
     if (lbasis.letter(key)) {
-        return {PyLieLetter::from_letter(lbasis.first_letter(key))};
+        return {PyLieLetter::from_letter(lbasis.to_letter(key))};
     }
 
     auto keys = lbasis.parents(key);
@@ -205,8 +205,8 @@ parse_key(const algebra::LieBasis& lbasis, key_type key)
     const bool right_letter = lbasis.letter(right_key);
 
     if (left_letter && right_letter) {
-        return {PyLieLetter::from_letter(lbasis.first_letter(left_key)),
-                PyLieLetter::from_letter(lbasis.first_letter(right_key))};
+        return {PyLieLetter::from_letter(lbasis.to_letter(left_key)),
+                PyLieLetter::from_letter(lbasis.to_letter(right_key))};
     }
 
     typename PyLieKey::container_type result;
@@ -215,7 +215,7 @@ parse_key(const algebra::LieBasis& lbasis, key_type key)
         auto right_result = parse_key(lbasis, right_key);
 
         result.reserve(2 + right_result.size());
-        result.push_back(PyLieLetter::from_letter(lbasis.first_letter(left_key))
+        result.push_back(PyLieLetter::from_letter(lbasis.to_letter(left_key))
         );
         result.push_back(PyLieLetter::from_offset(1));
 
@@ -225,7 +225,7 @@ parse_key(const algebra::LieBasis& lbasis, key_type key)
 
         result.reserve(2 + left_result.size());
         result.push_back(PyLieLetter::from_offset(2));
-        result.push_back(PyLieLetter::from_letter(lbasis.first_letter(right_key)
+        result.push_back(PyLieLetter::from_letter(lbasis.to_letter(right_key)
         ));
 
         result.insert(result.cend(), left_result.begin(), left_result.end());
