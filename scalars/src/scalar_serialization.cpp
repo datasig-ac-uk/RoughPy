@@ -27,3 +27,8 @@ using namespace rpy::scalars;
 #define RPY_SERIAL_EXTERNAL cereal
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::rational_poly_scalar
+#define RPY_SERIAL_EXTERNAL cereal
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>
