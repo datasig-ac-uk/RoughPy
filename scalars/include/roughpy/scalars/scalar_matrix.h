@@ -101,6 +101,8 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
+RPY_SERIAL_EXTERN_SERIALIZE_CLS(ScalarMatrix)
+
 RPY_SERIAL_SERIALIZE_FN_IMPL(ScalarMatrix)
 {
     RPY_SERIAL_SERIALIZE_NVP("layout", m_layout);

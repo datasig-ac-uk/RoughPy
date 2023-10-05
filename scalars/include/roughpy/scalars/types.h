@@ -1,0 +1,186 @@
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+// this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
+// and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors
+// may be used to endorse or promote products derived from this software without
+// specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#ifndef ROUGHPY_SCALARS_TYPES_H_
+#define ROUGHPY_SCALARS_TYPES_H_
+
+#include <complex>
+
+#include <Eigen/Core>
+#include <libalgebra_lite/coefficients.h>
+#include <libalgebra_lite/packed_integer.h>
+#include <libalgebra_lite/polynomial.h>
+#include <libalgebra_lite/polynomial_basis.h>
+
+#include "scalar_type.h"
+
+#ifdef LAL_NO_USE_GMP
+#  define RPY_USING_GMP 0
+#else
+#  define RPY_USING_GMP 1
+#endif
+
+namespace rpy {
+namespace scalars {
+
+/// IEEE half-precision floating point type
+using Eigen::half;
+
+/// BFloat16 (truncated) floating point type
+using Eigen::bfloat16;
+
+/// Rational scalar type
+using rational_scalar_type = lal::rational_field::scalar_type;
+
+/// half-precision complex float
+using half_complex = std::complex<half>;
+
+/// BFloat16 complex float - probably not supported anywhere
+using bf16_complex = std::complex<bfloat16>;
+
+/// Single precision complex float
+using float_complex = std::complex<float>;
+
+/// double precision complex float
+using double_complex = std::complex<double>;
+
+/// Monomial key-type of polynomials
+using monomial = lal::monomial;
+
+/// Indeterminate type for monomials
+using indeterminate_type = typename monomial::letter_type;
+
+/// Polynomial (with rational coefficients) scalar type
+using rational_poly_scalar = lal::polynomial<lal::rational_field>;
+
+namespace dtl {
+#define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                    \
+    template <>                                                                \
+    struct RPY_EXPORT type_id_of_impl<TYPE> {                                  \
+        static const string& get_id() noexcept;                                \
+    }
+
+ROUGHPY_MAKE_TYPE_ID_OF(char, "i8");
+
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned char, "u8");
+
+ROUGHPY_MAKE_TYPE_ID_OF(short, "i16");
+
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned short, "u16");
+
+ROUGHPY_MAKE_TYPE_ID_OF(int, "i32");
+
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned int, "u32");
+
+ROUGHPY_MAKE_TYPE_ID_OF(long long, "i64");
+
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned long long, "u64");
+
+ROUGHPY_MAKE_TYPE_ID_OF(signed_size_type_marker, "isize");
+
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned_size_type_marker, "usize");
+
+ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
+
+ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
+
+ROUGHPY_MAKE_TYPE_ID_OF(half, "f16");
+
+ROUGHPY_MAKE_TYPE_ID_OF(bfloat16, "bf16");
+
+ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational");
+
+ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
+
+#undef ROUGHPY_MAKE_TYPE_ID_OF
+
+// Long is silly. On Win64 it is 32 bits (because, Microsoft) on Unix, it is 64
+// bits
+template <>
+struct type_id_of_impl<long> : public std::conditional_t<
+                                       (sizeof(long) == sizeof(int)),
+                                       type_id_of_impl<int>,
+                                       type_id_of_impl<long long>> {
+};
+
+template <>
+struct RPY_EXPORT scalar_type_holder<float> {
+    static const ScalarType* get_type() noexcept;
+};
+
+template <>
+struct RPY_EXPORT scalar_type_holder<double> {
+    static const ScalarType* get_type() noexcept;
+};
+
+template <>
+struct RPY_EXPORT scalar_type_holder<rational_scalar_type> {
+    static const ScalarType* get_type() noexcept;
+};
+
+template <>
+struct RPY_EXPORT scalar_type_holder<rational_poly_scalar> {
+    static const ScalarType* get_type() noexcept;
+};
+
+template <>
+struct RPY_EXPORT scalar_type_holder<half> {
+    static const ScalarType* get_type() noexcept;
+};
+
+template <>
+struct RPY_EXPORT scalar_type_holder<bfloat16> {
+    static const ScalarType* get_type() noexcept;
+};
+
+}// namespace dtl
+
+namespace dtl {
+
+template <typename T>
+struct type_id_of_impl {
+    static const string& get_id()
+    {
+        /*
+         * The fallback implementation gets the type id by looking for the
+         * type and querying for the id. This should not fail unless no type
+         * is associated with T, since all the cases where ScalarType::of<T>
+         * () is allowed to be nullptr are integer types, which are
+         * overloaded below.
+         */
+        const auto* type = ScalarType::of<T>();
+        RPY_CHECK(type != nullptr);
+        return type->id();
+    }
+};
+
+}// namespace dtl
+
+}// namespace scalars
+}// namespace rpy
+
+#endif// ROUGHPY_SCALARS_TYPES_H_

@@ -34,6 +34,8 @@
 
 #include "scalar_blas_defs.h"
 
+#include <roughpy/scalars/types.h>
+
 #ifndef ROUGHPY_DISABLE_BLAS
 #define RPY_BLAS_FUNC_(NAME) RPY_JOIN(cblas_, NAME)
 #define RPY_BLAS_FUNC(NAME) RPY_BLAS_FUNC_(RPY_JOIN(RPY_BLA_SPRX, NAME))

@@ -92,6 +92,8 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_type_helper.h
         include/roughpy/scalars/key_scalar_stream.h
         include/roughpy/scalars.h
+        include/roughpy/scalars/types.h
+        include/roughpy/scalars/serialization.h
     DEPENDENCIES
         PUBLIC
             Boost::boost
