@@ -32,6 +32,7 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/scalars/scalar_matrix.h>
+#include <roughpy/platform/archives.h>
 
 #include <sstream>
 

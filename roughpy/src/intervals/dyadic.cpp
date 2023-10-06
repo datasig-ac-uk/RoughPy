@@ -32,6 +32,7 @@
 #include <roughpy/intervals/dyadic.h>
 #include <sstream>
 
+
 using namespace rpy;
 using namespace rpy::intervals;
 using namespace pybind11::literals;
@@ -80,4 +81,23 @@ void python::init_dyadic(py::module_& m)
     klass.def("__iadd__", [](Dyadic& dia, multiplier_t val) {
         return dia.move_forward(val);
     });
+
+    klass.def(py::pickle(
+            [](const Dyadic& dyadic) -> py::tuple {
+                return py::make_tuple(
+                        dyadic.multiplier(), dyadic.power()
+                        );
+            },
+            [](py::tuple state) -> Dyadic {
+                if (state.size() != 2) {
+                    throw std::runtime_error("invalid state");
+                }
+
+                Dyadic result(state[0].cast<dyadic_multiplier_t>(),
+                        state[1].cast<dyadic_depth_t>());
+
+                return result;
+            }
+            ));
+
 }

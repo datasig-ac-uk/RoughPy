@@ -38,6 +38,8 @@
 
 #include <memory>
 
+#include "filesystem.h"
+
 namespace rpy {
 
 // Forward declaration
@@ -71,6 +73,8 @@ public:
     template <typename T>
     RPY_NO_DISCARD enable_if_t<is_constructible<T, string_view>::value, T>
     get_config_value(string_view property) const;
+
+    fs::path stream_cache_dir() const;
 
     // TODO: In the future, this will include methods for finding runtime
     // libraries like libcudart

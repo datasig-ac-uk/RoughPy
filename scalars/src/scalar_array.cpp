@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 28/02/23.
@@ -34,6 +33,9 @@
 #include <roughpy/scalars/scalar_type.h>
 
 #include <roughpy/core/alloc.h>
+#include <roughpy/platform/archives.h>
+
+#include <cereal/types/vector.hpp>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -100,6 +102,25 @@ rpy::scalars::ScalarArray rpy::scalars::ScalarArray::borrow_mut() noexcept
 // unsigned int version); template void
 // ScalarArray::serialize(boost::archive::text_iarchive& ar, const unsigned int
 // version);
+
+RPY_SERIAL_SAVE_FN_IMPL(ScalarArray)
+{
+    RPY_SERIAL_SERIALIZE_NVP("type_id", get_type_id());
+    RPY_SERIAL_SERIALIZE_NVP("size", m_size);
+    auto bytes = to_raw_bytes(m_size);
+    RPY_SERIAL_SERIALIZE_NVP("raw_data", bytes);
+}
+
+RPY_SERIAL_LOAD_FN_IMPL(ScalarArray)
+{
+    string type_id;
+    RPY_SERIAL_SERIALIZE_NVP("type_id", type_id);
+    RPY_SERIAL_SERIALIZE_NVP("size", m_size);
+
+    std::vector<byte> tmp;
+    RPY_SERIAL_SERIALIZE_NVP("raw_data", tmp);
+    update_from_bytes(type_id, m_size, tmp);
+}
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::ScalarArray
 #define RPY_SERIAL_DO_SPLIT

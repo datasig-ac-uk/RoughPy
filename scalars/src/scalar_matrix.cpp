@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 12/04/23.
@@ -89,37 +88,37 @@ rpy::scalars::ScalarPointer rpy::scalars::ScalarMatrix::data()
     return rpy::scalars::ScalarPointer();
 }
 
-static void transpose_fallback(rpy::scalars::ScalarMatrix& matrix)
-{
-    const auto M = matrix.nrows();
-    const auto N = matrix.ncols();
-
-    const auto* type = matrix.type();
-    rpy::scalars::ScalarPointer ptr(matrix);
-    if (M == N) {
-        for (rpy::deg_t i = 0; i < M; ++i) {
-            for (rpy::deg_t j = i + 1; j < N; ++j) {
-                type->swap(
-                        ptr + static_cast<rpy::dimn_t>(i * N + j),
-                        ptr + static_cast<rpy::dimn_t>(j * N + i), 1
-                );
-            }
-        }
-    } else {
-        rpy::scalars::ScalarMatrix tmp(type, N, M, matrix.layout());
-
-        for (rpy::deg_t i = 0; i < M; ++i) {
-            for (rpy::deg_t j = 0; j < N; ++j) {
-                type->convert_copy(
-                        tmp + static_cast<rpy::dimn_t>(j * M + i),
-                        ptr + static_cast<rpy::dimn_t>(i * N + j), 1
-                );
-            }
-        }
-
-        matrix = std::move(tmp);
-    }
-}
+//static void transpose_fallback(rpy::scalars::ScalarMatrix& matrix)
+//{
+//    const auto M = matrix.nrows();
+//    const auto N = matrix.ncols();
+//
+//    const auto* type = matrix.type();
+//    rpy::scalars::ScalarPointer ptr(matrix);
+//    if (M == N) {
+//        for (rpy::deg_t i = 0; i < M; ++i) {
+//            for (rpy::deg_t j = i + 1; j < N; ++j) {
+//                type->swap(
+//                        ptr + static_cast<rpy::dimn_t>(i * N + j),
+//                        ptr + static_cast<rpy::dimn_t>(j * N + i), 1
+//                );
+//            }
+//        }
+//    } else {
+//        rpy::scalars::ScalarMatrix tmp(type, N, M, matrix.layout());
+//
+//        for (rpy::deg_t i = 0; i < M; ++i) {
+//            for (rpy::deg_t j = 0; j < N; ++j) {
+//                type->convert_copy(
+//                        tmp + static_cast<rpy::dimn_t>(j * M + i),
+//                        ptr + static_cast<rpy::dimn_t>(i * N + j), 1
+//                );
+//            }
+//        }
+//
+//        matrix = std::move(tmp);
+//    }
+//}
 
 rpy::scalars::ScalarMatrix::~ScalarMatrix()
 {

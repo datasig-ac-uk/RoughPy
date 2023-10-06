@@ -15,6 +15,7 @@ add_roughpy_component(Platform
         src/device.cpp
         src/cpu_device/CPUDevice.cpp
         src/cpu_device/CPUDevice.h
+        src/fs_path_serialization.cpp
     PUBLIC_HEADERS
         include/roughpy/platform.h
         include/roughpy/platform/filesystem.h
@@ -25,8 +26,8 @@ add_roughpy_component(Platform
     DEPENDENCIES
         PUBLIC
             Boost::boost
-            Boost::url
             Boost::system
+            Boost::url
             Boost::disable_autolinking
             Boost::filesystem IF NOT RPY_HAS_STD_FILESYSTEM
             cereal::cereal

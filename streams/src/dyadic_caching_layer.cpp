@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 10/03/23.
@@ -32,8 +31,30 @@
 
 #include <roughpy/streams/dyadic_caching_layer.h>
 
+#include <boost/interprocess/sync/scoped_lock.hpp>
+#include <boost/interprocess/sync/sharable_lock.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+#include <cereal/types/map.hpp>
+
+
+#include <fstream>
+
 using namespace rpy;
 using namespace rpy::streams;
+
+DyadicCachingLayer::DyadicCachingLayer()
+    : StreamInterface(), m_cache(), m_compute_lock(),
+          m_cache_id(uuids::random_generator()())
+{
+//    auto path = get_config().stream_cache_dir() / to_string(m_cache_id);
+//    {
+//        std::ofstream fs(path);
+//    }
+//
+//    m_file_lock = boost::interprocess::file_lock(path.c_str());
+}
 
 DyadicCachingLayer::DyadicCachingLayer(DyadicCachingLayer&& other) noexcept
     : StreamInterface(static_cast<StreamInterface&&>(other))
@@ -121,3 +142,59 @@ DyadicCachingLayer::signature(const intervals::Interval& interval,
 {
     return signature(interval, metadata().default_resolution, ctx);
 }
+
+void DyadicCachingLayer::load_cache() const {
+    std::lock_guard<std::recursive_mutex> access(m_compute_lock);
+    auto path = get_config().stream_cache_dir() / to_string(m_cache_id);
+
+    if (!exists(path)) {
+        return;
+    }
+
+//    boost::interprocess::sharable_lock<boost::interprocess::file_lock> fs_access(m_file_lock);
+
+    std::ifstream file_stream(path);
+    archives::BinaryInputArchive iar(file_stream);
+
+    iar(m_cache);
+}
+
+void DyadicCachingLayer::dump_cache() const {
+    std::lock_guard<std::recursive_mutex> access(m_compute_lock);
+    if (m_cache.empty()) { return; }
+
+    auto path = get_config().stream_cache_dir();
+    if (!exists(path)) {
+        create_directories(path);
+    }
+    path /= to_string(m_cache_id);
+
+
+//    boost::interprocess::scoped_lock<boost::interprocess::file_lock> fs_access(m_file_lock);
+
+    std::ofstream file_stream(path);
+    archives::BinaryOutputArchive oar(file_stream);
+
+    oar(m_cache);
+}
+
+
+
+RPY_SERIAL_LOAD_FN_IMPL(DyadicCachingLayer) {
+    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
+    string tmp;
+    RPY_SERIAL_SERIALIZE_NVP("cache_id", tmp);
+    m_cache_id = uuids::string_generator()(tmp);
+    load_cache();
+}
+
+RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer) {
+    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
+    RPY_SERIAL_SERIALIZE_NVP("cache_id", to_string(m_cache_id));
+    dump_cache();
+}
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::DyadicCachingLayer
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>

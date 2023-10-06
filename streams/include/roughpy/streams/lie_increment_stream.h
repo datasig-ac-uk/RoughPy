@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_LIE_INCREMENT_STREAM_H_
 #define ROUGHPY_STREAMS_LIE_INCREMENT_STREAM_H_
@@ -65,8 +64,8 @@ public:
             StreamMetadata md, std::shared_ptr<StreamSchema> schema
             );
 
-    RPY_NO_DISCARD bool empty(const intervals::Interval& interval
-    ) const noexcept override;
+    RPY_NO_DISCARD bool
+    empty(const intervals::Interval& interval) const noexcept override;
 
 protected:
     RPY_NO_DISCARD algebra::Lie log_signature_impl(
@@ -77,10 +76,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
+RPY_SERIAL_EXTERN_SERIALIZE_CLS(LieIncrementStream)
+
 RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 {
-    StreamMetadata md = metadata();
-    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
+    RPY_SERIAL_SERIALIZE_BASE(DyadicCachingLayer);
     RPY_SERIAL_SERIALIZE_NVP("data", m_data);
 }
 
@@ -89,20 +89,22 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 
 #ifndef RPY_DISABLE_SERIALIZATION
 
-RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::LieIncrementStream)
-{
-    using namespace rpy;
-    using namespace rpy::streams;
-
-    StreamMetadata md;
-    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
-    boost::container::flat_map<param_t, algebra::Lie> data;
-    RPY_SERIAL_SERIALIZE_VAL(data);
-
-    construct(std::move(md));
-}
-
+//RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::LieIncrementStream)
+//{
+//    using namespace rpy;
+//    using namespace rpy::streams;
+//
+//    StreamMetadata md;
+//    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
+//    boost::container::flat_map<param_t, algebra::Lie> data;
+//    RPY_SERIAL_SERIALIZE_VAL(data);
+//
+//    construct(std::move(md));
+//}
+//
 #endif
 RPY_SERIAL_REGISTER_CLASS(rpy::streams::LieIncrementStream)
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::LieIncrementStream,
+                            rpy::serial::specialization::member_serialize)
 
 #endif// ROUGHPY_STREAMS_LIE_INCREMENT_STREAM_H_

@@ -87,4 +87,26 @@ void python::init_dyadic_interval(py::module_& m)
                                            itype);
             },
             "inf"_a, "sup"_a, "resolution"_a, "interval_type"_a);
+
+
+    klass.def(py::pickle(
+            [](const DyadicInterval& value) -> py::tuple {
+                return py::make_tuple(
+                        value.type(),
+                        static_cast<const Dyadic&>(value)
+                        );
+            },
+            [](py::tuple state) -> DyadicInterval {
+                if (state.size() != 2) {
+                    throw std::runtime_error("invalid state");
+                }
+
+                return DyadicInterval (
+                        state[1].cast<Dyadic>(),
+                        state[0].cast<intervals::IntervalType>()
+                        );
+            }
+            ));
+
+
 }

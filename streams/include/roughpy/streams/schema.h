@@ -198,6 +198,8 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
+RPY_SERIAL_EXTERN_SERIALIZE_CLS(StreamSchema)
+
 RPY_SERIAL_SERIALIZE_FN_IMPL(StreamSchema)
 {
     RPY_SERIAL_SERIALIZE_NVP("channels", static_cast<base_type&>(*this));

@@ -23,7 +23,7 @@ option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Buildg the pymodule in the project roughpy directory" OFF)
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
-option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" OFF)
+option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 cmake_dependent_option(ROUGHPY_PREFER_ACCELERATE
     "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
 

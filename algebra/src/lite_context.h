@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 06/03/23.
@@ -39,6 +38,7 @@
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_stream.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/types.h>
 
 #include <roughpy/algebra/algebra_base.h>
 #include <roughpy/algebra/algebra_impl.h>
@@ -930,7 +930,7 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::free_multiply(
 ) const
 {
     return binary_invoker::eval(
-            this, wrappers::FreeMultiply(), move(left), move(right)
+            this, wrappers::FreeMultiply(), std::move(left), std::move(right)
     );
 }
 template <typename Coefficients>
@@ -940,7 +940,7 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::shuffle_multiply(
 ) const
 {
     return binary_invoker::eval(
-            this, wrappers::ShuffleMultiply(), move(left), move(right)
+            this, wrappers::ShuffleMultiply(), std::move(left), std::move(right)
     );
 }
 template <typename Coefficients>
@@ -950,7 +950,7 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::half_shuffle_multiply(
 ) const
 {
     return binary_invoker::eval(
-            this, wrappers::HalfShuffleMultiply(), move(left), move(right)
+            this, wrappers::HalfShuffleMultiply(), std::move(left), std::move(right)
     );
 }
 template <typename Coefficients>
@@ -960,8 +960,8 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::adjoint_to_left_multiply_by(
 ) const
 {
     return binary_invoker::eval(
-            this, wrappers::AdjointFreeMultiply(), move(multiplier),
-            move(argument)
+            this, wrappers::AdjointFreeMultiply(), std::move(multiplier),
+            std::move(argument)
     );
 }
 

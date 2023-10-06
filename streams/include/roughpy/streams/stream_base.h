@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_STREAM_BASE_H_
 #define ROUGHPY_STREAMS_STREAM_BASE_H_
@@ -83,14 +82,21 @@ class RPY_EXPORT StreamInterface
     std::shared_ptr<StreamSchema> p_schema;
 
 public:
-    RPY_NO_DISCARD
-    const StreamMetadata& metadata() const noexcept { return m_metadata; }
-    RPY_NO_DISCARD
-    const StreamSchema& schema() const noexcept { return *p_schema; }
+    RPY_NO_DISCARD const StreamMetadata& metadata() const noexcept
+    {
+        return m_metadata;
+    }
+    RPY_NO_DISCARD const StreamSchema& schema() const noexcept
+    {
+        return *p_schema;
+    }
 
-    explicit StreamInterface(StreamMetadata md,
-                             std::shared_ptr<StreamSchema> schema)
-        : m_metadata(std::move(md)), p_schema(std::move(schema))
+    explicit StreamInterface(
+            StreamMetadata md,
+            std::shared_ptr<StreamSchema> schema
+    )
+        : m_metadata(std::move(md)),
+          p_schema(std::move(schema))
     {
         RPY_DBG_ASSERT(p_schema);
     }
@@ -101,13 +107,16 @@ public:
     {}
 
     virtual ~StreamInterface() noexcept;
-    RPY_NO_DISCARD
-    virtual bool empty(const intervals::Interval& interval) const noexcept;
+    RPY_NO_DISCARD virtual bool empty(const intervals::Interval& interval
+    ) const noexcept;
     std::shared_ptr<StreamSchema> get_schema() const noexcept
     {
         return p_schema;
     }
+
 protected:
+    StreamInterface() : m_metadata(), p_schema() {}
+
     void set_metadata(StreamMetadata&& md) noexcept;
 
     void set_schema(std::shared_ptr<StreamSchema> schema) noexcept
@@ -115,92 +124,67 @@ protected:
         p_schema = std::move(schema);
     }
 
-
-
-    RPY_NO_DISCARD
-    virtual algebra::Lie log_signature_impl(const intervals::Interval& interval,
-                                            const algebra::Context& ctx) const
-            = 0;
+    RPY_NO_DISCARD virtual algebra::Lie log_signature_impl(
+            const intervals::Interval& interval,
+            const algebra::Context& ctx
+    ) const = 0;
 
 public:
-    RPY_NO_DISCARD
-    virtual algebra::Lie log_signature(const intervals::Interval& interval,
-                                       const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::Lie log_signature(
+            const intervals::Interval& interval,
+            const algebra::Context& ctx
+    ) const;
 
-    RPY_NO_DISCARD
-    virtual algebra::Lie
-    log_signature(const intervals::DyadicInterval& interval,
-                  resolution_t resolution, const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::Lie log_signature(
+            const intervals::DyadicInterval& interval,
+            resolution_t resolution,
+            const algebra::Context& ctx
+    ) const;
 
-    RPY_NO_DISCARD
-    virtual algebra::Lie log_signature(const intervals::Interval& interval,
-                                       resolution_t resolution,
-                                       const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::Lie log_signature(
+            const intervals::Interval& interval,
+            resolution_t resolution,
+            const algebra::Context& ctx
+    ) const;
 
-    RPY_NO_DISCARD
-    virtual algebra::FreeTensor signature(const intervals::Interval& interval,
-                                          const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::FreeTensor signature(
+            const intervals::Interval& interval,
+            const algebra::Context& ctx
+    ) const;
 
-    RPY_NO_DISCARD
-    virtual algebra::FreeTensor signature(const intervals::Interval& interval,
-                                          resolution_t resolution,
-                                          const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::FreeTensor signature(
+            const intervals::Interval& interval,
+            resolution_t resolution,
+            const algebra::Context& ctx
+    ) const;
 
 protected:
     // TODO: add methods for batch computing signatures via a computation tree
 
 public:
-    //    RPY_SERIAL_SERIALIZE_FN();
+    RPY_SERIAL_SERIALIZE_FN();
+    RPY_SERIAL_ACCESS();
 };
 
-/**
- * @brief Subclass of `StreamInterface` for solutions of controlled differential
- * equations.
- */
-class RPY_EXPORT SolutionStreamInterface : public StreamInterface
+
+
+
+
+
+RPY_SERIAL_EXTERN_SERIALIZE_CLS(StreamInterface)
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface)
 {
-public:
-    using StreamInterface::StreamInterface;
-    virtual algebra::Lie base_point() const = 0;
-};
-
-RPY_SERIAL_LOAD_FN_EXT(StreamMetadata)
-{
-    RPY_SERIAL_SERIALIZE_NVP("width", value.width);
-    RPY_SERIAL_SERIALIZE_NVP("support", value.effective_support);
-
-    algebra::BasicContextSpec spec;
-    spec.width = value.width;
-    RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
-    RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
-    RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
-    value.default_context = algebra::from_context_spec(spec);
-
-    value.data_scalar_type = value.default_context->ctype();
-    RPY_SERIAL_SERIALIZE_NVP("vtype", value.cached_vector_type);
-    RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
+    RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
+    RPY_SERIAL_SERIALIZE_NVP("schema", p_schema);
 }
-
-RPY_SERIAL_SAVE_FN_EXT(StreamMetadata)
-{
-    RPY_SERIAL_SERIALIZE_NVP("width", value.width);
-    RPY_SERIAL_SERIALIZE_NVP("support", value.effective_support);
-
-    auto spec = algebra::get_context_spec(value.default_context);
-    RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
-    RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
-    RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
-
-    RPY_SERIAL_SERIALIZE_NVP("vtype", value.cached_vector_type);
-    RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
-}
-
-// RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface) {
-//     RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
-//     RPY_SERIAL_SERIALIZE_NVP("schema", m_schema);
-// }
 
 }// namespace streams
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::streams::StreamInterface,
+        rpy::serial::specialization::member_serialize
+)
 
 #endif// ROUGHPY_STREAMS_STREAM_BASE_H_

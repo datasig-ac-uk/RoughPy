@@ -35,6 +35,8 @@
 #include "scalar_type_helper.h"
 #include "scalars_fwd.h"
 
+#include <roughpy/scalars/types.h>
+
 #include "../../standard_scalar_type.h"
 
 namespace rpy {
