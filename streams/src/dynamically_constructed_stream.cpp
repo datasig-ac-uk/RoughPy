@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 18/03/23.
@@ -376,3 +375,23 @@ streams::DynamicallyConstructedStream::compute_child_lie_increments(
     auto half = md.data_scalar_type->from(1, 2);
     return pair<Lie, Lie>(parent_value.smul(half), parent_value.smul(half));
 }
+
+
+
+namespace rpy { namespace streams { namespace dtl {
+
+RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe)
+{
+    RPY_SERIAL_SERIALIZE_NVP("interval", value.interval);
+    RPY_SERIAL_SERIALIZE_NVP("resolution", value.resolution);
+    RPY_SERIAL_SERIALIZE_NVP("content", value.content);
+    RPY_SERIAL_SERIALIZE_NVP("sibling_idx", value.sibling_idx);
+    RPY_SERIAL_SERIALIZE_NVP("parent_idx", value.parent_idx);
+}
+
+
+}}}
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::DynamicallyConstructedStream
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>

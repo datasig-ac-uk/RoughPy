@@ -25,64 +25,45 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 03/03/23.
-//
+#ifndef ROUGHPY_ALGEBRA_INTERFACE_TRAITS_H_
+#define ROUGHPY_ALGEBRA_INTERFACE_TRAITS_H_
 
-#include <roughpy/algebra/algebra_base.h>
+namespace rpy {
+namespace algebra {
 
+namespace traits {
 
-#include <ostream>
-#include <roughpy/algebra/context.h>
+namespace dtl {
 
-using namespace rpy;
-using namespace rpy::algebra;
+template <typename I>
+struct basis_of_impl {
+    using type = typename I::basis_t;
+};
 
-algebra::dtl::AlgebraInterfaceBase::AlgebraInterfaceBase(
-        context_pointer&& ctx,
-        VectorType vtype,
-        const scalars::ScalarType* stype,
-        ImplementationType impl_type,
-        AlgebraType alg_type
-)
-    : p_ctx(std::move(ctx)), p_coeff_type(stype), m_vector_type(vtype),
-      m_impl_type(impl_type), m_alg_type(alg_type)
-{}
+template <typename I>
+struct key_of_impl {
+    using type = typename basis_of_impl<I>::type::key_type;
+};
 
-algebra::dtl::AlgebraInterfaceBase::~AlgebraInterfaceBase() = default;
+template <typename I>
+struct algebra_of_impl {
+    using type = typename I::algebra_t;
+};
 
-void rpy::algebra::dtl::print_empty_algebra(std::ostream& os) { os << "{ }"; }
-
-const rpy::scalars::ScalarType*
-rpy::algebra::dtl::context_to_scalars(context_pointer const& ptr)
-{
-    return ptr->ctype();
 }
 
-UnspecifiedAlgebraType rpy::algebra::dtl::try_create_new_empty(
-        context_pointer ctx, AlgebraType alg_type
-)
-{
-    return ctx->construct(alg_type, {});
+template <typename I>
+using basis_of = typename dtl::basis_of_impl<I>::type;
+
+template <typename I>
+using key_of = typename dtl::key_of_impl<I>::type;
+
+template <typename I>
+using algebra_of = typename dtl::algebra_of_impl<I>::type;
+
 }
 
-UnspecifiedAlgebraType algebra::dtl::construct_dense_algebra(
-        scalars::ScalarArray&& data, const context_pointer& ctx,
-        AlgebraType atype
-)
-{
-    VectorConstructionData cdata{
-            {std::move(data), nullptr},
-            VectorType::Dense
-    };
-    return ctx->construct(atype, cdata);
-}
+}// namespace algebra
+}// namespace rpy
 
-void rpy::algebra::dtl::check_contexts_compatible(
-        const context_pointer& ref, const context_pointer& other
-)
-{
-    if (ref == other) { return; }
-
-    RPY_CHECK(ref->check_compatible(*other));
-}
+#endif// ROUGHPY_ALGEBRA_INTERFACE_TRAITS_H_

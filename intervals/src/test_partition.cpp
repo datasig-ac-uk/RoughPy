@@ -32,6 +32,7 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/intervals/partition.h>
+#include <roughpy/platform/archives.h>
 
 using namespace rpy;
 using namespace rpy::intervals;

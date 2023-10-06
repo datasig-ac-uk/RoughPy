@@ -13,21 +13,12 @@ option(RPY_POLY_SCALARS "Build polynomial scalar types" ON)
 
 if (BLA_SIZEOF_INTEGER EQUAL 8 OR MKL_INTERFACE STREQUAL ilp64)
     set(RPY_LAPACK_USE_ILP64 1)
-endif()
+endif ()
 
 #configure_file(scalar_blas_defs.h.in scalar_blas_defs.h @ONLY)
 add_roughpy_component(Scalars
-    SOURCES
-        src/linear_algebra/blas.h
-        src/linear_algebra/blas_complex_double.cpp
-        src/linear_algebra/blas_complex_float.cpp
-        src/linear_algebra/blas_double.cpp
-        src/linear_algebra/blas_float.cpp
-        src/linear_algebra/lapack.h
-        src/linear_algebra/lapack_complex_double.cpp
-        src/linear_algebra/lapack_complex_float.cpp
-        src/linear_algebra/lapack_double.cpp
-        src/linear_algebra/lapack_float.cpp
+        SOURCES
+
         src/scalar_type.cpp
         src/scalar_pointer.cpp
         src/scalar_interface.cpp
@@ -41,14 +32,12 @@ add_roughpy_component(Scalars
         src/key_scalar_array.cpp
         src/scalar_stream.cpp
         src/standard_scalar_type.h
-        src/standard_linalg.h
+
         src/standard_random_generator.cpp
         src/standard_random_generator.h
         src/scalar_matrix.cpp
-        src/scalar_blas.cpp
         src/random_impl.cpp
         src/random_impl.h
-        src/scalar_blas_impl.h
         src/key_scalar_stream.cpp
         src/scalar_implementations/half/half_type.h
         src/scalar_implementations/half/half_type.cpp
@@ -58,8 +47,6 @@ add_roughpy_component(Scalars
         src/scalar_implementations/double/double_type.h
         src/scalar_implementations/rational/RationalType.cpp
         src/scalar_implementations/rational/RationalType.h
-        src/scalar_implementations/float/float_blas.cpp
-        src/scalar_implementations/float/float_blas.h
         src/scalar_implementations/half/half_random_generator.cpp
         src/scalar_implementations/half/half_random_generator.h
         src/scalar_implementations/bfloat16/b_float_16_type.cpp
@@ -68,14 +55,12 @@ add_roughpy_component(Scalars
         src/scalar_implementations/bfloat16/bfloat16_random_generator.h
         src/scalar_implementations/rational_poly/rational_poly_scalar_type.cpp
         src/scalar_implementations/rational_poly/rational_poly_scalar_type.h
-        src/scalar_implementations/double/double_lin_alg.cpp
-        src/scalar_implementations/double/double_lin_alg.h
+
         #src/scalar_implementations/complex_double/complex_double_type.cpp
         #src/scalar_implementations/complex_double/complex_double_type.h
         #src/scalar_implementations/complex_float/complex_float_type.cpp
         #src/scalar_implementations/complex_float/complex_float_type.h
-        ${CMAKE_CURRENT_BINARY_DIR}/scalar_blas_defs.h
-    PUBLIC_HEADERS
+        PUBLIC_HEADERS
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/scalar_pointer.h
         include/roughpy/scalars/scalar.h
@@ -94,25 +79,47 @@ add_roughpy_component(Scalars
         include/roughpy/scalars.h
         include/roughpy/scalars/types.h
         include/roughpy/scalars/serialization.h
-    DEPENDENCIES
+        DEPENDENCIES
         PUBLIC
-            Boost::boost
-            Eigen3::Eigen
-            Libalgebra_lite::Libalgebra_lite
-            BLAS::BLAS IF NOT ROUGHPY_DISABLE_BLAS
-            LAPACK::LAPACK IF NOT ROUGHPY_DISABLE_BLAS
+        Boost::boost
+        Eigen3::Eigen
+        Libalgebra_lite::Libalgebra_lite
+        BLAS::BLAS IF NOT ROUGHPY_DISABLE_BLAS
+        LAPACK::LAPACK IF NOT ROUGHPY_DISABLE_BLAS
         PRIVATE
-            PCGRandom::pcg_random
-    CONFIGURE
+        PCGRandom::pcg_random
+        CONFIGURE
         FILE
-            IN scalar_blas_defs.h.in
-            OUT scalar_blas_defs.h
-            ATONLY
-    NEEDS
+        IN scalar_blas_defs.h.in
+        OUT scalar_blas_defs.h
+        ATONLY
+        NEEDS
         RoughPy::Core
         RoughPy::Platform
 )
 
+
+if (NOT ROUGHPY_DISABLE_BLAS)
+    target_sources(RoughPy_Scalars PRIVATE
+            src/linear_algebra/blas.h
+            src/linear_algebra/blas_complex_double.cpp
+            src/linear_algebra/blas_complex_float.cpp
+            src/linear_algebra/blas_double.cpp
+            src/linear_algebra/blas_float.cpp
+            src/linear_algebra/lapack.h
+            src/linear_algebra/lapack_complex_double.cpp
+            src/linear_algebra/lapack_complex_float.cpp
+            src/linear_algebra/lapack_double.cpp
+            src/linear_algebra/lapack_float.cpp
+            src/standard_linalg.h
+            src/scalar_blas_impl.h
+            src/scalar_blas.cpp
+            src/scalar_implementations/double/double_lin_alg.cpp
+            src/scalar_implementations/double/double_lin_alg.h
+            src/scalar_implementations/float/float_blas.h
+            src/scalar_implementations/float/float_blas.cpp
+    )
+endif ()
 
 if (TARGET Bignum::Bignum)
     set(RPY_RATIONAL_HEADER "gmp.hpp")
@@ -132,7 +139,7 @@ add_roughpy_test(scalar
         src/ScalarTests.h
         src/test_scalar.cpp
         src/test_scalar_type.cpp
-        src/test_float_blas.cpp
+#        src/test_float_blas.cpp
         src/test_scalar_array.cpp
         src/test_key_scalar_array.cpp
         src/test_scalar_matrix.cpp

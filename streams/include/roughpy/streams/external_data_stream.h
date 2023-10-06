@@ -36,6 +36,8 @@
 #include <roughpy/platform.h>
 #include <roughpy/platform/serialization.h>
 
+#include <boost/url/url.hpp>
+
 #include <memory>
 
 namespace rpy {
@@ -65,6 +67,8 @@ class RPY_EXPORT ExternalDataSourceFactory
 {
 
 public:
+    using url = boost::urls::url;
+
     virtual void destroy_payload(void*& payload) const;
 
     virtual ~ExternalDataSourceFactory();
@@ -134,6 +138,8 @@ class RPY_EXPORT ExternalDataStream : public DyadicCachingLayer
     std::unique_ptr<ExternalDataStreamSource> p_source;
 
 public:
+    using url = boost::urls::url;
+
     template <
             typename Source,
             typename
@@ -182,6 +188,7 @@ public:
     }
 };
 
+RPY_SERIAL_EXTERN_SERIALIZE_CLS(ExternalDataStream)
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(ExternalDataStream) {
     RPY_SERIAL_SERIALIZE_BASE(DyadicCachingLayer);

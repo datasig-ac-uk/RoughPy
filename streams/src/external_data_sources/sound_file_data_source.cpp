@@ -34,29 +34,20 @@
 #include <roughpy/platform/filesystem.h>
 #include <roughpy/scalars/owned_scalar_array.h>
 
+#include <boost/url/parse.hpp>
 #include <cmath>
 
 using namespace rpy;
 using namespace rpy::streams;
+
+
+using URIScheme = boost::urls::scheme;
 
 template <typename T>
 static scalars::ScalarPointer to_sp(T* ptr)
 {
     return scalars::ScalarPointer(scalars::ScalarType::of<T>(), ptr);
 }
-
-template <>
-scalars::ScalarPointer to_sp<int32_t>(int32_t* ptr)
-{
-    return scalars::ScalarPointer(ptr);
-}
-
-template <>
-scalars::ScalarPointer to_sp<int16_t>(int16_t* ptr)
-{
-    return scalars::ScalarPointer(ptr);
-}
-
 
 
 
@@ -189,7 +180,7 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
      * depending on whether the stream scalar types are floats or doubles.
      * This should dramatically simplify the code.
      */
-    auto format = m_handle.format() & SF_FORMAT_SUBMASK;
+//    auto format = m_handle.format() & SF_FORMAT_SUBMASK;
 //
 //    switch (format) {
 //        case SF_FORMAT_PCM_16:

@@ -36,10 +36,13 @@
 #include <roughpy/intervals/dyadic_interval.h>
 
 #include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/uuid/uuid.hpp>
 
 #include "stream_base.h"
 
 namespace rpy {
+namespace uuids = boost::uuids;
+
 namespace streams {
 
 /**
@@ -108,21 +111,8 @@ protected:
     void dump_cache() const;
 
 };
-
-RPY_SERIAL_LOAD_FN_IMPL(DyadicCachingLayer) {
-    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-    string tmp;
-    RPY_SERIAL_SERIALIZE_NVP("cache_id", tmp);
-    m_cache_id = uuids::string_generator()(tmp);
-    load_cache();
-}
-
-RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer) {
-    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-    RPY_SERIAL_SERIALIZE_NVP("cache_id", to_string(m_cache_id));
-    dump_cache();
-}
-
+RPY_SERIAL_EXTERN_LOAD_CLS(DyadicCachingLayer)
+RPY_SERIAL_EXTERN_SAVE_CLS(DyadicCachingLayer)
 
 }// namespace streams
 }// namespace rpy

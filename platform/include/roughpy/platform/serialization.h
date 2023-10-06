@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 09/05/23.
@@ -37,24 +36,26 @@
 #  include <cereal/access.hpp>
 #  include <cereal/cereal.hpp>
 #  include <cereal/specialize.hpp>
-#  include <cereal/types/array.hpp>
 #  include <cereal/types/base_class.hpp>
-#  include <cereal/types/map.hpp>
 #  include <cereal/types/memory.hpp>
 #  include <cereal/types/optional.hpp>
 #  include <cereal/types/polymorphic.hpp>
 #  include <cereal/types/string.hpp>
-#  include <cereal/types/tuple.hpp>
-#  include <cereal/types/unordered_map.hpp>
 #  include <cereal/types/utility.hpp>
-#  include <cereal/types/variant.hpp>
-#  include <cereal/types/vector.hpp>
-
-#  include <cereal/archives/binary.hpp>
-#  include <cereal/archives/json.hpp>
-#  include <cereal/archives/portable_binary.hpp>
-
 #endif// RPY_DISABLE_SERIALIZATION
+
+namespace cereal {
+
+class BinaryInputArchive;
+class BinaryOutputArchive;
+class JSONInputArchive;
+class JSONOutputArchive;
+class PortableBinaryInputArchive;
+class PortableBinaryOutputArchive;
+class XMLInputArchive;
+class XMLOutputArchive;
+
+}// namespace cereal
 
 #include <roughpy/core/slice.h>
 
@@ -292,8 +293,84 @@ using cereal::JSONInputArchive;
 using cereal::JSONOutputArchive;
 using cereal::PortableBinaryInputArchive;
 using cereal::PortableBinaryOutputArchive;
+using cereal::XMLInputArchive;
+using cereal::XMLOutputArchive;
 
 }// namespace archives
+
+#  define RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(CLASS, AR)                      \
+      extern template void CLASS::serialize<AR>(AR&, const std::uint32_t);
+
+#  define RPY_SERIAL_EXTERN_SERIALIZE_CLS(CLASS)                               \
+      RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(                                    \
+              CLASS,                                                           \
+              ::rpy::archives::BinaryOutputArchive                             \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(                                    \
+              CLASS,                                                           \
+              ::rpy::archives::JSONOutputArchive                               \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(                                    \
+              CLASS,                                                           \
+              ::rpy::archives::PortableBinaryOutputArchive                     \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(                                    \
+              CLASS,                                                           \
+              ::rpy::archives::XMLOutputArchive                                \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(                                    \
+              CLASS,                                                           \
+              ::rpy::archives::BinaryInputArchive                              \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(                                    \
+              CLASS,                                                           \
+              ::rpy::archives::JSONInputArchive                                \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(                                    \
+              CLASS,                                                           \
+              ::rpy::archives::PortableBinaryInputArchive                      \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(                                    \
+              CLASS,                                                           \
+              ::rpy::archives::XMLInputArchive                                 \
+      )
+
+
+#  define RPY_SERIAL_EXTERN_SAVE_CLS_IMPL(CLASS, AR)                           \
+      extern template void CLASS::save<AR>(AR&, const std::uint32_t) const;
+
+#  define RPY_SERIAL_EXTERN_SAVE_CLS(CLASS)                                    \
+      RPY_SERIAL_EXTERN_SAVE_CLS_IMPL(                                         \
+              CLASS,                                                           \
+              ::rpy::archives::BinaryOutputArchive                             \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SAVE_CLS_IMPL(                                         \
+              CLASS,                                                           \
+              ::rpy::archives::JSONOutputArchive                               \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SAVE_CLS_IMPL(                                         \
+              CLASS,                                                           \
+              ::rpy::archives::PortableBinaryOutputArchive                     \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_SAVE_CLS_IMPL(CLASS, ::rpy::archives::XMLOutputArchive)
+
+#  define RPY_SERIAL_EXTERN_LOAD_CLS_IMPL(CLASS, AR)                           \
+      extern template void CLASS::load<AR>(AR&, const std::uint32_t);
+
+#  define RPY_SERIAL_EXTERN_LOAD_CLS(CLASS)                                    \
+      RPY_SERIAL_EXTERN_LOAD_CLS_IMPL(                                         \
+              CLASS,                                                           \
+              ::rpy::archives::BinaryInputArchive                              \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_LOAD_CLS_IMPL(                                         \
+              CLASS,                                                           \
+              ::rpy::archives::JSONInputArchive                                \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_LOAD_CLS_IMPL(                                         \
+              CLASS,                                                           \
+              ::rpy::archives::PortableBinaryInputArchive                      \
+      )                                                                        \
+      RPY_SERIAL_EXTERN_LOAD_CLS_IMPL(CLASS, ::rpy::archives::XMLInputArchive)
 
 using ByteSlice = Slice<byte>;
 

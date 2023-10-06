@@ -179,16 +179,10 @@ struct DataIncrementSafe {
     dimn_t parent_idx = 0;
 };
 
-RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe)
-{
-    RPY_SERIAL_SERIALIZE_NVP("interval", value.interval);
-    RPY_SERIAL_SERIALIZE_NVP("resolution", value.resolution);
-    RPY_SERIAL_SERIALIZE_NVP("content", value.content);
-    RPY_SERIAL_SERIALIZE_NVP("sibling_idx", value.sibling_idx);
-    RPY_SERIAL_SERIALIZE_NVP("parent_idx", value.parent_idx);
-}
-
 }// namespace dtl
+
+RPY_SERIAL_EXTERN_LOAD_CLS(DynamicallyConstructedStream)
+RPY_SERIAL_EXTERN_SAVE_CLS(DynamicallyConstructedStream)
 
 RPY_SERIAL_LOAD_FN_IMPL(DynamicallyConstructedStream) {
     RPY_SERIAL_SERIALIZE_BASE(StreamInterface);

@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_BASE_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_BASE_H_
@@ -41,6 +40,7 @@
 
 #include "algebra_iterator.h"
 #include "basis.h"
+#include "interface_traits.h"
 #include "fallback_operations.h"
 
 
@@ -331,7 +331,6 @@ protected:
     std::unique_ptr<Interface> p_impl;
     friend struct algebra_access<Interface>;
 
-    friend struct algebra_access<typename Interface::algebra_interface_t>;
 
 public:
     explicit AlgebraBase(std::unique_ptr<Interface> impl)
@@ -345,10 +344,10 @@ public:
 
     using interface_t = Interface;
 
-    using basis_type = typename interface_t::basis_t;
-    using key_type = typename interface_t::key_type;
+    using basis_type = traits::basis_of<Interface>;
+    using key_type = traits::key_of<Interface>;
 
-    using algebra_t = typename Interface::algebra_t;
+    using algebra_t = traits::algebra_of<Interface>;
     using const_iterator = AlgebraIterator<algebra_t>;
 
     AlgebraBase() : p_impl(nullptr) {}

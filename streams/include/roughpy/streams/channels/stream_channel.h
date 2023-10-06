@@ -123,6 +123,9 @@ public:
     RPY_SERIAL_LOAD_FN();
 };
 
+RPY_SERIAL_EXTERN_LOAD_CLS(StreamChannel)
+RPY_SERIAL_EXTERN_SAVE_CLS(StreamChannel)
+
 RPY_SERIAL_SAVE_FN_IMPL(StreamChannel)
 {
     RPY_SERIAL_SERIALIZE_NVP("type", m_type);
@@ -138,6 +141,7 @@ RPY_SERIAL_LOAD_FN_IMPL(StreamChannel) {
         p_scalar_type = scalars::get_type(id);
     }
 }
+
 
 RPY_SERIAL_SAVE_FN_EXT(ChannelType) {
     RPY_SERIAL_SERIALIZE_BARE(static_cast<uint8_t>(value));

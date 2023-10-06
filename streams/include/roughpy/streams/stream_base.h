@@ -82,14 +82,21 @@ class RPY_EXPORT StreamInterface
     std::shared_ptr<StreamSchema> p_schema;
 
 public:
-    RPY_NO_DISCARD
-    const StreamMetadata& metadata() const noexcept { return m_metadata; }
-    RPY_NO_DISCARD
-    const StreamSchema& schema() const noexcept { return *p_schema; }
+    RPY_NO_DISCARD const StreamMetadata& metadata() const noexcept
+    {
+        return m_metadata;
+    }
+    RPY_NO_DISCARD const StreamSchema& schema() const noexcept
+    {
+        return *p_schema;
+    }
 
-    explicit StreamInterface(StreamMetadata md,
-                             std::shared_ptr<StreamSchema> schema)
-        : m_metadata(std::move(md)), p_schema(std::move(schema))
+    explicit StreamInterface(
+            StreamMetadata md,
+            std::shared_ptr<StreamSchema> schema
+    )
+        : m_metadata(std::move(md)),
+          p_schema(std::move(schema))
     {
         RPY_DBG_ASSERT(p_schema);
     }
@@ -100,15 +107,14 @@ public:
     {}
 
     virtual ~StreamInterface() noexcept;
-    RPY_NO_DISCARD
-    virtual bool empty(const intervals::Interval& interval) const noexcept;
+    RPY_NO_DISCARD virtual bool empty(const intervals::Interval& interval
+    ) const noexcept;
     std::shared_ptr<StreamSchema> get_schema() const noexcept
     {
         return p_schema;
     }
 
 protected:
-
     StreamInterface() : m_metadata(), p_schema() {}
 
     void set_metadata(StreamMetadata&& md) noexcept;
@@ -118,85 +124,67 @@ protected:
         p_schema = std::move(schema);
     }
 
-
-
-    RPY_NO_DISCARD
-    virtual algebra::Lie log_signature_impl(const intervals::Interval& interval,
-                                            const algebra::Context& ctx) const
-            = 0;
+    RPY_NO_DISCARD virtual algebra::Lie log_signature_impl(
+            const intervals::Interval& interval,
+            const algebra::Context& ctx
+    ) const = 0;
 
 public:
-    RPY_NO_DISCARD
-    virtual algebra::Lie log_signature(const intervals::Interval& interval,
-                                       const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::Lie log_signature(
+            const intervals::Interval& interval,
+            const algebra::Context& ctx
+    ) const;
 
-    RPY_NO_DISCARD
-    virtual algebra::Lie
-    log_signature(const intervals::DyadicInterval& interval,
-                  resolution_t resolution, const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::Lie log_signature(
+            const intervals::DyadicInterval& interval,
+            resolution_t resolution,
+            const algebra::Context& ctx
+    ) const;
 
-    RPY_NO_DISCARD
-    virtual algebra::Lie log_signature(const intervals::Interval& interval,
-                                       resolution_t resolution,
-                                       const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::Lie log_signature(
+            const intervals::Interval& interval,
+            resolution_t resolution,
+            const algebra::Context& ctx
+    ) const;
 
-    RPY_NO_DISCARD
-    virtual algebra::FreeTensor signature(const intervals::Interval& interval,
-                                          const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::FreeTensor signature(
+            const intervals::Interval& interval,
+            const algebra::Context& ctx
+    ) const;
 
-    RPY_NO_DISCARD
-    virtual algebra::FreeTensor signature(const intervals::Interval& interval,
-                                          resolution_t resolution,
-                                          const algebra::Context& ctx) const;
+    RPY_NO_DISCARD virtual algebra::FreeTensor signature(
+            const intervals::Interval& interval,
+            resolution_t resolution,
+            const algebra::Context& ctx
+    ) const;
 
 protected:
     // TODO: add methods for batch computing signatures via a computation tree
 
 public:
-        RPY_SERIAL_SERIALIZE_FN();
+    RPY_SERIAL_SERIALIZE_FN();
+    RPY_SERIAL_ACCESS();
 };
 
 
-RPY_SERIAL_LOAD_FN_EXT(StreamMetadata)
+
+
+
+
+RPY_SERIAL_EXTERN_SERIALIZE_CLS(StreamInterface)
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface)
 {
-    RPY_SERIAL_SERIALIZE_NVP("width", value.width);
-    RPY_SERIAL_SERIALIZE_NVP("support", value.effective_support);
-
-    algebra::BasicContextSpec spec;
-    spec.width = value.width;
-    RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
-    RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
-    RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
-    value.default_context = algebra::from_context_spec(spec);
-
-    value.data_scalar_type = value.default_context->ctype();
-    RPY_SERIAL_SERIALIZE_NVP("vtype", value.cached_vector_type);
-    RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
+    RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
+    RPY_SERIAL_SERIALIZE_NVP("schema", p_schema);
 }
-
-RPY_SERIAL_SAVE_FN_EXT(StreamMetadata)
-{
-    RPY_SERIAL_SERIALIZE_NVP("width", value.width);
-    RPY_SERIAL_SERIALIZE_NVP("support", value.effective_support);
-
-    auto spec = algebra::get_context_spec(value.default_context);
-    RPY_SERIAL_SERIALIZE_NVP("depth", spec.depth);
-    RPY_SERIAL_SERIALIZE_NVP("scalar_type_id", spec.stype_id);
-    RPY_SERIAL_SERIALIZE_NVP("backend", spec.backend);
-
-    RPY_SERIAL_SERIALIZE_NVP("vtype", value.cached_vector_type);
-    RPY_SERIAL_SERIALIZE_NVP("resolution", value.default_resolution);
-}
-
- RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface) {
-     RPY_SERIAL_SERIALIZE_NVP("metadata", m_metadata);
-     RPY_SERIAL_SERIALIZE_NVP("schema", p_schema);
- }
 
 }// namespace streams
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::StreamInterface,
-                            rpy::serial::specialization::member_serialize)
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::streams::StreamInterface,
+        rpy::serial::specialization::member_serialize
+)
 
 #endif// ROUGHPY_STREAMS_STREAM_BASE_H_

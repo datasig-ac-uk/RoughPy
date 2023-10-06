@@ -65,7 +65,7 @@ public:
     RPY_NO_DISCARD
     scalars::RandomGenerator& generator() noexcept { return *p_generator; }
 
-    BrownianStream() : DynamicallyConstructedStream({}), p_generator(nullptr) {}
+    using DynamicallyConstructedStream::DynamicallyConstructedStream;
 
     BrownianStream(std::unique_ptr<scalars::RandomGenerator> generator,
                    StreamMetadata md)

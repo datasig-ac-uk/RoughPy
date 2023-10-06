@@ -33,6 +33,9 @@
 
 #include <ostream>
 
+#include <roughpy/platform/serialization.h>
+
+
 namespace rpy {
 namespace intervals {
 
@@ -87,6 +90,7 @@ public:
 
 RPY_EXPORT
 std::ostream& operator<<(std::ostream& os, const Interval& interval);
+
 
 RPY_SERIAL_LOAD_FN_EXT(IntervalType) {
     uint32_t tmp;
