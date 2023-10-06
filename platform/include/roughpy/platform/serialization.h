@@ -39,9 +39,6 @@
 #  include <cereal/specialize.hpp>
 #  include <cereal/types/array.hpp>
 #  include <cereal/types/base_class.hpp>
-#  include <cereal/types/bitset.hpp>
-#  include <cereal/types/chrono.hpp>
-#  include <cereal/types/deque.hpp>
 #  include <cereal/types/map.hpp>
 #  include <cereal/types/memory.hpp>
 #  include <cereal/types/optional.hpp>
