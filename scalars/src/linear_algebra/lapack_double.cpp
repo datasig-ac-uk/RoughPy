@@ -29,6 +29,8 @@
 #define ROUGHPY_SCALARS_SRC_LINEAR_ALGEBRA_LAPACK_DOUBLE_CPP_
 
 #include "lapack.h"
+
+#ifndef ROUGHPY_DISABLE_BLAS
 #define RPY_LPK_SPRX d
 
 static constexpr double convert_scalar(const double& arg) noexcept
@@ -333,4 +335,5 @@ void lapack_funcs<double, double>::gelsd(
 }// namespace scalars
 }// namespace rpy
 
+#endif
 #endif// ROUGHPY_SCALARS_SRC_LINEAR_ALGEBRA_LAPACK_DOUBLE_CPP_

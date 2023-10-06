@@ -31,9 +31,11 @@ if (ROUGHPY_BUILD_PYMODULE_INPLACE)
 endif ()
 
 
+set_target_properties(RoughPy_PyModule PROPERTIES
+    INSTALL_RPATH $ORIGIN)
 if (LINUX)
     set_target_properties(RoughPy_PyModule PROPERTIES
-            INSTALL_RPATH "$ORIGIN")
+            INSTALL_RPATH $ORIGIN)
 elseif (APPLE)
     set_target_properties(RoughPy_PyModule PROPERTIES
             INSTALL_RPATH "@loader_path;@loader_path/../../..")

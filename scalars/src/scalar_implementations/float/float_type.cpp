@@ -35,7 +35,10 @@
 using namespace rpy::scalars;
 
 FloatType::FloatType() : StandardScalarType<float>("f32", "SPReal") {}
+
+#ifndef ROUGHPY_DISABLE_BLAS
 std::unique_ptr<BlasInterface> FloatType::get_blas() const
 {
     return std::make_unique<StandardLinearAlgebra<float, float>>(this);
 }
+#endif

@@ -35,6 +35,7 @@
 #include "scalar_blas_defs.h"
 #include "blas.h"
 
+#ifndef ROUGHPY_DISABLE_BLAS
 #define RPY_LPK_FUNC_(NAME) RPY_JOIN(LAPACKE_, NAME)
 #define RPY_LPK_FUNC(NAME) \
     RPY_LPK_FUNC_(RPY_JOIN(RPY_LPK_SPRX, RPY_JOIN(NAME, _work)))
@@ -247,5 +248,5 @@ struct lapack_funcs : lapack_func_workspace<S, R> {
 }// namespace lapack
 }// namespace scalars
 }// namespace rpy
-
+#endif
 #endif// ROUGHPY_SCALARS_SRC_LINEAR_ALGEBRA_LAPACK_H_

@@ -34,6 +34,8 @@
 
 #include "lapack.h"
 
+#ifndef ROUGHPY_DISABLE_BLAS
+
 #define RPY_LPK_SPRX c
 
 static constexpr rpy::blas::complex32
@@ -337,4 +339,5 @@ void lapack_funcs<scalars::float_complex, float>::gelsd(
 }// namespace scalars
 }// namespace rpy
 
+#endif
 #endif// ROUGHPY_SCALARS_SRC_LINEAR_ALGEBRA_LAPACK_COMPLEX_FLOAT_CPP_
