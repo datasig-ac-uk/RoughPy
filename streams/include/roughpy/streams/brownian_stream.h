@@ -126,6 +126,9 @@ RPY_SERIAL_LOAD_FN_IMPL(BrownianStream)
 
 }
 
+RPY_SERIAL_EXTERN_LOAD_CLS(BrownianStream)
+RPY_SERIAL_EXTERN_SAVE_CLS(BrownianStream)
+
 }// namespace streams
 }// namespace rpy
 

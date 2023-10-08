@@ -33,6 +33,8 @@
 #include <roughpy/algebra/lie.h>
 #include <roughpy/scalars/key_scalar_array.h>
 
+#include <cereal/types/vector.hpp>
+
 using namespace rpy;
 using namespace rpy::streams;
 

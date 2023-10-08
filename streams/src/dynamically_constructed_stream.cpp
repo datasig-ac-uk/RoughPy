@@ -32,6 +32,7 @@
 #include <roughpy/streams/dynamically_constructed_stream.h>
 
 #include <roughpy/algebra/lie.h>
+#include <cereal/types/vector.hpp>
 
 using namespace rpy;
 using namespace rpy::streams;
