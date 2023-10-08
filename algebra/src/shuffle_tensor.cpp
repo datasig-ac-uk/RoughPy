@@ -35,6 +35,8 @@
 #include <roughpy/algebra/algebra_base.h>
 #include <roughpy/algebra/algebra_base_impl.h>
 
+#include <roughpy/scalars/types.h>
+
 namespace rpy {
 namespace algebra {
 
