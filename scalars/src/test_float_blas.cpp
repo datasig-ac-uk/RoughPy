@@ -32,6 +32,7 @@
 #include "scalar_implementations/float/float_blas.h"
 #include <gtest/gtest.h>
 #include <roughpy/scalars/scalar_type.h>
+#inlucde <roughpy/scalars/types.h>
 
 #include <vector>
 

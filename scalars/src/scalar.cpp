@@ -39,6 +39,8 @@
 #include <ostream>
 #include <roughpy/platform/serialization.h>
 
+#include <cereal/types/vector.hpp>
+
 using namespace rpy;
 using namespace rpy::scalars;
 
@@ -349,6 +351,28 @@ std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& arg)
 
     return os;
 }
+
+RPY_SERIAL_SAVE_FN_IMPL(Scalar)
+{
+    RPY_SERIAL_SERIALIZE_NVP("type_id", get_type_id());
+    if (is_interface()) {
+        auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
+        RPY_SERIAL_SERIALIZE_NVP("data", p_type->to_raw_bytes(ptr, 1));
+    } else {
+        RPY_SERIAL_SERIALIZE_NVP("data", to_raw_bytes(1));
+    }
+}
+
+RPY_SERIAL_LOAD_FN_IMPL(Scalar)
+{
+    string type_id;
+    RPY_SERIAL_SERIALIZE_NVP("type_id", type_id);
+
+    std::vector<byte> raw_bytes;
+    RPY_SERIAL_SERIALIZE_NVP("data", raw_bytes);
+    update_from_bytes(type_id, 1, raw_bytes);
+}
+
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::Scalar
 #define RPY_SERIAL_DO_SPLIT

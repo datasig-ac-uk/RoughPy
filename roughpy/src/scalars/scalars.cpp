@@ -36,6 +36,7 @@
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/types.h>
 
 #include "dlpack.h"
 #include "r_py_polynomial.h"

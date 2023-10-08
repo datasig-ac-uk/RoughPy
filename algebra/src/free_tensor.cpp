@@ -32,6 +32,7 @@
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/free_tensor.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/scalars/types.h>
 
 #include <roughpy/algebra/algebra_bundle_impl.h>
 #include <roughpy/algebra/algebra_impl.h>

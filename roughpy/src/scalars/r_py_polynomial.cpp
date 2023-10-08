@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 06/07/23.
@@ -34,12 +35,16 @@
 #include <sstream>
 
 #include <roughpy/core/alloc.h>
+#include <roughpy/platform/archives.h>
+#include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/serialization.h>
+#include <roughpy/scalars/types.h>
 
 #include "scalars.h"
 
 using namespace rpy;
-using namespace python;
+using namespace rpy::python;
 
 namespace {
 
@@ -47,6 +52,23 @@ using poly_t = scalars::rational_poly_scalar;
 using rat_t = scalars::rational_scalar_type;
 
 }// namespace
+
+static inline bool is_monomial(PyObject* obj) noexcept
+{
+    return Py_TYPE(obj) == &RPyMonomial_Type;
+}
+static inline bool is_polynomial(PyObject* obj) noexcept
+{
+    return Py_TYPE(obj) == &RPyPolynomial_Type;
+}
+static inline scalars::monomial& cast_mon(PyObject* obj) noexcept
+{
+    return reinterpret_cast<RPyMonomial*>(obj)->m_data;
+}
+static inline poly_t& cast_poly(PyObject* obj) noexcept
+{
+    return reinterpret_cast<RPyPolynomial*>(obj)->m_data;
+}
 
 extern "C" {
 
@@ -103,7 +125,16 @@ static PyObject* monomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR);
 
 static PyObject* monomial___getstate__(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
+    std::stringstream ss;
+    {
+        archives::PortableBinaryOutputArchive oa(ss);
+        oa(cast_mon(self));
+    }
 
+    auto str = ss.str();
+    return reinterpret_cast<PyObject*>(
+            PyByteArray_FromStringAndSize(str.data(), str.size())
+    );
 }
 
 static PyObject* monomial___setstate__(PyObject* self, PyObject* args) {}
@@ -117,14 +148,14 @@ bool indeterminate_from_string(
 PyObject* PyMonomial_FromPyString(PyObject* py_string);
 
 static PyMethodDef RPyMonomial_methods[] = {
-        {      "degree",(PyCFunction) monomial_degree,METH_NOARGS, nullptr   },
+        {      "degree",(PyCFunction) monomial_degree,METH_NOARGS, nullptr                                                       },
         {"__getstate__",
          (PyCFunction) monomial___getstate__,
-         METH_NOARGS, nullptr                                                },
+         METH_NOARGS, nullptr                                               },
         {"__setstate__",
          (PyCFunction) monomial___setstate__,
-         METH_VARARGS, nullptr                                               },
-        {       nullptr,                        nullptr,           0, nullptr}
+         METH_VARARGS, nullptr                                              },
+        {       nullptr,                       nullptr,           0, nullptr}
 };
 
 static PyMappingMethods RPyMonomial_mapping{
@@ -388,23 +419,6 @@ void python::init_monomial(py::module_& m)
 
     m.add_object("Monomial", (PyObject*) &RPyMonomial_Type);
     m.add_object("PolynomialScalar", (PyObject*) &RPyPolynomial_Type);
-}
-
-static inline bool is_monomial(PyObject* obj) noexcept
-{
-    return Py_TYPE(obj) == &RPyMonomial_Type;
-}
-static inline bool is_polynomial(PyObject* obj) noexcept
-{
-    return Py_TYPE(obj) == &RPyPolynomial_Type;
-}
-static inline scalars::monomial& cast_mon(PyObject* obj) noexcept
-{
-    return reinterpret_cast<RPyMonomial*>(obj)->m_data;
-}
-static inline poly_t& cast_poly(PyObject* obj) noexcept
-{
-    return reinterpret_cast<RPyPolynomial*>(obj)->m_data;
 }
 
 static bool insert_from_pair(scalars::monomial& monomial, PyObject* item)

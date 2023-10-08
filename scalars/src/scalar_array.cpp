@@ -31,6 +31,7 @@
 
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/types.h>
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/platform/archives.h>

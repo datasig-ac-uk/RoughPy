@@ -33,6 +33,7 @@
 
 #include <roughpy/scalars/scalar_matrix.h>
 #include <roughpy/platform/archives.h>
+#include <roughpy/scalars/types.h>
 
 #include <sstream>
 

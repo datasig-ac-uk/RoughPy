@@ -60,7 +60,7 @@ Partition partition_py_ctor(const RealInterval& interval,
 void python::init_partition(py::module_& m)
 {
 
-    py::class_<Partition, Interval> cls(m, "Partition");
+    py::class_<Partition, Interval> cls(m, "Partition", PyPartition_doc);
 
     cls.def(py::init<RealInterval>(), "interval"_a);
     cls.def(py::init(&partition_py_ctor), "interval"_a, "intermediates"_a);

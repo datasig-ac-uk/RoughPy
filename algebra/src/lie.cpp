@@ -33,6 +33,7 @@
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/lie.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/scalars/types.h>
 
 namespace rpy {
 namespace algebra {

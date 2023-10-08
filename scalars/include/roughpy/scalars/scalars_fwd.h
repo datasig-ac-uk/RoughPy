@@ -122,9 +122,9 @@ class RandomGenerator;
 
 class BlasInterface;
 
-template <typename T>
-inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
-
+//template <typename T>
+//inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
+//
 using conversion_function
         = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
 

@@ -35,6 +35,8 @@
 #include <ostream>
 #include <roughpy/algebra/context.h>
 
+#include <roughpy/scalars/types.h>
+
 using namespace rpy;
 using namespace rpy::algebra;
 

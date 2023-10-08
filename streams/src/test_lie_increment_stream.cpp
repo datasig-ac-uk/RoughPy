@@ -35,6 +35,7 @@
 #include <gtest/gtest.h>
 #include <random>
 
+#include <roughpy/scalars/types.h>
 #include <roughpy/scalars/owned_scalar_array.h>
 #include <roughpy/scalars/scalar_pointer.h>
 

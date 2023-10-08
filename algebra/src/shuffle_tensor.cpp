@@ -36,6 +36,8 @@
 #include <roughpy/algebra/shuffle_tensor.h>
 #include <roughpy/platform/serialization.h>
 
+#include <roughpy/scalars/types.h>
+
 namespace rpy {
 namespace algebra {
 

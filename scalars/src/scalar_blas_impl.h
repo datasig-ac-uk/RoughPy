@@ -39,6 +39,7 @@
 #include "scalar_blas.h"
 #include "scalar_matrix.h"
 #include "scalar_type.h"
+#include <roughpy/scalars/types.h>
 
 #include "scalar_blas_defs.h"
 

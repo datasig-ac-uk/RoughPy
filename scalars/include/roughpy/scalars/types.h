@@ -36,7 +36,10 @@
 #include <libalgebra_lite/polynomial.h>
 #include <libalgebra_lite/polynomial_basis.h>
 
+
+#include "scalar_pointer.h"
 #include "scalar_type.h"
+#include "scalar.h"
 
 #ifdef LAL_NO_USE_GMP
 #  define RPY_USING_GMP 0
@@ -180,6 +183,51 @@ struct type_id_of_impl {
 
 }// namespace dtl
 
+
+namespace dtl {
+
+template <typename T>
+struct type_of_T_defined {
+    static T cast(ScalarPointer scalar)
+    {
+        const auto* tp = ScalarType::of<T>();
+        if (tp == scalar.type()) { return *scalar.raw_cast<const T*>(); }
+        if (tp == scalar.type()->rational_type()) {
+            return *scalar.raw_cast<const T*>();
+        }
+
+        T result;
+        ScalarPointer dst(tp, &result);
+        tp->convert_copy(dst, scalar, 1);
+        return result;
+    }
+};
+
+template <typename T>
+struct type_of_T_not_defined {
+    static T cast(ScalarPointer scalar)
+    {
+        T result;
+        scalar.type()->convert_copy({nullptr, &result}, scalar, 1,
+                                    type_id_of<T>());
+        return result;
+    }
+};
+
+}// namespace dtl
+
+template <typename T>
+inline remove_cv_ref_t<T> scalar_cast(const Scalar& scalar)
+{
+    if (scalar.is_zero()) { return T(0); }
+    using bare_t = remove_cv_ref_t<T>;
+    using impl_t = detected_or_t<dtl::type_of_T_not_defined<bare_t>,
+                                 dtl::type_of_T_defined, bare_t>;
+
+    // Now we are sure that scalar.type() != nullptr
+    // and scalar.ptr() != nullptr
+    return impl_t::cast(scalar.to_pointer());
+}
 }// namespace scalars
 }// namespace rpy
 

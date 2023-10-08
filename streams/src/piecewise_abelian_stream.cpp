@@ -32,6 +32,8 @@
 #include <roughpy/streams/piecewise_abelian_stream.h>
 #include <roughpy/streams/schema.h>
 
+#include <cereal/types/vector.hpp>
+
 using namespace rpy;
 using namespace rpy::streams;
 

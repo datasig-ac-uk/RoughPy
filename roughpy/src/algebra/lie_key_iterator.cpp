@@ -51,26 +51,6 @@ python::PyLieKeyIterator::PyLieKeyIterator(
     }
 }
 
-static python::PyLieKey
-to_py_lie_key(key_type k, const algebra::LieBasis& lbasis)
-{
-    if (lbasis.letter(k)) { return python::PyLieKey(lbasis, k); }
-
-    auto lparent = *lbasis.lparent(k);
-    auto rparent = *lbasis.rparent(k);
-
-    if (lbasis.letter(lparent) && lbasis.letter(rparent)) {
-        return python::PyLieKey(lbasis, lparent, rparent);
-    }
-    if (lbasis.letter(lparent)) {
-        return python::PyLieKey(lbasis, lparent, to_py_lie_key(rparent, lbasis));
-    }
-    return python::PyLieKey(
-            lbasis, to_py_lie_key(lparent, lbasis),
-            to_py_lie_key(rparent, lbasis)
-    );
-}
-
 python::PyLieKey python::PyLieKeyIterator::next()
 {
      if (m_current > m_end) { throw py::stop_iteration(); }

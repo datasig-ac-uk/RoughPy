@@ -34,6 +34,7 @@
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_blas.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/types.h>
 
 rpy::scalars::ScalarMatrix::ScalarMatrix() : ScalarArray() {}
 

@@ -35,6 +35,7 @@
 #include "../../standard_scalar_type.h"
 
 #include "bfloat16_random_generator.h"
+#include <roughpy/scalars/types.h>
 
 namespace rpy {
 namespace scalars {
