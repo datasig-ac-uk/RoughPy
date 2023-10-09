@@ -124,10 +124,16 @@ static PyObject* monomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR);
 
 static PyObject* monomial___getstate__(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
+
+    std::cout << cast_mon(self) <<
+            '\n';
     std::stringstream ss;
-    {
-        archives::PortableBinaryOutputArchive oa(ss);
+    try {
+        archives::BinaryOutputArchive oa(ss);
         oa(cast_mon(self));
+    } catch (cereal::Exception& exc) {
+        PyErr_SetString(PyExc_RuntimeError, exc.what());
+        return nullptr;
     }
 
     auto str = ss.str();
@@ -136,7 +142,8 @@ static PyObject* monomial___getstate__(PyObject* self, PyObject* RPY_UNUSED_VAR)
     );
 }
 
-static PyObject* monomial___setstate__(PyObject* self, PyObject* args) {
+static PyObject* monomial___setstate__(PyObject* self, PyObject* args)
+{
 
     PyByteArrayObject* data = nullptr;
 
@@ -144,11 +151,20 @@ static PyObject* monomial___setstate__(PyObject* self, PyObject* args) {
         return nullptr;
     }
 
-    std::string sdata(PyByteArray_AS_STRING(data), PyByteArray_GET_SIZE(data));
-    {
-        std::istringstream ss(sdata);
-        archives::PortableBinaryInputArchive ia(ss);
+    if (data == nullptr) {
+        PyErr_SetString(PyExc_ValueError, "data cannot be empty");
+        return nullptr;
+    }
+
+    std::string sdata(PyByteArray_AsString((PyObject*)data),
+                      PyByteArray_Size((PyObject*) data));
+    try {
+        std::stringstream ss(sdata);
+        archives::BinaryInputArchive ia(ss);
         ia(cast_mon(self));
+    } catch (cereal::Exception& exc) {
+        PyErr_SetString(PyExc_RuntimeError, exc.what());
+        return nullptr;
     }
 
     Py_RETURN_NONE;
@@ -219,7 +235,7 @@ static PyNumberMethods RPyMonomial_number{
 
 PyTypeObject RPyMonomial_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)    //
-        "_roughpy.Monomial",                 /* tp_name */
+        "roughpy.Monomial",                 /* tp_name */
         sizeof(RPyMonomial),                 /* tp_basicsize */
         0,                                   /* tp_itemsize */
         nullptr,                             /* tp_dealloc */
@@ -318,6 +334,42 @@ static PyObject* polynomial_repr(PyObject* self);
 
 // Other methods
 static PyObject* polynomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR);
+
+static PyObject*
+polynomial___getstate__(PyObject* self, PyObject* RPY_UNUSED_VAR)
+{
+    std::stringstream ss;
+    {
+        archives::PortableBinaryOutputArchive oa(ss);
+        oa(cast_mon(self));
+    }
+
+    string data(std::move(ss).str());
+
+    return PyByteArray_FromStringAndSize(data.data(), data.size());
+}
+
+
+static PyObject*
+polynomial___setstate__(PyObject* self, PyObject* args) {
+
+    PyByteArrayObject* data = nullptr;
+
+    if (!PyArg_ParseTuple(args, "O!", &PyByteArray_Type, &data)) {
+        return nullptr;
+    }
+
+    string sdata(PyByteArray_AS_STRING(data), PyByteArray_GET_SIZE(data));
+    {
+        std::istringstream ss(sdata);
+        archives::PortableBinaryInputArchive ia(ss);
+        ia(cast_mon(self));
+    }
+
+    Py_RETURN_NONE;
+}
+
+
 }
 
 PyObject* PyPolynomial_FromPolynomial(scalars::rational_poly_scalar&& poly
@@ -325,6 +377,10 @@ PyObject* PyPolynomial_FromPolynomial(scalars::rational_poly_scalar&& poly
 
 static PyMethodDef RPyPolynomial_methods[] = {
         {"degree", (PyCFunction) &polynomial_degree, METH_NOARGS, nullptr},
+        {"__getstate__", (PyCFunction) &polynomial___getstate__, METH_NOARGS,
+         nullptr},
+        {"__setstate__", (PyCFunction) &polynomial___setstate__, METH_VARARGS,
+         nullptr},
         { nullptr,                          nullptr,           0, nullptr}
 };
 
@@ -374,7 +430,7 @@ static PyNumberMethods RPyPolynomial_number{
 
 PyTypeObject RPyPolynomial_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)      //
-        "_roughpy.Polynomial",                 /* tp_name */
+        "roughpy.Polynomial",                 /* tp_name */
         sizeof(RPyPolynomial),                 /* tp_basicsize */
         0,                                     /* tp_itemsize */
         nullptr,                               /* tp_dealloc */

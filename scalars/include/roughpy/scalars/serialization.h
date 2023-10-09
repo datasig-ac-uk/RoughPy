@@ -32,6 +32,7 @@
 #include <roughpy/platform/serialization.h>
 
 #include "types.h"
+#include <cereal/types/utility.hpp>
 
 RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::half)
 {
@@ -277,27 +278,37 @@ RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::monomial)
 {
     using namespace ::rpy::scalars;
 
-    RPY_SERIAL_SERIALIZE_SIZE(value.type());
+    RPY_SERIAL_SERIALIZE_SIZE(static_cast<size_type>(value.type()));
 
-    for (const auto& entry : value) { RPY_SERIAL_SERIALIZE_VAL(entry); }
+    for (auto&& entry : value) {
+//        RPY_SERIAL_SERIALIZE_NVP("key", entry.first);
+//        RPY_SERIAL_SERIALIZE_NVP("degree", entry.second);
+        RPY_SERIAL_SERIALIZE_BARE(::cereal::make_map_item(entry.first, entry
+                                                                          .second));
+//        RPY_SERIAL_SERIALIZE_BARE(entry);
+    }
 }
 RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
 
-    size_t count;
+    size_type count;
     RPY_SERIAL_SERIALIZE_SIZE(count);
 
-    pair<indeterminate_type, deg_t> entry(indeterminate_type(0, 0), 0);
+//    pair<indeterminate_type, deg_t> entry(indeterminate_type(0, 0), 0);
+    indeterminate_type id(0, 0);
+    deg_t degree;
     for (size_t i = 0; i < count; ++i) {
-        RPY_SERIAL_SERIALIZE_VAL(entry);
-        value[entry.first] = entry.second;
+//        RPY_SERIAL_SERIALIZE_BARE(entry);
+        RPY_SERIAL_SERIALIZE_BARE(::cereal::make_map_item(id, degree));
+
+        value[id] = degree;
     }
 }
 
-namespace cereal {
-RPY_SERIAL_LOAD_FN_EXT(::rpy::scalars::rational_poly_scalar)
+//namespace cereal {
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::rational_poly_scalar)
 {
     using namespace rpy;
     using namespace rpy::scalars;
@@ -315,7 +326,7 @@ RPY_SERIAL_LOAD_FN_EXT(::rpy::scalars::rational_poly_scalar)
     }
 }
 
-RPY_SERIAL_SAVE_FN_EXT(::rpy::scalars::rational_poly_scalar)
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::rational_poly_scalar)
 {
     using namespace rpy;
     using namespace rpy::scalars;
@@ -327,6 +338,6 @@ RPY_SERIAL_SAVE_FN_EXT(::rpy::scalars::rational_poly_scalar)
         rpy::scalars::dtl::save_rational(archive, item.value());
     }
 }
-}// namespace cereal
+//}// namespace cereal
 
 #endif// ROUGHPY_SCALARS_SERIALIZATION_H_

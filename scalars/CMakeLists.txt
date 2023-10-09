@@ -144,6 +144,7 @@ add_roughpy_test(scalar
         src/test_key_scalar_array.cpp
         src/test_scalar_matrix.cpp
         src/test_pcg_standard_random.cpp
+        src/test_monomial.cpp
         NEEDS
         RoughPy::Scalars
 )

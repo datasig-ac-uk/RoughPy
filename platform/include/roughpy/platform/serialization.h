@@ -173,92 +173,31 @@ class XMLOutputArchive;
             const std::uint32_t RPY_UNUSED_VAR version                         \
     )
 
-#define RPY_SERIAL_EXT_LIB_SERIALIZE_FN(T)                                     \
-    namespace cereal {                                                         \
-    template <typename Archive>                                                \
-    void serialize(                                                            \
-            Archive& archive,                                                  \
-            T& value,                                                          \
-            const std::uint32_t RPY_UNUSED_VAR version                         \
-    );                                                                         \
-    }                                                                          \
-    template <typename Archive>                                                \
-    void cereal::serialize(                                                    \
-            Archive& archive,                                                  \
-            T& value,                                                          \
-            const std::uint32_t version                                        \
-    )
+
 
 #define RPY_SERIAL_EXT_LIB_SAVE_FN(T)                                          \
     namespace cereal {                                                         \
     template <typename Archive>                                                \
-    void                                                                       \
-    save(Archive& archive,                                                     \
-         const T& value,                                                       \
-         const std::uint32_t RPY_UNUSED_VAR version);                          \
+    void save(Archive& archive, const T& value);                               \
     }                                                                          \
     template <typename Archive>                                                \
-    void cereal::save(                                                         \
-            Archive& archive,                                                  \
-            const T& value,                                                    \
-            const std::uint32_t version                                        \
-    )
+    void cereal::save(Archive& archive, const T& value)
 
 #define RPY_SERIAL_EXT_LIB_LOAD_FN(T)                                          \
     namespace cereal {                                                         \
     template <typename Archive>                                                \
-    void load(Archive& archive, T& value, const std::uint32_t version);        \
+    void load(Archive& archive, T& value);                                     \
     }                                                                          \
     template <typename Archive>                                                \
-    void cereal::load(                                                         \
-            Archive& archive,                                                  \
-            T& value,                                                          \
-            const std::uint32_t RPY_UNUSED_VAR version                         \
-    )
-
+    void cereal::load(Archive& archive, T& value)
 
 #define RPY_SERIAL_EXT_LIB_SERIALIZE_FN(T)                                     \
     namespace cereal {                                                         \
     template <typename Archive>                                                \
-    void serialize(                                                            \
-            Archive& archive,                                                  \
-            T& value,                                                          \
-            const std::uint32_t RPY_UNUSED_VAR version                         \
-    );                                                                         \
+    void serialize(Archive& archive, T& value);                                \
     }                                                                          \
     template <typename Archive>                                                \
-    void cereal::serialize(                                                    \
-            Archive& archive,                                                  \
-            T& value,                                                          \
-            const std::uint32_t version                                        \
-    )
-
-#define RPY_SERIAL_EXT_LIB_SAVE_FN(T)                                          \
-    namespace cereal {                                                         \
-    template <typename Archive>                                                \
-    void                                                                       \
-    save(Archive& archive,                                                     \
-         const T& value,                                                       \
-         const std::uint32_t RPY_UNUSED_VAR version);                          \
-    }                                                                          \
-    template <typename Archive>                                                \
-    void cereal::save(                                                         \
-            Archive& archive,                                                  \
-            const T& value,                                                    \
-            const std::uint32_t version                                        \
-    )
-
-#define RPY_SERIAL_EXT_LIB_LOAD_FN(T)                                          \
-    namespace cereal {                                                         \
-    template <typename Archive>                                                \
-    void load(Archive& archive, T& value, const std::uint32_t version);        \
-    }                                                                          \
-    template <typename Archive>                                                \
-    void cereal::load(                                                         \
-            Archive& archive,                                                  \
-            T& value,                                                          \
-            const std::uint32_t RPY_UNUSED_VAR version                         \
-    )
+    void cereal::serialize(Archive& archive, T& value)
 
 namespace rpy {
 namespace serial {
@@ -334,7 +273,6 @@ using cereal::XMLOutputArchive;
               CLASS,                                                           \
               ::rpy::archives::XMLInputArchive                                 \
       )
-
 
 #  define RPY_SERIAL_EXTERN_SAVE_CLS_IMPL(CLASS, AR)                           \
       extern template void CLASS::save<AR>(AR&, const std::uint32_t) const;

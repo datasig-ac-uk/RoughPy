@@ -26,66 +26,43 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 03/03/23.
+// Created by user on 09/10/23.
 //
 
-#include "interfaces/algebra_interface.h"
-#include <roughpy/algebra/algebra_base.h>
-#include <roughpy/algebra/algebra_base_impl.h>
-
-#include <ostream>
-#include <roughpy/algebra/context.h>
+#include <gtest/gtest.h>
 
 #include <roughpy/scalars/types.h>
+#include <roughpy/scalars/serialization.h>
+
+#include <roughpy/platform/archives.h>
+
+#include <sstream>
 
 using namespace rpy;
-using namespace rpy::algebra;
+using namespace rpy::scalars;
 
-algebra::dtl::AlgebraInterfaceBase::AlgebraInterfaceBase(
-        context_pointer&& ctx,
-        VectorType vtype,
-        const scalars::ScalarType* stype,
-        ImplementationType impl_type,
-        AlgebraType alg_type
-)
-    : p_ctx(std::move(ctx)), p_coeff_type(stype), m_vector_type(vtype),
-      m_impl_type(impl_type), m_alg_type(alg_type)
-{}
 
-algebra::dtl::AlgebraInterfaceBase::~AlgebraInterfaceBase() = default;
 
-void rpy::algebra::dtl::print_empty_algebra(std::ostream& os) { os << "{ }"; }
+TEST(ScalarMonomial, MonomialSerializeRoundTrip) {
 
-const rpy::scalars::ScalarType*
-rpy::algebra::dtl::context_to_scalars(context_pointer const& ptr)
-{
-    return ptr->ctype();
-}
+    monomial x(indeterminate_type('x'));
 
-UnspecifiedAlgebraType rpy::algebra::dtl::try_create_new_empty(
-        context_pointer ctx, AlgebraType alg_type
-)
-{
-    return ctx->construct(alg_type, {});
-}
+    std::stringstream ss;
+    try {
+        archives::JSONOutputArchive oa(ss);
+        oa(serial::make_nvp("data", x));
+    } catch (std::exception& exc) {
+        std::cout << ss.str() << '\n';
+        throw exc;
+    }
 
-UnspecifiedAlgebraType algebra::dtl::construct_dense_algebra(
-        scalars::ScalarArray&& data, const context_pointer& ctx,
-        AlgebraType atype
-)
-{
-    VectorConstructionData cdata{
-            {std::move(data), nullptr},
-            VectorType::Dense
-    };
-    return ctx->construct(atype, cdata);
-}
+    std::cout << ss.str() << '\n';
 
-void rpy::algebra::dtl::check_contexts_compatible(
-        const context_pointer& ref, const context_pointer& other
-)
-{
-    if (ref == other) { return; }
+    monomial x1;
+    {
+        archives::JSONInputArchive ia(ss);
+        ia(serial::make_nvp("data", x1));
+    }
 
-    RPY_CHECK(ref->check_compatible(*other));
+    ASSERT_EQ(x1, x);
 }

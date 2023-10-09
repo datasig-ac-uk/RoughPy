@@ -219,10 +219,7 @@ AlgebraBase<Interface, DerivedImpl>::AlgebraBase(AlgebraBase&& other) noexcept
 template <
         typename Interface,
         template <typename, template <typename> class> class DerivedImpl>
-AlgebraBase<Interface, DerivedImpl>::~AlgebraBase() {
-    p_impl.~unique_ptr();
-}
-
+AlgebraBase<Interface, DerivedImpl>::~AlgebraBase() = default;
 
 template <
         typename Interface,
