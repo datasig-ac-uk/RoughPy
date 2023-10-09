@@ -30,8 +30,9 @@
 #ifndef ROUGHPY_LA_CONTEXT_LA_CONTEXT_H_
 #define ROUGHPY_LA_CONTEXT_LA_CONTEXT_H_
 
+#include "implementors/algebra_impl.h"
+#include "implementors/free_tensor_impl.h"
 #include "roughpy/algebra/algebra_base.h"
-#include "roughpy/algebra/algebra_impl.h"
 #include "roughpy/algebra/algebra_info.h"
 #include "roughpy/algebra/algebra_iterator.h"
 #include "roughpy/algebra/algebra_iterator_impl.h"
@@ -40,7 +41,6 @@
 #include "roughpy/algebra/basis_impl.h"
 #include "roughpy/algebra/context.h"
 #include "roughpy/algebra/free_tensor.h"
-#include "roughpy/algebra/free_tensor_impl.h"
 #include "roughpy/algebra/lie.h"
 #include "roughpy/algebra/shuffle_tensor.h"
 #include "roughpy/scalars/key_scalar_array.h"
