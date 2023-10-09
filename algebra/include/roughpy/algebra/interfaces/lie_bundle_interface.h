@@ -25,35 +25,39 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 06/03/23.
-//
+#ifndef ROUGHPY_ALGEBRA_LIE_BUNDLE_INTERFACE_H_
+#define ROUGHPY_ALGEBRA_LIE_BUNDLE_INTERFACE_H_
+
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+#include <roughpy/platform/serialization.h>
+
+#include "lie_interface.h"
+#include "algebra_bundle_interface.h"
 
 
-#include <roughpy/algebra/interfaces/shuffle_tensor_interface.h>
-#include <roughpy/algebra/algebra_base.h>
-#include <roughpy/algebra/algebra_base_impl.h>
 
 namespace rpy {
 namespace algebra {
 
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
+        BundleInterface<LieBundle, Lie, Lie>;
 
-template class RPY_EXPORT_INSTANTIATION AlgebraBase<ShuffleTensorInterface>;
-
-
-
-template <>
-typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx)
+class RPY_EXPORT LieBundleInterface
+    : public BundleInterface<LieBundle, Lie, Lie>
 {
-    return ctx->get_tensor_basis();
-}
+    using base_t = BundleInterface<LieBundle, Lie, Lie>;
 
-
+public:
+    using base_t::base_t;
+};
 
 }// namespace algebra
 }// namespace rpy
 
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::ShuffleTensor
+RPY_SERIAL_SPECIALIZE_TYPES(
+        rpy::algebra::LieBundleInterface,
+        rpy::serial::specialization::member_serialize
+)
 
-#include <roughpy/platform/serialization_instantiations.inl>
+#endif// ROUGHPY_ALGEBRA_LIE_BUNDLE_INTERFACE_H_

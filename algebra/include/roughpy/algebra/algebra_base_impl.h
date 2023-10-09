@@ -37,9 +37,11 @@
 #include <roughpy/platform/serialization.h>
 
 #include "context.h"
+#include "interfaces/algebra_interface.h"
 
 namespace rpy {
 namespace algebra {
+
 
 #define RPY_CHECK_CONTEXTS(OTHER)                                              \
     dtl::check_contexts_compatible(context(), (OTHER).context())
@@ -211,6 +213,17 @@ template <
 AlgebraBase<Interface, DerivedImpl>::AlgebraBase(AlgebraBase&& other) noexcept
     : p_impl(std::move(other.p_impl))
 {}
+
+
+
+template <
+        typename Interface,
+        template <typename, template <typename> class> class DerivedImpl>
+AlgebraBase<Interface, DerivedImpl>::~AlgebraBase() {
+    p_impl.~unique_ptr();
+}
+
+
 template <
         typename Interface,
         template <typename, template <typename> class> class DerivedImpl>

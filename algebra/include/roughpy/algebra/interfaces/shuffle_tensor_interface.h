@@ -25,35 +25,32 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 06/03/23.
-//
+#ifndef ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_INTERFACE_H_
+#define ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_INTERFACE_H_
 
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
 
-#include <roughpy/algebra/interfaces/shuffle_tensor_interface.h>
-#include <roughpy/algebra/algebra_base.h>
-#include <roughpy/algebra/algebra_base_impl.h>
+#include <roughpy/algebra/tensor_basis.h>
+#include <roughpy/algebra/shuffle_tensor.h>
+#include "algebra_interface.h"
 
 namespace rpy {
 namespace algebra {
 
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
+        AlgebraInterface<ShuffleTensor, TensorBasis>;
 
-template class RPY_EXPORT_INSTANTIATION AlgebraBase<ShuffleTensorInterface>;
-
-
-
-template <>
-typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx)
+class RPY_EXPORT ShuffleTensorInterface
+    : public AlgebraInterface<ShuffleTensor, TensorBasis>
 {
-    return ctx->get_tensor_basis();
-}
+    using base_t = AlgebraInterface<ShuffleTensor, TensorBasis>;
 
-
+public:
+    using base_t::base_t;
+};
 
 }// namespace algebra
 }// namespace rpy
 
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::ShuffleTensor
-
-#include <roughpy/platform/serialization_instantiations.inl>
+#endif// ROUGHPY_ALGEBRA_SHUFFLE_TENSOR_INTERFACE_H_

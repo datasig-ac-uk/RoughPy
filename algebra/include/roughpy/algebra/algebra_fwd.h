@@ -30,7 +30,6 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
-#include <roughpy/platform/serialization.h>
 
 #include <memory>
 
@@ -91,47 +90,132 @@ using RawUnspecifiedAlgebraType = dtl::AlgebraInterfaceBase*;
 using ConstRawUnspecifiedAlgebraType = const dtl::AlgebraInterfaceBase*;
 using UnspecifiedAlgebraType = std::unique_ptr<dtl::AlgebraInterfaceBase>;
 
+class TensorBasisInterface;
+class LieBasisInterface;
+
+using TensorKey = key_type;
+using TensorBasis = Basis<TensorBasisInterface>;
+using LieKey = key_type;
+using LieBasis = Basis<LieBasisInterface>;
+
+class FreeTensorInterface;
 class FreeTensor;
-
+class LieInterface;
 class Lie;
-
+class ShuffleTensorInterface;
 class ShuffleTensor;
-
+class FreeTensorBundleInterface;
 class FreeTensorBundle;
-
+class LieBundleInterface;
 class LieBundle;
-
+class ShuffleTensorBundleInterface;
 class ShuffleTensorBundle;
 
 
-RPY_SERIAL_SAVE_FN_EXT(VectorType) {
-    RPY_SERIAL_SERIALIZE_BARE(static_cast<uint16_t>(value));
-}
+namespace traits {
+namespace dtl {
 
-RPY_SERIAL_LOAD_FN_EXT(VectorType) {
-    uint16_t tmp;
-    RPY_SERIAL_SERIALIZE_BARE(tmp);
-    value = static_cast<VectorType>(tmp);
-}
+template <typename I>
+struct algebra_of_impl;
+
+template <typename I>
+struct basis_of_impl;
+
+template <typename I>
+struct key_of_impl;
+
+template <typename I>
+struct basis_algebra_of;
+
+template <typename I>
+struct fibre_algebra_of;
+
+template <>
+struct algebra_of_impl<FreeTensorInterface> {
+    using type = FreeTensor;
+};
+template <>
+struct basis_of_impl<FreeTensorInterface> {
+    using type = TensorBasis;
+};
+template <>
+struct key_of_impl<FreeTensorInterface> {
+    using type = TensorKey;
+};
+template <>
+struct algebra_of_impl<FreeTensorBundleInterface> {
+    using type = FreeTensorBundle;
+};
+template <>
+struct basis_of_impl<FreeTensorBundleInterface> {
+    using type = TensorBasis;
+};
+template <>
+struct key_of_impl<FreeTensorBundleInterface> {
+    using type = TensorKey;
+};
+
+template <>
+struct basis_of_impl<LieInterface> {
+    using type = LieBasis;
+};
+template <>
+struct algebra_of_impl<LieInterface> {
+    using type = Lie;
+};
+template <>
+struct key_of_impl<LieInterface> {
+    using type = LieKey;
+};
+template <>
+struct basis_of_impl<LieBundleInterface> {
+    using type = LieBasis;
+};
+template <>
+struct algebra_of_impl<LieBundleInterface> {
+    using type = LieBundle;
+};
+template <>
+struct key_of_impl<LieBundleInterface> {
+    using type = LieKey;
+};
+
+template <>
+struct algebra_of_impl<ShuffleTensorInterface> {
+    using type = ShuffleTensor;
+};
+template <>
+struct basis_of_impl<ShuffleTensorInterface> {
+    using type = TensorBasis;
+};
+template <>
+struct key_of_impl<ShuffleTensorInterface> {
+    using type = TensorKey;
+};
+template <>
+struct algebra_of_impl<ShuffleTensorBundleInterface> {
+    using type = ShuffleTensorBundle;
+};
+template <>
+struct basis_of_impl<ShuffleTensorBundleInterface> {
+    using type = TensorBasis;
+};
+template <>
+struct key_of_impl<ShuffleTensorBundleInterface> {
+    using type = TensorKey;
+};
 
 
-RPY_SERIAL_SAVE_FN_EXT(AlgebraType) {
-    RPY_SERIAL_SERIALIZE_BARE(static_cast<uint16_t>(value));
-}
 
-RPY_SERIAL_LOAD_FN_EXT(AlgebraType) {
-    uint16_t tmp;
-    RPY_SERIAL_SERIALIZE_BARE(tmp);
-    value = static_cast<AlgebraType>(tmp);
-}
-
+}// namespace dtl
+}// namespace traits
 }// namespace algebra
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::VectorType,
-                            rpy::serial::specialization::non_member_load_save);
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::algebra::AlgebraType,
-                            rpy::serial::specialization::non_member_load_save);
+
+
+
+
 
 #endif// ROUGHPY_ALGEBRA_ALGEBRA_FWD_H_

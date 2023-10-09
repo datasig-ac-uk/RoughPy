@@ -61,6 +61,12 @@ using key_of = typename dtl::key_of_impl<I>::type;
 template <typename I>
 using algebra_of = typename dtl::algebra_of_impl<I>::type;
 
+template <typename BI>
+using base_algebra_of = typename dtl::algebra_of_impl<BI>::type;
+
+template <typename BI>
+using fibre_algebra_of = typename dtl::algebra_of_impl<BI>::type;
+
 }
 
 }// namespace algebra

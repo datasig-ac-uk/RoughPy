@@ -29,8 +29,8 @@
 // Created by user on 03/03/23.
 //
 
+#include "interfaces/algebra_interface.h"
 #include <roughpy/algebra/algebra_base.h>
-
 
 #include <ostream>
 #include <roughpy/algebra/context.h>

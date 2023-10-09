@@ -25,35 +25,40 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 06/03/23.
-//
+#ifndef ROUGHPY_ALGEBRA_FREE_TENSOR_INTERFACE_H_
+#define ROUGHPY_ALGEBRA_FREE_TENSOR_INTERFACE_H_
 
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
 
-#include <roughpy/algebra/interfaces/shuffle_tensor_interface.h>
-#include <roughpy/algebra/algebra_base.h>
-#include <roughpy/algebra/algebra_base_impl.h>
+#include <roughpy/algebra/free_tensor.h>
+#include <roughpy/algebra/tensor_basis.h>
+#include "algebra_interface.h"
+
 
 namespace rpy {
 namespace algebra {
 
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
+        AlgebraInterface<FreeTensor, TensorBasis>;
 
-template class RPY_EXPORT_INSTANTIATION AlgebraBase<ShuffleTensorInterface>;
-
-
-
-template <>
-typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx)
+class RPY_EXPORT FreeTensorInterface
+    : public AlgebraInterface<FreeTensor, TensorBasis>
 {
-    return ctx->get_tensor_basis();
-}
+public:
+    using algebra_interface_t = AlgebraInterface<FreeTensor, TensorBasis>;
 
+    using algebra_interface_t::algebra_interface_t;
 
+    RPY_NO_DISCARD virtual FreeTensor exp() const = 0;
+    RPY_NO_DISCARD virtual FreeTensor log() const = 0;
+    //    RPY_NO_DISCARD
+    //    virtual FreeTensor inverse() const = 0;
+    RPY_NO_DISCARD virtual FreeTensor antipode() const = 0;
+    virtual void fmexp(const FreeTensor& other) = 0;
+};
 
 }// namespace algebra
 }// namespace rpy
 
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::ShuffleTensor
-
-#include <roughpy/platform/serialization_instantiations.inl>
+#endif// ROUGHPY_ALGEBRA_FREE_TENSOR_INTERFACE_H_

@@ -40,8 +40,12 @@
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/types.h>
 
+#include <roughpy/algebra/interfaces/free_tensor_interface.h>
+#include <roughpy/algebra/interfaces/lie_interface.h>
+#include <roughpy/algebra/interfaces/shuffle_tensor_interface.h>
+#include "implementors/algebra_impl.h"
+#include "implementors/free_tensor_impl.h"
 #include <roughpy/algebra/algebra_base.h>
-#include <roughpy/algebra/algebra_impl.h>
 #include <roughpy/algebra/algebra_info.h>
 #include <roughpy/algebra/algebra_iterator.h>
 #include <roughpy/algebra/algebra_iterator_impl.h>
@@ -49,9 +53,11 @@
 #include <roughpy/algebra/basis_impl.h>
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/free_tensor.h>
-#include <roughpy/algebra/free_tensor_impl.h>
 #include <roughpy/algebra/lie.h>
 #include <roughpy/algebra/shuffle_tensor.h>
+#include <roughpy/algebra/implementors/free_tensor_impl.h>
+#include <roughpy/algebra/implementors/lie_impl.h>
+#include <roughpy/algebra/implementors/shuffle_tensor_impl.h>
 
 #include "libalgebra_lite_internal/algebra_type_caster.h"
 #include "libalgebra_lite_internal/algebra_type_helper.h"

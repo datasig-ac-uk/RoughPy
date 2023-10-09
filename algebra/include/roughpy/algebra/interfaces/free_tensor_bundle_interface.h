@@ -25,35 +25,47 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 06/03/23.
-//
+#ifndef ROUGHPY_ALGEBRA_FREE_TENSOR_BUNDLE_INTERFACE_H_
+#define ROUGHPY_ALGEBRA_FREE_TENSOR_BUNDLE_INTERFACE_H_
+
+#include <roughpy/core/macros.h>
+
+#include <roughpy/algebra/tensor_basis.h>
+#include <roughpy/algebra/free_tensor.h>
+#include <roughpy/algebra/free_tensor_bundle.h>
 
 
-#include <roughpy/algebra/interfaces/shuffle_tensor_interface.h>
-#include <roughpy/algebra/algebra_base.h>
-#include <roughpy/algebra/algebra_base_impl.h>
+#include "algebra_bundle_interface.h"
 
-namespace rpy {
-namespace algebra {
+RPY_WARNING_PUSH
+RPY_GCC_DISABLE_WARNING(-Wattributes)
 
-
-template class RPY_EXPORT_INSTANTIATION AlgebraBase<ShuffleTensorInterface>;
+namespace rpy { namespace algebra {
 
 
+RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
+        BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
 
-template <>
-typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx)
+
+
+class RPY_EXPORT FreeTensorBundleInterface
+    : public BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>
 {
-    return ctx->get_tensor_basis();
-}
+public:
+    using algebra_interface_t
+            = BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
 
+    using algebra_interface_t::algebra_interface_t;
 
+    RPY_NO_DISCARD virtual FreeTensorBundle exp() const = 0;
+    RPY_NO_DISCARD virtual FreeTensorBundle log() const = 0;
+    //    RPY_NO_DISCARD
+    //    virtual FreeTensorBundle inverse() const = 0;
+    RPY_NO_DISCARD virtual FreeTensorBundle antipode() const = 0;
+    virtual void fmexp(const FreeTensorBundle& other) = 0;
+};
 
-}// namespace algebra
-}// namespace rpy
+}}
 
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::ShuffleTensor
-
-#include <roughpy/platform/serialization_instantiations.inl>
+RPY_WARNING_POP
+#endif // ROUGHPY_ALGEBRA_FREE_TENSOR_BUNDLE_INTERFACE_H_

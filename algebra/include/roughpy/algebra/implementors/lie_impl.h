@@ -25,35 +25,12 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 06/03/23.
-//
+#ifndef ROUGHPY_ALGEBRA_LIE_IMPL_H_
+#define ROUGHPY_ALGEBRA_LIE_IMPL_H_
 
+#include <roughpy/algebra/lie.h>
+#include <roughpy/algebra/interfaces/lie_interface.h>
 
-#include <roughpy/algebra/interfaces/shuffle_tensor_interface.h>
-#include <roughpy/algebra/algebra_base.h>
-#include <roughpy/algebra/algebra_base_impl.h>
+#include "algebra_impl.h"
 
-namespace rpy {
-namespace algebra {
-
-
-template class RPY_EXPORT_INSTANTIATION AlgebraBase<ShuffleTensorInterface>;
-
-
-
-template <>
-typename ShuffleTensor::basis_type
-basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx)
-{
-    return ctx->get_tensor_basis();
-}
-
-
-
-}// namespace algebra
-}// namespace rpy
-
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::ShuffleTensor
-
-#include <roughpy/platform/serialization_instantiations.inl>
+#endif // ROUGHPY_ALGEBRA_LIE_IMPL_H_

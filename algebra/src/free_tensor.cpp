@@ -29,32 +29,19 @@
 // Created by user on 05/03/23.
 //
 
-#include <roughpy/algebra/context.h>
-#include <roughpy/algebra/free_tensor.h>
-#include <roughpy/platform/serialization.h>
-#include <roughpy/scalars/types.h>
-
-#include <roughpy/algebra/algebra_bundle_impl.h>
-#include <roughpy/algebra/algebra_impl.h>
-#include <roughpy/algebra/free_tensor_impl.h>
-
-#include <roughpy/platform/archives.h>
+#include <roughpy/algebra/algebra_base.h>
+#include <roughpy/algebra/algebra_base_impl.h>
+#include <roughpy/algebra/interfaces/free_tensor_interface.h>
 
 using namespace rpy::algebra;
 
 namespace rpy {
 namespace algebra {
-template class RPY_EXPORT_INSTANTIATION
-        AlgebraInterface<FreeTensor, TensorBasis>;
+
 
 template class RPY_EXPORT_INSTANTIATION
         AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
 
-template class RPY_EXPORT_INSTANTIATION
-        BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>;
-
-template class RPY_EXPORT_INSTANTIATION AlgebraBundleBase<
-        FreeTensorBundleInterface, FreeTensorBundleImplementation>;
 }// namespace algebra
 }// namespace rpy
 
@@ -68,11 +55,11 @@ FreeTensor FreeTensor::log() const
     if (p_impl) { return p_impl->log(); }
     return {};
 }
-//FreeTensor FreeTensor::inverse() const
+// FreeTensor FreeTensor::inverse() const
 //{
-//    if (p_impl) { return p_impl->inverse(); }
-//    return {};
-//}
+//     if (p_impl) { return p_impl->inverse(); }
+//     return {};
+// }
 FreeTensor FreeTensor::antipode() const
 {
     if (p_impl) { return p_impl->antipode(); }
@@ -84,42 +71,9 @@ FreeTensor& FreeTensor::fmexp(const FreeTensor& other)
     return *this;
 }
 
-FreeTensorBundle FreeTensorBundle::exp() const
-{
-    if (p_impl) { return p_impl->exp(); }
-    return FreeTensorBundle();
-}
-FreeTensorBundle FreeTensorBundle::log() const
-{
-    if (p_impl) { return p_impl->log(); }
-    return FreeTensorBundle();
-}
-//FreeTensorBundle FreeTensorBundle::inverse() const
-//{
-//    if (p_impl) { return p_impl->inverse(); }
-//    return FreeTensorBundle();
-//}
-FreeTensorBundle FreeTensorBundle::antipode() const
-{
-    if (p_impl) { return p_impl->antipode(); }
-    return FreeTensorBundle();
-}
-FreeTensorBundle& FreeTensorBundle::fmexp(const FreeTensorBundle& other)
-{
-    if (p_impl && other.p_impl) { p_impl->fmexp(other); }
-    return *this;
-}
-
 template <>
 typename FreeTensor::basis_type
 basis_setup_helper<FreeTensor>::get(const context_pointer& ctx)
-{
-    return ctx->get_tensor_basis();
-}
-
-template <>
-typename FreeTensorBundle::basis_type
-basis_setup_helper<FreeTensorBundle>::get(const context_pointer& ctx)
 {
     return ctx->get_tensor_basis();
 }
