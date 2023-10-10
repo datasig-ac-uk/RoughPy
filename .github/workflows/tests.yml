@@ -22,7 +22,14 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: true
-        
+
+    - name: Setup gha caching for vcpkg
+      uses: actions/github-script@v6
+      with:
+        script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - name: Python dependencies
       run: |
         python3.10 -m pip install \
@@ -37,19 +44,6 @@ jobs:
         pth="$(python -m site --user-site)/roughpy.pth"
         echo $pth
         echo "import sys; sys.path.insert(0, '${{github.workspace}}')" >> $pth
-       
-    - name: configure-binary-caching
-      run: |
-        mono `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
-          sources add \
-          -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
-          -storepasswordincleartext \
-          -name "GitHub" \
-          -username "datasig-ac-uk" \
-          -password "${{ secrets.GITHUB_TOKEN }}"
-        mono `$VCPKG_INSTALLATION_ROOT/vcpkg fetch nuget | tail -n 1` \
-          setapikey "${{ secrets.GITHUB_TOKEN }}" \
-          -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
