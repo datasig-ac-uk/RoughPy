@@ -31,6 +31,7 @@
 #include <cassert>
 #include <sstream>
 
+#include <roughpy/scalars/types.h>
 #include <roughpy/algebra/context.h>
 
 using namespace rpy;

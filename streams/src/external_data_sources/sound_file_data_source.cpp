@@ -33,6 +33,7 @@
 
 #include <roughpy/platform/filesystem.h>
 #include <roughpy/scalars/owned_scalar_array.h>
+#include <roughpy/scalars/types.h>
 
 #include <boost/url/parse.hpp>
 #include <cmath>

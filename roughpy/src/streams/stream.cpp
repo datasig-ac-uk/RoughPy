@@ -557,7 +557,8 @@ static PyObject* restrict(PyObject* self, PyObject* args, PyObject* kwargs)
     return python::RPyStream_FromStream(stream.restrict(ivl));
 }
 
-static PyObject* stream___getnewargs_ex__(PyObject* self)
+static PyObject* stream___getnewargs_ex__(PyObject* self, PyObject*
+                                                                  RPY_UNUSED_VAR)
 {
     PyObject* data;
 

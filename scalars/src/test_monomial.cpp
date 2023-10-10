@@ -48,15 +48,11 @@ TEST(ScalarMonomial, MonomialSerializeRoundTrip) {
     monomial x(indeterminate_type('x'));
 
     std::stringstream ss;
-    try {
+    {
         archives::JSONOutputArchive oa(ss);
         oa(serial::make_nvp("data", x));
-    } catch (std::exception& exc) {
-        std::cout << ss.str() << '\n';
-        throw exc;
     }
 
-    std::cout << ss.str() << '\n';
 
     monomial x1;
     {

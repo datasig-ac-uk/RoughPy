@@ -27,6 +27,7 @@
 
 #include "tensor_key.h"
 #include <roughpy/algebra/context.h>
+#include <roughpy/scalars/types.h>
 
 #include <algorithm>
 #include <sstream>
