@@ -452,6 +452,50 @@ struct type_id_of_impl<long> : public std::conditional_t<
                                        type_id_of_impl<long long>> {
 };
 
+
+template <>
+struct RPY_EXPORT scalar_type_holder<char> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned char> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<short> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned short> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+
+template <>
+struct RPY_EXPORT scalar_type_holder<int> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned int> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<long> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned long> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<long long> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned long long> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+
+
 template <>
 struct RPY_EXPORT scalar_type_holder<float> {
     static const ScalarType* get_type() noexcept;
