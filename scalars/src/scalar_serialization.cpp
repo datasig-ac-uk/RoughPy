@@ -58,7 +58,12 @@ void rpy::scalars::dtl::MPIntegerSerializationHelper<Integer>::load(
     dimn_t size;
 
     RPY_SERIAL_SERIALIZE_VAL(is_negative);
-    RPY_SERIAL_SERIALIZE_SIZE(size);
+    {
+        // This is probably redundant, but keep the type system happy.
+        serial::size_type tmp_size;
+        RPY_SERIAL_SERIALIZE_SIZE(tmp_size);
+        size = static_cast<dimn_t>(tmp_size);
+    }
 
     if (size > 0) {
         auto n_limbs = (size + sizeof(limbs_t) - 1) / sizeof(limbs_t);
@@ -88,8 +93,13 @@ void rpy::scalars::dtl::MPIntegerSerializationHelper<Integer>::load(
     dimn_t size;
 
     RPY_SERIAL_SERIALIZE_VAL(is_negative);
-    RPY_SERIAL_SERIALIZE_SIZE(size);
 
+    {
+        // This is probably redundant, but keep the type system happy.
+        serial::size_type tmp_size;
+        RPY_SERIAL_SERIALIZE_SIZE(tmp_size);
+        size = static_cast<dimn_t>(tmp_size);
+    }
     if (size > 0) {
         auto n_limbs = (size + sizeof(limbs_t) - 1) / sizeof(limbs_t);
         archive.loadBinaryValue(resize(n_limbs), size, "data");
