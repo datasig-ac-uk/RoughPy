@@ -292,7 +292,7 @@ RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
-    size_t count;
+    cereal::size_type count;
     RPY_SERIAL_SERIALIZE_SIZE(count);
 
 //    pair<indeterminate_type, deg_t> entry(indeterminate_type(0, 0), 0);
