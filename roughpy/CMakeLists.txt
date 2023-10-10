@@ -23,7 +23,9 @@ set_target_properties(RoughPy_PyModule PROPERTIES
         )
 
 target_compile_definitions(RoughPy_PyModule PRIVATE
-        RPY_BUILDING_LIBRARY=1)
+        RPY_BUILDING_LIBRARY=1
+        BOOST_UUID_FORCE_AUTO_LINK=1
+)
 
 if (ROUGHPY_BUILD_PYMODULE_INPLACE)
     set_target_properties(RoughPy_PyModule PROPERTIES
