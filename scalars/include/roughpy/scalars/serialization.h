@@ -278,7 +278,7 @@ RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::monomial)
 {
     using namespace ::rpy::scalars;
 
-    RPY_SERIAL_SERIALIZE_SIZE(static_cast<size_t>(value.type()));
+    RPY_SERIAL_SERIALIZE_SIZE(static_cast<cereal::size_type>(value.type()));
 
     for (auto&& entry : value) {
 //        RPY_SERIAL_SERIALIZE_NVP("key", entry.first);
@@ -293,7 +293,7 @@ RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial)
     using namespace ::rpy;
     using namespace ::rpy::scalars;
     cereal::size_type count;
-    RPY_SERIAL_SERIALIZE_SIZE(count);
+    RPY_SERIAL_SERIALIZE_SIZE(static_cast<cereal::size_type&>(count));
 
 //    pair<indeterminate_type, deg_t> entry(indeterminate_type(0, 0), 0);
     indeterminate_type id(0, 0);
