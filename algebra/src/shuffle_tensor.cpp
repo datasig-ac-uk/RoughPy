@@ -31,6 +31,7 @@
 
 
 #include <roughpy/algebra/interfaces/shuffle_tensor_interface.h>
+#include <roughpy/algebra/shuffle_tensor.h>
 #include <roughpy/algebra/algebra_base.h>
 #include <roughpy/algebra/algebra_base_impl.h>
 

@@ -32,6 +32,7 @@
 #include <roughpy/algebra/algebra_base.h>
 #include <roughpy/algebra/algebra_base_impl.h>
 #include <roughpy/algebra/interfaces/free_tensor_interface.h>
+#include <roughpy/algebra/free_tensor.h>
 
 using namespace rpy::algebra;
 

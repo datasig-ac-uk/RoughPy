@@ -31,6 +31,7 @@
 
 
 #include <roughpy/algebra/interfaces/lie_interface.h>
+#include <roughpy/algebra/lie.h>
 #include <roughpy/algebra/algebra_base.h>
 #include <roughpy/algebra/algebra_base_impl.h>
 
