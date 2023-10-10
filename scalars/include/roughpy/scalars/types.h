@@ -87,29 +87,7 @@ namespace dtl {
         static const string& get_id() noexcept;                                \
     }
 
-ROUGHPY_MAKE_TYPE_ID_OF(char, "i8");
 
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned char, "u8");
-
-ROUGHPY_MAKE_TYPE_ID_OF(short, "i16");
-
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned short, "u16");
-
-ROUGHPY_MAKE_TYPE_ID_OF(int, "i32");
-
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned int, "u32");
-
-ROUGHPY_MAKE_TYPE_ID_OF(long long, "i64");
-
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned long long, "u64");
-
-ROUGHPY_MAKE_TYPE_ID_OF(signed_size_type_marker, "isize");
-
-ROUGHPY_MAKE_TYPE_ID_OF(unsigned_size_type_marker, "usize");
-
-ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
-
-ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
 
 ROUGHPY_MAKE_TYPE_ID_OF(half, "f16");
 
@@ -121,24 +99,8 @@ ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
 
 #undef ROUGHPY_MAKE_TYPE_ID_OF
 
-// Long is silly. On Win64 it is 32 bits (because, Microsoft) on Unix, it is 64
-// bits
-template <>
-struct type_id_of_impl<long> : public std::conditional_t<
-                                       (sizeof(long) == sizeof(int)),
-                                       type_id_of_impl<int>,
-                                       type_id_of_impl<long long>> {
-};
 
-template <>
-struct RPY_EXPORT scalar_type_holder<float> {
-    static const ScalarType* get_type() noexcept;
-};
 
-template <>
-struct RPY_EXPORT scalar_type_holder<double> {
-    static const ScalarType* get_type() noexcept;
-};
 
 template <>
 struct RPY_EXPORT scalar_type_holder<rational_scalar_type> {

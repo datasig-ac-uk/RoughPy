@@ -38,8 +38,6 @@
 #include <utility>
 #include <vector>
 
-
-
 namespace rpy {
 namespace scalars {
 
@@ -49,7 +47,7 @@ struct type_id_of_impl;
 
 template <typename ScalarImpl>
 struct RPY_EXPORT scalar_type_holder {
-    static const ScalarType* get_type() noexcept { return nullptr; }
+    static const ScalarType* get_type() noexcept;
 };
 }// namespace dtl
 
@@ -423,8 +421,49 @@ inline const string& type_id_of() noexcept
     return dtl::type_id_of_impl<T>::get_id();
 }
 
+namespace dtl {
+
+#define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                    \
+    template <>                                                                \
+    struct RPY_EXPORT type_id_of_impl<TYPE> {                                  \
+        static const string& get_id() noexcept;                                \
+    }
+
+ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
+ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
+ROUGHPY_MAKE_TYPE_ID_OF(char, "i8");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned char, "u8");
+ROUGHPY_MAKE_TYPE_ID_OF(short, "i16");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned short, "u16");
+ROUGHPY_MAKE_TYPE_ID_OF(int, "i32");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned int, "u32");
+ROUGHPY_MAKE_TYPE_ID_OF(long long, "i64");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned long long, "u64");
+ROUGHPY_MAKE_TYPE_ID_OF(signed_size_type_marker, "isize");
+ROUGHPY_MAKE_TYPE_ID_OF(unsigned_size_type_marker, "usize");
+
+#undef ROUGHPY_MAKE_TYPE_ID_OF
+// Long is silly. On Win64 it is 32 bits (because, Microsoft) on Unix, it is 64
+// bits
+template <>
+struct type_id_of_impl<long> : public std::conditional_t<
+                                       (sizeof(long) == sizeof(int)),
+                                       type_id_of_impl<int>,
+                                       type_id_of_impl<long long>> {
+};
+
+template <>
+struct RPY_EXPORT scalar_type_holder<float> {
+    static const ScalarType* get_type() noexcept;
+};
+
+template <>
+struct RPY_EXPORT scalar_type_holder<double> {
+    static const ScalarType* get_type() noexcept;
+};
+}// namespace dtl
+
 }// namespace scalars
 }// namespace rpy
 
-#include "types.h"
 #endif// ROUGHPY_SCALARS_SCALAR_TYPE_H_
