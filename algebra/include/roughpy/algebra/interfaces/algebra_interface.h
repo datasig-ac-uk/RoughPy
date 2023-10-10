@@ -35,7 +35,7 @@
 
 
 RPY_WARNING_PUSH
-RPY_MSVC_DISABLE_WARNING(C4661)
+RPY_MSVC_DISABLE_WARNING(4661)
 
 namespace rpy {
 namespace algebra {
