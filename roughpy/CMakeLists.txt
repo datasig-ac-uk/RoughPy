@@ -145,6 +145,7 @@ target_include_directories(RoughPy_PyModule PRIVATE
 
 target_link_libraries(RoughPy_PyModule PRIVATE
         pybind11::headers
+        Boost::boost
         #        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy::Streams>
         #        recombine::recombine
         )
