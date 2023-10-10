@@ -38,6 +38,8 @@
 #include <utility>
 #include <vector>
 
+
+
 namespace rpy {
 namespace scalars {
 
@@ -424,4 +426,5 @@ inline const string& type_id_of() noexcept
 }// namespace scalars
 }// namespace rpy
 
+#include "types.h"
 #endif// ROUGHPY_SCALARS_SCALAR_TYPE_H_
