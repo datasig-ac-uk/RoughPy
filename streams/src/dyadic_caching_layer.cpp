@@ -38,6 +38,11 @@
 
 #include <cereal/types/map.hpp>
 
+// This is not a good solution, but for now I don't see another way to force
+// a link to bcrypt.
+#ifdef RPY_PLATFORM_WINDOWS
+#pragma comment(lib, "bcrypt.lib")
+#endif
 
 #include <fstream>
 
