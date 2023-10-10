@@ -33,6 +33,10 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/scalars/scalar_type.h>
 
+
+RPY_WARNING_PUSH
+RPY_MSVC_DISABLE_WARNING(C4661)
+
 namespace rpy {
 namespace algebra {
 
@@ -274,5 +278,7 @@ protected:
 };
 }// namespace algebra
 }// namespace rpy
+
+RPY_WARNING_POP
 
 #endif// ROUGHPY_ALGEBRA_ALGEBRA_INTERFACE_H_

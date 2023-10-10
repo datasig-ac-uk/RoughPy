@@ -36,6 +36,7 @@
 
 RPY_WARNING_PUSH
 RPY_GCC_DISABLE_WARNING(-Wattributes)
+RPY_MSVC_DISABLE_WARNING(C4661)
 
 namespace rpy {
 namespace algebra {
