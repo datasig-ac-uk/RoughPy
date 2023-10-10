@@ -18,9 +18,6 @@
     "name" : "boost-core",
     "version>=" : "1.81.0#2"
   }, {
-    "name" : "boost-filesystem",
-    "version>=" : "1.81.0#2"
-  }, {
     "name" : "boost-url",
     "version>=" : "1.81.0#2"
   }, {
