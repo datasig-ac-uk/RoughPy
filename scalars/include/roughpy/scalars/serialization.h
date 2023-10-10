@@ -312,7 +312,7 @@ RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::rational_poly_scalar)
     using namespace rpy;
     using namespace rpy::scalars;
 
-    size_t count;
+    cereal::size_type count;
     RPY_SERIAL_SERIALIZE_SIZE(count);
 
     monomial m;
