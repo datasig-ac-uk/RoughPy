@@ -31,7 +31,7 @@
 
 #include "b_float_16_type.h"
 
-#include <roughpy/platform/device.h>
+#include <roughpy/device/core.h>
 
 #include <string>
 #include <utility>

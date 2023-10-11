@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_SCALARS_SRC_RATIONAL_POLY_SCALAR_TYPE_H
 #define ROUGHPY_SCALARS_SRC_RATIONAL_POLY_SCALAR_TYPE_H
 
-#include <roughpy/platform/device.h>
+#include <roughpy/device/core.h>
 
 #include <roughpy/scalars/types.h>
 
@@ -41,8 +41,8 @@
 #include "scalar_type_helper.h"
 
 
-using rpy::platform::DeviceType;
-using rpy::platform::DeviceInfo;
+using rpy::device::DeviceType;
+using rpy::device::DeviceInfo;
 
 namespace rpy {
 namespace scalars {
