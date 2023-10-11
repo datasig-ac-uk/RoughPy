@@ -32,3 +32,9 @@
 
 using namespace rpy;
 using namespace rpy::device;
+
+
+dimn_t QueueInterface::size(void* RPY_UNUSED_VAR content) const
+{
+    return 0;
+}

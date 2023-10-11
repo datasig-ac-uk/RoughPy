@@ -36,6 +36,10 @@ namespace device {
 
 class QueueInterface : public dtl::InterfaceBase
 {
+public:
+
+    dimn_t size(void* content) const;
+
 };
 
 class Queue : public dtl::ObjectBase<QueueInterface, Queue>
@@ -44,6 +48,10 @@ class Queue : public dtl::ObjectBase<QueueInterface, Queue>
 
 public:
     using base_t::base_t;
+
+    RPY_NO_DISCARD
+    dimn_t size() const;
+
 };
 
 }// namespace device

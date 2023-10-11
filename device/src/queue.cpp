@@ -33,3 +33,12 @@
 
 using namespace rpy;
 using namespace rpy::device;
+
+
+
+dimn_t Queue::size() const {
+    if (interface() == nullptr || content() == nullptr) {
+        return 0;
+    }
+    return interface()->size(content());
+}
