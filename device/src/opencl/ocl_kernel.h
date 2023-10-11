@@ -29,24 +29,63 @@
 // Created by user on 11/10/23.
 //
 
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_KERNEL_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_KERNEL_H_
+
 #include <roughpy/device/kernel.h>
 
-#include <roughpy/device/queue.h>
+#include "ocl_headers.h"
+#include "ocl_device.h"
 
-using namespace rpy;
-using namespace rpy::device;
+namespace rpy {
+namespace device {
+namespace cl {
 
-string_view KernelInterface::name(void* content) const { return ""; }
-
-dimn_t KernelInterface::num_args(void* content) const { return 0; }
-
-Event KernelInterface::launch_kernel_async(
-        void* content,
-        rpy::device::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
-) const
+class OCLKernelInterface : public KernelInterface
 {
-    return Event(nullptr, nullptr);
-}
+    struct Data {
+        cl_kernel kernel;
+        OCLDevice device;
+    };
+
+    static inline cl_kernel& ker(void* content) noexcept {
+        return static_cast<Data*>(content)->kernel;
+    }
+
+    static inline const OCLDevice& dev(void* content) noexcept {
+        return static_cast<Data*>(content)->device;
+    }
+
+
+    RPY_UNUSED
+    cl_program program(cl_kernel kernel) const;
+    RPY_UNUSED
+    cl_context context(cl_kernel kernel) const;
+
+
+public:
+
+    static inline void* create_data(cl_kernel k,
+                                    OCLDevice d) {
+        return new Data{k, std::move(d)};
+    }
+
+    void* clone(void* content) const override;
+    void clear(void* content) const override;
+
+    string_view name(void* content) const override;
+    dimn_t num_args(void* content) const override;
+    Event launch_kernel_async(
+            void* content,
+            Queue& queue,
+            Slice<void*> args,
+            Slice<dimn_t> arg_sizes,
+            const KernelLaunchParams& params
+    ) const override;
+};
+
+}// namespace cl
+}// namespace device
+}// namespace rpy
+
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_KERNEL_H_

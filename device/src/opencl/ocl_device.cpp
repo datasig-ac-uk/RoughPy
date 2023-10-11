@@ -29,24 +29,51 @@
 // Created by user on 11/10/23.
 //
 
-#include <roughpy/device/kernel.h>
+#include "ocl_device.h"
 
-#include <roughpy/device/queue.h>
+
+#include "ocl_buffer.h"
+#include "ocl_event.h"
+#include "ocl_handle_errors.h"
+#include "ocl_kernel.h"
+#include "ocl_queue.h"
 
 using namespace rpy;
 using namespace rpy::device;
+using namespace rpy::device::cl;
 
-string_view KernelInterface::name(void* content) const { return ""; }
+OCLDeviceHandle::~OCLDeviceHandle() {
+    clReleaseCommandQueue(m_default_queue);
 
-dimn_t KernelInterface::num_args(void* content) const { return 0; }
+    m_device_id = 0;
+    m_default_queue = nullptr;
 
-Event KernelInterface::launch_kernel_async(
-        void* content,
-        rpy::device::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
-) const
+    cl_int ecode;
+    while (!m_programs.empty()) {
+        ecode = clReleaseProgram(m_programs.back());
+        m_programs.pop_back();
+    }
+
+    for (auto&& [nm, ker] : m_kernels) {
+        ecode = clReleaseKernel(ker);
+    }
+    m_kernels.clear();
+
+    clReleaseContext(m_ctx);
+    clReleaseDevice(m_device);
+
+    (void) ecode;
+}
+DeviceInfo OCLDeviceHandle::info() const noexcept { return DeviceHandle::info(); }
+optional<fs::path> OCLDeviceHandle::runtime_library() const noexcept
 {
-    return Event(nullptr, nullptr);
+    return {};
+}
+Buffer OCLDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
+{
+    return DeviceHandle::raw_alloc(count, alignment);
+}
+void OCLDeviceHandle::raw_free(Buffer buffer) const
+{
+    DeviceHandle::raw_free(buffer);
 }

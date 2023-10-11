@@ -29,24 +29,63 @@
 // Created by user on 11/10/23.
 //
 
-#include <roughpy/device/kernel.h>
-
-#include <roughpy/device/queue.h>
+#include "ocl_event.h"
+#include "ocl_handle_errors.h"
+#include "ocl_headers.h"
 
 using namespace rpy;
 using namespace rpy::device;
+using namespace rpy::device::cl;
 
-string_view KernelInterface::name(void* content) const { return ""; }
-
-dimn_t KernelInterface::num_args(void* content) const { return 0; }
-
-Event KernelInterface::launch_kernel_async(
-        void* content,
-        rpy::device::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
-) const
+static constexpr cl_event cast(void* content) noexcept
 {
-    return Event(nullptr, nullptr);
+    return static_cast<cl_event>(content);
+}
+
+void OCLEventInterface::wait(void* content) const
+{
+    cl_event event = cast(content);
+    auto ecode = clWaitForEvents(1, &event);
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+}
+EventStatus OCLEventInterface::status(void* content) const
+{
+    cl_int stat;
+    auto ecode = clGetEventInfo(
+            cast(content),
+            CL_EVENT_COMMAND_EXECUTION_STATUS,
+            sizeof(cl_int),
+            &stat,
+            nullptr
+    );
+
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
+
+    switch(stat) {
+        case CL_SUCCESS:
+            return EventStatus::CompletedSuccessfully;
+        case CL_RUNNING:
+            return EventStatus::Running;
+        case CL_SUBMITTED:
+            return EventStatus::Submitted;
+        case CL_QUEUED:
+            return EventStatus::Queued;
+        default:
+            return EventStatus::Error;
+    }
+}
+void* OCLEventInterface::clone(void* content) const
+{
+    auto ecode = clRetainEvent(cast(content));
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
+    return content;
+}
+void OCLEventInterface::clear(void* content) const
+{
+    cl_int ecode = clReleaseEvent(cast(content));
+    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
 }

@@ -29,24 +29,59 @@
 // Created by user on 11/10/23.
 //
 
-#include <roughpy/device/kernel.h>
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_
 
-#include <roughpy/device/queue.h>
 
-using namespace rpy;
-using namespace rpy::device;
+#include <roughpy/device/buffer.h>
 
-string_view KernelInterface::name(void* content) const { return ""; }
+#include "ocl_headers.h"
+#include "ocl_device.h"
 
-dimn_t KernelInterface::num_args(void* content) const { return 0; }
+namespace rpy {
+namespace device {
+namespace cl {
 
-Event KernelInterface::launch_kernel_async(
-        void* content,
-        rpy::device::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
-) const
+class OCLBufferInterface : public BufferInterface
 {
-    return Event(nullptr, nullptr);
-}
+    struct Data {
+        cl_mem buffer;
+        OCLDevice device;
+    };
+
+    static inline cl_mem& buf(void* content) noexcept {
+        return static_cast<Data*>(content)->buffer;
+    }
+
+    static inline const OCLDevice& dev(void* content) noexcept {
+        return static_cast<Data*>(content)->device;
+    }
+
+public:
+
+    static inline void* create_data(
+            cl_mem buffer, OCLDevice device
+            ) noexcept {
+        return new Data { buffer, std::move(device) };
+    }
+
+    static cl_mem take_buffer(void* content) noexcept {
+        auto* data = static_cast<Data*>(content);
+        cl_mem buf = data->buffer;
+        data->buffer = nullptr;
+        return buf;
+    }
+
+    void* clone(void* content) const override;
+    void clear(void* content) const override;
+    BufferMode mode(void* content) const override;
+    dimn_t size(void* content) const override;
+    void* ptr(void* content) const override;
+};
+
+
+}// namespace cl
+}// namespace device
+}// namespace rpy
+
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_

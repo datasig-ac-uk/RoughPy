@@ -29,24 +29,56 @@
 // Created by user on 11/10/23.
 //
 
-#include <roughpy/device/kernel.h>
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_H_
 
-#include <roughpy/device/queue.h>
 
-using namespace rpy;
-using namespace rpy::device;
+#include "ocl_headers.h"
 
-string_view KernelInterface::name(void* content) const { return ""; }
+#include <roughpy/device/device_handle.h>
 
-dimn_t KernelInterface::num_args(void* content) const { return 0; }
+#include <unordered_map>
+#include <vector>
 
-Event KernelInterface::launch_kernel_async(
-        void* content,
-        rpy::device::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
-) const
+namespace rpy {
+namespace device {
+namespace cl {
+
+
+class OCLDeviceHandle : public DeviceHandle
 {
-    return Event(nullptr, nullptr);
-}
+    cl_device_id m_device;
+    int32_t m_device_id;
+
+    cl_context m_ctx;
+
+    cl_command_queue m_default_queue;
+
+    std::vector<cl_program> m_programs;
+    std::unordered_map<string, cl_kernel> m_kernels;
+
+public:
+    ~OCLDeviceHandle() override;
+    DeviceInfo info() const noexcept override;
+    optional<fs::path> runtime_library() const noexcept override;
+    Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
+    void raw_free(Buffer buffer) const override;
+
+
+
+    cl_command_queue default_queue() const noexcept {
+        return m_default_queue;
+    }
+
+    cl_context context() const noexcept { return m_ctx; }
+
+};
+
+
+using OCLDevice = boost::intrusive_ptr<const OCLDeviceHandle>;
+
+}// namespace cl
+}// namespace device
+}// namespace rpy
+
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_H_

@@ -29,24 +29,45 @@
 // Created by user on 11/10/23.
 //
 
-#include <roughpy/device/kernel.h>
+#include "ocl_queue.h"
 
-#include <roughpy/device/queue.h>
+#include "ocl_handle_errors.h"
+#include "ocl_headers.h"
 
 using namespace rpy;
 using namespace rpy::device;
+using namespace rpy::device::cl;
 
-string_view KernelInterface::name(void* content) const { return ""; }
-
-dimn_t KernelInterface::num_args(void* content) const { return 0; }
-
-Event KernelInterface::launch_kernel_async(
-        void* content,
-        rpy::device::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
-) const
+static constexpr cl_command_queue cast(void* content) noexcept
 {
-    return Event(nullptr, nullptr);
+    return static_cast<cl_command_queue>(content);
+}
+
+void* OCLQueueInterface::clone(void* content) const
+{
+    cl_int ecode = clRetainCommandQueue(cast(content));
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    return content;
+}
+void OCLQueueInterface::clear(void* content) const
+{
+    cl_int ecode = clReleaseCommandQueue(cast(content));
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+}
+
+dimn_t OCLQueueInterface::size(void* content) const
+{
+    cl_int ecode;
+    cl_ulong sz;
+    ecode = clGetCommandQueueInfo(
+            cast(content),
+            CL_QUEUE_SIZE,
+            sizeof(cl_ulong),
+            &sz,
+            nullptr
+    );
+
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return static_cast<dimn_t>(sz);
 }

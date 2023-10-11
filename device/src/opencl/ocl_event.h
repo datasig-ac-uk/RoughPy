@@ -29,24 +29,26 @@
 // Created by user on 11/10/23.
 //
 
-#include <roughpy/device/kernel.h>
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_EVENT_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_EVENT_H_
 
-#include <roughpy/device/queue.h>
+#include <roughpy/device/event.h>
 
-using namespace rpy;
-using namespace rpy::device;
+namespace rpy {
+namespace device {
+namespace cl {
 
-string_view KernelInterface::name(void* content) const { return ""; }
-
-dimn_t KernelInterface::num_args(void* content) const { return 0; }
-
-Event KernelInterface::launch_kernel_async(
-        void* content,
-        rpy::device::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
-) const
+class OCLEventInterface : public EventInterface
 {
-    return Event(nullptr, nullptr);
-}
+public:
+    void* clone(void* content) const override;
+    void clear(void* content) const override;
+    void wait(void* content) const override;
+    EventStatus status(void* content) const override;
+};
+
+}// namespace cl
+}// namespace device
+}// namespace rpy
+
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_EVENT_H_

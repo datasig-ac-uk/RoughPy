@@ -29,24 +29,29 @@
 // Created by user on 11/10/23.
 //
 
-#include <roughpy/device/kernel.h>
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_HANDLE_ERRORS_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_HANDLE_ERRORS_H_
 
-#include <roughpy/device/queue.h>
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
 
-using namespace rpy;
-using namespace rpy::device;
+#include "ocl_headers.h"
 
-string_view KernelInterface::name(void* content) const { return ""; }
+namespace rpy {
+namespace device {
+namespace cl {
 
-dimn_t KernelInterface::num_args(void* content) const { return 0; }
+RPY_NO_RETURN void
+handle_cl_error(cl_int err, const char* filename, int lineno, const char* func);
 
-Event KernelInterface::launch_kernel_async(
-        void* content,
-        rpy::device::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
-) const
-{
-    return Event(nullptr, nullptr);
-}
+}// namespace cl
+}// namespace device
+}// namespace rpy
+
+#define RPY_HANDLE_OCL_ERROR(ERR)                                              \
+    ::rpy::device::cl::handle_cl_error(                                        \
+            ERR, RPY_FILE_NAME, __LINE__, RPY_FUNC_NAME                        \
+    )
+
+
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_HANDLE_ERRORS_H_
