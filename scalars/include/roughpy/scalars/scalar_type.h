@@ -32,6 +32,7 @@
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/slice.h>
+#include <roughpy/device/core.h>
 
 #include <functional>
 #include <string>
@@ -83,7 +84,7 @@ public:
 
     template <typename T>
     RPY_NO_DISCARD inline static const ScalarType*
-    of(const platform::DeviceInfo& device)
+    of(const device::DeviceInfo& device)
     {
         return get_type(type_id_of<T>(), device);
     }
@@ -116,7 +117,7 @@ public:
      */
     RPY_NO_DISCARD static const ScalarType* from_type_details(
             const BasicScalarInfo& details,
-            const platform::DeviceInfo& device
+            const device::DeviceInfo& device
     );
 
     /**
