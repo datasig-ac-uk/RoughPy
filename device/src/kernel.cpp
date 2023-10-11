@@ -54,3 +54,34 @@ dimn_t Kernel::num_args() const
     }
     return interface()->num_args(content());
 }
+
+Event Kernel::launch_async(
+        Queue& queue,
+        Slice<void*> args,
+        Slice<dimn_t> arg_sizes,
+        const KernelLaunchParams& params
+)
+{
+    if (interface() == nullptr || content() == nullptr) {
+        return Event(nullptr, nullptr);
+    }
+
+    auto nargs = interface()->num_args(content());
+    if (nargs != args.size() || nargs != arg_sizes.size()) {
+        RPY_THROW(std::runtime_error, "incorrect number of arguments provided");
+    }
+
+    return interface()->launch_kernel_async(content(), queue, args,
+                                            arg_sizes, params);
+}
+EventStatus Kernel::launch_sync(
+        Queue& queue,
+        Slice<void*> args,
+        Slice<dimn_t> arg_sizes,
+        const KernelLaunchParams& params
+)
+{
+    auto event = launch_async(queue, args, arg_sizes, params);
+    event.wait();
+    return event.status();
+}

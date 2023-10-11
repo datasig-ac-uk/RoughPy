@@ -29,73 +29,69 @@
 #define ROUGHPY_DEVICE_KERNEL_H_
 
 #include "core.h"
-#include "event.h"
 #include "device_object_base.h"
+#include "event.h"
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
 #include <roughpy/core/slice.h>
+#include <roughpy/core/types.h>
 
+namespace rpy {
+namespace device {
 
-
-
-namespace rpy { namespace device {
-
-
-class KernelLaunchParams {
+class KernelLaunchParams
+{
     Dim3 m_work_size;
     Dim3 m_group_size;
     optional<Dim3> m_offsets;
 
 public:
-
     KernelLaunchParams();
-
 };
 
-class RPY_EXPORT KernelInterface : public dtl::InterfaceBase {
-
+class RPY_EXPORT KernelInterface : public dtl::InterfaceBase
+{
 
 public:
+    RPY_NO_DISCARD virtual string_view name(void* content) const;
 
-    RPY_NO_DISCARD
-    virtual string_view name(void* content) const;
+    RPY_NO_DISCARD virtual dimn_t num_args(void* content) const;
 
-    RPY_NO_DISCARD
-    virtual dimn_t num_args(void* content) const;
-
-    RPY_NO_DISCARD
-    virtual Event launch_kernel_async(void* content,
-                                      Queue& queue,
-                                      Slice<void*> args,
-                                      Slice<dimn_t> arg_sizes,
-                                      const KernelLaunchParams& params) const;
-
-
-
-    virtual EventStatus launch_kernel_sync(void* content,
-                                    Queue& queue,
-                                    Slice<void*> args,
-                                    Slice<dimn_t> arg_sizes,
-                                    const KernelLaunchParams& params) const;
-
-
+    RPY_NO_DISCARD virtual Event launch_kernel_async(
+            void* content,
+            Queue& queue,
+            Slice<void*> args,
+            Slice<dimn_t> arg_sizes,
+            const KernelLaunchParams& params
+    ) const;
 
 };
 
-
-class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel> {
+class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
+{
 
 public:
+    RPY_NO_DISCARD string_view name() const;
 
-    RPY_NO_DISCARD
-    string_view name() const;
+    RPY_NO_DISCARD dimn_t num_args() const;
 
-    RPY_NO_DISCARD
-    dimn_t num_args() const;
+    RPY_NO_DISCARD Event launch_async(
+            Queue& queue,
+            Slice<void*> args,
+            Slice<dimn_t> arg_sizes,
+            const KernelLaunchParams& params
+    );
+
+    RPY_NO_DISCARD EventStatus launch_sync(
+            Queue& queue,
+            Slice<void*> args,
+            Slice<dimn_t> arg_sizes,
+            const KernelLaunchParams& params
+            );
 
 };
 
-}}
+}// namespace device
+}// namespace rpy
 
-#endif // ROUGHPY_DEVICE_KERNEL_H_
+#endif// ROUGHPY_DEVICE_KERNEL_H_
