@@ -179,6 +179,8 @@ find_package(SndFile CONFIG REQUIRED)
 # This package is c++17 so cannot be used if changing to a lower standard
 find_package(tomlplusplus CONFIG REQUIRED)
 
+find_package(OpenCL REQUIRED)
+
 message(STATUS "Target architecture ${RPY_ARCH}")
 if (NOT ROUGHPY_DISABLE_BLAS)
     if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64" AND NOT
@@ -287,10 +289,10 @@ find_package(PCGRandom REQUIRED)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (LINUX)
-    set(CMAKE_INSTALL_RPATH "$ORIGIN")
-elseif (APPLE)
+if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
+elseif (NOT WIN32)
+    set(CMAKE_INSTALL_RPATH "$ORIGIN")
 endif ()
 
 add_subdirectory(external/libalgebra_lite)
@@ -298,15 +300,13 @@ add_subdirectory(external/libalgebra_lite)
 
 add_subdirectory(core)
 add_subdirectory(platform)
+add_subdirectory(device)
 add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
 add_subdirectory(roughpy)
 
-if (ROUGHPY_GENERATE_DEVICE_CODE)
-    add_subdirectory(device)
-endif ()
 
 if (ROUGHPY_BUILD_LA_CONTEXTS)
     set(LIBALGEBRA_NO_SERIALIZATION ON CACHE INTERNAL "")
