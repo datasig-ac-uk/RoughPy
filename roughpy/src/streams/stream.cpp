@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "stream.h"
 
@@ -78,7 +77,8 @@ static int resolution_converter(PyObject* object, void* out)
         // do nothing, use default
     } else {
         PyErr_SetString(
-                PyExc_TypeError, "resolution should be either float or int"
+                PyExc_TypeError,
+                "resolution should be either float or int"
         );
         return 0;
     }
@@ -86,15 +86,22 @@ static int resolution_converter(PyObject* object, void* out)
 }
 
 static int parse_sig_args(
-        PyObject* args, PyObject* kwargs, const StreamMetadata* smeta,
+        PyObject* args,
+        PyObject* kwargs,
+        const StreamMetadata* smeta,
         SigArgs* sigargs
 )
 {
     static const char* kwords[]
-            = {"interval_or_inf", "sup",   "resolution", "ctx",
-               "depth",           "dtype", nullptr};
+            = {"interval_or_inf",
+               "sup",
+               "resolution",
+               "ctx",
+               "depth",
+               "dtype",
+               nullptr};
 
-    PyObject* interval_or_inf;
+    PyObject* interval_or_inf = nullptr;
     resolution_t resolution = smeta->default_resolution;
     PyObject* ctx = nullptr;
     PyObject* py_sup = nullptr;
@@ -102,9 +109,18 @@ static int parse_sig_args(
     deg_t depth = 0;
 
     auto result = PyArg_ParseTupleAndKeywords(
-            args, kwargs, "|OOO&$O!iO", const_cast<char**>(kwords),
-            &interval_or_inf, &py_sup, &resolution_converter, &resolution,
-            &python::RPyContext_Type, &ctx, &depth, &dtype
+            args,
+            kwargs,
+            "|OOO&$O!iO",
+            const_cast<char**>(kwords),
+            &interval_or_inf,
+            &py_sup,
+            &resolution_converter,
+            &resolution,
+            &python::RPyContext_Type,
+            &ctx,
+            &depth,
+            &dtype
     );
     if (result == 0) { return -1; }
 
@@ -118,7 +134,8 @@ static int parse_sig_args(
             // In this case, we're expecting the first argument to be resolution
             if (Py_TYPE(interval_or_inf) == &PyFloat_Type) {
                 PyErr_SetString(
-                        PyExc_TypeError, "expecting integer resolution"
+                        PyExc_TypeError,
+                        "expecting integer resolution"
                 );
                 return -1;
             }
@@ -142,14 +159,16 @@ static int parse_sig_args(
                 sup = PyLong_AsDouble(py_sup);
             } else {
                 PyErr_SetString(
-                        PyExc_TypeError, "expected float value for sup"
+                        PyExc_TypeError,
+                        "expected float value for sup"
                 );
                 return -1;
             }
 
             if (inf > sup) {
                 PyErr_SetString(
-                        PyExc_ValueError, "inf must not be larger than sup"
+                        PyExc_ValueError,
+                        "inf must not be larger than sup"
                 );
                 return -1;
             }
@@ -192,7 +211,8 @@ static int parse_sig_args(
         );
     } else {
         PyErr_SetString(
-                PyExc_TypeError, "unexpected type for argument interval_or_inf"
+                PyExc_TypeError,
+                "unexpected type for argument interval_or_inf"
         );
         return -1;
     }
@@ -214,7 +234,8 @@ static int parse_sig_args(
                 ctype = scalars::get_type(dtype_str);
                 if (ctype == nullptr) {
                     PyErr_SetString(
-                            PyExc_TypeError, "unrecognised scalar type id"
+                            PyExc_TypeError,
+                            "unrecognised scalar type id"
                     );
                     return -1;
                 }
@@ -226,7 +247,8 @@ static int parse_sig_args(
                 );
                 if (ctype == nullptr) {
                     PyErr_SetString(
-                            PyExc_ValueError, "unsupported scalar type"
+                            PyExc_ValueError,
+                            "unsupported scalar type"
                     );
                     return -1;
                 }
@@ -270,7 +292,9 @@ static PyObject* signature(PyObject* self, PyObject* args, PyObject* kwargs)
     try {
         if (sigargs.interval) {
             result = stream->m_data.signature(
-                    *sigargs.interval, sigargs.resolution, *sigargs.ctx
+                    *sigargs.interval,
+                    sigargs.resolution,
+                    *sigargs.ctx
             );
         } else {
             result = stream->m_data.signature(sigargs.resolution, *sigargs.ctx);
@@ -298,7 +322,9 @@ static PyObject* log_signature(PyObject* self, PyObject* args, PyObject* kwargs)
     algebra::Lie result;
     if (sigargs.interval) {
         result = stream->m_data.log_signature(
-                *sigargs.interval, sigargs.resolution, *sigargs.ctx
+                *sigargs.interval,
+                sigargs.resolution,
+                *sigargs.ctx
         );
     } else {
         result = stream->m_data.log_signature(sigargs.resolution, *sigargs.ctx);
@@ -325,8 +351,14 @@ static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs)
     auto ctx = stream.metadata().default_context;
 
     auto parse_result = PyArg_ParseTupleAndKeywords(
-            args, kwargs, "O|Oi$i", const_cast<char**>(kwords), &arg,
-            &second_arg, &resolution, &depth
+            args,
+            kwargs,
+            "O|Oi$i",
+            const_cast<char**>(kwords),
+            &arg,
+            &second_arg,
+            &resolution,
+            &depth
     );
     if (!static_cast<bool>(parse_result)) { return nullptr; }
 
@@ -354,7 +386,10 @@ static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs)
                 = py::handle(second_arg).cast<const algebra::Lie&>();
 
         result = stream.signature_derivative(
-                interval, perturbation, resolution, *ctx
+                interval,
+                perturbation,
+                resolution,
+                *ctx
         );
 
     } else if (PyTuple_Check(arg) && PySequence_Length(arg) == 2) {
@@ -362,7 +397,11 @@ static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs)
         py::handle py_perturbation;
 
         parse_result = PyArg_ParseTuple(
-                arg, "O!O!", interval_type, &py_interval.ptr(), lie_type,
+                arg,
+                "O!O!",
+                interval_type,
+                &py_interval.ptr(),
+                lie_type,
                 &py_perturbation.ptr()
         );
         if (!static_cast<bool>(parse_result)) { return nullptr; }
@@ -371,7 +410,10 @@ static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs)
         const auto& perturbation = py_perturbation.cast<const algebra::Lie&>();
 
         result = stream.signature_derivative(
-                interval, perturbation, resolution, *ctx
+                interval,
+                perturbation,
+                resolution,
+                *ctx
         );
     } else if (static_cast<bool>(PySequence_Check(arg)) && PySequence_Length(arg) > 0) {
         streams::Stream::perturbation_list_t perturbations;
@@ -384,7 +426,8 @@ static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs)
             if (!static_cast<bool>(PySequence_Check(item))
                 || PySequence_Length(item) != 2) {
                 PyErr_SetString(
-                        PyExc_TypeError, "expected interval/perturbation pair"
+                        PyExc_TypeError,
+                        "expected interval/perturbation pair"
                 );
                 return nullptr;
             }
@@ -393,7 +436,11 @@ static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs)
             py::handle py_perturbation;
 
             parse_result = PyArg_ParseTuple(
-                    item, "O!O!", interval_type, &py_interval.ptr(), lie_type,
+                    item,
+                    "O!O!",
+                    interval_type,
+                    &py_interval.ptr(),
+                    lie_type,
                     &py_perturbation.ptr()
             );
             if (!static_cast<bool>(parse_result)) { return nullptr; }
@@ -409,7 +456,8 @@ static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs)
         result = stream.signature_derivative(perturbations, resolution, *ctx);
     } else {
         PyErr_SetString(
-                PyExc_ValueError, "unexpected arguments to signature derivative"
+                PyExc_ValueError,
+                "unexpected arguments to signature derivative"
         );
         return nullptr;
     }
@@ -491,7 +539,11 @@ static PyObject* restrict(PyObject* self, PyObject* args, PyObject* kwargs)
     PyObject* py_interval;
 
     if (PyArg_ParseTupleAndKeywords(
-                args, kwargs, "O", const_cast<char**>(kwords), &py_interval
+                args,
+                kwargs,
+                "O",
+                const_cast<char**>(kwords),
+                &py_interval
         )
         == 0) {
         return nullptr;
@@ -505,18 +557,54 @@ static PyObject* restrict(PyObject* self, PyObject* args, PyObject* kwargs)
     return python::RPyStream_FromStream(stream.restrict(ivl));
 }
 
+static PyObject* stream___getnewargs_ex__(PyObject* self, PyObject*
+                                                                  RPY_UNUSED_VAR)
+{
+    PyObject* data;
+
+    std::stringstream ss;
+    {
+        rpy::archives::BinaryOutputArchive oar(ss);
+        oar(reinterpret_cast<python::RPyStream*>(self)->m_data);
+    }
+
+    auto s = ss.str();
+    data = PyByteArray_FromStringAndSize(
+            s.data(),
+            static_cast<Py_ssize_t>(s.size())
+    );
+
+    PyObject* new_args = PyTuple_New(0);
+    PyObject* new_kwargs = Py_BuildValue("{sO}", "serialized_stream", data);
+
+    return Py_BuildValue("(OO)", new_args, new_kwargs);
+}
+
 static PyMethodDef RPyStream_members[] = {
-        {           "signature",       (PyCFunction) &signature,METH_VARARGS | METH_KEYWORDS,
-         SIGNATURE_DOC                                                                                            },
-        {       "log_signature",   (PyCFunction) &log_signature,
-         METH_VARARGS | METH_KEYWORDS,    LOGSIGNATURE_DOC                                                        },
-        {"signature_derivative",       (PyCFunction) &sig_deriv,
-         METH_VARARGS | METH_KEYWORDS,       SIG_DERIV_DOC                                                        },
-        {            "simplify", (PyCFunction) &simplify_stream,
-         METH_VARARGS | METH_KEYWORDS, SIMPLIFY_STREAM_DOC                                                        },
-        {            "restrict",        (PyCFunction)& restrict, METH_VARARGS | METH_KEYWORDS,
-         RESTRICT_DOC                                                                                             },
-        {               nullptr,                        nullptr,                            0,             nullptr}
+        {           "signature",
+         (PyCFunction) &signature,
+         METH_VARARGS | METH_KEYWORDS,
+         SIGNATURE_DOC                                      },
+        {       "log_signature",
+         (PyCFunction) &log_signature,
+         METH_VARARGS | METH_KEYWORDS,
+         LOGSIGNATURE_DOC                                   },
+        {"signature_derivative",
+         (PyCFunction) &sig_deriv,
+         METH_VARARGS | METH_KEYWORDS,
+         SIG_DERIV_DOC                                      },
+        {            "simplify",
+         (PyCFunction) &simplify_stream,
+         METH_VARARGS | METH_KEYWORDS,
+         SIMPLIFY_STREAM_DOC                                },
+        {            "restrict",
+         (PyCFunction)& restrict,
+         METH_VARARGS | METH_KEYWORDS,
+         RESTRICT_DOC                                       },
+        {   "__getnewargs_ex__",
+         (PyCFunction) stream___getnewargs_ex__,
+         METH_NOARGS, nullptr                               },
+        {               nullptr,        nullptr,  0, nullptr}
 };
 
 static PyObject* width_getter(PyObject* self)
@@ -570,9 +658,60 @@ static PyObject* RPyStream_repr(PyObject* self)
 }
 static PyObject* RPyStream_str(PyObject* self) { return RPyStream_repr(self); }
 
+static void RPyStream_finalize(PyObject* self)
+{
+    reinterpret_cast<python::RPyStream*>(self)->m_data.~Stream();
+}
+
+static PyObject*
+RPyStream_new(PyTypeObject* subtype, PyObject* args, PyObject* kwargs)
+{
+    using namespace rpy::python;
+    static const char* kwords[] = {"serialized_stream", nullptr};
+
+    PyByteArrayObject* pybuff = nullptr;
+    RPyStream* self;
+
+    if (!PyArg_ParseTupleAndKeywords(
+                args,
+                kwargs,
+                "|$O!:__new__",
+                const_cast<char**>(kwords),
+                &PyByteArray_Type,
+                &pybuff
+        )) {
+        return nullptr;
+    }
+
+    if (pybuff) {
+        // The stream is being initialised with previously serialized data.
+        self = reinterpret_cast<RPyStream*>(subtype->tp_alloc(subtype, 0));
+
+        // Ensure that the stream object is initialised in the data slot.
+        construct_inplace<streams::Stream>(&self->m_data);
+        {
+            std::string raw(
+                    PyByteArray_AS_STRING(pybuff),
+                    PyByteArray_GET_SIZE(pybuff)
+            );
+            std::stringstream ss(raw);
+            rpy::archives::BinaryInputArchive iar(ss);
+            iar(self->m_data);
+        }
+
+        return reinterpret_cast<PyObject*>(self);
+    }
+
+    PyErr_SetString(
+            PyExc_ValueError,
+            "no construction possible with the provided data"
+    );
+    return nullptr;
+}
+
 PyTypeObject rpy::python::RPyStream_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)         //
-        "_roughpy.Stream",                        /* tp_name */
+        "roughpy.Stream",                         /* tp_name */
         sizeof(python::RPyStream),                /* tp_basicsize */
         0,                                        /* tp_itemsize */
         nullptr,                                  /* tp_dealloc */
@@ -608,7 +747,18 @@ PyTypeObject rpy::python::RPyStream_Type = {
         0,                                        /* tp_dictoffset */
         (initproc) nullptr,                       /* tp_init */
         nullptr,                                  /* tp_alloc */
-        nullptr,                                  /* tp_new */
+        (newfunc) RPyStream_new,                  /* tp_new */
+        nullptr,                                  /* tp_free */
+        nullptr,                                  /* tp_is_gc */
+        nullptr,                                  /* tp_bases */
+        nullptr,                                  /* tp_mro */
+        nullptr,                                  /* tp_cache */
+        nullptr,                                  /* tp_subclasses */
+        nullptr,                                  /* tp_weaklist */
+        nullptr,                                  /* tp_del */
+        0,                                        /* tp_version_tag */
+        (destructor) RPyStream_finalize,          /* tp_finalize */
+        nullptr                                   /* tp_vectorcall */
 };
 }// extern "C"
 

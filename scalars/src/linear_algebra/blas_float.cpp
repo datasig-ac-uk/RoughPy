@@ -34,6 +34,8 @@
 
 #include "blas.h"
 
+#ifndef ROUGHPY_DISABLE_BLAS
+
 #define RPY_BLA_SPRX s
 
 
@@ -136,4 +138,5 @@ void blas_funcs<float, float>::gemm(
 }// namespace rpy
 
 #undef RPY_BLA_SPRX
+#endif
 #endif// ROUGHPY_SCALARS_SRC_LINEAR_ALGEBRA_BLAS_FLOAT_CPP_

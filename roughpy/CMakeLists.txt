@@ -23,7 +23,9 @@ set_target_properties(RoughPy_PyModule PROPERTIES
         )
 
 target_compile_definitions(RoughPy_PyModule PRIVATE
-        RPY_BUILDING_LIBRARY=1)
+        RPY_BUILDING_LIBRARY=1
+        BOOST_UUID_FORCE_AUTO_LINK=1
+)
 
 if (ROUGHPY_BUILD_PYMODULE_INPLACE)
     set_target_properties(RoughPy_PyModule PROPERTIES
@@ -31,9 +33,11 @@ if (ROUGHPY_BUILD_PYMODULE_INPLACE)
 endif ()
 
 
+set_target_properties(RoughPy_PyModule PROPERTIES
+    INSTALL_RPATH $ORIGIN)
 if (LINUX)
     set_target_properties(RoughPy_PyModule PROPERTIES
-            INSTALL_RPATH "$ORIGIN")
+            INSTALL_RPATH $ORIGIN)
 elseif (APPLE)
     set_target_properties(RoughPy_PyModule PROPERTIES
             INSTALL_RPATH "@loader_path;@loader_path/../../..")
@@ -143,6 +147,7 @@ target_include_directories(RoughPy_PyModule PRIVATE
 
 target_link_libraries(RoughPy_PyModule PRIVATE
         pybind11::headers
+        Boost::boost
         #        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy::Streams>
         #        recombine::recombine
         )

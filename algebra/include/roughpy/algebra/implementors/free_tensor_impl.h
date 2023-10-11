@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,20 +18,22 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_FREE_TENSOR_IMPL_H_
 #define ROUGHPY_ALGEBRA_FREE_TENSOR_IMPL_H_
 
-#include "algebra_bundle_impl.h"
+#include <roughpy/algebra/context.h>
+#include <roughpy/algebra/interfaces/free_tensor_interface.h>
+#include <roughpy/algebra/free_tensor.h>
+
 #include "algebra_impl.h"
-#include "free_tensor.h"
+
 
 namespace rpy {
 namespace algebra {
@@ -126,68 +128,6 @@ void FreeTensorImplementation<FTImpl, StorageModel>::fmexp(
 {
     base_t::data().fmexp_inplace(
             FreeTensorImplementation::convert_argument(other)
-    );
-}
-
-template <typename FTBImpl, template <typename> class StorageModel>
-class FreeTensorBundleImplementation
-    : public AlgebraBundleImplementation<
-              FreeTensorBundleInterface, FTBImpl, StorageModel>
-{
-    using base_t = AlgebraBundleImplementation<
-            FreeTensorBundleInterface, FTBImpl, StorageModel>;
-
-public:
-    using base_t::base_t;
-
-    FreeTensorBundle exp() const override;
-    FreeTensorBundle log() const override;
-//    FreeTensorBundle inverse() const override;
-    FreeTensorBundle antipode() const override;
-    void fmexp(const FreeTensorBundle& other) override;
-};
-
-template <typename FTBImpl, template <typename> class StorageModel>
-FreeTensorBundle
-FreeTensorBundleImplementation<FTBImpl, StorageModel>::exp() const
-{
-    return FreeTensorBundle(
-            FreeTensorBundleInterface::p_ctx, dtl::exp_wrapper(base_t::data())
-    );
-}
-template <typename FTBImpl, template <typename> class StorageModel>
-FreeTensorBundle
-FreeTensorBundleImplementation<FTBImpl, StorageModel>::log() const
-{
-    return FreeTensorBundle(
-            FreeTensorBundleInterface::p_ctx, dtl::log_wrapper(base_t::data())
-    );
-}
-//template <typename FTBImpl, template <typename> class StorageModel>
-//FreeTensorBundle
-//FreeTensorBundleImplementation<FTBImpl, StorageModel>::inverse() const
-//{
-//    return FreeTensorBundle(
-//            FreeTensorBundleInterface::p_ctx,
-//            dtl::inverse_wrapper(base_t::data())
-//    );
-//}
-template <typename FTBImpl, template <typename> class StorageModel>
-FreeTensorBundle
-FreeTensorBundleImplementation<FTBImpl, StorageModel>::antipode() const
-{
-    return FreeTensorBundle(
-            FreeTensorBundleInterface::p_ctx,
-            dtl::antipode_wrapper(base_t::data())
-    );
-}
-template <typename FTBImpl, template <typename> class StorageModel>
-void FreeTensorBundleImplementation<FTBImpl, StorageModel>::fmexp(
-        const FreeTensorBundle& other
-)
-{
-    base_t::data().fmexp_inplace(
-            FreeTensorBundleImplementation::convert_argument(other)
     );
 }
 

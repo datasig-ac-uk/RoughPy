@@ -34,6 +34,7 @@
 
 #include "lapack.h"
 
+#ifndef ROUGHPY_DISABLE_BLAS
 #define RPY_LPK_SPRX s
 
 static constexpr float convert_scalar(const float& arg) noexcept { return arg; }
@@ -461,5 +462,5 @@ void lapack_funcs<float, float>::gelsd(
 }}}
 
 
-
+#endif
 #endif// ROUGHPY_SCALARS_SRC_LINEAR_ALGEBRA_LAPACK_FLOAT_CPP_

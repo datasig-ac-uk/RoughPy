@@ -1,5 +1,6 @@
 from fractions import Fraction
 
+import pickle
 import pytest
 
 
@@ -77,3 +78,13 @@ def test_monomial_div_scalar(scalar_val):
     p = m / scalar_val
 
     assert type(p) == roughpy.PolynomialScalar
+
+
+
+def test_pickle_roundtrip():
+    m = Monomial('x')
+
+    data = pickle.dumps(m)
+    m1 = pickle.loads(data)
+
+    assert m == m1

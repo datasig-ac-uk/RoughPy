@@ -33,8 +33,8 @@
 #ifndef ROUGHPY_DEVICE_DEVICE_ALGEBRA_BASE_H
 #define ROUGHPY_DEVICE_DEVICE_ALGEBRA_BASE_H
 
+#include "implementors/algebra_impl.h"
 #include <roughpy/algebra/algebra_base.h>
-#include <roughpy/algebra/algebra_impl.h>
 #include <roughpy/algebra/algebra_iterator.h>
 #include <roughpy/scalars/owned_scalar_array.h>
 #include <roughpy/scalars/scalar.h>

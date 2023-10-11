@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 26/02/23.
@@ -33,9 +32,14 @@
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/types.h>
+#include <roughpy/platform/archives.h>
+
 
 #include <ostream>
 #include <roughpy/platform/serialization.h>
+
+#include <cereal/types/vector.hpp>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -347,6 +351,28 @@ std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& arg)
 
     return os;
 }
+
+RPY_SERIAL_SAVE_FN_IMPL(Scalar)
+{
+    RPY_SERIAL_SERIALIZE_NVP("type_id", get_type_id());
+    if (is_interface()) {
+        auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
+        RPY_SERIAL_SERIALIZE_NVP("data", p_type->to_raw_bytes(ptr, 1));
+    } else {
+        RPY_SERIAL_SERIALIZE_NVP("data", to_raw_bytes(1));
+    }
+}
+
+RPY_SERIAL_LOAD_FN_IMPL(Scalar)
+{
+    string type_id;
+    RPY_SERIAL_SERIALIZE_NVP("type_id", type_id);
+
+    std::vector<byte> raw_bytes;
+    RPY_SERIAL_SERIALIZE_NVP("data", raw_bytes);
+    update_from_bytes(type_id, 1, raw_bytes);
+}
+
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::Scalar
 #define RPY_SERIAL_DO_SPLIT

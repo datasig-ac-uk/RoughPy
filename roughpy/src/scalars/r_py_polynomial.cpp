@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 06/07/23.
@@ -35,12 +34,16 @@
 #include <sstream>
 
 #include <roughpy/core/alloc.h>
+#include <roughpy/platform/archives.h>
+#include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/serialization.h>
+#include <roughpy/scalars/types.h>
 
 #include "scalars.h"
 
 using namespace rpy;
-using namespace python;
+using namespace rpy::python;
 
 namespace {
 
@@ -48,6 +51,23 @@ using poly_t = scalars::rational_poly_scalar;
 using rat_t = scalars::rational_scalar_type;
 
 }// namespace
+
+static inline bool is_monomial(PyObject* obj) noexcept
+{
+    return Py_TYPE(obj) == &RPyMonomial_Type;
+}
+static inline bool is_polynomial(PyObject* obj) noexcept
+{
+    return Py_TYPE(obj) == &RPyPolynomial_Type;
+}
+static inline scalars::monomial& cast_mon(PyObject* obj) noexcept
+{
+    return reinterpret_cast<RPyMonomial*>(obj)->m_data;
+}
+static inline poly_t& cast_poly(PyObject* obj) noexcept
+{
+    return reinterpret_cast<RPyPolynomial*>(obj)->m_data;
+}
 
 extern "C" {
 
@@ -100,22 +120,79 @@ static PyObject* monomial_str(PyObject* self);
 static PyObject* monomial_repr(PyObject* self);
 
 // Other methods
-static PyObject* monomial_degree(PyObject* self);
+static PyObject* monomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR);
+
+static PyObject* monomial___getstate__(PyObject* self, PyObject* RPY_UNUSED_VAR)
+{
+
+    std::cout << cast_mon(self) <<
+            '\n';
+    std::stringstream ss;
+    try {
+        archives::BinaryOutputArchive oa(ss);
+        oa(cast_mon(self));
+    } catch (cereal::Exception& exc) {
+        PyErr_SetString(PyExc_RuntimeError, exc.what());
+        return nullptr;
+    }
+
+    auto str = ss.str();
+    return reinterpret_cast<PyObject*>(
+            PyByteArray_FromStringAndSize(str.data(), str.size())
+    );
+}
+
+static PyObject* monomial___setstate__(PyObject* self, PyObject* args)
+{
+
+    PyByteArrayObject* data = nullptr;
+
+    if (!PyArg_ParseTuple(args, "O!", &PyByteArray_Type, &data)) {
+        return nullptr;
+    }
+
+    if (data == nullptr) {
+        PyErr_SetString(PyExc_ValueError, "data cannot be empty");
+        return nullptr;
+    }
+
+    std::string sdata(PyByteArray_AsString((PyObject*)data),
+                      PyByteArray_Size((PyObject*) data));
+    try {
+        std::stringstream ss(sdata);
+        archives::BinaryInputArchive ia(ss);
+        ia(cast_mon(self));
+    } catch (cereal::Exception& exc) {
+        PyErr_SetString(PyExc_RuntimeError, exc.what());
+        return nullptr;
+    }
+
+    Py_RETURN_NONE;
+}
 }
 
 bool indeterminate_from_string(
-        PyObject* py_string, scalars::indeterminate_type& out
+        PyObject* py_string,
+        scalars::indeterminate_type& out
 );
 
 PyObject* PyMonomial_FromPyString(PyObject* py_string);
 
 static PyMethodDef RPyMonomial_methods[] = {
-        {"degree", (PyCFunction) &monomial_degree, METH_O, nullptr},
-        { nullptr,                        nullptr,      0, nullptr}
+        {      "degree",(PyCFunction) monomial_degree,METH_NOARGS, nullptr                                                       },
+        {"__getstate__",
+         (PyCFunction) monomial___getstate__,
+         METH_NOARGS, nullptr                                               },
+        {"__setstate__",
+         (PyCFunction) monomial___setstate__,
+         METH_VARARGS, nullptr                                              },
+        {       nullptr,                       nullptr,           0, nullptr}
 };
 
 static PyMappingMethods RPyMonomial_mapping{
-        monomial_len, monomial_subscript, monomial_ass_subscript};
+        monomial_len,
+        monomial_subscript,
+        monomial_ass_subscript};
 
 static PyNumberMethods RPyMonomial_number{
         (binaryfunc) monomial_add,              /* nb_add */
@@ -158,7 +235,7 @@ static PyNumberMethods RPyMonomial_number{
 
 PyTypeObject RPyMonomial_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)    //
-        "_roughpy.Monomial",                 /* tp_name */
+        "roughpy.Monomial",                 /* tp_name */
         sizeof(RPyMonomial),                 /* tp_basicsize */
         0,                                   /* tp_itemsize */
         nullptr,                             /* tp_dealloc */
@@ -256,19 +333,61 @@ static PyObject* polynomial_str(PyObject* self);
 static PyObject* polynomial_repr(PyObject* self);
 
 // Other methods
-static PyObject* polynomial_degree(PyObject* self);
+static PyObject* polynomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR);
+
+static PyObject*
+polynomial___getstate__(PyObject* self, PyObject* RPY_UNUSED_VAR)
+{
+    std::stringstream ss;
+    {
+        archives::PortableBinaryOutputArchive oa(ss);
+        oa(cast_mon(self));
+    }
+
+    string data(std::move(ss).str());
+
+    return PyByteArray_FromStringAndSize(data.data(), data.size());
+}
+
+
+static PyObject*
+polynomial___setstate__(PyObject* self, PyObject* args) {
+
+    PyByteArrayObject* data = nullptr;
+
+    if (!PyArg_ParseTuple(args, "O!", &PyByteArray_Type, &data)) {
+        return nullptr;
+    }
+
+    string sdata(PyByteArray_AS_STRING(data), PyByteArray_GET_SIZE(data));
+    {
+        std::istringstream ss(sdata);
+        archives::PortableBinaryInputArchive ia(ss);
+        ia(cast_mon(self));
+    }
+
+    Py_RETURN_NONE;
+}
+
+
 }
 
 PyObject* PyPolynomial_FromPolynomial(scalars::rational_poly_scalar&& poly
 ) noexcept;
 
 static PyMethodDef RPyPolynomial_methods[] = {
-        {"degree", (PyCFunction) &polynomial_degree, METH_O, nullptr},
-        { nullptr,                          nullptr,      0, nullptr}
+        {"degree", (PyCFunction) &polynomial_degree, METH_NOARGS, nullptr},
+        {"__getstate__", (PyCFunction) &polynomial___getstate__, METH_NOARGS,
+         nullptr},
+        {"__setstate__", (PyCFunction) &polynomial___setstate__, METH_VARARGS,
+         nullptr},
+        { nullptr,                          nullptr,           0, nullptr}
 };
 
 static PyMappingMethods RPyPolynomial_mapping{
-        polynomial_len, polynomial_subscript, polynomial_ass_subscript};
+        polynomial_len,
+        polynomial_subscript,
+        polynomial_ass_subscript};
 
 static PyNumberMethods RPyPolynomial_number{
         (binaryfunc) polynomial_add,              /* nb_add */
@@ -311,7 +430,7 @@ static PyNumberMethods RPyPolynomial_number{
 
 PyTypeObject RPyPolynomial_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)      //
-        "_roughpy.Polynomial",                 /* tp_name */
+        "roughpy.Polynomial",                 /* tp_name */
         sizeof(RPyPolynomial),                 /* tp_basicsize */
         0,                                     /* tp_itemsize */
         nullptr,                               /* tp_dealloc */
@@ -371,23 +490,6 @@ void python::init_monomial(py::module_& m)
 
     m.add_object("Monomial", (PyObject*) &RPyMonomial_Type);
     m.add_object("PolynomialScalar", (PyObject*) &RPyPolynomial_Type);
-}
-
-static inline bool is_monomial(PyObject* obj) noexcept
-{
-    return Py_TYPE(obj) == &RPyMonomial_Type;
-}
-static inline bool is_polynomial(PyObject* obj) noexcept
-{
-    return Py_TYPE(obj) == &RPyPolynomial_Type;
-}
-static inline scalars::monomial& cast_mon(PyObject* obj) noexcept
-{
-    return reinterpret_cast<RPyMonomial*>(obj)->m_data;
-}
-static inline poly_t& cast_poly(PyObject* obj) noexcept
-{
-    return reinterpret_cast<RPyPolynomial*>(obj)->m_data;
 }
 
 static bool insert_from_pair(scalars::monomial& monomial, PyObject* item)
@@ -750,7 +852,8 @@ PyObject* monomial_add(PyObject* self, PyObject* other)
         const auto& rhs = cast_mon(other);
 
         scalars::rational_poly_scalar result(
-                lhs, scalars::rational_scalar_type(1)
+                lhs,
+                scalars::rational_scalar_type(1)
         );
         result[rhs] += scalars::rational_scalar_type(1);
         return PyPolynomial_FromPolynomial(std::move(result));
@@ -781,7 +884,8 @@ PyObject* monomial_sub(PyObject* self, PyObject* other)
         const auto& rhs = cast_mon(other);
 
         scalars::rational_poly_scalar result(
-                lhs, scalars::rational_scalar_type(1)
+                lhs,
+                scalars::rational_scalar_type(1)
         );
         result[rhs] -= scalars::rational_scalar_type(1);
         return PyPolynomial_FromPolynomial(std::move(result));
@@ -931,7 +1035,7 @@ PyObject* monomial_repr(PyObject* self)
     ss << obj;
     return PyUnicode_FromFormat("Monomial(%s)", ss.str().c_str());
 }
-PyObject* monomial_degree(PyObject* self)
+PyObject* monomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
     PyErr_SetString(PyExc_NotImplementedError, "not implemented");
     return nullptr;
@@ -968,13 +1072,15 @@ scalars::monomial PyMonomial_AsMonomial(PyObject* py_monomial)
     return cast_mon(py_monomial);
 }
 bool indeterminate_from_string(
-        PyObject* py_string, scalars::indeterminate_type& out
+        PyObject* py_string,
+        scalars::indeterminate_type& out
 )
 {
     const auto size = PyUnicode_GET_LENGTH(py_string);
     if (size == 0) {
         PyErr_SetString(
-                PyExc_ValueError, "cannot parse indeterminate from empty string"
+                PyExc_ValueError,
+                "cannot parse indeterminate from empty string"
         );
         return false;
     }
@@ -1038,7 +1144,8 @@ static inline bool fill_poly_from_dict(poly_t& result, PyObject* dict_data)
             result += poly_t(cast_mon(key), scalar);
         } else {
             PyErr_SetString(
-                    PyExc_TypeError, "expected monomial -> scalar mapping"
+                    PyExc_TypeError,
+                    "expected monomial -> scalar mapping"
             );
             return false;
         }
@@ -1078,7 +1185,8 @@ PyObject* polynomial_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
         } else {
             Py_DECREF(arg);
             PyErr_SetString(
-                    PyExc_ValueError, "expected scalar, monomial, or dict"
+                    PyExc_ValueError,
+                    "expected scalar, monomial, or dict"
             );
             return nullptr;
         }
@@ -1096,7 +1204,8 @@ PyObject* polynomial_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
             Py_DECREF(monomial);
             Py_DECREF(scalar);
             PyErr_SetString(
-                    PyExc_TypeError, "expected a monomial as the first argument"
+                    PyExc_TypeError,
+                    "expected a monomial as the first argument"
             );
             return nullptr;
         }
@@ -1107,7 +1216,8 @@ PyObject* polynomial_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
             Py_DECREF(monomial);
             Py_DECREF(scalar);
             PyErr_SetString(
-                    PyExc_TypeError, "expected a scalar as the second argument"
+                    PyExc_TypeError,
+                    "expected a scalar as the second argument"
             );
             return nullptr;
         }
@@ -1203,7 +1313,8 @@ int polynomial_ass_subscript(PyObject* self, PyObject* index, PyObject* arg)
     }
 
     PyErr_SetString(
-            PyExc_TypeError, "polynomial index must be monomial or str"
+            PyExc_TypeError,
+            "polynomial index must be monomial or str"
     );
     return -1;
 }
@@ -1296,7 +1407,8 @@ PyObject* polynomial_pow(PyObject* self, PyObject* other, PyObject*)
     long power = PyLong_AsLong(other);
     if (power < 0) {
         PyErr_SetString(
-                PyExc_ValueError, "cannot raise poly to negative power"
+                PyExc_ValueError,
+                "cannot raise poly to negative power"
         );
         return nullptr;
     }
@@ -1522,7 +1634,8 @@ PyObject* polynomial_inplace_div(PyObject* self, PyObject* other)
 {
     if (!is_polynomial(self) || is_polynomial(other) || is_monomial(other)) {
         PyErr_SetString(
-                PyExc_TypeError, "polynomials can only appear in the numerator"
+                PyExc_TypeError,
+                "polynomials can only appear in the numerator"
         );
         return nullptr;
     }
@@ -1554,7 +1667,7 @@ PyObject* polynomial_repr(PyObject* self)
     ss << obj;
     return PyUnicode_FromString(ss.str().c_str());
 }
-PyObject* polynomial_degree(PyObject* self)
+PyObject* polynomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
     const auto& obj = cast_poly(self);
     return PyLong_FromLong(obj.degree());

@@ -34,7 +34,6 @@
 #include <roughpy/core/slice.h>
 
 #include <functional>
-#include <iosfwd>
 #include <string>
 #include <utility>
 #include <vector>
@@ -46,17 +45,21 @@ namespace dtl {
 template <typename T>
 struct type_id_of_impl;
 
-}
+template <typename ScalarImpl>
+struct RPY_EXPORT scalar_type_holder {
+    static const ScalarType* get_type() noexcept;
+};
+}// namespace dtl
 
 template <typename T>
 inline const string& type_id_of() noexcept;
 
 struct RingCharacteristics {
-    bool is_field           : 1;
-    bool is_ordered         : 1;
-    bool has_sqrt           : 1;
-    bool is_complex         : 1;
-    unsigned int            : 28;
+    bool is_field : 1;
+    bool is_ordered : 1;
+    bool has_sqrt : 1;
+    bool is_complex : 1;
+    unsigned int : 28;
 };
 
 class RPY_EXPORT ScalarType
@@ -73,11 +76,17 @@ protected:
 
 public:
     template <typename T>
-    RPY_NO_DISCARD inline static const ScalarType* of();
+    RPY_NO_DISCARD inline static const ScalarType* of()
+    {
+        return dtl::scalar_type_holder<remove_cv_ref_t<T>>::get_type();
+    }
 
     template <typename T>
     RPY_NO_DISCARD inline static const ScalarType*
-    of(const platform::DeviceInfo& device);
+    of(const platform::DeviceInfo& device)
+    {
+        return get_type(type_id_of<T>(), device);
+    }
 
     /*
      * ScalarTypes objects should be unique for each configuration,
@@ -106,7 +115,8 @@ public:
      * @return const pointer to appropriate scalar type
      */
     RPY_NO_DISCARD static const ScalarType* from_type_details(
-            const BasicScalarInfo& details, const platform::DeviceInfo& device
+            const BasicScalarInfo& details,
+            const platform::DeviceInfo& device
     );
 
     /**
@@ -177,7 +187,8 @@ public:
      * @param lhs Pointer to left hand scalar
      * @param rhs Pointer to right hand scalar
      */
-    virtual void swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count) const = 0;
+    virtual void swap(ScalarPointer lhs, ScalarPointer rhs, dimn_t count) const
+            = 0;
 
     virtual void
     convert_copy(ScalarPointer dst, ScalarPointer src, dimn_t count) const
@@ -191,7 +202,10 @@ public:
      * @param id
      */
     virtual void convert_fill(
-            ScalarPointer out, ScalarPointer in, dimn_t count, const string& id
+            ScalarPointer out,
+            ScalarPointer in,
+            dimn_t count,
+            const string& id
     ) const;
 
     /**
@@ -237,7 +251,6 @@ public:
     assign(ScalarPointer target, long long numerator, long long denominator
     ) const = 0;
 
-
     /**
      * @brief Compute the unary minus of all values in an array and write the
      * result to dst.
@@ -247,7 +260,9 @@ public:
      * @param mask
      */
     virtual void uminus_into(
-            ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
+            ScalarPointer& dst,
+            const ScalarPointer& arg,
+            dimn_t count,
             const uint64_t* mask
     ) const = 0;
 
@@ -264,8 +279,11 @@ public:
      * and 0 for not operation.
      */
     virtual void add_into(
-            ScalarPointer& dst, const ScalarPointer& lhs,
-            const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
+            ScalarPointer& dst,
+            const ScalarPointer& lhs,
+            const ScalarPointer& rhs,
+            dimn_t count,
+            const uint64_t* mask
     ) const = 0;
 
     /**
@@ -281,8 +299,11 @@ public:
      * and 0 for not operation.
      */
     virtual void sub_into(
-            ScalarPointer& dst, const ScalarPointer& lhs,
-            const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
+            ScalarPointer& dst,
+            const ScalarPointer& lhs,
+            const ScalarPointer& rhs,
+            dimn_t count,
+            const uint64_t* mask
     ) const = 0;
 
     /**
@@ -298,8 +319,11 @@ public:
      * and 0 for not operation.
      */
     virtual void mul_into(
-            ScalarPointer& dst, const ScalarPointer& lhs,
-            const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
+            ScalarPointer& dst,
+            const ScalarPointer& lhs,
+            const ScalarPointer& rhs,
+            dimn_t count,
+            const uint64_t* mask
     ) const = 0;
 
     /**
@@ -315,8 +339,11 @@ public:
      * and 0 for not operation.
      */
     virtual void div_into(
-            ScalarPointer& dst, const ScalarPointer& lhs,
-            const ScalarPointer& rhs, dimn_t count, const uint64_t* mask
+            ScalarPointer& dst,
+            const ScalarPointer& lhs,
+            const ScalarPointer& rhs,
+            dimn_t count,
+            const uint64_t* mask
     ) const = 0;
 
     /**
@@ -388,25 +415,13 @@ inline bool operator!=(const ScalarType& lhs, const ScalarType& rhs) noexcept
     return std::addressof(lhs) != std::addressof(rhs);
 }
 
-// Implementation of type getting mechanics
+template <typename T>
+inline const string& type_id_of() noexcept
+{
+    return dtl::type_id_of_impl<T>::get_id();
+}
 
 namespace dtl {
-
-template <typename T>
-struct type_id_of_impl {
-    static const string& get_id() {
-        /*
-         * The fallback implementation gets the type id by looking for the
-         * type and querying for the id. This should not fail unless no type
-         * is associated with T, since all the cases where ScalarType::of<T>
-         * () is allowed to be nullptr are integer types, which are
-         * overloaded below.
-         */
-        const auto* type = ScalarType::of<T>();
-        RPY_CHECK(type != nullptr);
-        return type->id();
-    }
-};
 
 #define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                    \
     template <>                                                                \
@@ -414,61 +429,72 @@ struct type_id_of_impl {
         static const string& get_id() noexcept;                                \
     }
 
+ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
+ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
 ROUGHPY_MAKE_TYPE_ID_OF(char, "i8");
-
 ROUGHPY_MAKE_TYPE_ID_OF(unsigned char, "u8");
-
 ROUGHPY_MAKE_TYPE_ID_OF(short, "i16");
-
 ROUGHPY_MAKE_TYPE_ID_OF(unsigned short, "u16");
-
 ROUGHPY_MAKE_TYPE_ID_OF(int, "i32");
-
 ROUGHPY_MAKE_TYPE_ID_OF(unsigned int, "u32");
-
 ROUGHPY_MAKE_TYPE_ID_OF(long long, "i64");
-
 ROUGHPY_MAKE_TYPE_ID_OF(unsigned long long, "u64");
-
 ROUGHPY_MAKE_TYPE_ID_OF(signed_size_type_marker, "isize");
-
 ROUGHPY_MAKE_TYPE_ID_OF(unsigned_size_type_marker, "usize");
 
-ROUGHPY_MAKE_TYPE_ID_OF(half, "f16");
-
-ROUGHPY_MAKE_TYPE_ID_OF(bfloat16, "bf16");
-
-ROUGHPY_MAKE_TYPE_ID_OF(float, "f32");
-
-ROUGHPY_MAKE_TYPE_ID_OF(double, "f64");
-
-ROUGHPY_MAKE_TYPE_ID_OF(rational_scalar_type, "Rational");
-
-ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
-
+#undef ROUGHPY_MAKE_TYPE_ID_OF
 // Long is silly. On Win64 it is 32 bits (because, Microsoft) on Unix, it is 64
 // bits
 template <>
-struct type_id_of_impl<long>
-    : public std::conditional_t<
-              (sizeof(long) == sizeof(int)), type_id_of_impl<int>,
-              type_id_of_impl<long long>> {
+struct type_id_of_impl<long> : public std::conditional_t<
+                                       (sizeof(long) == sizeof(int)),
+                                       type_id_of_impl<int>,
+                                       type_id_of_impl<long long>> {
 };
 
 
-#undef ROUGHPY_MAKE_TYPE_ID_OF
-
-template <typename ScalarImpl>
-struct RPY_EXPORT scalar_type_holder {
+template <>
+struct RPY_EXPORT scalar_type_holder<char> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned char> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<short> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned short> {
     static const ScalarType* get_type() noexcept { return nullptr; }
 };
 
-// template <typename ScalarImpl>
-// struct scalar_type_holder<ScalarImpl &> : scalar_type_holder<ScalarImpl> {};
-//
-// template <typename ScalarImpl>
-// struct scalar_type_holder<const ScalarImpl &> :
-// scalar_type_holder<ScalarImpl> {};
+template <>
+struct RPY_EXPORT scalar_type_holder<int> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned int> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<long> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned long> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<long long> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+template <>
+struct RPY_EXPORT scalar_type_holder<unsigned long long> {
+    static const ScalarType* get_type() noexcept { return nullptr; }
+};
+
 
 template <>
 struct RPY_EXPORT scalar_type_holder<float> {
@@ -479,46 +505,7 @@ template <>
 struct RPY_EXPORT scalar_type_holder<double> {
     static const ScalarType* get_type() noexcept;
 };
-
-template <>
-struct RPY_EXPORT scalar_type_holder<rational_scalar_type> {
-    static const ScalarType* get_type() noexcept;
-};
-
-template <>
-struct RPY_EXPORT scalar_type_holder<rational_poly_scalar> {
-    static const ScalarType* get_type() noexcept;
-};
-
-template <>
-struct RPY_EXPORT scalar_type_holder<half> {
-    static const ScalarType* get_type() noexcept;
-};
-
-template <>
-struct RPY_EXPORT scalar_type_holder<bfloat16> {
-    static const ScalarType* get_type() noexcept;
-};
-
 }// namespace dtl
-
-template <typename T>
-inline const ScalarType* ScalarType::of()
-{
-    return dtl::scalar_type_holder<remove_cv_ref_t<T>>::get_type();
-}
-
-template <typename T>
-const ScalarType* ScalarType::of(const platform::DeviceInfo& device)
-{
-    return get_type(type_id_of<T>(), device);
-}
-
-template <typename T>
-inline const string& type_id_of() noexcept
-{
-    return dtl::type_id_of_impl<T>::get_id();
-}
 
 }// namespace scalars
 }// namespace rpy

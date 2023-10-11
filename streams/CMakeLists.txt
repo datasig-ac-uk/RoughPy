@@ -55,6 +55,10 @@ add_roughpy_component(Streams
         include/roughpy/streams/channels.h
     DEPENDENCIES PRIVATE
         SndFile::sndfile
+        PUBLIC
+                Boost::boost
+    DEFINITIONS
+        BOOST_UUID_FORCE_AUTO_LINK=1
     NEEDS
         RoughPy::Core
         RoughPy::Platform

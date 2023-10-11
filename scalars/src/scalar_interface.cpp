@@ -32,6 +32,7 @@
 
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_interface.h>
+#include <roughpy/scalars/types.h>
 
 using namespace rpy::scalars;
 

@@ -1,9 +1,13 @@
+import pickle
+
 import numpy as np
+
+
 import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 import roughpy
-from roughpy import FreeTensor, TensorKey
+from roughpy import FreeTensor, TensorKey, DPReal
 
 DEPTH_LIMITS = {
     2: range(2, 26),
@@ -434,3 +438,12 @@ def test_antipode(width, depth, data1, coeff_type, vec_type):
 
     result = t.antipode().antipode()
     assert result == t, f"{result} {t} {result - t}"
+
+
+def test_free_tensor_pickle_roundtrip():
+
+    t = FreeTensor(np.array([1.0, 2.0, 3.0, 4.0]), width=3, depth=2, dtype=DPReal)
+
+    t2 = pickle.loads(pickle.dumps(t))
+
+    assert t2 == t

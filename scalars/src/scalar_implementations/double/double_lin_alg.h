@@ -33,6 +33,8 @@
 #define ROUGHPY_SCALARS_SRC_DOUBLE_LIN_ALG_H_
 
 #include "../../standard_linalg.h"
+#ifndef ROUGHPY_DISABLE_BLAS
+
 
 namespace rpy {
 namespace scalars {
@@ -42,4 +44,5 @@ extern template class StandardLinearAlgebra<double, double>;
 }// namespace scalars
 }// namespace rpy
 
+#endif
 #endif// ROUGHPY_SCALARS_SRC_DOUBLE_LIN_ALG_H_

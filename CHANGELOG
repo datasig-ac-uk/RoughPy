@@ -1,3 +1,14 @@
+Version 0.0.8:
+  - Disabled linking to BLAS/LAPACK to reduce compile times whilst under development.
+  - Greatly expanded the serialization support internally.
+  - Many classes can now be pickled/unpickled for transport across process boundaries.
+    (Note that this is not yet a safe means of storing and transmitting stream data.)
+  - Overlay triplets are now forced for all builds. This should improve reproducibility.
+  - Restructured the algebra module to improve build times.
+  - Added CMake detection of headers to help builds with non-compliant compilers.
+  - Fixed an error in the construction of `PyLieKey` in `PyLieKeyIterator`. [#40](https://github.com/datasig-ac-uk/RoughPy/issues/40)
+
+
 Version 0.0.7:
   - Overhaul the (internal) ScalarType API:
     . the overloads of convert_copy have been removed in favour of the variant that takes two ScalarPointers;

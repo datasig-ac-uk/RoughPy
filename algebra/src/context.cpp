@@ -32,12 +32,12 @@
 
 #include <roughpy/algebra/context.h>
 
+
 #include "hall_set_size.h"
 
 #include <mutex>
 #include <unordered_map>
 
-#include <boost/functional/hash.hpp>
 
 #include "lite_context.h"
 

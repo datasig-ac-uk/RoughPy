@@ -36,7 +36,9 @@ using namespace rpy::scalars;
 
 DoubleType::DoubleType() : StandardScalarType<double>("f64", "DPReal") {}
 
+#ifndef ROUGHPY_DISABLE_BLAS
 std::unique_ptr<BlasInterface> DoubleType::get_blas() const
 {
     return std::make_unique<StandardLinearAlgebra<double, double>>(this);
 }
+#endif

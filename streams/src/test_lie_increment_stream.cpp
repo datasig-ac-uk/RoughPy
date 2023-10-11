@@ -35,6 +35,7 @@
 #include <gtest/gtest.h>
 #include <random>
 
+#include <roughpy/scalars/types.h>
 #include <roughpy/scalars/owned_scalar_array.h>
 #include <roughpy/scalars/scalar_pointer.h>
 
@@ -172,4 +173,34 @@ TEST_F(LieIncrementStreamTests, TestLogSignatureTwoIncrementsDepth1)
     auto expected = ctx1->construct_lie(edata);
 
     ASSERT_EQ(lsig, expected);
+}
+
+TEST_F(LieIncrementStreamTests, TestSerializeAndDeserialize) {
+
+
+    auto data = random_data(1);
+    algebra::VectorConstructionData edata{
+            scalars::KeyScalarArray(scalars::OwnedScalarArray(data)),
+            algebra::VectorType::Dense};
+    auto idx = indices(1);
+    const streams::LieIncrementStream path(
+            scalars::KeyScalarArray(std::move(data)), idx, md,
+            std::make_shared<streams::StreamSchema>(ctx->width())
+    );
+
+    auto lsig = path.log_signature(intervals::RealInterval(0.0, 2.0), 1, *ctx);
+
+    std::stringstream ss;
+    {
+        archives::JSONOutputArchive oarch(ss);
+        oarch(path);
+    }
+
+
+    streams::LieIncrementStream loaded;
+    {
+        archives::JSONInputArchive iarch(ss);
+        iarch(loaded);
+    }
+
 }

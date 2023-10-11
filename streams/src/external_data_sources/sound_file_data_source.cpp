@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 13/04/23.
@@ -34,30 +33,22 @@
 
 #include <roughpy/platform/filesystem.h>
 #include <roughpy/scalars/owned_scalar_array.h>
+#include <roughpy/scalars/types.h>
 
+#include <boost/url/parse.hpp>
 #include <cmath>
 
 using namespace rpy;
 using namespace rpy::streams;
+
+
+using URIScheme = boost::urls::scheme;
 
 template <typename T>
 static scalars::ScalarPointer to_sp(T* ptr)
 {
     return scalars::ScalarPointer(scalars::ScalarType::of<T>(), ptr);
 }
-
-template <>
-scalars::ScalarPointer to_sp<int32_t>(int32_t* ptr)
-{
-    return scalars::ScalarPointer(ptr);
-}
-
-template <>
-scalars::ScalarPointer to_sp<int16_t>(int16_t* ptr)
-{
-    return scalars::ScalarPointer(ptr);
-}
-
 
 
 
@@ -166,10 +157,12 @@ dimn_t SoundFileDataSource::query_impl(
     return static_cast<dimn_t>(frame_count);
 }
 
-
+SoundFileDataSource::SoundFileDataSource(const fs::path& path)
+    : m_path(path), m_handle(m_path.c_str())
+{}
 
 SoundFileDataSource::SoundFileDataSource(const url& uri)
-    : m_handle(uri.path().c_str())
+    : m_path(uri.path()), m_handle(m_path.c_str())
 {}
 
 SoundFileDataSource::SoundFileDataSource(SndfileHandle&& handle)
@@ -188,7 +181,7 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
      * depending on whether the stream scalar types are floats or doubles.
      * This should dramatically simplify the code.
      */
-    auto format = m_handle.format() & SF_FORMAT_SUBMASK;
+//    auto format = m_handle.format() & SF_FORMAT_SUBMASK;
 //
 //    switch (format) {
 //        case SF_FORMAT_PCM_16:
@@ -397,3 +390,9 @@ void SoundFileDataSourceFactory::set_schema(
 {
     reinterpret_cast<Payload*>(payload)->schema = std::move(schema);
 }
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::SoundFileDataSource
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>

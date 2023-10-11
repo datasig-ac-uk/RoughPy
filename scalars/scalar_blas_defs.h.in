@@ -1,7 +1,9 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_BLAS_DEFS
 #define ROUGHPY_SCALARS_SCALAR_BLAS_DEFS
 
+#cmakedefine ROUGHPY_DISABLE_BLAS
 
+#ifndef ROUGHPY_DISABLE_BLAS
 #cmakedefine RPY_USE_MKL
 #cmakedefine RPY_USE_ACCELERATE
 #cmakedefine RPY_LAPACK_ILP64
@@ -88,5 +90,5 @@ using integer = lapack_int;
 }
 }
 
-
+#endif // ROUGHPY_DISABLE_BLAS
 #endif // ROUGHPY_SCALARS_SCALAR_BLAS_DEFS
