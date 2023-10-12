@@ -18,6 +18,7 @@ add_roughpy_component(Device
         SOURCES
         src/opencl/ocl_buffer.cpp
         src/opencl/ocl_buffer.h
+        src/opencl/ocl_decls.h
         src/opencl/ocl_device.cpp
         src/opencl/ocl_device.h
         src/opencl/ocl_event.cpp

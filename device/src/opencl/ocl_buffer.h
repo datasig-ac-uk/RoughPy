@@ -32,45 +32,26 @@
 #ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_
 #define ROUGHPY_DEVICE_SRC_OPENCL_OCL_BUFFER_H_
 
-
 #include <roughpy/device/buffer.h>
 
+#include "ocl_decls.h"
 #include "ocl_headers.h"
-#include "ocl_device.h"
 
 namespace rpy {
 namespace device {
-namespace cl {
+
 
 class OCLBufferInterface : public BufferInterface
 {
-    struct Data {
-        cl_mem buffer;
-        OCLDevice device;
-    };
-
-    static inline cl_mem& buf(void* content) noexcept {
-        return static_cast<Data*>(content)->buffer;
-    }
-
-    static inline const OCLDevice& dev(void* content) noexcept {
-        return static_cast<Data*>(content)->device;
-    }
+    struct Data;
+    OCLDevice m_device;
 
 public:
 
-    static inline void* create_data(
-            cl_mem buffer, OCLDevice device
-            ) noexcept {
-        return new Data { buffer, std::move(device) };
-    }
+    explicit OCLBufferInterface(OCLDevice dev) noexcept;
 
-    static cl_mem take_buffer(void* content) noexcept {
-        auto* data = static_cast<Data*>(content);
-        cl_mem buf = data->buffer;
-        data->buffer = nullptr;
-        return buf;
-    }
+    static void* create_data(cl_mem buffer) noexcept;
+    static cl_mem take(void* content) noexcept;
 
     void* clone(void* content) const override;
     void clear(void* content) const override;
@@ -79,8 +60,6 @@ public:
     void* ptr(void* content) const override;
 };
 
-
-}// namespace cl
 }// namespace device
 }// namespace rpy
 

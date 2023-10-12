@@ -32,20 +32,46 @@
 #include "ocl_buffer.h"
 
 #include "ocl_handle_errors.h"
+#include "ocl_device.h"
 #include "ocl_headers.h"
+
+#include <utility>
 
 using namespace rpy;
 using namespace rpy::device;
-using namespace rpy::device::cl;
 
 constexpr cl_int MODE_MASK
         = CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY | CL_MEM_READ_WRITE;
 
+struct OCLBufferInterface::Data {
+    cl_mem buffer;
+};
+
+#define buf(content) static_cast<Data*>(content)->buffer
+
+device::OCLBufferInterface::OCLBufferInterface(OCLDevice dev) noexcept
+    : m_device(std::move(dev))
+{}
+
+void* OCLBufferInterface::create_data(
+        cl_mem buffer
+) noexcept
+{
+    return new Data{ buffer };
+}
+
+cl_mem OCLBufferInterface::take(void* content) noexcept
+{
+    auto* data = static_cast<Data*>(content);
+    cl_mem buf = data->buffer;
+    delete data;
+    return buf;
+}
+
 BufferMode OCLBufferInterface::mode(void* content) const
 {
-    cl_int ecode;
     cl_int mode;
-    ecode = clGetMemObjectInfo(
+    auto ecode = clGetMemObjectInfo(
             buf(content),
             CL_MEM_FLAGS,
             sizeof(mode),
@@ -82,7 +108,7 @@ void* OCLBufferInterface::clone(void* content) const
 
     cl_int ecode;
     cl_mem new_buffer = clCreateBuffer(
-            dev(content)->context(),
+            m_device->context(),
             CL_MEM_ALLOC_HOST_PTR,
             buf_size,
             nullptr,
@@ -92,7 +118,7 @@ void* OCLBufferInterface::clone(void* content) const
 
     cl_event event;
     ecode = clEnqueueCopyBuffer(
-            dev(content)->default_queue(),
+            m_device->default_queue(),
             buf(content),
             new_buffer,
             0,
@@ -106,11 +132,12 @@ void* OCLBufferInterface::clone(void* content) const
 
     clWaitForEvents(1, &event);
 
-    return create_data(new_buffer, dev(content));
+    return create_data(new_buffer);
 }
 void OCLBufferInterface::clear(void* content) const
 {
-    auto ecode = clReleaseMemObject(buf(content));
+    auto ecode = clReleaseMemObject(take(content));
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
-    delete static_cast<Data*>(content);
 }
+
+#undef buf

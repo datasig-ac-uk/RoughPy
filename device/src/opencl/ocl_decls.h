@@ -26,50 +26,31 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 11/10/23.
+// Created by user on 12/10/23.
 //
 
-#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_KERNEL_H_
-#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_KERNEL_H_
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_DECLS_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_DECLS_H_
 
-#include "ocl_decls.h"
-#include "ocl_headers.h"
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
 
-#include <roughpy/device/kernel.h>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 namespace rpy {
 namespace device {
 
-class OCLKernelInterface : public KernelInterface
-{
-    struct Data;
-    OCLDevice m_device;
+class OCLDeviceHandle;
+class OCLBufferInterface;
+class OCLEventInterface;
+class OCLKernelInterface;
+class OCLQueueInterface;
 
-    RPY_UNUSED cl_program program(cl_kernel kernel) const;
-    RPY_UNUSED cl_context context(cl_kernel kernel) const;
+using OCLDevice = boost::intrusive_ptr<const OCLDeviceHandle>;
 
-public:
 
-    explicit OCLKernelInterface(OCLDevice dev) noexcept;
+}
+}
 
-    static void* create_data(cl_kernel k) noexcept;
-    static cl_kernel take(void* content) noexcept;
 
-    void* clone(void* content) const override;
-    void clear(void* content) const override;
-
-    string_view name(void* content) const override;
-    dimn_t num_args(void* content) const override;
-    Event launch_kernel_async(
-            void* content,
-            Queue& queue,
-            Slice<void*> args,
-            Slice<dimn_t> arg_sizes,
-            const KernelLaunchParams& params
-    ) const override;
-};
-
-}// namespace device
-}// namespace rpy
-
-#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_KERNEL_H_
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_DECLS_H_

@@ -33,20 +33,30 @@
 #define ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_H_
 
 
+#include "ocl_decls.h"
 #include "ocl_headers.h"
+#include "ocl_buffer.h"
+#include "ocl_event.h"
+#include "ocl_kernel.h"
+#include "ocl_queue.h"
 
 #include <roughpy/device/device_handle.h>
+
 
 #include <unordered_map>
 #include <vector>
 
 namespace rpy {
 namespace device {
-namespace cl {
 
 
 class OCLDeviceHandle : public DeviceHandle
 {
+    OCLBufferInterface m_buffer_iface;
+    OCLEventInterface m_event_iface;
+    OCLKernelInterface m_kernel_iface;
+    OCLQueueInterface m_queue_iface;
+
     cl_device_id m_device;
     int32_t m_device_id;
 
@@ -58,7 +68,15 @@ class OCLDeviceHandle : public DeviceHandle
     std::unordered_map<string, cl_kernel> m_kernels;
 
 public:
+    explicit OCLDeviceHandle(cl_device_id id);
+
     ~OCLDeviceHandle() override;
+
+    const BufferInterface* buffer_interface() const noexcept override;
+    const EventInterface* event_interface() const noexcept override;
+    const KernelInterface* kernel_interface() const noexcept override;
+    const QueueInterface* queue_interface() const noexcept override;
+
     DeviceInfo info() const noexcept override;
     optional<fs::path> runtime_library() const noexcept override;
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
@@ -75,9 +93,7 @@ public:
 };
 
 
-using OCLDevice = boost::intrusive_ptr<const OCLDeviceHandle>;
 
-}// namespace cl
 }// namespace device
 }// namespace rpy
 

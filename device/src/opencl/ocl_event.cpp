@@ -32,14 +32,30 @@
 #include "ocl_event.h"
 #include "ocl_handle_errors.h"
 #include "ocl_headers.h"
+#include "ocl_device.h"
 
 using namespace rpy;
 using namespace rpy::device;
-using namespace rpy::device::cl;
 
-static constexpr cl_event cast(void* content) noexcept
+struct OCLEventInterface::Data {
+    cl_event event;
+};
+
+#define cast(content) static_cast<Data*>(content)->event
+
+device::OCLEventInterface::OCLEventInterface(OCLDevice dev) noexcept
+    : m_device(std::move(dev))
+{}
+
+void* device::OCLEventInterface::create_data(cl_event event) noexcept
 {
-    return static_cast<cl_event>(content);
+    return new Data{event};
+}
+cl_event device::OCLEventInterface::take(void* content) noexcept
+{
+    auto event = cast(content);
+    delete static_cast<Data*>(content);
+    return event;
 }
 
 void OCLEventInterface::wait(void* content) const
@@ -59,33 +75,26 @@ EventStatus OCLEventInterface::status(void* content) const
             nullptr
     );
 
-    if (ecode != CL_SUCCESS) {
-        RPY_HANDLE_OCL_ERROR(ecode);
-    }
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    switch(stat) {
-        case CL_SUCCESS:
-            return EventStatus::CompletedSuccessfully;
-        case CL_RUNNING:
-            return EventStatus::Running;
-        case CL_SUBMITTED:
-            return EventStatus::Submitted;
-        case CL_QUEUED:
-            return EventStatus::Queued;
-        default:
-            return EventStatus::Error;
+    switch (stat) {
+        case CL_SUCCESS: return EventStatus::CompletedSuccessfully;
+        case CL_RUNNING: return EventStatus::Running;
+        case CL_SUBMITTED: return EventStatus::Submitted;
+        case CL_QUEUED: return EventStatus::Queued;
+        default: return EventStatus::Error;
     }
 }
 void* OCLEventInterface::clone(void* content) const
 {
     auto ecode = clRetainEvent(cast(content));
-    if (ecode != CL_SUCCESS) {
-        RPY_HANDLE_OCL_ERROR(ecode);
-    }
-    return content;
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    return create_data(cast(content));
 }
 void OCLEventInterface::clear(void* content) const
 {
-    cl_int ecode = clReleaseEvent(cast(content));
+    cl_int ecode = clReleaseEvent(take(content));
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
 }
+
+#undef cast

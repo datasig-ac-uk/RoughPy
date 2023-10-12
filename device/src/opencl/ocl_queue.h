@@ -32,23 +32,31 @@
 #ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_QUEUE_H_
 #define ROUGHPY_DEVICE_SRC_OPENCL_OCL_QUEUE_H_
 
+#include "ocl_decls.h"
+#include "ocl_headers.h"
 #include <roughpy/device/queue.h>
 
 namespace rpy {
 namespace device {
-namespace cl {
 
 class OCLQueueInterface : public QueueInterface
 {
+    struct Data;
+    OCLDevice m_device;
 
 public:
+
+    explicit OCLQueueInterface(OCLDevice dev) noexcept;
+
+    static void* create_data(cl_command_queue queue) noexcept;
+    static cl_command_queue take(void* content) noexcept;
+
     void* clone(void* content) const override;
     void clear(void* content) const override;
 
     dimn_t size(void* content) const override;
 };
 
-}// namespace cl
 }// namespace device
 }// namespace rpy
 

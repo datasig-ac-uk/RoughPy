@@ -33,25 +33,43 @@
 
 #include "ocl_handle_errors.h"
 #include "ocl_headers.h"
+#include "ocl_device.h"
 
 using namespace rpy;
 using namespace rpy::device;
-using namespace rpy::device::cl;
 
-static constexpr cl_command_queue cast(void* content) noexcept
+struct OCLQueueInterface::Data {
+    cl_command_queue queue;
+};
+
+#define cast(content) static_cast<Data*>(content)->queue
+
+device::OCLQueueInterface::OCLQueueInterface(OCLDevice dev) noexcept
+    : m_device(std::move(dev))
 {
-    return static_cast<cl_command_queue>(content);
+
+}
+
+void* device::OCLQueueInterface::create_data(cl_command_queue queue) noexcept
+{
+    return new Data { queue };
+}
+cl_command_queue device::OCLQueueInterface::take(void* content) noexcept
+{
+    auto queue = cast(content);
+    delete static_cast<Data*>(content);
+    return queue;
 }
 
 void* OCLQueueInterface::clone(void* content) const
 {
-    cl_int ecode = clRetainCommandQueue(cast(content));
+    auto ecode = clRetainCommandQueue(cast(content));
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-    return content;
+    return create_data(cast(content));
 }
 void OCLQueueInterface::clear(void* content) const
 {
-    cl_int ecode = clReleaseCommandQueue(cast(content));
+    auto ecode = clReleaseCommandQueue(take(content));
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 }
 

@@ -31,7 +31,6 @@
 
 #include "ocl_device.h"
 
-
 #include "ocl_buffer.h"
 #include "ocl_event.h"
 #include "ocl_handle_errors.h"
@@ -40,9 +39,17 @@
 
 using namespace rpy;
 using namespace rpy::device;
-using namespace rpy::device::cl;
 
-OCLDeviceHandle::~OCLDeviceHandle() {
+OCLDeviceHandle::OCLDeviceHandle(cl_device_id id)
+    : m_buffer_iface(this),
+      m_event_iface(this),
+      m_kernel_iface(this),
+      m_queue_iface(this),
+      m_device(id)
+{}
+
+OCLDeviceHandle::~OCLDeviceHandle()
+{
     clReleaseCommandQueue(m_default_queue);
 
     m_device_id = 0;
@@ -51,29 +58,56 @@ OCLDeviceHandle::~OCLDeviceHandle() {
     cl_int ecode;
     while (!m_programs.empty()) {
         ecode = clReleaseProgram(m_programs.back());
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
         m_programs.pop_back();
     }
 
     for (auto&& [nm, ker] : m_kernels) {
         ecode = clReleaseKernel(ker);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     }
     m_kernels.clear();
 
     clReleaseContext(m_ctx);
     clReleaseDevice(m_device);
-
-    (void) ecode;
 }
-DeviceInfo OCLDeviceHandle::info() const noexcept { return DeviceHandle::info(); }
+DeviceInfo OCLDeviceHandle::info() const noexcept
+{
+    return {DeviceType::OpenCL, m_device_id};
+}
 optional<fs::path> OCLDeviceHandle::runtime_library() const noexcept
 {
     return {};
 }
 Buffer OCLDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
 {
-    return DeviceHandle::raw_alloc(count, alignment);
+    cl_int ecode;
+    auto new_mem
+            = clCreateBuffer(m_ctx, CL_MEM_READ_WRITE, count, nullptr, &ecode);
+
+    if (new_mem == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+    return Buffer(buffer_interface(), OCLBufferInterface::create_data(new_mem));
 }
 void OCLDeviceHandle::raw_free(Buffer buffer) const
 {
-    DeviceHandle::raw_free(buffer);
+    RPY_CHECK(buffer.interface() == buffer_interface());
+    auto buf = OCLBufferInterface::take(buffer.content());
+    auto ecode = clReleaseMemObject(buf);
+    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+}
+const BufferInterface* OCLDeviceHandle::buffer_interface() const noexcept
+{
+    return &m_buffer_iface;
+}
+const EventInterface* OCLDeviceHandle::event_interface() const noexcept
+{
+    return &m_event_iface;
+}
+const KernelInterface* OCLDeviceHandle::kernel_interface() const noexcept
+{
+    return &m_kernel_iface;
+}
+const QueueInterface* OCLDeviceHandle::queue_interface() const noexcept
+{
+    return &m_queue_iface;
 }

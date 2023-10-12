@@ -32,14 +32,35 @@
 #include "ocl_kernel.h"
 
 #include "ocl_handle_errors.h"
-#include "ocl_headers.h"
+#include "ocl_device.h"
 
 #include <roughpy/device/queue.h>
 
 using namespace rpy;
 using namespace rpy::device;
-using namespace rpy::device::cl;
 
+struct OCLKernelInterface::Data {
+    cl_kernel kernel;
+};
+
+#define ker(content) static_cast<Data*>(content)->kernel
+#define dev(content) m_device
+
+device::OCLKernelInterface::OCLKernelInterface(OCLDevice dev) noexcept
+    : m_device(std::move(dev))
+{}
+
+void* device::OCLKernelInterface::create_data(cl_kernel k) noexcept
+{
+    return new Data { k };
+}
+cl_kernel device::OCLKernelInterface::take(void* content) noexcept
+{
+    auto k = ker(content);
+    ker(content) = nullptr;
+    delete static_cast<Data*>(content);
+    return k;
+}
 
 cl_program OCLKernelInterface::program(cl_kernel kernel) const
 {
@@ -116,7 +137,6 @@ Event OCLKernelInterface::launch_kernel_async(
 {
 
     auto& kernel = ker(content);
-    const auto& device = dev(content);
 
     RPY_DBG_ASSERT(args.size() == arg_sizes.size());
 
@@ -135,26 +155,26 @@ Event OCLKernelInterface::launch_kernel_async(
     dimn_t lw_size[3];
 
     // This is messy, but it gets the job done.
-//    gw_size[0] = params.grid_work_size.x;
-//    lw_size[0] = params.grid_work_size.x;
-//    if (params.grid_work_size.y > 1) {
-//        gw_size[1] = params.grid_work_size.y;
-//        lw_size[1] = params.block_work_size.y;
-//        ++work_dim;
-//
-//        if (params.grid_work_size.z > 1) {
-//            gw_size[2] = params.grid_work_size.z;
-//            lw_size[2] = params.block_work_size.z;
-//            ++work_dim;
-//        }
-//    }
+    //    gw_size[0] = params.grid_work_size.x;
+    //    lw_size[0] = params.grid_work_size.x;
+    //    if (params.grid_work_size.y > 1) {
+    //        gw_size[1] = params.grid_work_size.y;
+    //        lw_size[1] = params.block_work_size.y;
+    //        ++work_dim;
+    //
+    //        if (params.grid_work_size.z > 1) {
+    //            gw_size[2] = params.grid_work_size.z;
+    //            lw_size[2] = params.block_work_size.z;
+    //            ++work_dim;
+    //        }
+    //    }
 
     cl_command_queue command_queue;
     if (queue.interface() != nullptr && queue.content() != nullptr) {
-        RPY_CHECK(queue.interface() == device->queue_interface());
+        RPY_CHECK(queue.interface() == m_device->queue_interface());
         command_queue = static_cast<cl_command_queue>(queue.content());
     } else {
-        command_queue = device->default_queue();
+        command_queue = m_device->default_queue();
     }
 
     cl_event event;
@@ -172,8 +192,7 @@ Event OCLKernelInterface::launch_kernel_async(
 
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    return Event{device->event_interface(), event};
-
+    return Event{m_device->event_interface(), event};
 }
 void* OCLKernelInterface::clone(void* content) const
 {
@@ -182,10 +201,10 @@ void* OCLKernelInterface::clone(void* content) const
 
     if (new_ker == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    return create_data(new_ker, dev(content));
+    return create_data(new_ker);
 }
 void OCLKernelInterface::clear(void* content) const
 {
-    clReleaseKernel(ker(content));
-    delete static_cast<Data*>(content);
+    auto ecode = clReleaseKernel(take(content));
+    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
 }

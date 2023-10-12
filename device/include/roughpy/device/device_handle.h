@@ -47,50 +47,22 @@ namespace device {
 class RPY_EXPORT DeviceHandle
     : public boost::intrusive_ref_counter<DeviceHandle>
 {
-    const BufferInterface* p_buffer_interface;
-    const EventInterface* p_event_interface;
-    const KernelInterface* p_kernel_interface;
-    const QueueInterface* p_queue_interface;
 
 public:
-    RPY_NO_DISCARD const BufferInterface*
-    buffer_interface() const noexcept
-    {
-        RPY_DBG_ASSERT(p_buffer_interface);
-        return p_buffer_interface;
-    }
-    RPY_NO_DISCARD const EventInterface*
-    event_interface() const noexcept
-    {
-        RPY_DBG_ASSERT(p_event_interface);
-        return p_event_interface;
-    }
-    RPY_NO_DISCARD const KernelInterface*
-    kernel_interface() const noexcept
-    {
-        RPY_DBG_ASSERT(p_kernel_interface);
-        return p_kernel_interface;
-    }
-    RPY_NO_DISCARD const QueueInterface*
-    queue_interface() const noexcept
-    {
-        RPY_DBG_ASSERT(p_queue_interface);
-        return p_queue_interface;
-    }
+    RPY_NO_DISCARD virtual const BufferInterface*
+    buffer_interface() const noexcept = 0;
+
+    RPY_NO_DISCARD virtual const EventInterface*
+    event_interface() const noexcept = 0;
+
+    RPY_NO_DISCARD virtual const KernelInterface*
+    kernel_interface() const noexcept = 0;
+
+    RPY_NO_DISCARD virtual const QueueInterface*
+    queue_interface() const noexcept = 0;
+
 
     DeviceHandle();
-
-    DeviceHandle(
-            const BufferInterface* buffer_iface,
-            const EventInterface* event_iface,
-            const KernelInterface* kernel_iface,
-            const QueueInterface* queue_iface
-    )
-        : p_buffer_interface(buffer_iface),
-          p_event_interface(event_iface),
-          p_kernel_interface(kernel_iface),
-          p_queue_interface(queue_iface)
-    {}
 
     virtual ~DeviceHandle();
 

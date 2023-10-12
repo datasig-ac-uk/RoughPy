@@ -36,6 +36,13 @@
 using namespace rpy;
 using namespace rpy::device;
 
+DeviceHandle::DeviceHandle() {}
+DeviceInfo DeviceHandle::info() const noexcept { return DeviceInfo(); }
+optional<fs::path> DeviceHandle::runtime_library() const noexcept
+{
+    return optional<fs::path>();
+}
+
 DeviceHandle::~DeviceHandle() = default;
 
 
