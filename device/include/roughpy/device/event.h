@@ -40,9 +40,9 @@ namespace device {
 class RPY_EXPORT EventInterface : public dtl::InterfaceBase
 {
 public:
-    virtual void wait(void* content) const;
+    virtual void wait();
 
-    virtual EventStatus status(void* content) const;
+    virtual EventStatus status() const;
 };
 
 class Event : public dtl::ObjectBase<EventInterface, Event>

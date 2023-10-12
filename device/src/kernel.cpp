@@ -29,30 +29,23 @@
 // Created by user on 11/10/23.
 //
 
-
-#include <roughpy/device/kernel.h>
 #include <roughpy/device/event.h>
+#include <roughpy/device/kernel.h>
 #include <roughpy/device/queue.h>
-
-
 
 using namespace rpy;
 using namespace rpy::device;
 
-
-string_view Kernel::name() const {
-    if (interface() == nullptr || content() == nullptr) {
-        return "";
-    }
-    return interface()->name(content());
+string_view Kernel::name() const
+{
+    if (!p_impl) { return ""; }
+    return p_impl->name();
 }
 
 dimn_t Kernel::num_args() const
 {
-    if (interface() == nullptr || content() == nullptr) {
-        return 0;
-    }
-    return interface()->num_args(content());
+    if (!p_impl) { return 0; }
+    return p_impl->num_args();
 }
 
 Event Kernel::launch_async(
@@ -62,17 +55,14 @@ Event Kernel::launch_async(
         const KernelLaunchParams& params
 )
 {
-    if (interface() == nullptr || content() == nullptr) {
-        return Event(nullptr, nullptr);
-    }
+    if (!p_impl) { return Event(); }
 
-    auto nargs = interface()->num_args(content());
+    auto nargs = p_impl->num_args();
     if (nargs != args.size() || nargs != arg_sizes.size()) {
         RPY_THROW(std::runtime_error, "incorrect number of arguments provided");
     }
 
-    return interface()->launch_kernel_async(content(), queue, args,
-                                            arg_sizes, params);
+    return p_impl->launch_kernel_async(queue, args, arg_sizes, params);
 }
 EventStatus Kernel::launch_sync(
         Queue& queue,

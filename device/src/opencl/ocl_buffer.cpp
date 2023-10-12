@@ -31,8 +31,8 @@
 
 #include "ocl_buffer.h"
 
-#include "ocl_handle_errors.h"
 #include "ocl_device.h"
+#include "ocl_handle_errors.h"
 #include "ocl_headers.h"
 
 #include <utility>
@@ -43,36 +43,20 @@ using namespace rpy::device;
 constexpr cl_int MODE_MASK
         = CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY | CL_MEM_READ_WRITE;
 
-struct OCLBufferInterface::Data {
-    cl_mem buffer;
-};
 
-#define buf(content) static_cast<Data*>(content)->buffer
 
-device::OCLBufferInterface::OCLBufferInterface(OCLDevice dev) noexcept
-    : m_device(std::move(dev))
+device::OCLBuffer::OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept
+    : m_device(std::move(dev)),
+      m_buffer(buffer)
+{}
+device::OCLBuffer::OCLBuffer(OCLDevice dev) noexcept : m_device(std::move(dev))
 {}
 
-void* OCLBufferInterface::create_data(
-        cl_mem buffer
-) noexcept
-{
-    return new Data{ buffer };
-}
-
-cl_mem OCLBufferInterface::take(void* content) noexcept
-{
-    auto* data = static_cast<Data*>(content);
-    cl_mem buf = data->buffer;
-    delete data;
-    return buf;
-}
-
-BufferMode OCLBufferInterface::mode(void* content) const
+BufferMode OCLBuffer::mode() const
 {
     cl_int mode;
     auto ecode = clGetMemObjectInfo(
-            buf(content),
+            m_buffer,
             CL_MEM_FLAGS,
             sizeof(mode),
             &mode,
@@ -87,11 +71,11 @@ BufferMode OCLBufferInterface::mode(void* content) const
         default: RPY_THROW(std::runtime_error, "invalid buffer mode");
     }
 }
-dimn_t OCLBufferInterface::size(void* content) const
+dimn_t OCLBuffer::size() const
 {
     cl_ulong size;
     auto ecode = clGetMemObjectInfo(
-            buf(content),
+            m_buffer,
             CL_MEM_SIZE,
             sizeof(cl_ulong),
             &size,
@@ -101,10 +85,10 @@ dimn_t OCLBufferInterface::size(void* content) const
 
     return static_cast<dimn_t>(size);
 }
-void* OCLBufferInterface::ptr(void* content) const { return content; }
-void* OCLBufferInterface::clone(void* content) const
+void* OCLBuffer::ptr() { return this; }
+std::unique_ptr<device::dtl::InterfaceBase> OCLBuffer::clone() const
 {
-    dimn_t buf_size = size(content);
+    dimn_t buf_size = size();
 
     cl_int ecode;
     cl_mem new_buffer = clCreateBuffer(
@@ -119,7 +103,7 @@ void* OCLBufferInterface::clone(void* content) const
     cl_event event;
     ecode = clEnqueueCopyBuffer(
             m_device->default_queue(),
-            buf(content),
+            m_buffer,
             new_buffer,
             0,
             0,
@@ -132,12 +116,11 @@ void* OCLBufferInterface::clone(void* content) const
 
     clWaitForEvents(1, &event);
 
-    return create_data(new_buffer);
+    return std::make_unique<OCLBuffer>(new_buffer, m_device);
 }
-void OCLBufferInterface::clear(void* content) const
-{
-    auto ecode = clReleaseMemObject(take(content));
+Device OCLBuffer::device() const noexcept { return m_device; }
+OCLBuffer::~OCLBuffer() {
+    auto ecode = clReleaseMemObject(m_buffer);
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    m_buffer = nullptr;
 }
-
-#undef buf

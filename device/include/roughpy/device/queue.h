@@ -38,7 +38,7 @@ class QueueInterface : public dtl::InterfaceBase
 {
 public:
 
-    virtual dimn_t size(void* content) const;
+    virtual dimn_t size() const;
 
 };
 

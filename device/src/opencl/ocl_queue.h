@@ -39,22 +39,20 @@
 namespace rpy {
 namespace device {
 
-class OCLQueueInterface : public QueueInterface
+class OCLQueue : public QueueInterface
 {
-    struct Data;
+    cl_command_queue m_queue;
     OCLDevice m_device;
 
 public:
+    ~OCLQueue() override;
 
-    explicit OCLQueueInterface(OCLDevice dev) noexcept;
+    OCLQueue(cl_command_queue queue, OCLDevice dev) noexcept;
+    explicit OCLQueue(OCLDevice dev) noexcept;
+    Device device() const noexcept override;
 
-    static void* create_data(cl_command_queue queue) noexcept;
-    static cl_command_queue take(void* content) noexcept;
-
-    void* clone(void* content) const override;
-    void clear(void* content) const override;
-
-    dimn_t size(void* content) const override;
+    std::unique_ptr<dtl::InterfaceBase> clone() const override;
+    dimn_t size() const override;
 };
 
 }// namespace device

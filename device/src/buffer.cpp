@@ -37,22 +37,22 @@ using namespace rpy::device;
 
 
 BufferMode Buffer::mode() const {
-    if (interface() == nullptr || content() == nullptr) {
+    if (!p_impl){
         return BufferMode::Read;
     }
-    return interface()->mode(content());
+    return p_impl->mode();
 }
 
 dimn_t Buffer::size() const {
-    if (interface() == nullptr || content() == nullptr) {
+    if (!p_impl) {
         return 0;
     }
-    return interface()->size(content());
+    return p_impl->size();
 }
 
 void* Buffer::ptr() {
-    if (interface() == nullptr || content() == nullptr) {
+    if (!p_impl) {
         return nullptr;
     }
-    return interface()->ptr(content());
+    return p_impl->ptr();
 }

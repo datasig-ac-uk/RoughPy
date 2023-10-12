@@ -41,23 +41,22 @@ namespace rpy {
 namespace device {
 
 
-class OCLBufferInterface : public BufferInterface
+class OCLBuffer : public BufferInterface
 {
-    struct Data;
     OCLDevice m_device;
+    cl_mem m_buffer;
 
 public:
 
-    explicit OCLBufferInterface(OCLDevice dev) noexcept;
+    OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept;
+    explicit OCLBuffer(OCLDevice dev) noexcept;
+    ~OCLBuffer() override;
 
-    static void* create_data(cl_mem buffer) noexcept;
-    static cl_mem take(void* content) noexcept;
-
-    void* clone(void* content) const override;
-    void clear(void* content) const override;
-    BufferMode mode(void* content) const override;
-    dimn_t size(void* content) const override;
-    void* ptr(void* content) const override;
+    std::unique_ptr<dtl::InterfaceBase> clone() const override;
+    Device device() const noexcept override;
+    BufferMode mode() const override;
+    dimn_t size() const override;
+    void* ptr() override;
 };
 
 }// namespace device

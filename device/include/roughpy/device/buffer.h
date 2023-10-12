@@ -48,11 +48,11 @@ enum class BufferMode
 class BufferInterface : public dtl::InterfaceBase
 {
 public:
-    RPY_NO_DISCARD virtual BufferMode mode(void* content) const;
+    RPY_NO_DISCARD virtual BufferMode mode() const;
 
-    RPY_NO_DISCARD virtual dimn_t size(void* content) const;
+    RPY_NO_DISCARD virtual dimn_t size() const;
 
-    RPY_NO_DISCARD virtual void* ptr(void* content) const;
+    RPY_NO_DISCARD virtual void* ptr();
 };
 
 class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>

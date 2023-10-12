@@ -42,7 +42,7 @@
 
 #include <roughpy/device/device_handle.h>
 
-
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -52,11 +52,6 @@ namespace device {
 
 class OCLDeviceHandle : public DeviceHandle
 {
-    OCLBufferInterface m_buffer_iface;
-    OCLEventInterface m_event_iface;
-    OCLKernelInterface m_kernel_iface;
-    OCLQueueInterface m_queue_iface;
-
     cl_device_id m_device;
     int32_t m_device_id;
 
@@ -64,25 +59,30 @@ class OCLDeviceHandle : public DeviceHandle
 
     cl_command_queue m_default_queue;
 
-    std::vector<cl_program> m_programs;
-    std::unordered_map<string, cl_kernel> m_kernels;
+    mutable std::recursive_mutex m_lock;
+    mutable std::vector<cl_program> m_programs;
+    mutable std::unordered_map<string, cl_kernel> m_kernels;
+
+    Buffer make_buffer(cl_mem buffer, bool move=false) const;
+    Event make_event(cl_event event, bool move=true) const;
+    Kernel make_kernel(cl_kernel kernel, bool move=false) const;
+    Queue make_queue(cl_command_queue queue, bool move=true) const;
 
 public:
     explicit OCLDeviceHandle(cl_device_id id);
 
     ~OCLDeviceHandle() override;
 
-    const BufferInterface* buffer_interface() const noexcept override;
-    const EventInterface* event_interface() const noexcept override;
-    const KernelInterface* kernel_interface() const noexcept override;
-    const QueueInterface* queue_interface() const noexcept override;
 
     DeviceInfo info() const noexcept override;
     optional<fs::path> runtime_library() const noexcept override;
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
     void raw_free(Buffer buffer) const override;
 
-
+    optional<Kernel> compile_kernel_from_str(string_view code
+    ) const override;
+    optional<Kernel> get_kernel(string_view name) const noexcept override;
+    void compile_kernels_from_src(string_view code) const override;
 
     cl_command_queue default_queue() const noexcept {
         return m_default_queue;
@@ -90,6 +90,9 @@ public:
 
     cl_context context() const noexcept { return m_ctx; }
 
+    Event new_event() const override;
+    Queue new_queue() const override;
+    Queue get_default_queue() const override;
 };
 
 

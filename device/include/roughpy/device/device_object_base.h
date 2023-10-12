@@ -27,11 +27,14 @@
 
 #ifndef ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
 #define ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
+
 #include "core.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+
+#include <memory>
 
 namespace rpy {
 namespace device {
@@ -42,9 +45,8 @@ class RPY_EXPORT InterfaceBase
 public:
     virtual ~InterfaceBase();
 
-    RPY_NO_DISCARD virtual void* clone(void* content) const;
-
-    virtual void clear(void* content) const;
+    RPY_NO_DISCARD virtual std::unique_ptr<InterfaceBase> clone() const;
+    RPY_NO_DISCARD virtual Device device() const noexcept;
 };
 
 template <typename Interface, typename Derived>
@@ -55,40 +57,59 @@ class ObjectBase
             "Interface must be derived from InterfaceBase"
     );
 
+    friend class rpy::device::DeviceHandle;
+    friend class InterfaceBase;
+
     using interface_type = Interface;
 
-    const interface_type* p_interface;
-    void* p_content;
-
-public:
-    ObjectBase() : p_content(nullptr), p_interface(nullptr) {}
-
-    explicit ObjectBase(
-            const interface_type* interface,
-            void* content = nullptr
-    )
-        : p_interface(interface),
-          p_content(content)
-    {}
-
-    RPY_NO_DISCARD void* content() const noexcept { return p_content; }
-    RPY_NO_DISCARD const interface_type* interface() const noexcept
+    static std::unique_ptr<Interface>
+    downcast(std::unique_ptr<InterfaceBase>&& base) noexcept
     {
-        return p_interface;
+        return {reinterpret_cast<Interface*>(base.release())};
     }
 
+protected:
+    std::unique_ptr<Interface> p_impl;
+
+private:
+    explicit ObjectBase(std::unique_ptr<InterfaceBase>&& base)
+        : p_impl(downcast(std::move(base)))
+    {}
+
+public:
+    ObjectBase() = default;
+
+    template <
+            typename IFace,
+            typename = enable_if_t<is_base_of<Interface, IFace>::value>>
+    explicit ObjectBase(std::unique_ptr<IFace>&& base)
+        : p_impl(std::move(base))
+                  {}
+
+    explicit ObjectBase(std::unique_ptr<Interface>&& base)
+        : p_impl(std::move(base))
+    {}
+
     RPY_NO_DISCARD Derived clone() const;
+    RPY_NO_DISCARD Device device() const noexcept;
 };
 
 template <typename Interface, typename Derived>
 Derived ObjectBase<Interface, Derived>::clone() const
 {
-    RPY_CHECK(p_interface != nullptr);
-    return Derived(p_interface, p_interface->clone(p_content));
+    RPY_CHECK(p_impl);
+    return Derived(p_impl->clone());
+}
+
+template <typename Interface, typename Derived>
+Device device::dtl::ObjectBase<Interface, Derived>::device() const noexcept
+{
+    if (p_impl) { return p_impl->device(); }
+    return nullptr;
 }
 
 }// namespace dtl
 }// namespace device
 }// namespace rpy
 
-#endif // ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
+#endif// ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_

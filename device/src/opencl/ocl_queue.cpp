@@ -38,47 +38,31 @@
 using namespace rpy;
 using namespace rpy::device;
 
-struct OCLQueueInterface::Data {
-    cl_command_queue queue;
-};
+OCLQueue::OCLQueue(cl_command_queue queue, OCLDevice dev) noexcept
+    : m_queue(queue), m_device(std::move(dev))
+{}
 
-#define cast(content) static_cast<Data*>(content)->queue
-
-device::OCLQueueInterface::OCLQueueInterface(OCLDevice dev) noexcept
+device::OCLQueue::OCLQueue(OCLDevice dev) noexcept
     : m_device(std::move(dev))
 {
-
 }
 
-void* device::OCLQueueInterface::create_data(cl_command_queue queue) noexcept
-{
-    return new Data { queue };
-}
-cl_command_queue device::OCLQueueInterface::take(void* content) noexcept
-{
-    auto queue = cast(content);
-    delete static_cast<Data*>(content);
-    return queue;
-}
 
-void* OCLQueueInterface::clone(void* content) const
+
+
+std::unique_ptr<rpy::device::dtl::InterfaceBase> OCLQueue::clone() const
 {
-    auto ecode = clRetainCommandQueue(cast(content));
+    auto ecode = clRetainCommandQueue(m_queue);
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-    return create_data(cast(content));
-}
-void OCLQueueInterface::clear(void* content) const
-{
-    auto ecode = clReleaseCommandQueue(take(content));
-    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    return std::make_unique<OCLQueue>(m_queue, m_device);
 }
 
-dimn_t OCLQueueInterface::size(void* content) const
+dimn_t OCLQueue::size() const
 {
     cl_int ecode;
     cl_ulong sz;
     ecode = clGetCommandQueueInfo(
-            cast(content),
+            m_queue,
             CL_QUEUE_SIZE,
             sizeof(cl_ulong),
             &sz,
@@ -88,4 +72,12 @@ dimn_t OCLQueueInterface::size(void* content) const
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 
     return static_cast<dimn_t>(sz);
+}
+Device OCLQueue::device() const noexcept {
+    return m_device;
+}
+OCLQueue::~OCLQueue() {
+    auto ecode = clReleaseCommandQueue(m_queue);
+    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    m_queue = nullptr;
 }

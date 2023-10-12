@@ -36,15 +36,15 @@ using namespace rpy;
 using namespace rpy::device;
 
 void Event::wait() {
-    if (interface() != nullptr && content() != nullptr) {
-        interface()->wait(content());
+    if (p_impl) {
+        p_impl->wait();
     }
 }
 
 
 EventStatus Event::status() const {
-    if (interface() == nullptr || content() == nullptr) {
+    if (!p_impl) {
         return EventStatus::CompletedSuccessfully;
     }
-    return interface()->status(content());
+    return p_impl->status();
 }

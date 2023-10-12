@@ -53,24 +53,25 @@ class RPY_EXPORT KernelInterface : public dtl::InterfaceBase
 {
 
 public:
-    RPY_NO_DISCARD virtual string_view name(void* content) const;
+    RPY_NO_DISCARD virtual string_view name() const;
 
-    RPY_NO_DISCARD virtual dimn_t num_args(void* content) const;
+    RPY_NO_DISCARD virtual dimn_t num_args() const;
 
     RPY_NO_DISCARD virtual Event launch_kernel_async(
-            void* content,
             Queue& queue,
             Slice<void*> args,
             Slice<dimn_t> arg_sizes,
             const KernelLaunchParams& params
-    ) const;
-
+    );
 };
 
 class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
 {
+    using base_t = dtl::ObjectBase<KernelInterface, Kernel>;
 
 public:
+    using base_t::base_t;
+
     RPY_NO_DISCARD string_view name() const;
 
     RPY_NO_DISCARD dimn_t num_args() const;
@@ -87,8 +88,7 @@ public:
             Slice<void*> args,
             Slice<dimn_t> arg_sizes,
             const KernelLaunchParams& params
-            );
-
+    );
 };
 
 }// namespace device

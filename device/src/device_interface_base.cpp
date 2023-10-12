@@ -31,15 +31,20 @@
 
 #include <roughpy/device/device_object_base.h>
 
+#include "device_handle.h"
+
 using namespace rpy;
 using namespace rpy::device;
 
 rpy::device::dtl::InterfaceBase::~InterfaceBase() = default;
 
-void* rpy::device::dtl::InterfaceBase::clone(void* content) const
+std::unique_ptr<rpy::device::dtl::InterfaceBase>
+rpy::device::dtl::InterfaceBase::clone() const
 {
     return nullptr;
 }
 
-void rpy::device::dtl::InterfaceBase::clear(void* RPY_UNUSED_VAR content) const
-{}
+Device device::dtl::InterfaceBase::device() const noexcept
+{
+    return Device(nullptr);
+}

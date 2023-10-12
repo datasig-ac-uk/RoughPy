@@ -37,8 +37,6 @@ using namespace rpy::device;
 
 
 dimn_t Queue::size() const {
-    if (interface() == nullptr || content() == nullptr) {
-        return 0;
-    }
-    return interface()->size(content());
+    if (!p_impl) { return 0; }
+    return p_impl->size();
 }

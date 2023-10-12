@@ -39,34 +39,21 @@
 using namespace rpy;
 using namespace rpy::device;
 
-struct OCLKernelInterface::Data {
-    cl_kernel kernel;
-};
+OCLKernel::OCLKernel(cl_kernel kernel, OCLDevice dev) noexcept
+    : m_kernel(kernel), m_device(std::move(dev))
+{}
 
-#define ker(content) static_cast<Data*>(content)->kernel
-#define dev(content) m_device
-
-device::OCLKernelInterface::OCLKernelInterface(OCLDevice dev) noexcept
+device::OCLKernel::OCLKernel(OCLDevice dev) noexcept
     : m_device(std::move(dev))
 {}
 
-void* device::OCLKernelInterface::create_data(cl_kernel k) noexcept
-{
-    return new Data { k };
-}
-cl_kernel device::OCLKernelInterface::take(void* content) noexcept
-{
-    auto k = ker(content);
-    ker(content) = nullptr;
-    delete static_cast<Data*>(content);
-    return k;
-}
 
-cl_program OCLKernelInterface::program(cl_kernel kernel) const
+
+cl_program OCLKernel::program() const
 {
     cl_program prog;
     auto ecode = clGetKernelInfo(
-            kernel,
+            m_kernel,
             CL_KERNEL_PROGRAM,
             sizeof(cl_program),
             &prog,
@@ -78,11 +65,11 @@ cl_program OCLKernelInterface::program(cl_kernel kernel) const
     RPY_DBG_ASSERT(prog);
     return prog;
 }
-cl_context OCLKernelInterface::context(cl_kernel kernel) const
+cl_context OCLKernel::context() const
 {
     cl_context ctx;
     auto ecode = clGetKernelInfo(
-            kernel,
+            m_kernel,
             CL_KERNEL_CONTEXT,
             sizeof(cl_context),
             &ctx,
@@ -96,13 +83,13 @@ cl_context OCLKernelInterface::context(cl_kernel kernel) const
     return ctx;
 }
 
-string_view OCLKernelInterface::name(void* content) const
+string_view OCLKernel::name() const
 {
     cl_int ecode;
     char* cl_name;
     cl_ulong cl_name_len;
     ecode = clGetKernelInfo(
-            ker(content),
+            m_kernel,
             CL_KERNEL_FUNCTION_NAME,
             sizeof(char*),
             &cl_name,
@@ -112,12 +99,12 @@ string_view OCLKernelInterface::name(void* content) const
 
     return {cl_name, cl_name_len};
 }
-dimn_t OCLKernelInterface::num_args(void* content) const
+dimn_t OCLKernel::num_args() const
 {
     cl_int ecode;
     cl_uint nargs;
     ecode = clGetKernelInfo(
-            ker(content),
+            m_kernel,
             CL_KERNEL_NUM_ARGS,
             sizeof(cl_uint),
             &nargs,
@@ -127,27 +114,25 @@ dimn_t OCLKernelInterface::num_args(void* content) const
 
     return static_cast<dimn_t>(nargs);
 }
-Event OCLKernelInterface::launch_kernel_async(
-        void* content,
+Event OCLKernel::launch_kernel_async(
         Queue& queue,
         Slice<void*> args,
         Slice<dimn_t> arg_sizes,
         const KernelLaunchParams& params
-) const
+)
 {
 
-    auto& kernel = ker(content);
 
     RPY_DBG_ASSERT(args.size() == arg_sizes.size());
 
-    auto n_args = num_args(kernel);
+    auto n_args = num_args();
     RPY_DBG_ASSERT(args.size() == n_args);
 
     for (dimn_t i = 0; i < n_args; ++i) {
 #ifdef RPY_DEBUG
 
 #endif
-        clSetKernelArg(kernel, i, arg_sizes[i], args[i]);
+        clSetKernelArg(m_kernel, i, arg_sizes[i], args[i]);
     }
 
     cl_uint work_dim = 1;
@@ -169,18 +154,18 @@ Event OCLKernelInterface::launch_kernel_async(
     //        }
     //    }
 
-    cl_command_queue command_queue;
-    if (queue.interface() != nullptr && queue.content() != nullptr) {
-        RPY_CHECK(queue.interface() == m_device->queue_interface());
-        command_queue = static_cast<cl_command_queue>(queue.content());
-    } else {
-        command_queue = m_device->default_queue();
-    }
+    cl_command_queue command_queue = m_device->default_queue();
+//    if (queue.interface() != nullptr && queue.content() != nullptr) {
+//        RPY_CHECK(queue.interface() == m_device->queue_interface());
+//        command_queue = static_cast<cl_command_queue>(queue.content());
+//    } else {
+//        command_queue = m_device->default_queue();
+//    }
 
     cl_event event;
     cl_int ecode = clEnqueueNDRangeKernel(
             command_queue, /* kernel */
-            kernel,        /* kernel */
+            m_kernel,        /* kernel */
             work_dim,      /* work_dim */
             nullptr,       /* global_work_offset */
             gw_size,       /* global_work_size */
@@ -192,19 +177,14 @@ Event OCLKernelInterface::launch_kernel_async(
 
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    return Event{m_device->event_interface(), event};
+    return Event(std::make_unique<OCLEvent>(event, m_device));
 }
-void* OCLKernelInterface::clone(void* content) const
+std::unique_ptr<device::dtl::InterfaceBase> OCLKernel::clone() const
 {
     cl_int ecode;
-    cl_kernel new_ker = clCloneKernel(ker(content), &ecode);
+    cl_kernel new_ker = clCloneKernel(m_kernel, &ecode);
 
     if (new_ker == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    return create_data(new_ker);
-}
-void OCLKernelInterface::clear(void* content) const
-{
-    auto ecode = clReleaseKernel(take(content));
-    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    return std::make_unique<OCLKernel>(new_ker, m_device);
 }

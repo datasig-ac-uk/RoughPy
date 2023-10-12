@@ -41,10 +41,10 @@ namespace rpy {
 namespace device {
 
 class OCLDeviceHandle;
-class OCLBufferInterface;
-class OCLEventInterface;
-class OCLKernelInterface;
-class OCLQueueInterface;
+class OCLBuffer;
+class OCLEvent;
+class OCLKernel;
+class OCLQueue;
 
 using OCLDevice = boost::intrusive_ptr<const OCLDeviceHandle>;
 

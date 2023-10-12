@@ -49,18 +49,6 @@ class RPY_EXPORT DeviceHandle
 {
 
 public:
-    RPY_NO_DISCARD virtual const BufferInterface*
-    buffer_interface() const noexcept = 0;
-
-    RPY_NO_DISCARD virtual const EventInterface*
-    event_interface() const noexcept = 0;
-
-    RPY_NO_DISCARD virtual const KernelInterface*
-    kernel_interface() const noexcept = 0;
-
-    RPY_NO_DISCARD virtual const QueueInterface*
-    queue_interface() const noexcept = 0;
-
 
     DeviceHandle();
 
@@ -79,6 +67,17 @@ public:
     raw_alloc(dimn_t count, dimn_t alignment) const;
 
     virtual void raw_free(Buffer buffer) const;
+
+    virtual optional<Kernel> get_kernel(string_view name) const noexcept;
+    virtual optional<Kernel> compile_kernel_from_str(string_view code) const;
+
+    virtual void compile_kernels_from_src(string_view code) const;
+
+
+    virtual Event new_event() const;
+    virtual Queue new_queue() const;
+    virtual Queue get_default_queue() const;
+
 };
 
 

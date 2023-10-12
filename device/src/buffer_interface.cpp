@@ -37,14 +37,14 @@ using namespace rpy;
 using namespace rpy::device;
 
 
-BufferMode BufferInterface::mode(void* content) const {
+BufferMode BufferInterface::mode() const {
     return BufferMode::Read;
 }
 
-dimn_t BufferInterface::size(void* content) const {
+dimn_t BufferInterface::size() const {
     return 0;
 }
 
-void* BufferInterface::ptr(void* content) const {
+void* BufferInterface::ptr() {
     return nullptr;
 }

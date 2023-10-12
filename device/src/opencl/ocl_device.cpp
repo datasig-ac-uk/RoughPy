@@ -37,25 +37,150 @@
 #include "ocl_kernel.h"
 #include "ocl_queue.h"
 
+#include <roughpy/platform/configuration.h>
+
+#include <roughpy/device/buffer.h>
+#include <roughpy/device/device_object_base.h>
+#include <roughpy/device/event.h>
+#include <roughpy/device/kernel.h>
+#include <roughpy/device/queue.h>
+
+#include <boost/container/small_vector.hpp>
+
+#include <fstream>
+
 using namespace rpy;
 using namespace rpy::device;
 
-OCLDeviceHandle::OCLDeviceHandle(cl_device_id id)
-    : m_buffer_iface(this),
-      m_event_iface(this),
-      m_kernel_iface(this),
-      m_queue_iface(this),
-      m_device(id)
-{}
+Buffer OCLDeviceHandle::make_buffer(cl_mem buffer, bool move) const
+{
+    if (RPY_LIKELY(!move)) {
+        auto ecode = clRetainMemObject(buffer);
+        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    }
+    return Buffer(std::make_unique<OCLBuffer>(buffer, this));
+}
+Event OCLDeviceHandle::make_event(cl_event event, bool move) const
+{
+    if (RPY_UNLIKELY(!move)) {
+        auto ecode = clRetainEvent(event);
+        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    }
+    return Event(std::make_unique<OCLEvent>(event, this));
+}
+Kernel OCLDeviceHandle::make_kernel(cl_kernel kernel, bool move) const
+{
+    if (RPY_UNLIKELY(!move)) {
+        auto ecode = clRetainKernel(kernel);
+        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    }
+    return Kernel(std::make_unique<OCLKernel>(kernel, this));
+}
+Queue OCLDeviceHandle::make_queue(cl_command_queue queue, bool move) const
+{
+    if (RPY_LIKELY(!move)) {
+        auto ecode = clRetainCommandQueue(queue);
+        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    }
+    return Queue(std::make_unique<OCLQueue>(queue, this));
+}
+
+OCLDeviceHandle::OCLDeviceHandle(cl_device_id id) : m_device(id)
+{
+    cl_int ecode;
+
+    m_ctx = clCreateContext(nullptr, 1, &m_device, nullptr, nullptr, &ecode);
+
+    if (RPY_UNLIKELY(m_ctx == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    m_default_queue = clCreateCommandQueueWithProperties(
+            m_ctx,
+            m_device,
+            nullptr,
+            &ecode
+    );
+
+    if (RPY_UNLIKELY(m_default_queue == nullptr)) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
+
+    const auto& config = get_config();
+    fs::directory_iterator iter(config.get_builtin_kernel_dir());
+
+    std::vector<string> sources;
+    for (auto&& dir : iter) {
+        std::ifstream istr(dir.path());
+        sources.emplace_back();
+    }
+    auto count = static_cast<cl_uint>(sources.size());
+
+    std::vector<const char*> strings;
+    std::vector<size_t> sizes;
+    strings.reserve(count);
+    sizes.reserve(count);
+    for (auto&& src : sources) {
+        strings.push_back(src.data());
+        sizes.push_back(src.size());
+    }
+
+    auto program = clCreateProgramWithSource(
+            m_ctx,
+            count,
+            strings.data(),
+            sizes.data(),
+            &ecode
+    );
+
+    if (RPY_UNLIKELY(program == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    m_programs.push_back(program);
+
+    cl_uint num_kernels;
+    ecode = clGetProgramInfo(
+            program,
+            CL_PROGRAM_NUM_KERNELS,
+            sizeof(cl_uint),
+            &num_kernels,
+            nullptr
+    );
+
+    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    std::vector<cl_kernel> kernels(num_kernels);
+    ecode = clCreateKernelsInProgram(
+            program,
+            num_kernels,
+            kernels.data(),
+            nullptr
+    );
+
+    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    char* kname;
+    dimn_t kname_len;
+    for (auto&& kernel : kernels) {
+        ecode = clGetKernelInfo(
+                kernel,
+                CL_KERNEL_FUNCTION_NAME,
+                sizeof(kname),
+                &kname,
+                &kname_len
+        );
+        if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+        m_kernels[string(kname, kname_len)] = kernel;
+    }
+}
 
 OCLDeviceHandle::~OCLDeviceHandle()
 {
-    clReleaseCommandQueue(m_default_queue);
+    cl_int ecode;
+    ecode = clReleaseCommandQueue(m_default_queue);
+    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
 
     m_device_id = 0;
     m_default_queue = nullptr;
 
-    cl_int ecode;
     while (!m_programs.empty()) {
         ecode = clReleaseProgram(m_programs.back());
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
@@ -85,29 +210,148 @@ Buffer OCLDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
     auto new_mem
             = clCreateBuffer(m_ctx, CL_MEM_READ_WRITE, count, nullptr, &ecode);
 
-    if (new_mem == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
-    return Buffer(buffer_interface(), OCLBufferInterface::create_data(new_mem));
+    if (RPY_UNLIKELY(new_mem == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
+    return make_buffer(new_mem);
 }
 void OCLDeviceHandle::raw_free(Buffer buffer) const
 {
-    RPY_CHECK(buffer.interface() == buffer_interface());
-    auto buf = OCLBufferInterface::take(buffer.content());
-    auto ecode = clReleaseMemObject(buf);
-    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    RPY_CHECK(buffer.device() == this);
+    buffer.~Buffer();
 }
-const BufferInterface* OCLDeviceHandle::buffer_interface() const noexcept
+optional<Kernel> OCLDeviceHandle::get_kernel(string_view name) const noexcept
 {
-    return &m_buffer_iface;
+    string nme(name);
+    const auto& config = rpy::get_config();
+    {
+        std::lock_guard<std::recursive_mutex> access(m_lock);
+        auto found = m_kernels.find(nme);
+        if (found != m_kernels.end()) { return make_kernel(found->second); }
+    }
+
+    fs::path fname(name);
+    fname.replace_extension(".cl");
+    for (auto&& dir : config.kernel_source_search_dirs()) {
+        auto path = dir / fname;
+
+        if (exists(path)) {
+            std::ifstream ifs(path);
+            if (ifs.is_open()) {
+                try {
+                    string source;
+                    ifs >> source;
+                    return compile_kernel_from_str(source);
+                } catch (...) {
+                    return {};
+                }
+            }
+        }
+    }
+
+    return {};
 }
-const EventInterface* OCLDeviceHandle::event_interface() const noexcept
+optional<Kernel> OCLDeviceHandle::compile_kernel_from_str(string_view code
+) const
 {
-    return &m_event_iface;
+    std::lock_guard<std::recursive_mutex> access(m_lock);
+
+    auto len = code.size();
+    cl_int ecode;
+    const char* data = code.data();
+    auto program = clCreateProgramWithSource(m_ctx, 1, &data, &len, &ecode);
+
+    if (RPY_UNLIKELY(program == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    m_programs.push_back(program);
+
+    cl_kernel kernel;
+    ecode = clCreateKernelsInProgram(program, 1, &kernel, nullptr);
+    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    char* kname;
+    dimn_t kname_len;
+    ecode = clGetKernelInfo(
+            kernel,
+            CL_KERNEL_FUNCTION_NAME,
+            sizeof(kname),
+            &kname,
+            &kname_len
+    );
+    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    m_kernels[string(kname, kname_len)] = kernel;
+
+    return make_kernel(kernel);
 }
-const KernelInterface* OCLDeviceHandle::kernel_interface() const noexcept
+void OCLDeviceHandle::compile_kernels_from_src(string_view code) const
 {
-    return &m_kernel_iface;
+    std::lock_guard<std::recursive_mutex> access(m_lock);
+    auto len = code.size();
+    cl_int ecode;
+    const char* data = code.data();
+
+    auto program = clCreateProgramWithSource(m_ctx, 1, &data, &len, &ecode);
+
+    if (RPY_UNLIKELY(program == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    m_programs.push_back(program);
+
+    cl_uint num_kernels;
+    ecode = clGetProgramInfo(
+            program,
+            CL_PROGRAM_NUM_KERNELS,
+            sizeof(cl_uint),
+            &num_kernels,
+            nullptr
+    );
+    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    boost::container::small_vector<cl_kernel, 1> kernels(num_kernels);
+
+    ecode = clCreateKernelsInProgram(
+            program,
+            num_kernels,
+            kernels.data(),
+            nullptr
+    );
+    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    char* kname;
+    dimn_t kname_len;
+    for (auto&& kernel : kernels) {
+        ecode = clGetKernelInfo(
+                kernel,
+                CL_KERNEL_FUNCTION_NAME,
+                sizeof(kname),
+                &kname,
+                &kname_len
+        );
+        if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+        m_kernels[string(kname, kname_len)] = kernel;
+    }
 }
-const QueueInterface* OCLDeviceHandle::queue_interface() const noexcept
+Event OCLDeviceHandle::new_event() const
 {
-    return &m_queue_iface;
+    cl_int ecode;
+    auto event = clCreateUserEvent(m_ctx, &ecode);
+    if (event != nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return make_event(event);
+}
+
+Queue OCLDeviceHandle::new_queue() const
+{
+    cl_int ecode;
+    auto queue = clCreateCommandQueueWithProperties(
+            m_ctx,
+            m_device,
+            nullptr,
+            &ecode
+    );
+    if (queue == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+    return make_queue(queue);
+}
+Queue OCLDeviceHandle::get_default_queue() const
+{
+    return make_queue(m_default_queue, false);
 }

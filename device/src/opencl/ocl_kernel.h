@@ -40,33 +40,28 @@
 namespace rpy {
 namespace device {
 
-class OCLKernelInterface : public KernelInterface
+class OCLKernel : public KernelInterface
 {
-    struct Data;
+    cl_kernel m_kernel;
     OCLDevice m_device;
 
-    RPY_UNUSED cl_program program(cl_kernel kernel) const;
-    RPY_UNUSED cl_context context(cl_kernel kernel) const;
+    RPY_UNUSED cl_program program() const;
+    RPY_UNUSED cl_context context() const;
 
 public:
+    OCLKernel(cl_kernel kernel, OCLDevice dev) noexcept;
+    explicit OCLKernel(OCLDevice dev) noexcept;
 
-    explicit OCLKernelInterface(OCLDevice dev) noexcept;
+    std::unique_ptr<dtl::InterfaceBase> clone() const override;
 
-    static void* create_data(cl_kernel k) noexcept;
-    static cl_kernel take(void* content) noexcept;
-
-    void* clone(void* content) const override;
-    void clear(void* content) const override;
-
-    string_view name(void* content) const override;
-    dimn_t num_args(void* content) const override;
+    string_view name() const override;
+    dimn_t num_args() const override;
     Event launch_kernel_async(
-            void* content,
             Queue& queue,
             Slice<void*> args,
             Slice<dimn_t> arg_sizes,
             const KernelLaunchParams& params
-    ) const override;
+    ) override;
 };
 
 }// namespace device

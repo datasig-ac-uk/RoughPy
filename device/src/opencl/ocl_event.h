@@ -40,23 +40,20 @@
 namespace rpy {
 namespace device {
 
-class OCLEventInterface : public EventInterface
+class OCLEvent : public EventInterface
 {
-    struct Data;
+    cl_event m_event;
     OCLDevice m_device;
 
 public:
 
-    explicit OCLEventInterface(OCLDevice dev) noexcept;
-
-    static void* create_data(cl_event event) noexcept;
-    static cl_event take(void* content) noexcept;
+    OCLEvent(cl_event event, OCLDevice dev) noexcept;
+    explicit OCLEvent(OCLDevice dev) noexcept;
 
 
-    void* clone(void* content) const override;
-    void clear(void* content) const override;
-    void wait(void* content) const override;
-    EventStatus status(void* content) const override;
+    std::unique_ptr<dtl::InterfaceBase> clone() const override;
+    void wait() override;
+    EventStatus status() const override;
 };
 
 }// namespace device

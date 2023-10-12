@@ -37,10 +37,10 @@ using namespace rpy;
 using namespace rpy::device;
 
 
-void EventInterface::wait(void* RPY_UNUSED_VAR content) const
+void EventInterface::wait()
 {
 }
 
-EventStatus EventInterface::status(void* RPY_UNUSED_VAR content) const {
+EventStatus EventInterface::status() const {
     return EventStatus::CompletedSuccessfully;
 }

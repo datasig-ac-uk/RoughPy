@@ -37,38 +37,26 @@
 using namespace rpy;
 using namespace rpy::device;
 
-struct OCLEventInterface::Data {
-    cl_event event;
-};
+OCLEvent::OCLEvent(cl_event event, OCLDevice dev) noexcept
+    : m_event(event), m_device(std::move(dev))
+{}
 
-#define cast(content) static_cast<Data*>(content)->event
-
-device::OCLEventInterface::OCLEventInterface(OCLDevice dev) noexcept
+device::OCLEvent::OCLEvent(OCLDevice dev) noexcept
     : m_device(std::move(dev))
 {}
 
-void* device::OCLEventInterface::create_data(cl_event event) noexcept
-{
-    return new Data{event};
-}
-cl_event device::OCLEventInterface::take(void* content) noexcept
-{
-    auto event = cast(content);
-    delete static_cast<Data*>(content);
-    return event;
-}
 
-void OCLEventInterface::wait(void* content) const
+
+void OCLEvent::wait()
 {
-    cl_event event = cast(content);
-    auto ecode = clWaitForEvents(1, &event);
+    auto ecode = clWaitForEvents(1, &m_event);
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 }
-EventStatus OCLEventInterface::status(void* content) const
+EventStatus OCLEvent::status() const
 {
     cl_int stat;
     auto ecode = clGetEventInfo(
-            cast(content),
+            m_event,
             CL_EVENT_COMMAND_EXECUTION_STATUS,
             sizeof(cl_int),
             &stat,
@@ -85,16 +73,9 @@ EventStatus OCLEventInterface::status(void* content) const
         default: return EventStatus::Error;
     }
 }
-void* OCLEventInterface::clone(void* content) const
+std::unique_ptr<device::dtl::InterfaceBase> OCLEvent::clone() const
 {
-    auto ecode = clRetainEvent(cast(content));
+    auto ecode = clRetainEvent(m_event);
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-    return create_data(cast(content));
+    return std::make_unique<OCLEvent>(m_event, m_device);
 }
-void OCLEventInterface::clear(void* content) const
-{
-    cl_int ecode = clReleaseEvent(take(content));
-    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
-}
-
-#undef cast

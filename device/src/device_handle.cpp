@@ -33,6 +33,10 @@
 
 #include <roughpy/device/buffer.h>
 
+
+#include <mutex>
+#include <vector>
+
 using namespace rpy;
 using namespace rpy::device;
 
@@ -45,12 +49,14 @@ optional<fs::path> DeviceHandle::runtime_library() const noexcept
 
 DeviceHandle::~DeviceHandle() = default;
 
-
 Buffer DeviceHandle::raw_alloc(rpy::dimn_t count, rpy::dimn_t alignment) const
 {
-    return Buffer{nullptr, nullptr};
+    return {};
 }
 
-void DeviceHandle::raw_free(Buffer buffer) const {
+void DeviceHandle::raw_free(Buffer buffer) const {}
 
+optional<Kernel> DeviceHandle::get_kernel(string_view name) const noexcept
+{
+    return {};
 }

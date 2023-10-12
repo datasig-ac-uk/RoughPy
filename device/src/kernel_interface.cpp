@@ -36,17 +36,16 @@
 using namespace rpy;
 using namespace rpy::device;
 
-string_view KernelInterface::name(void* content) const { return ""; }
+string_view KernelInterface::name() const { return ""; }
 
-dimn_t KernelInterface::num_args(void* content) const { return 0; }
+dimn_t KernelInterface::num_args() const { return 0; }
 
 Event KernelInterface::launch_kernel_async(
-        void* content,
         rpy::device::Queue& queue,
         Slice<void*> args,
         Slice<rpy::dimn_t> arg_sizes,
         const rpy::device::KernelLaunchParams& params
-) const
+)
 {
-    return Event(nullptr, nullptr);
+    return Event();
 }
