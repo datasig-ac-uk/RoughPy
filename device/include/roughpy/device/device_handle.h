@@ -44,6 +44,11 @@
 namespace rpy {
 namespace device {
 
+/**
+ * @brief Interface for interacting with compute devices.
+ *
+ *
+ */
 class RPY_EXPORT DeviceHandle
     : public boost::intrusive_ref_counter<DeviceHandle>
 {
@@ -68,14 +73,18 @@ public:
 
     virtual void raw_free(Buffer buffer) const;
 
+    RPY_NO_DISCARD
     virtual optional<Kernel> get_kernel(string_view name) const noexcept;
+    RPY_NO_DISCARD
     virtual optional<Kernel> compile_kernel_from_str(string_view code) const;
 
     virtual void compile_kernels_from_src(string_view code) const;
 
-
+    RPY_NO_DISCARD
     virtual Event new_event() const;
+    RPY_NO_DISCARD
     virtual Queue new_queue() const;
+    RPY_NO_DISCARD
     virtual Queue get_default_queue() const;
 
 };

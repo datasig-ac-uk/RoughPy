@@ -61,7 +61,8 @@ Slice<const fs::path> rpy::Configuration::kernel_source_search_dirs() const
     return {};
 }
 
-Slice<const fs::path> rpy::Configuration::get_builtin_kernel_dir() const
+const fs::path& rpy::Configuration::get_builtin_kernel_dir() const
 {
-    return {};
+    static fs::path p;
+    return p;
 }

@@ -49,11 +49,11 @@ device::OCLBuffer::OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept
     : m_device(std::move(dev)),
       m_buffer(buffer)
 {}
-device::OCLBuffer::OCLBuffer(OCLDevice dev) noexcept : m_device(std::move(dev))
-{}
+
 
 BufferMode OCLBuffer::mode() const
 {
+    RPY_DBG_ASSERT(m_buffer != nullptr);
     cl_int mode;
     auto ecode = clGetMemObjectInfo(
             m_buffer,
@@ -73,6 +73,8 @@ BufferMode OCLBuffer::mode() const
 }
 dimn_t OCLBuffer::size() const
 {
+    RPY_DBG_ASSERT(m_buffer != nullptr);
+
     cl_ulong size;
     auto ecode = clGetMemObjectInfo(
             m_buffer,
@@ -88,6 +90,8 @@ dimn_t OCLBuffer::size() const
 void* OCLBuffer::ptr() { return this; }
 std::unique_ptr<device::dtl::InterfaceBase> OCLBuffer::clone() const
 {
+    RPY_DBG_ASSERT(m_buffer != nullptr);
+
     dimn_t buf_size = size();
 
     cl_int ecode;
@@ -120,7 +124,9 @@ std::unique_ptr<device::dtl::InterfaceBase> OCLBuffer::clone() const
 }
 Device OCLBuffer::device() const noexcept { return m_device; }
 OCLBuffer::~OCLBuffer() {
-    auto ecode = clReleaseMemObject(m_buffer);
-    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    if (RPY_LIKELY(m_buffer != nullptr)) {
+        auto ecode = clReleaseMemObject(m_buffer);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    }
     m_buffer = nullptr;
 }

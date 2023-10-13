@@ -42,16 +42,12 @@ OCLQueue::OCLQueue(cl_command_queue queue, OCLDevice dev) noexcept
     : m_queue(queue), m_device(std::move(dev))
 {}
 
-device::OCLQueue::OCLQueue(OCLDevice dev) noexcept
-    : m_device(std::move(dev))
-{
-}
-
 
 
 
 std::unique_ptr<rpy::device::dtl::InterfaceBase> OCLQueue::clone() const
 {
+    RPY_DBG_ASSERT(m_queue != nullptr);
     auto ecode = clRetainCommandQueue(m_queue);
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
     return std::make_unique<OCLQueue>(m_queue, m_device);
@@ -59,6 +55,7 @@ std::unique_ptr<rpy::device::dtl::InterfaceBase> OCLQueue::clone() const
 
 dimn_t OCLQueue::size() const
 {
+    RPY_DBG_ASSERT(m_queue != nullptr);
     cl_int ecode;
     cl_ulong sz;
     ecode = clGetCommandQueueInfo(
@@ -77,7 +74,9 @@ Device OCLQueue::device() const noexcept {
     return m_device;
 }
 OCLQueue::~OCLQueue() {
-    auto ecode = clReleaseCommandQueue(m_queue);
-    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    if (m_queue != nullptr) {
+        auto ecode = clReleaseCommandQueue(m_queue);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    }
     m_queue = nullptr;
 }

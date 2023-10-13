@@ -48,7 +48,6 @@ public:
     ~OCLQueue() override;
 
     OCLQueue(cl_command_queue queue, OCLDevice dev) noexcept;
-    explicit OCLQueue(OCLDevice dev) noexcept;
     Device device() const noexcept override;
 
     std::unique_ptr<dtl::InterfaceBase> clone() const override;

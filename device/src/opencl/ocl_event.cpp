@@ -41,19 +41,18 @@ OCLEvent::OCLEvent(cl_event event, OCLDevice dev) noexcept
     : m_event(event), m_device(std::move(dev))
 {}
 
-device::OCLEvent::OCLEvent(OCLDevice dev) noexcept
-    : m_device(std::move(dev))
-{}
-
 
 
 void OCLEvent::wait()
 {
+    RPY_DBG_ASSERT(m_event != nullptr);
     auto ecode = clWaitForEvents(1, &m_event);
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 }
 EventStatus OCLEvent::status() const
 {
+    RPY_DBG_ASSERT(m_event != nullptr);
+
     cl_int stat;
     auto ecode = clGetEventInfo(
             m_event,
@@ -75,7 +74,44 @@ EventStatus OCLEvent::status() const
 }
 std::unique_ptr<device::dtl::InterfaceBase> OCLEvent::clone() const
 {
-    auto ecode = clRetainEvent(m_event);
-    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    if (RPY_LIKELY(m_event != nullptr)) {
+        auto ecode = clRetainEvent(m_event);
+        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    }
     return std::make_unique<OCLEvent>(m_event, m_device);
 }
+bool OCLEvent::is_user() const noexcept {
+    RPY_DBG_ASSERT(m_event != nullptr);
+
+    cl_command_type type;
+    auto ecode = clGetEventInfo(m_event, CL_EVENT_COMMAND_TYPE, sizeof(cl_command_type), &type, nullptr);
+
+    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return type == CL_COMMAND_USER;
+}
+void OCLEvent::set_status(EventStatus status)
+{
+    cl_int exec_status;
+    switch (status) {
+        case EventStatus::CompletedSuccessfully:
+            exec_status = CL_SUCCESS;
+            break;
+        case EventStatus::Running:
+            exec_status = CL_RUNNING;
+            break;
+        case EventStatus::Submitted:
+            exec_status = CL_SUBMITTED;
+            break;
+        case EventStatus::Queued:
+            exec_status = CL_QUEUED;
+            break;
+        default:
+            RPY_THROW(std::runtime_error, "cannot set event satus to none");
+    }
+
+    auto ecode = clSetUserEventStatus(m_event, exec_status);
+    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+}
+Device OCLEvent::device() const noexcept { return m_device; }

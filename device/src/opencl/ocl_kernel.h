@@ -50,7 +50,6 @@ class OCLKernel : public KernelInterface
 
 public:
     OCLKernel(cl_kernel kernel, OCLDevice dev) noexcept;
-    explicit OCLKernel(OCLDevice dev) noexcept;
 
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
 

@@ -43,14 +43,11 @@ OCLKernel::OCLKernel(cl_kernel kernel, OCLDevice dev) noexcept
     : m_kernel(kernel), m_device(std::move(dev))
 {}
 
-device::OCLKernel::OCLKernel(OCLDevice dev) noexcept
-    : m_device(std::move(dev))
-{}
-
 
 
 cl_program OCLKernel::program() const
 {
+    RPY_DBG_ASSERT(m_kernel != nullptr);
     cl_program prog;
     auto ecode = clGetKernelInfo(
             m_kernel,
@@ -67,6 +64,7 @@ cl_program OCLKernel::program() const
 }
 cl_context OCLKernel::context() const
 {
+    RPY_DBG_ASSERT(m_kernel != nullptr);
     cl_context ctx;
     auto ecode = clGetKernelInfo(
             m_kernel,
@@ -85,6 +83,7 @@ cl_context OCLKernel::context() const
 
 string_view OCLKernel::name() const
 {
+    RPY_DBG_ASSERT(m_kernel != nullptr);
     cl_int ecode;
     char* cl_name;
     cl_ulong cl_name_len;
@@ -101,6 +100,7 @@ string_view OCLKernel::name() const
 }
 dimn_t OCLKernel::num_args() const
 {
+    RPY_DBG_ASSERT(m_kernel != nullptr);
     cl_int ecode;
     cl_uint nargs;
     ecode = clGetKernelInfo(
@@ -121,8 +121,7 @@ Event OCLKernel::launch_kernel_async(
         const KernelLaunchParams& params
 )
 {
-
-
+    RPY_DBG_ASSERT(m_kernel != nullptr);
     RPY_DBG_ASSERT(args.size() == arg_sizes.size());
 
     auto n_args = num_args();
@@ -181,6 +180,7 @@ Event OCLKernel::launch_kernel_async(
 }
 std::unique_ptr<device::dtl::InterfaceBase> OCLKernel::clone() const
 {
+    RPY_DBG_ASSERT(m_kernel);
     cl_int ecode;
     cl_kernel new_ker = clCloneKernel(m_kernel, &ecode);
 

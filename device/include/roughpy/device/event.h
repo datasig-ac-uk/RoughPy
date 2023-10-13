@@ -42,7 +42,14 @@ class RPY_EXPORT EventInterface : public dtl::InterfaceBase
 public:
     virtual void wait();
 
+    RPY_NO_DISCARD
     virtual EventStatus status() const;
+
+    RPY_NO_DISCARD
+    virtual bool is_user() const noexcept;
+
+
+    virtual void set_status(EventStatus status);
 };
 
 class Event : public dtl::ObjectBase<EventInterface, Event>
@@ -54,7 +61,15 @@ public:
 
     void wait();
 
+    RPY_NO_DISCARD
     EventStatus status() const;
+
+
+    RPY_NO_DISCARD bool is_user() const noexcept;
+
+    void set_status(EventStatus status);
+
+
 };
 
 }// namespace device

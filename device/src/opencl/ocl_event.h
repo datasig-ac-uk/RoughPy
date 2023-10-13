@@ -48,12 +48,16 @@ class OCLEvent : public EventInterface
 public:
 
     OCLEvent(cl_event event, OCLDevice dev) noexcept;
-    explicit OCLEvent(OCLDevice dev) noexcept;
 
-
+    RPY_NO_DISCARD
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
     void wait() override;
+    RPY_NO_DISCARD
     EventStatus status() const override;
+    Device device() const noexcept override;
+
+    bool is_user() const noexcept override;
+    void set_status(EventStatus status) override;
 };
 
 }// namespace device

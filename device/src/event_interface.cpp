@@ -44,3 +44,6 @@ void EventInterface::wait()
 EventStatus EventInterface::status() const {
     return EventStatus::CompletedSuccessfully;
 }
+
+bool EventInterface::is_user() const noexcept { return false; }
+void EventInterface::set_status(EventStatus status) {}

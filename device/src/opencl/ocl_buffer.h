@@ -49,13 +49,17 @@ class OCLBuffer : public BufferInterface
 public:
 
     OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept;
-    explicit OCLBuffer(OCLDevice dev) noexcept;
     ~OCLBuffer() override;
 
+    RPY_NO_DISCARD
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
+    RPY_NO_DISCARD
     Device device() const noexcept override;
+    RPY_NO_DISCARD
     BufferMode mode() const override;
+    RPY_NO_DISCARD
     dimn_t size() const override;
+    RPY_NO_DISCARD
     void* ptr() override;
 };
 

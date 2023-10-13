@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 11/10/23.
@@ -33,7 +34,6 @@
 
 #include <roughpy/device/buffer.h>
 
-
 #include <mutex>
 #include <vector>
 
@@ -41,10 +41,10 @@ using namespace rpy;
 using namespace rpy::device;
 
 DeviceHandle::DeviceHandle() {}
-DeviceInfo DeviceHandle::info() const noexcept { return DeviceInfo(); }
+DeviceInfo DeviceHandle::info() const noexcept { return {}; }
 optional<fs::path> DeviceHandle::runtime_library() const noexcept
 {
-    return optional<fs::path>();
+    return {};
 }
 
 DeviceHandle::~DeviceHandle() = default;
@@ -60,3 +60,14 @@ optional<Kernel> DeviceHandle::get_kernel(string_view name) const noexcept
 {
     return {};
 }
+
+optional<Kernel> DeviceHandle::compile_kernel_from_str(string_view code) const
+{
+    return {};
+}
+void DeviceHandle::compile_kernels_from_src(string_view RPY_UNUSED_VAR code
+) const
+{}
+Event DeviceHandle::new_event() const { return {}; }
+Queue DeviceHandle::new_queue() const { return {}; }
+Queue DeviceHandle::get_default_queue() const { return {}; }
