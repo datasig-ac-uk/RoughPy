@@ -26,26 +26,40 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 11/10/23.
+// Created by user on 16/10/23.
 //
 
-#include <roughpy/device/kernel.h>
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_INFO_HELPERS_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_INFO_HELPERS_H_
 
-#include <roughpy/device/queue.h>
+#include "ocl_headers.h"
+#include "ocl_handle_errors.h"
+#include <roughpy/core/types.h>
 
-using namespace rpy;
-using namespace rpy::device;
+namespace rpy { namespace device { namespace cl {
 
-string KernelInterface::name() const { return ""; }
 
-dimn_t KernelInterface::num_args() const { return 0; }
+template <typename Fn, typename CLObj, typename Info>
+RPY_NO_DISCARD
+inline string string_info(Fn&& fn, CLObj* cl_object, Info info_id) {
+    size_t ret_size;
+    auto ecode = fn(cl_object, info_id, 0, nullptr, &ret_size);
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
 
-Event KernelInterface::launch_kernel_async(
-        rpy::device::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
-)
-{
-    return Event();
+    string result;
+    result.resize(ret_size);
+    ecode = fn(cl_object, info_id, result.size(), result.data(), nullptr);
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
+
+    return result;
 }
+
+
+}}}
+
+
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_INFO_HELPERS_H_

@@ -53,7 +53,7 @@ public:
 
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
 
-    string_view name() const override;
+    string name() const override;
     dimn_t num_args() const override;
     Event launch_kernel_async(
             Queue& queue,

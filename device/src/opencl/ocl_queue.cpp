@@ -57,11 +57,11 @@ dimn_t OCLQueue::size() const
 {
     RPY_DBG_ASSERT(m_queue != nullptr);
     cl_int ecode;
-    cl_ulong sz;
+    cl_uint sz;
     ecode = clGetCommandQueueInfo(
             m_queue,
             CL_QUEUE_SIZE,
-            sizeof(cl_ulong),
+            sizeof(cl_uint),
             &sz,
             nullptr
     );

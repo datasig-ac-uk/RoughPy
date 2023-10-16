@@ -36,6 +36,7 @@
 #include "ocl_handle_errors.h"
 #include "ocl_kernel.h"
 #include "ocl_queue.h"
+#include "ocl_info_helpers.h"
 
 #include <roughpy/platform/configuration.h>
 
@@ -52,6 +53,10 @@
 
 using namespace rpy;
 using namespace rpy::device;
+
+
+
+
 
 Buffer OCLDeviceHandle::make_buffer(cl_mem buffer, bool move) const
 {
@@ -268,18 +273,10 @@ optional<Kernel> OCLDeviceHandle::compile_kernel_from_str(string_view code
     ecode = clCreateKernelsInProgram(program, 1, &kernel, nullptr);
     if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    char* kname;
-    dimn_t kname_len;
-    ecode = clGetKernelInfo(
-            kernel,
-            CL_KERNEL_FUNCTION_NAME,
-            sizeof(kname),
-            &kname,
-            &kname_len
-    );
-    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+    auto kname = cl::string_info(clGetKernelInfo, kernel,
+                                 CL_KERNEL_FUNCTION_NAME);
 
-    m_kernels[string(kname, kname_len)] = kernel;
+    m_kernels[kname] = kernel;
 
     return make_kernel(kernel);
 }
@@ -316,19 +313,10 @@ void OCLDeviceHandle::compile_kernels_from_src(string_view code) const
     );
     if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    char* kname;
-    dimn_t kname_len;
     for (auto&& kernel : kernels) {
-        ecode = clGetKernelInfo(
-                kernel,
-                CL_KERNEL_FUNCTION_NAME,
-                sizeof(kname),
-                &kname,
-                &kname_len
-        );
-        if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-        m_kernels[string(kname, kname_len)] = kernel;
+        auto kname = cl::string_info(clGetKernelInfo, kernel,
+                                     CL_KERNEL_FUNCTION_NAME);
+        m_kernels[kname] = kernel;
     }
 }
 Event OCLDeviceHandle::new_event() const

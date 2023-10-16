@@ -33,6 +33,7 @@
 
 #include "ocl_handle_errors.h"
 #include "ocl_device.h"
+#include "ocl_info_helpers.h"
 
 #include <roughpy/device/queue.h>
 
@@ -81,22 +82,9 @@ cl_context OCLKernel::context() const
     return ctx;
 }
 
-string_view OCLKernel::name() const
+string OCLKernel::name() const
 {
-    RPY_DBG_ASSERT(m_kernel != nullptr);
-    cl_int ecode;
-    char* cl_name;
-    cl_ulong cl_name_len;
-    ecode = clGetKernelInfo(
-            m_kernel,
-            CL_KERNEL_FUNCTION_NAME,
-            sizeof(char*),
-            &cl_name,
-            &cl_name_len
-    );
-    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    return {cl_name, cl_name_len};
+    return cl::string_info(clGetKernelInfo, m_kernel, CL_KERNEL_FUNCTION_NAME);
 }
 dimn_t OCLKernel::num_args() const
 {

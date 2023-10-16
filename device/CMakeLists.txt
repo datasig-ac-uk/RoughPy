@@ -26,6 +26,7 @@ add_roughpy_component(Device
         src/opencl/ocl_handle_errors.cpp
         src/opencl/ocl_handle_errors.h
         src/opencl/ocl_headers.h
+        src/opencl/ocl_info_helpers.h
         src/opencl/ocl_kernel.cpp
         src/opencl/ocl_kernel.h
         src/opencl/ocl_queue.cpp

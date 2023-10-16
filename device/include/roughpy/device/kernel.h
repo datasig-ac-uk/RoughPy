@@ -53,7 +53,7 @@ class RPY_EXPORT KernelInterface : public dtl::InterfaceBase
 {
 
 public:
-    RPY_NO_DISCARD virtual string_view name() const;
+    RPY_NO_DISCARD virtual string name() const;
 
     RPY_NO_DISCARD virtual dimn_t num_args() const;
 
