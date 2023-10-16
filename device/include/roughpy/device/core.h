@@ -113,6 +113,43 @@ struct DeviceInfo {
 };
 
 
+
+/**
+ * @brief Type codes for different types.
+ *
+ * These are chosen to be compatible with the DLPack
+ * array interchange protocol. Rational types will
+ * be encoded as OpaqueHandle, since they're not simple
+ * data. Some of these types might not be compatible with
+ * this library.
+ */
+enum class TypeCode : uint8_t
+{
+    Int = 0U,
+    UInt = 1U,
+    Float = 2U,
+    OpaqueHandle = 3U,
+    BFloat = 4U,
+    Complex = 5U,
+    Bool = 6U
+};
+
+/**
+ * @brief Basic information for identifying the type, size, and
+ * configuration of a type.
+ *
+ * Based on, and compatible with, the DlDataType struct from the
+ * DLPack array interchange protocol. The lanes parameter will
+ * usually be set to 1, and is not generally used by RoughPy.
+ */
+struct TypeInfo {
+    TypeCode code;
+    uint8_t bits;
+    uint16_t lanes;
+};
+
+
+
 struct Dim3 {
     dsize_t x;
     dsize_t y;

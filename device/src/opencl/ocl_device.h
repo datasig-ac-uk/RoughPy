@@ -42,6 +42,7 @@
 
 #include <roughpy/device/device_handle.h>
 
+
 #include <mutex>
 #include <unordered_map>
 #include <vector>
@@ -93,6 +94,9 @@ public:
     Event new_event() const override;
     Queue new_queue() const override;
     Queue get_default_queue() const override;
+
+    optional<boost::uuids::uuid> uuid() const noexcept override;
+    optional<PCIBusInfo> pci_bus_info() const noexcept override;
 };
 
 

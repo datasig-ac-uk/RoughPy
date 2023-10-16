@@ -45,6 +45,7 @@
 #include <roughpy/device/kernel.h>
 #include <roughpy/device/queue.h>
 
+#include <CL/cl_ext.h>
 #include <boost/container/small_vector.hpp>
 
 #include <fstream>
@@ -354,4 +355,47 @@ Queue OCLDeviceHandle::new_queue() const
 Queue OCLDeviceHandle::get_default_queue() const
 {
     return make_queue(m_default_queue, false);
+}
+
+optional<boost::uuids::uuid> OCLDeviceHandle::uuid() const noexcept
+{
+    static_assert(
+            CL_UUID_SIZE_KHR == sizeof(boost::uuids::uuid::data),
+            "UUID should be 16 bytes"
+    );
+    boost::uuids::uuid uuid;
+    auto ecode = clGetDeviceInfo(
+            m_device,
+            CL_DEVICE_UUID_KHR,
+            sizeof(uuid.data),
+            &uuid.data,
+            nullptr
+    );
+    if (ecode != CL_SUCCESS) { return {}; }
+    return uuid;
+}
+
+optional<PCIBusInfo> OCLDeviceHandle::pci_bus_info() const noexcept
+{
+    static_assert(
+            sizeof(cl_uint) == sizeof(uint32_t),
+            "bus info items should be 32 bit integers"
+    );
+    cl_device_pci_bus_info_khr bus_info;
+    auto ecode = clGetDeviceInfo(
+            m_device,
+            CL_DEVICE_PCI_BUS_INFO_KHR,
+            sizeof(cl_device_pci_bus_info_khr),
+            &bus_info,
+            nullptr
+    );
+
+    if (ecode != CL_SUCCESS) { return {}; }
+
+    return {
+            {bus_info.pci_bus,
+             bus_info.pci_device,
+             bus_info.pci_domain,
+             bus_info.pci_function}
+    };
 }

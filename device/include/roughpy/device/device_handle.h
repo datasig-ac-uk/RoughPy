@@ -87,6 +87,17 @@ public:
     RPY_NO_DISCARD
     virtual Queue get_default_queue() const;
 
+    RPY_NO_DISCARD
+    virtual optional<boost::uuids::uuid> uuid() const noexcept;
+    RPY_NO_DISCARD
+    virtual optional<PCIBusInfo> pci_bus_info() const noexcept;
+
+    RPY_NO_DISCARD
+    virtual bool supports_type(const TypeInfo& info) const noexcept;
+
+
+    
+
 };
 
 
