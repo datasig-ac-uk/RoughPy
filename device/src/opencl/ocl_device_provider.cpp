@@ -94,7 +94,10 @@ bool check_device_spec(
                     nullptr
             );
 
-            if (ecode != CL_SUCCESS || d_vid != vid) { return false; }
+            if (ecode != CL_SUCCESS) { return false; }
+
+            if (spec.is_strict() && d_vid != vid) { return false; }
+
             break;
         }
         case DeviceIdType::UUID: {
@@ -109,7 +112,9 @@ bool check_device_spec(
                     nullptr
             );
 
-            if (ecode != CL_SUCCESS || d_uuid != uuid) { return false; }
+            if (ecode != CL_SUCCESS) { return false; }
+
+            if (spec.is_strict() && uuid != d_uuid) { return false; }
 
             break;
         }
@@ -127,10 +132,21 @@ bool check_device_spec(
 
             if (ecode != CL_SUCCESS) { return false; }
 
-            if (pci_bus.pci_bus != pci_addr.pci_bus) { return false; }
-            if (pci_bus.pci_device != pci_addr.pci_device) { return false; }
-            if (pci_bus.pci_domain != pci_addr.pci_domain) { return false; }
-            if (pci_bus.pci_function != pci_addr.pci_function) { return false; }
+            if (spec.is_strict()) {
+
+                if (pci_bus.pci_bus != pci_addr.pci_bus) {
+                    return false;
+                }
+                if (pci_bus.pci_device != pci_addr.pci_device) {
+                    return false;
+                }
+                if (pci_bus.pci_domain != pci_addr.pci_domain) {
+                    return false;
+                }
+                if (pci_bus.pci_function != pci_addr.pci_function) {
+                    return false;
+                }
+            }
 
             break;
         }
