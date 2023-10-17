@@ -26,54 +26,12 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 11/10/23.
+// Created by user on 17/10/23.
 //
 
-#include <roughpy/device/core.h>
-#include <roughpy/device/device_handle.h>
 #include <roughpy/device/device_provider.h>
-
-#include "cpu/cpu_device.h"
-#include "cpu/cpu_device_provider.h"
-#include "opencl/ocl_device_provider.h"
-
-#include <boost/container/small_vector.hpp>
-
-#include <mutex>
 
 using namespace rpy;
 using namespace rpy::device;
 
-static std::mutex s_provider_lock;
-static boost::container::small_vector<std::unique_ptr<DeviceProvider>, 2>
-        s_provider_list;
-
-void DeviceProvider::register_provider(
-        std::unique_ptr<DeviceProvider>&& provider
-)
-{
-    std::lock_guard<std::mutex> access(s_provider_lock);
-    if (s_provider_list.empty()) {
-        s_provider_list.emplace_back(new CPUDeviceProvider);
-        s_provider_list.emplace_back(new OCLDeviceProvider);
-    }
-
-    s_provider_list.emplace_back(std::move(provider));
-}
-
-Device rpy::device::get_device(const rpy::device::DeviceSpecification& spec)
-{
-    std::lock_guard<std::mutex> access(s_provider_lock);
-    if (s_provider_list.empty()) {
-        s_provider_list.emplace_back(new CPUDeviceProvider);
-        s_provider_list.emplace_back(new OCLDeviceProvider);
-    }
-
-
-
-
-    return CPUDeviceHandle::get();
-}
-
-Device get_cpu_device() { return CPUDeviceHandle::get(); }
-Device get_default_device() { return CPUDeviceHandle::get(); }
+DeviceProvider::~DeviceProvider() = default;

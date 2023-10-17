@@ -21,6 +21,8 @@ add_roughpy_component(Device
         src/cpu/cpu_decls.h
         src/cpu/cpu_device.cpp
         src/cpu/cpu_device.h
+        src/cpu/cpu_device_provider.cpp
+        src/cpu/cpu_device_provider.h
         src/cpu/cpu_event.cpp
         src/cpu/cpu_event.h
         src/cpu/cpu_kernel.cpp
@@ -32,6 +34,8 @@ add_roughpy_component(Device
         src/opencl/ocl_decls.h
         src/opencl/ocl_device.cpp
         src/opencl/ocl_device.h
+        src/opencl/ocl_device_provider.cpp
+        src/opencl/ocl_device_provider.h
         src/opencl/ocl_event.cpp
         src/opencl/ocl_event.h
         src/opencl/ocl_handle_errors.cpp
@@ -47,6 +51,7 @@ add_roughpy_component(Device
         src/buffer_interface.cpp
         src/device_handle.cpp
         src/device_interface_base.cpp
+        src/device_provider.cpp
         src/event.cpp
         src/event_interface.cpp
         src/get_device.cpp

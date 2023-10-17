@@ -26,60 +26,27 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 16/10/23.
+// Created by user on 17/10/23.
 //
 
-#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_HELPERS_H_
-#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_HELPERS_H_
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_PROVIDER_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_PROVIDER_H_
 
-#include "ocl_handle_errors.h"
-#include "ocl_headers.h"
-
-#include <roughpy/core/slice.h>
-#include <roughpy/core/types.h>
-#include <roughpy/device/core.h>
+#include <roughpy/device/device_provider.h>
 
 namespace rpy {
 namespace device {
-namespace cl {
 
-template <typename Fn, typename CLObj, typename Info>
-RPY_NO_DISCARD inline string
-string_info(Fn&& fn, CLObj* cl_object, Info info_id)
+class OCLDeviceProvider : public DeviceProvider
 {
-    size_t ret_size;
-    auto ecode = fn(cl_object, info_id, 0, nullptr, &ret_size);
-    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+public:
+    bool supports(DeviceCategory category) const noexcept override;
+    int priority(const DeviceSpecification& spec) const noexcept override;
+    Device get(const DeviceSpecification& specification
+    ) noexcept override;
+};
 
-    string result;
-    result.resize(ret_size);
-    ecode = fn(cl_object, info_id, result.size(), result.data(), nullptr);
-    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    return result;
-}
-
-RPY_NO_DISCARD cl_mem
-to_ocl_buffer(void* data, dimn_t size, cl_context context);
-
-RPY_NO_DISCARD Slice<byte> from_ocl_buffer(cl_mem buf);
-
-RPY_NO_DISCARD inline cl_device_type to_ocl_device_type(DeviceCategory category
-) noexcept
-{
-    switch (category) {
-        case DeviceCategory::CPU: return CL_DEVICE_TYPE_CPU;
-        case DeviceCategory::GPU: return CL_DEVICE_TYPE_GPU;
-        case DeviceCategory::FPGA: return CL_DEVICE_TYPE_ACCELERATOR;
-        case DeviceCategory::DSP: return CL_DEVICE_TYPE_ACCELERATOR;
-        case DeviceCategory::AIP: return CL_DEVICE_TYPE_ACCELERATOR;
-        case DeviceCategory::Other: return CL_DEVICE_TYPE_CUSTOM;
-    }
-    RPY_UNREACHABLE_RETURN(CL_DEVICE_TYPE_CPU);
-}
-
-}// namespace cl
 }// namespace device
 }// namespace rpy
 
-#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_HELPERS_H_
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_PROVIDER_H_

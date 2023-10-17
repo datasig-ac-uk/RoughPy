@@ -26,54 +26,32 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 11/10/23.
+// Created by user on 17/10/23.
 //
 
-#include <roughpy/device/core.h>
-#include <roughpy/device/device_handle.h>
-#include <roughpy/device/device_provider.h>
+#ifndef ROUGHPY_DEVICE_DEVICE_PROVIDER_H_
+#define ROUGHPY_DEVICE_DEVICE_PROVIDER_H_
 
-#include "cpu/cpu_device.h"
-#include "cpu/cpu_device_provider.h"
-#include "opencl/ocl_device_provider.h"
+#include "core.h"
 
-#include <boost/container/small_vector.hpp>
 
-#include <mutex>
+namespace rpy { namespace device {
 
-using namespace rpy;
-using namespace rpy::device;
-
-static std::mutex s_provider_lock;
-static boost::container::small_vector<std::unique_ptr<DeviceProvider>, 2>
-        s_provider_list;
-
-void DeviceProvider::register_provider(
-        std::unique_ptr<DeviceProvider>&& provider
-)
+class RPY_EXPORT DeviceProvider
 {
-    std::lock_guard<std::mutex> access(s_provider_lock);
-    if (s_provider_list.empty()) {
-        s_provider_list.emplace_back(new CPUDeviceProvider);
-        s_provider_list.emplace_back(new OCLDeviceProvider);
-    }
+public:
+    static void
+    register_provider(std::unique_ptr<DeviceProvider>&& provider);
 
-    s_provider_list.emplace_back(std::move(provider));
-}
+    virtual ~DeviceProvider();
 
-Device rpy::device::get_device(const rpy::device::DeviceSpecification& spec)
-{
-    std::lock_guard<std::mutex> access(s_provider_lock);
-    if (s_provider_list.empty()) {
-        s_provider_list.emplace_back(new CPUDeviceProvider);
-        s_provider_list.emplace_back(new OCLDeviceProvider);
-    }
+    virtual bool supports(DeviceCategory category) const noexcept = 0;
+    virtual int priority(const DeviceSpecification& spec) const noexcept = 0;
+
+    virtual Device get(const DeviceSpecification& specification) noexcept
+            = 0;
+};
+}}
 
 
-
-
-    return CPUDeviceHandle::get();
-}
-
-Device get_cpu_device() { return CPUDeviceHandle::get(); }
-Device get_default_device() { return CPUDeviceHandle::get(); }
+#endif// ROUGHPY_DEVICE_DEVICE_PROVIDER_H_

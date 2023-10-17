@@ -54,8 +54,9 @@ enum class DeviceCategory : int32_t
 enum class DeviceIdType : int32_t
 {
     None = 0,
-    UUID = 1,
-    PCI = 2
+    VendorID = 1,
+    UUID = 2,
+    PCI = 3
 };
 
 struct PCIBusInfo {
@@ -65,15 +66,66 @@ struct PCIBusInfo {
     uint32_t pci_function;
 };
 
-struct DeviceSpecification {
-    DeviceCategory category;
-    DeviceIdType id_type;
+class DeviceSpecification
+{
+    DeviceCategory m_category;
+    DeviceIdType m_id_type;
 
     union
     {
-        boost::uuids::uuid uuid;
-        PCIBusInfo pci;
+        uint32_t m_vendor_id;
+        boost::uuids::uuid m_uuid;
+        PCIBusInfo m_pci;
     };
+
+    bool m_strict = false;
+
+public:
+    constexpr explicit DeviceSpecification(
+            DeviceCategory cat,
+            uint32_t vendor_id
+    )
+        : m_category(cat),
+          m_id_type(DeviceIdType::VendorID),
+          m_vendor_id(vendor_id)
+    {}
+
+    RPY_NO_DISCARD constexpr DeviceCategory category() const noexcept
+    {
+        return m_category;
+    }
+
+    RPY_NO_DISCARD constexpr bool is_strict() const noexcept
+    {
+        return m_strict;
+    }
+
+    inline void strict(bool strict) noexcept { m_strict = strict; }
+
+    RPY_NO_DISCARD constexpr bool has_id() const noexcept
+    {
+        return m_id_type != DeviceIdType::None;
+    }
+
+    RPY_NO_DISCARD constexpr DeviceIdType id_type() const noexcept
+    {
+        return m_id_type;
+    }
+
+    RPY_NO_DISCARD constexpr const uint32_t& vendor_id() const noexcept
+    {
+        return m_vendor_id;
+    }
+
+    RPY_NO_DISCARD constexpr const boost::uuids::uuid& uuid() const noexcept
+    {
+        return m_uuid;
+    }
+
+    RPY_NO_DISCARD constexpr const PCIBusInfo& pci_addr() const noexcept
+    {
+        return m_pci;
+    }
 };
 
 /**
@@ -112,8 +164,6 @@ struct DeviceInfo {
     int32_t device_id;
 };
 
-
-
 /**
  * @brief Type codes for different types.
  *
@@ -148,35 +198,31 @@ struct TypeInfo {
     uint16_t lanes;
 };
 
-
 template <typename I>
 struct BasicDim3 {
     I x;
     I y;
     I z;
 
-    template <typename I1=I, typename I2=I, typename I3=I>
-    constexpr explicit BasicDim3(I1 i1=0, I2 i2=0, I3 i3=0)
-        : x(i1), y(i2), z(i3)
+    template <typename I1 = I, typename I2 = I, typename I3 = I>
+    constexpr explicit BasicDim3(I1 i1 = 0, I2 i2 = 0, I3 i3 = 0)
+        : x(i1),
+          y(i2),
+          z(i3)
     {}
-
 };
-
 
 using Dim3 = BasicDim3<dsize_t>;
 using Size3 = BasicDim3<dimn_t>;
 
-
-enum class EventStatus : int8_t {
+enum class EventStatus : int8_t
+{
     CompletedSuccessfully = 0,
     Queued = 1,
     Submitted = 2,
     Running = 4,
     Error = 8
 };
-
-
-
 
 class DeviceHandle;
 
@@ -189,14 +235,11 @@ class Kernel;
 class QueueInterface;
 class Queue;
 
-
-
 using Device = boost::intrusive_ptr<const DeviceHandle>;
 
-
+RPY_EXPORT Device get_cpu_device();
 RPY_EXPORT Device get_default_device();
 RPY_EXPORT Device get_device(const DeviceSpecification& spec);
-
 
 constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 {
