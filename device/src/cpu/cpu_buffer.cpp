@@ -25,37 +25,73 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_DEVICE_QUEUE_H_
-#define ROUGHPY_DEVICE_QUEUE_H_
+//
+// Created by user on 16/10/23.
+//
 
-#include "core.h"
-#include "device_object_base.h"
+#include "cpu_buffer.h"
 
-namespace rpy {
-namespace device {
+#include <roughpy/device/device_handle.h>
+#include <roughpy/device/device_object_base.h>
 
-class QueueInterface : public dtl::InterfaceBase
-{
-public:
-    virtual dimn_t size() const;
-};
+#include "opencl/ocl_device.h"
+#include "opencl/ocl_handle_errors.h"
 
-class Queue : public dtl::ObjectBase<QueueInterface, Queue>
-{
-    using base_t = dtl::ObjectBase<QueueInterface, Queue>;
+#include "cpu_device.h"
 
-public:
-    using base_t::base_t;
+using namespace rpy;
+using namespace rpy::device;
 
-    RPY_NO_DISCARD dimn_t size() const;
+CPUBuffer::CPUBuffer(cl_mem buffer, CPUDevice dev)
+    : ocl_buffer(buffer, dev->ocl_device()), is_ocl(true)
+{}
 
-    RPY_NO_DISCARD bool is_default() const noexcept
-    {
-        return static_cast<bool>(p_impl);
+CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size)
+    : raw_buffer{ raw_ptr, size, IsOwned}, is_ocl(false)
+{}
+
+CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size)
+    : raw_buffer { const_cast<void*>(raw_ptr), size, IsConst }, is_ocl(false)
+{}
+
+CPUBuffer::~CPUBuffer() {
+    if (is_ocl) {
+        ocl_buffer.~OCLBuffer();
     }
-};
 
-}// namespace device
-}// namespace rpy
+    if (raw_buffer.flags & IsOwned) {
 
-#endif// ROUGHPY_DEVICE_QUEUE_H_
+    }
+
+}
+
+BufferMode CPUBuffer::mode() const
+{
+    if (is_ocl) {
+        return ocl_buffer.mode();
+    }
+
+    if (raw_buffer.flags & IsConst) {
+        return BufferMode::Read;
+    }
+    return BufferMode::ReadWrite;
+}
+dimn_t CPUBuffer::size() const {
+    if (is_ocl) {
+        return ocl_buffer.size();
+    }
+    return raw_buffer.size;
+}
+void* CPUBuffer::ptr() {
+    if (is_ocl) {
+        return ocl_buffer.ptr();
+    }
+    return raw_buffer.ptr;
+}
+std::unique_ptr<rpy::device::dtl::InterfaceBase> CPUBuffer::clone() const
+{
+    return nullptr;
+}
+Device CPUBuffer::device() const noexcept {
+    return CPUDeviceHandle::get();
+}

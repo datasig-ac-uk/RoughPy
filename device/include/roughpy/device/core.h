@@ -149,18 +149,23 @@ struct TypeInfo {
 };
 
 
+template <typename I>
+struct BasicDim3 {
+    I x;
+    I y;
+    I z;
 
-struct Dim3 {
-    dsize_t x;
-    dsize_t y;
-    dsize_t z;
-
-    template <typename I1=dsize_t, typename I2=dsize_t, typename I3=dsize_t>
-    explicit Dim3(I1 i1=1, I2 i2=1, I3 i3=1)
+    template <typename I1=I, typename I2=I, typename I3=I>
+    constexpr explicit BasicDim3(I1 i1=0, I2 i2=0, I3 i3=0)
         : x(i1), y(i2), z(i3)
     {}
 
 };
+
+
+using Dim3 = BasicDim3<dsize_t>;
+using Size3 = BasicDim3<dimn_t>;
+
 
 enum class EventStatus : int8_t {
     CompletedSuccessfully = 0,

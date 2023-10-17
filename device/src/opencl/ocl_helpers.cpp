@@ -29,37 +29,48 @@
 // Created by user on 16/10/23.
 //
 
-#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_INFO_HELPERS_H_
-#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_INFO_HELPERS_H_
 
-#include "ocl_headers.h"
-#include "ocl_handle_errors.h"
-#include <roughpy/core/types.h>
-
-namespace rpy { namespace device { namespace cl {
+#include "ocl_helpers.h"
 
 
-template <typename Fn, typename CLObj, typename Info>
-RPY_NO_DISCARD
-inline string string_info(Fn&& fn, CLObj* cl_object, Info info_id) {
-    size_t ret_size;
-    auto ecode = fn(cl_object, info_id, 0, nullptr, &ret_size);
-    if (ecode != CL_SUCCESS) {
+using namespace rpy;
+using namespace rpy::device;
+
+
+
+
+
+cl_mem cl::to_ocl_buffer(void* data, dimn_t size, cl_context context) {
+    cl_int ecode;
+    auto buffer = clCreateBuffer(context,
+                                 CL_MEM_USE_HOST_PTR,
+                                 size,
+                                 data,
+                                 &ecode
+    );
+
+    if (buffer == nullptr) {
         RPY_HANDLE_OCL_ERROR(ecode);
     }
 
-    string result;
-    result.resize(ret_size);
-    ecode = fn(cl_object, info_id, result.size(), result.data(), nullptr);
-    if (ecode != CL_SUCCESS) {
-        RPY_HANDLE_OCL_ERROR(ecode);
-    }
-
-    return result;
+    return buffer;
 }
+Slice<byte> cl::from_ocl_buffer(cl_mem buf) {
+    size_t count = 0;
+    byte* data = nullptr;
+    auto ecode = clGetMemObjectInfo(buf, CL_MEM_SIZE, sizeof(count), &count,
+                                    nullptr);
+    if (ecode != CL_SUCCESS) {
+        RPY_HANDLE_OCL_ERROR(ecode);
+    }
 
+    if (count > 0) {
+        ecode = clGetMemObjectInfo(buf, CL_MEM_HOST_PTR, sizeof(data), &data,
+                                   nullptr);
+        if (ecode != CL_SUCCESS) {
+            RPY_HANDLE_OCL_ERROR(ecode);
+        }
+    }
 
-}}}
-
-
-#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_INFO_HELPERS_H_
+    return {data, count};
+}

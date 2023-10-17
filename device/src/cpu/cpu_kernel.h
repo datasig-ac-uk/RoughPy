@@ -25,97 +25,51 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_DEVICE_KERNEL_H_
-#define ROUGHPY_DEVICE_KERNEL_H_
+//
+// Created by user on 16/10/23.
+//
 
-#include "core.h"
-#include "device_object_base.h"
-#include "event.h"
+#ifndef ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_KERNEL_H_
+#define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_KERNEL_H_
 
-#include <roughpy/core/macros.h>
-#include <roughpy/core/slice.h>
-#include <roughpy/core/types.h>
+#include <roughpy/device/kernel.h>
+
+#include "opencl/ocl_kernel.h"
 
 namespace rpy {
 namespace device {
 
-class KernelLaunchParams
+class CPUKernel : public KernelInterface
 {
-    Size3 m_work_dims;
-    Dim3 m_group_size;
-    optional<Dim3> m_offsets;
+    using fallback_kernel_t = void (*)(void**, Size3 work_size) noexcept;
+
+    fallback_kernel_t m_fallback;
+    string m_name;
+    OCLKernel m_ocl_kernel;
+    uint32_t m_nargs;
+
+
+
 
 public:
+    CPUKernel(fallback_kernel_t fallback, uint32_t nargs, string name);
+    CPUKernel(fallback_kernel_t fallback, cl_kernel kernel);
+    explicit CPUKernel(cl_kernel kernel);
 
-    RPY_NO_DISCARD bool has_work() const noexcept;
+    std::unique_ptr<InterfaceBase> clone() const override;
+    Device device() const noexcept override;
 
-    RPY_NO_DISCARD
-    Size3 total_work_dims() const noexcept;
-
-    RPY_NO_DISCARD
-    dimn_t total_work_size() const noexcept;
-
-    RPY_NO_DISCARD
-    dsize_t num_dims() const noexcept;
-
-    RPY_NO_DISCARD
-    Dim3 num_work_groups() const noexcept;
-
-    RPY_NO_DISCARD
-    Size3 underflow_of_groups() const noexcept;
-
-    KernelLaunchParams();
-};
-
-class RPY_EXPORT KernelInterface : public dtl::InterfaceBase
-{
-
-public:
-    RPY_NO_DISCARD virtual string name() const;
-
-    RPY_NO_DISCARD virtual dimn_t num_args() const;
-
-    RPY_NO_DISCARD virtual Event launch_kernel_async(
+    string name() const override;
+    dimn_t num_args() const override;
+    Event launch_kernel_async(
             Queue& queue,
             Slice<void*> args,
             Slice<dimn_t> arg_sizes,
             const KernelLaunchParams& params
-    );
-};
-
-class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
-{
-    using base_t = dtl::ObjectBase<KernelInterface, Kernel>;
-
-public:
-    using base_t::base_t;
-
-    RPY_NO_DISCARD string name() const;
-
-    RPY_NO_DISCARD dimn_t num_args() const;
-
-    RPY_NO_DISCARD Event launch_async(
-            Queue& queue,
-            Slice<void*> args,
-            Slice<dimn_t> arg_sizes,
-            const KernelLaunchParams& params
-    );
-
-    RPY_NO_DISCARD EventStatus launch_sync(
-            Queue& queue,
-            Slice<void*> args,
-            Slice<dimn_t> arg_sizes,
-            const KernelLaunchParams& params
-    );
-
-
-
-    RPY_NO_DISCARD static std::vector<bitmask_t>
-    construct_work_mask(const KernelLaunchParams& params);
-
+    ) override;
 };
 
 }// namespace device
 }// namespace rpy
 
-#endif// ROUGHPY_DEVICE_KERNEL_H_
+#endif// ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_KERNEL_H_

@@ -34,9 +34,9 @@
 #include "ocl_buffer.h"
 #include "ocl_event.h"
 #include "ocl_handle_errors.h"
+#include "ocl_helpers.h"
 #include "ocl_kernel.h"
 #include "ocl_queue.h"
-#include "ocl_info_helpers.h"
 
 #include <roughpy/platform/configuration.h>
 

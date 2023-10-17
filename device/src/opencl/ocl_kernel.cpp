@@ -31,9 +31,9 @@
 
 #include "ocl_kernel.h"
 
-#include "ocl_handle_errors.h"
 #include "ocl_device.h"
-#include "ocl_info_helpers.h"
+#include "ocl_handle_errors.h"
+#include "ocl_helpers.h"
 
 #include <roughpy/device/queue.h>
 
@@ -49,7 +49,7 @@ OCLKernel::OCLKernel(cl_kernel kernel, OCLDevice dev) noexcept
 cl_program OCLKernel::program() const
 {
     RPY_DBG_ASSERT(m_kernel != nullptr);
-    cl_program prog;
+    cl_program prog = nullptr;
     auto ecode = clGetKernelInfo(
             m_kernel,
             CL_KERNEL_PROGRAM,
@@ -66,7 +66,7 @@ cl_program OCLKernel::program() const
 cl_context OCLKernel::context() const
 {
     RPY_DBG_ASSERT(m_kernel != nullptr);
-    cl_context ctx;
+    cl_context ctx = nullptr;
     auto ecode = clGetKernelInfo(
             m_kernel,
             CL_KERNEL_CONTEXT,
@@ -89,8 +89,8 @@ string OCLKernel::name() const
 dimn_t OCLKernel::num_args() const
 {
     RPY_DBG_ASSERT(m_kernel != nullptr);
-    cl_int ecode;
-    cl_uint nargs;
+    cl_int ecode = CL_SUCCESS;
+    cl_uint nargs = 0;
     ecode = clGetKernelInfo(
             m_kernel,
             CL_KERNEL_NUM_ARGS,
@@ -115,11 +115,13 @@ Event OCLKernel::launch_kernel_async(
     auto n_args = num_args();
     RPY_DBG_ASSERT(args.size() == n_args);
 
-    for (dimn_t i = 0; i < n_args; ++i) {
-#ifdef RPY_DEBUG
+    cl_int ecode = CL_SUCCESS;
 
-#endif
-        clSetKernelArg(m_kernel, i, arg_sizes[i], args[i]);
+    for (dimn_t i = 0; i < n_args; ++i) {
+        ecode = clSetKernelArg(m_kernel, i, arg_sizes[i], args[i]);
+        if (ecode != CL_SUCCESS) {
+            RPY_HANDLE_OCL_ERROR(ecode);
+        }
     }
 
     cl_uint work_dim = 1;
@@ -142,6 +144,7 @@ Event OCLKernel::launch_kernel_async(
     //    }
 
     cl_command_queue command_queue = m_device->default_queue();
+    // TODO: Use queue.is_default() to test whether to fill in the default
 //    if (queue.interface() != nullptr && queue.content() != nullptr) {
 //        RPY_CHECK(queue.interface() == m_device->queue_interface());
 //        command_queue = static_cast<cl_command_queue>(queue.content());
@@ -150,7 +153,7 @@ Event OCLKernel::launch_kernel_async(
 //    }
 
     cl_event event;
-    cl_int ecode = clEnqueueNDRangeKernel(
+    ecode = clEnqueueNDRangeKernel(
             command_queue, /* kernel */
             m_kernel,        /* kernel */
             work_dim,      /* work_dim */
@@ -169,7 +172,7 @@ Event OCLKernel::launch_kernel_async(
 std::unique_ptr<device::dtl::InterfaceBase> OCLKernel::clone() const
 {
     RPY_DBG_ASSERT(m_kernel);
-    cl_int ecode;
+    cl_int ecode= CL_SUCCESS;
     cl_kernel new_ker = clCloneKernel(m_kernel, &ecode);
 
     if (new_ker == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }

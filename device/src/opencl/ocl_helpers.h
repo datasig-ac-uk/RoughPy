@@ -25,37 +25,47 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_DEVICE_QUEUE_H_
-#define ROUGHPY_DEVICE_QUEUE_H_
+//
+// Created by user on 16/10/23.
+//
 
-#include "core.h"
-#include "device_object_base.h"
+#ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_HELPERS_H_
+#define ROUGHPY_DEVICE_SRC_OPENCL_OCL_HELPERS_H_
+
+#include "ocl_handle_errors.h"
+#include "ocl_headers.h"
+
+#include <roughpy/core/slice.h>
+#include <roughpy/core/types.h>
 
 namespace rpy {
 namespace device {
+namespace cl {
 
-class QueueInterface : public dtl::InterfaceBase
+template <typename Fn, typename CLObj, typename Info>
+RPY_NO_DISCARD inline string
+string_info(Fn&& fn, CLObj* cl_object, Info info_id)
 {
-public:
-    virtual dimn_t size() const;
-};
+    size_t ret_size;
+    auto ecode = fn(cl_object, info_id, 0, nullptr, &ret_size);
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-class Queue : public dtl::ObjectBase<QueueInterface, Queue>
-{
-    using base_t = dtl::ObjectBase<QueueInterface, Queue>;
+    string result;
+    result.resize(ret_size);
+    ecode = fn(cl_object, info_id, result.size(), result.data(), nullptr);
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-public:
-    using base_t::base_t;
+    return result;
+}
 
-    RPY_NO_DISCARD dimn_t size() const;
+RPY_NO_DISCARD
+cl_mem to_ocl_buffer(void* data, dimn_t size, cl_context context);
 
-    RPY_NO_DISCARD bool is_default() const noexcept
-    {
-        return static_cast<bool>(p_impl);
-    }
-};
+RPY_NO_DISCARD
+Slice<byte> from_ocl_buffer(cl_mem buf);
 
+}// namespace cl
 }// namespace device
 }// namespace rpy
 
-#endif// ROUGHPY_DEVICE_QUEUE_H_
+#endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_HELPERS_H_

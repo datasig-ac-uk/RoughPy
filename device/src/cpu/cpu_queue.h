@@ -25,37 +25,23 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_DEVICE_QUEUE_H_
-#define ROUGHPY_DEVICE_QUEUE_H_
+//
+// Created by user on 16/10/23.
+//
 
-#include "core.h"
-#include "device_object_base.h"
+#ifndef ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_QUEUE_H_
+#define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_QUEUE_H_
+
+#include <roughpy/device/queue.h>
 
 namespace rpy {
 namespace device {
 
-class QueueInterface : public dtl::InterfaceBase
+class CPUQueue
 {
-public:
-    virtual dimn_t size() const;
-};
-
-class Queue : public dtl::ObjectBase<QueueInterface, Queue>
-{
-    using base_t = dtl::ObjectBase<QueueInterface, Queue>;
-
-public:
-    using base_t::base_t;
-
-    RPY_NO_DISCARD dimn_t size() const;
-
-    RPY_NO_DISCARD bool is_default() const noexcept
-    {
-        return static_cast<bool>(p_impl);
-    }
 };
 
 }// namespace device
 }// namespace rpy
 
-#endif// ROUGHPY_DEVICE_QUEUE_H_
+#endif// ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_QUEUE_H_

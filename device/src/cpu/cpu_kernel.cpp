@@ -26,12 +26,12 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 11/10/23.
+// Created by user on 16/10/23.
 //
 
-#include <roughpy/device/event.h>
-#include <roughpy/device/kernel.h>
-#include <roughpy/device/queue.h>
+#include "cpu_kernel.h"
+#include "cpu_device.h"
+#include "opencl/ocl_device.h"
 
 #include <roughpy/core/helpers.h>
 
@@ -39,65 +39,53 @@ using namespace rpy;
 using namespace rpy::device;
 
 
-string Kernel::name() const
+
+CPUKernel::CPUKernel(fallback_kernel_t fallback, uint32_t nargs, string name)
+    : m_fallback(fallback),
+      m_name(std::move(name)),
+      m_ocl_kernel(nullptr, nullptr),
+      m_nargs(nargs)
+{}
+CPUKernel::CPUKernel(CPUKernel::fallback_kernel_t fallback, cl_kernel kernel)
+    : m_fallback(fallback),
+      m_ocl_kernel(kernel, CPUDeviceHandle::get()->ocl_device()),
+      m_nargs(0)
 {
-    if (!p_impl) { return ""; }
-    return p_impl->name();
+    RPY_CHECK(kernel != nullptr);
+
+    m_nargs = m_ocl_kernel.num_args();
+    m_name = m_ocl_kernel.name();
+}
+CPUKernel::CPUKernel(cl_kernel kernel)
+    : m_fallback(nullptr),
+      m_ocl_kernel(kernel, CPUDeviceHandle::get()->ocl_device()),
+      m_nargs(0)
+{
+    RPY_CHECK(kernel != nullptr);
+
+    m_nargs = m_ocl_kernel.num_args();
+    m_name = m_ocl_kernel.name();
 }
 
-dimn_t Kernel::num_args() const
-{
-    if (!p_impl) { return 0; }
-    return p_impl->num_args();
-}
-
-Event Kernel::launch_async(
+string CPUKernel::name() const { return m_name; }
+dimn_t CPUKernel::num_args() const { return m_nargs; }
+Event CPUKernel::launch_kernel_async(
         Queue& queue,
         Slice<void*> args,
         Slice<dimn_t> arg_sizes,
         const KernelLaunchParams& params
 )
 {
-    if (!p_impl) { return Event(); }
-    if (!params.has_work()) { return Event(); }
-
-    auto nargs = p_impl->num_args();
-    if (nargs != args.size() || nargs != arg_sizes.size()) {
-        RPY_THROW(std::runtime_error, "incorrect number of arguments provided");
+    if (queue.is_default() && m_fallback != nullptr) {
+        m_fallback(args.begin(), params.total_work_dims());
     }
 
-    return p_impl->launch_kernel_async(queue, args, arg_sizes, params);
+
+
+    return KernelInterface::launch_kernel_async(queue, args, arg_sizes, params);
 }
-EventStatus Kernel::launch_sync(
-        Queue& queue,
-        Slice<void*> args,
-        Slice<dimn_t> arg_sizes,
-        const KernelLaunchParams& params
-)
+std::unique_ptr<rpy::device::dtl::InterfaceBase> CPUKernel::clone() const
 {
-    if (!params.has_work()) { return EventStatus::CompletedSuccessfully; }
-    auto event = launch_async(queue, args, arg_sizes, params);
-    event.wait();
-    return event.status();
+    return InterfaceBase::clone();
 }
-
-
-
-
-std::vector<bitmask_t>
-Kernel::construct_work_mask(const KernelLaunchParams& params)
-{
-    RPY_DBG_ASSERT(params.has_work());
-    std::vector<bitmask_t> result;
-
-    auto total_work = params.total_work_size();
-    auto num_masks = round_up_divide(total_work, CHAR_BIT*sizeof(bitmask_t));
-    result.reserve(num_masks);
-    result.resize(num_masks-1, ~bitmask_t(0));
-
-    auto underflow = num_masks*CHAR_BIT*sizeof(bitmask_t) - total_work;
-    auto final_mask = ~((bitmask_t(1) << (underflow + 1)) - 1);
-    result.push_back(final_mask);
-
-    return result;
-}
+Device CPUKernel::device() const noexcept { return CPUDeviceHandle::get(); }

@@ -25,37 +25,50 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_DEVICE_QUEUE_H_
-#define ROUGHPY_DEVICE_QUEUE_H_
+//
+// Created by user on 16/10/23.
+//
 
-#include "core.h"
-#include "device_object_base.h"
+#ifndef ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_DEVICE_H_
+#define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_DEVICE_H_
+
+#include <roughpy/device/device_handle.h>
+
+#include "opencl/ocl_decls.h"
+#include "opencl/ocl_headers.h"
+
+#include "cpu_decls.h"
 
 namespace rpy {
 namespace device {
 
-class QueueInterface : public dtl::InterfaceBase
+class CPUDeviceHandle : public DeviceHandle
 {
+    OCLDevice p_ocl_handle;
+
+    CPUDeviceHandle();
+    ~CPUDeviceHandle();
 public:
-    virtual dimn_t size() const;
-};
 
-class Queue : public dtl::ObjectBase<QueueInterface, Queue>
-{
-    using base_t = dtl::ObjectBase<QueueInterface, Queue>;
+    static CPUDevice get();
 
-public:
-    using base_t::base_t;
 
-    RPY_NO_DISCARD dimn_t size() const;
+    DeviceInfo info() const noexcept override;
+    Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
+    void raw_free(Buffer buffer) const override;
+    optional<Kernel> get_kernel(string_view name) const noexcept override;
+    optional<Kernel> compile_kernel_from_str(string_view code) const override;
+    void compile_kernels_from_src(string_view code) const override;
+    Event new_event() const override;
+    Queue new_queue() const override;
+    Queue get_default_queue() const override;
+    bool supports_type(const TypeInfo& info) const noexcept override;
 
-    RPY_NO_DISCARD bool is_default() const noexcept
-    {
-        return static_cast<bool>(p_impl);
-    }
+    RPY_NO_DISCARD
+    OCLDevice ocl_device() const noexcept;
 };
 
 }// namespace device
 }// namespace rpy
 
-#endif// ROUGHPY_DEVICE_QUEUE_H_
+#endif// ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_DEVICE_H_

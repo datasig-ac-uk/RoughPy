@@ -25,37 +25,30 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_DEVICE_QUEUE_H_
-#define ROUGHPY_DEVICE_QUEUE_H_
+//
+// Created by user on 16/10/23.
+//
 
-#include "core.h"
-#include "device_object_base.h"
+#ifndef ROUGHPY_DEVICE_SRC_CPU_CPU_DECLS_H_
+#define ROUGHPY_DEVICE_SRC_CPU_CPU_DECLS_H_
+
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 namespace rpy {
 namespace device {
 
-class QueueInterface : public dtl::InterfaceBase
-{
-public:
-    virtual dimn_t size() const;
-};
+class CPUDeviceHandle;
+class CPUBuffer;
+class CPUEvent;
+class CPUKernel;
+class CPUQueue;
 
-class Queue : public dtl::ObjectBase<QueueInterface, Queue>
-{
-    using base_t = dtl::ObjectBase<QueueInterface, Queue>;
-
-public:
-    using base_t::base_t;
-
-    RPY_NO_DISCARD dimn_t size() const;
-
-    RPY_NO_DISCARD bool is_default() const noexcept
-    {
-        return static_cast<bool>(p_impl);
-    }
-};
+using CPUDevice = boost::intrusive_ptr<const CPUDeviceHandle>;
 
 }// namespace device
 }// namespace rpy
 
-#endif// ROUGHPY_DEVICE_QUEUE_H_
+#endif// ROUGHPY_DEVICE_SRC_CPU_CPU_DECLS_H_
