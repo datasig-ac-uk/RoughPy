@@ -34,24 +34,22 @@
 
 #include "core.h"
 
-
-namespace rpy { namespace device {
+namespace rpy {
+namespace device {
 
 class RPY_EXPORT DeviceProvider
 {
 public:
-    static void
-    register_provider(std::unique_ptr<DeviceProvider>&& provider);
+    static void register_provider(std::unique_ptr<DeviceProvider>&& provider);
 
     virtual ~DeviceProvider();
 
     virtual bool supports(DeviceCategory category) const noexcept = 0;
     virtual int priority(const DeviceSpecification& spec) const noexcept = 0;
 
-    virtual Device get(const DeviceSpecification& specification) noexcept
-            = 0;
+    virtual Device get(const DeviceSpecification& specification) noexcept = 0;
 };
-}}
-
+}// namespace device
+}// namespace rpy
 
 #endif// ROUGHPY_DEVICE_DEVICE_PROVIDER_H_
