@@ -73,9 +73,11 @@ public:
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
     Device device() const noexcept override;
 
+    virtual bool owning() const noexcept;
     BufferMode mode() const override;
     dimn_t size() const override;
     void* ptr() override;
+
 };
 
 }// namespace device

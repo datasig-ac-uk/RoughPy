@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 16/10/23.
@@ -38,20 +39,19 @@
 #include <roughpy/device/kernel.h>
 #include <roughpy/device/queue.h>
 
-
 #include <boost/container/small_vector.hpp>
 
-#include "opencl/ocl_buffer.h"
-#include "opencl/ocl_device.h"
-#include "opencl/ocl_event.h"
-#include "opencl/ocl_handle_errors.h"
-#include "opencl/ocl_kernel.h"
-#include "opencl/ocl_queue.h"
-#include "opencl/ocl_helpers.h"
 #include "cpu_buffer.h"
 #include "cpu_event.h"
 #include "cpu_kernel.h"
 #include "cpu_queue.h"
+#include "opencl/ocl_buffer.h"
+#include "opencl/ocl_device.h"
+#include "opencl/ocl_event.h"
+#include "opencl/ocl_handle_errors.h"
+#include "opencl/ocl_helpers.h"
+#include "opencl/ocl_kernel.h"
+#include "opencl/ocl_queue.h"
 
 using namespace rpy;
 using namespace rpy::devices;
@@ -75,9 +75,7 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
         bc::small_vector<cl_device_id, 1> candidates;
 
         auto clear_candidates = [&candidates]() {
-            for (auto&& candidate : candidates) {
-                clReleaseDevice(candidate);
-            }
+            for (auto&& candidate : candidates) { clReleaseDevice(candidate); }
             candidates.clear();
         };
 
@@ -91,9 +89,9 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
                     &num_devices
             );
             if (ecode != CL_SUCCESS) {
-//                clear_candidates();
+                //                clear_candidates();
                 continue;
-//                RPY_HANDLE_OCL_ERROR(ecode);
+                //                RPY_HANDLE_OCL_ERROR(ecode);
             }
 
             if (num_devices > 0) {
@@ -107,10 +105,10 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
                         nullptr
                 );
                 if (ecode != CL_SUCCESS) {
-//                    clear_candidates();
+                    //                    clear_candidates();
                     candidates.resize(current_size);
                     continue;
-//                    RPY_HANDLE_OCL_ERROR(ecode);
+                    //                    RPY_HANDLE_OCL_ERROR(ecode);
                 }
             }
         }
@@ -124,17 +122,15 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
 
             clear_candidates();
         }
-
     }
 }
 CPUDeviceHandle::~CPUDeviceHandle() = default;
 
-CPUDevice CPUDeviceHandle::get() {
+CPUDevice CPUDeviceHandle::get()
+{
     static boost::intrusive_ptr<CPUDeviceHandle> device(new CPUDeviceHandle);
     return device;
 }
-
-
 
 DeviceInfo CPUDeviceHandle::info() const noexcept
 {
@@ -143,9 +139,21 @@ DeviceInfo CPUDeviceHandle::info() const noexcept
 
 Buffer CPUDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
 {
-    return DeviceHandle::raw_alloc(count, alignment);
+    return Buffer(
+            std::make_unique<CPUBuffer>(aligned_alloc(alignment, count), count)
+    );
 }
-void CPUDeviceHandle::raw_free(Buffer buffer) const {}
+void CPUDeviceHandle::raw_free(Buffer buffer) const {
+    if (buffer.device() == this && buffer.owning()) {
+        auto* ptr = buffer.ptr();
+        if (ptr != nullptr) {
+            aligned_free(ptr);
+        }
+    }
+
+
+
+}
 optional<Kernel> CPUDeviceHandle::get_kernel(string_view name) const noexcept
 {
     return DeviceHandle::get_kernel(name);
@@ -161,15 +169,9 @@ void CPUDeviceHandle::compile_kernels_from_src(string_view code) const
 }
 Event CPUDeviceHandle::new_event() const { return DeviceHandle::new_event(); }
 Queue CPUDeviceHandle::new_queue() const { return DeviceHandle::new_queue(); }
-Queue CPUDeviceHandle::get_default_queue() const
-{
-    return Queue();
-}
+Queue CPUDeviceHandle::get_default_queue() const { return Queue(); }
 bool CPUDeviceHandle::supports_type(const TypeInfo& info) const noexcept
 {
     return true;
 }
-OCLDevice CPUDeviceHandle::ocl_device() const noexcept
-{
-    return p_ocl_handle;
-}
+OCLDevice CPUDeviceHandle::ocl_device() const noexcept { return p_ocl_handle; }

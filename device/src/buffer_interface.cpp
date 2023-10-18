@@ -37,6 +37,11 @@ using namespace rpy;
 using namespace rpy::devices;
 
 
+
+bool BufferInterface::owning() const noexcept {
+    return false;
+}
+
 BufferMode BufferInterface::mode() const {
     return BufferMode::Read;
 }

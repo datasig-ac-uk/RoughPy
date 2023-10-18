@@ -95,3 +95,7 @@ std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUBuffer::clone() const
 Device CPUBuffer::device() const noexcept {
     return CPUDeviceHandle::get();
 }
+bool CPUBuffer::owning() const noexcept {
+    return is_ocl ? false : (raw_buffer.flags & IsOwned != 0);
+}
+

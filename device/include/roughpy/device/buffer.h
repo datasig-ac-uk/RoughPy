@@ -48,6 +48,9 @@ enum class BufferMode
 class BufferInterface : public dtl::InterfaceBase
 {
 public:
+
+    RPY_NO_DISCARD virtual bool owning() const noexcept;
+
     RPY_NO_DISCARD virtual BufferMode mode() const;
 
     RPY_NO_DISCARD virtual dimn_t size() const;
@@ -61,6 +64,8 @@ class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
 
 public:
     using base_t::base_t;
+
+    RPY_NO_DISCARD bool owning() const noexcept;
 
     RPY_NO_DISCARD dimn_t size() const;
 

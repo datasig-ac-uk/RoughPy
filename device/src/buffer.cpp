@@ -35,6 +35,10 @@
 using namespace rpy;
 using namespace rpy::devices;
 
+bool Buffer::owning() const noexcept {
+    if (p_impl) { return p_impl->owning(); }
+    return false;
+}
 
 BufferMode Buffer::mode() const {
     if (!p_impl){
@@ -56,3 +60,4 @@ void* Buffer::ptr() {
     }
     return p_impl->ptr();
 }
+
