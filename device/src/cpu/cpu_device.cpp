@@ -64,13 +64,13 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
     cl_uint num_platforms = 0;
     auto ecode = clGetPlatformIDs(0, nullptr, &num_platforms);
 
-    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    if (ecode != CL_SUCCESS) { return; }
 
     if (num_platforms > 0) {
         bc::small_vector<cl_platform_id, 1> platforms(num_platforms);
 
         ecode = clGetPlatformIDs(num_platforms, platforms.data(), nullptr);
-        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+        if (ecode != CL_SUCCESS) { return; }
 
         bc::small_vector<cl_device_id, 1> candidates;
 
@@ -91,8 +91,9 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
                     &num_devices
             );
             if (ecode != CL_SUCCESS) {
-                clear_candidates();
-                RPY_HANDLE_OCL_ERROR(ecode);
+//                clear_candidates();
+                continue;
+//                RPY_HANDLE_OCL_ERROR(ecode);
             }
 
             if (num_devices > 0) {
@@ -106,8 +107,10 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
                         nullptr
                 );
                 if (ecode != CL_SUCCESS) {
-                    clear_candidates();
-                    RPY_HANDLE_OCL_ERROR(ecode);
+//                    clear_candidates();
+                    candidates.resize(current_size);
+                    continue;
+//                    RPY_HANDLE_OCL_ERROR(ecode);
                 }
             }
         }
@@ -117,10 +120,8 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
             //  implementation of OpenCL to use. For now, just pick the first
             //  one.
             p_ocl_handle = new OCLDeviceHandle(candidates[0]);
+            candidates[0] = nullptr;
 
-            for (size_t i=1; i<candidates.size(); ++i) {
-                clReleaseDevice(candidates[i]);
-            }
             candidates.clear();
         }
 
