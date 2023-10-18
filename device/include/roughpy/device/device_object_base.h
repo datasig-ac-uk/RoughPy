@@ -37,7 +37,7 @@
 #include <memory>
 
 namespace rpy {
-namespace device {
+namespace devices {
 namespace dtl {
 
 class RPY_EXPORT InterfaceBase
@@ -57,7 +57,7 @@ class ObjectBase
             "Interface must be derived from InterfaceBase"
     );
 
-    friend class rpy::device::DeviceHandle;
+    friend class rpy::devices::DeviceHandle;
     friend class InterfaceBase;
 
     using interface_type = Interface;
@@ -102,7 +102,7 @@ Derived ObjectBase<Interface, Derived>::clone() const
 }
 
 template <typename Interface, typename Derived>
-Device device::dtl::ObjectBase<Interface, Derived>::device() const noexcept
+Device devices::dtl::ObjectBase<Interface, Derived>::device() const noexcept
 {
     if (p_impl) { return p_impl->device(); }
     return nullptr;

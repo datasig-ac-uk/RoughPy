@@ -38,7 +38,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class CPUDeviceHandle;
 class CPUBuffer;

@@ -36,7 +36,7 @@
 #include <roughpy/core/helpers.h>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 
 
@@ -84,7 +84,7 @@ Event CPUKernel::launch_kernel_async(
 
     return KernelInterface::launch_kernel_async(queue, args, arg_sizes, params);
 }
-std::unique_ptr<rpy::device::dtl::InterfaceBase> CPUKernel::clone() const
+std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUKernel::clone() const
 {
     return InterfaceBase::clone();
 }

@@ -38,7 +38,7 @@
 #include <roughpy/device/kernel.h>
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class OCLKernel : public KernelInterface
 {

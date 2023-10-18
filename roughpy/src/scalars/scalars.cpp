@@ -143,7 +143,7 @@ RPY_UNUSED
 static const scalars::ScalarType*
 dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
 {
-    using rpy::device::DeviceType;
+    using rpy::devices::DeviceType;
 
     scalars::ScalarTypeCode type;
     switch (dtype.code) {

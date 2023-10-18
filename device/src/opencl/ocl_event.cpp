@@ -35,7 +35,7 @@
 #include "ocl_device.h"
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 OCLEvent::OCLEvent(cl_event event, OCLDevice dev) noexcept
     : m_event(event), m_device(std::move(dev))
@@ -72,7 +72,7 @@ EventStatus OCLEvent::status() const
         default: return EventStatus::Error;
     }
 }
-std::unique_ptr<device::dtl::InterfaceBase> OCLEvent::clone() const
+std::unique_ptr<devices::dtl::InterfaceBase> OCLEvent::clone() const
 {
     if (RPY_LIKELY(m_event != nullptr)) {
         auto ecode = clRetainEvent(m_event);

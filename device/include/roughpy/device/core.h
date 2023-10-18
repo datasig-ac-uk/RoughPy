@@ -36,7 +36,7 @@
 #include <boost/uuid/uuid.hpp>
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 using dindex_t = int;
 using dsize_t = unsigned int;

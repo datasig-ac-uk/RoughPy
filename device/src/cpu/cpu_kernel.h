@@ -37,7 +37,7 @@
 #include "opencl/ocl_kernel.h"
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class CPUKernel : public KernelInterface
 {

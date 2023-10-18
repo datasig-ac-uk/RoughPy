@@ -33,7 +33,7 @@
 #define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_EVENT_H_
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class CPUEvent
 {

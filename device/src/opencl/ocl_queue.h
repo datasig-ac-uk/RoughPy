@@ -37,7 +37,7 @@
 #include <roughpy/device/queue.h>
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class OCLQueue : public QueueInterface
 {

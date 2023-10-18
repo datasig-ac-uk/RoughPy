@@ -31,7 +31,7 @@
 #include <roughpy/device/queue.h>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 
 dimn_t QueueInterface::size() const

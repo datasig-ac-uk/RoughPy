@@ -38,7 +38,7 @@
 #include <roughpy/device/event.h>
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class OCLEvent : public EventInterface
 {

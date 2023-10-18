@@ -43,8 +43,8 @@
 namespace rpy {
 namespace scalars {
 
-using ScalarTypeCode = device::TypeCode;
-using BasicScalarInfo = device::TypeInfo;
+using ScalarTypeCode = devices::TypeCode;
+using BasicScalarInfo = devices::TypeInfo;
 
 /// Marker for signed size type (ptrdiff_t)
 struct signed_size_type_marker {
@@ -63,7 +63,7 @@ struct ScalarTypeInfo {
     size_t n_bytes;
     size_t alignment;
     BasicScalarInfo basic_info;
-    device::DeviceInfo device;
+    devices::DeviceInfo device;
 };
 
 // Forward declarations
@@ -117,7 +117,7 @@ RPY_EXPORT void register_type(const ScalarType* type);
 RPY_EXPORT const ScalarType* get_type(const string& id);
 
 RPY_EXPORT const ScalarType*
-get_type(const string& id, const device::DeviceInfo& device);
+get_type(const string& id, const devices::DeviceInfo& device);
 
 /**
  * @brief Get a list of all registered ScalarTypes

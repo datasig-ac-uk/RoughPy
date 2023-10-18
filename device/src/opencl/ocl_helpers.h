@@ -40,7 +40,7 @@
 #include <roughpy/device/core.h>
 
 namespace rpy {
-namespace device {
+namespace devices {
 namespace cl {
 
 template <typename Fn, typename CLObj, typename Info>

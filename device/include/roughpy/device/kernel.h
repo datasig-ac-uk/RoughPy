@@ -37,7 +37,7 @@
 #include <roughpy/core/types.h>
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class KernelLaunchParams
 {

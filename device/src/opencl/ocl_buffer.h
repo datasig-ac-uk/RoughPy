@@ -38,7 +38,7 @@
 #include "ocl_headers.h"
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 
 class OCLBuffer : public BufferInterface

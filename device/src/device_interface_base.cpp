@@ -34,17 +34,17 @@
 #include "device_handle.h"
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
-rpy::device::dtl::InterfaceBase::~InterfaceBase() = default;
+rpy::devices::dtl::InterfaceBase::~InterfaceBase() = default;
 
-std::unique_ptr<rpy::device::dtl::InterfaceBase>
-rpy::device::dtl::InterfaceBase::clone() const
+std::unique_ptr<rpy::devices::dtl::InterfaceBase>
+rpy::devices::dtl::InterfaceBase::clone() const
 {
     return nullptr;
 }
 
-Device device::dtl::InterfaceBase::device() const noexcept
+Device devices::dtl::InterfaceBase::device() const noexcept
 {
     return Device(nullptr);
 }

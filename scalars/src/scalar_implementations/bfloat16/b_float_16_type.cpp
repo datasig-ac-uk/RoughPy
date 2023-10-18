@@ -44,5 +44,5 @@ BFloat16Type::BFloat16Type()
             string("BFloat16"), string("bf16"), sizeof(bfloat16),
             alignof(bfloat16),
             {ScalarTypeCode::BFloat, sizeof(bfloat16) * CHAR_BIT, 1U},
-            {device::DeviceType::CPU, 0})
+            {devices::DeviceType::CPU, 0})
 {}

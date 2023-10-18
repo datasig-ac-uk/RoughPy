@@ -40,9 +40,7 @@
 #include "scalar_type.h"
 #include "scalar_type_helper.h"
 
-
-using rpy::device::DeviceType;
-using rpy::device::DeviceInfo;
+using rpy::devices::DeviceInfo;
 
 namespace rpy {
 namespace scalars {

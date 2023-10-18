@@ -32,5 +32,5 @@
 #include "cpu_queue.h"
 
 namespace rpy {
-namespace device {}// namespace device
+namespace devices {}// namespace device
 }// namespace rpy

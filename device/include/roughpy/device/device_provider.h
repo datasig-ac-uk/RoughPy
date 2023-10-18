@@ -35,7 +35,7 @@
 #include "core.h"
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class RPY_EXPORT DeviceProvider
 {
@@ -49,6 +49,7 @@ public:
 
     virtual Device get(const DeviceSpecification& specification) noexcept = 0;
 };
+
 }// namespace device
 }// namespace rpy
 

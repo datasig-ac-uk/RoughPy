@@ -31,7 +31,7 @@
 
 #include "ocl_handle_errors.h"
 
-void rpy::device::cl::handle_cl_error(
+void rpy::devices::cl::handle_cl_error(
         cl_int err, const char* filename, int lineno, const char* func
 )
 {

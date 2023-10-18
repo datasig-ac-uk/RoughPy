@@ -35,7 +35,7 @@
 #include <roughpy/device/device_provider.h>
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class CPUDeviceProvider : public DeviceProvider
 {

@@ -47,8 +47,7 @@
 
 #include "standard_random_generator.h"
 
-using rpy::device::DeviceType;
-using rpy::device::DeviceInfo;
+using rpy::devices::DeviceInfo;
 
 namespace rpy {
 namespace scalars {

@@ -38,7 +38,7 @@
 #include <roughpy/device/queue.h>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 OCLKernel::OCLKernel(cl_kernel kernel, OCLDevice dev) noexcept
     : m_kernel(kernel), m_device(std::move(dev))
@@ -169,7 +169,7 @@ Event OCLKernel::launch_kernel_async(
 
     return Event(std::make_unique<OCLEvent>(event, m_device));
 }
-std::unique_ptr<device::dtl::InterfaceBase> OCLKernel::clone() const
+std::unique_ptr<devices::dtl::InterfaceBase> OCLKernel::clone() const
 {
     RPY_DBG_ASSERT(m_kernel);
     cl_int ecode= CL_SUCCESS;

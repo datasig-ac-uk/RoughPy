@@ -38,14 +38,12 @@
 #include <utility>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 constexpr cl_int MODE_MASK
         = CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY | CL_MEM_READ_WRITE;
 
-
-
-device::OCLBuffer::OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept
+devices::OCLBuffer::OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept
     : m_device(std::move(dev)),
       m_buffer(buffer)
 {}
@@ -88,7 +86,7 @@ dimn_t OCLBuffer::size() const
     return static_cast<dimn_t>(size);
 }
 void* OCLBuffer::ptr() { return m_buffer; }
-std::unique_ptr<device::dtl::InterfaceBase> OCLBuffer::clone() const
+std::unique_ptr<devices::dtl::InterfaceBase> OCLBuffer::clone() const
 {
     RPY_DBG_ASSERT(m_buffer != nullptr);
 

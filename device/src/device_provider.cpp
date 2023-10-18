@@ -32,6 +32,6 @@
 #include <roughpy/device/device_provider.h>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 DeviceProvider::~DeviceProvider() = default;

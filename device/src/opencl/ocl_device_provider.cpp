@@ -41,7 +41,7 @@
 #include <boost/container/small_vector.hpp>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 namespace bc = boost::container;
 
 bool OCLDeviceProvider::supports(DeviceCategory category) const noexcept

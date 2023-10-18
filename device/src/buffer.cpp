@@ -33,7 +33,7 @@
 
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 
 BufferMode Buffer::mode() const {

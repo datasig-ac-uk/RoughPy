@@ -40,7 +40,7 @@
 #include "cpu_decls.h"
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class CPUDeviceHandle : public DeviceHandle
 {

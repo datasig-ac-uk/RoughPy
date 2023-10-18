@@ -84,7 +84,7 @@ public:
 
     template <typename T>
     RPY_NO_DISCARD inline static const ScalarType*
-    of(const device::DeviceInfo& device)
+    of(const devices::DeviceInfo& device)
     {
         return get_type(type_id_of<T>(), device);
     }
@@ -117,7 +117,7 @@ public:
      */
     RPY_NO_DISCARD static const ScalarType* from_type_details(
             const BasicScalarInfo& details,
-            const device::DeviceInfo& device
+            const devices::DeviceInfo& device
     );
 
     /**
@@ -264,7 +264,7 @@ public:
             ScalarPointer& dst,
             const ScalarPointer& arg,
             dimn_t count,
-            const uint64_t* mask
+            const bitmask_t* mask
     ) const = 0;
 
     /**
@@ -284,7 +284,7 @@ public:
             const ScalarPointer& lhs,
             const ScalarPointer& rhs,
             dimn_t count,
-            const uint64_t* mask
+            const bitmask_t* mask
     ) const = 0;
 
     /**
@@ -304,7 +304,7 @@ public:
             const ScalarPointer& lhs,
             const ScalarPointer& rhs,
             dimn_t count,
-            const uint64_t* mask
+            const bitmask_t* mask
     ) const = 0;
 
     /**
@@ -324,7 +324,7 @@ public:
             const ScalarPointer& lhs,
             const ScalarPointer& rhs,
             dimn_t count,
-            const uint64_t* mask
+            const bitmask_t* mask
     ) const = 0;
 
     /**
@@ -344,7 +344,7 @@ public:
             const ScalarPointer& lhs,
             const ScalarPointer& rhs,
             dimn_t count,
-            const uint64_t* mask
+            const bitmask_t* mask
     ) const = 0;
 
     /**

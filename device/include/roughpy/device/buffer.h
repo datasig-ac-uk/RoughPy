@@ -35,7 +35,7 @@
 #include <roughpy/core/types.h>
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 enum class BufferMode
 {

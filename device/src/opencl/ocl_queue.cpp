@@ -36,7 +36,7 @@
 #include "ocl_device.h"
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 OCLQueue::OCLQueue(cl_command_queue queue, OCLDevice dev) noexcept
     : m_queue(queue), m_device(std::move(dev))
@@ -45,7 +45,7 @@ OCLQueue::OCLQueue(cl_command_queue queue, OCLDevice dev) noexcept
 
 
 
-std::unique_ptr<rpy::device::dtl::InterfaceBase> OCLQueue::clone() const
+std::unique_ptr<rpy::devices::dtl::InterfaceBase> OCLQueue::clone() const
 {
     RPY_DBG_ASSERT(m_queue != nullptr);
     auto ecode = clRetainCommandQueue(m_queue);

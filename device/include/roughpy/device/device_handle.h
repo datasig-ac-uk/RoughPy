@@ -42,7 +42,7 @@
 #include "queue.h"
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 /**
  * @brief Interface for interacting with compute devices.

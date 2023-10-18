@@ -37,7 +37,7 @@
 #include <vector>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 DeviceHandle::DeviceHandle() {}
 DeviceInfo DeviceHandle::info() const noexcept { return {}; }

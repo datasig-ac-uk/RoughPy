@@ -48,7 +48,7 @@
 #include <vector>
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 
 class OCLDeviceHandle : public DeviceHandle

@@ -36,7 +36,7 @@
 #include <roughpy/core/helpers.h>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 
 string Kernel::name() const

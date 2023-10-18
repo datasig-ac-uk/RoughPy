@@ -40,7 +40,7 @@
 #include "cpu_device.h"
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 CPUBuffer::CPUBuffer(cl_mem buffer, CPUDevice dev)
     : ocl_buffer(buffer, dev->ocl_device()), is_ocl(true)
@@ -88,7 +88,7 @@ void* CPUBuffer::ptr() {
     }
     return raw_buffer.ptr;
 }
-std::unique_ptr<rpy::device::dtl::InterfaceBase> CPUBuffer::clone() const
+std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUBuffer::clone() const
 {
     return nullptr;
 }

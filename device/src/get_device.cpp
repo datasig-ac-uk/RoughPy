@@ -42,7 +42,7 @@
 #include <mutex>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 static std::mutex s_provider_lock;
 static boost::container::small_vector<std::unique_ptr<DeviceProvider>, 2>
@@ -61,7 +61,7 @@ void DeviceProvider::register_provider(
     s_provider_list.emplace_back(std::move(provider));
 }
 
-Device rpy::device::get_device(const rpy::device::DeviceSpecification& spec)
+Device rpy::devices::get_device(const rpy::devices::DeviceSpecification& spec)
 {
     std::lock_guard<std::mutex> access(s_provider_lock);
     if (s_provider_list.empty()) {

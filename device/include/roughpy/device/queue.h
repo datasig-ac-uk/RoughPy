@@ -32,7 +32,7 @@
 #include "device_object_base.h"
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class QueueInterface : public dtl::InterfaceBase
 {

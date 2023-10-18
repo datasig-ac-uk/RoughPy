@@ -34,17 +34,17 @@
 #include <roughpy/device/queue.h>
 
 using namespace rpy;
-using namespace rpy::device;
+using namespace rpy::devices;
 
 string KernelInterface::name() const { return ""; }
 
 dimn_t KernelInterface::num_args() const { return 0; }
 
 Event KernelInterface::launch_kernel_async(
-        rpy::device::Queue& queue,
+        rpy::devices::Queue& queue,
         Slice<void*> args,
         Slice<rpy::dimn_t> arg_sizes,
-        const rpy::device::KernelLaunchParams& params
+        const rpy::devices::KernelLaunchParams& params
 )
 {
     return Event();

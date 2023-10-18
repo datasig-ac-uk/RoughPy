@@ -39,7 +39,7 @@
 #include "opencl/ocl_buffer.h"
 
 namespace rpy {
-namespace device {
+namespace devices {
 
 class CPUBuffer : public BufferInterface
 {
