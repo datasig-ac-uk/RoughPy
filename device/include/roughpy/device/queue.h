@@ -51,7 +51,7 @@ public:
 
     RPY_NO_DISCARD bool is_default() const noexcept
     {
-        return static_cast<bool>(p_impl);
+        return !static_cast<bool>(p_impl);
     }
 };
 
