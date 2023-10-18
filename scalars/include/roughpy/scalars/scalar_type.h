@@ -141,6 +141,13 @@ public:
     }
 
     /**
+     * @brief Get the underlying device for this type.
+     * @return Pointer to device handle
+     */
+    RPY_NO_DISCARD virtual devices::Device device() const noexcept = 0;
+
+
+    /**
      * @brief Get the size of a single scalar in bytes
      * @return number of bytes.
      */
