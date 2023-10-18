@@ -67,3 +67,12 @@ add_roughpy_component(Device
         RoughPy::Core
         RoughPy::Platform
 )
+
+
+
+add_roughpy_test(Devices
+    SRC
+    src/test_cpu_device.cpp
+    NEEDS
+    RoughPy::Device
+)
