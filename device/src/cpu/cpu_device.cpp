@@ -122,7 +122,7 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
             p_ocl_handle = new OCLDeviceHandle(candidates[0]);
             candidates[0] = nullptr;
 
-            candidates.clear();
+            clear_candidates();
         }
 
     }
