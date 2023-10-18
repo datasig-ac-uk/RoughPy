@@ -124,9 +124,6 @@ static PyObject* monomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR);
 
 static PyObject* monomial___getstate__(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
-
-    std::cout << cast_mon(self) <<
-            '\n';
     std::stringstream ss;
     try {
         archives::BinaryOutputArchive oa(ss);
