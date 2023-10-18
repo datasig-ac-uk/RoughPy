@@ -35,6 +35,8 @@
 #include <ostream>
 #include <unordered_map>
 
+
+#include <roughpy/device/device_handle.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/types.h>
@@ -52,7 +54,18 @@ using namespace scalars;
 using rpy::devices::DeviceInfo;
 using rpy::devices::DeviceType;
 
+ScalarType::ScalarType(ScalarTypeInfo info, devices::Device&& device)
+    : m_info(std::move(info)), m_device(std::move(device))
+{
+
+}
+
 ScalarType::~ScalarType() = default;
+
+devices::Device ScalarType::device() const noexcept
+{
+    return m_device;
+}
 
 const ScalarType* ScalarType::rational_type() const noexcept { return this; }
 
@@ -434,10 +447,6 @@ void rpy::scalars::register_conversion(
     }
 }
 
-ScalarType::ScalarType(ScalarTypeInfo info)
- : m_info(std::move(info))
-{
-}
 
 std::unique_ptr<RandomGenerator>
 ScalarType::get_rng(const string& bit_generator, Slice<uint64_t> seed) const

@@ -40,6 +40,7 @@ using ScalarTypeTests = rpy::scalars::testing::ScalarTests;
 using namespace rpy::scalars;
 
 using rpy::devices::DeviceInfo;
+using rpy::devices::DeviceType;
 
 class RAIIAlloc
 {

@@ -33,7 +33,7 @@
 #define ROUGHPY_SCALARS_SRC_RATIONAL_POLY_SCALAR_TYPE_H
 
 #include <roughpy/device/core.h>
-
+#include <roughpy/device/device_handle.h>
 #include <roughpy/scalars/types.h>
 
 #include "conversion.h"
@@ -59,12 +59,13 @@ public:
                 sizeof(rational_poly_scalar),
                 alignof(rational_poly_scalar),
                 {ScalarTypeCode::OpaqueHandle, 0, 0},
-                {DeviceType::CPU, 0},
-    })
+                {devices::DeviceType::CPU, 0},
+    }, devices::get_cpu_device())
     {}
 
     const ScalarType* rational_type() const noexcept override;
     const ScalarType* host_type() const noexcept override;
+
     Scalar
     from(long long int numerator, long long int denominator) const override;
     ScalarPointer allocate(std::size_t count) const override;

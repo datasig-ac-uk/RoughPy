@@ -111,71 +111,68 @@ OCLDeviceHandle::OCLDeviceHandle(cl_device_id id) : m_device(id)
     }
 
     const auto& config = get_config();
-    fs::directory_iterator iter(config.get_builtin_kernel_dir());
+    auto kernel_dir = config.get_builtin_kernel_dir();
+    if (exists(kernel_dir)) {
+        fs::directory_iterator iter(config.get_builtin_kernel_dir());
 
-    std::vector<string> sources;
-    for (auto&& dir : iter) {
-        std::ifstream istr(dir.path());
-        sources.emplace_back();
-    }
-    auto count = static_cast<cl_uint>(sources.size());
+        std::vector<string> sources;
+        for (auto&& dir : iter) {
+            std::ifstream istr(dir.path());
+            sources.emplace_back();
+        }
+        auto count = static_cast<cl_uint>(sources.size());
 
-    std::vector<const char*> strings;
-    std::vector<size_t> sizes;
-    strings.reserve(count);
-    sizes.reserve(count);
-    for (auto&& src : sources) {
-        strings.push_back(src.data());
-        sizes.push_back(src.size());
-    }
+        std::vector<const char*> strings;
+        std::vector<size_t> sizes;
+        strings.reserve(count);
+        sizes.reserve(count);
+        for (auto&& src : sources) {
+            strings.push_back(src.data());
+            sizes.push_back(src.size());
+        }
 
-    auto program = clCreateProgramWithSource(
-            m_ctx,
-            count,
-            strings.data(),
-            sizes.data(),
-            &ecode
-    );
-
-    if (RPY_UNLIKELY(program == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    m_programs.push_back(program);
-
-    cl_uint num_kernels;
-    ecode = clGetProgramInfo(
-            program,
-            CL_PROGRAM_NUM_KERNELS,
-            sizeof(cl_uint),
-            &num_kernels,
-            nullptr
-    );
-
-    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    std::vector<cl_kernel> kernels(num_kernels);
-    ecode = clCreateKernelsInProgram(
-            program,
-            num_kernels,
-            kernels.data(),
-            nullptr
-    );
-
-    if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    char* kname;
-    dimn_t kname_len;
-    for (auto&& kernel : kernels) {
-        ecode = clGetKernelInfo(
-                kernel,
-                CL_KERNEL_FUNCTION_NAME,
-                sizeof(kname),
-                &kname,
-                &kname_len
+        auto program = clCreateProgramWithSource(
+                m_ctx,
+                count,
+                strings.data(),
+                sizes.data(),
+                &ecode
         );
+
+        if (RPY_UNLIKELY(program == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+        m_programs.push_back(program);
+
+        cl_uint num_kernels;
+        ecode = clGetProgramInfo(
+                program,
+                CL_PROGRAM_NUM_KERNELS,
+                sizeof(cl_uint),
+                &num_kernels,
+                nullptr
+        );
+
         if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-        m_kernels[string(kname, kname_len)] = kernel;
+        std::vector<cl_kernel> kernels(num_kernels);
+        ecode = clCreateKernelsInProgram(
+                program,
+                num_kernels,
+                kernels.data(),
+                nullptr
+        );
+
+        if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+
+        for (auto&& kernel : kernels) {
+            auto kname = cl::string_info(clGetKernelInfo, kernel,
+                                         CL_KERNEL_FUNCTION_NAME);
+            m_kernels[kname] = kernel;
+        }
     }
+
+
 }
 
 OCLDeviceHandle::~OCLDeviceHandle()

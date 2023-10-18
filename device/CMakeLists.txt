@@ -60,7 +60,10 @@ add_roughpy_component(Device
         src/kernel_launch_params.cpp
         src/queue.cpp
         src/queue_interface.cpp
+        DEPENDENCIES
+        PRIVATE
+        OpenCL::OpenCL
         NEEDS
         RoughPy::Core
         RoughPy::Platform
-        )
+)

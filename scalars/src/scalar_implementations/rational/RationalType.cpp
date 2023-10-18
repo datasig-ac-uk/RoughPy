@@ -31,6 +31,8 @@
 
 #include "RationalType.h"
 
+#include <roughpy/device/device_handle.h>
+
 #include <algorithm>
 #include <cmath>
 #include <ostream>
@@ -73,8 +75,8 @@ RationalType::RationalType()
                                     ScalarTypeCode::OpaqueHandle,
                                     0, 0,
                                     },
-            {       DeviceType::CPU, 0   }
-})
+            {       devices::DeviceType::CPU, 0   }
+}, devices::get_cpu_device())
 {}
 ScalarPointer RationalType::allocate(std::size_t count) const
 {

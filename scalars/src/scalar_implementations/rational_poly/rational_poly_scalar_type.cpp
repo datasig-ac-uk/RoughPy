@@ -35,6 +35,8 @@
 #include "scalar_type_helper.h"
 
 #include "roughpy/core/alloc.h"
+#include <roughpy/device/core.h>
+#include <roughpy/device/device_handle.h>
 
 static inline rpy::scalars::rational_poly_scalar try_convert(
         rpy::scalars::ScalarPointer arg,
@@ -348,5 +350,6 @@ void RationalPolyScalarType::uminus_into(
             dst, arg, count, mask, [](auto s) { return -s; }
     );
 }
+
 }// namespace scalars
 }// namespace rpy

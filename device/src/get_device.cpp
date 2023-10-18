@@ -75,5 +75,5 @@ Device rpy::devices::get_device(const rpy::devices::DeviceSpecification& spec)
     return CPUDeviceHandle::get();
 }
 
-Device get_cpu_device() { return CPUDeviceHandle::get(); }
-Device get_default_device() { return CPUDeviceHandle::get(); }
+Device rpy::devices::get_cpu_device() { return CPUDeviceHandle::get(); }
+Device rpy::devices::get_default_device() { return CPUDeviceHandle::get(); }

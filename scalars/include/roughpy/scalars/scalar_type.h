@@ -68,12 +68,14 @@ class RPY_EXPORT ScalarType
     ScalarTypeInfo m_info;
     RingCharacteristics m_characteristics;
 
+    devices::Device m_device;
+
 protected:
     /**
      * @brief Constructor for Scalar types, must be called by derived types
      * @param info Scalar type info
      */
-    explicit ScalarType(ScalarTypeInfo info);
+    explicit ScalarType(ScalarTypeInfo info, devices::Device&& device);
 
 public:
     template <typename T>
@@ -144,7 +146,7 @@ public:
      * @brief Get the underlying device for this type.
      * @return Pointer to device handle
      */
-    RPY_NO_DISCARD virtual devices::Device device() const noexcept = 0;
+    RPY_NO_DISCARD devices::Device device() const noexcept;
 
 
     /**

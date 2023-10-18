@@ -129,8 +129,8 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
 CPUDeviceHandle::~CPUDeviceHandle() = default;
 
 CPUDevice CPUDeviceHandle::get() {
-    static const CPUDeviceHandle device;
-    return &device;
+    static boost::intrusive_ptr<CPUDeviceHandle> device(new CPUDeviceHandle);
+    return device;
 }
 
 

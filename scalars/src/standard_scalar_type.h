@@ -39,6 +39,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include <roughpy/device/device_handle.h>
 #include <roughpy/scalars/conversion.h>
 #include <roughpy/scalars/random.h>
 #include <roughpy/scalars/scalar_type.h>
@@ -92,8 +93,8 @@ public:
                 sizeof(ScalarImpl),
                 alignof(ScalarImpl),
                 {ScalarTypeCode::Float, sizeof_bits<ScalarImpl>(), 1U},
-                {DeviceType::CPU, 0}
-    })
+                {devices::DeviceType::CPU, 0}
+    }, devices::get_cpu_device())
     {}
 
     explicit StandardScalarType(const ScalarTypeInfo& info)
@@ -104,7 +105,8 @@ public:
             string name, string id, std::size_t size, std::size_t align,
             BasicScalarInfo basic_info, DeviceInfo device_info
     )
-        : helper({name, id, size, align, basic_info, device_info})
+        : helper({name, id, size, align, basic_info, device_info},
+                 devices::get_cpu_device())
     {}
 
     Scalar
@@ -173,118 +175,7 @@ public:
     {
         helper::copy_convert(dst, src, count);
     }
-    //    void convert_copy(
-    //            void* out, const void* in, std::size_t count, BasicScalarInfo
-    //            info
-    //    ) const override
-    //    {
-    //
-    //        ScalarPointer optr(this, out);
-    //        switch (info.code) {
-    //            case ScalarTypeCode::Int:
-    //                switch (info.bits) {
-    //                    case sizeof(int8_t) * CHAR_BIT:
-    //                        convert_copy_basic<int8_t>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                    case sizeof(int16_t) * CHAR_BIT:
-    //                        convert_copy_basic<int16_t>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                    case sizeof(int32_t) * CHAR_BIT:
-    //                        convert_copy_basic<int32_t>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                    case sizeof(int64_t) * CHAR_BIT:
-    //                        convert_copy_basic<int64_t>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                        //                    case 128:
-    //                    default:
-    //                        RPY_THROW(
-    //                                std::runtime_error,
-    //                                "invalid bit configuration for integer
-    //                                type"
-    //                        );
-    //                }
-    //                break;
-    //            case ScalarTypeCode::UInt:
-    //                switch (info.bits) {
-    //                    case sizeof(uint8_t) * CHAR_BIT:
-    //                        convert_copy_basic<uint8_t>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                    case sizeof(uint16_t) * CHAR_BIT:
-    //                        convert_copy_basic<uint16_t>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                    case sizeof(uint32_t) * CHAR_BIT:
-    //                        convert_copy_basic<uint32_t>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                    case sizeof(uint64_t) * CHAR_BIT:
-    //                        convert_copy_basic<uint64_t>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                        //                    case 128:
-    //                    default:
-    //                        RPY_THROW(
-    //                                std::runtime_error,
-    //                                "invalid bit configuration for integer
-    //                                type"
-    //                        );
-    //                }
-    //                break;
-    //            case ScalarTypeCode::Float:
-    //                switch (info.bits) {
-    //                    case sizeof(half) * CHAR_BIT:
-    //                        convert_copy_basic<half>(optr, in, info.lanes *
-    //                        count); break;
-    //                    case sizeof(float) * CHAR_BIT:
-    //                        convert_copy_basic<float>(optr, in, info.lanes *
-    //                        count); break;
-    //                    case sizeof(double) * CHAR_BIT:
-    //                        convert_copy_basic<double>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                    default:
-    //                        RPY_THROW(
-    //                                std::runtime_error,
-    //                                "invalid bit configuration for float type"
-    //                        );
-    //                }
-    //                break;
-    //            case ScalarTypeCode::BFloat:
-    //                switch (info.bits) {
-    //                    case sizeof(bfloat16) * CHAR_BIT:
-    //                        convert_copy_basic<bfloat16>(
-    //                                optr, in, info.lanes * count
-    //                        );
-    //                        break;
-    //                    default:
-    //                        RPY_THROW(
-    //                                std::runtime_error,
-    //                                "invalid bit configuration for bfloat
-    //                                type"
-    //                        );
-    //                }
-    //                break;
-    //            case ScalarTypeCode::Bool:
-    //            case ScalarTypeCode::OpaqueHandle: break;
-    //            case ScalarTypeCode::Complex:
-    //            default: RPY_THROW(std::runtime_error, "unsupported scalar
-    //            type");
-    //        }
-    //    }
+
     void
     assign(ScalarPointer target, long long int numerator,
            long long int denominator) const override
@@ -296,7 +187,6 @@ public:
     {
         return static_cast<scalar_t>(*arg.raw_cast<const ScalarImpl*>());
     }
-
 
     void uminus_into(
             ScalarPointer& dst, const ScalarPointer& arg, dimn_t count,
