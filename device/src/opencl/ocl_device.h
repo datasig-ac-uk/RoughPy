@@ -60,14 +60,14 @@ class OCLDeviceHandle : public DeviceHandle
 
     cl_command_queue m_default_queue;
 
-    mutable std::recursive_mutex m_lock;
     mutable std::vector<cl_program> m_programs;
-    mutable std::unordered_map<string, cl_kernel> m_kernels;
 
     Buffer make_buffer(cl_mem buffer, bool move=false) const;
     Event make_event(cl_event event, bool move=true) const;
     Kernel make_kernel(cl_kernel kernel, bool move=false) const;
     Queue make_queue(cl_command_queue queue, bool move=true) const;
+
+    using typename DeviceHandle::guard_type;
 
 public:
     explicit OCLDeviceHandle(cl_device_id id);
@@ -82,7 +82,7 @@ public:
 
     optional<Kernel> compile_kernel_from_str(string_view code
     ) const override;
-    optional<Kernel> get_kernel(string_view name) const noexcept override;
+    optional<Kernel> get_kernel(const string& name) const noexcept override;
     void compile_kernels_from_src(string_view code) const override;
 
     cl_command_queue default_queue() const noexcept {

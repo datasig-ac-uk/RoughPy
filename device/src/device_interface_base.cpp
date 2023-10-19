@@ -38,7 +38,7 @@ using namespace rpy::devices;
 
 rpy::devices::dtl::InterfaceBase::~InterfaceBase() = default;
 
-dimn_t devices::dtl::InterfaceBase::ref_count() const noexcept { return 0; }
+dimn_t devices::dtl::InterfaceBase::ref_count() const noexcept { return 1; }
 
 std::unique_ptr<rpy::devices::dtl::InterfaceBase>
 rpy::devices::dtl::InterfaceBase::clone() const

@@ -32,11 +32,29 @@
 #ifndef ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_EVENT_H_
 #define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_EVENT_H_
 
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+#include <roughpy/device/event.h>
+
+#include <mutex>
+#include <condition_variable>
+
 namespace rpy {
 namespace devices {
 
-class CPUEvent
+class CPUEvent : public EventInterface
 {
+    using guard_type = std::unique_lock<std::mutex>;
+
+    mutable std::mutex m_lock;
+    std::condition_variable m_cv;
+    EventStatus m_status;
+
+public:
+    void wait() override;
+    EventStatus status() const override;
+    bool is_user() const noexcept override;
+    void set_status(EventStatus status) override;
 };
 
 }// namespace device

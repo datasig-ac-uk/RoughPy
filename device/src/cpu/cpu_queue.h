@@ -37,8 +37,10 @@
 namespace rpy {
 namespace devices {
 
-class CPUQueue
+class CPUQueue : public QueueInterface
 {
+
+
 };
 
 }// namespace device

@@ -90,6 +90,8 @@ class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
 public:
     using base_t::base_t;
 
+    RPY_NO_DISCARD bool is_nop() const noexcept { return !p_impl; }
+
     RPY_NO_DISCARD string name() const;
 
     RPY_NO_DISCARD dimn_t num_args() const;

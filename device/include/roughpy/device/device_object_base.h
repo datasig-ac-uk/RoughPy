@@ -98,6 +98,9 @@ public:
     ObjectBase& operator=(const ObjectBase& other);
     ObjectBase& operator=(ObjectBase&& other) noexcept = default;
 
+
+    RPY_NO_DISCARD bool is_null() const noexcept { return !p_impl; }
+    RPY_NO_DISCARD dimn_t ref_count() const noexcept;
     RPY_NO_DISCARD Derived clone() const;
     RPY_NO_DISCARD Device device() const noexcept;
 };
@@ -123,6 +126,13 @@ ObjectBase<Interface, Derived>::operator=(const ObjectBase& other)
         }
     }
     return *this;
+}
+
+template <typename Interface, typename Derived>
+dimn_t ObjectBase<Interface, Derived>::ref_count() const noexcept
+{
+    if (p_impl) { return p_impl->ref_count(); }
+    return 1;
 }
 
 template <typename Interface, typename Derived>

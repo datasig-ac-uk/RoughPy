@@ -55,8 +55,27 @@ Buffer DeviceHandle::raw_alloc(rpy::dimn_t count, rpy::dimn_t alignment) const
 
 void DeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 
-optional<Kernel> DeviceHandle::get_kernel(string_view name) const noexcept
+const Kernel& DeviceHandle::register_kernel(Kernel kernel) const {
+    RPY_CHECK(kernel.device() == this);
+    const guard_type access(get_lock());
+
+    string name = kernel.name();
+    auto& cached = m_kernel_cache[name];
+    if (cached.is_nop()) {
+        cached = std::move(kernel);
+    }
+
+    return cached;
+}
+
+optional<Kernel> DeviceHandle::get_kernel(const string& name) const noexcept
 {
+    const guard_type access(get_lock());
+
+    const auto found = m_kernel_cache.find(name);
+    if (found != m_kernel_cache.end()) {
+        return found->second;
+    }
     return {};
 }
 

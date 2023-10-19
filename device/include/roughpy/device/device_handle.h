@@ -34,6 +34,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
+#include <mutex>
 
 #include "buffer.h"
 #include "core.h"
@@ -52,6 +53,15 @@ namespace devices {
 class RPY_EXPORT DeviceHandle
     : public boost::intrusive_ref_counter<DeviceHandle>
 {
+    mutable std::recursive_mutex m_lock;
+    mutable std::unordered_map<string, Kernel> m_kernel_cache;
+
+protected:
+    using lock_type = std::recursive_mutex;
+    using guard_type = std::lock_guard<lock_type>;
+
+    lock_type& get_lock() const noexcept { return m_lock; }
+
 
 public:
 
@@ -73,8 +83,10 @@ public:
 
     virtual void raw_free(void* pointer, dimn_t size) const;
 
+    virtual const Kernel& register_kernel(Kernel kernel) const;
+
     RPY_NO_DISCARD
-    virtual optional<Kernel> get_kernel(string_view name) const noexcept;
+    virtual optional<Kernel> get_kernel(const string& name) const noexcept;
     RPY_NO_DISCARD
     virtual optional<Kernel> compile_kernel_from_str(string_view code) const;
 

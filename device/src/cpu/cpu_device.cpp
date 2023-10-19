@@ -53,6 +53,9 @@
 #include "opencl/ocl_kernel.h"
 #include "opencl/ocl_queue.h"
 
+#include "kernels/masked_binary.h"
+#include "kernels/masked_unary.h"
+
 #include <algorithm>
 
 using namespace rpy;
@@ -62,7 +65,7 @@ namespace bc = boost::container;
 
 std::atomic_size_t* CPUDeviceHandle::get_ref_count() const
 {
-    std::lock_guard<std::recursive_mutex> access(m_lock);
+    const guard_type access(get_lock());
 
     if (!m_ref_counts.empty()) {
         auto found = std::find_if(
@@ -87,7 +90,7 @@ std::atomic_size_t* CPUDeviceHandle::get_ref_count() const
 
 CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
 {
-    std::lock_guard<std::recursive_mutex> access(m_lock);
+    const guard_type access(get_lock());
 
     cl_uint num_platforms = 0;
     auto ecode = clGetPlatformIDs(0, nullptr, &num_platforms);
@@ -177,10 +180,19 @@ void CPUDeviceHandle::raw_free(void* pointer, dimn_t size) const {
     aligned_free(pointer);
 }
 
+template<typename... Args>
+Kernel make_kernel(void (*fn)(Args...)) noexcept {
+    (void) fn;
+    return Kernel();
+}
+
 
 
 static const bc::flat_map<string_view, Kernel> s_kernels  {
-        {"foo", Kernel()}
+        {"masked_uminus_double",
+         make_kernel(kernels::masked_binary_into_buffer<double,
+            std::plus<double>>)
+        }
 };
 
 
@@ -194,26 +206,48 @@ static const bc::flat_map<string_view, Kernel> s_kernels  {
 
 
 
-optional<Kernel> CPUDeviceHandle::get_kernel(string_view name) const noexcept
+optional<Kernel> CPUDeviceHandle::get_kernel(const string& name) const noexcept
 {
+    auto kernel = DeviceHandle::get_kernel(name);
+    if (kernel) { return kernel; }
+
+    kernel = p_ocl_handle->get_kernel(name);
+    if (kernel) { return kernel; }
+
+
     auto found = s_kernels.find(name);
     if (found != s_kernels.end()) {
         return {found->second};
     }
 
-    return p_ocl_handle->get_kernel(name);
+    return {};
 }
 optional<Kernel> CPUDeviceHandle::compile_kernel_from_str(string_view code
 ) const
 {
-    return DeviceHandle::compile_kernel_from_str(code);
+    if (p_ocl_handle) {
+        return p_ocl_handle->compile_kernel_from_str(code);
+    }
+    return {};
 }
 void CPUDeviceHandle::compile_kernels_from_src(string_view code) const
 {
-    DeviceHandle::compile_kernels_from_src(code);
+    if (p_ocl_handle) {
+        p_ocl_handle->compile_kernels_from_src(code);
+    }
 }
-Event CPUDeviceHandle::new_event() const { return DeviceHandle::new_event(); }
-Queue CPUDeviceHandle::new_queue() const { return DeviceHandle::new_queue(); }
+Event CPUDeviceHandle::new_event() const {
+    if (p_ocl_handle) {
+        return p_ocl_handle->new_event();
+    }
+    return Event(std::make_unique<CPUEvent>());
+}
+Queue CPUDeviceHandle::new_queue() const {
+    if (p_ocl_handle) {
+        return p_ocl_handle->new_queue();
+    }
+    return Queue();
+}
 Queue CPUDeviceHandle::get_default_queue() const { return Queue(); }
 bool CPUDeviceHandle::supports_type(const TypeInfo& info) const noexcept
 {

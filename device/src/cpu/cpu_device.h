@@ -43,6 +43,7 @@
 
 #include <atomic>
 #include <mutex>
+#include <unordered_map>
 
 namespace rpy {
 namespace devices {
@@ -50,8 +51,6 @@ namespace devices {
 class CPUDeviceHandle : public DeviceHandle
 {
     OCLDevice p_ocl_handle;
-
-    mutable std::recursive_mutex m_lock;
 
     /*
      * This vector holds reference counts for the buffer objects that the CPU
@@ -65,7 +64,6 @@ class CPUDeviceHandle : public DeviceHandle
 
     std::atomic_size_t* get_ref_count() const;
 
-
     CPUDeviceHandle();
     ~CPUDeviceHandle();
 public:
@@ -76,7 +74,7 @@ public:
     DeviceInfo info() const noexcept override;
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
     void raw_free(void* pointer, dimn_t size) const override;
-    optional<Kernel> get_kernel(string_view name) const noexcept override;
+    optional<Kernel> get_kernel(const string& name) const noexcept override;
     optional<Kernel> compile_kernel_from_str(string_view code) const override;
     void compile_kernels_from_src(string_view code) const override;
     Event new_event() const override;
