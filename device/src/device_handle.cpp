@@ -53,7 +53,7 @@ Buffer DeviceHandle::raw_alloc(rpy::dimn_t count, rpy::dimn_t alignment) const
     return {};
 }
 
-void DeviceHandle::raw_free(Buffer buffer) const {}
+void DeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 
 optional<Kernel> DeviceHandle::get_kernel(string_view name) const noexcept
 {
