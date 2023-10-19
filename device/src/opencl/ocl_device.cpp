@@ -216,10 +216,8 @@ Buffer OCLDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
     if (RPY_UNLIKELY(new_mem == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
     return make_buffer(new_mem);
 }
-void OCLDeviceHandle::raw_free(Buffer buffer) const
+void OCLDeviceHandle::raw_free(void* pointer, dimn_t size) const
 {
-    RPY_CHECK(buffer.device() == this);
-    buffer.~Buffer();
 }
 optional<Kernel> OCLDeviceHandle::get_kernel(string_view name) const noexcept
 {

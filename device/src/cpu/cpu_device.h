@@ -39,12 +39,32 @@
 
 #include "cpu_decls.h"
 
+#include <boost/container/stable_vector.hpp>
+
+#include <atomic>
+#include <mutex>
+
 namespace rpy {
 namespace devices {
 
 class CPUDeviceHandle : public DeviceHandle
 {
     OCLDevice p_ocl_handle;
+
+    mutable std::recursive_mutex m_lock;
+
+    /*
+     * This vector holds reference counts for the buffer objects that the CPU
+     * device has allocated. Each CPU object, if it isn't really an
+     * OCL object, will have a pointer to one of these atomic counts, so it is
+     * important that pointers are not invalidated when the vector has to grow.
+     * For this reason, we're using a stable_vector, and will include logic
+     * to only grow if absolutely necessary - there are no inactive ref counts.
+     */
+    mutable boost::container::stable_vector<std::atomic_size_t> m_ref_counts;
+
+    std::atomic_size_t* get_ref_count() const;
+
 
     CPUDeviceHandle();
     ~CPUDeviceHandle();
@@ -55,7 +75,7 @@ public:
 
     DeviceInfo info() const noexcept override;
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
-    void raw_free(Buffer buffer) const override;
+    void raw_free(void* pointer, dimn_t size) const override;
     optional<Kernel> get_kernel(string_view name) const noexcept override;
     optional<Kernel> compile_kernel_from_str(string_view code) const override;
     void compile_kernels_from_src(string_view code) const override;

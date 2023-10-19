@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 16/10/23.
@@ -40,6 +39,7 @@
 #include <roughpy/device/queue.h>
 
 #include <boost/container/small_vector.hpp>
+#include <boost/container/flat_map.hpp>
 
 #include "cpu_buffer.h"
 #include "cpu_event.h"
@@ -53,13 +53,41 @@
 #include "opencl/ocl_kernel.h"
 #include "opencl/ocl_queue.h"
 
+#include <algorithm>
+
 using namespace rpy;
 using namespace rpy::devices;
 
 namespace bc = boost::container;
 
+std::atomic_size_t* CPUDeviceHandle::get_ref_count() const
+{
+    std::lock_guard<std::recursive_mutex> access(m_lock);
+
+    if (!m_ref_counts.empty()) {
+        auto found = std::find_if(
+                m_ref_counts.begin(),
+                m_ref_counts.end(),
+                [](const std::atomic_size_t& rc) {
+                    // We already hold a mutex, so only one thread is doing this
+                    return rc.load(std::memory_order_relaxed) == 0;
+                }
+        );
+
+        if (found != m_ref_counts.end()) {
+            // increment now, so there is no risk of a double use.
+            found->fetch_add(1, std::memory_order_relaxed);
+            return &*found;
+        }
+    }
+
+    m_ref_counts.emplace_back(1);
+    return &m_ref_counts.back();
+}
+
 CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
 {
+    std::lock_guard<std::recursive_mutex> access(m_lock);
 
     cl_uint num_platforms = 0;
     auto ecode = clGetPlatformIDs(0, nullptr, &num_platforms);
@@ -139,24 +167,41 @@ DeviceInfo CPUDeviceHandle::info() const noexcept
 
 Buffer CPUDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
 {
-    return Buffer(
-            std::make_unique<CPUBuffer>(aligned_alloc(alignment, count), count)
-    );
+    return Buffer(std::make_unique<CPUBuffer>(
+            aligned_alloc(alignment, count),
+            count,
+            get_ref_count()
+    ));
 }
-void CPUDeviceHandle::raw_free(Buffer buffer) const {
-    if (buffer.device() == this && buffer.owning()) {
-        auto* ptr = buffer.ptr();
-        if (ptr != nullptr) {
-            aligned_free(ptr);
-        }
-    }
-
-
-
+void CPUDeviceHandle::raw_free(void* pointer, dimn_t size) const {
+    aligned_free(pointer);
 }
+
+
+
+static const bc::flat_map<string_view, Kernel> s_kernels  {
+        {"foo", Kernel()}
+};
+
+
+
+
+
+
+
+
+
+
+
+
 optional<Kernel> CPUDeviceHandle::get_kernel(string_view name) const noexcept
 {
-    return DeviceHandle::get_kernel(name);
+    auto found = s_kernels.find(name);
+    if (found != s_kernels.end()) {
+        return {found->second};
+    }
+
+    return p_ocl_handle->get_kernel(name);
 }
 optional<Kernel> CPUDeviceHandle::compile_kernel_from_str(string_view code
 ) const

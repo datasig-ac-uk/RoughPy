@@ -52,6 +52,8 @@ public:
     ~OCLBuffer() override;
 
     RPY_NO_DISCARD
+    dimn_t ref_count() const noexcept override;
+    RPY_NO_DISCARD
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
     RPY_NO_DISCARD
     Device device() const noexcept override;
@@ -61,6 +63,12 @@ public:
     dimn_t size() const override;
     RPY_NO_DISCARD
     void* ptr() override;
+
+
+
+    dimn_t inc_ref();
+    dimn_t dec_ref();
+
 };
 
 }// namespace device

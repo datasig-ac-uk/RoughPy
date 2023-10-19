@@ -78,7 +78,7 @@ public:
     DeviceInfo info() const noexcept override;
     optional<fs::path> runtime_library() const noexcept override;
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
-    void raw_free(Buffer buffer) const override;
+    void raw_free(void* pointer, dimn_t size) const override;
 
     optional<Kernel> compile_kernel_from_str(string_view code
     ) const override;

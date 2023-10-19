@@ -128,3 +128,32 @@ OCLBuffer::~OCLBuffer() {
     }
     m_buffer = nullptr;
 }
+
+dimn_t OCLBuffer::inc_ref() {
+    if (RPY_LIKELY(m_buffer != nullptr)) {
+        auto ecode = clRetainMemObject(m_buffer);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    }
+    return 0;
+}
+
+dimn_t OCLBuffer::dec_ref() {
+    if (RPY_LIKELY(m_buffer != nullptr)) {
+        auto rc = ref_count();
+        auto ecode = clReleaseMemObject(m_buffer);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+        return rc;
+    }
+    return 0;
+}
+dimn_t OCLBuffer::ref_count() const noexcept
+{
+    if (m_buffer != nullptr) {
+        cl_uint ref_count = 0;
+        auto ecode = clGetMemObjectInfo(m_buffer, CL_MEM_REFERENCE_COUNT,
+                                        sizeof(ref_count), &ref_count, nullptr);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+        return static_cast<dimn_t>(ref_count);
+    }
+    return 0;
+}
