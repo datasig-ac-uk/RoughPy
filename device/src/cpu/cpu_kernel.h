@@ -34,7 +34,6 @@
 
 #include <roughpy/device/kernel.h>
 
-#include "opencl/ocl_kernel.h"
 
 namespace rpy {
 namespace devices {
@@ -45,7 +44,6 @@ class CPUKernel : public KernelInterface
 
     fallback_kernel_t m_fallback;
     string m_name;
-    OCLKernel m_ocl_kernel;
     uint32_t m_nargs;
 
 
@@ -53,8 +51,6 @@ class CPUKernel : public KernelInterface
 
 public:
     CPUKernel(fallback_kernel_t fallback, uint32_t nargs, string name);
-    CPUKernel(fallback_kernel_t fallback, cl_kernel kernel);
-    explicit CPUKernel(cl_kernel kernel);
 
     std::unique_ptr<InterfaceBase> clone() const override;
     Device device() const noexcept override;

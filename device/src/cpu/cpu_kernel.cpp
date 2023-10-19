@@ -31,7 +31,6 @@
 
 #include "cpu_kernel.h"
 #include "cpu_device.h"
-#include "opencl/ocl_device.h"
 
 #include <roughpy/core/helpers.h>
 
@@ -43,29 +42,10 @@ using namespace rpy::devices;
 CPUKernel::CPUKernel(fallback_kernel_t fallback, uint32_t nargs, string name)
     : m_fallback(fallback),
       m_name(std::move(name)),
-      m_ocl_kernel(nullptr, nullptr),
       m_nargs(nargs)
 {}
-CPUKernel::CPUKernel(CPUKernel::fallback_kernel_t fallback, cl_kernel kernel)
-    : m_fallback(fallback),
-      m_ocl_kernel(kernel, CPUDeviceHandle::get()->ocl_device()),
-      m_nargs(0)
-{
-    RPY_CHECK(kernel != nullptr);
 
-    m_nargs = m_ocl_kernel.num_args();
-    m_name = m_ocl_kernel.name();
-}
-CPUKernel::CPUKernel(cl_kernel kernel)
-    : m_fallback(nullptr),
-      m_ocl_kernel(kernel, CPUDeviceHandle::get()->ocl_device()),
-      m_nargs(0)
-{
-    RPY_CHECK(kernel != nullptr);
 
-    m_nargs = m_ocl_kernel.num_args();
-    m_name = m_ocl_kernel.name();
-}
 
 string CPUKernel::name() const { return m_name; }
 dimn_t CPUKernel::num_args() const { return m_nargs; }
@@ -80,12 +60,10 @@ Event CPUKernel::launch_kernel_async(
         m_fallback(args.begin(), params.total_work_dims());
     }
 
-
-
     return KernelInterface::launch_kernel_async(queue, args, arg_sizes, params);
 }
 std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUKernel::clone() const
 {
-    return InterfaceBase::clone();
+    return std::make_unique<CPUKernel>(m_fallback, m_nargs, m_name);
 }
 Device CPUKernel::device() const noexcept { return CPUDeviceHandle::get(); }
