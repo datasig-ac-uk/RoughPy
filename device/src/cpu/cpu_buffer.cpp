@@ -42,60 +42,52 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-CPUBuffer::CPUBuffer(cl_mem buffer, CPUDevice dev)
-    : ocl_buffer(buffer, dev->ocl_device()), is_ocl(true)
+CPUBuffer::CPUBuffer(CPUBuffer::RawBuffer raw, CPUBuffer::Flags arg_flags)
+    : raw_buffer(std::move(raw)),
+      flags(arg_flags)
+{
+    RPY_DBG_ASSERT(raw_ref_count(std::memory_order_acq_rel) > 0);
+    inc_ref();
+}
+
+CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, atomic_t rc)
+    : raw_buffer{raw_ptr, size, rc},
+      flags()
 {}
 
-CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size)
-    : raw_buffer{ raw_ptr, size, IsOwned}, is_ocl(false)
+CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, atomic_t rc)
+    : raw_buffer{const_cast<void*>(raw_ptr), size, rc},
+      flags(IsConst)
 {}
 
-CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size)
-    : raw_buffer { const_cast<void*>(raw_ptr), size, IsConst }, is_ocl(false)
-{}
-
-CPUBuffer::~CPUBuffer() {
-    if (is_ocl) {
-        ocl_buffer.~OCLBuffer();
+CPUBuffer::~CPUBuffer()
+{
+    if (dec_ref() == 1) {
+        RPY_DBG_ASSERT(raw_ref_count(std::memory_order_acq_rel) == 0);
+        CPUDeviceHandle::get()->raw_free(raw_buffer.ptr, raw_buffer.size);
+        raw_buffer.ptr = nullptr;
+        raw_buffer.size = 0;
     }
-
-    if (raw_buffer.flags & IsOwned) {
-
-    }
-
 }
 
 BufferMode CPUBuffer::mode() const
 {
-    if (is_ocl) {
-        return ocl_buffer.mode();
-    }
-
-    if (raw_buffer.flags & IsConst) {
-        return BufferMode::Read;
-    }
+    if (flags & IsConst) { return BufferMode::Read; }
     return BufferMode::ReadWrite;
 }
-dimn_t CPUBuffer::size() const {
-    if (is_ocl) {
-        return ocl_buffer.size();
-    }
+dimn_t CPUBuffer::size() const
+{
     return raw_buffer.size;
 }
-void* CPUBuffer::ptr() {
-    if (is_ocl) {
-        return ocl_buffer.ptr();
-    }
+void* CPUBuffer::ptr()
+{
     return raw_buffer.ptr;
 }
-std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUBuffer::clone() const
+std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUBuffer::clone() const {
+    return std::unique_ptr<CPUBuffer>(new CPUBuffer(raw_buffer, flags));
+}
+Device CPUBuffer::device() const noexcept { return CPUDeviceHandle::get(); }
+dimn_t CPUBuffer::ref_count() const noexcept
 {
-    return nullptr;
+    return raw_ref_count();
 }
-Device CPUBuffer::device() const noexcept {
-    return CPUDeviceHandle::get();
-}
-bool CPUBuffer::owning() const noexcept {
-    return is_ocl ? false : (raw_buffer.flags & IsOwned != 0);
-}
-

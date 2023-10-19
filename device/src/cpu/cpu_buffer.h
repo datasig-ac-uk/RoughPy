@@ -35,52 +35,74 @@
 #include <roughpy/device/buffer.h>
 
 #include "cpu_decls.h"
-#include "opencl/ocl_headers.h"
 #include "opencl/ocl_buffer.h"
+#include "opencl/ocl_headers.h"
+
+#include <atomic>
 
 namespace rpy {
 namespace devices {
 
 class CPUBuffer : public BufferInterface
 {
+public:
+    using atomic_t = std::atomic_size_t*;
+private:
+
+
     enum Flags
     {
         IsConst = 1,
-        IsOwned = 2
     };
 
     struct RawBuffer {
         void* ptr = nullptr;
         dimn_t size = 0;
-        Flags flags;
+        atomic_t ref_count;
     };
 
-    union {
-        OCLBuffer ocl_buffer;
-        RawBuffer raw_buffer;
-    };
+    RawBuffer raw_buffer;
+    Flags flags;
 
-    bool is_ocl = false;
+
+    inline dimn_t inc_ref() noexcept
+    {
+        return raw_buffer.ref_count->fetch_add(1, std::memory_order_relaxed);
+    }
+
+    inline dimn_t dec_ref() noexcept
+    {
+        RPY_DBG_ASSERT(raw_ref_count(std::memory_order_acq_rel) > 0);
+        return raw_buffer.ref_count->fetch_sub(1, std::memory_order_acq_rel);
+    }
+
+    inline dimn_t raw_ref_count(std::memory_order order = std::memory_order_relaxed
+    )
+            const noexcept
+    {
+        return raw_buffer.ref_count->load(order);
+    }
+
+    CPUBuffer(RawBuffer raw, Flags arg_flags);
 
 public:
 
-    CPUBuffer(cl_mem buffer, CPUDevice dev);
-    CPUBuffer(void* raw_ptr, dimn_t size);
-    CPUBuffer(const void* raw_ptr, dimn_t size);
+
+    CPUBuffer(void* raw_ptr, dimn_t size, atomic_t rc);
+    CPUBuffer(const void* raw_ptr, dimn_t size, atomic_t rc);
 
     ~CPUBuffer();
 
+    dimn_t ref_count() const noexcept override;
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
     Device device() const noexcept override;
 
-    virtual bool owning() const noexcept;
     BufferMode mode() const override;
     dimn_t size() const override;
     void* ptr() override;
-
 };
 
-}// namespace device
+}// namespace devices
 }// namespace rpy
 
 #endif// ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_BUFFER_H_
