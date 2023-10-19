@@ -15,7 +15,15 @@ add_roughpy_component(Device
         include/roughpy/device/kernel.h
         include/roughpy/device/macros.h
         include/roughpy/device/queue.h
+        include/roughpy/device/types.h
         SOURCES
+        src/cpu/kernels/masked_binary.h
+        src/cpu/kernels/masked_binary_bfloat16.cpp
+        src/cpu/kernels/masked_binary_double.cpp
+        src/cpu/kernels/masked_binary_float.cpp
+        src/cpu/kernels/masked_binary_half.cpp
+        src/cpu/kernels/masked_binary_poly.cpp
+        src/cpu/kernels/masked_binary_rational.cpp
         src/cpu/cpu_buffer.cpp
         src/cpu/cpu_buffer.h
         src/cpu/cpu_decls.h
@@ -63,6 +71,9 @@ add_roughpy_component(Device
         DEPENDENCIES
         PRIVATE
         OpenCL::OpenCL
+        PUBLIC
+            Eigen3::Eigen
+            Libalgebra_lite::Libalgebra_lite
         NEEDS
         RoughPy::Core
         RoughPy::Platform
