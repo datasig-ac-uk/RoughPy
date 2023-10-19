@@ -28,57 +28,28 @@
 #ifndef ROUGHPY_SCALARS_TYPES_H_
 #define ROUGHPY_SCALARS_TYPES_H_
 
-#include <complex>
 
-#include <Eigen/Core>
-#include <libalgebra_lite/coefficients.h>
-#include <libalgebra_lite/packed_integer.h>
-#include <libalgebra_lite/polynomial.h>
-#include <libalgebra_lite/polynomial_basis.h>
 
 
 #include "scalar_pointer.h"
 #include "scalar_type.h"
 #include "scalar.h"
 
-#ifdef LAL_NO_USE_GMP
-#  define RPY_USING_GMP 0
-#else
-#  define RPY_USING_GMP 1
-#endif
+#include <roughpy/device/types.h>
 
 namespace rpy {
 namespace scalars {
 
-/// IEEE half-precision floating point type
-using Eigen::half;
-
-/// BFloat16 (truncated) floating point type
-using Eigen::bfloat16;
-
-/// Rational scalar type
-using rational_scalar_type = lal::rational_field::scalar_type;
-
-/// half-precision complex float
-using half_complex = std::complex<half>;
-
-/// BFloat16 complex float - probably not supported anywhere
-using bf16_complex = std::complex<bfloat16>;
-
-/// Single precision complex float
-using float_complex = std::complex<float>;
-
-/// double precision complex float
-using double_complex = std::complex<double>;
-
-/// Monomial key-type of polynomials
-using monomial = lal::monomial;
-
-/// Indeterminate type for monomials
-using indeterminate_type = typename monomial::letter_type;
-
-/// Polynomial (with rational coefficients) scalar type
-using rational_poly_scalar = lal::polynomial<lal::rational_field>;
+using devices::half;
+using devices::bfloat16;
+using devices::rational_scalar_type;
+using devices::half_complex;
+using devices::bf16_complex;
+using devices::float_complex;
+using devices::double_complex;
+using devices::monomial;
+using devices::indeterminate_type;
+using devices::rational_poly_scalar;
 
 namespace dtl {
 #define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                    \

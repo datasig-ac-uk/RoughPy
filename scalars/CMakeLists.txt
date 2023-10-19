@@ -82,8 +82,7 @@ add_roughpy_component(Scalars
         DEPENDENCIES
         PUBLIC
         Boost::boost
-        Eigen3::Eigen
-        Libalgebra_lite::Libalgebra_lite
+
         BLAS::BLAS IF NOT ROUGHPY_DISABLE_BLAS
         LAPACK::LAPACK IF NOT ROUGHPY_DISABLE_BLAS
         PRIVATE
