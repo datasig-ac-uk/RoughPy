@@ -45,6 +45,7 @@ class RPY_EXPORT InterfaceBase
 public:
     virtual ~InterfaceBase();
 
+    RPY_NO_DISCARD virtual dimn_t ref_count() const noexcept;
     RPY_NO_DISCARD virtual std::unique_ptr<InterfaceBase> clone() const;
     RPY_NO_DISCARD virtual Device device() const noexcept;
 };
@@ -65,7 +66,9 @@ class ObjectBase
     static std::unique_ptr<Interface>
     downcast(std::unique_ptr<InterfaceBase>&& base) noexcept
     {
-        return {reinterpret_cast<Interface*>(base.release())};
+        return std::unique_ptr<Interface>(
+                reinterpret_cast<Interface*>(base.release())
+        );
     }
 
 protected:
@@ -79,20 +82,48 @@ private:
 public:
     ObjectBase() = default;
 
+    ObjectBase(const ObjectBase& other);
+    ObjectBase(ObjectBase&& other) noexcept = default;
+
     template <
             typename IFace,
             typename = enable_if_t<is_base_of<Interface, IFace>::value>>
-    explicit ObjectBase(std::unique_ptr<IFace>&& base)
-        : p_impl(std::move(base))
-                  {}
+    explicit ObjectBase(std::unique_ptr<IFace>&& base) : p_impl(std::move(base))
+    {}
 
     explicit ObjectBase(std::unique_ptr<Interface>&& base)
         : p_impl(std::move(base))
     {}
 
+    ObjectBase& operator=(const ObjectBase& other);
+    ObjectBase& operator=(ObjectBase&& other) noexcept = default;
+
     RPY_NO_DISCARD Derived clone() const;
     RPY_NO_DISCARD Device device() const noexcept;
 };
+
+template <typename Interface, typename Derived>
+ObjectBase<Interface, Derived>::ObjectBase(const ObjectBase& other)
+    : p_impl(nullptr)
+{
+    if (other.p_impl) {
+        p_impl = std::move(downcast(std::move(other.p_impl->clone())));
+    }
+}
+template <typename Interface, typename Derived>
+ObjectBase<Interface, Derived>&
+ObjectBase<Interface, Derived>::operator=(const ObjectBase& other)
+{
+    if (&other != this) {
+        this->~ObjectBase();
+        if (other.p_impl) {
+            p_impl = std::move(downcast(std::move(other.p_impl->clone())));
+        } else {
+            p_impl = nullptr;
+        }
+    }
+    return *this;
+}
 
 template <typename Interface, typename Derived>
 Derived ObjectBase<Interface, Derived>::clone() const
@@ -109,7 +140,7 @@ Device devices::dtl::ObjectBase<Interface, Derived>::device() const noexcept
 }
 
 }// namespace dtl
-}// namespace device
+}// namespace devices
 }// namespace rpy
 
 #endif// ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
