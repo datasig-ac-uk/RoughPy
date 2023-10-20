@@ -92,6 +92,7 @@ add_roughpy_component(Device
 add_roughpy_test(Devices
     SRC
     src/test_cpu_device.cpp
+    src/test_gpu_device.cpp
     NEEDS
     RoughPy::Device
 )

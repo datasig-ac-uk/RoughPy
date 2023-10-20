@@ -69,6 +69,8 @@ public:
 
     virtual ~DeviceHandle();
 
+    RPY_NO_DISCARD virtual DeviceCategory category() const noexcept;
+
     RPY_NO_DISCARD virtual DeviceInfo info() const noexcept;
 
     RPY_NO_DISCARD virtual optional<fs::path> runtime_library() const noexcept;

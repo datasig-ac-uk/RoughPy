@@ -239,7 +239,7 @@ using Device = boost::intrusive_ptr<const DeviceHandle>;
 
 RPY_EXPORT Device get_cpu_device();
 RPY_EXPORT Device get_default_device();
-RPY_EXPORT Device get_device(const DeviceSpecification& spec);
+RPY_EXPORT optional<Device> get_device(const DeviceSpecification& spec);
 
 constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 {

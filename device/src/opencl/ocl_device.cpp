@@ -369,3 +369,25 @@ optional<PCIBusInfo> OCLDeviceHandle::pci_bus_info() const noexcept
              bus_info.pci_function}
     };
 }
+DeviceCategory OCLDeviceHandle::category() const noexcept
+{
+    cl_device_type dtype;
+    auto ecode = clGetDeviceInfo(m_device, CL_DEVICE_TYPE, sizeof(dtype), &dtype, nullptr);
+    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    if (ecode == CL_SUCCESS) {
+        switch (dtype) {
+            case CL_DEVICE_TYPE_CPU:
+                return DeviceCategory::CPU;
+            case CL_DEVICE_TYPE_GPU:
+                return DeviceCategory::GPU;
+            case CL_DEVICE_TYPE_ACCELERATOR:
+                return DeviceCategory::AIP;
+            case CL_DEVICE_TYPE_CUSTOM:
+                return DeviceCategory::Other;
+            default:
+                break;
+        }
+    }
+
+    return DeviceHandle::category();
+}

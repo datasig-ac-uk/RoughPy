@@ -40,6 +40,12 @@ using namespace rpy;
 using namespace rpy::devices;
 
 DeviceHandle::DeviceHandle() {}
+
+DeviceCategory DeviceHandle::category() const noexcept
+{
+    return DeviceCategory::CPU;
+}
+
 DeviceInfo DeviceHandle::info() const noexcept { return {}; }
 optional<fs::path> DeviceHandle::runtime_library() const noexcept
 {

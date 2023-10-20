@@ -61,7 +61,7 @@ void DeviceProvider::register_provider(
     s_provider_list.emplace_back(std::move(provider));
 }
 
-Device rpy::devices::get_device(const rpy::devices::DeviceSpecification& spec)
+optional<Device> rpy::devices::get_device(const DeviceSpecification& spec)
 {
     std::lock_guard<std::mutex> access(s_provider_lock);
     if (s_provider_list.empty()) {
@@ -70,9 +70,18 @@ Device rpy::devices::get_device(const rpy::devices::DeviceSpecification& spec)
     }
 
 
+    boost::container::small_vector<DeviceProvider*, 1> candidates;
+    for (auto&& provider : s_provider_list) {
+        if (provider->supports(spec.category())) {
+            candidates.push_back(provider.get());
+        }
+    }
 
+    if (!candidates.empty()) {
+        return candidates[0]->get(spec);
+    }
 
-    return CPUDeviceHandle::get();
+    return {};
 }
 
 Device rpy::devices::get_cpu_device() { return CPUDeviceHandle::get(); }

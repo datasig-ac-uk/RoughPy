@@ -74,7 +74,7 @@ public:
 
     ~OCLDeviceHandle() override;
 
-
+    DeviceCategory category() const noexcept override;
     DeviceInfo info() const noexcept override;
     optional<fs::path> runtime_library() const noexcept override;
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
