@@ -30,6 +30,8 @@
 
 #include "blas.h"
 
+
+#ifndef ROUGHPY_DISABLE_BLAS
 #define RPY_BLA_SPRX z
 #define RPY_BLA_RPRX d
 
@@ -143,4 +145,5 @@ void blas_funcs<double_complex, double>::gemm(
 }// namespace scalars
 }// namespace rpy
 
+#endif // ROUGHPY_DISABLE_BLAS
 #endif// ROUGHPY_SCALARS_SRC_LINEAR_ALGEBRA_BLAS_COMPLEX_DOUBLE_CPP_

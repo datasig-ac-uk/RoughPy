@@ -32,9 +32,11 @@
 #include "scalar_implementations/float/float_blas.h"
 #include <gtest/gtest.h>
 #include <roughpy/scalars/scalar_type.h>
+#inlucde <roughpy/scalars/types.h>
 
 #include <vector>
 
+#ifndef ROUGHPY_DISABLE_BLAS
 using namespace rpy;
 using namespace rpy::scalars;
 
@@ -80,3 +82,8 @@ TEST_F(FloatBlasTests, TestRowMajorByRowMajorFull)
     EXPECT_EQ(ptr[2], -8.0F);
     EXPECT_EQ(ptr[3], 13.0F);
 }
+
+
+
+
+#endif

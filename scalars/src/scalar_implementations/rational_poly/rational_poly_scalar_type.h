@@ -34,6 +34,8 @@
 
 #include <roughpy/platform/device.h>
 
+#include <roughpy/scalars/types.h>
+
 #include "conversion.h"
 #include "scalar_type.h"
 #include "scalar_type_helper.h"

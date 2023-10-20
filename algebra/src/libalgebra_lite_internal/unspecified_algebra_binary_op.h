@@ -1,3 +1,30 @@
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+// this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
+// and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors
+// may be used to endorse or promote products derived from this software without
+// specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 //
 // Created by user on 18/07/23.
 //
@@ -34,9 +61,9 @@ class UnspecifiedFunctionInvoker<CasterType, Context, Current, Remaining...>
     {
         using caster = CasterType<AType, VType>;
         return base::eval(
-                ctx, forward<Operation>(op), remaining...,
-                forward<Previous>(previous)...,
-                caster::cast(forward<Current>(this_arg))
+                ctx, std::forward<Operation>(op), remaining...,
+                std::forward<Previous>(previous)...,
+                caster::cast(std::forward<Current>(this_arg))
         );
     }
 
@@ -51,8 +78,8 @@ class UnspecifiedFunctionInvoker<CasterType, Context, Current, Remaining...>
     {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
     cast_and_continue<AType, VTYPE>(                                           \
-            ctx, forward<Operation>(op), this_arg, remaining...,               \
-            forward<Previous>(previous)...                                     \
+            ctx, std::forward<Operation>(op), this_arg, remaining...,               \
+            std::forward<Previous>(previous)...                                     \
     )
         RPY_MAKE_VTYPE_SWITCH(this_arg->storage_type())
 #undef RPY_SWITCH_FN
@@ -78,8 +105,8 @@ class UnspecifiedFunctionInvoker<CasterType, Context, Current, Remaining...>
     {
 #define RPY_SWITCH_FN(ATYPE)                                                   \
     cast_vtype<ATYPE>(                                                         \
-            ctx, forward<Operation>(op), this_arg, remaining...,               \
-            forward<Previous>(previous)...                                     \
+            ctx, std::forward<Operation>(op), this_arg, remaining...,               \
+            std::forward<Previous>(previous)...                                     \
     )
         RPY_MAKE_ALGTYPE_SWITCH(this_arg->alg_type())
 #undef RPY_SWITCH_FN
@@ -92,8 +119,8 @@ public:
          Remaining... remaining, Previous&&... previous)
     {
         return cast_atype(
-                ctx, forward<Operation>(op), this_arg, remaining...,
-                forward<Previous>(previous)...
+                ctx, std::forward<Operation>(op), this_arg, remaining...,
+                std::forward<Previous>(previous)...
         );
     }
 
@@ -104,9 +131,9 @@ public:
     //    {
     //        return cast_atype(
     //                ctx,
-    //                forward<Operation>(op),
-    //                forward<Current>(this_arg),
-    //                forward<Remaining>(remaining)...
+    //                std::forward<Operation>(op),
+    //                std::forward<Current>(this_arg),
+    //                std::forward<Remaining>(remaining)...
     //        );
     //    }
 };
@@ -121,11 +148,11 @@ class UnspecifiedFunctionInvoker<CasterType, Context, Last>
     static UnspecifiedAlgebraType
     eval_func(const Context* ctx, Operation&& op, Args&&... args)
     {
-        using out_type = decltype(op(forward<Args>(args)...));
+        using out_type = decltype(op(std::forward<Args>(args)...));
         using impl_t =
                 typename dtl::alg_details_of<out_type>::implementation_type;
         return UnspecifiedAlgebraType(
-                new impl_t(ctx, op(forward<Args>(args)...))
+                new impl_t(ctx, op(std::forward<Args>(args)...))
         );
     }
 
@@ -139,7 +166,7 @@ class UnspecifiedFunctionInvoker<CasterType, Context, Last>
     {
         using caster = CasterType<AType, VType>;
         return eval_func(
-                ctx, forward<Operation>(op), forward<Previous>(previous)...,
+                ctx, std::forward<Operation>(op), std::forward<Previous>(previous)...,
                 caster::cast(this_arg)
         );
     }
@@ -155,8 +182,8 @@ class UnspecifiedFunctionInvoker<CasterType, Context, Last>
     {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
     cast_and_continue<AType, VTYPE>(                                           \
-            ctx, forward<Operation>(op), this_arg,                             \
-            forward<Previous>(previous)...                                     \
+            ctx, std::forward<Operation>(op), this_arg,                             \
+            std::forward<Previous>(previous)...                                     \
     )
         RPY_MAKE_VTYPE_SWITCH(this_arg->storage_type())
 #undef RPY_SWITCH_FN
@@ -183,8 +210,8 @@ class UnspecifiedFunctionInvoker<CasterType, Context, Last>
     {
 #define RPY_SWITCH_FN(ATYPE)                                                   \
     cast_vtype<ATYPE>(                                                         \
-            ctx, forward<Operation>(op), this_arg,                             \
-            forward<Previous>(previous)...                                     \
+            ctx, std::forward<Operation>(op), this_arg,                             \
+            std::forward<Previous>(previous)...                                     \
     )
         RPY_MAKE_ALGTYPE_SWITCH(this_arg->alg_type())
 #undef RPY_SWITCH_FN
@@ -197,8 +224,8 @@ public:
          Previous&&... previous)
     {
         return cast_atype(
-                ctx, forward<Operation>(op), this_arg,
-                forward<Previous>(previous)...
+                ctx, std::forward<Operation>(op), this_arg,
+                std::forward<Previous>(previous)...
         );
     }
 };

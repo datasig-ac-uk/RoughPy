@@ -31,7 +31,7 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/streams/schema.h>
-
+#include <cereal/types/vector.hpp>
 #include <algorithm>
 
 using namespace rpy;

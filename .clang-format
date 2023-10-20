@@ -84,3 +84,8 @@ WhitespaceSensitiveMacros: [
   "RPY_GCC_DISABLE_WARNING",
   "RPY_CLANG_DISABLE_WARNING"
 ]
+FixNamespaceComments: true
+IndentExternBlock: NoIndent
+PackConstructorInitializers: CurrentLine
+BinPackArguments: false
+BinPackParameters: false

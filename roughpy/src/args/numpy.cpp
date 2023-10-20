@@ -27,6 +27,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "numpy.h"
+#include <roughpy/scalars/types.h>
 
 using namespace rpy;
 

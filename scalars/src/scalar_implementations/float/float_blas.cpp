@@ -30,7 +30,7 @@
 //
 
 #include "float_blas.h"
-
+#ifndef ROUGHPY_DISABLE_BLAS
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -604,3 +604,5 @@ template class StandardLinearAlgebra<float, float>;
 //
 //    check_and_report_errors(info);
 //}
+
+#endif

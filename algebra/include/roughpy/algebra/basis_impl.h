@@ -97,6 +97,7 @@ public:
     deg_t degree(const key_type& key) const noexcept override;
     deg_t size(deg_t degree) const noexcept override;
     let_t first_letter(const key_type& key) const noexcept override;
+    let_t to_letter(const key_type& key) const noexcept override;
     dimn_t start_of_degree(deg_t degree) const noexcept override;
     pair<optional<key_type>, optional<key_type>> parents(const key_type& key
     ) const override;
@@ -161,6 +162,11 @@ let_t WordLikeBasisImplementationMixin<T, Derived, Base>::first_letter(
 ) const noexcept
 {
     return basis_traits::first_letter(m_impl, key);
+}
+template <typename T, typename Derived, typename Base>
+let_t WordLikeBasisImplementationMixin<T, Derived, Base>::to_letter(const key_type& key) const noexcept
+{
+    return basis_traits::to_letter(m_impl, key);
 }
 template <typename T, typename Derived, typename Base>
 dimn_t

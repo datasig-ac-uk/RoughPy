@@ -33,6 +33,7 @@
 #include "args/numpy.h"
 #include "args/strided_copy.h"
 #include "args/dlpack_helpers.h"
+#include <roughpy/scalars/types.h>
 
 using namespace rpy;
 using namespace rpy::python;

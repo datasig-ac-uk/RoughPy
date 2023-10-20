@@ -51,3 +51,8 @@ const Configuration& rpy::get_config()
     static const Configuration config;
     return config;
 }
+
+fs::path rpy::Configuration::stream_cache_dir() const {
+    auto path = fs::current_path() / ".stream_cache";
+    return path;
+}

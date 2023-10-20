@@ -45,6 +45,7 @@
 #include <roughpy/scalars/random.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/scalar_type_helper.h>
+#include <roughpy/scalars/types.h>
 
 #include "standard_random_generator.h"
 

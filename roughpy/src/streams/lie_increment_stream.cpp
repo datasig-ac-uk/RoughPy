@@ -51,7 +51,8 @@ of fixed size at specified time intervals.
 )rpydoc";
 
 void buffer_to_indices(
-        std::vector<param_t>& indices, const py::buffer_info& info
+        std::vector<param_t>& indices,
+        const py::buffer_info& info
 )
 {
     auto count = info.size;
@@ -66,13 +67,15 @@ void buffer_to_indices(
                 = scalars::get_conversion(py_buffer_to_type_id(info), "f64");
         conversion(
                 scalars::ScalarPointer{nullptr, dst},
-                scalars::ScalarPointer{nullptr, ptr}, count
+                scalars::ScalarPointer{nullptr, ptr},
+                count
         );
     }
 }
 
 static py::object lie_increment_stream_from_increments(
-        const py::object& data, const py::kwargs& kwargs
+        const py::object& data,
+        const py::kwargs& kwargs
 )
 {
     auto md = kwargs_to_metadata(kwargs);
@@ -112,7 +115,6 @@ static py::object lie_increment_stream_from_increments(
     }
 
     dimn_t num_increments = ks_stream.data_stream.row_count();
-
 
     auto effective_support
             = intervals::RealInterval::right_unbounded(0.0, md.interval_type);
@@ -172,13 +174,6 @@ static py::object lie_increment_stream_from_increments(
                     "argument"
             );
         }
-
-        if (!indices.empty()) {
-            auto minmax = std::minmax_element(indices.begin(), indices.end());
-            effective_support = intervals::RealInterval(
-                    *minmax.first, *minmax.second + 1.0, md.interval_type
-            );
-        }
     }
 
     if (indices.empty()) {
@@ -192,13 +187,26 @@ static py::object lie_increment_stream_from_increments(
         );
     }
 
+    if (!indices.empty()) {
+        auto minmax = std::minmax_element(indices.begin(), indices.end());
+        effective_support = intervals::RealInterval(
+                *minmax.first,
+                *minmax.second + ldexp(1.0, -md.resolution),
+                md.interval_type
+        );
+    }
+
     if (!md.schema) {
         md.schema = std::make_shared<streams::StreamSchema>(md.width);
     }
 
     auto result = streams::Stream(streams::LieIncrementStream(
-            ks_stream.data_stream, indices,
-            {md.width, effective_support, md.ctx, md.scalar_type,
+            ks_stream.data_stream,
+            indices,
+            {md.width,
+             effective_support,
+             md.ctx,
+             md.scalar_type,
              md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
              md.resolution},
             md.schema
@@ -220,11 +228,15 @@ void python::init_lie_increment_stream(py::module_& m)
 {
 
     py::class_<streams::LieIncrementStream> klass(
-            m, "LieIncrementStream", LIE_INCR_STREAM_DOC
+            m,
+            "LieIncrementStream",
+            LIE_INCR_STREAM_DOC
     );
 
     klass.def_static(
-            "from_increments", &lie_increment_stream_from_increments, "data"_a
+            "from_increments",
+            &lie_increment_stream_from_increments,
+            "data"_a
     );
     //    klass.def_static("from_values", &lie_increment_path_from_values,
     //    "data"_a);
