@@ -37,7 +37,7 @@ using namespace rpy::devices;
 
 bool CPUDeviceProvider::supports(DeviceCategory category) const noexcept
 {
-    return true;
+    return category == DeviceCategory::CPU;
 }
 int CPUDeviceProvider::priority(const DeviceSpecification& spec) const noexcept
 {

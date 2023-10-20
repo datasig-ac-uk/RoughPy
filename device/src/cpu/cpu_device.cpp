@@ -157,11 +157,15 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
 }
 CPUDeviceHandle::~CPUDeviceHandle() = default;
 
+
+
 CPUDevice CPUDeviceHandle::get()
 {
     static boost::intrusive_ptr<CPUDeviceHandle> device(new CPUDeviceHandle);
     return device;
 }
+
+
 
 DeviceInfo CPUDeviceHandle::info() const noexcept
 {
@@ -254,3 +258,7 @@ bool CPUDeviceHandle::supports_type(const TypeInfo& info) const noexcept
     return true;
 }
 OCLDevice CPUDeviceHandle::ocl_device() const noexcept { return p_ocl_handle; }
+DeviceCategory CPUDeviceHandle::category() const noexcept
+{
+    return DeviceCategory::CPU;
+}
