@@ -338,3 +338,5 @@ cython_debug/
 
 roughpy/version.py
 /my_todo.txt
+tools/
+.venv*/
