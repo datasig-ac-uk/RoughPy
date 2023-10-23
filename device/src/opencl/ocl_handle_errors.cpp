@@ -30,11 +30,14 @@
 //
 
 #include "ocl_handle_errors.h"
+#include <sstream>
 
 void rpy::devices::cl::handle_cl_error(
         cl_int err, const char* filename, int lineno, const char* func
 )
 {
+    std::stringstream msg;
+
     switch (err) {
         case CL_DEVICE_NOT_FOUND:
         case CL_DEVICE_NOT_AVAILABLE:
@@ -111,8 +114,9 @@ void rpy::devices::cl::handle_cl_error(
         case CL_MAX_SIZE_RESTRICTION_EXCEEDED:
 #endif
         default:
+            msg << "Error code " << err << " occurred";
             errors::throw_exception<std::runtime_error>(
-                    "An unknown error occurred",
+                    msg.str(),
                     filename,
                     lineno,
                     func

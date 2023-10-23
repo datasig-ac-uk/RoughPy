@@ -157,3 +157,6 @@ dimn_t OCLBuffer::ref_count() const noexcept
     }
     return 0;
 }
+DeviceType OCLBuffer::type() const noexcept {
+    return DeviceType::OpenCL;
+}

@@ -61,6 +61,8 @@ Buffer DeviceHandle::raw_alloc(rpy::dimn_t count, rpy::dimn_t alignment) const
 
 void DeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 
+bool DeviceHandle::has_compiler() const noexcept { return false; }
+
 const Kernel& DeviceHandle::register_kernel(Kernel kernel) const {
     RPY_CHECK(kernel.device() == this);
     const guard_type access(get_lock());
@@ -85,11 +87,14 @@ optional<Kernel> DeviceHandle::get_kernel(const string& name) const noexcept
     return {};
 }
 
-optional<Kernel> DeviceHandle::compile_kernel_from_str(string_view code) const
+optional<Kernel>
+DeviceHandle::compile_kernel_from_str(const ExtensionSourceAndOptions& args
+) const
 {
     return {};
 }
-void DeviceHandle::compile_kernels_from_src(string_view RPY_UNUSED_VAR code
+void DeviceHandle::compile_kernels_from_src(
+        const ExtensionSourceAndOptions& args
 ) const
 {}
 Event DeviceHandle::new_event() const { return {}; }
@@ -108,3 +113,4 @@ bool DeviceHandle::supports_type(const TypeInfo& info) const noexcept
 {
     return false;
 }
+DeviceType DeviceHandle::type() const noexcept { return DeviceType::CPU; }

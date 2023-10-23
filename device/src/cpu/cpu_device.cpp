@@ -226,18 +226,21 @@ optional<Kernel> CPUDeviceHandle::get_kernel(const string& name) const noexcept
 
     return {};
 }
-optional<Kernel> CPUDeviceHandle::compile_kernel_from_str(string_view code
+optional<Kernel>
+CPUDeviceHandle::compile_kernel_from_str(const ExtensionSourceAndOptions& args
 ) const
 {
     if (p_ocl_handle) {
-        return p_ocl_handle->compile_kernel_from_str(code);
+        return p_ocl_handle->compile_kernel_from_str(args);
     }
     return {};
 }
-void CPUDeviceHandle::compile_kernels_from_src(string_view code) const
+void CPUDeviceHandle::compile_kernels_from_src(
+        const ExtensionSourceAndOptions& args
+) const
 {
     if (p_ocl_handle) {
-        p_ocl_handle->compile_kernels_from_src(code);
+        p_ocl_handle->compile_kernels_from_src(args);
     }
 }
 Event CPUDeviceHandle::new_event() const {
@@ -261,4 +264,9 @@ OCLDevice CPUDeviceHandle::ocl_device() const noexcept { return p_ocl_handle; }
 DeviceCategory CPUDeviceHandle::category() const noexcept
 {
     return DeviceCategory::CPU;
+}
+bool CPUDeviceHandle::has_compiler() const noexcept
+{
+    if (p_ocl_handle) { return p_ocl_handle->has_compiler(); }
+    return false;
 }

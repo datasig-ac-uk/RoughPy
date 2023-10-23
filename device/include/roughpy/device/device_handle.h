@@ -45,6 +45,15 @@
 namespace rpy {
 namespace devices {
 
+struct ExtensionSourceAndOptions {
+    std::vector<string> sources;
+    string compile_options;
+    std::vector<pair<string, string>> header_name_and_source;
+    string link_options;
+};
+
+
+
 /**
  * @brief Interface for interacting with compute devices.
  *
@@ -69,6 +78,7 @@ public:
 
     virtual ~DeviceHandle();
 
+    RPY_NO_DISCARD virtual DeviceType type() const noexcept;
     RPY_NO_DISCARD virtual DeviceCategory category() const noexcept;
 
     RPY_NO_DISCARD virtual DeviceInfo info() const noexcept;
@@ -85,14 +95,18 @@ public:
 
     virtual void raw_free(void* pointer, dimn_t size) const;
 
+    virtual bool has_compiler() const noexcept;
+
     virtual const Kernel& register_kernel(Kernel kernel) const;
 
     RPY_NO_DISCARD
     virtual optional<Kernel> get_kernel(const string& name) const noexcept;
     RPY_NO_DISCARD
-    virtual optional<Kernel> compile_kernel_from_str(string_view code) const;
+    virtual optional<Kernel>
+    compile_kernel_from_str(const ExtensionSourceAndOptions& args) const;
 
-    virtual void compile_kernels_from_src(string_view code) const;
+    virtual void compile_kernels_from_src(const ExtensionSourceAndOptions& args
+    ) const;
 
     RPY_NO_DISCARD
     virtual Event new_event() const;

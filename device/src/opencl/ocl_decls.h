@@ -48,9 +48,7 @@ class OCLQueue;
 
 using OCLDevice = boost::intrusive_ptr<const OCLDeviceHandle>;
 
-
-}
-}
-
+}// namespace devices
+}// namespace rpy
 
 #endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_DECLS_H_

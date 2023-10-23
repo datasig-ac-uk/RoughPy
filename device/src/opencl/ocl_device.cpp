@@ -54,10 +54,6 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-
-
-
-
 Buffer OCLDeviceHandle::make_buffer(cl_mem buffer, bool move) const
 {
     if (RPY_LIKELY(!move)) {
@@ -165,13 +161,10 @@ OCLDeviceHandle::OCLDeviceHandle(cl_device_id id) : m_device(id)
 
         if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-
         for (auto&& kernel : kernels) {
             DeviceHandle::register_kernel(make_kernel(kernel, true));
         }
     }
-
-
 }
 
 OCLDeviceHandle::~OCLDeviceHandle()
@@ -210,16 +203,12 @@ Buffer OCLDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
     if (RPY_UNLIKELY(new_mem == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
     return make_buffer(new_mem);
 }
-void OCLDeviceHandle::raw_free(void* pointer, dimn_t size) const
-{
-}
+void OCLDeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 optional<Kernel> OCLDeviceHandle::get_kernel(const string& name) const noexcept
 {
     const guard_type access(get_lock());
     auto found = DeviceHandle::get_kernel(name);
-    if (found) {
-        return found;
-    }
+    if (found) { return found; }
 
     const auto& config = get_config();
 
@@ -234,7 +223,7 @@ optional<Kernel> OCLDeviceHandle::get_kernel(const string& name) const noexcept
                 try {
                     string source;
                     ifs >> source;
-                    return compile_kernel_from_str(source);
+                    return {};
                 } catch (...) {
                     return {};
                 }
@@ -244,41 +233,195 @@ optional<Kernel> OCLDeviceHandle::get_kernel(const string& name) const noexcept
 
     return {};
 }
-optional<Kernel> OCLDeviceHandle::compile_kernel_from_str(string_view code
+
+bool OCLDeviceHandle::cl_supports_version(cl_version version) const
+{
+    cl_platform_id plat = nullptr;
+    auto ecode = clGetDeviceInfo(
+            m_device,
+            CL_DEVICE_PLATFORM,
+            sizeof(plat),
+            &plat,
+            nullptr
+    );
+    if (ecode != CL_SUCCESS) { return false; }
+
+    RPY_DBG_ASSERT(plat != nullptr);
+
+    auto str_vers
+            = cl::string_info(clGetPlatformInfo, plat, CL_PLATFORM_VERSION);
+
+    /*
+     * str_vers should be of the form:
+     *
+     *  OpenCL<space><major_version.minor_version><space><other-stuff>
+     *
+     *  so the offset to the beginning of the version string is 7. The current
+     *  options are 1.0, 1.1, 1.2, 2.0, 2.1, 2.2, or 3.0, so the version string
+     *  is of length 3.
+     */
+    constexpr size_t offset = sizeof("OpenCL"); // Length + 1 for null byte
+
+    string_view actual_version(str_vers.data() + offset, 3);
+
+    cl_version num_version = 0;
+    if (actual_version == "3.0") {
+        num_version = 300;
+    } else if (actual_version == "2.2") {
+        num_version = 220;
+    } else if (actual_version == "2.1") {
+        num_version = 210;
+    } else if (actual_version == "2.0") {
+        num_version = 200;
+    } else if (actual_version == "1.2") {
+        num_version = 120;
+    } else if (actual_version == "1.1") {
+        num_version = 110;
+    } else if (actual_version == "1.0") {
+        num_version = 100;
+    } else {
+        RPY_THROW(std::runtime_error, "Invalid version string");
+    };
+
+    return num_version >= version;
+}
+
+cl_program OCLDeviceHandle::get_header_program(
+        const string& name,
+        const string& source
 ) const
 {
-    const guard_type access(get_lock());
+    guard_type access(get_lock());
 
+    auto program = m_header_cache[name];
 
-    auto len = code.size();
-    cl_int ecode;
-    const char* data = code.data();
-    auto program = clCreateProgramWithSource(m_ctx, 1, &data, &len, &ecode);
+    if (program == nullptr) {
+        cl_int ecode = CL_SUCCESS;
+        const char* c_source = source.c_str();
+        size_t source_size = source.size();
+        program = clCreateProgramWithSource(
+                m_ctx,
+                1,
+                &c_source,
+                &source_size,
+                &ecode
+        );
 
-    if (RPY_UNLIKELY(program == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
+        if (program == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+    }
 
-    m_programs.push_back(program);
+    return program;
+}
+
+cl_program
+OCLDeviceHandle::compile_program(const ExtensionSourceAndOptions& args) const
+{
+    if (args.sources.empty()) {
+        RPY_THROW(std::runtime_error, "Sources cannot be empty");
+    }
+    guard_type access(get_lock());
+
+    std::vector<const char*> source_ptrs;
+    std::vector<size_t> source_sizes;
+    source_ptrs.reserve(args.sources.size());
+    source_sizes.reserve(args.sources.size());
+    for (auto&& src : args.sources) {
+        source_ptrs.push_back(src.c_str());
+        source_sizes.push_back(src.size());
+    }
+
+    cl_int ecode = CL_SUCCESS;
+    auto program = clCreateProgramWithSource(
+            m_ctx,
+            source_ptrs.size(),
+            source_ptrs.data(),
+            source_sizes.data(),
+            &ecode
+    );
+
+    if (program == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    std::vector<cl_program> header_programs;
+    header_programs.reserve(args.header_name_and_source.size());
+
+    source_ptrs.clear();
+    source_ptrs.reserve(args.header_name_and_source.size());
+    for (auto&& header : args.header_name_and_source) {
+        header_programs.push_back(
+                get_header_program(header.first, header.second)
+        );
+        source_ptrs.push_back(header.first.c_str());
+    }
+
+    if (cl_supports_version(120)) {
+        ecode = clCompileProgram(
+                program,
+                1,
+                &m_device,
+                args.compile_options.c_str(),
+                header_programs.size(),
+                header_programs.data(),
+                source_ptrs.data(),
+                nullptr,
+                nullptr
+        );
+
+        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+        auto final_program = clLinkProgram(
+                m_ctx,
+                1,
+                &m_device,
+                args.link_options.c_str(),
+                1,
+                &program,
+                nullptr,
+                nullptr,
+                &ecode
+        );
+
+        if (final_program == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+        m_programs.push_back(final_program);
+        program = final_program;
+
+    } else {
+
+        ecode = clBuildProgram(
+                program,
+                1,
+                &m_device,
+                args.compile_options.c_str(),
+                nullptr,
+                nullptr
+        );
+        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+        m_programs.push_back(program);
+    }
+
+    return program;
+}
+
+optional<Kernel>
+OCLDeviceHandle::compile_kernel_from_str(const ExtensionSourceAndOptions& args
+) const
+{
+    auto program = compile_program(args);
 
     cl_kernel kernel;
-    ecode = clCreateKernelsInProgram(program, 1, &kernel, nullptr);
+    auto ecode = clCreateKernelsInProgram(program, 1, &kernel, nullptr);
     if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
     return DeviceHandle::register_kernel(make_kernel(kernel, true));
 }
-void OCLDeviceHandle::compile_kernels_from_src(string_view code) const
+void OCLDeviceHandle::compile_kernels_from_src(
+        const ExtensionSourceAndOptions& args
+) const
 {
-    const guard_type access(get_lock());
-    auto len = code.size();
-    cl_int ecode;
-    const char* data = code.data();
-
-    auto program = clCreateProgramWithSource(m_ctx, 1, &data, &len, &ecode);
-
-    if (RPY_UNLIKELY(program == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    m_programs.push_back(program);
+    auto program = compile_program(args);
 
     cl_uint num_kernels;
-    ecode = clGetProgramInfo(
+    auto ecode = clGetProgramInfo(
             program,
             CL_PROGRAM_NUM_KERNELS,
             sizeof(cl_uint),
@@ -372,22 +515,41 @@ optional<PCIBusInfo> OCLDeviceHandle::pci_bus_info() const noexcept
 DeviceCategory OCLDeviceHandle::category() const noexcept
 {
     cl_device_type dtype;
-    auto ecode = clGetDeviceInfo(m_device, CL_DEVICE_TYPE, sizeof(dtype), &dtype, nullptr);
+    auto ecode = clGetDeviceInfo(
+            m_device,
+            CL_DEVICE_TYPE,
+            sizeof(dtype),
+            &dtype,
+            nullptr
+    );
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     if (ecode == CL_SUCCESS) {
         switch (dtype) {
-            case CL_DEVICE_TYPE_CPU:
-                return DeviceCategory::CPU;
-            case CL_DEVICE_TYPE_GPU:
-                return DeviceCategory::GPU;
-            case CL_DEVICE_TYPE_ACCELERATOR:
-                return DeviceCategory::AIP;
-            case CL_DEVICE_TYPE_CUSTOM:
-                return DeviceCategory::Other;
-            default:
-                break;
+            case CL_DEVICE_TYPE_CPU: return DeviceCategory::CPU;
+            case CL_DEVICE_TYPE_GPU: return DeviceCategory::GPU;
+            case CL_DEVICE_TYPE_ACCELERATOR: return DeviceCategory::AIP;
+            case CL_DEVICE_TYPE_CUSTOM: return DeviceCategory::Other;
+            default: break;
         }
     }
 
     return DeviceHandle::category();
+}
+bool OCLDeviceHandle::has_compiler() const noexcept
+{
+    cl_bool compiler_available = 0;
+    auto ecode = clGetDeviceInfo(
+            m_device,
+            CL_DEVICE_COMPILER_AVAILABLE,
+            sizeof(compiler_available),
+            &compiler_available,
+            nullptr
+    );
+    RPY_CHECK(ecode == CL_SUCCESS);
+
+    return compiler_available != 0;
+}
+DeviceType OCLDeviceHandle::type() const noexcept
+{
+    return DeviceType::OpenCL;
 }

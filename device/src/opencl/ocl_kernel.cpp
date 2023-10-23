@@ -41,10 +41,9 @@ using namespace rpy;
 using namespace rpy::devices;
 
 OCLKernel::OCLKernel(cl_kernel kernel, OCLDevice dev) noexcept
-    : m_kernel(kernel), m_device(std::move(dev))
+    : m_kernel(kernel),
+      m_device(std::move(dev))
 {}
-
-
 
 cl_program OCLKernel::program() const
 {
@@ -119,9 +118,7 @@ Event OCLKernel::launch_kernel_async(
 
     for (dimn_t i = 0; i < n_args; ++i) {
         ecode = clSetKernelArg(m_kernel, i, arg_sizes[i], args[i]);
-        if (ecode != CL_SUCCESS) {
-            RPY_HANDLE_OCL_ERROR(ecode);
-        }
+        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
     }
 
     cl_uint work_dim = 1;
@@ -145,17 +142,17 @@ Event OCLKernel::launch_kernel_async(
 
     cl_command_queue command_queue = m_device->default_queue();
     // TODO: Use queue.is_default() to test whether to fill in the default
-//    if (queue.interface() != nullptr && queue.content() != nullptr) {
-//        RPY_CHECK(queue.interface() == m_device->queue_interface());
-//        command_queue = static_cast<cl_command_queue>(queue.content());
-//    } else {
-//        command_queue = m_device->default_queue();
-//    }
+    //    if (queue.interface() != nullptr && queue.content() != nullptr) {
+    //        RPY_CHECK(queue.interface() == m_device->queue_interface());
+    //        command_queue = static_cast<cl_command_queue>(queue.content());
+    //    } else {
+    //        command_queue = m_device->default_queue();
+    //    }
 
     cl_event event;
     ecode = clEnqueueNDRangeKernel(
             command_queue, /* kernel */
-            m_kernel,        /* kernel */
+            m_kernel,      /* kernel */
             work_dim,      /* work_dim */
             nullptr,       /* global_work_offset */
             gw_size,       /* global_work_size */
@@ -172,10 +169,25 @@ Event OCLKernel::launch_kernel_async(
 std::unique_ptr<devices::dtl::InterfaceBase> OCLKernel::clone() const
 {
     RPY_DBG_ASSERT(m_kernel);
-    cl_int ecode= CL_SUCCESS;
+    cl_int ecode = CL_SUCCESS;
     cl_kernel new_ker = clCloneKernel(m_kernel, &ecode);
 
     if (new_ker == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
 
     return std::make_unique<OCLKernel>(new_ker, m_device);
 }
+dimn_t OCLKernel::ref_count() const noexcept
+{
+    cl_uint rc = 0;
+    auto ecode = clGetKernelInfo(
+            m_kernel,
+            CL_KERNEL_REFERENCE_COUNT,
+            sizeof(rc),
+            &rc,
+            nullptr
+    );
+    if (ecode != CL_SUCCESS) { return 0; }
+    return static_cast<dimn_t>(rc);
+}
+Device OCLKernel::device() const noexcept { return m_device; }
+DeviceType OCLKernel::type() const noexcept { return DeviceType::OpenCL; }

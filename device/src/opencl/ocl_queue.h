@@ -50,6 +50,8 @@ public:
     OCLQueue(cl_command_queue queue, OCLDevice dev) noexcept;
     Device device() const noexcept override;
 
+    DeviceType type() const noexcept override;
+    dimn_t ref_count() const noexcept override;
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
     dimn_t size() const override;
 };

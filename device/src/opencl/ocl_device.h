@@ -32,16 +32,14 @@
 #ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_H_
 #define ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_H_
 
-
-#include "ocl_decls.h"
-#include "ocl_headers.h"
 #include "ocl_buffer.h"
+#include "ocl_decls.h"
 #include "ocl_event.h"
+#include "ocl_headers.h"
 #include "ocl_kernel.h"
 #include "ocl_queue.h"
 
 #include <roughpy/device/device_handle.h>
-
 
 #include <mutex>
 #include <unordered_map>
@@ -49,7 +47,6 @@
 
 namespace rpy {
 namespace devices {
-
 
 class OCLDeviceHandle : public DeviceHandle
 {
@@ -61,11 +58,12 @@ class OCLDeviceHandle : public DeviceHandle
     cl_command_queue m_default_queue;
 
     mutable std::vector<cl_program> m_programs;
+    mutable std::unordered_map<string, cl_program> m_header_cache;
 
-    Buffer make_buffer(cl_mem buffer, bool move=false) const;
-    Event make_event(cl_event event, bool move=true) const;
-    Kernel make_kernel(cl_kernel kernel, bool move=false) const;
-    Queue make_queue(cl_command_queue queue, bool move=true) const;
+    Buffer make_buffer(cl_mem buffer, bool move = false) const;
+    Event make_event(cl_event event, bool move = true) const;
+    Kernel make_kernel(cl_kernel kernel, bool move = false) const;
+    Queue make_queue(cl_command_queue queue, bool move = true) const;
 
     using typename DeviceHandle::guard_type;
 
@@ -74,20 +72,32 @@ public:
 
     ~OCLDeviceHandle() override;
 
+    DeviceType type() const noexcept override;
     DeviceCategory category() const noexcept override;
     DeviceInfo info() const noexcept override;
     optional<fs::path> runtime_library() const noexcept override;
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
     void raw_free(void* pointer, dimn_t size) const override;
 
-    optional<Kernel> compile_kernel_from_str(string_view code
+    bool has_compiler() const noexcept override;
+
+private:
+
+    bool cl_supports_version(cl_version version) const;
+
+    cl_program
+    get_header_program(const string& name, const string& source) const;
+    cl_program compile_program(const ExtensionSourceAndOptions& args) const;
+
+public:
+    optional<Kernel>
+    compile_kernel_from_str(const ExtensionSourceAndOptions& args
     ) const override;
     optional<Kernel> get_kernel(const string& name) const noexcept override;
-    void compile_kernels_from_src(string_view code) const override;
+    void compile_kernels_from_src(const ExtensionSourceAndOptions& args
+    ) const override;
 
-    cl_command_queue default_queue() const noexcept {
-        return m_default_queue;
-    }
+    cl_command_queue default_queue() const noexcept { return m_default_queue; }
 
     cl_context context() const noexcept { return m_ctx; }
 
@@ -99,9 +109,7 @@ public:
     optional<PCIBusInfo> pci_bus_info() const noexcept override;
 };
 
-
-
-}// namespace device
+}// namespace devices
 }// namespace rpy
 
 #endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_H_

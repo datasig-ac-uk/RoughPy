@@ -52,7 +52,9 @@ public:
     OCLKernel(cl_kernel kernel, OCLDevice dev) noexcept;
 
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
-
+    DeviceType type() const noexcept override;
+    dimn_t ref_count() const noexcept override;
+    Device device() const noexcept override;
     string name() const override;
     dimn_t num_args() const override;
     Event launch_kernel_async(

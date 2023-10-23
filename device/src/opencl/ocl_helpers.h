@@ -56,6 +56,9 @@ string_info(Fn&& fn, CLObj* cl_object, Info info_id)
     ecode = fn(cl_object, info_id, result.size(), result.data(), nullptr);
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 
+    if (result.back() == '\0') {
+        result.resize(ret_size - 1);
+    }
     return result;
 }
 

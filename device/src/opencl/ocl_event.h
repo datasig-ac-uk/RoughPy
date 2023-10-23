@@ -49,6 +49,8 @@ public:
 
     OCLEvent(cl_event event, OCLDevice dev) noexcept;
 
+    DeviceType type() const noexcept override;
+    dimn_t ref_count() const noexcept override;
     RPY_NO_DISCARD
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
     void wait() override;

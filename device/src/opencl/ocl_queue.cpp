@@ -31,19 +31,17 @@
 
 #include "ocl_queue.h"
 
+#include "ocl_device.h"
 #include "ocl_handle_errors.h"
 #include "ocl_headers.h"
-#include "ocl_device.h"
 
 using namespace rpy;
 using namespace rpy::devices;
 
 OCLQueue::OCLQueue(cl_command_queue queue, OCLDevice dev) noexcept
-    : m_queue(queue), m_device(std::move(dev))
+    : m_queue(queue),
+      m_device(std::move(dev))
 {}
-
-
-
 
 std::unique_ptr<rpy::devices::dtl::InterfaceBase> OCLQueue::clone() const
 {
@@ -70,13 +68,27 @@ dimn_t OCLQueue::size() const
 
     return static_cast<dimn_t>(sz);
 }
-Device OCLQueue::device() const noexcept {
-    return m_device;
-}
-OCLQueue::~OCLQueue() {
+Device OCLQueue::device() const noexcept { return m_device; }
+OCLQueue::~OCLQueue()
+{
     if (m_queue != nullptr) {
         auto ecode = clReleaseCommandQueue(m_queue);
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     }
     m_queue = nullptr;
+}
+DeviceType OCLQueue::type() const noexcept { return DeviceType::OpenCL; }
+
+dimn_t OCLQueue::ref_count() const noexcept
+{
+    cl_uint rc = 0;
+    auto ecode = clGetCommandQueueInfo(
+            m_queue,
+            CL_QUEUE_REFERENCE_COUNT,
+            sizeof(rc),
+            &rc,
+            nullptr
+    );
+    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    return rc;
 }

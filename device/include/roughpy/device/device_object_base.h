@@ -45,6 +45,7 @@ class RPY_EXPORT InterfaceBase
 public:
     virtual ~InterfaceBase();
 
+    RPY_NO_DISCARD virtual DeviceType type() const noexcept;
     RPY_NO_DISCARD virtual dimn_t ref_count() const noexcept;
     RPY_NO_DISCARD virtual std::unique_ptr<InterfaceBase> clone() const;
     RPY_NO_DISCARD virtual Device device() const noexcept;
@@ -98,7 +99,7 @@ public:
     ObjectBase& operator=(const ObjectBase& other);
     ObjectBase& operator=(ObjectBase&& other) noexcept = default;
 
-
+    RPY_NO_DISCARD DeviceType type() const noexcept;
     RPY_NO_DISCARD bool is_null() const noexcept { return !p_impl; }
     RPY_NO_DISCARD dimn_t ref_count() const noexcept;
     RPY_NO_DISCARD Derived clone() const;
@@ -126,6 +127,13 @@ ObjectBase<Interface, Derived>::operator=(const ObjectBase& other)
         }
     }
     return *this;
+}
+
+template <typename Interface, typename Derived>
+DeviceType ObjectBase<Interface, Derived>::type() const noexcept
+{
+    if (p_impl) { return p_impl->type(); }
+    return DeviceType::CPU;
 }
 
 template <typename Interface, typename Derived>

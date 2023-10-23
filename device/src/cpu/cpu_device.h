@@ -74,9 +74,14 @@ public:
     DeviceInfo info() const noexcept override;
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
     void raw_free(void* pointer, dimn_t size) const override;
+
+    bool has_compiler() const noexcept override;
     optional<Kernel> get_kernel(const string& name) const noexcept override;
-    optional<Kernel> compile_kernel_from_str(string_view code) const override;
-    void compile_kernels_from_src(string_view code) const override;
+    optional<Kernel>
+    compile_kernel_from_str(const ExtensionSourceAndOptions& args
+    ) const override;
+    void compile_kernels_from_src(const ExtensionSourceAndOptions& args
+    ) const override;
     Event new_event() const override;
     Queue new_queue() const override;
     Queue get_default_queue() const override;
