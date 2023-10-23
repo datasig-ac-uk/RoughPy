@@ -63,6 +63,9 @@ public:
             Slice<dimn_t> arg_sizes,
             const KernelLaunchParams& params
     ) override;
+
+    RPY_NO_DISCARD
+    cl_kernel get_kernel() const noexcept { return m_kernel; }
 };
 
 }// namespace device

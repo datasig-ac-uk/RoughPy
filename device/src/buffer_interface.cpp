@@ -50,3 +50,5 @@ dimn_t BufferInterface::size() const {
 void* BufferInterface::ptr() {
     return nullptr;
 }
+
+void* BufferInterface::ptr() const { return nullptr; }

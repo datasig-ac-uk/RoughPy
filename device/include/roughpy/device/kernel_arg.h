@@ -32,47 +32,28 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/traits.h>
 
-#include "types.h"
 
 namespace rpy {
 namespace devices {
 
-class RPY_EXPORT KernelArgument
+
+template <typename T>
+constexpr void* arg_to_pointer(T& arg) noexcept
 {
-
-public:
-    virtual ~KernelArgument();
-
-    virtual string name() const noexcept;
-    virtual string type_string() const noexcept;
-
-    virtual void set(Buffer& data);
-    virtual void set(const Buffer& data);
-    virtual void set(void* data, const TypeInfo& info);
-    virtual void set(const void* data, const TypeInfo& info);
-
-    void set(half data);
-    void set(bfloat16 data);
-    void set(float data);
-    void set(double data);
-    void set(const rational_scalar_type& data);
-    void set(const rational_poly_scalar& data);
-
-    template <typename I>
-    enable_if_t<is_integral<I>::value> set(I data);
-};
-
-template <typename I>
-enable_if_t<is_integral<I>::value> KernelArgument::set(I data)
-{
-    this->set(
-            &data,
-            {is_signed<I>::value ? TypeCode::Int : TypeCode::UInt,
-             sizeof(I),
-             1}
-    );
+    return std::addressof(arg);
 }
+
+template <typename T>
+constexpr void* arg_to_pointer(const T& arg) noexcept
+{
+    return const_cast<void*>(static_cast<const void*>(&arg));
+}
+
+void* arg_to_pointer(const Buffer& buffer);
+void* arg_to_pointer(Buffer& buffer);
+
 
 }// namespace devices
 }// namespace rpy
