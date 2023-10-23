@@ -172,6 +172,9 @@ struct DeviceInfo {
  * be encoded as OpaqueHandle, since they're not simple
  * data. Some of these types might not be compatible with
  * this library.
+ *
+ * We have added some additional types that are available in RoughPy such as
+ * rationals and polynomials.
  */
 enum class TypeCode : uint8_t
 {
@@ -181,21 +184,39 @@ enum class TypeCode : uint8_t
     OpaqueHandle = 3U,
     BFloat = 4U,
     Complex = 5U,
-    Bool = 6U
+    Bool = 6U,
+    Rational = 7U,
+    ArbitraryPrecision = 8U,
+    ArbitraryPrecisionInt = ArbitraryPrecision | Int,
+    ArbitraryPrecisionUInt = ArbitraryPrecision | UInt,
+    ArbitraryPrecisionFloat = ArbitraryPrecision | Float,
+    // ArbitraryPrecisionOpaque = ArbitraryPrecision | Opaque,
+    // ArbitraryPrecisionBFloat = ArbitraryPrecision | BFloat,
+    ArbitraryPrecisionComplex = ArbitraryPrecision | Complex,
+    // ArbitraryPrecisionBool = ArbitraryPrecision | Bool,
+    ArbitraryPrecisionRational = ArbitraryPrecision | Rational,
+
+    Polynomial = 16U,
+    APRationalPolynomial = Polynomial // | ArbitraryPrecisionRational
+
 };
 
 /**
  * @brief Basic information for identifying the type, size, and
  * configuration of a type.
  *
- * Based on, and compatible with, the DlDataType struct from the
- * DLPack array interchange protocol. The lanes parameter will
- * usually be set to 1, and is not generally used by RoughPy.
+ * This was originally based on the DLPack protocol, but actually that proved
+ * to be more effort converting bits to/from bytes. Now the size field is the
+ * number of bytes rather than number of bits, since almost all scalar types
+ * will be an integer number of bytes anyway.
+ *
+ * The lanes member will almost certainly be 1, and is currently ignored by
+ * RoughPy.
  */
 struct TypeInfo {
     TypeCode code;
-    uint8_t bits;
-    uint16_t lanes;
+    uint8_t bytes;
+    uint16_t lanes = 1;
 };
 
 template <typename I>
@@ -230,6 +251,7 @@ class BufferInterface;
 class Buffer;
 class EventInterface;
 class Event;
+class KernalArgument;
 class KernelInterface;
 class Kernel;
 class QueueInterface;

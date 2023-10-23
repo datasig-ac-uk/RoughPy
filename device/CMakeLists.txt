@@ -13,6 +13,7 @@ add_roughpy_component(Device
         include/roughpy/device/device_object_base.h
         include/roughpy/device/event.h
         include/roughpy/device/kernel.h
+        include/roughpy/device/kernel_arg.h
         include/roughpy/device/macros.h
         include/roughpy/device/queue.h
         include/roughpy/device/types.h
@@ -72,6 +73,7 @@ add_roughpy_component(Device
         src/event_interface.cpp
         src/get_device.cpp
         src/kernel.cpp
+        src/kernel_arg.cpp
         src/kernel_interface.cpp
         src/kernel_launch_params.cpp
         src/queue.cpp

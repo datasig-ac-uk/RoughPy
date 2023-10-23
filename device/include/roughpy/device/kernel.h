@@ -67,10 +67,12 @@ public:
     KernelLaunchParams();
 };
 
+
 class RPY_EXPORT KernelInterface : public dtl::InterfaceBase
 {
 
 public:
+
     RPY_NO_DISCARD virtual string name() const;
 
     RPY_NO_DISCARD virtual dimn_t num_args() const;
@@ -81,11 +83,15 @@ public:
             Slice<dimn_t> arg_sizes,
             const KernelLaunchParams& params
     );
+
+    virtual void init_args(std::vector<KernalArgument*>& args) const;
 };
 
 class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
 {
     using base_t = dtl::ObjectBase<KernelInterface, Kernel>;
+
+    std::vector<KernalArgument*> m_args;
 
 public:
     using base_t::base_t;
@@ -110,10 +116,14 @@ public:
             const KernelLaunchParams& params
     );
 
-
-
     RPY_NO_DISCARD static std::vector<bitmask_t>
     construct_work_mask(const KernelLaunchParams& params);
+
+    template <typename... Args>
+    void operator()(Args&&... args) const {
+        RPY_CHECK(sizeof...(args) == num_args());
+    }
+
 
 };
 

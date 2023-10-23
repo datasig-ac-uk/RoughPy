@@ -26,28 +26,42 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 11/10/23.
+// Created by user on 23/10/23.
 //
 
-#include <roughpy/device/kernel.h>
+#include <roughpy/device/kernel_arg.h>
 
-#include <roughpy/device/queue.h>
+#include <stdexcept>
 
 using namespace rpy;
 using namespace rpy::devices;
 
-string KernelInterface::name() const { return ""; }
+KernelArgument::~KernelArgument() = default;
 
-dimn_t KernelInterface::num_args() const { return 0; }
+string KernelArgument::name() const noexcept { return std::string(); }
+string KernelArgument::type_string() const noexcept { return "void"; }
+void KernelArgument::set(Buffer& data) {}
+void KernelArgument::set(const Buffer& data) {}
+void KernelArgument::set(void* data, const TypeInfo& info) {}
+void KernelArgument::set(const void* data, const TypeInfo& info) {}
 
-Event KernelInterface::launch_kernel_async(
-        rpy::devices::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::devices::KernelLaunchParams& params
-)
-{
-    return Event();
+void KernelArgument::set(half data) {
+    this->set(&data, {TypeCode::Float, sizeof(half), 1});
 }
-
-void KernelInterface::init_args(std::vector<KernalArgument*>& args) const {}
+void KernelArgument::set(bfloat16 data) {
+    this->set(&data, {TypeCode::BFloat, sizeof(bfloat16), 1});
+}
+void KernelArgument::set(float data) {
+    this->set(&data, {TypeCode::Float, sizeof(float), 1});
+}
+void KernelArgument::set(double data) {
+    this->set(&data, {TypeCode::Float, sizeof(double), 1});
+}
+void KernelArgument::set(const rational_scalar_type& RPY_UNUSED_VAR data) {
+    RPY_THROW(std::invalid_argument, "rational scalar types are not supported"
+                                     " by this device");
+}
+void KernelArgument::set(const rational_poly_scalar& RPY_UNUSED_VAR data) {
+    RPY_THROW(std::invalid_argument, "polynomial scalar types are not supported"
+                                     " by this device");
+}
