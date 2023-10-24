@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 16/10/23.
@@ -38,8 +39,8 @@
 #include <roughpy/device/kernel.h>
 #include <roughpy/device/queue.h>
 
-#include <boost/container/small_vector.hpp>
 #include <boost/container/flat_map.hpp>
+#include <boost/container/small_vector.hpp>
 
 #include "cpu_buffer.h"
 #include "cpu_event.h"
@@ -97,75 +98,102 @@ CPUDeviceHandle::CPUDeviceHandle() : p_ocl_handle(nullptr)
 
     if (ecode != CL_SUCCESS) { return; }
 
-    if (num_platforms > 0) {
-        bc::small_vector<cl_platform_id, 1> platforms(num_platforms);
+    if (num_platforms == 0) { return; }
 
-        ecode = clGetPlatformIDs(num_platforms, platforms.data(), nullptr);
-        if (ecode != CL_SUCCESS) { return; }
+    bc::small_vector<cl_platform_id, 1> platforms(num_platforms);
 
-        bc::small_vector<cl_device_id, 1> candidates;
+    ecode = clGetPlatformIDs(num_platforms, platforms.data(), nullptr);
+    if (ecode != CL_SUCCESS) { return; }
 
-        auto clear_candidates = [&candidates]() {
-            for (auto&& candidate : candidates) { clReleaseDevice(candidate); }
-            candidates.clear();
-        };
+    bc::small_vector<cl_device_id, 1> candidates;
 
-        cl_uint num_devices = 0;
-        for (auto&& platform : platforms) {
-            ecode = clGetDeviceIDs(
-                    platform,
-                    CL_DEVICE_TYPE_CPU,
-                    0,
-                    nullptr,
-                    &num_devices
+    auto clear_candidates = [&candidates]() {
+        for (auto&& candidate : candidates) { clReleaseDevice(candidate); }
+        candidates.clear();
+    };
+
+    bc::small_vector<cl_device_id, 1> devices;
+
+    auto clear_devices = [&devices]() {
+        for (auto&& dev : devices) { clReleaseDevice(dev); }
+        devices.clear();
+    };
+
+    cl_uint num_devices = 0;
+    for (auto platform : platforms) {
+
+        num_devices = 0;
+        ecode = clGetDeviceIDs(
+                platform,
+                CL_DEVICE_TYPE_ALL,
+                0,
+                nullptr,
+                &num_devices
+        );
+        if (ecode != CL_SUCCESS || num_devices == 0) {
+            ecode = CL_SUCCESS;
+            //                clear_candidates();
+            continue;
+            //                RPY_HANDLE_OCL_ERROR(ecode);
+        }
+
+        devices.resize(num_devices);
+        candidates.reserve(candidates.size() + num_devices);
+
+        ecode = clGetDeviceIDs(
+                platform,
+                CL_DEVICE_TYPE_ALL,
+                num_devices,
+                devices.data(),
+                nullptr
+        );
+        if (ecode != CL_SUCCESS) {
+            //                    clear_candidates();
+            ecode = CL_SUCCESS;
+            continue;
+            //                    RPY_HANDLE_OCL_ERROR(ecode);
+        }
+
+        for (auto& dev : devices) {
+            cl_device_type dev_type = 0;
+            ecode = clGetDeviceInfo(
+                    dev,
+                    CL_DEVICE_TYPE,
+                    sizeof(cl_device_type),
+                    &dev_type,
+                    nullptr
             );
+
             if (ecode != CL_SUCCESS) {
-                //                clear_candidates();
+                ecode = CL_SUCCESS;
                 continue;
-                //                RPY_HANDLE_OCL_ERROR(ecode);
             }
 
-            if (num_devices > 0) {
-                auto current_size = candidates.size();
-                candidates.resize(current_size + num_devices);
-                ecode = clGetDeviceIDs(
-                        platform,
-                        CL_DEVICE_TYPE_CPU,
-                        num_devices,
-                        candidates.data() + current_size,
-                        nullptr
-                );
-                if (ecode != CL_SUCCESS) {
-                    //                    clear_candidates();
-                    candidates.resize(current_size);
-                    continue;
-                    //                    RPY_HANDLE_OCL_ERROR(ecode);
-                }
+            if (dev_type == CL_DEVICE_TYPE_CPU) {
+                candidates.push_back(dev);
+                dev = nullptr;
             }
         }
+        clear_devices();
+    }
 
-        if (!candidates.empty()) {
-            // TODO: more sophisticated logic for choosing the best
-            //  implementation of OpenCL to use. For now, just pick the first
-            //  one.
-            p_ocl_handle = new OCLDeviceHandle(candidates[0]);
-            candidates[0] = nullptr;
+    if (!candidates.empty()) {
+        // TODO: more sophisticated logic for choosing the best
+        //  implementation of OpenCL to use. For now, just pick the first
+        //  one.
+        p_ocl_handle = new OCLDeviceHandle(candidates[0]);
+        candidates[0] = nullptr;
 
-            clear_candidates();
-        }
+        clear_candidates();
     }
 }
 CPUDeviceHandle::~CPUDeviceHandle() = default;
-
-
 
 CPUDevice CPUDeviceHandle::get()
 {
     static boost::intrusive_ptr<CPUDeviceHandle> device(new CPUDeviceHandle);
     return device;
 }
-
-
 
 DeviceInfo CPUDeviceHandle::info() const noexcept
 {
@@ -180,35 +208,23 @@ Buffer CPUDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
             get_ref_count()
     ));
 }
-void CPUDeviceHandle::raw_free(void* pointer, dimn_t size) const {
+void CPUDeviceHandle::raw_free(void* pointer, dimn_t size) const
+{
     aligned_free(pointer);
 }
 
-template<typename... Args>
-Kernel make_kernel(void (*fn)(Args...)) noexcept {
+template <typename... Args>
+Kernel make_kernel(void (*fn)(Args...)) noexcept
+{
     (void) fn;
     return Kernel();
 }
 
-
-
-static const bc::flat_map<string_view, Kernel> s_kernels  {
+static const bc::flat_map<string_view, Kernel> s_kernels{
         {"masked_uminus_double",
-         make_kernel(kernels::masked_binary_into_buffer<double,
-            std::plus<double>>)
-        }
+         make_kernel(kernels::masked_binary_into_buffer<
+         double, std::plus<double>>)}
 };
-
-
-
-
-
-
-
-
-
-
-
 
 optional<Kernel> CPUDeviceHandle::get_kernel(const string& name) const noexcept
 {
@@ -218,11 +234,8 @@ optional<Kernel> CPUDeviceHandle::get_kernel(const string& name) const noexcept
     kernel = p_ocl_handle->get_kernel(name);
     if (kernel) { return kernel; }
 
-
     auto found = s_kernels.find(name);
-    if (found != s_kernels.end()) {
-        return {found->second};
-    }
+    if (found != s_kernels.end()) { return {found->second}; }
 
     return {};
 }
@@ -230,29 +243,23 @@ optional<Kernel>
 CPUDeviceHandle::compile_kernel_from_str(const ExtensionSourceAndOptions& args
 ) const
 {
-    if (p_ocl_handle) {
-        return p_ocl_handle->compile_kernel_from_str(args);
-    }
+    if (p_ocl_handle) { return p_ocl_handle->compile_kernel_from_str(args); }
     return {};
 }
 void CPUDeviceHandle::compile_kernels_from_src(
         const ExtensionSourceAndOptions& args
 ) const
 {
-    if (p_ocl_handle) {
-        p_ocl_handle->compile_kernels_from_src(args);
-    }
+    if (p_ocl_handle) { p_ocl_handle->compile_kernels_from_src(args); }
 }
-Event CPUDeviceHandle::new_event() const {
-    if (p_ocl_handle) {
-        return p_ocl_handle->new_event();
-    }
+Event CPUDeviceHandle::new_event() const
+{
+    if (p_ocl_handle) { return p_ocl_handle->new_event(); }
     return Event(std::make_unique<CPUEvent>());
 }
-Queue CPUDeviceHandle::new_queue() const {
-    if (p_ocl_handle) {
-        return p_ocl_handle->new_queue();
-    }
+Queue CPUDeviceHandle::new_queue() const
+{
+    if (p_ocl_handle) { return p_ocl_handle->new_queue(); }
     return Queue();
 }
 Queue CPUDeviceHandle::get_default_queue() const { return Queue(); }

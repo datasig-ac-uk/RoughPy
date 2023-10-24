@@ -316,6 +316,7 @@ cl_program OCLDeviceHandle::get_header_program(
 cl_program
 OCLDeviceHandle::compile_program(const ExtensionSourceAndOptions& args) const
 {
+    RPY_DBG_ASSERT(m_device != nullptr);
     if (args.sources.empty()) {
         RPY_THROW(std::runtime_error, "Sources cannot be empty");
     }
@@ -341,19 +342,20 @@ OCLDeviceHandle::compile_program(const ExtensionSourceAndOptions& args) const
 
     if (program == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    std::vector<cl_program> header_programs;
-    header_programs.reserve(args.header_name_and_source.size());
-
-    source_ptrs.clear();
-    source_ptrs.reserve(args.header_name_and_source.size());
-    for (auto&& header : args.header_name_and_source) {
-        header_programs.push_back(
-                get_header_program(header.first, header.second)
-        );
-        source_ptrs.push_back(header.first.c_str());
-    }
 
     if (cl_supports_version(120)) {
+        std::vector<cl_program> header_programs;
+        std::vector<const char*> header_names;
+        header_programs.reserve(args.header_name_and_source.size());
+
+        header_names.reserve(args.header_name_and_source.size());
+        for (auto&& header : args.header_name_and_source) {
+            header_programs.push_back(
+                    get_header_program(header.first, header.second)
+            );
+            header_names.push_back(header.first.c_str());
+        }
+
         ecode = clCompileProgram(
                 program,
                 1,
@@ -361,7 +363,7 @@ OCLDeviceHandle::compile_program(const ExtensionSourceAndOptions& args) const
                 args.compile_options.c_str(),
                 header_programs.size(),
                 header_programs.data(),
-                source_ptrs.data(),
+                header_names.data(),
                 nullptr,
                 nullptr
         );

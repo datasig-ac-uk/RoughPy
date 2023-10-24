@@ -123,8 +123,8 @@ void Kernel::operator()(const KernelLaunchParams& params, Args&&... args)
     std::vector<void*> arg_p{arg_to_pointer(args)...};
     std::vector<dimn_t> arg_s{sizeof(Args)...};
 
-    auto queue = device()->get_default_queue();
-    auto status = launch_sync(queue, arg_p, arg_s, params);
+    Queue default_queue;
+    auto status = launch_sync(default_queue, arg_p, arg_s, params);
     RPY_DBG_ASSERT(status == EventStatus::CompletedSuccessfully);
 }
 
