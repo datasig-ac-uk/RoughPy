@@ -5,6 +5,8 @@ project(RoughPy_Device VERSION 0.0.1
         LANGUAGES CXX)
 
 
+
+
 add_roughpy_component(Device
         PUBLIC_HEADERS
         include/roughpy/device/buffer.h
@@ -46,6 +48,16 @@ add_roughpy_component(Device
         src/cpu/cpu_kernel.h
         src/cpu/cpu_queue.cpp
         src/cpu/cpu_queue.h
+        src/cuda/cuda_buffer.cpp
+        src/cuda/cuda_buffer.h
+        src/cuda/cuda_decls.h
+        src/cuda/cuda_device.cpp
+        src/cuda/cuda_device.h
+        src/cuda/cuda_event.cpp
+        src/cuda/cuda_event.h
+        src/cuda/cuda_headers.h
+        src/cuda/cuda_queue.cpp
+        src/cuda/cuda_queue.h
         src/opencl/ocl_buffer.cpp
         src/opencl/ocl_buffer.h
         src/opencl/ocl_decls.h
@@ -80,6 +92,8 @@ add_roughpy_component(Device
         src/queue_interface.cpp
         DEPENDENCIES
         PRIVATE
+        CUDA::toolkit
+        CUDA::cudart
         OpenCL::OpenCL
         PUBLIC
             Eigen3::Eigen
@@ -88,6 +102,9 @@ add_roughpy_component(Device
         RoughPy::Core
         RoughPy::Platform
 )
+
+
+
 
 
 

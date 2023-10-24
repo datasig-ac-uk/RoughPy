@@ -295,6 +295,14 @@ elseif (NOT WIN32)
     set(CMAKE_INSTALL_RPATH "$ORIGIN")
 endif ()
 
+
+find_package(CUDAToolkit REQUIRED)
+
+if (NOT TARGET CUDA::toolkit)
+message(FATAL_ERROR "Cuda toolkit not found")
+endif()
+
+
 add_subdirectory(external/libalgebra_lite)
 
 
