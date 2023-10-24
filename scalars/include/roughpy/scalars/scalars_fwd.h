@@ -97,7 +97,7 @@ using conversion_function
 constexpr bool
 operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept
 {
-    return lhs.code == rhs.code && lhs.bits == rhs.bits
+    return lhs.code == rhs.code && lhs.bytes == rhs.bytes
             && lhs.lanes == rhs.lanes;
 }
 
