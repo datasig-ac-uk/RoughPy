@@ -92,7 +92,7 @@ public:
                 std::move(id),
                 sizeof(ScalarImpl),
                 alignof(ScalarImpl),
-                {ScalarTypeCode::Float, sizeof_bits<ScalarImpl>(), 1U},
+                {ScalarTypeCode::Float, sizeof(ScalarImpl), 1U},
                 {devices::DeviceType::CPU, 0}
     }, devices::get_cpu_device())
     {}

@@ -72,7 +72,7 @@ RationalType::RationalType()
             sizeof(rational_scalar_type),
             alignof(rational_scalar_type),
             {
-                                    ScalarTypeCode::OpaqueHandle,
+                                    ScalarTypeCode::ArbitraryPrecisionRational,
                                     0, 0,
                                     },
             {       devices::DeviceType::CPU, 0   }

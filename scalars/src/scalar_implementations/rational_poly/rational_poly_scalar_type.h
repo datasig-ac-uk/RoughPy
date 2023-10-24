@@ -58,7 +58,7 @@ public:
                 string("RationalPoly"),
                 sizeof(rational_poly_scalar),
                 alignof(rational_poly_scalar),
-                {ScalarTypeCode::OpaqueHandle, 0, 0},
+                {ScalarTypeCode::APRationalPolynomial, 0, 0},
                 {devices::DeviceType::CPU, 0},
     }, devices::get_cpu_device())
     {}
