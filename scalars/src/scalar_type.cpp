@@ -92,10 +92,10 @@ const ScalarType* ScalarType::from_type_details(
         case ScalarTypeCode::Int: RPY_FALLTHROUGH;
         case ScalarTypeCode::UInt: return nullptr;
         case ScalarTypeCode::Float:
-            switch (details.bits) {
-                case 16: return ScalarType::of<half>();
-                case 32: return ScalarType::of<float>();
-                case 64: return ScalarType::of<double>();
+            switch (details.bytes) {
+                case 2: return ScalarType::of<half>();
+                case 4: return ScalarType::of<float>();
+                case 8: return ScalarType::of<double>();
                 default:
                     RPY_THROW(
                             std::invalid_argument,
@@ -103,8 +103,8 @@ const ScalarType* ScalarType::from_type_details(
                     );
             }
         case ScalarTypeCode::BFloat:
-            switch (details.bits) {
-                case 16: return ScalarType::of<bfloat16>();
+            switch (details.bytes) {
+                case 2: return ScalarType::of<bfloat16>();
                 default:
                     RPY_THROW(
                             std::invalid_argument,
