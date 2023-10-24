@@ -472,27 +472,27 @@ const std::string& rpy::scalars::id_from_basic_info(const BasicScalarInfo& info)
 
     switch (info.code) {
         case ScalarTypeCode::Int:
-            switch (info.bits) {
-                case 8: return reserved[I8IDX].second.id;
-                case 16: return reserved[I16IDX].second.id;
-                case 32: return reserved[I32IDX].second.id;
-                case 64: return reserved[I64IDX].second.id;
+            switch (info.bytes) {
+                case 1: return reserved[I8IDX].second.id;
+                case 2: return reserved[I16IDX].second.id;
+                case 4: return reserved[I32IDX].second.id;
+                case 8: return reserved[I64IDX].second.id;
                 default:
                     RPY_THROW(std::runtime_error, "unsupported integer type");
             }
         case ScalarTypeCode::UInt:
-            switch (info.bits) {
-                case 8: return reserved[U8IDX].second.id;
-                case 16: return reserved[U16IDX].second.id;
-                case 32: return reserved[U32IDX].second.id;
-                case 64: return reserved[U64IDX].second.id;
+            switch (info.bytes) {
+                case 1: return reserved[U8IDX].second.id;
+                case 2: return reserved[U16IDX].second.id;
+                case 4: return reserved[U32IDX].second.id;
+                case 8: return reserved[U64IDX].second.id;
                 default:
                     RPY_THROW(std::runtime_error, "unsupported integer type");
             }
         case ScalarTypeCode::Float:
-            switch (info.bits) {
-                case 32: return ScalarType::of<float>()->id();
-                case 64: return ScalarType::of<double>()->id();
+            switch (info.bytes) {
+                case 4: return ScalarType::of<float>()->id();
+                case 8: return ScalarType::of<double>()->id();
                 default:
                     RPY_THROW(std::runtime_error, "unsupported float type");
             }
