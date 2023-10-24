@@ -87,10 +87,19 @@ Queue OCLDeviceHandle::make_queue(cl_command_queue queue, bool move) const
     return Queue(std::make_unique<OCLQueue>(queue, this));
 }
 
+static OCLVersion get_ocl_version(cl_device_id device) {
+    auto str_vers
+            = cl::string_info(clGetDeviceInfo, device, CL_DEVICE_VERSION);
+
+    return OCLVersion(str_vers);
+}
+
 OCLDeviceHandle::OCLDeviceHandle(cl_device_id id) : m_device(id)
 {
     const guard_type access(get_lock());
     cl_int ecode;
+
+    m_ocl_version = get_ocl_version(m_device);
 
     m_ctx = clCreateContext(nullptr, 1, &m_device, nullptr, nullptr, &ecode);
 
@@ -234,56 +243,9 @@ optional<Kernel> OCLDeviceHandle::get_kernel(const string& name) const noexcept
     return {};
 }
 
-bool OCLDeviceHandle::cl_supports_version(cl_version version) const
+bool OCLDeviceHandle::cl_supports_version(OCLVersion version) const
 {
-    cl_platform_id plat = nullptr;
-    auto ecode = clGetDeviceInfo(
-            m_device,
-            CL_DEVICE_PLATFORM,
-            sizeof(plat),
-            &plat,
-            nullptr
-    );
-    if (ecode != CL_SUCCESS) { return false; }
-
-    RPY_DBG_ASSERT(plat != nullptr);
-
-    auto str_vers
-            = cl::string_info(clGetPlatformInfo, plat, CL_PLATFORM_VERSION);
-
-    /*
-     * str_vers should be of the form:
-     *
-     *  OpenCL<space><major_version.minor_version><space><other-stuff>
-     *
-     *  so the offset to the beginning of the version string is 7. The current
-     *  options are 1.0, 1.1, 1.2, 2.0, 2.1, 2.2, or 3.0, so the version string
-     *  is of length 3.
-     */
-    constexpr size_t offset = sizeof("OpenCL"); // Length + 1 for null byte
-
-    string_view actual_version(str_vers.data() + offset, 3);
-
-    cl_version num_version = 0;
-    if (actual_version == "3.0") {
-        num_version = 300;
-    } else if (actual_version == "2.2") {
-        num_version = 220;
-    } else if (actual_version == "2.1") {
-        num_version = 210;
-    } else if (actual_version == "2.0") {
-        num_version = 200;
-    } else if (actual_version == "1.2") {
-        num_version = 120;
-    } else if (actual_version == "1.1") {
-        num_version = 110;
-    } else if (actual_version == "1.0") {
-        num_version = 100;
-    } else {
-        RPY_THROW(std::runtime_error, "Invalid version string");
-    };
-
-    return num_version >= version;
+    return version <= m_ocl_version;
 }
 
 cl_program OCLDeviceHandle::get_header_program(
@@ -343,7 +305,7 @@ OCLDeviceHandle::compile_program(const ExtensionSourceAndOptions& args) const
     if (program == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
 
 
-    if (cl_supports_version(120)) {
+    if (cl_supports_version({1, 2})) {
         std::vector<cl_program> header_programs;
         std::vector<const char*> header_names;
         header_programs.reserve(args.header_name_and_source.size());

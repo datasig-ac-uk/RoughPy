@@ -38,6 +38,7 @@
 #include "ocl_headers.h"
 #include "ocl_kernel.h"
 #include "ocl_queue.h"
+#include "ocl_version.h"
 
 #include <roughpy/device/device_handle.h>
 
@@ -54,8 +55,9 @@ class OCLDeviceHandle : public DeviceHandle
     int32_t m_device_id;
 
     cl_context m_ctx;
-
     cl_command_queue m_default_queue;
+
+    OCLVersion m_ocl_version;
 
     mutable std::vector<cl_program> m_programs;
     mutable std::unordered_map<string, cl_program> m_header_cache;
@@ -66,6 +68,7 @@ class OCLDeviceHandle : public DeviceHandle
     Queue make_queue(cl_command_queue queue, bool move = true) const;
 
     using typename DeviceHandle::guard_type;
+
 
 public:
     explicit OCLDeviceHandle(cl_device_id id);
@@ -83,7 +86,7 @@ public:
 
 private:
 
-    bool cl_supports_version(cl_version version) const;
+    bool cl_supports_version(OCLVersion version) const;
 
     cl_program
     get_header_program(const string& name, const string& source) const;
