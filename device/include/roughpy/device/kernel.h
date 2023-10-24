@@ -125,7 +125,7 @@ void Kernel::operator()(const KernelLaunchParams& params, Args&&... args)
 
     Queue default_queue;
     auto status = launch_sync(default_queue, arg_p, arg_s, params);
-    RPY_DBG_ASSERT(status == EventStatus::CompletedSuccessfully);
+    RPY_CHECK(status == EventStatus::CompletedSuccessfully);
 }
 
 }// namespace devices
