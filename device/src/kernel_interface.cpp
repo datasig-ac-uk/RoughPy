@@ -41,10 +41,9 @@ string KernelInterface::name() const { return ""; }
 dimn_t KernelInterface::num_args() const { return 0; }
 
 Event KernelInterface::launch_kernel_async(
-        rpy::devices::Queue& queue,
-        Slice<void*> args,
-        Slice<rpy::dimn_t> arg_sizes,
-        const rpy::devices::KernelLaunchParams& params
+        Queue& queue,
+        Slice<KernelArgument> args,
+        const KernelLaunchParams& params
 )
 {
     return Event();

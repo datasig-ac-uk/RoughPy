@@ -51,8 +51,7 @@ string CPUKernel::name() const { return m_name; }
 dimn_t CPUKernel::num_args() const { return m_nargs; }
 Event CPUKernel::launch_kernel_async(
         Queue& queue,
-        Slice<void*> args,
-        Slice<dimn_t> arg_sizes,
+        Slice<KernelArgument> args,
         const KernelLaunchParams& params
 )
 {
@@ -60,7 +59,7 @@ Event CPUKernel::launch_kernel_async(
         m_fallback(args.begin(), params.total_work_dims());
     }
 
-    return KernelInterface::launch_kernel_async(queue, args, arg_sizes, params);
+    return KernelInterface::launch_kernel_async(queue, args, params);
 }
 std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUKernel::clone() const
 {

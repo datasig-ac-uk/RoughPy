@@ -53,8 +53,7 @@ dimn_t Kernel::num_args() const
 
 Event Kernel::launch_async(
         Queue& queue,
-        Slice<void*> args,
-        Slice<dimn_t> arg_sizes,
+        Slice<KernelArgument> args,
         const KernelLaunchParams& params
 )
 {
@@ -66,17 +65,16 @@ Event Kernel::launch_async(
         RPY_THROW(std::runtime_error, "incorrect number of arguments provided");
     }
 
-    return p_impl->launch_kernel_async(queue, args, arg_sizes, params);
+    return p_impl->launch_kernel_async(queue, args, params);
 }
 EventStatus Kernel::launch_sync(
         Queue& queue,
-        Slice<void*> args,
-        Slice<dimn_t> arg_sizes,
+        Slice<KernalArgument> args,
         const KernelLaunchParams& params
 )
 {
     if (!params.has_work()) { return EventStatus::CompletedSuccessfully; }
-    auto event = launch_async(queue, args, arg_sizes, params);
+    auto event = launch_async(queue, args, params);
     event.wait();
     return event.status();
 }

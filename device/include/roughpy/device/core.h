@@ -267,6 +267,35 @@ constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 {
     return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
 }
+
+
+
+
+namespace dtl {
+
+template <typename T>
+constexpr TypeInfo type_info();
+
+template <typename T>
+constexpr enable_if_t<is_integral<T>::value && is_signed<T>::value, TypeInfo>
+type_info() {
+    return { TypeCode::Int, sizeof(T), 1};
+}
+
+template <typename T>
+constexpr enable_if_t<is_integral<T>::value && !is_signed<T>::value, TypeInfo>
+type_info() {
+    return { TypeCode::UInt, sizeof(T), 1};
+}
+
+template <typename T>
+constexpr enable_if_t<is_floating_point<T>::value, TypeInfo>
+type_info() {
+    return { TypeCode::Float, sizeof(T), 1};
+}
+
+}
+
 }// namespace device
 }// namespace rpy
 

@@ -103,8 +103,7 @@ dimn_t OCLKernel::num_args() const
 }
 Event OCLKernel::launch_kernel_async(
         Queue& queue,
-        Slice<void*> args,
-        Slice<dimn_t> arg_sizes,
+        Slice<KernelArgument> args,
         const KernelLaunchParams& params
 )
 {

@@ -36,6 +36,8 @@
 #include <libalgebra_lite/polynomial.h>
 #include <libalgebra_lite/polynomial_basis.h>
 
+#include "core.h"
+
 #ifdef LAL_NO_USE_GMP
 #  define RPY_USING_GMP 0
 #else
@@ -74,6 +76,32 @@ using indeterminate_type = typename monomial::letter_type;
 
 /// Polynomial (with rational coefficients) scalar type
 using rational_poly_scalar = lal::polynomial<lal::rational_field>;
+
+namespace dtl {
+
+template <>
+constexpr TypeInfo type_info<half>() {
+    return { TypeCode::Float, sizeof(half), 1};
+}
+
+template <>
+constexpr TypeInfo type_info<bfloat16>() {
+    return { TypeCode::BFloat, sizeof(bfloat16), 1};
+}
+
+template <>
+constexpr TypeInfo type_info<rational_scalar_type>() {
+    return {TypeCode::ArbitraryPrecisionRational, sizeof(rational_scalar_type), 1};
+}
+template <>
+constexpr TypeInfo type_info<rational_poly_scalar>() {
+    return {TypeCode::APRationalPolynomial, sizeof(rational_poly_scalar), 1};
+}
+
+
+
+}
+
 
 }// namespace devices
 }// namespace rpy

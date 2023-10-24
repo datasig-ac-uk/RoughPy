@@ -73,8 +73,7 @@ public:
 
     RPY_NO_DISCARD virtual Event launch_kernel_async(
             Queue& queue,
-            Slice<void*> args,
-            Slice<dimn_t> arg_sizes,
+            Slice<KernelArgument> args,
             const KernelLaunchParams& params
     );
 
@@ -98,15 +97,13 @@ public:
 
     RPY_NO_DISCARD Event launch_async(
             Queue& queue,
-            Slice<void*> args,
-            Slice<dimn_t> arg_sizes,
+            Slice<KernelArgument> args,
             const KernelLaunchParams& params
     );
 
     RPY_NO_DISCARD EventStatus launch_sync(
             Queue& queue,
-            Slice<void*> args,
-            Slice<dimn_t> arg_sizes,
+            Slice<KernalArgument> args,
             const KernelLaunchParams& params
     );
 
@@ -120,11 +117,8 @@ public:
 template <typename... Args>
 void Kernel::operator()(const KernelLaunchParams& params, Args&&... args)
 {
-    std::vector<void*> arg_p{arg_to_pointer(args)...};
-    std::vector<dimn_t> arg_s{sizeof(Args)...};
-
     Queue default_queue;
-    auto status = launch_sync(default_queue, arg_p, arg_s, params);
+    auto status = launch_sync(default_queue, {KernelArgument(args)...}, params);
     RPY_CHECK(status == EventStatus::CompletedSuccessfully);
 }
 
