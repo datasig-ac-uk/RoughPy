@@ -71,7 +71,7 @@ TEST_F(ScalarTypeTests, BasicInfoFloat)
 
     ASSERT_EQ(info.device.device_type, DeviceType::CPU);
     ASSERT_EQ(info.device.device_id, 0);
-    ASSERT_EQ(info.basic_info.bits, sizeof(float) * 8);
+    ASSERT_EQ(info.basic_info.bytes, sizeof(float));
     ASSERT_EQ(info.basic_info.code, ScalarTypeCode::Float);
     ASSERT_EQ(info.basic_info.lanes, 1);
 }
@@ -87,7 +87,7 @@ TEST_F(ScalarTypeTests, BasicInfoDouble)
 
     ASSERT_EQ(info.device.device_type, DeviceType::CPU);
     ASSERT_EQ(info.device.device_id, 0);
-    ASSERT_EQ(info.basic_info.bits, sizeof(double) * 8);
+    ASSERT_EQ(info.basic_info.bytes, sizeof(double));
     ASSERT_EQ(info.basic_info.code, ScalarTypeCode::Float);
     ASSERT_EQ(info.basic_info.lanes, 1);
 }
