@@ -64,6 +64,8 @@ add_roughpy_component(Device
         src/opencl/ocl_kernel.h
         src/opencl/ocl_queue.cpp
         src/opencl/ocl_queue.h
+        src/opencl/ocl_version.cpp
+        src/opencl/ocl_version.h
         src/buffer.cpp
         src/buffer_interface.cpp
         src/device_handle.cpp
@@ -93,8 +95,11 @@ add_roughpy_component(Device
 
 add_roughpy_test(Devices
     SRC
+    src/opencl/test_ocl_version.cpp
     src/test_cpu_device.cpp
     src/test_gpu_device.cpp
+    DEP
+        OpenCL::OpenCL
     NEEDS
     RoughPy::Device
 )
