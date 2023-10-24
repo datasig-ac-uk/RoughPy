@@ -55,3 +55,7 @@ void* Buffer::ptr() {
     }
     return p_impl->ptr();
 }
+void* Buffer::ptr() const {
+    if (p_impl) { return p_impl->ptr(); }
+    return nullptr;
+}

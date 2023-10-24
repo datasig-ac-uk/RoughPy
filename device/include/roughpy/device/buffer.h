@@ -55,6 +55,7 @@ public:
     RPY_NO_DISCARD virtual dimn_t size() const;
 
     RPY_NO_DISCARD virtual void* ptr();
+    RPY_NO_DISCARD virtual void* ptr() const;
 };
 
 class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
@@ -70,6 +71,7 @@ public:
     RPY_NO_DISCARD BufferMode mode() const;
 
     RPY_NO_DISCARD void* ptr();
+    RPY_NO_DISCARD void* ptr() const;
 };
 
 }// namespace device

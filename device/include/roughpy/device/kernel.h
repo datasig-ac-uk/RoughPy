@@ -29,8 +29,10 @@
 #define ROUGHPY_DEVICE_KERNEL_H_
 
 #include "core.h"
+#include "device_handle.h"
 #include "device_object_base.h"
 #include "event.h"
+#include "kernel_arg.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/slice.h>
@@ -46,33 +48,25 @@ class KernelLaunchParams
     optional<Dim3> m_offsets;
 
 public:
-
     RPY_NO_DISCARD bool has_work() const noexcept;
 
-    RPY_NO_DISCARD
-    Size3 total_work_dims() const noexcept;
+    RPY_NO_DISCARD Size3 total_work_dims() const noexcept;
 
-    RPY_NO_DISCARD
-    dimn_t total_work_size() const noexcept;
+    RPY_NO_DISCARD dimn_t total_work_size() const noexcept;
 
-    RPY_NO_DISCARD
-    dsize_t num_dims() const noexcept;
+    RPY_NO_DISCARD dsize_t num_dims() const noexcept;
 
-    RPY_NO_DISCARD
-    Dim3 num_work_groups() const noexcept;
+    RPY_NO_DISCARD Dim3 num_work_groups() const noexcept;
 
-    RPY_NO_DISCARD
-    Size3 underflow_of_groups() const noexcept;
+    RPY_NO_DISCARD Size3 underflow_of_groups() const noexcept;
 
     KernelLaunchParams();
 };
-
 
 class RPY_EXPORT KernelInterface : public dtl::InterfaceBase
 {
 
 public:
-
     RPY_NO_DISCARD virtual string name() const;
 
     RPY_NO_DISCARD virtual dimn_t num_args() const;
@@ -120,14 +114,21 @@ public:
     construct_work_mask(const KernelLaunchParams& params);
 
     template <typename... Args>
-    void operator()(Args&&... args) const {
-        RPY_CHECK(sizeof...(args) == num_args());
-    }
-
-
+    void operator()(const KernelLaunchParams& params, Args&&... args);
 };
 
-}// namespace device
+template <typename... Args>
+void Kernel::operator()(const KernelLaunchParams& params, Args&&... args)
+{
+    std::vector<void*> arg_p{arg_to_pointer(args)...};
+    std::vector<dimn_t> arg_s{sizeof(Args)...};
+
+    auto queue = device()->get_default_queue();
+    auto status = launch_sync(queue, arg_p, arg_s, params);
+    RPY_DBG_ASSERT(status == EventStatus::CompletedSuccessfully);
+}
+
+}// namespace devices
 }// namespace rpy
 
 #endif// ROUGHPY_DEVICE_KERNEL_H_

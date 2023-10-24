@@ -30,38 +30,15 @@
 //
 
 #include <roughpy/device/kernel_arg.h>
-
+#include <roughpy/device/buffer.h>
 #include <stdexcept>
 
 using namespace rpy;
 using namespace rpy::devices;
 
-KernelArgument::~KernelArgument() = default;
-
-string KernelArgument::name() const noexcept { return std::string(); }
-string KernelArgument::type_string() const noexcept { return "void"; }
-void KernelArgument::set(Buffer& data) {}
-void KernelArgument::set(const Buffer& data) {}
-void KernelArgument::set(void* data, const TypeInfo& info) {}
-void KernelArgument::set(const void* data, const TypeInfo& info) {}
-
-void KernelArgument::set(half data) {
-    this->set(&data, {TypeCode::Float, sizeof(half), 1});
+void* devices::arg_to_pointer(const Buffer& buffer) {
+    return buffer.ptr();
 }
-void KernelArgument::set(bfloat16 data) {
-    this->set(&data, {TypeCode::BFloat, sizeof(bfloat16), 1});
-}
-void KernelArgument::set(float data) {
-    this->set(&data, {TypeCode::Float, sizeof(float), 1});
-}
-void KernelArgument::set(double data) {
-    this->set(&data, {TypeCode::Float, sizeof(double), 1});
-}
-void KernelArgument::set(const rational_scalar_type& RPY_UNUSED_VAR data) {
-    RPY_THROW(std::invalid_argument, "rational scalar types are not supported"
-                                     " by this device");
-}
-void KernelArgument::set(const rational_poly_scalar& RPY_UNUSED_VAR data) {
-    RPY_THROW(std::invalid_argument, "polynomial scalar types are not supported"
-                                     " by this device");
+void* devices::arg_to_pointer(Buffer& buffer) {
+    return buffer.ptr();
 }
