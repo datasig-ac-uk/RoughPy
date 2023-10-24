@@ -204,7 +204,7 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
     auto info = ctype->info();
     switch (info.basic_info.code) {
         case scalars::ScalarTypeCode::Float:
-            if (info.basic_info.bits > 16) {
+            if (info.basic_info.bytes > 2) {
                 return query_impl<double>(result, interval, schema);
             } else {
                 return query_impl<float>(result, interval, schema);
