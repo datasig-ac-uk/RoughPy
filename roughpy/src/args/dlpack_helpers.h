@@ -65,7 +65,7 @@ constexpr scalars::BasicScalarInfo
 convert_from_dl_datatype(const DLDataType& dtype) noexcept {
     return {
         convert_from_dl_typecode(dtype.code),
-        dtype.bits,
+        static_cast<uint8_t>(dtype.bits / CHAR_BIT),
         dtype.lanes
     };
 }
@@ -75,7 +75,7 @@ convert_to_dl_datatype(const scalars::BasicScalarInfo& info) noexcept
 {
     return {
         convert_to_dl_typecode(info.code),
-        info.bits,
+        static_cast<uint8_t>(info.bytes * CHAR_BIT),
         info.lanes
     };
 }
