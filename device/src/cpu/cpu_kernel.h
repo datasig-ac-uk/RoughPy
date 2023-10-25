@@ -59,8 +59,8 @@ public:
     dimn_t num_args() const override;
     Event launch_kernel_async(
             Queue& queue,
-            Slice<KernelArgument> args,
-            const KernelLaunchParams& params
+            const KernelLaunchParams& params,
+            Slice<KernelArgument> args
     ) override;
 };
 

@@ -79,7 +79,7 @@ dimn_t CPUBuffer::size() const
 {
     return raw_buffer.size;
 }
-void* CPUBuffer::ptr()
+void* CPUBuffer::ptr() noexcept
 {
     return raw_buffer.ptr;
 }
@@ -90,4 +90,8 @@ Device CPUBuffer::device() const noexcept { return CPUDeviceHandle::get(); }
 dimn_t CPUBuffer::ref_count() const noexcept
 {
     return raw_ref_count();
+}
+DeviceType CPUBuffer::type() const noexcept { return DeviceType::CPU; }
+const void* CPUBuffer::ptr() const noexcept {
+    return raw_buffer.ptr;
 }

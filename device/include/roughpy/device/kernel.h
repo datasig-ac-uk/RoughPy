@@ -60,6 +60,8 @@ public:
 
     RPY_NO_DISCARD Size3 underflow_of_groups() const noexcept;
 
+    RPY_NO_DISCARD Dim3 work_groups() const noexcept;
+
     KernelLaunchParams();
 };
 

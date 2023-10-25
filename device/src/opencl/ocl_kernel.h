@@ -40,6 +40,8 @@
 namespace rpy {
 namespace devices {
 
+
+
 class OCLKernel : public KernelInterface
 {
     cl_kernel m_kernel;
@@ -47,6 +49,7 @@ class OCLKernel : public KernelInterface
 
     RPY_UNUSED cl_program program() const;
     RPY_UNUSED cl_context context() const;
+
 
 public:
     OCLKernel(cl_kernel kernel, OCLDevice dev) noexcept;
@@ -59,8 +62,8 @@ public:
     dimn_t num_args() const override;
     Event launch_kernel_async(
             Queue& queue,
-            Slice<KernelArgument> args,
-            const KernelLaunchParams& params
+            const KernelLaunchParams& params,
+            Slice<KernelArgument> args
     ) override;
 
     RPY_NO_DISCARD

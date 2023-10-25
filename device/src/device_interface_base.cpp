@@ -54,3 +54,10 @@ Device devices::dtl::InterfaceBase::device() const noexcept
 {
     return Device(nullptr);
 }
+
+void* devices::dtl::InterfaceBase::ptr() noexcept { return nullptr; }
+
+const void* devices::dtl::InterfaceBase::ptr() const noexcept
+{
+    return nullptr;
+}

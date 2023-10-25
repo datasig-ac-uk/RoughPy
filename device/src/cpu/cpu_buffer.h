@@ -99,7 +99,9 @@ public:
 
     BufferMode mode() const override;
     dimn_t size() const override;
-    void* ptr() override;
+    void* ptr() noexcept override;
+    DeviceType type() const noexcept override;
+    const void* ptr() const noexcept override;
 };
 
 }// namespace devices

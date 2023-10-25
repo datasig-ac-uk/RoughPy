@@ -110,6 +110,10 @@ public:
 
     optional<boost::uuids::uuid> uuid() const noexcept override;
     optional<PCIBusInfo> pci_bus_info() const noexcept override;
+
+    RPY_NO_DISCARD
+    bool is_cpu() const;
+
 };
 
 }// namespace devices

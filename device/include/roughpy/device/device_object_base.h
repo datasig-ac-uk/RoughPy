@@ -49,6 +49,10 @@ public:
     RPY_NO_DISCARD virtual dimn_t ref_count() const noexcept;
     RPY_NO_DISCARD virtual std::unique_ptr<InterfaceBase> clone() const;
     RPY_NO_DISCARD virtual Device device() const noexcept;
+
+    RPY_NO_DISCARD virtual void* ptr() noexcept;
+    RPY_NO_DISCARD virtual const void* ptr() const noexcept;
+
 };
 
 template <typename Interface, typename Derived>
@@ -105,15 +109,19 @@ public:
     RPY_NO_DISCARD Derived clone() const;
     RPY_NO_DISCARD Device device() const noexcept;
 
-    RPY_NO_DISCARD Interface& get() noexcept {
-        RPY_DBG_ASSERT(!!p_impl);
-        return *p_impl;
-    }
-    RPY_NO_DISCARD const Interface& get() const noexcept {
-        RPY_DBG_ASSERT(!!p_impl);
-        return *p_impl;
-    }
+    RPY_NO_DISCARD void* ptr() noexcept;
+    RPY_NO_DISCARD const void* ptr() const noexcept;
 
+    RPY_NO_DISCARD Interface& get() noexcept
+    {
+        RPY_DBG_ASSERT(!!p_impl);
+        return *p_impl;
+    }
+    RPY_NO_DISCARD const Interface& get() const noexcept
+    {
+        RPY_DBG_ASSERT(!!p_impl);
+        return *p_impl;
+    }
 };
 
 template <typename Interface, typename Derived>
@@ -165,6 +173,29 @@ Device devices::dtl::ObjectBase<Interface, Derived>::device() const noexcept
 {
     if (p_impl) { return p_impl->device(); }
     return nullptr;
+}
+template <typename Interface, typename Derived>
+void* ObjectBase<Interface, Derived>::ptr() noexcept
+{
+    if (p_impl) { return p_impl->ptr(); }
+    return nullptr;
+}
+template <typename Interface, typename Derived>
+const void* ObjectBase<Interface, Derived>::ptr() const noexcept
+{
+    if (p_impl) { return p_impl->ptr(); }
+    return nullptr;
+}
+
+template <typename I>
+RPY_NO_DISCARD
+constexpr enable_if_t<
+        is_base_of<InterfaceBase, remove_reference_t<I>>::value,
+        add_lvalue_reference_t<I>>
+device_cast(copy_cv_ref_t<InterfaceBase, remove_reference_t<I>> interface)
+        noexcept
+{
+    return static_cast<add_lvalue_reference_t<I>>(interface);
 }
 
 }// namespace dtl

@@ -48,14 +48,3 @@ dimn_t Buffer::size() const {
     }
     return p_impl->size();
 }
-
-void* Buffer::ptr() {
-    if (!p_impl) {
-        return nullptr;
-    }
-    return p_impl->ptr();
-}
-void* Buffer::ptr() const {
-    if (p_impl) { return p_impl->ptr(); }
-    return nullptr;
-}

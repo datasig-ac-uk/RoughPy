@@ -48,6 +48,11 @@ Size3 KernelLaunchParams::total_work_dims() const noexcept
     return m_work_dims;
 }
 
+Dim3 KernelLaunchParams::work_groups() const noexcept
+{
+    return m_group_size;
+}
+
 dimn_t KernelLaunchParams::total_work_size() const noexcept
 {
     dimn_t result = m_work_dims.x;

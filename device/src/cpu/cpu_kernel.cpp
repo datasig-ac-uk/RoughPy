@@ -51,15 +51,15 @@ string CPUKernel::name() const { return m_name; }
 dimn_t CPUKernel::num_args() const { return m_nargs; }
 Event CPUKernel::launch_kernel_async(
         Queue& queue,
-        Slice<KernelArgument> args,
-        const KernelLaunchParams& params
+        const KernelLaunchParams& params,
+        Slice<KernelArgument> args
 )
 {
     if (queue.is_default() && m_fallback != nullptr) {
         m_fallback(args.begin(), params.total_work_dims());
     }
 
-    return KernelInterface::launch_kernel_async(queue, args, params);
+    return KernelInterface::launch_kernel_async(queue, params, args);
 }
 std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUKernel::clone() const
 {

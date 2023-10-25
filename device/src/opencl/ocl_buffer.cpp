@@ -85,7 +85,7 @@ dimn_t OCLBuffer::size() const
 
     return static_cast<dimn_t>(size);
 }
-void* OCLBuffer::ptr() { return m_buffer; }
+void* OCLBuffer::ptr() noexcept { return m_buffer; }
 std::unique_ptr<devices::dtl::InterfaceBase> OCLBuffer::clone() const
 {
     RPY_DBG_ASSERT(m_buffer != nullptr);
@@ -159,4 +159,7 @@ dimn_t OCLBuffer::ref_count() const noexcept
 }
 DeviceType OCLBuffer::type() const noexcept {
     return DeviceType::OpenCL;
+}
+const void* OCLBuffer::ptr() const noexcept {
+    return m_buffer;
 }

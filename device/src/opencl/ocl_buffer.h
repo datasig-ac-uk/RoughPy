@@ -64,9 +64,8 @@ public:
     RPY_NO_DISCARD
     dimn_t size() const override;
     RPY_NO_DISCARD
-    void* ptr() override;
-
-
+    void* ptr() noexcept override;
+    const void* ptr() const noexcept override;
 
     dimn_t inc_ref();
     dimn_t dec_ref();

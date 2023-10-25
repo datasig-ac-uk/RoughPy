@@ -70,7 +70,12 @@ Event Kernel::launch_async_in_queue(
         );
     }
 
-    return p_impl->launch_kernel_async(queue, args, params);
+    if (!queue.is_default() || queue.device() != device()) {
+        RPY_THROW(std::invalid_argument,
+                  "the queue provided is not a valid queue for this kernel");
+    }
+
+    return p_impl->launch_kernel_async(queue, params, args);
 }
 EventStatus Kernel::launch_sync_in_queue(
         Queue& queue,

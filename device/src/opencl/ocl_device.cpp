@@ -87,9 +87,9 @@ Queue OCLDeviceHandle::make_queue(cl_command_queue queue, bool move) const
     return Queue(std::make_unique<OCLQueue>(queue, this));
 }
 
-static OCLVersion get_ocl_version(cl_device_id device) {
-    auto str_vers
-            = cl::string_info(clGetDeviceInfo, device, CL_DEVICE_VERSION);
+static OCLVersion get_ocl_version(cl_device_id device)
+{
+    auto str_vers = cl::string_info(clGetDeviceInfo, device, CL_DEVICE_VERSION);
 
     return OCLVersion(str_vers);
 }
@@ -304,7 +304,6 @@ OCLDeviceHandle::compile_program(const ExtensionSourceAndOptions& args) const
 
     if (program == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-
     if (cl_supports_version({1, 2})) {
         std::vector<cl_program> header_programs;
         std::vector<const char*> header_names;
@@ -513,7 +512,18 @@ bool OCLDeviceHandle::has_compiler() const noexcept
 
     return compiler_available != 0;
 }
-DeviceType OCLDeviceHandle::type() const noexcept
+DeviceType OCLDeviceHandle::type() const noexcept { return DeviceType::OpenCL; }
+
+bool OCLDeviceHandle::is_cpu() const
 {
-    return DeviceType::OpenCL;
+    cl_device_type dev_type;
+    auto ecode = clGetDeviceInfo(
+            m_device,
+            CL_DEVICE_TYPE,
+            sizeof(dev_type),
+            &dev_type,
+            nullptr
+    );
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    return dev_type == CL_DEVICE_TYPE_CPU;
 }
