@@ -37,7 +37,6 @@
 namespace rpy {
 namespace devices {
 
-
 class RPY_EXPORT KernelArgument
 {
 
@@ -84,47 +83,45 @@ public:
           m_info(dtl::type_info<T>())
     {}
 
-    RPY_NO_DISCARD
-    constexpr bool is_buffer() const noexcept {
+    RPY_NO_DISCARD constexpr bool is_buffer() const noexcept
+    {
         return m_mode == BufferPointer || m_mode == ConstBufferPointer;
     }
 
-    RPY_NO_DISCARD
-    constexpr bool is_const() const noexcept {
+    RPY_NO_DISCARD constexpr bool is_const() const noexcept
+    {
         return m_mode == ConstPointer || m_mode == ConstBufferPointer;
     }
 
-    RPY_NO_DISCARD
-    constexpr void* pointer() const noexcept {
+    RPY_NO_DISCARD constexpr void* pointer() const noexcept
+    {
         RPY_DBG_ASSERT(m_mode == Pointer);
         return p_data;
     }
 
-    RPY_NO_DISCARD
-    constexpr const void* const_pointer() const noexcept {
+    RPY_NO_DISCARD constexpr const void* const_pointer() const noexcept
+    {
         RPY_DBG_ASSERT(!is_buffer());
         return (m_mode == Pointer) ? p_data : p_const_data;
     }
 
-    RPY_NO_DISCARD
-    constexpr Buffer& buffer() const noexcept {
+    RPY_NO_DISCARD constexpr Buffer& buffer() const noexcept
+    {
         RPY_DBG_ASSERT(m_mode == BufferPointer);
         return *p_buffer;
     }
 
-    RPY_NO_DISCARD
-    constexpr const Buffer& const_buffer() const noexcept {
+    RPY_NO_DISCARD constexpr const Buffer& const_buffer() const noexcept
+    {
         RPY_DBG_ASSERT(is_buffer());
-        return (m_mode == BufferPointer) ? *p_buffer : *p_const_buffer;
+        return (m_mode == BufferPointer) ? static_cast<const Buffer&>(*p_buffer)
+                                         : *p_const_buffer;
     }
 
-    RPY_NO_DISCARD
-    constexpr dimn_t size() const noexcept {
+    RPY_NO_DISCARD constexpr dimn_t size() const noexcept
+    {
         return (is_buffer()) ? sizeof(void*) : m_info.bytes;
     }
-
-
-
 };
 
 }// namespace devices

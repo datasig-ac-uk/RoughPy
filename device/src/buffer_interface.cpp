@@ -46,9 +46,3 @@ BufferMode BufferInterface::mode() const {
 dimn_t BufferInterface::size() const {
     return 0;
 }
-
-void* BufferInterface::ptr() {
-    return nullptr;
-}
-
-void* BufferInterface::ptr() const { return nullptr; }

@@ -151,7 +151,7 @@ void check_and_set_argument(
                     device->context(),
                     flags,
                     buf_ref.size(),
-                    buf_ref.ptr(),
+                    static_cast<cl_mem>(const_cast<void*>(buf_ref.ptr())),
                     &ecode
             );
             if (new_buffer == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
@@ -229,7 +229,6 @@ Event OCLKernel::launch_kernel_async(
 )
 {
     RPY_DBG_ASSERT(m_kernel != nullptr);
-    RPY_DBG_ASSERT(args.size() == arg_sizes.size());
 
     auto n_args = num_args();
     RPY_DBG_ASSERT(args.size() == n_args);

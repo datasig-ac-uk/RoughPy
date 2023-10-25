@@ -55,11 +55,7 @@ Event CPUKernel::launch_kernel_async(
         Slice<KernelArgument> args
 )
 {
-    if (queue.is_default() && m_fallback != nullptr) {
-        m_fallback(args.begin(), params.total_work_dims());
-    }
-
-    return KernelInterface::launch_kernel_async(queue, params, args);
+    return Event();
 }
 std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUKernel::clone() const
 {

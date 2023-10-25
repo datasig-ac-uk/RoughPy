@@ -35,10 +35,3 @@
 
 using namespace rpy;
 using namespace rpy::devices;
-
-void* devices::arg_to_pointer(const Buffer& buffer) {
-    return buffer.ptr();
-}
-void* devices::arg_to_pointer(Buffer& buffer) {
-    return buffer.ptr();
-}
