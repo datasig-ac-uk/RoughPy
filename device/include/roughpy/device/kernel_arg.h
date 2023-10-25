@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_DEVICE_KERNEL_ARG_H_
 #define ROUGHPY_DEVICE_KERNEL_ARG_H_
@@ -37,23 +36,6 @@
 
 namespace rpy {
 namespace devices {
-
-template <typename T>
-constexpr void* arg_to_pointer(T& arg) noexcept
-{
-    return std::addressof(arg);
-}
-
-template <typename T>
-constexpr void* arg_to_pointer(const T& arg) noexcept
-{
-    return const_cast<void*>(static_cast<const void*>(&arg));
-}
-
-void* arg_to_pointer(const Buffer& buffer);
-void* arg_to_pointer(Buffer& buffer);
-
-
 
 
 class RPY_EXPORT KernelArgument
@@ -95,7 +77,6 @@ public:
           m_info(dtl::type_info<T>())
     {}
 
-
     template <typename T>
     explicit KernelArgument(const T& data)
         : p_const_data(&data),
@@ -103,10 +84,44 @@ public:
           m_info(dtl::type_info<T>())
     {}
 
+    RPY_NO_DISCARD
+    constexpr bool is_buffer() const noexcept {
+        return m_mode == BufferPointer || m_mode == ConstBufferPointer;
+    }
 
+    RPY_NO_DISCARD
+    constexpr bool is_const() const noexcept {
+        return m_mode == ConstPointer || m_mode == ConstBufferPointer;
+    }
 
+    RPY_NO_DISCARD
+    constexpr void* pointer() const noexcept {
+        RPY_DBG_ASSERT(m_mode == Pointer);
+        return p_data;
+    }
 
+    RPY_NO_DISCARD
+    constexpr const void* const_pointer() const noexcept {
+        RPY_DBG_ASSERT(!is_buffer());
+        return (m_mode == Pointer) ? p_data : p_const_data;
+    }
 
+    RPY_NO_DISCARD
+    constexpr Buffer& buffer() const noexcept {
+        RPY_DBG_ASSERT(m_mode == BufferPointer);
+        return *p_buffer;
+    }
+
+    RPY_NO_DISCARD
+    constexpr const Buffer& const_buffer() const noexcept {
+        RPY_DBG_ASSERT(is_buffer());
+        return (m_mode == BufferPointer) ? *p_buffer : *p_const_buffer;
+    }
+
+    RPY_NO_DISCARD
+    constexpr dimn_t size() const noexcept {
+        return (is_buffer()) ? sizeof(void*) : m_info.bytes;
+    }
 
 
 

@@ -42,11 +42,9 @@ dimn_t KernelInterface::num_args() const { return 0; }
 
 Event KernelInterface::launch_kernel_async(
         Queue& queue,
-        Slice<KernelArgument> args,
-        const KernelLaunchParams& params
+        const KernelLaunchParams& params,
+        Slice<KernelArgument> args
 )
 {
     return Event();
 }
-
-void KernelInterface::init_args(std::vector<KernalArgument*>& args) const {}

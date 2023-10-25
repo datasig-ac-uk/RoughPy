@@ -73,11 +73,10 @@ public:
 
     RPY_NO_DISCARD virtual Event launch_kernel_async(
             Queue& queue,
-            Slice<KernelArgument> args,
-            const KernelLaunchParams& params
+            const KernelLaunchParams& params,
+            Slice<KernelArgument> args
     );
 
-    virtual void init_args(std::vector<KernalArgument*>& args) const;
 };
 
 class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
@@ -95,17 +94,23 @@ public:
 
     RPY_NO_DISCARD dimn_t num_args() const;
 
-    RPY_NO_DISCARD Event launch_async(
+    RPY_NO_DISCARD Event launch_async_in_queue(
             Queue& queue,
-            Slice<KernelArgument> args,
-            const KernelLaunchParams& params
+            const KernelLaunchParams& params,
+            Slice<KernelArgument> args
     );
 
-    RPY_NO_DISCARD EventStatus launch_sync(
+    RPY_NO_DISCARD EventStatus launch_sync_in_queue(
             Queue& queue,
-            Slice<KernalArgument> args,
-            const KernelLaunchParams& params
+            const KernelLaunchParams& params,
+            Slice<KernelArgument> args
     );
+
+    RPY_NO_DISCARD Event
+    launch_async(const KernelLaunchParams& params, Slice<KernelArgument> args);
+
+    RPY_NO_DISCARD EventStatus
+    launch_sync(const KernelLaunchParams& params, Slice<KernelArgument> args);
 
     RPY_NO_DISCARD static std::vector<bitmask_t>
     construct_work_mask(const KernelLaunchParams& params);
@@ -117,9 +122,51 @@ public:
 template <typename... Args>
 void Kernel::operator()(const KernelLaunchParams& params, Args&&... args)
 {
-    Queue default_queue;
-    auto status = launch_sync(default_queue, {KernelArgument(args)...}, params);
+    auto status = launch_sync({KernelArgument(args)...}, params);
     RPY_CHECK(status == EventStatus::CompletedSuccessfully);
+}
+
+template <typename... Args>
+RPY_NO_DISCARD
+Event launch_async(
+        Kernel kernel,
+        const KernelLaunchParams& params,
+        Args... args
+)
+{
+    return kernel.launch_async(params, {KernelArgument(args)...});
+}
+
+template <typename... Args>
+EventStatus
+launch_sync(Kernel kernel, const KernelLaunchParams& params, Args... args)
+{
+    return kernel.launch_sync(params, {KernelArgument(args)...});
+}
+
+template <typename... Args>
+RPY_NO_DISCARD
+Event launch_async(
+        Kernel kernel,
+        Queue& queue,
+        const KernelLaunchParams& params,
+        Args... args
+)
+{
+    return kernel
+            .launch_async_in_queue(queue, params, {KernelArgument(args)...});
+}
+
+template <typename... Args>
+EventStatus launch_sync(
+        Kernel kernel,
+        Queue& queue,
+        const KernelLaunchParams& params,
+        Args... args
+)
+{
+    return kernel
+            .launch_sync_in_queue(queue, params, {KernelArgument(args)...});
 }
 
 }// namespace devices
