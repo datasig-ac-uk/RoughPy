@@ -216,6 +216,7 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
             return query_impl<double>(result, interval, schema);
         case scalars::ScalarTypeCode::Complex:
         case scalars::ScalarTypeCode::Bool:
+        default:
             RPY_THROW(std::runtime_error, "no conversion to complex or bool "
                                           "types");
     }

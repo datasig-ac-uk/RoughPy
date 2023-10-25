@@ -114,11 +114,13 @@ const ScalarType* ScalarType::from_type_details(
         case ScalarTypeCode::OpaqueHandle: RPY_FALLTHROUGH;
         case ScalarTypeCode::Complex: RPY_FALLTHROUGH;
         case ScalarTypeCode::Bool:
+        default:
             RPY_THROW(
                     std::invalid_argument,
                     "opaque handles, complex, and bool arguments are not "
                     "currently supported"
             );
+
     }
     RPY_UNREACHABLE_RETURN(nullptr);
 }
