@@ -104,6 +104,16 @@ public:
     RPY_NO_DISCARD dimn_t ref_count() const noexcept;
     RPY_NO_DISCARD Derived clone() const;
     RPY_NO_DISCARD Device device() const noexcept;
+
+    RPY_NO_DISCARD Interface& get() noexcept {
+        RPY_DBG_ASSERT(!!p_impl);
+        return *p_impl;
+    }
+    RPY_NO_DISCARD const Interface& get() const noexcept {
+        RPY_DBG_ASSERT(!!p_impl);
+        return *p_impl;
+    }
+
 };
 
 template <typename Interface, typename Derived>
