@@ -37,7 +37,7 @@ using namespace rpy;
 
 TEST(CPUDevice, TestDeviceInfo)
 {
-    auto device = devices::get_cpu_device();
+    auto device = devices::get_host_device();
 
     auto info = device->info();
 
@@ -47,7 +47,7 @@ TEST(CPUDevice, TestDeviceInfo)
 
 TEST(CPUDevice, TestSupportedBasicTypes)
 {
-    auto device = devices::get_cpu_device();
+    auto device = devices::get_host_device();
 
     devices::TypeInfo f32_info{devices::TypeCode::Float, 32, 1};
     EXPECT_TRUE(device->supports_type(f32_info));
@@ -58,14 +58,14 @@ TEST(CPUDevice, TestSupportedBasicTypes)
 
 TEST(CPUDevice, TestDefaultQueueIsDefault)
 {
-    auto device = devices::get_cpu_device();
+    auto device = devices::get_host_device();
 
     ASSERT_TRUE(device->get_default_queue().is_default());
 }
 
 TEST(CPUDevice, TestAllocBufferCorrectSize)
 {
-    auto device = devices::get_cpu_device();
+    auto device = devices::get_host_device();
 
     auto buffer = device->raw_alloc(128, 16);
 
@@ -82,7 +82,7 @@ protected:
 
     void SetUp() override
     {
-        device = devices::get_cpu_device();
+        device = devices::get_host_device();
         if (!device->has_compiler()) {
             GTEST_SKIP() << "No OpenCL device for CPU";
         }

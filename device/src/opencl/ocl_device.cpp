@@ -534,7 +534,7 @@ Event OCLDeviceHandle::from_host(
         Queue& queue
 ) const
 {
-    auto host = get_cpu_device();
+    auto host = get_host_device();
     auto buffer_size = src.size();
     RPY_DBG_ASSERT(src.device() == host);
 
@@ -572,7 +572,7 @@ Event OCLDeviceHandle::to_host(Buffer& dst, const Buffer& src, Queue& queue)
         const
 {
     RPY_DBG_ASSERT(src.device() == this);
-    auto host = get_cpu_device();
+    auto host = get_host_device();
     auto buffer_size = src.size();
 
     if (dst.is_null()) {

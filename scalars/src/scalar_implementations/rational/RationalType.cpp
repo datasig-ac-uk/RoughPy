@@ -76,7 +76,8 @@ RationalType::RationalType()
                                     0, 0,
                                     },
             {       devices::DeviceType::CPU, 0   }
-}, devices::get_cpu_device())
+},
+            devices::get_host_device())
 {}
 ScalarPointer RationalType::allocate(std::size_t count) const
 {

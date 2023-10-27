@@ -60,7 +60,8 @@ public:
                 alignof(rational_poly_scalar),
                 {ScalarTypeCode::APRationalPolynomial, 0, 0},
                 {devices::DeviceType::CPU, 0},
-    }, devices::get_cpu_device())
+    },
+                devices::get_host_device())
     {}
 
     const ScalarType* rational_type() const noexcept override;

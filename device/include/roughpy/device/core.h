@@ -261,7 +261,7 @@ class Queue;
 using Device = boost::intrusive_ptr<const DeviceHandle>;
 using HostDevice = boost::intrusive_ptr<const HostDeviceHandle>;
 
-RPY_EXPORT HostDevice get_cpu_device();
+RPY_EXPORT HostDevice get_host_device();
 RPY_EXPORT Device get_default_device();
 RPY_EXPORT optional<Device> get_device(const DeviceSpecification& spec);
 

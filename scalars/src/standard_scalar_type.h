@@ -94,7 +94,8 @@ public:
                 alignof(ScalarImpl),
                 {ScalarTypeCode::Float, sizeof(ScalarImpl), 1U},
                 {devices::DeviceType::CPU, 0}
-    }, devices::get_cpu_device())
+    },
+                devices::get_host_device())
     {}
 
     explicit StandardScalarType(const ScalarTypeInfo& info)
@@ -106,7 +107,7 @@ public:
             BasicScalarInfo basic_info, DeviceInfo device_info
     )
         : helper({name, id, size, align, basic_info, device_info},
-                 devices::get_cpu_device())
+                devices::get_host_device())
     {}
 
     Scalar

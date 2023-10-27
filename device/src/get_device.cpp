@@ -84,5 +84,5 @@ optional<Device> rpy::devices::get_device(const DeviceSpecification& spec)
     return {};
 }
 
-HostDevice rpy::devices::get_cpu_device() { return CPUDeviceHandle::get(); }
+HostDevice rpy::devices::get_host_device() { return CPUDeviceHandle::get(); }
 Device rpy::devices::get_default_device() { return CPUDeviceHandle::get(); }
