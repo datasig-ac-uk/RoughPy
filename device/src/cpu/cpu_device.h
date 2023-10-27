@@ -32,7 +32,7 @@
 #ifndef ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_DEVICE_H_
 #define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_DEVICE_H_
 
-#include <roughpy/device/device_handle.h>
+#include <roughpy/device/host_device.h>
 
 #include "opencl/ocl_decls.h"
 #include "opencl/ocl_headers.h"
@@ -48,7 +48,7 @@
 namespace rpy {
 namespace devices {
 
-class CPUDeviceHandle : public DeviceHandle
+class CPUDeviceHandle : public HostDeviceHandle
 {
     OCLDevice p_ocl_handle;
 
