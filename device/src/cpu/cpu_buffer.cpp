@@ -95,3 +95,31 @@ DeviceType CPUBuffer::type() const noexcept { return DeviceType::CPU; }
 const void* CPUBuffer::ptr() const noexcept {
     return raw_buffer.ptr;
 }
+Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
+        const
+{
+    if (device == this->device()) {
+        /*
+         * There are two cases we need to work with here. The first is that
+         * the buffer dst is empty, in which case we simply allocate and copy.
+         * The second case is that dst has an existing allocation that can be
+         * either large enough or not. If it is exactly the right size, use
+         * the buffer and otherwise reallocate. Finally, copy.
+         */
+        if (dst.is_null()) {
+            dst = device->raw_alloc(raw_buffer.size, 0);
+        } else if (dst.size() != raw_buffer.size) {
+            dst = device->raw_alloc(raw_buffer.size, 0);
+        }
+
+        std::memcpy(dst.ptr(), raw_buffer.ptr, raw_buffer.size);
+
+        return {};
+    }
+
+    /*
+     * If the target device is not the host device, then we need to invoke
+     * the to_device function on device to initiate the copy.
+     */
+    return device->from_host(dst, *this, queue);
+}

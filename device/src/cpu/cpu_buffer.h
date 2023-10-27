@@ -102,6 +102,9 @@ public:
     void* ptr() noexcept override;
     DeviceType type() const noexcept override;
     const void* ptr() const noexcept override;
+
+    Event
+    to_device(Buffer& dst, const Device& device, Queue& queue) const override;
 };
 
 }// namespace devices
