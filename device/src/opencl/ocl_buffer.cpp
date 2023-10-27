@@ -85,7 +85,7 @@ dimn_t OCLBuffer::size() const
 
     return static_cast<dimn_t>(size);
 }
-void* OCLBuffer::ptr() noexcept { return m_buffer; }
+void* OCLBuffer::ptr() noexcept { return &m_buffer; }
 std::unique_ptr<devices::dtl::InterfaceBase> OCLBuffer::clone() const
 {
     RPY_DBG_ASSERT(m_buffer != nullptr);
