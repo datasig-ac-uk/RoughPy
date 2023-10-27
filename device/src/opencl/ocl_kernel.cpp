@@ -104,24 +104,11 @@ dimn_t OCLKernel::num_args() const
 
 namespace {
 
-class TempBuffers : public std::vector<cl_mem>
-{
-public:
-    using std::vector<cl_mem>::vector;
-
-    ~TempBuffers()
-    {
-        for (auto&& buf : *this) { clReleaseMemObject(buf); }
-        clear();
-    }
-};
-
 void check_and_set_argument(
         cl_kernel kernel,
         OCLDevice device,
         cl_uint arg_idx,
-        const KernelArgument& arg,
-        TempBuffers& tmps
+        const KernelArgument& arg
 )
 {
     cl_int ecode = CL_SUCCESS;
@@ -129,51 +116,17 @@ void check_and_set_argument(
         /*
          * Buffers need special attention here because they might not be
          * buffers allocated using OpenCL or on the same device. Currently,
-         * we're going to simply use OpenCL buffers, and map CPU buffers
-         * (that are not OpenCL) into OpenCL buffers.
+         * we're only going to use OpenCL buffers that have the correct device.
          *
          * We might handle this differently in the future.
          */
         const auto& buf_ref = arg.const_buffer();
-        if (buf_ref.type() == DeviceType::OpenCL) {
+        if (buf_ref.device() == device) {
             ecode = clSetKernelArg(
                     kernel,
                     arg_idx,
                     sizeof(cl_mem),
                     buf_ref.ptr()
-            );
-        } else if (buf_ref.type() == DeviceType::CPU) {
-            cl_mem_flags flags = device->is_cpu() ? CL_MEM_USE_HOST_PTR
-                                                  : CL_MEM_COPY_HOST_PTR;
-            if (arg.is_const()) { flags |= CL_MEM_READ_ONLY; }
-
-            auto new_buffer = clCreateBuffer(
-                    device->context(),
-                    flags,
-                    buf_ref.size(),
-                    static_cast<cl_mem>(const_cast<void*>(buf_ref.ptr())),
-                    &ecode
-            );
-            if (new_buffer == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-            try {
-                tmps.push_back(new_buffer);
-            } catch (...) {
-                /*
-                 * If pushing the new buffer to the back of the tmps vector
-                 * fails, then it won't be added to the vector but we still
-                 * need to handle clean-up.
-                 */
-                clReleaseMemObject(new_buffer);
-                // Rethrow the in-flight error
-                throw;
-            }
-
-            ecode = clSetKernelArg(
-                    kernel,
-                    arg_idx,
-                    sizeof(new_buffer),
-                    new_buffer
             );
         } else {
             RPY_THROW(
@@ -235,11 +188,20 @@ Event OCLKernel::launch_kernel_async(
 
     cl_int ecode = CL_SUCCESS;
 
+    /*
+     * The Kernel class has already checked that queue is either a default queue
+     * (i.e. it is empty) or it has the correct device. Thus casting from
+     * queue.ptr() to a cl_command_queue is perfectly safe.
+     */
+    auto queue_to_use = cl::scoped_guard(
+            (queue.is_default()) ? m_device->default_queue()
+                                 : static_cast<cl_command_queue>(queue.ptr())
+    );
+
     // RAII vector of buffer objects, properly clears on exit
-    TempBuffers temp_buffers;
 
     for (cl_uint i = 0; i < n_args; ++i) {
-        check_and_set_argument(m_kernel, m_device, i, args[i], temp_buffers);
+        check_and_set_argument(m_kernel, m_device, i, args[i]);
     }
 
     cl_uint work_dim = params.num_dims();
@@ -247,30 +209,6 @@ Event OCLKernel::launch_kernel_async(
     auto group_size = params.work_groups();
     dimn_t gw_size[3] = {work_size.x, work_size.y, work_size.z};
     dimn_t lw_size[3] = {group_size.x, group_size.y, group_size.z};
-
-    // This is messy, but it gets the job done.
-    //    gw_size[0] = params.grid_work_size.x;
-    //    lw_size[0] = params.grid_work_size.x;
-    //    if (params.grid_work_size.y > 1) {
-    //        gw_size[1] = params.grid_work_size.y;
-    //        lw_size[1] = params.block_work_size.y;
-    //        ++work_dim;
-    //
-    //        if (params.grid_work_size.z > 1) {
-    //            gw_size[2] = params.grid_work_size.z;
-    //            lw_size[2] = params.block_work_size.z;
-    //            ++work_dim;
-    //        }
-    //    }
-
-    /*
-     * The Kernel class has already checked that queue is either a default queue
-     * (i.e. it is empty) or it has the correct device. Thus casting from
-     * queue.ptr() to a cl_command_queue is perfectly safe.
-     */
-    cl_command_queue queue_to_use = (queue.is_default())
-            ? m_device->default_queue()
-            : static_cast<cl_command_queue>(queue.ptr());
 
     cl_event event;
     ecode = clEnqueueNDRangeKernel(
