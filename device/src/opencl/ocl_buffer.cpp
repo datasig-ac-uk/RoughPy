@@ -34,6 +34,9 @@
 #include "ocl_device.h"
 #include "ocl_handle_errors.h"
 #include "ocl_headers.h"
+#include "ocl_helpers.h"
+
+#include <roughpy/device/host_device.h>
 
 #include <utility>
 
@@ -47,7 +50,6 @@ devices::OCLBuffer::OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept
     : m_device(std::move(dev)),
       m_buffer(buffer)
 {}
-
 
 BufferMode OCLBuffer::mode() const
 {
@@ -151,52 +153,119 @@ const void* OCLBuffer::ptr() const noexcept { return &m_buffer; }
 Event OCLBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
         const
 {
+    if (device == m_device) {
+        dst = construct(this->clone());
+        return Event();
+    }
+
+    if (device == get_host_device()) {
+        return m_device->to_host(dst, *this, queue);
+    }
+
+    auto queue_to_use_this = cl::scoped_guard(
+            queue.is_default() ? m_device->default_queue()
+                               : static_cast<cl_command_queue>(queue.ptr())
+    );
+
+    auto buffer_size = size();
+
+    if (device->type() == DeviceType::OpenCL) {
+        // The device is an OpenCL device but is not this device.
+        // We can safely cast up to a OCLDeviceHandle from the raw DeviceHandle.
+        const OCLDeviceHandle& ocl_handle
+                = static_cast<const OCLDeviceHandle&>(*device);
+
+        /*
+         * The procedure is going to be as follows:
+         *  1) Map the source buffer (this) into host-accessible memory.
+         *  2) Write the contents of the mapped buffer into the destination
+         *  buffer (dst).
+         *
+         *  There might be a better way to do this if both platforms share
+         *  the same platform or are otherwise related.
+         */
+        cl_int ecode = CL_SUCCESS;
+        auto map_event = cl::scoped_guard(static_cast<cl_event>(nullptr));
+        auto* mapped_data = clEnqueueMapBuffer(
+                queue_to_use_this,
+                m_buffer,
+                CL_FALSE,
+                CL_MAP_READ,
+                0,
+                buffer_size,
+                0,
+                nullptr,
+                map_event.ptr(),
+                &ecode
+        );
+
+        if (mapped_data == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+        cl_uint wait_events = 0;
+        auto write_event = cl::scoped_guard(static_cast<cl_event>(nullptr));
+        if (m_device->context() == ocl_handle.context()) {
+            /*
+             * Things are dramatically simpler if the devices have the same
+             * context since we can just reuse some of the parts.
+             */
+            ecode = clEnqueueWriteBuffer(
+                    queue_to_use_this,
+                    *static_cast<cl_mem*>(dst.ptr()),
+                    CL_FALSE,
+                    0,
+                    buffer_size,
+                    mapped_data,
+                    1,
+                    map_event.ptr(),
+                    write_event.ptr()
+            );
+
+            if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+            wait_events = 1;
+        } else {
+            /*
+             * I don't know whether events can be passed between contexts
+             * safely, so let's assume not. So now we have to wait on the map
+             * event, then perform a blocking write to dst.
+             */
+            ecode = clWaitForEvents(1, map_event.ptr());
+
+            if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+            auto queue_to_use_other
+                    = cl::scoped_guard(ocl_handle.default_queue());
+
+            ecode = clEnqueueWriteBuffer(
+                    queue_to_use_other,
+                    *static_cast<cl_mem*>(dst.ptr()),
+                    CL_TRUE,
+                    0,
+                    buffer_size,
+                    mapped_data,
+                    0,
+                    nullptr,
+                    nullptr
+            );
+
+            if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+        }
+
+        cl_event unmap_event;
+        ecode = clEnqueueUnmapMemObject(
+                queue_to_use_this,
+                m_buffer,
+                mapped_data,
+                wait_events,
+                (wait_events == 0) ? nullptr : write_event.ptr(),
+                &unmap_event
+        );
+
+        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+        return m_device->make_event(unmap_event);
+    }
+
+
+
     return BufferInterface::to_device(dst, device, queue);
 }
-
-//Buffer OCLBuffer::read() const
-//{
-//    auto buffer_size = size();
-//
-//    auto host_buffer = get_cpu_device()->raw_alloc(buffer_size, 0);
-//
-//
-//    auto ecode = clEnqueueReadBuffer(
-//            m_device->default_queue(),
-//            m_buffer,
-//            CL_TRUE,
-//            0,
-//            buffer_size,
-//            host_buffer.ptr(),
-//            0,
-//            nullptr,
-//            nullptr
-//    );
-//
-//    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-//
-//    return host_buffer;
-//}
-//void OCLBuffer::write()
-//{
-//    RPY_CHECK(static_cast<bool>(m_host_buffer));
-//    // CHECK host_device is cpu.
-//
-//    auto buffer_size = size();
-//    RPY_CHECK(buffer_size == m_host_buffer->size());
-//
-//    auto ecode = clEnqueueWriteBuffer(
-//            m_device->default_queue(),
-//            m_buffer,
-//            CL_TRUE,
-//            0,
-//            buffer_size,
-//            m_host_buffer->ptr(),
-//            0,
-//            nullptr,
-//            nullptr
-//    );
-//
-//    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-//
-//}

@@ -568,7 +568,8 @@ Event OCLDeviceHandle::from_host(
 
     return make_event(write_event);
 }
-Event OCLDeviceHandle::to_host(Buffer& dst, const Buffer& src, Queue& queue)
+Event OCLDeviceHandle::to_host(Buffer& dst,
+        const BufferInterface& src, Queue& queue)
         const
 {
     RPY_DBG_ASSERT(src.device() == this);
@@ -605,4 +606,14 @@ Event OCLDeviceHandle::to_host(Buffer& dst, const Buffer& src, Queue& queue)
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 
     return make_event(read_event);
+}
+
+cl_platform_id OCLDeviceHandle::get_platform() const {
+
+    cl_platform_id platform = nullptr;
+    auto ecode = clGetDeviceInfo(m_device, CL_DEVICE_PLATFORM, sizeof
+                                 (platform), &platform, nullptr);
+
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    return platform;
 }

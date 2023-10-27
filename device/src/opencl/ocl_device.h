@@ -62,10 +62,7 @@ class OCLDeviceHandle : public DeviceHandle
     mutable std::vector<cl_program> m_programs;
     mutable std::unordered_map<string, cl_program> m_header_cache;
 
-    Buffer make_buffer(cl_mem buffer, bool move = false) const;
-    Event make_event(cl_event event, bool move = true) const;
-    Kernel make_kernel(cl_kernel kernel, bool move = false) const;
-    Queue make_queue(cl_command_queue queue, bool move = true) const;
+
 
     using typename DeviceHandle::guard_type;
 
@@ -85,9 +82,6 @@ public:
     bool has_compiler() const noexcept override;
 
 private:
-
-    bool cl_supports_version(OCLVersion version) const;
-
     cl_program
     get_header_program(const string& name, const string& source) const;
     cl_program compile_program(const ExtensionSourceAndOptions& args) const;
@@ -111,12 +105,30 @@ public:
     optional<boost::uuids::uuid> uuid() const noexcept override;
     optional<PCIBusInfo> pci_bus_info() const noexcept override;
 
-    RPY_NO_DISCARD
-    bool is_cpu() const;
+
+
 
     Event from_host(Buffer& dst, const BufferInterface& src, Queue& queue)
             const override;
-    Event to_host(Buffer& dst, const Buffer& src, Queue& queue) const override;
+    Event to_host(Buffer& dst, const BufferInterface& src, Queue& queue) const override;
+
+    RPY_NO_DISCARD
+    bool is_cpu() const;
+
+    RPY_NO_DISCARD
+    cl_platform_id get_platform() const;
+    RPY_NO_DISCARD
+    bool cl_supports_version(OCLVersion version) const;
+
+    RPY_NO_DISCARD
+    Buffer make_buffer(cl_mem buffer, bool move = false) const;
+    RPY_NO_DISCARD
+    Event make_event(cl_event event, bool move = true) const;
+    RPY_NO_DISCARD
+    Kernel make_kernel(cl_kernel kernel, bool move = false) const;
+    RPY_NO_DISCARD
+    Queue make_queue(cl_command_queue queue, bool move = true) const;
+
 };
 
 }// namespace devices

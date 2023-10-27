@@ -115,6 +115,10 @@ public:
     }
 
     constexpr operator CLType() const noexcept { return m_data; }
+
+    constexpr CLType* ptr() noexcept { return &m_data; }
+    constexpr const CLType* ptr() const noexcept { return &m_data; }
+
 };
 
 }// namespace dtl
