@@ -65,6 +65,7 @@ class ObjectBase
 
     friend class rpy::devices::DeviceHandle;
     friend class InterfaceBase;
+    friend Interface;
 
     using interface_type = Interface;
 
