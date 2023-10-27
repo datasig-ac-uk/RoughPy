@@ -129,37 +129,73 @@ OCLBuffer::~OCLBuffer() {
     m_buffer = nullptr;
 }
 
-dimn_t OCLBuffer::inc_ref() {
-    if (RPY_LIKELY(m_buffer != nullptr)) {
-        auto ecode = clRetainMemObject(m_buffer);
-        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
-    }
-    return 0;
-}
-
-dimn_t OCLBuffer::dec_ref() {
-    if (RPY_LIKELY(m_buffer != nullptr)) {
-        auto rc = ref_count();
-        auto ecode = clReleaseMemObject(m_buffer);
-        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
-        return rc;
-    }
-    return 0;
-}
 dimn_t OCLBuffer::ref_count() const noexcept
 {
     if (m_buffer != nullptr) {
         cl_uint ref_count = 0;
-        auto ecode = clGetMemObjectInfo(m_buffer, CL_MEM_REFERENCE_COUNT,
-                                        sizeof(ref_count), &ref_count, nullptr);
+        auto ecode = clGetMemObjectInfo(
+                m_buffer,
+                CL_MEM_REFERENCE_COUNT,
+                sizeof(ref_count),
+                &ref_count,
+                nullptr
+        );
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
         return static_cast<dimn_t>(ref_count);
     }
     return 0;
 }
-DeviceType OCLBuffer::type() const noexcept {
-    return DeviceType::OpenCL;
+DeviceType OCLBuffer::type() const noexcept { return DeviceType::OpenCL; }
+const void* OCLBuffer::ptr() const noexcept { return &m_buffer; }
+Event OCLBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
+        const
+{
+    return BufferInterface::to_device(dst, device, queue);
 }
-const void* OCLBuffer::ptr() const noexcept {
-    return m_buffer;
-}
+
+//Buffer OCLBuffer::read() const
+//{
+//    auto buffer_size = size();
+//
+//    auto host_buffer = get_cpu_device()->raw_alloc(buffer_size, 0);
+//
+//
+//    auto ecode = clEnqueueReadBuffer(
+//            m_device->default_queue(),
+//            m_buffer,
+//            CL_TRUE,
+//            0,
+//            buffer_size,
+//            host_buffer.ptr(),
+//            0,
+//            nullptr,
+//            nullptr
+//    );
+//
+//    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+//
+//    return host_buffer;
+//}
+//void OCLBuffer::write()
+//{
+//    RPY_CHECK(static_cast<bool>(m_host_buffer));
+//    // CHECK host_device is cpu.
+//
+//    auto buffer_size = size();
+//    RPY_CHECK(buffer_size == m_host_buffer->size());
+//
+//    auto ecode = clEnqueueWriteBuffer(
+//            m_device->default_queue(),
+//            m_buffer,
+//            CL_TRUE,
+//            0,
+//            buffer_size,
+//            m_host_buffer->ptr(),
+//            0,
+//            nullptr,
+//            nullptr
+//    );
+//
+//    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+//
+//}

@@ -67,9 +67,8 @@ public:
     void* ptr() noexcept override;
     const void* ptr() const noexcept override;
 
-    dimn_t inc_ref();
-    dimn_t dec_ref();
-
+    Event
+    to_device(Buffer& dst, const Device& device, Queue& queue) const override;
 };
 
 }// namespace device
