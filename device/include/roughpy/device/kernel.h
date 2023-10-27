@@ -136,39 +136,37 @@ public:
 template <typename... Args>
 void Kernel::operator()(const KernelLaunchParams& params, Args&&... args)
 {
-    auto status = launch_sync({KernelArgument(args)...}, params);
+    KernelArgument kargs[] = {KernelArgument(args)...};
+    auto status = launch_sync(params, kargs);
     RPY_CHECK(status == EventStatus::CompletedSuccessfully);
 }
 
 template <typename... Args>
-RPY_NO_DISCARD
-Event launch_async(
-        Kernel kernel,
-        const KernelLaunchParams& params,
-        Args... args
-)
+RPY_NO_DISCARD Event
+launch_async(Kernel kernel, const KernelLaunchParams& params, Args... args)
 {
-    return kernel.launch_async(params, {KernelArgument(args)...});
+    KernelArgument kargs[] = {KernelArgument(args)...};
+    return kernel.launch_async(params, kargs);
 }
 
 template <typename... Args>
 EventStatus
 launch_sync(Kernel kernel, const KernelLaunchParams& params, Args... args)
 {
-    return kernel.launch_sync(params, {KernelArgument(args)...});
+    KernelArgument kargs[] = {KernelArgument(args)...};
+    return kernel.launch_sync(params, kargs);
 }
 
 template <typename... Args>
-RPY_NO_DISCARD
-Event launch_async(
+RPY_NO_DISCARD Event launch_async(
         Kernel kernel,
         Queue& queue,
         const KernelLaunchParams& params,
         Args... args
 )
 {
-    return kernel
-            .launch_async_in_queue(queue, params, {KernelArgument(args)...});
+    KernelArgument kargs[] = {KernelArgument(args)...};
+    return kernel.launch_async_in_queue(queue, params, kargs);
 }
 
 template <typename... Args>
@@ -179,8 +177,8 @@ EventStatus launch_sync(
         Args... args
 )
 {
-    return kernel
-            .launch_sync_in_queue(queue, params, {KernelArgument(args)...});
+    KernelArgument kargs[] = {KernelArgument(args)...};
+    return kernel.launch_sync_in_queue(queue, params, kargs);
 }
 
 }// namespace devices
