@@ -123,7 +123,8 @@ Event DeviceHandle::from_host(
 {
     return Event();
 }
-Event DeviceHandle::to_host(Buffer& dst, const Buffer& src, Queue& queue) const
+Event DeviceHandle::to_host(Buffer& dst,
+        const BufferInterface& src, Queue& queue) const
 {
     return Event();
 }

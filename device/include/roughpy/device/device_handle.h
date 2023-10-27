@@ -121,7 +121,7 @@ public:
     RPY_NO_DISCARD virtual Event
     from_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
 
-    virtual Event to_host(Buffer& dst, const Buffer& src, Queue& queue) const;
+    virtual Event to_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
 };
 
 
