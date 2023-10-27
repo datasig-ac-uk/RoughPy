@@ -224,9 +224,9 @@ Kernel make_kernel(void (*fn)(Args...)) noexcept
 }
 
 static const bc::flat_map<string_view, Kernel> s_kernels{
-        {"masked_uminus_double",
-         make_kernel(kernels::masked_binary_into_buffer<
-         double, std::plus<double>>)}
+//        {"masked_uminus_double",
+//         make_kernel(kernels::masked_binary_into_buffer<
+//         double, std::plus<double>>)}
 };
 
 optional<Kernel> CPUDeviceHandle::get_kernel(const string& name) const noexcept
