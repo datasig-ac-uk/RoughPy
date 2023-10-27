@@ -70,7 +70,7 @@ Event Kernel::launch_async_in_queue(
         );
     }
 
-    if (!queue.is_default() || queue.device() != device()) {
+    if (!queue.is_default() && queue.device() != device()) {
         RPY_THROW(std::invalid_argument,
                   "the queue provided is not a valid queue for this kernel");
     }
