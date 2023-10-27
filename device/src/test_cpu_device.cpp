@@ -29,16 +29,14 @@
 // Created by sam on 18/10/23.
 //
 
-
 #include <gtest/gtest.h>
 
-#include <roughpy/device/device_handle.h>
-
+#include <roughpy/device/host_device.h>
 
 using namespace rpy;
 
-
-TEST(CPUDevice, TestDeviceInfo) {
+TEST(CPUDevice, TestDeviceInfo)
+{
     auto device = devices::get_cpu_device();
 
     auto info = device->info();
@@ -47,33 +45,26 @@ TEST(CPUDevice, TestDeviceInfo) {
     ASSERT_EQ(info.device_id, 0);
 }
 
-
-TEST(CPUDevice, TestSupportedBasicTypes) {
+TEST(CPUDevice, TestSupportedBasicTypes)
+{
     auto device = devices::get_cpu_device();
 
-    devices::TypeInfo f32_info{
-            devices::TypeCode::Float,
-            32,
-            1
-    };
+    devices::TypeInfo f32_info{devices::TypeCode::Float, 32, 1};
     EXPECT_TRUE(device->supports_type(f32_info));
 
-    devices::TypeInfo f64_info{
-            devices::TypeCode::Float,
-            64,
-            1
-    };
+    devices::TypeInfo f64_info{devices::TypeCode::Float, 64, 1};
     EXPECT_TRUE(device->supports_type(f64_info));
 }
 
-TEST(CPUDevice, TestDefaultQueueIsDefault) {
+TEST(CPUDevice, TestDefaultQueueIsDefault)
+{
     auto device = devices::get_cpu_device();
 
     ASSERT_TRUE(device->get_default_queue().is_default());
 }
 
-
-TEST(CPUDevice, TestAllocBufferCorrectSize) {
+TEST(CPUDevice, TestAllocBufferCorrectSize)
+{
     auto device = devices::get_cpu_device();
 
     auto buffer = device->raw_alloc(128, 16);
@@ -81,15 +72,16 @@ TEST(CPUDevice, TestAllocBufferCorrectSize) {
     EXPECT_EQ(buffer.size(), 128);
 }
 
-
 namespace {
 
-class TestCPUDeviceOCL : public ::testing::Test {
+class TestCPUDeviceOCL : public ::testing::Test
+{
 
 protected:
     devices::Device device;
 
-    void SetUp() override {
+    void SetUp() override
+    {
         device = devices::get_cpu_device();
         if (!device->has_compiler()) {
             GTEST_SKIP() << "No OpenCL device for CPU";
@@ -97,12 +89,10 @@ protected:
     }
 };
 
+}// namespace
 
-
-}
-
-
-TEST_F(TestCPUDeviceOCL, TestCreateKernelFromSource) {
+TEST_F(TestCPUDeviceOCL, TestCreateKernelFromSource)
+{
     devices::ExtensionSourceAndOptions ext;
 
     ext.sources.push_back(R"cl(
@@ -112,10 +102,29 @@ TEST_F(TestCPUDeviceOCL, TestCreateKernelFromSource) {
         }
     )cl");
 
-
     auto kernel = device->compile_kernel_from_str(ext);
+    auto k_device = kernel->device();
 
     EXPECT_TRUE(static_cast<bool>(kernel));
     EXPECT_EQ(kernel->name(), "test_kernel");
 
+    dimn_t count = 50;
+    auto buf = device->raw_alloc(count * sizeof(float), sizeof(float));
+    auto* raw = static_cast<float*>(buf.ptr());
+
+    for (dimn_t i = 0; i < count; ++i) { raw[i] = static_cast<float>(i); }
+
+    devices::Buffer kbuf;
+    buf.to_device(kbuf, k_device);
+    devices::KernelLaunchParams params(devices::Size3{count}, devices::Dim3{1});
+
+    (*kernel)(params, kbuf);
+
+    kbuf.to_device(buf, device);
+    auto result = buf.as_slice<float>();
+    ASSERT_EQ(result.size(), count);
+    for (dimn_t i = 0; i < count; ++i) {
+        ASSERT_EQ(result[i], static_cast<float>(i))
+                << "Index " << i << " mismatch";
+    }
 }
