@@ -121,7 +121,8 @@ std::unique_ptr<devices::dtl::InterfaceBase> OCLBuffer::clone() const
     return std::make_unique<OCLBuffer>(new_buffer, m_device);
 }
 Device OCLBuffer::device() const noexcept { return m_device; }
-OCLBuffer::~OCLBuffer() {
+OCLBuffer::~OCLBuffer()
+{
     if (RPY_LIKELY(m_buffer != nullptr)) {
         auto ecode = clReleaseMemObject(m_buffer);
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
