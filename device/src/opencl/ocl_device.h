@@ -114,6 +114,9 @@ public:
     RPY_NO_DISCARD
     bool is_cpu() const;
 
+    Event from_host(Buffer& dst, const BufferInterface& src, Queue& queue)
+            const override;
+    Event to_host(Buffer& dst, const Buffer& src, Queue& queue) const override;
 };
 
 }// namespace devices
