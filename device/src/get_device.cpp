@@ -33,8 +33,7 @@
 #include <roughpy/device/device_handle.h>
 #include <roughpy/device/device_provider.h>
 
-#include "cpu/cpu_device.h"
-#include "cpu/cpu_device_provider.h"
+#include "host/host_device_impl.h"
 #include "opencl/ocl_device_provider.h"
 
 #include <boost/container/small_vector.hpp>
@@ -54,7 +53,6 @@ void DeviceProvider::register_provider(
 {
     std::lock_guard<std::mutex> access(s_provider_lock);
     if (s_provider_list.empty()) {
-        s_provider_list.emplace_back(new CPUDeviceProvider);
         s_provider_list.emplace_back(new OCLDeviceProvider);
     }
 
@@ -65,7 +63,6 @@ optional<Device> rpy::devices::get_device(const DeviceSpecification& spec)
 {
     std::lock_guard<std::mutex> access(s_provider_lock);
     if (s_provider_list.empty()) {
-        s_provider_list.emplace_back(new CPUDeviceProvider);
         s_provider_list.emplace_back(new OCLDeviceProvider);
     }
 
