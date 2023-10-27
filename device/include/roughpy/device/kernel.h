@@ -48,6 +48,18 @@ class KernelLaunchParams
     optional<Dim3> m_offsets;
 
 public:
+    explicit KernelLaunchParams(Size3 work_dims)
+        : m_work_dims(work_dims),
+          m_group_size(),
+          m_offsets()
+    {}
+
+    explicit KernelLaunchParams(Size3 work_dims, Dim3 group_size)
+            : m_work_dims(work_dims),
+          m_group_size(group_size),
+          m_offsets()
+    {}
+
     RPY_NO_DISCARD bool has_work() const noexcept;
 
     RPY_NO_DISCARD Size3 total_work_dims() const noexcept;
