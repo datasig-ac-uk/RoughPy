@@ -48,6 +48,11 @@ enum class BufferMode
 
 class BufferInterface : public dtl::InterfaceBase
 {
+
+protected:
+    static inline Buffer construct(std::unique_ptr<InterfaceBase>&& iface
+    ) noexcept;
+
 public:
     RPY_NO_DISCARD virtual BufferMode mode() const;
 
@@ -75,6 +80,12 @@ public:
 
 };
 
-}// namespace device
+Buffer BufferInterface::construct(std::unique_ptr<InterfaceBase>&& iface
+) noexcept
+{
+    return Buffer(std::move(iface));
+}
+
+}// namespace devices
 }// namespace rpy
 #endif// ROUGHPY_DEVICE_BUFFER_H_
