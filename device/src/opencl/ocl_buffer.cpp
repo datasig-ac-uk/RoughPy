@@ -65,7 +65,7 @@ BufferMode OCLBuffer::mode() const
     switch (mode & MODE_MASK) {
         case CL_MEM_READ_WRITE: return BufferMode::ReadWrite;
         case CL_MEM_WRITE_ONLY: return BufferMode::Write;
-    case CL_MEM_READ_ONLY: return BufferMode::Read;
+        case CL_MEM_READ_ONLY: return BufferMode::Read;
         default: RPY_THROW(std::runtime_error, "invalid buffer mode");
     }
 }
