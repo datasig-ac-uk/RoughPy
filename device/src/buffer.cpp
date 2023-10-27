@@ -31,6 +31,7 @@
 
 #include <roughpy/device/buffer.h>
 
+#include <roughpy/device/device_handle.h>
 
 using namespace rpy;
 using namespace rpy::devices;
@@ -47,4 +48,28 @@ dimn_t Buffer::size() const {
         return 0;
     }
     return p_impl->size();
+}
+
+static inline bool check_device_compatibility(Buffer& dst, const Device& device)
+{
+    if (dst.is_null() || !device) { return true; }
+
+    RPY_CHECK(dst.device() == device);
+
+    return true;
+}
+
+
+void Buffer::to_device(Buffer& dst, const Device& device) const {
+    if (p_impl && check_device_compatibility(dst, device)) {
+        auto queue = device->get_default_queue();
+        p_impl->to_device(dst, device, queue).wait();
+    }
+}
+Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue) const
+{
+    if (p_impl && check_device_compatibility(dst, device)) {
+        return p_impl->to_device(dst, device, queue);
+    }
+    return {};
 }

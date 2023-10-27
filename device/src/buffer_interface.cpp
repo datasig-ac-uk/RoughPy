@@ -31,7 +31,7 @@
 
 
 #include <roughpy/device/buffer.h>
-
+#include <roughpy/device/event.h>
 
 using namespace rpy;
 using namespace rpy::devices;
@@ -45,4 +45,12 @@ BufferMode BufferInterface::mode() const {
 
 dimn_t BufferInterface::size() const {
     return 0;
+}
+Event BufferInterface::to_device(
+        Buffer& dst,
+        const Device& device,
+        Queue& queue
+) const
+{
+    return Event();
 }

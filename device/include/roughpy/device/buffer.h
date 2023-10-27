@@ -58,6 +58,8 @@ public:
 
     RPY_NO_DISCARD virtual dimn_t size() const;
 
+    RPY_NO_DISCARD virtual Event
+    to_device(Buffer& dst, const Device& device, Queue& queue) const;
 };
 
 class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
@@ -66,7 +68,6 @@ class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
 
 public:
     using base_t::base_t;
-
 
     RPY_NO_DISCARD dimn_t size() const;
 
@@ -78,6 +79,9 @@ public:
         return {static_cast<const T*>(ptr()), size() / sizeof(T)};
     }
 
+    void to_device(Buffer& dst, const Device& device) const;
+
+    Event to_device(Buffer& dst, const Device& device, Queue& queue) const;
 };
 
 Buffer BufferInterface::construct(std::unique_ptr<InterfaceBase>&& iface
