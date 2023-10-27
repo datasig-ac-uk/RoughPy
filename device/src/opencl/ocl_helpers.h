@@ -81,8 +81,81 @@ RPY_NO_DISCARD inline cl_device_type to_ocl_device_type(DeviceCategory category
     RPY_UNREACHABLE_RETURN(CL_DEVICE_TYPE_CPU);
 }
 
+namespace dtl {
+
+template <typename CLType>
+class ScopedCLObject
+{
+    CLType m_data;
+
+    using function_t = cl_int (*)(CLType);
+
+    function_t p_retain;
+    function_t p_release;
+
+public:
+    constexpr ScopedCLObject(
+            CLType data,
+            function_t retain,
+            function_t release
+    ) noexcept
+        : m_data(data),
+          p_retain(retain),
+          p_release(release)
+    {
+        if (p_retain) { p_retain(m_data); }
+    }
+
+    ~ScopedCLObject() noexcept
+    {
+        if (m_data && p_release) {
+            auto ecode = p_release(m_data);
+            RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+        }
+    }
+
+    constexpr operator CLType() const noexcept { return m_data; }
+};
+
+}// namespace dtl
+
+inline dtl::ScopedCLObject<cl_context> scoped_guard(cl_context data) noexcept
+{
+    return {data, clRetainContext, clReleaseContext};
+}
+inline dtl::ScopedCLObject<cl_device_id> scoped_guard(cl_device_id data
+) noexcept
+{
+    return {data, clRetainDevice, clReleaseDevice};
+}
+inline dtl::ScopedCLObject<cl_program> scoped_guard(cl_program data) noexcept
+{
+    return {data, clRetainProgram, clReleaseProgram};
+}
+inline dtl::ScopedCLObject<cl_mem> scoped_guard(cl_mem data) noexcept
+{
+    return {data, clRetainMemObject, clReleaseMemObject};
+}
+inline dtl::ScopedCLObject<cl_command_queue> scoped_guard(cl_command_queue data
+) noexcept
+{
+    return {data, clRetainCommandQueue, clReleaseCommandQueue};
+}
+inline dtl::ScopedCLObject<cl_kernel> scoped_guard(cl_kernel data) noexcept
+{
+    return {data, clRetainKernel, clReleaseKernel};
+}
+inline dtl::ScopedCLObject<cl_event> scoped_guard(cl_event data) noexcept
+{
+    return {data, clRetainEvent, clReleaseEvent};
+}
+inline dtl::ScopedCLObject<cl_sampler> scoped_guard(cl_sampler data) noexcept
+{
+    return {data, clRetainSampler, clReleaseSampler};
+}
+
 }// namespace cl
-}// namespace device
+}// namespace devices
 }// namespace rpy
 
 #endif// ROUGHPY_DEVICE_SRC_OPENCL_OCL_HELPERS_H_
