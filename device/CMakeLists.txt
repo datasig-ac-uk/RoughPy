@@ -20,21 +20,21 @@ add_roughpy_component(Device
         include/roughpy/device/types.h
         include/roughpy/device.h
         SOURCES
-        src/cpu/kernels/masked_binary.h
-        src/cpu/kernels/masked_binary_bfloat16.cpp
-        src/cpu/kernels/masked_binary_double.cpp
-        src/cpu/kernels/masked_binary_float.cpp
-        src/cpu/kernels/masked_binary_half.cpp
-        src/cpu/kernels/masked_binary_poly.cpp
-        src/cpu/kernels/masked_binary_rational.cpp
-        src/cpu/kernels/masked_unary.h
-        src/cpu/kernels/masked_unary_bfloat16.cpp
-        src/cpu/kernels/masked_unary_double.cpp
-        src/cpu/kernels/masked_unary_float.cpp
-        src/cpu/kernels/masked_unary_half.cpp
-        src/cpu/kernels/masked_unary_poly.cpp
-        src/cpu/kernels/masked_unary_rational.cpp
-        src/cpu/kernels/operators.h
+#        src/cpu/kernels/masked_binary.h
+#        src/cpu/kernels/masked_binary_bfloat16.cpp
+#        src/cpu/kernels/masked_binary_double.cpp
+#        src/cpu/kernels/masked_binary_float.cpp
+#        src/cpu/kernels/masked_binary_half.cpp
+#        src/cpu/kernels/masked_binary_poly.cpp
+#        src/cpu/kernels/masked_binary_rational.cpp
+#        src/cpu/kernels/masked_unary.h
+#        src/cpu/kernels/masked_unary_bfloat16.cpp
+#        src/cpu/kernels/masked_unary_double.cpp
+#        src/cpu/kernels/masked_unary_float.cpp
+#        src/cpu/kernels/masked_unary_half.cpp
+#        src/cpu/kernels/masked_unary_poly.cpp
+#        src/cpu/kernels/masked_unary_rational.cpp
+#        src/cpu/kernels/operators.h
         src/cpu/cpu_buffer.cpp
         src/cpu/cpu_buffer.h
         src/cpu/cpu_decls.h
