@@ -12,11 +12,13 @@ add_roughpy_component(Device
         include/roughpy/device/device_handle.h
         include/roughpy/device/device_object_base.h
         include/roughpy/device/event.h
+        include/roughpy/device/host_device.h
         include/roughpy/device/kernel.h
         include/roughpy/device/kernel_arg.h
         include/roughpy/device/macros.h
         include/roughpy/device/queue.h
         include/roughpy/device/types.h
+        include/roughpy/device.h
         SOURCES
         src/cpu/kernels/masked_binary.h
         src/cpu/kernels/masked_binary_bfloat16.cpp
