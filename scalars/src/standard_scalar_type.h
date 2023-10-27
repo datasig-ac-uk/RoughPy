@@ -39,7 +39,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include <roughpy/device/device_handle.h>
+#include <roughpy/device.h>
 #include <roughpy/scalars/conversion.h>
 #include <roughpy/scalars/random.h>
 #include <roughpy/scalars/scalar_type.h>

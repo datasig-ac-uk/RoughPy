@@ -33,7 +33,7 @@
 #define ROUGHPY_SCALARS_SRC_RATIONAL_POLY_SCALAR_TYPE_H
 
 #include <roughpy/device/core.h>
-#include <roughpy/device/device_handle.h>
+#include <roughpy/device.h>
 #include <roughpy/scalars/types.h>
 
 #include "conversion.h"
