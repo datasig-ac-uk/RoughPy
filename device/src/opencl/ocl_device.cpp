@@ -527,3 +527,81 @@ bool OCLDeviceHandle::is_cpu() const
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
     return dev_type == CL_DEVICE_TYPE_CPU;
 }
+Event OCLDeviceHandle::from_host(
+        Buffer& dst,
+        const BufferInterface& src,
+        Queue& queue
+) const
+{
+    auto host = get_cpu_device();
+    auto buffer_size = src.size();
+    RPY_DBG_ASSERT(src.device() == host);
+
+    if (dst.is_null()) {
+        dst = OCLDeviceHandle::raw_alloc(buffer_size, 0);
+    } else if (dst.size() != buffer_size) {
+        dst = OCLDeviceHandle::raw_alloc(buffer_size, 0);
+    } else {
+        RPY_DBG_ASSERT(dst.device() == this);
+    }
+
+    auto queue_to_use = cl::scoped_guard(
+            (queue.is_default()) ? m_default_queue
+                                 : static_cast<cl_command_queue>(queue.ptr())
+    );
+
+    cl_event write_event = nullptr;
+    auto ecode = clEnqueueWriteBuffer(
+            queue_to_use,
+            *static_cast<cl_mem*>(dst.ptr()),
+            CL_FALSE,
+            0,
+            buffer_size,
+            src.ptr(),
+            0,
+            nullptr,
+            &write_event
+    );
+
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return make_event(write_event);
+}
+Event OCLDeviceHandle::to_host(Buffer& dst, const Buffer& src, Queue& queue)
+        const
+{
+    RPY_DBG_ASSERT(src.device() == this);
+    auto host = get_cpu_device();
+    auto buffer_size = src.size();
+
+    if (dst.is_null()) {
+        dst = host->raw_alloc(buffer_size, 0);
+    } else if (dst.size() != buffer_size) {
+        dst = host->raw_alloc(buffer_size, 0);
+    } else {
+        RPY_DBG_ASSERT(dst.device() == host);
+    }
+
+
+    auto queue_to_use = cl::scoped_guard(
+            (queue.is_default()) ? m_default_queue
+                                 : static_cast<cl_command_queue>(queue.ptr())
+    );
+
+    cl_event read_event = nullptr;
+    auto ecode = clEnqueueReadBuffer(
+            queue_to_use,
+            *static_cast<cl_mem*>(const_cast<void*>(src.ptr())),
+            CL_TRUE,
+            0,
+            buffer_size,
+            dst.ptr(),
+            0,
+            nullptr,
+            &read_event
+    );
+
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return make_event(read_event);
+}
