@@ -108,24 +108,20 @@ public:
     virtual void compile_kernels_from_src(const ExtensionSourceAndOptions& args
     ) const;
 
-    RPY_NO_DISCARD
-    virtual Event new_event() const;
-    RPY_NO_DISCARD
-    virtual Queue new_queue() const;
-    RPY_NO_DISCARD
-    virtual Queue get_default_queue() const;
+    RPY_NO_DISCARD virtual Event new_event() const;
+    RPY_NO_DISCARD virtual Queue new_queue() const;
+    RPY_NO_DISCARD virtual Queue get_default_queue() const;
 
-    RPY_NO_DISCARD
-    virtual optional<boost::uuids::uuid> uuid() const noexcept;
-    RPY_NO_DISCARD
-    virtual optional<PCIBusInfo> pci_bus_info() const noexcept;
+    RPY_NO_DISCARD virtual optional<boost::uuids::uuid> uuid() const noexcept;
+    RPY_NO_DISCARD virtual optional<PCIBusInfo> pci_bus_info() const noexcept;
 
-    RPY_NO_DISCARD
-    virtual bool supports_type(const TypeInfo& info) const noexcept;
+    RPY_NO_DISCARD virtual bool supports_type(const TypeInfo& info
+    ) const noexcept;
 
+    RPY_NO_DISCARD virtual Event
+    from_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
 
-    
-
+    virtual Event to_host(Buffer& dst, const Buffer& src, Queue& queue) const;
 };
 
 

@@ -114,3 +114,16 @@ bool DeviceHandle::supports_type(const TypeInfo& info) const noexcept
     return false;
 }
 DeviceType DeviceHandle::type() const noexcept { return DeviceType::CPU; }
+
+Event DeviceHandle::from_host(
+        Buffer& dst,
+        const BufferInterface& src,
+        Queue& queue
+) const
+{
+    return Event();
+}
+Event DeviceHandle::to_host(Buffer& dst, const Buffer& src, Queue& queue) const
+{
+    return Event();
+}
