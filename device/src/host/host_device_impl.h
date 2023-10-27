@@ -64,6 +64,7 @@ class CPUDeviceHandle : public HostDeviceHandle
 
     std::atomic_size_t* get_ref_count() const;
 
+
     CPUDeviceHandle();
     ~CPUDeviceHandle();
 public:
@@ -89,6 +90,8 @@ public:
 
     RPY_NO_DISCARD
     OCLDevice ocl_device() const noexcept;
+
+    Device compute_delegate() const override;
 };
 
 }// namespace device

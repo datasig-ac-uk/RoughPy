@@ -280,3 +280,11 @@ bool CPUDeviceHandle::has_compiler() const noexcept
     if (p_ocl_handle) { return p_ocl_handle->has_compiler(); }
     return false;
 }
+Device CPUDeviceHandle::compute_delegate() const
+{
+    if (!p_ocl_handle) {
+        RPY_THROW(std::runtime_error, "no compute delegate is available on "
+                                      "the host device");
+    }
+    return p_ocl_handle;
+}

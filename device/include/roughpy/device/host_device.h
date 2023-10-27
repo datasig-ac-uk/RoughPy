@@ -35,6 +35,12 @@ namespace devices {
 
 class HostDeviceHandle : public DeviceHandle
 {
+
+public:
+
+    RPY_NO_DISCARD
+    virtual Device compute_delegate() const = 0;
+
 };
 }// namespace devices
 }// namespace rpy
