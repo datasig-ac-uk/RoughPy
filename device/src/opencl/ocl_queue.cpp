@@ -92,3 +92,5 @@ dimn_t OCLQueue::ref_count() const noexcept
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     return rc;
 }
+void* OCLQueue::ptr() noexcept { return m_queue; }
+const void* OCLQueue::ptr() const noexcept { return m_queue; }

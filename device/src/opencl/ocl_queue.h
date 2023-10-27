@@ -54,6 +54,8 @@ public:
     dimn_t ref_count() const noexcept override;
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
     dimn_t size() const override;
+    void* ptr() noexcept override;
+    const void* ptr() const noexcept override;
 };
 
 }// namespace device
