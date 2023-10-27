@@ -32,6 +32,7 @@
 #include "device_object_base.h"
 
 #include <roughpy/core/macros.h>
+#include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>
 
 namespace rpy {
@@ -65,6 +66,12 @@ public:
     RPY_NO_DISCARD dimn_t size() const;
 
     RPY_NO_DISCARD BufferMode mode() const;
+
+    template <typename T>
+    Slice<const T> as_slice() const
+    {
+        return {static_cast<const T*>(ptr()), size() / sizeof(T)};
+    }
 
 };
 
