@@ -29,7 +29,7 @@
 // Created by user on 16/10/23.
 //
 
-#include "cpu_buffer.h"
+#include "host_buffer.h"
 
 #include <roughpy/device/device_handle.h>
 #include <roughpy/device/device_object_base.h>
@@ -37,7 +37,7 @@
 #include "opencl/ocl_device.h"
 #include "opencl/ocl_handle_errors.h"
 
-#include "cpu_device.h"
+#include "host_device_impl.h"
 
 using namespace rpy;
 using namespace rpy::devices;

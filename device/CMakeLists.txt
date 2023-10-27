@@ -35,19 +35,19 @@ add_roughpy_component(Device
 #        src/cpu/kernels/masked_unary_poly.cpp
 #        src/cpu/kernels/masked_unary_rational.cpp
 #        src/cpu/kernels/operators.h
-        src/cpu/cpu_buffer.cpp
-        src/cpu/cpu_buffer.h
-        src/cpu/cpu_decls.h
-        src/cpu/cpu_device.cpp
-        src/cpu/cpu_device.h
-        src/cpu/cpu_device_provider.cpp
-        src/cpu/cpu_device_provider.h
-        src/cpu/cpu_event.cpp
-        src/cpu/cpu_event.h
-        src/cpu/cpu_kernel.cpp
-        src/cpu/cpu_kernel.h
-        src/cpu/cpu_queue.cpp
-        src/cpu/cpu_queue.h
+        src/host/host_buffer.cpp
+        src/host/host_buffer.h
+        src/host/host_decls.h
+        src/host/host_device_impl.cpp
+        src/host/host_device_impl.h
+        src/host/host_device_provider.cpp
+        src/host/host_device_provider.h
+        src/host/host_event.cpp
+        src/host/host_event.h
+        src/host/host_kernel.cpp
+        src/host/host_kernel.h
+        src/host/host_queue.cpp
+        src/host/host_queue.h
         src/opencl/ocl_buffer.cpp
         src/opencl/ocl_buffer.h
         src/opencl/ocl_decls.h

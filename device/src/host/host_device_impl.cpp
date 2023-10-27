@@ -29,7 +29,7 @@
 // Created by user on 16/10/23.
 //
 
-#include "cpu_device.h"
+#include "host_device_impl.h"
 
 #include <roughpy/core/alloc.h>
 
@@ -41,10 +41,10 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/container/small_vector.hpp>
 
-#include "cpu_buffer.h"
-#include "cpu_event.h"
-#include "cpu_kernel.h"
-#include "cpu_queue.h"
+#include "host_buffer.h"
+#include "host_event.h"
+#include "host_kernel.h"
+#include "host_queue.h"
 #include "opencl/ocl_buffer.h"
 #include "opencl/ocl_device.h"
 #include "opencl/ocl_event.h"

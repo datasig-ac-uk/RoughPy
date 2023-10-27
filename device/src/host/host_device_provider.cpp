@@ -26,11 +26,28 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 16/10/23.
+// Created by user on 17/10/23.
 //
 
-#include "cpu_queue.h"
+#include "host_device_provider.h"
+#include "host_device_impl.h"
 
-namespace rpy {
-namespace devices {}// namespace device
-}// namespace rpy
+using namespace rpy;
+using namespace rpy::devices;
+
+bool CPUDeviceProvider::supports(DeviceCategory category) const noexcept
+{
+    return category == DeviceCategory::CPU;
+}
+int CPUDeviceProvider::priority(const DeviceSpecification& spec) const noexcept
+{
+    if (spec.category() == DeviceCategory::CPU) {
+        return 100;
+    }
+    return 0;
+}
+Device CPUDeviceProvider::get(const DeviceSpecification& specification
+) noexcept
+{
+    return CPUDeviceHandle::get();
+}

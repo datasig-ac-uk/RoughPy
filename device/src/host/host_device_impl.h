@@ -37,7 +37,7 @@
 #include "opencl/ocl_decls.h"
 #include "opencl/ocl_headers.h"
 
-#include "cpu_decls.h"
+#include "host_decls.h"
 
 #include <boost/container/stable_vector.hpp>
 

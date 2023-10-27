@@ -26,28 +26,39 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 17/10/23.
+// Created by user on 16/10/23.
 //
 
-#include "cpu_device_provider.h"
-#include "cpu_device.h"
+#include "host_kernel.h"
+#include "host_device_impl.h"
+
+#include <roughpy/core/helpers.h>
 
 using namespace rpy;
 using namespace rpy::devices;
 
-bool CPUDeviceProvider::supports(DeviceCategory category) const noexcept
+
+
+CPUKernel::CPUKernel(fallback_kernel_t fallback, uint32_t nargs, string name)
+    : m_fallback(fallback),
+      m_name(std::move(name)),
+      m_nargs(nargs)
+{}
+
+
+
+string CPUKernel::name() const { return m_name; }
+dimn_t CPUKernel::num_args() const { return m_nargs; }
+Event CPUKernel::launch_kernel_async(
+        Queue& queue,
+        const KernelLaunchParams& params,
+        Slice<KernelArgument> args
+)
 {
-    return category == DeviceCategory::CPU;
+    return Event();
 }
-int CPUDeviceProvider::priority(const DeviceSpecification& spec) const noexcept
+std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUKernel::clone() const
 {
-    if (spec.category() == DeviceCategory::CPU) {
-        return 100;
-    }
-    return 0;
+    return std::make_unique<CPUKernel>(m_fallback, m_nargs, m_name);
 }
-Device CPUDeviceProvider::get(const DeviceSpecification& specification
-) noexcept
-{
-    return CPUDeviceHandle::get();
-}
+Device CPUKernel::device() const noexcept { return CPUDeviceHandle::get(); }

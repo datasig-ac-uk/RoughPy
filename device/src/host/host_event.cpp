@@ -29,36 +29,28 @@
 // Created by user on 16/10/23.
 //
 
-#include "cpu_kernel.h"
-#include "cpu_device.h"
-
-#include <roughpy/core/helpers.h>
-
-using namespace rpy;
-using namespace rpy::devices;
-
-
-
-CPUKernel::CPUKernel(fallback_kernel_t fallback, uint32_t nargs, string name)
-    : m_fallback(fallback),
-      m_name(std::move(name)),
-      m_nargs(nargs)
-{}
-
-
-
-string CPUKernel::name() const { return m_name; }
-dimn_t CPUKernel::num_args() const { return m_nargs; }
-Event CPUKernel::launch_kernel_async(
-        Queue& queue,
-        const KernelLaunchParams& params,
-        Slice<KernelArgument> args
-)
-{
-    return Event();
+#include "host_event.h"
+void rpy::devices::CPUEvent::wait() {
+    guard_type access(m_lock);
+    m_cv.wait(access, [this]() {
+        return (m_status == EventStatus::CompletedSuccessfully
+                || m_status == EventStatus::Error);
+    });
 }
-std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUKernel::clone() const
+rpy::devices::EventStatus rpy::devices::CPUEvent::status() const
 {
-    return std::make_unique<CPUKernel>(m_fallback, m_nargs, m_name);
+    guard_type access(m_lock);
+    return m_status;
 }
-Device CPUKernel::device() const noexcept { return CPUDeviceHandle::get(); }
+bool rpy::devices::CPUEvent::is_user() const noexcept
+{
+    return true;
+}
+void rpy::devices::CPUEvent::set_status(rpy::devices::EventStatus status)
+{
+    {
+        guard_type access(m_lock);
+        m_status = status;
+    }
+    m_cv.notify_all();
+}

@@ -29,28 +29,8 @@
 // Created by user on 16/10/23.
 //
 
-#include "cpu_event.h"
-void rpy::devices::CPUEvent::wait() {
-    guard_type access(m_lock);
-    m_cv.wait(access, [this]() {
-        return (m_status == EventStatus::CompletedSuccessfully
-                || m_status == EventStatus::Error);
-    });
-}
-rpy::devices::EventStatus rpy::devices::CPUEvent::status() const
-{
-    guard_type access(m_lock);
-    return m_status;
-}
-bool rpy::devices::CPUEvent::is_user() const noexcept
-{
-    return true;
-}
-void rpy::devices::CPUEvent::set_status(rpy::devices::EventStatus status)
-{
-    {
-        guard_type access(m_lock);
-        m_status = status;
-    }
-    m_cv.notify_all();
-}
+#include "host_queue.h"
+
+namespace rpy {
+namespace devices {}// namespace device
+}// namespace rpy
