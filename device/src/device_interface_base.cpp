@@ -61,3 +61,14 @@ const void* devices::dtl::InterfaceBase::ptr() const noexcept
 {
     return nullptr;
 }
+
+typename devices::dtl::InterfaceBase::reference_count_type
+devices::dtl::InterfaceBase::inc_ref() noexcept
+{
+    return 0;
+}
+typename devices::dtl::InterfaceBase::reference_count_type
+devices::dtl::InterfaceBase::dec_ref() noexcept
+{
+    return 0;
+}

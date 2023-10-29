@@ -49,17 +49,16 @@ enum class BufferMode
 class BufferInterface : public dtl::InterfaceBase
 {
 
-protected:
-    static inline Buffer construct(std::unique_ptr<InterfaceBase>&& iface
-    ) noexcept;
-
 public:
+    using object_t = Buffer;
+
+
     RPY_NO_DISCARD virtual BufferMode mode() const;
 
     RPY_NO_DISCARD virtual dimn_t size() const;
 
     RPY_NO_DISCARD virtual Event
-    to_device(Buffer& dst, const Device& device, Queue& queue) const;
+    to_device(Buffer& dst, const Device& device, Queue& queue);
 };
 
 class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
@@ -79,16 +78,11 @@ public:
         return {static_cast<const T*>(ptr()), size() / sizeof(T)};
     }
 
-    void to_device(Buffer& dst, const Device& device) const;
+    void to_device(Buffer& dst, const Device& device);
 
-    Event to_device(Buffer& dst, const Device& device, Queue& queue) const;
+    Event to_device(Buffer& dst, const Device& device, Queue& queue);
 };
 
-Buffer BufferInterface::construct(std::unique_ptr<InterfaceBase>&& iface
-) noexcept
-{
-    return Buffer(std::move(iface));
-}
 
 }// namespace devices
 }// namespace rpy

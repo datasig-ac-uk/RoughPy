@@ -37,6 +37,6 @@ using namespace rpy::devices;
 
 
 dimn_t Queue::size() const {
-    if (!p_impl) { return 0; }
-    return p_impl->size();
+    if (!impl()) { return 0; }
+    return impl()->size();
 }

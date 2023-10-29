@@ -193,7 +193,7 @@ Event OCLKernel::launch_kernel_async(
      * (i.e. it is empty) or it has the correct device. Thus casting from
      * queue.ptr() to a cl_command_queue is perfectly safe.
      */
-    auto queue_to_use = cl::scoped_guard(
+    auto queue_to_use = (
             (queue.is_default()) ? m_device->default_queue()
                                  : static_cast<cl_command_queue>(queue.ptr())
     );
@@ -225,7 +225,7 @@ Event OCLKernel::launch_kernel_async(
 
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    return Event(std::make_unique<OCLEvent>(event, m_device));
+    return m_device->make_event(event);
 }
 std::unique_ptr<devices::dtl::InterfaceBase> OCLKernel::clone() const
 {
@@ -237,7 +237,8 @@ std::unique_ptr<devices::dtl::InterfaceBase> OCLKernel::clone() const
 
     return std::make_unique<OCLKernel>(new_ker, m_device);
 }
-dimn_t OCLKernel::ref_count() const noexcept
+devices::dtl::InterfaceBase::reference_count_type
+OCLKernel::ref_count() const noexcept
 {
     cl_uint rc = 0;
     auto ecode = clGetKernelInfo(
@@ -248,7 +249,28 @@ dimn_t OCLKernel::ref_count() const noexcept
             nullptr
     );
     if (ecode != CL_SUCCESS) { return 0; }
-    return static_cast<dimn_t>(rc);
+    return static_cast<reference_count_type>(rc);
 }
 Device OCLKernel::device() const noexcept { return m_device; }
 DeviceType OCLKernel::type() const noexcept { return DeviceType::OpenCL; }
+void* OCLKernel::ptr() noexcept { return m_kernel; }
+const void* OCLKernel::ptr() const noexcept { return m_kernel; }
+devices::dtl::InterfaceBase::reference_count_type OCLKernel::inc_ref() noexcept
+{
+    reference_count_type rc = ref_count();
+    if (RPY_LIKELY(m_kernel != nullptr)) {
+        auto ecode = clRetainKernel(m_kernel);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    }
+    return rc;
+}
+devices::dtl::InterfaceBase::reference_count_type OCLKernel::dec_ref() noexcept
+{
+    reference_count_type rc = ref_count();
+    if (RPY_LIKELY(m_kernel != nullptr)) {
+        RPY_DBG_ASSERT(rc > 0);
+        auto ecode = clReleaseKernel(m_kernel);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    }
+    return rc;
+}

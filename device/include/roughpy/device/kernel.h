@@ -48,6 +48,7 @@ class KernelLaunchParams
     optional<Dim3> m_offsets;
 
 public:
+
     explicit KernelLaunchParams(Size3 work_dims)
         : m_work_dims(work_dims),
           m_group_size(),
@@ -79,8 +80,10 @@ public:
 
 class RPY_EXPORT KernelInterface : public dtl::InterfaceBase
 {
-
 public:
+
+    using object_t = Kernel;
+
     RPY_NO_DISCARD virtual string name() const;
 
     RPY_NO_DISCARD virtual dimn_t num_args() const;
@@ -102,7 +105,7 @@ class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
 public:
     using base_t::base_t;
 
-    RPY_NO_DISCARD bool is_nop() const noexcept { return !p_impl; }
+    RPY_NO_DISCARD bool is_nop() const noexcept { return is_null(); }
 
     RPY_NO_DISCARD string name() const;
 

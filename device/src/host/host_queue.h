@@ -37,7 +37,7 @@
 namespace rpy {
 namespace devices {
 
-class CPUQueue : public QueueInterface
+class CPUQueue : public dtl::RefCountBase<QueueInterface>
 {
 
 

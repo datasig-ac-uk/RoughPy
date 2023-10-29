@@ -68,7 +68,10 @@ public:
     const void* ptr() const noexcept override;
 
     Event
-    to_device(Buffer& dst, const Device& device, Queue& queue) const override;
+    to_device(Buffer& dst, const Device& device, Queue& queue) override;
+
+    reference_count_type inc_ref() noexcept override;
+    reference_count_type dec_ref() noexcept override;
 };
 
 }// namespace device

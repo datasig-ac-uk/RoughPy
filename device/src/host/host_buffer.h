@@ -43,7 +43,7 @@
 namespace rpy {
 namespace devices {
 
-class CPUBuffer : public BufferInterface
+class CPUBuffer : public dtl::RefCountBase<BufferInterface>
 {
 public:
     using atomic_t = std::atomic_size_t*;
@@ -58,42 +58,22 @@ private:
     struct RawBuffer {
         void* ptr = nullptr;
         dimn_t size = 0;
-        atomic_t ref_count;
     };
 
     RawBuffer raw_buffer;
     Flags flags;
 
 
-    inline dimn_t inc_ref() noexcept
-    {
-        return raw_buffer.ref_count->fetch_add(1, std::memory_order_relaxed);
-    }
-
-    inline dimn_t dec_ref() noexcept
-    {
-        RPY_DBG_ASSERT(raw_ref_count(std::memory_order_acq_rel) > 0);
-        return raw_buffer.ref_count->fetch_sub(1, std::memory_order_acq_rel);
-    }
-
-    inline dimn_t raw_ref_count(std::memory_order order = std::memory_order_relaxed
-    )
-            const noexcept
-    {
-        return raw_buffer.ref_count->load(order);
-    }
-
     CPUBuffer(RawBuffer raw, Flags arg_flags);
 
 public:
 
 
-    CPUBuffer(void* raw_ptr, dimn_t size, atomic_t rc);
-    CPUBuffer(const void* raw_ptr, dimn_t size, atomic_t rc);
+    CPUBuffer(void* raw_ptr, dimn_t size);
+    CPUBuffer(const void* raw_ptr, dimn_t size);
 
     ~CPUBuffer();
 
-    dimn_t ref_count() const noexcept override;
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
     Device device() const noexcept override;
 
@@ -104,7 +84,7 @@ public:
     const void* ptr() const noexcept override;
 
     Event
-    to_device(Buffer& dst, const Device& device, Queue& queue) const override;
+    to_device(Buffer& dst, const Device& device, Queue& queue) override;
 };
 
 }// namespace devices

@@ -57,35 +57,31 @@ using namespace rpy::devices;
 
 Buffer OCLDeviceHandle::make_buffer(cl_mem buffer, bool move) const
 {
-    if (RPY_LIKELY(!move)) {
-        auto ecode = clRetainMemObject(buffer);
-        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    if (RPY_LIKELY(move)) {
+        return steal_cast<BufferInterface>(new OCLBuffer(buffer, this));
     }
-    return Buffer(std::make_unique<OCLBuffer>(buffer, this));
+    return clone_cast(new OCLBuffer(buffer, this));
 }
 Event OCLDeviceHandle::make_event(cl_event event, bool move) const
 {
-    if (RPY_UNLIKELY(!move)) {
-        auto ecode = clRetainEvent(event);
-        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    if (RPY_UNLIKELY(move)) {
+        return steal_cast<EventInterface>(new OCLEvent(event, this));
     }
-    return Event(std::make_unique<OCLEvent>(event, this));
+    return clone_cast(new OCLEvent(event, this));
 }
 Kernel OCLDeviceHandle::make_kernel(cl_kernel kernel, bool move) const
 {
-    if (RPY_UNLIKELY(!move)) {
-        auto ecode = clRetainKernel(kernel);
-        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    if (RPY_UNLIKELY(move)) {
+        return steal_cast<KernelInterface>(new OCLKernel(kernel, this));
     }
-    return Kernel(std::make_unique<OCLKernel>(kernel, this));
+    return clone_cast(new OCLKernel(kernel, this));
 }
 Queue OCLDeviceHandle::make_queue(cl_command_queue queue, bool move) const
 {
-    if (RPY_LIKELY(!move)) {
-        auto ecode = clRetainCommandQueue(queue);
-        if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+    if (RPY_LIKELY(move)) {
+        return steal_cast<QueueInterface>(new OCLQueue(queue, this));
     }
-    return Queue(std::make_unique<OCLQueue>(queue, this));
+    return clone_cast(new OCLQueue(queue, this));
 }
 
 static OCLVersion get_ocl_version(cl_device_id device)
@@ -211,7 +207,7 @@ Buffer OCLDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
             = clCreateBuffer(m_ctx, CL_MEM_READ_WRITE, count, nullptr, &ecode);
 
     if (RPY_UNLIKELY(new_mem == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
-    return make_buffer(new_mem);
+    return make_buffer(new_mem, true);
 }
 void OCLDeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 optional<Kernel> OCLDeviceHandle::get_kernel(const string& name) const noexcept

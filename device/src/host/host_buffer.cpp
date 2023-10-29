@@ -45,58 +45,37 @@ using namespace rpy::devices;
 CPUBuffer::CPUBuffer(CPUBuffer::RawBuffer raw, CPUBuffer::Flags arg_flags)
     : raw_buffer(std::move(raw)),
       flags(arg_flags)
-{
-    RPY_DBG_ASSERT(raw_ref_count(std::memory_order_acq_rel) > 0);
-    inc_ref();
-}
+{}
 
-CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, atomic_t rc)
-    : raw_buffer{raw_ptr, size, rc},
+CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size)
+    : raw_buffer{raw_ptr, size},
       flags()
 {}
 
-CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, atomic_t rc)
-    : raw_buffer{const_cast<void*>(raw_ptr), size, rc},
+CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size)
+    : raw_buffer{const_cast<void*>(raw_ptr), size},
       flags(IsConst)
 {}
 
-CPUBuffer::~CPUBuffer()
-{
-    if (dec_ref() == 1) {
-        RPY_DBG_ASSERT(raw_ref_count(std::memory_order_acq_rel) == 0);
-        CPUDeviceHandle::get()->raw_free(raw_buffer.ptr, raw_buffer.size);
-        raw_buffer.ptr = nullptr;
-        raw_buffer.size = 0;
-    }
-}
+CPUBuffer::~CPUBuffer() {}
 
 BufferMode CPUBuffer::mode() const
 {
     if (flags & IsConst) { return BufferMode::Read; }
     return BufferMode::ReadWrite;
 }
-dimn_t CPUBuffer::size() const
+dimn_t CPUBuffer::size() const { return raw_buffer.size; }
+void* CPUBuffer::ptr() noexcept { return raw_buffer.ptr; }
+std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUBuffer::clone() const
 {
-    return raw_buffer.size;
-}
-void* CPUBuffer::ptr() noexcept
-{
-    return raw_buffer.ptr;
-}
-std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUBuffer::clone() const {
     return std::unique_ptr<CPUBuffer>(new CPUBuffer(raw_buffer, flags));
 }
 Device CPUBuffer::device() const noexcept { return CPUDeviceHandle::get(); }
-dimn_t CPUBuffer::ref_count() const noexcept
-{
-    return raw_ref_count();
-}
+
 DeviceType CPUBuffer::type() const noexcept { return DeviceType::CPU; }
-const void* CPUBuffer::ptr() const noexcept {
-    return raw_buffer.ptr;
-}
+const void* CPUBuffer::ptr() const noexcept { return raw_buffer.ptr; }
 Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
-        const
+
 {
     if (device == this->device()) {
         /*

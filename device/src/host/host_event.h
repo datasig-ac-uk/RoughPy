@@ -42,7 +42,7 @@
 namespace rpy {
 namespace devices {
 
-class CPUEvent : public EventInterface
+class CPUEvent : public dtl::RefCountBase<EventInterface>
 {
     using guard_type = std::unique_lock<std::mutex>;
 

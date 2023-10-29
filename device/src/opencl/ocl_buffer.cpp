@@ -50,6 +50,9 @@ devices::OCLBuffer::OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept
     : m_device(std::move(dev)),
       m_buffer(buffer)
 {}
+OCLBuffer::~OCLBuffer() {
+    m_buffer = nullptr;
+}
 
 BufferMode OCLBuffer::mode() const
 {
@@ -123,16 +126,9 @@ std::unique_ptr<devices::dtl::InterfaceBase> OCLBuffer::clone() const
     return std::make_unique<OCLBuffer>(new_buffer, m_device);
 }
 Device OCLBuffer::device() const noexcept { return m_device; }
-OCLBuffer::~OCLBuffer()
-{
-    if (RPY_LIKELY(m_buffer != nullptr)) {
-        auto ecode = clReleaseMemObject(m_buffer);
-        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
-    }
-    m_buffer = nullptr;
-}
 
-dimn_t OCLBuffer::ref_count() const noexcept
+devices::dtl::InterfaceBase::reference_count_type
+OCLBuffer::ref_count() const noexcept
 {
     if (m_buffer != nullptr) {
         cl_uint ref_count = 0;
@@ -151,10 +147,9 @@ dimn_t OCLBuffer::ref_count() const noexcept
 DeviceType OCLBuffer::type() const noexcept { return DeviceType::OpenCL; }
 const void* OCLBuffer::ptr() const noexcept { return &m_buffer; }
 Event OCLBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
-        const
 {
     if (device == m_device) {
-        dst = construct(this->clone());
+        dst = clone_cast(this);
         return Event();
     }
 
@@ -265,7 +260,25 @@ Event OCLBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
         return m_device->make_event(unmap_event);
     }
 
-
-
     return BufferInterface::to_device(dst, device, queue);
+}
+
+devices::dtl::InterfaceBase::reference_count_type OCLBuffer::inc_ref() noexcept
+{
+    reference_count_type rc = ref_count();
+    if (m_buffer != nullptr) {
+        auto ecode = clRetainMemObject(m_buffer);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    }
+    return rc;
+}
+devices::dtl::InterfaceBase::reference_count_type OCLBuffer::dec_ref() noexcept
+{
+    reference_count_type rc = ref_count();
+    if (RPY_LIKELY(m_buffer != nullptr)) {
+        RPY_DBG_ASSERT(rc > 0);
+        auto ecode = clReleaseMemObject(m_buffer);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    }
+    return rc;
 }

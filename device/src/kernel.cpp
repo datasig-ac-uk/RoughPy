@@ -40,14 +40,14 @@ using namespace rpy::devices;
 
 string Kernel::name() const
 {
-    if (!p_impl) { return ""; }
-    return p_impl->name();
+    if (!impl()) { return ""; }
+    return impl()->name();
 }
 
 dimn_t Kernel::num_args() const
 {
-    if (!p_impl) { return 0; }
-    return p_impl->num_args();
+    if (!impl()) { return 0; }
+    return impl()->num_args();
 }
 
 Event Kernel::launch_async_in_queue(
@@ -56,13 +56,13 @@ Event Kernel::launch_async_in_queue(
         Slice<KernelArgument> args
 )
 {
-    if (!p_impl || !params.has_work()) { return Event(); }
+    if (!impl() || !params.has_work()) { return Event(); }
 
-    auto nargs = p_impl->num_args();
+    auto nargs = impl()->num_args();
     if (nargs != args.size()) {
         RPY_THROW(
                 std::runtime_error,
-                "kernel '" + p_impl->name()
+                "kernel '" + impl()->name()
                         + "' called with incorrect number of arguments: "
                           "expected "
                         + std::to_string(nargs) + " arguments but got "
@@ -75,7 +75,7 @@ Event Kernel::launch_async_in_queue(
                   "the queue provided is not a valid queue for this kernel");
     }
 
-    return p_impl->launch_kernel_async(queue, params, args);
+    return impl()->launch_kernel_async(queue, params, args);
 }
 EventStatus Kernel::launch_sync_in_queue(
         Queue& queue,

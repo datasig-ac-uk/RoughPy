@@ -38,7 +38,7 @@
 namespace rpy {
 namespace devices {
 
-class CPUKernel : public KernelInterface
+class CPUKernel : public dtl::RefCountBase<KernelInterface>
 {
     using fallback_kernel_t = void (*)(void**, Size3 work_size) noexcept;
 

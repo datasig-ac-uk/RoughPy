@@ -40,6 +40,9 @@ namespace devices {
 class RPY_EXPORT EventInterface : public dtl::InterfaceBase
 {
 public:
+    using object_t = Event;
+
+
     virtual void wait();
 
     RPY_NO_DISCARD
@@ -71,6 +74,7 @@ public:
 
 
 };
+
 
 }// namespace device
 }// namespace rpy

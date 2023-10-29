@@ -37,17 +37,17 @@ using namespace rpy;
 using namespace rpy::devices;
 
 BufferMode Buffer::mode() const {
-    if (!p_impl){
+    if (!impl()){
         return BufferMode::Read;
     }
-    return p_impl->mode();
+    return impl()->mode();
 }
 
 dimn_t Buffer::size() const {
-    if (!p_impl) {
+    if (!impl()) {
         return 0;
     }
-    return p_impl->size();
+    return impl()->size();
 }
 
 static inline bool check_device_compatibility(Buffer& dst, const Device& device)
@@ -60,16 +60,17 @@ static inline bool check_device_compatibility(Buffer& dst, const Device& device)
 }
 
 
-void Buffer::to_device(Buffer& dst, const Device& device) const {
-    if (p_impl && check_device_compatibility(dst, device)) {
+void Buffer::to_device(Buffer& dst, const Device& device)
+{
+    if (impl() && check_device_compatibility(dst, device)) {
         auto queue = device->get_default_queue();
-        p_impl->to_device(dst, device, queue).wait();
+        impl()->to_device(dst, device, queue).wait();
     }
 }
-Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue) const
+Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue)
 {
-    if (p_impl && check_device_compatibility(dst, device)) {
-        return p_impl->to_device(dst, device, queue);
+    if (impl() && check_device_compatibility(dst, device)) {
+        return impl()->to_device(dst, device, queue);
     }
     return {};
 }

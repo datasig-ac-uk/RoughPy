@@ -50,7 +50,7 @@ Event BufferInterface::to_device(
         Buffer& dst,
         const Device& device,
         Queue& queue
-) const
+)
 {
     RPY_THROW(std::runtime_error, "unable to migrate data to this device");
 }

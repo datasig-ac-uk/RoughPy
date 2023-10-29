@@ -34,15 +34,25 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
+#include <atomic>
 #include <memory>
 
 namespace rpy {
 namespace devices {
+
+template <typename Interface>
+inline typename Interface::object_t steal_cast(Interface* iface) noexcept;
+
+template <typename Interface>
+inline typename Interface::object_t clone_cast(Interface* iface) noexcept;
+
 namespace dtl {
 
 class RPY_EXPORT InterfaceBase
 {
 public:
+    using reference_count_type = dimn_t;
+
     virtual ~InterfaceBase();
 
     RPY_NO_DISCARD virtual DeviceType type() const noexcept;
@@ -53,6 +63,28 @@ public:
     RPY_NO_DISCARD virtual void* ptr() noexcept;
     RPY_NO_DISCARD virtual const void* ptr() const noexcept;
 
+    virtual reference_count_type inc_ref() noexcept;
+    virtual reference_count_type dec_ref() noexcept;
+};
+
+template <typename Interface>
+class RefCountBase : public Interface
+{
+    static_assert(
+            is_base_of<InterfaceBase, Interface>::value,
+            "Interface must be derived from InterfaceBase"
+    );
+
+    using atomic_t = std::atomic_size_t;
+    atomic_t m_ref_count;
+
+public:
+    using Interface::Interface;
+    using typename InterfaceBase::reference_count_type;
+
+    reference_count_type inc_ref() noexcept override;
+    reference_count_type dec_ref() noexcept override;
+    reference_count_type ref_count() const noexcept override;
 };
 
 template <typename Interface, typename Derived>
@@ -69,44 +101,46 @@ class ObjectBase
 
     using interface_type = Interface;
 
-    static std::unique_ptr<Interface>
-    downcast(std::unique_ptr<InterfaceBase>&& base) noexcept
-    {
-        return std::unique_ptr<Interface>(
-                reinterpret_cast<Interface*>(base.release())
-        );
-    }
+    Interface* p_impl = nullptr;
+
+    friend typename Interface::object_t
+    rpy::devices::steal_cast<Interface>(Interface*) noexcept;
+
+    friend typename Interface::object_t
+    rpy::devices::clone_cast<Interface>(Interface*) noexcept;
+
+    struct steal_t {
+    };
+
 
 protected:
-    std::unique_ptr<Interface> p_impl;
-
-private:
-    explicit ObjectBase(std::unique_ptr<InterfaceBase>&& base)
-        : p_impl(downcast(std::move(base)))
-    {}
+    RPY_NO_DISCARD Interface* impl() noexcept { return p_impl; }
+    RPY_NO_DISCARD const Interface* impl() const noexcept { return p_impl; }
 
 public:
+    using reference_count_type = typename InterfaceBase::reference_count_type;
+
     ObjectBase() = default;
 
     ObjectBase(const ObjectBase& other);
-    ObjectBase(ObjectBase&& other) noexcept = default;
+    ObjectBase(ObjectBase&& other) noexcept;
 
-    template <
-            typename IFace,
-            typename = enable_if_t<is_base_of<Interface, IFace>::value>>
-    explicit ObjectBase(std::unique_ptr<IFace>&& base) : p_impl(std::move(base))
-    {}
+    explicit ObjectBase(Interface* iface) noexcept : p_impl(iface)
+    {
+        if (p_impl) { p_impl->inc_ref(); }
+    }
 
-    explicit ObjectBase(std::unique_ptr<Interface>&& base)
-        : p_impl(std::move(base))
-    {}
+    explicit ObjectBase(Interface* iface, steal_t) noexcept : p_impl(iface) {}
+
+
+    ~ObjectBase();
 
     ObjectBase& operator=(const ObjectBase& other);
-    ObjectBase& operator=(ObjectBase&& other) noexcept = default;
+    ObjectBase& operator=(ObjectBase&& other) noexcept;
 
     RPY_NO_DISCARD DeviceType type() const noexcept;
     RPY_NO_DISCARD bool is_null() const noexcept { return !p_impl; }
-    RPY_NO_DISCARD dimn_t ref_count() const noexcept;
+    RPY_NO_DISCARD reference_count_type ref_count() const noexcept;
     RPY_NO_DISCARD Derived clone() const;
     RPY_NO_DISCARD Device device() const noexcept;
 
@@ -125,14 +159,42 @@ public:
     }
 };
 
+template <typename Interface>
+InterfaceBase::reference_count_type RefCountBase<Interface>::inc_ref() noexcept
+{
+    return m_ref_count.fetch_add(1, std::memory_order_relaxed);
+}
+template <typename Interface>
+InterfaceBase::reference_count_type RefCountBase<Interface>::dec_ref() noexcept
+{
+    RPY_DBG_ASSERT(m_ref_count.load(std::memory_order_acq_rel) > 0);
+    return m_ref_count.fetch_sub(1, std::memory_order_acq_rel);
+}
+template <typename Interface>
+InterfaceBase::reference_count_type
+RefCountBase<Interface>::ref_count() const noexcept
+{
+    return m_ref_count.load(std::memory_order_relaxed);
+}
 template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>::ObjectBase(const ObjectBase& other)
-    : p_impl(nullptr)
+    : p_impl(other.p_impl)
 {
-    if (other.p_impl) {
-        p_impl = std::move(downcast(std::move(other.p_impl->clone())));
-    }
+    if (p_impl) { p_impl->inc_ref(); }
 }
+template <typename Interface, typename Derived>
+ObjectBase<Interface, Derived>::ObjectBase(ObjectBase&& other) noexcept
+    : p_impl(other.p_impl)
+{
+    other.p_impl = nullptr;
+}
+template <typename Interface, typename Derived>
+ObjectBase<Interface, Derived>::~ObjectBase()
+{
+    if (p_impl && p_impl->dec_ref() == 1) { delete p_impl; }
+    p_impl = nullptr;
+}
+
 template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>&
 ObjectBase<Interface, Derived>::operator=(const ObjectBase& other)
@@ -140,14 +202,23 @@ ObjectBase<Interface, Derived>::operator=(const ObjectBase& other)
     if (&other != this) {
         this->~ObjectBase();
         if (other.p_impl) {
-            p_impl = std::move(downcast(std::move(other.p_impl->clone())));
-        } else {
-            p_impl = nullptr;
+            p_impl = other.p_impl;
+            p_impl->inc_ref();
         }
     }
     return *this;
 }
-
+template <typename Interface, typename Derived>
+ObjectBase<Interface, Derived>&
+ObjectBase<Interface, Derived>::operator=(ObjectBase&& other) noexcept
+{
+    if (&other != this) {
+        this->~ObjectBase();
+        p_impl = other.p_impl;
+        other.p_impl = nullptr;
+    }
+    return *this;
+}
 template <typename Interface, typename Derived>
 DeviceType ObjectBase<Interface, Derived>::type() const noexcept
 {
@@ -156,10 +227,11 @@ DeviceType ObjectBase<Interface, Derived>::type() const noexcept
 }
 
 template <typename Interface, typename Derived>
-dimn_t ObjectBase<Interface, Derived>::ref_count() const noexcept
+typename ObjectBase<Interface, Derived>::reference_count_type
+ObjectBase<Interface, Derived>::ref_count() const noexcept
 {
     if (p_impl) { return p_impl->ref_count(); }
-    return 1;
+    return 0;
 }
 
 template <typename Interface, typename Derived>
@@ -188,18 +260,24 @@ const void* ObjectBase<Interface, Derived>::ptr() const noexcept
     return nullptr;
 }
 
-template <typename I>
-RPY_NO_DISCARD
-constexpr enable_if_t<
-        is_base_of<InterfaceBase, remove_reference_t<I>>::value,
-        add_lvalue_reference_t<I>>
-device_cast(copy_cv_ref_t<InterfaceBase, remove_reference_t<I>> interface)
-        noexcept
+}// namespace dtl
+
+template <typename Interface>
+inline typename Interface::object_t steal_cast(Interface* iface) noexcept
 {
-    return static_cast<add_lvalue_reference_t<I>>(interface);
+    using object_t = typename Interface::object_t;
+    return object_t(
+            iface,
+            typename dtl::ObjectBase<Interface, object_t>::steal_t()
+    );
 }
 
-}// namespace dtl
+template <typename Interface>
+inline typename Interface::object_t clone_cast(Interface* iface) noexcept
+{
+    using object_t = typename Interface::object_t;
+    return object_t(iface);
+}
 }// namespace devices
 }// namespace rpy
 

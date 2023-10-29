@@ -36,31 +36,31 @@ using namespace rpy::devices;
 
 void Event::wait()
 {
-    if (p_impl) { p_impl->wait(); }
+    if (impl()) { impl()->wait(); }
 }
 
 EventStatus Event::status() const
 {
-    if (!p_impl) { return EventStatus::CompletedSuccessfully; }
-    return p_impl->status();
+    if (!impl()) { return EventStatus::CompletedSuccessfully; }
+    return impl()->status();
 }
 
 bool Event::is_user() const noexcept {
-    if (p_impl) { return p_impl->is_user(); }
+    if (impl()) { return impl()->is_user(); }
     return false;
 }
 void Event::set_status(EventStatus status)
 {
-    if (!p_impl) {
+    if (!impl()) {
         return;
     }
 
-    if (!p_impl->is_user()) {
+    if (!impl()->is_user()) {
         RPY_THROW(
                 std::runtime_error,
                 "cannot set the status of a non-user event"
         );
     }
 
-    return p_impl->set_status(status);
+    return impl()->set_status(status);
 }

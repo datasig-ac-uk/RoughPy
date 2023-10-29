@@ -124,7 +124,7 @@ TEST_F(TestCPUDeviceOCL, TestCreateKernelFromSource)
     auto result = buf.as_slice<float>();
     ASSERT_EQ(result.size(), count);
     for (dimn_t i = 0; i < count; ++i) {
-        ASSERT_EQ(result[i], static_cast<float>(i))
+        ASSERT_EQ(result[i], 2*static_cast<float>(i))
                 << "Index " << i << " mismatch";
     }
 }

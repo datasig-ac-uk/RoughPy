@@ -71,15 +71,12 @@ dimn_t OCLQueue::size() const
 Device OCLQueue::device() const noexcept { return m_device; }
 OCLQueue::~OCLQueue()
 {
-    if (m_queue != nullptr) {
-        auto ecode = clReleaseCommandQueue(m_queue);
-        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
-    }
     m_queue = nullptr;
 }
 DeviceType OCLQueue::type() const noexcept { return DeviceType::OpenCL; }
 
-dimn_t OCLQueue::ref_count() const noexcept
+devices::dtl::InterfaceBase::reference_count_type
+OCLQueue::ref_count() const noexcept
 {
     cl_uint rc = 0;
     auto ecode = clGetCommandQueueInfo(
@@ -94,3 +91,22 @@ dimn_t OCLQueue::ref_count() const noexcept
 }
 void* OCLQueue::ptr() noexcept { return m_queue; }
 const void* OCLQueue::ptr() const noexcept { return m_queue; }
+devices::dtl::InterfaceBase::reference_count_type OCLQueue::inc_ref() noexcept
+{
+    reference_count_type rc = ref_count();
+    if (RPY_LIKELY(m_queue != nullptr)) {
+        auto ecode = clRetainCommandQueue(m_queue);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    }
+    return rc;
+}
+devices::dtl::InterfaceBase::reference_count_type OCLQueue::dec_ref() noexcept
+{
+    reference_count_type rc = ref_count();
+    if (RPY_LIKELY(m_queue != nullptr)) {
+        RPY_DBG_ASSERT(rc > 0);
+        auto ecode = clReleaseCommandQueue(m_queue);
+        RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    }
+    return rc;
+}

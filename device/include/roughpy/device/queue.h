@@ -37,6 +37,9 @@ namespace devices {
 class QueueInterface : public dtl::InterfaceBase
 {
 public:
+
+    using object_t = Queue;
+
     virtual dimn_t size() const;
 };
 
@@ -51,9 +54,11 @@ public:
 
     RPY_NO_DISCARD bool is_default() const noexcept
     {
-        return !static_cast<bool>(p_impl);
+        return is_null();
     }
 };
+
+
 
 }// namespace device
 }// namespace rpy
