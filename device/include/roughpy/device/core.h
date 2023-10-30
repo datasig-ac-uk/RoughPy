@@ -255,6 +255,7 @@ class HostDeviceHandle;
 class KernalArgument;
 class KernelInterface;
 class Kernel;
+class MemoryView;
 class QueueInterface;
 class Queue;
 

@@ -85,6 +85,8 @@ public:
 
     Event
     to_device(Buffer& dst, const Device& device, Queue& queue) override;
+
+    void* map(dimn_t size, dimn_t offset) override;
 };
 
 }// namespace devices

@@ -25,74 +25,45 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_DEVICE_BUFFER_H_
-#define ROUGHPY_DEVICE_BUFFER_H_
+#ifndef ROUGHPY_DEVICE_MEMORY_VIEW_H_
+#define ROUGHPY_DEVICE_MEMORY_VIEW_H_
 
 #include "core.h"
-#include "device_object_base.h"
 
-#include <roughpy/core/macros.h>
 #include <roughpy/core/slice.h>
-#include <roughpy/core/types.h>
 
 namespace rpy {
 namespace devices {
 
-enum class BufferMode
+class MemoryView
 {
-    None = 0,
-    Read = 1,
-    Write = 2,
-    ReadWrite = 3
-};
-
-class BufferInterface : public dtl::InterfaceBase
-{
+    Buffer& r_memory_owner;
+    void* p_data = nullptr;
+    dimn_t m_size = 0;
 
 public:
-    using object_t = Buffer;
+    MemoryView(Buffer& buf, void* data, dimn_t size);
+    ~MemoryView();
 
-
-    RPY_NO_DISCARD virtual BufferMode mode() const;
-
-    RPY_NO_DISCARD virtual dimn_t size() const;
-
-    RPY_NO_DISCARD virtual Event
-    to_device(Buffer& dst, const Device& device, Queue& queue);
-
-    RPY_NO_DISCARD
-    virtual void* map(dimn_t size, dimn_t offset);
-
-    virtual void unmap(void* ptr) noexcept;
-};
-
-class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
-{
-    using base_t = dtl::ObjectBase<BufferInterface, Buffer>;
-
-public:
-    using base_t::base_t;
-
-    RPY_NO_DISCARD dimn_t size() const;
-
-    RPY_NO_DISCARD BufferMode mode() const;
+    void* raw_ptr() noexcept { return p_data; }
 
     template <typename T>
-    Slice<const T> as_slice() const
+    Slice<const T> as_slice() const noexcept
     {
-        return {static_cast<const T*>(ptr()), size() / sizeof(T)};
+        RPY_DBG_ASSERT(m_size % sizeof(T) == 0);
+        return {static_cast<const T*>(p_data), m_size / sizeof(T)};
     }
 
-    void to_device(Buffer& dst, const Device& device);
-
-    Event to_device(Buffer& dst, const Device& device, Queue& queue);
-
-    RPY_NO_DISCARD
-    MemoryView map(dimn_t size=0, dimn_t offset=0);
-    void unmap(MemoryView& view) noexcept;
+    template <typename T>
+    Slice<T> as_mut_slice()
+    {
+        RPY_DBG_ASSERT(m_size % sizeof(T) == 0);
+        RPY_CHECK(r_memory_owner.mode() != BufferMode::Read);
+        return {static_cast<T*>(p_data), m_size / sizeof(T)};
+    }
 };
-
 
 }// namespace devices
 }// namespace rpy
-#endif// ROUGHPY_DEVICE_BUFFER_H_
+
+#endif// ROUGHPY_DEVICE_MEMORY_VIEW_H_

@@ -102,3 +102,13 @@ Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
      */
     return device->from_host(dst, *this, queue);
 }
+void* CPUBuffer::map(dimn_t size, dimn_t offset)
+{
+    if (offset + size >= raw_buffer.size) {
+        RPY_THROW(std::invalid_arguments, "the requested region would exceed "
+                                          "the allocated memory of this "
+                                          "buffer");
+    }
+
+    return raw_buffer.ptr + offset;
+}

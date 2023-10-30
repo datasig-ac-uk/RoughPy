@@ -25,74 +25,21 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_DEVICE_BUFFER_H_
-#define ROUGHPY_DEVICE_BUFFER_H_
+//
+// Created by user on 30/10/23.
+//
 
-#include "core.h"
-#include "device_object_base.h"
+#include <roughpy/device/memory_view.h>
+#include <roughpy/device/buffer.h>
 
-#include <roughpy/core/macros.h>
-#include <roughpy/core/slice.h>
-#include <roughpy/core/types.h>
+using namespace rpy;
+using namespace rpy::devices;
 
-namespace rpy {
-namespace devices {
-
-enum class BufferMode
+MemoryView::MemoryView(Buffer& buf, void* data, dimn_t size)
+    : r_memory_owner(buf), p_data(data), m_size(size)
 {
-    None = 0,
-    Read = 1,
-    Write = 2,
-    ReadWrite = 3
-};
-
-class BufferInterface : public dtl::InterfaceBase
-{
-
-public:
-    using object_t = Buffer;
-
-
-    RPY_NO_DISCARD virtual BufferMode mode() const;
-
-    RPY_NO_DISCARD virtual dimn_t size() const;
-
-    RPY_NO_DISCARD virtual Event
-    to_device(Buffer& dst, const Device& device, Queue& queue);
-
-    RPY_NO_DISCARD
-    virtual void* map(dimn_t size, dimn_t offset);
-
-    virtual void unmap(void* ptr) noexcept;
-};
-
-class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
-{
-    using base_t = dtl::ObjectBase<BufferInterface, Buffer>;
-
-public:
-    using base_t::base_t;
-
-    RPY_NO_DISCARD dimn_t size() const;
-
-    RPY_NO_DISCARD BufferMode mode() const;
-
-    template <typename T>
-    Slice<const T> as_slice() const
-    {
-        return {static_cast<const T*>(ptr()), size() / sizeof(T)};
-    }
-
-    void to_device(Buffer& dst, const Device& device);
-
-    Event to_device(Buffer& dst, const Device& device, Queue& queue);
-
-    RPY_NO_DISCARD
-    MemoryView map(dimn_t size=0, dimn_t offset=0);
-    void unmap(MemoryView& view) noexcept;
-};
-
-
-}// namespace devices
-}// namespace rpy
-#endif// ROUGHPY_DEVICE_BUFFER_H_
+    RPY_DBG_ASSERT(p_data != nullptr || m_size == 0);
+}
+MemoryView::~MemoryView() {
+    r_memory_owner.unmap(*this);
+}
