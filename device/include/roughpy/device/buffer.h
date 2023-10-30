@@ -38,20 +38,11 @@
 namespace rpy {
 namespace devices {
 
-enum class BufferMode
-{
-    None = 0,
-    Read = 1,
-    Write = 2,
-    ReadWrite = 3
-};
-
 class BufferInterface : public dtl::InterfaceBase
 {
 
 public:
     using object_t = Buffer;
-
 
     RPY_NO_DISCARD virtual BufferMode mode() const;
 
@@ -60,8 +51,8 @@ public:
     RPY_NO_DISCARD virtual Event
     to_device(Buffer& dst, const Device& device, Queue& queue);
 
-    RPY_NO_DISCARD
-    virtual void* map(dimn_t size, dimn_t offset);
+    RPY_NO_DISCARD virtual void*
+    map(BufferMode map_mode, dimn_t size, dimn_t offset);
 
     virtual void unmap(void* ptr) noexcept;
 };
@@ -87,11 +78,12 @@ public:
 
     Event to_device(Buffer& dst, const Device& device, Queue& queue);
 
-    RPY_NO_DISCARD
-    MemoryView map(dimn_t size=0, dimn_t offset=0);
+    RPY_NO_DISCARD MemoryView
+    map(BufferMode map_mode = BufferMode::None,
+        dimn_t size = 0,
+        dimn_t offset = 0);
     void unmap(MemoryView& view) noexcept;
 };
-
 
 }// namespace devices
 }// namespace rpy

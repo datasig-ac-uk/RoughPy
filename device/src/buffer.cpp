@@ -75,17 +75,17 @@ Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue)
     return {};
 }
 
-MemoryView Buffer::map(dimn_t size, dimn_t offset) {
+MemoryView Buffer::map(BufferMode map_mode, dimn_t size, dimn_t offset)
+{
     if (!impl() || size == 0) {
-        return {*this, nullptr, 0};
+        return {*this, nullptr, 0, BufferMode::Read};
     }
-    void* mapped = impl()->map(size, offset);
+    void* mapped = impl()->map(map_mode, size, offset);
     RPY_DBG_ASSERT(mapped != nullptr);
-    return MemoryView(*this, mapped, size);
+    return MemoryView(*this, mapped, size, BufferMode::Read);
 }
-
 
 void Buffer::unmap(MemoryView& view) noexcept {
     RPY_DBG_ASSERT(impl() != nullptr);
-    impl()->unmap(view.raw_ptr());
+    return impl()->unmap(view.raw_ptr());
 }

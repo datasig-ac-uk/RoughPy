@@ -34,13 +34,14 @@
 #include "scalar_type.h"
 
 #include <roughpy/platform/serialization.h>
+#include <roughpy/device/buffer.h>
 
 namespace rpy {
 namespace scalars {
 
 class RPY_EXPORT ScalarArray : public ScalarPointer
 {
-
+//    devices::Buffer m_buffer;
 protected:
     dimn_t m_size = 0;
 

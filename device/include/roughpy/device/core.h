@@ -236,6 +236,14 @@ struct BasicDim3 {
 using Dim3 = BasicDim3<dsize_t>;
 using Size3 = BasicDim3<dimn_t>;
 
+enum class BufferMode
+{
+    None = 0,
+    Read = 1,
+    Write = 2,
+    ReadWrite = 3
+};
+
 enum class EventStatus : int8_t
 {
     CompletedSuccessfully = 0,

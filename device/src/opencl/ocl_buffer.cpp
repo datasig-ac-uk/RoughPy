@@ -50,9 +50,7 @@ devices::OCLBuffer::OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept
     : m_device(std::move(dev)),
       m_buffer(buffer)
 {}
-OCLBuffer::~OCLBuffer() {
-    m_buffer = nullptr;
-}
+OCLBuffer::~OCLBuffer() { m_buffer = nullptr; }
 
 BufferMode OCLBuffer::mode() const
 {
@@ -281,4 +279,63 @@ devices::dtl::InterfaceBase::reference_count_type OCLBuffer::dec_ref() noexcept
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     }
     return rc;
+}
+void* OCLBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset)
+{
+    cl_mem_flags flags;
+
+    auto this_mode = mode();
+    if (map_mode == BufferMode::None) { map_mode = this_mode; }
+
+    switch (map_mode) {
+        case BufferMode::Read: flags = CL_MAP_READ; break;
+        case BufferMode::ReadWrite:
+            RPY_CHECK(this_mode != BufferMode::Read);
+            flags = CL_MAP_WRITE;
+            break;
+        case BufferMode::Write:
+            RPY_CHECK(this_mode != BufferMode::Read);
+            if (m_device->cl_supports_version({1, 2})) {
+                flags = CL_MAP_WRITE_INVALIDATE_REGION;
+            } else {
+                flags = CL_MAP_WRITE;
+            }
+            break;
+        case BufferMode::None: RPY_UNREACHABLE();
+    }
+
+    cl_int ecode = CL_SUCCESS;
+    void* ptr = clEnqueueMapBuffer(
+            m_device->default_queue(),
+            m_buffer,
+            CL_TRUE,
+            flags,
+            offset,
+            size,
+            0,
+            nullptr,
+            nullptr,
+            &ecode
+    );
+
+    if (ptr == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return ptr;
+}
+void OCLBuffer::unmap(void* ptr) noexcept
+{
+    if (ptr == nullptr) { return ; }
+
+    auto event = cl::scoped_guard(static_cast<cl_event>(nullptr));
+    auto ecode = clEnqueueUnmapMemObject(
+            m_device->default_queue(),
+            m_buffer,
+            ptr,
+            0,
+            nullptr,
+            event.ptr()
+    );
+
+    RPY_DBG_ASSERT(ecode == CL_SUCCESS);
+    clWaitForEvents(1, event.ptr());
 }

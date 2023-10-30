@@ -167,7 +167,7 @@ InterfaceBase::reference_count_type RefCountBase<Interface>::inc_ref() noexcept
 template <typename Interface>
 InterfaceBase::reference_count_type RefCountBase<Interface>::dec_ref() noexcept
 {
-    RPY_DBG_ASSERT(m_ref_count.load(std::memory_order_acq_rel) > 0);
+    RPY_DBG_ASSERT(m_ref_count.load(std::memory_order_acquire) > 0);
     return m_ref_count.fetch_sub(1, std::memory_order_acq_rel);
 }
 template <typename Interface>

@@ -72,6 +72,9 @@ public:
 
     reference_count_type inc_ref() noexcept override;
     reference_count_type dec_ref() noexcept override;
+
+    void* map(BufferMode map_mode, dimn_t size, dimn_t offset) override;
+    void unmap(void* ptr) noexcept override;
 };
 
 }// namespace device

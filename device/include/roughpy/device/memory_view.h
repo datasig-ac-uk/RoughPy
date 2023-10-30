@@ -40,12 +40,29 @@ class MemoryView
     Buffer& r_memory_owner;
     void* p_data = nullptr;
     dimn_t m_size = 0;
+    BufferMode m_mode;
+
+    friend class Buffer;
+
+    /*
+     * We don't want people to construct their own view objects.
+     * To that end, we make the constructor private, and befriend the Buffer
+     * type so it can create buffers.
+     */
+    MemoryView(Buffer& buf, void* data, dimn_t size, BufferMode mode)
+        : r_memory_owner(buf),
+          p_data(data),
+          m_size(size),
+          m_mode(mode)
+    {}
 
 public:
-    MemoryView(Buffer& buf, void* data, dimn_t size);
+
     ~MemoryView();
 
-    void* raw_ptr() noexcept { return p_data; }
+    constexpr void* raw_ptr() noexcept { return p_data; }
+    constexpr dimn_t size() const noexcept { return m_size; }
+    constexpr BufferMode mode() const noexcept { return m_mode; }
 
     template <typename T>
     Slice<const T> as_slice() const noexcept
@@ -58,7 +75,7 @@ public:
     Slice<T> as_mut_slice()
     {
         RPY_DBG_ASSERT(m_size % sizeof(T) == 0);
-        RPY_CHECK(r_memory_owner.mode() != BufferMode::Read);
+        RPY_CHECK(m_mode != BufferMode::Read);
         return {static_cast<T*>(p_data), m_size / sizeof(T)};
     }
 };

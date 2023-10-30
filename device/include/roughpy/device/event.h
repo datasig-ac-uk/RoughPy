@@ -76,6 +76,24 @@ public:
 };
 
 
+template <typename T>
+class Future : public Event {
+    T m_value;
+
+public:
+
+    Future(Event&& event, T&& value)
+        : Event(std::move(event)), m_value(std::move(value))
+    {}
+
+    T& value() {
+        wait();
+        return m_value;
+    }
+
+};
+
+
 }// namespace device
 }// namespace rpy
 

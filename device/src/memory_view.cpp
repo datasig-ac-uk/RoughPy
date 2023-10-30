@@ -35,11 +35,7 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-MemoryView::MemoryView(Buffer& buf, void* data, dimn_t size)
-    : r_memory_owner(buf), p_data(data), m_size(size)
-{
-    RPY_DBG_ASSERT(p_data != nullptr || m_size == 0);
-}
+
 MemoryView::~MemoryView() {
     r_memory_owner.unmap(*this);
 }
