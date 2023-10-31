@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lie_increment_stream.h"
 
@@ -52,7 +51,8 @@ of fixed size at specified time intervals.
 )rpydoc";
 
 void buffer_to_indices(
-        std::vector<param_t>& indices, const py::buffer_info& info
+        std::vector<param_t>& indices,
+        const py::buffer_info& info
 )
 {
     auto count = info.size;
@@ -67,13 +67,15 @@ void buffer_to_indices(
                 = scalars::get_conversion(py_buffer_to_type_id(info), "f64");
         conversion(
                 scalars::ScalarPointer{nullptr, dst},
-                scalars::ScalarPointer{nullptr, ptr}, count
+                scalars::ScalarPointer{nullptr, ptr},
+                count
         );
     }
 }
 
 static py::object lie_increment_stream_from_increments(
-        const py::object& data, const py::kwargs& kwargs
+        const py::object& data,
+        const py::kwargs& kwargs
 )
 {
     auto md = kwargs_to_metadata(kwargs);
@@ -114,7 +116,6 @@ static py::object lie_increment_stream_from_increments(
 
     dimn_t num_increments = ks_stream.data_stream.row_count();
 
-
     auto effective_support
             = intervals::RealInterval::right_unbounded(0.0, md.interval_type);
 
@@ -139,7 +140,7 @@ static py::object lie_increment_stream_from_increments(
                 }
             };
 
-            for (idimn_t i = 0; i < num_increments; ++i) {
+            for (dimn_t i = 0; i < num_increments; ++i) {
                 auto row = ks_stream.data_stream[i];
 
                 if (row.has_keys()) {
@@ -173,23 +174,25 @@ static py::object lie_increment_stream_from_increments(
                     "argument"
             );
         }
-
-        if (!indices.empty()) {
-            auto minmax = std::minmax_element(indices.begin(), indices.end());
-            effective_support = intervals::RealInterval(
-                    *minmax.first, *minmax.second + 1.0, md.interval_type
-            );
-        }
     }
 
     if (indices.empty()) {
         indices.reserve(num_increments);
         for (dimn_t i = 0; i < num_increments; ++i) { indices.emplace_back(i); }
-    } else if (static_cast<idimn_t>(indices.size()) != num_increments) {
+    } else if (indices.size() != num_increments) {
         RPY_THROW(
                 py::value_error,
                 "mismatch between number of rows in data and "
                 "number of indices"
+        );
+    }
+
+    if (!indices.empty()) {
+        auto minmax = std::minmax_element(indices.begin(), indices.end());
+        effective_support = intervals::RealInterval(
+                *minmax.first,
+                *minmax.second + ldexp(1.0, -md.resolution),
+                md.interval_type
         );
     }
 
@@ -198,8 +201,12 @@ static py::object lie_increment_stream_from_increments(
     }
 
     auto result = streams::Stream(streams::LieIncrementStream(
-            ks_stream.data_stream, indices,
-            {md.width, effective_support, md.ctx, md.scalar_type,
+            ks_stream.data_stream,
+            indices,
+            {md.width,
+             effective_support,
+             md.ctx,
+             md.scalar_type,
              md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
              md.resolution},
             md.schema
@@ -221,11 +228,15 @@ void python::init_lie_increment_stream(py::module_& m)
 {
 
     py::class_<streams::LieIncrementStream> klass(
-            m, "LieIncrementStream", LIE_INCR_STREAM_DOC
+            m,
+            "LieIncrementStream",
+            LIE_INCR_STREAM_DOC
     );
 
     klass.def_static(
-            "from_increments", &lie_increment_stream_from_increments, "data"_a
+            "from_increments",
+            &lie_increment_stream_from_increments,
+            "data"_a
     );
     //    klass.def_static("from_values", &lie_increment_path_from_values,
     //    "data"_a);

@@ -32,6 +32,7 @@
 
 #include "standard_random_generator.h"
 #include <pcg_uint128.hpp>
+#include <roughpy/scalars/types.h>
 
 namespace rpy {
 namespace scalars {

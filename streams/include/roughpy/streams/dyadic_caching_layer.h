@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_
 #define ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_
@@ -32,12 +31,18 @@
 #include <map>
 #include <mutex>
 
+#include <roughpy/platform.h>
 #include <roughpy/algebra/lie.h>
 #include <roughpy/intervals/dyadic_interval.h>
+
+#include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/uuid/uuid.hpp>
 
 #include "stream_base.h"
 
 namespace rpy {
+namespace uuids = boost::uuids;
+
 namespace streams {
 
 /**
@@ -58,8 +63,14 @@ class DyadicCachingLayer : public StreamInterface
     mutable std::map<intervals::DyadicInterval, algebra::Lie> m_cache;
     mutable std::recursive_mutex m_compute_lock;
 
+    uuids::uuid m_cache_id;
+
 public:
     using StreamInterface::StreamInterface;
+
+
+    DyadicCachingLayer();
+
 
     DyadicCachingLayer(const DyadicCachingLayer&) = delete;
     DyadicCachingLayer(DyadicCachingLayer&& other) noexcept;
@@ -87,8 +98,26 @@ public:
     RPY_NO_DISCARD
     algebra::FreeTensor signature(const intervals::Interval& interval,
                                   const algebra::Context& ctx) const override;
+
+
+    const uuids::uuid& cache_id() const noexcept { return m_cache_id; }
+
+    RPY_SERIAL_LOAD_FN();
+    RPY_SERIAL_SAVE_FN();
+
+protected:
+
+    void load_cache() const;
+    void dump_cache() const;
+
 };
+RPY_SERIAL_EXTERN_LOAD_CLS(DyadicCachingLayer)
+RPY_SERIAL_EXTERN_SAVE_CLS(DyadicCachingLayer)
 
 }// namespace streams
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(::rpy::streams::DyadicCachingLayer,
+                            rpy::serial::specialization::member_load_save)
+
 #endif// ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_

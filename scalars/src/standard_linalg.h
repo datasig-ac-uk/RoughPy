@@ -25,6 +25,9 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef ROUGHPY_SCALARS_STANDARD_LINALG_H_
+#define ROUGHPY_SCALARS_STANDARD_LINALG_H_
+
 #include <roughpy/scalars/scalars_fwd.h>
 
 #include <roughpy/scalars/owned_scalar_array.h>
@@ -37,7 +40,7 @@
 #include "linear_algebra/blas.h"
 #include "linear_algebra/lapack.h"
 
-
+#ifndef ROUGHPY_DISABLE_BLAS
 
 namespace rpy {
 namespace scalars {
@@ -625,8 +628,12 @@ StandardLinearAlgebra<S, R>::gelsd(ScalarMatrix& A, ScalarMatrix& b)
             rcond,
             rank
     );
+    return {};
 }
 
 }// namespace scalars
 
 }// namespace rpy
+
+#endif
+#endif // ROUGHPY_SCALARS_STANDARD_LINALG_H_

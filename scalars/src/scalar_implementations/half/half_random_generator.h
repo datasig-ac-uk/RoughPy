@@ -39,6 +39,8 @@
 
 #include "../../standard_random_generator.h"
 
+#include <roughpy/scalars/types.h>
+
 #include <mutex>
 #include <random>
 #include <sstream>

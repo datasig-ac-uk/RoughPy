@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lie_key.h"
 
@@ -32,6 +31,7 @@
 #include <cassert>
 #include <sstream>
 
+#include <roughpy/scalars/types.h>
 #include <roughpy/algebra/context.h>
 
 using namespace rpy;
@@ -194,7 +194,7 @@ parse_key(const algebra::LieBasis& lbasis, key_type key)
 {
     using namespace rpy::python;
     if (lbasis.letter(key)) {
-        return {PyLieLetter::from_letter(lbasis.first_letter(key))};
+        return {PyLieLetter::from_letter(lbasis.to_letter(key))};
     }
 
     auto keys = lbasis.parents(key);
@@ -205,8 +205,8 @@ parse_key(const algebra::LieBasis& lbasis, key_type key)
     const bool right_letter = lbasis.letter(right_key);
 
     if (left_letter && right_letter) {
-        return {PyLieLetter::from_letter(lbasis.first_letter(left_key)),
-                PyLieLetter::from_letter(lbasis.first_letter(right_key))};
+        return {PyLieLetter::from_letter(lbasis.to_letter(left_key)),
+                PyLieLetter::from_letter(lbasis.to_letter(right_key))};
     }
 
     typename PyLieKey::container_type result;
@@ -215,7 +215,7 @@ parse_key(const algebra::LieBasis& lbasis, key_type key)
         auto right_result = parse_key(lbasis, right_key);
 
         result.reserve(2 + right_result.size());
-        result.push_back(PyLieLetter::from_letter(lbasis.first_letter(left_key))
+        result.push_back(PyLieLetter::from_letter(lbasis.to_letter(left_key))
         );
         result.push_back(PyLieLetter::from_offset(1));
 
@@ -225,7 +225,7 @@ parse_key(const algebra::LieBasis& lbasis, key_type key)
 
         result.reserve(2 + left_result.size());
         result.push_back(PyLieLetter::from_offset(2));
-        result.push_back(PyLieLetter::from_letter(lbasis.first_letter(right_key)
+        result.push_back(PyLieLetter::from_letter(lbasis.to_letter(right_key)
         ));
 
         result.insert(result.cend(), left_result.begin(), left_result.end());
@@ -298,12 +298,12 @@ class ToLieKeyHelper
     RPY_UNUSED dimn_t current;
     algebra::LieBasis basis;
     deg_t width;
-    deg_t depth = 0;
     let_t max_letter = 0;
 
 public:
     explicit ToLieKeyHelper(algebra::LieBasis b, deg_t w)
-        : basis(std::move(b)), size(2), current(0), width(w)
+        : size(2), current(0),
+          basis(std::move(b)), width(w)
     {}
 
     container_type parse_list(const py::handle& obj)

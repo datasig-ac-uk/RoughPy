@@ -37,6 +37,7 @@
 
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_pointer.h>
+#include <roughpy/scalars/types.h>
 
 #include "scalar_implementations/bfloat16/b_float_16_type.h"
 #include "scalar_implementations/double/double_type.h"

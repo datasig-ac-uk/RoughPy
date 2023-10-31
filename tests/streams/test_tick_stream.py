@@ -138,3 +138,14 @@ def test_construct_tick_path_from_data(data):
 
     expected = Lie([1.0, 1.0, 0.5], width=2, depth=2, dtype=DPReal)
     assert lsig == expected, f"{lsig} == {expected}"
+
+
+
+
+def test_construct_tick_stream_with_time(rng):
+    data = DATA_FORMATS[0]
+
+    stream = TickStream.from_data(data, width=2, depth=2, include_time=True,
+                                  dtype=DPReal)
+
+    assert stream.width == 3

@@ -39,9 +39,11 @@
 #include "scalar_blas.h"
 #include "scalar_matrix.h"
 #include "scalar_type.h"
+#include <roughpy/scalars/types.h>
 
 #include "scalar_blas_defs.h"
 
+#ifndef ROUGHPY_DISABLE_BLAS
 namespace rpy {
 namespace scalars {
 
@@ -232,4 +234,5 @@ SingularValueDecomposition ScalarBlasImpl<S>::svd(const ScalarMatrix& matrix)
 }// namespace scalars
 }// namespace rpy
 
+#endif
 #endif// ROUGHPY_SCALAR_BLAS_IMPL_H

@@ -337,7 +337,8 @@ RPyContext_new(PyObject* self, PyObject* args, PyObject* kwargs)
 
 static const char* CONTEXT_DOC = R"rpydoc()rpydoc";
 PyTypeObject rpy::python::RPyContext_Type = {
-        PyVarObject_HEAD_INIT(nullptr, 0) "_roughpy.Context", /* tp_name */
+        PyVarObject_HEAD_INIT(nullptr, 0) //
+        "_roughpy.Context", /* tp_name */
         sizeof(python::RPyContext),                           /* tp_basicsize */
         0,                                                    /* tp_itemsize */
         nullptr,                                              /* tp_dealloc */

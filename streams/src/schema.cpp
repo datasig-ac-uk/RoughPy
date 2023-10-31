@@ -1,7 +1,7 @@
-// Copyright (c) 2023 Datasig Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 24/05/23.
@@ -32,7 +31,7 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/streams/schema.h>
-
+#include <cereal/types/vector.hpp>
 #include <algorithm>
 
 using namespace rpy;
@@ -134,7 +133,12 @@ dimn_t StreamSchema::width_without_param() const {
     return width_to_iterator(end());
 }
 
-
+const scalars::ScalarType*
+StreamSchema::get_most_appropriate_scalar_type() const
+{
+    // Replace this with more sound logic based on channel data types.
+    return scalars::ScalarType::of<double>();
+}
 
 dimn_t StreamSchema::channel_to_stream_dim(dimn_t channel_no) const
 {
@@ -259,15 +263,17 @@ StreamChannel& StreamSchema::insert_lie(string label)
 }
 
 typename StreamSchema::lie_key
-StreamSchema::label_to_lie_key(const string& label)
+StreamSchema::label_to_lie_key(const string& label) const
 {
     auto idx = label_to_stream_dim(label);
     return static_cast<lie_key>(idx) + 1;
 }
 typename StreamSchema::lie_key StreamSchema::time_channel_to_lie_key() const
 {
+    if (!p_parameterization->needs_adding()) {
+        return lie_key();
+    }
     RPY_CHECK(p_parameterization);
-    RPY_CHECK(p_parameterization->needs_adding());
 
     return static_cast<lie_key>(width_to_iterator(end())) + 1;
 }

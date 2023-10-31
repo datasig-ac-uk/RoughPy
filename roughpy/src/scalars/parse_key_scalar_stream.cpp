@@ -1,3 +1,30 @@
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+// this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
+// and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors
+// may be used to endorse or promote products derived from this software without
+// specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 //
 // Created by sam on 08/08/23.
 //
@@ -6,6 +33,7 @@
 #include "args/numpy.h"
 #include "args/strided_copy.h"
 #include "args/dlpack_helpers.h"
+#include <roughpy/scalars/types.h>
 
 using namespace rpy;
 using namespace rpy::python;
@@ -196,7 +224,8 @@ void buffer_to_stream(
 
         stride_copy(
                 tmp.data(), buf_info.ptr, buf_info.itemsize, buf_info.ndim,
-                buf_info.shape.data(), buf_info.strides.data(), tmp_strides
+                buf_info.shape.data(), buf_info.strides.data(), tmp_strides,
+                transposed
         );
 
         // Now that we're C-contiguous, convert_copy into the result.
@@ -248,7 +277,9 @@ void dl_to_stream(
         options.type = scalars::ScalarType::for_id(type_id);
     }
 
-    if (tensor.ndim == 0 || tensor.shape[0] == 0 || tensor.ndim > 1 && tensor.shape[1] == 0) {
+    if (tensor.ndim == 0
+        || tensor.shape[0] == 0
+        || (tensor.ndim > 1 && tensor.shape[1] == 0)) {
         return;
     }
 
@@ -298,17 +329,17 @@ void dl_to_stream(
         in_shape[0] = tensor.shape[0];
         if (tensor.ndim == 2) {
             if (transposed) {
-                out_strides[0] = tensor.shape[1]*itemsize;
                 out_shape[0] = tensor.shape[1];
                 out_shape[1] = tensor.shape[0];
             } else {
-                out_strides[0] = tensor.shape[0]*itemsize;
                 out_shape[0] = tensor.shape[0];
                 out_shape[1] = tensor.shape[1];
             }
+            out_strides[0] = out_shape[1]*itemsize;
+
             if (tensor.strides != nullptr) {
-                in_strides[0] = tensor.strides[0];
-                in_strides[1] = tensor.strides[1];
+                in_strides[0] = tensor.strides[0]*itemsize;
+                in_strides[1] = tensor.strides[1]*itemsize;
             } else {
                 in_strides[0] = tensor.shape[1]*itemsize;
                 in_strides[1] = itemsize;
@@ -319,7 +350,8 @@ void dl_to_stream(
 
         stride_copy(
                 tmp.data(), tensor.data, itemsize, tensor.ndim,
-                in_shape, in_strides, out_strides
+                in_shape, in_strides, out_strides,
+                transposed
         );
 
         // Now that we're C-contiguous, convert_copy into the result.

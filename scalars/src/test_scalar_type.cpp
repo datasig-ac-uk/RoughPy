@@ -33,6 +33,7 @@
 #include "ScalarTests.h"
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_pointer.h>
+#include <roughpy/scalars/types.h>
 
 #include <vector>
 

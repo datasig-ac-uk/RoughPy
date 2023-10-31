@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_MATRIX_H_
 #define ROUGHPY_SCALARS_SCALAR_MATRIX_H_
@@ -39,7 +38,7 @@ namespace scalars {
 
 using matrix_dim_t = int;
 
-enum class MatrixLayout
+enum class MatrixLayout : uint32_t
 {
     RowMajor,
     ColumnMajor
@@ -102,6 +101,8 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
+RPY_SERIAL_EXTERN_SERIALIZE_CLS(ScalarMatrix)
+
 RPY_SERIAL_SERIALIZE_FN_IMPL(ScalarMatrix)
 {
     RPY_SERIAL_SERIALIZE_NVP("layout", m_layout);
@@ -110,8 +111,21 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(ScalarMatrix)
     RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
 }
 
+RPY_SERIAL_SAVE_FN_EXT(MatrixLayout) {
+    RPY_SERIAL_SERIALIZE_BARE(static_cast<uint32_t>(value));
+}
+
+RPY_SERIAL_LOAD_FN_EXT(MatrixLayout) {
+    uint32_t tmp;
+    RPY_SERIAL_SERIALIZE_BARE(tmp);
+    value = static_cast<MatrixLayout>(tmp);
+}
+
 }// namespace scalars
 }// namespace rpy
+
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::scalars::MatrixLayout,
+                            rpy::serial::specialization::non_member_load_save)
 
 RPY_SERIAL_SPECIALIZE_TYPES(
         rpy::scalars::ScalarMatrix,

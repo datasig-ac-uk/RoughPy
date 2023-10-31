@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_DYNAMICALLY_CONSTRUCTED_STREAM_H_
 #define ROUGHPY_STREAMS_DYNAMICALLY_CONSTRUCTED_STREAM_H_
@@ -164,6 +163,10 @@ protected:
 
     template <typename Archive>
     void load_cache(Archive& archive, const algebra::Context& ctx);
+
+public:
+    RPY_SERIAL_LOAD_FN();
+    RPY_SERIAL_SAVE_FN();
 };
 
 namespace dtl {
@@ -176,16 +179,20 @@ struct DataIncrementSafe {
     dimn_t parent_idx = 0;
 };
 
-RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe)
-{
-    RPY_SERIAL_SERIALIZE_NVP("interval", value.interval);
-    RPY_SERIAL_SERIALIZE_NVP("resolution", value.resolution);
-    RPY_SERIAL_SERIALIZE_NVP("content", value.content);
-    RPY_SERIAL_SERIALIZE_NVP("sibling_idx", value.sibling_idx);
-    RPY_SERIAL_SERIALIZE_NVP("parent_idx", value.parent_idx);
+}// namespace dtl
+
+RPY_SERIAL_EXTERN_LOAD_CLS(DynamicallyConstructedStream)
+RPY_SERIAL_EXTERN_SAVE_CLS(DynamicallyConstructedStream)
+
+RPY_SERIAL_LOAD_FN_IMPL(DynamicallyConstructedStream) {
+    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
+    load_cache(archive, *metadata().default_context);
 }
 
-}// namespace dtl
+RPY_SERIAL_SAVE_FN_IMPL(DynamicallyConstructedStream) {
+    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
+    store_cache(archive);
+}
 
 template <typename Archive>
 void DynamicallyConstructedStream::store_cache(Archive& archive) const
@@ -233,6 +240,9 @@ void DynamicallyConstructedStream::load_cache(Archive& archive,
 }// namespace streams
 }// namespace rpy
 
+RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::DynamicallyConstructedStream,
+                            rpy::serial::specialization::member_load_save)
 RPY_SERIAL_CLASS_VERSION(rpy::streams::dtl::DataIncrementSafe, 0);
+
 
 #endif// ROUGHPY_STREAMS_DYNAMICALLY_CONSTRUCTED_STREAM_H_

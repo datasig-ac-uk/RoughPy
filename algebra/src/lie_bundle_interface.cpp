@@ -1,0 +1,14 @@
+//
+// Created by user on 09/10/23.
+//
+
+#include <roughpy/algebra/interfaces/lie_bundle_interface.h>
+
+
+namespace rpy { namespace algebra {
+
+
+template class RPY_EXPORT_INSTANTIATION BundleInterface<LieBundle, Lie, Lie>;
+
+
+}}

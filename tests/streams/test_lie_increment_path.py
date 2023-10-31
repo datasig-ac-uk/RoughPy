@@ -4,8 +4,9 @@ import operator
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
+import roughpy
 from roughpy import FreeTensor, Lie, RealInterval
 from roughpy import LieIncrementStream
 
@@ -151,7 +152,7 @@ def solution_signature(width, depth, tensor_size):
             for data in itertools.product(letters, repeat=d):
                 idx += 1
                 rv[idx] = factor * functools.reduce(operator.mul, data, 1) * (
-                            b - a) ** d
+                        b - a) ** d
         return rv
 
     return sig_func
@@ -229,7 +230,7 @@ def test_tick_path_sig_derivative(width, depth, tick_data, tick_indices, rng):
     p = path(tick_data, indices=tick_indices, width=width, depth=depth)
 
     def lie():
-        return Lie(rng.uniform(0.0, 1.0, size=(width,)), width=width,
+        return Lie(rng.uniform(0.0, 5.0, size=(width,)), width=width,
                    depth=depth)
 
     perturbations = [
@@ -247,3 +248,46 @@ def test_tick_path_sig_derivative(width, depth, tick_data, tick_indices, rng):
 
     # assert result == expected
     assert_array_almost_equal(result, expected)
+
+
+def test_lie_incr_stream_from_randints(rng):
+    array = rng.integers(0, 5, size=(4, 3))
+
+    stream = LieIncrementStream.from_increments(array, width=3, depth=2)
+
+    sig = stream.signature(RealInterval(0.0, 5.0), 2)
+
+    assert_array_equal(np.array(sig)[:4],
+                       np.hstack([[1.0], np.sum(array, axis=0)[:]]))
+
+def test_lie_incr_stream_from_randints_no_deduction(rng):
+    array = rng.integers(0, 5, size=(4, 3))
+
+    stream = LieIncrementStream.from_increments(array, width=3, depth=2,
+                                                dtype=roughpy.DPReal)
+
+    sig = stream.signature(RealInterval(0.0, 5.0), 2)
+
+    assert_array_equal(np.array(sig)[:4],
+                       np.hstack([[1.0], np.sum(array, axis=0)[:]]))
+
+def test_lie_incr_stream_from_randints_transposed(rng):
+    array = rng.integers(0, 5, size=(4, 3))
+
+    stream = LieIncrementStream.from_increments(array.T, width=3, depth=2)
+
+    sig = stream.signature(RealInterval(0.0, 5.0), 2)
+
+    assert_array_equal(np.array(sig)[:4],
+                       np.hstack([[1.0], np.sum(array, axis=0)[:]]))
+
+def test_lie_incr_stream_from_randints_no_deduction_transposed(rng):
+    array = rng.integers(0, 5, size=(4, 3))
+
+    stream = LieIncrementStream.from_increments(array.T, width=3, depth=2,
+                                                dtype=roughpy.DPReal)
+
+    sig = stream.signature(RealInterval(0.0, 5.0), 2)
+
+    assert_array_equal(np.array(sig)[:4],
+                       np.hstack([[1.0], np.sum(array, axis=0)[:]]))

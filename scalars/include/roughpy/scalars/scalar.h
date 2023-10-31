@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,29 +18,27 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_H_
 #define ROUGHPY_SCALARS_SCALAR_H_
 
 #include "scalars_fwd.h"
 
-#include <cassert>
-#include <stdexcept>
-#include <string>
-#include <type_traits>
 
 #include "scalar_interface.h"
 #include "scalar_pointer.h"
 #include "scalar_type.h"
 
+#include <roughpy/core/traits.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/platform/archives.h>
+
 
 namespace rpy {
 namespace scalars {
@@ -193,74 +191,14 @@ public:
     RPY_SERIAL_LOAD_FN();
 };
 
+RPY_SERIAL_EXTERN_SAVE_CLS(Scalar)
+RPY_SERIAL_EXTERN_LOAD_CLS(Scalar)
+
 RPY_EXPORT
 std::ostream& operator<<(std::ostream&, const Scalar& arg);
 
-RPY_SERIAL_SAVE_FN_IMPL(Scalar)
-{
-    RPY_SERIAL_SERIALIZE_NVP("type_id", get_type_id());
-    if (is_interface()) {
-        auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
-        RPY_SERIAL_SERIALIZE_NVP("data", p_type->to_raw_bytes(ptr, 1));
-    } else {
-        RPY_SERIAL_SERIALIZE_NVP("data", to_raw_bytes(1));
-    }
-}
 
-RPY_SERIAL_LOAD_FN_IMPL(Scalar)
-{
-    string type_id;
-    RPY_SERIAL_SERIALIZE_NVP("type_id", type_id);
 
-    std::vector<byte> raw_bytes;
-    RPY_SERIAL_SERIALIZE_NVP("data", raw_bytes);
-    update_from_bytes(type_id, 1, raw_bytes);
-}
-
-namespace dtl {
-
-template <typename T>
-struct type_of_T_defined {
-    static T cast(ScalarPointer scalar)
-    {
-        const auto* tp = ScalarType::of<T>();
-        if (tp == scalar.type()) { return *scalar.raw_cast<const T*>(); }
-        if (tp == scalar.type()->rational_type()) {
-            return *scalar.raw_cast<const T*>();
-        }
-
-        T result;
-        ScalarPointer dst(tp, &result);
-        tp->convert_copy(dst, scalar, 1);
-        return result;
-    }
-};
-
-template <typename T>
-struct type_of_T_not_defined {
-    static T cast(ScalarPointer scalar)
-    {
-        T result;
-        scalar.type()->convert_copy({nullptr, &result}, scalar, 1,
-                                    type_id_of<T>());
-        return result;
-    }
-};
-
-}// namespace dtl
-
-template <typename T>
-inline remove_cv_ref_t<T> scalar_cast(const Scalar& scalar)
-{
-    if (scalar.is_zero()) { return T(0); }
-    using bare_t = remove_cv_ref_t<T>;
-    using impl_t = detected_or_t<dtl::type_of_T_not_defined<bare_t>,
-                                 dtl::type_of_T_defined, bare_t>;
-
-    // Now we are sure that scalar.type() != nullptr
-    // and scalar.ptr() != nullptr
-    return impl_t::cast(scalar.to_pointer());
-}
 
 }// namespace scalars
 }// namespace rpy
