@@ -25,121 +25,59 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 25/02/23.
-//
+#ifndef ROUGHPY_SCALARS_SCALARS_FWD_H_
+#define ROUGHPY_SCALARS_SCALARS_FWD_H_
 
-#ifndef ROUGHPY_SCALARS_SCALARS_PREDEF_H
-#define ROUGHPY_SCALARS_SCALARS_PREDEF_H
-
-#include <roughpy/core/helpers.h>
-#include <roughpy/core/macros.h>
-#include <roughpy/core/traits.h>
-#include <roughpy/core/types.h>
+#include <roughpy/device/macros.h>
 #include <roughpy/device/core.h>
 
-#include <functional>
-
-namespace rpy {
-namespace scalars {
+namespace rpy { namespace scalars {
 
 using ScalarTypeCode = devices::TypeCode;
 using BasicScalarInfo = devices::TypeInfo;
 
-/// Marker for signed size type (ptrdiff_t)
-struct signed_size_type_marker {
-};
-
-/// Marker for unsigned size type (size_t)
-struct unsigned_size_type_marker {
-};
-
-/**
- * @brief A collection of basic information for identifying a scalar type.
- */
-struct ScalarTypeInfo {
-    string name;
-    string id;
-    size_t n_bytes;
-    size_t alignment;
-    BasicScalarInfo basic_info;
-    devices::DeviceInfo device;
-};
-
 // Forward declarations
-
 class ScalarType;
-
 class ScalarInterface;
-
-class ScalarPointer;
-
 class Scalar;
-
 class ScalarArray;
-
-class OwnedScalarArray;
-
+class ScalarArrayView;
 class KeyScalarArray;
-
 class ScalarStream;
-
+class KeyScalarStream;
 class RandomGenerator;
 
-class BlasInterface;
 
-//template <typename T>
-//inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
-//
-using conversion_function
-        = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
+namespace dtl {
 
-constexpr bool
-operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept
-{
-    return lhs.code == rhs.code && lhs.bytes == rhs.bytes
-            && lhs.lanes == rhs.lanes;
+template <typename T>
+struct ScalarTypeOfImpl {
+    static const ScalarType* get() noexcept {
+        static_assert(false, "no scalar type exists for this type");
+    }
+};
+
+template <>
+RPY_EXPORT const ScalarType* ScalarTypeOfImpl<float>::get() noexcept;
+
 }
 
-/**
- * @brief Register a new type with the scalar type system
- * @param type Pointer to newly created ScalarType
- *
- *
- */
-RPY_EXPORT void register_type(const ScalarType* type);
+template <typename T>
+RPY_NO_DISCARD const ScalarType* scalar_type_of() {
+    return dtl::ScalarTypeOfImpl<T>::get();
+}
 
-/**
- * @brief Get a type registered with the scalar type system
- * @param id Id string of type to be retrieved
- * @return pointer to ScalarType representing id
- */
-RPY_EXPORT const ScalarType* get_type(const string& id);
+RPY_NO_DISCARD const ScalarType* scalar_type_of(devices::TypeInfo info);
 
-RPY_EXPORT const ScalarType*
-get_type(const string& id, const devices::DeviceInfo& device);
 
-/**
- * @brief Get a list of all registered ScalarTypes
- * @return vector of ScalarType pointers.
- */
-RPY_NO_DISCARD RPY_EXPORT std::vector<const ScalarType*> list_types();
+template <typename T>
+RPY_NO_DISCARD T scalar_cast(const Scalar& value);
 
-RPY_NO_DISCARD RPY_EXPORT const ScalarTypeInfo& get_scalar_info(string_view id);
 
-RPY_NO_DISCARD RPY_EXPORT const std::string&
-id_from_basic_info(const BasicScalarInfo& info);
+inline constexpr int min_scalar_type_alignment = 16;
 
-RPY_NO_DISCARD RPY_EXPORT const conversion_function&
-get_conversion(const string& src_id, const string& dst_id);
 
-RPY_EXPORT void register_conversion(
-        const string& src_id,
-        const string& dst_id,
-        conversion_function converter
-);
 
-}// namespace scalars
-}// namespace rpy
+}}
 
-#endif// ROUGHPY_SCALARS_SCALARS_PREDEF_H
+#endif // ROUGHPY_SCALARS_SCALARS_FWD_H_

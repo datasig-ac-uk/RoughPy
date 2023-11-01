@@ -28,177 +28,334 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_H_
 #define ROUGHPY_SCALARS_SCALAR_H_
 
+#include "packed_scalar_type_ptr.h"
+#include "scalar_interface.h"
 #include "scalars_fwd.h"
 
-
-#include "scalar_interface.h"
-#include "scalar_pointer.h"
-#include "scalar_type.h"
-
+#include <roughpy/core/helpers.h>
+#include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
-#include <roughpy/platform/serialization.h>
-#include <roughpy/platform/archives.h>
+#include <roughpy/core/types.h>
 
+#include <roughpy/device/types.h>
 
 namespace rpy {
 namespace scalars {
 
-class Scalar : private ScalarPointer
+namespace dtl {
+
+/**
+ * @brief Discriminator for internal storage models of the Scalar type.
+ */
+enum class ScalarContentType : uint8_t
 {
+    /// Data held in internal array of bytes
+    TrivialBytes = 0,
+    /// Data is a pointer to an external value
+    OpaquePointer = 1,
+    /// Data is const
+    IsConst = 2,
+    // This one exists just to keep the switch statements happy.
+    // In reality, all TrivialBytes scalars are "const" in the sense that
+    // mutating them shouldn't have external effects.
+    /// Data is trivial bytes and const
+    ConstTrivialBytes = IsConst,
+    /// Data is a const pointer to an external value
+    ConstOpaquePointer = OpaquePointer | IsConst,
+    // We leave open the possibility of non-owning interface pointers in the
+    // future, but for now all interface pointers are owned.
+    /// Data is a pointer to a (mutable) polymorphic interface type
+    Interface = 4,
+    /// Data is a pointer to an external value that is owned by the scalar
+    OwnedPointer = 5,
+    /// Data is a pointer to a (mutable) polymorphic interface type that is
+    /// owned by the Scalar
+    OwnedInterface = 6
+};
+RPY_EXPORT bool scalar_convert_copy(
+        void* dst,
+        devices::TypeInfo dst_type,
+        const Scalar& src
+) noexcept;
+
+inline bool scalar_convert_copy(
+        void* dst,
+        PackedScalarTypePointer<ScalarContentType> ptype,
+        const Scalar& src
+) noexcept
+{
+    return scalar_convert_copy(dst, ptype.get_type_info(), src);
+}
+
+inline ScalarContentType content_type_of(devices::TypeInfo info) noexcept
+{
+    switch (info.code) {
+        case devices::TypeCode::Int:
+        case devices::TypeCode::UInt:
+        case devices::TypeCode::Float:
+        case devices::TypeCode::BFloat:
+            if (info.bytes <= sizeof(uintptr_t)) {
+                return ScalarContentType::TrivialBytes;
+            } else {
+                return ScalarContentType::OwnedPointer;
+            }
+        case devices::TypeCode::OpaqueHandle: break;
+        case devices::TypeCode::Complex:
+            if (2 * info.bytes <= sizeof(uintptr_t)) {
+                return ScalarContentType::TrivialBytes;
+            } else {
+                return ScalarContentType::OwnedPointer;
+            }
+            break;
+        case devices::TypeCode::Bool: break;
+        case devices::TypeCode::Rational: break;
+        case devices::TypeCode::ArbitraryPrecision: break;
+        case devices::TypeCode::ArbitraryPrecisionUInt: break;
+        case devices::TypeCode::ArbitraryPrecisionFloat: break;
+        case devices::TypeCode::ArbitraryPrecisionComplex: break;
+        case devices::TypeCode::ArbitraryPrecisionRational:
+        case devices::TypeCode::APRationalPolynomial:
+            return ScalarContentType::OwnedPointer;
+    }
+    return ScalarContentType::OpaquePointer;
+}
+
+inline ScalarContentType
+content_type_of(PackedScalarTypePointer<ScalarContentType> ptype) noexcept
+{
+    return content_type_of(ptype.get_type_info());
+}
+
+}// namespace dtl
+
+class RPY_EXPORT Scalar
+{
+    using interface_pointer_t = std::unique_ptr<ScalarInterface>;
+    static_assert(sizeof(interface_pointer_t) == sizeof(uintptr_t), "");
+    using type_pointer = PackedScalarTypePointer<dtl::ScalarContentType>;
+    type_pointer p_type_and_content_type;
+
+    union
+    {
+        uintptr_t integer_for_convenience;
+        byte trivial_bytes[sizeof(uintptr_t)];
+        interface_pointer_t interface;
+        void* opaque_pointer;
+    };
 
 public:
-    Scalar() = default;
+    Scalar();
+
+    explicit Scalar(type_pointer type);
+    explicit Scalar(const ScalarType* type);
+    explicit Scalar(devices::TypeInfo info);
+
+    template <
+            typename T,
+            typename = enable_if_t<
+                    !is_reference<T>::value && is_standard_layout<T>::value
+                    && is_trivially_copyable<T>::value
+                    && is_trivially_destructible<T>::value
+                    && sizeof(T) <= sizeof(void*)>>
+    Scalar(T value)
+        : p_type_and_content_type(devices::dtl::type_info<T>()),
+          integer_for_convenience(0)
+    {
+        std::memcpy(&trivial_bytes, &value, sizeof(value));
+    }
+
+    template <typename T>
+    Scalar(T& value)
+        : p_type_and_content_type(
+                scalar_type_of<T>(),
+                dtl::ScalarContentType::OpaquePointer
+        ),
+          opaque_pointer(&value)
+    {}
+
+    template <typename T>
+    Scalar(const T& value)
+        : p_type_and_content_type(
+                scalar_type_of<T>(),
+                dtl::ScalarContentType::ConstOpaquePointer
+        ),
+          opaque_pointer(const_cast<void*>(&value))
+    {}
+
+    explicit Scalar(std::unique_ptr<ScalarInterface> iface)
+        : p_type_and_content_type(
+                nullptr,
+                dtl::ScalarContentType::OwnedInterface
+        ),
+          interface(std::move(iface))
+    {}
+
     Scalar(const Scalar& other);
     Scalar(Scalar&& other) noexcept;
-    explicit Scalar(const ScalarType* type);
-
-    explicit Scalar(scalar_t arg);
-    explicit Scalar(ScalarPointer ptr);
-    explicit Scalar(ScalarInterface* interface_ptr);
-    Scalar(ScalarPointer ptr, flags::PointerType ptype);
-    Scalar(const ScalarType* type, scalar_t arg);
-
-    Scalar(ScalarPointer other, uint32_t new_flags);
-
-    template <typename I, typename J,
-              typename = std::enable_if_t<std::is_integral<I>::value
-                                          && std::is_integral<J>::value>>
-    Scalar(const ScalarType* type, I numerator, J denominator)
-    {
-        if (type == nullptr) { type = get_type("rational"); }
-        ScalarPointer::operator=(type->allocate(1));
-        type->assign(static_cast<const ScalarPointer&>(*this),
-                     static_cast<long long>(numerator),
-                     static_cast<long long>(denominator));
-    }
-
-    template <typename ScalarArg>
-    Scalar(const ScalarType* type, ScalarArg arg)
-    {
-        const auto* scalar_arg_type = ScalarType::of<ScalarArg>();
-        if (scalar_arg_type != nullptr) {
-            if (type == nullptr) { type = scalar_arg_type; }
-            ScalarPointer::operator=(type->allocate(1));
-            type->convert_copy(to_mut_pointer(),
-                               {scalar_arg_type, std::addressof(arg)}, 1);
-        } else {
-            const auto& id = type_id_of<ScalarArg>();
-            if (type == nullptr) { type = ScalarType::for_id(id); }
-            ScalarPointer::operator=(type->allocate(1));
-            type->convert_copy(to_mut_pointer(), {id, &arg}, 1);
-        }
-    }
 
     ~Scalar();
 
-    Scalar& operator=(const Scalar& other);
-    Scalar& operator=(Scalar&& other) noexcept;
-
-    template <typename T,
-              typename
-              = std::enable_if_t<!std::is_same<Scalar, std::decay_t<T>>::value>>
-    Scalar& operator=(T arg)
+    template <typename T>
+    void assign(const T& value) noexcept
     {
-        if (p_type == nullptr) {
-            p_type = ScalarType::of<std::decay_t<T>>();
-        } else {
-            if (is_const()) {
-                RPY_THROW(std::runtime_error,
-                        "attempting to assign value to const scalar");
-            }
-        }
+        dtl::scalar_convert_copy(
+                mut_pointer(),
+                type_info(),
+                &value,
+                devices::dtl::type_info<T>()
+        );
+    }
 
-        if (p_data == nullptr) {
-            m_flags |= flags::OwnedPointer;
-            ScalarPointer::operator=(p_type->allocate(1));
-        }
-
-        if ((m_flags & interface_flag) != 0) {
-            static_cast<ScalarInterface*>(const_cast<void*>(p_data))
-                    ->assign(std::addressof(arg), type_id_of<T>());
-        } else {
-            const auto& type_id = type_id_of<T>();
-            p_type->convert_copy(static_cast<ScalarPointer&>(*this),
-                                 {type_id, std::addressof(arg)}, 1);
-
+    /*
+     * ********* WARNING **********
+     * The assignment has different semantics than usual. Rather than simply
+     * changing the whole of *this to match the incoming value, the incoming
+     * value is converted to the current type of *this;
+     *
+     * The move/copy assignment operator have the usual semantics if they are
+     * empty values, to aid the compiler when the return value is a Scalar.
+     *
+     */
+    template <typename T>
+    enable_if_t<!is_base_of<Scalar, T>::value, Scalar&> operator=(const T& value
+    )
+    {
+        switch (p_type_and_content_type.get_enumeration()) {
+            case dtl::ScalarContentType::TrivialBytes:
+            case dtl::ScalarContentType::ConstTrivialBytes:
+                // We're actually not paying attention to "const" in trivial
+                // bytes, since the value is owned by the Scalar.
+                if (!dtl::scalar_convert_copy(
+                            trivial_bytes,
+                            type_info(),
+                            &value,
+                            devices::dtl::type_info<T>()
+                    )) {
+                    RPY_THROW(std::runtime_error, "assignment failed");
+                }
+                break;
+            case dtl::ScalarContentType::OpaquePointer:
+            case dtl::ScalarContentType ::OwnedPointer:
+                if (!dtl::scalar_convert_copy(
+                            opaque_pointer,
+                            p_type_and_content_type.get_type_info(),
+                            Scalar(value)
+                    )) {
+                    RPY_THROW(std::runtime_error, "assignment failed");
+                }
+                break;
+            case dtl::ScalarContentType::ConstOpaquePointer:
+                RPY_THROW(
+                        std::runtime_error,
+                        "attempting to write to a const value"
+                );
+            case dtl::ScalarContentType::Interface:
+                interface->set_value(value);
+                break;
+            case dtl::ScalarContentType::OwnedPointer: break;
         }
 
         return *this;
     }
 
-    using ScalarPointer::is_const;
-    using ScalarPointer::type;
-    RPY_NO_DISCARD
-    bool is_value() const noexcept;
-    RPY_NO_DISCARD
+    Scalar& operator=(const Scalar& other);
+    Scalar& operator=(Scalar&& other) noexcept;
+
+    bool fast_is_zero() const noexcept
+    {
+        return p_type_and_content_type.is_null()
+                || integer_for_convenience == 0;
+    }
     bool is_zero() const noexcept;
+    bool is_reference() const noexcept;
+    bool is_const() const noexcept;
 
-    RPY_NO_DISCARD
-    ScalarPointer to_pointer() const noexcept;
-    RPY_NO_DISCARD
-    ScalarPointer to_mut_pointer();
+    const void* pointer() const noexcept;
+    void* mut_pointer();
 
-    void set_to_zero();
+    optional<const ScalarType*> type() const noexcept;
+    devices::TypeInfo type_info() const noexcept;
 
-    RPY_NO_DISCARD
-    scalar_t to_scalar_t() const;
+    friend std::ostream& operator<<(std::ostream& os, const Scalar& value);
 
-    Scalar operator-() const;
+    /**
+     * @brief Cast the scalar to a concrete type T.
+     * @tparam T Type to cast
+     * @return const reference to type
+     *
+     * No type checking is done here, this should only be called if *this is
+     * known to hold a value of type T. Any other usage results in undefined
+     * behaviour.
+     */
+    template <typename T>
+    const T& as_type() const noexcept;
 
-    Scalar operator+(const Scalar& other) const;
-    Scalar operator-(const Scalar& other) const;
-    Scalar operator*(const Scalar& other) const;
-    Scalar operator/(const Scalar& other) const;
+    bool operator==(const Scalar& other) const;
 
     Scalar& operator+=(const Scalar& other);
     Scalar& operator-=(const Scalar& other);
     Scalar& operator*=(const Scalar& other);
     Scalar& operator/=(const Scalar& other);
-
-    bool operator==(const Scalar& other) const noexcept;
-    bool operator!=(const Scalar& other) const noexcept;
-
-    // #ifndef RPY_DISABLE_SERIALIZATION
-    // private:
-    //     friend rpy::serialization_access;
-    //
-    //
-    //     template <typename Ar>
-    //     void save(Ar& ar, const unsigned int /*version*/) const {
-    //         ar << get_type_id();
-    //         if (is_interface()) {
-    //             auto ptr = static_cast<const
-    //             ScalarInterface*>(p_data)->to_pointer();
-    //             // p_type cannot be null if the data is an interface
-    //             ar << p_type->to_raw_bytes(ptr, 1);
-    //         } else {
-    //             ar << to_raw_bytes(1);
-    //         }
-    //     }
-    //
-    //     template <typename Ar>
-    //     void load(Ar& ar, const unsigned int /*version*/) {
-    //         std::string type_id;
-    //         ar >> type_id;
-    //         std::vector<byte> bytes;
-    //         ar >> bytes;
-    //         update_from_bytes(type_id, 1, bytes);
-    //     }
-    //
-    // #endif
-
-    RPY_SERIAL_SAVE_FN();
-    RPY_SERIAL_LOAD_FN();
 };
 
-RPY_SERIAL_EXTERN_SAVE_CLS(Scalar)
-RPY_SERIAL_EXTERN_LOAD_CLS(Scalar)
+template <typename T>
+const T& Scalar::as_type() const noexcept
+{
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes:
+        case dtl::ScalarContentType::ConstTrivialBytes:
+            return *reinterpret_cast<const T*>(&trivial_bytes);
+        case dtl::ScalarContentType::ConstOpaquePointer:
+        case dtl::ScalarContentType::OpaquePointer:
+            //        case dtl::ScalarContentType::OwnedPointer:
+            return *reinterpret_cast<const T*>(opaque_pointer);
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface:
+            return *reinterpret_cast<const T*>(interface->pointer());
+    }
+}
 
-RPY_EXPORT
-std::ostream& operator<<(std::ostream&, const Scalar& arg);
+inline Scalar operator+(const Scalar& lhs, const Scalar& rhs)
+{
+    Scalar result(lhs);
+    result += rhs;
+    return result;
+}
+inline Scalar operator-(const Scalar& lhs, const Scalar& rhs)
+{
+    Scalar result(lhs);
+    result -= rhs;
+    return result;
+}
+inline Scalar operator*(const Scalar& lhs, const Scalar& rhs)
+{
+    Scalar result(lhs);
+    result *= rhs;
+    return result;
+}
+inline Scalar operator/(const Scalar& lhs, const Scalar& rhs)
+{
+    Scalar result(lhs);
+    result /= rhs;
+    return result;
+}
 
+template <typename T>
+RPY_NO_DISCARD T scalar_cast(const Scalar& value)
+{
+    T result;
 
+    // If the scalar is trivial zero, no need to do anything special.
+    if (!value.fast_is_zero()) {
+        const auto target_info = devices::dtl::type_info<T>();
 
+        if (!dtl::scalar_convert_copy(&result, target_info, value)) {
+            // Conversion failed for now just throw an exception.
+            RPY_THROW(std::runtime_error, "unable to cast");
+        }
+    }
+    return result;
+}
 
 }// namespace scalars
 }// namespace rpy

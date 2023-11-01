@@ -1,3 +1,5 @@
+
+
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -25,28 +27,9 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
-#define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+#include <roughpy/scalars/random.h>
 
-#include "scalars_fwd.h"
+using namespace rpy;
+using namespace rpy::scalars;
 
-#include <roughpy/device/buffer.h>
-
-namespace rpy { namespace scalars {
-
-class RPY_EXPORT ScalarArray {
-    devices::Buffer m_raw;
-
-public:
-
-
-    const ScalarType* type() const noexcept;
-
-
-};
-
-}}
-
-
-
-#endif // ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+RandomGenerator::~RandomGenerator() = default;

@@ -25,28 +25,22 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
-#define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+#ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_VIEW_H_
+#define ROUGHPY_SCALARS_SCALAR_ARRAY_VIEW_H_
 
 #include "scalars_fwd.h"
+#include <roughpy/device/memory_view.h>
 
-#include <roughpy/device/buffer.h>
 
 namespace rpy { namespace scalars {
 
-class RPY_EXPORT ScalarArray {
-    devices::Buffer m_raw;
 
-public:
-
-
-    const ScalarType* type() const noexcept;
-
+class RPY_EXPORT ScalarArrayView {
+    devices::MemoryView m_view;
 
 };
 
+
 }}
 
-
-
-#endif // ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+#endif // ROUGHPY_SCALARS_SCALAR_ARRAY_VIEW_H_

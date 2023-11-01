@@ -31,11 +31,13 @@
 
 #include <gtest/gtest.h>
 
+#include <roughpy/scalars/cast.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include <roughpy/platform/serialization.h>
+#include <roughpy/platform/archives.h>
 #include <sstream>
 
 using namespace rpy;

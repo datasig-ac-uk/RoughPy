@@ -25,28 +25,26 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
-#define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+//
+// Created by user on 01/11/23.
+//
+#ifndef ROUGHPY_SCALARS_SRC_SCALAR_ARITHMETIC_H_
+#define ROUGHPY_SCALARS_SRC_SCALAR_ARITHMETIC_H_
 
-#include "scalars_fwd.h"
+#include <roughpy/core/macros.h>
+#include <roughpy/scalars/scalar.h>
 
-#include <roughpy/device/buffer.h>
+namespace rpy {
+namespace scalars {
+namespace dtl {
 
-namespace rpy { namespace scalars {
+void scalar_inplace_add(void*, PackedScalarTypePointer<dtl::ScalarContentType>, const void*, PackedScalarTypePointer<dtl::ScalarContentType>);
+void scalar_inplace_sub(void*, PackedScalarTypePointer<dtl::ScalarContentType>, const void*, PackedScalarTypePointer<dtl::ScalarContentType>);
+void scalar_inplace_mul(void*, PackedScalarTypePointer<dtl::ScalarContentType>, const void*, PackedScalarTypePointer<dtl::ScalarContentType>);
+void scalar_inplace_div(void*, PackedScalarTypePointer<dtl::ScalarContentType>, const void*, PackedScalarTypePointer<dtl::ScalarContentType>);
 
-class RPY_EXPORT ScalarArray {
-    devices::Buffer m_raw;
+}
+}// namespace scalars
+}// namespace rpy
 
-public:
-
-
-    const ScalarType* type() const noexcept;
-
-
-};
-
-}}
-
-
-
-#endif // ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+#endif// ROUGHPY_SCALARS_SRC_SCALAR_ARITHMETIC_H_

@@ -25,28 +25,28 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
-#define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+//
+// Created by user on 01/11/23.
+//
 
-#include "scalars_fwd.h"
+#ifndef ROUGHPY_SCALARS_SRC_SCALAR_CASTS_H_
+#define ROUGHPY_SCALARS_SRC_SCALAR_CASTS_H_
 
-#include <roughpy/device/buffer.h>
+#include <roughpy/scalars/scalars_fwd.h>
 
-namespace rpy { namespace scalars {
+namespace rpy {
+namespace scalars {
+namespace dtl {
 
-class RPY_EXPORT ScalarArray {
-    devices::Buffer m_raw;
+bool scalar_convert_copy(
+        void* dst,
+        devices::TypeInfo dst_type,
+        const void* src,
+        devices::TypeInfo src_type
+) noexcept;
 
-public:
+}
+}// namespace scalars
+}// namespace rpy
 
-
-    const ScalarType* type() const noexcept;
-
-
-};
-
-}}
-
-
-
-#endif // ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+#endif// ROUGHPY_SCALARS_SRC_SCALAR_CASTS_H_
