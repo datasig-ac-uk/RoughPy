@@ -31,3 +31,15 @@ for key in basis:
 # easiest way to do this is with str.join, and map.
 all_keys_string = " ".join(map(str, basis))
 # "() (1) (2) (1,1) (1,2) (2,1) (2,2) ..."
+
+
+# We can also list out the keys of the Lie basis as follows:
+lie_basis = context.lie_basis
+for key in lie_basis:
+    print(key)
+
+# 1
+# 2
+# [1, 2]
+# [1, [1, 2]]
+# [2, [1, 2]]
