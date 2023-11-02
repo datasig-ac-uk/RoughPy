@@ -49,7 +49,8 @@ import roughpy as rp
 ```
 The main object(s) that you will interact with are `Stream` objects or the family of factory classes such as `LieIncrementStream`. For example, we can create a `LieIncrementStream` using the following commands:
 ```python
-stream = rp.LieIncrementStream.from_increments([[0., 1., 2.], [3., 4., 5.]], depth=2)
+import numpy as np
+stream = rp.LieIncrementStream.from_increments(np.array([[0, 1, 2], [3, 4, 5]], dtype=np.float64), depth=2)
 ```
 This will create a stream whose (hidden) underlying data are the two increments `[0., 1., 2.]` and `[3., 4., 5.]`, and whose algebra elements are truncated at maximum depth 2.
 To compute the log signature over an interval we use the `log_signature` method on the stream, for example
