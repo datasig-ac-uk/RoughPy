@@ -42,6 +42,20 @@ pip install git+https://github.com/datasig-ac-uk/RoughPy.git
 ```
 It will take some time to build.
 
+## Intervals in RoughPy
+RougPy is very careful about how it works with intervals.
+One design goal is that it should be able to handle jumps in the underlying signal that occur at particular times, including the beginning or end of the interval, and still guarantee that if you combine the signature over adjacent interval, you always get the signature over the entire interval.
+This implies that there has to be a decision about whether data at the exact beginning or exact end of the interval is included.
+The conventions in RoughPy are that we use clopen intervals, and that data at beginning of the interval is seen, and data at the end of the interval is seen in the next interval.
+A second design goal is that the code should be efficient, and so the internal representation of a stream involves caching the signature over dyadic intervals of different resolutions.
+Recovering the signature over any interval has logarithmic complexity (using at most 2^n tensor multiplications, when n is the internal resolution of the stream) from the cache.
+Resolution refers to the length of the finest granularity at which we will store information about the underlying data.
+Any event occurs within one of these finest granularity intervals, multiple events occur within the same interval resolve to a more complex log-signature which correctly reflects the time sequence of the events within this grain of time.
+However, no query of the stream is allowed to see finer resolution than the internal resolution of the stream, it is only allowed to access the information over intervals that are a union of thse finest resolution intervals.
+For this reason, a query over any interval is replaced by a query, or more accurately the interval that we query over, is replaced by an interval whose endpoints have been shifted to be consistent with the granular resolution, by rounding these points to the contained end-point of the unique clopen granular interval containing this point.
+In particular, if both the left-hand and right-hand ends of the interval are contained in the clopen granular interval, we round the interval to the empty interval. 
+Specifying a resolution of 32 or 64 equates to using integer arithmetic.
+
 ## Usage
 Following the NumPy (and related) convention, we import RoughPy under the alias `rp` as follows:
 ```python
@@ -70,6 +84,16 @@ sig = stream.signature(interval)
 ```
 Notice that the `lsig` and `sig` objects have types `Lie` and `FreeTensor`, respectively. They behave exactly as you would expect elements of these algebras to behave. Moreover, they will (usually) be convertible directly to a NumPy array (or TensorFlow, PyTorch, JAX tensor type in the future) of the underlying data, so you can interact with them as if they were simple arrays.
 
+We can also construct streams by providing the raw data of Lie increments with higher order terms by specifying the width using the same constructor above.
+For example, if we take width 2 and depth 2 then the elements of a Lie element will have keys (1, 2, [1,2]).
+So if we provide the following data, we construct a stream whose underlying Lie increments are width 2, depth 2 
+```
+stream = rp.LieIncrementStream.from_increments(np.array([[1, 2, 0.5], [0.2, -0.1, 0.2]], dtype=np.float64), width=2, depth=2)
+print(stream.log_signature(rp.RealInterval(0, 0.5), 2)) # returns the first increment
+# { 1(1), 2(2), 0.5([1,2]) }
+>>> print(stream.log_signature(rp.RealInterval(0, 1.5), 2)) # Campbell-Baker-Hausdorff product of both increments
+{ 1.2(1) 1.9(2) 0.45([1,2]) }
+```
 
 
 ## Support
