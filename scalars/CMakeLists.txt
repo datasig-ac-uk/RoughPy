@@ -20,10 +20,15 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_type.h
         include/roughpy/scalars/scalar_types.h
         include/roughpy/scalars/scalars_fwd.h
+        include/roughpy/scalars/traits.h
     SOURCES
         src/scalar/arithmetic.cpp
         src/scalar/arithmetic.h
         src/scalar/casts.cpp
+        src/scalar/casts.h
+        src/scalar/comparison.cpp
+        src/scalar/comparison.h
+        src/scalar/serialization.cpp
         src/key_scalar_array.cpp
         src/key_scalar_stream.cpp
         src/random.cpp
