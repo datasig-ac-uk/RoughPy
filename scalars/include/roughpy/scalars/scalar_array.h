@@ -31,22 +31,125 @@
 #include "scalars_fwd.h"
 
 #include <roughpy/device/buffer.h>
+#include "packed_scalar_type_ptr.h"
 
-namespace rpy { namespace scalars {
+namespace rpy {
+namespace scalars {
 
-class RPY_EXPORT ScalarArray {
-    devices::Buffer m_raw;
+namespace dtl {
+enum class ScalarArrayStorageModel
+{
+    BorrowConst = 0,
+    BorrowMut = 1,
+    Owned = 2,
+};
+
+}
+
+class RPY_EXPORT ScalarArray
+{
+    using discriminator_type = dtl::ScalarArrayStorageModel;
+    using type_pointer = PackedScalarTypePointer<dtl::ScalarArrayStorageModel>;
+
+    type_pointer p_type_and_mode;
+
+    union
+    {
+        devices::Buffer owned_buffer;
+        const void* const_borrowed;
+        void* mut_borrowed;
+    };
+
+    dimn_t m_size = 0;
+
+    static bool check_pointer_and_size(const void* ptr, dimn_t size);
 
 public:
+    ScalarArray();
 
+    explicit ScalarArray(const ScalarType* type, dimn_t size = 0);
+    explicit ScalarArray(devices::TypeInfo info, dimn_t size = 0);
 
-    const ScalarType* type() const noexcept;
+    explicit ScalarArray(const ScalarType* type, devices::Buffer&& buffer);
+    explicit ScalarArray(devices::TypeInfo info, devices::Buffer&& buffer);
 
+    template <typename T>
+    explicit ScalarArray(Slice<T> data);
+
+    template <typename T>
+    explicit ScalarArray(Slice<const T> data);
+
+    template <typename T>
+    ScalarArray(T* data, dimn_t size);
+
+    template <typename T>
+    ScalarArray(const T* adata, dimn_t size);
+
+    ~ScalarArray();
+
+    ScalarArray& operator=(const ScalarArray& other);
+    ScalarArray& operator=(ScalarArray&& other) noexcept;
+
+    bool is_owning() const noexcept {
+        return p_type_and_mode.get_enumeration() == discriminator_type::Owned;
+    }
+
+    optional<const ScalarType*> type() const noexcept;
+
+    devices::TypeInfo type_info() const noexcept;
+
+    constexpr dimn_t size() const noexcept { return m_size; }
 
 };
 
-}}
+template <typename T>
+ScalarArray::ScalarArray(Slice<T> data)
+    : p_type_and_mode(
+            scalar_type_of<T>(),
+            dtl::ScalarArrayStorageModel::BorrowMut
+    ),
+      mut_borrowed(data.data()),
+      m_size(data.size())
+{
+    check_pointer_and_size(data.data(), data.size());
+}
 
+template <typename T>
+ScalarArray::ScalarArray(Slice<const T> data)
+    : p_type_and_mode(
+            scalar_type_of<T>(),
+            dtl::ScalarArrayStorageModel::BorrowConst
+    ),
+      const_borrowed(data.data()),
+      m_size(data.size())
+{
+    check_pointer_and_size(data.data(), data.size());
+}
 
+template <typename T>
+ScalarArray::ScalarArray(T* data, dimn_t size)
+    : p_type_and_mode(
+            scalar_type_of<T>(),
+            dtl::ScalarArrayStorageModel::BorrowMut
+    ),
+      mut_borrowed(data),
+      m_size(size)
+{
+    check_pointer_and_size(data, size);
+}
+template <typename T>
+ScalarArray::ScalarArray(const T* data, dimn_t size)
+    : p_type_and_mode(
+            scalar_type_of<T>(),
+            dtl::ScalarArrayStorageModel::BorrowConst
+    ),
+      const_borrowed(data),
+      m_size(size)
+{
+    check_pointer_and_size(data, size);
+}
 
-#endif // ROUGHPY_SCALARS_SCALAR_ARRAY_H_
+}// namespace scalars
+}// namespace rpy
+
+#endif// ROUGHPY_SCALARS_SCALAR_ARRAY_H_

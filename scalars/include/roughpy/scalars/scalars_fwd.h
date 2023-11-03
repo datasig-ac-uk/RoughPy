@@ -52,14 +52,13 @@ namespace dtl {
 
 template <typename T>
 struct ScalarTypeOfImpl {
-    static const ScalarType* get() noexcept {
-        static_assert(false, "no scalar type exists for this type");
+    static optional<const ScalarType*> get() noexcept {
+        return {};
     }
 };
 
 template <>
-RPY_EXPORT const ScalarType* ScalarTypeOfImpl<float>::get() noexcept;
-
+RPY_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<float>::get() noexcept;
 }
 
 template <typename T>

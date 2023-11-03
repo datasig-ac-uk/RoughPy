@@ -36,7 +36,7 @@ using namespace rpy::scalars;
 
 ScalarArray ScalarType::allocate(dimn_t count) const
 {
-    return ScalarArray(m_device->raw_alloc(count, m_alignment), this);
+    return ScalarArray(this, m_device->raw_alloc(count, m_alignment));
 }
 
 void* ScalarType::allocate_single() const
@@ -53,7 +53,7 @@ void ScalarType::free_single(void* ptr) const
 {
     RPY_THROW(
             std::runtime_error,
-            "single scalar allocation is not available for " + m_type
+            "single scalar allocation is not available for " + m_name
     );
 }
 

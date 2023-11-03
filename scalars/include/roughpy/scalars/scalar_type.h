@@ -41,7 +41,7 @@ struct RingCharacteristics {
     bool is_complex : 1;
 };
 
-class RPY_EXPORT alignas(min_scalar_type_alignment) ScalarType
+class __attribute__((aligned(32))) RPY_EXPORT ScalarType
 {
     string m_name;
     string m_id;
@@ -61,6 +61,17 @@ protected:
     );
 
 public:
+
+    template <typename T>
+    static inline const ScalarType* of() noexcept {
+        return scalar_type_of<T>();
+    }
+
+    template <typename T>
+    static inline const ScalarType* of(const devices::Device& device) {
+        return of<T>()->with_device(device);
+    }
+
     /**
      * @brief Get the name of this type
      */
@@ -134,10 +145,21 @@ public:
 
 
 
+    // Scalar methods
+
+    virtual bool are_equal(const Scalar& lhs, const Scalar& rhs) const
+            noexcept = 0;
 
 
 
-};
+    /**
+     * @brief Get a new scalar type whose underlying device is given.
+     *
+     * @param device device on which the new scalar type should be based.
+     */
+    virtual const ScalarType* with_device(const devices::Device& device) const;
+
+} ;
 
 static_assert(
         alignof(ScalarType) >= min_scalar_type_alignment,
