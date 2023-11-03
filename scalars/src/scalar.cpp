@@ -32,6 +32,7 @@
 #include <roughpy/scalars/scalar_type.h>
 
 #include "scalar/arithmetic.h"
+#include "scalar/comparison.h"
 #include <roughpy/device/types.h>
 
 #include <stdexcept>
@@ -175,77 +176,16 @@ Scalar& Scalar::operator=(Scalar&& other) noexcept
     return *this;
 }
 
-static inline bool is_pointer_zero(
-        const void* ptr,
-        const PackedScalarTypePointer<scalars::dtl::ScalarContentType>& p_type
-) noexcept
-{
-    using namespace rpy::devices;
-    if (ptr == nullptr) { return true; }
 
-    // const ScalarType* type_ptr = nullptr;
+#define DO_OP_FOR_ALL_TYPES(INFO) \
+    switch(INFO.code) {\
+        casse devices::TypeCode::Int: \
+            switch (INFO.bytes) { \
+                case \
 
-    auto info = (p_type.is_pointer()) ? p_type->type_info()
-                                      : p_type.get_type_info();
 
-    switch (info.code) {
-        case devices::TypeCode::Int:
-            switch (info.bytes) {
-                case 1: return *reinterpret_cast<const int8_t*>(ptr) == 0;
-                case 2: return *reinterpret_cast<const int16_t*>(ptr) == 0;
-                case 4: return *reinterpret_cast<const int32_t*>(ptr) == 0;
-                case 8: return *reinterpret_cast<const int64_t*>(ptr) == 0;
-            }
-            break;
-        case devices::TypeCode::UInt:
-            switch (info.bytes) {
-                case 1: return *reinterpret_cast<const uint8_t*>(ptr) == 0;
-                case 2: return *reinterpret_cast<const uint16_t*>(ptr) == 0;
-                case 4: return *reinterpret_cast<const uint32_t*>(ptr) == 0;
-                case 8: return *reinterpret_cast<const uint64_t*>(ptr) == 0;
-            }
-            break;
-        case devices::TypeCode::Float:
-            switch (info.bytes) {
-                case 2: return *reinterpret_cast<const half*>(ptr) == 0;
-                case 4: return *reinterpret_cast<const float*>(ptr) == 0;
-                case 8: return *reinterpret_cast<const double*>(ptr) == 0;
-            }
-            break;
-        case devices::TypeCode::OpaqueHandle: break;
-        case devices::TypeCode::BFloat:
-            if (info.bytes == 2) {
-                return *reinterpret_cast<const bfloat16*>(ptr) == 0;
-            }
-            break;
-        case devices::TypeCode::Complex:
-            switch (info.bytes) {
-                case 2:
-                    return *reinterpret_cast<const half_complex*>(ptr)
-                            == half_complex();
-                case 4:
-                    return *reinterpret_cast<const float_complex*>(ptr)
-                            == float_complex();
-                case 8:
-                    return *reinterpret_cast<const double_complex*>(ptr)
-                            == double_complex();
-            }
-            break;
-        case devices::TypeCode::Bool: break;
-        case devices::TypeCode::Rational:
-        case devices::TypeCode::ArbitraryPrecision: break;
-        case devices::TypeCode::ArbitraryPrecisionUInt: break;
-        case devices::TypeCode::ArbitraryPrecisionFloat: break;
-        case devices::TypeCode::ArbitraryPrecisionComplex: break;
-        case devices::TypeCode::ArbitraryPrecisionRational:
-            return *reinterpret_cast<const rational_scalar_type*>(ptr) == 0;
-        case devices::TypeCode::APRationalPolynomial:
-            return reinterpret_cast<const rational_poly_scalar*>(ptr)->empty();
-    }
 
-    // Anything else, just return true because we don't support it anyway
-    return true;
-}
+
 
 bool Scalar::is_zero() const noexcept
 {
@@ -266,6 +206,8 @@ bool Scalar::is_zero() const noexcept
                     p_type_and_content_type
             );
     }
+
+    RPY_UNREACHABLE_RETURN(false);
 }
 
 bool Scalar::is_reference() const noexcept
@@ -280,6 +222,7 @@ bool Scalar::is_reference() const noexcept
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface: return true;
     }
+    RPY_UNREACHABLE_RETURN(false);
 }
 
 bool Scalar::is_const() const noexcept
@@ -294,6 +237,7 @@ bool Scalar::is_const() const noexcept
         case dtl::ScalarContentType::OwnedInterface: return false;
         case dtl::ScalarContentType::OwnedPointer: return false;
     }
+    RPY_UNREACHABLE_RETURN(false);
 }
 
 const void* Scalar::pointer() const noexcept
@@ -346,9 +290,7 @@ optional<const ScalarType*> Scalar::type() const noexcept
     }
 
     auto info = p_type_and_content_type.get_type_info();
-    // TODO: Get type from type info?
-
-    return {};
+    return  scalar_type_of(info);
 }
 devices::TypeInfo Scalar::type_info() const noexcept
 {
@@ -404,150 +346,4 @@ std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& value)
     }
 
     return os;
-}
-namespace {
-//
-// template <typename I, typename J>
-// inline enable_if_t<is_integral<I>::value && is_integral<J>::value, bool>
-// eq_impl(const I& lhs, const J& rhs) noexcept
-//{
-//    if constexpr (is_signed<I>::value) {
-//        if constexpr (is_signed<J>::value) {
-//            if constexpr (sizeof(I) < sizeof(J)) {
-//                return static_cast<J>(lhs) == rhs;
-//            } else {
-//                return lhs == static_cast<I>(rhs);
-//            }
-//        } else {
-//            if constexpr (sizeof(I) < sizeof(J)) {
-//                return lhs >= 0 && static_cast<J>(lhs) == rhs;
-//            } else {
-//                using uI = make_unsigned_t<I>;
-//                return lhs >= 0 && static_cast<uI>(lhs) ==
-//                static_cast<uI>(rhs);
-//            }
-//        }
-//    } else {
-//        return eq_impl(rhs, lhs);
-//    }
-//}
-//
-// template <typename F, typename G>
-// inline enable_if_t<
-//        is_floating_point<F>::value && is_floating_point<G>::value,
-//        bool>
-// eq_impl(const F& lhs, const G& rhs) noexcept
-//{
-//    if constexpr (sizeof(F) < sizeof(G)) {
-//        return static_cast<G>(lhs) == rhs;
-//    } else {
-//        return lhs == static_cast<F>(rhs);
-//    }
-//}
-//
-// template <typename I, typename F>
-// inline enable_if_t<is_integral<I>::value && is_floating_point<F>::value,
-// bool> eq_impl(const I& lhs, const F& rhs) noexcept
-//{
-//    constexpr auto mantissa_bits = std::numeric_limits<F>::digits;
-//    if constexpr (CHAR_BIT * sizeof(I) <= mantissa_bits) {
-//        return static_cast<F>(lhs) == rhs;
-//    } else {
-//        // Loss of precision here, maybe consider changing this later.
-//        return static_cast<F>(lhs) == rhs;
-//    }
-//}
-//
-//
-// template <typename I>
-// inline enable_if_t<!is_same<I, devices::rational_poly_scalar>::value, bool>
-// eq_impl(const I& lhs, const devices::rational_scalar_type& rhs) noexcept
-//{
-//    return static_cast<devices::rational_scalar_type>(lhs) == rhs;
-//}
-//
-// template <typename I>
-// inline enable_if_t<!is_same<I, devices::rational_poly_scalar>::value, bool>
-// eq_impl(const devices::rational_scalar_type& lhs, const I& rhs) noexcept
-//{
-//    return lhs == static_cast<devices::rational_scalar_type>(rhs);
-//}
-//
-// template <typename T>
-// inline enable_if_t<!is_same<T, devices::rational_poly_scalar>::value, bool>
-// eq_impl(const T& lhs, const devices::rational_poly_scalar& rhs) noexcept
-//{
-//    return static_cast<devices::rational_poly_scalar>(lhs) == rhs;
-//}
-// template <typename T>
-// inline enable_if_t<!is_same<T, devices::rational_poly_scalar>::value, bool>
-// eq_impl(const devices::rational_poly_scalar& lhs, const T& rhs) noexcept
-//{
-//    return lhs == static_cast<devices::rational_poly_scalar>(rhs);
-//}
-//
-// template <typename T>
-// inline bool eq_impl(const T& lhs, const T& rhs) noexcept
-//{
-//    return lhs == rhs;
-//}
-//
-// template <typename T>
-// inline bool eq_impl2(const T& lhs, const Scalar& rhs) noexcept
-//{
-//    auto info = rhs.type_info();
-//    switch (info.code) {
-//        case devices::TypeCode::Int:
-//            switch (info.bytes) {
-//                case 1: return eq_impl(lhs, rhs.as_type<int8_t>());
-//                case 2: return eq_impl(lhs, rhs.as_type<int16_t>());
-//                case 4: return eq_impl(lhs, rhs.as_type<int32_t>());
-//                case 8: return eq_impl(lhs, rhs.as_type<int64_t>());
-//            }
-//            break;
-//        case devices::TypeCode::UInt:
-//            switch (info.bytes) {
-//                case 1: return eq_impl(lhs, rhs.as_type<uint8_t>());
-//                case 2: return eq_impl(lhs, rhs.as_type<uint16_t>());
-//                case 4: return eq_impl(lhs, rhs.as_type<uint32_t>());
-//                case 8: return eq_impl(lhs, rhs.as_type<uint64_t>());
-//            }
-//            break;
-//        case devices::TypeCode::Float:
-//            switch (info.bytes) {
-//                case 2:
-//                    return eq_impl(lhs, float(rhs.as_type<devices::half>()));
-//                case 4: return eq_impl(lhs, rhs.as_type<float>());
-//                case 8: return eq_impl(lhs, rhs.as_type<double>());
-//            }
-//            break;
-//        case devices::TypeCode::OpaqueHandle: break;
-//        case devices::TypeCode::BFloat:
-//            if (info.bytes == 2) {
-//                return eq_impl(lhs, float(rhs.as_type<devices::bfloat16>()));
-//            }
-//            break;
-//        case devices::TypeCode::Complex: break;
-//        case devices::TypeCode::Bool: break;
-//        case devices::TypeCode::Rational: break;
-//        case devices::TypeCode::ArbitraryPrecision: break;
-//        case devices::TypeCode::ArbitraryPrecisionUInt: break;
-//        case devices::TypeCode::ArbitraryPrecisionFloat: break;
-//        case devices::TypeCode::ArbitraryPrecisionComplex: break;
-//        case devices::TypeCode::ArbitraryPrecisionRational:
-//            return eq_impl(lhs, rhs.as_type<devices::rational_scalar_type>());
-//        case devices::TypeCode::APRationalPolynomial:
-//            return eq_impl(lhs, rhs.as_type<devices::rational_poly_scalar>());
-//    }
-//    return false;
-//}
-//
-}// namespace
-
-bool Scalar::operator==(const Scalar& other) const
-{
-    if (fast_is_zero()) { return other.is_zero(); }
-    if (other.fast_is_zero()) { return is_zero(); }
-
-    return false;
 }

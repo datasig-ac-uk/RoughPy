@@ -31,6 +31,7 @@
 
 #include "arithmetic.h"
 #include "casts.h"
+#include "do_macro.h"
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/device/host_device.h>
@@ -76,51 +77,14 @@ struct RPY_LOCAL DivInplace {
     }
 };
 
-#define X(T) return op(*((T*) dst), *((const T*) src))
 
 template <typename Op>
 static inline void
 do_op(void* dst, const void* src, devices::TypeInfo type, Op&& op)
 {
-    switch (type.code) {
-        case devices::TypeCode::Int:
-            switch (type.bytes) {
-                case 1: X(int8_t);
-                case 2: X(int16_t);
-                case 4: X(int32_t);
-                case 8: X(int64_t);
-            }
-            break;
-        case devices::TypeCode::UInt:
-            switch (type.bytes) {
-                case 1: X(uint8_t);
-                case 2: X(uint16_t);
-                case 4: X(uint32_t);
-                case 8: X(uint64_t);
-            }
-            break;
-        case devices::TypeCode::Float:
-            switch (type.bytes) {
-                case 2: X(half);
-                case 4: X(float);
-                case 8: X(double);
-            }
-            break;
-        case devices::TypeCode::OpaqueHandle: break;
-        case devices::TypeCode::BFloat:
-            if (type.bytes == 2) { X(bfloat16); }
-            break;
-        case devices::TypeCode::Complex: break;
-        case devices::TypeCode::Bool: break;
-        case devices::TypeCode::ArbitraryPrecision: break;
-        case devices::TypeCode::ArbitraryPrecisionUInt: break;
-        case devices::TypeCode::ArbitraryPrecisionFloat: break;
-        case devices::TypeCode::ArbitraryPrecisionComplex: break;
-        case devices::TypeCode::Rational:
-        case devices::TypeCode::ArbitraryPrecisionRational:
-            X(rational_scalar_type);
-        case devices::TypeCode::APRationalPolynomial: X(rational_poly_scalar);
-    }
+#define X(T) return op(*((T*) dst), *((const T*) src))
+    DO_FOR_EACH_X(type)
+#undef X
     RPY_THROW(std::domain_error, "unsupported operation");
 }
 

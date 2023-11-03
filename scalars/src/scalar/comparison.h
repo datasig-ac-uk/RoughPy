@@ -29,26 +29,21 @@
 // Created by user on 01/11/23.
 //
 
-#ifndef ROUGHPY_SCALARS_SRC_SCALAR_CASTS_H_
-#define ROUGHPY_SCALARS_SRC_SCALAR_CASTS_H_
+#ifndef ROUGHPY_SCALARS_SRC_SCALAR_COMPARISON_H_
+#define ROUGHPY_SCALARS_SRC_SCALAR_COMPARISON_H_
 
-#include <roughpy/scalars/scalars_fwd.h>
+#include <roughpy/scalars/scalar.h>
 
-namespace rpy {
-namespace scalars {
-namespace dtl {
+namespace rpy { namespace scalars { namespace dtl {
 
 
-bool scalar_convert_copy(
-        void* dst,
-        devices::TypeInfo dst_type,
-        const void* src,
-        devices::TypeInfo src_type
+bool is_pointer_zero(
+        const void* ptr,
+        const PackedScalarTypePointer<scalars::dtl::ScalarContentType>& p_type
 ) noexcept;
 
 
-}
-}// namespace scalars
-}// namespace rpy
+}}}
 
-#endif// ROUGHPY_SCALARS_SRC_SCALAR_CASTS_H_
+
+#endif// ROUGHPY_SCALARS_SRC_SCALAR_COMPARISON_H_

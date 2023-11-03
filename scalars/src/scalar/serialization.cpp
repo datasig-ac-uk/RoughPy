@@ -26,29 +26,19 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 01/11/23.
+// Created by user on 02/11/23.
 //
 
-#ifndef ROUGHPY_SCALARS_SRC_SCALAR_CASTS_H_
-#define ROUGHPY_SCALARS_SRC_SCALAR_CASTS_H_
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/platform/archives.h>
 
-#include <roughpy/scalars/scalars_fwd.h>
+using namespace rpy;
+using namespace rpy::scalars;
 
-namespace rpy {
-namespace scalars {
-namespace dtl {
-
-
-bool scalar_convert_copy(
-        void* dst,
-        devices::TypeInfo dst_type,
-        const void* src,
-        devices::TypeInfo src_type
-) noexcept;
-
+RPY_SERIAL_LOAD_FN_IMPL(rpy::scalars::Scalar) {
 
 }
-}// namespace scalars
-}// namespace rpy
 
-#endif// ROUGHPY_SCALARS_SRC_SCALAR_CASTS_H_
+RPY_SERIAL_SAVE_FN_IMPL(rpy::scalars::Scalar) {
+
+}
