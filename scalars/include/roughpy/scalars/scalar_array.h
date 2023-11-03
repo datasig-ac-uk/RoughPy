@@ -100,6 +100,8 @@ public:
 
     constexpr dimn_t size() const noexcept { return m_size; }
 
+private:
+    const void* raw_pointer() const noexcept;
 };
 
 template <typename T>
