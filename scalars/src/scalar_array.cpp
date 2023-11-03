@@ -173,3 +173,44 @@ const void* ScalarArray::raw_pointer() const noexcept
     }
     RPY_UNREACHABLE_RETURN(nullptr);
 }
+
+const void* ScalarArray::pointer() const
+{
+    switch (p_type_and_mode.get_enumeration()) {
+        case dtl::ScalarArrayStorageModel::BorrowConst: return const_borrowed;
+        case dtl::ScalarArrayStorageModel::BorrowMut: return mut_borrowed;
+        case dtl::ScalarArrayStorageModel::Owned:
+            RPY_THROW(
+                    std::runtime_error,
+                    "cannot get pointer from devices::Buffer object safely"
+            );
+    }
+    RPY_UNREACHABLE_RETURN(nullptr);
+}
+void* ScalarArray::mut_pointer()
+{
+    RPY_CHECK(
+            p_type_and_mode.get_enumeration()
+            == dtl::ScalarArrayStorageModel::BorrowMut
+    );
+    return mut_borrowed;
+}
+const devices::Buffer& ScalarArray::buffer() const
+{
+    RPY_CHECK(
+            p_type_and_mode.get_enumeration()
+            == dtl::ScalarArrayStorageModel::Owned
+    );
+    return owned_buffer;
+}
+devices::Buffer& ScalarArray::mut_buffer()
+{
+    RPY_CHECK(
+            p_type_and_mode.get_enumeration()
+            == dtl::ScalarArrayStorageModel::Owned
+    );
+    return owned_buffer;
+}
+
+RPY_SERIAL_LOAD_FN_IMPL(rpy::scalars::ScalarArray) {}
+RPY_SERIAL_SAVE_FN_IMPL(rpy::scalars::ScalarArray) {}

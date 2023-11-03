@@ -29,9 +29,10 @@
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 
 #include "scalars_fwd.h"
-
-#include <roughpy/device/buffer.h>
 #include "packed_scalar_type_ptr.h"
+
+#include <roughpy/platform/serialization.h>
+#include <roughpy/device/buffer.h>
 
 namespace rpy {
 namespace scalars {
@@ -100,6 +101,15 @@ public:
 
     constexpr dimn_t size() const noexcept { return m_size; }
 
+    const void* pointer() const;
+    void* mut_pointer();
+    const devices::Buffer& buffer() const;
+    devices::Buffer& mut_buffer();
+
+    RPY_SERIAL_SAVE_FN();
+    RPY_SERIAL_LOAD_FN();
+
+
 private:
     const void* raw_pointer() const noexcept;
 };
@@ -150,6 +160,10 @@ ScalarArray::ScalarArray(const T* data, dimn_t size)
 {
     check_pointer_and_size(data, size);
 }
+
+RPY_SERIAL_EXTERN_SAVE_CLS(ScalarArray)
+RPY_SERIAL_EXTERN_LOAD_CLS(ScalarArray)
+
 
 }// namespace scalars
 }// namespace rpy
