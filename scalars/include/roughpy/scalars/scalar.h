@@ -36,6 +36,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include <roughpy/platform/serialization.h>
 
 #include <roughpy/device/types.h>
 
@@ -106,7 +107,6 @@ inline ScalarContentType content_type_of(devices::TypeInfo info) noexcept
             } else {
                 return ScalarContentType::OwnedPointer;
             }
-            break;
         case devices::TypeCode::Bool: break;
         case devices::TypeCode::Rational: break;
         case devices::TypeCode::ArbitraryPrecision: break;
@@ -128,6 +128,14 @@ content_type_of(PackedScalarTypePointer<ScalarContentType> ptype) noexcept
 
 }// namespace dtl
 
+
+/**
+ * @brief A wrapper around scalar values.
+ *
+ * This is a (statically) polymorphic wrapper around the various scalar types
+ * that can be used in the rest of the library.
+ *
+ */
 class RPY_EXPORT Scalar
 {
     using interface_pointer_t = std::unique_ptr<ScalarInterface>;
@@ -158,14 +166,15 @@ public:
                     && is_trivially_destructible<T>::value
                     && sizeof(T) <= sizeof(void*)>>
     Scalar(T value)
-        : p_type_and_content_type(devices::dtl::type_info<T>()),
+        : p_type_and_content_type(devices::type_info<T>(),
+                dtl::ScalarContentType::TrivialBytes),
           integer_for_convenience(0)
     {
         std::memcpy(&trivial_bytes, &value, sizeof(value));
     }
 
-    template <typename T>
-    Scalar(T& value)
+    template <typename T, typename=enable_if_t<!is_const<T>::value>>
+    explicit Scalar(T& value)
         : p_type_and_content_type(
                 scalar_type_of<T>(),
                 dtl::ScalarContentType::OpaquePointer
@@ -174,7 +183,7 @@ public:
     {}
 
     template <typename T>
-    Scalar(const T& value)
+    explicit Scalar(const T& value)
         : p_type_and_content_type(
                 scalar_type_of<T>(),
                 dtl::ScalarContentType::ConstOpaquePointer
@@ -202,7 +211,7 @@ public:
                 mut_pointer(),
                 type_info(),
                 &value,
-                devices::dtl::type_info<T>()
+                devices::type_info<T>()
         );
     }
 
@@ -228,8 +237,7 @@ public:
                 if (!dtl::scalar_convert_copy(
                             trivial_bytes,
                             type_info(),
-                            &value,
-                            devices::dtl::type_info<T>()
+                            value
                     )) {
                     RPY_THROW(std::runtime_error, "assignment failed");
                 }
@@ -239,7 +247,7 @@ public:
                 if (!dtl::scalar_convert_copy(
                             opaque_pointer,
                             p_type_and_content_type.get_type_info(),
-                            Scalar(value)
+                            value
                     )) {
                     RPY_THROW(std::runtime_error, "assignment failed");
                 }
@@ -250,9 +258,9 @@ public:
                         "attempting to write to a const value"
                 );
             case dtl::ScalarContentType::Interface:
+            case dtl::ScalarContentType::OwnedInterface:
                 interface->set_value(value);
                 break;
-            case dtl::ScalarContentType::OwnedPointer: break;
         }
 
         return *this;
@@ -261,19 +269,69 @@ public:
     Scalar& operator=(const Scalar& other);
     Scalar& operator=(Scalar&& other) noexcept;
 
+    /**
+     * @brief Perform a quick test to see if this is zero.
+     * @return true if this is trivially equivalent to zero, false otherwise.
+     */
     bool fast_is_zero() const noexcept
     {
         return p_type_and_content_type.is_null()
                 || integer_for_convenience == 0;
     }
+
+    /**
+     * @brief Fully check if this is zero.
+     * @return true if this is equivalent to zero, false otherwise.
+     */
     bool is_zero() const noexcept;
+
+    /**
+     * @brief Check if the underlying data is a local value.
+     * @return true if the underlying data is local, and false otherwise.
+     *
+     * We say that the underlying data is local if either the value has a
+     * trivial type and is held inline inside the Scalar, or if it is a
+     * pointer to a value allocated by this.
+     */
     bool is_reference() const noexcept;
+
+    /**
+     * @brief Check if the internal data is immutable.
+     * @return true if the underlying data is immutable, and false if it can
+     * be safely mutated in-place.
+     */
     bool is_const() const noexcept;
 
+    /**
+     * @brief Get an immutable pointer to the internal data representation.
+     * @return const pointer to the underlying data.
+     *
+     * This method cannot fail, since all Scalar values should contain some
+     * value. This pointer should never be null, but it might not have
+     * semantic meaning.
+     */
     const void* pointer() const noexcept;
+
+    /**
+     * @brief Get a mutable pointer to the internal data representation.
+     * @return mutable pointer to the underlying data
+     *
+     * This method will throw a runtime_error if the underlying data is not
+     * able to be mutated in-place.
+     */
     void* mut_pointer();
 
+    /**
+     * @brief Get a pointer to the scalar type representing this value.
+     *
+     * @return Pointer to scalar value if it has one, and empty otherise.
+     */
     optional<const ScalarType*> type() const noexcept;
+
+    /**
+     * @brief Get the type info associated with this.
+     * @return type info of this.
+     */
     devices::TypeInfo type_info() const noexcept;
 
     friend std::ostream& operator<<(std::ostream& os, const Scalar& value);
@@ -292,11 +350,26 @@ public:
 
     bool operator==(const Scalar& other) const;
 
+    bool operator!=(const Scalar& other) const {
+        return !(operator==(other));
+    }
+
     Scalar& operator+=(const Scalar& other);
     Scalar& operator-=(const Scalar& other);
     Scalar& operator*=(const Scalar& other);
     Scalar& operator/=(const Scalar& other);
+
+
+    RPY_SERIAL_SAVE_FN();
+    RPY_SERIAL_LOAD_FN();
 };
+
+std::ostream& operator<<(std::ostream&, const Scalar&);
+
+RPY_SERIAL_EXTERN_SAVE_CLS(Scalar)
+RPY_SERIAL_EXTERN_LOAD_CLS(Scalar)
+
+
 
 template <typename T>
 const T& Scalar::as_type() const noexcept
@@ -307,12 +380,13 @@ const T& Scalar::as_type() const noexcept
             return *reinterpret_cast<const T*>(&trivial_bytes);
         case dtl::ScalarContentType::ConstOpaquePointer:
         case dtl::ScalarContentType::OpaquePointer:
-            //        case dtl::ScalarContentType::OwnedPointer:
+        case dtl::ScalarContentType::OwnedPointer:
             return *reinterpret_cast<const T*>(opaque_pointer);
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
             return *reinterpret_cast<const T*>(interface->pointer());
     }
+    RPY_UNREACHABLE_RETURN(*((const T*)&trivial_bytes));
 }
 
 inline Scalar operator+(const Scalar& lhs, const Scalar& rhs)
@@ -347,7 +421,7 @@ RPY_NO_DISCARD T scalar_cast(const Scalar& value)
 
     // If the scalar is trivial zero, no need to do anything special.
     if (!value.fast_is_zero()) {
-        const auto target_info = devices::dtl::type_info<T>();
+        const auto target_info = devices::type_info<T>();
 
         if (!dtl::scalar_convert_copy(&result, target_info, value)) {
             // Conversion failed for now just throw an exception.
