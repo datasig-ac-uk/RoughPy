@@ -179,6 +179,13 @@ using void_or_base = conditional_t<is_void<T>::value, B, T>;
 
 using boost::hash;
 
+
+template <size_t N>
+struct ConstLog2 : integral_constant<size_t, ConstLog2<N / 2>::value + 1>{ };
+template <>
+struct ConstLog2<1> : integral_constant<size_t, 0>{};
+
+
 }// namespace rpy
 
 #endif// ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
