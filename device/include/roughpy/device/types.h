@@ -30,6 +30,7 @@
 
 #include <complex>
 
+// Maybe replace this, Eigen/Core brings in so much stuff.
 #include <Eigen/Core>
 #include <libalgebra_lite/coefficients.h>
 #include <libalgebra_lite/packed_integer.h>
@@ -79,24 +80,26 @@ using rational_poly_scalar = lal::polynomial<lal::rational_field>;
 
 namespace dtl {
 
-template <>
-constexpr TypeInfo type_info<half>() {
-    return { TypeCode::Float, sizeof(half), 1};
-}
+#define RPY_ENABLE_RETURN(C) enable_if_t<(C), TypeInfo>
 
 template <>
-constexpr TypeInfo type_info<bfloat16>() {
-    return { TypeCode::BFloat, sizeof(bfloat16), 1};
-}
+struct type_code_of_impl<half, void> {
+    static constexpr TypeCode value = TypeCode::Float;
+};
 
 template <>
-constexpr TypeInfo type_info<rational_scalar_type>() {
-    return {TypeCode::ArbitraryPrecisionRational, sizeof(rational_scalar_type), 1};
-}
+struct type_code_of_impl<bfloat16, void> {
+    static constexpr TypeCode value = TypeCode::BFloat;
+};
+
 template <>
-constexpr TypeInfo type_info<rational_poly_scalar>() {
-    return {TypeCode::APRationalPolynomial, sizeof(rational_poly_scalar), 1};
-}
+struct type_code_of_impl<rational_scalar_type , void> {
+    static constexpr TypeCode value = TypeCode::ArbitraryPrecisionRational;
+};
+template <>
+struct type_code_of_impl<rational_poly_scalar , void> {
+    static constexpr TypeCode value = TypeCode::APRationalPolynomial;
+};
 
 
 

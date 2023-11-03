@@ -197,12 +197,12 @@ enum class TypeCode : uint8_t
     ArbitraryPrecisionRational = ArbitraryPrecision | Rational,
 
     Polynomial = 16U,
-    APRationalPolynomial = Polynomial // | ArbitraryPrecisionRational
+    APRationalPolynomial = Polynomial// | ArbitraryPrecisionRational
 
 };
 
 /**
- * @brief Basic information for identifying the type, size, and
+ * @brief Basic information for identifying the type, size, alignment, and
  * configuration of a type.
  *
  * This was originally based on the DLPack protocol, but actually that proved
@@ -216,7 +216,8 @@ enum class TypeCode : uint8_t
 struct TypeInfo {
     TypeCode code;
     uint8_t bytes;
-    uint16_t lanes = 1;
+    uint8_t alignment;
+    uint8_t lanes = 1;
 };
 
 template <typename I>
@@ -279,35 +280,60 @@ constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
     return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
 }
 
-
-
+constexpr bool operator==(const TypeInfo& lhs, const TypeInfo& rhs) noexcept
+{
+    return lhs.code == rhs.code && lhs.bytes == rhs.bytes
+            && lhs.lanes == rhs.lanes;
+}
 
 namespace dtl {
 
-template <typename T>
-constexpr TypeInfo type_info();
+template <typename T, typename SFINAE = void>
+struct type_code_of_impl;
+
+#define RPY_GENERIC_TYPE_CODE_FUNCTION(cond, TC)                               \
+    template <typename T>                                                      \
+    struct type_code_of_impl<T, enable_if_t<(cond)>> {                         \
+        static constexpr TypeCode value = (TC);                                \
+    }
+
+RPY_GENERIC_TYPE_CODE_FUNCTION(
+        is_integral<T>::value&& is_signed<T>::value,
+        TypeCode::Int
+);
+
+RPY_GENERIC_TYPE_CODE_FUNCTION(
+        is_integral<T>::value&& is_unsigned<T>::value,
+        TypeCode::UInt
+);
+
+RPY_GENERIC_TYPE_CODE_FUNCTION(is_floating_point<T>::value, TypeCode::Float);
+
+#undef RPY_GENERIC_TYPE_CODE_FUNCTION
+
+}// namespace dtl
 
 template <typename T>
-constexpr enable_if_t<is_integral<T>::value && is_signed<T>::value, TypeInfo>
-type_info() {
-    return { TypeCode::Int, sizeof(T), 1};
+constexpr TypeCode type_code_of() noexcept
+{
+    return dtl::type_code_of_impl<T>::value;
 }
 
+/**
+ * @brief Get the type info struct relating to the given type
+ * @tparam T Type to query
+ * @return TypeInfo struct containing information about the type.
+ */
 template <typename T>
-constexpr enable_if_t<is_integral<T>::value && !is_signed<T>::value, TypeInfo>
-type_info() {
-    return { TypeCode::UInt, sizeof(T), 1};
+constexpr TypeInfo type_info() noexcept
+{
+    return {type_code_of<T>(),
+            static_cast<uint8_t>(sizeof(T)),
+            static_cast<uint8_t>(alignof(T)),
+            1U};
 }
 
-template <typename T>
-constexpr enable_if_t<is_floating_point<T>::value, TypeInfo>
-type_info() {
-    return { TypeCode::Float, sizeof(T), 1};
-}
-
-}
-
-}// namespace device
+}// namespace devices
 }// namespace rpy
 
 #endif// ROUGHPY_DEVICE_CORE_H_

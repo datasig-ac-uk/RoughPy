@@ -73,14 +73,14 @@ public:
     explicit KernelArgument(T& data)
         : p_data(&data),
           m_mode(Pointer),
-          m_info(dtl::type_info<T>())
+          m_info(type_info<T>())
     {}
 
     template <typename T>
     explicit KernelArgument(const T& data)
         : p_const_data(&data),
           m_mode(ConstPointer),
-          m_info(dtl::type_info<T>())
+          m_info(type_info<T>())
     {}
 
     RPY_NO_DISCARD constexpr bool is_buffer() const noexcept
