@@ -31,6 +31,7 @@
 #include <cstring>
 #include <sstream>
 
+#include <roughpy/platform/archives.h>
 #include <roughpy/intervals/partition.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/streams/stream.h>

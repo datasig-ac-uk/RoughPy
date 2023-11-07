@@ -43,6 +43,7 @@ RPY_MSVC_DISABLE_WARNING(4661)
 #include <pybind11/stl.h>
 
 #include <roughpy/platform/serialization.h>
+#include <roughpy/platform/archives.h>
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/scalars/scalar.h>
 
