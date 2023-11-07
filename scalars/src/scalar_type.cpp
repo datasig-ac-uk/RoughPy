@@ -1,5 +1,3 @@
-
-
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -29,10 +27,27 @@
 
 #include <roughpy/scalars/scalar_type.h>
 
+#include "scalar/casts.h"
 #include <roughpy/scalars/scalar_array.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
+
+ScalarType::ScalarType(
+        std::string name,
+        std::string id,
+        rpy::dimn_t alignment,
+        devices::Device device,
+        devices::TypeInfo type_info,
+        rpy::scalars::RingCharacteristics characteristics
+)
+    : m_name(std::move(name)),
+      m_id(std::move(id)),
+      m_alignment(alignment),
+      m_device(std::move(device)),
+      m_info(type_info),
+      m_characteristics(characteristics)
+{}
 
 ScalarArray ScalarType::allocate(dimn_t count) const
 {
@@ -62,5 +77,22 @@ void ScalarType::convert_copy(
         const rpy::scalars::ScalarArray& src
 ) const
 {
-    if (src.type() == this && dst.type() == this) {}
+    if (dst.size() < src.size()) {
+        RPY_THROW(std::runtime_error, "insufficient size for copy");
+    }
+    if (dst.device() != m_device) {
+        RPY_THROW(std::runtime_error, "unable to copy into device memory");
+    }
+    if (src.device() != m_device) {
+        RPY_THROW(std::runtime_error, "unable to copy from device memory");
+    }
+
+    if (!dtl::scalar_convert_copy(
+                dst.mut_pointer(),
+                dst.type_info(),
+                src.pointer(),
+                src.type_info()
+        )) {
+        RPY_THROW(std::runtime_error, "convert copy failed");
+    }
 }

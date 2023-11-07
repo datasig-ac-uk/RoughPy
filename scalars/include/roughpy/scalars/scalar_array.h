@@ -64,6 +64,9 @@ class RPY_EXPORT ScalarArray
     dimn_t m_size = 0;
 
     static bool check_pointer_and_size(const void* ptr, dimn_t size);
+protected:
+
+    type_pointer packed_type() const noexcept { return p_type_and_mode; }
 
 public:
     ScalarArray();
@@ -100,18 +103,49 @@ public:
     devices::TypeInfo type_info() const noexcept;
 
     constexpr dimn_t size() const noexcept { return m_size; }
+    dimn_t capacity() const noexcept;
+    constexpr bool empty() const noexcept { return m_size == 0; }
+    constexpr bool is_null() const noexcept {
+        return p_type_and_mode.is_null() && empty();
+    }
+    constexpr bool is_const() const noexcept {
+        return p_type_and_mode.get_enumeration() ==
+                discriminator_type::BorrowConst;
+    }
+    devices::Device device() const noexcept;
 
     const void* pointer() const;
     void* mut_pointer();
     const devices::Buffer& buffer() const;
     devices::Buffer& mut_buffer();
 
+
+    Scalar operator[](dimn_t i) const;
+    Scalar operator[](dimn_t i);
+
+
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 
+private:
+    void check_for_ptr_access(bool mut=false) const;
+
+public:
+    template <typename T>
+    Slice<T> as_mut_slice() {
+        check_for_ptr_access(true);
+        return {static_cast<T*>(raw_mut_pointer()), m_size};
+    }
+
+    template <typename T>
+    Slice<const T> as_slice() {
+        check_for_ptr_access(true);
+        return {static_cast<const T*>(raw_pointer()), m_size};
+    }
 
 private:
-    const void* raw_pointer() const noexcept;
+    const void* raw_pointer(dimn_t i=0) const noexcept;
+    void* raw_mut_pointer(dimn_t i=0) noexcept;
 };
 
 template <typename T>

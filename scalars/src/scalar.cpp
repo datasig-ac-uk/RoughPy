@@ -85,6 +85,24 @@ Scalar::Scalar(devices::TypeInfo info)
 }
 Scalar::Scalar() : p_type_and_content_type(), integer_for_convenience(0) {}
 
+Scalar::Scalar(const ScalarType* type, void* ptr)
+    : p_type_and_content_type(type, dtl::ScalarContentType::OpaquePointer),
+      opaque_pointer(ptr)
+{}
+Scalar::Scalar(const ScalarType* type, const void* ptr)
+    : p_type_and_content_type(type, dtl::ScalarContentType::ConstOpaquePointer),
+      opaque_pointer(const_cast<void*>(ptr))
+{}
+
+Scalar::Scalar(devices::TypeInfo info, void* ptr)
+    : p_type_and_content_type(info, dtl::ScalarContentType::OpaquePointer),
+      opaque_pointer(ptr)
+{}
+Scalar::Scalar(devices::TypeInfo info, const void* ptr)
+    : p_type_and_content_type(info, dtl::ScalarContentType::ConstOpaquePointer),
+      opaque_pointer(const_cast<void*>(ptr))
+{}
+
 Scalar::Scalar(const Scalar& other) {}
 Scalar::Scalar(Scalar&& other) noexcept {}
 

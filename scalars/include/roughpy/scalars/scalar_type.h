@@ -43,6 +43,13 @@ struct RingCharacteristics {
 
 class __attribute__((aligned(32))) RPY_EXPORT ScalarType
 {
+protected:
+
+    using lock_type = std::recursive_mutex;
+    using guard_type = std::lock_guard<lock_type>;
+
+    lock_type m_lock;
+
     string m_name;
     string m_id;
     dimn_t m_alignment;
@@ -50,7 +57,7 @@ class __attribute__((aligned(32))) RPY_EXPORT ScalarType
     devices::TypeInfo m_info;
     RingCharacteristics m_characteristics;
 
-protected:
+
     explicit ScalarType(
             string name,
             string id,
@@ -93,6 +100,11 @@ public:
     {
         return m_info;
     }
+
+    RPY_NO_DISCARD bool is_cpu() const noexcept {
+        return m_device == devices::get_host_device();
+    }
+
 
     /**
      * @brief Allocate new scalars in memory

@@ -128,7 +128,6 @@ content_type_of(PackedScalarTypePointer<ScalarContentType> ptype) noexcept
 
 }// namespace dtl
 
-
 /**
  * @brief A wrapper around scalar values.
  *
@@ -151,6 +150,12 @@ class RPY_EXPORT Scalar
         void* opaque_pointer;
     };
 
+protected:
+    type_pointer packed_type() const noexcept
+    {
+        return p_type_and_content_type;
+    }
+
 public:
     Scalar();
 
@@ -166,14 +171,16 @@ public:
                     && is_trivially_destructible<T>::value
                     && sizeof(T) <= sizeof(void*)>>
     Scalar(T value)
-        : p_type_and_content_type(devices::type_info<T>(),
-                dtl::ScalarContentType::TrivialBytes),
+        : p_type_and_content_type(
+                devices::type_info<T>(),
+                dtl::ScalarContentType::TrivialBytes
+        ),
           integer_for_convenience(0)
     {
         std::memcpy(&trivial_bytes, &value, sizeof(value));
     }
 
-    template <typename T, typename=enable_if_t<!is_const<T>::value>>
+    template <typename T, typename = enable_if_t<!is_const<T>::value>>
     explicit Scalar(T& value)
         : p_type_and_content_type(
                 scalar_type_of<T>(),
@@ -181,6 +188,11 @@ public:
         ),
           opaque_pointer(&value)
     {}
+
+    explicit Scalar(const ScalarType* type, void* ptr);
+    explicit Scalar(const ScalarType* type, const void* ptr);
+    explicit Scalar(devices::TypeInfo info, void* ptr);
+    explicit Scalar(devices::TypeInfo info, const void* ptr);
 
     template <typename T>
     explicit Scalar(const T& value)
@@ -350,15 +362,12 @@ public:
 
     bool operator==(const Scalar& other) const;
 
-    bool operator!=(const Scalar& other) const {
-        return !(operator==(other));
-    }
+    bool operator!=(const Scalar& other) const { return !(operator==(other)); }
 
     Scalar& operator+=(const Scalar& other);
     Scalar& operator-=(const Scalar& other);
     Scalar& operator*=(const Scalar& other);
     Scalar& operator/=(const Scalar& other);
-
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
@@ -368,8 +377,6 @@ std::ostream& operator<<(std::ostream&, const Scalar&);
 
 RPY_SERIAL_EXTERN_SAVE_CLS(Scalar)
 RPY_SERIAL_EXTERN_LOAD_CLS(Scalar)
-
-
 
 template <typename T>
 const T& Scalar::as_type() const noexcept
@@ -386,7 +393,7 @@ const T& Scalar::as_type() const noexcept
         case dtl::ScalarContentType::OwnedInterface:
             return *reinterpret_cast<const T*>(interface->pointer());
     }
-    RPY_UNREACHABLE_RETURN(*((const T*)&trivial_bytes));
+    RPY_UNREACHABLE_RETURN(*((const T*) &trivial_bytes));
 }
 
 inline Scalar operator+(const Scalar& lhs, const Scalar& rhs)
