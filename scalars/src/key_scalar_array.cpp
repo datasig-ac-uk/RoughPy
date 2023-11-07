@@ -24,3 +24,51 @@
 // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#include "key_scalar_array.h"
+
+using namespace rpy;
+using namespace rpy::scalars;
+
+KeyScalarArray::~KeyScalarArray() {
+    if (m_owns_keys) {
+        delete[] p_keys;
+    }
+}
+KeyScalarArray::KeyScalarArray(const KeyScalarArray& other)
+    : ScalarArray(other)
+{
+
+}
+KeyScalarArray::KeyScalarArray(KeyScalarArray&& other) noexcept {}
+KeyScalarArray::KeyScalarArray(ScalarArray&& sa) noexcept {}
+KeyScalarArray::KeyScalarArray(ScalarArray base, const key_type* keys) {}
+KeyScalarArray::KeyScalarArray(const ScalarType* type) noexcept {}
+KeyScalarArray::KeyScalarArray(const ScalarType* type, dimn_t n) noexcept
+    : ScalarArray(type, n)
+{}
+KeyScalarArray::KeyScalarArray(
+        const ScalarType* type,
+        const void* begin,
+        dimn_t count
+) noexcept
+{}
+KeyScalarArray::operator ScalarArray() && noexcept { return ScalarArray(); }
+KeyScalarArray KeyScalarArray::copy_or_move() && { return KeyScalarArray(); }
+KeyScalarArray& KeyScalarArray::operator=(const ScalarArray& other) noexcept
+{
+    return ScalarArray::operator=(other);
+}
+KeyScalarArray& KeyScalarArray::operator=(KeyScalarArray&& other) noexcept
+{
+    return *this;
+}
+KeyScalarArray& KeyScalarArray::operator=(ScalarArray&& other) noexcept
+{
+    return ScalarArray::operator=(other);
+}
+key_type* KeyScalarArray::keys() { return p_keys; }
+void KeyScalarArray::allocate_scalars(idimn_t count) {
+
+}
+void KeyScalarArray::allocate_keys(idimn_t count) {}
