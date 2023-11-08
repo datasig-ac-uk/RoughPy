@@ -28,11 +28,11 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 
-#include "scalars_fwd.h"
 #include "packed_scalar_type_ptr.h"
+#include "scalars_fwd.h"
 
-#include <roughpy/platform/serialization.h>
 #include <roughpy/device/buffer.h>
+#include <roughpy/platform/serialization.h>
 
 namespace rpy {
 namespace scalars {
@@ -64,15 +64,24 @@ class RPY_EXPORT ScalarArray
     dimn_t m_size = 0;
 
     static bool check_pointer_and_size(const void* ptr, dimn_t size);
-protected:
 
+protected:
     type_pointer packed_type() const noexcept { return p_type_and_mode; }
 
 public:
     ScalarArray();
+    ScalarArray(const ScalarArray& other);
+    ScalarArray(ScalarArray&& other) noexcept;
 
     explicit ScalarArray(const ScalarType* type, dimn_t size = 0);
     explicit ScalarArray(devices::TypeInfo info, dimn_t size = 0);
+
+    explicit ScalarArray(const ScalarType* type, const void* data, dimn_t size);
+    explicit ScalarArray(devices::TypeInfo info, const void* data, dimn_t size);
+
+    explicit ScalarArray(const ScalarType* type, void* data, dimn_t size);
+    explicit ScalarArray(devices::TypeInfo info, void* data, dimn_t size);
+
 
     explicit ScalarArray(const ScalarType* type, devices::Buffer&& buffer);
     explicit ScalarArray(devices::TypeInfo info, devices::Buffer&& buffer);
@@ -94,7 +103,11 @@ public:
     ScalarArray& operator=(const ScalarArray& other);
     ScalarArray& operator=(ScalarArray&& other) noexcept;
 
-    bool is_owning() const noexcept {
+
+    ScalarArray copy_or_clone() &&;
+
+    bool is_owning() const noexcept
+    {
         return p_type_and_mode.get_enumeration() == discriminator_type::Owned;
     }
 
@@ -105,12 +118,14 @@ public:
     constexpr dimn_t size() const noexcept { return m_size; }
     dimn_t capacity() const noexcept;
     constexpr bool empty() const noexcept { return m_size == 0; }
-    constexpr bool is_null() const noexcept {
+    constexpr bool is_null() const noexcept
+    {
         return p_type_and_mode.is_null() && empty();
     }
-    constexpr bool is_const() const noexcept {
-        return p_type_and_mode.get_enumeration() ==
-                discriminator_type::BorrowConst;
+    constexpr bool is_const() const noexcept
+    {
+        return p_type_and_mode.get_enumeration()
+                == discriminator_type::BorrowConst;
     }
     devices::Device device() const noexcept;
 
@@ -119,33 +134,33 @@ public:
     const devices::Buffer& buffer() const;
     devices::Buffer& mut_buffer();
 
-
     Scalar operator[](dimn_t i) const;
     Scalar operator[](dimn_t i);
-
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 
 private:
-    void check_for_ptr_access(bool mut=false) const;
+    void check_for_ptr_access(bool mut = false) const;
 
 public:
     template <typename T>
-    Slice<T> as_mut_slice() {
+    Slice<T> as_mut_slice()
+    {
         check_for_ptr_access(true);
         return {static_cast<T*>(raw_mut_pointer()), m_size};
     }
 
     template <typename T>
-    Slice<const T> as_slice() {
+    Slice<const T> as_slice()
+    {
         check_for_ptr_access(true);
         return {static_cast<const T*>(raw_pointer()), m_size};
     }
 
 private:
-    const void* raw_pointer(dimn_t i=0) const noexcept;
-    void* raw_mut_pointer(dimn_t i=0) noexcept;
+    const void* raw_pointer(dimn_t i = 0) const noexcept;
+    void* raw_mut_pointer(dimn_t i = 0) noexcept;
 };
 
 template <typename T>
@@ -197,7 +212,6 @@ ScalarArray::ScalarArray(const T* data, dimn_t size)
 
 RPY_SERIAL_EXTERN_SAVE_CLS(ScalarArray)
 RPY_SERIAL_EXTERN_LOAD_CLS(ScalarArray)
-
 
 }// namespace scalars
 }// namespace rpy

@@ -26,24 +26,42 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "key_scalar_array.h"
+#include "scalar_type.h"
+
+#include <algorithm>
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-KeyScalarArray::~KeyScalarArray() {
-    if (m_owns_keys) {
-        delete[] p_keys;
-    }
+KeyScalarArray::~KeyScalarArray()
+{
+    if (m_owns_keys) { delete[] p_keys; }
+    p_keys = nullptr;
+    m_owns_keys = false;
 }
 KeyScalarArray::KeyScalarArray(const KeyScalarArray& other)
-    : ScalarArray(other)
+    : ScalarArray(other),
+      p_keys()
 {
-
+    if (other.p_keys != nullptr && other.m_owns_keys) {
+        m_owns_keys = true;
+        allocate_keys();
+        std::copy_n(other.p_keys, other.size(), const_cast<key_type*>(p_keys));
+    }
 }
-KeyScalarArray::KeyScalarArray(KeyScalarArray&& other) noexcept {}
-KeyScalarArray::KeyScalarArray(ScalarArray&& sa) noexcept {}
-KeyScalarArray::KeyScalarArray(ScalarArray base, const key_type* keys) {}
-KeyScalarArray::KeyScalarArray(const ScalarType* type) noexcept {}
+KeyScalarArray::KeyScalarArray(KeyScalarArray&& other) noexcept
+    : ScalarArray(std::move(other)), p_keys(other.p_keys), m_owns_keys(other.m_owns_keys)
+{
+}
+KeyScalarArray::KeyScalarArray(ScalarArray&& sa) noexcept
+    : ScalarArray(std::move(sa))
+{}
+KeyScalarArray::KeyScalarArray(ScalarArray base, const key_type* keys)
+    : ScalarArray(std::move(base)), p_keys(keys), m_owns_keys(false)
+{}
+KeyScalarArray::KeyScalarArray(const ScalarType* type) noexcept
+    : ScalarArray(type)
+{}
 KeyScalarArray::KeyScalarArray(const ScalarType* type, dimn_t n) noexcept
     : ScalarArray(type, n)
 {}
@@ -52,23 +70,80 @@ KeyScalarArray::KeyScalarArray(
         const void* begin,
         dimn_t count
 ) noexcept
+    : ScalarArray(type, begin, count)
 {}
-KeyScalarArray::operator ScalarArray() && noexcept { return ScalarArray(); }
-KeyScalarArray KeyScalarArray::copy_or_move() && { return KeyScalarArray(); }
-KeyScalarArray& KeyScalarArray::operator=(const ScalarArray& other) noexcept
+KeyScalarArray KeyScalarArray::copy_or_move() && {
+    if (m_owns_keys) {
+        return std::move(*this);
+    }
+
+    KeyScalarArray result(static_cast<ScalarArray&&>(*this).copy_or_clone());
+    result.allocate_keys();
+    std::copy_n(p_keys, size(), result.keys());
+
+    return KeyScalarArray();
+}
+KeyScalarArray& KeyScalarArray::operator=(const KeyScalarArray& other)
 {
-    return ScalarArray::operator=(other);
+    if (&other != this) {
+        this->~KeyScalarArray();
+        ScalarArray::operator=(other);
+        if (other.m_owns_keys) {
+            allocate_keys();
+            std::copy_n(other.p_keys, other.size(), keys());
+            m_owns_keys = true;
+        } else {
+            p_keys = other.p_keys;
+            m_owns_keys = false;
+        }
+
+    }
+    return *this;
+}
+
+KeyScalarArray& KeyScalarArray::operator=(const ScalarArray& other)
+{
+    if (&other != this) {
+        this->~KeyScalarArray();
+        ScalarArray::operator=(other);
+    }
+    return *this;
 }
 KeyScalarArray& KeyScalarArray::operator=(KeyScalarArray&& other) noexcept
 {
+    if (&other != this) {
+        this->~KeyScalarArray();
+
+        ScalarArray::operator=(std::move(other));
+        p_keys = other.p_keys;
+        other.p_keys = nullptr;
+        m_owns_keys = other.m_owns_keys;
+
+    }
     return *this;
 }
 KeyScalarArray& KeyScalarArray::operator=(ScalarArray&& other) noexcept
 {
-    return ScalarArray::operator=(other);
+    if (&other != this) {
+        this->~KeyScalarArray();
+        ScalarArray::operator=(std::move(other));
+    }
+    return *this;
 }
-key_type* KeyScalarArray::keys() { return p_keys; }
+key_type* KeyScalarArray::keys() {
+    if (m_owns_keys) {
+        return const_cast<key_type *>(p_keys);
+    }
+    return nullptr;
+}
 void KeyScalarArray::allocate_scalars(idimn_t count) {
-
+    auto type = this->type();
+    if (count >= 0 && type) {
+        *this = (*type)->allocate(static_cast<dimn_t>(count));
+    }
 }
-void KeyScalarArray::allocate_keys(idimn_t count) {}
+void KeyScalarArray::allocate_keys(idimn_t count) {
+    if (count == -1 && p_keys == nullptr) {
+        p_keys = new key_type[size()];
+    }
+}

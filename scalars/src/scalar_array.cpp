@@ -42,6 +42,44 @@ bool ScalarArray::check_pointer_and_size(const void* ptr, dimn_t size)
     if (size > 0) { RPY_CHECK(ptr != nullptr); }
     return true;
 }
+ScalarArray::ScalarArray()
+    : const_borrowed(nullptr), m_size(0)
+{}
+ScalarArray::ScalarArray(const ScalarArray& other)
+    : p_type_and_mode(other.p_type_and_mode),
+      m_size(other.m_size)
+{
+    switch (p_type_and_mode.get_enumeration()) {
+        case dtl::ScalarArrayStorageModel::BorrowConst:
+            const_borrowed = other.const_borrowed;
+            break;
+        case dtl::ScalarArrayStorageModel::BorrowMut:
+            mut_borrowed = other.mut_borrowed;
+            break;
+        case dtl::ScalarArrayStorageModel::Owned:
+            owned_buffer = other.owned_buffer;
+            break;
+    }
+}
+ScalarArray::ScalarArray(ScalarArray&& other) noexcept
+    : p_type_and_mode(other.p_type_and_mode),
+      m_size(other.m_size)
+{
+    switch(p_type_and_mode.get_enumeration()) {
+        case dtl::ScalarArrayStorageModel::BorrowConst:
+            const_borrowed = other.const_borrowed;
+            other.const_borrowed = nullptr;
+            break;
+        case dtl::ScalarArrayStorageModel::BorrowMut:
+            mut_borrowed = other.mut_borrowed;
+            other.mut_borrowed = nullptr;
+            break;
+        case dtl::ScalarArrayStorageModel::Owned:
+            owned_buffer = std::move(other.owned_buffer);
+            break;
+    }
+}
+
 ScalarArray::ScalarArray(const ScalarType* type, dimn_t size)
 {
     RPY_DBG_ASSERT(type != nullptr);
@@ -57,6 +95,23 @@ ScalarArray::ScalarArray(devices::TypeInfo info, dimn_t size)
                 = devices::get_host_device()->raw_alloc(size, info.alignment);
     }
 }
+ScalarArray::ScalarArray(const ScalarType* type, const void* data, dimn_t size)
+    : p_type_and_mode(type, dtl::ScalarArrayStorageModel::BorrowConst),
+      const_borrowed(data), m_size(size)
+{}
+ScalarArray::ScalarArray(devices::TypeInfo info, const void* data, dimn_t size)
+    : p_type_and_mode(info, dtl::ScalarArrayStorageModel::BorrowConst),
+      const_borrowed(data), m_size(size)
+{}
+ScalarArray::ScalarArray(const ScalarType* type, void* data, dimn_t size)
+    : p_type_and_mode(type, dtl::ScalarArrayStorageModel::BorrowMut),
+      mut_borrowed(data), m_size(size)
+{}
+ScalarArray::ScalarArray(devices::TypeInfo info, void* data, dimn_t size)
+    : p_type_and_mode(info, dtl::ScalarArrayStorageModel::BorrowMut),
+      mut_borrowed(data), m_size(size)
+{}
+
 ScalarArray::ScalarArray(const ScalarType* type, devices::Buffer&& buffer)
     : p_type_and_mode(type, dtl::ScalarArrayStorageModel::Owned),
       owned_buffer(std::move(buffer)),
@@ -153,6 +208,9 @@ ScalarArray& ScalarArray::operator=(ScalarArray&& other) noexcept
     }
     return *this;
 }
+
+
+ScalarArray ScalarArray::copy_or_clone() && { return ScalarArray(); }
 
 optional<const ScalarType*> ScalarArray::type() const noexcept
 {

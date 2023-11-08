@@ -34,6 +34,9 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
+RPY_WARNING_PUSH
+RPY_CLANG_DISABLE_WARNING(HidingNonVirtualFunction)
+
 namespace rpy {
 namespace scalars {
 
@@ -60,11 +63,11 @@ public:
             dimn_t count
     ) noexcept;
 
-    explicit operator ScalarArray() && noexcept;
 
     RPY_NO_DISCARD KeyScalarArray copy_or_move() &&;
 
-    KeyScalarArray& operator=(const ScalarArray& other) noexcept;
+    KeyScalarArray& operator=(const KeyScalarArray& other);
+    KeyScalarArray& operator=(const ScalarArray& other);
     KeyScalarArray& operator=(KeyScalarArray&& other) noexcept;
     KeyScalarArray& operator=(ScalarArray&& other) noexcept;
 
@@ -82,4 +85,6 @@ public:
 }// namespace scalars
 }// namespace rpy
 
+
+RPY_WARNING_POP
 #endif// ROUGHPY_SCALARS_KEY_SCALAR_ARRAY_H_
