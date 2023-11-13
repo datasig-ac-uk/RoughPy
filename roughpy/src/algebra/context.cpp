@@ -66,8 +66,13 @@ RPyContext_cbh(PyObject* self, PyObject* args, PyObject* kwargs)
     PyObject* vtype = nullptr;
 
     if (!PyArg_ParseTupleAndKeywords(
-                args, kwargs, "O|O!", const_cast<char**>(kwords), &py_lies,
-                py::type::of<VectorType>().ptr(), &vtype
+                args,
+                kwargs,
+                "O|O!",
+                const_cast<char**>(kwords),
+                &py_lies,
+                py::type::of<VectorType>().ptr(),
+                &vtype
         )) {
         return nullptr;
     }
@@ -106,8 +111,13 @@ RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
     py::handle py_vtype;
 
     if (!PyArg_ParseTupleAndKeywords(
-                args, kwargs, "O|O!", const_cast<char**>(kwords), py_data.ptr(),
-                py::type::of<VectorType>().ptr(), py_vtype.ptr()
+                args,
+                kwargs,
+                "O|O!",
+                const_cast<char**>(kwords),
+                py_data.ptr(),
+                py::type::of<VectorType>().ptr(),
+                py_vtype.ptr()
         )) {
         return nullptr;
     }
@@ -134,10 +144,11 @@ RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
     }
 
     const auto* ctype = ctx->ctype();
+    const auto info = ctype->type_info();
     request.data_stream.set_ctype(ctype);
-    const auto itemsize = ctype->itemsize();
+    const auto itemsize = info.bytes;
 
-    const auto* p_buffer = static_cast<const char*>(buffer.cptr());
+    const auto* p_buffer = static_cast<const char*>(buffer.pointer());
     if (!buffer.has_keys()) {
         if (!py_vtype) { request.vector_type = VectorType::Dense; }
 
@@ -159,9 +170,10 @@ RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
         request.data_stream.set_elts_per_row(width);
         request.data_stream.reserve_size(n_increments);
         for (dimn_t i = 0; i < n_increments; ++i) {
-            request.data_stream.push_back(
-                    {ctype, p_buffer + i * width * itemsize}
-            );
+            request.data_stream.push_back(scalars::ScalarArray{
+                    ctype,
+                    p_buffer + i * width * itemsize,
+                    width});
         }
     } else {
         request.data_stream.reserve_size(options.shape.size());
@@ -170,10 +182,10 @@ RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
 
         auto n_increments = options.shape.size();
         for (dimn_t i = 0; i < n_increments; ++i) {
-            request.data_stream.push_back({
-                    {ctype, p_buffer},
-                    static_cast<dimn_t>(options.shape[i])
-            });
+            request.data_stream.push_back(scalars::ScalarArray{
+                    ctype,
+                    p_buffer,
+                    static_cast<dimn_t>(options.shape[i])});
             request.key_stream.push_back(p_keys);
             p_buffer += options.shape[i] * itemsize;
             p_keys += options.shape[i];
@@ -244,7 +256,11 @@ RPyContext_zero_lie(PyObject* self, PyObject* args, PyObject* kwargs)
 
     PyObject* py_vtype = nullptr;
     if (PyArg_ParseTupleAndKeywords(
-                args, kwargs, "|O!", const_cast<char**>(kwords), vtype_type,
+                args,
+                kwargs,
+                "|O!",
+                const_cast<char**>(kwords),
+                vtype_type,
                 &py_vtype
         )
         == 0) {
@@ -320,7 +336,7 @@ static PyObject* RPyContext_repr(PyObject* self)
     const auto& ctx = ctx_cast(self);
     std::stringstream ss;
     ss << "Context(width=" << ctx->width() << ", depth=" << ctx->depth()
-       << ", ctype=" << ctx->ctype()->info().name << ')';
+       << ", ctype=" << ctx->ctype()->name() << ')';
     return PyUnicode_FromString(ss.str().c_str());
 }
 static PyObject* RPyContext_str(PyObject* self)
@@ -328,8 +344,7 @@ static PyObject* RPyContext_str(PyObject* self)
     return RPyContext_repr(self);
 }
 
-RPY_UNUSED
-static PyObject*
+RPY_UNUSED static PyObject*
 RPyContext_new(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     RPY_UNREACHABLE_RETURN(nullptr);
@@ -337,11 +352,11 @@ RPyContext_new(PyObject* self, PyObject* args, PyObject* kwargs)
 
 static const char* CONTEXT_DOC = R"rpydoc()rpydoc";
 PyTypeObject rpy::python::RPyContext_Type = {
-        PyVarObject_HEAD_INIT(nullptr, 0) //
-        "_roughpy.Context", /* tp_name */
-        sizeof(python::RPyContext),                           /* tp_basicsize */
-        0,                                                    /* tp_itemsize */
-        nullptr,                                              /* tp_dealloc */
+        PyVarObject_HEAD_INIT(nullptr, 0)         //
+        "_roughpy.Context",                       /* tp_name */
+        sizeof(python::RPyContext),               /* tp_basicsize */
+        0,                                        /* tp_itemsize */
+        nullptr,                                  /* tp_dealloc */
         0,                                        /* tp_vectorcall_offset */
         (getattrfunc) nullptr,                    /* tp_getattr */
         (setattrfunc) nullptr,                    /* tp_setattr */
@@ -421,7 +436,9 @@ PyObject* python::RPyContext_FromContext(algebra::context_pointer ctx)
 }
 
 static py::handle py_get_context(
-        deg_t width, deg_t depth, const py::object& ctype,
+        deg_t width,
+        deg_t depth,
+        const py::object& ctype,
         const py::kwargs& kwargs
 )
 {
@@ -437,6 +454,9 @@ void python::init_context(py::module_& m)
     if (PyType_Ready(&RPyContext_Type) < 0) { throw py::error_already_set(); }
     m.add_object("Context", reinterpret_cast<PyObject*>(&RPyContext_Type));
 
-    m.def("get_context", py_get_context, "width"_a, "depth"_a,
+    m.def("get_context",
+          py_get_context,
+          "width"_a,
+          "depth"_a,
           "coeffs"_a = py::none());
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 01/11/23.
@@ -42,6 +43,51 @@ using namespace rpy;
 using namespace rpy::scalars;
 
 using rpy::scalars::dtl::ScalarContentType;
+
+static inline void
+uminus_impl(void* dst, const void* ptr, const devices::TypeInfo& info)
+{}
+
+Scalar Scalar::operator-() const
+{
+    Scalar result;
+    const auto info = type_info();
+    optional<const ScalarType*> stype;
+    if (!fast_is_zero()) {
+        switch (p_type_and_content_type.get_enumeration()) {
+            case ScalarContentType::TrivialBytes:
+            case ScalarContentType::ConstTrivialBytes:
+                result.p_type_and_content_type = type_pointer(
+                        info,
+                        dtl::ScalarContentType::TrivialBytes
+                );
+                uminus_impl(result.trivial_bytes, trivial_bytes, info);
+                break;
+            case ScalarContentType::OpaquePointer:
+            case ScalarContentType::ConstOpaquePointer:
+            case ScalarContentType::OwnedPointer:
+                stype = type();
+                RPY_CHECK(stype);
+                result.p_type_and_content_type = type_pointer(
+                        *stype,
+                        dtl::ScalarContentType::OwnedPointer
+                );
+                result.allocate_data();
+                uminus_impl(result.opaque_pointer, opaque_pointer, info);
+                break;
+            case ScalarContentType::Interface:
+            case ScalarContentType::OwnedInterface:
+                result.p_type_and_content_type = type_pointer(
+                        *stype,
+                        dtl::ScalarContentType::OwnedPointer
+                );
+                result.allocate_data();
+                uminus_impl(result.opaque_pointer, interface->pointer(), info);
+                break;
+        }
+    }
+    return result;
+}
 
 namespace {
 
@@ -76,7 +122,6 @@ struct RPY_LOCAL DivInplace {
         lhs /= rhs;
     }
 };
-
 
 template <typename Op>
 static inline void
@@ -125,7 +170,8 @@ Scalar& Scalar::operator+=(const Scalar& other)
     }
     return *this;
 }
-Scalar& Scalar::operator-=(const Scalar& other) {
+Scalar& Scalar::operator-=(const Scalar& other)
+{
     if (!other.fast_is_zero()) {
         scalar_inplace_arithmetic(
                 mut_pointer(),
@@ -137,7 +183,8 @@ Scalar& Scalar::operator-=(const Scalar& other) {
     }
     return *this;
 }
-Scalar& Scalar::operator*=(const Scalar& other) {
+Scalar& Scalar::operator*=(const Scalar& other)
+{
     if (!other.fast_is_zero()) {
         scalar_inplace_arithmetic(
                 mut_pointer(),

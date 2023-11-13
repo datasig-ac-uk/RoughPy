@@ -66,7 +66,8 @@ convert_from_dl_datatype(const DLDataType& dtype) noexcept {
     return {
         convert_from_dl_typecode(dtype.code),
         static_cast<uint8_t>(dtype.bits / CHAR_BIT),
-        dtype.lanes
+        static_cast<uint8_t>(dtype.bits / CHAR_BIT),
+        static_cast<uint8_t>(dtype.lanes & 0xFF)
     };
 }
 
@@ -106,9 +107,29 @@ scalar_type_for_dl_info(const DLDataType& dtype, const DLDevice& device);
 
 inline const scalars::ScalarType* scalar_type_of_dl_info(const DLDataType& dtype, const DLDevice& device)
 {
-    return scalars::ScalarType::from_type_details(
-            convert_from_dl_datatype(dtype),
-            convert_from_dl_device_info(device));
+    auto dtype_host = scalars::scalar_type_of(convert_from_dl_datatype(dtype));
+
+    RPY_CHECK(dtype_host);
+
+    switch (device.device_type) {
+        case kDLCPU:
+            return *dtype_host;
+        case kDLCUDA:
+        case kDLCUDAHost:
+        case kDLOpenCL:
+        case kDLVulkan:
+        case kDLMetal:
+        case kDLVPI:
+        case kDLROCM:
+        case kDLROCMHost:
+        case kDLExtDev:
+        case kDLCUDAManaged:
+        case kDLOneAPI:
+        case kDLWebGPU:
+        case kDLHexagon:
+            RPY_THROW(std::invalid_argument, "devices are not currently supported");
+    }
+
 }
 
 }

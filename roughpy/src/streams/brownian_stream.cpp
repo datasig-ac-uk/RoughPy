@@ -52,7 +52,7 @@ Brownian_from_generator(const py::args& args, const py::kwargs& kwargs)
     auto pmd = python::kwargs_to_metadata(kwargs);
 
     if (pmd.scalar_type == nullptr) {
-        pmd.scalar_type = scalars::ScalarType::of<double>();
+        pmd.scalar_type = *scalars::ScalarType::of<double>();
     }
 
     if (pmd.depth == 0) { pmd.depth = 2; }

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "scalars.h"
 
@@ -33,9 +34,8 @@
 
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
-#include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include "dlpack.h"
 #include "r_py_polynomial.h"
@@ -52,15 +52,16 @@ A generic scalar value.
 )edoc";
 
 void python::assign_py_object_to_scalar(
-        scalars::ScalarPointer ptr, pybind11::handle object
+        scalars::Scalar& dst,
+        pybind11::handle object
 )
 {
     if (py::isinstance<py::float_>(object)) {
-        *ptr = object.cast<double>();
+        dst = object.cast<double>();
     } else if (py::isinstance<py::int_>(object)) {
-        *ptr = object.cast<int64_t>();
+        dst = object.cast<int64_t>();
     } else if (RPyPolynomial_Check(object.ptr())) {
-        *ptr = RPyPolynomial_cast(object.ptr());
+        dst = RPyPolynomial_cast(object.ptr());
     } else {
         // TODO: other checks
 
@@ -68,7 +69,7 @@ void python::assign_py_object_to_scalar(
         RPY_THROW(
                 py::value_error,
                 "bad conversion from " + tp.cast<string>() + " to "
-                        + ptr.type()->info().name
+                        + string((*dst.type())->name())
         );
     }
 }
@@ -85,7 +86,7 @@ void python::init_scalars(pybind11::module_& m)
     py::class_<Scalar> klass(m, "Scalar", SCALAR_DOC);
 
     klass.def("scalar_type", [](const Scalar& self) {
-        return scalar_type_to_py_type(self.type());
+        return scalar_type_to_py_type(*self.type());
     });
 
     RPY_WARNING_PUSH
@@ -106,10 +107,10 @@ void python::init_scalars(pybind11::module_& m)
     klass.def(py::self != py::self);
 
     klass.def("__eq__", [](const Scalar& self, scalar_t other) {
-        return self.to_scalar_t() == other;
+        return self == Scalar(other);
     });
     klass.def("__eq__", [](scalar_t other, const Scalar& self) {
-        return self.to_scalar_t() == other;
+        return self == Scalar(other);
     });
 
     klass.def("__str__", [](const Scalar& self) {
@@ -119,11 +120,10 @@ void python::init_scalars(pybind11::module_& m)
     });
     klass.def("__repr__", [](const Scalar& self) {
         std::stringstream ss;
-        ss << "Scalar(type=" << self.type()->info().name << ", value approx "
-           << self.to_scalar_t() << ")";
+        ss << "Scalar(type=" << string((*self.type())->name())
+           << ", value approx " << self << ")";
         return ss.str();
     });
-    klass.def("to_float", &Scalar::to_scalar_t);
 
     RPY_WARNING_POP
 }
@@ -139,8 +139,7 @@ void python::init_scalars(pybind11::module_& m)
         type = scalars::ScalarTypeCode::NAME;                                  \
         break
 
-RPY_UNUSED
-static const scalars::ScalarType*
+RPY_UNUSED static const scalars::ScalarType*
 dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
 {
     using rpy::devices::DeviceType;
@@ -154,47 +153,66 @@ dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
         DOCASE(BFloat);
         DOCASE(Complex);
         DOCASE(Bool);
+        default: RPY_THROW(std::runtime_error, "unrecognised type code");
     }
 
-    return scalars::ScalarType::from_type_details(
-            {type, dtype.bits, dtype.lanes},
-            {static_cast<DeviceType>(device.device_type),
-             device.device_id}
+    return *scalars::scalar_type_of(
+            {type,
+             static_cast<uint8_t>(dtype.bits / CHAR_BIT),
+             static_cast<uint8_t>(dtype.bits / CHAR_BIT),
+             static_cast<uint8_t>(dtype.lanes)}
+            // {static_cast<DeviceType>(device.device_type), device.device_id}
     );
 }
 
 #undef DOCASE
 
 static inline void dl_copy_strided(
-        std::int32_t ndim, std::int64_t* shape, std::int64_t* strides,
-        scalars::ScalarPointer src, scalars::ScalarPointer dst
+        std::int32_t ndim,
+        std::int64_t* shape,
+        std::int64_t* strides,
+        const scalars::ScalarArray& src,
+        scalars::ScalarArray& dst
 )
 {
+    const auto dst_type_o = dst.type();
+    RPY_DBG_ASSERT(dst_type_o);
+    const auto* dst_type = *dst_type_o;
     if (ndim == 1) {
+
         if (strides[0] == 1) {
-            dst.type()->convert_copy(dst, src, shape[0]);
+            dst_type->convert_copy(dst, src);
         } else {
             for (std::int64_t i = 0; i < shape[0]; ++i) {
                 dst[i] = src[i * strides[0]];
             }
         }
     } else {
+
         auto* next_shape = shape + 1;
         auto* next_stride = strides + 1;
 
         for (std::int64_t j = 0; j < shape[0]; ++j) {
+            auto src_inner
+                    = src[{static_cast<dimn_t>(j * strides[0]), src.size()}];
+            auto dst_inner
+                    = dst[{static_cast<dimn_t>(j * shape[0]), dst.size()}];
             dl_copy_strided(
-                    ndim - 1, next_shape, next_stride,
-                    src + static_cast<dimn_t>(j * strides[0]),
-                    dst + static_cast<dimn_t>(j * shape[0])
+                    ndim - 1,
+                    next_shape,
+                    next_stride,
+                    src_inner,
+                    dst_inner
             );
         }
     }
 }
 
 static inline void update_dtype_and_allocate(
-        scalars::KeyScalarArray& result, python::PyToBufferOptions& options,
-        idimn_t no_values, idimn_t no_keys
+        scalars::KeyScalarArray& result,
+        python::PyToBufferOptions& options,
+        idimn_t no_values,
+        idimn_t no_keys
 )
 {
 
@@ -208,7 +226,8 @@ static inline void update_dtype_and_allocate(
 }
 
 static bool try_fill_buffer_dlpack(
-        scalars::KeyScalarArray& buffer, python::PyToBufferOptions& options,
+        scalars::KeyScalarArray& buffer,
+        python::PyToBufferOptions& options,
         const py::handle& object
 )
 {
@@ -222,8 +241,10 @@ static bool try_fill_buffer_dlpack(
 
     auto& dltensor = tensor->dl_tensor;
 
-    RPY_CHECK(dltensor.device.device_type == kDLCPU,
-              "no device support is currently available");
+    RPY_CHECK(
+            dltensor.device.device_type == kDLCPU,
+            "no device support is currently available"
+    );
 
     auto* data = reinterpret_cast<char*>(dltensor.data);
     auto ndim = dltensor.ndim;
@@ -253,12 +274,18 @@ static bool try_fill_buffer_dlpack(
 
     if (strides == nullptr) {
         buffer.allocate_scalars(size);
-        options.type->convert_copy(buffer, {tensor_stype, data}, size);
+        options.type->convert_copy(
+                buffer,
+                {tensor_stype, data, static_cast<dimn_t>(size)}
+        );
     } else {
         buffer.allocate_scalars(size);
-        scalars::ScalarPointer p(tensor_stype, data);
         dl_copy_strided(
-                ndim, shape, strides, p, buffer + static_cast<dimn_t>(0)
+                ndim,
+                shape,
+                strides,
+                {tensor_stype, data, static_cast<dimn_t>(size)},
+                buffer
         );
     }
     //
@@ -271,14 +298,12 @@ static bool try_fill_buffer_dlpack(
     return true;
 }
 
-
-
 static void
 check_and_set_dtype(python::PyToBufferOptions& options, py::handle arg)
 {
     if (options.type == nullptr) {
         if (options.no_check_imported) {
-            options.type = scalars::ScalarType::of<double>();
+            options.type = *scalars::ScalarType::of<double>();
         } else {
             options.type = python::py_type_to_scalar_type(py::type::of(arg));
         }
@@ -286,7 +311,8 @@ check_and_set_dtype(python::PyToBufferOptions& options, py::handle arg)
 }
 
 static bool check_ground_type(
-        py::handle object, GroundDataType& ground_type,
+        py::handle object,
+        GroundDataType& ground_type,
         python::PyToBufferOptions& options
 )
 {
@@ -296,7 +322,8 @@ static bool check_ground_type(
             ground_type = GroundDataType::Scalars;
         } else if (ground_type != GroundDataType::Scalars) {
             RPY_THROW(
-                    py::value_error, "inconsistent scalar/key-scalar-pair data"
+                    py::value_error,
+                    "inconsistent scalar/key-scalar-pair data"
             );
         }
         scalar = object;
@@ -305,7 +332,8 @@ static bool check_ground_type(
             ground_type = GroundDataType::KeyValuePairs;
         } else if (ground_type != GroundDataType::KeyValuePairs) {
             RPY_THROW(
-                    py::value_error, "inconsistent scalar/key-scalar-pair data"
+                    py::value_error,
+                    "inconsistent scalar/key-scalar-pair data"
             );
         }
         scalar = object.cast<py::tuple>()[1];
@@ -322,8 +350,11 @@ static bool check_ground_type(
 }
 
 static void compute_size_and_type_recurse(
-        python::PyToBufferOptions& options, std::vector<py::object>& leaves,
-        const py::handle& object, GroundDataType& ground_type, dimn_t depth
+        python::PyToBufferOptions& options,
+        std::vector<py::object>& leaves,
+        const py::handle& object,
+        GroundDataType& ground_type,
+        dimn_t depth
 )
 {
 
@@ -379,7 +410,11 @@ static void compute_size_and_type_recurse(
     } else if (py::isinstance<py::sequence>(item0)) {
         for (auto&& sibling : sequence) {
             compute_size_and_type_recurse(
-                    options, leaves, sibling, ground_type, depth + 1
+                    options,
+                    leaves,
+                    sibling,
+                    ground_type,
+                    depth + 1
             );
         }
     } else if (py::isinstance<py::dict>(item0)) {
@@ -412,7 +447,8 @@ static void compute_size_and_type_recurse(
 }
 
 ArgSizeInfo python::compute_size_and_type(
-        python::PyToBufferOptions& options, std::vector<py::object>& leaves,
+        python::PyToBufferOptions& options,
+        std::vector<py::object>& leaves,
         py::handle arg
 )
 {
@@ -447,7 +483,9 @@ ArgSizeInfo python::compute_size_and_type(
 }
 
 static void handle_sequence_tuple(
-        scalars::ScalarPointer scalar_ptr, key_type* key_ptr, py::handle tpl_o,
+        scalars::Scalar& scalar,
+        key_type* key_ptr,
+        py::handle tpl_o,
         python::PyToBufferOptions& options
 )
 {
@@ -460,15 +498,17 @@ static void handle_sequence_tuple(
         *key_ptr = key.cast<key_type>();
     }
 
-    python::assign_py_object_to_scalar(scalar_ptr, tpl[1]);
+    python::assign_py_object_to_scalar(scalar, tpl[1]);
 }
 
 static void handle_dict(
-        scalars::ScalarPointer& scalar_ptr, key_type*& key_ptr,
-        python::PyToBufferOptions& options, py::handle dict_o
+        scalars::ScalarArray& scalar_array,
+        key_type*& key_ptr,
+        python::PyToBufferOptions& options,
+        py::handle dict_o
 )
 {
-
+    dimn_t idx = 0;
     for (auto obj : py::reinterpret_borrow<py::dict>(dict_o)) {
         // dict iterator yields pairs [key, obj]
         // Expecting key-value tuples
@@ -480,12 +520,14 @@ static void handle_dict(
             *(key_ptr++) = key.cast<key_type>();
         }
 
-        python::assign_py_object_to_scalar(scalar_ptr++, obj.second);
+        auto val = scalar_array[idx++];
+        python::assign_py_object_to_scalar(val, obj.second);
     }
 }
 
 scalars::KeyScalarArray python::py_to_buffer(
-        const py::handle& object, python::PyToBufferOptions& options
+        const py::handle& object,
+        python::PyToBufferOptions& options
 )
 {
     scalars::KeyScalarArray result(options.type);
@@ -503,7 +545,8 @@ scalars::KeyScalarArray python::py_to_buffer(
         check_and_set_dtype(options, object);
         update_dtype_and_allocate(result, options, 1, 0);
 
-        assign_py_object_to_scalar(result, object);
+        auto val = result[0];
+        assign_py_object_to_scalar(val, object);
     } else if (is_kv_pair(object, options.alternative_key)) {
         /*
          * Now for tuples of length 2, which we expect to be a kv-pair
@@ -514,7 +557,8 @@ scalars::KeyScalarArray python::py_to_buffer(
         check_and_set_dtype(options, value);
         update_dtype_and_allocate(result, options, 1, 1);
 
-        handle_sequence_tuple(result, result.keys(), object, options);
+        auto val = result[0];
+        handle_sequence_tuple(val, result.keys(), object, options);
     } else if (py::hasattr(object, "__dlpack__")) {
         // If we used the dlpack interface, then the result is
         // already constructed.
@@ -522,10 +566,10 @@ scalars::KeyScalarArray python::py_to_buffer(
     } else if (py::isinstance<py::buffer>(object)) {
         // Fall back to the buffer protocol
         auto info = py::reinterpret_borrow<py::buffer>(object).request();
-        auto type_id = py_buffer_to_type_id(info);
+        auto type_info = py_buffer_to_type_info(info);
 
         if (options.type == nullptr) {
-            options.type = scalars::ScalarType::for_id(type_id);
+            options.type = scalars::ScalarType::for_info(type_info);
             result = scalars::KeyScalarArray(options.type);
         }
 
@@ -534,8 +578,10 @@ scalars::KeyScalarArray python::py_to_buffer(
         // The only way type can still be null is if there are no elements.
         if (options.type != nullptr) {
             options.type->convert_copy(
-                    result, {scalars::get_type(type_id), info.ptr},
-                    static_cast<dimn_t>(info.size)
+                    result,
+                    {*scalars::scalar_type_of(type_info),
+                     info.ptr,
+                     static_cast<dimn_t>(info.size)}
             );
             options.shape.assign(info.shape.begin(), info.shape.end());
         }
@@ -549,45 +595,50 @@ scalars::KeyScalarArray python::py_to_buffer(
             check_and_set_dtype(options, kv.second);
 
             update_dtype_and_allocate(
-                    result, options, options.shape[0], options.shape[0]
+                    result,
+                    options,
+                    options.shape[0],
+                    options.shape[0]
             );
 
-            scalars::ScalarPointer ptr(result);
             key_type* key_ptr = result.keys();
 
-            handle_dict(ptr, key_ptr, options, dict_arg);
+            handle_dict(result, key_ptr, options, dict_arg);
         }
     } else if (py::isinstance<py::sequence>(object)) {
         std::vector<py::object> leaves;
         auto size_info = compute_size_and_type(options, leaves, object);
 
         update_dtype_and_allocate(
-                result, options, size_info.num_values, size_info.num_keys
+                result,
+                options,
+                size_info.num_values,
+                size_info.num_keys
         );
-
-        scalars::ScalarPointer scalar_ptr(result);
 
         if (size_info.num_keys == 0) {
             // Scalar info only.
+            dimn_t idx = 0;
             for (auto leaf : leaves) {
                 auto leaf_seq = py::reinterpret_borrow<py::sequence>(leaf);
                 for (auto obj : leaf_seq) {
-                    assign_py_object_to_scalar(scalar_ptr++, obj);
+                    auto val = result[idx++];
+                    assign_py_object_to_scalar(val, obj);
                 }
             }
         } else {
             auto* key_ptr = result.keys();
             RPY_DBG_ASSERT(size_info.num_values == 0 || key_ptr != nullptr);
+            dimn_t idx = 0;
             for (auto leaf : leaves) {
                 // Key-value
                 if (py::isinstance<py::dict>(leaf)) {
-                    handle_dict(scalar_ptr, key_ptr, options, leaf);
+                    handle_dict(result, key_ptr, options, leaf);
                 } else {
                     for (auto obj :
                          py::reinterpret_borrow<py::sequence>(leaf)) {
-                        handle_sequence_tuple(
-                                scalar_ptr++, key_ptr++, obj, options
-                        );
+                        auto val = result[idx++];
+                        handle_sequence_tuple(val, key_ptr++, obj, options);
                     }
                 }
             }
@@ -607,6 +658,6 @@ python::py_to_scalar(const scalars::ScalarType* type, py::handle object)
 {
     RPY_DBG_ASSERT(type != nullptr);
     scalars::Scalar result(type, 0);
-    assign_py_object_to_scalar(result.to_mut_pointer(), object);
+    assign_py_object_to_scalar(result, object);
     return result;
 }

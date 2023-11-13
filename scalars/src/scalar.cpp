@@ -30,8 +30,10 @@
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_interface.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/traits.h>
 
 #include "scalar/arithmetic.h"
+#include "scalar/casts.h"
 #include "scalar/comparison.h"
 #include <roughpy/device/types.h>
 
@@ -39,6 +41,11 @@
 
 using namespace rpy;
 using namespace rpy::scalars;
+
+void Scalar::allocate_data() {
+    RPY_DBG_ASSERT(p_type_and_content_type.is_pointer());
+    opaque_pointer = p_type_and_content_type->allocate_single();
+}
 
 Scalar::Scalar(Scalar::type_pointer type) : integer_for_convenience(0)
 {
@@ -52,7 +59,7 @@ Scalar::Scalar(Scalar::type_pointer type) : integer_for_convenience(0)
             mode = dtl::content_type_of(info);
             if (mode == dtl::ScalarContentType::OwnedPointer) {
                 p_type_and_content_type
-                        = type_pointer(scalar_type_of(info), mode);
+                        = type_pointer(*scalar_type_of(info), mode);
             } else {
                 p_type_and_content_type = type_pointer(info, mode);
             }
@@ -79,7 +86,7 @@ Scalar::Scalar(devices::TypeInfo info)
 {
     auto mode = p_type_and_content_type.get_enumeration();
     if (mode == dtl::ScalarContentType::OwnedPointer) {
-        p_type_and_content_type = type_pointer(scalar_type_of(info), mode);
+        p_type_and_content_type = type_pointer(*scalar_type_of(info), mode);
         opaque_pointer = p_type_and_content_type->allocate_single();
     }
 }
@@ -102,6 +109,18 @@ Scalar::Scalar(devices::TypeInfo info, const void* ptr)
     : p_type_and_content_type(info, dtl::ScalarContentType::ConstOpaquePointer),
       opaque_pointer(const_cast<void*>(ptr))
 {}
+Scalar::Scalar(const ScalarType* type, int64_t num, int64_t denom)
+{
+    auto info = type->type_info();
+    if (traits::is_arithmetic(info) && info.bytes <= sizeof(void*)) {
+        p_type_and_content_type = type_pointer(type, dtl::ScalarContentType::TrivialBytes);
+        dtl::scalar_assign_rational(trivial_bytes, info, num, denom);
+    } else {
+        p_type_and_content_type = type_pointer(type, dtl::ScalarContentType::OwnedPointer);
+        opaque_pointer = type->allocate_single();
+        dtl::scalar_assign_rational(opaque_pointer, info, num, denom);
+    }
+}
 
 Scalar::Scalar(const Scalar& other) {}
 Scalar::Scalar(Scalar&& other) noexcept {}

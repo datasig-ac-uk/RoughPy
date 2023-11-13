@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_DEVICE_CORE_H_
 #define ROUGHPY_DEVICE_CORE_H_
@@ -35,11 +36,39 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/uuid/uuid.hpp>
 
+#include <libalgebra_lite/polynomial.h>
+
+/*
+ * We use the half precision floating point and bfloat16 types from Eigen but
+ * we really don't want to include the whole Eigen/Core header until we
+ * absolutely have to. To avoid this, we pre-declare the two types that we need
+ * in the Eigen namespace, so we can typedef them in the our own namespace and
+ * set up all the machinary that we need. Then, we can import the actual
+ * definitions only when we need to.
+ */
+namespace Eigen {
+
+struct half;
+struct bfloat16;
+
+}// namespace Eigen
+
+
+
 namespace rpy {
 namespace devices {
 
 using dindex_t = int;
 using dsize_t = unsigned int;
+
+/// IEEE half-precision floating point type
+using Eigen::half;
+/// BFloat16 (truncated) floating point type
+using Eigen::bfloat16;
+/// Rational scalar type
+using rational_scalar_type = lal::rational_field::scalar_type;
+/// Polynomial (with rational coefficients) scalar type
+using rational_poly_scalar = lal::rational_poly;
 
 enum class DeviceCategory : int32_t
 {
@@ -81,10 +110,8 @@ class DeviceSpecification
     bool m_strict = false;
 
 public:
-    constexpr explicit DeviceSpecification(
-            DeviceCategory cat,
-            uint32_t vendor_id
-    )
+    constexpr explicit
+    DeviceSpecification(DeviceCategory cat, uint32_t vendor_id)
         : m_category(cat),
           m_id_type(DeviceIdType::VendorID),
           m_vendor_id(vendor_id)
@@ -287,29 +314,58 @@ constexpr bool operator==(const TypeInfo& lhs, const TypeInfo& rhs) noexcept
 }
 
 namespace dtl {
+template <typename I>
+struct integral_code_impl {
+    static constexpr TypeCode value
+            = is_signed<I>::value ? TypeCode::Int : TypeCode::UInt;
+};
 
-template <typename T, typename SFINAE = void>
-struct type_code_of_impl;
+struct floating_code_impl {
+    static constexpr TypeCode value = TypeCode::Float;
+};
 
-#define RPY_GENERIC_TYPE_CODE_FUNCTION(cond, TC)                               \
-    template <typename T>                                                      \
-    struct type_code_of_impl<T, enable_if_t<(cond)>> {                         \
-        static constexpr TypeCode value = (TC);                                \
-    }
+struct unknown_code_impl {
+};
 
-RPY_GENERIC_TYPE_CODE_FUNCTION(
-        is_integral<T>::value&& is_signed<T>::value,
-        TypeCode::Int
-);
+template <typename T>
+struct not_integral_code_impl : public conditional_t<
+                                        is_floating_point<T>::value,
+                                        floating_code_impl,
+                                        unknown_code_impl> {
+};
 
-RPY_GENERIC_TYPE_CODE_FUNCTION(
-        is_integral<T>::value&& is_unsigned<T>::value,
-        TypeCode::UInt
-);
+template <typename T>
+struct type_code_of_impl : public conditional_t<
+                                   is_integral<T>::value,
+                                   integral_code_impl<T>,
+                                   not_integral_code_impl<T>> {
+};
 
-RPY_GENERIC_TYPE_CODE_FUNCTION(is_floating_point<T>::value, TypeCode::Float);
 
-#undef RPY_GENERIC_TYPE_CODE_FUNCTION
+template <>
+struct type_code_of_impl<half>
+{
+    static constexpr TypeCode value = TypeCode::Float;
+};
+
+template <>
+struct type_code_of_impl<bfloat16>
+{
+    static constexpr TypeCode value = TypeCode::BFloat;
+};
+
+template <>
+struct type_code_of_impl<rational_scalar_type>
+{
+    static constexpr TypeCode value = TypeCode::ArbitraryPrecisionRational;
+};
+
+template <>
+struct type_code_of_impl<rational_poly_scalar>
+{
+    static constexpr TypeCode value = TypeCode::APRationalPolynomial;
+};
+
 
 }// namespace dtl
 

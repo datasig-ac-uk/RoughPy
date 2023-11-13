@@ -1,4 +1,11 @@
-// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
+//
+// Created by user on 08/11/23.
+//
+
+#ifndef ROUGHPY_SCALARS_SRC_SCALARTESTS_H_
+#define ROUGHPY_SCALARS_SRC_SCALARTESTS_H_
+
+// Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -27,40 +34,37 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Created by user on 26/06/23.
+// Created by sam on 15/03/23.
 //
 
-#include "random/standard_random_generator.h"
+#ifndef ROUGHPY_SCALARTESTS_H
+#define ROUGHPY_SCALARTESTS_H
+
 #include <gtest/gtest.h>
-#include <sstream>
-#include <string>
 
-using generator_t = rpy::scalars::StandardRandomGenerator<double, pcg64>;
-using namespace std::literals::string_literals;
+#include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/scalar_types.h>
 
-struct my_pcg64 : pcg64 {
-    using pcg64::state_;
+namespace rpy {
+namespace scalars {
+namespace testing {
+
+class ScalarTests : public ::testing::Test
+{
+public:
+    const scalars::ScalarType* dtype;
+    const scalars::ScalarType* ftype;
+
+    ScalarTests()
+        : dtype(*ScalarType::of<double>()), ftype(*ScalarType::of<float>())
+    {}
 };
 
-TEST(PCGGenTests, LoadFromTerminatedSStream)
-{
+}// namespace testing
+}// namespace scalars
+}// namespace rpy
 
-    std::stringstream ss("5");
-    ss.flags(std::ios_base::dec);
-    auto in = ss.get();
-    EXPECT_EQ(in, '5');
-    auto in2 = ss.get();
-    EXPECT_EQ(in2, std::stringstream::traits_type::eof());
-}
+#endif// ROUGHPY_SCALARTESTS_H
 
-TEST(PCGenTests, LoadRandomState)
-{
-    std::stringstream ss(
-            "47026247687942121848144207491837523525 117397592171526113268558934119004209487 120436820235895678955951683610125339985\n"s);
-    my_pcg64 gen;
-    ss >> gen;
 
-    EXPECT_EQ(gen.state_,
-              PCG_128BIT_CONSTANT(6528893107350212886ULL,
-                                  10831353900920016209ULL));
-}
+#endif// ROUGHPY_SCALARS_SRC_SCALARTESTS_H_

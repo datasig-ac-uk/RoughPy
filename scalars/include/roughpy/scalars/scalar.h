@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_H_
 #define ROUGHPY_SCALARS_SCALAR_H_
@@ -32,13 +33,13 @@
 #include "scalar_interface.h"
 #include "scalars_fwd.h"
 
+#include <roughpy/core/alloc.h>
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
-#include <roughpy/device/types.h>
 
 namespace rpy {
 namespace scalars {
@@ -87,6 +88,14 @@ inline bool scalar_convert_copy(
 {
     return scalar_convert_copy(dst, ptype.get_type_info(), src);
 }
+
+bool scalar_convert_copy(
+        void* dst,
+        devices::TypeInfo dst_type,
+        const void* src,
+        devices::TypeInfo src_type,
+        dimn_t count = 1
+) noexcept;
 
 inline ScalarContentType content_type_of(devices::TypeInfo info) noexcept
 {
@@ -150,6 +159,8 @@ class RPY_EXPORT Scalar
         void* opaque_pointer;
     };
 
+    void allocate_data();
+
 protected:
     type_pointer packed_type() const noexcept
     {
@@ -170,7 +181,7 @@ public:
                     && is_trivially_copyable<T>::value
                     && is_trivially_destructible<T>::value
                     && sizeof(T) <= sizeof(void*)>>
-    Scalar(T value)
+    explicit Scalar(T value)
         : p_type_and_content_type(
                 devices::type_info<T>(),
                 dtl::ScalarContentType::TrivialBytes
@@ -180,27 +191,65 @@ public:
         std::memcpy(&trivial_bytes, &value, sizeof(value));
     }
 
-    template <typename T, typename = enable_if_t<!is_const<T>::value>>
-    explicit Scalar(T& value)
-        : p_type_and_content_type(
-                scalar_type_of<T>(),
-                dtl::ScalarContentType::OpaquePointer
-        ),
-          opaque_pointer(&value)
-    {}
+    template <
+            typename T,
+            typename = enable_if_t<
+                    !is_pointer<T>::value && is_standard_layout<T>::value
+                    && is_trivially_copyable<T>::value
+                    && is_trivially_destructible<T>::value>>
+    explicit Scalar(const ScalarType* type, T&& value)
+        : p_type_and_content_type(type, dtl::ScalarContentType::TrivialBytes),
+          integer_for_convenience(0)
+    {
+        dtl::scalar_convert_copy(
+                trivial_bytes,
+                type_info(),
+                &value,
+                devices::type_info<T>()
+        );
+    }
+
+    template <
+            typename T,
+            enable_if_t<
+                    !is_pointer<T>::value
+                            && (!is_standard_layout<T>::value
+                                || !is_trivially_copyable<T>::value
+                                || !is_trivially_destructible<T>::value),
+                    int>
+            = 0>
+    explicit Scalar(const ScalarType* type, T&& value)
+        : p_type_and_content_type(type, dtl::ScalarContentType::OwnedPointer),
+          integer_for_convenience(0)
+    {
+        allocate_data();
+        auto this_info = type_info();
+        auto value_info = devices::type_info<T>();
+        if (this_info == value_info) {
+            construct_inplace<T>(opaque_pointer, std::forward<T>(value));
+        } else {
+            dtl::scalar_convert_copy(
+                    opaque_pointer,
+                    this_info,
+                    &value,
+                    value_info,
+                    1
+            );
+        }
+    }
 
     explicit Scalar(const ScalarType* type, void* ptr);
     explicit Scalar(const ScalarType* type, const void* ptr);
     explicit Scalar(devices::TypeInfo info, void* ptr);
     explicit Scalar(devices::TypeInfo info, const void* ptr);
 
-    template <typename T>
+    template <typename T, typename = enable_if_t<(sizeof(T) > sizeof(void*))>>
     explicit Scalar(const T& value)
         : p_type_and_content_type(
-                scalar_type_of<T>(),
+                *scalar_type_of<T>(),
                 dtl::ScalarContentType::ConstOpaquePointer
         ),
-          opaque_pointer(const_cast<void*>(&value))
+          opaque_pointer(const_cast<void*>(static_cast<const void*>(&value)))
     {}
 
     explicit Scalar(std::unique_ptr<ScalarInterface> iface)
@@ -210,6 +259,8 @@ public:
         ),
           interface(std::move(iface))
     {}
+
+    explicit Scalar(const ScalarType* type, int64_t num, int64_t denom);
 
     Scalar(const Scalar& other);
     Scalar(Scalar&& other) noexcept;
@@ -249,7 +300,7 @@ public:
                 if (!dtl::scalar_convert_copy(
                             trivial_bytes,
                             type_info(),
-                            value
+                            Scalar(value)
                     )) {
                     RPY_THROW(std::runtime_error, "assignment failed");
                 }
@@ -259,7 +310,7 @@ public:
                 if (!dtl::scalar_convert_copy(
                             opaque_pointer,
                             p_type_and_content_type.get_type_info(),
-                            value
+                            Scalar(value)
                     )) {
                     RPY_THROW(std::runtime_error, "assignment failed");
                 }
@@ -271,7 +322,7 @@ public:
                 );
             case dtl::ScalarContentType::Interface:
             case dtl::ScalarContentType::OwnedInterface:
-                interface->set_value(value);
+                interface->set_value(Scalar(value));
                 break;
         }
 
@@ -364,6 +415,8 @@ public:
 
     bool operator!=(const Scalar& other) const { return !(operator==(other)); }
 
+    Scalar operator-() const;
+
     Scalar& operator+=(const Scalar& other);
     Scalar& operator-=(const Scalar& other);
     Scalar& operator*=(const Scalar& other);
@@ -424,7 +477,7 @@ inline Scalar operator/(const Scalar& lhs, const Scalar& rhs)
 template <typename T>
 RPY_NO_DISCARD T scalar_cast(const Scalar& value)
 {
-    T result;
+    T result{};
 
     // If the scalar is trivial zero, no need to do anything special.
     if (!value.fast_is_zero()) {

@@ -38,13 +38,15 @@ namespace rpy {
 namespace scalars {
 namespace dtl {
 
-bool scalar_convert_copy(
-        void* dst,
-        devices::TypeInfo dst_type,
-        const void* src,
-        devices::TypeInfo src_type,
-        dimn_t count=1
-) noexcept;
+
+
+
+bool scalar_assign_rational(
+    void* dst,
+    devices::TypeInfo dst_type,
+    int64_t numerator,
+    int64_t denominator
+);
 
 
 }

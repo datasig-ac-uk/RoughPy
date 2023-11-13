@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_PACKED_SCALAR_TYPE_PTR_H_
 #define ROUGHPY_SCALARS_PACKED_SCALAR_TYPE_PTR_H_
@@ -79,27 +80,19 @@ class PackedScalarTypePointer
     static constexpr integral_type TypeInfoMask
             = ((integral_type(1) << SizeOfTypeInfo) - 1) << NonPointerBits;
 
-
-
 public:
     PackedScalarTypePointer() = default;
 
-    constexpr PackedScalarTypePointer(
-            const ScalarType* dtype,
-            enumeration_type value
-    )
-        : m_data(
-                bit_cast<integral_type>(dtype)
-                | static_cast<integral_type>(value)
-        )
+    constexpr
+    PackedScalarTypePointer(const ScalarType* dtype, enumeration_type value)
+        : m_data(bit_cast<integral_type>(dtype)
+                 | static_cast<integral_type>(value))
     {}
 
     constexpr PackedScalarTypePointer(type_info_t info, enumeration_type ty)
-        : m_data(
-                (static_cast<integral_type>(bit_cast<uint32_t>(info))
-                 << MaxEnumBits)
-                | ModeMask | (static_cast<integral_type>(ty) & EnumMask)
-        )
+        : m_data((static_cast<integral_type>(bit_cast<uint32_t>(info))
+                  << MaxEnumBits)
+                 | ModeMask | (static_cast<integral_type>(ty) & EnumMask))
     {}
 
     constexpr bool is_pointer() const noexcept
@@ -144,12 +137,18 @@ public:
         return get_pointer();
     }
 
-    constexpr operator enumeration_type () const noexcept
+    constexpr operator enumeration_type() const noexcept
     {
         return get_enumeration();
     }
 
     constexpr operator type_info_t() const noexcept { return get_type_info(); }
+
+    void update_enumeration(enumeration_type enum_val) noexcept
+    {
+        m_data = (m_data & (PointerMask | ModeMask))
+                | (static_cast<integral_type>(enum_val) & EnumMask);
+    }
 };
 
 }// namespace scalars

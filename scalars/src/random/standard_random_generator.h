@@ -40,6 +40,8 @@
 #include <sstream>
 #include <vector>
 
+#include <roughpy/core/alloc.h>
+
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/scalar_types.h>
@@ -178,10 +180,11 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
 
     ScalarArray result(p_type, count * dists.size());
 
-    auto* out = result.raw_cast<scalar_type*>();
+    auto out_slice = result.as_slice<scalar_type>();
+    auto* out = out_slice.data;
     for (dimn_t i = 0; i < count; ++i) {
         for (auto& dist : dists) {
-            ::new (out++) scalar_type(dist(m_generator));
+            construct_inplace(out++, dist(m_generator));
         }
     }
 
@@ -201,9 +204,10 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::normal_random(
             scalar_cast<scalar_type>(scale)
     );
 
-    auto* out = result.raw_cast<scalar_type*>();
+    auto out_slice = result.as_slice<scalar_type>();
+    auto* out = out_slice.data();
     for (dimn_t i = 0; i < count; ++i) {
-        ::new (out++) scalar_type(dist(m_generator));
+        construct_inplace(out++, dist(m_generator));
     }
 
     return result;

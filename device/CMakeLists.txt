@@ -96,6 +96,11 @@ add_roughpy_component(Device
 )
 
 
+target_precompile_headers(RoughPy_Device PUBLIC
+    "include/roughpy/device/core.h"
+)
+
+
 
 add_roughpy_test(Devices
     SRC

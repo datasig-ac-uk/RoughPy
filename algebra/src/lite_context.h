@@ -32,13 +32,8 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LITE_CONTEXT_H
 #define ROUGHPY_ALGEBRA_SRC_LITE_CONTEXT_H
 
-#include <roughpy/scalars/key_scalar_array.h>
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_array.h>
-#include <roughpy/scalars/scalar_pointer.h>
-#include <roughpy/scalars/scalar_stream.h>
-#include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include <roughpy/algebra/interfaces/free_tensor_interface.h>
 #include <roughpy/algebra/interfaces/lie_interface.h>
@@ -431,16 +426,17 @@ OutType LiteContext<Coefficients>::construct_impl(
 
     if (data.data.is_null()) { return result; }
 
-    const scalar_type* data_ptr;
+    Slice<const scalar_type> raw_data;
 
     const auto size = data.data.size();
     std::vector<scalar_type> tmp;
     if (data.data.type() != ctype()) {
         tmp.resize(data.data.size());
-        ctype()->convert_copy({ctype(), tmp.data()}, data.data, size);
-        data_ptr = tmp.data();
+        scalars::ScalarArray tmp_sa(ctype(), tmp.data(), size);
+        ctype()->convert_copy(tmp_sa, data.data);
+        raw_data = tmp;
     } else {
-        data_ptr = data.data.raw_cast<const scalar_type>();
+        raw_data = data.data.as_slice<const scalar_type>();
     }
 
     if (data.data.has_keys()) {
@@ -448,7 +444,7 @@ OutType LiteContext<Coefficients>::construct_impl(
         const auto* keys = data.data.keys();
 
         for (dimn_t i = 0; i < size; ++i) {
-            result[basis->index_to_key(keys[i])] = data_ptr[i];
+            result[basis->index_to_key(keys[i])] = raw_data[i];
         }
 
     } else {
@@ -457,7 +453,7 @@ OutType LiteContext<Coefficients>::construct_impl(
         for (dimn_t i = 0; i < size; ++i) {
             // Replace this with a more efficient method once it's implemented
             // at the lower level
-            result[basis->index_to_key(i)] = data_ptr[i];
+            result[basis->index_to_key(i)] = raw_data[i];
         }
     }
 
@@ -682,7 +678,7 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
 template <typename Coefficients>
 LiteContext<Coefficients>::LiteContext(deg_t width, deg_t depth)
     : dtl::LiteContextBasisHolder(width, depth),
-      Context(width, depth, scalars::ScalarType::of<scalar_type>(),
+      Context(width, depth, *scalars::ScalarType::of<scalar_type>(),
               string("libalgebra_lite"), p_lbasis->sizes().data(),
               p_tbasis->sizes().data()),
       m_tensor_basis(&*p_tbasis), m_lie_basis(&*p_lbasis),

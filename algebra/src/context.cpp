@@ -47,7 +47,7 @@ using namespace rpy::algebra;
 BasicContextSpec rpy::algebra::get_context_spec(const context_pointer& ctx)
 {
     if (!ctx) { return {"", "", 0, 0}; }
-    return {ctx->ctype()->id(), ctx->backend(), ctx->width(), ctx->depth()};
+    return {string(ctx->ctype()->id()), ctx->backend(), ctx->width(), ctx->depth()};
 }
 
 context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)

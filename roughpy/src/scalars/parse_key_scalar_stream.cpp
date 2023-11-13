@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by sam on 08/08/23.
@@ -33,7 +34,7 @@
 #include "args/dlpack_helpers.h"
 #include "args/numpy.h"
 #include "args/strided_copy.h"
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 
 using namespace rpy;
 using namespace rpy::python;
@@ -81,7 +82,8 @@ void python::parse_key_scalar_stream(
     } else if (py::isinstance<py::sequence>(data)) {
         // We always need to make a copy from a Python object
         result.data_buffer = py_to_buffer(data, options);
-
+        const auto* type = *result.data_buffer.type();
+        const auto info = type->type_info();
         /*
          * Now we need to use the options.shape information to construct the
          * stream. How we should interpret the shape values are determined by
@@ -107,15 +109,19 @@ void python::parse_key_scalar_stream(
         if (result.data_buffer.has_keys()) {
             result.data_stream.reserve_size(options.shape.size());
 
-            scalars::ScalarPointer sptr(result.data_buffer);
+            const auto* sptr
+                    = static_cast<const byte*>(result.data_buffer.pointer());
             const key_type* kptr = result.data_buffer.keys();
             dimn_t check = 0;
             for (auto incr_size : options.shape) {
                 result.data_stream.push_back(
-                        {sptr, static_cast<dimn_t>(incr_size)},
+                        scalars::ScalarArray{
+                                type,
+                                sptr,
+                                static_cast<dimn_t>(incr_size)},
                         kptr
                 );
-                sptr += incr_size;
+                sptr += incr_size * info.bytes;
                 kptr += incr_size;
                 check += incr_size;
             }
@@ -123,14 +129,16 @@ void python::parse_key_scalar_stream(
             RPY_CHECK(check == buf_size);
         } else if (options.shape.size() != 2 || (shape_size != buf_size)) {
             result.data_stream.reserve_size(options.shape.size());
-            scalars::ScalarPointer sptr(result.data_buffer);
             dimn_t check = 0;
+            const auto* sptr
+                    = static_cast<const byte*>(result.data_buffer.pointer());
 
             for (auto incr_size : options.shape) {
-                result.data_stream.push_back(
-                        {sptr, static_cast<dimn_t>(incr_size)}
-                );
-                sptr += incr_size;
+                result.data_stream.push_back(scalars::ScalarArray{
+                        type,
+                        sptr,
+                        static_cast<dimn_t>(incr_size)});
+                sptr += incr_size * info.bytes;
                 check += incr_size;
             }
 
@@ -142,10 +150,15 @@ void python::parse_key_scalar_stream(
             const auto incr_size = static_cast<dimn_t>(options.shape[1]);
             result.data_stream.set_elts_per_row(incr_size);
 
-            scalars::ScalarPointer sptr(result.data_buffer);
+            const auto stride = incr_size * info.bytes;
+
+            const auto* sptr
+                    = static_cast<const byte*>(result.data_buffer.pointer());
             for (dimn_t i = 0; i < num_increments; ++i) {
-                result.data_stream.push_back(sptr);
-                sptr += incr_size;
+                result.data_stream.push_back(
+                        scalars::ScalarArray(type, sptr, incr_size)
+                );
+                sptr += stride;
             }
         }
 
@@ -172,14 +185,14 @@ void buffer_to_stream(
      * simple type and this type matches the requested data type (if set).
      */
 
-    auto type_id = py_buffer_to_type_id(buf_info);
+    auto type_info = py_buffer_to_type_info(buf_info);
 
     if (options.type == nullptr) {
-        options.type = scalars::ScalarType::for_id(type_id);
+        options.type = scalars::ScalarType::for_info(type_info);
     }
 
     // Imperfect check for whether the chosen data type is the same.
-    bool borrow = options.type->id() == type_id;
+    bool borrow = options.type->type_info() == type_info;
 
     // Check if the array is C-contiguous
     auto acc_stride = buf_info.itemsize;
@@ -194,7 +207,10 @@ void buffer_to_stream(
         if (buf_info.ndim == 1) {
             result.data_stream.set_elts_per_row(buf_info.shape[0]);
             result.data_stream.reserve_size(1);
-            result.data_stream.push_back({type_id, buf_info.ptr});
+            result.data_stream.push_back(scalars::ScalarArray{
+                    type_info,
+                    buf_info.ptr,
+                    static_cast<dimn_t>(buf_info.shape[0])});
         } else {
             const auto num_increments = static_cast<dimn_t>(buf_info.shape[0]);
             result.data_stream.set_elts_per_row(buf_info.shape[1]);
@@ -203,7 +219,10 @@ void buffer_to_stream(
             const auto* ptr = static_cast<const char*>(buf_info.ptr);
             const auto stride = buf_info.strides[0];
             for (dimn_t i = 0; i < num_increments; ++i) {
-                result.data_stream.push_back({options.type, ptr});
+                result.data_stream.push_back(scalars::ScalarArray{
+                        options.type,
+                        ptr,
+                        static_cast<dimn_t>(buf_info.shape[1])});
                 ptr += stride;
             }
         }
@@ -242,14 +261,20 @@ void buffer_to_stream(
         result.data_buffer.allocate_scalars(buf_info.size);
         options.type->convert_copy(
                 result.data_buffer,
-                {type_id, tmp.data()},
-                buf_info.size
+                scalars::ScalarArray{
+                        type_info,
+                        tmp.data(),
+                        static_cast<dimn_t>(buf_info.size)}
         );
 
         if (buf_info.ndim == 1) {
             result.data_stream.reserve_size(1);
             result.data_stream.set_elts_per_row(buf_info.size);
-            result.data_stream.push_back({options.type, tmp.data()});
+            result.data_stream.push_back(
+                    {options.type,
+                     tmp.data(),
+                     static_cast<dimn_t>(buf_info.size)}
+            );
         } else {
             // shape[0] increments of size shape[1]
             RPY_DBG_ASSERT(
@@ -257,11 +282,14 @@ void buffer_to_stream(
             );
             result.data_stream.reserve_size(tmp_shape[0]);
             result.data_stream.set_elts_per_row(tmp_shape[1]);
+            const auto info = options.type->type_info();
 
-            scalars::ScalarPointer sptr(result.data_buffer);
+            const auto* sptr
+                    = static_cast<const byte*>(result.data_buffer.pointer());
             for (dimn_t i = 0; i < tmp_shape[0]; ++i) {
-                result.data_stream.push_back(sptr);
-                sptr += tmp_shape[1];
+                result.data_stream.push_back({options.type, sptr, tmp_shape[1]}
+                );
+                sptr += tmp_shape[1] * info.bytes;
             }
         }
     }
@@ -284,10 +312,9 @@ void dl_to_stream(
     RPY_CHECK(dltensor != nullptr);
     auto& tensor = dltensor->dl_tensor;
 
-    const auto type_id
-            = python::type_id_for_dl_info(tensor.dtype, tensor.device);
+    const auto type_info = convert_from_dl_datatype(tensor.dtype);
     if (options.type == nullptr) {
-        options.type = scalars::ScalarType::for_id(type_id);
+        options.type = scalars::ScalarType::for_info(type_info);
     }
 
     if (tensor.ndim == 0 || tensor.shape[0] == 0
@@ -301,7 +328,7 @@ void dl_to_stream(
     result.data_stream = KeyScalarStream(options.type);
     result.data_buffer = KeyScalarArray(options.type);
 
-    bool borrow = options.type->id() == type_id;
+    bool borrow = options.type->type_info() == type_info;
 
     // Check if the array is C-contiguous
     const auto itemsize = tensor.dtype.bits / 8;
@@ -314,7 +341,11 @@ void dl_to_stream(
         if (tensor.ndim == 1) {
             result.data_stream.set_elts_per_row(tensor.shape[0]);
             result.data_stream.reserve_size(1);
-            result.data_stream.push_back({options.type, tensor.data});
+            result.data_stream.push_back(
+                    {options.type,
+                     tensor.data,
+                     static_cast<dimn_t>(tensor.shape[0])}
+            );
         } else {
             const auto num_increments = static_cast<dimn_t>(tensor.shape[0]);
             result.data_stream.set_elts_per_row(tensor.shape[1]);
@@ -323,7 +354,11 @@ void dl_to_stream(
             const auto* ptr = static_cast<const char*>(tensor.data);
             const auto stride = tensor.shape[1] * itemsize;
             for (dimn_t i = 0; i < num_increments; ++i) {
-                result.data_stream.push_back({options.type, ptr});
+                result.data_stream.push_back(
+                        {options.type,
+                         ptr,
+                         static_cast<dimn_t>(tensor.shape[1])}
+                );
                 ptr += stride;
             }
         }
@@ -372,23 +407,28 @@ void dl_to_stream(
         // Now that we're C-contiguous, convert_copy into the result.
         result.data_buffer = KeyScalarArray(options.type);
         result.data_buffer.allocate_scalars(size);
-        options.type
-                ->convert_copy(result.data_buffer, {type_id, tmp.data()}, size);
+        options.type->convert_copy(
+                result.data_buffer,
+                {type_info, tmp.data(), static_cast<dimn_t>(size)}
+        );
 
         if (tensor.ndim == 1) {
             result.data_stream.reserve_size(1);
             result.data_stream.set_elts_per_row(size);
-            result.data_stream.push_back({options.type, tmp.data()});
+            result.data_stream.push_back(
+                    {options.type, tmp.data(), static_cast<dimn_t>(size)}
+            );
         } else {
             // shape[0] increments of size shape[1]
             RPY_DBG_ASSERT(tensor.shape[0] * tensor.shape[1] == size);
             result.data_stream.reserve_size(out_shape[0]);
             result.data_stream.set_elts_per_row(out_shape[1]);
 
-            scalars::ScalarPointer sptr(result.data_buffer);
+            const auto* sptr
+                    = static_cast<const byte*>(result.data_buffer.pointer());
             for (dimn_t i = 0; i < out_shape[0]; ++i) {
-                result.data_stream.push_back(sptr);
-                sptr += out_shape[1];
+                result.data_stream.push_back({type_info, sptr, out_shape[1]});
+                sptr += out_shape[1]*type_info.bytes;
             }
         }
     }

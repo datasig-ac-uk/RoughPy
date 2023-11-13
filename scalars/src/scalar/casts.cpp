@@ -162,3 +162,55 @@ bool rpy::scalars::dtl::scalar_convert_copy(
 #undef X
     return false;
 }
+
+namespace {
+
+template <typename T>
+constexpr enable_if_t<is_trivially_constructible<T>::value && is_standard_layout<T>::value, bool>
+assign_rational(T* dst, int64_t num, int64_t denom) noexcept
+{
+    construct_inplace(dst, T(num) / T(denom));
+    return true;
+}
+
+inline bool assign_rational(rational_scalar_type* dst, int64_t num, int64_t denom) noexcept
+{
+    construct_inplace(dst, num, denom);
+    return true;
+}
+inline bool assign_rational(rational_poly_scalar* dst, int64_t num, int64_t denom) noexcept
+{
+    construct_inplace(dst, rational_scalar_type(num, denom));
+    return true;
+}
+
+constexpr bool assign_rational(half* dst, int64_t num, int64_t denom) noexcept
+{
+    construct_inplace(dst, static_cast<float>(num) / denom);
+    return true;
+}
+
+constexpr bool assign_rational(bfloat16* dst, int64_t num, int64_t denom) noexcept
+{
+    construct_inplace(dst, static_cast<float>(num) / denom);
+    return true;
+}
+
+
+
+
+}
+
+
+bool scalars::dtl::scalar_assign_rational(
+        void* dst,
+        devices::TypeInfo dst_type,
+        int64_t numerator,
+        int64_t denominator
+)
+{
+#define X(TP) return assign_rational((TP*) dst, numerator, denominator)
+    DO_FOR_EACH_X(dst_type)
+#undef X
+    return false;
+}

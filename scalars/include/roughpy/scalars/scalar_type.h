@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
@@ -44,7 +45,6 @@ struct RingCharacteristics {
 class __attribute__((aligned(32))) RPY_EXPORT ScalarType
 {
 protected:
-
     using lock_type = std::recursive_mutex;
     using guard_type = std::lock_guard<lock_type>;
 
@@ -57,7 +57,6 @@ protected:
     devices::TypeInfo m_info;
     RingCharacteristics m_characteristics;
 
-
     explicit ScalarType(
             string name,
             string id,
@@ -68,16 +67,26 @@ protected:
     );
 
 public:
-
     template <typename T>
-    static inline const ScalarType* of() noexcept {
+    static inline optional<const ScalarType*> of() noexcept
+    {
         return scalar_type_of<T>();
     }
 
     template <typename T>
-    static inline const ScalarType* of(const devices::Device& device) {
-        return of<T>()->with_device(device);
+    static inline optional<const ScalarType*> of(const devices::Device& device)
+    {
+        auto host = of<T>();
+        if (host) {
+            return (*host)->with_device(device);
+        }
+        return {};
     }
+
+
+    static const ScalarType* for_info(const devices::TypeInfo& info);
+
+    static const ScalarType* for_id(string_view id);
 
     /**
      * @brief Get the name of this type
@@ -101,10 +110,10 @@ public:
         return m_info;
     }
 
-    RPY_NO_DISCARD bool is_cpu() const noexcept {
+    RPY_NO_DISCARD bool is_cpu() const noexcept
+    {
         return m_device == devices::get_host_device();
     }
-
 
     /**
      * @brief Allocate new scalars in memory
@@ -121,14 +130,14 @@ public:
      *
      * Only necessary for large scalar types.
      */
-     RPY_NO_DISCARD virtual void* allocate_single() const;
+    RPY_NO_DISCARD virtual void* allocate_single() const;
 
-     /**
-      * @brief Free a previously allocated single scalar value.
-      *
-      * Only necessary for large scalar types
-      */
-     virtual void free_single(void* ptr) const;
+    /**
+     * @brief Free a previously allocated single scalar value.
+     *
+     * Only necessary for large scalar types
+     */
+    virtual void free_single(void* ptr) const;
 
     /**
      * @brief Get a new random number generator for this scalar type
@@ -155,14 +164,10 @@ public:
      */
     virtual void assign(ScalarArray& dst, Scalar value) const;
 
-
-
     // Scalar methods
 
-    virtual bool are_equal(const Scalar& lhs, const Scalar& rhs) const
-            noexcept = 0;
-
-
+    virtual bool are_equal(const Scalar& lhs, const Scalar& rhs) const noexcept
+            = 0;
 
     /**
      * @brief Get a new scalar type whose underlying device is given.
@@ -170,8 +175,7 @@ public:
      * @param device device on which the new scalar type should be based.
      */
     virtual const ScalarType* with_device(const devices::Device& device) const;
-
-} ;
+};
 
 static_assert(
         alignof(ScalarType) >= min_scalar_type_alignment,

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
@@ -47,6 +48,11 @@ enum class ScalarArrayStorageModel
 
 }
 
+struct SliceIndex {
+    dimn_t begin;
+    dimn_t end;
+};
+
 class RPY_EXPORT ScalarArray
 {
     using discriminator_type = dtl::ScalarArrayStorageModel;
@@ -68,6 +74,25 @@ class RPY_EXPORT ScalarArray
 protected:
     type_pointer packed_type() const noexcept { return p_type_and_mode; }
 
+    ScalarArray(type_pointer type, void* data, dimn_t size)
+        : p_type_and_mode(type),
+          mut_borrowed(data),
+          m_size(size)
+    {
+        p_type_and_mode.update_enumeration(
+                dtl::ScalarArrayStorageModel::BorrowMut
+        );
+    }
+    ScalarArray(type_pointer type, const void* data, dimn_t size)
+        : p_type_and_mode(type),
+          const_borrowed(data),
+          m_size(size)
+    {
+        p_type_and_mode.update_enumeration(
+                dtl::ScalarArrayStorageModel::BorrowConst
+        );
+    }
+
 public:
     ScalarArray();
     ScalarArray(const ScalarArray& other);
@@ -76,15 +101,14 @@ public:
     explicit ScalarArray(const ScalarType* type, dimn_t size = 0);
     explicit ScalarArray(devices::TypeInfo info, dimn_t size = 0);
 
-    explicit ScalarArray(const ScalarType* type, const void* data, dimn_t size);
-    explicit ScalarArray(devices::TypeInfo info, const void* data, dimn_t size);
+    ScalarArray(const ScalarType* type, const void* data, dimn_t size);
+    ScalarArray(devices::TypeInfo info, const void* data, dimn_t size);
 
-    explicit ScalarArray(const ScalarType* type, void* data, dimn_t size);
-    explicit ScalarArray(devices::TypeInfo info, void* data, dimn_t size);
+    ScalarArray(const ScalarType* type, void* data, dimn_t size);
+    ScalarArray(devices::TypeInfo info, void* data, dimn_t size);
 
-
-    explicit ScalarArray(const ScalarType* type, devices::Buffer&& buffer);
-    explicit ScalarArray(devices::TypeInfo info, devices::Buffer&& buffer);
+    ScalarArray(const ScalarType* type, devices::Buffer&& buffer);
+    ScalarArray(devices::TypeInfo info, devices::Buffer&& buffer);
 
     template <typename T>
     explicit ScalarArray(Slice<T> data);
@@ -102,7 +126,6 @@ public:
 
     ScalarArray& operator=(const ScalarArray& other);
     ScalarArray& operator=(ScalarArray&& other) noexcept;
-
 
     ScalarArray copy_or_clone() &&;
 
@@ -137,6 +160,9 @@ public:
     Scalar operator[](dimn_t i) const;
     Scalar operator[](dimn_t i);
 
+    ScalarArray operator[](SliceIndex index);
+    ScalarArray operator[](SliceIndex index) const;
+
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 
@@ -152,9 +178,9 @@ public:
     }
 
     template <typename T>
-    Slice<const T> as_slice()
+    Slice<const T> as_slice() const
     {
-        check_for_ptr_access(true);
+        check_for_ptr_access(false);
         return {static_cast<const T*>(raw_pointer()), m_size};
     }
 
@@ -166,9 +192,9 @@ private:
 template <typename T>
 ScalarArray::ScalarArray(Slice<T> data)
     : p_type_and_mode(
-            scalar_type_of<T>(),
-            dtl::ScalarArrayStorageModel::BorrowMut
-    ),
+              *scalar_type_of<T>(),
+              dtl::ScalarArrayStorageModel::BorrowMut
+      ),
       mut_borrowed(data.data()),
       m_size(data.size())
 {
@@ -178,9 +204,9 @@ ScalarArray::ScalarArray(Slice<T> data)
 template <typename T>
 ScalarArray::ScalarArray(Slice<const T> data)
     : p_type_and_mode(
-            scalar_type_of<T>(),
-            dtl::ScalarArrayStorageModel::BorrowConst
-    ),
+              *scalar_type_of<T>(),
+              dtl::ScalarArrayStorageModel::BorrowConst
+      ),
       const_borrowed(data.data()),
       m_size(data.size())
 {
@@ -190,9 +216,9 @@ ScalarArray::ScalarArray(Slice<const T> data)
 template <typename T>
 ScalarArray::ScalarArray(T* data, dimn_t size)
     : p_type_and_mode(
-            scalar_type_of<T>(),
-            dtl::ScalarArrayStorageModel::BorrowMut
-    ),
+              *scalar_type_of<T>(),
+              dtl::ScalarArrayStorageModel::BorrowMut
+      ),
       mut_borrowed(data),
       m_size(size)
 {
@@ -201,9 +227,9 @@ ScalarArray::ScalarArray(T* data, dimn_t size)
 template <typename T>
 ScalarArray::ScalarArray(const T* data, dimn_t size)
     : p_type_and_mode(
-            scalar_type_of<T>(),
-            dtl::ScalarArrayStorageModel::BorrowConst
-    ),
+              *scalar_type_of<T>(),
+              dtl::ScalarArrayStorageModel::BorrowConst
+      ),
       const_borrowed(data),
       m_size(size)
 {

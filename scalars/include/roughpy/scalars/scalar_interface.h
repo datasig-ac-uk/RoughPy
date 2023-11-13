@@ -42,14 +42,14 @@ public:
     RPY_NO_DISCARD
     virtual const void* pointer() const noexcept = 0;
 
-    virtual void set_value(Scalar value) = 0;
+    virtual void set_value(const Scalar& value) = 0;
 
     virtual void print(std::ostream& os) const = 0;
 
-    virtual void add_inplace(Scalar other);
-    virtual void sub_inplace(Scalar other);
-    virtual void mul_inplace(Scalar other);
-    virtual void div_inplace(Scalar other);
+    virtual void add_inplace(const Scalar& other);
+    virtual void sub_inplace(const Scalar& other);
+    virtual void mul_inplace(const Scalar& other);
+    virtual void div_inplace(const Scalar& other);
 
 };
 

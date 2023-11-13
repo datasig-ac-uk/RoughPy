@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 15/03/23.
@@ -42,9 +43,9 @@ RPY_MSVC_DISABLE_WARNING(4661)
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
-#include <roughpy/platform/serialization.h>
-#include <roughpy/platform/archives.h>
 #include <roughpy/algebra/algebra_fwd.h>
+#include <roughpy/platform/archives.h>
+#include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar.h>
 
 #include "args/numpy.h"
@@ -231,7 +232,10 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
         if (dense_data) {
             const auto dense_data_inner = *dense_data;
             return py::array(
-                    dtype, {dense_data_inner.size()}, {}, dense_data_inner.ptr()
+                    dtype,
+                    {dense_data_inner.size()},
+                    {},
+                    dense_data_inner.pointer()
             );
         }
         return py::array(dtype);
@@ -246,9 +250,7 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
                     oar(value);
                 }
 
-                return py::make_tuple(
-                        py::bytearray(ss.str())
-                        );
+                return py::make_tuple(py::bytearray(ss.str()));
             },
             [](py::tuple state) -> Alg {
                 if (state.size() != 1) {
@@ -263,7 +265,7 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
                 }
                 return result;
             }
-            ));
+    ));
 
     // TODO: DLpack interface
 }

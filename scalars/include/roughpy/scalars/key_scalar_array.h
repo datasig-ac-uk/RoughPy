@@ -34,8 +34,8 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
-RPY_WARNING_PUSH
-RPY_CLANG_DISABLE_WARNING(HidingNonVirtualFunction)
+// RPY_WARNING_PUSH
+// RPY_CLANG_DISABLE_WARNING(HidingNonVirtualFunction)
 
 namespace rpy {
 namespace scalars {
@@ -86,5 +86,5 @@ public:
 }// namespace rpy
 
 
-RPY_WARNING_POP
+// RPY_WARNING_POP
 #endif// ROUGHPY_SCALARS_KEY_SCALAR_ARRAY_H_

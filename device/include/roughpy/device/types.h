@@ -48,14 +48,6 @@
 namespace rpy {
 namespace devices {
 
-/// IEEE half-precision floating point type
-using Eigen::half;
-
-/// BFloat16 (truncated) floating point type
-using Eigen::bfloat16;
-
-/// Rational scalar type
-using rational_scalar_type = lal::rational_field::scalar_type;
 
 /// half-precision complex float
 using half_complex = std::complex<half>;
@@ -75,35 +67,7 @@ using monomial = lal::monomial;
 /// Indeterminate type for monomials
 using indeterminate_type = typename monomial::letter_type;
 
-/// Polynomial (with rational coefficients) scalar type
-using rational_poly_scalar = lal::polynomial<lal::rational_field>;
 
-namespace dtl {
-
-#define RPY_ENABLE_RETURN(C) enable_if_t<(C), TypeInfo>
-
-template <>
-struct type_code_of_impl<half, void> {
-    static constexpr TypeCode value = TypeCode::Float;
-};
-
-template <>
-struct type_code_of_impl<bfloat16, void> {
-    static constexpr TypeCode value = TypeCode::BFloat;
-};
-
-template <>
-struct type_code_of_impl<rational_scalar_type , void> {
-    static constexpr TypeCode value = TypeCode::ArbitraryPrecisionRational;
-};
-template <>
-struct type_code_of_impl<rational_poly_scalar , void> {
-    static constexpr TypeCode value = TypeCode::APRationalPolynomial;
-};
-
-
-
-}
 
 
 }// namespace devices

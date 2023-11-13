@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "scalar_array.h"
 
@@ -42,9 +43,7 @@ bool ScalarArray::check_pointer_and_size(const void* ptr, dimn_t size)
     if (size > 0) { RPY_CHECK(ptr != nullptr); }
     return true;
 }
-ScalarArray::ScalarArray()
-    : const_borrowed(nullptr), m_size(0)
-{}
+ScalarArray::ScalarArray() : const_borrowed(nullptr), m_size(0) {}
 ScalarArray::ScalarArray(const ScalarArray& other)
     : p_type_and_mode(other.p_type_and_mode),
       m_size(other.m_size)
@@ -65,7 +64,7 @@ ScalarArray::ScalarArray(ScalarArray&& other) noexcept
     : p_type_and_mode(other.p_type_and_mode),
       m_size(other.m_size)
 {
-    switch(p_type_and_mode.get_enumeration()) {
+    switch (p_type_and_mode.get_enumeration()) {
         case dtl::ScalarArrayStorageModel::BorrowConst:
             const_borrowed = other.const_borrowed;
             other.const_borrowed = nullptr;
@@ -97,19 +96,23 @@ ScalarArray::ScalarArray(devices::TypeInfo info, dimn_t size)
 }
 ScalarArray::ScalarArray(const ScalarType* type, const void* data, dimn_t size)
     : p_type_and_mode(type, dtl::ScalarArrayStorageModel::BorrowConst),
-      const_borrowed(data), m_size(size)
+      const_borrowed(data),
+      m_size(size)
 {}
 ScalarArray::ScalarArray(devices::TypeInfo info, const void* data, dimn_t size)
     : p_type_and_mode(info, dtl::ScalarArrayStorageModel::BorrowConst),
-      const_borrowed(data), m_size(size)
+      const_borrowed(data),
+      m_size(size)
 {}
 ScalarArray::ScalarArray(const ScalarType* type, void* data, dimn_t size)
     : p_type_and_mode(type, dtl::ScalarArrayStorageModel::BorrowMut),
-      mut_borrowed(data), m_size(size)
+      mut_borrowed(data),
+      m_size(size)
 {}
 ScalarArray::ScalarArray(devices::TypeInfo info, void* data, dimn_t size)
     : p_type_and_mode(info, dtl::ScalarArrayStorageModel::BorrowMut),
-      mut_borrowed(data), m_size(size)
+      mut_borrowed(data),
+      m_size(size)
 {}
 
 ScalarArray::ScalarArray(const ScalarType* type, devices::Buffer&& buffer)
@@ -209,7 +212,6 @@ ScalarArray& ScalarArray::operator=(ScalarArray&& other) noexcept
     return *this;
 }
 
-
 ScalarArray ScalarArray::copy_or_clone() && { return ScalarArray(); }
 
 optional<const ScalarType*> ScalarArray::type() const noexcept
@@ -239,7 +241,7 @@ const void* ScalarArray::raw_pointer(dimn_t i) const noexcept
     }
 
     if (ptr == nullptr) { return ptr; }
-    auto info = type_info();
+    const auto info = type_info();
 
     return static_cast<const byte*>(ptr) + i * info.bytes;
 }
@@ -257,9 +259,9 @@ void* ScalarArray::raw_mut_pointer(dimn_t i) noexcept
     }
 
     if (ptr == nullptr) { return ptr; }
-    auto info = type_info();
+    const auto info = type_info();
 
-    return static_cast<byte*>(ptr) + i*info.bytes;
+    return static_cast<byte*>(ptr) + i * info.bytes;
 }
 
 const void* ScalarArray::pointer() const
@@ -310,10 +312,10 @@ Scalar ScalarArray::operator[](dimn_t i) const
     }
     return Scalar(p_type_and_mode.get_type_info(), raw_pointer(i));
 }
-Scalar ScalarArray::operator[](dimn_t i) {
+Scalar ScalarArray::operator[](dimn_t i)
+{
     check_for_ptr_access(true);
     RPY_CHECK(i < m_size);
-
 
     if (p_type_and_mode.is_pointer()) {
         return Scalar(p_type_and_mode.get_pointer(), raw_mut_pointer(i));
@@ -321,20 +323,59 @@ Scalar ScalarArray::operator[](dimn_t i) {
     return Scalar(p_type_and_mode.get_type_info(), raw_mut_pointer(i));
 }
 
-inline void ScalarArray::check_for_ptr_access(bool mut) const {
-    RPY_CHECK(!p_type_and_mode.is_pointer() || p_type_and_mode->is_cpu());
+ScalarArray ScalarArray::operator[](SliceIndex index)
+{
+    RPY_DBG_ASSERT(index.begin < index.end);
+    RPY_CHECK(index.end <= m_size);
 
-    RPY_CHECK(!mut || p_type_and_mode.get_enumeration() !=
-            dtl::ScalarArrayStorageModel::BorrowConst);
-
-}
-dimn_t ScalarArray::capacity() const noexcept {
     switch (p_type_and_mode.get_enumeration()) {
+        case dtl::ScalarArrayStorageModel::Owned:
+            RPY_THROW(std::runtime_error, "not implemented");
+        case dtl::ScalarArrayStorageModel::BorrowConst:
+            RPY_THROW(
+                    std::runtime_error,
+                    "attempting to borrow const array as muable"
+            );
+        case dtl::ScalarArrayStorageModel::BorrowMut:
+            return {p_type_and_mode,
+                    raw_mut_pointer(index.begin),
+                    index.end - index.begin};
+    }
+}
+ScalarArray ScalarArray::operator[](SliceIndex index) const
+{
+    RPY_DBG_ASSERT(index.begin < index.end);
+    RPY_CHECK(index.end <= m_size);
+
+    switch (p_type_and_mode.get_enumeration()) {
+        case dtl::ScalarArrayStorageModel::Owned:
+            RPY_THROW(std::runtime_error, "not implemented");
         case dtl::ScalarArrayStorageModel::BorrowConst:
         case dtl::ScalarArrayStorageModel::BorrowMut:
-            return m_size;
-        case dtl::ScalarArrayStorageModel::Owned:
-            return owned_buffer.size();
+            return {
+                p_type_and_mode,
+                raw_pointer(index.begin),
+                index.end - index.begin
+            };
+    }
+}
+
+inline void ScalarArray::check_for_ptr_access(bool mut) const
+{
+    RPY_CHECK(!p_type_and_mode.is_pointer() || p_type_and_mode->is_cpu());
+
+    RPY_CHECK(
+            !mut
+            || p_type_and_mode.get_enumeration()
+                    != dtl::ScalarArrayStorageModel::BorrowConst
+    );
+}
+dimn_t ScalarArray::capacity() const noexcept
+{
+    switch (p_type_and_mode.get_enumeration()) {
+        case dtl::ScalarArrayStorageModel::BorrowConst:
+        case dtl::ScalarArrayStorageModel::BorrowMut: return m_size;
+        case dtl::ScalarArrayStorageModel::Owned: return owned_buffer.size();
     }
     RPY_UNREACHABLE_RETURN(0);
 }
@@ -344,8 +385,7 @@ devices::Device ScalarArray::device() const noexcept
         case dtl::ScalarArrayStorageModel::BorrowConst:
         case dtl::ScalarArrayStorageModel::BorrowMut:
             return devices::get_host_device();
-        case dtl::ScalarArrayStorageModel::Owned:
-            return owned_buffer.device();
+        case dtl::ScalarArrayStorageModel::Owned: return owned_buffer.device();
     }
     RPY_UNREACHABLE_RETURN(nullptr);
 }
