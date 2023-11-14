@@ -55,6 +55,7 @@ public:
             const ScalarArray& scalar_data,
             const key_type* key_ptr = nullptr
     );
+    void push_back(ScalarArray&& scalar_data, const key_type* key_ptr=nullptr);
 };
 
 }// namespace scalars

@@ -54,23 +54,23 @@ KeyScalarArray::KeyScalarArray(KeyScalarArray&& other) noexcept
 {
 }
 KeyScalarArray::KeyScalarArray(ScalarArray&& sa) noexcept
-    : ScalarArray(std::move(sa))
+    : ScalarArray(std::move(sa)), m_owns_keys(false)
 {}
 KeyScalarArray::KeyScalarArray(ScalarArray base, const key_type* keys)
     : ScalarArray(std::move(base)), p_keys(keys), m_owns_keys(false)
 {}
 KeyScalarArray::KeyScalarArray(const ScalarType* type) noexcept
-    : ScalarArray(type)
+    : ScalarArray(type), m_owns_keys(false)
 {}
 KeyScalarArray::KeyScalarArray(const ScalarType* type, dimn_t n) noexcept
-    : ScalarArray(type, n)
+    : ScalarArray(type, n), m_owns_keys(false)
 {}
 KeyScalarArray::KeyScalarArray(
         const ScalarType* type,
         const void* begin,
         dimn_t count
 ) noexcept
-    : ScalarArray(type, begin, count)
+    : ScalarArray(type, begin, count), m_owns_keys(false)
 {}
 KeyScalarArray KeyScalarArray::copy_or_move() && {
     if (m_owns_keys) {
@@ -81,7 +81,7 @@ KeyScalarArray KeyScalarArray::copy_or_move() && {
     result.allocate_keys();
     std::copy_n(p_keys, size(), result.keys());
 
-    return KeyScalarArray();
+    return result;
 }
 KeyScalarArray& KeyScalarArray::operator=(const KeyScalarArray& other)
 {
