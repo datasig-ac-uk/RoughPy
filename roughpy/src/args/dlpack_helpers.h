@@ -130,6 +130,7 @@ inline const scalars::ScalarType* scalar_type_of_dl_info(const DLDataType& dtype
             RPY_THROW(std::invalid_argument, "devices are not currently supported");
     }
 
+    RPY_UNREACHABLE_RETURN(nullptr);
 }
 
 }
