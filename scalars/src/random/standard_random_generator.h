@@ -122,7 +122,7 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
       m_seed{seed[0]},
       m_generator(BitGenerator(seed[0]))
 {
-    RPY_CHECK(p_type = ScalarType::of<ScalarImpl>());
+    RPY_CHECK(p_type == *ScalarType::of<ScalarImpl>());
     RPY_CHECK(seed.size() >= 1);
 }
 template <typename ScalarImpl, typename BitGenerator>
@@ -180,8 +180,8 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
 
     ScalarArray result(p_type, count * dists.size());
 
-    auto out_slice = result.as_slice<scalar_type>();
-    auto* out = out_slice.data;
+    auto out_slice = result.as_mut_slice<scalar_type>();
+    auto* out = out_slice.data();
     for (dimn_t i = 0; i < count; ++i) {
         for (auto& dist : dists) {
             construct_inplace(out++, dist(m_generator));
@@ -204,7 +204,7 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::normal_random(
             scalar_cast<scalar_type>(scale)
     );
 
-    auto out_slice = result.as_slice<scalar_type>();
+    auto out_slice = result.as_mut_slice<scalar_type>();
     auto* out = out_slice.data();
     for (dimn_t i = 0; i < count; ++i) {
         construct_inplace(out++, dist(m_generator));

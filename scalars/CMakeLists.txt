@@ -24,12 +24,17 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/traits.h
         include/roughpy/scalars.h
     SOURCES
+        src/random/random_impl.cpp
+        src/random/random_impl.h
+        src/random/standard_random_generator.cpp
+        src/random/standard_random_generator.h
         src/scalar/arithmetic.cpp
         src/scalar/arithmetic.h
         src/scalar/casts.cpp
         src/scalar/casts.h
         src/scalar/comparison.cpp
         src/scalar/comparison.h
+        src/scalar/do_macro.h
         src/scalar/serialization.cpp
         src/scalar_helpers/standard_scalar_type.h
         src/key_scalar_array.cpp
@@ -38,6 +43,7 @@ add_roughpy_component(Scalars
         src/scalar.cpp
         src/scalar_array.cpp
         src/scalar_array_view.cpp
+        src/scalar_interface.cpp
         src/scalar_serialization.cpp
         src/scalar_stream.cpp
         src/scalar_type.cpp
