@@ -42,7 +42,7 @@ struct RingCharacteristics {
     bool is_complex : 1;
 };
 
-class __attribute__((aligned(32))) RPY_EXPORT ScalarType
+class alignas(32) ScalarType
 {
 protected:
     using lock_type = std::recursive_mutex;
@@ -67,6 +67,8 @@ protected:
     );
 
 public:
+    virtual ~ScalarType();
+
     template <typename T>
     static inline optional<const ScalarType*> of() noexcept
     {
@@ -175,7 +177,7 @@ public:
      * @param device device on which the new scalar type should be based.
      */
     virtual const ScalarType* with_device(const devices::Device& device) const;
-};
+} ;
 
 static_assert(
         alignof(ScalarType) >= min_scalar_type_alignment,

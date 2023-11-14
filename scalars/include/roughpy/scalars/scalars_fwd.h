@@ -39,7 +39,7 @@ using ScalarTypeCode = devices::TypeCode;
 using BasicScalarInfo = devices::TypeInfo;
 
 // Forward declarations
-class ScalarType;
+class RPY_EXPORT ScalarType;
 class ScalarInterface;
 class Scalar;
 class ScalarArray;
