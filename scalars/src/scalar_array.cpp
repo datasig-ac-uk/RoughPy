@@ -341,6 +341,7 @@ ScalarArray ScalarArray::operator[](SliceIndex index)
                     raw_mut_pointer(index.begin),
                     index.end - index.begin};
     }
+    RPY_UNREACHABLE_RETURN({});
 }
 ScalarArray ScalarArray::operator[](SliceIndex index) const
 {
@@ -358,6 +359,7 @@ ScalarArray ScalarArray::operator[](SliceIndex index) const
                 index.end - index.begin
             };
     }
+    RPY_UNREACHABLE_RETURN({});
 }
 
 inline void ScalarArray::check_for_ptr_access(bool mut) const
