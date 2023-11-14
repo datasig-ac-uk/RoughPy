@@ -35,6 +35,8 @@ add_roughpy_component(Scalars
         src/scalar/comparison.cpp
         src/scalar/comparison.h
         src/scalar/do_macro.h
+        src/scalar/raw_bytes.cpp
+        src/scalar/raw_bytes.h
         src/scalar/serialization.cpp
         src/scalar_helpers/standard_scalar_type.h
         src/types/aprational/ap_rational_type.cpp

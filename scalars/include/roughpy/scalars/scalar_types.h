@@ -29,6 +29,7 @@
 #define ROUGHPY_SCALARS_SCALAR_TYPES_H_
 
 #include <roughpy/device/types.h>
+#include <roughpy/platform/serialization.h>
 
 namespace rpy {
 namespace scalars {
@@ -44,7 +45,14 @@ using devices::indeterminate_type;
 using devices::monomial;
 using devices::rational_poly_scalar;
 
+
+
+
+
 }
 }// namespace rpy
+
+
+
 
 #endif// ROUGHPY_SCALARS_SCALAR_TYPES_H_

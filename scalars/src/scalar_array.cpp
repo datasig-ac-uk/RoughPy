@@ -31,9 +31,13 @@
 #include "scalar.h"
 #include "scalar/casts.h"
 #include "scalar_type.h"
+#include "scalar_serialization.h"
 #include "traits.h"
 
+#include "scalar/raw_bytes.h"
+
 #include <roughpy/device/host_device.h>
+#include <roughpy/device/buffer.h>
 
 using namespace rpy;
 using namespace scalars;
@@ -392,5 +396,25 @@ devices::Device ScalarArray::device() const noexcept
     RPY_UNREACHABLE_RETURN(nullptr);
 }
 
-RPY_SERIAL_LOAD_FN_IMPL(rpy::scalars::ScalarArray) {}
-RPY_SERIAL_SAVE_FN_IMPL(rpy::scalars::ScalarArray) {}
+std::vector<byte> ScalarArray::to_raw_bytes() const
+{
+    return dtl::to_raw_bytes(pointer(), m_size, type_info());
+}
+
+void ScalarArray::from_raw_bytes(devices::TypeInfo info, dimn_t count, Slice<byte> bytes)
+{
+    RPY_CHECK(is_null());
+    auto tp_o = scalar_type_of(info);
+    if (tp_o) {
+        *this = (*tp_o)->allocate(count);
+    } else {
+        p_type_and_mode = type_pointer(info, dtl::ScalarArrayStorageModel::Owned);
+        owned_buffer = devices::get_host_device()->raw_alloc(count, info.alignment);
+    }
+
+    dtl::from_raw_bytes(owned_buffer.ptr(), count, bytes, info);
+}
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::ScalarArray
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>

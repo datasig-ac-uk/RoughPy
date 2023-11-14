@@ -186,6 +186,9 @@ public:
 
 private:
     void check_for_ptr_access(bool mut = false) const;
+    RPY_NO_DISCARD
+    std::vector<byte> to_raw_bytes() const;
+    void from_raw_bytes(devices::TypeInfo info, dimn_t count, Slice<byte> bytes);
 
 public:
     template <typename T>
@@ -256,8 +259,30 @@ ScalarArray::ScalarArray(const T* data, dimn_t size)
     check_pointer_and_size(data, size);
 }
 
+
+RPY_SERIAL_LOAD_FN_IMPL(rpy::scalars::ScalarArray)
+{
+    devices::TypeInfo type_info;
+    RPY_SERIAL_SERIALIZE_VAL(type_info);
+    uint64_t count;
+    RPY_SERIAL_SERIALIZE_VAL(count);
+    std::vector<byte> raw_bytes;
+    RPY_SERIAL_SERIALIZE_VAL(raw_bytes);
+    from_raw_bytes(type_info, count, raw_bytes);
+}
+RPY_SERIAL_SAVE_FN_IMPL(rpy::scalars::ScalarArray)
+{
+    RPY_SERIAL_SERIALIZE_NVP("type_info", type_info());
+    RPY_SERIAL_SERIALIZE_NVP("count", static_cast<uint64_t>(size()));
+    RPY_SERIAL_SERIALIZE_NVP("raw_bytes", to_raw_bytes());
+}
+
+
 RPY_SERIAL_EXTERN_SAVE_CLS(ScalarArray)
 RPY_SERIAL_EXTERN_LOAD_CLS(ScalarArray)
+
+
+
 
 }// namespace scalars
 }// namespace rpy

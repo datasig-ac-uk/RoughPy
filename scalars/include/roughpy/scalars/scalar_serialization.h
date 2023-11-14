@@ -34,6 +34,13 @@
 #include "scalar_types.h"
 #include <cereal/types/utility.hpp>
 
+RPY_SERIAL_SERIALIZE_FN_EXT(rpy::devices::TypeInfo)
+{
+    RPY_SERIAL_SERIALIZE_NVP("code", value.code);
+    RPY_SERIAL_SERIALIZE_NVP("bytes", value.bytes);
+    RPY_SERIAL_SERIALIZE_NVP("alignment", value.alignment);
+    RPY_SERIAL_SERIALIZE_NVP("lanes", value.lanes);
+}
 RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::half)
 {
     using namespace ::rpy;
