@@ -72,6 +72,7 @@ class RPY_EXPORT ScalarArray
     static bool check_pointer_and_size(const void* ptr, dimn_t size);
 
 protected:
+    RPY_NO_DISCARD
     type_pointer packed_type() const noexcept { return p_type_and_mode; }
 
     ScalarArray(type_pointer type, void* data, dimn_t size)
@@ -129,38 +130,55 @@ public:
 
     ScalarArray copy_or_clone() &&;
 
+    RPY_NO_DISCARD
     bool is_owning() const noexcept
     {
         return p_type_and_mode.get_enumeration() == discriminator_type::Owned;
     }
 
+    RPY_NO_DISCARD
     optional<const ScalarType*> type() const noexcept;
 
+    RPY_NO_DISCARD
     devices::TypeInfo type_info() const noexcept;
 
+    RPY_NO_DISCARD
     constexpr dimn_t size() const noexcept { return m_size; }
+    RPY_NO_DISCARD
     dimn_t capacity() const noexcept;
+    RPY_NO_DISCARD
     constexpr bool empty() const noexcept { return m_size == 0; }
+    RPY_NO_DISCARD
     constexpr bool is_null() const noexcept
     {
         return p_type_and_mode.is_null() && empty();
     }
+    RPY_NO_DISCARD
     constexpr bool is_const() const noexcept
     {
         return p_type_and_mode.get_enumeration()
                 == discriminator_type::BorrowConst;
     }
+    RPY_NO_DISCARD
     devices::Device device() const noexcept;
 
+    RPY_NO_DISCARD
     const void* pointer() const;
+    RPY_NO_DISCARD
     void* mut_pointer();
+    RPY_NO_DISCARD
     const devices::Buffer& buffer() const;
+    RPY_NO_DISCARD
     devices::Buffer& mut_buffer();
 
+    RPY_NO_DISCARD
     Scalar operator[](dimn_t i) const;
+    RPY_NO_DISCARD
     Scalar operator[](dimn_t i);
 
+    RPY_NO_DISCARD
     ScalarArray operator[](SliceIndex index);
+    RPY_NO_DISCARD
     ScalarArray operator[](SliceIndex index) const;
 
     RPY_SERIAL_SAVE_FN();
@@ -171,21 +189,23 @@ private:
 
 public:
     template <typename T>
-    Slice<T> as_mut_slice()
+    RPY_NO_DISCARD Slice<T> as_mut_slice()
     {
         check_for_ptr_access(true);
         return {static_cast<T*>(raw_mut_pointer()), m_size};
     }
 
     template <typename T>
-    Slice<const T> as_slice() const
+    RPY_NO_DISCARD Slice<const T> as_slice() const
     {
         check_for_ptr_access(false);
         return {static_cast<const T*>(raw_pointer()), m_size};
     }
 
 private:
+    RPY_NO_DISCARD
     const void* raw_pointer(dimn_t i = 0) const noexcept;
+    RPY_NO_DISCARD
     void* raw_mut_pointer(dimn_t i = 0) noexcept;
 };
 
