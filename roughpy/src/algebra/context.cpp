@@ -167,7 +167,6 @@ RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
             n_increments = options.shape[0];
         }
 
-        request.data_stream.set_elts_per_row(width);
         request.data_stream.reserve_size(n_increments);
         for (dimn_t i = 0; i < n_increments; ++i) {
             request.data_stream.push_back(scalars::ScalarArray{

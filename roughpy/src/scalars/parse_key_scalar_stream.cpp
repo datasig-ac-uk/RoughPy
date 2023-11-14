@@ -148,7 +148,6 @@ void python::parse_key_scalar_stream(
 
             const auto num_increments = static_cast<dimn_t>(options.shape[0]);
             const auto incr_size = static_cast<dimn_t>(options.shape[1]);
-            result.data_stream.set_elts_per_row(incr_size);
 
             const auto stride = incr_size * info.bytes;
 
@@ -205,7 +204,6 @@ void buffer_to_stream(
 
     if (borrow) {
         if (buf_info.ndim == 1) {
-            result.data_stream.set_elts_per_row(buf_info.shape[0]);
             result.data_stream.reserve_size(1);
             result.data_stream.push_back(scalars::ScalarArray{
                     type_info,
@@ -213,7 +211,6 @@ void buffer_to_stream(
                     static_cast<dimn_t>(buf_info.shape[0])});
         } else {
             const auto num_increments = static_cast<dimn_t>(buf_info.shape[0]);
-            result.data_stream.set_elts_per_row(buf_info.shape[1]);
             result.data_stream.reserve_size(num_increments);
 
             const auto* ptr = static_cast<const char*>(buf_info.ptr);
@@ -269,7 +266,6 @@ void buffer_to_stream(
 
         if (buf_info.ndim == 1) {
             result.data_stream.reserve_size(1);
-            result.data_stream.set_elts_per_row(buf_info.size);
             result.data_stream.push_back(
                     {options.type,
                      tmp.data(),
@@ -281,7 +277,6 @@ void buffer_to_stream(
                     buf_info.shape[0] * buf_info.shape[1] == buf_info.size
             );
             result.data_stream.reserve_size(tmp_shape[0]);
-            result.data_stream.set_elts_per_row(tmp_shape[1]);
             const auto info = options.type->type_info();
 
             const auto* sptr
@@ -339,7 +334,6 @@ void dl_to_stream(
 
     if (borrow) {
         if (tensor.ndim == 1) {
-            result.data_stream.set_elts_per_row(tensor.shape[0]);
             result.data_stream.reserve_size(1);
             result.data_stream.push_back(
                     {options.type,
@@ -348,7 +342,6 @@ void dl_to_stream(
             );
         } else {
             const auto num_increments = static_cast<dimn_t>(tensor.shape[0]);
-            result.data_stream.set_elts_per_row(tensor.shape[1]);
             result.data_stream.reserve_size(num_increments);
 
             const auto* ptr = static_cast<const char*>(tensor.data);
@@ -414,7 +407,6 @@ void dl_to_stream(
 
         if (tensor.ndim == 1) {
             result.data_stream.reserve_size(1);
-            result.data_stream.set_elts_per_row(size);
             result.data_stream.push_back(
                     {options.type, tmp.data(), static_cast<dimn_t>(size)}
             );
@@ -422,7 +414,6 @@ void dl_to_stream(
             // shape[0] increments of size shape[1]
             RPY_DBG_ASSERT(tensor.shape[0] * tensor.shape[1] == size);
             result.data_stream.reserve_size(out_shape[0]);
-            result.data_stream.set_elts_per_row(out_shape[1]);
 
             const auto* sptr
                     = static_cast<const byte*>(result.data_buffer.pointer());
