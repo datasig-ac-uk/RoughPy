@@ -1,4 +1,8 @@
-# Shuffle Tensors
+- [ ] Need list of things to show
+- [ ] Shuffle two together, same as free tensor
+
+---
+
 
 ```python
 from roughpy import ShuffleTensor

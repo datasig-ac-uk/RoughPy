@@ -1,5 +1,3 @@
-# Lies
-
 - [ ] Elements of the Free Lie Algebra
 - [ ] They have a one to one relationship with the group-like elements 
 - [ ] Hall basis

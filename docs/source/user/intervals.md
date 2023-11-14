@@ -1,5 +1,3 @@
-# Intervals
-
 - [ ] Closed on the left, open on the right, e.g. [0,1)
 - [ ] Time-like axis
 - [ ] Subset of the support, used to query a stream to get a signature or a log signature

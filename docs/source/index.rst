@@ -10,15 +10,18 @@ Welcome to RoughPy's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
-
 .. doxygennamespace:: rpy::algebra
    :project: RoughPy
+
+**Useful links**:
+`Source Repository <https://github.com/datasig-ac-uk/RoughPy>`_ |
+`Issue Tracker <https://github.com/datasig-ac-uk/RoughPy/issues>`_ |
 
 
 Indices and tables
 ==================
 
+* :doc:`user/index`
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

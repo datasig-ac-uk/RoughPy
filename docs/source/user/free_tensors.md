@@ -1,5 +1,3 @@
-# Free Tensors
-
 We can create a **free tensor** in many ways using `RoughPy`.
 
 We create a **free tensor** using **data**, a **Width** and a **Depth**. The **data** you use can take many forms, for example:

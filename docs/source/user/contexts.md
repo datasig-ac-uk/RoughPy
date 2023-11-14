@@ -1,5 +1,3 @@
-# Contexts
-
 - [ ] Providing a Width, Depth, and a coefficient field
 - [ ] Provides access to the Baker-Campbell-Hausdorff formula
 - [ ] Allows us to transfer between signatures and log signatures (t2l, l2t functions) 
