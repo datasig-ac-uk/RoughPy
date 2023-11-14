@@ -74,6 +74,13 @@ public:
         return {static_cast<const T*>(ptr()), size() / sizeof(T)};
     }
 
+    template <typename T>
+    Slice<T> as_mut_slice()
+    {
+        RPY_CHECK(mode() != BufferMode::Read);
+        return { static_cast<T*>(ptr()), size() / sizeof(T)};
+    }
+
     void to_device(Buffer& dst, const Device& device);
 
     Event to_device(Buffer& dst, const Device& device, Queue& queue);
