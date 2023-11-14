@@ -306,12 +306,25 @@ constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 {
     return lhs.device_type == rhs.device_type && lhs.device_id == rhs.device_id;
 }
+constexpr bool operator!=(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
+{
+    return lhs.device_type != rhs.device_type || lhs.device_id != rhs.device_id;
+}
 
 constexpr bool operator==(const TypeInfo& lhs, const TypeInfo& rhs) noexcept
 {
     return lhs.code == rhs.code && lhs.bytes == rhs.bytes
             && lhs.lanes == rhs.lanes;
 }
+
+constexpr bool operator!=(const TypeInfo& lhs, const TypeInfo& rhs) noexcept
+{
+    return lhs.code != rhs.code || lhs.bytes != rhs.bytes
+            || lhs.lanes != rhs.lanes;
+}
+
+
+
 
 namespace dtl {
 template <typename I>
