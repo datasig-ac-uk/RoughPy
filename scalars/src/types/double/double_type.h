@@ -7,12 +7,17 @@
 
 #include "scalar_helpers/standard_scalar_type.h"
 
+
 namespace rpy {
 namespace scalars {
 
 class DoubleType : public dtl::StandardScalarType<double>
 {
-    using base_t = dtl::ScalarContentType<double>;
+    using base_t = dtl::StandardScalarType<double>;
+
+public:
+
+    DoubleType();
 };
 
 }// namespace scalars

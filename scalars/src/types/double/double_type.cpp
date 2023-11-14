@@ -4,6 +4,13 @@
 
 #include "double_type.h"
 
-namespace rpy {
-namespace scalars {}// namespace scalars
-}// namespace rpy
+
+using namespace rpy;
+using namespace rpy::scalars;
+
+static constexpr RingCharacteristics
+        double_ring_characteristics{true, true, true, false};
+
+DoubleType::DoubleType()
+    : base_t("double", "f64", double_ring_characteristics)
+{}

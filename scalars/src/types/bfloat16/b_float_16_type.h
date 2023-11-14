@@ -13,6 +13,12 @@ namespace scalars {
 class BFloat16Type : public dtl::StandardScalarType<bfloat16>
 {
     using base_t = dtl::StandardScalarType<bfloat16>;
+
+
+public:
+
+    BFloat16Type();
+
 };
 
 }// namespace scalars

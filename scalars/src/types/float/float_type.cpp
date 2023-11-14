@@ -5,6 +5,10 @@
 #include "scalars_fwd.h"
 #include <roughpy/device/types.h>
 
-
 using namespace rpy;
 using namespace rpy::scalars;
+
+static constexpr RingCharacteristics
+        float_ring_characteristics{true, true, true, false};
+
+FloatType::FloatType() : base_t("float", "f32", float_ring_characteristics) {}

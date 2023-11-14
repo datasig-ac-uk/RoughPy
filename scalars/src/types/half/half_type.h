@@ -15,6 +15,10 @@ namespace scalars {
 class HalfType : public dtl::StandardScalarType<half>
 {
     using base_t = dtl::StandardScalarType<half>;
+
+
+public:
+    HalfType();
 };
 
 }// namespace scalars

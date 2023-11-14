@@ -48,7 +48,7 @@ protected:
     using lock_type = std::recursive_mutex;
     using guard_type = std::lock_guard<lock_type>;
 
-    lock_type m_lock;
+    mutable lock_type m_lock;
 
     string m_name;
     string m_id;

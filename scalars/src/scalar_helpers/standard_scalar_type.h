@@ -40,6 +40,7 @@
 
 #include <algorithm>
 #include <unordered_set>
+#include <boost/container_hash/hash.hpp>
 
 namespace rpy {
 namespace scalars {
@@ -48,7 +49,7 @@ namespace dtl {
 template <typename ScalarImpl>
 class StandardScalarType : public ScalarType
 {
-    std::unordered_set<void*> m_allocated;
+    mutable std::unordered_set<void*, boost::hash<void*>> m_allocated;
 
 protected:
 
@@ -77,20 +78,20 @@ ScalarArray StandardScalarType<ScalarImpl>::allocate(dimn_t count) const
 {
     auto buf = m_device->raw_alloc(count*m_info.bytes, m_info.alignment);
     {
-        auto slice = buf.template as_slice<ScalarImpl>();
+        auto slice = buf.template as_mut_slice<ScalarImpl>();
         std::uninitialized_fill(
                 slice.begin(),
                 slice.end(),
                 ScalarImpl(0));
     }
 
-    return ScalarArray(std::move(buf));
+    return ScalarArray(this, std::move(buf));
 }
 template <typename ScalarImpl>
 void* StandardScalarType<ScalarImpl>::allocate_single() const
 {
     guard_type access(m_lock);
-    auto [pos, inserted] = m_allocated.insert(new ScalarImpl());
+    auto [pos, inserted] = m_allocated.insert(static_cast<void*>(new ScalarImpl()));
     RPY_DBG_ASSERT(inserted);
     return *pos;
 }
