@@ -33,6 +33,7 @@
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_types.h>
+#include "random.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -85,6 +86,8 @@ ScalarType::ScalarType(
       m_info(type_info),
       m_characteristics(characteristics)
 {}
+
+ScalarType::~ScalarType() = default;
 
 ScalarArray ScalarType::allocate(dimn_t count) const
 {
@@ -180,4 +183,18 @@ RPY_EXPORT optional<const ScalarType*>
 scalars::dtl::ScalarTypeOfImpl<devices::bfloat16>::get() noexcept
 {
     return {};
+}
+std::unique_ptr<RandomGenerator>
+ScalarType::get_rng(const string& bit_generator, Slice<uint64_t> seed) const
+{
+    return nullptr;
+}
+void ScalarType::assign(ScalarArray& dst, Scalar value) const {}
+bool ScalarType::are_equal(const Scalar& lhs, const Scalar& rhs) const noexcept
+{
+    return false;
+}
+const ScalarType* ScalarType::with_device(const devices::Device& device) const
+{
+    return this;
 }
