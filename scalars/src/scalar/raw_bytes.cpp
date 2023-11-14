@@ -39,7 +39,7 @@ std::vector<byte> scalars::dtl::to_raw_bytes(
 namespace {
 
 template <typename T>
-void from_raw_bytes(T* dst, dimn_t count, Slice<byte> bytes);
+void from_raw_bytes_impl(T* dst, dimn_t count, Slice<byte> bytes) {}
 
 }
 
@@ -51,7 +51,7 @@ void scalars::dtl::from_raw_bytes(
         const devices::TypeInfo& info
 )
 {
-#define X(TP) return from_raw_bytes((TP*) dst, count, bytes)
+#define X(TP) return from_raw_bytes_impl((TP*) dst, count, bytes)
 DO_FOR_EACH_X(info)
 #undef X
 }

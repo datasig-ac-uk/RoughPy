@@ -32,6 +32,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include <roughpy/platform/serialization.h>
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -401,6 +402,18 @@ constexpr TypeInfo type_info() noexcept
             static_cast<uint8_t>(alignof(T)),
             1U};
 }
+
+
+
+
+RPY_SERIAL_SERIALIZE_FN_EXT(TypeInfo)
+{
+    RPY_SERIAL_SERIALIZE_NVP("code", value.code);
+    RPY_SERIAL_SERIALIZE_NVP("bytes", value.bytes);
+    RPY_SERIAL_SERIALIZE_NVP("alignment", value.alignment);
+    RPY_SERIAL_SERIALIZE_NVP("lanes", value.lanes);
+}
+
 
 }// namespace devices
 }// namespace rpy

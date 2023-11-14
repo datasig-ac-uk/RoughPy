@@ -39,6 +39,8 @@
 #include <roughpy/device/host_device.h>
 #include <roughpy/device/buffer.h>
 
+#include <cereal/types/vector.hpp>
+
 using namespace rpy;
 using namespace scalars;
 
@@ -415,6 +417,6 @@ void ScalarArray::from_raw_bytes(devices::TypeInfo info, dimn_t count, Slice<byt
     dtl::from_raw_bytes(owned_buffer.ptr(), count, bytes, info);
 }
 
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::ScalarArray
+#define RPY_SERIAL_IMPL_CLASSNAME ScalarArray
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>
