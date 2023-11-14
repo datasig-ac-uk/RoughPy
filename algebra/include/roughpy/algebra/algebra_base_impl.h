@@ -35,6 +35,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include "context.h"
 #include "interfaces/algebra_interface.h"

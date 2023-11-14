@@ -34,6 +34,7 @@
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_INTERNAL_SPARSE_MUTABLE_REF_SCALAR_TRAIT_H
 
 #include <roughpy/scalars/scalar_interface.h>
+#include <roughpy/scalars/scalar_types.h>
 #include <roughpy/scalars/scalar_traits.h>
 
 #include <libalgebra_lite/sparse_vector.h>
@@ -110,6 +111,12 @@ public:
         os << static_cast<const value_type&>(m_data);
     }
 };
+
+template <typename Vector>
+void SparseMutableRefScalarImpl<Vector>::set_value(const Scalar& value)
+{
+    m_data = scalar_cast<typename trait::value_type>(value);
+}
 
 }// namespace dtl
 
