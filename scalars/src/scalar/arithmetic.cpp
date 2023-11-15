@@ -209,10 +209,11 @@ Scalar& Scalar::operator*=(const Scalar& other)
  * to eliminate these as problems.
  */
 template <typename T, typename R>
-static inline void do_divide_impl(T* dst, const R* divisor)
+static inline
+enable_if_t<is_same<decltype(std::declval<T&>() /= std::declval<const R&>()), T&>::value>
+do_divide_impl(T* dst, const R* divisor)
 {
-    DivInplace op;
-    op(*dst, *divisor);
+    *dst /= *divisor;
 }
 
 static inline void do_divide_impl(rational_poly_scalar* dst, const rational_scalar_type* divisor)
@@ -222,6 +223,11 @@ static inline void do_divide_impl(rational_poly_scalar* dst, const rational_scal
 
 template <typename R>
 static inline void do_divide_impl(rational_poly_scalar* dst, const R* other)
+{
+    RPY_THROW(std::domain_error, "invalid division");
+}
+
+static inline void do_divide_impl(...)
 {
     RPY_THROW(std::domain_error, "invalid division");
 }
