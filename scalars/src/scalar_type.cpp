@@ -211,3 +211,5 @@ const ScalarType* ScalarType::with_device(const devices::Device& device) const
 {
     return this;
 }
+
+const ScalarType* ScalarType::rational_type() const noexcept { return this; }

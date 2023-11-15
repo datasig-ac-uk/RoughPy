@@ -133,17 +133,70 @@ Scalar::Scalar(const ScalarType* type, int64_t num, int64_t denom)
     }
 }
 
-Scalar::Scalar(const Scalar& other) {}
-Scalar::Scalar(Scalar&& other) noexcept
+void Scalar::copy_from_opaque_pointer(devices::TypeInfo info, const void* src)
 {
+    if (traits::is_fundamental(info) && info.bytes <= sizeof(void*)) {
+        std::memcpy(trivial_bytes, src, info.bytes);
+        p_type_and_content_type.update_enumeration(dtl::ScalarContentType::TrivialBytes);
+    } else {
+        allocate_data();
+        dtl::scalar_convert_copy(opaque_pointer, info, src, info);
+    }
+}
 
+
+Scalar::Scalar(const Scalar& other)
+{
+    if (!other.fast_is_zero()) {
+        p_type_and_content_type = other.p_type_and_content_type;
+        const auto info = type_info();
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes:
+            case dtl::ScalarContentType::ConstTrivialBytes:
+            std::memcpy(trivial_bytes, other.trivial_bytes, sizeof(void*));
+            break;
+        case dtl::ScalarContentType::OpaquePointer:
+        case dtl::ScalarContentType::ConstOpaquePointer:
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface:
+            copy_from_opaque_pointer(info, other.pointer());
+            break;
+        case dtl::ScalarContentType::OwnedPointer:
+            // This should only happen if the data type is too large to fit in
+            // inline storage or has a non-trivial constructor/destructor.
+            allocate_data();
+            auto successful = dtl::scalar_convert_copy(opaque_pointer, info, other.opaque_pointer, info, 1);
+            RPY_DBG_ASSERT(successful);
+            break;
+        }
+    }
+
+}
+Scalar::Scalar(Scalar&& other) noexcept
+    : p_type_and_content_type(other.p_type_and_content_type),
+      integer_for_convenience(0)
+{
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes:
+        case dtl::ScalarContentType::ConstTrivialBytes:
+            std::memcpy(trivial_bytes, other.trivial_bytes, sizeof(void*));
+            break;
+        case dtl::ScalarContentType::OpaquePointer:
+        case dtl::ScalarContentType::ConstOpaquePointer:
+        case dtl::ScalarContentType::OwnedPointer:
+            opaque_pointer = other.opaque_pointer;
+            break;
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface:
+            interface = std::move(other.interface);
+    }
 }
 
 Scalar::~Scalar()
 {
     switch (p_type_and_content_type.get_enumeration()) {
         case dtl::ScalarContentType::OwnedPointer:
-            RPY_CHECK(p_type_and_content_type.is_pointer());
+            RPY_DBG_ASSERT(p_type_and_content_type.is_pointer());
             p_type_and_content_type->free_single(opaque_pointer);
             break;
         case dtl::ScalarContentType::Interface:

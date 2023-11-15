@@ -91,6 +91,29 @@ constexpr bool is_unsigned(const devices::TypeInfo& info) noexcept
 }
 
 
+constexpr devices::TypeInfo rational_type_of(const devices::TypeInfo& info) noexcept
+{
+    switch (info.code) {
+        case devices::TypeCode::Int:
+        case devices::TypeCode::UInt:
+        case devices::TypeCode::Float:
+        case devices::TypeCode::OpaqueHandle:
+        case devices::TypeCode::BFloat:
+        case devices::TypeCode::Complex:
+        case devices::TypeCode::Bool:
+        case devices::TypeCode::Rational:
+        case devices::TypeCode::ArbitraryPrecisionInt:
+        case devices::TypeCode::ArbitraryPrecisionUInt:
+        case devices::TypeCode::ArbitraryPrecisionFloat:
+        case devices::TypeCode::ArbitraryPrecisionComplex:
+        case devices::TypeCode::ArbitraryPrecisionRational:
+            return info;
+        case devices::TypeCode::APRationalPolynomial:
+            return devices::type_info<devices::rational_poly_scalar>();
+    }
+
+    return info;
+}
 
 
 }// namespace traits

@@ -149,7 +149,15 @@ public:
         m_data = (m_data & (PointerMask | ModeMask))
                 | (static_cast<integral_type>(enum_val) & EnumMask);
     }
+
+    friend constexpr bool operator==(const PackedScalarTypePointer& lhs, const PackedScalarTypePointer& rhs) noexcept
+    {
+        return lhs.m_data == rhs.m_data;
+    }
+
 };
+
+
 
 }// namespace scalars
 }// namespace rpy

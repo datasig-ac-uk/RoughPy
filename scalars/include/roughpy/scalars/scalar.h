@@ -162,6 +162,8 @@ class RPY_EXPORT Scalar
 
     void allocate_data();
 
+    void copy_from_opaque_pointer(devices::TypeInfo info, const void* src);
+
 protected:
     type_pointer packed_type() const noexcept
     {
@@ -175,6 +177,8 @@ public:
     explicit Scalar(const ScalarType* type);
     explicit Scalar(devices::TypeInfo info);
 
+
+public:
     template <
             typename T,
             typename = enable_if_t<

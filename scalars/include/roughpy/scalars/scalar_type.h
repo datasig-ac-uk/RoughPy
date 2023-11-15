@@ -85,7 +85,6 @@ public:
         return {};
     }
 
-
     static const ScalarType* for_info(const devices::TypeInfo& info);
 
     static const ScalarType* for_id(string_view id);
@@ -116,6 +115,14 @@ public:
     {
         return m_device == devices::get_host_device();
     }
+
+    /**
+     * @brief Get the rational type associated with this scalar type.
+     *
+     * If the scalar type is a field, then this should always return this.
+     */
+    RPY_NO_DISCARD virtual const ScalarType* rational_type() const noexcept;
+
 
     /**
      * @brief Allocate new scalars in memory
