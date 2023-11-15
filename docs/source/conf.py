@@ -16,8 +16,9 @@ release = '0.0.2'
 
 extensions = [
     "sphinx.ext.intersphinx",
-    "breathe",
-    "m2r",
+    "sphinx.ext.autodoc",
+    "sphinx_design",
+    "sphinx.ext.todo"
 ]
 
 source_suffix = {
@@ -34,10 +35,11 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
-html_static_path = ['_static']
+html_theme = 'sphinx_rtd_theme'
+html_static_path = []
 
 
-intersphinx_mapping = {
-    "python": ("https://python.org/3", None)
-}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+
+# Display todos by setting to True
+todo_include_todos = True

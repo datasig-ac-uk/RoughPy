@@ -1,6 +1,6 @@
-******************
+********************
 RoughPy fundamentals
-******************
+********************
 
 These documents clarify concepts, design decisions, and technical
 constraints in RoughPy. This is a great place to understand the

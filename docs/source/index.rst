@@ -3,25 +3,97 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. _roughpy_docs_mainpage:
+
+###################################
 Welcome to RoughPy's documentation!
-===================================
+###################################
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :hidden:
 
-.. doxygennamespace:: rpy::algebra
-   :project: RoughPy
+   User Guide <user/index>
+   API reference <reference/index>
+   Development <dev/index>
+   release
 
 **Useful links**:
 `Source Repository <https://github.com/datasig-ac-uk/RoughPy>`_ |
 `Issue Tracker <https://github.com/datasig-ac-uk/RoughPy/issues>`_ |
 
+RoughPy is the new package for working with streamed data and all the algebra associated with it.
+It has C++ and Python interfaces for easy interaction.
 
-Indices and tables
-==================
+.. grid:: 2
 
-* :doc:`user/index`
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    .. grid-item-card::
+
+         Getting started
+         ^^^^^^^^^^^^^^^
+
+         New to RoughPy? Check out the Absolute Beginner's Guide. It contains an
+         introduction to RoughPy's main concepts and links to additional tutorials.
+
+         +++
+
+         .. button-ref:: user/absolute_beginners
+             :expand:
+             :color: secondary
+             :click-parent:
+
+             To the absolute beginner's guide
+
+    .. grid-item-card::
+
+        User guide
+        ^^^^^^^^^^
+
+        The user guide provides in-depth information on the
+        key concepts of RoughPy with useful background information and explanation.
+
+        +++
+
+        .. button-ref:: user
+            :expand:
+            :color: secondary
+            :click-parent:
+
+            To the user guide
+
+    .. grid-item-card::
+
+        API reference
+        ^^^^^^^^^^^^^
+
+        The reference guide contains a detailed description of the functions,
+        modules, and objects included in RoughPy. The reference describes how the
+        methods work and which parameters can be used. It assumes that you have an
+        understanding of the key concepts.
+
+        +++
+
+        .. button-ref:: reference
+            :expand:
+            :color: secondary
+            :click-parent:
+
+            To the reference guide
+
+    .. grid-item-card::
+
+        Contributor's guide
+        ^^^^^^^^^^^^^^^^^^^
+
+        Want to add to the codebase? Can help add translation or a flowchart to the
+        documentation? The contributing guidelines will guide you through the
+        process of improving RoughPy.
+
+        +++
+
+        .. button-ref:: devindex
+            :expand:
+            :color: secondary
+            :click-parent:
+
+            To the contributor's guide
