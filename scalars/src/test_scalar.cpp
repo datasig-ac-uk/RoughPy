@@ -171,7 +171,7 @@ TEST(scalar, DivisionByDefaultThrows)
     Scalar lhs( 3.142f);
     Scalar rhs;
 
-    ASSERT_THROW(lhs / rhs, std::runtime_error);
+    ASSERT_THROW(lhs / rhs, std::domain_error);
 }
 
 TEST(scalar, DivisionByZeroSameTypeThrows)
@@ -179,7 +179,7 @@ TEST(scalar, DivisionByZeroSameTypeThrows)
     Scalar lhs( 3.142f);
     Scalar rhs( 0.0f);
 
-    ASSERT_THROW(lhs / rhs, std::runtime_error);
+    ASSERT_THROW(lhs / rhs, std::domain_error);
 }
 
 TEST(scalar, InplaceAdditionSameType)
