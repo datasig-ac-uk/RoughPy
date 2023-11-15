@@ -124,6 +124,9 @@ else ()
         message(STATUS "Adding python virtual environment to path")
         list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}")
     endif ()
+    if (DEFINED ROUGHPY_PYTHON_VENV_DIR)
+        list(PREPEND CMAKE_PREFIX_PATH "${ROUGHPY_PYTHON_VENV_DIR}")
+    endif()
 endif ()
 
 
@@ -231,7 +234,8 @@ if (NOT ROUGHPY_DISABLE_BLAS)
         find_package(MKL CONFIG)
         if (TARGET MKL::MKL)
             set(RPY_USE_MKL ON CACHE INTERNAL "BLAS/LAPACK provided by mkl")
-            add_library(BLAS::BLAS ALIAS MKL::MKL)
+            add_library(BLAS::BLAS ALIAS MKL::MKL
+                    scalars/src/scalar_type_of.cpp)
             add_library(LAPACK::LAPACK ALIAS MKL::MKL)
 
             if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)

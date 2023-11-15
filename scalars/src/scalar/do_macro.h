@@ -44,10 +44,10 @@
             break;                                                             \
         case devices::TypeCode::UInt:                                          \
             switch (INFO.bytes) {                                              \
-                case 1: X(int8_t);                                             \
-                case 2: X(int16_t);                                            \
-                case 4: X(int32_t);                                            \
-                case 8: X(int64_t);                                            \
+                case 1: X(uint8_t);                                             \
+                case 2: X(uint16_t);                                            \
+                case 4: X(uint32_t);                                            \
+                case 8: X(uint64_t);                                            \
             }                                                                  \
             break;                                                             \
         case devices::TypeCode::Float:                                         \

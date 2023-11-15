@@ -19,6 +19,8 @@ class HalfType : public dtl::StandardScalarType<half>
 
 public:
     HalfType();
+
+    static const ScalarType* get() noexcept;
 };
 
 }// namespace scalars

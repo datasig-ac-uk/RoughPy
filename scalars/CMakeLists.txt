@@ -61,6 +61,7 @@ add_roughpy_component(Scalars
         src/scalar_serialization.cpp
         src/scalar_stream.cpp
         src/scalar_type.cpp
+        src/scalar_type_of.cpp
     DEPENDENCIES
         PUBLIC
             Boost::boost

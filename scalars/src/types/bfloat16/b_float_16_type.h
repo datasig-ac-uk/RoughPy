@@ -19,6 +19,8 @@ public:
 
     BFloat16Type();
 
+
+    static const ScalarType* get() noexcept;
 };
 
 }// namespace scalars

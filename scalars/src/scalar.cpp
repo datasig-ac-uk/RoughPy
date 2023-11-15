@@ -39,12 +39,23 @@
 
 #include <stdexcept>
 
+#include "scalar/raw_bytes.h"
+
 using namespace rpy;
 using namespace rpy::scalars;
 
 void Scalar::allocate_data() {
+    if (!p_type_and_content_type.is_pointer()) {
+        auto tp_o = scalar_type_of(p_type_and_content_type.get_type_info());
+        if (!tp_o) {
+            RPY_THROW(std::runtime_error, "unable to allocate scalar");
+        }
+
+    }
+
     RPY_DBG_ASSERT(p_type_and_content_type.is_pointer());
     opaque_pointer = p_type_and_content_type->allocate_single();
+    p_type_and_content_type.update_enumeration(dtl::ScalarContentType::OwnedPointer);
 }
 
 Scalar::Scalar(Scalar::type_pointer type) : integer_for_convenience(0)
@@ -123,7 +134,10 @@ Scalar::Scalar(const ScalarType* type, int64_t num, int64_t denom)
 }
 
 Scalar::Scalar(const Scalar& other) {}
-Scalar::Scalar(Scalar&& other) noexcept {}
+Scalar::Scalar(Scalar&& other) noexcept
+{
+
+}
 
 Scalar::~Scalar()
 {
@@ -383,4 +397,32 @@ std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& value)
     }
 
     return os;
+}
+
+std::vector<byte> Scalar::to_raw_bytes() const
+{
+    return dtl::to_raw_bytes(pointer(), 1, type_info());
+}
+void Scalar::from_raw_bytes(devices::TypeInfo info, Slice<byte> bytes)
+{
+    // Make sure it is clear
+    this->~Scalar();
+    auto tp_o = scalar_type_of(info);
+    if (tp_o) {
+        p_type_and_content_type = type_pointer(*tp_o, dtl::ScalarContentType::TrivialBytes);
+    } else {
+        p_type_and_content_type = type_pointer(info, dtl::ScalarContentType::TrivialBytes);
+    }
+
+    void* ptr = nullptr;
+    if (traits::is_arithmetic(info) && info.bytes <= sizeof(void*)) {
+        ptr = trivial_bytes;
+    } else if (tp_o) {
+        allocate_data();
+        ptr = opaque_pointer;
+    } else {
+        RPY_THROW(std::runtime_error, "unable to allocate scalar");
+    }
+
+    dtl::from_raw_bytes(ptr, 1, bytes, info);
 }

@@ -43,3 +43,16 @@ void APRationalType::assign(ScalarArray& dst, Scalar value) const
 {
     ScalarType::assign(dst, value);
 }
+
+const ScalarType* APRationalType::get() noexcept
+{
+    static const APRationalType type;
+    return &type;
+}
+
+template <>
+RPY_EXPORT optional<const ScalarType*>
+scalars::dtl::ScalarTypeOfImpl<rational_scalar_type>::get() noexcept
+{
+    return APRationalType::get();
+}

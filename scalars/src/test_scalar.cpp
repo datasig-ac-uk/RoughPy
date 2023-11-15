@@ -46,14 +46,14 @@ TEST(scalar, CreateFromDoubleTypeInference)
 {
     Scalar scalar(3.142);
 
-    ASSERT_EQ(scalar.type(), *ScalarType::of<double>());
+    ASSERT_EQ(scalar.type(), ScalarType::of<double>());
 }
 
 TEST(scalar, CreateWithTypeCoercion)
 {
-    Scalar scalar(3.142);
+    Scalar scalar(*ScalarType::of<float>(), 3.142);
 
-    ASSERT_EQ(scalar.type(), *ScalarType::of<float>());
+    ASSERT_EQ(scalar.type(), ScalarType::of<float>());
     ASSERT_FLOAT_EQ(scalar_cast<float>(scalar), 3.142f);
 }
 
@@ -72,7 +72,7 @@ TEST(scalar, DefaultCreateAssignDouble)
 
     scalar = 3.142;
 
-    ASSERT_EQ(scalar.type(), *ScalarType::of<double>());
+    ASSERT_EQ(scalar.type(), ScalarType::of<double>());
     ASSERT_EQ(scalar_cast<double>(scalar), 3.142);
 }
 
@@ -84,7 +84,7 @@ TEST(scalar, DefaultCreateAssignFloat)
 
     scalar = 3.142f;
 
-    ASSERT_EQ(scalar.type(), *ScalarType::of<float>());
+    ASSERT_EQ(scalar.type(), ScalarType::of<float>());
     ASSERT_EQ(scalar_cast<float>(scalar), 3.142f);
 }
 
@@ -94,7 +94,7 @@ TEST(scalar, AssignDoubleToFloat)
 
     scalar = 2.718;
 
-    ASSERT_EQ(scalar.type(), *ScalarType::of<float>());
+    ASSERT_EQ(scalar.type(), ScalarType::of<float>());
     ASSERT_FLOAT_EQ(scalar_cast<float>(scalar), 2.718f);
 }
 
@@ -217,7 +217,7 @@ TEST(scalar, InplaceDivisionByDefaultThrows)
     Scalar lhs( 3.142);
     Scalar rhs;
 
-    ASSERT_THROW(lhs /= rhs, std::runtime_error);
+    ASSERT_THROW(lhs /= rhs, std::domain_error);
 }
 
 TEST(scalar, InplaceDivisionSameTypeZeroThrows)
@@ -225,7 +225,7 @@ TEST(scalar, InplaceDivisionSameTypeZeroThrows)
     Scalar lhs( 3.142f);
     Scalar rhs( 0.0f);
 
-    ASSERT_THROW(lhs /= rhs, std::runtime_error);
+    ASSERT_THROW(lhs /= rhs, std::domain_error);
 }
 
 TEST(scalar, InplaceDivisionSameType)

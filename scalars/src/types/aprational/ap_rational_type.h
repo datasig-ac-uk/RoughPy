@@ -22,6 +22,9 @@ public:
     void free_single(void* ptr) const override;
     void convert_copy(ScalarArray& dst, const ScalarArray& src) const override;
     void assign(ScalarArray& dst, Scalar value) const override;
+
+
+    static const ScalarType* get() noexcept;
 };
 
 }// namespace scalars

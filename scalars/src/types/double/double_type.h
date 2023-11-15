@@ -18,6 +18,9 @@ class DoubleType : public dtl::StandardScalarType<double>
 public:
 
     DoubleType();
+
+    static const ScalarType* get() noexcept;
+
 };
 
 }// namespace scalars

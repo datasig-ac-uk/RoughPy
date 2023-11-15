@@ -18,6 +18,9 @@ class FloatType : dtl::StandardScalarType<float>
 public:
 
     FloatType();
+
+
+    static const ScalarType* get() noexcept;
 };
 
 }// namespace scalars

@@ -35,6 +35,9 @@
 #include <roughpy/scalars/scalar_types.h>
 #include "random.h"
 
+
+#include <charconv>
+
 using namespace rpy;
 using namespace rpy::scalars;
 
@@ -42,14 +45,10 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
 {
     switch (info.code) {
         case devices::TypeCode::Int:
-        case devices::TypeCode::UInt:
-            if (info.bytes > 3) {
+        case devices::TypeCode::UInt: if (info.bytes > 3) {
                 return *scalar_type_of<float>();
-            } else {
-                return *scalar_type_of<double>();
-            }
-        case devices::TypeCode::Float:
-            switch (info.bytes) {
+            } else { return *scalar_type_of<double>(); }
+        case devices::TypeCode::Float: switch (info.bytes) {
                 case 4: return *scalar_type_of<float>();
                 case 8: return *scalar_type_of<double>();
             }
@@ -62,30 +61,29 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
         case devices::TypeCode::ArbitraryPrecisionUInt:
         case devices::TypeCode::ArbitraryPrecisionFloat:
         case devices::TypeCode::ArbitraryPrecisionComplex:
-        case devices::TypeCode::ArbitraryPrecisionRational:
-            return *scalar_type_of<rational_scalar_type>();
-        case devices::TypeCode::APRationalPolynomial:
-            return *scalar_type_of<rational_poly_scalar>();
+        case devices::TypeCode::ArbitraryPrecisionRational: return *
+                    scalar_type_of<rational_scalar_type>();
+        case devices::TypeCode::APRationalPolynomial: return *scalar_type_of<
+                rational_poly_scalar>();
     }
 
     RPY_THROW(std::runtime_error, "unsupported data type");
 }
 
 ScalarType::ScalarType(
-        std::string name,
-        std::string id,
-        rpy::dimn_t alignment,
-        devices::Device device,
-        devices::TypeInfo type_info,
-        rpy::scalars::RingCharacteristics characteristics
+    std::string name,
+    std::string id,
+    rpy::dimn_t alignment,
+    devices::Device device,
+    devices::TypeInfo type_info,
+    rpy::scalars::RingCharacteristics characteristics
 )
     : m_name(std::move(name)),
       m_id(std::move(id)),
       m_alignment(alignment),
       m_device(std::move(device)),
       m_info(type_info),
-      m_characteristics(characteristics)
-{}
+      m_characteristics(characteristics) {}
 
 ScalarType::~ScalarType() = default;
 
@@ -97,9 +95,9 @@ ScalarArray ScalarType::allocate(dimn_t count) const
 void* ScalarType::allocate_single() const
 {
     RPY_THROW(
-            std::runtime_error,
-            "single scalar allocation is not available "
-            "for " + m_name
+        std::runtime_error,
+        "single scalar allocation is not available "
+        "for " + m_name
     );
     return nullptr;
 }
@@ -107,14 +105,14 @@ void* ScalarType::allocate_single() const
 void ScalarType::free_single(void* ptr) const
 {
     RPY_THROW(
-            std::runtime_error,
-            "single scalar allocation is not available for " + m_name
+        std::runtime_error,
+        "single scalar allocation is not available for " + m_name
     );
 }
 
 void ScalarType::convert_copy(
-        rpy::scalars::ScalarArray& dst,
-        const rpy::scalars::ScalarArray& src
+    rpy::scalars::ScalarArray& dst,
+    const rpy::scalars::ScalarArray& src
 ) const
 {
     if (dst.size() < src.size()) {
@@ -128,14 +126,12 @@ void ScalarType::convert_copy(
     }
 
     if (!dtl::scalar_convert_copy(
-                dst.mut_pointer(),
-                dst.type_info(),
-                src.pointer(),
-                src.type_info(),
-                1
-        )) {
-        RPY_THROW(std::runtime_error, "convert copy failed");
-    }
+        dst.mut_pointer(),
+        dst.type_info(),
+        src.pointer(),
+        src.type_info(),
+        1
+    )) { RPY_THROW(std::runtime_error, "convert copy failed"); }
 }
 
 const ScalarType* ScalarType::for_id(string_view id)
@@ -143,57 +139,74 @@ const ScalarType* ScalarType::for_id(string_view id)
     return *ScalarType::of<double>();
 }
 
-template <>
-RPY_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<float>::get() noexcept
+namespace {
+inline optional<devices::TypeInfo> parse_byted_type(
+    string_view id_sub,
+    devices::TypeCode code) noexcept
 {
+    uint8_t bytes = 0;
+
+    auto result = std::from_chars(&*id_sub.begin(), &*id_sub.end(), bytes);
+    if (result.ec != std::errc{}) {
+        return{};
+    }
+
+    return devices::TypeInfo{ code, bytes, bytes, 1};
+}
+
+
+inline optional<devices::TypeInfo> parse_id_to_type_info(string_view id)
+    noexcept
+{
+    using devices::TypeCode;
+    RPY_DBG_ASSERT(!id.empty());
+
+    switch (id.front()) {
+        case 'i': return parse_byted_type(id.substr(1), TypeCode::Int);
+        case 'u': return parse_byted_type(id.substr(1), TypeCode::UInt);
+        case 'f': return parse_byted_type(id.substr(1), TypeCode::Float);
+        case 'c': return parse_byted_type(id.substr(1), TypeCode::Complex);
+        case 'b': if (id.size() > 1 && id[2] == 'f') {
+                return parse_byted_type(id.substr(2), TypeCode::BFloat);
+            }
+        default: break;
+    }
+
+    return {};
+}
+}
+
+optional<const ScalarType*> rpy::scalars::get_type(string_view id)
+{
+    if (id.empty()) {
+        return {};
+    }
+
+    auto info = parse_id_to_type_info(id);
+    if (info) {
+        return scalar_type_of(*info);
+    }
+
+    const auto rat_type = scalar_type_of<rational_scalar_type>();
+    RPY_DBG_ASSERT(rat_type);
+    if (id == (*rat_type)->id()) { return rat_type; }
+
+    const auto aprpol_type = scalar_type_of<rational_poly_scalar>();
+    RPY_DBG_ASSERT(aprpol_type);
+    if (id == (*aprpol_type)->id()) { return aprpol_type; }
+
     return {};
 }
 
-template <>
-RPY_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<double>::get() noexcept
-{
-    return {};
-}
 
-template <>
-RPY_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<devices::rational_scalar_type>::get() noexcept
-{
-    return {};
-}
-
-template <>
-RPY_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<devices::rational_poly_scalar>::get() noexcept
-{
-    return {};
-}
-
-template <>
-RPY_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<devices::half>::get() noexcept
-{
-    return {};
-}
-
-template <>
-RPY_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<devices::bfloat16>::get() noexcept
-{
-    return {};
-}
 std::unique_ptr<RandomGenerator>
 ScalarType::get_rng(const string& bit_generator, Slice<uint64_t> seed) const
 {
     return nullptr;
 }
+
 void ScalarType::assign(ScalarArray& dst, Scalar value) const {}
-bool ScalarType::are_equal(const Scalar& lhs, const Scalar& rhs) const noexcept
-{
-    return false;
-}
+
 const ScalarType* ScalarType::with_device(const devices::Device& device) const
 {
     return this;

@@ -14,3 +14,16 @@ static constexpr RingCharacteristics
 DoubleType::DoubleType()
     : base_t("double", "f64", double_ring_characteristics)
 {}
+
+const ScalarType* DoubleType::get() noexcept
+{
+    static const DoubleType type;
+    return &type;
+}
+
+template <>
+RPY_EXPORT optional<const ScalarType*>
+scalars::dtl::ScalarTypeOfImpl<double>::get() noexcept
+{
+    return DoubleType::get();
+}

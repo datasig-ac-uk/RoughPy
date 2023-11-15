@@ -136,7 +136,9 @@ RPY_SERIAL_LOAD_FN_IMPL(StreamChannel) {
     string id;
     RPY_SERIAL_SERIALIZE_NVP("dtype_id", id);
     if (!id.empty()) {
-        p_scalar_type = scalars::get_type(id);
+        auto tp_o = scalars::get_type(id);
+        RPY_CHECK(tp_o);
+        p_scalar_type = *tp_o;
     }
 }
 

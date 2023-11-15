@@ -30,15 +30,15 @@
 //
 
 #include <roughpy/scalars/scalar.h>
-#include <roughpy/platform/archives.h>
+
+#include <cereal/types/vector.hpp>
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-RPY_SERIAL_LOAD_FN_IMPL(rpy::scalars::Scalar) {
 
-}
 
-RPY_SERIAL_SAVE_FN_IMPL(rpy::scalars::Scalar) {
 
-}
+#define RPY_SERIAL_IMPL_CLASSNAME Scalar
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>

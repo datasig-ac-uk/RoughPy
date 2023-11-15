@@ -49,6 +49,25 @@ write_result(D* dst, const T* src, dimn_t count) noexcept
     return true;
 }
 
+
+template <typename D, typename T>
+static inline void assign_result(D& result, const T& arg)
+{
+    result = static_cast<D>(arg);
+}
+
+template <typename D>
+static inline void assign_result(D& result, const half& arg)
+{
+    result = static_cast<D>(static_cast<float>(arg));
+}
+
+template <typename D>
+static inline void assign_result(D& result, const bfloat16& arg)
+{
+    result = static_cast<D>(static_cast<float>(arg));
+}
+
 template <typename D, typename T>
 static inline enable_if_t<
         is_constructible<D, const T&>::value
@@ -57,7 +76,7 @@ static inline enable_if_t<
 write_result(D* dst, const T* src, dimn_t count) noexcept
 {
     try {
-        for (dimn_t i = 0; i < count; ++i) { dst[i] = D(src[i]); }
+        for (dimn_t i = 0; i < count; ++i) { assign_result(dst[i], src[i]); }
     } catch (...) {
         return false;
     }
@@ -114,7 +133,7 @@ static inline bool convert_impl(
         dimn_t count
 ) noexcept
 {
-#define X(TP) return write_result((T*) dst, src, count)
+#define X(TP) return write_result((TP*) dst, src, count)
     DO_FOR_EACH_X(info)
 #undef X
     return false;

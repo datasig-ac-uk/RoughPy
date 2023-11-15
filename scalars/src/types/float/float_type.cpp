@@ -3,6 +3,7 @@
 
 #include "float_type.h"
 #include "scalars_fwd.h"
+
 #include <roughpy/device/types.h>
 
 using namespace rpy;
@@ -12,3 +13,16 @@ static constexpr RingCharacteristics
         float_ring_characteristics{true, true, true, false};
 
 FloatType::FloatType() : base_t("float", "f32", float_ring_characteristics) {}
+
+const ScalarType* FloatType::get() noexcept
+{
+    static const FloatType type;
+    return &type;
+}
+
+template <>
+RPY_EXPORT optional<const ScalarType*>
+scalars::dtl::ScalarTypeOfImpl<float>::get() noexcept
+{
+    return FloatType::get();
+}

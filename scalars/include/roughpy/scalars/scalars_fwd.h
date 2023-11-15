@@ -92,11 +92,11 @@ scalar_type_of(devices::TypeInfo info, const devices::Device& device);
 template <typename T>
 RPY_NO_DISCARD T scalar_cast(const Scalar& value);
 
-RPY_NO_DISCARD const ScalarType* get_type(string_view id);
+RPY_NO_DISCARD optional<const ScalarType*> get_type(string_view id);
 
 inline constexpr int min_scalar_type_alignment = 16;
 
-
+#define RPY_SCALAR_TYPE_ALIGNMENT alignas(min_scalar_type_alignment)
 
 
 

@@ -20,3 +20,17 @@ static constexpr RingCharacteristics bf16_ring_characteristics {
 BFloat16Type::BFloat16Type()
     : base_t("bfloat16", "bf16", bf16_ring_characteristics)
 {}
+
+const ScalarType* BFloat16Type::get() noexcept
+{
+    static const BFloat16Type type;
+    return &type;
+}
+
+
+template <>
+RPY_EXPORT optional<const ScalarType*>
+scalars::dtl::ScalarTypeOfImpl<devices::bfloat16>::get() noexcept
+{
+    return BFloat16Type::get();
+}

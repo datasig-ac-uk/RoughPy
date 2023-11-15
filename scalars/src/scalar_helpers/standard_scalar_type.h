@@ -70,8 +70,7 @@ public:
     void free_single(void* ptr) const override;
     void convert_copy(ScalarArray& dst, const ScalarArray& src) const override;
     void assign(ScalarArray& dst, Scalar value) const override;
-    bool
-    are_equal(const Scalar& lhs, const Scalar& rhs) const noexcept override;
+
 };
 template <typename ScalarImpl>
 ScalarArray StandardScalarType<ScalarImpl>::allocate(dimn_t count) const
@@ -105,6 +104,7 @@ void StandardScalarType<ScalarImpl>::free_single(void* ptr) const
                                       "with as a different type");
     }
     delete static_cast<ScalarImpl*>(*found);
+    m_allocated.erase(found);
 }
 
 template <typename ScalarImpl>
@@ -207,14 +207,7 @@ void StandardScalarType<ScalarImpl>::assign(ScalarArray& dst, Scalar value)
 
 
 }
-template <typename ScalarImpl>
-bool StandardScalarType<ScalarImpl>::are_equal(
-        const Scalar& lhs,
-        const Scalar& rhs
-) const noexcept
-{
-    return false;
-}
+
 
 }// namespace dtl
 }// namespace scalars

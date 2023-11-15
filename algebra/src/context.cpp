@@ -54,8 +54,11 @@ context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)
 {
     RPY_CHECK(spec.stype_id != "");
 
+    auto tp_o = scalars::get_type(spec.stype_id);
+
+    RPY_CHECK(tp_o);
     return get_context(
-            spec.width, spec.depth, scalars::get_type(spec.stype_id),
+            spec.width, spec.depth, *tp_o,
             {
                     {"backend", spec.backend}
     }

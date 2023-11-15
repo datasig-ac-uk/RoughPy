@@ -32,7 +32,7 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/platform/archives.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 #include <roughpy/streams/brownian_stream.h>
 #include <sstream>
 
@@ -62,7 +62,7 @@ public:
     BrownianHolder bm;
 
     BrownianStreamTests()
-        : seed(12345), ctype(scalars::ScalarType::of<double>()),
+        : seed(12345), ctype(*scalars::ScalarType::of<double>()),
           ctx(algebra::get_context(width, depth, ctype, {})),
           bm(ctype->get_rng("pcg", seed),
              {width, {0.0, 1.0}, ctx, ctype, vtype, 1})

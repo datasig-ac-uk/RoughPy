@@ -42,7 +42,7 @@ struct RingCharacteristics {
     bool is_complex : 1;
 };
 
-class alignas(32) ScalarType
+class RPY_SCALAR_TYPE_ALIGNMENT ScalarType
 {
 protected:
     using lock_type = std::recursive_mutex;
@@ -168,8 +168,7 @@ public:
 
     // Scalar methods
 
-    virtual bool are_equal(const Scalar& lhs, const Scalar& rhs) const noexcept
-            = 0;
+
 
     /**
      * @brief Get a new scalar type whose underlying device is given.

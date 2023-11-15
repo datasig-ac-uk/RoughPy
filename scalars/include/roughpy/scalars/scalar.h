@@ -36,6 +36,7 @@
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
+#include <roughpy/core/slice.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
@@ -292,40 +293,43 @@ public:
     enable_if_t<!is_base_of<Scalar, T>::value, Scalar&> operator=(const T& value
     )
     {
-        switch (p_type_and_content_type.get_enumeration()) {
-            case dtl::ScalarContentType::TrivialBytes:
-            case dtl::ScalarContentType::ConstTrivialBytes:
-                // We're actually not paying attention to "const" in trivial
-                // bytes, since the value is owned by the Scalar.
-                if (!dtl::scalar_convert_copy(
-                            trivial_bytes,
-                            type_info(),
-                            Scalar(value)
+        if (fast_is_zero()) {
+            *this = Scalar(value);
+        } else {
+            switch (p_type_and_content_type.get_enumeration()) {
+                case dtl::ScalarContentType::TrivialBytes:
+                case dtl::ScalarContentType::ConstTrivialBytes:
+                    // We're actually not paying attention to "const" in trivial
+                    // bytes, since the value is owned by the Scalar.
+                    if (!dtl::scalar_convert_copy(
+                        trivial_bytes,
+                        type_info(),
+                        Scalar(value)
                     )) {
-                    RPY_THROW(std::runtime_error, "assignment failed");
-                }
+                        RPY_THROW(std::runtime_error, "assignment failed");
+                    }
                 break;
-            case dtl::ScalarContentType::OpaquePointer:
-            case dtl::ScalarContentType ::OwnedPointer:
-                if (!dtl::scalar_convert_copy(
-                            opaque_pointer,
-                            p_type_and_content_type.get_type_info(),
-                            Scalar(value)
+                case dtl::ScalarContentType::OpaquePointer:
+                case dtl::ScalarContentType ::OwnedPointer:
+                    if (!dtl::scalar_convert_copy(
+                        opaque_pointer,
+                        p_type_and_content_type.get_type_info(),
+                        Scalar(value)
                     )) {
-                    RPY_THROW(std::runtime_error, "assignment failed");
-                }
+                        RPY_THROW(std::runtime_error, "assignment failed");
+                    }
                 break;
-            case dtl::ScalarContentType::ConstOpaquePointer:
-                RPY_THROW(
+                case dtl::ScalarContentType::ConstOpaquePointer:
+                    RPY_THROW(
                         std::runtime_error,
                         "attempting to write to a const value"
-                );
-            case dtl::ScalarContentType::Interface:
-            case dtl::ScalarContentType::OwnedInterface:
-                interface->set_value(Scalar(value));
+                    );
+                case dtl::ScalarContentType::Interface:
+                case dtl::ScalarContentType::OwnedInterface:
+                    interface->set_value(Scalar(value));
                 break;
+            }
         }
-
         return *this;
     }
 
@@ -424,9 +428,28 @@ public:
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
+
+private:
+    std::vector<byte> to_raw_bytes() const;
+    void from_raw_bytes(devices::TypeInfo info, Slice<byte> bytes);
 };
 
 std::ostream& operator<<(std::ostream&, const Scalar&);
+
+RPY_SERIAL_LOAD_FN_IMPL(Scalar) {
+    devices::TypeInfo type_info;
+    RPY_SERIAL_SERIALIZE_VAL(type_info);
+    std::vector<byte> raw_bytes;
+    RPY_SERIAL_SERIALIZE_VAL(raw_bytes);
+    from_raw_bytes(type_info, raw_bytes);
+}
+
+RPY_SERIAL_SAVE_FN_IMPL(Scalar) {
+    RPY_SERIAL_SERIALIZE_NVP("type_info", type_info());
+    RPY_SERIAL_SERIALIZE_NVP("raw_bytes", to_raw_bytes());
+}
+
+
 
 RPY_SERIAL_EXTERN_SAVE_CLS(Scalar)
 RPY_SERIAL_EXTERN_LOAD_CLS(Scalar)
