@@ -90,6 +90,11 @@ public:
 
     constexpr Slice(T* ptr, std::size_t N) : p_data(ptr), m_size(N) {}
 
+    constexpr operator Slice<add_const_t<T>> () const noexcept
+    {
+        return { p_data, m_size };
+    }
+
     template <typename Container>
     enable_if_t<
             is_const<T>::value
