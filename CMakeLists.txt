@@ -234,8 +234,7 @@ if (NOT ROUGHPY_DISABLE_BLAS)
         find_package(MKL CONFIG)
         if (TARGET MKL::MKL)
             set(RPY_USE_MKL ON CACHE INTERNAL "BLAS/LAPACK provided by mkl")
-            add_library(BLAS::BLAS ALIAS MKL::MKL
-                    scalars/src/scalar_type_of.cpp)
+            add_library(BLAS::BLAS ALIAS MKL::MKL)
             add_library(LAPACK::LAPACK ALIAS MKL::MKL)
 
             if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
