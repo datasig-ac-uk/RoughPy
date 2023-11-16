@@ -32,6 +32,7 @@
 #include "packed_scalar_type_ptr.h"
 #include "scalar_interface.h"
 #include "scalars_fwd.h"
+#include "scalar_type.h"
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/helpers.h>
@@ -178,7 +179,6 @@ public:
     explicit Scalar(devices::TypeInfo info);
 
 
-public:
     template <
             typename T,
             typename = enable_if_t<

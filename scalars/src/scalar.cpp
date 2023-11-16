@@ -32,14 +32,15 @@
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/traits.h>
 
+#include <roughpy/device/types.h>
 #include "scalar/arithmetic.h"
 #include "scalar/casts.h"
 #include "scalar/comparison.h"
-#include <roughpy/device/types.h>
+#include "scalar/print.h"
+#include "scalar/raw_bytes.h"
 
 #include <stdexcept>
 
-#include "scalar/raw_bytes.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -394,7 +395,7 @@ optional<const ScalarType*> Scalar::type() const noexcept
     }
 
     auto info = p_type_and_content_type.get_type_info();
-    return  scalar_type_of(info);
+    return scalar_type_of(info);
 }
 devices::TypeInfo Scalar::type_info() const noexcept
 {
@@ -425,29 +426,8 @@ std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& value)
         return os;
     }
 
-    switch (value.p_type_and_content_type.get_enumeration()) {
-        case dtl::ScalarContentType::TrivialBytes:
-        case dtl::ScalarContentType::ConstTrivialBytes:
-            print_trivial_bytes(
-                    os,
-                    value.trivial_bytes,
-                    value.p_type_and_content_type
-            );
-            break;
-        case dtl::ScalarContentType::OpaquePointer:
-        case dtl::ScalarContentType::ConstOpaquePointer:
-        case dtl::ScalarContentType::OwnedPointer:
-            print_opaque_pointer(
-                    os,
-                    value.opaque_pointer,
-                    value.p_type_and_content_type
-            );
-            break;
-        case dtl::ScalarContentType::Interface:
-        case dtl::ScalarContentType::OwnedInterface:
-            value.interface->print(os);
-            break;
-    }
+    dtl::print_scalar_val(os, value.pointer(), value.type_info());
+
 
     return os;
 }

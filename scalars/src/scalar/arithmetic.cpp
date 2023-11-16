@@ -141,8 +141,8 @@ inline void scalar_inplace_arithmetic(
     Op&& op
 )
 {
-    auto src_info = src_type.get_type_info();
-    auto dst_info = dst_type.get_type_info();
+    auto src_info = type_info_from(src_type);
+    auto dst_info = type_info_from(dst_type);
 
     if (src_info == dst_info) {
         do_op(dst, src, dst_info, std::forward<Op>(op));

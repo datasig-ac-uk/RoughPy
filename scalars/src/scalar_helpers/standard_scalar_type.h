@@ -35,6 +35,8 @@
 #include "scalar_type.h"
 #include "scalar_array.h"
 #include "scalar.h"
+#include <roughpy/device/device_handle.h>
+#include <roughpy/device/host_device.h>
 
 #include "scalar/casts.h"
 
@@ -151,7 +153,7 @@ void StandardScalarType<ScalarImpl>::convert_copy(
     if (dst.is_null()) {
         // If the dst array is empty, allocate enough space for the new data.
         dst = allocate(src_size);
-    } else if (dst_cap < src_size) {
+    } else if (dst_cap < src_size*dst_info.bytes) {
         if (dst.is_owning()) {
             if (dst_type) {
                // If dst_type is defined, then it is this so a simple

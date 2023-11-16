@@ -272,7 +272,7 @@ template <typename L>
 inline bool
 compare_set_left(const L& lhs, const void* rhs, TypeInfo rhs_info) noexcept
 {
-#define X(T) compare_outer(lhs, *((const T*) rhs))
+#define X(T) return compare_outer(lhs, *((const T*) rhs))
     DO_FOR_EACH_X(rhs_info)
 #undef X
     return false;

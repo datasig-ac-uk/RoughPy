@@ -31,6 +31,7 @@
 
 #include "packed_scalar_type_ptr.h"
 #include "scalars_fwd.h"
+#include "scalar_type.h"
 
 #include <roughpy/device/buffer.h>
 #include <roughpy/platform/serialization.h>
@@ -215,7 +216,7 @@ private:
 template <typename T>
 ScalarArray::ScalarArray(Slice<T> data)
     : p_type_and_mode(
-              *scalar_type_of<T>(),
+              devices::type_info<T>(),
               dtl::ScalarArrayStorageModel::BorrowMut
       ),
       mut_borrowed(data.data()),
@@ -227,7 +228,7 @@ ScalarArray::ScalarArray(Slice<T> data)
 template <typename T>
 ScalarArray::ScalarArray(Slice<const T> data)
     : p_type_and_mode(
-              *scalar_type_of<T>(),
+              devices::type_info<T>(),
               dtl::ScalarArrayStorageModel::BorrowConst
       ),
       const_borrowed(data.data()),
@@ -239,7 +240,7 @@ ScalarArray::ScalarArray(Slice<const T> data)
 template <typename T>
 ScalarArray::ScalarArray(T* data, dimn_t size)
     : p_type_and_mode(
-              *scalar_type_of<T>(),
+              devices::type_info<T>(),
               dtl::ScalarArrayStorageModel::BorrowMut
       ),
       mut_borrowed(data),
@@ -250,7 +251,7 @@ ScalarArray::ScalarArray(T* data, dimn_t size)
 template <typename T>
 ScalarArray::ScalarArray(const T* data, dimn_t size)
     : p_type_and_mode(
-              *scalar_type_of<T>(),
+              devices::type_info<T>(),
               dtl::ScalarArrayStorageModel::BorrowConst
       ),
       const_borrowed(data),

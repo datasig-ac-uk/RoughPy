@@ -145,5 +145,12 @@ void KeyScalarArray::allocate_scalars(idimn_t count) {
 void KeyScalarArray::allocate_keys(idimn_t count) {
     if (count == -1 && p_keys == nullptr) {
         p_keys = new key_type[size()];
+        m_owns_keys = true;
     }
 }
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME KeyScalarArray
+#define RPY_SERIAL_DO_SPLIT
+#include <roughpy/platform/serialization_instantiations.inl>

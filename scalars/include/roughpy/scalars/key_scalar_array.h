@@ -34,6 +34,9 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
+#include <cereal/types/vector.hpp>
+#include <algorithm>
+
 // RPY_WARNING_PUSH
 // RPY_CLANG_DISABLE_WARNING(HidingNonVirtualFunction)
 
@@ -79,8 +82,37 @@ public:
     void allocate_keys(idimn_t count = -1);
 
 
+    RPY_SERIAL_LOAD_FN();
+    RPY_SERIAL_SAVE_FN();
 
 };
+
+RPY_SERIAL_LOAD_FN_IMPL(KeyScalarArray)
+{
+    RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
+    bool hkeys = false;
+    RPY_SERIAL_SERIALIZE_NVP("has_keys", hkeys);
+    if (hkeys) {
+        std::vector<key_type> tmp_keys;
+        RPY_SERIAL_SERIALIZE_NVP("keys", tmp_keys);
+
+        RPY_CHECK(tmp_keys.size() == size());
+        allocate_keys();
+        std::memcpy(keys(), tmp_keys.data(), size() * sizeof(key_type));
+        // std::copy(tmp_keys.begin(), tmp_keys.end(), keys());
+    }
+}
+RPY_SERIAL_SAVE_FN_IMPL(KeyScalarArray)
+{
+    RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
+    bool hkeys = has_keys();
+    RPY_SERIAL_SERIALIZE_NVP("has_keys", hkeys);
+    if (hkeys) {
+        std::vector<key_type> tmp_keys(p_keys, p_keys + size());
+        RPY_SERIAL_SERIALIZE_NVP("keys", tmp_keys);
+    }
+}
+
 
 }// namespace scalars
 }// namespace rpy

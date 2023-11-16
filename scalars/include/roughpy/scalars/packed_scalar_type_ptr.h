@@ -33,12 +33,12 @@
 
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/traits.h>
+// #include "scalar_type.h"
 
 #include <limits>
 
 namespace rpy {
 namespace scalars {
-
 template <typename OptionsEnumerator>
 class PackedScalarTypePointer
 {
@@ -157,6 +157,14 @@ public:
 
 };
 
+template <typename OptionsEnumeration>
+inline devices::TypeInfo type_info_from(const PackedScalarTypePointer<OptionsEnumeration>& arg) noexcept
+{
+    if (arg.is_pointer()) {
+        return arg->type_info();
+    }
+    return arg.get_type_info();
+}
 
 
 }// namespace scalars

@@ -98,10 +98,12 @@ class MPIntegerSerializationHelper
     Integer* ptr;
 
 public:
-    MPIntegerSerializationHelper(Integer* p) : ptr(p) {}
-    MPIntegerSerializationHelper(Integer& p) : ptr(&p) {}
+    MPIntegerSerializationHelper(Integer* p)
+        : ptr(p) {}
 
-private:
+    MPIntegerSerializationHelper(Integer& p)
+        : ptr(&p) {}
+
     using ptr_t = conditional_t<is_const<Integer>::value, const char*, char*>;
 
 #if RPY_USING_GMP
@@ -128,6 +130,8 @@ private:
 #endif
     }
 
+    static constexpr dimn_t sizeof_limb() noexcept { return sizeof(limbs_t); }
+
     dimn_t size() const noexcept
     {
 #if RPY_USING_GMP
@@ -142,7 +146,7 @@ private:
 #if RPY_USING_GMP
         return mpz_limbs_write(ptr, static_cast<mp_size_t>(new_size));
 #else
-        ptr->reszie(new_size, new_size);
+        ptr->resize(new_size, new_size);
         return ptr->limbs();
 #endif
     }
@@ -151,9 +155,10 @@ private:
     {
 #if RPY_USING_GMP
         mpz_limbs_finish(
-                ptr,
-                isneg ? -static_cast<mp_size_t>(size)
-                      : static_cast<mp_size_t>(size)
+            ptr,
+            isneg
+            ? -static_cast<mp_size_t>(size)
+            : static_cast<mp_size_t>(size)
         );
 #else
         ptr->sign(isneg);
@@ -162,7 +167,11 @@ private:
 
     dimn_t nbytes() const noexcept { return size() * sizeof(limbs_t); }
 
-public:
+    dimn_t total_bytes() const noexcept
+    {
+        return 1 + sizeof(uint64_t) + nbytes();
+    }
+
     RPY_SERIAL_SAVE_FN()
     {
         RPY_SERIAL_SERIALIZE_NVP("is_negative", is_negative());
@@ -183,11 +192,12 @@ public:
             size = static_cast<dimn_t>(tmp_size);
         }
 
+        dimn_t n_limbs = 0;
         if (size > 0) {
-            auto n_limbs = (size + sizeof(limbs_t) - 1) / sizeof(limbs_t);
+            n_limbs = (size + sizeof(limbs_t) - 1) / sizeof(limbs_t);
             RPY_SERIAL_SERIALIZE_BYTES("data", resize(n_limbs), size);
-            finalize(n_limbs, is_negative);
         }
+        finalize(n_limbs, is_negative);
     }
 
     void
@@ -217,8 +227,8 @@ void save_rational(Archive& archive, const rational_scalar_type& value)
 
     RPY_SERIAL_SERIALIZE_NVP("numerator", helper_t(mpq_numref(backend.data())));
     RPY_SERIAL_SERIALIZE_NVP(
-            "denominator",
-            helper_t(mpq_denref(backend.data()))
+        "denominator",
+        helper_t(mpq_denref(backend.data()))
     );
 #else
     using helper_t = MPIntegerSerializationHelper<
@@ -239,8 +249,8 @@ void load_rational(Archive& archive, rational_scalar_type& value)
 
     RPY_SERIAL_SERIALIZE_NVP("numerator", helper_t(mpq_numref(backend.data())));
     RPY_SERIAL_SERIALIZE_NVP(
-            "denominator",
-            helper_t(mpq_denref(backend.data()))
+        "denominator",
+        helper_t(mpq_denref(backend.data()))
     );
 #else
     using helper_t = MPIntegerSerializationHelper<
@@ -289,11 +299,12 @@ RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::monomial)
         //        RPY_SERIAL_SERIALIZE_NVP("key", entry.first);
         //        RPY_SERIAL_SERIALIZE_NVP("degree", entry.second);
         RPY_SERIAL_SERIALIZE_BARE(
-                ::cereal::make_map_item(entry.first, entry.second)
+            ::cereal::make_map_item(entry.first, entry.second)
         );
         //        RPY_SERIAL_SERIALIZE_BARE(entry);
     }
 }
+
 RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial)
 {
     using namespace ::rpy;
@@ -343,6 +354,7 @@ RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::rational_poly_scalar)
         rpy::scalars::dtl::save_rational(archive, item.value());
     }
 }
+
 //}// namespace cereal
 
 #endif // ROUGHPY_SCALARS_SCALAR_SERIALIZATION_H_

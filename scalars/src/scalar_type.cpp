@@ -130,7 +130,7 @@ void ScalarType::convert_copy(
         dst.type_info(),
         src.pointer(),
         src.type_info(),
-        1
+        dst.size()
     )) { RPY_THROW(std::runtime_error, "convert copy failed"); }
 }
 
