@@ -317,7 +317,7 @@ public:
                 case dtl::ScalarContentType ::OwnedPointer:
                     if (!dtl::scalar_convert_copy(
                         opaque_pointer,
-                        p_type_and_content_type.get_type_info(),
+                        type_info_from(p_type_and_content_type),
                         Scalar(value)
                     )) {
                         RPY_THROW(std::runtime_error, "assignment failed");

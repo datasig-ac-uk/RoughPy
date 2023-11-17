@@ -47,10 +47,14 @@ add_roughpy_component(Scalars
         src/types/apratpoly/ap_rat_poly_type.h
         src/types/bfloat16/b_float_16_type.cpp
         src/types/bfloat16/b_float_16_type.h
+        src/types/bfloat16/bfloat16_random_generator.cpp
+        src/types/bfloat16/bfloat16_random_generator.h
         src/types/double/double_type.cpp
         src/types/double/double_type.h
         src/types/float/float_type.cpp
         src/types/float/float_type.h
+        src/types/half/half_random_generator.cpp
+        src/types/half/half_random_generator.h
         src/types/half/half_type.cpp
         src/types/half/half_type.h
         src/key_scalar_array.cpp

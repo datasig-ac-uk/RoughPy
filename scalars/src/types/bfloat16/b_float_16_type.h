@@ -7,6 +7,8 @@
 
 #include "scalar_helpers/standard_scalar_type.h"
 #include "scalar_types.h"
+#include "bfloat16_random_generator.h"
+
 namespace rpy {
 namespace scalars {
 

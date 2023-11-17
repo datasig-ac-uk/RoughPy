@@ -125,6 +125,16 @@ round_up_divide(I value, J divisor) noexcept {
 }
 
 
+template <typename I>
+RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I>
+next_power_2(I value, I start=I(1)) noexcept
+{
+    if (value == 0) { return 0; }
+    if (is_signed<I>::value && value < 0) { return -next_power_2(-value); }
+    return (start >= value) ? start : next_power_2(value, I(start << 1));
+}
+
+
 }// namespace rpy
 
 #endif// ROUGHPY_CORE_POINTER_HELPERS_H_

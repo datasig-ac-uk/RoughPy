@@ -38,6 +38,9 @@ namespace scalars {
 using ScalarTypeCode = devices::TypeCode;
 using BasicScalarInfo = devices::TypeInfo;
 
+using seed_int_t = uint64_t;
+
+
 // Forward declarations
 class RPY_EXPORT ScalarType;
 class ScalarInterface;

@@ -25,9 +25,6 @@ public:
     RPY_NO_DISCARD void* allocate_single() const override;
 
     void free_single(void* ptr) const override;
-    RPY_NO_DISCARD std::unique_ptr<RandomGenerator> get_rng(
-        const string& bit_generator,
-        Slice<uint64_t> seed) const override;
     void convert_copy(ScalarArray& dst, const ScalarArray& src) const override;
     void assign(ScalarArray& dst, Scalar value) const override;
     const ScalarType* with_device(const devices::Device& device) const override;

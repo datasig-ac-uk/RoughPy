@@ -144,14 +144,14 @@ inline optional<devices::TypeInfo> parse_byted_type(
     string_view id_sub,
     devices::TypeCode code) noexcept
 {
-    uint8_t bytes = 0;
+    dimn_t bits = 0;
 
-    auto result = std::from_chars(&*id_sub.begin(), &*id_sub.end(), bytes);
-    if (result.ec != std::errc{}) {
-        return{};
-    }
+    auto result = std::from_chars(&*id_sub.begin(), &*id_sub.end(), bits);
+    if (result.ec != std::errc{}) { return {}; }
 
-    return devices::TypeInfo{ code, bytes, bytes, 1};
+    const auto bytes = static_cast<uint8_t>(bits / CHAR_BIT);
+
+    return devices::TypeInfo{code, bytes, next_power_2(bytes), 1};
 }
 
 
@@ -178,14 +178,10 @@ inline optional<devices::TypeInfo> parse_id_to_type_info(string_view id)
 
 optional<const ScalarType*> rpy::scalars::get_type(string_view id)
 {
-    if (id.empty()) {
-        return {};
-    }
+    if (id.empty()) { return {}; }
 
     auto info = parse_id_to_type_info(id);
-    if (info) {
-        return scalar_type_of(*info);
-    }
+    if (info) { return scalar_type_of(*info); }
 
     const auto rat_type = scalar_type_of<rational_scalar_type>();
     RPY_DBG_ASSERT(rat_type);
@@ -200,9 +196,16 @@ optional<const ScalarType*> rpy::scalars::get_type(string_view id)
 
 
 std::unique_ptr<RandomGenerator>
-ScalarType::get_rng(const string& bit_generator, Slice<uint64_t> seed) const
+ScalarType::get_rng(const string& bit_generator, Slice<seed_int_t> seed) const
 {
-    return nullptr;
+    const auto getter = m_rng_getters.find(bit_generator);
+    if (getter != m_rng_getters.end()) {
+        return getter->second(this, seed);
+    }
+
+    RPY_THROW(std::runtime_error,
+              "no matching random number generator " + bit_generator +
+              " for type " + m_name);
 }
 
 void ScalarType::assign(ScalarArray& dst, Scalar value) const {}

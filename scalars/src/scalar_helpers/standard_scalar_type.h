@@ -35,6 +35,8 @@
 #include "scalar_type.h"
 #include "scalar_array.h"
 #include "scalar.h"
+#include "random/standard_random_generator.h"
+
 #include <roughpy/device/device_handle.h>
 #include <roughpy/device/host_device.h>
 
@@ -42,7 +44,6 @@
 
 #include <algorithm>
 #include <unordered_set>
-#include <boost/container_hash/hash.hpp>
 
 namespace rpy {
 namespace scalars {
@@ -51,22 +52,30 @@ namespace dtl {
 template <typename ScalarImpl>
 class StandardScalarType : public ScalarType
 {
-    mutable std::unordered_set<void*, boost::hash<void*>> m_allocated;
+    mutable std::unordered_set<void*> m_allocated;
+
+    static std::unique_ptr<RandomGenerator> get_mt19937_generator(
+        const ScalarType* tp,
+        Slice<seed_int_t> seed);
+    static std::unique_ptr<RandomGenerator> get_pcg_generator(
+        const ScalarType* tp,
+        Slice<seed_int_t> seed);
 
 protected:
-
     StandardScalarType(string name, string id, RingCharacteristics chars)
-            : ScalarType(std::move(name),
+        : ScalarType(std::move(name),
                      std::move(id),
                      alignof(ScalarImpl),
                      devices::get_host_device(),
                      devices::type_info<ScalarImpl>(),
                      chars
-                     )
-    {}
+        )
+    {
+        register_rng_getter("mt19937", &get_mt19937_generator);
+        register_rng_getter("pcg", &get_pcg_generator);
+    }
 
 public:
-
     ScalarArray allocate(dimn_t count) const override;
     void* allocate_single() const override;
     void free_single(void* ptr) const override;
@@ -74,36 +83,41 @@ public:
     void assign(ScalarArray& dst, Scalar value) const override;
 
 };
+
 template <typename ScalarImpl>
 ScalarArray StandardScalarType<ScalarImpl>::allocate(dimn_t count) const
 {
-    auto buf = m_device->raw_alloc(count*m_info.bytes, m_info.alignment);
+    auto buf = m_device->raw_alloc(count * m_info.bytes, m_info.alignment);
     {
         auto slice = buf.template as_mut_slice<ScalarImpl>();
         std::uninitialized_fill(
-                slice.begin(),
-                slice.end(),
-                ScalarImpl(0));
+            slice.begin(),
+            slice.end(),
+            ScalarImpl(0));
     }
 
     return ScalarArray(this, std::move(buf));
 }
+
 template <typename ScalarImpl>
 void* StandardScalarType<ScalarImpl>::allocate_single() const
 {
     guard_type access(m_lock);
-    auto [pos, inserted] = m_allocated.insert(static_cast<void*>(new ScalarImpl()));
+    auto [pos, inserted] = m_allocated.insert(
+        static_cast<void*>(new ScalarImpl()));
     RPY_DBG_ASSERT(inserted);
     return *pos;
 }
+
 template <typename ScalarImpl>
 void StandardScalarType<ScalarImpl>::free_single(void* ptr) const
 {
     guard_type access(m_lock);
     auto found = m_allocated.find(ptr);
     if (found == m_allocated.end()) {
-        RPY_THROW(std::runtime_error, "Attempting to free scalar allocated "
-                                      "with as a different type");
+        RPY_THROW(std::runtime_error,
+                  "Attempting to free scalar allocated "
+                  "with as a different type");
     }
     delete static_cast<ScalarImpl*>(*found);
     m_allocated.erase(found);
@@ -111,8 +125,8 @@ void StandardScalarType<ScalarImpl>::free_single(void* ptr) const
 
 template <typename ScalarImpl>
 void StandardScalarType<ScalarImpl>::convert_copy(
-        ScalarArray& dst,
-        const ScalarArray& src
+    ScalarArray& dst,
+    const ScalarArray& src
 ) const
 {
     if (src.empty()) {
@@ -153,18 +167,18 @@ void StandardScalarType<ScalarImpl>::convert_copy(
     if (dst.is_null()) {
         // If the dst array is empty, allocate enough space for the new data.
         dst = allocate(src_size);
-    } else if (dst_cap < src_size*dst_info.bytes) {
+    } else if (dst_cap < src_size * dst_info.bytes) {
         if (dst.is_owning()) {
             if (dst_type) {
-               // If dst_type is defined, then it is this so a simple
-               // reallocation can be used.
-               dst = allocate(src_size);
+                // If dst_type is defined, then it is this so a simple
+                // reallocation can be used.
+                dst = allocate(src_size);
             } else {
-               // dst type is not defined, so is a trivial type fully
-               // described by the TypeInfo struct.
-               auto new_buf = m_device->raw_alloc(src_size*dst_info.bytes,
-                                                  dst_info.alignment);
-               dst = ScalarArray(dst_info, std::move(new_buf));
+                // dst type is not defined, so is a trivial type fully
+                // described by the TypeInfo struct.
+                auto new_buf = m_device->raw_alloc(src_size * dst_info.bytes,
+                                                   dst_info.alignment);
+                dst = ScalarArray(dst_info, std::move(new_buf));
             }
         } else {
             RPY_THROW(std::runtime_error, "cannot resize a borrowed array");
@@ -174,9 +188,7 @@ void StandardScalarType<ScalarImpl>::convert_copy(
         // final array is correct.
         if (dst_type) {
             dst = ScalarArray(*dst_type, std::move(dst.mut_buffer()));
-        } else {
-            dst = ScalarArray(dst_info, std::move(dst.mut_buffer()));
-        }
+        } else { dst = ScalarArray(dst_info, std::move(dst.mut_buffer())); }
     }
 
     /*
@@ -187,9 +199,11 @@ void StandardScalarType<ScalarImpl>::convert_copy(
 
     ScalarType::convert_copy(dst, src);
 }
+
 template <typename ScalarImpl>
-void StandardScalarType<ScalarImpl>::assign(ScalarArray& dst, Scalar value)
-        const
+void StandardScalarType<ScalarImpl>::assign(ScalarArray& dst,
+                                            Scalar value)
+const
 {
     if (dst.is_null()) {
         RPY_THROW(std::invalid_argument, "destination array is not valid");
@@ -207,7 +221,23 @@ void StandardScalarType<ScalarImpl>::assign(ScalarArray& dst, Scalar value)
         std::fill(slice.begin(), slice.end(), scalar_cast<ScalarImpl>(value));
     }
 
+}
 
+
+template <typename ScalarImpl>
+std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::
+get_mt19937_generator(const ScalarType* tp, Slice<seed_int_t> seed)
+{
+    return std::make_unique<StandardRandomGenerator<
+        ScalarImpl, std::mt19937_64>>(tp, seed);
+}
+
+template <typename ScalarImpl>
+std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::
+get_pcg_generator(const ScalarType* tp, Slice<seed_int_t> seed)
+{
+    return std::make_unique<StandardRandomGenerator<
+        ScalarImpl, pcg64>>(tp, seed);
 }
 
 

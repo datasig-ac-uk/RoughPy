@@ -56,12 +56,6 @@ void APRatPolyType::free_single(void* ptr) const
     m_allocations.erase(found);
 }
 
-std::unique_ptr<RandomGenerator> APRatPolyType::get_rng(
-    const string& bit_generator,
-    Slice<uint64_t> seed) const
-{
-    return ScalarType::get_rng(bit_generator, seed);
-}
 
 
 void APRatPolyType::convert_copy(ScalarArray& dst, const ScalarArray& src) const

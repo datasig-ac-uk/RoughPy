@@ -35,7 +35,8 @@
 namespace rpy {
 namespace scalars {
 
-struct RingCharacteristics {
+struct RingCharacteristics
+{
     bool is_field : 1;
     bool is_ordered : 1;
     bool has_sqrt : 1;
@@ -47,6 +48,9 @@ class RPY_SCALAR_TYPE_ALIGNMENT ScalarType
 protected:
     using lock_type = std::recursive_mutex;
     using guard_type = std::lock_guard<lock_type>;
+    using rng_getter = std::unique_ptr<RandomGenerator> (*)(
+        const ScalarType*,
+        Slice<seed_int_t>);
 
     mutable lock_type m_lock;
 
@@ -57,13 +61,15 @@ protected:
     devices::TypeInfo m_info;
     RingCharacteristics m_characteristics;
 
+    std::unordered_map<string, rng_getter> m_rng_getters;
+
     explicit ScalarType(
-            string name,
-            string id,
-            dimn_t alignment,
-            devices::Device device,
-            devices::TypeInfo type_info,
-            RingCharacteristics characteristics
+        string name,
+        string id,
+        dimn_t alignment,
+        devices::Device device,
+        devices::TypeInfo type_info,
+        RingCharacteristics characteristics
     );
 
 public:
@@ -79,9 +85,7 @@ public:
     static inline optional<const ScalarType*> of(const devices::Device& device)
     {
         auto host = of<T>();
-        if (host) {
-            return (*host)->with_device(device);
-        }
+        if (host) { return (*host)->with_device(device); }
         return {};
     }
 
@@ -148,6 +152,10 @@ public:
      */
     virtual void free_single(void* ptr) const;
 
+protected:
+    void register_rng_getter(string name, rng_getter getterhalf);
+
+public:
     /**
      * @brief Get a new random number generator for this scalar type
      * @param bit_generator Source of randomness used for generating random
@@ -156,8 +164,8 @@ public:
      * generator's seed type).
      * @return Pointer to new RandomGenerator instance.
      */
-    RPY_NO_DISCARD virtual std::unique_ptr<RandomGenerator>
-    get_rng(const string& bit_generator, Slice<uint64_t> seed) const;
+    RPY_NO_DISCARD std::unique_ptr<RandomGenerator>
+    get_rng(const string& bit_generator, Slice<seed_int_t> seed=nullptr) const;
 
     /**
      * @brief Copy the contents of one array into another.
@@ -176,19 +184,18 @@ public:
     // Scalar methods
 
 
-
     /**
      * @brief Get a new scalar type whose underlying device is given.
      *
      * @param device device on which the new scalar type should be based.
      */
     virtual const ScalarType* with_device(const devices::Device& device) const;
-} ;
+};
 
 static_assert(
-        alignof(ScalarType) >= min_scalar_type_alignment,
-        "ScalarType must have alignment of at least 8 bytes so there are 3 "
-        "free bits in the low end of pointers."
+    alignof(ScalarType) >= min_scalar_type_alignment,
+    "ScalarType must have alignment of at least 8 bytes so there are 3 "
+    "free bits in the low end of pointers."
 );
 
 }// namespace scalars

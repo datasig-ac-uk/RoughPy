@@ -9,6 +9,8 @@
 #include "scalar_helpers/standard_scalar_type.h"
 #include "scalar_types.h"
 
+#include "half_random_generator.h"
+
 namespace rpy {
 namespace scalars {
 

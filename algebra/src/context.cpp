@@ -190,7 +190,7 @@ Lie Context::cbh(Slice<const Lie*> lies, VectorType vtype) const {
     }
 
     FreeTensor collector = zero_free_tensor(vtype);
-    collector[0] = scalars::Scalar(1);
+    collector[0] = 1;
 
     cbh_fallback(collector, lies);
 
