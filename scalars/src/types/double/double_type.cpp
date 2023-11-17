@@ -12,7 +12,7 @@ static constexpr RingCharacteristics
         double_ring_characteristics{true, true, true, false};
 
 DoubleType::DoubleType()
-    : base_t("double", "f64", double_ring_characteristics)
+    : base_t("DPReal", "f64", double_ring_characteristics)
 {}
 
 const ScalarType* DoubleType::get() noexcept

@@ -10,7 +10,7 @@ using namespace rpy::scalars;
 static constexpr RingCharacteristics
         half_ring_characteristics{true, true, true, false};
 
-HalfType::HalfType() : base_t("half", "f16", half_ring_characteristics) {}
+HalfType::HalfType() : base_t("HPReal", "f16", half_ring_characteristics) {}
 
 const ScalarType* HalfType::get() noexcept
 {

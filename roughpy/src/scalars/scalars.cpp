@@ -219,7 +219,7 @@ static inline void update_dtype_and_allocate(
     if (options.type != nullptr) {
         result = scalars::KeyScalarArray(options.type);
         result.allocate_scalars(no_values);
-        result.allocate_keys(no_keys);
+        result.allocate_keys();
     } else if (no_values > 0) {
         RPY_THROW(py::type_error, "unable to deduce a suitable scalar type");
     }
@@ -257,6 +257,8 @@ static bool try_fill_buffer_dlpack(
             = python::scalar_type_of_dl_info(dltensor.dtype, dltensor.device);
     if (options.type == nullptr) {
         options.type = tensor_stype;
+    }
+    if (buffer.type() == nullptr) {
         buffer = scalars::KeyScalarArray(options.type);
     }
     RPY_DBG_ASSERT(options.type != nullptr);
@@ -530,7 +532,7 @@ scalars::KeyScalarArray python::py_to_buffer(
         python::PyToBufferOptions& options
 )
 {
-    scalars::KeyScalarArray result(options.type);
+    scalars::KeyScalarArray result;
 
     // First handle the single number cases
     if (py::isinstance<py::float_>(object)

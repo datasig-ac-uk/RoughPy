@@ -12,7 +12,7 @@ using namespace rpy::scalars;
 static constexpr RingCharacteristics
         float_ring_characteristics{true, true, true, false};
 
-FloatType::FloatType() : base_t("float", "f32", float_ring_characteristics) {}
+FloatType::FloatType() : base_t("SPReal", "f32", float_ring_characteristics) {}
 
 const ScalarType* FloatType::get() noexcept
 {

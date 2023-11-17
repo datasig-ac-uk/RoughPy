@@ -35,7 +35,7 @@ using namespace rpy::scalars;
 
 KeyScalarArray::~KeyScalarArray()
 {
-    if (m_owns_keys) { delete[] p_keys; }
+    if (p_keys != nullptr && m_owns_keys) { delete[] p_keys; }
     p_keys = nullptr;
     m_owns_keys = false;
 }
@@ -52,6 +52,8 @@ KeyScalarArray::KeyScalarArray(const KeyScalarArray& other)
 KeyScalarArray::KeyScalarArray(KeyScalarArray&& other) noexcept
     : ScalarArray(std::move(other)), p_keys(other.p_keys), m_owns_keys(other.m_owns_keys)
 {
+    other.p_keys = nullptr;
+    other.m_owns_keys = false;
 }
 KeyScalarArray::KeyScalarArray(ScalarArray&& sa) noexcept
     : ScalarArray(std::move(sa)), m_owns_keys(false)
@@ -144,7 +146,7 @@ void KeyScalarArray::allocate_scalars(idimn_t count) {
 }
 void KeyScalarArray::allocate_keys(idimn_t count) {
     if (count == -1 && p_keys == nullptr) {
-        p_keys = new key_type[size()];
+        p_keys = new key_type[size()] {};
         m_owns_keys = true;
     }
 }

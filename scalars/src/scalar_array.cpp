@@ -64,8 +64,9 @@ ScalarArray::ScalarArray(const ScalarArray& other)
         case dtl::ScalarArrayStorageModel::BorrowMut: mut_borrowed = other.
                     mut_borrowed;
             break;
-        case dtl::ScalarArrayStorageModel::Owned:
-            construct_inplace(&owned_buffer, other.owned_buffer);
+        case dtl::ScalarArrayStorageModel::Owned: construct_inplace(
+                &owned_buffer,
+                other.owned_buffer);
             break;
     }
 }
@@ -83,15 +84,17 @@ ScalarArray::ScalarArray(ScalarArray&& other) noexcept
                     mut_borrowed;
             other.mut_borrowed = nullptr;
             break;
-        case dtl::ScalarArrayStorageModel::Owned: construct_inplace(&owned_buffer, std::move(
-                other.owned_buffer));
+        case dtl::ScalarArrayStorageModel::Owned: construct_inplace(
+                &owned_buffer,
+                std::move(
+                    other.owned_buffer));
             break;
     }
 }
 
 ScalarArray::ScalarArray(const ScalarType* type, dimn_t size)
     : p_type_and_mode(type, dtl::ScalarArrayStorageModel::BorrowConst),
-        const_borrowed(nullptr)
+      const_borrowed(nullptr)
 {
     RPY_DBG_ASSERT(type != nullptr);
     *this = type->allocate(size);
@@ -142,6 +145,8 @@ ScalarArray::~ScalarArray()
 {
     if (p_type_and_mode.get_enumeration()
         == dtl::ScalarArrayStorageModel::Owned) { owned_buffer.~Buffer(); }
+    const_borrowed = nullptr;
+    p_type_and_mode = type_pointer();
 }
 
 ScalarArray& ScalarArray::operator=(const ScalarArray& other)
@@ -341,7 +346,9 @@ Scalar ScalarArray::operator[](dimn_t i) const
 Scalar ScalarArray::operator[](dimn_t i)
 {
     check_for_ptr_access(true);
-    RPY_CHECK(i < m_size);
+    RPY_CHECK(i < m_size,
+              "index " + std::to_string(i) + " out of bounds for array of size "
+              + std::to_string(m_size));
 
     if (p_type_and_mode.is_pointer()) {
         return Scalar(p_type_and_mode.get_pointer(), raw_mut_pointer(i));
@@ -402,7 +409,8 @@ dimn_t ScalarArray::capacity() const noexcept
 {
     switch (p_type_and_mode.get_enumeration()) {
         case dtl::ScalarArrayStorageModel::BorrowConst:
-        case dtl::ScalarArrayStorageModel::BorrowMut: return m_size;
+        case dtl::ScalarArrayStorageModel::BorrowMut: return m_size *
+                    type_info().bytes;
         case dtl::ScalarArrayStorageModel::Owned: return owned_buffer.size();
     }
     RPY_UNREACHABLE_RETURN(0);
