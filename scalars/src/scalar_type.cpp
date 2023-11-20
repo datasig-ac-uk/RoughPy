@@ -28,11 +28,11 @@
 
 #include "scalar_type.h"
 
-#include "scalars_fwd.h"
+#include "random.h"
 #include "scalar.h"
 #include "scalar_array.h"
 #include "scalar_types.h"
-#include "random.h"
+#include "scalars_fwd.h"
 
 #include "scalar/casts.h"
 
@@ -45,10 +45,14 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
 {
     switch (info.code) {
         case devices::TypeCode::Int:
-        case devices::TypeCode::UInt: if (info.bytes > 3) {
+        case devices::TypeCode::UInt:
+            if (info.bytes > 3) {
                 return *scalar_type_of<float>();
-            } else { return *scalar_type_of<double>(); }
-        case devices::TypeCode::Float: switch (info.bytes) {
+            } else {
+                return *scalar_type_of<double>();
+            }
+        case devices::TypeCode::Float:
+            switch (info.bytes) {
                 case 4: return *scalar_type_of<float>();
                 case 8: return *scalar_type_of<double>();
             }
@@ -61,43 +65,47 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
         case devices::TypeCode::ArbitraryPrecisionUInt:
         case devices::TypeCode::ArbitraryPrecisionFloat:
         case devices::TypeCode::ArbitraryPrecisionComplex:
-        case devices::TypeCode::ArbitraryPrecisionRational: return *
-                    scalar_type_of<rational_scalar_type>();
-        case devices::TypeCode::APRationalPolynomial: return *scalar_type_of<
-                rational_poly_scalar>();
+        case devices::TypeCode::ArbitraryPrecisionRational:
+            return *scalar_type_of<rational_scalar_type>();
+        case devices::TypeCode::APRationalPolynomial:
+            return *scalar_type_of<rational_poly_scalar>();
     }
 
     RPY_THROW(std::runtime_error, "unsupported data type");
 }
 
 ScalarType::ScalarType(
-    std::string name,
-    std::string id,
-    rpy::dimn_t alignment,
-    devices::Device device,
-    devices::TypeInfo type_info,
-    rpy::scalars::RingCharacteristics characteristics
+        std::string name,
+        std::string id,
+        rpy::dimn_t alignment,
+        devices::Device device,
+        devices::TypeInfo type_info,
+        rpy::scalars::RingCharacteristics characteristics
 )
     : m_name(std::move(name)),
       m_id(std::move(id)),
       m_alignment(alignment),
       m_device(std::move(device)),
       m_info(type_info),
-      m_characteristics(characteristics) {}
+      m_characteristics(characteristics)
+{}
 
 ScalarType::~ScalarType() = default;
 
 ScalarArray ScalarType::allocate(dimn_t count) const
 {
-    return ScalarArray(this, m_device->raw_alloc(count*m_info.bytes, m_info.alignment));
+    return ScalarArray(
+            this,
+            m_device->raw_alloc(count * m_info.bytes, m_info.alignment)
+    );
 }
 
 void* ScalarType::allocate_single() const
 {
     RPY_THROW(
-        std::runtime_error,
-        "single scalar allocation is not available "
-        "for " + m_name
+            std::runtime_error,
+            "single scalar allocation is not available "
+            "for " + m_name
     );
     return nullptr;
 }
@@ -105,14 +113,14 @@ void* ScalarType::allocate_single() const
 void ScalarType::free_single(void* ptr) const
 {
     RPY_THROW(
-        std::runtime_error,
-        "single scalar allocation is not available for " + m_name
+            std::runtime_error,
+            "single scalar allocation is not available for " + m_name
     );
 }
 
 void ScalarType::convert_copy(
-    rpy::scalars::ScalarArray& dst,
-    const rpy::scalars::ScalarArray& src
+        rpy::scalars::ScalarArray& dst,
+        const rpy::scalars::ScalarArray& src
 ) const
 {
     if (dst.size() < src.size()) {
@@ -126,12 +134,14 @@ void ScalarType::convert_copy(
     }
 
     if (!dtl::scalar_convert_copy(
-        dst.mut_pointer(),
-        dst.type_info(),
-        src.pointer(),
-        src.type_info(),
-        dst.size()
-    )) { RPY_THROW(std::runtime_error, "convert copy failed"); }
+                dst.mut_pointer(),
+                dst.type_info(),
+                src.pointer(),
+                src.type_info(),
+                dst.size()
+        )) {
+        RPY_THROW(std::runtime_error, "convert copy failed");
+    }
 }
 
 const ScalarType* ScalarType::for_id(string_view id)
@@ -140,9 +150,8 @@ const ScalarType* ScalarType::for_id(string_view id)
 }
 
 namespace {
-inline optional<devices::TypeInfo> parse_byted_type(
-    string_view id_sub,
-    devices::TypeCode code) noexcept
+inline optional<devices::TypeInfo>
+parse_byted_type(string_view id_sub, devices::TypeCode code) noexcept
 {
     dimn_t bits = 0;
 
@@ -154,9 +163,8 @@ inline optional<devices::TypeInfo> parse_byted_type(
     return devices::TypeInfo{code, bytes, next_power_2(bytes), 1};
 }
 
-
-inline optional<devices::TypeInfo> parse_id_to_type_info(string_view id)
-    noexcept
+inline optional<devices::TypeInfo> parse_id_to_type_info(string_view id
+) noexcept
 {
     using devices::TypeCode;
     RPY_DBG_ASSERT(!id.empty());
@@ -166,7 +174,8 @@ inline optional<devices::TypeInfo> parse_id_to_type_info(string_view id)
         case 'u': return parse_byted_type(id.substr(1), TypeCode::UInt);
         case 'f': return parse_byted_type(id.substr(1), TypeCode::Float);
         case 'c': return parse_byted_type(id.substr(1), TypeCode::Complex);
-        case 'b': if (id.size() > 1 && id[2] == 'f') {
+        case 'b':
+            if (id.size() > 1 && id[2] == 'f') {
                 return parse_byted_type(id.substr(2), TypeCode::BFloat);
             }
         default: break;
@@ -174,7 +183,7 @@ inline optional<devices::TypeInfo> parse_id_to_type_info(string_view id)
 
     return {};
 }
-}
+}// namespace
 
 optional<const ScalarType*> rpy::scalars::get_type(string_view id)
 {
@@ -194,18 +203,28 @@ optional<const ScalarType*> rpy::scalars::get_type(string_view id)
     return {};
 }
 
-
 std::unique_ptr<RandomGenerator>
 ScalarType::get_rng(const string& bit_generator, Slice<seed_int_t> seed) const
 {
-    const auto getter = m_rng_getters.find(bit_generator);
-    if (getter != m_rng_getters.end()) {
-        return getter->second(this, seed);
+    if (m_rng_getters.empty()) {
+        RPY_THROW(
+                std::runtime_error,
+                "no random number generators available for type " + m_name
+        );
     }
 
-    RPY_THROW(std::runtime_error,
-              "no matching random number generator " + bit_generator +
-              " for type " + m_name);
+    if (bit_generator.empty()) {
+        return m_rng_getters.begin()->second(this, seed);
+    }
+
+    const auto getter = m_rng_getters.find(bit_generator);
+    if (getter != m_rng_getters.end()) { return getter->second(this, seed); }
+
+    RPY_THROW(
+            std::runtime_error,
+            "no matching random number generator " + bit_generator
+                    + " for type " + m_name
+    );
 }
 
 void ScalarType::assign(ScalarArray& dst, Scalar value) const {}
