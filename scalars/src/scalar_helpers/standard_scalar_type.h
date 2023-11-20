@@ -212,7 +212,8 @@ const
     if (dst_type && *dst_type != this) {
         (*dst_type)->assign(dst, std::move(value));
         return;
-    } else if (!dst_type && dst.type_info() != m_info) {
+    }
+    if (!dst_type && dst.type_info() != m_info) {
         RPY_THROW(std::invalid_argument, "dst has incorrect type");
     }
 
