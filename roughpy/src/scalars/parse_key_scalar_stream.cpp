@@ -415,11 +415,8 @@ void dl_to_stream(
             RPY_DBG_ASSERT(tensor.shape[0] * tensor.shape[1] == size);
             result.data_stream.reserve_size(out_shape[0]);
 
-            const auto* sptr
-                    = static_cast<const byte*>(result.data_buffer.pointer());
             for (dimn_t i = 0; i < out_shape[0]; ++i) {
-                result.data_stream.push_back({type_info, sptr, out_shape[1]});
-                sptr += out_shape[1]*type_info.bytes;
+                result.data_stream.push_back(result.data_buffer[{i*out_shape[1], (i+1)*out_shape[1]}]);
             }
         }
     }
