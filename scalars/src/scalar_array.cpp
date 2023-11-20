@@ -255,7 +255,7 @@ const void* ScalarArray::raw_pointer(dimn_t i) const noexcept
             break;
     }
 
-    if (ptr == nullptr) { return ptr; }
+    if (ptr == nullptr || i == 0) { return ptr; }
     const auto info = type_info();
 
     return static_cast<const byte*>(ptr) + i * info.bytes;

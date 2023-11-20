@@ -36,7 +36,9 @@ APRatPolyType::APRatPolyType()
 
 ScalarArray APRatPolyType::allocate(dimn_t count) const
 {
-    return ScalarType::allocate(count);
+    auto result = ScalarType::allocate(count);
+    std::uninitialized_default_construct_n(static_cast<rational_poly_scalar*>(result.mut_pointer()), count);
+    return result;
 }
 
 void* APRatPolyType::allocate_single() const

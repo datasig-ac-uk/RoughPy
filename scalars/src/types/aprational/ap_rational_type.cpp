@@ -24,7 +24,9 @@ APRationalType::APRationalType()
 {}
 ScalarArray APRationalType::allocate(dimn_t count) const
 {
-    return ScalarType::allocate(count);
+    auto result = ScalarType::allocate(count);
+    std::uninitialized_default_construct_n(static_cast<rational_scalar_type*>(result.mut_pointer()), count);
+    return result;
 }
 void* APRationalType::allocate_single() const
 {

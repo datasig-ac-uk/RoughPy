@@ -625,7 +625,10 @@ scalars::KeyScalarArray python::py_to_buffer(
                 auto leaf_seq = py::reinterpret_borrow<py::sequence>(leaf);
                 for (auto obj : leaf_seq) {
                     auto val = result[idx++];
+                    std::cout << "Object " << py::str(obj).cast<string>()
+                    << " into " << val;
                     assign_py_object_to_scalar(val, obj);
+                    std::cout << " newval " << val << '\n';
                 }
             }
         } else {

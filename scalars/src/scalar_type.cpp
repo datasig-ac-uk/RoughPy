@@ -26,15 +26,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <roughpy/scalars/scalar_type.h>
+#include "scalar_type.h"
 
-#include "scalar/casts.h"
 #include "scalars_fwd.h"
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_array.h>
-#include <roughpy/scalars/scalar_types.h>
+#include "scalar.h"
+#include "scalar_array.h"
+#include "scalar_types.h"
 #include "random.h"
 
+#include "scalar/casts.h"
 
 #include <charconv>
 
@@ -89,7 +89,7 @@ ScalarType::~ScalarType() = default;
 
 ScalarArray ScalarType::allocate(dimn_t count) const
 {
-    return ScalarArray(this, m_device->raw_alloc(count, m_alignment));
+    return ScalarArray(this, m_device->raw_alloc(count*m_info.bytes, m_info.alignment));
 }
 
 void* ScalarType::allocate_single() const
