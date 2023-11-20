@@ -145,10 +145,19 @@ void KeyScalarArray::allocate_scalars(idimn_t count) {
     }
 }
 void KeyScalarArray::allocate_keys(idimn_t count) {
-    if (count == -1 && p_keys == nullptr) {
-        p_keys = new key_type[size()] {};
+    if (count != 0) {
+        if (p_keys != nullptr) { delete[] p_keys; }
+
+        if (count == -1) {
+            count = size();
+        }
+
+        RPY_CHECK(count == size());
+
+        p_keys = new key_type[count] {};
         m_owns_keys = true;
     }
+
 }
 
 
