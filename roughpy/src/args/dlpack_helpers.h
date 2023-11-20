@@ -35,6 +35,7 @@
 #include "roughpy_module.h"
 #include "dlpack.h"
 
+#include <roughpy/core/helpers.h>
 #include <roughpy/scalars/scalars_fwd.h>
 #include <roughpy/scalars/scalar_type.h>
 
@@ -66,7 +67,7 @@ convert_from_dl_datatype(const DLDataType& dtype) noexcept {
     return {
         convert_from_dl_typecode(dtype.code),
         static_cast<uint8_t>(dtype.bits / CHAR_BIT),
-        static_cast<uint8_t>(dtype.bits / CHAR_BIT),
+        round_up_divide(dtype.bits, CHAR_BIT),
         static_cast<uint8_t>(dtype.lanes & 0xFF)
     };
 }
