@@ -430,10 +430,11 @@ OutType LiteContext<Coefficients>::construct_impl(
 
     const auto size = data.data.size();
     std::vector<scalar_type> tmp;
-    if (data.data.type() != ctype()) {
+    const auto* this_type = ctype();
+    if (data.data.type() != this_type) {
         tmp.resize(data.data.size());
-        scalars::ScalarArray tmp_sa(ctype(), tmp.data(), size);
-        ctype()->convert_copy(tmp_sa, data.data);
+        scalars::ScalarArray tmp_sa(this_type, tmp.data(), size);
+        this_type->convert_copy(tmp_sa, data.data);
         raw_data = tmp;
     } else {
         raw_data = data.data.as_slice<const scalar_type>();
