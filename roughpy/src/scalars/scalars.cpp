@@ -125,6 +125,10 @@ void python::init_scalars(pybind11::module_& m)
         return ss.str();
     });
 
+    klass.def("to_float", [](const Scalar& self) {
+        return scalars::scalar_cast<double>(self);
+    });
+
     RPY_WARNING_POP
 }
 
@@ -219,7 +223,7 @@ static inline void update_dtype_and_allocate(
     if (options.type != nullptr) {
         result = scalars::KeyScalarArray(options.type);
         result.allocate_scalars(no_values);
-        result.allocate_keys();
+        result.allocate_keys(no_keys);
     } else if (no_values > 0) {
         RPY_THROW(py::type_error, "unable to deduce a suitable scalar type");
     }
@@ -625,10 +629,7 @@ scalars::KeyScalarArray python::py_to_buffer(
                 auto leaf_seq = py::reinterpret_borrow<py::sequence>(leaf);
                 for (auto obj : leaf_seq) {
                     auto val = result[idx++];
-                    std::cout << "Object " << py::str(obj).cast<string>()
-                    << " into " << val;
                     assign_py_object_to_scalar(val, obj);
-                    std::cout << " newval " << val << '\n';
                 }
             }
         } else {
