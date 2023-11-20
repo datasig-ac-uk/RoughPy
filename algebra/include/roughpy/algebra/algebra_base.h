@@ -302,6 +302,16 @@ private:
     RPY_SERIAL_LOAD_FN();
 };
 
+
+template <
+        typename Interface,
+        template <typename, template <typename> class> class DerivedImpl>
+inline std::ostream&
+operator<<(std::ostream& os, const AlgebraBase<Interface, DerivedImpl>& alg)
+{
+    return alg.print(os);
+}
+
 namespace dtl {
 
 RPY_EXPORT

@@ -705,14 +705,6 @@ std::ostream& AlgebraBase<Interface, DerivedImpl>::print(std::ostream& os) const
     return os;
 }
 
-template <
-        typename Interface,
-        template <typename, template <typename> class> class DerivedImpl>
-inline std::ostream&
-operator<<(std::ostream& os, const AlgebraBase<Interface, DerivedImpl>& alg)
-{
-    return alg.print(os);
-}
 
 #undef RPY_CHECK_CONTEXTS
 template <
