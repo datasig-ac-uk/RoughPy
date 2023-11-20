@@ -129,9 +129,6 @@ void ScalarType::convert_copy(
     if (dst.device() != m_device) {
         RPY_THROW(std::runtime_error, "unable to copy into device memory");
     }
-    if (src.device() != m_device) {
-        RPY_THROW(std::runtime_error, "unable to copy from device memory");
-    }
 
     if (!dtl::scalar_convert_copy(
                 dst.mut_pointer(),
