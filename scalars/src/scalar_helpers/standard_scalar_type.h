@@ -87,16 +87,14 @@ public:
 template <typename ScalarImpl>
 ScalarArray StandardScalarType<ScalarImpl>::allocate(dimn_t count) const
 {
-    auto buf = m_device->raw_alloc(count * m_info.bytes, m_info.alignment);
+    RPY_CHECK(count > 0);
+    ScalarArray result(this, m_device->raw_alloc(count*m_info.bytes, m_info.alignment));;
     {
-        auto slice = buf.template as_mut_slice<ScalarImpl>();
-        std::uninitialized_fill(
-            slice.begin(),
-            slice.end(),
-            ScalarImpl(0));
+        auto slice = result.mut_buffer().template as_mut_slice<ScalarImpl>();
+        std::uninitialized_fill(slice.begin(), slice.end(), ScalarImpl(0));
     }
 
-    return ScalarArray(this, std::move(buf));
+    return result;
 }
 
 template <typename ScalarImpl>
