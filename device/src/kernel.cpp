@@ -33,6 +33,8 @@
 #include <roughpy/device/kernel.h>
 #include <roughpy/device/queue.h>
 
+#include "device_handle.h"
+
 #include <roughpy/core/helpers.h>
 
 using namespace rpy;
