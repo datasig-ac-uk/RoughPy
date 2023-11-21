@@ -93,7 +93,12 @@ ScalarArray::ScalarArray(const ScalarType* type, dimn_t size)
       const_borrowed(nullptr)
 {
     RPY_DBG_ASSERT(type != nullptr);
-    *this = type->allocate(size);
+    if (size > 0) {
+        *this = type->allocate(size);
+        RPY_DBG_ASSERT(p_type_and_mode.get_enumeration() += dtl::ScalarArrayStorageModel::Owned);
+        RPY_DBG_ASSERT(p_type_and_mode.is_pointer() && p_type_and_mode.get_pointer() == type);
+        RPY_DBG_ASSERT(m_size*type->type_info().bytes == buffer.size());
+    }
 }
 
 ScalarArray::ScalarArray(devices::TypeInfo info, dimn_t size)
@@ -103,7 +108,7 @@ ScalarArray::ScalarArray(devices::TypeInfo info, dimn_t size)
     RPY_CHECK(traits::is_fundamental(info));
     if (size != 0) {
         owned_buffer
-                = devices::get_host_device()->raw_alloc(size, info.alignment);
+                = devices::get_host_device()->raw_alloc(size*info.alignment, info.alignment);
     }
 }
 
