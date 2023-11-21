@@ -96,8 +96,9 @@ add_roughpy_component(Device
 )
 
 
+
 target_precompile_headers(RoughPy_Device PUBLIC
-    "external/libalgebra_lite/include/libalgebra_lite/polynomial.h"
+        "${CMAKE_SOURCE_DIR}/external/libalgebra_lite/include/libalgebra_lite/polynomial.h"
 )
 
 
