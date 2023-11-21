@@ -29,7 +29,6 @@
 #define ROUGHPY_DEVICE_KERNEL_H_
 
 #include "core.h"
-#include "device_handle.h"
 #include "device_object_base.h"
 #include "event.h"
 #include "kernel_arg.h"
