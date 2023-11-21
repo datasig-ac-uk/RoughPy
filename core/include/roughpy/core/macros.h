@@ -86,7 +86,7 @@
 #if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__))            \
         && !defined(RPY_DEBUG)
 #  define RPY_DEBUG
-#else
+#elseif !defined(RPY_DEBUG)
 #  undef RPY_DEBUG
 #endif
 
@@ -410,7 +410,11 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
     RPY_INVOKE_VA(RPY_THROW_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
 #ifdef RPY_DEBUG
-#  define RPY_DBG_ASSERT(ARG) assert(ARG)
+#  if defined(RPY_GCC) || defined(RPY_CLANG)
+#    define RPY_DBG_ASSERT(ARG) assert(ARG)
+#  else
+#    define RPY_DBG_ASSERT(ARG) assert(ARG)
+#  endif
 #else
 #  define RPY_DBG_ASSERT(ARG) (void) 0
 #endif
