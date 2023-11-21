@@ -95,9 +95,9 @@ ScalarArray::ScalarArray(const ScalarType* type, dimn_t size)
     RPY_DBG_ASSERT(type != nullptr);
     if (size > 0) {
         *this = type->allocate(size);
-        RPY_DBG_ASSERT(p_type_and_mode.get_enumeration() += dtl::ScalarArrayStorageModel::Owned);
+        RPY_DBG_ASSERT(p_type_and_mode.get_enumeration() == dtl::ScalarArrayStorageModel::Owned);
         RPY_DBG_ASSERT(p_type_and_mode.is_pointer() && p_type_and_mode.get_pointer() == type);
-        RPY_DBG_ASSERT(m_size*type->type_info().bytes == buffer.size());
+        RPY_DBG_ASSERT(m_size*type->type_info().bytes == owned_buffer.size());
     }
 }
 
