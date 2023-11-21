@@ -97,7 +97,7 @@ add_roughpy_component(Device
 
 
 target_precompile_headers(RoughPy_Device PUBLIC
-    "include/roughpy/device/core.h"
+    "external/libalgebra_lite/include/libalgebra_lite/polynomial.h"
 )
 
 
