@@ -22,8 +22,9 @@ Welcome to RoughPy's documentation!
 `Source Repository <https://github.com/datasig-ac-uk/RoughPy>`_ |
 `Issue Tracker <https://github.com/datasig-ac-uk/RoughPy/issues>`_ |
 
-RoughPy is the new package for working with streamed data and all the algebra associated with it.
-It has C++ and Python interfaces for easy interaction.
+RoughPy is a package for working with streaming data as rough paths, and working with algebraic objects such as free tensors, shuffle tensors, and elements of the free Lie algebra.
+
+This library is currently in an alpha stage, and as such many features are still incomplete or not fully implemented. Please bear this in mind when looking at the source code.
 
 .. grid:: 2
 
