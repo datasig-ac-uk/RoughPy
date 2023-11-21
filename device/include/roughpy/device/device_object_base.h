@@ -80,7 +80,7 @@ class RefCountBase : public Interface
 
 public:
     using Interface::Interface;
-    using typename InterfaceBase::reference_count_type;
+    using reference_count_type = dimn_t;
 
     reference_count_type inc_ref() noexcept override;
     reference_count_type dec_ref() noexcept override;
@@ -191,6 +191,7 @@ ObjectBase<Interface, Derived>::ObjectBase(ObjectBase&& other) noexcept
 template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>::~ObjectBase()
 {
+    RPY_DBG_ASSERT(!p_impl || p_impl->ref_count() > 0);
     if (p_impl && p_impl->dec_ref() == 1) { delete p_impl; }
     p_impl = nullptr;
 }
