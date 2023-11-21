@@ -35,8 +35,7 @@
 #include <roughpy/device/buffer.h>
 
 #include "host_decls.h"
-#include "opencl/ocl_buffer.h"
-#include "opencl/ocl_headers.h"
+
 
 #include <atomic>
 
@@ -72,7 +71,7 @@ public:
     CPUBuffer(void* raw_ptr, dimn_t size);
     CPUBuffer(const void* raw_ptr, dimn_t size);
 
-    ~CPUBuffer();
+    ~CPUBuffer() override;
 
     std::unique_ptr<dtl::InterfaceBase> clone() const override;
     Device device() const noexcept override;

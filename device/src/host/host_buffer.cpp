@@ -33,7 +33,7 @@
 
 #include <roughpy/device/device_handle.h>
 #include <roughpy/device/device_object_base.h>
-
+#include "host_device.h"
 #include "opencl/ocl_device.h"
 #include "opencl/ocl_handle_errors.h"
 
@@ -57,7 +57,17 @@ CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size)
       flags(IsConst)
 {}
 
-CPUBuffer::~CPUBuffer() {}
+CPUBuffer::~CPUBuffer()
+{
+    if (raw_buffer.ptr != nullptr) {
+        RPY_DBG_ASSERT(raw_buffer.size != 0);
+        get_host_device()->raw_free(raw_buffer.ptr, raw_buffer.size);
+        raw_buffer = { nullptr, 0};
+    } else
+    {
+        RPY_DBG_ASSERT(raw_buffer.size == 0);
+    }
+}
 
 BufferMode CPUBuffer::mode() const
 {
