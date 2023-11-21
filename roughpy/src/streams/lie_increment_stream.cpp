@@ -29,8 +29,6 @@
 
 #include <roughpy/core/helpers.h>
 #include <roughpy/scalars/key_scalar_array.h>
-#include <roughpy/scalars/owned_scalar_array.h>
-#include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/streams/lie_increment_stream.h>
 #include <roughpy/streams/stream.h>
@@ -45,6 +43,8 @@ using namespace rpy;
 using namespace rpy::python;
 using namespace pybind11::literals;
 
+using scalars::scalar_cast;
+
 static const char* LIE_INCR_STREAM_DOC
         = R"rpydoc(A basic stream type defined by a sequence of increments
 of fixed size at specified time intervals.
@@ -55,22 +55,11 @@ void buffer_to_indices(
         const py::buffer_info& info
 )
 {
-    auto count = info.size;
-    const auto* ptr = info.ptr;
+    indices.resize(info.size);
+    scalars::ScalarArray dst(indices.data(), indices.size());
+    scalars::ScalarArray src(py_buffer_to_type_info(info), info.ptr, info.size);
 
-    indices.resize(count);
-    auto* dst = indices.data();
-    if (info.format[0] == 'd') {
-        memcpy(dst, ptr, count * sizeof(double));
-    } else {
-        auto conversion
-                = scalars::get_conversion(py_buffer_to_type_id(info), "f64");
-        conversion(
-                scalars::ScalarPointer{nullptr, dst},
-                scalars::ScalarPointer{nullptr, ptr},
-                count
-        );
-    }
+    (*scalars::scalar_type_of<param_t>())->convert_copy(dst, src);
 }
 
 static py::object lie_increment_stream_from_increments(
@@ -159,10 +148,10 @@ static py::object lie_increment_stream_from_increments(
 
                     const auto pos = static_cast<dimn_t>(found - begin);
 
-                    add_index(row[pos].to_scalar_t());
+                    add_index(scalar_cast<param_t>(row[pos]));
                 } else {
                     RPY_CHECK(icol < row.size());
-                    add_index(row[icol].to_scalar_t());
+                    add_index(scalar_cast<param_t>(row[icol]));
                 }
             }
         } else if (py::isinstance<py::sequence>(indices_arg)) {

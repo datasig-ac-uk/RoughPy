@@ -1,0 +1,60 @@
+//
+// Created by user on 06/11/23.
+//
+
+#include "ap_rational_type.h"
+#include "scalar_array.h"
+#include "scalar.h"
+
+using namespace rpy;
+using namespace rpy::scalars;
+
+static constexpr RingCharacteristics
+        ap_rational_ring_characteristics{true, true, false, false};
+
+APRationalType::APRationalType()
+    : ScalarType(
+              "Rational",
+              "Rational",
+              alignof(rational_scalar_type),
+              devices::get_host_device(),
+              devices::type_info<rational_scalar_type>(),
+              ap_rational_ring_characteristics
+      )
+{}
+ScalarArray APRationalType::allocate(dimn_t count) const
+{
+    auto result = ScalarType::allocate(count);
+    std::uninitialized_default_construct_n(static_cast<rational_scalar_type*>(result.mut_pointer()), count);
+    return result;
+}
+void* APRationalType::allocate_single() const
+{
+    return ScalarType::allocate_single();
+}
+void APRationalType::free_single(void* ptr) const
+{
+    ScalarType::free_single(ptr);
+}
+void APRationalType::convert_copy(ScalarArray& dst, const ScalarArray& src)
+        const
+{
+    ScalarType::convert_copy(dst, src);
+}
+void APRationalType::assign(ScalarArray& dst, Scalar value) const
+{
+    ScalarType::assign(dst, value);
+}
+
+const ScalarType* APRationalType::get() noexcept
+{
+    static const APRationalType type;
+    return &type;
+}
+
+template <>
+RPY_EXPORT optional<const ScalarType*>
+scalars::dtl::ScalarTypeOfImpl<rational_scalar_type>::get() noexcept
+{
+    return APRationalType::get();
+}

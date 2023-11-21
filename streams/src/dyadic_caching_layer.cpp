@@ -31,6 +31,8 @@
 
 #include <roughpy/streams/dyadic_caching_layer.h>
 
+#include <roughpy/platform/archives.h>
+
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/sync/sharable_lock.hpp>
 #include <boost/uuid/uuid_generators.hpp>

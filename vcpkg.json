@@ -61,5 +61,8 @@
   }, {
     "name" : "boost-interprocess",
     "version>=" : "1.83.0"
+  }, {
+    "name" : "opencl",
+    "version>=" : "v2023.02.06#2"
   } ]
 }

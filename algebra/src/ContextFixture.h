@@ -37,7 +37,7 @@
 
 #include <roughpy/algebra/context.h>
 #include <roughpy/core/types.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 #include <roughpy/scalars/scalar_type.h>
 
 namespace rpy {

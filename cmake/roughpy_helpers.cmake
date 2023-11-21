@@ -448,6 +448,8 @@ function(add_roughpy_component _name)
         set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "" FORCE)
     endif ()
 
+
+
     _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps _interface_deps)
     _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps _private_deps)
 
@@ -470,6 +472,9 @@ function(add_roughpy_component _name)
                 PRIVATE
                 ${_pvt_nrpy_deps}
         )
+        if (ROUGHPY_ENABLE_DBG_ASSERT)
+            target_compile_definitions(${_real_name} PRIVATE RPY_DEBUG=1)
+        endif ()
 
         foreach (_rpy_dep IN LISTS _pvt_rpy_deps)
             get_target_property(_dep_type ${_rpy_dep} TYPE)

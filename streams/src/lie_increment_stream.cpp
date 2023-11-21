@@ -80,16 +80,16 @@ LieIncrementStream::LieIncrementStream(
              * the provided increments have degree 1.
              * TODO: Add support for key-scalar streams.
              */
-
+            const auto info = buffer.type_info();
             const auto width = sch.width_without_param();
 
-            const char* dptr = buffer.raw_cast<const char*>();
-            const auto stride = buffer.type()->itemsize() * width;
+            const char* dptr = buffer.as_slice<const char>().data();
+            const auto stride = info.bytes * width;
             param_t previous_param = 0.0;
             for (auto index : indices) {
 
                 algebra::VectorConstructionData cdata{
-                        scalars::KeyScalarArray(buffer.type(), dptr, width),
+                        scalars::KeyScalarArray(*buffer.type(), dptr, width),
                         md.cached_vector_type};
 
                 auto [it, inserted]

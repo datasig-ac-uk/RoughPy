@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 06/07/23.
@@ -37,8 +38,8 @@
 #include <roughpy/platform/archives.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/serialization.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_serialization.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include "scalars.h"
 
@@ -124,9 +125,6 @@ static PyObject* monomial_degree(PyObject* self, PyObject* RPY_UNUSED_VAR);
 
 static PyObject* monomial___getstate__(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
-
-    std::cout << cast_mon(self) <<
-            '\n';
     std::stringstream ss;
     try {
         archives::BinaryOutputArchive oa(ss);
@@ -156,8 +154,10 @@ static PyObject* monomial___setstate__(PyObject* self, PyObject* args)
         return nullptr;
     }
 
-    std::string sdata(PyByteArray_AsString((PyObject*)data),
-                      PyByteArray_Size((PyObject*) data));
+    std::string sdata(
+            PyByteArray_AsString((PyObject*) data),
+            PyByteArray_Size((PyObject*) data)
+    );
     try {
         std::stringstream ss(sdata);
         archives::BinaryInputArchive ia(ss);
@@ -235,7 +235,7 @@ static PyNumberMethods RPyMonomial_number{
 
 PyTypeObject RPyMonomial_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)    //
-        "roughpy.Monomial",                 /* tp_name */
+        "roughpy.Monomial",                  /* tp_name */
         sizeof(RPyMonomial),                 /* tp_basicsize */
         0,                                   /* tp_itemsize */
         nullptr,                             /* tp_dealloc */
@@ -349,9 +349,8 @@ polynomial___getstate__(PyObject* self, PyObject* RPY_UNUSED_VAR)
     return PyByteArray_FromStringAndSize(data.data(), data.size());
 }
 
-
-static PyObject*
-polynomial___setstate__(PyObject* self, PyObject* args) {
+static PyObject* polynomial___setstate__(PyObject* self, PyObject* args)
+{
 
     PyByteArrayObject* data = nullptr;
 
@@ -368,20 +367,20 @@ polynomial___setstate__(PyObject* self, PyObject* args) {
 
     Py_RETURN_NONE;
 }
-
-
 }
 
 PyObject* PyPolynomial_FromPolynomial(scalars::rational_poly_scalar&& poly
 ) noexcept;
 
 static PyMethodDef RPyPolynomial_methods[] = {
-        {"degree", (PyCFunction) &polynomial_degree, METH_NOARGS, nullptr},
-        {"__getstate__", (PyCFunction) &polynomial___getstate__, METH_NOARGS,
-         nullptr},
-        {"__setstate__", (PyCFunction) &polynomial___setstate__, METH_VARARGS,
-         nullptr},
-        { nullptr,                          nullptr,           0, nullptr}
+        {      "degree",(PyCFunction) &polynomial_degree,METH_NOARGS, nullptr                                                          },
+        {"__getstate__",
+         (PyCFunction) &polynomial___getstate__,
+         METH_NOARGS, nullptr                                                  },
+        {"__setstate__",
+         (PyCFunction) &polynomial___setstate__,
+         METH_VARARGS, nullptr                                                 },
+        {       nullptr,                          nullptr,           0, nullptr}
 };
 
 static PyMappingMethods RPyPolynomial_mapping{
@@ -430,7 +429,7 @@ static PyNumberMethods RPyPolynomial_number{
 
 PyTypeObject RPyPolynomial_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)      //
-        "roughpy.Polynomial",                 /* tp_name */
+        "roughpy.Polynomial",                  /* tp_name */
         sizeof(RPyPolynomial),                 /* tp_basicsize */
         0,                                     /* tp_itemsize */
         nullptr,                               /* tp_dealloc */
@@ -1197,12 +1196,12 @@ PyObject* polynomial_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
          */
         auto* monomial = PyTuple_GetItem(args, 0);
         Py_INCREF(monomial);
-        auto* scalar = PyTuple_GetItem(args, 1);
-        Py_INCREF(scalar);
+        auto* py_scalar = PyTuple_GetItem(args, 1);
+        Py_INCREF(py_scalar);
 
         if (!is_monomial(monomial)) {
             Py_DECREF(monomial);
-            Py_DECREF(scalar);
+            Py_DECREF(py_scalar);
             PyErr_SetString(
                     PyExc_TypeError,
                     "expected a monomial as the first argument"
@@ -1212,9 +1211,9 @@ PyObject* polynomial_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
 
         const auto& mon = cast_mon(monomial);
         rat_t scal;
-        if (!py_scalar_to_rat(scal, scalar)) {
+        if (!py_scalar_to_rat(scal, py_scalar)) {
             Py_DECREF(monomial);
-            Py_DECREF(scalar);
+            Py_DECREF(py_scalar);
             PyErr_SetString(
                     PyExc_TypeError,
                     "expected a scalar as the second argument"
@@ -1222,7 +1221,7 @@ PyObject* polynomial_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
             return nullptr;
         }
         Py_DECREF(monomial);
-        Py_DECREF(scalar);
+        Py_DECREF(py_scalar);
 
         if (scal != 0) { result = poly_t(mon, scal); }
     } else {
@@ -1265,12 +1264,7 @@ PyObject* polynomial_subscript(PyObject* self, PyObject* index)
 {
     const auto& poly = cast_poly(self);
     if (is_monomial(index)) {
-        return py::cast(scalars::Scalar(
-                                scalars::ScalarType::of<rat_t>(),
-                                poly[cast_mon(index)]
-                        ))
-                .release()
-                .ptr();
+        return py::cast(scalars::Scalar(poly[cast_mon(index)])).release().ptr();
     }
 
     PyErr_SetString(

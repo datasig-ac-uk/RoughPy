@@ -200,7 +200,7 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
                     break;
                 }
             case streams::ChannelType::Categorical: {
-                lie_elt[key] += pmd.scalar_type->one();
+                lie_elt[key] += scalars::Scalar(1);
                 break;
             }
             case streams::ChannelType::Lie:

@@ -32,7 +32,8 @@
 
 #include <roughpy/streams/channels/stream_channel.h>
 
-
+#include <roughpy/scalars/scalar_array.h>
+#include <roughpy/scalars/scalar_type.h>
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -71,19 +72,18 @@ const std::vector<string>& StreamChannel::get_variants() const
 void StreamChannel::set_lead_lag(bool new_value) {}
 bool StreamChannel::is_lead_lag() const { return false; }
 void StreamChannel::convert_input(
-        scalars::ScalarPointer& dst, const scalars::ScalarPointer& src,
-        dimn_t count
+        scalars::ScalarArray& dst, const scalars::ScalarArray& src
 ) const
 {
-    if (count == 0) { return; }
+    if (src.empty() == 0) { return; }
     RPY_CHECK(!src.is_null());
-    RPY_CHECK(dst.type() != nullptr);
+    RPY_CHECK(!dst.empty() || dst.type() != nullptr);
 
-    if (dst.is_null()) {
-        dst = dst.type()->allocate(count);
+    if (dst.empty()) {
+        dst = (*dst.type())->allocate(src.size());
     }
 
-    dst.type()->convert_copy(dst, src, count);
+    (*dst.type())->convert_copy(dst, src);
 }
 
 
