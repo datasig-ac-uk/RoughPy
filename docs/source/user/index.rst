@@ -12,7 +12,7 @@ details are found in :doc:`../reference/index`.
    :maxdepth: 1
 
    whatisroughpy
-   Installation <https://github.com/datasig-ac-uk/RoughPy>
+   installation
    quickstart
    absolute_beginners
 
