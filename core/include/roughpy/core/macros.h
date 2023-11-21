@@ -86,7 +86,7 @@
 #if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__))            \
         && !defined(RPY_DEBUG)
 #  define RPY_DEBUG
-#elseif !defined(RPY_DEBUG)
+#elif !defined(RPY_DEBUG)
 #  undef RPY_DEBUG
 #endif
 
