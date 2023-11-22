@@ -260,12 +260,18 @@ static bool try_fill_buffer_dlpack(
     const auto* tensor_stype
             = python::scalar_type_of_dl_info(dltensor.dtype, dltensor.device);
     if (options.type == nullptr) {
-        options.type = tensor_stype;
+        if (tensor_stype != nullptr) {
+            options.type = tensor_stype;
+        } else {
+            options.type
+                    = scalar_type_for_dl_info(dltensor.dtype, dltensor.device);
+        }
     }
+    RPY_DBG_ASSERT(options.type != nullptr);
+
     if (buffer.type() == nullptr) {
         buffer = scalars::KeyScalarArray(options.type);
     }
-    RPY_DBG_ASSERT(options.type != nullptr);
 
     if (data == nullptr) {
         // The array is empty, empty result.
