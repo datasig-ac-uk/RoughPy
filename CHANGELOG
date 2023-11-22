@@ -1,3 +1,7 @@
+Version 0.1.0:
+  - Added framework for integrating device support and redesigned scalars module to accommodate the changes.
+
+
 Version 0.0.8:
   - Disabled linking to BLAS/LAPACK to reduce compile times whilst under development.
   - Greatly expanded the serialization support internally.
