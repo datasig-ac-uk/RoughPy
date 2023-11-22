@@ -47,15 +47,18 @@ using namespace rpy::algebra;
 BasicContextSpec rpy::algebra::get_context_spec(const context_pointer& ctx)
 {
     if (!ctx) { return {"", "", 0, 0}; }
-    return {ctx->ctype()->id(), ctx->backend(), ctx->width(), ctx->depth()};
+    return {string(ctx->ctype()->id()), ctx->backend(), ctx->width(), ctx->depth()};
 }
 
 context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)
 {
     RPY_CHECK(spec.stype_id != "");
 
+    auto tp_o = scalars::get_type(spec.stype_id);
+
+    RPY_CHECK(tp_o);
     return get_context(
-            spec.width, spec.depth, scalars::get_type(spec.stype_id),
+            spec.width, spec.depth, *tp_o,
             {
                     {"backend", spec.backend}
     }
@@ -175,7 +178,7 @@ Lie Context::cbh(const std::vector<Lie>& lies, VectorType vtype) const
     if (lies.size() == 1) { return convert(lies[0], vtype); }
 
     FreeTensor collector = zero_free_tensor(vtype);
-    collector[0] = scalars::Scalar(1);
+    collector[0] = 1;
 
     if (!lies.empty()) { cbh_fallback(collector, lies); }
 
@@ -187,7 +190,7 @@ Lie Context::cbh(Slice<const Lie*> lies, VectorType vtype) const {
     }
 
     FreeTensor collector = zero_free_tensor(vtype);
-    collector[0] = scalars::Scalar(1);
+    collector[0] = 1;
 
     cbh_fallback(collector, lies);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -57,6 +57,8 @@ class Slice
 
 public:
     constexpr Slice() = default;
+    Slice(const Slice&) = default;
+    Slice(Slice&&) noexcept = default;
 
     constexpr Slice(T& num) : p_data(&num), m_size(1) {}
 
@@ -67,14 +69,48 @@ public:
             typename
             = enable_if_t<is_same<typename Container::value_type, T>::value>>
     constexpr Slice(Container& container)
-        : p_data(container.data()), m_size(container.size())
+        : p_data(container.data()),
+          m_size(container.size())
+    {}
+
+    template <
+            typename Container,
+            typename = enable_if_t<
+                    is_same<remove_cv_t<typename Container::value_type>,
+                            T>::value>>
+    constexpr Slice(const Container& container)
+        : p_data(container.data()),
+          m_size(container.size())
     {}
 
     template <std::size_t N>
-    constexpr Slice(T (&array)[N]) : p_data(array), m_size(N)
+    constexpr Slice(T (&array)[N]) : p_data(array),
+                                     m_size(N)
     {}
 
     constexpr Slice(T* ptr, std::size_t N) : p_data(ptr), m_size(N) {}
+
+    constexpr operator Slice<add_const_t<T>> () const noexcept
+    {
+        return { p_data, m_size };
+    }
+
+    template <typename Container>
+    enable_if_t<
+            is_const<T>::value
+                    && is_same<
+                            remove_const_t<T>,
+                            typename Container::value_type>::value,
+            Slice>
+    operator=(const Container& container) noexcept
+    {
+        p_data = container.data();
+        m_size = container.size();
+        return *this;
+    }
+
+    Slice& operator=(const Slice&) = default;
+    Slice& operator=(Slice&&) noexcept = default;
 
     template <typename I>
     constexpr enable_if_t<is_integral<I>::value, const T&> operator[](I i
@@ -92,47 +128,43 @@ public:
         return p_data[i];
     }
 
-    RPY_NO_DISCARD
-    constexpr bool empty() const noexcept
+    RPY_NO_DISCARD constexpr bool empty() const noexcept
     {
         return p_data == nullptr || m_size == 0;
     }
 
-    RPY_NO_DISCARD
-    constexpr std::size_t size() const noexcept { return m_size; }
+    RPY_NO_DISCARD constexpr std::size_t size() const noexcept
+    {
+        return m_size;
+    }
 
-    RPY_NO_DISCARD
-    constexpr T* begin() noexcept { return p_data; }
-    RPY_NO_DISCARD
-    constexpr T* end() noexcept { return p_data + m_size; }
-    RPY_NO_DISCARD
-    constexpr const T* begin() const { return p_data; }
-    RPY_NO_DISCARD
-    constexpr const T* end() const { return p_data + m_size; }
+    RPY_NO_DISCARD constexpr T* data() const noexcept { return p_data; }
 
-    RPY_NO_DISCARD
-    constexpr std::reverse_iterator<T*> rbegin() noexcept
+    RPY_NO_DISCARD constexpr T* begin() noexcept { return p_data; }
+    RPY_NO_DISCARD constexpr T* end() noexcept { return p_data + m_size; }
+    RPY_NO_DISCARD constexpr const T* begin() const { return p_data; }
+    RPY_NO_DISCARD constexpr const T* end() const { return p_data + m_size; }
+
+    RPY_NO_DISCARD constexpr std::reverse_iterator<T*> rbegin() noexcept
     {
         return std::reverse_iterator<T*>(p_data + m_size);
     }
-    RPY_NO_DISCARD
-    constexpr std::reverse_iterator<T*> rend() noexcept
+    RPY_NO_DISCARD constexpr std::reverse_iterator<T*> rend() noexcept
     {
         return std::reverse_iterator<T*>(p_data);
     }
-    RPY_NO_DISCARD
-    constexpr std::reverse_iterator<const T*> rbegin() const noexcept
+    RPY_NO_DISCARD constexpr std::reverse_iterator<const T*>
+    rbegin() const noexcept
     {
         return std::reverse_iterator<const T*>(p_data + m_size);
     }
-    RPY_NO_DISCARD
-    constexpr std::reverse_iterator<const T*> rend() const noexcept
+    RPY_NO_DISCARD constexpr std::reverse_iterator<const T*>
+    rend() const noexcept
     {
         return std::reverse_iterator<const T*>(p_data);
     }
 
-    RPY_NO_DISCARD
-    operator std::vector<T>() const
+    RPY_NO_DISCARD operator std::vector<remove_const_t<T>>() const
     {
         std::vector<T> result;
         result.reserve(m_size);
@@ -140,6 +172,52 @@ public:
         return result;
     }
 };
+
+template <>
+class Slice<void>
+{
+    void* p_data = nullptr;
+    dimn_t m_size = 0;
+
+public:
+    constexpr Slice() = default;
+
+    template <typename T>
+    constexpr Slice(T& num) : p_data(&num),
+                              m_size(1)
+    {}
+
+    constexpr Slice(std::nullptr_t) : p_data(nullptr), m_size(0) {}
+
+    template <typename T>
+    constexpr Slice(std::vector<T>& container)
+        : p_data(container.data()),
+          m_size(container.size())
+    {}
+
+    template <typename T, std::size_t N>
+    constexpr Slice(T (&array)[N]) : p_data(array),
+                                     m_size(N)
+    {}
+
+    template <typename T>
+    constexpr Slice(T* ptr, std::size_t N) : p_data(ptr),
+                                             m_size(N)
+    {}
+
+    RPY_NO_DISCARD constexpr bool empty() const noexcept
+    {
+        return p_data == nullptr || m_size == 0;
+    }
+
+    RPY_NO_DISCARD constexpr std::size_t size() const noexcept
+    {
+        return m_size;
+    }
+
+    RPY_NO_DISCARD constexpr void* data() const noexcept { return p_data; }
+};
+
 }// namespace rpy
 
 #endif// ROUGHPY_CORE_SLICE_H_

@@ -18,6 +18,7 @@ project(RoughPy VERSION ${_rpy_version})
 include(CMakeDependentOption)
 include(CheckIncludeFileCXX)
 
+option(ROUGHPY_ENABLE_DBG_ASSERT "enable debug assertions at runtime" OFF)
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Buildg the pymodule in the project roughpy directory" OFF)
@@ -124,6 +125,9 @@ else ()
         message(STATUS "Adding python virtual environment to path")
         list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}")
     endif ()
+    if (DEFINED ROUGHPY_PYTHON_VENV_DIR)
+        list(PREPEND CMAKE_PREFIX_PATH "${ROUGHPY_PYTHON_VENV_DIR}")
+    endif()
 endif ()
 
 
@@ -178,6 +182,8 @@ find_package(SndFile CONFIG REQUIRED)
 
 # This package is c++17 so cannot be used if changing to a lower standard
 find_package(tomlplusplus CONFIG REQUIRED)
+
+find_package(OpenCL REQUIRED)
 
 message(STATUS "Target architecture ${RPY_ARCH}")
 if (NOT ROUGHPY_DISABLE_BLAS)
@@ -287,10 +293,10 @@ find_package(PCGRandom REQUIRED)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (LINUX)
-    set(CMAKE_INSTALL_RPATH "$ORIGIN")
-elseif (APPLE)
+if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
+elseif (NOT WIN32)
+    set(CMAKE_INSTALL_RPATH "$ORIGIN")
 endif ()
 
 add_subdirectory(external/libalgebra_lite)
@@ -298,15 +304,13 @@ add_subdirectory(external/libalgebra_lite)
 
 add_subdirectory(core)
 add_subdirectory(platform)
+add_subdirectory(device)
 add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
 add_subdirectory(roughpy)
 
-if (ROUGHPY_GENERATE_DEVICE_CODE)
-    add_subdirectory(device)
-endif ()
 
 if (ROUGHPY_BUILD_LA_CONTEXTS)
     set(LIBALGEBRA_NO_SERIALIZATION ON CACHE INTERNAL "")

@@ -27,7 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "numpy.h"
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
+#include <roughpy/scalars/scalar_type.h>
 
 using namespace rpy;
 
@@ -80,11 +81,11 @@ const scalars::ScalarType* python::npy_dtype_to_ctype(pybind11::dtype dtype)
     const scalars::ScalarType* type = nullptr;
 
     switch (dtype.num()) {
-        case NPY_FLOAT: type = scalars::ScalarType::of<float>(); break;
-        case NPY_DOUBLE: type = scalars::ScalarType::of<double>(); break;
+        case NPY_FLOAT: type = *scalars::ScalarType::of<float>(); break;
+        case NPY_DOUBLE: type = *scalars::ScalarType::of<double>(); break;
         default:
             // Default behaviour, promote to double
-            type = scalars::ScalarType::of<double>();
+            type = *scalars::ScalarType::of<double>();
             break;
     }
 
@@ -92,8 +93,8 @@ const scalars::ScalarType* python::npy_dtype_to_ctype(pybind11::dtype dtype)
 }
 pybind11::dtype python::ctype_to_npy_dtype(const scalars::ScalarType* type)
 {
-    if (type == scalars::ScalarType::of<double>()) { return py::dtype("d"); }
-    if (type == scalars::ScalarType::of<float>()) { return py::dtype("f"); }
+    if (type == *scalars::ScalarType::of<double>()) { return py::dtype("d"); }
+    if (type == *scalars::ScalarType::of<float>()) { return py::dtype("f"); }
 
     RPY_THROW(py::type_error, "unsupported data type");
 }

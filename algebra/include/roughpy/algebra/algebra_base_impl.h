@@ -35,6 +35,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include "context.h"
 #include "interfaces/algebra_interface.h"
@@ -704,14 +705,6 @@ std::ostream& AlgebraBase<Interface, DerivedImpl>::print(std::ostream& os) const
     return os;
 }
 
-template <
-        typename Interface,
-        template <typename, template <typename> class> class DerivedImpl>
-inline std::ostream&
-operator<<(std::ostream& os, const AlgebraBase<Interface, DerivedImpl>& alg)
-{
-    return alg.print(os);
-}
 
 #undef RPY_CHECK_CONTEXTS
 template <

@@ -57,11 +57,12 @@ algebra::Lie streams::ExternalDataStream::log_signature_impl(
 
     tmp.data_stream.reserve_size(num_increments);
     const auto width = static_cast<dimn_t>(metadata().width);
+    const auto info = metadata().data_scalar_type->type_info();
 
-    scalars::ScalarPointer buf_ptr(buffer);
+    const auto* buf_ptr = buffer.as_slice<const byte>().data();
     for (dimn_t i = 0; i < num_increments; ++i) {
-        tmp.data_stream.push_back({buf_ptr, width});
-        buf_ptr += width;
+        tmp.data_stream.push_back(scalars::ScalarArray{info, buf_ptr, width});
+        buf_ptr += width*info.bytes;
     }
 
     return ctx.log_signature(tmp);

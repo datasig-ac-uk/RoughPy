@@ -31,6 +31,7 @@
 #include <cstring>
 #include <sstream>
 
+#include <roughpy/platform/archives.h>
 #include <roughpy/intervals/partition.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/streams/stream.h>
@@ -231,14 +232,15 @@ static int parse_sig_args(
                 ctype = ((python::PyScalarMetaType*) dtype)->tp_ctype;
             } else if (Py_TYPE(dtype) == &PyUnicode_Type) {
                 const auto* dtype_str = PyUnicode_AsUTF8(dtype);
-                ctype = scalars::get_type(dtype_str);
-                if (ctype == nullptr) {
+                const auto ctype_o = scalars::get_type(dtype_str);
+                if (ctype_o) {
                     PyErr_SetString(
                             PyExc_TypeError,
                             "unrecognised scalar type id"
                     );
                     return -1;
                 }
+                ctype = *ctype_o;
             }
 #ifdef ROUGHPY_WITH_NUMPY
             else if (Py_TYPE(dtype) == &PyArrayDescr_Type) {

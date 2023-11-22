@@ -33,9 +33,10 @@
 
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include <roughpy/platform/serialization.h>
+#include <roughpy/platform/archives.h>
 #include <sstream>
 
 using namespace rpy;
@@ -50,7 +51,7 @@ TEST(scalar, CreateFromDoubleTypeInference)
 
 TEST(scalar, CreateWithTypeCoercion)
 {
-    Scalar scalar(ScalarType::of<float>(), 3.142);
+    Scalar scalar(*ScalarType::of<float>(), 3.142);
 
     ASSERT_EQ(scalar.type(), ScalarType::of<float>());
     ASSERT_FLOAT_EQ(scalar_cast<float>(scalar), 3.142f);
@@ -58,7 +59,7 @@ TEST(scalar, CreateWithTypeCoercion)
 
 TEST(scalar, CreateWithNumAndDenomTypeGiven)
 {
-    Scalar scalar(ScalarType::of<float>(), 1, 8);
+    Scalar scalar(*ScalarType::of<float>(), 1, 8);
 
     ASSERT_EQ(scalar_cast<float>(scalar), 1.0f / 8.0f);
 }
@@ -89,7 +90,7 @@ TEST(scalar, DefaultCreateAssignFloat)
 
 TEST(scalar, AssignDoubleToFloat)
 {
-    Scalar scalar(ScalarType::of<float>(), 3.142f);
+    Scalar scalar(3.142f);
 
     scalar = 2.718;
 
@@ -117,18 +118,18 @@ TEST(scalar, IsZeroFalseForDoubleOne)
 
     ASSERT_FALSE(scalar.is_zero());
 }
-
-TEST(scalar, ToScalarTFromFloat)
-{
-    Scalar scalar(ScalarType::of<float>(), 3.142f);
-
-    ASSERT_FLOAT_EQ(scalar.to_scalar_t(), 3.142f);
-}
-
+//
+// TEST(scalar, ToScalarTFromFloat)
+// {
+//     Scalar scalar( 3.142f);
+//
+//     ASSERT_FLOAT_EQ(scalar.to_scalar_t(), 3.142f);
+// }
+//
 TEST(scalar, AdditionSameType)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
-    Scalar rhs(ScalarType::of<float>(), 2.718f);
+    Scalar lhs( 3.142f);
+    Scalar rhs( 2.718f);
 
     auto result = lhs + rhs;
 
@@ -137,8 +138,8 @@ TEST(scalar, AdditionSameType)
 
 TEST(scalar, SubtractionSameType)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
-    Scalar rhs(ScalarType::of<float>(), 2.718f);
+    Scalar lhs( 3.142f);
+    Scalar rhs( 2.718f);
 
     auto result = lhs - rhs;
 
@@ -147,8 +148,8 @@ TEST(scalar, SubtractionSameType)
 
 TEST(scalar, MultiplicationSameType)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
-    Scalar rhs(ScalarType::of<float>(), 2.718f);
+    Scalar lhs( 3.142f);
+    Scalar rhs( 2.718f);
 
     auto result = lhs * rhs;
 
@@ -157,8 +158,8 @@ TEST(scalar, MultiplicationSameType)
 
 TEST(scalar, DivisionSameType)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142);
-    Scalar rhs(ScalarType::of<float>(), 2.718f);
+    Scalar lhs( 3.142);
+    Scalar rhs( 2.718f);
 
     auto result = lhs / rhs;
 
@@ -167,24 +168,24 @@ TEST(scalar, DivisionSameType)
 
 TEST(scalar, DivisionByDefaultThrows)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
+    Scalar lhs( 3.142f);
     Scalar rhs;
 
-    ASSERT_THROW(lhs / rhs, std::runtime_error);
+    ASSERT_THROW(lhs / rhs, std::domain_error);
 }
 
 TEST(scalar, DivisionByZeroSameTypeThrows)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
-    Scalar rhs(ScalarType::of<float>(), 0.0f);
+    Scalar lhs( 3.142f);
+    Scalar rhs( 0.0f);
 
-    ASSERT_THROW(lhs / rhs, std::runtime_error);
+    ASSERT_THROW(lhs / rhs, std::domain_error);
 }
 
 TEST(scalar, InplaceAdditionSameType)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
-    Scalar rhs(ScalarType::of<float>(), 2.718f);
+    Scalar lhs( 3.142f);
+    Scalar rhs( 2.718f);
 
     lhs += rhs;
 
@@ -193,8 +194,8 @@ TEST(scalar, InplaceAdditionSameType)
 
 TEST(scalar, InplaceSubtractionSameType)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
-    Scalar rhs(ScalarType::of<float>(), 2.718f);
+    Scalar lhs( 3.142f);
+    Scalar rhs( 2.718f);
 
     lhs -= rhs;
 
@@ -203,8 +204,8 @@ TEST(scalar, InplaceSubtractionSameType)
 
 TEST(scalar, InplaceMultiplicationSameType)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
-    Scalar rhs(ScalarType::of<float>(), 2.718f);
+    Scalar lhs( 3.142f);
+    Scalar rhs( 2.718f);
 
     lhs *= rhs;
 
@@ -213,24 +214,24 @@ TEST(scalar, InplaceMultiplicationSameType)
 
 TEST(scalar, InplaceDivisionByDefaultThrows)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142);
+    Scalar lhs( 3.142);
     Scalar rhs;
 
-    ASSERT_THROW(lhs /= rhs, std::runtime_error);
+    ASSERT_THROW(lhs /= rhs, std::domain_error);
 }
 
 TEST(scalar, InplaceDivisionSameTypeZeroThrows)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
-    Scalar rhs(ScalarType::of<float>(), 0.0f);
+    Scalar lhs( 3.142f);
+    Scalar rhs( 0.0f);
 
-    ASSERT_THROW(lhs /= rhs, std::runtime_error);
+    ASSERT_THROW(lhs /= rhs, std::domain_error);
 }
 
 TEST(scalar, InplaceDivisionSameType)
 {
-    Scalar lhs(ScalarType::of<float>(), 3.142f);
-    Scalar rhs(ScalarType::of<float>(), 2.718f);
+    Scalar lhs( 3.142f);
+    Scalar rhs( 2.718f);
 
     lhs /= rhs;
 
@@ -247,7 +248,7 @@ TEST(scalar, EqualsDefaultDefaultTrue)
 
 TEST(scalar, EqualsDefaultFloatZeroTrue)
 {
-    Scalar lhs(ScalarType::of<float>(), 0.0f);
+    Scalar lhs(0.0f);
     Scalar rhs;
 
     ASSERT_EQ(lhs, rhs);
@@ -255,7 +256,7 @@ TEST(scalar, EqualsDefaultFloatZeroTrue)
 
 TEST(scalar, EqualsDefaultFloatOneFalse)
 {
-    Scalar lhs(ScalarType::of<float>(), 1.0f);
+    Scalar lhs( 1.0f);
     Scalar rhs;
 
     ASSERT_FALSE(lhs == rhs);
@@ -263,7 +264,7 @@ TEST(scalar, EqualsDefaultFloatOneFalse)
 
 TEST(Scalar, SerializeSimpleFloatValue)
 {
-    Scalar val(ScalarType::of<float>(), 1.0f);
+    Scalar val( 1.0f);
     std::stringstream ss;
     {
         archives::JSONOutputArchive out_ar(ss);

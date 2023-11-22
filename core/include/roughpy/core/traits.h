@@ -52,8 +52,6 @@ namespace rpy {
 
 using std::declval;
 using std::integral_constant;
-using std::move;
-using std::forward;
 
 using std::is_array;
 using std::is_class;
@@ -96,6 +94,7 @@ using std::is_nothrow_constructible;
 using std::is_nothrow_default_constructible;
 using std::is_trivially_constructible;
 using std::is_trivially_default_constructible;
+using std::is_trivially_destructible;
 
 using std::is_base_of;
 using std::is_convertible;
@@ -179,6 +178,13 @@ template <typename T, typename B = dtl::EmptyBase>
 using void_or_base = conditional_t<is_void<T>::value, B, T>;
 
 using boost::hash;
+
+
+template <size_t N>
+struct ConstLog2 : integral_constant<size_t, ConstLog2<N / 2>::value + 1>{ };
+template <>
+struct ConstLog2<1> : integral_constant<size_t, 0>{};
+
 
 }// namespace rpy
 

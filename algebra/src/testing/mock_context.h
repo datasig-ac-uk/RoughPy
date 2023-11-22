@@ -47,7 +47,7 @@ class MockContext : public Context
 {
 
 public:
-    MockContext() : Context(2, 2, scalars::ScalarType::of<float>(), "mock") {}
+    MockContext() : Context(2, 2, *scalars::ScalarType::of<float>(), "mock") {}
 };
 
 }// namespace testing

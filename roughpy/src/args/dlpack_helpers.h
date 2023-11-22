@@ -1,3 +1,30 @@
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+// this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
+// and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors
+// may be used to endorse or promote products derived from this software without
+// specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 //
 // Created by sam on 11/08/23.
 //
@@ -8,6 +35,7 @@
 #include "roughpy_module.h"
 #include "dlpack.h"
 
+#include <roughpy/core/helpers.h>
 #include <roughpy/scalars/scalars_fwd.h>
 #include <roughpy/scalars/scalar_type.h>
 
@@ -23,13 +51,13 @@ convert_to_dl_typecode(scalars::ScalarTypeCode code) noexcept {
     return static_cast<uint8_t>(code);
 }
 
-constexpr platform::DeviceType
+constexpr devices::DeviceType
 convert_from_dl_device_type(DLDeviceType type) noexcept {
-    return static_cast<platform::DeviceType>(type);
+    return static_cast<devices::DeviceType>(type);
 }
 
 constexpr DLDeviceType
-convert_to_dl_device_type(platform::DeviceType type) noexcept
+convert_to_dl_device_type(devices::DeviceType type) noexcept
 {
     return static_cast<DLDeviceType>(type);
 }
@@ -38,8 +66,9 @@ constexpr scalars::BasicScalarInfo
 convert_from_dl_datatype(const DLDataType& dtype) noexcept {
     return {
         convert_from_dl_typecode(dtype.code),
-        dtype.bits,
-        dtype.lanes
+        static_cast<uint8_t>(dtype.bits / CHAR_BIT),
+        round_up_divide(dtype.bits, CHAR_BIT),
+        static_cast<uint8_t>(dtype.lanes & 0xFF)
     };
 }
 
@@ -48,12 +77,12 @@ convert_to_dl_datatype(const scalars::BasicScalarInfo& info) noexcept
 {
     return {
         convert_to_dl_typecode(info.code),
-        info.bits,
+        static_cast<uint8_t>(info.bytes * CHAR_BIT),
         info.lanes
     };
 }
 
-constexpr platform::DeviceInfo
+constexpr devices::DeviceInfo
 convert_from_dl_device_info(const DLDevice& device) noexcept
 {
     return {
@@ -63,7 +92,7 @@ convert_from_dl_device_info(const DLDevice& device) noexcept
 }
 
 constexpr DLDevice
-convert_to_dl_device_info(const platform::DeviceInfo& device) noexcept {
+convert_to_dl_device_info(const devices::DeviceInfo& device) noexcept {
     return {
         convert_to_dl_device_type(device.device_type),
         device.device_id
@@ -79,9 +108,30 @@ scalar_type_for_dl_info(const DLDataType& dtype, const DLDevice& device);
 
 inline const scalars::ScalarType* scalar_type_of_dl_info(const DLDataType& dtype, const DLDevice& device)
 {
-    return scalars::ScalarType::from_type_details(
-            convert_from_dl_datatype(dtype),
-            convert_from_dl_device_info(device));
+    auto dtype_host = scalars::scalar_type_of(convert_from_dl_datatype(dtype));
+
+    RPY_CHECK(dtype_host);
+
+    switch (device.device_type) {
+        case kDLCPU:
+            return *dtype_host;
+        case kDLCUDA:
+        case kDLCUDAHost:
+        case kDLOpenCL:
+        case kDLVulkan:
+        case kDLMetal:
+        case kDLVPI:
+        case kDLROCM:
+        case kDLROCMHost:
+        case kDLExtDev:
+        case kDLCUDAManaged:
+        case kDLOneAPI:
+        case kDLWebGPU:
+        case kDLHexagon:
+            RPY_THROW(std::invalid_argument, "devices are not currently supported");
+    }
+
+    RPY_UNREACHABLE_RETURN(nullptr);
 }
 
 }

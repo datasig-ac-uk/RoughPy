@@ -31,7 +31,7 @@
 #include <cassert>
 #include <sstream>
 
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 #include <roughpy/algebra/context.h>
 
 using namespace rpy;
@@ -419,7 +419,7 @@ make_lie_key(const py::args& args, const py::kwargs& kwargs)
         basis = algebra::get_context(
                 width,
                 depth,
-                scalars::ScalarType::of<float>()
+                *scalars::ScalarType::of<float>()
                 )->get_lie_basis();
     } else {
         RPY_THROW(py::value_error,

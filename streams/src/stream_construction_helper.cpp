@@ -58,7 +58,7 @@ void StreamConstructionHelper::add_categorical(param_t timestamp,
 {
     auto idx = p_schema->channel_variant_to_stream_dim(channel, variant);
     auto key = static_cast<key_type>(idx + 1);
-    next_entry(timestamp)[key] += p_ctx->ctype()->one();
+    next_entry(timestamp)[key] += scalars::Scalar(1);
 }
 void StreamConstructionHelper::add_categorical(param_t timestamp,
                                                string_view channel,
@@ -69,7 +69,7 @@ void StreamConstructionHelper::add_categorical(param_t timestamp,
     RPY_CHECK(variant < found->second->num_variants());
     auto key = static_cast<key_type>(found - p_schema->begin())
             + static_cast<key_type>(variant) + 1;
-    next_entry(timestamp)[key] += p_ctx->ctype()->one();
+    next_entry(timestamp)[key] += scalars::Scalar(1);
 }
 void StreamConstructionHelper::add_categorical(param_t timestamp,
                                                dimn_t channel,
@@ -84,7 +84,7 @@ void StreamConstructionHelper::add_categorical(param_t timestamp,
 
     auto key = static_cast<key_type>(p_schema->channel_variant_to_stream_dim(
             channel, static_cast<dimn_t>(found - variants.begin())));
-    next_entry(timestamp)[key] += p_ctx->ctype()->one();
+    next_entry(timestamp)[key] += scalars::Scalar(1);
 }
 void StreamConstructionHelper::add_categorical(param_t timestamp,
                                                string_view channel,
@@ -93,7 +93,7 @@ void StreamConstructionHelper::add_categorical(param_t timestamp,
     auto idx = p_schema->label_to_stream_dim(string(channel) + ':'
                                              + string(variant));
     next_entry(timestamp)[static_cast<key_type>(idx + 1)]
-            += p_ctx->ctype()->one();
+            += scalars::Scalar(1);
 }
 typename StreamConstructionHelper::multimap_type
 StreamConstructionHelper::finalise()
