@@ -40,8 +40,6 @@ You can then create a **stream** using your chosen **data** and **context** with
 
     >>> stream = roughpy.LieIncrementStream.from_increments(data, indices=times, ctx=context)
 
-You can also plot a stream.
-
 .. todo::
 
     Plot the stream, like in the electricity data example
