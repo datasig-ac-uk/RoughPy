@@ -23,7 +23,8 @@ details are found in :doc:`../reference/index`.
    basics
 
 .. toctree::
-   :caption: Advanced usage and interoperability
+   :caption: Advanced usage
    :maxdepth: 1
 
    building
+   references
