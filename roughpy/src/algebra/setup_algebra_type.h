@@ -226,19 +226,28 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
 #ifdef ROUGHPY_WITH_NUMPY
     klass.def("__array__", [](const Alg& self) {
         //        py::dtype dtype = dtype_from(self.coeff_type());
-        py::dtype dtype = ctype_to_npy_dtype(self.coeff_type());
+        const auto* stype = self.coeff_type();
+        py::dtype dtype = ctype_to_npy_dtype(stype);
 
+        const auto dimension = self.basis().dimension();
         auto dense_data = self.dense_data();
-        if (dense_data) {
-            const auto dense_data_inner = *dense_data;
+
+        if (dense_data && dense_data->size() == dimension) {
+            // Dense and full dimension, bottow
             return py::array(
                     dtype,
-                    {dense_data_inner.size()},
+                    {dimension},
                     {},
-                    dense_data_inner.pointer()
+                    dense_data->pointer()
             );
         }
+
+        py::array result(dtype, {dimension});
+
+
+
         return py::array(dtype);
+
     });
 #endif
 

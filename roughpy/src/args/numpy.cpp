@@ -30,59 +30,108 @@
 #include <roughpy/scalars/scalar_types.h>
 #include <roughpy/scalars/scalar_type.h>
 
+
+#include <numpy/arrayobject.h>
+
 using namespace rpy;
 
-namespace {
+// namespace {
+//
+// enum NpyDtypes : int
+// {
+//     NPY_BOOL = 0,
+//     NPY_BYTE,
+//     NPY_UBYTE,
+//     NPY_SHORT,
+//     NPY_USHORT,
+//     NPY_INT,
+//     NPY_UINT,
+//     NPY_LONG,
+//     NPY_ULONG,
+//     NPY_LONGLONG,
+//     NPY_ULONGLONG,
+//     NPY_FLOAT,
+//     NPY_DOUBLE,
+//     NPY_LONGDOUBLE,
+//     NPY_CFLOAT,
+//     NPY_CDOUBLE,
+//     NPY_CLONGDOUBLE,
+//     NPY_OBJECT = 17,
+//     NPY_STRING,
+//     NPY_UNICODE,
+//     NPY_VOID,
+//     /*
+//      * New 1.6 types appended, may be integrated
+//      * into the above in 2.0.
+//      */
+//     NPY_DATETIME,
+//     NPY_TIMEDELTA,
+//     NPY_HALF,
+//
+//     NPY_NTYPES,
+//     NPY_NOTYPE,
+//     NPY_CHAR,
+//     NPY_USERDEF = 256, /* leave room for characters */
+//
+//     /* The number of types not including the new 1.6 types */
+//     NPY_NTYPES_ABI_COMPATIBLE = 21
+// };
+//
+// }// namespace
 
-enum NpyDtypes : int
+static inline int info_to_typenum(const devices::TypeInfo& info)
 {
-    NPY_BOOL = 0,
-    NPY_BYTE,
-    NPY_UBYTE,
-    NPY_SHORT,
-    NPY_USHORT,
-    NPY_INT,
-    NPY_UINT,
-    NPY_LONG,
-    NPY_ULONG,
-    NPY_LONGLONG,
-    NPY_ULONGLONG,
-    NPY_FLOAT,
-    NPY_DOUBLE,
-    NPY_LONGDOUBLE,
-    NPY_CFLOAT,
-    NPY_CDOUBLE,
-    NPY_CLONGDOUBLE,
-    NPY_OBJECT = 17,
-    NPY_STRING,
-    NPY_UNICODE,
-    NPY_VOID,
-    /*
-     * New 1.6 types appended, may be integrated
-     * into the above in 2.0.
-     */
-    NPY_DATETIME,
-    NPY_TIMEDELTA,
-    NPY_HALF,
+    switch (info.code) {
+        case devices::TypeCode::Int: switch (info.bytes) {
+                case 1: return NPY_INT8;
+                case 2: return NPY_INT16;
+                case 4: return NPY_INT32;
+                case 8: return NPY_INT64;
+                default: break;
+            }
+            break;
+        case devices::TypeCode::UInt: switch (info.bytes) {
+                case 1: return NPY_UINT8;
+                case 2: return NPY_UINT16;
+                case 4: return NPY_UINT32;
+                case 8: return NPY_UINT64;
+                default: break;
+            }
+            break;
+        case devices::TypeCode::Float: switch (info.bytes) {
+                case 2: return NPY_FLOAT16;
+                case 4: return NPY_FLOAT32;
+                case 8: return NPY_FLOAT64;
+                default: break;
+            }
+            break;
+        case devices::TypeCode::OpaqueHandle: break;
+        case devices::TypeCode::BFloat: break;
+        case devices::TypeCode::Complex: break;
+        case devices::TypeCode::Bool: break;
+        case devices::TypeCode::Rational:
+        case devices::TypeCode::ArbitraryPrecisionInt:
+        case devices::TypeCode::ArbitraryPrecisionUInt:
+        case devices::TypeCode::ArbitraryPrecisionFloat:
+        case devices::TypeCode::ArbitraryPrecisionComplex:
+        case devices::TypeCode::ArbitraryPrecisionRational:
+        case devices::TypeCode::APRationalPolynomial: return NPY_OBJECT;
+    }
 
-    NPY_NTYPES,
-    NPY_NOTYPE,
-    NPY_CHAR,
-    NPY_USERDEF = 256, /* leave room for characters */
-
-    /* The number of types not including the new 1.6 types */
-    NPY_NTYPES_ABI_COMPATIBLE = 21
-};
-
-}// namespace
+    RPY_THROW(std::runtime_error,
+              "scalar type " + std::to_string(info) +
+              " is not supported in conversions");
+}
 
 const scalars::ScalarType* python::npy_dtype_to_ctype(pybind11::dtype dtype)
 {
     const scalars::ScalarType* type = nullptr;
 
     switch (dtype.num()) {
-        case NPY_FLOAT: type = *scalars::ScalarType::of<float>(); break;
-        case NPY_DOUBLE: type = *scalars::ScalarType::of<double>(); break;
+        case NPY_FLOAT: type = *scalars::ScalarType::of<float>();
+            break;
+        case NPY_DOUBLE: type = *scalars::ScalarType::of<double>();
+            break;
         default:
             // Default behaviour, promote to double
             type = *scalars::ScalarType::of<double>();
@@ -91,12 +140,10 @@ const scalars::ScalarType* python::npy_dtype_to_ctype(pybind11::dtype dtype)
 
     return type;
 }
+
 pybind11::dtype python::ctype_to_npy_dtype(const scalars::ScalarType* type)
 {
-    if (type == *scalars::ScalarType::of<double>()) { return py::dtype("d"); }
-    if (type == *scalars::ScalarType::of<float>()) { return py::dtype("f"); }
-
-    RPY_THROW(py::type_error, "unsupported data type");
+    return py::dtype(info_to_typenum(type->type_info()));
 }
 
 string python::npy_dtype_to_identifier(pybind11::dtype dtype)
@@ -104,35 +151,54 @@ string python::npy_dtype_to_identifier(pybind11::dtype dtype)
     string identifier;
 
     switch (dtype.num()) {
-        case NPY_FLOAT: identifier = "f32"; break;
-        case NPY_DOUBLE: identifier = "f64"; break;
-        case NPY_INT: identifier = "i32"; break;
-        case NPY_UINT: identifier = "u32"; break;
+        case NPY_FLOAT: identifier = "f32";
+            break;
+        case NPY_DOUBLE: identifier = "f64";
+            break;
+        case NPY_INT: identifier = "i32";
+            break;
+        case NPY_UINT: identifier = "u32";
+            break;
         case NPY_LONG: {
-            if (sizeof(long) == sizeof(int)) {
-                identifier = "i32";
-            } else {
+            if (sizeof(long) == sizeof(int)) { identifier = "i32"; } else {
                 identifier = "i64";
             }
-        } break;
+        }
+        break;
         case NPY_ULONG: {
-            if (sizeof(long) == sizeof(int)) {
-                identifier = "ui32";
-            } else {
+            if (sizeof(long) == sizeof(int)) { identifier = "ui32"; } else {
                 identifier = "u64";
             }
-        } break;
-        case NPY_LONGLONG: identifier = "i64"; break;
-        case NPY_ULONGLONG: identifier = "u64"; break;
+        }
+        break;
+        case NPY_LONGLONG: identifier = "i64";
+            break;
+        case NPY_ULONGLONG: identifier = "u64";
+            break;
 
         case NPY_BOOL:
-        case NPY_BYTE: identifier = "i8"; break;
-        case NPY_UBYTE: identifier = "u8"; break;
-        case NPY_SHORT: identifier = "i16"; break;
-        case NPY_USHORT: identifier = "u16"; break;
+        case NPY_BYTE: identifier = "i8";
+            break;
+        case NPY_UBYTE: identifier = "u8";
+            break;
+        case NPY_SHORT: identifier = "i16";
+            break;
+        case NPY_USHORT: identifier = "u16";
+            break;
 
         default: RPY_THROW(py::type_error, "unsupported dtype");
     }
 
     return identifier;
 }
+
+
+py::array python::dtl::dense_data_to_array(const scalars::ScalarArray& data,
+                                           dimn_t dimension) {}
+
+py::array python::dtl::new_zero_array_for_stype(const scalars::ScalarType* type,
+                                                dimn_t dimension) {}
+
+void python::dtl::write_entry_to_array(py::array& array,
+                                       dimn_t index,
+                                       const scalars::Scalar& arg) {}
