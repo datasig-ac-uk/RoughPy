@@ -291,3 +291,21 @@ def test_lie_incr_stream_from_randints_no_deduction_transposed(rng):
 
     assert_array_equal(np.array(sig)[:4],
                        np.hstack([[1.0], np.sum(array, axis=0)[:]]))
+
+
+TYPE_DEDUCTION_WIDTH = 3
+TYPE_DEDUCTION_DEPTH = 3
+TYPE_DEDUCTION_ARGS = [
+    ([[1.0, 2.0, 3.0], [1.0, 2.0, 3.0]], roughpy.DPReal),
+    ([[1, 2, 3], [1, 2, 3]], roughpy.DPReal),
+    (np.array([[1, 2, 3], [1, 2, 3]], dtype=np.int32), roughpy.DPReal),
+    (np.array([[1, 2, 3], [1, 2, 3]], dtype=np.float32), roughpy.SPReal),
+    (np.array([[1, 2, 3], [1, 2, 3]], dtype=np.float64), roughpy.DPReal),
+]
+
+
+@pytest.mark.parametrize('data,typ', TYPE_DEDUCTION_ARGS)
+def test_ctor_type_deduction(data, typ):
+    stream = LieIncrementStream.from_increments(data, width=TYPE_DEDUCTION_WIDTH, depth=TYPE_DEDUCTION_DEPTH)
+
+    assert stream.dtype == typ

@@ -1,12 +1,11 @@
 import pickle
 
 import numpy as np
-
-
 import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 import roughpy
+import roughpy as rp
 from roughpy import FreeTensor, TensorKey, DPReal
 
 DEPTH_LIMITS = {
@@ -447,3 +446,24 @@ def test_free_tensor_pickle_roundtrip():
     t2 = pickle.loads(pickle.dumps(t))
 
     assert t2 == t
+
+
+TYPE_DEDUCTION_WIDTH = 3
+TYPE_DEDUCTION_DEPTH = 3
+
+TYPE_DEDUCTION_ARGS = [
+    (1, rp.DPReal),
+    (1.0, rp.DPReal),
+    ([1], rp.DPReal),
+    ([1.0], rp.DPReal),
+    (np.array([1], dtype="int32"), rp.DPReal),
+    (np.array([1.0], dtype="float32"), rp.SPReal),
+    (np.array([1.0], dtype="float64"), rp.DPReal),
+]
+
+
+@pytest.mark.parametrize("data,typ", TYPE_DEDUCTION_ARGS)
+def test_ft_ctor_type_deduction(data, typ):
+    f = FreeTensor(data, width=TYPE_DEDUCTION_WIDTH, depth=TYPE_DEDUCTION_DEPTH)
+
+    assert f.dtype == typ
