@@ -194,3 +194,22 @@ def test_Lie_pikle_roundtrip():
     l2 = pickle.loads(pickle.dumps(l))
 
     assert l == l2
+
+
+TYPE_DEDUCTION_WIDTH = 3
+TYPE_DEDUCTION_DEPTH = 3
+
+TYPE_DEDUCTION_ARGS = [
+    ([1] * TYPE_DEDUCTION_WIDTH, roughpy.DPReal),
+    ([1.0] * TYPE_DEDUCTION_WIDTH, roughpy.DPReal),
+    (np.array([1] * TYPE_DEDUCTION_WIDTH, dtype="int32"), roughpy.DPReal),
+    (np.array([1.0] * TYPE_DEDUCTION_WIDTH, dtype="float32"), roughpy.SPReal),
+    (np.array([1.0] * TYPE_DEDUCTION_WIDTH, dtype="float64"), roughpy.DPReal),
+]
+
+
+@pytest.mark.parametrize("data,typ", TYPE_DEDUCTION_ARGS)
+def test_ft_ctor_type_deduction(data, typ):
+    f = Lie(data, width=TYPE_DEDUCTION_WIDTH, depth=TYPE_DEDUCTION_DEPTH)
+
+    assert f.dtype == typ
