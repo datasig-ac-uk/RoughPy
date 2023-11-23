@@ -47,10 +47,10 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
         case devices::TypeCode::Int:
         case devices::TypeCode::UInt:
             // if (info.bytes <= 3) {
-                // return *scalar_type_of<float>();
+            // return *scalar_type_of<float>();
             // } else {
-                return *scalar_type_of<double>();
-            // }
+            return *scalar_type_of<double>();
+        // }
         case devices::TypeCode::Float:
             switch (info.bytes) {
                 case 4: return *scalar_type_of<float>();

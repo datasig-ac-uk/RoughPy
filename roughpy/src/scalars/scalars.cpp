@@ -257,14 +257,14 @@ static bool try_fill_buffer_dlpack(
 
     // This function throws if no matching dtype is found
 
-    const auto* tensor_stype
-            = python::scalar_type_of_dl_info(dltensor.dtype, dltensor.device);
+    const auto tensor_stype_info = convert_from_dl_datatype(dltensor.dtype);
+    const auto tensor_stype = scalars::scalar_type_of(tensor_stype_info);
+
     if (options.type == nullptr) {
-        if (tensor_stype != nullptr) {
-            options.type = tensor_stype;
+        if (tensor_stype) {
+            options.type = *tensor_stype;
         } else {
-            options.type
-                    = scalar_type_for_dl_info(dltensor.dtype, dltensor.device);
+            options.type = scalars::ScalarType::for_info(tensor_stype_info);
         }
     }
     RPY_DBG_ASSERT(options.type != nullptr);
@@ -288,7 +288,7 @@ static bool try_fill_buffer_dlpack(
         buffer.allocate_scalars(size);
         options.type->convert_copy(
                 buffer,
-                {tensor_stype, data, static_cast<dimn_t>(size)}
+                {tensor_stype_info, data, static_cast<dimn_t>(size)}
         );
     } else {
         buffer.allocate_scalars(size);
@@ -296,7 +296,7 @@ static bool try_fill_buffer_dlpack(
                 ndim,
                 shape,
                 strides,
-                {tensor_stype, data, static_cast<dimn_t>(size)},
+                {tensor_stype_info, data, static_cast<dimn_t>(size)},
                 buffer
         );
     }
