@@ -467,3 +467,28 @@ def test_ft_ctor_type_deduction(data, typ):
     f = FreeTensor(data, width=TYPE_DEDUCTION_WIDTH, depth=TYPE_DEDUCTION_DEPTH)
 
     assert f.dtype == typ
+
+
+TO_ARRAY_WIDTH = 3
+TO_ARRAY_DEPTH = 3
+
+
+def to_array_tensor():
+    ctx = roughpy.get_context(width=TO_ARRAY_WIDTH, depth=TO_ARRAY_DEPTH, coeffs=roughpy.DPReal)
+
+    yield FreeTensor(ctx=ctx)
+    yield FreeTensor([0.0], ctx=ctx)
+
+    for depth in range(TO_ARRAY_WIDTH + 1):
+        yield FreeTensor(np.zeros(ctx.tensor_size(depth)), ctx=ctx)
+
+    # sparse
+    yield FreeTensor({0: 1.0, 1: 1.0}, ctx=ctx)
+
+
+@pytest.mark.parametrize("tensor", to_array_tensor())
+def test_to_array(tensor):
+    ctx = roughpy.get_context(width=TO_ARRAY_WIDTH, depth=TO_ARRAY_DEPTH, coeffs=roughpy.DPReal)
+
+    print(tensor)
+    assert_array_equal(np.array(tensor), np.zeros(ctx.tensor_size(TO_ARRAY_WIDTH)))
