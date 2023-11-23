@@ -1,5 +1,6 @@
 Version 0.1.0:
   - Added framework for integrating device support and redesigned scalars module to accommodate the changes.
+  - Made changes to type deduction in constructors to avoid exceptions when providing lists of python ints/floats.
 
 
 Version 0.0.8:
