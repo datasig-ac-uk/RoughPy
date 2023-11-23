@@ -261,9 +261,7 @@ static bool try_fill_buffer_dlpack(
     const auto tensor_stype = scalars::scalar_type_of(tensor_stype_info);
 
     if (options.type == nullptr) {
-        if (tensor_stype) {
-            options.type = *tensor_stype;
-        } else {
+        if (tensor_stype) { options.type = *tensor_stype; } else {
             options.type = scalars::ScalarType::for_info(tensor_stype_info);
         }
     }
