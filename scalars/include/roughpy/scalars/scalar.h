@@ -210,7 +210,7 @@ public:
                 trivial_bytes,
                 type_info(),
                 &value,
-                devices::type_info<T>()
+                devices::type_info<remove_cv_ref_t<T>>()
         );
     }
 
@@ -229,9 +229,9 @@ public:
     {
         allocate_data();
         auto this_info = type_info();
-        auto value_info = devices::type_info<T>();
+        auto value_info = devices::type_info<remove_cv_ref_t<T>>();
         if (this_info == value_info) {
-            construct_inplace<T>(opaque_pointer, std::forward<T>(value));
+            construct_inplace<remove_cv_ref_t<T>>(static_cast<remove_cv_ref_t<T>*>(opaque_pointer), std::forward<T>(value));
         } else {
             dtl::scalar_convert_copy(
                     opaque_pointer,
