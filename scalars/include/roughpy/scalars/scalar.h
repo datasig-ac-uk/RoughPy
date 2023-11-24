@@ -231,7 +231,9 @@ public:
         auto this_info = type_info();
         auto value_info = devices::type_info<remove_cv_ref_t<T>>();
         if (this_info == value_info) {
-            construct_inplace<remove_cv_ref_t<T>>(static_cast<remove_cv_ref_t<T>*>(opaque_pointer), std::forward<T>(value));
+            construct_inplace<remove_cv_ref_t<T>>(
+                static_cast<remove_cv_ref_t<T>*>(opaque_pointer),
+                std::forward<T>(value));
         } else {
             dtl::scalar_convert_copy(
                     opaque_pointer,
