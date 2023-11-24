@@ -54,6 +54,10 @@ struct RPyPolynomial {
 
 extern PyTypeObject RPyPolynomial_Type;
 
+PyObject* PyPolynomial_FromPolynomial(rpy::scalars::rational_poly_scalar&& poly
+) noexcept;
+
+
 inline bool RPyMonomial_Check(PyObject* obj)
 {
     return Py_TYPE(obj) == &RPyMonomial_Type;

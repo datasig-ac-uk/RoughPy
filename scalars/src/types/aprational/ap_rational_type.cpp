@@ -30,11 +30,18 @@ ScalarArray APRationalType::allocate(dimn_t count) const
 }
 void* APRationalType::allocate_single() const
 {
-    return ScalarType::allocate_single();
+    guard_type access(m_lock);
+    auto [pos, inserted] = m_allocations.insert(new rational_scalar_type());
+    RPY_DBG_ASSERT(inserted);
+    return *pos;
 }
 void APRationalType::free_single(void* ptr) const
 {
-    ScalarType::free_single(ptr);
+    guard_type access(m_lock);
+    auto found = m_allocations.find(ptr);
+    RPY_CHECK(found != m_allocations.end());
+    delete static_cast<rational_scalar_type*>(ptr);
+    m_allocations.erase(found);
 }
 void APRationalType::convert_copy(ScalarArray& dst, const ScalarArray& src)
         const

@@ -653,7 +653,7 @@ scalars::KeyScalarArray python::py_to_buffer(
                 }
             }
         }
-    } else {
+    } else if (object.is_none()) {} else {
         RPY_THROW(
                 std::invalid_argument,
                 "could not parse argument to a valid scalar array type"

@@ -191,7 +191,8 @@ public:
         return p_impl.get();
     }
 
-
+    RPY_NO_DISCARD
+    basis_type basis() const;
     RPY_NO_DISCARD
     dimn_t dimension() const;
     RPY_NO_DISCARD

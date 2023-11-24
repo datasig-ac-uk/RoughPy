@@ -8,11 +8,15 @@
 #include "scalar_type.h"
 #include "scalar_types.h"
 
+#include <unordered_set>
+
 namespace rpy {
 namespace scalars {
 
 class APRationalType : public ScalarType
 {
+    mutable std::unordered_set<void*> m_allocations;
+
 public:
 
     APRationalType();

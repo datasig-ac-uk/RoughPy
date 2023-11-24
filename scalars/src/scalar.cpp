@@ -184,8 +184,12 @@ Scalar::Scalar(Scalar&& other) noexcept
             break;
         case dtl::ScalarContentType::OpaquePointer:
         case dtl::ScalarContentType::ConstOpaquePointer:
+            opaque_pointer = other.opaque_pointer;
+            other.opaque_pointer = nullptr;
+            break;
         case dtl::ScalarContentType::OwnedPointer:
             opaque_pointer = other.opaque_pointer;
+            other.opaque_pointer = nullptr;
             break;
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
@@ -198,7 +202,10 @@ Scalar::~Scalar()
     switch (p_type_and_content_type.get_enumeration()) {
         case dtl::ScalarContentType::OwnedPointer:
             RPY_DBG_ASSERT(p_type_and_content_type.is_pointer());
-            p_type_and_content_type->free_single(opaque_pointer);
+            if (opaque_pointer != nullptr) {
+                p_type_and_content_type->free_single(opaque_pointer);
+                opaque_pointer = nullptr;
+            }
             break;
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface: interface.~unique_ptr();
