@@ -502,3 +502,14 @@ def test_to_array(tensor):
                        np.zeros(ctx.tensor_size(TO_ARRAY_WIDTH)))
 
 
+
+
+def test_to_array_rational_coeffs():
+
+    ctx = roughpy.get_context(width=TO_ARRAY_WIDTH, depth=TO_ARRAY_DEPTH, coeffs=roughpy.Rational)
+
+    tensor = FreeTensor([1]*(1+TO_ARRAY_WIDTH), ctx=ctx)
+
+    array_tensor = np.array(tensor)
+
+    assert array_tensor.dtype == object
