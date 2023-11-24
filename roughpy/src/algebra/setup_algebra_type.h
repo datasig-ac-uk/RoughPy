@@ -226,7 +226,7 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
 #ifdef ROUGHPY_WITH_NUMPY
     klass.def("__array__", [](const Alg& self) {
         return algebra_to_array(self);
-            // return py::array();
+        // return py::array();
     });
 #endif
 

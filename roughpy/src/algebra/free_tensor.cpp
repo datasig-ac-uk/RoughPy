@@ -103,7 +103,6 @@ static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs)
     options.type = helper.ctype;
     options.alternative_key = &alt;
 
-
     auto buffer = python::py_to_buffer(data, options);
 
     if (helper.ctype == nullptr) {
