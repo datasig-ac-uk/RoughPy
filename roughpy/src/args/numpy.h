@@ -96,11 +96,13 @@ inline py::array algebra_to_array(
 
 #endif// ROUGHPY_WITH_NUMPY
 
-namespace rpy { namespace python {
+namespace rpy {
+namespace python {
 
 void import_numpy();
 
-}}
+}
+}
 
 
 #endif// RPY_PY_ARGS_NUMPY_H_
