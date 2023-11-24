@@ -27,11 +27,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "numpy.h"
+#include <roughpy/device/core.h>
 #include <roughpy/scalars/scalar_types.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/traits.h>
 
-
+#define NPY_NO_DEPRECATED_API NPY_1_17_API_VERSION
 #include <numpy/arrayobject.h>
+
+#include "scalars/r_py_polynomial.h"
+#include "scalars/scalars.h"
+
+#include <sstream>
 
 using namespace rpy;
 
@@ -118,9 +125,10 @@ static inline int info_to_typenum(const devices::TypeInfo& info)
         case devices::TypeCode::APRationalPolynomial: return NPY_OBJECT;
     }
 
-    RPY_THROW(std::runtime_error,
-              "scalar type " + std::to_string(info) +
-              " is not supported in conversions");
+    std::stringstream ss;
+    ss << "scalar type " << info << " is not supported in conversions";
+
+    RPY_THROW(std::runtime_error, ss.str());
 }
 
 const scalars::ScalarType* python::npy_dtype_to_ctype(pybind11::dtype dtype)
@@ -192,13 +200,115 @@ string python::npy_dtype_to_identifier(pybind11::dtype dtype)
     return identifier;
 }
 
+namespace {
+
+template <typename T>
+void write_type_as_py_object(PyObject** dst, Slice<const T> data)
+{
+    const auto type_o = scalars::scalar_type_of<T>();
+    RPY_CHECK(type_o);
+    for (dimn_t i = 0; i < data.size(); ++i) {
+        Py_XDECREF(dst[i]);
+        dst[i] = py::cast(scalars::Scalar(*type_o, data[i])).release().ptr();
+    }
+}
+
+void write_type_as_py_object(PyObject** dst,
+                             Slice<const scalars::rational_poly_scalar> data)
+{
+    for (dimn_t i = 0; i < data.size(); ++i) {
+        Py_XDECREF(dst[i]);
+        dst[i] = PyPolynomial_FromPolynomial(
+            scalars::rational_poly_scalar(data[i]));
+    }
+}
+
+
+}
+
 
 py::array python::dtl::dense_data_to_array(const scalars::ScalarArray& data,
-                                           dimn_t dimension) {}
+                                           dimn_t dimension)
+{
+    RPY_DBG_ASSERT(data.size() <= dimension);
+    const auto type_info = data.type_info();
+
+    py::dtype dtype(info_to_typenum(type_info));
+
+    py::array result(dtype, dimension);;
+
+    if (scalars::traits::is_fundamental(type_info)) {
+        scalars::dtl::scalar_convert_copy(result.mutable_data(),
+                                          type_info,
+                                          data.pointer(),
+                                          type_info,
+                                          data.size());
+    } else {
+        PyArray_FillObjectArray(reinterpret_cast<PyArrayObject*>(result.ptr()),
+                                Py_None);
+
+        auto** raw = static_cast<PyObject**>(result.mutable_data());
+
+        switch (type_info.code) {
+            case devices::TypeCode::ArbitraryPrecisionRational
+            : write_type_as_py_object(
+                    raw,
+                    data.template as_slice<devices::rational_scalar_type>());
+                break;
+            case devices::TypeCode::APRationalPolynomial
+            : write_type_as_py_object(raw,
+                                      data.template as_slice<
+                                          devices::rational_poly_scalar>());
+            case devices::TypeCode::Int:
+            case devices::TypeCode::UInt:
+            case devices::TypeCode::Float:
+            case devices::TypeCode::OpaqueHandle:
+            case devices::TypeCode::BFloat:
+            case devices::TypeCode::Complex:
+            case devices::TypeCode::Bool:
+            case devices::TypeCode::Rational:
+            case devices::TypeCode::ArbitraryPrecisionInt:
+            case devices::TypeCode::ArbitraryPrecisionUInt:
+            case devices::TypeCode::ArbitraryPrecisionFloat:
+            case devices::TypeCode::ArbitraryPrecisionComplex:
+                RPY_THROW(std::runtime_error,
+                          "this case should have been handled elsewhere");
+        }
+    }
+
+    return result;
+}
 
 py::array python::dtl::new_zero_array_for_stype(const scalars::ScalarType* type,
-                                                dimn_t dimension) {}
+                                                dimn_t dimension)
+{
+    auto typenum = info_to_typenum(type->type_info());
+    py::dtype dtype(typenum);
+    py::array result(dtype, {static_cast<py::ssize_t>(dimension)}, {});
+
+    if (typenum == NPY_OBJECT) {
+        PyArray_FillObjectArray(reinterpret_cast<PyArrayObject*>(result.ptr()),
+                                Py_None);
+    } else { PyArray_FILLWBYTE(reinterpret_cast<PyArrayObject*>(result.ptr()), 0); }
+
+    return result;
+}
+
 
 void python::dtl::write_entry_to_array(py::array& array,
                                        dimn_t index,
                                        const scalars::Scalar& arg) {}
+
+
+static inline PyTypeObject* import_numpy_impl() noexcept
+{
+    import_array();
+    return &PyArray_Type;
+}
+
+void python::import_numpy()
+{
+#ifdef ROUGHPY_WITH_NUMPY
+    if (import_numpy_impl() == nullptr) { throw py::error_already_set(); }
+#endif
+}
