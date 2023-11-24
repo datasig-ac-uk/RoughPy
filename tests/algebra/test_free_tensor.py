@@ -484,7 +484,7 @@ def to_array_tensor():
     yield FreeTensor(ctx=ctx)
     yield FreeTensor([0.0], ctx=ctx)
 
-    for depth in range(TO_ARRAY_WIDTH + 1):
+    for depth in range(TO_ARRAY_WIDTH+1):
         yield FreeTensor(np.zeros(ctx.tensor_size(depth)), ctx=ctx)
 
     # sparse
@@ -496,6 +496,9 @@ def test_to_array(tensor):
     ctx = roughpy.get_context(width=TO_ARRAY_WIDTH, depth=TO_ARRAY_DEPTH,
                               coeffs=roughpy.DPReal)
 
-    print(tensor)
-    assert_array_equal(np.array(tensor),
+    array_tensor = np.array(tensor)
+    assert array_tensor.flags.owndata
+    assert_array_equal(array_tensor,
                        np.zeros(ctx.tensor_size(TO_ARRAY_WIDTH)))
+
+
