@@ -259,6 +259,7 @@ py::array python::dtl::dense_data_to_array(const scalars::ScalarArray& data,
             : write_type_as_py_object(raw,
                                       data.template as_slice<
                                           devices::rational_poly_scalar>());
+                break;
             case devices::TypeCode::Int:
             case devices::TypeCode::UInt:
             case devices::TypeCode::Float:
