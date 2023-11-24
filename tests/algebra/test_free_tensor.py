@@ -65,7 +65,8 @@ def test_create_list_floats_no_ctype():
 
     np_result = np.array(result)
     assert np_result.dtype == np.float64
-    assert_array_equal(np_result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+    assert_array_equal(np_result,
+                       np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
     assert result.width == 3
     assert result.max_degree == 2
 
@@ -76,7 +77,8 @@ def test_create_list_ints_no_ctype():
     np_result = np.array(result)
     assert np_result.flags.owndata
     assert np_result.dtype == np.float64
-    assert_array_equal(np_result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+    assert_array_equal(np_result,
+                       np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
     assert result.width == 3
     assert result.max_degree == 2
 
@@ -109,7 +111,8 @@ def test_create_dlpack():
 
     assert result.width == 3
     assert result.max_degree == 2
-    assert_array_equal(result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+    assert_array_equal(result,
+                       np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
 
 
 def test_create_buffer_doubles():
@@ -119,7 +122,8 @@ def test_create_buffer_doubles():
 
     assert result.width == 3
     assert result.max_degree == 2
-    assert_array_equal(result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+    assert_array_equal(result,
+                       np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
 
 
 def test_create_buffer_floats():
@@ -129,7 +133,9 @@ def test_create_buffer_floats():
 
     assert result.width == 3
     assert result.max_degree == 2
-    assert_array_equal(result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.float32))
+    assert_array_equal(result,
+                       np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                                dtype=np.float32))
 
 
 def test_create_intv_pair():
@@ -179,7 +185,7 @@ def test_create_list_intv_pairs_dense():
     assert result.width == 2
     assert result.max_degree == 2
     assert result.storage_type == roughpy.VectorType.DenseVector
-    assert_array_equal(result, np.array([0., 1., 2.]))
+    assert_array_equal(result, np.array([0., 1., 2., 0, 0, 0, 0]))
 
 
 def test_create_dict_args():
@@ -353,7 +359,7 @@ def test_FreeTensor_mul_single_letter(width):
     expected = FreeTensor(np.array(
         [1.0, 1.0] + [0.0] * (width - 1) + [0.5] + [0.0] * (width ** 2 - 1) + [
             1.0 / 6.0] + [0.0] * (width ** 3 - 1)),
-                          width=width, depth=depth)
+        width=width, depth=depth)
 
     assert t.exp() == expected
 
@@ -438,8 +444,8 @@ def test_antipode(width, depth, data1, coeff_type, vec_type):
 
 
 def test_free_tensor_pickle_roundtrip():
-
-    t = FreeTensor(np.array([1.0, 2.0, 3.0, 4.0]), width=3, depth=2, dtype=DPReal)
+    t = FreeTensor(np.array([1.0, 2.0, 3.0, 4.0]), width=3, depth=2,
+                   dtype=DPReal)
 
     t2 = pickle.loads(pickle.dumps(t))
 
@@ -472,7 +478,8 @@ TO_ARRAY_DEPTH = 3
 
 
 def to_array_tensor():
-    ctx = roughpy.get_context(width=TO_ARRAY_WIDTH, depth=TO_ARRAY_DEPTH, coeffs=roughpy.DPReal)
+    ctx = roughpy.get_context(width=TO_ARRAY_WIDTH, depth=TO_ARRAY_DEPTH,
+                              coeffs=roughpy.DPReal)
 
     yield FreeTensor(ctx=ctx)
     yield FreeTensor([0.0], ctx=ctx)
@@ -486,7 +493,9 @@ def to_array_tensor():
 
 @pytest.mark.parametrize("tensor", to_array_tensor())
 def test_to_array(tensor):
-    ctx = roughpy.get_context(width=TO_ARRAY_WIDTH, depth=TO_ARRAY_DEPTH, coeffs=roughpy.DPReal)
+    ctx = roughpy.get_context(width=TO_ARRAY_WIDTH, depth=TO_ARRAY_DEPTH,
+                              coeffs=roughpy.DPReal)
 
     print(tensor)
-    assert_array_equal(np.array(tensor), np.zeros(ctx.tensor_size(TO_ARRAY_WIDTH)))
+    assert_array_equal(np.array(tensor),
+                       np.zeros(ctx.tensor_size(TO_ARRAY_WIDTH)))
