@@ -513,3 +513,15 @@ def test_to_array_rational_coeffs():
     array_tensor = np.array(tensor)
 
     assert array_tensor.dtype == object
+
+def test_to_array_rational_poly_coeffs():
+
+    ctx = roughpy.get_context(width=TO_ARRAY_WIDTH, depth=TO_ARRAY_DEPTH, coeffs=roughpy.RationalPoly)
+
+    tensor = FreeTensor([1]*(1+TO_ARRAY_WIDTH), ctx=ctx)
+
+    array_tensor = np.array(tensor)
+
+    assert array_tensor.dtype == object
+
+
