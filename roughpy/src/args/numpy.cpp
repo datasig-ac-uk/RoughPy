@@ -289,7 +289,9 @@ py::array python::dtl::new_zero_array_for_stype(const scalars::ScalarType* type,
     if (typenum == NPY_OBJECT) {
         PyArray_FillObjectArray(reinterpret_cast<PyArrayObject*>(result.ptr()),
                                 Py_None);
-    } else { PyArray_FILLWBYTE(reinterpret_cast<PyArrayObject*>(result.ptr()), 0); }
+    } else {
+        PyArray_FILLWBYTE(reinterpret_cast<PyArrayObject*>(result.ptr()), 0);
+    }
 
     return result;
 }
