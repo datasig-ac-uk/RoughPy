@@ -649,12 +649,11 @@ scalars::KeyScalarArray python::py_to_buffer(
                          py::reinterpret_borrow<py::sequence>(leaf)) {
                         auto val = result[idx++];
                         handle_sequence_tuple(val, key_ptr++, obj, options);
-                         }
+                    }
                 }
             }
         }
-    } else if (object.is_none()) {
-    } else {
+    } else if (object.is_none()) {} else {
         RPY_THROW(
                 std::invalid_argument,
                 "could not parse argument to a valid scalar array type"
