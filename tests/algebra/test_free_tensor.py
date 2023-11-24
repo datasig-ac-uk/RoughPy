@@ -45,8 +45,7 @@ def test_create_single_float_no_ctype():
     result = FreeTensor(1.0, width=2, depth=2)
 
     np_result = np.array(result)
-    assert np_result.shape == (1,)
-    assert_array_equal(np_result, np.array([1.]))
+    assert_array_equal(np_result, np.array([1., 0, 0, 0, 0, 0, 0]))
     assert result.width == 2
     assert result.max_degree == 2
 
@@ -55,8 +54,8 @@ def test_create_single_int_no_ctype():
     result = FreeTensor(1, width=2, depth=2)
 
     np_result = np.array(result)
-    assert np_result.shape == (1,)
-    assert_array_equal(np_result, np.array([1.]))
+    assert np_result.flags.owndata
+    assert_array_equal(np_result, np.array([1., 0, 0, 0, 0, 0, 0]))
     assert result.width == 2
     assert result.max_degree == 2
 
@@ -65,9 +64,8 @@ def test_create_list_floats_no_ctype():
     result = FreeTensor([0., 1., 2., 3.], width=3, depth=2)
 
     np_result = np.array(result)
-    assert np_result.shape == (4,)
     assert np_result.dtype == np.float64
-    assert_array_equal(np_result, np.array([0., 1., 2., 3.]))
+    assert_array_equal(np_result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
     assert result.width == 3
     assert result.max_degree == 2
 
@@ -76,9 +74,9 @@ def test_create_list_ints_no_ctype():
     result = FreeTensor([0, 1, 2, 3], width=3, depth=2)
 
     np_result = np.array(result)
-    assert np_result.shape == (4,)
+    assert np_result.flags.owndata
     assert np_result.dtype == np.float64
-    assert_array_equal(np_result, np.array([0., 1., 2., 3.]))
+    assert_array_equal(np_result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
     assert result.width == 3
     assert result.max_degree == 2
 
@@ -111,7 +109,7 @@ def test_create_dlpack():
 
     assert result.width == 3
     assert result.max_degree == 2
-    assert_array_equal(result, np.array([0., 1., 2., 3.]))
+    assert_array_equal(result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
 
 
 def test_create_buffer_doubles():
@@ -121,7 +119,7 @@ def test_create_buffer_doubles():
 
     assert result.width == 3
     assert result.max_degree == 2
-    assert_array_equal(result, np.array([0., 1., 2., 3.]))
+    assert_array_equal(result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0]))
 
 
 def test_create_buffer_floats():
@@ -131,7 +129,7 @@ def test_create_buffer_floats():
 
     assert result.width == 3
     assert result.max_degree == 2
-    assert_array_equal(result, np.array([0., 1., 2., 3.], dtype=np.float32))
+    assert_array_equal(result, np.array([0., 1., 2., 3., 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.float32))
 
 
 def test_create_intv_pair():
@@ -236,7 +234,7 @@ def test_create_FreeTensor_specified_width_incomplete_degree_range(rng, width):
 
 def test_FreeTensor_array_roundtrip(width, rdata, rtensor):
     assert rtensor.width == width
-    assert_array_equal(rdata, np.array(rtensor))
+    assert_array_equal(rdata, np.array(rtensor)[:rdata.shape[0]])
 
 
 def test_FreeTensor_repr(rng, width, depth, tensor_size):
