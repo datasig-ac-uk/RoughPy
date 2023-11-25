@@ -106,6 +106,9 @@ add_roughpy_component(Algebra
         )
 
 
+target_precompile_headers(RoughPy_Algebra PRIVATE
+        "src/lite_context.h")
+
 add_roughpy_test_helper(AlgebraMock STATIC
         SRCS
         src/testing/mock_context.cpp

@@ -34,3 +34,20 @@ add_roughpy_component(Platform
     NEEDS
         RoughPy::Core
     )
+
+
+target_precompile_headers(RoughPy_Platform PUBLIC
+        <cereal/cereal.hpp>
+        <cereal/access.hpp>
+        <cereal/specialize.hpp>
+        <cereal/types/base_class.hpp>
+        <cereal/types/optional.hpp>
+        <cereal/types/polymorphic.hpp>
+        <cereal/types/string.hpp>
+        <cereal/types/utility.hpp>
+        <cereal/types/vector.hpp>
+        <cereal/archives/binary.hpp>
+        <cereal/archives/json.hpp>
+        <cereal/archives/portable_binary.hpp>
+        <cereal/archives/xml.hpp>
+)

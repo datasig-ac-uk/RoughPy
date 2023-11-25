@@ -79,6 +79,9 @@ add_roughpy_component(Scalars
             RoughPy::Device
 )
 
+target_precompile_headers(RoughPy_Scalars PUBLIC
+        include/roughpy/scalars/scalar_types.h
+)
 
 add_roughpy_test(scalars
     SRC
