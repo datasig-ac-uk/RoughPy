@@ -309,3 +309,37 @@ def test_ctor_type_deduction(data, typ):
     stream = LieIncrementStream.from_increments(data, width=TYPE_DEDUCTION_WIDTH, depth=TYPE_DEDUCTION_DEPTH)
 
     assert stream.dtype == typ
+
+
+
+
+
+def test_log_sigature_interval_alignment_default_resolution():
+    rp = roughpy
+    stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2)
+    zero = stream.ctx.zero_lie()
+
+    print(f"{stream.resolution=}")
+
+    result = stream.log_signature(rp.RealInterval(0.0, 0.1))
+    expected = rp.Lie([0.0, 1.0, 2.0], ctx=stream.ctx)
+    assert result == expected, f"{result} != {expected}"
+
+    for i in range(1, 20):
+        result = stream.log_signature(rp.RealInterval(0.1*i, 0.1*(i+1)))
+        assert result == zero, f"{result} != {zero}"
+
+def test_log_sigature_interval_alignment_set_resolution():
+    rp = roughpy
+    stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2, resolution=1)
+    zero = stream.ctx.zero_lie()
+
+    print(f"{stream.resolution=}")
+
+    result = stream.log_signature(rp.RealInterval(0.0, 0.1))
+    assert result == zero, f"{result} != {zero}"
+
+    for i in range(1, 20):
+        result = stream.log_signature(rp.RealInterval(0.1*i, 0.1*(i+1)))
+        assert result == zero, f"{result} != {zero}"
+
