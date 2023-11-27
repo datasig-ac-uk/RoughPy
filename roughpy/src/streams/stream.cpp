@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "stream.h"
 
@@ -31,8 +32,8 @@
 #include <cstring>
 #include <sstream>
 
-#include <roughpy/platform/archives.h>
 #include <roughpy/intervals/partition.h>
+#include <roughpy/platform/archives.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/streams/stream.h>
 
@@ -559,8 +560,8 @@ static PyObject* restrict(PyObject* self, PyObject* args, PyObject* kwargs)
     return python::RPyStream_FromStream(stream.restrict(ivl));
 }
 
-static PyObject* stream___getnewargs_ex__(PyObject* self, PyObject*
-                                                                  RPY_UNUSED_VAR)
+static PyObject*
+stream___getnewargs_ex__(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
     PyObject* data;
 
@@ -642,12 +643,21 @@ static PyObject* support_getter(PyObject* self)
             .ptr();
 }
 
+static PyObject* resolution_getter(PyObject* self)
+{
+
+    return PyLong_FromLong(reinterpret_cast<python::RPyStream*>(self)
+                                   ->m_data.metadata()
+                                   .default_resolution);
+}
+
 static PyGetSetDef RPyStream_getset[] = {
-        {  "width",   (getter) width_getter, nullptr, nullptr, nullptr},
-        {  "dtype",   (getter) ctype_getter, nullptr, nullptr, nullptr},
-        {    "ctx",     (getter) ctx_getter, nullptr, nullptr, nullptr},
-        {"support", (getter) support_getter, nullptr, nullptr, nullptr},
-        {  nullptr,                 nullptr, nullptr, nullptr, nullptr}
+        {     "width",      (getter) width_getter, nullptr, nullptr, nullptr},
+        {     "dtype",      (getter) ctype_getter, nullptr, nullptr, nullptr},
+        {       "ctx",        (getter) ctx_getter, nullptr, nullptr, nullptr},
+        {   "support",    (getter) support_getter, nullptr, nullptr, nullptr},
+        {"resolution", (getter) resolution_getter, nullptr, nullptr, nullptr},
+        {     nullptr,                    nullptr, nullptr, nullptr, nullptr}
 };
 
 static PyObject* RPyStream_repr(PyObject* self)
