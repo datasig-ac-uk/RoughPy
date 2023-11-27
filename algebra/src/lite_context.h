@@ -341,12 +341,12 @@ template <typename TensorObject>
 void tensor_populate_vcd(VectorConstructionData& data, const TensorObject& arg)
 {
 
+    auto sz = arg.size();
     if (arg.storage_type() == VectorType::Dense) {
         // Simply borrow the data pointer
         data.data = *arg.dense_data();
-    } else {
+    } else if (sz > 0) {
         // Construct key-value arrays to pass to construct_impl
-        auto sz = arg.size();
         data.data.allocate_scalars(sz);
         data.data.allocate_keys();
 
