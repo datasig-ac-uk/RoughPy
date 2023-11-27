@@ -403,7 +403,7 @@ constexpr TypeInfo type_info() noexcept
             1U};
 }
 
-
+std::ostream& operator<<(std::ostream& os, const TypeInfo& code);
 
 
 RPY_SERIAL_SERIALIZE_FN_EXT(TypeInfo)

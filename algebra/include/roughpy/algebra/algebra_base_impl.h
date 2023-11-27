@@ -254,6 +254,15 @@ context_pointer AlgebraBase<Interface, DerivedImpl>::context() const noexcept
     return (p_impl) ? p_impl->context() : nullptr;
 }
 
+
+template <
+        typename Interface,
+        template <typename, template <typename> class> class DerivedImpl>
+typename AlgebraBase<Interface, DerivedImpl>::basis_type AlgebraBase<Interface, DerivedImpl>::basis() const
+{
+    return (p_impl) ? p_impl->basis() : basis_type();
+}
+
 template <
         typename Interface,
         template <typename, template <typename> class> class DerivedImpl>

@@ -71,6 +71,7 @@ add_roughpy_component(Device
         src/opencl/ocl_version.h
         src/buffer.cpp
         src/buffer_interface.cpp
+        src/core.cpp
         src/device_handle.cpp
         src/device_interface_base.cpp
         src/device_provider.cpp

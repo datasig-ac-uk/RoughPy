@@ -369,9 +369,6 @@ static PyObject* polynomial___setstate__(PyObject* self, PyObject* args)
 }
 }
 
-PyObject* PyPolynomial_FromPolynomial(scalars::rational_poly_scalar&& poly
-) noexcept;
-
 static PyMethodDef RPyPolynomial_methods[] = {
         {      "degree",(PyCFunction) &polynomial_degree,METH_NOARGS, nullptr                                                          },
         {"__getstate__",

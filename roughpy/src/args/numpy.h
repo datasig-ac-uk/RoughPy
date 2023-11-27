@@ -33,7 +33,8 @@
 #  include "roughpy_module.h"
 #  include <pybind11/numpy.h>
 
-#  include <roughpy/scalars/scalar.h>
+#  include <roughpy/scalars.h>
+#include <roughpy/algebra/algebra_base.h>
 
 #  include <string>
 
@@ -46,8 +47,62 @@ py::dtype ctype_to_npy_dtype(const scalars::ScalarType* type);
 
 string npy_dtype_to_identifier(py::dtype dtype);
 
+namespace dtl {
+
+RPY_NO_DISCARD
+py::array dense_data_to_array(const scalars::ScalarArray& data,
+                              dimn_t dimension);
+RPY_NO_DISCARD
+py::array new_zero_array_for_stype(const scalars::ScalarType* type,
+                                   dimn_t dimension);
+void write_entry_to_array(py::array& array,
+                          dimn_t index,
+                          const scalars::Scalar& arg);
+
+
+}
+
+template <typename Interface, template <typename, template <typename> class>
+          class DerivedImpl>
+RPY_NO_DISCARD
+inline py::array algebra_to_array(
+    const algebra::AlgebraBase<Interface, DerivedImpl>& alg)
+{
+    const auto* stype = alg.coeff_type();
+    const auto basis = alg.basis();
+    const auto dimension = basis.dimension();
+
+    auto dense_data = alg.dense_data();
+
+    if (dense_data && dense_data->size() == dimension) {
+        // Dense and full dimension, borrow
+        auto dtype = ctype_to_npy_dtype(stype);
+        return py::array(dtype, {dimension}, {}, dense_data->pointer());
+    }
+    if (dense_data) { return dtl::dense_data_to_array(*dense_data, dimension); }
+
+    auto result = dtl::new_zero_array_for_stype(stype, dimension);
+
+    for (auto&& item : alg) {
+        dimn_t index = basis.key_to_index(item.key());
+        dtl::write_entry_to_array(result, index, item.value());
+    }
+
+    return result;
+}
+
 }// namespace python
 }// namespace rpy
 
 #endif// ROUGHPY_WITH_NUMPY
+
+namespace rpy {
+namespace python {
+
+void import_numpy();
+
+}
+}
+
+
 #endif// RPY_PY_ARGS_NUMPY_H_
