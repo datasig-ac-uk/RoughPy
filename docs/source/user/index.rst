@@ -20,7 +20,8 @@ details are found in :doc:`../reference/index`.
    :caption: Fundamentals and usage
    :maxdepth: 2
 
-   basics
+   fundamentals
+   tutorials
 
 .. toctree::
    :caption: Advanced usage
