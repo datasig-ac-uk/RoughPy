@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_STREAM_H_
 #define ROUGHPY_STREAMS_STREAM_H_
@@ -70,13 +71,18 @@ private:
     RPY_NO_DISCARD bool check_support_and_trim(RealInterval& domain
     ) const noexcept;
 
+    RPY_NO_DISCARD bool check_interval_and_resolution(
+            const Interval& interval,
+            resolution_t resolution
+    ) const noexcept;
+
     Stream(const std::shared_ptr<const StreamInterface>& impl,
            RealInterval support)
-        : p_impl(impl), m_support(support)
+        : p_impl(impl),
+          m_support(support)
     {}
 
 public:
-
     Stream() = default;
 
     template <typename Impl>
@@ -106,7 +112,8 @@ public:
     RPY_NO_DISCARD Lie
     log_signature(const Interval& interval, resolution_t resolution) const;
     RPY_NO_DISCARD Lie log_signature(
-            const Interval& interval, resolution_t resolution,
+            const Interval& interval,
+            resolution_t resolution,
             const Context& ctx
     ) const;
 
@@ -119,33 +126,42 @@ public:
     RPY_NO_DISCARD FreeTensor
     signature(const Interval& interval, resolution_t resolution) const;
     RPY_NO_DISCARD FreeTensor signature(
-            const Interval& interval, resolution_t resolution,
+            const Interval& interval,
+            resolution_t resolution,
             const Context& ctx
     ) const;
 
     RPY_NO_DISCARD FreeTensor
     signature_derivative(const Interval& domain, const Lie& perturbation) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const Interval& domain, const Lie& perturbation, const Context& ctx
+            const Interval& domain,
+            const Lie& perturbation,
+            const Context& ctx
     ) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const Interval& domain, const Lie& perturbation,
+            const Interval& domain,
+            const Lie& perturbation,
             resolution_t resolution
     ) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const Interval& domain, const Lie& perturbation,
-            resolution_t resolution, const Context& ctx
+            const Interval& domain,
+            const Lie& perturbation,
+            resolution_t resolution,
+            const Context& ctx
     ) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const perturbation_list_t& perturbations, resolution_t resolution
+            const perturbation_list_t& perturbations,
+            resolution_t resolution
     ) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const perturbation_list_t& perturbations, resolution_t resolution,
+            const perturbation_list_t& perturbations,
+            resolution_t resolution,
             const Context& ctx
     ) const;
 
     Stream simplify(
-            const intervals::Partition& partition, resolution_t resolution
+            const intervals::Partition& partition,
+            resolution_t resolution
     ) const
     {
         const auto& md = metadata();
@@ -153,7 +169,8 @@ public:
     }
 
     Stream simplify(
-            const intervals::Partition& partition, resolution_t resolution,
+            const intervals::Partition& partition,
+            resolution_t resolution,
             const Context& ctx
     ) const;
 
