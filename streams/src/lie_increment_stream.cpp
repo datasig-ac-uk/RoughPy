@@ -36,6 +36,8 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <vector>
+
 using namespace rpy;
 using namespace rpy::streams;
 
@@ -147,7 +149,7 @@ LieIncrementStream::LieIncrementStream(
              * We've inserted a new element, so we should now add the param
              * value if it is needed.
              */
-            it->second[param_slot] = Scalar(index - previous_param);
+            it->second[param_slot] = index - previous_param;
         }
         previous_param = index;
 
