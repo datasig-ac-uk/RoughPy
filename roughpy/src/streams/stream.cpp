@@ -66,10 +66,7 @@ struct SigArgs {
 static int resolution_converter(PyObject* object, void* out)
 {
     if (Py_TYPE(object) == &PyFloat_Type) {
-        auto tmp = PyFloat_AsDouble(object);
-        int exponent;
-        frexp(tmp, &exponent);
-        *reinterpret_cast<resolution_t*>(out) = -std::min(0, exponent - 1);
+        *reinterpret_cast<resolution_t*>(out) = python::param_to_resolution(PyFloat_AsDouble(object));
     } else if (Py_TYPE(object) == &PyLong_Type) {
         *reinterpret_cast<resolution_t*>(out) = PyLong_AsLong(object);
 #if PY_VERSION_HEX >= 0x030A0000

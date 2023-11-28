@@ -57,7 +57,8 @@ bool Stream::check_interval_and_resolution(
 ) const noexcept
 {
     auto diff = interval.sup() - interval.inf();
-    auto min_diff = ldexp(1.0, -resolution);
+    RPY_DBG_ASSERT(diff > 0.0);
+    auto min_diff = ldexp(0.5, -resolution);
     return diff >= min_diff;
 }
 
@@ -149,13 +150,12 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
     const auto& schema = p_impl->schema();
 
     RealInterval query_interval(schema.adjust_interval(interval));
-    if (!check_support_and_trim(query_interval)) {
-        return zero_lie(ctx);
-    }
     if (!check_interval_and_resolution(query_interval, resolution)) {
         return zero_lie(ctx);
     }
-
+    if (!check_support_and_trim(query_interval)) {
+        return zero_lie(ctx);
+    }
     return p_impl->log_signature(query_interval, resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature() const

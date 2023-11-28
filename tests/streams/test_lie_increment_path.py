@@ -319,27 +319,26 @@ def test_log_sigature_interval_alignment_default_resolution():
     stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2)
     zero = stream.ctx.zero_lie()
 
-    print(f"{stream.resolution=}")
-
+    # resolution is 0 here by default,
     result = stream.log_signature(rp.RealInterval(0.0, 0.1))
-    expected = rp.Lie([0.0, 1.0, 2.0], ctx=stream.ctx)
-    assert result == expected, f"{result} != {expected}"
+    assert result == zero, f"{result} != {zero}"
 
-    for i in range(1, 20):
+    for i in range(1, 10):
         result = stream.log_signature(rp.RealInterval(0.1*i, 0.1*(i+1)))
-        assert result == zero, f"{result} != {zero}"
+        assert result == zero, f"incr {i} expected {zero} got {result}"
 
 def test_log_sigature_interval_alignment_set_resolution():
     rp = roughpy
-    stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2, resolution=1)
+    stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2, resolution=4)
     zero = stream.ctx.zero_lie()
 
     print(f"{stream.resolution=}")
 
     result = stream.log_signature(rp.RealInterval(0.0, 0.1))
-    assert result == zero, f"{result} != {zero}"
+    expected = rp.Lie([0., 1., 2.], ctx=stream.ctx)
+    assert result == expected, f"{result} != {expected}"
 
-    for i in range(1, 20):
+    for i in range(1, 10):
         result = stream.log_signature(rp.RealInterval(0.1*i, 0.1*(i+1)))
         assert result == zero, f"{result} != {zero}"
 

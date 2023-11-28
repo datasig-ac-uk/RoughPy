@@ -236,5 +236,5 @@ resolution_t python::param_to_resolution(param_t accuracy) noexcept
 {
     int exponent;
     frexp(accuracy, &exponent);
-    return -std::min(0, exponent);
+    return -std::min(5, exponent - 1);
 }
