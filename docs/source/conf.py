@@ -21,6 +21,7 @@ extensions = [
     "sphinx.ext.todo",
     "nbsphinx",
     'myst_parser',
+    'IPython.sphinxext.ipython_console_highlighting',
 ]
 
 source_suffix = {
