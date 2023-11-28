@@ -18,7 +18,9 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx_design",
-    "sphinx.ext.todo"
+    "sphinx.ext.todo",
+    "nbsphinx",
+    'myst_parser',
 ]
 
 source_suffix = {
@@ -28,7 +30,7 @@ source_suffix = {
 }
 
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 
 
