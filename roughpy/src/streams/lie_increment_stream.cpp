@@ -39,6 +39,8 @@
 #include "scalars/scalars.h"
 #include "stream.h"
 
+#include <limits>
+
 using namespace rpy;
 using namespace rpy::python;
 using namespace pybind11::literals;
@@ -168,6 +170,7 @@ static py::object lie_increment_stream_from_increments(
     if (indices.empty()) {
         indices.reserve(num_increments);
         for (dimn_t i = 0; i < num_increments; ++i) { indices.emplace_back(i); }
+        md.resolution = 0;
     } else if (indices.size() != num_increments) {
         RPY_THROW(
                 py::value_error,
@@ -176,18 +179,41 @@ static py::object lie_increment_stream_from_increments(
         );
     }
 
-    if (!indices.empty()) {
-        auto minmax = std::minmax_element(indices.begin(), indices.end());
-        effective_support = intervals::RealInterval(
-                *minmax.first,
-                *minmax.second + ldexp(1.0, -md.resolution),
-                md.interval_type
-        );
-    }
+
 
     if (!md.schema) {
         md.schema = std::make_shared<streams::StreamSchema>(md.width);
     }
+
+    if (!md.resolution) {
+        RPY_DBG_ASSERT(!indices.empty());
+
+        auto min_diff = std::numeric_limits<param_t>::infinity();
+        auto previous = 0.0;
+
+        for (const auto& idx : indices) {
+            auto diff = idx - previous;
+            if (diff < min_diff) {
+                min_diff = diff;
+            }
+            md.resolution = python::param_to_resolution(min_diff);
+        }
+    }
+
+    if (!indices.empty()) {
+        auto minmax = std::minmax_element(indices.begin(), indices.end());
+        effective_support = intervals::RealInterval(
+                *minmax.first,
+                *minmax.second + ldexp(1.0, -*md.resolution),
+                md.interval_type
+        );
+    }
+//
+//    std::cout << "indices\n";
+//    for (auto&& ind : indices) {
+//        std::cout << ind << '\n';
+//    }
+//    std::cout <<'\n';
 
     auto result = streams::Stream(streams::LieIncrementStream(
             ks_stream.data_stream,
@@ -197,7 +223,7 @@ static py::object lie_increment_stream_from_increments(
              md.ctx,
              md.scalar_type,
              md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
-             md.resolution},
+             *md.resolution},
             md.schema
     ));
     if (md.support) { result.restrict_to(*md.support); }

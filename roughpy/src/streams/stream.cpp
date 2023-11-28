@@ -38,6 +38,7 @@
 #include <roughpy/streams/stream.h>
 
 #include "algebra/context.h"
+#include "args/kwargs_to_path_metadata.h"
 #include "args/numpy.h"
 #include "intervals/interval.h"
 #include "scalars/scalar_type.h"
