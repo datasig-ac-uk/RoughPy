@@ -208,12 +208,7 @@ static py::object lie_increment_stream_from_increments(
                 md.interval_type
         );
     }
-//
-//    std::cout << "indices\n";
-//    for (auto&& ind : indices) {
-//        std::cout << ind << '\n';
-//    }
-//    std::cout <<'\n';
+
 
     auto result = streams::Stream(streams::LieIncrementStream(
             ks_stream.data_stream,
