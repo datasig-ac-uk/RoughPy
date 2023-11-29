@@ -2,7 +2,7 @@
 RoughPy tutorials
 *****************
 
-Here are some tutorials
+Here are some examples of using RoughPy methods.
 
 .. toctree::
    :maxdepth: 1
