@@ -51,6 +51,24 @@ bool Stream::check_support_and_trim(Stream::RealInterval& domain) const noexcept
     return true;
 }
 
+inline optional<pair<Stream::RealInterval, resolution_t>>
+Stream::refine_interval(
+        const Interval& original_query
+) const
+{
+    auto query = schema().adjust_interval(original_query);
+
+    if (!check_support_and_trim(query)) {
+        return {};
+    }
+    auto length = query.sup() - query.inf();
+    if (length == 0.0) { return {}; }
+
+    auto resolution = param_to_resolution(length) + 2;
+
+    return {{query, resolution}};
+}
+
 bool Stream::check_interval_and_resolution(
         const Stream::Interval& interval,
         resolution_t resolution
@@ -146,17 +164,11 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         const rpy::streams::Stream::Context& ctx
 ) const
 {
-    const auto& md = metadata();
-    const auto& schema = p_impl->schema();
+    auto amended_query = refine_interval(interval);
+    if (!amended_query) { return zero_lie(ctx); }
 
-    RealInterval query_interval(schema.adjust_interval(interval));
-    if (!check_interval_and_resolution(query_interval, resolution)) {
-        return zero_lie(ctx);
-    }
-    if (!check_support_and_trim(query_interval)) {
-        return zero_lie(ctx);
-    }
-    return p_impl->log_signature(query_interval, resolution, ctx);
+
+    return p_impl->log_signature(amended_query->first, resolution, ctx);
 }
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature() const
 {
