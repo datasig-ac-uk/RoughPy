@@ -334,7 +334,7 @@ public:
                     );
                 case dtl::ScalarContentType::Interface:
                 case dtl::ScalarContentType::OwnedInterface:
-                    interface->set_value(Scalar(value));
+                    interface->set_value(Scalar(devices::type_info<remove_cv_t<T>>(), &value));
                 break;
             }
         }
