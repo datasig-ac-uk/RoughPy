@@ -185,7 +185,7 @@ def test_tick_sig_deriv_width_3_depth_1_let_2_perturb():
     perturbation = Lie(np.array([0.0, 1.0, 0.0]), width=3, depth=1)
     interval = RealInterval(0.0, 1.0)
 
-    d = p.signature_derivative(interval, perturbation, 1)
+    d = p.signature_derivative(interval, perturbation)
 
     expected = FreeTensor(np.array([0.0, 0.0, 1.0, 0.0]), width=3, depth=1)
 
