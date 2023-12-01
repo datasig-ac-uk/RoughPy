@@ -238,8 +238,8 @@ ObjectBase<Interface, Derived>::ref_count() const noexcept
 template <typename Interface, typename Derived>
 Derived ObjectBase<Interface, Derived>::clone() const
 {
-    RPY_CHECK(p_impl);
-    return Derived(p_impl->clone());
+    RPY_CHECK(p_impl != nullptr);
+    return Derived(p_impl);
 }
 
 template <typename Interface, typename Derived>
