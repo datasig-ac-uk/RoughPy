@@ -31,8 +31,8 @@
 
 #include "packed_scalar_type_ptr.h"
 #include "scalar_interface.h"
-#include "scalars_fwd.h"
 #include "scalar_type.h"
+#include "scalars_fwd.h"
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/helpers.h>
@@ -41,7 +41,6 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
-
 
 namespace rpy {
 namespace scalars {
@@ -137,6 +136,14 @@ content_type_of(PackedScalarTypePointer<ScalarContentType> ptype) noexcept
     return content_type_of(ptype.get_type_info());
 }
 
+
+template <typename T>
+struct can_be_scalar : conditional_t<!is_base_of<Scalar, T>::value, std::true_type, std::false_type> {};
+
+template <typename T>
+struct can_be_scalar<std::unique_ptr<T>> : std::false_type {};
+
+
 }// namespace dtl
 
 /**
@@ -178,22 +185,41 @@ public:
     explicit Scalar(const ScalarType* type);
     explicit Scalar(devices::TypeInfo info);
 
+    //    template <
+    //            typename T,
+    //            typename = enable_if_t<
+    //                    !is_reference<T>::value &&
+    //                    is_standard_layout<T>::value
+    //                    && is_trivially_copyable<T>::value
+    //                    && is_trivially_destructible<T>::value
+    //                    && (sizeof(T) <= sizeof(void*))>>
+    //    explicit Scalar(T value)
+    //        : p_type_and_content_type(
+    //                devices::type_info<T>(),
+    //                dtl::ScalarContentType::TrivialBytes
+    //        ),
+    //          integer_for_convenience(0)
+    //    {
+    //        std::memcpy(&trivial_bytes, &value, sizeof(value));
+    //    }
 
-    template <
-            typename T,
-            typename = enable_if_t<
-                    !is_reference<T>::value && is_standard_layout<T>::value
-                    && is_trivially_copyable<T>::value
-                    && is_trivially_destructible<T>::value
-                    && sizeof(T) <= sizeof(void*)>>
-    explicit Scalar(T value)
+    template <typename T, typename = enable_if_t<dtl::can_be_scalar<T>::value>>
+    explicit Scalar(const T& value)
         : p_type_and_content_type(
-                devices::type_info<T>(),
+                devices::type_info<remove_cv_t<T>>(),
                 dtl::ScalarContentType::TrivialBytes
         ),
           integer_for_convenience(0)
     {
-        std::memcpy(&trivial_bytes, &value, sizeof(value));
+        if constexpr (is_standard_layout<T>::value
+                      && is_trivially_copyable<T>::value
+                      && is_trivially_destructible<T>::value
+                      && sizeof(T) <= sizeof(void*)) {
+            std::memcpy(trivial_bytes, &value, sizeof(T));
+        } else {
+            allocate_data();
+            construct_inplace(static_cast<T*>(opaque_pointer), value);
+        }
     }
 
     template <
@@ -232,8 +258,9 @@ public:
         auto value_info = devices::type_info<remove_cv_ref_t<T>>();
         if (this_info == value_info) {
             construct_inplace(
-                static_cast<remove_cv_ref_t<T>*>(opaque_pointer),
-                std::forward<T>(value));
+                    static_cast<remove_cv_ref_t<T>*>(opaque_pointer),
+                    std::forward<T>(value)
+            );
         } else {
             dtl::scalar_convert_copy(
                     opaque_pointer,
@@ -250,16 +277,8 @@ public:
     explicit Scalar(devices::TypeInfo info, void* ptr);
     explicit Scalar(devices::TypeInfo info, const void* ptr);
 
-    template <typename T, typename = enable_if_t<(sizeof(T) > sizeof(void*))>>
-    explicit Scalar(const T& value)
-        : p_type_and_content_type(
-                *scalar_type_of<T>(),
-                dtl::ScalarContentType::ConstOpaquePointer
-        ),
-          opaque_pointer(const_cast<void*>(static_cast<const void*>(&value)))
-    {}
-
-    explicit Scalar(std::unique_ptr<ScalarInterface> iface)
+    template <typename I, typename = enable_if_t<is_base_of<ScalarInterface, I>::value>>
+    explicit Scalar(std::unique_ptr<I>&& iface)
         : p_type_and_content_type(
                 nullptr,
                 dtl::ScalarContentType::OwnedInterface
@@ -308,34 +327,36 @@ public:
                     // We're actually not paying attention to "const" in trivial
                     // bytes, since the value is owned by the Scalar.
                     if (!dtl::scalar_convert_copy(
-                        trivial_bytes,
-                        type_info(),
-                        &value,
-                        devices::type_info<remove_cv_t<T>>()
-                    )) {
+                                trivial_bytes,
+                                type_info(),
+                                &value,
+                                devices::type_info<remove_cv_t<T>>()
+                        )) {
                         RPY_THROW(std::runtime_error, "assignment failed");
                     }
-                break;
+                    break;
                 case dtl::ScalarContentType::OpaquePointer:
                 case dtl::ScalarContentType ::OwnedPointer:
                     if (!dtl::scalar_convert_copy(
-                        opaque_pointer,
-                        type_info_from(p_type_and_content_type),
-                        &value,
-                        devices::type_info<remove_cv_t<T>>()
-                    )) {
+                                opaque_pointer,
+                                type_info_from(p_type_and_content_type),
+                                &value,
+                                devices::type_info<remove_cv_t<T>>()
+                        )) {
                         RPY_THROW(std::runtime_error, "assignment failed");
                     }
-                break;
+                    break;
                 case dtl::ScalarContentType::ConstOpaquePointer:
                     RPY_THROW(
-                        std::runtime_error,
-                        "attempting to write to a const value"
+                            std::runtime_error,
+                            "attempting to write to a const value"
                     );
                 case dtl::ScalarContentType::Interface:
                 case dtl::ScalarContentType::OwnedInterface:
-                    interface->set_value(Scalar(devices::type_info<remove_cv_t<T>>(), &value));
-                break;
+                    interface->set_value(
+                            Scalar(devices::type_info<remove_cv_t<T>>(), &value)
+                    );
+                    break;
             }
         }
         return *this;
@@ -444,7 +465,8 @@ private:
 
 std::ostream& operator<<(std::ostream&, const Scalar&);
 
-RPY_SERIAL_LOAD_FN_IMPL(Scalar) {
+RPY_SERIAL_LOAD_FN_IMPL(Scalar)
+{
     devices::TypeInfo type_info;
     RPY_SERIAL_SERIALIZE_VAL(type_info);
     std::vector<byte> raw_bytes;
@@ -452,12 +474,11 @@ RPY_SERIAL_LOAD_FN_IMPL(Scalar) {
     from_raw_bytes(type_info, raw_bytes);
 }
 
-RPY_SERIAL_SAVE_FN_IMPL(Scalar) {
+RPY_SERIAL_SAVE_FN_IMPL(Scalar)
+{
     RPY_SERIAL_SERIALIZE_NVP("type_info", type_info());
     RPY_SERIAL_SERIALIZE_NVP("raw_bytes", to_raw_bytes());
 }
-
-
 
 RPY_SERIAL_EXTERN_SAVE_CLS(Scalar)
 RPY_SERIAL_EXTERN_LOAD_CLS(Scalar)
