@@ -144,9 +144,7 @@ DyadicCachingLayer::log_signature(const intervals::Interval& domain,
     lies.reserve(dyadic_dissection.size());
     for (const auto& itvl : dyadic_dissection) {
         auto lsig = log_signature(itvl, resolution, ctx);
-        if (!lsig.is_zero()) {
-            lies.push_back(lsig);
-        }
+        if (!lsig.is_zero()) { lies.push_back(lsig); }
     }
 
     return ctx.cbh(lies, DyadicCachingLayer::metadata().cached_vector_type);
