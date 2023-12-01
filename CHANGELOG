@@ -3,6 +3,7 @@ Version 0.1.0:
   - Made changes to type deduction in constructors to avoid exceptions when providing lists of python ints/floats.
   - Changed the implementation of __array__ for algebra types. A copy is always made, and the size of the array is always
     equal to the dimension of the chosen width/depth composition.
+  - Changed the behaviour when no resolution is given. RoughPy now uses a heuristic to compute a suitable resolution for computing signatures if none is given.
 
 
 Version 0.0.8:
