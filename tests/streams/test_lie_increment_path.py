@@ -319,9 +319,10 @@ def test_log_sigature_interval_alignment_default_resolution():
     stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2)
     zero = stream.ctx.zero_lie()
 
-    # resolution is 0 here by default,
+    # resolution is set dynamically
     result = stream.log_signature(rp.RealInterval(0.0, 0.1))
-    assert result == zero, f"{result} != {zero}"
+    expected = rp.Lie([0., 1., 2.], ctx=stream.ctx)
+    assert result == expected, f"{result} != {expected}"
 
     for i in range(1, 10):
         result = stream.log_signature(rp.RealInterval(0.1*i, 0.1*(i+1)))
@@ -334,12 +335,12 @@ def test_log_sigature_interval_alignment_set_resolution():
 
     print(f"{stream.resolution=}")
 
-    result = stream.log_signature(rp.RealInterval(0.0, 0.1))
+    result = stream.log_signature(rp.RealInterval(0.0, 0.1), resolution=4)
     expected = rp.Lie([0., 1., 2.], ctx=stream.ctx)
     assert result == expected, f"{result} != {expected}"
 
     for i in range(1, 10):
-        result = stream.log_signature(rp.RealInterval(0.1*i, 0.1*(i+1)))
+        result = stream.log_signature(rp.RealInterval(0.1*i, 0.1*(i+1)), resolution=4)
         assert result == zero, f"{result} != {zero}"
 
 
