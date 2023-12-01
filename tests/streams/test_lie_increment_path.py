@@ -342,3 +342,17 @@ def test_log_sigature_interval_alignment_set_resolution():
         result = stream.log_signature(rp.RealInterval(0.1*i, 0.1*(i+1)))
         assert result == zero, f"{result} != {zero}"
 
+
+def test_signature_multiplication():
+    rp = roughpy
+    ctx = rp.get_context(width=3, depth=2, coeffs=rp.Rational)
+    data = np.array([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]])
+    indices = np.array([0., np.pi / 4, 1.0])
+
+    stream = LieIncrementStream.from_increments(data, indices=indices, ctx=ctx)
+
+    left = stream.signature(rp.RealInterval(0.0, np.pi / 4))
+    right = stream.signature(rp.RealInterval(np.pi / 4, 2.))
+    full = stream.signature(rp.RealInterval(0.0, 2.0))
+
+    assert left * right == full, f"{left}*{right}={left * right} != {full}"
