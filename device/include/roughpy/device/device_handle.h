@@ -39,11 +39,11 @@
 
 #include "core.h"
 
-//#include "buffer.h"
-//#include "core.h"
-//#include "event.h"
-//#include "kernel.h"
-//#include "queue.h"
+#include "buffer.h"
+#include "core.h"
+#include "event.h"
+#include "kernel.h"
+#include "queue.h"
 
 namespace rpy {
 namespace devices {
