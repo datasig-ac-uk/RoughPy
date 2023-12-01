@@ -196,7 +196,7 @@ static py::object lie_increment_stream_from_increments(
             if (diff < min_diff) {
                 min_diff = diff;
             }
-            md.resolution = python::param_to_resolution(min_diff);
+            md.resolution = python::param_to_resolution(min_diff) + 1;
         }
     }
 
