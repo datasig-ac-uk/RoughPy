@@ -53,14 +53,12 @@ bool Stream::check_support_and_trim(Stream::RealInterval& domain) const noexcept
 
 inline optional<pair<Stream::RealInterval, resolution_t>>
 Stream::refine_interval(
-        const Interval& original_query
+    const Interval& original_query
 ) const
 {
     auto query = schema().adjust_interval(original_query);
 
-    if (!check_support_and_trim(query)) {
-        return {};
-    }
+    if (!check_support_and_trim(query)) { return {}; }
     auto length = query.sup() - query.inf();
     if (length == 0.0) { return {}; }
 
@@ -167,9 +165,9 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
     auto amended_query = refine_interval(interval);
     if (!amended_query) { return zero_lie(ctx); }
 
-
     return p_impl->log_signature(amended_query->first, resolution, ctx);
 }
+
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature() const
 {
     const auto& md = metadata();
