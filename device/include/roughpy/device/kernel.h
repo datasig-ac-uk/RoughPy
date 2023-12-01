@@ -96,7 +96,9 @@ public:
 };
 
 
-extern template class dtl::ObjectBase<KernelInterface, Kernel>;
+namespace dtl {
+extern template class ObjectBase<KernelInterface, Kernel>;
+}
 
 class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
 {
