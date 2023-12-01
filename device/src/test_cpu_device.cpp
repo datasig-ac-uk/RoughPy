@@ -32,6 +32,10 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/device/host_device.h>
+#include <roughpy/device/buffer.h>
+#include <roughpy/device/event.h>
+#include <roughpy/device/kernel.h>
+#include <roughpy/device/queue.h>
 
 using namespace rpy;
 

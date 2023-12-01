@@ -28,7 +28,8 @@
 #ifndef ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 #define ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 
-
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
 #include <roughpy/platform/filesystem.h>
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -36,11 +37,13 @@
 
 #include <mutex>
 
-#include "buffer.h"
 #include "core.h"
-#include "event.h"
-#include "kernel.h"
-#include "queue.h"
+
+//#include "buffer.h"
+//#include "core.h"
+//#include "event.h"
+//#include "kernel.h"
+//#include "queue.h"
 
 namespace rpy {
 namespace devices {

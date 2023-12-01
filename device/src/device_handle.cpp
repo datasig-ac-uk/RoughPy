@@ -33,6 +33,11 @@
 
 #include <roughpy/device/buffer.h>
 
+#include "buffer.h"
+#include "event.h"
+#include "kernel.h"
+#include "queue.h"
+
 #include <mutex>
 #include <vector>
 

@@ -33,6 +33,10 @@
 #include <roughpy/device/memory_view.h>
 #include <roughpy/device/device_handle.h>
 
+#include "queue.h"
+#include "event.h"
+#include "kernel.h"
+
 using namespace rpy;
 using namespace rpy::devices;
 
