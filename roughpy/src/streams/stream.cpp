@@ -59,16 +59,16 @@ A stream is an abstract stream of data viewed as a rough path.
 
 struct SigArgs {
     optional<intervals::RealInterval> interval;
-    resolution_t resolution;
+    optional<resolution_t> resolution;
     algebra::context_pointer ctx;
 };
 
 static int resolution_converter(PyObject* object, void* out)
 {
     if (Py_TYPE(object) == &PyFloat_Type) {
-        *reinterpret_cast<resolution_t*>(out) = python::param_to_resolution(PyFloat_AsDouble(object));
+        *reinterpret_cast<optional<resolution_t>*>(out) = python::param_to_resolution(PyFloat_AsDouble(object));
     } else if (Py_TYPE(object) == &PyLong_Type) {
-        *reinterpret_cast<resolution_t*>(out) = PyLong_AsLong(object);
+        *reinterpret_cast<optional<resolution_t>*>(out) = PyLong_AsLong(object);
 #if PY_VERSION_HEX >= 0x030A0000
     } else if (Py_IsNone(object)) {
 #else
@@ -102,7 +102,6 @@ static int parse_sig_args(
                nullptr};
 
     PyObject* interval_or_inf = nullptr;
-    resolution_t resolution = smeta->default_resolution;
     PyObject* ctx = nullptr;
     PyObject* py_sup = nullptr;
     PyObject* dtype = nullptr;
@@ -116,7 +115,7 @@ static int parse_sig_args(
             &interval_or_inf,
             &py_sup,
             &resolution_converter,
-            &resolution,
+            &sigargs->resolution,
             &python::RPyContext_Type,
             &ctx,
             &depth,
@@ -124,7 +123,6 @@ static int parse_sig_args(
     );
     if (result == 0) { return -1; }
 
-    sigargs->resolution = resolution;
 
     // First decide if we're given an interval, inf/sup pair, or global
     if (interval_or_inf == nullptr) {
@@ -292,13 +290,24 @@ static PyObject* signature(PyObject* self, PyObject* args, PyObject* kwargs)
     algebra::FreeTensor result;
     try {
         if (sigargs.interval) {
-            result = stream->m_data.signature(
-                    *sigargs.interval,
-                    sigargs.resolution,
-                    *sigargs.ctx
-            );
+            if (sigargs.resolution) {
+                result = stream->m_data.signature(
+                        *sigargs.interval,
+                        *sigargs.resolution,
+                        *sigargs.ctx
+                );
+            } else {
+                result = stream->m_data.signature(
+                        *sigargs.interval,
+                        *sigargs.ctx
+                        );
+            }
         } else {
-            result = stream->m_data.signature(sigargs.resolution, *sigargs.ctx);
+            if (sigargs.resolution) {
+                result = stream->m_data.signature(*sigargs.resolution, *sigargs.ctx);
+            } else {
+                result = stream->m_data.signature(*sigargs.ctx);
+            }
         }
     } catch (std::exception& err) {
         PyErr_SetString(PyExc_RuntimeError, err.what());
@@ -322,13 +331,24 @@ static PyObject* log_signature(PyObject* self, PyObject* args, PyObject* kwargs)
 
     algebra::Lie result;
     if (sigargs.interval) {
-        result = stream->m_data.log_signature(
-                *sigargs.interval,
-                sigargs.resolution,
-                *sigargs.ctx
-        );
+        if (sigargs.resolution) {
+            result = stream->m_data.log_signature(
+                    *sigargs.interval,
+                    *sigargs.resolution,
+                    *sigargs.ctx
+            );
+        } else {
+            result = stream->m_data.log_signature(
+                    *sigargs.interval,
+                    *sigargs.ctx
+            );
+        }
     } else {
-        result = stream->m_data.log_signature(sigargs.resolution, *sigargs.ctx);
+        if (sigargs.resolution) {
+            result = stream->m_data.log_signature(*sigargs.resolution, *sigargs.ctx);
+        } else {
+            result = stream->m_data.log_signature(*sigargs.ctx);
+        }
     }
 
     return py::cast(result).release().ptr();
