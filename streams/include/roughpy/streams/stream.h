@@ -72,15 +72,19 @@ private:
     ) const noexcept;
 
     RPY_NO_DISCARD bool check_interval_and_resolution(
-            const Interval& interval,
-            resolution_t resolution
+        const Interval& interval,
+        resolution_t resolution
     ) const noexcept;
 
     Stream(const std::shared_ptr<const StreamInterface>& impl,
            RealInterval support)
         : p_impl(impl),
-          m_support(support)
-    {}
+          m_support(support) {}
+
+    RPY_NO_DISCARD optional<pair<RealInterval, resolution_t>> refine_interval(
+        const Interval& original_query
+    )
+    const;
 
 public:
     Stream() = default;
@@ -112,9 +116,9 @@ public:
     RPY_NO_DISCARD Lie
     log_signature(const Interval& interval, resolution_t resolution) const;
     RPY_NO_DISCARD Lie log_signature(
-            const Interval& interval,
-            resolution_t resolution,
-            const Context& ctx
+        const Interval& interval,
+        resolution_t resolution,
+        const Context& ctx
     ) const;
 
     RPY_NO_DISCARD FreeTensor signature() const;
@@ -126,42 +130,42 @@ public:
     RPY_NO_DISCARD FreeTensor
     signature(const Interval& interval, resolution_t resolution) const;
     RPY_NO_DISCARD FreeTensor signature(
-            const Interval& interval,
-            resolution_t resolution,
-            const Context& ctx
+        const Interval& interval,
+        resolution_t resolution,
+        const Context& ctx
     ) const;
 
     RPY_NO_DISCARD FreeTensor
     signature_derivative(const Interval& domain, const Lie& perturbation) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const Interval& domain,
-            const Lie& perturbation,
-            const Context& ctx
+        const Interval& domain,
+        const Lie& perturbation,
+        const Context& ctx
     ) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const Interval& domain,
-            const Lie& perturbation,
-            resolution_t resolution
+        const Interval& domain,
+        const Lie& perturbation,
+        resolution_t resolution
     ) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const Interval& domain,
-            const Lie& perturbation,
-            resolution_t resolution,
-            const Context& ctx
+        const Interval& domain,
+        const Lie& perturbation,
+        resolution_t resolution,
+        const Context& ctx
     ) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const perturbation_list_t& perturbations,
-            resolution_t resolution
+        const perturbation_list_t& perturbations,
+        resolution_t resolution
     ) const;
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const perturbation_list_t& perturbations,
-            resolution_t resolution,
-            const Context& ctx
+        const perturbation_list_t& perturbations,
+        resolution_t resolution,
+        const Context& ctx
     ) const;
 
     Stream simplify(
-            const intervals::Partition& partition,
-            resolution_t resolution
+        const intervals::Partition& partition,
+        resolution_t resolution
     ) const
     {
         const auto& md = metadata();
@@ -169,9 +173,9 @@ public:
     }
 
     Stream simplify(
-            const intervals::Partition& partition,
-            resolution_t resolution,
-            const Context& ctx
+        const intervals::Partition& partition,
+        resolution_t resolution,
+        const Context& ctx
     ) const;
 
     RPY_SERIAL_SERIALIZE_FN();
@@ -180,8 +184,7 @@ public:
 template <typename Impl>
 Stream::Stream(Impl&& impl)
     : p_impl(new remove_cv_t<Impl>(std::forward<Impl>(impl))),
-      m_support(p_impl->metadata().effective_support)
-{}
+      m_support(p_impl->metadata().effective_support) {}
 
 RPY_SERIAL_EXTERN_SERIALIZE_CLS(Stream)
 
