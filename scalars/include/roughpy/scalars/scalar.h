@@ -300,7 +300,7 @@ public:
     )
     {
         if (fast_is_zero()) {
-            *this = Scalar(value);
+            construct_inplace(this, value);
         } else {
             switch (p_type_and_content_type.get_enumeration()) {
                 case dtl::ScalarContentType::TrivialBytes:
@@ -310,7 +310,8 @@ public:
                     if (!dtl::scalar_convert_copy(
                         trivial_bytes,
                         type_info(),
-                        Scalar(value)
+                        &value,
+                        devices::type_info<remove_cv_t<T>>()
                     )) {
                         RPY_THROW(std::runtime_error, "assignment failed");
                     }
@@ -320,7 +321,8 @@ public:
                     if (!dtl::scalar_convert_copy(
                         opaque_pointer,
                         type_info_from(p_type_and_content_type),
-                        Scalar(value)
+                        &value,
+                        devices::type_info<remove_cv_t<T>>()
                     )) {
                         RPY_THROW(std::runtime_error, "assignment failed");
                     }
