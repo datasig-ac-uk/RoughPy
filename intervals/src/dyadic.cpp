@@ -152,12 +152,8 @@ bool rpy::intervals::rational_equals(const Dyadic& lhs, const Dyadic& rhs)
      * power. Otherwise, if either one is zero but not the other then they
      * cannot be equal.
      */
-    if (lhs.multiplier() == 0 && rhs.multiplier() == 0) {
-        return true;
-    }
-    if (lhs.multiplier() == 0 || rhs.multiplier() == 0) {
-        return false;
-    }
+    if (lhs.multiplier() == 0 && rhs.multiplier() == 0) { return true; }
+    if (lhs.multiplier() == 0 || rhs.multiplier() == 0) { return false; }
 
     Dyadic::multiplier_t ratio;
     if (lhs.multiplier() % rhs.multiplier() == 0
