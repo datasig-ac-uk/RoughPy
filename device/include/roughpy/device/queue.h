@@ -43,6 +43,8 @@ public:
     virtual dimn_t size() const;
 };
 
+extern template class dtl::ObjectBase<QueueInterface, Queue>;
+
 class Queue : public dtl::ObjectBase<QueueInterface, Queue>
 {
     using base_t = dtl::ObjectBase<QueueInterface, Queue>;

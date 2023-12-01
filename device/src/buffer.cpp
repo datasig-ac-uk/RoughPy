@@ -36,6 +36,11 @@
 using namespace rpy;
 using namespace rpy::devices;
 
+namespace rpy { namespace devices { namespace dtl {
+
+template class ObjectBase<BufferInterface, Buffer>;
+}}}
+
 BufferMode Buffer::mode() const {
     if (!impl()){
         return BufferMode::Read;

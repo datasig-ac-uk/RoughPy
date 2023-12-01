@@ -57,6 +57,9 @@ public:
     virtual void unmap(void* ptr) noexcept;
 };
 
+
+extern template class dtl::ObjectBase<BufferInterface, Buffer>;
+
 class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
 {
     using base_t = dtl::ObjectBase<BufferInterface, Buffer>;

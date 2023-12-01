@@ -55,6 +55,8 @@ public:
     virtual void set_status(EventStatus status);
 };
 
+extern template class dtl::ObjectBase<EventInterface, Event>;
+
 class Event : public dtl::ObjectBase<EventInterface, Event>
 {
     using base_t = dtl::ObjectBase<EventInterface, Event>;

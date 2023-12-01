@@ -30,9 +30,16 @@
 //
 
 #include <roughpy/device/event.h>
+#include "device_handle.h"
 
 using namespace rpy;
 using namespace rpy::devices;
+
+namespace rpy { namespace devices { namespace dtl {
+
+template class ObjectBase<EventInterface, Event>;
+
+}}}
 
 void Event::wait()
 {
