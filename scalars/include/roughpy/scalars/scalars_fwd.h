@@ -40,7 +40,6 @@ using BasicScalarInfo = devices::TypeInfo;
 
 using seed_int_t = uint64_t;
 
-
 // Forward declarations
 class RPY_EXPORT ScalarType;
 class ScalarInterface;
@@ -56,8 +55,14 @@ namespace dtl {
 
 template <typename T>
 struct ScalarTypeOfImpl {
-    static optional<const ScalarType*> get() noexcept { return {}; }
+    static optional<const ScalarType*> get() noexcept;
 };
+
+template <typename T>
+inline optional<const ScalarType*> ScalarTypeOfImpl<T>::get() noexcept
+{
+    return {};
+}
 
 template <>
 RPY_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<float>::get() noexcept;
@@ -66,17 +71,20 @@ template <>
 RPY_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<double>::get() noexcept;
 
 template <>
-RPY_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<devices::rational_scalar_type>::get() noexcept;
+RPY_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<devices::rational_scalar_type>::get() noexcept;
 
 template <>
-RPY_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<devices::rational_poly_scalar>::get() noexcept;
+RPY_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<devices::rational_poly_scalar>::get() noexcept;
 
 template <>
-RPY_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<devices::half>::get() noexcept;
+RPY_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<devices::half>::get() noexcept;
 
 template <>
-RPY_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<devices::bfloat16>::get() noexcept;
-
+RPY_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<devices::bfloat16>::get() noexcept;
 
 }// namespace dtl
 
@@ -100,8 +108,6 @@ RPY_NO_DISCARD optional<const ScalarType*> get_type(string_view id);
 inline constexpr int min_scalar_type_alignment = 16;
 
 #define RPY_SCALAR_TYPE_ALIGNMENT alignas(min_scalar_type_alignment)
-
-
 
 }// namespace scalars
 }// namespace rpy
