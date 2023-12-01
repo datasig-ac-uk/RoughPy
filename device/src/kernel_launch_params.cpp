@@ -32,6 +32,8 @@
 #include <roughpy/core/helpers.h>
 #include <roughpy/device/kernel.h>
 
+#include "device_handle.h"
+
 using namespace rpy;
 using namespace rpy::devices;
 
