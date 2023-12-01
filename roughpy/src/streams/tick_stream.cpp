@@ -124,13 +124,17 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
     //            },
     //            pmd.resolution));
 
+    if (!pmd.resolution) {
+        pmd.resolution = 0;
+    }
+
     streams::StreamMetadata meta{
             pmd.width,
             pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
             pmd.ctx,
             pmd.scalar_type,
             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-            pmd.resolution,
+            *pmd.resolution,
             pmd.interval_type};
 
     std::set<param_t> index;
@@ -148,7 +152,7 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
 
     for (const auto& tick : ticks) {
         const intervals::DyadicInterval di(
-                tick.timestamp, pmd.resolution, pmd.interval_type
+                tick.timestamp, *pmd.resolution, pmd.interval_type
         );
 
         auto lie_elt = pmd.ctx->zero_lie(meta.cached_vector_type);
@@ -228,7 +232,7 @@ static py::object construct(const py::object& data, const py::kwargs& kwargs)
 
     streams::Stream result(streams::TickStream(
             std::vector<param_t>(index.begin(), index.end()),
-            std::move(raw_data), pmd.resolution, pmd.schema, std::move(meta)
+            std::move(raw_data), *pmd.resolution, pmd.schema, std::move(meta)
     ));
 
     return py::reinterpret_steal<py::object>(

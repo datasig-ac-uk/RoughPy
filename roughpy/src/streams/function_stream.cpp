@@ -99,13 +99,18 @@ static py::object from_function(py::object fn, py::kwargs kwargs)
         effective_support = *pmd.support;
     }
 
+    if (!pmd.resolution) {
+        pmd.resolution = 0;
+    }
+
+
     streams::StreamMetadata md{
             pmd.width,
             effective_support,
             pmd.ctx,
             pmd.scalar_type,
             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-            pmd.resolution};
+            *pmd.resolution};
 
     PyObject* stream = python::RPyStream_FromStream(
             streams::Stream(python::FunctionStream(

@@ -66,6 +66,10 @@ Brownian_from_generator(const py::args& args, const py::kwargs& kwargs)
         );
     }
 
+    if (!pmd.resolution) {
+        pmd.resolution = 0;
+    }
+
     // TODO: Fix this up properly.
 
     streams::StreamMetadata md{
@@ -78,7 +82,7 @@ Brownian_from_generator(const py::args& args, const py::kwargs& kwargs)
             pmd.ctx,
             pmd.scalar_type,
             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-            pmd.resolution};
+            *pmd.resolution};
 
     // TODO: Finish this
 
