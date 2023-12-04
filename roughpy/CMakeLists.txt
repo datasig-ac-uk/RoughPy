@@ -33,14 +33,16 @@ if (ROUGHPY_BUILD_PYMODULE_INPLACE)
 endif ()
 
 
-set_target_properties(RoughPy_PyModule PROPERTIES
-    INSTALL_RPATH $ORIGIN)
-if (LINUX)
+#set_target_properties(RoughPy_PyModule PROPERTIES
+#    INSTALL_RPATH $ORIGIN)
+if (WIN32)
+
+elseif (APPLE)
+    #    set_target_properties(RoughPy_PyModule PROPERTIES
+    #            INSTALL_RPATH "@loader_path;@loader_path/../../..")
+else ()
     set_target_properties(RoughPy_PyModule PROPERTIES
             INSTALL_RPATH $ORIGIN)
-elseif (APPLE)
-    set_target_properties(RoughPy_PyModule PROPERTIES
-            INSTALL_RPATH "@loader_path;@loader_path/../../..")
 endif ()
 
 target_sources(RoughPy_PyModule PRIVATE

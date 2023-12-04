@@ -311,6 +311,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_INSTALL_RPATH "@executable_path")
 elseif (NOT WIN32)
     set(CMAKE_INSTALL_RPATH "$ORIGIN")
 endif ()
