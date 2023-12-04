@@ -344,6 +344,7 @@ def test_log_sigature_interval_alignment_set_resolution():
         assert result == zero, f"{result} != {zero}"
 
 
+@pytest.mark.skip("Issues on Windows with the MPIR library")
 def test_signature_multiplication():
     rp = roughpy
     ctx = rp.get_context(width=3, depth=2, coeffs=rp.Rational)
