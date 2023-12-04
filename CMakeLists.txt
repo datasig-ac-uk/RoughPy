@@ -275,11 +275,11 @@ if (NOT ROUGHPY_DISABLE_BLAS)
     endif ()
 endif ()
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
-add_library(Bignum::Bignum ALIAS PkgConfig::gmp)
-set(Bignum_LIBRARY "$<TARGET_FILE:PkgConfig::gmp>")
-set(Bignum_INCLUDE_DIR "$<TARGET_PROPERTY:PkgConfig::gmp,INTERFACE_INCLUDE_DIRECTORY>")
+#find_package(PkgConfig REQUIRED)
+#pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
+#add_library(Bignum::Bignum ALIAS PkgConfig::gmp)
+#set(Bignum_LIBRARY "$<TARGET_FILE:PkgConfig::gmp>")
+#set(Bignum_INCLUDE_DIR "$<TARGET_PROPERTY:PkgConfig::gmp,INTERFACE_INCLUDE_DIRECTORY>")
 
 
 #if (APPLE AND NOT DEFINED MKL_OMP_LIB)
