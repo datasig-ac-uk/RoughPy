@@ -311,7 +311,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
-    set_target_properties(Bignum::Bignum PROPERTIES IMPORT_NO_SONAME ON)
     set(CMAKE_INSTALL_RPATH "@loader_path" CACHE INTERNAL "")
 elseif (NOT WIN32)
     set(CMAKE_INSTALL_RPATH "$ORIGIN" CACHE INTERNAL "")
@@ -319,6 +318,9 @@ endif ()
 
 add_subdirectory(external/libalgebra_lite)
 
+if (APPLE AND TARGET Bignum::Bignum)
+    set_target_properties(Bignum::Bignum PROPERTIES IMPORT_NO_SONAME ON)
+endif ()
 
 add_subdirectory(core)
 add_subdirectory(platform)
