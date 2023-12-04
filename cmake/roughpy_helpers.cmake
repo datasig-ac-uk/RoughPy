@@ -521,7 +521,7 @@ function(add_roughpy_component _name)
     endforeach ()
 
     unset(_runtime_deps)
-    _check_runtime_deps(_runtime_deps ${ARG_PUBLIC_DEPS} ${ARG_PRIVATE_DEPS})
+    _check_runtime_deps(_runtime_deps ${_pub_nrpy_deps} ${_pvt_nrpy_deps})
 
     if (_runtime_deps)
         set_target_properties(${_real_name} PROPERTIES RUNTIME_DEPENDENCIES ${_runtime_deps})

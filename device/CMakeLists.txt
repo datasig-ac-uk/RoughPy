@@ -91,6 +91,7 @@ add_roughpy_component(Device
         PUBLIC
             Eigen3::Eigen
             Libalgebra_lite::Libalgebra_lite
+        Bignum::Bignum
         NEEDS
         RoughPy::Core
         RoughPy::Platform
