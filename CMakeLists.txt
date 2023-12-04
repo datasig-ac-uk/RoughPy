@@ -311,9 +311,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
-    set(CMAKE_INSTALL_RPATH "@executable_path")
+    #    set(CMAKE_INSTALL_RPATH "@executable_path")
 elseif (NOT WIN32)
-    set(CMAKE_INSTALL_RPATH "$ORIGIN")
+    set(CMAKE_INSTALL_RPATH "$ORIGIN" CACHE INTERNAL "")
 endif ()
 
 add_subdirectory(external/libalgebra_lite)
