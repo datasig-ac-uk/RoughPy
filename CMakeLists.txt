@@ -33,7 +33,7 @@ if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
     execute_process(COMMAND ${CMAKE_C_COMPILER} -fuse-ld=gold -Wl,--version OUTPUT_VARIABLE stdout ERROR_QUIET)
     if ("${stdout}" MATCHES "GNU gold")
         message(STATUS "using gold linker")
-        add_compile_options(-fuse-ld=gold)
+        add_link_options(-fuse-ld=gold)
     endif ()
 endif ()
 
