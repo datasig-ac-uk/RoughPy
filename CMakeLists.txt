@@ -310,7 +310,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (APPLE)
-    set(CMAKE_MACOSX_RPATH ON)
+    # set(CMAKE_MACOSX_RPATH ON)
     #    set(CMAKE_INSTALL_RPATH "@executable_path")
 elseif (NOT WIN32)
     set(CMAKE_INSTALL_RPATH "$ORIGIN" CACHE INTERNAL "")
@@ -364,6 +364,7 @@ install(DIRECTORY roughpy
     PATTERN "*.pyi"
     PATTERN "src/*" EXCLUDE)
 
+if (NOT APPLE)
 set(_runtime_deps "")
 foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
     get_target_property(_lib_deps ${_rpy_lib} RUNTIME_DEPENDENCIES)
@@ -373,3 +374,4 @@ foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
     endif ()
 endforeach ()
 install(FILES ${_runtime_deps} DESTINATION roughpy)
+endif ()
