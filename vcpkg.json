@@ -43,9 +43,8 @@
     "name" : "gtest",
     "version>=" : "1.13.0"
   }, {
-    "name" : "mpir",
-    "version>=" : "2022-03-02#1",
-    "platform" : "windows"
+    "name": "gmp",
+    "version>=": "6.2.1#21"
   }, {
     "name" : "pcg",
     "version>=" : "2021-04-06"

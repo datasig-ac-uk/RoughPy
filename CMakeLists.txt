@@ -28,6 +28,15 @@ option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 cmake_dependent_option(ROUGHPY_PREFER_ACCELERATE
     "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
 
+
+if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+    execute_process(COMMAND ${CMAKE_C_COMPILER} -fuse-ld=gold -Wl,--version OUTPUT_VARIABLE stdout ERROR_QUIET)
+    if ("${stdout}" MATCHES "GNU gold")
+        message(STATUS "using gold linker")
+        add_compile_options(-fuse-ld=gold)
+    endif ()
+endif ()
+
 # If testing is enabled, find GTest to make sure the tests can be
 # successfully built.
 if (ROUGHPY_BUILD_TESTS)
@@ -265,6 +274,11 @@ if (NOT ROUGHPY_DISABLE_BLAS)
         find_package(LAPACK REQUIRED)
     endif ()
 endif ()
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
+add_library(Bignum::Bignum ALIAS PkgConfig::gmp)
+
 
 #if (APPLE AND NOT DEFINED MKL_OMP_LIB)
 #    get_brew_prefix(_libomp_prefix libomp VERBOSE)
