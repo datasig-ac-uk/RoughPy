@@ -34,7 +34,6 @@
 #include <functional>
 
 #include <roughpy/scalars/key_scalar_array.h>
-#include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
 
 #include "r_py_polynomial.h"
@@ -125,7 +124,7 @@ inline bool is_kv_pair(py::handle arg, python::AlternativeKeyType* alternative)
 scalars::KeyScalarArray
 py_to_buffer(const py::handle& arg, PyToBufferOptions& options);
 
-void assign_py_object_to_scalar(scalars::ScalarPointer ptr, py::handle object);
+void assign_py_object_to_scalar(scalars::Scalar& dst, py::handle object);
 
 scalars::Scalar
 py_to_scalar(const scalars::ScalarType* type, py::handle object);
@@ -134,6 +133,8 @@ ArgSizeInfo compute_size_and_type(
         python::PyToBufferOptions& options, std::vector<py::object>& leaves,
         py::handle arg
 );
+
+
 
 void init_scalars(py::module_& m);
 

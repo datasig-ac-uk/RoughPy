@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,28 +18,25 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 02/03/23.
-//
+#ifndef ROUGHPY_SCALARS_SCALARS_H_
+#define ROUGHPY_SCALARS_SCALARS_H_
 
-#ifndef ROUGHPY_SCALARS_INCLUDE_ROUGHPY_SCALARS_H
-#define ROUGHPY_SCALARS_INCLUDE_ROUGHPY_SCALARS_H
-
-#include "scalars/key_scalar_array.h"
-#include "scalars/owned_scalar_array.h"
+#include "scalars/scalars_fwd.h"
+#include "scalars/scalar_type.h"
 #include "scalars/scalar.h"
 #include "scalars/scalar_array.h"
-#include "scalars/scalar_pointer.h"
+#include "scalars/scalar_array_view.h"
+#include "scalars/key_scalar_array.h"
 #include "scalars/scalar_stream.h"
-#include "scalars/scalar_type.h"
-#include "scalars/scalars_fwd.h"
+#include "scalars/key_scalar_stream.h"
 
-#endif// ROUGHPY_SCALARS_INCLUDE_ROUGHPY_SCALARS_H
+#include "scalars/random.h"
+
+#endif // ROUGHPY_SCALARS_SCALARS_H_

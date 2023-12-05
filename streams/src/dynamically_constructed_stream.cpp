@@ -373,8 +373,8 @@ streams::DynamicallyConstructedStream::compute_child_lie_increments(
         const DynamicallyConstructedStream::Lie& parent_value) const
 {
     const auto& md = metadata();
-    auto half = md.data_scalar_type->from(1, 2);
-    return pair<Lie, Lie>(parent_value.smul(half), parent_value.smul(half));
+    scalars::Scalar one_half(md.data_scalar_type, 1, 2);
+    return pair<Lie, Lie>(parent_value.smul(one_half), parent_value.smul(one_half));
 }
 
 

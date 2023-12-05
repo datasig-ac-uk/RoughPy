@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 13/04/23.
@@ -32,8 +33,7 @@
 #include "sound_file_data_source.h"
 
 #include <roughpy/platform/filesystem.h>
-#include <roughpy/scalars/owned_scalar_array.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include <boost/url/parse.hpp>
 #include <cmath>
@@ -41,16 +41,7 @@
 using namespace rpy;
 using namespace rpy::streams;
 
-
 using URIScheme = boost::urls::scheme;
-
-template <typename T>
-static scalars::ScalarPointer to_sp(T* ptr)
-{
-    return scalars::ScalarPointer(scalars::ScalarType::of<T>(), ptr);
-}
-
-
 
 sf_count_t SoundFileDataSource::param_to_frame(param_t param)
 {
@@ -63,11 +54,10 @@ sf_count_t SoundFileDataSource::param_to_frame(param_t param)
     return static_cast<sf_count_t>(std::ceil(seconds * sample_rate));
 }
 
-
-
 template <typename T>
 dimn_t SoundFileDataSource::query_impl(
-        scalars::KeyScalarArray& result, const intervals::Interval& interval,
+        scalars::KeyScalarArray& result,
+        const intervals::Interval& interval,
         const StreamSchema& schema
 )
 {
@@ -78,18 +68,18 @@ dimn_t SoundFileDataSource::query_impl(
      * simple transform is applied. We'll pretend that doesn't happen for now.
      *
      */
-    const auto* ctype = result.type();
-
+    const auto* ctype = *result.type();
+    const auto read_info = devices::type_info<T>();
+    const auto info = ctype->type_info();
 
     // At some point, we might want to avoid skipping the first readings.
-//    bool has_values = true;
+    //    bool has_values = true;
 
     auto width = schema.width();
 
     std::vector<T> working(width);
     std::vector<T> previous(m_handle.channels());
     std::vector<T> current(m_handle.channels());
-
 
     auto frame_begin = param_to_frame(interval.inf());
     auto frame_end = param_to_frame(interval.sup());
@@ -100,15 +90,15 @@ dimn_t SoundFileDataSource::query_impl(
     }
 
     // If we're at the beginning of time, skip the first reading
-    if (frame_begin == 0) {
-        ++frame_begin;
-    }
+    if (frame_begin == 0) { ++frame_begin; }
 
-    auto seek_pos = m_handle.seek(frame_begin-1, SEEK_SET);
+    auto seek_pos = m_handle.seek(frame_begin - 1, SEEK_SET);
     m_handle.readf(previous.data(), 1);
 
-    RPY_CHECK(frame_begin > 0 && frame_begin <= frame_end
-                  && frame_end <= m_handle.frames());
+    RPY_CHECK(
+            frame_begin > 0 && frame_begin <= frame_end
+            && frame_end <= m_handle.frames()
+    );
 
     auto frame_count = frame_end - frame_begin;
 
@@ -116,10 +106,11 @@ dimn_t SoundFileDataSource::query_impl(
 
     result.allocate_scalars(frame_count * width);
 
-    auto stride = ctype->itemsize() * width;
-    char* write_ptr = result.raw_cast<char*>();
+    auto stride = info.bytes * width;
+    auto* write_ptr = result.as_mut_slice<char>().data();
 
-    for (sf_count_t row_idx=0; row_idx < frame_count; ++row_idx) {
+    scalars::ScalarArray out(ctype, write_ptr, width);
+    for (sf_count_t row_idx = 0; row_idx < frame_count; ++row_idx) {
         /*
          * Process is as follows:
          *      1) Read the data into current.
@@ -133,7 +124,7 @@ dimn_t SoundFileDataSource::query_impl(
          */
 
         m_handle.readf(current.data(), 1);
-        dimn_t i=0;
+        dimn_t i = 0;
         // I really wish C++ had enumerate iterators!
         for (const auto& [_, chan] : schema) {
             auto out_idx = schema.channel_to_stream_dim(i);
@@ -148,30 +139,37 @@ dimn_t SoundFileDataSource::query_impl(
         }
         std::swap(current, previous);
 
-        ctype->convert_copy(scalars::ScalarPointer(ctype, write_ptr),
-                            to_sp(working.data()), width);
+        ctype->convert_copy(
+                out,
+                scalars::ScalarArray(read_info, working.data(), width)
+        );
 
         write_ptr += stride;
+        out = scalars::ScalarArray(ctype, write_ptr, width);
     }
 
     return static_cast<dimn_t>(frame_count);
 }
 
 SoundFileDataSource::SoundFileDataSource(const fs::path& path)
-    : m_path(path), m_handle(m_path.c_str())
+    : m_path(path),
+      m_handle(m_path.c_str())
 {}
 
 SoundFileDataSource::SoundFileDataSource(const url& uri)
-    : m_path(uri.path()), m_handle(m_path.c_str())
+    : m_path(uri.path()),
+      m_handle(m_path.c_str())
 {}
 
 SoundFileDataSource::SoundFileDataSource(SndfileHandle&& handle)
     : m_handle(std::move(handle))
 {}
 
-dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
-                                  const intervals::Interval& interval,
-                                  const StreamSchema& schema)
+dimn_t SoundFileDataSource::query(
+        scalars::KeyScalarArray& result,
+        const intervals::Interval& interval,
+        const StreamSchema& schema
+)
 {
     /*
      * The actual implementation is dispatched to an appropriate
@@ -181,30 +179,31 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
      * depending on whether the stream scalar types are floats or doubles.
      * This should dramatically simplify the code.
      */
-//    auto format = m_handle.format() & SF_FORMAT_SUBMASK;
-//
-//    switch (format) {
-//        case SF_FORMAT_PCM_16:
-//            return query_impl<int16_t>(result, interval, schema);
-//        case SF_FORMAT_PCM_32:
-//            return query_impl<int32_t>(result, interval, schema);
-//        case SF_FORMAT_FLOAT:
-//            return query_impl<float>(result, interval, schema);
-//        case SF_FORMAT_DOUBLE:
-//            return query_impl<double>(result, interval, schema);
-//        default:
-//            break;
-//    }
-//
-    const auto* ctype = result.type();
+    //    auto format = m_handle.format() & SF_FORMAT_SUBMASK;
+    //
+    //    switch (format) {
+    //        case SF_FORMAT_PCM_16:
+    //            return query_impl<int16_t>(result, interval, schema);
+    //        case SF_FORMAT_PCM_32:
+    //            return query_impl<int32_t>(result, interval, schema);
+    //        case SF_FORMAT_FLOAT:
+    //            return query_impl<float>(result, interval, schema);
+    //        case SF_FORMAT_DOUBLE:
+    //            return query_impl<double>(result, interval, schema);
+    //        default:
+    //            break;
+    //    }
+    //
+    const auto* ctype = *result.type();
+
     /*
      * If we made it here, we need to decide, based on ctype whether to use
      * floats or doubles for the working type.
      */
-    auto info = ctype->info();
-    switch (info.basic_info.code) {
+    auto info = ctype->type_info();
+    switch (info.code) {
         case scalars::ScalarTypeCode::Float:
-            if (info.basic_info.bits > 16) {
+            if (info.bytes > 2) {
                 return query_impl<double>(result, interval, schema);
             } else {
                 return query_impl<float>(result, interval, schema);
@@ -216,8 +215,12 @@ dimn_t SoundFileDataSource::query(scalars::KeyScalarArray& result,
             return query_impl<double>(result, interval, schema);
         case scalars::ScalarTypeCode::Complex:
         case scalars::ScalarTypeCode::Bool:
-            RPY_THROW(std::runtime_error, "no conversion to complex or bool "
-                                          "types");
+        default:
+            RPY_THROW(
+                    std::runtime_error,
+                    "no conversion to complex or bool "
+                    "types"
+            );
     }
 
     RPY_UNREACHABLE_RETURN(0);
@@ -266,14 +269,21 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
 {
     auto* pl = reinterpret_cast<Payload*>(payload);
 
-    StreamMetadata meta{0,       intervals::RealInterval(0, 1), nullptr,
-                        nullptr, algebra::VectorType::Dense,    10};
+    StreamMetadata meta{
+            0,
+            intervals::RealInterval(0, 1),
+            nullptr,
+            nullptr,
+            algebra::VectorType::Dense,
+            10};
 
     if (pl->width) {
         auto width = *pl->width;
         if (width != pl->handle.channels()) {
-            RPY_THROW(std::invalid_argument,
-                    "requested width does not match number of channels");
+            RPY_THROW(
+                    std::invalid_argument,
+                    "requested width does not match number of channels"
+            );
         }
         meta.width = width;
     } else {
@@ -285,20 +295,26 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
     } else {
         switch (pl->handle.format() & SF_FORMAT_SUBMASK) {
             case SF_FORMAT_PCM_S8:
-                meta.data_scalar_type = scalars::ScalarType::for_id("i8");
+                meta.data_scalar_type = scalars::ScalarType::for_info(
+                        devices::type_info<int8_t>()
+                );
                 break;
             case SF_FORMAT_PCM_16:
-                meta.data_scalar_type = scalars::ScalarType::for_id("i16");
+                meta.data_scalar_type = scalars::ScalarType::for_info(
+                        devices::type_info<int16_t>()
+                );
                 break;
             case SF_FORMAT_PCM_32:
-                meta.data_scalar_type = scalars::ScalarType::for_id("i32");
+                meta.data_scalar_type = scalars::ScalarType::for_info(
+                        devices::type_info<int32_t>()
+                );
                 break;
             case SF_FORMAT_FLOAT:
-                meta.data_scalar_type = scalars::ScalarType::of<float>();
+                meta.data_scalar_type = *scalars::ScalarType::of<float>();
                 break;
             default:
             case SF_FORMAT_DOUBLE:
-                meta.data_scalar_type = scalars::ScalarType::of<double>();
+                meta.data_scalar_type = *scalars::ScalarType::of<double>();
                 break;
         }
     }
@@ -310,10 +326,16 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
     } else {
         if (meta.width != 0 && pl->depth && meta.data_scalar_type != nullptr) {
             meta.default_context = algebra::get_context(
-                    meta.width, *pl->depth, meta.data_scalar_type, {});
+                    meta.width,
+                    *pl->depth,
+                    meta.data_scalar_type,
+                    {}
+            );
         } else {
-            RPY_THROW(std::invalid_argument,
-                    "insufficient information to get context");
+            RPY_THROW(
+                    std::invalid_argument,
+                    "insufficient information to get context"
+            );
         }
     }
 
@@ -336,9 +358,11 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
     pl->handle.command(SFC_SET_NORM_FLOAT, nullptr, SF_TRUE);
     pl->handle.command(SFC_SET_NORM_DOUBLE, nullptr, SF_TRUE);
 
-    ExternalDataStream inner(SoundFileDataSource(std::move(pl->handle)),
-                             std::move(meta),
-                             std::move(pl->schema));
+    ExternalDataStream inner(
+            SoundFileDataSource(std::move(pl->handle)),
+            std::move(meta),
+            std::move(pl->schema)
+    );
 
     destroy_payload(payload);
 
@@ -360,38 +384,47 @@ void SoundFileDataSourceFactory::set_depth(void* payload, deg_t depth) const
     reinterpret_cast<Payload*>(payload)->depth = depth;
 }
 void SoundFileDataSourceFactory::set_ctype(
-        void* payload, const scalars::ScalarType* ctype) const
+        void* payload,
+        const scalars::ScalarType* ctype
+) const
 {
     reinterpret_cast<Payload*>(payload)->ctype = ctype;
 }
-void SoundFileDataSourceFactory::set_context(void* payload,
-                                             algebra::context_pointer ctx) const
+void SoundFileDataSourceFactory::set_context(
+        void* payload,
+        algebra::context_pointer ctx
+) const
 {
     reinterpret_cast<Payload*>(payload)->ctx = std::move(ctx);
 }
 void SoundFileDataSourceFactory::set_support(
-        void* payload, intervals::RealInterval support) const
+        void* payload,
+        intervals::RealInterval support
+) const
 {
     reinterpret_cast<Payload*>(payload)->support = support;
 }
-void SoundFileDataSourceFactory::set_vtype(void* payload,
-                                           algebra::VectorType vtype) const
+void SoundFileDataSourceFactory::set_vtype(
+        void* payload,
+        algebra::VectorType vtype
+) const
 {
     reinterpret_cast<Payload*>(payload)->vtype = vtype;
 }
-void SoundFileDataSourceFactory::set_resolution(void* payload,
-                                                resolution_t resolution) const
+void SoundFileDataSourceFactory::set_resolution(
+        void* payload,
+        resolution_t resolution
+) const
 {
     reinterpret_cast<Payload*>(payload)->resolution = resolution;
 }
 void SoundFileDataSourceFactory::set_schema(
-        void* payload, std::shared_ptr<StreamSchema> schema
+        void* payload,
+        std::shared_ptr<StreamSchema> schema
 ) const
 {
     reinterpret_cast<Payload*>(payload)->schema = std::move(schema);
 }
-
-
 
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::SoundFileDataSource
 #define RPY_SERIAL_DO_SPLIT

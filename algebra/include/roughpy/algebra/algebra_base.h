@@ -191,7 +191,8 @@ public:
         return p_impl.get();
     }
 
-
+    RPY_NO_DISCARD
+    basis_type basis() const;
     RPY_NO_DISCARD
     dimn_t dimension() const;
     RPY_NO_DISCARD
@@ -301,6 +302,16 @@ private:
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 };
+
+
+template <
+        typename Interface,
+        template <typename, template <typename> class> class DerivedImpl>
+inline std::ostream&
+operator<<(std::ostream& os, const AlgebraBase<Interface, DerivedImpl>& alg)
+{
+    return alg.print(os);
+}
 
 namespace dtl {
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -26,120 +26,110 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 28/02/23.
-//
+#include "scalar_stream.h"
 
-#include <roughpy/scalars/scalar_stream.h>
-
-#include <algorithm>
-
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_array.h>
-#include <roughpy/scalars/scalar_pointer.h>
-#include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/types.h>
-
+#include "scalar.h"
+#include "scalar_array.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-ScalarStream::ScalarStream() : m_stream(), m_elts_per_row(0), p_type(nullptr) {}
-
+ScalarStream::ScalarStream() : m_stream(),  p_type(nullptr) {}
 ScalarStream::ScalarStream(const ScalarType* type)
-    : m_stream(), m_elts_per_row(0), p_type(type)
+    : m_stream(),
+      p_type(type)
 {}
-ScalarStream::ScalarStream(ScalarPointer base, std::vector<dimn_t> shape)
+
+ScalarStream::ScalarStream(const ScalarStream& other)
+    : m_stream(other.m_stream),
+      p_type(other.p_type)
+{}
+ScalarStream::ScalarStream(ScalarStream&& other) noexcept
+    : m_stream(std::move(other.m_stream)),
+      p_type(other.p_type)
+{}
+
+ScalarStream::ScalarStream(ScalarArray base, std::vector<dimn_t> shape)
 {
     if (!base.is_null()) {
-        p_type = base.type();
-        if (p_type == nullptr) { RPY_THROW(std::runtime_error, "missing type"); }
+        auto tp = base.type();
+        RPY_CHECK(tp);
+        p_type = *tp;
+
         if (shape.empty()) {
             RPY_THROW(std::runtime_error, "strides cannot be empty");
         }
 
-        const auto* ptr = static_cast<const char*>(base.ptr());
-        const auto itemsize = p_type->itemsize();
-
         dimn_t rows = shape[0];
         dimn_t cols = (shape.size() > 1) ? shape[1] : 1;
 
-        m_elts_per_row.push_back(cols);
 
-        dimn_t stride = cols * itemsize;
         m_stream.reserve(rows);
 
         for (dimn_t i = 0; i < rows; ++i) {
-            m_stream.push_back(ptr);
-            ptr += stride;
+            m_stream.push_back(base[{i * cols, (i + 1) * cols}]);
         }
     }
 }
 
+ScalarStream& ScalarStream::operator=(const ScalarStream& other)
+{
+    if (&other != this) {
+        this->~ScalarStream();
+        m_stream = other.m_stream;
+        p_type = other.p_type;
+    }
+    return *this;
+}
+ScalarStream& ScalarStream::operator=(ScalarStream&& other) noexcept
+{
+    if (&other != this) {
+        this->~ScalarStream();
+        m_stream = std::move(other.m_stream);
+        p_type = other.p_type;
+    }
+    return *this;
+}
 dimn_t ScalarStream::col_count(dimn_t i) const noexcept
 {
-    if (m_elts_per_row.size() == 1) { return m_elts_per_row[0]; }
-
-    RPY_DBG_ASSERT(m_elts_per_row.size() > 1);
-    RPY_DBG_ASSERT(i < m_elts_per_row.size());
-    return m_elts_per_row[i];
+    RPY_CHECK(i<m_stream.size());
+    return m_stream[i].size();
 }
-
-dimn_t ScalarStream::max_row_size() const noexcept {
-    if (m_elts_per_row.empty()) { return 0; }
-    if (m_elts_per_row.size() == 1) { return m_elts_per_row[0]; }
-
-    auto max_elt = std::max_element(m_elts_per_row.begin(), m_elts_per_row.end());
-
-    return *max_elt;
-}
-
-ScalarArray ScalarStream::operator[](dimn_t row) const noexcept
+dimn_t ScalarStream::max_row_size() const noexcept
 {
-    return {ScalarPointer(p_type, m_stream[row]), col_count(row)};
-}
-Scalar ScalarStream::operator[](std::pair<dimn_t, dimn_t> index) const noexcept
-{
-    auto first = operator[](index.first);
-    return first[index.second];
-}
+    if (m_stream.empty()) { return 0; }
 
-void ScalarStream::set_elts_per_row(dimn_t num_elts) noexcept
-{
-    if (m_elts_per_row.size() > 1) {
-        m_elts_per_row.clear();
-        m_elts_per_row.push_back(num_elts);
-    } else if (m_elts_per_row.size() == 1) {
-        m_elts_per_row[0] = num_elts;
-    } else {
-        m_elts_per_row.push_back(num_elts);
+    std::vector<dimn_t> tmp;
+    tmp.reserve(m_stream.size());
+
+    for (auto&& arr : m_stream ) {
+        tmp.push_back(arr.size());
     }
+
+    return *std::max_element(tmp.begin(), tmp.end());
 }
-void ScalarStream::reserve_size(dimn_t num_rows) { m_stream.reserve(num_rows); }
-void ScalarStream::push_back(const ScalarPointer& data)
+ScalarArray ScalarStream::operator[](dimn_t row) const noexcept {
+    RPY_CHECK(row < m_stream.size());
+    return m_stream[row];
+}
+Scalar ScalarStream::operator[](std::pair<dimn_t, dimn_t> index) const noexcept {
+    RPY_CHECK(index.first < m_stream.size());
+    return m_stream[index.first][index.second];
+}
+void ScalarStream::set_ctype(const scalars::ScalarType* type) noexcept
 {
-    RPY_CHECK(m_elts_per_row.size() == 1 && m_elts_per_row[0] > 0);
-    RPY_DBG_ASSERT(!data.is_null());
-    m_stream.push_back(data.ptr());
+    p_type = type;
+}
+void ScalarStream::reserve_size(dimn_t num_rows)
+{
+    m_stream.reserve(num_rows);
 }
 void ScalarStream::push_back(const ScalarArray& data)
 {
-    if (m_elts_per_row.size() == 1) {
-        RPY_DBG_ASSERT(!data.is_null());
-        m_stream.push_back(data.ptr());
-        if (data.size() != m_elts_per_row[0]) {
-            m_elts_per_row.reserve(m_stream.size() + 1);
-            m_elts_per_row.resize(m_stream.size(), m_elts_per_row[0]);
-            m_elts_per_row.push_back(data.size());
-        }
-    } else {
-        m_stream.push_back(data.ptr());
-        m_elts_per_row.push_back(data.size());
-    }
+    m_stream.push_back(data);
 }
 
-void ScalarStream::set_ctype(const scalars::ScalarType* type) noexcept
+void ScalarStream::push_back(ScalarArray&& data)
 {
-    m_stream.clear();
-    p_type = type;
+    m_stream.push_back(std::move(data));
 }

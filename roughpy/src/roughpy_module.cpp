@@ -43,9 +43,15 @@
 #include "scalars/scalars.h"
 #include "streams/streams.h"
 
+#include "args/numpy.h"
+
+
 #ifndef ROUGHPY_VERSION_STRING
 #  define ROUGHPY_VERSION_STRING "1.0.0"
 #endif
+
+
+
 
 PYBIND11_MODULE(_roughpy, m)
 {
@@ -59,4 +65,7 @@ PYBIND11_MODULE(_roughpy, m)
     init_algebra(m);
     init_streams(m);
     //    init_recombine(m);
+
+
+    import_numpy();
 }

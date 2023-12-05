@@ -8,7 +8,6 @@
 #include "roughpy_module.h"
 
 #include <roughpy/scalars/key_scalar_stream.h>
-#include <roughpy/scalars/owned_scalar_array.h>
 
 #include "scalar_type.h"
 #include "scalars.h"

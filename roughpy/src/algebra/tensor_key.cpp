@@ -27,7 +27,7 @@
 
 #include "tensor_key.h"
 #include <roughpy/algebra/context.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include <algorithm>
 #include <sstream>
@@ -136,7 +136,7 @@ construct_key(const py::args& args, const py::kwargs& kwargs)
         }
 
         auto ctx = algebra::get_context(width, depth,
-                                        scalars::ScalarType::of<float>());
+                                        *scalars::ScalarType::of<float>());
         return python::PyTensorKey(ctx->get_tensor_basis(), index);
     }
 
@@ -176,7 +176,7 @@ construct_key(const py::args& args, const py::kwargs& kwargs)
     }
 
     auto ctx = algebra::get_context(
-            width, depth, scalars::ScalarType::of<float>()
+            width, depth, *scalars::ScalarType::of<float>()
     );
     return python::PyTensorKey(ctx->get_tensor_basis(), result);
 }

@@ -31,6 +31,8 @@
 //
 #include "lite_context.h"
 
+#include <roughpy/scalars/scalar_types.h>
+
 namespace rpy {
 namespace algebra {
 template class LiteContext<lal::float_field>;

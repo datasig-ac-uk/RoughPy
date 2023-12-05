@@ -34,6 +34,8 @@ RPY_MSVC_DISABLE_WARNING(4661)
 
 #include <pybind11/operators.h>
 
+#include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_type.h>
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/shuffle_tensor.h>
 
@@ -125,7 +127,7 @@ void rpy::python::init_shuffle_tensor(py::module_& m)
     klass.def(
             "__matmul__",
             [](const ShuffleTensor& shuf, const FreeTensor& arg) {
-                auto result = shuf->coeff_type()->zero();
+                scalars::Scalar result(shuf.coeff_type(), 0, 1);
                 for (auto&& item : shuf) {
                     result += item.value() * arg[item.key()];
                 }
@@ -138,7 +140,7 @@ void rpy::python::init_shuffle_tensor(py::module_& m)
         std::stringstream ss;
         ss << "ShuffleTensor(width=" << *self.width()
            << ", depth=" << *self.depth();
-        ss << ", ctype=" << self.coeff_type()->info().name << ')';
+        ss << ", ctype=" << self.coeff_type()->name() << ')';
         return ss.str();
     });
 }

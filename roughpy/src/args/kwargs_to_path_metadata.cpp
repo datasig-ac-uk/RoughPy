@@ -27,13 +27,15 @@
 
 #include "kwargs_to_path_metadata.h"
 
-#include <memory>
 
 #include "algebra/context.h"
 #include "scalars/scalar_type.h"
 
 #include "numpy.h"
 #include "parse_schema.h"
+
+#include <memory>
+#include <cmath>
 
 using namespace rpy;
 
@@ -48,7 +50,7 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
             nullptr,                        // context
             nullptr,                        // scalar type
             {},                             // vector type
-            0,                              // default resolution
+            {},                              // default resolution
             intervals::IntervalType::Clopen,// interval type
             nullptr,                        // schema
             false                           // include_param_as_data
@@ -228,4 +230,11 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
     // TODO: Code for getting interval type
 
     return md;
+}
+
+resolution_t python::param_to_resolution(param_t accuracy) noexcept
+{
+    int exponent;
+    frexp(accuracy, &exponent);
+    return -std::min(5, exponent - 1);
 }

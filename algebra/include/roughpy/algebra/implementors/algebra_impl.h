@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_IMPL_H_
 #define ROUGHPY_ALGEBRA_ALGEBRA_IMPL_H_
@@ -32,14 +33,14 @@
 #include "roughpy/core/traits.h"
 #include "roughpy/platform/serialization.h"
 #include "roughpy/scalars/scalar_traits.h"
-#include "roughpy/scalars/types.h"
+#include "roughpy/scalars/scalar_types.h"
 
-#include <roughpy/algebra/context.h>
 #include "algebra_base.h"
 #include "algebra_info.h"
 #include "algebra_iterator_impl.h"
-#include <roughpy/algebra/interfaces/algebra_interface.h>
 #include <roughpy/algebra/algebra_base_impl.h>
+#include <roughpy/algebra/context.h>
+#include <roughpy/algebra/interfaces/algebra_interface.h>
 
 #include <functional>
 
@@ -168,13 +169,17 @@ struct has_implementation {
 
 template <template <typename> class MF, typename T>
 using use_impl_t = conditional_t<
-        is_detected<MF, T>::value, has_implementation, no_implementation>;
+        is_detected<MF, T>::value,
+        has_implementation,
+        no_implementation>;
 
 }// namespace dtl
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 class AlgebraImplementation : public ImplAccessLayer<Interface, Impl>,
                               protected StorageModel<Impl>
 {
@@ -188,7 +193,8 @@ class AlgebraImplementation : public ImplAccessLayer<Interface, Impl>,
 
     using alg_info = algebra_info<typename Interface::algebra_t, Impl>;
     using basis_traits = BasisInfo<
-            typename Interface::basis_t, typename alg_info::basis_type>;
+            typename Interface::basis_t,
+            typename alg_info::basis_type>;
 
 public:
     using interface_t = Interface;
@@ -205,7 +211,9 @@ private:
     using iterator_type = AlgebraIterator<algebra_t>;
     using iterator_interface_type = AlgebraIteratorInterface<algebra_t>;
     using iterator_impl_type = AlgebraIteratorImplementation<
-            algebra_t, basis_type, typename Impl::const_iterator>;
+            algebra_t,
+            basis_type,
+            typename Impl::const_iterator>;
 
 protected:
     using storage_base_t::data;
@@ -217,7 +225,8 @@ public:
     {
         if (is_same<storage_base_t, BorrowedStorageModel<Impl>>::value) {
             RPY_THROW(
-                    std::runtime_error, "cannot take from a borrowed algebra"
+                    std::runtime_error,
+                    "cannot take from a borrowed algebra"
             );
         }
         return std::move(data());
@@ -226,9 +235,11 @@ public:
     template <typename... Args>
     explicit AlgebraImplementation(context_pointer&& ctx, Args&&... args)
         : access_layer_t(
-                std::move(ctx), alg_info::vtype(), alg_info::ctype(),
-                storage_base_t::s_type
-        ),
+                  std::move(ctx),
+                  alg_info::vtype(),
+                  alg_info::ctype(),
+                  storage_base_t::s_type
+          ),
           storage_base_t(std::forward<Args>(args)...)
     {}
 
@@ -283,68 +294,88 @@ protected:
 
 private:
     void add_scal_mul_impl(
-            const algebra_t& arg, const scalars::Scalar& scalar,
+            const algebra_t& arg,
+            const scalars::Scalar& scalar,
             dtl::no_implementation
     );
     void sub_scal_mul_impl(
-            const algebra_t& arg, const scalars::Scalar& scalar,
+            const algebra_t& arg,
+            const scalars::Scalar& scalar,
             dtl::no_implementation
     );
     void add_scal_div_impl(
-            const algebra_t& arg, const scalars::Scalar& scalar,
+            const algebra_t& arg,
+            const scalars::Scalar& scalar,
             dtl::no_implementation
     );
     void sub_scal_div_impl(
-            const algebra_t& arg, const scalars::Scalar& scalar,
+            const algebra_t& arg,
+            const scalars::Scalar& scalar,
             dtl::no_implementation
     );
 
     void add_mul_impl(
-            const algebra_t& lhs, const algebra_t& rhs, dtl::no_implementation
+            const algebra_t& lhs,
+            const algebra_t& rhs,
+            dtl::no_implementation
     );
     void sub_mul_impl(
-            const algebra_t& lhs, const algebra_t& rhs, dtl::no_implementation
+            const algebra_t& lhs,
+            const algebra_t& rhs,
+            dtl::no_implementation
     );
 
     void mul_smul_impl(
-            const algebra_t& lhs, const scalars::Scalar& rhs,
+            const algebra_t& lhs,
+            const scalars::Scalar& rhs,
             dtl::no_implementation
     );
     void mul_sdiv_impl(
-            const algebra_t& lhs, const scalars::Scalar& rhs,
+            const algebra_t& lhs,
+            const scalars::Scalar& rhs,
             dtl::no_implementation
     );
 
     void add_scal_mul_impl(
-            const algebra_t& arg, const scalars::Scalar& scalar,
+            const algebra_t& arg,
+            const scalars::Scalar& scalar,
             dtl::has_implementation
     );
     void sub_scal_mul_impl(
-            const algebra_t& arg, const scalars::Scalar& scalar,
+            const algebra_t& arg,
+            const scalars::Scalar& scalar,
             dtl::has_implementation
     );
     void add_scal_div_impl(
-            const algebra_t& arg, const scalars::Scalar& scalar,
+            const algebra_t& arg,
+            const scalars::Scalar& scalar,
             dtl::has_implementation
     );
     void sub_scal_div_impl(
-            const algebra_t& arg, const scalars::Scalar& scalar,
+            const algebra_t& arg,
+            const scalars::Scalar& scalar,
             dtl::has_implementation
     );
 
     void add_mul_impl(
-            const algebra_t& lhs, const algebra_t& rhs, dtl::has_implementation
+            const algebra_t& lhs,
+            const algebra_t& rhs,
+            dtl::has_implementation
     );
     void sub_mul_impl(
-            const algebra_t& lhs, const algebra_t& rhs, dtl::has_implementation
+            const algebra_t& lhs,
+            const algebra_t& rhs,
+            dtl::has_implementation
     );
 
     void mul_smul_impl(
-            const algebra_t& lhs, const scalars::Scalar& rhs,
+            const algebra_t& lhs,
+            const scalars::Scalar& rhs,
             dtl::has_implementation
     );
     void mul_sdiv_impl(
-            const algebra_t& lhs, const scalars::Scalar& rhs,
+            const algebra_t& lhs,
+            const scalars::Scalar& rhs,
             dtl::has_implementation
     );
 
@@ -388,62 +419,78 @@ Impl&& take_algebra(typename Interface::algebra_t&& arg) noexcept
 }
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 dimn_t AlgebraImplementation<Interface, Impl, StorageModel>::size() const
 {
     return data().size();
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 dimn_t AlgebraImplementation<Interface, Impl, StorageModel>::dimension() const
 {
     return data().dimension();
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 bool AlgebraImplementation<Interface, Impl, StorageModel>::is_zero() const
 {
     // TODO: Replace with better, type aware implementation.
     return data().size() == 0;
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 optional<deg_t>
 AlgebraImplementation<Interface, Impl, StorageModel>::degree() const
 {
     return alg_info::degree(data());
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 optional<deg_t>
 AlgebraImplementation<Interface, Impl, StorageModel>::width() const
 {
     return basis_traits::width(&alg_info::basis(data()));
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 optional<deg_t>
 AlgebraImplementation<Interface, Impl, StorageModel>::depth() const
 {
     return basis_traits::depth(&alg_info::basis(data()));
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename Interface::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::clone() const
 {
     return algebra_t(Interface::context(), data());
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename Interface::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::zero_like() const
 {
@@ -451,8 +498,10 @@ AlgebraImplementation<Interface, Impl, StorageModel>::zero_like() const
 }
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename AlgebraImplementation<Interface, Impl, StorageModel>::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::borrow() const
 {
@@ -460,8 +509,10 @@ AlgebraImplementation<Interface, Impl, StorageModel>::borrow() const
     return algebra_t(Interface::context());
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename AlgebraImplementation<Interface, Impl, StorageModel>::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::borrow_mut()
 {
@@ -469,8 +520,10 @@ AlgebraImplementation<Interface, Impl, StorageModel>::borrow_mut()
 }
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 scalars::Scalar
 AlgebraImplementation<Interface, Impl, StorageModel>::get(key_type key) const
 {
@@ -480,8 +533,10 @@ AlgebraImplementation<Interface, Impl, StorageModel>::get(key_type key) const
     return trait::make(data()[akey]);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 scalars::Scalar
 AlgebraImplementation<Interface, Impl, StorageModel>::get_mut(key_type key)
 {
@@ -491,8 +546,10 @@ AlgebraImplementation<Interface, Impl, StorageModel>::get_mut(key_type key)
     return trait::make(data()[akey]);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 std::shared_ptr<AlgebraIteratorInterface<typename Interface::algebra_t>>
 AlgebraImplementation<Interface, Impl, StorageModel>::make_iterator_ptr(
         typename Impl::const_iterator it
@@ -504,35 +561,45 @@ AlgebraImplementation<Interface, Impl, StorageModel>::make_iterator_ptr(
 }
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 AlgebraIterator<typename Interface::algebra_t>
 AlgebraImplementation<Interface, Impl, StorageModel>::begin() const
 {
     return iterator_type(
-            make_iterator_ptr(data().begin()), bit_cast<std::uintptr_t>(&data())
+            make_iterator_ptr(data().begin()),
+            bit_cast<std::uintptr_t>(&data())
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 AlgebraIterator<typename Interface::algebra_t>
 AlgebraImplementation<Interface, Impl, StorageModel>::end() const
 {
     return iterator_type(
-            make_iterator_ptr(data().end()), bit_cast<std::uintptr_t>(&data())
+            make_iterator_ptr(data().end()),
+            bit_cast<std::uintptr_t>(&data())
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::clear()
 {
     data().clear();
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::assign(
         const algebra_t& arg
 )
@@ -540,8 +607,10 @@ void AlgebraImplementation<Interface, Impl, StorageModel>::assign(
     data() = convert_argument(arg);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 optional<scalars::ScalarArray>
 AlgebraImplementation<Interface, Impl, StorageModel>::dense_data() const
 {
@@ -552,21 +621,26 @@ AlgebraImplementation<Interface, Impl, StorageModel>::dense_data() const
     return dense_data_impl(data().base_vector(), tag());
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 template <typename B>
 optional<scalars::ScalarArray>
 AlgebraImplementation<Interface, Impl, StorageModel>::
         dense_data_impl(const B& data, integral_constant<bool, true>) const
 {
     return scalars::ScalarArray{
-            {Interface::coeff_type(), data.as_ptr()},
+            Interface::coeff_type(),
+            data.as_ptr(),
             data.dimension()
     };
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 template <typename B>
 optional<scalars::ScalarArray>
 AlgebraImplementation<Interface, Impl, StorageModel>::
@@ -576,8 +650,10 @@ AlgebraImplementation<Interface, Impl, StorageModel>::
 }
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 dtl::ConvertedArgument<Impl>
 AlgebraImplementation<Interface, Impl, StorageModel>::convert_argument(
         const algebra_t& arg
@@ -595,207 +671,277 @@ AlgebraImplementation<Interface, Impl, StorageModel>::convert_argument(
 }
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_scal_mul_impl(
-        const algebra_t& arg, const scalars::Scalar& scalar,
+        const algebra_t& arg,
+        const scalars::Scalar& scalar,
         dtl::no_implementation
 )
 {
     Interface::add_scal_mul(arg, scalar);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_scal_mul_impl(
-        const algebra_t& arg, const scalars::Scalar& scalar,
+        const algebra_t& arg,
+        const scalars::Scalar& scalar,
         dtl::no_implementation
 )
 {
     Interface::sub_scal_mul(arg, scalar);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_scal_div_impl(
-        const algebra_t& arg, const scalars::Scalar& scalar,
+        const algebra_t& arg,
+        const scalars::Scalar& scalar,
         dtl::no_implementation
 )
 {
     Interface::add_scal_div(arg, scalar);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_scal_div_impl(
-        const algebra_t& arg, const scalars::Scalar& scalar,
+        const algebra_t& arg,
+        const scalars::Scalar& scalar,
         dtl::no_implementation
 )
 {
     Interface::sub_scal_div(arg, scalar);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_mul_impl(
-        const algebra_t& lhs, const algebra_t& rhs, dtl::no_implementation
+        const algebra_t& lhs,
+        const algebra_t& rhs,
+        dtl::no_implementation
 )
 {
     Interface::add_mul(lhs, rhs);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_mul_impl(
-        const algebra_t& lhs, const algebra_t& rhs, dtl::no_implementation
+        const algebra_t& lhs,
+        const algebra_t& rhs,
+        dtl::no_implementation
 )
 {
     Interface::sub_mul(lhs, rhs);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::mul_smul_impl(
-        const algebra_t& lhs, const scalars::Scalar& rhs, dtl::no_implementation
+        const algebra_t& lhs,
+        const scalars::Scalar& rhs,
+        dtl::no_implementation
 )
 {
     Interface::mul_smul(lhs, rhs);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::mul_sdiv_impl(
-        const algebra_t& lhs, const scalars::Scalar& rhs, dtl::no_implementation
+        const algebra_t& lhs,
+        const scalars::Scalar& rhs,
+        dtl::no_implementation
 )
 {
     Interface::mul_sdiv(lhs, rhs);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_scal_mul_impl(
-        const algebra_t& arg, const scalars::Scalar& scalar,
+        const algebra_t& arg,
+        const scalars::Scalar& scalar,
         dtl::has_implementation
 )
 {
     data().add_scal_prod(
-            convert_argument(arg), scalars::scalar_cast<scalar_type>(scalar)
+            convert_argument(arg),
+            scalars::scalar_cast<scalar_type>(scalar)
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_scal_mul_impl(
-        const algebra_t& arg, const scalars::Scalar& scalar,
+        const algebra_t& arg,
+        const scalars::Scalar& scalar,
         dtl::has_implementation
 )
 {
     data().sub_scal_prod(
-            convert_argument(arg), scalars::scalar_cast<scalar_type>(scalar)
+            convert_argument(arg),
+            scalars::scalar_cast<scalar_type>(scalar)
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_scal_div_impl(
-        const algebra_t& arg, const scalars::Scalar& scalar,
+        const algebra_t& arg,
+        const scalars::Scalar& scalar,
         dtl::has_implementation
 )
 {
     data().add_scal_div(
-            convert_argument(arg), scalars::scalar_cast<rational_type>(scalar)
+            convert_argument(arg),
+            scalars::scalar_cast<rational_type>(scalar)
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_scal_div_impl(
-        const algebra_t& arg, const scalars::Scalar& scalar,
+        const algebra_t& arg,
+        const scalars::Scalar& scalar,
         dtl::has_implementation
 )
 {
     data().sub_scal_sub(
-            convert_argument(arg), scalars::scalar_cast<rational_type>(scalar)
+            convert_argument(arg),
+            scalars::scalar_cast<rational_type>(scalar)
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_mul_impl(
-        const algebra_t& lhs, const algebra_t& rhs, dtl::has_implementation
+        const algebra_t& lhs,
+        const algebra_t& rhs,
+        dtl::has_implementation
 )
 {
     data().add_mul(convert_argument(lhs), convert_argument(rhs));
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_mul_impl(
-        const algebra_t& lhs, const algebra_t& rhs, dtl::has_implementation
+        const algebra_t& lhs,
+        const algebra_t& rhs,
+        dtl::has_implementation
 )
 {
     data().sub_mul(convert_argument(lhs), convert_argument(rhs));
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::mul_smul_impl(
-        const algebra_t& lhs, const scalars::Scalar& rhs,
+        const algebra_t& lhs,
+        const scalars::Scalar& rhs,
         dtl::has_implementation
 )
 {
     data().mul_scal_prod(
-            convert_argument(lhs), scalars::scalar_cast<scalar_type>(rhs)
+            convert_argument(lhs),
+            scalars::scalar_cast<scalar_type>(rhs)
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::mul_sdiv_impl(
-        const algebra_t& lhs, const scalars::Scalar& rhs,
+        const algebra_t& lhs,
+        const scalars::Scalar& rhs,
         dtl::has_implementation
 )
 {
     data().mul_scal_div(
-            convert_argument(lhs), scalars::scalar_cast<rational_type>(rhs)
+            convert_argument(lhs),
+            scalars::scalar_cast<rational_type>(rhs)
     );
 }
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename Interface::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::uminus() const
 {
     return algebra_t(Interface::context(), -data());
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename Interface::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::add(const algebra_t& other
 ) const
 {
     std::plus<Impl> plus;
     return algebra_t(
-            Interface::context(), plus(data(), convert_argument(other))
+            Interface::context(),
+            plus(data(), convert_argument(other))
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename Interface::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::sub(const algebra_t& other
 ) const
 {
     std::minus<Impl> minus;
     return algebra_t(
-            Interface::context(), minus(data(), convert_argument(other))
+            Interface::context(),
+            minus(data(), convert_argument(other))
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename Interface::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::mul(const algebra_t& other
 ) const
@@ -807,8 +953,10 @@ AlgebraImplementation<Interface, Impl, StorageModel>::mul(const algebra_t& other
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename Interface::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::smul(
         const scalars::Scalar& scalar
@@ -820,8 +968,10 @@ AlgebraImplementation<Interface, Impl, StorageModel>::smul(
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 typename Interface::algebra_t
 AlgebraImplementation<Interface, Impl, StorageModel>::sdiv(
         const scalars::Scalar& scalar
@@ -850,8 +1000,10 @@ void sub_assign(T& left, const S& right)
 }// namespace ADL_FORCE
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_inplace(
         const algebra_t& other
 )
@@ -860,8 +1012,10 @@ void AlgebraImplementation<Interface, Impl, StorageModel>::add_inplace(
     //    data() += convert_argument(other);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_inplace(
         const algebra_t& other
 )
@@ -870,8 +1024,10 @@ void AlgebraImplementation<Interface, Impl, StorageModel>::sub_inplace(
     //    data() -= convert_argument(other);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::mul_inplace(
         const algebra_t& other
 )
@@ -879,8 +1035,10 @@ void AlgebraImplementation<Interface, Impl, StorageModel>::mul_inplace(
     data() *= static_cast<const Impl&>(convert_argument(other));
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::smul_inplace(
         const scalars::Scalar& other
 )
@@ -888,8 +1046,10 @@ void AlgebraImplementation<Interface, Impl, StorageModel>::smul_inplace(
     data() *= scalars::scalar_cast<scalar_type>(other);
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sdiv_inplace(
         const scalars::Scalar& other
 )
@@ -898,89 +1058,123 @@ void AlgebraImplementation<Interface, Impl, StorageModel>::sdiv_inplace(
 }
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_scal_mul(
-        const algebra_t& arg, const scalars::Scalar& scalar
+        const algebra_t& arg,
+        const scalars::Scalar& scalar
 )
 {
     add_scal_mul_impl(
-            arg, scalar, dtl::use_impl_t<dtl::d_add_scal_prod, Impl>()
+            arg,
+            scalar,
+            dtl::use_impl_t<dtl::d_add_scal_prod, Impl>()
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_scal_mul(
-        const algebra_t& arg, const scalars::Scalar& scalar
+        const algebra_t& arg,
+        const scalars::Scalar& scalar
 )
 {
     sub_scal_mul_impl(
-            arg, scalar, dtl::use_impl_t<dtl::d_sub_scal_prod, Impl>()
+            arg,
+            scalar,
+            dtl::use_impl_t<dtl::d_sub_scal_prod, Impl>()
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_scal_div(
-        const algebra_t& arg, const scalars::Scalar& scalar
+        const algebra_t& arg,
+        const scalars::Scalar& scalar
 )
 {
     add_scal_div_impl(
-            arg, scalar, dtl::use_impl_t<dtl::d_add_scal_div, Impl>()
+            arg,
+            scalar,
+            dtl::use_impl_t<dtl::d_add_scal_div, Impl>()
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_scal_div(
-        const algebra_t& arg, const scalars::Scalar& scalar
+        const algebra_t& arg,
+        const scalars::Scalar& scalar
 )
 {
     sub_scal_div_impl(
-            arg, scalar, dtl::use_impl_t<dtl::d_sub_scal_div, Impl>()
+            arg,
+            scalar,
+            dtl::use_impl_t<dtl::d_sub_scal_div, Impl>()
     );
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::add_mul(
-        const algebra_t& lhs, const algebra_t& rhs
+        const algebra_t& lhs,
+        const algebra_t& rhs
 )
 {
     add_mul_impl(lhs, rhs, dtl::use_impl_t<dtl::d_add_mul, Impl>());
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::sub_mul(
-        const algebra_t& lhs, const algebra_t& rhs
+        const algebra_t& lhs,
+        const algebra_t& rhs
 )
 {
     sub_mul_impl(lhs, rhs, dtl::use_impl_t<dtl::d_sub_mul, Impl>());
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::mul_smul(
-        const algebra_t& lhs, const scalars::Scalar& rhs
+        const algebra_t& lhs,
+        const scalars::Scalar& rhs
 )
 {
     mul_smul_impl(lhs, rhs, dtl::use_impl_t<dtl::d_mul_scal_prod, Impl>());
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 void AlgebraImplementation<Interface, Impl, StorageModel>::mul_sdiv(
-        const algebra_t& lhs, const scalars::Scalar& rhs
+        const algebra_t& lhs,
+        const scalars::Scalar& rhs
 )
 {
     mul_sdiv_impl(lhs, rhs, dtl::use_impl_t<dtl::d_mul_scal_div, Impl>());
 }
 
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 std::ostream&
 AlgebraImplementation<Interface, Impl, StorageModel>::print(std::ostream& os
 ) const
@@ -988,8 +1182,10 @@ AlgebraImplementation<Interface, Impl, StorageModel>::print(std::ostream& os
     return os << data();
 }
 template <
-        typename Interface, typename Impl,
-        template <typename> class StorageModel>
+        typename Interface,
+        typename Impl,
+        template <typename>
+        class StorageModel>
 bool AlgebraImplementation<Interface, Impl, StorageModel>::equals(
         const algebra_t& other
 ) const

@@ -94,7 +94,7 @@ function(_check_runtime_component _library _out_var)
         get_target_property(_imported_loc ${_library} IMPORTED_LOCATION)
         set(${_out_var} ${_imported_loc} PARENT_SCOPE)
     else ()
-        set(${_out_var} "$<TARGET_FILE:${_library}>" PARENT_SCOPE)
+        set(${_out_var} "${_library}" PARENT_SCOPE)
     endif ()
 endfunction()
 
@@ -448,6 +448,8 @@ function(add_roughpy_component _name)
         set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "" FORCE)
     endif ()
 
+
+
     _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps _interface_deps)
     _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps _private_deps)
 
@@ -470,6 +472,9 @@ function(add_roughpy_component _name)
                 PRIVATE
                 ${_pvt_nrpy_deps}
         )
+        if (ROUGHPY_ENABLE_DBG_ASSERT)
+            target_compile_definitions(${_real_name} PRIVATE RPY_DEBUG=1)
+        endif ()
 
         foreach (_rpy_dep IN LISTS _pvt_rpy_deps)
             get_target_property(_dep_type ${_rpy_dep} TYPE)
@@ -516,7 +521,7 @@ function(add_roughpy_component _name)
     endforeach ()
 
     unset(_runtime_deps)
-    _check_runtime_deps(_runtime_deps ${ARG_PUBLIC_DEPS} ${ARG_PRIVATE_DEPS})
+    _check_runtime_deps(_runtime_deps ${_pub_nrpy_deps} ${_pvt_nrpy_deps})
 
     if (_runtime_deps)
         set_target_properties(${_real_name} PROPERTIES RUNTIME_DEPENDENCIES ${_runtime_deps})
