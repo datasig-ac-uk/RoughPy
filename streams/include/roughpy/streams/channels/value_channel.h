@@ -61,6 +61,6 @@ RPY_SERIAL_SPECIALIZE_TYPES(
         rpy::serial::specialization::member_serialize
 )
 
-RPY_SERIAL_REGISTER_CLASS(rpy::streams::ValueChannel)
+RPY_SERIAL_FORCE_DYNAMIC_INIT(value_channel)
 
 #endif// ROUGHPY_STREAMS_VALUE_CHANNEL_H

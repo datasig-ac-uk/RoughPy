@@ -35,6 +35,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include "context.h"
 #include "interfaces/algebra_interface.h"
@@ -251,6 +252,15 @@ template <
 context_pointer AlgebraBase<Interface, DerivedImpl>::context() const noexcept
 {
     return (p_impl) ? p_impl->context() : nullptr;
+}
+
+
+template <
+        typename Interface,
+        template <typename, template <typename> class> class DerivedImpl>
+typename AlgebraBase<Interface, DerivedImpl>::basis_type AlgebraBase<Interface, DerivedImpl>::basis() const
+{
+    return (p_impl) ? p_impl->basis() : basis_type();
 }
 
 template <
@@ -704,14 +714,6 @@ std::ostream& AlgebraBase<Interface, DerivedImpl>::print(std::ostream& os) const
     return os;
 }
 
-template <
-        typename Interface,
-        template <typename, template <typename> class> class DerivedImpl>
-inline std::ostream&
-operator<<(std::ostream& os, const AlgebraBase<Interface, DerivedImpl>& alg)
-{
-    return alg.print(os);
-}
 
 #undef RPY_CHECK_CONTEXTS
 template <

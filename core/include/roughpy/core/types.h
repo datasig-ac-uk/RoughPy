@@ -69,6 +69,8 @@ using dyadic_depth_t = resolution_t;
 
 using accuracy_t = param_t;
 
+using bitmask_t = uint64_t;
+
 using std::pair;
 using std::string;
 

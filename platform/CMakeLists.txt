@@ -12,9 +12,6 @@ add_roughpy_component(Platform
     SOURCES
         src/configuration.cpp
 #        src/threading/openmp_threading.cpp
-        src/device.cpp
-        src/cpu_device/CPUDevice.cpp
-        src/cpu_device/CPUDevice.h
         src/fs_path_serialization.cpp
     PUBLIC_HEADERS
         include/roughpy/platform.h
@@ -22,7 +19,6 @@ add_roughpy_component(Platform
         include/roughpy/platform/configuration.h
         include/roughpy/platform/serialization.h
         include/roughpy/platform/threads.h
-        include/roughpy/platform/device.h
     DEPENDENCIES
         PUBLIC
             Boost::boost
@@ -38,3 +34,20 @@ add_roughpy_component(Platform
     NEEDS
         RoughPy::Core
     )
+
+
+target_precompile_headers(RoughPy_Platform PUBLIC
+        <cereal/cereal.hpp>
+        <cereal/access.hpp>
+        <cereal/specialize.hpp>
+        <cereal/types/base_class.hpp>
+        <cereal/types/optional.hpp>
+        <cereal/types/polymorphic.hpp>
+        <cereal/types/string.hpp>
+        <cereal/types/utility.hpp>
+        <cereal/types/vector.hpp>
+        <cereal/archives/binary.hpp>
+        <cereal/archives/json.hpp>
+        <cereal/archives/portable_binary.hpp>
+        <cereal/archives/xml.hpp>
+)

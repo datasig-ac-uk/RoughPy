@@ -49,9 +49,9 @@ static std::unordered_map<
         s_lite_context_cache;
 
 static std::array<const scalars::ScalarType*, 4> s_lite_context_allowed_ctypes
-        = {scalars::ScalarType::of<double>(), scalars::ScalarType::of<float>(),
-           scalars::ScalarType::of<typename lal::rational_field::scalar_type>(),
-           scalars::ScalarType::of<typename lal::polynomial_ring::scalar_type>(
+        = {*scalars::ScalarType::of<double>(), *scalars::ScalarType::of<float>(),
+           *scalars::ScalarType::of<typename lal::rational_field::scalar_type>(),
+           *scalars::ScalarType::of<typename lal::polynomial_ring::scalar_type>(
            )};
 
 static optional<std::ptrdiff_t> index_of_ctype(const scalars::ScalarType* ctype

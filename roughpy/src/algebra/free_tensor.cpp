@@ -171,7 +171,7 @@ void python::init_free_tensor(py::module_& m)
         std::stringstream ss;
         ss << "FreeTensor(width=" << *self.width()
            << ", depth=" << *self.depth();
-        ss << ", ctype=" << self.coeff_type()->info().name << ')';
+        ss << ", ctype=" << self.coeff_type()->name() << ')';
 //        self->print(ss);
         return ss.str();
     });

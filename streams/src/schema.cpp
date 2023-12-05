@@ -137,7 +137,7 @@ const scalars::ScalarType*
 StreamSchema::get_most_appropriate_scalar_type() const
 {
     // Replace this with more sound logic based on channel data types.
-    return scalars::ScalarType::of<double>();
+    return *scalars::ScalarType::of<double>();
 }
 
 dimn_t StreamSchema::channel_to_stream_dim(dimn_t channel_no) const

@@ -1,7 +1,7 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,13 +18,12 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 16/03/23.
@@ -35,9 +34,9 @@
 #include <gtest/gtest.h>
 #include <random>
 
-#include <roughpy/scalars/types.h>
-#include <roughpy/scalars/owned_scalar_array.h>
-#include <roughpy/scalars/scalar_pointer.h>
+#include <roughpy/platform/archives.h>
+
+#include <roughpy/scalars/scalar_types.h>
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -64,10 +63,10 @@ public:
 
     explicit RandomScalars(double std_dev)
         : rng(std::random_device()()), dist(0.0, std_dev),
-          ctype(scalars::ScalarType::of<double>())
+          ctype(*scalars::ScalarType::of<double>())
     {}
 
-    scalars::OwnedScalarArray random_data(dimn_t count)
+    scalars::ScalarArray random_data(dimn_t count)
     {
         std::vector<double> tmp_data;
 
@@ -76,9 +75,8 @@ public:
             tmp_data.push_back(dist(rng));
         }
 
-        scalars::OwnedScalarArray result(ctype, count);
-        scalars::ScalarPointer src(ctype, tmp_data.data());
-        ctype->convert_copy(result, src, count);
+        scalars::ScalarArray result(ctype, count);
+        ctype->convert_copy(result, {ctype, tmp_data.data(), count});
 
         return result;
     }
@@ -106,7 +104,7 @@ public:
                     ))
     {}
 
-    scalars::OwnedScalarArray random_data(dimn_t rows, dimn_t cols = width)
+    scalars::ScalarArray random_data(dimn_t rows, dimn_t cols = width)
     {
         return gen.random_data(rows * cols);
     }
@@ -133,7 +131,7 @@ TEST_F(LieIncrementStreamTests, TestLogSignatureSingleIncrement)
 
     auto data = random_data(1);
     algebra::VectorConstructionData edata{
-            scalars::KeyScalarArray(scalars::OwnedScalarArray(data)),
+            scalars::KeyScalarArray(scalars::ScalarArray(data)),
             algebra::VectorType::Dense};
     auto idx = indices(1);
     const streams::LieIncrementStream path(
@@ -157,7 +155,7 @@ TEST_F(LieIncrementStreamTests, TestLogSignatureTwoIncrementsDepth1)
     algebra::VectorConstructionData edata{
             scalars::KeyScalarArray(ctx->ctype()), algebra::VectorType::Dense};
     edata.data.allocate_scalars(width);
-    edata.data.type()->convert_copy(edata.data, data, width);
+    (*edata.data.type())->convert_copy(edata.data, {md.data_scalar_type, data.pointer(), width});
     for (int i = 0; i < width; ++i) { edata.data[i] += data[i + width]; }
 
     auto idx = indices(2);
@@ -172,6 +170,7 @@ TEST_F(LieIncrementStreamTests, TestLogSignatureTwoIncrementsDepth1)
 
     auto expected = ctx1->construct_lie(edata);
 
+    ASSERT_EQ(lsig.size(), width);
     ASSERT_EQ(lsig, expected);
 }
 
@@ -180,7 +179,7 @@ TEST_F(LieIncrementStreamTests, TestSerializeAndDeserialize) {
 
     auto data = random_data(1);
     algebra::VectorConstructionData edata{
-            scalars::KeyScalarArray(scalars::OwnedScalarArray(data)),
+            scalars::KeyScalarArray(scalars::ScalarArray(data)),
             algebra::VectorType::Dense};
     auto idx = indices(1);
     const streams::LieIncrementStream path(

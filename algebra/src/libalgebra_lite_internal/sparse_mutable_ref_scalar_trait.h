@@ -34,6 +34,7 @@
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_INTERNAL_SPARSE_MUTABLE_REF_SCALAR_TRAIT_H
 
 #include <roughpy/scalars/scalar_interface.h>
+#include <roughpy/scalars/scalar_types.h>
 #include <roughpy/scalars/scalar_traits.h>
 
 #include <libalgebra_lite/sparse_vector.h>
@@ -58,17 +59,6 @@ public:
     using value_type = typename data_type::scalar_type;
     using rational_type = typename trait::rational_type;
 
-    const ScalarType* type() const noexcept override
-    {
-        return ScalarType::of<value_type>();
-    }
-    bool is_const() const noexcept override { return false; }
-    bool is_value() const noexcept override { return false; }
-    bool is_zero() const noexcept override
-    {
-        return static_cast<const value_type&>(m_data) == value_type(0);
-    }
-
 private:
     template <typename T>
     static enable_if_t<is_convertible<const T&, scalar_t>::value, scalar_t>
@@ -85,44 +75,17 @@ private:
     }
 
 public:
-    scalar_t as_scalar() const override
-    {
-        return convert_to_scalar_t(static_cast<const value_type&>(m_data));
-    }
-    void assign(ScalarPointer pointer) override
-    {
-        value_type tmp = static_cast<const value_type&>(m_data);
-        type()->convert_copy({type(), &tmp}, pointer, 1);
-        m_data = tmp;
-    }
-    void assign(const Scalar& other) override { assign(other.to_pointer()); }
-    void assign(const void* data, const string& type_id) override
-    {
-        value_type tmp = static_cast<const value_type&>(m_data);
-        type()->convert_copy(
-                {type(), &tmp}, {scalars::get_type(type_id), data}, 1
-        );
-        m_data = tmp;
-    }
-    ScalarPointer to_pointer() override
-    {
-        RPY_THROW(
-                std::runtime_error,
-                "cannot get non-const pointer to proxy reference type"
-        );
-    }
-    ScalarPointer to_pointer() const noexcept override
-    {
-        return {type(), &static_cast<const value_type&>(m_data)};
-    }
+    void set_value(const Scalar& value) override;
+
+    const void* pointer() const noexcept override { return &m_data; }
 
 private:
     template <typename F>
     void inplace_function(const Scalar& other, F&& f)
     {
-        value_type tmp(0);
-        type()->convert_copy({type(), &tmp}, other.to_pointer(), 1);
-        m_data = f(static_cast<const value_type&>(m_data), tmp);
+        m_data
+                = f(static_cast<const value_type&>(m_data),
+                    scalar_cast<value_type>(other));
     }
 
 public:
@@ -140,18 +103,20 @@ public:
     }
     void div_inplace(const Scalar& other) override
     {
-        rational_type tmp(1);
-        type()->rational_type()->convert_copy(
-                {type()->rational_type(), &tmp}, other.to_pointer(), 1
-        );
-        m_data /= tmp;
+        m_data /= scalar_cast<rational_type>(other);
     }
 
-    std::ostream& print(std::ostream& os) const override
+    void print(std::ostream& os) const override
     {
-        return os << static_cast<const value_type&>(m_data);
+        os << static_cast<const value_type&>(m_data);
     }
 };
+
+template <typename Vector>
+void SparseMutableRefScalarImpl<Vector>::set_value(const Scalar& value)
+{
+    m_data = scalar_cast<typename trait::value_type>(value);
+}
 
 }// namespace dtl
 
@@ -173,7 +138,8 @@ public:
 
     static Scalar make(reference arg)
     {
-        return Scalar(new dtl::SparseMutableRefScalarImpl<Vector>(std::move(arg)
+        return Scalar(std::make_unique<dtl::SparseMutableRefScalarImpl<Vector>>(
+                std::move(arg)
         ));
     }
 };

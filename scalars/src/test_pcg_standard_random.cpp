@@ -30,7 +30,7 @@
 // Created by user on 26/06/23.
 //
 
-#include "standard_random_generator.h"
+#include "random/standard_random_generator.h"
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>

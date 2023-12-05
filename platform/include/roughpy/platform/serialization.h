@@ -42,6 +42,7 @@
 #  include <cereal/types/polymorphic.hpp>
 #  include <cereal/types/string.hpp>
 #  include <cereal/types/utility.hpp>
+#  include <cereal/types/vector.hpp>
 #endif// RPY_DISABLE_SERIALIZATION
 
 namespace cereal {

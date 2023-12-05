@@ -1,3 +1,5 @@
+
+
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -25,356 +27,442 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 26/02/23.
-//
-
 #include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_pointer.h>
+#include <roughpy/scalars/scalar_interface.h>
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/types.h>
-#include <roughpy/platform/archives.h>
+#include <roughpy/scalars/traits.h>
 
+#include <roughpy/device/types.h>
+#include "scalar/arithmetic.h"
+#include "scalar/casts.h"
+#include "scalar/comparison.h"
+#include "scalar/print.h"
+#include "scalar/raw_bytes.h"
 
-#include <ostream>
-#include <roughpy/platform/serialization.h>
+#include <stdexcept>
 
-#include <cereal/types/vector.hpp>
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-Scalar::Scalar(ScalarPointer other, uint32_t new_flags) : ScalarPointer(other)
-{
-    m_flags = new_flags;
-}
-Scalar::Scalar(ScalarPointer data, flags::PointerType ptype)
-    : ScalarPointer(data)
-{
-    m_flags |= ptype;
+void Scalar::allocate_data() {
+    if (!p_type_and_content_type.is_pointer()) {
+        auto tp_o = scalar_type_of(p_type_and_content_type.get_type_info());
+        if (!tp_o) {
+            RPY_THROW(std::runtime_error, "unable to allocate scalar");
+        }
+
+    }
+
+    RPY_DBG_ASSERT(p_type_and_content_type.is_pointer());
+    opaque_pointer = p_type_and_content_type->allocate_single();
+    p_type_and_content_type.update_enumeration(dtl::ScalarContentType::OwnedPointer);
 }
 
-Scalar::Scalar(ScalarInterface* other)
+Scalar::Scalar(Scalar::type_pointer type) : integer_for_convenience(0)
 {
-    if (other == nullptr) {
-        RPY_THROW(
-                std::invalid_argument, "scalar interface pointer cannot be null"
-        );
-    }
-    p_type = other->type();
-    p_data = other;
-    m_flags |= flags::InterfacePointer
-            | (other->is_const() ? flags::IsConst : flags::IsMutable);
-}
-Scalar::Scalar(ScalarPointer ptr) : ScalarPointer(ptr)
-{
-    if (p_data != nullptr && p_type == nullptr) {
-        RPY_THROW(std::runtime_error, "non-zero scalars must have a type");
+    if (!type.is_null()) {
+        dtl::ScalarContentType mode;
+        if (type.is_pointer()) {
+            mode = dtl::content_type_of(type);
+            p_type_and_content_type = type_pointer(type.get_pointer(), mode);
+        } else {
+            auto info = type.get_type_info();
+            mode = dtl::content_type_of(info);
+            if (mode == dtl::ScalarContentType::OwnedPointer) {
+                p_type_and_content_type
+                        = type_pointer(*scalar_type_of(info), mode);
+            } else {
+                p_type_and_content_type = type_pointer(info, mode);
+            }
+        }
+
+        if (mode == dtl::ScalarContentType::OwnedPointer) {
+            opaque_pointer = type->allocate_single();
+        }
     }
 }
 
 Scalar::Scalar(const ScalarType* type)
-    : ScalarPointer(type, static_cast<void*>(nullptr))
-{}
-Scalar::Scalar(scalar_t scal)
-    : ScalarPointer(ScalarType::of<scalar_t>()->allocate(1))
+    : p_type_and_content_type(type, dtl::content_type_of(type->type_info())),
+      integer_for_convenience(0)
 {
-    p_type->convert_copy(to_mut_pointer(), {p_type, &scal}, 1);
-}
-Scalar::Scalar(const ScalarType* type, scalar_t scal)
-    : ScalarPointer(type->allocate(1))
-{
-    const auto* scal_type = ScalarType::of<scalar_t>();
-    p_type->convert_copy(to_mut_pointer(), {scal_type, &scal}, 1);
-}
-Scalar::Scalar(const Scalar& other)
-    : ScalarPointer(
-            other.p_type == nullptr ? ScalarPointer()
-                                    : other.p_type->allocate(1)
-    )
-{
-    if (p_type != nullptr) {
-        p_type->convert_copy(to_mut_pointer(), other.to_pointer(), 1);
+    if (p_type_and_content_type.get_enumeration()
+        == dtl::ScalarContentType::OwnedPointer) {
+        opaque_pointer = type->allocate_single();
     }
 }
-Scalar::Scalar(Scalar&& other) noexcept : ScalarPointer(std::move(other))
+Scalar::Scalar(devices::TypeInfo info)
+    : p_type_and_content_type(info, dtl::content_type_of(info)),
+      integer_for_convenience(0)
 {
-    /*
-     * Since other might own its pointer, we need to make sure
-     * the pointer is set to null before the destructor on other
-     * is called.
-     */
-    other.p_data = nullptr;
+    auto mode = p_type_and_content_type.get_enumeration();
+    if (mode == dtl::ScalarContentType::OwnedPointer) {
+        p_type_and_content_type = type_pointer(*scalar_type_of(info), mode);
+        opaque_pointer = p_type_and_content_type->allocate_single();
+    }
+}
+Scalar::Scalar() : p_type_and_content_type(), integer_for_convenience(0) {}
+
+Scalar::Scalar(const ScalarType* type, void* ptr)
+    : p_type_and_content_type(type, dtl::ScalarContentType::OpaquePointer),
+      opaque_pointer(ptr)
+{}
+Scalar::Scalar(const ScalarType* type, const void* ptr)
+    : p_type_and_content_type(type, dtl::ScalarContentType::ConstOpaquePointer),
+      opaque_pointer(const_cast<void*>(ptr))
+{}
+
+Scalar::Scalar(devices::TypeInfo info, void* ptr)
+    : p_type_and_content_type(info, dtl::ScalarContentType::OpaquePointer),
+      opaque_pointer(ptr)
+{}
+Scalar::Scalar(devices::TypeInfo info, const void* ptr)
+    : p_type_and_content_type(info, dtl::ScalarContentType::ConstOpaquePointer),
+      opaque_pointer(const_cast<void*>(ptr))
+{}
+Scalar::Scalar(const ScalarType* type, int64_t num, int64_t denom)
+{
+    auto info = type->type_info();
+    if (traits::is_arithmetic(info) && info.bytes <= sizeof(void*)) {
+        p_type_and_content_type = type_pointer(type, dtl::ScalarContentType::TrivialBytes);
+        dtl::scalar_assign_rational(trivial_bytes, info, num, denom);
+    } else {
+        p_type_and_content_type = type_pointer(type, dtl::ScalarContentType::OwnedPointer);
+        opaque_pointer = type->allocate_single();
+        dtl::scalar_assign_rational(opaque_pointer, info, num, denom);
+    }
+}
+
+void Scalar::copy_from_opaque_pointer(devices::TypeInfo info, const void* src)
+{
+    if (traits::is_fundamental(info) && info.bytes <= sizeof(void*)) {
+        std::memcpy(trivial_bytes, src, info.bytes);
+        p_type_and_content_type.update_enumeration(dtl::ScalarContentType::TrivialBytes);
+    } else {
+        allocate_data();
+        dtl::scalar_convert_copy(opaque_pointer, info, src, info);
+    }
+}
+
+
+Scalar::Scalar(const Scalar& other)
+{
+    if (!other.fast_is_zero()) {
+        p_type_and_content_type = other.p_type_and_content_type;
+        const auto info = type_info();
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes:
+            case dtl::ScalarContentType::ConstTrivialBytes:
+            std::memcpy(trivial_bytes, other.trivial_bytes, sizeof(void*));
+            break;
+        case dtl::ScalarContentType::OpaquePointer:
+        case dtl::ScalarContentType::ConstOpaquePointer:
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface:
+            copy_from_opaque_pointer(info, other.pointer());
+            break;
+        case dtl::ScalarContentType::OwnedPointer:
+            // This should only happen if the data type is too large to fit in
+            // inline storage or has a non-trivial constructor/destructor.
+            allocate_data();
+            auto successful = dtl::scalar_convert_copy(opaque_pointer, info, other.opaque_pointer, info, 1);
+            RPY_DBG_ASSERT(successful);
+            break;
+        }
+    }
+
+}
+Scalar::Scalar(Scalar&& other) noexcept
+    : p_type_and_content_type(other.p_type_and_content_type),
+      integer_for_convenience(0)
+{
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes:
+        case dtl::ScalarContentType::ConstTrivialBytes:
+            std::memcpy(trivial_bytes, other.trivial_bytes, sizeof(void*));
+            break;
+        case dtl::ScalarContentType::OpaquePointer:
+        case dtl::ScalarContentType::ConstOpaquePointer:
+            opaque_pointer = other.opaque_pointer;
+            other.opaque_pointer = nullptr;
+            break;
+        case dtl::ScalarContentType::OwnedPointer:
+            opaque_pointer = other.opaque_pointer;
+            other.opaque_pointer = nullptr;
+            break;
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface:
+            interface = std::move(other.interface);
+    }
 }
 
 Scalar::~Scalar()
 {
-    if (p_data != nullptr) {
-        if (is_interface()) {
-            delete static_cast<ScalarInterface*>(const_cast<void*>(p_data));
-        } else if (is_owning()) {
-            p_type->free(to_mut_pointer(), 1);
-        }
-        p_data = nullptr;
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::OwnedPointer:
+            RPY_DBG_ASSERT(p_type_and_content_type.is_pointer());
+            if (opaque_pointer != nullptr) {
+                p_type_and_content_type->free_single(opaque_pointer);
+                opaque_pointer = nullptr;
+            }
+            break;
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface: interface.~unique_ptr();
+        case dtl::ScalarContentType::TrivialBytes:
+        case dtl::ScalarContentType::OpaquePointer:
+        case dtl::ScalarContentType::ConstTrivialBytes:
+        case dtl::ScalarContentType::ConstOpaquePointer: break;
     }
-}
-
-bool Scalar::is_value() const noexcept
-{
-    if (p_data == nullptr) { return true; }
-    if (is_interface()) {
-        return static_cast<const ScalarInterface*>(p_data)->is_value();
-    }
-
-    return is_owning();
-}
-bool Scalar::is_zero() const noexcept
-{
-    if (p_data == nullptr) { return true; }
-    if (is_interface()) {
-        return static_cast<const ScalarInterface*>(p_data)->is_zero();
-    }
-
-    // TODO: finish this off?
-    return p_type->is_zero(to_pointer());
-}
+};
 
 Scalar& Scalar::operator=(const Scalar& other)
 {
-    if (is_const()) {
-        RPY_THROW(std::runtime_error, "Cannot cast to a const value");
-    }
-    if (this != std::addressof(other)) {
-        if (is_interface()) {
-            auto* iface
-                    = static_cast<ScalarInterface*>(const_cast<void*>(p_data));
-            iface->assign(other.to_pointer());
+    if (&other != this) {
+        if (this->fast_is_zero()) {
+            p_type_and_content_type = other.p_type_and_content_type;
+
+            switch (p_type_and_content_type.get_enumeration()) {
+                case dtl::ScalarContentType::TrivialBytes:
+                case dtl::ScalarContentType::ConstTrivialBytes:
+                    std::memcpy(
+                            trivial_bytes,
+                            other.trivial_bytes,
+                            sizeof(interface_pointer_t)
+                    );
+                    break;
+                case dtl::ScalarContentType::OpaquePointer:
+                case dtl::ScalarContentType::ConstOpaquePointer:
+                    opaque_pointer = other.opaque_pointer;
+                    break;
+                case dtl::ScalarContentType::OwnedPointer:
+                    // TODO: implement copy for owned pointers
+                    break;
+                case dtl::ScalarContentType::Interface:
+                case dtl::ScalarContentType::OwnedInterface:
+                    // Copying of interface pointers is disallowed.
+                    RPY_THROW(
+                            std::runtime_error,
+                            "copying of interface pointers "
+                            "is not allowed"
+                    );
+            }
         } else {
-            p_type->convert_copy(to_mut_pointer(), other.to_pointer(), 1);
+            dtl::scalar_convert_copy(
+                    mut_pointer(),
+                    p_type_and_content_type.get_type_info(),
+                    other
+            );
         }
     }
     return *this;
 }
+
 Scalar& Scalar::operator=(Scalar&& other) noexcept
 {
-    if (this != std::addressof(other)) {
-        if (p_type == nullptr || is_const()) {
-            this->~Scalar();
-            p_data = other.p_data;
-            p_type = other.p_type;
-            m_flags = other.m_flags;
-            other.p_data = nullptr;
-            other.p_type = nullptr;
-        } else {
-            if (is_interface()) {
-                auto* iface
-                        = static_cast<ScalarInterface*>(const_cast<void*>(p_data
-                        ));
-                iface->assign(other.to_pointer());
-            } else {
-                p_type->convert_copy(to_mut_pointer(), other.to_pointer(), 1);
-            }
+    if (&other != this) {
+        this->~Scalar();
+        p_type_and_content_type = other.p_type_and_content_type;
+        switch (p_type_and_content_type.get_enumeration()) {
+            case dtl::ScalarContentType::TrivialBytes:
+            case dtl::ScalarContentType::ConstTrivialBytes:
+                std::memcpy(
+                        trivial_bytes,
+                        other.trivial_bytes,
+                        sizeof(interface_pointer_t)
+                );
+                break;
+            case dtl::ScalarContentType::OpaquePointer:
+            case dtl::ScalarContentType::ConstOpaquePointer:
+            case dtl::ScalarContentType::OwnedPointer:
+                opaque_pointer = other.opaque_pointer;
+                other.opaque_pointer = nullptr;
+                break;
+            case dtl::ScalarContentType::Interface:
+            case dtl::ScalarContentType::OwnedInterface:
+                interface = std::move(other.interface);
+                other.interface = nullptr;
+                break;
         }
     }
-
     return *this;
 }
 
-ScalarPointer Scalar::to_pointer() const noexcept
+
+#define DO_OP_FOR_ALL_TYPES(INFO) \
+    switch(INFO.code) {\
+        casse devices::TypeCode::Int: \
+            switch (INFO.bytes) { \
+                case \
+
+
+
+
+
+bool Scalar::is_zero() const noexcept
 {
-    if (is_interface()) {
-        return static_cast<const ScalarInterface*>(p_data)->to_pointer();
+    if (fast_is_zero()) { return true; }
+
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes:
+        case dtl::ScalarContentType::ConstTrivialBytes:
+            return bit_cast<uintptr_t>(trivial_bytes) == 0;
+        case dtl::ScalarContentType::OpaquePointer:
+        case dtl::ScalarContentType::ConstOpaquePointer:
+        case dtl::ScalarContentType::OwnedPointer:
+            return is_pointer_zero(opaque_pointer, p_type_and_content_type);
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface:
+            return is_pointer_zero(
+                    interface->pointer(),
+                    p_type_and_content_type
+            );
     }
-    return {p_type, p_data};
+
+    RPY_UNREACHABLE_RETURN(false);
 }
-ScalarPointer Scalar::to_mut_pointer()
+
+bool Scalar::is_reference() const noexcept
 {
-    if (is_const()) {
+    if (fast_is_zero()) { return false; }
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes:
+        case dtl::ScalarContentType::ConstTrivialBytes:
+        case dtl::ScalarContentType::OwnedPointer: return false;
+        case dtl::ScalarContentType::OpaquePointer:
+        case dtl::ScalarContentType::ConstOpaquePointer:
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface: return true;
+    }
+    RPY_UNREACHABLE_RETURN(false);
+}
+
+bool Scalar::is_const() const noexcept
+{
+    if (fast_is_zero()) { return true; }
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes: return false;
+        case dtl::ScalarContentType::ConstTrivialBytes: return true;
+        case dtl::ScalarContentType::OpaquePointer: return false;
+        case dtl::ScalarContentType::ConstOpaquePointer: return true;
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface: return false;
+        case dtl::ScalarContentType::OwnedPointer: return false;
+    }
+    RPY_UNREACHABLE_RETURN(false);
+}
+
+const void* Scalar::pointer() const noexcept
+{
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes:
+        case dtl::ScalarContentType::ConstTrivialBytes: return &trivial_bytes;
+        case dtl::ScalarContentType::OpaquePointer:
+        case dtl::ScalarContentType::ConstOpaquePointer:
+        case dtl::ScalarContentType::OwnedPointer: return opaque_pointer;
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface:
+            return interface->pointer();
+    }
+    RPY_UNREACHABLE_RETURN(nullptr);
+}
+void* Scalar::mut_pointer()
+{
+    if (fast_is_zero()) {
         RPY_THROW(
                 std::runtime_error,
-                "cannot get non-const pointer to const value"
+                "cannot get mutable pointer to constant"
+                " value zero"
         );
     }
-    auto* ptr = const_cast<void*>(p_data);
-    if (is_interface()) {
-        return static_cast<ScalarInterface*>(ptr)->to_pointer();
-    }
-    return {p_type, ptr};
-}
-void Scalar::set_to_zero()
-{
-    if (p_data == nullptr) {
-        RPY_CHECK(p_type != nullptr);
-        RPY_CHECK(!is_const());
-        RPY_CHECK(is_owning());
-        ScalarPointer::operator=(p_type->allocate(1));
-        p_type->assign(to_mut_pointer(), 0, 1);
-    }
-    // TODO: look at the logic here.
-}
-scalar_t Scalar::to_scalar_t() const
-{
-    if (p_data == nullptr) { return scalar_t(0); }
-    if (is_interface()) {
-        return static_cast<const ScalarInterface*>(p_data)->as_scalar();
-    }
-    RPY_CHECK(p_type != nullptr);
-    return p_type->to_scalar_t(to_pointer());
-}
-Scalar Scalar::operator-() const
-{
-    if (p_data == nullptr) { return Scalar(p_type); }
-    if (is_interface()) {
-        return static_cast<const ScalarInterface*>(p_data)->uminus();
-    }
-    Scalar result(p_type, 0);
-    p_type->uminus_into(result, *this, 1, nullptr);
-    return result;
-}
-
-#define RPY_SCALAR_OP(OP, MNAME)                                               \
-    Scalar Scalar::operator OP(const Scalar& other) const                      \
-    {                                                                          \
-        const ScalarType* type = (p_type != nullptr) ? p_type : other.p_type;  \
-        if (type == nullptr) { return Scalar(); }                              \
-        Scalar result(type, 0);                                                \
-        type->MNAME##_into(                                                    \
-                result, to_pointer(), other.to_pointer(), 1, nullptr           \
-        );                                                                     \
-        return result;                                                         \
+    switch (p_type_and_content_type.get_enumeration()) {
+        case dtl::ScalarContentType::TrivialBytes: return &trivial_bytes;
+        case dtl::ScalarContentType::OpaquePointer:
+        case dtl::ScalarContentType::OwnedPointer: return opaque_pointer;
+        case dtl::ScalarContentType::ConstTrivialBytes:
+        case dtl::ScalarContentType::ConstOpaquePointer:
+            RPY_THROW(
+                    std::runtime_error,
+                    "cannot get mutable pointer to constant value"
+            );
+        case dtl::ScalarContentType::Interface:
+        case dtl::ScalarContentType::OwnedInterface:
+            RPY_THROW(
+                    std::runtime_error,
+                    "cannot get mutable pointer to special scalar references"
+            );
     }
 
-RPY_SCALAR_OP(+, add)
-RPY_SCALAR_OP(-, sub)
-RPY_SCALAR_OP(*, mul)
-
-#undef RPY_SCALAR_OP
-
-Scalar Scalar::operator/(const Scalar& other) const
+    RPY_UNREACHABLE_RETURN(nullptr);
+}
+optional<const ScalarType*> Scalar::type() const noexcept
 {
-    const ScalarType* type = (p_type != nullptr) ? p_type : other.p_type;
-    if (type == nullptr) { return Scalar(); }
-    if (other.p_data == nullptr) {
-        RPY_THROW(std::runtime_error, "division by zero");
+    if (p_type_and_content_type.is_pointer()) {
+        return p_type_and_content_type.get_pointer();
     }
-    Scalar result(type, 0);
-    type->div_into(result, to_pointer(), other.to_pointer(), 1, nullptr);
-    return result;
+
+    auto info = p_type_and_content_type.get_type_info();
+    return scalar_type_of(info);
+}
+devices::TypeInfo Scalar::type_info() const noexcept
+{
+    if (p_type_and_content_type.is_pointer()) {
+        return p_type_and_content_type->type_info();
+    }
+    return p_type_and_content_type.get_type_info();
 }
 
-#define RPY_SCALAR_IOP(OP, MNAME)                                              \
-    Scalar& Scalar::operator OP(const Scalar& other)                           \
-    {                                                                          \
-        if (is_const()) {                                                      \
-            RPY_THROW(                                                         \
-                    std::runtime_error,                                        \
-                    "performing inplace operation on const scalar"             \
-            );                                                                 \
-        }                                                                      \
-                                                                               \
-        if (p_type == nullptr) {                                               \
-            RPY_DBG_ASSERT(p_data == nullptr);                                 \
-            /* We just established that other.p_data != nullptr */             \
-            RPY_DBG_ASSERT(other.p_type != nullptr);                           \
-            p_type = other.p_type;                                             \
-        }                                                                      \
-        if (p_data == nullptr) {                                               \
-            if (p_type == nullptr) { p_type = other.p_type; }                  \
-            set_to_zero();                                                     \
-        }                                                                      \
-        if (is_interface()) {                                                  \
-            auto* iface                                                        \
-                    = static_cast<ScalarInterface*>(const_cast<void*>(p_data)  \
-                    );                                                         \
-            iface->MNAME##_inplace(other);                                     \
-        } else {                                                               \
-            p_type->MNAME##_into(                                              \
-                    *this, ScalarPointer(), other.to_pointer(), 1, nullptr     \
-            );                                                                 \
-        }                                                                      \
-        return *this;                                                          \
+static void print_trivial_bytes(
+        std::ostream& os,
+        const byte* bytes,
+        PackedScalarTypePointer<scalars::dtl::ScalarContentType> p_type
+)
+{}
+
+static void print_opaque_pointer(
+        std::ostream& os,
+        const void* opaque,
+        PackedScalarTypePointer<scalars::dtl::ScalarContentType> p_type
+)
+{}
+
+std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& value)
+{
+    if (value.fast_is_zero()) {
+        os << 0;
+        return os;
     }
 
-RPY_SCALAR_IOP(+=, add)
-RPY_SCALAR_IOP(-=, sub)
-RPY_SCALAR_IOP(*=, mul)
+    dtl::print_scalar_val(os, value.pointer(), value.type_info());
 
-Scalar& Scalar::operator/=(const Scalar& other)
-{
-    if (is_const()) {
-        RPY_THROW(
-                std::runtime_error,
-                "performing inplace operation on const scalar"
-        );
-    }
-    if (other.p_data == nullptr) {
-        RPY_THROW(std::runtime_error, "division by zero");
-    }
-    if (p_type == nullptr) {
-        RPY_DBG_ASSERT(p_data == nullptr);
-        RPY_DBG_ASSERT(other.p_type != nullptr);
-        p_type = other.p_type;
-    }
-    if (p_data == nullptr) {
-        if (p_type == nullptr) { p_type = other.p_type->rational_type(); }
-        set_to_zero();
-    }
-    if (is_interface()) {
-        auto* iface = static_cast<ScalarInterface*>(const_cast<void*>(p_data));
-        iface->div_inplace(other);
-    } else {
-        p_type->rational_type()->div_into(
-                *this, ScalarPointer(), other.to_pointer(), 1, nullptr
-        );
-    }
-    return *this;
-}
-
-#undef RPY_SCALAR_IOP
-
-bool Scalar::operator==(const Scalar& rhs) const noexcept
-{
-    if (p_type == nullptr) { return rhs.is_zero(); }
-    return p_type->are_equal(to_pointer(), rhs.to_pointer());
-}
-bool Scalar::operator!=(const Scalar& rhs) const noexcept
-{
-    return !operator==(rhs);
-}
-std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& arg)
-{
-    if (arg.type() == nullptr) {
-        os << '0';
-    } else {
-        arg.type()->print(arg.to_pointer(), os);
-    }
 
     return os;
 }
 
-RPY_SERIAL_SAVE_FN_IMPL(Scalar)
+std::vector<byte> Scalar::to_raw_bytes() const
 {
-    RPY_SERIAL_SERIALIZE_NVP("type_id", get_type_id());
-    if (is_interface()) {
-        auto ptr = static_cast<const ScalarInterface*>(p_data)->to_pointer();
-        RPY_SERIAL_SERIALIZE_NVP("data", p_type->to_raw_bytes(ptr, 1));
+    return dtl::to_raw_bytes(pointer(), 1, type_info());
+}
+void Scalar::from_raw_bytes(devices::TypeInfo info, Slice<byte> bytes)
+{
+    // Make sure it is clear
+    this->~Scalar();
+    auto tp_o = scalar_type_of(info);
+    if (tp_o) {
+        p_type_and_content_type = type_pointer(*tp_o, dtl::ScalarContentType::TrivialBytes);
     } else {
-        RPY_SERIAL_SERIALIZE_NVP("data", to_raw_bytes(1));
+        p_type_and_content_type = type_pointer(info, dtl::ScalarContentType::TrivialBytes);
     }
+
+    void* ptr = nullptr;
+    if (traits::is_arithmetic(info) && info.bytes <= sizeof(void*)) {
+        ptr = trivial_bytes;
+    } else if (tp_o) {
+        allocate_data();
+        ptr = opaque_pointer;
+    } else {
+        RPY_THROW(std::runtime_error, "unable to allocate scalar");
+    }
+
+    dtl::from_raw_bytes(ptr, 1, bytes, info);
 }
-
-RPY_SERIAL_LOAD_FN_IMPL(Scalar)
-{
-    string type_id;
-    RPY_SERIAL_SERIALIZE_NVP("type_id", type_id);
-
-    std::vector<byte> raw_bytes;
-    RPY_SERIAL_SERIALIZE_NVP("data", raw_bytes);
-    update_from_bytes(type_id, 1, raw_bytes);
-}
-
-
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::Scalar
-#define RPY_SERIAL_DO_SPLIT
-
-#include <roughpy/platform/serialization_instantiations.inl>

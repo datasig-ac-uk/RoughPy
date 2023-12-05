@@ -96,6 +96,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.0
         env:
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
+          VCPKG_INSTALL_OPTIONS: "--debug"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: >
             auditwheel show {wheel} &&
             auditwheel repair -w {dest_dir} {wheel}

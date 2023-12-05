@@ -62,6 +62,21 @@ struct StreamMetadata {
     intervals::IntervalType interval_type;
 };
 
+
+RPY_NO_DISCARD
+inline resolution_t param_to_resolution(param_t arg) noexcept
+{
+    int exponent;
+    frexp(arg, &exponent);
+    /*
+     * frexp returns fractional part in the range [0.5, 1), so the correct power
+     * of 2 is actually exponent - 1.\
+     */
+    return -std::min(0, exponent - 1);
+}
+
+
+
 /**
  * @brief Base class for all stream types.
  *

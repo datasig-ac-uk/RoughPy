@@ -31,6 +31,8 @@
 
 #include <roughpy/streams/dyadic_caching_layer.h>
 
+#include <roughpy/platform/archives.h>
+
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/sync/sharable_lock.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -87,7 +89,9 @@ DyadicCachingLayer::log_signature(const intervals::DyadicInterval& interval,
         return ctx.zero_lie(DyadicCachingLayer::metadata().cached_vector_type);
     }
 
-    if (interval.power() == resolution) {
+    const auto stream_resolution = metadata().default_resolution;
+
+    if (interval.power() == stream_resolution) {
         std::lock_guard<std::recursive_mutex> access(m_compute_lock);
 
         auto& cached = m_cache[interval];
@@ -95,6 +99,16 @@ DyadicCachingLayer::log_signature(const intervals::DyadicInterval& interval,
         // Currently, const borrowing is not permitted, so return a mutable
         // view.
         return cached.borrow_mut();
+    }
+
+    if (interval.power() > stream_resolution) {
+        intervals::DyadicInterval tmp(interval);
+        tmp.expand_interval(interval.power() - stream_resolution);
+        RPY_DBG_ASSERT(tmp.power() == stream_resolution);
+        if (rational_equals(tmp, interval)) {
+            return log_signature(tmp, stream_resolution, ctx);
+        }
+        return algebra::Lie();
     }
 
     intervals::DyadicInterval lhs_itvl(interval);
@@ -105,8 +119,8 @@ DyadicCachingLayer::log_signature(const intervals::DyadicInterval& interval,
     auto lhs = log_signature(lhs_itvl, resolution, ctx);
     auto rhs = log_signature(rhs_itvl, resolution, ctx);
 
-    if (lhs.size() == 0) { return rhs; }
-    if (rhs.size() == 0) { return lhs; }
+    if (lhs.is_zero()) { return rhs; }
+    if (rhs.is_zero()) { return lhs; }
 
     return ctx.cbh({lhs, rhs},
                    DyadicCachingLayer::metadata().cached_vector_type);
@@ -130,7 +144,7 @@ DyadicCachingLayer::log_signature(const intervals::Interval& domain,
     lies.reserve(dyadic_dissection.size());
     for (const auto& itvl : dyadic_dissection) {
         auto lsig = log_signature(itvl, resolution, ctx);
-        lies.push_back(lsig);
+        if (!lsig.is_zero()) { lies.push_back(lsig); }
     }
 
     return ctx.cbh(lies, DyadicCachingLayer::metadata().cached_vector_type);
