@@ -343,15 +343,6 @@ endif ()
 
 install(TARGETS
     RoughPy_PyModule
-        RUNTIME_DEPENDENCIES
-        PRE_EXCLUDE_REGEXES
-        [[libc\.so\..*]]
-        [[libgcc_s\.so\..*]]
-        [[libm\.so\..*]]
-        [[libstdc\+\+\.so\..*]]
-        [[ld.*\.so\..*]]
-        [[libdl\.so\..*]]
-        [[libpthread.*\.so.*]]
     EXPORT RoughPy_EXPORTS
     RUNTIME DESTINATION roughpy
     LIBRARY
