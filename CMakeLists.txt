@@ -358,6 +358,7 @@ install(TARGETS
 
 install(FILES roughpy/py.typed DESTINATION roughpy)
 install(DIRECTORY roughpy
+        RUNTIME_DEPENDENCIES
     DESTINATION .
     FILES_MATCHING
     PATTERN "*.py"
@@ -372,4 +373,4 @@ foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
         #        install(FILES ${_lib_deps} DESTINATION roughpy)
     endif ()
 endforeach ()
-install(FILES ${_runtime_deps} DESTINATION roughpy)
+#install(FILES ${_runtime_deps} DESTINATION roughpy)
