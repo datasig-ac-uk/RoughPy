@@ -343,6 +343,7 @@ endif ()
 
 install(TARGETS
     RoughPy_PyModule
+        RUNTIME_DEPENDENCIES
     EXPORT RoughPy_EXPORTS
     RUNTIME DESTINATION roughpy
     LIBRARY
@@ -358,7 +359,6 @@ install(TARGETS
 
 install(FILES roughpy/py.typed DESTINATION roughpy)
 install(DIRECTORY roughpy
-        RUNTIME_DEPENDENCIES
     DESTINATION .
     FILES_MATCHING
     PATTERN "*.py"
