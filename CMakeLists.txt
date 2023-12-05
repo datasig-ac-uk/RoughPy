@@ -318,9 +318,6 @@ endif ()
 
 add_subdirectory(external/libalgebra_lite)
 
-if (APPLE AND TARGET Bignum::Bignum)
-    set_target_properties(Bignum::Bignum PROPERTIES IMPORT_NO_SONAME ON)
-endif ()
 
 add_subdirectory(core)
 add_subdirectory(platform)
