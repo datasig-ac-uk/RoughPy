@@ -45,7 +45,7 @@
   }, {
     "name": "gmp",
     "version>=": "6.2.1#21",
-    "platform": "!windows"
+    "platform": "linux"
   },
     {
       "name": "mpir",
