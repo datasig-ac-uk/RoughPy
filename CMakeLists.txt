@@ -13,10 +13,9 @@ else ()
     set(_rpy_version 0.0.1)
 endif ()
 
-project(RoughPy VERSION ${_rpy_version})
-
 include(CMakeDependentOption)
 include(CheckIncludeFileCXX)
+
 
 option(ROUGHPY_ENABLE_DBG_ASSERT "enable debug assertions at runtime" OFF)
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
@@ -26,7 +25,16 @@ option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 cmake_dependent_option(ROUGHPY_PREFER_ACCELERATE
-    "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
+        "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
+
+
+if (ROUGHPY_BUILD_TESTS)
+    set(VCPKG_MANIFEST_FEATURES "tests")
+endif ()
+
+project(RoughPy VERSION ${_rpy_version})
+
+
 
 
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
@@ -310,8 +318,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (APPLE)
-    #    set(CMAKE_MACOSX_RPATH ON)
-    #    set(CMAKE_INSTALL_RPATH "@loader_path" CACHE INTERNAL "")
+    set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_INSTALL_RPATH "@loader_path" CACHE INTERNAL "")
 elseif (NOT WIN32)
     set(CMAKE_INSTALL_RPATH "$ORIGIN" CACHE INTERNAL "")
 endif ()
