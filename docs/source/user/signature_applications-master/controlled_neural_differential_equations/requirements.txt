@@ -1,0 +1,5 @@
+wheel
+matplotlib
+torch>=1.7.1
+torchcde@git+https://github.com/patrick-kidger/torchcde.git@4620b4b8bfb08416f4871c9e76510b69439ee916
+signatory==1.2.4.1.7.1
