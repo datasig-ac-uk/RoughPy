@@ -35,7 +35,7 @@
 namespace rpy { namespace scalars {
 
 
-class RPY_EXPORT ScalarArrayView {
+class ROUGHPY_SCALARS_EXPORT ScalarArrayView {
     devices::MemoryView m_view;
 
 };

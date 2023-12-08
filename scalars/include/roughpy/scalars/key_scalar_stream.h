@@ -34,7 +34,7 @@
 namespace rpy {
 namespace scalars {
 
-class RPY_EXPORT KeyScalarStream : public ScalarStream
+class ROUGHPY_SCALARS_EXPORT KeyScalarStream : public ScalarStream
 {
     std::vector<const key_type*> m_key_stream;
 

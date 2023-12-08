@@ -38,6 +38,7 @@
 
 #include <memory>
 
+#include "roughpy_platform_export.h"
 #include "filesystem.h"
 
 namespace rpy {
@@ -49,7 +50,7 @@ class Configuration;
  * @brief Get a reference to the current configuration.
  * @return global configuration reference
  */
-const Configuration& get_config();
+ROUGHPY_PLATFORM_EXPORT const Configuration& get_config();
 
 /**
  * @brief Interface for getting RoughPy configuration settings.

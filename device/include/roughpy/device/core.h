@@ -39,6 +39,8 @@
 
 #include <libalgebra_lite/polynomial.h>
 
+#include "roughpy_device_export.h"
+
 /*
  * We use the half precision floating point and bfloat16 types from Eigen but
  * we really don't want to include the whole Eigen/Core header until we
@@ -299,9 +301,9 @@ class Queue;
 using Device = boost::intrusive_ptr<const DeviceHandle>;
 using HostDevice = boost::intrusive_ptr<const HostDeviceHandle>;
 
-RPY_EXPORT HostDevice get_host_device();
-RPY_EXPORT Device get_default_device();
-RPY_EXPORT optional<Device> get_device(const DeviceSpecification& spec);
+ROUGHPY_DEVICE_EXPORT HostDevice get_host_device();
+ROUGHPY_DEVICE_EXPORT Device get_default_device();
+ROUGHPY_DEVICE_EXPORT optional<Device> get_device(const DeviceSpecification& spec);
 
 constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 {

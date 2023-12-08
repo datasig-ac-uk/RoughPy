@@ -11,10 +11,12 @@
 
 #include <boost/container/flat_map.hpp>
 
+#include "roughpy_streams_export.h"
+
 namespace rpy {
 namespace streams {
 
-class StreamConstructionHelper
+class ROUGHPY_STREAMS_EXPORT StreamConstructionHelper
 {
     std::shared_ptr<StreamSchema> p_schema;
     algebra::context_pointer p_ctx;

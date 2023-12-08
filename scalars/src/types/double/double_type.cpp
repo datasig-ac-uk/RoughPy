@@ -22,7 +22,7 @@ const ScalarType* DoubleType::get() noexcept
 }
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 scalars::dtl::ScalarTypeOfImpl<double>::get() noexcept
 {
     return DoubleType::get();

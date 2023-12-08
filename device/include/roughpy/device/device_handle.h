@@ -62,7 +62,7 @@ struct ExtensionSourceAndOptions {
  *
  *
  */
-class RPY_EXPORT DeviceHandle
+class ROUGHPY_DEVICE_EXPORT DeviceHandle
     : public boost::intrusive_ref_counter<DeviceHandle>
 {
     mutable std::recursive_mutex m_lock;

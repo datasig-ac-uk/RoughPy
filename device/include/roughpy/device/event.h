@@ -37,7 +37,7 @@
 namespace rpy {
 namespace devices {
 
-class RPY_EXPORT EventInterface : public dtl::InterfaceBase
+class ROUGHPY_DEVICE_EXPORT EventInterface : public dtl::InterfaceBase
 {
 public:
     using object_t = Event;

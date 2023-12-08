@@ -36,7 +36,7 @@ namespace rpy {
 namespace scalars {
 
 
-class RPY_EXPORT RandomGenerator
+class ROUGHPY_SCALARS_EXPORT RandomGenerator
 {
 protected:
     const ScalarType* p_type;

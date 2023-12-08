@@ -38,7 +38,7 @@ namespace rpy { namespace streams {
 
 
 
-class RPY_EXPORT IncrementChannel : public LeadLaggableChannel
+class ROUGHPY_STREAMS_EXPORT IncrementChannel : public LeadLaggableChannel
 {
 public:
 

@@ -41,7 +41,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT LieIncrementStream : public DyadicCachingLayer
+class ROUGHPY_STREAMS_EXPORT LieIncrementStream : public DyadicCachingLayer
 {
     using base_t = DyadicCachingLayer;
 

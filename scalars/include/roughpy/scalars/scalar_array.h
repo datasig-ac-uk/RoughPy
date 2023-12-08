@@ -54,7 +54,7 @@ struct SliceIndex {
     dimn_t end;
 };
 
-class RPY_EXPORT ScalarArray
+class ROUGHPY_SCALARS_EXPORT ScalarArray
 {
     using discriminator_type = dtl::ScalarArrayStorageModel;
     using type_pointer = PackedScalarTypePointer<dtl::ScalarArrayStorageModel>;

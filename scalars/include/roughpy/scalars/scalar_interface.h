@@ -33,7 +33,7 @@
 namespace rpy {
 namespace scalars {
 
-class RPY_EXPORT ScalarInterface
+class ROUGHPY_SCALARS_EXPORT ScalarInterface
 {
 public:
 

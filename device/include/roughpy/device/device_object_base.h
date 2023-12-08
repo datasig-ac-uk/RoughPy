@@ -48,7 +48,7 @@ inline typename Interface::object_t clone_cast(Interface* iface) noexcept;
 
 namespace dtl {
 
-class RPY_EXPORT InterfaceBase
+class ROUGHPY_DEVICE_EXPORT InterfaceBase
 {
 public:
     using reference_count_type = dimn_t;

@@ -39,6 +39,8 @@
 
 #include "schema.h"
 
+#include "roughpy_streams_export.h"
+
 namespace rpy {
 namespace streams {
 
@@ -91,7 +93,7 @@ inline resolution_t param_to_resolution(param_t arg) noexcept
  * computed from log signatures, rather than using the data to compute these
  * independently.)
  */
-class RPY_EXPORT StreamInterface
+class ROUGHPY_STREAMS_EXPORT StreamInterface
 {
     StreamMetadata m_metadata;
     std::shared_ptr<StreamSchema> p_schema;

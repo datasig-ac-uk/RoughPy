@@ -41,7 +41,7 @@ namespace algebra {
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         AlgebraInterface<ShuffleTensor, TensorBasis>;
 
-class RPY_EXPORT ShuffleTensorInterface
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensorInterface
     : public AlgebraInterface<ShuffleTensor, TensorBasis>
 {
     using base_t = AlgebraInterface<ShuffleTensor, TensorBasis>;

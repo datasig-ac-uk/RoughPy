@@ -21,7 +21,7 @@ const ScalarType* FloatType::get() noexcept
 }
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 scalars::dtl::ScalarTypeOfImpl<float>::get() noexcept
 {
     return FloatType::get();

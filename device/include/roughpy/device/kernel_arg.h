@@ -37,7 +37,7 @@
 namespace rpy {
 namespace devices {
 
-class RPY_EXPORT KernelArgument
+class ROUGHPY_DEVICE_EXPORT KernelArgument
 {
 
     union

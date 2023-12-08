@@ -37,7 +37,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT LeadLaggableChannel : public StreamChannel
+class ROUGHPY_STREAMS_EXPORT LeadLaggableChannel : public StreamChannel
 {
     bool m_use_leadlag = false;
 

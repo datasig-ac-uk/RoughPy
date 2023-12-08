@@ -32,6 +32,8 @@
 #include <roughpy/device/core.h>
 #include <roughpy/device/macros.h>
 
+#include "roughpy_scalars_export.h"
+
 namespace rpy {
 namespace scalars {
 
@@ -41,7 +43,7 @@ using BasicScalarInfo = devices::TypeInfo;
 using seed_int_t = uint64_t;
 
 // Forward declarations
-class RPY_EXPORT ScalarType;
+class ROUGHPY_SCALARS_EXPORT ScalarType;
 class ScalarInterface;
 class Scalar;
 class ScalarArray;
@@ -65,25 +67,25 @@ inline optional<const ScalarType*> ScalarTypeOfImpl<T>::get() noexcept
 }
 
 template <>
-RPY_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<float>::get() noexcept;
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<float>::get() noexcept;
 
 template <>
-RPY_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<double>::get() noexcept;
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<double>::get() noexcept;
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 ScalarTypeOfImpl<devices::rational_scalar_type>::get() noexcept;
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 ScalarTypeOfImpl<devices::rational_poly_scalar>::get() noexcept;
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 ScalarTypeOfImpl<devices::half>::get() noexcept;
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 ScalarTypeOfImpl<devices::bfloat16>::get() noexcept;
 
 }// namespace dtl

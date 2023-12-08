@@ -26,7 +26,7 @@ option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 cmake_dependent_option(ROUGHPY_PREFER_ACCELERATE
         "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
-
+option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
 
 if (ROUGHPY_BUILD_TESTS)
     set(VCPKG_MANIFEST_FEATURES "tests")
@@ -334,7 +334,9 @@ add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
-add_subdirectory(roughpy)
+if (ROUGHPY_BUILD_PYLIB)
+    add_subdirectory(roughpy)
+endif ()
 
 
 if (ROUGHPY_BUILD_LA_CONTEXTS)

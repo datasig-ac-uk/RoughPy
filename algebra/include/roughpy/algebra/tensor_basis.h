@@ -36,7 +36,7 @@
 namespace rpy {
 namespace algebra {
 
-class RPY_EXPORT TensorBasisInterface
+class ROUGHPY_ALGEBRA_EXPORT TensorBasisInterface
     : public make_basis_interface<
               TensorBasisInterface, rpy::key_type, OrderedBasisInterface,
               WordLikeBasisInterface>

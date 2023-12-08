@@ -60,7 +60,7 @@ const ScalarType* APRationalType::get() noexcept
 }
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 scalars::dtl::ScalarTypeOfImpl<rational_scalar_type>::get() noexcept
 {
     return APRationalType::get();

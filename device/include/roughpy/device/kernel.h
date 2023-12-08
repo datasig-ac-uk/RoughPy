@@ -77,7 +77,7 @@ public:
     KernelLaunchParams();
 };
 
-class RPY_EXPORT KernelInterface : public dtl::InterfaceBase
+class ROUGHPY_DEVICE_EXPORT KernelInterface : public dtl::InterfaceBase
 {
 public:
 
@@ -100,7 +100,7 @@ namespace dtl {
 extern template class ObjectBase<KernelInterface, Kernel>;
 }
 
-class RPY_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
+class ROUGHPY_DEVICE_EXPORT Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
 {
     using base_t = dtl::ObjectBase<KernelInterface, Kernel>;
 
