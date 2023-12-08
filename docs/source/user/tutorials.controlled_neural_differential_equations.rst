@@ -8,8 +8,8 @@ Path Signatures for Handwritten Digit Classification using Esig
     :maxdepth: 1
     :glob:
 
-    signature_applications-master/controlled_neural_differential_equations/logsignature.ipynb
-    signature_applications-master/controlled_neural_differential_equations/time_series_classification.ipynb
+    signature_applications/controlled_neural_differential_equations/logsignature.ipynb
+    signature_applications/controlled_neural_differential_equations/time_series_classification.ipynb
 
 
 

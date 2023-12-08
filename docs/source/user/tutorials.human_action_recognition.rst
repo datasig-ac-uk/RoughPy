@@ -8,7 +8,7 @@ Path Signature Methodology for Landmark-based Human Action Recognition
     :maxdepth: 1
     :glob:
 
-    signature_applications-master/human_action_recognition/jhmdb_demo
+    signature_applications/human_action_recognition/jhmdb_demo
 
 
 

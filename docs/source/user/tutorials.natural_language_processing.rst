@@ -8,7 +8,7 @@ Path Signatures for Natural Language Processing
     :maxdepth: 1
     :glob:
 
-    signature_applications-master/natural_language_processing/nlp_demo.ipynb
+    signature_applications/natural_language_processing/nlp_demo.ipynb
 
 
 

@@ -8,7 +8,7 @@ Path Signatures for Handwritten Digit Classification Using Esig
     :maxdepth: 1
     :glob:
 
-    signature_applications-master/mnist_classification/handwritten_digit_classification.ipynb
+    signature_applications/mnist_classification/handwritten_digit_classification.ipynb
 
 
 

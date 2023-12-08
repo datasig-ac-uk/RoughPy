@@ -8,7 +8,7 @@ Path Signatures for Drone Identification using Esig
     :maxdepth: 1
     :glob:
 
-    signature_applications-master/drone_identification/drone_identification.ipynb
+    signature_applications/drone_identification/drone_identification.ipynb
 
 
 
