@@ -9,4 +9,4 @@
 
 RPY_SERIAL_REGISTER_CLASS(rpy::streams::ValueChannel)
 
-RPY_SERIAL_DYNAMIC_INIT(value_channel)
+// RPY_SERIAL_DYNAMIC_INIT(value_channel)

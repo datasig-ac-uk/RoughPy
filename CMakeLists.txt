@@ -329,7 +329,6 @@ add_subdirectory(external/libalgebra_lite)
 
 add_subdirectory(core)
 add_subdirectory(platform)
-add_subdirectory(device)
 add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)

@@ -29,7 +29,7 @@
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_VIEW_H_
 
 #include "scalars_fwd.h"
-#include <roughpy/device/memory_view.h>
+#include <roughpy/platform/devices/memory_view.h>
 
 
 namespace rpy { namespace scalars {

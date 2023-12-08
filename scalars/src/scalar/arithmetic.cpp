@@ -35,7 +35,7 @@
 #include "do_macro.h"
 
 #include <roughpy/core/alloc.h>
-#include <roughpy/device/host_device.h>
+#include <roughpy/platform/devices/host_device.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_types.h>
 #include <roughpy/scalars/scalar_type.h>

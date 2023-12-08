@@ -36,8 +36,8 @@
 
 #include "scalar/raw_bytes.h"
 
-#include <roughpy/device/buffer.h>
-#include <roughpy/device/host_device.h>
+#include <roughpy/platform/devices/buffer.h>
+#include <roughpy/platform/devices/host_device.h>
 
 #include <cereal/types/vector.hpp>
 
@@ -432,7 +432,7 @@ ScalarArray ScalarArray::operator[](SliceIndex index) const
     RPY_UNREACHABLE_RETURN({});
 }
 
-inline void ScalarArray::check_for_ptr_access(bool mut) const
+void ScalarArray::check_for_ptr_access(bool mut) const
 {
     RPY_CHECK(!p_type_and_mode.is_pointer() || p_type_and_mode->is_cpu());
 

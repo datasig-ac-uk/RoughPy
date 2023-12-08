@@ -28,7 +28,7 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPES_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPES_H_
 
-#include <roughpy/device/types.h>
+#include <roughpy/platform/devices/types.h>
 #include <roughpy/platform/serialization.h>
 
 namespace rpy {

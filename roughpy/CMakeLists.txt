@@ -150,23 +150,35 @@ target_include_directories(RoughPy_PyModule PRIVATE
 target_link_libraries(RoughPy_PyModule PRIVATE
         pybind11::headers
         Boost::boost
-        #        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy::Streams>
-        #        recombine::recombine
-        )
-
-target_link_components(RoughPy_PyModule PRIVATE
         RoughPy::Core
         RoughPy::Platform
         RoughPy::Scalars
         RoughPy::Intervals
         RoughPy::Algebra
         RoughPy::Streams
+        #        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy::Streams>
+        #        recombine::recombine
         )
+
+
+target_precompile_headers(RoughPy_PyModule PRIVATE
+        <pybind11/pybind11.h>
+        <pybind11/functional.h>
+        <pybind11/stl.h>
+)
+
+set(RPY_TARGETS RoughPy::Platform
+        RoughPy::Scalars
+        RoughPy::Algebra
+        RoughPy::Intervals
+        RoughPy::Streams)
+
 
 if (ROUGHPY_LINK_NUMPY)
     target_link_libraries(RoughPy_PyModule PRIVATE Python::NumPy)
     target_compile_definitions(RoughPy_PyModule PRIVATE
             ROUGHPY_WITH_NUMPY)
+    target_precompile_headers(RoughPy_PyModule PRIVATE <pybind11/numpy.h>)
 endif ()
 
 

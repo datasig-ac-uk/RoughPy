@@ -61,6 +61,6 @@ RPY_SERIAL_SPECIALIZE_TYPES(
         rpy::streams::LieChannel, rpy::serial::specialization::member_serialize
 )
 
-RPY_SERIAL_FORCE_DYNAMIC_INIT(lie_channel)
+// RPY_SERIAL_FORCE_DYNAMIC_INIT(lie_channel)
 
 #endif// ROUGHPY_STREAMS_LIE_CHANNEL_H

@@ -15,4 +15,4 @@
 RPY_SERIAL_REGISTER_CLASS(rpy::streams::LieChannel)
 
 
-RPY_SERIAL_DYNAMIC_INIT(lie_channel)
+// RPY_SERIAL_DYNAMIC_INIT(lie_channel)

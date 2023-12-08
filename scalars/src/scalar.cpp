@@ -32,7 +32,7 @@
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/traits.h>
 
-#include <roughpy/device/types.h>
+#include <roughpy/platform/devices/types.h>
 #include "scalar/arithmetic.h"
 #include "scalar/casts.h"
 #include "scalar/comparison.h"

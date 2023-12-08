@@ -61,6 +61,6 @@ RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::IncrementChannel,
                             rpy::serial::specialization::member_serialize)
 
 
-RPY_SERIAL_FORCE_DYNAMIC_INIT(increment_channel)
+// RPY_SERIAL_FORCE_DYNAMIC_INIT(increment_channel)
 
 #endif// ROUGHPY_STREAMS_INCREMENT_CHANNEL_H

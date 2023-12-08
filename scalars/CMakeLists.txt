@@ -76,10 +76,10 @@ add_roughpy_component(Scalars
         NEEDS
             RoughPy::Core
             RoughPy::Platform
-            RoughPy::Device
 )
 
-target_precompile_headers(RoughPy_Scalars PUBLIC
+target_precompile_headers(RoughPy_Scalars PRIVATE
+        include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/scalar_types.h
 )
 

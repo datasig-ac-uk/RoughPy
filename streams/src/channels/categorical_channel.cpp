@@ -109,4 +109,4 @@ StreamChannel& CategoricalChannel::insert_variant(string variant_label)
 RPY_SERIAL_REGISTER_CLASS(rpy::streams::CategoricalChannel)
 
 
-RPY_SERIAL_DYNAMIC_INIT(categorical_channel)
+// RPY_SERIAL_DYNAMIC_INIT(categorical_channel)

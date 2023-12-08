@@ -103,7 +103,9 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 //}
 //
 #endif
-RPY_SERIAL_REGISTER_CLASS(rpy::streams::LieIncrementStream)
+
+// RPY_SERIAL_FORCE_DYNAMIC_INIT(lie_increment_stream)
+
 RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::LieIncrementStream,
                             rpy::serial::specialization::member_serialize)
 

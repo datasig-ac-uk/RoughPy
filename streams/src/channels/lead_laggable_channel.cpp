@@ -54,4 +54,4 @@ bool LeadLaggableChannel::is_lead_lag() const
 
 RPY_SERIAL_REGISTER_CLASS(rpy::streams::LeadLaggableChannel)
 
-RPY_SERIAL_DYNAMIC_INIT(lead_laggable_channel)
+// RPY_SERIAL_DYNAMIC_INIT(lead_laggable_channel)

@@ -6,7 +6,7 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
-#include <roughpy/device/host_device.h>
+#include <roughpy/platform/devices/host_device.h>
 
 #include "scalar_array.h"
 #include "scalar.h"
