@@ -22,7 +22,11 @@ extensions = [
     "nbsphinx",
     'myst_parser',
     'IPython.sphinxext.ipython_console_highlighting',
+    'sphinxcontrib.bibtex',
+    "sphinxcontrib.video",
 ]
+
+bibtex_bibfiles = ['references.bib']
 
 source_suffix = {
     '.rst': 'restructuredtext',
@@ -45,4 +49,4 @@ html_static_path = []
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 # Display todos by setting to True
-todo_include_todos = False
+todo_include_todos = True
