@@ -8,7 +8,7 @@ Path Signatures for Early Sepsis Detection
     :maxdepth: 1
     :glob:
 
-    signature_applications-master/sepsis_detection/sepsis_detection.ipynb
+    signature_applications/sepsis_detection/sepsis_detection.ipynb
 
 
 
