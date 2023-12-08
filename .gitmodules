@@ -12,3 +12,6 @@
 	url = https://github.com/terrylyons/libalgebra
 	branch = develop
 	update = merge
+[submodule "docs/source/user/signature_applications"]
+	path = docs/source/user/signature_applications
+	url = https://github.com/datasig-ac-uk/signature_applications.git
