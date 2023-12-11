@@ -118,7 +118,8 @@ target_precompile_headers(RoughPy_Platform PUBLIC
         <cereal/archives/xml.hpp>
 )
 
-target_precompile_headers(RoughPy_Platform PRIVATE
+target_precompile_headers(RoughPy_Platform PUBLIC
+        <libalgebra_lite/coefficients.h>
         <libalgebra_lite/polynomial.h>
 )
 
