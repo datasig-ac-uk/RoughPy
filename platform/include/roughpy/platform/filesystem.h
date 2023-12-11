@@ -29,6 +29,7 @@
 #define ROUGHPY_PLATFORM_FILESYSTEM_H_
 
 #include "available_libraries.h"
+#include "serialization.h"
 
 
 #if defined(RPY_HAS_STD_FILESYSTEM) && RPY_HAS_STD_FILESYSTEM
@@ -45,6 +46,27 @@ using namespace std::filesystem;
 #else
 using namespace boost::filesystem;
 #endif
+
+
+template <typename Archive>
+void save(
+    Archive &archive,
+    const path &value,
+    const std::uint32_t RPY_UNUSED_VAR version
+) {
+    RPY_SERIAL_SERIALIZE_NVP("path", value.string());
+}
+
+template <typename Archive>
+void load(
+    Archive &archive,
+    path &value,
+    const std::uint32_t RPY_UNUSED_VAR version
+) {
+    std::string tmp;
+    RPY_SERIAL_SERIALIZE_NVP("path", tmp);
+    value = path(tmp);
+}
 }// namespace fs
 }// namespace rpy
 
