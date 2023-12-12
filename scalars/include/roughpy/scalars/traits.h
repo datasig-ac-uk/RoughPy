@@ -28,7 +28,7 @@
 #ifndef ROUGHPY_SCALARS_TRAITS_H_
 #define ROUGHPY_SCALARS_TRAITS_H_
 
-#include <roughpy/device/core.h>
+#include <roughpy/platform/devices/core.h>
 #include <roughpy/core/helpers.h>
 
 namespace rpy {

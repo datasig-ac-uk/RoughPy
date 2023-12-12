@@ -38,7 +38,7 @@
 namespace rpy {
 namespace streams {
 
-class DataIncrement
+class ROUGHPY_STREAMS_EXPORT DataIncrement
 {
     using Lie = algebra::Lie;
     using DyadicInterval = intervals::DyadicInterval;
@@ -89,7 +89,7 @@ public:
     }
 };
 
-class DynamicallyConstructedStream : public StreamInterface
+class ROUGHPY_STREAMS_EXPORT DynamicallyConstructedStream : public StreamInterface
 {
 public:
     using DyadicInterval = intervals::DyadicInterval;

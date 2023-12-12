@@ -86,17 +86,17 @@ struct BasicContextSpec {
     deg_t depth;
 };
 
-RPY_NO_DISCARD RPY_EXPORT BasicContextSpec
+RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT BasicContextSpec
 get_context_spec(const context_pointer& ctx);
 
-RPY_NO_DISCARD RPY_EXPORT context_pointer
+RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT context_pointer
 from_context_spec(const BasicContextSpec& spec);
 
-RPY_NO_DISCARD RPY_EXPORT std::vector<byte> alg_to_raw_bytes(
+RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT std::vector<byte> alg_to_raw_bytes(
         context_pointer ctx, AlgebraType atype, RawUnspecifiedAlgebraType alg
 );
 
-RPY_NO_DISCARD RPY_EXPORT UnspecifiedAlgebraType alg_from_raw_bytes(
+RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT UnspecifiedAlgebraType alg_from_raw_bytes(
         context_pointer ctx, AlgebraType atype, Slice<byte> raw_data
 );
 

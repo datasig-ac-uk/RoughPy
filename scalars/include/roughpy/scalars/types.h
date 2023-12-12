@@ -83,7 +83,7 @@ using rational_poly_scalar = lal::polynomial<lal::rational_field>;
 namespace dtl {
 #define ROUGHPY_MAKE_TYPE_ID_OF(TYPE, NAME)                                    \
     template <>                                                                \
-    struct RPY_EXPORT type_id_of_impl<TYPE> {                                  \
+    struct ROUGHPY_SCALARS_EXPORT type_id_of_impl<TYPE> {                                  \
         static const string& get_id() noexcept;                                \
     }
 
@@ -103,22 +103,22 @@ ROUGHPY_MAKE_TYPE_ID_OF(rational_poly_scalar, "RationalPoly");
 
 
 template <>
-struct RPY_EXPORT scalar_type_holder<rational_scalar_type> {
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_scalar_type> {
     static const ScalarType* get_type() noexcept;
 };
 
 template <>
-struct RPY_EXPORT scalar_type_holder<rational_poly_scalar> {
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<rational_poly_scalar> {
     static const ScalarType* get_type() noexcept;
 };
 
 template <>
-struct RPY_EXPORT scalar_type_holder<half> {
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<half> {
     static const ScalarType* get_type() noexcept;
 };
 
 template <>
-struct RPY_EXPORT scalar_type_holder<bfloat16> {
+struct ROUGHPY_SCALARS_EXPORT scalar_type_holder<bfloat16> {
     static const ScalarType* get_type() noexcept;
 };
 

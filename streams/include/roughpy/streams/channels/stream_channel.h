@@ -40,6 +40,8 @@
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar_type.h>
 
+#include "roughpy_streams_export.h"
+
 namespace rpy {
 namespace streams {
 
@@ -62,7 +64,7 @@ enum struct ChannelType : uint8_t
  * typically accessed via a schema, which maintains the collection of
  * all channels associated with a stream.
  */
-class RPY_EXPORT StreamChannel
+class ROUGHPY_STREAMS_EXPORT StreamChannel
 {
     ChannelType m_type;
     const scalars::ScalarType* p_scalar_type = nullptr;

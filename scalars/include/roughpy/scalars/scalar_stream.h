@@ -36,7 +36,7 @@
 
 namespace rpy { namespace scalars {
 
-class RPY_EXPORT ScalarStream {
+class ROUGHPY_SCALARS_EXPORT ScalarStream {
 protected:
     std::vector<ScalarArray> m_stream;
     const ScalarType* p_type;

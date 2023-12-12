@@ -69,7 +69,7 @@ struct VectorConstructionData {
     VectorType vector_type = VectorType::Sparse;
 };
 
-class RPY_EXPORT ContextBase : public boost::intrusive_ref_counter<ContextBase>
+class ROUGHPY_ALGEBRA_EXPORT ContextBase : public boost::intrusive_ref_counter<ContextBase>
 {
     deg_t m_width;
     deg_t m_depth;
@@ -93,7 +93,7 @@ public:
     RPY_NO_DISCARD dimn_t tensor_size(deg_t deg) const noexcept;
 };
 
-class RPY_EXPORT Context : public ContextBase
+class ROUGHPY_ALGEBRA_EXPORT Context : public ContextBase
 {
     const scalars::ScalarType* p_ctype;
     string m_ctx_backend;
@@ -229,9 +229,9 @@ public:
 
 };
 
-RPY_EXPORT base_context_pointer get_base_context(deg_t width, deg_t depth);
+ROUGHPY_ALGEBRA_EXPORT base_context_pointer get_base_context(deg_t width, deg_t depth);
 
-RPY_EXPORT context_pointer get_context(
+ROUGHPY_ALGEBRA_EXPORT context_pointer get_context(
         deg_t width, deg_t depth, const scalars::ScalarType* ctype,
         const std::vector<std::pair<string, string>>& preferences = {}
 );
@@ -259,7 +259,7 @@ inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2)
     // TODO: Alternatively, check that ctype1 is convertible to ctype2
 }
 
-class RPY_EXPORT ContextMaker
+class ROUGHPY_ALGEBRA_EXPORT ContextMaker
 {
 public:
     using preference_list = std::vector<std::pair<string, string>>;
@@ -276,7 +276,7 @@ public:
     get_base_context(deg_t width, deg_t depth) const = 0;
 };
 
-RPY_EXPORT const ContextMaker*
+ROUGHPY_ALGEBRA_EXPORT const ContextMaker*
 register_context_maker(std::unique_ptr<ContextMaker> maker);
 
 template <typename Maker>

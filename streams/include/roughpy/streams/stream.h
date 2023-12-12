@@ -40,7 +40,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT Stream
+class ROUGHPY_STREAMS_EXPORT Stream
 {
 public:
     using FreeTensor = algebra::FreeTensor;

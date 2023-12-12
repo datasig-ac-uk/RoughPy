@@ -72,7 +72,7 @@ namespace streams {
  * data, this is a 1-1 mapping. However, categorical values must be expanded
  * and other types of data might occupy multiple stream dimensions.
  */
-class RPY_EXPORT StreamSchema
+class ROUGHPY_STREAMS_EXPORT StreamSchema
     : private std::vector<pair<string, std::shared_ptr<StreamChannel>>>
 {
     using base_type = std::vector<pair<string, std::shared_ptr<StreamChannel>>>;

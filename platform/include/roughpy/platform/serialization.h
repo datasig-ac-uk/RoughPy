@@ -60,7 +60,7 @@ class XMLOutputArchive;
 
 #include <roughpy/core/slice.h>
 
-#include "filesystem.h"
+//#include "filesystem.h"
 
 /*
  * For flexibility, and possibly later swapping out framework,
@@ -355,30 +355,6 @@ load(Archive& archive, Slice<T>& data)
     for (dimn_t i = 0; i < data.size(); ++i) { archive(ptr[i]); }
 }
 
-namespace fs {
-template <typename Archive>
-void save(
-        Archive& archive,
-        const path& value,
-        const std::uint32_t RPY_UNUSED_VAR version
-)
-{
-    RPY_SERIAL_SERIALIZE_NVP("path", value.string());
-}
-
-template <typename Archive>
-void load(
-        Archive& archive,
-        path& value,
-        const std::uint32_t RPY_UNUSED_VAR version
-)
-{
-    std::string tmp;
-    RPY_SERIAL_SERIALIZE_NVP("path", tmp);
-    value = path(tmp);
-}
-
-}// namespace fs
 #  endif
 
 }// namespace rpy

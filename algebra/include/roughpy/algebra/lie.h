@@ -47,7 +47,7 @@ namespace algebra {
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         AlgebraBase<LieInterface>;
 
-class RPY_EXPORT Lie : public AlgebraBase<LieInterface>
+class ROUGHPY_ALGEBRA_EXPORT Lie : public AlgebraBase<LieInterface>
 {
     using base_t = AlgebraBase<LieInterface>;
 
@@ -66,7 +66,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(Lie) { RPY_SERIAL_SERIALIZE_BASE(base_t); }
 
 
 template <>
-RPY_EXPORT typename Lie::basis_type
+ROUGHPY_ALGEBRA_EXPORT typename Lie::basis_type
 basis_setup_helper<Lie>::get(const context_pointer& ctx);
 
 

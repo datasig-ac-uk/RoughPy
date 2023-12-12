@@ -98,6 +98,10 @@
 #    endif
 #  endif
 
+#if defined(RPY_SERIAL_DO_REGISTER)
+RPY_SERIAL_REGISTER_CLASS(RPY_SERIAL_IMPL_CLASSNAME)
+#endif
+
 #  if defined(RPY_SERIAL_DO_SPLIT)
 ADD_SAVE(::cereal::BinaryOutputArchive);
 ADD_LOAD(::cereal::BinaryInputArchive);

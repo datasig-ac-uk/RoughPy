@@ -405,7 +405,7 @@ function(add_roughpy_component _name)
     if (ARG_INTERFACE)
         set(_lib_type INTERFACE)
     else ()
-        set(_lib_type STATIC)
+        set(_lib_type SHARED)
     endif ()
 
     _parse_dependencies(_private_deps _interface_deps "${ARG_DEPENDENCIES}")
@@ -485,7 +485,7 @@ function(add_roughpy_component _name)
             endif ()
         endforeach ()
 
-        target_compile_definitions(${_real_name} PRIVATE RPY_BUILDING_LIBRARY=1)
+        #target_compile_definitions(${_real_name} PRIVATE RPY_BUILDING_LIBRARY=1)
 
 
     else ()
@@ -546,6 +546,9 @@ function(add_roughpy_component _name)
     if (_lib_type STREQUAL STATIC OR _lib_type STREQUAL OBJECT)
         set_target_properties(${_real_name} PROPERTIES
                 POSITION_INDEPENDENT_CODE ON)
+    elseif (_lib_type STREQUAL SHARED)
+        generate_export_header(${_real_name})
+        set_target_properties(${_real_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
     endif ()
 
     target_link_components(${_real_name} ${_public} ${ARG_NEEDS})
