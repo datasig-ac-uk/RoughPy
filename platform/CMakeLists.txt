@@ -54,6 +54,7 @@ add_roughpy_component(Platform
         src/devices/device_provider.cpp
         src/devices/event.cpp
         src/devices/event_interface.cpp
+        src/devices/rational_numbers.cpp
         src/devices/get_device.cpp
         src/devices/kernel.cpp
         src/devices/kernel_arg.cpp
@@ -90,6 +91,7 @@ add_roughpy_component(Platform
             cereal::cereal
         Eigen3::Eigen
         Libalgebra_lite::Libalgebra_lite
+        GMP::GMP
         PRIVATE
         OpenCL::OpenCL
     CONFIGURE
@@ -119,6 +121,7 @@ target_precompile_headers(RoughPy_Platform PUBLIC
 )
 
 target_precompile_headers(RoughPy_Platform PUBLIC
+        <boost/multiprecision/gmp.hpp>
         <libalgebra_lite/coefficients.h>
         <libalgebra_lite/polynomial.h>
 )

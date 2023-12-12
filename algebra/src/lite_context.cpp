@@ -50,8 +50,8 @@ static std::unordered_map<
 
 static std::array<const scalars::ScalarType*, 4> s_lite_context_allowed_ctypes
         = {*scalars::ScalarType::of<double>(), *scalars::ScalarType::of<float>(),
-           *scalars::ScalarType::of<typename lal::rational_field::scalar_type>(),
-           *scalars::ScalarType::of<typename lal::polynomial_ring::scalar_type>(
+           *scalars::ScalarType::of<typename rational_field::scalar_type>(),
+           *scalars::ScalarType::of<typename rational_poly_ring::scalar_type>(
            )};
 
 static optional<std::ptrdiff_t> index_of_ctype(const scalars::ScalarType* ctype
@@ -99,8 +99,8 @@ context_pointer LiteContextMaker::create_context(
     switch (*idx) {
         case 0: return new LiteContext<lal::double_field>(width, depth);
         case 1: return new LiteContext<lal::float_field>(width, depth);
-        case 2: return new LiteContext<lal::rational_field>(width, depth);
-        case 3: return new LiteContext<lal::polynomial_ring>(width, depth);
+        case 2: return new LiteContext<rational_field>(width, depth);
+        case 3: return new LiteContext<rational_poly_ring>(width, depth);
     }
 
     RPY_UNREACHABLE();

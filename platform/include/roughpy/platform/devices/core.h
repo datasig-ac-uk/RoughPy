@@ -37,8 +37,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/uuid/uuid.hpp>
 
-#include <libalgebra_lite/polynomial.h>
-
+#include "rational_numbers.h"
 #include "roughpy_platform_export.h"
 
 /*
@@ -46,7 +45,7 @@
  * we really don't want to include the whole Eigen/Core header until we
  * absolutely have to. To avoid this, we pre-declare the two types that we need
  * in the Eigen namespace, so we can typedef them in the our own namespace and
- * set up all the machinary that we need. Then, we can import the actual
+ * set up all the machinery that we need. Then, we can import the actual
  * definitions only when we need to.
  */
 namespace Eigen {
@@ -69,9 +68,9 @@ using Eigen::half;
 /// BFloat16 (truncated) floating point type
 using Eigen::bfloat16;
 /// Rational scalar type
-using rational_scalar_type = lal::rational_field::scalar_type;
+//using rational_scalar_type = lal::rational_field::scalar_type;
 /// Polynomial (with rational coefficients) scalar type
-using rational_poly_scalar = lal::rational_poly;
+//using rational_poly_scalar = lal::rational_poly;
 
 enum class DeviceCategory : int32_t
 {
