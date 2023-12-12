@@ -11,7 +11,10 @@ RoughPy has no independent time steps. We can use intelligent caching so that we
 
 RoughPy's major components are an algebra library for Lie algebras, free tensors, shuffle tensors, intervals and a library for working with streaming data. We can work with data of many file formats, such as sound files and .csvs.
 
-.. video:: _static/terry.mp4
+.. video:: ../_static/terry.mp4
+    :width: 700
+    :autoplay:
+    :muted:
 
 .. bibliography::
 
