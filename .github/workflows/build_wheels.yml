@@ -2,26 +2,28 @@ name: Build Wheels
 
 on:
   push:
-    branches: [ "main" ]
-    paths-ignore:
-      - "examples/**"
-      - "doc/**"
-      - "README.md"
-      - "*.txt"
-      - "CHANGELOG"
-  pull_request:
-    branches: [ "main" ]
-    types:
-      - opened
-      - reopened
-      - synchronize
-    paths-ignore:
-      - "examples/**"
-      - "doc/**"
-      - "README.md"
-      - "*.txt"
-      - "CHANGELOG"
-
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+#    branches: [ "main" ]
+#    paths-ignore:
+#      - "examples/**"
+#      - "doc/**"
+#      - "README.md"
+#      - "*.txt"
+#      - "CHANGELOG"
+#  pull_request:
+#    branches: [ "main" ]
+#    types:
+#      - opened
+#      - reopened
+#      - synchronize
+#    paths-ignore:
+#      - "examples/**"
+#      - "doc/**"
+#      - "README.md"
+#      - "*.txt"
+#      - "CHANGELOG"
+#
 env:
   BUILD_TYPE: Release
   VERBOSE: 1
