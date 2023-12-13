@@ -228,18 +228,10 @@ void buffer_to_stream(
         py::ssize_t tmp_strides[2]{};
         dimn_t tmp_shape[2]{};
         tmp_strides[buf_info.ndim - 1] = buf_info.itemsize;
-        bool transposed
-                = buf_info.ndim == 2 && buf_info.shape[0] < buf_info.shape[1];
         if (buf_info.ndim == 2) {
-            if (transposed) {
-                tmp_strides[0] = buf_info.shape[1];
-                tmp_shape[0] = buf_info.shape[1];
-                tmp_shape[1] = buf_info.shape[0];
-            } else {
-                tmp_strides[0] = buf_info.shape[0];
-                tmp_shape[0] = buf_info.shape[0];
-                tmp_shape[1] = buf_info.shape[1];
-            }
+            tmp_strides[0] = buf_info.shape[0];
+            tmp_shape[0] = buf_info.shape[0];
+            tmp_shape[1] = buf_info.shape[1];
         }
 
         stride_copy(
@@ -250,7 +242,7 @@ void buffer_to_stream(
                 buf_info.shape.data(),
                 buf_info.strides.data(),
                 tmp_strides,
-                transposed
+                false
         );
 
         // Now that we're C-contiguous, convert_copy into the result.
@@ -362,17 +354,12 @@ void dl_to_stream(
         py::ssize_t in_shape[2]{};
         dimn_t out_shape[2]{};
         out_strides[tensor.ndim - 1] = itemsize;
-        bool transposed = tensor.ndim == 2 && tensor.shape[0] < tensor.shape[1];
 
         in_shape[0] = tensor.shape[0];
         if (tensor.ndim == 2) {
-            if (transposed) {
-                out_shape[0] = tensor.shape[1];
-                out_shape[1] = tensor.shape[0];
-            } else {
-                out_shape[0] = tensor.shape[0];
-                out_shape[1] = tensor.shape[1];
-            }
+
+            out_shape[0] = tensor.shape[0];
+            out_shape[1] = tensor.shape[1];
             out_strides[0] = out_shape[1] * itemsize;
 
             if (tensor.strides != nullptr) {
@@ -394,7 +381,7 @@ void dl_to_stream(
                 in_shape,
                 in_strides,
                 out_strides,
-                transposed
+                false
         );
 
         // Now that we're C-contiguous, convert_copy into the result.
