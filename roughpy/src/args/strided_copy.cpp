@@ -46,17 +46,21 @@ void rpy::python::stride_copy(
     const auto* sptr = static_cast<const char*>(src);
 
     if (ndim == 1) {
-        for (py::ssize_t i=0; i<shape_in[0]; ++i) {
-            std::memcpy(dptr + i*strides_out[0],
-                        sptr + i*strides_in[0],
-                        itemsize);
+        if (strides_in[0] == itemsize) {
+            std::memcpy(dptr, sptr, shape_in[0] * itemsize);
+        } else {
+            for (py::ssize_t i = 0; i < shape_in[0]; ++i) {
+                std::memcpy(dptr + i * strides_out[0],
+                            sptr + i * strides_in[0],
+                            itemsize);
+            }
         }
     } else if (transpose) {
-         for (py::ssize_t i=0; i<shape_in[0]; ++i) {
-            for (py::ssize_t j=0; j<shape_in[1]; ++j) {
+        for (py::ssize_t i = 0; i < shape_in[1]; ++i) {
+            for (py::ssize_t j = 0; j < shape_in[0]; ++j) {
                 std::memcpy(
                         dptr + j*strides_out[0] + i*strides_out[1],
-                        sptr + i*strides_in[0] + j*strides_in[1],
+                        sptr + i * strides_in[1] + j * strides_in[0],
                         itemsize
                         );
             }
