@@ -29,7 +29,7 @@ cmake_dependent_option(ROUGHPY_PREFER_ACCELERATE
 option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
 
 if (ROUGHPY_BUILD_TESTS)
-    set(VCPKG_MANIFEST_FEATURES "tests")
+    set(VCPKG_MANIFEST_FEATURES "tests" CACHE INTERNAL "")
 endif ()
 
 project(RoughPy VERSION ${_rpy_version})
