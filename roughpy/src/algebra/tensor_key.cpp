@@ -28,6 +28,7 @@
 #include "tensor_key.h"
 #include <roughpy/algebra/context.h>
 #include <roughpy/scalars/scalar_types.h>
+#include <pybind11/operators.h>
 
 #include <algorithm>
 #include <sstream>
@@ -197,6 +198,24 @@ construct_key(const py::args& args, const py::kwargs& kwargs)
     return python::PyTensorKey(ctx->get_tensor_basis(), result);
 }
 
+python::PyTensorKey python::operator*(
+        const python::PyTensorKey& lhs,
+        const python::PyTensorKey& rhs
+)
+{
+    const auto basis = lhs.basis();
+    RPY_CHECK(basis == rhs.basis());
+    const auto left_letters = lhs.to_letters();
+    const auto right_letters = rhs.to_letters();
+
+    std::vector<let_t> letters;
+    letters.reserve(left_letters.size() + right_letters.size());
+    auto it = letters.insert(letters.end(), left_letters.begin(), left_letters.end());
+    letters.insert(it, right_letters.begin(), right_letters.end());
+
+    return {basis, letters};
+}
+
 void python::init_py_tensor_key(py::module_& m)
 {
     py::class_<PyTensorKey> klass(m, "TensorKey");
@@ -216,6 +235,8 @@ void python::init_py_tensor_key(py::module_& m)
 
     klass.def("__str__", &PyTensorKey::to_string);
     klass.def("__repr__", &PyTensorKey::to_string);
-
     klass.def("__eq__", &PyTensorKey::equals);
+
+
+    klass.def(py::self * py::self);
 }

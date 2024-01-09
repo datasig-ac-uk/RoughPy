@@ -66,24 +66,33 @@ public:
 
     explicit operator key_type() const noexcept;
 
-    string to_string() const;
-    PyTensorKey lparent() const;
-    PyTensorKey rparent() const;
-    bool is_letter() const;
+    RPY_NO_DISCARD string to_string() const;
+    RPY_NO_DISCARD PyTensorKey lparent() const;
+    RPY_NO_DISCARD PyTensorKey rparent() const;
+    RPY_NO_DISCARD bool is_letter() const;
 
-    deg_t width() const;
-    deg_t depth() const;
-    algebra::TensorBasis basis() const { return m_basis; }
-    pair<PyTensorKey, PyTensorKey> split_n(deg_t n) const;
+    RPY_NO_DISCARD deg_t width() const;
+    RPY_NO_DISCARD deg_t depth() const;
+    RPY_NO_DISCARD algebra::TensorBasis basis() const { return m_basis; }
+    RPY_NO_DISCARD pair<PyTensorKey, PyTensorKey> split_n(deg_t n) const;
 
-    deg_t degree() const;
-    std::vector<let_t> to_letters() const;
+    RPY_NO_DISCARD deg_t degree() const;
+    RPY_NO_DISCARD std::vector<let_t> to_letters() const;
 
-    PyTensorKey reverse() const;
+    RPY_NO_DISCARD PyTensorKey reverse() const;
 
+    RPY_NO_DISCARD
     bool equals(const PyTensorKey& other) const noexcept;
+    RPY_NO_DISCARD
     bool less(const PyTensorKey& other) const noexcept;
+
+
+
+
+
 };
+
+RPY_NO_DISCARD PyTensorKey operator*(const PyTensorKey& lhs, const PyTensorKey& rhs);
 
 void init_py_tensor_key(py::module_& m);
 
