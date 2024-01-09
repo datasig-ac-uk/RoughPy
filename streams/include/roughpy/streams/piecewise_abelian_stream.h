@@ -39,7 +39,7 @@
 namespace rpy {
 namespace streams {
 
-class PiecewiseAbelianStream : public StreamInterface
+class ROUGHPY_STREAMS_EXPORT PiecewiseAbelianStream : public StreamInterface
 {
 public:
     using LiePiece = std::pair<intervals::RealInterval, algebra::Lie>;

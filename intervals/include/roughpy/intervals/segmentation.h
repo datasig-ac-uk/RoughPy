@@ -35,13 +35,15 @@
 #include <functional>
 #include <vector>
 
+#include "roughpy_intervals_export.h"
+
 namespace rpy {
 namespace intervals {
 
 using predicate_t = std::function<bool(const Interval&)>;
 
 RPY_NO_DISCARD
-RPY_EXPORT
+ROUGHPY_INTERVALS_EXPORT
 std::vector<RealInterval> segment(const Interval& interval,
                                   predicate_t predicate,
                                   dyadic_depth_t max_depth);

@@ -34,10 +34,12 @@
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
 
+#include "roughpy_streams_export.h"
+
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT Parameterization
+class ROUGHPY_STREAMS_EXPORT Parameterization
 {
     param_t m_param_offset = 0.0;
     param_t m_param_scaling = 1.0;

@@ -52,7 +52,7 @@ RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
 
 
 
-class RPY_EXPORT FreeTensor
+class ROUGHPY_ALGEBRA_EXPORT FreeTensor
     : public AlgebraBase<FreeTensorInterface, FreeTensorImplementation>
 {
     using base_t = AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
@@ -77,7 +77,7 @@ RPY_SERIAL_EXTERN_SERIALIZE_CLS(FreeTensor)
 RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensor) { RPY_SERIAL_SERIALIZE_BASE(base_t); }
 
 template <>
-RPY_EXPORT typename FreeTensor::basis_type
+ROUGHPY_ALGEBRA_EXPORT typename FreeTensor::basis_type
 basis_setup_helper<FreeTensor>::get(const context_pointer& ctx);
 
 

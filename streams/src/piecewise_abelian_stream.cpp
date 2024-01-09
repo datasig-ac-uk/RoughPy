@@ -188,5 +188,8 @@ algebra::Lie PiecewiseAbelianStream::log_signature_impl(
     return ctx.cbh(lies, md.cached_vector_type);
 }
 
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::PiecewiseAbelianStream
-#include <roughpy/platform/serialization_instantiations.inl>
+// #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::PiecewiseAbelianStream
+// #include <roughpy/platform/serialization_instantiations.inl>
+//
+//
+// RPY_SERIAL_REGISTER_CLASS(rpy::streams::PiecewiseAbelianStream)

@@ -37,7 +37,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT LieChannel : public StreamChannel
+class ROUGHPY_STREAMS_EXPORT LieChannel : public StreamChannel
 {
 public:
     LieChannel() : StreamChannel(ChannelType::Lie, nullptr) {}

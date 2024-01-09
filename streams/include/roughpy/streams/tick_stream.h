@@ -42,7 +42,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT TickStream : public StreamInterface
+class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface
 {
     std::vector<param_t> m_granular_times;
     std::map<intervals::DyadicInterval, algebra::Lie> m_data;

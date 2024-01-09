@@ -97,3 +97,5 @@ DynamicallyConstructedStream::Lie BrownianStream::make_neighbour_root_increment(
 #define RPY_SERIAL_DO_SPLIT
 
 #include <roughpy/platform/serialization_instantiations.inl>
+
+RPY_SERIAL_REGISTER_CLASS(rpy::streams::BrownianStream)

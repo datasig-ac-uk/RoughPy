@@ -29,7 +29,7 @@ const ScalarType* BFloat16Type::get() noexcept
 
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 scalars::dtl::ScalarTypeOfImpl<devices::bfloat16>::get() noexcept
 {
     return BFloat16Type::get();

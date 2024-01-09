@@ -38,7 +38,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT BrownianStream : public DynamicallyConstructedStream
+class ROUGHPY_STREAMS_EXPORT BrownianStream : public DynamicallyConstructedStream
 {
     std::unique_ptr<scalars::RandomGenerator> p_generator;
 
@@ -135,7 +135,4 @@ RPY_SERIAL_EXTERN_SAVE_CLS(BrownianStream)
 
 RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::BrownianStream,
                             rpy::serial::specialization::member_load_save)
-
-RPY_SERIAL_REGISTER_CLASS(rpy::streams::BrownianStream)
-
 #endif// ROUGHPY_STREAMS_BROWNIAN_STREAM_H_

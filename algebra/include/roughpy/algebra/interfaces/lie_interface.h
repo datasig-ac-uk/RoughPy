@@ -40,7 +40,7 @@ namespace algebra {
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         AlgebraInterface<Lie, LieBasis>;
 
-class RPY_EXPORT LieInterface : public AlgebraInterface<Lie, LieBasis>
+class ROUGHPY_ALGEBRA_EXPORT LieInterface : public AlgebraInterface<Lie, LieBasis>
 {
     using base_t = AlgebraInterface<Lie, LieBasis>;
 

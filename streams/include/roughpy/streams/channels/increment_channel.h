@@ -38,7 +38,7 @@ namespace rpy { namespace streams {
 
 
 
-class RPY_EXPORT IncrementChannel : public LeadLaggableChannel
+class ROUGHPY_STREAMS_EXPORT IncrementChannel : public LeadLaggableChannel
 {
 public:
 
@@ -59,7 +59,6 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(IncrementChannel) {
 
 RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::IncrementChannel,
                             rpy::serial::specialization::member_serialize)
-
 
 RPY_SERIAL_FORCE_DYNAMIC_INIT(increment_channel)
 

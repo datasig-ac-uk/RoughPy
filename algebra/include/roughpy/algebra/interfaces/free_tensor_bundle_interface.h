@@ -61,7 +61,7 @@ RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
 
 
 
-class RPY_EXPORT FreeTensorBundleInterface
+class ROUGHPY_ALGEBRA_EXPORT FreeTensorBundleInterface
     : public BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>
 {
 public:

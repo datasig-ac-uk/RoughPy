@@ -75,7 +75,7 @@ enum class ScalarContentType : uint8_t
     /// owned by the Scalar
     OwnedInterface = 6
 };
-RPY_EXPORT bool scalar_convert_copy(
+ROUGHPY_SCALARS_EXPORT bool scalar_convert_copy(
         void* dst,
         devices::TypeInfo dst_type,
         const Scalar& src
@@ -153,7 +153,7 @@ struct can_be_scalar<std::unique_ptr<T>> : std::false_type {};
  * that can be used in the rest of the library.
  *
  */
-class RPY_EXPORT Scalar
+class ROUGHPY_SCALARS_EXPORT Scalar
 {
     using interface_pointer_t = std::unique_ptr<ScalarInterface>;
     static_assert(sizeof(interface_pointer_t) == sizeof(uintptr_t), "");

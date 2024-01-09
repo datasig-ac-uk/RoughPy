@@ -43,7 +43,7 @@
 namespace rpy {
 namespace scalars {
 
-class RPY_EXPORT KeyScalarArray : public ScalarArray
+class ROUGHPY_SCALARS_EXPORT KeyScalarArray : public ScalarArray
 {
     const key_type* p_keys = nullptr;
     bool m_owns_keys = false;

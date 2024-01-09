@@ -37,7 +37,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT CategoricalChannel : public StreamChannel
+class ROUGHPY_STREAMS_EXPORT CategoricalChannel : public StreamChannel
 {
     std::vector<string> m_variants;
 

@@ -33,7 +33,7 @@
 #include "scalars_fwd.h"
 #include "scalar_type.h"
 
-#include <roughpy/device/buffer.h>
+#include <roughpy/platform/devices/buffer.h>
 #include <roughpy/platform/serialization.h>
 
 namespace rpy {
@@ -54,7 +54,7 @@ struct SliceIndex {
     dimn_t end;
 };
 
-class RPY_EXPORT ScalarArray
+class ROUGHPY_SCALARS_EXPORT ScalarArray
 {
     using discriminator_type = dtl::ScalarArrayStorageModel;
     using type_pointer = PackedScalarTypePointer<dtl::ScalarArrayStorageModel>;
@@ -70,6 +70,7 @@ class RPY_EXPORT ScalarArray
 
     dimn_t m_size = 0;
 
+    ROUGHPY_SCALARS_EXPORT
     static bool check_pointer_and_size(const void* ptr, dimn_t size);
 
 protected:

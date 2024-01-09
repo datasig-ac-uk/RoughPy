@@ -11,7 +11,7 @@ namespace rpy { namespace algebra {
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
 BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>;
 
-class RPY_EXPORT ShuffleTensorBundleInterface
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensorBundleInterface
     : public BundleInterface<ShuffleTensorBundle, ShuffleTensor, ShuffleTensor>
 {
 };
