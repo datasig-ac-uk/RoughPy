@@ -30,7 +30,7 @@
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
 
 #include "scalars_fwd.h"
-#include <roughpy/device.h>
+#include <roughpy/platform/devices.h>
 
 namespace rpy {
 namespace scalars {

@@ -35,6 +35,7 @@
 
 #include <roughpy/platform/serialization.h>
 
+#include "roughpy_intervals_export.h"
 
 namespace rpy {
 namespace intervals {
@@ -45,7 +46,7 @@ enum class IntervalType : uint32_t
     Opencl
 };
 
-class RPY_EXPORT Interval
+class ROUGHPY_INTERVALS_EXPORT Interval
 {
 protected:
     IntervalType m_interval_type = IntervalType::Clopen;
@@ -88,7 +89,7 @@ public:
 
 };
 
-RPY_EXPORT
+ROUGHPY_INTERVALS_EXPORT
 std::ostream& operator<<(std::ostream& os, const Interval& interval);
 
 

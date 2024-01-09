@@ -4,7 +4,7 @@
 #include "float_type.h"
 #include "scalars_fwd.h"
 
-#include <roughpy/device/types.h>
+#include <roughpy/platform/devices/types.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -21,7 +21,7 @@ const ScalarType* FloatType::get() noexcept
 }
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 scalars::dtl::ScalarTypeOfImpl<float>::get() noexcept
 {
     return FloatType::get();

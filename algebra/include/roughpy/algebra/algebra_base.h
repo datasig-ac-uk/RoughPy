@@ -75,8 +75,8 @@ struct with_interface {
     using type = AlgebraImplementation<IFace, Impl, StorageModel>;
 };
 
-RPY_EXPORT void print_empty_algebra(std::ostream& os);
-RPY_EXPORT const scalars::ScalarType*
+ROUGHPY_ALGEBRA_EXPORT void print_empty_algebra(std::ostream& os);
+ROUGHPY_ALGEBRA_EXPORT const scalars::ScalarType*
 context_to_scalars(const context_pointer& ptr);
 
 }// namespace dtl
@@ -331,7 +331,7 @@ UnspecifiedAlgebraType construct_dense_algebra(
         AlgebraType atype
 );
 
-RPY_EXPORT void check_contexts_compatible(
+ROUGHPY_ALGEBRA_EXPORT void check_contexts_compatible(
         const context_pointer& ref, const context_pointer& other
 );
 }// namespace dtl

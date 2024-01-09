@@ -15,7 +15,7 @@ RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
 AlgebraBundleBase<ShuffleTensorBundleInterface>;
 
 
-class RPY_EXPORT ShuffleTensorBundle
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensorBundle
     : public AlgebraBundleBase<ShuffleTensorBundleInterface>
 {
     using base_t = AlgebraBundleBase<ShuffleTensorBundleInterface>;
@@ -36,7 +36,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensorBundle)
 }
 
 template <>
-RPY_EXPORT typename ShuffleTensorBundle::basis_type
+ROUGHPY_ALGEBRA_EXPORT typename ShuffleTensorBundle::basis_type
 basis_setup_helper<ShuffleTensorBundle>::get(const context_pointer& ctx);
 
 }// namespace algebra

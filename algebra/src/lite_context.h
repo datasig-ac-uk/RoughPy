@@ -61,6 +61,7 @@
 #include "libalgebra_lite_internal/lie_basis_info.h"
 #include "libalgebra_lite_internal/lie_info.h"
 #include "libalgebra_lite_internal/lite_vector_selector.h"
+#include "libalgebra_lite_internal/rational_coefficients.h"
 #include "libalgebra_lite_internal/shuffle_tensor_info.h"
 #include "libalgebra_lite_internal/sparse_mutable_ref_scalar_trait.h"
 #include "libalgebra_lite_internal/sparse_vector_iterator.h"
@@ -972,9 +973,9 @@ extern template class LiteContext<lal::float_field>;
 
 extern template class LiteContext<lal::double_field>;
 
-extern template class LiteContext<lal::rational_field>;
+extern template class LiteContext<rational_field>;
 
-extern template class LiteContext<lal::polynomial_ring>;
+extern template class LiteContext<rational_poly_ring>;
 
 }// namespace algebra
 }// namespace rpy

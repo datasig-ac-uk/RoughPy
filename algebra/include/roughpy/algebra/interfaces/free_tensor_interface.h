@@ -42,7 +42,7 @@ namespace algebra {
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         AlgebraInterface<FreeTensor, TensorBasis>;
 
-class RPY_EXPORT FreeTensorInterface
+class ROUGHPY_ALGEBRA_EXPORT FreeTensorInterface
     : public AlgebraInterface<FreeTensor, TensorBasis>
 {
 public:

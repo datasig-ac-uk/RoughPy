@@ -217,3 +217,6 @@ RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer) {
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::DyadicCachingLayer
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>
+
+
+RPY_SERIAL_REGISTER_CLASS(rpy::streams::DyadicCachingLayer)

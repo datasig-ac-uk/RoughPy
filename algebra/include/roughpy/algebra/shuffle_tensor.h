@@ -45,7 +45,7 @@ namespace algebra {
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         AlgebraBase<ShuffleTensorInterface>;
 
-class RPY_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface>
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface>
 {
     using base_t = AlgebraBase<ShuffleTensorInterface>;
 
@@ -67,7 +67,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor)
 
 
 template <>
-RPY_EXPORT typename ShuffleTensor::basis_type
+ROUGHPY_ALGEBRA_EXPORT typename ShuffleTensor::basis_type
 basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx);
 
 

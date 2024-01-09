@@ -6,7 +6,7 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
-#include <roughpy/device/host_device.h>
+#include <roughpy/platform/devices/host_device.h>
 
 #include "scalar_array.h"
 #include "scalar.h"
@@ -83,7 +83,7 @@ const ScalarType* APRatPolyType::get() noexcept
 }
 
 template <>
-RPY_EXPORT optional<const ScalarType*>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 scalars::dtl::ScalarTypeOfImpl<rational_poly_scalar>::get() noexcept
 {
     return APRatPolyType::get();

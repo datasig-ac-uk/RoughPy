@@ -27,10 +27,10 @@ option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 cmake_dependent_option(ROUGHPY_PREFER_ACCELERATE
         "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
-
+option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
 
 if (ROUGHPY_BUILD_TESTS)
-    set(VCPKG_MANIFEST_FEATURES "tests")
+    set(VCPKG_MANIFEST_FEATURES "tests" CACHE INTERNAL "")
 endif ()
 
 project(RoughPy VERSION ${_rpy_version})
@@ -253,7 +253,9 @@ if (NOT ROUGHPY_DISABLE_BLAS)
         find_package(MKL CONFIG)
         if (TARGET MKL::MKL)
             set(RPY_USE_MKL ON CACHE INTERNAL "BLAS/LAPACK provided by mkl")
-            add_library(BLAS::BLAS ALIAS MKL::MKL)
+            add_library(BLAS::BLAS ALIAS MKL::MKL
+                    algebra/src/libalgebra_lite_internal/rational_coefficients.cpp
+                    algebra/src/libalgebra_lite_internal/rational_coefficients.h)
             add_library(LAPACK::LAPACK ALIAS MKL::MKL)
 
             if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
@@ -312,6 +314,11 @@ endif ()
 find_package(pybind11 REQUIRED)
 find_package(cereal REQUIRED)
 find_package(PCGRandom REQUIRED)
+find_package(Libalgebra_lite REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GMP REQUIRED IMPORTED_TARGET gmp)
+add_library(GMP::GMP ALIAS PkgConfig::GMP)
 
 # Now we get to adding our components. Let's do some global setup such as
 # setting the CXX standard and the shared library details.
@@ -325,17 +332,18 @@ elseif (NOT WIN32)
     set(CMAKE_INSTALL_RPATH "$ORIGIN" CACHE INTERNAL "")
 endif ()
 
-add_subdirectory(external/libalgebra_lite)
+#add_subdirectory(external/libalgebra_lite)
 
 
 add_subdirectory(core)
 add_subdirectory(platform)
-add_subdirectory(device)
 add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
-add_subdirectory(roughpy)
+if (ROUGHPY_BUILD_PYLIB)
+    add_subdirectory(roughpy)
+endif ()
 
 
 if (ROUGHPY_BUILD_LA_CONTEXTS)

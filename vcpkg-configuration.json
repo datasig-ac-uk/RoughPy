@@ -1,5 +1,20 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg-configuration.schema.json",
+  "default-registry": {
+    "kind": "git",
+    "baseline": "4f9d25a7f299db656c376af402637819ee2caba0",
+    "repository": "https://github.com/microsoft/vcpkg"
+  },
+  "registries": [
+    {
+      "kind": "filesystem",
+      "path": "tools/registry",
+      "baseline": "default",
+      "packages": [
+        "libalgebra-lite"
+      ]
+    }
+  ],
   "overlay-triplets": [
     "./tools/triplets"
   ],

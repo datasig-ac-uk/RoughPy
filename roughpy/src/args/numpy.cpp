@@ -27,7 +27,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "numpy.h"
-#include <roughpy/device/core.h>
+#include <roughpy/platform/devices/core.h>
 #include <roughpy/scalars/scalar_types.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/traits.h>

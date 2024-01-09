@@ -125,7 +125,7 @@ static int parse_sig_args(
 
 
     // First decide if we're given an interval, inf/sup pair, or global
-    if (interval_or_inf == nullptr) {
+if (interval_or_inf == nullptr || interval_or_inf == Py_None) {
         // Global, nothing to do as optional default is empty.
     } else if (Py_TYPE(interval_or_inf) == &PyFloat_Type || Py_TYPE(interval_or_inf) == &PyLong_Type) {
         if (py_sup == nullptr) {
@@ -289,6 +289,7 @@ static PyObject* signature(PyObject* self, PyObject* args, PyObject* kwargs)
 
     algebra::FreeTensor result;
     try {
+        py::gil_scoped_release gil;
         if (sigargs.interval) {
             if (sigargs.resolution) {
                 result = stream->m_data.signature(
@@ -330,25 +331,31 @@ static PyObject* log_signature(PyObject* self, PyObject* args, PyObject* kwargs)
     }
 
     algebra::Lie result;
-    if (sigargs.interval) {
-        if (sigargs.resolution) {
-            result = stream->m_data.log_signature(
+    try {
+        py::gil_scoped_release gil;
+        if (sigargs.interval) {
+            if (sigargs.resolution) {
+                result = stream->m_data.log_signature(
                     *sigargs.interval,
                     *sigargs.resolution,
                     *sigargs.ctx
-            );
-        } else {
-            result = stream->m_data.log_signature(
+                );
+            } else {
+                result = stream->m_data.log_signature(
                     *sigargs.interval,
                     *sigargs.ctx
-            );
-        }
-    } else {
-        if (sigargs.resolution) {
-            result = stream->m_data.log_signature(*sigargs.resolution, *sigargs.ctx);
+                );
+            }
         } else {
-            result = stream->m_data.log_signature(*sigargs.ctx);
+            if (sigargs.resolution) {
+                result = stream->m_data.log_signature(*sigargs.resolution, *sigargs.ctx);
+            } else {
+                result = stream->m_data.log_signature(*sigargs.ctx);
+            }
         }
+    } catch (std::exception &err) {
+        PyErr_SetString(PyExc_RuntimeError, err.what());
+        return nullptr;
     }
 
     return py::cast(result).release().ptr();

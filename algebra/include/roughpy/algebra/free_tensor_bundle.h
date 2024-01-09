@@ -15,7 +15,7 @@ RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE AlgebraBundleBase<
         FreeTensorBundleInterface,
         FreeTensorBundleImplementation>;
 
-class RPY_EXPORT FreeTensorBundle : public AlgebraBundleBase<
+class ROUGHPY_ALGEBRA_EXPORT FreeTensorBundle : public AlgebraBundleBase<
                                             FreeTensorBundleInterface,
                                             FreeTensorBundleImplementation>
 {
@@ -46,7 +46,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensorBundle)
 }
 
 template <>
-RPY_EXPORT typename FreeTensorBundle::basis_type
+ROUGHPY_ALGEBRA_EXPORT typename FreeTensorBundle::basis_type
 basis_setup_helper<FreeTensorBundle>::get(const context_pointer& ctx);
 
 

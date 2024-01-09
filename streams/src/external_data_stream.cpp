@@ -219,3 +219,8 @@ streams::Stream streams::ExternalDataStreamConstructor::construct()
     p_payload = nullptr;
     return p_factory->construct_stream(payload);
 }
+
+
+
+// #include <roughpy/platform/archives.h>
+// RPY_SERIAL_REGISTER_CLASS(rpy::streams::ExternalDataStream)

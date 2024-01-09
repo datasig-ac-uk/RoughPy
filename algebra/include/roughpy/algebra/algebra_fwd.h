@@ -32,6 +32,7 @@
 #include <roughpy/core/types.h>
 
 #include <memory>
+#include "roughpy_algebra_export.h"
 
 namespace rpy {
 namespace algebra {
