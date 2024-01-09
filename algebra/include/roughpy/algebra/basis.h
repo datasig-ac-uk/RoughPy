@@ -31,6 +31,7 @@
 
 #include "algebra_fwd.h"
 
+#include <roughpy/core/hash.h>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
@@ -212,6 +213,11 @@ public:
     friend bool operator!=(const Basis& left, const Basis& right) noexcept
     {
         return left.p_impl != right.p_impl;
+    }
+
+
+    friend hash_t hash_value(const Basis& basis) noexcept {
+        return hash_value(basis.p_impl);
     }
 
 };
