@@ -31,6 +31,7 @@
 
 #include "roughpy_module.h"
 
+#include <roughpy/core/hash.h>
 #include <roughpy/core/slice.h>
 #include <roughpy/algebra/tensor_basis.h>
 
@@ -88,7 +89,7 @@ public:
 
 
 
-
+    friend hash_t hash_value(const PyTensorKey& key) noexcept;
 
 };
 

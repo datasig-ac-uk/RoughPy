@@ -26,6 +26,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tensor_key.h"
+
 #include <roughpy/algebra/context.h>
 #include <roughpy/scalars/scalar_types.h>
 #include <pybind11/operators.h>
@@ -216,6 +217,12 @@ python::PyTensorKey python::operator*(
     return {basis, letters};
 }
 
+hash_t python::hash_value(const python::PyTensorKey& key) noexcept {
+    auto seed = hash_value(key.m_basis);
+    hash_combine(seed, key.m_key);
+    return seed;
+}
+
 void python::init_py_tensor_key(py::module_& m)
 {
     py::class_<PyTensorKey> klass(m, "TensorKey");
@@ -237,6 +244,7 @@ void python::init_py_tensor_key(py::module_& m)
     klass.def("__repr__", &PyTensorKey::to_string);
     klass.def("__eq__", &PyTensorKey::equals);
 
+    klass.def("__hash__", [](const PyTensorKey& key) { return hash_value(key); });
 
     klass.def(py::self * py::self);
 }
