@@ -123,6 +123,10 @@ void rpy::python::init_shuffle_tensor(py::module_& m)
     klass.def("__getitem__", [](const ShuffleTensor& self, key_type key) {
         return self[key];
     });
+    klass.def("__getitem__", [](const ShuffleTensor& self, const PyTensorKey& tkey) {
+             return self[static_cast<key_type>(tkey)];
+         });
+
 
     klass.def(
             "__matmul__",
