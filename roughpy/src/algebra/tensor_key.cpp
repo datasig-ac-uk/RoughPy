@@ -40,6 +40,16 @@ python::PyTensorKey::PyTensorKey(algebra::TensorBasis basis, key_type key)
     : m_key(key), m_basis(std::move(basis))
 {}
 
+python::PyTensorKey::PyTensorKey(algebra::TensorBasis basis, Slice<let_t> letters)
+    : m_key(0), m_basis(std::move(basis))
+{
+    const auto width = m_basis.width();
+    for (const auto& letter : letters) {
+        m_key *= static_cast<key_type>(width);
+        m_key += letter;
+    }
+}
+
 python::PyTensorKey::operator key_type() const noexcept { return m_key; }
 string python::PyTensorKey::to_string() const
 {
@@ -117,6 +127,12 @@ bool python::PyTensorKey::equals(const python::PyTensorKey& other
 bool python::PyTensorKey::less(const python::PyTensorKey& other) const noexcept
 {
     return m_key < other.m_key;
+}
+python::PyTensorKey python::PyTensorKey::reverse() const
+{
+    auto letters = to_letters();
+    std::reverse(letters.begin(), letters.end());
+    return {m_basis, letters};
 }
 
 static python::PyTensorKey
@@ -196,6 +212,7 @@ void python::init_py_tensor_key(py::module_& m)
         return key.to_letters().size();
     });
     klass.def("split_n", &PyTensorKey::split_n, "n"_a);
+    klass.def("reverse", &PyTensorKey::reverse);
 
     klass.def("__str__", &PyTensorKey::to_string);
     klass.def("__repr__", &PyTensorKey::to_string);

@@ -31,6 +31,7 @@
 
 #include "roughpy_module.h"
 
+#include <roughpy/core/slice.h>
 #include <roughpy/algebra/tensor_basis.h>
 
 namespace rpy {
@@ -61,6 +62,8 @@ class PyTensorKey
 public:
     explicit PyTensorKey(algebra::TensorBasis basis, key_type key);
 
+    PyTensorKey(algebra::TensorBasis basis, Slice<let_t> letters);
+
     explicit operator key_type() const noexcept;
 
     string to_string() const;
@@ -75,6 +78,8 @@ public:
 
     deg_t degree() const;
     std::vector<let_t> to_letters() const;
+
+    PyTensorKey reverse() const;
 
     bool equals(const PyTensorKey& other) const noexcept;
     bool less(const PyTensorKey& other) const noexcept;
