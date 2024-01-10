@@ -106,11 +106,111 @@ void python::init_scalars(pybind11::module_& m)
     klass.def(py::self == py::self);
     klass.def(py::self != py::self);
 
+    klass.def("__add__", [](const Scalar& self, scalar_t other) {
+        return self + Scalar(other);
+    });
+    klass.def("__add__", [](const Scalar& self, long long other) {
+        return self + Scalar(other);
+    });
+    klass.def("__radd__", [](scalar_t other, const Scalar& self) {
+        return Scalar(other) + self;
+    });
+    klass.def("__radd__", [](long long other, const Scalar& self) {
+        return Scalar(other) + self;
+    });
+    klass.def("__iadd__", [](Scalar& self, scalar_t other) {
+        return self += Scalar(other);
+    });
+    klass.def("__iadd__", [](Scalar& self, long long other) {
+        return self += Scalar(other);
+    });
+
+    klass.def("__sub__", [](const Scalar& self, scalar_t other) {
+        return self - Scalar(other);
+    });
+    klass.def("__sub__", [](const Scalar& self, long long other) {
+        return self - Scalar(other);
+    });
+    klass.def("__rsub__", [](scalar_t other, const Scalar& self) {
+        return Scalar(other) - self;
+    });
+    klass.def("__rsub__", [](long long other, const Scalar& self) {
+        return Scalar(other) - self;
+    });
+    klass.def("__isub__", [](Scalar& self, scalar_t other) {
+        return self -= Scalar(other);
+    });
+    klass.def("__isub__", [](Scalar& self, long long other) {
+        return self -= Scalar(other);
+    });
+
+    klass.def("__mul__", [](const Scalar& self, scalar_t other) {
+        return self * Scalar(other);
+    });
+    klass.def("__mul__", [](const Scalar& self, long long other) {
+        return self * Scalar(other);
+    });
+    klass.def("__rmul__", [](scalar_t other, const Scalar& self) {
+        return Scalar(other) * self;
+    });
+    klass.def("__rmul__", [](long long other, const Scalar& self) {
+        return Scalar(other) * self;
+    });
+    klass.def("__imul__", [](Scalar& self, scalar_t other) {
+        return self *= Scalar(other);
+    });
+    klass.def("__imul__", [](Scalar& self, long long other) {
+        return self *= Scalar(other);
+    });
+
+
+    klass.def("__div__", [](const Scalar& self, scalar_t other) {
+        if (other == 0.0) { throw py::value_error("division by zero"); }
+        return self / Scalar(other);
+    });
+    klass.def("__div__", [](const Scalar& self, long long other) {
+        if (other == 0) { throw py::value_error("division by zero"); }
+        return self / Scalar(other);
+    });
+    klass.def("__rdiv__", [](scalar_t other, const Scalar& self) {
+        return Scalar(other) / self;
+    });
+    klass.def("__rdiv__", [](long long other, const Scalar& self) {
+        return Scalar(other) / self;
+    });
+    klass.def("__idiv__", [](Scalar& self, scalar_t other) {
+        if (other == 0.0) { throw py::value_error("division by zero"); }
+        return self /= Scalar(other);
+    });
+    klass.def("__idiv__", [](Scalar& self, long long other) {
+        if (other == 0) { throw py::value_error("division by zero"); }
+        return self /= Scalar(other);
+    });
+
     klass.def("__eq__", [](const Scalar& self, scalar_t other) {
         return self == Scalar(other);
     });
     klass.def("__eq__", [](scalar_t other, const Scalar& self) {
         return self == Scalar(other);
+    });
+    klass.def("__eq__", [](const Scalar& self, long long other) {
+        return self == Scalar(other);
+    });
+    klass.def("__eq__", [](long long other, const Scalar& self) {
+        return self == Scalar(other);
+    });
+
+    klass.def("__neq__", [](const Scalar& self, scalar_t other) {
+        return self != Scalar(other);
+    });
+    klass.def("__neq__", [](scalar_t other, const Scalar& self) {
+        return self != Scalar(other);
+    });
+    klass.def("__neq__", [](const Scalar& self, long long other) {
+        return self != Scalar(other);
+    });
+    klass.def("__neq__", [](long long other, const Scalar& self) {
+        return self != Scalar(other);
     });
 
     klass.def("__str__", [](const Scalar& self) {
@@ -261,7 +361,9 @@ static bool try_fill_buffer_dlpack(
     const auto tensor_stype = scalars::scalar_type_of(tensor_stype_info);
 
     if (options.type == nullptr) {
-        if (tensor_stype) { options.type = *tensor_stype; } else {
+        if (tensor_stype) {
+            options.type = *tensor_stype;
+        } else {
             options.type = scalars::ScalarType::for_info(tensor_stype_info);
         }
     }
@@ -653,7 +755,8 @@ scalars::KeyScalarArray python::py_to_buffer(
                 }
             }
         }
-    } else if (object.is_none()) {} else {
+    } else if (object.is_none()) {
+    } else {
         RPY_THROW(
                 std::invalid_argument,
                 "could not parse argument to a valid scalar array type"
