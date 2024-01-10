@@ -140,7 +140,7 @@ public:
         return parents(key).second;
     }
 
-    RPY_NO_DISCARD optional<key_type>
+    RPY_NO_DISCARD virtual optional<key_type>
     child(const key_type& lparent, const key_type& rparent) const = 0;
 
     RPY_NO_DISCARD virtual key_type key_of_letter(let_t letter) const noexcept
