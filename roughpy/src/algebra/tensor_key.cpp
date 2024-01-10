@@ -230,6 +230,7 @@ void python::init_py_tensor_key(py::module_& m)
 
     klass.def_property_readonly("width", &PyTensorKey::width);
     klass.def_property_readonly("max_degree", &PyTensorKey::depth);
+    klass.def("basis", &PyTensorKey::basis);
 
     klass.def("to_index", [](const PyTensorKey& key) {
         return static_cast<key_type>(key);
