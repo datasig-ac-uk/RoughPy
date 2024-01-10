@@ -238,6 +238,7 @@ void python::init_py_tensor_key(py::module_& m)
     klass.def("degree", [](const PyTensorKey& key) {
         return key.to_letters().size();
     });
+    klass.def("to_letters", &PyTensorKey::to_letters);
     klass.def("split_n", &PyTensorKey::split_n, "n"_a);
     klass.def("reverse", &PyTensorKey::reverse);
 
