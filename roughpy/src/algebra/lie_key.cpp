@@ -469,3 +469,40 @@ python::parse_lie_key(const algebra::LieBasis& basis, const py::args& args, cons
     ToLieKeyHelper helper(basis, basis.width());
     return PyLieKey(basis, helper(args[0]));
 }
+
+namespace {
+
+optional<key_type> to_internal_key_recurse(const algebra::LieBasis& basis, const python::PyLieLetter* base) noexcept
+{
+    if (!base->is_offset()) {
+        return static_cast<key_type>(*base);
+    }
+
+    optional<key_type> result;
+
+    auto left = to_internal_key_recurse(basis, base + static_cast<dimn_t>(*base));
+    auto right = to_internal_key_recurse(basis, ++base);
+
+    if (left && right) {
+        result = basis.child(*left, *right);
+    }
+
+    return result;
+}
+
+}
+
+
+python::PyLieKey::operator key_type() const noexcept {
+    if (m_data.size() == 1) {
+        return static_cast<key_type>(m_data[0]);
+    }
+
+    auto combined = to_internal_key_recurse(m_basis, m_data.data());
+
+    if (combined) {
+        return *combined;
+    }
+
+    return 0;
+}

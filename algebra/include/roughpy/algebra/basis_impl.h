@@ -101,6 +101,7 @@ public:
     dimn_t start_of_degree(deg_t degree) const noexcept override;
     pair<optional<key_type>, optional<key_type>> parents(const key_type& key
     ) const override;
+    optional<key_type> child(const key_type& lparent, const key_type& rparent) const override;
     key_type key_of_letter(let_t letter) const noexcept override;
     bool letter(const key_type& key) const override;
 };
@@ -182,6 +183,12 @@ WordLikeBasisImplementationMixin<T, Derived, Base>::parents(const key_type& key
 {
     return basis_traits::parents(m_impl, key);
 }
+
+template <typename T, typename Derived, typename Base>
+optional<typename Derived::key_type> WordLikeBasisImplementationMixin<T, Derived, Base>::child(const key_type& lparent, const key_type& rparent) const {
+    return basis_traits::child(m_impl, lparent, rparent);
+}
+
 template <typename T, typename Derived, typename Base>
 typename Derived::key_type
 WordLikeBasisImplementationMixin<T, Derived, Base>::key_of_letter(let_t letter
