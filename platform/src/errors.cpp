@@ -11,12 +11,13 @@ string errors::format_error_message(
         string_view user_message,
         const char* filename,
         int lineno,
-        const char* func
+        const char* func,
+        const boost::stacktrace::stacktrace& st
 )
 {
     std::stringstream ss;
     ss << user_message << " at lineno " << lineno << " in " << filename
        << " in function " << func << '\n'
-       << boost::stacktrace::stacktrace() << '\n';
+       << st << '\n';
     return ss.str();
 }

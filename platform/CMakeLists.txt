@@ -3,11 +3,6 @@ cmake_minimum_required(VERSION 3.21)
 
 project(Roughpy_Platform VERSION 0.0.1)
 
-
-
-
-
-
 add_roughpy_component(Platform
     SOURCES
         src/configuration.cpp
@@ -104,7 +99,6 @@ add_roughpy_component(Platform
     NEEDS
         RoughPy::Core
     )
-
 
 target_precompile_headers(RoughPy_Platform PUBLIC
         <cereal/cereal.hpp>

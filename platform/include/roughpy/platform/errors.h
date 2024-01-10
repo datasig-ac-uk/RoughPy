@@ -8,6 +8,8 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
+#include <boost/stacktrace.hpp>
+
 /*
  * Check macro definition.
  *
@@ -23,14 +25,14 @@ namespace rpy {
 namespace errors {
 
 
-string format_error_message(string_view user_message, const char* filename, int lineno, const char* func);
+string format_error_message(string_view user_message, const char* filename, int lineno, const char* func, const boost::stacktrace::stacktrace& st);
 
 template <typename E>
 RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const string& msg, const char* filename, int lineno, const char* func
 )
 {
-    throw E(format_error_message(msg, filename, lineno, func));
+    throw E(format_error_message(msg, filename, lineno, func, boost::stacktrace::stacktrace()));
 }
 
 template <typename E>
@@ -38,7 +40,7 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const char* msg, const char* filename, int lineno, const char* func
 )
 {
-    throw E(format_error_message(msg, filename, lineno, func));
+    throw E(format_error_message(msg, filename, lineno, func, boost::stacktrace::stacktrace()));
 }
 
 }// namespace errors
