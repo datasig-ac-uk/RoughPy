@@ -93,6 +93,9 @@ public:
 
 };
 
+hash_t hash_value(const PyTensorKey& key) noexcept;
+
+
 RPY_NO_DISCARD PyTensorKey operator*(const PyTensorKey& lhs, const PyTensorKey& rhs);
 
 void init_py_tensor_key(py::module_& m);
