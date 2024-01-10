@@ -31,6 +31,7 @@
 
 #include <roughpy/platform/devices/core.h>
 #include <roughpy/platform/devices/macros.h>
+#include <roughpy/platform/errors.h>
 
 #include "roughpy_scalars_export.h"
 

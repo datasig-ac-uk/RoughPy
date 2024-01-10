@@ -30,6 +30,8 @@
 //
 #include "partition.h"
 
+#include <roughpy/platform/errors.h>
+
 #include <cereal/types/vector.hpp>
 
 #include <algorithm>

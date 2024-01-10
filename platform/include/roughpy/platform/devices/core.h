@@ -33,6 +33,7 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/platform/errors.h>
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/uuid/uuid.hpp>

@@ -36,6 +36,7 @@
 #include <roughpy/core/types.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/platform/errors.h>
 
 #include "schema.h"
 

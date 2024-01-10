@@ -12,6 +12,7 @@ add_roughpy_component(Platform
     SOURCES
         src/configuration.cpp
 #        src/threading/openmp_threading.cpp
+        src/errors.cpp
         src/fs_path_serialization.cpp
         src/devices/host/host_buffer.cpp
         src/devices/host/host_buffer.h
@@ -70,6 +71,7 @@ add_roughpy_component(Platform
         include/roughpy/platform/serialization.h
         include/roughpy/platform/threads.h
         include/roughpy/platform/devices.h
+        include/roughpy/platform/errors.h
         include/roughpy/platform/devices/buffer.h
         include/roughpy/platform/devices/core.h
         include/roughpy/platform/devices/device_handle.h
