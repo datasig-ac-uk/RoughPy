@@ -363,7 +363,7 @@ const void* Scalar::pointer() const noexcept
 {
     switch (p_type_and_content_type.get_enumeration()) {
         case dtl::ScalarContentType::TrivialBytes:
-        case dtl::ScalarContentType::ConstTrivialBytes: return &trivial_bytes;
+        case dtl::ScalarContentType::ConstTrivialBytes: return trivial_bytes;
         case dtl::ScalarContentType::OpaquePointer:
         case dtl::ScalarContentType::ConstOpaquePointer:
         case dtl::ScalarContentType::OwnedPointer: return opaque_pointer;
@@ -383,7 +383,7 @@ void* Scalar::mut_pointer()
         );
     }
     switch (p_type_and_content_type.get_enumeration()) {
-        case dtl::ScalarContentType::TrivialBytes: return &trivial_bytes;
+        case dtl::ScalarContentType::TrivialBytes: return trivial_bytes;
         case dtl::ScalarContentType::OpaquePointer:
         case dtl::ScalarContentType::OwnedPointer:
             if (opaque_pointer == nullptr) {
