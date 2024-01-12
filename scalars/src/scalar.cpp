@@ -155,8 +155,8 @@ void Scalar::copy_from_opaque_pointer(devices::TypeInfo info, const void* src)
 
 Scalar::Scalar(const Scalar& other) : integer_for_convenience(0)
 {
+    p_type_and_content_type = other.p_type_and_content_type;
     if (!other.fast_is_zero()) {
-        p_type_and_content_type = other.p_type_and_content_type;
         const auto info = type_info();
         switch (p_type_and_content_type.get_enumeration()) {
             case dtl::ScalarContentType::TrivialBytes:
