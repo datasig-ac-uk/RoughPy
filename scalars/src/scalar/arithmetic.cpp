@@ -158,6 +158,7 @@ inline void scalar_inplace_arithmetic(
 
 Scalar& Scalar::operator+=(const Scalar& other)
 {
+    RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     if (!other.fast_is_zero()) {
         scalar_inplace_arithmetic(
             mut_pointer(),
@@ -172,6 +173,7 @@ Scalar& Scalar::operator+=(const Scalar& other)
 
 Scalar& Scalar::operator-=(const Scalar& other)
 {
+    RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     if (!other.fast_is_zero()) {
         scalar_inplace_arithmetic(
             mut_pointer(),
@@ -186,6 +188,7 @@ Scalar& Scalar::operator-=(const Scalar& other)
 
 Scalar& Scalar::operator*=(const Scalar& other)
 {
+    RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     if (!fast_is_zero() && !other.fast_is_zero()) {
         scalar_inplace_arithmetic(
             mut_pointer(),
