@@ -518,6 +518,7 @@ inline Scalar operator-(const Scalar& lhs, const Scalar& rhs)
 inline Scalar operator*(const Scalar& lhs, const Scalar& rhs)
 {
     Scalar result(lhs);
+    RPY_DBG_ASSERT(result.is_mutable());
     result *= rhs;
     return result;
 }
