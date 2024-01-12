@@ -112,10 +112,10 @@ void python::init_scalars(pybind11::module_& m)
     klass.def("__add__", [](const Scalar& self, long long other) {
         return self + Scalar(other);
     });
-    klass.def("__radd__", [](scalar_t other, const Scalar& self) {
+    klass.def("__radd__", [](const Scalar& self, scalar_t other) {
         return Scalar(other) + self;
     });
-    klass.def("__radd__", [](long long other, const Scalar& self) {
+    klass.def("__radd__", [](const Scalar& self, long long other) {
         return Scalar(other) + self;
     });
     klass.def("__iadd__", [](Scalar& self, scalar_t other) {
@@ -131,10 +131,10 @@ void python::init_scalars(pybind11::module_& m)
     klass.def("__sub__", [](const Scalar& self, long long other) {
         return self - Scalar(other);
     });
-    klass.def("__rsub__", [](scalar_t other, const Scalar& self) {
+    klass.def("__rsub__", [](const Scalar& self, scalar_t other) {
         return Scalar(other) - self;
     });
-    klass.def("__rsub__", [](long long other, const Scalar& self) {
+    klass.def("__rsub__", [](const Scalar& self, long long other) {
         return Scalar(other) - self;
     });
     klass.def("__isub__", [](Scalar& self, scalar_t other) {
@@ -150,10 +150,10 @@ void python::init_scalars(pybind11::module_& m)
     klass.def("__mul__", [](const Scalar& self, long long other) {
         return self * Scalar(other);
     });
-    klass.def("__rmul__", [](scalar_t other, const Scalar& self) {
+    klass.def("__rmul__", [](const Scalar& self, scalar_t other) {
         return Scalar(other) * self;
     });
-    klass.def("__rmul__", [](long long other, const Scalar& self) {
+    klass.def("__rmul__", [](const Scalar& self, long long other) {
         return Scalar(other) * self;
     });
     klass.def("__imul__", [](Scalar& self, scalar_t other) {
@@ -172,10 +172,10 @@ void python::init_scalars(pybind11::module_& m)
         if (other == 0) { throw py::value_error("division by zero"); }
         return self / Scalar(other);
     });
-    klass.def("__rdiv__", [](scalar_t other, const Scalar& self) {
+    klass.def("__rdiv__", [](const Scalar& self, scalar_t other) {
         return Scalar(other) / self;
     });
-    klass.def("__rdiv__", [](long long other, const Scalar& self) {
+    klass.def("__rdiv__", [](const Scalar& self, long long other) {
         return Scalar(other) / self;
     });
     klass.def("__idiv__", [](Scalar& self, scalar_t other) {
