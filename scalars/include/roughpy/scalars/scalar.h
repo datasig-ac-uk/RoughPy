@@ -220,6 +220,7 @@ public:
             allocate_data();
             construct_inplace(static_cast<T*>(opaque_pointer), value);
         }
+        RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     }
 
     template <
@@ -506,12 +507,14 @@ const T& Scalar::as_type() const noexcept
 inline Scalar operator+(const Scalar& lhs, const Scalar& rhs)
 {
     Scalar result(lhs);
+    RPY_DBG_ASSERT(result.is_mutable());
     result += rhs;
     return result;
 }
 inline Scalar operator-(const Scalar& lhs, const Scalar& rhs)
 {
     Scalar result(lhs);
+    RPY_DBG_ASSERT(result.is_mutable());
     result -= rhs;
     return result;
 }
@@ -525,6 +528,7 @@ inline Scalar operator*(const Scalar& lhs, const Scalar& rhs)
 inline Scalar operator/(const Scalar& lhs, const Scalar& rhs)
 {
     Scalar result(lhs);
+    RPY_DBG_ASSERT(result.is_mutable());
     result /= rhs;
     return result;
 }
