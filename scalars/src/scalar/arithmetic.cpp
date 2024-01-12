@@ -186,7 +186,7 @@ Scalar& Scalar::operator-=(const Scalar& other)
 
 Scalar& Scalar::operator*=(const Scalar& other)
 {
-    if (!other.fast_is_zero()) {
+    if (!fast_is_zero() && !other.fast_is_zero()) {
         scalar_inplace_arithmetic(
             mut_pointer(),
             p_type_and_content_type,
