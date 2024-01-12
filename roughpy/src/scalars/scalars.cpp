@@ -220,8 +220,20 @@ void python::init_scalars(pybind11::module_& m)
     });
     klass.def("__repr__", [](const Scalar& self) {
         std::stringstream ss;
-        ss << "Scalar(type=" << string((*self.type())->name())
-           << ", value approx " << self << ")";
+        ss << "Scalar(type=";
+        auto tp = self.type();
+        if (tp) {
+            ss << string((*tp)->name());
+        } else {
+            auto info = self.type_info();
+            if (info.code == devices::TypeCode::Int) {
+                ss << "int" << CHAR_BIT*info.bytes;
+            } else if (info.code == devices::TypeCode::UInt) {
+                ss << "uint" << CHAR_BIT*info.bytes;
+            }
+        }
+        ss << ", value approx " << self << ")";
+
         return ss.str();
     });
 
