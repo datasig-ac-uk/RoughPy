@@ -318,7 +318,7 @@ public:
     enable_if_t<!is_base_of<Scalar, T>::value, Scalar&> operator=(const T& value
     )
     {
-        if (fast_is_zero()) {
+        if (p_type_and_content_type.is_null()) {
             construct_inplace(this, value);
         } else {
             switch (p_type_and_content_type.get_enumeration()) {
