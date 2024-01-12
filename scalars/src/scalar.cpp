@@ -2,8 +2,8 @@
 
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -20,43 +20,45 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_interface.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/traits.h>
 
-#include <roughpy/platform/devices/types.h>
 #include "scalar/arithmetic.h"
 #include "scalar/casts.h"
 #include "scalar/comparison.h"
 #include "scalar/print.h"
 #include "scalar/raw_bytes.h"
+#include <roughpy/platform/devices/types.h>
 
 #include <stdexcept>
-
 
 using namespace rpy;
 using namespace rpy::scalars;
 
-void Scalar::allocate_data() {
+void Scalar::allocate_data()
+{
     if (!p_type_and_content_type.is_pointer()) {
         auto tp_o = scalar_type_of(p_type_and_content_type.get_type_info());
         if (!tp_o) {
             RPY_THROW(std::runtime_error, "unable to allocate scalar");
         }
-
     }
 
     RPY_DBG_ASSERT(p_type_and_content_type.is_pointer());
     opaque_pointer = p_type_and_content_type->allocate_single();
-    p_type_and_content_type.update_enumeration(dtl::ScalarContentType::OwnedPointer);
+    p_type_and_content_type.update_enumeration(
+            dtl::ScalarContentType::OwnedPointer
+    );
 }
 
 Scalar::Scalar(Scalar::type_pointer type) : integer_for_convenience(0)
@@ -125,10 +127,12 @@ Scalar::Scalar(const ScalarType* type, int64_t num, int64_t denom)
 {
     auto info = type->type_info();
     if (traits::is_arithmetic(info) && info.bytes <= sizeof(void*)) {
-        p_type_and_content_type = type_pointer(type, dtl::ScalarContentType::TrivialBytes);
+        p_type_and_content_type
+                = type_pointer(type, dtl::ScalarContentType::TrivialBytes);
         dtl::scalar_assign_rational(trivial_bytes, info, num, denom);
     } else {
-        p_type_and_content_type = type_pointer(type, dtl::ScalarContentType::OwnedPointer);
+        p_type_and_content_type
+                = type_pointer(type, dtl::ScalarContentType::OwnedPointer);
         opaque_pointer = type->allocate_single();
         dtl::scalar_assign_rational(opaque_pointer, info, num, denom);
     }
@@ -138,10 +142,14 @@ void Scalar::copy_from_opaque_pointer(devices::TypeInfo info, const void* src)
 {
     if (traits::is_fundamental(info) && info.bytes <= sizeof(void*)) {
         std::memcpy(trivial_bytes, src, info.bytes);
-        p_type_and_content_type.update_enumeration(dtl::ScalarContentType::TrivialBytes);
+        p_type_and_content_type.update_enumeration(
+                dtl::ScalarContentType::TrivialBytes
+        );
     } else {
         allocate_data();
-        dtl::scalar_convert_copy(opaque_pointer, info, src, info);
+        auto successful
+                = dtl::scalar_convert_copy(opaque_pointer, info, src, info);
+        RPY_DBG_ASSERT(successful);
     }
 }
 
@@ -295,16 +303,11 @@ Scalar& Scalar::operator=(Scalar&& other) noexcept
     return *this;
 }
 
-
-#define DO_OP_FOR_ALL_TYPES(INFO) \
-    switch(INFO.code) {\
-        casse devices::TypeCode::Int: \
-            switch (INFO.bytes) { \
-                case \
-
-
-
-
+#define DO_OP_FOR_ALL_TYPES(INFO)                                              \
+    switch (INFO.code) {                                                       \
+        casse devices::TypeCode::Int : switch (INFO.bytes)                     \
+        {                                                                      \
+            case
 
 bool Scalar::is_zero() const noexcept
 {
@@ -378,8 +381,7 @@ void* Scalar::mut_pointer()
     if (p_type_and_content_type.is_null()) {
         RPY_THROW(
                 std::runtime_error,
-                "cannot get mutable pointer to constant"
-                " value zero"
+                "cannot get mutable pointer to constant value zero"
         );
     }
     switch (p_type_and_content_type.get_enumeration()) {
@@ -458,7 +460,6 @@ std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& value)
 
     dtl::print_scalar_val(os, value.pointer(), value.type_info());
 
-
     return os;
 }
 
@@ -472,9 +473,11 @@ void Scalar::from_raw_bytes(devices::TypeInfo info, Slice<byte> bytes)
     this->~Scalar();
     auto tp_o = scalar_type_of(info);
     if (tp_o) {
-        p_type_and_content_type = type_pointer(*tp_o, dtl::ScalarContentType::TrivialBytes);
+        p_type_and_content_type
+                = type_pointer(*tp_o, dtl::ScalarContentType::TrivialBytes);
     } else {
-        p_type_and_content_type = type_pointer(info, dtl::ScalarContentType::TrivialBytes);
+        p_type_and_content_type
+                = type_pointer(info, dtl::ScalarContentType::TrivialBytes);
     }
 
     void* ptr = nullptr;
