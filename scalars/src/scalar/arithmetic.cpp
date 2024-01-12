@@ -147,7 +147,7 @@ inline void scalar_inplace_arithmetic(
     if (src_info == dst_info) {
         do_op(dst, src, dst_info, std::forward<Op>(op));
     } else {
-        Scalar tmp(dst_type);
+        Scalar tmp(dst_info);
         void* tmp_ptr = tmp.mut_pointer();
         scalars::dtl::scalar_convert_copy(tmp_ptr, dst_info, src, src_info, 1);
         do_op(dst, tmp_ptr, dst_info, std::forward<Op>(op));
