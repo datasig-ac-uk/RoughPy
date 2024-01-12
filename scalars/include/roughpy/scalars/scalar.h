@@ -417,6 +417,8 @@ public:
      */
     void* mut_pointer();
 
+    bool is_mutable() const noexcept;
+
     /**
      * @brief Get a pointer to the scalar type representing this value.
      *

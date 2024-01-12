@@ -409,6 +409,15 @@ void* Scalar::mut_pointer()
 
     RPY_UNREACHABLE_RETURN(nullptr);
 }
+
+bool Scalar::is_mutable() const noexcept
+{
+    return !static_cast<bool>(
+            static_cast<uint8_t>(p_type_and_content_type.get_enumeration())
+            & static_cast<uint8_t>(dtl::ScalarContentType::IsConst)
+    );
+}
+
 optional<const ScalarType*> Scalar::type() const noexcept
 {
     if (p_type_and_content_type.is_pointer()) {
