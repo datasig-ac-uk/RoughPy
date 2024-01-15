@@ -64,6 +64,8 @@ public:
     string key_to_string(const typename PrimaryInterface::key_type& key
     ) const override;
     dimn_t dimension() const noexcept override;
+
+    bool are_same(const typename PrimaryInterface::base_interface_t &other) const noexcept override;
 };
 
 template <typename T, typename Derived, typename Base>
@@ -117,6 +119,15 @@ template <typename T, typename PrimaryInterface>
 dimn_t BasisImplementation<T, PrimaryInterface>::dimension() const noexcept
 {
     return basis_traits::dimension(m_impl);
+}
+
+template <typename T, typename PrimaryInterface>
+bool BasisImplementation<T,
+                         PrimaryInterface>::are_same(const typename PrimaryInterface::base_interface_t &other) const noexcept {
+    const auto *pother = dynamic_cast<const BasisImplementation *>(&other);
+    if (pother == nullptr) { return false; }
+
+    return basis_traits::are_same(m_impl, pother->m_impl);
 }
 
 template <typename T, typename Derived, typename Base>

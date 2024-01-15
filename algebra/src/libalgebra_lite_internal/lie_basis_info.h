@@ -210,6 +210,8 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
     {
         return basis->letter(convert_to_impl(basis, key));
     }
+
+    static bool are_same(storage_t basis1, storage_t basis2) noexcept { return basis1 == basis2; }
 };
 }// namespace algebra
 }// namespace rpy

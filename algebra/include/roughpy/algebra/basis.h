@@ -55,6 +55,8 @@ public:
     template <typename T>
     using impl_t = dtl::BasisImplementation<T, Derived>;
 
+    using base_interface_t = BasisInterface;
+
     using mixin_t = void;
 
     virtual ~BasisInterface() = default;
@@ -62,6 +64,8 @@ public:
     RPY_NO_DISCARD virtual string key_to_string(const key_type& key) const = 0;
 
     RPY_NO_DISCARD virtual dimn_t dimension() const noexcept = 0;
+
+    RPY_NO_DISCARD virtual bool are_same(const BasisInterface &other) const noexcept = 0;
 };
 
 namespace dtl {
@@ -207,12 +211,16 @@ public:
 
     friend bool operator==(const Basis& left, const Basis& right) noexcept
     {
-        return left.p_impl == right.p_impl;
+        if (left.p_impl == right.p_impl) {
+            return true;
+        }
+
+        return left.p_impl->are_same(*right.p_impl);
     }
 
     friend bool operator!=(const Basis& left, const Basis& right) noexcept
     {
-        return left.p_impl != right.p_impl;
+        return !operator==(left, right);
     }
 
     friend hash_t hash_value(const Basis& basis) noexcept

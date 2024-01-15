@@ -180,6 +180,9 @@ struct BasisInfo {
     {
         return basis->letter(convert_to_impl(basis, key));
     }
+
+    /// Determine whether two bases are the same
+    static bool are_same(storage_t basis1, storage_t basis2) noexcept { return basis1 == basis2; }
 };
 
 }// namespace algebra
