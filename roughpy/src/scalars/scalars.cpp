@@ -62,10 +62,12 @@ void python::assign_py_object_to_scalar(
         dst = object.cast<int64_t>();
     } else if (RPyPolynomial_Check(object.ptr())) {
         dst = RPyPolynomial_cast(object.ptr());
+    } else if (py::isinstance<scalars::Scalar>(object)) {
+        dst = object.cast<const scalars::Scalar &>();
     } else {
         // TODO: other checks
 
-        auto tp = py::type::of(object);
+        auto tp = py::str(py::type::of(object));
         RPY_THROW(
                 py::value_error,
                 "bad conversion from " + tp.cast<string>() + " to "
