@@ -246,6 +246,7 @@ Scalar& Scalar::operator=(const Scalar& other)
         if (this->fast_is_zero()) {
             p_type_and_content_type = other.p_type_and_content_type;
 
+            const auto info = type_info();
             switch (p_type_and_content_type.get_enumeration()) {
                 case dtl::ScalarContentType::TrivialBytes:
                 case dtl::ScalarContentType::ConstTrivialBytes:
