@@ -259,8 +259,17 @@ Scalar& Scalar::operator=(const Scalar& other)
                 case dtl::ScalarContentType::ConstOpaquePointer:
                     opaque_pointer = other.opaque_pointer;
                     break;
-                case dtl::ScalarContentType::OwnedPointer:
-                    // TODO: implement copy for owned pointers
+                case dtl::ScalarContentType::OwnedPointer: {
+                    allocate_data();
+                    auto successful = dtl::scalar_convert_copy(
+                        opaque_pointer,
+                        p_type_and_content_type->type_info(),
+                        other.opaque_pointer,
+                        p_type_and_content_type->type_info(),
+                        1
+                    );
+                    RPY_DBG_ASSERT(successful);
+                }
                     break;
                 case dtl::ScalarContentType::Interface:
                 case dtl::ScalarContentType::OwnedInterface:
