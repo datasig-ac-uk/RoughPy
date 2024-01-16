@@ -322,12 +322,6 @@ Scalar& Scalar::operator=(Scalar&& other) noexcept
     return *this;
 }
 
-#define DO_OP_FOR_ALL_TYPES(INFO)                                              \
-    switch (INFO.code) {                                                       \
-        casse devices::TypeCode::Int : switch (INFO.bytes)                     \
-        {                                                                      \
-            case
-
 bool Scalar::is_zero() const noexcept
 {
     if (fast_is_zero()) { return true; }
