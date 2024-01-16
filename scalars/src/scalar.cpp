@@ -305,29 +305,12 @@ Scalar& Scalar::operator=(const Scalar& other)
 Scalar& Scalar::operator=(Scalar&& other) noexcept
 {
     if (&other != this) {
-        this->~Scalar();
-        p_type_and_content_type = other.p_type_and_content_type;
-        switch (p_type_and_content_type.get_enumeration()) {
-            case dtl::ScalarContentType::TrivialBytes:
-            case dtl::ScalarContentType::ConstTrivialBytes:
-                std::memcpy(
-                    trivial_bytes,
-                    other.trivial_bytes,
-                    sizeof(interface_pointer_t)
-                );
-                break;
-            case dtl::ScalarContentType::OpaquePointer:
-            case dtl::ScalarContentType::ConstOpaquePointer:
-            case dtl::ScalarContentType::OwnedPointer:
-                opaque_pointer = other.opaque_pointer;
-                other.opaque_pointer = nullptr;
-                break;
-            case dtl::ScalarContentType::Interface:
-            case dtl::ScalarContentType::OwnedInterface:
-                interface = std::move(other.interface);
-                other.interface = nullptr;
-                break;
+        if (p_type_and_content_type.is_null()) {
+            construct_inplace(this, std::move(other));
+        } else {
+            dtl::scalar_convert_copy(mut_pointer(), type_info(), other);
         }
+
     }
     return *this;
 }
