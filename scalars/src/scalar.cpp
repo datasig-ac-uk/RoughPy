@@ -258,7 +258,7 @@ Scalar& Scalar::operator=(const Scalar& other)
                     break;
                 case dtl::ScalarContentType::OpaquePointer:
                 case dtl::ScalarContentType::ConstOpaquePointer:
-                    opaque_pointer = other.opaque_pointer;
+                    copy_from_opaque_pointer(info, other.opaque_pointer);
                     break;
                 case dtl::ScalarContentType::OwnedPointer: {
                     allocate_data();
