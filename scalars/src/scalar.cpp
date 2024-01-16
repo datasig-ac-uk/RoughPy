@@ -283,9 +283,9 @@ Scalar& Scalar::operator=(const Scalar& other)
             }
         } else {
             dtl::scalar_convert_copy(
-                    mut_pointer(),
-                    p_type_and_content_type.get_type_info(),
-                    other
+                mut_pointer(),
+                type_info(),
+                other
             );
         }
     }
