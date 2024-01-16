@@ -273,13 +273,13 @@ Scalar& Scalar::operator=(const Scalar& other)
                 }
                     break;
                 case dtl::ScalarContentType::Interface:
-                case dtl::ScalarContentType::OwnedInterface:
+                case dtl::ScalarContentType::OwnedInterface:copy_from_opaque_pointer(info, other.pointer());
                     // Copying of interface pointers is disallowed.
-                    RPY_THROW(
-                            std::runtime_error,
-                            "copying of interface pointers "
-                            "is not allowed"
-                    );
+//                    RPY_THROW(
+//                        std::runtime_error,
+//                        "copying of interface pointers "
+//                        "is not allowed"
+//                    );
             }
         } else {
             dtl::scalar_convert_copy(
