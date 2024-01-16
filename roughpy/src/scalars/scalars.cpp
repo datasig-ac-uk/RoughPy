@@ -428,7 +428,16 @@ static void
 check_and_set_dtype(python::PyToBufferOptions& options, py::handle arg)
 {
     if (options.type == nullptr) {
-        if (options.no_check_imported) {
+
+        if (py::isinstance<scalars::Scalar>(arg)) {
+            const auto &scal = arg.cast<const scalars::Scalar &>();
+            auto arg_type = scal.type();
+            if (arg_type) {
+                options.type = *arg_type;
+            } else {
+                options.type = scalars::ScalarType::for_info(scal.type_info());
+            }
+        } else if (options.no_check_imported) {
             options.type = *scalars::ScalarType::of<double>();
         } else {
             options.type = python::py_type_to_scalar_type(py::type::of(arg));
