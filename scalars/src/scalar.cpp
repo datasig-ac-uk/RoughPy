@@ -138,10 +138,19 @@ Scalar::Scalar(const ScalarType* type, int64_t num, int64_t denom)
     }
 }
 
-void Scalar::copy_from_opaque_pointer(devices::TypeInfo info, const void* src)
-{
-    if (traits::is_fundamental(info) && info.bytes <= sizeof(void*)) {
-        std::memcpy(trivial_bytes, src, info.bytes);
+void Scalar::copy_from_opaque_pointer(devices::TypeInfo info, const void *src) {
+    if (p_type_and_content_type.is_null()) {
+        p_type_and_content_type = type_pointer(info, dtl::ScalarContentType::TrivialBytes);
+    }
+
+    const auto dst_info = type_info();
+    if (traits::is_fundamental(dst_info) && dst_info.bytes <= sizeof(void *)) {
+        if (info == dst_info) {
+            std::memcpy(trivial_bytes, src, info.bytes);
+        } else {
+            auto successful = dtl::scalar_convert_copy(trivial_bytes, dst_info, src, info);
+            RPY_DBG_ASSERT(successful);
+        }
         p_type_and_content_type.update_enumeration(
                 dtl::ScalarContentType::TrivialBytes
         );
