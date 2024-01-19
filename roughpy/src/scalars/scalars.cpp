@@ -39,6 +39,7 @@
 
 #include "dlpack.h"
 #include "r_py_polynomial.h"
+// #include "scalar.h"
 #include "scalar_type.h"
 
 #include "args/dlpack_helpers.h"
@@ -84,6 +85,11 @@ void python::init_scalars(pybind11::module_& m)
 
     python::init_scalar_types(m);
     python::init_monomial(m);
+    //
+    // if (PyType_Ready(&PyScalar_Type) < 0) {
+    //     throw py::error_already_set();
+    // }
+    // m.add_object("Scalar", (PyObject*) &PyScalar_Type);
 
     py::class_<Scalar> klass(m, "Scalar", SCALAR_DOC);
 

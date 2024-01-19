@@ -28,6 +28,9 @@
 
 #include "scalar_type.h"
 
+// #include "scalar.h"
+#include "scalars.h"
+
 #include <roughpy/scalars/scalar_types.h>
 
 
@@ -341,50 +344,50 @@ char python::format_to_type_char(const string& fmt)
 after_loop:
     return python_format;
 }
-//string python::py_buffer_to_type_id(const py::buffer_info& info)
+// string python::py_buffer_to_type_id(const py::buffer_info& info)
 //{
-//    using scalars::type_id_of;
+//     using scalars::type_id_of;
 //
-//    auto python_format = format_to_type_char(info.format);
-//    string format;
-//    switch (python_format) {
-//        case 'd': format = type_id_of<double>(); break;
-//        case 'f': format = type_id_of<float>(); break;
-//        case 'l': {
-//            if (info.itemsize == sizeof(int)) {
-//                format = type_id_of<int>();
-//            } else {
-//                format = type_id_of<long long>();
-//            }
-//            break;
-//        }
-//        case 'q': format = scalars::type_id_of<long long>(); break;
-//        case 'L':
-//            if (info.itemsize == sizeof(int)) {
-//                format = type_id_of<unsigned int>();
-//            } else {
-//                format = type_id_of<unsigned long long>();
-//            }
-//            break;
-//        case 'Q': format = type_id_of<unsigned long long>(); break;
-//        case 'i': format = type_id_of<int>(); break;
-//        case 'I': format = type_id_of<unsigned int>(); break;
-//        case 'n':
-//            format = type_id_of<scalars::signed_size_type_marker>();
-//            break;
-//        case 'N':
-//            format = type_id_of<scalars::unsigned_size_type_marker>();
-//            break;
-//        case 'h': format = type_id_of<short>(); break;
-//        case 'H': format = type_id_of<unsigned short>(); break;
-//        case 'b':
-//        case 'c': format = type_id_of<char>(); break;
-//        case 'B': format = type_id_of<unsigned char>(); break;
-//        default: RPY_THROW(std::runtime_error, "Unrecognised data format");
-//    }
+//     auto python_format = format_to_type_char(info.format);
+//     string format;
+//     switch (python_format) {
+//         case 'd': format = type_id_of<double>(); break;
+//         case 'f': format = type_id_of<float>(); break;
+//         case 'l': {
+//             if (info.itemsize == sizeof(int)) {
+//                 format = type_id_of<int>();
+//             } else {
+//                 format = type_id_of<long long>();
+//             }
+//             break;
+//         }
+//         case 'q': format = scalars::type_id_of<long long>(); break;
+//         case 'L':
+//             if (info.itemsize == sizeof(int)) {
+//                 format = type_id_of<unsigned int>();
+//             } else {
+//                 format = type_id_of<unsigned long long>();
+//             }
+//             break;
+//         case 'Q': format = type_id_of<unsigned long long>(); break;
+//         case 'i': format = type_id_of<int>(); break;
+//         case 'I': format = type_id_of<unsigned int>(); break;
+//         case 'n':
+//             format = type_id_of<scalars::signed_size_type_marker>();
+//             break;
+//         case 'N':
+//             format = type_id_of<scalars::unsigned_size_type_marker>();
+//             break;
+//         case 'h': format = type_id_of<short>(); break;
+//         case 'H': format = type_id_of<unsigned short>(); break;
+//         case 'b':
+//         case 'c': format = type_id_of<char>(); break;
+//         case 'B': format = type_id_of<unsigned char>(); break;
+//         default: RPY_THROW(std::runtime_error, "Unrecognised data format");
+//     }
 //
-//    return format;
-//}
+//     return format;
+// }
 
 devices::TypeInfo python::py_buffer_to_type_info(const py::buffer_info& info)
 {
@@ -465,7 +468,10 @@ py::type python::scalar_type_to_py_type(const scalars::ScalarType* type)
         );
     }
 
-    RPY_THROW(py::type_error, "no matching type for type " + string(type->name()));
+    RPY_THROW(
+            py::type_error,
+            "no matching type for type " + string(type->name())
+    );
 }
 
 void python::init_scalar_types(pybind11::module_& m)
