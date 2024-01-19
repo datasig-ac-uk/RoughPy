@@ -73,6 +73,10 @@ py::handle get_scalar_baseclass();
 extern "C" void PyScalarMetaType_dealloc(PyObject* arg);
 
 void register_scalar_type(const scalars::ScalarType* ctype, py::handle py_type);
+
+extern "C" PyObject* PyScalarType_FromScalarType(const scalars::ScalarType* type
+);
+
 py::object to_ctype_type(const scalars::ScalarType* type);
 
 inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype)

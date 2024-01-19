@@ -507,3 +507,21 @@ void python::init_scalar_types(pybind11::module_& m)
             *scalars::ScalarType::of<scalars::rational_poly_scalar>()
     );
 }
+
+PyObject* python::PyScalarType_FromScalarType(const scalars::ScalarType* type)
+{
+    if (type == nullptr) {
+        PyErr_SetString(PyExc_RuntimeError, "invalid scalar type");
+        return nullptr;
+    }
+
+    const auto found = ctype_type_cache.find(type);
+    if (found != ctype_type_cache.end()) {
+        return py::reinterpret_borrow<py::object>(found->second)
+                .release()
+                .ptr();
+    }
+
+    PyErr_SetString(PyExc_RuntimeError, "unregistered scalar type");
+    return nullptr;
+}
