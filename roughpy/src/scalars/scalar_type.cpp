@@ -43,11 +43,109 @@ static PyMethodDef PyScalarMetaType_methods[] = {
         {nullptr, nullptr, 0, nullptr}
 };
 
-PyObject* PyScalarMetaType_call(PyObject*, PyObject*, PyObject*)
+extern "C" PyObject*
+PyScalarMetaType_call(PyObject* self, PyObject* args, PyObject* kwargs)
 {
-    // TODO: implement this?
-    PyErr_SetString(PyExc_AssertionError, "doh");
-    return nullptr;
+    using namespace python;
+    auto* type = reinterpret_cast<PyTypeObject*>(self);
+    const auto* stype = reinterpret_cast<PyScalarMetaType*>(type)->tp_ctype;
+
+    static const char* kwords[] = {"data", "numerator", "denominator"};
+
+    PyObject* data = nullptr;
+    PyObject* numerator = nullptr;
+    PyObject* denominator = nullptr;
+
+    if (PyArg_ParseTupleAndKeywords(
+                args,
+                kwargs,
+                "|OOO",
+                const_cast<char**>(kwords),
+                &data,
+                &numerator,
+                &denominator
+        )
+        == 0) {
+        return nullptr;
+    }
+
+    scalars::Scalar result(stype);
+    if (data != nullptr) {
+        if (numerator != nullptr) {
+            if (denominator != nullptr) {
+                PyErr_SetString(
+                        PyExc_ValueError,
+                        "cannot specify data and numerator/denominator"
+                );
+                return nullptr;
+            }
+            denominator = numerator;
+            numerator = data;
+            data = nullptr;
+        } else if (denominator != nullptr) {
+            numerator = data;
+            data = nullptr;
+        }
+    } else if (numerator != nullptr) {
+        if (denominator == nullptr) {
+            PyErr_SetString(PyExc_ValueError, "no denominator provided");
+            return nullptr;
+        }
+    } else if (denominator != nullptr) {
+        PyErr_SetString(PyExc_ValueError, "no numerator provided");
+        return nullptr;
+    } else {
+        // No arguments means zero
+
+        try {
+            return py::cast(std::move(result)).release().ptr();
+        } catch (std::exception& exc) {
+            PyErr_SetString(PyExc_RuntimeError, exc.what());
+            return nullptr;
+        }
+    }
+
+    if (data != nullptr) {
+        try {
+            assign_py_object_to_scalar(result, data);
+        } catch (std::exception& exc) {
+            PyErr_SetString(PyExc_RuntimeError, exc.what());
+            return nullptr;
+        }
+    } else {
+        if (PyLong_Check(numerator) == 0) {
+            PyErr_SetString(PyExc_TypeError, "numerator should be an int");
+            return nullptr;
+        }
+        if (PyLong_Check(denominator) == 0) {
+            PyErr_SetString(PyExc_TypeError, "denominator should be an int");
+            return nullptr;
+        }
+
+        auto num = PyLong_AsLongLong(numerator);
+        auto denom = PyLong_AsLongLong(denominator);
+
+        try {
+            result = scalars::Scalar(stype, num, denom);
+        } catch (std::exception& exc) {
+            PyErr_SetString(PyExc_RuntimeError, exc.what());
+            return nullptr;
+        }
+    }
+
+    // auto* obj = reinterpret_cast<PyScalar*>(type->tp_alloc(type, 0));
+    // if (obj == nullptr) { return nullptr; }
+    //
+    // construct_inplace(&obj->m_content);
+
+    try {
+        return py::cast(std::move(result)).release().ptr();
+    } catch (std::exception& exc) {
+        PyErr_SetString(PyExc_RuntimeError, exc.what());
+        return nullptr;
+    }
+
+    // return reinterpret_cast<PyObject*>(obj);
 }
 static PyTypeObject PyScalarMetaType_type = {
         PyVarObject_HEAD_INIT(
