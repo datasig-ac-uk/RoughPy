@@ -278,41 +278,32 @@ Scalar& Scalar::operator/=(const Scalar& other)
      * type - as is the case for polynomials.
      * We need to handle both of these cases gracefully.
      */
+    const auto num_info = type_info_from(p_type_and_content_type);
+    const auto true_denom_info = type_info_from(other.p_type_and_content_type);
+    const auto rat_denom_info = traits::rational_type_of(true_denom_info);
 
-    type_pointer tmp_type;
-    if (other.p_type_and_content_type.is_pointer()) {
-        tmp_type = type_pointer(
-                other.p_type_and_content_type->rational_type(),
-                other.p_type_and_content_type.get_enumeration()
-        );
-    } else {
-        tmp_type = type_pointer(
-                traits::rational_type_of(
-                        other.p_type_and_content_type.get_type_info()
-                ),
-                other.p_type_and_content_type.get_enumeration()
-        );
+    // Set up the actual denominator that we will divide by
+    Scalar rational_denom(true_denom_info, other.pointer());
+    if (rat_denom_info != true_denom_info) {
+        rational_denom.change_type(rat_denom_info);
     }
 
-    const auto num_type = type_info();
-    if (tmp_type == other.p_type_and_content_type) {
-#define X(TP)                                                                  \
-    do_divide((TP*) mut_pointer(), other.pointer(), tmp_type.get_type_info()); \
-    break
-
-        DO_FOR_EACH_X(num_type)
-#undef X
-    } else {
-        Scalar tmp(tmp_type);
-        // hopefully converts
-        tmp = other;
-#define X(TP)                                                                  \
-    do_divide((TP*) mut_pointer(), tmp.pointer(), tmp_type.get_type_info());   \
-    break
-
-        DO_FOR_EACH_X(num_type)
-#undef X
+    /*
+     * The type resolution needs to be done with the true denominator type,
+     * rather than whatever the rational type is.
+     */
+    if (num_info != true_denom_info) {
+        change_type(dtl::compute_dest_type(
+                p_type_and_content_type,
+                other.p_type_and_content_type
+        ));
     }
+
+    // Now we should be ready
+#define X(tp) do_divide((tp*) mut_pointer(), rational_denom.pointer(), rat_denom_info);\
+    break
+    DO_FOR_EACH_X(num_info)
+#undef X
 
     return *this;
 }
