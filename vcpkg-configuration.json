@@ -8,7 +8,7 @@
   "registries": [
     {
       "kind": "filesystem",
-      "path": "tools/registry",
+      "path": "./tools/registry",
       "baseline": "default",
       "packages": [
         "libalgebra-lite"
@@ -19,6 +19,6 @@
     "./tools/triplets"
   ],
   "overlay-ports": [
-    "./tools/ports"
+    "/tools/ports"
   ]
 }
