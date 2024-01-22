@@ -13,7 +13,6 @@ details are found in :doc:`../reference/index`.
 
    whatisroughpy
    installation
-   quickstart
    absolute_beginners
 
 .. toctree::
