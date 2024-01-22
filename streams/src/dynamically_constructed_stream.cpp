@@ -194,11 +194,9 @@ void streams::DynamicallyConstructedStream::update_parents(
 {
     //    data_increment below(current);
     //    data_increment top = update_parent_accuracy(below);
-    //    std::cout << top->first << ' ' << below->first << '\n';
     //    while (top != below) {
     //        below = top;
     //        top = update_parent_accuracy(below);
-    //        std::cout << top->first << ' ' << below->first << '\n';
     //    }
     const auto& md = metadata();
     auto root = m_data_tree.begin();
