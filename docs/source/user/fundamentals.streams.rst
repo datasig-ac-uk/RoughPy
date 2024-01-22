@@ -52,7 +52,3 @@ You can then create a **stream** using your chosen **data** and **context** with
 
     Show example with tick data, constructor
 
-.. todo::
-
-    Language (English alphabet) example
-

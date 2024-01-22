@@ -40,7 +40,3 @@ If we provide a complementary :doc:`fundamentals.contexts`, then we can use this
     context = rp.get_context(3, 2, rp.RationalPoly)
 
     tensor = context.lie_to_tensor(lie)
-
-.. todo::
-
-    Can I plot this in any way?
