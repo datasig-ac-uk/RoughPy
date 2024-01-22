@@ -40,7 +40,7 @@
     "version>=" : "1.83.0"
   }, {
     "name" : "gmp",
-    "version>=" : "6.2.1#21",
+    "version>=" : "6.2.1#21"
   }, {
     "name" : "mpir",
     "version>=" : "2022-03-02",
