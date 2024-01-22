@@ -34,5 +34,5 @@ except _ilm.PackageNotFoundError:
 import roughpy._roughpy
 from roughpy._roughpy import *
 
-import tensor_functions
+from . import tensor_functions
 
