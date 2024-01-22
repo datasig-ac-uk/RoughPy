@@ -10,7 +10,7 @@ Contexts
     - Provides access to the Baker-Campbell-Hausdorff formula
     - Allows us to transfer between signatures and log signatures (t2l, l2t functions)
 
-We can create **contexts** for ::doc::`basics.streams` in the following way. The example below has width 2, depth 6, and coefficients over the Reals.
+We can create **contexts** for :doc:`fundamentals.streams` in the following way. The example below has width 2, depth 6, and coefficients over the Reals.
 
 ::
 
