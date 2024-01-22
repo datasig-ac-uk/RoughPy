@@ -335,7 +335,6 @@ def test_log_sigature_interval_alignment_set_resolution():
     stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2, resolution=4)
     zero = stream.ctx.zero_lie()
 
-    print(f"{stream.resolution=}")
 
     result = stream.log_signature(rp.RealInterval(0.0, 0.1), resolution=4)
     expected = rp.Lie([0., 1., 2.], ctx=stream.ctx)
