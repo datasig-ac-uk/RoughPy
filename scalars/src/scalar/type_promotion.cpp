@@ -59,6 +59,15 @@ devices::TypeInfo compute_float_promotion(
         return dst_info;
     }
 
+    if (traits::is_floating_point(src_info)) {
+        if (src_info.bytes > dst_info.bytes) {
+            return {devices::TypeCode::Float,
+                    src_info.bytes,
+                    src_info.alignment,
+                    1};
+        }
+    }
+
     return src_info;
 }
 
@@ -67,6 +76,17 @@ devices::TypeInfo compute_bfloat_promotion(
         const devices::TypeInfo& src_info
 )
 {
+    if (traits::is_integral(src_info)) {
+        /*
+         * bfloats cannot hold anything larger than int8_t faithfully, so for
+         * anything larger than int8_t we'll promote to a float or double.
+         */
+        if (src_info.bytes == 1) { return dst_info; }
+        if (src_info.bytes <= 4) { return devices::type_info<float>(); }
+
+        return devices::type_info<double>();
+    }
+
     return src_info;
 }
 
