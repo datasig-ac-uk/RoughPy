@@ -136,13 +136,16 @@ content_type_of(PackedScalarTypePointer<ScalarContentType> ptype) noexcept
     return content_type_of(ptype.get_type_info());
 }
 
+template <typename T>
+struct can_be_scalar : conditional_t<
+                               !is_base_of<Scalar, T>::value,
+                               std::true_type,
+                               std::false_type> {
+};
 
 template <typename T>
-struct can_be_scalar : conditional_t<!is_base_of<Scalar, T>::value, std::true_type, std::false_type> {};
-
-template <typename T>
-struct can_be_scalar<std::unique_ptr<T>> : std::false_type {};
-
+struct can_be_scalar<std::unique_ptr<T>> : std::false_type {
+};
 
 }// namespace dtl
 
@@ -206,15 +209,12 @@ public:
     template <typename T, typename = enable_if_t<dtl::can_be_scalar<T>::value>>
     explicit Scalar(const T& value)
         : p_type_and_content_type(
-                devices::type_info<remove_cv_t<T>>(),
-                dtl::ScalarContentType::TrivialBytes
-        ),
+                  devices::type_info<remove_cv_t<T>>(),
+                  dtl::ScalarContentType::TrivialBytes
+          ),
           integer_for_convenience(0)
     {
-        if constexpr (is_standard_layout<T>::value
-                      && is_trivially_copyable<T>::value
-                      && is_trivially_destructible<T>::value
-                      && sizeof(T) <= sizeof(void*)) {
+        if constexpr (is_standard_layout<T>::value && is_trivially_copyable<T>::value && is_trivially_destructible<T>::value && sizeof(T) <= sizeof(void*)) {
             std::memcpy(trivial_bytes, &value, sizeof(T));
         } else {
             allocate_data();
@@ -278,12 +278,14 @@ public:
     explicit Scalar(devices::TypeInfo info, void* ptr);
     explicit Scalar(devices::TypeInfo info, const void* ptr);
 
-    template <typename I, typename = enable_if_t<is_base_of<ScalarInterface, I>::value>>
+    template <
+            typename I,
+            typename = enable_if_t<is_base_of<ScalarInterface, I>::value>>
     explicit Scalar(std::unique_ptr<I>&& iface)
         : p_type_and_content_type(
-                nullptr,
-                dtl::ScalarContentType::OwnedInterface
-        ),
+                  nullptr,
+                  dtl::ScalarContentType::OwnedInterface
+          ),
           interface(std::move(iface))
     {}
 
