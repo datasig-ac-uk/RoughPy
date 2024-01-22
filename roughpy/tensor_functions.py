@@ -129,13 +129,6 @@ class TensorTensorProduct:
         return self
 
 
-def str_ttp(t):
-    return " ".join([
-        '{',
-        *(f"{v}{k}" for k, v in t.items()),
-        '}'
-    ])
-
 def _concat_product(a, b):
     out = defaultdict(lambda: 0)
 
