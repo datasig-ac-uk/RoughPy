@@ -111,6 +111,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/scalars/parse_key_scalar_stream.h
         src/scalars/r_py_polynomial.cpp
         src/scalars/r_py_polynomial.h
+        #        src/scalars/scalar.h
+        #        src/scalars/scalar.cpp
         src/scalars/scalar_type.h
         src/scalars/scalar_type.cpp
         src/scalars/scalars.cpp

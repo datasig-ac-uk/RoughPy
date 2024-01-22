@@ -36,7 +36,9 @@
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
 #include <roughpy/core/types.h>
+#include <roughpy/platform/errors.h>
 
 #if defined(RPY_GCC)
 #  define RPY_NO_EXPORT __attribute__((visibility("hidden")))

@@ -34,6 +34,7 @@
 
 #include <algorithm>
 #include <list>
+#include <roughpy/platform/errors.h>
 
 #include <roughpy/intervals/real_interval.h>
 

@@ -75,6 +75,8 @@ public:
     deg_t degree() const;
 
     bool equals(const PyLieKey& other) const noexcept;
+
+    explicit operator key_type() const noexcept;
 };
 
 PyLieKey

@@ -26,8 +26,10 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tensor_key.h"
+
 #include <roughpy/algebra/context.h>
 #include <roughpy/scalars/scalar_types.h>
+#include <pybind11/operators.h>
 
 #include <algorithm>
 #include <sstream>
@@ -39,6 +41,16 @@ using namespace pybind11::literals;
 python::PyTensorKey::PyTensorKey(algebra::TensorBasis basis, key_type key)
     : m_key(key), m_basis(std::move(basis))
 {}
+
+python::PyTensorKey::PyTensorKey(algebra::TensorBasis basis, Slice<let_t> letters)
+    : m_key(0), m_basis(std::move(basis))
+{
+    const auto width = m_basis.width();
+    for (const auto& letter : letters) {
+        m_key *= static_cast<key_type>(width);
+        m_key += letter;
+    }
+}
 
 python::PyTensorKey::operator key_type() const noexcept { return m_key; }
 string python::PyTensorKey::to_string() const
@@ -118,6 +130,12 @@ bool python::PyTensorKey::less(const python::PyTensorKey& other) const noexcept
 {
     return m_key < other.m_key;
 }
+python::PyTensorKey python::PyTensorKey::reverse() const
+{
+    auto letters = to_letters();
+    std::reverse(letters.begin(), letters.end());
+    return {m_basis, letters};
+}
 
 static python::PyTensorKey
 construct_key(const py::args& args, const py::kwargs& kwargs)
@@ -181,6 +199,30 @@ construct_key(const py::args& args, const py::kwargs& kwargs)
     return python::PyTensorKey(ctx->get_tensor_basis(), result);
 }
 
+python::PyTensorKey python::operator*(
+        const python::PyTensorKey& lhs,
+        const python::PyTensorKey& rhs
+)
+{
+    const auto basis = lhs.basis();
+    RPY_CHECK(basis == rhs.basis());
+    const auto left_letters = lhs.to_letters();
+    const auto right_letters = rhs.to_letters();
+
+    std::vector<let_t> letters;
+    letters.reserve(left_letters.size() + right_letters.size());
+    auto it = letters.insert(letters.end(), left_letters.begin(), left_letters.end());
+    letters.insert(it, right_letters.begin(), right_letters.end());
+
+    return {basis, letters};
+}
+
+hash_t python::hash_value(const python::PyTensorKey& key) noexcept {
+    auto seed = hash_value(key.m_basis);
+    hash_combine(seed, key.m_key);
+    return seed;
+}
+
 void python::init_py_tensor_key(py::module_& m)
 {
     py::class_<PyTensorKey> klass(m, "TensorKey");
@@ -188,6 +230,7 @@ void python::init_py_tensor_key(py::module_& m)
 
     klass.def_property_readonly("width", &PyTensorKey::width);
     klass.def_property_readonly("max_degree", &PyTensorKey::depth);
+    klass.def("basis", &PyTensorKey::basis);
 
     klass.def("to_index", [](const PyTensorKey& key) {
         return static_cast<key_type>(key);
@@ -195,10 +238,15 @@ void python::init_py_tensor_key(py::module_& m)
     klass.def("degree", [](const PyTensorKey& key) {
         return key.to_letters().size();
     });
+    klass.def("to_letters", &PyTensorKey::to_letters);
     klass.def("split_n", &PyTensorKey::split_n, "n"_a);
+    klass.def("reverse", &PyTensorKey::reverse);
 
     klass.def("__str__", &PyTensorKey::to_string);
     klass.def("__repr__", &PyTensorKey::to_string);
-
     klass.def("__eq__", &PyTensorKey::equals);
+
+    klass.def("__hash__", [](const PyTensorKey& key) { return hash_value(key); });
+
+    klass.def(py::self * py::self);
 }

@@ -1,3 +1,9 @@
+Version 0.1.1:
+  - Fixed type promotions in scalar arithmetic - left hand types are now promoted when appropriate.
+  - Added "tensor_functions" module for implementing additional functions on tensors. Currently only Log is implemented.
+
+
+
 Version 0.1.0:
   - Added framework for integrating device support and redesigned scalars module to accommodate the changes.
   - Made changes to type deduction in constructors to avoid exceptions when providing lists of python ints/floats.

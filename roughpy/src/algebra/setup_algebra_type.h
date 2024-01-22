@@ -49,6 +49,7 @@ RPY_MSVC_DISABLE_WARNING(4661)
 #include <roughpy/scalars/scalar.h>
 
 #include "args/numpy.h"
+#include "context.h"
 #include "scalars/scalar_type.h"
 
 namespace rpy {
@@ -85,6 +86,9 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
     });
     klass.def_property_readonly("storage_type", [](const Alg& arg) {
         return arg.storage_type();
+    });
+    klass.def_property_readonly("context", [](const Alg& arg) {
+        return py::handle(python::RPyContext_FromContext(arg.context()));
     });
 
     // setup dynamic properties

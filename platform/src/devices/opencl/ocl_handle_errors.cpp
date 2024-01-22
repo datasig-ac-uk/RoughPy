@@ -30,6 +30,7 @@
 //
 
 #include "ocl_handle_errors.h"
+#include <roughpy/platform/errors.h>
 #include <sstream>
 
 void rpy::devices::cl::handle_cl_error(

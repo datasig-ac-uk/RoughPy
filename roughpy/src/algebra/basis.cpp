@@ -47,13 +47,19 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
 
     py::class_<T> basis(m, name);
 
-//    basis.def(py::init<deg_t, deg_t>([](deg_t width, deg_t depth) {
-//
-//         }));
+    //    basis.def(py::init<deg_t, deg_t>([](deg_t width, deg_t depth) {
+    //
+    //         }));
 
-    basis.def_property_readonly("width", &T::width);
-    basis.def_property_readonly("depth", &T::depth);
-    basis.def_property_readonly("dimension", &T::dimension);
+    basis.def_property_readonly("width", [](const T& basis) {
+        return basis.width();
+    });
+    basis.def_property_readonly("depth", [](const T& basis) {
+        return basis.depth();
+    });
+    basis.def_property_readonly("dimension", [](const T& basis) {
+        return basis.dimension();
+    });
 
     basis.def(
             "index_to_key",
@@ -75,11 +81,11 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
             [](const T& self, const K& key) { return self.parents(0); },
             "key"_a
     );
-    basis.def("size", &T::size);
-
-    basis.def("__iter__", [](const T& self) {
-        return KIter(self);
+    basis.def("size", [](const T& basis, deg_t degree) {
+        return basis.size(degree);
     });
+
+    basis.def("__iter__", [](const T& self) { return KIter(self); });
 
     return basis;
 }
@@ -88,10 +94,9 @@ void python::init_basis(py::module_& m)
 {
 
     wordlike_basis_setup<TensorBasis, PyTensorKey, PyTensorKeyIterator>(
-            m, "TensorBasis"
+            m,
+            "TensorBasis"
     );
 
-    wordlike_basis_setup<LieBasis, PyLieKey, PyLieKeyIterator>(
-            m, "LieBasis"
-    );
+    wordlike_basis_setup<LieBasis, PyLieKey, PyLieKeyIterator>(m, "LieBasis");
 }

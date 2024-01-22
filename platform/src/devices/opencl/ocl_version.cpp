@@ -8,6 +8,7 @@
 #include <regex>
 #include <stdexcept>
 #include <string>
+#include <roughpy/platform/errors.h>
 
 using namespace rpy;
 using namespace devices;

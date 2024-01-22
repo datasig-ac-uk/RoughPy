@@ -136,13 +136,16 @@ content_type_of(PackedScalarTypePointer<ScalarContentType> ptype) noexcept
     return content_type_of(ptype.get_type_info());
 }
 
+template <typename T>
+struct can_be_scalar : conditional_t<
+                               !is_base_of<Scalar, T>::value,
+                               std::true_type,
+                               std::false_type> {
+};
 
 template <typename T>
-struct can_be_scalar : conditional_t<!is_base_of<Scalar, T>::value, std::true_type, std::false_type> {};
-
-template <typename T>
-struct can_be_scalar<std::unique_ptr<T>> : std::false_type {};
-
+struct can_be_scalar<std::unique_ptr<T>> : std::false_type {
+};
 
 }// namespace dtl
 
@@ -206,20 +209,18 @@ public:
     template <typename T, typename = enable_if_t<dtl::can_be_scalar<T>::value>>
     explicit Scalar(const T& value)
         : p_type_and_content_type(
-                devices::type_info<remove_cv_t<T>>(),
-                dtl::ScalarContentType::TrivialBytes
-        ),
+                  devices::type_info<remove_cv_t<T>>(),
+                  dtl::ScalarContentType::TrivialBytes
+          ),
           integer_for_convenience(0)
     {
-        if constexpr (is_standard_layout<T>::value
-                      && is_trivially_copyable<T>::value
-                      && is_trivially_destructible<T>::value
-                      && sizeof(T) <= sizeof(void*)) {
+        if constexpr (is_standard_layout<T>::value && is_trivially_copyable<T>::value && is_trivially_destructible<T>::value && sizeof(T) <= sizeof(void*)) {
             std::memcpy(trivial_bytes, &value, sizeof(T));
         } else {
             allocate_data();
             construct_inplace(static_cast<T*>(opaque_pointer), value);
         }
+        RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     }
 
     template <
@@ -277,12 +278,14 @@ public:
     explicit Scalar(devices::TypeInfo info, void* ptr);
     explicit Scalar(devices::TypeInfo info, const void* ptr);
 
-    template <typename I, typename = enable_if_t<is_base_of<ScalarInterface, I>::value>>
+    template <
+            typename I,
+            typename = enable_if_t<is_base_of<ScalarInterface, I>::value>>
     explicit Scalar(std::unique_ptr<I>&& iface)
         : p_type_and_content_type(
-                nullptr,
-                dtl::ScalarContentType::OwnedInterface
-        ),
+                  nullptr,
+                  dtl::ScalarContentType::OwnedInterface
+          ),
           interface(std::move(iface))
     {}
 
@@ -318,7 +321,7 @@ public:
     enable_if_t<!is_base_of<Scalar, T>::value, Scalar&> operator=(const T& value
     )
     {
-        if (fast_is_zero()) {
+        if (p_type_and_content_type.is_null()) {
             construct_inplace(this, value);
         } else {
             switch (p_type_and_content_type.get_enumeration()) {
@@ -417,6 +420,8 @@ public:
      */
     void* mut_pointer();
 
+    bool is_mutable() const noexcept;
+
     /**
      * @brief Get a pointer to the scalar type representing this value.
      *
@@ -429,6 +434,19 @@ public:
      * @return type info of this.
      */
     devices::TypeInfo type_info() const noexcept;
+
+    type_pointer packed_type_info() const noexcept
+    {
+        return p_type_and_content_type;
+    }
+
+    void change_type(devices::TypeInfo new_type_info)
+    {
+        Scalar tmp(new_type_info);
+        dtl::scalar_convert_copy(tmp.mut_pointer(), new_type_info, *this);
+        this->~Scalar();
+        construct_inplace(this, std::move(tmp));
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const Scalar& value);
 
@@ -504,24 +522,28 @@ const T& Scalar::as_type() const noexcept
 inline Scalar operator+(const Scalar& lhs, const Scalar& rhs)
 {
     Scalar result(lhs);
+    RPY_DBG_ASSERT(result.is_mutable());
     result += rhs;
     return result;
 }
 inline Scalar operator-(const Scalar& lhs, const Scalar& rhs)
 {
     Scalar result(lhs);
+    RPY_DBG_ASSERT(result.is_mutable());
     result -= rhs;
     return result;
 }
 inline Scalar operator*(const Scalar& lhs, const Scalar& rhs)
 {
     Scalar result(lhs);
+    RPY_DBG_ASSERT(result.is_mutable());
     result *= rhs;
     return result;
 }
 inline Scalar operator/(const Scalar& lhs, const Scalar& rhs)
 {
     Scalar result(lhs);
+    RPY_DBG_ASSERT(result.is_mutable());
     result /= rhs;
     return result;
 }

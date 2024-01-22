@@ -9,12 +9,13 @@ include(GNUInstallDirs)
 
 add_roughpy_component(Core INTERFACE
         PUBLIC_HEADERS
+        include/roughpy/core/alloc.h
+        include/roughpy/core/hash.h
         include/roughpy/core/types.h
         include/roughpy/core/traits.h
         include/roughpy/core/macros.h
         include/roughpy/core/helpers.h
         include/roughpy/core/slice.h
-        include/roughpy/core/alloc.h
         DEPENDENCIES INTERFACE
             Boost::boost
         )

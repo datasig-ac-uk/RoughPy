@@ -40,6 +40,9 @@ add_roughpy_component(Scalars
         src/scalar/raw_bytes.cpp
         src/scalar/raw_bytes.h
         src/scalar/serialization.cpp
+        src/scalar/serialization.h
+        src/scalar/type_promotion.cpp
+        src/scalar/type_promotion.h
         src/scalar_helpers/standard_scalar_type.h
         src/types/aprational/ap_rational_type.cpp
         src/types/aprational/ap_rational_type.h

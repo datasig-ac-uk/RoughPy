@@ -83,6 +83,7 @@ constexpr bool is_signed(const devices::TypeInfo& info) noexcept
         case devices::TypeCode::ArbitraryPrecisionFloat:
         case devices::TypeCode::ArbitraryPrecisionRational: return true;
     }
+    RPY_UNREACHABLE_RETURN(false);
 }
 
 constexpr bool is_unsigned(const devices::TypeInfo& info) noexcept
