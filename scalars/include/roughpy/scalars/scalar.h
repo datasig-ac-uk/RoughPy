@@ -433,6 +433,19 @@ public:
      */
     devices::TypeInfo type_info() const noexcept;
 
+    type_pointer packed_type_info() const noexcept
+    {
+        return p_type_and_content_type;
+    }
+
+    void change_type(devices::TypeInfo new_type_info)
+    {
+        Scalar tmp(new_type_info);
+        dtl::scalar_convert_copy(tmp.mut_pointer(), new_type_info, *this);
+        this->~Scalar();
+        construct_inplace(this, std::move(tmp));
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Scalar& value);
 
     /**
