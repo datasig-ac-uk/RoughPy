@@ -64,7 +64,7 @@ void python::assign_py_object_to_scalar(
     } else if (RPyPolynomial_Check(object.ptr())) {
         dst = RPyPolynomial_cast(object.ptr());
     } else if (py::isinstance<scalars::Scalar>(object)) {
-        dst = object.cast<const scalars::Scalar &>();
+        dst = object.cast<const scalars::Scalar&>();
     } else {
         // TODO: other checks
 
@@ -101,19 +101,22 @@ void python::init_scalars(pybind11::module_& m)
     RPY_CLANG_DISABLE_WARNING(-Wself-assign-overloaded)
 
     klass.def(-py::self);
-    klass.def(py::self + py::self);
-    klass.def(py::self - py::self);
-    klass.def(py::self * py::self);
-    klass.def(py::self / py::self);
+    //    klass.def(py::self + py::self);
+    //    klass.def(py::self - py::self);
+    //    klass.def(py::self * py::self);
+    //    klass.def(py::self / py::self);
+    //
+    //    klass.def(py::self += py::self);
+    //    klass.def(py::self -= py::self);
+    //    klass.def(py::self *= py::self);
+    //    klass.def(py::self /= py::self);
 
-    klass.def(py::self += py::self);
-    klass.def(py::self -= py::self);
-    klass.def(py::self *= py::self);
-    klass.def(py::self /= py::self);
+    //    klass.def(py::self == py::self);
+    //    klass.def(py::self != py::self);
 
-    klass.def(py::self == py::self);
-    klass.def(py::self != py::self);
-
+    klass.def("__add__", [](const Scalar& self, const Scalar& other) {
+        return self + other;
+    });
     klass.def("__add__", [](const Scalar& self, scalar_t other) {
         return self + Scalar(other);
     });
@@ -125,6 +128,9 @@ void python::init_scalars(pybind11::module_& m)
     });
     klass.def("__radd__", [](const Scalar& self, long long other) {
         return Scalar(other) + self;
+    });
+    klass.def("__iadd__", [](Scalar& self, const Scalar& other) {
+        return self += other;
     });
     klass.def("__iadd__", [](Scalar& self, scalar_t other) {
         return self += Scalar(other);
@@ -152,6 +158,9 @@ void python::init_scalars(pybind11::module_& m)
         return self -= Scalar(other);
     });
 
+    klass.def("__mul__", [](const Scalar& self, const Scalar& other) {
+        return self * other;
+    });
     klass.def("__mul__", [](const Scalar& self, scalar_t other) {
         return self * Scalar(other);
     });
@@ -164,13 +173,15 @@ void python::init_scalars(pybind11::module_& m)
     klass.def("__rmul__", [](const Scalar& self, long long other) {
         return Scalar(other) * self;
     });
+    klass.def("__imul__", [](Scalar& self, const Scalar& other) {
+        return self *= other;
+    });
     klass.def("__imul__", [](Scalar& self, scalar_t other) {
         return self *= Scalar(other);
     });
     klass.def("__imul__", [](Scalar& self, long long other) {
         return self *= Scalar(other);
     });
-
 
     klass.def("__div__", [](const Scalar& self, scalar_t other) {
         if (other == 0.0) { throw py::value_error("division by zero"); }
@@ -195,6 +206,9 @@ void python::init_scalars(pybind11::module_& m)
         return self /= Scalar(other);
     });
 
+    klass.def("__eq__", [](const Scalar& lhs, const Scalar& rhs) {
+        return lhs == rhs;
+    });
     klass.def("__eq__", [](const Scalar& self, scalar_t other) {
         return self == Scalar(other);
     });
@@ -208,16 +222,19 @@ void python::init_scalars(pybind11::module_& m)
         return self == Scalar(other);
     });
 
-    klass.def("__neq__", [](const Scalar& self, scalar_t other) {
+    klass.def("__ne__", [](const Scalar& lhs, const Scalar& rhs) {
+        return lhs != rhs;
+    });
+    klass.def("__ne__", [](const Scalar& self, scalar_t other) {
         return self != Scalar(other);
     });
-    klass.def("__neq__", [](scalar_t other, const Scalar& self) {
+    klass.def("__ne__", [](scalar_t other, const Scalar& self) {
         return self != Scalar(other);
     });
-    klass.def("__neq__", [](const Scalar& self, long long other) {
+    klass.def("__ne__", [](const Scalar& self, long long other) {
         return self != Scalar(other);
     });
-    klass.def("__neq__", [](long long other, const Scalar& self) {
+    klass.def("__ne__", [](long long other, const Scalar& self) {
         return self != Scalar(other);
     });
 
@@ -235,9 +252,9 @@ void python::init_scalars(pybind11::module_& m)
         } else {
             auto info = self.type_info();
             if (info.code == devices::TypeCode::Int) {
-                ss << "int" << CHAR_BIT*info.bytes;
+                ss << "int" << CHAR_BIT * info.bytes;
             } else if (info.code == devices::TypeCode::UInt) {
-                ss << "uint" << CHAR_BIT*info.bytes;
+                ss << "uint" << CHAR_BIT * info.bytes;
             }
         }
         ss << ", value approx " << self << ")";
@@ -436,7 +453,7 @@ check_and_set_dtype(python::PyToBufferOptions& options, py::handle arg)
     if (options.type == nullptr) {
 
         if (py::isinstance<scalars::Scalar>(arg)) {
-            const auto &scal = arg.cast<const scalars::Scalar &>();
+            const auto& scal = arg.cast<const scalars::Scalar&>();
             auto arg_type = scal.type();
             if (arg_type) {
                 options.type = *arg_type;
