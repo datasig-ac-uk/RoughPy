@@ -19,6 +19,6 @@
     "./tools/triplets"
   ],
   "overlay-ports": [
-    "/tools/ports"
+    "./tools/ports"
   ]
 }
