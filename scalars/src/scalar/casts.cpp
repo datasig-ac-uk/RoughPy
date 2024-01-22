@@ -92,8 +92,6 @@ write_result(D*, const T*, dimn_t) noexcept
 
 static inline bool write_single_poly(rational_poly_scalar* dst, const rational_poly_scalar& value)
 {
-    // std::cout << "writing " << value << " to dst " << *dst << '\n';
-
     *dst = value;
     return true;
 }
