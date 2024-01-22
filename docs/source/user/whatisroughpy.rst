@@ -16,6 +16,11 @@ RoughPy's major components are an algebra library for Lie algebras, free tensors
     :autoplay:
     :muted:
 
+|
+
+References
+==========
+
 .. bibliography::
 
 .. todo::
