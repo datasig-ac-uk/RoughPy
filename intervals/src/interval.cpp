@@ -31,6 +31,8 @@
 //
 
 #include <ostream>
+
+#include <roughpy/platform/errors.h>
 #include <roughpy/intervals/interval.h>
 
 using namespace rpy;

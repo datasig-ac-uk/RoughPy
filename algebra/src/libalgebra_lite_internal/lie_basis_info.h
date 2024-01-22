@@ -170,6 +170,25 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
                 convert_from_impl(basis, parents_pair.second)};
     }
 
+    static optional<our_key_type> child(storage_t basis, const our_key_type& lparent, const our_key_type& rparent)
+    {
+        using parent_type = typename lal::hall_basis::parent_type;
+
+        parent_type parents {
+                convert_to_impl(basis, lparent),
+                convert_to_impl(basis, rparent)
+        };
+
+        auto result = basis->find(parents);
+
+        optional<our_key_type> out {};
+        if (result.found) {
+            out = convert_from_impl(basis, result.it->second);
+        }
+
+        return out;
+    }
+
     /// Get the first letter of the key as a word
     static let_t first_letter(storage_t basis, const our_key_type& key)
     {
@@ -191,6 +210,8 @@ struct BasisInfo<LieBasis, lal::hall_basis> {
     {
         return basis->letter(convert_to_impl(basis, key));
     }
+
+    static bool are_same(storage_t basis1, storage_t basis2) noexcept { return basis1 == basis2; }
 };
 }// namespace algebra
 }// namespace rpy

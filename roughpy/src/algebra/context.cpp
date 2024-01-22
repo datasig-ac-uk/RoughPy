@@ -349,6 +349,36 @@ RPyContext_new(PyObject* self, PyObject* args, PyObject* kwargs)
     RPY_UNREACHABLE_RETURN(nullptr);
 }
 
+static PyObject *
+    RPyContext_richcompare(PyObject * o1, PyObject * o2, int
+opid ) {
+
+switch ( opid ) {
+case Py_EQ :
+if ( ctx_cast(o1) == ctx_cast(o2)) {
+Py_RETURN_TRUE ;
+}
+Py_RETURN_FALSE;
+case Py_NE:
+if (
+ctx_cast(o1)
+==
+ctx_cast(o2)
+) {
+Py_RETURN_FALSE;
+}
+Py_RETURN_TRUE;
+case Py_LT:
+case Py_LE:
+case Py_GT:
+case Py_GE:
+break;
+}
+
+return nullptr;
+}
+
+
 static const char* CONTEXT_DOC = R"rpydoc()rpydoc";
 PyTypeObject rpy::python::RPyContext_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)         //
@@ -374,7 +404,7 @@ PyTypeObject rpy::python::RPyContext_Type = {
         CONTEXT_DOC,                              /* tp_doc */
         nullptr,                                  /* tp_traverse */
         nullptr,                                  /* tp_clear */
-        nullptr,                                  /* tp_richcompare */
+        RPyContext_richcompare,                   /* tp_richcompare */
         0,                                        /* tp_weaklistoffset */
         (getiterfunc) nullptr,                    /* tp_iter */
         nullptr,                                  /* tp_iternext */

@@ -31,6 +31,8 @@
 
 #include "roughpy_module.h"
 
+#include <roughpy/core/hash.h>
+#include <roughpy/core/slice.h>
 #include <roughpy/algebra/tensor_basis.h>
 
 namespace rpy {
@@ -61,24 +63,40 @@ class PyTensorKey
 public:
     explicit PyTensorKey(algebra::TensorBasis basis, key_type key);
 
+    PyTensorKey(algebra::TensorBasis basis, Slice<let_t> letters);
+
     explicit operator key_type() const noexcept;
 
-    string to_string() const;
-    PyTensorKey lparent() const;
-    PyTensorKey rparent() const;
-    bool is_letter() const;
+    RPY_NO_DISCARD string to_string() const;
+    RPY_NO_DISCARD PyTensorKey lparent() const;
+    RPY_NO_DISCARD PyTensorKey rparent() const;
+    RPY_NO_DISCARD bool is_letter() const;
 
-    deg_t width() const;
-    deg_t depth() const;
-    algebra::TensorBasis basis() const { return m_basis; }
-    pair<PyTensorKey, PyTensorKey> split_n(deg_t n) const;
+    RPY_NO_DISCARD deg_t width() const;
+    RPY_NO_DISCARD deg_t depth() const;
+    RPY_NO_DISCARD algebra::TensorBasis basis() const { return m_basis; }
+    RPY_NO_DISCARD pair<PyTensorKey, PyTensorKey> split_n(deg_t n) const;
 
-    deg_t degree() const;
-    std::vector<let_t> to_letters() const;
+    RPY_NO_DISCARD deg_t degree() const;
+    RPY_NO_DISCARD std::vector<let_t> to_letters() const;
 
+    RPY_NO_DISCARD PyTensorKey reverse() const;
+
+    RPY_NO_DISCARD
     bool equals(const PyTensorKey& other) const noexcept;
+    RPY_NO_DISCARD
     bool less(const PyTensorKey& other) const noexcept;
+
+
+
+    friend hash_t hash_value(const PyTensorKey& key) noexcept;
+
 };
+
+hash_t hash_value(const PyTensorKey& key) noexcept;
+
+
+RPY_NO_DISCARD PyTensorKey operator*(const PyTensorKey& lhs, const PyTensorKey& rhs);
 
 void init_py_tensor_key(py::module_& m);
 

@@ -165,6 +165,27 @@ struct BasisInfo<TensorBasis, lal::tensor_basis> {
                 convert_from_impl(basis, basis->rparent(tmpkey))};
     }
 
+    static optional<our_key_type> child(storage_t basis, const our_key_type& lparent, const our_key_type& rparent)
+    {
+        const auto left = convert_to_impl(basis, lparent);
+        const auto right = convert_to_impl(basis, rparent);
+
+        const auto ldegree = left.degree();
+        const auto rdegree = right.degree();
+
+        optional<our_key_type> out {};
+
+        const auto degree = ldegree + rdegree;
+        if (degree <= basis->depth()) {
+            const auto shift = basis->powers()[rdegree];
+            const auto idx = left.index() * shift + right.index();
+
+            out = convert_from_impl(basis, impl_key_type {degree, idx});
+        }
+
+        return out;
+    }
+
     /// Get the first letter of the key as a word
     static let_t first_letter(storage_t basis, const our_key_type& key)
     {
@@ -188,6 +209,9 @@ struct BasisInfo<TensorBasis, lal::tensor_basis> {
     {
         return lal::tensor_basis::letter(convert_to_impl(basis, key));
     }
+
+
+    static bool are_same(storage_t basis1, storage_t basis2) noexcept { return basis1 == basis2; }
 };
 }// namespace algebra
 }// namespace rpy

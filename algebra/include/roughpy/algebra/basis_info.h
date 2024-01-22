@@ -157,6 +157,12 @@ struct BasisInfo {
                 convert_from_impl(basis, parents_pair.second)};
     }
 
+
+    static optional<our_key_type> child(storage_t basis, const our_key_type& lparent, const our_key_type& rparent)
+    {
+        return {};
+    }
+
     /// Get the first letter of the key as a word
     static let_t first_letter(storage_t basis, const our_key_type& key)
     {
@@ -174,6 +180,9 @@ struct BasisInfo {
     {
         return basis->letter(convert_to_impl(basis, key));
     }
+
+    /// Determine whether two bases are the same
+    static bool are_same(storage_t basis1, storage_t basis2) noexcept { return basis1 == basis2; }
 };
 
 }// namespace algebra

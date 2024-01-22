@@ -160,6 +160,9 @@ void python::init_free_tensor(py::module_& m)
     klass.def("__getitem__", [](const FreeTensor& self, key_type key) {
         return self[key];
     });
+    klass.def("__getitem__", [](const FreeTensor& self, const PyTensorKey& tkey) {
+             return self[static_cast<key_type>(tkey)];
+         });
 
     klass.def("exp", &FreeTensor::exp);
     klass.def("log", &FreeTensor::log);

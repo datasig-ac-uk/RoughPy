@@ -296,8 +296,10 @@ bool scalars::dtl::is_pointer_zero(
         const PackedScalarTypePointer<scalars::dtl::ScalarContentType>& p_type
 ) noexcept
 {
+    const auto info = (p_type.is_pointer() ? p_type.get_pointer()->type_info() : p_type.get_type_info());
+
 #define X(TYP) return is_zero(*((const TYP*) ptr))
-    DO_FOR_EACH_X(p_type.get_type_info())
+    DO_FOR_EACH_X(info)
 #undef X
     return true;
 }

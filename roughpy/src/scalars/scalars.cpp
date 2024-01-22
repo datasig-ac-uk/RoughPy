@@ -39,6 +39,7 @@
 
 #include "dlpack.h"
 #include "r_py_polynomial.h"
+// #include "scalar.h"
 #include "scalar_type.h"
 
 #include "args/dlpack_helpers.h"
@@ -62,10 +63,12 @@ void python::assign_py_object_to_scalar(
         dst = object.cast<int64_t>();
     } else if (RPyPolynomial_Check(object.ptr())) {
         dst = RPyPolynomial_cast(object.ptr());
+    } else if (py::isinstance<scalars::Scalar>(object)) {
+        dst = object.cast<const scalars::Scalar&>();
     } else {
         // TODO: other checks
 
-        auto tp = py::type::of(object);
+        auto tp = py::str(py::type::of(object));
         RPY_THROW(
                 py::value_error,
                 "bad conversion from " + tp.cast<string>() + " to "
@@ -82,6 +85,11 @@ void python::init_scalars(pybind11::module_& m)
 
     python::init_scalar_types(m);
     python::init_monomial(m);
+    //
+    // if (PyType_Ready(&PyScalar_Type) < 0) {
+    //     throw py::error_already_set();
+    // }
+    // m.add_object("Scalar", (PyObject*) &PyScalar_Type);
 
     py::class_<Scalar> klass(m, "Scalar", SCALAR_DOC);
 
@@ -93,24 +101,141 @@ void python::init_scalars(pybind11::module_& m)
     RPY_CLANG_DISABLE_WARNING(-Wself-assign-overloaded)
 
     klass.def(-py::self);
-    klass.def(py::self + py::self);
-    klass.def(py::self - py::self);
-    klass.def(py::self * py::self);
-    klass.def(py::self / py::self);
+    //    klass.def(py::self + py::self);
+    //    klass.def(py::self - py::self);
+    //    klass.def(py::self * py::self);
+    //    klass.def(py::self / py::self);
+    //
+    //    klass.def(py::self += py::self);
+    //    klass.def(py::self -= py::self);
+    //    klass.def(py::self *= py::self);
+    //    klass.def(py::self /= py::self);
 
-    klass.def(py::self += py::self);
-    klass.def(py::self -= py::self);
-    klass.def(py::self *= py::self);
-    klass.def(py::self /= py::self);
+    //    klass.def(py::self == py::self);
+    //    klass.def(py::self != py::self);
 
-    klass.def(py::self == py::self);
-    klass.def(py::self != py::self);
+    klass.def("__add__", [](const Scalar& self, const Scalar& other) {
+        return self + other;
+    });
+    klass.def("__add__", [](const Scalar& self, scalar_t other) {
+        return self + Scalar(other);
+    });
+    klass.def("__add__", [](const Scalar& self, long long other) {
+        return self + Scalar(other);
+    });
+    klass.def("__radd__", [](const Scalar& self, scalar_t other) {
+        return Scalar(other) + self;
+    });
+    klass.def("__radd__", [](const Scalar& self, long long other) {
+        return Scalar(other) + self;
+    });
+    klass.def("__iadd__", [](Scalar& self, const Scalar& other) {
+        return self += other;
+    });
+    klass.def("__iadd__", [](Scalar& self, scalar_t other) {
+        return self += Scalar(other);
+    });
+    klass.def("__iadd__", [](Scalar& self, long long other) {
+        return self += Scalar(other);
+    });
 
+    klass.def("__sub__", [](const Scalar& self, scalar_t other) {
+        return self - Scalar(other);
+    });
+    klass.def("__sub__", [](const Scalar& self, long long other) {
+        return self - Scalar(other);
+    });
+    klass.def("__rsub__", [](const Scalar& self, scalar_t other) {
+        return Scalar(other) - self;
+    });
+    klass.def("__rsub__", [](const Scalar& self, long long other) {
+        return Scalar(other) - self;
+    });
+    klass.def("__isub__", [](Scalar& self, scalar_t other) {
+        return self -= Scalar(other);
+    });
+    klass.def("__isub__", [](Scalar& self, long long other) {
+        return self -= Scalar(other);
+    });
+
+    klass.def("__mul__", [](const Scalar& self, const Scalar& other) {
+        return self * other;
+    });
+    klass.def("__mul__", [](const Scalar& self, scalar_t other) {
+        return self * Scalar(other);
+    });
+    klass.def("__mul__", [](const Scalar& self, long long other) {
+        return self * Scalar(other);
+    });
+    klass.def("__rmul__", [](const Scalar& self, scalar_t other) {
+        return Scalar(other) * self;
+    });
+    klass.def("__rmul__", [](const Scalar& self, long long other) {
+        return Scalar(other) * self;
+    });
+    klass.def("__imul__", [](Scalar& self, const Scalar& other) {
+        return self *= other;
+    });
+    klass.def("__imul__", [](Scalar& self, scalar_t other) {
+        return self *= Scalar(other);
+    });
+    klass.def("__imul__", [](Scalar& self, long long other) {
+        return self *= Scalar(other);
+    });
+
+    klass.def("__div__", [](const Scalar& self, scalar_t other) {
+        if (other == 0.0) { throw py::value_error("division by zero"); }
+        return self / Scalar(other);
+    });
+    klass.def("__div__", [](const Scalar& self, long long other) {
+        if (other == 0) { throw py::value_error("division by zero"); }
+        return self / Scalar(other);
+    });
+    klass.def("__rdiv__", [](const Scalar& self, scalar_t other) {
+        return Scalar(other) / self;
+    });
+    klass.def("__rdiv__", [](const Scalar& self, long long other) {
+        return Scalar(other) / self;
+    });
+    klass.def("__idiv__", [](Scalar& self, scalar_t other) {
+        if (other == 0.0) { throw py::value_error("division by zero"); }
+        return self /= Scalar(other);
+    });
+    klass.def("__idiv__", [](Scalar& self, long long other) {
+        if (other == 0) { throw py::value_error("division by zero"); }
+        return self /= Scalar(other);
+    });
+
+    klass.def("__eq__", [](const Scalar& lhs, const Scalar& rhs) {
+        return lhs == rhs;
+    });
     klass.def("__eq__", [](const Scalar& self, scalar_t other) {
         return self == Scalar(other);
     });
     klass.def("__eq__", [](scalar_t other, const Scalar& self) {
         return self == Scalar(other);
+    });
+    klass.def("__eq__", [](const Scalar& self, long long other) {
+        return self == Scalar(other);
+    });
+    klass.def("__eq__", [](long long other, const Scalar& self) {
+        return self == Scalar(other);
+    });
+
+    klass.def("__ne__", [](const Scalar& lhs, const Scalar& rhs) {
+        return lhs != rhs;
+    });
+    klass.def("__ne__", [](const Scalar& self, scalar_t other) {
+        return self != Scalar(other);
+    });
+    klass.def("__ne__", [](scalar_t other, const Scalar& self) {
+        return self != Scalar(other);
+    });
+    klass.def("__ne__", [](const Scalar& self, long long other) {
+        return self != Scalar(other);
+    });
+    klass.def("__ne__", [](long long other, const Scalar& self) {
+        return self != Scalar(other);
     });
 
     klass.def("__str__", [](const Scalar& self) {
@@ -120,8 +245,20 @@ void python::init_scalars(pybind11::module_& m)
     });
     klass.def("__repr__", [](const Scalar& self) {
         std::stringstream ss;
-        ss << "Scalar(type=" << string((*self.type())->name())
-           << ", value approx " << self << ")";
+        ss << "Scalar(type=";
+        auto tp = self.type();
+        if (tp) {
+            ss << string((*tp)->name());
+        } else {
+            auto info = self.type_info();
+            if (info.code == devices::TypeCode::Int) {
+                ss << "int" << CHAR_BIT * info.bytes;
+            } else if (info.code == devices::TypeCode::UInt) {
+                ss << "uint" << CHAR_BIT * info.bytes;
+            }
+        }
+        ss << ", value approx " << self << ")";
+
         return ss.str();
     });
 
@@ -261,7 +398,9 @@ static bool try_fill_buffer_dlpack(
     const auto tensor_stype = scalars::scalar_type_of(tensor_stype_info);
 
     if (options.type == nullptr) {
-        if (tensor_stype) { options.type = *tensor_stype; } else {
+        if (tensor_stype) {
+            options.type = *tensor_stype;
+        } else {
             options.type = scalars::ScalarType::for_info(tensor_stype_info);
         }
     }
@@ -312,7 +451,16 @@ static void
 check_and_set_dtype(python::PyToBufferOptions& options, py::handle arg)
 {
     if (options.type == nullptr) {
-        if (options.no_check_imported) {
+
+        if (py::isinstance<scalars::Scalar>(arg)) {
+            const auto& scal = arg.cast<const scalars::Scalar&>();
+            auto arg_type = scal.type();
+            if (arg_type) {
+                options.type = *arg_type;
+            } else {
+                options.type = scalars::ScalarType::for_info(scal.type_info());
+            }
+        } else if (options.no_check_imported) {
             options.type = *scalars::ScalarType::of<double>();
         } else {
             options.type = python::py_type_to_scalar_type(py::type::of(arg));
@@ -653,7 +801,8 @@ scalars::KeyScalarArray python::py_to_buffer(
                 }
             }
         }
-    } else if (object.is_none()) {} else {
+    } else if (object.is_none()) {
+    } else {
         RPY_THROW(
                 std::invalid_argument,
                 "could not parse argument to a valid scalar array type"
