@@ -154,19 +154,37 @@ inline void scalar_inplace_arithmetic(
     }
 }
 
+template <typename Op>
+inline void scalar_inplace_arithmetic(Scalar& dst, const Scalar& src, Op&& op)
+{
+    const auto dst_info = dst.type_info();
+    const auto src_info = src.type_info();
+
+    if (src_info == dst_info) {
+        do_op(dst.mut_pointer(), src.pointer(), dst_info, std::forward<Op>(op));
+    } else {
+        auto out_type = scalars::dtl::compute_dest_type(
+                dst.packed_type_info(),
+                src.packed_type_info()
+        );
+        if (out_type != dst_info) { dst.change_type(out_type); }
+        scalar_inplace_arithmetic(
+                dst.mut_pointer(),
+                dst.packed_type_info(),
+                src.pointer(),
+                src.packed_type_info(),
+                std::forward<Op>(op)
+        );
+    }
+}
+
 }// namespace
 
 Scalar& Scalar::operator+=(const Scalar& other)
 {
     RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     if (!other.fast_is_zero()) {
-        scalar_inplace_arithmetic(
-            mut_pointer(),
-            p_type_and_content_type,
-            other.pointer(),
-            other.p_type_and_content_type,
-            AddInplace()
-        );
+        scalar_inplace_arithmetic(*this, other, AddInplace());
     }
     return *this;
 }
@@ -175,13 +193,7 @@ Scalar& Scalar::operator-=(const Scalar& other)
 {
     RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     if (!other.fast_is_zero()) {
-        scalar_inplace_arithmetic(
-            mut_pointer(),
-            p_type_and_content_type,
-            other.pointer(),
-            other.p_type_and_content_type,
-            SubInplace()
-        );
+        scalar_inplace_arithmetic(*this, other, SubInplace());
     }
     return *this;
 }
@@ -190,14 +202,10 @@ Scalar& Scalar::operator*=(const Scalar& other)
 {
     RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     if (!fast_is_zero() && !other.fast_is_zero()) {
-        scalar_inplace_arithmetic(
-            mut_pointer(),
-            p_type_and_content_type,
-            other.pointer(),
-            other.p_type_and_content_type,
-            MulInplace()
-        );
-    } else { operator=(0); }
+        scalar_inplace_arithmetic(*this, other, MulInplace());
+    } else {
+        operator=(0);
+    }
 
     return *this;
 }
