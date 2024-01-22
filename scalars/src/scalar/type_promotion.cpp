@@ -66,6 +66,8 @@ devices::TypeInfo compute_float_promotion(
                     src_info.alignment,
                     1};
         }
+
+        return dst_info;
     }
 
     return src_info;
