@@ -49,4 +49,4 @@ html_static_path = ['_static']
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 # Display todos by setting to True
-todo_include_todos = True
+todo_include_todos = False
