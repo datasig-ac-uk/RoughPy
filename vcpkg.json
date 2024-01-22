@@ -41,7 +41,6 @@
   }, {
     "name" : "gmp",
     "version>=" : "6.2.1#21",
-    "platform" : "linux"
   }, {
     "name" : "mpir",
     "version>=" : "2022-03-02",
