@@ -13,14 +13,14 @@ details are found in :doc:`../reference/index`.
 
    whatisroughpy
    installation
-   quickstart
    absolute_beginners
 
 .. toctree::
    :caption: Fundamentals and usage
    :maxdepth: 2
 
-   basics
+   fundamentals
+   tutorials
 
 .. toctree::
    :caption: Advanced usage

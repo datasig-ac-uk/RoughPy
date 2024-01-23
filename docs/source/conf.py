@@ -18,8 +18,15 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx_design",
-    "sphinx.ext.todo"
+    "sphinx.ext.todo",
+    "nbsphinx",
+    'myst_parser',
+    'IPython.sphinxext.ipython_console_highlighting',
+    'sphinxcontrib.bibtex',
+    "sphinxcontrib.video",
 ]
+
+bibtex_bibfiles = ['references.bib']
 
 source_suffix = {
     '.rst': 'restructuredtext',
@@ -28,7 +35,7 @@ source_suffix = {
 }
 
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 
 
@@ -36,7 +43,7 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-html_static_path = []
+html_static_path = ['_static']
 
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}

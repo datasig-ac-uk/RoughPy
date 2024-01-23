@@ -33,14 +33,10 @@ We can then use our data to create a Lie element. Here we are creating one with 
     lie = rp.Lie(lie_data, width=3, depth=2, dtype=rp.RationalPoly)
 
 
-If we provide a complementary :doc:`basics.contexts`, then we can use this to create a :doc:`basics.free_tensors`, from our Lie element.
+If we provide a complementary :doc:`fundamentals.contexts`, then we can use this to create a :doc:`fundamentals.free_tensors`, from our Lie element.
 
 ::
 
     context = rp.get_context(3, 2, rp.RationalPoly)
 
     tensor = context.lie_to_tensor(lie)
-
-.. todo::
-
-    Can I plot this in any way?

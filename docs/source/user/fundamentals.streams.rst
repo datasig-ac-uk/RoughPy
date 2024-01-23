@@ -22,7 +22,7 @@ For example, we can create data using a linearly spaced time array.
                                times2.reshape(-1,1),
                                (times*d2t - 2*times*dt).reshape(-1,1)], axis=1)
 
-To create a stream, we should also provide a **context**. For more information, see :doc:`basics.contexts`.
+To create a stream, we should also provide a **context**. For more information, see :doc:`fundamentals.contexts`.
 
 For example, we can create the following context, with Width 2, Depth 6, and Real coefficients.
 
@@ -51,8 +51,4 @@ You can then create a **stream** using your chosen **data** and **context** with
 .. todo::
 
     Show example with tick data, constructor
-
-.. todo::
-
-    Language (English alphabet) example
 
