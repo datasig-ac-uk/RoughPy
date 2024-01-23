@@ -85,7 +85,11 @@ Scalar Scalar::operator-() const
                         dtl::ScalarContentType::OwnedPointer
                 );
                 result.allocate_data();
-                uminus_impl(result.opaque_pointer, interface->pointer(), info);
+                uminus_impl(
+                        result.opaque_pointer,
+                        interface_ptr->pointer(),
+                        info
+                );
                 break;
         }
     }

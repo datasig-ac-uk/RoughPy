@@ -168,7 +168,7 @@ class ROUGHPY_SCALARS_EXPORT Scalar
     union {
         uintptr_t integer_for_convenience;
         byte trivial_bytes[sizeof(uintptr_t)];
-        interface_pointer_t interface;
+        interface_pointer_t interface_ptr;
         void* opaque_pointer;
     };
 
@@ -287,7 +287,7 @@ public:
                   nullptr,
                   dtl::ScalarContentType::OwnedInterface
           ),
-          interface(std::move(iface).release())
+          interface_ptr(std::move(iface).release())
     {}
 
     explicit Scalar(const ScalarType* type, int64_t num, int64_t denom);
@@ -357,7 +357,7 @@ public:
                     );
                 case dtl::ScalarContentType::Interface:
                 case dtl::ScalarContentType::OwnedInterface:
-                    interface->set_value(
+                    interface_ptr->set_value(
                             Scalar(devices::type_info<remove_cv_t<T>>(), &value)
                     );
                     break;
@@ -515,7 +515,7 @@ const T& Scalar::as_type() const noexcept
             return *reinterpret_cast<const T*>(opaque_pointer);
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
-            return *reinterpret_cast<const T*>(interface->pointer());
+            return *reinterpret_cast<const T*>(interface_ptr->pointer());
     }
     RPY_UNREACHABLE_RETURN(*((const T*) &trivial_bytes));
 }
