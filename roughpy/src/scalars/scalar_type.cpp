@@ -71,6 +71,7 @@ PyScalarMetaType_call(PyObject* self, PyObject* args, PyObject* kwargs)
         == 0) {
         return nullptr;
     }
+    RPY_DBG_ASSERT(stype != nullptr);
 
     scalars::Scalar result(stype);
     if (data != nullptr) {
