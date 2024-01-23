@@ -45,14 +45,14 @@ using seed_int_t = uint64_t;
 
 // Forward declarations
 class ROUGHPY_SCALARS_EXPORT ScalarType;
-class ScalarInterface;
-class Scalar;
-class ScalarArray;
+class ROUGHPY_SCALARS_EXPORT ScalarInterface;
+class ROUGHPY_SCALARS_EXPORT Scalar;
+class ROUGHPY_SCALARS_EXPORT ScalarArray;
 class ScalarArrayView;
-class KeyScalarArray;
-class ScalarStream;
-class KeyScalarStream;
-class RandomGenerator;
+class ROUGHPY_SCALARS_EXPORT KeyScalarArray;
+class ROUGHPY_SCALARS_EXPORT ScalarStream;
+class ROUGHPY_SCALARS_EXPORT KeyScalarStream;
+class ROUGHPY_SCALARS_EXPORT RandomGenerator;
 
 namespace dtl {
 
