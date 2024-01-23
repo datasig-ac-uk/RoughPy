@@ -75,6 +75,7 @@ enum class ScalarContentType : uint8_t
     /// owned by the Scalar
     OwnedInterface = 6
 };
+
 ROUGHPY_SCALARS_EXPORT bool scalar_convert_copy(
         void* dst,
         devices::TypeInfo dst_type,
@@ -90,6 +91,7 @@ inline bool scalar_convert_copy(
     return scalar_convert_copy(dst, ptype.get_type_info(), src);
 }
 
+ROUGHPY_SCALARS_EXPORT
 bool scalar_convert_copy(
         void* dst,
         devices::TypeInfo dst_type,
