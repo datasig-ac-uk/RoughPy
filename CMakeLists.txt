@@ -57,10 +57,8 @@ if (ROUGHPY_BUILD_TESTS)
 
     enable_testing()
 
-    # If we are building roughpy tests and gtest is available then we also
-    # to build the libalgebra_lite tests.
-    set(LIBALGEBRA_LITE_BUILD_TESTS ON CACHE INTERNAL "")
 endif ()
+
 
 # If we're building with SKBUILD, we need to define install locations for
 # all the components using their special directory variables. Otherwise,
@@ -253,9 +251,7 @@ if (NOT ROUGHPY_DISABLE_BLAS)
         find_package(MKL CONFIG)
         if (TARGET MKL::MKL)
             set(RPY_USE_MKL ON CACHE INTERNAL "BLAS/LAPACK provided by mkl")
-            add_library(BLAS::BLAS ALIAS MKL::MKL
-                    algebra/src/libalgebra_lite_internal/rational_coefficients.cpp
-                    algebra/src/libalgebra_lite_internal/rational_coefficients.h)
+            add_library(BLAS::BLAS ALIAS MKL::MKL)
             add_library(LAPACK::LAPACK ALIAS MKL::MKL)
 
             if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
@@ -314,7 +310,7 @@ endif ()
 find_package(pybind11 REQUIRED)
 find_package(cereal REQUIRED)
 find_package(PCGRandom REQUIRED)
-find_package(Libalgebra_lite REQUIRED)
+#find_package(Libalgebra_lite REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GMP REQUIRED IMPORTED_TARGET gmp)
@@ -332,7 +328,11 @@ elseif (NOT WIN32)
     set(CMAKE_INSTALL_RPATH "$ORIGIN" CACHE INTERNAL "")
 endif ()
 
-#add_subdirectory(external/libalgebra_lite)
+
+
+set(LIBALGEBRA_LITE_BUILD_TESTS OFF CACHE INTERNAL "")
+set(LIBALGEBRA_LITE_RATIONAL_CEFFS OFF CACHE INTERNAL "")
+add_subdirectory(external/libalgebra_lite)
 
 
 add_subdirectory(core)
@@ -341,6 +341,7 @@ add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
+
 if (ROUGHPY_BUILD_PYLIB)
     add_subdirectory(roughpy)
 endif ()
