@@ -70,7 +70,6 @@ class ROUGHPY_SCALARS_EXPORT ScalarArray
 
     dimn_t m_size = 0;
 
-    ROUGHPY_SCALARS_EXPORT
     static bool check_pointer_and_size(const void* ptr, dimn_t size);
 
 protected:
