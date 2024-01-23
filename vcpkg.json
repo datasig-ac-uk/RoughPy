@@ -64,9 +64,6 @@
     "name" : "opencl",
     "version>=" : "v2023.02.06#2"
   }, {
-    "name" : "libalgebra-lite",
-    "version>=" : "1.0.0"
-  }, {
     "name" : "boost-stacktrace",
     "version>=" : "1.83.0"
   } ],
