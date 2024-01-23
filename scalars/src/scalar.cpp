@@ -224,7 +224,8 @@ Scalar::Scalar(Scalar&& other) noexcept
             break;
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
-            interface = std::move(other.interface);
+            interface = other.interface;
+            other.interface = nullptr;
     }
 }
 
@@ -240,7 +241,8 @@ Scalar::~Scalar()
             break;
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
-            interface.~unique_ptr();
+            delete interface;
+            break;
         case dtl::ScalarContentType::TrivialBytes:
         case dtl::ScalarContentType::OpaquePointer:
         case dtl::ScalarContentType::ConstTrivialBytes:

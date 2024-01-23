@@ -158,13 +158,12 @@ struct can_be_scalar<std::unique_ptr<T>> : std::false_type {
  */
 class ROUGHPY_SCALARS_EXPORT Scalar
 {
-    using interface_pointer_t = std::unique_ptr<ScalarInterface>;
+    using interface_pointer_t = ScalarInterface*;
     static_assert(sizeof(interface_pointer_t) == sizeof(uintptr_t), "");
     using type_pointer = PackedScalarTypePointer<dtl::ScalarContentType>;
     type_pointer p_type_and_content_type;
 
-    union
-    {
+    union {
         uintptr_t integer_for_convenience;
         byte trivial_bytes[sizeof(uintptr_t)];
         interface_pointer_t interface;
@@ -286,7 +285,7 @@ public:
                   nullptr,
                   dtl::ScalarContentType::OwnedInterface
           ),
-          interface(std::move(iface))
+          interface(std::move(iface).release())
     {}
 
     explicit Scalar(const ScalarType* type, int64_t num, int64_t denom);
