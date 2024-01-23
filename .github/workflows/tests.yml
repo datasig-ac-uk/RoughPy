@@ -57,11 +57,7 @@ jobs:
 
     - name: Python dependencies
       run: |
-        python -m pip install \
-          numpy \
-          ninja \
-          pytest \
-          pybind11
+        python -m pip install numpy ninja pytest pybind11
 
 
     - name: Configure CMake
