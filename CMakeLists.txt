@@ -328,6 +328,8 @@ elseif(DEFINED VCPKG_INSTALLED_DIR AND EXISTS VCPKG_INSTALLED_DIR)
     else()
         message(FATAL_ERROR "Could not locate gmp")
     endif()
+else()
+    message(FATAL_ERROR "Could not locate gmp, no vcpkg")
 endif()
 
 # Now we get to adding our components. Let's do some global setup such as
