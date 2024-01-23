@@ -75,7 +75,7 @@ jobs:
     - name: setup vcpkg
       shell: bash
       run: |
-        git checkout https://github.com/Microsoft/vcpkg.git tools/vcpkg
+        git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
