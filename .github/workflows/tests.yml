@@ -82,17 +82,16 @@ jobs:
       run: |
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_PYMODULE_INPLACE=ON
       env:
-        CMAKE_TOOLCHAIN_FILE: ${{github.workspace}}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+        CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
 
     - name: Build
-      shell: bash
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{ github.workspace }}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test
       shell: bash
-      working-directory: ${{github.workspace}}/build
+      working-directory: ${{ github.workspace }}/build
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
