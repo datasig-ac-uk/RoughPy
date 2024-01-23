@@ -312,8 +312,23 @@ find_package(PCGRandom REQUIRED)
 #find_package(Libalgebra_lite REQUIRED)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GMP REQUIRED IMPORTED_TARGET gmp)
-add_library(GMP::GMP ALIAS PkgConfig::GMP)
+pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
+if (TARGET PkgConfig::GMP)
+    add_library(GMP::GMP ALIAS PkgConfig::GMP)
+elseif(DEFINED VCPKG_INSTALLED_DIR AND EXISTS VCPKG_INSTALLED_DIR)
+    find_path(GMP_INCLUDES NAMES gmp.h
+    PATHS ${VCPKG_INSTALLED_DIR})
+
+    find_library(GMP_LIBRARIES gmp PATHS ${VCPKG_INSTALLED_DIR})
+
+    if(GMP_INCLUDES AND GMP_LIBRARIES)
+        add_library(GMP::GMP UNKNOWN IMPORTED GLOBAL)
+        target_include_directories(GMP::GMP INTERFACE ${GMP_INCLUDES})
+        target_link_libraries(GMP::GMP INTERFACE ${GMP_LIBRARIES})
+    else()
+        message(FATAL_ERROR "Could not locate gmp")
+    endif()
+endif()
 
 # Now we get to adding our components. Let's do some global setup such as
 # setting the CXX standard and the shared library details.
