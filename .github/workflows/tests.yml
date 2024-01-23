@@ -61,7 +61,7 @@ jobs:
         msbuild-architecture: x64
 
     - name: set msbuild env variables
-      if: runnner.os == 'Windows'
+      if: runner.os == 'Windows'
       run: |
         echo "CMAKE_CXX_COMPILER=cl" >> $GITHUB_ENV
         echo "CMAKE_C_COMPILER=cl" >> $GITHUB_ENV
