@@ -123,7 +123,7 @@ target_precompile_headers(RoughPy_Platform PUBLIC
 )
 
 if (APPLE)
-    target_compile_definitions(RoughPy_PLATFORM PUBLIC BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED)
+    target_compile_definitions(RoughPy_Platform PUBLIC BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED)
 endif()
 
 
