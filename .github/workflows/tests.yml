@@ -44,6 +44,10 @@ jobs:
       with:
         submodules: true
 
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
     - name: Setup gha caching for vcpkg
       uses: actions/github-script@v6
       with:
@@ -53,7 +57,7 @@ jobs:
 
     - name: Python dependencies
       run: |
-        python3.10 -m pip install \
+        python -m pip install \
           numpy \
           ninja \
           pytest \
