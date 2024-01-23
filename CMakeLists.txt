@@ -313,6 +313,7 @@ find_package(PCGRandom REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
+message(STATUS "VCPKG INSTALLED: ${VCPKG_INSTALLED_DIR}")
 if (TARGET PkgConfig::GMP)
     add_library(GMP::GMP ALIAS PkgConfig::GMP)
 elseif(DEFINED VCPKG_INSTALLED_DIR AND EXISTS VCPKG_INSTALLED_DIR)
