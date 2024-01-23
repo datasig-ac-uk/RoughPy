@@ -157,6 +157,15 @@
 #  define RPY_LOCAL
 #endif
 
+/*
+ * MSVC pre-defines min and max macros. undef them because this is insane
+ */
+#ifdef RPY_PLATFORM_WINDOWS
+#  undef min
+#  undef max
+#endif
+
+
 #if RPY_CPP_VERSION >= 201403L
 #  define RPY_CPP_14
 #else
