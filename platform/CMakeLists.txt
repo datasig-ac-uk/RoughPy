@@ -122,6 +122,10 @@ target_precompile_headers(RoughPy_Platform PUBLIC
         <libalgebra_lite/polynomial.h>
 )
 
+if (APPLE)
+    target_compile_definitions(RoughPy_PLATFORM PUBLIC BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED)
+endif()
+
 
 add_roughpy_test(Devices
         SRC
