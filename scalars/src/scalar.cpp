@@ -241,12 +241,15 @@ Scalar::~Scalar()
             break;
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
+            RPY_DBG_ASSERT(interface != nullptr);
             delete interface;
+            interface = nullptr;
             break;
         case dtl::ScalarContentType::TrivialBytes:
         case dtl::ScalarContentType::OpaquePointer:
         case dtl::ScalarContentType::ConstTrivialBytes:
         case dtl::ScalarContentType::ConstOpaquePointer:
+            opaque_pointer = nullptr;
             break;
     }
 };
