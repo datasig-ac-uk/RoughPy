@@ -19,3 +19,5 @@ add_roughpy_component(Core INTERFACE
         DEPENDENCIES INTERFACE
             Boost::boost
         )
+
+target_compile_definitions(RoughPy_Core INTERFACE NOMINMAX=1)
