@@ -55,6 +55,11 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
+    - uses: microsoft/setup-msbuild@v1.0.1
+      if: "${{ matrix.os }} == 'windows-latest'"
+      with:
+        msbuild-architecture: x64
+
     - name: Python dependencies
       shell: bash
       run: |
