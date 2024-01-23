@@ -58,8 +58,7 @@ jobs:
           ninja \
           pytest \
           pybind11
-        pth="$(python -m site --user-site)/roughpy.pth"
-        echo "import sys; sys.path.insert(0, '${{github.workspace}}')" >> $pth
+
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -85,3 +84,5 @@ jobs:
 
     - name: PyTests
       run: pytest tests
+      env:
+        PYTHONPATH: ${{ github.workspace }}
