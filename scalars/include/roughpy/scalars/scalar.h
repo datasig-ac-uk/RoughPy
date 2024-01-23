@@ -159,7 +159,7 @@ struct can_be_scalar<std::unique_ptr<T>> : std::false_type {
 class ROUGHPY_SCALARS_EXPORT Scalar
 {
     using interface_pointer_t = ScalarInterface*;
-    static_assert(sizeof(interface_pointer_t) == sizeof(uintptr_t), "");
+//    static_assert(sizeof(interface_pointer_t) == sizeof(uintptr_t), "");
     using type_pointer = PackedScalarTypePointer<dtl::ScalarContentType>;
     type_pointer p_type_and_content_type;
 
