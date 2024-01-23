@@ -103,7 +103,7 @@ PyScalarMetaType_call(PyObject* self, PyObject* args, PyObject* kwargs)
         try {
             return py::cast(std::move(result)).release().ptr();
         } catch (std::exception& exc) {
-            PyErr_SetString(PyExc_RuntimeError, exc.what());
+            PyErr_SetString(PyExc_RuntimeError, "failed");
             return nullptr;
         }
     }
@@ -112,10 +112,12 @@ PyScalarMetaType_call(PyObject* self, PyObject* args, PyObject* kwargs)
         try {
             assign_py_object_to_scalar(result, data);
         } catch (std::exception& exc) {
-            PyErr_SetString(PyExc_RuntimeError, exc.what());
+            PyErr_SetString(PyExc_RuntimeError, "failed");
             return nullptr;
         }
     } else {
+        RPY_DBG_ASSERT(numerator != nullptr);
+        RPY_DBG_ASSERT(denominator != nullptr);
         if (PyLong_Check(numerator) == 0) {
             PyErr_SetString(PyExc_TypeError, "numerator should be an int");
             return nullptr;
@@ -131,7 +133,7 @@ PyScalarMetaType_call(PyObject* self, PyObject* args, PyObject* kwargs)
         try {
             result = scalars::Scalar(stype, num, denom);
         } catch (std::exception& exc) {
-            PyErr_SetString(PyExc_RuntimeError, exc.what());
+            PyErr_SetString(PyExc_RuntimeError, "failed");
             return nullptr;
         }
     }
@@ -144,7 +146,7 @@ PyScalarMetaType_call(PyObject* self, PyObject* args, PyObject* kwargs)
     try {
         return py::cast(std::move(result)).release().ptr();
     } catch (std::exception& exc) {
-        PyErr_SetString(PyExc_RuntimeError, exc.what());
+        PyErr_SetString(PyExc_RuntimeError, "failed");
         return nullptr;
     }
 
