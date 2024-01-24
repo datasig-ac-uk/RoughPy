@@ -39,8 +39,9 @@
           serialize(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&);                     \
           }
 #      define ADD_LOAD(ARCHIVE)                                                \
-          namespace RPY_DLL_EXPORT {                                           \
-          template RPY_EXPORT void load(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&); \
+          namespace RPY_SERIAL_EXTERNAL {                                      \
+          template RPY_DLL_EXPORT void                                         \
+          load(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&);                          \
           }
 #      define ADD_SAVE(ARCHIVE)                                                \
           namespace RPY_SERIAL_EXTERNAL {                                      \
@@ -73,7 +74,7 @@
 #      define ADD_ARCHIVE(ARCHIVE)                                             \
           template void RPY_SERIAL_IMPL_CLASSNAME::serialize(ARCHIVE& ar)
 #      define ADD_LOAD(ARCHIVE)                                                \
-          template RPY_EXPORT void RPY_SERIAL_IMPL_CLASSNAME::load(ARCHIVE& ar)
+          template void RPY_SERIAL_IMPL_CLASSNAME::load(ARCHIVE& ar)
 #      define ADD_SAVE(ARCHIVE)                                                \
           template void RPY_SERIAL_IMPL_CLASSNAME::save(ARCHIVE& ar) const
 #    else
