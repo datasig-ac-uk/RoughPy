@@ -286,8 +286,10 @@ enum class EventStatus : int8_t
 
 class DeviceHandle;
 
-void intrusive_ptr_add_ref(const DeviceHandle* device) noexcept;
-void intrusive_ptr_release(const DeviceHandle* device) noexcept;
+void ROUGHPY_PLATFORM_EXPORT intrusive_ptr_add_ref(const DeviceHandle* device
+) noexcept;
+void ROUGHPY_PLATFORM_EXPORT intrusive_ptr_release(const DeviceHandle* device
+) noexcept;
 
 class BufferInterface;
 class Buffer;
