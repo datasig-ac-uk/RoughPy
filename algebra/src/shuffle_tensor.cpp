@@ -38,10 +38,7 @@
 namespace rpy {
 namespace algebra {
 
-
-template class RPY_EXPORT_INSTANTIATION AlgebraBase<ShuffleTensorInterface>;
-
-
+template class RPY_DLL_EXPORT AlgebraBase<ShuffleTensorInterface>;
 
 template <>
 typename ShuffleTensor::basis_type

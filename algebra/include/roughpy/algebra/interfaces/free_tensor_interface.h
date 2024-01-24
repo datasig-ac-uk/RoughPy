@@ -39,8 +39,16 @@
 namespace rpy {
 namespace algebra {
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
+#ifdef RPY_PLATFORM_WINDOWS
+#  ifdef RPY_BUILDING_DLL
+extern template class AlgebraInterface<FreeTensor, TensorBasis>;
+#  else
+template class RPY_DLL_IMPORT AlgebraInterface<FreeTensor, TensorBasis>;
+#  endif
+#else
+extern template class ROUGHPY_ALGEBRA_EXPORT
         AlgebraInterface<FreeTensor, TensorBasis>;
+#endif
 
 class ROUGHPY_ALGEBRA_EXPORT FreeTensorInterface
     : public AlgebraInterface<FreeTensor, TensorBasis>

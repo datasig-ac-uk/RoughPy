@@ -45,12 +45,19 @@ namespace algebra {
 template <typename, template <typename> class>
 class FreeTensorImplementation;
 
-
-
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
+#ifdef RPY_PLATFORM_WINDOWS
+#  ifdef RPY_BUILDING_DLL
+extern template class AlgebraBase<
+        FreeTensorInterface,
+        FreeTensorImplementation>;
+#  else
+template class RPY_DLL_IMPORT
+        AlgebraBase<FreeTensorIntefrace, FreeTensorImplementation>;
+#  endif
+#else
+extern template class ROUGHPY_ALGEBRA_EXPORT
         AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
-
-
+#endif
 
 class ROUGHPY_ALGEBRA_EXPORT FreeTensor
     : public AlgebraBase<FreeTensorInterface, FreeTensorImplementation>

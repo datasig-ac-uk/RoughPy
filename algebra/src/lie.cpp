@@ -39,9 +39,9 @@
 namespace rpy {
 namespace algebra {
 
-template class RPY_EXPORT_INSTANTIATION AlgebraInterface<Lie, LieBasis>;
+template class RPY_DLL_EXPORT AlgebraInterface<Lie, LieBasis>;
 
-template class RPY_EXPORT_INSTANTIATION AlgebraBase<LieInterface>;
+template class RPY_DLL_EXPORT AlgebraBase<LieInterface>;
 
 template <>
 typename Lie::basis_type basis_setup_helper<Lie>::get(const context_pointer& ctx

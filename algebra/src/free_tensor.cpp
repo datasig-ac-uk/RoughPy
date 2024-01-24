@@ -39,8 +39,7 @@ using namespace rpy::algebra;
 namespace rpy {
 namespace algebra {
 
-
-template class RPY_EXPORT_INSTANTIATION
+template class RPY_DLL_EXPORT
         AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
 
 }// namespace algebra
