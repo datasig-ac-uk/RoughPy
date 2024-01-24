@@ -57,7 +57,24 @@ public:
     virtual void unmap(void* ptr) noexcept;
 };
 
-
+#ifdef RPY_PLATFORM_WINDOWS
+// MSVC is literally too stupid to delay instantation correctly.
+#  ifdef RoughPy_Platform_EXPORTS
+namespace dtl {
+extern template class ROUGHPY_PLATFORM_EXPORT
+        ObjectBase<BufferInterface, Buffer>;
+}
+#  else
+namespace dtl {
+template class ROUGHPY_PLATFORM_EXPORT ObjectBase<BufferInterface, Buffer>;
+}
+#  endif
+#else
+namespace dtl {
+extern template class ROUGHPY_PLATFORM_EXPORT
+        ObjectBase<BufferInterface, Buffer>;
+}
+#endif
 
 class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
 {

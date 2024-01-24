@@ -43,6 +43,23 @@ public:
     virtual dimn_t size() const;
 };
 
+#ifdef RPY_PLATFORM_WINDOWS
+// MSVC is literally too stupid to delay instantation correctly.
+#  ifdef RoughPy_Platform_EXPORTS
+namespace dtl {
+extern template class ROUGHPY_PLATFORM_EXPORT ObjectBase<QueueInterface, Queue>;
+}
+#  else
+namespace dtl {
+template class ROUGHPY_PLATFORM_EXPORT ObjectBase<QueueInterface, Queue>;
+}
+#  endif
+#else
+namespace dtl {
+extern template class ROUGHPY_PLATFORM_EXPORT ObjectBase<QueueInterface, Queue>;
+}
+#endif
+
 class ROUGHPY_PLATFORM_EXPORT Queue
     : public dtl::ObjectBase<QueueInterface, Queue>
 {

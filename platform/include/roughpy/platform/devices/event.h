@@ -42,18 +42,31 @@ class ROUGHPY_PLATFORM_EXPORT EventInterface : public dtl::InterfaceBase
 public:
     using object_t = Event;
 
-
     virtual void wait();
 
-    RPY_NO_DISCARD
-    virtual EventStatus status() const;
+    RPY_NO_DISCARD virtual EventStatus status() const;
 
-    RPY_NO_DISCARD
-    virtual bool is_user() const noexcept;
-
+    RPY_NO_DISCARD virtual bool is_user() const noexcept;
 
     virtual void set_status(EventStatus status);
 };
+
+#ifdef RPY_PLATFORM_WINDOWS
+// MSVC is literally too stupid to delay instantation correctly.
+#  ifdef RoughPy_Platform_EXPORTS
+namespace dtl {
+extern template class ROUGHPY_PLATFORM_EXPORT ObjectBase<EventInterface, Event>;
+}
+#  else
+namespace dtl {
+template class ROUGHPY_PLATFORM_EXPORT ObjectBase<EventInterface, Event>;
+}
+#  endif
+#else
+namespace dtl {
+extern template class ROUGHPY_PLATFORM_EXPORT ObjectBase<EventInterface, Event>;
+}
+#endif
 
 class ROUGHPY_PLATFORM_EXPORT Event
     : public dtl::ObjectBase<EventInterface, Event>
