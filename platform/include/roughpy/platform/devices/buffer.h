@@ -75,7 +75,8 @@ extern template class ROUGHPY_PLATFORM_EXPORT
 }
 #endif
 
-class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
+class ROUGHPY_PLATFORM_EXPORT Buffer
+    : public dtl::ObjectBase<BufferInterface, Buffer>
 {
     using base_t = dtl::ObjectBase<BufferInterface, Buffer>;
 
