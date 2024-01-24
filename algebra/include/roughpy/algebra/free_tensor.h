@@ -46,7 +46,7 @@ template <typename, template <typename> class>
 class FreeTensorImplementation;
 
 #ifdef RPY_PLATFORM_WINDOWS
-#  ifdef RPY_BUILDING_DLL
+#  ifdef RPY_COMPILING_DLL
 extern template class AlgebraBase<
         FreeTensorInterface,
         FreeTensorImplementation>;

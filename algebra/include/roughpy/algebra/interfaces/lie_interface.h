@@ -38,7 +38,7 @@ namespace rpy {
 namespace algebra {
 
 #ifdef RPY_PLATFORM_WINDOWS
-#  ifdef RPY_BUILDING_DLL
+#  ifdef RPY_COMPILING_DLL
 extern template class AlgebraInterface<Lie, LieBasis>;
 #  else
 template class RPY_DLL_IMPORT AlgebraInterface<Lie, LieBasis>;
