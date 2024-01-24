@@ -146,19 +146,15 @@
 #  else
 #    if (defined(RPY_GCC) && RPY_GCC >= 4) || defined(RPY_CLANG)
 #      if defined(RPY_BUILDING_LIBRARY)
-#        define RPY_EXPORT __attribute__((visibility("default")))
 #        define RPY_LOCAL __attribute__((visibility("hidden")))
 #      else
-#        define RPY_EXPORT __attribute__((visibility("default")))
 #        define RPY_LOCAL __attribute__((visibility("hidden")))
 #      endif
 #    else
-#      define RPY_EXPORT
 #      define RPY_LOCAL
 #    endif
 #  endif
 #else
-#  define RPY_EXPORT
 #  define RPY_LOCAL
 #endif
 

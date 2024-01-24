@@ -238,6 +238,7 @@ using cereal::XMLOutputArchive;
 
 }// namespace archives
 
+#  if !defined(RPY_PLATFORM_WINDOWS) || defined(RPY_COMPILING_DLL)
 #  define RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMPL(CLASS, AR)                      \
       extern template void CLASS::serialize<AR>(AR&, const std::uint32_t);
 
@@ -310,6 +311,11 @@ using cereal::XMLOutputArchive;
               ::rpy::archives::PortableBinaryInputArchive                      \
       )                                                                        \
       RPY_SERIAL_EXTERN_LOAD_CLS_IMPL(CLASS, ::rpy::archives::XMLInputArchive)
+#  elif defined(RPY_PLATFORM_WINDOWS) && !defined(RPY_COMPILING_DLL)
+#    define RPY_SERIAL_EXTERN_SERIALIZE_CLS(CLASS)
+#    define RPY_SERIAL_EXTERN_SAVE_CLS(CLASS)
+#    define RPY_SERIAL_EXTERN_LOAD_CLS(CLASS)
+#  endif
 
 using ByteSlice = Slice<byte>;
 
