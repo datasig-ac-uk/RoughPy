@@ -65,7 +65,7 @@ class ROUGHPY_PLATFORM_EXPORT Configuration
     Configuration();
     ~Configuration();
 
-    friend const Configuration& get_config();
+    friend ROUGHPY_PLATFORM_EXPORT const Configuration& get_config();
 
 public:
     RPY_NO_DISCARD
