@@ -43,7 +43,7 @@ class ROUGHPY_ALGEBRA_EXPORT LieBasisInterface
 
 #ifdef RPY_PLATFORM_WINDOWS
 #  ifdef RPY_COMPILING_DLL
-extern template class Basis<LieBasisInterface>
+extern template class Basis<LieBasisInterface>;
 #  else
 template class RPY_DLL_IMPORT Basis<LieBasisInterface>;
 #  endif

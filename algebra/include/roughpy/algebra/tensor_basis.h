@@ -47,7 +47,7 @@ public:
 
 #ifdef RPY_PLATFORM_WINDOWS
 #  ifdef RPY_COMPILING_DLL
-extern template class Basis<TensorBasisInterface>
+extern template class Basis<TensorBasisInterface>;
 #  else
 template class RPY_DLL_IMPORT Basis<TensorBasisInterface>;
 #  endif
