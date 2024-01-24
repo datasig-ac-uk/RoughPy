@@ -21,3 +21,8 @@ add_roughpy_component(Core INTERFACE
         )
 
 target_compile_definitions(RoughPy_Core INTERFACE NOMINMAX=1)
+
+
+if (MSVC)
+        target_compile_options(RoughPy_Core INTERFACE /permissive-)
+endif ()
