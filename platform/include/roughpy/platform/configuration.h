@@ -55,7 +55,7 @@ ROUGHPY_PLATFORM_EXPORT const Configuration& get_config();
 /**
  * @brief Interface for getting RoughPy configuration settings.
  */
-class Configuration
+class ROUGHPY_PLATFORM_EXPORT Configuration
 {
 
     class State;
