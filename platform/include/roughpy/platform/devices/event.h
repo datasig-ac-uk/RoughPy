@@ -37,7 +37,7 @@
 namespace rpy {
 namespace devices {
 
-class ROUGHPY_PLATFORM_EXPORT  EventInterface : public dtl::InterfaceBase
+class ROUGHPY_PLATFORM_EXPORT EventInterface : public dtl::InterfaceBase
 {
 public:
     using object_t = Event;
@@ -55,9 +55,8 @@ public:
     virtual void set_status(EventStatus status);
 };
 
-extern template class dtl::ObjectBase<EventInterface, Event>;
-
-class Event : public dtl::ObjectBase<EventInterface, Event>
+class ROUGHPY_PLATFORM_EXPORT Event
+    : public dtl::ObjectBase<EventInterface, Event>
 {
     using base_t = dtl::ObjectBase<EventInterface, Event>;
 

@@ -38,7 +38,7 @@
 namespace rpy {
 namespace devices {
 
-class BufferInterface : public dtl::InterfaceBase
+class ROUGHPY_PLATFORM_EXPORT BufferInterface : public dtl::InterfaceBase
 {
 
 public:
@@ -58,7 +58,6 @@ public:
 };
 
 
-extern template class dtl::ObjectBase<BufferInterface, Buffer>;
 
 class Buffer : public dtl::ObjectBase<BufferInterface, Buffer>
 {

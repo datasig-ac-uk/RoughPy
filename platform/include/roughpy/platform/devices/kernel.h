@@ -40,7 +40,7 @@
 namespace rpy {
 namespace devices {
 
-class KernelLaunchParams
+class ROUGHPY_PLATFORM_EXPORT KernelLaunchParams
 {
     Size3 m_work_dims;
     Dim3 m_group_size;
@@ -77,7 +77,7 @@ public:
     KernelLaunchParams();
 };
 
-class ROUGHPY_PLATFORM_EXPORT  KernelInterface : public dtl::InterfaceBase
+class ROUGHPY_PLATFORM_EXPORT KernelInterface : public dtl::InterfaceBase
 {
 public:
 
@@ -95,12 +95,8 @@ public:
 
 };
 
-
-namespace dtl {
-extern template class ObjectBase<KernelInterface, Kernel>;
-}
-
-class ROUGHPY_PLATFORM_EXPORT  Kernel : public dtl::ObjectBase<KernelInterface, Kernel>
+class ROUGHPY_PLATFORM_EXPORT Kernel
+    : public dtl::ObjectBase<KernelInterface, Kernel>
 {
     using base_t = dtl::ObjectBase<KernelInterface, Kernel>;
 

@@ -34,7 +34,7 @@
 namespace rpy {
 namespace devices {
 
-class QueueInterface : public dtl::InterfaceBase
+class ROUGHPY_PLATFORM_EXPORT QueueInterface : public dtl::InterfaceBase
 {
 public:
 
@@ -43,9 +43,8 @@ public:
     virtual dimn_t size() const;
 };
 
-extern template class dtl::ObjectBase<QueueInterface, Queue>;
-
-class Queue : public dtl::ObjectBase<QueueInterface, Queue>
+class ROUGHPY_PLATFORM_EXPORT Queue
+    : public dtl::ObjectBase<QueueInterface, Queue>
 {
     using base_t = dtl::ObjectBase<QueueInterface, Queue>;
 
