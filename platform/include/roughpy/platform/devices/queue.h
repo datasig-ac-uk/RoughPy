@@ -51,7 +51,7 @@ extern template class ObjectBase<QueueInterface, Queue>;
 }
 #  else
 namespace dtl {
-template class ROUGHPY_PLATFORM_EXPORT ObjectBase<QueueInterface, Queue>;
+template class RPY_DLL_IMPORT ObjectBase<QueueInterface, Queue>;
 }
 #  endif
 #else

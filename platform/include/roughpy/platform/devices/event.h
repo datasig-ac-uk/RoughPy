@@ -59,7 +59,7 @@ extern template class ObjectBase<EventInterface, Event>;
 }
 #  else
 namespace dtl {
-template class ROUGHPY_PLATFORM_EXPORT ObjectBase<EventInterface, Event>;
+template class RPY_DLL_IMPORT ObjectBase<EventInterface, Event>;
 }
 #  endif
 #else

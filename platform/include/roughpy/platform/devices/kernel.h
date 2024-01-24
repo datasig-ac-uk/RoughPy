@@ -103,7 +103,7 @@ extern template class ObjectBase<KernelInterface, Kernel>;
 }
 #  else
 namespace dtl {
-template class ROUGHPY_PLATFORM_EXPORT ObjectBase<KernelInterface, Kernel>;
+template class RPY_DLL_IMPORT ObjectBase<KernelInterface, Kernel>;
 }
 #  endif
 #else

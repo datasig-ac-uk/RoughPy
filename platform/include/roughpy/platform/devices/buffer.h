@@ -65,7 +65,7 @@ extern template class ObjectBase<BufferInterface, Buffer>;
 }
 #  else
 namespace dtl {
-template class ROUGHPY_PLATFORM_EXPORT ObjectBase<BufferInterface, Buffer>;
+template class RPY_DLL_IMPORT ObjectBase<BufferInterface, Buffer>;
 }
 #  endif
 #else
