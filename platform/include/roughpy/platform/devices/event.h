@@ -55,7 +55,7 @@ public:
 // MSVC is literally too stupid to delay instantation correctly.
 #  ifdef RoughPy_Platform_EXPORTS
 namespace dtl {
-extern template class ROUGHPY_PLATFORM_EXPORT ObjectBase<EventInterface, Event>;
+extern template class ObjectBase<EventInterface, Event>;
 }
 #  else
 namespace dtl {

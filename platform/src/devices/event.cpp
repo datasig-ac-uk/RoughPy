@@ -37,7 +37,7 @@ using namespace rpy::devices;
 
 namespace rpy { namespace devices { namespace dtl {
 
-template class ObjectBase<EventInterface, Event>;
+template class RPY_DLL_EXPORT ObjectBase<EventInterface, Event>;
 
 }}}
 

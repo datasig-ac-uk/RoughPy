@@ -118,6 +118,11 @@
 
 #if defined(RPY_PLATFORM_WINDOWS) || defined(__CYGWIN__)
 #  define RPY_COMPILING_DLL
+#  define RPY_DLL_EXPORT __declspec(dllexport)
+#  define RPY_DLL_IMPORT __declspec(dllimport)
+#else
+#  define RPY_DLL_EXPORT
+#  define RPY_DLL_IMPORT
 #endif
 
 #ifndef RPY_DISABLE_EXPORTS

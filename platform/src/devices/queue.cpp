@@ -36,7 +36,7 @@ using namespace rpy;
 using namespace rpy::devices;
 
 namespace rpy { namespace devices { namespace dtl {
-template class ObjectBase<QueueInterface, Queue>;
+template class RPY_DLL_EXPORT ObjectBase<QueueInterface, Queue>;
 }}}
 
 
