@@ -50,7 +50,7 @@
 #    else
 #      define ADD_ARCHIVE(ARCHIVE)                                             \
           namespace RPY_SERIAL_EXTERNAL {                                      \
-          template RPY_EXPORT void serialize(                                  \
+          template RPY_DLL_EXPORT void serialize(                              \
                   ARCHIVE&,                                                    \
                   RPY_SERIAL_IMPL_CLASSNAME&,                                  \
                   const std::uint32_t                                          \
@@ -58,12 +58,12 @@
           }
 #      define ADD_LOAD(ARCHIVE)                                                \
           namespace RPY_SERIAL_EXTERNAL {                                      \
-          template RPY_EXPORT void                                             \
+          template RPY_DLL_EXPORT void                                         \
           load(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&, const std::uint32_t);     \
           }
 #      define ADD_SAVE(ARCHIVE)                                                \
           namespace RPY_SERIAL_EXTERNAL {                                      \
-          template RPY_EXPORT void                                             \
+          template RPY_DLL_EXPORT void                                         \
           save(ARCHIVE&, const RPY_SERIAL_IMPL_CLASSNAME&, const std::uint32_t \
           );                                                                   \
           }
