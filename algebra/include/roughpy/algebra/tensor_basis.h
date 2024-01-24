@@ -45,10 +45,17 @@ public:
     ~TensorBasisInterface() override;
 };
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
-        Basis<TensorBasisInterface>;
+#ifdef RPY_PLATFORM_WINDOWS
+#  ifdef RPY_COMPILING_DLL
+extern template class Basis<TensorBasisInterface>
+#  else
+template class RPY_DLL_IMPORT Basis<TensorBasisInterface>;
+#  endif
+#else
+extern template class ROUGHPY_ALGEBRA_EXPORT Basis<TensorBasisInterface>;
+#endif
 
-using TensorBasis = Basis<TensorBasisInterface>;
+        using TensorBasis = Basis<TensorBasisInterface>;
 
 }// namespace algebra
 }// namespace rpy
