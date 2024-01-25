@@ -505,8 +505,13 @@ RPY_SERIAL_SAVE_FN_IMPL(Scalar)
     RPY_SERIAL_SERIALIZE_NVP("raw_bytes", to_raw_bytes());
 }
 
-RPY_SERIAL_EXTERN_SAVE_CLS(Scalar)
-RPY_SERIAL_EXTERN_LOAD_CLS(Scalar)
+#ifdef RPY_COMPILING_SCALARS
+RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(Scalar)
+RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(Scalar)
+#else
+RPY_SERIAL_EXTERN_SAVE_CLS_IMP(Scalar)
+RPY_SERIAL_EXTERN_LOAD_CLS_IMP(Scalar)
+#endif
 
 template <typename T>
 const T& Scalar::as_type() const noexcept

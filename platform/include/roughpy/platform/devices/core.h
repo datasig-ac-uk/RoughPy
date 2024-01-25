@@ -306,9 +306,10 @@ class Queue;
 using Device = boost::intrusive_ptr<const DeviceHandle>;
 using HostDevice = boost::intrusive_ptr<const HostDeviceHandle>;
 
-ROUGHPY_PLATFORM_EXPORT  HostDevice get_host_device();
-ROUGHPY_PLATFORM_EXPORT  Device get_default_device();
-ROUGHPY_PLATFORM_EXPORT  optional<Device> get_device(const DeviceSpecification& spec);
+ROUGHPY_PLATFORM_EXPORT HostDevice get_host_device();
+ROUGHPY_PLATFORM_EXPORT Device get_default_device();
+ROUGHPY_PLATFORM_EXPORT optional<Device>
+get_device(const DeviceSpecification& spec);
 
 constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 {

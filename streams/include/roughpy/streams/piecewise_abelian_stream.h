@@ -81,7 +81,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(PiecewiseAbelianStream)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(PiecewiseAbelianStream)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(PiecewiseAbelianStream)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(PiecewiseAbelianStream)
 {

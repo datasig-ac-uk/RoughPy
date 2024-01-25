@@ -263,7 +263,11 @@ Stream::Stream(Impl&& impl)
       m_support(p_impl->metadata().effective_support)
 {}
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(Stream)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(Stream)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(Stream)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Stream)
 {

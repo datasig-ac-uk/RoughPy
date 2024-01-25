@@ -28,6 +28,9 @@
 #  ifndef RPY_SERIAL_IMPL_CLASSNAME
 #    error "class name not set"
 #  endif
+#  ifndef RPY_EXPORT_MACRO
+#    define RPY_EXPORT_MACRO
+#  endif
 
 #  include <roughpy/platform/archives.h>
 
@@ -72,24 +75,30 @@
 #  else
 #    ifdef RPY_SERIAL_NO_VERSION
 #      define ADD_ARCHIVE(ARCHIVE)                                             \
-          template void RPY_SERIAL_IMPL_CLASSNAME::serialize(ARCHIVE& ar)
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::serialize( \
+                  ARCHIVE& ar                                                  \
+          )
 #      define ADD_LOAD(ARCHIVE)                                                \
-          template void RPY_SERIAL_IMPL_CLASSNAME::load(ARCHIVE& ar)
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::load(      \
+                  ARCHIVE& ar                                                  \
+          )
 #      define ADD_SAVE(ARCHIVE)                                                \
-          template void RPY_SERIAL_IMPL_CLASSNAME::save(ARCHIVE& ar) const
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::save(      \
+                  ARCHIVE& ar                                                  \
+          ) const
 #    else
 #      define ADD_ARCHIVE(ARCHIVE)                                             \
-          template void RPY_SERIAL_IMPL_CLASSNAME::serialize(                  \
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::serialize( \
                   ARCHIVE& ar,                                                 \
                   const std::uint32_t version                                  \
           )
 #      define ADD_LOAD(ARCHIVE)                                                \
-          template void RPY_SERIAL_IMPL_CLASSNAME::load(                       \
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::load(      \
                   ARCHIVE& ar,                                                 \
                   const std::uint32_t version                                  \
           )
 #      define ADD_SAVE(ARCHIVE)                                                \
-          template void RPY_SERIAL_IMPL_CLASSNAME::save(                       \
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::save(      \
                   ARCHIVE& ar,                                                 \
                   const std::uint32_t version                                  \
           ) const

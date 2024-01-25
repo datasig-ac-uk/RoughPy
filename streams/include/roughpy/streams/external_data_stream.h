@@ -188,7 +188,11 @@ public:
     }
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(ExternalDataStream)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(ExternalDataStream)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(ExternalDataStream)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(ExternalDataStream) {
     RPY_SERIAL_SERIALIZE_BASE(DyadicCachingLayer);

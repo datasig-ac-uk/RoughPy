@@ -412,6 +412,8 @@ function(add_roughpy_component _name)
 
     set(_real_name "RoughPy_${_name}")
     set(_alias_name "RoughPy::${_name}")
+
+    string(TOUPPER "${_name}" _name_upper)
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
     _get_component_name(_component_name ${_component})
 
@@ -449,7 +451,6 @@ function(add_roughpy_component _name)
     endif ()
 
 
-
     _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps _interface_deps)
     _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps _private_deps)
 
@@ -458,6 +459,7 @@ function(add_roughpy_component _name)
             EXPORT_NAME ${_name})
 
     if (NOT ${_lib_type} STREQUAL "INTERFACE")
+        target_compile_definitions(${_real_name} PRIVATE "RPY_COMPILING_${_name_upper}=1")
         target_include_directories(${_real_name}
                 PRIVATE
                 "${_private_include_dirs}"
