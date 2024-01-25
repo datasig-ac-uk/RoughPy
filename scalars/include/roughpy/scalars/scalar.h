@@ -475,13 +475,8 @@ public:
     Scalar& operator*=(const Scalar& other);
     Scalar& operator/=(const Scalar& other);
 
-    template <typename Archive>
-    ROUGHPY_SCALARS_EXPORT void
-    save(Archive& archive, const std::uint32_t version) const;
-
-    template <typename Archive>
-    ROUGHPY_SCALARS_EXPORT void
-    load(Archive& archive, const std::uint32_t version);
+    RPY_SERIAL_SAVE_FN();
+    RPY_SERIAL_LOAD_FN();
 
 private:
     std::vector<byte> to_raw_bytes() const;
