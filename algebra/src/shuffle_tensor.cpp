@@ -52,6 +52,7 @@ basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx)
 }// namespace algebra
 }// namespace rpy
 
+#define RPY_EXPORT_MACRO ROUGHPY_ALGEBRA_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::ShuffleTensor
 
 #include <roughpy/platform/serialization_instantiations.inl>

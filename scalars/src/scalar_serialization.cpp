@@ -104,6 +104,7 @@ void rpy::scalars::dtl::MPIntegerSerializationHelper<Integer>::load(
     }
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::half
 #define RPY_SERIAL_EXTERNAL cereal
 #define RPY_SERIAL_DO_SPLIT

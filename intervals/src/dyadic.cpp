@@ -170,5 +170,6 @@ bool rpy::intervals::rational_equals(const Dyadic& lhs, const Dyadic& rhs)
     return false;
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_INTERVALS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::intervals::Dyadic
 #include <roughpy/platform/serialization_instantiations.inl>

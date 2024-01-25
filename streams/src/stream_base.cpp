@@ -141,6 +141,7 @@ RPY_SERIAL_SAVE_FN_EXT(StreamMetadata)
 }
 }// namespace streams
 }// namespace rpy
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME StreamMetadata
 #define RPY_SERIAL_EXTERNAL rpy::streams
 #define RPY_SERIAL_DO_SPLIT
