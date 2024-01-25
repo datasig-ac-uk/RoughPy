@@ -656,7 +656,7 @@ function(add_roughpy_test _name)
 
     if (WIN32)
         add_custom_command(TARGET ${_tests_name} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
+                COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
                 COMMAND_EXPAND_LISTS)
     endif ()
 
