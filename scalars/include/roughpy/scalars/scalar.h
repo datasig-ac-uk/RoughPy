@@ -483,6 +483,7 @@ private:
     void from_raw_bytes(devices::TypeInfo info, Slice<byte> bytes);
 };
 
+ROUGHPY_SCALARS_EXPORT
 std::ostream& operator<<(std::ostream&, const Scalar&);
 
 RPY_SERIAL_LOAD_FN_IMPL(Scalar)
