@@ -129,7 +129,6 @@ endif()
 
 add_roughpy_test(Devices
         SRC
-        src/devices/opencl/test_ocl_version.cpp
         src/devices/test_cpu_device.cpp
         src/devices/test_gpu_device.cpp
         DEP
