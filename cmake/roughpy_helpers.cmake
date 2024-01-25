@@ -432,11 +432,11 @@ function(add_roughpy_component _name)
                 message(FATAL_ERROR "The path ${_pth} does not exist")
             endif ()
         endforeach ()
-    else()
+    else ()
         if (_private_deps)
             message(FATAL_ERROR
                     "INTERFACE library cannot have private dependencies")
-        endif()
+        endif ()
 
     endif ()
 
@@ -644,6 +644,7 @@ function(add_roughpy_test _name)
 
     endforeach ()
 
+
     target_link_libraries(${_tests_name} PRIVATE ${_deps} GTest::gtest_main)
 
     target_compile_definitions(${_tests_name} PRIVATE ${test_DEFN})
@@ -653,6 +654,11 @@ function(add_roughpy_test _name)
 
     target_link_components(${_tests_name} PRIVATE ${test_NEEDS})
 
+    if (WIN32)
+        add_custom_command(TARGET ${_tests_name} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
+                COMMAND_EXPAND_LISTS)
+    endif ()
 
     gtest_discover_tests(${_tests_name})
 endfunction()
