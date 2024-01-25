@@ -411,6 +411,7 @@ constexpr TypeInfo type_info() noexcept
             1U};
 }
 
+ROUGHPY_PLATFORM_EXPORT
 std::ostream& operator<<(std::ostream& os, const TypeInfo& code);
 
 
