@@ -450,7 +450,8 @@ public:
         construct_inplace(this, std::move(tmp));
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Scalar& value);
+    friend ROUGHPY_SCALARS_EXPORT std::ostream&
+    operator<<(std::ostream& os, const Scalar& value);
 
     /**
      * @brief Cast the scalar to a concrete type T.
