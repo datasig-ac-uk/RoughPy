@@ -36,9 +36,7 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-
-
-
+#define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME Scalar
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>
