@@ -32,8 +32,6 @@
 #include "scalars_fwd.h"
 #include <roughpy/platform/devices.h>
 
-
-
 namespace rpy {
 namespace scalars {
 
@@ -203,5 +201,4 @@ static_assert(
 }// namespace scalars
 }// namespace rpy
 
-#include "types.h"
 #endif// ROUGHPY_SCALARS_SCALAR_TYPE_H_

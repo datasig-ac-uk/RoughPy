@@ -122,6 +122,14 @@ RPY_SERIAL_EXTERN_LOAD_CLS_IMP(DyadicCachingLayer)
 RPY_SERIAL_EXTERN_SAVE_CLS_IMP(DyadicCachingLayer)
 #endif
 
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(DyadicCachingLayer)
+RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(DyadicCachingLayer)
+#else
+RPY_SERIAL_EXTERN_LOAD_CLS_IMP(DyadicCachingLayer)
+RPY_SERIAL_EXTERN_SAVE_CLS_IMP(DyadicCachingLayer)
+#endif
+
 }// namespace streams
 }// namespace rpy
 

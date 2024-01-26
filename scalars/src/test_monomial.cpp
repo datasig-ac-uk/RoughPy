@@ -35,7 +35,6 @@
 #include <roughpy/scalars/scalar_serialization.h>
 
 #include <roughpy/platform/archives.h>
-#include <roughpy/scalars/types.h>
 
 #include <sstream>
 

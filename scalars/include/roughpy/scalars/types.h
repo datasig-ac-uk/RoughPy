@@ -37,6 +37,7 @@
 #include <libalgebra_lite/polynomial_basis.h>
 
 
+#include "scalar_pointer.h"
 #include "scalar_type.h"
 #include "scalar.h"
 
