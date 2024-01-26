@@ -315,7 +315,7 @@ operator<<(std::ostream& os, const AlgebraBase<Interface, DerivedImpl>& alg)
 
 namespace dtl {
 
-RPY_EXPORT
+ROUGHPY_ALGEBRA_EXPORT
 UnspecifiedAlgebraType
 try_create_new_empty(context_pointer ctx, AlgebraType alg_type);
 
@@ -325,7 +325,8 @@ std::unique_ptr<Interface> downcast_interface_ptr(UnspecifiedAlgebraType ptr)
     return std::unique_ptr<Interface>(reinterpret_cast<Interface*>(ptr.release()
     ));
 }
-RPY_EXPORT
+
+ROUGHPY_ALGEBRA_EXPORT
 UnspecifiedAlgebraType construct_dense_algebra(
         scalars::ScalarArray&& data, const context_pointer& ctx,
         AlgebraType atype

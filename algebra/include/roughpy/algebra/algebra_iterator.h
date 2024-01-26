@@ -79,9 +79,9 @@ public:
     using basis_type = typename Algebra::basis_type;
     using key_type = typename Algebra::key_type;
 
-    AlgebraIteratorItem(std::shared_ptr<AlgebraIteratorInterface<Algebra>>
-                                interface)
-        : p_interface(std::move(interface))
+    AlgebraIteratorItem(std::shared_ptr<AlgebraIteratorInterface<Algebra>> iface
+    )
+        : p_interface(std::move(iface))
     {}
 
     RPY_NO_DISCARD
@@ -114,10 +114,9 @@ public:
     using difference_type = std::ptrdiff_t;
     using iterator_category = std::forward_iterator_tag;
 
-    AlgebraIterator(
-            std::shared_ptr<interface_type> interface, std::uintptr_t tag
-    )
-        : p_interface(std::move(interface)), m_tag(tag)
+    AlgebraIterator(std::shared_ptr<interface_type> iface, std::uintptr_t tag)
+        : p_interface(std::move(iface)),
+          m_tag(tag)
     {}
 
     AlgebraIterator() = default;

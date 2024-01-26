@@ -278,6 +278,7 @@ typename StreamSchema::lie_key StreamSchema::time_channel_to_lie_key() const
     return static_cast<lie_key>(width_to_iterator(end())) + 1;
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamSchema
 
 #include <roughpy/platform/serialization_instantiations.inl>

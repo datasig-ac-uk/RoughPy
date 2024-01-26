@@ -37,27 +37,38 @@
 namespace rpy {
 namespace devices {
 
-class ROUGHPY_PLATFORM_EXPORT  EventInterface : public dtl::InterfaceBase
+class ROUGHPY_PLATFORM_EXPORT EventInterface : public dtl::InterfaceBase
 {
 public:
     using object_t = Event;
 
-
     virtual void wait();
 
-    RPY_NO_DISCARD
-    virtual EventStatus status() const;
+    RPY_NO_DISCARD virtual EventStatus status() const;
 
-    RPY_NO_DISCARD
-    virtual bool is_user() const noexcept;
-
+    RPY_NO_DISCARD virtual bool is_user() const noexcept;
 
     virtual void set_status(EventStatus status);
 };
 
-extern template class dtl::ObjectBase<EventInterface, Event>;
+#ifdef RPY_PLATFORM_WINDOWS
+#  ifdef RoughPy_Platform_EXPORTS
+namespace dtl {
+extern template class ObjectBase<EventInterface, Event>;
+}
+#  else
+namespace dtl {
+template class RPY_DLL_IMPORT ObjectBase<EventInterface, Event>;
+}
+#  endif
+#else
+namespace dtl {
+extern template class ROUGHPY_PLATFORM_EXPORT ObjectBase<EventInterface, Event>;
+}
+#endif
 
-class Event : public dtl::ObjectBase<EventInterface, Event>
+class ROUGHPY_PLATFORM_EXPORT Event
+    : public dtl::ObjectBase<EventInterface, Event>
 {
     using base_t = dtl::ObjectBase<EventInterface, Event>;
 

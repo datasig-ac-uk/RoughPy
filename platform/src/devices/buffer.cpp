@@ -42,7 +42,7 @@ using namespace rpy::devices;
 
 namespace rpy { namespace devices { namespace dtl {
 
-template class ObjectBase<BufferInterface, Buffer>;
+template class RPY_DLL_EXPORT ObjectBase<BufferInterface, Buffer>;
 }}}
 
 BufferMode Buffer::mode() const {

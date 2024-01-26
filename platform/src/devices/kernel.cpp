@@ -45,7 +45,7 @@ namespace rpy {
 namespace devices {
 namespace dtl {
 
-template class ObjectBase<KernelInterface, Kernel>;
+template class RPY_DLL_EXPORT ObjectBase<KernelInterface, Kernel>;
 }
 }// namespace devices
 }// namespace rpy

@@ -100,11 +100,17 @@ RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT UnspecifiedAlgebraType alg_from_raw_bytes(
         context_pointer ctx, AlgebraType atype, Slice<byte> raw_data
 );
 
-void intrusive_ptr_release(const ContextBase* ptr);
-void intrusive_ptr_add_ref(const ContextBase* ptr);
+ROUGHPY_ALGEBRA_EXPORT
+void intrusive_ptr_release(const ContextBase* ptr) noexcept;
 
-void intrusive_ptr_release(const Context* ptr);
-void intrusive_ptr_add_ref(const Context* ptr);
+ROUGHPY_ALGEBRA_EXPORT
+void intrusive_ptr_add_ref(const ContextBase* ptr) noexcept;
+
+ROUGHPY_ALGEBRA_EXPORT
+void intrusive_ptr_release(const Context* ptr) noexcept;
+
+ROUGHPY_ALGEBRA_EXPORT
+void intrusive_ptr_add_ref(const Context* ptr) noexcept;
 
 template <typename Algebra>
 struct basis_setup_helper {

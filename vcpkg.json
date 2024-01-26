@@ -42,10 +42,6 @@
     "name" : "gmp",
     "version>=" : "6.2.1#21"
   }, {
-    "name" : "mpir",
-    "version>=" : "2022-03-02",
-    "platform" : "windows"
-  }, {
     "name" : "pcg",
     "version>=" : "2021-04-06"
   }, {

@@ -119,7 +119,11 @@ bool dyadic_equals(const Dyadic& lhs, const Dyadic& rhs);
 ROUGHPY_INTERVALS_EXPORT
 bool rational_equals(const Dyadic& lhs, const Dyadic& rhs);
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(Dyadic)
+#ifdef RPY_COMPILING_INTERVALS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(Dyadic)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(Dyadic)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Dyadic)
 {

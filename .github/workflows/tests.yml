@@ -55,33 +55,46 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
+      #    - uses: microsoft/setup-msbuild@v1.1
+      #      if: runner.os == 'Windows'
+      #      with:
+      #        msbuild-architecture: x64
+
+    - name: use ninja on non windows
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+
     - name: Python dependencies
       shell: bash
       run: |
         python -m pip install numpy ninja pytest pybind11
 
+    - name: setup vcpkg
+      shell: bash
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
 
     - name: Configure CMake
-      shell: bash
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: |
-        cmake -GNinja -B ${{github.workspace}}/build \
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DROUGHPY_BUILD_TESTS=ON \
-          -DROUGHPY_BUILD_PYMODULE_INPLACE=ON \
-          --toolchain=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_PYMODULE_INPLACE=ON
       env:
+        VERBOSE: 1
+        CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
 
     - name: Build
-      shell: bash
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{ github.workspace }}/build --config ${{env.BUILD_TYPE}}
+      env:
+        VERBOSE: 1
 
     - name: Test
       shell: bash
-      working-directory: ${{github.workspace}}/build
+      working-directory: ${{ github.workspace }}/build
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}

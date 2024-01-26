@@ -45,12 +45,19 @@ namespace algebra {
 template <typename, template <typename> class>
 class FreeTensorImplementation;
 
-
-
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
+#ifdef RPY_PLATFORM_WINDOWS
+#  ifdef RPY_COMPILING_DLL
+extern template class AlgebraBase<
+        FreeTensorInterface,
+        FreeTensorImplementation>;
+#  else
+template class RPY_DLL_IMPORT
         AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
-
-
+#  endif
+#else
+extern template class ROUGHPY_ALGEBRA_EXPORT
+        AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
+#endif
 
 class ROUGHPY_ALGEBRA_EXPORT FreeTensor
     : public AlgebraBase<FreeTensorInterface, FreeTensorImplementation>
@@ -72,7 +79,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(FreeTensor)
+#ifdef RPY_COMPILING_ALGEBRA
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(FreeTensor)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(FreeTensor)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(FreeTensor) { RPY_SERIAL_SERIALIZE_BASE(base_t); }
 

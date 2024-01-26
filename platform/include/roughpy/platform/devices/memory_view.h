@@ -35,7 +35,7 @@
 namespace rpy {
 namespace devices {
 
-class MemoryView
+class ROUGHPY_PLATFORM_EXPORT MemoryView
 {
     Buffer& r_memory_owner;
     void* p_data = nullptr;

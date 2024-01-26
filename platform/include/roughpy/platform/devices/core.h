@@ -286,6 +286,11 @@ enum class EventStatus : int8_t
 
 class DeviceHandle;
 
+void ROUGHPY_PLATFORM_EXPORT intrusive_ptr_add_ref(const DeviceHandle* device
+) noexcept;
+void ROUGHPY_PLATFORM_EXPORT intrusive_ptr_release(const DeviceHandle* device
+) noexcept;
+
 class BufferInterface;
 class Buffer;
 class EventInterface;
@@ -301,9 +306,10 @@ class Queue;
 using Device = boost::intrusive_ptr<const DeviceHandle>;
 using HostDevice = boost::intrusive_ptr<const HostDeviceHandle>;
 
-ROUGHPY_PLATFORM_EXPORT  HostDevice get_host_device();
-ROUGHPY_PLATFORM_EXPORT  Device get_default_device();
-ROUGHPY_PLATFORM_EXPORT  optional<Device> get_device(const DeviceSpecification& spec);
+ROUGHPY_PLATFORM_EXPORT HostDevice get_host_device();
+ROUGHPY_PLATFORM_EXPORT Device get_default_device();
+ROUGHPY_PLATFORM_EXPORT optional<Device>
+get_device(const DeviceSpecification& spec);
 
 constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 {
@@ -405,6 +411,7 @@ constexpr TypeInfo type_info() noexcept
             1U};
 }
 
+ROUGHPY_PLATFORM_EXPORT
 std::ostream& operator<<(std::ostream& os, const TypeInfo& code);
 
 

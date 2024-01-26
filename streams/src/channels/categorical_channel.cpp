@@ -103,6 +103,7 @@ StreamChannel& CategoricalChannel::insert_variant(string variant_label)
     return *this;
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::CategoricalChannel
 #define RPY_SERIAL_DO_REGISTER
 #include <roughpy/platform/serialization_instantiations.inl>

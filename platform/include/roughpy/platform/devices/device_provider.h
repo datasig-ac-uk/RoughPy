@@ -37,7 +37,7 @@
 namespace rpy {
 namespace devices {
 
-class ROUGHPY_PLATFORM_EXPORT  DeviceProvider
+class ROUGHPY_PLATFORM_EXPORT DeviceProvider
 {
 public:
     static void register_provider(std::unique_ptr<DeviceProvider>&& provider);

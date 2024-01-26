@@ -210,6 +210,7 @@ RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer) {
     dump_cache();
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::LieIncrementStream
 
 #include <roughpy/platform/serialization_instantiations.inl>

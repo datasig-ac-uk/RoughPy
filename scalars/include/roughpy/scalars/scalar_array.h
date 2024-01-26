@@ -70,7 +70,6 @@ class ROUGHPY_SCALARS_EXPORT ScalarArray
 
     dimn_t m_size = 0;
 
-    ROUGHPY_SCALARS_EXPORT
     static bool check_pointer_and_size(const void* ptr, dimn_t size);
 
 protected:
@@ -279,12 +278,13 @@ RPY_SERIAL_SAVE_FN_IMPL(ScalarArray)
     RPY_SERIAL_SERIALIZE_NVP("raw_bytes", to_raw_bytes());
 }
 
-
-RPY_SERIAL_EXTERN_SAVE_CLS(ScalarArray)
-RPY_SERIAL_EXTERN_LOAD_CLS(ScalarArray)
-
-
-
+#ifdef RPY_COMPILING_SCALARS
+RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(ScalarArray)
+RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(ScalarArray)
+#else
+RPY_SERIAL_EXTERN_SAVE_CLS_IMP(ScalarArray)
+RPY_SERIAL_EXTERN_LOAD_CLS_IMP(ScalarArray)
+#endif
 
 }// namespace scalars
 }// namespace rpy
