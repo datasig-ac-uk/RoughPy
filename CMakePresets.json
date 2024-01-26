@@ -1,0 +1,46 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+      },
+      "toolchainFile": "${sourceDir}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    {
+      "name": "tests-base",
+      "displayName": "Build Tests",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "ROUGHPY_BUILD_TESTS": {
+          "type": "BOOL",
+          "value": true
+        },
+        "ROUGHPY_BUILD_PYMODULE_INPLACE": {
+          "type": "BOOL",
+          "value": true
+        }
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Build release",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Release"
+        }
+      }
+    }
+  ]
+}
