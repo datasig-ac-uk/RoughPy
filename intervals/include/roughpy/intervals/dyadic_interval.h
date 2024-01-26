@@ -134,7 +134,11 @@ to_dyadic_intervals(const Interval& interval, typename Dyadic::power_t tol,
 ROUGHPY_INTERVALS_EXPORT
 bool operator<(const DyadicInterval& lhs, const DyadicInterval& rhs) noexcept;
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(DyadicInterval)
+#ifdef RPY_COMPILING_INTERVALS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(DyadicInterval)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(DyadicInterval)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(DyadicInterval)
 {

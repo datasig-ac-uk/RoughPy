@@ -45,14 +45,14 @@ using seed_int_t = uint64_t;
 
 // Forward declarations
 class ROUGHPY_SCALARS_EXPORT ScalarType;
-class ScalarInterface;
-class Scalar;
-class ScalarArray;
+class ROUGHPY_SCALARS_EXPORT ScalarInterface;
+class ROUGHPY_SCALARS_EXPORT Scalar;
+class ROUGHPY_SCALARS_EXPORT ScalarArray;
 class ScalarArrayView;
-class KeyScalarArray;
-class ScalarStream;
-class KeyScalarStream;
-class RandomGenerator;
+class ROUGHPY_SCALARS_EXPORT KeyScalarArray;
+class ROUGHPY_SCALARS_EXPORT ScalarStream;
+class ROUGHPY_SCALARS_EXPORT KeyScalarStream;
+class ROUGHPY_SCALARS_EXPORT RandomGenerator;
 
 namespace dtl {
 
@@ -97,16 +97,17 @@ RPY_NO_DISCARD optional<const ScalarType*> scalar_type_of()
     return dtl::ScalarTypeOfImpl<T>::get();
 }
 
-RPY_NO_DISCARD optional<const ScalarType*> scalar_type_of(devices::TypeInfo info
-);
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+scalar_type_of(devices::TypeInfo info);
 
-RPY_NO_DISCARD optional<const ScalarType*>
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 scalar_type_of(devices::TypeInfo info, const devices::Device& device);
 
 template <typename T>
 RPY_NO_DISCARD T scalar_cast(const Scalar& value);
 
-RPY_NO_DISCARD optional<const ScalarType*> get_type(string_view id);
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+get_type(string_view id);
 
 inline constexpr int min_scalar_type_alignment = 16;
 

@@ -490,6 +490,7 @@ void ScalarArray::from_raw_bytes(
     dtl::from_raw_bytes(owned_buffer.ptr(), count, bytes, info);
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME ScalarArray
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>

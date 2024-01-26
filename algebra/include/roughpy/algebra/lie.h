@@ -41,11 +41,15 @@ RPY_MSVC_DISABLE_WARNING(4661)
 namespace rpy {
 namespace algebra {
 
-
-
-
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
-        AlgebraBase<LieInterface>;
+#ifdef RPY_PLATFORM_WINDOWS
+#  ifdef RPY_COMPILING_DLL
+extern template class AlgebraBase<LieInterface>;
+#  else
+template class RPY_DLL_IMPORT AlgebraBase<LieInterface>;
+#  endif
+#else
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraBase<LieInterface>;
+#endif
 
 class ROUGHPY_ALGEBRA_EXPORT Lie : public AlgebraBase<LieInterface>
 {
@@ -59,8 +63,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(Lie)
-
+#ifdef RPY_COMPILING_ALGEBRA
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(Lie)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(Lie)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Lie) { RPY_SERIAL_SERIALIZE_BASE(base_t); }
 

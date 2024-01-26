@@ -75,6 +75,7 @@ enum class ScalarContentType : uint8_t
     /// owned by the Scalar
     OwnedInterface = 6
 };
+
 ROUGHPY_SCALARS_EXPORT bool scalar_convert_copy(
         void* dst,
         devices::TypeInfo dst_type,
@@ -90,6 +91,7 @@ inline bool scalar_convert_copy(
     return scalar_convert_copy(dst, ptype.get_type_info(), src);
 }
 
+ROUGHPY_SCALARS_EXPORT
 bool scalar_convert_copy(
         void* dst,
         devices::TypeInfo dst_type,
@@ -158,8 +160,8 @@ struct can_be_scalar<std::unique_ptr<T>> : std::false_type {
  */
 class ROUGHPY_SCALARS_EXPORT Scalar
 {
-    using interface_pointer_t = std::unique_ptr<ScalarInterface>;
-    static_assert(sizeof(interface_pointer_t) == sizeof(uintptr_t), "");
+    using interface_pointer_t = ScalarInterface*;
+    //    static_assert(sizeof(interface_pointer_t) == sizeof(uintptr_t), "");
     using type_pointer = PackedScalarTypePointer<dtl::ScalarContentType>;
     type_pointer p_type_and_content_type;
 
@@ -167,7 +169,7 @@ class ROUGHPY_SCALARS_EXPORT Scalar
     {
         uintptr_t integer_for_convenience;
         byte trivial_bytes[sizeof(uintptr_t)];
-        interface_pointer_t interface;
+        interface_pointer_t interface_ptr;
         void* opaque_pointer;
     };
 
@@ -286,7 +288,7 @@ public:
                   nullptr,
                   dtl::ScalarContentType::OwnedInterface
           ),
-          interface(std::move(iface))
+          interface_ptr(std::move(iface).release())
     {}
 
     explicit Scalar(const ScalarType* type, int64_t num, int64_t denom);
@@ -356,7 +358,7 @@ public:
                     );
                 case dtl::ScalarContentType::Interface:
                 case dtl::ScalarContentType::OwnedInterface:
-                    interface->set_value(
+                    interface_ptr->set_value(
                             Scalar(devices::type_info<remove_cv_t<T>>(), &value)
                     );
                     break;
@@ -448,7 +450,8 @@ public:
         construct_inplace(this, std::move(tmp));
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Scalar& value);
+    friend ROUGHPY_SCALARS_EXPORT std::ostream&
+    operator<<(std::ostream& os, const Scalar& value);
 
     /**
      * @brief Cast the scalar to a concrete type T.
@@ -481,6 +484,7 @@ private:
     void from_raw_bytes(devices::TypeInfo info, Slice<byte> bytes);
 };
 
+ROUGHPY_SCALARS_EXPORT
 std::ostream& operator<<(std::ostream&, const Scalar&);
 
 RPY_SERIAL_LOAD_FN_IMPL(Scalar)
@@ -498,8 +502,13 @@ RPY_SERIAL_SAVE_FN_IMPL(Scalar)
     RPY_SERIAL_SERIALIZE_NVP("raw_bytes", to_raw_bytes());
 }
 
-RPY_SERIAL_EXTERN_SAVE_CLS(Scalar)
-RPY_SERIAL_EXTERN_LOAD_CLS(Scalar)
+#ifdef RPY_COMPILING_SCALARS
+RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(Scalar)
+RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(Scalar)
+#else
+RPY_SERIAL_EXTERN_SAVE_CLS_IMP(Scalar)
+RPY_SERIAL_EXTERN_LOAD_CLS_IMP(Scalar)
+#endif
 
 template <typename T>
 const T& Scalar::as_type() const noexcept
@@ -514,7 +523,7 @@ const T& Scalar::as_type() const noexcept
             return *reinterpret_cast<const T*>(opaque_pointer);
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
-            return *reinterpret_cast<const T*>(interface->pointer());
+            return *reinterpret_cast<const T*>(interface_ptr->pointer());
     }
     RPY_UNREACHABLE_RETURN(*((const T*) &trivial_bytes));
 }

@@ -391,6 +391,7 @@ RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe)
 
 }}}
 
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::DynamicallyConstructedStream
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>

@@ -90,9 +90,7 @@ DynamicallyConstructedStream::Lie BrownianStream::make_neighbour_root_increment(
     );
 }
 
-
-
-
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::BrownianStream
 #define RPY_SERIAL_DO_SPLIT
 

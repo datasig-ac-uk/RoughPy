@@ -184,7 +184,7 @@ Scalar::Scalar(const Scalar& other) : integer_for_convenience(0)
                 break;
             case dtl::ScalarContentType::Interface:
             case dtl::ScalarContentType::OwnedInterface:
-                copy_from_opaque_pointer(info, other.interface->pointer());
+                copy_from_opaque_pointer(info, other.interface_ptr->pointer());
                 break;
             case dtl::ScalarContentType::OwnedPointer:
                 // This should only happen if the data type is too large to fit
@@ -224,7 +224,8 @@ Scalar::Scalar(Scalar&& other) noexcept
             break;
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
-            interface = std::move(other.interface);
+            interface_ptr = other.interface_ptr;
+            other.interface_ptr = nullptr;
     }
 }
 
@@ -240,11 +241,15 @@ Scalar::~Scalar()
             break;
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
-            interface.~unique_ptr();
+            RPY_DBG_ASSERT(interface_ptr != nullptr);
+            delete interface_ptr;
+            interface_ptr = nullptr;
+            break;
         case dtl::ScalarContentType::TrivialBytes:
         case dtl::ScalarContentType::OpaquePointer:
         case dtl::ScalarContentType::ConstTrivialBytes:
         case dtl::ScalarContentType::ConstOpaquePointer:
+            opaque_pointer = nullptr;
             break;
     }
 };
@@ -330,8 +335,8 @@ bool Scalar::is_zero() const noexcept
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
             return is_pointer_zero(
-                interface->pointer(),
-                p_type_and_content_type
+                    interface_ptr->pointer(),
+                    p_type_and_content_type
             );
     }
 
@@ -388,7 +393,7 @@ const void* Scalar::pointer() const noexcept
             return opaque_pointer;
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
-            return interface->pointer();
+            return interface_ptr->pointer();
     }
     RPY_UNREACHABLE_RETURN(nullptr);
 }

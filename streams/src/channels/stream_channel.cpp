@@ -87,9 +87,7 @@ void StreamChannel::convert_input(
     (*dst.type())->convert_copy(dst, src);
 }
 
-
-
-
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamChannel
 #define RPY_SERIAL_DO_SPLIT
 

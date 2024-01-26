@@ -118,6 +118,11 @@
 
 #if defined(RPY_PLATFORM_WINDOWS) || defined(__CYGWIN__)
 #  define RPY_COMPILING_DLL
+#  define RPY_DLL_EXPORT __declspec(dllexport)
+#  define RPY_DLL_IMPORT __declspec(dllimport)
+#else
+#  define RPY_DLL_EXPORT
+#  define RPY_DLL_IMPORT
 #endif
 
 #ifndef RPY_DISABLE_EXPORTS
@@ -141,21 +146,26 @@
 #  else
 #    if (defined(RPY_GCC) && RPY_GCC >= 4) || defined(RPY_CLANG)
 #      if defined(RPY_BUILDING_LIBRARY)
-#        define RPY_EXPORT __attribute__((visibility("default")))
 #        define RPY_LOCAL __attribute__((visibility("hidden")))
 #      else
-#        define RPY_EXPORT __attribute__((visibility("default")))
 #        define RPY_LOCAL __attribute__((visibility("hidden")))
 #      endif
 #    else
-#      define RPY_EXPORT
 #      define RPY_LOCAL
 #    endif
 #  endif
 #else
-#  define RPY_EXPORT
 #  define RPY_LOCAL
 #endif
+
+/*
+ * MSVC pre-defines min and max macros. undef them because this is insane
+ */
+#ifdef RPY_PLATFORM_WINDOWS
+#  undef min
+#  undef max
+#endif
+
 
 #if RPY_CPP_VERSION >= 201403L
 #  define RPY_CPP_14

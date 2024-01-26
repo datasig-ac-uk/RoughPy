@@ -122,10 +122,13 @@ target_precompile_headers(RoughPy_Platform PUBLIC
         <libalgebra_lite/polynomial.h>
 )
 
+if (APPLE)
+    target_compile_definitions(RoughPy_Platform PUBLIC BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED)
+endif()
+
 
 add_roughpy_test(Devices
         SRC
-        src/devices/opencl/test_ocl_version.cpp
         src/devices/test_cpu_device.cpp
         src/devices/test_gpu_device.cpp
         DEP

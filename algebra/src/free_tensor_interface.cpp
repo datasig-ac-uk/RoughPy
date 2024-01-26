@@ -48,7 +48,7 @@ template class RPY_EXPORT_INSTANTIATION AlgebraArithmetic<
         AlgebraElementAccess<AlgebraBasicProperties<FreeTensor, TensorBasis>>>;
 
 }// namespace dtl
-template class RPY_EXPORT_INSTANTIATION
-AlgebraInterface<FreeTensor, TensorBasis>;
+
+template class RPY_DLL_EXPORT AlgebraInterface<FreeTensor, TensorBasis>;
 
 }}

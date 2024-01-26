@@ -10,31 +10,41 @@
 
 using namespace rpy::devices;
 
+std::ostream& rpy::devices::operator<<(
+        std::ostream& os,
+        const rpy::devices::OCLVersion& version
+)
+{
+    return os << version.major() << '.' << version.minor() << '.'
+              << version.patch();
+}
 
-
-TEST(TestOCLVersion, OCLParseVersionString11Extra) {
-    OCLVersion parsed ("OpenCL 1.1 Mesa 22.3.6");
-    OCLVersion expected {1, 1};
+TEST(TestOCLVersion, OCLParseVersionString11Extra)
+{
+    OCLVersion parsed("OpenCL 1.1 Mesa 22.3.6");
+    OCLVersion expected{1, 1};
 
     EXPECT_EQ(parsed, expected);
 }
 
-TEST(TestOCLVersion, OCLParseVersionString11NoExtra) {
-    OCLVersion parsed ("OpenCL 1.1");
-    OCLVersion expected {1, 1};
+TEST(TestOCLVersion, OCLParseVersionString11NoExtra)
+{
+    OCLVersion parsed("OpenCL 1.1");
+    OCLVersion expected{1, 1};
 
     EXPECT_EQ(parsed, expected);
 }
 
-TEST(TestOCLVersion, OCLParseVersionString30Extra) {
+TEST(TestOCLVersion, OCLParseVersionString30Extra)
+{
     OCLVersion parsed("OpenCL 3.0 (Build 0)");
     OCLVersion expected{3, 0};
 
     EXPECT_EQ(parsed, expected);
 }
 
-
-TEST(TestOCLVersion, StreamOutputOperator) {
+TEST(TestOCLVersion, StreamOutputOperator)
+{
 
     OCLVersion version{2, 2};
 

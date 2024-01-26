@@ -412,6 +412,8 @@ function(add_roughpy_component _name)
 
     set(_real_name "RoughPy_${_name}")
     set(_alias_name "RoughPy::${_name}")
+
+    string(TOUPPER "${_name}" _name_upper)
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
     _get_component_name(_component_name ${_component})
 
@@ -430,11 +432,11 @@ function(add_roughpy_component _name)
                 message(FATAL_ERROR "The path ${_pth} does not exist")
             endif ()
         endforeach ()
-    else()
+    else ()
         if (_private_deps)
             message(FATAL_ERROR
                     "INTERFACE library cannot have private dependencies")
-        endif()
+        endif ()
 
     endif ()
 
@@ -449,7 +451,6 @@ function(add_roughpy_component _name)
     endif ()
 
 
-
     _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps _interface_deps)
     _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps _private_deps)
 
@@ -458,6 +459,7 @@ function(add_roughpy_component _name)
             EXPORT_NAME ${_name})
 
     if (NOT ${_lib_type} STREQUAL "INTERFACE")
+        target_compile_definitions(${_real_name} PRIVATE "RPY_COMPILING_${_name_upper}=1")
         target_include_directories(${_real_name}
                 PRIVATE
                 "${_private_include_dirs}"
@@ -642,6 +644,7 @@ function(add_roughpy_test _name)
 
     endforeach ()
 
+
     target_link_libraries(${_tests_name} PRIVATE ${_deps} GTest::gtest_main)
 
     target_compile_definitions(${_tests_name} PRIVATE ${test_DEFN})
@@ -651,6 +654,11 @@ function(add_roughpy_test _name)
 
     target_link_components(${_tests_name} PRIVATE ${test_NEEDS})
 
+    if (WIN32)
+        add_custom_command(TARGET ${_tests_name} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
+                COMMAND_EXPAND_LISTS)
+    endif ()
 
     gtest_discover_tests(${_tests_name})
 endfunction()

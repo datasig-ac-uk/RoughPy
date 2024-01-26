@@ -269,6 +269,7 @@ streams::TickStream::signature(const intervals::Interval& interval,
     return StreamInterface::signature(interval, resolution, ctx);
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::TickStream
 
 #include <roughpy/platform/serialization_instantiations.inl>

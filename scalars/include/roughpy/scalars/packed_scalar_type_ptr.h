@@ -39,6 +39,7 @@
 
 namespace rpy {
 namespace scalars {
+
 template <typename OptionsEnumerator>
 class PackedScalarTypePointer
 {

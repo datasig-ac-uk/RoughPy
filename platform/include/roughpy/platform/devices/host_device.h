@@ -33,7 +33,7 @@
 namespace rpy {
 namespace devices {
 
-class HostDeviceHandle : public DeviceHandle
+class ROUGHPY_PLATFORM_EXPORT HostDeviceHandle : public DeviceHandle
 {
 
 public:

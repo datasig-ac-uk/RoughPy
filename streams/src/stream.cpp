@@ -257,6 +257,7 @@ Stream Stream::simplify(
     ));
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::Stream
 
 #include <roughpy/platform/serialization_instantiations.inl>

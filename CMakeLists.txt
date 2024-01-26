@@ -20,8 +20,7 @@ include(CheckIncludeFileCXX)
 option(ROUGHPY_ENABLE_DBG_ASSERT "enable debug assertions at runtime" OFF)
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
-option(ROUGHPY_BUILD_DOCS "Build documentation" OFF)
-option(ROUGHPY_BUILD_PYMODULE_INPLACE "Buildg the pymodule in the project roughpy directory" OFF)
+option(ROUGHPY_BUILD_PYMODULE_INPLACE "Build the pymodule in the project roughpy directory" OFF)
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
@@ -313,8 +312,27 @@ find_package(PCGRandom REQUIRED)
 #find_package(Libalgebra_lite REQUIRED)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GMP REQUIRED IMPORTED_TARGET gmp)
-add_library(GMP::GMP ALIAS PkgConfig::GMP)
+pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
+if (TARGET PkgConfig::GMP)
+    add_library(GMP::GMP ALIAS PkgConfig::GMP)
+elseif(DEFINED VCPKG_INSTALLED_DIR)
+    find_path(GMP_INCLUDES NAMES gmp.h
+    PATHS ${VCPKG_INSTALLED_DIR})
+
+    find_library(GMP_LIBRARIES gmp PATHS ${VCPKG_INSTALLED_DIR})
+
+    message(STATUS "GMP HEADERS: ${GMP_INCLUDES}")
+    message(STATUS "GMP LIBRARIES: ${GMP_LIBRARIES}")
+    if(GMP_INCLUDES AND GMP_LIBRARIES)
+        add_library(GMP::GMP UNKNOWN IMPORTED GLOBAL)
+        target_include_directories(GMP::GMP INTERFACE ${GMP_INCLUDES})
+        target_link_libraries(GMP::GMP INTERFACE ${GMP_LIBRARIES})
+    else()
+        message(FATAL_ERROR "Could not locate gmp")
+    endif()
+else()
+    message(FATAL_ERROR "Could not locate gmp, no vcpkg")
+endif()
 
 # Now we get to adding our components. Let's do some global setup such as
 # setting the CXX standard and the shared library details.
@@ -352,11 +370,6 @@ if (ROUGHPY_BUILD_LA_CONTEXTS)
     add_subdirectory(external/libalgebra)
     add_subdirectory(la_context)
 endif ()
-
-
-if (ROUGHPY_BUILD_DOCS)
-    add_subdirectory(docs)
-endif()
 
 
 # TODO: Maybe we should replace this with a custom install target rather than

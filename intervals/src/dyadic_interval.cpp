@@ -247,5 +247,6 @@ bool rpy::intervals::operator<(const DyadicInterval& lhs,
     return unit * (rhs_k - lhs_k) >= 0;
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_INTERVALS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::intervals::DyadicInterval
 #include <roughpy/platform/serialization_instantiations.inl>
