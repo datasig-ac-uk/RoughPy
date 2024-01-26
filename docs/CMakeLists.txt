@@ -33,7 +33,9 @@ set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/docs/sphinx)
 
 add_custom_target(Sphinx ALL
         COMMAND ${SPHINX_EXECUTABLE} -b html
+        -Dbreathe_projects.RoughPy=${DOXYGEN_OUTPUT_DIR}/xml
         ${SPHINX_SOURCE} ${SPHINX_BUILD}
+        DEPENDS Doxygen
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating docs with sphinx")
 
