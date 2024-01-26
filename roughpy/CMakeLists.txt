@@ -28,14 +28,17 @@ target_compile_definitions(RoughPy_PyModule PRIVATE
 )
 
 if (ROUGHPY_BUILD_PYMODULE_INPLACE)
-    set_target_properties(RoughPy_PyModule PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
     if (MSVC)
-        foreach (_cfg IN LISTS CMAKE_CONFIGURATION_TYPES)
-            message(STATUS "Setting ${_cfg} output directory")
-            set_target_properties(RoughPy_PyModule PROPERTIES
-                    RUNTIME_OUTPUT_DIRECTORY_${_cfg} "$<1:${CMAKE_CURRENT_LIST_DIR}>")
-        endforeach ()
+        add_custom_command(RoughPy_PyModule POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:RoughPy_PyModule>
+        )
+        add_custom_command(RoughPy_PyModule POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
+            COMMAND_EXPAND_LISTS
+        )
+    else()
+        set_target_properties(RoughPy_PyModule PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
     endif ()
 endif ()
 
