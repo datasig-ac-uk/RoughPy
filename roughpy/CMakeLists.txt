@@ -29,10 +29,10 @@ target_compile_definitions(RoughPy_PyModule PRIVATE
 
 if (ROUGHPY_BUILD_PYMODULE_INPLACE)
     if (MSVC)
-        add_custom_command(RoughPy_PyModule POST_BUILD
+        add_custom_command(TARGET RoughPy_PyModule POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:RoughPy_PyModule>
         )
-        add_custom_command(RoughPy_PyModule POST_BUILD
+        add_custom_command(TARGET RoughPy_PyModule POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
             COMMAND_EXPAND_LISTS
         )
