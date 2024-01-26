@@ -31,10 +31,11 @@ if (ROUGHPY_BUILD_PYMODULE_INPLACE)
     set_target_properties(RoughPy_PyModule PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
     if (MSVC)
-        set_target_properties(RoughPy_PyModule PROPERTIES
-                    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_LIST_DIR}")
-        set_target_properties(RoughPy_PyModule PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_LIST_DIR}")
+        foreach (_cfg IN LISTS CMAKE_CONFIGURATION_TYPES)
+            message(STATUS "Setting ${_cfg} output directory")
+            set_target_properties(RoughPy_PyModule PROPERTIES
+                    RUNTIME_OUTPUT_DIRECTORY_${_cfg} "$<1:${CMAKE_CURRENT_LIST_DIR}>")
+        endforeach ()
     endif ()
 endif ()
 
