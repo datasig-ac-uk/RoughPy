@@ -31,6 +31,7 @@ add_roughpy_component(Algebra
         src/libalgebra_lite_internal/unspecified_algebra_binary_op.h
         src/libalgebra_lite_internal/vector_storage_type.h
         src/libalgebra_lite_internal/vector_type_helper.h
+        src/algebra.cpp
         src/algebra_base.cpp
         src/algebra_iterator.cpp
         src/basis.cpp
@@ -57,6 +58,7 @@ add_roughpy_component(Algebra
 #        src/shuffle_tensor_bundle_interface.cpp
         src/shuffle_tensor_interface.cpp
         src/tensor_basis.cpp
+        src/vector.cpp
         PUBLIC_HEADERS
 #        include/roughpy/algebra/implementors/algebra_bundle_impl.h
         include/roughpy/algebra/implementors/algebra_impl.h
@@ -74,6 +76,7 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/interfaces/lie_interface.h
 #        include/roughpy/algebra/interfaces/shuffle_tensor_bundle_interface.h
         include/roughpy/algebra/interfaces/shuffle_tensor_interface.h
+        include/roughpy/algebra/algebra.h
         include/roughpy/algebra/algebra_base.h
         include/roughpy/algebra/algebra_base_impl.h
 #        include/roughpy/algebra/algebra_bundle.h
@@ -98,6 +101,7 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/shuffle_tensor.h
 #        include/roughpy/algebra/shuffle_tensor_bundle.h
         include/roughpy/algebra/tensor_basis.h
+        include/roughpy/algebra/vector.h
         DEPENDENCIES PUBLIC
         Boost::boost
         Libalgebra_lite::Libalgebra_lite
