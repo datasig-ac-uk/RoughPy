@@ -46,8 +46,8 @@ class TensorTensorProduct:
     tensor functions such as Log.
     """
 
-    data: dict[tuple[rp.TensorKey], Any]
-    ctx: rp.Context
+    data: 'dict[tuple[rp.TensorKey], Any]'
+    ctx: 'rp.Context'
 
     def __init__(self, data, ctx=None):
 
