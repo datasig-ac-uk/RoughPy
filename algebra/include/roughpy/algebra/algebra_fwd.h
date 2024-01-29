@@ -80,7 +80,6 @@ struct algebra_info;
 template <typename Algebra>
 class AlgebraIterator;
 
-template <typename PrimaryInterface>
 class Basis;
 
 namespace dtl {

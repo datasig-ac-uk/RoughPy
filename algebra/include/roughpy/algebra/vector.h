@@ -12,8 +12,7 @@
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 
-#include "roughpy_algebra_export.h"
-#include <ostream>
+#include "algebra_fwd.h"
 
 namespace rpy {
 namespace algebra {
@@ -25,10 +24,12 @@ class VectorIterator;
 
 class Vector
 {
+    using basis_pointer = std::shared_ptr<const Basis>;
+
     scalars::ScalarArray m_scalar_buffer;
     devices::Buffer m_key_buffer;
 
-    std::shared_ptr<const Basis> p_basis;
+    basis_pointer p_basis;
 
 public:
     using iterator = VectorIterator;
@@ -57,6 +58,23 @@ protected:
         return m_scalar_buffer.size();
     }
 
+    RPY_NO_DISCARD devices::Buffer& mut_scalar_Buffer() noexcept
+    {
+        return m_scalar_buffer.mut_buffer();
+    }
+    RPY_NO_DISCARD devices::Buffer& mut_key_buffer() noexcept
+    {
+        return m_key_buffer;
+    }
+    RPY_NO_DISCARD const devices::Buffer& scalar_buffer() const noexcept
+    {
+        return m_scalar_buffer.buffer();
+    }
+    RPY_NO_DISCARD const devices::Buffer& key_buffer() const noexcept
+    {
+        return m_key_buffer;
+    }
+
 public:
     /**
      * @brief Is the vector densely stored
@@ -79,8 +97,7 @@ public:
     /**
      * @brief Get the basis for this vector
      */
-    RPY_NO_DISCARD std::shared_ptr<const Basis> basis() const noexcept
-    {
+    RPY_NO_DISCARD basis_pointer basis() const noexcept {
         return p_basis;
     }
 
@@ -145,6 +162,26 @@ public:
 
     RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key);
 
+protected:
+    enum OperationType
+    {
+        Unary,
+        UnaryInplace,
+        Binary,
+        BinaryInplace,
+        Ternary,
+        TernaryInplace
+    };
+
+    /**
+     * @brief Get the correct kernel for the given operation
+     * @param type the type of operation that is required
+     * @param operation Operation to get
+     * @return Kernel for the required operation
+     */
+    devices::Kernel get_kernel(OperationType type, string_view operation) const;
+
+public:
     RPY_NO_DISCARD Vector uminus() const;
 
     RPY_NO_DISCARD Vector add(const Vector& other) const;
@@ -179,45 +216,77 @@ std::ostream& operator<<(std::ostream& os, const Vector& value);
  */
 
 template <typename V>
-RPY_NO_DISCARD inline enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
 operator-(const V& arg)
 {
     return V(arg.uminus());
 }
 
 template <typename V>
-RPY_NO_DISCARD inline enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
 operator+(const V& lhs, const Vector& rhs)
 {
     return V(lhs.add(rhs));
 }
 
 template <typename V>
-RPY_NO_DISCARD inline enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
 operator-(const V& lhs, const Vector& rhs)
 {
     return V(lhs.sub(rhs));
 }
 
 template <typename V>
-RPY_NO_DISCARD inline enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
 operator*(const V& lhs, const scalars::Scalar& rhs)
 {
     return V(lhs.right_smul(rhs));
 }
 
 template <typename V>
-RPY_NO_DISCARD inline enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
 operator*(const scalars::Scalar& lhs, const V& rhs)
 {
     return V(rhs.left_smul(lhs));
 }
 
 template <typename V>
-RPY_NO_DISCARD inline enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
 operator/(const V& lhs, const scalars::Scalar& rhs)
 {
     return V(lhs.sdiv(rhs));
+}
+
+template <typename V>
+enable_if_t<is_base_of<Vector, V>::value, V&>
+operator*=(V& lhs, const Vector& rhs)
+{
+    lhs.add_inplace(rhs);
+    return lhs;
+}
+
+template <typename V>
+enable_if_t<is_base_of<Vector, V>::value, V&>
+operator-=(V& lhs, const Vector& rhs)
+{
+    lhs.sub_inplace(rhs);
+    return lhs;
+}
+
+template <typename V>
+enable_if_t<is_base_of<Vector, V>::value, V&>
+operator*=(V& lhs, const scalars::Scalar& rhs)
+{
+    lhs.smul_inplace(rhs);
+    return lhs;
+}
+
+template <typename V>
+enable_if_t<is_base_of<Vector, V>::value, V&>
+operator/=(V& lhs, const scalars::Scalar& rhs)
+{
+    lhs.sdiv_inplace(rhs);
+    return lhs;
 }
 
 }// namespace algebra
