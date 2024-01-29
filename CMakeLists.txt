@@ -378,6 +378,11 @@ endif ()
 #set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")
 
 install(TARGETS
+        RoughPy_Platform
+        RoughPy_Intervals
+        RoughPy_Scalars
+        RoughPy_Algebra
+        RoughPy_Streams
     RoughPy_PyModule
     EXPORT RoughPy_EXPORTS
     RUNTIME DESTINATION roughpy
