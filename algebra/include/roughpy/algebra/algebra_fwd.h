@@ -82,6 +82,8 @@ class AlgebraIterator;
 
 class Basis;
 
+using BasisPointer = boost::intrusive_ptr<const Basis>;
+
 namespace dtl {
 
 class AlgebraInterfaceBase;
@@ -94,10 +96,6 @@ using UnspecifiedAlgebraType = std::unique_ptr<dtl::AlgebraInterfaceBase>;
 class TensorBasisInterface;
 class LieBasisInterface;
 
-using TensorKey = key_type;
-using TensorBasis = Basis<TensorBasisInterface>;
-using LieKey = key_type;
-using LieBasis = Basis<LieBasisInterface>;
 
 class FreeTensorInterface;
 class FreeTensor;

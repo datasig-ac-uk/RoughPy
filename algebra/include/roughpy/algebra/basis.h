@@ -42,6 +42,7 @@ namespace algebra {
 
 class ROUGHPY_ALGEBRA_EXPORT Basis
 {
+
 };
 
 

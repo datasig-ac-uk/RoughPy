@@ -35,6 +35,7 @@ add_roughpy_component(Algebra
         src/algebra_base.cpp
         src/algebra_iterator.cpp
         src/basis.cpp
+
         src/context.cpp
         src/double_lite_context.cpp
         src/float_lite_context.cpp
@@ -86,6 +87,7 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/algebra_iterator.h
         include/roughpy/algebra/algebra_iterator_impl.h
         include/roughpy/algebra/basis.h
+        include/roughpy/algebra/basis_key.h
         include/roughpy/algebra/basis_impl.h
         include/roughpy/algebra/basis_info.h
 #        include/roughpy/algebra/bundle_info.h
