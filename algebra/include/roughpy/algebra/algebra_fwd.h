@@ -106,12 +106,11 @@ class LieInterface;
 class Lie;
 class ShuffleTensorInterface;
 class ShuffleTensor;
-class FreeTensorBundleInterface;
-class FreeTensorBundle;
-class LieBundleInterface;
-class LieBundle;
-class ShuffleTensorBundleInterface;
-class ShuffleTensorBundle;
+
+
+template <typename Base, typename Fibre>
+class Bundle;
+
 
 
 namespace traits {
@@ -145,19 +144,6 @@ struct key_of_impl<FreeTensorInterface> {
     using type = TensorKey;
 };
 template <>
-struct algebra_of_impl<FreeTensorBundleInterface> {
-    using type = FreeTensorBundle;
-};
-template <>
-struct basis_of_impl<FreeTensorBundleInterface> {
-    using type = TensorBasis;
-};
-template <>
-struct key_of_impl<FreeTensorBundleInterface> {
-    using type = TensorKey;
-};
-
-template <>
 struct basis_of_impl<LieInterface> {
     using type = LieBasis;
 };
@@ -169,18 +155,7 @@ template <>
 struct key_of_impl<LieInterface> {
     using type = LieKey;
 };
-template <>
-struct basis_of_impl<LieBundleInterface> {
-    using type = LieBasis;
-};
-template <>
-struct algebra_of_impl<LieBundleInterface> {
-    using type = LieBundle;
-};
-template <>
-struct key_of_impl<LieBundleInterface> {
-    using type = LieKey;
-};
+
 
 template <>
 struct algebra_of_impl<ShuffleTensorInterface> {
@@ -194,19 +169,6 @@ template <>
 struct key_of_impl<ShuffleTensorInterface> {
     using type = TensorKey;
 };
-template <>
-struct algebra_of_impl<ShuffleTensorBundleInterface> {
-    using type = ShuffleTensorBundle;
-};
-template <>
-struct basis_of_impl<ShuffleTensorBundleInterface> {
-    using type = TensorBasis;
-};
-template <>
-struct key_of_impl<ShuffleTensorBundleInterface> {
-    using type = TensorKey;
-};
-
 
 
 }// namespace dtl

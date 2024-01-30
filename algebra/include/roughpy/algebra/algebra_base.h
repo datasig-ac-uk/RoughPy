@@ -260,33 +260,20 @@ public:
     RPY_NO_DISCARD
     algebra_t sdiv(const scalars::Scalar& rhs) const;
 
-    RPY_NO_DISCARD
     algebra_t& add_inplace(const algebra_t& rhs);
-    RPY_NO_DISCARD
     algebra_t& sub_inplace(const algebra_t& rhs);
-    RPY_NO_DISCARD
     algebra_t& mul_inplace(const algebra_t& rhs);
-    RPY_NO_DISCARD
     algebra_t& smul_inplace(const scalars::Scalar& rhs);
-    RPY_NO_DISCARD
     algebra_t& sdiv_inplace(const scalars::Scalar& rhs);
 
-    RPY_NO_DISCARD
     algebra_t& add_scal_mul(const algebra_t& lhs, const scalars::Scalar& rhs);
-    RPY_NO_DISCARD
     algebra_t& sub_scal_mul(const algebra_t& lhs, const scalars::Scalar& rhs);
-    RPY_NO_DISCARD
     algebra_t& add_scal_div(const algebra_t& lhs, const scalars::Scalar& rhs);
-    RPY_NO_DISCARD
     algebra_t& sub_scal_div(const algebra_t& lhs, const scalars::Scalar& rhs);
 
-    RPY_NO_DISCARD
     algebra_t& add_mul(const algebra_t& lhs, const algebra_t& rhs);
-    RPY_NO_DISCARD
     algebra_t& sub_mul(const algebra_t& lhs, const algebra_t& rhs);
-    RPY_NO_DISCARD
     algebra_t& mul_smul(const algebra_t& lhs, const scalars::Scalar& rhs);
-    RPY_NO_DISCARD
     algebra_t& mul_sdiv(const algebra_t& lhs, const scalars::Scalar& rhs);
 
     std::ostream& print(std::ostream& os) const;
