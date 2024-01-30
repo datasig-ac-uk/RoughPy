@@ -24,12 +24,11 @@ class VectorIterator;
 
 class Vector
 {
-    using basis_pointer = std::shared_ptr<const Basis>;
 
     scalars::ScalarArray m_scalar_buffer;
     devices::Buffer m_key_buffer;
 
-    basis_pointer p_basis;
+    BasisPointer p_basis;
 
 public:
     using iterator = VectorIterator;
@@ -75,7 +74,42 @@ protected:
         return m_key_buffer;
     }
 
+    RPY_NO_DISCARD bool fast_is_zero() const noexcept
+    {
+        return p_basis == nullptr || m_scalar_buffer.empty();
+    }
+
+    void set_zero();
+
 public:
+
+    Vector();
+
+    ~Vector();
+
+    Vector(const Vector& other);
+
+    Vector(Vector&& other) noexcept;
+
+    explicit Vector(BasisPointer basis, const scalars::ScalarType* scalar_type)
+        : p_basis(std::move(basis)),
+          m_scalar_buffer(scalar_type),
+          m_key_buffer() {}
+
+    Vector(BasisPointer basis,
+           scalars::ScalarArray&& scalar_data,
+           devices::Buffer&& key_buffer)
+        : p_basis(std::move(basis)), m_scalar_buffer(std::move(scalar_data)),
+          m_key_buffer(std::move(key_buffer))
+    {
+    }
+
+    Vector& operator=(const Vector& other);
+
+    Vector& operator=(Vector&& other) noexcept;
+
+
+
     /**
      * @brief Is the vector densely stored
      * @return
@@ -97,7 +131,8 @@ public:
     /**
      * @brief Get the basis for this vector
      */
-    RPY_NO_DISCARD basis_pointer basis() const noexcept {
+    RPY_NO_DISCARD BasisPointer basis() const noexcept
+    {
         return p_basis;
     }
 
@@ -181,6 +216,9 @@ protected:
      */
     devices::Kernel get_kernel(OperationType type, string_view operation) const;
 
+    devices::KernelLaunchParams get_kernel_launch_params() const;
+
+
 public:
     RPY_NO_DISCARD Vector uminus() const;
 
@@ -192,8 +230,10 @@ public:
 
     Vector& add_inplace(const Vector& other);
     Vector& sub_inplace(const Vector& other);
-    Vector& smul_inplace(const Vector& other);
-    Vector& sdiv_inplace(const Vector& other);
+
+    Vector& smul_inplace(const scalars::Scalar& other);
+
+    Vector& sdiv_inplace(const scalars::Scalar& other);
 
     Vector& add_scal_mul(const Vector& other, const scalars::Scalar& scalar);
     Vector& sub_scal_mul(const Vector& other, const scalars::Scalar& scalar);

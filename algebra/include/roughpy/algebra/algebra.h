@@ -16,15 +16,17 @@
 namespace rpy {
 namespace algebra {
 
+
+class ROUGHPY_ALGEBRA_EXPORT Multiplication {
+
+};
+
+
 class ROUGHPY_ALGEBRA_EXPORT Algebra : public Vector
 {
-    devices::Kernel m_multiplication;
+    boost::intrusive_ptr<const Multiplication> p_multiplication;
 
 public:
-    RPY_NO_DISCARD devices::Kernel multiplication() const noexcept
-    {
-        return m_multiplication;
-    }
 
     RPY_NO_DISCARD Algebra multiply(const Vector& other) const;
     Algebra& multiply_inplace(const Vector& other);

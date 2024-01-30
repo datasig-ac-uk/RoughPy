@@ -82,127 +82,24 @@ class AlgebraIterator;
 
 class Basis;
 
+class BasisKey;
+
+class BasisKeyPointer;
+
 using BasisPointer = boost::intrusive_ptr<const Basis>;
 
-namespace dtl {
+void intrusive_ptr_add_ref(const Basis*) noexcept;
 
-class AlgebraInterfaceBase;
+void intrusive_ptr_release(const Basis*) noexcept;
 
-}
-using RawUnspecifiedAlgebraType = dtl::AlgebraInterfaceBase*;
-using ConstRawUnspecifiedAlgebraType = const dtl::AlgebraInterfaceBase*;
-using UnspecifiedAlgebraType = std::unique_ptr<dtl::AlgebraInterfaceBase>;
+class Vector;
 
-class TensorBasisInterface;
-class LieBasisInterface;
+class Algebra;
 
-
-class FreeTensorInterface;
 class FreeTensor;
-class LieInterface;
 class Lie;
-class ShuffleTensorInterface;
 class ShuffleTensor;
-class FreeTensorBundleInterface;
-class FreeTensorBundle;
-class LieBundleInterface;
-class LieBundle;
-class ShuffleTensorBundleInterface;
-class ShuffleTensorBundle;
 
-
-namespace traits {
-namespace dtl {
-
-template <typename I>
-struct algebra_of_impl;
-
-template <typename I>
-struct basis_of_impl;
-
-template <typename I>
-struct key_of_impl;
-
-template <typename I>
-struct basis_algebra_of;
-
-template <typename I>
-struct fibre_algebra_of;
-
-template <>
-struct algebra_of_impl<FreeTensorInterface> {
-    using type = FreeTensor;
-};
-template <>
-struct basis_of_impl<FreeTensorInterface> {
-    using type = TensorBasis;
-};
-template <>
-struct key_of_impl<FreeTensorInterface> {
-    using type = TensorKey;
-};
-template <>
-struct algebra_of_impl<FreeTensorBundleInterface> {
-    using type = FreeTensorBundle;
-};
-template <>
-struct basis_of_impl<FreeTensorBundleInterface> {
-    using type = TensorBasis;
-};
-template <>
-struct key_of_impl<FreeTensorBundleInterface> {
-    using type = TensorKey;
-};
-
-template <>
-struct basis_of_impl<LieInterface> {
-    using type = LieBasis;
-};
-template <>
-struct algebra_of_impl<LieInterface> {
-    using type = Lie;
-};
-template <>
-struct key_of_impl<LieInterface> {
-    using type = LieKey;
-};
-template <>
-struct basis_of_impl<LieBundleInterface> {
-    using type = LieBasis;
-};
-template <>
-struct algebra_of_impl<LieBundleInterface> {
-    using type = LieBundle;
-};
-template <>
-struct key_of_impl<LieBundleInterface> {
-    using type = LieKey;
-};
-
-template <>
-struct algebra_of_impl<ShuffleTensorInterface> {
-    using type = ShuffleTensor;
-};
-template <>
-struct basis_of_impl<ShuffleTensorInterface> {
-    using type = TensorBasis;
-};
-template <>
-struct key_of_impl<ShuffleTensorInterface> {
-    using type = TensorKey;
-};
-template <>
-struct algebra_of_impl<ShuffleTensorBundleInterface> {
-    using type = ShuffleTensorBundle;
-};
-template <>
-struct basis_of_impl<ShuffleTensorBundleInterface> {
-    using type = TensorBasis;
-};
-template <>
-struct key_of_impl<ShuffleTensorBundleInterface> {
-    using type = TensorKey;
-};
 
 
 

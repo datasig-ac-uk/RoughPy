@@ -12,12 +12,10 @@ using namespace algebra;
 namespace rpy {
 namespace algebra {
 
-class VectorIterator
-{
+class VectorIterator {
 };
 
-class BasisKey
-{
+class BasisKey {
 };
 
 }// namespace algebra
@@ -35,32 +33,105 @@ dimn_t Vector::dimension() const noexcept { return m_scalar_buffer.size(); }
 
 dimn_t Vector::size() const noexcept {}
 
-bool Vector::is_zero() const noexcept {}
+bool Vector::is_zero() const noexcept
+{
+    if (fast_is_zero()) {
+        return true;
+    }
+
+
+    return true;
+}
+
+void Vector::set_zero()
+{
+    if (is_sparse()) {
+        m_scalar_buffer = scalars::ScalarArray(scalar_type());
+        m_key_buffer = devices::Buffer();
+    } else {
+        auto kernel = get_kernel(UnaryInplace, "set_scalar");
+        auto params = get_kernel_launch_params();
+
+        kernel(params, m_scalar_buffer.mut_buffer(), scalars::Scalar(0));
+    }
+}
 
 void Vector::make_dense() {}
+
 void Vector::make_sparse() {}
+
+
+Vector::Vector() : p_basis(), m_scalar_buffer(), m_key_buffer()
+{
+}
+
+Vector::~Vector() = default;
+
+Vector::Vector(const Vector& other)
+    : p_basis(other.p_basis), m_scalar_buffer(other.m_scalar_buffer),
+      m_key_buffer(other.m_key_buffer.clone())
+{
+}
+
+Vector::Vector(Vector&& other) noexcept
+    : p_basis(std::move(other.p_basis)),
+      m_scalar_buffer(std::move(other.m_scalar_buffer)),
+      m_key_buffer(std::move(other.m_key_buffer))
+{
+}
+
+Vector& Vector::operator=(const Vector& other)
+{
+    if (&other != this) {
+        this->~Vector();
+        p_basis = other.p_basis;
+        m_scalar_buffer = other.m_scalar_buffer;
+        m_key_buffer = other.m_key_buffer.clone();
+    }
+    return *this;
+}
+
+Vector& Vector::operator=(Vector&& other) noexcept
+{
+    if (&other != this) {
+        this->~Vector();
+        p_basis = std::move(other.p_basis);
+        m_scalar_buffer = std::move(other.m_scalar_buffer);
+        m_key_buffer = std::move(other.m_key_buffer);
+    }
+    return *this;
+}
+
+
 scalars::Scalar Vector::get(BasisKey key) const { return scalars::Scalar(); }
+
 scalars::Scalar Vector::get_mut(BasisKey key) { return scalars::Scalar(); }
+
 Vector::iterator Vector::begin() noexcept
 {
     return rpy::algebra::Vector::iterator();
 }
+
 Vector::iterator Vector::end() noexcept
 {
     return rpy::algebra::Vector::iterator();
 }
+
 Vector::const_iterator Vector::begin() const noexcept
 {
     return rpy::algebra::Vector::const_iterator();
 }
+
 Vector::const_iterator Vector::end() const noexcept
 {
     return rpy::algebra::Vector::const_iterator();
 }
+
 scalars::Scalar Vector::operator[](BasisKey key) const
 {
     return scalars::Scalar();
 }
+
 scalars::Scalar Vector::operator[](BasisKey key) { return scalars::Scalar(); }
 
 devices::Kernel
@@ -82,41 +153,121 @@ Vector::get_kernel(OperationType type, string_view operation) const
     return *kernel;
 }
 
-Vector Vector::uminus() const { return Vector(); }
+
+devices::KernelLaunchParams Vector::get_kernel_launch_params() const
+{
+    return devices::KernelLaunchParams();
+}
+
+Vector Vector::uminus() const
+{
+    auto kernel = get_kernel(Unary, "uminus");
+    scalars::ScalarArray out_data(scalar_type(), dimension());
+    devices::Buffer out_keys(m_key_buffer.clone());
+
+    auto launch_params = get_kernel_launch_params();
+
+    kernel(launch_params, out_data.mut_buffer(), m_scalar_buffer.buffer());
+
+    return {p_basis, std::move(out_data), std::move(out_keys)};
+}
+
 Vector Vector::add(const Vector& other) const { return Vector(); }
+
 Vector Vector::sub(const Vector& other) const { return Vector(); }
+
 Vector Vector::left_smul(const scalars::Scalar& other) const
 {
-    return Vector();
+    const auto* stype = scalar_type();
+
+    Vector result(p_basis, stype);
+
+    if (!other.is_zero()) {
+        auto kernel = get_kernel(Unary, "left_scalar_multiply");
+        auto params = get_kernel_launch_params();
+
+        result.m_scalar_buffer = scalars::ScalarArray(stype,
+                                                      dimension());
+        result.m_key_buffer = m_key_buffer.clone();
+
+        kernel(params,
+               result.m_scalar_buffer.mut_buffer(),
+               m_scalar_buffer.buffer(),
+               other
+        );
+    }
+
+    return result;
 }
+
 Vector Vector::right_smul(const scalars::Scalar& other) const
 {
+    const auto* stype = scalar_type();
+    Vector result(p_basis, stype);
+
+    if (!other.is_zero()) {
+        auto kernel = get_kernel(Unary, "right_scalar_multiply");
+        auto params = get_kernel_launch_params();
+
+        result.m_scalar_buffer = scalars::ScalarArray(stype, dimension());
+        result.m_key_buffer = m_key_buffer.clone();
+
+        kernel(params,
+               result.m_scalar_buffer.mut_buffer(),
+               m_scalar_buffer.buffer(),
+               other);
+    }
+
+    return result;
+}
+
+Vector Vector::sdiv(const scalars::Scalar& other) const
+{
+
+    if (other.is_zero()) {
+        throw std::domain_error("division by zero");
+    }
+
+
     return Vector();
 }
-Vector Vector::sdiv(const scalars::Scalar& other) const { return Vector(); }
+
 Vector& Vector::add_inplace(const Vector& other) { return *this; }
+
 Vector& Vector::sub_inplace(const Vector& other) { return *this; }
-Vector& Vector::smul_inplace(const Vector& other) { return *this; }
-Vector& Vector::sdiv_inplace(const Vector& other) { return *this; }
+
+Vector& Vector::smul_inplace(const scalars::Scalar& other)
+{
+
+
+    return *this;
+}
+
+Vector& Vector::sdiv_inplace(const scalars::Scalar& other) { return *this; }
+
 Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
     return *this;
 }
+
 Vector& Vector::sub_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
     return *this;
 }
+
 Vector& Vector::add_scal_div(const Vector& other, const scalars::Scalar& scalar)
 {
     return *this;
 }
+
 Vector& Vector::sub_scal_div(const Vector& other, const scalars::Scalar& scalar)
 {
     return *this;
 }
+
 bool Vector::operator==(const Vector& other) const { return false; }
 
 std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
 {
-    return <#initializer #>;
+    return os;
 }
