@@ -4,8 +4,21 @@
 Streams
 **************
 
+^^^^^^^^^^^^^^^^^^^^^
+What are streams
+^^^^^^^^^^^^^^^^^^^^^
+
 A stream means an object that provides the signature or log-signature over any interval.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How do streams fit into RoughPy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Streams are parametrised sequential data viewed via Rough Path theory as a rough path.
+
+^^^^^^^^^^^^^^^^^^^^^^^^
+How to work with streams
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 To create a stream, you need **data**.
 For example, we can create data using a linearly spaced time array.
@@ -52,3 +65,8 @@ You can then create a **stream** using your chosen **data** and **context** with
 
     Show example with tick data, constructor
 
+^^^^^^^^^^^^^^^^^^^^^
+Literature references
+^^^^^^^^^^^^^^^^^^^^^
+
+.. bibliography::

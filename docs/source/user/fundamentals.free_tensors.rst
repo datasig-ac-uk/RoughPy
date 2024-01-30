@@ -4,6 +4,25 @@
 Free Tensors
 **************
 
+^^^^^^^^^^^^^^^^^^^^^
+What are free tensors
+^^^^^^^^^^^^^^^^^^^^^
+
+Free tensors are
+
+.. todo::
+    Finish what are free tensors
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How do free tensors fit into RoughPy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You will most commonly encounter free tensors by taking the signature of a stream.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How to work with free tensors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 We can create a **free tensor** in many ways using `RoughPy`.
 
 We create a free tensor using data, a Width and a Depth. The data you use can take many forms, for example:
@@ -64,3 +83,9 @@ as well as take their exponential, log, and antipode.
 
     # antipode
     t1.antipode().antipode()
+
+^^^^^^^^^^^^^^^^^^^^^
+Literature references
+^^^^^^^^^^^^^^^^^^^^^
+
+.. bibliography::

@@ -4,11 +4,21 @@
 Lies
 **************
 
-.. todo::
+^^^^^^^^^^^^^^^^^^^^^
+What are Lie elements
+^^^^^^^^^^^^^^^^^^^^^
 
-    - Elements of the Free Lie Algebra
-    - They have a one to one relationship with the group-like elements
-    - Hall basis
+Lie elements live in the free Lie Algebra. They construct the Hall basis greedily. They have a one to one relationship with the group-like elements.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How do Lies fit into RoughPy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You will most commonly encounter Lies when taking the log signature of a path. We can use the Dynkin map to transfer between Lies and signatures.
+
+^^^^^^^^^^^^^^^^^^^^^
+How to work with Lies
+^^^^^^^^^^^^^^^^^^^^^
 
 To create a Lie element, we should start by creating **data**.
 
@@ -40,3 +50,9 @@ If we provide a complementary :doc:`fundamentals.contexts`, then we can use this
     context = rp.get_context(3, 2, rp.RationalPoly)
 
     tensor = context.lie_to_tensor(lie)
+
+^^^^^^^^^^^^^^^^^^^^^
+Literature references
+^^^^^^^^^^^^^^^^^^^^^
+
+.. bibliography::
