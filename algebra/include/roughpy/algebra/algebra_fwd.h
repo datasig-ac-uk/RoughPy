@@ -82,15 +82,14 @@ class AlgebraIterator;
 
 class Basis;
 
+class BasisKeyInterface;
 class BasisKey;
-
-class BasisKeyPointer;
 
 using BasisPointer = boost::intrusive_ptr<const Basis>;
 
-void intrusive_ptr_add_ref(const Basis*) noexcept;
+ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_add_ref(const Basis*) noexcept;
 
-void intrusive_ptr_release(const Basis*) noexcept;
+ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_release(const Basis*) noexcept;
 
 class Vector;
 
@@ -102,9 +101,6 @@ class ShuffleTensor;
 
 
 
-
-}// namespace dtl
-}// namespace traits
 }// namespace algebra
 }// namespace rpy
 

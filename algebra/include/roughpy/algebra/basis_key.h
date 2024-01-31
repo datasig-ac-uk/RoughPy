@@ -12,6 +12,8 @@
 #include "algebra_fwd.h"
 #include "roughpy_algebra_export.h"
 
+#include <cstddef>
+
 namespace rpy {
 namespace algebra {
 
@@ -24,7 +26,7 @@ enum class BasisKeyType {
 };
 
 
-class ROUGHPY_ALGEBRA_EXPORT BasisKey {
+class ROUGHPY_ALGEBRA_EXPORT BasisKeyInterface {
 public:
     virtual ~BasisKey();
 
@@ -36,33 +38,38 @@ public:
 };
 
 
-class BasisKeyPointer {
+class BasisKey {
     using data_type = uintptr_t;
     static_assert(sizeof(data_type) == sizeof(void*),
                   "data type must be the same size as a pointer");
 
     data_type m_data;
 
-    static_assert(alignof(BasisKey) >= 2,
+    static_assert(alignof(BasisKeyInterface) >= 2,
                   "alignment of pointer must be at least 2");
 
-    static constexpr data_type spare_bits = alignof(BasisKey);
+    static constexpr data_type spare_bits = alignof(BasisKeyInterface);
     static constexpr data_type flag_mask = 1;
     static constexpr data_type index_offset = 1;
 
 public:
 
-    BasisKeyPointer() : m_data(0) {}
+    BasisKey() : m_data(0) {}
 
-    constexpr explicit BasisKeyPointer(const BasisKeyPointer* pointer) noexcept
+    constexpr explicit BasisKey(const BasisKey* pointer) noexcept
         : m_data(bit_cast<data_type>(pointer))
     {
         RPY_DBG_ASSERT(pointer != nullptr);
     }
 
-    constexpr explicit BasisKeyPointer(dimn_t index) noexcept
+    constexpr explicit BasisKey(dimn_t index) noexcept
         : m_data((static_cast<data_type>(index) << index_offset) | flag_mask) {}
 
+
+    BasisKey& operator=(std::nullptr_t) noexcept
+    {
+        m_data = 0;
+    }
 
     constexpr operator bool() const noexcept { return m_data == 0; }
 

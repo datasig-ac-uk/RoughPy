@@ -4,22 +4,48 @@
 
 #include "vector.h"
 
+#include "basis_key.h"
+
+
 #include <sstream>
 
 using namespace rpy;
 using namespace algebra;
 
+
 namespace rpy {
 namespace algebra {
 
-class VectorIterator {
-};
+class VectorIterator {};
 
-class BasisKey {
-};
+}
+}
 
-}// namespace algebra
-}// namespace rpy
+devices::Kernel
+Vector::get_kernel(OperationType type, string_view operation) const
+{
+    RPY_DBG_ASSERT(!operation.empty());
+    const auto* stype = scalar_type();
+
+    string op(operation);
+    op += '_';
+    op += stype->id();
+
+    if (type != Unary && type != UnaryInplace) {
+        op += (is_sparse() ? "_sparse" : "_dense");
+    }
+
+    auto kernel = stype->device()->get_kernel(op);
+    RPY_CHECK(kernel);
+    return *kernel;
+}
+
+
+devices::KernelLaunchParams Vector::get_kernel_launch_params() const
+{
+    return devices::KernelLaunchParams();
+}
+
 
 void Vector::resize_dim(rpy::deg_t dim)
 {
@@ -55,6 +81,57 @@ void Vector::set_zero()
         kernel(params, m_scalar_buffer.mut_buffer(), scalars::Scalar(0));
     }
 }
+
+
+optional <dimn_t> Vector::get_index(rpy::algebra::BasisKey key) const noexcept
+{
+
+    if (is_dense() && key.is_index()) {
+        auto index = key.get_index();
+        return index >= dimension() ? optional<dimn_t>() : index;
+    }
+
+    if (!p_basis->has_key(key)) {
+        return {};
+    }
+
+    const auto* basis = p_basis.get();
+    if (p_basis->is_ordered()) {
+        if (is_dense()) {
+            auto index = p_basis->to_index(key);
+            return index >= dimension() ? optional<dimn_t>() : index;
+        }
+
+        auto keys = m_key_buffer.as_slice<BasisKey>();
+
+        auto compare = [basis](const BasisKey& lhs, const BasisKey& rhs) {
+            return basis->less(lhs, rhs);
+        };
+
+        const auto* begin = keys.begin();
+        const auto* end = keys.end();
+        const auto* found = std::lower_bound(begin, end, key, compare);
+        if (found != end && p_basis->equals(key, *found)) {
+            return static_cast<dimn_t>(found - begin);
+        }
+    } else {
+        auto keys = m_key_buffer.as_slice<BasisKey>();
+        const auto* begin = keys.begin();
+        const auto* end = keys.end();
+
+        auto compare = [basis, key](const BasisKey& arg) {
+            return basis->equals(arg, key);
+        };
+        const auto* found = std::find_if(begin, end, compare);
+
+        if (found != end) {
+            return static_cast<dimn_t>(found - begin);
+        }
+    }
+
+    return {};
+}
+
 
 void Vector::make_dense() {}
 
@@ -134,30 +211,7 @@ scalars::Scalar Vector::operator[](BasisKey key) const
 
 scalars::Scalar Vector::operator[](BasisKey key) { return scalars::Scalar(); }
 
-devices::Kernel
-Vector::get_kernel(OperationType type, string_view operation) const
-{
-    RPY_DBG_ASSERT(!operation.empty());
-    const auto* stype = scalar_type();
 
-    string op(operation);
-    op += '_';
-    op += stype->id();
-
-    if (type != Unary && type != UnaryInplace) {
-        op += (is_sparse() ? "_sparse" : "_dense");
-    }
-
-    auto kernel = stype->device()->get_kernel(op);
-    RPY_CHECK(kernel);
-    return *kernel;
-}
-
-
-devices::KernelLaunchParams Vector::get_kernel_launch_params() const
-{
-    return devices::KernelLaunchParams();
-}
 
 Vector Vector::uminus() const
 {

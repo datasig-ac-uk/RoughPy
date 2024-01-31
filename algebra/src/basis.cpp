@@ -30,10 +30,82 @@
 // Created by user on 02/03/23.
 //
 #include <roughpy/algebra/basis.h>
+#include "basis_key.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
 
-namespace rpy {
-namespace algebra {}
-}// namespace rpy
+
+Basis::~Basis() = default;
+
+bool Basis::less(BasisKey RPY_UNUSED_VAR k1,
+                 BasisKey RPY_UNUSED_VAR k2) const noexcept
+{
+    return false;
+}
+
+dimn_t Basis::to_index(BasisKey RPY_UNUSED_VAR key) const noexcept
+{
+    return 0;
+}
+
+BasisKey Basis::to_key(dimn_t RPY_UNUSED_VAR index) const noexcept
+{
+    return BasisKey();
+}
+
+
+KeyRange Basis::iterate_keys() const noexcept
+{
+    return KeyRange();
+}
+
+deg_t Basis::max_degree() const noexcept
+{
+    return 0;
+}
+
+deg_t Basis::degree(BasisKey RPY_UNUSED_VAR key) const noexcept
+{
+    return 0;
+}
+
+KeyRange Basis::iterate_keys_of_degree(deg_t degree) const noexcept
+{
+    return KeyRange();
+}
+
+
+deg_t Basis::alphabet_size() const noexcept
+{
+    return 0;
+}
+
+bool Basis::is_letter(BasisKey RPY_UNUSED_VAR key) const noexcept
+{
+    return false;
+}
+
+let_t Basis::get_letter(BasisKey RPY_UNUSED_VAR key) const noexcept
+{
+    return 0;
+}
+
+pair<optional<BasisKey>,
+     optional<BasisKey>> Basis::parents(BasisKey RPY_UNUSED_VAR key) const noexcept
+{
+    return pair<optional<BasisKey>, optional<BasisKey >>();
+}
+
+
+void rpy::algebra::intrusive_ptr_add_ref(const Basis* ptr) noexcept
+{
+    using ptr_type = boost::intrusive_ref_counter<Basis>;
+    intrusive_ptr_add_ref(static_cast<const ptr_type*>(ptr));
+}
+
+void rpy::algebra::intrusive_ptr_release(const Basis* ptr) noexcept
+{
+    using ptr_type = boost::intrusive_ref_counter<Basis>;
+    intrusive_ptr_release(static_cast<const ptr_type*>(ptr));
+}

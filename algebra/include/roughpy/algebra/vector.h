@@ -48,6 +48,26 @@ protected:
      */
     void resize_degree(deg_t degree);
 
+    enum OperationType {
+        Unary,
+        UnaryInplace,
+        Binary,
+        BinaryInplace,
+        Ternary,
+        TernaryInplace
+    };
+
+    /**
+     * @brief Get the correct kernel for the given operation
+     * @param type the type of operation that is required
+     * @param operation Operation to get
+     * @return Kernel for the required operation
+     */
+    devices::Kernel get_kernel(OperationType type, string_view operation) const;
+
+    devices::KernelLaunchParams get_kernel_launch_params() const;
+
+
     /**
      * @brief Get the current size of the buffer
      * @return
@@ -80,6 +100,8 @@ protected:
     }
 
     void set_zero();
+
+    optional<dimn_t> get_index(BasisKey key) const noexcept;
 
 public:
 
@@ -196,28 +218,6 @@ public:
     RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key) const;
 
     RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key);
-
-protected:
-    enum OperationType
-    {
-        Unary,
-        UnaryInplace,
-        Binary,
-        BinaryInplace,
-        Ternary,
-        TernaryInplace
-    };
-
-    /**
-     * @brief Get the correct kernel for the given operation
-     * @param type the type of operation that is required
-     * @param operation Operation to get
-     * @return Kernel for the required operation
-     */
-    devices::Kernel get_kernel(OperationType type, string_view operation) const;
-
-    devices::KernelLaunchParams get_kernel_launch_params() const;
-
 
 public:
     RPY_NO_DISCARD Vector uminus() const;

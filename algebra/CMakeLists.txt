@@ -45,6 +45,7 @@ add_roughpy_component(Algebra
         src/free_tensor_interface.cpp
         src/hall_set_size.cpp
         src/hall_set_size.h
+        src/key_range.cpp
         src/lie.cpp
         src/lie_basis.cpp
 #        src/lie_bundle.cpp
