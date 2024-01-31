@@ -7,6 +7,7 @@
 #include "basis_key.h"
 
 
+#include <algorithm>
 #include <sstream>
 
 using namespace rpy;
@@ -65,6 +66,10 @@ bool Vector::is_zero() const noexcept
         return true;
     }
 
+    auto kernel = get_kernel(Unary, "all_equal");
+    auto params = get_kernel_launch_params();
+
+
 
     return true;
 }
@@ -78,7 +83,7 @@ void Vector::set_zero()
         auto kernel = get_kernel(UnaryInplace, "set_scalar");
         auto params = get_kernel_launch_params();
 
-        kernel(params, m_scalar_buffer.mut_buffer(), scalars::Scalar(0));
+        kernel(params, m_scalar_buffer.mut_buffer(), 0);
     }
 }
 

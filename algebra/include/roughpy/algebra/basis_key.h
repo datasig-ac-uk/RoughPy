@@ -27,6 +27,7 @@ enum class BasisKeyType {
 
 
 class ROUGHPY_ALGEBRA_EXPORT BasisKeyInterface {
+    mutable std::atomic_uint32_t m_ref_count;
 public:
     virtual ~BasisKey();
 
@@ -35,6 +36,9 @@ public:
     virtual BasisKeyType type() const noexcept;
 
 
+    uint32_t inc_ref() const noexcept;
+
+    uint32_t dec_ref() const noexcept;
 };
 
 
@@ -52,14 +56,26 @@ class BasisKey {
     static constexpr data_type flag_mask = 1;
     static constexpr data_type index_offset = 1;
 
+    static constexpr data_type valid_pointer_mask = ~(
+        (data_type(1) << spare_bits) - 1);
+
+
 public:
 
     BasisKey() : m_data(0) {}
 
-    constexpr explicit BasisKey(const BasisKey* pointer) noexcept
+    constexpr explicit BasisKey(const BasisKeyInterface* pointer) noexcept
         : m_data(bit_cast<data_type>(pointer))
     {
         RPY_DBG_ASSERT(pointer != nullptr);
+        pointer->inc_ref();
+    }
+
+    ~BasisKey()
+    {
+        if (is_valid_pointer() && get_pointer()->dec_ref() == 0) {
+            delete const_cast<BasisKeyInterface*>(get_pointer());
+        }
     }
 
     constexpr explicit BasisKey(dimn_t index) noexcept
@@ -71,7 +87,7 @@ public:
         m_data = 0;
     }
 
-    constexpr operator bool() const noexcept { return m_data == 0; }
+    constexpr operator bool() const noexcept { return m_data != 0; }
 
     constexpr bool is_index() const noexcept
     {
@@ -83,16 +99,21 @@ public:
         return (m_data & flag_mask) == 0;
     }
 
+    constexpr bool is_valid_pointer() const noexcept
+    {
+        return (m_data & valid_pointer_mask) != 0;
+    }
+
     constexpr dimn_t get_index() const noexcept
     {
         RPY_DBG_ASSERT(is_index());
         return static_cast<dimn_t>(m_data >> index_offset);
     }
 
-    constexpr const BasisKey* get_pointer() const noexcept
+    constexpr const BasisKeyInterface* get_pointer() const noexcept
     {
-        RPY_DBG_ASSERT(is_pointer());
-        return bit_cast<const BasisKey*>(m_data);
+        RPY_DBG_ASSERT(is_valid_pointer());
+        return bit_cast<const BasisKeyInterface*>(m_data);
     }
 
 
