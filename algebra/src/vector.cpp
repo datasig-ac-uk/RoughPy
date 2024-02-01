@@ -287,8 +287,10 @@ Vector Vector::sdiv(const scalars::Scalar& other) const
         throw std::domain_error("division by zero");
     }
 
+    scalars::Scalar recip(scalar_type(), 1);
+    recip /= other;
 
-    return Vector();
+    return right_smul(recip);
 }
 
 Vector& Vector::add_inplace(const Vector& other) { return *this; }
