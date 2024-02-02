@@ -525,8 +525,15 @@ function(add_roughpy_component _name)
         set_target_properties(${_real_name} PROPERTIES RUNTIME_DEPENDENCIES ${_runtime_deps})
     endif ()
 
+
+    set(_public_headers)
+    foreach (_hdr IN ITEMS ${ARG_PUBLIC_HEADERS})
+        cmake_path(ABSOLUTE_PATH _hdr)
+        list(APPEND _public_headers ${_hdr})
+    endforeach()
+
+
     set_target_properties(${_real_name} PROPERTIES
-            PUBLIC_HEADERS "${ARG_PUBLIC_HEADERS}"
             LINKER_LANGUAGE CXX
             CXX_DEFAULT_VISIBILITY hidden
             VISIBILITY_INLINES_HIDDEN ON
@@ -551,12 +558,12 @@ function(add_roughpy_component _name)
 
     target_link_components(${_real_name} ${_public} ${ARG_NEEDS})
 
-    install(DIRECTORIES ${CMAKE_CURRENT_LIST_DIR}/include
+    install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/roughpy
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
     if (_lib_type STREQUAL SHARED)
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/roughpy_${_cname}_export.h
-                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/roughpy/${_cname})
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/roughpy_${_cname}_export.h"
+                DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/roughpy/${_cname}")
     endif ()
 
 endfunction()
