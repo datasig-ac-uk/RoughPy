@@ -1,0 +1,17 @@
+
+
+include(CMakeFindDependencyMacro)
+
+
+find_dependency(PkgConfig)
+
+set(Boost_NO_WARN_NEW_VERSIONS ON)
+find_dependency(Boost @RPY_BOOST_VERSION@ REQUIRED COMPONENTS @RPY_BOOST_COMPONENTS@)
+
+
+find_dependency(cereal)
+
+find_dependency(Libalgebra_lite)
+
+
+include("${CMAKE_CURRENT_LIST_DIR}/RoughPyTargets.cmake")

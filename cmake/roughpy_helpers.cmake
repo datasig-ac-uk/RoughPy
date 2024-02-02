@@ -414,6 +414,7 @@ function(add_roughpy_component _name)
     set(_alias_name "RoughPy::${_name}")
 
     string(TOUPPER "${_name}" _name_upper)
+    string(TOLOWER "${_name}" _cname)
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
     _get_component_name(_component_name ${_component})
 
@@ -465,11 +466,10 @@ function(add_roughpy_component _name)
                 "${_private_include_dirs}"
         )
         target_sources(${_real_name}
-                PUBLIC
-                ${ARG_PUBLIC_HEADERS}
                 PRIVATE
                 ${ARG_SOURCES}
         )
+
         target_link_libraries(${_real_name}
                 PRIVATE
                 ${_pvt_nrpy_deps}
@@ -489,10 +489,6 @@ function(add_roughpy_component _name)
 
         #target_compile_definitions(${_real_name} PRIVATE RPY_BUILDING_LIBRARY=1)
 
-
-    else ()
-
-        target_sources(${_real_name} INTERFACE ${ARG_PUBLIC_HEADERS})
     endif ()
 
     if (ARG_CONFIGURE)
@@ -530,7 +526,7 @@ function(add_roughpy_component _name)
     endif ()
 
     set_target_properties(${_real_name} PROPERTIES
-            PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
+            PUBLIC_HEADERS "${ARG_PUBLIC_HEADERS}"
             LINKER_LANGUAGE CXX
             CXX_DEFAULT_VISIBILITY hidden
             VISIBILITY_INLINES_HIDDEN ON
@@ -554,6 +550,14 @@ function(add_roughpy_component _name)
     endif ()
 
     target_link_components(${_real_name} ${_public} ${ARG_NEEDS})
+
+    install(DIRECTORIES ${CMAKE_CURRENT_LIST_DIR}/include
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+    if (_lib_type STREQUAL SHARED)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/roughpy_${_cname}_export.h
+                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/roughpy/${_cname})
+    endif ()
 
 endfunction()
 
