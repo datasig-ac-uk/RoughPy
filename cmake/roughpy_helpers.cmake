@@ -213,7 +213,7 @@ function(_do_configure_file _tgt _path_in _path_out _defines _atonly_flag
 endfunction()
 
 
-function(_configure_file _tgt _args)
+function(_configure_file _tgt _args _configured_files)
     set(flag_params "ATONLY;IS_PUBLIC")
     set(single_arg_params "IN;OUT")
     set(multi_arg_params "DEFINE")
@@ -222,6 +222,8 @@ function(_configure_file _tgt _args)
     if (NOT _sanity_check STREQUAL "FILE")
         message(FATAL_ERROR "Invalid arguments to configure")
     endif ()
+
+    set(_configured_files_local)
 
 
     list(LENGTH _args _nargs)
@@ -256,6 +258,7 @@ function(_configure_file _tgt _args)
         if (NOT EXISTS ${_path_in})
             message(FATAL_ERROR "The source file ${_path_in} does not exist")
         endif ()
+        list(APPEND ${_configured_files_local} ${_path_out})
 
         message(STATUS "generating file \"${_path_out}\" from \"${_path_in}\"")
         _do_configure_file("${_tgt}"
@@ -270,6 +273,7 @@ function(_configure_file _tgt _args)
     endwhile ()
 
 
+    set(${_configured_files} ${_configured_files_local} PARENT_SCOPE)
 endfunction()
 
 function(_parse_dependencies _private_var _interface_var)
@@ -491,8 +495,9 @@ function(add_roughpy_component _name)
 
     endif ()
 
+
     if (ARG_CONFIGURE)
-        _configure_file(${_real_name} "${ARG_CONFIGURE}")
+        _configure_file(${_real_name} "${ARG_CONFIGURE}" _configured_files)
     endif ()
 
     if (_lib_type MATCHES "INTERFACE")
@@ -560,6 +565,11 @@ function(add_roughpy_component _name)
 
     install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/roughpy
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+    if (DEFINED _configured_files)
+        install(FILES ${_configued_files}
+                DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/roughpy/${_cname}")
+    endif()
 
     if (_lib_type STREQUAL SHARED)
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/roughpy_${_cname}_export.h"

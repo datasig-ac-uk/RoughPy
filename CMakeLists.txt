@@ -13,10 +13,8 @@ else ()
     set(_rpy_version 0.0.1)
 endif ()
 
+
 include(CMakeDependentOption)
-include(CheckIncludeFileCXX)
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
 
 option(ROUGHPY_BUILD_COMPONENT_LIBS "Build the component libraries for RoughPy" ON)
 option(ROUGHPY_ENABLE_DBG_ASSERT "enable debug assertions at runtime" OFF)
@@ -27,16 +25,29 @@ option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 cmake_dependent_option(ROUGHPY_PREFER_ACCELERATE
-        "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
+    "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
 option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
 
 if (ROUGHPY_BUILD_TESTS)
     set(VCPKG_MANIFEST_FEATURES "tests" CACHE INTERNAL "")
 endif ()
 
-project(RoughPy VERSION ${_rpy_version})
+project(RoughPy VERSION ${_rpy_version} LANGUAGES CXX)
 
 
+include(CheckIncludeFileCXX)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+set(RPY_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+# TODO: handle this better
+if (DEFINED CMAKE_CXX_COMPILER_TARGET)
+    set(RPY_ARCH ${CMAKE_CXX_COMPILER_TARGET})
+endif ()
+
+
+# Check of the gold linker is available on GNU. Gold is much faster than the
+# standard GCC linker.
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
     execute_process(COMMAND ${CMAKE_C_COMPILER} -fuse-ld=gold -Wl,--version OUTPUT_VARIABLE stdout ERROR_QUIET)
     if ("${stdout}" MATCHES "GNU gold")
@@ -53,127 +64,50 @@ if (ROUGHPY_BUILD_TESTS)
     if (NOT TARGET GTest::gtest)
         message(FATAL_ERROR "GTest::gtest target not defined")
     endif ()
-
     enable_testing()
-
 endif ()
 
+# At the moment, we only need Python to build the Python module.
+if (ROUGHPY_BUILD_PYLIB)
+    # We need to provide some help to make sure we find the correct version of
+    # Python. Ideally, if we're using Scikit-Build-Core to build the library (via
+    # pip) and the Python executable is provided via the PYTHON_EXECUTABLE cache
+    # variable. In this case, make sure that this is the version of Python that gets
+    # found.
+    if (NOT PYTHON_FOUND AND SKBUILD)
+        cmake_path(GET PYTHON_EXECUTABLE PARENT_PATH _sk_env_dir)
+        message(STATUS "SKBuild environment: ${_sk_env_dir}")
 
-# If we're building with SKBUILD, we need to define install locations for
-# all the components using their special directory variables. Otherwise,
-# use the GNUInstall dirs
-if (SKBUILD)
+        # The following variables might have been set by SKBuild, but they cause
+        # problems if we don't attempt to find the library associated (which we
+        # don't need).
+        unset(Python_LIBRARY CACHE)
+        unset(PYTHON_LIBRARY CACHE)
+        unset(Python3_LIBRARY CACHE)
 
-    # This is all the variables set by GNUInstallDirs, minus LIBDIR and BINDIR
-    set(_ignore_dirs
-            SBINDIR
-            LIBEXECDIR
-            SYSCONFIGDIR
-            SHAREDSTATEDIR
-            LOCALSTATEDIR
-            RUNSTATEDIR
-            INCLUDEDIR
-            OLDINCLUDEDIR
-            DATAROOTDIR
-            DATADIR
-            INFODIR
-            LOCALEDIR
-            MANDIR
-            DOCDIR
-    )
-
-    if (WIN32)
-        # On Windows, DLLs are put in BINDIR
-        list(APPEND _ignore_dirs LIBDIR)
-        set(CMAKE_INSTALL_BINDIR ${SKBUILD_PLATLIB_DIR}/roughpy CACHE STRING
-                "Overwritten install for BINDIR")
+        unset(_sk_env_dir)
     else ()
-        # On not Windows, Shared Objects go in LIBDIR
-        list(APPEND _ignore_dirs BINDIR)
-        set(CMAKE_INSTALL_LIBDIR ${SKBUILD_PLATLIB_DIR}/roughpy CACHE STRING
-                "Overwritten install for LIBDIR")
+        set(Python_FIND_VIRTUALENV FIRST)
 
-        list(APPEND _ignore_dirs BINDIR)
+        if (DEFINED ROUGHPY_PYTHON_VENV_DIR)
+            # We might want to customise the virtual environment we use to build
+            # RoughPy (e.g. for debug builds). For this reason, set the virtual
+            # environment ENV variable to this directory, if it exists.
+            set(ENV{VIRTUAL_ENV} "${ROUGHPY_PYTHON_VENV_DIR}")
+        endif ()
     endif ()
 
-    foreach (_dir ${_ignore_dirs})
-        set(CMAKE_INSTALL_${_dir} ${SKBUILD_NULL_DIR} CACHE STRING
-                "Overwritten install for ${_dir}")
-    endforeach ()
+    set(RPY_PYTHON_COMPONENTS_NEEDED Interpreter Development.Module)
+    if (ROUGHPY_LINK_NUMPY)
+        list(APPEND RPY_PYTHON_COMPONENTS_NEEDED NumPy)
+    endif ()
 
-else ()
+    find_package(Python 3.8 REQUIRED COMPONENTS ${RPY_PYTHON_COMPONENTS_NEEDED})
 endif ()
 
 
 # Load the helper functions
 include(cmake/roughpy_helpers.cmake)
-
-# We need to provide some help to make sure we find the correct version of
-# Python. Ideally, if we're using Scikit-Build-Core to build the library (via
-# pip) and the Python executable is provided via the PYTHON_EXECUTABLE cache
-# variable. In this case, make sure that this is the version of Python that gets
-# found.
-set(PYBIND11_FINDPYTHON ON)
-if (NOT PYTHON_FOUND AND SKBUILD)
-    cmake_path(GET PYTHON_EXECUTABLE PARENT_PATH _sk_env_dir)
-    message(STATUS "SKBuild environment: ${_sk_env_dir}")
-
-    # Some variables that are set might cause issues in the FindPython module,
-    # so unset those
-    unset(Python_LIBRARY CACHE)
-    unset(PYTHON_LIBRARY CACHE)
-    unset(Python3_LIBRARY CACHE)
-
-    # clean up temporary
-    unset(_sk_env_dir)
-else ()
-    # If we're not using Scikit-Build-Core (i.e. a pure CMake build) then try
-    # looking for a Python virtual environment first.
-    set(Python_FIND_VIRTUALENV FIRST)
-
-    # In particular, if ENV{VIRTUAL_ENV} is set then add this to the cmake
-    # prefix path so FindPython is more likely to find this environemnt.
-    if (DEFINED ENV{VIRTUAL_ENV})
-        # Put venv/lib on the prefix path so we can find
-        # a pip installed MKL
-        message(STATUS "Adding python virtual environment to path")
-        list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}")
-    endif ()
-    if (DEFINED ROUGHPY_PYTHON_VENV_DIR)
-        list(PREPEND CMAKE_PREFIX_PATH "${ROUGHPY_PYTHON_VENV_DIR}")
-    endif ()
-endif ()
-
-
-# At minimum we need Interpreter and Development.Module in order to build a
-# Python extension module.
-set(PYTHON_COMPONENTS_NEEDED Interpreter Development.Module)
-if (ROUGHPY_LINK_NUMPY)
-    list(APPEND PYTHON_COMPONENTS_NEEDED NumPy)
-endif ()
-
-find_package(Python 3.8 REQUIRED COMPONENTS ${PYTHON_COMPONENTS_NEEDED})
-
-
-if (NOT DEFINED pybind11_ROOT)
-    execute_process(COMMAND
-            "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
-            COMMAND_ECHO STDOUT
-            RESULT_VARIABLE _python_pybind11_dir_found
-            OUTPUT_VARIABLE _python_pybind11_dir
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
-        message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
-        set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
-    endif ()
-endif ()
-
-set(RPY_ARCH ${CMAKE_SYSTEM_PROCESSOR})
-# TODO: handle this better
-if (DEFINED CMAKE_CXX_COMPILER_TARGET)
-    set(RPY_ARCH ${CMAKE_CXX_COMPILER_TARGET})
-endif ()
 
 
 # We use C++17 standard library headers. If these aren't available for some
@@ -199,113 +133,6 @@ find_package(tomlplusplus CONFIG REQUIRED)
 
 find_package(OpenCL REQUIRED)
 
-#message(STATUS "Target architecture ${RPY_ARCH}")
-#if (NOT ROUGHPY_DISABLE_BLAS)
-#    if (RPY_ARCH MATCHES "[xX](86(_64)?|64)|[aA][mM][dD]64" AND NOT
-#        ROUGHPY_PREFER_ACCELERATE)
-#
-#        # If we're looking for MKL then we might have installed it via pip.
-#        # To make sure we can find this, let's use Python's importlib metadata to
-#        # locate the directory containing MKLConfig.cmake and add the relevant
-#        # directory to the prefix path.
-#        execute_process(COMMAND ${Python_EXECUTABLE}
-#            "${CMAKE_CURRENT_LIST_DIR}/tools/python-get-binary-obj-path.py"
-#            "--directory" "mkl-devel" "cmake/mkl/MKLConfig.cmake"
-#            RESULT_VARIABLE _python_mkl_dir_found
-#            OUTPUT_VARIABLE _python_mkl_dir
-#            OUTPUT_STRIP_TRAILING_WHITESPACE
-#            ERROR_QUIET
-#        )
-#        if (NOT _python_mkl_dir_found AND EXISTS "${_python_mkl_dir}")
-#            cmake_path(GET _python_mkl_dir PARENT_PATH _python_mkl_dir)
-#            message(STATUS "Adding MKL dir from pip-installed mkl: ${_python_mkl_dir}")
-#            list(APPEND CMAKE_PREFIX_PATH "${_python_mkl_dir}")
-#            if (NOT MKL_ROOT)
-#                set(MKL_ROOT "${_python_mkl_dir}")
-#            endif ()
-#            set(MKL_DIR "${_python_mkl_dir}")
-#        endif ()
-#
-#        # Set the variables that determine the actual MKL library that we need to
-#        # link. At the moment, we force 32-bit addressing on both 32- and 64-bit
-#        # platforms, statically linked, and using the Intel OMP library (except on
-#        # Windows).
-#        if (RPY_ARCH STREQUAL "x86")
-#            set(MKL_ARCH ia32)
-#        else ()
-#            set(MKL_ARCH intel64)
-#            set(MKL_INTERFACE lp64)
-#        endif ()
-#
-#        set(MKL_LINK static)
-#        if (WIN32)
-#            # Currently there is no way to get this working with threading
-#            # on Windows using this distribution of MKL
-#            set(MKL_THREADING sequential)
-#        else ()
-#            set(MKL_THREADING intel_thread)
-#        endif ()
-#
-#        find_package(MKL CONFIG)
-#        if (TARGET MKL::MKL)
-#            set(RPY_USE_MKL ON CACHE INTERNAL "BLAS/LAPACK provided by mkl")
-#            add_library(BLAS::BLAS ALIAS MKL::MKL)
-#            add_library(LAPACK::LAPACK ALIAS MKL::MKL)
-#
-#            if (DEFINED MKL_OMP_LIB AND MKL_OMP_LIB)
-#                #            if (APPLE)
-#                #                foreach (LANG IN ITEMS C CXX)
-#                #                    set(OpenMP_${LANG}_LIB_NAMES "${MKL_OMP_LIB}" CACHE STRING "libomp location for OpenMP")
-#                #                endforeach ()
-#                #            endif ()
-#                #            set(OpenMP_${MKL_OMP_LIB}_LIBRARY "${MKL_THREAD_LIB}")
-#            endif ()
-#        else ()
-#            set(RPY_USE_MKL OFF CACHE INTERNAL "BLAS/LAPACK not provided by mkl")
-#            set(BLA_SIZEOF_INTEGER 4)
-#            set(BLA_STATIC ON)
-#        endif ()
-#    elseif (APPLE)
-#        set(RPY_USE_ACCELERATE ON CACHE INTERNAL "BLAS/LAPACK provided by Accelerate")
-#        set(BLA_VENDOR Apple)
-#        set(BLA_SIZEOF_INTEGER 4)
-#        set(BLA_STATIC ON)
-#    endif ()
-#
-#    if (NOT TARGET BLAS::BLAS)
-#        find_package(BLAS REQUIRED)
-#    endif ()
-#    if (NOT TARGET LAPACK::LAPACK)
-#        find_package(LAPACK REQUIRED)
-#    endif ()
-#endif ()
-
-#find_package(PkgConfig REQUIRED)
-#pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
-#add_library(Bignum::Bignum ALIAS PkgConfig::gmp)
-#set(Bignum_LIBRARY "$<TARGET_FILE:PkgConfig::gmp>")
-#set(Bignum_INCLUDE_DIR "$<TARGET_PROPERTY:PkgConfig::gmp,INTERFACE_INCLUDE_DIRECTORY>")
-
-
-#if (APPLE AND NOT DEFINED MKL_OMP_LIB)
-#    get_brew_prefix(_libomp_prefix libomp VERBOSE)
-#
-#    if (_libomp_prefix AND EXISTS ${_libomp_prefix})
-#        list(APPEND CMAKE_PREFIX_PATH ${_libomp_prefix})
-#    endif()
-#endif()
-#
-#find_package(OpenMP REQUIRED COMPONENTS CXX)
-
-#if (MSVC)
-#    # MSVC has openmp from the stone ages, so add the experimental flag
-#    get_target_property(_omp_flags OpenMP::OpenMP_CXX INTERFACE_COMPILE_OPTIONS)
-#    string(REPLACE "/openmp" "/openmp:experimental" _omp_flags "${_omp_flags}")
-#    set_target_properties(OpenMP::OpenMP_CXX PROPERTIES
-#            INTERFACE_COMPILE_OPTIONS "${_omp_flags}")
-#endif()
-
-find_package(pybind11 REQUIRED)
 find_package(cereal REQUIRED)
 find_package(PCGRandom REQUIRED)
 #find_package(Libalgebra_lite REQUIRED)
@@ -314,23 +141,6 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
 if (TARGET PkgConfig::GMP)
     add_library(GMP::GMP ALIAS PkgConfig::GMP)
-elseif (DEFINED VCPKG_INSTALLED_DIR)
-    find_path(GMP_INCLUDES NAMES gmp.h
-            PATHS ${VCPKG_INSTALLED_DIR})
-
-    find_library(GMP_LIBRARIES gmp PATHS ${VCPKG_INSTALLED_DIR})
-
-    message(STATUS "GMP HEADERS: ${GMP_INCLUDES}")
-    message(STATUS "GMP LIBRARIES: ${GMP_LIBRARIES}")
-    if (GMP_INCLUDES AND GMP_LIBRARIES)
-        add_library(GMP::GMP UNKNOWN IMPORTED GLOBAL)
-        target_include_directories(GMP::GMP INTERFACE ${GMP_INCLUDES})
-        target_link_libraries(GMP::GMP INTERFACE ${GMP_LIBRARIES})
-    else ()
-        message(FATAL_ERROR "Could not locate gmp")
-    endif ()
-else ()
-    message(FATAL_ERROR "Could not locate gmp, no vcpkg")
 endif ()
 
 # Now we get to adding our components. Let's do some global setup such as
@@ -379,64 +189,65 @@ endif ()
 
 if (ROUGHPY_BUILD_COMPONENT_LIBS)
     set(RPY_COMPONENT_TARGETS
-            RoughPy_Core
-            RoughPy_Platform
-            RoughPy_Intervals
-            RoughPy_Scalars
-            RoughPy_Algebra
-            RoughPy_Streams)
+        RoughPy_Core
+        RoughPy_Platform
+        RoughPy_Intervals
+        RoughPy_Scalars
+        RoughPy_Algebra
+        RoughPy_Streams)
 
     install(TARGETS
-            ${RPY_COMPONENT_TARGETS}
-            EXPORT RoughPyTargets
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        ${RPY_COMPONENT_TARGETS}
+        EXPORT RoughPyTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 
+
     write_basic_package_version_file(
-            RoughPyConfigVersion.cmake
-            VERSION ${PROJECT_VERSION}
-            COMPATIBILITY SameMajorVersion)
+        RoughPyConfigVersion.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion)
 
     configure_file(cmake/RoughPyConfig.cmake.in RoughPyConfig.cmake @ONLY)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/RoughPyConfig.cmake"
-            "${CMAKE_CURRENT_BINARY_DIR}/RoughPyConfigVersion.cmake"
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RoughPy)
+        "${CMAKE_CURRENT_BINARY_DIR}/RoughPyConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RoughPy)
 
     install(EXPORT RoughPyTargets
-            FILE RoughPyTargets.cmake
-            NAMESPACE RoughPy::
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RoughPy)
+        FILE RoughPyTargets.cmake
+        NAMESPACE RoughPy::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RoughPy)
 
 endif ()
 
 
 if (SKBUILD)
     install(TARGETS
-            RoughPy_PyModule
-            EXPORT RoughPy_EXPORTS
-            RUNTIME DESTINATION roughpy
-            LIBRARY
-            DESTINATION roughpy
-            NAMELINK_SKIP
-            ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
-            COMPONENT Development
-            EXCLUDE_FROM_ALL
-            INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
-            COMPONENT Development
-            FRAMEWORK DESTINATION roughpy
-            EXCLUDE_FROM_ALL
+        RoughPy_PyModule
+        EXPORT RoughPy_EXPORTS
+        RUNTIME DESTINATION roughpy
+        LIBRARY
+        DESTINATION roughpy
+        NAMELINK_SKIP
+        ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+        COMPONENT Development
+        EXCLUDE_FROM_ALL
+        INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+        COMPONENT Development
+        FRAMEWORK DESTINATION roughpy
+        EXCLUDE_FROM_ALL
     )
 
     install(FILES roughpy/py.typed DESTINATION roughpy)
     install(DIRECTORY roughpy
-            DESTINATION .
-            FILES_MATCHING
-            PATTERN "*.py"
-            PATTERN "*.pyi"
-            PATTERN "src/*" EXCLUDE)
+        DESTINATION .
+        FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "*.pyi"
+        PATTERN "src/*" EXCLUDE)
 
     set(_runtime_deps "")
     foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)

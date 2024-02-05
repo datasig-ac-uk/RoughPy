@@ -1,3 +1,10 @@
+# This file is the main file for the Python module only. It should find all of
+# the dependencies required for this module regardless of whether these might
+# have been found by the surrounding build process.
+# In particular, it needs to find Python, pybind11, and any other libraries
+# that are specific to the Python library only. Also any setup that depends on
+# SKBUILD can be done in here rather than relying on the top-level CMakeLists.
+
 cmake_minimum_required(VERSION 3.21)
 
 
@@ -7,6 +14,27 @@ project(RoughPy_PyModule
 )
 message(STATUS "Adding RoughPy::PyModule version ${RoughPy_VERSION}")
 
+
+
+
+set(PYBIND11_FINDPYTHON ON)
+
+if (NOT DEFINED pybind11_ROOT)
+    execute_process(COMMAND
+        "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
+        RESULT_VARIABLE _python_pybind11_dir_found
+        OUTPUT_VARIABLE _python_pybind11_dir
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
+        message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
+        set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
+    endif ()
+endif ()
+
+
+
+find_package(pybind11 REQUIRED)
 
 if (NOT TARGET pybind11::headers)
     find_package(Pybind11 CONFIG REQUIRED)
@@ -208,3 +236,42 @@ get_target_property(RoughPy_Streams_VERSION RoughPy::Streams VERSION)
 
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)
+
+add_custom_command(TARGET RoughPy_PyModule
+    COMMAND ${CMAKE_COMMAND}
+        -DDEP_TARGET_FILE="$<TARGET_FILE:RoughPy_PyModule>"
+        -P ${CMAKE_CURRENT_LIST_DIR}/deps.cmake
+    POST_BUILD)
+
+
+# The old install logic was terrible. Let's do this properly
+
+if (SKBUILD)
+    # There really is no reason to install the Py module if you're not doing an
+    # Skbuild build, so don't bother generating the code in this case
+
+    set(_install_loc "${SKBUILD_PLATLIB_DIR}/roughpy")
+    install(TARGETS RoughPy_PyModule
+        LIBRARY DESTINATION ${_install_loc}
+        RUNTIME DESTINATION ${_install_loc}
+        NAMELINK_SKIP
+        ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+        INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+        FRAMEWORK DESTINATION ${_install_loc}
+        )
+
+    install(FILES py.typed DESTINATION ${_install_loc})
+    install(DIRECTORY . DESTINATION ${_install_loc}
+    FILES_MATCHING PATTERN "*.py"
+                   PATTERN "*.pyi"
+                   PATTERN "src/*" EXCLUDE)
+
+    # Now we need to make sure the runtime artifacts from the component libs,
+    # and all their dependencies are installed alongside the module itself.
+    # Unusually for Windows, there is a very simple solution here: install the
+    # TARGET_RUNTIME_DLLs. On Linux and Mac, we have to rely on other means
+
+
+
+
+endif()
