@@ -9,9 +9,9 @@ fundamental RoughPy ideas and philosophy.
 .. toctree::
    :maxdepth: 1
 
+   fundamentals.contexts
    fundamentals.streams
+   fundamentals.intervals
    fundamentals.free_tensors
    fundamentals.shuffle_tensors
    fundamentals.lies
-   fundamentals.contexts
-   fundamentals.intervals

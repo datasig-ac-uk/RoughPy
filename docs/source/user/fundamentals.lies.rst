@@ -8,7 +8,10 @@ Lies
 What are Lie elements
 ^^^^^^^^^^^^^^^^^^^^^
 
-Lie elements live in the free Lie Algebra. They construct the Hall basis greedily. They have a one to one relationship with the group-like elements.
+Lie elements live in the free Lie Algebra. They have a one to one relationship with the group-like elements.
+
+.. todo::
+    - From notes "group like elts -> signatures". Ask??
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 How do Lies fit into RoughPy
@@ -36,11 +39,21 @@ To create a Lie element, we should start by creating **data**.
 Here ``roughpy.Monomial`` creates a monomial object (in this case, a single indeterminate),
 and multiplying this by 1 makes this monomial into a polynomial.
 
-We can then use our data to create a Lie element. Here we are creating one with Width 3, Depth 2, with polynomial coefficients.
+We can then use our data to create a Lie element. Here we are creating two Lies with Width 3, Depth 2. The first is using a list of integers. The second is using our polynomial coefficients.
 
 ::
 
-    lie = rp.Lie(lie_data, width=3, depth=2, dtype=rp.RationalPoly)
+    lie1 = rp.Lie([1, 2, 3], width=3, depth=2)
+    lie2 = rp.Lie(lie_data, width=3, depth=2, dtype=rp.RationalPoly)
+
+We can also multply Lies together
+
+::
+
+    result = lie1*lie2
+
+.. todo::
+    Print multiply result
 
 
 If we provide a complementary :doc:`fundamentals.contexts`, then we can use this to create a :doc:`fundamentals.free_tensors`, from our Lie element.
@@ -51,8 +64,24 @@ If we provide a complementary :doc:`fundamentals.contexts`, then we can use this
 
     tensor = context.lie_to_tensor(lie)
 
+We can also go the other way, creating a Lie from a tensor. Using the signature of the stream shown ealier in :doc:`fundamentals.streams`, we can create a corresponding Lie element.
+
+::
+
+    lie = context.tensor_to_lie(sig)
+
+.. todo::
+    Print above result. Check: .log() or .exp()?? Start with a signature of a stream. Apply .log ctx tensor to lie. Add on end .exp()
+
+
 ^^^^^^^^^^^^^^^^^^^^^
 Literature references
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. bibliography::
+
+.. todo::
+
+    Include references: (create individual bib file)
+        - Reutenauer
+        - Bourbaki Lie groups and Lie algebras

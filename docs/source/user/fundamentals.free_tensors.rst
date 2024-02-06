@@ -11,7 +11,7 @@ What are free tensors
 Free tensors are
 
 .. todo::
-    Finish what are free tensors
+    Finish what are free tensors. Borrow from notebooks (Check: Handwritten digit classigication: the path signature??)
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 How do free tensors fit into RoughPy
@@ -25,7 +25,7 @@ How to work with free tensors
 
 We can create a **free tensor** in many ways using `RoughPy`.
 
-We create a free tensor using data, a Width and a Depth. The data you use can take many forms, for example:
+We create a free tensor using data, a Width and a Depth. The data you use can take many forms, here are some example constructors:
 
 ::
 
@@ -45,10 +45,6 @@ We create a free tensor using data, a Width and a Depth. The data you use can ta
         {0: 1., 2: 1.}
         ]
     tensor5 = FreeTensor(data, width=2, depth=2)
-
-.. todo::
-
-    Improve descriptions of different constructors
 
 You can do **arithmetic** with **free tensors**. We can add, subtract, multiply and divide them
 
@@ -82,10 +78,16 @@ as well as take their exponential, log, and antipode.
     t1.log()
 
     # antipode
-    t1.antipode().antipode()
+    t1.antipode()
 
 ^^^^^^^^^^^^^^^^^^^^^
 Literature references
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. bibliography::
+
+.. todo::
+
+    Include references: (create individual bib file)
+        - Reutenauer Free Lie Algebras
+        - Bourbaki Algebra I

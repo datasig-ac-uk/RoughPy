@@ -41,8 +41,23 @@ We can create an interval to query a stream over, for example to compute a signa
 
     interval = rp.RealInterval(0, 1)
 
-^^^^^^^^^^^^^^^^^^^^^
-Literature references
-^^^^^^^^^^^^^^^^^^^^^
+.. todo::
+    Include working with different types of intervals:
+        - Diadic
+        - Partitions
 
-.. bibliography::
+::
+
+    d = DyadicInterval(17, 3)
+    p = Partition(RealInterval(0.5, 1.6), [0.9, 1.3])
+
+.. todo::
+    Include methods:
+        - Inf
+        - Sup
+        - Inc.end (exactly 1)
+        - Exc.end (exactly 1) Check: is this for joining two together?
+
+::
+
+    RealInterval(0.0, 1.0, IntervalType.Clopen)

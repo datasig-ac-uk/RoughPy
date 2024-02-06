@@ -14,11 +14,7 @@ Contexts allow us to provide a Width, Depth, and a coefficient field for a tenso
 How do contexts fit into RoughPy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Contexts allow us to transfer between signatures and log signatures (t2l, l2t functions).
-
-.. todo::
-    - Finish contexts in RoughPy
-    - Link transfer functions
+Contexts are the environment in which calculations are done. They are used everywhere in RoughPy, for any stream or algebraic object.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 How to work with contexts
@@ -30,8 +26,3 @@ We can create **contexts** for :doc:`fundamentals.streams` in the following way.
 
     context = roughpy.get_context(width=2, depth=6, coeffs=rp.DPReal)
 
-^^^^^^^^^^^^^^^^^^^^^
-Literature references
-^^^^^^^^^^^^^^^^^^^^^
-
-.. bibliography::

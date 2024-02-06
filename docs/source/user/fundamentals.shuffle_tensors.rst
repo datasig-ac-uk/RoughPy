@@ -8,19 +8,15 @@ Shuffle Tensors
 What are shuffle tensors
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Shuffle tensors are
-
-.. todo::
-    Finish what are shuffle tensors
+Shuffle tensors are one way of representing the linear functionals on free tensors.
+The shuffle product corresponds to pointwise multiplication of the continuous functions on paths via the signature correspondence.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 How do shuffle tensors fit into RoughPy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You will most commonly encounter shuffle tensors
+Shuffle tensors are useful because they represent funcitons on paths via the signature.
 
-.. todo::
-    Finish shuffle tensors in RoughPy
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 How to work with shuffle tensors
@@ -36,13 +32,22 @@ How to work with shuffle tensors
     shuffle_tensor2 = ShuffleTensor([1 * Monomial(f"x{i}") for i in range(7)], width=2,
                     depth=2, dtype=roughpy.RationalPoly)
 
+We can shuffle these together
+
+::
+
+    result = rp.free_multiply(shuffle_tensor1, shuffle_tensor2)
+
 .. todo::
 
-    - Need list of things to show
-    - Shuffle two together, same as free tensor
+    - Print output of shuffle
 
 ^^^^^^^^^^^^^^^^^^^^^
 Literature references
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. bibliography::
+
+.. todo::
+    Include references: (create individual bib file)
+        - Reutenauer
