@@ -258,7 +258,7 @@ function(_configure_file _tgt _args _configured_files)
         if (NOT EXISTS ${_path_in})
             message(FATAL_ERROR "The source file ${_path_in} does not exist")
         endif ()
-        list(APPEND ${_configured_files_local} ${_path_out})
+        list(APPEND _configured_files_local "${CMAKE_CURRENT_BINARY_DIR}/${_path_out}")
 
         message(STATUS "generating file \"${_path_out}\" from \"${_path_in}\"")
         _do_configure_file("${_tgt}"
@@ -273,7 +273,7 @@ function(_configure_file _tgt _args _configured_files)
     endwhile ()
 
 
-    set(${_configured_files} ${_configured_files_local} PARENT_SCOPE)
+    set(${_configured_files} "${_configured_files_local}" PARENT_SCOPE)
 endfunction()
 
 function(_parse_dependencies _private_var _interface_var)
@@ -567,7 +567,7 @@ function(add_roughpy_component _name)
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
     if (DEFINED _configured_files)
-        install(FILES ${_configued_files}
+        install(FILES ${_configured_files}
                 DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/roughpy/${_cname}")
     endif()
 
