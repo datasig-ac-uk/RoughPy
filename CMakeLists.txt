@@ -34,6 +34,10 @@ endif ()
 
 project(RoughPy VERSION ${_rpy_version} LANGUAGES CXX)
 
+# Now we get to adding our components. Let's do some global setup such as
+# setting the CXX standard and the shared library details.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(CheckIncludeFileCXX)
 include(GNUInstallDirs)
@@ -68,6 +72,9 @@ if (ROUGHPY_BUILD_TESTS)
 endif ()
 
 # At the moment, we only need Python to build the Python module.
+# However, because the virtual environment for dev environments is typically
+# at the root of the project, we need the detection to start here, otherwise
+# it can't find the virtual environment without help.
 if (ROUGHPY_BUILD_PYLIB)
     # We need to provide some help to make sure we find the correct version of
     # Python. Ideally, if we're using Scikit-Build-Core to build the library (via
@@ -122,20 +129,12 @@ set(RPY_BOOST_COMPONENTS url system)
 if (NOT RPY_HAS_STD_FILESYSTEM)
     set(RPY_BOOST_COMPONENTS ${RPY_BOOST_COMPONENTS} filesystem)
 endif ()
+
+# All the components need the Boost headers. The other components are debatable
 find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS ${RPY_BOOST_COMPONENTS})
 
 
 find_package(Eigen3 CONFIG REQUIRED)
-find_package(SndFile CONFIG REQUIRED)
-
-# This package is c++17 so cannot be used if changing to a lower standard
-find_package(tomlplusplus CONFIG REQUIRED)
-
-find_package(OpenCL REQUIRED)
-
-find_package(cereal REQUIRED)
-find_package(PCGRandom REQUIRED)
-#find_package(Libalgebra_lite REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
@@ -143,10 +142,14 @@ if (TARGET PkgConfig::GMP)
     add_library(GMP::GMP ALIAS PkgConfig::GMP)
 endif ()
 
-# Now we get to adding our components. Let's do some global setup such as
-# setting the CXX standard and the shared library details.
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# This package is c++17 so cannot be used if changing to a lower standard
+# find_package(tomlplusplus CONFIG REQUIRED)
+
+# All the components need cereal, so keep it here.
+find_package(cereal REQUIRED)
+#find_package(Libalgebra_lite REQUIRED)
+
+
 
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
@@ -211,7 +214,10 @@ if (ROUGHPY_BUILD_COMPONENT_LIBS)
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY SameMajorVersion)
 
-    configure_file(cmake/RoughPyConfig.cmake.in RoughPyConfig.cmake @ONLY)
+    configure_package_config_file(cmake/RoughPyConfig.cmake.in
+            RoughPyConfig.cmake
+            INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/roughpy/cmake
+            )
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/RoughPyConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/RoughPyConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RoughPy)

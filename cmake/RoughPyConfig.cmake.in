@@ -1,4 +1,5 @@
 
+@PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
 
@@ -6,8 +7,13 @@ include(CMakeFindDependencyMacro)
 find_dependency(PkgConfig)
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
-find_dependency(Boost @RPY_BOOST_VERSION@ REQUIRED COMPONENTS @RPY_BOOST_COMPONENTS@)
+find_dependency(Boost @RPY_BOOST_VERSION@ REQUIRED COMPONENTS url system)
 
+find_dependency(PkgConfig)
+pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
+if (NOT TARGET GMP::GMP)
+add_library(GMP::GMP ALIAS PkgConfig::GMP)
+endif()
 
 find_dependency(cereal)
 
