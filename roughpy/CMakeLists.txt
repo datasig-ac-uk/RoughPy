@@ -245,11 +245,30 @@ if (SKBUILD)
     # There really is no reason to install the Py module if you're not doing an
     # Skbuild build, so don't bother generating the code in this case
 
-    set(_install_loc "${SKBUILD_PLATLIB_DIR}/roughpy")
+    if (DEFINED SKBUILD_PLATLIB_DIR)
+        set(_install_loc "${SKBUILD_PLATLIB_DIR}/roughpy")
+    else()
+        set(_install_loc "roughpy")
+    endif()
+
+    set(RPY_INCLUDE_REGEXES)
+    if (DEFINED VCPKG_ROOT)
+        message("Install ${VCPKG_ROOT}")
+        list(APPEND RPY_INCLUDE_REGEX "${VCPKG_ROOT}/.*")
+    endif()
+    if (DEFINED RoughPy_ROOT)
+        list(APPEND RPY_INCLUDE_REGEX "${RoughPy_ROOT}/.*")
+    endif()
+
+    # We need to make sure the runtime artifacts from the component libs,
+    # and all their dependencies are installed alongside the module itself.
+    # Unusually for Windows, there is a very simple solution here: install the
+    # TARGET_RUNTIME_DLLs. On Linux and Mac, we have to rely on other means
     install(TARGETS RoughPy_PyModule
+        RUNTIME_DEPENDENCY_SET RPyModule_Depends
         LIBRARY DESTINATION ${_install_loc}
+            NAMELINK_SKIP
         RUNTIME DESTINATION ${_install_loc}
-        NAMELINK_SKIP
         ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
         INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
         FRAMEWORK DESTINATION ${_install_loc}
@@ -259,12 +278,32 @@ if (SKBUILD)
     install(DIRECTORY . DESTINATION ${_install_loc}
     FILES_MATCHING PATTERN "*.py"
                    PATTERN "*.pyi"
-                   PATTERN "src/*" EXCLUDE)
+                   PATTERN "src" EXCLUDE
+                   PATTERN "*/__pycache__" EXCLUDE)
 
-    # Now we need to make sure the runtime artifacts from the component libs,
-    # and all their dependencies are installed alongside the module itself.
-    # Unusually for Windows, there is a very simple solution here: install the
-    # TARGET_RUNTIME_DLLs. On Linux and Mac, we have to rely on other means
+
+    message("Include ${RPY_INCLUDE_REGEXES}")
+    install(RUNTIME_DEPENDENCY_SET RPyModule_Depends
+        DESTINATION ${_install_loc}
+        PRE_EXCLUDE_REGEXES
+        # Linux system libraries
+        [[libc\.\so\..*]]
+        [[libgcc_s\.so\..*]]
+        [[libm\.so\..*]]
+        [[libstdc\+\+\.so\..*]]
+        [[ld.*\.so.*]]
+        # Windows system libraries (pre)
+        [[api-ms-win-.*]]
+        [[ext-ms-.*]]
+        [[kernel32\.dll]]
+
+        POST_EXCLUDE_REGEXES
+        # On Windows, exclude anything in the in the system32 directory
+        [[.*/system32/.*\.dll]]
+        POST_INCLUDE_REGEXES
+        ${RPY_INCLUDE_REGEXES}
+    )
+
 
 
 
