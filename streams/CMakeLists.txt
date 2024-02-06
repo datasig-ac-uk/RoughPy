@@ -9,6 +9,9 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 
+
+find_package(SndFile CONFIG REQUIRED)
+
 add_roughpy_component(Streams
     SOURCES
         src/stream_base.cpp
