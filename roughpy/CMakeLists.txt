@@ -237,11 +237,6 @@ get_target_property(RoughPy_Streams_VERSION RoughPy::Streams VERSION)
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)
 
-add_custom_command(TARGET RoughPy_PyModule
-    COMMAND ${CMAKE_COMMAND}
-        -DDEP_TARGET_FILE="$<TARGET_FILE:RoughPy_PyModule>"
-        -P ${CMAKE_CURRENT_LIST_DIR}/deps.cmake
-    POST_BUILD)
 
 
 # The old install logic was terrible. Let's do this properly
