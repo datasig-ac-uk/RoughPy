@@ -81,7 +81,7 @@ if (ROUGHPY_BUILD_PYLIB)
     # pip) and the Python executable is provided via the PYTHON_EXECUTABLE cache
     # variable. In this case, make sure that this is the version of Python that gets
     # found.
-    if (NOT PYTHON_FOUND AND SKBUILD)
+    if (NOT PYTHON_FOUND AND SKBUILD AND PYTHON_EXECUTABLE)
         cmake_path(GET PYTHON_EXECUTABLE PARENT_PATH _sk_env_dir)
         message(STATUS "SKBuild environment: ${_sk_env_dir}")
 
@@ -229,39 +229,39 @@ if (ROUGHPY_BUILD_COMPONENT_LIBS)
 
 endif ()
 
-
-if (SKBUILD)
-    install(TARGETS
-        RoughPy_PyModule
-        EXPORT RoughPy_EXPORTS
-        RUNTIME DESTINATION roughpy
-        LIBRARY
-        DESTINATION roughpy
-        NAMELINK_SKIP
-        ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
-        COMPONENT Development
-        EXCLUDE_FROM_ALL
-        INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
-        COMPONENT Development
-        FRAMEWORK DESTINATION roughpy
-        EXCLUDE_FROM_ALL
-    )
-
-    install(FILES roughpy/py.typed DESTINATION roughpy)
-    install(DIRECTORY roughpy
-        DESTINATION .
-        FILES_MATCHING
-        PATTERN "*.py"
-        PATTERN "*.pyi"
-        PATTERN "src/*" EXCLUDE)
-
-    set(_runtime_deps "")
-    foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
-        get_target_property(_lib_deps ${_rpy_lib} RUNTIME_DEPENDENCIES)
-        if (_lib_deps)
-            list(APPEND _runtime_deps "${_lib_deps}")
-            #        install(FILES ${_lib_deps} DESTINATION roughpy)
-        endif ()
-    endforeach ()
-    #install(FILES ${_runtime_deps} DESTINATION roughpy)
-endif ()
+#
+#if (SKBUILD)
+#    install(TARGETS
+#        RoughPy_PyModule
+#        EXPORT RoughPy_EXPORTS
+#        RUNTIME DESTINATION roughpy
+#        LIBRARY
+#        DESTINATION roughpy
+#        NAMELINK_SKIP
+#        ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+#        COMPONENT Development
+#        EXCLUDE_FROM_ALL
+#        INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+#        COMPONENT Development
+#        FRAMEWORK DESTINATION roughpy
+#        EXCLUDE_FROM_ALL
+#    )
+#
+#    install(FILES roughpy/py.typed DESTINATION roughpy)
+#    install(DIRECTORY roughpy
+#        DESTINATION .
+#        FILES_MATCHING
+#        PATTERN "*.py"
+#        PATTERN "*.pyi"
+#        PATTERN "src/*" EXCLUDE)
+#
+#    set(_runtime_deps "")
+#    foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
+#        get_target_property(_lib_deps ${_rpy_lib} RUNTIME_DEPENDENCIES)
+#        if (_lib_deps)
+#            list(APPEND _runtime_deps "${_lib_deps}")
+#            #        install(FILES ${_lib_deps} DESTINATION roughpy)
+#        endif ()
+#    endforeach ()
+#    #install(FILES ${_runtime_deps} DESTINATION roughpy)
+#endif ()
