@@ -39,7 +39,6 @@
 #include <boost/uuid/uuid.hpp>
 
 #include "rational_numbers.h"
-#include "roughpy_platform_export.h"
 
 /*
  * We use the half precision floating point and bfloat16 types from Eigen but
