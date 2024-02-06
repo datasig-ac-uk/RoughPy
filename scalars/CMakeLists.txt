@@ -5,6 +5,10 @@ project(RoughPyScalars
         LANGUAGES CXX)
 
 
+# PCGRandom is only needed by scalars, it is exposed through
+# the scalar random generator interface.
+find_package(PCGRandom REQUIRED)
+
 
 add_roughpy_component(Scalars
     PUBLIC_HEADERS
