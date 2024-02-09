@@ -1,13 +1,13 @@
 
 
 include(FindPackageHandleStandardArgs)
-
+mark_as_advanced(GMP_LIBRARIES GMP_INCLUDE_DIRS)
 
 find_package(PkgConfig QUIET)
 
 if (PKG_CONFIG_FOUND)
 
-    pkg_check_modules(GMP IMPORTED_TARGET)
+    pkg_check_modules(GMP IMPORTED_TARGET gmp)
 
     if (TARGET PkgConfig::GMP)
         add_library(GMP::GMP ALIAS PkgConfig::GMP GLOBAL)
