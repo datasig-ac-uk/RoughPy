@@ -9,7 +9,7 @@ if (PKG_CONFIG_FOUND)
     pkg_check_modules(PCGMP QUIET gmp)
 endif ()
 
-find_Library(GMP_LIBRARIES NAMES gmp
+find_Library(GMP_LIBRARIES NAMES gmp libgmp
         HINTS
         ${PCGMP_LIBRARY_DIRS}
         ${VCPKG_INSTALLED_DIR})
