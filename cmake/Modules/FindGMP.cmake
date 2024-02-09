@@ -9,6 +9,8 @@ if (PKG_CONFIG_FOUND)
     pkg_check_modules(PCGMP QUIET gmp)
 endif ()
 
+message(STATUS "Looking in ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
+
 find_Library(GMP_LIBRARIES NAMES gmp libgmp
         PATHS
         ${PCGMP_LIBRARY_DIRS}
