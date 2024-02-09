@@ -10,11 +10,11 @@ if (PKG_CONFIG_FOUND)
 endif ()
 
 find_Library(GMP_LIBRARIES NAMES gmp libgmp
-        HINTS
+        PATHS
         ${PCGMP_LIBRARY_DIRS}
         ${VCPKG_INSTALLED_DIR})
 find_path(GMP_INCLUDE_DIRS NAMES gmp.h
-        HINTS
+        PATHS
         ${PCGMP_INCLUDE_DIRS}
         ${VCPKG_INSTALLED_DIR})
 
