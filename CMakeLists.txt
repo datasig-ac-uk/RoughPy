@@ -137,7 +137,7 @@ find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS ${RPY_BOOST_COMPONEN
 find_package(Eigen3 CONFIG REQUIRED)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
+pkg_check_modules(GMP REQUIRED IMPORTED_TARGET gmp)
 if (TARGET PkgConfig::GMP)
     add_library(GMP::GMP ALIAS PkgConfig::GMP)
 endif ()
