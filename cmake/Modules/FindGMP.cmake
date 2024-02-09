@@ -12,7 +12,11 @@ endif ()
 find_Library(GMP_LIBRARIES NAMES gmp libgmp
         PATHS
         ${PCGMP_LIBRARY_DIRS}
-        ${VCPKG_INSTALLED_DIR})
+        ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}
+        PATH_SUFFIXES gmp
+)
+
+
 find_path(GMP_INCLUDE_DIRS NAMES gmp.h
         PATHS
         ${PCGMP_INCLUDE_DIRS}
