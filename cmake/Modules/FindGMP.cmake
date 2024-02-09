@@ -6,21 +6,21 @@ mark_as_advanced(GMP_LIBRARIES GMP_INCLUDE_DIRS)
 find_package(PkgConfig QUIET)
 
 if (PKG_CONFIG_FOUND)
-
-    pkg_check_modules(GMP IMPORTED_TARGET gmp)
-
-    if (TARGET PkgConfig::GMP)
-        add_library(GMP::GMP ALIAS PkgConfig::GMP GLOBAL)
-        return()
-    endif ()
+    pkg_check_modules(PCGMP QUIET gmp)
 endif ()
 
+find_Library(GMP_LIBRARIES NAMES gmp
+        HINTS
+        ${PCGMP_LIBRARY_DIRS}
+        ${VCPKG_INSTALLED_DIR})
+find_path(GMP_INCLUDE_DIRS NAMES gmp.h
+        HINTS
+        ${PCGMP_INCLUDE_DIRS}
+        ${VCPKG_INSTALLED_DIR})
 
-find_Library(GMP_LIBRARIES NAMES gmp HINTS ${VCPKG_INSTALLED_DIR})
-find_file(GMP_INCLUDE_DIRS NAMES gmp.h HINTS ${VCPKG_INSTALLED_DIR})
-
-
-find_package_handle_standard_args(GMP FOUND_VAR GMP_FOUND REQUIRED_VARS GMP_LIBRARIES GMP_INCLUDE_DIRS)
+find_package_handle_standard_args(GMP
+        FOUND_VAR GMP_FOUND
+        REQUIRED_VARS GMP_LIBRARIES GMP_INCLUDE_DIRS)
 
 if (GMP_FOUND AND NOT TARGET GMP::GMP)
     add_library(GMP::GMP IMPORTED UNKNOWN GLOBAL)
