@@ -542,12 +542,12 @@ function(add_roughpy_component _name)
             LINKER_LANGUAGE CXX
             CXX_DEFAULT_VISIBILITY hidden
             VISIBILITY_INLINES_HIDDEN ON
-            VERSION "${PROJECT_VERSION}"
+#            VERSION "${PROJECT_VERSION}"
     )
-    #    if (_lib_type STREQUAL SHARED)
-    #        set_target_properties(${_real_name} PROPERTIES
-    #                SOVERSION ${PROJECT_VERSION_MAJOR})
-    #    endif ()
+#        if (_lib_type STREQUAL SHARED)
+#            set_target_properties(${_real_name} PROPERTIES
+#                    SOVERSION ${PROJECT_VERSION_MAJOR})
+#        endif ()
 
     #    if (_lib_type STREQUAL STATIC)
     #        set_target_properties(${_real_name} PROPERTIES INTERFACE_LINK_LIBRARIES_DIRECT)
@@ -558,7 +558,7 @@ function(add_roughpy_component _name)
                 POSITION_INDEPENDENT_CODE ON)
     elseif (_lib_type STREQUAL SHARED)
         generate_export_header(${_real_name})
-        set_target_properties(${_real_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+#        set_target_properties(${_real_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
     endif ()
 
     target_link_components(${_real_name} ${_public} ${ARG_NEEDS})

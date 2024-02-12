@@ -146,7 +146,6 @@ find_package(cereal REQUIRED)
 #find_package(Libalgebra_lite REQUIRED)
 
 
-
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
     set(CMAKE_INSTALL_RPATH "@loader_path" CACHE INTERNAL "")
@@ -197,13 +196,35 @@ if (ROUGHPY_BUILD_COMPONENT_LIBS)
 
     install(TARGETS
         ${RPY_COMPONENT_TARGETS}
+        RUNTIME_DEPENDENCY_SET RPY_COMPONENT_DEPENDS
         EXPORT RoughPyTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            NAMELINK_SKIP
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 
+    install(RUNTIME_DEPENDENCY_SET RPY_COMPONENT_DEPENDS
+        PRE_EXCLUDE_REGEXES
+        # Linux system libraries
+        [[libc\.\so\..*]]
+        [[libgcc_s\.so\..*]]
+        [[libm\.so\..*]]
+        [[libstdc\+\+\.so\..*]]
+        [[ld.*\.so.*]]
+        # Windows system libraries (pre)
+        [[api-ms-win-.*]]
+        [[ext-ms-.*]]
+        [[kernel32\.dll]]
+
+        POST_EXCLUDE_REGEXES
+        # On Windows, exclude anything in the in the system32 directory
+        [[.*/system32/.*\.dll]]
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            NAMELINK_SKIP
+    )
 
     write_basic_package_version_file(
         RoughPyConfigVersion.cmake
@@ -211,9 +232,9 @@ if (ROUGHPY_BUILD_COMPONENT_LIBS)
         COMPATIBILITY SameMajorVersion)
 
     configure_package_config_file(cmake/RoughPyConfig.cmake.in
-            RoughPyConfig.cmake
-            INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/roughpy/cmake
-            )
+        RoughPyConfig.cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/roughpy/cmake
+    )
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/RoughPyConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/RoughPyConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RoughPy)
