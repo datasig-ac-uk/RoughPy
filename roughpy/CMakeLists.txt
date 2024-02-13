@@ -265,7 +265,6 @@ if (SKBUILD)
     # Unusually for Windows, there is a very simple solution here: install the
     # TARGET_RUNTIME_DLLs. On Linux and Mac, we have to rely on other means
     install(TARGETS RoughPy_PyModule
-        RUNTIME_DEPENDENCY_SET RPyModule_Depends
         LIBRARY DESTINATION ${_install_loc}
             NAMELINK_SKIP
         RUNTIME DESTINATION ${_install_loc}
@@ -273,6 +272,10 @@ if (SKBUILD)
         INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
         FRAMEWORK DESTINATION ${_install_loc}
         )
+
+    install_roughpy_components(
+        RUNTIME DESTINATION ${_install_loc}
+        LIBRARY DESTINATION ${_install_loc})
 
     install(FILES py.typed DESTINATION ${_install_loc})
     install(DIRECTORY . DESTINATION ${_install_loc}
@@ -282,27 +285,6 @@ if (SKBUILD)
                    PATTERN "*/__pycache__" EXCLUDE)
 
 
-    message("Include ${RPY_INCLUDE_REGEXES}")
-    install(RUNTIME_DEPENDENCY_SET RPyModule_Depends
-        DESTINATION ${_install_loc}
-        PRE_EXCLUDE_REGEXES
-        # Linux system libraries
-        [[libc\.\so\..*]]
-        [[libgcc_s\.so\..*]]
-        [[libm\.so\..*]]
-        [[libstdc\+\+\.so\..*]]
-        [[ld.*\.so.*]]
-        # Windows system libraries (pre)
-        [[api-ms-win-.*]]
-        [[ext-ms-.*]]
-        [[kernel32\.dll]]
-
-        POST_EXCLUDE_REGEXES
-        # On Windows, exclude anything in the in the system32 directory
-        [[.*/system32/.*\.dll]]
-        POST_INCLUDE_REGEXES
-        ${RPY_INCLUDE_REGEXES}
-    )
 
 
 

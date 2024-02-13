@@ -938,6 +938,25 @@ function(add_libalgebra_contexts _name)
 endfunction()
 
 
+function(install_roughpy_components)
+    # Installing components is tricky because we don't know if it was built
+    # along with the Python library or if they were built separately.
+    # Of course we can determine this since they will have the IMPORTED property
+    # set if they were built externally
+
+    foreach(_component IN ITEMS Core Platform Scalars Intervals Algebra Streams)
+        set(_tgt "RoughPy_${_component}")
+        get_target_property(_imported ${_tgt} IMPORTED)
+        if(_imported)
+            install(IMPORTED_RUNTIME_ARTIFACTS ${_tgt} ${ARGN})
+        else()
+            install(TARGETS ${_tgt} ${ARGN})
+        endif()
+
+    endforeach()
+
+endfunction()
+
 set(RPY_SIZEOF_DPReal 8 CACHE STRING "Sizeof double precision real number")
 set(RPY_SIZEOF_SPReal 4 CACHE STRING "Sizeof single precision real number")
 set(RPY_LA_CTYPE_DPReal alg::coefficients::double_field CACHE STRING "Name of double precision coeff ring")
