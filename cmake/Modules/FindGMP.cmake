@@ -11,7 +11,7 @@ endif ()
 
 message(STATUS "Looking in ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
 
-find_Library(GMP_LIBRARIES NAMES gmp libgmp
+find_Library(GMP_LIBRARIES NAMES gmp
         PATHS
         ${PCGMP_LIBRARY_DIRS}
         ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}
