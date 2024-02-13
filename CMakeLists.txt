@@ -20,6 +20,7 @@ option(ROUGHPY_BUILD_COMPONENT_LIBS "Build the component libraries for RoughPy" 
 option(ROUGHPY_ENABLE_DBG_ASSERT "enable debug assertions at runtime" OFF)
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
+option(ROUGHPY_BUILD_DOCS "Build the roughpy documentation" OFF)
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Build the pymodule in the project roughpy directory" OFF)
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
@@ -205,26 +206,6 @@ if (ROUGHPY_BUILD_COMPONENT_LIBS)
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 
-    install(RUNTIME_DEPENDENCY_SET RPY_COMPONENT_DEPENDS
-        PRE_EXCLUDE_REGEXES
-        # Linux system libraries
-        [[libc\.\so\..*]]
-        [[libgcc_s\.so\..*]]
-        [[libm\.so\..*]]
-        [[libstdc\+\+\.so\..*]]
-        [[ld.*\.so.*]]
-        # Windows system libraries (pre)
-        [[api-ms-win-.*]]
-        [[ext-ms-.*]]
-        [[kernel32\.dll]]
-
-        POST_EXCLUDE_REGEXES
-        # On Windows, exclude anything in the in the system32 directory
-        [[.*/system32/.*\.dll]]
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            NAMELINK_SKIP
-    )
 
     write_basic_package_version_file(
         RoughPyConfigVersion.cmake
