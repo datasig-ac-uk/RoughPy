@@ -478,6 +478,10 @@ public:
     Scalar& operator*=(const Scalar& other);
     Scalar& operator/=(const Scalar& other);
 
+
+    RPY_NO_DISCARD
+    Scalar reciprocal() const;
+
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 
