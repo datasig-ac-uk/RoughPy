@@ -580,6 +580,12 @@ RPY_NO_DISCARD T scalar_cast(const Scalar& value)
     return result;
 }
 
+
+RPY_NO_DISCARD inline devices::KernelArgument to_kernel_arg(const Scalar& arg) noexcept
+{
+    return {arg.type_info(), arg.pointer()};
+}
+
 }// namespace scalars
 }// namespace rpy
 
