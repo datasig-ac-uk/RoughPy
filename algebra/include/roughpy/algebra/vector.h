@@ -8,6 +8,9 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include <roughpy/platform/devices/buffer.h>
+#include <roughpy/platform/devices/device_handle.h>
+#include <roughpy/platform/devices/kernel.h>
 
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
@@ -24,7 +27,6 @@ class VectorIterator;
 
 class Vector
 {
-
     scalars::ScalarArray m_scalar_buffer;
     devices::Buffer m_key_buffer;
 
@@ -39,7 +41,7 @@ protected:
      * @brief Reallocate and move contents to a new buffer with the given size
      * @param dim target dimension
      */
-    void resize_dim(deg_t dim);
+    void resize_dim(dimn_t dim);
 
     /**
      * @brief Reallocate and move contents to a new buffer for the dimension
@@ -54,7 +56,8 @@ protected:
         Binary,
         BinaryInplace,
         Ternary,
-        TernaryInplace
+        TernaryInplace,
+        Comparison
     };
 
     /**
@@ -63,7 +66,9 @@ protected:
      * @param operation Operation to get
      * @return Kernel for the required operation
      */
-    devices::Kernel get_kernel(OperationType type, string_view operation) const;
+    devices::Kernel get_kernel(OperationType type,
+                               string_view operation,
+                               string_view suffix) const;
 
     devices::KernelLaunchParams get_kernel_launch_params() const;
 
@@ -158,6 +163,12 @@ public:
         return p_basis;
     }
 
+    RPY_NO_DISCARD
+    devices::Device device() const noexcept
+    {
+        return m_scalar_buffer.device();
+    }
+
     RPY_NO_DISCARD const scalars::ScalarType* scalar_type() const noexcept
     {
         auto type = m_scalar_buffer.type();
@@ -218,6 +229,22 @@ public:
     RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key) const;
 
     RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key);
+
+private:
+
+    /**
+     * @brief Check vector compatibility and resize *this
+     * @param lhs left reference vector
+     * @param rhs  right reference vector
+     *
+     * This is the binary version of the check for compatibility.
+     */
+    void check_and_resize_for_operands(const Vector& lhs, const Vector& rhs);
+
+    void apply_binary_kernel(string_view kernel_name,
+                             const Vector& lhs,
+                             const Vector& rhs,
+                             optional<scalars::Scalar> multiplier = {});
 
 public:
     RPY_NO_DISCARD Vector uminus() const;
@@ -328,6 +355,7 @@ operator/=(V& lhs, const scalars::Scalar& rhs)
     lhs.sdiv_inplace(rhs);
     return lhs;
 }
+
 
 }// namespace algebra
 }// namespace rpy
