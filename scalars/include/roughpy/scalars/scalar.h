@@ -293,6 +293,8 @@ public:
 
     explicit Scalar(const ScalarType* type, int64_t num, int64_t denom);
 
+    explicit Scalar(devices::TypeInfo info, int64_t num, int64_t denom);
+
     Scalar(const Scalar& other);
     Scalar(Scalar&& other) noexcept;
 
