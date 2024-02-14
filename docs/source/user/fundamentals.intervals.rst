@@ -30,6 +30,9 @@ For this reason, a query over any interval is replaced by a query is replaced by
 In particular, if both the left-hand and right-hand ends of the interval are contained in the clopen granular interval, we round the interval to the empty interval.
 Specifying a resolution of 32 or 64 equates to using integer arithmetic.
 
+.. todo::
+    Create diagram of diadics. Look at GitHub Issue: https://github.com/datasig-ac-uk/RoughPy/issues/53
+
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 How to work with intervals
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -39,25 +42,39 @@ We can create an interval to query a stream over, for example to compute a signa
 
 ::
 
-    interval = rp.RealInterval(0, 1)
+    >>> interval = rp.RealInterval(0, 1)
+    >>> print(f"{interval=!s}")
+    interval=[0, 1)
 
-.. todo::
-    Include working with different types of intervals:
-        - Diadic
-        - Partitions
 
-::
-
-    d = DyadicInterval(17, 3)
-    p = Partition(RealInterval(0.5, 1.6), [0.9, 1.3])
-
-.. todo::
-    Include methods:
-        - Inf
-        - Sup
-        - Inc.end (exactly 1)
-        - Exc.end (exactly 1) Check: is this for joining two together?
+There are other types of intervals, such as Dyadic intervals:
 
 ::
 
-    RealInterval(0.0, 1.0, IntervalType.Clopen)
+    >>> d = rp.DyadicInterval(17, 3)
+    >>> print(f"{d=!s}")
+    d=[2.125, 2.25)
+
+which can be used to compute a signature or a log signature of a stream over, just as easily.
+We can also use partitions:
+
+::
+
+    >>> p = rp.Partition(rp.RealInterval(0.5, 1.6), [0.9, 1.3])
+    >>> print(f"{p=!s}")
+    p=[0.5, 0.9)[0.9, 1.3)[1.3, 1.6)
+
+which by default have the join as open on the left, closed on the right, as above.
+
+We can also define intervals using an infimum and a suprimim. Here we define a real interval with the infimum set as 0.0 and the suprimum set as 1.0.
+
+::
+
+    >>> ivl = rp.RealInterval(0.0, 1.0, rp.IntervalType.Clopen)
+    >>> print(f"{ivl=!s}")
+    ivl=[0, 1)
+
+.. note::
+
+    Clopen is currently the only supported interval type.
+
