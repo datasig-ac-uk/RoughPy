@@ -31,7 +31,25 @@ In particular, if both the left-hand and right-hand ends of the interval are con
 Specifying a resolution of 32 or 64 equates to using integer arithmetic.
 
 .. todo::
-    Create diagram of diadics. Look at GitHub Issue: https://github.com/datasig-ac-uk/RoughPy/issues/53
+
+    - Create diagram of diadics. Look at GitHub Issue: https://github.com/datasig-ac-uk/RoughPy/issues/53
+    - Check, is the below ok, or is it out of date? Are the problems with this resolved now?
+
+RoughPy internally granularises query intervals by moving the the endpoints the included end of the unique granular dyadic interval containing said endpoint.
+For instance, if the stream has resolution 3, so granular dyadic intervals have length 1/8 and we query the interval over the interval [0.3, 0.6), then the actual query will take place over the granular interval [0.25, 0.5).
+To see why this happens, we need the following picture:
+
+::
+
+                                       0.3                                   0.6
+    ------------------------------------[-------------------------------------)---------------------     original interval
+    [--------------)[--------------)[--------------)[--------------)[--------------)[--------------)     granular dyadic dissection
+    0            0.125            0.25           0.375            0.5            0.625            0.75
+
+The lower bound of the query interval (0.3) lies in the granular dyadic interval [0.25, 0.375) so is rounded to the contained end-point 0.25.
+The upper bound of the query interval (0.6) lies in the granular dyadic interval [0.5, 0.625) so is rounded to the contained end-point 0.5.
+This rounding means that we can ensure the the signatures over adjacent intervals always concatenate to give the correct signature over the union of these intervals.
+
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 How to work with intervals
