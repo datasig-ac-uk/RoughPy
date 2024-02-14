@@ -98,6 +98,15 @@ public:
 
     virtual void raw_free(void* pointer, dimn_t size) const;
 
+    /**
+     * @brief Free the underlying resources associated with a buffer
+     * @param buf buffer to free
+     *
+     * This does not destruct elements of the buffer, it just deallocates
+     * the memory resources. This is equivalent to libc free.
+     */
+    virtual void raw_free(Buffer& buf) const;
+
     virtual bool has_compiler() const noexcept;
 
     virtual const Kernel& register_kernel(Kernel kernel) const;
@@ -125,6 +134,16 @@ public:
     from_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
 
     virtual Event to_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
+
+    /**
+     * @brief Copy data from one buffer to another
+     * @param dst Buffer to copy data into
+     * @param src Buffer to copy data from
+     * @return event triggered when the copy is complete.
+     */
+    RPY_NO_DISCARD virtual Event
+    memcopy(Buffer& dst, const Buffer& src) const;
+
 };
 
 
