@@ -8,7 +8,7 @@ Streams
 What are streams
 ^^^^^^^^^^^^^^^^^^^^^
 
-A stream means an object that provides the signature or log-signature over any interval.
+A stream means an object that provides the signature or log-signature over any interval. For more information on streams, see :cite:t:`lyons_signature_2024` and :cite:t:`lyons_differential_2007`.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 How do streams fit into RoughPy
@@ -62,30 +62,91 @@ You can also compute and display the signature and log signature of any stream.
     logsig={ 4.5(1) 9(2) }
 
 The above stream was constructed with Lie increments. You can construct streams in many ways. The six types are:
-    - Tick streams
-    - Piecewize abelian
-    - Lie increments
-    - Function streams
-    - External source data (two kinds)
 
-Tick stream and piecewise Abelian streams are shown below.
+#. Tick streams
 
-::
+    ::
 
-    stream = TickStream.from_data(data, width=2, depth=2, dtype=DPReal)
-    piecewise_lie = PiecewiseAbelianStream.construct(piecewise_lie_data, width=2, depth=2, dtype=DPReal)
+       # create tick stream data
+       data = DATA_FORMATS[0]
+
+       #construct stream
+       >>> tick_stream = TickStream.from_data(data, width=2, depth=2, dtype=DPReal)
+    .. todo::
+        - Create tick stream data, tests for tick stream confusing, DATA_FORMATS = [
+
+
+#. Piecewize abelian streams
+
+    ::
+
+        # create piecewise lie data
+        piecewise_lie_data = [
+                (interval,
+                Lie(rng.normal(0.0, 1.0, size=(2,)), width=2, depth=2))
+                for interval in piecewise_intervals
+            ]
+
+        # construct stream
+        >>> piecewise_abelian_stream = PiecewiseAbelianStream.construct(piecewise_lie_data, width=2, depth=2, dtype=DPReal)
+
+    .. todo::
+        - create piecewise lie data? Similar to tests: (??)
+
+        def piecewise_intervals(count):
+            return [RealInterval(float(i), float(i + 1)) for i in range(count)]
+
+        @pytest.fixture
+        def piecewise_lie_data(piecewise_intervals, rng):
+            return [
+                (interval,
+                Lie(rng.normal(0.0, 1.0, size=(WIDTH,)), width=WIDTH, depth=DEPTH))
+                for interval in piecewise_intervals
+            ]
+
+#. Lie increment streams
+
+    ::
+
+        # Using lie increments data as above
+        >>> lie_increment_stream = roughpy.LieIncrementStream.from_increments(data, indices=times, ctx=context)
+
+#. Brownian streams
+
+    ::
+
+        >>> brownian_stream = BrownianStream.with_generator(width=2, depth=2, dtype=DPReal)
+
+    .. todo::
+        - Is this unfinished??
+        - Taken from Brownian stream tests, is this ok?
+
+#. Function streams
+
+    ::
+
+        >>> function_stream = ()
+
+    .. todo::
+        - Do function that returns t and 2t for function streams. Looked at test_function_path.py, confused? Returning a stream object given a function?
+
+#. External source data (two kinds)
+
+    ::
+
+        >>> external_source_stream1 = ()
+        >>> external_source_stream2 = ()
+
+        >>> roughpy.ExternalDataStream.from_uri(sound_file, depth=2)
+
+    .. todo::
+        - What are the two types?
 
 .. todo::
-    Print the output of these
+    - What can you print from a stream? Not the stream object. Shall we print the sig of all of these?
 
 ^^^^^^^^^^^^^^^^^^^^^
 Literature references
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. bibliography::
-
-.. todo::
-
-    Include references: (create individual bib file)
-        - Lyons and McLeod Signature methods in machine learning
-        - Lyons and Levy Differential equations
