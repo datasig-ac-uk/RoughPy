@@ -225,6 +225,8 @@ public:
     RPY_NO_DISCARD
     virtual hash_t hash(BasisKey k1) const noexcept = 0;
 
+    RPY_NO_DISCARD
+    virtual dimn_t max_dimension() const noexcept = 0;
 
     /*
      * Ordered basis functions

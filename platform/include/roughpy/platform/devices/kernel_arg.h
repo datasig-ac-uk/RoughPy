@@ -37,19 +37,16 @@
 namespace rpy {
 namespace devices {
 
-class ROUGHPY_PLATFORM_EXPORT KernelArgument
-{
+class ROUGHPY_PLATFORM_EXPORT KernelArgument {
 
-    union
-    {
+    union {
         void* p_data;
         const void* p_const_data;
         Buffer* p_buffer;
         const Buffer* p_const_buffer;
     };
 
-    enum
-    {
+    enum {
         Pointer,
         ConstPointer,
         BufferPointer,
@@ -59,29 +56,42 @@ class ROUGHPY_PLATFORM_EXPORT KernelArgument
     TypeInfo m_info;
 
 public:
+
+    KernelArgument(const KernelArgument&) = default;
+
+    KernelArgument(KernelArgument&&) noexcept = default;
+
     explicit KernelArgument(Buffer& buffer)
         : p_buffer(&buffer),
-          m_mode(BufferPointer)
-    {}
+          m_mode(BufferPointer) {}
 
     explicit KernelArgument(const Buffer& buffer)
         : p_const_buffer(&buffer),
-          m_mode(BufferPointer)
-    {}
+          m_mode(BufferPointer) {}
 
-    template <typename T>
+    template <typename T, enable_if_t<!is_same<T, KernelArgument>::value,
+                                      int> = 0>
     explicit KernelArgument(T& data)
         : p_data(&data),
           m_mode(Pointer),
-          m_info(type_info<T>())
-    {}
+          m_info(type_info<T>()) {}
 
-    template <typename T>
+    template <typename T, enable_if_t<!is_same<T, KernelArgument>::value,
+                                      int> = 0>
     explicit KernelArgument(const T& data)
         : p_const_data(&data),
           m_mode(ConstPointer),
-          m_info(type_info<T>())
-    {}
+          m_info(type_info<T>()) {}
+
+    KernelArgument(TypeInfo info, void* pointer)
+        : p_data(pointer),
+          m_mode(Pointer),
+          m_info(info) {}
+
+    KernelArgument(TypeInfo info, const void* pointer)
+        : p_const_data(pointer),
+          m_mode(ConstPointer),
+          m_info(info) {}
 
     RPY_NO_DISCARD constexpr bool is_buffer() const noexcept
     {
