@@ -10,6 +10,7 @@ What are shuffle tensors
 
 Shuffle tensors are one way of representing the linear functionals on free tensors.
 The shuffle product corresponds to pointwise multiplication of the continuous functions on paths via the signature correspondence.
+For more information on shuffle tensors, see :cite:t:`reutenauer_free_1993`.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 How do shuffle tensors fit into RoughPy
@@ -52,7 +53,3 @@ Literature references
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. bibliography::
-
-.. todo::
-    Include references: (create individual bib file)
-        - Reutenauer
