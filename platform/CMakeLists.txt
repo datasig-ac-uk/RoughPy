@@ -3,6 +3,13 @@ cmake_minimum_required(VERSION 3.21)
 
 project(Roughpy_Platform VERSION 0.0.1)
 
+
+
+
+
+
+find_package(OpenCL REQUIRED)
+
 add_roughpy_component(Platform
     SOURCES
         src/configuration.cpp

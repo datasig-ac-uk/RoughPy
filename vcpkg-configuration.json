@@ -7,8 +7,5 @@
   },
   "overlay-triplets": [
     "./tools/triplets"
-  ],
-  "overlay-ports": [
-    "./tools/ports"
   ]
 }

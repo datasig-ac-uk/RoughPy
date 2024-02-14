@@ -213,7 +213,7 @@ function(_do_configure_file _tgt _path_in _path_out _defines _atonly_flag
 endfunction()
 
 
-function(_configure_file _tgt _args)
+function(_configure_file _tgt _args _configured_files)
     set(flag_params "ATONLY;IS_PUBLIC")
     set(single_arg_params "IN;OUT")
     set(multi_arg_params "DEFINE")
@@ -222,6 +222,8 @@ function(_configure_file _tgt _args)
     if (NOT _sanity_check STREQUAL "FILE")
         message(FATAL_ERROR "Invalid arguments to configure")
     endif ()
+
+    set(_configured_files_local)
 
 
     list(LENGTH _args _nargs)
@@ -256,6 +258,7 @@ function(_configure_file _tgt _args)
         if (NOT EXISTS ${_path_in})
             message(FATAL_ERROR "The source file ${_path_in} does not exist")
         endif ()
+        list(APPEND _configured_files_local "${CMAKE_CURRENT_BINARY_DIR}/${_path_out}")
 
         message(STATUS "generating file \"${_path_out}\" from \"${_path_in}\"")
         _do_configure_file("${_tgt}"
@@ -270,6 +273,7 @@ function(_configure_file _tgt _args)
     endwhile ()
 
 
+    set(${_configured_files} "${_configured_files_local}" PARENT_SCOPE)
 endfunction()
 
 function(_parse_dependencies _private_var _interface_var)
@@ -414,6 +418,7 @@ function(add_roughpy_component _name)
     set(_alias_name "RoughPy::${_name}")
 
     string(TOUPPER "${_name}" _name_upper)
+    string(TOLOWER "${_name}" _cname)
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
     _get_component_name(_component_name ${_component})
 
@@ -465,11 +470,10 @@ function(add_roughpy_component _name)
                 "${_private_include_dirs}"
         )
         target_sources(${_real_name}
-                PUBLIC
-                ${ARG_PUBLIC_HEADERS}
                 PRIVATE
                 ${ARG_SOURCES}
         )
+
         target_link_libraries(${_real_name}
                 PRIVATE
                 ${_pvt_nrpy_deps}
@@ -489,14 +493,11 @@ function(add_roughpy_component _name)
 
         #target_compile_definitions(${_real_name} PRIVATE RPY_BUILDING_LIBRARY=1)
 
-
-    else ()
-
-        target_sources(${_real_name} INTERFACE ${ARG_PUBLIC_HEADERS})
     endif ()
 
+
     if (ARG_CONFIGURE)
-        _configure_file(${_real_name} "${ARG_CONFIGURE}")
+        _configure_file(${_real_name} "${ARG_CONFIGURE}" _configured_files)
     endif ()
 
     if (_lib_type MATCHES "INTERFACE")
@@ -529,17 +530,24 @@ function(add_roughpy_component _name)
         set_target_properties(${_real_name} PROPERTIES RUNTIME_DEPENDENCIES ${_runtime_deps})
     endif ()
 
+
+    set(_public_headers)
+    foreach (_hdr IN ITEMS ${ARG_PUBLIC_HEADERS})
+        cmake_path(ABSOLUTE_PATH _hdr)
+        list(APPEND _public_headers ${_hdr})
+    endforeach()
+
+
     set_target_properties(${_real_name} PROPERTIES
-            PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
             LINKER_LANGUAGE CXX
             CXX_DEFAULT_VISIBILITY hidden
             VISIBILITY_INLINES_HIDDEN ON
-            VERSION "${PROJECT_VERSION}"
+#            VERSION "${PROJECT_VERSION}"
     )
-    #    if (_lib_type STREQUAL SHARED)
-    #        set_target_properties(${_real_name} PROPERTIES
-    #                SOVERSION ${PROJECT_VERSION_MAJOR})
-    #    endif ()
+#        if (_lib_type STREQUAL SHARED)
+#            set_target_properties(${_real_name} PROPERTIES
+#                    SOVERSION ${PROJECT_VERSION_MAJOR})
+#        endif ()
 
     #    if (_lib_type STREQUAL STATIC)
     #        set_target_properties(${_real_name} PROPERTIES INTERFACE_LINK_LIBRARIES_DIRECT)
@@ -550,10 +558,23 @@ function(add_roughpy_component _name)
                 POSITION_INDEPENDENT_CODE ON)
     elseif (_lib_type STREQUAL SHARED)
         generate_export_header(${_real_name})
-        set_target_properties(${_real_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+#        set_target_properties(${_real_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
     endif ()
 
     target_link_components(${_real_name} ${_public} ${ARG_NEEDS})
+
+    install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/roughpy
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+    if (DEFINED _configured_files)
+        install(FILES ${_configured_files}
+                DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/roughpy/${_cname}")
+    endif()
+
+    if (_lib_type STREQUAL SHARED)
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/roughpy_${_cname}_export.h"
+                DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/roughpy/${_cname}")
+    endif ()
 
 endfunction()
 
@@ -916,6 +937,25 @@ function(add_libalgebra_contexts _name)
 
 endfunction()
 
+
+function(install_roughpy_components)
+    # Installing components is tricky because we don't know if it was built
+    # along with the Python library or if they were built separately.
+    # Of course we can determine this since they will have the IMPORTED property
+    # set if they were built externally
+
+    foreach(_component IN ITEMS Core Platform Scalars Intervals Algebra Streams)
+        set(_tgt "RoughPy_${_component}")
+        get_target_property(_imported ${_tgt} IMPORTED)
+        if(_imported)
+            install(IMPORTED_RUNTIME_ARTIFACTS ${_tgt} ${ARGN})
+        else()
+            install(TARGETS ${_tgt} ${ARGN})
+        endif()
+
+    endforeach()
+
+endfunction()
 
 set(RPY_SIZEOF_DPReal 8 CACHE STRING "Sizeof double precision real number")
 set(RPY_SIZEOF_SPReal 4 CACHE STRING "Sizeof single precision real number")

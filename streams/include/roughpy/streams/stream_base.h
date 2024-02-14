@@ -38,9 +38,8 @@
 #include <roughpy/platform/serialization.h>
 #include <roughpy/platform/errors.h>
 
+#include "streams_fwd.h"
 #include "schema.h"
-
-#include "roughpy_streams_export.h"
 
 namespace rpy {
 namespace streams {

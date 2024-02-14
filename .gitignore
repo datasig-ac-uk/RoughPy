@@ -340,3 +340,4 @@ roughpy/version.py
 /my_todo.txt
 
 .venv*/
+/staging/

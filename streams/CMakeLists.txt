@@ -9,6 +9,9 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 
+
+find_package(SndFile CONFIG REQUIRED)
+
 add_roughpy_component(Streams
     SOURCES
         src/stream_base.cpp
@@ -44,6 +47,7 @@ add_roughpy_component(Streams
         include/roughpy/streams/dynamically_constructed_stream.h
         include/roughpy/streams/lie_increment_stream.h
         include/roughpy/streams/stream.h
+        include/roughpy/streams/streams_fwd.h
         include/roughpy/streams/stream_base.h
         include/roughpy/streams/tick_stream.h
         include/roughpy/streams/brownian_stream.h

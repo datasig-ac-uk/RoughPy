@@ -40,18 +40,11 @@
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar_type.h>
 
-#include "roughpy_streams_export.h"
+#include <roughpy/streams/streams_fwd.h>
 
 namespace rpy {
 namespace streams {
 
-enum struct ChannelType : uint8_t
-{
-    Increment = 0,
-    Value = 1,
-    Categorical = 2,
-    Lie = 3,
-};
 
 /**
  * @brief Abstract description of a single channel of data.
