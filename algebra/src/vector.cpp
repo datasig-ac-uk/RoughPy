@@ -238,12 +238,12 @@ Vector::iterator Vector::end() noexcept
 
 Vector::const_iterator Vector::begin() const noexcept
 {
-    return rpy::algebra::Vector::const_iterator();
+    return {m_scalar_buffer.view(), m_key_buffer.map(), 0};
 }
 
 Vector::const_iterator Vector::end() const noexcept
 {
-    return rpy::algebra::Vector::const_iterator();
+    return {m_scalar_buffer.view(), m_key_buffer.map(), m_scalar_buffer.size()};
 }
 
 scalars::Scalar Vector::operator[](BasisKey key) const

@@ -53,9 +53,9 @@ public:
     to_device(Buffer& dst, const Device& device, Queue& queue);
 
     RPY_NO_DISCARD virtual void*
-    map(BufferMode map_mode, dimn_t size, dimn_t offset);
+    map(BufferMode map_mode, dimn_t size, dimn_t offset) const;
 
-    virtual void unmap(void* ptr) noexcept;
+    virtual void unmap(const void* ptr) const noexcept;
 };
 
 #ifdef RPY_PLATFORM_WINDOWS
@@ -107,8 +107,9 @@ public:
     RPY_NO_DISCARD MemoryView
     map(BufferMode map_mode = BufferMode::None,
         dimn_t size = 0,
-        dimn_t offset = 0);
-    void unmap(MemoryView& view) noexcept;
+        dimn_t offset = 0) const;
+
+    void unmap(MemoryView& view) const noexcept;
 };
 
 }// namespace devices

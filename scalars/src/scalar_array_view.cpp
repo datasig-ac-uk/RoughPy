@@ -24,3 +24,43 @@
 // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+#include "scalar_array_view.h"
+#include "scalar_array.h"
+#include "scalar.h"
+
+#include <roughpy/platform/devices/memory_view.h>
+#include <roughpy/platform/devices/buffer.h>
+
+
+using namespace rpy;
+using namespace rpy::scalars;
+
+ScalarArrayView::ScalarArrayView(ScalarArray& array)
+    : m_view(array.mut_buffer().map()),
+      p_type_and_mode(array.packed_type()),
+      m_size(array.size()) {}
+
+optional<const ScalarType*> ScalarArrayView::type() const noexcept
+{
+    if (p_type_and_mode.is_pointer()) {
+        return p_type_and_mode.to_pointer();
+    }
+    return scalar_type_of(p_type_and_mode.to_info());
+}
+
+Scalar ScalarArrayView::operator[](dimn_t i) const noexcept
+{
+    auto info = type_info_from(p_type_and_mode);
+    return Scalar(info, m_view.raw_ptr(i * info.bytes));
+}
+
+ScalarArrayView ScalarArrayView::operator[](SliceIndex i) const
+{
+    auto info = type_info_from(p_type_and_mode);
+    auto size = i.end - i.begin;
+    return {m_view.slice(i.begin * info.bytes, size * info.bytes),
+            p_type_and_mode, size};
+}

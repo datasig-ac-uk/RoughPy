@@ -157,6 +157,11 @@ public:
         RPY_DBG_ASSERT(!!p_impl);
         return *p_impl;
     }
+
+    bool operator==(const ObjectBase& other) const noexcept
+    {
+        return p_impl == other.p_impl;
+    }
 };
 
 template <typename Interface>

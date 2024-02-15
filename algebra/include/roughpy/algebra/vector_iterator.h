@@ -1,0 +1,76 @@
+//
+// Created by sam on 2/15/24.
+//
+
+#ifndef ROUGHPY_VECTOR_ITERATOR_H
+#define ROUGHPY_VECTOR_ITERATOR_H
+
+#include "roughpy_algebra_export.h"
+#include "algebra_fwd.h"
+
+#include "basis_key.h"
+
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+
+#include <roughpy/platform/devices/buffer.h>
+#include <roughpy/platform/devices/memory_view.h>
+
+#include <roughpy/scalars/scalar_array_view.h>
+#include <roughpy/scalars/scalar.h>
+
+namespace rpy {
+namespace algebra {
+
+
+class ROUGHPY_ALGEBRA_EXPORT VectorIterator {
+    scalars::ScalarArrayView m_scalar_view;
+    devices::MemoryView m_key_view;
+
+    dimn_t m_index;
+
+public:
+
+
+    using value_type = pair<BasisKey, scalars::Scalar>;
+
+    class KVPairProxy {
+        value_type m_pair;
+    public:
+
+        KVPairProxy(BasisKey key, scalars::Scalar value)
+            : m_pair(std::move(key), std::move(value)) {}
+
+        operator const value_type&() const noexcept { return m_pair; }
+
+        const value_type* operator->() const noexcept { return &m_pair; }
+    };
+
+    using reference = KVPairProxy;
+    using pointer = KVPairProxy;
+
+    VectorIterator(scalars::ScalarArrayView data_view,
+                   devices::MemoryView key_view,
+                   dimn_t index = 0)
+        : m_scalar_view(std::move(data_view)),
+          m_key_view(std::move(key_view)),
+          m_index(index) {}
+
+    VectorIterator& operator++();
+
+    const VectorIterator operator++(int);
+
+    reference operator*();
+
+    pointer operator->();
+
+    bool operator==(const VectorIterator& other) const noexcept;
+
+    bool operator!=(const VectorIterator& other) const noexcept;
+
+};
+
+
+}
+}
+#endif //ROUGHPY_VECTOR_ITERATOR_H

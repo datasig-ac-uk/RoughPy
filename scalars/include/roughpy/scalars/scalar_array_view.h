@@ -29,6 +29,10 @@
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_VIEW_H_
 
 #include "scalars_fwd.h"
+
+#include "packed_scalar_type_ptr.h"
+
+#include <roughpy/core/types.h>
 #include <roughpy/platform/devices/memory_view.h>
 
 
@@ -36,8 +40,48 @@ namespace rpy { namespace scalars {
 
 
 class ROUGHPY_SCALARS_EXPORT ScalarArrayView {
-    devices::MemoryView m_view;
+    friend class ScalarArray;
 
+    using type_pointer = PackedScalarTypePointer<dtl::ScalarArrayStorageModel>;
+
+    devices::MemoryView m_view;
+    type_pointer p_type_and_mode;
+    dimn_t m_size;
+
+    // Private constructor
+    explicit ScalarArrayView(ScalarArray& array);
+
+    ScalarArrayView(devices::MemoryView view, type_pointer type, dimn_t size)
+        : m_view(view),
+          p_type_and_mode(type),
+          m_size(size) {}
+
+public:
+
+    RPY_NO_DISCARD const devices::MemoryView& memory_view() const noexcept
+    {
+        return m_view;
+    }
+
+    RPY_NO_DISCARD optional<const ScalarType*> type() const noexcept;
+
+    RPY_NO_DISCARD dimn_t size() const noexcept { return m_size; }
+
+    RPY_NO_DISCARD bool empty() const noexcept { return m_size == 0; }
+
+    const void* pointer() const noexcept { return m_view.raw_ptr(); }
+
+    RPY_NO_DISCARD
+    Scalar operator[](dimn_t i) const noexcept;
+
+    RPY_NO_DISCARD
+    ScalarArrayView operator[](SliceIndex i) const;
+
+    template <typename T>
+    RPY_NO_DISCARD Slice<const T> as_slice() const
+    {
+        return {m_view.raw_ptr(), m_size};
+    }
 };
 
 

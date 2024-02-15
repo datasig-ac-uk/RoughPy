@@ -55,12 +55,14 @@ Event BufferInterface::to_device(
     RPY_THROW(std::runtime_error, "unable to migrate data to this device");
 }
 
-void* BufferInterface::map(BufferMode map_mode, dimn_t size, dimn_t offset)
+void* BufferInterface::map(BufferMode map_mode,
+                           dimn_t size,
+                           dimn_t offset) const
 {
     RPY_THROW(std::runtime_error, "mapping of this buffer type is not "
                                   "supported");
 }
 
-void BufferInterface::unmap(void* ptr) noexcept
+void BufferInterface::unmap(const void* ptr) const noexcept
 {
 }

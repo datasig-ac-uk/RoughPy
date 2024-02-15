@@ -49,16 +49,15 @@ enum class ScalarArrayStorageModel
 
 }
 
-struct SliceIndex {
-    dimn_t begin;
-    dimn_t end;
-};
+
+class ScalarArrayView;
 
 class ROUGHPY_SCALARS_EXPORT ScalarArray
 {
     using discriminator_type = dtl::ScalarArrayStorageModel;
     using type_pointer = PackedScalarTypePointer<dtl::ScalarArrayStorageModel>;
 
+    friend class ScalarArrayView;
     type_pointer p_type_and_mode;
 
     union
@@ -171,6 +170,8 @@ public:
     const devices::Buffer& buffer() const;
     RPY_NO_DISCARD
     devices::Buffer& mut_buffer();
+
+    RPY_NO_DISCARD ScalarArrayView view() const;
 
     RPY_NO_DISCARD
     Scalar operator[](dimn_t i) const;

@@ -74,6 +74,11 @@ using bitmask_t = uint64_t;
 using std::pair;
 using std::string;
 
+struct SliceIndex {
+    dimn_t begin;
+    dimn_t end;
+};
+
 #ifdef RPY_CPP_17
 using std::optional;
 using std::string_view;

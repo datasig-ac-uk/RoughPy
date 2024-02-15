@@ -33,11 +33,13 @@
 #include "scalar_serialization.h"
 #include "scalar_type.h"
 #include "traits.h"
+#include "scalar_array_view.h"
 
 #include "scalar/raw_bytes.h"
 
 #include <roughpy/platform/devices/buffer.h>
 #include <roughpy/platform/devices/host_device.h>
+#include <roughpy/platform/devices/memory_view.h>
 
 #include <cereal/types/vector.hpp>
 
@@ -489,6 +491,23 @@ void ScalarArray::from_raw_bytes(
 
     dtl::from_raw_bytes(owned_buffer.ptr(), count, bytes, info);
 }
+
+ScalarArrayView ScalarArray::view() const
+{
+    switch (p_type_and_mode.get_enumeration()) {
+        case dtl::ScalarArrayStorageModel::Owned:
+            return {owned_buffer.map(), p_type_and_mode, m_size};
+        case dtl::ScalarArrayStorageModel::BorrowConst:
+            return {
+                devices::MemoryView(const_borrowed, m_size * type_info().bytes),
+                p_type_and_mode, m_size};
+        case dtl::ScalarArrayStorageModel::BorrowMut:
+            return {
+                devices::MemoryView(mut_borrowed, m_size * type_info().bytes),
+                p_type_and_mode, m_size};
+    }
+}
+
 
 #define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME ScalarArray

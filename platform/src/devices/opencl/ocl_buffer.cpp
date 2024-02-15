@@ -280,7 +280,8 @@ devices::dtl::InterfaceBase::reference_count_type OCLBuffer::dec_ref() noexcept
     }
     return rc;
 }
-void* OCLBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset)
+
+void* OCLBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset) const
 {
     cl_mem_flags flags;
 
@@ -322,7 +323,8 @@ void* OCLBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset)
 
     return ptr;
 }
-void OCLBuffer::unmap(void* ptr) noexcept
+
+void OCLBuffer::unmap(const void* ptr) const noexcept
 {
     if (ptr == nullptr) { return ; }
 
@@ -330,7 +332,7 @@ void OCLBuffer::unmap(void* ptr) noexcept
     auto ecode = clEnqueueUnmapMemObject(
             m_device->default_queue(),
             m_buffer,
-            ptr,
+            const_cast<void*>(ptr),
             0,
             nullptr,
             event.ptr()

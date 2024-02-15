@@ -61,6 +61,7 @@ add_roughpy_component(Algebra
         src/shuffle_tensor_interface.cpp
         src/tensor_basis.cpp
         src/vector.cpp
+        src/vector_iterator.cpp
         PUBLIC_HEADERS
 #        include/roughpy/algebra/implementors/algebra_bundle_impl.h
         include/roughpy/algebra/implementors/algebra_impl.h
@@ -105,6 +106,7 @@ add_roughpy_component(Algebra
 #        include/roughpy/algebra/shuffle_tensor_bundle.h
         include/roughpy/algebra/tensor_basis.h
         include/roughpy/algebra/vector.h
+        include/roughpy/algebra/vector_iterator.h
         DEPENDENCIES PUBLIC
         Boost::boost
         Libalgebra_lite::Libalgebra_lite

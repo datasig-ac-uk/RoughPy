@@ -30,17 +30,30 @@
 
 #include "core.h"
 
+#include <roughpy/core/macros.h>
 #include <roughpy/core/slice.h>
+#include <roughpy/core/types.h>
 
 namespace rpy {
 namespace devices {
 
+/**
+ * @brief A read-only view into mapped data that might live on a separate device
+ *
+ * This object is a read-only view into a region of memory mapped into main RAM.
+ * The data itself might live on device or in system RAM, or it could be backed
+ * by a memory-mapped file of some description. MemoryViews retain a strong
+ * reference to their mapped buffer, to make sure the data is valid even if the
+ * original object is destroyed. It should not be possible to modify the
+ * buffer-held data whilst a MemoryView is alive, but if this does happen then
+ * then the changes might not be reflected in the view itself.
+ *
+ */
 class ROUGHPY_PLATFORM_EXPORT MemoryView
 {
-    Buffer& r_memory_owner;
-    void* p_data = nullptr;
+    Buffer m_memory_owner;
+    const void* p_data = nullptr;
     dimn_t m_size = 0;
-    BufferMode m_mode;
 
     friend class Buffer;
 
@@ -49,20 +62,27 @@ class ROUGHPY_PLATFORM_EXPORT MemoryView
      * To that end, we make the constructor private, and befriend the Buffer
      * type so it can create buffers.
      */
-    MemoryView(Buffer& buf, void* data, dimn_t size, BufferMode mode)
-        : r_memory_owner(buf),
+    MemoryView(const Buffer& buf, const void* data, dimn_t size)
+        : m_memory_owner(buf),
           p_data(data),
-          m_size(size),
-          m_mode(mode)
+          m_size(size)
     {}
 
 public:
 
     ~MemoryView();
 
-    constexpr void* raw_ptr() noexcept { return p_data; }
+    constexpr const void* raw_ptr(dimn_t offset = 0) const noexcept
+    {
+        return static_cast<const byte*>(p_data) + offset;
+    }
     constexpr dimn_t size() const noexcept { return m_size; }
-    constexpr BufferMode mode() const noexcept { return m_mode; }
+
+    MemoryView slice(dimn_t offset_bytes, dimn_t size_bytes)
+    {
+        RPY_DBG_ASSERT(offset_bytes + size_bytes <= m_size);
+        return {m_memory_owner, raw_ptr(offset_bytes), size_bytes};
+    }
 
     template <typename T>
     Slice<const T> as_slice() const noexcept
@@ -71,12 +91,10 @@ public:
         return {static_cast<const T*>(p_data), m_size / sizeof(T)};
     }
 
-    template <typename T>
-    Slice<T> as_mut_slice()
+
+    bool operator==(const MemoryView& other) const noexcept
     {
-        RPY_DBG_ASSERT(m_size % sizeof(T) == 0);
-        RPY_CHECK(m_mode != BufferMode::Read);
-        return {static_cast<T*>(p_data), m_size / sizeof(T)};
+        return (m_memory_owner == other.m_memory_owner);
     }
 };
 

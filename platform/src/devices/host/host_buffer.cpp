@@ -111,7 +111,8 @@ Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
      */
     return device->from_host(dst, *this, queue);
 }
-void* CPUBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset)
+
+void* CPUBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset) const
 {
     if (offset + size >= raw_buffer.size) {
         RPY_THROW(
