@@ -216,9 +216,19 @@ Vector& Vector::operator=(Vector&& other) noexcept
 }
 
 
-scalars::Scalar Vector::get(BasisKey key) const { return scalars::Scalar(); }
+scalars::Scalar Vector::get(BasisKey key) const {
+    if (auto index = get_index(key)) {
+        return m_scalar_buffer[*index];
+    }
+    return scalars::Scalar();
+}
 
-scalars::Scalar Vector::get_mut(BasisKey key) { return scalars::Scalar(); }
+scalars::Scalar Vector::get_mut(BasisKey key) {
+    if (auto index = get_index(key)) {
+        return m_scalar_buffer[*index];
+    }
+    return scalars::Scalar();
+}
 
 Vector::const_iterator Vector::begin() const noexcept
 {
@@ -232,10 +242,10 @@ Vector::const_iterator Vector::end() const noexcept
 
 scalars::Scalar Vector::operator[](BasisKey key) const
 {
-    return scalars::Scalar();
+    return get(key);
 }
 
-scalars::Scalar Vector::operator[](BasisKey key) { return scalars::Scalar(); }
+scalars::Scalar Vector::operator[](BasisKey key) { return get_mut(key); }
 
 namespace {
 
@@ -711,7 +721,6 @@ std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
     for (const auto& item : value) {
         os << item->second << '(' << basis->to_string(item->first)
            << ')';
-
     }
     return os;
 }
