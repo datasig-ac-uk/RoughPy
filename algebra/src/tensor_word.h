@@ -1,0 +1,86 @@
+//
+// Created by sam on 16/02/24.
+//
+
+#ifndef ROUGHPY_TENSOR_WORD_H
+#define ROUGHPY_TENSOR_WORD_H
+
+#include "basis_key.h"
+
+#include <boost/container/small_vector.hpp>
+
+namespace rpy {
+namespace algebra {
+
+
+
+class TensorWord : public BasisKeyInterface
+{
+    static constexpr string_view s_basis_type = "tensor_word";
+    using container_t = boost::container::small_vector<let_t, 1>;
+
+    container_t m_letters;
+
+public:
+    using iterator = typename container_t::iterator;
+    using const_iterator = typename container_t::const_iterator;
+    using reverse_iterator = typename container_t::reverse_iterator;
+    using const_reverse_iterator = typename container_t::const_reverse_iterator;
+
+    explicit TensorWord(dimn_t capacity)
+            : m_letters()
+    {
+        m_letters.reserve(capacity);
+    }
+
+
+    void push_back(let_t letter) { m_letters.push_back(letter); }
+
+    virtual string_view key_type() const noexcept;
+    virtual BasisPointer basis() const noexcept;
+
+    dimn_t degree() const noexcept { return m_letters.size(); }
+
+    auto begin() noexcept -> decltype(m_letters.begin()) {
+        return m_letters.begin();
+    }
+    auto end() noexcept -> decltype(m_letters.end()) {
+        return m_letters.end();
+    }
+
+    auto begin() const noexcept -> decltype(m_letters.begin()) {
+        return m_letters.begin();
+    }
+    auto end() const noexcept -> decltype(m_letters.end()) {
+        return m_letters.end();
+    }
+
+    auto cbegin() const noexcept -> decltype(m_letters.cbegin()) {
+        return m_letters.cbegin();
+    }
+    auto cend() const noexcept -> decltype(m_letters.cend()){
+        return m_letters.cend();
+    }
+
+    auto rbegin() const noexcept -> decltype(m_letters.rbegin()) {
+        return m_letters.rbegin();
+    }
+    auto rend() const noexcept -> decltype(m_letters.rbegin()) {
+        return m_letters.rbegin();
+    }
+
+    auto rbegin() noexcept -> decltype(m_letters.rbegin()) {
+        return m_letters.rbegin();
+    }
+    auto rend() noexcept -> decltype(m_letters.rbegin()) {
+        return m_letters.rbegin();
+    }
+
+
+
+};
+
+}// namespace algebra
+}// namespace rpy
+
+#endif// ROUGHPY_TENSOR_WORD_H
