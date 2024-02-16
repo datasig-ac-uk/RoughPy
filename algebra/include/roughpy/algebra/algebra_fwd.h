@@ -32,7 +32,7 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/errors.h>
 
-#include <memory>
+#include <boost/intrusive_ptr.hpp>
 #include "roughpy_algebra_export.h"
 
 namespace rpy {
@@ -68,17 +68,7 @@ enum class AlgebraType : uint16_t
     LieBundle
 };
 
-template <AlgebraType>
-struct algebra_type_tag {};
 
-template <typename Interface>
-struct algebra_access;
-
-template <typename Wrapper, typename Algebra>
-struct algebra_info;
-
-template <typename Algebra>
-class AlgebraIterator;
 
 class Basis;
 
@@ -92,7 +82,6 @@ ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_add_ref(const Basis*) noexcept;
 ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_release(const Basis*) noexcept;
 
 class Vector;
-
 class Algebra;
 
 class FreeTensor;
