@@ -70,7 +70,14 @@ class ROUGHPY_PLATFORM_EXPORT MemoryView
 
 public:
 
+    MemoryView() = default;
+    MemoryView(const MemoryView&) = default;
+    MemoryView(MemoryView&&) noexcept = default;
+
     ~MemoryView();
+
+    MemoryView& operator=(const MemoryView&) = default;
+    MemoryView& operator=(MemoryView&&) noexcept = default;
 
     constexpr const void* raw_ptr(dimn_t offset = 0) const noexcept
     {

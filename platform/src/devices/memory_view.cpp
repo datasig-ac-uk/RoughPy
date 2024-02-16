@@ -37,5 +37,5 @@ using namespace rpy::devices;
 
 
 MemoryView::~MemoryView() {
-    r_memory_owner.unmap(*this);
+    m_memory_owner.unmap(*this);
 }
