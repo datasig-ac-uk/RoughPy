@@ -64,6 +64,10 @@ Buffer DeviceHandle::raw_alloc(rpy::dimn_t count, rpy::dimn_t alignment) const
 
 void DeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 
+void DeviceHandle::raw_free(Buffer& buf) const
+{
+}
+
 bool DeviceHandle::has_compiler() const noexcept { return false; }
 
 const Kernel& DeviceHandle::register_kernel(Kernel kernel) const
