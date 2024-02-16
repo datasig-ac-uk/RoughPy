@@ -30,12 +30,11 @@ enum class BasisKeyType {
 class ROUGHPY_ALGEBRA_EXPORT BasisKeyInterface {
     mutable std::atomic_uint32_t m_ref_count;
 public:
-    virtual ~BasisKey();
+    virtual ~BasisKeyInterface();
 
-    virtual BasisPointer basis() const noexcept;
+    virtual string_view key_type() const noexcept = 0;
 
-    virtual BasisKeyType type() const noexcept;
-
+    virtual BasisPointer basis() const noexcept = 0;
 
     uint32_t inc_ref() const noexcept;
 
