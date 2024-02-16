@@ -29,8 +29,7 @@
 #ifndef ROUGHPY_ALGEBRA_LINEAR_OPERATOR_H_
 #define ROUGHPY_ALGEBRA_LINEAR_OPERATOR_H_
 
-#include "algebra_base.h"
-#include "algebra_bundle.h"
+
 #include "algebra_fwd.h"
 
 #include <roughpy/core/macros.h>
