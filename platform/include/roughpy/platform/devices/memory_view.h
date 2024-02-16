@@ -78,6 +78,8 @@ public:
     }
     constexpr dimn_t size() const noexcept { return m_size; }
 
+    bool empty() const noexcept { return m_memory_owner.is_null() || m_size == 0; }
+
     MemoryView slice(dimn_t offset_bytes, dimn_t size_bytes)
     {
         RPY_DBG_ASSERT(offset_bytes + size_bytes <= m_size);
