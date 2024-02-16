@@ -36,12 +36,18 @@ BasisKey clone_key(const void* kptr)
 
 VectorIterator::reference VectorIterator::operator*()
 {
+    if (m_key_view.empty()) {
+        return {BasisKey(m_index), m_scalar_view[m_index]};
+    }
     return {clone_key(m_key_view.raw_ptr(m_index * sizeof(BasisKey))),
             m_scalar_view[m_index]};
 }
 
 VectorIterator::pointer VectorIterator::operator->()
 {
+    if (m_key_view.empty()) {
+        return {BasisKey(m_index), m_scalar_view[m_index]};
+    }
     return {clone_key(m_key_view.raw_ptr(m_index * sizeof(BasisKey))),
             m_scalar_view[m_index]};
 }
