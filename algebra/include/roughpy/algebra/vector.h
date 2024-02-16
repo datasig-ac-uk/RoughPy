@@ -155,6 +155,11 @@ public:
         return !m_key_buffer.is_null();
     }
 
+    RPY_NO_DISCARD
+    VectorType vector_type() const noexcept {
+        return (is_sparse()) ? VectorType::Sparse : VectorType::Dense;
+    }
+
     /**
      * @brief Get the basis for this vector
      */
