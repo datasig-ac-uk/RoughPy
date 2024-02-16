@@ -13,6 +13,7 @@
 #include "roughpy_algebra_export.h"
 
 #include <cstddef>
+#include <atomic>
 
 namespace rpy {
 namespace algebra {
