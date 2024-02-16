@@ -220,9 +220,6 @@ public:
      */
     RPY_NO_DISCARD scalars::Scalar get_mut(BasisKey key);
 
-    RPY_NO_DISCARD iterator begin() noexcept;
-    RPY_NO_DISCARD iterator end() noexcept;
-
     RPY_NO_DISCARD const_iterator begin() const noexcept;
     RPY_NO_DISCARD const_iterator end() const noexcept;
 

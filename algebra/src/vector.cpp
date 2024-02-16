@@ -3,8 +3,10 @@
 //
 
 #include "vector.h"
-
+#include "basis.h"
 #include "basis_key.h"
+#include "vector_iterator.h"
+
 
 #include <roughpy/platform/devices/core.h>
 #include <roughpy/scalars/scalar.h>
@@ -18,14 +20,6 @@
 using namespace rpy;
 using namespace algebra;
 
-
-namespace rpy {
-namespace algebra {
-
-class VectorIterator {};
-
-}
-}
 
 devices::Kernel
 Vector::get_kernel(OperationType type,
@@ -225,16 +219,6 @@ Vector& Vector::operator=(Vector&& other) noexcept
 scalars::Scalar Vector::get(BasisKey key) const { return scalars::Scalar(); }
 
 scalars::Scalar Vector::get_mut(BasisKey key) { return scalars::Scalar(); }
-
-Vector::iterator Vector::begin() noexcept
-{
-    return rpy::algebra::Vector::iterator();
-}
-
-Vector::iterator Vector::end() noexcept
-{
-    return rpy::algebra::Vector::iterator();
-}
 
 Vector::const_iterator Vector::begin() const noexcept
 {
@@ -723,10 +707,11 @@ bool Vector::operator==(const Vector& other) const
 std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
 {
     //TODO: uncomment once iterators are implemented.
-//    for (const auto& item : value) {
-//        os << item.value() << '(' << value.basis()->to_string(item.key())
-//           << ')';
-//
-//    }
+    const auto basis = value.basis();
+    for (const auto& item : value) {
+        os << item->second << '(' << basis->to_string(item->first)
+           << ')';
+
+    }
     return os;
 }
