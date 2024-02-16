@@ -191,11 +191,11 @@ class ROUGHPY_ALGEBRA_EXPORT Basis
     };
 
     Flags m_flags;
+    dimn_t m_max_dimension;
 
 public:
 
     virtual ~Basis();
-
 
     RPY_NO_DISCARD bool is_ordered() const noexcept { return m_flags.is_ordered; }
 
@@ -226,7 +226,7 @@ public:
     virtual hash_t hash(BasisKey k1) const noexcept = 0;
 
     RPY_NO_DISCARD
-    virtual dimn_t max_dimension() const noexcept = 0;
+    dimn_t max_dimension() const noexcept { return m_max_dimension; };
 
     /*
      * Ordered basis functions
@@ -246,7 +246,7 @@ public:
      * @return index of key in the basis order if it is ordered, otherwise 0
      */
     RPY_NO_DISCARD
-    virtual dimn_t to_index(BasisKey key) const noexcept;
+    virtual dimn_t to_index(BasisKey key) const;
 
     /**
      * @brief Get the key that corresponds to index
@@ -254,7 +254,7 @@ public:
      * @return BasisKey corresponding to index if basis is ordered, and index is
      * valid for this basis, otherwise an invalid key.
      */
-    RPY_NO_DISCARD virtual BasisKey to_key(dimn_t index) const noexcept;
+    RPY_NO_DISCARD virtual BasisKey to_key(dimn_t index) const;
 
 
     RPY_NO_DISCARD virtual KeyRange iterate_keys() const noexcept;

@@ -44,13 +44,11 @@ bool Basis::less(BasisKey RPY_UNUSED_VAR k1,
     return false;
 }
 
-dimn_t Basis::to_index(BasisKey RPY_UNUSED_VAR key) const noexcept
-{
+dimn_t Basis::to_index(BasisKey RPY_UNUSED_VAR key) const {
     return 0;
 }
 
-BasisKey Basis::to_key(dimn_t RPY_UNUSED_VAR index) const noexcept
-{
+BasisKey Basis::to_key(dimn_t index) const {
     return BasisKey();
 }
 
