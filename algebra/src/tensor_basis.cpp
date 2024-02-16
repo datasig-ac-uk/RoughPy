@@ -21,6 +21,17 @@ using namespace rpy::algebra;
 
 namespace {
 
+deg_t index_to_degree(const std::vector<dimn_t>& degree_sizes, dimn_t arg) noexcept {
+    if (arg == 0) { return 0; }
+    auto begin = degree_sizes.begin();
+    auto end = degree_sizes.end();
+
+    auto it = std::lower_bound(begin, end, arg, std::less_equal<>());
+
+    RPY_DBG_ASSERT(it != degree_sizes.end());
+    return static_cast<deg_t>(it - begin);
+}
+
 
 const TensorWord* cast_pointer_key(const BasisKey& key) {
     RPY_CHECK(key.is_valid_pointer());
@@ -57,17 +68,6 @@ void print_word(string& out, const TensorWord* word) noexcept {
         out.push_back(',');
         out += std::to_string(*it);
     }
-}
-
-deg_t index_to_degree(const std::vector<dimn_t>& degree_sizes, dimn_t arg) noexcept {
-    if (arg == 0) { return 0; }
-    auto begin = degree_sizes.begin();
-    auto end = degree_sizes.end();
-
-    auto it = std::lower_bound(begin, end, arg, std::less_equal<>());
-
-    RPY_DBG_ASSERT(it != degree_sizes.end());
-    return static_cast<deg_t>(it - begin);
 }
 
 
@@ -122,17 +122,19 @@ BasisKey TensorBasis::to_key(dimn_t index) const
 {
     RPY_CHECK(index < m_max_dimension);
     auto degree = index_to_degree(m_degree_sizes, index);
-    BasisKey key(new TensorWord(degree));
-
+    auto word = std::make_unique<TensorWord>(degree);
 
     index -= m_degree_sizes[degree];
     dimn_t tmp;
     while (index > m_width) {
         tmp = index;
         index /= m_width;
-
+        word->push_back(1 + tmp - index * m_width);
     }
 
+    std::reverse(word->begin(), word->end());
+
+    return BasisKey(word.release());
 }
 KeyRange TensorBasis::iterate_keys() const noexcept
 {
