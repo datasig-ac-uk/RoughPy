@@ -7,7 +7,6 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
-#include <roughpy/core/
 
 #include <roughpy/platform/devices/kernel.h>
 
@@ -18,6 +17,13 @@ namespace algebra {
 
 
 class ROUGHPY_ALGEBRA_EXPORT Multiplication {
+
+public:
+
+    virtual ~Multiplication();
+
+    virtual devices::Kernel get_kernel(string_view suffix) const;
+
 
 };
 
