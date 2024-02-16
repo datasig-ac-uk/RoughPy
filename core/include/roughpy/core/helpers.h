@@ -134,6 +134,14 @@ next_power_2(I value, I start=I(1)) noexcept
     return (start >= value) ? start : next_power_2(value, I(start << 1));
 }
 
+template <unsigned Base, typename I>
+RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I>
+const_log(I arg) noexcept {
+    return arg >= static_cast<I>(Base)
+            ? 1 + const_log<Base>(static_cast<I>(arg / Base))
+            : 0;
+}
+
 
 }// namespace rpy
 
