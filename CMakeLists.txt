@@ -309,7 +309,6 @@ endif ()
 find_package(pybind11 REQUIRED)
 find_package(cereal REQUIRED)
 find_package(PCGRandom REQUIRED)
-#find_package(Libalgebra_lite REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)

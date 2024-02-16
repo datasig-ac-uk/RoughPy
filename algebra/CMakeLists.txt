@@ -9,18 +9,20 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 
-if (NOT TARGET Libalgebra_lite::Libalgebra_lite)
-    find_package(Libalgebra_Lite CONFIG REQUIRED)
-endif ()
+
 
 add_roughpy_component(Algebra
         SOURCES
         src/algebra.cpp
         src/basis.cpp
+        src/basis_key.cpp
         src/context.cpp
         src/hall_set_size.cpp
         src/hall_set_size.h
         src/key_range.cpp
+        src/tensor_basis.cpp
+        src/tensor_word.cpp
+        src/tensor_word.h
         src/vector.cpp
         src/vector_iterator.cpp
         PUBLIC_HEADERS
@@ -42,8 +44,7 @@ add_roughpy_component(Algebra
         )
 
 
-target_precompile_headers(RoughPy_Algebra PRIVATE
-        "src/lite_context.h")
+
 
 add_roughpy_test_helper(AlgebraMock STATIC
         SRCS
