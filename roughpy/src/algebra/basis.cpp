@@ -81,7 +81,16 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
             [](const T& self, const K& key) { return self.parents(0); },
             "key"_a
     );
-    basis.def("size", [](const T& basis, deg_t degree) {
+    basis.def("size", [](const T& basis, deg_t degree = -1) {
+        if (degree < 0) {
+            degree = basis.depth();
+        } else if (degree > basis.depth()) {
+            PyErr_WarnEx(nullptr,
+                         "the requested degree exceeds the "
+                         "maximum degree for this basis", 1);
+            throw py::error_already_set();
+        }
+
         return basis.size(degree);
     });
 
