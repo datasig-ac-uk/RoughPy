@@ -85,9 +85,9 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
         if (degree < 0) {
             degree = basis.depth();
         } else if (degree > basis.depth()) {
-            PyErr_WarnEx(nullptr,
+            PyErr_SetString(PyExc_ValueError,
                          "the requested degree exceeds the "
-                         "maximum degree for this basis", 1);
+                         "maximum degree for this basis");
             throw py::error_already_set();
         }
 
