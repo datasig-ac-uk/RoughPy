@@ -97,6 +97,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/args/kwargs_to_vector_construction.h
         src/args/numpy.cpp
         src/args/numpy.h
+        src/args/parse_algebra_configuration.cpp
+        src/args/parse_algebra_configuration.h
         src/args/parse_schema.cpp
         src/args/parse_schema.h
         src/args/strided_copy.cpp

@@ -68,6 +68,15 @@ inline PyObject* cast_to_object(T&& arg) noexcept
     return py::cast(std::forward<T>(arg)).release().ptr();
 }
 
+
+py::object kwargs_pop(py::kwargs& kwargs, const char* name)
+{
+    auto arg = py::reinterpret_borrow<py::object>(kwargs[name]);
+    PyDict_DelItemString(kwargs.ptr(), name);
+    return arg;
+}
+
+
 }// namespace python
 }// namespace rpy
 
