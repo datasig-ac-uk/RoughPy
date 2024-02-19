@@ -10,7 +10,8 @@ This library is currently in an alpha stage, and as such many features are still
 Please refer to the [documentation](https://roughpy.org) and to
 the [examples folder](examples/) for details on how to use RoughPy. If you want
 to implement more complex functions built on top of RoughPy, you may also want
-to check out the  [roughpy/tensor_functions.py]() file to see how the "Log"
+to check out the [roughpy/tensor_functions.py](roughpy/tensor_functions.py) file
+to see how the "LOG"
 function is implemented for free tensor objects.
 
 ## Installation
