@@ -52,7 +52,6 @@ class CPUKernel : public dtl::RefCountBase<KernelInterface>
 public:
     CPUKernel(fallback_kernel_t fallback, uint32_t nargs, string name);
 
-    std::unique_ptr<InterfaceBase> clone() const override;
     Device device() const noexcept override;
 
     string name() const override;

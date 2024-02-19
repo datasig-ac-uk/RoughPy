@@ -37,5 +37,17 @@ using namespace rpy::devices;
 
 
 MemoryView::~MemoryView() {
-    m_memory_owner.unmap(*this);
+    m_memory_owner.impl()->unmap(p_data);
+}
+
+
+MutableMemoryView::MutableMemoryView() = default;
+
+MutableMemoryView::MutableMemoryView(MutableMemoryView&&) noexcept = default;
+
+MutableMemoryView& MutableMemoryView::operator=(MutableMemoryView&&) noexcept = default;
+
+MutableMemoryView::~MutableMemoryView()
+{
+    m_memory_owner.impl()->unmap(p_data);
 }

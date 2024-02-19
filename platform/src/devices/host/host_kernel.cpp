@@ -57,8 +57,4 @@ Event CPUKernel::launch_kernel_async(
 {
     return Event();
 }
-std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUKernel::clone() const
-{
-    return std::make_unique<CPUKernel>(m_fallback, m_nargs, m_name);
-}
 Device CPUKernel::device() const noexcept { return CPUDeviceHandle::get(); }

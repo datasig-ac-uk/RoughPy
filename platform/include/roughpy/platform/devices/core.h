@@ -300,6 +300,8 @@ class Kernel;
 
 class MemoryView;
 
+class MutableMemoryView;
+
 class QueueInterface;
 
 class Queue;

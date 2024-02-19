@@ -34,6 +34,8 @@
 #include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>
 
+#include "buffer.h"
+
 namespace rpy {
 namespace devices {
 
@@ -105,6 +107,60 @@ public:
     {
         return (m_memory_owner == other.m_memory_owner);
     }
+};
+
+
+class ROUGHPY_PLATFORM_EXPORT MutableMemoryView {
+    Buffer m_memory_owner;
+    void* p_data = nullptr;
+    dimn_t m_size = 0;
+
+    friend class Buffer;
+
+    /*
+     * We don't want people to construct their own view objects.
+     * To that end, we make the constructor private, and befriend the Buffer
+     * type so it can create buffers.
+     */
+    MutableMemoryView(Buffer& buf, void* data, dimn_t size)
+        : m_memory_owner(buf),
+          p_data(data),
+          m_size(size) {}
+
+public:
+
+    MutableMemoryView();
+
+    MutableMemoryView(const MutableMemoryView&) = delete;
+
+    MutableMemoryView(MutableMemoryView&&) noexcept;
+
+    MutableMemoryView& operator=(const MutableMemoryView&) = delete;
+
+    MutableMemoryView& operator=(MutableMemoryView&&) noexcept;
+
+    ~MutableMemoryView();
+
+    constexpr void* raw_ptr(dimn_t offset = 0) const noexcept
+    {
+        return static_cast<byte*>(p_data) + offset;
+    }
+
+    constexpr dimn_t size() const noexcept { return m_size; }
+
+    MutableMemoryView slice(dimn_t offset_bytes, dimn_t size_bytes)
+    {
+        RPY_DBG_ASSERT(offset_bytes + size_bytes <= m_size);
+        return {m_memory_owner, raw_ptr(offset_bytes), size_bytes};
+    }
+
+    template <typename T>
+    Slice<T> as_slice() noexcept
+    {
+        RPY_DBG_ASSERT(m_size % sizeof(T) == 0);
+        return {static_cast<T*>(p_data), m_size / sizeof(T)};
+    }
+
 };
 
 }// namespace devices
