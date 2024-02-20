@@ -45,10 +45,6 @@ You can then create a **stream** using your chosen **data** and **context** with
 
     >>> stream = roughpy.LieIncrementStream.from_increments(data, indices=times, ctx=context)
 
-.. todo::
-
-    Plot the stream, like in the electricity data example. Currenly just showing a dot? Fix.
-
 You can also compute and display the signature and log signature of any stream.
 
 ::
@@ -63,87 +59,83 @@ You can also compute and display the signature and log signature of any stream.
 
 The above stream was constructed with Lie increments. You can construct streams in many ways. The six types are:
 
+#. Lie increment streams
+
+    ::
+
+        # Using Lie increments data as above
+        >>> lie_increment_stream = roughpy.LieIncrementStream.from_increments(data, indices=times, ctx=context)
+
 #. Tick streams
 
     ::
 
        # create tick stream data
-       data = DATA_FORMATS[0]
+       >>> data = { 1.0: [("first", "increment", 1.0),("second", "increment", 2.0)],
+                2.0: [("first", "increment", 1.0)]
+                }
 
-       #construct stream
+       # construct stream
        >>> tick_stream = TickStream.from_data(data, width=2, depth=2, dtype=DPReal)
-    .. todo::
-        - Create tick stream data, tests for tick stream confusing, DATA_FORMATS = [
 
+#. Brownian streams
+
+    ::
+
+        # Generating on demand from a source of randomness with normal increments that approximate Brownian motion
+        >>> brownian_stream = BrownianStream.with_generator(width=2, depth=2, dtype=DPReal)
 
 #. Piecewize abelian streams
 
     ::
 
         # create piecewise lie data
-        piecewise_lie_data = [
+        >>> piecewise_intervals = [RealInterval(float(i), float(i + 1)) for i in range(5)]
+
+        >>> piecewise_lie_data = [
                 (interval,
-                Lie(rng.normal(0.0, 1.0, size=(2,)), width=2, depth=2))
+                brownian_stream.log_signature(interval))
                 for interval in piecewise_intervals
             ]
 
         # construct stream
         >>> piecewise_abelian_stream = PiecewiseAbelianStream.construct(piecewise_lie_data, width=2, depth=2, dtype=DPReal)
 
-    .. todo::
-        - create piecewise lie data? Similar to tests: (??)
-
-        def piecewise_intervals(count):
-            return [RealInterval(float(i), float(i + 1)) for i in range(count)]
-
-        @pytest.fixture
-        def piecewise_lie_data(piecewise_intervals, rng):
-            return [
-                (interval,
-                Lie(rng.normal(0.0, 1.0, size=(WIDTH,)), width=WIDTH, depth=DEPTH))
-                for interval in piecewise_intervals
-            ]
-
-#. Lie increment streams
-
-    ::
-
-        # Using lie increments data as above
-        >>> lie_increment_stream = roughpy.LieIncrementStream.from_increments(data, indices=times, ctx=context)
-
-#. Brownian streams
-
-    ::
-
-        >>> brownian_stream = BrownianStream.with_generator(width=2, depth=2, dtype=DPReal)
-
-    .. todo::
-        - Is this unfinished??
-        - Taken from Brownian stream tests, is this ok?
-
 #. Function streams
 
     ::
 
-        >>> function_stream = ()
+        # create a function to generate a stream from
+        >>> def func(t, ctx):
+        ...     return Lie(np.array([t, 2*t]), ctx=ctx)
 
-    .. todo::
-        - Do function that returns t and 2t for function streams. Looked at test_function_path.py, confused? Returning a stream object given a function?
+        #construct stream
+        >>> function_stream = rp.FunctionStream.from_function(func, width=2, depth=2, dtype=rp.DPReal)
 
 #. External source data (two kinds)
 
     ::
 
-        >>> external_source_stream1 = ()
-        >>> external_source_stream2 = ()
+        # create a stream from an external source
+        # here we use a sound file, but other formats are supported
+        >>> roughpy.ExternalDataStream.from_uri("/path/to/sound_file.mp3", depth=2)
 
-        >>> roughpy.ExternalDataStream.from_uri(sound_file, depth=2)
 
-    .. todo::
-        - What are the two types?
+You can also plot your streams. Below are a few examples of figures made by querying streams from electricity data.
 
-.. todo::
-    - What can you print from a stream? Not the stream object. Shall we print the sig of all of these?
+.. figure:: ../_static/1.png
+
+    Fig 1. Raw signal over a time interval at the specified resolution. Accessing all the level one increments at the fine resolution and uses these values to plot the two dimensional over the interval.
+
+.. figure:: ../_static/3.png
+
+    Fig 2. Applying UMAP to learn the manifold embedding that captures the log signature features we observe in electric data to classify cycles in an unsupervised way.
+
+.. figure:: ../_static/5.png
+
+    Fig 3. Plotting the umap reduced data as a function of cycle index.
+
+To see how these streams were made, queried and then plotted, see `Electricity Data Example <https://github.com/datasig-ac-uk/electricity-data-example/tree/main>`_ .
 
 ^^^^^^^^^^^^^^^^^^^^^
 Literature references
