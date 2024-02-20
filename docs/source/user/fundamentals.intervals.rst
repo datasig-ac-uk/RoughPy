@@ -30,15 +30,6 @@ For this reason, a query over any interval is replaced by a query is replaced by
 In particular, if both the left-hand and right-hand ends of the interval are contained in the clopen granular interval, we round the interval to the empty interval.
 Specifying a resolution of 32 or 64 equates to using integer arithmetic.
 
-.. todo::
-
-    - Create diagram of diadics. Look at GitHub Issue: https://github.com/datasig-ac-uk/RoughPy/issues/53
-    - Check, is the below ok, or is it out of date? Are the problems with this resolved now?
-
-RoughPy internally granularises query intervals by moving the the endpoints the included end of the unique granular dyadic interval containing said endpoint.
-For instance, if the stream has resolution 3, so granular dyadic intervals have length 1/8 and we query the interval over the interval [0.3, 0.6), then the actual query will take place over the granular interval [0.25, 0.5).
-To see why this happens, we need the following picture:
-
 ::
 
                                        0.3                                   0.6
