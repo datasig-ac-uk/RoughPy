@@ -7,10 +7,9 @@
 
 
 #include "roughpy_module.h"
-#include "algebra/context.h"
-#include "scalars/scalar_type.h"
 
 #include <roughpy/core/types.h>
+#include <roughpy/scalars/scalars_fwd.h>
 #include <roughpy/algebra/context_fwd.h>
 
 namespace rpy {
@@ -20,9 +19,10 @@ struct AlgebraConfiguration {
     algebra::context_pointer ctx;
     optional <deg_t> width;
     optional <deg_t> depth;
-    PyScalarMetaType* scalar_type;
+    const scalars::ScalarType* scalar_type;
 };
 
+RPY_NO_EXPORT
 AlgebraConfiguration parse_algebra_configuration(py::kwargs& kwargs);
 
 }

@@ -4,6 +4,9 @@
 
 #include "parse_algebra_configuration.h"
 
+#include "scalars/scalar_type.h"
+#include "algebra/context.h"
+
 #include <roughpy/algebra/context.h>
 
 using namespace rpy;
@@ -12,7 +15,7 @@ using namespace rpy::python;
 
 AlgebraConfiguration python::parse_algebra_configuration(py::kwargs& kwargs)
 {
-    AlgebraConfiguration result;
+    AlgebraConfiguration result{nullptr, {}, {}, nullptr};
     bool warned = false;
 
     static constexpr const char* ctx_kwords[] = {
@@ -23,10 +26,19 @@ AlgebraConfiguration python::parse_algebra_configuration(py::kwargs& kwargs)
 
     for (const auto* name : ctx_kwords) {
         if (kwargs.contains(name)) {
-            ctx_name = name;
-            auto ctx = kwargs_pop(kwargs, name);
-            result.ctx = ctx_cast(ctx.ptr());
-            break;
+            if (ctx_name == nullptr) {
+                ctx_name = name;
+                auto ctx = kwargs_pop(kwargs, name);
+                result.ctx = ctx_cast(ctx.ptr());
+            } else {
+                // We need to pop repeated arguments, because otherwise they
+                // will trigger an additional warning
+                auto _ = kwargs_pop(kwargs, name);
+                PyErr_WarnFormat(PyExc_RuntimeWarning, 1,
+                                 "two keyword arguments specifying context "
+                                 "have been provided, \"%s\" will be ignored",
+                                 name);
+            }
         }
     }
 
@@ -82,24 +94,37 @@ AlgebraConfiguration python::parse_algebra_configuration(py::kwargs& kwargs)
     static constexpr const char* coeff_kwords[] = {"dtype", "ctype", "coeffs"};
     for (const auto* name : coeff_kwords) {
         if (kwargs.contains(name)) {
-            const auto obj = kwargs_pop(kwargs, name);
+            if (result.scalar_type == nullptr) {
+                const auto obj = kwargs_pop(kwargs, name);
+                result.scalar_type = to_stype_ptr(obj);
+            } else {
+                auto _ = kwargs_pop(kwargs, name);
+                PyErr_WarnFormat(PyExc_RuntimeWarning, 1,
+                                 "multiple keyword arguments specifying scalar "
+                                 "type have been provided, \"%s\" will be "
+                                 "ignored",
+                                 name);
+            }
+
             if (!warned && result.ctx) {
                 PyErr_WarnFormat(PyExc_RuntimeWarning,
                                  1,
                                  "providing both \"%s\" and \"%s\" "
                                  "ignores the \"%s\" parameter. "
                                  "Note that the \"%s\" parameter is deprecated,"
-                                 "and you should use the \"ctx\" argument instead.",
+                                 "and you should use the \"ctx\" argument "
+                                 "instead.",
                                  ctx_name, name, name, name
                 );
                 warned = true;
             }
             if (!warned) {
-                PyErr_WarnFormat(PyExc_DeprecationWarning, 1,
-                                 "using the \"%s\" keyword argument is deprecated, "
-                                 "instead you should use a context and the \"ctx\""
-                                 " keyword argument to specify the "
-                                 "algebra configuration",
+                PyErr_WarnFormat(PyExc_DeprecationWarning,
+                                 1,
+                                 "using the \"%s\" keyword argument is"
+                                 " deprecated, instead you should use a context"
+                                 " and the \"ctx\" keyword argument to specify "
+                                 "the algebra configuration",
                                  name);
                 warned = true;
             }
