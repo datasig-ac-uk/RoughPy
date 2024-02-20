@@ -135,7 +135,7 @@ You can also plot your streams. Below are a few examples of figures made by quer
 
     Fig 3. Plotting the UMAP reduced data as a function of cycle index.
 
-To see how these streams were made, queried and then plotted, see `Electricity Data Example <https://github.com/datasig-ac-uk/electricity-data-example/tree/main>`_ .
+To see how these streams were made, queried and then plotted, see `Electricity Data Example <https://github.com/datasig-ac-uk/electricity-data-example/tree/main>`_.
 
 ^^^^^^^^^^^^^^^^^^^^^
 Literature references
