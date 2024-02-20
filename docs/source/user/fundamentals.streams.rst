@@ -121,11 +121,11 @@ The above stream was constructed with Lie increments. You can construct streams 
         >>> roughpy.ExternalDataStream.from_uri("/path/to/sound_file.mp3", depth=2)
 
 
-You can also plot your streams. Below are a few examples of figures made by querying streams from electricity data.
+You can also plot your streams. Below are a few examples of figures made by querying streams from electricity data, which can be downloaded `here <https://data.ukedc.rl.ac.uk/browse/edc/efficiency/residential/EnergyConsumption/Domestic/UK-DALE-2017/ReadMe_DALE-2017.html#HighSpeed>`_.
 
 .. figure:: ../_static/1.png
 
-    Fig 1. Raw signal over a time interval at the specified resolution. Accessing all the level one increments at the fine resolution and uses these values to plot the two dimensional over the interval.
+    Fig 1. Raw signal over a time interval at the specified resolution. Accessing all the level one increments at the fine resolution and using these values to plot the two dimensional over the interval.
 
 .. figure:: ../_static/3.png
 
@@ -133,7 +133,7 @@ You can also plot your streams. Below are a few examples of figures made by quer
 
 .. figure:: ../_static/5.png
 
-    Fig 3. Plotting the umap reduced data as a function of cycle index.
+    Fig 3. Plotting the UMAP reduced data as a function of cycle index.
 
 To see how these streams were made, queried and then plotted, see `Electricity Data Example <https://github.com/datasig-ac-uk/electricity-data-example/tree/main>`_ .
 
