@@ -14,9 +14,6 @@ It is within the tensor algebra that the signature of a path lives.
 
 For a more accurate defnintion of the tensor algebra, see :cite:t:`lyons_signature_2024`. See also :cite:t:`reutenauer_free_1993` and :cite:t:`bourbaki_algebra_1998`.
 
-.. todo::
-    - Check: is this ok?
-
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 How do free tensors fit into RoughPy
