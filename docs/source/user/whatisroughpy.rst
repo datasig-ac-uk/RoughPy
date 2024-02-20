@@ -22,12 +22,3 @@ References
 ==========
 
 .. bibliography::
-
-.. todo::
-
-    Ideas for this page
-
-    * Maud Right adjoint example
-    * Signature kernels
-    * Picture at bottom, paracetamol?
-    * Financial volatility data, line updating, calculating signatures side by side
