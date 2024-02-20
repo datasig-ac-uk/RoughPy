@@ -50,7 +50,7 @@ We can then use our data to create a Lie element. Here we are creating two Lies 
     lie_x={ { 1(x1) }(1) { 1(x2) }(2) { 1(x3) }(3) { 1(x4) }([1,2]) { 1(x5) }([1,3]) { 1(x6) }([2,3]) }
 
     >>> lie_y = rp.Lie(lie_data_y, width=3, depth=2, dtype=rp.RationalPoly)
-    >>> print(f"{lie_x=!s}")
+    >>> print(f"{lie_y=!s}")
     lie_y={ { 1(y1) }(1) { 1(y2) }(2) { 1(y3) }(3) { 1(y4) }([1,2]) { 1(y5) }([1,3]) { 1(y6) }([2,3]) }
 
 
