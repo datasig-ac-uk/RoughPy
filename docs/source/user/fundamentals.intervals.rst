@@ -32,10 +32,10 @@ Specifying a resolution of 32 or 64 equates to using integer arithmetic.
 
 ::
 
-                                       0.3                                   0.6
-    ------------------------------------[-------------------------------------)---------------------     original interval
-    [--------------)[--------------)[--------------)[--------------)[--------------)[--------------)     granular dyadic dissection
-    0            0.125            0.25           0.375            0.5            0.625            0.75
+                                   0.3                               0.6
+    --------------------------------[---------------------------------)-----------------  original interval
+    [------------)[------------)[------------)[------------)[------------)[------------)  granular dyadic dissection
+    0          0.125          0.25         0.375          0.5          0.625         0.75
 
 The lower bound of the query interval (0.3) lies in the granular dyadic interval [0.25, 0.375) so is rounded to the contained end-point 0.25.
 The upper bound of the query interval (0.6) lies in the granular dyadic interval [0.5, 0.625) so is rounded to the contained end-point 0.5.
