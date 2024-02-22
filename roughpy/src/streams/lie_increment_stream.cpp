@@ -37,6 +37,7 @@
 #include "scalars/parse_key_scalar_stream.h"
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
+#include "schema_finalization.h"
 #include "stream.h"
 
 #include <limits>
@@ -64,10 +65,7 @@ void buffer_to_indices(
     (*scalars::scalar_type_of<param_t>())->convert_copy(dst, src);
 }
 
-static py::object lie_increment_stream_from_increments(
-        const py::object& data,
-        const py::kwargs& kwargs
-)
+static py::object lie_increment_stream_from_increments(py::object data, py::kwargs kwargs)
 {
     auto md = kwargs_to_metadata(kwargs);
 
@@ -181,9 +179,6 @@ static py::object lie_increment_stream_from_increments(
 
 
 
-    if (!md.schema) {
-        md.schema = std::make_shared<streams::StreamSchema>(md.width);
-    }
 
     if (!md.resolution) {
         RPY_DBG_ASSERT(!indices.empty());
@@ -209,6 +204,7 @@ static py::object lie_increment_stream_from_increments(
         );
     }
 
+    python::finalize_schema(md);
 
     auto result = streams::Stream(streams::LieIncrementStream(
             ks_stream.data_stream,

@@ -4,8 +4,9 @@
 
 #include "parse_algebra_configuration.h"
 
-#include "scalars/scalar_type.h"
 #include "algebra/context.h"
+#include "numpy.h"
+#include "scalars/scalar_type.h"
 
 #include <roughpy/algebra/context.h>
 
@@ -96,7 +97,15 @@ AlgebraConfiguration python::parse_algebra_configuration(py::kwargs& kwargs)
         if (kwargs.contains(name)) {
             if (result.scalar_type == nullptr) {
                 const auto obj = kwargs_pop(kwargs, name);
-                result.scalar_type = to_stype_ptr(obj);
+#ifdef ROUGHPY_WITH_NUMPY
+                if (py::isinstance<py::dtype>(obj)) {
+                    result.scalar_type = npy_dtype_to_ctype(obj);
+                } else {
+                    result.scalar_type = py_arg_to_ctype(obj);
+                }
+#else
+                result.scalar_type = py_arg_to_ctype(obj);
+#endif
             } else {
                 auto _ = kwargs_pop(kwargs, name);
                 PyErr_WarnFormat(PyExc_RuntimeWarning, 1,
@@ -131,4 +140,5 @@ AlgebraConfiguration python::parse_algebra_configuration(py::kwargs& kwargs)
         }
     }
 
+    return result;
 }

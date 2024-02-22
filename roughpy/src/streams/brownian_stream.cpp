@@ -45,8 +45,7 @@ using namespace pybind11::literals;
 static const char* BROWNIAN_PATH_DOC = R"rpydoc(A Brownian motion stream.
 )rpydoc";
 
-static py::object
-Brownian_from_generator(const py::args& args, const py::kwargs& kwargs)
+static py::object Brownian_from_generator(py::args args, py::kwargs kwargs)
 {
 
     auto pmd = python::kwargs_to_metadata(kwargs);
