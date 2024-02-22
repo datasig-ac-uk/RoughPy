@@ -42,15 +42,18 @@ static const char* FUNC_STREAM_DOC
 )rpydoc";
 
 python::FunctionStream::FunctionStream(
-        py::object fn, python::FunctionStream::FunctionValueType val_type,
+        py::object fn,
+        python::FunctionStream::FunctionValueType val_type,
         streams::StreamMetadata md
 )
-    : DynamicallyConstructedStream(std::move(md)), m_fn(std::move(fn)),
+    : DynamicallyConstructedStream(std::move(md)),
+      m_fn(std::move(fn)),
       m_val_type(val_type)
 {}
 
 algebra::Lie python::FunctionStream::log_signature_impl(
-        const intervals::Interval& interval, const algebra::Context& ctx
+        const intervals::Interval& interval,
+        const algebra::Context& ctx
 ) const
 {
     py::gil_scoped_acquire gil;
@@ -87,22 +90,22 @@ static py::object from_function(py::object fn, py::kwargs kwargs)
     if (pmd.ctx == nullptr && pmd.width != 0 && pmd.depth != 0
         && pmd.scalar_type != nullptr) {
         pmd.ctx = algebra::get_context(
-                pmd.width, pmd.depth, pmd.scalar_type, {}
+                pmd.width,
+                pmd.depth,
+                pmd.scalar_type,
+                {}
         );
     }
 
     // TODO: Fix this up properly.
 
-    intervals::RealInterval effective_support =
-            intervals::RealInterval::unbounded();
-    if (pmd.support) {
-        effective_support = *pmd.support;
-    }
+    intervals::RealInterval effective_support
+            = intervals::RealInterval::unbounded();
+    if (pmd.support) { effective_support = *pmd.support; }
 
-    if (!pmd.resolution) {
-        pmd.resolution = 0;
-    }
+    if (!pmd.resolution) { pmd.resolution = 0; }
 
+    python::check_for_excess_arguments(kwargs);
 
     streams::StreamMetadata md{
             pmd.width,
@@ -110,11 +113,14 @@ static py::object from_function(py::object fn, py::kwargs kwargs)
             pmd.ctx,
             pmd.scalar_type,
             pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-            *pmd.resolution};
+            *pmd.resolution
+    };
 
     PyObject* stream = python::RPyStream_FromStream(
             streams::Stream(python::FunctionStream(
-                    std::move(fn), python::FunctionStream::Value, std::move(md)
+                    std::move(fn),
+                    python::FunctionStream::Value,
+                    std::move(md)
             ))
     );
     return py::reinterpret_steal<py::object>(stream);
