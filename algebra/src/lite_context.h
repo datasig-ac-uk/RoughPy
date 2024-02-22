@@ -429,7 +429,7 @@ OutType LiteContext<Coefficients>::construct_impl(
 
     Slice<const scalar_type> raw_data;
 
-    const auto size = data.data.size();
+    const auto size = std::min(data.data.size(), basis->size(-1));
     std::vector<scalar_type> tmp;
     const auto* this_type = ctype();
     if (data.data.type() != this_type) {
