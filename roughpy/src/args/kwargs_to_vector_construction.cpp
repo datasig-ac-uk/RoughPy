@@ -80,7 +80,9 @@ python::kwargs_to_construction_data(pybind11::kwargs& kwargs)
 
     if (helper.width != 0 && helper.depth != 0 && helper.ctype != nullptr) {
         helper.ctx = algebra::get_context(
-                helper.width, helper.depth, helper.ctype
+                helper.width,
+                helper.depth,
+                helper.ctype
         );
     }
 
