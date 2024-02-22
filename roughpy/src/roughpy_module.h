@@ -75,6 +75,7 @@ inline py::object kwargs_pop(py::kwargs& kwargs, const char* name)
     return arg;
 }
 
+void check_for_excess_arguments(const py::kwargs& kwargs);
 
 }// namespace python
 }// namespace rpy

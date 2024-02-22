@@ -87,6 +87,7 @@ target_sources(RoughPy_PyModule PRIVATE
         src/algebra/tensor_key.h
         src/algebra/tensor_key_iterator.cpp
         src/algebra/tensor_key_iterator.h
+        src/args/check_for_excess_args.cpp
         src/args/convert_timestamp.cpp
         src/args/convert_timestamp.h
         src/args/dlpack_helpers.cpp
