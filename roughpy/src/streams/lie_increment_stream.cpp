@@ -109,7 +109,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
             = intervals::RealInterval::right_unbounded(0.0, md.interval_type);
 
     if (kwargs.contains("indices")) {
-        auto indices_arg = kwargs["indices"];
+        auto indices_arg = kwargs_pop(kwargs, "indices");
 
         if (py::isinstance<py::buffer>(indices_arg)) {
             auto info
@@ -203,6 +203,10 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
                 md.interval_type
         );
     }
+
+    // Everything is finished except building the stream. Check for extra kword
+    // args
+    python::check_for_excess_arguments(kwargs);
 
     python::finalize_schema(md);
 
