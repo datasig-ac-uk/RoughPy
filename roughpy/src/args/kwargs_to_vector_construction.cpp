@@ -31,44 +31,47 @@
 #include "algebra/context.h"
 #include "scalars/scalar_type.h"
 
+#include "parse_algebra_configuration.h"
+
 using namespace rpy;
 
 python::PyVectorConstructionHelper
-python::kwargs_to_construction_data(const pybind11::kwargs& kwargs)
+python::kwargs_to_construction_data(pybind11::kwargs& kwargs)
 {
 
     PyVectorConstructionHelper helper;
 
-    if (kwargs.contains("ctx")) {
-        helper.ctx = python::ctx_cast(kwargs["ctx"].ptr());
+    auto algebra_configuration = python::parse_algebra_configuration(kwargs);
+
+    if (algebra_configuration.ctx != nullptr) {
+        helper.ctx = algebra_configuration.ctx;
         helper.width = helper.ctx->width();
         helper.depth = helper.ctx->depth();
         helper.ctype = helper.ctx->ctype();
         helper.ctype_requested = true;
     } else {
-        if (kwargs.contains("dtype")) {
-            helper.ctype = py_arg_to_ctype(kwargs["dtype"]);
-            helper.ctype_requested = true;
+        if (algebra_configuration.width) {
+            helper.width = *algebra_configuration.width;
         }
-
-        if (kwargs.contains("depth")) {
-            helper.depth = kwargs["depth"].cast<deg_t>();
+        if (algebra_configuration.depth) {
+            helper.depth = *algebra_configuration.depth;
         } else {
             helper.depth = 2;
         }
-
-        if (kwargs.contains("width")) {
-            helper.width = kwargs["width"].cast<deg_t>();
+        if (algebra_configuration.scalar_type != nullptr) {
+            helper.ctype = algebra_configuration.scalar_type;
+            helper.ctype_requested = true;
         }
     }
 
     if (kwargs.contains("vector_type")) {
-        helper.vtype = kwargs["vector_type"].cast<algebra::VectorType>();
+        helper.vtype
+                = kwargs_pop(kwargs, "vector_type").cast<algebra::VectorType>();
         helper.vtype_requested = true;
     }
 
     if (kwargs.contains("keys")) {
-        const auto& arg = kwargs["keys"];
+        const auto arg = kwargs_pop(kwargs, "keys");
         if (py::isinstance<key_type>(arg)) {
         } else if (py::isinstance<py::buffer>(arg)) {
             auto key_info = arg.cast<py::buffer>().request();
