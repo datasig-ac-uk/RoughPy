@@ -35,6 +35,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
 
+#include <algorithm>
+
 using namespace rpy;
 using namespace intervals;
 using namespace pybind11::literals;
@@ -47,11 +49,17 @@ namespace {
 Partition partition_py_ctor(const RealInterval& interval,
                             const py::iterable& py_intermediates)
 {
+    const auto inf = interval.inf();
+    const auto sup = interval.sup();
     std::vector<param_t> intermediates;
     for (auto&& mid : py_intermediates) {
-        intermediates.push_back(mid.cast<param_t>());
+        auto param = mid.cast<param_t>();
+        if (interval.contains_point(param) && param != inf && param != sup) {
+            intermediates.push_back(param);
+        }
     }
 
+    std::sort(intermediates.begin(), intermediates.end());
     return Partition(interval, std::move(intermediates));
 }
 
