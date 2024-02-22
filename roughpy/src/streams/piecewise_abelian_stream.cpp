@@ -73,6 +73,8 @@ static py::object construct_piecewise_lie_stream(
         pmd.resolution = 0;
     }
 
+    python::check_for_excess_arguments(kwargs);
+
     pmd.support = intervals::RealInterval(a, b);
 
     streams::Stream result(streams::PiecewiseAbelianStream(
