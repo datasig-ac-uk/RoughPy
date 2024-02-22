@@ -71,6 +71,8 @@ static py::object Brownian_from_generator(py::args args, py::kwargs kwargs)
 
     // TODO: Fix this up properly.
 
+    python::check_for_excess_arguments(kwargs);
+
     streams::StreamMetadata md{
             pmd.width,
             pmd.support ? *pmd.support
