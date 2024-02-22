@@ -84,5 +84,8 @@ python::kwargs_to_construction_data(pybind11::kwargs& kwargs)
         );
     }
 
+    // we should now have consumed all the the kwargs. Run the check
+    python::check_for_excess_arguments(kwargs);
+
     return helper;
 }
