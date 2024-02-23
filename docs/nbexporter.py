@@ -9,24 +9,41 @@ from nbconvert.preprocessors import Preprocessor
 
 class DatasigPreprocessor(Preprocessor):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.title_seen = False
+
     def _generate_lines(self, source, resources):
+        if source.startswith("<div>"):
+            return
+
         metadata = resources["metadata"]
-        if not "referenced_images" in resources:
+        if "referenced_images" not in resources:
             resources["referenced_images"] = {}
 
+
         for line in source.splitlines():
+            line = line.strip()
             if (re.match(r"#+ https://(.+)", line)) is not None:
                 continue
 
-            if line.startswith("#"):
-                yield "#" + line
+            if line.startswith("# "):
+                if self.title_seen:
+                    yield "#" + line
+                else:
+                    yield line
+                    self.title_seen = True
                 continue
 
-            for m in re.finditer(r"""!\[[^]]+\]\(([^)\s]+)(\s+"\w+")?\)""",
+            if (m := re.match(r"^#{3,}", line)) is not None:
+                yield "###" + line[m.end():]
+                continue
+
+            for m in re.finditer(r"""!\[[^]]+\]\((([^)\s]+)(\s+"\w+")?)\)""",
                                  line):
-                p = Path(metadata["path"], m.group(1))
+                p = Path(metadata["path"], m.group(2))
                 begin, end = m.span(1)
-                filename = Path(m.group(1)).name
+                filename = Path(m.group(2)).name
                 new_path = Path(f"{metadata['name']}_{filename}")
 
                 resources["referenced_images"][str(new_path)] = p
@@ -43,6 +60,9 @@ class DatasigPreprocessor(Preprocessor):
         return md_cell
 
     def preprocess_cell(self, cell, resources, index):
+        if cell["cell_type"] == "raw":
+            if cell["source"].contains("<div>"):
+                return None, resources
         if cell["cell_type"] == "markdown":
             self._process_md(cell, resources)
         return cell, resources
