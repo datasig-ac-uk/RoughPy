@@ -51,12 +51,28 @@ last_minute_setup(streams::StreamSchema& schema, PyStreamMetaData& pmd)
 
     if (schema.is_final()) { return; }
 
+    // Now is the time to make sure the schema width is correct
+    RPY_DBG_ASSERT(pmd.width != 0);
+    for (auto i = static_cast<deg_t>(schema.width()); i < pmd.width; ++i) {
+        switch (pmd.default_channel_type) {
+            case rpy::streams::ChannelType::Increment:
+                schema.insert_increment("");
+                break;
+            case rpy::streams::ChannelType::Value:
+                schema.insert_value("");
+                break;
+            case rpy::streams::ChannelType::Categorical:
+                schema.insert_categorical("");
+                break;
+            case rpy::streams::ChannelType::Lie: schema.insert_lie(""); break;
+        }
+    }
+
     if (pmd.include_param_as_data) {
         schema.parametrization()->add_as_channel();
     }
 
-
-    schema.finalize();
+    schema.finalize(0);
 }
 
 void python::finalize_schema(PyStreamMetaData& pmd)

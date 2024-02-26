@@ -101,20 +101,22 @@ def test_from_array_inferred_width_3_2_increments():
 
     assert sig.width == 3
     assert sig.max_degree == 1
-    assert sig == rp.FreeTensor(np.array([1, 3, 7, 1]), width=3, depth=1,
-                                coeffs=rp.Rational)
+    expected = rp.FreeTensor(np.array([1, 3, 7, 1]), width=3, depth=1,
+                             dtype=rp.Rational)
+    assert sig == expected, f"{sig} != {expected}"
 
 
 def test_from_array_width_3_2_increments():
     data = np.array([[3, 7, 0], [0, 0, 1]])
     stream = LieIncrementStream.from_increments(data, width=3, depth=2,
-                                                coeffs=rp.Rational)
+                                                dtype=rp.Rational)
     sig = stream.signature(depth=1)
 
     assert sig.width == 3
     assert sig.max_degree == 1
-    assert sig == rp.FreeTensor(np.array([1, 3, 7, 1]), width=3, depth=1,
-                                coeffs=rp.Rational)
+    expected = rp.FreeTensor(np.array([1, 3, 7, 1]), width=3, depth=1,
+                             dtype=rp.Rational)
+    assert sig == expected, f"{sig} != {expected}"
 
 
 def test_from_array_wider_than_depth_2_dim():
@@ -124,7 +126,7 @@ def test_from_array_wider_than_depth_2_dim():
     sig = stream.signature(depth=1)
 
     assert sig == rp.FreeTensor(np.array([1, 3, 7]), width=2, depth=1,
-                                coeffs=rp.Rational)
+                                dtype=rp.Rational)
 
 
 def test_tick_path_signature_calc_accuracy():

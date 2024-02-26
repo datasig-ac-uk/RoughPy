@@ -53,6 +53,7 @@ build-backend = "scikit_build_core.build"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
 
 
 [tool.scikit-build]

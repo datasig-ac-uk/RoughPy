@@ -87,6 +87,7 @@ target_sources(RoughPy_PyModule PRIVATE
         src/algebra/tensor_key.h
         src/algebra/tensor_key_iterator.cpp
         src/algebra/tensor_key_iterator.h
+        src/args/check_for_excess_args.cpp
         src/args/convert_timestamp.cpp
         src/args/convert_timestamp.h
         src/args/dlpack_helpers.cpp
@@ -97,6 +98,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/args/kwargs_to_vector_construction.h
         src/args/numpy.cpp
         src/args/numpy.h
+        src/args/parse_algebra_configuration.cpp
+        src/args/parse_algebra_configuration.h
         src/args/parse_schema.cpp
         src/args/parse_schema.h
         src/args/strided_copy.cpp

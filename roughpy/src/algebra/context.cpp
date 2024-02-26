@@ -44,78 +44,88 @@ using rpy::python::RPyContext;
 extern "C" {
 
 static const char* lie_size_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_lie_size(PyObject * self,
-                                     PyObject * args,
-                                     PyObject * kwargs)
+static PyObject*
+RPyContext_lie_size(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static const char* kwords[] = {"degree", nullptr};
     const auto& myself = ctx_cast(self);
     const deg_t max_degree = myself->depth();
     deg_t depth = max_degree;
 
-    if (PyArg_ParseTupleAndKeywords(args,
-                                    kwargs,
-                                    "|i",
-                                    const_cast<char**>(kwords),
-                                    &depth) == 0) {
+    if (PyArg_ParseTupleAndKeywords(
+                args,
+                kwargs,
+                "|i",
+                const_cast<char**>(kwords),
+                &depth
+        )
+        == 0) {
         return nullptr;
     }
 
     if (depth < 0) {
         depth = max_degree;
     } else if (depth > max_degree) {
-        PyErr_SetString(PyExc_ValueError, "the requested degree exceeds the"
-                                          " maximum degree for this basis");
+        PyErr_SetString(
+                PyExc_ValueError,
+                "the requested degree exceeds the"
+                " maximum degree for this basis"
+        );
         return nullptr;
     }
     return PyLong_FromSize_t(myself->lie_size(depth));
 }
 static const char* tensor_size_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_tensor_size(PyObject * self,
-                                        PyObject * args,
-                                        PyObject * kwargs)
+static PyObject*
+RPyContext_tensor_size(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static const char* kwords[] = {"degree", nullptr};
     const auto& myself = ctx_cast(self);
     const deg_t max_degree = myself->depth();
     deg_t depth = max_degree;
 
-    if (PyArg_ParseTupleAndKeywords(args,
-                                    kwargs,
-                                    "|i",
-                                    const_cast<char**>(kwords),
-                                    &depth) == 0) {
+    if (PyArg_ParseTupleAndKeywords(
+                args,
+                kwargs,
+                "|i",
+                const_cast<char**>(kwords),
+                &depth
+        )
+        == 0) {
         return nullptr;
     }
 
     if (depth < 0) {
         depth = max_degree;
     } else if (depth > max_degree) {
-        PyErr_SetString(PyExc_ValueError, "the requested degree exceeds the"
-                                          " maximum degree for this basis");
+        PyErr_SetString(
+                PyExc_ValueError,
+                "the requested degree exceeds the"
+                " maximum degree for this basis"
+        );
         return nullptr;
     }
     return PyLong_FromSize_t(myself->tensor_size(depth));
 }
 static const char* cbh_DOC = R"rpydoc()rpydoc";
 static PyObject*
-RPyContext_cbh(PyObject * self, PyObject * args, PyObject * kwargs)
+RPyContext_cbh(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static const char* kwords[] = {"lies", "vec_type", nullptr};
     const auto& ctx = ctx_cast(self);
 
-    PyObject * py_lies = nullptr;
-    PyObject * vtype = nullptr;
+    PyObject* py_lies = nullptr;
+    PyObject* vtype = nullptr;
 
     if (!PyArg_ParseTupleAndKeywords(
-        args,
-        kwargs,
-        "O|O!",
-        const_cast<char**>(kwords),
-        &py_lies,
-        py::type::of<VectorType>().ptr(),
-        &vtype
-    )) {
+                args,
+                kwargs,
+                "O|O!",
+                const_cast<char**>(kwords),
+                &py_lies,
+                py::type::of<VectorType>().ptr(),
+                &vtype
+        )) {
         return nullptr;
     }
 
@@ -133,7 +143,7 @@ RPyContext_cbh(PyObject * self, PyObject * args, PyObject * kwargs)
             return python::cast_to_object(ctx->zero_lie(VectorType::Sparse));
         }
         return python::cast_to_object(
-            ctx->zero_lie(py::handle(vtype).cast<VectorType>())
+                ctx->zero_lie(py::handle(vtype).cast<VectorType>())
         );
     }
 
@@ -144,9 +154,7 @@ RPyContext_cbh(PyObject * self, PyObject * args, PyObject * kwargs)
 }
 static const char* compute_signature_DOC = R"rpydoc()rpydoc";
 static PyObject*
-RPyContext_compute_signature(PyObject * self,
-                             PyObject * args,
-                             PyObject * kwargs)
+RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static const char* kwords[] = {"data", "vtype", nullptr};
     const auto& ctx = ctx_cast(self);
@@ -155,14 +163,14 @@ RPyContext_compute_signature(PyObject * self,
     py::handle py_vtype;
 
     if (!PyArg_ParseTupleAndKeywords(
-        args,
-        kwargs,
-        "O|O!",
-        const_cast<char**>(kwords),
-        py_data.ptr(),
-        py::type::of<VectorType>().ptr(),
-        py_vtype.ptr()
-    )) {
+                args,
+                kwargs,
+                "O|O!",
+                const_cast<char**>(kwords),
+                py_data.ptr(),
+                py::type::of<VectorType>().ptr(),
+                py_vtype.ptr()
+        )) {
         return nullptr;
     }
 
@@ -214,9 +222,10 @@ RPyContext_compute_signature(PyObject * self,
         request.data_stream.reserve_size(n_increments);
         for (dimn_t i = 0; i < n_increments; ++i) {
             request.data_stream.push_back(scalars::ScalarArray{
-                ctype,
-                p_buffer + i * width * itemsize,
-                width});
+                    ctype,
+                    p_buffer + i * width * itemsize,
+                    width
+            });
         }
     } else {
         request.data_stream.reserve_size(options.shape.size());
@@ -226,9 +235,10 @@ RPyContext_compute_signature(PyObject * self,
         auto n_increments = options.shape.size();
         for (dimn_t i = 0; i < n_increments; ++i) {
             request.data_stream.push_back(scalars::ScalarArray{
-                ctype,
-                p_buffer,
-                static_cast<dimn_t>(options.shape[i])});
+                    ctype,
+                    p_buffer,
+                    static_cast<dimn_t>(options.shape[i])
+            });
             request.key_stream.push_back(p_keys);
             p_buffer += options.shape[i] * itemsize;
             p_keys += options.shape[i];
@@ -238,7 +248,7 @@ RPyContext_compute_signature(PyObject * self,
     return python::cast_to_object(ctx->signature(request));
 }
 static const char* to_logsignature_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_to_logsignature(PyObject * self, PyObject * arg)
+static PyObject* RPyContext_to_logsignature(PyObject* self, PyObject* arg)
 {
 
     py::handle py_sig(arg);
@@ -254,7 +264,7 @@ static PyObject* RPyContext_to_logsignature(PyObject * self, PyObject * arg)
     return python::cast_to_object(ctx->tensor_to_lie(sig.log()));
 }
 static const char* lie_to_tensor_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_lie_to_tensor(PyObject * self, PyObject * arg)
+static PyObject* RPyContext_lie_to_tensor(PyObject* self, PyObject* arg)
 {
     py::handle py_lie(arg);
     if (!py::isinstance<algebra::Lie>(py_lie)) {
@@ -267,7 +277,7 @@ static PyObject* RPyContext_lie_to_tensor(PyObject * self, PyObject * arg)
     );
 }
 static const char* tensor_to_lie_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_tensor_to_lie(PyObject * self, PyObject * arg)
+static PyObject* RPyContext_tensor_to_lie(PyObject* self, PyObject* arg)
 {
     py::handle py_ft(arg);
     if (!py::isinstance<algebra::FreeTensor>(py_ft)) {
@@ -277,35 +287,35 @@ static PyObject* RPyContext_tensor_to_lie(PyObject * self, PyObject * arg)
 
     const auto& ctx = ctx_cast(self);
     return python::cast_to_object(
-        ctx->tensor_to_lie(py_ft.cast<const FreeTensor&>())
+            ctx->tensor_to_lie(py_ft.cast<const FreeTensor&>())
     );
 }
 
-static PyObject* RPyContext_enter(PyObject * self) { return self; }
+static PyObject* RPyContext_enter(PyObject* self) { return self; }
 
-static PyObject* RPyContext_exit(PyObject * self, PyObject * RPY_UNUSED_VAR)
+static PyObject* RPyContext_exit(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
     Py_RETURN_NONE;
 }
 
 static const char* zero_lie_DOC
-    = R"rpydoc(Get a new Lie with value zero)rpydoc";
+        = R"rpydoc(Get a new Lie with value zero)rpydoc";
 static PyObject*
-RPyContext_zero_lie(PyObject * self, PyObject * args, PyObject * kwargs)
+RPyContext_zero_lie(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static const char* kwords[] = {"vtype", nullptr};
     PyTypeObject* vtype_type
-        = reinterpret_cast<PyTypeObject*>(py::type::of<VectorType>().ptr());
+            = reinterpret_cast<PyTypeObject*>(py::type::of<VectorType>().ptr());
 
-    PyObject * py_vtype = nullptr;
+    PyObject* py_vtype = nullptr;
     if (PyArg_ParseTupleAndKeywords(
-        args,
-        kwargs,
-        "|O!",
-        const_cast<char**>(kwords),
-        vtype_type,
-        &py_vtype
-    )
+                args,
+                kwargs,
+                "|O!",
+                const_cast<char**>(kwords),
+                vtype_type,
+                &py_vtype
+        )
         == 0) {
         return nullptr;
     }
@@ -318,63 +328,64 @@ RPyContext_zero_lie(PyObject * self, PyObject * args, PyObject * kwargs)
 
 #define ADD_METHOD(NAME, FLAGS)                                                \
     {                                                                          \
-        #NAME, (PyCFunction) &RPyContext_##NAME, (FLAGS), NAME##_DOC           \
+        #NAME, (PyCFunction) & RPyContext_##NAME, (FLAGS), NAME##_DOC          \
     }
 
 static PyMethodDef RPyContext_members[] = {
-    ADD_METHOD(lie_size, METH_VARARGS | METH_KEYWORDS),
-    ADD_METHOD(tensor_size, METH_VARARGS | METH_KEYWORDS),
-    ADD_METHOD(cbh, METH_VARARGS | METH_KEYWORDS),
-    ADD_METHOD(compute_signature, METH_VARARGS | METH_KEYWORDS),
-    ADD_METHOD(to_logsignature, METH_O),
-    ADD_METHOD(lie_to_tensor, METH_O),
-    ADD_METHOD(tensor_to_lie, METH_O),
-    ADD_METHOD(zero_lie, METH_VARARGS | METH_KEYWORDS),
-    {"__enter__", (PyCFunction) &RPyContext_enter, METH_NOARGS, nullptr},
-    {"__exit__", (PyCFunction) &RPyContext_exit, METH_VARARGS, nullptr},
-    {nullptr, nullptr, 0, nullptr}
+        ADD_METHOD(lie_size, METH_VARARGS | METH_KEYWORDS),
+        ADD_METHOD(tensor_size, METH_VARARGS | METH_KEYWORDS),
+        ADD_METHOD(cbh, METH_VARARGS | METH_KEYWORDS),
+        ADD_METHOD(compute_signature, METH_VARARGS | METH_KEYWORDS),
+        ADD_METHOD(to_logsignature, METH_O),
+        ADD_METHOD(lie_to_tensor, METH_O),
+        ADD_METHOD(tensor_to_lie, METH_O),
+        ADD_METHOD(zero_lie, METH_VARARGS | METH_KEYWORDS),
+        {"__enter__", (PyCFunction) &RPyContext_enter,  METH_NOARGS, nullptr},
+        { "__exit__",  (PyCFunction) &RPyContext_exit, METH_VARARGS, nullptr},
+        {    nullptr,                         nullptr,            0, nullptr}
 };
 
 #undef ADD_METHOD
 
-static PyObject* RPyContext_width_getter(PyObject * self)
+static PyObject* RPyContext_width_getter(PyObject* self)
 {
     return PyLong_FromLong(ctx_cast(self)->width());
 }
-static PyObject* RPyContext_depth_getter(PyObject * self)
+static PyObject* RPyContext_depth_getter(PyObject* self)
 {
     return PyLong_FromLong(ctx_cast(self)->depth());
 }
-static PyObject* RPyContext_ctype_getter(PyObject * self)
+static PyObject* RPyContext_ctype_getter(PyObject* self)
 {
     return python::to_ctype_type(ctx_cast(self)->ctype()).release().ptr();
 }
-static PyObject* RPyContext_lie_basis_getter(PyObject * self)
+static PyObject* RPyContext_lie_basis_getter(PyObject* self)
 {
     return python::cast_to_object(ctx_cast(self)->get_lie_basis());
 }
-static PyObject* RPyContext_tensor_basis_getter(PyObject * self)
+static PyObject* RPyContext_tensor_basis_getter(PyObject* self)
 {
     return python::cast_to_object(ctx_cast(self)->get_tensor_basis());
 }
 
 #define ADD_GETSET(NAME)                                                       \
     {                                                                          \
-        #NAME, (getter) &RPyContext_##NAME##_getter, nullptr, nullptr, nullptr \
+        #NAME, (getter) & RPyContext_##NAME##_getter, nullptr, nullptr,        \
+                nullptr                                                        \
     }
 
 static PyGetSetDef RPyContext_getset[] = {
-    ADD_GETSET(width),
-    ADD_GETSET(depth),
-    ADD_GETSET(ctype),
-    ADD_GETSET(lie_basis),
-    ADD_GETSET(tensor_basis),
-    {nullptr, nullptr, nullptr, nullptr, nullptr}
+        ADD_GETSET(width),
+        ADD_GETSET(depth),
+        ADD_GETSET(ctype),
+        ADD_GETSET(lie_basis),
+        ADD_GETSET(tensor_basis),
+        {nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 #undef ADD_GETSET
 
-static PyObject* RPyContext_repr(PyObject * self)
+static PyObject* RPyContext_repr(PyObject* self)
 {
     const auto& ctx = ctx_cast(self);
     std::stringstream ss;
@@ -382,87 +393,76 @@ static PyObject* RPyContext_repr(PyObject * self)
        << ", ctype=" << ctx->ctype()->name() << ')';
     return PyUnicode_FromString(ss.str().c_str());
 }
-static PyObject* RPyContext_str(PyObject * self)
+static PyObject* RPyContext_str(PyObject* self)
 {
     return RPyContext_repr(self);
 }
 
 RPY_UNUSED static PyObject*
-RPyContext_new(PyObject * self, PyObject * args, PyObject * kwargs)
+RPyContext_new(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     RPY_UNREACHABLE_RETURN(nullptr);
 }
 
-static PyObject*
-    RPyContext_richcompare(PyObject * o1, PyObject * o2, int
-opid ) {
+static PyObject* RPyContext_richcompare(PyObject* o1, PyObject* o2, int opid)
+{
 
-switch ( opid ) {
-case Py_EQ :
-if ( ctx_cast(o1) == ctx_cast(o2)) {
-Py_RETURN_TRUE ;
-}
-Py_RETURN_FALSE;
-case Py_NE:
-if (
-ctx_cast(o1)
-==
-ctx_cast(o2)
-) {
-Py_RETURN_FALSE;
-}
-Py_RETURN_TRUE;
-case Py_LT:
-case Py_LE:
-case Py_GT:
-case Py_GE:
-break;
-}
+    switch (opid) {
+        case Py_EQ:
+            if (ctx_cast(o1) == ctx_cast(o2)) { Py_RETURN_TRUE; }
+            Py_RETURN_FALSE;
+        case Py_NE:
+            if (ctx_cast(o1) == ctx_cast(o2)) { Py_RETURN_FALSE; }
+            Py_RETURN_TRUE;
+        case Py_LT:
+        case Py_LE:
+        case Py_GT:
+        case Py_GE: break;
+    }
 
-return nullptr;
+    return nullptr;
 }
-
 
 static const char* CONTEXT_DOC = R"rpydoc()rpydoc";
 PyTypeObject rpy::python::RPyContext_Type = {
-    PyVarObject_HEAD_INIT(nullptr, 0)         //
-    "_roughpy.Context",                       /* tp_name */
-    sizeof(python::RPyContext),               /* tp_basicsize */
-    0,                                        /* tp_itemsize */
-    nullptr,                                  /* tp_dealloc */
-    0,                                        /* tp_vectorcall_offset */
-    (getattrfunc) nullptr,                    /* tp_getattr */
-    (setattrfunc) nullptr,                    /* tp_setattr */
-    nullptr,                                  /* tp_as_async */
-    (reprfunc) RPyContext_repr,               /* tp_repr */
-    nullptr,                                  /* tp_as_number */
-    nullptr,                                  /* tp_as_sequence */
-    nullptr,                                  /* tp_as_mapping */
-    nullptr,                                  /* tp_hash */
-    nullptr,                                  /* tp_call */
-    (reprfunc) RPyContext_str,                /* tp_str */
-    nullptr,                                  /* tp_getattro */
-    (setattrofunc) nullptr,                   /* tp_setattro */
-    (PyBufferProcs*) nullptr,                 /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    CONTEXT_DOC,                              /* tp_doc */
-    nullptr,                                  /* tp_traverse */
-    nullptr,                                  /* tp_clear */
-    RPyContext_richcompare,                   /* tp_richcompare */
-    0,                                        /* tp_weaklistoffset */
-    (getiterfunc) nullptr,                    /* tp_iter */
-    nullptr,                                  /* tp_iternext */
-    RPyContext_members,                       /* tp_methods */
-    nullptr,                                  /* tp_members */
-    RPyContext_getset,                        /* tp_getset */
-    nullptr,                                  /* tp_base */
-    nullptr,                                  /* tp_dict */
-    nullptr,                                  /* tp_descr_get */
-    nullptr,                                  /* tp_descr_set */
-    0,                                        /* tp_dictoffset */
-    (initproc) nullptr,                       /* tp_init */
-    nullptr,                                  /* tp_alloc */
-    PyType_GenericNew,                        /* tp_new */
+        PyVarObject_HEAD_INIT(nullptr, 0)         //
+        "_roughpy.Context",                       /* tp_name */
+        sizeof(python::RPyContext),               /* tp_basicsize */
+        0,                                        /* tp_itemsize */
+        nullptr,                                  /* tp_dealloc */
+        0,                                        /* tp_vectorcall_offset */
+        (getattrfunc) nullptr,                    /* tp_getattr */
+        (setattrfunc) nullptr,                    /* tp_setattr */
+        nullptr,                                  /* tp_as_async */
+        (reprfunc) RPyContext_repr,               /* tp_repr */
+        nullptr,                                  /* tp_as_number */
+        nullptr,                                  /* tp_as_sequence */
+        nullptr,                                  /* tp_as_mapping */
+        nullptr,                                  /* tp_hash */
+        nullptr,                                  /* tp_call */
+        (reprfunc) RPyContext_str,                /* tp_str */
+        nullptr,                                  /* tp_getattro */
+        (setattrofunc) nullptr,                   /* tp_setattro */
+        (PyBufferProcs*) nullptr,                 /* tp_as_buffer */
+        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
+        CONTEXT_DOC,                              /* tp_doc */
+        nullptr,                                  /* tp_traverse */
+        nullptr,                                  /* tp_clear */
+        RPyContext_richcompare,                   /* tp_richcompare */
+        0,                                        /* tp_weaklistoffset */
+        (getiterfunc) nullptr,                    /* tp_iter */
+        nullptr,                                  /* tp_iternext */
+        RPyContext_members,                       /* tp_methods */
+        nullptr,                                  /* tp_members */
+        RPyContext_getset,                        /* tp_getset */
+        nullptr,                                  /* tp_base */
+        nullptr,                                  /* tp_dict */
+        nullptr,                                  /* tp_descr_get */
+        nullptr,                                  /* tp_descr_set */
+        0,                                        /* tp_dictoffset */
+        (initproc) nullptr,                       /* tp_init */
+        nullptr,                                  /* tp_alloc */
+        PyType_GenericNew,                        /* tp_new */
 };
 }
 
@@ -502,22 +502,22 @@ PyTypeObject rpy::python::RPyContext_Type = {
 PyObject* python::RPyContext_FromContext(algebra::context_pointer ctx)
 {
     auto* new_ctx = reinterpret_cast<RPyContext*>(
-        RPyContext_Type.tp_alloc(&RPyContext_Type, 0)
+            RPyContext_Type.tp_alloc(&RPyContext_Type, 0)
     );
     new_ctx->p_ctx = std::move(ctx);
     return reinterpret_cast<PyObject*>(new_ctx);
 }
 
 static py::handle py_get_context(
-    deg_t width,
-    deg_t depth,
-    const py::object& ctype,
-    const py::kwargs& kwargs
+        deg_t width,
+        deg_t depth,
+        const py::object& ctype,
+        const py::kwargs& kwargs
 )
 {
     // TODO: Make this accept extra arguments.
     return python::RPyContext_FromContext(
-        get_context(width, depth, python::to_stype_ptr(ctype), {})
+            get_context(width, depth, python::to_stype_ptr(ctype), {})
     );
 }
 
