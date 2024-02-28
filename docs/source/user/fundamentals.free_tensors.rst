@@ -4,9 +4,30 @@
 Free Tensors
 **************
 
-We can create a **free tensor** in many ways using `RoughPy`.
+^^^^^^^^^^^^^^^^^^^^^
+What are free tensors
+^^^^^^^^^^^^^^^^^^^^^
 
-We create a free tensor using data, a Width and a Depth. The data you use can take many forms, for example:
+Free tensors live in a tensor algebra. Equipped with addition, scalar multiplication and a tensor product,
+a tensor algebra is a real, non-commutative unital algebra, with unit :math:`\mathbb{1} = (1, 0, 0, ...)`.
+It is within the tensor algebra that the signature of a path lives.
+
+For a more accurate defnintion of the tensor algebra, see :cite:t:`lyons_signature_2024`. See also :cite:t:`reutenauer_free_1993` and :cite:t:`bourbaki_algebra_1998`.
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How do free tensors fit into RoughPy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You will most commonly encounter free tensors by taking the signature of a stream.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How to work with free tensors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We can create a **free tensor** in many ways using RoughPy.
+
+We create a free tensor using data, a Width and a Depth. The data you use can take many forms, here are some example constructors:
 
 ::
 
@@ -26,10 +47,6 @@ We create a free tensor using data, a Width and a Depth. The data you use can ta
         {0: 1., 2: 1.}
         ]
     tensor5 = FreeTensor(data, width=2, depth=2)
-
-.. todo::
-
-    Improve descriptions of different constructors
 
 You can do **arithmetic** with **free tensors**. We can add, subtract, multiply and divide them
 
@@ -63,4 +80,10 @@ as well as take their exponential, log, and antipode.
     t1.log()
 
     # antipode
-    t1.antipode().antipode()
+    t1.antipode()
+
+^^^^^^^^^^^^^^^^^^^^^
+Literature references
+^^^^^^^^^^^^^^^^^^^^^
+
+.. bibliography::

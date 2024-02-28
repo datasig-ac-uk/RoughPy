@@ -16,18 +16,9 @@ RoughPy's major components are an algebra library for Lie algebras, free tensors
     :autoplay:
     :muted:
 
-|
+The rest of this video can be found here: `Signatures of Streams - Terry Lyons <https://www.youtube.com/watch?v=GtJMLJqTUFcL>`_
 
 References
 ==========
 
 .. bibliography::
-
-.. todo::
-
-    Ideas for this page
-
-    * Maud Right adjoint example
-    * Signature kernels
-    * Picture at bottom, paracetamol?
-    * Financial volatility data, line updating, calculating signatures side by side

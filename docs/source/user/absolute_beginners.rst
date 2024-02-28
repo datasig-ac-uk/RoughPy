@@ -300,3 +300,4 @@ but the log-signature for "otto" is
 
 which are not equal.
 The same is true for "naan" and "anna", since the pattern of letters is identical.
+Only the non-zero terms are printed here. There are no (non-zero) terms of degree 2 in either of these log signatures.
