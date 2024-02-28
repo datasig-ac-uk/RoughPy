@@ -134,6 +134,18 @@ inline const scalars::ScalarType* scalar_type_of_dl_info(const DLDataType& dtype
     RPY_UNREACHABLE_RETURN(nullptr);
 }
 
+RPY_NO_EXPORT inline py::capsule py_to_dlpack(py::handle arg)
+{
+    return py::reinterpret_borrow<py::capsule>(arg.attr("__dlpack__")(py::none()
+    ));
+}
+
+RPY_NO_EXPORT inline DLManagedTensorVersioned*
+unpack_dl_capsule(const py::capsule& cap) noexcept
+{
+    return cap.get_pointer<DLManagedTensorVersioned>();
+}
+
 }
 }
 
