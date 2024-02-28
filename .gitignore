@@ -340,3 +340,9 @@ roughpy/version.py
 /my_todo.txt
 
 .venv*/
+
+docs/source/user/*.png
+docs/source/user/*.rst
+docs/source/user/*.jpg
+examples/*.png
+examples/*.flac
