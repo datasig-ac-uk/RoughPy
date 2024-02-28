@@ -36,6 +36,8 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <vector>
+
 using namespace rpy;
 using namespace rpy::streams;
 
@@ -80,16 +82,16 @@ LieIncrementStream::LieIncrementStream(
              * the provided increments have degree 1.
              * TODO: Add support for key-scalar streams.
              */
-
+            const auto info = buffer.type_info();
             const auto width = sch.width_without_param();
 
-            const char* dptr = buffer.raw_cast<const char*>();
-            const auto stride = buffer.type()->itemsize() * width;
+            const char* dptr = buffer.as_slice<const char>().data();
+            const auto stride = info.bytes * width;
             param_t previous_param = 0.0;
             for (auto index : indices) {
 
                 algebra::VectorConstructionData cdata{
-                        scalars::KeyScalarArray(buffer.type(), dptr, width),
+                        scalars::KeyScalarArray(*buffer.type(), dptr, width),
                         md.cached_vector_type};
 
                 auto [it, inserted]
@@ -147,7 +149,7 @@ LieIncrementStream::LieIncrementStream(
              * We've inserted a new element, so we should now add the param
              * value if it is needed.
              */
-            it->second[param_slot] = Scalar(index - previous_param);
+            it->second[param_slot] = index - previous_param;
         }
         previous_param = index;
 
@@ -208,6 +210,9 @@ RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer) {
     dump_cache();
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::LieIncrementStream
 
 #include <roughpy/platform/serialization_instantiations.inl>
+
+RPY_SERIAL_REGISTER_CLASS(rpy::streams::LieIncrementStream)

@@ -2,26 +2,28 @@ name: Build Wheels
 
 on:
   push:
-    branches: [ "main" ]
-    paths-ignore:
-      - "examples/**"
-      - "doc/**"
-      - "README.md"
-      - "*.txt"
-      - "CHANGELOG"
-  pull_request:
-    branches: [ "main" ]
-    types:
-      - opened
-      - reopened
-      - synchronize
-    paths-ignore:
-      - "examples/**"
-      - "doc/**"
-      - "README.md"
-      - "*.txt"
-      - "CHANGELOG"
-
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+#    branches: [ "main" ]
+#    paths-ignore:
+#      - "examples/**"
+#      - "doc/**"
+#      - "README.md"
+#      - "*.txt"
+#      - "CHANGELOG"
+#  pull_request:
+#    branches: [ "main" ]
+#    types:
+#      - opened
+#      - reopened
+#      - synchronize
+#    paths-ignore:
+#      - "examples/**"
+#      - "doc/**"
+#      - "README.md"
+#      - "*.txt"
+#      - "CHANGELOG"
+#
 env:
   BUILD_TYPE: Release
   VERBOSE: 1
@@ -96,6 +98,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.0
         env:
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
+          VCPKG_INSTALL_OPTIONS: "--debug"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: >
             auditwheel show {wheel} &&
             auditwheel repair -w {dest_dir} {wheel}
@@ -119,7 +122,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install release deps
         run: python -m pip install twine
@@ -136,13 +139,12 @@ jobs:
           name: wheels
           path: dist
 
-      - name: Create release
+      - name: Update release
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version="$(ls dist | grep -Po '(?<=roughpy-).+(?=\.tar\.gz)')"
-          gh release -R ${{ github.repository }} create -t $version --generate-notes $version dist/*
+          gh release upload -r ${{ github.repository }} upload ${{ github.ref_name }} dist/*
 
       - name: Publish
         run: |

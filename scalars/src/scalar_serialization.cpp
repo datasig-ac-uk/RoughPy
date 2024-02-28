@@ -1,3 +1,4 @@
+
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -25,14 +26,10 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 02/10/23.
-//
-
 #include <roughpy/platform/archives.h>
-#include <roughpy/scalars/serialization.h>
+#include <roughpy/scalars/scalar_serialization.h>
 #include <roughpy/scalars/scalars_fwd.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -107,6 +104,7 @@ void rpy::scalars::dtl::MPIntegerSerializationHelper<Integer>::load(
     }
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::half
 #define RPY_SERIAL_EXTERNAL cereal
 #define RPY_SERIAL_DO_SPLIT

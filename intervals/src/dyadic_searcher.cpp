@@ -32,6 +32,8 @@
 
 #include "dyadic_searcher.h"
 
+#include <roughpy/platform/errors.h>
+
 #include <algorithm>
 
 using namespace rpy::intervals;

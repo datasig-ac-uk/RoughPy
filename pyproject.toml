@@ -43,10 +43,10 @@ requires = [
     "pybind11",
     "ninja; platform_system!='Windows'",
     "oldest-supported-numpy",
-    "mkl-devel; platform_machine in 'x86_64 x86 AMD64'",
-    "mkl-static; platform_machine in 'x86_64 x86 AMD64'",
-    "tbb-devel; platform_system =='Windows'",
-    "intel-openmp; platform_machine in 'x86_64 x86' and platform_system!='Windows'"
+    #    "mkl-devel; platform_machine in 'x86_64 x86 AMD64'",
+    #    "mkl-static; platform_machine in 'x86_64 x86 AMD64'",
+    #    "tbb-devel; platform_system =='Windows'",
+    #    "intel-openmp; platform_machine in 'x86_64 x86' and platform_system!='Windows'"
 ]
 build-backend = "scikit_build_core.build"
 

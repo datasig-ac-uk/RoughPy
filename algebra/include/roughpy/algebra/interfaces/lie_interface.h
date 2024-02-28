@@ -37,10 +37,17 @@
 namespace rpy {
 namespace algebra {
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
-        AlgebraInterface<Lie, LieBasis>;
+#ifdef RPY_PLATFORM_WINDOWS
+#  ifdef RPY_COMPILING_DLL
+extern template class AlgebraInterface<Lie, LieBasis>;
+#  else
+template class RPY_DLL_IMPORT AlgebraInterface<Lie, LieBasis>;
+#  endif
+#else
+extern template class ROUGHPY_ALGEBRA_EXPORT AlgebraInterface<Lie, LieBasis>;
+#endif
 
-class RPY_EXPORT LieInterface : public AlgebraInterface<Lie, LieBasis>
+class ROUGHPY_ALGEBRA_EXPORT LieInterface : public AlgebraInterface<Lie, LieBasis>
 {
     using base_t = AlgebraInterface<Lie, LieBasis>;
 

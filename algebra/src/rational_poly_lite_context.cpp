@@ -30,9 +30,10 @@
 //
 
 #include "lite_context.h"
+#include <roughpy/scalars/scalar_types.h>
 
 namespace rpy {
 namespace algebra {
-template class LiteContext<lal::polynomial_ring>;
+template class LiteContext<rational_poly_ring>;
 }
 }// namespace rpy

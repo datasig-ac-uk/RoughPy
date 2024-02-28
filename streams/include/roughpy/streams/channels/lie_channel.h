@@ -37,7 +37,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT LieChannel : public StreamChannel
+class ROUGHPY_STREAMS_EXPORT LieChannel : public StreamChannel
 {
 public:
     LieChannel() : StreamChannel(ChannelType::Lie, nullptr) {}
@@ -45,7 +45,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(LieChannel)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(LieChannel)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(LieChannel)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(LieChannel)
 {
@@ -61,5 +65,6 @@ RPY_SERIAL_SPECIALIZE_TYPES(
         rpy::streams::LieChannel, rpy::serial::specialization::member_serialize
 )
 
-RPY_SERIAL_REGISTER_CLASS(rpy::streams::LieChannel)
+RPY_SERIAL_FORCE_DYNAMIC_INIT(lie_channel)
+
 #endif// ROUGHPY_STREAMS_LIE_CHANNEL_H

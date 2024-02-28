@@ -26,154 +26,94 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 25/02/23.
-//
+#ifndef ROUGHPY_SCALARS_SCALARS_FWD_H_
+#define ROUGHPY_SCALARS_SCALARS_FWD_H_
 
-#ifndef ROUGHPY_SCALARS_SCALARS_PREDEF_H
-#define ROUGHPY_SCALARS_SCALARS_PREDEF_H
+#include <roughpy/platform/devices/core.h>
+#include <roughpy/platform/devices/macros.h>
+#include <roughpy/platform/errors.h>
 
-#include <roughpy/core/helpers.h>
-#include <roughpy/core/macros.h>
-#include <roughpy/core/traits.h>
-#include <roughpy/core/types.h>
-#include <roughpy/platform/device.h>
-
-#include <functional>
+#include "roughpy_scalars_export.h"
 
 namespace rpy {
 namespace scalars {
 
+using ScalarTypeCode = devices::TypeCode;
+using BasicScalarInfo = devices::TypeInfo;
 
-
-/// Marker for signed size type (ptrdiff_t)
-struct signed_size_type_marker {
-};
-
-/// Marker for unsigned size type (size_t)
-struct unsigned_size_type_marker {
-};
-
-/**
- * @brief Type codes for different scalar types.
- *
- * These are chosen to be compatible with the DLPack
- * array interchange protocol. Rational types will
- * be encoded as OpaqueHandle, since they're not simple
- * data. Some of these types might not be compatible with
- * this library.
- */
-enum class ScalarTypeCode : uint8_t
-{
-    Int = 0U,
-    UInt = 1U,
-    Float = 2U,
-    OpaqueHandle = 3U,
-    BFloat = 4U,
-    Complex = 5U,
-    Bool = 6U
-};
-
-/**
- * @brief Basic information for identifying the type, size, and
- * configuration of a scalar.
- *
- * Based on, and compatible with, the DlDataType struct from the
- * DLPack array interchange protocol. The lanes parameter will
- * usually be set to 1, and is not generally used by RoughPy.
- */
-struct BasicScalarInfo {
-    ScalarTypeCode code;
-    std::uint8_t bits;
-    std::uint16_t lanes;
-};
-
-/**
- * @brief A collection of basic information for identifying a scalar type.
- */
-struct ScalarTypeInfo {
-    string name;
-    string id;
-    size_t n_bytes;
-    size_t alignment;
-    BasicScalarInfo basic_info;
-    platform::DeviceInfo device;
-};
+using seed_int_t = uint64_t;
 
 // Forward declarations
+class ROUGHPY_SCALARS_EXPORT ScalarType;
+class ROUGHPY_SCALARS_EXPORT ScalarInterface;
+class ROUGHPY_SCALARS_EXPORT Scalar;
+class ROUGHPY_SCALARS_EXPORT ScalarArray;
+class ScalarArrayView;
+class ROUGHPY_SCALARS_EXPORT KeyScalarArray;
+class ROUGHPY_SCALARS_EXPORT ScalarStream;
+class ROUGHPY_SCALARS_EXPORT KeyScalarStream;
+class ROUGHPY_SCALARS_EXPORT RandomGenerator;
 
-class ScalarType;
+namespace dtl {
 
-class ScalarInterface;
+template <typename T>
+struct ScalarTypeOfImpl {
+    static optional<const ScalarType*> get() noexcept;
+};
 
-class ScalarPointer;
-
-class Scalar;
-
-class ScalarArray;
-
-class OwnedScalarArray;
-
-class KeyScalarArray;
-
-class ScalarStream;
-
-class RandomGenerator;
-
-class BlasInterface;
-
-//template <typename T>
-//inline remove_cv_ref_t<T> scalar_cast(const Scalar& arg);
-//
-using conversion_function
-        = std::function<void(ScalarPointer, ScalarPointer, dimn_t)>;
-
-constexpr bool
-operator==(const BasicScalarInfo& lhs, const BasicScalarInfo& rhs) noexcept
+template <typename T>
+inline optional<const ScalarType*> ScalarTypeOfImpl<T>::get() noexcept
 {
-    return lhs.code == rhs.code && lhs.bits == rhs.bits
-            && lhs.lanes == rhs.lanes;
+    return {};
 }
 
-/**
- * @brief Register a new type with the scalar type system
- * @param type Pointer to newly created ScalarType
- *
- *
- */
-RPY_EXPORT void register_type(const ScalarType* type);
+template <>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<float>::get() noexcept;
 
-/**
- * @brief Get a type registered with the scalar type system
- * @param id Id string of type to be retrieved
- * @return pointer to ScalarType representing id
- */
-RPY_EXPORT const ScalarType* get_type(const string& id);
+template <>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<double>::get() noexcept;
 
-RPY_EXPORT const ScalarType*
-get_type(const string& id, const platform::DeviceInfo& device);
+template <>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<devices::rational_scalar_type>::get() noexcept;
 
-/**
- * @brief Get a list of all registered ScalarTypes
- * @return vector of ScalarType pointers.
- */
-RPY_NO_DISCARD RPY_EXPORT std::vector<const ScalarType*> list_types();
+template <>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<devices::rational_poly_scalar>::get() noexcept;
 
-RPY_NO_DISCARD RPY_EXPORT const ScalarTypeInfo& get_scalar_info(string_view id);
+template <>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<devices::half>::get() noexcept;
 
-RPY_NO_DISCARD RPY_EXPORT const std::string&
-id_from_basic_info(const BasicScalarInfo& info);
+template <>
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<devices::bfloat16>::get() noexcept;
 
-RPY_NO_DISCARD RPY_EXPORT const conversion_function&
-get_conversion(const string& src_id, const string& dst_id);
+}// namespace dtl
 
-RPY_EXPORT void register_conversion(
-        const string& src_id,
-        const string& dst_id,
-        conversion_function converter
-);
+template <typename T>
+RPY_NO_DISCARD optional<const ScalarType*> scalar_type_of()
+{
+    return dtl::ScalarTypeOfImpl<T>::get();
+}
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+scalar_type_of(devices::TypeInfo info);
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+scalar_type_of(devices::TypeInfo info, const devices::Device& device);
+
+template <typename T>
+RPY_NO_DISCARD T scalar_cast(const Scalar& value);
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+get_type(string_view id);
+
+inline constexpr int min_scalar_type_alignment = 16;
+
+#define RPY_SCALAR_TYPE_ALIGNMENT alignas(min_scalar_type_alignment)
 
 }// namespace scalars
 }// namespace rpy
 
-#endif// ROUGHPY_SCALARS_SCALARS_PREDEF_H
+#endif// ROUGHPY_SCALARS_SCALARS_FWD_H_

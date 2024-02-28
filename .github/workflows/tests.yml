@@ -2,10 +2,23 @@ name: tests
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "main" ]
+    paths-ignore:
+      - "examples/**"
+      - "doc/**"
+      - "README.md"
+      - "*.txt"
+      - "CHANGELOG"
+      - "tools/*.py"
   pull_request:
-    branches: [ "develop" ]
-
+    branches: [ "main" ]
+    paths-ignore:
+      - "examples/**"
+      - "doc/**"
+      - "README.md"
+      - "*.txt"
+      - "CHANGELOG"
+      - "tools/*.py"
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -16,12 +29,24 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: true
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-2019
+          - macos-11
 
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: true
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
 
     - name: Setup gha caching for vcpkg
       uses: actions/github-script@v6
@@ -30,40 +55,52 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-    - name: Python dependencies
+      #    - uses: microsoft/setup-msbuild@v1.1
+      #      if: runner.os == 'Windows'
+      #      with:
+      #        msbuild-architecture: x64
+
+    - name: use ninja on non windows
+      if: runner.os != 'Windows'
+      shell: bash
       run: |
-        python3.10 -m pip install \
-          numpy \
-          mkl-include \
-          mkl-static \
-          mkl-devel \
-          intel-openmp \
-          ninja \
-          pytest \
-          pybind11
-        pth="$(python -m site --user-site)/roughpy.pth"
-        echo $pth
-        echo "import sys; sys.path.insert(0, '${{github.workspace}}')" >> $pth
+        echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+
+    - name: Python dependencies
+      shell: bash
+      run: |
+        python -m pip install numpy ninja pytest pybind11
+
+    - name: setup vcpkg
+      shell: bash
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: |
-        cmake -GNinja -B ${{github.workspace}}/build \
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DROUGHPY_BUILD_TESTS=ON \
-          -DROUGHPY_BUILD_PYMODULE_INPLACE=ON \
-          --toolchain=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_PYMODULE_INPLACE=ON
+      env:
+        VERBOSE: 1
+        CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+        MACOSX_DEPLOYMENT_TARGET: 11.0.0
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{ github.workspace }}/build --config ${{env.BUILD_TYPE}}
+      env:
+        VERBOSE: 1
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
+      shell: bash
+      working-directory: ${{ github.workspace }}/build
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: PyTests
+      shell: bash
       run: pytest tests
+      env:
+        PYTHONPATH: ${{ github.workspace }}

@@ -28,12 +28,25 @@
 #ifndef ROUGHPY_ALGEBRA_FREE_TENSOR_BUNDLE_INTERFACE_H_
 #define ROUGHPY_ALGEBRA_FREE_TENSOR_BUNDLE_INTERFACE_H_
 
+<<<<<<<< HEAD:algebra/include/roughpy/algebra/interfaces/free_tensor_bundle_interface.h
 #include <roughpy/core/macros.h>
+========
+#include "scalar_implementations/float/float_blas.h"
+#include <gtest/gtest.h>
+#include <roughpy/scalars/scalar_type.h>
+#inlucde <roughpy/scalars/types.h>
+>>>>>>>> origin/main:scalars/src/test_float_blas.cpp
 
 #include <roughpy/algebra/tensor_basis.h>
 #include <roughpy/algebra/free_tensor.h>
 #include <roughpy/algebra/free_tensor_bundle.h>
 
+<<<<<<<< HEAD:algebra/include/roughpy/algebra/interfaces/free_tensor_bundle_interface.h
+========
+#ifndef ROUGHPY_DISABLE_BLAS
+using namespace rpy;
+using namespace rpy::scalars;
+>>>>>>>> origin/main:scalars/src/test_float_blas.cpp
 
 #include "algebra_bundle_interface.h"
 
@@ -48,7 +61,7 @@ RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
 
 
 
-class RPY_EXPORT FreeTensorBundleInterface
+class ROUGHPY_ALGEBRA_EXPORT FreeTensorBundleInterface
     : public BundleInterface<FreeTensorBundle, FreeTensor, FreeTensor>
 {
 public:
@@ -67,5 +80,30 @@ public:
 
 }}
 
+<<<<<<<< HEAD:algebra/include/roughpy/algebra/interfaces/free_tensor_bundle_interface.h
 RPY_WARNING_POP
 #endif // ROUGHPY_ALGEBRA_FREE_TENSOR_BUNDLE_INTERFACE_H_
+========
+TEST_F(FloatBlasTests, TestRowMajorByRowMajorFull)
+{
+    ScalarMatrix result;
+    blas->gemm(result, matA, matB, Scalar(1), Scalar(1));
+
+    /*
+     * [[1.0, 1.0]  [[-1.0, 2.0]   =  [[-3.0,  5.0]
+     *  [2.0, 3.0]]  [-2.0, 3.0]]      [-8.0, 13.0]]
+     */
+
+    auto* ptr = result.raw_cast<float*>();
+
+    EXPECT_EQ(ptr[0], -3.0F);
+    EXPECT_EQ(ptr[1], 5.0F);
+    EXPECT_EQ(ptr[2], -8.0F);
+    EXPECT_EQ(ptr[3], 13.0F);
+}
+
+
+
+
+#endif
+>>>>>>>> origin/main:scalars/src/test_float_blas.cpp

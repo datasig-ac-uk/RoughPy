@@ -43,13 +43,16 @@ struct PyStreamMetaData {
     algebra::context_pointer ctx;
     const scalars::ScalarType* scalar_type;
     optional<algebra::VectorType> vector_type;
-    resolution_t resolution;
+    optional<resolution_t> resolution;
     intervals::IntervalType interval_type;
     std::shared_ptr<streams::StreamSchema> schema;
     bool include_param_as_data;
 };
 
 PyStreamMetaData kwargs_to_metadata(const py::kwargs& kwargs);
+
+
+resolution_t param_to_resolution(param_t accuracy) noexcept;
 
 }// namespace python
 }// namespace rpy

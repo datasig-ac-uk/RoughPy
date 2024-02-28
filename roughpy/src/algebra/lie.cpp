@@ -105,11 +105,14 @@ void python::init_lie(py::module_& m)
     klass.def("__getitem__", [](const Lie& self, key_type key) {
         return self[key];
     });
+    klass.def("__getitem__", [](const Lie& self, const PyLieKey& lkey) {
+             return self[static_cast<key_type>(lkey)];
+         });
 
     klass.def("__repr__", [](const Lie& self) {
         std::stringstream ss;
         ss << "Lie(width=" << *self.width() << ", depth=" << *self.depth();
-        ss << ", ctype=" << self.coeff_type()->info().name << ')';
+        ss << ", ctype=" << self.coeff_type()->name() << ')';
 //        self->print(ss);
         return ss.str();
     });

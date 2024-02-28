@@ -37,7 +37,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT LeadLaggableChannel : public StreamChannel
+class ROUGHPY_STREAMS_EXPORT LeadLaggableChannel : public StreamChannel
 {
     bool m_use_leadlag = false;
 
@@ -56,7 +56,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(LeadLaggableChannel)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(LeadLaggableChannel)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(LeadLaggableChannel)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(LeadLaggableChannel)
 {
@@ -73,6 +77,6 @@ RPY_SERIAL_SPECIALIZE_TYPES(
         rpy::serial::specialization::member_serialize
 )
 
-RPY_SERIAL_REGISTER_CLASS(rpy::streams::LeadLaggableChannel)
 
+RPY_SERIAL_FORCE_DYNAMIC_INIT(lead_laggable_channel)
 #endif// ROUGHPY_STREAMS_LEAD_LAGGABLE_CHANNEL_H

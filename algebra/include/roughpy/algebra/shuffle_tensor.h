@@ -42,10 +42,18 @@ RPY_MSVC_DISABLE_WARNING(4661)
 namespace rpy {
 namespace algebra {
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
+#ifdef RPY_PLATFORM_WINDOWS
+#  ifdef RPY_COMPILING_DLL
+extern template class AlgebraBase<ShuffleTensorInterface>;
+#  else
+template class RPY_DLL_IMPORT AlgebraBase<ShuffleTensorInterface>;
+#  endif
+#else
+extern template class ROUGHPY_ALGEBRA_EXPORT
         AlgebraBase<ShuffleTensorInterface>;
+#endif
 
-class RPY_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface>
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensorInterface>
 {
     using base_t = AlgebraBase<ShuffleTensorInterface>;
 
@@ -57,7 +65,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(ShuffleTensor)
+#ifdef RPY_COMPILING_ALGEBRA
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(ShuffleTensor)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(ShuffleTensor)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor)
 {
@@ -67,7 +79,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(ShuffleTensor)
 
 
 template <>
-RPY_EXPORT typename ShuffleTensor::basis_type
+ROUGHPY_ALGEBRA_EXPORT typename ShuffleTensor::basis_type
 basis_setup_helper<ShuffleTensor>::get(const context_pointer& ctx);
 
 

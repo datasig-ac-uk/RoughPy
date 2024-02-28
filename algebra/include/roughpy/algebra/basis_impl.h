@@ -64,6 +64,8 @@ public:
     string key_to_string(const typename PrimaryInterface::key_type& key
     ) const override;
     dimn_t dimension() const noexcept override;
+
+    bool are_same(const typename PrimaryInterface::base_interface_t &other) const noexcept override;
 };
 
 template <typename T, typename Derived, typename Base>
@@ -101,6 +103,7 @@ public:
     dimn_t start_of_degree(deg_t degree) const noexcept override;
     pair<optional<key_type>, optional<key_type>> parents(const key_type& key
     ) const override;
+    optional<key_type> child(const key_type& lparent, const key_type& rparent) const override;
     key_type key_of_letter(let_t letter) const noexcept override;
     bool letter(const key_type& key) const override;
 };
@@ -116,6 +119,15 @@ template <typename T, typename PrimaryInterface>
 dimn_t BasisImplementation<T, PrimaryInterface>::dimension() const noexcept
 {
     return basis_traits::dimension(m_impl);
+}
+
+template <typename T, typename PrimaryInterface>
+bool BasisImplementation<T,
+                         PrimaryInterface>::are_same(const typename PrimaryInterface::base_interface_t &other) const noexcept {
+    const auto *pother = dynamic_cast<const BasisImplementation *>(&other);
+    if (pother == nullptr) { return false; }
+
+    return basis_traits::are_same(m_impl, pother->m_impl);
 }
 
 template <typename T, typename Derived, typename Base>
@@ -182,6 +194,12 @@ WordLikeBasisImplementationMixin<T, Derived, Base>::parents(const key_type& key
 {
     return basis_traits::parents(m_impl, key);
 }
+
+template <typename T, typename Derived, typename Base>
+optional<typename Derived::key_type> WordLikeBasisImplementationMixin<T, Derived, Base>::child(const key_type& lparent, const key_type& rparent) const {
+    return basis_traits::child(m_impl, lparent, rparent);
+}
+
 template <typename T, typename Derived, typename Base>
 typename Derived::key_type
 WordLikeBasisImplementationMixin<T, Derived, Base>::key_of_letter(let_t letter

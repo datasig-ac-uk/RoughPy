@@ -32,12 +32,10 @@
 
 #include <roughpy/algebra/context.h>
 
-
 #include "hall_set_size.h"
 
 #include <mutex>
 #include <unordered_map>
-
 
 #include "lite_context.h"
 
@@ -47,15 +45,23 @@ using namespace rpy::algebra;
 BasicContextSpec rpy::algebra::get_context_spec(const context_pointer& ctx)
 {
     if (!ctx) { return {"", "", 0, 0}; }
-    return {ctx->ctype()->id(), ctx->backend(), ctx->width(), ctx->depth()};
+    return {string(ctx->ctype()->id()),
+            ctx->backend(),
+            ctx->width(),
+            ctx->depth()};
 }
 
 context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)
 {
     RPY_CHECK(spec.stype_id != "");
 
+    auto tp_o = scalars::get_type(spec.stype_id);
+
+    RPY_CHECK(tp_o);
     return get_context(
-            spec.width, spec.depth, scalars::get_type(spec.stype_id),
+            spec.width,
+            spec.depth,
+            *tp_o,
             {
                     {"backend", spec.backend}
     }
@@ -63,7 +69,9 @@ context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)
 }
 
 std::vector<byte> rpy::algebra::alg_to_raw_bytes(
-        context_pointer ctx, AlgebraType atype, RawUnspecifiedAlgebraType alg
+        context_pointer ctx,
+        AlgebraType atype,
+        RawUnspecifiedAlgebraType alg
 )
 {
     if (ctx) { return ctx->to_raw_bytes(atype, alg); }
@@ -71,7 +79,9 @@ std::vector<byte> rpy::algebra::alg_to_raw_bytes(
 }
 
 UnspecifiedAlgebraType rpy::algebra::alg_from_raw_bytes(
-        context_pointer ctx, AlgebraType atype, Slice<byte> raw_data
+        context_pointer ctx,
+        AlgebraType atype,
+        Slice<byte> raw_data
 )
 {
     if (ctx) { return ctx->from_raw_bytes(atype, raw_data); }
@@ -79,10 +89,14 @@ UnspecifiedAlgebraType rpy::algebra::alg_from_raw_bytes(
 }
 
 ContextBase::ContextBase(
-        deg_t width, deg_t depth, const dimn_t* lie_sizes,
+        deg_t width,
+        deg_t depth,
+        const dimn_t* lie_sizes,
         const dimn_t* tensor_sizes
 )
-    : m_width(width), m_depth(depth), p_lie_sizes(lie_sizes),
+    : m_width(width),
+      m_depth(depth),
+      p_lie_sizes(lie_sizes),
       p_tensor_sizes(tensor_sizes)
 {
     if (!p_tensor_sizes) {
@@ -175,19 +189,18 @@ Lie Context::cbh(const std::vector<Lie>& lies, VectorType vtype) const
     if (lies.size() == 1) { return convert(lies[0], vtype); }
 
     FreeTensor collector = zero_free_tensor(vtype);
-    collector[0] = scalars::Scalar(1);
+    collector[0] = 1;
 
     if (!lies.empty()) { cbh_fallback(collector, lies); }
 
     return tensor_to_lie(collector.log());
 }
-Lie Context::cbh(Slice<const Lie*> lies, VectorType vtype) const {
-    if (lies.size() == 1) {
-        return convert(*lies[0], vtype);
-    }
+Lie Context::cbh(Slice<const Lie*> lies, VectorType vtype) const
+{
+    if (lies.size() == 1) { return convert(*lies[0], vtype); }
 
     FreeTensor collector = zero_free_tensor(vtype);
-    collector[0] = scalars::Scalar(1);
+    collector[0] = 1;
 
     cbh_fallback(collector, lies);
 
@@ -244,7 +257,9 @@ base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth)
     return s_base_context_cache.back();
 }
 context_pointer rpy::algebra::get_context(
-        deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+        deg_t width,
+        deg_t depth,
+        const scalars::ScalarType* ctype,
         const std::vector<std::pair<string, string>>& preferences
 )
 {
@@ -290,7 +305,9 @@ rpy::algebra::register_context_maker(std::unique_ptr<ContextMaker> maker)
 }
 
 bool ContextMaker::can_get(
-        deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+        deg_t width,
+        deg_t depth,
+        const scalars::ScalarType* ctype,
         const preference_list& preferences
 ) const
 {
@@ -306,32 +323,6 @@ UnspecifiedAlgebraType
 Context::from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const
 {
     RPY_THROW(std::runtime_error, "cannot load from raw bytes");
-}
-
-void rpy::algebra::intrusive_ptr_release(const rpy::algebra::Context* ptr)
-{
-    intrusive_ptr_release(static_cast<const boost::intrusive_ref_counter<
-                                  ContextBase, boost::thread_safe_counter>*>(ptr
-    ));
-}
-void rpy::algebra::intrusive_ptr_release(const rpy::algebra::ContextBase* ptr)
-{
-    intrusive_ptr_release(static_cast<const boost::intrusive_ref_counter<
-                                  ContextBase, boost::thread_safe_counter>*>(ptr
-    ));
-}
-
-void rpy::algebra::intrusive_ptr_add_ref(const rpy::algebra::Context* ptr)
-{
-    intrusive_ptr_add_ref(static_cast<const boost::intrusive_ref_counter<
-                                  ContextBase, boost::thread_safe_counter>*>(ptr
-    ));
-}
-void rpy::algebra::intrusive_ptr_add_ref(const rpy::algebra::ContextBase* ptr)
-{
-    intrusive_ptr_add_ref(static_cast<const boost::intrusive_ref_counter<
-                                  ContextBase, boost::thread_safe_counter>*>(ptr
-    ));
 }
 
 UnspecifiedAlgebraType Context::free_multiply(
@@ -377,4 +368,29 @@ UnspecifiedAlgebraType Context::adjoint_to_left_multiply_by(
             "adjoint of left multiply is not implemented for "
             "arbitrary types with this backend"
     );
+}
+
+void rpy::algebra::intrusive_ptr_add_ref(const ContextBase* ptr) noexcept
+{
+    using counter_t = boost::
+            intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
+    intrusive_ptr_add_ref(static_cast<const counter_t*>(ptr));
+}
+void rpy::algebra::intrusive_ptr_release(const ContextBase* ptr) noexcept
+{
+    using counter_t = boost::
+            intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
+    intrusive_ptr_release(static_cast<const counter_t*>(ptr));
+}
+void rpy::algebra::intrusive_ptr_add_ref(const Context* ptr) noexcept
+{
+    using counter_t = boost::
+            intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
+    intrusive_ptr_add_ref(static_cast<const counter_t*>(ptr));
+}
+void rpy::algebra::intrusive_ptr_release(const Context* ptr) noexcept
+{
+    using counter_t = boost::
+            intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
+    intrusive_ptr_release(static_cast<const counter_t*>(ptr));
 }

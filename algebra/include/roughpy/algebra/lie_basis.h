@@ -34,16 +34,24 @@
 namespace rpy {
 namespace algebra {
 
-class RPY_EXPORT LieBasisInterface
+class ROUGHPY_ALGEBRA_EXPORT LieBasisInterface
     : public make_basis_interface<
               LieBasisInterface, rpy::key_type, OrderedBasisInterface,
               WordLikeBasisInterface>
 {
 };
 
-RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE Basis<LieBasisInterface>;
+#ifdef RPY_PLATFORM_WINDOWS
+#  ifdef RPY_COMPILING_DLL
+extern template class Basis<LieBasisInterface>;
+#  else
+template class RPY_DLL_IMPORT Basis<LieBasisInterface>;
+#  endif
+#else
+extern template class ROUGHPY_ALGEBRA_EXPORT Basis<LieBasisInterface>;
+#endif
 
-using LieBasis = Basis<LieBasisInterface>;
+        using LieBasis = Basis<LieBasisInterface>;
 
 }// namespace algebra
 }// namespace rpy

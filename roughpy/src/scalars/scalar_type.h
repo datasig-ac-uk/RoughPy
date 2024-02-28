@@ -73,6 +73,10 @@ py::handle get_scalar_baseclass();
 extern "C" void PyScalarMetaType_dealloc(PyObject* arg);
 
 void register_scalar_type(const scalars::ScalarType* ctype, py::handle py_type);
+
+extern "C" PyObject* PyScalarType_FromScalarType(const scalars::ScalarType* type
+);
+
 py::object to_ctype_type(const scalars::ScalarType* type);
 
 inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype)
@@ -85,7 +89,7 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype)
 
     auto* mcs_tp = reinterpret_cast<PyTypeObject*>(mcs.ptr());
 
-    const auto& name = ctype->info().name;
+    const auto& name = ctype->name();
     py::str ht_name(name);
     dtl::new_scalar_type_temps_manager tmp_manager;
 
@@ -99,7 +103,7 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype)
         PyErr_NoMemory();
         throw py::error_already_set();
     }
-    memcpy(tmp_manager.ht_name, name.c_str(), no_letters);
+    memcpy(tmp_manager.ht_name, name.data(), no_letters);
 
     tmp_manager.cls
             = reinterpret_cast<PyScalarMetaType*>(mcs_tp->tp_alloc(mcs_tp, 0));
@@ -147,7 +151,7 @@ inline void make_scalar_type(py::module_& m, const scalars::ScalarType* ctype)
 
     py::handle h_class(reinterpret_cast<PyObject*>(tmp_manager.cls));
     register_scalar_type(ctype, h_class);
-    m.add_object(name.c_str(), h_class);
+    m.add_object(name.data(), h_class);
 }
 
 inline const scalars::ScalarType* to_stype_ptr(const py::handle& arg)
@@ -159,7 +163,11 @@ inline const scalars::ScalarType* to_stype_ptr(const py::handle& arg)
 }
 
 char format_to_type_char(const string& fmt);
-string py_buffer_to_type_id(const py::buffer_info& info);
+//string py_buffer_to_type_id(const py::buffer_info& info);
+
+RPY_NO_DISCARD
+devices::TypeInfo py_buffer_to_type_info(const py::buffer_info& info);
+
 
 const scalars::ScalarType* py_buffer_to_scalar_type(const py::buffer_info& info
 );

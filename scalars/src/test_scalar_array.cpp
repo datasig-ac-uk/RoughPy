@@ -35,8 +35,8 @@
 
 #include <roughpy/platform/serialization.h>
 #include <roughpy/platform/archives.h>
-#include <roughpy/scalars/scalar_array.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars.h>
+#include <roughpy/scalars/scalar_types.h>
 
 using namespace rpy;
 using namespace rpy::scalars;

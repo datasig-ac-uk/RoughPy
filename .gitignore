@@ -338,9 +338,32 @@ cython_debug/
 
 roughpy/version.py
 /my_todo.txt
-tools/
+
 .venv*/
 
-examples/*.png
+docs/source/user/tutorials.rst
+
+docs/source/user/drone_identification.rst
+docs/source/user/drone_identification_256px-Quadcopter_camera_drone_in_flight.jpg
+docs/source/user/drone_identification*.png
+
+docs/source/user/handwritten_digit_classification.rst
+docs/source/user/handwritten_digit_classification*.png
+
+docs/source/user/jhmdb_demo.rst
+docs/source/user/jhmdb_demo*.png
+
+docs/source/user/logsignature.rst
+
+docs/source/user/nlp_demo.rst
+
+docs/source/user/sepsis_detection.rst
+docs/source/user/sepsis_detection*.png
+
+docs/source/user/time_series_classification.rst
+docs/source/user/time_series_classification*.png
+
 examples/*.flac
+examples/*.png
 examples/documentation-testing.py
+

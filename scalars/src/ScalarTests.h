@@ -1,3 +1,10 @@
+//
+// Created by user on 08/11/23.
+//
+
+#ifndef ROUGHPY_SCALARS_SRC_SCALARTESTS_H_
+#define ROUGHPY_SCALARS_SRC_SCALARTESTS_H_
+
 // Copyright (c) 2023 RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,7 +43,7 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 
 namespace rpy {
 namespace scalars {
@@ -49,7 +56,7 @@ public:
     const scalars::ScalarType* ftype;
 
     ScalarTests()
-        : dtype(ScalarType::of<double>()), ftype(ScalarType::of<float>())
+        : dtype(*ScalarType::of<double>()), ftype(*ScalarType::of<float>())
     {}
 };
 
@@ -58,3 +65,6 @@ public:
 }// namespace rpy
 
 #endif// ROUGHPY_SCALARTESTS_H
+
+
+#endif// ROUGHPY_SCALARS_SRC_SCALARTESTS_H_

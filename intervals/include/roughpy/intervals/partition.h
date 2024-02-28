@@ -36,11 +36,12 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
+#include "roughpy_intervals_export.h"
 
 namespace rpy {
 namespace intervals {
 
-class RPY_EXPORT Partition : public RealInterval
+class ROUGHPY_INTERVALS_EXPORT Partition : public RealInterval
 {
 public:
     using intermediates_t = std::vector<param_t>;
@@ -104,7 +105,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(Partition)
+#ifdef RPY_COMPILING_INTERVALS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(Partition)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(Partition)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Partition) {
     RPY_SERIAL_SERIALIZE_BASE(RealInterval);

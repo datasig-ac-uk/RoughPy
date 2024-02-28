@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "stream.h"
 
@@ -32,10 +33,12 @@
 #include <sstream>
 
 #include <roughpy/intervals/partition.h>
+#include <roughpy/platform/archives.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/streams/stream.h>
 
 #include "algebra/context.h"
+#include "args/kwargs_to_path_metadata.h"
 #include "args/numpy.h"
 #include "intervals/interval.h"
 #include "scalars/scalar_type.h"
@@ -56,19 +59,16 @@ A stream is an abstract stream of data viewed as a rough path.
 
 struct SigArgs {
     optional<intervals::RealInterval> interval;
-    resolution_t resolution;
+    optional<resolution_t> resolution;
     algebra::context_pointer ctx;
 };
 
 static int resolution_converter(PyObject* object, void* out)
 {
     if (Py_TYPE(object) == &PyFloat_Type) {
-        auto tmp = PyFloat_AsDouble(object);
-        int exponent;
-        frexp(tmp, &exponent);
-        *reinterpret_cast<resolution_t*>(out) = -std::min(0, exponent - 1);
+        *reinterpret_cast<optional<resolution_t>*>(out) = python::param_to_resolution(PyFloat_AsDouble(object));
     } else if (Py_TYPE(object) == &PyLong_Type) {
-        *reinterpret_cast<resolution_t*>(out) = PyLong_AsLong(object);
+        *reinterpret_cast<optional<resolution_t>*>(out) = PyLong_AsLong(object);
 #if PY_VERSION_HEX >= 0x030A0000
     } else if (Py_IsNone(object)) {
 #else
@@ -102,7 +102,6 @@ static int parse_sig_args(
                nullptr};
 
     PyObject* interval_or_inf = nullptr;
-    resolution_t resolution = smeta->default_resolution;
     PyObject* ctx = nullptr;
     PyObject* py_sup = nullptr;
     PyObject* dtype = nullptr;
@@ -116,7 +115,7 @@ static int parse_sig_args(
             &interval_or_inf,
             &py_sup,
             &resolution_converter,
-            &resolution,
+            &sigargs->resolution,
             &python::RPyContext_Type,
             &ctx,
             &depth,
@@ -124,10 +123,9 @@ static int parse_sig_args(
     );
     if (result == 0) { return -1; }
 
-    sigargs->resolution = resolution;
 
     // First decide if we're given an interval, inf/sup pair, or global
-    if (interval_or_inf == nullptr) {
+if (interval_or_inf == nullptr || interval_or_inf == Py_None) {
         // Global, nothing to do as optional default is empty.
     } else if (Py_TYPE(interval_or_inf) == &PyFloat_Type || Py_TYPE(interval_or_inf) == &PyLong_Type) {
         if (py_sup == nullptr) {
@@ -231,14 +229,15 @@ static int parse_sig_args(
                 ctype = ((python::PyScalarMetaType*) dtype)->tp_ctype;
             } else if (Py_TYPE(dtype) == &PyUnicode_Type) {
                 const auto* dtype_str = PyUnicode_AsUTF8(dtype);
-                ctype = scalars::get_type(dtype_str);
-                if (ctype == nullptr) {
+                const auto ctype_o = scalars::get_type(dtype_str);
+                if (ctype_o) {
                     PyErr_SetString(
                             PyExc_TypeError,
                             "unrecognised scalar type id"
                     );
                     return -1;
                 }
+                ctype = *ctype_o;
             }
 #ifdef ROUGHPY_WITH_NUMPY
             else if (Py_TYPE(dtype) == &PyArrayDescr_Type) {
@@ -290,14 +289,26 @@ static PyObject* signature(PyObject* self, PyObject* args, PyObject* kwargs)
 
     algebra::FreeTensor result;
     try {
+        py::gil_scoped_release gil;
         if (sigargs.interval) {
-            result = stream->m_data.signature(
-                    *sigargs.interval,
-                    sigargs.resolution,
-                    *sigargs.ctx
-            );
+            if (sigargs.resolution) {
+                result = stream->m_data.signature(
+                        *sigargs.interval,
+                        *sigargs.resolution,
+                        *sigargs.ctx
+                );
+            } else {
+                result = stream->m_data.signature(
+                        *sigargs.interval,
+                        *sigargs.ctx
+                        );
+            }
         } else {
-            result = stream->m_data.signature(sigargs.resolution, *sigargs.ctx);
+            if (sigargs.resolution) {
+                result = stream->m_data.signature(*sigargs.resolution, *sigargs.ctx);
+            } else {
+                result = stream->m_data.signature(*sigargs.ctx);
+            }
         }
     } catch (std::exception& err) {
         PyErr_SetString(PyExc_RuntimeError, err.what());
@@ -320,14 +331,31 @@ static PyObject* log_signature(PyObject* self, PyObject* args, PyObject* kwargs)
     }
 
     algebra::Lie result;
-    if (sigargs.interval) {
-        result = stream->m_data.log_signature(
-                *sigargs.interval,
-                sigargs.resolution,
-                *sigargs.ctx
-        );
-    } else {
-        result = stream->m_data.log_signature(sigargs.resolution, *sigargs.ctx);
+    try {
+        py::gil_scoped_release gil;
+        if (sigargs.interval) {
+            if (sigargs.resolution) {
+                result = stream->m_data.log_signature(
+                    *sigargs.interval,
+                    *sigargs.resolution,
+                    *sigargs.ctx
+                );
+            } else {
+                result = stream->m_data.log_signature(
+                    *sigargs.interval,
+                    *sigargs.ctx
+                );
+            }
+        } else {
+            if (sigargs.resolution) {
+                result = stream->m_data.log_signature(*sigargs.resolution, *sigargs.ctx);
+            } else {
+                result = stream->m_data.log_signature(*sigargs.ctx);
+            }
+        }
+    } catch (std::exception &err) {
+        PyErr_SetString(PyExc_RuntimeError, err.what());
+        return nullptr;
     }
 
     return py::cast(result).release().ptr();
@@ -557,8 +585,8 @@ static PyObject* restrict(PyObject* self, PyObject* args, PyObject* kwargs)
     return python::RPyStream_FromStream(stream.restrict(ivl));
 }
 
-static PyObject* stream___getnewargs_ex__(PyObject* self, PyObject*
-                                                                  RPY_UNUSED_VAR)
+static PyObject*
+stream___getnewargs_ex__(PyObject* self, PyObject* RPY_UNUSED_VAR)
 {
     PyObject* data;
 
@@ -640,12 +668,21 @@ static PyObject* support_getter(PyObject* self)
             .ptr();
 }
 
+static PyObject* resolution_getter(PyObject* self)
+{
+
+    return PyLong_FromLong(reinterpret_cast<python::RPyStream*>(self)
+                                   ->m_data.metadata()
+                                   .default_resolution);
+}
+
 static PyGetSetDef RPyStream_getset[] = {
-        {  "width",   (getter) width_getter, nullptr, nullptr, nullptr},
-        {  "dtype",   (getter) ctype_getter, nullptr, nullptr, nullptr},
-        {    "ctx",     (getter) ctx_getter, nullptr, nullptr, nullptr},
-        {"support", (getter) support_getter, nullptr, nullptr, nullptr},
-        {  nullptr,                 nullptr, nullptr, nullptr, nullptr}
+        {     "width",      (getter) width_getter, nullptr, nullptr, nullptr},
+        {     "dtype",      (getter) ctype_getter, nullptr, nullptr, nullptr},
+        {       "ctx",        (getter) ctx_getter, nullptr, nullptr, nullptr},
+        {   "support",    (getter) support_getter, nullptr, nullptr, nullptr},
+        {"resolution", (getter) resolution_getter, nullptr, nullptr, nullptr},
+        {     nullptr,                    nullptr, nullptr, nullptr, nullptr}
 };
 
 static PyObject* RPyStream_repr(PyObject* self)

@@ -28,27 +28,25 @@
 #ifndef ROUGHPY_SCALARS_KEY_SCALAR_ARRAY_H_
 #define ROUGHPY_SCALARS_KEY_SCALAR_ARRAY_H_
 
+#include "scalar_array.h"
 #include "scalars_fwd.h"
 
-#include "scalar_array.h"
-#include "scalar_type.h"
-
+#include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
+
+#include <cereal/types/vector.hpp>
+#include <algorithm>
+
+// RPY_WARNING_PUSH
+// RPY_CLANG_DISABLE_WARNING(HidingNonVirtualFunction)
 
 namespace rpy {
 namespace scalars {
 
-class RPY_EXPORT KeyScalarArray : public ScalarArray
+class ROUGHPY_SCALARS_EXPORT KeyScalarArray : public ScalarArray
 {
-
-    static constexpr uint32_t keys_owning_flag = 1 << subtype_flag_offset;
-
     const key_type* p_keys = nullptr;
-
-    constexpr bool keys_owned() const noexcept
-    {
-        return (m_flags & keys_owning_flag) != 0;
-    }
+    bool m_owns_keys = false;
 
 public:
     KeyScalarArray() = default;
@@ -57,82 +55,68 @@ public:
     KeyScalarArray(const KeyScalarArray& other);
     KeyScalarArray(KeyScalarArray&& other) noexcept;
 
-    explicit KeyScalarArray(OwnedScalarArray&& sa) noexcept;
+    explicit KeyScalarArray(ScalarArray&& sa) noexcept;
     KeyScalarArray(ScalarArray base, const key_type* keys);
 
     explicit KeyScalarArray(const ScalarType* type) noexcept;
     explicit KeyScalarArray(const ScalarType* type, dimn_t n) noexcept;
-    KeyScalarArray(const ScalarType* type, const void* begin,
-                   dimn_t count) noexcept;
+    KeyScalarArray(
+            const ScalarType* type,
+            const void* begin,
+            dimn_t count
+    ) noexcept;
 
-    explicit operator OwnedScalarArray() && noexcept;
 
-    RPY_NO_DISCARD
-    KeyScalarArray copy_or_move() &&;
+    RPY_NO_DISCARD KeyScalarArray copy_or_move() &&;
 
-    KeyScalarArray& operator=(const ScalarArray& other) noexcept;
+    KeyScalarArray& operator=(const KeyScalarArray& other);
+    KeyScalarArray& operator=(const ScalarArray& other);
     KeyScalarArray& operator=(KeyScalarArray&& other) noexcept;
-    KeyScalarArray& operator=(OwnedScalarArray&& other) noexcept;
+    KeyScalarArray& operator=(ScalarArray&& other) noexcept;
 
-    RPY_NO_DISCARD
-    const key_type* keys() const noexcept { return p_keys; }
-    RPY_NO_DISCARD
-    key_type* keys();
-    RPY_NO_DISCARD
-    bool has_keys() const noexcept { return p_keys != nullptr; }
+    RPY_NO_DISCARD const key_type* keys() const noexcept { return p_keys; }
+    RPY_NO_DISCARD key_type* keys();
+    RPY_NO_DISCARD bool has_keys() const noexcept { return p_keys != nullptr; }
 
     void allocate_scalars(idimn_t count = -1);
     void allocate_keys(idimn_t count = -1);
 
-    //    template <typename Ar>
-    //    void save(Ar& ar, const unsigned int /*version*/) const {
-    //        ar << serial::base_object<ScalarArray>(*this);
-    //        const auto key_count = p_keys != nullptr ? size() : 0;
-    //        ar << key_count;
-    //        ar << serial::make_array(p_keys, key_count);
-    //    }
-    //
-    //    template <typename Ar>
-    //    void load(Ar& ar, const unsigned int /*version*/) {
-    //        ar >> serial::base_object<ScalarArray>(*this);
-    //        auto key_count = 0;
-    //        ar >> key_count;
-    //        ar >> serial::make_array(p_keys, key_count);
-    //    }
 
-    RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
+    RPY_SERIAL_SAVE_FN();
+
 };
-
-RPY_SERIAL_EXTERN_SAVE_CLS(KeyScalarArray)
-RPY_SERIAL_EXTERN_LOAD_CLS(KeyScalarArray)
-
-
-RPY_SERIAL_SAVE_FN_IMPL(KeyScalarArray)
-{
-    RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
-    auto key_count = p_keys != nullptr ? size() : 0;
-    RPY_SERIAL_SERIALIZE_VAL(key_count);
-    Slice<key_type> keys(const_cast<key_type*>(p_keys), key_count);
-    RPY_SERIAL_SERIALIZE_NVP("keys", keys);
-}
 
 RPY_SERIAL_LOAD_FN_IMPL(KeyScalarArray)
 {
     RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
-    dimn_t key_count;
-    RPY_SERIAL_SERIALIZE_VAL(key_count);
+    bool hkeys = false;
+    RPY_SERIAL_SERIALIZE_NVP("has_keys", hkeys);
+    if (hkeys) {
+        std::vector<key_type> tmp_keys;
+        RPY_SERIAL_SERIALIZE_NVP("keys", tmp_keys);
 
-    p_keys = new key_type[key_count];
-    Slice<key_type> key_slice(const_cast<key_type*>(p_keys), key_count);
-    RPY_SERIAL_SERIALIZE_NVP("keys", key_slice);
-    m_flags |= keys_owning_flag;
+        RPY_CHECK(tmp_keys.size() == size());
+        allocate_keys();
+        std::memcpy(keys(), tmp_keys.data(), size() * sizeof(key_type));
+        // std::copy(tmp_keys.begin(), tmp_keys.end(), keys());
+    }
 }
+RPY_SERIAL_SAVE_FN_IMPL(KeyScalarArray)
+{
+    RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
+    bool hkeys = has_keys();
+    RPY_SERIAL_SERIALIZE_NVP("has_keys", hkeys);
+    if (hkeys) {
+        std::vector<key_type> tmp_keys(p_keys, p_keys + size());
+        RPY_SERIAL_SERIALIZE_NVP("keys", tmp_keys);
+    }
+}
+
 
 }// namespace scalars
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(rpy::scalars::KeyScalarArray,
-                            rpy::serial::specialization::member_load_save)
 
+// RPY_WARNING_POP
 #endif// ROUGHPY_SCALARS_KEY_SCALAR_ARRAY_H_

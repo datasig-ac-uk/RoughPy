@@ -28,6 +28,9 @@
 #  ifndef RPY_SERIAL_IMPL_CLASSNAME
 #    error "class name not set"
 #  endif
+#  ifndef RPY_EXPORT_MACRO
+#    define RPY_EXPORT_MACRO
+#  endif
 
 #  include <roughpy/platform/archives.h>
 
@@ -35,22 +38,23 @@
 #    ifdef RPY_SERIAL_NO_VERSION
 #      define ADD_ARCHIVE(ARCHIVE)                                             \
           namespace RPY_SERIAL_EXTERNAL {                                      \
-          template RPY_EXPORT void                                             \
+          template RPY_DLL_EXPORT void                                         \
           serialize(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&);                     \
           }
 #      define ADD_LOAD(ARCHIVE)                                                \
           namespace RPY_SERIAL_EXTERNAL {                                      \
-          template RPY_EXPORT void load(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&); \
+          template RPY_DLL_EXPORT void                                         \
+          load(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&);                          \
           }
 #      define ADD_SAVE(ARCHIVE)                                                \
           namespace RPY_SERIAL_EXTERNAL {                                      \
-          template RPY_EXPORT void                                             \
+          template RPY_DLL_EXPORT void                                         \
           save(ARCHIVE&, const RPY_SERIAL_IMPL_CLASSNAME&);                    \
           }
 #    else
 #      define ADD_ARCHIVE(ARCHIVE)                                             \
           namespace RPY_SERIAL_EXTERNAL {                                      \
-          template RPY_EXPORT void serialize(                                  \
+          template RPY_DLL_EXPORT void serialize(                              \
                   ARCHIVE&,                                                    \
                   RPY_SERIAL_IMPL_CLASSNAME&,                                  \
                   const std::uint32_t                                          \
@@ -58,12 +62,12 @@
           }
 #      define ADD_LOAD(ARCHIVE)                                                \
           namespace RPY_SERIAL_EXTERNAL {                                      \
-          template RPY_EXPORT void                                             \
+          template RPY_DLL_EXPORT void                                         \
           load(ARCHIVE&, RPY_SERIAL_IMPL_CLASSNAME&, const std::uint32_t);     \
           }
 #      define ADD_SAVE(ARCHIVE)                                                \
           namespace RPY_SERIAL_EXTERNAL {                                      \
-          template RPY_EXPORT void                                             \
+          template RPY_DLL_EXPORT void                                         \
           save(ARCHIVE&, const RPY_SERIAL_IMPL_CLASSNAME&, const std::uint32_t \
           );                                                                   \
           }
@@ -71,32 +75,39 @@
 #  else
 #    ifdef RPY_SERIAL_NO_VERSION
 #      define ADD_ARCHIVE(ARCHIVE)                                             \
-          template RPY_EXPORT void RPY_SERIAL_IMPL_CLASSNAME::serialize(       \
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::serialize( \
                   ARCHIVE& ar                                                  \
           )
 #      define ADD_LOAD(ARCHIVE)                                                \
-          template RPY_EXPORT void RPY_SERIAL_IMPL_CLASSNAME::load(ARCHIVE& ar)
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::load(      \
+                  ARCHIVE& ar                                                  \
+          )
 #      define ADD_SAVE(ARCHIVE)                                                \
-          template RPY_EXPORT void RPY_SERIAL_IMPL_CLASSNAME::save(ARCHIVE& ar \
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::save(      \
+                  ARCHIVE& ar                                                  \
           ) const
 #    else
 #      define ADD_ARCHIVE(ARCHIVE)                                             \
-          template RPY_EXPORT void RPY_SERIAL_IMPL_CLASSNAME::serialize(       \
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::serialize( \
                   ARCHIVE& ar,                                                 \
                   const std::uint32_t version                                  \
           )
 #      define ADD_LOAD(ARCHIVE)                                                \
-          template RPY_EXPORT void RPY_SERIAL_IMPL_CLASSNAME::load(            \
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::load(      \
                   ARCHIVE& ar,                                                 \
                   const std::uint32_t version                                  \
           )
 #      define ADD_SAVE(ARCHIVE)                                                \
-          template RPY_EXPORT void RPY_SERIAL_IMPL_CLASSNAME::save(            \
+          template RPY_EXPORT_MACRO void RPY_SERIAL_IMPL_CLASSNAME::save(      \
                   ARCHIVE& ar,                                                 \
                   const std::uint32_t version                                  \
           ) const
 #    endif
 #  endif
+
+#if defined(RPY_SERIAL_DO_REGISTER)
+RPY_SERIAL_REGISTER_CLASS(RPY_SERIAL_IMPL_CLASSNAME)
+#endif
 
 #  if defined(RPY_SERIAL_DO_SPLIT)
 ADD_SAVE(::cereal::BinaryOutputArchive);

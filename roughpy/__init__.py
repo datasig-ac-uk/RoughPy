@@ -33,3 +33,6 @@ except _ilm.PackageNotFoundError:
 
 import roughpy._roughpy
 from roughpy._roughpy import *
+
+from . import tensor_functions
+

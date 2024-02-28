@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,16 +18,21 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include "scalar_type.h"
 
-#include <roughpy/scalars/types.h>
+// #include "scalar.h"
+#include "scalars.h"
+
+#include <roughpy/scalars/scalar_types.h>
+
 
 #include <unordered_map>
 
@@ -41,15 +46,117 @@ static PyMethodDef PyScalarMetaType_methods[] = {
         {nullptr, nullptr, 0, nullptr}
 };
 
-PyObject* PyScalarMetaType_call(PyObject*, PyObject*, PyObject*)
+extern "C" PyObject*
+PyScalarMetaType_call(PyObject* self, PyObject* args, PyObject* kwargs)
 {
-    // TODO: implement this?
-    PyErr_SetString(PyExc_AssertionError, "doh");
-    return nullptr;
+    using namespace python;
+    auto* type = reinterpret_cast<PyTypeObject*>(self);
+    const auto* stype = reinterpret_cast<PyScalarMetaType*>(type)->tp_ctype;
+
+    static const char* kwords[] = {"data", "numerator", "denominator"};
+
+    PyObject* data = nullptr;
+    PyObject* numerator = nullptr;
+    PyObject* denominator = nullptr;
+
+    if (PyArg_ParseTupleAndKeywords(
+                args,
+                kwargs,
+                "|OOO",
+                const_cast<char**>(kwords),
+                &data,
+                &numerator,
+                &denominator
+        )
+        == 0) {
+        return nullptr;
+    }
+    RPY_DBG_ASSERT(stype != nullptr);
+
+    scalars::Scalar result(stype);
+    if (data != nullptr) {
+        if (numerator != nullptr) {
+            if (denominator != nullptr) {
+                PyErr_SetString(
+                        PyExc_ValueError,
+                        "cannot specify data and numerator/denominator"
+                );
+                return nullptr;
+            }
+            denominator = numerator;
+            numerator = data;
+            data = nullptr;
+        } else if (denominator != nullptr) {
+            numerator = data;
+            data = nullptr;
+        }
+    } else if (numerator != nullptr) {
+        if (denominator == nullptr) {
+            PyErr_SetString(PyExc_ValueError, "no denominator provided");
+            return nullptr;
+        }
+    } else if (denominator != nullptr) {
+        PyErr_SetString(PyExc_ValueError, "no numerator provided");
+        return nullptr;
+    } else {
+        // No arguments means zero
+
+        try {
+            return py::cast(std::move(result)).release().ptr();
+        } catch (std::exception& exc) {
+            PyErr_SetString(PyExc_RuntimeError, "failed");
+            return nullptr;
+        }
+    }
+
+    if (data != nullptr) {
+        try {
+            assign_py_object_to_scalar(result, data);
+        } catch (std::exception& exc) {
+            PyErr_SetString(PyExc_RuntimeError, "failed");
+            return nullptr;
+        }
+    } else {
+        RPY_DBG_ASSERT(numerator != nullptr);
+        RPY_DBG_ASSERT(denominator != nullptr);
+        if (PyLong_Check(numerator) == 0) {
+            PyErr_SetString(PyExc_TypeError, "numerator should be an int");
+            return nullptr;
+        }
+        if (PyLong_Check(denominator) == 0) {
+            PyErr_SetString(PyExc_TypeError, "denominator should be an int");
+            return nullptr;
+        }
+
+        auto num = PyLong_AsLongLong(numerator);
+        auto denom = PyLong_AsLongLong(denominator);
+
+        try {
+            result = scalars::Scalar(stype, num, denom);
+        } catch (std::exception& exc) {
+            PyErr_SetString(PyExc_RuntimeError, "failed");
+            return nullptr;
+        }
+    }
+
+    // auto* obj = reinterpret_cast<PyScalar*>(type->tp_alloc(type, 0));
+    // if (obj == nullptr) { return nullptr; }
+    //
+    // construct_inplace(&obj->m_content);
+
+    try {
+        return py::cast(std::move(result)).release().ptr();
+    } catch (std::exception& exc) {
+        PyErr_SetString(PyExc_RuntimeError, "failed");
+        return nullptr;
+    }
+
+    // return reinterpret_cast<PyObject*>(obj);
 }
 static PyTypeObject PyScalarMetaType_type = {
         PyVarObject_HEAD_INIT(
-                &PyType_Type, 0
+                &PyType_Type,
+                0
         ) "_roughpy.ScalarMeta",          /* tp_name */
         sizeof(python::PyScalarMetaType), /* tp_basicsize */
         0,                                /* tp_itemsize */
@@ -161,7 +268,8 @@ static std::unordered_map<const scalars::ScalarType*, py::object>
         ctype_type_cache;
 
 void python::register_scalar_type(
-        const scalars::ScalarType* ctype, pybind11::handle py_type
+        const scalars::ScalarType* ctype,
+        pybind11::handle py_type
 )
 {
     auto& found = ctype_type_cache[ctype];
@@ -181,7 +289,7 @@ py::object python::to_ctype_type(const scalars::ScalarType* type)
 
     RPY_THROW(
             std::runtime_error,
-            "no matching ctype for type " + type->info().name
+            "no matching ctype for type " + string(type->name())
     );
 }
 
@@ -193,7 +301,8 @@ char python::format_to_type_char(const string& fmt)
         switch (chr) {
             case '<':// little-endian
 #if BOOST_ENDIAN_BIG_BYTE || BOOST_ENDIAN_BIG_WORD
-                RPY_THROW(std::runtime_error,
+                RPY_THROW(
+                        std::runtime_error,
                         "non-native byte ordering not supported"
                 );
 #else
@@ -201,7 +310,8 @@ char python::format_to_type_char(const string& fmt)
 #endif
             case '>':// big-endian
 #if BOOST_ENDIAN_LITTLE_BYTE || BOOST_ENDIAN_LITTLE_WORD
-                RPY_THROW(std::runtime_error, 
+                RPY_THROW(
+                        std::runtime_error,
                         "non-native byte ordering not supported"
                 );
 #else
@@ -214,7 +324,8 @@ char python::format_to_type_char(const string& fmt)
 #endif
             case '!':// network ( = big-endian )
 #if BOOST_ENDIAN_LITTLE_BYTE || BOOST_ENDIAN_LITTLE_WORD
-                RPY_THROW(std::runtime_error,
+                RPY_THROW(
+                        std::runtime_error,
                         "non-native byte ordering not supported"
                 );
 #else
@@ -236,49 +347,74 @@ char python::format_to_type_char(const string& fmt)
 after_loop:
     return python_format;
 }
-string python::py_buffer_to_type_id(const py::buffer_info& info)
+// string python::py_buffer_to_type_id(const py::buffer_info& info)
+//{
+//     using scalars::type_id_of;
+//
+//     auto python_format = format_to_type_char(info.format);
+//     string format;
+//     switch (python_format) {
+//         case 'd': format = type_id_of<double>(); break;
+//         case 'f': format = type_id_of<float>(); break;
+//         case 'l': {
+//             if (info.itemsize == sizeof(int)) {
+//                 format = type_id_of<int>();
+//             } else {
+//                 format = type_id_of<long long>();
+//             }
+//             break;
+//         }
+//         case 'q': format = scalars::type_id_of<long long>(); break;
+//         case 'L':
+//             if (info.itemsize == sizeof(int)) {
+//                 format = type_id_of<unsigned int>();
+//             } else {
+//                 format = type_id_of<unsigned long long>();
+//             }
+//             break;
+//         case 'Q': format = type_id_of<unsigned long long>(); break;
+//         case 'i': format = type_id_of<int>(); break;
+//         case 'I': format = type_id_of<unsigned int>(); break;
+//         case 'n':
+//             format = type_id_of<scalars::signed_size_type_marker>();
+//             break;
+//         case 'N':
+//             format = type_id_of<scalars::unsigned_size_type_marker>();
+//             break;
+//         case 'h': format = type_id_of<short>(); break;
+//         case 'H': format = type_id_of<unsigned short>(); break;
+//         case 'b':
+//         case 'c': format = type_id_of<char>(); break;
+//         case 'B': format = type_id_of<unsigned char>(); break;
+//         default: RPY_THROW(std::runtime_error, "Unrecognised data format");
+//     }
+//
+//     return format;
+// }
+
+devices::TypeInfo python::py_buffer_to_type_info(const py::buffer_info& info)
 {
-    using scalars::type_id_of;
+    using rpy::devices::type_info;
 
-    auto python_format = format_to_type_char(info.format);
-    string format;
-    switch (python_format) {
-        case 'd': format = type_id_of<double>(); break;
-        case 'f': format = type_id_of<float>(); break;
-        case 'l': {
-            if (info.itemsize == sizeof(int)) {
-                format = type_id_of<int>();
-            } else {
-                format = type_id_of<long long>();
-            }
-            break;
-        }
-        case 'q': format = scalars::type_id_of<long long>(); break;
-        case 'L':
-            if (info.itemsize == sizeof(int)) {
-                format = type_id_of<unsigned int>();
-            } else {
-                format = type_id_of<unsigned long long>();
-            }
-            break;
-        case 'Q': format = type_id_of<unsigned long long>(); break;
-        case 'i': format = type_id_of<int>(); break;
-        case 'I': format = type_id_of<unsigned int>(); break;
-        case 'n':
-            format = type_id_of<scalars::signed_size_type_marker>();
-            break;
-        case 'N':
-            format = type_id_of<scalars::unsigned_size_type_marker>();
-            break;
-        case 'h': format = type_id_of<short>(); break;
-        case 'H': format = type_id_of<unsigned short>(); break;
+    switch (format_to_type_char(info.format)) {
+        case 'd': return type_info<double>();
+        case 'f': return type_info<float>();
+        case 'l': return type_info<long>();
+        case 'q': return type_info<long long>();
+        case 'L': return type_info<unsigned long>();
+        case 'Q': return type_info<unsigned long long>();
+        case 'i': return type_info<int>();
+        case 'I': return type_info<unsigned int>();
+        case 'n': return type_info<ptrdiff_t>();
+        case 'N': return type_info<size_t>();
+        case 'h': return type_info<short>();
+        case 'H': return type_info<unsigned short>();
         case 'b':
-        case 'c': format = type_id_of<char>(); break;
-        case 'B': format = type_id_of<unsigned char>(); break;
-        default: RPY_THROW(std::runtime_error, "Unrecognised data format");
+        case 'c': return type_info<char>();
+        case 'B': return type_info<unsigned char>();
+        default:
+            RPY_THROW(std::runtime_error, "Unsupported data format for arrays");
     }
-
-    return format;
 }
 
 const scalars::ScalarType*
@@ -289,26 +425,28 @@ python::py_buffer_to_scalar_type(const py::buffer_info& info)
     auto python_format = format_to_type_char(info.format);
 
     switch (python_format) {
-        case 'f': return ScalarType::of<float>();
-        case 'd': return ScalarType::of<double>();
+        case 'f': return *ScalarType::of<float>();
+        case 'd': return *ScalarType::of<double>();
         default:
-            RPY_THROW(py::type_error,
+            RPY_THROW(
+                    py::type_error,
                     "no matching type for buffer type " + string(&python_format)
             );
     }
     // TODO: Add custom type handling
 
-    return ScalarType::of<double>();
+    return *ScalarType::of<double>();
 }
 const scalars::ScalarType* python::py_type_to_scalar_type(const py::type& type)
 {
     if (type.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type)) {
-        return scalars::ScalarType::of<double>();
+        return *scalars::ScalarType::of<double>();
     } else if (type.ptr() == reinterpret_cast<PyObject*>(&PyLong_Type)) {
-        return scalars::ScalarType::of<double>();
+        return *scalars::ScalarType::of<double>();
     }
 
-    RPY_THROW(py::type_error,
+    RPY_THROW(
+            py::type_error,
             "no matching scalar type for type " + pytype_name(type)
     );
 }
@@ -333,7 +471,10 @@ py::type python::scalar_type_to_py_type(const scalars::ScalarType* type)
         );
     }
 
-    RPY_THROW(py::type_error, "no matching type for type " + type->info().name);
+    RPY_THROW(
+            py::type_error,
+            "no matching type for type " + string(type->name())
+    );
 }
 
 void python::init_scalar_types(pybind11::module_& m)
@@ -345,7 +486,8 @@ void python::init_scalar_types(pybind11::module_& m)
     }
 
     m.add_object(
-            "ScalarMeta", reinterpret_cast<PyObject*>(&PyScalarMetaType_type)
+            "ScalarMeta",
+            reinterpret_cast<PyObject*>(&PyScalarMetaType_type)
     );
 
     Py_INCREF(&PyScalarMetaType_type);
@@ -361,14 +503,34 @@ void python::init_scalar_types(pybind11::module_& m)
 
     m.add_object("ScalarTypeBase", get_scalar_baseclass());
 
-    make_scalar_type(m, scalars::ScalarType::of<float>());
-    make_scalar_type(m, scalars::ScalarType::of<double>());
+    make_scalar_type(m, *scalars::ScalarType::of<float>());
+    make_scalar_type(m, *scalars::ScalarType::of<double>());
     make_scalar_type(
-            m, scalars::ScalarType::of<scalars::rational_scalar_type>()
+            m,
+            *scalars::ScalarType::of<scalars::rational_scalar_type>()
     );
-    make_scalar_type(m, scalars::ScalarType::of<scalars::half>());
-    make_scalar_type(m, scalars::ScalarType::of<scalars::bfloat16>());
+    make_scalar_type(m, *scalars::ScalarType::of<scalars::half>());
+    make_scalar_type(m, *scalars::ScalarType::of<scalars::bfloat16>());
     make_scalar_type(
-            m, scalars::ScalarType::of<scalars::rational_poly_scalar>()
+            m,
+            *scalars::ScalarType::of<scalars::rational_poly_scalar>()
     );
+}
+
+PyObject* python::PyScalarType_FromScalarType(const scalars::ScalarType* type)
+{
+    if (type == nullptr) {
+        PyErr_SetString(PyExc_RuntimeError, "invalid scalar type");
+        return nullptr;
+    }
+
+    const auto found = ctype_type_cache.find(type);
+    if (found != ctype_type_cache.end()) {
+        return py::reinterpret_borrow<py::object>(found->second)
+                .release()
+                .ptr();
+    }
+
+    PyErr_SetString(PyExc_RuntimeError, "unregistered scalar type");
+    return nullptr;
 }

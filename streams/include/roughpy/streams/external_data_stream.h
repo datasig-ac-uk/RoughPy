@@ -43,7 +43,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT ExternalDataStreamSource
+class ROUGHPY_STREAMS_EXPORT ExternalDataStreamSource
 {
 
 public:
@@ -63,7 +63,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(ExternalDataStreamSource) {}
 
 class ExternalDataStreamConstructor;
 
-class RPY_EXPORT ExternalDataSourceFactory
+class ROUGHPY_STREAMS_EXPORT ExternalDataSourceFactory
 {
 
 public:
@@ -93,7 +93,7 @@ public:
     virtual Stream construct_stream(void* payload) const = 0;
 };
 
-class RPY_EXPORT ExternalDataStreamConstructor
+class ROUGHPY_STREAMS_EXPORT ExternalDataStreamConstructor
 {
     const ExternalDataSourceFactory* p_factory = nullptr;
     void* p_payload = nullptr;
@@ -133,7 +133,7 @@ public:
     operator bool() const noexcept { return p_factory != nullptr; }
 };
 
-class RPY_EXPORT ExternalDataStream : public DyadicCachingLayer
+class ROUGHPY_STREAMS_EXPORT ExternalDataStream : public DyadicCachingLayer
 {
     std::unique_ptr<ExternalDataStreamSource> p_source;
 
@@ -188,7 +188,11 @@ public:
     }
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(ExternalDataStream)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(ExternalDataStream)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(ExternalDataStream)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(ExternalDataStream) {
     RPY_SERIAL_SERIALIZE_BASE(DyadicCachingLayer);

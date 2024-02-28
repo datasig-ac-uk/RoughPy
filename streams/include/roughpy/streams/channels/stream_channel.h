@@ -38,8 +38,9 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
-#include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
+
+#include "roughpy_streams_export.h"
 
 namespace rpy {
 namespace streams {
@@ -63,7 +64,7 @@ enum struct ChannelType : uint8_t
  * typically accessed via a schema, which maintains the collection of
  * all channels associated with a stream.
  */
-class RPY_EXPORT StreamChannel
+class ROUGHPY_STREAMS_EXPORT StreamChannel
 {
     ChannelType m_type;
     const scalars::ScalarType* p_scalar_type = nullptr;
@@ -98,15 +99,14 @@ public:
     RPY_NO_DISCARD virtual bool is_lead_lag() const;
 
     virtual void convert_input(
-            scalars::ScalarPointer& dst, const scalars::ScalarPointer& src,
-            dimn_t count
+            scalars::ScalarArray& dst, const scalars::ScalarArray& src
     ) const;
-
-    template <typename T>
-    void convert_input(scalars::ScalarPointer& dst, const T& single_data) const
-    {
-        convert_input(dst, {scalars::type_id_of<T>(), &single_data}, 1);
-    }
+//
+//    template <typename T>
+//    void convert_input(scalars::ScalarPointer& dst, const T& single_data) const
+//    {
+//        convert_input(dst, {scalars::type_id_of<T>(), &single_data}, 1);
+//    }
 
     virtual StreamChannel& add_variant(string variant_label);
 
@@ -123,14 +123,19 @@ public:
     RPY_SERIAL_LOAD_FN();
 };
 
-RPY_SERIAL_EXTERN_LOAD_CLS(StreamChannel)
-RPY_SERIAL_EXTERN_SAVE_CLS(StreamChannel)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(StreamChannel)
+RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(StreamChannel)
+#else
+RPY_SERIAL_EXTERN_LOAD_CLS_IMP(StreamChannel)
+RPY_SERIAL_EXTERN_SAVE_CLS_IMP(StreamChannel)
+#endif
 
 RPY_SERIAL_SAVE_FN_IMPL(StreamChannel)
 {
     RPY_SERIAL_SERIALIZE_NVP("type", m_type);
     RPY_SERIAL_SERIALIZE_NVP(
-            "dtype_id", (p_scalar_type == nullptr) ? "" : p_scalar_type->id()
+            "dtype_id", (p_scalar_type == nullptr) ? "" : string(p_scalar_type->id())
     );
 }
 RPY_SERIAL_LOAD_FN_IMPL(StreamChannel) {
@@ -138,7 +143,9 @@ RPY_SERIAL_LOAD_FN_IMPL(StreamChannel) {
     string id;
     RPY_SERIAL_SERIALIZE_NVP("dtype_id", id);
     if (!id.empty()) {
-        p_scalar_type = scalars::get_type(id);
+        auto tp_o = scalars::get_type(id);
+        RPY_CHECK(tp_o);
+        p_scalar_type = *tp_o;
     }
 }
 

@@ -29,8 +29,6 @@
 
 #include <roughpy/core/helpers.h>
 #include <roughpy/scalars/key_scalar_array.h>
-#include <roughpy/scalars/owned_scalar_array.h>
-#include <roughpy/scalars/scalar_pointer.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/streams/lie_increment_stream.h>
 #include <roughpy/streams/stream.h>
@@ -41,9 +39,13 @@
 #include "scalars/scalars.h"
 #include "stream.h"
 
+#include <limits>
+
 using namespace rpy;
 using namespace rpy::python;
 using namespace pybind11::literals;
+
+using scalars::scalar_cast;
 
 static const char* LIE_INCR_STREAM_DOC
         = R"rpydoc(A basic stream type defined by a sequence of increments
@@ -55,22 +57,11 @@ void buffer_to_indices(
         const py::buffer_info& info
 )
 {
-    auto count = info.size;
-    const auto* ptr = info.ptr;
+    indices.resize(info.size);
+    scalars::ScalarArray dst(indices.data(), indices.size());
+    scalars::ScalarArray src(py_buffer_to_type_info(info), info.ptr, info.size);
 
-    indices.resize(count);
-    auto* dst = indices.data();
-    if (info.format[0] == 'd') {
-        memcpy(dst, ptr, count * sizeof(double));
-    } else {
-        auto conversion
-                = scalars::get_conversion(py_buffer_to_type_id(info), "f64");
-        conversion(
-                scalars::ScalarPointer{nullptr, dst},
-                scalars::ScalarPointer{nullptr, ptr},
-                count
-        );
-    }
+    (*scalars::scalar_type_of<param_t>())->convert_copy(dst, src);
 }
 
 static py::object lie_increment_stream_from_increments(
@@ -159,10 +150,10 @@ static py::object lie_increment_stream_from_increments(
 
                     const auto pos = static_cast<dimn_t>(found - begin);
 
-                    add_index(row[pos].to_scalar_t());
+                    add_index(scalar_cast<param_t>(row[pos]));
                 } else {
                     RPY_CHECK(icol < row.size());
-                    add_index(row[icol].to_scalar_t());
+                    add_index(scalar_cast<param_t>(row[icol]));
                 }
             }
         } else if (py::isinstance<py::sequence>(indices_arg)) {
@@ -179,6 +170,7 @@ static py::object lie_increment_stream_from_increments(
     if (indices.empty()) {
         indices.reserve(num_increments);
         for (dimn_t i = 0; i < num_increments; ++i) { indices.emplace_back(i); }
+        md.resolution = 0;
     } else if (indices.size() != num_increments) {
         RPY_THROW(
                 py::value_error,
@@ -187,18 +179,36 @@ static py::object lie_increment_stream_from_increments(
         );
     }
 
-    if (!indices.empty()) {
-        auto minmax = std::minmax_element(indices.begin(), indices.end());
-        effective_support = intervals::RealInterval(
-                *minmax.first,
-                *minmax.second + ldexp(1.0, -md.resolution),
-                md.interval_type
-        );
-    }
+
 
     if (!md.schema) {
         md.schema = std::make_shared<streams::StreamSchema>(md.width);
     }
+
+    if (!md.resolution) {
+        RPY_DBG_ASSERT(!indices.empty());
+
+        auto min_diff = std::numeric_limits<param_t>::infinity();
+        auto previous = 0.0;
+
+        for (const auto& idx : indices) {
+            auto diff = idx - previous;
+            if (diff < min_diff) {
+                min_diff = diff;
+            }
+            md.resolution = python::param_to_resolution(min_diff) + 1;
+        }
+    }
+
+    if (!indices.empty()) {
+        auto minmax = std::minmax_element(indices.begin(), indices.end());
+        effective_support = intervals::RealInterval(
+                *minmax.first,
+                *minmax.second + ldexp(1.0, -*md.resolution),
+                md.interval_type
+        );
+    }
+
 
     auto result = streams::Stream(streams::LieIncrementStream(
             ks_stream.data_stream,
@@ -208,7 +218,7 @@ static py::object lie_increment_stream_from_increments(
              md.ctx,
              md.scalar_type,
              md.vector_type ? *md.vector_type : algebra::VectorType::Dense,
-             md.resolution},
+             *md.resolution},
             md.schema
     ));
     if (md.support) { result.restrict_to(*md.support); }

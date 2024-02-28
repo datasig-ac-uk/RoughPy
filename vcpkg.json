@@ -1,7 +1,6 @@
 {
   "name" : "roughpy",
   "version-string" : "1.0.0",
-  "builtin-baseline" : "4f9d25a7f299db656c376af402637819ee2caba0",
   "dependencies" : [ {
     "name" : "libsndfile",
     "version>=" : "1.2.0"
@@ -40,12 +39,8 @@
     "name" : "boost-dll",
     "version>=" : "1.83.0"
   }, {
-    "name" : "gtest",
-    "version>=" : "1.13.0"
-  }, {
-    "name" : "mpir",
-    "version>=" : "2022-03-02#1",
-    "platform" : "windows"
+    "name" : "gmp",
+    "version>=" : "6.2.1#21"
   }, {
     "name" : "pcg",
     "version>=" : "2021-04-06"
@@ -61,5 +56,20 @@
   }, {
     "name" : "boost-interprocess",
     "version>=" : "1.83.0"
-  } ]
+  }, {
+    "name" : "opencl",
+    "version>=" : "v2023.02.06#2"
+  }, {
+    "name" : "boost-stacktrace",
+    "version>=" : "1.83.0"
+  } ],
+  "features" : {
+    "tests" : {
+      "description" : "dependencies for the unit tests",
+      "dependencies" : [ {
+        "name" : "gtest",
+        "version>=" : "1.13.0"
+      } ]
+    }
+  }
 }

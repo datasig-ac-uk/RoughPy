@@ -34,7 +34,7 @@
 
 #include "roughpy_module.h"
 #include <roughpy/scalars/scalars_fwd.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars/scalar_types.h>
 
 struct RPyMonomial {
     PyObject_VAR_HEAD //
@@ -53,6 +53,10 @@ struct RPyPolynomial {
 };
 
 extern PyTypeObject RPyPolynomial_Type;
+
+PyObject* PyPolynomial_FromPolynomial(rpy::scalars::rational_poly_scalar&& poly
+) noexcept;
+
 
 inline bool RPyMonomial_Check(PyObject* obj)
 {

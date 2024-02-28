@@ -38,7 +38,7 @@ namespace rpy { namespace streams {
 
 
 
-class RPY_EXPORT IncrementChannel : public LeadLaggableChannel
+class ROUGHPY_STREAMS_EXPORT IncrementChannel : public LeadLaggableChannel
 {
 public:
 
@@ -49,7 +49,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(IncrementChannel)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(IncrementChannel)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(IncrementChannel)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(IncrementChannel) {
     RPY_SERIAL_SERIALIZE_BASE(LeadLaggableChannel);
@@ -60,6 +64,6 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(IncrementChannel) {
 RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::IncrementChannel,
                             rpy::serial::specialization::member_serialize)
 
-RPY_SERIAL_REGISTER_CLASS(rpy::streams::IncrementChannel)
+RPY_SERIAL_FORCE_DYNAMIC_INIT(increment_channel)
 
 #endif// ROUGHPY_STREAMS_INCREMENT_CHANNEL_H

@@ -30,8 +30,10 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+#include <roughpy/platform/errors.h>
 
 #include <memory>
+#include "roughpy_algebra_export.h"
 
 namespace rpy {
 namespace algebra {

@@ -75,8 +75,8 @@ struct with_interface {
     using type = AlgebraImplementation<IFace, Impl, StorageModel>;
 };
 
-RPY_EXPORT void print_empty_algebra(std::ostream& os);
-RPY_EXPORT const scalars::ScalarType*
+ROUGHPY_ALGEBRA_EXPORT void print_empty_algebra(std::ostream& os);
+ROUGHPY_ALGEBRA_EXPORT const scalars::ScalarType*
 context_to_scalars(const context_pointer& ptr);
 
 }// namespace dtl
@@ -191,7 +191,8 @@ public:
         return p_impl.get();
     }
 
-
+    RPY_NO_DISCARD
+    basis_type basis() const;
     RPY_NO_DISCARD
     dimn_t dimension() const;
     RPY_NO_DISCARD
@@ -302,9 +303,19 @@ private:
     RPY_SERIAL_LOAD_FN();
 };
 
+
+template <
+        typename Interface,
+        template <typename, template <typename> class> class DerivedImpl>
+inline std::ostream&
+operator<<(std::ostream& os, const AlgebraBase<Interface, DerivedImpl>& alg)
+{
+    return alg.print(os);
+}
+
 namespace dtl {
 
-RPY_EXPORT
+ROUGHPY_ALGEBRA_EXPORT
 UnspecifiedAlgebraType
 try_create_new_empty(context_pointer ctx, AlgebraType alg_type);
 
@@ -314,13 +325,14 @@ std::unique_ptr<Interface> downcast_interface_ptr(UnspecifiedAlgebraType ptr)
     return std::unique_ptr<Interface>(reinterpret_cast<Interface*>(ptr.release()
     ));
 }
-RPY_EXPORT
+
+ROUGHPY_ALGEBRA_EXPORT
 UnspecifiedAlgebraType construct_dense_algebra(
         scalars::ScalarArray&& data, const context_pointer& ctx,
         AlgebraType atype
 );
 
-RPY_EXPORT void check_contexts_compatible(
+ROUGHPY_ALGEBRA_EXPORT void check_contexts_compatible(
         const context_pointer& ref, const context_pointer& other
 );
 }// namespace dtl

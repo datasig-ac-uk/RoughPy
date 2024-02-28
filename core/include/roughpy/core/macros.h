@@ -34,9 +34,7 @@
 #define ROUGHPY_CORE_MACROS_H
 
 #include <cassert>
-#include <sstream>
-#include <stdexcept>
-#include <string>
+
 
 #ifdef __has_builtin
 #  define RPY_HAS_BUILTIN(x) __has_builtin(x)
@@ -86,7 +84,7 @@
 #if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__))            \
         && !defined(RPY_DEBUG)
 #  define RPY_DEBUG
-#else
+#elif !defined(RPY_DEBUG)
 #  undef RPY_DEBUG
 #endif
 
@@ -120,6 +118,11 @@
 
 #if defined(RPY_PLATFORM_WINDOWS) || defined(__CYGWIN__)
 #  define RPY_COMPILING_DLL
+#  define RPY_DLL_EXPORT __declspec(dllexport)
+#  define RPY_DLL_IMPORT __declspec(dllimport)
+#else
+#  define RPY_DLL_EXPORT
+#  define RPY_DLL_IMPORT
 #endif
 
 #ifndef RPY_DISABLE_EXPORTS
@@ -143,21 +146,26 @@
 #  else
 #    if (defined(RPY_GCC) && RPY_GCC >= 4) || defined(RPY_CLANG)
 #      if defined(RPY_BUILDING_LIBRARY)
-#        define RPY_EXPORT __attribute__((visibility("default")))
 #        define RPY_LOCAL __attribute__((visibility("hidden")))
 #      else
-#        define RPY_EXPORT __attribute__((visibility("default")))
 #        define RPY_LOCAL __attribute__((visibility("hidden")))
 #      endif
 #    else
-#      define RPY_EXPORT
 #      define RPY_LOCAL
 #    endif
 #  endif
 #else
-#  define RPY_EXPORT
 #  define RPY_LOCAL
 #endif
+
+/*
+ * MSVC pre-defines min and max macros. undef them because this is insane
+ */
+#ifdef RPY_PLATFORM_WINDOWS
+#  undef min
+#  undef max
+#endif
+
 
 #if RPY_CPP_VERSION >= 201403L
 #  define RPY_CPP_14
@@ -334,83 +342,14 @@
 #  define RPY_FILE_NAME __FILE__
 #endif
 
-/*
- * Check macro definition.
- *
- * This macro checks that the given expression evaluates to true (under the
- * assumption that it will usually be true), and throws an error if this
- * evaluates to false.
- *
- * Optionally, one can provide a message string literal that will be used
- * instead of the default, and an optional error type. The default error type
- * is a std::runtime_error.
- */
-namespace rpy {
-namespace errors {
 
-template <typename E>
-RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
-        std::string msg, const char* filename, int lineno, const char* func
-)
-{
-    std::stringstream ss;
-    ss << msg << " at lineno " << lineno << " in " << filename
-       << " in function " << func;
-    throw E(ss.str());
-}
-
-template <typename E>
-RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
-        const char* msg, const char* filename, int lineno, const char* func
-)
-{
-    std::stringstream ss;
-    ss << msg << " at lineno " << lineno << " in " << filename
-       << " in function " << func;
-    throw E(ss.str());
-}
-
-}// namespace errors
-}// namespace rpy
-
-// Dispatch the check macro on the number of arguments
-// See: https://stackoverflow.com/a/16683147/9225581
-#define RPY_CHECK_3(EXPR, MSG, TYPE)                                           \
-    do {                                                                       \
-        if (RPY_UNLIKELY(!(EXPR))) {                                           \
-            ::rpy::errors::throw_exception<TYPE>(                              \
-                    MSG, RPY_FILE_NAME, __LINE__, RPY_FUNC_NAME                \
-            );                                                                 \
-        }                                                                      \
-    } while (0)
-
-#define RPY_CHECK_2(EXPR, MSG) RPY_CHECK_3(EXPR, MSG, std::runtime_error)
-
-#define RPY_CHECK_1(EXPR) RPY_CHECK_2(EXPR, "failed check \"" #EXPR "\"")
-
-#define RPY_CHECK_CNT_IMPL(_1, _2, _3, COUNT, ...) COUNT
-// Always pass one more argument than expected, so clang doesn't complain about
-// empty parameter packs.
-#define RPY_CHECK_CNT(...) RPY_CHECK_CNT_IMPL(__VA_ARGS__, 3, 2, 1, 0)
-#define RPY_CHECK_SEL(NUM) RPY_JOIN(RPY_CHECK_, NUM)
-
-#define RPY_CHECK(...)                                                         \
-    RPY_INVOKE_VA(RPY_CHECK_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
-
-#define RPY_THROW_2(EXC_TYPE, MSG)                                             \
-    ::rpy::errors::throw_exception<EXC_TYPE>(                                  \
-            MSG, __FILE__, __LINE__, RPY_FUNC_NAME                             \
-    )
-#define RPY_THROW_1(MSG) RPY_THROW_2(std::runtime_error, MSG)
-
-#define RPY_THROW_SEL(NUM) RPY_JOIN(RPY_THROW_, NUM)
-#define RPY_THROW_CNT_IMPL(_1, _2, COUNT, ...) COUNT
-#define RPY_THROW_CNT(...) RPY_THROW_CNT_IMPL(__VA_ARGS__, 2, 1, 0)
-#define RPY_THROW(...)                                                         \
-    RPY_INVOKE_VA(RPY_THROW_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
 #ifdef RPY_DEBUG
-#  define RPY_DBG_ASSERT(ARG) assert(ARG)
+#  if defined(RPY_GCC) || defined(RPY_CLANG)
+#    define RPY_DBG_ASSERT(ARG) assert(ARG)
+#  else
+#    define RPY_DBG_ASSERT(ARG) assert(ARG)
+#  endif
 #else
 #  define RPY_DBG_ASSERT(ARG) (void) 0
 #endif

@@ -58,7 +58,7 @@ namespace streams {
  * over the whole interval.
  *
  */
-class DyadicCachingLayer : public StreamInterface
+class ROUGHPY_STREAMS_EXPORT DyadicCachingLayer : public StreamInterface
 {
     mutable std::map<intervals::DyadicInterval, algebra::Lie> m_cache;
     mutable std::recursive_mutex m_compute_lock;
@@ -111,8 +111,14 @@ protected:
     void dump_cache() const;
 
 };
-RPY_SERIAL_EXTERN_LOAD_CLS(DyadicCachingLayer)
-RPY_SERIAL_EXTERN_SAVE_CLS(DyadicCachingLayer)
+
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(DyadicCachingLayer)
+RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(DyadicCachingLayer)
+#else
+RPY_SERIAL_EXTERN_LOAD_CLS_IMP(DyadicCachingLayer)
+RPY_SERIAL_EXTERN_SAVE_CLS_IMP(DyadicCachingLayer)
+#endif
 
 }// namespace streams
 }// namespace rpy

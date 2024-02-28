@@ -137,7 +137,7 @@ const scalars::ScalarType*
 StreamSchema::get_most_appropriate_scalar_type() const
 {
     // Replace this with more sound logic based on channel data types.
-    return scalars::ScalarType::of<double>();
+    return *scalars::ScalarType::of<double>();
 }
 
 dimn_t StreamSchema::channel_to_stream_dim(dimn_t channel_no) const
@@ -278,6 +278,7 @@ typename StreamSchema::lie_key StreamSchema::time_channel_to_lie_key() const
     return static_cast<lie_key>(width_to_iterator(end())) + 1;
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::StreamSchema
 
 #include <roughpy/platform/serialization_instantiations.inl>

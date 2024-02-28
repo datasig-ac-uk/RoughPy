@@ -39,8 +39,7 @@ using namespace rpy::algebra;
 namespace rpy {
 namespace algebra {
 
-
-template class RPY_EXPORT_INSTANTIATION
+template class RPY_DLL_EXPORT
         AlgebraBase<FreeTensorInterface, FreeTensorImplementation>;
 
 }// namespace algebra
@@ -79,6 +78,7 @@ basis_setup_helper<FreeTensor>::get(const context_pointer& ctx)
     return ctx->get_tensor_basis();
 }
 
+#define RPY_EXPORT_MACRO ROUGHPY_ALGEBRA_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::algebra::FreeTensor
 
 #include <roughpy/platform/serialization_instantiations.inl>

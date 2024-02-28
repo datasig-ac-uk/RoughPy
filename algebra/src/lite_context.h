@@ -32,13 +32,8 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LITE_CONTEXT_H
 #define ROUGHPY_ALGEBRA_SRC_LITE_CONTEXT_H
 
-#include <roughpy/scalars/key_scalar_array.h>
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_array.h>
-#include <roughpy/scalars/scalar_pointer.h>
-#include <roughpy/scalars/scalar_stream.h>
-#include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/types.h>
+#include <roughpy/scalars.h>
+#include <roughpy/scalars/scalar_types.h>
 
 #include <roughpy/algebra/interfaces/free_tensor_interface.h>
 #include <roughpy/algebra/interfaces/lie_interface.h>
@@ -66,6 +61,7 @@
 #include "libalgebra_lite_internal/lie_basis_info.h"
 #include "libalgebra_lite_internal/lie_info.h"
 #include "libalgebra_lite_internal/lite_vector_selector.h"
+#include "libalgebra_lite_internal/rational_coefficients.h"
 #include "libalgebra_lite_internal/shuffle_tensor_info.h"
 #include "libalgebra_lite_internal/sparse_mutable_ref_scalar_trait.h"
 #include "libalgebra_lite_internal/sparse_vector_iterator.h"
@@ -346,12 +342,12 @@ template <typename TensorObject>
 void tensor_populate_vcd(VectorConstructionData& data, const TensorObject& arg)
 {
 
+    auto sz = arg.size();
     if (arg.storage_type() == VectorType::Dense) {
         // Simply borrow the data pointer
         data.data = *arg.dense_data();
-    } else {
+    } else if (sz > 0) {
         // Construct key-value arrays to pass to construct_impl
-        auto sz = arg.size();
         data.data.allocate_scalars(sz);
         data.data.allocate_keys();
 
@@ -431,16 +427,18 @@ OutType LiteContext<Coefficients>::construct_impl(
 
     if (data.data.is_null()) { return result; }
 
-    const scalar_type* data_ptr;
+    Slice<const scalar_type> raw_data;
 
-    const auto size = data.data.size();
+    const auto size = std::min(data.data.size(), basis->size(-1));
     std::vector<scalar_type> tmp;
-    if (data.data.type() != ctype()) {
+    const auto* this_type = ctype();
+    if (data.data.type() != this_type) {
         tmp.resize(data.data.size());
-        ctype()->convert_copy({ctype(), tmp.data()}, data.data, size);
-        data_ptr = tmp.data();
+        scalars::ScalarArray tmp_sa(this_type, tmp.data(), size);
+        this_type->convert_copy(tmp_sa, data.data);
+        raw_data = tmp;
     } else {
-        data_ptr = data.data.raw_cast<const scalar_type>();
+        raw_data = data.data.as_slice<const scalar_type>();
     }
 
     if (data.data.has_keys()) {
@@ -448,7 +446,7 @@ OutType LiteContext<Coefficients>::construct_impl(
         const auto* keys = data.data.keys();
 
         for (dimn_t i = 0; i < size; ++i) {
-            result[basis->index_to_key(keys[i])] = data_ptr[i];
+            result[basis->index_to_key(keys[i])] = raw_data[i];
         }
 
     } else {
@@ -457,7 +455,7 @@ OutType LiteContext<Coefficients>::construct_impl(
         for (dimn_t i = 0; i < size; ++i) {
             // Replace this with a more efficient method once it's implemented
             // at the lower level
-            result[basis->index_to_key(i)] = data_ptr[i];
+            result[basis->index_to_key(i)] = raw_data[i];
         }
     }
 
@@ -682,7 +680,7 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
 template <typename Coefficients>
 LiteContext<Coefficients>::LiteContext(deg_t width, deg_t depth)
     : dtl::LiteContextBasisHolder(width, depth),
-      Context(width, depth, scalars::ScalarType::of<scalar_type>(),
+      Context(width, depth, *scalars::ScalarType::of<scalar_type>(),
               string("libalgebra_lite"), p_lbasis->sizes().data(),
               p_tbasis->sizes().data()),
       m_tensor_basis(&*p_tbasis), m_lie_basis(&*p_lbasis),
@@ -975,9 +973,9 @@ extern template class LiteContext<lal::float_field>;
 
 extern template class LiteContext<lal::double_field>;
 
-extern template class LiteContext<lal::rational_field>;
+extern template class LiteContext<rational_field>;
 
-extern template class LiteContext<lal::polynomial_ring>;
+extern template class LiteContext<rational_poly_ring>;
 
 }// namespace algebra
 }// namespace rpy

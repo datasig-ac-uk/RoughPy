@@ -1,0 +1,35 @@
+{
+  "name": "libalgebra-lite",
+  "version-string": "1.0.0",
+  "description": "library for computational algebra",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    {
+      "name": "boost-container",
+      "version>=": "1.82.0#1"
+    },
+    {
+      "name": "boost-functional",
+      "version>=": "1.82.0#1"
+    },
+    {
+      "name": "boost-mpl",
+      "version>=": "1.82.0#1"
+    },
+    {
+      "name": "boost-multiprecision",
+      "version>=": "1.82.0#1"
+    },
+    {
+      "name": "boost-type-traits",
+      "version>=": "1.82.0#1"
+    }
+  ]
+}

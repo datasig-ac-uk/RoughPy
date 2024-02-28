@@ -42,7 +42,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT TickStream : public StreamInterface
+class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface
 {
     std::vector<param_t> m_granular_times;
     std::map<intervals::DyadicInterval, algebra::Lie> m_data;
@@ -119,7 +119,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(TickStream)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(TickStream)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(TickStream)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(TickStream)
 {

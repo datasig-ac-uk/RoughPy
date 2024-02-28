@@ -94,7 +94,7 @@ function(_check_runtime_component _library _out_var)
         get_target_property(_imported_loc ${_library} IMPORTED_LOCATION)
         set(${_out_var} ${_imported_loc} PARENT_SCOPE)
     else ()
-        set(${_out_var} "$<TARGET_FILE:${_library}>" PARENT_SCOPE)
+        set(${_out_var} "${_library}" PARENT_SCOPE)
     endif ()
 endfunction()
 
@@ -405,13 +405,15 @@ function(add_roughpy_component _name)
     if (ARG_INTERFACE)
         set(_lib_type INTERFACE)
     else ()
-        set(_lib_type STATIC)
+        set(_lib_type SHARED)
     endif ()
 
     _parse_dependencies(_private_deps _interface_deps "${ARG_DEPENDENCIES}")
 
     set(_real_name "RoughPy_${_name}")
     set(_alias_name "RoughPy::${_name}")
+
+    string(TOUPPER "${_name}" _name_upper)
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
     _get_component_name(_component_name ${_component})
 
@@ -430,11 +432,11 @@ function(add_roughpy_component _name)
                 message(FATAL_ERROR "The path ${_pth} does not exist")
             endif ()
         endforeach ()
-    else()
+    else ()
         if (_private_deps)
             message(FATAL_ERROR
                     "INTERFACE library cannot have private dependencies")
-        endif()
+        endif ()
 
     endif ()
 
@@ -448,6 +450,7 @@ function(add_roughpy_component _name)
         set(ROUGHPY_LIBS "${_real_name}" CACHE INTERNAL "" FORCE)
     endif ()
 
+
     _split_rpy_deps(_pub_rpy_deps _pub_nrpy_deps _interface_deps)
     _split_rpy_deps(_pvt_rpy_deps _pvt_nrpy_deps _private_deps)
 
@@ -456,6 +459,7 @@ function(add_roughpy_component _name)
             EXPORT_NAME ${_name})
 
     if (NOT ${_lib_type} STREQUAL "INTERFACE")
+        target_compile_definitions(${_real_name} PRIVATE "RPY_COMPILING_${_name_upper}=1")
         target_include_directories(${_real_name}
                 PRIVATE
                 "${_private_include_dirs}"
@@ -470,6 +474,9 @@ function(add_roughpy_component _name)
                 PRIVATE
                 ${_pvt_nrpy_deps}
         )
+        if (ROUGHPY_ENABLE_DBG_ASSERT)
+            target_compile_definitions(${_real_name} PRIVATE RPY_DEBUG=1)
+        endif ()
 
         foreach (_rpy_dep IN LISTS _pvt_rpy_deps)
             get_target_property(_dep_type ${_rpy_dep} TYPE)
@@ -480,7 +487,7 @@ function(add_roughpy_component _name)
             endif ()
         endforeach ()
 
-        target_compile_definitions(${_real_name} PRIVATE RPY_BUILDING_LIBRARY=1)
+        #target_compile_definitions(${_real_name} PRIVATE RPY_BUILDING_LIBRARY=1)
 
 
     else ()
@@ -516,7 +523,7 @@ function(add_roughpy_component _name)
     endforeach ()
 
     unset(_runtime_deps)
-    _check_runtime_deps(_runtime_deps ${ARG_PUBLIC_DEPS} ${ARG_PRIVATE_DEPS})
+    _check_runtime_deps(_runtime_deps ${_pub_nrpy_deps} ${_pvt_nrpy_deps})
 
     if (_runtime_deps)
         set_target_properties(${_real_name} PROPERTIES RUNTIME_DEPENDENCIES ${_runtime_deps})
@@ -541,6 +548,9 @@ function(add_roughpy_component _name)
     if (_lib_type STREQUAL STATIC OR _lib_type STREQUAL OBJECT)
         set_target_properties(${_real_name} PROPERTIES
                 POSITION_INDEPENDENT_CODE ON)
+    elseif (_lib_type STREQUAL SHARED)
+        generate_export_header(${_real_name})
+        set_target_properties(${_real_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
     endif ()
 
     target_link_components(${_real_name} ${_public} ${ARG_NEEDS})
@@ -634,6 +644,7 @@ function(add_roughpy_test _name)
 
     endforeach ()
 
+
     target_link_libraries(${_tests_name} PRIVATE ${_deps} GTest::gtest_main)
 
     target_compile_definitions(${_tests_name} PRIVATE ${test_DEFN})
@@ -643,6 +654,11 @@ function(add_roughpy_test _name)
 
     target_link_components(${_tests_name} PRIVATE ${test_NEEDS})
 
+    if (WIN32)
+        add_custom_command(TARGET ${_tests_name} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
+                COMMAND_EXPAND_LISTS)
+    endif ()
 
     gtest_discover_tests(${_tests_name})
 endfunction()

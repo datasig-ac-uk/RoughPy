@@ -36,8 +36,11 @@
 #include <roughpy/core/types.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/platform/errors.h>
 
 #include "schema.h"
+
+#include "roughpy_streams_export.h"
 
 namespace rpy {
 namespace streams {
@@ -62,6 +65,21 @@ struct StreamMetadata {
     intervals::IntervalType interval_type;
 };
 
+
+RPY_NO_DISCARD
+inline resolution_t param_to_resolution(param_t arg) noexcept
+{
+    int exponent;
+    frexp(arg, &exponent);
+    /*
+     * frexp returns fractional part in the range [0.5, 1), so the correct power
+     * of 2 is actually exponent - 1.\
+     */
+    return -std::min(0, exponent - 1);
+}
+
+
+
 /**
  * @brief Base class for all stream types.
  *
@@ -76,7 +94,7 @@ struct StreamMetadata {
  * computed from log signatures, rather than using the data to compute these
  * independently.)
  */
-class RPY_EXPORT StreamInterface
+class ROUGHPY_STREAMS_EXPORT StreamInterface
 {
     StreamMetadata m_metadata;
     std::shared_ptr<StreamSchema> p_schema;
@@ -166,12 +184,11 @@ public:
     RPY_SERIAL_ACCESS();
 };
 
-
-
-
-
-
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(StreamInterface)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(StreamInterface)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(StreamInterface)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(StreamInterface)
 {

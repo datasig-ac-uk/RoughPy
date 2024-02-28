@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_STREAMS_STREAM_H_
 #define ROUGHPY_STREAMS_STREAM_H_
@@ -39,7 +40,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT Stream
+class ROUGHPY_STREAMS_EXPORT Stream
 {
 public:
     using FreeTensor = algebra::FreeTensor;
@@ -72,11 +73,14 @@ private:
 
     Stream(const std::shared_ptr<const StreamInterface>& impl,
            RealInterval support)
-        : p_impl(impl), m_support(support)
+        : p_impl(impl),
+          m_support(support)
     {}
 
-public:
+    RPY_NO_DISCARD optional<pair<RealInterval, resolution_t>>
+    refine_interval(const Interval& original_query) const;
 
+public:
     Stream() = default;
 
     template <typename Impl>
@@ -97,55 +101,147 @@ public:
 
     RPY_NO_DISCARD const StreamSchema& schema() const;
 
-    RPY_NO_DISCARD Lie log_signature() const;
-    RPY_NO_DISCARD Lie log_signature(const Context& ctx) const;
-    RPY_NO_DISCARD Lie log_signature(resolution_t resolution);
+private:
+    RPY_NO_DISCARD Lie log_signature_impl(
+            const Interval& interval,
+            resolution_t resolution,
+            const Context& ctx
+    ) const;
+
+public:
+    RPY_NO_DISCARD Lie log_signature(
+            const Interval& interval,
+            resolution_t resolution,
+            const Context& ctx
+    ) const;
     RPY_NO_DISCARD Lie
-    log_signature(resolution_t resolution, const Context& ctx) const;
-    RPY_NO_DISCARD Lie log_signature(const Interval& interval) const;
+    log_signature(const Interval& interval, const Context& ctx) const;
+
+    RPY_NO_DISCARD Lie log_signature() const
+    {
+        return log_signature(m_support, *metadata().default_context);
+    }
+    RPY_NO_DISCARD Lie log_signature(const Context& ctx) const
+    {
+        return log_signature(m_support, ctx);
+    }
+    RPY_NO_DISCARD Lie log_signature(const Interval& interval) const
+    {
+        return log_signature(interval, *metadata().default_context);
+    }
+    RPY_NO_DISCARD Lie log_signature(resolution_t resolution)
+    {
+        return log_signature(
+                m_support,
+                resolution,
+                *metadata().default_context
+        );
+    }
+    RPY_NO_DISCARD Lie
+    log_signature(resolution_t resolution, const Context& ctx) const
+    {
+        return log_signature(m_support, resolution, ctx);
+    }
+
     RPY_NO_DISCARD Lie
     log_signature(const Interval& interval, resolution_t resolution) const;
-    RPY_NO_DISCARD Lie log_signature(
-            const Interval& interval, resolution_t resolution,
-            const Context& ctx
-    ) const;
 
-    RPY_NO_DISCARD FreeTensor signature() const;
-    RPY_NO_DISCARD FreeTensor signature(const Context& ctx) const;
-    RPY_NO_DISCARD FreeTensor signature(resolution_t resolution);
+    RPY_NO_DISCARD FreeTensor signature() const
+    {
+        return signature(m_support, *metadata().default_context);
+    }
+    RPY_NO_DISCARD FreeTensor signature(const Context& ctx) const
+    {
+        return signature(m_support, ctx);
+    }
+    RPY_NO_DISCARD FreeTensor signature(const Interval& interval) const
+    {
+        return signature(interval, *metadata().default_context);
+    }
     RPY_NO_DISCARD FreeTensor
-    signature(resolution_t resolution, const Context& ctx) const;
-    RPY_NO_DISCARD FreeTensor signature(const Interval& interval) const;
+    signature(const Interval& interval, const Context& ctx) const;
+
+    RPY_NO_DISCARD FreeTensor signature(resolution_t resolution)
+    {
+        return signature(m_support, resolution, *metadata().default_context);
+    }
     RPY_NO_DISCARD FreeTensor
-    signature(const Interval& interval, resolution_t resolution) const;
+    signature(resolution_t resolution, const Context& ctx) const
+    {
+        return signature(m_support, resolution, ctx);
+    }
+    RPY_NO_DISCARD FreeTensor
+    signature(const Interval& interval, resolution_t resolution) const
+    {
+        return signature(interval, resolution, *metadata().default_context);
+    }
     RPY_NO_DISCARD FreeTensor signature(
-            const Interval& interval, resolution_t resolution,
+            const Interval& interval,
+            resolution_t resolution,
             const Context& ctx
     ) const;
 
     RPY_NO_DISCARD FreeTensor
-    signature_derivative(const Interval& domain, const Lie& perturbation) const;
+    signature_derivative(const Interval& domain, const Lie& perturbation) const
+    {
+        return signature_derivative(
+                domain,
+                perturbation,
+                *metadata().default_context
+        );
+    }
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const Interval& domain, const Lie& perturbation, const Context& ctx
+            const Interval& domain,
+            const Lie& perturbation,
+            const Context& ctx
     ) const;
+
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const Interval& domain, const Lie& perturbation,
+            const Interval& domain,
+            const Lie& perturbation,
             resolution_t resolution
-    ) const;
+    ) const
+    {
+        return signature_derivative(
+                domain,
+                perturbation,
+                resolution,
+                *metadata().default_context
+        );
+    }
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const Interval& domain, const Lie& perturbation,
-            resolution_t resolution, const Context& ctx
+            const Interval& domain,
+            const Lie& perturbation,
+            resolution_t resolution,
+            const Context& ctx
     ) const;
+
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const perturbation_list_t& perturbations, resolution_t resolution
-    ) const;
+            const perturbation_list_t& perturbations
+            ) const {
+        return signature_derivative(perturbations, *metadata().default_context);
+    }
     RPY_NO_DISCARD FreeTensor signature_derivative(
-            const perturbation_list_t& perturbations, resolution_t resolution,
+            const perturbation_list_t& perturbations,
+            const Context& ctx
+            ) const;
+
+    RPY_NO_DISCARD FreeTensor signature_derivative(
+            const perturbation_list_t& perturbations,
+            resolution_t resolution
+    ) const
+    {
+        return signature_derivative(perturbations, resolution, *metadata().default_context);
+    }
+    RPY_NO_DISCARD FreeTensor signature_derivative(
+            const perturbation_list_t& perturbations,
+            resolution_t resolution,
             const Context& ctx
     ) const;
 
     Stream simplify(
-            const intervals::Partition& partition, resolution_t resolution
+            const intervals::Partition& partition,
+            resolution_t resolution
     ) const
     {
         const auto& md = metadata();
@@ -153,7 +249,8 @@ public:
     }
 
     Stream simplify(
-            const intervals::Partition& partition, resolution_t resolution,
+            const intervals::Partition& partition,
+            resolution_t resolution,
             const Context& ctx
     ) const;
 
@@ -166,7 +263,11 @@ Stream::Stream(Impl&& impl)
       m_support(p_impl->metadata().effective_support)
 {}
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(Stream)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(Stream)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(Stream)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Stream)
 {

@@ -84,7 +84,7 @@ struct algebra_info<
     /// Get the rpy ScalarType for the scalars in this algebra
     static const scalars::ScalarType* ctype() noexcept
     {
-        return scalars::ScalarType::of<scalar_type>();
+        return *scalars::ScalarType::of<scalar_type>();
     }
 
     /// Get the storage type for this algebra.

@@ -36,10 +36,12 @@
 #include <cmath>
 #include <limits>
 
+#include "roughpy_intervals_export.h"
+
 namespace rpy {
 namespace intervals {
 
-class RPY_EXPORT Dyadic
+class ROUGHPY_INTERVALS_EXPORT Dyadic
 {
 public:
     using multiplier_t = dyadic_multiplier_t;
@@ -96,28 +98,32 @@ private:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_EXPORT
+ROUGHPY_INTERVALS_EXPORT
 bool operator<(const Dyadic& lhs, const Dyadic& rhs);
 
-RPY_EXPORT
+ROUGHPY_INTERVALS_EXPORT
 bool operator<=(const Dyadic& lhs, const Dyadic& rhs);
 
-RPY_EXPORT
+ROUGHPY_INTERVALS_EXPORT
 bool operator>(const Dyadic& lhs, const Dyadic& rhs);
 
-RPY_EXPORT
+ROUGHPY_INTERVALS_EXPORT
 bool operator>=(const Dyadic& lhs, const Dyadic& rhs);
 
-RPY_EXPORT
+ROUGHPY_INTERVALS_EXPORT
 std::ostream& operator<<(std::ostream& os, const Dyadic& arg);
 
-RPY_EXPORT
+ROUGHPY_INTERVALS_EXPORT
 bool dyadic_equals(const Dyadic& lhs, const Dyadic& rhs);
 
-RPY_EXPORT
+ROUGHPY_INTERVALS_EXPORT
 bool rational_equals(const Dyadic& lhs, const Dyadic& rhs);
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(Dyadic)
+#ifdef RPY_COMPILING_INTERVALS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(Dyadic)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(Dyadic)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Dyadic)
 {

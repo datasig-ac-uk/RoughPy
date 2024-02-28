@@ -22,6 +22,8 @@ add_roughpy_component(Algebra
         src/libalgebra_lite_internal/lie_basis_info.h
         src/libalgebra_lite_internal/lie_info.h
         src/libalgebra_lite_internal/lite_vector_selector.h
+        src/libalgebra_lite_internal/rational_coefficients.cpp
+        src/libalgebra_lite_internal/rational_coefficients.h
         src/libalgebra_lite_internal/shuffle_tensor_info.h
         src/libalgebra_lite_internal/sparse_mutable_ref_scalar_trait.h
         src/libalgebra_lite_internal/sparse_vector_iterator.h
@@ -105,6 +107,9 @@ add_roughpy_component(Algebra
         RoughPy::Scalars
         )
 
+
+target_precompile_headers(RoughPy_Algebra PRIVATE
+        "src/lite_context.h")
 
 add_roughpy_test_helper(AlgebraMock STATIC
         SRCS

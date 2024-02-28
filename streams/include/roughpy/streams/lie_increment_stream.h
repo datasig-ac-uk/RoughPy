@@ -41,7 +41,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT LieIncrementStream : public DyadicCachingLayer
+class ROUGHPY_STREAMS_EXPORT LieIncrementStream : public DyadicCachingLayer
 {
     using base_t = DyadicCachingLayer;
 
@@ -76,7 +76,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(LieIncrementStream)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(LieIncrementStream)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(LieIncrementStream)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 {
@@ -103,7 +107,9 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 //}
 //
 #endif
-RPY_SERIAL_REGISTER_CLASS(rpy::streams::LieIncrementStream)
+
+// RPY_SERIAL_FORCE_DYNAMIC_INIT(lie_increment_stream)
+
 RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::LieIncrementStream,
                             rpy::serial::specialization::member_serialize)
 

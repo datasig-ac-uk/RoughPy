@@ -31,6 +31,8 @@
 //
 
 #include <ostream>
+
+#include <roughpy/platform/errors.h>
 #include <roughpy/intervals/interval.h>
 
 using namespace rpy;
@@ -123,6 +125,6 @@ std::ostream& rpy::intervals::operator<<(std::ostream& os,
     return os;
 }
 
-
+#define RPY_EXPORT_MACRO ROUGHPY_INTERVALS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::intervals::Interval
 #include <roughpy/platform/serialization_instantiations.inl>

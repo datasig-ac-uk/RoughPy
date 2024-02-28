@@ -69,6 +69,10 @@ static py::object construct_piecewise_lie_stream(
         if (piece.first.sup() > b) { b = piece.first.sup(); }
     }
 
+    if (!pmd.resolution) {
+        pmd.resolution = 0;
+    }
+
     pmd.support = intervals::RealInterval(a, b);
 
     streams::Stream result(streams::PiecewiseAbelianStream(
@@ -77,7 +81,7 @@ static py::object construct_piecewise_lie_stream(
              pmd.support ? *pmd.support : intervals::RealInterval(0, 1),
              pmd.ctx, pmd.scalar_type,
              pmd.vector_type ? *pmd.vector_type : algebra::VectorType::Dense,
-             pmd.resolution}
+             *pmd.resolution}
     ));
 
     return py::reinterpret_steal<py::object>(

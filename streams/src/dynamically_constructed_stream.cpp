@@ -194,11 +194,9 @@ void streams::DynamicallyConstructedStream::update_parents(
 {
     //    data_increment below(current);
     //    data_increment top = update_parent_accuracy(below);
-    //    std::cout << top->first << ' ' << below->first << '\n';
     //    while (top != below) {
     //        below = top;
     //        top = update_parent_accuracy(below);
-    //        std::cout << top->first << ' ' << below->first << '\n';
     //    }
     const auto& md = metadata();
     auto root = m_data_tree.begin();
@@ -373,8 +371,8 @@ streams::DynamicallyConstructedStream::compute_child_lie_increments(
         const DynamicallyConstructedStream::Lie& parent_value) const
 {
     const auto& md = metadata();
-    auto half = md.data_scalar_type->from(1, 2);
-    return pair<Lie, Lie>(parent_value.smul(half), parent_value.smul(half));
+    scalars::Scalar one_half(md.data_scalar_type, 1, 2);
+    return pair<Lie, Lie>(parent_value.smul(one_half), parent_value.smul(one_half));
 }
 
 
@@ -393,6 +391,9 @@ RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe)
 
 }}}
 
+#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::DynamicallyConstructedStream
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>
+
+RPY_SERIAL_REGISTER_CLASS(rpy::streams::DynamicallyConstructedStream)

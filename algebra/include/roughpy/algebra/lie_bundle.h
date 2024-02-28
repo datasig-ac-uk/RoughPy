@@ -16,7 +16,7 @@ RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         AlgebraBundleBase<LieBundleInterface>;
 
 
-class RPY_EXPORT LieBundle : public AlgebraBundleBase<LieBundleInterface>
+class ROUGHPY_ALGEBRA_EXPORT LieBundle : public AlgebraBundleBase<LieBundleInterface>
 {
     using base_t = AlgebraBundleBase<LieBundleInterface>;
 
@@ -34,7 +34,7 @@ RPY_SERIAL_EXTERN_SERIALIZE_CLS(LieBundle)
 RPY_SERIAL_SERIALIZE_FN_IMPL(LieBundle) { RPY_SERIAL_SERIALIZE_BASE(base_t); }
 
 template <>
-RPY_EXPORT typename LieBundle::basis_type
+ROUGHPY_ALGEBRA_EXPORT typename LieBundle::basis_type
 basis_setup_helper<LieBundle>::get(const context_pointer& ctx);
 
 }// namespace algebra

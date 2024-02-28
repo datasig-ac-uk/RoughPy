@@ -37,7 +37,7 @@
 namespace rpy {
 namespace streams {
 
-class RPY_EXPORT CategoricalChannel : public StreamChannel
+class ROUGHPY_STREAMS_EXPORT CategoricalChannel : public StreamChannel
 {
     std::vector<string> m_variants;
 
@@ -57,7 +57,11 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-RPY_SERIAL_EXTERN_SERIALIZE_CLS(CategoricalChannel)
+#ifdef RPY_COMPILING_STREAMS
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(CategoricalChannel)
+#else
+RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(CategoricalChannel)
+#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(CategoricalChannel) {
     RPY_SERIAL_SERIALIZE_BASE(StreamChannel);
@@ -73,6 +77,6 @@ RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::CategoricalChannel,
                             rpy::serial::specialization::member_serialize)
 
 
-RPY_SERIAL_REGISTER_CLASS(rpy::streams::CategoricalChannel)
+RPY_SERIAL_FORCE_DYNAMIC_INIT(categorical_channel);
 
 #endif// ROUGHPY_STREAMS_CATEGORICAL_CHANNEL_H

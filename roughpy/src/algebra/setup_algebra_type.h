@@ -42,11 +42,13 @@ RPY_MSVC_DISABLE_WARNING(4661)
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
-#include <roughpy/platform/serialization.h>
 #include <roughpy/algebra/algebra_fwd.h>
+#include <roughpy/platform/archives.h>
+#include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar.h>
 
 #include "args/numpy.h"
+#include "context.h"
 #include "scalars/scalar_type.h"
 
 namespace rpy {
@@ -83,6 +85,9 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
     });
     klass.def_property_readonly("storage_type", [](const Alg& arg) {
         return arg.storage_type();
+    });
+    klass.def_property_readonly("context", [](const Alg& arg) {
+        return py::handle(python::RPyContext_FromContext(arg.context()));
     });
 
     // setup dynamic properties
@@ -223,17 +228,8 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
     // setup conversion to numpy array
 #ifdef ROUGHPY_WITH_NUMPY
     klass.def("__array__", [](const Alg& self) {
-        //        py::dtype dtype = dtype_from(self.coeff_type());
-        py::dtype dtype = ctype_to_npy_dtype(self.coeff_type());
-
-        auto dense_data = self.dense_data();
-        if (dense_data) {
-            const auto dense_data_inner = *dense_data;
-            return py::array(
-                    dtype, {dense_data_inner.size()}, {}, dense_data_inner.ptr()
-            );
-        }
-        return py::array(dtype);
+        return algebra_to_array(self);
+        // return py::array();
     });
 #endif
 
@@ -245,9 +241,7 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
                     oar(value);
                 }
 
-                return py::make_tuple(
-                        py::bytearray(ss.str())
-                        );
+                return py::make_tuple(py::bytearray(ss.str()));
             },
             [](py::tuple state) -> Alg {
                 if (state.size() != 1) {
@@ -262,7 +256,7 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
                 }
                 return result;
             }
-            ));
+    ));
 
     // TODO: DLpack interface
 }

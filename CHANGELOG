@@ -1,3 +1,17 @@
+Version 0.1.1:
+  - Fixed type promotions in scalar arithmetic - left hand types are now promoted when appropriate.
+  - Added "tensor_functions" module for implementing additional functions on tensors. Currently only Log is implemented.
+  - Fixed a few bugs in the build system
+
+
+Version 0.1.0:
+  - Added framework for integrating device support and redesigned scalars module to accommodate the changes.
+  - Made changes to type deduction in constructors to avoid exceptions when providing lists of python ints/floats.
+  - Changed the implementation of __array__ for algebra types. A copy is always made, and the size of the array is always
+    equal to the dimension of the chosen width/depth composition.
+  - Changed the behaviour when no resolution is given. RoughPy now uses a heuristic to compute a suitable resolution for computing signatures if none is given.
+
+
 Version 0.0.8:
   - Disabled linking to BLAS/LAPACK to reduce compile times whilst under development.
   - Greatly expanded the serialization support internally.

@@ -43,7 +43,7 @@ namespace algebra {
 RPY_TEMPLATE_EXTERN template class RPY_EXPORT_TEMPLATE
         BundleInterface<LieBundle, Lie, Lie>;
 
-class RPY_EXPORT LieBundleInterface
+class ROUGHPY_ALGEBRA_EXPORT LieBundleInterface
     : public BundleInterface<LieBundle, Lie, Lie>
 {
     using base_t = BundleInterface<LieBundle, Lie, Lie>;
