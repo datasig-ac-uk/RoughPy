@@ -87,6 +87,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/algebra/tensor_key.h
         src/algebra/tensor_key_iterator.cpp
         src/algebra/tensor_key_iterator.h
+        src/args/buffer_info.cpp
+        src/args/buffer_info.h
         src/args/check_for_excess_args.cpp
         src/args/convert_timestamp.cpp
         src/args/convert_timestamp.h
@@ -104,6 +106,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/args/parse_data_argument.h
         src/args/parse_schema.cpp
         src/args/parse_schema.h
+        src/scalars/pytype_conversion.cpp
+        src/scalars/pytype_conversion.h
         src/args/strided_copy.cpp
         src/args/strided_copy.h
         src/intervals/date_time_interval.cpp
