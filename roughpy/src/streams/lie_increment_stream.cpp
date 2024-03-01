@@ -71,8 +71,8 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
 
     std::vector<param_t> indices;
 
-    python::PyToBufferOptions options;
-    options.type = md.scalar_type;
+    python::DataArgOptions options;
+    options.scalar_type = md.scalar_type;
     options.max_nested = 2;
     options.allow_scalar = false;
 
@@ -81,8 +81,8 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
     python::parse_key_scalar_stream(ks_stream, data, options);
 
     if (md.scalar_type == nullptr) {
-        if (options.type != nullptr) {
-            md.scalar_type = options.type;
+        if (options.scalar_type != nullptr) {
+            md.scalar_type = options.scalar_type;
         } else {
             RPY_THROW(py::type_error, "unable to deduce suitable scalar type");
         }

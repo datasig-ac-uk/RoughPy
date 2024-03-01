@@ -46,7 +46,7 @@ class ConversionManager
 
 public:
     explicit ConversionManager(DataArgOptions& options)
-        : m_data(options.scalar_type),
+        : m_data(),
           m_options(options)
     {}
 
@@ -112,7 +112,7 @@ bool ConversionManager::is_scalar(py::handle obj) const noexcept
     if (RPyPolynomial_Check(obj.ptr())) { return true; }
 
     if (m_options.check_imported_scalars) {
-        if (is_imported_type(obj, "fraction", "Fraction")) { return true; }
+        if (is_imported_type(obj, "fractions", "Fraction")) { return true; }
 
         // TODO: Add more checks
     }
@@ -142,7 +142,7 @@ scalars::Scalar ConversionManager::convert_scalar(py::handle scalar) const
 LeafItem& ConversionManager::add_leaf(py::handle node, LeafType type)
 {
     m_options.leaves.push_back(
-            {{}, py::reinterpret_borrow<py::object>(node), 0, {}, type}
+            {{}, py::reinterpret_borrow<py::object>(node), 0, 0, {}, type}
     );
     return m_options.leaves.back();
 }
@@ -184,10 +184,10 @@ void ConversionManager::compute_size_and_allocate()
         make_sparse |= (leaf.value_type == ValueType::KeyValue);
     }
 
-    RPY_DBG_ASSERT(size > 0);
-
-    m_data.allocate_scalars(size);
-    if (make_sparse) { m_data.allocate_keys(size); }
+    if (size > 0) {
+        m_data.allocate_scalars(size);
+        if (make_sparse) { m_data.allocate_keys(size); }
+    }
     RPY_DBG_ASSERT(m_offset == 0);
 }
 
@@ -215,8 +215,7 @@ void ConversionManager::handle_lie(py::handle value)
 
 void ConversionManager::handle_dltensor_leaf(LeafItem& leaf)
 {
-    auto dlpack_capsule = py_to_dlpack(leaf.object);
-    auto* managed = unpack_dl_capsule(dlpack_capsule);
+    auto* managed = unpack_dl_capsule(leaf.object);
     const auto& tensor = managed->dl_tensor;
 
     const auto size = leaf.size;
@@ -321,6 +320,7 @@ void ConversionManager::handle_buffer_leaf(rpy::python::LeafItem& leaf)
 
 void ConversionManager::handle_dict_leaf(rpy::python::LeafItem& leaf)
 {
+    leaf.offset = m_offset;
     for (auto [key_o, scalar_o] : python::steal_as<py::dict>(leaf.object)) {
         push(convert_key(key_o), py_to_scalar(m_options.scalar_type, scalar_o));
     }
@@ -328,6 +328,7 @@ void ConversionManager::handle_dict_leaf(rpy::python::LeafItem& leaf)
 
 void ConversionManager::handle_sequence_leaf(rpy::python::LeafItem& leaf)
 {
+    leaf.offset = m_offset;
     if (leaf.value_type == ValueType::Value) {
         for (auto scalar : leaf.object) { handle_scalar(scalar); }
     } else {
@@ -359,7 +360,7 @@ void ConversionManager::check_dl_size(py::capsule dlcap, deg_t depth)
     depth += tensor.ndim;
     RPY_CHECK(depth <= m_options.max_nested);
 
-    auto& leaf = add_leaf(std::move(dlcap), LeafType::DLTensor);
+    auto& leaf = add_leaf(dlcap, LeafType::DLTensor);
 
     leaf.shape.assign(tensor.shape, tensor.shape + tensor.ndim);
 
@@ -381,7 +382,7 @@ void ConversionManager::check_buffer_size(py::buffer buffer, deg_t depth)
     depth += info.ndim;
     RPY_CHECK(depth <= m_options.max_nested);
 
-    auto& leaf = add_leaf(std::move(buffer), LeafType::Buffer);
+    auto& leaf = add_leaf(buffer, LeafType::Buffer);
 
     leaf.value_type = ValueType::Value;
     leaf.shape.reserve(info.ndim);
@@ -502,25 +503,22 @@ void ConversionManager::check_size_and_type_recurse(
             auto& leaf = add_leaf(node, LeafType::Sequence);
             leaf.value_type = *expected_tp;
             leaf.shape.push_back(py::len(node));
-            leaf.scalar_info = py_type_to_type_info(py::type::of(node));
+//            leaf.scalar_info = py_type_to_type_info(py::type::of(node));
+            leaf.scalar_info = devices::type_info<double>();
             leaf.size = leaf.shape[0];
-        } else if (m_options.allow_timestamped && depth == 0) {
-            for (auto pair : node) {
-                RPY_CHECK(
-                        py::isinstance<py::tuple>(pair) && py::len(pair) == 2
-                );
-                auto ts = pair[py::int_(0)];
-                auto val = pair[py::int_(1)];
-                RPY_CHECK(py::isinstance<py::float_>(ts));
-                m_options.indices.push_back(ts.cast<param_t>());
-                check_size_and_type_recurse(val, depth + 1);
-            }
         } else {
-            RPY_THROW(
-                    py::value_error,
-                    "expected sequence of scalars, key-scalar pairs, array, "
-                    "dict, or sequence"
-            );
+            for (auto pair : node) {
+                if (m_options.allow_timestamped && depth == 0 &&
+                    py::isinstance<py::tuple>(pair) && py::len(pair) == 2) {
+                    auto ts = pair[py::int_(0)];
+                    auto val = pair[py::int_(1)];
+                    RPY_CHECK(py::isinstance<py::float_>(ts));
+                    m_options.indices.push_back(ts.cast<param_t>());
+                    check_size_and_type_recurse(val, depth + 1);
+                } else {
+                    check_size_and_type_recurse(pair, depth+1);
+                }
+            }
         }
     } else {
         RPY_THROW(
@@ -578,5 +576,7 @@ void ConversionManager::parse_argument(py::handle arg)
 
     m_options.scalar_type = compute_scalar_type();
     compute_size_and_allocate();
-    do_conversion();
+    if (!m_data.empty()) {
+        do_conversion();
+    }
 }

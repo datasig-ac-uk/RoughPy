@@ -53,6 +53,13 @@ const scalars::ScalarType* python::type_of_pyscalar(py::handle obj)
 
 const scalars::ScalarType* python::py_type_to_type(py::handle obj) {
     py::gil_scoped_acquire gil;
+    if (obj.ptr() == (PyObject*) &PyFloat_Type) {
+        return *scalars::scalar_type_of<double>();
+    }
+    if (obj.ptr() == (PyObject*) &PyLong_Type) {
+        return *scalars::scalar_type_of<double>();
+    }
+
     if (PyDict_Contains(p_scalar_type_mapping, obj.ptr()) == 0) {
         RPY_THROW(py::type_error, "unrecognised scalar type");
     }

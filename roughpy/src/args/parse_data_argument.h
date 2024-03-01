@@ -34,6 +34,7 @@ struct LeafItem {
     boost::container::small_vector<idimn_t, 1> shape;
     py::object object;
     dimn_t size;
+    dimn_t offset;
     devices::TypeInfo scalar_info;
     LeafType leaf_type;
     ValueType value_type;

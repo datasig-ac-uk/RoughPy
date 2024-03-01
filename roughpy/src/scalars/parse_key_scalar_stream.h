@@ -12,6 +12,8 @@
 #include "scalar_type.h"
 #include "scalars.h"
 
+#include "args/parse_data_argument.h"
+
 namespace rpy {
 namespace python {
 
@@ -26,7 +28,7 @@ struct ParsedKeyScalarStream {
 
 void parse_key_scalar_stream(
         ParsedKeyScalarStream& result, const py::object& data,
-        PyToBufferOptions& options
+        DataArgOptions& options
 );
 
 }// namespace python

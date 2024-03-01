@@ -34,7 +34,14 @@
 #include "args/dlpack_helpers.h"
 #include "args/numpy.h"
 #include "args/strided_copy.h"
+
+#include "roughpy_module.h"
+
 #include <roughpy/scalars/scalar_types.h>
+
+
+#include <roughpy/platform/errors.h>
+
 
 using namespace rpy;
 using namespace rpy::python;
@@ -57,115 +64,40 @@ static inline void dl_to_stream(
 void python::parse_key_scalar_stream(
     ParsedKeyScalarStream &result,
     const py::object &data,
-    rpy::python::PyToBufferOptions &options
+    rpy::python::DataArgOptions &options
 ) {
+    result.data_buffer = parse_data_argument(data, options);
 
-    /*
-     * A key-data stream should not represent a single (key-)scalar value,
-     * so we only need to deal with the following types:
-     *   1) An array/buffer of values,
-     *   2) A key-array dict,  // implement later
-     *   3) Any other kind of sequential data
-     */
+    // Now we have to construct the key scalar stream entries
 
-    if (py::hasattr(data, "__dlpack__")) {
-        dl_to_stream(result, data, options);
-    } else if (py::isinstance<py::buffer>(data)) {
-        const auto buffer_data = py::reinterpret_borrow<py::buffer>(data);
-        buffer_to_stream(result, buffer_data.request(), options);
-    } else if (py::isinstance<py::dict>(data)) {
-        RPY_THROW(
-            std::runtime_error,
-            "constructing from a dict of arrays/lists is not yet supported"
-        );
-    } else if (py::isinstance<py::sequence>(data)) {
-        // We always need to make a copy from a Python object
-        result.data_buffer = py_to_buffer(data, options);
-        const auto *type = *result.data_buffer.type();
-        const auto info = type->type_info();
-        /*
-         * Now we need to use the options.shape information to construct the
-         * stream. How we should interpret the shape values are determined by
-         * whether keys are given:
-         *   1) If result.data_buffer contains keys, then there are shape.size()
-         *      increments, where the ith increment contains shape[i] values.
-         *   2) If result.data_buffer does not contain keys, then there are two
-         *      cases to handle:
-         *      a) if shape.size() != 2, then there are shape.size() increments,
-         *         where the size of the ith increment is shape[i];
-         *      b) if shape.size() == 2 then
-         *         - if shape[0]*shape[1] == data_buffer.size() then there are
-         *           shape[0] increments with size shape[1]
-         *         - otherwise there are 2 increments of sizes shape[0] and
-         *           shape[1].
-         *
-         * Oof, that's a lot of cases.
-         */
 
-        const auto buf_size = result.data_buffer.size();
-        const auto shape_size
-            = static_cast<dimn_t>(options.shape[0] * options.shape[1]);
-        if (result.data_buffer.has_keys()) {
-            result.data_stream.reserve_size(options.shape.size());
-
-            const auto *sptr
-                = static_cast<const byte *>(result.data_buffer.pointer());
-            const key_type *kptr = result.data_buffer.keys();
-            dimn_t check = 0;
-            for (auto incr_size : options.shape) {
-                result.data_stream.push_back(
-                    scalars::ScalarArray{
-                        type,
-                        sptr,
-                        static_cast<dimn_t>(incr_size)},
-                    kptr
-                );
-                sptr += incr_size * info.bytes;
-                kptr += incr_size;
-                check += incr_size;
+    for (const auto& leaf : options.leaves) {
+        switch (leaf.leaf_type) {
+            case LeafType::Scalar:
+                RPY_THROW(std::runtime_error, "scalar value disallowed");
+                break;
+            case LeafType::KeyScalar:
+                RPY_THROW(std::runtime_error, "key-scalar value disallowed");
+                break;
+            case LeafType::DLTensor:
+            case LeafType::Buffer: {
+                dimn_t offset = leaf.offset;
+                dimn_t sz = leaf.shape.back();
+                for (dimn_t inner = 0; inner < leaf.size; inner += sz) {
+                    result.data_stream.push_back(result.data_buffer[{offset, offset + sz}]);
+                }
             }
+                break;
+            case LeafType::Dict:
+            case LeafType::Lie:
+            case LeafType::Sequence:
+                result.data_stream.push_back(result.data_buffer[{leaf.offset, leaf.offset+leaf.size}]);
+                break;
 
-            RPY_CHECK(check == buf_size);
-        } else if (options.shape.size() != 2 || (shape_size != buf_size)) {
-            result.data_stream.reserve_size(options.shape.size());
-            dimn_t check = 0;
-            const auto *sptr
-                = static_cast<const byte *>(result.data_buffer.pointer());
-
-            for (auto incr_size : options.shape) {
-                result.data_stream.push_back(scalars::ScalarArray{
-                    type,
-                    sptr,
-                    static_cast<dimn_t>(incr_size)});
-                sptr += incr_size * info.bytes;
-                check += incr_size;
-            }
-
-            RPY_CHECK(check == buf_size);
-        } else {
-            RPY_DBG_ASSERT(shape_size == buf_size);
-
-            const auto num_increments = static_cast<dimn_t>(options.shape[0]);
-            const auto incr_size = static_cast<dimn_t>(options.shape[1]);
-
-            const auto stride = incr_size * info.bytes;
-
-            const auto *sptr
-                = static_cast<const byte *>(result.data_buffer.pointer());
-            for (dimn_t i = 0; i < num_increments; ++i) {
-                result.data_stream.push_back(
-                    scalars::ScalarArray(type, sptr, incr_size)
-                );
-                sptr += stride;
-            }
         }
-
-    } else {
-        RPY_THROW(
-            std::invalid_argument,
-            "could not parse argument to a valid scalar array type"
-        );
     }
+
+
 }
 
 void buffer_to_stream(
