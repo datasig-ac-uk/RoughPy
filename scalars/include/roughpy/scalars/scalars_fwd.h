@@ -68,10 +68,12 @@ inline optional<const ScalarType*> ScalarTypeOfImpl<T>::get() noexcept
 }
 
 template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<float>::get() noexcept;
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<float>::get() noexcept;
 
 template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*> ScalarTypeOfImpl<double>::get() noexcept;
+ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+ScalarTypeOfImpl<double>::get() noexcept;
 
 template <>
 ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
@@ -112,6 +114,31 @@ get_type(string_view id);
 inline constexpr int min_scalar_type_alignment = 16;
 
 #define RPY_SCALAR_TYPE_ALIGNMENT alignas(min_scalar_type_alignment)
+
+/**
+ * @brief Determines the type promotion when performing an
+ * operation with two types.
+ *
+ * This function takes two types and returns the result of the
+ * type promotion according to the following rules:
+ * - If both types are the same, the result is the same type.
+ * - If one of the types is an integer and the other is a
+ * floating-point, the result is a floating-point type.
+ * - If one of the types is a long integer and the other is a
+ * regular integer, the result is a long integer type.
+ * - If one of the types is a long integer and the other is a
+ * floating-point, the result is a floating-point type.
+ * - If one of the types is a double precision floating-point and
+ * the other is a regular floating-point, the result is a double
+ * precision floating-point type.
+ *
+ * @param left The type of the left operand.
+ * @param right The type of the right operand.
+ * @return The resulting type after performing promotion on
+ * `left` and `right`.
+ */
+RPY_NO_DISCARD devices::TypeInfo
+compute_type_promotion(devices::TypeInfo left, devices::TypeInfo right);
 
 }// namespace scalars
 }// namespace rpy
