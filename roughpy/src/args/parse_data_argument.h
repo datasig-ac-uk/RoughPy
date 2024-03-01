@@ -33,6 +33,7 @@ enum class ValueType : uint8_t
 struct LeafItem {
     boost::container::small_vector<idimn_t, 1> shape;
     py::object object;
+    dimn_t size;
     devices::TypeInfo scalar_info;
     LeafType leaf_type;
     ValueType value_type;
@@ -55,6 +56,7 @@ struct RPY_NO_EXPORT DataArgOptions {
     bool allow_scalar = true;
     bool allow_kv_pair = true;
     bool allow_lie_arg = true;
+    bool check_imported_scalars = true;
     bool is_ragged = false;
 };
 
