@@ -8,11 +8,12 @@
 #include "dlpack.h"
 #include "dlpack_helpers.h"
 #include "numpy.h"
-#include "pytype_conversion.h"
 
 #include "scalars/r_py_polynomial.h"
 #include "scalars/scalar.h"
+#include "scalars/scalars.h"
 #include "scalars/scalar_type.h"
+#include "scalars/pytype_conversion.h"
 
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/algebra/lie.h>
@@ -33,11 +34,9 @@
 using namespace rpy;
 using namespace rpy::python;
 
-scalars::Scalar py_to_scalar(const scalars::ScalarType* type, py::handle arg);
 
 namespace {
 
-key_type py_to_key(py::handle arg);
 
 class ConversionManager
 {
@@ -59,6 +58,7 @@ private:
 
     RPY_NO_DISCARD key_type compute_key() const noexcept;
     RPY_NO_DISCARD key_type convert_key(py::handle pykey) const;
+    RPY_NO_DISCARD scalars::Scalar convert_scalar(py::handle scalar) const;
 
     LeafItem& add_leaf(py::handle node, LeafType type);
 
@@ -134,6 +134,11 @@ key_type ConversionManager::convert_key(py::handle pykey) const
     RPY_THROW(py::type_error, "unrecognised key type");
 }
 
+scalars::Scalar ConversionManager::convert_scalar(py::handle scalar) const
+{
+    return py_to_scalar(m_options.scalar_type, scalar);
+}
+
 LeafItem& ConversionManager::add_leaf(py::handle node, LeafType type)
 {
     m_options.leaves.push_back(
@@ -169,7 +174,7 @@ void ConversionManager::push(const algebra::Lie& lie_data)
 
 void ConversionManager::compute_size_and_allocate()
 {
-    RPY_CHECK(!m_leaves.empty());
+    RPY_CHECK(!m_options.leaves.empty());
     m_data = scalars::KeyScalarArray(m_options.scalar_type);
 
     bool make_sparse = false;
@@ -189,9 +194,9 @@ void ConversionManager::compute_size_and_allocate()
 void ConversionManager::handle_scalar(py::handle value)
 {
     if (is_sparse()) {
-        push(compute_key(), py_to_scalar(m_options.scalar_type, value));
+        push(compute_key(), convert_scalar(value));
     } else {
-        push(py_to_scalar(m_options.scalar_type, value));
+        push(convert_scalar(value));
     }
 }
 
@@ -200,7 +205,7 @@ void ConversionManager::handle_key_scalar(py::handle value)
     RPY_DBG_ASSERT(is_sparse());
     RPY_DBG_ASSERT(py::isinstance<py::tuple>(value) && py::len(value) == 2);
     push(convert_key(value[py::int_(0)]),
-         py_to_scalar(m_options.scalar_type, value[py::int_(1)]));
+         convert_scalar(value[py::int_(1)]));
 }
 
 void ConversionManager::handle_lie(py::handle value)
@@ -382,7 +387,7 @@ void ConversionManager::check_buffer_size(py::buffer buffer, deg_t depth)
     leaf.shape.reserve(info.ndim);
     for (const auto& dim : info.shape) { leaf.shape.push_back(dim); }
 
-    leaf.scalar_info = py_buffer_to_device_info(info);
+    leaf.scalar_info = py_buffer_to_type_info(info);
     leaf.size = static_cast<dimn_t>(std::accumulate(
             leaf.shape.begin(),
             leaf.shape.end(),
@@ -502,7 +507,7 @@ void ConversionManager::check_size_and_type_recurse(
         } else if (m_options.allow_timestamped && depth == 0) {
             for (auto pair : node) {
                 RPY_CHECK(
-                        py::isinstance<py::tuple_>(pair) && py::len(pair) == 2
+                        py::isinstance<py::tuple>(pair) && py::len(pair) == 2
                 );
                 auto ts = pair[py::int_(0)];
                 auto val = pair[py::int_(1)];

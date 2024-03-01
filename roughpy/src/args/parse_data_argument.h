@@ -8,11 +8,11 @@
 #include "roughpy_module.h"
 #include <boost/container/small_vector.hpp>
 
+#include "scalars/scalars.h"
+
 namespace rpy {
 namespace python {
 
-devices::TypeInfo py_type_to_type_info(py::handle pytype);
-devices::TypeInfo py_buffer_to_device_info(const py::buffer_info& info);
 
 enum class LeafType : uint8_t
 {
@@ -39,10 +39,10 @@ struct LeafItem {
     ValueType value_type;
 };
 
-struct RPY_NO_EXPORT AlternativeKeyType {
-    py::handle py_key_type;
-    std::function<key_type(py::handle)> converter;
-};
+//struct RPY_NO_EXPORT AlternativeKeyType {
+//    py::handle py_key_type;
+//    std::function<key_type(py::handle)> converter;
+//};
 
 struct RPY_NO_EXPORT DataArgOptions {
     std::vector<LeafItem> leaves;

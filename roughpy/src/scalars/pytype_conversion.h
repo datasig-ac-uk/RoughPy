@@ -19,6 +19,11 @@ RPY_NO_DISCARD bool is_py_scalar_type(py::handle obj);
 
 RPY_NO_DISCARD const scalars::ScalarType* type_of_pyscalar(py::handle obj);
 
+RPY_NO_DISCARD const scalars::ScalarType* py_type_to_type(py::handle obj);
+
+RPY_NO_DISCARD
+devices::TypeInfo py_type_to_type_info(py::handle pytype);
+
 py::object init_scalar_mapping();
 
 }// namespace python
