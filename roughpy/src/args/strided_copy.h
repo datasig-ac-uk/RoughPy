@@ -50,6 +50,12 @@ void stride_copy(void* RPY_RESTRICT dst,
                  ) noexcept;
 
 
+void stride_copy(scalars::ScalarArray& out,
+                 const scalars::ScalarArray& in,
+                 const int32_t ndim,
+                 const int64_t* shape,
+                 const int64_t* strides
+                 ) noexcept;
 
 }}
 

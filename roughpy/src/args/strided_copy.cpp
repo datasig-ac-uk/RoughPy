@@ -78,3 +78,47 @@ void rpy::python::stride_copy(
     }
 
 }
+
+
+namespace {
+
+int32_t get_compressed_dims(int32_t ndim, int32_t bytes, const int64_t* shape, const int64_t* strides) noexcept
+{
+    if (strides == nullptr) { return ndim; }
+
+    int64_t compressed_stride = bytes;
+
+    for (int32_t i=1; i<=ndim; ++i) {
+        if (strides[ndim-i] != compressed_stride) {
+            return i - 1;
+        }
+        compressed_stride *= shape[ndim-i];
+    }
+
+    return ndim;
+}
+
+}
+
+void rpy::python::stride_copy(
+        rpy::scalars::ScalarArray& out,
+        const rpy::scalars::ScalarArray& in,
+        const int32_t ndim,
+        const int64_t* shape,
+        const int64_t* strides
+) noexcept
+{
+    if (ndim == 0) { return;}
+    const auto info = in.type_info();
+
+
+    auto compressed_ndim = get_compressed_dims(ndim, info.bytes, shape, strides);
+
+
+
+    const byte* src = reinterpret_cast<const byte*>(in.pointer());
+
+
+
+
+}
