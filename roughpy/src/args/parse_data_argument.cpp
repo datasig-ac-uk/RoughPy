@@ -8,12 +8,13 @@
 #include "dlpack.h"
 #include "dlpack_helpers.h"
 #include "numpy.h"
+#include "strided_copy.h"
 
+#include "scalars/pytype_conversion.h"
 #include "scalars/r_py_polynomial.h"
 #include "scalars/scalar.h"
-#include "scalars/scalars.h"
 #include "scalars/scalar_type.h"
-#include "scalars/pytype_conversion.h"
+#include "scalars/scalars.h"
 
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/algebra/lie.h>
@@ -34,9 +35,7 @@
 using namespace rpy;
 using namespace rpy::python;
 
-
 namespace {
-
 
 class ConversionManager
 {
@@ -88,8 +87,6 @@ private:
 public:
     void parse_argument(py::handle arg);
 };
-
-
 
 }// namespace
 
@@ -204,8 +201,7 @@ void ConversionManager::handle_key_scalar(py::handle value)
 {
     RPY_DBG_ASSERT(is_sparse());
     RPY_DBG_ASSERT(py::isinstance<py::tuple>(value) && py::len(value) == 2);
-    push(convert_key(value[py::int_(0)]),
-         convert_scalar(value[py::int_(1)]));
+    push(convert_key(value[py::int_(0)]), convert_scalar(value[py::int_(1)]));
 }
 
 void ConversionManager::handle_lie(py::handle value)
@@ -219,6 +215,16 @@ void ConversionManager::handle_dltensor_leaf(LeafItem& leaf)
     const auto& tensor = managed->dl_tensor;
 
     const auto size = leaf.size;
+
+    boost::container::small_vector<int64_t, 2> modified_strides;
+    if (tensor.strides != nullptr) {
+        modified_strides.reserve(tensor.ndim);
+        for (int32_t i = 0; i < tensor.ndim; ++i) {
+            modified_strides.emplace_back(
+                    tensor.strides[i] * leaf.scalar_info.bytes
+            );
+        }
+    }
 
     if (tensor.strides == nullptr) {
         scalars::ScalarArray dst_array = m_data[{m_offset, m_offset + size}];
@@ -503,20 +509,21 @@ void ConversionManager::check_size_and_type_recurse(
             auto& leaf = add_leaf(node, LeafType::Sequence);
             leaf.value_type = *expected_tp;
             leaf.shape.push_back(py::len(node));
-//            leaf.scalar_info = py_type_to_type_info(py::type::of(node));
+            //            leaf.scalar_info =
+            //            py_type_to_type_info(py::type::of(node));
             leaf.scalar_info = devices::type_info<double>();
             leaf.size = leaf.shape[0];
         } else {
             for (auto pair : node) {
-                if (m_options.allow_timestamped && depth == 0 &&
-                    py::isinstance<py::tuple>(pair) && py::len(pair) == 2) {
+                if (m_options.allow_timestamped && depth == 0
+                    && py::isinstance<py::tuple>(pair) && py::len(pair) == 2) {
                     auto ts = pair[py::int_(0)];
                     auto val = pair[py::int_(1)];
                     RPY_CHECK(py::isinstance<py::float_>(ts));
                     m_options.indices.push_back(ts.cast<param_t>());
                     check_size_and_type_recurse(val, depth + 1);
                 } else {
-                    check_size_and_type_recurse(pair, depth+1);
+                    check_size_and_type_recurse(pair, depth + 1);
                 }
             }
         }
@@ -576,7 +583,5 @@ void ConversionManager::parse_argument(py::handle arg)
 
     m_options.scalar_type = compute_scalar_type();
     compute_size_and_allocate();
-    if (!m_data.empty()) {
-        do_conversion();
-    }
+    if (!m_data.empty()) { do_conversion(); }
 }

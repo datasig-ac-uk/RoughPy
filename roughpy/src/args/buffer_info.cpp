@@ -19,4 +19,8 @@ BufferInfo::BufferInfo(PyObject* object)
 
 BufferInfo::~BufferInfo() { PyBuffer_Release(&m_view); }
 
-BufferFormat BufferInfo::format() const { BufferFormat fmt; }
+BufferFormat BufferInfo::format() const
+{
+    BufferFormat fmt;
+    return fmt;
+}

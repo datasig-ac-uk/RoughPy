@@ -39,6 +39,26 @@
 
 namespace rpy { namespace python {
 
+/**
+ * @brief Copies data from source to destination using strides.
+ *
+ * This function copies data from the source array to the destination array
+ * using given strides. It supports 1-dimensional and 2-dimensional arrays.
+ *
+ * @param dst Pointer to the destination array.
+ * @param src Pointer to the source array.
+ * @param itemsize Size of each item in bytes.
+ * @param ndim Number of dimensions in the arrays (1 or 2).
+ * @param shape_in Array containing the shape of the input array.
+ * @param strides_in Array containing the strides of the input array.
+ * @param strides_out Array containing the strides of the output array.
+ * @param transpose Flag indicating whether to transpose the input array.
+ *
+ * @return None.
+ *
+ * @note The function assumes that the input arrays are valid and have
+ * compatible dimensions and strides.
+ */
 void stride_copy(void* RPY_RESTRICT dst,
                  const void* RPY_RESTRICT src,
                  const py::ssize_t itemsize,
@@ -49,7 +69,42 @@ void stride_copy(void* RPY_RESTRICT dst,
                  bool transpose
                  ) noexcept;
 
-
+/**
+ * @brief Copies data from one ScalarArray to another, with optional compression
+ * of dimensions.
+ *
+ * This function copies data from the input ScalarArray `in` to the output
+ * ScalarArray `out`. The `ndim` parameter specifies the number of dimensions in
+ * the arrays. The `shape` parameter is an array specifying the size of each
+ * dimension in `in`. The `strides` parameter is an array specifying the stride
+ * of each dimension in `in`.
+ *
+ * The function attempts to compress the dimensions of `in` based on the `shape`
+ * and `strides` parameters. If all dimensions are fully compressed, meaning the
+ * strides match the size of each dimension, the function performs a
+ * copy-convert operation by invoking the `convert_copy` method of the `type`
+ * attribute of `out`. Otherwise, the function iterates over the dimensions and
+ * performs the following steps:
+ * - Calculates the source offset based on the current dimension's index and
+ * strides.
+ * - Creates a temporary ScalarArray `tmp_in` representing a subarray of `in`
+ * using the calculated source offset and the compression size, which is the
+ * product of the remaining dimensions' sizes.
+ * - Creates a temporary subarray `tmp_out` of `out` using the current offset
+ * and the compression size.
+ * - Invokes the `convert_copy` method of the `type` attribute of `out` to copy
+ * and convert the data from `tmp_in` to `tmp_out`.
+ *
+ * @param[out] out The output ScalarArray where the data will be copied.
+ * @param[in] in The input ScalarArray that provides the data to be copied.
+ * @param[in] ndim The number of dimensions in the arrays.
+ * @param[in] shape An array specifying the size of each dimension in `in`.
+ * @param[in] strides An array specifying the stride of each dimension in `in`.
+ *
+ * @note This function assumes that `in` and `out` are valid ScalarArrays and
+ * that `shape` and `strides` have at least `ndim` elements. The function
+ * modifies `out` and does not modify `in`. This function is noexcept.
+ */
 void stride_copy(scalars::ScalarArray& out,
                  const scalars::ScalarArray& in,
                  const int32_t ndim,
