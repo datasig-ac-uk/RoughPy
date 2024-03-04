@@ -818,7 +818,7 @@ scalars::Scalar
 python::py_to_scalar(const scalars::ScalarType* type, py::handle object)
 {
     RPY_DBG_ASSERT(type != nullptr);
-    scalars::Scalar result(type, 0);
+    scalars::Scalar result(type);
     assign_py_object_to_scalar(result, object);
     return result;
 }
