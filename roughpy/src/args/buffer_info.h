@@ -24,6 +24,7 @@ struct BufferFormat {
 class BufferInfo
 {
     Py_buffer m_view;
+    optional<Py_ssize_t> m_size;
 
 public:
     explicit BufferInfo(PyObject* object);
@@ -34,7 +35,7 @@ public:
         return reinterpret_cast<const byte*>(m_view.buf);
     }
 
-    RPY_NO_DISCARD Py_ssize_t size() const noexcept { return m_view.len; }
+    RPY_NO_DISCARD Py_ssize_t size() const noexcept;
 
     RPY_NO_DISCARD bool is_contiguous() const noexcept
     {

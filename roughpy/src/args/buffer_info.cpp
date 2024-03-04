@@ -7,6 +7,9 @@
 #include "roughpy_module.h"
 #include <roughpy/platform/errors.h>
 
+#include <functional>
+#include <numeric>
+
 using namespace rpy;
 using namespace python;
 
@@ -18,6 +21,16 @@ BufferInfo::BufferInfo(PyObject* object)
 }
 
 BufferInfo::~BufferInfo() { PyBuffer_Release(&m_view); }
+
+Py_ssize_t BufferInfo::size() const noexcept
+{
+    return std::accumulate(
+            m_view.shape,
+            m_view.shape + m_view.ndim,
+            1,
+            std::multiplies<>()
+    );
+}
 
 BufferFormat BufferInfo::format() const
 {
