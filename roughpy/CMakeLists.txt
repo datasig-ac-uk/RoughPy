@@ -126,8 +126,6 @@ target_sources(RoughPy_PyModule PRIVATE
         src/intervals/real_interval.h
         src/intervals/segmentation.cpp
         src/intervals/segmentation.h
-        src/scalars/parse_key_scalar_stream.cpp
-        src/scalars/parse_key_scalar_stream.h
         src/scalars/r_py_polynomial.cpp
         src/scalars/r_py_polynomial.h
         #        src/scalars/scalar.h

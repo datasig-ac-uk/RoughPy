@@ -34,13 +34,14 @@
 #include <roughpy/streams/stream.h>
 
 #include "args/kwargs_to_path_metadata.h"
-#include "scalars/parse_key_scalar_stream.h"
+#include "args/parse_data_argument.h"
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 #include "schema_finalization.h"
 #include "stream.h"
 
 #include <limits>
+#include <pybind11/pytypes.h>
 
 using namespace rpy;
 using namespace rpy::python;
@@ -77,8 +78,43 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
     options.allow_scalar = false;
 
     //    auto buffer = python::py_to_buffer(data, options);
-    python::ParsedKeyScalarStream ks_stream;
-    python::parse_key_scalar_stream(ks_stream, data, options);
+    auto parsedData = parse_data_argument(data, options);
+
+    scalars::KeyScalarStream ks_stream;
+    // Now we have to construct the key scalar stream entries
+    ks_stream.set_ctype(options.scalar_type);
+
+    for (const auto& leaf : parsedData) {
+        switch (leaf.leaf_type) {
+            case LeafType::Scalar:
+                RPY_THROW(std::runtime_error, "scalar value disallowed");
+                break;
+            case LeafType::KeyScalar:
+                RPY_THROW(std::runtime_error, "key-scalar value disallowed");
+                break;
+            case LeafType::DLTensor:
+            case LeafType::Buffer: {
+                if (leaf.size == 0) { break; }
+                if (leaf.shape.size() == 1) {
+                    auto sz = leaf.size;
+                    ks_stream.push_back(leaf.data.borrow());
+
+                } else {
+                    dimn_t sz = leaf.shape.back();
+                    dimn_t offset1 = 0;
+                    for (dimn_t inner = 0; inner < leaf.size; inner += sz) {
+                        ks_stream.push_back(leaf.data[{offset1, offset1 + sz}]);
+                        offset1 += sz;
+                    }
+                }
+            } break;
+            case LeafType::Dict:
+            case LeafType::Lie:
+            case LeafType::Sequence:
+                ks_stream.push_back(leaf.data.borrow());
+                break;
+        }
+    }
 
     if (md.scalar_type == nullptr) {
         if (options.scalar_type != nullptr) {
@@ -91,7 +127,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
     RPY_CHECK(md.scalar_type != nullptr);
     if (!md.ctx) {
         if (md.width == 0) {
-            md.width = static_cast<deg_t>(ks_stream.data_stream.max_row_size());
+            md.width = static_cast<deg_t>(ks_stream.max_row_size());
         }
 
         if (md.width == 0 || md.depth == 0) {
@@ -103,7 +139,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
         md.ctx = algebra::get_context(md.width, md.depth, md.scalar_type);
     }
 
-    dimn_t num_increments = ks_stream.data_stream.row_count();
+    dimn_t num_increments = ks_stream.row_count();
 
     auto effective_support
             = intervals::RealInterval::right_unbounded(0.0, md.interval_type);
@@ -130,7 +166,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
             };
 
             for (dimn_t i = 0; i < num_increments; ++i) {
-                auto row = ks_stream.data_stream[i];
+                auto row = ks_stream[i];
 
                 if (row.has_keys()) {
 
@@ -211,7 +247,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
     python::finalize_schema(md);
 
     auto result = streams::Stream(streams::LieIncrementStream(
-            ks_stream.data_stream,
+            ks_stream,
             indices,
             {md.width,
              effective_support,
