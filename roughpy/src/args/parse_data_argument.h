@@ -6,13 +6,18 @@
 #define ROUGHPY_PARSE_DATA_ARGUMENT_H
 
 #include "roughpy_module.h"
-#include <boost/container/small_vector.hpp>
 
 #include "scalars/scalars.h"
+#include <roughpy/core/types.h>
+#include <roughpy/platform/devices/core.h>
+#include <roughpy/scalars/scalars_fwd.h>
+
+#include <boost/container/small_vector.hpp>
+
+#include <vector>
 
 namespace rpy {
 namespace python {
-
 
 enum class LeafType : uint8_t
 {
@@ -30,23 +35,52 @@ enum class ValueType : uint8_t
     KeyValue
 };
 
-struct LeafItem {
+struct LeafData {
+
+    LeafData(
+            boost::container::small_vector<idimn_t, 1>&& shape,
+            scalars::ScalarArray&& data,
+            devices::Buffer keyData,
+            py::object&& owningObject,
+            dimn_t size,
+            devices::TypeInfo originTypeInfo,
+            LeafType leafType,
+            ValueType valueType
+    )
+        : shape(std::move(shape)),
+          data(std::move(data)),
+          key_data(keyData),
+          owning_object(std::move(owningObject)),
+          size(size),
+          origin_type_info(originTypeInfo),
+          leaf_type(leafType),
+          value_type(valueType)
+    {}
+
     boost::container::small_vector<idimn_t, 1> shape;
-    py::object object;
+    scalars::ScalarArray data;
+    devices::Buffer key_data;
+    py::object owning_object;
     dimn_t size;
-    dimn_t offset;
-    devices::TypeInfo scalar_info;
+    devices::TypeInfo origin_type_info;
     LeafType leaf_type;
     ValueType value_type;
 };
 
-//struct RPY_NO_EXPORT AlternativeKeyType {
-//    py::handle py_key_type;
-//    std::function<key_type(py::handle)> converter;
-//};
+class ParsedData : public std::vector<LeafData>
+{
+    std::vector<param_t> m_indices;
+
+public:
+    const std::vector<param_t>& indices() const noexcept { return m_indices; }
+};
+
+// struct RPY_NO_EXPORT AlternativeKeyType {
+//     py::handle py_key_type;
+//     std::function<key_type(py::handle)> converter;
+// };
 
 struct RPY_NO_EXPORT DataArgOptions {
-    std::vector<LeafItem> leaves;
     std::vector<param_t> indices;
     const scalars::ScalarType* scalar_type = nullptr;
     algebra::context_pointer context = nullptr;
@@ -61,7 +95,7 @@ struct RPY_NO_EXPORT DataArgOptions {
     bool is_ragged = false;
 };
 
-RPY_NO_DISCARD scalars::KeyScalarArray
+RPY_NO_DISCARD ParsedData
 parse_data_argument(py::handle arg, DataArgOptions& options);
 
 }// namespace python

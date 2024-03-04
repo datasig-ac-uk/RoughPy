@@ -18,6 +18,8 @@
 
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/algebra/lie.h>
+#include <roughpy/platform/devices/buffer.h>
+#include <roughpy/platform/devices/device_handle.h>
 #include <roughpy/scalars/key_scalar_array.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>
@@ -37,23 +39,30 @@ using namespace rpy::python;
 
 namespace {
 
+struct LeafItem {
+    boost::container::small_vector<idimn_t, 1> shape;
+    py::object object;
+    dimn_t size;
+    dimn_t offset;
+    devices::TypeInfo scalar_info;
+    LeafType leaf_type;
+    ValueType value_type;
+};
+
 class ConversionManager
 {
-    scalars::KeyScalarArray m_data;
+    std::vector<LeafItem> m_leaves;
+    ParsedData m_parsed_data;
     DataArgOptions& m_options;
     dimn_t m_offset = 0;
 
 public:
-    explicit ConversionManager(DataArgOptions& options)
-        : m_data(),
-          m_options(options)
-    {}
+    explicit ConversionManager(DataArgOptions& options) : m_options(options) {}
 
-    scalars::KeyScalarArray take() && { return m_data; }
+    ParsedData take() && { return m_parsed_data; }
 
 private:
     RPY_NO_DISCARD bool is_scalar(py::handle obj) const noexcept;
-    RPY_NO_DISCARD bool is_sparse() const noexcept { return m_data.has_keys(); }
 
     RPY_NO_DISCARD key_type compute_key() const noexcept;
     RPY_NO_DISCARD key_type convert_key(py::handle pykey) const;
@@ -65,11 +74,17 @@ private:
     void push(key_type key, scalars::Scalar scalar);
     void push(const algebra::Lie& lie);
 
+    LeafData& add_leaf(LeafItem& item);
+    LeafData& allocate_leaf(LeafData& leaf);
     void compute_size_and_allocate();
 
-    void handle_scalar(py::handle value);
+    void handle_scalar(py::handle value, bool key = false);
     void handle_key_scalar(py::handle value);
     void handle_lie(py::handle value);
+
+    void handle_scalar_leaf(LeafItem& leaf);
+    void handle_key_scalar_leaf(LeafItem& leaf);
+    void handle_lie_leaf(LeafItem& leaf);
     void handle_dltensor_leaf(LeafItem& leaf);
     void handle_buffer_leaf(LeafItem& leaf);
     void handle_dict_leaf(LeafItem& leaf);
@@ -90,7 +105,7 @@ public:
 
 }// namespace
 
-scalars::KeyScalarArray python::parse_data_argument(
+ParsedData python::parse_data_argument(
         py::handle arg,
         rpy::python::DataArgOptions& options
 )
@@ -138,29 +153,28 @@ scalars::Scalar ConversionManager::convert_scalar(py::handle scalar) const
 
 LeafItem& ConversionManager::add_leaf(py::handle node, LeafType type)
 {
-    m_options.leaves.push_back(
+    m_leaves.push_back(
             {{}, py::reinterpret_borrow<py::object>(node), 0, 0, {}, type}
     );
-    return m_options.leaves.back();
+    return m_leaves.back();
 }
 
 void ConversionManager::push(scalars::Scalar scalar)
 {
-    RPY_DBG_ASSERT(m_offset < m_data.size());
-    m_data[m_offset] = scalar;
+    auto& data = m_parsed_data.back().data;
+    RPY_DBG_ASSERT(m_offset < data.size());
+    data[m_offset] = scalar;
     ++m_offset;
 }
 void ConversionManager::push(key_type key, scalars::Scalar scalar)
 {
-    RPY_DBG_ASSERT(m_data.has_keys() && m_offset < m_data.size());
-    m_data.keys()[m_offset] = key;
+    auto& keys = m_parsed_data.back().key_data;
+    keys.as_mut_slice<key_type>()[m_offset] = key;
     push(std::move(scalar));
 }
 void ConversionManager::push(const algebra::Lie& lie_data)
 {
-    RPY_DBG_ASSERT(m_offset < m_data.size());
-    if ((lie_data.storage_type() == algebra::VectorType::Dense)
-        && !is_sparse()) {
+    if ((lie_data.storage_type() == algebra::VectorType::Dense)) {
         const auto& dense_data = lie_data.dense_data();
 
         m_offset += dense_data->size();
@@ -169,28 +183,40 @@ void ConversionManager::push(const algebra::Lie& lie_data)
     }
 }
 
-void ConversionManager::compute_size_and_allocate()
+LeafData& ConversionManager::add_leaf(LeafItem& item)
 {
-    RPY_CHECK(!m_options.leaves.empty());
-    m_data = scalars::KeyScalarArray(m_options.scalar_type);
+    auto& new_leaf = m_parsed_data.emplace_back(
+            std::move(item.shape),
+            scalars::ScalarArray(m_options.scalar_type),
+            devices::Buffer(),
+            std::move(item.object),
+            item.size,
+            item.scalar_info,
+            item.leaf_type,
+            item.value_type
+    );
 
-    bool make_sparse = false;
-    idimn_t size = 0;
-    for (const auto& leaf : m_options.leaves) {
-        size += static_cast<idimn_t>(leaf.size);
-        make_sparse |= (leaf.value_type == ValueType::KeyValue);
-    }
-
-    if (size > 0) {
-        m_data.allocate_scalars(size);
-        if (make_sparse) { m_data.allocate_keys(size); }
-    }
-    RPY_DBG_ASSERT(m_offset == 0);
+    m_offset = 0;
+    return new_leaf;
 }
 
-void ConversionManager::handle_scalar(py::handle value)
+LeafData& ConversionManager::allocate_leaf(LeafData& leaf)
 {
-    if (is_sparse()) {
+    leaf.data = scalars::ScalarArray(m_options.scalar_type, leaf.size);
+    if (leaf.leaf_type == LeafType::KeyScalar) {
+        leaf.key_data = m_options.scalar_type->device()->raw_alloc(
+                leaf.size * sizeof(key_type),
+                alignof(key_type)
+        );
+    }
+    return leaf;
+}
+
+void ConversionManager::compute_size_and_allocate() {}
+
+void ConversionManager::handle_scalar(py::handle value, bool key)
+{
+    if (key) {
         push(compute_key(), convert_scalar(value));
     } else {
         push(convert_scalar(value));
@@ -199,7 +225,6 @@ void ConversionManager::handle_scalar(py::handle value)
 
 void ConversionManager::handle_key_scalar(py::handle value)
 {
-    RPY_DBG_ASSERT(is_sparse());
     RPY_DBG_ASSERT(py::isinstance<py::tuple>(value) && py::len(value) == 2);
     push(convert_key(value[py::int_(0)]), convert_scalar(value[py::int_(1)]));
 }
@@ -209,12 +234,65 @@ void ConversionManager::handle_lie(py::handle value)
     push(value.cast<const algebra::Lie&>());
 }
 
+void ConversionManager::handle_scalar_leaf(LeafItem& leaf)
+{
+    auto& new_leaf = add_leaf(leaf);
+    allocate_leaf(new_leaf);
+    handle_scalar(new_leaf.owning_object);
+}
+
+void ConversionManager::handle_key_scalar_leaf(LeafItem& leaf)
+{
+    auto& new_leaf = add_leaf(leaf);
+    allocate_leaf(new_leaf);
+    handle_key_scalar(new_leaf.owning_object);
+}
+void ConversionManager::handle_lie_leaf(LeafItem& leaf)
+{
+    auto& new_leaf = add_leaf(leaf);
+    const auto& leaf_lie = new_leaf.owning_object.cast<const algebra::Lie&>();
+    if (leaf_lie.storage_type() == algebra::VectorType::Dense) {
+        if (leaf_lie.coeff_type() == m_options.scalar_type) {
+            // Borrowing is fine here.
+            new_leaf.data = *leaf_lie.dense_data();
+        } else {
+            allocate_leaf(new_leaf);
+            m_options.scalar_type->convert_copy(
+                    new_leaf.data,
+                    *leaf_lie.dense_data()
+            );
+        }
+    } else {
+        allocate_leaf(new_leaf);
+        for (auto&& item : leaf_lie) { push(item.key(), item.value()); }
+    }
+}
+
 void ConversionManager::handle_dltensor_leaf(LeafItem& leaf)
 {
-    auto* managed = unpack_dl_capsule(leaf.object);
-    const auto& tensor = managed->dl_tensor;
+    auto& new_leaf = add_leaf(leaf);
 
-    const auto size = leaf.size;
+    auto* managed = unpack_dl_capsule(new_leaf.owning_object);
+    const auto& tensor = managed->dl_tensor;
+    const auto size = new_leaf.size;
+
+    auto borrow = is_C_contiguous<int64_t>(
+            {tensor.strides, static_cast<dimn_t>(tensor.ndim)},
+            {tensor.shape, static_cast<dimn_t>(tensor.ndim)},
+            leaf.scalar_info.bytes
+    );
+    borrow &= m_options.scalar_type->type_info() == leaf.scalar_info;
+
+    if (borrow) {
+        new_leaf.data = scalars::ScalarArray(
+                m_options.scalar_type,
+                tensor.data,
+                size
+        );
+        return;
+    }
+
+    allocate_leaf(new_leaf);
 
     boost::container::small_vector<idimn_t, 2> modified_shape(
             tensor.shape,
@@ -231,31 +309,36 @@ void ConversionManager::handle_dltensor_leaf(LeafItem& leaf)
         }
     }
 
-    auto out = m_data[{m_offset, m_offset + size}];
     python::stride_copy(
-            out,
+            new_leaf.data,
             {leaf.scalar_info, tensor.data, size},
             tensor.ndim,
             modified_shape.data(),
             modified_strides.empty() ? nullptr : modified_strides.data()
     );
-
-    leaf.offset = m_offset;
-    m_offset += size;
 }
 
-void ConversionManager::handle_buffer_leaf(rpy::python::LeafItem& leaf)
+void ConversionManager::handle_buffer_leaf(LeafItem& leaf)
 {
-    BufferInfo info(leaf.object.ptr());
+    auto& new_leaf = add_leaf(leaf);
 
-    // This is substantially similar, but not identical, to the dlpack methods
+    BufferInfo info(new_leaf.owning_object.ptr());
 
-    // The difference with the dlpack thing is that the strides of buffers are
-    // in bytes rather than elements
+    bool borrow = info.is_contiguous()
+            && m_options.scalar_type->type_info() == new_leaf.origin_type_info;
+    if (borrow) {
+        new_leaf.data = scalars::ScalarArray(
+                m_options.scalar_type,
+                info.data(),
+                info.size()
+        );
+        return;
+    }
 
-    auto out = m_data[{m_offset, m_offset + leaf.size}];
+    allocate_leaf(new_leaf);
+
     python::stride_copy(
-            out,
+            new_leaf.data,
             {leaf.scalar_info, info.data(), static_cast<dimn_t>(info.size())},
             info.ndim(),
             info.shape(),
@@ -266,31 +349,37 @@ void ConversionManager::handle_buffer_leaf(rpy::python::LeafItem& leaf)
     m_offset += leaf.size;
 }
 
-void ConversionManager::handle_dict_leaf(rpy::python::LeafItem& leaf)
+void ConversionManager::handle_dict_leaf(LeafItem& leaf)
 {
-    leaf.offset = m_offset;
-    for (auto [key_o, scalar_o] : python::steal_as<py::dict>(leaf.object)) {
+    auto& new_leaf = add_leaf(leaf);
+    allocate_leaf(new_leaf);
+
+    for (auto [key_o, scalar_o] :
+         py::reinterpret_borrow<py::dict>(new_leaf.owning_object)) {
         push(convert_key(key_o), py_to_scalar(m_options.scalar_type, scalar_o));
     }
 }
 
-void ConversionManager::handle_sequence_leaf(rpy::python::LeafItem& leaf)
+void ConversionManager::handle_sequence_leaf(LeafItem& leaf)
 {
-    leaf.offset = m_offset;
+    auto& new_leaf = add_leaf(leaf);
+    allocate_leaf(new_leaf);
+
     if (leaf.value_type == ValueType::Value) {
-        for (auto scalar : leaf.object) { handle_scalar(scalar); }
+        for (auto scalar : new_leaf.owning_object) { handle_scalar(scalar); }
     } else {
-        for (auto key_scalar : leaf.object) { handle_key_scalar(key_scalar); }
+        for (auto key_scalar : new_leaf.owning_object) {
+            handle_key_scalar(key_scalar);
+        }
     }
 }
 
 void ConversionManager::do_conversion()
 {
-    compute_size_and_allocate();
-    for (auto& leaf : m_options.leaves) {
+    for (auto& leaf : m_leaves) {
         switch (leaf.leaf_type) {
-            case LeafType::Scalar: handle_scalar(leaf.object); break;
-            case LeafType::KeyScalar: handle_key_scalar(leaf.object); break;
+            case LeafType::Scalar: handle_scalar_leaf(leaf); break;
+            case LeafType::KeyScalar: handle_key_scalar_leaf(leaf); break;
             case LeafType::Lie: handle_lie(leaf.object); break;
             case LeafType::DLTensor: handle_dltensor_leaf(leaf); break;
             case LeafType::Buffer: handle_buffer_leaf(leaf); break;
@@ -490,7 +579,7 @@ const scalars::ScalarType* ConversionManager::compute_scalar_type() const
 
     auto info = devices::type_info<int>();
 
-    for (const auto& leaf : m_options.leaves) {
+    for (const auto& leaf : m_leaves) {
         info = scalars::compute_type_promotion(info, leaf.scalar_info);
     }
 
@@ -524,6 +613,5 @@ void ConversionManager::parse_argument(py::handle arg)
     check_size_and_type(arg);
 
     m_options.scalar_type = compute_scalar_type();
-    compute_size_and_allocate();
-    if (!m_data.empty()) { do_conversion(); }
+    do_conversion();
 }
