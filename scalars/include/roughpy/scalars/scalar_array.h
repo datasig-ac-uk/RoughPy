@@ -182,6 +182,9 @@ public:
     RPY_NO_DISCARD
     ScalarArray operator[](SliceIndex index) const;
 
+    ScalarArray borrow() const;
+    ScalarArray borrow_mut();
+
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 
