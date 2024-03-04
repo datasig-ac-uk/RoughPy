@@ -83,38 +83,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
     scalars::KeyScalarStream ks_stream;
     // Now we have to construct the key scalar stream entries
     ks_stream.set_ctype(options.scalar_type);
-
-    for (const auto& leaf : parsedData) {
-        switch (leaf.leaf_type) {
-            case LeafType::Scalar:
-                RPY_THROW(std::runtime_error, "scalar value disallowed");
-                break;
-            case LeafType::KeyScalar:
-                RPY_THROW(std::runtime_error, "key-scalar value disallowed");
-                break;
-            case LeafType::DLTensor:
-            case LeafType::Buffer: {
-                if (leaf.size == 0) { break; }
-                if (leaf.shape.size() == 1) {
-                    auto sz = leaf.size;
-                    ks_stream.push_back(leaf.data.borrow());
-
-                } else {
-                    dimn_t sz = leaf.shape.back();
-                    dimn_t offset1 = 0;
-                    for (dimn_t inner = 0; inner < leaf.size; inner += sz) {
-                        ks_stream.push_back(leaf.data[{offset1, offset1 + sz}]);
-                        offset1 += sz;
-                    }
-                }
-            } break;
-            case LeafType::Dict:
-            case LeafType::Lie:
-            case LeafType::Sequence:
-                ks_stream.push_back(leaf.data.borrow());
-                break;
-        }
-    }
+    parsedData.fill_ks_stream(ks_stream);
 
     if (md.scalar_type == nullptr) {
         if (options.scalar_type != nullptr) {
