@@ -137,14 +137,22 @@ void rpy::python::stride_copy(
         // Fully compressed already, just invoke copy-convert
         tp->convert_copy(out, in);
     } else {
-
+        const auto uncompressed = ndim - compressed_ndim;
         const byte* src = reinterpret_cast<const byte*>(in.pointer());
-        boost::container::small_vector<idimn_t, 2> index(compressed_ndim);
+        boost::container::small_vector<idimn_t, 2> index(uncompressed);
 
-        auto src_offset = [&strides, &compressed_ndim, &index]() {
+        auto src_offset = [&strides, &uncompressed, &index]() {
             dimn_t offset = 0;
-            for (int32_t i = 0; i < compressed_ndim; ++i) {
+            for (int32_t i = 0; i < uncompressed; ++i) {
                 offset += strides[i] * index[i];
+            }
+            return offset;
+        };
+
+        auto dst_offset = [&shape, &uncompressed, &index]() {
+            dimn_t offset = index[uncompressed-1];
+            for (int32_t i = 1; i < uncompressed; ++i) {
+                offset += shape[i] * index[i-1];
             }
             return offset;
         };
@@ -152,7 +160,7 @@ void rpy::python::stride_copy(
         auto advance_index = [&shape, &index]() {
             auto dim = index.size() - 1;
             for (auto it = index.rbegin(); it != index.rend(); ++it, --dim) {
-                if (++(*it) >= shape[dim]) {
+                if (++(*it) >= shape[dim] && dim > 0) {
                     *it = 0;
                 } else {
                     break;
@@ -161,15 +169,14 @@ void rpy::python::stride_copy(
         };
 
         auto compression_size = std::accumulate(
-                shape + ndim - compressed_ndim,
+                shape + uncompressed,
                 shape + ndim,
                 static_cast<int64_t>(1),
                 std::multiplies<>()
         );
 
-        dimn_t offset = 0;
-        for (; index[0] < shape[0];
-             advance_index(), offset += compression_size) {
+        for (; index[0] < shape[0]; advance_index()) {
+            auto offset = dst_offset();
             auto tmp_out = out[{offset, offset + compression_size}];
             scalars::ScalarArray tmp_in(
                     info,

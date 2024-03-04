@@ -216,7 +216,12 @@ void ConversionManager::handle_dltensor_leaf(LeafItem& leaf)
 
     const auto size = leaf.size;
 
-    boost::container::small_vector<int64_t, 2> modified_strides;
+    boost::container::small_vector<idimn_t, 2> modified_shape(
+            tensor.shape,
+            tensor.shape + tensor.ndim
+    );
+
+    boost::container::small_vector<idimn_t, 2> modified_strides;
     if (tensor.strides != nullptr) {
         modified_strides.reserve(tensor.ndim);
         for (int32_t i = 0; i < tensor.ndim; ++i) {
@@ -226,54 +231,16 @@ void ConversionManager::handle_dltensor_leaf(LeafItem& leaf)
         }
     }
 
-    if (tensor.strides == nullptr) {
-        scalars::ScalarArray dst_array = m_data[{m_offset, m_offset + size}];
-        m_options.scalar_type->convert_copy(
-                dst_array,
-                {leaf.scalar_info, tensor.data, size}
-        );
-        m_offset += size;
-        return;
-    }
+    auto out = m_data[{m_offset, m_offset + size}];
+    python::stride_copy(
+            out,
+            {leaf.scalar_info, tensor.data, size},
+            tensor.ndim,
+            modified_shape.data(),
+            modified_strides.empty() ? nullptr : modified_strides.data()
+    );
 
-    boost::container::small_vector<idimn_t, 2> index(tensor.ndim);
-    const auto* src = reinterpret_cast<const byte*>(tensor.data);
-
-    // TODO: optimisation for when the inner-most parts are contiguous
-    auto advance_index = [&index, &tensor]() {
-        for (auto i = tensor.ndim - 1; i >= 0; --i) {
-            if (index[i] < tensor.shape[i] - 1) {
-                ++index[i];
-                break;
-            } else {
-                index[i] = 0;
-            }
-        }
-    };
-
-    auto get_src_offset
-            = [&index, &tensor, itemsize = leaf.scalar_info.bytes]() {
-                  dimn_t idx = 0;
-                  for (auto i = 0; i < tensor.ndim; ++i) {
-                      idx += index[i] * tensor.strides[i];
-                  }
-                  return idx * itemsize;
-              };
-
-    auto get_dst_offset = [&index, &tensor]() {
-        dimn_t idx = 0;
-        for (auto i = 0; i < tensor.ndim; ++i) {
-            idx += index[i] * tensor.shape[i];
-        }
-        return idx;
-    };
-
-    while (index[0] < tensor.shape[0]) {
-        m_data[m_offset + get_dst_offset()]
-                = scalars::Scalar(leaf.scalar_info, src + get_src_offset());
-        advance_index();
-    }
-
+    leaf.offset = m_offset;
     m_offset += size;
 }
 
@@ -286,41 +253,16 @@ void ConversionManager::handle_buffer_leaf(rpy::python::LeafItem& leaf)
     // The difference with the dlpack thing is that the strides of buffers are
     // in bytes rather than elements
 
-    if (info.is_contiguous()) {
-        auto dst_array = m_data[{m_offset, m_offset + leaf.size}];
-        m_options.scalar_type->convert_copy(
-                dst_array,
-                {leaf.scalar_info, info.data(), leaf.size}
-        );
-    } else {
-        auto index = info.new_index();
+    auto out = m_data[{m_offset, m_offset + leaf.size}];
+    python::stride_copy(
+            out,
+            {leaf.scalar_info, info.data(), static_cast<dimn_t>(info.size())},
+            info.ndim(),
+            info.shape(),
+            info.strides()
+    );
 
-        // TODO: optimisation for when the inner-most parts are contiguous
-        auto advance_index = [&index, &info]() {
-            for (auto i = info.ndim() - 1; i >= 0; --i) {
-                if (index[i] < info.shape()[i] - 1) {
-                    ++index[i];
-                    break;
-                } else {
-                    index[i] = 0;
-                }
-            }
-        };
-
-        auto get_dst_offset = [&index, &info]() {
-            dimn_t idx = 0;
-            for (auto i = 0; i < info.ndim(); ++i) {
-                idx += index[i] * info.shape()[i];
-            }
-            return idx;
-        };
-
-        while (index[0] < info.shape()[0]) {
-            m_data[m_offset + get_dst_offset()]
-                    = scalars::Scalar(leaf.scalar_info, info.ptr(index.data()));
-            advance_index();
-        }
-    }
+    leaf.offset = m_offset;
     m_offset += leaf.size;
 }
 

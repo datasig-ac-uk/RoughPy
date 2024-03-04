@@ -36,6 +36,7 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+#include <roughpy/scalars/scalars_fwd.h>
 
 namespace rpy { namespace python {
 
@@ -108,8 +109,8 @@ void stride_copy(void* RPY_RESTRICT dst,
 void stride_copy(scalars::ScalarArray& out,
                  const scalars::ScalarArray& in,
                  const int32_t ndim,
-                 const int64_t* shape,
-                 const int64_t* strides
+                 const idimn_t* shape,
+                 const idimn_t* strides
                  ) noexcept;
 
 }}

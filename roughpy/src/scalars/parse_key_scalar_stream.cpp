@@ -33,15 +33,14 @@
 #include "parse_key_scalar_stream.h"
 #include "args/dlpack_helpers.h"
 #include "args/numpy.h"
+#include "args/parse_data_argument.h"
 #include "args/strided_copy.h"
 
 #include "roughpy_module.h"
 
 #include <roughpy/scalars/scalar_types.h>
 
-
 #include <roughpy/platform/errors.h>
-
 
 using namespace rpy;
 using namespace rpy::python;
@@ -50,26 +49,27 @@ using rpy::scalars::KeyScalarArray;
 using rpy::scalars::KeyScalarStream;
 
 static inline void buffer_to_stream(
-    ParsedKeyScalarStream &result,
-    const py::buffer_info &buf_info,
-    PyToBufferOptions &options
+        ParsedKeyScalarStream& result,
+        const py::buffer_info& buf_info,
+        PyToBufferOptions& options
 );
 
 static inline void dl_to_stream(
-    ParsedKeyScalarStream &result,
-    const py::object &dl_object,
-    PyToBufferOptions &options
+        ParsedKeyScalarStream& result,
+        const py::object& dl_object,
+        PyToBufferOptions& options
 );
 
 void python::parse_key_scalar_stream(
-    ParsedKeyScalarStream &result,
-    const py::object &data,
-    rpy::python::DataArgOptions &options
-) {
+        ParsedKeyScalarStream& result,
+        const py::object& data,
+        rpy::python::DataArgOptions& options
+)
+{
     result.data_buffer = parse_data_argument(data, options);
 
     // Now we have to construct the key scalar stream entries
-
+    result.data_stream.set_ctype(*result.data_buffer.type());
 
     for (const auto& leaf : options.leaves) {
         switch (leaf.leaf_type) {
@@ -81,30 +81,40 @@ void python::parse_key_scalar_stream(
                 break;
             case LeafType::DLTensor:
             case LeafType::Buffer: {
+                if (leaf.size == 0) { break; }
                 dimn_t offset = leaf.offset;
-                dimn_t sz = leaf.shape.back();
-                for (dimn_t inner = 0; inner < leaf.size; inner += sz) {
-                    result.data_stream.push_back(result.data_buffer[{offset, offset + sz}]);
+                if (leaf.shape.size() == 1) {
+                    auto sz = leaf.size;
+                    result.data_stream.push_back(
+                            result.data_buffer[{offset, offset + sz}]
+                    );
+                } else {
+                    dimn_t sz = leaf.shape.back();
+                    for (dimn_t inner = 0; inner < leaf.size; inner += sz) {
+                        result.data_stream.push_back(
+                                result.data_buffer[{offset, offset + sz}]
+                        );
+                    }
                 }
-            }
-                break;
+            } break;
             case LeafType::Dict:
             case LeafType::Lie:
             case LeafType::Sequence:
-                result.data_stream.push_back(result.data_buffer[{leaf.offset, leaf.offset+leaf.size}]);
+                result.data_stream.push_back(
+                        result.data_buffer
+                                [{leaf.offset, leaf.offset + leaf.size}]
+                );
                 break;
-
         }
     }
-
-
 }
 
 void buffer_to_stream(
-    ParsedKeyScalarStream &result,
-    const py::buffer_info &buf_info,
-    PyToBufferOptions &options
-) {
+        ParsedKeyScalarStream& result,
+        const py::buffer_info& buf_info,
+        PyToBufferOptions& options
+)
+{
     RPY_CHECK(buf_info.ndim <= 2 && buf_info.ndim > 0);
 
     /*
@@ -126,7 +136,7 @@ void buffer_to_stream(
     // Check if the array is C-contiguous
     auto acc_stride = buf_info.itemsize;
     for (auto dim = buf_info.ndim; dim > 0;) {
-        const auto &this_stride = buf_info.strides[--dim];
+        const auto& this_stride = buf_info.strides[--dim];
         RPY_CHECK(this_stride > 0);
         borrow &= this_stride == acc_stride;
         acc_stride *= buf_info.shape[dim];
@@ -136,20 +146,22 @@ void buffer_to_stream(
         if (buf_info.ndim == 1) {
             result.data_stream.reserve_size(1);
             result.data_stream.push_back(scalars::ScalarArray{
-                type_info,
-                buf_info.ptr,
-                static_cast<dimn_t>(buf_info.shape[0])});
+                    type_info,
+                    buf_info.ptr,
+                    static_cast<dimn_t>(buf_info.shape[0])
+            });
         } else {
             const auto num_increments = static_cast<dimn_t>(buf_info.shape[0]);
             result.data_stream.reserve_size(num_increments);
 
-            const auto *ptr = static_cast<const char *>(buf_info.ptr);
+            const auto* ptr = static_cast<const char*>(buf_info.ptr);
             const auto stride = buf_info.strides[0];
             for (dimn_t i = 0; i < num_increments; ++i) {
                 result.data_stream.push_back(scalars::ScalarArray{
-                    options.type,
-                    ptr,
-                    static_cast<dimn_t>(buf_info.shape[1])});
+                        options.type,
+                        ptr,
+                        static_cast<dimn_t>(buf_info.shape[1])
+                });
                 ptr += stride;
             }
         }
@@ -165,44 +177,45 @@ void buffer_to_stream(
         }
 
         stride_copy(
-            tmp.data(),
-            buf_info.ptr,
-            buf_info.itemsize,
-            buf_info.ndim,
-            buf_info.shape.data(),
-            buf_info.strides.data(),
-            tmp_strides,
-            false
+                tmp.data(),
+                buf_info.ptr,
+                buf_info.itemsize,
+                buf_info.ndim,
+                buf_info.shape.data(),
+                buf_info.strides.data(),
+                tmp_strides,
+                false
         );
 
         // Now that we're C-contiguous, convert_copy into the result.
         result.data_buffer = KeyScalarArray(options.type);
         result.data_buffer.allocate_scalars(buf_info.size);
         options.type->convert_copy(
-            result.data_buffer,
-            scalars::ScalarArray{
-                type_info,
-                tmp.data(),
-                static_cast<dimn_t>(buf_info.size)}
+                result.data_buffer,
+                scalars::ScalarArray{
+                        type_info,
+                        tmp.data(),
+                        static_cast<dimn_t>(buf_info.size)
+                }
         );
 
         if (buf_info.ndim == 1) {
             result.data_stream.reserve_size(1);
             result.data_stream.push_back(
-                {options.type,
-                 tmp.data(),
-                 static_cast<dimn_t>(buf_info.size)}
+                    {options.type,
+                     tmp.data(),
+                     static_cast<dimn_t>(buf_info.size)}
             );
         } else {
             // shape[0] increments of size shape[1]
             RPY_DBG_ASSERT(
-                buf_info.shape[0] * buf_info.shape[1] == buf_info.size
+                    buf_info.shape[0] * buf_info.shape[1] == buf_info.size
             );
             result.data_stream.reserve_size(tmp_shape[0]);
             const auto info = options.type->type_info();
 
-            const auto *sptr
-                = static_cast<const byte *>(result.data_buffer.pointer());
+            const auto* sptr
+                    = static_cast<const byte*>(result.data_buffer.pointer());
             for (dimn_t i = 0; i < tmp_shape[0]; ++i) {
                 result.data_stream.push_back({options.type, sptr, tmp_shape[1]}
                 );
@@ -213,10 +226,11 @@ void buffer_to_stream(
 }
 
 void dl_to_stream(
-    ParsedKeyScalarStream &result,
-    const py::object &dl_object,
-    PyToBufferOptions &options
-) {
+        ParsedKeyScalarStream& result,
+        const py::object& dl_object,
+        PyToBufferOptions& options
+)
+{
     /*
      * This is going to work much like the python buffer protocol, except we
      * have to do some extra work to deal with device arrays. Currently, this is
@@ -224,9 +238,9 @@ void dl_to_stream(
      */
 
     py::capsule dlpack = dl_object.attr("__dlpack__")();
-    auto *dltensor = dlpack.get_pointer<DLManagedTensor>();
+    auto* dltensor = dlpack.get_pointer<DLManagedTensor>();
     RPY_CHECK(dltensor != nullptr);
-    auto &tensor = dltensor->dl_tensor;
+    auto& tensor = dltensor->dl_tensor;
 
     const auto type_info = convert_from_dl_datatype(tensor.dtype);
     if (options.type == nullptr) {
@@ -257,21 +271,20 @@ void dl_to_stream(
         if (tensor.ndim == 1) {
             result.data_stream.reserve_size(1);
             result.data_stream.push_back(
-                {options.type,
-                 tensor.data,
-                 static_cast<dimn_t>(tensor.shape[0])}
+                    {options.type,
+                     tensor.data,
+                     static_cast<dimn_t>(tensor.shape[0])}
             );
         } else {
             const auto num_increments = static_cast<dimn_t>(tensor.shape[0]);
             result.data_stream.reserve_size(num_increments);
 
-            const auto *ptr = static_cast<const char *>(tensor.data);
+            const auto* ptr = static_cast<const char*>(tensor.data);
             const auto stride = tensor.shape[1] * itemsize;
             for (dimn_t i = 0; i < num_increments; ++i) {
                 result.data_stream.push_back(
-                    {options.type,
-                     ptr,
-                     static_cast<dimn_t>(tensor.shape[1])}
+                        {options.type, ptr, static_cast<dimn_t>(tensor.shape[1])
+                        }
                 );
                 ptr += stride;
             }
@@ -299,32 +312,31 @@ void dl_to_stream(
                 in_strides[1] = itemsize;
             }
             in_shape[1] = tensor.shape[1];
-
         }
 
         stride_copy(
-            tmp.data(),
-            tensor.data,
-            itemsize,
-            tensor.ndim,
-            in_shape,
-            in_strides,
-            out_strides,
-            in_strides[0] < in_strides[1]
+                tmp.data(),
+                tensor.data,
+                itemsize,
+                tensor.ndim,
+                in_shape,
+                in_strides,
+                out_strides,
+                in_strides[0] < in_strides[1]
         );
 
         // Now that we're C-contiguous, convert_copy into the result.
         result.data_buffer = KeyScalarArray(options.type);
         result.data_buffer.allocate_scalars(size);
         options.type->convert_copy(
-            result.data_buffer,
-            {type_info, tmp.data(), static_cast<dimn_t>(size)}
+                result.data_buffer,
+                {type_info, tmp.data(), static_cast<dimn_t>(size)}
         );
 
         if (tensor.ndim == 1) {
             result.data_stream.reserve_size(1);
             result.data_stream.push_back(
-                {options.type, tmp.data(), static_cast<dimn_t>(size)}
+                    {options.type, tmp.data(), static_cast<dimn_t>(size)}
             );
         } else {
             // shape[0] increments of size shape[1]
@@ -332,7 +344,10 @@ void dl_to_stream(
             result.data_stream.reserve_size(out_shape[0]);
 
             for (dimn_t i = 0; i < out_shape[0]; ++i) {
-                result.data_stream.push_back(result.data_buffer[{i * out_shape[1], (i + 1) * out_shape[1]}]);
+                result.data_stream.push_back(
+                        result.data_buffer
+                                [{i * out_shape[1], (i + 1) * out_shape[1]}]
+                );
             }
         }
     }
