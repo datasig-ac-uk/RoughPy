@@ -70,6 +70,8 @@ class ParsedData : public std::vector<LeafData>
 
 public:
     const std::vector<param_t>& indices() const noexcept { return m_indices; }
+
+    void fill_ks_stream(scalars::KeyScalarStream& stream);
 };
 
 // struct RPY_NO_EXPORT AlternativeKeyType {

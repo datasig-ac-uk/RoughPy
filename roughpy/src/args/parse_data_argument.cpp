@@ -647,3 +647,38 @@ void ConversionManager::parse_argument(py::handle arg)
     m_options.scalar_type = compute_scalar_type();
     do_conversion();
 }
+
+void ParsedData::fill_ks_stream(scalars::KeyScalarStream& ks_stream)
+{
+    for (const auto& leaf : *this) {
+        switch (leaf.leaf_type) {
+            case LeafType::Scalar:
+                RPY_THROW(std::runtime_error, "scalar value disallowed");
+                break;
+            case LeafType::KeyScalar:
+                RPY_THROW(std::runtime_error, "key-scalar value disallowed");
+                break;
+            case LeafType::DLTensor:
+            case LeafType::Buffer: {
+                if (leaf.size == 0) { break; }
+                if (leaf.shape.size() == 1) {
+                    auto sz = leaf.size;
+                    ks_stream.push_back(leaf.data.borrow());
+
+                } else {
+                    dimn_t sz = leaf.shape.back();
+                    dimn_t offset1 = 0;
+                    for (dimn_t inner = 0; inner < leaf.size; inner += sz) {
+                        ks_stream.push_back(leaf.data[{offset1, offset1 + sz}]);
+                        offset1 += sz;
+                    }
+                }
+            } break;
+            case LeafType::Dict:
+            case LeafType::Lie:
+            case LeafType::Sequence:
+                ks_stream.push_back(leaf.data.borrow());
+                break;
+        }
+    }
+}
