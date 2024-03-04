@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by sam on 09/08/23.
@@ -38,7 +39,8 @@
 #include <roughpy/core/types.h>
 #include <roughpy/scalars/scalars_fwd.h>
 
-namespace rpy { namespace python {
+namespace rpy {
+namespace python {
 
 /**
  * @brief Copies data from source to destination using strides.
@@ -60,15 +62,36 @@ namespace rpy { namespace python {
  * @note The function assumes that the input arrays are valid and have
  * compatible dimensions and strides.
  */
-void stride_copy(void* RPY_RESTRICT dst,
-                 const void* RPY_RESTRICT src,
-                 const py::ssize_t itemsize,
-                 const py::ssize_t ndim,
-                 const py::ssize_t* shape_in,
-                 const py::ssize_t* strides_in,
-                 const py::ssize_t* strides_out,
-                 bool transpose
-                 ) noexcept;
+void stride_copy(
+        void* RPY_RESTRICT dst,
+        const void* RPY_RESTRICT src,
+        const py::ssize_t itemsize,
+        const py::ssize_t ndim,
+        const py::ssize_t* shape_in,
+        const py::ssize_t* strides_in,
+        const py::ssize_t* strides_out,
+        bool transpose
+) noexcept;
+
+/**
+ * @file
+ * @brief Check if a slice is C-contiguous
+ */
+template <typename T>
+inline bool is_C_contiguous(
+        Slice<const T> strides,
+        Slice<const T> shape,
+        optional<int32_t> itemsize
+) noexcept
+{
+    if (strides.empty()) { return true; }
+    T compressed_size = (itemsize) ? *itemsize : 1;
+    for (auto i = strides.size(); i > 0;) {
+        if (strides[--i] != compressed_size) { return false; }
+        compressed_size *= shape[i];
+    }
+    return true;
+}
 
 /**
  * @brief Copies data from one ScalarArray to another, with optional compression
@@ -106,14 +129,15 @@ void stride_copy(void* RPY_RESTRICT dst,
  * that `shape` and `strides` have at least `ndim` elements. The function
  * modifies `out` and does not modify `in`. This function is noexcept.
  */
-void stride_copy(scalars::ScalarArray& out,
-                 const scalars::ScalarArray& in,
-                 const int32_t ndim,
-                 const idimn_t* shape,
-                 const idimn_t* strides
-                 ) noexcept;
+void stride_copy(
+        scalars::ScalarArray& out,
+        const scalars::ScalarArray& in,
+        const int32_t ndim,
+        const idimn_t* shape,
+        const idimn_t* strides
+) noexcept;
 
-}}
-
+}// namespace python
+}// namespace rpy
 
 #endif// ROUGHPY_STRIDED_COPY_H
