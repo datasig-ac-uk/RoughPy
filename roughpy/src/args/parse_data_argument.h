@@ -39,8 +39,7 @@ struct LeafData {
 
     LeafData(
             boost::container::small_vector<idimn_t, 1>&& shape,
-            scalars::ScalarArray&& data,
-            devices::Buffer keyData,
+            scalars::KeyScalarArray&& data,
             py::object&& owningObject,
             dimn_t size,
             devices::TypeInfo originTypeInfo,
@@ -49,7 +48,6 @@ struct LeafData {
     )
         : shape(std::move(shape)),
           data(std::move(data)),
-          key_data(keyData),
           owning_object(std::move(owningObject)),
           size(size),
           origin_type_info(originTypeInfo),
@@ -58,8 +56,7 @@ struct LeafData {
     {}
 
     boost::container::small_vector<idimn_t, 1> shape;
-    scalars::ScalarArray data;
-    devices::Buffer key_data;
+    scalars::KeyScalarArray data;
     py::object owning_object;
     dimn_t size;
     devices::TypeInfo origin_type_info;

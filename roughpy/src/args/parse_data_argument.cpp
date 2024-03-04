@@ -68,6 +68,8 @@ private:
     RPY_NO_DISCARD key_type convert_key(py::handle pykey) const;
     RPY_NO_DISCARD scalars::Scalar convert_scalar(py::handle scalar) const;
 
+    RPY_NO_DISCARD devices::TypeInfo type_info_from(py::handle scalar) const;
+
     LeafItem& add_leaf(py::handle node, LeafType type);
 
     void push(scalars::Scalar scalar);
@@ -76,7 +78,6 @@ private:
 
     LeafData& add_leaf(LeafItem& item);
     LeafData& allocate_leaf(LeafData& leaf);
-    void compute_size_and_allocate();
 
     void handle_scalar(py::handle value, bool key = false);
     void handle_key_scalar(py::handle value);
@@ -117,6 +118,8 @@ ParsedData python::parse_data_argument(
 
 bool ConversionManager::is_scalar(py::handle obj) const noexcept
 {
+    if (py::isinstance<scalars::Scalar>(obj)) { return true; }
+
     if (py::isinstance<py::int_>(obj) || py::isinstance<py::float_>(obj)) {
         return true;
     }
@@ -151,6 +154,19 @@ scalars::Scalar ConversionManager::convert_scalar(py::handle scalar) const
     return py_to_scalar(m_options.scalar_type, scalar);
 }
 
+devices::TypeInfo ConversionManager::type_info_from(py::handle scalar) const
+{
+    if (py::isinstance<scalars::Scalar>(scalar)) {
+        return scalar.cast<const scalars::Scalar&>().type_info();
+    }
+
+    if (RPyPolynomial_Check(scalar.ptr())) {
+        return (*scalars::get_type("RationalPoly"))->type_info();
+    }
+
+    return py_type_to_type_info(py::type::of(scalar));
+}
+
 LeafItem& ConversionManager::add_leaf(py::handle node, LeafType type)
 {
     m_leaves.push_back(
@@ -168,8 +184,8 @@ void ConversionManager::push(scalars::Scalar scalar)
 }
 void ConversionManager::push(key_type key, scalars::Scalar scalar)
 {
-    auto& keys = m_parsed_data.back().key_data;
-    keys.as_mut_slice<key_type>()[m_offset] = key;
+    auto& data = m_parsed_data.back().data;
+    data.keys()[m_offset] = key;
     push(std::move(scalar));
 }
 void ConversionManager::push(const algebra::Lie& lie_data)
@@ -187,9 +203,8 @@ LeafData& ConversionManager::add_leaf(LeafItem& item)
 {
     auto& new_leaf = m_parsed_data.emplace_back(
             std::move(item.shape),
-            scalars::ScalarArray(m_options.scalar_type),
-            devices::Buffer(),
-            std::move(item.object),
+            scalars::KeyScalarArray(m_options.scalar_type),
+            py::reinterpret_borrow<py::object>(item.object),
             item.size,
             item.scalar_info,
             item.leaf_type,
@@ -203,16 +218,11 @@ LeafData& ConversionManager::add_leaf(LeafItem& item)
 LeafData& ConversionManager::allocate_leaf(LeafData& leaf)
 {
     leaf.data = scalars::ScalarArray(m_options.scalar_type, leaf.size);
-    if (leaf.leaf_type == LeafType::KeyScalar) {
-        leaf.key_data = m_options.scalar_type->device()->raw_alloc(
-                leaf.size * sizeof(key_type),
-                alignof(key_type)
-        );
+    if (leaf.value_type == ValueType::KeyValue) {
+        leaf.data.allocate_keys(leaf.size);
     }
     return leaf;
 }
-
-void ConversionManager::compute_size_and_allocate() {}
 
 void ConversionManager::handle_scalar(py::handle value, bool key)
 {
@@ -344,9 +354,6 @@ void ConversionManager::handle_buffer_leaf(LeafItem& leaf)
             info.shape(),
             info.strides()
     );
-
-    leaf.offset = m_offset;
-    m_offset += leaf.size;
 }
 
 void ConversionManager::handle_dict_leaf(LeafItem& leaf)
@@ -367,6 +374,7 @@ void ConversionManager::handle_sequence_leaf(LeafItem& leaf)
 
     if (leaf.value_type == ValueType::Value) {
         for (auto scalar : new_leaf.owning_object) { handle_scalar(scalar); }
+
     } else {
         for (auto key_scalar : new_leaf.owning_object) {
             handle_key_scalar(key_scalar);
@@ -380,7 +388,7 @@ void ConversionManager::do_conversion()
         switch (leaf.leaf_type) {
             case LeafType::Scalar: handle_scalar_leaf(leaf); break;
             case LeafType::KeyScalar: handle_key_scalar_leaf(leaf); break;
-            case LeafType::Lie: handle_lie(leaf.object); break;
+            case LeafType::Lie: handle_lie_leaf(leaf); break;
             case LeafType::DLTensor: handle_dltensor_leaf(leaf); break;
             case LeafType::Buffer: handle_buffer_leaf(leaf); break;
             case LeafType::Dict: handle_dict_leaf(leaf); break;
@@ -439,7 +447,11 @@ void ConversionManager::check_size_and_type_recurse(
         deg_t depth
 )
 {
-    RPY_CHECK(depth <= m_options.max_nested);
+    RPY_CHECK(
+            depth < m_options.max_nested,
+            "maximum nested depth reached in this context",
+            py::value_error
+    );
     if (py::hasattr(node, "__dlpack__")) {
         // DLPack arguments have their inner-most dimension as leaves
         check_dl_size(py_to_dlpack(node), depth);
@@ -454,23 +466,21 @@ void ConversionManager::check_size_and_type_recurse(
                 = std::all_of(as_dict.begin(), as_dict.end(), [this](auto kv) {
                       if (!is_scalar(kv.second)) { return false; }
 
-                      return !static_cast<bool>(
-                              (!py::isinstance<py::int_>(kv.first)
-                               || m_options.alternative_key == nullptr
-                               || !py::isinstance(
-                                       kv.first,
-                                       m_options.alternative_key->py_key_type
-                               ))
-                      );
+                      return static_cast<bool>((
+                              py::isinstance<py::int_>(kv.first)
+                              || (m_options.alternative_key != nullptr
+                                  && py::isinstance(
+                                          kv.first,
+                                          m_options.alternative_key->py_key_type
+                                  ))
+                      ));
                   });
 
         if (is_leaf) {
             auto& leaf = add_leaf(as_dict, LeafType::Dict);
             leaf.value_type = ValueType::KeyValue;
             leaf.shape.push_back(py::len(node));
-            leaf.scalar_info
-                    = py_type_to_type_info(py::type::of(as_dict.begin()->second)
-                    );
+            leaf.scalar_info = type_info_from(as_dict.begin()->second);
             leaf.size = leaf.shape[0];
         } else if (m_options.allow_timestamped && depth == 0) {
             m_options.indices.reserve(py::len(as_dict));
@@ -510,13 +520,14 @@ void ConversionManager::check_size_and_type_recurse(
                         if (!is_scalar(item[py::int_(1)])) { return false; }
 
                         auto key = item[py::int_(0)];
-                        return !static_cast<bool>(
-                                !py::isinstance<py::int_>(key)
-                                || m_options.alternative_key == nullptr
-                                || !py::isinstance(
-                                        key,
-                                        m_options.alternative_key->py_key_type
-                                )
+                        return static_cast<bool>(
+                                py::isinstance<py::int_>(key)
+                                || (m_options.alternative_key != nullptr
+                                    && py::isinstance(
+                                            key,
+                                            m_options.alternative_key
+                                                    ->py_key_type
+                                    ))
                         );
                     }
 
@@ -542,7 +553,12 @@ void ConversionManager::check_size_and_type_recurse(
             leaf.shape.push_back(py::len(node));
             //            leaf.scalar_info =
             //            py_type_to_type_info(py::type::of(node));
-            leaf.scalar_info = devices::type_info<double>();
+            if (leaf.value_type == ValueType::Value) {
+                leaf.scalar_info = type_info_from(node[py::int_(0)]);
+            } else {
+                leaf.scalar_info
+                        = type_info_from(node[py::int_(0)][py::int_(1)]);
+            }
             leaf.size = leaf.shape[0];
         } else {
             for (auto pair : node) {
@@ -567,9 +583,25 @@ void ConversionManager::check_size_and_type_recurse(
 }
 void ConversionManager::check_size_and_type(py::handle arg)
 {
-    deg_t depth = 0;
-    optional<ValueType> expected_type;
+    if (m_options.allow_scalar && is_scalar(arg)) {
+        auto& leaf = add_leaf(arg, LeafType::Scalar);
+        leaf.size = 1;
+        leaf.shape.push_back(1);
+        leaf.value_type = ValueType::Value;
+        leaf.scalar_info = type_info_from(arg);
+        return;
+    }
 
+    if (m_options.allow_kv_pair && is_kv_pair(arg, m_options.alternative_key)) {
+        auto& leaf = add_leaf(arg, LeafType::KeyScalar);
+        leaf.size = 1;
+        leaf.shape.push_back(1);
+        leaf.value_type = ValueType::KeyValue;
+        leaf.scalar_info = type_info_from(arg[py::int_(1)]);
+        return;
+    }
+
+    deg_t depth = 0;
     check_size_and_type_recurse(arg, depth);
 }
 
