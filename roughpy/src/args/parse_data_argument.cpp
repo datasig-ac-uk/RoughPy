@@ -682,3 +682,18 @@ void ParsedData::fill_ks_stream(scalars::KeyScalarStream& ks_stream)
         }
     }
 }
+
+void ParsedData::fill_ks_buffer(scalars::KeyScalarArray& ks_array)
+{
+    if (empty()) { return; }
+
+    const auto sz = size();
+    if (sz == 1) {
+        ks_array = std::move(front().data);
+    } else {
+        RPY_THROW(
+                std::runtime_error,
+                "unable to flatten array into single buffer"
+        );
+    }
+}

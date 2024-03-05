@@ -71,7 +71,9 @@ class ParsedData : public std::vector<LeafData>
 public:
     const std::vector<param_t>& indices() const noexcept { return m_indices; }
 
-    void fill_ks_stream(scalars::KeyScalarStream& stream);
+    void fill_ks_stream(scalars::KeyScalarStream& ks_stream);
+
+    void fill_ks_buffer(scalars::KeyScalarArray& ks_array);
 };
 
 // struct RPY_NO_EXPORT AlternativeKeyType {
