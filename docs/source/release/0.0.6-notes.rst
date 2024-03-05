@@ -1,0 +1,8 @@
+===========================
+RoughPy 0.0.6 Release Notes
+===========================
+
+* Externally sourced streams (sound-file streams) now support setting channel types/schema in factory function.
+* Added option for customising file name macro in exception throws.
+* Made some improvements to the internal interface of ScalarType to allow more efficient implementations of vectorised operations.
+* Added fast "is_zero" method to Python algebra objects.
