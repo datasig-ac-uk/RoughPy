@@ -452,7 +452,16 @@ void ConversionManager::check_size_and_type_recurse(
             "maximum nested depth reached in this context",
             py::value_error
     );
-    if (py::hasattr(node, "__dlpack__")) {
+    if (py::isinstance<algebra::Lie>(node)) {
+        const auto& lie = node.cast<const algebra::Lie&>();
+        auto& leaf = add_leaf(node, LeafType::Lie);
+        leaf.shape.push_back(lie.dimension());
+        leaf.value_type = lie.storage_type() == algebra::VectorType::Dense
+                ? ValueType::Value
+                : ValueType::KeyValue;
+        leaf.size = lie.dimension();
+        leaf.scalar_info = lie.coeff_type()->type_info();
+    } else if (py::hasattr(node, "__dlpack__")) {
         // DLPack arguments have their inner-most dimension as leaves
         check_dl_size(py_to_dlpack(node), depth);
     } else if (py::isinstance<py::buffer>(node)) {
