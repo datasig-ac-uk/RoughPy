@@ -30,10 +30,12 @@
 
 #include <pybind11/stl.h>
 
+#include "args/parse_data_argument.h"
 #include "lie_key_iterator.h"
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 #include "tensor_key_iterator.h"
+#include <roughpy/algebra/context.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -174,76 +176,33 @@ RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
         return nullptr;
     }
 
-    python::PyToBufferOptions options;
+    python::DataArgOptions options;
     options.allow_scalar = false;
     options.max_nested = 2;
+    options.scalar_type = ctx->ctype();
 
-    scalars::KeyScalarArray buffer;
+    python::ParsedData parsed_data;
 
+    SignatureData request;
     try {
-        buffer = python::py_to_buffer(py_data, options);
+        parsed_data = python::parse_data_argument(py_data, options);
+        parsed_data.fill_ks_stream(request.data_stream);
     } catch (std::exception& exc) {
         PyErr_SetString(PyExc_RuntimeError, exc.what());
         return nullptr;
     }
 
-    SignatureData request;
-    request.vector_type = VectorType::Sparse;
-    if (py_vtype) { request.vector_type = py_vtype.cast<VectorType>(); }
-
-    if (buffer.size() == 0) {
+    if (parsed_data.size() == 0) {
         auto result = ctx->zero_free_tensor(request.vector_type);
     }
 
-    const auto* ctype = ctx->ctype();
-    const auto info = ctype->type_info();
-    request.data_stream.set_ctype(ctype);
-    const auto itemsize = info.bytes;
-
-    const auto* p_buffer = static_cast<const char*>(buffer.pointer());
-    if (!buffer.has_keys()) {
-        if (!py_vtype) { request.vector_type = VectorType::Dense; }
-
-        if (options.shape.empty() || options.shape.size() > 2) {
-            PyErr_SetString(PyExc_ValueError, "invalid shape");
-            return nullptr;
-        }
-
-        dimn_t width;
-        dimn_t n_increments;
-        if (options.shape.size() == 1) {
-            width = options.shape[0];
-            n_increments = 1;
-        } else {
-            width = options.shape[1];
-            n_increments = options.shape[0];
-        }
-
-        request.data_stream.reserve_size(n_increments);
-        for (dimn_t i = 0; i < n_increments; ++i) {
-            request.data_stream.push_back(scalars::ScalarArray{
-                    ctype,
-                    p_buffer + i * width * itemsize,
-                    width
-            });
-        }
-    } else {
-        request.data_stream.reserve_size(options.shape.size());
-        request.key_stream.reserve(options.shape.size());
-        const key_type* p_keys = buffer.keys();
-
-        auto n_increments = options.shape.size();
-        for (dimn_t i = 0; i < n_increments; ++i) {
-            request.data_stream.push_back(scalars::ScalarArray{
-                    ctype,
-                    p_buffer,
-                    static_cast<dimn_t>(options.shape[i])
-            });
-            request.key_stream.push_back(p_keys);
-            p_buffer += options.shape[i] * itemsize;
-            p_keys += options.shape[i];
-        }
+    request.vector_type = VectorType::Sparse;
+    if (py_vtype) {
+        request.vector_type = py_vtype.cast<VectorType>();
+    } else if (parsed_data.size() == 1 && parsed_data.front().value_type == python::ValueType::Value) {
+        request.vector_type = VectorType::Dense;
     }
+
 
     return python::cast_to_object(ctx->signature(request));
 }
