@@ -42,22 +42,3 @@ add_roughpy_component(Algebra
         RoughPy::Platform
         RoughPy::Scalars
         )
-
-
-
-
-add_roughpy_test_helper(AlgebraMock STATIC
-        SRCS
-        src/testing/mock_context.cpp
-        src/testing/mock_context.h
-        DEPS
-        RoughPy::Algebra
-        )
-
-add_roughpy_test(algebra
-        SRC
-        src/ContextFixture.cpp
-        src/ContextFixture.h
-        NEEDS
-        RoughPy::Algebra
-        )

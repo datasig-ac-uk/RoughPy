@@ -716,7 +716,6 @@ bool Vector::operator==(const Vector& other) const
 
 std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
 {
-    //TODO: uncomment once iterators are implemented.
     const auto basis = value.basis();
     for (const auto& item : value) {
         os << item->second << '(' << basis->to_string(item->first)
