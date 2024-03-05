@@ -137,6 +137,7 @@ inline constexpr int min_scalar_type_alignment = 16;
  * @return The resulting type after performing promotion on
  * `left` and `right`.
  */
+ROUGHPY_SCALARS_EXPORT
 RPY_NO_DISCARD devices::TypeInfo
 compute_type_promotion(devices::TypeInfo left, devices::TypeInfo right);
 
