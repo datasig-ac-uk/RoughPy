@@ -34,20 +34,32 @@
 #define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_KERNEL_H_
 
 #include "devices/kernel.h"
+#include "devices/buffer.h"
+#include "devices/memory_view.h"
 
 namespace rpy {
 namespace devices {
 
+
+template <typename... Ts>
+using raw_kfn_ptr = void (*)(Ts...);
+
+
 class CPUKernel : public dtl::RefCountBase<KernelInterface>
 {
-    using fallback_kernel_t = void (*)(void**, Size3 work_size) noexcept;
+    using wrapped_kernel_t = std::function<void(const KernelLaunchParams&, Slice<KernelArgument>)>;
 
-    fallback_kernel_t m_fallback;
+    wrapped_kernel_t m_kernel;
     string m_name;
     uint32_t m_nargs;
 
 public:
-    CPUKernel(fallback_kernel_t fallback, uint32_t nargs, string name);
+    template <typename... Ts>
+    CPUKernel(raw_kfn_ptr<Ts...> fn, string name);
+
+    template <typename... Ts>
+    CPUKernel(std::function<void(Ts...)> fn, string name);
+
 
     Device device() const noexcept override;
 
@@ -74,9 +86,18 @@ public:
 };
 
 template <typename T>
+ConvertedKernelArgument<T>::ConvertedKernelArgument(KernelArgument& arg)
+{
+    RPY_CHECK(arg.info() == type_info<T>());
+    p_data = arg.const_pointer();
+}
+
+
+template <typename T>
 class ConvertedKernelArgument<T*>
 {
     T* p_data;
+    MutableMemoryView m_view;
 
 public:
 
@@ -87,10 +108,26 @@ public:
 };
 
 template <typename T>
+ConvertedKernelArgument<T*>::ConvertedKernelArgument(KernelArgument& arg)
+{
+    RPY_CHECK(arg.info() == type_info<T>());
+    RPY_CHECK(arg.is_buffer() && !arg.is_const());
+    auto& buffer = arg.buffer();
+
+    if (buffer.device() != get_host_device()) {
+        m_view = buffer.map_raw(buffer.size(), 0);
+        p_data = reinterpret_cast<T*>(m_view.raw_ptr(0));
+    } else {
+        p_data = buffer.ptr();
+    }
+}
+
+
+template <typename T>
 class ConvertedKernelArgument<const T*>
 {
     const T* p_data;
-
+    MemoryView m_view;
 public:
 
     explicit ConvertedKernelArgument(KernelArgument& arg);
@@ -98,6 +135,21 @@ public:
     operator const T*() { return p_data; }
 
 };
+
+template <typename T>
+ConvertedKernelArgument<const T*>::ConvertedKernelArgument(KernelArgument& arg)
+{
+    RPY_CHECK(arg.info() == type_info<T>());
+    RPY_CHECK(arg.is_buffer() && !arg.is_const());
+    auto& buffer = arg.buffer();
+
+    if (buffer.device() != get_host_device()) {
+        m_view = buffer.map();
+        p_data = reinterpret_cast<T*>(m_view.raw_ptr(0));
+    } else {
+        p_data = buffer.ptr();
+    }
+}
 
 /*
  * The problem we need to solve now is how to invoke a function that takes a
@@ -155,7 +207,45 @@ RPY_INLINE_ALWAYS void invoke_kernel(std::function<void(Ts...)> fn, Slice<Kernel
     invoke_kernel_inner(std::move(fn), indices_for<Ts...>(), args);
 }
 
+
+
+template <typename... Ts, size_t... Is>
+RPY_INLINE_ALWAYS void invoke_kernel_inner(
+        raw_kfn_ptr<Ts...> fn,
+        Indices<Is...>,
+        Slice<KernelArgument> args
+)
+{
+    fn(ConvertedKernelArgument<Ts>(args[Is])...);
+}
+
+template <typename... Ts>
+RPY_INLINE_ALWAYS void invoke_kernel(raw_kfn_ptr<void(Ts...)> fn, Slice<KernelArgument> args)
+{
+    invoke_kernel_inner(fn, indices_for<Ts...>(), args);
+}
+
+
+
+
+
 }// namespace dtl
+
+template <typename... Ts>
+CPUKernel::CPUKernel(raw_kfn_ptr<Ts...> fn, string name)
+    : m_kernel([fn](const KernelLaunchParams& params, Slice<KernelArgument> args) {
+          dtl::invoke_kernel(fn, args);
+      }),
+      m_name(std::move(name))
+{}
+
+template <typename... Ts>
+CPUKernel::CPUKernel(std::function<void(Ts...)> fn, string name)
+    : m_kernel([fn=std::move(fn)](const KernelLaunchParams& params, Slice<KernelArgument> args) {
+          dtl::invoke_kernel(fn, args);
+      }),
+      m_name(std::move(name))
+{}
 
 }// namespace devices
 }// namespace rpy
