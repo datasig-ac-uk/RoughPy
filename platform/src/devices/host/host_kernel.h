@@ -236,6 +236,7 @@ CPUKernel::CPUKernel(raw_kfn_ptr<Ts...> fn, string name)
     : m_kernel([fn](const KernelLaunchParams& params, Slice<KernelArgument> args) {
           dtl::invoke_kernel(fn, args);
       }),
+      m_nargs(sizeof...(Ts)),
       m_name(std::move(name))
 {}
 
@@ -244,6 +245,7 @@ CPUKernel::CPUKernel(std::function<void(Ts...)> fn, string name)
     : m_kernel([fn=std::move(fn)](const KernelLaunchParams& params, Slice<KernelArgument> args) {
           dtl::invoke_kernel(fn, args);
       }),
+      m_nargs(sizeof...(Ts)),
       m_name(std::move(name))
 {}
 

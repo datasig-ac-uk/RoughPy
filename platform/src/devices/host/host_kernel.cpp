@@ -39,12 +39,6 @@ using namespace rpy::devices;
 
 
 
-CPUKernel::CPUKernel(fallback_kernel_t fallback, uint32_t nargs, string name)
-    : m_fallback(fallback),
-      m_name(std::move(name)),
-      m_nargs(nargs)
-{}
-
 
 
 string CPUKernel::name() const { return m_name; }
@@ -55,6 +49,7 @@ Event CPUKernel::launch_kernel_async(
         Slice<KernelArgument> args
 )
 {
+    m_kernel(params, args);
     return Event();
 }
 Device CPUKernel::device() const noexcept { return CPUDeviceHandle::get(); }
