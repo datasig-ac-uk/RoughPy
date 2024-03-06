@@ -586,6 +586,10 @@ RPY_NO_DISCARD inline devices::KernelArgument to_kernel_arg(const Scalar& arg) n
     return {arg.type_info(), arg.pointer()};
 }
 
+RPY_NO_DISCARD inline devices::KernelArgument to_kernel_arg(Scalar& arg) noexcept {
+    return { arg.type_info(), arg.is_mutable() ? arg.mut_pointer() : arg.pointer() };
+}
+
 }// namespace scalars
 }// namespace rpy
 
