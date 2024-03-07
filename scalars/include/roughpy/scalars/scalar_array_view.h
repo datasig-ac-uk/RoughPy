@@ -28,13 +28,12 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_VIEW_H_
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_VIEW_H_
 
-#include "scalars_fwd.h"
-
 #include "packed_scalar_type_ptr.h"
+#include "scalar_array.h"
+#include "scalars_fwd.h"
 
 #include <roughpy/core/types.h>
 #include <roughpy/platform/devices/memory_view.h>
-
 
 namespace rpy { namespace scalars {
 

@@ -11,7 +11,7 @@ using namespace rpy::algebra;
 
 KeyRange::KeyRange() = default;
 
-KeyRange::KeyRange(KeyIteratorState* state) : p_state(state)
+KeyRange::KeyRange(KeyIteratorState* state) noexcept : p_state(state)
 {
     RPY_DBG_ASSERT(state != nullptr);
 }

@@ -45,10 +45,8 @@ ScalarArrayView::ScalarArrayView(ScalarArray& array)
 
 optional<const ScalarType*> ScalarArrayView::type() const noexcept
 {
-    if (p_type_and_mode.is_pointer()) {
-        return p_type_and_mode.to_pointer();
-    }
-    return scalar_type_of(p_type_and_mode.to_info());
+    if (p_type_and_mode.is_pointer()) { return p_type_and_mode.get_pointer(); }
+    return scalar_type_of(p_type_and_mode.get_type_info());
 }
 
 Scalar ScalarArrayView::operator[](dimn_t i) const noexcept

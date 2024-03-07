@@ -5,18 +5,22 @@
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_H
 #define ROUGHPY_ALGEBRA_ALGEBRA_H
 
+#include "roughpy_algebra_export.h"
+#include "vector.h"
+
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
 #include <roughpy/platform/devices/kernel.h>
 
-#include "vector.h"
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
 namespace rpy {
 namespace algebra {
 
-
-class ROUGHPY_ALGEBRA_EXPORT Multiplication {
+class ROUGHPY_ALGEBRA_EXPORT Multiplication
+    : boost::intrusive_ref_counter<Multiplication>
+{
 
 public:
 

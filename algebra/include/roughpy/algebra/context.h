@@ -42,6 +42,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "free_tensor.h"
@@ -129,9 +130,7 @@ public:
             deg_t new_width, deg_t new_depth,
             const scalars::ScalarType* new_ctype
     ) const = 0;
-
-    RPY_NO_DISCARD virtual bool check_compatible(const Context& other_ctx
-    ) const noexcept;
+    ;
 
     RPY_NO_DISCARD virtual LieBasis get_lie_basis() const = 0;
     RPY_NO_DISCARD virtual TensorBasis get_tensor_basis() const = 0;
@@ -155,40 +154,12 @@ public:
     RPY_NO_DISCARD virtual Lie construct_lie(const VectorConstructionData& arg
     ) const = 0;
 
-    RPY_NO_DISCARD virtual UnspecifiedAlgebraType
-    construct(AlgebraType type, const VectorConstructionData& data) const
-            = 0;
-
-    RPY_NO_DISCARD FreeTensor zero_free_tensor(VectorType vtype) const;
-    RPY_NO_DISCARD ShuffleTensor zero_shuffle_tensor(VectorType vtype) const;
-    RPY_NO_DISCARD Lie zero_lie(VectorType vtype) const;
-
-protected:
-    void lie_to_tensor_fallback(FreeTensor& result, const Lie& arg) const;
-    void tensor_to_lie_fallback(Lie& result, const FreeTensor& arg) const;
 
 public:
     RPY_NO_DISCARD virtual FreeTensor lie_to_tensor(const Lie& arg) const = 0;
     RPY_NO_DISCARD virtual Lie tensor_to_lie(const FreeTensor& arg) const = 0;
-
-protected:
-    void
-    cbh_fallback(FreeTensor& collector, const std::vector<Lie>& lies) const;
-
-    void
-    cbh_fallback(FreeTensor& collector, Slice<const Lie*> lies) const;
-
 public:
-    RPY_NO_DISCARD virtual Lie
-    cbh(const std::vector<Lie>& lies, VectorType vtype) const;
-    RPY_NO_DISCARD virtual Lie
-    cbh(Slice<const Lie*> lies, VectorType vtype) const;
 
-    RPY_NO_DISCARD virtual Lie
-    cbh(const Lie& left, const Lie& right, VectorType vtype) const;
-
-    RPY_NO_DISCARD virtual FreeTensor to_signature(const Lie& log_signature
-    ) const;
     RPY_NO_DISCARD virtual FreeTensor signature(const SignatureData& data) const
             = 0;
     RPY_NO_DISCARD virtual Lie log_signature(const SignatureData& data) const
@@ -197,33 +168,6 @@ public:
     RPY_NO_DISCARD virtual FreeTensor sig_derivative(
             const std::vector<DerivativeComputeInfo>& info, VectorType vtype
     ) const = 0;
-
-    // Functions to aid serialization
-    RPY_NO_DISCARD virtual std::vector<byte>
-    to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const;
-
-    RPY_NO_DISCARD virtual UnspecifiedAlgebraType
-    from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const;
-
-    virtual UnspecifiedAlgebraType free_multiply(
-            const ConstRawUnspecifiedAlgebraType left,
-            const ConstRawUnspecifiedAlgebraType right
-    ) const;
-
-    virtual UnspecifiedAlgebraType shuffle_multiply(
-            ConstRawUnspecifiedAlgebraType left,
-            ConstRawUnspecifiedAlgebraType right
-            ) const;
-
-    virtual UnspecifiedAlgebraType half_shuffle_multiply(
-            ConstRawUnspecifiedAlgebraType left,
-            ConstRawUnspecifiedAlgebraType right
-            ) const;
-
-    virtual UnspecifiedAlgebraType adjoint_to_left_multiply_by(
-            ConstRawUnspecifiedAlgebraType multiplier,
-            ConstRawUnspecifiedAlgebraType argument
-            ) const;
 
 
 

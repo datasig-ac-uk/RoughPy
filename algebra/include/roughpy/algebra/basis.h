@@ -83,6 +83,7 @@ public:
             p_state->advance();
             update_value();
         }
+        return *this;
     }
 
     const KeyRangeIterator operator++(int) noexcept

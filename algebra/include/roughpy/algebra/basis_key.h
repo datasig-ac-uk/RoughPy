@@ -85,6 +85,7 @@ public:
     BasisKey& operator=(std::nullptr_t) noexcept
     {
         m_data = 0;
+        return *this;
     }
 
     constexpr operator bool() const noexcept { return m_data != 0; }
@@ -110,7 +111,7 @@ public:
         return static_cast<dimn_t>(m_data >> index_offset);
     }
 
-    constexpr const BasisKeyInterface* get_pointer() const noexcept
+    const BasisKeyInterface* get_pointer() const noexcept
     {
         RPY_DBG_ASSERT(is_valid_pointer());
         return bit_cast<const BasisKeyInterface*>(m_data);
