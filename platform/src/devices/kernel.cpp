@@ -37,6 +37,7 @@
 #include "devices/device_handle.h"
 
 #include <roughpy/core/helpers.h>
+#include <roughpy/core/macros.h>
 
 using namespace rpy;
 using namespace rpy::devices;
