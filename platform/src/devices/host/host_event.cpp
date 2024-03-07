@@ -31,16 +31,16 @@
 
 #include "host_event.h"
 void rpy::devices::CPUEvent::wait() {
-    guard_type access(m_lock);
-    m_cv.wait(access, [this]() {
-        return (m_status == EventStatus::CompletedSuccessfully
-                || m_status == EventStatus::Error);
+    guard_type access(m_ctx.lock);
+    m_ctx.condition.wait(access, [this]() {
+        return (m_ctx.status == EventStatus::CompletedSuccessfully
+                || m_ctx.status == EventStatus::Error);
     });
 }
 rpy::devices::EventStatus rpy::devices::CPUEvent::status() const
 {
-    guard_type access(m_lock);
-    return m_status;
+    guard_type access(m_ctx.lock);
+    return m_ctx.status;
 }
 bool rpy::devices::CPUEvent::is_user() const noexcept
 {
@@ -49,8 +49,8 @@ bool rpy::devices::CPUEvent::is_user() const noexcept
 void rpy::devices::CPUEvent::set_status(rpy::devices::EventStatus status)
 {
     {
-        guard_type access(m_lock);
-        m_status = status;
+        guard_type access(m_ctx.lock);
+        m_ctx.status = status;
     }
-    m_cv.notify_all();
+    m_ctx.condition.notify_all();
 }

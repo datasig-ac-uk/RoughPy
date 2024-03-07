@@ -97,9 +97,7 @@ EventStatus Kernel::launch_sync_in_queue(
         Slice<KernelArgument> args
 )
 {
-    auto event = launch_async_in_queue(queue, params, args);
-    event.wait();
-    return event.status();
+    return impl()->launch_kernel_sync(queue, params, args);
 }
 Event Kernel::launch_async(
         const KernelLaunchParams& params,

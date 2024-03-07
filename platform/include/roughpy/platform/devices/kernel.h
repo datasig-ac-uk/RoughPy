@@ -93,6 +93,11 @@ public:
             Slice<KernelArgument> args
     );
 
+    virtual EventStatus launch_kernel_sync(
+            Queue& queue,
+            const KernelLaunchParams& params,
+            Slice<KernelArgument> args
+    );
 };
 
 #ifdef RPY_PLATFORM_WINDOWS

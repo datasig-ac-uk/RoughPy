@@ -33,21 +33,57 @@
 #ifndef ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_KERNEL_H_
 #define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_KERNEL_H_
 
-#include "devices/kernel.h"
 #include "devices/buffer.h"
+#include "devices/event.h"
+#include "devices/kernel.h"
 #include "devices/memory_view.h"
+
+#include "host_event.h"
+
+#include <exception>
+#include <functional>
+#include <mutex>
 
 namespace rpy {
 namespace devices {
 
-
 template <typename... Ts>
 using raw_kfn_ptr = void (*)(Ts...);
 
+// Defined elsewhere :|
+struct ThreadingContext;
+
+class HostKernelEvent : public dtl::RefCountBase<EventInterface>
+{
+    mutable HostEventContext m_ctx;
+
+    string m_kernel_name;
+
+public:
+    explicit HostKernelEvent(string_view kernel_name);
+
+    Device device() const noexcept override;
+    void* ptr() noexcept override;
+    const void* ptr() const noexcept override;
+    void wait() override;
+    EventStatus status() const override;
+    bool is_user() const noexcept override;
+};
 
 class CPUKernel : public dtl::RefCountBase<KernelInterface>
 {
-    using wrapped_kernel_t = std::function<void(const KernelLaunchParams&, Slice<KernelArgument>)>;
+
+    struct LaunchContext {
+        HostEventContext* event;
+        ThreadingContext* threads = nullptr;
+    };
+
+    using wrapped_kernel_t = std::function<
+            void(LaunchContext*,
+                 const KernelLaunchParams&,
+                 Slice<KernelArgument>)>;
+
+    Event new_kernel_event(string_view name);
 
     wrapped_kernel_t m_kernel;
     string m_name;
@@ -60,12 +96,16 @@ public:
     template <typename... Ts>
     CPUKernel(std::function<void(Ts...)> fn, string name);
 
-
     Device device() const noexcept override;
 
     string name() const override;
     dimn_t num_args() const override;
     Event launch_kernel_async(
+            Queue& queue,
+            const KernelLaunchParams& params,
+            Slice<KernelArgument> args
+    ) override;
+    EventStatus launch_kernel_sync(
             Queue& queue,
             const KernelLaunchParams& params,
             Slice<KernelArgument> args
@@ -78,8 +118,8 @@ template <typename T>
 class ConvertedKernelArgument
 {
     T* p_data;
-public:
 
+public:
     explicit ConvertedKernelArgument(KernelArgument& arg);
 
     operator T() { return *p_data; }
@@ -92,7 +132,6 @@ ConvertedKernelArgument<T>::ConvertedKernelArgument(KernelArgument& arg)
     p_data = arg.const_pointer();
 }
 
-
 template <typename T>
 class ConvertedKernelArgument<T*>
 {
@@ -100,11 +139,9 @@ class ConvertedKernelArgument<T*>
     MutableMemoryView m_view;
 
 public:
-
     explicit ConvertedKernelArgument(KernelArgument& arg);
 
     operator T*() { return p_data; }
-
 };
 
 template <typename T>
@@ -122,18 +159,16 @@ ConvertedKernelArgument<T*>::ConvertedKernelArgument(KernelArgument& arg)
     }
 }
 
-
 template <typename T>
 class ConvertedKernelArgument<const T*>
 {
     const T* p_data;
     MemoryView m_view;
-public:
 
+public:
     explicit ConvertedKernelArgument(KernelArgument& arg);
 
     operator const T*() { return p_data; }
-
 };
 
 template <typename T>
@@ -194,7 +229,8 @@ using indices_for = BuildIndices<sizeof...(Ts)>;
 template <typename... Ts, size_t... Is>
 RPY_INLINE_ALWAYS void invoke_kernel_inner(
         std::function<void(Ts...)> fn,
-        Indices<Is...>,
+        const KernelLaunchParams& params,
+        Indices<Is...> RPY_UNUSED_VAR indices,
         Slice<KernelArgument> args
 )
 {
@@ -202,16 +238,19 @@ RPY_INLINE_ALWAYS void invoke_kernel_inner(
 }
 
 template <typename... Ts>
-RPY_INLINE_ALWAYS void invoke_kernel(std::function<void(Ts...)> fn, Slice<KernelArgument> args)
+RPY_INLINE_ALWAYS void invoke_kernel(
+        std::function<void(Ts...)> fn,
+        const KernelLaunchParams& params,
+        Slice<KernelArgument> args
+)
 {
-    invoke_kernel_inner(std::move(fn), indices_for<Ts...>(), args);
+    invoke_kernel_inner(std::move(fn), params, indices_for<Ts...>(), args);
 }
-
-
 
 template <typename... Ts, size_t... Is>
 RPY_INLINE_ALWAYS void invoke_kernel_inner(
         raw_kfn_ptr<Ts...> fn,
+        const KernelLaunchParams& params,
         Indices<Is...>,
         Slice<KernelArgument> args
 )
@@ -220,21 +259,72 @@ RPY_INLINE_ALWAYS void invoke_kernel_inner(
 }
 
 template <typename... Ts>
-RPY_INLINE_ALWAYS void invoke_kernel(raw_kfn_ptr<void(Ts...)> fn, Slice<KernelArgument> args)
+RPY_INLINE_ALWAYS void invoke_kernel(
+        raw_kfn_ptr<void(Ts...)> fn,
+        const KernelLaunchParams& params,
+        Slice<KernelArgument> args
+)
 {
-    invoke_kernel_inner(fn, indices_for<Ts...>(), args);
+    invoke_kernel_inner(fn, params, indices_for<Ts...>(), args);
 }
 
+template <typename F>
+void invoke_locking(
+        F&& fn,
+        HostEventContext* event_ctx,
+        ThreadingContext* RPY_UNUSED_VAR thread_ctx,
+        const KernelLaunchParams& params,
+        Slice<KernelArgument> args
+) noexcept
+{
+    std::unique_lock<std::mutex> lk(event_ctx->lock);
+    event_ctx->status = EventStatus::Running;
+    lk.unlock();
+    event_ctx->condition.notify_all();
 
+    try {
+        invoke_kernel(std::forward<F>(fn), params, args);
+        lk.lock();
+        event_ctx->status = EventStatus::CompletedSuccessfully;
+    } catch (...) {
+        lk.lock();
+        event_ctx->status = EventStatus::Error;
+        event_ctx->error_state = std::current_exception();
+    }
+    lk.unlock();
+    event_ctx->condition.notify_all();
+}
 
-
+template <typename F>
+void invoke_nonlocking(
+        F&& fn,
+        HostEventContext* event_ctx,
+        const KernelLaunchParams& params,
+        Slice<KernelArgument> args
+) noexcept
+{
+    event_ctx->status = EventStatus::Running;
+    try {
+        invoke_kernel(std::forward<F>(fn), params, args);
+        event_ctx->status = EventStatus::CompletedSuccessfully;
+    } catch (...) {
+        event_ctx->status = EventStatus::Error;
+        event_ctx->error_state = std::current_exception();
+    }
+}
 
 }// namespace dtl
 
 template <typename... Ts>
 CPUKernel::CPUKernel(raw_kfn_ptr<Ts...> fn, string name)
-    : m_kernel([fn](const KernelLaunchParams& params, Slice<KernelArgument> args) {
-          dtl::invoke_kernel(fn, args);
+    : m_kernel([fn](LaunchContext* ctx,
+                    const KernelLaunchParams& params,
+                    Slice<KernelArgument> args) {
+          if (ctx->threads != nullptr) {
+              dtl::invoke_locking(fn, ctx->event, ctx->threads, params, args);
+          } else {
+              dtl::invoke_nonlocking(fn, ctx->event, params, args);
+          }
       }),
       m_nargs(sizeof...(Ts)),
       m_name(std::move(name))
@@ -242,8 +332,15 @@ CPUKernel::CPUKernel(raw_kfn_ptr<Ts...> fn, string name)
 
 template <typename... Ts>
 CPUKernel::CPUKernel(std::function<void(Ts...)> fn, string name)
-    : m_kernel([fn=std::move(fn)](const KernelLaunchParams& params, Slice<KernelArgument> args) {
-          dtl::invoke_kernel(fn, args);
+    : m_kernel([fn = std::move(fn
+                )](LaunchContext* ctx,
+                   const KernelLaunchParams& params,
+                   Slice<KernelArgument> args) {
+          if (ctx->threads != nullptr) {
+              dtl::invoke_locking(fn, ctx->event, ctx->threads, params, args);
+          } else {
+              dtl::invoke_nonlocking(fn, ctx->event, params, args);
+          }
       }),
       m_nargs(sizeof...(Ts)),
       m_name(std::move(name))
