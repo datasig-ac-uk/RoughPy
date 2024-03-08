@@ -33,7 +33,7 @@
 #include "scalars_fwd.h"
 #include "scalar_type.h"
 
-#include <roughpy/platform/devices/buffer.h>
+#include "devices/buffer.h"
 #include <roughpy/platform/serialization.h>
 
 namespace rpy {

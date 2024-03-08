@@ -37,8 +37,8 @@
 #include "scalar.h"
 #include "random/standard_random_generator.h"
 
-#include <roughpy/platform/devices/device_handle.h>
-#include <roughpy/platform/devices/host_device.h>
+#include "devices/device_handle.h"
+#include "devices/host_device.h"
 
 #include "scalar/casts.h"
 

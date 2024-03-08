@@ -64,7 +64,7 @@ public:
 
     BasisKey() : m_data(0) {}
 
-    constexpr explicit BasisKey(const BasisKeyInterface* pointer) noexcept
+    explicit BasisKey(const BasisKeyInterface* pointer) noexcept
         : m_data(bit_cast<data_type>(pointer))
     {
         RPY_DBG_ASSERT(pointer != nullptr);

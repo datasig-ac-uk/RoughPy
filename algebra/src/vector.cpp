@@ -90,7 +90,7 @@ void Vector::resize_degree(rpy::deg_t degree) {}
 
 dimn_t Vector::dimension() const noexcept { return m_scalar_buffer.size(); }
 
-dimn_t Vector::size() const noexcept {}
+dimn_t Vector::size() const noexcept { return 0; }
 
 bool Vector::is_zero() const noexcept
 {

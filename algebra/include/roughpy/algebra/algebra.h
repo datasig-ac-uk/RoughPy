@@ -19,7 +19,7 @@ namespace rpy {
 namespace algebra {
 
 class ROUGHPY_ALGEBRA_EXPORT Multiplication
-    : boost::intrusive_ref_counter<Multiplication>
+    : public boost::intrusive_ref_counter<Multiplication>
 {
 
 public:

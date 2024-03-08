@@ -6,12 +6,12 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
-#include <roughpy/platform/devices/host_device.h>
 
-#include "scalar_array.h"
-#include "scalar.h"
-#include "scalar_types.h"
+#include "devices/host_device.h"
 #include "random.h"
+#include "scalar.h"
+#include "scalar_array.h"
+#include "scalar_types.h"
 
 #include <algorithm>
 

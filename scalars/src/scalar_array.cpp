@@ -37,9 +37,9 @@
 
 #include "scalar/raw_bytes.h"
 
-#include <roughpy/platform/devices/buffer.h>
-#include <roughpy/platform/devices/host_device.h>
-#include <roughpy/platform/devices/memory_view.h>
+#include "devices/buffer.h"
+#include "devices/host_device.h"
+#include "devices/memory_view.h"
 
 #include <cereal/types/vector.hpp>
 
@@ -498,13 +498,9 @@ ScalarArrayView ScalarArray::view() const
         case dtl::ScalarArrayStorageModel::Owned:
             return {owned_buffer.map(), p_type_and_mode, m_size};
         case dtl::ScalarArrayStorageModel::BorrowConst:
-            return {
-                devices::MemoryView(const_borrowed, m_size * type_info().bytes),
-                p_type_and_mode, m_size};
+            RPY_THROW(std::runtime_error, "no view yet");
         case dtl::ScalarArrayStorageModel::BorrowMut:
-            return {
-                devices::MemoryView(mut_borrowed, m_size * type_info().bytes),
-                p_type_and_mode, m_size};
+            RPY_THROW(std::runtime_error, "no view yet");
     }
 }
 

@@ -31,9 +31,8 @@
 #include "scalar_array.h"
 #include "scalar.h"
 
-#include <roughpy/platform/devices/memory_view.h>
-#include <roughpy/platform/devices/buffer.h>
-
+#include "devices/buffer.h"
+#include "devices/memory_view.h"
 
 using namespace rpy;
 using namespace rpy::scalars;

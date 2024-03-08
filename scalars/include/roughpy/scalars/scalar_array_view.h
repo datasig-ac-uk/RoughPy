@@ -32,8 +32,8 @@
 #include "scalar_array.h"
 #include "scalars_fwd.h"
 
+#include "devices/memory_view.h"
 #include <roughpy/core/types.h>
-#include <roughpy/platform/devices/memory_view.h>
 
 namespace rpy { namespace scalars {
 

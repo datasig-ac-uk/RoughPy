@@ -14,6 +14,8 @@ namespace algebra {
 
 class ROUGHPY_ALGEBRA_EXPORT LieBasis : public Basis
 {
+public:
+    using key_type = BasisKey;
 };
 
 }// namespace algebra

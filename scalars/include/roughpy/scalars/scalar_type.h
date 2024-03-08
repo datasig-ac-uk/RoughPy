@@ -29,8 +29,8 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
 
+#include "devices.h"
 #include "scalars_fwd.h"
-#include <roughpy/platform/devices.h>
 
 namespace rpy {
 namespace scalars {

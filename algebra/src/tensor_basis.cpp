@@ -103,7 +103,7 @@ dimn_t TensorBasis::to_index(BasisKey key) const
 {
     if (key.is_index()) {
         auto index = key.get_index();
-        RPY_DBG_ASSERT(index. <= max_dimension());
+        RPY_DBG_ASSERT(index <= max_dimension());
         return index;
     }
 

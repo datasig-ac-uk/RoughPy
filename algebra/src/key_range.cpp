@@ -30,10 +30,10 @@ KeyRange::~KeyRange()
     }
 }
 
-KeyRange& operator=(KeyRange&& other) noexcept
+KeyRange& KeyRange::operator=(KeyRange&& other) noexcept
 {
     if (&other != this) {
-        ~KeyRange();
+        this->~KeyRange();
         p_state = other.p_state;
         other.p_state = nullptr;
     }
