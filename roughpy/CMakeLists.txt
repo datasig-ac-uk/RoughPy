@@ -87,6 +87,8 @@ target_sources(RoughPy_PyModule PRIVATE
         src/algebra/tensor_key.h
         src/algebra/tensor_key_iterator.cpp
         src/algebra/tensor_key_iterator.h
+        src/args/buffer_info.cpp
+        src/args/buffer_info.h
         src/args/check_for_excess_args.cpp
         src/args/convert_timestamp.cpp
         src/args/convert_timestamp.h
@@ -100,8 +102,12 @@ target_sources(RoughPy_PyModule PRIVATE
         src/args/numpy.h
         src/args/parse_algebra_configuration.cpp
         src/args/parse_algebra_configuration.h
+        src/args/parse_data_argument.cpp
+        src/args/parse_data_argument.h
         src/args/parse_schema.cpp
         src/args/parse_schema.h
+        src/scalars/pytype_conversion.cpp
+        src/scalars/pytype_conversion.h
         src/args/strided_copy.cpp
         src/args/strided_copy.h
         src/intervals/date_time_interval.cpp
@@ -120,8 +126,6 @@ target_sources(RoughPy_PyModule PRIVATE
         src/intervals/real_interval.h
         src/intervals/segmentation.cpp
         src/intervals/segmentation.h
-        src/scalars/parse_key_scalar_stream.cpp
-        src/scalars/parse_key_scalar_stream.h
         src/scalars/r_py_polynomial.cpp
         src/scalars/r_py_polynomial.h
         #        src/scalars/scalar.h

@@ -168,6 +168,7 @@ python::PyStreamMetaData python::kwargs_to_metadata(pybind11::kwargs& kwargs)
     if (algebra_config.ctx) {
         md.ctx = std::move(algebra_config.ctx);
         md.width = md.ctx->width();
+        md.depth = md.ctx->depth();
         md.scalar_type = md.ctx->ctype();
     } else {
         if (algebra_config.width) { md.width = *algebra_config.width; }

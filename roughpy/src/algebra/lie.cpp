@@ -40,6 +40,7 @@ RPY_MSVC_DISABLE_WARNING(4661)
 
 #include "args/kwargs_to_vector_construction.h"
 #include "args/numpy.h"
+#include "args/parse_data_argument.h"
 #include "scalars/scalars.h"
 
 #include "lie_key.h"
@@ -58,18 +59,27 @@ static Lie construct_lie(py::object data, py::kwargs kwargs)
 {
     auto helper = python::kwargs_to_construction_data(kwargs);
 
-    python::PyToBufferOptions options;
-    options.type = helper.ctype;
+    python::DataArgOptions options;
+    options.scalar_type = helper.ctype;
     options.allow_scalar = false;
+    options.max_nested = 1;
 
-    auto buffer = py_to_buffer(data, options);
+    auto parsed_data = python::parse_data_argument(data, options);
+
+    bool is_sparse = false;
+    scalars::KeyScalarArray buffer;
+    if (parsed_data.size() == 1) {
+        auto& leaf = parsed_data.back();
+        buffer = std::move(leaf.data);
+        is_sparse = leaf.value_type == python::ValueType::KeyValue;
+    }
 
     if (helper.ctype == nullptr) {
-        if (options.type == nullptr) {
+        if (options.scalar_type == nullptr) {
             RPY_THROW(py::value_error,"could not deduce an appropriate scalar_type"
             );
         }
-        helper.ctype = options.type;
+        helper.ctype = options.scalar_type;
     }
 
     if (helper.width == 0 && buffer.size() > 0) {

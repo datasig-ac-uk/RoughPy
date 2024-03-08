@@ -37,7 +37,7 @@
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/scalars/key_scalar_array.h>
-#include <roughpy/scalars/scalar_stream.h>
+#include <roughpy/scalars/key_scalar_stream.h>
 #include <roughpy/scalars/scalar_type.h>
 
 #include <memory>
@@ -54,8 +54,7 @@ namespace rpy {
 namespace algebra {
 
 struct SignatureData {
-    scalars::ScalarStream data_stream;
-    std::vector<const key_type*> key_stream;
+    scalars::KeyScalarStream data_stream;
     VectorType vector_type;
 };
 

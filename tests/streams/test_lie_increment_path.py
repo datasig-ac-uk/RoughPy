@@ -124,9 +124,9 @@ def test_from_array_wider_than_depth_2_dim():
         np.array([[3, 7, 0, 4], [0, 0, 1, 5]]), width=2, depth=2,
         coeffs=rp.Rational)
     sig = stream.signature(depth=1)
-
-    assert sig == rp.FreeTensor(np.array([1, 3, 7]), width=2, depth=1,
-                                dtype=rp.Rational)
+    expected = rp.FreeTensor(np.array([1, 3, 7]), width=2, depth=1,
+                             dtype=rp.Rational)
+    assert sig == expected, f"{sig} != {expected}"
 
 
 def test_tick_path_signature_calc_accuracy():
@@ -396,3 +396,18 @@ def test_signature_multiplication():
     full = stream.signature(rp.RealInterval(0.0, 2.0))
 
     assert left * right == full, f"{left}*{right}={left * right} != {full}"
+
+
+def test_construct_sequence_of_lies():
+    ctx = rp.get_context(width=3, depth=3, coeffs=rp.DPReal)
+    seq = [
+        rp.Lie([1., 2., 3.], ctx=ctx),
+        rp.Lie([4., 5., 6.], ctx=ctx),
+        rp.Lie([7., 8., 9.], ctx=ctx)
+    ]
+
+    stream = LieIncrementStream.from_increments(seq, ctx=ctx)
+
+    lsig = stream.log_signature(rp.RealInterval(0, 1))
+
+    assert lsig == seq[0], f"{lsig} != {seq[0]}"
