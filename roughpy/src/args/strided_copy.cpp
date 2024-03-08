@@ -120,8 +120,8 @@ void rpy::python::stride_copy(
         rpy::scalars::ScalarArray& out,
         const rpy::scalars::ScalarArray& in,
         const int32_t ndim,
-        const int64_t* shape,
-        const int64_t* strides
+        const idimn_t* shape,
+        const idimn_t* strides
 ) noexcept
 {
     if (ndim == 0) { return; }
@@ -171,7 +171,7 @@ void rpy::python::stride_copy(
         auto compression_size = std::accumulate(
                 shape + uncompressed,
                 shape + ndim,
-                static_cast<int64_t>(1),
+                static_cast<idimn_t>(1),
                 std::multiplies<>()
         );
 
