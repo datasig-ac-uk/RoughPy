@@ -40,6 +40,11 @@
 namespace rpy {
 namespace devices {
 
+struct RawBuffer {
+    void* ptr = nullptr;
+    dimn_t size = 0;
+};
+
 class CPUDeviceHandle;
 class CPUBuffer;
 class CPUEvent;

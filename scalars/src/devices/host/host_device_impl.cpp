@@ -213,6 +213,26 @@ void CPUDeviceHandle::raw_free(void* pointer, dimn_t size) const
     aligned_free(pointer);
 }
 
+RawBuffer CPUDeviceHandle::allocate_raw_buffer(
+        rpy::dimn_t size,
+        rpy::dimn_t alignment
+) const
+{
+    RPY_DBG_ASSERT(size > 0);
+    if (alignment == 0) { alignment = alignof(std::max_align_t); }
+
+    return {aligned_alloc(alignment, size), size};
+}
+
+void CPUDeviceHandle::free_raw_buffer(rpy::devices::RawBuffer& buffer) const
+{
+    if (buffer.ptr != nullptr) {
+        aligned_free(buffer.ptr);
+        buffer.ptr = nullptr;
+    }
+    buffer.size = 0;
+}
+
 template <typename... Args>
 Kernel make_kernel(void (*fn)(Args...)) noexcept
 {

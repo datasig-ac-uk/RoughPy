@@ -76,6 +76,9 @@ public:
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
     void raw_free(void* pointer, dimn_t size) const override;
 
+    RawBuffer allocate_raw_buffer(dimn_t size, dimn_t alignment) const;
+    void free_raw_buffer(RawBuffer& buffer) const;
+
     bool has_compiler() const noexcept override;
     optional<Kernel> get_kernel(const string& name) const noexcept override;
     optional<Kernel>

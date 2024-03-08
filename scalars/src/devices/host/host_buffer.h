@@ -44,32 +44,23 @@ namespace devices {
 
 class CPUBuffer : public dtl::RefCountBase<BufferInterface>
 {
-public:
-    using atomic_t = std::atomic_size_t*;
-private:
-
 
     enum Flags
     {
         IsConst = 1,
-    };
-
-    struct RawBuffer {
-        void* ptr = nullptr;
-        dimn_t size = 0;
+        IsOwned = 2,
     };
 
     RawBuffer raw_buffer;
-    Flags flags;
+    uint32_t m_flags;
+    TypeInfo m_info;
 
-
-    CPUBuffer(RawBuffer raw, Flags arg_flags);
+    CPUBuffer(RawBuffer raw, uint32_t arg_flags, TypeInfo info);
 
 public:
-
-
-    CPUBuffer(void* raw_ptr, dimn_t size);
-    CPUBuffer(const void* raw_ptr, dimn_t size);
+    CPUBuffer(dimn_t size, TypeInfo info);
+    CPUBuffer(void* raw_ptr, dimn_t size, TypeInfo info);
+    CPUBuffer(const void* raw_ptr, dimn_t size, TypeInfo info);
 
     ~CPUBuffer() override;
 
@@ -77,6 +68,7 @@ public:
     Device device() const noexcept override;
 
     BufferMode mode() const override;
+    TypeInfo type_info() const noexcept override;
     dimn_t size() const override;
     void* ptr() noexcept override;
     DeviceType type() const noexcept override;

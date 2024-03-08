@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,44 +18,61 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 11/10/23.
 //
 
 #include "devices/buffer.h"
-#include "devices/memory_view.h"
 #include "devices/device_handle.h"
+#include "devices/memory_view.h"
 
-#include "devices/queue.h"
 #include "devices/event.h"
 #include "devices/kernel.h"
+#include "devices/queue.h"
+
+#include "devices/host/host_buffer.h"
 
 using namespace rpy;
 using namespace rpy::devices;
 
-namespace rpy { namespace devices { namespace dtl {
+namespace rpy {
+namespace devices {
+namespace dtl {
 
 template class RPY_DLL_EXPORT ObjectBase<BufferInterface, Buffer>;
-}}}
+}
+}// namespace devices
+}// namespace rpy
 
-BufferMode Buffer::mode() const {
-    if (!impl()){
-        return BufferMode::Read;
-    }
+Buffer::Buffer(void* ptr, dimn_t size, TypeInfo info)
+    : base_t(new CPUBuffer(ptr, size, info))
+{}
+
+Buffer::Buffer(const void* ptr, dimn_t size, TypeInfo info)
+    : base_t(new CPUBuffer(ptr, size, info))
+{}
+
+BufferMode Buffer::mode() const
+{
+    if (!impl()) { return BufferMode::Read; }
     return impl()->mode();
 }
 
-dimn_t Buffer::size() const {
-    if (!impl()) {
-        return 0;
-    }
+TypeInfo BufferInterface::type_info() const noexcept
+{
+    return devices::type_info<char>();
+}
+dimn_t Buffer::size() const
+{
+    if (!impl()) { return 0; }
     return impl()->size();
 }
 
@@ -67,7 +84,6 @@ static inline bool check_device_compatibility(Buffer& dst, const Device& device)
 
     return true;
 }
-
 
 void Buffer::to_device(Buffer& dst, const Device& device)
 {
@@ -84,12 +100,9 @@ Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue)
     return {};
 }
 
-
 MemoryView Buffer::map(BufferMode map_mode, dimn_t size, dimn_t offset) const
 {
-    if (!impl() || size == 0) {
-        return {*this, nullptr, 0};
-    }
+    if (!impl() || size == 0) { return {*this, nullptr, 0}; }
     void* mapped = impl()->map(map_mode, size, offset);
     RPY_DBG_ASSERT(mapped != nullptr);
     return MemoryView(*this, mapped, size);

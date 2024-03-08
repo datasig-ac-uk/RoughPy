@@ -47,7 +47,7 @@ public:
     using object_t = Buffer;
 
     RPY_NO_DISCARD virtual BufferMode mode() const;
-
+    RPY_NO_DISCARD virtual TypeInfo type_info() const noexcept;
     RPY_NO_DISCARD virtual dimn_t size() const;
 
     RPY_NO_DISCARD virtual Event
@@ -89,8 +89,11 @@ class ROUGHPY_PLATFORM_EXPORT Buffer
 public:
     using base_t::base_t;
 
-    RPY_NO_DISCARD dimn_t size() const;
+    Buffer(void* ptr, dimn_t size, TypeInfo info);
+    Buffer(const void* ptr, dimn_t size, TypeInfo info);
 
+    RPY_NO_DISCARD dimn_t size() const;
+    RPY_NO_DISCARD TypeInfo type_info() const noexcept;
     RPY_NO_DISCARD BufferMode mode() const;
 
     template <typename T>
