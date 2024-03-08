@@ -42,6 +42,8 @@
 
 #include <boost/container/small_vector.hpp>
 
+using namespace rpy;
+
 void rpy::python::stride_copy(
         void* dst,
         const void* src,
@@ -98,13 +100,13 @@ namespace {
 int32_t get_compressed_dims(
         int32_t ndim,
         int32_t bytes,
-        const int64_t* shape,
-        const int64_t* strides
+        const idimn_t* shape,
+        const idimn_t* strides
 ) noexcept
 {
     if (strides == nullptr) { return ndim; }
 
-    int64_t compressed_stride = bytes;
+    idimn_t compressed_stride = bytes;
 
     for (int32_t i = 1; i <= ndim; ++i) {
         if (strides[ndim - i] != compressed_stride) { return i - 1; }
