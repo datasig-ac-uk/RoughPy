@@ -135,7 +135,7 @@ void stride_copy(
         const int32_t ndim,
         const idimn_t* shape,
         const idimn_t* strides
-) noexcept;
+);
 
 }// namespace python
 }// namespace rpy

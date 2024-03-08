@@ -122,7 +122,7 @@ void rpy::python::stride_copy(
         const int32_t ndim,
         const idimn_t* shape,
         const idimn_t* strides
-) noexcept
+)
 {
     if (ndim == 0) { return; }
     const auto info = in.type_info();
