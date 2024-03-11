@@ -45,10 +45,10 @@ class OCLBuffer : public BufferInterface
 {
     OCLDevice m_device;
     cl_mem m_buffer;
+    TypeInfo m_info;
 
 public:
-
-    OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept;
+    OCLBuffer(cl_mem buffer, OCLDevice dev, TypeInfo info) noexcept;
     ~OCLBuffer() override;
 
     RPY_NO_DISCARD
@@ -71,9 +71,15 @@ public:
     reference_count_type inc_ref() noexcept override;
     reference_count_type dec_ref() noexcept override;
 
-    void* map(BufferMode map_mode, dimn_t size, dimn_t offset) const override;
+    TypeInfo type_info() const noexcept override;
+    dimn_t bytes() const override;
+    Buffer map_mut(dimn_t size, dimn_t offset) override;
+    Buffer map(dimn_t size, dimn_t offset) const override;
+    Buffer memory_owner() const noexcept override;
+    Buffer slice(dimn_t offset, dimn_t size) const override;
+    Buffer mut_slice(dimn_t offset, dimn_t size) override;
 
-    void unmap(const void* ptr) const noexcept override;
+    void unmap(Buffer& buffer) const noexcept override;
 };
 
 }// namespace device

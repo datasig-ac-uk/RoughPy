@@ -227,8 +227,9 @@ enum class TypeCode : uint8_t
     ArbitraryPrecisionRational = ArbitraryPrecision | Rational,
 
     Polynomial = 16U,
-    APRationalPolynomial = Polynomial// | ArbitraryPrecisionRational
+    APRationalPolynomial = Polynomial,// | ArbitraryPrecisionRational
 
+    KeyType = 32,
 };
 
 /**

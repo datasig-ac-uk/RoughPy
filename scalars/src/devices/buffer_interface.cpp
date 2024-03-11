@@ -40,6 +40,7 @@ using namespace rpy::devices;
 BufferMode BufferInterface::mode() const { return BufferMode::Read; }
 
 dimn_t BufferInterface::size() const { return 0; }
+dimn_t BufferInterface::bytes() const { return size() * type_info().bytes; }
 Event BufferInterface::to_device(
         Buffer& dst,
         const Device& device,
@@ -61,7 +62,7 @@ Buffer BufferInterface::mut_slice(dimn_t offset, dimn_t size)
     return Buffer();
 }
 
-void BufferInterface::unmap(const void* ptr) const noexcept {}
+void BufferInterface::unmap(Buffer& ptr) const noexcept {}
 
 Buffer BufferInterface::memory_owner() const noexcept
 {

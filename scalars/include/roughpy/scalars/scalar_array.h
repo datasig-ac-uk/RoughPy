@@ -32,6 +32,7 @@
 #include "packed_scalar_type_ptr.h"
 #include "scalar_type.h"
 #include "scalars_fwd.h"
+#include "traits.h"
 
 #include "devices/buffer.h"
 #include <roughpy/platform/serialization.h>
@@ -53,33 +54,14 @@ class ScalarArrayView;
 
 class ROUGHPY_SCALARS_EXPORT ScalarArray
 {
-    using discriminator_type = dtl::ScalarArrayStorageModel;
-    using type_pointer = PackedScalarTypePointer<dtl::ScalarArrayStorageModel>;
 
-    friend class ScalarArrayView;
-    type_pointer p_type_and_mode;
+    // Scalar type is only necessary if the buffer type is not fundamental,
+    // in which case it must not be null
+    const ScalarType* p_type = nullptr;
 
     // All memory is represented as a buffer now, even if it is a borrowed
     // pointer from some other place. This should dramatically simplify things.
     devices::Buffer m_buffer;
-
-    dimn_t m_size = 0;
-
-    static bool check_pointer_and_size(const void* ptr, dimn_t size);
-
-protected:
-    RPY_NO_DISCARD type_pointer packed_type() const noexcept
-    {
-        return p_type_and_mode;
-    }
-
-    ScalarArray(type_pointer type, void* data, dimn_t size);
-    ScalarArray(type_pointer type, const void* data, dimn_t size);
-
-    ScalarArray(type_pointer type, devices::Buffer&& buffer)
-        : p_type_and_mode(type),
-          m_buffer(std::move(buffer))
-    {}
 
 public:
     ScalarArray();
@@ -126,17 +108,22 @@ public:
 
     RPY_NO_DISCARD devices::TypeInfo type_info() const noexcept;
 
-    RPY_NO_DISCARD constexpr dimn_t size() const noexcept { return m_size; }
+    RPY_NO_DISCARD constexpr dimn_t size() const noexcept
+    {
+        return m_buffer.size();
+    }
     RPY_NO_DISCARD dimn_t capacity() const noexcept;
-    RPY_NO_DISCARD constexpr bool empty() const noexcept { return m_size == 0; }
+    RPY_NO_DISCARD constexpr bool empty() const noexcept
+    {
+        return m_buffer.size() == 0;
+    }
     RPY_NO_DISCARD constexpr bool is_null() const noexcept
     {
-        return p_type_and_mode.is_null() && empty();
+        return m_buffer.is_null();
     }
     RPY_NO_DISCARD constexpr bool is_const() const noexcept
     {
-        return p_type_and_mode.get_enumeration()
-                == discriminator_type::BorrowConst;
+        return m_buffer.mode() == devices::BufferMode::Read;
     }
     RPY_NO_DISCARD devices::Device device() const noexcept
     {
@@ -189,50 +176,46 @@ private:
 };
 
 template <typename T>
-ScalarArray::ScalarArray(Slice<T> data)
-    : p_type_and_mode(
-              devices::type_info<T>(),
-              dtl::ScalarArrayStorageModel::BorrowMut
-      ),
-      mut_borrowed(data.data()),
-      m_size(data.size())
+ScalarArray::ScalarArray(Slice<T> data) : m_buffer(data)
 {
-    check_pointer_and_size(data.data(), data.size());
+    const auto info = m_buffer.type_info();
+    if (!traits::is_fundamental(info)) {
+        auto tp = scalar_type_of<T>();
+        RPY_CHECK(tp);
+        p_type = *tp;
+    }
 }
 
 template <typename T>
-ScalarArray::ScalarArray(Slice<const T> data)
-    : p_type_and_mode(
-              devices::type_info<T>(),
-              dtl::ScalarArrayStorageModel::BorrowConst
-      ),
-      const_borrowed(data.data()),
-      m_size(data.size())
+ScalarArray::ScalarArray(Slice<const T> data) : m_buffer(data)
 {
-    check_pointer_and_size(data.data(), data.size());
+    const auto info = m_buffer.type_info();
+    if (!traits::is_fundamental(info)) {
+        auto tp = scalar_type_of<T>();
+        RPY_CHECK(tp);
+        p_type = *tp;
+    }
 }
 
 template <typename T>
-ScalarArray::ScalarArray(T* data, dimn_t size)
-    : p_type_and_mode(
-              devices::type_info<T>(),
-              dtl::ScalarArrayStorageModel::BorrowMut
-      ),
-      mut_borrowed(data),
-      m_size(size)
+ScalarArray::ScalarArray(T* data, dimn_t size) : m_buffer({data, size})
 {
-    check_pointer_and_size(data, size);
+    const auto info = m_buffer.type_info();
+    if (!traits::is_fundamental(info)) {
+        auto tp = scalar_type_of<T>();
+        RPY_CHECK(tp);
+        p_type = *tp;
+    }
 }
 template <typename T>
-ScalarArray::ScalarArray(const T* data, dimn_t size)
-    : p_type_and_mode(
-              devices::type_info<T>(),
-              dtl::ScalarArrayStorageModel::BorrowConst
-      ),
-      const_borrowed(data),
-      m_size(size)
+ScalarArray::ScalarArray(const T* data, dimn_t size) : m_buffer({data, size})
 {
-    check_pointer_and_size(data, size);
+    const auto info = m_buffer.type_info();
+    if (!traits::is_fundamental(info)) {
+        auto tp = scalar_type_of<T>();
+        RPY_CHECK(tp);
+        p_type = *tp;
+    }
 }
 
 RPY_SERIAL_LOAD_FN_IMPL(ScalarArray)

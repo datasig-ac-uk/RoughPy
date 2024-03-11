@@ -45,6 +45,8 @@
 #include "kernel.h"
 #include "queue.h"
 
+#include <vector>
+
 namespace rpy {
 namespace devices {
 

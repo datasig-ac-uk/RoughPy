@@ -56,7 +56,10 @@ CPUBuffer::CPUBuffer(rpy::dimn_t size, rpy::devices::TypeInfo info)
 {
     if (size > 0) {
         auto device = CPUDeviceHandle::get();
-        raw_buffer = device->allocate_raw_buffer(size, info.alignment);
+        raw_buffer = device->allocate_raw_buffer(
+                size * info.bytes,
+                info.alignment
+        );
     }
 }
 
@@ -77,14 +80,27 @@ CPUBuffer::~CPUBuffer()
     if ((m_flags & IsOwned) != 0) {
         CPUDeviceHandle::get()->free_raw_buffer(raw_buffer);
     } else if (!m_memory_owner.is_null()) {
-        m_memory_owner.get().unmap(raw_buffer.ptr);
     }
 }
+dimn_t CPUBuffer::bytes() const { return raw_buffer.size * m_info.bytes; }
 
 BufferMode CPUBuffer::mode() const
 {
     if (m_flags & IsConst) { return BufferMode::Read; }
     return BufferMode::ReadWrite;
+}
+void CPUBuffer::unmap(Buffer& other) const noexcept
+{
+    RPY_CHECK(other.is_host());
+    RPY_CHECK(&other.memory_owner().get() == this);
+
+    auto& as_cpubuf = static_cast<CPUBuffer&>(other.get());
+
+    // Should reduce the reference count of this
+    // In practice this function will probably only be called in the destructor
+    // of a buffer, anyway, but better safe than sorry.
+    as_cpubuf.m_memory_owner = Buffer();
+    as_cpubuf.raw_buffer = {nullptr, 0};
 }
 TypeInfo CPUBuffer::type_info() const noexcept { return m_info; }
 dimn_t CPUBuffer::size() const { return raw_buffer.size; }
@@ -121,20 +137,6 @@ Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
     return device->from_host(dst, *this, queue);
 }
 
-void* CPUBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset) const
-{
-    if (offset + size >= raw_buffer.size) {
-        RPY_THROW(
-                std::invalid_argument,
-                "the requested region would exceed "
-                "the allocated memory of this "
-                "buffer"
-        );
-    }
-
-    return static_cast<byte*>(raw_buffer.ptr) + offset;
-}
-
 Buffer CPUBuffer::memory_owner() const noexcept
 {
     if (m_memory_owner.is_null()) { return BufferInterface::memory_owner(); }
@@ -148,6 +150,7 @@ Buffer CPUBuffer::map(dimn_t size, dimn_t offset) const
 {
     return slice(size, offset);
 }
+
 bool CPUBuffer::is_host() const noexcept { return true; }
 Buffer CPUBuffer::slice(dimn_t offset, dimn_t size) const
 {

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 11/10/23.
@@ -46,9 +47,14 @@ using namespace rpy::devices;
 constexpr cl_int MODE_MASK
         = CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY | CL_MEM_READ_WRITE;
 
-devices::OCLBuffer::OCLBuffer(cl_mem buffer, OCLDevice dev) noexcept
+devices::OCLBuffer::OCLBuffer(
+        cl_mem buffer,
+        OCLDevice dev,
+        TypeInfo info
+) noexcept
     : m_device(std::move(dev)),
-      m_buffer(buffer)
+      m_buffer(buffer),
+      m_info(info)
 {}
 OCLBuffer::~OCLBuffer() { m_buffer = nullptr; }
 
@@ -74,19 +80,8 @@ BufferMode OCLBuffer::mode() const
 }
 dimn_t OCLBuffer::size() const
 {
-    RPY_DBG_ASSERT(m_buffer != nullptr);
-
-    cl_ulong size;
-    auto ecode = clGetMemObjectInfo(
-            m_buffer,
-            CL_MEM_SIZE,
-            sizeof(cl_ulong),
-            &size,
-            nullptr
-    );
-    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    return static_cast<dimn_t>(size);
+    RPY_DBG_ASSERT((bytes() % m_info.bytes) == 0);
+    return bytes() / m_info.bytes;
 }
 void* OCLBuffer::ptr() noexcept { return &m_buffer; }
 // std::unique_ptr<devices::dtl::InterfaceBase> OCLBuffer::clone() const
@@ -281,58 +276,58 @@ devices::dtl::InterfaceBase::reference_count_type OCLBuffer::dec_ref() noexcept
     return rc;
 }
 
-void* OCLBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset) const
+// void* OCLBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset) const
+//{
+//     cl_mem_flags flags;
+//
+//     auto this_mode = mode();
+//     if (map_mode == BufferMode::None) { map_mode = this_mode; }
+//
+//     switch (map_mode) {
+//         case BufferMode::Read: flags = CL_MAP_READ; break;
+//         case BufferMode::ReadWrite:
+//             RPY_CHECK(this_mode != BufferMode::Read);
+//             flags = CL_MAP_WRITE;
+//             break;
+//         case BufferMode::Write:
+//             RPY_CHECK(this_mode != BufferMode::Read);
+//             if (m_device->cl_supports_version({1, 2})) {
+//                 flags = CL_MAP_WRITE_INVALIDATE_REGION;
+//             } else {
+//                 flags = CL_MAP_WRITE;
+//             }
+//             break;
+//         case BufferMode::None: RPY_UNREACHABLE();
+//     }
+//
+//     cl_int ecode = CL_SUCCESS;
+//     void* ptr = clEnqueueMapBuffer(
+//             m_device->default_queue(),
+//             m_buffer,
+//             CL_TRUE,
+//             flags,
+//             offset,
+//             size,
+//             0,
+//             nullptr,
+//             nullptr,
+//             &ecode
+//     );
+//
+//     if (ptr == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+//
+//     return ptr;
+// }
+
+void OCLBuffer::unmap(Buffer& buffer) const noexcept
 {
-    cl_mem_flags flags;
-
-    auto this_mode = mode();
-    if (map_mode == BufferMode::None) { map_mode = this_mode; }
-
-    switch (map_mode) {
-        case BufferMode::Read: flags = CL_MAP_READ; break;
-        case BufferMode::ReadWrite:
-            RPY_CHECK(this_mode != BufferMode::Read);
-            flags = CL_MAP_WRITE;
-            break;
-        case BufferMode::Write:
-            RPY_CHECK(this_mode != BufferMode::Read);
-            if (m_device->cl_supports_version({1, 2})) {
-                flags = CL_MAP_WRITE_INVALIDATE_REGION;
-            } else {
-                flags = CL_MAP_WRITE;
-            }
-            break;
-        case BufferMode::None: RPY_UNREACHABLE();
-    }
-
-    cl_int ecode = CL_SUCCESS;
-    void* ptr = clEnqueueMapBuffer(
-            m_device->default_queue(),
-            m_buffer,
-            CL_TRUE,
-            flags,
-            offset,
-            size,
-            0,
-            nullptr,
-            nullptr,
-            &ecode
-    );
-
-    if (ptr == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    return ptr;
-}
-
-void OCLBuffer::unmap(const void* ptr) const noexcept
-{
-    if (ptr == nullptr) { return ; }
+    if (buffer.is_null()) { return; }
 
     auto event = cl::scoped_guard(static_cast<cl_event>(nullptr));
     auto ecode = clEnqueueUnmapMemObject(
             m_device->default_queue(),
             m_buffer,
-            const_cast<void*>(ptr),
+            buffer.ptr(),
             0,
             nullptr,
             event.ptr()
@@ -340,4 +335,41 @@ void OCLBuffer::unmap(const void* ptr) const noexcept
 
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     clWaitForEvents(1, event.ptr());
+}
+TypeInfo OCLBuffer::type_info() const noexcept { return m_info; }
+dimn_t OCLBuffer::bytes() const
+{
+    RPY_DBG_ASSERT(m_buffer != nullptr);
+
+    cl_ulong size;
+    auto ecode = clGetMemObjectInfo(
+            m_buffer,
+            CL_MEM_SIZE,
+            sizeof(cl_ulong),
+            &size,
+            nullptr
+    );
+    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return static_cast<dimn_t>(size);
+}
+Buffer OCLBuffer::map_mut(dimn_t size, dimn_t offset)
+{
+    return BufferInterface::map_mut(size, offset);
+}
+Buffer OCLBuffer::map(dimn_t size, dimn_t offset) const
+{
+    return BufferInterface::map(size, offset);
+}
+Buffer OCLBuffer::memory_owner() const noexcept
+{
+    return BufferInterface::memory_owner();
+}
+Buffer OCLBuffer::slice(dimn_t offset, dimn_t size) const
+{
+    return BufferInterface::slice(offset, size);
+}
+Buffer OCLBuffer::mut_slice(dimn_t offset, dimn_t size)
+{
+    return BufferInterface::mut_slice(offset, size);
 }

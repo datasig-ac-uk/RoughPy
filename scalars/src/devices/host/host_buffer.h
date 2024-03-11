@@ -34,8 +34,12 @@
 
 #include "devices/buffer.h"
 
+#include "devices/core.h"
+#include "devices/event.h"
+#include "devices/queue.h"
 #include "host_decls.h"
 
+#include <roughpy/core/types.h>
 
 #include <atomic>
 
@@ -85,6 +89,8 @@ public:
 
     Buffer slice(dimn_t offset, dimn_t size) const override;
     Buffer mut_slice(dimn_t offset, dimn_t size) override;
+    void unmap(Buffer& ptr) const noexcept override;
+    dimn_t bytes() const override;
 };
 
 }// namespace devices

@@ -48,6 +48,7 @@ public:
     RPY_NO_DISCARD virtual BufferMode mode() const;
     RPY_NO_DISCARD virtual TypeInfo type_info() const noexcept;
     RPY_NO_DISCARD virtual dimn_t size() const;
+    RPY_NO_DISCARD virtual dimn_t bytes() const;
 
     RPY_NO_DISCARD virtual Event
     to_device(Buffer& dst, const Device& device, Queue& queue);
@@ -55,7 +56,7 @@ public:
     RPY_NO_DISCARD virtual Buffer map_mut(dimn_t size, dimn_t offset);
     RPY_NO_DISCARD virtual Buffer map(dimn_t size, dimn_t offset) const;
 
-    virtual void unmap(const void* ptr) const noexcept;
+    virtual void unmap(Buffer& ptr) const noexcept;
 
     virtual Buffer memory_owner() const noexcept;
 
@@ -110,20 +111,21 @@ public:
     explicit Buffer(Slice<const T> data);
 
     RPY_NO_DISCARD dimn_t size() const;
+    RPY_NO_DISCARD dimn_t bytes() const;
     RPY_NO_DISCARD TypeInfo type_info() const noexcept;
     RPY_NO_DISCARD BufferMode mode() const;
 
     template <typename T>
     Slice<const T> as_slice() const
     {
-        return {static_cast<const T*>(ptr()), size() / sizeof(T)};
+        return {static_cast<const T*>(ptr()), size()};
     }
 
     template <typename T>
     Slice<T> as_mut_slice()
     {
         RPY_CHECK(mode() != BufferMode::Read);
-        return {static_cast<T*>(ptr()), size() / sizeof(T)};
+        return {static_cast<T*>(ptr()), size()};
     }
 
     RPY_NO_DISCARD Buffer slice(dimn_t offset, dimn_t size);

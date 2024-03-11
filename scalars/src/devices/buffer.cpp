@@ -33,6 +33,7 @@
 #include "devices/buffer.h"
 #include "devices/device_handle.h"
 
+#include "devices/core.h"
 #include "devices/event.h"
 #include "devices/queue.h"
 
@@ -87,7 +88,7 @@ Buffer::Buffer(Device device, dimn_t size, TypeInfo type)
     *this = device->alloc(type, size);
 }
 
-cuffer::Buffer(rpy::dimn_t size, rpy::devices::TypeInfo type)
+Buffer::Buffer(rpy::dimn_t size, rpy::devices::TypeInfo type)
     : base_t(new CPUBuffer(size, type))
 {}
 
@@ -105,6 +106,11 @@ dimn_t Buffer::size() const
 {
     if (impl() == nullptr) { return 0; }
     return impl()->size();
+}
+dimn_t Buffer::bytes() const
+{
+    if (impl() == nullptr) { return 0; }
+    return impl()->size() * impl()->type_info().bytes;
 }
 
 static inline bool check_device_compatibility(Buffer& dst, const Device& device)
