@@ -34,7 +34,6 @@
 #include "devices/device_handle.h"
 
 #include "devices/event.h"
-#include "devices/kernel.h"
 #include "devices/queue.h"
 
 #include "devices/host/host_buffer.h"
@@ -88,23 +87,23 @@ Buffer::Buffer(Device device, dimn_t size, TypeInfo type)
     *this = device->alloc(type, size);
 }
 
-Buffer::Buffer(rpy::dimn_t size, rpy::devices::TypeInfo type)
+cuffer::Buffer(rpy::dimn_t size, rpy::devices::TypeInfo type)
     : base_t(new CPUBuffer(size, type))
 {}
 
 BufferMode Buffer::mode() const
 {
-    if (!impl()) { return BufferMode::Read; }
+    if (impl() == nullptr) { return BufferMode::Read; }
     return impl()->mode();
 }
 
 TypeInfo BufferInterface::type_info() const noexcept
 {
-    return devices::type_info<char>();
+    return devices::type_info<byte>();
 }
 dimn_t Buffer::size() const
 {
-    if (!impl()) { return 0; }
+    if (impl() == nullptr) { return 0; }
     return impl()->size();
 }
 
@@ -113,20 +112,22 @@ static inline bool check_device_compatibility(Buffer& dst, const Device& device)
     if (dst.is_null() || !device) { return true; }
 
     RPY_CHECK(dst.device() == device);
+    // Get clangd to shut up about always true statements
+    volatile bool result = true;
 
-    return true;
+    return result;
 }
 
 void Buffer::to_device(Buffer& dst, const Device& device)
 {
-    if (impl() && check_device_compatibility(dst, device)) {
+    if (impl() != nullptr && check_device_compatibility(dst, device)) {
         auto queue = device->get_default_queue();
         impl()->to_device(dst, device, queue).wait();
     }
 }
 Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue)
 {
-    if (impl() && check_device_compatibility(dst, device)) {
+    if (impl() != nullptr && check_device_compatibility(dst, device)) {
         return impl()->to_device(dst, device, queue);
     }
     return {};
@@ -146,7 +147,7 @@ Buffer Buffer::map(rpy::dimn_t size, rpy::dimn_t offset) const
 
 TypeInfo Buffer::type_info() const noexcept
 {
-    if (!impl()) { return rpy::devices::type_info<char>(); }
+    if (impl() == nullptr) { return rpy::devices::type_info<char>(); }
     return impl()->type_info();
 }
 

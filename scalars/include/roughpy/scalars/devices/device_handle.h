@@ -98,8 +98,6 @@ public:
     RPY_NO_DISCARD virtual Buffer
     raw_alloc(dimn_t count, dimn_t alignment) const;
 
-    virtual void raw_free(void* pointer, dimn_t size) const;
-
     /**
      * @brief Free the underlying resources associated with a buffer
      * @param buf buffer to free
