@@ -32,7 +32,6 @@
 
 #include "devices/buffer.h"
 #include "devices/device_handle.h"
-#include "devices/memory_view.h"
 
 #include "devices/event.h"
 #include "devices/kernel.h"
@@ -100,10 +99,54 @@ Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue)
     return {};
 }
 
-MemoryView Buffer::map(BufferMode map_mode, dimn_t size, dimn_t offset) const
+Buffer Buffer::map(rpy::dimn_t size, rpy::dimn_t offset)
 {
-    if (!impl() || size == 0) { return {*this, nullptr, 0}; }
-    void* mapped = impl()->map(map_mode, size, offset);
-    RPY_DBG_ASSERT(mapped != nullptr);
-    return MemoryView(*this, mapped, size);
+    if (impl() == nullptr) { return Buffer(); }
+
+    RPY_DBG_ASSERT(!is_null());
+    auto max_size = this->size();
+    RPY_CHECK(offset + size <= max_size);
+
+    auto info = this->type_info();
+
+    // The "owner" might itself be borrowed, by calling memory_owner we will
+    // always get the "real" owning buffer for this memory
+    auto memory_owner = this->memory_owner();
+
+    // owner might not be a CPU buffer, so this might be a real memory mapping.
+    auto* ptr = impl()->map(size, offset);
+
+    return Buffer(new CPUBuffer(ptr, size, info));
+}
+
+Buffer Buffer::map(rpy::dimn_t size, rpy::dimn_t offset) const
+{
+    if (impl() == nullptr) { return Buffer(); }
+
+    RPY_DBG_ASSERT(!is_null());
+    auto max_size = this->size();
+    RPY_CHECK(offset + size <= max_size);
+
+    auto info = this->type_info();
+
+    // The "owner" might itself be borrowed, by calling memory_owner we will
+    // always get the "real" owning buffer for this memory
+    auto memory_owner = this->memory_owner();
+
+    // owner might not be a CPU buffer, so this might be a real memory mapping.
+    const auto* ptr = impl()->map(size, offset);
+
+    return Buffer(new CPUBuffer(ptr, size, info));
+}
+
+TypeInfo Buffer::type_info() const noexcept
+{
+    if (!impl()) { return rpy::devices::type_info<char>(); }
+    return impl()->type_info();
+}
+
+Buffer Buffer::memory_owner() const noexcept
+{
+    if (impl() == nullptr) { return Buffer(); }
+    return impl()->memory_owner();
 }

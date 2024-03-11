@@ -29,8 +29,8 @@
 // Created by user on 11/10/23.
 //
 
-
 #include "devices/buffer.h"
+#include "devices/device_object_base.h"
 #include "devices/event.h"
 
 using namespace rpy;
@@ -63,6 +63,19 @@ void* BufferInterface::map(BufferMode map_mode,
                                   "supported");
 }
 
+void* BufferInterface::map(dimn_t size, dimn_t offset) { return nullptr; }
+const void* BufferInterface::map(dimn_t size, dimn_t offset) const
+{
+    return nullptr;
+}
+
 void BufferInterface::unmap(const void* ptr) const noexcept
 {
+}
+
+Buffer BufferInterface::memory_owner() const noexcept
+{
+    // This const-cast is fine, because we are creating a new counted reference
+    // to *this.
+    return Buffer(const_cast<BufferInterface*>(this));
 }

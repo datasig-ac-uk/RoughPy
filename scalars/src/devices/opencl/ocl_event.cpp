@@ -71,10 +71,6 @@ EventStatus OCLEvent::status() const
         default: return EventStatus::Error;
     }
 }
-std::unique_ptr<devices::dtl::InterfaceBase> OCLEvent::clone() const
-{
-    return std::make_unique<OCLEvent>(m_event, m_device);
-}
 bool OCLEvent::is_user() const noexcept
 {
     RPY_DBG_ASSERT(m_event != nullptr);

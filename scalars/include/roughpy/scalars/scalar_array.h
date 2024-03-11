@@ -171,8 +171,6 @@ public:
     RPY_NO_DISCARD
     devices::Buffer& mut_buffer();
 
-    RPY_NO_DISCARD ScalarArrayView view() const;
-
     RPY_NO_DISCARD
     Scalar operator[](dimn_t i) const;
     RPY_NO_DISCARD

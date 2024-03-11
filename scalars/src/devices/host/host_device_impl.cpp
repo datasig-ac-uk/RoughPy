@@ -205,7 +205,8 @@ Buffer CPUDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
 
     return Buffer(new CPUBuffer(
             aligned_alloc(alignment, count),
-            count
+            count,
+            type_info<byte>()
     ));
 }
 void CPUDeviceHandle::raw_free(void* pointer, dimn_t size) const

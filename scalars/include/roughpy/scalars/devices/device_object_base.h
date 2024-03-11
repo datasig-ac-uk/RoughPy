@@ -57,7 +57,6 @@ public:
 
     RPY_NO_DISCARD virtual DeviceType type() const noexcept;
     RPY_NO_DISCARD virtual dimn_t ref_count() const noexcept;
-    RPY_NO_DISCARD virtual std::unique_ptr<InterfaceBase> clone() const;
     RPY_NO_DISCARD virtual Device device() const noexcept;
 
     RPY_NO_DISCARD virtual void* ptr() noexcept;

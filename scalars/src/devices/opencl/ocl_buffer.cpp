@@ -89,40 +89,40 @@ dimn_t OCLBuffer::size() const
     return static_cast<dimn_t>(size);
 }
 void* OCLBuffer::ptr() noexcept { return &m_buffer; }
-std::unique_ptr<devices::dtl::InterfaceBase> OCLBuffer::clone() const
-{
-    RPY_DBG_ASSERT(m_buffer != nullptr);
-
-    dimn_t buf_size = size();
-
-    cl_int ecode;
-    cl_mem new_buffer = clCreateBuffer(
-            m_device->context(),
-            CL_MEM_ALLOC_HOST_PTR,
-            buf_size,
-            nullptr,
-            &ecode
-    );
-    if (new_buffer == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    cl_event event;
-    ecode = clEnqueueCopyBuffer(
-            m_device->default_queue(),
-            m_buffer,
-            new_buffer,
-            0,
-            0,
-            buf_size,
-            0,
-            nullptr,
-            &event
-    );
-    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    clWaitForEvents(1, &event);
-
-    return std::make_unique<OCLBuffer>(new_buffer, m_device);
-}
+// std::unique_ptr<devices::dtl::InterfaceBase> OCLBuffer::clone() const
+//{
+//     RPY_DBG_ASSERT(m_buffer != nullptr);
+//
+//     dimn_t buf_size = size();
+//
+//     cl_int ecode;
+//     cl_mem new_buffer = clCreateBuffer(
+//             m_device->context(),
+//             CL_MEM_ALLOC_HOST_PTR,
+//             buf_size,
+//             nullptr,
+//             &ecode
+//     );
+//     if (new_buffer == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+//
+//     cl_event event;
+//     ecode = clEnqueueCopyBuffer(
+//             m_device->default_queue(),
+//             m_buffer,
+//             new_buffer,
+//             0,
+//             0,
+//             buf_size,
+//             0,
+//             nullptr,
+//             &event
+//     );
+//     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
+//
+//     clWaitForEvents(1, &event);
+//
+//     return std::make_unique<OCLBuffer>(new_buffer, m_device);
+// }
 Device OCLBuffer::device() const noexcept { return m_device; }
 
 devices::dtl::InterfaceBase::reference_count_type

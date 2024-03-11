@@ -227,16 +227,6 @@ Event OCLKernel::launch_kernel_async(
 
     return m_device->make_event(event);
 }
-std::unique_ptr<devices::dtl::InterfaceBase> OCLKernel::clone() const
-{
-    RPY_DBG_ASSERT(m_kernel);
-    cl_int ecode = CL_SUCCESS;
-    cl_kernel new_ker = clCloneKernel(m_kernel, &ecode);
-
-    if (new_ker == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
-
-    return std::make_unique<OCLKernel>(new_ker, m_device);
-}
 devices::dtl::InterfaceBase::reference_count_type
 OCLKernel::ref_count() const noexcept
 {

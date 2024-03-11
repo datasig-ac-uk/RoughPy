@@ -44,11 +44,6 @@ DeviceType devices::dtl::InterfaceBase::type() const noexcept {
     return DeviceType::CPU;
 }
 
-std::unique_ptr<rpy::devices::dtl::InterfaceBase>
-rpy::devices::dtl::InterfaceBase::clone() const
-{
-    return nullptr;
-}
 
 Device devices::dtl::InterfaceBase::device() const noexcept
 {

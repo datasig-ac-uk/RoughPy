@@ -52,7 +52,6 @@ public:
 
     DeviceType type() const noexcept override;
     reference_count_type ref_count() const noexcept override;
-    std::unique_ptr<dtl::InterfaceBase> clone() const override;
     dimn_t size() const override;
     void* ptr() noexcept override;
     const void* ptr() const noexcept override;

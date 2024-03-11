@@ -76,6 +76,8 @@ CPUBuffer::~CPUBuffer()
 {
     if ((m_flags & IsOwned) != 0) {
         CPUDeviceHandle::get()->free_raw_buffer(raw_buffer);
+    } else if (!m_memory_owner.is_null()) {
+        m_memory_owner.get().unmap(raw_buffer.ptr);
     }
 }
 
@@ -87,11 +89,6 @@ BufferMode CPUBuffer::mode() const
 TypeInfo CPUBuffer::type_info() const noexcept { return m_info; }
 dimn_t CPUBuffer::size() const { return raw_buffer.size; }
 void* CPUBuffer::ptr() noexcept { return raw_buffer.ptr; }
-std::unique_ptr<rpy::devices::dtl::InterfaceBase> CPUBuffer::clone() const
-{
-    return std::unique_ptr<CPUBuffer>(new CPUBuffer(raw_buffer, m_flags, m_info)
-    );
-}
 Device CPUBuffer::device() const noexcept { return CPUDeviceHandle::get(); }
 
 DeviceType CPUBuffer::type() const noexcept { return DeviceType::CPU; }
@@ -136,4 +133,20 @@ void* CPUBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset) const
     }
 
     return static_cast<byte*>(raw_buffer.ptr) + offset;
+}
+
+Buffer CPUBuffer::memory_owner() const noexcept
+{
+    if (m_memory_owner.is_null()) { return BufferInterface::memory_owner(); }
+    return m_memory_owner;
+}
+void* CPUBuffer::map(dimn_t size, dimn_t offset)
+{
+    RPY_CHECK(offset + size <= raw_buffer.size);
+    return static_cast<byte*>(raw_buffer.ptr) + offset;
+}
+const void* CPUBuffer::map(dimn_t size, dimn_t offset) const
+{
+    RPY_CHECK(offset + size <= raw_buffer.size);
+    return static_cast<const byte*>(raw_buffer.ptr) + offset;
 }

@@ -56,8 +56,6 @@ public:
     RPY_NO_DISCARD
     dimn_t ref_count() const noexcept override;
     RPY_NO_DISCARD
-    std::unique_ptr<dtl::InterfaceBase> clone() const override;
-    RPY_NO_DISCARD
     Device device() const noexcept override;
     RPY_NO_DISCARD
     BufferMode mode() const override;

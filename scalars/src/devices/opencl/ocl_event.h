@@ -51,8 +51,6 @@ public:
 
     DeviceType type() const noexcept override;
     reference_count_type ref_count() const noexcept override;
-    RPY_NO_DISCARD
-    std::unique_ptr<dtl::InterfaceBase> clone() const override;
     void wait() override;
     RPY_NO_DISCARD
     EventStatus status() const override;

@@ -42,7 +42,6 @@ namespace devices {
 class ROUGHPY_PLATFORM_EXPORT BufferInterface : public dtl::InterfaceBase
 {
 
-
 public:
     using object_t = Buffer;
 
@@ -57,8 +56,12 @@ public:
 
     RPY_NO_DISCARD virtual void*
     map(BufferMode map_mode, dimn_t size, dimn_t offset) const;
+    RPY_NO_DISCARD virtual void* map(dimn_t size, dimn_t offset);
+    RPY_NO_DISCARD virtual const void* map(dimn_t size, dimn_t offset) const;
 
     virtual void unmap(const void* ptr) const noexcept;
+
+    virtual Buffer memory_owner() const noexcept;
 };
 
 #ifdef RPY_PLATFORM_WINDOWS
@@ -86,6 +89,7 @@ class ROUGHPY_PLATFORM_EXPORT Buffer
     friend class ROUGHPY_PLATFORM_EXPORT MemoryView;
 
     friend class ROUGHPY_PLATFORM_EXPORT MutableMemoryView;
+
 public:
     using base_t::base_t;
 
@@ -113,14 +117,10 @@ public:
 
     Event to_device(Buffer& dst, const Device& device, Queue& queue);
 
-    RPY_NO_DISCARD
-    MutableMemoryView map_raw(dimn_t size, dimn_t offset);
+    RPY_NO_DISCARD Buffer map(dimn_t size = 0, dimn_t offset = 0) const;
+    RPY_NO_DISCARD Buffer map(dimn_t size = 0, dimn_t offset = 0);
 
-    RPY_NO_DISCARD MemoryView
-    map(BufferMode map_mode = BufferMode::None,
-        dimn_t size = 0,
-        dimn_t offset = 0) const;
-
+    Buffer memory_owner() const noexcept;
 };
 
 }// namespace devices

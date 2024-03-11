@@ -36,7 +36,6 @@
 #include "devices/buffer.h"
 #include "devices/event.h"
 #include "devices/kernel.h"
-#include "devices/memory_view.h"
 
 #include "host_event.h"
 
@@ -136,7 +135,7 @@ template <typename T>
 class ConvertedKernelArgument<T*>
 {
     T* p_data;
-    MutableMemoryView m_view;
+    Buffer m_view;
 
 public:
     explicit ConvertedKernelArgument(KernelArgument& arg);
@@ -152,8 +151,8 @@ ConvertedKernelArgument<T*>::ConvertedKernelArgument(KernelArgument& arg)
     auto& buffer = arg.buffer();
 
     if (buffer.device() != get_host_device()) {
-        m_view = buffer.map_raw(buffer.size(), 0);
-        p_data = reinterpret_cast<T*>(m_view.raw_ptr(0));
+        m_view = buffer.map(buffer.size(), 0);
+        p_data = reinterpret_cast<T*>(m_view.ptr());
     } else {
         p_data = buffer.ptr();
     }
@@ -163,7 +162,7 @@ template <typename T>
 class ConvertedKernelArgument<const T*>
 {
     const T* p_data;
-    MemoryView m_view;
+    Buffer m_view;
 
 public:
     explicit ConvertedKernelArgument(KernelArgument& arg);
@@ -176,11 +175,11 @@ ConvertedKernelArgument<const T*>::ConvertedKernelArgument(KernelArgument& arg)
 {
     RPY_CHECK(arg.info() == type_info<T>());
     RPY_CHECK(arg.is_buffer() && !arg.is_const());
-    auto& buffer = arg.buffer();
+    const auto& buffer = arg.const_buffer();
 
     if (buffer.device() != get_host_device()) {
         m_view = buffer.map();
-        p_data = reinterpret_cast<T*>(m_view.raw_ptr(0));
+        p_data = reinterpret_cast<T*>(m_view.ptr());
     } else {
         p_data = buffer.ptr();
     }

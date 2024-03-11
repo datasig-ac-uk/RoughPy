@@ -17,7 +17,6 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/devices/kernel.h
         include/roughpy/scalars/devices/kernel_arg.h
         include/roughpy/scalars/devices/macros.h
-        include/roughpy/scalars/devices/memory_view.h
         include/roughpy/scalars/devices/queue.h
         include/roughpy/scalars/devices/types.h
         include/roughpy/scalars/devices.h
@@ -26,7 +25,6 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/packed_scalar_type_ptr.h
         include/roughpy/scalars/scalar.h
         include/roughpy/scalars/scalar_array.h
-        include/roughpy/scalars/scalar_array_view.h
         include/roughpy/scalars/scalar_interface.h
         include/roughpy/scalars/scalar_serialization.h
         include/roughpy/scalars/scalar_stream.h
@@ -84,7 +82,6 @@ add_roughpy_component(Scalars
         src/devices/kernel_arg.cpp
         src/devices/kernel_interface.cpp
         src/devices/kernel_launch_params.cpp
-        src/devices/memory_view.cpp
         src/devices/queue.cpp
         src/devices/queue_interface.cpp
         src/random/random_impl.cpp
@@ -128,7 +125,6 @@ add_roughpy_component(Scalars
         src/random.cpp
         src/scalar.cpp
         src/scalar_array.cpp
-        src/scalar_array_view.cpp
         src/scalar_interface.cpp
         src/scalar_serialization.cpp
         src/scalar_stream.cpp

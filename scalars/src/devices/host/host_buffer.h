@@ -54,6 +54,7 @@ class CPUBuffer : public dtl::RefCountBase<BufferInterface>
     RawBuffer raw_buffer;
     uint32_t m_flags;
     TypeInfo m_info;
+    Buffer m_memory_owner;
 
     CPUBuffer(RawBuffer raw, uint32_t arg_flags, TypeInfo info);
 
@@ -64,7 +65,6 @@ public:
 
     ~CPUBuffer() override;
 
-    std::unique_ptr<dtl::InterfaceBase> clone() const override;
     Device device() const noexcept override;
 
     BufferMode mode() const override;
@@ -78,6 +78,11 @@ public:
     to_device(Buffer& dst, const Device& device, Queue& queue) override;
 
     void* map(BufferMode map_mode, dimn_t size, dimn_t offset) const override;
+
+    void* map(dimn_t size, dimn_t offset) override;
+    const void* map(dimn_t size, dimn_t offset) const override;
+
+    Buffer memory_owner() const noexcept override;
 };
 
 }// namespace devices

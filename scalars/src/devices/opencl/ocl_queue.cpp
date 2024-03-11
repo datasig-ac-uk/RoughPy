@@ -43,13 +43,6 @@ OCLQueue::OCLQueue(cl_command_queue queue, OCLDevice dev) noexcept
       m_device(std::move(dev))
 {}
 
-std::unique_ptr<rpy::devices::dtl::InterfaceBase> OCLQueue::clone() const
-{
-    RPY_DBG_ASSERT(m_queue != nullptr);
-    auto ecode = clRetainCommandQueue(m_queue);
-    if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
-    return std::make_unique<OCLQueue>(m_queue, m_device);
-}
 
 dimn_t OCLQueue::size() const
 {

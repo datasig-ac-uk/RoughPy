@@ -33,13 +33,11 @@
 #include "scalar_serialization.h"
 #include "scalar_type.h"
 #include "traits.h"
-#include "scalar_array_view.h"
 
 #include "scalar/raw_bytes.h"
 
 #include "devices/buffer.h"
 #include "devices/host_device.h"
-#include "devices/memory_view.h"
 
 #include <cereal/types/vector.hpp>
 
@@ -491,19 +489,6 @@ void ScalarArray::from_raw_bytes(
 
     dtl::from_raw_bytes(owned_buffer.ptr(), count, bytes, info);
 }
-
-ScalarArrayView ScalarArray::view() const
-{
-    switch (p_type_and_mode.get_enumeration()) {
-        case dtl::ScalarArrayStorageModel::Owned:
-            return {owned_buffer.map(), p_type_and_mode, m_size};
-        case dtl::ScalarArrayStorageModel::BorrowConst:
-            RPY_THROW(std::runtime_error, "no view yet");
-        case dtl::ScalarArrayStorageModel::BorrowMut:
-            RPY_THROW(std::runtime_error, "no view yet");
-    }
-}
-
 
 #define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME ScalarArray
