@@ -73,6 +73,8 @@ public:
 
     DeviceCategory category() const noexcept override;
     DeviceInfo info() const noexcept override;
+
+    Buffer alloc(TypeInfo info, dimn_t count) const override;
     Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
     void raw_free(void* pointer, dimn_t size) const override;
 

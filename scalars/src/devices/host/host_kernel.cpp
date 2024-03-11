@@ -39,7 +39,6 @@
 
 #include <roughpy/core/helpers.h>
 
-
 #include <memory>
 #include <mutex>
 
@@ -75,15 +74,22 @@ EventStatus CPUKernel::launch_kernel_sync(
 )
 {
     auto event = new_kernel_event(m_name);
-    LaunchContext ctx{reinterpret_cast<HostEventContext*>(event.ptr()), nullptr};
+    LaunchContext ctx{
+            reinterpret_cast<HostEventContext*>(event.ptr()),
+            nullptr
+    };
     m_kernel(&ctx, params, args);
     return event.status();
 }
 
 Device CPUKernel::device() const noexcept { return get_host_device(); }
+bool CPUKernel::is_host() const noexcept { return true; }
 
 HostKernelEvent::HostKernelEvent(std::string_view kernel_name)
-    : m_ctx{std::mutex(), std::condition_variable(), EventStatus::Queued, nullptr},
+    : m_ctx{std::mutex(),
+            std::condition_variable(),
+            EventStatus::Queued,
+            nullptr},
       m_kernel_name(kernel_name)
 {}
 

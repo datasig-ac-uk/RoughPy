@@ -57,6 +57,8 @@ optional<fs::path> DeviceHandle::runtime_library() const noexcept { return {}; }
 
 DeviceHandle::~DeviceHandle() = default;
 
+Buffer DeviceHandle::alloc(TypeInfo info, dimn_t count) const { return {}; }
+
 Buffer DeviceHandle::raw_alloc(rpy::dimn_t count, rpy::dimn_t alignment) const
 {
     return {};
@@ -64,9 +66,7 @@ Buffer DeviceHandle::raw_alloc(rpy::dimn_t count, rpy::dimn_t alignment) const
 
 void DeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 
-void DeviceHandle::raw_free(Buffer& buf) const
-{
-}
+void DeviceHandle::raw_free(Buffer& buf) const {}
 
 bool DeviceHandle::has_compiler() const noexcept { return false; }
 

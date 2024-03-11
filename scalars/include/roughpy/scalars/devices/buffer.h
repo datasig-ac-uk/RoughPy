@@ -52,16 +52,15 @@ public:
     RPY_NO_DISCARD virtual Event
     to_device(Buffer& dst, const Device& device, Queue& queue);
 
-    RPY_NO_DISCARD virtual void* map_raw(dimn_t size, dimn_t offset);
-
-    RPY_NO_DISCARD virtual void*
-    map(BufferMode map_mode, dimn_t size, dimn_t offset) const;
-    RPY_NO_DISCARD virtual void* map(dimn_t size, dimn_t offset);
-    RPY_NO_DISCARD virtual const void* map(dimn_t size, dimn_t offset) const;
+    RPY_NO_DISCARD virtual Buffer map_mut(dimn_t size, dimn_t offset);
+    RPY_NO_DISCARD virtual Buffer map(dimn_t size, dimn_t offset) const;
 
     virtual void unmap(const void* ptr) const noexcept;
 
     virtual Buffer memory_owner() const noexcept;
+
+    virtual Buffer slice(dimn_t offset, dimn_t size) const;
+    virtual Buffer mut_slice(dimn_t offset, dimn_t size);
 };
 
 #ifdef RPY_PLATFORM_WINDOWS
@@ -86,15 +85,29 @@ class ROUGHPY_PLATFORM_EXPORT Buffer
 {
     using base_t = dtl::ObjectBase<BufferInterface, Buffer>;
 
-    friend class ROUGHPY_PLATFORM_EXPORT MemoryView;
-
-    friend class ROUGHPY_PLATFORM_EXPORT MutableMemoryView;
 
 public:
     using base_t::base_t;
 
+    Buffer(Device device, dimn_t size, TypeInfo type);
+    Buffer(dimn_t size, TypeInfo type);
+    Buffer(Device device, void* ptr, dimn_t size, TypeInfo type);
+    Buffer(Device device, const void* ptr, dimn_t size, TypeInfo type);
+
     Buffer(void* ptr, dimn_t size, TypeInfo info);
     Buffer(const void* ptr, dimn_t size, TypeInfo info);
+
+    template <typename T>
+    explicit Buffer(Device device, Slice<T> data);
+
+    template <typename T>
+    explicit Buffer(Device device, Slice<const T> data);
+
+    template <typename T>
+    explicit Buffer(Slice<T> data);
+
+    template <typename T>
+    explicit Buffer(Slice<const T> data);
 
     RPY_NO_DISCARD dimn_t size() const;
     RPY_NO_DISCARD TypeInfo type_info() const noexcept;
@@ -113,6 +126,9 @@ public:
         return {static_cast<T*>(ptr()), size() / sizeof(T)};
     }
 
+    RPY_NO_DISCARD Buffer slice(dimn_t offset, dimn_t size);
+    RPY_NO_DISCARD Buffer slice(dimn_t offset, dimn_t size) const;
+
     void to_device(Buffer& dst, const Device& device);
 
     Event to_device(Buffer& dst, const Device& device, Queue& queue);
@@ -121,7 +137,39 @@ public:
     RPY_NO_DISCARD Buffer map(dimn_t size = 0, dimn_t offset = 0);
 
     Buffer memory_owner() const noexcept;
+
+    bool is_owner() const noexcept
+    {
+        // This is a really bad implementation, but it will do for now
+        return memory_owner().impl() == impl();
+    }
 };
+
+template <typename T>
+Buffer::Buffer(rpy::devices::Device device, Slice<T> data)
+    : Buffer(device, data.data(), data.size(), devices::type_info<T>())
+{}
+
+template <typename T>
+Buffer::Buffer(rpy::devices::Device device, Slice<const T> data)
+    : Buffer(device, data.data(), data.size(), devices::type_info<T>())
+{}
+
+template <typename T>
+Buffer::Buffer(Slice<T> data)
+    : Buffer(get_host_device(),
+             data.data(),
+             data.size(),
+             devices::type_info<T>())
+{}
+
+template <typename T>
+Buffer::Buffer(Slice<const T> data)
+    : Buffer(get_host_device(),
+             data.data(),
+             data.size(),
+             devices::type_info<T>())
+{}
 
 }// namespace devices
 }// namespace rpy

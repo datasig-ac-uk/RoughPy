@@ -67,6 +67,7 @@ public:
 
     Device device() const noexcept override;
 
+    bool is_host() const noexcept override;
     BufferMode mode() const override;
     TypeInfo type_info() const noexcept override;
     dimn_t size() const override;
@@ -77,12 +78,13 @@ public:
     Event
     to_device(Buffer& dst, const Device& device, Queue& queue) override;
 
-    void* map(BufferMode map_mode, dimn_t size, dimn_t offset) const override;
-
-    void* map(dimn_t size, dimn_t offset) override;
-    const void* map(dimn_t size, dimn_t offset) const override;
+    Buffer map_mut(dimn_t size, dimn_t offset) override;
+    Buffer map(dimn_t size, dimn_t offset) const override;
 
     Buffer memory_owner() const noexcept override;
+
+    Buffer slice(dimn_t offset, dimn_t size) const override;
+    Buffer mut_slice(dimn_t offset, dimn_t size) override;
 };
 
 }// namespace devices

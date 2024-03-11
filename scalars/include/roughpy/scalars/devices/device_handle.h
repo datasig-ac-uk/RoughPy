@@ -93,6 +93,8 @@ public:
     //                               void** args
     //                               ) = 0;
 
+    RPY_NO_DISCARD virtual Buffer alloc(TypeInfo info, dimn_t count) const;
+
     RPY_NO_DISCARD virtual Buffer
     raw_alloc(dimn_t count, dimn_t alignment) const;
 

@@ -94,7 +94,7 @@ public:
 
     template <typename... Ts>
     CPUKernel(std::function<void(Ts...)> fn, string name);
-
+    bool is_host() const noexcept override;
     Device device() const noexcept override;
 
     string name() const override;

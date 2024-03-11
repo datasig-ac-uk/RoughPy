@@ -39,6 +39,8 @@
 
 #include "devices/host/host_buffer.h"
 
+#include <roughpy/core/macros.h>
+
 using namespace rpy;
 using namespace rpy::devices;
 
@@ -51,12 +53,43 @@ template class RPY_DLL_EXPORT ObjectBase<BufferInterface, Buffer>;
 }// namespace devices
 }// namespace rpy
 
+Buffer::Buffer(
+        rpy::devices::Device device,
+        void* ptr,
+        rpy::dimn_t size,
+        rpy::devices::TypeInfo type
+)
+{
+    Buffer tmp(ptr, size, type);
+    tmp.to_device(*this, device);
+}
+
+Buffer::Buffer(
+        rpy::devices::Device device,
+        const void* ptr,
+        rpy::dimn_t size,
+        rpy::devices::TypeInfo type
+)
+{
+    Buffer tmp(ptr, size, type);
+    tmp.to_device(*this, device);
+}
+
 Buffer::Buffer(void* ptr, dimn_t size, TypeInfo info)
     : base_t(new CPUBuffer(ptr, size, info))
 {}
 
 Buffer::Buffer(const void* ptr, dimn_t size, TypeInfo info)
     : base_t(new CPUBuffer(ptr, size, info))
+{}
+
+Buffer::Buffer(Device device, dimn_t size, TypeInfo type)
+{
+    *this = device->alloc(type, size);
+}
+
+Buffer::Buffer(rpy::dimn_t size, rpy::devices::TypeInfo type)
+    : base_t(new CPUBuffer(size, type))
 {}
 
 BufferMode Buffer::mode() const
@@ -102,41 +135,13 @@ Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue)
 Buffer Buffer::map(rpy::dimn_t size, rpy::dimn_t offset)
 {
     if (impl() == nullptr) { return Buffer(); }
-
-    RPY_DBG_ASSERT(!is_null());
-    auto max_size = this->size();
-    RPY_CHECK(offset + size <= max_size);
-
-    auto info = this->type_info();
-
-    // The "owner" might itself be borrowed, by calling memory_owner we will
-    // always get the "real" owning buffer for this memory
-    auto memory_owner = this->memory_owner();
-
-    // owner might not be a CPU buffer, so this might be a real memory mapping.
-    auto* ptr = impl()->map(size, offset);
-
-    return Buffer(new CPUBuffer(ptr, size, info));
+    return impl()->map_mut(size, offset);
 }
 
 Buffer Buffer::map(rpy::dimn_t size, rpy::dimn_t offset) const
 {
     if (impl() == nullptr) { return Buffer(); }
-
-    RPY_DBG_ASSERT(!is_null());
-    auto max_size = this->size();
-    RPY_CHECK(offset + size <= max_size);
-
-    auto info = this->type_info();
-
-    // The "owner" might itself be borrowed, by calling memory_owner we will
-    // always get the "real" owning buffer for this memory
-    auto memory_owner = this->memory_owner();
-
-    // owner might not be a CPU buffer, so this might be a real memory mapping.
-    const auto* ptr = impl()->map(size, offset);
-
-    return Buffer(new CPUBuffer(ptr, size, info));
+    return impl()->map(size, offset);
 }
 
 TypeInfo Buffer::type_info() const noexcept
@@ -149,4 +154,16 @@ Buffer Buffer::memory_owner() const noexcept
 {
     if (impl() == nullptr) { return Buffer(); }
     return impl()->memory_owner();
+}
+
+Buffer Buffer::slice(dimn_t offset, dimn_t size)
+{
+    if (impl() == nullptr) { return Buffer(); }
+
+    return impl()->mut_slice(offset, size);
+}
+Buffer Buffer::slice(dimn_t offset, dimn_t size) const
+{
+    if (impl() == nullptr) { return Buffer(); }
+    return impl()->slice(offset, size);
 }

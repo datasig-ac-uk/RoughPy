@@ -30,8 +30,8 @@
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 
 #include "packed_scalar_type_ptr.h"
-#include "scalars_fwd.h"
 #include "scalar_type.h"
+#include "scalars_fwd.h"
 
 #include "devices/buffer.h"
 #include <roughpy/platform/serialization.h>
@@ -49,7 +49,6 @@ enum class ScalarArrayStorageModel
 
 }
 
-
 class ScalarArrayView;
 
 class ROUGHPY_SCALARS_EXPORT ScalarArray
@@ -60,39 +59,27 @@ class ROUGHPY_SCALARS_EXPORT ScalarArray
     friend class ScalarArrayView;
     type_pointer p_type_and_mode;
 
-    union
-    {
-        devices::Buffer owned_buffer;
-        const void* const_borrowed;
-        void* mut_borrowed;
-    };
+    // All memory is represented as a buffer now, even if it is a borrowed
+    // pointer from some other place. This should dramatically simplify things.
+    devices::Buffer m_buffer;
 
     dimn_t m_size = 0;
 
     static bool check_pointer_and_size(const void* ptr, dimn_t size);
 
 protected:
-    RPY_NO_DISCARD
-    type_pointer packed_type() const noexcept { return p_type_and_mode; }
+    RPY_NO_DISCARD type_pointer packed_type() const noexcept
+    {
+        return p_type_and_mode;
+    }
 
-    ScalarArray(type_pointer type, void* data, dimn_t size)
+    ScalarArray(type_pointer type, void* data, dimn_t size);
+    ScalarArray(type_pointer type, const void* data, dimn_t size);
+
+    ScalarArray(type_pointer type, devices::Buffer&& buffer)
         : p_type_and_mode(type),
-          mut_borrowed(data),
-          m_size(size)
-    {
-        p_type_and_mode.update_enumeration(
-                dtl::ScalarArrayStorageModel::BorrowMut
-        );
-    }
-    ScalarArray(type_pointer type, const void* data, dimn_t size)
-        : p_type_and_mode(type),
-          const_borrowed(data),
-          m_size(size)
-    {
-        p_type_and_mode.update_enumeration(
-                dtl::ScalarArrayStorageModel::BorrowConst
-        );
-    }
+          m_buffer(std::move(buffer))
+    {}
 
 public:
     ScalarArray();
@@ -130,86 +117,75 @@ public:
 
     ScalarArray copy_or_clone() &&;
 
-    RPY_NO_DISCARD
-    bool is_owning() const noexcept
+    RPY_NO_DISCARD bool is_owning() const noexcept
     {
-        return p_type_and_mode.get_enumeration() == discriminator_type::Owned;
+        return m_buffer.is_owner();
     }
 
-    RPY_NO_DISCARD
-    optional<const ScalarType*> type() const noexcept;
+    RPY_NO_DISCARD optional<const ScalarType*> type() const noexcept;
 
-    RPY_NO_DISCARD
-    devices::TypeInfo type_info() const noexcept;
+    RPY_NO_DISCARD devices::TypeInfo type_info() const noexcept;
 
-    RPY_NO_DISCARD
-    constexpr dimn_t size() const noexcept { return m_size; }
-    RPY_NO_DISCARD
-    dimn_t capacity() const noexcept;
-    RPY_NO_DISCARD
-    constexpr bool empty() const noexcept { return m_size == 0; }
-    RPY_NO_DISCARD
-    constexpr bool is_null() const noexcept
+    RPY_NO_DISCARD constexpr dimn_t size() const noexcept { return m_size; }
+    RPY_NO_DISCARD dimn_t capacity() const noexcept;
+    RPY_NO_DISCARD constexpr bool empty() const noexcept { return m_size == 0; }
+    RPY_NO_DISCARD constexpr bool is_null() const noexcept
     {
         return p_type_and_mode.is_null() && empty();
     }
-    RPY_NO_DISCARD
-    constexpr bool is_const() const noexcept
+    RPY_NO_DISCARD constexpr bool is_const() const noexcept
     {
         return p_type_and_mode.get_enumeration()
                 == discriminator_type::BorrowConst;
     }
-    RPY_NO_DISCARD
-    devices::Device device() const noexcept;
+    RPY_NO_DISCARD devices::Device device() const noexcept
+    {
+        return m_buffer.device();
+    }
 
-    RPY_NO_DISCARD
-    const void* pointer() const;
-    RPY_NO_DISCARD
-    void* mut_pointer();
-    RPY_NO_DISCARD
-    const devices::Buffer& buffer() const;
-    RPY_NO_DISCARD
-    devices::Buffer& mut_buffer();
+    RPY_NO_DISCARD devices::Buffer memory_owner() const noexcept
+    {
+        return m_buffer.memory_owner();
+    }
 
-    RPY_NO_DISCARD
+    //    RPY_NO_DISCARD const void* pointer() const;
+    //    RPY_NO_DISCARD void* mut_pointer();
+    RPY_NO_DISCARD const devices::Buffer& buffer() const;
+    RPY_NO_DISCARD devices::Buffer& mut_buffer();
+
     Scalar operator[](dimn_t i) const;
-    RPY_NO_DISCARD
-    Scalar operator[](dimn_t i);
+    RPY_NO_DISCARD Scalar operator[](dimn_t i);
 
-    RPY_NO_DISCARD
-    ScalarArray operator[](SliceIndex index);
-    RPY_NO_DISCARD
-    ScalarArray operator[](SliceIndex index) const;
+    RPY_NO_DISCARD ScalarArray operator[](SliceIndex index);
+    RPY_NO_DISCARD ScalarArray operator[](SliceIndex index) const;
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 
 private:
     void check_for_ptr_access(bool mut = false) const;
-    RPY_NO_DISCARD
-    std::vector<byte> to_raw_bytes() const;
-    void from_raw_bytes(devices::TypeInfo info, dimn_t count, Slice<byte> bytes);
+    RPY_NO_DISCARD std::vector<byte> to_raw_bytes() const;
+    void
+    from_raw_bytes(devices::TypeInfo info, dimn_t count, Slice<byte> bytes);
 
 public:
-    template <typename T>
-    RPY_NO_DISCARD Slice<T> as_mut_slice()
-    {
-        check_for_ptr_access(true);
-        return {static_cast<T*>(raw_mut_pointer()), m_size};
-    }
-
-    template <typename T>
-    RPY_NO_DISCARD Slice<const T> as_slice() const
-    {
-        check_for_ptr_access(false);
-        return {static_cast<const T*>(raw_pointer()), m_size};
-    }
+    //    template <typename T>
+    //    RPY_NO_DISCARD Slice<T> as_mut_slice()
+    //    {
+    //        check_for_ptr_access(true);
+    //        return {static_cast<T*>(raw_mut_pointer()), m_size};
+    //    }
+    //
+    //    template <typename T>
+    //    RPY_NO_DISCARD Slice<const T> as_slice() const
+    //    {
+    //        check_for_ptr_access(false);
+    //        return {static_cast<const T*>(raw_pointer()), m_size};
+    //    }
 
 private:
-    RPY_NO_DISCARD
-    const void* raw_pointer(dimn_t i = 0) const noexcept;
-    RPY_NO_DISCARD
-    void* raw_mut_pointer(dimn_t i = 0) noexcept;
+    //    RPY_NO_DISCARD const void* raw_pointer(dimn_t i = 0) const noexcept;
+    //    RPY_NO_DISCARD void* raw_mut_pointer(dimn_t i = 0) noexcept;
 };
 
 template <typename T>
@@ -258,7 +234,6 @@ ScalarArray::ScalarArray(const T* data, dimn_t size)
 {
     check_pointer_and_size(data, size);
 }
-
 
 RPY_SERIAL_LOAD_FN_IMPL(ScalarArray)
 {

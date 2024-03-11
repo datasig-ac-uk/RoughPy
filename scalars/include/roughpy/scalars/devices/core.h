@@ -32,8 +32,8 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
-#include <roughpy/platform/serialization.h>
 #include <roughpy/platform/errors.h>
+#include <roughpy/platform/serialization.h>
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -56,8 +56,6 @@ struct bfloat16;
 
 }// namespace Eigen
 
-
-
 namespace rpy {
 namespace devices {
 
@@ -69,11 +67,12 @@ using Eigen::half;
 /// BFloat16 (truncated) floating point type
 using Eigen::bfloat16;
 /// Rational scalar type
-//using rational_scalar_type = lal::rational_field::scalar_type;
+// using rational_scalar_type = lal::rational_field::scalar_type;
 /// Polynomial (with rational coefficients) scalar type
-//using rational_poly_scalar = lal::rational_poly;
+// using rational_poly_scalar = lal::rational_poly;
 
-enum class DeviceCategory : int32_t {
+enum class DeviceCategory : int32_t
+{
     CPU = 0,
     GPU = 1,
     FPGA = 2,
@@ -82,7 +81,8 @@ enum class DeviceCategory : int32_t {
     Other = 5
 };
 
-enum class DeviceIdType : int32_t {
+enum class DeviceIdType : int32_t
+{
     None = 0,
     VendorID = 1,
     UUID = 2,
@@ -96,11 +96,13 @@ struct PCIBusInfo {
     uint32_t pci_function;
 };
 
-class DeviceSpecification {
+class DeviceSpecification
+{
     DeviceCategory m_category;
     DeviceIdType m_id_type;
 
-    union {
+    union
+    {
         uint32_t m_vendor_id;
         boost::uuids::uuid m_uuid;
         PCIBusInfo m_pci;
@@ -109,11 +111,14 @@ class DeviceSpecification {
     bool m_strict = false;
 
 public:
-    constexpr explicit
-    DeviceSpecification(DeviceCategory cat, uint32_t vendor_id)
+    constexpr explicit DeviceSpecification(
+            DeviceCategory cat,
+            uint32_t vendor_id
+    )
         : m_category(cat),
           m_id_type(DeviceIdType::VendorID),
-          m_vendor_id(vendor_id) {}
+          m_vendor_id(vendor_id)
+    {}
 
     RPY_NO_DISCARD constexpr DeviceCategory category() const noexcept
     {
@@ -161,7 +166,8 @@ public:
  * device types that scalar data may be allocated on. This code goes
  * with a 32bit integer device ID, which is implementation specific.
  */
-enum DeviceType : int32_t {
+enum DeviceType : int32_t
+{
     CPU = 1,
     CUDA = 2,
     CUDAHost = 3,
@@ -200,7 +206,8 @@ struct DeviceInfo {
  * We have added some additional types that are available in RoughPy such as
  * rationals and polynomials.
  */
-enum class TypeCode : uint8_t {
+enum class TypeCode : uint8_t
+{
     Int = 0U,
     UInt = 1U,
     Float = 2U,
@@ -253,20 +260,23 @@ struct BasicDim3 {
     constexpr explicit BasicDim3(I1 i1 = 0, I2 i2 = 0, I3 i3 = 0)
         : x(i1),
           y(i2),
-          z(i3) {}
+          z(i3)
+    {}
 };
 
 using Dim3 = BasicDim3<dsize_t>;
 using Size3 = BasicDim3<dimn_t>;
 
-enum class BufferMode {
+enum class BufferMode
+{
     None = 0,
     Read = 1,
     Write = 2,
     ReadWrite = 3
 };
 
-enum class EventStatus : int8_t {
+enum class EventStatus : int8_t
+{
     CompletedSuccessfully = 0,
     Queued = 1,
     Submitted = 2,
@@ -298,10 +308,6 @@ class KernelInterface;
 
 class Kernel;
 
-class MemoryView;
-
-class MutableMemoryView;
-
 class QueueInterface;
 
 class Queue;
@@ -329,21 +335,20 @@ constexpr bool operator!=(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 constexpr bool operator==(const TypeInfo& lhs, const TypeInfo& rhs) noexcept
 {
     return lhs.code == rhs.code && lhs.bytes == rhs.bytes
-                                   && lhs.lanes == rhs.lanes;
+            && lhs.lanes == rhs.lanes;
 }
 
 constexpr bool operator!=(const TypeInfo& lhs, const TypeInfo& rhs) noexcept
 {
     return lhs.code != rhs.code || lhs.bytes != rhs.bytes
-                                   || lhs.lanes != rhs.lanes;
+            || lhs.lanes != rhs.lanes;
 }
-
 
 namespace dtl {
 template <typename I>
 struct integral_code_impl {
     static constexpr TypeCode value
-        = is_signed<I>::value ? TypeCode::Int : TypeCode::UInt;
+            = is_signed<I>::value ? TypeCode::Int : TypeCode::UInt;
 };
 
 struct floating_code_impl {
@@ -355,18 +360,17 @@ struct unknown_code_impl {
 
 template <typename T>
 struct not_integral_code_impl : public conditional_t<
-    is_floating_point<T>::value,
-    floating_code_impl,
-    unknown_code_impl> {
+                                        is_floating_point<T>::value,
+                                        floating_code_impl,
+                                        unknown_code_impl> {
 };
 
 template <typename T>
 struct type_code_of_impl : public conditional_t<
-    is_integral<T>::value,
-    integral_code_impl<T>,
-    not_integral_code_impl<T>> {
+                                   is_integral<T>::value,
+                                   integral_code_impl<T>,
+                                   not_integral_code_impl<T>> {
 };
-
 
 template <>
 struct type_code_of_impl<half> {
@@ -387,7 +391,6 @@ template <>
 struct type_code_of_impl<rational_poly_scalar> {
     static constexpr TypeCode value = TypeCode::APRationalPolynomial;
 };
-
 
 }// namespace dtl
 
@@ -414,7 +417,6 @@ constexpr TypeInfo type_info() noexcept
 ROUGHPY_PLATFORM_EXPORT
 std::ostream& operator<<(std::ostream& os, const TypeInfo& code);
 
-
 RPY_SERIAL_SERIALIZE_FN_EXT(TypeInfo)
 {
     RPY_SERIAL_SERIALIZE_NVP("code", value.code);
@@ -422,7 +424,6 @@ RPY_SERIAL_SERIALIZE_FN_EXT(TypeInfo)
     RPY_SERIAL_SERIALIZE_NVP("alignment", value.alignment);
     RPY_SERIAL_SERIALIZE_NVP("lanes", value.lanes);
 }
-
 
 }// namespace devices
 }// namespace rpy

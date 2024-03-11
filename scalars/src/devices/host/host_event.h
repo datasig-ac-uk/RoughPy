@@ -58,6 +58,7 @@ class CPUEvent : public dtl::RefCountBase<EventInterface>
 
 public:
     void wait() override;
+    bool is_host() const noexcept override;
     EventStatus status() const override;
     bool is_user() const noexcept override;
     void set_status(EventStatus status) override;

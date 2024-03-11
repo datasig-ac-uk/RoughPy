@@ -40,7 +40,8 @@ namespace devices {
 class CPUQueue : public dtl::RefCountBase<QueueInterface>
 {
 
-
+public:
+    bool is_host() const noexcept override;
 };
 
 }// namespace device

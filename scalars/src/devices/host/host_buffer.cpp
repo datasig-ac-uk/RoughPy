@@ -140,13 +140,26 @@ Buffer CPUBuffer::memory_owner() const noexcept
     if (m_memory_owner.is_null()) { return BufferInterface::memory_owner(); }
     return m_memory_owner;
 }
-void* CPUBuffer::map(dimn_t size, dimn_t offset)
+Buffer CPUBuffer::map_mut(dimn_t size, dimn_t offset)
 {
-    RPY_CHECK(offset + size <= raw_buffer.size);
-    return static_cast<byte*>(raw_buffer.ptr) + offset;
+    return mut_slice(size, offset);
 }
-const void* CPUBuffer::map(dimn_t size, dimn_t offset) const
+Buffer CPUBuffer::map(dimn_t size, dimn_t offset) const
+{
+    return slice(size, offset);
+}
+bool CPUBuffer::is_host() const noexcept { return true; }
+Buffer CPUBuffer::slice(dimn_t offset, dimn_t size) const
 {
     RPY_CHECK(offset + size <= raw_buffer.size);
-    return static_cast<const byte*>(raw_buffer.ptr) + offset;
+
+    const auto* ptr = static_cast<const byte*>(raw_buffer.ptr) + offset;
+    return Buffer(new CPUBuffer(ptr, size, m_info));
+}
+Buffer CPUBuffer::mut_slice(dimn_t offset, dimn_t size)
+{
+    RPY_CHECK(offset + size <= raw_buffer.size);
+
+    auto* ptr = static_cast<byte*>(raw_buffer.ptr) + offset;
+    return Buffer(new CPUBuffer(ptr, size, m_info));
 }

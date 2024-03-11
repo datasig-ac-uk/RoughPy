@@ -55,6 +55,7 @@ public:
 
     virtual ~InterfaceBase();
 
+    RPY_NO_DISCARD virtual bool is_host() const noexcept;
     RPY_NO_DISCARD virtual DeviceType type() const noexcept;
     RPY_NO_DISCARD virtual dimn_t ref_count() const noexcept;
     RPY_NO_DISCARD virtual Device device() const noexcept;
@@ -137,6 +138,7 @@ public:
     ObjectBase& operator=(const ObjectBase& other);
     ObjectBase& operator=(ObjectBase&& other) noexcept;
 
+    RPY_NO_DISCARD bool is_host() const noexcept;
     RPY_NO_DISCARD DeviceType type() const noexcept;
     RPY_NO_DISCARD bool is_null() const noexcept { return !p_impl; }
     RPY_NO_DISCARD reference_count_type ref_count() const noexcept;
@@ -198,6 +200,12 @@ ObjectBase<Interface, Derived>::~ObjectBase()
     RPY_DBG_ASSERT(!p_impl || p_impl->ref_count() > 0);
     if (p_impl && p_impl->dec_ref() == 1) { delete p_impl; }
     p_impl = nullptr;
+}
+
+template <typename Interface, typename Derived>
+bool ObjectBase<Interface, Derived>::is_host() const noexcept
+{
+    return p_impl == nullptr || p_impl->is_host();
 }
 
 template <typename Interface, typename Derived>
