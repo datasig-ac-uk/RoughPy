@@ -108,8 +108,7 @@ public:
 
     RPY_NO_DISCARD devices::TypeInfo type_info() const noexcept;
 
-    RPY_NO_DISCARD constexpr dimn_t size() const noexcept
-    {
+    RPY_NO_DISCARD dimn_t size() const noexcept {
         return m_buffer.size();
     }
     RPY_NO_DISCARD dimn_t capacity() const noexcept;
