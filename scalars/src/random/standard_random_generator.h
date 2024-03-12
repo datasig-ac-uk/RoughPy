@@ -82,7 +82,7 @@ public:
     StandardRandomGenerator(StandardRandomGenerator&&) noexcept = delete;
     StandardRandomGenerator& operator=(const StandardRandomGenerator&) = delete;
     StandardRandomGenerator& operator=(StandardRandomGenerator&&) noexcept
-    = delete;
+            = delete;
 
     void set_seed(Slice<uint64_t> seed_data) override;
     std::vector<uint64_t> get_seed() const override;
@@ -90,9 +90,9 @@ public:
     string get_state() const override;
 
     ScalarArray uniform_random_scalar(
-        const ScalarArray& lower,
-        const ScalarArray& upper,
-        dimn_t count
+            const ScalarArray& lower,
+            const ScalarArray& upper,
+            dimn_t count
     ) const override;
     ScalarArray
     normal_random(Scalar loc, Scalar scale, dimn_t count) const override;
@@ -115,8 +115,8 @@ string StandardRandomGenerator<ScalarImpl, BitGenerator>::get_type() const
 
 template <typename ScalarImpl, typename BitGenerator>
 StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
-    const ScalarType* stype,
-    Slice<uint64_t> seed
+        const ScalarType* stype,
+        Slice<uint64_t> seed
 )
     : RandomGenerator(stype)
 {
@@ -125,11 +125,12 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
         m_seed.resize(1);
         auto& s = m_seed[0];
         std::random_device dev;
-        auto continue_bits = static_cast<idimn_t>(sizeof(seed_int_t) *
-            CHAR_BIT);
+        auto continue_bits
+                = static_cast<idimn_t>(sizeof(seed_int_t) * CHAR_BIT);
 
-        constexpr auto so_rd_int = static_cast<idimn_t>(sizeof(typename
-            std::random_device::result_type) * CHAR_BIT);
+        constexpr auto so_rd_int = static_cast<idimn_t>(
+                sizeof(typename std::random_device::result_type) * CHAR_BIT
+        );
         while (continue_bits > 0) {
             s <<= so_rd_int;
             s |= static_cast<seed_int_t>(dev());
@@ -144,7 +145,7 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
 
 template <typename ScalarImpl, typename BitGenerator>
 void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_seed(
-    Slice<uint64_t> seed_data
+        Slice<uint64_t> seed_data
 )
 {
     RPY_CHECK(seed_data.size() >= 1);
@@ -155,7 +156,7 @@ void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_seed(
 
 template <typename ScalarImpl, typename BitGenerator>
 void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_state(
-    string_view state
+        string_view state
 )
 {
     // add a linebreak char to terminate the string to avoid a bug in the pcg
@@ -174,9 +175,9 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::get_seed() const
 template <typename ScalarImpl, typename BitGenerator>
 ScalarArray
 StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
-    const ScalarArray& lower,
-    const ScalarArray& upper,
-    dimn_t count
+        const ScalarArray& lower,
+        const ScalarArray& upper,
+        dimn_t count
 ) const
 {
 
@@ -184,23 +185,22 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
 
     if (lower.size() != upper.size()) {
         RPY_THROW(
-            std::invalid_argument,
-            "mismatch dimensions between lower and upper limits"
+                std::invalid_argument,
+                "mismatch dimensions between lower and upper limits"
         );
     }
 
     dists.reserve(lower.size());
     for (dimn_t i = 0; i < lower.size(); ++i) {
         dists.emplace_back(
-            scalar_cast<scalar_type>(lower[i]),
-            scalar_cast<scalar_type>(upper[i])
+                scalar_cast<scalar_type>(lower[i]),
+                scalar_cast<scalar_type>(upper[i])
         );
     }
 
     ScalarArray result(p_type, count * dists.size());
 
-    auto out_slice = result.as_mut_slice<scalar_type>();
-    auto* out = out_slice.data();
+    auto* out = reinterpret_cast<scalar_type*>(result.mut_buffer().ptr());
     for (dimn_t i = 0; i < count; ++i) {
         for (auto& dist : dists) {
             construct_inplace(out++, dist(m_generator));
@@ -211,21 +211,19 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
 }
 
 template <typename ScalarImpl, typename BitGenerator>
-ScalarArray
-StandardRandomGenerator<ScalarImpl, BitGenerator>::normal_random(
-    Scalar loc,
-    Scalar scale,
-    dimn_t count
+ScalarArray StandardRandomGenerator<ScalarImpl, BitGenerator>::normal_random(
+        Scalar loc,
+        Scalar scale,
+        dimn_t count
 ) const
 {
     ScalarArray result(p_type, count);
     std::normal_distribution<ScalarImpl> dist(
-        scalar_cast<scalar_type>(loc),
-        scalar_cast<scalar_type>(scale)
+            scalar_cast<scalar_type>(loc),
+            scalar_cast<scalar_type>(scale)
     );
 
-    auto out_slice = result.as_mut_slice<scalar_type>();
-    auto* out = out_slice.data();
+    auto* out = reinterpret_cast<scalar_type*>(result.mut_buffer().ptr());
     for (dimn_t i = 0; i < count; ++i) {
         construct_inplace(out++, dist(m_generator));
     }
