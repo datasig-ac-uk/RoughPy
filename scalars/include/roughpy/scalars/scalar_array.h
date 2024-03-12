@@ -113,15 +113,13 @@ public:
         return m_buffer.size();
     }
     RPY_NO_DISCARD dimn_t capacity() const noexcept;
-    RPY_NO_DISCARD constexpr bool empty() const noexcept
-    {
+    RPY_NO_DISCARD bool empty() const noexcept {
         return m_buffer.size() == 0;
     }
-    RPY_NO_DISCARD constexpr bool is_null() const noexcept
-    {
+    RPY_NO_DISCARD bool is_null() const noexcept {
         return m_buffer.is_null();
     }
-    RPY_NO_DISCARD constexpr bool is_const() const noexcept
+    RPY_NO_DISCARD bool is_const() const noexcept
     {
         return m_buffer.mode() == devices::BufferMode::Read;
     }
