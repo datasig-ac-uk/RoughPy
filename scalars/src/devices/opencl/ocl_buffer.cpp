@@ -46,7 +46,17 @@ using namespace rpy::devices;
 
 constexpr cl_int MODE_MASK
         = CL_MEM_READ_ONLY | CL_MEM_WRITE_ONLY | CL_MEM_READ_WRITE;
-
+OCLBuffer::OCLBuffer(
+        cl_mem buffer,
+        OCLDevice dev,
+        TypeInfo info,
+        Buffer memory_owner
+)
+    : m_buffer(buffer),
+      m_device(std::move(dev)),
+      m_info(info),
+      m_memory_owner(std::move(memory_owner))
+{}
 devices::OCLBuffer::OCLBuffer(
         cl_mem buffer,
         OCLDevice dev,
@@ -56,7 +66,12 @@ devices::OCLBuffer::OCLBuffer(
       m_buffer(buffer),
       m_info(info)
 {}
-OCLBuffer::~OCLBuffer() { m_buffer = nullptr; }
+OCLBuffer::~OCLBuffer()
+{
+    // Reference count should be zero now
+    RPY_DBG_ASSERT(ref_count() == 0);
+    m_buffer = nullptr;
+}
 
 BufferMode OCLBuffer::mode() const
 {
@@ -319,9 +334,17 @@ devices::dtl::InterfaceBase::reference_count_type OCLBuffer::dec_ref() noexcept
 //     return ptr;
 // }
 
-void OCLBuffer::unmap(Buffer& buffer) const noexcept
+void OCLBuffer::unmap(BufferInterface& buffer) const noexcept
 {
-    if (buffer.is_null()) { return; }
+    //    if (buffer.is_null()) { return; }
+    RPY_CHECK(buffer.type() == DeviceType::OpenCL);
+    {
+        auto owner = buffer.memory_owner();
+        RPY_CHECK(!owner.is_null() && (&owner.get() == this));
+    }
+
+    // buffer is a indeed a CPUBuffer instance, so the ptr method should return
+    // a pointer to the beginning of the mapped buffer as required.
 
     auto event = cl::scoped_guard(static_cast<cl_event>(nullptr));
     auto ecode = clEnqueueUnmapMemObject(
@@ -355,21 +378,96 @@ dimn_t OCLBuffer::bytes() const
 }
 Buffer OCLBuffer::map_mut(dimn_t size, dimn_t offset)
 {
-    return BufferInterface::map_mut(size, offset);
+    cl_mem_flags flags = CL_MAP_WRITE;
+
+    cl_int ecode = CL_SUCCESS;
+    const void* ptr = clEnqueueMapBuffer(
+            m_device->default_queue(),
+            m_buffer,
+            CL_TRUE,
+            flags,
+            offset,
+            size,
+            0,
+            nullptr,
+            nullptr,
+            &ecode
+    );
+    if (ptr == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return Buffer(ptr, size, m_info);
 }
 Buffer OCLBuffer::map(dimn_t size, dimn_t offset) const
 {
-    return BufferInterface::map(size, offset);
+    cl_mem_flags flags = CL_MAP_READ;
+
+    cl_int ecode = CL_SUCCESS;
+    const void* ptr = clEnqueueMapBuffer(
+            m_device->default_queue(),
+            m_buffer,
+            CL_TRUE,
+            flags,
+            offset,
+            size,
+            0,
+            nullptr,
+            nullptr,
+            &ecode
+    );
+    if (ptr == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return Buffer(ptr, size, m_info);
 }
 Buffer OCLBuffer::memory_owner() const noexcept
 {
-    return BufferInterface::memory_owner();
+    if (m_memory_owner.is_null()) { return BufferInterface::memory_owner(); }
+    return m_memory_owner;
 }
 Buffer OCLBuffer::slice(dimn_t offset, dimn_t size) const
 {
-    return BufferInterface::slice(offset, size);
+    cl_int ecode = CL_SUCCESS;
+
+    cl_buffer_region region{offset, size};
+
+    auto new_buffer = clCreateSubBuffer(
+            m_buffer,
+            CL_MEM_READ_ONLY,
+            CL_BUFFER_CREATE_TYPE_REGION,
+            &region,
+            &ecode
+    );
+
+    if (new_buffer == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return Buffer(new OCLBuffer(
+            new_buffer,
+            m_device,
+            m_info,
+            Buffer(const_cast<OCLBuffer*>(this)
+            )// Safe, just creating a new reference
+    ));
 }
 Buffer OCLBuffer::mut_slice(dimn_t offset, dimn_t size)
 {
-    return BufferInterface::mut_slice(offset, size);
+    cl_int ecode = CL_SUCCESS;
+
+    cl_buffer_region region{offset, size};
+
+    auto new_buffer = clCreateSubBuffer(
+            m_buffer,
+            CL_MEM_READ_WRITE,
+            CL_BUFFER_CREATE_TYPE_REGION,
+            &region,
+            &ecode
+    );
+
+    if (new_buffer == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
+
+    return Buffer(new OCLBuffer(
+            new_buffer,
+            m_device,
+            m_info,
+            Buffer(const_cast<OCLBuffer*>(this)
+            )// Safe, just creating a new reference
+    ));
 }

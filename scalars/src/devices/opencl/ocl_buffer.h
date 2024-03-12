@@ -45,9 +45,11 @@ class OCLBuffer : public BufferInterface
 {
     OCLDevice m_device;
     cl_mem m_buffer;
+    Buffer m_memory_owner{};
     TypeInfo m_info;
 
 public:
+    OCLBuffer(cl_mem buffer, OCLDevice dev, TypeInfo info, Buffer memory_owner);
     OCLBuffer(cl_mem buffer, OCLDevice dev, TypeInfo info) noexcept;
     ~OCLBuffer() override;
 
@@ -79,7 +81,8 @@ public:
     Buffer slice(dimn_t offset, dimn_t size) const override;
     Buffer mut_slice(dimn_t offset, dimn_t size) override;
 
-    void unmap(Buffer& buffer) const noexcept override;
+    void unmap(BufferInterface& buffer) const noexcept override;
+    bool is_host() const noexcept override;
 };
 
 }// namespace device
