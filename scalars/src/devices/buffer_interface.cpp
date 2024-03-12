@@ -62,7 +62,7 @@ Buffer BufferInterface::mut_slice(dimn_t offset, dimn_t size)
     return Buffer();
 }
 
-void BufferInterface::unmap(Buffer& ptr) const noexcept {}
+void BufferInterface::unmap(BufferInterface& ptr) const noexcept {}
 
 Buffer BufferInterface::memory_owner() const noexcept
 {
