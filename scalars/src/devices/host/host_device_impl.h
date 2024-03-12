@@ -66,7 +66,6 @@ public:
     DeviceInfo info() const noexcept override;
 
     Buffer alloc(TypeInfo info, dimn_t count) const override;
-    Buffer raw_alloc(dimn_t count, dimn_t alignment) const override;
 
     void raw_free(Buffer& buf) const override;
     RawBuffer allocate_raw_buffer(dimn_t size, dimn_t alignment) const;

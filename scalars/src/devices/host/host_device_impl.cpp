@@ -200,17 +200,6 @@ DeviceInfo CPUDeviceHandle::info() const noexcept
     return {DeviceType::CPU, 0};
 }
 
-Buffer CPUDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
-{
-    if (alignment == 0) { alignment = alignof(std::max_align_t); }
-
-    return Buffer(new CPUBuffer(
-            aligned_alloc(alignment, count),
-            count,
-            type_info<byte>()
-    ));
-}
-
 RawBuffer CPUDeviceHandle::allocate_raw_buffer(
         rpy::dimn_t size,
         rpy::dimn_t alignment
