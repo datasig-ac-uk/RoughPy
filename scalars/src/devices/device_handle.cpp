@@ -60,7 +60,6 @@ DeviceHandle::~DeviceHandle() = default;
 Buffer DeviceHandle::alloc(TypeInfo info, dimn_t count) const { return {}; }
 
 
-void DeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 
 void DeviceHandle::raw_free(Buffer& buf) const {}
 
