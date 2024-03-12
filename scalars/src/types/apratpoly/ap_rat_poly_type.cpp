@@ -18,26 +18,27 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-static constexpr RingCharacteristics ap_rat_poly_ring_characteristics{
-        false,
-        false,
-        false,
-        false
-};
+static constexpr RingCharacteristics
+        ap_rat_poly_ring_characteristics{false, false, false, false};
 
 APRatPolyType::APRatPolyType()
-    : ScalarType("RationalPoly",
-                 "RationalPoly",
-                 alignof(rational_poly_scalar),
-                 devices::get_host_device(),
-                 devices::type_info<rational_poly_scalar>(),
-                 ap_rat_poly_ring_characteristics) {}
-
+    : ScalarType(
+              "RationalPoly",
+              "RationalPoly",
+              alignof(rational_poly_scalar),
+              devices::get_host_device(),
+              devices::type_info<rational_poly_scalar>(),
+              ap_rat_poly_ring_characteristics
+      )
+{}
 
 ScalarArray APRatPolyType::allocate(dimn_t count) const
 {
     auto result = ScalarType::allocate(count);
-    std::uninitialized_default_construct_n(static_cast<rational_poly_scalar*>(result.mut_pointer()), count);
+    std::uninitialized_default_construct_n(
+            static_cast<rational_poly_scalar*>(result.mut_buffer().ptr()),
+            count
+    );
     return result;
 }
 
@@ -58,8 +59,6 @@ void APRatPolyType::free_single(void* ptr) const
     m_allocations.erase(found);
 }
 
-
-
 void APRatPolyType::convert_copy(ScalarArray& dst, const ScalarArray& src) const
 {
     ScalarType::convert_copy(dst, src);
@@ -70,8 +69,8 @@ void APRatPolyType::assign(ScalarArray& dst, Scalar value) const
     ScalarType::assign(dst, value);
 }
 
-const ScalarType* APRatPolyType::
-with_device(const devices::Device& device) const
+const ScalarType* APRatPolyType::with_device(const devices::Device& device
+) const
 {
     return ScalarType::with_device(device);
 }
