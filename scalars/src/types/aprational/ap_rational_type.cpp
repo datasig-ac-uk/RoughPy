@@ -3,8 +3,8 @@
 //
 
 #include "ap_rational_type.h"
-#include "scalar_array.h"
 #include "scalar.h"
+#include "scalar_array.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -25,7 +25,10 @@ APRationalType::APRationalType()
 ScalarArray APRationalType::allocate(dimn_t count) const
 {
     auto result = ScalarType::allocate(count);
-    std::uninitialized_default_construct_n(static_cast<rational_scalar_type*>(result.mut_pointer()), count);
+    std::uninitialized_default_construct_n(
+            static_cast<rational_scalar_type*>(result.mut_buffer().ptr()),
+            count
+    );
     return result;
 }
 void* APRationalType::allocate_single() const
