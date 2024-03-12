@@ -120,10 +120,9 @@ Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
          * either large enough or not. If it is exactly the right size, use
          * the buffer and otherwise reallocate. Finally, copy.
          */
-        if (dst.is_null()) {
-            dst = device->raw_alloc(raw_buffer.size, 0);
-        } else if (dst.size() != raw_buffer.size) {
-            dst = device->raw_alloc(raw_buffer.size, 0);
+        if (dst.is_null() || dst.type_info() != m_info
+            || dst.size() != raw_buffer.size) {
+            dst = device->alloc(m_info, raw_buffer.size);
         }
 
         std::memcpy(dst.ptr(), raw_buffer.ptr, raw_buffer.size);
