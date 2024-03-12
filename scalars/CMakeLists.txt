@@ -5,9 +5,8 @@ project(RoughPyScalars
         LANGUAGES CXX)
 
 
-
 add_roughpy_component(Scalars
-    PUBLIC_HEADERS
+        PUBLIC_HEADERS
         include/roughpy/scalars/devices/buffer.h
         include/roughpy/scalars/devices/core.h
         include/roughpy/scalars/devices/device_handle.h
@@ -34,7 +33,7 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/traits.h
         include/roughpy/scalars.h
-    SOURCES
+        SOURCES
         src/devices/host/host_buffer.cpp
         src/devices/host/host_buffer.h
         src/devices/host/host_decls.h
@@ -125,23 +124,25 @@ add_roughpy_component(Scalars
         src/random.cpp
         src/scalar.cpp
         src/scalar_array.cpp
+        src/scalar_array_element.cpp
+        src/scalar_array_element.h
         src/scalar_interface.cpp
         src/scalar_serialization.cpp
         src/scalar_stream.cpp
         src/scalar_type.cpp
         src/scalar_type_of.cpp
-    DEPENDENCIES
+        DEPENDENCIES
         PUBLIC
-            Boost::boost
+        Boost::boost
         PRIVATE
-            PCGRandom::pcg_random
+        PCGRandom::pcg_random
         OpenCL::OpenCL
         GMP::GMP
         Libalgebra_lite::Libalgebra_lite
         Eigen3::Eigen
         NEEDS
-            RoughPy::Core
-            RoughPy::Platform
+        RoughPy::Core
+        RoughPy::Platform
 )
 
 target_precompile_headers(RoughPy_Scalars PRIVATE
@@ -155,7 +156,7 @@ target_precompile_headers(RoughPy_Scalars PRIVATE
 )
 
 add_roughpy_test(scalars
-    SRC
+        SRC
         src/test_key_scalar_array.cpp
         src/test_monomial.cpp
         src/test_pcg_standard_random.cpp

@@ -30,6 +30,7 @@
 
 #include "scalar.h"
 #include "scalar/casts.h"
+#include "scalar_array_element.h"
 #include "scalar_serialization.h"
 #include "scalar_type.h"
 #include "traits.h"
@@ -271,6 +272,7 @@ devices::Buffer& ScalarArray::mut_buffer() { return m_buffer; }
 
 Scalar ScalarArray::operator[](dimn_t i) const
 {
+    RPY_CHECK(i < size());
     //    check_for_ptr_access();
     //    RPY_CHECK(i < m_buffer.size());
     //
@@ -278,7 +280,7 @@ Scalar ScalarArray::operator[](dimn_t i) const
     //        return Scalar(p_type_and_mode.get_pointer(), raw_pointer(i));
     //    }
     //    return Scalar(p_type_and_mode.get_type_info(), raw_pointer(i));
-    return Scalar();
+    return Scalar(std::make_unique<ScalarArrayElement>(buffer(), i, p_type));
 }
 
 Scalar ScalarArray::operator[](dimn_t i)
@@ -295,8 +297,9 @@ Scalar ScalarArray::operator[](dimn_t i)
     //        return Scalar(p_type_and_mode.get_pointer(), raw_mut_pointer(i));
     //    }
     //    return Scalar(p_type_and_mode.get_type_info(), raw_mut_pointer(i));
-
-    return Scalar();
+    RPY_CHECK(i < size());
+    return Scalar(std::make_unique<ScalarArrayElement>(mut_buffer(), i, p_type)
+    );
 }
 
 ScalarArray ScalarArray::operator[](SliceIndex index)
