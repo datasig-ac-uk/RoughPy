@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 11/10/23.
@@ -46,6 +47,7 @@
 #include "devices/host_device.h"
 #include "devices/kernel.h"
 #include "devices/queue.h"
+#include "devices/traits.h"
 
 #include <CL/cl_ext.h>
 #include <boost/container/small_vector.hpp>
@@ -55,12 +57,13 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-Buffer OCLDeviceHandle::make_buffer(cl_mem buffer, bool move) const
+Buffer
+OCLDeviceHandle::make_buffer(cl_mem buffer, TypeInfo info, bool move) const
 {
     if (RPY_LIKELY(move)) {
-        return steal_cast<BufferInterface>(new OCLBuffer(buffer, this));
+        return steal_cast<BufferInterface>(new OCLBuffer(buffer, this, info));
     }
-    return clone_cast(new OCLBuffer(buffer, this));
+    return clone_cast(new OCLBuffer(buffer, this, info));
 }
 Event OCLDeviceHandle::make_event(cl_event event, bool move) const
 {
@@ -200,16 +203,6 @@ optional<fs::path> OCLDeviceHandle::runtime_library() const noexcept
 {
     return {};
 }
-Buffer OCLDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
-{
-    cl_int ecode;
-    auto new_mem
-            = clCreateBuffer(m_ctx, CL_MEM_READ_WRITE, count, nullptr, &ecode);
-
-    if (RPY_UNLIKELY(new_mem == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
-    return make_buffer(new_mem, true);
-}
-void OCLDeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 optional<Kernel> OCLDeviceHandle::get_kernel(const string& name) const noexcept
 {
     const guard_type access(get_lock());
@@ -533,11 +526,11 @@ Event OCLDeviceHandle::from_host(
     auto host = get_host_device();
     auto buffer_size = src.size();
     RPY_DBG_ASSERT(src.device() == host);
+    const auto info = src.type_info();
+    RPY_CHECK(traits::is_fundamental(info));
 
-    if (dst.is_null()) {
-        dst = OCLDeviceHandle::raw_alloc(buffer_size, 0);
-    } else if (dst.size() != buffer_size) {
-        dst = OCLDeviceHandle::raw_alloc(buffer_size, 0);
+    if (dst.is_null() || dst.type_info() != info || dst.size() != buffer_size) {
+        dst = OCLDeviceHandle::alloc(info, buffer_size);
     } else {
         RPY_DBG_ASSERT(dst.device() == this);
     }
@@ -564,22 +557,22 @@ Event OCLDeviceHandle::from_host(
 
     return make_event(write_event);
 }
-Event OCLDeviceHandle::to_host(Buffer& dst,
-        const BufferInterface& src, Queue& queue)
-        const
+Event OCLDeviceHandle::to_host(
+        Buffer& dst,
+        const BufferInterface& src,
+        Queue& queue
+) const
 {
     RPY_DBG_ASSERT(src.device() == this);
     auto host = get_host_device();
     auto buffer_size = src.size();
+    const auto info = src.type_info();
 
-    if (dst.is_null()) {
-        dst = host->raw_alloc(buffer_size, 0);
-    } else if (dst.size() != buffer_size) {
-        dst = host->raw_alloc(buffer_size, 0);
+    if (dst.is_null() || dst.type_info() != info || dst.size() != buffer_size) {
+        dst = host->alloc(info, buffer_size);
     } else {
         RPY_DBG_ASSERT(dst.device() == host);
     }
-
 
     auto queue_to_use = cl::scoped_guard(
             (queue.is_default()) ? m_default_queue
@@ -604,12 +597,27 @@ Event OCLDeviceHandle::to_host(Buffer& dst,
     return make_event(read_event);
 }
 
-cl_platform_id OCLDeviceHandle::get_platform() const {
+cl_platform_id OCLDeviceHandle::get_platform() const
+{
 
     cl_platform_id platform = nullptr;
-    auto ecode = clGetDeviceInfo(m_device, CL_DEVICE_PLATFORM, sizeof
-                                 (platform), &platform, nullptr);
+    auto ecode = clGetDeviceInfo(
+            m_device,
+            CL_DEVICE_PLATFORM,
+            sizeof(platform),
+            &platform,
+            nullptr
+    );
 
     if (ecode != CL_SUCCESS) { RPY_HANDLE_OCL_ERROR(ecode); }
     return platform;
+}
+Buffer OCLDeviceHandle::alloc(TypeInfo info, dimn_t count) const
+{
+    cl_int ecode;
+    auto new_mem
+            = clCreateBuffer(m_ctx, CL_MEM_READ_WRITE, count, nullptr, &ecode);
+
+    if (RPY_UNLIKELY(new_mem == nullptr)) { RPY_HANDLE_OCL_ERROR(ecode); }
+    return make_buffer(new_mem, info, true);
 }
