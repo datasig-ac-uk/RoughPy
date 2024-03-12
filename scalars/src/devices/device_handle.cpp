@@ -59,10 +59,6 @@ DeviceHandle::~DeviceHandle() = default;
 
 Buffer DeviceHandle::alloc(TypeInfo info, dimn_t count) const { return {}; }
 
-Buffer DeviceHandle::raw_alloc(rpy::dimn_t count, rpy::dimn_t alignment) const
-{
-    return {};
-}
 
 void DeviceHandle::raw_free(void* pointer, dimn_t size) const {}
 
