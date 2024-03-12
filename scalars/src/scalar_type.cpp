@@ -94,10 +94,7 @@ ScalarType::~ScalarType() = default;
 
 ScalarArray ScalarType::allocate(dimn_t count) const
 {
-    return ScalarArray(
-            this,
-            m_device->raw_alloc(count * m_info.bytes, m_info.alignment)
-    );
+    return ScalarArray(this, m_device->alloc(m_info, count));
 }
 
 void* ScalarType::allocate_single() const
@@ -131,9 +128,9 @@ void ScalarType::convert_copy(
     }
 
     if (!dtl::scalar_convert_copy(
-                dst.mut_pointer(),
+                dst.mut_buffer().ptr(),
                 dst.type_info(),
-                src.pointer(),
+                src.buffer().ptr(),
                 src.type_info(),
                 dst.size()
         )) {
