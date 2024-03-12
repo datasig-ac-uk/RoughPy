@@ -32,34 +32,13 @@
 #ifndef ROUGHPY_SCALARS_SRC_SCALAR_ARITHMETIC_H_
 #define ROUGHPY_SCALARS_SRC_SCALAR_ARITHMETIC_H_
 
+#include "packed_type.h"
 #include <roughpy/core/macros.h>
 #include <roughpy/scalars/scalar.h>
 
 namespace rpy {
 namespace scalars {
 namespace dtl {
-
-enum EmptyEnum
-{
-};
-
-using PackedType = PackedScalarTypePointer<EmptyEnum>;
-
-constexpr PackedType pack_type(devices::TypeInfo tinfo) noexcept
-{
-    return PackedType(tinfo, {});
-}
-constexpr PackedType pack_type(const ScalarType* type) noexcept
-{
-    return PackedType(type, {});
-}
-
-template <typename E>
-constexpr PackedType pack_type(PackedScalarTypePointer<E> packed) noexcept
-{
-    return (packed.is_pointer()) ? PackedType(packed.get_pointer(), {})
-                                 : PackedType(packed.get_type_info(), {});
-}
 
 void RPY_LOCAL scalar_inplace_add(void*, PackedType, const void*, PackedType);
 void RPY_LOCAL scalar_inplace_sub(void*, PackedType, const void*, PackedType);

@@ -94,6 +94,7 @@ add_roughpy_component(Scalars
         src/scalar/comparison.cpp
         src/scalar/comparison.h
         src/scalar/do_macro.h
+        src/scalar/packed_type.h
         src/scalar/print.cpp
         src/scalar/print.h
         src/scalar/raw_bytes.cpp

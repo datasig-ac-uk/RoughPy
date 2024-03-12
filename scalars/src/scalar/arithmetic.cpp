@@ -147,12 +147,12 @@ do_op(void* dst, const void* src, devices::TypeInfo type, Op&& op)
     RPY_THROW(std::domain_error, "unsupported operation");
 }
 
-template <typename Op>
+template <typename Op, typename E1, typename E2>
 inline void scalar_inplace_arithmetic(
         void* dst,
-        PackedScalarTypePointer<ScalarContentType> dst_type,
+        PackedScalarTypePointer<E1> dst_type,
         const void* src,
-        PackedScalarTypePointer<ScalarContentType> src_type,
+        PackedScalarTypePointer<E2> src_type,
         Op&& op
 )
 {
@@ -304,10 +304,75 @@ Scalar& Scalar::operator/=(const Scalar& other)
     }
 
     // Now we should be ready
-#define X(tp) do_divide((tp*) mut_pointer(), rational_denom.pointer(), rat_denom_info);\
+#define X(tp)                                                                  \
+    do_divide((tp*) mut_pointer(), rational_denom.pointer(), rat_denom_info);  \
     break
     DO_FOR_EACH_X(num_info)
 #undef X
 
     return *this;
+}
+
+void scalars::dtl::scalar_inplace_add(
+        void* dst,
+        rpy::scalars::dtl::PackedType dst_type,
+        const void* src,
+        rpy::scalars::dtl::PackedType src_type
+)
+{
+    RPY_DBG_ASSERT(src != nullptr && dst != nullptr);
+    scalar_inplace_arithmetic(dst, dst_type, src, src_type, AddInplace());
+}
+
+void scalars::dtl::scalar_inplace_sub(
+        void* dst,
+        dtl::PackedType dst_type,
+        const void* src,
+        dtl::PackedType src_type
+)
+{
+    RPY_DBG_ASSERT(src != nullptr && dst != nullptr);
+    scalar_inplace_arithmetic(dst, dst_type, src, src_type, SubInplace());
+}
+void scalars::dtl::scalar_inplace_mul(
+        void* dst,
+        dtl::PackedType dst_type,
+        const void* src,
+        dtl::PackedType src_type
+)
+{
+    RPY_DBG_ASSERT(src != nullptr && dst != nullptr);
+    scalar_inplace_arithmetic(dst, dst_type, src, src_type, MulInplace());
+}
+void scalars::dtl::scalar_inplace_div(
+        void* dst,
+        dtl::PackedType dst_type,
+        const void* src,
+        dtl::PackedType src_type
+)
+{
+    /*
+     * We need to check some additional things here.
+     * Division need not be defined for all scalar types. For instance, integers
+     * do not have globally defined division (it is a ring, not a field).
+     * Similarly, the type of divisible units might differ from the ring/field
+     * type - as is the case for polynomials.
+     * We need to handle both of these cases gracefully.
+     */
+    const auto num_info = type_info_from(dst_type);
+    const auto true_denom_info = type_info_from(src_type);
+    const auto rat_denom_info = traits::rational_type_of(true_denom_info);
+
+    // Set up the actual denominator that we will divide by
+    Scalar rational_denom(true_denom_info, src);
+    if (rat_denom_info != true_denom_info) {
+        rational_denom.change_type(rat_denom_info);
+    }
+
+    // Now we should be ready
+#define X(tp)                                                                  \
+    do_divide((tp*) dst, rational_denom.pointer(), rat_denom_info);            \
+    break
+    DO_FOR_EACH_X(num_info)
+#undef X
 }
