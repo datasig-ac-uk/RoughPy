@@ -80,6 +80,7 @@ CPUBuffer::~CPUBuffer()
     if ((m_flags & IsOwned) != 0) {
         CPUDeviceHandle::get()->free_raw_buffer(raw_buffer);
     } else if (!m_memory_owner.is_null()) {
+        m_memory_owner.~Buffer();
     }
 }
 dimn_t CPUBuffer::bytes() const { return raw_buffer.size * m_info.bytes; }
