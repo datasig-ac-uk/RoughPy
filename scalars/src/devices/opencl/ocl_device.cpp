@@ -47,7 +47,7 @@
 #include "devices/host_device.h"
 #include "devices/kernel.h"
 #include "devices/queue.h"
-#include "devices/traits.h"
+#include "traits.h"
 
 #include <CL/cl_ext.h>
 #include <boost/container/small_vector.hpp>
@@ -527,7 +527,7 @@ Event OCLDeviceHandle::from_host(
     auto buffer_size = src.size();
     RPY_DBG_ASSERT(src.device() == host);
     const auto info = src.type_info();
-    RPY_CHECK(traits::is_fundamental(info));
+    RPY_CHECK(scalars::traits::is_fundamental(info));
 
     if (dst.is_null() || dst.type_info() != info || dst.size() != buffer_size) {
         dst = OCLDeviceHandle::alloc(info, buffer_size);
