@@ -176,10 +176,7 @@ void StandardScalarType<ScalarImpl>::convert_copy(
             } else {
                 // dst type is not defined, so is a trivial type fully
                 // described by the TypeInfo struct.
-                auto new_buf = m_device->raw_alloc(
-                        src_size * dst_info.bytes,
-                        dst_info.alignment
-                );
+                auto new_buf = m_device->alloc(dst_info, src_size);
                 dst = ScalarArray(dst_info, std::move(new_buf));
             }
         } else {
@@ -221,7 +218,7 @@ void StandardScalarType<ScalarImpl>::assign(ScalarArray& dst, Scalar value)
     }
 
     {
-        auto slice = dst.template as_mut_slice<ScalarImpl>();
+        auto slice = dst.mut_buffer().template as_mut_slice<ScalarImpl>();
         std::fill(slice.begin(), slice.end(), scalar_cast<ScalarImpl>(value));
     }
 }
