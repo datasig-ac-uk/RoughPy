@@ -41,7 +41,11 @@ namespace devices {
 
 class ROUGHPY_PLATFORM_EXPORT BufferInterface : public dtl::InterfaceBase
 {
-
+    /*
+     * I'd really like to have the memory owner pointer here, but I can't
+     * because the Buffer class isn't defined until later. Instead, the
+     * implementations will have to handle this by themselves.
+     */
 public:
     using object_t = Buffer;
 
@@ -56,7 +60,7 @@ public:
     RPY_NO_DISCARD virtual Buffer map_mut(dimn_t size, dimn_t offset);
     RPY_NO_DISCARD virtual Buffer map(dimn_t size, dimn_t offset) const;
 
-    virtual void unmap(Buffer& ptr) const noexcept;
+    virtual void unmap(BufferInterface& ptr) const noexcept;
 
     virtual Buffer memory_owner() const noexcept;
 
