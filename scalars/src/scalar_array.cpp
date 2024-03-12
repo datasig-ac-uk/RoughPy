@@ -147,7 +147,7 @@ ScalarArray::~ScalarArray()
 {
     m_buffer.~Buffer();
     m_buffer = devices::Buffer();
-    p_type_and_mode = type_pointer();
+    p_type = nullptr;
 }
 
 ScalarArray& ScalarArray::operator=(const ScalarArray& other)
@@ -158,9 +158,7 @@ ScalarArray& ScalarArray::operator=(const ScalarArray& other)
         const auto info = other.type_info();
         const auto bytes = other.size();
 
-        if (traits::is_fundamental(info)) {
-            RPY_CHECK(!p_type_and_mode.is_null());
-        }
+        if (traits::is_fundamental(info)) { RPY_CHECK(p_type != nullptr); }
     }
     return *this;
 }
@@ -169,8 +167,7 @@ ScalarArray& ScalarArray::operator=(ScalarArray&& other) noexcept
 {
     if (&other != this) {
         this->~ScalarArray();
-        p_type_and_mode = other.p_type_and_mode;
-        m_size = other.m_size;
+        p_type = other.p_type;
         m_buffer = std::move(other.m_buffer);
     }
     return *this;
@@ -180,15 +177,13 @@ ScalarArray ScalarArray::copy_or_clone() && { return ScalarArray(); }
 
 optional<const ScalarType*> ScalarArray::type() const noexcept
 {
-    if (p_type_and_mode.is_pointer()) { return p_type_and_mode.get_pointer(); }
-
-    return scalar_type_of(p_type_and_mode.get_type_info());
+    if (p_type != nullptr) { return p_type; }
+    return scalar_type_of(m_buffer.type_info());
 }
 
 devices::TypeInfo ScalarArray::type_info() const noexcept
 {
-    if (p_type_and_mode.is_pointer()) { return p_type_and_mode->type_info(); }
-    return p_type_and_mode.get_type_info();
+    return m_buffer.type_info();
 }
 
 // const void* ScalarArray::raw_pointer(dimn_t i) const noexcept
@@ -276,79 +271,80 @@ devices::Buffer& ScalarArray::mut_buffer() { return m_buffer; }
 
 Scalar ScalarArray::operator[](dimn_t i) const
 {
-    check_for_ptr_access();
-    RPY_CHECK(i < m_size);
-
-    if (p_type_and_mode.is_pointer()) {
-        return Scalar(p_type_and_mode.get_pointer(), raw_pointer(i));
-    }
-    return Scalar(p_type_and_mode.get_type_info(), raw_pointer(i));
+    //    check_for_ptr_access();
+    //    RPY_CHECK(i < m_buffer.size());
+    //
+    //    if (p_type != nullptr) {
+    //        return Scalar(p_type_and_mode.get_pointer(), raw_pointer(i));
+    //    }
+    //    return Scalar(p_type_and_mode.get_type_info(), raw_pointer(i));
+    return Scalar();
 }
 
 Scalar ScalarArray::operator[](dimn_t i)
 {
-    check_for_ptr_access(true);
-    RPY_CHECK(
-            i < m_size,
-            "index " + std::to_string(i) + " out of bounds for array of size "
-                    + std::to_string(m_size)
-    );
+    //    check_for_ptr_access(true);
+    //    RPY_CHECK(
+    //            i < m_size,
+    //            "index " + std::to_string(i) + " out of bounds for array of
+    //            size "
+    //                    + std::to_string(m_size)
+    //    );
+    //
+    //    if (p_type_and_mode.is_pointer()) {
+    //        return Scalar(p_type_and_mode.get_pointer(), raw_mut_pointer(i));
+    //    }
+    //    return Scalar(p_type_and_mode.get_type_info(), raw_mut_pointer(i));
 
-    if (p_type_and_mode.is_pointer()) {
-        return Scalar(p_type_and_mode.get_pointer(), raw_mut_pointer(i));
-    }
-    return Scalar(p_type_and_mode.get_type_info(), raw_mut_pointer(i));
+    return Scalar();
 }
 
 ScalarArray ScalarArray::operator[](SliceIndex index)
 {
     RPY_DBG_ASSERT(index.begin < index.end);
+    const auto buffer_size = size();
     RPY_CHECK(
-            index.end <= m_size,
+            index.end <= buffer_size,
             "index end " + std::to_string(index.end)
                     + " is out of bounds for array of size "
-                    + std::to_string(m_size)
+                    + std::to_string(buffer_size)
     );
 
     const auto info = type_info();
     const auto offset = index.begin * info.bytes;
     const auto sz = (index.end - index.begin) * info.bytes;
 
-    return {p_type_and_mode, m_buffer.slice(offset, sz)};
+    return {p_type, m_buffer.slice(offset, sz)};
 }
 
 ScalarArray ScalarArray::operator[](SliceIndex index) const
 {
     RPY_DBG_ASSERT(index.begin < index.end);
+    const auto buffer_size = m_buffer.size();
     RPY_CHECK(
-            index.end <= m_size,
+            index.end <= buffer_size,
             "index end " + std::to_string(index.end)
                     + " is out of bounds for array of size "
-                    + std::to_string(m_size)
+                    + std::to_string(buffer_size)
     );
     const auto info = type_info();
     const auto offset = index.begin * info.bytes;
     const auto sz = (index.end - index.begin) * info.bytes;
 
-    return {p_type_and_mode, m_buffer.slice(offset, sz)};
+    return {p_type, m_buffer.slice(offset, sz)};
 }
 
 void ScalarArray::check_for_ptr_access(bool mut) const
 {
-    RPY_CHECK(!p_type_and_mode.is_pointer() || p_type_and_mode->is_cpu());
-
-    RPY_CHECK(
-            !mut
-            || p_type_and_mode.get_enumeration()
-                    != dtl::ScalarArrayStorageModel::BorrowConst
-    );
+    RPY_CHECK(m_buffer.is_host());
+    RPY_CHECK(!mut || m_buffer.mode() != devices::BufferMode::Read);
 }
 
 dimn_t ScalarArray::capacity() const noexcept { return m_buffer.size(); }
 
 std::vector<byte> ScalarArray::to_raw_bytes() const
 {
-    return dtl::to_raw_bytes(m_buffer.ptr(), m_size, type_info());
+    return dtl::to_raw_bytes(m_buffer.ptr(), m_buffer.size(), type_info());
 }
 
 void ScalarArray::from_raw_bytes(
@@ -362,9 +358,7 @@ void ScalarArray::from_raw_bytes(
     if (tp_o) {
         *this = (*tp_o)->allocate(count);
     } else {
-        p_type_and_mode
-                = type_pointer(info, dtl::ScalarArrayStorageModel::Owned);
-        m_buffer = devices::get_host_device()->raw_alloc(count, info.alignment);
+        m_buffer = devices::get_host_device()->alloc(info, count);
     }
 
     dtl::from_raw_bytes(m_buffer.ptr(), count, bytes, info);
