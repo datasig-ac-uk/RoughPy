@@ -90,12 +90,12 @@ BufferMode CPUBuffer::mode() const
     if (m_flags & IsConst) { return BufferMode::Read; }
     return BufferMode::ReadWrite;
 }
-void CPUBuffer::unmap(Buffer& other) const noexcept
+void CPUBuffer::unmap(BufferInterface& other) const noexcept
 {
     RPY_CHECK(other.is_host());
     RPY_CHECK(&other.memory_owner().get() == this);
 
-    auto& as_cpubuf = static_cast<CPUBuffer&>(other.get());
+    auto& as_cpubuf = static_cast<CPUBuffer&>(other);
 
     // Should reduce the reference count of this
     // In practice this function will probably only be called in the destructor

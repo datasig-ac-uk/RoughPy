@@ -89,7 +89,7 @@ public:
 
     Buffer slice(dimn_t offset, dimn_t size) const override;
     Buffer mut_slice(dimn_t offset, dimn_t size) override;
-    void unmap(Buffer& ptr) const noexcept override;
+    void unmap(BufferInterface& ptr) const noexcept override;
     dimn_t bytes() const override;
 };
 
