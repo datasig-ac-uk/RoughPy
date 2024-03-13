@@ -108,16 +108,10 @@ public:
 
     RPY_NO_DISCARD devices::TypeInfo type_info() const noexcept;
 
-    RPY_NO_DISCARD dimn_t size() const noexcept {
-        return m_buffer.size();
-    }
+    RPY_NO_DISCARD dimn_t size() const noexcept { return m_buffer.size(); }
     RPY_NO_DISCARD dimn_t capacity() const noexcept;
-    RPY_NO_DISCARD bool empty() const noexcept {
-        return m_buffer.size() == 0;
-    }
-    RPY_NO_DISCARD bool is_null() const noexcept {
-        return m_buffer.is_null();
-    }
+    RPY_NO_DISCARD bool empty() const noexcept { return m_buffer.size() == 0; }
+    RPY_NO_DISCARD bool is_null() const noexcept { return m_buffer.is_null(); }
     RPY_NO_DISCARD bool is_const() const noexcept
     {
         return m_buffer.mode() == devices::BufferMode::Read;
@@ -142,6 +136,10 @@ public:
 
     RPY_NO_DISCARD ScalarArray operator[](SliceIndex index);
     RPY_NO_DISCARD ScalarArray operator[](SliceIndex index) const;
+
+    RPY_NO_DISCARD ScalarArray view() const { return {p_type, m_buffer.map()}; }
+
+    RPY_NO_DISCARD ScalarArray mut_view() { return {p_type, m_buffer.map()}; }
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
