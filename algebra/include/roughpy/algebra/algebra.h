@@ -11,7 +11,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/platform/devices/kernel.h>
+#include <roughpy/scalars/devices/kernel.h>
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 

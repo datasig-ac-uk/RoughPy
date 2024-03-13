@@ -8,8 +8,7 @@
 #include "basis.h"
 #include "basis_key.h"
 
-
-#include <roughpy/platform/devices/buffer.h>
+#include <roughpy/scalars/devices/buffer.h>
 
 namespace rpy { namespace algebra {
 
