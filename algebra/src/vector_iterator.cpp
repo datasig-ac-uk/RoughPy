@@ -11,7 +11,6 @@ using namespace rpy::algebra;
 
 using rpy::scalars::Scalar;
 
-
 VectorIterator& VectorIterator::operator++()
 {
     ++m_index;
@@ -32,16 +31,15 @@ BasisKey clone_key(const void* kptr)
     return *static_cast<const BasisKey*>(kptr);
 }
 
-}
-
+}// namespace
 
 VectorIterator::reference VectorIterator::operator*()
 {
     if (m_key_view.empty()) {
         return {BasisKey(m_index), m_scalar_view[m_index]};
     }
-    return {clone_key(m_key_view.raw_ptr(m_index * sizeof(BasisKey))),
-            m_scalar_view[m_index]};
+    auto* ptr = static_cast<const BasisKey*>(m_key_view.ptr()) + m_index;
+    return {clone_key(ptr), m_scalar_view[m_index]};
 }
 
 VectorIterator::pointer VectorIterator::operator->()
@@ -49,18 +47,18 @@ VectorIterator::pointer VectorIterator::operator->()
     if (m_key_view.empty()) {
         return {BasisKey(m_index), m_scalar_view[m_index]};
     }
-    return {clone_key(m_key_view.raw_ptr(m_index * sizeof(BasisKey))),
-            m_scalar_view[m_index]};
+    auto* ptr = static_cast<const BasisKey*>(m_key_view.ptr()) + m_index;
+    return {clone_key(ptr), m_scalar_view[m_index]};
 }
 
 bool VectorIterator::operator==(const VectorIterator& other) const noexcept
 {
-    return (m_scalar_view.memory_view() == other.m_scalar_view.memory_view()
+    return (m_scalar_view.buffer() == other.m_scalar_view.buffer()
             && m_key_view == other.m_key_view && m_index == other.m_index);
 }
 
 bool VectorIterator::operator!=(const VectorIterator& other) const noexcept
 {
-    return (!(m_scalar_view.memory_view() == other.m_scalar_view.memory_view())
+    return (!(m_scalar_view.buffer() == other.m_scalar_view.buffer())
             || !(m_key_view == other.m_key_view) || m_index != other.m_index);
 }
