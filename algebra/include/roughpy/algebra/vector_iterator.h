@@ -14,8 +14,8 @@
 #include <roughpy/core/types.h>
 
 #include <roughpy/scalars/devices/buffer.h>
-
 #include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_array.h>
 
 namespace rpy {
 namespace algebra {
