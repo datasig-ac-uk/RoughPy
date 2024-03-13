@@ -7,8 +7,7 @@
 #include "basis_key.h"
 #include "vector_iterator.h"
 
-
-#include <roughpy/platform/devices/core.h>
+#include <roughpy/scalars/devices/core.h>
 #include <roughpy/scalars/scalar.h>
 
 
