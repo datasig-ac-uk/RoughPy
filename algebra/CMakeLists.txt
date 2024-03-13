@@ -17,9 +17,11 @@ add_roughpy_component(Algebra
         src/basis.cpp
         src/basis_key.cpp
         src/context.cpp
+        src/free_tensor.cpp
         src/hall_set_size.cpp
         src/hall_set_size.h
         src/key_range.cpp
+        src/lie.cpp
         src/tensor_basis.cpp
         src/tensor_word.cpp
         src/tensor_word.h

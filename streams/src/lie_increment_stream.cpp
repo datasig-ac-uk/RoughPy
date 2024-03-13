@@ -85,7 +85,8 @@ LieIncrementStream::LieIncrementStream(
             const auto info = buffer.type_info();
             const auto width = sch.width_without_param();
 
-            const char* dptr = buffer.as_slice<const char>().data();
+            // TODO: Deal with data that doesn't necessarily belong on host.
+            const auto* dptr = static_cast<const byte*>(buffer.buffer().ptr());
             const auto stride = info.bytes * width;
             param_t previous_param = 0.0;
             for (auto index : indices) {

@@ -15,6 +15,10 @@ namespace algebra {
 
 class ROUGHPY_ALGEBRA_EXPORT Lie : public Algebra
 {
+public:
+    Lie();
+
+    explicit Lie(Vector&& data);
 };
 
 }// namespace algebra

@@ -37,7 +37,6 @@
 #include <mutex>
 #include <unordered_map>
 
-
 using namespace rpy;
 using namespace rpy::algebra;
 
@@ -66,7 +65,6 @@ context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)
     }
     );
 }
-
 
 static std::recursive_mutex s_context_lock;
 
@@ -119,7 +117,6 @@ context_pointer rpy::algebra::get_context(
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
     auto& maker_list = get_context_maker_list();
 
-
     std::vector<const ContextMaker*> found;
     found.reserve(maker_list.size());
     for (const auto& maker : maker_list) {
@@ -166,8 +163,6 @@ bool ContextMaker::can_get(
     return false;
 }
 
-
-
 void rpy::algebra::intrusive_ptr_add_ref(const ContextBase* ptr) noexcept
 {
     using counter_t = boost::
@@ -192,3 +187,35 @@ void rpy::algebra::intrusive_ptr_release(const Context* ptr) noexcept
             intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
     intrusive_ptr_release(static_cast<const counter_t*>(ptr));
 }
+
+Lie Context::zero_lie(VectorType) const { return Lie(); }
+FreeTensor Context::zero_free_tensor(VectorType) const { return FreeTensor(); }
+ShuffleTensor Context::zero_shuffle_tensor(VectorType) const
+{
+    return ShuffleTensor();
+}
+
+Lie Context::cbh(const Lie& lhs, const Lie& rhs, VectorType) const
+{
+    return Lie();
+}
+Lie Context::cbh(Slice<Lie> lies, VectorType) const { return Lie(); }
+
+FreeTensor Context::to_signature(const Lie& log_signature) const
+{
+    return FreeTensor();
+}
+ContextBase::ContextBase(
+        deg_t width,
+        deg_t depth,
+        const dimn_t* lie_sizes,
+        const dimn_t* tensor_sizes
+)
+    : p_lie_sizes(lie_sizes),
+      p_tensor_sizes(tensor_sizes),
+      m_width(width),
+      m_depth(depth)
+{}
+ContextBase::~ContextBase() {}
+dimn_t ContextBase::lie_size(deg_t deg) const noexcept { return 0; }
+dimn_t ContextBase::tensor_size(deg_t deg) const noexcept { return 0; }
