@@ -66,13 +66,12 @@ pair<algebra::Lie, algebra::Lie> BrownianStream::compute_child_lie_increments(
 ) const
 {
     const auto& md = metadata();
-    const auto mean
-            = parent_value.smul(scalars::Scalar(md.data_scalar_type, 1, 2));
+    const auto mean = parent_value * scalars::Scalar(md.data_scalar_type, 1, 2);
 
     auto length = ldexp(0.5, left_di.power());
 
     const auto perturbation = gaussian_increment(*md.default_context, length);
-    return {mean.add(perturbation), mean.sub(perturbation)};
+    return {mean + perturbation, mean - perturbation};
 }
 DynamicallyConstructedStream::Lie BrownianStream::make_new_root_increment(
         DynamicallyConstructedStream::DyadicInterval di

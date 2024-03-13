@@ -174,12 +174,10 @@ algebra::Lie LieIncrementStream::log_signature_impl(
 
     if (begin == end) { return ctx.zero_lie(md.cached_vector_type); }
 
-    std::vector<const Lie*> lies;
+    std::vector<Lie> lies;
     lies.reserve(static_cast<dimn_t>(end - begin));
 
-    for (auto it = begin; it != end; ++it) {
-        lies.push_back(&it->second);
-    }
+    for (auto it = begin; it != end; ++it) { lies.push_back(it->second); }
 
     return ctx.cbh(lies, md.cached_vector_type);
 }
