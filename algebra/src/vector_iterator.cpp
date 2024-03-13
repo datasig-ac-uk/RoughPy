@@ -15,6 +15,7 @@ using rpy::scalars::Scalar;
 VectorIterator& VectorIterator::operator++()
 {
     ++m_index;
+    return *this;
 }
 
 const VectorIterator VectorIterator::operator++(int)
