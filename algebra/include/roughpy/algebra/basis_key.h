@@ -33,6 +33,9 @@ class ROUGHPY_ALGEBRA_EXPORT BasisKeyInterface
     mutable std::atomic_uint32_t m_ref_count;
 
 public:
+    RPY_NO_DISCARD void* operator new(std::size_t count);
+    void operator delete(void* ptr, std::size_t count);
+
     virtual ~BasisKeyInterface();
 
     virtual string_view key_type() const noexcept = 0;
@@ -68,6 +71,17 @@ class BasisKey
 
 public:
     BasisKey() : m_data(0) {}
+
+    template <
+            typename KeyType,
+            typename
+            = enable_if_t<is_base_of<BasisKeyInterface, KeyType>::value>,
+            typename... Args>
+    BasisKey(Args&&... args)
+        : m_data(bit_cast<data_type>(new KeyType(std::forward<Args>(args)...)))
+    {
+        get_pointer()->inc_ref();
+    }
 
     explicit BasisKey(const BasisKeyInterface* pointer) noexcept
         : m_data(bit_cast<data_type>(pointer))
