@@ -16,6 +16,7 @@
 #include <roughpy/scalars/scalar_array.h>
 
 #include "algebra_fwd.h"
+#include "basis.h"
 
 namespace rpy {
 namespace algebra {
@@ -225,6 +226,20 @@ public:
     RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key) const;
 
     RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key);
+
+    template <typename I>
+    RPY_NO_DISCARD enable_if_t<is_integral<I>::value, scalars::Scalar>
+    operator[](I index) const
+    {
+        return operator[](p_basis->to_key(index));
+    }
+
+    template <typename I>
+    RPY_NO_DISCARD enable_if_t<is_integral<I>::value, scalars::Scalar>
+    operator[](I index)
+    {
+        return operator[](p_basis->to_key(index));
+    }
 
 private:
     /**
