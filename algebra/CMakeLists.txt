@@ -22,6 +22,7 @@ add_roughpy_component(Algebra
         src/hall_set_size.h
         src/key_range.cpp
         src/lie.cpp
+        src/lie_basis.cpp
         src/tensor_basis.cpp
         src/tensor_word.cpp
         src/tensor_word.h
