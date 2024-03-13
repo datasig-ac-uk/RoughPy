@@ -66,7 +66,8 @@ struct SigArgs {
 static int resolution_converter(PyObject* object, void* out)
 {
     if (Py_TYPE(object) == &PyFloat_Type) {
-        *reinterpret_cast<optional<resolution_t>*>(out) = python::param_to_resolution(PyFloat_AsDouble(object));
+        *reinterpret_cast<optional<resolution_t>*>(out)
+                = python::param_to_resolution(PyFloat_AsDouble(object));
     } else if (Py_TYPE(object) == &PyLong_Type) {
         *reinterpret_cast<optional<resolution_t>*>(out) = PyLong_AsLong(object);
 #if PY_VERSION_HEX >= 0x030A0000
@@ -123,9 +124,8 @@ static int parse_sig_args(
     );
     if (result == 0) { return -1; }
 
-
     // First decide if we're given an interval, inf/sup pair, or global
-if (interval_or_inf == nullptr || interval_or_inf == Py_None) {
+    if (interval_or_inf == nullptr || interval_or_inf == Py_None) {
         // Global, nothing to do as optional default is empty.
     } else if (Py_TYPE(interval_or_inf) == &PyFloat_Type || Py_TYPE(interval_or_inf) == &PyLong_Type) {
         if (py_sup == nullptr) {
@@ -301,11 +301,14 @@ static PyObject* signature(PyObject* self, PyObject* args, PyObject* kwargs)
                 result = stream->m_data.signature(
                         *sigargs.interval,
                         *sigargs.ctx
-                        );
+                );
             }
         } else {
             if (sigargs.resolution) {
-                result = stream->m_data.signature(*sigargs.resolution, *sigargs.ctx);
+                result = stream->m_data.signature(
+                        *sigargs.resolution,
+                        *sigargs.ctx
+                );
             } else {
                 result = stream->m_data.signature(*sigargs.ctx);
             }
@@ -336,24 +339,27 @@ static PyObject* log_signature(PyObject* self, PyObject* args, PyObject* kwargs)
         if (sigargs.interval) {
             if (sigargs.resolution) {
                 result = stream->m_data.log_signature(
-                    *sigargs.interval,
-                    *sigargs.resolution,
-                    *sigargs.ctx
+                        *sigargs.interval,
+                        *sigargs.resolution,
+                        *sigargs.ctx
                 );
             } else {
                 result = stream->m_data.log_signature(
-                    *sigargs.interval,
-                    *sigargs.ctx
+                        *sigargs.interval,
+                        *sigargs.ctx
                 );
             }
         } else {
             if (sigargs.resolution) {
-                result = stream->m_data.log_signature(*sigargs.resolution, *sigargs.ctx);
+                result = stream->m_data.log_signature(
+                        *sigargs.resolution,
+                        *sigargs.ctx
+                );
             } else {
                 result = stream->m_data.log_signature(*sigargs.ctx);
             }
         }
-    } catch (std::exception &err) {
+    } catch (std::exception& err) {
         PyErr_SetString(PyExc_RuntimeError, err.what());
         return nullptr;
     }

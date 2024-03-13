@@ -47,6 +47,7 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
 }// namespace errors
 }// namespace rpy
 
+#ifndef __CLION_IDE__
 // Dispatch the check macro on the number of arguments
 // See: https://stackoverflow.com/a/16683147/9225581
 #define RPY_CHECK_3(EXPR, MSG, TYPE)                                           \
@@ -83,5 +84,11 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
 #define RPY_THROW(...)                                                         \
     RPY_INVOKE_VA(RPY_THROW_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
+#else
+
+#  define RPY_CHECK(...)
+#  define RPY_THROW(...)
+
+#endif
 
 #endif// ROUGHPY_PLATFORM_ERRORS_H

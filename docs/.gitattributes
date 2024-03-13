@@ -1,0 +1,6 @@
+source/_static/terry-trimmed.mp4 filter=lfs diff=lfs merge=lfs -text
+source/_static/1.png filter=lfs diff=lfs merge=lfs -text
+source/_static/2.png filter=lfs diff=lfs merge=lfs -text
+source/_static/3.png filter=lfs diff=lfs merge=lfs -text
+source/_static/4.png filter=lfs diff=lfs merge=lfs -text
+source/_static/5.png filter=lfs diff=lfs merge=lfs -text

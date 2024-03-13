@@ -367,6 +367,16 @@ void ScalarArray::from_raw_bytes(
     dtl::from_raw_bytes(m_buffer.ptr(), count, bytes, info);
 }
 
+ScalarArray ScalarArray::borrow() const
+{
+    return ScalarArray(p_type_and_mode, pointer(), m_size);
+}
+
+ScalarArray ScalarArray::borrow_mut()
+{
+    return ScalarArray(p_type_and_mode, mut_pointer(), m_size);
+}
+
 #define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME ScalarArray
 #define RPY_SERIAL_DO_SPLIT

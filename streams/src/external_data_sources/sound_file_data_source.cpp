@@ -352,6 +352,8 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
 
     if (!pl->schema) {
         pl->schema = std::make_shared<StreamSchema>(meta.width);
+    } else if (!pl->schema->is_final()) {
+        pl->schema->finalize(meta.width);
     }
 
     // Let the library handle normalisation

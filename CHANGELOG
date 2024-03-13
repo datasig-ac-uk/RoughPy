@@ -1,8 +1,16 @@
+Version 0.1.2
+  - Documentation is now in sync with the main branch (@philipparubin PR #85)
+  - Fixed a fault when constructing with larger than expected array (Issue #70, @inakleinbottle PR #72)
+  - Updated README to remove old information, users should now read roughpy.org (Issue #74, @inakleinbottle PR #71, #78)
+  - Fixed degree argument on basis size function (Issue #75, @inakleinbottle PR #79)
+  - Fixed unknown keyword arguments not flagged (Issue #77, @inakleinbottle PR #81)
+  - Fixed partition intermediates unchecked by Python constructor (Issue #80, @inakleinbottle PR #82)
+  - Fixed path constructors now accept Lies (Issue #83, @inakleinbottle PR #87)
+
 Version 0.1.1:
   - Fixed type promotions in scalar arithmetic - left hand types are now promoted when appropriate.
   - Added "tensor_functions" module for implementing additional functions on tensors. Currently only Log is implemented.
-
-
+  - Fixed a few bugs in the build system
 
 Version 0.1.0:
   - Added framework for integrating device support and redesigned scalars module to accommodate the changes.

@@ -141,6 +141,9 @@ public:
 
     RPY_NO_DISCARD ScalarArray mut_view() { return {p_type, m_buffer.map()}; }
 
+    ScalarArray borrow() const;
+    ScalarArray borrow_mut();
+
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 
