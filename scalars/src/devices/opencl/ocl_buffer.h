@@ -82,7 +82,6 @@ public:
     Buffer mut_slice(dimn_t offset, dimn_t size) override;
 
     void unmap(BufferInterface& buffer) const noexcept override;
-    bool is_host() const noexcept override;
 };
 
 }// namespace device
