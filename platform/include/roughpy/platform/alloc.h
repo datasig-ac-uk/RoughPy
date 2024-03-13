@@ -26,12 +26,12 @@ static constexpr dimn_t small_alloc_chunk_size = 64;
  * This allocator will try to allocate from a pool of chunks. failing that, it
  * will use malloc to allocate from the heap
  */
-RPY_NO_DISCARD void* alloc_small(dimn_t size, std::align_val_t alignment);
+RPY_NO_DISCARD void* alloc_small(dimn_t size);
 
 /**
  * @brief Free a small object allocated with alloc_small
  */
-void free_small(void* ptr, dimn_t size, std::align_val_t alignment);
+void free_small(void* ptr, dimn_t size);
 
 }// namespace platform
 }// namespace rpy

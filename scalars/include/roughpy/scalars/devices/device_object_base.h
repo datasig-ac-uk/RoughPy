@@ -54,11 +54,9 @@ class ROUGHPY_PLATFORM_EXPORT InterfaceBase
 public:
     using reference_count_type = dimn_t;
 
-    RPY_NO_DISCARD void*
-    operator new(std::size_t count, std::align_val_t alignment);
+    RPY_NO_DISCARD void* operator new(std::size_t count);
 
-    void
-    operator delete(void* ptr, std::size_t count, std::align_val_t alignment);
+    void operator delete(void* ptr, std::size_t count);
 
     virtual ~InterfaceBase();
 

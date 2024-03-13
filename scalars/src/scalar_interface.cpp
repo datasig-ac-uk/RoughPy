@@ -7,20 +7,14 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-void* ScalarInterface::operator new(
-        std::size_t count,
-        std::align_val_t alignment
-)
+void* ScalarInterface::operator new(std::size_t count)
 {
-    return platform::alloc_small(count, alignment);
+    return platform::alloc_small(count);
 }
 void ScalarInterface::operator delete(
-        void* ptr,
-        std::size_t count,
-        std::align_val_t alignment
-)
+        void* ptr, std::size_t count)
 {
-    platform::free_small(ptr, count, alignment);
+    platform::free_small(ptr, count);
 }
 
 ScalarInterface::~ScalarInterface() = default;

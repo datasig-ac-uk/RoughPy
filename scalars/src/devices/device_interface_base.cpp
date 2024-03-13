@@ -38,21 +38,14 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-void* devices::dtl::InterfaceBase::operator new(
-        std::size_t count,
-        std::align_val_t alignment
-)
+void* devices::dtl::InterfaceBase::operator new(std::size_t count)
 {
-    return platform::alloc_small(count, alignment);
+    return platform::alloc_small(count);
 }
 
-void devices::dtl::InterfaceBase::operator delete(
-        void* ptr,
-        std::size_t count,
-        std::align_val_t alignment
-)
+void devices::dtl::InterfaceBase::operator delete(void* ptr, std::size_t count)
 {
-    platform::free_small(ptr, count, alignment);
+    platform::free_small(ptr, count);
 }
 
 rpy::devices::dtl::InterfaceBase::~InterfaceBase() = default;
