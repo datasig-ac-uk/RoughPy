@@ -33,9 +33,27 @@
 #include "devices/device_object_base.h"
 
 #include "devices/device_handle.h"
+#include <roughpy/platform/alloc.h>
 
 using namespace rpy;
 using namespace rpy::devices;
+
+void* devices::dtl::InterfaceBase::operator new(
+        std::size_t count,
+        std::align_val_t alignment
+)
+{
+    return platform::alloc_small(count, alignment);
+}
+
+void devices::dtl::InterfaceBase::operator delete(
+        void* ptr,
+        std::size_t count,
+        std::align_val_t alignment
+)
+{
+    platform::free_small(ptr, count, alignment);
+}
 
 rpy::devices::dtl::InterfaceBase::~InterfaceBase() = default;
 
