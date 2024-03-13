@@ -118,6 +118,10 @@ public:
     RPY_NO_DISCARD dimn_t bytes() const;
     RPY_NO_DISCARD TypeInfo type_info() const noexcept;
     RPY_NO_DISCARD BufferMode mode() const;
+    RPY_NO_DISCARD bool empty() const noexcept
+    {
+        return is_null() || impl()->size() == 0;
+    }
 
     template <typename T>
     Slice<const T> as_slice() const
