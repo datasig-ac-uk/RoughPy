@@ -10,6 +10,8 @@
 
 #include "roughpy_algebra_export.h"
 
+#include <roughpy/platform/serialization.h>
+
 namespace rpy {
 namespace algebra {
 
@@ -19,7 +21,11 @@ public:
     Lie();
 
     explicit Lie(Vector&& data);
+
+    RPY_SERIAL_SERIALIZE_FN();
 };
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(Lie) {}
 
 }// namespace algebra
 }// namespace rpy
