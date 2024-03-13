@@ -8,6 +8,7 @@
 #include "scalar_interface.h"
 
 #include "devices/buffer.h"
+#include "scalar/packed_type.h"
 
 namespace rpy {
 namespace scalars {
@@ -16,8 +17,7 @@ class ScalarArrayElement : public ScalarInterface
 {
     devices::Buffer m_buffer;
     dimn_t m_index;
-    devices::TypeInfo m_info;
-    const ScalarType* p_type;
+    dtl::PackedType p_type_or_info;
 
 public:
     ScalarArrayElement(

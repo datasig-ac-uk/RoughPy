@@ -16,14 +16,12 @@ ScalarArrayElement::ScalarArrayElement(
         const ScalarType* type
 )
     : m_buffer(buffer.map(buffer.size(), 0)),
-      m_index(index),
-      m_info(buffer.type_info()),
-      p_type(type)
+      m_index(index)
 {
-    if (buffer.is_host()) {
-        m_buffer = buffer;
+    if (type != nullptr) {
+        p_type_or_info = dtl::pack_type(type);
     } else {
-        m_buffer = buffer.map(buffer.size(), 0);
+        p_type_or_info = dtl::pack_type(buffer.type_info());
     }
 }
 ScalarArrayElement::ScalarArrayElement(
@@ -32,107 +30,71 @@ ScalarArrayElement::ScalarArrayElement(
         const ScalarType* type
 )
     : m_buffer(buffer.map(buffer.size(), 0)),
-      m_index(index),
-      m_info(buffer.type_info()),
-      p_type(type)
-{}
+      m_index(index)
+{
+
+    if (type != nullptr) {
+        p_type_or_info = dtl::pack_type(type);
+    } else {
+        p_type_or_info = dtl::pack_type(buffer.type_info());
+    }
+}
 
 void* ScalarArrayElement::mut_pointer()
 {
     RPY_CHECK(m_buffer.mode() == devices::BufferMode::Write);
-    return static_cast<byte*>(m_buffer.ptr()) + m_index * m_info.bytes;
+    const auto info = type_info_from(p_type_or_info);
+    return static_cast<byte*>(m_buffer.ptr()) + m_index * info.bytes;
 }
 const void* ScalarArrayElement::pointer() const noexcept
 {
-    return static_cast<const byte*>(m_buffer.ptr()) + m_index * m_info.bytes;
+    const auto info = type_info_from(p_type_or_info);
+    return static_cast<const byte*>(m_buffer.ptr()) + m_index * info.bytes;
 }
 void ScalarArrayElement::set_value(const Scalar& value)
 {
     RPY_CHECK(m_buffer.mode() == devices::BufferMode::Write);
-    auto* ptr = static_cast<byte*>(m_buffer.ptr()) + m_index * m_info.bytes;
-    scalars::dtl::scalar_convert_copy(ptr, m_info, value);
+    const auto info = type_info_from(p_type_or_info);
+    auto* ptr = static_cast<byte*>(m_buffer.ptr()) + m_index * info.bytes;
+    scalars::dtl::scalar_convert_copy(ptr, info, value);
 }
 void ScalarArrayElement::print(std::ostream& os) const
 {
-    dtl::print_scalar_val(os, pointer(), m_info);
+    dtl::print_scalar_val(os, pointer(), type_info_from(p_type_or_info));
 }
 void ScalarArrayElement::add_inplace(const Scalar& other)
 {
-    auto* dst_ptr = mut_pointer();
-
-    if (p_type != nullptr) {
-        dtl::scalar_inplace_add(
-                dst_ptr,
-                p_type,
-                other.pointer(),
-                other.packed_type_info()
-        );
-    } else {
-        dtl::scalar_inplace_add(
-                dst_ptr,
-                m_info,
-                other.pointer(),
-                other.packed_type_info()
-        );
-    }
+    dtl::scalar_inplace_add(
+            mut_pointer(),
+            p_type_or_info,
+            other.pointer(),
+            other.packed_type_info()
+    );
 }
 void ScalarArrayElement::sub_inplace(const Scalar& other)
 {
-    auto* dst_ptr = mut_pointer();
-
-    if (p_type != nullptr) {
-        dtl::scalar_inplace_sub(
-                dst_ptr,
-                p_type,
-                other.pointer(),
-                other.packed_type_info()
-        );
-    } else {
-        dtl::scalar_inplace_sub(
-                dst_ptr,
-                m_info,
-                other.pointer(),
-                other.packed_type_info()
-        );
-    }
+    dtl::scalar_inplace_sub(
+            mut_pointer(),
+            p_type_or_info,
+            other.pointer(),
+            other.packed_type_info()
+    );
 }
 void ScalarArrayElement::mul_inplace(const Scalar& other)
 {
-    auto* dst_ptr = mut_pointer();
-
-    if (p_type != nullptr) {
-        dtl::scalar_inplace_mul(
-                dst_ptr,
-                p_type,
-                other.pointer(),
-                other.packed_type_info()
-        );
-    } else {
-        dtl::scalar_inplace_mul(
-                dst_ptr,
-                m_info,
-                other.pointer(),
-                other.packed_type_info()
-        );
-    }
+    dtl::scalar_inplace_mul(
+            mut_pointer(),
+            p_type_or_info,
+            other.pointer(),
+            other.packed_type_info()
+    );
 }
 void ScalarArrayElement::div_inplace(const Scalar& other)
 {
-    auto* dst_ptr = mut_pointer();
-
-    if (p_type != nullptr) {
-        dtl::scalar_inplace_div(
-                dst_ptr,
-                p_type,
-                other.pointer(),
-                other.packed_type_info()
-        );
-    } else {
-        dtl::scalar_inplace_div(
-                dst_ptr,
-                m_info,
-                other.pointer(),
-                other.packed_type_info()
-        );
-    }
+    dtl::scalar_inplace_div(
+            mut_pointer(),
+            p_type_or_info,
+            other.pointer(),
+            other.packed_type_info()
+    );
 }
