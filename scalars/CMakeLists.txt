@@ -135,11 +135,11 @@ add_roughpy_component(Scalars
         DEPENDENCIES
         PUBLIC
         Boost::boost
+        Libalgebra_lite::Libalgebra_lite
         PRIVATE
         PCGRandom::pcg_random
         OpenCL::OpenCL
         GMP::GMP
-        Libalgebra_lite::Libalgebra_lite
         Eigen3::Eigen
         NEEDS
         RoughPy::Core
