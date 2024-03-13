@@ -31,18 +31,14 @@
 
 #include "scalars_fwd.h"
 
-#include <roughpy/platform/alloc.h>
-
 namespace rpy {
 namespace scalars {
 
 class ROUGHPY_SCALARS_EXPORT ScalarInterface
 {
 public:
-    RPY_NO_DISCARD void*
-    operator new(std::size_t count, std::align_val_t alignment);
-    void
-    operator delete(void* ptr, std::size_t count, std::align_val_t alignment);
+    RPY_NO_DISCARD void* operator new(std::size_t count);
+    void operator delete(void* ptr, std::size_t count);
 
     virtual ~ScalarInterface();
 
