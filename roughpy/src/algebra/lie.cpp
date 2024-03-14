@@ -51,7 +51,52 @@ using namespace rpy::algebra;
 using namespace pybind11::literals;
 
 static const char* LIE_DOC = R"edoc(
-Element of the free Lie algebra.
+
+Lie elements live in the free Lie Algebra.
+Group-like elements have a one-to-one correspondence with a stream.
+That is, for every group-like element, there exists a stream where the signature of that stream is the group-like element.
+For more information on Lie Algebras, see Reutenauer https://books.google.co.uk/books?id=cBvvAAAAMAAJ&redir_esc=y and Bourbaki https://link.springer.com/book/9783540642428.
+
+You will most commonly encounter Lies when taking the log signature of a path.
+We can use the Dynkin map to transfer between Lies and signatures.
+
+To construct a Lie, you will need data. For example, we can construct a Lie using a list of polynomials.
+
+.. code:: python
+    >>> lie_data_x = [
+        1 * roughpy.Monomial("x1"),  # channel (1)
+        1 * roughpy.Monomial("x2"),  # channel (2)
+        1 * roughpy.Monomial("x3"),  # channel (3)
+        1 * roughpy.Monomial("x4"),  # channel ([1, 2])
+        1 * roughpy.Monomial("x5"),  # channel ([1, 3])
+        1 * roughpy.Monomial("x6"),  # channel ([2, 3])
+        ]
+
+    >>> lie_x = rp.Lie(lie_data_x, width=3, depth=2, dtype=rp.RationalPoly)
+    >>> print(f"{lie_x=!s}")
+        lie_x={ { 1(x1) }(1) { 1(x2) }(2) { 1(x3) }(3) { 1(x4) }([1,2]) { 1(x5) }([1,3]) { 1(x6) }([2,3]) }
+
+You will also need to provide the following parameters:
+
+ctx
+    Provide an algebra context in which to create the algebra, takes priority over the next 3.
+
+OR
+
+dtype
+    Scalar type for the algebra (deprecated, use ctx instead). Can be a RoughPy data type (rp.SPReal, rp.DPReal, rp.Rational, rp.PolyRational), or a numpy dtype.
+depth
+    Maximum degree for Lies, tensors, etc. (deprecated, use ctx instead)
+width
+    Alphabet size, dimension of the underlying space (deprecated, use ctx instead)
+
+Optional parameters:
+
+vector_type
+    Dense or sparse
+keys
+    List/array of keys to go along with scalars provided as an array argument.
+
 )edoc";
 
 static Lie construct_lie(py::object data, py::kwargs kwargs)
