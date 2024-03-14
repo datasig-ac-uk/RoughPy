@@ -54,7 +54,99 @@ using namespace rpy;
 using namespace rpy::streams;
 
 static const char* STREAM_DOC = R"rpydoc(
-A stream is an abstract stream of data viewed as a rough path.
+
+A stream means an object that provides the signature or log-signature over any interval.
+For more information on streams, see Lyons and McLeod http://arxiv.org/abs/2206.14674 and Lyons et al. https://link.springer.com/book/10.1007/978-3-540-71285-5.
+
+Streams are parametrised sequential data viewed via Rough Path theory as a rough path.
+
+You can construct a stream in many ways. You can use Lie increments:
+.. code:: python
+    >>> roughpy.LieIncrementStream.from_increments(data, indices=times, ctx=context)
+
+Tick streams:
+.. code:: python
+    # create tick stream data
+    >>> data = { 1.0: [("first", "increment", 1.0),("second", "increment", 2.0)],
+     2.0: [("first", "increment", 1.0)]
+     }
+
+    # construct stream
+    >>> tick_stream = TickStream.from_data(data, width=2, depth=2, dtype=DPReal)
+
+Brownian streams:
+.. code:: python
+    # Generating on demand from a source of randomness with normal increments that approximate Brownian motion
+    >>> brownian_stream = BrownianStream.with_generator(width=2, depth=2, dtype=DPReal)
+
+Piecewize abelian streams:
+.. code:: python
+    # create piecewise lie data
+    >>> piecewise_intervals = [RealInterval(float(i), float(i + 1)) for i in range(5)]
+
+    >>> piecewise_lie_data = [
+    (interval,
+    brownian_stream.log_signature(interval))
+    for interval in piecewise_intervals
+    ]
+
+    # construct stream
+    >>> piecewise_abelian_stream = PiecewiseAbelianStream.construct(piecewise_lie_data, width=2, depth=2, dtype=DPReal)
+
+Function streams:
+.. code:: python
+    # create a function to generate a stream from
+    >>> def func(t, ctx):
+    ...     return Lie(np.array([t, 2*t]), ctx=ctx)
+
+    #construct stream
+    >>> function_stream = rp.FunctionStream.from_function(func, width=2, depth=2, dtype=rp.DPReal)
+
+External source data:
+.. code:: python
+    # create a stream from an external source
+    # here we use a sound file, but other formats are supported
+    >>> roughpy.ExternalDataStream.from_uri("/path/to/sound_file.mp3", depth=2)
+
+All of these streams are constructed with different data types.
+As well as data, you will need to provide the following parameters:
+
+ctx
+  Provide an algebra context in which to create the algebra, takes priority over the next 3.
+
+OR
+
+dtype
+  Scalar type for the algebra (deprecated, use ctx instead). Can be a RoughPy data type (rp.SPReal, rp.DPReal, rp.Rational, rp.PolyRational), or a numpy dtype.
+depth
+  Maximum degree for Lies, tensors, etc. (deprecated, use ctx instead)
+width
+  Alphabet size, dimension of the underlying space (deprecated, use ctx instead)
+
+Streams also have the following optional parameters:
+
+schema
+    An abstract description of what the comprises the channels of the underlying space in schema form. Can be deduced from data/constructor. If provided must be "correct" (i.e. width must be correct).
+
+channel_types
+    Sequence of channel types, str name of channel type (e.g. "increment"), or dict of name: type pairs. Used to construct a schema if you don't have one of those already.
+
+include_time
+    Bool, indicates whether the parameter value should be included as a stream channel.
+
+vtype
+    Default vector type for algebras return from stream methods. (Dense or Sparse). Default is currently Dense, although this will change to be determined by the form of the underlying stream.
+
+resolution
+    Resolution for the dyadic dissection of the domain, and the default resolution used in signature/log_signature calculations.
+
+Support
+    Interval of parameter values on which the stream has meaning.
+
+indices
+    For LieIncrementStreams, optionally provide a list/array of parameter values at which each row of the input data occurs. (default, row "i" occurs at parameter value "i"), or integer indicating the "column" of data that corresponds to the parameter. (Must be present in all rows)
+
+
 )rpydoc";
 
 struct SigArgs {
