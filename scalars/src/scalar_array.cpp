@@ -369,12 +369,12 @@ void ScalarArray::from_raw_bytes(
 
 ScalarArray ScalarArray::borrow() const
 {
-    return ScalarArray(p_type_and_mode, pointer(), m_size);
+    return ScalarArray(p_type, devices::Buffer(m_buffer));
 }
 
 ScalarArray ScalarArray::borrow_mut()
 {
-    return ScalarArray(p_type_and_mode, mut_pointer(), m_size);
+    return ScalarArray(p_type, devices::Buffer(m_buffer));
 }
 
 #define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
