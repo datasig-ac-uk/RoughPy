@@ -38,8 +38,7 @@ using namespace rpy::algebra;
 
 Basis::~Basis() = default;
 
-bool Basis::less(BasisKey RPY_UNUSED_VAR k1,
-                 BasisKey RPY_UNUSED_VAR k2) const noexcept
+bool Basis::less(BasisKey RPY_UNUSED_VAR k1, BasisKey RPY_UNUSED_VAR k2) const
 {
     return false;
 }
@@ -52,9 +51,7 @@ BasisKey Basis::to_key(dimn_t index) const {
     return BasisKey();
 }
 
-
-KeyRange Basis::iterate_keys() const noexcept
-{
+KeyRange Basis::iterate_keys() const {
     return KeyRange();
 }
 
@@ -63,12 +60,11 @@ deg_t Basis::max_degree() const noexcept
     return 0;
 }
 
-deg_t Basis::degree(BasisKey RPY_UNUSED_VAR key) const noexcept
-{
+deg_t Basis::degree(BasisKey RPY_UNUSED_VAR key) const {
     return 0;
 }
 
-KeyRange Basis::iterate_keys_of_degree(deg_t degree) const noexcept
+KeyRange Basis::iterate_keys_of_degree(deg_t degree) const
 {
     return KeyRange();
 }
@@ -79,18 +75,16 @@ deg_t Basis::alphabet_size() const noexcept
     return 0;
 }
 
-bool Basis::is_letter(BasisKey RPY_UNUSED_VAR key) const noexcept
-{
+bool Basis::is_letter(BasisKey RPY_UNUSED_VAR key) const {
     return false;
 }
 
-let_t Basis::get_letter(BasisKey RPY_UNUSED_VAR key) const noexcept
-{
+let_t Basis::get_letter(BasisKey RPY_UNUSED_VAR key) const {
     return 0;
 }
 
-pair<optional<BasisKey>,
-     optional<BasisKey>> Basis::parents(BasisKey RPY_UNUSED_VAR key) const noexcept
+pair<optional<BasisKey>, optional<BasisKey>>
+Basis::parents(BasisKey RPY_UNUSED_VAR key) const
 {
     return pair<optional<BasisKey>, optional<BasisKey >>();
 }

@@ -83,15 +83,17 @@ public:
     ~HallWord() override;
 
     string_view key_type() const noexcept override;
-    BasisPointer basis() const noexcept override;
 
-    RPY_NO_DISCARD deg_t degree() const noexcept;
-    RPY_NO_DISCARD pair<BasisKey, optional<BasisKey>> parents() const;
+    RPY_NO_DISCARD deg_t degree() const;
+    RPY_NO_DISCARD pair<optional<BasisKey>, optional<BasisKey>> parents() const;
 
     RPY_NO_DISCARD string to_string() const;
 
     RPY_NO_DISCARD let_t first_letter() const;
+
+    RPY_NO_DISCARD deg_t min_width() const noexcept;
 };
+
 RPY_NO_DISCARD inline const HallWord* cast_to_hallword(const BasisKey& key)
 {
     RPY_CHECK(key.is_valid_pointer());

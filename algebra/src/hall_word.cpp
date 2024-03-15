@@ -9,6 +9,8 @@
 using namespace rpy;
 using namespace rpy::algebra;
 
+constexpr string_view HallWord::key_name;
+
 HallWord::HallWord(let_t letter) : m_tree{static_cast<int16_t>(letter)} {}
 HallWord::HallWord(let_t left, let_t right)
     : m_tree{static_cast<int16_t>(left), static_cast<int16_t>(right)}
@@ -31,10 +33,6 @@ HallWord::HallWord(const HallWord* left, const HallWord* right)
 HallWord::~HallWord() = default;
 
 string_view HallWord::key_type() const noexcept { return key_name; }
-BasisPointer HallWord::basis() const noexcept
-{
-    return rpy::algebra::BasisPointer();
-}
 
 namespace {
 
@@ -43,7 +41,7 @@ inline deg_t degree_of_letter(let_t) noexcept { return 1; }
 inline deg_t degree_binop(deg_t left, deg_t right) { return left + right; }
 
 }// namespace
-deg_t HallWord::degree() const noexcept
+deg_t HallWord::degree() const
 {
     if (m_tree.empty()) { return 0; }
     if (m_tree.size() == 1) { return 1; }
@@ -69,7 +67,7 @@ void HallWord::copy_tree(
     }
 }
 
-pair<BasisKey, optional<BasisKey>> HallWord::parents() const
+pair<optional<BasisKey>, optional<BasisKey>> HallWord::parents() const
 {
     if (m_tree.size() <= 1) { return {BasisKey(this), {}}; }
     if (m_tree.size() == 2) {
@@ -126,4 +124,29 @@ string HallWord::to_string() const
             to_string_letterfn,
             to_string_binop
     );
+}
+
+let_t HallWord::first_letter() const
+{
+    RPY_CHECK(!m_tree.empty());
+    if (m_tree.size() <= 2) { return static_cast<let_t>(m_tree[0]); }
+
+    auto it = m_tree.begin();
+    const auto end = m_tree.end();
+    for (; it != end; ++it) {
+        if (is_offset(it)) {
+            it = follow_offset(it);
+        } else {
+            RPY_DBG_ASSERT(is_letter(it));
+            return static_cast<let_t>(*it);
+        }
+    }
+
+    RPY_UNREACHABLE_RETURN(0);
+}
+
+deg_t HallWord::min_width() const noexcept
+{
+    if (m_tree.empty()) { return 0; }
+    return static_cast<deg_t>(*std::max_element(m_tree.begin(), m_tree.end()));
 }

@@ -16,12 +16,13 @@ namespace algebra {
 
 class TensorWord : public BasisKeyInterface
 {
-    static constexpr string_view s_basis_type = "tensor_word";
     using container_t = boost::container::small_vector<let_t, 1>;
 
     container_t m_letters;
 
 public:
+    static constexpr string_view key_name = "tensor_word";
+
     using iterator = typename container_t::iterator;
     using const_iterator = typename container_t::const_iterator;
     using reverse_iterator = typename container_t::reverse_iterator;
@@ -37,7 +38,6 @@ public:
     void push_back(let_t letter) { m_letters.push_back(letter); }
 
     virtual string_view key_type() const noexcept;
-    virtual BasisPointer basis() const noexcept;
 
     dimn_t degree() const noexcept { return m_letters.size(); }
 
@@ -76,8 +76,7 @@ public:
         return m_letters.rbegin();
     }
 
-
-
+    RPY_NO_DISCARD deg_t min_width() const noexcept;
 };
 
 }// namespace algebra

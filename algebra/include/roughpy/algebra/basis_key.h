@@ -40,8 +40,6 @@ public:
 
     virtual string_view key_type() const noexcept = 0;
 
-    virtual BasisPointer basis() const noexcept = 0;
-
     uint32_t inc_ref() const noexcept;
 
     uint32_t dec_ref() const noexcept;

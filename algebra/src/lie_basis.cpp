@@ -103,19 +103,16 @@ LieBasis::LieBasis(deg_t width, deg_t depth) : m_width(width), m_depth(depth)
 }
 
 bool LieBasis::has_key(BasisKey key) const noexcept { return false; }
-string LieBasis::to_string(BasisKey key) const noexcept
-{
-    return std::string();
-}
-bool LieBasis::equals(BasisKey k1, BasisKey k2) const noexcept
+string LieBasis::to_string(BasisKey key) const { return std::string(); }
+bool LieBasis::equals(BasisKey k1, BasisKey k2) const
 {
     return to_index(k1) == to_index(k2);
 }
-hash_t LieBasis::hash(BasisKey k1) const noexcept
+hash_t LieBasis::hash(BasisKey k1) const
 {
     return static_cast<hash_t>(to_index(k1));
 }
-bool LieBasis::less(BasisKey k1, BasisKey k2) const noexcept
+bool LieBasis::less(BasisKey k1, BasisKey k2) const
 {
     return to_index(k1) < to_index(k2);
 }
@@ -126,12 +123,9 @@ dimn_t LieBasis::to_index(BasisKey key) const
     return 0;
 }
 BasisKey LieBasis::to_key(dimn_t index) const { return BasisKey(index); }
-KeyRange LieBasis::iterate_keys() const noexcept
-{
-    return Basis::iterate_keys();
-}
+KeyRange LieBasis::iterate_keys() const { return Basis::iterate_keys(); }
 deg_t LieBasis::max_degree() const noexcept { return m_depth; }
-deg_t LieBasis::degree(BasisKey key) const noexcept
+deg_t LieBasis::degree(BasisKey key) const
 {
     if (key.is_index()) {
         // hallset impl
@@ -140,25 +134,24 @@ deg_t LieBasis::degree(BasisKey key) const noexcept
 
     return cast_to_hallword(key)->degree();
 }
-KeyRange LieBasis::iterate_keys_of_degree(deg_t degree) const noexcept
+KeyRange LieBasis::iterate_keys_of_degree(deg_t degree) const
 {
     return Basis::iterate_keys_of_degree(degree);
 }
 deg_t LieBasis::alphabet_size() const noexcept { return m_width; }
-bool LieBasis::is_letter(BasisKey key) const noexcept
-{
-    return Basis::is_letter(key);
-}
-let_t LieBasis::get_letter(BasisKey key) const noexcept
+bool LieBasis::is_letter(BasisKey key) const { return Basis::is_letter(key); }
+let_t LieBasis::get_letter(BasisKey key) const
 {
     RPY_DBG_ASSERT(is_letter(key));
     if (key.is_index()) { return 1 + key.get_index(); }
     return cast_to_hallword(key)->first_letter();
 }
 pair<optional<BasisKey>, optional<BasisKey>> LieBasis::parents(BasisKey key
-) const noexcept
+) const
 {
-    return Basis::parents(key);
+    if (key.is_index()) { return {}; }
+
+    return cast_to_hallword(key)->parents();
 }
 
 LieBasis::HallSet::HallSet(deg_t width)

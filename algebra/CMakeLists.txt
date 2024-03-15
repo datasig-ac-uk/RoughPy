@@ -20,6 +20,7 @@ add_roughpy_component(Algebra
         src/hall_set_size.h
         src/hall_word.cpp
         src/hall_word.h
+        src/key_iterator_state.cpp
         src/key_range.cpp
         src/lie.cpp
         src/lie_basis.cpp
