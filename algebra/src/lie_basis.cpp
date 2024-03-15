@@ -5,6 +5,7 @@
 #include "lie_basis.h"
 
 #include "hall_set_size.h"
+#include "hall_word.h"
 
 #include <boost/container/flat_map.hpp>
 
@@ -132,7 +133,12 @@ KeyRange LieBasis::iterate_keys() const noexcept
 deg_t LieBasis::max_degree() const noexcept { return m_depth; }
 deg_t LieBasis::degree(BasisKey key) const noexcept
 {
-    return Basis::degree(key);
+    if (key.is_index()) {
+        // hallset impl
+        return 0;
+    }
+
+    return cast_to_hallword(key)->degree();
 }
 KeyRange LieBasis::iterate_keys_of_degree(deg_t degree) const noexcept
 {
@@ -145,7 +151,9 @@ bool LieBasis::is_letter(BasisKey key) const noexcept
 }
 let_t LieBasis::get_letter(BasisKey key) const noexcept
 {
-    return Basis::get_letter(key);
+    RPY_DBG_ASSERT(is_letter(key));
+    if (key.is_index()) { return 1 + key.get_index(); }
+    return cast_to_hallword(key)->first_letter();
 }
 pair<optional<BasisKey>, optional<BasisKey>> LieBasis::parents(BasisKey key
 ) const noexcept

@@ -89,7 +89,16 @@ public:
     RPY_NO_DISCARD pair<BasisKey, optional<BasisKey>> parents() const;
 
     RPY_NO_DISCARD string to_string() const;
+
+    RPY_NO_DISCARD let_t first_letter() const;
 };
+RPY_NO_DISCARD inline const HallWord* cast_to_hallword(const BasisKey& key)
+{
+    RPY_CHECK(key.is_valid_pointer());
+    auto* ptr = key.get_pointer();
+    RPY_CHECK(ptr->key_type() == HallWord::key_name);
+    return static_cast<const HallWord*>(ptr);
+}
 
 }// namespace algebra
 }// namespace rpy
