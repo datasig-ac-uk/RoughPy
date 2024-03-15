@@ -9,8 +9,6 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 
-
-
 add_roughpy_component(Algebra
         SOURCES
         src/algebra.cpp
@@ -20,6 +18,8 @@ add_roughpy_component(Algebra
         src/free_tensor.cpp
         src/hall_set_size.cpp
         src/hall_set_size.h
+        src/hall_word.cpp
+        src/hall_word.h
         src/key_range.cpp
         src/lie.cpp
         src/lie_basis.cpp
@@ -44,4 +44,4 @@ add_roughpy_component(Algebra
         RoughPy::Core
         RoughPy::Platform
         RoughPy::Scalars
-        )
+)
