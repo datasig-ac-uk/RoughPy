@@ -190,6 +190,8 @@ bool TensorBasis::is_letter(BasisKey key) const { return degree(key) == 1; }
 let_t TensorBasis::get_letter(BasisKey key) const
 {
     RPY_DBG_ASSERT(is_letter(key));
+
+    return 0;
 }
 pair<optional<BasisKey>, optional<BasisKey>> TensorBasis::parents(BasisKey key
 ) const

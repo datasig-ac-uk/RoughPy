@@ -33,5 +33,3 @@ uint32_t BasisKeyInterface::dec_ref() const noexcept
     RPY_DBG_ASSERT(count > 0);
     return count - 1;
 }
-
-constexpr devices::TypeInfo rpy::algebra::basis_key_type_info;
