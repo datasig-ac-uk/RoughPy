@@ -5,41 +5,39 @@
 #ifndef ROUGHPY_VECTOR_ITERATOR_H
 #define ROUGHPY_VECTOR_ITERATOR_H
 
-#include "roughpy_algebra_export.h"
 #include "algebra_fwd.h"
+#include "roughpy_algebra_export.h"
 
 #include "basis_key.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/platform/devices/buffer.h>
-#include <roughpy/platform/devices/memory_view.h>
-
-#include <roughpy/scalars/scalar_array_view.h>
+#include <roughpy/scalars/devices/buffer.h>
 #include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_array.h>
 
 namespace rpy {
 namespace algebra {
 
-
-class ROUGHPY_ALGEBRA_EXPORT VectorIterator {
-    scalars::ScalarArrayView m_scalar_view;
-    devices::MemoryView m_key_view;
+class ROUGHPY_ALGEBRA_EXPORT VectorIterator
+{
+    scalars::ScalarArray m_scalar_view;
+    devices::Buffer m_key_view;
 
     dimn_t m_index;
 
 public:
-
-
     using value_type = pair<BasisKey, scalars::Scalar>;
 
-    class KVPairProxy {
+    class KVPairProxy
+    {
         value_type m_pair;
-    public:
 
+    public:
         KVPairProxy(BasisKey key, scalars::Scalar value)
-            : m_pair(std::move(key), std::move(value)) {}
+            : m_pair(std::move(key), std::move(value))
+        {}
 
         operator const value_type&() const noexcept { return m_pair; }
 
@@ -49,12 +47,15 @@ public:
     using reference = KVPairProxy;
     using pointer = KVPairProxy;
 
-    VectorIterator(scalars::ScalarArrayView data_view,
-                   devices::MemoryView key_view,
-                   dimn_t index = 0)
+    VectorIterator(
+            scalars::ScalarArray data_view,
+            devices::Buffer key_view,
+            dimn_t index = 0
+    )
         : m_scalar_view(std::move(data_view)),
           m_key_view(std::move(key_view)),
-          m_index(index) {}
+          m_index(index)
+    {}
 
     VectorIterator& operator++();
 
@@ -67,10 +68,8 @@ public:
     bool operator==(const VectorIterator& other) const noexcept;
 
     bool operator!=(const VectorIterator& other) const noexcept;
-
 };
 
-
-}
-}
-#endif //ROUGHPY_VECTOR_ITERATOR_H
+}// namespace algebra
+}// namespace rpy
+#endif// ROUGHPY_VECTOR_ITERATOR_H

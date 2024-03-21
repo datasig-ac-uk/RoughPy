@@ -8,9 +8,8 @@
 #include "scalar_type.h"
 #include "scalar_types.h"
 
-#include <roughpy/platform/devices/core.h>
-#include <roughpy/platform/devices/host_device.h>
-
+#include "devices/core.h"
+#include "devices/host_device.h"
 
 #include "scalar/do_macro.h"
 

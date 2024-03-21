@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 10/03/23.
@@ -43,9 +44,11 @@ using rpy::intervals::Interval;
 using rpy::intervals::RealInterval;
 
 PiecewiseAbelianStream::PiecewiseAbelianStream(
-        std::vector<LiePiece>&& data, StreamMetadata&& md
+        std::vector<LiePiece>&& data,
+        StreamMetadata&& md
 )
-    : StreamInterface(std::move(md)), m_data(std::move(data))
+    : StreamInterface(std::move(md)),
+      m_data(std::move(data))
 {
     //    // first sort so we know the inf of each interval are in order
     //    auto sort_fun = [](const LiePiece &a, const LiePiece &b) {
@@ -137,15 +140,19 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(
     auto schema = std::make_shared<streams::StreamSchema>();
     auto& info = schema->insert_lie("");
     info.set_lie_info(
-            meta.width, meta.default_context->depth(), meta.cached_vector_type
+            meta.width,
+            meta.default_context->depth(),
+            meta.cached_vector_type
     );
     set_schema(std::move(schema));
 }
 PiecewiseAbelianStream::PiecewiseAbelianStream(
-        std::vector<LiePiece>&& arg, StreamMetadata&& md,
+        std::vector<LiePiece>&& arg,
+        StreamMetadata&& md,
         std::shared_ptr<StreamSchema> schema
 )
-    : StreamInterface(std::move(md), std::move(schema)), m_data(std::move(arg))
+    : StreamInterface(std::move(md), std::move(schema)),
+      m_data(std::move(arg))
 {}
 
 bool PiecewiseAbelianStream::empty(const Interval& interval) const noexcept
@@ -153,7 +160,8 @@ bool PiecewiseAbelianStream::empty(const Interval& interval) const noexcept
     return StreamInterface::empty(interval);
 }
 algebra::Lie PiecewiseAbelianStream::log_signature_impl(
-        const Interval& domain, const Context& ctx
+        const Interval& domain,
+        const Context& ctx
 ) const
 {
     std::vector<algebra::Lie> lies;
@@ -175,12 +183,10 @@ algebra::Lie PiecewiseAbelianStream::log_signature_impl(
             lies.push_back(piece.second);
         } else if (pb <= pb) {
             // [p---[---p)-----)
-            lies.push_back(piece.second.smul(to_multiplier_upper(piece.first, a)
-            ));
+            lies.push_back(piece.second * to_multiplier_upper(piece.first, a));
         } else if (pa >= a && pb > b) {
             // [---[p----)----p)
-            lies.push_back(piece.second.smul(to_multiplier_lower(piece.first, b)
-            ));
+            lies.push_back(piece.second * to_multiplier_lower(piece.first, b));
         }
     }
 

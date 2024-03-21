@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 03/11/23.
@@ -32,13 +33,13 @@
 #ifndef ROUGHPY_SCALARS_SRC_SCALAR_HELPERS_STANDARD_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SRC_SCALAR_HELPERS_STANDARD_SCALAR_TYPE_H_
 
-#include "scalar_type.h"
-#include "scalar_array.h"
-#include "scalar.h"
 #include "random/standard_random_generator.h"
+#include "scalar.h"
+#include "scalar_array.h"
+#include "scalar_type.h"
 
-#include <roughpy/platform/devices/device_handle.h>
-#include <roughpy/platform/devices/host_device.h>
+#include "devices/device_handle.h"
+#include "devices/host_device.h"
 
 #include "scalar/casts.h"
 
@@ -54,22 +55,21 @@ class StandardScalarType : public ScalarType
 {
     mutable std::unordered_set<void*> m_allocated;
 
-    static std::unique_ptr<RandomGenerator> get_mt19937_generator(
-        const ScalarType* tp,
-        Slice<seed_int_t> seed);
-    static std::unique_ptr<RandomGenerator> get_pcg_generator(
-        const ScalarType* tp,
-        Slice<seed_int_t> seed);
+    static std::unique_ptr<RandomGenerator>
+    get_mt19937_generator(const ScalarType* tp, Slice<seed_int_t> seed);
+    static std::unique_ptr<RandomGenerator>
+    get_pcg_generator(const ScalarType* tp, Slice<seed_int_t> seed);
 
 protected:
     StandardScalarType(string name, string id, RingCharacteristics chars)
-        : ScalarType(std::move(name),
-                     std::move(id),
-                     alignof(ScalarImpl),
-                     devices::get_host_device(),
-                     devices::type_info<ScalarImpl>(),
-                     chars
-        )
+        : ScalarType(
+                  std::move(name),
+                  std::move(id),
+                  alignof(ScalarImpl),
+                  devices::get_host_device(),
+                  devices::type_info<ScalarImpl>(),
+                  chars
+          )
     {
         register_rng_getter("mt19937", &get_mt19937_generator);
         register_rng_getter("pcg", &get_pcg_generator);
@@ -81,14 +81,14 @@ public:
     void free_single(void* ptr) const override;
     void convert_copy(ScalarArray& dst, const ScalarArray& src) const override;
     void assign(ScalarArray& dst, Scalar value) const override;
-
 };
 
 template <typename ScalarImpl>
 ScalarArray StandardScalarType<ScalarImpl>::allocate(dimn_t count) const
 {
     RPY_CHECK(count > 0);
-    ScalarArray result(this, m_device->raw_alloc(count*m_info.bytes, m_info.alignment));;
+    ScalarArray result(this, m_device->alloc(m_info, count));
+
     {
         auto slice = result.mut_buffer().template as_mut_slice<ScalarImpl>();
         std::uninitialized_fill(slice.begin(), slice.end(), ScalarImpl(0));
@@ -101,8 +101,8 @@ template <typename ScalarImpl>
 void* StandardScalarType<ScalarImpl>::allocate_single() const
 {
     guard_type access(m_lock);
-    auto [pos, inserted] = m_allocated.insert(
-        static_cast<void*>(new ScalarImpl()));
+    auto [pos, inserted]
+            = m_allocated.insert(static_cast<void*>(new ScalarImpl()));
     RPY_DBG_ASSERT(inserted);
     return *pos;
 }
@@ -113,9 +113,11 @@ void StandardScalarType<ScalarImpl>::free_single(void* ptr) const
     guard_type access(m_lock);
     auto found = m_allocated.find(ptr);
     if (found == m_allocated.end()) {
-        RPY_THROW(std::runtime_error,
-                  "Attempting to free scalar allocated "
-                  "with as a different type");
+        RPY_THROW(
+                std::runtime_error,
+                "Attempting to free scalar allocated "
+                "with as a different type"
+        );
     }
     delete static_cast<ScalarImpl*>(*found);
     m_allocated.erase(found);
@@ -123,8 +125,8 @@ void StandardScalarType<ScalarImpl>::free_single(void* ptr) const
 
 template <typename ScalarImpl>
 void StandardScalarType<ScalarImpl>::convert_copy(
-    ScalarArray& dst,
-    const ScalarArray& src
+        ScalarArray& dst,
+        const ScalarArray& src
 ) const
 {
     if (src.empty()) {
@@ -174,8 +176,7 @@ void StandardScalarType<ScalarImpl>::convert_copy(
             } else {
                 // dst type is not defined, so is a trivial type fully
                 // described by the TypeInfo struct.
-                auto new_buf = m_device->raw_alloc(src_size * dst_info.bytes,
-                                                   dst_info.alignment);
+                auto new_buf = m_device->alloc(dst_info, src_size);
                 dst = ScalarArray(dst_info, std::move(new_buf));
             }
         } else {
@@ -186,7 +187,9 @@ void StandardScalarType<ScalarImpl>::convert_copy(
         // final array is correct.
         if (dst_type) {
             dst = ScalarArray(*dst_type, std::move(dst.mut_buffer()));
-        } else { dst = ScalarArray(dst_info, std::move(dst.mut_buffer())); }
+        } else {
+            dst = ScalarArray(dst_info, std::move(dst.mut_buffer()));
+        }
     }
 
     /*
@@ -199,9 +202,8 @@ void StandardScalarType<ScalarImpl>::convert_copy(
 }
 
 template <typename ScalarImpl>
-void StandardScalarType<ScalarImpl>::assign(ScalarArray& dst,
-                                            Scalar value)
-const
+void StandardScalarType<ScalarImpl>::assign(ScalarArray& dst, Scalar value)
+        const
 {
     if (dst.is_null()) {
         RPY_THROW(std::invalid_argument, "destination array is not valid");
@@ -216,29 +218,34 @@ const
     }
 
     {
-        auto slice = dst.template as_mut_slice<ScalarImpl>();
+        auto slice = dst.mut_buffer().template as_mut_slice<ScalarImpl>();
         std::fill(slice.begin(), slice.end(), scalar_cast<ScalarImpl>(value));
     }
-
-}
-
-
-template <typename ScalarImpl>
-std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::
-get_mt19937_generator(const ScalarType* tp, Slice<seed_int_t> seed)
-{
-    return std::make_unique<StandardRandomGenerator<
-        ScalarImpl, std::mt19937_64>>(tp, seed);
 }
 
 template <typename ScalarImpl>
-std::unique_ptr<RandomGenerator> StandardScalarType<ScalarImpl>::
-get_pcg_generator(const ScalarType* tp, Slice<seed_int_t> seed)
+std::unique_ptr<RandomGenerator>
+StandardScalarType<ScalarImpl>::get_mt19937_generator(
+        const ScalarType* tp,
+        Slice<seed_int_t> seed
+)
 {
-    return std::make_unique<StandardRandomGenerator<
-        ScalarImpl, pcg64>>(tp, seed);
+    return std::make_unique<
+            StandardRandomGenerator<ScalarImpl, std::mt19937_64>>(tp, seed);
 }
 
+template <typename ScalarImpl>
+std::unique_ptr<RandomGenerator>
+StandardScalarType<ScalarImpl>::get_pcg_generator(
+        const ScalarType* tp,
+        Slice<seed_int_t> seed
+)
+{
+    return std::make_unique<StandardRandomGenerator<ScalarImpl, pcg64>>(
+            tp,
+            seed
+    );
+}
 
 }// namespace dtl
 }// namespace scalars

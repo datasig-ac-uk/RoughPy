@@ -85,7 +85,8 @@ LieIncrementStream::LieIncrementStream(
             const auto info = buffer.type_info();
             const auto width = sch.width_without_param();
 
-            const char* dptr = buffer.as_slice<const char>().data();
+            // TODO: Deal with data that doesn't necessarily belong on host.
+            const auto* dptr = static_cast<const byte*>(buffer.buffer().ptr());
             const auto stride = info.bytes * width;
             param_t previous_param = 0.0;
             for (auto index : indices) {
@@ -173,12 +174,10 @@ algebra::Lie LieIncrementStream::log_signature_impl(
 
     if (begin == end) { return ctx.zero_lie(md.cached_vector_type); }
 
-    std::vector<const Lie*> lies;
+    std::vector<Lie> lies;
     lies.reserve(static_cast<dimn_t>(end - begin));
 
-    for (auto it = begin; it != end; ++it) {
-        lies.push_back(&it->second);
-    }
+    for (auto it = begin; it != end; ++it) { lies.push_back(it->second); }
 
     return ctx.cbh(lies, md.cached_vector_type);
 }

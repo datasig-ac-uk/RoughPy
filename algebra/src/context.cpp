@@ -37,8 +37,6 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "lite_context.h"
-
 using namespace rpy;
 using namespace rpy::algebra;
 
@@ -66,153 +64,6 @@ context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)
                     {"backend", spec.backend}
     }
     );
-}
-
-std::vector<byte> rpy::algebra::alg_to_raw_bytes(
-        context_pointer ctx,
-        AlgebraType atype,
-        RawUnspecifiedAlgebraType alg
-)
-{
-    if (ctx) { return ctx->to_raw_bytes(atype, alg); }
-    return std::vector<byte>();
-}
-
-UnspecifiedAlgebraType rpy::algebra::alg_from_raw_bytes(
-        context_pointer ctx,
-        AlgebraType atype,
-        Slice<byte> raw_data
-)
-{
-    if (ctx) { return ctx->from_raw_bytes(atype, raw_data); }
-    return nullptr;
-}
-
-ContextBase::ContextBase(
-        deg_t width,
-        deg_t depth,
-        const dimn_t* lie_sizes,
-        const dimn_t* tensor_sizes
-)
-    : m_width(width),
-      m_depth(depth),
-      p_lie_sizes(lie_sizes),
-      p_tensor_sizes(tensor_sizes)
-{
-    if (!p_tensor_sizes) {
-        auto* tsizes = new dimn_t[1 + m_depth];
-        // Immediately give ownership to the MaybeOwned type so we don't leak
-        // memory.
-        p_tensor_sizes = tsizes;
-        tsizes[0] = 1;
-        tsizes[1] = 1 + m_width;
-        for (deg_t i = 1; i <= m_depth; ++i) {
-            tsizes[i] = 1 + tsizes[i - 1] * m_width;
-        }
-    }
-
-    if (!p_lie_sizes) {
-        HallSetSizeHelper helper(m_width, m_depth);
-        auto* lsizes = new dimn_t[1 + m_depth];
-        // Immediately give ownership to the MaybeOwned type so we don't leak
-        // memory.
-        p_lie_sizes = lsizes;
-        lsizes[0] = 0;
-        lsizes[1] = m_width;
-        for (int i = 2; i <= m_depth; ++i) {
-            lsizes[i] = helper(i) * lsizes[i - 1];
-        }
-    }
-}
-
-ContextBase::~ContextBase() = default;
-
-dimn_t ContextBase::lie_size(deg_t deg) const noexcept
-{
-    if (deg < 0 || deg > m_depth) { deg = m_depth; }
-    return p_lie_sizes[deg];
-}
-dimn_t ContextBase::tensor_size(deg_t deg) const noexcept
-{
-    if (deg < 0 || deg > m_depth) { deg = m_depth; }
-    return p_tensor_sizes[deg];
-}
-bool Context::check_compatible(const Context& other_ctx) const noexcept
-{
-    return width() == other_ctx.width();
-}
-FreeTensor Context::zero_free_tensor(VectorType vtype) const
-{
-    return construct_free_tensor({scalars::KeyScalarArray(), vtype});
-}
-ShuffleTensor Context::zero_shuffle_tensor(VectorType vtype) const
-{
-    return construct_shuffle_tensor({scalars::KeyScalarArray(), vtype});
-}
-Lie Context::zero_lie(VectorType vtype) const
-{
-    return construct_lie({scalars::KeyScalarArray(), vtype});
-}
-FreeTensor Context::to_signature(const Lie& log_signature) const
-{
-    return lie_to_tensor(log_signature).exp();
-}
-
-void Context::lie_to_tensor_fallback(FreeTensor& result, const Lie& arg) const
-{
-    // TODO: Implement
-}
-void Context::tensor_to_lie_fallback(Lie& result, const FreeTensor& arg) const
-{
-    // TODO: Implement
-}
-void Context::cbh_fallback(FreeTensor& collector, const std::vector<Lie>& lies)
-        const
-{
-    for (const auto& alie : lies) {
-        if (alie.dimension() != 0) {
-            collector.fmexp(this->lie_to_tensor(alie));
-        }
-    }
-}
-void Context::cbh_fallback(FreeTensor& collector, Slice<const Lie*> lies) const
-{
-    for (const auto* alie : lies) {
-        if (alie->dimension() != 0) {
-            collector.fmexp(this->lie_to_tensor(*alie));
-        }
-    }
-}
-
-Lie Context::cbh(const std::vector<Lie>& lies, VectorType vtype) const
-{
-    if (lies.size() == 1) { return convert(lies[0], vtype); }
-
-    FreeTensor collector = zero_free_tensor(vtype);
-    collector[0] = 1;
-
-    if (!lies.empty()) { cbh_fallback(collector, lies); }
-
-    return tensor_to_lie(collector.log());
-}
-Lie Context::cbh(Slice<const Lie*> lies, VectorType vtype) const
-{
-    if (lies.size() == 1) { return convert(*lies[0], vtype); }
-
-    FreeTensor collector = zero_free_tensor(vtype);
-    collector[0] = 1;
-
-    cbh_fallback(collector, lies);
-
-    return tensor_to_lie(collector.log());
-}
-
-Lie Context::cbh(const Lie& left, const Lie& right, VectorType vtype) const
-{
-    FreeTensor tmp = lie_to_tensor(left).exp();
-    tmp.fmexp(lie_to_tensor(right));
-
-    return tensor_to_lie(tmp.log());
 }
 
 static std::recursive_mutex s_context_lock;
@@ -266,8 +117,6 @@ context_pointer rpy::algebra::get_context(
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
     auto& maker_list = get_context_maker_list();
 
-    if (maker_list.empty()) { maker_list.emplace_back(new LiteContextMaker); }
-
     std::vector<const ContextMaker*> found;
     found.reserve(maker_list.size());
     for (const auto& maker : maker_list) {
@@ -314,62 +163,6 @@ bool ContextMaker::can_get(
     return false;
 }
 
-std::vector<byte>
-Context::to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const
-{
-    RPY_THROW(std::runtime_error, "cannot generate raw byte representation");
-}
-UnspecifiedAlgebraType
-Context::from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const
-{
-    RPY_THROW(std::runtime_error, "cannot load from raw bytes");
-}
-
-UnspecifiedAlgebraType Context::free_multiply(
-        const ConstRawUnspecifiedAlgebraType left,
-        const ConstRawUnspecifiedAlgebraType right
-) const
-{
-    RPY_THROW(
-            std::runtime_error,
-            "free tensor multiply is not implemented for "
-            "arbitrary types with this backend"
-    );
-}
-UnspecifiedAlgebraType Context::shuffle_multiply(
-        ConstRawUnspecifiedAlgebraType left,
-        ConstRawUnspecifiedAlgebraType right
-) const
-{
-    RPY_THROW(
-            std::runtime_error,
-            "shuffle multiply is not implemented for "
-            "arbitrary types with this backend"
-    );
-}
-UnspecifiedAlgebraType Context::half_shuffle_multiply(
-        ConstRawUnspecifiedAlgebraType left,
-        ConstRawUnspecifiedAlgebraType right
-) const
-{
-    RPY_THROW(
-            std::runtime_error,
-            "half shuffle multiply is not implemented for "
-            "arbitrary types with this backend"
-    );
-}
-UnspecifiedAlgebraType Context::adjoint_to_left_multiply_by(
-        ConstRawUnspecifiedAlgebraType multiplier,
-        ConstRawUnspecifiedAlgebraType argument
-) const
-{
-    RPY_THROW(
-            std::runtime_error,
-            "adjoint of left multiply is not implemented for "
-            "arbitrary types with this backend"
-    );
-}
-
 void rpy::algebra::intrusive_ptr_add_ref(const ContextBase* ptr) noexcept
 {
     using counter_t = boost::
@@ -394,3 +187,35 @@ void rpy::algebra::intrusive_ptr_release(const Context* ptr) noexcept
             intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
     intrusive_ptr_release(static_cast<const counter_t*>(ptr));
 }
+
+Lie Context::zero_lie(VectorType) const { return Lie(); }
+FreeTensor Context::zero_free_tensor(VectorType) const { return FreeTensor(); }
+ShuffleTensor Context::zero_shuffle_tensor(VectorType) const
+{
+    return ShuffleTensor();
+}
+
+Lie Context::cbh(const Lie& lhs, const Lie& rhs, VectorType) const
+{
+    return Lie();
+}
+Lie Context::cbh(Slice<Lie> lies, VectorType) const { return Lie(); }
+
+FreeTensor Context::to_signature(const Lie& log_signature) const
+{
+    return FreeTensor();
+}
+ContextBase::ContextBase(
+        deg_t width,
+        deg_t depth,
+        const dimn_t* lie_sizes,
+        const dimn_t* tensor_sizes
+)
+    : p_lie_sizes(lie_sizes),
+      p_tensor_sizes(tensor_sizes),
+      m_width(width),
+      m_depth(depth)
+{}
+ContextBase::~ContextBase() {}
+dimn_t ContextBase::lie_size(deg_t deg) const noexcept { return 0; }
+dimn_t ContextBase::tensor_size(deg_t deg) const noexcept { return 0; }

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_ALGEBRA_CONTEXT_H_
 #define ROUGHPY_ALGEBRA_CONTEXT_H_
@@ -37,16 +38,17 @@
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/scalars/key_scalar_array.h>
-#include <roughpy/scalars/scalar_stream.h>
+#include <roughpy/scalars/key_scalar_stream.h>
 #include <roughpy/scalars/scalar_type.h>
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "free_tensor.h"
-#include "lie_basis.h"
 #include "lie.h"
+#include "lie_basis.h"
 #include "shuffle_tensor.h"
 #include "tensor_basis.h"
 
@@ -54,8 +56,7 @@ namespace rpy {
 namespace algebra {
 
 struct SignatureData {
-    scalars::ScalarStream data_stream;
-    std::vector<const key_type*> key_stream;
+    scalars::KeyScalarStream data_stream;
     VectorType vector_type;
 };
 
@@ -69,7 +70,8 @@ struct VectorConstructionData {
     VectorType vector_type = VectorType::Sparse;
 };
 
-class ROUGHPY_ALGEBRA_EXPORT ContextBase : public boost::intrusive_ref_counter<ContextBase>
+class ROUGHPY_ALGEBRA_EXPORT ContextBase
+    : public boost::intrusive_ref_counter<ContextBase>
 {
     deg_t m_width;
     deg_t m_depth;
@@ -79,7 +81,9 @@ class ROUGHPY_ALGEBRA_EXPORT ContextBase : public boost::intrusive_ref_counter<C
 
 protected:
     ContextBase(
-            deg_t width, deg_t depth, const dimn_t* lie_sizes,
+            deg_t width,
+            deg_t depth,
+            const dimn_t* lie_sizes,
             const dimn_t* tensor_sizes
     );
 
@@ -100,11 +104,15 @@ class ROUGHPY_ALGEBRA_EXPORT Context : public ContextBase
 
 protected:
     explicit Context(
-            deg_t width, deg_t depth, const scalars::ScalarType* ctype,
-            string&& context_backend, const dimn_t* lie_sizes = nullptr,
+            deg_t width,
+            deg_t depth,
+            const scalars::ScalarType* ctype,
+            string&& context_backend,
+            const dimn_t* lie_sizes = nullptr,
             const dimn_t* tensor_sizes = nullptr
     )
-        : ContextBase(width, depth, lie_sizes, tensor_sizes), p_ctype(ctype),
+        : ContextBase(width, depth, lie_sizes, tensor_sizes),
+          p_ctype(ctype),
           m_ctx_backend(std::move(context_backend))
     {}
 
@@ -126,12 +134,11 @@ public:
     get_alike(deg_t new_depth, const scalars::ScalarType* new_ctype) const
             = 0;
     RPY_NO_DISCARD virtual context_pointer get_alike(
-            deg_t new_width, deg_t new_depth,
+            deg_t new_width,
+            deg_t new_depth,
             const scalars::ScalarType* new_ctype
     ) const = 0;
-
-    RPY_NO_DISCARD virtual bool check_compatible(const Context& other_ctx
-    ) const noexcept;
+    ;
 
     RPY_NO_DISCARD virtual LieBasis get_lie_basis() const = 0;
     RPY_NO_DISCARD virtual TensorBasis get_tensor_basis() const = 0;
@@ -155,84 +162,38 @@ public:
     RPY_NO_DISCARD virtual Lie construct_lie(const VectorConstructionData& arg
     ) const = 0;
 
-    RPY_NO_DISCARD virtual UnspecifiedAlgebraType
-    construct(AlgebraType type, const VectorConstructionData& data) const
-            = 0;
-
-    RPY_NO_DISCARD FreeTensor zero_free_tensor(VectorType vtype) const;
-    RPY_NO_DISCARD ShuffleTensor zero_shuffle_tensor(VectorType vtype) const;
-    RPY_NO_DISCARD Lie zero_lie(VectorType vtype) const;
-
-protected:
-    void lie_to_tensor_fallback(FreeTensor& result, const Lie& arg) const;
-    void tensor_to_lie_fallback(Lie& result, const FreeTensor& arg) const;
-
 public:
     RPY_NO_DISCARD virtual FreeTensor lie_to_tensor(const Lie& arg) const = 0;
     RPY_NO_DISCARD virtual Lie tensor_to_lie(const FreeTensor& arg) const = 0;
 
-protected:
-    void
-    cbh_fallback(FreeTensor& collector, const std::vector<Lie>& lies) const;
-
-    void
-    cbh_fallback(FreeTensor& collector, Slice<const Lie*> lies) const;
-
 public:
-    RPY_NO_DISCARD virtual Lie
-    cbh(const std::vector<Lie>& lies, VectorType vtype) const;
-    RPY_NO_DISCARD virtual Lie
-    cbh(Slice<const Lie*> lies, VectorType vtype) const;
-
-    RPY_NO_DISCARD virtual Lie
-    cbh(const Lie& left, const Lie& right, VectorType vtype) const;
-
-    RPY_NO_DISCARD virtual FreeTensor to_signature(const Lie& log_signature
-    ) const;
     RPY_NO_DISCARD virtual FreeTensor signature(const SignatureData& data) const
             = 0;
     RPY_NO_DISCARD virtual Lie log_signature(const SignatureData& data) const
             = 0;
 
     RPY_NO_DISCARD virtual FreeTensor sig_derivative(
-            const std::vector<DerivativeComputeInfo>& info, VectorType vtype
+            const std::vector<DerivativeComputeInfo>& info,
+            VectorType vtype
     ) const = 0;
 
-    // Functions to aid serialization
-    RPY_NO_DISCARD virtual std::vector<byte>
-    to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const;
+    RPY_NO_DISCARD Lie zero_lie(VectorType) const;
+    RPY_NO_DISCARD FreeTensor zero_free_tensor(VectorType) const;
+    RPY_NO_DISCARD ShuffleTensor zero_shuffle_tensor(VectorType) const;
 
-    RPY_NO_DISCARD virtual UnspecifiedAlgebraType
-    from_raw_bytes(AlgebraType atype, Slice<byte> raw_bytes) const;
+    RPY_NO_DISCARD Lie cbh(const Lie& lhs, const Lie& rhs, VectorType) const;
+    RPY_NO_DISCARD Lie cbh(Slice<Lie> lies, VectorType) const;
 
-    virtual UnspecifiedAlgebraType free_multiply(
-            const ConstRawUnspecifiedAlgebraType left,
-            const ConstRawUnspecifiedAlgebraType right
-    ) const;
-
-    virtual UnspecifiedAlgebraType shuffle_multiply(
-            ConstRawUnspecifiedAlgebraType left,
-            ConstRawUnspecifiedAlgebraType right
-            ) const;
-
-    virtual UnspecifiedAlgebraType half_shuffle_multiply(
-            ConstRawUnspecifiedAlgebraType left,
-            ConstRawUnspecifiedAlgebraType right
-            ) const;
-
-    virtual UnspecifiedAlgebraType adjoint_to_left_multiply_by(
-            ConstRawUnspecifiedAlgebraType multiplier,
-            ConstRawUnspecifiedAlgebraType argument
-            ) const;
-
-
-
+    RPY_NO_DISCARD FreeTensor to_signature(const Lie& log_signature) const;
 };
 
-ROUGHPY_ALGEBRA_EXPORT base_context_pointer get_base_context(deg_t width, deg_t depth);
+ROUGHPY_ALGEBRA_EXPORT base_context_pointer
+get_base_context(deg_t width, deg_t depth);
 
 ROUGHPY_ALGEBRA_EXPORT context_pointer get_context(
-        deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+        deg_t width,
+        deg_t depth,
+        const scalars::ScalarType* ctype,
         const std::vector<std::pair<string, string>>& preferences = {}
 );
 
@@ -266,10 +227,14 @@ public:
 
     virtual ~ContextMaker() = default;
     virtual bool
-    can_get(deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+    can_get(deg_t width,
+            deg_t depth,
+            const scalars::ScalarType* ctype,
             const preference_list& preferences) const;
     virtual context_pointer get_context(
-            deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+            deg_t width,
+            deg_t depth,
+            const scalars::ScalarType* ctype,
             const preference_list& preferences
     ) const = 0;
     virtual optional<base_context_pointer>
@@ -299,7 +264,8 @@ public:
             = RegisterMakerHelper<MAKER>()
 
 inline bool check_contexts_algebra_compatible(
-        const Context& base, const Context& other
+        const Context& base,
+        const Context& other
 ) noexcept
 {
     if (base.width() != other.width()) { return false; }

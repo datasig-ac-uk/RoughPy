@@ -20,6 +20,7 @@ include(CheckIncludeFileCXX)
 option(ROUGHPY_ENABLE_DBG_ASSERT "enable debug assertions at runtime" OFF)
 option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
+option(ROUGHPY_BUILD_DOCS "Build the documentation" OFF)
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Build the pymodule in the project roughpy directory" OFF)
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
@@ -371,12 +372,21 @@ if (ROUGHPY_BUILD_LA_CONTEXTS)
 endif ()
 
 
+if (ROUGHPY_BUILD_DOCS)
+    add_subdirectory(docs)
+endif()
+
 # TODO: Maybe we should replace this with a custom install target rather than
 # messing with the install directories.
 #set(CMAKE_INSTALL_LIBDIR "roughpy" CACHE STRING "install library dir")
 #set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")
 
 install(TARGETS
+        RoughPy_Platform
+        RoughPy_Intervals
+        RoughPy_Scalars
+        RoughPy_Algebra
+        RoughPy_Streams
     RoughPy_PyModule
     EXPORT RoughPy_EXPORTS
     RUNTIME DESTINATION roughpy

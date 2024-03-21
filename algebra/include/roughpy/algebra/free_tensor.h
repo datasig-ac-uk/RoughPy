@@ -23,9 +23,10 @@ public:
 
 class FreeTensor : public Algebra {
 
-
-
-
+public:
+    FreeTensor exp() const;
+    FreeTensor log() const;
+    FreeTensor antipode() const;
 };
 
 

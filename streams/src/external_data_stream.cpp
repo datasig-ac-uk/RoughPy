@@ -46,23 +46,26 @@ streams::ExternalDataStreamSource::~ExternalDataStreamSource() = default;
 streams::ExternalDataSourceFactory::~ExternalDataSourceFactory() = default;
 
 algebra::Lie streams::ExternalDataStream::log_signature_impl(
-        const intervals::Interval& interval, const algebra::Context& ctx) const
+        const intervals::Interval& interval,
+        const algebra::Context& ctx
+) const
 {
     scalars::KeyScalarArray buffer(ctx.ctype());
     auto num_increments = p_source->query(buffer, interval, schema());
 
-    algebra::SignatureData tmp{scalars::ScalarStream(ctx.ctype()),
-                               std::vector<const key_type*>(),
-                               metadata().cached_vector_type};
+    algebra::SignatureData tmp{
+            scalars::KeyScalarStream(ctx.ctype()),
+            metadata().cached_vector_type
+    };
 
     tmp.data_stream.reserve_size(num_increments);
     const auto width = static_cast<dimn_t>(metadata().width);
     const auto info = metadata().data_scalar_type->type_info();
 
-    const auto* buf_ptr = buffer.as_slice<const byte>().data();
+    const auto* buf_ptr = static_cast<const byte*>(buffer.buffer().ptr());
     for (dimn_t i = 0; i < num_increments; ++i) {
         tmp.data_stream.push_back(scalars::ScalarArray{info, buf_ptr, width});
-        buf_ptr += width*info.bytes;
+        buf_ptr += width * info.bytes;
     }
 
     return ctx.log_signature(tmp);
@@ -73,7 +76,8 @@ static std::vector<std::unique_ptr<const streams::ExternalDataSourceFactory>>
         s_factory_list;
 
 void streams::ExternalDataStream::register_factory(
-        std::unique_ptr<const ExternalDataSourceFactory>&& factory)
+        std::unique_ptr<const ExternalDataSourceFactory>&& factory
+)
 {
     std::lock_guard<std::mutex> access(s_factory_guard);
     s_factory_list.push_back(std::move(factory));
@@ -102,47 +106,65 @@ void streams::ExternalDataSourceFactory::destroy_payload(void*& payload) const
     RPY_DBG_ASSERT(payload == nullptr);
 }
 
-void streams::ExternalDataSourceFactory::set_width(void* payload,
-                                                   deg_t width) const
+void streams::ExternalDataSourceFactory::set_width(void* payload, deg_t width)
+        const
 {}
-void streams::ExternalDataSourceFactory::set_depth(void* payload,
-                                                   deg_t depth) const
+void streams::ExternalDataSourceFactory::set_depth(void* payload, deg_t depth)
+        const
 {}
 void streams::ExternalDataSourceFactory::set_ctype(
-        void* payload, const scalars::ScalarType* ctype) const
+        void* payload,
+        const scalars::ScalarType* ctype
+) const
 {}
 void streams::ExternalDataSourceFactory::set_context(
-        void* payload, algebra::context_pointer ctx) const
+        void* payload,
+        algebra::context_pointer ctx
+) const
 {}
 void streams::ExternalDataSourceFactory::set_support(
-        void* payload, intervals::RealInterval support) const
+        void* payload,
+        intervals::RealInterval support
+) const
 {}
 void streams::ExternalDataSourceFactory::set_vtype(
-        void* payload, algebra::VectorType vtype) const
+        void* payload,
+        algebra::VectorType vtype
+) const
 {}
 void streams::ExternalDataSourceFactory::set_resolution(
-        void* payload, resolution_t resolution) const
+        void* payload,
+        resolution_t resolution
+) const
 {}
 void streams::ExternalDataSourceFactory::set_schema(
-        void* payload, std::shared_ptr<StreamSchema> schema
+        void* payload,
+        std::shared_ptr<StreamSchema> schema
 ) const
 {}
 
-void streams::ExternalDataSourceFactory::add_option(void* payload,
-                                                    const string& option,
-                                                    void* value) const
+void streams::ExternalDataSourceFactory::add_option(
+        void* payload,
+        const string& option,
+        void* value
+) const
 {}
 
 streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(
-        const streams::ExternalDataSourceFactory* factory, void* payload)
-    : p_factory(factory), p_payload(payload)
+        const streams::ExternalDataSourceFactory* factory,
+        void* payload
+)
+    : p_factory(factory),
+      p_payload(payload)
 {
     RPY_CHECK(p_factory != nullptr && p_payload != nullptr);
 }
 
 streams::ExternalDataStreamConstructor::ExternalDataStreamConstructor(
-        streams::ExternalDataStreamConstructor&& other) noexcept
-    : p_factory(other.p_factory), p_payload(other.p_payload)
+        streams::ExternalDataStreamConstructor&& other
+) noexcept
+    : p_factory(other.p_factory),
+      p_payload(other.p_payload)
 {
     other.p_factory = nullptr;
     other.p_payload = nullptr;
@@ -156,7 +178,8 @@ streams::ExternalDataStreamConstructor::~ExternalDataStreamConstructor()
 }
 streams::ExternalDataStreamConstructor&
 streams::ExternalDataStreamConstructor::operator=(
-        streams::ExternalDataStreamConstructor&& other) noexcept
+        streams::ExternalDataStreamConstructor&& other
+) noexcept
 {
     if (this != &other) {
         this->~ExternalDataStreamConstructor();
@@ -177,27 +200,31 @@ void streams::ExternalDataStreamConstructor::set_depth(deg_t depth)
     p_factory->set_depth(p_payload, depth);
 }
 void streams::ExternalDataStreamConstructor::set_ctype(
-        const scalars::ScalarType* ctype)
+        const scalars::ScalarType* ctype
+)
 {
     p_factory->set_ctype(p_payload, ctype);
 }
 void streams::ExternalDataStreamConstructor::set_context(
-        algebra::context_pointer ctx)
+        algebra::context_pointer ctx
+)
 {
     p_factory->set_context(p_payload, std::move(ctx));
 }
 void streams::ExternalDataStreamConstructor::set_support(
-        intervals::RealInterval support)
+        intervals::RealInterval support
+)
 {
     p_factory->set_support(p_payload, std::move(support));
 }
-void streams::ExternalDataStreamConstructor::set_vtype(
-        algebra::VectorType vtype)
+void streams::ExternalDataStreamConstructor::set_vtype(algebra::VectorType vtype
+)
 {
     p_factory->set_vtype(p_payload, vtype);
 }
 void streams::ExternalDataStreamConstructor::set_resolution(
-        resolution_t resolution)
+        resolution_t resolution
+)
 {
     p_factory->set_resolution(p_payload, resolution);
 }
@@ -208,8 +235,10 @@ void streams::ExternalDataStreamConstructor::set_schema(
     p_factory->set_schema(p_payload, std::move(schema));
 }
 
-void streams::ExternalDataStreamConstructor::add_option(const string& option,
-                                                        void* value)
+void streams::ExternalDataStreamConstructor::add_option(
+        const string& option,
+        void* value
+)
 {
     p_factory->add_option(p_payload, option, value);
 }
@@ -219,8 +248,6 @@ streams::Stream streams::ExternalDataStreamConstructor::construct()
     p_payload = nullptr;
     return p_factory->construct_stream(payload);
 }
-
-
 
 // #include <roughpy/platform/archives.h>
 // RPY_SERIAL_REGISTER_CLASS(rpy::streams::ExternalDataStream)

@@ -1,0 +1,8 @@
+==================================
+RoughPy v0.0.2 alpha Release Notes
+==================================
+
+* Added datetime and timedelta object support to tick data parsing.
+* Expanded build system to include more versions of Python.
+* Stabilised compilation on all three platforms.
+* Fixed numerous bugs in the build system.

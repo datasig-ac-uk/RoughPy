@@ -107,7 +107,7 @@ dimn_t SoundFileDataSource::query_impl(
     result.allocate_scalars(frame_count * width);
 
     auto stride = info.bytes * width;
-    auto* write_ptr = result.as_mut_slice<char>().data();
+    auto* write_ptr = static_cast<byte*>(result.mut_buffer().ptr());
 
     scalars::ScalarArray out(ctype, write_ptr, width);
     for (sf_count_t row_idx = 0; row_idx < frame_count; ++row_idx) {
@@ -352,6 +352,8 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
 
     if (!pl->schema) {
         pl->schema = std::make_shared<StreamSchema>(meta.width);
+    } else if (!pl->schema->is_final()) {
+        pl->schema->finalize(meta.width);
     }
 
     // Let the library handle normalisation

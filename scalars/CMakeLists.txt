@@ -5,15 +5,25 @@ project(RoughPyScalars
         LANGUAGES CXX)
 
 
-
 add_roughpy_component(Scalars
-    PUBLIC_HEADERS
+        PUBLIC_HEADERS
+        include/roughpy/scalars/devices/buffer.h
+        include/roughpy/scalars/devices/core.h
+        include/roughpy/scalars/devices/device_handle.h
+        include/roughpy/scalars/devices/device_provider.h
+        include/roughpy/scalars/devices/event.h
+        include/roughpy/scalars/devices/host_device.h
+        include/roughpy/scalars/devices/kernel.h
+        include/roughpy/scalars/devices/kernel_arg.h
+        include/roughpy/scalars/devices/macros.h
+        include/roughpy/scalars/devices/queue.h
+        include/roughpy/scalars/devices/types.h
+        include/roughpy/scalars/devices.h
         include/roughpy/scalars/key_scalar_array.h
         include/roughpy/scalars/key_scalar_stream.h
         include/roughpy/scalars/packed_scalar_type_ptr.h
         include/roughpy/scalars/scalar.h
         include/roughpy/scalars/scalar_array.h
-        include/roughpy/scalars/scalar_array_view.h
         include/roughpy/scalars/scalar_interface.h
         include/roughpy/scalars/scalar_serialization.h
         include/roughpy/scalars/scalar_stream.h
@@ -23,7 +33,56 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/traits.h
         include/roughpy/scalars.h
-    SOURCES
+        SOURCES
+        src/devices/host/host_buffer.cpp
+        src/devices/host/host_buffer.h
+        src/devices/host/host_decls.h
+        src/devices/host/host_device_impl.cpp
+        src/devices/host/host_device_impl.h
+        src/devices/host/host_device_provider.cpp
+        src/devices/host/host_device_provider.h
+        src/devices/host/host_event.cpp
+        src/devices/host/host_event.h
+        src/devices/host/host_kernel.cpp
+        src/devices/host/host_kernel.h
+        src/devices/host/host_queue.cpp
+        src/devices/host/host_queue.h
+        src/devices/opencl/ocl_buffer.cpp
+        src/devices/opencl/ocl_buffer.h
+        src/devices/opencl/ocl_decls.h
+        src/devices/opencl/ocl_device.cpp
+        src/devices/opencl/ocl_device.h
+        src/devices/opencl/ocl_device_provider.cpp
+        src/devices/opencl/ocl_device_provider.h
+        src/devices/opencl/ocl_event.cpp
+        src/devices/opencl/ocl_event.h
+        src/devices/opencl/ocl_handle_errors.cpp
+        src/devices/opencl/ocl_handle_errors.h
+        src/devices/opencl/ocl_headers.h
+        src/devices/opencl/ocl_helpers.cpp
+        src/devices/opencl/ocl_helpers.h
+        src/devices/opencl/ocl_kernel.cpp
+        src/devices/opencl/ocl_kernel.h
+        src/devices/opencl/ocl_queue.cpp
+        src/devices/opencl/ocl_queue.h
+        src/devices/opencl/ocl_version.cpp
+        src/devices/opencl/ocl_version.h
+        src/devices/buffer.cpp
+        src/devices/buffer_interface.cpp
+        src/devices/core.cpp
+        src/devices/device_handle.cpp
+        src/devices/device_interface_base.cpp
+        src/devices/device_provider.cpp
+        src/devices/event.cpp
+        src/devices/event_interface.cpp
+        src/devices/rational_numbers.cpp
+        src/devices/get_device.cpp
+        src/devices/kernel.cpp
+        src/devices/kernel_arg.cpp
+        src/devices/kernel_interface.cpp
+        src/devices/kernel_launch_params.cpp
+        src/devices/queue.cpp
+        src/devices/queue_interface.cpp
         src/random/random_impl.cpp
         src/random/random_impl.h
         src/random/standard_random_generator.cpp
@@ -35,6 +94,7 @@ add_roughpy_component(Scalars
         src/scalar/comparison.cpp
         src/scalar/comparison.h
         src/scalar/do_macro.h
+        src/scalar/packed_type.h
         src/scalar/print.cpp
         src/scalar/print.h
         src/scalar/raw_bytes.cpp
@@ -65,35 +125,48 @@ add_roughpy_component(Scalars
         src/random.cpp
         src/scalar.cpp
         src/scalar_array.cpp
-        src/scalar_array_view.cpp
+        src/scalar_array_element.cpp
+        src/scalar_array_element.h
         src/scalar_interface.cpp
         src/scalar_serialization.cpp
         src/scalar_stream.cpp
         src/scalar_type.cpp
         src/scalar_type_of.cpp
-    DEPENDENCIES
+        DEPENDENCIES
         PUBLIC
-            Boost::boost
+        Boost::boost
+        Libalgebra_lite::Libalgebra_lite
         PRIVATE
-            PCGRandom::pcg_random
+        PCGRandom::pcg_random
+        OpenCL::OpenCL
+        GMP::GMP
+        Eigen3::Eigen
         NEEDS
-            RoughPy::Core
-            RoughPy::Platform
+        RoughPy::Core
+        RoughPy::Platform
 )
 
 target_precompile_headers(RoughPy_Scalars PRIVATE
+        <boost/multiprecision/gmp.hpp>
+        <libalgebra_lite/coefficients.h>
+        <libalgebra_lite/polynomial.h>
+)
+target_precompile_headers(RoughPy_Scalars PRIVATE
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/scalar_types.h
-        <roughpy/platform/devices.h>
 )
 
 add_roughpy_test(scalars
-    SRC
+        SRC
         src/test_key_scalar_array.cpp
         src/test_monomial.cpp
         src/test_pcg_standard_random.cpp
         src/test_scalar.cpp
         src/test_scalar_type.cpp
-    NEEDS
+        src/devices/test_cpu_device.cpp
+        src/devices/test_gpu_device.cpp
+        DEP
+        OpenCL::OpenCL
+        NEEDS
         RoughPy::Scalars
 )

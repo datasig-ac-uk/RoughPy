@@ -1,0 +1,5 @@
+==================================
+RoughPy v0.0.1 alpha Release Notes
+==================================
+
+* First alpha release.

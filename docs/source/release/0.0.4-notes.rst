@@ -1,0 +1,10 @@
+===========================
+RoughPy 0.0.4 Release Notes
+===========================
+
+* Overhauled the RPY_CHECK macro so it now gives much better contextual information.
+* Readme updated to reflect PyPI installation with wheels.
+* Antipode is now implemented in libalgebra_lite, and exposed to Python for Free tensors.
+* Streams now carry a support interval, outside of which the signature will be return trivial.
+* Build requirements fixed for non x86 platforms.
+* Expanded coverage of pytype stub file.

@@ -29,72 +29,71 @@
 //
 // Created by user on 02/03/23.
 //
-#include <roughpy/algebra/basis.h>
 #include "basis_key.h"
+#include <roughpy/algebra/basis.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
 
-
 Basis::~Basis() = default;
 
-bool Basis::less(BasisKey RPY_UNUSED_VAR k1,
-                 BasisKey RPY_UNUSED_VAR k2) const noexcept
+dimn_t Basis::max_dimension() const noexcept { return 0; }
+
+bool Basis::less(BasisKey RPY_UNUSED_VAR k1, BasisKey RPY_UNUSED_VAR k2) const
 {
-    return false;
+    RPY_THROW(std::runtime_error, "basis is not ordered");
 }
 
-dimn_t Basis::to_index(BasisKey RPY_UNUSED_VAR key) const {
-    return 0;
-}
-
-BasisKey Basis::to_key(dimn_t index) const {
-    return BasisKey();
-}
-
-
-KeyRange Basis::iterate_keys() const noexcept
+dimn_t Basis::to_index(BasisKey RPY_UNUSED_VAR key) const
 {
-    return KeyRange();
+    RPY_THROW(std::runtime_error, "basis is not ordered");
 }
 
-deg_t Basis::max_degree() const noexcept
+BasisKey Basis::to_key(dimn_t index) const
 {
-    return 0;
+    RPY_THROW(std::runtime_error, "basis is not ordered");
 }
 
-deg_t Basis::degree(BasisKey RPY_UNUSED_VAR key) const noexcept
+KeyRange Basis::iterate_keys() const
 {
-    return 0;
+    RPY_THROW(std::runtime_error, "basis is not ordered");
 }
 
-KeyRange Basis::iterate_keys_of_degree(deg_t degree) const noexcept
+deg_t Basis::max_degree() const
 {
-    return KeyRange();
+    RPY_THROW(std::runtime_error, "basis is not graded");
 }
 
-
-deg_t Basis::alphabet_size() const noexcept
+deg_t Basis::degree(BasisKey RPY_UNUSED_VAR key) const
 {
-    return 0;
+    RPY_THROW(std::runtime_error, "basis is not graded");
 }
 
-bool Basis::is_letter(BasisKey RPY_UNUSED_VAR key) const noexcept
+KeyRange Basis::iterate_keys_of_degree(deg_t degree) const
 {
-    return false;
+    RPY_THROW(std::runtime_error, "basis is not graded or ordered");
 }
 
-let_t Basis::get_letter(BasisKey RPY_UNUSED_VAR key) const noexcept
+deg_t Basis::alphabet_size() const
 {
-    return 0;
+    RPY_THROW(std::runtime_error, "basis is not word-like");
 }
 
-pair<optional<BasisKey>,
-     optional<BasisKey>> Basis::parents(BasisKey RPY_UNUSED_VAR key) const noexcept
+bool Basis::is_letter(BasisKey RPY_UNUSED_VAR key) const
 {
-    return pair<optional<BasisKey>, optional<BasisKey >>();
+    RPY_THROW(std::runtime_error, "basis is not word-like");
 }
 
+let_t Basis::get_letter(BasisKey RPY_UNUSED_VAR key) const
+{
+    RPY_THROW(std::runtime_error, "basis is not word-like");
+}
+
+pair<optional<BasisKey>, optional<BasisKey>>
+Basis::parents(BasisKey RPY_UNUSED_VAR key) const
+{
+    RPY_THROW(std::runtime_error, "basis is not word-like");
+}
 
 void rpy::algebra::intrusive_ptr_add_ref(const Basis* ptr) noexcept
 {
@@ -106,4 +105,10 @@ void rpy::algebra::intrusive_ptr_release(const Basis* ptr) noexcept
 {
     using ptr_type = boost::intrusive_ref_counter<Basis>;
     intrusive_ptr_release(static_cast<const ptr_type*>(ptr));
+}
+
+BasisComparison Basis::compare(BasisPointer other) const noexcept
+{
+    if (other == this) { return BasisComparison::IsSame; }
+    return BasisComparison::IsNotCompatible;
 }

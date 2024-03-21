@@ -1,0 +1,13 @@
+============================
+RoughPy v0.0.3 Release Notes
+============================
+
+* Added datetime interval support.
+* Integrated schema reparametrisation into stream signature methods.
+* Fixed bug in names of scalar types, names now display correctly.
+* Fixed bfloat16 given wrong scalar type code.
+* Added half precision float and bfloat16 to py module
+* Added real partition class and Python interface.
+* Implemented simplify method on Streams.
+* Added polynomial coefficients
+* started an examples folder

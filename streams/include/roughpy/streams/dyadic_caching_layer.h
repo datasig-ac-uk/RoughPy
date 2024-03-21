@@ -60,7 +60,7 @@ namespace streams {
  */
 class ROUGHPY_STREAMS_EXPORT DyadicCachingLayer : public StreamInterface
 {
-    mutable std::map<intervals::DyadicInterval, algebra::Lie> m_cache;
+    mutable std::map<intervals::DyadicInterval, optional<algebra::Lie>> m_cache;
     mutable std::recursive_mutex m_compute_lock;
 
     uuids::uuid m_cache_id;

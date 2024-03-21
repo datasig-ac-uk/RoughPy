@@ -1,0 +1,9 @@
+===========================
+RoughPy 0.0.5 Release Notes
+===========================
+
+* Added free functions for performing free-tensor, shuffle, half-shuffle multiplication between pairs of tensors (of either kind).
+* Added free function for applying the adjoint of left free tensor multiplication to arbitrary tensors.
+* Improved exception usage, messages now include filename, lineno, and function name to help locate c++ exceptions passed through to Python.
+* Basis objects in Python are now iterable.
+* Added ``split_n`` and ``to_index`` methods to Tensor key.

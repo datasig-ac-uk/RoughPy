@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 01/11/23.
@@ -44,10 +45,10 @@
             break;                                                             \
         case devices::TypeCode::UInt:                                          \
             switch (INFO.bytes) {                                              \
-                case 1: X(uint8_t);                                             \
-                case 2: X(uint16_t);                                            \
-                case 4: X(uint32_t);                                            \
-                case 8: X(uint64_t);                                            \
+                case 1: X(uint8_t);                                            \
+                case 2: X(uint16_t);                                           \
+                case 4: X(uint32_t);                                           \
+                case 8: X(uint64_t);                                           \
             }                                                                  \
             break;                                                             \
         case devices::TypeCode::Float:                                         \
@@ -71,7 +72,8 @@
         case devices::TypeCode::ArbitraryPrecisionRational:                    \
             X(rational_scalar_type);                                           \
         case devices::TypeCode::APRationalPolynomial: X(rational_poly_scalar); \
+        case devices::TypeCode::KeyType:                                       \
+            RPY_THROW(std::runtime_error, "keytype is not a scalar");          \
     }
-
 
 #endif// ROUGHPY_SCALARS_SRC_SCALAR_DO_MACRO_H_

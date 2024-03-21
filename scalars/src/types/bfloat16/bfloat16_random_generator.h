@@ -8,7 +8,6 @@
 #include "random/standard_random_generator.h"
 #include "scalar_types.h"
 
-
 namespace rpy {
 namespace scalars {
 
@@ -31,18 +30,20 @@ public:
     RPY_NO_DISCARD std::vector<seed_int_t> get_seed() const override;
     RPY_NO_DISCARD std::string get_type() const override;
     RPY_NO_DISCARD std::string get_state() const override;
-    RPY_NO_DISCARD ScalarArray uniform_random_scalar(const ScalarArray& lower,
-        const ScalarArray& upper,
-        dimn_t count) const override;
-    RPY_NO_DISCARD ScalarArray normal_random(Scalar loc,
-                                             Scalar scale,
-                                             dimn_t count) const override;
+    RPY_NO_DISCARD ScalarArray uniform_random_scalar(
+            const ScalarArray& lower,
+            const ScalarArray& upper,
+            dimn_t count
+    ) const override;
+    RPY_NO_DISCARD ScalarArray
+    normal_random(Scalar loc, Scalar scale, dimn_t count) const override;
 };
 
 template <typename BitGenerator>
 StandardRandomGenerator<bfloat16, BitGenerator>::StandardRandomGenerator(
-    const ScalarType* stype,
-    Slice<seed_int_t> seed)
+        const ScalarType* stype,
+        Slice<seed_int_t> seed
+)
     : RandomGenerator(stype)
 {
     RPY_CHECK(p_type == *ScalarType::of<bfloat16>());
@@ -50,24 +51,28 @@ StandardRandomGenerator<bfloat16, BitGenerator>::StandardRandomGenerator(
         m_seed.resize(1);
         auto& s = m_seed[0];
         std::random_device dev;
-        auto continue_bits = static_cast<idimn_t>(sizeof(seed_int_t) *
-            CHAR_BIT);
+        auto continue_bits
+                = static_cast<idimn_t>(sizeof(seed_int_t) * CHAR_BIT);
 
-        constexpr auto so_rd_int = static_cast<idimn_t>(sizeof(typename
-            std::random_device::result_type) * CHAR_BIT);
+        constexpr auto so_rd_int = static_cast<idimn_t>(
+                sizeof(typename std::random_device::result_type) * CHAR_BIT
+        );
         while (continue_bits > 0) {
             s <<= so_rd_int;
             s |= static_cast<seed_int_t>(dev());
             continue_bits -= so_rd_int;
         }
-    } else { m_seed = seed; }
+    } else {
+        m_seed = seed;
+    }
 
     m_generator = BitGenerator(m_seed[0]);
 }
 
 template <typename BitGenerator>
 void StandardRandomGenerator<bfloat16, BitGenerator>::set_seed(
-    Slice<seed_int_t> seed_data)
+        Slice<seed_int_t> seed_data
+)
 {
     RPY_CHECK(seed_data.size() >= 1);
 
@@ -76,8 +81,9 @@ void StandardRandomGenerator<bfloat16, BitGenerator>::set_seed(
 }
 
 template <typename BitGenerator>
-void StandardRandomGenerator<bfloat16, BitGenerator>::
-set_state(string_view state)
+void StandardRandomGenerator<bfloat16, BitGenerator>::set_state(
+        string_view state
+)
 {
     // add a linebreak char to terminate the string to avoid a bug in the pcg
     // stream read function
@@ -86,8 +92,11 @@ set_state(string_view state)
 }
 
 template <typename BitGenerator>
-std::vector<seed_int_t> StandardRandomGenerator<bfloat16, BitGenerator>::
-get_seed() const { return {m_seed[0]}; }
+std::vector<seed_int_t>
+StandardRandomGenerator<bfloat16, BitGenerator>::get_seed() const
+{
+    return {m_seed[0]};
+}
 
 template <typename BitGenerator>
 std::string StandardRandomGenerator<bfloat16, BitGenerator>::get_type() const
@@ -104,32 +113,33 @@ std::string StandardRandomGenerator<bfloat16, BitGenerator>::get_state() const
 }
 
 template <typename BitGenerator>
-ScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::uniform_random_scalar(
-    const ScalarArray& lower,
-    const ScalarArray& upper,
-    dimn_t count) const
+ScalarArray
+StandardRandomGenerator<bfloat16, BitGenerator>::uniform_random_scalar(
+        const ScalarArray& lower,
+        const ScalarArray& upper,
+        dimn_t count
+) const
 {
     std::vector<std::uniform_real_distribution<float>> dists;
 
     if (lower.size() != upper.size()) {
         RPY_THROW(
-            std::invalid_argument,
-            "mismatch dimensions between lower and upper limits"
+                std::invalid_argument,
+                "mismatch dimensions between lower and upper limits"
         );
     }
 
     dists.reserve(lower.size());
     for (dimn_t i = 0; i < lower.size(); ++i) {
         dists.emplace_back(
-            scalar_cast<float>(lower[i]),
-            scalar_cast<float>(upper[i])
+                scalar_cast<float>(lower[i]),
+                scalar_cast<float>(upper[i])
         );
     }
 
     ScalarArray result(p_type, count * dists.size());
 
-    auto out_slice = result.as_mut_slice<scalar_type>();
-    auto* out = out_slice.data();
+    auto* out = reinterpret_cast<scalar_type*>(result.mut_buffer().ptr());
     for (dimn_t i = 0; i < count; ++i) {
         for (auto& dist : dists) {
             construct_inplace(out++, scalar_type(dist(m_generator)));
@@ -141,18 +151,18 @@ ScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::uniform_random_scal
 
 template <typename BitGenerator>
 ScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::normal_random(
-    Scalar loc,
-    Scalar scale,
-    dimn_t count) const
+        Scalar loc,
+        Scalar scale,
+        dimn_t count
+) const
 {
     ScalarArray result(p_type, count);
     std::normal_distribution<float> dist(
-        scalar_cast<float>(loc),
-        scalar_cast<float>(scale)
+            scalar_cast<float>(loc),
+            scalar_cast<float>(scale)
     );
 
-    auto out_slice = result.as_mut_slice<scalar_type>();
-    auto* out = out_slice.data();
+    auto* out = reinterpret_cast<scalar_type*>(result.mut_buffer().ptr());
     for (dimn_t i = 0; i < count; ++i) {
         construct_inplace(out++, scalar_type(dist(m_generator)));
     }
@@ -163,8 +173,7 @@ ScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::normal_random(
 extern template class StandardRandomGenerator<bfloat16, std::mt19937_64>;
 extern template class StandardRandomGenerator<bfloat16, pcg64>;
 
+}// namespace scalars
+}// namespace rpy
 
-}// scalars
-}// rpy
-
-#endif //BFLOAT16_RANDOM_GENERATOR_H
+#endif// BFLOAT16_RANDOM_GENERATOR_H

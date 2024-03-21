@@ -113,9 +113,11 @@ devices::TypeInfo compute_aprpoly_promotion(
     return dst_info;
 }
 
-devices::TypeInfo compute_promotion(
-        PackedScalarTypePointer<ScalarContentType> dst_type,
-        PackedScalarTypePointer<ScalarContentType> src_type
+}// namespace
+
+devices::TypeInfo scalars::dtl::compute_promotion(
+        scalars::dtl::PackedType dst_type,
+        scalars::dtl::PackedType src_type
 )
 {
     const auto dst_info = type_info_from(dst_type);
@@ -145,9 +147,6 @@ devices::TypeInfo compute_promotion(
 
     RPY_THROW(std::runtime_error, "cannot find suitable promotion");
 }
-
-}// namespace
-
 devices::TypeInfo scalars::dtl::compute_dest_type(
         PackedScalarTypePointer<ScalarContentType> dst_type,
         PackedScalarTypePointer<ScalarContentType> src_type
@@ -159,7 +158,7 @@ devices::TypeInfo scalars::dtl::compute_dest_type(
         case ScalarContentType::TrivialBytes:
         case ScalarContentType::ConstTrivialBytes:
         case ScalarContentType::OwnedPointer:
-            return compute_promotion(dst_type, src_type);
+            return compute_promotion(pack_type(dst_type), pack_type(src_type));
         case ScalarContentType::OpaquePointer:
         case ScalarContentType::ConstOpaquePointer:
         case ScalarContentType::Interface:

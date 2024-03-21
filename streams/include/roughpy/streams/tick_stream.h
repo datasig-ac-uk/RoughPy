@@ -45,7 +45,7 @@ namespace streams {
 class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface
 {
     std::vector<param_t> m_granular_times;
-    std::map<intervals::DyadicInterval, algebra::Lie> m_data;
+    std::map<intervals::DyadicInterval, optional<algebra::Lie>> m_data;
     resolution_t m_resolution;
 
     using DyadicInterval = intervals::DyadicInterval;
@@ -65,8 +65,8 @@ class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface
 
 public:
     TickStream(std::vector<param_t>&& granular_times,
-               std::map<intervals::DyadicInterval, algebra::Lie>&& data,
-               resolution_t resolution,
+            std::map<intervals::DyadicInterval, optional<algebra::Lie>>&& data,
+            resolution_t resolution,
                std::shared_ptr<streams::StreamSchema> schema,
                StreamMetadata&& md)
         : StreamInterface(std::move(md), std::move(schema)),

@@ -31,19 +31,33 @@
 //
 
 #include "hall_set_size.h"
+#include <mutex>
 
 using namespace rpy;
 using namespace rpy::algebra;
 
-HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth)
-    : m_width(width), m_depth(depth)
+/*
+ * The first 50 values of the Mobius function
+ * should be plenty, but we should include
+ * the ability to compute more if we need to.
+ */
+static std::vector<int32_t> s_mobius
+        = {0,// included so the index = argument
+           1, -1, -1, 0, -1, 1,  -1, 0,  0,  1, -1, 0,  -1, 1,  1, 0, -1,
+           0, -1, 0,  1, 1,  -1, 0,  0,  1,  0, 0,  -1, -1, -1, 0, 1, 1,
+           1, 0,  -1, 1, 1,  0,  -1, -1, -1, 0, 0,  1,  -1, 0,  0, 0};
+static std::mutex s_lock;
+
+int32_t mobius(int32_t value)
 {
-    if (static_cast<dimn_t>(m_depth) > m_mobius.size()) {
+    std::lock_guard<std::mutex> access(s_lock);
+
+    if (value >= s_mobius.size()) {
         std::vector<bool> tmp;
-        tmp.resize(m_depth / 2, true);
+        tmp.resize(value / 2, true);
         tmp[0] = false;
 
-        auto bound = m_depth / 2;
+        auto bound = value / 2;
         for (int i = 2; i < bound; ++i) {
             for (int j = 2, m = 2 * i; m < bound; ++j, m = i * j) {
                 tmp[m] = false;
@@ -64,26 +78,30 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth)
          * Odyssey, 421-432.
          */
 
-        auto old_size = static_cast<int>(m_mobius.size());
-        m_mobius.resize(m_depth + 1, 1);
+        auto old_size = static_cast<int32_t>(s_mobius.size());
+        s_mobius.resize(value + 1, 1);
         for (auto& prime : primes) {
-            for (deg_t i = (old_size / prime) + 1, m = i * prime; m <= m_depth;
+            for (deg_t i = (old_size / prime) + 1, m = i * prime; m <= value;
                  ++i) {
-                m_mobius[m] *= -prime;
+                s_mobius[m] *= -prime;
             }
             auto p2 = prime * prime;
-            for (deg_t i = (old_size / p2) + 1, m = i * p2; m <= m_depth; ++i) {
-                m_mobius[m] = 0;
+            for (deg_t i = (old_size / p2) + 1, m = i * p2; m <= value; ++i) {
+                s_mobius[m] = 0;
             }
         }
-        for (deg_t i = old_size + 1; i <= m_depth; ++i) {
-            if (abs(m_mobius[i]) != i) { m_mobius[i] = -m_mobius[i]; }
+        for (deg_t i = old_size + 1; i <= value; ++i) {
+            if (abs(s_mobius[i]) != i) { s_mobius[i] = -s_mobius[i]; }
             // Mobius[i] = sign(Mobius[i])
-            m_mobius[i] = static_cast<int>(0 < m_mobius[i])
-                    - static_cast<int>(m_mobius[i] < 0);
+            s_mobius[i] = static_cast<int32_t>(0 < s_mobius[i])
+                    - static_cast<int32_t>(s_mobius[i] < 0);
         }
     }
+
+    return s_mobius[value];
 }
+
+HallSetSizeHelper::HallSetSizeHelper(deg_t width) : m_width(width) {}
 
 /*
  * This is a special version of power for use in the computation of
@@ -97,7 +115,7 @@ static inline dimn_t power(deg_t base, int exp)
             * power(base, exp / 2);
 }
 
-dimn_t HallSetSizeHelper::operator()(int k)
+dimn_t HallSetSizeHelper::operator()(int32_t k) const noexcept
 {
     dimn_t result = 0;
 
@@ -106,7 +124,7 @@ dimn_t HallSetSizeHelper::operator()(int k)
         if (divs.rem == 0) {
             auto comp = k / divs.quot;
             result += static_cast<dimn_t>(
-                    m_mobius[divs.quot] * power(m_width, comp)
+                    mobius(divs.quot) * power(m_width, comp)
             );
         }
     }

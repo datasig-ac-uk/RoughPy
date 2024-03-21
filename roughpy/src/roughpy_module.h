@@ -37,6 +37,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/errors.h>
 
@@ -66,6 +67,22 @@ template <typename T>
 inline PyObject* cast_to_object(T&& arg) noexcept
 {
     return py::cast(std::forward<T>(arg)).release().ptr();
+}
+
+inline py::object kwargs_pop(py::kwargs& kwargs, const char* name)
+{
+    auto arg = py::reinterpret_borrow<py::object>(kwargs[name]);
+    PyDict_DelItemString(kwargs.ptr(), name);
+    return arg;
+}
+
+void check_for_excess_arguments(const py::kwargs& kwargs);
+
+template <typename T>
+enable_if_t<is_base_of<py::object, T>::value, T> steal_as(py::object& obj
+) noexcept
+{
+    return py::reinterpret_steal<T>(obj.release().ptr());
 }
 
 }// namespace python

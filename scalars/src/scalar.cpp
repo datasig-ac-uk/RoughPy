@@ -33,12 +33,12 @@
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/traits.h>
 
+#include "devices/types.h"
 #include "scalar/arithmetic.h"
 #include "scalar/casts.h"
 #include "scalar/comparison.h"
 #include "scalar/print.h"
 #include "scalar/raw_bytes.h"
-#include <roughpy/platform/devices/types.h>
 
 #include <stdexcept>
 

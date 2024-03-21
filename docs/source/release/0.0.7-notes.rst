@@ -1,0 +1,23 @@
+===========================
+RoughPy 0.0.7 Release Notes
+===========================
+
+* Overhaul the (internal) ScalarType API:
+
+    * the overloads of convert_copy have been removed in favour of the variant that takes two ScalarPointers;
+    * the single versions of add(_inplace) and friends have been replaced with more flexible add_into; batch compute methods and friends;
+    * replaced single value uminus with uminus into with similar signature to to add_into and friends;
+    * removed single value copy method;
+* Added constructor for ScalarPointer from type_id and pointer.
+* Implementations of ScalarType methods that are essentially the same for all types are implemented in a common implementation layer.
+* Added threading support in platform
+* add_into and friends have threading support if available and enabled.
+* Added default implementation of type_id_of so that non-specialized types look for a ScalarType object.
+* Greatly simplified the design of ScalarMatrix - it now only supports full, dense matrices.
+* Redesigned the interface between the Scalar linear algebra and MKL/BLAS+LAPACK.
+* Added function to query ring characteristics of a ScalarType - currently unused.
+* Added KeyScalarStream for constructing streams from array-like data more easily.
+* Implemented the ``from_type_details`` function for scalar types. This fixes a bug when constructing objects using the dlpack protocol.
+* Overhaul constructor for ``LieIncrementStream`` from increment data to reduce number of copies (if possible) and to handle non-contiguous or oddly shaped data correctly.
+* Change implementation of ``LieIncrementStream`` to allow adding the parameter channel during construction.
+* Change implementation of ``TickStream`` to allow adding parameter channel during construction.
