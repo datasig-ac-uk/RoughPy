@@ -14,6 +14,7 @@ add_roughpy_component(Core INTERFACE
         include/roughpy/core/types.h
         include/roughpy/core/traits.h
         include/roughpy/core/macros.h
+        include/roughpy/core/ranges.h
         include/roughpy/core/helpers.h
         include/roughpy/core/slice.h
         DEPENDENCIES INTERFACE

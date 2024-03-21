@@ -17,6 +17,9 @@
     "name" : "boost-core",
     "version>=" : "1.83.0"
   }, {
+    "name" : "boost-range",
+    "version>=" : "1.83.0"
+  },{
     "name" : "boost-url",
     "version>=" : "1.83.0"
   }, {
