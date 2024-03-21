@@ -21,9 +21,12 @@ class TensorBasis : public Basis
 
     std::vector<dimn_t> m_degree_sizes;
 
-public:
     TensorBasis(deg_t width, deg_t depth);
 
+public:
+    static constexpr string_view basis_id = "tensor_basis";
+
+    dimn_t max_dimension() const noexcept override;
     virtual bool has_key(BasisKey key) const noexcept override;
     virtual string to_string(BasisKey key) const override;
     virtual bool equals(BasisKey k1, BasisKey k2) const override;
@@ -41,6 +44,10 @@ public:
     let_t get_letter(BasisKey key) const override;
     pair<optional<BasisKey>, optional<BasisKey>> parents(BasisKey key
     ) const override;
+
+    BasisComparison compare(BasisPointer other) const noexcept override;
+
+    static BasisPointer get(deg_t width, deg_t depth);
 };
 
 }// namespace algebra

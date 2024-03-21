@@ -16,7 +16,8 @@ using namespace rpy;
 using namespace rpy::algebra;
 
 TensorBasis::TensorBasis(rpy::deg_t width, rpy::deg_t depth)
-    : m_width(width),
+    : Basis(basis_id, {true, true, true}),
+      m_width(width),
       m_depth(depth)
 {
     m_degree_sizes.reserve(depth + 1);
@@ -29,6 +30,7 @@ TensorBasis::TensorBasis(rpy::deg_t width, rpy::deg_t depth)
     }
 }
 
+dimn_t TensorBasis::max_dimension() const noexcept { return m_max_dimension; }
 namespace {
 
 deg_t index_to_degree(
@@ -197,4 +199,30 @@ pair<optional<BasisKey>, optional<BasisKey>> TensorBasis::parents(BasisKey key
 ) const
 {
     return Basis::parents(key);
+}
+
+static std::mutex s_tensor_basis_lock;
+static std::unordered_map<
+        pair<deg_t, deg_t>,
+        BasisPointer,
+        hash<pair<deg_t, deg_t>>>
+        s_tensor_basis_cache;
+
+BasisPointer TensorBasis::get(deg_t width, deg_t depth)
+{
+    std::lock_guard<std::mutex> access(s_tensor_basis_lock);
+    auto& basis = s_tensor_basis_cache[{width, depth}];
+    if (!basis) { basis = new TensorBasis(width, depth); }
+    return basis;
+}
+
+BasisComparison TensorBasis::compare(BasisPointer other) const noexcept
+{
+    if (other == this) { return BasisComparison::IsSame; }
+
+    if (other->id() == basis_id && other->alphabet_size() == m_width) {
+        return BasisComparison::IsCompatible;
+    }
+
+    return BasisComparison::IsNotCompatible;
 }

@@ -171,6 +171,13 @@ public:
     }
 };
 
+enum class BasisComparison
+{
+    IsSame,
+    IsCompatible,
+    IsNotCompatible
+};
+
 class ROUGHPY_ALGEBRA_EXPORT Basis : public boost::intrusive_ref_counter<Basis>
 {
     struct Flags {
@@ -179,11 +186,19 @@ class ROUGHPY_ALGEBRA_EXPORT Basis : public boost::intrusive_ref_counter<Basis>
         bool is_word_like : 1;
     };
 
+    const string_view m_basis_id;
+
     Flags m_flags;
-    dimn_t m_max_dimension;
 
 public:
+    Basis(string_view id_string, Flags flags)
+        : m_basis_id(id_string),
+          m_flags(flags)
+    {}
+
     virtual ~Basis();
+
+    RPY_NO_DISCARD string_view id() const noexcept { return m_basis_id; }
 
     RPY_NO_DISCARD bool is_ordered() const noexcept
     {
@@ -217,10 +232,16 @@ public:
      */
     RPY_NO_DISCARD virtual hash_t hash(BasisKey k1) const = 0;
 
-    RPY_NO_DISCARD dimn_t max_dimension() const noexcept
-    {
-        return m_max_dimension;
-    };
+    /**
+     * @brief Get the max dimension supported by this basis
+     * @return maximum dimension of the basis
+     *
+     * In mathematical terms, this is simply the dimension of the vector space
+     * spanned by the basis. However, in this context, a basis might actually
+     * represent a family of graded bases and so the dimension might not be a
+     * well defined number. The maximum dimension is well defined.
+     */
+    RPY_NO_DISCARD virtual dimn_t max_dimension() const noexcept;
 
     /*
      * Ordered basis functions
@@ -255,7 +276,7 @@ public:
      * Graded basis functions
      */
 
-    RPY_NO_DISCARD virtual deg_t max_degree() const noexcept;
+    RPY_NO_DISCARD virtual deg_t max_degree() const;
 
     /**
      * @brief Get the degree of a key
@@ -269,7 +290,7 @@ public:
     /*
      * Word-like basis functions
      */
-    RPY_NO_DISCARD virtual deg_t alphabet_size() const noexcept;
+    RPY_NO_DISCARD virtual deg_t alphabet_size() const;
 
     RPY_NO_DISCARD virtual bool is_letter(BasisKey key) const;
 
@@ -277,7 +298,16 @@ public:
 
     RPY_NO_DISCARD virtual pair<optional<BasisKey>, optional<BasisKey>>
     parents(BasisKey key) const;
+
+    RPY_NO_DISCARD virtual BasisComparison compare(BasisPointer other
+    ) const noexcept;
 };
+
+inline BasisComparison compare(BasisPointer lhs, BasisPointer rhs)
+{
+
+    return (lhs && rhs) ? lhs->compare(rhs) : BasisComparison::IsNotCompatible;
+}
 
 // Just for completeness, declare these functions again
 ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_add_ref(const Basis* ptr) noexcept;

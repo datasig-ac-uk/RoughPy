@@ -17,6 +17,7 @@
 
 #include "algebra_fwd.h"
 #include "basis.h"
+#include "key_array.h"
 
 namespace rpy {
 namespace algebra {
@@ -29,7 +30,7 @@ class VectorIterator;
 class Vector
 {
     scalars::ScalarArray m_scalar_buffer;
-    devices::Buffer m_key_buffer;
+    KeyArray m_key_buffer;
 
     BasisPointer p_basis;
 
@@ -97,7 +98,7 @@ protected:
     }
     RPY_NO_DISCARD const devices::Buffer& key_buffer() const noexcept
     {
-        return m_key_buffer;
+        return m_key_buffer.buffer();
     }
 
     RPY_NO_DISCARD bool fast_is_zero() const noexcept

@@ -90,7 +90,10 @@ public:
     }
 };
 
-LieBasis::LieBasis(deg_t width, deg_t depth) : m_width(width), m_depth(depth)
+LieBasis::LieBasis(deg_t width, deg_t depth)
+    : Basis(basis_id, {true, true, true}),
+      m_width(width),
+      m_depth(depth)
 {
     static std::mutex s_lock;
     static std::unordered_map<deg_t, std::shared_ptr<HallSet>> s_cache;
@@ -100,6 +103,11 @@ LieBasis::LieBasis(deg_t width, deg_t depth) : m_width(width), m_depth(depth)
     if (!hallset) { hallset = std::make_shared<HallSet>(width); }
     hallset->grow(depth);
     p_hallset = hallset;
+}
+
+dimn_t algebra::LieBasis::max_dimension() const noexcept
+{
+    return m_max_dimension;
 }
 
 bool LieBasis::has_key(BasisKey key) const noexcept { return false; }
@@ -215,4 +223,29 @@ void LieBasis::HallSet::grow(rpy::deg_t degree)
             ++m_degree;
         }
     }
+}
+
+static std::mutex s_lie_lock;
+static std::unordered_map<
+        pair<deg_t, deg_t>,
+        BasisPointer,
+        hash<pair<deg_t, deg_t>>>
+        s_lie_basis_cache;
+
+BasisPointer algebra::LieBasis::get(deg_t width, deg_t depth)
+{
+    std::lock_guard<std::mutex> access(s_lie_lock);
+    auto& basis = s_lie_basis_cache[{width, depth}];
+    if (!basis) { basis = new LieBasis(width, depth); }
+    return basis;
+}
+BasisComparison algebra::LieBasis::compare(BasisPointer other) const noexcept
+{
+    if (this == other) { return BasisComparison::IsSame; }
+
+    if (other->id() == basis_id && other->alphabet_size() == m_width) {
+        return BasisComparison::IsCompatible;
+    }
+
+    return BasisComparison::IsNotCompatible;
 }
