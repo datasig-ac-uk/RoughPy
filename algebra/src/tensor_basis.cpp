@@ -52,7 +52,7 @@ const TensorWord* cast_pointer_key(const BasisKey& key)
 {
     RPY_CHECK(key.is_valid_pointer());
     const auto* ptr = key.get_pointer();
-    RPY_CHECK(ptr->key_type() == "tensor_word");
+    RPY_CHECK(ptr->key_type() == TensorWord::key_name);
     return reinterpret_cast<const TensorWord*>(ptr);
 }
 
@@ -135,15 +135,15 @@ dimn_t TensorBasis::to_index(BasisKey key) const
 {
     if (key.is_index()) {
         auto index = key.get_index();
-        RPY_DBG_ASSERT(index <= max_dimension());
+        RPY_CHECK(index <= max_dimension());
         return index;
     }
 
     const auto* word = cast_pointer_key(key);
 
     dimn_t index = 0;
-
     for (const auto& let : *word) {
+        RPY_CHECK(let <= m_width);
         index *= m_width;
         index += let;
     }
@@ -177,7 +177,7 @@ deg_t TensorBasis::degree(BasisKey key) const
         RPY_CHECK(key.is_valid_pointer());
 
         const auto* ptr = cast_pointer_key(key);
-        return ptr->degree();
+        return static_cast<deg_t>(ptr->degree());
     }
 
     return index_to_degree(m_degree_sizes, key.get_index());

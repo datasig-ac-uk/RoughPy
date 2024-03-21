@@ -41,7 +41,7 @@ class KeyArray
     devices::Buffer m_buffer;
 
 public:
-    k
+
 
     KeyArray();
     KeyArray(const KeyArray&);
@@ -56,6 +56,9 @@ public:
 
     ~KeyArray();
 
+    RPY_NO_DISCARD bool empty() const noexcept { return m_buffer.empty(); }
+    RPY_NO_DISCARD dimn_t size() const noexcept { return m_buffer.size(); }
+
     KeyArray& operator=(const KeyArray&);
     KeyArray& operator=(KeyArray&&) noexcept;
 
@@ -65,6 +68,19 @@ public:
 
     devices::Buffer& mut_buffer() noexcept { return m_buffer; }
     const devices::Buffer& buffer() const noexcept { return m_buffer; }
+
+    RPY_NO_DISCARD Slice<const BasisKey> as_slice() const {
+        return m_buffer.as_slice<BasisKey>();
+    }
+
+    RPY_NO_DISCARD Slice<BasisKey> as_mut_slice() {
+        return m_buffer.as_mut_slice<BasisKey>();
+    }
+
+    RPY_NO_DISCARD KeyArray view() const { return KeyArray(m_buffer.map()); }
+    RPY_NO_DISCARD KeyArray mut_view() { return KeyArray(m_buffer.map()); }
+
+
 };
 
 }// namespace algebra

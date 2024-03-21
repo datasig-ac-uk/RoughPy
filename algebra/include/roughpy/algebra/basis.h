@@ -285,6 +285,8 @@ public:
      */
     RPY_NO_DISCARD virtual deg_t degree(BasisKey key) const;
 
+    RPY_NO_DISCARD virtual dimn_t dimension_to_degree(deg_t degree) const;
+
     RPY_NO_DISCARD virtual KeyRange iterate_keys_of_degree(deg_t degree) const;
 
     /*

@@ -5,6 +5,7 @@
 #include "vector.h"
 #include "basis.h"
 #include "basis_key.h"
+#include "mutable_vector_element.h"
 #include "vector_iterator.h"
 
 #include <roughpy/scalars/devices/core.h>
@@ -68,7 +69,8 @@ void Vector::resize_dim(rpy::dimn_t dim)
 
     if (is_sparse()) {
         const auto dhandle = device();
-        auto new_key_buffer = dhandle->alloc(basis_key_type_info, dim);
+        auto new_key_buffer
+                = KeyArray(dhandle->alloc(basis_key_type_info, dim));
         /*
          * I'm about to do something rather dangerous. I'm going to memcopy the
          * raw bytes of the keys over to the new buffer and then quietly release
@@ -77,17 +79,22 @@ void Vector::resize_dim(rpy::dimn_t dim)
          * constructors. This is essentially using a move operation on each of
          * the keys individually.
          */
-        dhandle->memcopy(new_key_buffer, m_key_buffer).wait();
-        dhandle->raw_free(m_key_buffer);
+        dhandle->memcopy(new_key_buffer.mut_buffer(), m_key_buffer.buffer())
+                .wait();
+        dhandle->raw_free(m_key_buffer.mut_buffer());
         m_key_buffer = std::move(new_key_buffer);
     }
 }
 
-void Vector::resize_degree(rpy::deg_t degree) {}
+void Vector::resize_degree(rpy::deg_t degree)
+{
+    auto new_size = p_basis->dimension_to_degree(degree);
+    resize_dim(new_size);
+}
 
 dimn_t Vector::dimension() const noexcept { return m_scalar_buffer.size(); }
 
-dimn_t Vector::size() const noexcept { return 0; }
+dimn_t Vector::size() const noexcept { return m_scalar_buffer.size(); }
 
 bool Vector::is_zero() const noexcept
 {
@@ -103,7 +110,7 @@ void Vector::set_zero()
 {
     if (is_sparse()) {
         m_scalar_buffer = scalars::ScalarArray(scalar_type());
-        m_key_buffer = devices::Buffer();
+        m_key_buffer = KeyArray();
     } else {
         auto kernel = get_kernel(UnaryInplace, "set_scalar", "");
         auto params = get_kernel_launch_params();
@@ -129,7 +136,7 @@ optional<dimn_t> Vector::get_index(rpy::algebra::BasisKey key) const noexcept
             return index >= dimension() ? optional<dimn_t>() : index;
         }
 
-        auto keys = m_key_buffer.as_slice<BasisKey>();
+        auto keys = m_key_buffer.as_slice();
 
         auto compare = [basis](const BasisKey& lhs, const BasisKey& rhs) {
             return basis->less(lhs, rhs);
@@ -142,7 +149,7 @@ optional<dimn_t> Vector::get_index(rpy::algebra::BasisKey key) const noexcept
             return static_cast<dimn_t>(found - begin);
         }
     } else {
-        auto keys = m_key_buffer.as_slice<BasisKey>();
+        auto keys = m_key_buffer.as_slice();
         const auto* begin = keys.begin();
         const auto* end = keys.end();
 
@@ -168,7 +175,7 @@ Vector::~Vector() = default;
 Vector::Vector(const Vector& other)
     : p_basis(other.p_basis),
       m_scalar_buffer(other.m_scalar_buffer),
-      m_key_buffer(other.m_key_buffer.clone())
+      m_key_buffer(other.m_key_buffer)
 {}
 
 Vector::Vector(Vector&& other) noexcept
@@ -183,7 +190,7 @@ Vector& Vector::operator=(const Vector& other)
         this->~Vector();
         p_basis = other.p_basis;
         m_scalar_buffer = other.m_scalar_buffer;
-        m_key_buffer = other.m_key_buffer.clone();
+        m_key_buffer = other.m_key_buffer;
     }
     return *this;
 }
@@ -201,24 +208,27 @@ Vector& Vector::operator=(Vector&& other) noexcept
 
 scalars::Scalar Vector::get(BasisKey key) const
 {
+    RPY_CHECK(p_basis->has_key(key));
     if (auto index = get_index(key)) { return m_scalar_buffer[*index]; }
     return scalars::Scalar();
 }
 
 scalars::Scalar Vector::get_mut(BasisKey key)
 {
-    if (auto index = get_index(key)) { return m_scalar_buffer[*index]; }
-    return scalars::Scalar();
+    using scalars::Scalar;
+    RPY_CHECK(p_basis->has_key(key));
+    return Scalar(std::make_unique<MutableVectorElement>(this, key));
 }
 
 Vector::const_iterator Vector::begin() const noexcept
 {
-    return {m_scalar_buffer.view(), m_key_buffer.map(), 0};
+    return {m_scalar_buffer.view(), m_key_buffer.view(), 0};
 }
 
 Vector::const_iterator Vector::end() const noexcept
 {
-    return {m_scalar_buffer.view(), m_key_buffer.map(), m_scalar_buffer.size()};
+    return {m_scalar_buffer.view(), m_key_buffer.view(), m_scalar_buffer.size()
+    };
 }
 
 scalars::Scalar Vector::operator[](BasisKey key) const { return get(key); }
@@ -325,16 +335,16 @@ void Vector::apply_binary_kernel(
 
             if (multiplier) {
                 kernel(params,
-                       m_key_buffer,
+                       m_key_buffer.mut_buffer(),
                        m_scalar_buffer.mut_buffer(),
-                       rhs.m_key_buffer,
+                       rhs.m_key_buffer.buffer(),
                        rhs.m_scalar_buffer.buffer(),
                        scalars::to_kernel_arg(*multiplier));
             } else {
                 kernel(params,
-                       m_key_buffer,
+                       m_key_buffer.mut_buffer(),
                        m_scalar_buffer.mut_buffer(),
-                       rhs.m_key_buffer,
+                       rhs.m_key_buffer.buffer(),
                        rhs.m_scalar_buffer.buffer());
             }
 
@@ -359,13 +369,13 @@ void Vector::apply_binary_kernel(
             if (multiplier) {
                 kernel(params,
                        m_scalar_buffer.mut_buffer(),
-                       rhs.m_key_buffer,
+                       rhs.m_key_buffer.buffer(),
                        rhs.m_scalar_buffer.buffer(),
                        scalars::to_kernel_arg(*multiplier));
             } else {
                 kernel(params,
                        m_scalar_buffer.mut_buffer(),
-                       rhs.m_key_buffer,
+                       rhs.m_key_buffer.buffer(),
                        rhs.m_scalar_buffer.buffer());
             }
 
@@ -424,20 +434,20 @@ void Vector::apply_binary_kernel(
 
         if (multiplier) {
             kernel(params,
-                   m_key_buffer,
+                   m_key_buffer.mut_buffer(),
                    m_scalar_buffer.mut_buffer(),
-                   lhs.m_key_buffer,
+                   lhs.m_key_buffer.buffer(),
                    lhs.m_scalar_buffer.buffer(),
-                   rhs.m_key_buffer,
+                   rhs.m_key_buffer.buffer(),
                    rhs.m_scalar_buffer.buffer(),
                    scalars::to_kernel_arg(*multiplier));
         } else {
             kernel(params,
-                   m_key_buffer,
+                   m_key_buffer.mut_buffer(),
                    m_scalar_buffer.mut_buffer(),
-                   lhs.m_key_buffer,
+                   lhs.m_key_buffer.buffer(),
                    lhs.m_scalar_buffer.buffer(),
-                   rhs.m_key_buffer,
+                   rhs.m_key_buffer.buffer(),
                    rhs.m_scalar_buffer.buffer());
         }
 
@@ -454,14 +464,14 @@ void Vector::apply_binary_kernel(
         if (multiplier) {
             kernel(params,
                    m_scalar_buffer.mut_buffer(),
-                   lhs.m_key_buffer,
+                   lhs.m_key_buffer.buffer(),
                    lhs.m_scalar_buffer.buffer(),
                    rhs.m_scalar_buffer.buffer(),
                    scalars::to_kernel_arg(*multiplier));
         } else {
             kernel(params,
                    m_scalar_buffer.mut_buffer(),
-                   lhs.m_key_buffer,
+                   lhs.m_key_buffer.buffer(),
                    lhs.m_scalar_buffer.buffer(),
                    rhs.m_scalar_buffer.buffer());
         }
@@ -473,14 +483,14 @@ void Vector::apply_binary_kernel(
             kernel(params,
                    m_scalar_buffer.mut_buffer(),
                    lhs.m_scalar_buffer.buffer(),
-                   rhs.m_key_buffer,
+                   rhs.m_key_buffer.buffer(),
                    rhs.m_scalar_buffer.buffer(),
                    scalars::to_kernel_arg(*multiplier));
         } else {
             kernel(params,
                    m_scalar_buffer.mut_buffer(),
                    lhs.m_scalar_buffer.buffer(),
-                   rhs.m_key_buffer,
+                   rhs.m_key_buffer.buffer(),
                    rhs.m_scalar_buffer.buffer());
         }
     } else {
@@ -509,7 +519,7 @@ Vector Vector::uminus() const
 {
     auto kernel = get_kernel(Unary, "uminus", "");
     scalars::ScalarArray out_data(scalar_type(), dimension());
-    devices::Buffer out_keys(m_key_buffer.clone());
+    KeyArray out_keys(m_key_buffer);
 
     auto launch_params = get_kernel_launch_params();
 
@@ -543,7 +553,7 @@ Vector Vector::left_smul(const scalars::Scalar& other) const
         auto params = get_kernel_launch_params();
 
         result.m_scalar_buffer = scalars::ScalarArray(stype, dimension());
-        result.m_key_buffer = m_key_buffer.clone();
+        result.m_key_buffer = m_key_buffer;
 
         kernel(params,
                result.m_scalar_buffer.mut_buffer(),
@@ -564,7 +574,7 @@ Vector Vector::right_smul(const scalars::Scalar& other) const
         auto params = get_kernel_launch_params();
 
         result.m_scalar_buffer = scalars::ScalarArray(stype, dimension());
-        result.m_key_buffer = m_key_buffer.clone();
+        result.m_key_buffer = m_key_buffer;
 
         kernel(params,
                result.m_scalar_buffer.mut_buffer(),

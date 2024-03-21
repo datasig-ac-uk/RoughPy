@@ -34,6 +34,9 @@ class Vector
 
     BasisPointer p_basis;
 
+
+    friend class MutableVectorElement;
+
 public:
     using iterator = VectorIterator;
     using const_iterator = VectorIterator;
@@ -90,7 +93,7 @@ protected:
     }
     RPY_NO_DISCARD devices::Buffer& mut_key_buffer() noexcept
     {
-        return m_key_buffer;
+        return m_key_buffer.mut_buffer();
     }
     RPY_NO_DISCARD const devices::Buffer& scalar_buffer() const noexcept
     {
@@ -110,6 +113,10 @@ protected:
 
     optional<dimn_t> get_index(BasisKey key) const noexcept;
 
+
+    void insert_element(BasisKey key, scalars::Scalar value);
+    void delete_element(BasisKey key, optional<dimn_t> index_hint);
+
 public:
     Vector();
 
@@ -127,7 +134,7 @@ public:
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
-           devices::Buffer&& key_buffer)
+           KeyArray&& key_buffer)
         : p_basis(std::move(basis)),
           m_scalar_buffer(std::move(scalar_data)),
           m_key_buffer(std::move(key_buffer))
@@ -143,7 +150,7 @@ public:
      */
     RPY_NO_DISCARD bool is_dense() const noexcept
     {
-        return m_key_buffer.is_null();
+        return m_key_buffer.empty();
     }
 
     /**
@@ -152,7 +159,7 @@ public:
      */
     RPY_NO_DISCARD bool is_sparse() const noexcept
     {
-        return !m_key_buffer.is_null();
+        return !m_key_buffer.empty();
     }
 
     RPY_NO_DISCARD VectorType vector_type() const noexcept

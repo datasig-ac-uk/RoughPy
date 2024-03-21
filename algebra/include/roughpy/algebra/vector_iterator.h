@@ -9,6 +9,7 @@
 #include "roughpy_algebra_export.h"
 
 #include "basis_key.h"
+#include "key_array.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
@@ -23,7 +24,7 @@ namespace algebra {
 class ROUGHPY_ALGEBRA_EXPORT VectorIterator
 {
     scalars::ScalarArray m_scalar_view;
-    devices::Buffer m_key_view;
+    KeyArray m_key_view;
 
     dimn_t m_index;
 
@@ -49,7 +50,7 @@ public:
 
     VectorIterator(
             scalars::ScalarArray data_view,
-            devices::Buffer key_view,
+            KeyArray key_view,
             dimn_t index = 0
     )
         : m_scalar_view(std::move(data_view)),

@@ -37,7 +37,7 @@ public:
 
     void push_back(let_t letter) { m_letters.push_back(letter); }
 
-    virtual string_view key_type() const noexcept;
+    string_view key_type() const noexcept override;
 
     dimn_t degree() const noexcept { return m_letters.size(); }
 

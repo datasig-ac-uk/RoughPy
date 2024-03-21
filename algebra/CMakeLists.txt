@@ -29,6 +29,8 @@ add_roughpy_component(Algebra
         src/key_range.cpp
         src/lie.cpp
         src/lie_basis.cpp
+        src/mutable_vector_element.cpp
+        src/mutable_vector_element.h
         src/tensor_basis.cpp
         src/tensor_key_iterator_state.cpp
         src/tensor_key_iterator_state.h
