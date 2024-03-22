@@ -53,16 +53,17 @@ using namespace pybind11::literals;
 static const char* LIE_DOC = R"edoc(
 
 Lie elements live in the free Lie Algebra.
-Group-like elements have a one-to-one correspondence with a stream.
-That is, for every group-like element, there exists a stream where the signature of that stream is the group-like element.
-For more information on Lie Algebras, see Reutenauer https://books.google.co.uk/books?id=cBvvAAAAMAAJ&redir_esc=y and Bourbaki https://link.springer.com/book/9783540642428.
+Group-like elements have a one-to-one correspondence with a :class:`stream`.
+That is, for every group-like element, there exists a :class:`stream` where the :py:meth:`~signature` of that :class:`stream` is the group-like element.
+For more information on Lie Algebras, see `Reutenauer <https://books.google.co.uk/books?id=cBvvAAAAMAAJ&redir_esc=y>`_ and `Bourbaki <https://link.springer.com/book/9783540642428>`_.
 
-You will most commonly encounter Lies when taking the log signature of a path.
-We can use the Dynkin map to transfer between Lies and signatures.
+You will most commonly encounter :class:`Lie` objects when taking the :py:meth:`~log_signature` of a path.
+We can use the Dynkin map to transfer between :class:`Lie` and :py:attr:`~signature` objects.
 
-To construct a Lie, you will need data. For example, we can construct a Lie using a list of polynomials.
+To construct a :class:`Lie`, you will need :py:data:`~data`. For example, we can construct a :class:`Lie` using a list of polynomials.
 
 .. code:: python
+
     >>> lie_data_x = [
         1 * roughpy.Monomial("x1"),  # channel (1)
         1 * roughpy.Monomial("x2"),  # channel (2)
@@ -78,24 +79,27 @@ To construct a Lie, you will need data. For example, we can construct a Lie usin
 
 You will also need to provide the following parameters:
 
-ctx
+``ctx``
     Provide an algebra context in which to create the algebra, takes priority over the next 3.
 
-OR
+Or
 
-dtype
-    Scalar type for the algebra (deprecated, use ctx instead). Can be a RoughPy data type (rp.SPReal, rp.DPReal, rp.Rational, rp.PolyRational), or a numpy dtype.
-depth
-    Maximum degree for Lies, tensors, etc. (deprecated, use ctx instead)
-width
-    Alphabet size, dimension of the underlying space (deprecated, use ctx instead)
+``dtype``
+    Scalar type for the algebra (deprecated, use ``ctx`` instead). Can be a ``RoughPy`` data type (``rp.SPReal``, ``rp.DPReal``, ``rp.Rational``, ``rp.PolyRational``), or a ``numpy`` dtype.
+
+``depth``
+    Maximum degree for :class:`Lie` and :class:`tensor` objects, etc. (deprecated, use ``ctx`` instead)
+
+``width``
+    Alphabet size, dimension of the underlying space (deprecated, use ``ctx`` instead)
 
 Optional parameters:
 
-vector_type
-    Dense or sparse
-keys
-    List/array of keys to go along with scalars provided as an array argument.
+``vector_type``
+    ``dense`` or ``sparse``
+
+``keys``
+    List/array of ``keys`` to go along with scalars provided as an array argument.
 
 )edoc";
 
