@@ -17,23 +17,85 @@
 
 #include "algebra_fwd.h"
 #include "basis.h"
+#include "basis_key.h"
 #include "key_array.h"
 
 namespace rpy {
 namespace algebra {
 
-class Basis;
-class BasisKey;
+class ROUGHPY_ALGEBRA_EXPORT VectorData
+{
+    scalars::ScalarArray m_scalar_buffer{};
+    KeyArray m_key_buffer{};
+    dimn_t m_size = 0;
+
+public:
+    explicit VectorData(scalars::ScalarArray&& scalars, KeyArray&& keys)
+        : m_scalar_buffer(std::move(scalars)),
+          m_key_buffer(std::move(keys)),
+          m_size(scalars.size())
+    {}
+
+    explicit VectorData(const scalars::ScalarType* type) : m_scalar_buffer(type)
+    {}
+
+    void reserve(dimn_t dim);
+    void resize(dimn_t dim);
+
+    RPY_NO_DISCARD dimn_t capacity() const noexcept
+    {
+        return m_scalar_buffer.size();
+    }
+    RPY_NO_DISCARD dimn_t size() const noexcept { return m_size; }
+
+    RPY_NO_DISCARD bool empty() const noexcept
+    {
+        return m_scalar_buffer.empty();
+    }
+
+    RPY_NO_DISCARD devices::Buffer& mut_scalar_Buffer() noexcept
+    {
+        return m_scalar_buffer.mut_buffer();
+    }
+    RPY_NO_DISCARD devices::Buffer& mut_key_buffer() noexcept
+    {
+        return m_key_buffer.mut_buffer();
+    }
+    RPY_NO_DISCARD const devices::Buffer& scalar_buffer() const noexcept
+    {
+        return m_scalar_buffer.buffer();
+    }
+    RPY_NO_DISCARD const devices::Buffer& key_buffer() const noexcept
+    {
+        return m_key_buffer.buffer();
+    }
+
+    RPY_NO_DISCARD scalars::ScalarArray& mut_scalars() noexcept
+    {
+        return m_scalar_buffer;
+    }
+    RPY_NO_DISCARD KeyArray& mut_keys() noexcept { return m_key_buffer; }
+    RPY_NO_DISCARD const scalars::ScalarArray& scalars() const noexcept
+    {
+        return m_scalar_buffer;
+    }
+    RPY_NO_DISCARD const KeyArray& keys() const noexcept
+    {
+        return m_key_buffer;
+    }
+
+    void insert_element(dimn_t index, dimn_t next_size, BasisKey key, scalars::Scalar value);
+    void delete_element(dimn_t index);
+
+
+};
 
 class VectorIterator;
 
-class Vector
+class ROUGHPY_ALGEBRA_EXPORT Vector
 {
-    scalars::ScalarArray m_scalar_buffer;
-    KeyArray m_key_buffer;
-
+    VectorData m_data;
     BasisPointer p_basis;
-
 
     friend class MutableVectorElement;
 
@@ -82,40 +144,24 @@ protected:
      * @brief Get the current size of the buffer
      * @return
      */
-    RPY_NO_DISCARD dimn_t buffer_size() const noexcept
-    {
-        return m_scalar_buffer.size();
-    }
-
-    RPY_NO_DISCARD devices::Buffer& mut_scalar_Buffer() noexcept
-    {
-        return m_scalar_buffer.mut_buffer();
-    }
-    RPY_NO_DISCARD devices::Buffer& mut_key_buffer() noexcept
-    {
-        return m_key_buffer.mut_buffer();
-    }
-    RPY_NO_DISCARD const devices::Buffer& scalar_buffer() const noexcept
-    {
-        return m_scalar_buffer.buffer();
-    }
-    RPY_NO_DISCARD const devices::Buffer& key_buffer() const noexcept
-    {
-        return m_key_buffer.buffer();
-    }
+    RPY_NO_DISCARD dimn_t buffer_size() const noexcept { return m_data.size(); }
 
     RPY_NO_DISCARD bool fast_is_zero() const noexcept
     {
-        return p_basis == nullptr || m_scalar_buffer.empty();
+        return p_basis == nullptr || m_data.empty();
     }
 
     void set_zero();
 
-    optional<dimn_t> get_index(BasisKey key) const noexcept;
 
-
-    void insert_element(BasisKey key, scalars::Scalar value);
-    void delete_element(BasisKey key, optional<dimn_t> index_hint);
+    void insert_element(BasisKey key, scalars::Scalar value)
+    {
+        m_data.insert_element(key, value);
+    }
+    void delete_element(BasisKey key, optional<dimn_t> index_hint)
+    {
+        m_data.delete_element(key, index_hint);
+    }
 
 public:
     Vector();
@@ -128,21 +174,33 @@ public:
 
     explicit Vector(BasisPointer basis, const scalars::ScalarType* scalar_type)
         : p_basis(std::move(basis)),
-          m_scalar_buffer(scalar_type),
-          m_key_buffer()
+          m_data(scalar_type)
     {}
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
         : p_basis(std::move(basis)),
-          m_scalar_buffer(std::move(scalar_data)),
-          m_key_buffer(std::move(key_buffer))
+          m_data(std::move(scalar_data), std::move(key_buffer))
     {}
 
     Vector& operator=(const Vector& other);
 
     Vector& operator=(Vector&& other) noexcept;
+
+    RPY_NO_DISCARD const scalars::ScalarArray& scalars() const noexcept
+    {
+        return m_data.scalars();
+    }
+    RPY_NO_DISCARD const KeyArray& keys() const noexcept
+    {
+        return m_data.keys();
+    }
+    RPY_NO_DISCARD scalars::ScalarArray& mut_scalars() noexcept
+    {
+        return m_data.mut_scalars();
+    }
+    RPY_NO_DISCARD KeyArray& mut_keys() noexcept { return m_data.mut_keys(); }
 
     /**
      * @brief Is the vector densely stored
@@ -150,7 +208,7 @@ public:
      */
     RPY_NO_DISCARD bool is_dense() const noexcept
     {
-        return m_key_buffer.empty();
+        return m_data.key_buffer().empty();
     }
 
     /**
@@ -159,7 +217,7 @@ public:
      */
     RPY_NO_DISCARD bool is_sparse() const noexcept
     {
-        return !m_key_buffer.empty();
+        return !m_data.key_buffer().empty();
     }
 
     RPY_NO_DISCARD VectorType vector_type() const noexcept
@@ -174,12 +232,12 @@ public:
 
     RPY_NO_DISCARD devices::Device device() const noexcept
     {
-        return m_scalar_buffer.device();
+        return m_data.scalar_buffer().device();
     }
 
     RPY_NO_DISCARD const scalars::ScalarType* scalar_type() const noexcept
     {
-        auto type = m_scalar_buffer.type();
+        auto type = m_data.scalars().type();
         RPY_DBG_ASSERT(type);
         return *type;
     }
@@ -230,6 +288,9 @@ public:
 
     RPY_NO_DISCARD const_iterator begin() const noexcept;
     RPY_NO_DISCARD const_iterator end() const noexcept;
+
+
+    optional<dimn_t> get_index(BasisKey key) const noexcept;
 
     RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key) const;
 

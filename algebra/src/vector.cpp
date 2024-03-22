@@ -54,7 +54,7 @@ devices::KernelLaunchParams Vector::get_kernel_launch_params() const
      */
 
     return devices::KernelLaunchParams(
-            devices::Size3{m_scalar_buffer.size()},
+            devices::Size3{m_data.scalar_buffer().size()},
             devices::Dim3{1}
     );
 }
@@ -64,8 +64,8 @@ void Vector::resize_dim(rpy::dimn_t dim)
     const auto* type = scalar_type();
 
     auto new_buffer = type->allocate(dim);
-    type->move_buffer(new_buffer, m_scalar_buffer);
-    std::swap(m_scalar_buffer, new_buffer);
+    type->move_buffer(new_buffer, scalars());
+    std::swap(mut_scalars(), new_buffer);
 
     if (is_sparse()) {
         const auto dhandle = device();
@@ -79,10 +79,10 @@ void Vector::resize_dim(rpy::dimn_t dim)
          * constructors. This is essentially using a move operation on each of
          * the keys individually.
          */
-        dhandle->memcopy(new_key_buffer.mut_buffer(), m_key_buffer.buffer())
+        dhandle->memcopy(new_key_buffer.mut_buffer(), keys().buffer())
                 .wait();
-        dhandle->raw_free(m_key_buffer.mut_buffer());
-        m_key_buffer = std::move(new_key_buffer);
+        dhandle->raw_free(mut_keys().mut_buffer());
+        mut_keys() = std::move(new_key_buffer);
     }
 }
 
@@ -92,9 +92,9 @@ void Vector::resize_degree(rpy::deg_t degree)
     resize_dim(new_size);
 }
 
-dimn_t Vector::dimension() const noexcept { return m_scalar_buffer.size(); }
+dimn_t Vector::dimension() const noexcept { return m_data.size(); }
 
-dimn_t Vector::size() const noexcept { return m_scalar_buffer.size(); }
+dimn_t Vector::size() const noexcept { return m_data.size(); }
 
 bool Vector::is_zero() const noexcept
 {
@@ -109,13 +109,13 @@ bool Vector::is_zero() const noexcept
 void Vector::set_zero()
 {
     if (is_sparse()) {
-        m_scalar_buffer = scalars::ScalarArray(scalar_type());
-        m_key_buffer = KeyArray();
+        mut_scalars() = scalars::ScalarArray(scalar_type());
+        mut_keys() = KeyArray();
     } else {
         auto kernel = get_kernel(UnaryInplace, "set_scalar", "");
         auto params = get_kernel_launch_params();
 
-        kernel(params, m_scalar_buffer.mut_buffer(), 0);
+        kernel(params, mut_scalars().mut_buffer(), 0);
     }
 }
 
@@ -136,7 +136,7 @@ optional<dimn_t> Vector::get_index(rpy::algebra::BasisKey key) const noexcept
             return index >= dimension() ? optional<dimn_t>() : index;
         }
 
-        auto keys = m_key_buffer.as_slice();
+        auto keys = m_data.keys().as_slice();
 
         auto compare = [basis](const BasisKey& lhs, const BasisKey& rhs) {
             return basis->less(lhs, rhs);
@@ -149,7 +149,7 @@ optional<dimn_t> Vector::get_index(rpy::algebra::BasisKey key) const noexcept
             return static_cast<dimn_t>(found - begin);
         }
     } else {
-        auto keys = m_key_buffer.as_slice();
+        auto keys = m_data.keys().as_slice();
         const auto* begin = keys.begin();
         const auto* end = keys.end();
 

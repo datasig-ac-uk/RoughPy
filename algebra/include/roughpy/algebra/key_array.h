@@ -69,6 +69,9 @@ public:
     devices::Buffer& mut_buffer() noexcept { return m_buffer; }
     const devices::Buffer& buffer() const noexcept { return m_buffer; }
 
+    RPY_NO_DISCARD
+    devices::Device device() const noexcept { return m_buffer.device(); }
+
     RPY_NO_DISCARD Slice<const BasisKey> as_slice() const {
         return m_buffer.as_slice<BasisKey>();
     }

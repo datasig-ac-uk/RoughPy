@@ -40,6 +40,7 @@ add_roughpy_component(Algebra
         src/tensor_word.cpp
         src/tensor_word.h
         src/vector.cpp
+        src/vector_data.cpp
         src/vector_iterator.cpp
         PUBLIC_HEADERS
         include/roughpy/algebra/algebra.h
