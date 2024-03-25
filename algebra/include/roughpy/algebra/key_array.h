@@ -158,15 +158,14 @@ public:
     RPY_NO_DISCARD KeyArray view() const { return KeyArray(m_buffer.map()); }
     RPY_NO_DISCARD KeyArray mut_view() { return KeyArray(m_buffer.map()); }
 
-
     template <typename ViewFn>
-    friend constexpr auto operator|(const KeyArray& array, views::view_closure<ViewFn>& view)
-        -> decltype(array.as_range() | view)
+    friend constexpr auto
+    operator|(const KeyArray& array, views::view_closure<ViewFn>& view)
+            -> decltype(array.as_range() | view)
     {
         return array.as_range() | view;
     }
 };
-
 
 }// namespace algebra
 }// namespace rpy
