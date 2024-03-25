@@ -12,7 +12,7 @@ void MutableVectorElement::get_value() {
     if (auto index = p_vector->get_index(m_key)) {
         m_loc = index;
     } else {
-        m_value = scalars::Scalar(*p_vector->m_scalar_buffer.type(), 0);
+        m_value = scalars::Scalar(*p_vector->m_data.scalars().type(), 0);
     }
 }
 MutableVectorElement::~MutableVectorElement() {

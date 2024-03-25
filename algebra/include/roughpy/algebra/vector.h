@@ -30,6 +30,7 @@ class ROUGHPY_ALGEBRA_EXPORT VectorData
     dimn_t m_size = 0;
 
 public:
+    VectorData() = default;
     explicit VectorData(scalars::ScalarArray&& scalars, KeyArray&& keys)
         : m_scalar_buffer(std::move(scalars)),
           m_key_buffer(std::move(keys)),
@@ -53,7 +54,7 @@ public:
         return m_scalar_buffer.empty();
     }
 
-    RPY_NO_DISCARD devices::Buffer& mut_scalar_Buffer() noexcept
+    RPY_NO_DISCARD devices::Buffer& mut_scalar_buffer() noexcept
     {
         return m_scalar_buffer.mut_buffer();
     }
@@ -84,10 +85,13 @@ public:
         return m_key_buffer;
     }
 
-    void insert_element(dimn_t index, dimn_t next_size, BasisKey key, scalars::Scalar value);
+    void insert_element(
+            dimn_t index,
+            dimn_t next_size,
+            BasisKey key,
+            scalars::Scalar value
+    );
     void delete_element(dimn_t index);
-
-
 };
 
 class VectorIterator;
@@ -153,15 +157,8 @@ protected:
 
     void set_zero();
 
-
-    void insert_element(BasisKey key, scalars::Scalar value)
-    {
-        m_data.insert_element(key, value);
-    }
-    void delete_element(BasisKey key, optional<dimn_t> index_hint)
-    {
-        m_data.delete_element(key, index_hint);
-    }
+    void insert_element(BasisKey key, scalars::Scalar value);
+    void delete_element(BasisKey key, optional<dimn_t> index_hint);
 
 public:
     Vector();
@@ -173,15 +170,15 @@ public:
     Vector(Vector&& other) noexcept;
 
     explicit Vector(BasisPointer basis, const scalars::ScalarType* scalar_type)
-        : p_basis(std::move(basis)),
-          m_data(scalar_type)
+        : m_data(scalar_type),
+          p_basis(std::move(basis))
     {}
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
-        : p_basis(std::move(basis)),
-          m_data(std::move(scalar_data), std::move(key_buffer))
+        : m_data(std::move(scalar_data), std::move(key_buffer)),
+          p_basis(std::move(basis))
     {}
 
     Vector& operator=(const Vector& other);
@@ -289,12 +286,17 @@ public:
     RPY_NO_DISCARD const_iterator begin() const noexcept;
     RPY_NO_DISCARD const_iterator end() const noexcept;
 
-
     optional<dimn_t> get_index(BasisKey key) const noexcept;
 
-    RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key) const;
+    RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key) const
+    {
+        return get(key);
+    }
 
-    RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key);
+    RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key)
+    {
+        return get_mut(key);
+    }
 
     template <typename I>
     RPY_NO_DISCARD enable_if_t<is_integral<I>::value, scalars::Scalar>
