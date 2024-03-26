@@ -18,14 +18,16 @@ using std::realloc;
 using boost::alignment::aligned_alloc;
 using boost::alignment::aligned_free;
 
-
 template <typename T, typename... Args>
-constexpr void construct_inplace(T* dst, Args&&... args)
-    noexcept(is_nothrow_constructible<T, Args...>::value)
+constexpr void construct_inplace(T* dst, Args&&... args) noexcept(
+        is_nothrow_constructible<T, Args...>::value
+)
 {
     ::new (static_cast<void*>(dst)) T(std::forward<Args>(args)...);
 }
 
+template <typename T>
+using Allocator = std::allocator<T>;
 
 }// namespace rpy
 
