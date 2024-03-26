@@ -5,6 +5,8 @@
 #ifndef ROUGHPY_ALLOC_H
 #define ROUGHPY_ALLOC_H
 
+#include "roughpy_platform_export.h"
+
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
@@ -32,6 +34,13 @@ RPY_NO_DISCARD void* alloc_small(dimn_t size);
  * @brief Free a small object allocated with alloc_small
  */
 void free_small(void* ptr, dimn_t size);
+
+class ROUGHPY_PLATFORM_EXPORT SmallObjectBase
+{
+public:
+    void* operator new(dimn_t size);
+    void operator delete(void* ptr, dimn_t size);
+};
 
 }// namespace platform
 }// namespace rpy
