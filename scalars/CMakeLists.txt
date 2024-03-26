@@ -18,6 +18,7 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/devices/macros.h
         include/roughpy/scalars/devices/queue.h
         include/roughpy/scalars/devices/types.h
+        include/roughpy/scalars/types/monomial.h
         include/roughpy/scalars/devices.h
         include/roughpy/scalars/key_scalar_array.h
         include/roughpy/scalars/key_scalar_stream.h
@@ -104,6 +105,13 @@ add_roughpy_component(Scalars
         src/scalar/type_promotion.cpp
         src/scalar/type_promotion.h
         src/scalar_helpers/standard_scalar_type.h
+        src/scalar_implementations/arbitrary_precision_rational.cpp
+        src/scalar_implementations/arbitrary_precision_rational.h
+        src/scalar_implementations/monomial.cpp
+        src/scalar_implementations/poly_rational.cpp
+        src/scalar_implementations/poly_rational.h
+        src/scalar_implementations/rational.cpp
+        src/scalar_implementations/rational.h
         src/types/aprational/ap_rational_type.cpp
         src/types/aprational/ap_rational_type.h
         src/types/apratpoly/ap_rat_poly_type.cpp
