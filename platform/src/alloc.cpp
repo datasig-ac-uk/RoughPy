@@ -22,3 +22,10 @@ void rpy::platform::free_small(void* ptr, dimn_t size)
 {
     s_resource.deallocate(ptr, size);
 }
+
+void* SmallObjectBase::operator new(dimn_t size) {
+    return alloc_small(size);
+}
+void SmallObjectBase::operator delete(void* ptr, dimn_t size) {
+    free_small(ptr, size);
+}
