@@ -785,11 +785,11 @@ static PyObject* resolution_getter(PyObject* self)
 }
 
 static PyGetSetDef RPyStream_getset[] = {
-        {     "width",      (getter) width_getter, nullptr, nullptr, nullptr},
-        {     "dtype",      (getter) ctype_getter, nullptr, nullptr, nullptr},
-        {       "ctx",        (getter) ctx_getter, nullptr, nullptr, nullptr},
-        {   "support",    (getter) support_getter, nullptr, nullptr, nullptr},
-        {"resolution", (getter) resolution_getter, nullptr, nullptr, nullptr},
+        {     "width",      (getter) width_getter, nullptr, "Alphabet size, dimension of the underlying space (deprecated, use ``ctx`` instead).", nullptr},
+        {     "dtype",      (getter) ctype_getter, nullptr, "Scalar type for the algebra (deprecated, use ``ctx`` instead). Can be a RoughPy data type (``rp.SPReal``, ``rp.DPReal``, ``rp.Rational``, ``rp.PolyRational``), or a numpy dtype.", nullptr},
+        {       "ctx",        (getter) ctx_getter, nullptr, "Provide an algebra context in which to create the algebra.", nullptr},
+        {   "support",    (getter) support_getter, nullptr, "Interval of parameter values on which the stream has meaning.", nullptr},
+        {"resolution", (getter) resolution_getter, nullptr, "Resolution for the dyadic dissection of the domain, and the default resolution used in signature/log_signature calculations.", nullptr},
         {     nullptr,                    nullptr, nullptr, nullptr, nullptr}
 };
 
