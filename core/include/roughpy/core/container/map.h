@@ -43,7 +43,7 @@ template <
         typename Key,
         typename Mapped,
         dimn_t SmallSize,
-        typename Compare = std::less<Mapped>,
+        typename Compare = std::less<Key>,
         typename Alloc = Allocator<pair<const Key, Mapped>>>
 using SmallFlatMap = boost::container::flat_map<
         Key,
