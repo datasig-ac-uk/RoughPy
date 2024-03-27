@@ -184,7 +184,6 @@ target_precompile_headers(RoughPy_PyModule PRIVATE
         <roughpy/scalars/devices.h>
         <roughpy/platform/serialization.h>
         <roughpy/platform/filesystem.h>
-        <roughpy/scalars/key_scalar_array.h>
         <roughpy/algebra/context.h>
         <pybind11/pybind11.h>
         <pybind11/functional.h>

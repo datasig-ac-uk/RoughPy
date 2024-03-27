@@ -68,7 +68,6 @@ add_roughpy_component(Streams
         )
 
 target_precompile_headers(RoughPy_Streams PRIVATE
-        <roughpy/scalars/key_scalar_array.h>
         <roughpy/algebra/context.h>
         <roughpy/algebra/free_tensor.h>
         <roughpy/algebra/lie.h>
