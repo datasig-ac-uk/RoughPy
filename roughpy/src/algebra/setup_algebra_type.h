@@ -204,7 +204,7 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
     );
 
     // setup fused inplace ops
-    klass.def("add_scal_mul", &Alg::add_scal_mul, "other"_a, "scalar"_a);
+    klass.def("add_scal_mul", &Alg::add_scal_mul, "other"_a, "scalar"_a, "A version of += fused with scalar multiplication.");
     klass.def("sub_scal_mul", &Alg::sub_scal_mul, "other"_a, "scalar"_a);
     klass.def("add_scal_div", &Alg::add_scal_div, "other"_a, "scalar"_a);
     klass.def("sub_scal_div", &Alg::sub_scal_div, "other"_a, "scalar"_a);
