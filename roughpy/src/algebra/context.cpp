@@ -423,7 +423,13 @@ return nullptr;
 }
 
 
-static const char* CONTEXT_DOC = R"rpydoc()rpydoc";
+static const char* CONTEXT_DOC = R"rpydoc(
+Contexts allow us to provide a ``width``, ``depth``, and a ``coefficient`` field for a ``tensor``.
+They also provide access to the Baker-Campbell-Hausdorff formula.
+They are the environment in which calculations are done.
+They are used everywhere in ``RoughPy``, for any ``stream`` or algebraic object.
+)rpydoc";
+
 PyTypeObject rpy::python::RPyContext_Type = {
     PyVarObject_HEAD_INIT(nullptr, 0)         //
     "_roughpy.Context",                       /* tp_name */
@@ -531,5 +537,7 @@ void python::init_context(py::module_& m)
           py_get_context,
           "width"_a,
           "depth"_a,
-          "coeffs"_a = py::none());
+          "coeffs"_a = py::none(),
+          "Takes ``width``, ``depth``, and ``coeff`` as minimum, returns a ``context`` with that configuration, has other keywords that aren't fully realised yet."
+          );
 }
