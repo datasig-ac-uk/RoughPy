@@ -43,7 +43,7 @@ using rpy::python::RPyContext;
 
 extern "C" {
 
-static const char* lie_size_DOC = R"rpydoc()rpydoc";
+static const char* lie_size_DOC = R"rpydoc(A shortcut for ``lie_basis.size``. )rpydoc";
 static PyObject* RPyContext_lie_size(PyObject * self,
                                      PyObject * args,
                                      PyObject * kwargs)
@@ -70,7 +70,7 @@ static PyObject* RPyContext_lie_size(PyObject * self,
     }
     return PyLong_FromSize_t(myself->lie_size(depth));
 }
-static const char* tensor_size_DOC = R"rpydoc()rpydoc";
+static const char* tensor_size_DOC = R"rpydoc(A shortcut for ``tensor_basis.size``. )rpydoc";
 static PyObject* RPyContext_tensor_size(PyObject * self,
                                         PyObject * args,
                                         PyObject * kwargs)
@@ -97,7 +97,7 @@ static PyObject* RPyContext_tensor_size(PyObject * self,
     }
     return PyLong_FromSize_t(myself->tensor_size(depth));
 }
-static const char* cbh_DOC = R"rpydoc()rpydoc";
+static const char* cbh_DOC = R"rpydoc(Computes the Campbell-Baker-Haussdorff product of a number of Lie elements within that ``context``, using the truncation levels. Lies need to have the same ``width``, but truncation level might differ.)rpydoc";
 static PyObject*
 RPyContext_cbh(PyObject * self, PyObject * args, PyObject * kwargs)
 {
@@ -142,7 +142,7 @@ RPyContext_cbh(PyObject * self, PyObject * args, PyObject * kwargs)
 
     return python::cast_to_object(ctx->cbh(lies, vtp));
 }
-static const char* compute_signature_DOC = R"rpydoc()rpydoc";
+static const char* compute_signature_DOC = R"rpydoc(Computes the ``signature`` of a ``stream``.)rpydoc";
 static PyObject*
 RPyContext_compute_signature(PyObject * self,
                              PyObject * args,
@@ -237,7 +237,7 @@ RPyContext_compute_signature(PyObject * self,
 
     return python::cast_to_object(ctx->signature(request));
 }
-static const char* to_logsignature_DOC = R"rpydoc()rpydoc";
+static const char* to_logsignature_DOC = R"rpydoc(Takes some argument (``signature``), equivalent to ``tensor_to_lie(signature.log())``.)rpydoc";
 static PyObject* RPyContext_to_logsignature(PyObject * self, PyObject * arg)
 {
 
@@ -253,7 +253,7 @@ static PyObject* RPyContext_to_logsignature(PyObject * self, PyObject * arg)
 
     return python::cast_to_object(ctx->tensor_to_lie(sig.log()));
 }
-static const char* lie_to_tensor_DOC = R"rpydoc()rpydoc";
+static const char* lie_to_tensor_DOC = R"rpydoc(Linear embedding of the lie algebra into the free tensor algebra.)rpydoc";
 static PyObject* RPyContext_lie_to_tensor(PyObject * self, PyObject * arg)
 {
     py::handle py_lie(arg);
@@ -266,7 +266,7 @@ static PyObject* RPyContext_lie_to_tensor(PyObject * self, PyObject * arg)
     return python::cast_to_object(ctx->lie_to_tensor(py_lie.cast<const Lie&>())
     );
 }
-static const char* tensor_to_lie_DOC = R"rpydoc()rpydoc";
+static const char* tensor_to_lie_DOC = R"rpydoc(Linear embedding of the free tensor algebra into the lie algebra.)rpydoc";
 static PyObject* RPyContext_tensor_to_lie(PyObject * self, PyObject * arg)
 {
     py::handle py_ft(arg);
@@ -358,17 +358,17 @@ static PyObject* RPyContext_tensor_basis_getter(PyObject * self)
     return python::cast_to_object(ctx_cast(self)->get_tensor_basis());
 }
 
-#define ADD_GETSET(NAME)                                                       \
+#define ADD_GETSET(NAME, doc)                                                       \
     {                                                                          \
-        #NAME, (getter) &RPyContext_##NAME##_getter, nullptr, nullptr, nullptr \
+        #NAME, (getter) &RPyContext_##NAME##_getter, nullptr, doc, nullptr \
     }
 
 static PyGetSetDef RPyContext_getset[] = {
-    ADD_GETSET(width),
-    ADD_GETSET(depth),
-    ADD_GETSET(ctype),
-    ADD_GETSET(lie_basis),
-    ADD_GETSET(tensor_basis),
+    ADD_GETSET(width, "Alphabet size, dimension of the underlying space (deprecated, use ``ctx`` instead)."),
+    ADD_GETSET(depth, "Maximum degree for Lies, tensors, etc. (deprecated, use ``ctx`` instead)."),
+    ADD_GETSET(ctype, "Coefficient type. One of ``rp.SPReal``, ``rp.DPReal``, ``rp.Rational``, ``rp.PolyRational``."),
+    ADD_GETSET(lie_basis, "An instance of lie basis with the context's ``width`` and ``depth``."),
+    ADD_GETSET(tensor_basis, "An instance of tensor basis with the context's ``width`` and ``depth``."),
     {nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
