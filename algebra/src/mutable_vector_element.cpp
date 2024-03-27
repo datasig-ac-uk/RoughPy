@@ -3,7 +3,7 @@
 //
 
 #include "mutable_vector_element.h"
-
+#include "vector.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -12,7 +12,7 @@ void MutableVectorElement::get_value() {
     if (auto index = p_vector->get_index(m_key)) {
         m_loc = index;
     } else {
-        m_value = scalars::Scalar(*p_vector->m_data.scalars().type(), 0);
+        m_value = scalars::Scalar(p_vector->scalar_type());
     }
 }
 MutableVectorElement::~MutableVectorElement() {

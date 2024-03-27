@@ -27,7 +27,8 @@ devices::Kernel Vector::get_kernel(
 ) const
 {
     RPY_DBG_ASSERT(!operation.empty());
-    const auto* stype = scalar_type();
+    const auto stype = scalar_type();
+    RPY_CHECK(stype.is_pointer());
 
     string op(operation);
     op += '_';
@@ -62,7 +63,8 @@ devices::KernelLaunchParams Vector::get_kernel_launch_params() const
 
 void Vector::resize_dim(rpy::dimn_t dim)
 {
-    const auto* type = scalar_type();
+    const auto type = scalar_type();
+    RPY_CHECK(type.is_pointer());
 
     auto new_buffer = type->allocate(dim);
     type->move_buffer(new_buffer, scalars());
@@ -534,7 +536,7 @@ Vector Vector::sub(const Vector& other) const
 
 Vector Vector::left_smul(const scalars::Scalar& other) const
 {
-    const auto* stype = scalar_type();
+    const auto stype = scalar_type();
 
     Vector result(p_basis, stype);
 
@@ -558,7 +560,7 @@ Vector Vector::left_smul(const scalars::Scalar& other) const
 
 Vector Vector::right_smul(const scalars::Scalar& other) const
 {
-    const auto* stype = scalar_type();
+    const auto stype = scalar_type();
     Vector result(p_basis, stype);
 
     if (!other.is_zero()) {

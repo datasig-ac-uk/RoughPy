@@ -7,7 +7,8 @@
 #include "hall_set_size.h"
 #include "hall_word.h"
 
-#include <boost/container/flat_map.hpp>
+#include <mutex>
+#include <roughpy/core/container/map.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -15,7 +16,7 @@ using namespace rpy::algebra;
 class LieBasis::HallSet
 {
     mutable std::recursive_mutex m_lock;
-    boost::container::flat_map<parent_type, BasisKey> m_reverse_map;
+    containers::FlatMap<parent_type, BasisKey> m_reverse_map;
     std::vector<let_t> m_letters;
     std::vector<dimn_t> m_degree_sizes;
     std::vector<parent_type> m_hall_set;

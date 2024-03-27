@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <mutex>
 
 using namespace rpy;
 using namespace rpy::algebra;
