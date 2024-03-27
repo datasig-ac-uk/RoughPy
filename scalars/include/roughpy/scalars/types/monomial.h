@@ -45,7 +45,6 @@ class PackedInteger
     static constexpr Base remaining_mask = Base(~packed_mask);
 
 public:
-
     using packed_type = Packed;
     using integral_type = Base;
 
@@ -65,15 +64,9 @@ public:
         return static_cast<Packed>(m_data >> packed_offset);
     }
 
-    constexpr explicit operator Base() const noexcept
-    {
-        return base();
-    }
+    constexpr explicit operator Base() const noexcept { return base(); }
 
-    constexpr explicit operator Packed() const noexcept
-    {
-        return packed();
-    }
+    constexpr explicit operator Packed() const noexcept { return packed(); }
 
     bool operator==(const PackedInteger& other) const noexcept
     {
@@ -121,7 +114,7 @@ class ROUGHPY_SCALARS_EXPORT Monomial
 private:
     using map_type = containers::SmallFlatMap<indeterminate_type, deg_t, 1>;
 
-    map_type m_data {};
+    map_type m_data{};
 
 public:
     using value_type = typename map_type::value_type;

@@ -44,7 +44,6 @@
 
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/scalar_types.h>
 
 #include "random_impl.h"
 #include <pcg_random.hpp>
