@@ -20,8 +20,6 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/devices/types.h
         include/roughpy/scalars/types/monomial.h
         include/roughpy/scalars/devices.h
-        include/roughpy/scalars/key_scalar_array.h
-        include/roughpy/scalars/key_scalar_stream.h
         include/roughpy/scalars/packed_scalar_type_ptr.h
         include/roughpy/scalars/scalar.h
         include/roughpy/scalars/scalar_array.h
@@ -30,7 +28,6 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/scalar_stream.h
         include/roughpy/scalars/scalar_traits.h
         include/roughpy/scalars/scalar_type.h
-        include/roughpy/scalars/scalar_types.h
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/traits.h
         include/roughpy/scalars.h
@@ -107,6 +104,12 @@ add_roughpy_component(Scalars
         src/scalar_helpers/standard_scalar_type.h
         src/scalar_implementations/arbitrary_precision_rational.cpp
         src/scalar_implementations/arbitrary_precision_rational.h
+        src/scalar_implementations/bfloat.cpp
+        src/scalar_implementations/bfloat.h
+        src/scalar_implementations/complex.cpp
+        src/scalar_implementations/complex.h
+        src/scalar_implementations/half.cpp
+        src/scalar_implementations/half.h
         src/scalar_implementations/monomial.cpp
         src/scalar_implementations/poly_rational.cpp
         src/scalar_implementations/poly_rational.h
@@ -128,8 +131,6 @@ add_roughpy_component(Scalars
         src/types/half/half_random_generator.h
         src/types/half/half_type.cpp
         src/types/half/half_type.h
-        src/key_scalar_array.cpp
-        src/key_scalar_stream.cpp
         src/random.cpp
         src/scalar.cpp
         src/scalar_array.cpp
@@ -161,7 +162,6 @@ target_precompile_headers(RoughPy_Scalars PRIVATE
 )
 target_precompile_headers(RoughPy_Scalars PRIVATE
         include/roughpy/scalars/scalars_fwd.h
-        include/roughpy/scalars/scalar_types.h
 )
 
 add_roughpy_test(scalars

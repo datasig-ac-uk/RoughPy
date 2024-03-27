@@ -24,7 +24,7 @@ namespace dtl {
 template <typename Base, typename Packed>
 class PackedInteger
 {
-    Base m_data;
+    Base m_data{};
 
     static_assert(
             is_integral<Base>::value && is_integral<Packed>::value,
@@ -36,14 +36,19 @@ class PackedInteger
             "size of packed type must be strictly less than base type"
     );
 
+    static constexpr int32_t packed_bits = sizeof(Packed) * CHAR_BIT;
     static constexpr int32_t packed_offset
             = (sizeof(Base) - sizeof(Packed)) * CHAR_BIT;
-    static constexpr Base packed_mask
-            = (Base(1) << (sizeof(Packed) * CHAR_BIT + 1 - 1)) << packed_offset;
+    static constexpr Base packed_mask = (Base(1) << (packed_bits) -1)
+            << packed_offset;
 
     static constexpr Base remaining_mask = Base(~packed_mask);
 
 public:
+
+    using packed_type = Packed;
+    using integral_type = Base;
+
     PackedInteger(Packed packed, Base base)
         : m_data((static_cast<Base>(packed) << packed_offset) | (base))
     {
@@ -59,19 +64,64 @@ public:
     {
         return static_cast<Packed>(m_data >> packed_offset);
     }
+
+    constexpr explicit operator Base() const noexcept
+    {
+        return base();
+    }
+
+    constexpr explicit operator Packed() const noexcept
+    {
+        return packed();
+    }
+
+    bool operator==(const PackedInteger& other) const noexcept
+    {
+        return m_data == other.m_data;
+    }
+
+    bool operator!=(const PackedInteger& other) const noexcept
+    {
+        return m_data != other.m_data;
+    }
+
+    bool operator<(const PackedInteger& other) const noexcept
+    {
+        return m_data < other.m_data;
+    }
+
+    bool operator<=(const PackedInteger& other) const noexcept
+    {
+        return m_data <= other.m_data;
+    }
+
+    bool operator>(const PackedInteger& other) const noexcept
+    {
+        return m_data > other.m_data;
+    }
+
+    bool operator>=(const PackedInteger& other) const noexcept
+    {
+        return m_data >= other.m_data;
+    }
+
+    friend hash_t hash_value(const PackedInteger& arg) noexcept
+    {
+        return static_cast<hash_t>(arg.m_data);
+    }
 };
 
 }// namespace dtl
 
+using indeterminate_type = dtl::PackedInteger<deg_t, char>;
+
 class ROUGHPY_SCALARS_EXPORT Monomial
 {
-public:
-    using letter_type = dtl::PackedInteger<deg_t, char>;
 
 private:
-    using map_type = containers::SmallFlatMap<letter_type, deg_t, 1>;
+    using map_type = containers::SmallFlatMap<indeterminate_type, deg_t, 1>;
 
-    map_type m_data;
+    map_type m_data {};
 
 public:
     using value_type = typename map_type::value_type;
@@ -80,7 +130,12 @@ public:
     using iterator = typename map_type::iterator;
     using const_iterator = typename map_type::const_iterator;
 
-    explicit Monomial(letter_type letter, deg_t deg = 1)
+
+    Monomial() = default;
+    Monomial(const Monomial& other) = default;
+    Monomial(Monomial&& other) noexcept = default;
+
+    explicit Monomial(indeterminate_type letter, deg_t deg = 1)
         : m_data{
                   {letter, deg}
     }
@@ -88,7 +143,7 @@ public:
 
     explicit Monomial(char symbol, deg_t id, deg_t degree = 1)
         : m_data{
-                  {letter_type(symbol, id), degree}
+                  {indeterminate_type(symbol, id), degree}
     }
     {}
 
@@ -97,8 +152,10 @@ public:
         : m_data(ranges::begin(range), ranges::end(range))
     {}
 
-    RPY_NO_DISCARD deg_t degree() const noexcept;
+    Monomial& operator=(const Monomial& other) = default;
+    Monomial& operator=(Monomial&& other) noexcept = default;
 
+    RPY_NO_DISCARD deg_t degree() const noexcept;
     RPY_NO_DISCARD deg_t type() const noexcept { return m_data.size(); }
 
     RPY_NO_DISCARD iterator begin() noexcept { return m_data.begin(); }
@@ -109,8 +166,16 @@ public:
     }
     RPY_NO_DISCARD const_iterator end() const noexcept { return m_data.end(); }
 
+    RPY_NO_DISCARD deg_t operator[](const indeterminate_type& val
+    ) const noexcept
+    {
+        auto it = m_data.find(val);
+        if (it != m_data.end()) { return it->second; }
+        return 0;
+    }
+
     Monomial& operator*=(const Monomial& rhs);
-    Monomial& operator*=(letter_type rhs);
+    Monomial& operator*=(indeterminate_type rhs);
 };
 
 RPY_NO_DISCARD inline bool

@@ -4,18 +4,21 @@
 
 #include "types/monomial.h"
 
+
 using namespace rpy;
 using namespace rpy::scalars;
 
-namespace {
-std::ostream& operator<<(std::ostream& os, const Monomial::letter_type& letter)
+namespace rpy {
+namespace scalars {
+std::ostream& operator<<(std::ostream& os, const indeterminate_type& letter)
 {
     os << letter.packed();
     const auto id = letter.base();
     if (RPY_LIKELY(id != 0)) { os << id; }
     return os;
 }
-}// namespace
+}
+}
 
 deg_t Monomial::degree() const noexcept
 {
@@ -26,7 +29,7 @@ Monomial& Monomial::operator*=(const Monomial& rhs)
     for (const auto& [key, value] : rhs.m_data) { m_data[key] += value; }
     return *this;
 }
-Monomial& Monomial::operator*=(letter_type rhs)
+Monomial& Monomial::operator*=(indeterminate_type rhs)
 {
     m_data[rhs] += 1;
     return *this;
@@ -34,14 +37,14 @@ Monomial& Monomial::operator*=(letter_type rhs)
 std::ostream& scalars::operator<<(std::ostream& os, const Monomial& arg)
 {
     bool first = true;
-    for (const auto& [key, deg] : arg) {
+    for (const auto& item : arg) {
         if (first) {
             first = false;
         } else {
             os << ' ';
         }
-        os << key;
-        if (deg > 1) { os << '^' << deg; }
+        os << item.first;
+        if (item.second > 1) { os << '^' << item.second; }
     }
     return os;
 }

@@ -4,11 +4,7 @@
 
 #include "rational.h"
 
-namespace rpy {
-namespace scalars {
-
-template class boost::rational<int64_t>;
-template class boost::rational<int32_t>;
-
-}// namespace scalars
-}// namespace rpy
+namespace boost {
+template class rational<int64_t>;
+template class rational<int32_t>;
+}

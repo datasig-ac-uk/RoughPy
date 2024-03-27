@@ -6,6 +6,5 @@
 
 namespace rpy { namespace scalars {
 
-template class boost::multiprecision::mpq_rational;
 
 }}
