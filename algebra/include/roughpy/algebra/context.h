@@ -37,8 +37,6 @@
 
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
-#include <roughpy/scalars/key_scalar_array.h>
-#include <roughpy/scalars/key_scalar_stream.h>
 #include <roughpy/scalars/scalar_type.h>
 
 #include <memory>
@@ -52,11 +50,13 @@
 #include "shuffle_tensor.h"
 #include "tensor_basis.h"
 
+#include <roughpy/scalars/scalar_stream.h>
+
 namespace rpy {
 namespace algebra {
 
 struct SignatureData {
-    scalars::KeyScalarStream data_stream;
+    scalars::ScalarStream data_stream;
     VectorType vector_type;
 };
 
@@ -66,7 +66,7 @@ struct DerivativeComputeInfo {
 };
 
 struct VectorConstructionData {
-    scalars::KeyScalarArray data;
+    scalars::ScalarArray data;
     VectorType vector_type = VectorType::Sparse;
 };
 
