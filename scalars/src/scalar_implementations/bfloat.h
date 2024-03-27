@@ -8,23 +8,24 @@
 #include "devices/core.h"
 #include <Eigen/Core>
 
-namespace rpy { namespace scalars {
+namespace rpy {
+namespace scalars {
 
 using BFloat16 = Eigen::bfloat16;
 
-
 }
 
-namespace devices { namespace dtl {
+namespace devices {
+namespace dtl {
 
 template <>
-struct type_code_of_impl<scalars::BFloat16>
-{
+struct type_code_of_impl<scalars::BFloat16> {
     static constexpr TypeCode value = TypeCode::BFloat;
 };
 
-}}
+}// namespace dtl
+}// namespace devices
 
-}
+}// namespace rpy
 
-#endif //BFLOAT_H
+#endif// BFLOAT_H

@@ -49,7 +49,9 @@ public:
     Polynomial(Polynomial&& other) noexcept = default;
 
     explicit Polynomial(Sca scalar)
-        : m_data { {{}, std::move(scalar)}}
+        : m_data{
+                  {{}, std::move(scalar)}
+    }
     {}
     explicit Polynomial(Monomial mon);
     Polynomial(Monomial mon, const Scalar& scalar);
@@ -250,7 +252,6 @@ template <>
 struct type_code_of_impl<scalars::APPolyRat> {
     static constexpr TypeCode value = TypeCode::APRationalPolynomial;
 };
-
 
 template <typename T>
 struct type_code_of_impl<scalars::Polynomial<scalars::Rational<T>>> {
