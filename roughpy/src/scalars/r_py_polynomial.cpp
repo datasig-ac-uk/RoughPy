@@ -31,15 +31,13 @@
 //
 
 #include "r_py_polynomial.h"
-
 #include <sstream>
 
+#include "scalar_serialization.h"
 #include <roughpy/core/alloc.h>
 #include <roughpy/platform/archives.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_serialization.h>
-#include <roughpy/scalars/scalar_types.h>
 
 #include "scalars.h"
 
