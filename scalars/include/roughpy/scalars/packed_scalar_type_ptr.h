@@ -46,6 +46,9 @@ class PackedScalarTypePointer
     using integral_type = uint64_t;
     using enumeration_type = OptionsEnumerator;
 
+    template <typename O>
+    friend class PackedScalarTypePointer;
+
     static_assert(sizeof(integral_type) >= sizeof(ScalarType*), "");
     static_assert(sizeof(uintptr_t) == sizeof(ScalarType*), "");
 
@@ -81,8 +84,24 @@ class PackedScalarTypePointer
     static constexpr integral_type TypeInfoMask
             = ((integral_type(1) << SizeOfTypeInfo) - 1) << NonPointerBits;
 
+    constexpr explicit PackedScalarTypePointer(integral_type m_data) noexcept
+        : m_data(m_data)
+    {}
+
 public:
     PackedScalarTypePointer() = default;
+
+
+
+    constexpr PackedScalarTypePointer(const ScalarType* dtype)
+        : m_data(bit_cast<integral_type>(dtype))
+    {}
+
+    constexpr PackedScalarTypePointer(devices::TypeInfo info)
+        : m_data((static_cast<integral_type>(bit_cast<uint32_t>(info))
+                  << MaxEnumBits)
+                 | ModeMask)
+    {}
 
     constexpr
     PackedScalarTypePointer(const ScalarType* dtype, enumeration_type value)
@@ -95,6 +114,20 @@ public:
                   << MaxEnumBits)
                  | ModeMask | (static_cast<integral_type>(ty) & EnumMask))
     {}
+
+    operator PackedScalarType() const noexcept
+    {
+        return PackedScalarType(m_data);
+    }
+
+    template <typename E>
+    constexpr PackedScalarTypePointer<E> with_enum(E e) noexcept
+    {
+        return PackedScalarTypePointer<E>(
+                (m_data & PointerMask) | (m_data & ModeMask)
+                | (static_cast<integral_type>(e) & EnumMask)
+        );
+    }
 
     constexpr bool is_pointer() const noexcept
     {
@@ -138,12 +171,15 @@ public:
         return get_pointer();
     }
 
-    constexpr operator enumeration_type() const noexcept
+    constexpr explicit operator enumeration_type() const noexcept
     {
         return get_enumeration();
     }
 
-    constexpr operator type_info_t() const noexcept { return get_type_info(); }
+    constexpr explicit operator type_info_t() const noexcept
+    {
+        return get_type_info();
+    }
 
     void update_enumeration(enumeration_type enum_val) noexcept
     {
@@ -151,22 +187,28 @@ public:
                 | (static_cast<integral_type>(enum_val) & EnumMask);
     }
 
-    friend constexpr bool operator==(const PackedScalarTypePointer& lhs, const PackedScalarTypePointer& rhs) noexcept
+    friend constexpr bool operator==(
+            const PackedScalarTypePointer& lhs,
+            const PackedScalarTypePointer& rhs
+    ) noexcept
     {
         return lhs.m_data == rhs.m_data;
     }
-
 };
 
-template <typename OptionsEnumeration>
-inline devices::TypeInfo type_info_from(const PackedScalarTypePointer<OptionsEnumeration>& arg) noexcept
+template <typename T>
+RPY_NO_DISCARD PackedScalarType scalar_type_of()
 {
-    if (arg.is_pointer()) {
-        return arg->type_info();
-    }
-    return arg.get_type_info();
+    return PackedScalarType(devices::type_info<T>(), {});
 }
 
+template <typename OptionsEnumeration>
+devices::TypeInfo
+type_info_from(const PackedScalarTypePointer<OptionsEnumeration>& arg) noexcept
+{
+    if (arg.is_pointer()) { return arg->type_info(); }
+    return arg.get_type_info();
+}
 
 }// namespace scalars
 }// namespace rpy

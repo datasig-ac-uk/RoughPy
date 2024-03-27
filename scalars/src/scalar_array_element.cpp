@@ -68,7 +68,7 @@ void ScalarArrayElement::add_inplace(const Scalar& other)
             mut_pointer(),
             p_type_or_info,
             other.pointer(),
-            other.packed_type_info()
+            other.type()
     );
 }
 void ScalarArrayElement::sub_inplace(const Scalar& other)
@@ -77,7 +77,7 @@ void ScalarArrayElement::sub_inplace(const Scalar& other)
             mut_pointer(),
             p_type_or_info,
             other.pointer(),
-            other.packed_type_info()
+            other.type()
     );
 }
 void ScalarArrayElement::mul_inplace(const Scalar& other)
@@ -86,7 +86,7 @@ void ScalarArrayElement::mul_inplace(const Scalar& other)
             mut_pointer(),
             p_type_or_info,
             other.pointer(),
-            other.packed_type_info()
+            other.type()
     );
 }
 void ScalarArrayElement::div_inplace(const Scalar& other)
@@ -95,6 +95,6 @@ void ScalarArrayElement::div_inplace(const Scalar& other)
             mut_pointer(),
             p_type_or_info,
             other.pointer(),
-            other.packed_type_info()
+            other.type()
     );
 }

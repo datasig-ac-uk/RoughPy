@@ -240,7 +240,7 @@ void from_raw_bytes_impl(indeterminate_type& value, Slice<const byte> bytes)
 
 dimn_t from_raw_bytes_impl(Monomial& value, Slice<const byte> bytes)
 {
-    constexpr auto sizeof_idep= sizeof(indeterminate_type);
+    constexpr auto sizeof_idep = sizeof(indeterminate_type);
     constexpr auto sizeof_term = sizeof_idep + sizeof(lal::deg_t);
     RPY_CHECK(bytes.size() > sizeof(uint64_t));
     uint64_t size_large = 0;

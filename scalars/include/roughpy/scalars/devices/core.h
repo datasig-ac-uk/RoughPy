@@ -373,24 +373,23 @@ struct type_code_of_impl : public conditional_t<
                                    not_integral_code_impl<T>> {
 };
 
-template <>
-struct type_code_of_impl<half> {
-    static constexpr TypeCode value = TypeCode::Float;
+
+template <typename T>
+struct type_size_of_impl
+{
+    static constexpr dimn_t value = sizeof(T);
 };
 
-template <>
-struct type_code_of_impl<bfloat16> {
-    static constexpr TypeCode value = TypeCode::BFloat;
+template <typename T>
+struct type_align_of_impl
+{
+    static constexpr dimn_t value = alignof(T);
 };
 
-template <>
-struct type_code_of_impl<rational_scalar_type> {
-    static constexpr TypeCode value = TypeCode::ArbitraryPrecisionRational;
-};
-
-template <>
-struct type_code_of_impl<rational_poly_scalar> {
-    static constexpr TypeCode value = TypeCode::APRationalPolynomial;
+template <typename T>
+struct type_lanes_of_impl
+{
+    static constexpr dimn_t value = 1;
 };
 
 }// namespace dtl
@@ -401,6 +400,25 @@ constexpr TypeCode type_code_of() noexcept
     return dtl::type_code_of_impl<T>::value;
 }
 
+template <typename T, typename I=dimn_t>
+constexpr I type_size_of() noexcept
+{
+    return static_cast<I>(dtl::type_size_of_impl<T>::value);
+}
+
+template <typename T, typename I=dimn_t>
+constexpr I type_align_of() noexcept
+{
+    return static_cast<I>(dtl::type_align_of_impl<T>::value);
+}
+
+template <typename T, typename I=dimn_t>
+constexpr I type_lanes_of() noexcept
+{
+    return static_cast<I>(dtl::type_lanes_of_impl<T>::value);
+}
+
+
 /**
  * @brief Get the type info struct relating to the given type
  * @tparam T Type to query
@@ -410,9 +428,9 @@ template <typename T>
 constexpr TypeInfo type_info() noexcept
 {
     return {type_code_of<T>(),
-            static_cast<uint8_t>(sizeof(T)),
-            static_cast<uint8_t>(alignof(T)),
-            1U};
+            type_size_of<T, uint8_t>(),
+            type_align_of<T, uint8_t>(),
+            type_lanes_of<T, uint8_t>()};
 }
 
 ROUGHPY_PLATFORM_EXPORT

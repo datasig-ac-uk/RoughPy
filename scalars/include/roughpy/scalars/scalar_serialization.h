@@ -31,37 +31,43 @@
 #include <roughpy/core/helpers.h>
 #include <roughpy/platform/serialization.h>
 
-#include "scalar_types.h"
+#include "scalar_implementations/half.h"
+#include "scalar_implementations/bfloat.h"
+#include "scalar_implementations/arbitrary_precision_rational.h"
+#include "scalar_implementations/rational.h"
+#include "scalar_implementations/complex.h"
+#include "scalar_implementations/poly_rational.h"
+
 #include <cereal/types/utility.hpp>
 
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::half)
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::Half)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
 
     uint16_t tmp;
     RPY_SERIAL_SERIALIZE_NVP("value", tmp);
-    value = bit_cast<half>(tmp);
+    value = bit_cast<Half>(tmp);
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::half)
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::Half)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
     RPY_SERIAL_SERIALIZE_NVP("value", bit_cast<uint16_t>(value));
 }
 
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::bfloat16)
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::BFloat16)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
 
     uint16_t tmp;
     RPY_SERIAL_SERIALIZE_NVP("value", tmp);
-    value = bit_cast<bfloat16>(tmp);
+    value = bit_cast<BFloat16>(tmp);
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::bfloat16)
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::BFloat16)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
@@ -218,7 +224,7 @@ public:
 };
 
 template <typename Archive>
-void save_rational(Archive& archive, const rational_scalar_type& value)
+void save_rational(Archive& archive, const ArbitraryPrecisionRational& value)
 {
     const auto& backend = value.backend();
 
@@ -240,7 +246,7 @@ void save_rational(Archive& archive, const rational_scalar_type& value)
 }
 
 template <typename Archive>
-void load_rational(Archive& archive, rational_scalar_type& value)
+void load_rational(Archive& archive, ArbitraryPrecisionRational& value)
 {
     auto& backend = value.backend();
 
@@ -289,7 +295,7 @@ RPY_SERIAL_EXT_LIB_SAVE_FN(rpy::scalars::indeterminate_type)
     RPY_SERIAL_SERIALIZE_NVP("index", static_cast<integral_type>(value));
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::monomial)
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::Monomial)
 {
     using namespace ::rpy::scalars;
 
@@ -305,7 +311,7 @@ RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::monomial)
     }
 }
 
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial)
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::Monomial)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
@@ -324,7 +330,7 @@ RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial)
 }
 
 // namespace cereal {
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::rational_poly_scalar)
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::APPolyRat)
 {
     using namespace rpy;
     using namespace rpy::scalars;
@@ -332,8 +338,8 @@ RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::rational_poly_scalar)
     cereal::size_type count;
     RPY_SERIAL_SERIALIZE_SIZE(count);
 
-    monomial m;
-    rational_scalar_type s;
+    Monomial m;
+    ArbitraryPrecisionRational s;
 
     for (size_t i = 0; i < count; ++i) {
         RPY_SERIAL_SERIALIZE_BARE(m);
@@ -342,16 +348,16 @@ RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::rational_poly_scalar)
     }
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::rational_poly_scalar)
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::APPolyRat)
 {
     using namespace rpy;
     using namespace rpy::scalars;
 
     RPY_SERIAL_SERIALIZE_SIZE(value.size());
 
-    for (const auto& item : value) {
-        RPY_SERIAL_SERIALIZE_BARE(item.key());
-        rpy::scalars::dtl::save_rational(archive, item.value());
+    for (const auto& [key, val] : value) {
+        RPY_SERIAL_SERIALIZE_BARE(key);
+        rpy::scalars::dtl::save_rational(archive, val);
     }
 }
 

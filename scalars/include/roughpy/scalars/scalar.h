@@ -28,10 +28,10 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_H_
 #define ROUGHPY_SCALARS_SCALAR_H_
 
-#include "packed_scalar_type_ptr.h"
 #include "scalar_interface.h"
 #include "scalar_type.h"
 #include "scalars_fwd.h"
+#include "packed_scalar_type_ptr.h"
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/helpers.h>
@@ -80,25 +80,17 @@ enum class ScalarContentType : uint8_t
 
 ROUGHPY_SCALARS_EXPORT bool scalar_convert_copy(
         void* dst,
-        devices::TypeInfo dst_type,
+        PackedScalarType dst_type,
         const Scalar& src
 ) noexcept;
 
-inline bool scalar_convert_copy(
-        void* dst,
-        PackedScalarTypePointer<ScalarContentType> ptype,
-        const Scalar& src
-) noexcept
-{
-    return scalar_convert_copy(dst, ptype.get_type_info(), src);
-}
 
 ROUGHPY_SCALARS_EXPORT
 bool scalar_convert_copy(
         void* dst,
-        devices::TypeInfo dst_type,
+        PackedScalarType dst_type,
         const void* src,
-        devices::TypeInfo src_type,
+        PackedScalarType src_type,
         dimn_t count = 1
 ) noexcept;
 
@@ -188,6 +180,7 @@ protected:
 public:
     Scalar();
 
+    explicit Scalar(PackedScalarType type);
     explicit Scalar(type_pointer type);
     explicit Scalar(const ScalarType* type);
     explicit Scalar(devices::TypeInfo info);
@@ -277,10 +270,8 @@ public:
         }
     }
 
-    explicit Scalar(const ScalarType* type, void* ptr);
-    explicit Scalar(const ScalarType* type, const void* ptr);
-    explicit Scalar(devices::TypeInfo info, void* ptr);
-    explicit Scalar(devices::TypeInfo info, const void* ptr);
+    explicit Scalar(PackedScalarType info, void* ptr);
+    explicit Scalar(PackedScalarType info, const void* ptr);
 
     template <
             typename I,
@@ -293,9 +284,7 @@ public:
           interface_ptr(std::move(iface).release())
     {}
 
-    explicit Scalar(const ScalarType* type, int64_t num, int64_t denom);
-
-    explicit Scalar(devices::TypeInfo info, int64_t num, int64_t denom);
+    explicit Scalar(PackedScalarType info, int64_t num, int64_t denom);
 
     Scalar(const Scalar& other);
     Scalar(Scalar&& other) noexcept;
@@ -431,9 +420,12 @@ public:
     /**
      * @brief Get a pointer to the scalar type representing this value.
      *
-     * @return Pointer to scalar value if it has one, and empty otherise.
+     * @return Packed scalar type object
      */
-    optional<const ScalarType*> type() const noexcept;
+    PackedScalarType type() const noexcept
+    {
+        return static_cast<PackedScalarType>(p_type_and_content_type);
+    }
 
     /**
      * @brief Get the type info associated with this.
@@ -441,12 +433,8 @@ public:
      */
     devices::TypeInfo type_info() const noexcept;
 
-    type_pointer packed_type_info() const noexcept
-    {
-        return p_type_and_content_type;
-    }
 
-    void change_type(devices::TypeInfo new_type_info)
+    void change_type(PackedScalarType new_type_info)
     {
         Scalar tmp(new_type_info);
         dtl::scalar_convert_copy(tmp.mut_pointer(), new_type_info, *this);
@@ -489,7 +477,7 @@ public:
 
 private:
     std::vector<byte> to_raw_bytes() const;
-    void from_raw_bytes(devices::TypeInfo info, Slice<byte> bytes);
+    void from_raw_bytes(PackedScalarType info, Slice<byte> bytes);
 };
 
 ROUGHPY_SCALARS_EXPORT

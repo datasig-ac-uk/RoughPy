@@ -38,73 +38,29 @@
 
 namespace rpy {
 namespace scalars {
-
 using ScalarTypeCode = devices::TypeCode;
 using BasicScalarInfo = devices::TypeInfo;
 
 using seed_int_t = uint64_t;
+
+template <typename E>
+class PackedScalarTypePointer;
+
+namespace dtl {
+enum class EmptyEnum : uint8_t
+{
+};
+}
+
+using PackedScalarType = PackedScalarTypePointer<dtl::EmptyEnum>;
 
 // Forward declarations
 class ROUGHPY_SCALARS_EXPORT ScalarType;
 class ROUGHPY_SCALARS_EXPORT ScalarInterface;
 class ROUGHPY_SCALARS_EXPORT Scalar;
 class ROUGHPY_SCALARS_EXPORT ScalarArray;
-class ScalarArrayView;
-class ROUGHPY_SCALARS_EXPORT KeyScalarArray;
 class ROUGHPY_SCALARS_EXPORT ScalarStream;
-class ROUGHPY_SCALARS_EXPORT KeyScalarStream;
 class ROUGHPY_SCALARS_EXPORT RandomGenerator;
-
-namespace dtl {
-
-template <typename T>
-struct ScalarTypeOfImpl {
-    static optional<const ScalarType*> get() noexcept;
-};
-
-template <typename T>
-inline optional<const ScalarType*> ScalarTypeOfImpl<T>::get() noexcept
-{
-    return {};
-}
-
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-ScalarTypeOfImpl<float>::get() noexcept;
-
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-ScalarTypeOfImpl<double>::get() noexcept;
-
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-ScalarTypeOfImpl<devices::rational_scalar_type>::get() noexcept;
-
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-ScalarTypeOfImpl<devices::rational_poly_scalar>::get() noexcept;
-
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-ScalarTypeOfImpl<devices::half>::get() noexcept;
-
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-ScalarTypeOfImpl<devices::bfloat16>::get() noexcept;
-
-}// namespace dtl
-
-template <typename T>
-RPY_NO_DISCARD optional<const ScalarType*> scalar_type_of()
-{
-    return dtl::ScalarTypeOfImpl<T>::get();
-}
-
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-scalar_type_of(devices::TypeInfo info);
-
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-scalar_type_of(devices::TypeInfo info, const devices::Device& device);
 
 template <typename T>
 RPY_NO_DISCARD T scalar_cast(const Scalar& value);
@@ -141,6 +97,21 @@ inline constexpr int min_scalar_type_alignment = 16;
 
 RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT devices::TypeInfo
 compute_type_promotion(devices::TypeInfo left, devices::TypeInfo right);
+
+template <typename T>
+RPY_NO_DISCARD PackedScalarType scalar_type_of();
+
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT PackedScalarType
+scalar_type_of(string_view id, devices::Device = nullptr);
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT PackedScalarType
+rational_type_of(PackedScalarType type);
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT PackedScalarType
+compute_type_promotion(PackedScalarType left, PackedScalarType right);
+
+
 
 }// namespace scalars
 }// namespace rpy

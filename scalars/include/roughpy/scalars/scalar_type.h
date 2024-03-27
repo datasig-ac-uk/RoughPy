@@ -32,6 +32,8 @@
 #include "devices.h"
 #include "scalars_fwd.h"
 
+#include "packed_scalar_type_ptr.h"
+
 namespace rpy {
 namespace scalars {
 
@@ -209,6 +211,8 @@ static_assert(
     "ScalarType must have alignment of at least 8 bytes so there are 3 "
     "free bits in the low end of pointers."
 );
+
+
 
 }// namespace scalars
 }// namespace rpy
