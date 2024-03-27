@@ -472,13 +472,14 @@ std::vector<byte> Scalar::to_raw_bytes() const
     return dtl::to_raw_bytes(pointer(), 1, type_info());
 }
 
-void Scalar::from_raw_bytes(PackedScalarType info, Slice<byte> bytes)
+void Scalar::from_raw_bytes(PackedScalarType type, Slice<byte> bytes)
 {
     // Make sure it is clear
     this->~Scalar();
     p_type_and_content_type
-            = info.with_enum(dtl::ScalarContentType::TrivialBytes);
+            = type.with_enum(dtl::ScalarContentType::TrivialBytes);
 
+    const auto info = type_info_from(type);
     void* ptr = nullptr;
     if (traits::is_arithmetic(info) && info.bytes <= sizeof(void*)) {
         ptr = trivial_bytes;

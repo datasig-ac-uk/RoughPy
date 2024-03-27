@@ -101,7 +101,6 @@ compute_type_promotion(devices::TypeInfo left, devices::TypeInfo right);
 template <typename T>
 RPY_NO_DISCARD PackedScalarType scalar_type_of();
 
-
 RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT PackedScalarType
 scalar_type_of(string_view id, devices::Device = nullptr);
 
@@ -110,8 +109,6 @@ rational_type_of(PackedScalarType type);
 
 RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT PackedScalarType
 compute_type_promotion(PackedScalarType left, PackedScalarType right);
-
-
 
 }// namespace scalars
 }// namespace rpy
