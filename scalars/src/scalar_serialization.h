@@ -25,43 +25,49 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_SCALARS_SERIALIZATION_H_
-#define ROUGHPY_SCALARS_SERIALIZATION_H_
+#ifndef ROUGHPY_SCALARS_SCALAR_SERIALIZATION_H_
+#define ROUGHPY_SCALARS_SCALAR_SERIALIZATION_H_
 
 #include <roughpy/core/helpers.h>
 #include <roughpy/platform/serialization.h>
 
-#include "types.h"
+#include "scalar_implementations/arbitrary_precision_rational.h"
+#include "scalar_implementations/bfloat.h"
+#include "scalar_implementations/complex.h"
+#include "scalar_implementations/half.h"
+#include "scalar_implementations/poly_rational.h"
+#include "scalar_implementations/rational.h"
+
 #include <cereal/types/utility.hpp>
 
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::half)
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::Half)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
 
     uint16_t tmp;
     RPY_SERIAL_SERIALIZE_NVP("value", tmp);
-    value = bit_cast<half>(tmp);
+    value = bit_cast<Half>(tmp);
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::half)
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::Half)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
     RPY_SERIAL_SERIALIZE_NVP("value", bit_cast<uint16_t>(value));
 }
 
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::bfloat16)
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::BFloat16)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
 
     uint16_t tmp;
     RPY_SERIAL_SERIALIZE_NVP("value", tmp);
-    value = bit_cast<bfloat16>(tmp);
+    value = bit_cast<BFloat16>(tmp);
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::bfloat16)
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::BFloat16)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
@@ -98,10 +104,12 @@ class MPIntegerSerializationHelper
     Integer* ptr;
 
 public:
-    MPIntegerSerializationHelper(Integer* p) : ptr(p) {}
-    MPIntegerSerializationHelper(Integer& p) : ptr(&p) {}
+    MPIntegerSerializationHelper(Integer* p)
+        : ptr(p) {}
 
-private:
+    MPIntegerSerializationHelper(Integer& p)
+        : ptr(&p) {}
+
     using ptr_t = conditional_t<is_const<Integer>::value, const char*, char*>;
 
 #if RPY_USING_GMP
@@ -128,6 +136,8 @@ private:
 #endif
     }
 
+    static constexpr dimn_t sizeof_limb() noexcept { return sizeof(limbs_t); }
+
     dimn_t size() const noexcept
     {
 #if RPY_USING_GMP
@@ -142,7 +152,7 @@ private:
 #if RPY_USING_GMP
         return mpz_limbs_write(ptr, static_cast<mp_size_t>(new_size));
 #else
-        ptr->reszie(new_size, new_size);
+        ptr->resize(new_size, new_size);
         return ptr->limbs();
 #endif
     }
@@ -151,9 +161,10 @@ private:
     {
 #if RPY_USING_GMP
         mpz_limbs_finish(
-                ptr,
-                isneg ? -static_cast<mp_size_t>(size)
-                      : static_cast<mp_size_t>(size)
+            ptr,
+            isneg
+            ? -static_cast<mp_size_t>(size)
+            : static_cast<mp_size_t>(size)
         );
 #else
         ptr->sign(isneg);
@@ -162,7 +173,11 @@ private:
 
     dimn_t nbytes() const noexcept { return size() * sizeof(limbs_t); }
 
-public:
+    dimn_t total_bytes() const noexcept
+    {
+        return 1 + sizeof(uint64_t) + nbytes();
+    }
+
     RPY_SERIAL_SAVE_FN()
     {
         RPY_SERIAL_SERIALIZE_NVP("is_negative", is_negative());
@@ -183,11 +198,12 @@ public:
             size = static_cast<dimn_t>(tmp_size);
         }
 
+        dimn_t n_limbs = 0;
         if (size > 0) {
-            auto n_limbs = (size + sizeof(limbs_t) - 1) / sizeof(limbs_t);
+            n_limbs = (size + sizeof(limbs_t) - 1) / sizeof(limbs_t);
             RPY_SERIAL_SERIALIZE_BYTES("data", resize(n_limbs), size);
-            finalize(n_limbs, is_negative);
         }
+        finalize(n_limbs, is_negative);
     }
 
     void
@@ -208,7 +224,7 @@ public:
 };
 
 template <typename Archive>
-void save_rational(Archive& archive, const rational_scalar_type& value)
+void save_rational(Archive& archive, const ArbitraryPrecisionRational& value)
 {
     const auto& backend = value.backend();
 
@@ -217,8 +233,8 @@ void save_rational(Archive& archive, const rational_scalar_type& value)
 
     RPY_SERIAL_SERIALIZE_NVP("numerator", helper_t(mpq_numref(backend.data())));
     RPY_SERIAL_SERIALIZE_NVP(
-            "denominator",
-            helper_t(mpq_denref(backend.data()))
+        "denominator",
+        helper_t(mpq_denref(backend.data()))
     );
 #else
     using helper_t = MPIntegerSerializationHelper<
@@ -230,7 +246,7 @@ void save_rational(Archive& archive, const rational_scalar_type& value)
 }
 
 template <typename Archive>
-void load_rational(Archive& archive, rational_scalar_type& value)
+void load_rational(Archive& archive, ArbitraryPrecisionRational& value)
 {
     auto& backend = value.backend();
 
@@ -239,8 +255,8 @@ void load_rational(Archive& archive, rational_scalar_type& value)
 
     RPY_SERIAL_SERIALIZE_NVP("numerator", helper_t(mpq_numref(backend.data())));
     RPY_SERIAL_SERIALIZE_NVP(
-            "denominator",
-            helper_t(mpq_denref(backend.data()))
+        "denominator",
+        helper_t(mpq_denref(backend.data()))
     );
 #else
     using helper_t = MPIntegerSerializationHelper<
@@ -279,40 +295,42 @@ RPY_SERIAL_EXT_LIB_SAVE_FN(rpy::scalars::indeterminate_type)
     RPY_SERIAL_SERIALIZE_NVP("index", static_cast<integral_type>(value));
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::monomial)
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::Monomial)
 {
     using namespace ::rpy::scalars;
 
     RPY_SERIAL_SERIALIZE_SIZE(static_cast<cereal::size_type>(value.type()));
 
     for (auto&& entry : value) {
-//        RPY_SERIAL_SERIALIZE_NVP("key", entry.first);
-//        RPY_SERIAL_SERIALIZE_NVP("degree", entry.second);
-        RPY_SERIAL_SERIALIZE_BARE(::cereal::make_map_item(entry.first, entry
-                                                                          .second));
-//        RPY_SERIAL_SERIALIZE_BARE(entry);
+        //        RPY_SERIAL_SERIALIZE_NVP("key", entry.first);
+        //        RPY_SERIAL_SERIALIZE_NVP("degree", entry.second);
+        RPY_SERIAL_SERIALIZE_BARE(
+            ::cereal::make_map_item(entry.first, entry.second)
+        );
+        //        RPY_SERIAL_SERIALIZE_BARE(entry);
     }
 }
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::monomial)
+
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::Monomial)
 {
     using namespace ::rpy;
     using namespace ::rpy::scalars;
     cereal::size_type count;
     RPY_SERIAL_SERIALIZE_SIZE(static_cast<cereal::size_type&>(count));
 
-//    pair<indeterminate_type, deg_t> entry(indeterminate_type(0, 0), 0);
+    //    pair<indeterminate_type, deg_t> entry(indeterminate_type(0, 0), 0);
     indeterminate_type id(0, 0);
     deg_t degree;
     for (size_t i = 0; i < count; ++i) {
-//        RPY_SERIAL_SERIALIZE_BARE(entry);
+        //        RPY_SERIAL_SERIALIZE_BARE(entry);
         RPY_SERIAL_SERIALIZE_BARE(::cereal::make_map_item(id, degree));
 
         value[id] = degree;
     }
 }
 
-//namespace cereal {
-RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::rational_poly_scalar)
+// namespace cereal {
+RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::APPolyRat)
 {
     using namespace rpy;
     using namespace rpy::scalars;
@@ -320,8 +338,8 @@ RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::rational_poly_scalar)
     cereal::size_type count;
     RPY_SERIAL_SERIALIZE_SIZE(count);
 
-    monomial m;
-    rational_scalar_type s;
+    Monomial m;
+    ArbitraryPrecisionRational s;
 
     for (size_t i = 0; i < count; ++i) {
         RPY_SERIAL_SERIALIZE_BARE(m);
@@ -330,18 +348,19 @@ RPY_SERIAL_EXT_LIB_LOAD_FN(::rpy::scalars::rational_poly_scalar)
     }
 }
 
-RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::rational_poly_scalar)
+RPY_SERIAL_EXT_LIB_SAVE_FN(::rpy::scalars::APPolyRat)
 {
     using namespace rpy;
     using namespace rpy::scalars;
 
     RPY_SERIAL_SERIALIZE_SIZE(value.size());
 
-    for (const auto& item : value) {
-        RPY_SERIAL_SERIALIZE_BARE(item.key());
-        rpy::scalars::dtl::save_rational(archive, item.value());
+    for (const auto& [key, val] : value) {
+        RPY_SERIAL_SERIALIZE_BARE(key);
+        rpy::scalars::dtl::save_rational(archive, val);
     }
 }
+
 //}// namespace cereal
 
-#endif// ROUGHPY_SCALARS_SERIALIZATION_H_
+#endif // ROUGHPY_SCALARS_SCALAR_SERIALIZATION_H_

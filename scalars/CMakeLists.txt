@@ -20,12 +20,11 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/types/monomial.h
         include/roughpy/scalars/devices.h
         include/roughpy/scalars/packed_scalar_type_ptr.h
+        include/roughpy/scalars/random.h
         include/roughpy/scalars/scalar.h
         include/roughpy/scalars/scalar_array.h
         include/roughpy/scalars/scalar_interface.h
-        include/roughpy/scalars/scalar_serialization.h
         include/roughpy/scalars/scalar_stream.h
-        include/roughpy/scalars/scalar_traits.h
         include/roughpy/scalars/scalar_type.h
         include/roughpy/scalars/scalars_fwd.h
         include/roughpy/scalars/traits.h
@@ -138,6 +137,7 @@ add_roughpy_component(Scalars
         src/scalar_array_element.h
         src/scalar_interface.cpp
         src/scalar_serialization.cpp
+        src/scalar_serialization.h
         src/scalar_stream.cpp
         src/scalar_type.cpp
         src/scalar_type_of.cpp

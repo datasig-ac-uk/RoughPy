@@ -7,6 +7,8 @@
 
 #include <boost/rational.hpp>
 
+
+
 namespace boost {
 
 extern template class ROUGHPY_SCALARS_NO_EXPORT rational<int64_t>;

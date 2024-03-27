@@ -31,15 +31,13 @@
 
 #include "scalars_fwd.h"
 
+#include <roughpy/platform/alloc.h>
 namespace rpy {
 namespace scalars {
 
-class ROUGHPY_SCALARS_EXPORT ScalarInterface
+class ROUGHPY_SCALARS_EXPORT ScalarInterface : public platform::SmallObjectBase
 {
 public:
-    RPY_NO_DISCARD void* operator new(std::size_t count);
-    void operator delete(void* ptr, std::size_t count);
-
     virtual ~ScalarInterface();
 
     RPY_NO_DISCARD virtual const void* pointer() const noexcept = 0;

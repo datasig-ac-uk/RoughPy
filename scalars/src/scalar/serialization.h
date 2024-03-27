@@ -8,9 +8,6 @@
 
 namespace rpy { namespace scalars { namespace dtl {
 
-template <typename Archive, typename T>
-void do_load(Archive& ar, const
-
 
 }}}
 

@@ -167,6 +167,11 @@ public:
         return 0;
     }
 
+    RPY_NO_DISCARD deg_t& operator[](const indeterminate_type& arg)
+    {
+        return m_data[arg];
+    }
+
     Monomial& operator*=(const Monomial& rhs);
     Monomial& operator*=(indeterminate_type rhs);
 };

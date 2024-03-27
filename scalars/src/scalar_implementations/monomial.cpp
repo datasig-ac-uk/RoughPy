@@ -3,6 +3,7 @@
 //
 
 #include "types/monomial.h"
+#include "scalar_serialization.h"
 
 
 using namespace rpy;
@@ -48,3 +49,17 @@ std::ostream& scalars::operator<<(std::ostream& os, const Monomial& arg)
     }
     return os;
 }
+
+
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::indeterminate_type
+#define RPY_SERIAL_EXTERNAL cereal
+#define RPY_SERIAL_DO_SPLIT
+#define RPY_SERIAL_NO_VERSION
+#include <roughpy/platform/serialization_instantiations.inl>
+
+#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::Monomial
+#define RPY_SERIAL_EXTERNAL cereal
+#define RPY_SERIAL_DO_SPLIT
+#define RPY_SERIAL_NO_VERSION
+#include <roughpy/platform/serialization_instantiations.inl>

@@ -32,11 +32,7 @@
 #include "scalars/scalar_type.h"
 #include "scalars/scalar.h"
 #include "scalars/scalar_array.h"
-#include "scalars/scalar_array_view.h"
-#include "scalars/key_scalar_array.h"
 #include "scalars/scalar_stream.h"
-#include "scalars/key_scalar_stream.h"
-
 #include "scalars/random.h"
 
 #endif // ROUGHPY_SCALARS_SCALARS_H_

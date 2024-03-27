@@ -32,7 +32,7 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/scalars/scalar_types.h>
-#include <roughpy/scalars/scalar_serialization.h>
+#include <scalar_serialization.h>
 
 #include <roughpy/platform/archives.h>
 

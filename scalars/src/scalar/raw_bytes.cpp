@@ -5,8 +5,8 @@
 #include "raw_bytes.h"
 #include "do_macro.h"
 
+#include "../scalar_serialization.h"
 #include "builtin_scalars.h"
-#include "scalar_serialization.h"
 #include "types/monomial.h"
 
 #include <random>
