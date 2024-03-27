@@ -12,10 +12,12 @@ static constexpr RingCharacteristics
 
 HalfType::HalfType() : base_t("HPReal", "f16", half_ring_characteristics) {}
 
+
+const HalfType scalars::half_type;
+
 const ScalarType* HalfType::get() noexcept
 {
-    static const HalfType type;
-    return &type;
+    return &half_type;
 }
 
 // template <>

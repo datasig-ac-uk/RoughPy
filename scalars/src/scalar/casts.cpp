@@ -34,7 +34,7 @@
 #include "do_macro.h"
 #include <roughpy/core/alloc.h>
 
-#include "all_scalar_types.h"
+#include "builtin_scalars.h"
 
 using namespace rpy;
 using namespace scalars;

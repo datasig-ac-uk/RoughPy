@@ -104,7 +104,7 @@ public:
         return m_buffer.is_owner();
     }
 
-    RPY_NO_DISCARD optional<const ScalarType*> type() const noexcept;
+    RPY_NO_DISCARD PackedScalarType type() const noexcept;
 
     RPY_NO_DISCARD devices::TypeInfo type_info() const noexcept;
 
@@ -150,8 +150,7 @@ public:
 private:
     void check_for_ptr_access(bool mut = false) const;
     RPY_NO_DISCARD std::vector<byte> to_raw_bytes() const;
-    void
-    from_raw_bytes(devices::TypeInfo info, dimn_t count, Slice<byte> bytes);
+    void from_raw_bytes(PackedScalarType type, dimn_t count, Slice<byte> bytes);
 
 public:
     //    template <typename T>

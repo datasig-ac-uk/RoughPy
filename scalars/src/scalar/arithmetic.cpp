@@ -31,7 +31,7 @@
 //
 
 #include "arithmetic.h"
-#include "all_scalar_types.h"
+#include "builtin_scalars.h"
 #include "casts.h"
 #include "do_macro.h"
 #include "type_promotion.h"

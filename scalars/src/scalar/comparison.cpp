@@ -31,7 +31,7 @@
 //
 
 #include "comparison.h"
-#include "all_scalar_types.h"
+#include "builtin_scalars.h"
 
 #include "do_macro.h"
 

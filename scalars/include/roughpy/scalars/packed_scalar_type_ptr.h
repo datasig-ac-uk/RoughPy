@@ -65,6 +65,7 @@ class PackedScalarTypePointer
             "for a packed scalar type pointer"
     );
 
+public:
     static constexpr integral_type MaxEnumBits = NonPointerBits - 1;
     static constexpr integral_type EnumMask
             = (integral_type(1) << MaxEnumBits) - 1;
@@ -87,11 +88,7 @@ class PackedScalarTypePointer
     constexpr explicit PackedScalarTypePointer(integral_type m_data) noexcept
         : m_data(m_data)
     {}
-
-public:
     PackedScalarTypePointer() = default;
-
-
 
     constexpr PackedScalarTypePointer(const ScalarType* dtype)
         : m_data(bit_cast<integral_type>(dtype))
@@ -187,6 +184,8 @@ public:
                 | (static_cast<integral_type>(enum_val) & EnumMask);
     }
 
+    constexpr integral_type raw() const noexcept { return m_data; }
+
     friend constexpr bool operator==(
             const PackedScalarTypePointer& lhs,
             const PackedScalarTypePointer& rhs
@@ -208,6 +207,117 @@ type_info_from(const PackedScalarTypePointer<OptionsEnumeration>& arg) noexcept
 {
     if (arg.is_pointer()) { return arg->type_info(); }
     return arg.get_type_info();
+}
+
+template <typename E1, typename E2>
+constexpr bool operator==(
+        const PackedScalarTypePointer<E1>& lhs,
+        const PackedScalarTypePointer<E2>& rhs
+) noexcept
+{
+    return static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs);
+    ;
+}
+
+template <typename E1, typename E2>
+constexpr bool operator!=(
+        const PackedScalarTypePointer<E1>& lhs,
+        const PackedScalarTypePointer<E2>& rhs
+) noexcept
+{
+    return !(
+            static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs)
+    );
+}
+
+template <typename E>
+constexpr bool operator==(
+        const PackedScalarTypePointer<E>& lhs,
+        const ScalarType* rhs
+) noexcept
+{
+    return static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs);
+}
+
+template <typename E>
+constexpr bool operator==(
+        const ScalarType* lhs,
+        const PackedScalarTypePointer<E>& rhs
+) noexcept
+{
+    return static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs);
+}
+
+template <typename E>
+constexpr bool operator!=(
+        const PackedScalarTypePointer<E>& lhs,
+        const ScalarType* rhs
+) noexcept
+{
+    return !(
+            static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs)
+    );
+}
+
+template <typename E>
+constexpr bool operator!=(
+        const ScalarType* lhs,
+        const PackedScalarTypePointer<E>& rhs
+) noexcept
+{
+    return !(
+            static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs)
+    );
+}
+
+template <typename E>
+constexpr bool operator==(
+        const PackedScalarTypePointer<E>& lhs,
+        const devices::TypeInfo& rhs
+) noexcept
+{
+    return static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs);
+}
+
+template <typename E>
+constexpr bool operator==(
+        const devices::TypeInfo& lhs,
+        const PackedScalarTypePointer<E>& rhs
+) noexcept
+{
+    return static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs);
+}
+
+template <typename E>
+constexpr bool operator!=(
+        const PackedScalarTypePointer<E>& lhs,
+        const devices::TypeInfo& rhs
+) noexcept
+{
+    return !(
+            static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs)
+    );
+}
+
+template <typename E>
+constexpr bool operator!=(
+        const devices::TypeInfo& lhs,
+        const PackedScalarTypePointer<E>& rhs
+) noexcept
+{
+    return !(
+            static_cast<PackedScalarType>(lhs)
+            == static_cast<PackedScalarType>(rhs)
+    );
 }
 
 }// namespace scalars

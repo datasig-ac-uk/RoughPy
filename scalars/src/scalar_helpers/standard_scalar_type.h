@@ -139,18 +139,18 @@ void StandardScalarType<ScalarImpl>::convert_copy(
 
     auto dst_type = dst.type();
     auto src_type = src.type();
-    if (dst_type) {
+    if (dst_type.is_pointer()) {
         if (dst_type != this) {
-            (*dst_type)->convert_copy(dst, src);
+            dst_type->convert_copy(dst, src);
             return;
         }
 
-        if (src_type && (*src_type)->device() != m_device) {
-            (*src_type)->convert_copy(dst, src);
+        if (src_type.is_pointer() && src_type->device() != m_device) {
+            src_type->convert_copy(dst, src);
             return;
         }
-    } else if (src_type && src_type != this) {
-        (*src_type)->convert_copy(dst, src);
+    } else if (src_type.is_pointer() && src_type != this) {
+        src_type->convert_copy(dst, src);
     }
 
     auto src_info = src.type_info();
@@ -185,11 +185,7 @@ void StandardScalarType<ScalarImpl>::convert_copy(
     } else if (dst.is_owning() && dst_cap > src_size) {
         // Just a little care is needed here to make sure the size of the
         // final array is correct.
-        if (dst_type) {
-            dst = ScalarArray(*dst_type, std::move(dst.mut_buffer()));
-        } else {
-            dst = ScalarArray(dst_info, std::move(dst.mut_buffer()));
-        }
+        dst = ScalarArray(dst_info, std::move(dst.mut_buffer()));
     }
 
     /*
@@ -209,8 +205,8 @@ void StandardScalarType<ScalarImpl>::assign(ScalarArray& dst, Scalar value)
         RPY_THROW(std::invalid_argument, "destination array is not valid");
     }
     auto dst_type = dst.type();
-    if (dst_type && *dst_type != this) {
-        (*dst_type)->assign(dst, std::move(value));
+    if (dst_type.is_pointer() && dst_type != this) {
+        dst_type->assign(dst, std::move(value));
         return;
     }
     if (!dst_type && dst.type_info() != m_info) {

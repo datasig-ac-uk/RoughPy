@@ -31,7 +31,6 @@
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/traits.h>
 
-#include "devices/types.h"
 #include "scalar/arithmetic.h"
 #include "scalar/casts.h"
 #include "scalar/comparison.h"
@@ -480,7 +479,7 @@ void Scalar::from_raw_bytes(PackedScalarType type, Slice<byte> bytes)
             = type.with_enum(dtl::ScalarContentType::TrivialBytes);
 
     const auto info = type_info_from(type);
-    void* ptr = nullptr;
+    void* ptr;
     if (traits::is_arithmetic(info) && info.bytes <= sizeof(void*)) {
         ptr = trivial_bytes;
     } else if (p_type_and_content_type.is_pointer()) {

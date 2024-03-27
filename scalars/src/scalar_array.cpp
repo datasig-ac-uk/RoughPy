@@ -176,10 +176,10 @@ ScalarArray& ScalarArray::operator=(ScalarArray&& other) noexcept
 
 ScalarArray ScalarArray::copy_or_clone() && { return ScalarArray(); }
 
-optional<const ScalarType*> ScalarArray::type() const noexcept
+PackedScalarType ScalarArray::type() const noexcept
 {
     if (p_type != nullptr) { return p_type; }
-    return scalar_type_of(m_buffer.type_info());
+    return m_buffer.type_info();
 }
 
 devices::TypeInfo ScalarArray::type_info() const noexcept
@@ -347,24 +347,17 @@ dimn_t ScalarArray::capacity() const noexcept { return m_buffer.size(); }
 
 std::vector<byte> ScalarArray::to_raw_bytes() const
 {
-    return dtl::to_raw_bytes(m_buffer.ptr(), m_buffer.size(), type_info());
+    return dtl::to_raw_bytes(m_buffer.ptr(), m_buffer.size(), type());
 }
 
 void ScalarArray::from_raw_bytes(
-        devices::TypeInfo info,
+        PackedScalarType type,
         dimn_t count,
         Slice<byte> bytes
 )
 {
     RPY_CHECK(is_null());
-    auto tp_o = scalar_type_of(info);
-    if (tp_o) {
-        *this = (*tp_o)->allocate(count);
-    } else {
-        m_buffer = devices::get_host_device()->alloc(info, count);
-    }
-
-    dtl::from_raw_bytes(m_buffer.ptr(), count, bytes, info);
+    dtl::from_raw_bytes(m_buffer.ptr(), count, bytes, type);
 }
 
 ScalarArray ScalarArray::borrow() const

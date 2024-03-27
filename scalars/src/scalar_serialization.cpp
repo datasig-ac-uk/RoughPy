@@ -29,7 +29,6 @@
 #include <roughpy/platform/archives.h>
 #include <roughpy/scalars/scalar_serialization.h>
 #include <roughpy/scalars/scalars_fwd.h>
-#include <roughpy/scalars/scalar_types.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -104,33 +103,33 @@ void rpy::scalars::dtl::MPIntegerSerializationHelper<Integer>::load(
     }
 }
 
-#define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::half
-#define RPY_SERIAL_EXTERNAL cereal
-#define RPY_SERIAL_DO_SPLIT
-#define RPY_SERIAL_NO_VERSION
-#include <roughpy/platform/serialization_instantiations.inl>
-
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::bfloat16
-#define RPY_SERIAL_EXTERNAL cereal
-#define RPY_SERIAL_DO_SPLIT
-#define RPY_SERIAL_NO_VERSION
-#include <roughpy/platform/serialization_instantiations.inl>
-
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::indeterminate_type
-#define RPY_SERIAL_EXTERNAL cereal
-#define RPY_SERIAL_DO_SPLIT
-#define RPY_SERIAL_NO_VERSION
-#include <roughpy/platform/serialization_instantiations.inl>
-
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::monomial
-#define RPY_SERIAL_EXTERNAL cereal
-#define RPY_SERIAL_DO_SPLIT
-#define RPY_SERIAL_NO_VERSION
-#include <roughpy/platform/serialization_instantiations.inl>
-
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::rational_poly_scalar
-#define RPY_SERIAL_EXTERNAL cereal
-#define RPY_SERIAL_DO_SPLIT
-#define RPY_SERIAL_NO_VERSION
-#include <roughpy/platform/serialization_instantiations.inl>
+// #define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
+// #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::half
+// #define RPY_SERIAL_EXTERNAL cereal
+// #define RPY_SERIAL_DO_SPLIT
+// #define RPY_SERIAL_NO_VERSION
+// #include <roughpy/platform/serialization_instantiations.inl>
+//
+// #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::bfloat16
+// #define RPY_SERIAL_EXTERNAL cereal
+// #define RPY_SERIAL_DO_SPLIT
+// #define RPY_SERIAL_NO_VERSION
+// #include <roughpy/platform/serialization_instantiations.inl>
+//
+// #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::indeterminate_type
+// #define RPY_SERIAL_EXTERNAL cereal
+// #define RPY_SERIAL_DO_SPLIT
+// #define RPY_SERIAL_NO_VERSION
+// #include <roughpy/platform/serialization_instantiations.inl>
+//
+// #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::monomial
+// #define RPY_SERIAL_EXTERNAL cereal
+// #define RPY_SERIAL_DO_SPLIT
+// #define RPY_SERIAL_NO_VERSION
+// #include <roughpy/platform/serialization_instantiations.inl>
+//
+// #define RPY_SERIAL_IMPL_CLASSNAME rpy::scalars::rational_poly_scalar
+// #define RPY_SERIAL_EXTERNAL cereal
+// #define RPY_SERIAL_DO_SPLIT
+// #define RPY_SERIAL_NO_VERSION
+// #include <roughpy/platform/serialization_instantiations.inl>

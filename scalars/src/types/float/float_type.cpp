@@ -4,7 +4,6 @@
 #include "float_type.h"
 #include "scalars_fwd.h"
 
-#include "devices/types.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -14,10 +13,13 @@ static constexpr RingCharacteristics
 
 FloatType::FloatType() : base_t("SPReal", "f32", float_ring_characteristics) {}
 
+
+
+const FloatType scalars::float_type;
+
 const ScalarType* FloatType::get() noexcept
 {
-    static const FloatType type;
-    return &type;
+    return &float_type;
 }
 
 // template <>

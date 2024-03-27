@@ -17,7 +17,6 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/devices/kernel_arg.h
         include/roughpy/scalars/devices/macros.h
         include/roughpy/scalars/devices/queue.h
-        include/roughpy/scalars/devices/types.h
         include/roughpy/scalars/types/monomial.h
         include/roughpy/scalars/devices.h
         include/roughpy/scalars/packed_scalar_type_ptr.h
@@ -73,7 +72,6 @@ add_roughpy_component(Scalars
         src/devices/device_provider.cpp
         src/devices/event.cpp
         src/devices/event_interface.cpp
-        src/devices/rational_numbers.cpp
         src/devices/get_device.cpp
         src/devices/kernel.cpp
         src/devices/kernel_arg.cpp
@@ -131,6 +129,8 @@ add_roughpy_component(Scalars
         src/types/half/half_random_generator.h
         src/types/half/half_type.cpp
         src/types/half/half_type.h
+        src/builtin_scalar_types.h
+        src/builtin_scalars.h
         src/random.cpp
         src/scalar.cpp
         src/scalar_array.cpp
@@ -141,10 +141,10 @@ add_roughpy_component(Scalars
         src/scalar_stream.cpp
         src/scalar_type.cpp
         src/scalar_type_of.cpp
+        src/scalar_type_of.h
         DEPENDENCIES
         PUBLIC
         Boost::boost
-        Libalgebra_lite::Libalgebra_lite
         PRIVATE
         PCGRandom::pcg_random
         OpenCL::OpenCL
@@ -157,8 +157,6 @@ add_roughpy_component(Scalars
 
 target_precompile_headers(RoughPy_Scalars PRIVATE
         <boost/multiprecision/gmp.hpp>
-        <libalgebra_lite/coefficients.h>
-        <libalgebra_lite/polynomial.h>
 )
 target_precompile_headers(RoughPy_Scalars PRIVATE
         include/roughpy/scalars/scalars_fwd.h

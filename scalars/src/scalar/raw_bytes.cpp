@@ -5,7 +5,7 @@
 #include "raw_bytes.h"
 #include "do_macro.h"
 
-#include "all_scalar_types.h"
+#include "builtin_scalars.h"
 #include "scalar_serialization.h"
 #include "types/monomial.h"
 
@@ -241,7 +241,7 @@ void from_raw_bytes_impl(indeterminate_type& value, Slice<const byte> bytes)
 dimn_t from_raw_bytes_impl(Monomial& value, Slice<const byte> bytes)
 {
     constexpr auto sizeof_idep = sizeof(indeterminate_type);
-    constexpr auto sizeof_term = sizeof_idep + sizeof(lal::deg_t);
+    constexpr auto sizeof_term = sizeof_idep + sizeof(deg_t);
     RPY_CHECK(bytes.size() > sizeof(uint64_t));
     uint64_t size_large = 0;
     from_raw_bytes_impl(&size_large, 1, bytes);
@@ -251,11 +251,11 @@ dimn_t from_raw_bytes_impl(Monomial& value, Slice<const byte> bytes)
     const auto* src = bytes.data() + sizeof(uint64_t);
 
     indeterminate_type tmp_idep(0, 0);
-    lal::deg_t power = 0;
+    deg_t power = 0;
     for (dimn_t i = 0; i < size; ++i) {
         // TODO: This isn't right. Indeterminates are stored as 5 bytes, not 4
         from_raw_bytes_impl(tmp_idep, {src, sizeof_idep});
-        from_raw_bytes_impl(&power, 1, {src + sizeof_idep, sizeof(lal::deg_t)});
+        from_raw_bytes_impl(&power, 1, {src + sizeof_idep, sizeof(deg_t)});
         // value[tmp_idep] = power;
         src += sizeof_term;
     }

@@ -57,15 +57,18 @@ void APRationalType::assign(ScalarArray& dst, Scalar value) const
     ScalarType::assign(dst, value);
 }
 
-const ScalarType* APRationalType::get() noexcept
-{
-    static const APRationalType type;
-    return &type;
-}
-
 // template <>
 // ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 // scalars::dtl::ScalarTypeOfImpl<ArbitraryPrecisionRational>::get() noexcept
 // {
 //     return APRationalType::get();
 // }
+
+
+
+const APRationalType scalars::arbitrary_precision_rational_type;
+
+const ScalarType* APRationalType::get() noexcept
+{
+    return &arbitrary_precision_rational_type;
+}

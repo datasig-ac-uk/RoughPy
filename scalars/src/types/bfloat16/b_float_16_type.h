@@ -25,6 +25,9 @@ public:
     static const ScalarType* get() noexcept;
 };
 
+
+RPY_LOCAL extern const BFloat16Type bfloat16_type;
+
 }// namespace scalars
 }// namespace rpy
 

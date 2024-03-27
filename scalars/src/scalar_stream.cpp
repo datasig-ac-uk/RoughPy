@@ -34,11 +34,8 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-ScalarStream::ScalarStream() : m_stream(),  p_type(nullptr) {}
-ScalarStream::ScalarStream(const ScalarType* type)
-    : m_stream(),
-      p_type(type)
-{}
+ScalarStream::ScalarStream() : m_stream(), p_type(nullptr) {}
+ScalarStream::ScalarStream(const ScalarType* type) : m_stream(), p_type(type) {}
 
 ScalarStream::ScalarStream(const ScalarStream& other)
     : m_stream(other.m_stream),
@@ -53,8 +50,7 @@ ScalarStream::ScalarStream(ScalarArray base, std::vector<dimn_t> shape)
 {
     if (!base.is_null()) {
         auto tp = base.type();
-        RPY_CHECK(tp);
-        p_type = *tp;
+        p_type = tp.is_pointer() ? tp.get_pointer() : nullptr;
 
         if (shape.empty()) {
             RPY_THROW(std::runtime_error, "strides cannot be empty");
@@ -62,7 +58,6 @@ ScalarStream::ScalarStream(ScalarArray base, std::vector<dimn_t> shape)
 
         dimn_t rows = shape[0];
         dimn_t cols = (shape.size() > 1) ? shape[1] : 1;
-
 
         m_stream.reserve(rows);
 
@@ -92,7 +87,7 @@ ScalarStream& ScalarStream::operator=(ScalarStream&& other) noexcept
 }
 dimn_t ScalarStream::col_count(dimn_t i) const noexcept
 {
-    RPY_CHECK(i<m_stream.size());
+    RPY_CHECK(i < m_stream.size());
     return m_stream[i].size();
 }
 dimn_t ScalarStream::max_row_size() const noexcept
@@ -102,17 +97,17 @@ dimn_t ScalarStream::max_row_size() const noexcept
     std::vector<dimn_t> tmp;
     tmp.reserve(m_stream.size());
 
-    for (auto&& arr : m_stream ) {
-        tmp.push_back(arr.size());
-    }
+    for (auto&& arr : m_stream) { tmp.push_back(arr.size()); }
 
     return *std::max_element(tmp.begin(), tmp.end());
 }
-ScalarArray ScalarStream::operator[](dimn_t row) const noexcept {
+ScalarArray ScalarStream::operator[](dimn_t row) const noexcept
+{
     RPY_CHECK(row < m_stream.size());
     return m_stream[row];
 }
-Scalar ScalarStream::operator[](std::pair<dimn_t, dimn_t> index) const noexcept {
+Scalar ScalarStream::operator[](std::pair<dimn_t, dimn_t> index) const noexcept
+{
     RPY_CHECK(index.first < m_stream.size());
     return m_stream[index.first][index.second];
 }
@@ -120,10 +115,7 @@ void ScalarStream::set_ctype(const scalars::ScalarType* type) noexcept
 {
     p_type = type;
 }
-void ScalarStream::reserve_size(dimn_t num_rows)
-{
-    m_stream.reserve(num_rows);
-}
+void ScalarStream::reserve_size(dimn_t num_rows) { m_stream.reserve(num_rows); }
 void ScalarStream::push_back(const ScalarArray& data)
 {
     m_stream.push_back(data);

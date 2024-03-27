@@ -3,7 +3,7 @@
 //
 
 #include "print.h"
-#include  "all_scalar_types.h"
+#include  "builtin_scalars.h"
 
 namespace {
 

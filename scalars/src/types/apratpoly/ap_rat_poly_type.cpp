@@ -12,6 +12,7 @@
 #include "scalar.h"
 #include "scalar_array.h"
 #include "scalar_implementations/poly_rational.h"
+#include "types/aprational/ap_rational_type.h"
 
 #include <algorithm>
 
@@ -75,11 +76,6 @@ const ScalarType* APRatPolyType::with_device(const devices::Device& device
     return ScalarType::with_device(device);
 }
 
-const ScalarType* APRatPolyType::get() noexcept
-{
-    static const APRatPolyType type;
-    return &type;
-}
 
 // template <>
 // ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
@@ -87,3 +83,11 @@ const ScalarType* APRatPolyType::get() noexcept
 // {
 //     return APRatPolyType::get();
 // }
+
+
+const APRatPolyType scalars::arbitrary_precision_rational_polynomial_type;
+
+const ScalarType* APRatPolyType::get() noexcept
+{
+    return &arbitrary_precision_rational_polynomial_type;
+}

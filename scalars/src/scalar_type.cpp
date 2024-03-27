@@ -31,9 +31,9 @@
 #include "random.h"
 #include "scalar.h"
 #include "scalar_array.h"
-#include "scalar_types.h"
 #include "scalars_fwd.h"
-
+#include "builtin_scalars.h"
+#include "builtin_scalar_types.h"
 #include "scalar/casts.h"
 
 #include <charconv>
@@ -49,15 +49,19 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
             // if (info.bytes <= 3) {
             // return *scalar_type_of<float>();
             // } else {
-            return *scalar_type_of<double>();
+            return &double_type;
         // }
         case devices::TypeCode::Float:
             switch (info.bytes) {
-                case 4: return *scalar_type_of<float>();
-                case 8: return *scalar_type_of<double>();
+                case 2: return &half_type;
+                case 4: return &float_type;
+                case 8: return &double_type;
+                default:
+                    break;
             }
+        break;
         case devices::TypeCode::OpaqueHandle: break;
-        case devices::TypeCode::BFloat: break;
+        case devices::TypeCode::BFloat: return &bfloat16_type;
         case devices::TypeCode::Complex: break;
         case devices::TypeCode::Bool: break;
         case devices::TypeCode::Rational:
@@ -66,9 +70,9 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
         case devices::TypeCode::ArbitraryPrecisionFloat:
         case devices::TypeCode::ArbitraryPrecisionComplex:
         case devices::TypeCode::ArbitraryPrecisionRational:
-            return *scalar_type_of<rational_scalar_type>();
+            return &arbitrary_precision_rational_type;
         case devices::TypeCode::APRationalPolynomial:
-            return *scalar_type_of<rational_poly_scalar>();
+            return &arbitrary_precision_rational_polynomial_type;
     }
 
     RPY_THROW(std::runtime_error, "unsupported data type");
@@ -143,59 +147,9 @@ const ScalarType* ScalarType::for_id(string_view id)
     return *ScalarType::of<double>();
 }
 
-namespace {
-inline optional<devices::TypeInfo>
-parse_byted_type(string_view id_sub, devices::TypeCode code) noexcept
-{
-    dimn_t bits = 0;
 
-    auto result = std::from_chars(&*id_sub.begin(), &*id_sub.end(), bits);
-    if (result.ec != std::errc{}) { return {}; }
 
-    const auto bytes = static_cast<uint8_t>(bits / CHAR_BIT);
 
-    return devices::TypeInfo{code, bytes, next_power_2(bytes), 1};
-}
-
-inline optional<devices::TypeInfo> parse_id_to_type_info(string_view id
-) noexcept
-{
-    using devices::TypeCode;
-    RPY_DBG_ASSERT(!id.empty());
-
-    switch (id.front()) {
-        case 'i': return parse_byted_type(id.substr(1), TypeCode::Int);
-        case 'u': return parse_byted_type(id.substr(1), TypeCode::UInt);
-        case 'f': return parse_byted_type(id.substr(1), TypeCode::Float);
-        case 'c': return parse_byted_type(id.substr(1), TypeCode::Complex);
-        case 'b':
-            if (id.size() > 1 && id[2] == 'f') {
-                return parse_byted_type(id.substr(2), TypeCode::BFloat);
-            }
-        default: break;
-    }
-
-    return {};
-}
-}// namespace
-
-optional<const ScalarType*> rpy::scalars::get_type(string_view id)
-{
-    if (id.empty()) { return {}; }
-
-    auto info = parse_id_to_type_info(id);
-    if (info) { return scalar_type_of(*info); }
-
-    const auto rat_type = scalar_type_of<rational_scalar_type>();
-    RPY_DBG_ASSERT(rat_type);
-    if (id == (*rat_type)->id()) { return rat_type; }
-
-    const auto aprpol_type = scalar_type_of<rational_poly_scalar>();
-    RPY_DBG_ASSERT(aprpol_type);
-    if (id == (*aprpol_type)->id()) { return aprpol_type; }
-
-    return {};
-}
 
 std::unique_ptr<RandomGenerator>
 ScalarType::get_rng(const string& bit_generator, Slice<seed_int_t> seed) const

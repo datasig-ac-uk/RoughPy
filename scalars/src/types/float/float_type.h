@@ -11,7 +11,7 @@
 namespace rpy {
 namespace scalars {
 
-class FloatType : dtl::StandardScalarType<float>
+class FloatType : public dtl::StandardScalarType<float>
 {
     using base_t = dtl::StandardScalarType<float>;
 
@@ -22,6 +22,9 @@ public:
 
     static const ScalarType* get() noexcept;
 };
+
+
+RPY_LOCAL extern const FloatType float_type;
 
 }// namespace scalars
 }// namespace rpy

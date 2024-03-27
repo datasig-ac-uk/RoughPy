@@ -38,23 +38,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/uuid/uuid.hpp>
 
-#include "rational_numbers.h"
 #include "roughpy_platform_export.h"
-
-/*
- * We use the half precision floating point and bfloat16 types from Eigen but
- * we really don't want to include the whole Eigen/Core header until we
- * absolutely have to. To avoid this, we pre-declare the two types that we need
- * in the Eigen namespace, so we can typedef them in the our own namespace and
- * set up all the machinery that we need. Then, we can import the actual
- * definitions only when we need to.
- */
-namespace Eigen {
-
-struct half;
-struct bfloat16;
-
-}// namespace Eigen
 
 namespace rpy {
 namespace devices {
@@ -62,14 +46,6 @@ namespace devices {
 using dindex_t = int;
 using dsize_t = unsigned int;
 
-/// IEEE half-precision floating point type
-using Eigen::half;
-/// BFloat16 (truncated) floating point type
-using Eigen::bfloat16;
-/// Rational scalar type
-// using rational_scalar_type = lal::rational_field::scalar_type;
-/// Polynomial (with rational coefficients) scalar type
-// using rational_poly_scalar = lal::rational_poly;
 
 enum class DeviceCategory : int32_t
 {

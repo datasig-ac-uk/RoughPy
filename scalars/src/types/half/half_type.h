@@ -25,6 +25,9 @@ public:
     static const ScalarType* get() noexcept;
 };
 
+RPY_LOCAL extern const HalfType half_type;
+
+
 }// namespace scalars
 }// namespace rpy
 

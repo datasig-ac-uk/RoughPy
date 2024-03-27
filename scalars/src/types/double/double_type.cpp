@@ -15,11 +15,6 @@ DoubleType::DoubleType()
     : base_t("DPReal", "f64", double_ring_characteristics)
 {}
 
-const ScalarType* DoubleType::get() noexcept
-{
-    static const DoubleType type;
-    return &type;
-}
 
 // template <>
 // ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
@@ -27,3 +22,11 @@ const ScalarType* DoubleType::get() noexcept
 // {
 //     return DoubleType::get();
 // }
+
+
+const DoubleType scalars::double_type;
+
+const ScalarType* DoubleType::get() noexcept
+{
+    return &double_type;;
+}
