@@ -49,8 +49,14 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/basis_key.h
         include/roughpy/algebra/context.h
         include/roughpy/algebra/context_fwd.h
+        include/roughpy/algebra/free_tensor.h
         include/roughpy/algebra/key_array.h
-        include/roughpy/algebra/linear_operator.h
+        include/roughpy/algebra/key_scalar_array.h
+        include/roughpy/algebra/key_scalar_stream.h
+        include/roughpy/algebra/lie.h
+        include/roughpy/algebra/lie_basis.h
+        include/roughpy/algebra/shuffle_tensor.h
+        include/roughpy/algebra/tensor_basis.h
         include/roughpy/algebra/tensor_product_basis.h
         include/roughpy/algebra/vector.h
         include/roughpy/algebra/vector_iterator.h

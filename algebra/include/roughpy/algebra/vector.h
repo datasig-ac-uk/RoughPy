@@ -232,11 +232,9 @@ public:
         return m_data.scalar_buffer().device();
     }
 
-    RPY_NO_DISCARD const scalars::ScalarType* scalar_type() const noexcept
+    RPY_NO_DISCARD scalars::PackedScalarType scalar_type() const noexcept
     {
-        auto type = m_data.scalars().type();
-        RPY_DBG_ASSERT(type);
-        return *type;
+        return m_data.scalars().type();
     }
 
     /**
