@@ -6,9 +6,9 @@
 #define ROUGHPY_SCALARS_SRC_TYPES_APRATIONAL_AP_RATIONAL_TYPE_H_
 
 #include "scalar_type.h"
-#include "scalar_types.h"
+#include "scalar_implementations/arbitrary_precision_rational.h"
 
-#include <unordered_set>
+
 
 namespace rpy {
 namespace scalars {

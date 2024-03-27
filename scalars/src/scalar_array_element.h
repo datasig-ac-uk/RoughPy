@@ -17,7 +17,7 @@ class ScalarArrayElement : public ScalarInterface
 {
     devices::Buffer m_buffer;
     dimn_t m_index;
-    dtl::PackedType p_type_or_info;
+    PackedScalarType p_type_or_info;
 
 public:
     ScalarArrayElement(

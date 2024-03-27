@@ -11,7 +11,7 @@
 #include "random.h"
 #include "scalar.h"
 #include "scalar_array.h"
-#include "scalar_types.h"
+#include "scalar_implementations/poly_rational.h"
 
 #include <algorithm>
 
@@ -25,9 +25,9 @@ APRatPolyType::APRatPolyType()
     : ScalarType(
               "RationalPoly",
               "RationalPoly",
-              alignof(rational_poly_scalar),
+              alignof(APPolyRat),
               devices::get_host_device(),
-              devices::type_info<rational_poly_scalar>(),
+              devices::type_info<APPolyRat>(),
               ap_rat_poly_ring_characteristics
       )
 {}
@@ -36,7 +36,7 @@ ScalarArray APRatPolyType::allocate(dimn_t count) const
 {
     auto result = ScalarType::allocate(count);
     std::uninitialized_default_construct_n(
-            static_cast<rational_poly_scalar*>(result.mut_buffer().ptr()),
+            static_cast<APPolyRat*>(result.mut_buffer().ptr()),
             count
     );
     return result;
@@ -45,7 +45,7 @@ ScalarArray APRatPolyType::allocate(dimn_t count) const
 void* APRatPolyType::allocate_single() const
 {
     guard_type access(m_lock);
-    auto [pos, inserted] = m_allocations.insert(new rational_poly_scalar());
+    auto [pos, inserted] = m_allocations.insert(new APPolyRat());
     RPY_DBG_ASSERT(inserted);
     return *pos;
 }
@@ -55,7 +55,7 @@ void APRatPolyType::free_single(void* ptr) const
     guard_type access(m_lock);
     auto found = m_allocations.find(ptr);
     RPY_CHECK(found != m_allocations.end());
-    delete static_cast<rational_poly_scalar*>(*found);
+    delete static_cast<APPolyRat*>(*found);
     m_allocations.erase(found);
 }
 
@@ -81,9 +81,9 @@ const ScalarType* APRatPolyType::get() noexcept
     return &type;
 }
 
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<rational_poly_scalar>::get() noexcept
-{
-    return APRatPolyType::get();
-}
+// template <>
+// ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+// scalars::dtl::ScalarTypeOfImpl<APPolyRat>::get() noexcept
+// {
+//     return APRatPolyType::get();
+// }

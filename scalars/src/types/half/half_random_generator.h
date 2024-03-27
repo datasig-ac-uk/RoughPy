@@ -6,15 +6,15 @@
 #define HALF_RANDOM_GENERATOR_H
 
 #include "random/standard_random_generator.h"
-#include "scalar_types.h"
+#include "scalar_implementations/half.h"
 
 namespace rpy {
 namespace scalars {
 
 template <typename BitGenerator>
-class StandardRandomGenerator<half, BitGenerator> : public RandomGenerator
+class StandardRandomGenerator<Half, BitGenerator> : public RandomGenerator
 {
-    using scalar_type = half;
+    using scalar_type = Half;
     using bit_generator = BitGenerator;
 
     std::vector<uint64_t> m_seed;
@@ -40,13 +40,13 @@ public:
 };
 
 template <typename BitGenerator>
-StandardRandomGenerator<half, BitGenerator>::StandardRandomGenerator(
+StandardRandomGenerator<Half, BitGenerator>::StandardRandomGenerator(
         const ScalarType* stype,
         Slice<seed_int_t> seed
 )
     : RandomGenerator(stype)
 {
-    RPY_CHECK(p_type == *ScalarType::of<half>());
+    RPY_CHECK(p_type == *ScalarType::of<Half>());
     if (seed.empty()) {
         m_seed.resize(1);
         auto& s = m_seed[0];
@@ -70,7 +70,7 @@ StandardRandomGenerator<half, BitGenerator>::StandardRandomGenerator(
 }
 
 template <typename BitGenerator>
-void StandardRandomGenerator<half, BitGenerator>::set_seed(
+void StandardRandomGenerator<Half, BitGenerator>::set_seed(
         Slice<seed_int_t> seed_data
 )
 {
@@ -81,7 +81,7 @@ void StandardRandomGenerator<half, BitGenerator>::set_seed(
 }
 
 template <typename BitGenerator>
-void StandardRandomGenerator<half, BitGenerator>::set_state(string_view state)
+void StandardRandomGenerator<Half, BitGenerator>::set_state(string_view state)
 {
     // add a linebreak char to terminate the string to avoid a bug in the pcg
     // stream read function
@@ -91,19 +91,19 @@ void StandardRandomGenerator<half, BitGenerator>::set_state(string_view state)
 
 template <typename BitGenerator>
 std::vector<seed_int_t>
-StandardRandomGenerator<half, BitGenerator>::get_seed() const
+StandardRandomGenerator<Half, BitGenerator>::get_seed() const
 {
     return {m_seed[0]};
 }
 
 template <typename BitGenerator>
-std::string StandardRandomGenerator<half, BitGenerator>::get_type() const
+std::string StandardRandomGenerator<Half, BitGenerator>::get_type() const
 {
     return string(dtl::rng_type_getter<BitGenerator>::name);
 }
 
 template <typename BitGenerator>
-std::string StandardRandomGenerator<half, BitGenerator>::get_state() const
+std::string StandardRandomGenerator<Half, BitGenerator>::get_state() const
 {
     std::stringstream ss;
     ss << m_generator;
@@ -111,7 +111,7 @@ std::string StandardRandomGenerator<half, BitGenerator>::get_state() const
 }
 
 template <typename BitGenerator>
-ScalarArray StandardRandomGenerator<half, BitGenerator>::uniform_random_scalar(
+ScalarArray StandardRandomGenerator<Half, BitGenerator>::uniform_random_scalar(
         const ScalarArray& lower,
         const ScalarArray& upper,
         dimn_t count
@@ -147,7 +147,7 @@ ScalarArray StandardRandomGenerator<half, BitGenerator>::uniform_random_scalar(
 }
 
 template <typename BitGenerator>
-ScalarArray StandardRandomGenerator<half, BitGenerator>::normal_random(
+ScalarArray StandardRandomGenerator<Half, BitGenerator>::normal_random(
         Scalar loc,
         Scalar scale,
         dimn_t count
@@ -167,8 +167,8 @@ ScalarArray StandardRandomGenerator<half, BitGenerator>::normal_random(
     return result;
 }
 
-extern template class StandardRandomGenerator<half, std::mt19937_64>;
-extern template class StandardRandomGenerator<half, pcg64>;
+extern template class StandardRandomGenerator<Half, std::mt19937_64>;
+extern template class StandardRandomGenerator<Half, pcg64>;
 
 }// namespace scalars
 }// namespace rpy

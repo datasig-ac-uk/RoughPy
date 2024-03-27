@@ -40,10 +40,10 @@ namespace rpy {
 namespace scalars {
 namespace dtl {
 
-void RPY_LOCAL scalar_inplace_add(void*, PackedType, const void*, PackedType);
-void RPY_LOCAL scalar_inplace_sub(void*, PackedType, const void*, PackedType);
-void RPY_LOCAL scalar_inplace_mul(void*, PackedType, const void*, PackedType);
-void RPY_LOCAL scalar_inplace_div(void*, PackedType, const void*, PackedType);
+void RPY_LOCAL scalar_inplace_add(void*, PackedScalarType, const void*, PackedScalarType);
+void RPY_LOCAL scalar_inplace_sub(void*, PackedScalarType, const void*, PackedScalarType);
+void RPY_LOCAL scalar_inplace_mul(void*, PackedScalarType, const void*, PackedScalarType);
+void RPY_LOCAL scalar_inplace_div(void*, PackedScalarType, const void*, PackedScalarType);
 
 template <typename D, typename S>
 RPY_LOCAL void

@@ -7,16 +7,16 @@
 
 
 #include "scalar_helpers/standard_scalar_type.h"
-#include "scalar_types.h"
+#include "scalar_implementations/half.h"
 
 #include "half_random_generator.h"
 
 namespace rpy {
 namespace scalars {
 
-class HalfType : public dtl::StandardScalarType<half>
+class HalfType : public dtl::StandardScalarType<Half>
 {
-    using base_t = dtl::StandardScalarType<half>;
+    using base_t = dtl::StandardScalarType<Half>;
 
 
 public:

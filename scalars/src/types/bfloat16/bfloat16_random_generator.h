@@ -6,15 +6,15 @@
 #define BFLOAT16_RANDOM_GENERATOR_H
 
 #include "random/standard_random_generator.h"
-#include "scalar_types.h"
+#include "scalar_implementations/bfloat.h"
 
 namespace rpy {
 namespace scalars {
 
 template <typename BitGenerator>
-class StandardRandomGenerator<bfloat16, BitGenerator> : public RandomGenerator
+class StandardRandomGenerator<BFloat16, BitGenerator> : public RandomGenerator
 {
-    using scalar_type = bfloat16;
+    using scalar_type = BFloat16;
     using bit_generator = BitGenerator;
 
     std::vector<seed_int_t> m_seed;
@@ -40,13 +40,13 @@ public:
 };
 
 template <typename BitGenerator>
-StandardRandomGenerator<bfloat16, BitGenerator>::StandardRandomGenerator(
+StandardRandomGenerator<BFloat16, BitGenerator>::StandardRandomGenerator(
         const ScalarType* stype,
         Slice<seed_int_t> seed
 )
     : RandomGenerator(stype)
 {
-    RPY_CHECK(p_type == *ScalarType::of<bfloat16>());
+    RPY_CHECK(p_type == *ScalarType::of<BFloat16>());
     if (seed.empty()) {
         m_seed.resize(1);
         auto& s = m_seed[0];
@@ -70,7 +70,7 @@ StandardRandomGenerator<bfloat16, BitGenerator>::StandardRandomGenerator(
 }
 
 template <typename BitGenerator>
-void StandardRandomGenerator<bfloat16, BitGenerator>::set_seed(
+void StandardRandomGenerator<BFloat16, BitGenerator>::set_seed(
         Slice<seed_int_t> seed_data
 )
 {
@@ -81,7 +81,7 @@ void StandardRandomGenerator<bfloat16, BitGenerator>::set_seed(
 }
 
 template <typename BitGenerator>
-void StandardRandomGenerator<bfloat16, BitGenerator>::set_state(
+void StandardRandomGenerator<BFloat16, BitGenerator>::set_state(
         string_view state
 )
 {
@@ -93,19 +93,19 @@ void StandardRandomGenerator<bfloat16, BitGenerator>::set_state(
 
 template <typename BitGenerator>
 std::vector<seed_int_t>
-StandardRandomGenerator<bfloat16, BitGenerator>::get_seed() const
+StandardRandomGenerator<BFloat16, BitGenerator>::get_seed() const
 {
     return {m_seed[0]};
 }
 
 template <typename BitGenerator>
-std::string StandardRandomGenerator<bfloat16, BitGenerator>::get_type() const
+std::string StandardRandomGenerator<BFloat16, BitGenerator>::get_type() const
 {
     return string(dtl::rng_type_getter<BitGenerator>::name);
 }
 
 template <typename BitGenerator>
-std::string StandardRandomGenerator<bfloat16, BitGenerator>::get_state() const
+std::string StandardRandomGenerator<BFloat16, BitGenerator>::get_state() const
 {
     std::stringstream ss;
     ss << m_generator;
@@ -114,7 +114,7 @@ std::string StandardRandomGenerator<bfloat16, BitGenerator>::get_state() const
 
 template <typename BitGenerator>
 ScalarArray
-StandardRandomGenerator<bfloat16, BitGenerator>::uniform_random_scalar(
+StandardRandomGenerator<BFloat16, BitGenerator>::uniform_random_scalar(
         const ScalarArray& lower,
         const ScalarArray& upper,
         dimn_t count
@@ -150,7 +150,7 @@ StandardRandomGenerator<bfloat16, BitGenerator>::uniform_random_scalar(
 }
 
 template <typename BitGenerator>
-ScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::normal_random(
+ScalarArray StandardRandomGenerator<BFloat16, BitGenerator>::normal_random(
         Scalar loc,
         Scalar scale,
         dimn_t count
@@ -170,8 +170,8 @@ ScalarArray StandardRandomGenerator<bfloat16, BitGenerator>::normal_random(
     return result;
 }
 
-extern template class StandardRandomGenerator<bfloat16, std::mt19937_64>;
-extern template class StandardRandomGenerator<bfloat16, pcg64>;
+extern template class StandardRandomGenerator<BFloat16, std::mt19937_64>;
+extern template class StandardRandomGenerator<BFloat16, pcg64>;
 
 }// namespace scalars
 }// namespace rpy

@@ -53,14 +53,14 @@
             break;                                                             \
         case devices::TypeCode::Float:                                         \
             switch (INFO.bytes) {                                              \
-                case 2: X(half);                                               \
+                case 2: X(Half);                                               \
                 case 4: X(float);                                              \
                 case 8: X(double);                                             \
             }                                                                  \
             break;                                                             \
         case devices::TypeCode::OpaqueHandle: break;                           \
         case devices::TypeCode::BFloat:                                        \
-            if (INFO.bytes == 2) { X(bfloat16); }                              \
+            if (INFO.bytes == 2) { X(BFloat16); }                              \
             break;                                                             \
         case devices::TypeCode::Complex: break;                                \
         case devices::TypeCode::Bool: break;                                   \
@@ -70,8 +70,8 @@
         case devices::TypeCode::ArbitraryPrecisionFloat: break;                \
         case devices::TypeCode::ArbitraryPrecisionComplex: break;              \
         case devices::TypeCode::ArbitraryPrecisionRational:                    \
-            X(rational_scalar_type);                                           \
-        case devices::TypeCode::APRationalPolynomial: X(rational_poly_scalar); \
+            X(ArbitraryPrecisionRational);                                     \
+        case devices::TypeCode::APRationalPolynomial: X(APPolyRat);            \
         case devices::TypeCode::KeyType:                                       \
             RPY_THROW(std::runtime_error, "keytype is not a scalar");          \
     }

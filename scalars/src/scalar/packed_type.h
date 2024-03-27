@@ -12,26 +12,20 @@ namespace rpy {
 namespace scalars {
 namespace dtl {
 
-enum EmptyEnum
+constexpr PackedScalarType pack_type(devices::TypeInfo tinfo) noexcept
 {
-};
-
-using PackedType = PackedScalarTypePointer<EmptyEnum>;
-
-constexpr PackedType pack_type(devices::TypeInfo tinfo) noexcept
-{
-    return PackedType(tinfo, {});
+    return PackedScalarType(tinfo, {});
 }
-constexpr PackedType pack_type(const ScalarType* type) noexcept
+constexpr PackedScalarType pack_type(const ScalarType* type) noexcept
 {
-    return PackedType(type, {});
+    return PackedScalarType(type, {});
 }
 
 template <typename E>
-constexpr PackedType pack_type(PackedScalarTypePointer<E> packed) noexcept
+constexpr PackedScalarType pack_type(PackedScalarTypePointer<E> packed) noexcept
 {
-    return (packed.is_pointer()) ? PackedType(packed.get_pointer(), {})
-                                 : PackedType(packed.get_type_info(), {});
+    return (packed.is_pointer()) ? PackedScalarType(packed.get_pointer(), {})
+                                 : PackedScalarType(packed.get_type_info(), {});
 }
 
 }// namespace dtl

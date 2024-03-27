@@ -31,6 +31,7 @@
 //
 
 #include "arithmetic.h"
+#include "all_scalar_types.h"
 #include "casts.h"
 #include "do_macro.h"
 #include "type_promotion.h"
@@ -40,7 +41,6 @@
 #include <roughpy/core/alloc.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/scalar_types.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -125,7 +125,7 @@ struct RPY_LOCAL MulInplace {
 struct RPY_LOCAL DivInplace {
     template <typename T, typename R>
     constexpr enable_if_t<
-            !is_same<T, rational_poly_scalar>::value
+            !is_same<T, APPolyRat>::value
             && is_same<
                     decltype(std::declval<T&>() /= std::declval<const R&>()),
                     T&>::value>
@@ -178,16 +178,15 @@ inline void scalar_inplace_arithmetic(Scalar& dst, const Scalar& src, Op&& op)
     if (src_info == dst_info) {
         do_op(dst.mut_pointer(), src.pointer(), dst_info, std::forward<Op>(op));
     } else {
-        auto out_type = scalars::dtl::compute_dest_type(
-                dst.packed_type_info(),
-                src.packed_type_info()
-        );
-        if (out_type != dst_info) { dst.change_type(out_type); }
+        auto out_type = scalars::dtl::compute_dest_type(dst.type(), src.type());
+        if (out_type != static_cast<PackedScalarType>(dst.type())) {
+            dst.change_type(out_type);
+        }
         scalar_inplace_arithmetic(
                 dst.mut_pointer(),
-                dst.packed_type_info(),
+                dst.type(),
                 src.pointer(),
-                src.packed_type_info(),
+                src.type(),
                 std::forward<Op>(op)
         );
     }
@@ -244,13 +243,13 @@ do_divide_impl(T* dst, const R* divisor)
 }
 
 static inline void
-do_divide_impl(rational_poly_scalar* dst, const rational_scalar_type* divisor)
+do_divide_impl(APPolyRat* dst, const ArbitraryPrecisionRational* divisor)
 {
     *dst /= *divisor;
 }
 
 template <typename R>
-static inline void do_divide_impl(rational_poly_scalar* dst, const R* other)
+static inline void do_divide_impl(APPolyRat* dst, const R* other)
 {
     RPY_THROW(std::domain_error, "invalid division");
 }
@@ -283,8 +282,9 @@ Scalar& Scalar::operator/=(const Scalar& other)
      * We need to handle both of these cases gracefully.
      */
     const auto num_info = type_info_from(p_type_and_content_type);
-    const auto true_denom_info = type_info_from(other.p_type_and_content_type);
-    const auto rat_denom_info = traits::rational_type_of(true_denom_info);
+    const auto true_denom_info
+            = static_cast<PackedScalarType>(other.p_type_and_content_type);
+    const auto rat_denom_info = rational_type_of(other.p_type_and_content_type);
 
     // Set up the actual denominator that we will divide by
     Scalar rational_denom(true_denom_info, other.pointer());
@@ -296,7 +296,8 @@ Scalar& Scalar::operator/=(const Scalar& other)
      * The type resolution needs to be done with the true denominator type,
      * rather than whatever the rational type is.
      */
-    if (num_info != true_denom_info) {
+    if (static_cast<PackedScalarType>(p_type_and_content_type)
+        != true_denom_info) {
         change_type(dtl::compute_dest_type(
                 p_type_and_content_type,
                 other.p_type_and_content_type
@@ -305,7 +306,11 @@ Scalar& Scalar::operator/=(const Scalar& other)
 
     // Now we should be ready
 #define X(tp)                                                                  \
-    do_divide((tp*) mut_pointer(), rational_denom.pointer(), rat_denom_info);  \
+    do_divide(                                                                 \
+            (tp*) mut_pointer(),                                               \
+            rational_denom.pointer(),                                          \
+            type_info_from(rat_denom_info)                                     \
+    );                                                                         \
     break
     DO_FOR_EACH_X(num_info)
 #undef X
@@ -315,9 +320,9 @@ Scalar& Scalar::operator/=(const Scalar& other)
 
 void scalars::dtl::scalar_inplace_add(
         void* dst,
-        rpy::scalars::dtl::PackedType dst_type,
+        PackedScalarType dst_type,
         const void* src,
-        rpy::scalars::dtl::PackedType src_type
+        PackedScalarType src_type
 )
 {
     RPY_DBG_ASSERT(src != nullptr && dst != nullptr);
@@ -326,9 +331,9 @@ void scalars::dtl::scalar_inplace_add(
 
 void scalars::dtl::scalar_inplace_sub(
         void* dst,
-        dtl::PackedType dst_type,
+        PackedScalarType dst_type,
         const void* src,
-        dtl::PackedType src_type
+        PackedScalarType src_type
 )
 {
     RPY_DBG_ASSERT(src != nullptr && dst != nullptr);
@@ -336,9 +341,9 @@ void scalars::dtl::scalar_inplace_sub(
 }
 void scalars::dtl::scalar_inplace_mul(
         void* dst,
-        dtl::PackedType dst_type,
+        PackedScalarType dst_type,
         const void* src,
-        dtl::PackedType src_type
+        PackedScalarType src_type
 )
 {
     RPY_DBG_ASSERT(src != nullptr && dst != nullptr);
@@ -346,9 +351,9 @@ void scalars::dtl::scalar_inplace_mul(
 }
 void scalars::dtl::scalar_inplace_div(
         void* dst,
-        dtl::PackedType dst_type,
+        PackedScalarType dst_type,
         const void* src,
-        dtl::PackedType src_type
+        PackedScalarType src_type
 )
 {
     /*
@@ -361,17 +366,21 @@ void scalars::dtl::scalar_inplace_div(
      */
     const auto num_info = type_info_from(dst_type);
     const auto true_denom_info = type_info_from(src_type);
-    const auto rat_denom_info = traits::rational_type_of(true_denom_info);
+    const auto rat_denom_info = rational_type_of(src_type);
 
     // Set up the actual denominator that we will divide by
     Scalar rational_denom(true_denom_info, src);
-    if (rat_denom_info != true_denom_info) {
+    if (rat_denom_info != src_type) {
         rational_denom.change_type(rat_denom_info);
     }
 
     // Now we should be ready
 #define X(tp)                                                                  \
-    do_divide((tp*) dst, rational_denom.pointer(), rat_denom_info);            \
+    do_divide(                                                                 \
+            (tp*) dst,                                                         \
+            rational_denom.pointer(),                                          \
+            type_info_from(rat_denom_info)                                     \
+    );                                                                         \
     break
     DO_FOR_EACH_X(num_info)
 #undef X

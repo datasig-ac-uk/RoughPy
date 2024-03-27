@@ -18,9 +18,9 @@ const ScalarType* HalfType::get() noexcept
     return &type;
 }
 
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<devices::half>::get() noexcept
-{
-    return HalfType::get();
-}
+// template <>
+// ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+// scalars::dtl::ScalarTypeOfImpl<devices::half>::get() noexcept
+// {
+//     return HalfType::get();
+// }

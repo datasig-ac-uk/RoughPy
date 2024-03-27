@@ -115,13 +115,36 @@ devices::TypeInfo compute_aprpoly_promotion(
 
 }// namespace
 
-devices::TypeInfo scalars::dtl::compute_promotion(
-        scalars::dtl::PackedType dst_type,
-        scalars::dtl::PackedType src_type
+
+PackedScalarType scalars::dtl::compute_dest_type(
+        PackedScalarTypePointer<ScalarContentType> dst_type,
+        PackedScalarTypePointer<ScalarContentType> src_type
 )
 {
-    const auto dst_info = type_info_from(dst_type);
-    const auto src_info = type_info_from(src_type);
+    RPY_DBG_ASSERT(!(dst_type == src_type));
+
+    switch (dst_type.get_enumeration()) {
+        case ScalarContentType::TrivialBytes:
+        case ScalarContentType::ConstTrivialBytes:
+        case ScalarContentType::OwnedPointer:
+            return compute_type_promotion(
+                    pack_type(dst_type),
+                    pack_type(src_type)
+            );
+        case ScalarContentType::OpaquePointer:
+        case ScalarContentType::ConstOpaquePointer:
+        case ScalarContentType::Interface:
+        case ScalarContentType::OwnedInterface:
+            return static_cast<PackedScalarType>(dst_type);
+    }
+
+    RPY_UNREACHABLE_RETURN(dst_type);
+}
+PackedScalarType
+scalars::compute_type_promotion(PackedScalarType left, PackedScalarType right)
+{
+    const auto dst_info = type_info_from(left);
+    const auto src_info = type_info_from(right);
 
     switch (dst_info.code) {
         case devices::TypeCode::Int:
@@ -146,24 +169,4 @@ devices::TypeInfo scalars::dtl::compute_promotion(
     }
 
     RPY_THROW(std::runtime_error, "cannot find suitable promotion");
-}
-devices::TypeInfo scalars::dtl::compute_dest_type(
-        PackedScalarTypePointer<ScalarContentType> dst_type,
-        PackedScalarTypePointer<ScalarContentType> src_type
-)
-{
-    RPY_DBG_ASSERT(!(dst_type == src_type));
-
-    switch (dst_type.get_enumeration()) {
-        case ScalarContentType::TrivialBytes:
-        case ScalarContentType::ConstTrivialBytes:
-        case ScalarContentType::OwnedPointer:
-            return compute_promotion(pack_type(dst_type), pack_type(src_type));
-        case ScalarContentType::OpaquePointer:
-        case ScalarContentType::ConstOpaquePointer:
-        case ScalarContentType::Interface:
-        case ScalarContentType::OwnedInterface: return dst_type;
-    }
-
-    RPY_UNREACHABLE_RETURN(dst_type);
 }

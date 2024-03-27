@@ -3,12 +3,13 @@
 //
 
 #include "bfloat16_random_generator.h"
+#include "scalar_implementations/bfloat.h"
 
 namespace rpy {
 namespace scalars {
 
-template class StandardRandomGenerator<bfloat16, std::mt19937_64>;
-template class StandardRandomGenerator<bfloat16, pcg64>;
+template class StandardRandomGenerator<BFloat16, std::mt19937_64>;
+template class StandardRandomGenerator<BFloat16, pcg64>;
 
 } // scalars
 } // rpy

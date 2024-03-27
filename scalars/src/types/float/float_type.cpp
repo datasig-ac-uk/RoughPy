@@ -20,9 +20,9 @@ const ScalarType* FloatType::get() noexcept
     return &type;
 }
 
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<float>::get() noexcept
-{
-    return FloatType::get();
-}
+// template <>
+// ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+// scalars::dtl::ScalarTypeOfImpl<float>::get() noexcept
+// {
+//     return FloatType::get();
+// }

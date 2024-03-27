@@ -3,7 +3,7 @@
 //
 
 #include "b_float_16_type.h"
-
+#include "scalar_implementations/bfloat.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -28,9 +28,9 @@ const ScalarType* BFloat16Type::get() noexcept
 }
 
 
-template <>
-ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-scalars::dtl::ScalarTypeOfImpl<devices::bfloat16>::get() noexcept
-{
-    return BFloat16Type::get();
-}
+// template <>
+// ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
+// scalars::dtl::ScalarTypeOfImpl<devices::bfloat16>::get() noexcept
+// {
+//     return BFloat16Type::get();
+// }

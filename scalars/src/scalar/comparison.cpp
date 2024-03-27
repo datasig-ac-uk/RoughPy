@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,21 +18,22 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 01/11/23.
 //
 
 #include "comparison.h"
+#include "all_scalar_types.h"
 
 #include "do_macro.h"
-#include <roughpy/scalars/scalar_types.h>
 
 #include <limits>
 
@@ -49,15 +50,12 @@ constexpr bool is_zero(const T& arg) noexcept
     return arg == T(0);
 }
 
-constexpr bool is_zero(const rational_scalar_type& arg) noexcept
+constexpr bool is_zero(const ArbitraryPrecisionRational& arg) noexcept
 {
     return arg == 0;
 }
 
-inline bool is_zero(const rational_poly_scalar& arg) noexcept
-{
-    return arg.empty();
-}
+inline bool is_zero(const APPolyRat& arg) noexcept { return arg.empty(); }
 
 template <typename L, typename R>
 inline bool compare_outer(const L& lhs, const R& rhs) noexcept;
@@ -68,8 +66,7 @@ constexpr bool compare_impl(const S& lhs, const T& rhs) noexcept
     return lhs == rhs;
 }
 
-RPY_UNUSED
-inline bool
+RPY_UNUSED inline bool
 compare_same(const void* lhs, const void* rhs, TypeInfo info) noexcept
 {
 #define X(T) return compare_impl(*((const T*) lhs), *((const T*) rhs))
@@ -188,38 +185,41 @@ compare_wrap_unequal(const L& lhs, const R& rhs) noexcept
 }
 
 template <typename L>
-constexpr bool
-compare_wrap_unequal(const L& lhs, const rational_scalar_type& rhs) noexcept
+constexpr bool compare_wrap_unequal(
+        const L& lhs,
+        const ArbitraryPrecisionRational& rhs
+) noexcept
 {
-    return rational_scalar_type(lhs) == rhs;
+    return ArbitraryPrecisionRational(lhs) == rhs;
 }
 template <typename R>
 constexpr enable_if_t<
-        sizeof(rational_scalar_type) < sizeof(R)
-                && !is_same<R, rational_poly_scalar>::value,
+        sizeof(ArbitraryPrecisionRational) < sizeof(R)
+                && !is_same<R, APPolyRat>::value,
         bool>
-compare_wrap_unequal(const rational_scalar_type& lhs, const R& rhs) noexcept
+compare_wrap_unequal(
+        const ArbitraryPrecisionRational& lhs,
+        const R& rhs
+) noexcept
 {
-    return lhs == rational_scalar_type(rhs);
+    return lhs == ArbitraryPrecisionRational(rhs);
 }
 template <typename L>
-inline  bool
-compare_wrap_unequal(const L& lhs, const rational_poly_scalar& rhs) noexcept
+inline bool compare_wrap_unequal(const L& lhs, const APPolyRat& rhs) noexcept
 {
     if (rhs.empty()) { return is_zero(lhs); }
 
     if (rhs.size() == 1) {
         auto first = rhs.begin();
-        if (first->key() == monomial()) {
-            return compare_outer(lhs, first->value());
+        if (first->first == Monomial()) {
+            return compare_outer(lhs, first->second);
         }
     }
 
     return false;
 }
 template <typename R>
-constexpr bool
-compare_wrap_unequal(const rational_poly_scalar& lhs, const R& rhs) noexcept
+constexpr bool compare_wrap_unequal(const APPolyRat& lhs, const R& rhs) noexcept
 {
     return compare_wrap_unequal(rhs, lhs);
 }
@@ -257,11 +257,8 @@ constexpr const T& replace_tricky(const T& arg) noexcept
     return arg;
 }
 
-inline float replace_tricky(const half& arg) noexcept { return float(arg); }
-inline float replace_tricky(const bfloat16& arg) noexcept
-{
-    return float(arg);
-}
+inline float replace_tricky(const Half& arg) noexcept { return float(arg); }
+inline float replace_tricky(const BFloat16& arg) noexcept { return float(arg); }
 template <typename L, typename R>
 inline bool compare_outer(const L& lhs, const R& rhs) noexcept
 {
@@ -296,7 +293,9 @@ bool scalars::dtl::is_pointer_zero(
         const PackedScalarTypePointer<scalars::dtl::ScalarContentType>& p_type
 ) noexcept
 {
-    const auto info = (p_type.is_pointer() ? p_type.get_pointer()->type_info() : p_type.get_type_info());
+    const auto info
+            = (p_type.is_pointer() ? p_type.get_pointer()->type_info()
+                                   : p_type.get_type_info());
 
 #define X(TYP) return is_zero(*((const TYP*) ptr))
     DO_FOR_EACH_X(info)
