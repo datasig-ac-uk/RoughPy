@@ -12,13 +12,10 @@ static constexpr RingCharacteristics
 
 HalfType::HalfType() : base_t("HPReal", "f16", half_ring_characteristics) {}
 
-
 const HalfType scalars::half_type;
 
 const ScalarType* HalfType::get() noexcept
-{
-    return &half_type;
-}
+{ return &half_type; }
 
 // template <>
 // ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>

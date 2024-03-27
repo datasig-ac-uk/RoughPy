@@ -101,9 +101,7 @@ void scalars::register_scalar_type(const ScalarType* tp)
     std::lock_guard<std::recursive_mutex> access(s_type_cache_lock);
 
     auto& elt = s_scalar_type_cache[tp->id()];
-    if (elt == nullptr) {
-        elt = tp;
-    }
+    if (elt == nullptr) { elt = tp; }
 }
 void scalars::unregister_scalar_type(string_view id)
 {
