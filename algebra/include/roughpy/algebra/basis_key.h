@@ -9,9 +9,12 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
+#include <roughpy/platform/alloc.h>
+
+#include <roughpy/scalars/devices/core.h>
+
 #include "algebra_fwd.h"
 #include "roughpy_algebra_export.h"
-#include <roughpy/scalars/devices/core.h>
 
 #include <atomic>
 #include <cstddef>
@@ -29,13 +32,11 @@ enum class BasisKeyType
 };
 
 class ROUGHPY_ALGEBRA_EXPORT BasisKeyInterface
+    : public platform::SmallObjectBase
 {
     mutable std::atomic_uint32_t m_ref_count;
 
 public:
-    RPY_NO_DISCARD void* operator new(std::size_t count);
-    void operator delete(void* ptr, std::size_t count);
-
     virtual ~BasisKeyInterface();
 
     virtual string_view key_type() const noexcept = 0;

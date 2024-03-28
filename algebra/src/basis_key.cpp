@@ -3,19 +3,10 @@
 //
 
 #include "basis_key.h"
-#include <roughpy/platform/alloc.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
 
-void* BasisKeyInterface::operator new(std::size_t count)
-{
-    return platform::alloc_small(count);
-}
-void BasisKeyInterface::operator delete(void* ptr, std::size_t count)
-{
-    platform::free_small(ptr, count);
-}
 
 BasisKeyInterface::~BasisKeyInterface() = default;
 
