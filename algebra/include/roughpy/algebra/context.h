@@ -32,31 +32,27 @@
 #include "algebra_fwd.h"
 #include "context_fwd.h"
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
-
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/scalars/scalar_type.h>
-
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
+#include <roughpy/scalars/scalar_stream.h>
 
 #include "free_tensor.h"
 #include "lie.h"
 #include "lie_basis.h"
 #include "shuffle_tensor.h"
 #include "tensor_basis.h"
+#include "key_scalar_array.h"
+#include "key_scalar_stream.h"
 
-#include <roughpy/scalars/scalar_stream.h>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
 namespace rpy {
 namespace algebra {
 
 struct SignatureData {
-    scalars::ScalarStream data_stream;
+    KeyScalarStream data_stream;
     VectorType vector_type;
 };
 
@@ -66,7 +62,7 @@ struct DerivativeComputeInfo {
 };
 
 struct VectorConstructionData {
-    scalars::ScalarArray data;
+    KeyScalarArray data;
     VectorType vector_type = VectorType::Sparse;
 };
 
