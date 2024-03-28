@@ -3,6 +3,7 @@
 //
 
 #include "key_array.h"
+#include <roughpy/scalars/devices/host_device.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -10,6 +11,10 @@ using namespace rpy::algebra;
 KeyArray::KeyArray() = default;
 KeyArray::KeyArray(const KeyArray&) = default;
 KeyArray::KeyArray(rpy::algebra::KeyArray&&) noexcept = default;
+
+KeyArray::KeyArray(dimn_t size)
+    : m_buffer(devices::get_host_device()->alloc(basis_key_type_info, size))
+{}
 
 KeyArray::KeyArray(Slice<BasisKey> keys)
     : m_buffer(keys.data(), keys.size(), basis_key_type_info)

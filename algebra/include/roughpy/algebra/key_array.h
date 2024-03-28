@@ -117,6 +117,8 @@ public:
 
     explicit KeyArray(Slice<BasisKey> keys);
 
+    explicit KeyArray(dimn_t size);
+
     ~KeyArray();
 
     RPY_NO_DISCARD bool empty() const noexcept { return m_buffer.empty(); }
