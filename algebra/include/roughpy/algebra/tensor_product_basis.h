@@ -7,12 +7,14 @@
 
 #include "basis.h"
 
+#include <roughpy/core/container/vector.h>
+
 namespace rpy {
 namespace algebra {
 
 class TensorProductBasis : public Basis
 {
-    std::vector<BasisPointer> m_bases;
+    containers::Vec<BasisPointer> m_bases;
 
 public:
     using ordering_function = std::function<
