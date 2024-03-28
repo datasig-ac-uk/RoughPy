@@ -27,6 +27,8 @@ add_roughpy_component(Algebra
         src/key_array.cpp
         src/key_iterator_state.cpp
         src/key_range.cpp
+        src/key_scalar_array.cpp
+        src/key_scalar_stream.cpp
         src/lie.cpp
         src/lie_basis.cpp
         src/mutable_vector_element.cpp
