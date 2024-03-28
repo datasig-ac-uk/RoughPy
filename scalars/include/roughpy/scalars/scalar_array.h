@@ -247,10 +247,8 @@ RPY_SERIAL_EXTERN_SAVE_CLS_IMP(ScalarArray)
 RPY_SERIAL_EXTERN_LOAD_CLS_IMP(ScalarArray)
 #endif
 
-
-ROUGHPY_SCALARS_EXPORT void convert_copy(ScalarArray& dst, const ScalarArray& src);
-
-
+ROUGHPY_SCALARS_EXPORT void
+convert_copy(ScalarArray& dst, const ScalarArray& src);
 
 }// namespace scalars
 }// namespace rpy
