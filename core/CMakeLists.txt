@@ -9,8 +9,9 @@ include(GNUInstallDirs)
 
 add_roughpy_component(Core INTERFACE
         PUBLIC_HEADERS
-        include/roughpy/core/container/unorderd_map.h
+        include/roughpy/core/container/unordered_map.h
         include/roughpy/core/container/map.h
+        include/roughpy/core/container/vector.h
         include/roughpy/core/alloc.h
         include/roughpy/core/hash.h
         include/roughpy/core/types.h

@@ -2,8 +2,8 @@
 // Created by sam on 3/25/24.
 //
 
-#ifndef UNORDERD_MAP_H
-#define UNORDERD_MAP_H
+#ifndef ROUHGPY_CORE_CONTAINER_UNORDERD_MAP_H
+#define ROUHGPY_CORE_CONTAINER_UNORDERD_MAP_H
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/hash.h>
@@ -43,4 +43,4 @@ using FlatNodeMap = boost::unordered::unordered_node_map<K, M, H, P, A>;
 }// namespace containers
 }// namespace rpy
 
-#endif// UNORDERD_MAP_H
+#endif// ROUHGPY_CORE_CONTAINER_UNORDERD_MAP_H

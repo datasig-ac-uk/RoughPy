@@ -2,8 +2,8 @@
 // Created by sam on 3/26/24.
 //
 
-#ifndef MAP_H
-#define MAP_H
+#ifndef ROUHGPY_CORE_CONTAINER_MAP_H
+#define ROUHGPY_CORE_CONTAINER_MAP_H
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/macros.h>
@@ -55,4 +55,4 @@ using SmallFlatMap = boost::container::flat_map<
 }// namespace containers
 }// namespace rpy
 
-#endif// MAP_H
+#endif// ROUHGPY_CORE_CONTAINER_MAP_H
