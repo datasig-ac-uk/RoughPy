@@ -95,6 +95,17 @@ public:
 
 }// namespace dtl
 
+/**
+ * @class KeyArray
+ * @brief Represents an array of BasisKey objects.
+ *
+ * The KeyArray class provides a container for storing and manipulating an array
+ * of BasisKey objects. It internally uses a devices::Buffer to store the data.
+ * The class provides various member functions and operators for accessing and
+ * manipulating the data in the KeyArray.
+ *
+ * @tparam BasisKey The type of the elements stored in the KeyArray.
+ */
 class ROUGHPY_ALGEBRA_EXPORT KeyArray
 {
     devices::Buffer m_buffer;
