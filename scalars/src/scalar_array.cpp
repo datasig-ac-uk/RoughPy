@@ -45,7 +45,7 @@
 using namespace rpy;
 using namespace scalars;
 
-ScalarArray::ScalarArray() : m_buffer() {}
+ScalarArray::ScalarArray() = default;
 
 ScalarArray::ScalarArray(const ScalarArray& other)
     : p_type(other.p_type),
@@ -69,85 +69,88 @@ ScalarArray::ScalarArray(devices::TypeInfo info, dimn_t size)
     RPY_CHECK(traits::is_fundamental(info));
 }
 
-ScalarArray::ScalarArray(const ScalarType* type, const void* data, dimn_t size)
-    : p_type(type)
+ScalarArray::ScalarArray(PackedScalarType type, const void* data, dimn_t size)
+    : m_buffer(data, size, type_info_from(type))
 {
-    RPY_CHECK(type != nullptr);
-    m_buffer = devices::Buffer(type->device(), data, size, type->type_info());
+    if (type.is_pointer()) { p_type = type.get_pointer(); }
 }
-
-ScalarArray::ScalarArray(devices::TypeInfo info, const void* data, dimn_t size)
-    : m_buffer(data, size, info)
-{}
-
-ScalarArray::ScalarArray(const ScalarType* type, void* data, dimn_t size)
-    : p_type(type)
+ScalarArray::ScalarArray(PackedScalarType type, void* data, dimn_t size)
+    : m_buffer(data, size, type_info_from(type))
 {
-    RPY_CHECK(type != nullptr);
-    m_buffer = devices::Buffer(type->device(), data, size, type->type_info());
+    if (type.is_pointer()) { p_type = type.get_pointer(); }
 }
-
-ScalarArray::ScalarArray(devices::TypeInfo info, void* data, dimn_t size)
-    : m_buffer(data, size, info)
-{}
-
-ScalarArray::ScalarArray(const ScalarType* type, devices::Buffer&& buffer)
-    : p_type(type)
+ScalarArray::ScalarArray(PackedScalarType type, devices::Buffer&& buffer)
+    : m_buffer(std::move(buffer))
 {
-    RPY_CHECK(type != nullptr);
-    auto source_device = buffer.device();
-    auto target_device = type->device();
-    const auto source_info = buffer.type_info();
-    const auto target_info = type->type_info();
-    if (source_info == target_info) {
-        if (source_device == target_device) {
-            m_buffer = std::move(buffer);
-        } else {
-            buffer.to_device(m_buffer, target_device);
-        }
-    } else {
-        ScalarArray tmp(source_info, std::move(buffer));
-        m_buffer = devices::Buffer(type->device(), tmp.size(), target_info);
-        type->convert_copy(*this, tmp);
+    RPY_CHECK(type == buffer.type_info());
+    if (type.is_pointer()) { p_type = type.get_pointer(); }
+
+    auto dst_device = scalars::device_from(type);
+    if (dst_device && (*dst_device) != m_buffer.device()) {
+
     }
 }
 
-ScalarArray::ScalarArray(devices::TypeInfo info, devices::Buffer&& buffer)
-{
-    const auto source_info = buffer.type_info();
-    if (buffer.type_info() == info) {
-        if (buffer.is_host()) {
-            m_buffer = std::move(buffer);
-        } else {
-            buffer.to_device(m_buffer, devices::get_host_device());
-        }
-    } else {
-        RPY_CHECK(traits::is_fundamental(info));
-        devices::Buffer tmp;
-        if (m_buffer.is_host()) {
-            tmp = std::move(buffer);
-        } else {
-            buffer.to_device(tmp, devices::get_host_device());
-        }
 
-        m_buffer = devices::Buffer(tmp.size(), info);
 
-        if (!dtl::scalar_convert_copy(
-                    m_buffer.ptr(),
-                    info,
-                    tmp.ptr(),
-                    source_info,
-                    tmp.size()
-            )) {
-            RPY_THROW(std::runtime_error, "failed to convert copy into target");
-        }
-    }
-}
+
+
+// ScalarArray::ScalarArray(const ScalarType* type, devices::Buffer&& buffer)
+//     : p_type(type)
+// {
+//     RPY_CHECK(type != nullptr);
+//     auto source_device = buffer.device();
+//     auto target_device = type->device();
+//     const auto source_info = buffer.type_info();
+//     const auto target_info = type->type_info();
+//     if (source_info == target_info) {
+//         if (source_device == target_device) {
+//             m_buffer = std::move(buffer);
+//         } else {
+//             buffer.to_device(m_buffer, target_device);
+//         }
+//     } else {
+//         ScalarArray tmp(source_info, std::move(buffer));
+//         m_buffer = devices::Buffer(type->device(), tmp.size(), target_info);
+//         type->convert_copy(*this, tmp);
+//     }
+// }
+//
+// ScalarArray::ScalarArray(devices::TypeInfo info, devices::Buffer&& buffer)
+// {
+//     const auto source_info = buffer.type_info();
+//     if (buffer.type_info() == info) {
+//         if (buffer.is_host()) {
+//             m_buffer = std::move(buffer);
+//         } else {
+//             buffer.to_device(m_buffer, devices::get_host_device());
+//         }
+//     } else {
+//         RPY_CHECK(traits::is_fundamental(info));
+//         devices::Buffer tmp;
+//         if (m_buffer.is_host()) {
+//             tmp = std::move(buffer);
+//         } else {
+//             buffer.to_device(tmp, devices::get_host_device());
+//         }
+//
+//         m_buffer = devices::Buffer(tmp.size(), info);
+//
+//         if (!dtl::scalar_convert_copy(
+//                     m_buffer.ptr(),
+//                     info,
+//                     tmp.ptr(),
+//                     source_info,
+//                     tmp.size()
+//             )) {
+//             RPY_THROW(std::runtime_error, "failed to convert copy into target");
+//         }
+//     }
+// }
 
 ScalarArray::~ScalarArray()
 {
     m_buffer.~Buffer();
-    m_buffer = devices::Buffer();
     p_type = nullptr;
 }
 

@@ -78,14 +78,10 @@ public:
     explicit ScalarArray(const ScalarType* type, dimn_t size = 0);
     explicit ScalarArray(devices::TypeInfo info, dimn_t size = 0);
 
-    ScalarArray(const ScalarType* type, const void* data, dimn_t size);
-    ScalarArray(devices::TypeInfo info, const void* data, dimn_t size);
+    ScalarArray(PackedScalarType type, const void* data, dimn_t size);
+    ScalarArray(PackedScalarType type, void* data, dimn_t size);
+    ScalarArray(PackedScalarType type, devices::Buffer&& buffer);
 
-    ScalarArray(const ScalarType* type, void* data, dimn_t size);
-    ScalarArray(devices::TypeInfo info, void* data, dimn_t size);
-
-    ScalarArray(const ScalarType* type, devices::Buffer&& buffer);
-    ScalarArray(devices::TypeInfo info, devices::Buffer&& buffer);
 
     template <typename T>
     explicit ScalarArray(Slice<T> data);
@@ -97,7 +93,7 @@ public:
     ScalarArray(T* data, dimn_t size);
 
     template <typename T>
-    ScalarArray(const T* adata, dimn_t size);
+    ScalarArray(const T* data, dimn_t size);
 
     ~ScalarArray();
 

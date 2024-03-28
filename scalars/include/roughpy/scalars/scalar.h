@@ -512,14 +512,14 @@ const T& Scalar::as_type() const noexcept
     switch (p_type_and_content_type.get_enumeration()) {
         case dtl::ScalarContentType::TrivialBytes:
         case dtl::ScalarContentType::ConstTrivialBytes:
-            return *reinterpret_cast<const T*>(&trivial_bytes);
+            return *reinterpret_cast<const T*>(trivial_bytes);
         case dtl::ScalarContentType::ConstOpaquePointer:
         case dtl::ScalarContentType::OpaquePointer:
         case dtl::ScalarContentType::OwnedPointer:
-            return *reinterpret_cast<const T*>(opaque_pointer);
+            return *static_cast<const T*>(opaque_pointer);
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
-            return *reinterpret_cast<const T*>(interface_ptr->pointer());
+            return *static_cast<const T*>(interface_ptr->pointer());
     }
     RPY_UNREACHABLE_RETURN(*((const T*) &trivial_bytes));
 }

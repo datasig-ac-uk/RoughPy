@@ -34,6 +34,8 @@
 
 #include "packed_scalar_type_ptr.h"
 
+#include <roughpy/core/container/unordered_map.h>
+
 namespace rpy {
 namespace scalars {
 
@@ -63,7 +65,7 @@ protected:
     devices::TypeInfo m_info;
     RingCharacteristics m_characteristics;
 
-    std::unordered_map<string, rng_getter> m_rng_getters;
+    containers::HashMap<string, rng_getter> m_rng_getters;
 
     explicit ScalarType(
         string name,
@@ -213,6 +215,10 @@ static_assert(
 );
 
 
+inline optional<devices::Device> device_from(const PackedScalarType& type) noexcept
+{
+    return type.is_pointer() ? type->device() : optional<devices::Device>{};
+}
 
 }// namespace scalars
 }// namespace rpy
