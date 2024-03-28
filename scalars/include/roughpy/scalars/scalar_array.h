@@ -50,8 +50,15 @@ enum class ScalarArrayStorageModel
 
 }
 
-class ScalarArrayView;
 
+/**
+ * @class ScalarArray
+ * @brief Represents an array of scalar values.
+ *
+ * This class provides functionality to store, manipulate, and access an array
+ * of scalar values. It supports various constructors, assignment operators,
+ * access operators, and utility functions.
+ */
 class ROUGHPY_SCALARS_EXPORT ScalarArray
 {
 
@@ -239,6 +246,11 @@ RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(ScalarArray)
 RPY_SERIAL_EXTERN_SAVE_CLS_IMP(ScalarArray)
 RPY_SERIAL_EXTERN_LOAD_CLS_IMP(ScalarArray)
 #endif
+
+
+ROUGHPY_SCALARS_EXPORT void convert_copy(ScalarArray& dst, const ScalarArray& src);
+
+
 
 }// namespace scalars
 }// namespace rpy

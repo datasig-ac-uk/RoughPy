@@ -11,7 +11,7 @@
 #include "devices/core.h"
 #include "devices/host_device.h"
 
-#include <roughpy/core/container/unorderd_map.h>
+#include <roughpy/core/container/unordered_map.h>
 
 #include <charconv>
 

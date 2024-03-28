@@ -5,7 +5,7 @@
 #ifndef POLY_RATIONAL_H
 #define POLY_RATIONAL_H
 
-#include <roughpy/core/container/unorderd_map.h>
+#include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/hash.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/ranges.h>
