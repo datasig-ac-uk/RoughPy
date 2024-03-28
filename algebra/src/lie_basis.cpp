@@ -9,6 +9,8 @@
 
 #include <mutex>
 #include <roughpy/core/container/map.h>
+#include <roughpy/core/container/unordered_map.h>
+#include <roughpy/core/container/vector.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -17,11 +19,11 @@ class LieBasis::HallSet
 {
     mutable std::recursive_mutex m_lock;
     containers::FlatMap<parent_type, BasisKey> m_reverse_map;
-    std::vector<let_t> m_letters;
-    std::vector<dimn_t> m_degree_sizes;
-    std::vector<parent_type> m_hall_set;
-    std::vector<BasisKey> m_l2k;
-    std::vector<pair<dimn_t, dimn_t>> m_degree_ranges;
+    containers::Vec<let_t> m_letters;
+    containers::Vec<dimn_t> m_degree_sizes;
+    containers::Vec<parent_type> m_hall_set;
+    containers::Vec<BasisKey> m_l2k;
+    containers::Vec<pair<dimn_t, dimn_t>> m_degree_ranges;
 
     deg_t m_degree = 0;
     deg_t m_width;
@@ -97,7 +99,7 @@ LieBasis::LieBasis(deg_t width, deg_t depth)
       m_depth(depth)
 {
     static std::mutex s_lock;
-    static std::unordered_map<deg_t, std::shared_ptr<HallSet>> s_cache;
+    static containers::HashMap<deg_t, std::shared_ptr<HallSet>> s_cache;
 
     std::lock_guard<std::mutex> access(s_lock);
     auto& hallset = s_cache[width];
@@ -227,11 +229,7 @@ void LieBasis::HallSet::grow(rpy::deg_t degree)
 }
 
 static std::mutex s_lie_lock;
-static std::unordered_map<
-        pair<deg_t, deg_t>,
-        BasisPointer,
-        hash<pair<deg_t, deg_t>>>
-        s_lie_basis_cache;
+static containers::HashMap<pair<deg_t, deg_t>, BasisPointer> s_lie_basis_cache;
 
 BasisPointer algebra::LieBasis::get(deg_t width, deg_t depth)
 {

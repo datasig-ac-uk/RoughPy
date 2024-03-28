@@ -3,6 +3,7 @@
 //
 
 #include "tensor_basis.h"
+#include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
 
@@ -203,10 +204,7 @@ pair<optional<BasisKey>, optional<BasisKey>> TensorBasis::parents(BasisKey key
 }
 
 static std::mutex s_tensor_basis_lock;
-static std::unordered_map<
-        pair<deg_t, deg_t>,
-        BasisPointer,
-        hash<pair<deg_t, deg_t>>>
+static containers::HashMap<pair<deg_t, deg_t>, BasisPointer>
         s_tensor_basis_cache;
 
 BasisPointer TensorBasis::get(deg_t width, deg_t depth)
