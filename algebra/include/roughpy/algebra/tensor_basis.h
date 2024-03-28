@@ -8,6 +8,7 @@
 #include "basis.h"
 #include "basis_key.h"
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/scalars/devices/buffer.h>
 
 namespace rpy {
@@ -19,7 +20,7 @@ class TensorBasis : public Basis
     deg_t m_depth;
     dimn_t m_max_dimension;
 
-    std::vector<dimn_t> m_degree_sizes;
+    containers::Vec<dimn_t> m_degree_sizes;
 
     TensorBasis(deg_t width, deg_t depth);
 
