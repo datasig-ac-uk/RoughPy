@@ -215,7 +215,8 @@ static_assert(
 );
 
 
-inline optional<devices::Device> device_from(const PackedScalarType& type) noexcept
+inline optional<devices::Device> device_from(const PackedScalarType& type
+) noexcept
 {
     return type.is_pointer() ? type->device() : optional<devices::Device>{};
 }
