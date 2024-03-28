@@ -31,11 +31,12 @@
 
 #include "algebra_fwd.h"
 
+#include <roughpy/core/hash.h>
+#include <roughpy/core/traits.h>
+
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
-#include <roughpy/core/hash.h>
 
-#include <roughpy/core/traits.h>
 
 #include "basis_key.h"
 #include "roughpy_algebra_export.h"
