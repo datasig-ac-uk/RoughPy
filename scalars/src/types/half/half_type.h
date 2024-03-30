@@ -1,34 +1,27 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
 //
 
-#ifndef ROUGHPY_SCALARS_SRC_TYPES_HALF_HALF_TYPE_H_
-#define ROUGHPY_SCALARS_SRC_TYPES_HALF_HALF_TYPE_H_
+#ifndef HALF_TYPE_H
+#define HALF_TYPE_H
 
+#include "devices/fundamental_type.h"
 
-#include "scalar_helpers/standard_scalar_type.h"
 #include "scalar_implementations/half.h"
 
-#include "half_random_generator.h"
-
 namespace rpy {
-namespace scalars {
+namespace devices {
 
-class HalfType : public dtl::StandardScalarType<Half>
-{
-    using base_t = dtl::StandardScalarType<Half>;
-
+class HalfType : public FundamentalType<scalars::Half> {
 
 public:
     HalfType();
-
-    static const ScalarType* get() noexcept;
 };
 
-RPY_LOCAL extern const HalfType half_type;
 
 
-}// namespace scalars
-}// namespace rpy
+extern const HalfType half_type;
+} // devices
+} // rpy
 
-#endif// ROUGHPY_SCALARS_SRC_TYPES_HALF_HALF_TYPE_H_
+#endif //HALF_TYPE_H

@@ -47,6 +47,9 @@ using namespace rpy::devices;
 
 DeviceHandle::DeviceHandle() {}
 
+bool DeviceHandle::is_host() const noexcept { return false; }
+
+
 DeviceCategory DeviceHandle::category() const noexcept
 {
     return DeviceCategory::CPU;

@@ -1,32 +1,24 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
 //
 
-#ifndef ROUGHPY_SCALARS_SRC_TYPES_FLOAT_FLOAT_TYPE_H_
-#define ROUGHPY_SCALARS_SRC_TYPES_FLOAT_FLOAT_TYPE_H_
+#ifndef FLOAT_TYPE_H
+#define FLOAT_TYPE_H
 
-
-#include "scalar_helpers/standard_scalar_type.h"
+#include "devices/fundamental_type.h"
 
 namespace rpy {
-namespace scalars {
+namespace devices {
 
-class FloatType : public dtl::StandardScalarType<float>
-{
-    using base_t = dtl::StandardScalarType<float>;
+class FloatType : public FundamentalType<float> {
 
 public:
-
     FloatType();
-
-
-    static const ScalarType* get() noexcept;
 };
 
+extern const FloatType float_type;
 
-RPY_LOCAL extern const FloatType float_type;
+} // devices
+} // roy
 
-}// namespace scalars
-}// namespace rpy
-
-#endif// ROUGHPY_SCALARS_SRC_TYPES_FLOAT_FLOAT_TYPE_H_
+#endif //FLOAT_TYPE_H

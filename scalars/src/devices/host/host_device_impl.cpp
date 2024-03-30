@@ -195,6 +195,11 @@ CPUDevice CPUDeviceHandle::get()
     return device;
 }
 
+bool CPUDeviceHandle::is_host() const noexcept
+{
+    return true;
+}
+
 DeviceInfo CPUDeviceHandle::info() const noexcept
 {
     return {DeviceType::CPU, 0};

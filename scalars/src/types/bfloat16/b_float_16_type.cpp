@@ -1,38 +1,14 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
 //
 
 #include "b_float_16_type.h"
-#include "scalar_implementations/bfloat.h"
 
 using namespace rpy;
-using namespace rpy::scalars;
-
-
-static constexpr RingCharacteristics bf16_ring_characteristics {
-    true,
-    true,
-     true,
-    false
-};
-
+using namespace rpy::devices;
 
 BFloat16Type::BFloat16Type()
-    : base_t("bfloat16", "bf16", bf16_ring_characteristics)
+    : FundamentalType("bf16", "BFloat16")
 {}
 
-
-
-const BFloat16Type scalars::bfloat16_type;
-
-const ScalarType* BFloat16Type::get() noexcept
-{
-    return &bfloat16_type;
-}
-
-// template <>
-// ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-// scalars::dtl::ScalarTypeOfImpl<devices::bfloat16>::get() noexcept
-// {
-//     return BFloat16Type::get();
-// }
+const BFloat16Type devices::bfloat16_type;

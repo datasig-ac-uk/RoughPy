@@ -1,40 +1,32 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
 //
 
-#ifndef ROUGHPY_SCALARS_SRC_TYPES_APRATPOLY_AP_RAT_POLY_TYPE_H_
-#define ROUGHPY_SCALARS_SRC_TYPES_APRATPOLY_AP_RAT_POLY_TYPE_H_
+#ifndef AP_RAT_POLY_TYPE_H
+#define AP_RAT_POLY_TYPE_H
 
-#include "scalar_type.h"
-
-#include <unordered_set>
+#include "devices/fundamental_type.h"
+#include "scalar_implementations/poly_rational.h"
 
 namespace rpy {
-namespace scalars {
+namespace devices {
 
-class APRatPolyType : public ScalarType
+class APRatPolyType : public FundamentalType<scalars::APPolyRat>
 {
-
-    mutable std::unordered_set<void*> m_allocations;
-
 public:
+
     APRatPolyType();
 
-    RPY_NO_DISCARD ScalarArray allocate(dimn_t count) const override;
+    RPY_NO_DISCARD Buffer allocate(Device device, dimn_t count) const override;
     RPY_NO_DISCARD void* allocate_single() const override;
-
     void free_single(void* ptr) const override;
-    void convert_copy(ScalarArray& dst, const ScalarArray& src) const override;
-    void assign(ScalarArray& dst, Scalar value) const override;
-    const ScalarType* with_device(const devices::Device& device) const override;
-
-    static const ScalarType* get() noexcept;
+    bool supports_device(const Device& device) const noexcept override;
 };
 
-RPY_LOCAL extern const APRatPolyType
-        arbitrary_precision_rational_polynomial_type;
 
-}// namespace scalars
-}// namespace rpy
+extern const APRatPolyType arbitrary_precision_rational_poly_type;
 
-#endif// ROUGHPY_SCALARS_SRC_TYPES_APRATPOLY_AP_RAT_POLY_TYPE_H_
+} // devices
+} // rpy
+
+#endif //AP_RAT_POLY_TYPE_H

@@ -1,30 +1,14 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
+//
 
 #include "float_type.h"
-#include "scalars_fwd.h"
 
 
 using namespace rpy;
-using namespace rpy::scalars;
+using namespace rpy::devices;
 
-static constexpr RingCharacteristics
-        float_ring_characteristics{true, true, true, false};
+FloatType::FloatType() : Type("f32", "SPReal", type_info<float>())
+{}
 
-FloatType::FloatType() : base_t("SPReal", "f32", float_ring_characteristics) {}
-
-
-
-const FloatType scalars::float_type;
-
-const ScalarType* FloatType::get() noexcept
-{
-    return &float_type;
-}
-
-// template <>
-// ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-// scalars::dtl::ScalarTypeOfImpl<float>::get() noexcept
-// {
-//     return FloatType::get();
-// }
+const FloatType devices::float_type;

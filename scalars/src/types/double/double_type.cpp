@@ -1,32 +1,14 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
 //
 
 #include "double_type.h"
 
+#include "devices/core.h"
 
 using namespace rpy;
-using namespace rpy::scalars;
+using namespace rpy::devices;
 
-static constexpr RingCharacteristics
-        double_ring_characteristics{true, true, true, false};
+DoubleType::DoubleType() : FundamentalType("f64", "DPReal") {}
 
-DoubleType::DoubleType()
-    : base_t("DPReal", "f64", double_ring_characteristics)
-{}
-
-
-// template <>
-// ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-// scalars::dtl::ScalarTypeOfImpl<double>::get() noexcept
-// {
-//     return DoubleType::get();
-// }
-
-
-const DoubleType scalars::double_type;
-
-const ScalarType* DoubleType::get() noexcept
-{
-    return &double_type;;
-}
+const DoubleType devices::double_type;

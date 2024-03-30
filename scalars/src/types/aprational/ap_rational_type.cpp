@@ -1,74 +1,41 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
 //
 
 #include "ap_rational_type.h"
-#include "scalar.h"
-#include "scalar_array.h"
-#include "scalar_implementations/arbitrary_precision_rational.h"
+
+#include <roughpy/core/alloc.h>
+
+#include "devices/buffer.h"
+#include "devices/device_handle.h"
+
 
 using namespace rpy;
-using namespace rpy::scalars;
+using namespace rpy::devices;
 
-static constexpr RingCharacteristics
-        ap_rational_ring_characteristics{true, true, false, false};
-
-APRationalType::APRationalType()
-    : ScalarType(
-              "Rational",
-              "Rational",
-              alignof(ArbitraryPrecisionRational),
-              devices::get_host_device(),
-              devices::type_info<ArbitraryPrecisionRational>(),
-              ap_rational_ring_characteristics
-      )
+rpy::devices::APRationalType::APRationalType()
+    : FundamentalType("Rational", "Rational")
 {}
-ScalarArray APRationalType::allocate(dimn_t count) const
+
+Buffer APRationalType::allocate(Device device, dimn_t count) const
 {
-    auto result = ScalarType::allocate(count);
-    std::uninitialized_default_construct_n(
-            static_cast<ArbitraryPrecisionRational*>(result.mut_buffer().ptr()),
-            count
-    );
-    return result;
+    RPY_CHECK(device->is_host());
+    return Type::allocate(device, count);
 }
 void* APRationalType::allocate_single() const
 {
-    guard_type access(m_lock);
-    auto [pos, inserted] = m_allocations.insert(new ArbitraryPrecisionRational());
-    RPY_DBG_ASSERT(inserted);
-    return *pos;
+    auto* ptr = Type::allocate_single();
+    construct_inplace(static_cast<scalars::ArbitraryPrecisionRational*>(ptr));
+    return ptr;
 }
 void APRationalType::free_single(void* ptr) const
 {
-    guard_type access(m_lock);
-    auto found = m_allocations.find(ptr);
-    RPY_CHECK(found != m_allocations.end());
-    delete static_cast<ArbitraryPrecisionRational*>(ptr);
-    m_allocations.erase(found);
+    std::destroy_at(static_cast<scalars::ArbitraryPrecisionRational*>(ptr));
+    Type::free_single(ptr);
 }
-void APRationalType::convert_copy(ScalarArray& dst, const ScalarArray& src)
-        const
+bool APRationalType::supports_device(const Device& device) const noexcept
 {
-    ScalarType::convert_copy(dst, src);
-}
-void APRationalType::assign(ScalarArray& dst, Scalar value) const
-{
-    ScalarType::assign(dst, value);
+    return device->is_host();
 }
 
-// template <>
-// ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-// scalars::dtl::ScalarTypeOfImpl<ArbitraryPrecisionRational>::get() noexcept
-// {
-//     return APRationalType::get();
-// }
-
-
-
-const APRationalType scalars::arbitrary_precision_rational_type;
-
-const ScalarType* APRationalType::get() noexcept
-{
-    return &arbitrary_precision_rational_type;
-}
+const APRationalType devices::arbitrary_precision_rational_type;

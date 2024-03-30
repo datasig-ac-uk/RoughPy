@@ -1,33 +1,26 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
 //
 
-#ifndef ROUGHPY_SCALARS_SRC_TYPES_DOUBLE_DOUBLE_TYPE_H_
-#define ROUGHPY_SCALARS_SRC_TYPES_DOUBLE_DOUBLE_TYPE_H_
+#ifndef DOUBLE_TYPE_H
+#define DOUBLE_TYPE_H
 
-#include "scalar_helpers/standard_scalar_type.h"
-
+#include "devices/fundamental_type.h"
+#include "devices/type.h"
 
 namespace rpy {
-namespace scalars {
+namespace devices {
 
-class DoubleType : public dtl::StandardScalarType<double>
-{
-    using base_t = dtl::StandardScalarType<double>;
+class DoubleType : public FundamentalType<double> {
 
 public:
 
     DoubleType();
-
-    static const ScalarType* get() noexcept;
-
 };
 
+extern const DoubleType double_type;
 
-RPY_LOCAL extern const DoubleType double_type;
+} // devices
+} // rpy
 
-
-}// namespace scalars
-}// namespace rpy
-
-#endif// ROUGHPY_SCALARS_SRC_TYPES_DOUBLE_DOUBLE_TYPE_H_
+#endif //DOUBLE_TYPE_H

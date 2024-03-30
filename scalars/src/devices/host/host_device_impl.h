@@ -62,6 +62,7 @@ class CPUDeviceHandle : public HostDeviceHandle
 public:
     static CPUDevice get();
 
+    bool is_host() const noexcept override;
     DeviceCategory category() const noexcept override;
     DeviceInfo info() const noexcept override;
 

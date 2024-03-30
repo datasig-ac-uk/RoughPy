@@ -73,6 +73,8 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
             return &arbitrary_precision_rational_type;
         case devices::TypeCode::APRationalPolynomial:
             return &arbitrary_precision_rational_polynomial_type;
+        case devices::TypeCode::KeyType:
+            break;
     }
 
     RPY_THROW(std::runtime_error, "unsupported data type");
@@ -86,11 +88,24 @@ ScalarType::ScalarType(
         devices::TypeInfo type_info,
         rpy::scalars::RingCharacteristics characteristics
 )
-    : m_name(std::move(name)),
-      m_id(std::move(id)),
-      m_alignment(alignment),
+    : p_type(new devices::Type(std::move(id), std::move(name), type_info)),
       m_device(std::move(device)),
+      m_id(p_type->id()),
+      m_name(p_type->name()),
       m_info(type_info),
+      m_characteristics(characteristics)
+{}
+
+ScalarType::ScalarType(
+        const devices::Type* type,
+        devices::Device device,
+        RingCharacteristics characteristics
+)
+    : p_type(type),
+      m_device(std::move(device)),
+      m_id(p_type->id()),
+      m_name(p_type->name()),
+      m_info(p_type->type_info()),
       m_characteristics(characteristics)
 {}
 
@@ -98,7 +113,7 @@ ScalarType::~ScalarType() = default;
 
 ScalarArray ScalarType::allocate(dimn_t count) const
 {
-    return ScalarArray(this, m_device->alloc(m_info, count));
+    return ScalarArray(this, p_type->allocate(m_device, count));
 }
 
 void* ScalarType::allocate_single() const
@@ -106,7 +121,7 @@ void* ScalarType::allocate_single() const
     RPY_THROW(
             std::runtime_error,
             "single scalar allocation is not available "
-            "for " + m_name
+            "for " + string(name())
     );
     return nullptr;
 }
@@ -115,7 +130,7 @@ void ScalarType::free_single(void* ptr) const
 {
     RPY_THROW(
             std::runtime_error,
-            "single scalar allocation is not available for " + m_name
+            "single scalar allocation is not available for " + string(name())
     );
 }
 
@@ -157,7 +172,7 @@ ScalarType::get_rng(const string& bit_generator, Slice<seed_int_t> seed) const
     if (m_rng_getters.empty()) {
         RPY_THROW(
                 std::runtime_error,
-                "no random number generators available for type " + m_name
+                "no random number generators available for type " + string(name())
         );
     }
 
@@ -171,7 +186,7 @@ ScalarType::get_rng(const string& bit_generator, Slice<seed_int_t> seed) const
     RPY_THROW(
             std::runtime_error,
             "no matching random number generator " + bit_generator
-                    + " for type " + m_name
+                    + " for type " + string(name())
     );
 }
 
@@ -185,5 +200,6 @@ const ScalarType* ScalarType::with_device(const devices::Device& device) const
 const ScalarType* ScalarType::rational_type() const noexcept { return this; }
 void ScalarType::register_rng_getter(string name, rng_getter getter)
 {
+    const auto access = p_type->lock();
     m_rng_getters[name] = getter;
 }

@@ -83,6 +83,7 @@ public:
 
     virtual ~DeviceHandle();
 
+    RPY_NO_DISCARD virtual bool is_host() const noexcept;
     RPY_NO_DISCARD virtual DeviceType type() const noexcept;
     RPY_NO_DISCARD virtual DeviceCategory category() const noexcept;
 

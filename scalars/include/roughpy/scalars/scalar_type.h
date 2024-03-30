@@ -30,6 +30,7 @@
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
 
 #include "devices.h"
+#include "devices/type.h"
 #include "scalars_fwd.h"
 
 #include "packed_scalar_type_ptr.h"
@@ -39,8 +40,7 @@
 namespace rpy {
 namespace scalars {
 
-struct RingCharacteristics
-{
+struct RingCharacteristics {
     bool is_field : 1;
     bool is_ordered : 1;
     bool has_sqrt : 1;
@@ -49,31 +49,37 @@ struct RingCharacteristics
 
 class RPY_SCALAR_TYPE_ALIGNMENT ScalarType
 {
+    const devices::Type* p_type;
+
 protected:
     using lock_type = std::recursive_mutex;
     using guard_type = std::lock_guard<lock_type>;
-    using rng_getter = std::unique_ptr<RandomGenerator> (*)(
-        const ScalarType*,
-        Slice<seed_int_t>);
+    using rng_getter = std::unique_ptr<
+            RandomGenerator> (*)(const ScalarType*, Slice<seed_int_t>);
 
     mutable lock_type m_lock;
 
-    string m_name;
-    string m_id;
-    dimn_t m_alignment;
     devices::Device m_device;
+    string_view m_name;
+    string_view m_id;
     devices::TypeInfo m_info;
     RingCharacteristics m_characteristics;
 
     containers::HashMap<string, rng_getter> m_rng_getters;
 
     explicit ScalarType(
-        string name,
-        string id,
-        dimn_t alignment,
-        devices::Device device,
-        devices::TypeInfo type_info,
-        RingCharacteristics characteristics
+            string name,
+            string id,
+            dimn_t alignment,
+            devices::Device device,
+            devices::TypeInfo type_info,
+            RingCharacteristics characteristics
+    );
+
+    explicit ScalarType(
+            const devices::Type* type,
+            devices::Device device,
+            RingCharacteristics characteristics
     );
 
 public:
@@ -131,7 +137,6 @@ public:
      */
     RPY_NO_DISCARD virtual const ScalarType* rational_type() const noexcept;
 
-
     /**
      * @brief Allocate new scalars in memory
      * @param count Number of scalars to allocate space
@@ -169,7 +174,8 @@ public:
      * @return Pointer to new RandomGenerator instance.
      */
     RPY_NO_DISCARD std::unique_ptr<RandomGenerator>
-    get_rng(const string& bit_generator, Slice<seed_int_t> seed=nullptr) const;
+    get_rng(const string& bit_generator,
+            Slice<seed_int_t> seed = nullptr) const;
 
     /**
      * @brief Copy the contents of one array into another.
@@ -186,7 +192,6 @@ public:
     virtual void assign(ScalarArray& dst, Scalar value) const;
 
     // Scalar methods
-
 
     /**
      * @brief Get a new scalar type whose underlying device is given.
@@ -209,11 +214,10 @@ public:
 };
 
 static_assert(
-    alignof(ScalarType) >= min_scalar_type_alignment,
-    "ScalarType must have alignment of at least 8 bytes so there are 3 "
-    "free bits in the low end of pointers."
+        alignof(ScalarType) >= min_scalar_type_alignment,
+        "ScalarType must have alignment of at least 8 bytes so there are 3 "
+        "free bits in the low end of pointers."
 );
-
 
 inline optional<devices::Device> device_from(const PackedScalarType& type
 ) noexcept

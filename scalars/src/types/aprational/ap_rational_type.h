@@ -1,41 +1,31 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
 //
 
-#ifndef ROUGHPY_SCALARS_SRC_TYPES_APRATIONAL_AP_RATIONAL_TYPE_H_
-#define ROUGHPY_SCALARS_SRC_TYPES_APRATIONAL_AP_RATIONAL_TYPE_H_
+#ifndef AP_RATIONAL_TYPE_H
+#define AP_RATIONAL_TYPE_H
 
-#include "scalar_type.h"
+#include "devices/fundamental_type.h"
 #include "scalar_implementations/arbitrary_precision_rational.h"
 
-
-
 namespace rpy {
-namespace scalars {
+namespace devices {
 
-class APRationalType : public ScalarType
-{
-    mutable std::unordered_set<void*> m_allocations;
+class APRationalType : public FundamentalType<scalars::ArbitraryPrecisionRational> {
 
 public:
 
     APRationalType();
 
-    ScalarArray allocate(dimn_t count) const override;
-    void* allocate_single() const override;
+    RPY_NO_DISCARD Buffer allocate(Device device, dimn_t count) const override;
+    RPY_NO_DISCARD void* allocate_single() const override;
     void free_single(void* ptr) const override;
-    void convert_copy(ScalarArray& dst, const ScalarArray& src) const override;
-    void assign(ScalarArray& dst, Scalar value) const override;
-
-
-    static const ScalarType* get() noexcept;
+    bool supports_device(const Device& device) const noexcept override;
 };
 
-RPY_LOCAL
 extern const APRationalType arbitrary_precision_rational_type;
 
+}
+}
 
-}// namespace scalars
-}// namespace rpy
-
-#endif// ROUGHPY_SCALARS_SRC_TYPES_APRATIONAL_AP_RATIONAL_TYPE_H_
+#endif //AP_RATIONAL_TYPE_H

@@ -1,25 +1,14 @@
 //
-// Created by user on 06/11/23.
+// Created by sam on 3/30/24.
 //
 
 #include "half_type.h"
 
+#include "scalar_implementations/half.h"
 using namespace rpy;
-using namespace rpy::scalars;
+using namespace rpy::devices;
 
-static constexpr RingCharacteristics
-        half_ring_characteristics{true, true, true, false};
+HalfType::HalfType() : FundamentalType("f16", "HPReal"){  }
 
-HalfType::HalfType() : base_t("HPReal", "f16", half_ring_characteristics) {}
 
-const HalfType scalars::half_type;
-
-const ScalarType* HalfType::get() noexcept
-{ return &half_type; }
-
-// template <>
-// ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-// scalars::dtl::ScalarTypeOfImpl<devices::half>::get() noexcept
-// {
-//     return HalfType::get();
-// }
+const HalfType devices::half_type;
