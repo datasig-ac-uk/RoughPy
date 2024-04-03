@@ -7,6 +7,7 @@
 
 #include "scalars_fwd.h"
 
+#include "devices/algorithms.h"
 #include "devices/buffer.h"
 #include "devices/core.h"
 #include "devices/value.h"
@@ -17,115 +18,19 @@
 namespace rpy {
 namespace scalars {
 namespace algorithms {
-namespace drivers {
+namespace drivers = devices::algorithms::drivers;
 
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<dimn_t>
-find(PackedScalarType type,
-     const devices::Buffer& buffer,
-     devices::Reference value);
 
-RPY_NO_DISCARD inline bool contains(
-        PackedScalarType type,
-        const devices::Buffer& buffer,
-        devices::Reference value
-)
+inline const devices::Type* packed_to_type(const PackedScalarType& type)
 {
-    return static_cast<bool>(find(type, buffer, value));
+    return type.is_pointer() ? type->as_type() : get_type(type.get_type_info());
 }
-
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT dimn_t
-count(PackedScalarType type,
-      const devices::Buffer& buffer,
-      devices::Reference value);
-
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<dimn_t> mismatch(
-        PackedScalarType left_type,
-        const devices::Buffer& left,
-        PackedScalarType right_type,
-        const devices::Buffer& right
-);
-
-RPY_NO_DISCARD inline bool
-equal(PackedScalarType left_type,
-      const devices::Buffer& left,
-      PackedScalarType right_type,
-      const devices::Buffer& right)
-{
-    return !static_cast<bool>(mismatch(left_type, left, right_type, right));
-}
-
-ROUGHPY_SCALARS_EXPORT void
-swap(PackedScalarType type, devices::Buffer& left, devices::Buffer& right);
-
-ROUGHPY_SCALARS_EXPORT void
-copy(PackedScalarType type, devices::Buffer& dst, const devices::Buffer& src);
-
-ROUGHPY_SCALARS_EXPORT void
-fill(PackedScalarType type, devices::Buffer& buffer, devices::Reference value);
-
-ROUGHPY_SCALARS_EXPORT void
-iota(PackedScalarType type,
-     devices::Buffer& buffer,
-     devices::Reference start,
-     devices::Reference stop,
-     devices::Reference step);
-
-ROUGHPY_SCALARS_EXPORT void
-reverse(PackedScalarType type, devices::Buffer& buffer);
-
-ROUGHPY_SCALARS_EXPORT void
-shift_left(PackedScalarType type, devices::Buffer& buffer);
-
-ROUGHPY_SCALARS_EXPORT void
-shift_right(PackedScalarType type, devices::Buffer& buffer);
-
-ROUGHPY_SCALARS_EXPORT void lower_bound(
-        devices::Reference out,
-        PackedScalarType type,
-        const devices::Buffer& buffer,
-        devices::Reference value
-);
-
-ROUGHPY_SCALARS_EXPORT void upper_bound(
-        devices::Reference out,
-        PackedScalarType type,
-        const devices::Buffer& buffer,
-        devices::Reference value
-);
-
-ROUGHPY_SCALARS_EXPORT SliceIndex equal_range(
-        PackedScalarType type,
-        const devices::Buffer& buffer,
-        devices::Reference value
-);
-
-ROUGHPY_SCALARS_EXPORT bool binary_serach(
-        PackedScalarType type,
-        const devices::Buffer& buffer,
-        devices::Reference value
-);
-
-ROUGHPY_SCALARS_EXPORT void
-max(devices::Reference out, PackedScalarType type, const devices::Buffer& buffer
-);
-
-ROUGHPY_SCALARS_EXPORT void
-min(devices::Reference out, PackedScalarType type, const devices::Buffer& buffer
-);
-
-ROUGHPY_SCALARS_EXPORT bool lexicographical_compare(
-        PackedScalarType type,
-        const devices::Buffer& left,
-        const devices::Buffer& right
-);
-
-}// namespace drivers
 
 template <typename T>
 RPY_NO_DISCARD optional<dimn_t> find(const ScalarArray& range, const T& value)
 {
     return drivers::find(
-            range.type(),
+            packed_to_type(range.type()),
             range.buffer(),
             devices::TypedReference(value)
     );
@@ -134,7 +39,7 @@ RPY_NO_DISCARD inline optional<dimn_t>
 find(const ScalarArray& range, const Scalar& value)
 {
     return drivers::find(
-            range.type(),
+            packed_to_type(range.type()),
             range.buffer(),
             devices::Reference(value.pointer())
     );
@@ -144,7 +49,7 @@ template <typename T>
 RPY_NO_DISCARD bool contains(const ScalarArray& range, const T& value)
 {
     return drivers::contains(
-            range.type(),
+            packed_to_type(range.type()),
             range.buffer(),
             devices::TypedReference(value)
     );
@@ -154,7 +59,7 @@ RPY_NO_DISCARD inline bool
 contains(const ScalarArray& range, const Scalar& value)
 {
     return drivers::contains(
-            range.type(),
+            packed_to_type(range.type()),
             range.buffer(),
             devices::Reference(value.pointer())
     );
@@ -164,7 +69,7 @@ template <typename T>
 RPY_NO_DISCARD dimn_t count(const ScalarArray& range, const T& value)
 {
     return drivers::count(
-            range.type(),
+            packed_to_type(range.type()),
             range.buffer(),
             devices::TypedReference(value)
     );
@@ -174,7 +79,7 @@ RPY_NO_DISCARD inline dimn_t
 count(const ScalarArray& range, const Scalar& value)
 {
     return drivers::count(
-            range.type(),
+            packed_to_type(range.type()),
             range.buffer(),
             devices::Reference(value.pointer())
     );
@@ -227,9 +132,6 @@ inline void fill(ScalarArray& dst, const Scalar& value)
             devices::Reference(value.pointer())
     );
 }
-
-
-
 
 }// namespace algorithms
 }// namespace scalars
