@@ -16,7 +16,6 @@
 #include "scalar_implementations/poly_rational.h"
 #include "types/aprational/ap_rational_scalar_type.h"
 
-
 #include <algorithm>
 
 using namespace rpy;

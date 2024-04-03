@@ -75,7 +75,7 @@ protected:
         register_rng_getter("pcg", &get_pcg_generator);
     }
 
-    StandardScalarType(string id, string name, )
+    StandardScalarType(string id, string name);
 
 public:
     ScalarArray allocate(dimn_t count) const override;
