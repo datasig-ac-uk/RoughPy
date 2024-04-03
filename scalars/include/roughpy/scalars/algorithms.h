@@ -20,7 +20,6 @@ namespace scalars {
 namespace algorithms {
 namespace drivers = devices::algorithms::drivers;
 
-
 inline const devices::Type* packed_to_type(const PackedScalarType& type)
 {
     return type.is_pointer() ? type->as_type() : get_type(type.get_type_info());
