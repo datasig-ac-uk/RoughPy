@@ -13,7 +13,7 @@
 namespace rpy {
 namespace scalars {
 
-class APRationalScalarType : public ScalarType
+class RPY_LOCAL APRationalScalarType : public ScalarType
 {
     mutable std::unordered_set<void*> m_allocations;
 

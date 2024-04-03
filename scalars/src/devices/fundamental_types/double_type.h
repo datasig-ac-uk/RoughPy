@@ -6,7 +6,6 @@
 #define DOUBLE_TYPE_H
 
 #include "devices/fundamental_type.h"
-#include "devices/type.h"
 
 namespace rpy {
 namespace devices {

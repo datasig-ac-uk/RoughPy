@@ -11,18 +11,17 @@
 namespace rpy {
 namespace devices {
 
-
 template <typename T>
-class FundamentalType : public Type {
+class RPY_LOCAL FundamentalType : public Type
+{
 
 public:
-
-    FundamentalType(string id, string name)
-        : Type(std::move(id), std::move(name), type_info<T>(), traits_of<T>())
+    FundamentalType(string_view id, string_view name)
+        : Type(id, name, devices::type_info<T>(), devices::traits_of<T>())
     {}
-
 };
 
-}}
+}// namespace devices
+}// namespace rpy
 
-#endif //FUNDAMENTAL_TYPE_H
+#endif// FUNDAMENTAL_TYPE_H

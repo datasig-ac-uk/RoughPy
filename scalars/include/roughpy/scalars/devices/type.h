@@ -22,7 +22,6 @@ struct TypeTraits {
     bool trivially_constructible : 1;
     bool trivially_default_constructible : 1;
     bool trivially_copy_constructible : 1;
-    bool trivially_assignable : 1;
     bool trivially_copy_assignable : 1;
     bool trivially_destructible : 1;
     bool polymorphic : 1;
@@ -33,21 +32,14 @@ struct TypeTraits {
 
 class ROUGHPY_SCALARS_EXPORT Type
 {
-public:
-    using lock_type = std::recursive_mutex;
-    using guard_type = std::lock_guard<lock_type>;
-
-private:
-    mutable lock_type m_lock;
-    string m_id;
-    string m_name;
+    string_view m_id;
+    string_view m_name;
     TypeInfo m_info;
     TypeTraits m_traits;
 
 public:
-    explicit Type(string id, string name, TypeInfo info, TypeTraits traits);
-
-    guard_type lock() const noexcept { return guard_type(m_lock); }
+    explicit
+    Type(string_view id, string_view name, TypeInfo info, TypeTraits traits);
 
     Type() = delete;
     Type(const Type&) = delete;
@@ -71,7 +63,10 @@ public:
 
     RPY_NO_DISCARD TypeInfo type_info() const noexcept { return m_info; }
 
-    RPY_NO_DISCARD const TypeTraits& type_traits() const noexcept { return m_traits; }
+    RPY_NO_DISCARD const TypeTraits& type_traits() const noexcept
+    {
+        return m_traits;
+    }
 
     /**
      * @brief Allocate new scalars in memory
@@ -111,7 +106,6 @@ constexpr TypeTraits traits_of() noexcept
             std::is_trivially_constructible_v<base_t>,
             std::is_trivially_default_constructible_v<base_t>,
             std::is_trivially_copy_constructible_v<base_t>,
-            std::is_trivially_assignable_v<base_t>,
             std::is_trivially_copy_assignable_v<base_t>,
             std::is_trivially_destructible_v<base_t>,
             std::is_polymorphic_v<base_t>,
@@ -121,75 +115,77 @@ constexpr TypeTraits traits_of() noexcept
     };
 }
 
-
-
-
-
 namespace traits {
 
-    using TypePtr = const Type*;
+using TypePtr = const Type*;
 
-    inline bool is_standard_layout(TypePtr const typePtr) {
-        return typePtr->type_traits().standard_layout;
-    }
-
-    inline bool is_trivially_copyable(TypePtr const typePtr) {
-        return typePtr->type_traits().trivially_copyable;
-    }
-
-    inline bool is_trivially_constructible(TypePtr const typePtr) {
-        return typePtr->type_traits().trivially_constructible;
-    }
-
-    inline bool is_trivially_default_constructible(TypePtr const typePtr) {
-        return typePtr->type_traits().trivially_default_constructible;
-    }
-
-    inline bool is_trivially_copy_constructible(TypePtr const typePtr) {
-        return typePtr->type_traits().trivially_copy_constructible;
-    }
-
-    inline bool is_trivially_assignable(TypePtr const typePtr) {
-        return typePtr->type_traits().trivially_assignable;
-    }
-
-    inline bool is_trivially_copy_assignable(TypePtr const typePtr) {
-        return typePtr->type_traits().trivially_copy_assignable;
-    }
-
-    inline bool is_trivially_destructible(TypePtr const typePtr) {
-        return typePtr->type_traits().trivially_destructible;
-    }
-
-    inline bool is_polymorphic(TypePtr const typePtr) {
-        return typePtr->type_traits().polymorphic;
-    }
-
-    inline bool is_signed(TypePtr const typePtr) {
-        return typePtr->type_traits().is_signed;
-    }
-
-    inline bool is_unsigned(TypePtr const typePtr)
-    {
-        return !typePtr->type_traits().is_signed;
-    }
-
-    inline bool is_floating_point(TypePtr const typePtr) {
-        return typePtr->type_traits().is_floating_point;
-    }
-
-    inline bool is_integral(TypePtr const typePtr) {
-        return typePtr->type_traits().is_integral;
-    }
-
-} // end of traits namespace
-
-
-
-
-
+inline bool is_standard_layout(TypePtr const typePtr)
+{
+    return typePtr->type_traits().standard_layout;
 }
 
+inline bool is_trivially_copyable(TypePtr const typePtr)
+{
+    return typePtr->type_traits().trivially_copyable;
 }
+
+inline bool is_trivially_constructible(TypePtr const typePtr)
+{
+    return typePtr->type_traits().trivially_constructible;
+}
+
+inline bool is_trivially_default_constructible(TypePtr const typePtr)
+{
+    return typePtr->type_traits().trivially_default_constructible;
+}
+
+inline bool is_trivially_copy_constructible(TypePtr const typePtr)
+{
+    return typePtr->type_traits().trivially_copy_constructible;
+}
+
+inline bool is_trivially_copy_assignable(TypePtr const typePtr)
+{
+    return typePtr->type_traits().trivially_copy_assignable;
+}
+
+inline bool is_trivially_destructible(TypePtr const typePtr)
+{
+    return typePtr->type_traits().trivially_destructible;
+}
+
+inline bool is_polymorphic(TypePtr const typePtr)
+{
+    return typePtr->type_traits().polymorphic;
+}
+
+inline bool is_signed(TypePtr const typePtr)
+{
+    return typePtr->type_traits().is_signed;
+}
+
+inline bool is_unsigned(TypePtr const typePtr)
+{
+    return !typePtr->type_traits().is_signed;
+}
+
+inline bool is_floating_point(TypePtr const typePtr)
+{
+    return typePtr->type_traits().is_floating_point;
+}
+
+inline bool is_integral(TypePtr const typePtr)
+{
+    return typePtr->type_traits().is_integral;
+}
+
+}// namespace traits
+
+RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT const devices::Type*
+get_type(devices::TypeInfo info);
+
+}// namespace devices
+
+}// namespace rpy
 
 #endif// ROUGHPY_DEVICES_TYPE_H

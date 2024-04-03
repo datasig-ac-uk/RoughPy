@@ -5,8 +5,8 @@
 #ifndef B_FLOAT_16_TYPE_H
 #define B_FLOAT_16_TYPE_H
 
-#include "devices/fundamental_type.h"
 #include "scalar_implementations/bfloat.h"
+#include "devices/fundamental_type.h"
 
 namespace rpy {
 namespace devices {

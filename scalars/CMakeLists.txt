@@ -7,6 +7,7 @@ project(RoughPyScalars
 
 add_roughpy_component(Scalars
         PUBLIC_HEADERS
+        include/roughpy/scalars/devices/algorithms.h
         include/roughpy/scalars/devices/buffer.h
         include/roughpy/scalars/devices/core.h
         include/roughpy/scalars/devices/device_handle.h
@@ -33,6 +34,30 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/traits.h
         include/roughpy/scalars.h
         SOURCES
+        src/devices/fundamental_types/b_float_16_type.cpp
+        src/devices/fundamental_types/b_float_16_type.h
+        src/devices/fundamental_types/double_type.cpp
+        src/devices/fundamental_types/double_type.h
+        src/devices/fundamental_types/float_type.cpp
+        src/devices/fundamental_types/float_type.h
+        src/devices/fundamental_types/half_type.cpp
+        src/devices/fundamental_types/half_type.h
+        src/devices/fundamental_types/int8_type.cpp
+        src/devices/fundamental_types/int8_type.h
+        src/devices/fundamental_types/int16_type.cpp
+        src/devices/fundamental_types/int16_type.h
+        src/devices/fundamental_types/int32_type.cpp
+        src/devices/fundamental_types/int32_type.h
+        src/devices/fundamental_types/int64_type.cpp
+        src/devices/fundamental_types/int64_type.h
+        src/devices/fundamental_types/uint8_type.cpp
+        src/devices/fundamental_types/uint8_type.h
+        src/devices/fundamental_types/uint16_type.cpp
+        src/devices/fundamental_types/uint16_type.h
+        src/devices/fundamental_types/uint32_type.cpp
+        src/devices/fundamental_types/uint32_type.h
+        src/devices/fundamental_types/uint64_type.cpp
+        src/devices/fundamental_types/uint64_type.h
         src/devices/host/host_buffer.cpp
         src/devices/host/host_buffer.h
         src/devices/host/host_decls.h
@@ -127,24 +152,16 @@ add_roughpy_component(Scalars
         src/types/apratpoly/ap_rat_poly_type.h
         src/types/bfloat16/b_float_16_scalar_type.cpp
         src/types/bfloat16/b_float_16_scalar_type.h
-        src/types/bfloat16/b_float_16_type.cpp
-        src/types/bfloat16/b_float_16_type.h
         src/types/bfloat16/bfloat16_random_generator.cpp
         src/types/bfloat16/bfloat16_random_generator.h
         src/types/double/double_scalar_type.cpp
         src/types/double/double_scalar_type.h
-        src/types/double/double_type.cpp
-        src/types/double/double_type.h
         src/types/float/float_scalar_type.cpp
         src/types/float/float_scalar_type.h
-        src/types/float/float_type.cpp
-        src/types/float/float_type.h
         src/types/half/half_random_generator.cpp
         src/types/half/half_random_generator.h
         src/types/half/half_scalar_type.cpp
         src/types/half/half_scalar_type.h
-        src/types/half/half_type.cpp
-        src/types/half/half_type.h
         src/builtin_scalar_types.h
         src/builtin_scalars.h
         src/random.cpp

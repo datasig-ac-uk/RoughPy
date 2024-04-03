@@ -4,7 +4,6 @@
 
 #include "double_type.h"
 
-#include "devices/core.h"
 
 using namespace rpy;
 using namespace rpy::devices;

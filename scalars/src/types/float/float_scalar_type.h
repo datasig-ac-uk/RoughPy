@@ -5,9 +5,7 @@
 #ifndef ROUGHPY_SCALARS_SRC_TYPES_FLOAT_FLOAT_TYPE_H_
 #define ROUGHPY_SCALARS_SRC_TYPES_FLOAT_FLOAT_TYPE_H_
 
-
 #include "scalar_helpers/standard_scalar_type.h"
-#include "float_type.h"
 
 namespace rpy {
 namespace scalars {

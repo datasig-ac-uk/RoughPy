@@ -33,7 +33,7 @@ ScalarArray APRationalScalarType::allocate(dimn_t count) const
 }
 void* APRationalScalarType::allocate_single() const
 {
-    guard_type access(m_lock);
+    const auto access = this->lock();
     auto [pos, inserted]
             = m_allocations.insert(new ArbitraryPrecisionRational());
     RPY_DBG_ASSERT(inserted);
@@ -41,7 +41,7 @@ void* APRationalScalarType::allocate_single() const
 }
 void APRationalScalarType::free_single(void* ptr) const
 {
-    guard_type access(m_lock);
+    const auto access = this->lock();
     auto found = m_allocations.find(ptr);
     RPY_CHECK(found != m_allocations.end());
     delete static_cast<ArbitraryPrecisionRational*>(ptr);

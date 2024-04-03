@@ -80,21 +80,6 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
     RPY_THROW(std::runtime_error, "unsupported data type");
 }
 
-ScalarType::ScalarType(
-        std::string name,
-        std::string id,
-        rpy::dimn_t alignment,
-        devices::Device device,
-        devices::TypeInfo type_info,
-        rpy::scalars::RingCharacteristics characteristics
-)
-    : p_type(new devices::Type(std::move(id), std::move(name), type_info)),
-      m_device(std::move(device)),
-      m_id(p_type->id()),
-      m_name(p_type->name()),
-      m_info(type_info),
-      m_characteristics(characteristics)
-{}
 
 ScalarType::ScalarType(
         const devices::Type* type,
@@ -197,9 +182,10 @@ const ScalarType* ScalarType::with_device(const devices::Device& device) const
     return this;
 }
 
+
 const ScalarType* ScalarType::rational_type() const noexcept { return this; }
 void ScalarType::register_rng_getter(string name, rng_getter getter)
 {
-    const auto access = p_type->lock();
+    const auto access = this->lock();
     m_rng_getters[name] = getter;
 }

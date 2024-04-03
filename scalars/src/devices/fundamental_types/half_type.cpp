@@ -4,7 +4,6 @@
 
 #include "half_type.h"
 
-#include "scalar_implementations/half.h"
 using namespace rpy;
 using namespace rpy::devices;
 

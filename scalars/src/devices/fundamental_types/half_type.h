@@ -6,7 +6,6 @@
 #define HALF_TYPE_H
 
 #include "devices/fundamental_type.h"
-
 #include "scalar_implementations/half.h"
 
 namespace rpy {

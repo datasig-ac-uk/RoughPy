@@ -4,11 +4,10 @@
 
 #include "float_type.h"
 
-
 using namespace rpy;
 using namespace rpy::devices;
 
-FloatType::FloatType() : Type("f32", "SPReal", type_info<float>())
+FloatType::FloatType() : FundamentalType("f32", "SPReal")
 {}
 
 const FloatType devices::float_type;

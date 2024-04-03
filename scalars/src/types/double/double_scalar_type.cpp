@@ -4,7 +4,7 @@
 
 #include "double_scalar_type.h"
 
-#include "double_type.h"
+#include "devices/fundamental_types/double_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;

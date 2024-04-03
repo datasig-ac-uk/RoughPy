@@ -4,7 +4,7 @@
 
 #include "b_float_16_scalar_type.h"
 
-#include "b_float_16_type.h"
+#include "devices/fundamental_types/b_float_16_type.h"
 #include "scalar_implementations/bfloat.h"
 
 using namespace rpy;

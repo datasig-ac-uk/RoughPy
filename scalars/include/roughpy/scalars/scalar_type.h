@@ -57,8 +57,10 @@ protected:
     using rng_getter = std::unique_ptr<
             RandomGenerator> (*)(const ScalarType*, Slice<seed_int_t>);
 
+private:
     mutable lock_type m_lock;
 
+public:
     devices::Device m_device;
     string_view m_name;
     string_view m_id;
@@ -68,15 +70,6 @@ protected:
     containers::HashMap<string, rng_getter> m_rng_getters;
 
     explicit ScalarType(
-            string name,
-            string id,
-            dimn_t alignment,
-            devices::Device device,
-            devices::TypeInfo type_info,
-            RingCharacteristics characteristics
-    );
-
-    explicit ScalarType(
             const devices::Type* type,
             devices::Device device,
             RingCharacteristics characteristics
@@ -84,6 +77,13 @@ protected:
 
 public:
     virtual ~ScalarType();
+
+    RPY_NO_DISCARD guard_type lock() const noexcept
+    {
+        return guard_type(m_lock);
+    }
+
+    const devices::Type* as_type() const noexcept { return p_type; }
 
     template <typename T>
     static inline optional<const ScalarType*> of() noexcept

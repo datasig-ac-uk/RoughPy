@@ -2,7 +2,7 @@
 // Created by user on 06/11/23.
 
 #include "float_scalar_type.h"
-#include "float_type.h"
+#include "devices/fundamental_types/float_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
