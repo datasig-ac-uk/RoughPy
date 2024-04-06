@@ -34,6 +34,22 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/traits.h
         include/roughpy/scalars.h
         SOURCES
+        src/devices/algorithms/algorithm_impl.h
+        src/devices/algorithms/builtin_algorithm_drivers.h
+        src/devices/algorithms/copy.cpp
+        src/devices/algorithms/count.cpp
+        src/devices/algorithms/fill.cpp
+        src/devices/algorithms/find.cpp
+        src/devices/algorithms/lexicographical_compare.cpp
+        src/devices/algorithms/lower_bound.cpp
+        src/devices/algorithms/max.cpp
+        src/devices/algorithms/min.cpp
+        src/devices/algorithms/mismatch.cpp
+        src/devices/algorithms/reverse.cpp
+        src/devices/algorithms/shift_left.cpp
+        src/devices/algorithms/shift_right.cpp
+        src/devices/algorithms/swap.cpp
+        src/devices/algorithms/upper_bound.cpp
         src/devices/fundamental_types/b_float_16_type.cpp
         src/devices/fundamental_types/b_float_16_type.h
         src/devices/fundamental_types/double_type.cpp
@@ -91,6 +107,7 @@ add_roughpy_component(Scalars
         src/devices/opencl/ocl_queue.h
         src/devices/opencl/ocl_version.cpp
         src/devices/opencl/ocl_version.h
+        src/devices/algorithm_drivers.h
         src/devices/buffer.cpp
         src/devices/buffer_interface.cpp
         src/devices/core.cpp

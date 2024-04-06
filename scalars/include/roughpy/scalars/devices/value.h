@@ -20,15 +20,15 @@ public:
     explicit Reference(const void* val) : p_val(const_cast<void*>(val)) {}
 
     template <typename T>
-    add_const_t<T>* value() const
+    add_const_t<T>& value() const
     {
-        return static_cast<add_const_t<T>*>(p_val);
+        return *static_cast<add_const_t<T>*>(p_val);
     }
 
     template <typename T>
-    T* value()
+    T& value()
     {
-        return static_cast<T*>(p_val);
+        return *static_cast<T*>(p_val);
     }
 };
 

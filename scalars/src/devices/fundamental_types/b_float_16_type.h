@@ -11,7 +11,7 @@
 namespace rpy {
 namespace devices {
 
-class BFloat16Type : public FundamentalType<scalars::BFloat16> {
+class RPY_LOCAL BFloat16Type : public FundamentalType<scalars::BFloat16> {
 
 public:
 

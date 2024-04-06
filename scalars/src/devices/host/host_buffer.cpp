@@ -38,19 +38,22 @@
 #include "devices/opencl/ocl_device.h"
 #include "devices/opencl/ocl_handle_errors.h"
 
+#include "devices/type.h"
 #include "host_device_impl.h"
 
 using namespace rpy;
 using namespace rpy::devices;
 
 CPUBuffer::CPUBuffer(RawBuffer raw, uint32_t arg_flags, TypeInfo info)
-    : raw_buffer(std::move(raw)),
+    : base_t(get_type(info)),
+      raw_buffer(std::move(raw)),
       m_flags(arg_flags),
       m_info(info)
 {}
 
 CPUBuffer::CPUBuffer(rpy::dimn_t size, rpy::devices::TypeInfo info)
-    : raw_buffer{nullptr, 0},
+    : base_t(get_type(info)),
+      raw_buffer{nullptr, 0},
       m_flags(IsOwned),
       m_info(info)
 {
@@ -64,13 +67,13 @@ CPUBuffer::CPUBuffer(rpy::dimn_t size, rpy::devices::TypeInfo info)
 }
 
 CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, TypeInfo info)
-    : raw_buffer{raw_ptr, size},
+    : base_t(get_type(info)), raw_buffer{raw_ptr, size},
       m_flags(),
       m_info(info)
 {}
 
 CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, TypeInfo info)
-    : raw_buffer{const_cast<void*>(raw_ptr), size},
+    : base_t(get_type(info)), raw_buffer{const_cast<void*>(raw_ptr), size},
       m_flags(IsConst),
       m_info(info)
 {}
@@ -103,7 +106,6 @@ void CPUBuffer::unmap(BufferInterface& other) const noexcept
     as_cpubuf.m_memory_owner = Buffer();
     as_cpubuf.raw_buffer = {nullptr, 0};
 }
-TypeInfo CPUBuffer::type_info() const noexcept { return m_info; }
 dimn_t CPUBuffer::size() const { return raw_buffer.size; }
 void* CPUBuffer::ptr() noexcept { return raw_buffer.ptr; }
 Device CPUBuffer::device() const noexcept { return CPUDeviceHandle::get(); }

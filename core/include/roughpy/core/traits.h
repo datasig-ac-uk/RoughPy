@@ -52,6 +52,8 @@ namespace rpy {
 
 using std::declval;
 using std::integral_constant;
+using std::true_type;
+using std::false_type;
 
 using std::is_array;
 using std::is_class;
@@ -106,6 +108,7 @@ using std::add_volatile_t;
 using std::remove_const_t;
 using std::remove_cv_t;
 using std::remove_volatile_t;
+using std::decay_t;
 
 using std::add_lvalue_reference_t;
 using std::add_pointer_t;

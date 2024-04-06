@@ -33,6 +33,7 @@
 #include "devices/buffer.h"
 #include "devices/device_object_base.h"
 #include "devices/event.h"
+#include "devices/type.h"
 
 using namespace rpy;
 using namespace rpy::devices;

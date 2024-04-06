@@ -34,6 +34,7 @@
 
 #include "devices/buffer.h"
 
+#include "algorithm_drivers.h"
 #include "devices/buffer.h"
 #include "devices/event.h"
 #include "devices/kernel.h"
@@ -48,7 +49,6 @@ using namespace rpy::devices;
 DeviceHandle::DeviceHandle() {}
 
 bool DeviceHandle::is_host() const noexcept { return false; }
-
 
 DeviceCategory DeviceHandle::category() const noexcept
 {
@@ -141,4 +141,45 @@ void rpy::devices::intrusive_ptr_release(
     using counter_t = boost::
             intrusive_ref_counter<DeviceHandle, boost::thread_safe_counter>;
     intrusive_ptr_release(static_cast<const counter_t*>(device));
+}
+
+void DeviceHandle::check_type_compatibility(
+        const Type* primary,
+        const Type* secondary
+) const
+{
+    if (secondary != nullptr && secondary != primary) {
+        if (!primary->convertible_from(secondary)) {
+            RPY_THROW(
+                    std::runtime_error,
+                    "secondary type " + string(secondary->name())
+                            + " is not convertible to primary type "
+                            + string(primary->name())
+            );
+        }
+    }
+}
+
+AlgorithmDriversPtr DeviceHandle::algorithms(
+        const Type* primary_type,
+        const Type* secondary_type,
+        bool check_conversion
+) const
+{
+    if (secondary_type == nullptr) { secondary_type = primary_type; }
+    if (check_conversion) {
+        check_type_compatibility(primary_type, secondary_type);
+    }
+
+    if (traits::is_arithmetic(primary_type)
+        && traits::is_arithmetic(secondary_type)) {
+        return algorithms::get_builtin_algorithms();
+    }
+
+    RPY_THROW(
+            std::runtime_error,
+            "no standard algorithms for primary type "
+                    + string(primary_type->name()) + " and secondary type "
+                    + string(secondary_type->name())
+    );
 }

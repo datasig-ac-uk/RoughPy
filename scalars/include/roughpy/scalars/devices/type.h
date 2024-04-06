@@ -7,11 +7,9 @@
 
 #include "core.h"
 
-#include <mutex>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/scalars/scalars_fwd.h>
 
 namespace rpy {
 namespace devices {
@@ -94,6 +92,11 @@ public:
     virtual void free_single(void* ptr) const;
 
     virtual bool supports_device(const Device& device) const noexcept;
+
+
+    virtual bool convertible_to(const Type* dest_type) const noexcept;
+
+    virtual bool convertible_from(const Type* src_type) const noexcept;
 };
 
 template <typename T>
@@ -113,6 +116,12 @@ constexpr TypeTraits traits_of() noexcept
             std::is_floating_point_v<base_t>,
             std::is_integral_v<base_t>,
     };
+}
+
+
+inline dimn_t size_of(const Type* type)
+{
+    return type->type_info().bytes;
 }
 
 namespace traits {
@@ -177,6 +186,11 @@ inline bool is_floating_point(TypePtr const typePtr)
 inline bool is_integral(TypePtr const typePtr)
 {
     return typePtr->type_traits().is_integral;
+}
+
+inline bool is_arithmetic(TypePtr const typePtr)
+{
+    return is_integral(typePtr) || is_floating_point(typePtr);
 }
 
 }// namespace traits

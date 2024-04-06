@@ -52,7 +52,8 @@ OCLBuffer::OCLBuffer(
         TypeInfo info,
         Buffer memory_owner
 )
-    : m_buffer(buffer),
+    : BufferInterface(get_type(info)),
+      m_buffer(buffer),
       m_device(std::move(dev)),
       m_info(info),
       m_memory_owner(std::move(memory_owner))
@@ -62,7 +63,8 @@ devices::OCLBuffer::OCLBuffer(
         OCLDevice dev,
         TypeInfo info
 ) noexcept
-    : m_device(std::move(dev)),
+    : BufferInterface(get_type(info)),
+      m_device(std::move(dev)),
       m_buffer(buffer),
       m_info(info)
 {}
@@ -359,7 +361,6 @@ void OCLBuffer::unmap(BufferInterface& buffer) const noexcept
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     clWaitForEvents(1, event.ptr());
 }
-TypeInfo OCLBuffer::type_info() const noexcept { return m_info; }
 dimn_t OCLBuffer::bytes() const
 {
     RPY_DBG_ASSERT(m_buffer != nullptr);

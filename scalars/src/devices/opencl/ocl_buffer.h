@@ -73,7 +73,6 @@ public:
     reference_count_type inc_ref() noexcept override;
     reference_count_type dec_ref() noexcept override;
 
-    TypeInfo type_info() const noexcept override;
     dimn_t bytes() const override;
     Buffer map_mut(dimn_t size, dimn_t offset) override;
     Buffer map(dimn_t size, dimn_t offset) const override;

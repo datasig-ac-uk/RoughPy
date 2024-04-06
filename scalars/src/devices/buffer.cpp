@@ -100,7 +100,7 @@ BufferMode Buffer::mode() const
 
 TypeInfo BufferInterface::type_info() const noexcept
 {
-    return devices::type_info<byte>();
+    return p_type->type_info();
 }
 dimn_t Buffer::size() const
 {

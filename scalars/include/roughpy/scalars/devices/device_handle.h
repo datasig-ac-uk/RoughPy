@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 #define ROUGHPY_DEVICE_DEVICE_HANDLE_H_
@@ -40,15 +41,13 @@
 #include "core.h"
 
 #include "buffer.h"
-#include "core.h"
 #include "event.h"
 #include "kernel.h"
 #include "queue.h"
 
-#include <vector>
-
 namespace rpy {
 namespace devices {
+
 
 struct ExtensionSourceAndOptions {
     std::vector<string> sources;
@@ -56,8 +55,6 @@ struct ExtensionSourceAndOptions {
     std::vector<pair<string, string>> header_name_and_source;
     string link_options;
 };
-
-
 
 /**
  * @brief Interface for interacting with compute devices.
@@ -76,9 +73,7 @@ protected:
 
     lock_type& get_lock() const noexcept { return m_lock; }
 
-
 public:
-
     DeviceHandle();
 
     virtual ~DeviceHandle();
@@ -111,10 +106,9 @@ public:
 
     virtual const Kernel& register_kernel(Kernel kernel) const;
 
-    RPY_NO_DISCARD
-    virtual optional<Kernel> get_kernel(const string& name) const noexcept;
-    RPY_NO_DISCARD
-    virtual optional<Kernel>
+    RPY_NO_DISCARD virtual optional<Kernel> get_kernel(const string& name
+    ) const noexcept;
+    RPY_NO_DISCARD virtual optional<Kernel>
     compile_kernel_from_str(const ExtensionSourceAndOptions& args) const;
 
     virtual void compile_kernels_from_src(const ExtensionSourceAndOptions& args
@@ -133,7 +127,8 @@ public:
     RPY_NO_DISCARD virtual Event
     from_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
 
-    virtual Event to_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
+    virtual Event
+    to_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
 
     /**
      * @brief Copy data from one buffer to another
@@ -141,14 +136,18 @@ public:
      * @param src Buffer to copy data from
      * @return event triggered when the copy is complete.
      */
-    RPY_NO_DISCARD virtual Event
-    memcopy(Buffer& dst, const Buffer& src) const;
+    RPY_NO_DISCARD virtual Event memcopy(Buffer& dst, const Buffer& src) const;
 
+protected:
+    void check_type_compatibility(const Type* primary, const Type* secondary) const;
+
+public:
+
+    RPY_NO_DISCARD AlgorithmDriversPtr
+    virtual algorithms(const Type* primary_type, const Type* secondary_type = nullptr, bool check_conversion=false) const;
 };
 
-
-
-}// namespace device
+}// namespace devices
 }// namespace rpy
 
 #endif// ROUGHPY_DEVICE_DEVICE_HANDLE_H_

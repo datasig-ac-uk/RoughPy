@@ -31,6 +31,7 @@
 
 #include "core.h"
 #include "device_object_base.h"
+#include "type.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/slice.h>
@@ -46,11 +47,16 @@ class ROUGHPY_PLATFORM_EXPORT BufferInterface : public dtl::InterfaceBase
      * because the Buffer class isn't defined until later. Instead, the
      * implementations will have to handle this by themselves.
      */
+    const Type* p_type;
 public:
     using object_t = Buffer;
 
+    explicit BufferInterface(const Type* type) : p_type(type) {}
+
+    RPY_NO_DISCARD const Type* content_type() const noexcept { return p_type; }
+
     RPY_NO_DISCARD virtual BufferMode mode() const;
-    RPY_NO_DISCARD virtual TypeInfo type_info() const noexcept;
+    RPY_NO_DISCARD TypeInfo type_info() const noexcept;
     RPY_NO_DISCARD virtual dimn_t size() const;
     RPY_NO_DISCARD virtual dimn_t bytes() const;
 
@@ -114,6 +120,10 @@ public:
     template <typename T>
     explicit Buffer(Slice<const T> data);
 
+    RPY_NO_DISCARD const Type* content_type() const noexcept
+    {
+        return is_null() ? nullptr : impl()->content_type();
+    }
     RPY_NO_DISCARD dimn_t size() const;
     RPY_NO_DISCARD dimn_t bytes() const;
     RPY_NO_DISCARD TypeInfo type_info() const noexcept;

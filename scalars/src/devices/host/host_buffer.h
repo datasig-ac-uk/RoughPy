@@ -48,7 +48,7 @@ namespace devices {
 
 class CPUBuffer : public dtl::RefCountBase<BufferInterface>
 {
-
+    using base_t = dtl::RefCountBase<BufferInterface>;
     enum Flags
     {
         IsConst = 1,
@@ -73,7 +73,6 @@ public:
 
     bool is_host() const noexcept override;
     BufferMode mode() const override;
-    TypeInfo type_info() const noexcept override;
     dimn_t size() const override;
     void* ptr() noexcept override;
     DeviceType type() const noexcept override;

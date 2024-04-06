@@ -61,19 +61,6 @@ class StandardScalarType : public ScalarType
     get_pcg_generator(const ScalarType* tp, Slice<seed_int_t> seed);
 
 protected:
-    StandardScalarType(string name, string id, RingCharacteristics chars)
-        : ScalarType(
-                  std::move(name),
-                  std::move(id),
-                  alignof(ScalarImpl),
-                  devices::get_host_device(),
-                  devices::type_info<ScalarImpl>(),
-                  chars
-          )
-    {
-        register_rng_getter("mt19937", &get_mt19937_generator);
-        register_rng_getter("pcg", &get_pcg_generator);
-    }
 
     StandardScalarType(string id, string name);
 
