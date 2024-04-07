@@ -14,3 +14,7 @@ AlgorithmDriversPtr algorithms::get_builtin_algorithms() noexcept {
     static const AlgorithmDrivers algos;
     return &algos;
 }
+
+
+
+AlgorithmDrivers::~AlgorithmDrivers() = default;
