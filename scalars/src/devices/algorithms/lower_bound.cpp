@@ -26,7 +26,7 @@ struct LowerBoundFunctor {
 }// namespace
 
 optional<dimn_t>
-AlgorithmDrivers::lower_bound(const Buffer& buffer, Reference value)
+AlgorithmDrivers::lower_bound(const Buffer& buffer, Reference value) const
 {
     const auto host_view = buffer.map();
     return algorithms::do_algorithm<optional<dimn_t>, LowerBoundFunctor>(

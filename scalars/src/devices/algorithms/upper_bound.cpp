@@ -25,7 +25,7 @@ struct UpperBoundFunctor {
 }// namespace
 
 optional<dimn_t>
-AlgorithmDrivers::upper_bound(const Buffer& buffer, Reference value)
+AlgorithmDrivers::upper_bound(const Buffer& buffer, Reference value) const
 {
     const auto host_view = buffer.map();
     return algorithms::do_algorithm<optional<dimn_t>, UpperBoundFunctor>(
