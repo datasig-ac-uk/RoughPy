@@ -29,7 +29,8 @@ find(const ScalarArray& range, const Scalar& value)
 template <typename T>
 RPY_NO_DISCARD optional<dimn_t> find(const ScalarArray& range, const T& value)
 {
-    return find(range.buffer(), Scalar(range.type(), &value));;
+    return find(range.buffer(), Scalar(range.type(), &value));
+    ;
 }
 
 
@@ -37,11 +38,15 @@ RPY_NO_DISCARD optional<dimn_t> find(const ScalarArray& range, const T& value)
 RPY_NO_DISCARD inline optional<dimn_t>
 lower_bound(const ScalarArray& range, const Scalar& value)
 {
-    return drivers::lower_bound(range.buffer(), devices::Reference(value.pointer()));
+    return drivers::lower_bound(
+            range.buffer(),
+            devices::Reference(value.pointer())
+    );
 }
 
 template <typename T>
-RPY_NO_DISCARD optional<dimn_t> lower_bound(const ScalarArray& range, const T& value)
+RPY_NO_DISCARD optional<dimn_t>
+lower_bound(const ScalarArray& range, const T& value)
 {
     return lower_bound(range.buffer(), Scalar(range.type(), &value));
 }
@@ -49,11 +54,15 @@ RPY_NO_DISCARD optional<dimn_t> lower_bound(const ScalarArray& range, const T& v
 RPY_NO_DISCARD inline optional<dimn_t>
 upper_bound(const ScalarArray& range, const Scalar& value)
 {
-    return drivers::upper_bound(range.buffer(), devices::Reference(value.pointer()));
+    return drivers::upper_bound(
+            range.buffer(),
+            devices::Reference(value.pointer())
+    );
 }
 
 template <typename T>
-RPY_NO_DISCARD optional<dimn_t> upper_bound(const ScalarArray& range, const T& value)
+RPY_NO_DISCARD optional<dimn_t>
+upper_bound(const ScalarArray& range, const T& value)
 {
     return upper_bound(range.buffer(), Scalar(range.type(), &value));
 }
@@ -98,9 +107,6 @@ equal(const ScalarArray& left, const ScalarArray& right)
     return drivers::equal(left.buffer(), right.buffer());
 }
 
-
-
-
 inline void swap_ranges(ScalarArray& left, ScalarArray& right)
 {
     RPY_CHECK(left.type() == right.type());
@@ -112,14 +118,7 @@ inline void copy(ScalarArray& dst, const ScalarArray& src)
     drivers::copy(dst.mut_buffer(), src.buffer());
 }
 
-
-
-
-
-inline void reverse(ScalarArray& arr)
-{
-    drivers::reverse(arr.mut_buffer());
-}
+inline void reverse(ScalarArray& arr) { drivers::reverse(arr.mut_buffer()); }
 
 inline void shift_left(ScalarArray& arr, dimn_t count)
 {
@@ -133,7 +132,6 @@ inline void shift_right(ScalarArray& arr, dimn_t count)
     drivers::shift_right(arr.mut_buffer());
 }
 
-
 inline void fill(ScalarArray& dst, const Scalar& value)
 {
     drivers::fill(dst.mut_buffer(), devices::Reference(value.pointer()));
@@ -145,18 +143,11 @@ inline void fill(ScalarArray& dst, const T& value)
     fill(dst, Scalar(dst.type(), &value));
 }
 
-
-
-
-
-
-
 RPY_NO_DISCARD inline bool
 lexicographical_compare(const ScalarArray& left, const ScalarArray& right)
 {
     return drivers::lexicographical_compare(left.buffer(), right.buffer());
 }
-
 
 RPY_NO_DISCARD inline Scalar min(const ScalarArray& range)
 {
@@ -164,7 +155,6 @@ RPY_NO_DISCARD inline Scalar min(const ScalarArray& range)
     drivers::min(range.buffer(), devices::Reference(result.mut_pointer()));
     return result;
 }
-
 
 RPY_NO_DISCARD inline Scalar max(const ScalarArray& range)
 {
