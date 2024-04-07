@@ -11,7 +11,7 @@
 namespace rpy {
 namespace devices {
 
-class HalfType : public FundamentalType<scalars::Half> {
+class RPY_LOCAL HalfType : public FundamentalType<scalars::Half> {
 
 public:
     HalfType();

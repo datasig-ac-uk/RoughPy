@@ -10,7 +10,7 @@
 namespace rpy {
 namespace devices {
 
-class FloatType : public FundamentalType<float> {
+class RPY_LOCAL FloatType : public FundamentalType<float> {
 
 public:
     FloatType();

@@ -10,7 +10,7 @@
 namespace rpy {
 namespace devices {
 
-class DoubleType : public FundamentalType<double> {
+class RPY_LOCAL DoubleType : public FundamentalType<double> {
 
 public:
 
