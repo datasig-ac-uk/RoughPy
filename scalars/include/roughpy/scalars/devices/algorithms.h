@@ -116,6 +116,11 @@ RPY_NO_DISCARD inline dimn_t count(const Buffer& buffer, Reference value)
     return algo->count(buffer, value);
 }
 
+RPY_NO_DISCARD inline bool contains(const Buffer& buffer, Reference value)
+{
+    return static_cast<bool>(find(buffer, value));
+}
+
 RPY_NO_DISCARD inline optional<dimn_t>
 mismatch(const Buffer& left, const Buffer& right)
 {
@@ -137,15 +142,13 @@ RPY_NO_DISCARD inline bool equal(const Buffer& left, const Buffer& right)
     return static_cast<bool>(mismatch(left, right));
 }
 
-
-
 RPY_NO_DISCARD inline bool lexicographical_compare(const Buffer& left, const Buffer& right)
 {
     if (left.is_null()) {
         if (right.is_null()) { return {}; }
-        return 0;
+        return false;
     }
-    if (right.is_null()) { return 0; }
+    if (right.is_null()) { return false; }
 
     Device devices[] = {left.device(), right.device()};
     const auto device = get_best_device(devices);
@@ -232,6 +235,21 @@ inline void fill(Buffer& buffer, Reference value)
     algo->fill(buffer, value);
 }
 
+inline void min(const Buffer& buffer, Reference out)
+{
+    if (buffer.empty()) { return; }
+
+    auto algo = buffer.device()->algorithms(buffer.content_type());
+    algo->min(buffer, out);
+}
+
+inline void max(const Buffer& buffer, Reference out)
+{
+    if (buffer.empty()) { return; }
+
+    auto algo = buffer.device()->algorithms(buffer.content_type());
+    algo->max(buffer, out);
+}
 
 
 }// namespace algorithms
