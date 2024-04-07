@@ -67,9 +67,11 @@ public:
 
     virtual void shift_right(Buffer& buffer) const;
 
-    virtual optional<dimn_t> lower_bound(const Buffer& buffer, Reference value) const;
+    virtual optional<dimn_t>
+    lower_bound(const Buffer& buffer, Reference value) const;
 
-    virtual optional<dimn_t> upper_bound(const Buffer& buffer, Reference value) const;
+    virtual optional<dimn_t>
+    upper_bound(const Buffer& buffer, Reference value) const;
 
     virtual void max(const Buffer& buffer, Reference out) const;
 
@@ -250,7 +252,6 @@ inline void max(const Buffer& buffer, Reference out)
     auto algo = buffer.device()->algorithms(buffer.content_type());
     algo->max(buffer, out);
 }
-
 
 }// namespace algorithms
 
