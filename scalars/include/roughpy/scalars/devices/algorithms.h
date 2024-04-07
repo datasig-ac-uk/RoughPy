@@ -67,9 +67,9 @@ public:
 
     virtual void shift_right(Buffer& buffer) const;
 
-    virtual optional<dimn_t> lower_bound(const Buffer& buffer, Reference value);
+    virtual optional<dimn_t> lower_bound(const Buffer& buffer, Reference value) const;
 
-    virtual optional<dimn_t> upper_bound(const Buffer& buffer, Reference value);
+    virtual optional<dimn_t> upper_bound(const Buffer& buffer, Reference value) const;
 
     virtual void max(const Buffer& buffer, Reference out) const;
 
