@@ -35,7 +35,6 @@ add_roughpy_component(Scalars
         include/roughpy/scalars.h
         SOURCES
         src/devices/algorithms/algorithm_impl.h
-        src/devices/algorithms/builtin_algorithm_drivers.h
         src/devices/algorithms/copy.cpp
         src/devices/algorithms/count.cpp
         src/devices/algorithms/fill.cpp
@@ -107,6 +106,7 @@ add_roughpy_component(Scalars
         src/devices/opencl/ocl_queue.h
         src/devices/opencl/ocl_version.cpp
         src/devices/opencl/ocl_version.h
+        src/devices/algorithm_drivers.cpp
         src/devices/algorithm_drivers.h
         src/devices/buffer.cpp
         src/devices/buffer_interface.cpp

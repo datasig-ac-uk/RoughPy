@@ -293,7 +293,7 @@ class AlgorithmDrivers;
 
 using Device = boost::intrusive_ptr<const DeviceHandle>;
 using HostDevice = boost::intrusive_ptr<const HostDeviceHandle>;
-using AlgorithmDriversPtr = boost::intrusive_ptr<AlgorithmDrivers>;
+using AlgorithmDriversPtr = boost::intrusive_ptr<const AlgorithmDrivers>;
 
 ROUGHPY_PLATFORM_EXPORT HostDevice get_host_device();
 
