@@ -11,6 +11,7 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/devices/buffer.h
         include/roughpy/scalars/devices/core.h
         include/roughpy/scalars/devices/device_handle.h
+        include/roughpy/scalars/devices/device_object_base.h
         include/roughpy/scalars/devices/device_provider.h
         include/roughpy/scalars/devices/event.h
         include/roughpy/scalars/devices/host_device.h
