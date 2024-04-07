@@ -6,20 +6,17 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-
 namespace {
 
 template <typename T>
-struct ReverseFunctor
-{
+struct ReverseFunctor {
     void operator()(Buffer& buffer) const
     {
         rpy::ranges::reverse(buffer.as_mut_slice<T>());
     }
 };
 
-}
-
+}// namespace
 
 void AlgorithmDrivers::reverse(Buffer& buffer) const
 {

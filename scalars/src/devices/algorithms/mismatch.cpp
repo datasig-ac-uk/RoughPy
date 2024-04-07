@@ -40,6 +40,7 @@ AlgorithmDrivers::mismatch(const Buffer& left, const Buffer& right) const
     const auto left_host_view = left.map();
     const auto right_host_view = right.map();
     return algorithms::do_algorithm<optional<dimn_t>, MismatchFunctor>(
-        left_host_view, right_host_view
+            left_host_view,
+            right_host_view
     );
 }

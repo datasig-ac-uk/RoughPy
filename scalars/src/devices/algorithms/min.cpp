@@ -1,26 +1,22 @@
-#include "devices/algorithms.h"
 #include "algorithm_impl.h"
+#include "devices/algorithms.h"
 
 #include <roughpy/core/ranges.h>
 
 using namespace rpy;
 using namespace rpy::devices;
 
-
 namespace {
 
 template <typename T>
-struct MinFunctor
-{
+struct MinFunctor {
     void operator()(const Buffer& buffer, Reference out) const
     {
         out.value<T>() = rpy::ranges::min(buffer.as_slice<T>());
     }
 };
 
-}
-
-
+}// namespace
 
 void AlgorithmDrivers::min(const Buffer& buffer, Reference out) const
 {
