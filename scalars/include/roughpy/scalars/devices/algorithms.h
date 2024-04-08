@@ -22,18 +22,61 @@
 namespace rpy {
 namespace devices {
 
+/**
+ * @class AlgorithmDrivers
+ * @brief The AlgorithmDrivers class provides a set of algorithms that can be
+ * applied to buffers.
+ *
+ * The AlgorithmDrivers class is an abstract base class that provides a common
+ * interface for implementing algorithms that operate on buffers.
+ *
+ * @sa Buffer
+ */
 class ROUGHPY_SCALARS_EXPORT AlgorithmDrivers
     : public boost::intrusive_ref_counter<AlgorithmDrivers>
 {
 public:
     virtual ~AlgorithmDrivers();
 
+    /**
+     * @brief Find the first position where a value occurs in a buffer.
+     *
+     * This method is used to find the position of the first occurrence
+     * of a specified value in a buffer. It returns an optional that contains
+     * the position if the value is found, or an optional without a value if the
+     * value is not found.
+     *
+     * @param buffer The buffer in which to search for the value.
+     * @param value The value to search for.
+     *
+     * @return An optional containing the position of the first occurrence of
+     * the specified value in the buffer. If the value is not found, an optional
+     * without a value is returned.
+     *
+     * @sa Buffer
+     */
     RPY_NO_DISCARD virtual optional<dimn_t>
     find(const Buffer& buffer, Reference value) const;
 
     RPY_NO_DISCARD virtual dimn_t
     count(const Buffer& buffer, Reference value) const;
 
+    /**
+     * @brief Find the first position where two buffers differ.
+     *
+     * This method compares the elements of the left and right buffers and
+     * returns the position of the first mismatch. If the buffers are equal, it
+     * returns an optional that does not contain a value.
+     *
+     * @param left The first buffer to compare.
+     * @param right The second buffer to compare.
+     *
+     * @return An optional containing the position of the first mismatch if the
+     * buffers are different. If the buffers are equal, an optional without a
+     * value is returned.
+     *
+     * @sa Buffer
+     */
     RPY_NO_DISCARD virtual optional<dimn_t>
     mismatch(const Buffer& left, const Buffer& right) const;
 
@@ -81,8 +124,6 @@ public:
     lexicographacal_compare(const Buffer& left, const Buffer& rought) const;
 };
 
-ROUGHPY_SCALARS_EXPORT
-RPY_NO_DISCARD Device get_best_device(Slice<Device> devices);
 
 namespace algorithms {
 

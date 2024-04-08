@@ -38,7 +38,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/uuid/uuid.hpp>
 
-#include "roughpy_platform_export.h"
+#include "roughpy_scalars_export.h"
 
 namespace rpy {
 namespace devices {
@@ -301,6 +301,9 @@ ROUGHPY_PLATFORM_EXPORT Device get_default_device();
 
 ROUGHPY_PLATFORM_EXPORT optional<Device>
 get_device(const DeviceSpecification& spec);
+
+ROUGHPY_SCALARS_EXPORT
+RPY_NO_DISCARD Device get_best_device(Slice<Device> devices);
 
 constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 {
