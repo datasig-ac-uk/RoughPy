@@ -23,7 +23,7 @@
 namespace rpy {
 namespace algebra {
 
-class ROUGHPY_ALGEBRA_EXPORT VectorData
+class ROUGHPY_ALGEBRA_EXPORT VectorData : public platform::SmallObjectBase
 {
     scalars::ScalarArray m_scalar_buffer{};
     KeyArray m_key_buffer{};
@@ -96,10 +96,26 @@ public:
 
 class VectorIterator;
 
+/**
+ * @class Vector
+ * @brief Class representing a mathematical vector
+ *
+ * This class represents a mathematical vector. It can be either dense or sparse,
+ * and holds the coefficients of the vector in a scalable way. The class provides
+ * various methods for performing vector arithmetic operations, such as addition,
+ * subtraction, scaling, and division.
+ *
+ * @note This class is designed to be used in conjunction with the ROUGHPY_ALGEBRA
+ * library.
+ */
 class ROUGHPY_ALGEBRA_EXPORT Vector
 {
-    VectorData m_data;
+    std::unique_ptr<VectorData> p_data;
     BasisPointer p_basis;
+    std::unique_ptr<VectorData> p_fibre = nullptr;
+
+
+
 
     friend class MutableVectorElement;
 
@@ -170,14 +186,14 @@ public:
     Vector(Vector&& other) noexcept;
 
     explicit Vector(BasisPointer basis, const scalars::ScalarType* scalar_type)
-        : m_data(scalar_type),
+        : p_data(new VectorData(scalar_type)),
           p_basis(std::move(basis))
     {}
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
-        : m_data(std::move(scalar_data), std::move(key_buffer)),
+        : p_data(new VectorData(std::move(scalar_data), std::move(key_buffer))),
           p_basis(std::move(basis))
     {}
 
@@ -187,17 +203,17 @@ public:
 
     RPY_NO_DISCARD const scalars::ScalarArray& scalars() const noexcept
     {
-        return m_data.scalars();
+        return p_data->scalars();
     }
     RPY_NO_DISCARD const KeyArray& keys() const noexcept
     {
-        return m_data.keys();
+        return p_data->keys();
     }
     RPY_NO_DISCARD scalars::ScalarArray& mut_scalars() noexcept
     {
-        return m_data.mut_scalars();
+        return p_data->mut_scalars();
     }
-    RPY_NO_DISCARD KeyArray& mut_keys() noexcept { return m_data.mut_keys(); }
+    RPY_NO_DISCARD KeyArray& mut_keys() noexcept { return p_data->mut_keys(); }
 
     /**
      * @brief Is the vector densely stored
@@ -205,7 +221,7 @@ public:
      */
     RPY_NO_DISCARD bool is_dense() const noexcept
     {
-        return m_data.key_buffer().empty();
+        return p_data->key_buffer().empty();
     }
 
     /**
@@ -214,7 +230,8 @@ public:
      */
     RPY_NO_DISCARD bool is_sparse() const noexcept
     {
-        return !m_data.key_buffer().empty();
+        return !p_data->key_buffer().empty();
+
     }
 
     RPY_NO_DISCARD VectorType vector_type() const noexcept
@@ -229,12 +246,12 @@ public:
 
     RPY_NO_DISCARD devices::Device device() const noexcept
     {
-        return m_data.scalar_buffer().device();
+        return p_data->scalar_buffer().device();
     }
 
     RPY_NO_DISCARD scalars::PackedScalarType scalar_type() const noexcept
     {
-        return m_data.scalars().type();
+        return p_data->scalars().type();
     }
 
     /**
