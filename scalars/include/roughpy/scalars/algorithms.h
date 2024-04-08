@@ -29,11 +29,8 @@ find(const ScalarArray& range, const Scalar& value)
 template <typename T>
 RPY_NO_DISCARD optional<dimn_t> find(const ScalarArray& range, const T& value)
 {
-    return find(range.buffer(), Scalar(range.type(), &value));
-    ;
+    return find(range, Scalar(range.type(), &value));
 }
-
-
 
 RPY_NO_DISCARD inline optional<dimn_t>
 lower_bound(const ScalarArray& range, const Scalar& value)
@@ -48,7 +45,7 @@ template <typename T>
 RPY_NO_DISCARD optional<dimn_t>
 lower_bound(const ScalarArray& range, const T& value)
 {
-    return lower_bound(range.buffer(), Scalar(range.type(), &value));
+    return lower_bound(range, Scalar(range.type(), &value));
 }
 
 RPY_NO_DISCARD inline optional<dimn_t>
@@ -64,7 +61,7 @@ template <typename T>
 RPY_NO_DISCARD optional<dimn_t>
 upper_bound(const ScalarArray& range, const T& value)
 {
-    return upper_bound(range.buffer(), Scalar(range.type(), &value));
+    return upper_bound(range, Scalar(range.type(), &value));
 }
 
 RPY_NO_DISCARD inline dimn_t
@@ -76,7 +73,7 @@ count(const ScalarArray& range, const Scalar& value)
 template <typename T>
 RPY_NO_DISCARD dimn_t count(const ScalarArray& range, const T& value)
 {
-    return count(range.buffer(), Scalar(range.type(), &value));
+    return count(range, Scalar(range.type(), &value));
 }
 
 RPY_NO_DISCARD inline bool
@@ -91,7 +88,7 @@ contains(const ScalarArray& range, const Scalar& value)
 template <typename T>
 RPY_NO_DISCARD bool contains(const ScalarArray& range, const T& value)
 {
-    return contains(range.buffer(), Scalar(range.type(), &value));
+    return contains(range, Scalar(range.type(), &value));
 }
 
 
