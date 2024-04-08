@@ -16,6 +16,8 @@ add_roughpy_component(Algebra
         src/augmented_basis.h
         src/basis.cpp
         src/basis_key.cpp
+        src/basis_key_type.cpp
+        src/basis_key_type.h
         src/context.cpp
         src/free_tensor.cpp
         src/hall_set_size.cpp
@@ -52,6 +54,7 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/context.h
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/free_tensor.h
+        include/roughpy/algebra/key_algorithms.h
         include/roughpy/algebra/key_array.h
         include/roughpy/algebra/key_scalar_array.h
         include/roughpy/algebra/key_scalar_stream.h

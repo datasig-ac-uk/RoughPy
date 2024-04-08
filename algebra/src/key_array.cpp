@@ -16,6 +16,10 @@ KeyArray::KeyArray(dimn_t size)
     : m_buffer(devices::get_host_device()->alloc(basis_key_type_info, size))
 {}
 
+KeyArray::KeyArray(devices::Device device, dimn_t size)
+    : m_buffer(device->alloc(basis_key_type_info, size))
+{}
+
 KeyArray::KeyArray(Slice<BasisKey> keys)
     : m_buffer(keys.data(), keys.size(), basis_key_type_info)
 {}

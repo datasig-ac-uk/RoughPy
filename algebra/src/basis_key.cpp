@@ -3,6 +3,7 @@
 //
 
 #include "basis_key.h"
+#include "basis_key_type.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -23,4 +24,13 @@ uint32_t BasisKeyInterface::dec_ref() const noexcept
             = m_ref_count.fetch_sub(1, std::memory_order::memory_order_release);
     RPY_DBG_ASSERT(count > 0);
     return count - 1;
+}
+
+
+
+
+
+const devices::Type* algebra::get_key_type() noexcept {
+    static const BasisKeyType bktype;
+    return &bktype;
 }

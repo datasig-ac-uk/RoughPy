@@ -12,6 +12,7 @@
 #include <roughpy/platform/alloc.h>
 
 #include <roughpy/scalars/devices/core.h>
+#include <roughpy/scalars/devices/type.h>
 
 #include "algebra_fwd.h"
 #include "roughpy_algebra_export.h"
@@ -23,7 +24,7 @@ namespace rpy {
 
 namespace algebra {
 
-enum class BasisKeyType
+enum class KeyType
 {
     Simple,
     Ordered,
@@ -34,7 +35,7 @@ enum class BasisKeyType
 class ROUGHPY_ALGEBRA_EXPORT BasisKeyInterface
     : public platform::SmallObjectBase
 {
-    mutable std::atomic_uint32_t m_ref_count;
+    mutable std::atomic_uint32_t m_ref_count = 0;
 
 public:
     virtual ~BasisKeyInterface();
@@ -106,34 +107,38 @@ public:
         return *this;
     }
 
-    constexpr operator bool() const noexcept { return m_data != 0; }
+    RPY_NO_DISCARD constexpr operator bool() const noexcept
+    {
+        return m_data != 0;
+    }
 
-    constexpr bool is_index() const noexcept
+    RPY_NO_DISCARD constexpr bool is_index() const noexcept
     {
         return (m_data & flag_mask) == 1;
     }
 
-    constexpr bool is_pointer() const noexcept
+    RPY_NO_DISCARD constexpr bool is_pointer() const noexcept
     {
         return (m_data & flag_mask) == 0;
     }
 
-    constexpr bool is_valid_pointer() const noexcept
+    RPY_NO_DISCARD constexpr bool is_valid_pointer() const noexcept
     {
         return (m_data & valid_pointer_mask) != 0;
     }
 
-    constexpr dimn_t get_index() const noexcept
+    RPY_NO_DISCARD constexpr dimn_t get_index() const noexcept
     {
         RPY_DBG_ASSERT(is_index());
         return static_cast<dimn_t>(m_data >> index_offset);
     }
 
-    const BasisKeyInterface* get_pointer() const noexcept
+    RPY_NO_DISCARD const BasisKeyInterface* get_pointer() const noexcept
     {
         RPY_DBG_ASSERT(is_valid_pointer());
         return bit_cast<const BasisKeyInterface*>(m_data);
     }
+
 };
 
 static constexpr devices::TypeInfo basis_key_type_info{
@@ -142,6 +147,11 @@ static constexpr devices::TypeInfo basis_key_type_info{
         static_cast<uint8_t>(alignof(algebra::BasisKey)),
         1U
 };
+
+RPY_NO_DISCARD
+const devices::Type* get_key_type() noexcept;
+
+
 
 }// namespace algebra
 }// namespace rpy
