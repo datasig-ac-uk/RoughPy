@@ -37,7 +37,7 @@ class TypedReference : public Reference
 {
 public:
     TypedReference(T& t)
-        : Reference(const_cast<remove_cv_t<T>>(std::addressof(t)))
+        : Reference(const_cast<remove_cv_t<T>*>(std::addressof(t)))
     {}
 
     operator add_const_t<T>&() const { return *value<add_const_t<T>>(); }
