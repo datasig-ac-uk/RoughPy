@@ -4,10 +4,28 @@
 
 #include "vector.h"
 
+#include <roughpy/scalars/algorithms.h>
+#include "key_algorithms.h"
+
 using namespace rpy;
 using namespace rpy::algebra;
 
-void VectorData::reserve(dimn_t dim) {}
+void VectorData::reserve(dimn_t dim) {
+    if (dim <= capacity()) {
+        return;
+    }
+
+    auto new_buffer = m_scalar_buffer.type()->allocate(dim);
+    scalars::algorithms::copy(new_buffer, m_scalar_buffer);
+
+    if (!m_key_buffer.empty()) {
+        KeyArray new_key_buffer(m_key_buffer.device(), dim);
+        algorithms::copy(new_key_buffer, m_key_buffer);
+        std::swap(m_key_buffer, new_key_buffer);
+    }
+
+    std::swap(m_scalar_buffer, new_buffer);
+}
 
 void VectorData::resize(dimn_t dim)
 {
