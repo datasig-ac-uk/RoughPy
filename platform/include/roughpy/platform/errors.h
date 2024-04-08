@@ -9,7 +9,6 @@
 #include <roughpy/core/types.h>
 
 #include "roughpy_platform_export.h"
-#include <boost/stacktrace.hpp>
 
 /*
  * Check macro definition.
@@ -26,22 +25,33 @@ namespace rpy {
 namespace errors {
 
 ROUGHPY_PLATFORM_EXPORT
-string format_error_message(string_view user_message, const char* filename, int lineno, const char* func, const boost::stacktrace::stacktrace& st);
+string format_error_message(
+        string_view user_message,
+        const char* filename,
+        int lineno,
+        const char* func
+);
 
 template <typename E>
 RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
-        const string& msg, const char* filename, int lineno, const char* func
+        const string& msg,
+        const char* filename,
+        int lineno,
+        const char* func
 )
 {
-    throw E(format_error_message(msg, filename, lineno, func, boost::stacktrace::stacktrace()));
+    throw E(format_error_message(msg, filename, lineno, func));
 }
 
 template <typename E>
 RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
-        const char* msg, const char* filename, int lineno, const char* func
+        const char* msg,
+        const char* filename,
+        int lineno,
+        const char* func
 )
 {
-    throw E(format_error_message(msg, filename, lineno, func, boost::stacktrace::stacktrace()));
+    throw E(format_error_message(msg, filename, lineno, func));
 }
 
 }// namespace errors
@@ -53,7 +63,10 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
     do {                                                                       \
         if (RPY_UNLIKELY(!(EXPR))) {                                           \
             ::rpy::errors::throw_exception<TYPE>(                              \
-                    MSG, RPY_FILE_NAME, __LINE__, RPY_FUNC_NAME                \
+                    MSG,                                                       \
+                    RPY_FILE_NAME,                                             \
+                    __LINE__,                                                  \
+                    RPY_FUNC_NAME                                              \
             );                                                                 \
         }                                                                      \
     } while (0)
@@ -73,7 +86,10 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
 
 #define RPY_THROW_2(EXC_TYPE, MSG)                                             \
     ::rpy::errors::throw_exception<EXC_TYPE>(                                  \
-            MSG, __FILE__, __LINE__, RPY_FUNC_NAME                             \
+            MSG,                                                               \
+            __FILE__,                                                          \
+            __LINE__,                                                          \
+            RPY_FUNC_NAME                                                      \
     )
 #define RPY_THROW_1(MSG) RPY_THROW_2(std::runtime_error, MSG)
 
@@ -82,6 +98,5 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
 #define RPY_THROW_CNT(...) RPY_THROW_CNT_IMPL(__VA_ARGS__, 2, 1, 0)
 #define RPY_THROW(...)                                                         \
     RPY_INVOKE_VA(RPY_THROW_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
-
 
 #endif// ROUGHPY_PLATFORM_ERRORS_H
