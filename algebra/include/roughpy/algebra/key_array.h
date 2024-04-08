@@ -130,6 +130,8 @@ public:
 
     explicit KeyArray(dimn_t size);
 
+    explicit KeyArray(devices::Device device, dimn_t size);
+
     ~KeyArray();
 
     RPY_NO_DISCARD bool empty() const noexcept { return m_buffer.empty(); }
