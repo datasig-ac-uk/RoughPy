@@ -11,7 +11,7 @@
 namespace rpy {
 namespace devices {
 
-class APRationalType : public FundamentalType<scalars::ArbitraryPrecisionRational> {
+class RPY_LOCAL APRationalType : public FundamentalType<scalars::ArbitraryPrecisionRational> {
 
 public:
 
