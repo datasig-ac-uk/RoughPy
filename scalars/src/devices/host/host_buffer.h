@@ -79,7 +79,7 @@ public:
     const void* ptr() const noexcept override;
 
     Event
-    to_device(Buffer& dst, const Device& device, Queue& queue) override;
+    to_device(Buffer& dst, const Device& device, Queue& queue) const override;
 
     Buffer map_mut(dimn_t size, dimn_t offset) override;
     Buffer map(dimn_t size, dimn_t offset) const override;

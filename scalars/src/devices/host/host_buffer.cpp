@@ -67,13 +67,15 @@ CPUBuffer::CPUBuffer(rpy::dimn_t size, rpy::devices::TypeInfo info)
 }
 
 CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, TypeInfo info)
-    : base_t(get_type(info)), raw_buffer{raw_ptr, size},
+    : base_t(get_type(info)),
+      raw_buffer{raw_ptr, size},
       m_flags(),
       m_info(info)
 {}
 
 CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, TypeInfo info)
-    : base_t(get_type(info)), raw_buffer{const_cast<void*>(raw_ptr), size},
+    : base_t(get_type(info)),
+      raw_buffer{const_cast<void*>(raw_ptr), size},
       m_flags(IsConst),
       m_info(info)
 {}
@@ -113,6 +115,7 @@ Device CPUBuffer::device() const noexcept { return CPUDeviceHandle::get(); }
 DeviceType CPUBuffer::type() const noexcept { return DeviceType::CPU; }
 const void* CPUBuffer::ptr() const noexcept { return raw_buffer.ptr; }
 Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
+        const
 {
     if (device == this->device()) {
         /*

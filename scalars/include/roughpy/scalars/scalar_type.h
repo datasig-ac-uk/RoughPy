@@ -75,7 +75,6 @@ public:
             RingCharacteristics characteristics
     );
 
-public:
     virtual ~ScalarType();
 
     RPY_NO_DISCARD guard_type lock() const noexcept

@@ -156,7 +156,7 @@ OCLBuffer::ref_count() const noexcept
 }
 DeviceType OCLBuffer::type() const noexcept { return DeviceType::OpenCL; }
 const void* OCLBuffer::ptr() const noexcept { return &m_buffer; }
-Event OCLBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
+Event OCLBuffer::to_device(Buffer& dst, const Device& device, Queue& queue) const
 {
     if (device == m_device) {
         dst = clone_cast(this);
