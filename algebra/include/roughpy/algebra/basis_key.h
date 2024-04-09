@@ -101,9 +101,15 @@ public:
         : m_data((static_cast<data_type>(index) << index_offset) | flag_mask)
     {}
 
-    BasisKey& operator=(std::nullptr_t) noexcept
+    constexpr BasisKey& operator=(std::nullptr_t) noexcept
     {
         m_data = 0;
+        return *this;
+    }
+
+    constexpr BasisKey& operator=(dimn_t index) noexcept
+    {
+        m_data = (static_cast<data_type>(index) << index_offset) | flag_mask;
         return *this;
     }
 

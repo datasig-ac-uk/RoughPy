@@ -31,6 +31,12 @@ class ROUGHPY_ALGEBRA_EXPORT VectorData : public platform::SmallObjectBase
 
 public:
     VectorData() = default;
+
+    explicit VectorData(scalars::PackedScalarType type, dimn_t size)
+        : m_scalar_buffer(type, size),
+          m_size(size)
+    {}
+
     explicit VectorData(scalars::ScalarArray&& scalars, KeyArray&& keys)
         : m_scalar_buffer(std::move(scalars)),
           m_key_buffer(std::move(keys)),
@@ -100,22 +106,19 @@ class VectorIterator;
  * @class Vector
  * @brief Class representing a mathematical vector
  *
- * This class represents a mathematical vector. It can be either dense or sparse,
- * and holds the coefficients of the vector in a scalable way. The class provides
- * various methods for performing vector arithmetic operations, such as addition,
- * subtraction, scaling, and division.
+ * This class represents a mathematical vector. It can be either dense or
+ * sparse, and holds the coefficients of the vector in a scalable way. The class
+ * provides various methods for performing vector arithmetic operations, such as
+ * addition, subtraction, scaling, and division.
  *
- * @note This class is designed to be used in conjunction with the ROUGHPY_ALGEBRA
- * library.
+ * @note This class is designed to be used in conjunction with the
+ * ROUGHPY_ALGEBRA library.
  */
 class ROUGHPY_ALGEBRA_EXPORT Vector
 {
-    std::unique_ptr<VectorData> p_data;
-    BasisPointer p_basis;
+    std::unique_ptr<VectorData> p_data = nullptr;
+    BasisPointer p_basis = nullptr;
     std::unique_ptr<VectorData> p_fibre = nullptr;
-
-
-
 
     friend class MutableVectorElement;
 
@@ -164,11 +167,14 @@ protected:
      * @brief Get the current size of the buffer
      * @return
      */
-    RPY_NO_DISCARD dimn_t buffer_size() const noexcept { return m_data.size(); }
+    RPY_NO_DISCARD dimn_t buffer_size() const noexcept
+    {
+        return p_data->size();
+    }
 
     RPY_NO_DISCARD bool fast_is_zero() const noexcept
     {
-        return p_basis == nullptr || m_data.empty();
+        return p_basis == nullptr || p_data == nullptr || p_data->empty();
     }
 
     void set_zero();
@@ -231,7 +237,6 @@ public:
     RPY_NO_DISCARD bool is_sparse() const noexcept
     {
         return !p_data->key_buffer().empty();
-
     }
 
     RPY_NO_DISCARD VectorType vector_type() const noexcept
@@ -251,6 +256,7 @@ public:
 
     RPY_NO_DISCARD scalars::PackedScalarType scalar_type() const noexcept
     {
+        RPY_DBG_ASSERT(p_data != nullptr);
         return p_data->scalars().type();
     }
 
@@ -301,7 +307,7 @@ public:
     RPY_NO_DISCARD const_iterator begin() const noexcept;
     RPY_NO_DISCARD const_iterator end() const noexcept;
 
-    optional<dimn_t> get_index(BasisKey key) const noexcept;
+    RPY_NO_DISCARD optional<dimn_t> get_index(BasisKey key) const noexcept;
 
     RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key) const
     {

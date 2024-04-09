@@ -34,6 +34,8 @@ public:
     static constexpr string_view basis_id = "lie_hall_basis";
 
     dimn_t max_dimension() const noexcept override;
+    RPY_NO_DISCARD dimn_t dense_dimension(dimn_t size) const override;
+    RPY_NO_DISCARD dimn_t dimension_to_degree(deg_t degree) const override;
     bool has_key(BasisKey key) const noexcept override;
     string to_string(BasisKey key) const override;
     bool equals(BasisKey k1, BasisKey k2) const override;

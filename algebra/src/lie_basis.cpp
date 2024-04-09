@@ -8,6 +8,7 @@
 #include "hall_word.h"
 
 #include <mutex>
+#include <roughpy/core/ranges.h>
 #include <roughpy/core/container/map.h>
 #include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/container/vector.h>
@@ -37,6 +38,11 @@ public:
     std::lock_guard<std::recursive_mutex> lock() const noexcept
     {
         return std::lock_guard<std::recursive_mutex>(m_lock);
+    }
+
+    RPY_NO_DISCARD const containers::Vec<dimn_t>& sizes() const noexcept
+    {
+        return m_degree_sizes;
     }
 
     RPY_NO_DISCARD dimn_t size(deg_t deg) const noexcept
@@ -247,4 +253,22 @@ BasisComparison algebra::LieBasis::compare(BasisPointer other) const noexcept
     }
 
     return BasisComparison::IsNotCompatible;
+}
+
+dimn_t LieBasis::dense_dimension(dimn_t size) const noexcept
+{
+    const auto& sizes = p_hallset->sizes();
+    auto begin = sizes.begin();
+    auto end = sizes.end();
+    auto pos = ranges::lower_bound(begin, end, size);
+    RPY_CHECK(pos != end);
+    return *pos;
+}
+dimn_t LieBasis::dimension_to_degree(deg_t degree) const
+{
+    const auto& sizes = p_hallset->sizes();
+    auto begin = sizes.begin();
+    auto end = sizes.end();
+    auto pos = ranges::lower_bound(begin, end, 0);
+    return 0;
 }

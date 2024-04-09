@@ -28,10 +28,11 @@ public:
     static constexpr string_view basis_id = "tensor_basis";
 
     dimn_t max_dimension() const noexcept override;
-    virtual bool has_key(BasisKey key) const noexcept override;
-    virtual string to_string(BasisKey key) const override;
-    virtual bool equals(BasisKey k1, BasisKey k2) const override;
-    virtual hash_t hash(BasisKey k1) const override;
+    RPY_NO_DISCARD dimn_t dense_dimension(dimn_t size) const override;
+    bool has_key(BasisKey key) const noexcept override;
+    string to_string(BasisKey key) const override;
+    bool equals(BasisKey k1, BasisKey k2) const override;
+    hash_t hash(BasisKey k1) const override;
 
     bool less(BasisKey k1, BasisKey k2) const override;
     dimn_t to_index(BasisKey key) const override;

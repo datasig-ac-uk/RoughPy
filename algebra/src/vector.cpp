@@ -3,8 +3,11 @@
 //
 
 #include "vector.h"
+#include "roughpy/core/container/vector.h"
+
 #include "basis.h"
 #include "basis_key.h"
+#include "key_algorithms.h"
 #include "mutable_vector_element.h"
 #include "vector_iterator.h"
 
@@ -166,9 +169,81 @@ optional<dimn_t> Vector::get_index(rpy::algebra::BasisKey key) const noexcept
     return {};
 }
 
-void Vector::make_dense() {}
+void Vector::make_dense()
+{
+    if (is_dense()) { return; }
+    RPY_CHECK(p_basis->is_ordered());
 
-void Vector::make_sparse() {}
+    const auto scalar_device = p_data->scalar_buffer().device();
+    const auto key_device = p_data->key_buffer().device();
+
+    auto dense_data = std::make_unique<VectorData>(scalar_type());
+
+    dimn_t dimension;
+    if (key_device->is_host()) {
+        /*
+         * If we're on host, then the keys might not be an array of indices, so
+         * we need to do the transformation into indices first, then look for
+         * the maximum value.
+         */
+        dimension = 0;
+        dimn_t index;
+        for (auto& key : p_data->mut_keys().as_mut_slice()) {
+            index = p_basis->to_index(key);
+            if (index > dimension) { dimension = index; }
+            key = BasisKey(index);
+        }
+
+    } else {
+        /*
+         * On device, all of the key should be indices so we can just use the
+         * algorithms max to find the maximum index that exists in the vector.
+         */
+        dimension = algorithms::max(p_data->keys());
+    }
+
+    auto resize_dim = p_basis->dense_dimension(dimension);
+
+    dense_data->resize(resize_dim);
+
+    /*
+     * We have already made sure that the buffer only contains indices so we can
+     * call a kernel to write the data into the dense array. The only remaining
+     * tricky part is to make sure the keys live on the same device as the
+     * scalars. We can fix this by copying the data to the device if necessary.
+     */
+
+    devices::Buffer key_buffer;
+    if (scalar_device == key_device) {
+        key_buffer = p_data->key_buffer();
+    } else {
+        p_data->mut_key_buffer().to_device(key_buffer, scalar_device);
+    }
+
+    auto kernel = get_kernel(OperationType::BinaryInplace, "sparse_write", "");
+    auto params = get_kernel_launch_params();
+
+    kernel(params,
+           dense_data->mut_scalar_buffer(),
+           key_buffer,
+           p_data->scalar_buffer());
+}
+
+void Vector::make_sparse()
+{
+    if (is_sparse()) { return; }
+
+    KeyArray keys(dimension());
+    {
+        auto key_slice = keys.as_mut_slice();
+        for (auto& [k, i] : ranges::enumerate(key_slice)) {
+            k = i;
+        }
+    }
+
+
+    p_data->mut_keys() = std::move(keys);
+}
 
 Vector::Vector() = default;
 
@@ -182,14 +257,12 @@ Vector::Vector(const Vector& other)
 Vector::Vector(Vector&& other) noexcept
     : p_data(std::move(other.p_data)),
       p_basis(std::move(other.p_basis))
-{
-
-}
+{}
 
 Vector& Vector::operator=(const Vector& other)
 {
     if (&other != this) {
-        this->~Vector();
+        *p_data = VectorData(*other.p_data);
         p_basis = other.p_basis;
     }
     return *this;
@@ -198,7 +271,6 @@ Vector& Vector::operator=(const Vector& other)
 Vector& Vector::operator=(Vector&& other) noexcept
 {
     if (&other != this) {
-        this->~Vector();
         p_basis = std::move(other.p_basis);
         p_data = std::move(other.p_data);
     }
@@ -511,15 +583,17 @@ void Vector::apply_binary_kernel(
 
 Vector Vector::uminus() const
 {
+    Vector result(p_basis, scalar_type());
     auto kernel = get_kernel(Unary, "uminus", "");
-    scalars::ScalarArray out_data(scalar_type(), dimension());
-    KeyArray out_keys(p_data->keys());
+    result.p_data = std::make_unique<VectorData>(scalar_type(), dimension());
+    result.p_data->mut_keys() = p_data->keys();
 
     auto launch_params = get_kernel_launch_params();
 
-    kernel(launch_params, out_data.mut_buffer(), p_data->scalar_buffer());
-
-    return {p_basis, std::move(out_data), std::move(out_keys)};
+    kernel(launch_params,
+           result.p_data->mut_scalar_buffer(),
+           p_data->scalar_buffer());
+    return result;
 }
 
 Vector Vector::add(const Vector& other) const
@@ -538,11 +612,10 @@ Vector Vector::sub(const Vector& other) const
 
 Vector Vector::left_smul(const scalars::Scalar& other) const
 {
-    const auto stype = scalar_type();
 
-    Vector result(p_basis, stype);
-
+    Vector result(p_basis, scalar_type());
     if (!other.is_zero()) {
+        const auto stype = scalar_type();
         auto kernel = get_kernel(Unary, "left_scalar_multiply", "");
         auto params = get_kernel_launch_params();
 
@@ -562,10 +635,10 @@ Vector Vector::left_smul(const scalars::Scalar& other) const
 
 Vector Vector::right_smul(const scalars::Scalar& other) const
 {
-    const auto stype = scalar_type();
-    Vector result(p_basis, stype);
+    Vector result(p_basis, scalar_type());
 
     if (!other.is_zero()) {
+        const auto stype = scalar_type();
         auto kernel = get_kernel(Unary, "right_scalar_multiply", "");
         auto params = get_kernel_launch_params();
 
@@ -584,7 +657,6 @@ Vector Vector::right_smul(const scalars::Scalar& other) const
 
 Vector Vector::sdiv(const scalars::Scalar& other) const
 {
-
     if (other.is_zero()) { throw std::domain_error("division by zero"); }
 
     scalars::Scalar recip(scalar_type(), 1);
@@ -688,6 +760,7 @@ Vector& Vector::sub_scal_div(const Vector& other, const scalars::Scalar& scalar)
 bool Vector::operator==(const Vector& other) const
 {
     if (&other == this) { return true; }
+
     if (p_basis != other.p_basis || scalar_type() != other.scalar_type()) {
         return false;
     }

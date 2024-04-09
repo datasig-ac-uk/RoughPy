@@ -6,6 +6,7 @@
 #include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
+#include <roughpy/core/ranges.h>
 
 #include "tensor_word.h"
 #include <roughpy/platform/errors.h>
@@ -33,6 +34,15 @@ TensorBasis::TensorBasis(rpy::deg_t width, rpy::deg_t depth)
 }
 
 dimn_t TensorBasis::max_dimension() const noexcept { return m_max_dimension; }
+
+dimn_t TensorBasis::dense_dimension(dimn_t size) const
+{
+    const auto end = m_degree_sizes.end();
+    auto pos = ranges::lower_bound(m_degree_sizes.begin(), end, size);
+    RPY_CHECK(pos != end);
+    return *pos;
+}
+
 namespace {
 
 deg_t index_to_degree(

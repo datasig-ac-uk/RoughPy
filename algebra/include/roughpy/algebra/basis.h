@@ -244,6 +244,8 @@ public:
      */
     RPY_NO_DISCARD virtual dimn_t max_dimension() const noexcept;
 
+    RPY_NO_DISCARD virtual dimn_t dense_dimension(dimn_t size) const;
+
     /*
      * Ordered basis functions
      */
