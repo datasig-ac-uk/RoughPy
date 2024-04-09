@@ -373,7 +373,19 @@ ScalarArray ScalarArray::borrow_mut()
     return ScalarArray(p_type, devices::Buffer(m_buffer));
 }
 
+ScalarArray ScalarArray::to_device(devices::Device device) const
+{
+    if (device == this->device()) {
+        return *this;
+    }
+
+    auto new_buffer = device->alloc(type_info(), this->size());
+    m_buffer.to_device(new_buffer, device);
+    return {p_type, std::move(new_buffer)};
+}
+
 #define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME ScalarArray
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>
+

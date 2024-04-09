@@ -147,6 +147,10 @@ public:
     ScalarArray borrow() const;
     ScalarArray borrow_mut();
 
+
+    ScalarArray to_device(devices::Device device) const;
+
+
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 

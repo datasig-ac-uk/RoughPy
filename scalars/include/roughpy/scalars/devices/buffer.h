@@ -61,7 +61,7 @@ public:
     RPY_NO_DISCARD virtual dimn_t bytes() const;
 
     RPY_NO_DISCARD virtual Event
-    to_device(Buffer& dst, const Device& device, Queue& queue);
+    to_device(Buffer& dst, const Device& device, Queue& queue) const;
 
     RPY_NO_DISCARD virtual Buffer map_mut(dimn_t size, dimn_t offset);
     RPY_NO_DISCARD virtual Buffer map(dimn_t size, dimn_t offset) const;
@@ -149,9 +149,9 @@ public:
     RPY_NO_DISCARD Buffer slice(dimn_t offset, dimn_t size);
     RPY_NO_DISCARD Buffer slice(dimn_t offset, dimn_t size) const;
 
-    void to_device(Buffer& dst, const Device& device);
+    void to_device(Buffer& dst, const Device& device) const;
 
-    Event to_device(Buffer& dst, const Device& device, Queue& queue);
+    Event to_device(Buffer& dst, const Device& device, Queue& queue) const;
 
     RPY_NO_DISCARD Buffer map(dimn_t size = 0, dimn_t offset = 0) const;
     RPY_NO_DISCARD Buffer map(dimn_t size = 0, dimn_t offset = 0);

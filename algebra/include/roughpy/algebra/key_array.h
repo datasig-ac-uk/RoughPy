@@ -173,6 +173,8 @@ public:
     RPY_NO_DISCARD KeyArray view() const { return KeyArray(m_buffer.map()); }
     RPY_NO_DISCARD KeyArray mut_view() { return KeyArray(m_buffer.map()); }
 
+    RPY_NO_DISCARD KeyArray to_device(devices::Device device) const;
+
     template <typename ViewFn>
     friend constexpr auto
     operator|(const KeyArray& array, views::view_closure<ViewFn>& view)

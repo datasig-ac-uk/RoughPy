@@ -59,3 +59,9 @@ BasisKey& KeyArray::operator[](dimn_t index)
 
     return m_buffer.as_mut_slice<BasisKey>()[index];
 }
+KeyArray KeyArray::to_device(devices::Device device) const
+{
+    devices::Buffer new_buffer = device->alloc(basis_key_type_info, this->size());
+    m_buffer.to_device(new_buffer, device);
+    return KeyArray(std::move(new_buffer));
+}

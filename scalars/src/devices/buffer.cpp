@@ -124,14 +124,14 @@ static inline bool check_device_compatibility(Buffer& dst, const Device& device)
     return result;
 }
 
-void Buffer::to_device(Buffer& dst, const Device& device)
+void Buffer::to_device(Buffer& dst, const Device& device) const
 {
     if (impl() != nullptr && check_device_compatibility(dst, device)) {
         auto queue = device->get_default_queue();
         impl()->to_device(dst, device, queue).wait();
     }
 }
-Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue)
+Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue) const
 {
     if (impl() != nullptr && check_device_compatibility(dst, device)) {
         return impl()->to_device(dst, device, queue);

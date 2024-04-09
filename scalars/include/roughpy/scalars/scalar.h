@@ -415,6 +415,24 @@ public:
      */
     void* mut_pointer();
 
+    /**
+     * @brief Determines whether the Scalar object is mutable or not.
+     *
+     * @return    true if the Scalar object is mutable (non-const), false
+     * otherwise.
+     *
+     * @note The mutability of a Scalar object is determined by the value of its
+     * internal storage model, namely the ScalarContentType. If the
+     * ScalarContentType is set to IsConst, then the object is considered
+     * immutable (const). If the ScalarContentType is not set to IsConst, then
+     * the object is considered mutable (non-const). This method returns true
+     * for mutable objects and false for immutable objects.
+     *
+     * @note This method does not modify the internal state of the Scalar
+     * object.
+     *
+     * @see ScalarContentType
+     */
     bool is_mutable() const noexcept;
 
     /**
@@ -433,7 +451,21 @@ public:
      */
     devices::TypeInfo type_info() const noexcept;
 
-
+    /**
+     * @brief Changes the type of the Scalar object.
+     *
+     * This method allows changing the type of the Scalar object to a new type
+     * specified by the provided new_type_info. The method first creates a
+     * temporary Scalar object, tmp, with the new_type_info. Then, it converts
+     * the content of the original Scalar object to the new type using
+     * dtl::scalar_convert_copy method. After the conversion, it destroys the
+     * original Scalar object using the destructor and constructs a new Scalar
+     * object of the new type in its place.
+     *
+     * @param new_type_info The PackedScalarType representing the new type
+     * information.
+     *
+     */
     void change_type(PackedScalarType new_type_info)
     {
         Scalar tmp(new_type_info);
@@ -468,9 +500,17 @@ public:
     Scalar& operator*=(const Scalar& other);
     Scalar& operator/=(const Scalar& other);
 
-
-    RPY_NO_DISCARD
-    Scalar reciprocal() const;
+    /**
+     * @brief Returns the reciprocal value of the Scalar.
+     *
+     * This method calculates the reciprocal value of the Scalar and returns it.
+     * The reciprocal of a number is defined as 1 divided by the number.
+     *
+     * @note This method does not modify the original Scalar value.
+     *
+     * @return The reciprocal value of the Scalar.
+     */
+    RPY_NO_DISCARD Scalar reciprocal() const;
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
