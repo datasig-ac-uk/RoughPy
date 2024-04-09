@@ -50,7 +50,6 @@ enum class ScalarArrayStorageModel
 
 }
 
-
 /**
  * @class ScalarArray
  * @brief Represents an array of scalar values.
@@ -81,7 +80,6 @@ public:
     ScalarArray(PackedScalarType type, const void* data, dimn_t size);
     ScalarArray(PackedScalarType type, void* data, dimn_t size);
     ScalarArray(PackedScalarType type, devices::Buffer&& buffer);
-
 
     template <typename T>
     explicit ScalarArray(Slice<T> data);
@@ -134,7 +132,7 @@ public:
     RPY_NO_DISCARD const devices::Buffer& buffer() const;
     RPY_NO_DISCARD devices::Buffer& mut_buffer();
 
-    Scalar operator[](dimn_t i) const;
+    RPY_NO_DISCARD Scalar operator[](dimn_t i) const;
     RPY_NO_DISCARD Scalar operator[](dimn_t i);
 
     RPY_NO_DISCARD ScalarArray operator[](SliceIndex index);
@@ -144,12 +142,10 @@ public:
 
     RPY_NO_DISCARD ScalarArray mut_view() { return {p_type, m_buffer.map()}; }
 
-    ScalarArray borrow() const;
-    ScalarArray borrow_mut();
+    RPY_NO_DISCARD ScalarArray borrow() const;
+    RPY_NO_DISCARD ScalarArray borrow_mut();
 
-
-    ScalarArray to_device(devices::Device device) const;
-
+    RPY_NO_DISCARD ScalarArray to_device(devices::Device device) const;
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
