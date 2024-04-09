@@ -12,6 +12,7 @@
 #include "vector_iterator.h"
 
 #include <roughpy/core/ranges.h>
+#include <roughpy/scalars/algorithms.h>
 #include <roughpy/scalars/devices/core.h>
 #include <roughpy/scalars/scalar.h>
 
@@ -105,10 +106,11 @@ bool Vector::is_zero() const noexcept
 {
     if (fast_is_zero()) { return true; }
 
-    auto kernel = get_kernel(Unary, "all_equal", "");
-    auto params = get_kernel_launch_params();
+    // TODO: This won't work if the scalars are not ordered
+    const auto max = scalars::algorithms::max(p_data->scalars());
+    const auto min = scalars::algorithms::min(p_data->scalars());
 
-    return true;
+    return max.is_zero() && min.is_zero();
 }
 
 void Vector::set_zero()
@@ -236,11 +238,8 @@ void Vector::make_sparse()
     KeyArray keys(dimension());
     {
         auto key_slice = keys.as_mut_slice();
-        for (auto& [k, i] : ranges::enumerate(key_slice)) {
-            k = i;
-        }
+        for (auto& [k, i] : ranges::enumerate(key_slice)) { k = i; }
     }
-
 
     p_data->mut_keys() = std::move(keys);
 }
