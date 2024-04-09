@@ -70,6 +70,8 @@ void Vector::resize_dim(rpy::dimn_t dim)
     const auto type = scalar_type();
     RPY_CHECK(type.is_pointer());
 
+    // TODO: Replace this with a better implementation.
+
     auto new_buffer = type->allocate(dim);
     type->move_buffer(new_buffer, scalars());
     std::swap(mut_scalars(), new_buffer);
@@ -98,9 +100,18 @@ void Vector::resize_degree(rpy::deg_t degree)
     resize_dim(new_size);
 }
 
-dimn_t Vector::dimension() const noexcept { return p_data->size(); }
+dimn_t Vector::dimension() const noexcept
+{
+    RPY_DBG_ASSERT(p_data != nullptr);
+    return p_data->size();
+}
 
-dimn_t Vector::size() const noexcept { return p_data->size(); }
+dimn_t Vector::size() const noexcept
+{
+    RPY_DBG_ASSERT(p_data != nullptr);
+    return p_data->size();
+}
+
 
 bool Vector::is_zero() const noexcept
 {
@@ -119,10 +130,7 @@ void Vector::set_zero()
         mut_scalars() = scalars::ScalarArray(scalar_type());
         mut_keys() = KeyArray();
     } else {
-        auto kernel = get_kernel(UnaryInplace, "set_scalar", "");
-        auto params = get_kernel_launch_params();
-
-        kernel(params, mut_scalars().mut_buffer(), 0);
+        scalars::algorithms::fill(mut_scalars(), 0);
     }
 }
 
