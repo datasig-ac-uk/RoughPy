@@ -67,7 +67,7 @@ Event Kernel::launch_async_in_queue(
         Queue& queue,
         const KernelLaunchParams& params,
         Slice<KernelArgument> args
-)
+) const
 {
     if (!impl() || !params.has_work()) { return Event(); }
 
@@ -96,14 +96,14 @@ EventStatus Kernel::launch_sync_in_queue(
         Queue& queue,
         const KernelLaunchParams& params,
         Slice<KernelArgument> args
-)
+) const
 {
     return impl()->launch_kernel_sync(queue, params, args);
 }
 Event Kernel::launch_async(
         const KernelLaunchParams& params,
         Slice<KernelArgument> args
-)
+) const
 {
     auto queue = device()->get_default_queue();
     return launch_async_in_queue(queue, params, args);
@@ -111,7 +111,7 @@ Event Kernel::launch_async(
 EventStatus Kernel::launch_sync(
         const KernelLaunchParams& params,
         Slice<KernelArgument> args
-)
+) const
 {
     auto queue = device()->get_default_queue();
     return launch_sync_in_queue(queue, params, args);

@@ -91,13 +91,13 @@ public:
             Queue& queue,
             const KernelLaunchParams& params,
             Slice<KernelArgument> args
-    );
+    ) const;
 
     virtual EventStatus launch_kernel_sync(
             Queue& queue,
             const KernelLaunchParams& params,
             Slice<KernelArgument> args
-    );
+    ) const;
 };
 
 #ifdef RPY_PLATFORM_WINDOWS
@@ -137,29 +137,29 @@ public:
             Queue& queue,
             const KernelLaunchParams& params,
             Slice<KernelArgument> args
-    );
+    ) const;
 
     RPY_NO_DISCARD EventStatus launch_sync_in_queue(
             Queue& queue,
             const KernelLaunchParams& params,
             Slice<KernelArgument> args
-    );
+    ) const;
 
     RPY_NO_DISCARD Event
-    launch_async(const KernelLaunchParams& params, Slice<KernelArgument> args);
+    launch_async(const KernelLaunchParams& params, Slice<KernelArgument> args) const;
 
     RPY_NO_DISCARD EventStatus
-    launch_sync(const KernelLaunchParams& params, Slice<KernelArgument> args);
+    launch_sync(const KernelLaunchParams& params, Slice<KernelArgument> args) const;
 
     RPY_NO_DISCARD static std::vector<bitmask_t>
     construct_work_mask(const KernelLaunchParams& params);
 
     template <typename... Args>
-    void operator()(const KernelLaunchParams& params, Args&&... args);
+    void operator()(const KernelLaunchParams& params, Args&&... args) const;
 };
 
 template <typename... Args>
-void Kernel::operator()(const KernelLaunchParams& params, Args&&... args)
+void Kernel::operator()(const KernelLaunchParams& params, Args&&... args) const
 {
     KernelArgument kargs[] = {KernelArgument(args)...};
     auto status = launch_sync(params, kargs);

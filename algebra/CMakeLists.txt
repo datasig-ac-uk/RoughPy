@@ -11,6 +11,7 @@ include(GenerateExportHeader)
 
 add_roughpy_component(Algebra
         SOURCES
+        src/kernels/kernel.h
         src/algebra.cpp
         src/augmented_basis.cpp
         src/augmented_basis.h

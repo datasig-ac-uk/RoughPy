@@ -87,6 +87,7 @@ add_roughpy_component(Scalars
         src/devices/host/host_kernel.h
         src/devices/host/host_queue.cpp
         src/devices/host/host_queue.h
+        src/devices/host/kernel_registry.h
         src/devices/opencl/ocl_buffer.cpp
         src/devices/opencl/ocl_buffer.h
         src/devices/opencl/ocl_decls.h

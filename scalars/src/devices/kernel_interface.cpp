@@ -46,7 +46,7 @@ Event KernelInterface::launch_kernel_async(
         Queue& queue,
         const KernelLaunchParams& params,
         Slice<KernelArgument> args
-)
+) const
 {
     return Event();
 }
@@ -55,7 +55,7 @@ EventStatus KernelInterface::launch_kernel_sync(
         Queue& queue,
         const rpy::devices::KernelLaunchParams& params,
         Slice<KernelArgument> args
-)
+) const
 {
     auto event = launch_kernel_async(queue, params, args);
     event.wait();
