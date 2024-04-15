@@ -1,4 +1,5 @@
 Sam Morley for the core RoughPy components
+Philippa Rubin for documentation
 Terry Lyons for core features and design
 
 RoughPy is substantially based on LibRDE (Terry Lyons, Stephen Buckley, Djalil Chafai, Greg Gyurkó,

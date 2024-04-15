@@ -2,9 +2,6 @@
   "name" : "roughpy",
   "version-string" : "1.0.0",
   "dependencies" : [ {
-    "name" : "libsndfile",
-    "version>=" : "1.2.0"
-  }, {
     "name" : "eigen3",
     "version>=" : "3.4.0#2"
   }, {
@@ -46,7 +43,7 @@
     "version>=" : "6.2.1#21"
   }, {
     "name" : "pcg",
-    "version>=" : "2021-04-06"
+    "version>=": "2021-04-06#2"
   }, {
     "name" : "cereal",
     "version>=" : "1.3.2#1"
@@ -71,7 +68,13 @@
   }, {
     "name" : "boost-rational",
     "version>=" : "1.84.0"
+  },
+    {
+      "name": "libsndfile",
+      "version>=": "1.2.2"
   } ],
+  "overrides": [
+  ],
   "features" : {
     "tests" : {
       "description" : "dependencies for the unit tests",

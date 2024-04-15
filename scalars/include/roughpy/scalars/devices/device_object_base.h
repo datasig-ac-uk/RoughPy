@@ -294,6 +294,17 @@ inline typename Interface::object_t clone_cast(Interface* iface) noexcept
     using object_t = typename Interface::object_t;
     return object_t(iface);
 }
+
+template <typename Interface>
+inline typename Interface::object_t clone_cast(const Interface* iface) noexcept
+{
+    using object_t = typename Interface::object_t;
+    // const_cast is safe because this just creates a new strong reference to
+    // the interface object.
+    return object_t(const_cast<Interface*>(iface));
+}
+
+
 }// namespace devices
 }// namespace rpy
 

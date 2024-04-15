@@ -48,7 +48,7 @@ using namespace rpy::devices;
 string CPUKernel::name() const { return m_name; }
 dimn_t CPUKernel::num_args() const { return m_nargs; }
 
-Event CPUKernel::new_kernel_event(string_view name)
+Event CPUKernel::new_kernel_event(string_view name)const
 {
     auto inner = std::make_unique<HostKernelEvent>(name);
     return Event(inner.release());
@@ -57,7 +57,7 @@ Event CPUKernel::launch_kernel_async(
         Queue& queue,
         const KernelLaunchParams& params,
         Slice<KernelArgument> args
-)
+)const
 {
     auto event = new_kernel_event(m_name);
     LaunchContext ctx{
@@ -71,7 +71,7 @@ EventStatus CPUKernel::launch_kernel_sync(
         rpy::devices::Queue& queue,
         const rpy::devices::KernelLaunchParams& params,
         Slice<rpy::devices::KernelArgument> args
-)
+)const
 {
     auto event = new_kernel_event(m_name);
     LaunchContext ctx{

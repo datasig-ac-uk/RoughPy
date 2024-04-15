@@ -82,7 +82,7 @@ class CPUKernel : public dtl::RefCountBase<KernelInterface>
                  const KernelLaunchParams&,
                  Slice<KernelArgument>)>;
 
-    Event new_kernel_event(string_view name);
+    Event new_kernel_event(string_view name) const;
 
     wrapped_kernel_t m_kernel;
     string m_name;
@@ -103,12 +103,12 @@ public:
             Queue& queue,
             const KernelLaunchParams& params,
             Slice<KernelArgument> args
-    ) override;
+    ) const override;
     EventStatus launch_kernel_sync(
             Queue& queue,
             const KernelLaunchParams& params,
             Slice<KernelArgument> args
-    ) override;
+    ) const override;
 };
 
 namespace dtl {

@@ -30,6 +30,15 @@ class ROUGHPY_ALGEBRA_EXPORT VectorData : public platform::SmallObjectBase
     dimn_t m_size = 0;
 
 public:
+
+    void set_size(dimn_t size)
+    {
+        RPY_CHECK(size <= m_scalar_buffer.size());
+        RPY_CHECK(m_key_buffer.empty() || size <= m_scalar_buffer.size());
+        m_size = size;
+   }
+
+
     VectorData() = default;
 
     explicit VectorData(scalars::PackedScalarType type, dimn_t size)

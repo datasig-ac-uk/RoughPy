@@ -366,12 +366,6 @@ if (ROUGHPY_BUILD_PYLIB)
 endif ()
 
 
-if (ROUGHPY_BUILD_LA_CONTEXTS)
-    set(LIBALGEBRA_NO_SERIALIZATION ON CACHE INTERNAL "")
-    add_subdirectory(external/libalgebra)
-    add_subdirectory(la_context)
-endif ()
-
 
 if (ROUGHPY_BUILD_DOCS)
     add_subdirectory(docs)
@@ -387,8 +381,8 @@ install(TARGETS
         RoughPy_Intervals
         RoughPy_Scalars
         RoughPy_Algebra
-        RoughPy_Streams
-    RoughPy_PyModule
+        #        RoughPy_Streams
+        #    RoughPy_PyModule
     EXPORT RoughPy_EXPORTS
     RUNTIME DESTINATION roughpy
     LIBRARY

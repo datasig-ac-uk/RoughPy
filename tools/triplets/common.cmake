@@ -1,1 +1,1 @@
-set(VCPKG_BUILD_TYPE release)
+#set(VCPKG_BUILD_TYPE release)

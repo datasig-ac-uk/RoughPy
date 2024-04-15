@@ -112,7 +112,6 @@ dimn_t Vector::size() const noexcept
     return p_data->size();
 }
 
-
 bool Vector::is_zero() const noexcept
 {
     if (fast_is_zero()) { return true; }
@@ -246,7 +245,7 @@ void Vector::make_sparse()
     KeyArray keys(dimension());
     {
         auto key_slice = keys.as_mut_slice();
-        for (auto& [k, i] : ranges::enumerate(key_slice)) { k = i; }
+        for (auto [i, k] : views::enumerate(key_slice)) { k = i; }
     }
 
     p_data->mut_keys() = std::move(keys);

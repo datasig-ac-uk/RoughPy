@@ -63,7 +63,7 @@ public:
             Queue& queue,
             const KernelLaunchParams& params,
             Slice<KernelArgument> args
-    ) override;
+    ) const override;
 
     RPY_NO_DISCARD
     cl_kernel get_kernel() const noexcept { return m_kernel; }

@@ -255,7 +255,7 @@ BasisComparison algebra::LieBasis::compare(BasisPointer other) const noexcept
     return BasisComparison::IsNotCompatible;
 }
 
-dimn_t LieBasis::dense_dimension(dimn_t size) const noexcept
+dimn_t LieBasis::dense_dimension(dimn_t size) const
 {
     const auto& sizes = p_hallset->sizes();
     auto begin = sizes.begin();
