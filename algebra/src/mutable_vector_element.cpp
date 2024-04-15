@@ -30,6 +30,7 @@ MutableVectorElement::~MutableVectorElement() {
 const void* MutableVectorElement::pointer() const noexcept {
 
 
+    return nullptr;
 
 }
 void MutableVectorElement::set_value(const scalars::Scalar& value) {}
