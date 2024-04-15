@@ -103,13 +103,6 @@ class KernelLaunchData
     string_view m_name;
 };
 
-template <typename F, typename... Ts>
-auto curry(F&& func, Ts&&... curried_args)
-{
-    return [=](auto... more_args) {
-        return func(std::forward<Ts>(curried_args)..., more_args...);
-    };
-}
 
 template <typename... ArgSpec>
 class BoundArgs;
