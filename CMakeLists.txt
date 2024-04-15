@@ -197,7 +197,7 @@ find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 
 # This package is c++17 so cannot be used if changing to a lower standard
-find_package(tomlplusplus CONFIG REQUIRED)
+#find_package(tomlplusplus CONFIG REQUIRED)
 
 find_package(OpenCL REQUIRED)
 
