@@ -28,6 +28,7 @@ add_roughpy_component(Algebra
     src/kernels/generic_kernel_MV_CV_CV_CS.cpp
     src/kernels/generic_kernel_MV_CV_CV_CS.h
     src/kernels/kernel.h
+        src/kernels/sparse_helpers.h
     src/algebra.cpp
     src/augmented_basis.cpp
     src/augmented_basis.h

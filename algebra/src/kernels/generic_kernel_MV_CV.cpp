@@ -4,59 +4,11 @@
 #include <roughpy/core/ranges.h>
 
 #include "basis.h"
+#include "sparse_helpers.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
 
-namespace {
-
-using KeyScalarMap = containers::
-        FlatHashMap<BasisKey, scalars::Scalar, KeyHash, KeyEquals>;
-
-template <typename IndexAndKeyRange>
-void write_with_sparse(
-        KeyScalarMap& mapped,
-        IndexAndKeyRange&& range,
-        const scalars::ScalarArray& scalars
-)
-{
-    for (auto [i, k] : range) { mapped[k] += scalars[i]; }
-}
-
-template <typename IndexAndKeyRange>
-void preload_map(
-        KeyScalarMap& mapped,
-        IndexAndKeyRange&& range,
-        const scalars::ScalarArray& scalars
-)
-{
-    for (auto [i, k] : range) { mapped[k] = scalars[i]; }
-}
-
-bool filter_pairs(typename KeyScalarMap::reference val) noexcept
-{
-    return val.second.is_zero();
-}
-
-inline void write_sparse_result(VectorData& data, KeyScalarMap& mapped)
-{
-    const auto mapped_size = mapped.size();
-    if (data.capacity() < mapped_size) { data.reserve(mapped_size); }
-
-    auto keys = data.mut_keys().mut_view();
-    auto scalars = data.mut_scalars().mut_view();
-
-    dimn_t count = 0;
-    for (auto&& [k, v] : mapped | views::filter(filter_pairs) | views::move) {
-        keys[count] = std::move(k);
-        scalars[count] = v;
-        ++count;
-    }
-
-    data.set_size(count);
-}
-
-}// namespace
 
 void rpy::algebra::dtl::GenericKernel<
         rpy::algebra::dtl::MutableVectorArg,
@@ -75,7 +27,12 @@ void rpy::algebra::dtl::GenericKernel<
         preload_map(tmp_map, views::enumerate(out_key_view), scalars_out);
 
         auto in_key_view = keys_in.as_slice();
-        write_with_sparse(tmp_map, views::enumerate(in_key_view), scalars_in);
+        write_with_sparse(
+                tmp_map,
+                views::enumerate(in_key_view),
+                scalars_in,
+                m_func
+        );
     }
 
     write_sparse_result(out, tmp_map);
@@ -105,7 +62,8 @@ void rpy::algebra::dtl::GenericKernel<
                         | views::transform([basis = p_basis](dimn_t idx) {
                               return std::make_tuple(idx, basis->to_key(idx));
                           }),
-                scalars_in
+                scalars_in,
+                m_func
         );
     }
 

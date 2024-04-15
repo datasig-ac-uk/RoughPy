@@ -5,21 +5,58 @@
 #ifndef GENERIC_KERNEL_VS_H
 #define GENERIC_KERNEL_VS_H
 
+#include "arg_data.h"
+#include "argument_specs.h"
 #include "common.h"
 #include "generic_kernel.h"
-#include "argument_specs.h"
-#include "arg_data.h"
 
-
-namespace rpy { namespace algebra { namespace dtl {
+namespace rpy {
+namespace algebra {
+namespace dtl {
 
 template <>
 class GenericKernel<MutableVectorArg, ConstVectorArg, ConstScalarArg>
 {
+    GenericBinaryFunction m_func;
+    const Basis* p_basis;
 
+    void eval_sparse_sparse(
+            VectorData& out,
+            const VectorData& arg,
+            const scalars::Scalar& scal
+    ) const;
+    void eval_sparse_dense(
+            VectorData& out,
+            const VectorData& arg,
+            const scalars::Scalar& scal
+    ) const;
+    void eval_dense_sparse(
+            VectorData& out,
+            const VectorData& arg,
+            const scalars::Scalar& scal
+    ) const;
+    void eval_dense_dense(
+            VectorData& out,
+            const VectorData& arg,
+            const scalars::Scalar& scal
+    ) const;
+
+public:
+    explicit
+    GenericKernel(GenericBinaryFunction&& func, const Basis* basis = nullptr)
+        : m_func(std::move(func)),
+          p_basis(basis)
+    {}
+
+    void operator()(
+            VectorData& out,
+            const VectorData& arg,
+            const scalars::Scalar& scal
+    ) const;
 };
 
-}}}
+}// namespace dtl
+}// namespace algebra
+}// namespace rpy
 
-
-#endif //GENERIC_KERNEL_VS_H
+#endif// GENERIC_KERNEL_VS_H
