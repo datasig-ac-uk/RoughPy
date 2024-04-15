@@ -319,6 +319,28 @@ ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_add_ref(const Basis* ptr) noexcept;
 
 ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_release(const Basis* ptr) noexcept;
 
+
+struct KeyHash
+{
+    const Basis* p_basis;
+
+    hash_t operator()(const BasisKey& arg) const
+    {
+        return p_basis->hash(arg);
+    }
+};
+
+struct KeyEquals
+{
+    const Basis* p_basis;
+
+    bool operator()(const BasisKey& left, const BasisKey& right) const
+    {
+        return p_basis->equals(left, right);
+    }
+};
+
+
 }// namespace algebra
 }// namespace rpy
 

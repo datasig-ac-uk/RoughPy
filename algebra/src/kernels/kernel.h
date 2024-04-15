@@ -5,21 +5,16 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-#include <roughpy/core/macros.h>
-#include <roughpy/core/ranges.h>
-#include <roughpy/core/types.h>
 
-#include <roughpy/scalars/devices/core.h>
+#include "common.h"
+
 #include <roughpy/scalars/devices/device_handle.h>
 #include <roughpy/scalars/devices/kernel.h>
 
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_array.h>
-#include <roughpy/scalars/scalar_type.h>
-
 #include "key_algorithms.h"
 #include "mutable_vector_element.h"
-#include "vector.h"
+#include "arg_data.h"
+
 
 namespace rpy {
 namespace algebra {
@@ -28,73 +23,7 @@ namespace dtl {
 
 using KArg = devices::KernelArgument;
 
-template <typename V>
-struct VectorArg {
-    V* data;
-    devices::Buffer mapped_scalars;
-};
 
-struct MutableDenseVectorArg : VectorArg<VectorData> {
-};
-
-struct MutableSparseVectorArg : VectorArg<VectorData> {
-    devices::Buffer mapped_keys;
-};
-
-struct ConstDenseVectorArg : VectorArg<const VectorData> {
-};
-struct ConstSparseVectorArg : VectorArg<const VectorData> {
-    devices::Buffer mapped_keys;
-};
-
-struct MutableScalarArg {
-    scalars::Scalar* arg;
-};
-
-struct ConstScalarArg {
-    const scalars::Scalar* arg;
-};
-
-template <typename Arg>
-struct ArgData {
-    Arg m_data;
-
-    Arg* operator->() noexcept { return &m_data; }
-    Arg& operator*() noexcept { return m_data; }
-};
-
-template <>
-struct ArgData<VectorData> {
-    VectorData* p_data;
-
-    VectorData* operator->() noexcept { return p_data; }
-    VectorData& operator*() noexcept { return *p_data; }
-};
-
-template <>
-struct ArgData<const VectorData> {
-    const VectorData* p_data;
-
-    const VectorData* operator->() noexcept { return p_data; }
-    VectorData& operator*() noexcept { return *p_data; }
-};
-
-struct MutableVectorArg {
-    using arg_type = VectorData&;
-    using data = ArgData<VectorData>;
-};
-struct ConstVectorArg {
-    using arg_type = const VectorData&;
-    using data = ArgData<const VectorData>;
-};
-struct ConstScalarArg {
-    using arg_type = const scalars::Scalar&;
-    using data = ArgData<const scalars::Scalar>;
-};
-struct MutableScalarArg {
-    using arg_type = scalars::Scalar&;
-    using data = ArgData<scalars::Scalar>;
-};
 
 class KernelLaunchData
 {
@@ -103,35 +32,70 @@ class KernelLaunchData
     string_view m_name;
 };
 
-
 template <typename... ArgSpec>
 class BoundArgs;
 
 template <typename FirstArgSpec, typename... RemainingArgSpec>
 class BoundArgs<FirstArgSpec, RemainingArgSpec...>
-    : BoundArgs<RemainingArgSpec...>, FirstArgSpec::data
+    : FirstArgSpec::template data<BoundArgs<RemainingArgSpec...>>
 {
-    using base_t = BoundArgs<RemainingArgSpec...>;
+    using base_t = typename FirstArgSpec::
+            template data<FirstArgSpec, BoundArgs<RemainingArgSpec...>>;
 
-    template <typename F, typename... Args>
-    decltype(auto) eval(F&& func, Args&&... args)
-    {
-        return base_t::eval(std::forward<F>(func), std::forward<Args>(args)...);
-    }
+public:
+    using base_t::eval_device;
+    using base_t::eval_generic;
+    using base_t::eval_host;
+    using base_t::get_suffix;
+
+    template <typename... Args>
+    explicit BoundArgs(Args&&... args) : base_t(std::forward<Args>(args)...)
+    {}
 };
 
 template <>
 class BoundArgs<>
 {
+
+public:
+    template <typename F>
+    decltype(auto) eval_device(F&& func) const
+    {
+        return func();
+    }
+    template <typename F>
+    decltype(auto) eval_host(F&& func) const
+    {
+        return func();
+    }
+    template <typename F>
+    decltype(auto) eval_generic(F&& func) const
+    {
+        return func();
+    }
+
+    RPY_NO_DISCARD string get_suffix() const noexcept { return string(); }
 };
 
+RPY_NO_DISCARD optional<devices::Kernel> get_kernel(
+        string_view kernel_name,
+        string_view suffix,
+        const devices::Device& device
+);
+
 }// namespace dtl
+
+
+
+
 template <typename Derived, typename... ArgSpec>
 class VectorKernelBase
 {
 
     template <typename Spec>
     using arg_type = typename Spec::arg_type;
+
+    using BoundArgs = dtl::BoundArgs<ArgSpec...>;
 
 protected:
     Derived& instance() noexcept { return static_cast<Derived&>(*this); }
@@ -140,8 +104,46 @@ protected:
         return static_cast<const Derived&>(*this);
     }
 
+    bool eval_device(string_view suffix, BoundArgs& bound)
+    {
+        if (auto kernel = dtl::get_kernel(
+                    instance().kernel_name(),
+                    suffix,
+                    bound.get_device()
+            )) {
+            bound.eval_host(*kernel);
+            return true;
+        }
+        return false;
+    }
+    bool eval_host(string_view suffix, BoundArgs& bound)
+    {
+        if (auto kernel = dtl::get_kernel(
+                    instance().kernel_name(),
+                    suffix,
+                    bound.get_device()
+            )) {
+            bound.eval_host(*kernel);
+            return true;
+        }
+        return false;
+    }
+    bool eval_generic(BoundArgs& bound)
+    {
+        bound.eval_generic(instance().get_generic());
+        return true;
+    }
+
 public:
-    decltype(auto) operator()(arg_type<ArgSpec>... spec) const { return 0; }
+    void operator()(arg_type<ArgSpec>... spec) const
+    {
+        BoundArgs bound_args(spec);
+        const auto suffix = bound_args.get_suffix();
+
+        if (!eval_device(suffix, bound_args)) {
+            if (!eval_host(suffix, bound_args)) { eval_generic(bound_args); }
+        }
+    }
 };
 
 }// namespace algebra

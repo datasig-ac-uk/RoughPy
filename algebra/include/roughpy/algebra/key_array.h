@@ -23,8 +23,11 @@ class KeyArrayIterator
     const BasisKey* p_current;
 
 public:
+    using value_type = const BasisKey;
     using reference = const BasisKey&;
     using pointer = const BasisKey*;
+    using iterator_category = std::forward_iterator_tag;
+
 
     explicit KeyArrayIterator(pointer val) : p_current(val) {}
 
@@ -91,6 +94,15 @@ public:
     {
         return KeyArrayIterator(p_end);
     }
+
+    RPY_NO_DISCARD iterator begin() noexcept
+    {
+        return KeyArrayIterator(p_begin);
+    }
+    RPY_NO_DISCARD iterator end() noexcept
+    {
+        return KeyArrayIterator(p_end);
+    }
 };
 
 }// namespace dtl
@@ -151,6 +163,9 @@ public:
     BasisKey operator[](dimn_t index) const;
 
     BasisKey& operator[](dimn_t index);
+
+    KeyArray operator[](SliceIndex index);
+    KeyArray operator[](SliceIndex index) const;
 
     devices::Buffer& mut_buffer() noexcept { return m_buffer; }
     const devices::Buffer& buffer() const noexcept { return m_buffer; }
