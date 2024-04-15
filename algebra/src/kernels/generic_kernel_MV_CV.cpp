@@ -24,11 +24,36 @@ void write_with_sparse(
 }
 
 template <typename IndexAndKeyRange>
-void preload_map(KeyScalarMap& mapped, IndexAndKeyRange&& range, const scalars::ScalarArray& scalars)
+void preload_map(
+        KeyScalarMap& mapped,
+        IndexAndKeyRange&& range,
+        const scalars::ScalarArray& scalars
+)
 {
-    for (auto [i, k] : range) {
-        mapped[k] = scalars[i];
+    for (auto [i, k] : range) { mapped[k] = scalars[i]; }
+}
+
+bool filter_pairs(typename KeyScalarMap::reference val) noexcept
+{
+    return val.second.is_zero();
+}
+
+inline void write_sparse_result(VectorData& data, KeyScalarMap& mapped)
+{
+    const auto mapped_size = mapped.size();
+    if (data.capacity() < mapped_size) { data.reserve(mapped_size); }
+
+    auto keys = data.mut_keys().mut_view();
+    auto scalars = data.mut_scalars().mut_view();
+
+    dimn_t count = 0;
+    for (auto&& [k, v] : mapped | views::filter(filter_pairs) | views::move) {
+        keys[count] = std::move(k);
+        scalars[count] = v;
+        ++count;
     }
+
+    data.set_size(count);
 }
 
 }// namespace
@@ -37,7 +62,24 @@ void rpy::algebra::dtl::GenericKernel<
         rpy::algebra::dtl::MutableVectorArg,
         rpy::algebra::dtl::ConstVectorArg>::
         eval_sparse_sparse(VectorData& out, const VectorData& arg) const
-{}
+{
+    const auto scalars_in = arg.scalars().view();
+    const auto keys_in = arg.keys().view();
+
+    KeyScalarMap tmp_map;
+    {
+        const auto keys_out = out.keys().view();
+        const auto scalars_out = out.scalars().view();
+
+        auto out_key_view = keys_out.as_slice();
+        preload_map(tmp_map, views::enumerate(out_key_view), scalars_out);
+
+        auto in_key_view = keys_in.as_slice();
+        write_with_sparse(tmp_map, views::enumerate(in_key_view), scalars_in);
+    }
+
+    write_sparse_result(out, tmp_map);
+}
 void rpy::algebra::dtl::GenericKernel<
         rpy::algebra::dtl::MutableVectorArg,
         rpy::algebra::dtl::ConstVectorArg>::
@@ -54,8 +96,8 @@ void rpy::algebra::dtl::GenericKernel<
         const auto out_keys = out.keys().view();
         const auto out_scalars = out.scalars().view();
 
-        auto key_view = out_keys.as_range();
-        preload_map(tmp_map, views::enumerate(key_view ), out_scalars);
+        auto key_view = out_keys.as_slice();
+        preload_map(tmp_map, views::enumerate(key_view), out_scalars);
 
         write_with_sparse(
                 tmp_map,
@@ -67,6 +109,7 @@ void rpy::algebra::dtl::GenericKernel<
         );
     }
 
+    write_sparse_result(out, tmp_map);
 }
 void rpy::algebra::dtl::GenericKernel<
         rpy::algebra::dtl::MutableVectorArg,
