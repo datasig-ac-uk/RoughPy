@@ -119,7 +119,7 @@ void algebra::dtl::GenericKernel<
 
     const auto size = std::min(out.size(), arg.size());
     auto scalars_out = out.mut_scalars().mut_view();
-    const auto scalars_in = out.scalars().view();
+    const auto scalars_in = arg.scalars().view();
 
     for (dimn_t i = 0; i < size; ++i) {
         auto tmp = scalars_out[i];
