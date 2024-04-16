@@ -69,6 +69,11 @@ public:
                             ) { return f(*p_data, next_arg...); });
     }
 
+    RPY_NO_DISCARD dimn_t size() const noexcept
+    {
+        return std::max(p_data->size(), Derive::size());
+    }
+
 
     devices::Device get_device() const noexcept
     {
@@ -139,6 +144,11 @@ public:
                             ) { return f(*p_data, next_arg...); });
     }
 
+    RPY_NO_DISCARD dimn_t size() const noexcept
+    {
+        return std::max(p_data->size(), Derive::size());
+    }
+
     devices::Device get_device() const noexcept
     {
         std::array<devices::Device, 2> devices {
@@ -190,6 +200,10 @@ public:
                             ) { return f(*p_data, next_arg...); });
     }
 
+    RPY_NO_DISCARD dimn_t size() const noexcept
+    {
+        return Derive::size();
+    }
 
     devices::Device get_device() const noexcept
     {
@@ -235,6 +249,11 @@ public:
     {
         return Derive::eval_generic([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(*p_data, next_arg...); });
+    }
+
+    RPY_NO_DISCARD dimn_t size() const noexcept
+    {
+        return Derive::size();
     }
 
     devices::Device get_device() const noexcept

@@ -3,6 +3,7 @@
 //
 
 #include "subtraction_kernel.h"
+#include "generic_kernel_MV_CV_CV.h"
 
 namespace rpy {
 namespace algebra {

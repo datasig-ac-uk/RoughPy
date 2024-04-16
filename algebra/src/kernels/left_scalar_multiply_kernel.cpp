@@ -3,13 +3,18 @@
 //
 
 #include "left_scalar_multiply_kernel.h"
+#include "generic_kernel_MV_CV_CS.h"
 
 namespace rpy {
 namespace algebra {
 
-template class VectorKernelBase<LeftScalarMultiplyKernel, dtl::MutableVectorArg, dtl::ConstVectorArg, dtl::ConstScalarArg>;
+template class VectorKernelBase<
+        LeftScalarMultiplyKernel,
+        dtl::MutableVectorArg,
+        dtl::ConstVectorArg,
+        dtl::ConstScalarArg>;
 
-} // algebra
+}// namespace algebra
 }// namespace rpy
 
 std::string_view

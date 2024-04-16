@@ -4,6 +4,8 @@
 
 #include "inplace_addition_kernel.h"
 
+#include "generic_kernel_MV_CV.h"
+
 namespace rpy {
 namespace algebra {
 

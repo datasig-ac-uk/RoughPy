@@ -3,6 +3,7 @@
 //
 
 #include "inplace_left_scalar_multiply_kernel.h"
+#include "generic_kernel_MV_CS.h"
 
 namespace rpy {
 namespace algebra {

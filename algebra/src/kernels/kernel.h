@@ -42,14 +42,13 @@ public:
     using base_t::eval_device;
     using base_t::eval_generic;
     using base_t::eval_host;
-    using base_t::get_suffix;
     using base_t::get_device;
+    using base_t::get_suffix;
+    using base_t::size;
 
     template <typename... Args>
     explicit BoundArgs(Args&&... args) : base_t(std::forward<Args>(args)...)
     {}
-
-
 };
 
 template <>
@@ -75,6 +74,7 @@ public:
 
     devices::Device get_device() const noexcept { return nullptr; }
 
+    RPY_NO_DISCARD dimn_t size() const noexcept { return 0; }
     RPY_NO_DISCARD string get_suffix() const noexcept { return string(); }
 };
 
@@ -103,34 +103,46 @@ protected:
         return static_cast<const Derived&>(*this);
     }
 
-    bool eval_device(string_view suffix, BoundArgs& bound)
+    bool eval_device(string_view suffix, BoundArgs& bound) const
     {
         if (auto kernel = dtl::get_kernel(
                     instance().kernel_name(),
                     suffix,
                     bound.get_device()
             )) {
-            bound.eval_host(*kernel);
+            devices::KernelLaunchParams params(
+                    devices::Size3{bound.size()},
+                    devices::Dim3{1}
+            );
+            bound.eval_host([k = *kernel, params](auto... args) {
+                return k(params, args...);
+            });
             return true;
         }
         return false;
     }
-    bool eval_host(string_view suffix, BoundArgs& bound)
+    bool eval_host(string_view suffix, BoundArgs& bound) const
     {
         if (auto kernel = dtl::get_kernel(
                     instance().kernel_name(),
                     suffix,
                     bound.get_device()
             )) {
-            bound.eval_host(*kernel);
+            devices::KernelLaunchParams params(
+                    devices::Size3{bound.size()},
+                    devices::Dim3{1}
+            );
+            bound.eval_host([k = *kernel, params](auto... args) {
+                return k(params, args...);
+            });
             return true;
         }
         return false;
     }
-    bool eval_generic(BoundArgs& bound)
+    bool eval_generic(BoundArgs& bound) const
     {
         dtl::GenericKernel<ArgSpec...> kernel(instance().generic_op(), p_basis);
-        bound.eval_generic(instance().get_generic());
+        bound.eval_generic(kernel);
         return true;
     }
 

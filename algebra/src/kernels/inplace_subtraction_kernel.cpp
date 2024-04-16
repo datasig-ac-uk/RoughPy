@@ -3,13 +3,15 @@
 //
 
 #include "inplace_subtraction_kernel.h"
-
+#include "generic_kernel_MV_CV.h"
 
 namespace rpy {
 namespace algebra {
 
-template class VectorKernelBase<InplaceSubtractionKernel, dtl::MutableVectorArg, dtl::ConstVectorArg>;
+template class VectorKernelBase<
+        InplaceSubtractionKernel,
+        dtl::MutableVectorArg,
+        dtl::ConstVectorArg>;
 
-
-} // algebra
-} // rpy
+}// namespace algebra
+}// namespace rpy
