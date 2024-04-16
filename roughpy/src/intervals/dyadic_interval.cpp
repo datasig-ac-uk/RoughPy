@@ -72,10 +72,10 @@ void python::init_dyadic_interval(py::module_& m)
     klass.def("dyadic_sup", &DyadicInterval::dsup);
 
     klass.def("shrink_to_contained_end",
-              &DyadicInterval::shrink_to_contained_end, "arg"_a = 1);
-    klass.def("shrink_to_omitted_end", &DyadicInterval::shrink_to_omitted_end);
-    klass.def("shrink_left", &DyadicInterval::shrink_interval_left);
-    klass.def("shrink_right", &DyadicInterval::shrink_interval_right);
+              &DyadicInterval::shrink_to_contained_end, "arg"_a = 1, "Same as shrink_interval functions, but aware of the type (clopen, opencl).");
+    klass.def("shrink_to_omitted_end", &DyadicInterval::shrink_to_omitted_end, "Same as shrink_interval functions, but aware of the type (clopen, opencl).");
+    klass.def("shrink_left", &DyadicInterval::shrink_interval_left, "Split in half, take the left.");
+    klass.def("shrink_right", &DyadicInterval::shrink_interval_right, "split in half, take the right.");
 
     klass.def_static("to_dyadic_intervals", &to_dyadic_intervals, "interval"_a,
                      "resolution"_a, "interval_type"_a, TO_DYADIC_INT_DOC);

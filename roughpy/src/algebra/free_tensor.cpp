@@ -164,11 +164,11 @@ void python::init_free_tensor(py::module_& m)
              return self[static_cast<key_type>(tkey)];
          });
 
-    klass.def("exp", &FreeTensor::exp);
-    klass.def("log", &FreeTensor::log);
-    klass.def("antipode", &FreeTensor::antipode, "compute the antipode");
+    klass.def("exp", &FreeTensor::exp, "Computes the truncated exponential of a free_tensor instance.");
+    klass.def("log", &FreeTensor::log, "Computes the truncated log of arg up to degree max_degree");
+    klass.def("antipode", &FreeTensor::antipode, "Compute the antipode of a free_tensor instance");
 //    klass.def("inverse", &FreeTensor::inverse);
-    klass.def("fmexp", &FreeTensor::fmexp, "other"_a);
+    klass.def("fmexp", &FreeTensor::fmexp, "other"_a, "Fused multiply exponential operation for free tensors. Computes a*exp(x).");
 //
     klass.def("__repr__", [](const FreeTensor& self) {
         std::stringstream ss;

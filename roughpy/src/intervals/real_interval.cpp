@@ -50,7 +50,7 @@ void python::init_real_interval(py::module_& m)
     //    klass.def(py::init<IntervalType>());
     klass.def(py::init<double, double>(), "inf"_a, "sup"_a);
     klass.def(py::init<double, double, IntervalType>(), "inf"_a, "sup"_a,
-              "interval_type"_a);
+              "interval_type"_a, "Either clopen or opencl (although only clopen supported currently)");
     klass.def(py::init<const Interval&>(), "arg"_a);
     klass.def("__repr__", [](const RealInterval& arg) {
         std::stringstream ss;
