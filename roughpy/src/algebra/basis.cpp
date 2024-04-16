@@ -51,12 +51,15 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
     //
     //         }));
 
+    // todo: "Alphabet size"
     basis.def_property_readonly("width", [](const T& basis) {
         return basis.width();
     });
+    // todo: "Truncation level"
     basis.def_property_readonly("depth", [](const T& basis) {
         return basis.depth();
     });
+    // todo: "The number of elements represented by the vector."
     basis.def_property_readonly("dimension", [](const T& basis) {
         return basis.dimension();
     });
@@ -66,21 +69,25 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
             [](const T& self, dimn_t index) {
                 return K(self, self.index_to_key(index));
             },
-            "index"_a
+            "index"_a,
+            "Takes an integer and returns a key at that index."
     );
     basis.def(
             "key_to_index",
             [](const T& self, const python::PyLieKey& key) {
                 return self.key_to_index(0);
             },
-            "key"_a
+            "key"_a,
+            "Takes a key and returns an integer corresponding to the index"
     );
 
     basis.def(
             "parents",
             [](const T& self, const K& key) { return self.parents(0); },
-            "key"_a
+            "key"_a,
+            "Splits off the first letter and returns the letter and the remainder of the word."
     );
+    // todo: "How big the dimension will be at a particular degree"
     basis.def("size", [](const T& basis, deg_t degree = -1) {
         if (degree < 0) {
             degree = basis.depth();

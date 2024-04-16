@@ -74,28 +74,33 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
      * Use lambda wrapping functions because there is an issue with "noexcept"
      * modifier on these methods in C++17 mode.
      */
+    // todo: "Alphabet size, dimension of the underlying space (deprecated, use ctx instead)"
     klass.def_property_readonly("width", [](const Alg& arg) {
         return arg.width();
     });
+    // todo: ""Set out by the basis, i.e. depth"
     klass.def_property_readonly("max_degree", [](const Alg& arg) {
         return arg.depth();
     });
+    // todo: "Scalar type for the algebra (deprecated, use ctx instead). Can be a RoughPy data type (rp.SPReal, rp.DPReal, rp.Rational, rp.PolyRational), or a numpy dtype."
     klass.def_property_readonly("dtype", [](const Alg& arg) {
         return to_ctype_type(arg.coeff_type());
     });
+    // todo: "Sparse or dense"
     klass.def_property_readonly("storage_type", [](const Alg& arg) {
         return arg.storage_type();
     });
+    // todo: "Provide an algebra context in which to create the algebra"
     klass.def_property_readonly("context", [](const Alg& arg) {
         return py::handle(python::RPyContext_FromContext(arg.context()));
     });
 
     // setup dynamic properties
-    klass.def("size", &Alg::size);
-    klass.def("dimension", &Alg::dimension);
-    klass.def("degree", &Alg::degree);
+    klass.def("size", &Alg::size, "Total number of non-zero elements represented by the vector, measure of sparsity.");
+    klass.def("dimension", &Alg::dimension, "The number of elements that are represented by the vector.");
+    klass.def("degree", &Alg::degree, "Less than or equal to depth, not fixed, measure of what we have.");
 
-    klass.def("is_zero", &Alg::is_zero);
+    klass.def("is_zero", &Alg::is_zero, "Bool, checks if empty, i.e. all coefficients are zero.");
     // TODO: Add access and iteration methods
 
     klass.def(
@@ -205,14 +210,14 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
 
     // setup fused inplace ops
     klass.def("add_scal_mul", &Alg::add_scal_mul, "other"_a, "scalar"_a, "A version of += fused with scalar multiplication.");
-    klass.def("sub_scal_mul", &Alg::sub_scal_mul, "other"_a, "scalar"_a);
-    klass.def("add_scal_div", &Alg::add_scal_div, "other"_a, "scalar"_a);
-    klass.def("sub_scal_div", &Alg::sub_scal_div, "other"_a, "scalar"_a);
+    klass.def("sub_scal_mul", &Alg::sub_scal_mul, "other"_a, "scalar"_a, "A version of -= fused with scalar multiplication");
+    klass.def("add_scal_div", &Alg::add_scal_div, "other"_a, "scalar"_a, "A version of += fused with scalar multiplication");
+    klass.def("sub_scal_div", &Alg::sub_scal_div, "other"_a, "scalar"_a, "A version of -= fused with rational division");
 
-    klass.def("add_mul", &Alg::add_mul, "lhs"_a, "rhs"_a);
-    klass.def("sub_mul", &Alg::sub_mul, "lhs"_a, "rhs"_a);
-    klass.def("mul_smul", &Alg::mul_smul, "other"_a, "scalar"_a);
-    klass.def("mul_sdiv", &Alg::mul_sdiv, "other"_a, "scalar"_a);
+    klass.def("add_mul", &Alg::add_mul, "lhs"_a, "rhs"_a, "Adds to the instance a product of algebra instances.");
+    klass.def("sub_mul", &Alg::sub_mul, "lhs"_a, "rhs"_a, "Subtracts to the instance a product of algebra instances.");
+    klass.def("mul_smul", &Alg::mul_smul, "other"_a, "scalar"_a, "Multiply and scalar multiply");
+    klass.def("mul_sdiv", &Alg::mul_sdiv, "other"_a, "scalar"_a, "Multiply and scalar divide");
 
     // setup string function
     klass.def("__str__", [](const Alg& self) {
