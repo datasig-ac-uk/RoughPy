@@ -69,6 +69,11 @@ public:
         return m_scalar_buffer.empty();
     }
 
+    RPY_NO_DISCARD scalars::PackedScalarType scalar_type() const noexcept
+    {
+        return m_scalar_buffer.type();
+    }
+
     RPY_NO_DISCARD bool sparse() const noexcept { return m_key_buffer.empty(); }
 
     RPY_NO_DISCARD devices::Buffer& mut_scalar_buffer() noexcept
@@ -109,6 +114,9 @@ public:
             scalars::Scalar value
     );
     void delete_element(dimn_t index);
+
+    std::unique_ptr<VectorData> make_dense(const Basis* basis) const;
+    std::unique_ptr<VectorData> make_sparse(const Basis* basis) const;
 };
 
 class VectorIterator;

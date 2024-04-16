@@ -287,7 +287,7 @@ scalars::Scalar Vector::get(BasisKey key) const
 {
     RPY_CHECK(p_basis->has_key(key));
     if (auto index = get_index(key)) { return p_data->scalars()[*index]; }
-    return scalars::Scalar();
+    return scalars::Scalar(p_data->scalar_type());
 }
 
 scalars::Scalar Vector::get_mut(BasisKey key)

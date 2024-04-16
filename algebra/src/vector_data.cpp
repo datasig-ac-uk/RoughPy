@@ -4,16 +4,16 @@
 
 #include "vector.h"
 
-#include <roughpy/scalars/algorithms.h>
+#include "kernels/kernel.h"
 #include "key_algorithms.h"
+#include <roughpy/scalars/algorithms.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
 
-void VectorData::reserve(dimn_t dim) {
-    if (dim <= capacity()) {
-        return;
-    }
+void VectorData::reserve(dimn_t dim)
+{
+    if (dim <= capacity()) { return; }
 
     auto new_buffer = m_scalar_buffer.type()->allocate(dim);
     scalars::algorithms::copy(new_buffer, m_scalar_buffer);
@@ -39,11 +39,7 @@ void VectorData::insert_element(
         BasisKey key,
         scalars::Scalar value
 )
-{
-
-
-
-}
+{}
 void VectorData::delete_element(dimn_t index)
 {
     RPY_DBG_ASSERT(index < m_scalar_buffer.size());
@@ -59,4 +55,90 @@ void VectorData::delete_element(dimn_t index)
             key_view[i] = std::move(key_view[i + 1]);
         }
     }
+}
+
+std::unique_ptr<VectorData> VectorData::make_dense(const Basis* basis) const
+{
+    RPY_CHECK(basis->is_ordered() && sparse());;
+
+    const auto scalar_device = m_scalar_buffer.device();
+    const auto key_device = m_key_buffer.device();
+
+    auto dense_data = std::make_unique<VectorData>(m_scalar_buffer.type());
+
+    dimn_t dimension;
+    if (key_device->is_host()) {
+        /*
+         * If we're on host, then the keys might not be an array of indices, so
+         * we need to do the transformation into indices first, then look for
+         * the maximum value.
+         */
+        dimension = 0;
+        dimn_t index;
+        for (auto& key : dense_data->m_key_buffer.as_mut_slice()) {
+            index = basis->to_index(key);
+            if (index > dimension) { dimension = index; }
+            key = BasisKey(index);
+        }
+
+    } else {
+        /*
+         * On device, all of the key should be indices so we can just use the
+         * algorithms max to find the maximum index that exists in the vector.
+         */
+        dimension = algorithms::max(m_key_buffer);
+    }
+
+    auto resize_dim = basis->dense_dimension(dimension);
+
+    dense_data->resize(resize_dim);
+
+    /*
+     * We have already made sure that the buffer only contains indices so we can
+     * call a kernel to write the data into the dense array. The only remaining
+     * tricky part is to make sure the keys live on the same device as the
+     * scalars. We can fix this by copying the data to the device if necessary.
+     */
+
+    devices::Buffer key_buffer;
+    if (scalar_device == key_device) {
+        key_buffer = dense_data->m_key_buffer.mut_buffer();
+        ;
+    } else {
+        dense_data->m_key_buffer.mut_buffer().to_device(key_buffer, scalar_device);
+    }
+
+    auto kernel = dtl::get_kernel("sparse_write", "ds", scalar_device);
+    devices::KernelLaunchParams params(
+            devices::Size3{m_size},
+            devices::Dim3{1}
+    );
+    RPY_CHECK(kernel);
+
+    (*kernel)(
+            params,
+            dense_data->mut_scalar_buffer(),
+            key_buffer,
+            m_scalar_buffer.buffer()
+    );
+
+    return dense_data;
+}
+
+std::unique_ptr<VectorData> VectorData::make_sparse(const Basis* basis) const
+{
+    RPY_CHECK(!sparse());
+
+    auto sparse_data = std::make_unique<VectorData>(*this);
+
+    KeyArray keys(m_size);
+    {
+        auto key_slice = keys.as_mut_slice();
+        for (auto [i, k] : views::enumerate(key_slice)) { k = i; }
+    }
+
+    sparse_data->m_key_buffer = std::move(keys);
+
+
+    return sparse_data;
 }

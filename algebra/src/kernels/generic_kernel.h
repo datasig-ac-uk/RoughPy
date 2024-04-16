@@ -26,6 +26,10 @@ using GenericTernaryFunction = std::function<
              const scalars::Scalar&,
              const scalars::Scalar&)>;
 
+inline int get_sparse_dense_config(const VectorData& arg) noexcept
+{
+    return (arg.sparse() ? 0 : 1);
+}
 
 template <typename... Rem>
 RPY_NO_DISCARD int get_sparse_dense_config(
@@ -36,6 +40,8 @@ RPY_NO_DISCARD int get_sparse_dense_config(
     return (first.sparse() ? 0 : 1 << sizeof...(remaining))
             | get_sparse_dense_config(remaining...);
 }
+
+
 
 template <>
 class GenericKernel<MutableVectorArg, ConstScalarArg>;

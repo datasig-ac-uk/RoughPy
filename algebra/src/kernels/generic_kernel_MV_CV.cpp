@@ -9,7 +9,6 @@
 using namespace rpy;
 using namespace rpy::algebra;
 
-
 void rpy::algebra::dtl::GenericKernel<
         rpy::algebra::dtl::MutableVectorArg,
         rpy::algebra::dtl::ConstVectorArg>::
@@ -20,12 +19,18 @@ void rpy::algebra::dtl::GenericKernel<
 
     KeyScalarMap tmp_map;
     {
-        const auto keys_out = out.keys().view();
-        const auto scalars_out = out.scalars().view();
+        // We need to make sure the scalar views are unmapped before the writing
+        // happens later
+        const auto out_keys = out.keys().view();
+        auto key_view = out_keys.as_slice();
+        tmp_map = preload_map(
+                p_basis,
+                views::enumerate(key_view),
+                out.scalars().view()
+        );
+    }
 
-        auto out_key_view = keys_out.as_slice();
-        preload_map(tmp_map, views::enumerate(out_key_view), scalars_out);
-
+    {
         auto in_key_view = keys_in.as_slice();
         write_with_sparse(
                 tmp_map,
@@ -44,6 +49,9 @@ void rpy::algebra::dtl::GenericKernel<
 {
     const auto size = arg.size();
 
+    auto ikmap = [basis = p_basis](dimn_t idx) {
+        return std::make_tuple(idx, basis->to_key(idx));
+    };
     const auto scalars_in = arg.scalars().view();
 
     KeyScalarMap tmp_map;
@@ -51,17 +59,19 @@ void rpy::algebra::dtl::GenericKernel<
         // We need to make sure the scalar views are unmapped before the writing
         // happens later
         const auto out_keys = out.keys().view();
-        const auto out_scalars = out.scalars().view();
 
         auto key_view = out_keys.as_slice();
-        preload_map(tmp_map, views::enumerate(key_view), out_scalars);
+        tmp_map = preload_map(
+                p_basis,
+                views::enumerate(key_view),
+                out.scalars().view()
+        );
+    }
 
+    {
         write_with_sparse(
                 tmp_map,
-                views::ints(dimn_t(0), size)
-                        | views::transform([basis = p_basis](dimn_t idx) {
-                              return std::make_tuple(idx, basis->to_key(idx));
-                          }),
+                views::ints(dimn_t(0), size) | views::transform(ikmap),
                 scalars_in,
                 m_func
         );

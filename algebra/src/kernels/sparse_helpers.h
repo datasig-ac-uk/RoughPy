@@ -29,13 +29,16 @@ void write_with_sparse(
 }
 
 template <typename IndexAndKeyRange>
-void preload_map(
-        KeyScalarMap& mapped,
+KeyScalarMap preload_map(
+        const Basis* basis,
         IndexAndKeyRange&& range,
         const scalars::ScalarArray& scalars
 )
 {
-    for (auto [i, k] : range) { mapped[k] = scalars[i]; }
+    const auto scalar_view = scalars.view();
+    KeyScalarMap mapped(0, KeyHash{basis}, KeyEquals{basis});
+    for (auto [i, k] : range) { mapped[k] = scalar_view[i]; }
+    return mapped;
 }
 
 inline bool filter_pairs(typename KeyScalarMap::reference val) noexcept
@@ -53,13 +56,58 @@ inline void write_sparse_result(VectorData& data, KeyScalarMap& mapped)
 
     dimn_t count = 0;
     for (auto&& [k, v] : mapped | views::filter(filter_pairs) | views::move) {
-        keys[count] = std::move(k);
+        keys[count] = k;
         scalars[count] = v;
         ++count;
     }
 
     data.set_size(count);
 }
+
+
+template <typename IKR, typename F>
+void binary_operation_into_map_left(
+    KeyScalarMap& mapped,
+    IKR&& ikr,
+    const scalars::ScalarArray& left,
+    F&& func,
+    const scalars::Scalar& zero
+    )
+{
+    for (auto [i, k] : ikr) {
+        func(mapped[k], left[i], zero);
+    }
+}
+
+template <typename IKR, typename F>
+void binary_operation_into_map_right(
+    KeyScalarMap& mapped,
+    IKR&& ikr,
+    const scalars::ScalarArray& right,
+    F&& func,
+    const scalars::Scalar& zero
+    )
+{
+    for (auto [i, k] : ikr) {
+        func(mapped[k], zero, right[i]);
+    }
+}
+
+template <typename IDK1, typename IDK2, typename F>
+void binary_operation_into_map(
+        KeyScalarMap& mapped,
+        IDK1&& idk_left,
+        const scalars::ScalarArray& left,
+        IDK2&& idk_right,
+        const scalars::ScalarArray& right,
+        F&& func
+)
+{
+    const scalars::Scalar zero(left.type());
+    binary_operation_into_map_left(mapped, idk_left, left, func, zero);
+    binary_operation_into_map_right(mapped, idk_right, right, func, zero);
+}
+
 
 }// namespace algebra
 }// namespace rpy

@@ -21,11 +21,15 @@ void algebra::dtl::GenericKernel<
     KeyScalarMap tmp_map;
     {
         const auto keys_out = out.keys().view();
-        const auto scalars_out = out.scalars().view();
-
         auto out_key_view = keys_out.as_slice();
-        preload_map(tmp_map, views::enumerate(out_key_view), scalars_out);
+        tmp_map = preload_map(
+                p_basis,
+                views::enumerate(out_key_view),
+                out.scalars().view()
+        );
+    }
 
+    {
         auto in_key_view = keys_in.as_slice();
         write_with_sparse(
                 tmp_map,
@@ -55,14 +59,18 @@ void algebra::dtl::GenericKernel<
 
     KeyScalarMap tmp_map;
     {
+
         // We need to make sure the scalar views are unmapped before the writing
         // happens later
         const auto out_keys = out.keys().view();
-        const auto out_scalars = out.scalars().view();
-
         auto key_view = out_keys.as_slice();
-        preload_map(tmp_map, views::enumerate(key_view), out_scalars);
-
+        tmp_map = preload_map(
+                p_basis,
+                views::enumerate(key_view),
+                out.scalars().view()
+        );
+    }
+    {
         write_with_sparse(
                 tmp_map,
                 views::ints(dimn_t(0), size)

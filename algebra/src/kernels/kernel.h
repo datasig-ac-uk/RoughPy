@@ -137,7 +137,7 @@ protected:
 public:
     void operator()(arg_type<ArgSpec>... spec) const
     {
-        BoundArgs bound_args(spec);
+        BoundArgs bound_args(spec...);
         const auto suffix = bound_args.get_suffix();
 
         if (!eval_device(suffix, bound_args)) {
