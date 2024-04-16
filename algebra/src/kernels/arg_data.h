@@ -31,7 +31,7 @@ public:
     template <typename F>
     decltype(auto) eval_device(F&& func)
     {
-        return Derive::eval([func, this](auto... next_arg) {
+        return Derive::eval_device([func, this](auto... next_arg) {
             const auto size = p_data->size();
             auto scalars = p_data->mut_scalars()[{0, size}].mut_buffer();
             if (p_data->keys().empty()) {
@@ -47,7 +47,7 @@ public:
     template <typename F>
     decltype(auto) eval_host(F&& func)
     {
-        return Derive::eval([func, this](auto... next_arg) {
+        return Derive::eval_host([func, this](auto... next_arg) {
             const auto size = p_data->size();
             auto scalars
                     = p_data->mut_scalars().mut_view()[{0, size}].mut_buffer();
@@ -65,7 +65,7 @@ public:
     template <typename F>
     decltype(auto) eval_generic(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
+        return Derive::eval_generic([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(*p_data, next_arg...); });
     }
 
@@ -82,7 +82,7 @@ public:
 };
 
 template <typename Derive>
-class ArgData<const VectorData, Derive>
+class ArgData<const VectorData, Derive> : Derive
 {
     const VectorData* p_data;
 
@@ -118,7 +118,7 @@ public:
     template <typename F>
     decltype(auto) eval_host(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func),
+        return Derive::eval_host([f = std::forward<F>(func),
                              this](auto... next_arg) {
             const auto size = p_data->size();
             auto scalars = p_data->scalars().view()[{0, size}].buffer();
@@ -135,7 +135,7 @@ public:
     template <typename F>
     decltype(auto) eval_generic(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
+        return Derive::eval_generic([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(*p_data, next_arg...); });
     }
 
@@ -170,7 +170,7 @@ public:
     template <typename F>
     decltype(auto) eval_device(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
+        return Derive::eval_device([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(to_kernel_arg(*p_data), next_arg...); }
         );
     }
@@ -178,7 +178,7 @@ public:
     template <typename F>
     decltype(auto) eval_host(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
+        return Derive::eval_host([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(to_kernel_arg(*p_data), next_arg...); }
         );
     }
@@ -186,7 +186,7 @@ public:
     template <typename F>
     decltype(auto) eval_generic(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
+        return Derive::eval_generic([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(*p_data, next_arg...); });
     }
 
@@ -217,7 +217,7 @@ public:
     template <typename F>
     decltype(auto) eval_device(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
+        return Derive::eval_device([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(to_kernel_arg(*p_data), next_arg...); }
         );
     }
@@ -225,7 +225,7 @@ public:
     template <typename F>
     decltype(auto) eval_host(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
+        return Derive::eval_host([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(to_kernel_arg(*p_data), next_arg...); }
         );
     }
@@ -233,7 +233,7 @@ public:
     template <typename F>
     decltype(auto) eval_generic(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
+        return Derive::eval_generic([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(*p_data, next_arg...); });
     }
 

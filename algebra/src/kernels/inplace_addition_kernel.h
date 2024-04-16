@@ -29,8 +29,8 @@ class InplaceAdditionKernel : public VectorKernelBase<
 
     using base_t = VectorKernelBase<
             InplaceAdditionKernel,
-            dtl::MutableScalarArg,
-            dtl::ConstScalarArg>;
+            dtl::MutableVectorArg,
+            dtl::ConstVectorArg>;
 
 public:
     using base_t::base_t;
