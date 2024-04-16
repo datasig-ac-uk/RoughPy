@@ -5,16 +5,14 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-
 #include "common.h"
 
 #include <roughpy/scalars/devices/device_handle.h>
 #include <roughpy/scalars/devices/kernel.h>
 
+#include "arg_data.h"
 #include "key_algorithms.h"
 #include "mutable_vector_element.h"
-#include "arg_data.h"
-
 
 namespace rpy {
 namespace algebra {
@@ -22,8 +20,6 @@ namespace algebra {
 namespace dtl {
 
 using KArg = devices::KernelArgument;
-
-
 
 class KernelLaunchData
 {
@@ -39,18 +35,21 @@ template <typename FirstArgSpec, typename... RemainingArgSpec>
 class BoundArgs<FirstArgSpec, RemainingArgSpec...>
     : FirstArgSpec::template data<BoundArgs<RemainingArgSpec...>>
 {
-    using base_t = typename FirstArgSpec::
-            template data<FirstArgSpec, BoundArgs<RemainingArgSpec...>>;
+    using base_t = typename FirstArgSpec::template data<
+            BoundArgs<RemainingArgSpec...>>;
 
 public:
     using base_t::eval_device;
     using base_t::eval_generic;
     using base_t::eval_host;
     using base_t::get_suffix;
+    using base_t::get_device;
 
     template <typename... Args>
     explicit BoundArgs(Args&&... args) : base_t(std::forward<Args>(args)...)
     {}
+
+
 };
 
 template <>
@@ -74,6 +73,8 @@ public:
         return func();
     }
 
+    devices::Device get_device() const noexcept { return nullptr; }
+
     RPY_NO_DISCARD string get_suffix() const noexcept { return string(); }
 };
 
@@ -85,12 +86,10 @@ RPY_NO_DISCARD optional<devices::Kernel> get_kernel(
 
 }// namespace dtl
 
-
-
-
 template <typename Derived, typename... ArgSpec>
 class VectorKernelBase
 {
+    const Basis* p_basis;
 
     template <typename Spec>
     using arg_type = typename Spec::arg_type;
@@ -130,11 +129,14 @@ protected:
     }
     bool eval_generic(BoundArgs& bound)
     {
+        dtl::GenericKernel<ArgSpec...> kernel(instance().generic_op(), p_basis);
         bound.eval_generic(instance().get_generic());
         return true;
     }
 
 public:
+    explicit VectorKernelBase(const Basis* basis) : p_basis(basis) {}
+
     void operator()(arg_type<ArgSpec>... spec) const
     {
         BoundArgs bound_args(spec...);

@@ -25,10 +25,16 @@ add_roughpy_component(Algebra
     src/kernels/generic_kernel_MV_CV_CS.h
     src/kernels/generic_kernel_MV_CV_CV.cpp
     src/kernels/generic_kernel_MV_CV_CV.h
-    src/kernels/generic_kernel_MV_CV_CV_CS.cpp
-    src/kernels/generic_kernel_MV_CV_CV_CS.h
+    src/kernels/inplace_addition_kernel.cpp
+    src/kernels/inplace_addition_kernel.h
+    src/kernels/inplace_subtraction_kernel.cpp
+    src/kernels/inplace_subtraction_kernel.h
     src/kernels/kernel.h
-        src/kernels/sparse_helpers.h
+    src/kernels/left_scalar_multiply_kernel.cpp
+    src/kernels/left_scalar_multiply_kernel.h
+    src/kernels/sparse_helpers.h
+    src/kernels/uminus_kernel.cpp
+    src/kernels/uminus_kernel.h
     src/algebra.cpp
     src/augmented_basis.cpp
     src/augmented_basis.h

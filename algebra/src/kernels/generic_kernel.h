@@ -58,12 +58,6 @@ class GenericKernel<MutableVectorArg, ConstVectorArg, ConstScalarArg>;
 template <>
 class GenericKernel<MutableVectorArg, ConstVectorArg, ConstVectorArg>;
 
-template <>
-class GenericKernel<
-        MutableVectorArg,
-        ConstVectorArg,
-        ConstVectorArg,
-        ConstScalarArg>;
 
 }// namespace dtl
 }// namespace algebra

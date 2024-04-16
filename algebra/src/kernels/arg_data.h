@@ -68,6 +68,17 @@ public:
         return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(*p_data, next_arg...); });
     }
+
+
+    devices::Device get_device() const noexcept
+    {
+        std::array<devices::Device, 2> devices {
+            Derive::get_device(),
+            p_data->scalars().device()
+        };
+
+        return devices::get_best_device(devices);
+    }
 };
 
 template <typename Derive>
@@ -127,6 +138,16 @@ public:
         return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(*p_data, next_arg...); });
     }
+
+    devices::Device get_device() const noexcept
+    {
+        std::array<devices::Device, 2> devices {
+            Derive::get_device(),
+            p_data->scalars().device()
+        };
+
+        return devices::get_best_device(devices);
+    }
 };
 
 template <typename Derive>
@@ -168,6 +189,12 @@ public:
         return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(*p_data, next_arg...); });
     }
+
+
+    devices::Device get_device() const noexcept
+    {
+        return Derive::get_device();
+    }
 };
 
 template <typename Derive>
@@ -208,6 +235,11 @@ public:
     {
         return Derive::eval([f = std::forward<F>(func), this](auto... next_arg
                             ) { return f(*p_data, next_arg...); });
+    }
+
+    devices::Device get_device() const noexcept
+    {
+        return Derive::get_device();
     }
 };
 
