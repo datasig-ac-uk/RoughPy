@@ -447,7 +447,7 @@ make_lie_key(const py::args& args, const py::kwargs& kwargs)
 }
 void python::init_py_lie_key(py::module_& m)
 {
-    py::class_<PyLieKey> klass(m, "LieKey");
+    py::class_<PyLieKey> klass(m, "LieKey", "Same as a tensor key, Hall word, element of the Hall basis for the free Lie algebra.");
     klass.def(py::init(&make_lie_key));
 
     klass.def("__str__", &PyLieKey::to_string);

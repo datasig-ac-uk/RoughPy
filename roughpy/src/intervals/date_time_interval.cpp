@@ -40,7 +40,7 @@ void python::init_datetime_interval(py::module_& m)
 {
 
     py::class_<DateTimeInterval, intervals::Interval> cls(m,
-                                                          "DateTimeInterval");
+                                                          "DateTimeInterval", "An interval which describes a region of time.");
 
     cls.def("dt_inf", &DateTimeInterval::dt_inf);
     cls.def("dt_sup", &DateTimeInterval::dt_sup);

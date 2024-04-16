@@ -66,16 +66,16 @@ void python::init_dyadic_interval(py::module_& m)
     klass.def(py::init<Dyadic>(), "dyadic"_a);
     klass.def(py::init<Dyadic, power_t>(), "dyadic"_a, "resolution"_a);
 
-    klass.def("dyadic_included_end", &DyadicInterval::dincluded_end);
-    klass.def("dyadic_excluded_end", &DyadicInterval::dexcluded_end);
-    klass.def("dyadic_inf", &DyadicInterval::dinf);
-    klass.def("dyadic_sup", &DyadicInterval::dsup);
+    klass.def("dyadic_included_end", &DyadicInterval::dincluded_end, "If the interval type is clopen, returns the infimum. If the interval is opencl, returns the supremum.");
+    klass.def("dyadic_excluded_end", &DyadicInterval::dexcluded_end, "If the interval type is clopen, returns the supremum. If the interval is opencl, returns the infimum.");
+    klass.def("dyadic_inf", &DyadicInterval::dinf, "Returns the infimum of a dyadic interval.");
+    klass.def("dyadic_sup", &DyadicInterval::dsup, "Returns the supremum of a dyadic interval.");
 
     klass.def("shrink_to_contained_end",
               &DyadicInterval::shrink_to_contained_end, "arg"_a = 1, "Same as shrink_interval functions, but aware of the type (clopen, opencl).");
     klass.def("shrink_to_omitted_end", &DyadicInterval::shrink_to_omitted_end, "Same as shrink_interval functions, but aware of the type (clopen, opencl).");
-    klass.def("shrink_left", &DyadicInterval::shrink_interval_left, "Split in half, take the left.");
-    klass.def("shrink_right", &DyadicInterval::shrink_interval_right, "split in half, take the right.");
+    klass.def("shrink_left", &DyadicInterval::shrink_interval_left, "Split the interval in half, take the left.");
+    klass.def("shrink_right", &DyadicInterval::shrink_interval_right, "Split the interval in half, take the right.");
 
     klass.def_static("to_dyadic_intervals", &to_dyadic_intervals, "interval"_a,
                      "resolution"_a, "interval_type"_a, TO_DYADIC_INT_DOC);

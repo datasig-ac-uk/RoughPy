@@ -41,7 +41,7 @@ using namespace rpy;
 void python::init_intervals(pybind11::module_& m)
 {
 
-    py::enum_<intervals::IntervalType>(m, "IntervalType")
+    py::enum_<intervals::IntervalType>(m, "IntervalType", "Either clopen or opencl, although only clopen supported currently.")
             .value("Clopen", intervals::IntervalType::Clopen)
             //        .value("Opencl", intervals::IntervalType::Opencl)
             .export_values();

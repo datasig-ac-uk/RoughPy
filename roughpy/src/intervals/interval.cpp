@@ -78,17 +78,17 @@ void python::init_interval(py::module_& m)
 
     klass.def_property_readonly("interval_type", &Interval::type);
 
-    klass.def("inf", &Interval::inf);
-    klass.def("sup", &Interval::sup);
-    klass.def("included_end", &Interval::included_end);
-    klass.def("excluded_end", &Interval::excluded_end);
+    klass.def("inf", &Interval::inf, "Returns the infimum of an interval.");
+    klass.def("sup", &Interval::sup, "Returns the supremum of an interval.");
+    klass.def("included_end", &Interval::included_end, "If the interval type is clopen, returns the infimum. If the interval is opencl, returns the supremum.");
+    klass.def("excluded_end", &Interval::excluded_end, "If the interval type is clopen, returns the supremum. If the interval is opencl, returns the infimum.");
     klass.def("__eq__", [](const Interval& lhs, const Interval& rhs) {
         return lhs == rhs;
     });
     klass.def("__neq__", [](const Interval& lhs, const Interval& rhs) {
         return lhs != rhs;
     });
-    klass.def("intersects_with", &Interval::intersects_with, "other"_a);
+    klass.def("intersects_with", &Interval::intersects_with, "other"_a, "Checks whether two intervals overlap.");
 
     klass.def("contains",
               static_cast<bool (Interval::*)(param_t) const noexcept>(
@@ -97,7 +97,7 @@ void python::init_interval(py::module_& m)
     klass.def("contains",
               static_cast<bool (Interval::*)(const Interval&) const noexcept>(
                       &Interval::contains),
-              "arg"_a);
+              "arg"_a, "Takes either a number, tells you if it's there or not, OR takes an interval, tells you if that interval is fully contained in the other interval.");
 
     klass.def("__repr__", [](const Interval& arg) {
         std::stringstream ss;
