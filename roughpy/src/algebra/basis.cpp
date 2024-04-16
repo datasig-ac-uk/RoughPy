@@ -51,18 +51,15 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
     //
     //         }));
 
-    // todo: "Alphabet size"
     basis.def_property_readonly("width", [](const T& basis) {
         return basis.width();
-    });
-    // todo: "Truncation level"
+    }, "Alphabet size");
     basis.def_property_readonly("depth", [](const T& basis) {
         return basis.depth();
-    });
-    // todo: "The number of elements represented by the vector."
+    },"Truncation level");
     basis.def_property_readonly("dimension", [](const T& basis) {
         return basis.dimension();
-    });
+    },"The number of elements represented by the vector.");
 
     basis.def(
             "index_to_key",
@@ -87,7 +84,6 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
             "key"_a,
             "Splits off the first letter and returns the letter and the remainder of the word."
     );
-    // todo: "How big the dimension will be at a particular degree"
     basis.def("size", [](const T& basis, deg_t degree = -1) {
         if (degree < 0) {
             degree = basis.depth();
@@ -99,7 +95,7 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
         }
 
         return basis.size(degree);
-    });
+    }, "How big the dimension will be at a particular degree");
 
     basis.def("__iter__", [](const T& self) { return KIter(self); });
 

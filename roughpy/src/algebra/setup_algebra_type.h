@@ -74,26 +74,21 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
      * Use lambda wrapping functions because there is an issue with "noexcept"
      * modifier on these methods in C++17 mode.
      */
-    // todo: "Alphabet size, dimension of the underlying space (deprecated, use ctx instead)"
     klass.def_property_readonly("width", [](const Alg& arg) {
         return arg.width();
-    });
-    // todo: ""Set out by the basis, i.e. depth"
+    },"Alphabet size, dimension of the underlying space (deprecated, use ctx instead)");
     klass.def_property_readonly("max_degree", [](const Alg& arg) {
         return arg.depth();
-    });
-    // todo: "Scalar type for the algebra (deprecated, use ctx instead). Can be a RoughPy data type (rp.SPReal, rp.DPReal, rp.Rational, rp.PolyRational), or a numpy dtype."
+    }, "Set out by the basis, i.e. depth");
     klass.def_property_readonly("dtype", [](const Alg& arg) {
         return to_ctype_type(arg.coeff_type());
-    });
-    // todo: "Sparse or dense"
+    }, "Scalar type for the algebra (deprecated, use ctx instead). Can be a RoughPy data type (rp.SPReal, rp.DPReal, rp.Rational, rp.PolyRational), or a numpy dtype.");
     klass.def_property_readonly("storage_type", [](const Alg& arg) {
         return arg.storage_type();
-    });
-    // todo: "Provide an algebra context in which to create the algebra"
+    }, "Sparse or dense");
     klass.def_property_readonly("context", [](const Alg& arg) {
         return py::handle(python::RPyContext_FromContext(arg.context()));
-    });
+    }, "Provide an algebra context in which to create the algebra");
 
     // setup dynamic properties
     klass.def("size", &Alg::size, "Total number of non-zero elements represented by the vector, measure of sparsity.");
