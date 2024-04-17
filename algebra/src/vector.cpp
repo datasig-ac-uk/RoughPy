@@ -38,47 +38,6 @@
 using namespace rpy;
 using namespace algebra;
 
-devices::Kernel Vector::get_kernel(
-        OperationType type,
-        string_view operation,
-        string_view suffix
-) const
-{
-    RPY_DBG_ASSERT(!operation.empty());
-    const auto stype = scalar_type();
-    RPY_CHECK(stype.is_pointer());
-
-    string op(operation);
-    op += '_';
-    op += stype->id();
-
-    if (type != Unary && type != UnaryInplace) {
-        op += (is_sparse() ? "_sparse" : "_dense");
-    }
-
-    if (!suffix.empty()) {
-        op += '_';
-        op += suffix;
-    }
-
-    auto kernel = stype->device()->get_kernel(op);
-    RPY_CHECK(kernel);
-    return *kernel;
-}
-
-devices::KernelLaunchParams Vector::get_kernel_launch_params() const
-{
-    /*
-     * vector operations are one dimensional so we can safely set the work
-     * parameters generically here based on the size of the vectors.
-     */
-
-    return devices::KernelLaunchParams(
-            devices::Size3{p_data->scalar_buffer().size()},
-            devices::Dim3{1}
-    );
-}
-
 void Vector::resize_dim(rpy::dimn_t dim)
 {
     const auto type = scalar_type();
@@ -102,7 +61,7 @@ void Vector::resize_dim(rpy::dimn_t dim)
          * constructors. This is essentially using a move operation on each of
          * the keys individually.
          */
-        dhandle->memcopy(new_key_buffer.mut_buffer(), keys().buffer()).wait();
+        algorithms::copy(new_key_buffer, keys());
         dhandle->raw_free(mut_keys().mut_buffer());
         mut_keys() = std::move(new_key_buffer);
     }
@@ -147,7 +106,7 @@ void Vector::set_zero()
     }
 }
 
-optional<dimn_t> Vector::get_index(rpy::algebra::BasisKey key) const noexcept
+optional<dimn_t> Vector::get_index(const BasisKey& key) const noexcept
 {
 
     if (is_dense() && key.is_index()) {
@@ -243,13 +202,11 @@ void Vector::make_dense()
         p_data->mut_key_buffer().to_device(key_buffer, scalar_device);
     }
 
-    auto kernel = get_kernel(OperationType::BinaryInplace, "sparse_write", "");
-    auto params = get_kernel_launch_params();
+    const SparseWriteKernel kernel(&*p_basis);
 
-    kernel(params,
-           dense_data->mut_scalar_buffer(),
-           key_buffer,
-           p_data->scalar_buffer());
+    kernel(*dense_data, *p_data);
+
+    std::swap(dense_data, p_data);
 }
 
 void Vector::make_sparse()
@@ -297,14 +254,14 @@ Vector& Vector::operator=(Vector&& other) noexcept
     return *this;
 }
 
-scalars::Scalar Vector::get(BasisKey key) const
+scalars::Scalar Vector::get(const BasisKey& key) const
 {
     RPY_CHECK(p_basis->has_key(key));
-    if (auto index = get_index(key)) { return p_data->scalars()[*index]; }
+    if (const auto index = get_index(key)) { return p_data->scalars()[*index]; }
     return scalars::Scalar(p_data->scalar_type());
 }
 
-scalars::Scalar Vector::get_mut(BasisKey key)
+scalars::Scalar Vector::get_mut(const BasisKey& key)
 {
     using scalars::Scalar;
     RPY_CHECK(p_basis->has_key(key));
@@ -363,244 +320,6 @@ void Vector::check_and_resize_for_operands(const Vector& lhs, const Vector& rhs)
     }
 }
 
-void Vector::apply_binary_kernel(
-        string_view kernel_name,
-        const Vector& lhs,
-        const Vector& rhs,
-        optional<scalars::Scalar> multiplier
-)
-{
-    check_and_resize_for_operands(lhs, rhs);
-
-    const auto lhs_sparse = lhs.is_sparse();
-    const auto rhs_sparse = rhs.is_sparse();
-
-    if (multiplier) {
-        // Make sure the multiplier if given is of the correct type
-        multiplier->change_type(p_data->scalars().type_info());
-    }
-
-    if (&lhs == this) {
-        /*
-         * This is the inplace mode of operation. All references to lhs are
-         * unused in this branch, since we must maintain strict aliasing.
-         *
-         * The first thing to do is check that the vectors are compatible, and
-         * resize *this to make sure it is large enough to accommodate the
-         * result.
-         *
-         * Once this is done, we can start to think about arguments. For dense
-         * vectors, the only troublesome part is whether the kernel needs an
-         * additional multiplier argument. For the time being, we shall simply
-         * pass the multiplier argument whenever it is provided, and let the
-         * kernel check that it has the correct number of arguments etc.
-         *
-         * For sparse cases or mixed cases there are more problems. Since sparse
-         * vectors need their key arrays along side the scalar buffers, we also
-         * need to think about how these are passed into the kernel. If both are
-         * sparse then this is easy. Otherwise, we're going to have to convert
-         * one to be dense/sparse so that it matches. There may be reasonable
-         * heuristics for deciding which. However, let's just work with the idea
-         * that doing operations where one vector is sparse always causes the
-         * other to be made sparse too (by the construction of a temporary key
-         * array). This should take care of any actual problems for now.
-         *
-         */
-
-        if (lhs_sparse && rhs_sparse) {
-            // Both are sparse, os send keys and scalars
-
-            auto kernel = get_kernel(
-                    OperationType::BinaryInplace,
-                    kernel_name,
-                    "s"
-            );
-            // TODO: This won't work in general, since the final size isn't
-            // known
-            auto params = get_kernel_launch_params();
-
-            if (multiplier) {
-                kernel(params,
-                       p_data->mut_key_buffer(),
-                       p_data->mut_scalar_buffer(),
-                       rhs.p_data->key_buffer(),
-                       rhs.p_data->scalar_buffer(),
-                       scalars::to_kernel_arg(*multiplier));
-            } else {
-                kernel(params,
-                       p_data->mut_key_buffer(),
-                       p_data->mut_scalar_buffer(),
-                       rhs.p_data->key_buffer(),
-                       rhs.p_data->scalar_buffer());
-            }
-
-            return;
-        }
-
-        if (rhs_sparse) {
-            /*
-             * This is the simple mixed case. Probably the most sensible
-             * thing is to have mixed form kernel that performs the addition
-             * the operation only on indices that are present in the sparse
-             * data.
-             */
-
-            auto kernel = get_kernel(
-                    OperationType::BinaryInplace,
-                    kernel_name,
-                    "s"
-            );
-            auto params = get_kernel_launch_params();
-
-            if (multiplier) {
-                kernel(params,
-                       p_data->mut_scalar_buffer(),
-                       rhs.p_data->key_buffer(),
-                       rhs.p_data->scalar_buffer(),
-                       scalars::to_kernel_arg(*multiplier));
-            } else {
-                kernel(params,
-                       p_data->mut_scalar_buffer(),
-                       rhs.p_data->key_buffer(),
-                       rhs.p_data->scalar_buffer());
-            }
-
-            return;
-        }
-
-        if (lhs_sparse) {
-            /*
-             * For this mixed case, we'll promote *this to be dense too,
-             * and then use the same logic as for dense-dense
-             */
-            make_dense();
-        }
-
-        // Both should be dense at this point
-        RPY_DBG_ASSERT(is_dense() && rhs.is_dense());
-        // both are dense, use the dense kernel
-        auto kernel
-                = get_kernel(OperationType::BinaryInplace, kernel_name, "d");
-        auto params = get_kernel_launch_params();
-
-        if (multiplier) {
-            kernel(params,
-                   p_data->mut_scalar_buffer(),
-                   rhs.p_data->scalar_buffer(),
-                   scalars::to_kernel_arg(*multiplier));
-        } else {
-            kernel(params,
-                   p_data->mut_scalar_buffer(),
-                   rhs.p_data->scalar_buffer());
-        }
-
-        return;
-    }
-
-    /*
-     * Now the inplace case is dealt with we have to do it all again for the
-     * out of place operations. The process is exactly the same, we just
-     * have to do some checking to see what the output vector will look like
-     * and then call the appropriate kernel.
-     *
-     * The only thing that is really different in this case is that we can't
-     * reduce the cases by simply promoting lhs to dense, since it is not the
-     * output vector.
-     */
-
-    // For now, always promote to dense if either is dense
-    auto output_sparse = lhs_sparse && rhs_sparse;
-
-    if (output_sparse) {
-        // The resize vector might not have initialised the key array
-        make_sparse();
-
-        auto kernel = get_kernel(OperationType::Binary, kernel_name, "ss");
-        auto params = get_kernel_launch_params();
-
-        if (multiplier) {
-            kernel(params,
-                   p_data->mut_key_buffer(),
-                   p_data->mut_scalar_buffer(),
-                   lhs.p_data->key_buffer(),
-                   lhs.p_data->scalar_buffer(),
-                   rhs.p_data->key_buffer(),
-                   rhs.p_data->scalar_buffer(),
-                   scalars::to_kernel_arg(*multiplier));
-        } else {
-            kernel(params,
-                   p_data->mut_key_buffer(),
-                   p_data->mut_scalar_buffer(),
-                   lhs.p_data->key_buffer(),
-                   lhs.p_data->scalar_buffer(),
-                   rhs.p_data->key_buffer(),
-                   rhs.p_data->scalar_buffer());
-        }
-
-        return;
-    }
-
-    // The vector might be dense if it wasn't already sparse. So make dense
-    make_dense();
-
-    if (lhs_sparse) {
-        auto kernel = get_kernel(OperationType::Binary, kernel_name, "sd");
-        auto params = get_kernel_launch_params();
-
-        if (multiplier) {
-            kernel(params,
-                   p_data->mut_scalar_buffer(),
-                   lhs.p_data->key_buffer(),
-                   lhs.p_data->scalar_buffer(),
-                   rhs.p_data->scalar_buffer(),
-                   scalars::to_kernel_arg(*multiplier));
-        } else {
-            kernel(params,
-                   p_data->mut_scalar_buffer(),
-                   lhs.p_data->key_buffer(),
-                   lhs.p_data->scalar_buffer(),
-                   rhs.p_data->scalar_buffer());
-        }
-    } else if (rhs_sparse) {
-        auto kernel = get_kernel(OperationType::Binary, kernel_name, "ds");
-        auto params = get_kernel_launch_params();
-
-        if (multiplier) {
-            kernel(params,
-                   p_data->mut_scalar_buffer(),
-                   lhs.p_data->scalar_buffer(),
-                   rhs.p_data->key_buffer(),
-                   rhs.p_data->scalar_buffer(),
-                   scalars::to_kernel_arg(*multiplier));
-        } else {
-            kernel(params,
-                   p_data->mut_scalar_buffer(),
-                   lhs.p_data->scalar_buffer(),
-                   rhs.p_data->key_buffer(),
-                   rhs.p_data->scalar_buffer());
-        }
-    } else {
-        auto kernel = get_kernel(OperationType::Binary, kernel_name, "dd");
-        auto params = get_kernel_launch_params();
-
-        if (multiplier) {
-            kernel(params,
-                   p_data->mut_scalar_buffer(),
-                   lhs.p_data->scalar_buffer(),
-                   rhs.p_data->scalar_buffer(),
-                   scalars::to_kernel_arg(*multiplier));
-        } else {
-            kernel(params,
-                   p_data->mut_scalar_buffer(),
-                   lhs.p_data->scalar_buffer(),
-                   rhs.p_data->scalar_buffer());
-        }
-    }
-}
-
-// TODO: Handle the short-circuit cases where one of the vectors is trivially
-//  equal to zero.
-
 Vector Vector::uminus() const
 {
     Vector result(p_basis, scalar_type());
@@ -632,7 +351,6 @@ Vector Vector::left_smul(const scalars::Scalar& other) const
 
     Vector result(p_basis, scalar_type());
     if (!other.is_zero()) {
-        const auto stype = scalar_type();
         const LeftScalarMultiplyKernel kernel(&*p_basis);
         kernel(*result.p_data, *p_data, other);
     }
@@ -773,4 +491,14 @@ std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
         os << item->second << '(' << basis->to_string(item->first) << ')';
     }
     return os;
+}
+
+void Vector::insert_element(const BasisKey& key, scalars::Scalar value)
+{
+    (void) this;
+}
+
+void Vector::delete_element(const BasisKey& key, optional<dimn_t> index_hint)
+{
+    (void) this;
 }

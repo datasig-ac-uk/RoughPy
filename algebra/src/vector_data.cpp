@@ -36,7 +36,7 @@ void VectorData::resize(dimn_t dim)
 void VectorData::insert_element(
         dimn_t index,
         dimn_t next_size,
-        BasisKey key,
+        const BasisKey& key,
         scalars::Scalar value
 )
 {}
