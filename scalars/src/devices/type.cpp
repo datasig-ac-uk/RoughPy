@@ -8,19 +8,19 @@
 
 #include "devices/device_handle.h"
 
-#include "fundamental_types/int8_type.h"
 #include "fundamental_types/int16_type.h"
 #include "fundamental_types/int32_type.h"
 #include "fundamental_types/int64_type.h"
+#include "fundamental_types/int8_type.h"
 
-#include "fundamental_types/uint8_type.h"
 #include "fundamental_types/uint16_type.h"
 #include "fundamental_types/uint32_type.h"
 #include "fundamental_types/uint64_type.h"
+#include "fundamental_types/uint8_type.h"
 
-#include "fundamental_types/half_type.h"
-#include "fundamental_types/float_type.h"
 #include "fundamental_types/double_type.h"
+#include "fundamental_types/float_type.h"
+#include "fundamental_types/half_type.h"
 
 #include "fundamental_types/b_float_16_type.h"
 
@@ -49,7 +49,6 @@ void* Type::allocate_single() const
 void Type::free_single(void* ptr) const { aligned_free(ptr); }
 
 bool Type::supports_device(const Device& device) const noexcept { return true; }
-
 
 const Type* devices::get_type(TypeInfo info)
 {
@@ -87,4 +86,15 @@ const Type* devices::get_type(TypeInfo info)
             std::runtime_error,
             "Only fundamental types can be read from TypeInfo"
     );
+}
+bool Type::convertible_to(const Type* dest_type) const noexcept
+{
+    return dest_type->convertible_from(this);
+}
+bool Type::convertible_from(const Type* src_type) const noexcept
+{
+    if (src_type == this) { return true; }
+    if (traits::is_arithmetic(src_type)) { return true; }
+
+    return false;
 }
