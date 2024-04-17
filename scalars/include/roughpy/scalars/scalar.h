@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,20 +18,21 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_H_
 #define ROUGHPY_SCALARS_SCALAR_H_
 
+#include "packed_scalar_type_ptr.h"
 #include "scalar_interface.h"
 #include "scalar_type.h"
 #include "scalars_fwd.h"
-#include "packed_scalar_type_ptr.h"
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/helpers.h>
@@ -40,7 +41,6 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
-#include <roughpy/platform/archives.h>
 
 #include <cereal/types/vector.hpp>
 
@@ -83,7 +83,6 @@ ROUGHPY_SCALARS_EXPORT bool scalar_convert_copy(
         PackedScalarType dst_type,
         const Scalar& src
 ) noexcept;
-
 
 ROUGHPY_SCALARS_EXPORT
 bool scalar_convert_copy(
@@ -537,14 +536,14 @@ RPY_SERIAL_SAVE_FN_IMPL(Scalar)
     RPY_SERIAL_SERIALIZE_NVP("type_info", type_info());
     RPY_SERIAL_SERIALIZE_NVP("raw_bytes", to_raw_bytes());
 }
-
-#ifdef RPY_COMPILING_SCALARS
-RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(Scalar)
-RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(Scalar)
-#else
-RPY_SERIAL_EXTERN_SAVE_CLS_IMP(Scalar)
-RPY_SERIAL_EXTERN_LOAD_CLS_IMP(Scalar)
-#endif
+//
+// #ifdef RPY_COMPILING_SCALARS
+// RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(Scalar)
+// RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(Scalar)
+// #else
+// RPY_SERIAL_EXTERN_SAVE_CLS_IMP(Scalar)
+// RPY_SERIAL_EXTERN_LOAD_CLS_IMP(Scalar)
+// #endif
 
 template <typename T>
 const T& Scalar::as_type() const noexcept
@@ -610,14 +609,17 @@ RPY_NO_DISCARD T scalar_cast(const Scalar& value)
     return result;
 }
 
-
-RPY_NO_DISCARD inline devices::KernelArgument to_kernel_arg(const Scalar& arg) noexcept
+RPY_NO_DISCARD inline devices::KernelArgument to_kernel_arg(const Scalar& arg
+) noexcept
 {
     return {arg.type_info(), arg.pointer()};
 }
 
-RPY_NO_DISCARD inline devices::KernelArgument to_kernel_arg(Scalar& arg) noexcept {
-    return { arg.type_info(), arg.is_mutable() ? arg.mut_pointer() : arg.pointer() };
+RPY_NO_DISCARD inline devices::KernelArgument to_kernel_arg(Scalar& arg
+) noexcept
+{
+    return {arg.type_info(),
+            arg.is_mutable() ? arg.mut_pointer() : arg.pointer()};
 }
 
 }// namespace scalars
