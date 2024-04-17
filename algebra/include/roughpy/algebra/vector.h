@@ -20,6 +20,8 @@
 #include "basis_key.h"
 #include "key_array.h"
 
+#include <initializer_list>
+
 namespace rpy {
 namespace algebra {
 
@@ -30,14 +32,12 @@ class ROUGHPY_ALGEBRA_EXPORT VectorData : public platform::SmallObjectBase
     dimn_t m_size = 0;
 
 public:
-
     void set_size(dimn_t size)
     {
         RPY_CHECK(size <= m_scalar_buffer.size());
         RPY_CHECK(m_key_buffer.empty() || size <= m_scalar_buffer.size());
         m_size = size;
-   }
-
+    }
 
     VectorData() = default;
 
@@ -110,7 +110,7 @@ public:
     void insert_element(
             dimn_t index,
             dimn_t next_size,
-            BasisKey key,
+            const BasisKey& key,
             scalars::Scalar value
     );
     void delete_element(dimn_t index);
@@ -159,29 +159,6 @@ protected:
      */
     void resize_degree(deg_t degree);
 
-    enum OperationType
-    {
-        Unary,
-        UnaryInplace,
-        Binary,
-        BinaryInplace,
-        Ternary,
-        TernaryInplace,
-        Comparison
-    };
-
-    /**
-     * @brief Get the correct kernel for the given operation
-     * @param type the type of operation that is required
-     * @param operation Operation to get
-     * @return Kernel for the required operation
-     */
-    devices::Kernel
-    get_kernel(OperationType type, string_view operation, string_view suffix)
-            const;
-
-    devices::KernelLaunchParams get_kernel_launch_params() const;
-
     /**
      * @brief Get the current size of the buffer
      * @return
@@ -198,8 +175,8 @@ protected:
 
     void set_zero();
 
-    void insert_element(BasisKey key, scalars::Scalar value);
-    void delete_element(BasisKey key, optional<dimn_t> index_hint);
+    void insert_element(const BasisKey& key, scalars::Scalar value);
+    void delete_element(const BasisKey& key, optional<dimn_t> index_hint);
 
 public:
     Vector();
@@ -221,6 +198,17 @@ public:
         : p_data(new VectorData(std::move(scalar_data), std::move(key_buffer))),
           p_basis(std::move(basis))
     {}
+
+    template <typename T>
+    Vector(BasisPointer basis,
+           const scalars::ScalarType* scalar_type,
+           std::initializer_list<T> vals)
+        : p_data(new VectorData(scalar_type, vals.size())),
+          p_basis(std::move(basis))
+    {
+        auto& scalar_vals = p_data->mut_scalars();
+        for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
+    }
 
     Vector& operator=(const Vector& other);
 
@@ -314,26 +302,27 @@ public:
      * @param key Key to query
      * @return Non-mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::Scalar get(BasisKey key) const;
+    RPY_NO_DISCARD scalars::Scalar get(const BasisKey& key) const;
 
     /**
      * @brief Get the coefficient of key in the vector mutably
      * @param key Key to query
      * @return Mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::Scalar get_mut(BasisKey key);
+    RPY_NO_DISCARD scalars::Scalar get_mut(const BasisKey& key);
 
     RPY_NO_DISCARD const_iterator begin() const noexcept;
     RPY_NO_DISCARD const_iterator end() const noexcept;
 
-    RPY_NO_DISCARD optional<dimn_t> get_index(BasisKey key) const noexcept;
+    RPY_NO_DISCARD optional<dimn_t> get_index(const BasisKey& key
+    ) const noexcept;
 
-    RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key) const
+    RPY_NO_DISCARD scalars::Scalar operator[](const BasisKey& key) const
     {
         return get(key);
     }
 
-    RPY_NO_DISCARD scalars::Scalar operator[](BasisKey key)
+    RPY_NO_DISCARD scalars::Scalar operator[](const BasisKey& key)
     {
         return get_mut(key);
     }
@@ -361,13 +350,6 @@ private:
      * This is the binary version of the check for compatibility.
      */
     void check_and_resize_for_operands(const Vector& lhs, const Vector& rhs);
-
-    void apply_binary_kernel(
-            string_view kernel_name,
-            const Vector& lhs,
-            const Vector& rhs,
-            optional<scalars::Scalar> multiplier = {}
-    );
 
 public:
     RPY_NO_DISCARD Vector uminus() const;
