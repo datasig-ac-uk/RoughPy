@@ -2,8 +2,8 @@
 // Created by sam on 16/04/24.
 //
 
-#ifndef INPLACE_ADDITION_KERNEL_H
-#define INPLACE_ADDITION_KERNEL_H
+#ifndef INPLACE_SUBTRACTION_KERNEL_H
+#define INPLACE_SUBTRACTION_KERNEL_H
 
 #include "arg_data.h"
 #include "argument_specs.h"
@@ -53,4 +53,4 @@ public:
 }// namespace algebra
 }// namespace rpy
 
-#endif// INPLACE_ADDITION_KERNEL_H
+#endif// INPLACE_SUBTRACTION_KERNEL_H

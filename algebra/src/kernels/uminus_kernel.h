@@ -5,31 +5,35 @@
 #ifndef UMINUS_KERNEL_H
 #define UMINUS_KERNEL_H
 
-#include "kernel.h"
-#include "generic_kernel.h"
 #include "argument_specs.h"
+#include "generic_kernel.h"
+#include "kernel.h"
 
 namespace rpy {
 namespace algebra {
 
 class UminusKernel;
 
-extern template class VectorKernelBase<UminusKernel, dtl::MutableVectorArg, dtl::ConstVectorArg>;
+extern template class VectorKernelBase<
+        UminusKernel,
+        dtl::MutableVectorArg,
+        dtl::ConstVectorArg>;
 
-class UminusKernel : public VectorKernelBase<UminusKernel, dtl::MutableVectorArg, dtl::ConstVectorArg> {
-    using base_t = VectorKernelBase<UminusKernel, dtl::MutableVectorArg, dtl::ConstVectorArg>;
+class UminusKernel : public VectorKernelBase<
+                             UminusKernel,
+                             dtl::MutableVectorArg,
+                             dtl::ConstVectorArg>
+{
 
-    public:
+public:
+    using VectorKernelBase::VectorKernelBase;
 
-    RPY_NO_DISCARD
-    string_view kernel_name() const noexcept;
+    RPY_NO_DISCARD string_view kernel_name() const noexcept;
 
-    RPY_NO_DISCARD
-    dtl::GenericUnaryFunction generic_op() const noexcept;
-
+    RPY_NO_DISCARD dtl::GenericUnaryFunction generic_op() const noexcept;
 };
 
-} // algebra
-} // rpy
+}// namespace algebra
+}// namespace rpy
 
-#endif //UMINUS_KERNEL_H
+#endif// UMINUS_KERNEL_H

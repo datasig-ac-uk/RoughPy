@@ -2,8 +2,8 @@
 // Created by sam on 16/04/24.
 //
 
-#ifndef LEFT_SCALAR_MULTIPLY_KERNEL_H
-#define LEFT_SCALAR_MULTIPLY_KERNEL_H
+#ifndef RIGHT_SCALAR_MULTIPLY_KERNEL_H
+#define RIGHT_SCALAR_MULTIPLY_KERNEL_H
 
 #include "argument_specs.h"
 #include "common.h"
@@ -49,4 +49,4 @@ public:
 }// namespace algebra
 }// namespace rpy
 
-#endif// LEFT_SCALAR_MULTIPLY_KERNEL_H
+#endif// RIGHT_SCALAR_MULTIPLY_KERNEL_H

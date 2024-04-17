@@ -2,8 +2,8 @@
 // Created by sam on 4/16/24.
 //
 
-#ifndef FUSED_ADD_LEFT_SCALAR_MULTIPLY_H
-#define FUSED_ADD_LEFT_SCALAR_MULTIPLY_H
+#ifndef FUSED_ADD_RIGHT_SCALAR_MULTIPLY_H
+#define FUSED_ADD_RIGHT_SCALAR_MULTIPLY_H
 
 #include "argument_specs.h"
 #include "common.h"
@@ -45,4 +45,4 @@ public:
 }// namespace algebra
 }// namespace rpy
 
-#endif// FUSED_ADD_LEFT_SCALAR_MULTIPLY_H
+#endif// FUSED_ADD_RIGHT_SCALAR_MULTIPLY_H

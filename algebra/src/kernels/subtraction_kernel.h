@@ -2,8 +2,8 @@
 // Created by sam on 4/16/24.
 //
 
-#ifndef ADDITION_KERNEL_H
-#define ADDITION_KERNEL_H
+#ifndef SUBTRACTION_KERNEL_H
+#define SUBTRACTION_KERNEL_H
 
 #include "arg_data.h"
 #include "argument_specs.h"
@@ -43,4 +43,4 @@ public:
 }// namespace algebra
 }// namespace rpy
 
-#endif// ADDITION_KERNEL_H
+#endif// SUBTRACTION_KERNEL_H

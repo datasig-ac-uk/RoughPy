@@ -10,15 +10,15 @@
 #include "generic_kernel.h"
 #include "kernel.h"
 
-
 namespace rpy {
 namespace algebra {
 
 class InplaceAdditionKernel;
 
-extern template class VectorKernelBase<InplaceAdditionKernel, dtl::MutableVectorArg, dtl::ConstVectorArg>;
-
-
+extern template class VectorKernelBase<
+        InplaceAdditionKernel,
+        dtl::MutableVectorArg,
+        dtl::ConstVectorArg>;
 
 class InplaceAdditionKernel : public VectorKernelBase<
                                       InplaceAdditionKernel,

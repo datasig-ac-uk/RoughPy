@@ -8,10 +8,12 @@
 namespace rpy {
 namespace algebra {
 
+template class VectorKernelBase<
+        UminusKernel,
+        dtl::MutableVectorArg,
+        dtl::ConstVectorArg>;
 
-template class VectorKernelBase<UminusKernel, dtl::MutableVectorArg, dtl::ConstVectorArg>;
-
-} // algebra
+}// namespace algebra
 }// namespace rpy
 
 std::string_view rpy::algebra::UminusKernel::kernel_name() const noexcept
@@ -21,7 +23,5 @@ std::string_view rpy::algebra::UminusKernel::kernel_name() const noexcept
 rpy::algebra::dtl::GenericUnaryFunction
 rpy::algebra::UminusKernel::generic_op() const noexcept
 {
-    return [](scalars::Scalar& out, const scalars::Scalar& arg) {
-        out = -arg;
-    };
+    return [](scalars::Scalar& out, const scalars::Scalar& arg) { out = -arg; };
 }
