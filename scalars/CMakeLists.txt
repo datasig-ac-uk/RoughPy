@@ -119,6 +119,7 @@ add_roughpy_component(Scalars
         src/devices/event.cpp
         src/devices/event_interface.cpp
         src/devices/fundamental_type.h
+        src/devices/get_best_device.cpp
         src/devices/get_device.cpp
         src/devices/kernel.cpp
         src/devices/kernel_arg.cpp
