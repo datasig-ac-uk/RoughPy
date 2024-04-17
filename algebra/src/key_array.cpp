@@ -61,7 +61,39 @@ BasisKey& KeyArray::operator[](dimn_t index)
 }
 KeyArray KeyArray::to_device(devices::Device device) const
 {
-    devices::Buffer new_buffer = device->alloc(basis_key_type_info, this->size());
+    devices::Buffer new_buffer
+            = device->alloc(basis_key_type_info, this->size());
     m_buffer.to_device(new_buffer, device);
     return KeyArray(std::move(new_buffer));
+}
+
+KeyArray KeyArray::operator[](SliceIndex index)
+{
+    RPY_DBG_ASSERT(index.begin < index.end);
+    const auto buffer_size = size();
+    RPY_CHECK(
+            index.end <= buffer_size,
+            "index end " + std::to_string(index.end)
+                    + " is out of bounds for array of size "
+                    + std::to_string(buffer_size)
+    );
+
+    const auto offset = index.begin * sizeof(BasisKey);
+    const auto size = (index.end - index.begin) * sizeof(BasisKey);
+    return KeyArray(m_buffer.slice(offset, size));
+}
+KeyArray KeyArray::operator[](SliceIndex index) const
+{
+    RPY_DBG_ASSERT(index.begin < index.end);
+    const auto buffer_size = size();
+    RPY_CHECK(
+            index.end <= buffer_size,
+            "index end " + std::to_string(index.end)
+                    + " is out of bounds for array of size "
+                    + std::to_string(buffer_size)
+    );
+
+    const auto offset = index.begin * sizeof(BasisKey);
+    const auto size = (index.end - index.begin) * sizeof(BasisKey);
+    return KeyArray(m_buffer.slice(offset, size));
 }
