@@ -198,8 +198,6 @@ public:
      * @param device device on which the new scalar type should be based.
      */
     virtual const ScalarType* with_device(const devices::Device& device) const;
-
-
 };
 
 static_assert(
