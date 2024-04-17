@@ -48,7 +48,6 @@
 namespace rpy {
 namespace devices {
 
-
 struct ExtensionSourceAndOptions {
     std::vector<string> sources;
     string compile_options;
@@ -130,21 +129,16 @@ public:
     virtual Event
     to_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
 
-    /**
-     * @brief Copy data from one buffer to another
-     * @param dst Buffer to copy data into
-     * @param src Buffer to copy data from
-     * @return event triggered when the copy is complete.
-     */
-    RPY_NO_DISCARD virtual Event memcopy(Buffer& dst, const Buffer& src) const;
-
 protected:
-    void check_type_compatibility(const Type* primary, const Type* secondary) const;
+    void
+    check_type_compatibility(const Type* primary, const Type* secondary) const;
 
 public:
-
-    RPY_NO_DISCARD AlgorithmDriversPtr
-    virtual algorithms(const Type* primary_type, const Type* secondary_type = nullptr, bool check_conversion=false) const;
+    RPY_NO_DISCARD AlgorithmDriversPtr virtual algorithms(
+            const Type* primary_type,
+            const Type* secondary_type = nullptr,
+            bool check_conversion = false
+    ) const;
 };
 
 }// namespace devices
