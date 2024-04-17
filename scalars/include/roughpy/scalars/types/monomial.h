@@ -15,6 +15,7 @@
 #include <roughpy/core/types.h>
 
 #include <ostream>
+#include <roughpy/platform/serialization.h>
 
 namespace rpy {
 namespace scalars {
@@ -102,7 +103,19 @@ public:
     {
         return static_cast<hash_t>(arg.m_data);
     }
+
+    RPY_SERIAL_SERIALIZE_FN();
 };
+
+template <typename Base, typename Packed>
+template <typename Archive>
+void PackedInteger<Base, Packed>::serialize(
+        Archive& archive,
+        const std::uint32_t RPY_UNUSED_VAR version
+)
+{
+    RPY_SERIAL_SERIALIZE_BARE(m_data);
+}
 
 }// namespace dtl
 
@@ -122,7 +135,6 @@ public:
     using const_reference = typename map_type::const_reference;
     using iterator = typename map_type::iterator;
     using const_iterator = typename map_type::const_iterator;
-
 
     Monomial() = default;
     Monomial(const Monomial& other) = default;
@@ -174,6 +186,8 @@ public:
 
     Monomial& operator*=(const Monomial& rhs);
     Monomial& operator*=(indeterminate_type rhs);
+
+    RPY_SERIAL_SERIALIZE_FN();
 };
 
 RPY_NO_DISCARD inline bool
@@ -244,6 +258,8 @@ operator*(const Monomial& lhs, const Monomial& rhs)
     result *= rhs;
     return result;
 }
+
+RPY_SERIAL_SERIALIZE_FN_IMPL(Monomial) { RPY_SERIAL_SERIALIZE_BARE(m_data); }
 
 }// namespace scalars
 }// namespace rpy
