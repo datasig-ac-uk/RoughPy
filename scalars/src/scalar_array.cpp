@@ -35,6 +35,7 @@
 #include "scalar_type.h"
 #include "traits.h"
 
+#include "algorithms.h"
 #include "scalar/raw_bytes.h"
 
 #include "devices/buffer.h"
@@ -86,14 +87,8 @@ ScalarArray::ScalarArray(PackedScalarType type, devices::Buffer&& buffer)
     if (type.is_pointer()) { p_type = type.get_pointer(); }
 
     auto dst_device = scalars::device_from(type);
-    if (dst_device && (*dst_device) != m_buffer.device()) {
-
-    }
+    if (dst_device && (*dst_device) != m_buffer.device()) {}
 }
-
-
-
-
 
 // ScalarArray::ScalarArray(const ScalarType* type, devices::Buffer&& buffer)
 //     : p_type(type)
@@ -143,7 +138,8 @@ ScalarArray::ScalarArray(PackedScalarType type, devices::Buffer&& buffer)
 //                     source_info,
 //                     tmp.size()
 //             )) {
-//             RPY_THROW(std::runtime_error, "failed to convert copy into target");
+//             RPY_THROW(std::runtime_error, "failed to convert copy into
+//             target");
 //         }
 //     }
 // }
@@ -375,17 +371,19 @@ ScalarArray ScalarArray::borrow_mut()
 
 ScalarArray ScalarArray::to_device(devices::Device device) const
 {
-    if (device == this->device()) {
-        return *this;
-    }
+    if (device == this->device()) { return *this; }
 
     auto new_buffer = device->alloc(type_info(), this->size());
     m_buffer.to_device(new_buffer, device);
     return {p_type, std::move(new_buffer)};
 }
 
+void scalars::convert_copy(ScalarArray& dst, const ScalarArray& src)
+{
+    algorithms::copy(dst, src);
+}
+
 #define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME ScalarArray
 #define RPY_SERIAL_DO_SPLIT
 #include <roughpy/platform/serialization_instantiations.inl>
-
