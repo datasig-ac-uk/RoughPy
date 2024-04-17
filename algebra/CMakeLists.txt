@@ -33,6 +33,7 @@ add_roughpy_component(Algebra
         src/kernels/generic_kernel_MV_CV_CS.h
         src/kernels/generic_kernel_MV_CV_CV.cpp
         src/kernels/generic_kernel_MV_CV_CV.h
+        src/kernels/get_kernel.cpp
         src/kernels/inplace_addition_kernel.cpp
         src/kernels/inplace_addition_kernel.h
         src/kernels/inplace_left_scalar_multiply_kernel.cpp
@@ -113,4 +114,12 @@ add_roughpy_component(Algebra
         RoughPy::Core
         RoughPy::Platform
         RoughPy::Scalars
+)
+
+
+add_roughpy_test(Algebra
+        SRC
+        src/test_vector.cpp
+        NEEDS
+        RoughPy::Algebra
 )
