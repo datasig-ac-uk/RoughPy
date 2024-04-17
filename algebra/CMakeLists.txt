@@ -45,6 +45,8 @@ add_roughpy_component(Algebra
         src/kernels/right_scalar_multiply_kernel.cpp
         src/kernels/right_scalar_multiply_kernel.h
         src/kernels/sparse_helpers.h
+        src/kernels/sparse_write_kernel.cpp
+        src/kernels/sparse_write_kernel
         src/kernels/subtraction_kernel.cpp
         src/kernels/subtraction_kernel.h
         src/kernels/uminus_kernel.cpp
