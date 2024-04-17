@@ -3,6 +3,7 @@
 //
 
 #include "sparse_write_kernel.h"
+#include "generic_kernel_MV_CV.h"
 
 namespace rpy {
 namespace algebra {

@@ -19,22 +19,23 @@ extern template class VectorKernelBase<
         dtl::MutableVectorArg,
         dtl::ConstVectorArg>;
 
-class SparseWriteKernel : public VectorKernelBase<SparseWriteKernel, dtl::MutableVectorArg, dtl::ConstVectorArg>
+class SparseWriteKernel : public VectorKernelBase<
+                                  SparseWriteKernel,
+                                  dtl::MutableVectorArg,
+                                  dtl::ConstVectorArg>
 {
 public:
-
     using VectorKernelBase::VectorKernelBase;
 
     string_view kernel_name() const noexcept;
 
-    dtl::GenericUnaryFunction generic_op() const noexcept {
+    dtl::GenericUnaryFunction generic_op() const noexcept
+    {
         return [](scalars::Scalar& out, const scalars::Scalar& in) {
             out = in;
         };
     }
-
 };
-
 
 }// namespace algebra
 }// namespace rpy
