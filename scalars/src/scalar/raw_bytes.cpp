@@ -5,7 +5,6 @@
 #include "raw_bytes.h"
 #include "do_macro.h"
 
-#include "../scalar_serialization.h"
 #include "builtin_scalars.h"
 #include "types/monomial.h"
 
@@ -27,52 +26,32 @@ to_raw_bytes_impl(std::vector<byte>& out, const T* data, dimn_t size)
     std::memcpy(out.data() + curr_size, data, nbytes);
 }
 
-template <typename I>
-void to_raw_bytes_impl_helper(
-        std::vector<byte>& out,
-        scalars::dtl::MPIntegerSerializationHelper<I>& helper
-)
-{
-    const auto curr_size = out.size();
-    out.resize(curr_size + helper.total_bytes());
-
-    auto it = out.begin() + curr_size;
-    *it = (helper.is_negative()) ? 1 : 0;
-    ++it;
-    uint64_t limbs_size = helper.size();
-    it = std::copy_n(
-            reinterpret_cast<const byte*>(&limbs_size),
-            sizeof(uint8_t),
-            it
-    );
-    std::copy_n(reinterpret_cast<const byte*>(helper.limbs()), limbs_size, it);
-}
-
 void to_raw_bytes_impl(
         std::vector<byte>& out,
         const ArbitraryPrecisionRational* data,
         dimn_t count
 )
 {
+    auto serial_int = [&out](auto* value) {
+        out.push_back(static_cast<bool>(mpz_sgn(value)));
+        const auto size
+                = static_cast<uint64_t>(mpz_size(value)) * sizeof(mp_limb_t);
+        auto it = out.insert(
+                out.end(),
+                reinterpret_cast<const byte*>(&size),
+                reinterpret_cast<const byte*>((&size) + 1)
+        );
+        const auto* limb_ptr
+                = reinterpret_cast<const byte*>(mpz_limbs_read(value));
+        it = out.insert(it, limb_ptr, limb_ptr + size);
+        (void) it;
+    };
+
     out.reserve(out.size() + count * sizeof(ArbitraryPrecisionRational));
     for (dimn_t i = 0; i < count; ++i) {
         const auto& backend = data->backend();
-#if RPY_USING_GMP
-        using helper_t = scalars::dtl::MPIntegerSerializationHelper<
-                remove_pointer_t<mpz_srcptr>>;
-
-        helper_t num_helper(mpq_numref(backend.data()));
-        helper_t den_helper(mpq_denref(backend.data()));
-#else
-        using helper_t = scalars::dtl::MPIntegerSerializationHelper<
-                const boost::multiprecision::cpp_int_backend>;
-
-        helper_t num_helper(backend.num());
-        helper_t den_helper(backend.den());
-#endif
-
-        to_raw_bytes_impl_helper(out, num_helper);
-        to_raw_bytes_impl_helper(out, den_helper);
+        serial_int(mpq_numref(backend.data()));
+        serial_int(mpq_denref(backend.data()));
     }
 }
 
@@ -149,34 +128,6 @@ from_raw_bytes_impl(T* dst, dimn_t count, Slice<const byte> bytes)
     std::memcpy(dst, bytes.begin(), nbytes);
 }
 
-template <typename I>
-dimn_t from_raw_bytes_impl(
-        scalars::dtl::MPIntegerSerializationHelper<I>& helper,
-        Slice<const byte> bytes
-)
-{
-    auto advance = 1 + sizeof(uint64_t);
-    const auto* src = bytes.data();
-    RPY_CHECK(bytes.size() > advance);
-
-    auto is_negative = static_cast<bool>(*(src++));
-    uint64_t nbytes_large = 0;
-    std::memcpy(&nbytes_large, src, sizeof(uint64_t));
-    src += sizeof(uint64_t);
-    auto nbytes = static_cast<dimn_t>(nbytes_large);
-    advance += nbytes;
-    RPY_CHECK(bytes.size() > advance);
-
-    dimn_t n_limbs = 0;
-    if (nbytes > 0) {
-        n_limbs = round_up_divide(nbytes, helper.sizeof_limb());
-        std::memcpy(helper.resize(n_limbs), src, nbytes);
-    }
-    helper.finalize(n_limbs, is_negative);
-
-    return advance;
-}
-
 void from_raw_bytes_impl(
         ArbitraryPrecisionRational* dst,
         dimn_t count,
@@ -184,39 +135,41 @@ void from_raw_bytes_impl(
         dimn_t* final_offset = nullptr
 )
 {
-#if RPY_USING_GMP
-    using helper_t = scalars::dtl::MPIntegerSerializationHelper<
-            remove_pointer_t<mpz_ptr>>;
-#else
-    using helper_t = scalars::dtl::MPIntegerSerializationHelper<
-            boost::multiprecision::cpp_int_backend>;
-#endif
 
     const auto* src = bytes.data();
-    dimn_t offset = 0;
     dimn_t remaining = bytes.size();
+
+    auto read_int = [&remaining, &src](auto* value) {
+        RPY_CHECK(remaining >= 1 + sizeof(uint64_t));
+        bool is_negative = static_cast<bool>(src++);
+        remaining -= 1;
+        uint64_t nbytes;
+        std::memcpy(&nbytes, src, sizeof(uint64_t));
+        src += nbytes;
+        remaining -= sizeof(uint64_t);
+
+        RPY_CHECK(remaining >= nbytes);
+        auto n_limbs = (nbytes + sizeof(mp_limb_t) - 1) / sizeof(mp_limb_t);
+        std::memcpy(mpz_limbs_write(value, n_limbs), src, nbytes);
+
+        auto size = is_negative ? -static_cast<mp_size_t>(n_limbs)
+                                : static_cast<mp_size_t>(n_limbs);
+
+        mpz_limbs_finish(value, size);
+
+        src += nbytes;
+        remaining -= nbytes;
+    };
+
     for (dimn_t i = 0; i < count; ++i) {
         auto& backend = dst[i].backend();
-
-#if RPY_USING_GMP
-        helper_t num_helper(mpq_numref(backend.data()));
-        helper_t den_helper(mpq_denref(backend.data()));
-#else
-        helper_t num_helper(backend.num());
-        helper_t den_helper(backend.den());
-#endif
-
-        auto advance = from_raw_bytes_impl(num_helper, {src, remaining});
-        src += advance;
-        remaining -= advance;
-        advance = from_raw_bytes_impl(den_helper, {src, remaining});
-        src += advance;
-        remaining -= advance;
-
-        offset += advance;
+        read_int(mpq_numref(backend.data()));
+        read_int(mpq_denref(backend.data()));
     }
 
-    if (final_offset != nullptr) { *final_offset = offset; }
+    if (final_offset != nullptr) {
+        *final_offset = static_cast<dimn_t>(src - bytes.begin());
+    }
 }
 
 void from_raw_bytes_impl(indeterminate_type& value, Slice<const byte> bytes)
