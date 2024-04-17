@@ -11,6 +11,20 @@
 #include "mutable_vector_element.h"
 #include "vector_iterator.h"
 
+#include "kernels/addition_kernel.h"
+#include "kernels/fused_add_left_scalar_multiply.h"
+#include "kernels/fused_add_right_scalar_multiply.h"
+#include "kernels/fused_sub_right_scalar_multiply_kernel.h"
+#include "kernels/inplace_addition_kernel.h"
+#include "kernels/inplace_left_scalar_multiply_kernel.h"
+#include "kernels/inplace_right_scalar_multiply_kernel.h"
+#include "kernels/inplace_subtraction_kernel.h"
+#include "kernels/left_scalar_multiply_kernel.h"
+#include "kernels/right_scalar_multiply_kernel.h"
+#include "kernels/sparse_write_kernel.h"
+#include "kernels/subtraction_kernel.h"
+#include "kernels/uminus_kernel.h"
+
 #include <roughpy/core/ranges.h>
 #include <roughpy/scalars/algorithms.h>
 #include <roughpy/scalars/devices/core.h>
@@ -590,29 +604,26 @@ void Vector::apply_binary_kernel(
 Vector Vector::uminus() const
 {
     Vector result(p_basis, scalar_type());
-    auto kernel = get_kernel(Unary, "uminus", "");
     result.p_data = std::make_unique<VectorData>(scalar_type(), dimension());
-    result.p_data->mut_keys() = p_data->keys();
 
-    auto launch_params = get_kernel_launch_params();
-
-    kernel(launch_params,
-           result.p_data->mut_scalar_buffer(),
-           p_data->scalar_buffer());
+    const UminusKernel kernel(&*p_basis);
+    kernel(*result.p_data, *p_data);
     return result;
 }
 
 Vector Vector::add(const Vector& other) const
 {
     Vector result(p_basis, scalar_type());
-    result.apply_binary_kernel("add", *this, other);
+    const AdditionKernel kernel(&*p_basis);
+    kernel(*result.p_data, *p_data, *other.p_data);
     return result;
 }
 
 Vector Vector::sub(const Vector& other) const
 {
     Vector result(p_basis, scalar_type());
-    result.apply_binary_kernel("sub", *this, other);
+    const SubtractionKernel kernel(&*p_basis);
+    kernel(*result.p_data, *p_data, *other.p_data);
     return result;
 }
 
@@ -622,20 +633,9 @@ Vector Vector::left_smul(const scalars::Scalar& other) const
     Vector result(p_basis, scalar_type());
     if (!other.is_zero()) {
         const auto stype = scalar_type();
-        auto kernel = get_kernel(Unary, "left_scalar_multiply", "");
-        auto params = get_kernel_launch_params();
-
-        *result.p_data = VectorData(
-                scalars::ScalarArray(stype, dimension()),
-                KeyArray(p_data->keys())
-        );
-
-        kernel(params,
-               result.p_data->mut_scalar_buffer(),
-               p_data->scalar_buffer(),
-               scalars::to_kernel_arg(other));
+        const LeftScalarMultiplyKernel kernel(&*p_basis);
+        kernel(*result.p_data, *p_data, other);
     }
-
     return result;
 }
 
@@ -644,18 +644,8 @@ Vector Vector::right_smul(const scalars::Scalar& other) const
     Vector result(p_basis, scalar_type());
 
     if (!other.is_zero()) {
-        const auto stype = scalar_type();
-        auto kernel = get_kernel(Unary, "right_scalar_multiply", "");
-        auto params = get_kernel_launch_params();
-
-        *result.p_data = VectorData(
-                scalars::ScalarArray(stype, dimension()),
-                KeyArray(p_data->keys())
-        );
-        kernel(params,
-               result.p_data->mut_scalar_buffer(),
-               p_data->scalar_buffer(),
-               scalars::to_kernel_arg(other));
+        const RightScalarMultiplyKernel kernel(&*p_basis);
+        kernel(*result.p_data, *p_data, other);
     }
 
     return result;
@@ -663,18 +653,14 @@ Vector Vector::right_smul(const scalars::Scalar& other) const
 
 Vector Vector::sdiv(const scalars::Scalar& other) const
 {
-    if (other.is_zero()) { throw std::domain_error("division by zero"); }
-
-    scalars::Scalar recip(scalar_type(), 1);
-    recip /= other;
-
-    return right_smul(recip);
+    return right_smul(other.reciprocal());
 }
 
 Vector& Vector::add_inplace(const Vector& other)
 {
     if (&other != this) {
-        apply_binary_kernel("add_inplace", *this, other);
+        const InplaceAdditionKernel kernel(&*p_basis);
+        kernel(*p_data, *other.p_data);
     } else {
         // Adding a vector to itself has the effect of multiplying all
         // entries by 2
@@ -686,7 +672,8 @@ Vector& Vector::add_inplace(const Vector& other)
 Vector& Vector::sub_inplace(const Vector& other)
 {
     if (&other != this) {
-        apply_binary_kernel("sub_inplace", *this, other);
+        const InplaceSubtractionKernel kernel(&*p_basis);
+        kernel(*p_data, *other.p_data);
     } else {
         // Subtracting a vector from itself yields zero
         this->set_zero();
@@ -714,8 +701,8 @@ Vector& Vector::sdiv_inplace(const scalars::Scalar& other)
 Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
     if (&other != this) {
-        scalars::Scalar tmp(scalar.type_info(), scalar.pointer());
-        apply_binary_kernel("add_scal_mul", *this, other, tmp);
+        const FusedAddRightScalarMultiply kernel(&*p_basis);
+        kernel(*p_data, *other.p_data, scalar);
     } else {
         scalars::Scalar tmp(scalar.type_info(), 1, 1);
         tmp += scalar;
@@ -727,8 +714,8 @@ Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 Vector& Vector::sub_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
     if (&other != this) {
-        scalars::Scalar tmp(scalar.type_info(), scalar.pointer());
-        apply_binary_kernel("sub_scal_mul", *this, other, tmp);
+        const FusedSubRightScalarMultiplyKernel kernel(&*p_basis);
+        kernel(*p_data, *other.p_data, scalar);
     } else {
         scalars::Scalar tmp(scalar.type_info(), 1, 1);
         tmp -= scalar;
@@ -740,8 +727,8 @@ Vector& Vector::sub_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 Vector& Vector::add_scal_div(const Vector& other, const scalars::Scalar& scalar)
 {
     if (&other != this) {
-        auto tmp = scalar.reciprocal();
-        apply_binary_kernel("add_scal_mul", *this, other, std::move(tmp));
+        const FusedAddRightScalarMultiply kernel(&*p_basis);
+        kernel(*p_data, *other.p_data, scalar.reciprocal());
     } else {
         scalars::Scalar tmp(scalar.type_info(), 1, 1);
         tmp += scalar.reciprocal();
@@ -753,8 +740,8 @@ Vector& Vector::add_scal_div(const Vector& other, const scalars::Scalar& scalar)
 Vector& Vector::sub_scal_div(const Vector& other, const scalars::Scalar& scalar)
 {
     if (&other != this) {
-        auto tmp = scalar.reciprocal();
-        apply_binary_kernel("sub_scal_mul", *this, other, std::move(tmp));
+        const FusedSubRightScalarMultiplyKernel kernel(&*p_basis);
+        kernel(*p_data, *other.p_data, scalar.reciprocal());
     } else {
         scalars::Scalar tmp(scalar.type_info(), 1, 1);
         tmp -= scalar.reciprocal();
@@ -771,16 +758,10 @@ bool Vector::operator==(const Vector& other) const
         return false;
     }
 
-    auto kernel = get_kernel(OperationType::Comparison, "equals", "");
-    auto params = get_kernel_launch_params();
-
-    int result = 0;
-    devices::KernelArgument result_param(devices::type_info<int>(), &result);
-    // TODO: handle sparse vectors.
-    kernel(params,
-           std::move(result_param),
-           p_data->scalar_buffer(),
-           other.p_data->scalar_buffer());
+    if (is_dense() && other.is_dense()) {
+        return scalars::algorithms::equal(scalars(), other.scalars());
+    }
+    // Handle dense and sparse mixtures
 
     return false;
 }
