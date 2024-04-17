@@ -7,7 +7,7 @@
 
 #include <boost/rational.hpp>
 
-
+#include "scalars_fwd.h"
 
 namespace boost {
 
@@ -27,26 +27,21 @@ using Rational32 = boost::rational<int32_t>;
 
 }// namespace scalars
 
-
 namespace devices {
 namespace dtl {
 
 template <typename T>
-struct type_code_of_impl<scalars::Rational<T>>
-{
+struct type_code_of_impl<scalars::Rational<T>> {
     static constexpr TypeCode value = TypeCode::Rational;
 };
 
 template <typename T>
-struct type_size_of_impl<scalars::Rational<T>>
-{
+struct type_size_of_impl<scalars::Rational<T>> {
     static constexpr dimn_t value = sizeof(T);
 };
 
-
-}
-}
-
+}// namespace dtl
+}// namespace devices
 
 }// namespace rpy
 

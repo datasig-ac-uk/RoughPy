@@ -4,6 +4,7 @@
 
 #ifndef COMPLEX_H
 #define COMPLEX_H
+#include "devices/core.h"
 #include <complex>
 
 namespace rpy {
@@ -14,28 +15,26 @@ using Complex64 = std::complex<double>;
 
 }// namespace scalars
 
-namespace devices { namespace dtl {
+namespace devices {
+namespace dtl {
 
 template <>
-struct type_code_of_impl<scalars::Complex32>
-{
+struct type_code_of_impl<scalars::Complex32> {
     static constexpr TypeCode value = TypeCode::Complex;
 };
 
 template <>
-struct type_code_of_impl<scalars::Complex64>
-{
+struct type_code_of_impl<scalars::Complex64> {
     static constexpr TypeCode value = TypeCode::Complex;
 };
 
 template <typename T>
-struct type_size_of_impl<std::complex<T>>
-{
+struct type_size_of_impl<std::complex<T>> {
     static constexpr dimn_t value = sizeof(T);
 };
 
-
-}}
+}// namespace dtl
+}// namespace devices
 
 }// namespace rpy
 

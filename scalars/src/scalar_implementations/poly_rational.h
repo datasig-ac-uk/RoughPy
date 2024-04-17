@@ -173,6 +173,9 @@ public:
             return {elt.first, elt.second / rhs};
         });
     }
+
+    // RPY_SERIAL_LOAD_FN();
+    // RPY_SERIAL_SAVE_FN();
 };
 
 template <typename Sca>
@@ -233,6 +236,18 @@ bool operator!=(const Polynomial<Sca>& lhs, const Polynomial<Sca>& rhs) noexcept
 {
     return !ranges::equal(lhs, rhs);
 }
+
+// template <typename I>
+// RPY_SERIAL_LOAD_FN_IMPL(Polynomial<I>)
+// {
+//     RPY_SERIAL_SERIALIZE_VAL(m_data);
+// }
+//
+// template <typename I>
+// RPY_SERIAL_SAVE_FN_IMPL(Polynomial<I>)
+// {
+//     RPY_SERIAL_SERIALIZE_VAL(m_data);
+// }
 
 extern template class ROUGHPY_SCALARS_NO_EXPORT
         Polynomial<ArbitraryPrecisionRational>;
