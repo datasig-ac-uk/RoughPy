@@ -199,17 +199,7 @@ public:
      */
     virtual const ScalarType* with_device(const devices::Device& device) const;
 
-    /**
-     * @brief Move data from source buffer to destination buffer
-     * @param dst destination buffer
-     * @param src source buffer
-     *
-     * If the data is trivially copyable then the default implementation is to
-     * use device.memcopy to fill the new buffer. If the data is not trivially
-     * copyable, then this method needs to be overridden to provide a custom
-     * implementation.
-     */
-    virtual void move_buffer(ScalarArray& dst, const ScalarArray& src) const;
+
 };
 
 static_assert(
