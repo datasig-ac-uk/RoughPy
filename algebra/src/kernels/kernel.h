@@ -149,16 +149,20 @@ protected:
 public:
     explicit VectorKernelBase(const Basis* basis) : p_basis(basis) {}
 
-    void operator()(arg_type<ArgSpec>... spec) const
-    {
-        BoundArgs bound_args(spec...);
-        const auto suffix = bound_args.get_suffix();
-
-        if (!eval_device(suffix, bound_args)) {
-            if (!eval_host(suffix, bound_args)) { eval_generic(bound_args); }
-        }
-    }
+    void operator()(arg_type<ArgSpec>... spec) const;
 };
+
+template <typename Derived, typename... ArgSpec>
+void VectorKernelBase<Derived, ArgSpec...>::operator()(arg_type<ArgSpec>... spec
+) const
+{
+    BoundArgs bound_args(spec...);
+    const auto suffix = bound_args.get_suffix();
+
+    if (!eval_device(suffix, bound_args)) {
+        if (!eval_host(suffix, bound_args)) { eval_generic(bound_args); }
+    }
+}
 
 }// namespace algebra
 }// namespace rpy
