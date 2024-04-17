@@ -20,6 +20,8 @@ add_roughpy_component(Algebra
         src/kernels/fused_add_left_scalar_multiply.h
         src/kernels/fused_add_right_scalar_multiply.cpp
         src/kernels/fused_add_right_scalar_multiply.h
+        src/kernels/fused_sub_right_scalar_multiply_kernel.cpp
+        src/kernels/fused_sub_right_scalar_multiply_kernel.h
         src/kernels/generic_kernel.h
         src/kernels/generic_kernel_MV_CS.cpp
         src/kernels/generic_kernel_MV_CS.h
