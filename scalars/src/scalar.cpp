@@ -491,3 +491,9 @@ void Scalar::from_raw_bytes(PackedScalarType type, Slice<byte> bytes)
 
     dtl::from_raw_bytes(ptr, 1, bytes, info);
 }
+Scalar Scalar::reciprocal() const
+{
+    Scalar result(p_type_and_content_type, 1, 1);
+    result /= *this;
+    return result;
+}
