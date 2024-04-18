@@ -42,7 +42,7 @@ ScalarArrayElement::ScalarArrayElement(
 
 void* ScalarArrayElement::mut_pointer()
 {
-    RPY_CHECK(m_buffer.mode() == devices::BufferMode::Write);
+    RPY_CHECK(m_buffer.mode() != devices::BufferMode::Read);
     const auto info = type_info_from(p_type_or_info);
     return static_cast<byte*>(m_buffer.ptr()) + m_index * info.bytes;
 }
@@ -53,7 +53,7 @@ const void* ScalarArrayElement::pointer() const noexcept
 }
 void ScalarArrayElement::set_value(const Scalar& value)
 {
-    RPY_CHECK(m_buffer.mode() == devices::BufferMode::Write);
+    RPY_CHECK(m_buffer.mode() != devices::BufferMode::Read);
     const auto info = type_info_from(p_type_or_info);
     auto* ptr = static_cast<byte*>(m_buffer.ptr()) + m_index * info.bytes;
     scalars::dtl::scalar_convert_copy(ptr, info, value);
