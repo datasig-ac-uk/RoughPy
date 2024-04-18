@@ -40,6 +40,16 @@
 namespace rpy {
 namespace scalars {
 
+/**
+ * @struct RingCharacteristics
+ * @brief Represents the characteristics of a mathematical ring.
+ *
+ * The RingCharacteristics struct is used to store the properties of a
+ * mathematical ring. It contains four boolean flags representing different
+ * characteristics of the ring. The flags are used to indicate whether the ring
+ * is a field, whether it is ordered, whether it has square root functionality,
+ * and whether it deals with complex numbers.
+ */
 struct RingCharacteristics {
     bool is_field : 1;
     bool is_ordered : 1;
@@ -47,6 +57,10 @@ struct RingCharacteristics {
     bool is_complex : 1;
 };
 
+/**
+ * @class ScalarType
+ * @brief Represents a scalar type.
+ */
 class RPY_SCALAR_TYPE_ALIGNMENT ScalarType
 {
     const devices::Type* p_type;
@@ -98,8 +112,36 @@ public:
         return {};
     }
 
+    /**
+     * @brief Returns a pointer to the ScalarType based on the provided
+     * TypeInfo.
+     *
+     * The for_info method is a static member function of the ScalarType class.
+     * It takes a reference to a TypeInfo object as input and returns a const
+     * pointer to the corresponding ScalarType object based on the information
+     * in the TypeInfo object.
+     *
+     * @param info The TypeInfo object that provides information about the data
+     * type.
+     * @return A const pointer to the ScalarType object based on the provided
+     * TypeInfo.
+     * @throws std::runtime_error if the data type is not supported.
+     */
     static const ScalarType* for_info(const devices::TypeInfo& info);
 
+    /**
+     * @fn static const ScalarType* ScalarType::for_id(string_view id)
+     * @brief Retrieves the ScalarType object associated with the given ID.
+     *
+     * This method returns a pointer to the ScalarType object that corresponds
+     * to the provided ID. The ID is passed as a string_view parameter, which
+     * allows for efficient access to the characters of the ID without
+     * necessarily copying them to a new string object.
+     *
+     * @param id The ID of the ScalarType to retrieve.
+     * @return A pointer to the ScalarType object associated with the given ID,
+     * or nullptr if no ScalarType can be found.
+     */
     static const ScalarType* for_id(string_view id);
 
     /**
@@ -119,11 +161,32 @@ public:
      */
     RPY_NO_DISCARD devices::Device device() const noexcept { return m_device; }
 
+    /**
+     * @brief Returns the type information of a device.
+     *
+     * The type_info method is a const member function that returns the type
+     * information of a device. It is used to retrieve the characteristics and
+     * properties of a device.
+     *
+     * @return The type information of the device.
+     *
+     * @note This method does not throw any exceptions.
+     */
     RPY_NO_DISCARD devices::TypeInfo type_info() const noexcept
     {
         return m_info;
     }
 
+    /**
+     * @brief Checks if the device is the CPU device.
+     *
+     * The `is_cpu` method is used to determine if the device is the CPU device.
+     * It compares the device with the host device obtained from the `devices`
+     * namespace. If the two devices are the same, it returns `true`; otherwise,
+     * it returns `false`.
+     *
+     * @return `true` if the device is the CPU device, `false` otherwise.
+     */
     RPY_NO_DISCARD bool is_cpu() const noexcept
     {
         return m_device == devices::get_host_device();

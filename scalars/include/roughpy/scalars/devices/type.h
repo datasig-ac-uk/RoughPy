@@ -180,6 +180,20 @@ public:
      */
     virtual void free_single(void* ptr) const;
 
+    /**
+     * @brief Check if the current object supports the specified device.
+     *
+     * This method checks if the current object supports the specified device.
+     *
+     * @param device The device to check support for.
+     *
+     * @return true if the current object supports the specified device, false
+     * otherwise.
+     *
+     * @note This method is declared as virtual to allow derived classes to
+     * override the behavior. The noexcept specifier indicates that this method
+     * will not throw any exception.
+     */
     RPY_NO_DISCARD virtual bool supports_device(const Device& device
     ) const noexcept;
 
@@ -256,66 +270,131 @@ namespace traits {
 
 using TypePtr = const Type*;
 
+/**
+ * @brief Check if the given type has standard layout
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type has standard layout
+ */
 inline bool is_standard_layout(TypePtr const typePtr)
 {
     return typePtr->type_traits().standard_layout;
 }
 
+/**
+ * @brief Check if the given type is trivially copyable
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is trivially copyable
+ */
 inline bool is_trivially_copyable(TypePtr const typePtr)
 {
     return typePtr->type_traits().trivially_copyable;
 }
 
+/**
+ * @brief Check if the given type is trivially constructible
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is trivially constructible
+ */
 inline bool is_trivially_constructible(TypePtr const typePtr)
 {
     return typePtr->type_traits().trivially_constructible;
 }
 
+/**
+ * @brief Check if the given type is trivially default constructible
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is trivially default constructible
+ */
 inline bool is_trivially_default_constructible(TypePtr const typePtr)
 {
     return typePtr->type_traits().trivially_default_constructible;
 }
 
+/**
+ * @brief Check if the given type is trivially copy constructible
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is trivially copy constructible
+ */
 inline bool is_trivially_copy_constructible(TypePtr const typePtr)
 {
     return typePtr->type_traits().trivially_copy_constructible;
 }
 
+/**
+ * @brief Check if the given type is trivially copy assignable
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is trivially copy assignable
+ */
 inline bool is_trivially_copy_assignable(TypePtr const typePtr)
 {
     return typePtr->type_traits().trivially_copy_assignable;
 }
 
+/**
+ * @brief Check if the given type is trivially destructible
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is trivially destructible
+ */
 inline bool is_trivially_destructible(TypePtr const typePtr)
 {
     return typePtr->type_traits().trivially_destructible;
 }
 
+/**
+ * @brief Check if the given type is polymorphic
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is polymorphic
+ */
 inline bool is_polymorphic(TypePtr const typePtr)
 {
     return typePtr->type_traits().polymorphic;
 }
 
+/**
+ * @brief Check if the given type is signed
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is signed
+ */
 inline bool is_signed(TypePtr const typePtr)
 {
     return typePtr->type_traits().is_signed;
 }
 
+/**
+ * @brief Check if the given type is unsigned
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is unsigned
+ */
 inline bool is_unsigned(TypePtr const typePtr)
 {
     return !typePtr->type_traits().is_signed;
 }
 
+/**
+ * @brief Check if the given type is floating point
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is floating point
+ */
 inline bool is_floating_point(TypePtr const typePtr)
 {
     return typePtr->type_traits().is_floating_point;
 }
 
+/**
+ * @brief Check if the given type is integral
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is integral
+ */
 inline bool is_integral(TypePtr const typePtr)
 {
     return typePtr->type_traits().is_integral;
 }
 
+/**
+ * @brief Check if the given type is either integral or floating point
+ * @param typePtr A pointer to the Type object
+ * @return A boolean value indicating whether the type is either integral or floating point
+ */
 inline bool is_arithmetic(TypePtr const typePtr)
 {
     return is_integral(typePtr) || is_floating_point(typePtr);
@@ -323,6 +402,23 @@ inline bool is_arithmetic(TypePtr const typePtr)
 
 }// namespace traits
 
+/**
+ * @brief Retrieves the Type for a given TypeInfo object.
+ *
+ * The get_type function returns the Type for a given TypeInfo object based on
+ * the provided information.
+ *
+ * @param info The TypeInfo object that contains information about the desired
+ * Type.
+ * @return The Type object corresponding to the provided TypeInfo.
+ * @throws std::runtime_error if the TypeInfo does not correspond to a
+ * fundamental type.
+ *
+ * The get_type function uses a switch statement to handle different TypeCode
+ * values and their corresponding byte sizes in order to return the appropriate
+ * Type object. If the TypeInfo does not correspond to a fundamental type, an
+ * exception of type std::runtime_error is thrown.
+ */
 RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT const devices::Type*
 get_type(devices::TypeInfo info);
 
