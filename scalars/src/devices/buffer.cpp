@@ -142,12 +142,14 @@ Event Buffer::to_device(Buffer& dst, const Device& device, Queue& queue) const
 Buffer Buffer::map(rpy::dimn_t size, rpy::dimn_t offset)
 {
     if (impl() == nullptr) { return Buffer(); }
+    if (size == 0) { size = this->size(); }
     return impl()->map_mut(size, offset);
 }
 
 Buffer Buffer::map(rpy::dimn_t size, rpy::dimn_t offset) const
 {
     if (impl() == nullptr) { return Buffer(); }
+    if (size == 0) { size = this->size(); }
     return impl()->map(size, offset);
 }
 
