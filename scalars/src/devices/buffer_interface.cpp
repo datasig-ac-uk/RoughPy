@@ -54,11 +54,11 @@ Event BufferInterface::to_device(
 Buffer BufferInterface::map_mut(dimn_t size, dimn_t offset) { return {}; }
 Buffer BufferInterface::map(dimn_t size, dimn_t offset) const { return {}; }
 
-Buffer BufferInterface::slice(dimn_t offset, dimn_t size) const
+Buffer BufferInterface::slice(dimn_t size, dimn_t offset) const
 {
     return Buffer();
 }
-Buffer BufferInterface::mut_slice(dimn_t offset, dimn_t size)
+Buffer BufferInterface::mut_slice(dimn_t size, dimn_t offset)
 {
     return Buffer();
 }
