@@ -28,7 +28,6 @@ public:
     using pointer = const BasisKey*;
     using iterator_category = std::forward_iterator_tag;
 
-
     explicit KeyArrayIterator(pointer val) : p_current(val) {}
 
     KeyArrayIterator& operator++()
@@ -76,15 +75,13 @@ public:
     using iterator = KeyArrayIterator;
     using const_iterator = iterator;
 
-
     explicit KeyArrayRange(devices::Buffer&& mapped) noexcept
-            : m_mapped_buffer(std::move(mapped))
+        : m_mapped_buffer(std::move(mapped))
     {
         auto slice = m_mapped_buffer.as_slice<BasisKey>();
         p_begin = slice.begin();
         p_end = slice.end();
     }
-
 
     RPY_NO_DISCARD const_iterator begin() const noexcept
     {
@@ -99,10 +96,7 @@ public:
     {
         return KeyArrayIterator(p_begin);
     }
-    RPY_NO_DISCARD iterator end() noexcept
-    {
-        return KeyArrayIterator(p_end);
-    }
+    RPY_NO_DISCARD iterator end() noexcept { return KeyArrayIterator(p_end); }
 };
 
 }// namespace dtl
@@ -135,7 +129,11 @@ public:
 
     explicit KeyArray(devices::Buffer&& data) : m_buffer(std::move(data))
     {
-        RPY_CHECK(m_buffer.type_info().code == devices::TypeCode::KeyType);
+
+        RPY_CHECK(
+                m_buffer.is_null()
+                || m_buffer.type_info().code == devices::TypeCode::KeyType
+        );
     }
 
     explicit KeyArray(Slice<BasisKey> keys);
