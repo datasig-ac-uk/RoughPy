@@ -48,14 +48,18 @@ CPUBuffer::CPUBuffer(RawBuffer raw, uint32_t arg_flags, TypeInfo info)
     : base_t(get_type(info)),
       raw_buffer(std::move(raw)),
       m_flags(arg_flags),
-      m_info(info)
-{}
+      m_info(info),
+      m_num_elts(raw.size / info.bytes)
+{
+    RPY_DBG_ASSERT(raw.size == m_num_elts * info.bytes);
+}
 
 CPUBuffer::CPUBuffer(rpy::dimn_t size, rpy::devices::TypeInfo info)
     : base_t(get_type(info)),
       raw_buffer{nullptr, 0},
       m_flags(IsOwned),
-      m_info(info)
+      m_info(info),
+      m_num_elts(size)
 {
     if (size > 0) {
         auto device = CPUDeviceHandle::get();
@@ -68,27 +72,30 @@ CPUBuffer::CPUBuffer(rpy::dimn_t size, rpy::devices::TypeInfo info)
 
 CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, TypeInfo info)
     : base_t(get_type(info)),
-      raw_buffer{raw_ptr, size},
+      raw_buffer{raw_ptr, size * info.bytes},
       m_flags(),
-      m_info(info)
+      m_info(info),
+      m_num_elts(size)
 {}
 
 CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, TypeInfo info)
     : base_t(get_type(info)),
-      raw_buffer{const_cast<void*>(raw_ptr), size},
+      raw_buffer{const_cast<void*>(raw_ptr), size * info.bytes},
       m_flags(IsConst),
-      m_info(info)
+      m_info(info),
+      m_num_elts(size)
 {}
 
 CPUBuffer::~CPUBuffer()
 {
+    RPY_DBG_ASSERT(CPUBuffer::ref_count() == 0);
     if ((m_flags & IsOwned) != 0) {
         CPUDeviceHandle::get()->free_raw_buffer(raw_buffer);
     } else if (!m_memory_owner.is_null()) {
         m_memory_owner.~Buffer();
     }
 }
-dimn_t CPUBuffer::bytes() const { return raw_buffer.size * m_info.bytes; }
+dimn_t CPUBuffer::bytes() const { return raw_buffer.size; }
 
 BufferMode CPUBuffer::mode() const
 {
@@ -108,7 +115,7 @@ void CPUBuffer::unmap(BufferInterface& other) const noexcept
     as_cpubuf.m_memory_owner = Buffer();
     as_cpubuf.raw_buffer = {nullptr, 0};
 }
-dimn_t CPUBuffer::size() const { return raw_buffer.size; }
+dimn_t CPUBuffer::size() const { return m_num_elts; }
 void* CPUBuffer::ptr() noexcept { return raw_buffer.ptr; }
 Device CPUBuffer::device() const noexcept { return CPUDeviceHandle::get(); }
 
@@ -159,14 +166,14 @@ Buffer CPUBuffer::map(dimn_t size, dimn_t offset) const
 bool CPUBuffer::is_host() const noexcept { return true; }
 Buffer CPUBuffer::slice(dimn_t size, dimn_t offset) const
 {
-    RPY_CHECK(offset + size <= raw_buffer.size);
+    RPY_CHECK(offset + size <= m_num_elts);
 
     const auto* ptr = static_cast<const byte*>(raw_buffer.ptr) + offset;
     return Buffer(new CPUBuffer(ptr, size, m_info));
 }
 Buffer CPUBuffer::mut_slice(dimn_t size, dimn_t offset)
 {
-    RPY_CHECK(offset + size <= raw_buffer.size);
+    RPY_CHECK(offset + size <= m_num_elts);
 
     auto* ptr = static_cast<byte*>(raw_buffer.ptr) + offset;
     return Buffer(new CPUBuffer(ptr, size, m_info));
