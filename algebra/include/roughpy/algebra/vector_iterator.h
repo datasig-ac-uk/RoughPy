@@ -36,7 +36,7 @@ public:
         value_type m_pair;
 
     public:
-        KVPairProxy(BasisKey key, scalars::Scalar value)
+        KVPairProxy(BasisKey&& key, scalars::Scalar&& value)
             : m_pair(std::move(key), std::move(value))
         {}
 
