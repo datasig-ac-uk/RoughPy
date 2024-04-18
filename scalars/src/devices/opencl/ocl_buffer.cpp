@@ -156,7 +156,8 @@ OCLBuffer::ref_count() const noexcept
 }
 DeviceType OCLBuffer::type() const noexcept { return DeviceType::OpenCL; }
 const void* OCLBuffer::ptr() const noexcept { return &m_buffer; }
-Event OCLBuffer::to_device(Buffer& dst, const Device& device, Queue& queue) const
+Event OCLBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
+        const
 {
     if (device == m_device) {
         dst = clone_cast(this);
@@ -424,7 +425,7 @@ Buffer OCLBuffer::memory_owner() const noexcept
     if (m_memory_owner.is_null()) { return BufferInterface::memory_owner(); }
     return m_memory_owner;
 }
-Buffer OCLBuffer::slice(dimn_t offset, dimn_t size) const
+Buffer OCLBuffer::slice(dimn_t size, dimn_t offset) const
 {
     cl_int ecode = CL_SUCCESS;
 
@@ -448,7 +449,7 @@ Buffer OCLBuffer::slice(dimn_t offset, dimn_t size) const
             )// Safe, just creating a new reference
     ));
 }
-Buffer OCLBuffer::mut_slice(dimn_t offset, dimn_t size)
+Buffer OCLBuffer::mut_slice(dimn_t size, dimn_t offset)
 {
     cl_int ecode = CL_SUCCESS;
 

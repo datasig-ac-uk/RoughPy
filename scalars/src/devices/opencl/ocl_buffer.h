@@ -77,8 +77,8 @@ public:
     Buffer map_mut(dimn_t size, dimn_t offset) override;
     Buffer map(dimn_t size, dimn_t offset) const override;
     Buffer memory_owner() const noexcept override;
-    Buffer slice(dimn_t offset, dimn_t size) const override;
-    Buffer mut_slice(dimn_t offset, dimn_t size) override;
+    Buffer slice(dimn_t size, dimn_t offset) const override;
+    Buffer mut_slice(dimn_t size, dimn_t offset) override;
 
     void unmap(BufferInterface& buffer) const noexcept override;
 };

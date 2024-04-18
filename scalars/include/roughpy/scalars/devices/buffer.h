@@ -48,6 +48,7 @@ class ROUGHPY_PLATFORM_EXPORT BufferInterface : public dtl::InterfaceBase
      * implementations will have to handle this by themselves.
      */
     const Type* p_type;
+
 public:
     using object_t = Buffer;
 
@@ -70,8 +71,8 @@ public:
 
     virtual Buffer memory_owner() const noexcept;
 
-    virtual Buffer slice(dimn_t offset, dimn_t size) const;
-    virtual Buffer mut_slice(dimn_t offset, dimn_t size);
+    virtual Buffer slice(dimn_t size, dimn_t offset) const;
+    virtual Buffer mut_slice(dimn_t size, dimn_t offset);
 };
 
 #ifdef RPY_PLATFORM_WINDOWS
@@ -95,7 +96,6 @@ class ROUGHPY_PLATFORM_EXPORT Buffer
     : public dtl::ObjectBase<BufferInterface, Buffer>
 {
     using base_t = dtl::ObjectBase<BufferInterface, Buffer>;
-
 
 public:
     using base_t::base_t;

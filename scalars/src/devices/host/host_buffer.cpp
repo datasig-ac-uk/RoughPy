@@ -157,14 +157,14 @@ Buffer CPUBuffer::map(dimn_t size, dimn_t offset) const
 }
 
 bool CPUBuffer::is_host() const noexcept { return true; }
-Buffer CPUBuffer::slice(dimn_t offset, dimn_t size) const
+Buffer CPUBuffer::slice(dimn_t size, dimn_t offset) const
 {
     RPY_CHECK(offset + size <= raw_buffer.size);
 
     const auto* ptr = static_cast<const byte*>(raw_buffer.ptr) + offset;
     return Buffer(new CPUBuffer(ptr, size, m_info));
 }
-Buffer CPUBuffer::mut_slice(dimn_t offset, dimn_t size)
+Buffer CPUBuffer::mut_slice(dimn_t size, dimn_t offset)
 {
     RPY_CHECK(offset + size <= raw_buffer.size);
 
