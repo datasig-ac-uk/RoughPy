@@ -237,8 +237,7 @@ ObjectBase<Interface, Derived>::operator=(ObjectBase&& other) noexcept
     RPY_DBG_ASSERT(other.p_impl == nullptr || other.p_impl->ref_count() > 0);
     if (&other != this) {
         this->~ObjectBase();
-        p_impl = other.p_impl;
-        other.p_impl = nullptr;
+        std::swap(p_impl, other.p_impl);
     }
     return *this;
 }
