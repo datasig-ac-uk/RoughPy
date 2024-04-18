@@ -121,6 +121,10 @@ void PackedInteger<Base, Packed>::serialize(
 
 using indeterminate_type = dtl::PackedInteger<deg_t, char>;
 
+/**
+ * @class Monomial
+ * @brief A class representing a monomial
+ */
 class ROUGHPY_SCALARS_EXPORT Monomial
 {
 
@@ -160,7 +164,27 @@ public:
     Monomial& operator=(const Monomial& other) = default;
     Monomial& operator=(Monomial&& other) noexcept = default;
 
+    /**
+     * @brief Get the degree of the monomial.
+     *
+     * This method calculates and returns the degree of the monomial.
+     * The degree is calculated by summing up the exponents of all the variables
+     * in the monomial.
+     *
+     * @return The degree of the monomial as an integer of type deg_t.
+     *
+     * @see Monomial
+     */
     RPY_NO_DISCARD deg_t degree() const noexcept;
+
+    /**
+     * @brief Returns the type of the monomial
+     *
+     * They *type* of a monomial is the number of distinct indeterminates that
+     * appear in the monomial.
+     *
+     * @return The type of the monomial as a deg_t type
+     */
     RPY_NO_DISCARD deg_t type() const noexcept { return m_data.size(); }
 
     RPY_NO_DISCARD iterator begin() noexcept { return m_data.begin(); }
