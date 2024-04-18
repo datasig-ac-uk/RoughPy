@@ -132,6 +132,7 @@ public:
     explicit ObjectBase(Interface* iface) noexcept : p_impl(iface)
     {
         if (p_impl) { p_impl->inc_ref(); }
+        RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
     }
 
     explicit ObjectBase(Interface* iface, steal_t) noexcept : p_impl(iface) {}
@@ -189,19 +190,21 @@ template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>::ObjectBase(const ObjectBase& other)
     : p_impl(other.p_impl)
 {
-    if (p_impl) { p_impl->inc_ref(); }
+    if (p_impl != nullptr) { p_impl->inc_ref(); }
+    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
 }
 template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>::ObjectBase(ObjectBase&& other) noexcept
     : p_impl(other.p_impl)
 {
+    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
     other.p_impl = nullptr;
 }
 template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>::~ObjectBase()
 {
-    RPY_DBG_ASSERT(!p_impl || p_impl->ref_count() > 0);
-    if (p_impl && p_impl->dec_ref() == 1) { delete p_impl; }
+    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
+    if (p_impl != nullptr && p_impl->dec_ref() == 1) { delete p_impl; }
     p_impl = nullptr;
 }
 
@@ -215,9 +218,11 @@ template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>&
 ObjectBase<Interface, Derived>::operator=(const ObjectBase& other)
 {
+    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
+    RPY_DBG_ASSERT(other.p_impl == nullptr || other.p_impl->ref_count() > 0);
     if (&other != this) {
         this->~ObjectBase();
-        if (other.p_impl) {
+        if (other.p_impl != nullptr) {
             p_impl = other.p_impl;
             p_impl->inc_ref();
         }
@@ -228,6 +233,8 @@ template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>&
 ObjectBase<Interface, Derived>::operator=(ObjectBase&& other) noexcept
 {
+    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
+    RPY_DBG_ASSERT(other.p_impl == nullptr || other.p_impl->ref_count() > 0);
     if (&other != this) {
         this->~ObjectBase();
         p_impl = other.p_impl;
@@ -303,7 +310,6 @@ inline typename Interface::object_t clone_cast(const Interface* iface) noexcept
     // the interface object.
     return object_t(const_cast<Interface*>(iface));
 }
-
 
 }// namespace devices
 }// namespace rpy
