@@ -138,9 +138,15 @@ public:
     RPY_NO_DISCARD ScalarArray operator[](SliceIndex index);
     RPY_NO_DISCARD ScalarArray operator[](SliceIndex index) const;
 
-    RPY_NO_DISCARD ScalarArray view() const { return {p_type, m_buffer.map()}; }
+    RPY_NO_DISCARD ScalarArray view() const
+    {
+        return {p_type, m_buffer.map(size())};
+    }
 
-    RPY_NO_DISCARD ScalarArray mut_view() { return {p_type, m_buffer.map()}; }
+    RPY_NO_DISCARD ScalarArray mut_view()
+    {
+        return {p_type, m_buffer.map(size())};
+    }
 
     RPY_NO_DISCARD ScalarArray borrow() const;
     RPY_NO_DISCARD ScalarArray borrow_mut();
