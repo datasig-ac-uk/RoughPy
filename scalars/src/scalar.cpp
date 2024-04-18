@@ -330,6 +330,8 @@ Scalar& Scalar::operator=(Scalar&& other) noexcept
     if (&other != this) {
         if (p_type_and_content_type.is_null()) {
             construct_inplace(this, std::move(other));
+        } else if (p_type_and_content_type.get_enumeration() == dtl::ScalarContentType::OwnedInterface) {
+            interface_ptr->set_value(other);
         } else {
             dtl::scalar_convert_copy(mut_pointer(), type_info(), other);
         }
