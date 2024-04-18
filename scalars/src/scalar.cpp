@@ -247,6 +247,7 @@ Scalar::Scalar(Scalar&& other) noexcept
             interface_ptr = other.interface_ptr;
             other.interface_ptr = nullptr;
     }
+    other.p_type_and_content_type = packed_type();
 }
 
 Scalar::~Scalar()
@@ -261,9 +262,10 @@ Scalar::~Scalar()
             break;
         case dtl::ScalarContentType::Interface:
         case dtl::ScalarContentType::OwnedInterface:
-            RPY_DBG_ASSERT(interface_ptr != nullptr);
-            delete interface_ptr;
-            interface_ptr = nullptr;
+            if (interface_ptr) {
+                delete interface_ptr;
+                interface_ptr = nullptr;
+            }
             break;
         case dtl::ScalarContentType::TrivialBytes:
         case dtl::ScalarContentType::OpaquePointer:
@@ -272,6 +274,7 @@ Scalar::~Scalar()
             opaque_pointer = nullptr;
             break;
     }
+    p_type_and_content_type = packed_type();
 };
 
 Scalar& Scalar::operator=(const Scalar& other)
