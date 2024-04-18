@@ -328,7 +328,7 @@ mismatch(const Buffer& left, const Buffer& right)
 
 RPY_NO_DISCARD inline bool equal(const Buffer& left, const Buffer& right)
 {
-    return static_cast<bool>(mismatch(left, right));
+    return !static_cast<bool>(mismatch(left, right));
 }
 
 RPY_NO_DISCARD inline bool
