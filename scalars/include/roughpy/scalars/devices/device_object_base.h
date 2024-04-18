@@ -81,7 +81,7 @@ class RefCountBase : public Interface
     );
 
     using atomic_t = std::atomic_size_t;
-    atomic_t m_ref_count;
+    atomic_t m_ref_count = 0;
 
 public:
     using Interface::Interface;
