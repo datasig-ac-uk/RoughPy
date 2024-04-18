@@ -31,7 +31,6 @@ void algebra::dtl::GenericKernel<
         );
     }
 
-
     {
         const auto left_keys = right.keys().view();
         const auto left_key_slice = left_keys.as_slice();
@@ -248,6 +247,11 @@ void algebra::dtl::GenericKernel<
                 const VectorData& right
         ) const
 {
+    if (out.empty()) {
+        const auto max_size = std::max(left.size(), right.size());
+        out.resize(max_size);
+    }
+
     const auto size = std::min(left.size(), right.size());
 
     auto scalars_out = out.mut_scalars().mut_view();
