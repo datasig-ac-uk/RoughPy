@@ -74,7 +74,10 @@ public:
         return m_scalar_buffer.type();
     }
 
-    RPY_NO_DISCARD bool sparse() const noexcept { return m_key_buffer.empty(); }
+    RPY_NO_DISCARD bool sparse() const noexcept
+    {
+        return !m_key_buffer.empty();
+    }
 
     RPY_NO_DISCARD devices::Buffer& mut_scalar_buffer() noexcept
     {
