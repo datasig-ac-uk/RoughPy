@@ -26,7 +26,7 @@ KeyArray::KeyArray(Slice<BasisKey> keys)
 
 KeyArray::~KeyArray()
 {
-    if (m_buffer.is_host() && m_buffer.is_owner()) {
+    if (!m_buffer.is_null() && m_buffer.is_host() && m_buffer.is_owner()) {
         auto slice = m_buffer.as_mut_slice<BasisKey>();
         std::destroy(slice.begin(), slice.end());
     }
