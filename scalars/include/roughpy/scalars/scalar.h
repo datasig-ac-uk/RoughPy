@@ -277,7 +277,7 @@ public:
             typename = enable_if_t<is_base_of<ScalarInterface, I>::value>>
     explicit Scalar(std::unique_ptr<I>&& iface)
         : p_type_and_content_type(
-                  nullptr,
+                  iface->type(),
                   dtl::ScalarContentType::OwnedInterface
           ),
           interface_ptr(std::move(iface).release())
