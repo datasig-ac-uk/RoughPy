@@ -487,10 +487,12 @@ bool Vector::operator==(const Vector& other) const
 std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
 {
     const auto basis = value.basis();
+    os << '{';
     for (const auto& item : value) {
-        os << item->second << '(' << basis->to_string(item->first) << ')';
+        os << ' ' << item->second << '(' << basis->to_string(item->first)
+           << ')';
     }
-    return os;
+    return os << " }";
 }
 
 void Vector::insert_element(const BasisKey& key, scalars::Scalar value)
