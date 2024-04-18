@@ -195,10 +195,7 @@ CPUDevice CPUDeviceHandle::get()
     return device;
 }
 
-bool CPUDeviceHandle::is_host() const noexcept
-{
-    return true;
-}
+bool CPUDeviceHandle::is_host() const noexcept { return true; }
 
 DeviceInfo CPUDeviceHandle::info() const noexcept
 {
@@ -243,8 +240,10 @@ optional<Kernel> CPUDeviceHandle::get_kernel(const string& name) const noexcept
     auto kernel = DeviceHandle::get_kernel(name);
     if (kernel) { return kernel; }
 
-    kernel = p_ocl_handle->get_kernel(name);
-    if (kernel) { return kernel; }
+    if (p_ocl_handle) {
+        kernel = p_ocl_handle->get_kernel(name);
+        if (kernel) { return kernel; }
+    }
 
     auto found = s_kernels.find(name);
     if (found != s_kernels.end()) { return {found->second}; }
