@@ -30,8 +30,8 @@
 #define ROUGHPY_SCALARS_SCALAR_INTERFACE_H_
 
 #include "scalars_fwd.h"
-
 #include <roughpy/platform/alloc.h>
+
 namespace rpy {
 namespace scalars {
 
@@ -42,8 +42,9 @@ public:
 
     RPY_NO_DISCARD virtual const void* pointer() const noexcept = 0;
 
-    virtual void set_value(const Scalar& value) = 0;
+    virtual PackedScalarType type() const noexcept = 0;
 
+    virtual void set_value(const Scalar& value) = 0;
     virtual void print(std::ostream& os) const = 0;
 
     virtual void add_inplace(const Scalar& other);

@@ -40,6 +40,11 @@ ScalarArrayElement::ScalarArrayElement(
     }
 }
 
+PackedScalarType ScalarArrayElement::type() const noexcept
+{
+    return p_type_or_info;
+}
+
 void* ScalarArrayElement::mut_pointer()
 {
     RPY_CHECK(m_buffer.mode() != devices::BufferMode::Read);

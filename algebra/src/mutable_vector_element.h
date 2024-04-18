@@ -5,13 +5,12 @@
 #ifndef ROUGHPY_MUTABLE_VECTOR_ELEMENT_H
 #define ROUGHPY_MUTABLE_VECTOR_ELEMENT_H
 
-
 #include "basis_key.h"
 #include "key_array.h"
 #include "vector.h"
 
-#include <roughpy/scalars/scalar_interface.h>
 #include <roughpy/scalars/scalar.h>
+#include <roughpy/scalars/scalar_interface.h>
 
 namespace rpy {
 namespace algebra {
@@ -23,7 +22,6 @@ class MutableVectorElement : public scalars::ScalarInterface
     scalars::Scalar m_value;
     optional<dimn_t> m_loc;
 
-
     void get_value();
 
 public:
@@ -31,6 +29,8 @@ public:
         : p_vector(vector),
           m_key(std::move(key))
     {}
+
+    scalars::PackedScalarType type() const noexcept override;
 
     virtual ~MutableVectorElement();
     virtual const void* pointer() const noexcept;

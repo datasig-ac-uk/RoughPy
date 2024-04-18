@@ -31,6 +31,8 @@ public:
             const ScalarType* type = nullptr
     );
 
+    PackedScalarType type() const noexcept override;
+
     void* mut_pointer();
     const void* pointer() const noexcept override;
     void set_value(const Scalar& value) override;
