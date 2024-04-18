@@ -36,7 +36,7 @@ BasisKey clone_key(const void* kptr)
 VectorIterator::reference VectorIterator::operator*()
 {
     if (m_key_view.empty()) {
-        return {BasisKey(m_index), m_scalar_view[m_index]};
+        return {BasisKey(m_index), std::move(m_scalar_view[m_index])};
     }
     auto* ptr
             = static_cast<const BasisKey*>(m_key_view.buffer().ptr()) + m_index;
@@ -57,12 +57,14 @@ bool VectorIterator::operator==(const VectorIterator& other) const noexcept
 {
     return (m_scalar_view.buffer() == other.m_scalar_view.buffer()
             && m_key_view.buffer() == other.m_key_view.buffer()
-            && m_index == other.m_index);
+            && m_index == other.m_index)
+            || m_index >= m_scalar_view.size();
 }
 
 bool VectorIterator::operator!=(const VectorIterator& other) const noexcept
 {
-    return (!(m_scalar_view.buffer() == other.m_scalar_view.buffer())
-            || !(m_key_view.buffer() == other.m_key_view.buffer())
-            || m_index != other.m_index);
+    return ((m_scalar_view.buffer() == other.m_scalar_view.buffer())
+            && (m_key_view.buffer() == other.m_key_view.buffer())
+            && m_index != other.m_index)
+            || m_index < m_scalar_view.size();
 }
