@@ -37,5 +37,8 @@ bool APRationalType::supports_device(const Device& device) const noexcept
 {
     return device->is_host();
 }
-
-const APRationalType devices::arbitrary_precision_rational_type;
+const APRationalType* APRationalType::get() noexcept
+{
+    static const APRationalType type;
+    return &type;
+}

@@ -12,15 +12,18 @@ static constexpr RingCharacteristics
 
 FloatType::FloatType()
     : ScalarType(
-              &devices::float_type,
+              devices::FloatType::get(),
               devices::get_host_device(),
               float_ring_characteristics
       )
 {}
 
-const FloatType scalars::float_type;
 
-const ScalarType* FloatType::get() noexcept { return &float_type; }
+const ScalarType* FloatType::get() noexcept
+{
+    static const FloatType type;
+    return &type;
+}
 
 // template <>
 // ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>

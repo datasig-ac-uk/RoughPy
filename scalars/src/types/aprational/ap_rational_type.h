@@ -21,9 +21,11 @@ public:
     RPY_NO_DISCARD void* allocate_single() const override;
     void free_single(void* ptr) const override;
     bool supports_device(const Device& device) const noexcept override;
+
+    RPY_NO_DISCARD
+    static const APRationalType* get() noexcept;
 };
 
-extern const APRationalType arbitrary_precision_rational_type;
 
 }
 }

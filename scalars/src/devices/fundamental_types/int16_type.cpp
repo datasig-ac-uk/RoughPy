@@ -1,10 +1,24 @@
+
 #include "int16_type.h"
-namespace rpy {
-namespace devices {
-template class FundamentalType<int16_t>;
-}
-}
+
 using namespace rpy;
 using namespace rpy::devices;
-const FundamentalType<int16_t>
-    devices::int16_type("i16", "int16");
+
+
+namespace rpy {
+namespace devices {
+
+namespace dtl {
+template <>
+struct IDAndNameOfFType<int16_t> {
+    static constexpr string_view id = "i16";
+    static constexpr string_view name = "int16";
+};
+
+}
+
+template class FundamentalType<int16_t>;
+
+}
+}
+

@@ -12,18 +12,17 @@
 namespace rpy {
 namespace scalars {
 
-class BFloat16Type : public ScalarType
+class BFloat16ScalarType : public ScalarType
 {
 public:
 
-    BFloat16Type();
+    BFloat16ScalarType();
 
 
     static const ScalarType* get() noexcept;
 };
 
 
-RPY_LOCAL extern const BFloat16Type bfloat16_type;
 
 }// namespace scalars
 }// namespace rpy

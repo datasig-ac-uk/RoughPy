@@ -28,15 +28,16 @@
 
 #include "scalar_type.h"
 
+#include "builtin_scalar_types.h"
+#include "builtin_scalars.h"
 #include "random.h"
 #include "scalar.h"
+#include "scalar/casts.h"
 #include "scalar_array.h"
 #include "scalars_fwd.h"
-#include "builtin_scalars.h"
-#include "builtin_scalar_types.h"
-#include "scalar/casts.h"
 
 #include <charconv>
+#include <gtest/internal/gtest-internal.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -49,19 +50,18 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
             // if (info.bytes <= 3) {
             // return *scalar_type_of<float>();
             // } else {
-            return &double_type;
+            return DoubleType::get();
         // }
         case devices::TypeCode::Float:
             switch (info.bytes) {
-                case 2: return &half_type;
-                case 4: return &float_type;
-                case 8: return &double_type;
-                default:
-                    break;
+                case 2: return HalfType::get();
+                case 4: return FloatType::get();
+                case 8: return DoubleType::get();
+                default: break;
             }
-        break;
+            break;
         case devices::TypeCode::OpaqueHandle: break;
-        case devices::TypeCode::BFloat: return &bfloat16_type;
+        case devices::TypeCode::BFloat: return BFloat16ScalarType::get();
         case devices::TypeCode::Complex: break;
         case devices::TypeCode::Bool: break;
         case devices::TypeCode::Rational:
@@ -70,16 +70,14 @@ const ScalarType* ScalarType::for_info(const devices::TypeInfo& info)
         case devices::TypeCode::ArbitraryPrecisionFloat:
         case devices::TypeCode::ArbitraryPrecisionComplex:
         case devices::TypeCode::ArbitraryPrecisionRational:
-            return &arbitrary_precision_rational_type;
+            return APRationalScalarType::get();
         case devices::TypeCode::APRationalPolynomial:
-            return &arbitrary_precision_rational_polynomial_type;
-        case devices::TypeCode::KeyType:
-            break;
+            return APRatPolyScalarType::get();
+        case devices::TypeCode::KeyType: break;
     }
 
     RPY_THROW(std::runtime_error, "unsupported data type");
 }
-
 
 ScalarType::ScalarType(
         const devices::Type* type,
@@ -147,17 +145,14 @@ const ScalarType* ScalarType::for_id(string_view id)
     return *ScalarType::of<double>();
 }
 
-
-
-
-
 std::unique_ptr<RandomGenerator>
 ScalarType::get_rng(const string& bit_generator, Slice<seed_int_t> seed) const
 {
     if (m_rng_getters.empty()) {
         RPY_THROW(
                 std::runtime_error,
-                "no random number generators available for type " + string(name())
+                "no random number generators available for type "
+                        + string(name())
         );
     }
 

@@ -15,9 +15,10 @@ class RPY_LOCAL DoubleType : public FundamentalType<double> {
 public:
 
     DoubleType();
+
+    RPY_NO_DISCARD static const DoubleType* get() noexcept;
 };
 
-extern const DoubleType double_type;
 
 } // devices
 } // rpy

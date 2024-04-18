@@ -1,10 +1,24 @@
+
 #include "int64_type.h"
-namespace rpy {
-namespace devices {
-template class FundamentalType<int64_t>;
-}
-}
+
 using namespace rpy;
 using namespace rpy::devices;
-const FundamentalType<int64_t>
-    devices::int64_type("i64", "int64");
+
+
+namespace rpy {
+namespace devices {
+
+namespace dtl {
+template <>
+struct IDAndNameOfFType<int64_t> {
+    static constexpr string_view id = "i64";
+    static constexpr string_view name = "int64";
+};
+
+}
+
+template class FundamentalType<int64_t>;
+
+}
+}
+

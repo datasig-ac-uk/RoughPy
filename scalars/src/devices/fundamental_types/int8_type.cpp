@@ -1,10 +1,22 @@
+
 #include "int8_type.h"
-namespace rpy {
-namespace devices {
-template class FundamentalType<int8_t>;
-}
-}
+
 using namespace rpy;
 using namespace rpy::devices;
-const FundamentalType<int8_t>
-    devices::int8_type("i8", "int8");
+
+namespace rpy {
+namespace devices {
+
+namespace dtl {
+template <>
+struct IDAndNameOfFType<int8_t> {
+    static constexpr string_view id = "i8";
+    static constexpr string_view name = "int8";
+};
+
+}// namespace dtl
+
+template class FundamentalType<int8_t>;
+
+}// namespace devices
+}// namespace rpy

@@ -185,6 +185,7 @@ add_roughpy_component(Scalars
         src/builtin_scalar_types.h
         src/builtin_scalars.h
         src/random.cpp
+        src/rational_type_of.cpp
         src/scalar.cpp
         src/scalar_array.cpp
         src/scalar_array_element.cpp
@@ -212,9 +213,7 @@ add_roughpy_component(Scalars
 target_precompile_headers(RoughPy_Scalars PRIVATE
         <boost/multiprecision/gmp.hpp>
 )
-target_precompile_headers(RoughPy_Scalars PRIVATE
-        include/roughpy/scalars/scalars_fwd.h
-)
+
 
 add_roughpy_test(scalars
         SRC

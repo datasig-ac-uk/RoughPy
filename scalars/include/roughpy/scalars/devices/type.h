@@ -122,23 +122,20 @@ public:
     /**
      * @brief Get the name of this type
      */
-    RPY_NO_DISCARD virtual string_view name() const noexcept { return m_name; }
+    RPY_NO_DISCARD string_view name() const noexcept { return m_name; }
 
     /**
      * @brief Get the unique internal ID string for this type
      * @return const reference to the ID string.
      */
-    RPY_NO_DISCARD virtual string_view id() const noexcept { return m_id; }
+    RPY_NO_DISCARD string_view id() const noexcept { return m_id; }
 
     /**
      * @brief Retrieves the type information of the object.
      *
      * @return The type information of the object.
      */
-    RPY_NO_DISCARD virtual TypeInfo type_info() const noexcept
-    {
-        return m_info;
-    }
+    RPY_NO_DISCARD TypeInfo type_info() const noexcept { return m_info; }
 
     /**
      * @brief Get the type traits of this object

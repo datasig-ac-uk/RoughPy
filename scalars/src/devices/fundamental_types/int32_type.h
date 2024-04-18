@@ -6,7 +6,6 @@
 namespace rpy {
 namespace devices {
 extern template class RPY_LOCAL FundamentalType<int32_t>;
-extern RPY_LOCAL const FundamentalType<int32_t> int32_type;
 }
 }
 #endif // INT32_TYPE_H_

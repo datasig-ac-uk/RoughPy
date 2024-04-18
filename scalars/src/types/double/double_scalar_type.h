@@ -21,7 +21,6 @@ public:
 };
 
 
-RPY_LOCAL extern const DoubleType double_type;
 
 
 }// namespace scalars

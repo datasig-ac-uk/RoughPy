@@ -35,8 +35,8 @@ bool APRatPolyType::supports_device(const Device& device) const noexcept
     return device->is_host();
 }
 
-
-
-
-
-const APRatPolyType devices::arbitrary_precision_rational_poly_type;
+const APRatPolyType* APRatPolyType::get() noexcept
+{
+    static const APRatPolyType rational_type;
+    return &rational_type;
+}

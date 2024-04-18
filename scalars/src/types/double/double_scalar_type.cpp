@@ -6,6 +6,8 @@
 
 #include "devices/fundamental_types/double_type.h"
 
+#include <gtest/internal/gtest-internal.h>
+
 using namespace rpy;
 using namespace rpy::scalars;
 
@@ -14,7 +16,7 @@ static constexpr RingCharacteristics
 
 DoubleType::DoubleType()
     : ScalarType(
-              &devices::double_type,
+              devices::DoubleType::get(),
               devices::get_host_device(),
               double_ring_characteristics
       )
@@ -27,10 +29,9 @@ DoubleType::DoubleType()
 //     return DoubleType::get();
 // }
 
-const DoubleType scalars::double_type;
-
 const ScalarType* DoubleType::get() noexcept
 {
-    return &double_type;
+    static const DoubleType type;
+    return &type;
     ;
 }

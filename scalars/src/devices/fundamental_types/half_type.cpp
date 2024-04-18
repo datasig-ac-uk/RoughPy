@@ -7,7 +7,10 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-HalfType::HalfType() : FundamentalType("f16", "HPReal"){  }
+HalfType::HalfType() : FundamentalType("f16", "HPReal") {}
 
-
-const HalfType devices::half_type;
+const HalfType* HalfType::get() noexcept
+{
+    static const HalfType type;
+    return &type;
+}

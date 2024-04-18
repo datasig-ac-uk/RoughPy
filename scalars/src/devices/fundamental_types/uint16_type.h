@@ -6,7 +6,6 @@
 namespace rpy {
 namespace devices {
 extern template class RPY_LOCAL FundamentalType<uint16_t>;
-extern RPY_LOCAL const FundamentalType<uint16_t> uint16_type;
 }
 }
 #endif // UINT16_TYPE_H_

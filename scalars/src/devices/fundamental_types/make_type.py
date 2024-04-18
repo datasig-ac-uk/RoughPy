@@ -55,7 +55,6 @@ def write_file(type_name: str):
             "namespace rpy {",
             "namespace devices {",
             f"extern template class RPY_LOCAL FundamentalType<{type_name}>;",
-            f"extern RPY_LOCAL const FundamentalType<{type_name}> {var_name};",
             "}",
             "}",
             f"#endif // {guard_name}"
@@ -63,16 +62,21 @@ def write_file(type_name: str):
 
     with open(file.with_suffix(".cpp"), "wt") as fp:
         fp.write("\n".join([
-            f"#include \"{file.with_suffix('.h').name}\"",
-            "namespace rpy {",
-            "namespace devices {",
-            f"template class FundamentalType<{type_name}>;",
-            "}",
-            "}",
+            f"\n#include \"{file.with_suffix('.h').name}\"\n",
             "using namespace rpy;",
-            "using namespace rpy::devices;",
-            f"const FundamentalType<{type_name}>",
-            f"    devices::{var_name}(\"{type_id}\", \"{display_name}\");",
+            "using namespace rpy::devices;\n\n",
+            "namespace rpy {",
+            "namespace devices {\n",
+            "namespace dtl {",
+            "template <>",
+            f"struct IDAndNameOfFType<{type_name}> {{",
+            f"    static constexpr string_view id = \"{type_id}\";",
+            f"    static constexpr string_view name = \"{display_name}\";",
+            "};\n",
+            "}\n",
+            f"template class FundamentalType<{type_name}>;\n",
+            "}",
+            "}\n\n",
         ]))
 
 

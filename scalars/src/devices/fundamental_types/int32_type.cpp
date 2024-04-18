@@ -1,10 +1,24 @@
+
 #include "int32_type.h"
-namespace rpy {
-namespace devices {
-template class FundamentalType<int32_t>;
-}
-}
+
 using namespace rpy;
 using namespace rpy::devices;
-const FundamentalType<int32_t>
-    devices::int32_type("i32", "int32");
+
+
+namespace rpy {
+namespace devices {
+
+namespace dtl {
+template <>
+struct IDAndNameOfFType<int32_t> {
+    static constexpr string_view id = "i32";
+    static constexpr string_view name = "int32";
+};
+
+}
+
+template class FundamentalType<int32_t>;
+
+}
+}
+

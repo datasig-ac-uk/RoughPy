@@ -14,9 +14,11 @@ class RPY_LOCAL FloatType : public FundamentalType<float> {
 
 public:
     FloatType();
+
+    RPY_NO_DISCARD
+    static const FloatType* get() noexcept;
 };
 
-extern const FloatType float_type;
 
 } // devices
 } // roy

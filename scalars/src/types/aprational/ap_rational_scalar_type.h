@@ -31,8 +31,6 @@ public:
     static const ScalarType* get() noexcept;
 };
 
-RPY_LOCAL
-extern const APRationalScalarType arbitrary_precision_rational_type;
 
 
 }// namespace scalars

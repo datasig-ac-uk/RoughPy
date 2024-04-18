@@ -13,17 +13,20 @@ using namespace rpy::scalars;
 static constexpr RingCharacteristics
         bf16_ring_characteristics{true, true, true, false};
 
-BFloat16Type::BFloat16Type()
+BFloat16ScalarType::BFloat16ScalarType()
     : ScalarType(
-              &devices::bfloat16_type,
+              devices::BFloat16Type::get(),
               devices::get_host_device(),
               bf16_ring_characteristics
       )
 {}
 
-const BFloat16Type scalars::bfloat16_type;
 
-const ScalarType* BFloat16Type::get() noexcept { return &bfloat16_type; }
+const ScalarType* BFloat16ScalarType::get() noexcept
+{
+    static const BFloat16ScalarType type;
+    return &type;
+}
 
 // template <>
 // ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>

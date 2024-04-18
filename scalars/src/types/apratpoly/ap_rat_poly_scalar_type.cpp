@@ -24,15 +24,15 @@ using namespace rpy::scalars;
 static constexpr RingCharacteristics
         ap_rat_poly_ring_characteristics{false, false, false, false};
 
-APRatPolyType::APRatPolyType()
+APRatPolyScalarType::APRatPolyScalarType()
     : ScalarType(
-              &devices::arbitrary_precision_rational_poly_type,
+              devices::APRatPolyType::get(),
               devices::get_host_device(),
               ap_rat_poly_ring_characteristics
       )
 {}
 
-ScalarArray APRatPolyType::allocate(dimn_t count) const
+ScalarArray APRatPolyScalarType::allocate(dimn_t count) const
 {
     auto result = ScalarType::allocate(count);
     std::uninitialized_default_construct_n(
@@ -42,7 +42,7 @@ ScalarArray APRatPolyType::allocate(dimn_t count) const
     return result;
 }
 
-void* APRatPolyType::allocate_single() const
+void* APRatPolyScalarType::allocate_single() const
 {
     const auto access = this->lock();
     auto [pos, inserted] = m_allocations.insert(new APPolyRat());
@@ -50,7 +50,7 @@ void* APRatPolyType::allocate_single() const
     return *pos;
 }
 
-void APRatPolyType::free_single(void* ptr) const
+void APRatPolyScalarType::free_single(void* ptr) const
 {
     const auto access = this->lock();
     auto found = m_allocations.find(ptr);
@@ -59,17 +59,18 @@ void APRatPolyType::free_single(void* ptr) const
     m_allocations.erase(found);
 }
 
-void APRatPolyType::convert_copy(ScalarArray& dst, const ScalarArray& src) const
+void APRatPolyScalarType::convert_copy(ScalarArray& dst, const ScalarArray& src)
+        const
 {
     ScalarType::convert_copy(dst, src);
 }
 
-void APRatPolyType::assign(ScalarArray& dst, Scalar value) const
+void APRatPolyScalarType::assign(ScalarArray& dst, Scalar value) const
 {
     ScalarType::assign(dst, value);
 }
 
-const ScalarType* APRatPolyType::with_device(const devices::Device& device
+const ScalarType* APRatPolyScalarType::with_device(const devices::Device& device
 ) const
 {
     return ScalarType::with_device(device);
@@ -79,12 +80,11 @@ const ScalarType* APRatPolyType::with_device(const devices::Device& device
 // ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
 // scalars::dtl::ScalarTypeOfImpl<APPolyRat>::get() noexcept
 // {
-//     return APRatPolyType::get();
+//     return APRatPolyScalarType::get();
 // }
 
-const APRatPolyType scalars::arbitrary_precision_rational_polynomial_type;
-
-const ScalarType* APRatPolyType::get() noexcept
+const ScalarType* APRatPolyScalarType::get() noexcept
 {
-    return &arbitrary_precision_rational_polynomial_type;
+    static const APRatPolyScalarType type;
+    return &type;
 }

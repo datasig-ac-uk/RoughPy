@@ -67,12 +67,12 @@ inline optional<devices::TypeInfo> parse_id_to_type_info(string_view id
 
 static std::recursive_mutex s_type_cache_lock;
 static containers::HashMap<string_view, const ScalarType*> s_scalar_type_cache{
-        {         "f16",                                    &half_type},
-        {         "f32",                                   &float_type},
-        {         "f64",                                  &double_type},
-        {    "Rational",            &arbitrary_precision_rational_type},
-        {        "bf16",                                &bfloat16_type},
-        {"RationalPoly", &arbitrary_precision_rational_polynomial_type}
+        {         "f16",             HalfType::get()},
+        {         "f32",            FloatType::get()},
+        {         "f64",           DoubleType::get()},
+        {    "Rational", APRationalScalarType::get()},
+        {        "bf16",   BFloat16ScalarType::get()},
+        {"RationalPoly",  APRatPolyScalarType::get()}
 };
 
 PackedScalarType scalars::scalar_type_of(string_view id, devices::Device device)
@@ -95,6 +95,18 @@ PackedScalarType scalars::scalar_type_of(string_view id, devices::Device device)
             "no scalar type with id \"" + string(id) + '\"'
     );
 }
+
+optional<const ScalarType*> scalars::get_type(string_view id)
+{
+    std::lock_guard access(s_type_cache_lock);
+    const auto it = s_scalar_type_cache.find(id);
+    if (it != s_scalar_type_cache.end()) {
+        RPY_DBG_ASSERT(it->second != nullptr);
+        return it->second;
+    }
+    return {};
+}
+
 void scalars::register_scalar_type(const ScalarType* tp)
 {
     RPY_CHECK(tp != nullptr);

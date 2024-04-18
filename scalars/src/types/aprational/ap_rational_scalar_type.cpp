@@ -17,7 +17,7 @@ static constexpr RingCharacteristics
 
 APRationalScalarType::APRationalScalarType()
     : ScalarType(
-              &devices::arbitrary_precision_rational_type,
+              devices::APRationalType::get(),
               devices::get_host_device(),
               ap_rational_ring_characteristics
       )
@@ -66,9 +66,9 @@ void APRationalScalarType::assign(ScalarArray& dst, Scalar value) const
 //     return APRationalType::get();
 // }
 
-const APRationalScalarType scalars::arbitrary_precision_rational_type;
 
 const ScalarType* APRationalScalarType::get() noexcept
 {
-    return &arbitrary_precision_rational_type;
+    static const APRationalScalarType rational_type;
+    return &rational_type;
 }

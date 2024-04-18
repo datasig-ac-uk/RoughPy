@@ -7,8 +7,10 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-BFloat16Type::BFloat16Type()
-    : FundamentalType("bf16", "BFloat16")
-{}
+BFloat16Type::BFloat16Type() : FundamentalType("bf16", "BFloat16") {}
 
-const BFloat16Type devices::bfloat16_type;
+const BFloat16Type* BFloat16Type::get() noexcept
+{
+    static const BFloat16Type type;
+    return &type;
+}

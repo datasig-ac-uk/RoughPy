@@ -9,5 +9,8 @@ using namespace rpy;
 using namespace rpy::devices;
 
 DoubleType::DoubleType() : FundamentalType("f64", "DPReal") {}
-
-const DoubleType devices::double_type;
+const DoubleType* DoubleType::get() noexcept
+{
+    static const DoubleType type;
+    return &type;
+}

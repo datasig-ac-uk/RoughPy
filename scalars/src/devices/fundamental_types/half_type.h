@@ -15,11 +15,13 @@ class RPY_LOCAL HalfType : public FundamentalType<scalars::Half> {
 
 public:
     HalfType();
+
+    RPY_NO_DISCARD
+    static const HalfType* get() noexcept;
 };
 
 
 
-extern const HalfType half_type;
 } // devices
 } // rpy
 

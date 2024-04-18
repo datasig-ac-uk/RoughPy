@@ -17,11 +17,11 @@ public:
 
     BFloat16Type();
 
-
+    RPY_NO_DISCARD
+    static const BFloat16Type* get() noexcept;
 };
 
 
-extern const BFloat16Type bfloat16_type;
 
 } // devices
 } // rpy

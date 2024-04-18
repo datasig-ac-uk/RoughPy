@@ -14,15 +14,17 @@ static constexpr RingCharacteristics
 
 HalfType::HalfType()
     : ScalarType(
-              &devices::half_type,
+              devices::HalfType::get(),
               devices::get_host_device(),
               half_ring_characteristics
       )
 {}
 
-const HalfType scalars::half_type;
-
-const ScalarType* HalfType::get() noexcept { return &half_type; }
+const ScalarType* HalfType::get() noexcept
+{
+    static const HalfType type;
+    return &type;
+}
 
 // template <>
 // ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>

@@ -55,30 +55,30 @@ const Type* devices::get_type(TypeInfo info)
     switch (info.code) {
         case TypeCode::Int:
             switch (info.bytes) {
-                case 1: return &int8_type;
-                case 2: return &int16_type;
-                case 4: return &int32_type;
-                case 8: return &int64_type;
+                case 1: return FundamentalType<int8_t>::get();
+                case 2: return FundamentalType<int16_t>::get();
+                case 4: return FundamentalType<int32_t>::get();
+                case 8: return FundamentalType<int64_t>::get();
                 default: break;
             }
         case TypeCode::UInt:
             switch (info.bytes) {
-                case 1: return &int8_type;
-                case 2: return &int16_type;
-                case 4: return &int32_type;
-                case 8: return &int64_type;
+                case 1: return FundamentalType<uint8_t>::get();
+                case 2: return FundamentalType<uint16_t>::get();
+                case 4: return FundamentalType<uint32_t>::get();
+                case 8: return FundamentalType<uint64_t>::get();
                 default: break;
             }
         case TypeCode::Float:
             switch (info.bytes) {
-                case 2: return &half_type;
-                case 4: return &float_type;
-                case 8: return &double_type;
+                case 2: return HalfType::get();
+                case 4: return FloatType::get();
+                case 8: return DoubleType::get();
                 default: break;
             }
         case TypeCode::BFloat:
             RPY_CHECK(info.bytes == 2);
-            return &bfloat16_type;
+            return BFloat16Type::get();
         default: break;
     }
 
