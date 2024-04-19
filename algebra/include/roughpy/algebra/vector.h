@@ -206,7 +206,10 @@ public:
     Vector(BasisPointer basis,
            const scalars::ScalarType* scalar_type,
            std::initializer_list<T> vals)
-        : p_data(new VectorData(scalar_type, vals.size())),
+        : p_data(new VectorData(
+                  scalar_type,
+                  basis->dense_dimension(vals.size())
+          )),
           p_basis(std::move(basis))
     {
         auto& scalar_vals = p_data->mut_scalars();
