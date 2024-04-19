@@ -24,10 +24,9 @@ TensorBasis::TensorBasis(rpy::deg_t width, rpy::deg_t depth)
       m_depth(depth)
 {
     m_degree_sizes.reserve(depth + 1);
-    m_degree_sizes.push_back(1);
 
     m_max_dimension = 1;
-    for (deg_t i = 1; i <= depth; ++i) {
+    for (deg_t i = 0; i <= depth; ++i) {
         m_degree_sizes.push_back(m_max_dimension);
         m_max_dimension = 1 + width * m_max_dimension;
     }
@@ -44,6 +43,18 @@ dimn_t TensorBasis::dense_dimension(dimn_t size) const
 }
 
 namespace {
+
+template <typename F>
+void do_for_each_letter_in_index(deg_t width, dimn_t index, F&& op)
+{
+    const auto divisor = static_cast<dimn_t>(width);
+
+    while (index > 0) {
+        auto [div, rem] = remquo(index - 1, divisor);
+        op(rem + 1);
+        index = div;
+    }
+}
 
 deg_t index_to_degree(
         const std::vector<dimn_t>& degree_sizes,
@@ -67,23 +78,6 @@ const TensorWord* cast_pointer_key(const BasisKey& key)
     RPY_CHECK(ptr->key_type() == TensorWord::key_name);
     return reinterpret_cast<const TensorWord*>(ptr);
 }
-
-void print_index(string& out, dimn_t width, dimn_t index) noexcept
-{
-    if (index == 0) { return; }
-
-    dimn_t tmp = index;
-    index /= width;
-    out += std::to_string(1 + tmp - index * width);
-
-    while (index > width) {
-        tmp = index;
-        index /= width;
-        out.push_back(',');
-        out += std::to_string(1 + tmp - index * width);
-    }
-}
-
 void print_word(string& out, const TensorWord* word) noexcept
 {
     if (word->degree() == 0) { return; }
@@ -125,7 +119,19 @@ string rpy::algebra::TensorBasis::to_string(BasisKey key) const
 {
     string result;
     if (key.is_index()) {
-        print_index(result, m_width, key.get_index());
+        bool first = true;
+        do_for_each_letter_in_index(
+                m_width,
+                key.get_index(),
+                [&result, &first](dimn_t letter) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        result.push_back(',');
+                    }
+                    result += std::to_string(letter);
+                }
+        );
     } else {
         print_word(result, cast_pointer_key(key));
     }
