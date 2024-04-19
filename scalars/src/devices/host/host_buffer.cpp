@@ -168,13 +168,14 @@ Buffer CPUBuffer::slice(dimn_t size, dimn_t offset) const
 {
     RPY_CHECK(offset + size <= m_num_elts);
 
-    const auto* ptr = static_cast<const byte*>(raw_buffer.ptr) + offset;
+    const auto* ptr
+            = static_cast<const byte*>(raw_buffer.ptr) + offset * m_info.bytes;
     return Buffer(new CPUBuffer(ptr, size, m_info));
 }
 Buffer CPUBuffer::mut_slice(dimn_t size, dimn_t offset)
 {
     RPY_CHECK(offset + size <= m_num_elts);
 
-    auto* ptr = static_cast<byte*>(raw_buffer.ptr) + offset;
+    auto* ptr = static_cast<byte*>(raw_buffer.ptr) + offset * m_info.bytes;
     return Buffer(new CPUBuffer(ptr, size, m_info));
 }
