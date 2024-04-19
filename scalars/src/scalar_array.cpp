@@ -312,9 +312,8 @@ ScalarArray ScalarArray::operator[](SliceIndex index)
                     + std::to_string(buffer_size)
     );
 
-    const auto info = type_info();
-    const auto offset = index.begin * info.bytes;
-    const auto sz = (index.end - index.begin) * info.bytes;
+    const auto offset = index.begin;
+    const auto sz = (index.end - index.begin);
 
     return {p_type, m_buffer.slice(offset, sz)};
 }
@@ -329,9 +328,8 @@ ScalarArray ScalarArray::operator[](SliceIndex index) const
                     + " is out of bounds for array of size "
                     + std::to_string(buffer_size)
     );
-    const auto info = type_info();
-    const auto offset = index.begin * info.bytes;
-    const auto sz = (index.end - index.begin) * info.bytes;
+    const auto offset = index.begin;
+    const auto sz = (index.end - index.begin);
 
     return {p_type, m_buffer.slice(offset, sz)};
 }
