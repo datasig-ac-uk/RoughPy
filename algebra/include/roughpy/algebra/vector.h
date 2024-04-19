@@ -171,6 +171,21 @@ protected:
         return p_data->size();
     }
 
+    /**
+     * @brief Check if the vector is zero.
+     *
+     * This method checks if the vector is zero. It returns true if any of the
+     * following conditions are met:
+     * - p_basis is nullptr
+     * - p_data is nullptr
+     * - p_data is empty
+     *
+     * @return true if the vector is zero, false otherwise.
+     *
+     * @note This is a fast check and does not loop through
+     * the data elements. The method is designed to be used in a noexcept
+     * context.
+     */
     RPY_NO_DISCARD bool fast_is_zero() const noexcept
     {
         return p_basis == nullptr || p_data == nullptr || p_data->empty();
@@ -252,6 +267,22 @@ public:
         return !p_data->key_buffer().empty();
     }
 
+    /**
+     * @brief Retrieves the type of the vector
+     *
+     * This method returns the type of the vector, which can be either
+     * sparse or dense. It determines the vector type based on the
+     * sparsity of the vector and returns the corresponding value from
+     * the VectorType enumeration.
+     *
+     * @return The type of the vector, either Sparse or Dense, as a value
+     *         from the VectorType enumeration.
+     *
+     * @note The returned vector type is based on the sparsity of the vector.
+     *       If the vector is sparse, the method returns VectorType::Sparse,
+     *       otherwise it returns VectorType::Dense.
+     * @note This method is noexcept, meaning it does not throw any exceptions.
+     */
     RPY_NO_DISCARD VectorType vector_type() const noexcept
     {
         return (is_sparse()) ? VectorType::Sparse : VectorType::Dense;
@@ -262,11 +293,31 @@ public:
      */
     RPY_NO_DISCARD BasisPointer basis() const noexcept { return p_basis; }
 
+    /**
+     * @brief Retrieves the device of the scalar buffer
+     *
+     * This method returns the device of the scalar buffer associated with the
+     * device object.
+     *
+     * @return The device of the scalar buffer.
+     *
+     * @note This method is noexcept, meaning it does not throw any exceptions.
+     */
     RPY_NO_DISCARD devices::Device device() const noexcept
     {
         return p_data->scalar_buffer().device();
     }
 
+    /**
+     * @brief Retrieves the type of the scalar buffer
+     *
+     * This method returns the type of the scalar buffer associated with the
+     * scalar object.
+     *
+     * @return The type of the scalar buffer.
+     *
+     * @note This method is noexcept, meaning it does not throw any exceptions.
+     */
     RPY_NO_DISCARD scalars::PackedScalarType scalar_type() const noexcept
     {
         RPY_DBG_ASSERT(p_data != nullptr);
@@ -320,6 +371,19 @@ public:
     RPY_NO_DISCARD const_iterator begin() const noexcept;
     RPY_NO_DISCARD const_iterator end() const noexcept;
 
+    /**
+     * @brief Gets the index of the given BasisKey in the Vector
+     *
+     * This method retrieves the index of the specified BasisKey in the Vector.
+     *
+     * @param key The BasisKey to find the index for
+     *
+     * @return The index of the BasisKey, or an empty optional if the BasisKey
+     * is not found
+     * @note The returned index is zero-based.
+     *
+     * @sa BasisKey
+     */
     RPY_NO_DISCARD optional<dimn_t> get_index(const BasisKey& key
     ) const noexcept;
 
@@ -358,24 +422,207 @@ private:
     void check_and_resize_for_operands(const Vector& lhs, const Vector& rhs);
 
 public:
+    /**
+     * @brief Performs the unary minus operation on the vector
+     *
+     * This method returns a new vector that is the negation of the current
+     * vector. The operation is performed element-wise, meaning that each
+     * coefficient of the vector will be negated.
+     *
+     * @return A new vector that is the negation of the current vector
+     */
     RPY_NO_DISCARD Vector uminus() const;
 
+    /**
+     * @brief Adds another vector to the current vector.
+     *
+     * This method takes in another vector and adds its corresponding
+     * coefficients to the coefficients of the current vector. The operation is
+     * performed element-wise and the result is returned as a new vector.
+     *
+     * @param other The vector to be added.
+     * @return A new vector representing the result of the addition.
+     */
     RPY_NO_DISCARD Vector add(const Vector& other) const;
+
+    /**
+     * @brief Subtract a vector from the current vector
+     *
+     * This method subtracts the given vector from the current vector and
+     * returns a new vector that represents the result.
+     *
+     * @param other The vector to subtract from the current vector
+     * @return The resulting vector after subtraction
+     */
     RPY_NO_DISCARD Vector sub(const Vector& other) const;
+
+    /**
+     * @brief Left scalar multiplication of a vector.
+     *
+     * This method performs a left scalar multiplication of the vector with the
+     * given scalar.
+     *
+     * @param other The scalar value to multiply the vector with.
+     * @return The resulting vector after left scalar multiplication.
+     *
+     * @note This method creates a new vector and does not modify the original
+     * vector.
+     */
     RPY_NO_DISCARD Vector left_smul(const scalars::Scalar& other) const;
+
+    /**
+     * @brief Right scalar multiplication of a vector.
+     *
+     * This method performs right scalar multiplication on the vector.
+     * It multiplies each coefficient of the vector by the given scalar and
+     * returns a new vector with the result.
+     *
+     * @param other The scalar to multiply with.
+     * @return A new vector resulting from right scalar multiplication.
+     */
     RPY_NO_DISCARD Vector right_smul(const scalars::Scalar& other) const;
+
+    /**
+     * @brief Perform element-wise division of the vector by a scalar value.
+     *
+     * This method performs element-wise division of the vector by a scalar
+     * value. The resulting vector contains the result of dividing each element
+     * of the original vector by the given scalar value.
+     *
+     * @param other The scalar value to divide the vector by.
+     * @return A new Vector object containing the result of the element-wise
+     * division.
+     */
     RPY_NO_DISCARD Vector sdiv(const scalars::Scalar& other) const;
 
+    /**
+     * @brief Adds another vector to the current vector in place.
+     *
+     * This method adds the given vector `other` to the current vector,
+     * modifying the current vector itself. The addition is performed
+     * element-wise.
+     *
+     * @param other The vector to be added.
+     * @return Reference to the modified current vector.
+     *
+     * @note If the `other` vector is the same as the current vector, then the
+     * result will be the current vector scaled by 2.
+     *
+     * @see Vector::add
+     */
     Vector& add_inplace(const Vector& other);
+
+    /**
+     * @brief Subtract another vector from this vector in place.
+     *
+     * This method subtracts the coefficients of another vector from the
+     * coefficients of this vector in place. The subtraction is performed
+     * element-wise, meaning each coefficient in this vector is subtracted by
+     * the corresponding coefficient in the other vector.
+     *
+     * @param other The vector to subtract from this vector.
+     *
+     * @return A reference to this vector after the subtraction operation.
+     *
+     * @note If the other vector is the same as this vector, all coefficients in
+     * this vector will be set to zero.
+     */
     Vector& sub_inplace(const Vector& other);
 
+    /**
+     * @brief Multiplies the vector by the given scalar in place
+     *
+     * This method multiplies each coefficient of the vector by the given scalar
+     * value. The vector itself is modified in place, meaning the original
+     * vector is changed.
+     *
+     * @param other The scalar value to multiply the vector coefficients by
+     *
+     * @return A reference to the modified vector
+     *
+     * @note This method assumes that the vector and the scalar value are
+     * compatible for multiplication.
+     */
     Vector& smul_inplace(const scalars::Scalar& other);
 
+    /**
+     * @brief Divides the vector element-wise by the given scalar value.
+     *
+     * This method divides each element of the vector by the given scalar value
+     * and updates the vector in-place.
+     *
+     * @param other The scalar value to divide the vector by.
+     *
+     * @return A reference to the modified vector.
+     */
     Vector& sdiv_inplace(const scalars::Scalar& other);
 
+    /**
+     * @brief Adds the scaled product of another vector and a scalar to the
+     * current vector.
+     *
+     * This method adds the scaled product of a given vector and a scalar to the
+     * current vector. The given vector and scalar are multiplied element-wise,
+     * and the product is then added to each element of the current vector.
+     *
+     * @param other The vector to be multiplied with the scalar and added to the
+     * current vector.
+     * @param scalar The scalar by which the vector is scaled before being added
+     * to the current vector.
+     *
+     * @return A reference to the current vector after the addition operation.
+     */
     Vector& add_scal_mul(const Vector& other, const scalars::Scalar& scalar);
+
+    /**
+     * @brief Subtract another vector scaled by a scalar from the current
+     * vector.
+     *
+     * This method subtracts the specified vector scaled by the specified scalar
+     * from the current vector.
+     *
+     * @param other The vector to be subtracted from the current vector.
+     * @param scalar The scalar to scale the other vector.
+     *
+     * @return A reference to the current vector after the subtraction and
+     * scaling operation.
+     */
     Vector& sub_scal_mul(const Vector& other, const scalars::Scalar& scalar);
+
+    /**
+     * @brief Adds the scaled product of another vector to the current vector.
+     *
+     * This method adds the scaled product of a given vector and a scalar to the
+     * current vector. The scaling is done by dividing by the provided scalar.
+     * The given vector and scalar are multiplied element-wise,
+     * and the product is then added to each element of the current vector.
+     *
+     * @param other The vector to be multiplied with the scalar and added to the
+     * current vector.
+     * @param scalar The scalar by which the vector is scaled before being added
+     * to the current vector.
+     *
+     * @return A reference to the current vector after the addition operation.
+     */
     Vector& add_scal_div(const Vector& other, const scalars::Scalar& scalar);
+
+    /**
+     * @brief Subtract the scaled product of another vector to the current
+     * vector.
+     *
+     * This method subtracts the scaled product of a given vector and a scalar
+     * to the current vector. The scaling is done by dividing by the provided
+     * scalar. The given vector and scalar are multiplied element-wise, and the
+     * product is then added to each element of the current vector.
+     *
+     * @param other The vector to be multiplied with the scalar and subtracted
+     * from the current vector.
+     * @param scalar The scalar by which the vector is scaled before being
+     * subtracted from the current vector.
+     *
+     * @return A reference to the current vector after the subtraction
+     * operation.
+     */
     Vector& sub_scal_div(const Vector& other, const scalars::Scalar& scalar);
 
     RPY_NO_DISCARD bool operator==(const Vector& other) const;
