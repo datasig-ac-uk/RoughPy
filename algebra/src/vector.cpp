@@ -477,7 +477,29 @@ bool Vector::operator==(const Vector& other) const
     }
 
     if (is_dense() && other.is_dense()) {
-        return scalars::algorithms::equal(scalars(), other.scalars());
+        const auto mismatch = scalars::algorithms::mismatch(
+                scalars()[{0, p_data->size()}],
+                other.scalars()[{0, other.p_data->size()}]
+        );
+
+        if (!mismatch) { return true; }
+        if (*mismatch == p_data->size()) {
+            // Check if the content of other[size, ...] is zero
+            auto count = scalars::algorithms::count(
+                    other.scalars()[{*mismatch, other.p_data->size()}],
+                    scalars::Scalar(other.scalar_type())
+            );
+            return count == (other.p_data->size() - *mismatch);
+        }
+        if (*mismatch == other.p_data->size()) {
+            // Check if the content of this[size, ...] is zero
+            auto count = scalars::algorithms::count(
+                    scalars()[{*mismatch, p_data->size()}],
+                    scalars::Scalar(other.scalar_type())
+            );
+            return count == (p_data->size() - *mismatch);
+        }
+        return false;
     }
     // Handle dense and sparse mixtures
 
