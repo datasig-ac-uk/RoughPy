@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_CORE_POINTER_HELPERS_H_
 #define ROUGHPY_CORE_POINTER_HELPERS_H_
@@ -61,7 +62,8 @@ bit_cast(From from)
 {
     To to;
     memcpy(static_cast<void*>(std::addressof(to)),
-           static_cast<const void*>(std::addressof(from)), sizeof(To));
+           static_cast<const void*>(std::addressof(from)),
+           sizeof(To));
     return to;
 }
 #endif
@@ -116,18 +118,16 @@ public:
     RPY_NO_DISCARD operator bool() const noexcept { return p_data != nullptr; }
 };
 
-
-
 template <typename I, typename J>
 RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I>
-round_up_divide(I value, J divisor) noexcept {
+round_up_divide(I value, J divisor) noexcept
+{
     return (value + static_cast<I>(divisor) - 1) / static_cast<I>(divisor);
 }
 
-
 template <typename I>
 RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I>
-next_power_2(I value, I start=I(1)) noexcept
+next_power_2(I value, I start = I(1)) noexcept
 {
     if (value == 0) { return 0; }
     if (is_signed<I>::value && value < 0) { return -next_power_2(-value); }
@@ -135,14 +135,45 @@ next_power_2(I value, I start=I(1)) noexcept
 }
 
 template <unsigned Base, typename I>
-RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I>
-const_log(I arg) noexcept {
+RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I> const_log(I arg
+) noexcept
+{
     return arg >= static_cast<I>(Base)
             ? 1 + const_log<Base>(static_cast<I>(arg / Base))
             : 0;
 }
 
-
+/**
+ * Calculates the quotient and remainder of dividing a given number by a given
+ * divisor.
+ *
+ * This function calculates the quotient and remainder of the division of the
+ * given numerator (`num`) and divisor (`divisor`). The result is returned as a
+ * pair, where the first element represents the quotient and the second element
+ * represents the remainder.
+ *
+ * @param num The number to be divided.
+ * @param divisor The divisor.
+ * @return A pair containing the quotient and remainder of the division.
+ *
+ * @note The types `I` and `J` must satisfy the requirements:
+ *       - `I` must be an integral type.
+ *       - `J` must be an integral type.
+ *       - `J` must be convertible to `I`.
+ *
+ * @note The function is constexpr and noexcept, ensuring it can be used in
+ *       compile-time evaluation and it does not throw any exceptions.
+ */
+template <typename I, typename J>
+constexpr enable_if_t<
+        is_integral<I>::value && is_integral<J>::value
+                && is_convertible<J, I>::value,
+        pair<I, J>>
+remquo(I num, J divisor) noexcept
+{
+    const auto div = static_cast<I>(divisor);
+    return {num / div, static_cast<J>(num % div)};
+}
 }// namespace rpy
 
 #endif// ROUGHPY_CORE_POINTER_HELPERS_H_
