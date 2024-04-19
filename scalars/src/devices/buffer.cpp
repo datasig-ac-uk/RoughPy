@@ -169,10 +169,10 @@ Buffer Buffer::slice(dimn_t offset, dimn_t size)
 {
     if (impl() == nullptr) { return Buffer(); }
 
-    return impl()->mut_slice(offset, size);
+    return impl()->mut_slice(size, offset);
 }
 Buffer Buffer::slice(dimn_t offset, dimn_t size) const
 {
     if (impl() == nullptr) { return Buffer(); }
-    return impl()->slice(offset, size);
+    return impl()->slice(size, offset);
 }
