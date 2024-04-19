@@ -124,6 +124,7 @@ void algebra::dtl::GenericKernel<
                 const scalars::Scalar& scal
         ) const
 {
+    if (out.empty()) { out.resize(arg.size()); }
 
     const auto size = std::min(out.size(), arg.size());
     auto scalars_out = out.mut_scalars().mut_view();
