@@ -402,18 +402,14 @@ Vector& Vector::sub_inplace(const Vector& other)
 
 Vector& Vector::smul_inplace(const scalars::Scalar& other)
 {
-    // bad implementation, but it will do for now
-    const Vector tmp = this->right_smul(other);
-    *this = tmp;
+    const InplaceRightScalarMultiplyKernel kernel(&*p_basis);
+    kernel(*p_data, other);
     return *this;
 }
 
 Vector& Vector::sdiv_inplace(const scalars::Scalar& other)
 {
-    // bad implementation, but it will do for now.
-    const Vector tmp = this->sdiv(other);
-    *this = tmp;
-    return *this;
+    return smul_inplace(other.reciprocal());
 }
 
 Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
