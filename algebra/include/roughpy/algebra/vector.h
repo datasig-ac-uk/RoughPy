@@ -148,6 +148,8 @@ public:
     using iterator = VectorIterator;
     using const_iterator = VectorIterator;
 
+    using scalars::Scalar;
+
 protected:
     /**
      * @brief Reallocate and move contents to a new buffer with the given size
@@ -191,9 +193,47 @@ protected:
         return p_basis == nullptr || p_data == nullptr || p_data->empty();
     }
 
+    /**
+     * @brief Sets all the coefficients of the vector to zero.
+     *
+     * This method sets all the coefficients of the vector to zero. If the
+     * vector is dense, it uses a scalar algorithm to efficiently fill the
+     * scalar array with zeroes. If the vector is sparse, it clears the scalar
+     * array and the key array.
+     *
+     * @note This method modifies the vector in place.
+     */
     void set_zero();
 
+    /**
+     * @brief Insert an element into the vector
+     *
+     * This method allows the user to insert an element into the vector
+     * represented by the `Vector` class. The element is specified by a
+     * `BasisKey` object and a `scalars::Scalar` value.
+     *
+     * @param key The `BasisKey` object that specifies the position where the
+     * element should be inserted.
+     * @param value The `scalars::Scalar` value of the element to be inserted.
+     */
     void insert_element(const BasisKey& key, scalars::Scalar value);
+
+    /**
+     * @brief Deletes an element from the vector given a basis key and,
+     * optionally, an index hint.
+     *
+     * This function removes an element from the vector identified by the
+     * provided basis key and, if supplied, the index hint. The basis key
+     * specifies the element to delete, and the index hint can be used to
+     * optimize the search for the element.
+     *
+     * @param key The basis key specifying the element to delete.
+     * @param index_hint (optional) A hint for the index of the element to
+     * optimize the search. If not provided, a default hint is used.
+     *
+     * @note This function assumes that the vector is already initialized and
+     * contains the basis key.
+     */
     void delete_element(const BasisKey& key, optional<dimn_t> index_hint);
 
 public:
@@ -204,6 +244,13 @@ public:
     Vector(const Vector& other);
 
     Vector(Vector&& other) noexcept;
+
+    explicit Vector(BasisPointer basis, BasisKey key, Scalar scalar)
+        : p_data(new VectorData(scalar.type())),
+          p_basis(std::move(basis))
+    {
+        insert_element(std::move(key), std::move(scalar));
+    }
 
     explicit Vector(BasisPointer basis, const scalars::ScalarType* scalar_type)
         : p_data(new VectorData(scalar_type)),
