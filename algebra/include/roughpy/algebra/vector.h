@@ -437,7 +437,7 @@ operator/(const V& lhs, const scalars::Scalar& rhs)
 
 template <typename V>
 enable_if_t<is_base_of<Vector, V>::value, V&>
-operator*=(V& lhs, const Vector& rhs)
+operator+=(V& lhs, const Vector& rhs)
 {
     lhs.add_inplace(rhs);
     return lhs;
