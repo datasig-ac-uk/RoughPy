@@ -82,7 +82,7 @@ ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_add_ref(const Basis*) noexcept;
 ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_release(const Basis*) noexcept;
 
 class Vector;
-class Algebra;
+
 
 class FreeTensor;
 class Lie;
