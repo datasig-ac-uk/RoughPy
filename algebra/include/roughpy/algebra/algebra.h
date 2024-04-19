@@ -11,51 +11,78 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/scalars/devices/kernel.h>
-
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
-
 namespace rpy {
 namespace algebra {
 
-class ROUGHPY_ALGEBRA_EXPORT Multiplication
-    : public boost::intrusive_ref_counter<Multiplication>
-{
+namespace dtl {
 
-public:
-
-    virtual ~Multiplication();
-
-    virtual devices::Kernel get_kernel(string_view suffix) const;
-
-
+template <typename Multiplication>
+struct MultiplicationTraits {
+    static void fma(Vector& out, const Vector& left, const Vector& right);
+    static void multiply_into(Vector& out, const Vector& other);
 };
 
+template <typename Multiplication>
+struct UnitalAlgebraTraits {
+    static BasisKey unit_key(const BasisPointer& basis) noexcept;
+};
 
-class ROUGHPY_ALGEBRA_EXPORT Algebra : public Vector
+}// namespace dtl
+
+template <typename Multiplication, typename Base = Vector>
+class Algebra : public Base
 {
-    boost::intrusive_ptr<const Multiplication> p_multiplication;
+    using multiplication_type = Multiplication;
+    using multiplication_traits = dtl::MultiplicationTraits<Multiplication>;
 
 public:
-
     RPY_NO_DISCARD Algebra multiply(const Vector& other) const;
     Algebra& multiply_inplace(const Vector& other);
 };
 
-template <typename A>
-enable_if_t<is_base_of<Algebra, A>::value, A>
-operator*(const A& lhs, const Vector& rhs)
+template <typename Multiplication, typename Base>
+Algebra<Multiplication, Base>
+Algebra<Multiplication, Base>::multiply(const Vector& other) const
 {
-    return A(lhs.multiply(rhs));
+    Algebra result(this->basis());
+    multiplication_traits::fma(result, *this, other);
+    return result;
 }
 
-template <typename A>
-enable_if_t<is_base_of<Algebra, A>::value, A&>
-operator*=(A& lhs, const Vector& rhs)
+template <typename Multiplication, typename Base>
+Algebra<Multiplication, Base>&
+Algebra<Multiplication, Base>::multiply_inplace(const Vector& other)
 {
-    lhs.multiply_inplace(rhs);
-    return lhs;
+    multiplication_traits::multiply_into(*this, other);
+    return *this;
 }
+
+/**
+ * @class UnitalAlgebra
+ * @brief represents a unital algebra.
+ */
+template <typename Multiplication, typename Base = Algebra<Multiplication>>
+class UnitalAlgebra : public Base
+{
+    using unital_traits = dtl::UnitalAlgebraTraits<Multiplication>;
+
+public:
+    using typename Base::Scalar;
+
+    UnitalAlgebra(BasisPointer basis, Scalar unit_coeff)
+        : Base(basis, unital_traits::unit_key(basis), std::move(unit_coeff))
+    {}
+
+    /**
+     * @brief Get the coefficient of the unit of the algebra.
+     *
+     * @return Scalar The coefficient of the unit of the algebra.
+     */
+    Scalar unit() const
+    {
+        return (*this)[unital_traits::unit_key(this->basis())];
+    }
+};
 
 }// namespace algebra
 }// namespace rpy
