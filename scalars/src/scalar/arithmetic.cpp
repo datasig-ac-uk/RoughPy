@@ -198,7 +198,12 @@ Scalar& Scalar::operator+=(const Scalar& other)
 {
     RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     if (!other.fast_is_zero()) {
-        scalar_inplace_arithmetic(*this, other, AddInplace());
+        if (p_type_and_content_type.get_enumeration()
+            == dtl::ScalarContentType::OwnedInterface) {
+            interface_ptr->add_inplace(other);
+        } else {
+            scalar_inplace_arithmetic(*this, other, AddInplace());
+        }
     }
     return *this;
 }
@@ -207,7 +212,12 @@ Scalar& Scalar::operator-=(const Scalar& other)
 {
     RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     if (!other.fast_is_zero()) {
-        scalar_inplace_arithmetic(*this, other, SubInplace());
+        if (p_type_and_content_type.get_enumeration()
+            == dtl::ScalarContentType::OwnedInterface) {
+            interface_ptr->sub_inplace(other);
+        } else {
+            scalar_inplace_arithmetic(*this, other, SubInplace());
+        }
     }
     return *this;
 }
@@ -216,7 +226,12 @@ Scalar& Scalar::operator*=(const Scalar& other)
 {
     RPY_DBG_ASSERT(!p_type_and_content_type.is_null());
     if (!fast_is_zero() && !other.fast_is_zero()) {
-        scalar_inplace_arithmetic(*this, other, MulInplace());
+        if (p_type_and_content_type.get_enumeration()
+            == dtl::ScalarContentType::OwnedInterface) {
+            interface_ptr->mul_inplace(other);
+        } else {
+            scalar_inplace_arithmetic(*this, other, MulInplace());
+        }
     } else {
         operator=(0);
     }
@@ -302,6 +317,12 @@ Scalar& Scalar::operator/=(const Scalar& other)
                 p_type_and_content_type,
                 other.p_type_and_content_type
         ));
+    }
+
+    if (p_type_and_content_type.get_enumeration()
+        == dtl::ScalarContentType::OwnedInterface) {
+        interface_ptr->div_inplace(rational_denom);
+        return *this;
     }
 
     // Now we should be ready
