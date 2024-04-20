@@ -67,12 +67,6 @@ void Vector::resize_dim(rpy::dimn_t dim)
     }
 }
 
-void Vector::resize_degree(rpy::deg_t degree)
-{
-    auto new_size = p_basis->dimension_to_degree(degree);
-    resize_dim(new_size);
-}
-
 dimn_t Vector::dimension() const noexcept
 {
     RPY_DBG_ASSERT(p_data != nullptr);
@@ -159,7 +153,7 @@ void Vector::make_dense()
     const auto scalar_device = p_data->scalar_buffer().device();
     const auto key_device = p_data->key_buffer().device();
 
-    auto dense_data = std::make_unique<VectorData>(scalar_type());
+    auto dense_data = VectorDataPtr(new VectorData(scalar_type()));
 
     dimn_t dimension;
     if (key_device->is_host()) {
@@ -323,7 +317,7 @@ void Vector::check_and_resize_for_operands(const Vector& lhs, const Vector& rhs)
 Vector Vector::uminus() const
 {
     Vector result(p_basis, scalar_type());
-    result.p_data = std::make_unique<VectorData>(scalar_type(), dimension());
+    result.p_data = VectorDataPtr(new VectorData(scalar_type(), dimension()));
 
     const UminusKernel kernel(&*p_basis);
     kernel(*result.p_data, *p_data);
@@ -515,10 +509,54 @@ std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
 
 void Vector::insert_element(const BasisKey& key, scalars::Scalar value)
 {
-    (void) this;
+    if (is_dense()) {
+        dimn_t index = p_basis->to_index(key);
+        if (index < this->dimension()) {
+            p_data->mut_scalars()[index] = value;
+        } else {
+            p_data->resize(p_basis->dense_dimension(index));
+            p_data->mut_scalars()[index] = value;
+        }
+
+    } else if (is_sparse()) {
+        auto indexOpt = this->get_index(key);
+        if (indexOpt.has_value()) {
+            // The element already exists, simply update it
+            p_data->mut_scalars()[indexOpt.value()] = value;
+        } else {
+            // The element doesn't exist, we need to insert it.
+            // Start by resizing our containers to make room for the new element
+            dimn_t newSize = this->size() + 1;
+            this->resize_dim(newSize);
+
+            // Populate the new entries with the data we've received
+            p_data->mut_scalars()[newSize - 1] = value;
+            p_data->mut_keys()[newSize - 1] = key;
+        }
+    }
 }
 
 void Vector::delete_element(const BasisKey& key, optional<dimn_t> index_hint)
 {
-    (void) this;
+    if (is_dense()) {
+        dimn_t index = p_basis->to_index(key);
+        if (index < this->dimension()) {
+            // set the item to the default initialization of the scalar type
+            p_data->mut_scalars()[index] = scalars::Scalar(scalar_type());
+        }
+    } else if (is_sparse()) {
+        auto indexOpt = this->get_index(key);
+        if (indexOpt.has_value()) {
+            dimn_t idx = indexOpt.value();
+
+            // Shift left from idx to the end, effectively removing the unwanted
+            // value
+            auto scalar_slice = p_data->mut_scalars()[{idx, p_data->size()}];
+            auto key_slice = p_data->mut_keys()[{idx, p_data->size()}];
+            scalars::algorithms::shift_left(scalar_slice, 1);
+            algorithms::shift_left(key_slice, 1);
+
+            p_data->set_size(p_data->size() - 1);
+        }
+    }
 }
