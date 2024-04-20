@@ -12,6 +12,9 @@
 namespace rpy {
 namespace algebra {
 
+/**
+
+ */
 class ROUGHPY_ALGEBRA_EXPORT LieBasis : public Basis
 {
     class HallSet;

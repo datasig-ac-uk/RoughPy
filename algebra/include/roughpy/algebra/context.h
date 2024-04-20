@@ -93,6 +93,15 @@ public:
     RPY_NO_DISCARD dimn_t tensor_size(deg_t deg) const noexcept;
 };
 
+/**
+ * @class Context
+ * @brief Represents the context in which algebraic operations are performed.
+ *
+ * The Context class is a base class for defining the context in which algebraic
+ * operations are performed. It provides functionalities for accessing the
+ * context's scalar type, backend, lie basis, tensor basis, and performing
+ * conversions, constructions, and computations related to algebraic objects.
+ */
 class ROUGHPY_ALGEBRA_EXPORT Context : public ContextBase
 {
     const scalars::ScalarType* p_ctype;

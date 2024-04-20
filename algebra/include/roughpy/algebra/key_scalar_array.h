@@ -74,10 +74,19 @@ public:
         return *this;
     }
 
-    /// Allocate keys with a given size
+    /**
+     * @brief Allocate the keys for the KeyScalarArray with the given size.
+     *
+     * @param size The size of the keys to allocate.
+     *
+     * This method allocates the keys for the KeyScalarArray with the given
+     * size. The keys are represented by an instance of the KeyArray class.
+     */
     void allocate_keys(const dimn_t size) { m_keys = KeyArray(size); }
 
-    /// Allocate scalars with a given size and type
+    /**
+     *
+     */
     void
     allocate_scalars(dimn_t size, scalars::PackedScalarType type=nullptr)
     {

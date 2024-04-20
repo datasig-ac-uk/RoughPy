@@ -144,12 +144,50 @@ public:
 
     ~KeyArray();
 
+    /**
+     * @brief Checks if the buffer is empty.
+     *
+     * The empty method checks whether the buffer is empty or not. It returns a
+     * boolean value indicating whether the buffer is empty.
+     *
+     * @return A boolean value. True if the buffer is empty, false otherwise.
+     * @note This method does not throw any exceptions and is guaranteed to be
+     * noexcept.
+     */
     RPY_NO_DISCARD bool empty() const noexcept { return m_buffer.empty(); }
+
+    /**
+     * @brief Gets the size of the buffer.
+     *
+     * The size method returns the size of the buffer. It returns a dimn_t value
+     * indicating the size of the buffer in elements.
+     *
+     * @return The size of the buffer.
+     * @note This method does not throw any exceptions and is guaranteed to be
+     * noexcept.
+     */
     RPY_NO_DISCARD dimn_t size() const noexcept { return m_buffer.size(); }
 
     KeyArray& operator=(const KeyArray&);
     KeyArray& operator=(KeyArray&&) noexcept;
 
+    /**
+     * @brief Returns a range of BasisKey objects in the KeyArray.
+     *
+     * The as_range method returns a dtl::KeyArrayRange object representing a
+     * range of BasisKey objects in the KeyArray. The range starts at the given
+     * offset and ends at the given end_offset (or the end of the KeyArray if
+     * end_offset is not specified). The method checks that the offsets are
+     * within the bounds of the KeyArray buffer before creating the range. If
+     * the offsets are invalid, an exception will be thrown.
+     *
+     * @param offset The starting offset of the range. Defaults to 0.
+     * @param end_offset The ending offset of the range. Defaults to 0, which
+     * means it will be set to the size of the KeyArray buffer.
+     * @return A dtl::KeyArrayRange object representing the range of BasisKey
+     * objects.
+     * @throws std::runtime_error if the offset or end_offset is out of bounds.
+     */
     dtl::KeyArrayRange as_range(dimn_t offset = 0, dimn_t end_offset = 0) const
     {
         RPY_CHECK(offset <= m_buffer.size() && end_offset <= m_buffer.size());
@@ -168,24 +206,110 @@ public:
     devices::Buffer& mut_buffer() noexcept { return m_buffer; }
     const devices::Buffer& buffer() const noexcept { return m_buffer; }
 
+    /**
+     * @brief Returns the underlying device associated with this device.
+     *
+     * The device() method returns the underlying devices::Device object
+     * associated with this device. This method is const and noexcept.
+     *
+     * @return The underlying devices::Device object associated with this
+     * device.
+     */
     RPY_NO_DISCARD devices::Device device() const noexcept
     {
         return m_buffer.device();
     }
 
+    /**
+     * @brief Returns a constant slice of BasisKey objects from the KeyArray.
+     *
+     * The as_slice method returns a constant slice of BasisKey objects from the
+     * KeyArray. It internally calls the as_slice method of the devices::Buffer
+     * class, passing the BasisKey type as a template parameter. This method
+     * only returns a constant view of the data, allowing read-only access to
+     * the elements.
+     *
+     * @return A constant Slice object representing the slice of BasisKey
+     * objects.
+     * @note This method does not throw any exceptions.
+     * @see devices::Buffer::as_slice()
+     */
     RPY_NO_DISCARD Slice<const BasisKey> as_slice() const
     {
         return m_buffer.as_slice<BasisKey>();
     }
 
+    /**
+     * @brief Returns a mutable slice of BasisKey objects from the KeyArray.
+     *
+     * The as_mut_slice method returns a mutable slice of BasisKey objects from
+     * the KeyArray. It internally calls the as_mut_slice method of the
+     * devices::Buffer class, passing the BasisKey type as a template parameter.
+     * This method provides a mutable view of the data, allowing read and write
+     * access to the elements.
+     *
+     * @return A mutable Slice object representing the slice of BasisKey
+     * objects.
+     * @note This method does not throw any exceptions.
+     * @see devices::Buffer::as_mut_slice()
+     */
     RPY_NO_DISCARD Slice<BasisKey> as_mut_slice()
     {
         return m_buffer.as_mut_slice<BasisKey>();
     }
 
+    /**
+     * @brief Returns a KeyArray object representing a view of the data in the
+     * buffer.
+     *
+     * The view() method returns a KeyArray object which represents a view of
+     * the data stored in the buffer. The view is created by mapping the buffer
+     * using the `map()` method of the buffer object. The KeyArray object
+     * returned by this method can be used to access and manipulate the data in
+     * the buffer.
+     *
+     * @return A KeyArray object representing a view of the data in the buffer.
+     *
+     * @see KeyArray
+     * @see Buffer::map()
+     */
     RPY_NO_DISCARD KeyArray view() const { return KeyArray(m_buffer.map()); }
+
+    /**
+     * @brief Creates a mutable view of the KeyArray object.
+     *
+     * The `mut_view()` method returns a new KeyArray object that provides a
+     * mutable view of the data stored in the current KeyArray object. The
+     * method internally uses the `map()` function of the m_buffer member
+     * variable to create the mutable view.
+     *
+     * The mutable view allows modifying the elements of the KeyArray object
+     * without making a copy of the underlying data. Any changes made to the
+     * mutable view will directly affect the data stored in the original
+     * KeyArray object.
+     *
+     * @note It's important to make sure that the mutable view is not used after
+     * the original KeyArray object is destroyed, as it will lead to undefined
+     * behavior.
+     *
+     * @return A new KeyArray object that provides a mutable view of the data
+     * stored in the original KeyArray object.
+     */
     RPY_NO_DISCARD KeyArray mut_view() { return KeyArray(m_buffer.map()); }
 
+    /**
+     * @brief Copies the KeyArray to the specified device.
+     *
+     * The to_device method creates a new KeyArray object by copying the
+     * elements of the current KeyArray to the specified device. It internally
+     * allocates a devices::Buffer on the specified device and copies the data
+     * from the original devices::Buffer using the to_device method.
+     *
+     * @tparam BasisKey The type of the elements stored in the KeyArray.
+     * @param device The target device to copy the KeyArray to.
+     * @return A new KeyArray object containing the copied data on the specified
+     * device.
+     */
     RPY_NO_DISCARD KeyArray to_device(devices::Device device) const;
 
     template <typename ViewFn>

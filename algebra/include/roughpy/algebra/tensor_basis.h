@@ -14,7 +14,15 @@
 namespace rpy {
 namespace algebra {
 
-class TensorBasis : public Basis
+/**
+ * @class TensorBasis
+ * @brief A class representing a tensor basis.
+ *
+ * The TensorBasis class is a concrete implementation of the Basis abstract
+ * class. It provides functionality for manipulating and working with a tensor
+ * basis.
+ */
+class ROUGHPY_ALGEBRA_EXPORT TensorBasis : public Basis
 {
     deg_t m_width;
     deg_t m_depth;

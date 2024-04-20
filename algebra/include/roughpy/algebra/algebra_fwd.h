@@ -31,8 +31,8 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/errors.h>
+#include <roughpy/core/smart_ptr.h>
 
-#include <boost/intrusive_ptr.hpp>
 #include "roughpy_algebra_export.h"
 
 namespace rpy {
@@ -75,7 +75,7 @@ class Basis;
 class BasisKeyInterface;
 class BasisKey;
 
-using BasisPointer = boost::intrusive_ptr<const Basis>;
+using BasisPointer = Rc<const Basis>;
 
 ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_add_ref(const Basis*) noexcept;
 
