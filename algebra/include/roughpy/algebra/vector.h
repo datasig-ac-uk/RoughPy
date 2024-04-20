@@ -6,6 +6,7 @@
 #define ROUGHPY_ALGEBRA_VECTOR_H
 
 #include <roughpy/core/macros.h>
+#include <roughpy/core/smart_ptr.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
@@ -25,7 +26,8 @@
 namespace rpy {
 namespace algebra {
 
-class ROUGHPY_ALGEBRA_EXPORT VectorData : public platform::SmallObjectBase
+class ROUGHPY_ALGEBRA_EXPORT VectorData : public platform::SmallObjectBase,
+                                          public RcBase<VectorData>
 {
     scalars::ScalarArray m_scalar_buffer{};
     KeyArray m_key_buffer{};
@@ -125,22 +127,24 @@ public:
 class VectorIterator;
 
 /**
- * @class Vector
- * @brief Class representing a mathematical vector
+ * @brief The Vector class represents a mathematical vector in a given basis.
  *
- * This class represents a mathematical vector. It can be either dense or
- * sparse, and holds the coefficients of the vector in a scalable way. The class
- * provides various methods for performing vector arithmetic operations, such as
- * addition, subtraction, scaling, and division.
+ * The Vector class provides methods for manipulating and performing operations
+ * on vectors. It supports various types of vectors, such as dense and sparse
+ * vectors, and allows for inserting, deleting, and accessing elements of the
+ * vector. It also provides operations for scalar multiplication, vector
+ * addition, and dot product.
  *
- * @note This class is designed to be used in conjunction with the
- * ROUGHPY_ALGEBRA library.
+ * @see Basis
+ * @see VectorData
  */
 class ROUGHPY_ALGEBRA_EXPORT Vector
 {
-    std::unique_ptr<VectorData> p_data = nullptr;
+    using VectorDataPtr = Rc<VectorData>;
+
+    VectorDataPtr p_data = nullptr;
     BasisPointer p_basis = nullptr;
-    std::unique_ptr<VectorData> p_fibre = nullptr;
+    VectorDataPtr p_fibre = nullptr;
 
     friend class MutableVectorElement;
 
@@ -148,7 +152,7 @@ public:
     using iterator = VectorIterator;
     using const_iterator = VectorIterator;
 
-    using scalars::Scalar;
+    using Scalar = scalars::Scalar;
 
 protected:
     /**
@@ -156,13 +160,6 @@ protected:
      * @param dim target dimension
      */
     void resize_dim(dimn_t dim);
-
-    /**
-     * @brief Reallocate and move contents to a new buffer for the dimension
-     * corresponding to the given degree
-     * @param degree
-     */
-    void resize_degree(deg_t degree);
 
     /**
      * @brief Get the current size of the buffer
@@ -236,6 +233,18 @@ protected:
      */
     void delete_element(const BasisKey& key, optional<dimn_t> index_hint);
 
+    explicit Vector(BasisPointer basis, VectorDataPtr base, VectorDataPtr fibre)
+        : p_data(std::move(base)),
+          p_basis(std::move(basis)),
+          p_fibre(std::move(fibre))
+    {}
+
+    RPY_NO_DISCARD static bool basis_compatibility_check(const Basis& basis
+    ) noexcept
+    {
+        return true;
+    }
+
 public:
     Vector();
 
@@ -245,6 +254,19 @@ public:
 
     Vector(Vector&& other) noexcept;
 
+    /**
+     * @brief Constructs a Vector object with a given basis, basis key, and
+     * scalar value.
+     *
+     * This constructor initializes a Vector object with the specified basis,
+     * basis key, and scalar value. It creates a new VectorData object with the
+     * type of the scalar and assigns it to the p_data member variable. The
+     * basis is moved into the p_basis member variable.
+     *
+     * @param basis Pointer to the basis object associated with the vector.
+     * @param key Key for the basis.
+     * @param scalar Scalar value for the vector.
+     */
     explicit Vector(BasisPointer basis, BasisKey key, Scalar scalar)
         : p_data(new VectorData(scalar.type())),
           p_basis(std::move(basis))
@@ -252,6 +274,12 @@ public:
         insert_element(std::move(key), std::move(scalar));
     }
 
+    /**
+     * @brief Constructs a Vector object with a given basis and scalar type.
+     *
+     * @param basis Pointer to the basis of the vector.
+     * @param scalar_type Pointer to the scalar type of the vector.
+     */
     explicit Vector(BasisPointer basis, const scalars::ScalarType* scalar_type)
         : p_data(new VectorData(scalar_type)),
           p_basis(std::move(basis))
@@ -264,6 +292,22 @@ public:
           p_basis(std::move(basis))
     {}
 
+    /**
+     * @brief Constructs a Vector object with the provided basis, scalar type,
+     * and initial values.
+     *
+     * This constructor initializes a Vector object with the given basis, scalar
+     * type, and initial values. The basis represents the mathematical space in
+     * which the vector is defined. The scalar type determines the type of
+     * values the vector can store. The initial values are specified as an
+     * initializer list of type T.
+     *
+     * @param basis     A pointer to the basis representing the mathematical
+     * space.
+     * @param scalar_type  A pointer to the scalar type for the vector.
+     * @param vals      An initializer list of values for initializing the
+     * vector.
+     */
     template <typename T>
     Vector(BasisPointer basis,
            const scalars::ScalarType* scalar_type,
@@ -297,8 +341,62 @@ public:
     RPY_NO_DISCARD KeyArray& mut_keys() noexcept { return p_data->mut_keys(); }
 
     /**
-     * @brief Is the vector densely stored
-     * @return
+     * @brief Borrows a vector if the type of V is a subclass of Vector.
+     *
+     * This method returns a borrowed vector if the type of V is a subclass of
+     * Vector. It checks the compatibility of V's basis with the basis stored in
+     * this object. If compatibility is confirmed, it creates a new vector of
+     * type V using the same basis, data, and fibre as this object and returns
+     * it.
+     *
+     * @tparam V The type of vector to borrow. Must be a subclass of Vector.
+     *
+     * @return A borrowed vector of type V with the same basis, data, and fibre
+     * as this object.
+     *
+     * @see Vector
+     * @see borrow_mut
+     */
+    template <typename V>
+    enable_if_t<is_base_of<Vector, V>::value, V> borrow() const
+    {
+        RPY_CHECK(V::basis_compatibility_check(*p_basis));
+        return V(p_basis, p_data, p_fibre);
+    }
+
+    template <typename V>
+    /**
+     * @brief Mutably borrows the vector and checks compatibility with the
+     * basis.
+     *
+     * The `borrow_mut` method mutably borrows the vector and checks
+     * compatibility with the basis associated with the vector. If the vector is
+     * not compatible with the basis, an exception is thrown. The method then
+     * returns a mutable reference to the borrowed vector.
+     *
+     * @tparam V The type of vector.
+     * @return A mutable reference to the borrowed vector.
+     *
+     * @note This method requires that `V` is a derived of `Vector`.
+     *
+     * @see basis_compatibility_check
+     * @see borrow
+     */
+    enable_if_t<is_base_of<Vector, V>::value, V> borrow_mut()
+    {
+        RPY_CHECK(V::basis_compatibility_check(*p_basis));
+        return V(p_basis, p_data, p_fibre);
+    }
+
+    /**
+     * @brief Checks if the vector is dense.
+     *
+     * The `is_dense` method determines whether the vector is dense or not. A
+     * dense vector is a vector where all the elements are stored contiguously
+     * in memory. This is in contrast to a sparse vector, where only non-zero
+     * elements are stored.
+     *
+     * @return `true` if the vector is dense, `false` otherwise.
      */
     RPY_NO_DISCARD bool is_dense() const noexcept
     {
@@ -306,8 +404,15 @@ public:
     }
 
     /**
-     * @brief Is the vector sparse
-     * @return
+     * @brief Checks whether the vector is sparse.
+     *
+     * The is_sparse() method determines whether the vector is sparse by
+     * checking if the key buffer of the vector's data is empty. A sparse vector
+     * is one that stores only non-zero elements and uses an index-based lookup,
+     * while a dense vector stores all elements, including zeros, and uses
+     * contiguous memory for storage.
+     *
+     * @return True if the vector is sparse, false otherwise.
      */
     RPY_NO_DISCARD bool is_sparse() const noexcept
     {
@@ -336,7 +441,13 @@ public:
     }
 
     /**
-     * @brief Get the basis for this vector
+     * @brief Get the basis of the vector.
+     *
+     * This method returns a pointer to the basis of the vector.
+     * The basis represents the coordinate system in which the vector is
+     * defined.
+     *
+     * @return A pointer to the basis of the vector.
      */
     RPY_NO_DISCARD BasisPointer basis() const noexcept { return p_basis; }
 
@@ -372,20 +483,53 @@ public:
     }
 
     /**
-     * @brief The total number of elements (including zeros).
-     * @return The total number of elements
+     * @brief Returns the dimension of the vector.
+     *
+     * The dimension of a vector is the number of elements it contains.
+     * This method returns the number of elements in the vector.
+     *
+     * @return The dimension of the vector.
+     *
+     * @note This method assumes that the vector is not null.
+     * It is the responsibility of the caller to ensure that the vector is not
+     * null before calling this method. If the vector is null, the behavior is
+     * undefined.
      */
     RPY_NO_DISCARD dimn_t dimension() const noexcept;
 
     /**
-     * @brief Number of non-zero elements.
-     * @return The number of non-zero elements
+     * @brief Returns the size of the Vector.
+     *
+     * This method returns the size of the Vector, which represents the number
+     * of non-zero elements in the Vector. If the vector is sparse, this number
+     * coincides with the dimension.
+     *
+     * @note This method does not modify the contents of the Vector.
+     *
+     * @return The size of the Vector as a dimn_t.
+     *
      */
     RPY_NO_DISCARD dimn_t size() const noexcept;
 
     /**
-     * @brief Quickly check if the vector is zero.
-     * @return True if the vector represents zero.
+     * @brief Returns true if all elements in the vector are zero; otherwise,
+     * returns false.
+     *
+     * This method checks if all elements in the vector are zero. It first calls
+     * the private method `fast_is_zero()` to quickly check if all elements are
+     * zero. If `fast_is_zero()` returns false, it then compares the maximum and
+     * minimum values of the vector's scalars using the `max` and `min`
+     * algorithms from the `scalars::algorithms` namespace. If both the maximum
+     * and minimum values are zero, the method returns true; otherwise, it
+     * returns false.
+     *
+     * @return true if all elements in the vector are zero; otherwise, false.
+     *
+     * @note This method assumes that the scalars of the vector are ordered.
+     *
+     * @see fast_is_zero()
+     * @see scalars::algorithms::max()
+     * @see scalars::algorithms::min()
      */
     RPY_NO_DISCARD bool is_zero() const noexcept;
 
