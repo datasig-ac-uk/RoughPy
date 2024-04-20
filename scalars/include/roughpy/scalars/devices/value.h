@@ -43,7 +43,7 @@ public:
     operator add_const_t<T>&() const { return *value<add_const_t<T>>(); }
 
     template <typename U = remove_cv_ref_t<T>>
-    operator enable_if_t<is_convertible<T&, U&>::value, U&>()
+    operator enable_if_t<is_convertible_v<T&, U&>, U&>()
     {
         return static_cast<U&>(value<T>());
     }

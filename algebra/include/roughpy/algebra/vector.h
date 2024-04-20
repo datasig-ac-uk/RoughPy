@@ -358,7 +358,7 @@ public:
      * @see borrow_mut
      */
     template <typename V>
-    enable_if_t<is_base_of<Vector, V>::value, V> borrow() const
+    enable_if_t<is_base_of_v<Vector, V>, V> borrow() const
     {
         RPY_CHECK(V::basis_compatibility_check(*p_basis));
         return V(p_basis, p_data, p_fibre);
@@ -382,7 +382,7 @@ public:
      * @see basis_compatibility_check
      * @see borrow
      */
-    enable_if_t<is_base_of<Vector, V>::value, V> borrow_mut()
+    enable_if_t<is_base_of_v<Vector, V>, V> borrow_mut()
     {
         RPY_CHECK(V::basis_compatibility_check(*p_basis));
         return V(p_basis, p_data, p_fibre);
@@ -589,14 +589,14 @@ public:
     }
 
     template <typename I>
-    RPY_NO_DISCARD enable_if_t<is_integral<I>::value, scalars::Scalar>
+    RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
     operator[](I index) const
     {
         return operator[](p_basis->to_key(index));
     }
 
     template <typename I>
-    RPY_NO_DISCARD enable_if_t<is_integral<I>::value, scalars::Scalar>
+    RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
     operator[](I index)
     {
         return operator[](p_basis->to_key(index));
@@ -832,49 +832,49 @@ std::ostream& operator<<(std::ostream& os, const Vector& value);
  */
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
 operator-(const V& arg)
 {
     return V(arg.uminus());
 }
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
 operator+(const V& lhs, const Vector& rhs)
 {
     return V(lhs.add(rhs));
 }
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
 operator-(const V& lhs, const Vector& rhs)
 {
     return V(lhs.sub(rhs));
 }
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
 operator*(const V& lhs, const scalars::Scalar& rhs)
 {
     return V(lhs.right_smul(rhs));
 }
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
 operator*(const scalars::Scalar& lhs, const V& rhs)
 {
     return V(rhs.left_smul(lhs));
 }
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of<Vector, V>::value, V>
+RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
 operator/(const V& lhs, const scalars::Scalar& rhs)
 {
     return V(lhs.sdiv(rhs));
 }
 
 template <typename V>
-enable_if_t<is_base_of<Vector, V>::value, V&>
+enable_if_t<is_base_of_v<Vector, V>, V&>
 operator+=(V& lhs, const Vector& rhs)
 {
     lhs.add_inplace(rhs);
@@ -882,7 +882,7 @@ operator+=(V& lhs, const Vector& rhs)
 }
 
 template <typename V>
-enable_if_t<is_base_of<Vector, V>::value, V&>
+enable_if_t<is_base_of_v<Vector, V>, V&>
 operator-=(V& lhs, const Vector& rhs)
 {
     lhs.sub_inplace(rhs);
@@ -890,7 +890,7 @@ operator-=(V& lhs, const Vector& rhs)
 }
 
 template <typename V>
-enable_if_t<is_base_of<Vector, V>::value, V&>
+enable_if_t<is_base_of_v<Vector, V>, V&>
 operator*=(V& lhs, const scalars::Scalar& rhs)
 {
     lhs.smul_inplace(rhs);
@@ -898,7 +898,7 @@ operator*=(V& lhs, const scalars::Scalar& rhs)
 }
 
 template <typename V>
-enable_if_t<is_base_of<Vector, V>::value, V&>
+enable_if_t<is_base_of_v<Vector, V>, V&>
 operator/=(V& lhs, const scalars::Scalar& rhs)
 {
     lhs.sdiv_inplace(rhs);

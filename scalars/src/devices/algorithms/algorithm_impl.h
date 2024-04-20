@@ -62,7 +62,7 @@ template <typename T>
 struct WrappedBufferRef {
     using type = remove_const_t<T>;
 
-    using value_type = conditional_t<is_const<T>::value, const Buffer, Buffer>;
+    using value_type = conditional_t<is_const_v<T>, const Buffer, Buffer>;
     using pointer_type = value_type*;
     using ref_type = value_type&;
     pointer_type p_ref;
@@ -101,7 +101,7 @@ struct WrappedBufferRef {
     }
 
 template <typename S, typename T>
-using copy_const_t = conditional_t<is_const<S>::value, const T, T>;
+using copy_const_t = conditional_t<is_const_v<S>, const T, T>;
 
 template <typename Result, template <typename...> class Functor, typename... Ts>
 class AlgoFunctorEvalutor
@@ -137,7 +137,7 @@ class AlgoFunctorEvalutor
     )
     {
         static_assert(
-                is_same<decay_t<Head>, Buffer>::value,
+                is_same_v<decay_t<Head>, Buffer>,
                 "Head must be a Buffer or or const Buffer"
         );
 

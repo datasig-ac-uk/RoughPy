@@ -28,7 +28,7 @@ class PackedInteger
     Base m_data{};
 
     static_assert(
-            is_integral<Base>::value && is_integral<Packed>::value,
+            is_integral_v<Base> && is_integral_v<Packed>,
             "both base and packed must be integral types"
     );
 

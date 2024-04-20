@@ -13,7 +13,7 @@ namespace rpy {
 namespace algebra {
 
 /**
-
+ * @brief The LieBasis class represents a basis for Lie algebra.
  */
 class ROUGHPY_ALGEBRA_EXPORT LieBasis : public Basis
 {

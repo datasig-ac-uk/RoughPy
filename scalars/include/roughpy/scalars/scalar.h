@@ -133,7 +133,7 @@ content_type_of(PackedScalarTypePointer<ScalarContentType> ptype) noexcept
 
 template <typename T>
 struct can_be_scalar : conditional_t<
-                               !is_base_of<Scalar, T>::value,
+                               !is_base_of_v<Scalar, T>,
                                std::true_type,
                                std::false_type> {
 };
@@ -210,7 +210,7 @@ public:
           ),
           integer_for_convenience(0)
     {
-        if constexpr (is_standard_layout<T>::value && is_trivially_copyable<T>::value && is_trivially_destructible<T>::value && sizeof(T) <= sizeof(void*)) {
+        if constexpr (is_standard_layout_v<T> && is_trivially_copyable_v<T> && is_trivially_destructible_v<T> && sizeof(T) <= sizeof(void*)) {
             std::memcpy(trivial_bytes, &value, sizeof(T));
         } else {
             allocate_data();
@@ -222,9 +222,9 @@ public:
     template <
             typename T,
             typename = enable_if_t<
-                    !is_pointer<T>::value && is_standard_layout<T>::value
-                    && is_trivially_copyable<T>::value
-                    && is_trivially_destructible<T>::value>>
+                    !is_pointer_v<T> && is_standard_layout_v<T>
+                    && is_trivially_copyable_v<T>
+                    && is_trivially_destructible_v<T>>>
     explicit Scalar(const ScalarType* type, T&& value)
         : p_type_and_content_type(type, dtl::ScalarContentType::TrivialBytes),
           integer_for_convenience(0)
@@ -240,10 +240,10 @@ public:
     template <
             typename T,
             enable_if_t<
-                    !is_pointer<T>::value
-                            && (!is_standard_layout<T>::value
-                                || !is_trivially_copyable<T>::value
-                                || !is_trivially_destructible<T>::value),
+                    !is_pointer_v<T>
+                            && (!is_standard_layout_v<T>
+                                || !is_trivially_copyable_v<T>
+                                || !is_trivially_destructible_v<T>),
                     int>
             = 0>
     explicit Scalar(const ScalarType* type, T&& value)
@@ -274,7 +274,7 @@ public:
 
     template <
             typename I,
-            typename = enable_if_t<is_base_of<ScalarInterface, I>::value>>
+            typename = enable_if_t<is_base_of_v<ScalarInterface, I>>>
     explicit Scalar(std::unique_ptr<I>&& iface)
         : p_type_and_content_type(
                   iface->type(),
@@ -312,7 +312,7 @@ public:
      *
      */
     template <typename T>
-    enable_if_t<!is_base_of<Scalar, T>::value, Scalar&> operator=(const T& value
+    enable_if_t<!is_base_of_v<Scalar, T>, Scalar&> operator=(const T& value
     )
     {
         if (p_type_and_content_type.is_null()) {

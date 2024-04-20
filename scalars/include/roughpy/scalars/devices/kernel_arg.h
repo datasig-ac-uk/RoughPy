@@ -69,14 +69,14 @@ public:
         : p_const_buffer(&buffer),
           m_mode(BufferPointer) {}
 
-    template <typename T, enable_if_t<!is_same<T, KernelArgument>::value,
+    template <typename T, enable_if_t<!is_same_v<T, KernelArgument>,
                                       int> = 0>
     explicit KernelArgument(T& data)
         : p_data(&data),
           m_mode(Pointer),
           m_info(type_info<T>()) {}
 
-    template <typename T, enable_if_t<!is_same<T, KernelArgument>::value,
+    template <typename T, enable_if_t<!is_same_v<T, KernelArgument>,
                                       int> = 0>
     explicit KernelArgument(const T& data)
         : p_const_data(&data),

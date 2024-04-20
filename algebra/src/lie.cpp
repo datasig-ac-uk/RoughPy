@@ -6,7 +6,3 @@
 
 using namespace rpy;
 using namespace rpy::algebra;
-
-Lie::Lie() {}
-
-Lie::Lie(Vector&& data) {}

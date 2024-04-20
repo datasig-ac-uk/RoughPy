@@ -46,14 +46,13 @@
 #include <boost/type_traits/is_detected.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
 
-#include <boost/container_hash/hash.hpp>
 
 namespace rpy {
 
 using std::declval;
+using std::false_type;
 using std::integral_constant;
 using std::true_type;
-using std::false_type;
 
 using std::is_array;
 using std::is_class;
@@ -102,13 +101,89 @@ using std::is_base_of;
 using std::is_convertible;
 using std::is_same;
 
+using std::is_base_of_v;
+using std::is_convertible_v;
+using std::is_same_v;
+
+using std::is_array_v;
+using std::is_class_v;
+using std::is_enum_v;
+using std::is_floating_point_v;
+using std::is_function_v;
+using std::is_integral_v;
+using std::is_lvalue_reference_v;
+using std::is_member_function_pointer_v;
+using std::is_member_object_pointer_v;
+using std::is_null_pointer_v;
+using std::is_pointer_v;
+using std::is_rvalue_reference_v;
+using std::is_union_v;
+using std::is_void_v;
+
+using std::is_const_v;
+using std::is_literal_type_v;
+using std::is_pod_v;
+using std::is_standard_layout_v;
+using std::is_trivial_v;
+using std::is_trivially_copyable_v;
+using std::is_volatile_v;
+
+using std::is_abstract_v;
+using std::is_aggregate_v;
+using std::is_empty_v;
+using std::is_final_v;
+using std::is_polymorphic_v;
+
+using std::is_signed_v;
+using std::is_unsigned_v;
+
+using std::is_constructible_v;
+using std::is_nothrow_constructible_v;
+using std::is_trivially_constructible_v;
+
+using std::is_default_constructible_v;
+using std::is_nothrow_default_constructible_v;
+using std::is_trivially_default_constructible_v;
+
+using std::is_copy_constructible_v;
+using std::is_nothrow_copy_constructible_v;
+using std::is_trivially_copy_constructible_v;
+
+using std::is_move_constructible_v;
+using std::is_nothrow_move_constructible_v;
+using std::is_trivially_move_constructible_v;
+
+using std::is_assignable_v;
+using std::is_nothrow_assignable_v;
+using std::is_trivially_assignable_v;
+
+using std::is_copy_assignable_v;
+using std::is_nothrow_copy_assignable_v;
+using std::is_trivially_copy_assignable_v;
+
+using std::is_move_assignable_v;
+using std::is_nothrow_move_assignable_v;
+using std::is_trivially_move_assignable_v;
+
+using std::is_destructible_v;
+using std::is_nothrow_destructible_v;
+using std::is_trivially_destructible_v;
+
+using std::has_unique_object_representations_v;
+using std::has_virtual_destructor_v;
+
+using std::is_nothrow_swappable_v;
+using std::is_nothrow_swappable_with_v;
+using std::is_swappable_v;
+using std::is_swappable_with_v;
+
 using std::add_const_t;
 using std::add_cv_t;
 using std::add_volatile_t;
+using std::decay_t;
 using std::remove_const_t;
 using std::remove_cv_t;
 using std::remove_volatile_t;
-using std::decay_t;
 
 using std::add_lvalue_reference_t;
 using std::add_pointer_t;
@@ -135,8 +210,8 @@ using boost::remove_cv_ref_t;
 using boost::is_detected;
 
 #ifdef RPY_CPP_17
-using std::void_t;
 using std::invoke_result_t;
+using std::void_t;
 #else
 using boost::void_t;
 
@@ -150,7 +225,7 @@ using invoke_result_t = std::result_of_t<F(ArgTypes...)>;
  * Makes T a pointer if it isn't already a pointer.
  */
 template <typename T>
-using ensure_pointer = conditional_t<is_pointer<T>::value, T, add_pointer_t<T>>;
+using ensure_pointer = conditional_t<is_pointer_v<T>, T, add_pointer_t<T>>;
 
 /**
  * @brief Get the most sensible parameter type for type T
@@ -178,16 +253,24 @@ struct EmptyBase {
 }// namespace dtl
 
 template <typename T, typename B = dtl::EmptyBase>
-using void_or_base = conditional_t<is_void<T>::value, B, T>;
+using void_or_base = conditional_t<is_void_v<T>, B, T>;
 
-using boost::hash;
-
-
+/**
+ * @struct ConstLog2
+ * @brief A compile-time struct to compute the logarithm base 2 of a given
+ * integer.
+ *
+ * This struct calculates the logarithm base 2 of a given integer at compile
+ * time.
+ *
+ * @tparam N The value for which the logarithm base 2 is to be computed.
+ */
 template <size_t N>
-struct ConstLog2 : integral_constant<size_t, ConstLog2<N / 2>::value + 1>{ };
+struct ConstLog2 : integral_constant<size_t, ConstLog2<N / 2>::value + 1> {
+};
 template <>
-struct ConstLog2<1> : integral_constant<size_t, 0>{};
-
+struct ConstLog2<1> : integral_constant<size_t, 0> {
+};
 
 }// namespace rpy
 

@@ -331,7 +331,7 @@ namespace dtl {
 template <typename I>
 struct integral_code_impl {
     static constexpr TypeCode value
-            = is_signed<I>::value ? TypeCode::Int : TypeCode::UInt;
+            = is_signed_v<I> ? TypeCode::Int : TypeCode::UInt;
 };
 
 struct floating_code_impl {
@@ -343,14 +343,14 @@ struct unknown_code_impl {
 
 template <typename T>
 struct not_integral_code_impl : public conditional_t<
-                                        is_floating_point<T>::value,
+                                        is_floating_point_v<T>,
                                         floating_code_impl,
                                         unknown_code_impl> {
 };
 
 template <typename T>
 struct type_code_of_impl : public conditional_t<
-                                   is_integral<T>::value,
+                                   is_integral_v<T>,
                                    integral_code_impl<T>,
                                    not_integral_code_impl<T>> {
 };

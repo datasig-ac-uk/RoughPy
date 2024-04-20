@@ -15,6 +15,15 @@
 namespace rpy {
 namespace algebra {
 
+/**
+ * @class LieMultiplication
+ * @brief A class representing Lie algebra multiplication operations.
+ *
+ * This class provides static functions for Lie algebra multiplication
+ * operations, such as basis compatibility check, fused multiply-accumulate, and
+ * multiplication into a vector.
+ *
+ */
 class ROUGHPY_ALGEBRA_EXPORT LieMultiplication
 {
 public:
@@ -25,7 +34,7 @@ public:
 };
 
 /**
- * i@class Lie
+ * @class Lie
  * @brief A class representing a Lie algebra.
  *
  * This class is derived from the GradedAlgebra class and specializes in Lie

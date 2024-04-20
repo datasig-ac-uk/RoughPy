@@ -17,7 +17,7 @@ using namespace scalars;
 namespace {
 
 template <typename T>
-enable_if_t<is_trivially_copyable<T>::value>
+enable_if_t<is_trivially_copyable_v<T>>
 to_raw_bytes_impl(std::vector<byte>& out, const T* data, dimn_t size)
 {
     const auto nbytes = size * sizeof(T);
@@ -120,7 +120,7 @@ scalars::dtl::to_raw_bytes(const void* ptr, dimn_t size, PackedScalarType info)
 namespace {
 
 template <typename T>
-enable_if_t<is_trivially_copyable<T>::value>
+enable_if_t<is_trivially_copyable_v<T>>
 from_raw_bytes_impl(T* dst, dimn_t count, Slice<const byte> bytes)
 {
     const auto nbytes = count * sizeof(T);

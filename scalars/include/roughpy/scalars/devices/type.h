@@ -229,8 +229,8 @@ constexpr TypeTraits traits_of() noexcept
 {
     using base_t = remove_cv_ref_t<T>;
     return {
-            is_standard_layout<base_t>::value,
-            is_trivially_copyable<base_t>::value,
+            is_standard_layout_v<base_t>,
+            is_trivially_copyable_v<base_t>,
             std::is_trivially_constructible_v<base_t>,
             std::is_trivially_default_constructible_v<base_t>,
             std::is_trivially_copy_constructible_v<base_t>,

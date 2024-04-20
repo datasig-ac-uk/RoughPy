@@ -42,8 +42,8 @@ using devices::TypeInfo;
 
 template <typename D, typename T>
 static inline enable_if_t<
-        is_constructible<D, const T&>::value
-                && is_trivially_default_constructible<D>::value,
+        is_constructible_v<D, const T&>
+                && is_trivially_default_constructible_v<D>,
         bool>
 write_result(D* dst, const T* src, dimn_t count) noexcept
 {
@@ -71,8 +71,8 @@ static inline void assign_result(D& result, const BFloat16& arg)
 
 template <typename D, typename T>
 static inline enable_if_t<
-        is_constructible<D, const T&>::value
-                && !is_trivially_default_constructible<D>::value,
+        is_constructible_v<D, const T&>
+                && !is_trivially_default_constructible_v<D>,
         bool>
 write_result(D* dst, const T* src, dimn_t count) noexcept
 {
@@ -85,7 +85,7 @@ write_result(D* dst, const T* src, dimn_t count) noexcept
 }
 
 template <typename D, typename T>
-static inline enable_if_t<!is_constructible<D, const T&>::value, bool>
+static inline enable_if_t<!is_constructible_v<D, const T&>, bool>
 write_result(D*, const T*, dimn_t) noexcept
 {
     return false;
@@ -193,7 +193,7 @@ namespace {
 
 template <typename T>
 constexpr enable_if_t<
-        is_trivially_constructible<T>::value && is_standard_layout<T>::value,
+        is_trivially_constructible_v<T> && is_standard_layout_v<T>,
         bool>
 assign_rational(T* dst, int64_t num, int64_t denom) noexcept
 {

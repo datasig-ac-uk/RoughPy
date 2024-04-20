@@ -54,9 +54,9 @@ using std::bit_cast;
 #else
 template <typename To, typename From>
 RPY_NO_DISCARD enable_if_t<
-        sizeof(To) == sizeof(From) && is_trivially_copyable<From>::value
-                && is_trivially_copyable<To>::value
-                && is_default_constructible<To>::value,
+        sizeof(To) == sizeof(From)
+                && is_trivially_copyable_v<From> && is_trivially_copyable_v<To>
+                && is_default_constructible_v<To>,
         To>
 bit_cast(From from)
 {
@@ -69,8 +69,8 @@ bit_cast(From from)
 #endif
 
 template <typename T>
-RPY_NO_DISCARD inline enable_if_t<is_integral<T>::value, size_t>
-count_bits(T val) noexcept
+RPY_NO_DISCARD inline enable_if_t<is_integral_v<T>, size_t> count_bits(T val
+) noexcept
 {
     // There might be optimisations using builtin popcount functions
     return std::bitset<CHAR_BIT * sizeof(T)>(val).count();
@@ -119,23 +119,36 @@ public:
 };
 
 template <typename I, typename J>
-RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I>
+RPY_NO_DISCARD constexpr enable_if_t<is_integral_v<I>, I>
 round_up_divide(I value, J divisor) noexcept
 {
     return (value + static_cast<I>(divisor) - 1) / static_cast<I>(divisor);
 }
 
 template <typename I>
-RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I>
+RPY_NO_DISCARD constexpr enable_if_t<is_integral_v<I>, I>
 next_power_2(I value, I start = I(1)) noexcept
 {
     if (value == 0) { return 0; }
-    if (is_signed<I>::value && value < 0) { return -next_power_2(-value); }
+    if (is_signed_v<I> && value < 0) { return -next_power_2(-value); }
     return (start >= value) ? start : next_power_2(value, I(start << 1));
 }
 
 template <unsigned Base, typename I>
-RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I> const_log(I arg
+/**
+ * @brief Calculates the logarithm base @p Base of an integral value @p arg
+ * recursively.
+ *
+ * This function uses a constexpr implementation to recursively calculate the
+ * logarithm base @p Base of an integral value @p arg. It returns the number of
+ * times @p Base must be multiplied by itself to reach or exceed the value @p
+ * arg.
+ *
+ * @tparam I The type of the integral value.
+ * @param arg The integral value for which to calculate the logarithm.
+ * @return The logarithm base @p Base of the integral value @p arg.
+ */
+RPY_NO_DISCARD constexpr enable_if_t<is_integral_v<I>, I> const_log(I arg
 ) noexcept
 {
     return arg >= static_cast<I>(Base)
@@ -166,8 +179,7 @@ RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I> const_log(I arg
  */
 template <typename I, typename J>
 constexpr enable_if_t<
-        is_integral<I>::value && is_integral<J>::value
-                && is_convertible<J, I>::value,
+        is_integral_v<I> && is_integral_v<J> && is_convertible_v<J, I>,
         pair<I, J>>
 remquo(I num, J divisor) noexcept
 {

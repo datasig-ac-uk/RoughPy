@@ -75,7 +75,7 @@ public:
     template <
             typename KeyType,
             typename
-            = enable_if_t<is_base_of<BasisKeyInterface, KeyType>::value>,
+            = enable_if_t<is_base_of_v<BasisKeyInterface, KeyType>>,
             typename... Args>
     BasisKey(Args&&... args)
         : m_data(bit_cast<data_type>(new KeyType(std::forward<Args>(args)...)))
