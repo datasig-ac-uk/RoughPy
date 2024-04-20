@@ -14,7 +14,7 @@ template <typename T>
 using Rc = boost::intrusive_ptr<T>;
 
 template <typename Derived, typename Policy = boost::thread_safe_counter>
-using RcBase = boost::intrusive_ref_counter;
+using RcBase = boost::intrusive_ref_counter<Derived, Policy>;
 
 }// namespace rpy
 
