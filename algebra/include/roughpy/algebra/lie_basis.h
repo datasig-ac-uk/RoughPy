@@ -14,13 +14,12 @@ namespace algebra {
 
 class ROUGHPY_ALGEBRA_EXPORT LieBasis : public Basis
 {
+    class HallSet;
+    std::shared_ptr<HallSet> p_hallset;
+
     deg_t m_width;
     deg_t m_depth;
     dimn_t m_max_dimension;
-
-    class HallSet;
-
-    std::shared_ptr<HallSet> p_hallset;
 
 public:
     using parent_type = pair<BasisKey, BasisKey>;
