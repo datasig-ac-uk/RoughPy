@@ -34,16 +34,16 @@
 
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
-#include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/scalar_stream.h>
+#include <roughpy/scalars/scalar_type.h>
 
 #include "free_tensor.h"
+#include "key_scalar_array.h"
+#include "key_scalar_stream.h"
 #include "lie.h"
 #include "lie_basis.h"
 #include "shuffle_tensor.h"
 #include "tensor_basis.h"
-#include "key_scalar_array.h"
-#include "key_scalar_stream.h"
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
@@ -108,14 +108,13 @@ class ROUGHPY_ALGEBRA_EXPORT Context : public ContextBase
     string m_ctx_backend;
 
 protected:
-    explicit Context(
-            deg_t width,
+    explicit
+    Context(deg_t width,
             deg_t depth,
             const scalars::ScalarType* ctype,
             string&& context_backend,
             const dimn_t* lie_sizes = nullptr,
-            const dimn_t* tensor_sizes = nullptr
-    )
+            const dimn_t* tensor_sizes = nullptr)
         : ContextBase(width, depth, lie_sizes, tensor_sizes),
           p_ctype(ctype),
           m_ctx_backend(std::move(context_backend))

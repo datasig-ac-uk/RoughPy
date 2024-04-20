@@ -32,8 +32,8 @@
 #include "algebra_fwd.h"
 
 #include <roughpy/core/hash.h>
-#include <roughpy/core/traits.h>
 #include <roughpy/core/smart_ptr.h>
+#include <roughpy/core/traits.h>
 
 #include "basis_key.h"
 #include "roughpy_algebra_export.h"
@@ -226,14 +226,12 @@ class ROUGHPY_ALGEBRA_EXPORT Basis : public RcBase<Basis>
     Flags m_flags;
 
 protected:
-
     Basis(string_view id_string, Flags flags)
         : m_basis_id(id_string),
           m_flags(flags)
     {}
 
 public:
-
     virtual ~Basis();
 
     /**
@@ -629,14 +627,10 @@ ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_release(const Basis* ptr) noexcept;
  *
  * @see Basis, BasisKey
  */
-struct KeyHash
-{
+struct KeyHash {
     const Basis* p_basis;
 
-    hash_t operator()(const BasisKey& arg) const
-    {
-        return p_basis->hash(arg);
-    }
+    hash_t operator()(const BasisKey& arg) const { return p_basis->hash(arg); }
 };
 
 /**
@@ -662,8 +656,7 @@ struct KeyHash
  * bool equal = comparator(key1, key2);
  * @endcode
  */
-struct KeyEquals
-{
+struct KeyEquals {
     const Basis* p_basis;
 
     bool operator()(const BasisKey& left, const BasisKey& right) const
@@ -671,7 +664,6 @@ struct KeyEquals
         return p_basis->equals(left, right);
     }
 };
-
 
 }// namespace algebra
 }// namespace rpy
