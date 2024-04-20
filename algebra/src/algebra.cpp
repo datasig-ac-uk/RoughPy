@@ -7,10 +7,3 @@
 
 using namespace rpy;
 using namespace rpy::algebra;
-
-Algebra Algebra::multiply(const Vector& other) const { return Algebra(); }
-
-Algebra& Algebra::multiply_inplace(const rpy::algebra::Vector& other)
-{
-    return *this;
-}
