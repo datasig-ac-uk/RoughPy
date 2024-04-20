@@ -97,6 +97,7 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/context.h
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/free_tensor.h
+        include/roughpy/algebra/graded_vector.h
         include/roughpy/algebra/key_algorithms.h
         include/roughpy/algebra/key_array.h
         include/roughpy/algebra/key_scalar_array.h
@@ -106,6 +107,7 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/shuffle_tensor.h
         include/roughpy/algebra/tensor_basis.h
         include/roughpy/algebra/tensor_product_basis.h
+        include/roughpy/algebra/unital_algebra.h
         include/roughpy/algebra/vector.h
         include/roughpy/algebra/vector_iterator.h
         DEPENDENCIES PUBLIC
