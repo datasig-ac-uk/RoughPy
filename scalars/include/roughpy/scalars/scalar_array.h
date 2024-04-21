@@ -100,36 +100,158 @@ public:
 
     ScalarArray copy_or_clone() &&;
 
+    /**
+     * @brief Checks if the ScalarArray is owning its buffer.
+     *
+     * This method returns true if the ScalarArray is owning its buffer,
+     * and false otherwise. The ownership status is determined by the underlying
+     * buffer of the ScalarArray.
+     *
+     * @return True if the ScalarArray is owning its buffer, false otherwise.
+     */
     RPY_NO_DISCARD bool is_owning() const noexcept
     {
         return m_buffer.is_owner();
     }
 
+    /**
+     * @brief Retrieves the type of the packed scalar values in the ScalarArray.
+     *
+     * This method returns the PackedScalarType of the packed scalar values
+     * in the ScalarArray. The type represents the data type of the scalar
+     * values stored in the array.
+     *
+     * @return The PackedScalarType of the packed scalar values.
+     * @note The return value is only valid if the ScalarArray has been
+     * initialized with valid packed scalar values. If the ScalarArray is not
+     * initialized, the return value may be invalid.
+     * @remark The returned PackedScalarType value points to either a
+     * pre-defined type or a custom-defined type. It is recommended to use the
+     * appropriate access methods of the PackedScalarType class to retrieve the
+     * specific details and properties of the scalar type, such as size,
+     * precision, signed/unsigned, etc. Please refer to the PackedScalarType
+     * class documentation for more information.
+     * @remark The return type is constant and noexcept guaranteeing that the
+     * method will not throw any exceptions. However, the behavior is undefined
+     * if the ScalarArray is not valid.
+     */
     RPY_NO_DISCARD PackedScalarType type() const noexcept;
 
+    /**
+     * @brief Returns the type information of the ScalarArray.
+     *
+     * This method returns the type information of the ScalarArray.
+     * It accesses the type information of the internal buffer and returns it.
+     *
+     * @return The type information of the ScalarArray.
+     */
     RPY_NO_DISCARD devices::TypeInfo type_info() const noexcept;
 
+    /**
+     * @brief Retrieves the size of the ScalarArray.
+     *
+     * This method returns the size of the ScalarArray, which represents the
+     * number of elements in the array. The size is determined by the size of
+     * the internal buffer of the ScalarArray.
+     *
+     * @return The size of the ScalarArray.
+     * @note The return value represents the number of elements in the array and
+     * is not related to the memory occupied by the array.
+     * @remark The return type is constant and noexcept guaranteeing that the
+     * method will not throw any exceptions.
+     */
     RPY_NO_DISCARD dimn_t size() const noexcept { return m_buffer.size(); }
     RPY_NO_DISCARD dimn_t capacity() const noexcept;
+    /**
+     * @fn bool empty() const noexcept
+     * @brief Checks if the scalar array is empty.
+     *
+     * This function checks whether the scalar array is empty or not. An empty
+     * scalar array has no elements.
+     *
+     * @return True if the scalar array is empty, false otherwise.
+     *
+     * @note This function does not modify the state of the object.
+     * @note This function should be called on a valid scalar array object.
+     * @note This function has a constant time complexity.
+     * @note This function is safe to use in a noexcept context.
+     */
     RPY_NO_DISCARD bool empty() const noexcept { return m_buffer.size() == 0; }
+    /**
+     * @brief Checks if the scalar array is null.
+     *
+     * This method checks if the scalar array is null by calling the `is_null()`
+     * method of the internal buffer.
+     *
+     * @return True if the scalar array is null, false otherwise.
+     *
+     * @see scalar_array.h
+     */
     RPY_NO_DISCARD bool is_null() const noexcept { return m_buffer.is_null(); }
+    /**
+     * @brief Checks if the ScalarArray is read-only.
+     *
+     * This method checks if the ScalarArray is read-only by comparing the mode
+     * of the underlying buffer with devices::BufferMode::Read. If the mode is
+     * devices::BufferMode::Read, then the ScalarArray is considered to be
+     * read-only. Otherwise, it is not read-only.
+     *
+     * @return True if the ScalarArray is read-only, false otherwise.
+     */
     RPY_NO_DISCARD bool is_const() const noexcept
     {
         return m_buffer.mode() == devices::BufferMode::Read;
     }
+    /**
+     * @brief Retrieves the device associated with the device.
+     *
+     * This method returns the device associated with the device.
+     *
+     * @return The device associated with the device.
+     *
+     * @note This method does not throw any exceptions.
+     */
     RPY_NO_DISCARD devices::Device device() const noexcept
     {
         return m_buffer.device();
     }
 
+    /**
+     * @brief Returns the memory owner of the buffer.
+     *
+     * This method returns the memory owner of the buffer associated with the
+     * current object. The returned memory owner is of type devices::Buffer.
+     *
+     * @return The memory owner of the buffer.
+     */
     RPY_NO_DISCARD devices::Buffer memory_owner() const noexcept
     {
         return m_buffer.memory_owner();
     }
 
-    //    RPY_NO_DISCARD const void* pointer() const;
-    //    RPY_NO_DISCARD void* mut_pointer();
+    /**
+     * @brief Returns a reference to the buffer object of the ScalarArray.
+     *
+     * This method returns a constant reference to the buffer object of the
+     * ScalarArray. The buffer object is used to store the scalar values of the
+     * array.
+     *
+     * @return A constant reference to the buffer object.
+     */
     RPY_NO_DISCARD const devices::Buffer& buffer() const;
+    /**
+     * @fn devices::Buffer& ScalarArray::mut_buffer()
+     * @brief Retrieves a mutable reference to the buffer object associated with
+     * the ScalarArray.
+     *
+     * This function returns a mutable reference to the buffer object associated
+     * with the ScalarArray. The buffer object represents the underlying data
+     * storage for the ScalarArray. By retrieving a mutable reference to the
+     * buffer, you can directly manipulate the data stored in the ScalarArray.
+     *
+     * @return A mutable reference to the buffer object associated with the
+     * ScalarArray.
+     */
     RPY_NO_DISCARD devices::Buffer& mut_buffer();
 
     RPY_NO_DISCARD Scalar operator[](dimn_t i) const;
@@ -138,19 +260,66 @@ public:
     RPY_NO_DISCARD ScalarArray operator[](SliceIndex index);
     RPY_NO_DISCARD ScalarArray operator[](SliceIndex index) const;
 
+    /**
+     * @brief Returns a view of the ScalarArray.
+     *
+     * This method returns a view of the ScalarArray. The view is created by
+     * mapping the buffer of the ScalarArray to the desired size.
+     *
+     * @return A view of the ScalarArray.
+     */
     RPY_NO_DISCARD ScalarArray view() const
     {
         return {p_type, m_buffer.map(size())};
     }
 
+    /**
+     * @brief Provides a mutable view of the ScalarArray.
+     *
+     * This method returns a mutable view of the ScalarArray by creating a new
+     * ScalarArray with the same type and a mapped buffer of the same size. The
+     * view allows modifying the contents of the original ScalarArray without
+     * creating a deep copy.
+     *
+     * @return A mutable view of the ScalarArray.
+     */
     RPY_NO_DISCARD ScalarArray mut_view()
     {
         return {p_type, m_buffer.map(size())};
     }
 
+    /**
+     * @brief Returns a borrowed copy of the ScalarArray object.
+     *
+     * This method returns a borrowed copy of the current ScalarArray object.
+     * The borrowed copy shares the same underlying data buffer with the
+     * original object. Changes made to the borrowed copy will affect the
+     * original object and vice versa.
+     *
+     * @return A borrowed copy of the ScalarArray object.
+     */
     RPY_NO_DISCARD ScalarArray borrow() const;
+    /**
+     * @fn ScalarArray::borrow_mut()
+     * @brief Borrows a mutable reference to the scalar array.
+     *
+     * This method returns a mutable reference to the scalar array. It allows
+     * for modification of the array elements.
+     *
+     * @return A mutable reference to the scalar array.
+     */
     RPY_NO_DISCARD ScalarArray borrow_mut();
 
+    /**
+     * @brief Converts the ScalarArray to the specified device.
+     *
+     * This method creates a new ScalarArray object that is stored on the
+     * specified device. If the existing ScalarArray is already stored on the
+     * specified device, it returns a copy of the existing ScalarArray object.
+     *
+     * @param device The device to which the ScalarArray will be moved.
+     * @return A ScalarArray object that is stored on the specified device.
+     */
     RPY_NO_DISCARD ScalarArray to_device(devices::Device device) const;
 
     RPY_SERIAL_SAVE_FN();
@@ -249,6 +418,22 @@ RPY_SERIAL_EXTERN_SAVE_CLS_IMP(ScalarArray)
 RPY_SERIAL_EXTERN_LOAD_CLS_IMP(ScalarArray)
 #endif
 
+/**
+ * @brief Converts and copies the contents of one ScalarArray to another.
+ *
+ * This function copies the scalar values from the source ScalarArray to the
+ * destination ScalarArray, converting them if necessary. The destination
+ * ScalarArray must be pre-allocated with enough capacity to hold all the
+ * elements of the source ScalarArray.
+ *
+ * @param dst The destination ScalarArray to copy the elements to.
+ * @param src The source ScalarArray to copy the elements from.
+ *
+ * @note The size and capacity of the destination ScalarArray will be modified
+ * to match that of the source ScalarArray.
+ * @note The data in the destination ScalarArray will be overwritten.
+ * @note Both the source and destination ScalarArrays must have the same length.
+ */
 ROUGHPY_SCALARS_EXPORT void
 convert_copy(ScalarArray& dst, const ScalarArray& src);
 

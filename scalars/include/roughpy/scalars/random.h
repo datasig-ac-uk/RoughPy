@@ -35,7 +35,15 @@
 namespace rpy {
 namespace scalars {
 
-
+/**
+ * @class RandomGenerator
+ * @brief Interface for generating random numbers
+ *
+ * This class provides an interface for generating random numbers. It is
+ * intended to be used as a base class for specific random number generators.
+ * The derived class must implement the pure virtual functions defined in this
+ * class.
+ */
 class ROUGHPY_SCALARS_EXPORT RandomGenerator
 {
 protected:

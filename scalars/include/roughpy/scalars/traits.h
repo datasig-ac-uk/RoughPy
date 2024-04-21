@@ -36,6 +36,15 @@ namespace rpy {
 namespace scalars {
 namespace traits {
 
+/**
+ * @brief Get the size of a TypeInfo object in bytes.
+ *
+ * This function returns the size of the TypeInfo object in bytes.
+ *
+ * @param info The TypeInfo object to get the size of.
+ *
+ * @return The size of the TypeInfo object in bytes.
+ */
 constexpr dimn_t size_of(const devices::TypeInfo& info) noexcept
 {
     return static_cast<dimn_t>(info.bytes);
@@ -46,28 +55,86 @@ constexpr dimn_t align_of(const devices::TypeInfo& info) noexcept
     return dimn_t(1) << static_log2p1(info.bytes);
 }
 
+/**
+ * @brief Check if the given TypeInfo object represents a floating point type.
+ *
+ * This function checks if the provided TypeInfo object represents a floating
+ * point type. It returns true if the TypeInfo object's code is either
+ * devices::TypeCode::Float or devices::TypeCode::BFloat, indicating a floating
+ * point type. Otherwise, it returns false.
+ *
+ * @param info The TypeInfo object to check.
+ *
+ * @return true if the TypeInfo object represents a floating point type,
+ * otherwise false.
+ */
 constexpr bool is_floating_point(const devices::TypeInfo& info) noexcept
 {
     return info.code == devices::TypeCode::Float
             || info.code == devices::TypeCode::BFloat;
 }
 
+/**
+ * @brief Check if a given TypeInfo object represents an integral type.
+ *
+ * This function checks if the given TypeInfo object represents an integral
+ * type. It returns true if the type code of the TypeInfo object is either Int
+ * or UInt, and false otherwise.
+ *
+ * @param info The TypeInfo object to check.
+ *
+ * @return True if the TypeInfo object represents an integral type, false
+ * otherwise.
+ */
 constexpr bool is_integral(const devices::TypeInfo& info) noexcept
 {
     return info.code == devices::TypeCode::Int
             || info.code == devices::TypeCode::UInt;
 }
 
+/**
+ * @brief Check if a TypeInfo object represents an arithmetic type.
+ *
+ * This function checks if the given TypeInfo object represents an arithmetic
+ * type. An arithmetic type is either an integral type or a floating-point type.
+ *
+ * @param info The TypeInfo object to check.
+ *
+ * @return A boolean value indicating if the TypeInfo object represents an
+ * arithmetic type or not.
+ */
 constexpr bool is_arithmetic(const devices::TypeInfo& info) noexcept
 {
     return is_integral(info) || is_floating_point(info);
 }
 
+/**
+ * @brief Check if the given TypeInfo is a fundamental type.
+ *
+ * This function checks if the given TypeInfo object represents a fundamental
+ * type. A fundamental type is either an arithmetic type or the TypeCode is
+ * Bool.
+ *
+ * @param info The TypeInfo object to check.
+ *
+ * @return True if the TypeInfo object is a fundamental type, false otherwise.
+ */
 constexpr bool is_fundamental(const devices::TypeInfo& info) noexcept
 {
     return is_arithmetic(info) || info.code == devices::TypeCode::Bool;
 }
 
+/**
+ * @brief Check if a TypeInfo object represents a signed type.
+ *
+ * This function takes a TypeInfo object and checks if it represents a signed
+ * type.
+ *
+ * @param info The TypeInfo object to check.
+ *
+ * @return true if the TypeInfo object represents a signed type, false
+ * otherwise.
+ */
 constexpr bool is_signed(const devices::TypeInfo& info) noexcept
 {
     switch (info.code) {
@@ -90,6 +157,16 @@ constexpr bool is_signed(const devices::TypeInfo& info) noexcept
     RPY_UNREACHABLE_RETURN(false);
 }
 
+/**
+ * @brief Check if the TypeInfo object is unsigned.
+ *
+ * This function checks if the TypeInfo object represents an unsigned data type.
+ *
+ * @param info The TypeInfo object to check.
+ *
+ * @return true if the TypeInfo object represents an unsigned data type,
+ * false otherwise.
+ */
 constexpr bool is_unsigned(const devices::TypeInfo& info) noexcept
 {
     return !is_signed(info);

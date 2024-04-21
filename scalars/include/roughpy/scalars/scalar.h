@@ -78,12 +78,48 @@ enum class ScalarContentType : uint8_t
     OwnedInterface = 6
 };
 
+/**
+ * @brief Convert a scalar and copy it to the destination.
+ *
+ * @param dst Pointer to the destination memory space.
+ * @param dst_type The storage model of the destination scalar.
+ * @param src The source scalar to be converted and copied.
+ *
+ * @return True if the conversion and copy was successful, false otherwise.
+ *
+ * @note This function internally determines the type of the source scalar and
+ * performs the conversion to the destination scalar type. The converted scalar
+ * is then copied to the destination memory space pointed by `dst`. The function
+ * returns true if the conversion and copy were successful. Otherwise, it
+ * returns false.
+ *
+ * @warning The caller of this function is responsible for allocating memory for
+ * the destination scalar and ensuring that it has enough memory to hold the
+ * converted scalar.
+ */
 ROUGHPY_SCALARS_EXPORT bool scalar_convert_copy(
         void* dst,
         PackedScalarType dst_type,
         const Scalar& src
 ) noexcept;
 
+/**
+ * @brief Converts and copies scalar values from the source buffer to the
+ * destination buffer.
+ *
+ * @param dst The pointer to the destination buffer where the converted scalar
+ * values will be copied to.
+ * @param dst_type The internal storage model of the destination buffer scalar
+ * type.
+ * @param src The pointer to the source buffer where the scalar values are
+ * located.
+ * @param src_type The internal storage model of the source buffer scalar type.
+ * @param count The number of scalar values to convert and copy. It defaults
+ * to 1.
+ *
+ * @return Returns true if the conversion and copying operation is successful;
+ * otherwise, returns false.
+ */
 ROUGHPY_SCALARS_EXPORT
 bool scalar_convert_copy(
         void* dst,
@@ -93,6 +129,29 @@ bool scalar_convert_copy(
         dimn_t count = 1
 ) noexcept;
 
+/**
+ * @brief Determines the content type of a given TypeInfo.
+ *
+ * This function determines the content type of a given TypeInfo. The content
+ * type indicates how the data is stored internally.
+ *
+ * @param info The TypeInfo for which the content type is to be determined.
+ *
+ * @return The content type of the TypeInfo.
+ *         - TrivialBytes: If the TypeInfo represents a scalar of Int, UInt,
+ * Float, or BFloat type with size less than or equal to sizeof(uintptr_t).
+ *         - OwnedPointer: If the TypeInfo represents a scalar of Int, UInt,
+ * Float, or BFloat type with size greater than sizeof(uintptr_t).
+ *         - OpaquePointer: If the TypeInfo represents a scalar of OpaqueHandle
+ * type.
+ *         - TrivialBytes: If the TypeInfo represents a scalar of Complex type
+ * with size less than or equal to sizeof(uintptr_t).
+ *         - OwnedPointer: If the TypeInfo represents a scalar of Complex type
+ * with size greater than sizeof(uintptr_t).
+ *         - OwnedPointer: If the TypeInfo represents a scalar of
+ * ArbitraryPrecisionRational or APRationalPolynomial type.
+ *         - OpaquePointer: If none of the above conditions are met.
+ */
 inline ScalarContentType content_type_of(devices::TypeInfo info) noexcept
 {
     switch (info.code) {
@@ -145,10 +204,14 @@ struct can_be_scalar<std::unique_ptr<T>> : std::false_type {
 }// namespace dtl
 
 /**
- * @brief A wrapper around scalar values.
+ * @class Scalar
+ * @brief A class representing a scalar value with different storage models.
  *
- * This is a (statically) polymorphic wrapper around the various scalar types
- * that can be used in the rest of the library.
+ * The Scalar class provides a flexible representation for scalar values with
+ * different storage models. It supports various types of scalar values,
+ * including trivial bytes, opaque pointers, owned pointers, and interfaces. The
+ * class is designed to be efficient and lightweight, while still providing
+ * flexibility and ease of use.
  *
  */
 class ROUGHPY_SCALARS_EXPORT Scalar
@@ -290,8 +353,19 @@ public:
 
     ~Scalar();
 
+    /**
+     * @brief Assigns a value to the Scalar object.
+     *
+     * This method assigns the given value to the Scalar object. The assigned
+     * value must be of the same type as the Scalar object. If the value is of a
+     * different type, a conversion will be performed using the
+     * `scalar_convert_copy` function.
+     *
+     * @param value The value to assign to the Scalar object.
+     *
+     */
     template <typename T>
-    void assign(const T& value) noexcept
+    void assign(const T& value)
     {
         dtl::scalar_convert_copy(
                 mut_pointer(),
