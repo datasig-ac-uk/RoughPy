@@ -224,6 +224,19 @@ public:
     ) const noexcept;
 };
 
+/**
+ * @brief Get the type traits for a given type.
+ *
+ * This function returns an instance of the TypeTraits struct that provides
+ * information about the traits of a given type.
+ *
+ * @tparam T The type to get the traits for.
+ * @return TypeTraits An instance of TypeTraits struct representing the traits
+ * of the given type T.
+ *
+ * @note The function is declared as constexpr and is noexcept, ensuring it can
+ * be used in compile-time evaluations and does not throw any exceptions.
+ */
 template <typename T>
 constexpr TypeTraits traits_of() noexcept
 {
@@ -231,15 +244,15 @@ constexpr TypeTraits traits_of() noexcept
     return {
             is_standard_layout_v<base_t>,
             is_trivially_copyable_v<base_t>,
-            std::is_trivially_constructible_v<base_t>,
-            std::is_trivially_default_constructible_v<base_t>,
-            std::is_trivially_copy_constructible_v<base_t>,
-            std::is_trivially_copy_assignable_v<base_t>,
-            std::is_trivially_destructible_v<base_t>,
-            std::is_polymorphic_v<base_t>,
-            std::is_signed_v<base_t>,
-            std::is_floating_point_v<base_t>,
-            std::is_integral_v<base_t>,
+            is_trivially_constructible_v<base_t>,
+            is_trivially_default_constructible_v<base_t>,
+            is_trivially_copy_constructible_v<base_t>,
+            is_trivially_copy_assignable_v<base_t>,
+            is_trivially_destructible_v<base_t>,
+            is_polymorphic_v<base_t>,
+            is_signed_v<base_t>,
+            is_floating_point_v<base_t>,
+            is_integral_v<base_t>,
     };
 }
 

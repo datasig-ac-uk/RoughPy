@@ -37,6 +37,25 @@
 namespace rpy {
 namespace devices {
 
+/**
+ * @class KernelArgument
+ * @brief Represents an argument for a kernel function.
+ *
+ * This class encapsulates various types of kernel arguments, including pointers
+ * to data, pointers to constant data, pointers to buffers, or constant pointers
+ * to buffers.
+ *
+ * Usage example:
+ * @code
+ * Buffer buffer;
+ * int data = 42;
+ * const float constData = 3.14f;
+ *
+ * KernelArgument arg1(buffer); // Create an argument from a buffer
+ * KernelArgument arg2(data); // Create an argument from non-const data
+ * KernelArgument arg3(constData); // Create an argument from constant data
+ * @endcode
+ */
 class ROUGHPY_PLATFORM_EXPORT KernelArgument {
 
     union {

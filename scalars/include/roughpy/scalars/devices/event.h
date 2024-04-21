@@ -37,17 +37,62 @@
 namespace rpy {
 namespace devices {
 
+/**
+ * @class EventInterface
+ * @brief An interface for event objects that can be waited on and have status.
+ *
+ * EventInterface is a base class for event objects that can be waited on and
+ * have a status. It provides essential methods for waiting, getting the status,
+ * checking if the event was triggered by a user, and setting the status of the
+ * event.
+ */
 class ROUGHPY_PLATFORM_EXPORT EventInterface : public dtl::InterfaceBase
 {
 public:
     using object_t = Event;
 
+    /**
+     * @brief Waits for the event to be signaled.
+     *
+     * This method blocks the current thread until the event is signaled or
+     * completed. If the event is already completed, the method returns
+     * immediately.
+     *
+     * @note This method is virtual and can be overridden by derived classes.
+     */
     virtual void wait();
 
+    /**
+     * @brief Returns the status of the event.
+     *
+     * This method returns the current status of the event. The status indicates
+     * whether the event has been completed successfully, has encountered an
+     * error, or is still in progress.
+     *
+     * @return The current status of the event.
+     */
     RPY_NO_DISCARD virtual EventStatus status() const;
 
+    /**
+     * @brief Checks if the event was triggered by a user.
+     *
+     * This method returns true if the event was triggered by a user, and false
+     * otherwise.
+     *
+     * @return True if the event was triggered by a user, false otherwise.
+     */
     RPY_NO_DISCARD virtual bool is_user() const noexcept;
 
+    /**
+     * @brief Sets the status of the event.
+     *
+     * This method sets the status of the event to the specified value.
+     *
+     * @param status The status to set for the event.
+     *
+     * @note This method throws a std::runtime_error if the event is not a user
+     * event.
+     */
     virtual void set_status(EventStatus status);
 };
 
@@ -67,6 +112,16 @@ extern template class ROUGHPY_PLATFORM_EXPORT ObjectBase<EventInterface, Event>;
 }
 #endif
 
+/**
+ * @class Event
+ * @brief A class representing an event object that can be waited on and has
+ * status.
+ *
+ * Event is a class that inherits from ObjectBase<EventInterface, Event> and
+ * represents an event object that can be waited on and has a status. It
+ * provides methods for waiting on the event, getting the status, checking if
+ * the event was triggered by a user, and setting the status of the event.
+ */
 class ROUGHPY_PLATFORM_EXPORT Event
     : public dtl::ObjectBase<EventInterface, Event>
 {

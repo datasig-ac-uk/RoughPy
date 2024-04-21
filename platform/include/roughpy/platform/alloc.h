@@ -35,6 +35,9 @@ RPY_NO_DISCARD void* alloc_small(dimn_t size);
  */
 void free_small(void* ptr, dimn_t size);
 
+/**
+ *
+ */
 class ROUGHPY_PLATFORM_EXPORT SmallObjectBase
 {
 public:

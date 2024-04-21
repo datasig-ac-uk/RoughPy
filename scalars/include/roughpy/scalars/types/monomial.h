@@ -22,6 +22,20 @@ namespace scalars {
 
 namespace dtl {
 
+/**
+ * @class PackedInteger
+ * @brief A class representing a packed integer
+ *
+ * This class allows for efficient storage and manipulation of integers
+ * by packing a smaller integral type (Packed) into a larger integral type
+ * (Base).
+ *
+ * PackedInteger supports various operations, such as comparison,
+ * conversion to Packed and Base types, and serialization.
+ *
+ * @tparam Base The base integral type that the packed integer is stored in
+ * @tparam Packed The packed integral type that is stored in the base type
+ */
 template <typename Base, typename Packed>
 class PackedInteger
 {

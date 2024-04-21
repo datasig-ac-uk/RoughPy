@@ -34,6 +34,13 @@
 namespace rpy {
 namespace devices {
 
+/**
+ * @class QueueInterface
+ * @brief The QueueInterface class is an interface for a queue implementation.
+ *
+ * This class defines the public methods that must be implemented by any class
+ * that wants to act as a queue.
+ */
 class ROUGHPY_PLATFORM_EXPORT QueueInterface : public dtl::InterfaceBase
 {
 public:
@@ -59,6 +66,14 @@ extern template class ROUGHPY_PLATFORM_EXPORT ObjectBase<QueueInterface, Queue>;
 }
 #endif
 
+/**
+ * @class Queue
+ * @brief The Queue class represents a queue object.
+ *
+ * This class is derived from ObjectBase, which provides common functionalities
+ * for device objects. The Queue class is used to store elements in a queue
+ * data structure.
+ */
 class ROUGHPY_PLATFORM_EXPORT Queue
     : public dtl::ObjectBase<QueueInterface, Queue>
 {
@@ -67,8 +82,26 @@ class ROUGHPY_PLATFORM_EXPORT Queue
 public:
     using base_t::base_t;
 
+    /**
+     * @brief Returns the number of elements in the queue.
+     *
+     * This method returns the size of the queue by calling the size() method
+     * of the implementation object, which must be available in order for
+     * this method to work.
+     *
+     * @return The number of elements in the queue. If the implementation object
+     *         is null, 0 is returned.
+     */
     RPY_NO_DISCARD dimn_t size() const;
 
+    /**
+     * @brief Checks whether the queue is the default queue.
+     *
+     * This method checks whether the queue is the default queue. If the queue
+     * is the default queue, it returns true; otherwise, it returns false.
+     *
+     * @return True if the queue is the default queue; otherwise, false.
+     */
     RPY_NO_DISCARD bool is_default() const noexcept
     {
         return is_null();

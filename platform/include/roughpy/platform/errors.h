@@ -24,6 +24,21 @@
 namespace rpy {
 namespace errors {
 
+/**
+ * @brief Formats an error message with user-provided message, filename, line
+ * number, and function name.
+ *
+ * This function takes a user-provided message, filename, line number, and
+ * function name, and formats them into an error message string.
+ *
+ * @param user_message The user-provided message to include in the error
+ * message.
+ * @param filename The name of the file where the error occurred.
+ * @param lineno The line number where the error occurred.
+ * @param func The name of the function where the error occurred.
+ *
+ * @return The formatted error message string.
+ */
 ROUGHPY_PLATFORM_EXPORT
 string format_error_message(
         string_view user_message,
@@ -32,6 +47,19 @@ string format_error_message(
         const char* func
 );
 
+/**
+ * @brief Throws an exception with a formatted error message.
+ *
+ * This method throws an exception with a formatted error message that includes
+ * the user-provided message, filename, line number, and function name.
+ *
+ * @param msg The user-provided message to include in the error message.
+ * @param filename The name of the file where the error occurred.
+ * @param lineno The line number where the error occurred.
+ * @param func The name of the function where the error occurred.
+ *
+ * @return None.
+ */
 template <typename E>
 RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const string& msg,
@@ -43,6 +71,23 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
     throw E(format_error_message(msg, filename, lineno, func));
 }
 
+/**
+ * @brief Throws an exception with user-provided message, filename, line number,
+ * and function name.
+ *
+ * This function throws an exception with the provided user message, filename,
+ * line number, and function name. It uses the format_error_message function to
+ * format the error message string before throwing the exception.
+ *
+ * @param msg The user-provided message to include in the exception.
+ * @param filename The name of the file where the exception is thrown.
+ * @param lineno The line number where the exception is thrown.
+ * @param func The name of the function where the exception is thrown.
+ *
+ * @return This function does not return a value.
+ *
+ * @see format_error_message
+ */
 template <typename E>
 RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const char* msg,

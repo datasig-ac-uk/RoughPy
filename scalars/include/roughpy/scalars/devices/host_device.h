@@ -34,10 +34,28 @@
 namespace rpy {
 namespace devices {
 
+/**
+ * @class HostDeviceHandle
+ * @brief Represents a handle to a host device.
+ *
+ * This class is a subclass of DeviceHandle and represents a handle to a host
+ * device. It provides the functionality to compute delegate to the host device.
+ */
 class ROUGHPY_PLATFORM_EXPORT HostDeviceHandle : public DeviceHandle
 {
 
 public:
+    /**
+     * @brief Computes the delegate for the host device.
+     *
+     * This pure virtual method returns a Device object representing the
+     * delegate for the host device.
+     *
+     * @return Device A Device object representing the delegate for the host
+     * device.
+     *
+     * @see HostDeviceHandle
+     */
     RPY_NO_DISCARD virtual Device compute_delegate() const = 0;
 };
 }// namespace devices
