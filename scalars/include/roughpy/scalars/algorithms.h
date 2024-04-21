@@ -35,7 +35,6 @@ find(const ScalarArray& range, const Scalar& value)
     return drivers::find(range.buffer(), devices::Reference(value.pointer()));
 }
 
-template <typename T>
 /**
  * @brief Find the first occurrence of a given value in a ScalarArray range.
  *
@@ -45,6 +44,7 @@ template <typename T>
  * @return An optional containing the index of the first occurrence of the
  * value, if found. If the value is not found, the optional will be empty.
  */
+template <typename T>
 RPY_NO_DISCARD optional<dimn_t> find(const ScalarArray& range, const T& value)
 {
     return find(range, Scalar(range.type(), &value));
@@ -72,7 +72,6 @@ lower_bound(const ScalarArray& range, const Scalar& value)
     );
 }
 
-template <typename T>
 /**
  * @brief Find the first element in the ScalarArray range that is not less than
  * the given value.
@@ -85,6 +84,7 @@ template <typename T>
  * less than the value, if found. If the value is not found or the range is
  * empty, the optional will be empty.
  */
+template <typename T>
 RPY_NO_DISCARD optional<dimn_t>
 lower_bound(const ScalarArray& range, const T& value)
 {
@@ -115,7 +115,6 @@ upper_bound(const ScalarArray& range, const Scalar& value)
     );
 }
 
-template <typename T>
 /**
  * @brief Find the upper bound of the first occurrence of a given value in a
  * ScalarArray range.
@@ -130,6 +129,7 @@ template <typename T>
  * @return An optional containing the index of the upper bound, if found. If the
  * value is not found, the optional will be empty.
  */
+template <typename T>
 RPY_NO_DISCARD optional<dimn_t>
 upper_bound(const ScalarArray& range, const T& value)
 {
@@ -151,7 +151,6 @@ count(const ScalarArray& range, const Scalar& value)
     return drivers::count(range.buffer(), devices::Reference(value.pointer()));
 }
 
-template <typename T>
 /**
  * @brief Count the occurrences of a given value in a ScalarArray range.
  *
@@ -160,6 +159,7 @@ template <typename T>
  *
  * @return The number of occurrences of the value in the range.
  */
+template <typename T>
 RPY_NO_DISCARD dimn_t count(const ScalarArray& range, const T& value)
 {
     return count(range, Scalar(range.type(), &value));
@@ -182,7 +182,6 @@ contains(const ScalarArray& range, const Scalar& value)
     );
 }
 
-template <typename T>
 /**
  * @brief Checks if a given value is contained in a ScalarArray range.
  *
@@ -191,6 +190,7 @@ template <typename T>
  *
  * @return True if the value is found in the range, false otherwise.
  */
+template <typename T>
 RPY_NO_DISCARD bool contains(const ScalarArray& range, const T& value)
 {
     return contains(range, Scalar(range.type(), &value));
@@ -272,37 +272,105 @@ inline void copy(ScalarArray& dst, const ScalarArray& src)
     drivers::copy(dst.mut_buffer(), src.buffer());
 }
 
+/**
+ * @brief Reverse the elements in a ScalarArray.
+ *
+ * This method reverses the order of the elements in the provided ScalarArray.
+ *
+ * @param arr The ScalarArray to be reversed.
+ */
 inline void reverse(ScalarArray& arr) { drivers::reverse(arr.mut_buffer()); }
 
+/**
+ * @brief Shifts the elements of a ScalarArray to the left by a given count.
+ *
+ * @param arr The ScalarArray to shift.
+ * @param count The number of positions to shift the elements to the left.
+ */
 inline void shift_left(ScalarArray& arr, dimn_t count)
 {
     (void) count;
     drivers::shift_left(arr.mut_buffer());
 }
 
+/**
+ * @brief Shifts the elements of a ScalarArray to the right by a specified
+ * count.
+ *
+ * This function shifts the elements of the ScalarArray to the right by the
+ * specified count.
+ *
+ * @param arr The ScalarArray whose elements are to be shifted.
+ * @param count The number of positions to shift the elements to the right.
+ *        This parameter is ignored in the current implementation.
+ *
+ */
 inline void shift_right(ScalarArray& arr, dimn_t count)
 {
     (void) count;
     drivers::shift_right(arr.mut_buffer());
 }
 
+/**
+ * @brief Fill the ScalarArray with a specified value.
+ *
+ * This method fills the specified ScalarArray with the provided value.
+ *
+ * @param dst The ScalarArray to fill.
+ * @param value The value to fill the ScalarArray with.
+ *
+ * @note The ScalarArray will be modified in-place.
+ */
 inline void fill(ScalarArray& dst, const Scalar& value)
 {
     drivers::fill(dst.mut_buffer(), devices::Reference(value.pointer()));
 }
 
+/**
+ @brief Fill a ScalarArray with a given value.
+
+ This method fills a ScalarArray with a specified value. The value is passed as
+ a reference to a constant T object.
+
+ @param dst The ScalarArray to be filled.
+ @param value The value to fill the ScalarArray with.
+
+ @see ScalarArray
+
+ @code
+ // Example usage:
+ ScalarArray arr;
+ fill(arr, 5);
+ @endcode
+ */
 template <typename T>
 inline void fill(ScalarArray& dst, const T& value)
 {
     fill(dst, Scalar(dst.type(), &value));
 }
 
+/**
+ * @brief Lexicographically compares two ScalarArrays.
+ *
+ * @param left The first ScalarArray to be compared.
+ * @param right The second ScalarArray to be compared.
+ *
+ * @return True if the first ScalarArray is less than the second ScalarArray
+ *         lexicographically, false otherwise.
+ */
 RPY_NO_DISCARD inline bool
 lexicographical_compare(const ScalarArray& left, const ScalarArray& right)
 {
     return drivers::lexicographical_compare(left.buffer(), right.buffer());
 }
 
+/**
+ * @brief Find the minimum value in a given ScalarArray range.
+ *
+ * @param range The ScalarArray range to search in.
+ *
+ * @return The minimum value found in the range.
+ */
 RPY_NO_DISCARD inline Scalar min(const ScalarArray& range)
 {
     Scalar result(range.type());
@@ -310,6 +378,17 @@ RPY_NO_DISCARD inline Scalar min(const ScalarArray& range)
     return result;
 }
 
+/**
+ * @brief Calculate the maximum value of a ScalarArray range.
+ *
+ * This method calculates the maximum value within the given ScalarArray range.
+ * It iterates through each element in the range and compares it against the
+ * current maximum value. The maximum value is then returned.
+ *
+ * @param range The ScalarArray range to calculate the maximum value from.
+ *
+ * @return The maximum value within the ScalarArray range.
+ */
 RPY_NO_DISCARD inline Scalar max(const ScalarArray& range)
 {
     Scalar result(range.type());
