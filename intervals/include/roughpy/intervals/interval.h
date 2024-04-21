@@ -40,12 +40,23 @@
 namespace rpy {
 namespace intervals {
 
+/**
+ * @brief The IntervalType enum class represents the different types of
+ * intervals.
+ */
 enum class IntervalType : uint32_t
 {
     Clopen,
     Opencl
 };
 
+/**
+ * @class Interval
+ * @brief The Interval class represents an abstract interval.
+ *
+ * This class provides a base implementation for interval operations and
+ * defines common interface for concrete interval subclasses to implement.
+ */
 class ROUGHPY_INTERVALS_EXPORT Interval
 {
 protected:
@@ -61,24 +72,99 @@ public:
     RPY_NO_DISCARD
     inline IntervalType type() const noexcept { return m_interval_type; }
 
-    RPY_NO_DISCARD
-    virtual param_t inf() const = 0;
-    RPY_NO_DISCARD
-    virtual param_t sup() const = 0;
+    /**
+     * @brief Returns the lower bound of the interval.
+     *
+     * @details This method returns the lower bound of the interval.
+     *
+     * @return The lower bound of the interval.
+     */
+    RPY_NO_DISCARD virtual param_t inf() const = 0;
+    /**
+     * @brief Returns the upper bound of the interval.
+     *
+     * This method returns the upper bound of the interval.
+     *
+     * @return The upper bound of the interval.
+     */
+    RPY_NO_DISCARD virtual param_t sup() const = 0;
 
-    RPY_NO_DISCARD
-    virtual param_t included_end() const;
-    RPY_NO_DISCARD
-    virtual param_t excluded_end() const;
+    /**
+     * @brief Returns the included end of the interval.
+     *
+     * This method returns the included end of the interval. If the interval
+     * type is Clopen, it returns the upper bound of the interval. If the
+     * interval type is Opencl, it returns the lower bound of the interval.
+     *
+     * @return The included end of the interval.
+     */
+    RPY_NO_DISCARD virtual param_t included_end() const;
+    /**
+     * @brief Returns the excluded end of the interval.
+     *
+     * This method returns the excluded end of the interval. If the interval
+     * type is Clopen, it returns the upper bound of the interval. If the
+     * interval type is Opencl, it returns the lower bound of the interval.
+     *
+     * @return The excluded end of the interval.
+     */
+    RPY_NO_DISCARD virtual param_t excluded_end() const;
 
-    RPY_NO_DISCARD
-    virtual bool contains_point(param_t arg) const noexcept;
-    RPY_NO_DISCARD
-    virtual bool is_associated(const Interval& arg) const noexcept;
-    RPY_NO_DISCARD
-    virtual bool contains(const Interval& arg) const noexcept;
-    RPY_NO_DISCARD
-    virtual bool intersects_with(const Interval& arg) const noexcept;
+    /**
+     * @brief Checks if a given point is contained within the interval.
+     *
+     * @param arg The point to be checked.
+     * @return Returns true if the point is contained within the interval, false
+     * otherwise.
+     * @note This method considers the boundaries of the interval depending on
+     * its type.
+     */
+    RPY_NO_DISCARD virtual bool contains_point(param_t arg) const noexcept;
+    /**
+     * @brief Checks whether the given interval is associated with the current
+     * interval.
+     *
+     * This method determines whether the given interval is associated with the
+     * current interval by checking if the included end point of the given
+     * interval is contained in the current interval.
+     *
+     * @param arg The interval to check for association.
+     * @return True if the given interval is associated with the current
+     * interval, false otherwise.
+     *
+     * @note This method does not modify the current interval.
+     * @note This method assumes that the given interval is not null.
+     * @note This method is noexcept, meaning it does not throw any exceptions.
+     */
+    RPY_NO_DISCARD virtual bool is_associated(const Interval& arg) const noexcept;
+    /**
+     * @brief Check if the given interval is contained within this interval.
+     *
+     * This method checks if the given interval @p arg is completely contained
+     * within this interval. It returns true if both the lower and upper bound
+     * of @p arg are within the range of this interval, otherwise it returns
+     * false.
+     *
+     * @param arg The interval to check for containment.
+     * @return True if the given interval is contained within this interval,
+     *         false otherwise.
+     */
+    RPY_NO_DISCARD virtual bool contains(const Interval& arg) const noexcept;
+    /**
+     * @brief Checks whether the given interval intersects with the current
+     * interval.
+     *
+     * This method determines whether the given interval intersects with the
+     * current interval by checking if there is any overlap between the two
+     * intervals.
+     *
+     * @param arg The interval to check for intersection.
+     * @return True if the given interval intersects with the current interval,
+     * false otherwise.
+     * @note This method does not modify the current interval.
+     * @note This method is noexcept, meaning it does not throw any exceptions.
+     */
+    RPY_NO_DISCARD virtual bool intersects_with(const Interval& arg) const noexcept;
 
     RPY_NO_DISCARD
     virtual bool operator==(const Interval& other) const;
