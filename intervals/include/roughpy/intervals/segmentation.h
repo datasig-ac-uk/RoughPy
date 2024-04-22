@@ -44,11 +44,19 @@ namespace intervals {
 
 using predicate_t = std::function<bool(const Interval&)>;
 
-RPY_NO_DISCARD
-ROUGHPY_INTERVALS_EXPORT
-containers::Vec<RealInterval> segment(const Interval& interval,
-                                  predicate_t predicate,
-                                  dyadic_depth_t max_depth);
+/**
+ * @brief Split the given interval into subintervals based on a given predicate
+ * and maximum depth.
+ *
+ * @param interval The interval to be segmented.
+ * @param predicate The predicate used to split the interval.
+ * @param max_depth The maximum depth to which the interval is split.
+ * @return A vector of subintervals resulting from the segmentation.
+ */
+RPY_NO_DISCARD ROUGHPY_INTERVALS_EXPORT containers::Vec<RealInterval>
+segment(const Interval& interval,
+        predicate_t predicate,
+        dyadic_depth_t max_depth);
 
 }// namespace intervals
 }// namespace rpy

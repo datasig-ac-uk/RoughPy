@@ -69,10 +69,36 @@ public:
           m_intermediate_points(std::move(intermediates))
     {}
 
+    /**
+     * @brief Refines the midpoints of the Partition.
+     *
+     * This method creates a new Partition object by refining the midpoints of
+     * the current Partition. The new Partition will have twice the number of
+     * intermediate points as the current Partition.
+     *
+     * @return The refined Partition object with the midpoints updated.
+     */
     RPY_NO_DISCARD Partition refine_midpoints() const;
 
+    /**
+     * @brief Calculates the mesh of the Partition.
+     *
+     * This method calculates the mesh of the Partition, which is the smallest
+     * distance between any two adjacent intermediate points or between the last
+     * intermediate point and the upper bound of the Partition.
+     *
+     * @return The mesh of the Partition.
+     */
     RPY_NO_DISCARD param_t mesh() const noexcept;
 
+    /**
+     * @brief Returns the size of the Partition.
+     *
+     * This method calculates and returns the size of the Partition, which is
+     * the number of intermediate points plus one (for the base interval).
+     *
+     * @return The size of the Partition.
+     */
     RPY_NO_DISCARD dimn_t size() const noexcept
     {
         return 1 + m_intermediate_points.size();
@@ -80,13 +106,45 @@ public:
 
     RPY_NO_DISCARD RealInterval operator[](dimn_t i) const;
 
+    /**
+     * @brief Returns a const reference to the intermediate points of the
+     * Partition.
+     *
+     * This method returns a const reference to the intermediate points of the
+     * Partition. The intermediate points represent the points within the
+     * Partition interval, excluding the base interval. The points are stored in
+     * a Vec container.
+     *
+     * @return A const reference to the intermediate points of the Partition.
+     */
     const intermediates_t& intermediates() const noexcept
     {
         return m_intermediate_points;
     }
 
+    /**
+     * @brief Inserts an intermediate point into the partition.
+     *
+     * This method inserts the provided intermediate point into the partition.
+     * The intermediate point must lie within the interval of the partition,
+     * otherwise an exception will be thrown.
+     *
+     * @param new_intermediate The intermediate point to be inserted.
+     *
+     * @throws std::invalid_argument If the provided intermediate point does not
+     *         lie within the interval of the partition.
+     */
     void insert_intermediate(param_t new_intermediate);
 
+    /**
+     * @brief Merge the given Partition with this Partition.
+     *
+     * This method takes another Partition object as input and merges it with
+     * the current Partition object. The merged Partition is returned.
+     *
+     * @param other The Partition object to merge with.
+     * @return The merged Partition object.
+     */
     RPY_NO_DISCARD Partition merge(const Partition& other) const;
 
     RPY_NO_DISCARD bool operator=(const Partition& other) const noexcept

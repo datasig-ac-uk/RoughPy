@@ -38,6 +38,15 @@
 namespace rpy {
 namespace streams {
 
+/**
+ * @class BrownianStream
+ * @brief A class representing a Brownian stream that inherits from
+ * DynamicallyConstructedStream.
+ *
+ * BrownianStream generates random increments and computes the log signature of
+ * the stream by implementing the necessary methods from
+ * DynamicallyConstructedStream.
+ */
 class ROUGHPY_STREAMS_EXPORT BrownianStream : public DynamicallyConstructedStream
 {
     std::unique_ptr<scalars::RandomGenerator> p_generator;

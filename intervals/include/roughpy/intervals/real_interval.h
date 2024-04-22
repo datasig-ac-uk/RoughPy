@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_INTERVALS_REAL_INTERVAL_H_
 #define ROUGHPY_INTERVALS_REAL_INTERVAL_H_
@@ -39,6 +40,15 @@
 namespace rpy {
 namespace intervals {
 
+/**
+ * @class RealInterval
+ * @brief Represents an interval in the real number line.
+ *
+ * RealInterval is a derived class of Interval. It represents an interval
+ * in the real number line with a lower bound (inf) and an upper bound (sup).
+ * It provides methods to check if an interval contains another interval and
+ * to obtain the lower and upper bounds of the interval.
+ */
 class ROUGHPY_INTERVALS_EXPORT RealInterval : public Interval
 {
     param_t m_inf = 0.0;
@@ -53,20 +63,27 @@ public:
     RealInterval& operator=(RealInterval&&) noexcept = default;
 
     RealInterval(
-            param_t inf, param_t sup, IntervalType itype = IntervalType::Clopen
+            param_t inf,
+            param_t sup,
+            IntervalType itype = IntervalType::Clopen
     )
-        : Interval(itype), m_inf(inf), m_sup(sup)
+        : Interval(itype),
+          m_inf(inf),
+          m_sup(sup)
     {
         if (m_inf > m_sup) { std::swap(m_inf, m_sup); }
     }
 
     explicit RealInterval(const Interval& interval)
-        : Interval(interval.type()), m_inf(interval.inf()),
+        : Interval(interval.type()),
+          m_inf(interval.inf()),
           m_sup(interval.sup())
     {}
 
     explicit RealInterval(const Interval& interval, IntervalType itype)
-        : Interval(itype), m_inf(interval.inf()), m_sup(interval.sup())
+        : Interval(itype),
+          m_inf(interval.inf()),
+          m_sup(interval.sup())
     {}
 
     static RealInterval unbounded() noexcept
@@ -76,14 +93,16 @@ public:
     }
 
     static RealInterval left_unbounded(
-            param_t sup = 0.0, IntervalType itype = IntervalType::Clopen
+            param_t sup = 0.0,
+            IntervalType itype = IntervalType::Clopen
     ) noexcept
     {
         return {-std::numeric_limits<param_t>::infinity(), sup, itype};
     }
 
     static RealInterval right_unbounded(
-            param_t inf = 0.0, IntervalType itype = IntervalType::Clopen
+            param_t inf = 0.0,
+            IntervalType itype = IntervalType::Clopen
     ) noexcept
     {
         return {inf, std::numeric_limits<param_t>::infinity(), itype};
@@ -113,7 +132,9 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(RealInterval)
 }// namespace intervals
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(::rpy::intervals::RealInterval,
-                            rpy::serial::specialization::member_serialize);
+RPY_SERIAL_SPECIALIZE_TYPES(
+        ::rpy::intervals::RealInterval,
+        rpy::serial::specialization::member_serialize
+);
 
 #endif// ROUGHPY_INTERVALS_REAL_INTERVAL_H_
