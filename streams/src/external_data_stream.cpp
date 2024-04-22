@@ -72,7 +72,7 @@ algebra::Lie streams::ExternalDataStream::log_signature_impl(
 }
 
 static std::mutex s_factory_guard;
-static std::vector<std::unique_ptr<const streams::ExternalDataSourceFactory>>
+static containers::Vec<std::unique_ptr<const streams::ExternalDataSourceFactory>>
         s_factory_list;
 
 void streams::ExternalDataStream::register_factory(

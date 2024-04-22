@@ -35,6 +35,7 @@
 #include <roughpy/core/slice.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/platform/serialization.h>
 
 #include "roughpy_intervals_export.h"
@@ -52,7 +53,7 @@ namespace intervals {
 class ROUGHPY_INTERVALS_EXPORT Partition : public RealInterval
 {
 public:
-    using intermediates_t = std::vector<param_t>;
+    using intermediates_t = containers::Vec<param_t>;
 
 private:
     intermediates_t m_intermediate_points;
@@ -63,7 +64,7 @@ public:
     explicit Partition(RealInterval base);
     explicit Partition(RealInterval base, Slice<param_t> intermediate_points);
 
-    Partition(RealInterval base, std::vector<param_t>&& intermediates)
+    Partition(RealInterval base, containers::Vec<param_t>&& intermediates)
         : RealInterval(std::move(base)),
           m_intermediate_points(std::move(intermediates))
     {}

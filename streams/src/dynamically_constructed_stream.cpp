@@ -342,7 +342,7 @@ DynamicallyConstructedStream::log_signature(const intervals::Interval& domain,
     if (empty(domain)) { return ctx.zero_lie(md.cached_vector_type); }
 
     auto dyadic_dissection = intervals::to_dyadic_intervals(domain, resolution);
-    std::vector<Lie> lies;
+    containers::Vec<Lie> lies;
     lies.reserve(dyadic_dissection.size());
 
     for (const auto& itvl : dyadic_dissection) {

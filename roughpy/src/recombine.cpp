@@ -28,8 +28,7 @@
 
 #include "recombine.h"
 
-#include <recombine/recombine.h>
-
+#include <roughpy/core/container/vector.h>
 #include "scalars/scalars.h"
 
 using namespace rpy;
@@ -79,9 +78,9 @@ static py::tuple py_recombine(const py::object& data,
     python::PyToBufferOptions options;
     options.max_nested = 2;
     options.allow_scalar = false;
-    std::vector<double> data_bk;
-    std::vector<double> src_weights_bk;
-    std::vector<std::size_t> src_locs_bk;
+    containers::Vec<double> data_bk;
+    containers::Vec<double> src_weights_bk;
+    containers::Vec<std::size_t> src_locs_bk;
 
     auto buffer = python::py_to_buffer(data, options);
 

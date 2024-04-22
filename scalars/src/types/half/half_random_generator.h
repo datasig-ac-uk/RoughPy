@@ -17,7 +17,7 @@ class StandardRandomGenerator<Half, BitGenerator> : public RandomGenerator
     using scalar_type = Half;
     using bit_generator = BitGenerator;
 
-    std::vector<uint64_t> m_seed;
+    containers::Vec<uint64_t> m_seed;
 
     mutable BitGenerator m_generator;
     mutable std::mutex m_lock;
@@ -27,7 +27,7 @@ public:
 
     void set_seed(Slice<seed_int_t> seed_data) override;
     void set_state(string_view state) override;
-    RPY_NO_DISCARD std::vector<seed_int_t> get_seed() const override;
+    RPY_NO_DISCARD containers::Vec<seed_int_t> get_seed() const override;
     RPY_NO_DISCARD std::string get_type() const override;
     RPY_NO_DISCARD std::string get_state() const override;
     RPY_NO_DISCARD ScalarArray uniform_random_scalar(
@@ -90,7 +90,7 @@ void StandardRandomGenerator<Half, BitGenerator>::set_state(string_view state)
 }
 
 template <typename BitGenerator>
-std::vector<seed_int_t>
+containers::Vec<seed_int_t>
 StandardRandomGenerator<Half, BitGenerator>::get_seed() const
 {
     return {m_seed[0]};
@@ -117,7 +117,7 @@ ScalarArray StandardRandomGenerator<Half, BitGenerator>::uniform_random_scalar(
         dimn_t count
 ) const
 {
-    std::vector<std::uniform_real_distribution<float>> dists;
+    containers::Vec<std::uniform_real_distribution<float>> dists;
 
     if (lower.size() != upper.size()) {
         RPY_THROW(

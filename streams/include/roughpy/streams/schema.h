@@ -74,9 +74,9 @@ namespace streams {
  * and other types of data might occupy multiple stream dimensions.
  */
 class ROUGHPY_STREAMS_EXPORT StreamSchema
-    : private std::vector<pair<string, std::shared_ptr<StreamChannel>>>
+    : private containers::Vec<pair<string, std::shared_ptr<StreamChannel>>>
 {
-    using base_type = std::vector<pair<string, std::shared_ptr<StreamChannel>>>;
+    using base_type = containers::Vec<pair<string, std::shared_ptr<StreamChannel>>>;
 
     bool m_is_final = false;
 

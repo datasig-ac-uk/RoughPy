@@ -32,6 +32,7 @@
 
 #include "dyadic_searcher.h"
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/platform/errors.h>
 
 #include <algorithm>
@@ -208,7 +209,7 @@ void DyadicSearcher::get_next_dyadic(DyadicInterval& current) const
 
     current = {k, n, itype};
 }
-std::vector<RealInterval>
+containers::Vec<RealInterval>
 DyadicSearcher::find_in_unit_interval(ScaledPredicate& predicate)
 {
     //    assert(!predicate(dyadic_interval(0, 0)));
@@ -236,16 +237,18 @@ DyadicSearcher::find_in_unit_interval(ScaledPredicate& predicate)
             get_next_dyadic(check_current);
         }
     }
-    std::vector<RealInterval> result;
+    containers::Vec<RealInterval> result;
     result.reserve(m_seen.size());
     for (const auto& pair : m_seen) {
-        result.emplace_back(static_cast<double>(pair.second),
-                            static_cast<double>(pair.first));
+        result.emplace_back(
+                static_cast<double>(pair.second),
+                static_cast<double>(pair.first)
+        );
     }
     std::reverse(result.begin(), result.end());
     return result;
 }
-std::vector<RealInterval> DyadicSearcher::operator()(const Interval& original)
+rpy::containers::Vec<RealInterval> DyadicSearcher::operator()(const Interval& original)
 {
     if (m_predicate(original)) {
         // If the original interval is good, there is nothing to do.
@@ -255,7 +258,7 @@ std::vector<RealInterval> DyadicSearcher::operator()(const Interval& original)
     auto predicate = rescale_to_unit_interval(original);
     auto found = find_in_unit_interval(predicate);
 
-    std::vector<RealInterval> result;
+    containers::Vec<RealInterval> result;
     result.reserve(found.size());
     for (const auto& itvl : found) {
         result.emplace_back(predicate.unscale(itvl));

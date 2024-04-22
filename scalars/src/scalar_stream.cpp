@@ -46,7 +46,7 @@ ScalarStream::ScalarStream(ScalarStream&& other) noexcept
       p_type(other.p_type)
 {}
 
-ScalarStream::ScalarStream(ScalarArray base, std::vector<dimn_t> shape)
+ScalarStream::ScalarStream(ScalarArray base, containers::Vec<dimn_t> shape)
 {
     if (!base.is_null()) {
         auto tp = base.type();
@@ -94,7 +94,7 @@ dimn_t ScalarStream::max_row_size() const noexcept
 {
     if (m_stream.empty()) { return 0; }
 
-    std::vector<dimn_t> tmp;
+    containers::Vec<dimn_t> tmp;
     tmp.reserve(m_stream.size());
 
     for (auto&& arr : m_stream) { tmp.push_back(arr.size()); }

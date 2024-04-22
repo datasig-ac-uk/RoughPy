@@ -26,6 +26,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_interface.h>
 #include <roughpy/scalars/scalar_type.h>
@@ -471,7 +472,7 @@ std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& value)
     return os;
 }
 
-std::vector<byte> Scalar::to_raw_bytes() const
+containers::Vec<byte> Scalar::to_raw_bytes() const
 {
     return dtl::to_raw_bytes(pointer(), 1, type_info());
 }

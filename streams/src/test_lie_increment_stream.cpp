@@ -68,7 +68,7 @@ public:
 
     scalars::ScalarArray random_data(dimn_t count)
     {
-        std::vector<double> tmp_data;
+        containers::Vec<double> tmp_data;
 
         tmp_data.reserve(count);
         for (std::size_t i = 0; i < count; ++i) {
@@ -109,11 +109,11 @@ public:
         return gen.random_data(rows * cols);
     }
 
-    std::vector<param_t> indices(deg_t num_increments) const
+    containers::Vec<param_t> indices(deg_t num_increments) const
     {
         if (num_increments == 1) { return {0.0}; }
 
-        std::vector<param_t> result;
+        containers::Vec<param_t> result;
         result.reserve(num_increments);
 
         param_t step(1.0 / (num_increments - 1));

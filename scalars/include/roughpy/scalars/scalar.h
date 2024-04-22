@@ -40,6 +40,7 @@
 #include <roughpy/core/slice.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/platform/serialization.h>
 
 #include <cereal/types/vector.hpp>
@@ -589,7 +590,7 @@ public:
     RPY_SERIAL_LOAD_FN();
 
 private:
-    std::vector<byte> to_raw_bytes() const;
+    containers::Vec<byte> to_raw_bytes() const;
     void from_raw_bytes(PackedScalarType info, Slice<byte> bytes);
 };
 
@@ -600,7 +601,7 @@ RPY_SERIAL_LOAD_FN_IMPL(Scalar)
 {
     devices::TypeInfo type_info;
     RPY_SERIAL_SERIALIZE_VAL(type_info);
-    std::vector<byte> raw_bytes;
+    containers::Vec<byte> raw_bytes;
     RPY_SERIAL_SERIALIZE_VAL(raw_bytes);
     from_raw_bytes(type_info, raw_bytes);
 }

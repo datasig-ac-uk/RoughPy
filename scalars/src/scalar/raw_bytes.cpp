@@ -18,7 +18,7 @@ namespace {
 
 template <typename T>
 enable_if_t<is_trivially_copyable_v<T>>
-to_raw_bytes_impl(std::vector<byte>& out, const T* data, dimn_t size)
+to_raw_bytes_impl(containers::Vec<byte>& out, const T* data, dimn_t size)
 {
     const auto nbytes = size * sizeof(T);
     const auto curr_size = out.size();
@@ -27,7 +27,7 @@ to_raw_bytes_impl(std::vector<byte>& out, const T* data, dimn_t size)
 }
 
 void to_raw_bytes_impl(
-        std::vector<byte>& out,
+        containers::Vec<byte>& out,
         const ArbitraryPrecisionRational* data,
         dimn_t count
 )
@@ -55,7 +55,7 @@ void to_raw_bytes_impl(
     }
 }
 
-void to_raw_bytes_impl(std::vector<byte>& out, const indeterminate_type& value)
+void to_raw_bytes_impl(containers::Vec<byte>& out, const indeterminate_type& value)
 {
     using packed_type = typename indeterminate_type::packed_type;
     using integral_type = typename indeterminate_type::integral_type;
@@ -67,7 +67,7 @@ void to_raw_bytes_impl(std::vector<byte>& out, const indeterminate_type& value)
     to_raw_bytes_impl(out, &integral, 1);
 }
 
-void to_raw_bytes_impl(std::vector<byte>& out, const Monomial& value)
+void to_raw_bytes_impl(containers::Vec<byte>& out, const Monomial& value)
 {
     uint64_t size = value.type();
     to_raw_bytes_impl(out, &size, 1);
@@ -78,7 +78,7 @@ void to_raw_bytes_impl(std::vector<byte>& out, const Monomial& value)
     }
 }
 
-void to_raw_bytes_impl_single(std::vector<byte>& out, const APPolyRat& value)
+void to_raw_bytes_impl_single(containers::Vec<byte>& out, const APPolyRat& value)
 {
     uint64_t size = value.size();
     to_raw_bytes_impl(out, &size, 1);
@@ -89,7 +89,7 @@ void to_raw_bytes_impl_single(std::vector<byte>& out, const APPolyRat& value)
 }
 
 void to_raw_bytes_impl(
-        std::vector<byte>& out,
+        containers::Vec<byte>& out,
         const APPolyRat* data,
         dimn_t count
 )
@@ -101,11 +101,11 @@ void to_raw_bytes_impl(
 
 }// namespace
 
-std::vector<byte>
+containers::Vec<byte>
 scalars::dtl::to_raw_bytes(const void* ptr, dimn_t size, PackedScalarType info)
 {
     auto tp_info = type_info_from(info);
-    std::vector<byte> out;
+    containers::Vec<byte> out;
     // Reserve approximately the right amount of space to cut down number of
     // reallocations
     out.reserve(size * tp_info.bytes);

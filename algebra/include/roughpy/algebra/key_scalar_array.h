@@ -13,6 +13,7 @@
 
 #include "basis_key.h"
 #include "key_array.h"
+#include "roughpy/core/container/vector.h"
 
 namespace rpy {
 namespace algebra {
@@ -87,15 +88,14 @@ public:
     /**
      *
      */
-    void
-    allocate_scalars(dimn_t size, scalars::PackedScalarType type=nullptr)
+    void allocate_scalars(dimn_t size, scalars::PackedScalarType type = nullptr)
     {
         if (type.is_null()) { type = this->type(); }
         RPY_CHECK(!type.is_null());
         *this = ScalarArray(type, size);
     }
 
-    RPY_NO_DISCARD bool has_keys() const noexcept  {return !m_keys.empty(); }
+    RPY_NO_DISCARD bool has_keys() const noexcept { return !m_keys.empty(); }
 
     ~KeyScalarArray();
 
@@ -106,14 +106,13 @@ public:
     RPY_SERIAL_SAVE_FN();
 };
 
-
 RPY_SERIAL_LOAD_FN_IMPL(KeyScalarArray)
 {
     RPY_SERIAL_SERIALIZE_BASE(ScalarArray);
     bool hkeys = false;
     RPY_SERIAL_SERIALIZE_NVP("has_keys", hkeys);
     if (hkeys) {
-        std::vector<key_type> tmp_keys;
+        containers::Vec<key_type> tmp_keys;
         RPY_SERIAL_SERIALIZE_NVP("keys", tmp_keys);
 
         // RPY_CHECK(tmp_keys.size() == size());

@@ -33,6 +33,7 @@
 
 #include <roughpy/core/hash.h>
 #include <roughpy/core/slice.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/algebra/tensor_basis.h>
 
 namespace rpy {
@@ -78,7 +79,7 @@ public:
     RPY_NO_DISCARD pair<PyTensorKey, PyTensorKey> split_n(deg_t n) const;
 
     RPY_NO_DISCARD deg_t degree() const;
-    RPY_NO_DISCARD std::vector<let_t> to_letters() const;
+    RPY_NO_DISCARD containers::Vec<let_t> to_letters() const;
 
     RPY_NO_DISCARD PyTensorKey reverse() const;
 

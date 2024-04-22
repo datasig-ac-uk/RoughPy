@@ -31,6 +31,7 @@
 
 #include <gtest/gtest.h>
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/intervals/partition.h>
 #include <roughpy/platform/archives.h>
 
@@ -67,7 +68,7 @@ TEST(Partitions, TestPartitionsRefineMidpointIntermediates) {
 
     EXPECT_EQ(refined.size(), 2*parts.size());
 
-    std::vector<param_t> expected_intermediates {
+    containers::Vec<param_t> expected_intermediates {
             0.15, 0.3, 0.45, 0.6, 0.8
     };
 

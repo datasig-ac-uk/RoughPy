@@ -4,6 +4,7 @@
 
 #include "tensor_basis.h"
 #include <roughpy/core/container/unordered_map.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/ranges.h>
@@ -57,7 +58,7 @@ void do_for_each_letter_in_index(deg_t width, dimn_t index, F&& op)
 }
 
 deg_t index_to_degree(
-        const std::vector<dimn_t>& degree_sizes,
+        const containers::Vec<dimn_t>& degree_sizes,
         dimn_t arg
 ) noexcept
 {

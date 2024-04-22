@@ -32,10 +32,10 @@
 
 #include <pybind11/operators.h>
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/scalar_types.h>
 
 #include "dlpack.h"
 #include "r_py_polynomial.h"
@@ -511,7 +511,7 @@ static bool check_ground_type(
 
 static void compute_size_and_type_recurse(
         python::PyToBufferOptions& options,
-        std::vector<py::object>& leaves,
+        containers::Vec<py::object>& leaves,
         const py::handle& object,
         GroundDataType& ground_type,
         dimn_t depth
@@ -608,7 +608,7 @@ static void compute_size_and_type_recurse(
 
 ArgSizeInfo python::compute_size_and_type(
         python::PyToBufferOptions& options,
-        std::vector<py::object>& leaves,
+        containers::Vec<py::object>& leaves,
         py::handle arg
 )
 {
@@ -766,7 +766,7 @@ scalars::KeyScalarArray python::py_to_buffer(
             handle_dict(result, key_ptr, options, dict_arg);
         }
     } else if (py::isinstance<py::sequence>(object)) {
-        std::vector<py::object> leaves;
+        containers::Vec<py::object> leaves;
         auto size_info = compute_size_and_type(options, leaves, object);
 
         update_dtype_and_allocate(

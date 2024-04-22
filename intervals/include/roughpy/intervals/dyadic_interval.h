@@ -32,6 +32,7 @@
 #include "dyadic.h"
 #include "interval.h"
 #include <roughpy/core/types.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/platform/serialization.h>
 
 #include <ostream>
@@ -381,7 +382,7 @@ std::ostream& operator<<(std::ostream& os, const DyadicInterval& di);
  * @return A vector of DyadicIntervals representing the converted Interval.
  */
 ROUGHPY_INTERVALS_EXPORT
-std::vector<DyadicInterval> to_dyadic_intervals(
+containers::Vec<DyadicInterval> to_dyadic_intervals(
         const Interval& interval,
         typename Dyadic::power_t tol,
         IntervalType itype = IntervalType::Clopen

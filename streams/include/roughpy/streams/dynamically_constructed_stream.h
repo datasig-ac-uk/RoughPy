@@ -204,7 +204,7 @@ void DynamicallyConstructedStream::store_cache(Archive& archive) const
 {
     std::lock_guard<std::recursive_mutex> access(m_lock);
     std::map<DyadicInterval, dimn_t> indices;
-    std::vector<dtl::DataIncrementSafe> linear_data;
+    containers::Vec<dtl::DataIncrementSafe> linear_data;
     linear_data.reserve(m_data_tree.size());
 
     dimn_t index = 0;
@@ -226,7 +226,7 @@ template <typename Archive>
 void DynamicallyConstructedStream::load_cache(Archive& archive,
                                               const algebra::Context& ctx)
 {
-    std::vector<dtl::DataIncrementSafe> linear_data;
+    containers::Vec<dtl::DataIncrementSafe> linear_data;
     RPY_SERIAL_SERIALIZE_NVP("cache_data", linear_data);
 
     for (auto& item : linear_data) {

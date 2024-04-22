@@ -7,10 +7,12 @@
 
 #include "roughpy_module.h"
 
+#include <roughpy/core/container/vector.h>
+
 #include "scalars/scalars.h"
 #include <roughpy/core/types.h>
-#include <roughpy/platform/devices/core.h>
 #include <roughpy/scalars/scalars_fwd.h>
+
 
 #include <boost/container/small_vector.hpp>
 
@@ -64,12 +66,12 @@ struct LeafData {
     ValueType value_type;
 };
 
-class ParsedData : public std::vector<LeafData>
+class ParsedData : public containers::Vec<LeafData>
 {
-    std::vector<param_t> m_indices;
+    containers::Vec<param_t> m_indices;
 
 public:
-    const std::vector<param_t>& indices() const noexcept { return m_indices; }
+    const containers::Vec<param_t>& indices() const noexcept { return m_indices; }
 
     void fill_ks_stream(scalars::KeyScalarStream& ks_stream);
 
@@ -82,7 +84,7 @@ public:
 // };
 
 struct RPY_NO_EXPORT DataArgOptions {
-    std::vector<param_t> indices;
+    containers::Vec<param_t> indices;
     const scalars::ScalarType* scalar_type = nullptr;
     algebra::context_pointer context = nullptr;
     AlternativeKeyType* alternative_key = nullptr;

@@ -14,7 +14,7 @@ namespace rpy {
 namespace scalars {
 namespace dtl {
 
-RPY_NO_DISCARD std::vector<byte>
+RPY_NO_DISCARD containers::Vec<byte>
 to_raw_bytes(const void* ptr, dimn_t size, PackedScalarType info);
 
 void from_raw_bytes(

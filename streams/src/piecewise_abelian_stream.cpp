@@ -44,7 +44,7 @@ using rpy::intervals::Interval;
 using rpy::intervals::RealInterval;
 
 PiecewiseAbelianStream::PiecewiseAbelianStream(
-        std::vector<LiePiece>&& data,
+        containers::Vec<LiePiece>&& data,
         StreamMetadata&& md
 )
     : StreamInterface(std::move(md)),
@@ -147,7 +147,7 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(
     set_schema(std::move(schema));
 }
 PiecewiseAbelianStream::PiecewiseAbelianStream(
-        std::vector<LiePiece>&& arg,
+        containers::Vec<LiePiece>&& arg,
         StreamMetadata&& md,
         std::shared_ptr<StreamSchema> schema
 )
@@ -164,7 +164,7 @@ algebra::Lie PiecewiseAbelianStream::log_signature_impl(
         const Context& ctx
 ) const
 {
-    std::vector<algebra::Lie> lies;
+    containers::Vec<algebra::Lie> lies;
     lies.reserve(4);
 
     auto a = domain.inf(), b = domain.sup();

@@ -28,8 +28,8 @@ class ROUGHPY_STREAMS_EXPORT StreamConstructionHelper
     multimap_type m_entries;
     algebra::Lie m_zero;
 
-    std::vector<key_type> m_dense_keys;
-    std::vector<scalars::Scalar> m_previous_values;
+    containers::Vec<key_type> m_dense_keys;
+    containers::Vec<scalars::Scalar> m_previous_values;
 
 public:
     StreamConstructionHelper(algebra::context_pointer ctx,

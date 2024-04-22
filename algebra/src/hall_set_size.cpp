@@ -31,6 +31,9 @@
 //
 
 #include "hall_set_size.h"
+
+#include "roughpy/core/container/vector.h"
+
 #include <mutex>
 
 using namespace rpy;
@@ -41,7 +44,7 @@ using namespace rpy::algebra;
  * should be plenty, but we should include
  * the ability to compute more if we need to.
  */
-static std::vector<int32_t> s_mobius
+static containers::Vec<int32_t> s_mobius
         = {0,// included so the index = argument
            1, -1, -1, 0, -1, 1,  -1, 0,  0,  1, -1, 0,  -1, 1,  1, 0, -1,
            0, -1, 0,  1, 1,  -1, 0,  0,  1,  0, 0,  -1, -1, -1, 0, 1, 1,
@@ -53,7 +56,7 @@ int32_t mobius(int32_t value)
     std::lock_guard<std::mutex> access(s_lock);
 
     if (value >= s_mobius.size()) {
-        std::vector<bool> tmp;
+        containers::Vec<bool> tmp;
         tmp.resize(value / 2, true);
         tmp[0] = false;
 
@@ -63,7 +66,7 @@ int32_t mobius(int32_t value)
                 tmp[m] = false;
             }
         }
-        std::vector<int> primes;
+        containers::Vec<int> primes;
         primes.reserve(bound);
         for (int i = 2; i < bound; ++i) {
             if (tmp[i]) { primes.push_back(i); }

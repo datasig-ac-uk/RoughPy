@@ -34,6 +34,7 @@
 #include "kernel_arg.h"
 
 #include <roughpy/core/macros.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>
 
@@ -181,7 +182,6 @@ class ROUGHPY_PLATFORM_EXPORT Kernel
 {
     using base_t = dtl::ObjectBase<KernelInterface, Kernel>;
 
-    std::vector<KernalArgument*> m_args;
 
 public:
     using base_t::base_t;
@@ -313,7 +313,7 @@ public:
     RPY_NO_DISCARD EventStatus
     launch_sync(const KernelLaunchParams& params, Slice<KernelArgument> args) const;
 
-    RPY_NO_DISCARD static std::vector<bitmask_t>
+    RPY_NO_DISCARD static containers::Vec<bitmask_t>
     construct_work_mask(const KernelLaunchParams& params);
 
     template <typename... Args>

@@ -32,6 +32,7 @@
 
 #include "piecewise_abelian_stream.h"
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/streams/piecewise_abelian_stream.h>
 #include <roughpy/streams/stream.h>
 
@@ -46,7 +47,7 @@ static const char* PW_LIE_STREAM_DOC
 )rpydoc";
 
 static py::object construct_piecewise_lie_stream(
-        std::vector<std::pair<intervals::RealInterval, algebra::Lie>> lies,
+        containers::Vec<pair<intervals::RealInterval, algebra::Lie>> lies,
         py::kwargs kwargs
 )
 {

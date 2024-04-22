@@ -45,7 +45,7 @@ public:
     using LiePiece = std::pair<intervals::RealInterval, algebra::Lie>;
 
 private:
-    std::vector<LiePiece> m_data;
+    containers::Vec<LiePiece> m_data;
 
     RPY_NO_DISCARD
     static inline scalars::Scalar
@@ -65,8 +65,8 @@ private:
     }
 
 public:
-    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md);
-    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md,
+    PiecewiseAbelianStream(containers::Vec<LiePiece>&& arg, StreamMetadata&& md);
+    PiecewiseAbelianStream(containers::Vec<LiePiece>&& arg, StreamMetadata&& md,
                            std::shared_ptr<StreamSchema> schema);
 
     RPY_NO_DISCARD

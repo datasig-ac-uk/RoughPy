@@ -117,7 +117,7 @@ public:
      */
     virtual StreamChannel& insert_variant(string variant_label);
 
-    RPY_NO_DISCARD virtual const std::vector<string>& get_variants() const;
+    RPY_NO_DISCARD virtual const containers::Vec<string>& get_variants() const;
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();

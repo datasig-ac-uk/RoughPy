@@ -75,7 +75,7 @@ rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(
 ) const
 {
     auto dissection = intervals::to_dyadic_intervals(interval, resolution);
-    std::vector<algebra::Lie> lies;
+    containers::Vec<algebra::Lie> lies;
     lies.reserve(dissection.size());
 
     for (auto& ivl : dissection) {

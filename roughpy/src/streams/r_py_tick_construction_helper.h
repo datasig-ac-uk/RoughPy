@@ -36,6 +36,7 @@
 
 #include "args/convert_timestamp.h"
 #include <roughpy/core/macros.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/streams/schema.h>
 #include <roughpy/streams/stream.h>
 
@@ -52,7 +53,7 @@ struct RPy_Tick {
 
 class RPyTickConstructionHelper
 {
-    std::vector<RPy_Tick> m_ticks;
+    containers::Vec<RPy_Tick> m_ticks;
     std::shared_ptr<streams::StreamSchema> p_schema;
     bool b_schema_only;
     py::object m_reference_time;
@@ -105,7 +106,7 @@ public:
     {
         return p_schema;
     }
-    const std::vector<RPy_Tick>& ticks() noexcept;
+    const containers::Vec<RPy_Tick>& ticks() noexcept;
 
 
 

@@ -33,8 +33,9 @@
 
 #include <functional>
 
-#include <roughpy/scalars/key_scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>
+
+#include <roughpy/algebra/key_scalar_array.h>
 
 #include "r_py_polynomial.h"
 
@@ -68,7 +69,7 @@ struct RPY_NO_EXPORT PyToBufferOptions {
     dimn_t max_nested = 0;
 
     /// Information about the constructed array
-    std::vector<idimn_t> shape;
+    containers::Vec<idimn_t> shape;
 
     /// Allow a single, untagged scalar as argument
     bool allow_scalar = true;
@@ -121,7 +122,7 @@ inline bool is_kv_pair(py::handle arg, python::AlternativeKeyType* alternative)
 }
 
 
-scalars::KeyScalarArray
+algebra::KeyScalarArray
 py_to_buffer(const py::handle& arg, PyToBufferOptions& options);
 
 void assign_py_object_to_scalar(scalars::Scalar& dst, py::handle object);
@@ -130,7 +131,7 @@ scalars::Scalar
 py_to_scalar(const scalars::ScalarType* type, py::handle object);
 
 ArgSizeInfo compute_size_and_type(
-        python::PyToBufferOptions& options, std::vector<py::object>& leaves,
+        python::PyToBufferOptions& options, containers::Vec<py::object>& leaves,
         py::handle arg
 );
 

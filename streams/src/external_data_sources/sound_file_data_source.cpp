@@ -77,9 +77,9 @@ dimn_t SoundFileDataSource::query_impl(
 
     auto width = schema.width();
 
-    std::vector<T> working(width);
-    std::vector<T> previous(m_handle.channels());
-    std::vector<T> current(m_handle.channels());
+    containers::Vec<T> working(width);
+    containers::Vec<T> previous(m_handle.channels());
+    containers::Vec<T> current(m_handle.channels());
 
     auto frame_begin = param_to_frame(interval.inf());
     auto frame_end = param_to_frame(interval.sup());
@@ -275,7 +275,8 @@ Stream SoundFileDataSourceFactory::construct_stream(void* payload) const
             nullptr,
             nullptr,
             algebra::VectorType::Dense,
-            10};
+            10
+    };
 
     if (pl->width) {
         auto width = *pl->width;

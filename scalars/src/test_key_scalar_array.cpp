@@ -41,7 +41,7 @@ using namespace rpy::scalars;
 
 TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys)
 {
-    std::vector<float> nums{1.0F, 2.0F, 3.0F};
+    containers::Vec<float> nums{1.0F, 2.0F, 3.0F};
     KeyScalarArray sa(ScalarArray(*ScalarType::of<float>(), nums.data(), 3));
     std::stringstream ss;
     {
@@ -64,8 +64,8 @@ TEST(KeyScalarArray, TestKeyScalarArraySerializeNoKeys)
 }
 TEST(KeyScalarArray, TestKeyScalarArraySerializeWidthKeys)
 {
-    std::vector<float> nums{1.0F, 2.0F, 3.0F};
-    std::vector<key_type> keys{1UL, 2UL, 3UL};
+    containers::Vec<float> nums{1.0F, 2.0F, 3.0F};
+    containers::Vec<key_type> keys{1UL, 2UL, 3UL};
     KeyScalarArray sa(ScalarArray(*ScalarType::of<float>(), nums.data(), 3),
                       keys.data());
     std::stringstream ss;

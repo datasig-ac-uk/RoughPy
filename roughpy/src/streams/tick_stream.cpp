@@ -30,6 +30,7 @@
 #include <map>
 #include <set>
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/algebra/lie.h>
 #include <roughpy/intervals/interval.h>
 #include <roughpy/streams/stream.h>
@@ -141,7 +142,7 @@ static py::object construct(const py::object& data, py::kwargs kwargs)
     std::map<intervals::DyadicInterval, algebra::Lie> raw_data;
 
     // For value types, we need to keep track of the last value that appeared
-    std::vector<algebra::Lie> previous_values(
+    containers::Vec<algebra::Lie> previous_values(
             pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type)
     );
 
@@ -231,7 +232,7 @@ static py::object construct(const py::object& data, py::kwargs kwargs)
     }
 
     streams::Stream result(streams::TickStream(
-            std::vector<param_t>(index.begin(), index.end()),
+            containers::Vec<param_t>(index.begin(), index.end()),
             std::move(raw_data), *pmd.resolution, pmd.schema, std::move(meta)
     ));
 

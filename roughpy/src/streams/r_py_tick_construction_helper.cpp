@@ -31,6 +31,7 @@
 
 #include "r_py_tick_construction_helper.h"
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/streams/tick_stream.h>
 
 #include "args/convert_timestamp.h"
@@ -99,7 +100,7 @@ void python::RPyTickConstructionHelper::fail_data_none()
     RPY_THROW(py::value_error, "data cannot be None when constructing stream");
 }
 
-const std::vector<python::RPy_Tick>&
+const containers::Vec<python::RPy_Tick>&
 python::RPyTickConstructionHelper::ticks() noexcept
 {
     std::sort(

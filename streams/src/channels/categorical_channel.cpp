@@ -59,7 +59,7 @@ dimn_t CategoricalChannel::variant_id_of_label(string_view label) const
     return static_cast<dimn_t>(it - m_variants.begin());
 }
 
-const std::vector<string>& CategoricalChannel::get_variants() const
+const containers::Vec<string>& CategoricalChannel::get_variants() const
 {
     return m_variants;
 }

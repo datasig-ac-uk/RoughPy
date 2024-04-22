@@ -68,9 +68,9 @@ context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)
 
 static std::recursive_mutex s_context_lock;
 
-static std::vector<std::unique_ptr<ContextMaker>>& get_context_maker_list()
+static containers::Vec<std::unique_ptr<ContextMaker>>& get_context_maker_list()
 {
-    static std::vector<std::unique_ptr<ContextMaker>> list;
+    static containers::Vec<std::unique_ptr<ContextMaker>> list;
     return list;
 }
 
@@ -98,7 +98,7 @@ base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth)
 
     // No context makers have a base context with this configuration, let's
     // make a new one
-    static std::vector<base_context_pointer> s_base_context_cache;
+    static containers::Vec<base_context_pointer> s_base_context_cache;
 
     for (const auto& bcp : s_base_context_cache) {
         if (bcp->width() == width && bcp->depth() == depth) { return bcp; }
@@ -111,13 +111,13 @@ context_pointer rpy::algebra::get_context(
         deg_t width,
         deg_t depth,
         const scalars::ScalarType* ctype,
-        const std::vector<std::pair<string, string>>& preferences
+        const containers::Vec<std::pair<string, string>>& preferences
 )
 {
     std::lock_guard<std::recursive_mutex> access(s_context_lock);
     auto& maker_list = get_context_maker_list();
 
-    std::vector<const ContextMaker*> found;
+    containers::Vec<const ContextMaker*> found;
     found.reserve(maker_list.size());
     for (const auto& maker : maker_list) {
         if (maker->can_get(width, depth, ctype, preferences)) {

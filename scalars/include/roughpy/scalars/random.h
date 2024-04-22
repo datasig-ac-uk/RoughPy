@@ -29,6 +29,8 @@
 #define ROUGHPY_SCALARS_RANDOM_H_
 
 #include "scalars_fwd.h"
+
+#include <roughpy/core/container/vector.h>
 #include "scalar_array.h"
 
 
@@ -57,7 +59,7 @@ public:
     virtual void set_seed(Slice<seed_int_t> seed_data) = 0;
     virtual void set_state(string_view state) = 0;
 
-    RPY_NO_DISCARD virtual std::vector<seed_int_t> get_seed() const = 0;
+    RPY_NO_DISCARD virtual containers::Vec<seed_int_t> get_seed() const = 0;
     RPY_NO_DISCARD virtual std::string get_type() const = 0;
     RPY_NO_DISCARD virtual std::string get_state() const = 0;
 

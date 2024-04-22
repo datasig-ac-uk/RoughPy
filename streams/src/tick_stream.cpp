@@ -143,7 +143,7 @@ streams::TickStream::recursive_logsig(streams::TickStream::DyadicInterval di)
         auto& it = m_data[*pdi1];
         if (it) { return *it; }
 
-        std::vector<algebra::Lie> v;
+        containers::Vec<algebra::Lie> v;
         v.reserve(2);
         DyadicInterval left(*pdi1);
         DyadicInterval right(*pdi1);
@@ -159,8 +159,8 @@ streams::TickStream::recursive_logsig(streams::TickStream::DyadicInterval di)
 }
 streams::TickStream::TickStream(
         scalars::ScalarStream&& raw_data,
-        std::vector<const key_type*> raw_key_stream,
-        std::vector<param_t> raw_timestamps,
+        containers::Vec<const key_type*> raw_key_stream,
+        containers::Vec<param_t> raw_timestamps,
         resolution_t resolution,
         StreamMetadata md,
         intervals::IntervalType itype

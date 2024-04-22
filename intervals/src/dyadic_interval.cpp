@@ -32,6 +32,8 @@
 
 #include <roughpy/intervals/dyadic_interval.h>
 
+#include <roughpy/core/container/vector.h>
+
 #include <algorithm>
 #include <list>
 #include <roughpy/platform/errors.h>
@@ -185,7 +187,7 @@ std::ostream& rpy::intervals::operator<<(std::ostream& os,
     return os << static_cast<const Interval&>(di);
 }
 
-std::vector<DyadicInterval>
+containers::Vec<DyadicInterval>
 rpy::intervals::to_dyadic_intervals(const Interval& interval,
                                     Dyadic::power_t tol, IntervalType itype)
 {

@@ -29,6 +29,7 @@
 #ifndef ROUGHPY_CORE_SLICE_H_
 #define ROUGHPY_CORE_SLICE_H_
 
+#include "container/vector.h"
 #include "traits.h"
 #include "types.h"
 
@@ -163,9 +164,9 @@ public:
         return std::reverse_iterator<const T*>(p_data);
     }
 
-    RPY_NO_DISCARD operator std::vector<remove_const_t<T>>() const
+    RPY_NO_DISCARD operator containers::Vec<remove_const_t<T>>() const
     {
-        std::vector<T> result;
+        containers::Vec<T> result;
         result.reserve(m_size);
         for (dimn_t i = 0; i < m_size; ++i) { result.push_back(p_data[i]); }
         return result;
@@ -189,7 +190,7 @@ public:
     constexpr Slice(std::nullptr_t) : p_data(nullptr), m_size(0) {}
 
     template <typename T>
-    constexpr Slice(std::vector<T>& container)
+    constexpr Slice(containers::Vec<T>& container)
         : p_data(container.data()),
           m_size(container.size())
     {}

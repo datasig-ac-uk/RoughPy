@@ -35,6 +35,9 @@
 
 #include <roughpy/intervals/segmentation.h>
 
+#include <roughpy/core/container/vector.h>
+#include <roughpy/core/container/map.h>
+
 #include <cassert>
 #include <deque>
 #include <map>
@@ -68,7 +71,7 @@ struct DyadicRealStrictGreater {
 class DyadicSearcher
 {
     predicate_t m_predicate;
-    std::map<Dyadic, Dyadic, DyadicRealStrictGreater> m_seen;
+    containers::Map<Dyadic, Dyadic, DyadicRealStrictGreater> m_seen;
     dyadic_depth_t m_max_depth;
 
 protected:
@@ -86,10 +89,10 @@ public:
 private:
     ScaledPredicate rescale_to_unit_interval(const Interval& original);
     void get_next_dyadic(DyadicInterval& current) const;
-    std::vector<RealInterval> find_in_unit_interval(ScaledPredicate& predicate);
+    containers::Vec<RealInterval> find_in_unit_interval(ScaledPredicate& predicate);
 
 public:
-    std::vector<RealInterval> operator()(const Interval& original);
+    containers::Vec<RealInterval> operator()(const Interval& original);
 };
 
 }// namespace intervals

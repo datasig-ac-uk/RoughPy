@@ -44,7 +44,7 @@ namespace streams {
 
 class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface
 {
-    std::vector<param_t> m_granular_times;
+    containers::Vec<param_t> m_granular_times;
     std::map<intervals::DyadicInterval, optional<algebra::Lie>> m_data;
     resolution_t m_resolution;
 
@@ -64,7 +64,7 @@ class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface
     algebra::Lie recursive_logsig(DyadicInterval di);
 
 public:
-    TickStream(std::vector<param_t>&& granular_times,
+    TickStream(containers::Vec<param_t>&& granular_times,
             std::map<intervals::DyadicInterval, optional<algebra::Lie>>&& data,
             resolution_t resolution,
                std::shared_ptr<streams::StreamSchema> schema,
@@ -87,8 +87,8 @@ public:
                resolution_t resolution);
 
     TickStream(scalars::ScalarStream&& raw_data,
-               std::vector<const key_type*> raw_key_stream,
-               std::vector<param_t> raw_timestamps, resolution_t resolution,
+               containers::Vec<const key_type*> raw_key_stream,
+               containers::Vec<param_t> raw_timestamps, resolution_t resolution,
                StreamMetadata md,
                intervals::IntervalType itype = intervals::IntervalType::Clopen);
 
@@ -144,7 +144,7 @@ RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::TickStream)
 
     StreamMetadata metadata;
     RPY_SERIAL_SERIALIZE_VAL(metadata);
-    std::vector<param_t> granular_times;
+    containers::Vec<param_t> granular_times;
     RPY_SERIAL_SERIALIZE_VAL(granular_times);
     std::map<intervals::DyadicInterval, algebra::Lie> data;
     RPY_SERIAL_SERIALIZE_VAL(data);

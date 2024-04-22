@@ -28,6 +28,8 @@
 
 #include "scalar_array.h"
 
+#include <roughpy/core/container/vector.h>
+
 #include "scalar.h"
 #include "scalar/casts.h"
 #include "scalar_array_element.h"
@@ -342,7 +344,7 @@ void ScalarArray::check_for_ptr_access(bool mut) const
 
 dimn_t ScalarArray::capacity() const noexcept { return m_buffer.size(); }
 
-std::vector<byte> ScalarArray::to_raw_bytes() const
+containers::Vec<byte> ScalarArray::to_raw_bytes() const
 {
     return dtl::to_raw_bytes(m_buffer.ptr(), m_buffer.size(), type());
 }

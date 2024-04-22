@@ -30,6 +30,8 @@
 
 #include <pybind11/stl.h>
 
+#include <roughpy/core/container/vector.h>
+
 #include "args/parse_data_argument.h"
 #include "lie_key_iterator.h"
 #include "scalars/scalar_type.h"
@@ -132,7 +134,7 @@ RPyContext_cbh(PyObject* self, PyObject* args, PyObject* kwargs)
     }
 
     const auto num_lies = PySequence_Size(py_lies);
-    std::vector<Lie> lies;
+    containers::Vec<Lie> lies;
     lies.reserve(num_lies);
 
     for (Py_ssize_t i = 0; i < num_lies; ++i) {

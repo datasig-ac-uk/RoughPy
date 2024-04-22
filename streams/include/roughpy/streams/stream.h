@@ -50,7 +50,7 @@ public:
     using RealInterval = intervals::RealInterval;
 
     using perturbation_t = std::pair<RealInterval, Lie>;
-    using perturbation_list_t = std::vector<perturbation_t>;
+    using perturbation_list_t = containers::Vec<perturbation_t>;
 
 private:
     std::shared_ptr<const StreamInterface> p_impl;

@@ -109,7 +109,7 @@ RPY_SERIAL_LOAD_FN_IMPL(BrownianStream)
     std::string generator;
     RPY_SERIAL_SERIALIZE_VAL(generator);
 
-    std::vector<uint64_t> seed;
+    containers::Vec<uint64_t> seed;
     RPY_SERIAL_SERIALIZE_VAL(seed);
 
     std::string state;

@@ -16,6 +16,7 @@
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/algebra/lie.h>
 #include <roughpy/platform/devices/buffer.h>
@@ -51,7 +52,7 @@ struct LeafItem {
 
 class ConversionManager
 {
-    std::vector<LeafItem> m_leaves;
+    containers::Vec<LeafItem> m_leaves;
     ParsedData m_parsed_data;
     DataArgOptions& m_options;
     dimn_t m_offset = 0;

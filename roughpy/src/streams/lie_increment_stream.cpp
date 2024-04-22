@@ -28,8 +28,10 @@
 #include "lie_increment_stream.h"
 
 #include <roughpy/core/helpers.h>
-#include <roughpy/scalars/key_scalar_array.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/algebra/key_scalar_array.h>
+#include <roughpy/algebra/key_scalar_stream.h>
 #include <roughpy/streams/lie_increment_stream.h>
 #include <roughpy/streams/stream.h>
 
@@ -55,7 +57,7 @@ of fixed size at specified time intervals.
 )rpydoc";
 
 void buffer_to_indices(
-        std::vector<param_t>& indices,
+        containers::Vec<param_t>& indices,
         const py::buffer_info& info
 )
 {
@@ -70,7 +72,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
 {
     auto md = kwargs_to_metadata(kwargs);
 
-    std::vector<param_t> indices;
+    containers::Vec<param_t> indices;
 
     python::DataArgOptions options;
     options.scalar_type = md.scalar_type;
@@ -80,7 +82,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
     //    auto buffer = python::py_to_buffer(data, options);
     auto parsedData = parse_data_argument(data, options);
 
-    scalars::KeyScalarStream ks_stream;
+    algebra::KeyScalarStream ks_stream;
     // Now we have to construct the key scalar stream entries
     ks_stream.set_ctype(options.scalar_type);
     parsedData.fill_ks_stream(ks_stream);
@@ -160,7 +162,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
                 }
             }
         } else if (py::isinstance<py::sequence>(indices_arg)) {
-            indices = indices_arg.cast<std::vector<param_t>>();
+            indices = indices_arg.cast<containers::Vec<param_t>>();
         } else {
             RPY_THROW(
                     py::type_error,

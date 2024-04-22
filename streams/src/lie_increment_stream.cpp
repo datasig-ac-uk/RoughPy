@@ -174,7 +174,7 @@ algebra::Lie LieIncrementStream::log_signature_impl(
 
     if (begin == end) { return ctx.zero_lie(md.cached_vector_type); }
 
-    std::vector<Lie> lies;
+    containers::Vec<Lie> lies;
     lies.reserve(static_cast<dimn_t>(end - begin));
 
     for (auto it = begin; it != end; ++it) { lies.push_back(it->second); }

@@ -31,6 +31,8 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/container/vector.h>
+
 #include <roughpy/platform/filesystem.h>
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -49,9 +51,9 @@ namespace rpy {
 namespace devices {
 
 struct ExtensionSourceAndOptions {
-    std::vector<string> sources;
+    containers::Vec<string> sources;
     string compile_options;
-    std::vector<pair<string, string>> header_name_and_source;
+    containers::Vec<pair<string, string>> header_name_and_source;
     string link_options;
 };
 

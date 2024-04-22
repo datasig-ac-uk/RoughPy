@@ -34,6 +34,7 @@
 
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/scalars/scalar_stream.h>
 #include <roughpy/scalars/scalar_type.h>
 
@@ -177,7 +178,7 @@ public:
             = 0;
 
     RPY_NO_DISCARD virtual FreeTensor sig_derivative(
-            const std::vector<DerivativeComputeInfo>& info,
+            const containers::Vec<DerivativeComputeInfo>& info,
             VectorType vtype
     ) const = 0;
 
@@ -198,7 +199,7 @@ ROUGHPY_ALGEBRA_EXPORT context_pointer get_context(
         deg_t width,
         deg_t depth,
         const scalars::ScalarType* ctype,
-        const std::vector<std::pair<string, string>>& preferences = {}
+        const containers::Vec<std::pair<string, string>>& preferences = {}
 );
 
 inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2)
@@ -227,7 +228,7 @@ inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2)
 class ROUGHPY_ALGEBRA_EXPORT ContextMaker
 {
 public:
-    using preference_list = std::vector<std::pair<string, string>>;
+    using preference_list = containers::Vec<pair<string, string>>;
 
     virtual ~ContextMaker() = default;
     virtual bool

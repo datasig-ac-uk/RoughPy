@@ -48,7 +48,7 @@ bool OCLDeviceProvider::supports(DeviceCategory category) const noexcept
 {
     if (category == DeviceCategory::CPU) { return false; }
 
-    std::vector<cl_platform_id> platforms;
+    containers::Vec<cl_platform_id> platforms;
     cl_uint count = 0;
     auto ecode = clGetPlatformIDs(0, nullptr, &count);
     if (ecode != CL_SUCCESS || count == 0) { return false; }

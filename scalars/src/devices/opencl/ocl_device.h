@@ -60,7 +60,7 @@ class OCLDeviceHandle : public DeviceHandle
 
     OCLVersion m_ocl_version;
 
-    mutable std::vector<cl_program> m_programs;
+    mutable containers::Vec<cl_program> m_programs;
     mutable std::unordered_map<string, cl_program> m_header_cache;
 
     using typename DeviceHandle::guard_type;

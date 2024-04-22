@@ -7,12 +7,14 @@
 
 #include "basis_key.h"
 
+#include <roughpy/core/container/vector.h>
+
 namespace rpy {
 namespace algebra {
 
 class TensorProductBasisKey : public BasisKeyInterface
 {
-    std::vector<BasisKey> m_keys;
+    containers::Vec<BasisKey> m_keys;
 
 public:
     static constexpr string_view key_name = "tensor_product_key";
