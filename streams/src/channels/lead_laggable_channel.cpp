@@ -36,7 +36,7 @@ dimn_t LeadLaggableChannel::variant_id_of_label(string_view label) const
 }
 const containers::Vec<string>& LeadLaggableChannel::get_variants() const
 {
-    static const containers::Vec<string> leadlag { "lead", "lag" };
+    static const containers::Vec<string> leadlag{"lead", "lag"};
     return (m_use_leadlag) ? leadlag : StreamChannel::get_variants();
 }
 void LeadLaggableChannel::set_lead_lag(bool new_value)
