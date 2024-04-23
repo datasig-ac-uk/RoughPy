@@ -68,7 +68,7 @@ OCLQueue::~OCLQueue()
 }
 DeviceType OCLQueue::type() const noexcept { return DeviceType::OpenCL; }
 
-devices::dtl::InterfaceBase::reference_count_type
+rc_count_t
 OCLQueue::ref_count() const noexcept
 {
     cl_uint rc = 0;
@@ -84,18 +84,18 @@ OCLQueue::ref_count() const noexcept
 }
 void* OCLQueue::ptr() noexcept { return m_queue; }
 const void* OCLQueue::ptr() const noexcept { return m_queue; }
-devices::dtl::InterfaceBase::reference_count_type OCLQueue::inc_ref() noexcept
+rc_count_t OCLQueue::inc_ref() const noexcept
 {
-    reference_count_type rc = ref_count();
+    auto rc = ref_count();
     if (RPY_LIKELY(m_queue != nullptr)) {
         auto ecode = clRetainCommandQueue(m_queue);
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     }
     return rc;
 }
-devices::dtl::InterfaceBase::reference_count_type OCLQueue::dec_ref() noexcept
+rc_count_t OCLQueue::dec_ref() const noexcept
 {
-    reference_count_type rc = ref_count();
+    auto rc = ref_count();
     if (RPY_LIKELY(m_queue != nullptr)) {
         RPY_DBG_ASSERT(rc > 0);
         auto ecode = clReleaseCommandQueue(m_queue);

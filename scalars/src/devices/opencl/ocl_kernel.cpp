@@ -228,7 +228,7 @@ Event OCLKernel::launch_kernel_async(
 
     return m_device->make_event(event);
 }
-devices::dtl::InterfaceBase::reference_count_type
+rc_count_t
 OCLKernel::ref_count() const noexcept
 {
     cl_uint rc = 0;
@@ -240,24 +240,24 @@ OCLKernel::ref_count() const noexcept
             nullptr
     );
     if (ecode != CL_SUCCESS) { return 0; }
-    return static_cast<reference_count_type>(rc);
+    return static_cast<rc_count_t>(rc);
 }
 Device OCLKernel::device() const noexcept { return m_device; }
 DeviceType OCLKernel::type() const noexcept { return DeviceType::OpenCL; }
 void* OCLKernel::ptr() noexcept { return m_kernel; }
 const void* OCLKernel::ptr() const noexcept { return m_kernel; }
-devices::dtl::InterfaceBase::reference_count_type OCLKernel::inc_ref() noexcept
+rc_count_t OCLKernel::inc_ref() const noexcept
 {
-    reference_count_type rc = ref_count();
+    auto rc = ref_count();
     if (RPY_LIKELY(m_kernel != nullptr)) {
         auto ecode = clRetainKernel(m_kernel);
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     }
     return rc;
 }
-devices::dtl::InterfaceBase::reference_count_type OCLKernel::dec_ref() noexcept
+rc_count_t OCLKernel::dec_ref() const noexcept
 {
-    reference_count_type rc = ref_count();
+    auto rc = ref_count();
     if (RPY_LIKELY(m_kernel != nullptr)) {
         RPY_DBG_ASSERT(rc > 0);
         auto ecode = clReleaseKernel(m_kernel);

@@ -30,6 +30,7 @@
 #define ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
 
 #include "core.h"
+#include "roughpy/core/smart_ptr.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
@@ -52,8 +53,6 @@ namespace dtl {
 class ROUGHPY_PLATFORM_EXPORT InterfaceBase
 {
 public:
-    using reference_count_type = dimn_t;
-
     RPY_NO_DISCARD void* operator new(std::size_t count);
 
     void operator delete(void* ptr, std::size_t count);
@@ -68,8 +67,20 @@ public:
     RPY_NO_DISCARD virtual void* ptr() noexcept;
     RPY_NO_DISCARD virtual const void* ptr() const noexcept;
 
-    virtual reference_count_type inc_ref() noexcept;
-    virtual reference_count_type dec_ref() noexcept;
+protected:
+    virtual rc_count_t inc_ref() const noexcept;
+    virtual rc_count_t dec_ref() const noexcept;
+
+    friend void intrusive_ptr_add_ref(const InterfaceBase* p) noexcept
+    {
+        auto used = p->inc_ref();
+        (void) used;
+    }
+
+    friend void intrusive_ptr_release(const InterfaceBase* p) noexcept
+    {
+        if (p->dec_ref() == 0) { delete p; }
+    }
 };
 
 template <typename Interface>
@@ -80,16 +91,20 @@ class RefCountBase : public Interface
             "Interface must be derived from InterfaceBase"
     );
 
+    using RcPolicy = boost::thread_safe_counter;
     using atomic_t = std::atomic_size_t;
-    atomic_t m_ref_count = 0;
+    mutable typename RcPolicy::type m_ref_count;
 
 public:
-    using Interface::Interface;
-    using reference_count_type = dimn_t;
+    template <typename... Args>
+    explicit RefCountBase(Args&&... args)
+        : Interface(std::forward<Args>(args)...),
+          m_ref_count(0)
+    {}
 
-    reference_count_type inc_ref() noexcept override;
-    reference_count_type dec_ref() noexcept override;
-    reference_count_type ref_count() const noexcept override;
+    rc_count_t inc_ref() const noexcept override;
+    rc_count_t dec_ref() const noexcept override;
+    rc_count_t ref_count() const noexcept override;
 };
 
 template <typename Interface, typename Derived>
@@ -106,7 +121,7 @@ class ObjectBase
 
     using interface_type = Interface;
 
-    Interface* p_impl = nullptr;
+    Rc<Interface> p_impl = nullptr;
 
     friend typename Interface::object_t
     rpy::devices::steal_cast<Interface>(Interface*) noexcept;
@@ -118,26 +133,26 @@ class ObjectBase
     };
 
 protected:
-    RPY_NO_DISCARD Interface* impl() noexcept { return p_impl; }
-    RPY_NO_DISCARD const Interface* impl() const noexcept { return p_impl; }
+    RPY_NO_DISCARD Interface* impl() noexcept { return p_impl.get(); }
+    RPY_NO_DISCARD const Interface* impl() const noexcept
+    {
+        return p_impl.get();
+    }
 
 public:
-    using reference_count_type = typename InterfaceBase::reference_count_type;
-
     ObjectBase() = default;
 
     ObjectBase(const ObjectBase& other);
     ObjectBase(ObjectBase&& other) noexcept;
 
-    explicit ObjectBase(Interface* iface) noexcept : p_impl(iface)
-    {
-        if (p_impl) { p_impl->inc_ref(); }
-        RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
-    }
+    explicit ObjectBase(Interface* iface) noexcept : p_impl(iface) {}
 
-    explicit ObjectBase(Interface* iface, steal_t) noexcept : p_impl(iface) {}
+    explicit ObjectBase(Rc<Interface> iface) noexcept : p_impl(std::move(iface))
+    {}
 
-    ~ObjectBase();
+    explicit ObjectBase(Interface* iface, steal_t) noexcept
+        : p_impl(iface, false)
+    {}
 
     ObjectBase& operator=(const ObjectBase& other);
     ObjectBase& operator=(ObjectBase&& other) noexcept;
@@ -145,7 +160,7 @@ public:
     RPY_NO_DISCARD bool is_host() const noexcept;
     RPY_NO_DISCARD DeviceType type() const noexcept;
     RPY_NO_DISCARD bool is_null() const noexcept { return !p_impl; }
-    RPY_NO_DISCARD reference_count_type ref_count() const noexcept;
+    RPY_NO_DISCARD rc_count_t ref_count() const noexcept;
     RPY_NO_DISCARD Derived clone() const;
     RPY_NO_DISCARD Device device() const noexcept;
 
@@ -154,12 +169,12 @@ public:
 
     RPY_NO_DISCARD Interface& get() noexcept
     {
-        RPY_DBG_ASSERT(!!p_impl);
+        RPY_DBG_ASSERT(static_cast<bool>(p_impl));
         return *p_impl;
     }
     RPY_NO_DISCARD const Interface& get() const noexcept
     {
-        RPY_DBG_ASSERT(!!p_impl);
+        RPY_DBG_ASSERT(static_cast<bool>(p_impl));
         return *p_impl;
     }
 
@@ -170,44 +185,34 @@ public:
 };
 
 template <typename Interface>
-InterfaceBase::reference_count_type RefCountBase<Interface>::inc_ref() noexcept
+rc_count_t RefCountBase<Interface>::inc_ref() const noexcept
 {
-    return m_ref_count.fetch_add(1, std::memory_order_relaxed);
+    // return m_ref_count.fetch_add(1, std::memory_order_relaxed);
+    RcPolicy::increment(m_ref_count);
+    return 0;
+}
+
+template <typename Interface>
+rc_count_t RefCountBase<Interface>::dec_ref() const noexcept
+{
+    // RPY_DBG_ASSERT(m_ref_count.load(std::memory_order_acquire) > 0);
+    // return m_ref_count.fetch_sub(1, std::memory_order_acq_rel);
+    return static_cast<rc_count_t>(RcPolicy::decrement(m_ref_count));
 }
 template <typename Interface>
-InterfaceBase::reference_count_type RefCountBase<Interface>::dec_ref() noexcept
+rc_count_t RefCountBase<Interface>::ref_count() const noexcept
 {
-    RPY_DBG_ASSERT(m_ref_count.load(std::memory_order_acquire) > 0);
-    return m_ref_count.fetch_sub(1, std::memory_order_acq_rel);
-}
-template <typename Interface>
-InterfaceBase::reference_count_type
-RefCountBase<Interface>::ref_count() const noexcept
-{
-    return m_ref_count.load(std::memory_order_relaxed);
+    // return m_ref_count.load(std::memory_order_relaxed);
+    return RcPolicy::load(m_ref_count);
 }
 template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>::ObjectBase(const ObjectBase& other)
     : p_impl(other.p_impl)
-{
-    if (p_impl != nullptr) { p_impl->inc_ref(); }
-    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
-}
+{}
 template <typename Interface, typename Derived>
 ObjectBase<Interface, Derived>::ObjectBase(ObjectBase&& other) noexcept
-    : p_impl(other.p_impl)
-{
-    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
-    other.p_impl = nullptr;
-}
-template <typename Interface, typename Derived>
-ObjectBase<Interface, Derived>::~ObjectBase()
-{
-    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
-    if (p_impl != nullptr && p_impl->dec_ref() == 1) { delete p_impl; }
-    p_impl = nullptr;
-}
-
+    : p_impl(std::move(other.p_impl))
+{}
 template <typename Interface, typename Derived>
 bool ObjectBase<Interface, Derived>::is_host() const noexcept
 {
@@ -222,10 +227,7 @@ ObjectBase<Interface, Derived>::operator=(const ObjectBase& other)
     RPY_DBG_ASSERT(other.p_impl == nullptr || other.p_impl->ref_count() > 0);
     if (&other != this) {
         this->~ObjectBase();
-        if (other.p_impl != nullptr) {
-            p_impl = other.p_impl;
-            p_impl->inc_ref();
-        }
+        if (other.p_impl != nullptr) { p_impl = other.p_impl; }
     }
     return *this;
 }
@@ -249,8 +251,7 @@ DeviceType ObjectBase<Interface, Derived>::type() const noexcept
 }
 
 template <typename Interface, typename Derived>
-typename ObjectBase<Interface, Derived>::reference_count_type
-ObjectBase<Interface, Derived>::ref_count() const noexcept
+rc_count_t ObjectBase<Interface, Derived>::ref_count() const noexcept
 {
     if (p_impl) { return p_impl->ref_count(); }
     return 0;

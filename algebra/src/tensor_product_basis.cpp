@@ -5,24 +5,34 @@
 #include "tensor_product_basis.h"
 #include "tensor_product_basis_key.h"
 
+#include <roughpy/core/ranges.h>
+
 #include <sstream>
 
 using namespace rpy;
 using namespace rpy::algebra;
 
 TensorProductBasis::TensorProductBasis(Slice<BasisPointer> bases)
-    : Basis(basis_id, {false, false, false}),
-      m_bases(bases)
-{}
+    : Basis(basis_id, {false, false, false})
+{
+    m_bases.reserve(bases.size());
+    for (auto&& basis : bases | views::move) {
+        m_bases.emplace_back(std::move(basis));
+    }
+}
 
 TensorProductBasis::TensorProductBasis(
         Slice<rpy::algebra::BasisPointer> bases,
         ordering_function order
 )
     : Basis(basis_id, {true, false, false}),
-      m_bases(bases),
       m_ordering(std::move(order))
-{}
+{
+    m_bases.reserve(bases.size());
+    for (auto&& basis : bases | views::move) {
+        m_bases.emplace_back(std::move(basis));
+    }
+}
 
 bool TensorProductBasis::has_key(BasisKey key) const noexcept
 {
@@ -78,9 +88,41 @@ string TensorProductBasis::to_string(BasisKey key) const
 }
 bool TensorProductBasis::equals(BasisKey k1, BasisKey k2) const
 {
-    return false;
+    if (k1.is_index() && k2.is_index()) {
+        return k1.get_index() == k2.get_index();
+    }
+
+    auto do_equals = [this](const BasisKey& _k1, const BasisKey& _k2) {
+        auto* tk1 = cast_key<TensorProductBasisKey>(_k1);
+        auto* tk2 = cast_key<TensorProductBasisKey>(_k2);
+
+        return ranges::fold_left(
+                views::zip(m_bases, tk1->keys(), tk2->keys())
+                        | views::transform([](const auto& t) {
+                              auto&& [b, k1i, k2i] = t;
+                              return b->equals(k1i, k2i);
+                          }),
+                true,
+                std::logical_and<>()
+        );
+    };
+
+    if (k1.is_index()) { return do_equals(to_key(k1.get_index()), k2); }
+    if (k2.is_index()) { return do_equals(k1, to_key(k2.get_index())); }
+    return do_equals(k1, k2);
 }
-hash_t TensorProductBasis::hash(BasisKey k1) const { return 0; }
+hash_t TensorProductBasis::hash(BasisKey k1) const
+{
+    if (k1.is_index()) { return static_cast<hash_t>(k1.get_index()); }
+
+    auto* this_key = cast_key<TensorProductBasisKey>(k1);
+
+    hash_t result = 0;
+    for (const auto& [basis, key] : views::zip(m_bases, this_key->keys())) {
+        hash_combine(result, basis->hash(key));
+    }
+    return result;
+}
 bool TensorProductBasis::less(BasisKey k1, BasisKey k2) const
 {
     if (m_ordering) {
@@ -103,10 +145,26 @@ KeyRange TensorProductBasis::iterate_keys() const
 {
     return Basis::iterate_keys();
 }
-deg_t TensorProductBasis::max_degree() const { return Basis::max_degree(); }
+deg_t TensorProductBasis::max_degree() const
+{
+    return ranges::fold_left(
+            m_bases | views::transform([](const auto& b) {
+                return b->max_degree();
+            }),
+            0,
+            std::plus<>()
+    );
+}
 deg_t TensorProductBasis::degree(BasisKey key) const
 {
-    return Basis::degree(key);
+
+    auto* this_key = cast_key<TensorProductBasisKey>(key);
+
+    deg_t result = 0;
+    for (const auto& [key, basis] : views::zip(this_key->keys(), m_bases)) {
+        result += basis->degree(key);
+    }
+    return result;
 }
 KeyRange TensorProductBasis::iterate_keys_of_degree(deg_t degree) const
 {
@@ -150,7 +208,6 @@ BasisComparison TensorProductBasis::compare(BasisPointer other) const noexcept
                     break;
                 case BasisComparison::IsNotCompatible:
                     return BasisComparison::IsNotCompatible;
-                    break;
             }
         }
         return result;
@@ -163,4 +220,17 @@ dimn_t TensorProductBasis::max_dimension() const noexcept
     dimn_t dimension = 1;
     for (const auto& basis : m_bases) { dimension *= basis->max_dimension(); }
     return dimension;
+}
+
+BasisPointer algebra::tensor_product_basis(
+        Slice<BasisPointer> bases,
+        std::function<dimn_t(BasisKey)> index_function,
+        std::function<BasisKey(dimn_t)> key_function
+)
+{
+    RPY_CHECK(!bases.empty());
+
+    if (bases.size() == 1) { return bases[0]; }
+
+    return BasisPointer(new TensorProductBasis(bases));
 }

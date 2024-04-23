@@ -51,13 +51,13 @@ public:
     Device device() const noexcept override;
 
     DeviceType type() const noexcept override;
-    reference_count_type ref_count() const noexcept override;
+    rc_count_t ref_count() const noexcept override;
     dimn_t size() const override;
     void* ptr() noexcept override;
     const void* ptr() const noexcept override;
 
-    reference_count_type inc_ref() noexcept override;
-    reference_count_type dec_ref() noexcept override;
+    rc_count_t inc_ref() const noexcept override;
+    rc_count_t dec_ref() const noexcept override;
 };
 
 }// namespace device

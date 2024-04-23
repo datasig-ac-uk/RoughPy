@@ -82,6 +82,7 @@ add_roughpy_component(Algebra
         src/tensor_key_iterator_state.cpp
         src/tensor_key_iterator_state.h
         src/tensor_product_basis.cpp
+        src/tensor_product_basis.h
         src/tensor_product_basis_key.cpp
         src/tensor_product_basis_key.h
         src/tensor_word.cpp
@@ -106,7 +107,6 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/lie_basis.h
         include/roughpy/algebra/shuffle_tensor.h
         include/roughpy/algebra/tensor_basis.h
-        include/roughpy/algebra/tensor_product_basis.h
         include/roughpy/algebra/unital_algebra.h
         include/roughpy/algebra/vector.h
         include/roughpy/algebra/vector_iterator.h

@@ -50,7 +50,7 @@ void devices::dtl::InterfaceBase::operator delete(void* ptr, std::size_t count)
 
 rpy::devices::dtl::InterfaceBase::~InterfaceBase() = default;
 
-dimn_t devices::dtl::InterfaceBase::ref_count() const noexcept { return 1; }
+dimn_t devices::dtl::InterfaceBase::ref_count() const noexcept { return 0; }
 
 DeviceType devices::dtl::InterfaceBase::type() const noexcept
 {
@@ -71,13 +71,5 @@ const void* devices::dtl::InterfaceBase::ptr() const noexcept
     return nullptr;
 }
 
-typename devices::dtl::InterfaceBase::reference_count_type
-devices::dtl::InterfaceBase::inc_ref() noexcept
-{
-    return 0;
-}
-typename devices::dtl::InterfaceBase::reference_count_type
-devices::dtl::InterfaceBase::dec_ref() noexcept
-{
-    return 0;
-}
+rc_count_t devices::dtl::InterfaceBase::inc_ref() const noexcept { return 0; }
+rc_count_t devices::dtl::InterfaceBase::dec_ref() const noexcept { return 0; }

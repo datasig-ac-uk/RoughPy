@@ -23,6 +23,8 @@ public:
 
     string_view key_type() const noexcept override;
 
+    const containers::Vec<BasisKey>& keys() const noexcept { return m_keys; }
+
     decltype(auto) begin() const noexcept { return m_keys.begin(); }
     decltype(auto) end() const noexcept { return m_keys.end(); }
     dimn_t size() const noexcept { return m_keys.size(); }

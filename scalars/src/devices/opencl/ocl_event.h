@@ -50,7 +50,7 @@ public:
     OCLEvent(cl_event event, OCLDevice dev) noexcept;
 
     DeviceType type() const noexcept override;
-    reference_count_type ref_count() const noexcept override;
+    rc_count_t ref_count() const noexcept override;
     void wait() override;
     RPY_NO_DISCARD
     EventStatus status() const override;
@@ -60,8 +60,8 @@ public:
     void set_status(EventStatus status) override;
     void* ptr() noexcept override;
     const void* ptr() const noexcept override;
-    reference_count_type inc_ref() noexcept override;
-    reference_count_type dec_ref() noexcept override;
+    rc_count_t inc_ref() const noexcept override;
+    rc_count_t dec_ref() const noexcept override;
 };
 
 }// namespace device

@@ -107,7 +107,7 @@ void OCLEvent::set_status(EventStatus status)
 }
 Device OCLEvent::device() const noexcept { return m_device; }
 DeviceType OCLEvent::type() const noexcept { return DeviceType::OpenCL; }
-devices::dtl::InterfaceBase::reference_count_type OCLEvent::ref_count() const
+rc_count_t OCLEvent::ref_count() const
         noexcept
 {
     cl_uint rc = 0;
@@ -119,23 +119,23 @@ devices::dtl::InterfaceBase::reference_count_type OCLEvent::ref_count() const
             nullptr
     );
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
-    return static_cast<reference_count_type>(rc);
+    return static_cast<rc_count_t>(rc);
 }
 void* OCLEvent::ptr() noexcept { return m_event; }
 
 const void* OCLEvent::ptr() const noexcept { return m_event; }
-devices::dtl::InterfaceBase::reference_count_type OCLEvent::inc_ref() noexcept
+rc_count_t OCLEvent::inc_ref() const noexcept
 {
-    reference_count_type rc = ref_count();
+    auto rc = ref_count();
     if (RPY_LIKELY(m_event != nullptr)) {
         auto ecode = clRetainEvent(m_event);
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     }
     return rc;
 }
-devices::dtl::InterfaceBase::reference_count_type OCLEvent::dec_ref() noexcept
+rc_count_t OCLEvent::dec_ref() const noexcept
 {
-    reference_count_type rc = ref_count();
+    auto rc = ref_count();
     if (RPY_LIKELY(m_event != nullptr)) {
         RPY_DBG_ASSERT(rc > 0);
         auto ecode = clRetainEvent(m_event);

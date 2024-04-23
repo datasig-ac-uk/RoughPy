@@ -14,7 +14,7 @@ namespace algebra {
 
 class TensorProductBasis : public Basis
 {
-    containers::Vec<BasisPointer> m_bases;
+    containers::SmallVec<BasisPointer, 2> m_bases;
 
 public:
     using ordering_function = std::function<
@@ -29,10 +29,8 @@ public:
     static constexpr string_view basis_id = "tensor_product_basis";
 
     explicit TensorProductBasis(Slice<BasisPointer> bases);
-    explicit TensorProductBasis(
-            Slice<BasisPointer> bases,
-            ordering_function order
-    );
+    explicit
+    TensorProductBasis(Slice<BasisPointer> bases, ordering_function order);
 
     dimn_t max_dimension() const noexcept override;
 

@@ -70,8 +70,8 @@ public:
     Event
     to_device(Buffer& dst, const Device& device, Queue& queue) const override;
 
-    reference_count_type inc_ref() noexcept override;
-    reference_count_type dec_ref() noexcept override;
+    rc_count_t inc_ref() const noexcept override;
+    rc_count_t dec_ref() const noexcept override;
 
     dimn_t bytes() const override;
     Buffer map_mut(dimn_t size, dimn_t offset) override;

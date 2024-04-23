@@ -18,9 +18,6 @@
 namespace rpy {
 namespace algebra {
 
-/**
- *
- */
 class ROUGHPY_ALGEBRA_EXPORT KeyScalarStream
 {
     using PackedScalarType = scalars::PackedScalarType;

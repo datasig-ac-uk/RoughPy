@@ -10,6 +10,8 @@
 
 namespace rpy {
 
+using rc_count_t = uint64_t;
+
 template <typename T>
 using Rc = boost::intrusive_ptr<T>;
 

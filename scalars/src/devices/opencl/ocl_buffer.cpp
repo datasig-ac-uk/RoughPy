@@ -71,7 +71,7 @@ devices::OCLBuffer::OCLBuffer(
 OCLBuffer::~OCLBuffer()
 {
     // Reference count should be zero now
-    RPY_DBG_ASSERT(ref_count() == 0);
+    RPY_DBG_ASSERT(OCLBuffer::ref_count() == 0);
     m_buffer = nullptr;
 }
 
@@ -137,8 +137,7 @@ void* OCLBuffer::ptr() noexcept { return &m_buffer; }
 // }
 Device OCLBuffer::device() const noexcept { return m_device; }
 
-devices::dtl::InterfaceBase::reference_count_type
-OCLBuffer::ref_count() const noexcept
+rc_count_t OCLBuffer::ref_count() const noexcept
 {
     if (m_buffer != nullptr) {
         cl_uint ref_count = 0;
@@ -150,7 +149,7 @@ OCLBuffer::ref_count() const noexcept
                 nullptr
         );
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
-        return static_cast<dimn_t>(ref_count);
+        return static_cast<rc_count_t>(ref_count);
     }
     return 0;
 }
@@ -274,24 +273,24 @@ Event OCLBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
     return BufferInterface::to_device(dst, device, queue);
 }
 
-devices::dtl::InterfaceBase::reference_count_type OCLBuffer::inc_ref() noexcept
+rc_count_t OCLBuffer::inc_ref() const noexcept
 {
-    reference_count_type rc = ref_count();
+    auto rc = ref_count();
     if (m_buffer != nullptr) {
         auto ecode = clRetainMemObject(m_buffer);
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     }
     return rc;
 }
-devices::dtl::InterfaceBase::reference_count_type OCLBuffer::dec_ref() noexcept
+rc_count_t OCLBuffer::dec_ref() const noexcept
 {
-    reference_count_type rc = ref_count();
+    auto rc = ref_count();
     if (RPY_LIKELY(m_buffer != nullptr)) {
         RPY_DBG_ASSERT(rc > 0);
         auto ecode = clReleaseMemObject(m_buffer);
         RPY_DBG_ASSERT(ecode == CL_SUCCESS);
     }
-    return rc;
+    return rc - 1;
 }
 
 // void* OCLBuffer::map(BufferMode map_mode, dimn_t size, dimn_t offset) const

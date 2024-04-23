@@ -665,6 +665,12 @@ struct KeyEquals {
     }
 };
 
+BasisPointer tensor_product_basis(
+        Slice<BasisPointer> bases,
+        std::function<dimn_t(BasisKey)> index_function = nullptr,
+        std::function<BasisKey(dimn_t)> key_function = nullptr
+);
+
 }// namespace algebra
 }// namespace rpy
 

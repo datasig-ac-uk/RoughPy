@@ -159,6 +159,16 @@ const devices::Type* get_key_type() noexcept;
 
 
 
+template <typename Key>
+const Key* cast_key(const BasisKey& arg)
+{
+    RPY_CHECK(arg.is_valid_pointer());
+    const auto* ptr = arg.get_pointer();
+    RPY_CHECK(ptr->key_type() == Key::key_name);
+    return reinterpret_cast<const Key*>(ptr);
+}
+
+
 }// namespace algebra
 }// namespace rpy
 
