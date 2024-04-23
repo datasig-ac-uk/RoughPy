@@ -38,16 +38,6 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-void* devices::dtl::InterfaceBase::operator new(std::size_t count)
-{
-    return platform::alloc_small(count);
-}
-
-void devices::dtl::InterfaceBase::operator delete(void* ptr, std::size_t count)
-{
-    platform::free_small(ptr, count);
-}
-
 rpy::devices::dtl::InterfaceBase::~InterfaceBase() = default;
 
 dimn_t devices::dtl::InterfaceBase::ref_count() const noexcept { return 0; }

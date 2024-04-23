@@ -31,6 +31,7 @@
 
 #include "core.h"
 #include "roughpy/core/smart_ptr.h"
+#include "roughpy/platform/alloc.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
@@ -50,13 +51,9 @@ inline typename Interface::object_t clone_cast(Interface* iface) noexcept;
 
 namespace dtl {
 
-class ROUGHPY_PLATFORM_EXPORT InterfaceBase
+class ROUGHPY_PLATFORM_EXPORT InterfaceBase : public platform::SmallObjectBase
 {
 public:
-    RPY_NO_DISCARD void* operator new(std::size_t count);
-
-    void operator delete(void* ptr, std::size_t count);
-
     virtual ~InterfaceBase();
 
     RPY_NO_DISCARD virtual bool is_host() const noexcept;
