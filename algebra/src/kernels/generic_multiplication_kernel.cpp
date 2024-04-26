@@ -9,7 +9,6 @@
 using namespace rpy;
 using namespace rpy::algebra;
 
-
 void algebra::dtl::GenericSquareMultiplicationKernel::eval_sss(
         VectorData& out,
         const VectorData& left,
