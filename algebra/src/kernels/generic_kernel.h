@@ -41,7 +41,22 @@ RPY_NO_DISCARD int get_sparse_dense_config(
             | get_sparse_dense_config(remaining...);
 }
 
+class DenseVectorMap
+{
+    scalars::ScalarArray& m_array;
+    const Basis* p_basis;
 
+public:
+    DenseVectorMap(scalars::ScalarArray& array, const Basis* basis)
+        : m_array(array),
+          p_basis(basis)
+    {}
+
+    scalars::Scalar operator[](const BasisKey& key)
+    {
+        return m_array[p_basis->to_index(key)];
+    }
+};
 
 template <>
 class GenericKernel<MutableVectorArg, ConstScalarArg>;
@@ -57,7 +72,6 @@ class GenericKernel<MutableVectorArg, ConstVectorArg, ConstScalarArg>;
 
 template <>
 class GenericKernel<MutableVectorArg, ConstVectorArg, ConstVectorArg>;
-
 
 }// namespace dtl
 }// namespace algebra

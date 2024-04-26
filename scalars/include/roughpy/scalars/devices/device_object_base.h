@@ -99,9 +99,11 @@ public:
           m_ref_count(0)
     {}
 
+    rc_count_t ref_count() const noexcept override;
+
+protected:
     rc_count_t inc_ref() const noexcept override;
     rc_count_t dec_ref() const noexcept override;
-    rc_count_t ref_count() const noexcept override;
 };
 
 template <typename Interface, typename Derived>
