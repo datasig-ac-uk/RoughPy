@@ -537,6 +537,207 @@ Buffer::Buffer(Slice<const T> data)
              devices::type_info<T>())
 {}
 
+namespace dtl {
+
+template <typename T>
+class BufferRangeIterator;
+
+template <typename T>
+class BufferRange
+{
+    Buffer m_buffer;
+
+public:
+    using value_type = T;
+    using reference = T&;
+    using const_reference = add_const_t<T>&;
+    using pointer = T*;
+    using const_pointer = add_const_t<T>*;
+    using size_type = dimn_t;
+    using difference_type = idimn_t;
+
+    using iterator = BufferRangeIterator<T>;
+    using const_iterator = BufferRangeIterator<const T>;
+
+    iterator begin() noexcept;
+    iterator end() noexcept;
+    const_iterator begin() const noexcept;
+    const_iterator cbegin() const noexcept;
+    const_iterator end() const noexcept;
+    const_iterator cend() const noexcept;
+};
+
+template <typename T>
+class BufferRangeIterator
+{
+    T* m_ptr;
+
+public:
+    using value_type = T;
+    using reference = T&;
+    using pointer = T*;
+    using size_type = dimn_t;
+    using difference_type = idimn_t;
+
+    using iterator_category = std::random_access_iterator_tag;
+
+    explicit constexpr BufferRangeIterator(T* ptr) : m_ptr(ptr) {}
+
+    BufferRangeIterator& operator++() noexcept
+    {
+        ++m_ptr;
+        return *this;
+    }
+
+    const BufferRangeIterator operator++(int) noexcept
+    {
+        BufferRangeIterator prev(*this);
+        ++m_ptr;
+        return prev;
+    }
+
+    BufferRangeIterator& operator--() noexcept
+    {
+        --m_ptr;
+        return *this;
+    }
+
+    const BufferRangeIterator operator--(int) noexcept
+    {
+        BufferRangeIterator prev(*this);
+        --m_ptr;
+        return prev;
+    }
+
+    T& operator*() const noexcept { return *m_ptr; }
+    T* operator->() const noexcept { return m_ptr; }
+
+    constexpr BufferRangeIterator& operator+=(difference_type n) noexcept
+    {
+        m_ptr += n;
+        return *this;
+    }
+
+    constexpr BufferRangeIterator& operator-=(difference_type n) noexcept
+    {
+        m_ptr -= n;
+        return *this;
+    }
+
+    constexpr BufferRangeIterator operator+(difference_type n) const noexcept
+    {
+        return BufferRangeIterator(m_ptr + 1);
+    }
+
+    constexpr BufferRangeIterator operator-(difference_type n) const noexcept
+    {
+        return BufferRangeIterator(m_ptr - 1);
+    }
+
+    constexpr reference operator[](difference_type n) noexcept
+    {
+        return m_ptr[n];
+    }
+
+    friend constexpr bool operator!=(
+            const BufferRangeIterator& left,
+            const BufferRangeIterator& right
+    ) noexcept
+    {
+        return left.m_ptr == right.m_ptr;
+    }
+
+    friend constexpr difference_type operator-(
+            const BufferRangeIterator& left,
+            const BufferRangeIterator& right
+    ) noexcept
+    {
+        return static_cast<difference_type>(right - left);
+    }
+
+    friend constexpr bool operator<(
+            const BufferRangeIterator& left,
+            const BufferRangeIterator& right
+    ) noexcept
+    {
+        return left.m_ptr < right.m_ptr;
+    }
+
+    friend constexpr bool operator<=(
+            const BufferRangeIterator& left,
+            const BufferRangeIterator& right
+    ) noexcept
+    {
+        return left.m_ptr <= right.m_ptr;
+    }
+
+    friend constexpr bool operator>(
+            const BufferRangeIterator& left,
+            const BufferRangeIterator& right
+    ) noexcept
+    {
+        return left.m_ptr > right.m_ptr;
+    }
+
+    friend constexpr bool operator>=(
+            const BufferRangeIterator& left,
+            const BufferRangeIterator& right
+    ) noexcept
+    {
+        return left.m_ptr >= right.m_ptr;
+    }
+};
+
+template <typename T>
+constexpr bool operator==(
+        const BufferRangeIterator<T>& left,
+        const BufferRangeIterator<T>& right
+) noexcept
+{
+    return !(left != right);
+}
+
+template <typename I, typename T>
+constexpr BufferRangeIterator<T>
+operator+(I left, const BufferRangeIterator<T>& right) noexcept
+{
+    using difference_type = typename BufferRangeIterator<T>::difference_type;
+    return right + static_cast<difference_type>(left);
+}
+
+template <typename T>
+typename BufferRange<T>::iterator BufferRange<T>::begin() noexcept
+{
+    return iterator(static_cast<T*>(m_buffer.ptr()));
+}
+template <typename T>
+typename BufferRange<T>::iterator BufferRange<T>::end() noexcept
+{
+    return iterator(static_cast<T*>(m_buffer.ptr())) + m_buffer.size();
+}
+template <typename T>
+typename BufferRange<T>::const_iterator BufferRange<T>::begin() const noexcept
+{
+    return iterator(static_cast<T*>(m_buffer.ptr()));
+}
+template <typename T>
+typename BufferRange<T>::const_iterator BufferRange<T>::cbegin() const noexcept
+{
+    return iterator(static_cast<T*>(m_buffer.ptr()));
+}
+template <typename T>
+typename BufferRange<T>::const_iterator BufferRange<T>::end() const noexcept
+{
+    return iterator(static_cast<T*>(m_buffer.ptr())) + m_buffer.size();
+}
+template <typename T>
+typename BufferRange<T>::const_iterator BufferRange<T>::cend() const noexcept
+{
+    return iterator(static_cast<T*>(m_buffer.ptr())) + m_buffer.size();
+}
+
+}// namespace dtl
+
 }// namespace devices
 }// namespace rpy
 #endif// ROUGHPY_DEVICE_BUFFER_H_
