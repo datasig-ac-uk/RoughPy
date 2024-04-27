@@ -30,15 +30,15 @@ target_compile_definitions(RoughPy_PyModule PRIVATE
 if (ROUGHPY_BUILD_PYMODULE_INPLACE)
     if (MSVC)
         add_custom_command(TARGET RoughPy_PyModule POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:RoughPy_PyModule>
+                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:RoughPy_PyModule>
         )
         add_custom_command(TARGET RoughPy_PyModule POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
-            COMMAND_EXPAND_LISTS
+                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
+                COMMAND_EXPAND_LISTS
         )
-    else()
+    else ()
         set_target_properties(RoughPy_PyModule PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
     endif ()
 endif ()
 
@@ -180,15 +180,14 @@ target_link_libraries(RoughPy_PyModule PRIVATE
 )
 
 
-target_precompile_headers(RoughPy_PyModule PRIVATE
-        <roughpy/scalars/devices.h>
-        <roughpy/platform/serialization.h>
-        <roughpy/platform/filesystem.h>
-        <roughpy/algebra/context.h>
-        <pybind11/pybind11.h>
-        <pybind11/functional.h>
-        <pybind11/stl.h>
-)
+#target_precompile_headers(RoughPy_PyModule PRIVATE
+#        <roughpy/platform/serialization.h>
+#        <roughpy/platform/filesystem.h>
+#        <roughpy/algebra/context.h>
+#        <pybind11/pybind11.h>
+#        <pybind11/functional.h>
+#        <pybind11/stl.h>
+#)
 
 set(RPY_TARGETS RoughPy::Platform
         RoughPy::Scalars

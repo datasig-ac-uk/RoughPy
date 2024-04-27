@@ -10,7 +10,7 @@ include(GenerateExportHeader)
 
 
 add_roughpy_component(Streams
-    SOURCES
+        SOURCES
         src/stream_base.cpp
         src/stream.cpp
         src/lie_increment_stream.cpp
@@ -33,7 +33,7 @@ add_roughpy_component(Streams
         src/channels/value_channel.cpp
         src/channels/lie_channel.cpp
         src/channels/lead_laggable_channel.cpp
-    PUBLIC_HEADERS
+        PUBLIC_HEADERS
         include/roughpy/streams/channels/stream_channel.h
         include/roughpy/streams/channels/increment_channel.h
         include/roughpy/streams/channels/value_channel.h
@@ -53,25 +53,25 @@ add_roughpy_component(Streams
         include/roughpy/streams/parametrization.h
         include/roughpy/streams/stream_construction_helper.h
         include/roughpy/streams/channels.h
-    DEPENDENCIES PRIVATE
+        DEPENDENCIES PRIVATE
         SndFile::sndfile
         PUBLIC
-                Boost::boost
-    DEFINITIONS
+        Boost::boost
+        DEFINITIONS
         BOOST_UUID_FORCE_AUTO_LINK=1
-    NEEDS
+        NEEDS
         RoughPy::Core
         RoughPy::Platform
         RoughPy::Intervals
         RoughPy::Scalars
         RoughPy::Algebra
-        )
-
-target_precompile_headers(RoughPy_Streams PRIVATE
-        <roughpy/algebra/context.h>
-        <roughpy/algebra/free_tensor.h>
-        <roughpy/algebra/lie.h>
 )
+
+#target_precompile_headers(RoughPy_Streams PRIVATE
+#        <roughpy/algebra/context.h>
+#        <roughpy/algebra/free_tensor.h>
+#        <roughpy/algebra/lie.h>
+#)
 
 
 add_roughpy_test(Streams
@@ -81,4 +81,4 @@ add_roughpy_test(Streams
         src/test_schema.cpp
         NEEDS
         RoughPy::Streams
-        )
+)

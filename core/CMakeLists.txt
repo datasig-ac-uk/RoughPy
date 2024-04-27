@@ -14,6 +14,7 @@ add_roughpy_component(Core INTERFACE
         include/roughpy/core/container/unordered_set.h
         include/roughpy/core/container/vector.h
         include/roughpy/core/alloc.h
+        include/roughpy/core/errors.h
         include/roughpy/core/hash.h
         include/roughpy/core/types.h
         include/roughpy/core/traits.h
