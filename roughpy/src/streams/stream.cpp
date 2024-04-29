@@ -124,42 +124,42 @@ All of these :class:`stream` objects are constructed with different data types.
 
 As well as data, you will need to provide the following parameters:
 
-``ctx``
+:py:attr:`ctx`
   Provide an algebra context in which to create the algebra, takes priority over the next 3.
 
 Or
 
-``dtype``
-  Scalar type for the algebra (deprecated, use ``ctx`` instead). Can be a ``RoughPy`` data type (``rp.SPReal``, ``rp.DPReal``, ``rp.Rational``, ``rp.PolyRational``), or a ``numpy`` dtype.
+:py:attr:`dtype`
+  Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a ``RoughPy`` data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a ``numpy`` dtype.
 
-``depth``
+:py:attr:`depth`
 
-  Maximum degree for :class:`Lie` objects, :class:`tensor` objects, etc. (deprecated, use ``ctx`` instead)
+  Maximum degree for :class:`Lie` objects, :class:`tensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
 
-``width``
-  Alphabet size, dimension of the underlying space (deprecated, use ``ctx`` instead)
+:py:attr:`width`
+  Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`ctx` instead)
 
-:class:`Stream` objects also have the following optional parameters:
+Stream objects also have the following optional parameters:
 
-``schema``
-    An abstract description of what the comprises the channels of the underlying space in schema form. Can be deduced from data/constructor. If provided must be "correct" (i.e. ``width`` must be correct).
+:py:attr:`schema`
+    An abstract description of what the comprises the channels of the underlying space in schema form. Can be deduced from data/constructor. If provided must be "correct" (i.e. :py:attr:`width` must be correct).
 
-``channel_types``
+:py:attr:`channel_types`
     Sequence of channel types, ``str`` name of channel type (e.g. ``increment``), or ``dict`` of ``name: type`` pairs. Used to construct a schema if you don't have one of those already.
 
-``include_time``
-    ``Bool``, indicates whether the parameter value should be included as a :class:`stream` channel.
+:py:attr:`include_time`
+    Bool, indicates whether the parameter value should be included as a :class:`stream` channel.
 
-``vtype``
-    Default vector type for algebras return from :class:`stream` methods. (``Dense`` or ``Sparse``). Default is currently ``Dense``, although this will change to be determined by the form of the underlying :class:`stream`.
+:py:attr:`vtype`
+    Default vector type for algebras return from :class:`stream` methods. (:py:attr:`dense` or :py:attr:`sparse`). Default is currently :py:attr:`dense`, although this will change to be determined by the form of the underlying :class:`stream`.
 
-``resolution``
-    Resolution for the dyadic dissection of the domain, and the default ``resolution`` used in :py:meth:`~signature` / :py:meth:`~log_signature` calculations.
+:py:attr:`resolution`
+    Resolution for the dyadic dissection of the domain, and the default :py:attr:`resolution` used in :py:meth:`~signature` / :py:meth:`~log_signature` calculations.
 
-``support``
+:py:attr:`support`
     :class:`Interval` of parameter values on which the :class:`stream` has meaning.
 
-``indices``
+:py:attr:`indices`
     For :py:attr:`~LieIncrementStreams`, optionally provide a list/array of parameter values at which each row of the input data occurs. (default, row "i" occurs at parameter value "i"), or integer indicating the "column" of data that corresponds to the parameter. (Must be present in all rows)
 
 
@@ -384,7 +384,7 @@ if (interval_or_inf == nullptr || interval_or_inf == Py_None) {
 extern "C" {
 
 static const char* SIGNATURE_DOC
-        = R"rpydoc(Compute the signature of the stream over an interval.)rpydoc";
+        = R"rpydoc(Compute the :py:meth:`signature` of the :class:`Stream` over an :class:`Interval`.)rpydoc";
 static PyObject* signature(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     SigArgs sigargs;
@@ -427,7 +427,7 @@ static PyObject* signature(PyObject* self, PyObject* args, PyObject* kwargs)
 }
 
 static const char* LOGSIGNATURE_DOC
-        = R"rpydoc(Compute the log signature of the stream over an interval.)rpydoc";
+        = R"rpydoc(Compute the log signature of the :class:`Stream` over an :class:`Interval`.)rpydoc";
 static PyObject* log_signature(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     SigArgs sigargs;
@@ -602,7 +602,7 @@ static PyObject* sig_deriv(PyObject* self, PyObject* args, PyObject* kwargs)
 }
 
 static const char SIMPLIFY_STREAM_DOC[] = R"rpydoc(Produce a piecewise
-abelian path subordinate to the given partition.
+abelian path subordinate to the given :class:`Partition`.
 )rpydoc";
 static PyObject*
 simplify_stream(PyObject* self, PyObject* args, PyObject* kwargs)
@@ -666,8 +666,8 @@ simplify_stream(PyObject* self, PyObject* args, PyObject* kwargs)
     return python::RPyStream_FromStream(stream.simplify(partition, resolution));
 }
 
-static const char RESTRICT_DOC[] = R"rpydoc(Create a new stream with the same
- data but restricted to a given interval.)rpydoc";
+static const char RESTRICT_DOC[] = R"rpydoc(Create a new :class:`Stream` with the same
+ data but restricted to a given :class:`Interval`.)rpydoc";
 static PyObject* restrict(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static const char* kwords[] = {"interval", nullptr};
@@ -785,11 +785,11 @@ static PyObject* resolution_getter(PyObject* self)
 }
 
 static PyGetSetDef RPyStream_getset[] = {
-        {     "width",      (getter) width_getter, nullptr, "Alphabet size, dimension of the underlying space (deprecated, use ``ctx`` instead).", nullptr},
-        {     "dtype",      (getter) ctype_getter, nullptr, "Scalar type for the algebra (deprecated, use ``ctx`` instead). Can be a RoughPy data type (``rp.SPReal``, ``rp.DPReal``, ``rp.Rational``, ``rp.PolyRational``), or a numpy dtype.", nullptr},
+        {     "width",      (getter) width_getter, nullptr, "Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`ctx` instead).", nullptr},
+        {     "dtype",      (getter) ctype_getter, nullptr, "Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a RoughPy data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a numpy dtype.", nullptr},
         {       "ctx",        (getter) ctx_getter, nullptr, "Provide an algebra context in which to create the algebra.", nullptr},
-        {   "support",    (getter) support_getter, nullptr, "Interval of parameter values on which the stream has meaning.", nullptr},
-        {"resolution", (getter) resolution_getter, nullptr, "Resolution for the dyadic dissection of the domain, and the default resolution used in signature/log_signature calculations.", nullptr},
+        {   "support",    (getter) support_getter, nullptr, ":class:`Interval` of parameter values on which the :class:`Stream` has meaning.", nullptr},
+        {"resolution", (getter) resolution_getter, nullptr, ":py:attr:`resolution` for the dyadic dissection of the domain, and the default resolution used in signature/log_signature calculations.", nullptr},
         {     nullptr,                    nullptr, nullptr, nullptr, nullptr}
 };
 

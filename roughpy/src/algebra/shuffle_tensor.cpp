@@ -81,27 +81,27 @@ You construct with data, which for the example above was the following list:
 
 As well as data, you will need to provide the following parameters:
 
-``ctx``
+:py:attr:`ctx`
     Provide an algebra context in which to create the algebra, takes priority over the next 3.
 
 Or
 
-``dtype``
-    Scalar type for the algebra (deprecated, use ``ctx`` instead). Can be a ``RoughPy`` data type (``rp.SPReal``, ``rp.DPReal``, ``rp.Rational``, ``rp.PolyRational``), or a ``numpy`` dtype.
+:py:attr:`dtype`
+    Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a ``RoughPy`` data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a ``numpy`` dtype.
 
-``depth``
-    Maximum degree for :class:`lie` objects, :class:`tensor` objects, etc. (deprecated, use ``ctx`` instead)
+:py:attr:`depth`
+    Maximum degree for :class:`lie` objects, :class:`tensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
 
-``width``
-    Alphabet size, dimension of the underlying space (deprecated, use ``ctx`` instead)
+:py:attr:`width`
+    Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`ctx` instead)
 
 Optional parameters:
 
-``vector_type``
-    ``dense`` or ``sparse``
+:py:attr:`vector_type`
+    :py:attr:`dense` or :py:attr:`sparse`
 
-``keys``
-    List/array of ``keys`` to go along with scalars provided as an array argument.
+:py:attr:`keys`
+    List/array of :py:attr:`keys` to go along with scalars provided as an array argument.
 
 You can shuffle two tensors together, using ``*``. For example, using ``x`` and ``y`` for indeterminate names for ``shuffle_tensor1`` and ``shuffle_tensor2``, for the above tensor we could do:
 

@@ -64,7 +64,7 @@ py::object free_multiply(const py::object& left, const py::object& right)
 }
 
 static const char SHUFFLE_MULTIPLY_DOC[] = R"rpydoc(
-Shuffle two free tensors.
+Shuffle two :class:`FreeTensor` objects.
 Use a multiplication that isn't the native one.
 )rpydoc";
 py::object shuffle_multiply(const py::object& left, const py::object& right)
@@ -120,7 +120,7 @@ py::object shuffle_multiply(const py::object& left, const py::object& right)
 
 static const char HALF_SHUFFLE_MULTIPLY_DOC[] = R"rpydoc(
 Use a multiplication that isn't the native one.
-For example, half shuffle two shuffle tensors. Do what's not allowed by type using * (ish).
+For example, half shuffle two :class:`ShuffleTensor` objects. Do what's not allowed by type using ``*`` (ish).
 )rpydoc";
 py::object
 half_shuffle_multiply(const py::object& left, const py::object& right)
@@ -174,7 +174,7 @@ half_shuffle_multiply(const py::object& left, const py::object& right)
     RPY_UNREACHABLE_RETURN(py::none());
 }
 
-static const char ADJOINT_FREE_MULTIPLY_DOC[] = R"rpydoc(Performs the adjoint of the free multiplication, A > A.)rpydoc";
+static const char ADJOINT_FREE_MULTIPLY_DOC[] = R"rpydoc(Performs the adjoint of the free multiplication, :math:`A > A`.)rpydoc";
 py::object
 adjoint_to_free_multiply(const py::object& multiplier, const py::object& arg)
 {

@@ -38,7 +38,7 @@ using namespace rpy::intervals;
 using namespace pybind11::literals;
 
 static const char* REAL_INTERVAL_DOC
-        = R"edoc(A half-open interval in the real line.
+        = R"edoc(A half-open :class:`Interval` in the real line.
 )edoc";
 
 void python::init_real_interval(py::module_& m)
@@ -50,7 +50,7 @@ void python::init_real_interval(py::module_& m)
     //    klass.def(py::init<IntervalType>());
     klass.def(py::init<double, double>(), "inf"_a, "sup"_a);
     klass.def(py::init<double, double, IntervalType>(), "inf"_a, "sup"_a,
-              "interval_type"_a, "Either clopen or opencl (although only clopen supported currently)");
+              "interval_type"_a, "Either :py:attr:`clopen` or :py:attr:`opencl` (although only :py:attr:`clopen` supported currently)");
     klass.def(py::init<const Interval&>(), "arg"_a);
     klass.def("__repr__", [](const RealInterval& arg) {
         std::stringstream ss;

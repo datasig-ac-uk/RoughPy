@@ -69,8 +69,8 @@ documentation of these methods for more information.
 
 A tensor can be created from an array-like object containing the coefficients of the keys, in
 their standard order. Since tensors must be created with both an alphabet size and depth, we need
-to provide at least the ``depth`` argument. However, it is recommended that you also provided
-the ``width`` argument, otherwise it is assumed that the tensor has degree 1 and the alphabet
+to provide at least the :py:attr:`~depth` argument. However, it is recommended that you also provided
+the :py:attr:`~width` argument, otherwise it is assumed that the tensor has degree 1 and the alphabet
 size will be determined from the length of the argument.
 
 .. code:: python
@@ -82,7 +82,7 @@ size will be determined from the length of the argument.
     >>> print(ts2)
     { 1() 2(1) 3(2) }
 
-If the width argument is provided, this construction can be used to construct tensors of any
+If the width argument is provided, this construction can be used to construct :class:`~Tensor` objects of any
 degree, up to the maximum. The :class:`~esig_paths.algebra_context` class provides a method
 :py:meth:`~esig_paths.algebra_context.tensor_size` that can be used to get the dimension of the
 tensor algebra_old up to a given degree.
@@ -164,11 +164,11 @@ void python::init_free_tensor(py::module_& m)
              return self[static_cast<key_type>(tkey)];
          });
 
-    klass.def("exp", &FreeTensor::exp, "Computes the truncated exponential of a free_tensor instance.");
-    klass.def("log", &FreeTensor::log, "Computes the truncated log of arg up to degree max_degree");
-    klass.def("antipode", &FreeTensor::antipode, "Compute the antipode of a free_tensor instance");
+    klass.def("exp", &FreeTensor::exp, "Computes the truncated exponential of a :class:`~FreeTensor` instance.");
+    klass.def("log", &FreeTensor::log, "Computes the truncated log of the argument up to degree :py:attr:`~max_degree`");
+    klass.def("antipode", &FreeTensor::antipode, "Compute the antipode of a :class:`~FreeTensor` instance");
 //    klass.def("inverse", &FreeTensor::inverse);
-    klass.def("fmexp", &FreeTensor::fmexp, "other"_a, "Fused multiply exponential operation for free tensors. Computes a*exp(x).");
+    klass.def("fmexp", &FreeTensor::fmexp, "other"_a, "Fused multiply exponential operation for :py:attr:`~FreeTensor` objects. Computes :math:`a exp(x)`.");
 //
     klass.def("__repr__", [](const FreeTensor& self) {
         std::stringstream ss;

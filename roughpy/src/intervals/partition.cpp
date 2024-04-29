@@ -42,8 +42,8 @@ using namespace intervals;
 using namespace pybind11::literals;
 
 PyDoc_VAR(PyPartition_doc) = R"rpydoc(
-An interval into which there are a number of intermediate points which represent the end points of sub intervals.
-Partition of an interval in the real line.
+An :class:`Interval` into which there are a number of intermediate points which represent the end points of sub intervals.
+Partition of an :class:`Interval` in the real line.
 )rpydoc";
 
 namespace {

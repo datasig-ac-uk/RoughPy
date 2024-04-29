@@ -67,7 +67,7 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
                 return K(self, self.index_to_key(index));
             },
             "index"_a,
-            "Takes an integer and returns a key at that index."
+            "Takes an integer and returns a :py:attr:`key` at that index."
     );
     basis.def(
             "key_to_index",
@@ -75,7 +75,7 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
                 return self.key_to_index(0);
             },
             "key"_a,
-            "Takes a key and returns an integer corresponding to the index"
+            "Takes a :py:attr:`key` and returns an integer corresponding to the index."
     );
 
     basis.def(
@@ -95,7 +95,7 @@ static py::class_<T> wordlike_basis_setup(py::module_& m, const char* name)
         }
 
         return basis.size(degree);
-    }, "How big the dimension will be at a particular degree");
+    }, "How big the dimension will be at a particular degree.");
 
     basis.def("__iter__", [](const T& self) { return KIter(self); });
 

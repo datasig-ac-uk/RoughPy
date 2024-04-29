@@ -55,7 +55,7 @@ using boost::urls::parse_uri_reference;
 using URIScheme = boost::urls::scheme;
 
 static const char* EXTERNALLY_SOURCED_STREAM_DOC
-        = R"rpydoc(A stream that acquires its data dynamically from an external source.
+        = R"rpydoc(A :class:`~Stream` that acquires its :py:attr:`~data` dynamically from an external source.
 )rpydoc";
 
 static py::object
