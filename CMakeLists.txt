@@ -123,6 +123,7 @@ if (NOT PYTHON_FOUND AND SKBUILD)
     unset(Python_LIBRARY CACHE)
     unset(PYTHON_LIBRARY CACHE)
     unset(Python3_LIBRARY CACHE)
+    unset(Python3_EXECUTABLE CACHE)
 
     # clean up temporary
     unset(_sk_env_dir)
@@ -132,7 +133,7 @@ else ()
     set(Python_FIND_VIRTUALENV FIRST)
 
     # In particular, if ENV{VIRTUAL_ENV} is set then add this to the cmake
-    # prefix path so FindPython is more likely to find this environemnt.
+    # prefix path so FindPython is more likely to find this environment.
     if (DEFINED ENV{VIRTUAL_ENV})
         # Put venv/lib on the prefix path so we can find
         # a pip installed MKL
