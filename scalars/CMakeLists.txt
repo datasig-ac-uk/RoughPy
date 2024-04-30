@@ -7,23 +7,8 @@ project(RoughPyScalars
 
 add_roughpy_component(Scalars
         PUBLIC_HEADERS
-        include/roughpy/scalars/devices/algorithms.h
-        include/roughpy/scalars/devices/buffer.h
-        include/roughpy/scalars/devices/core.h
-        include/roughpy/scalars/devices/device_handle.h
-        include/roughpy/scalars/devices/device_object_base.h
-        include/roughpy/scalars/devices/device_provider.h
-        include/roughpy/scalars/devices/event.h
-        include/roughpy/scalars/devices/host_device.h
-        include/roughpy/scalars/devices/kernel.h
-        include/roughpy/scalars/devices/kernel_arg.h
-        include/roughpy/scalars/devices/macros.h
-        include/roughpy/scalars/devices/queue.h
-        include/roughpy/scalars/devices/type.h
-        include/roughpy/scalars/devices/value.h
         include/roughpy/scalars/types/monomial.h
         include/roughpy/scalars/algorithms.h
-        include/roughpy/scalars/devices.h
         include/roughpy/scalars/packed_scalar_type_ptr.h
         include/roughpy/scalars/random.h
         include/roughpy/scalars/scalar.h
@@ -35,99 +20,6 @@ add_roughpy_component(Scalars
         include/roughpy/scalars/traits.h
         include/roughpy/scalars.h
         SOURCES
-        src/devices/algorithms/algorithm_impl.h
-        src/devices/algorithms/copy.cpp
-        src/devices/algorithms/count.cpp
-        src/devices/algorithms/fill.cpp
-        src/devices/algorithms/find.cpp
-        src/devices/algorithms/lexicographical_compare.cpp
-        src/devices/algorithms/lower_bound.cpp
-        src/devices/algorithms/max.cpp
-        src/devices/algorithms/min.cpp
-        src/devices/algorithms/mismatch.cpp
-        src/devices/algorithms/reverse.cpp
-        src/devices/algorithms/shift_left.cpp
-        src/devices/algorithms/shift_right.cpp
-        src/devices/algorithms/swap.cpp
-        src/devices/algorithms/upper_bound.cpp
-        src/devices/fundamental_types/b_float_16_type.cpp
-        src/devices/fundamental_types/b_float_16_type.h
-        src/devices/fundamental_types/double_type.cpp
-        src/devices/fundamental_types/double_type.h
-        src/devices/fundamental_types/float_type.cpp
-        src/devices/fundamental_types/float_type.h
-        src/devices/fundamental_types/half_type.cpp
-        src/devices/fundamental_types/half_type.h
-        src/devices/fundamental_types/int8_type.cpp
-        src/devices/fundamental_types/int8_type.h
-        src/devices/fundamental_types/int16_type.cpp
-        src/devices/fundamental_types/int16_type.h
-        src/devices/fundamental_types/int32_type.cpp
-        src/devices/fundamental_types/int32_type.h
-        src/devices/fundamental_types/int64_type.cpp
-        src/devices/fundamental_types/int64_type.h
-        src/devices/fundamental_types/uint8_type.cpp
-        src/devices/fundamental_types/uint8_type.h
-        src/devices/fundamental_types/uint16_type.cpp
-        src/devices/fundamental_types/uint16_type.h
-        src/devices/fundamental_types/uint32_type.cpp
-        src/devices/fundamental_types/uint32_type.h
-        src/devices/fundamental_types/uint64_type.cpp
-        src/devices/fundamental_types/uint64_type.h
-        src/devices/host/host_buffer.cpp
-        src/devices/host/host_buffer.h
-        src/devices/host/host_decls.h
-        src/devices/host/host_device_impl.cpp
-        src/devices/host/host_device_impl.h
-        src/devices/host/host_device_provider.cpp
-        src/devices/host/host_device_provider.h
-        src/devices/host/host_event.cpp
-        src/devices/host/host_event.h
-        src/devices/host/host_kernel.cpp
-        src/devices/host/host_kernel.h
-        src/devices/host/host_queue.cpp
-        src/devices/host/host_queue.h
-        src/devices/host/kernel_registry.h
-        src/devices/opencl/ocl_buffer.cpp
-        src/devices/opencl/ocl_buffer.h
-        src/devices/opencl/ocl_decls.h
-        src/devices/opencl/ocl_device.cpp
-        src/devices/opencl/ocl_device.h
-        src/devices/opencl/ocl_device_provider.cpp
-        src/devices/opencl/ocl_device_provider.h
-        src/devices/opencl/ocl_event.cpp
-        src/devices/opencl/ocl_event.h
-        src/devices/opencl/ocl_handle_errors.cpp
-        src/devices/opencl/ocl_handle_errors.h
-        src/devices/opencl/ocl_headers.h
-        src/devices/opencl/ocl_helpers.cpp
-        src/devices/opencl/ocl_helpers.h
-        src/devices/opencl/ocl_kernel.cpp
-        src/devices/opencl/ocl_kernel.h
-        src/devices/opencl/ocl_queue.cpp
-        src/devices/opencl/ocl_queue.h
-        src/devices/opencl/ocl_version.cpp
-        src/devices/opencl/ocl_version.h
-        src/devices/algorithm_drivers.cpp
-        src/devices/algorithm_drivers.h
-        src/devices/buffer.cpp
-        src/devices/buffer_interface.cpp
-        src/devices/core.cpp
-        src/devices/device_handle.cpp
-        src/devices/device_interface_base.cpp
-        src/devices/device_provider.cpp
-        src/devices/event.cpp
-        src/devices/event_interface.cpp
-        src/devices/fundamental_type.h
-        src/devices/get_best_device.cpp
-        src/devices/get_device.cpp
-        src/devices/kernel.cpp
-        src/devices/kernel_arg.cpp
-        src/devices/kernel_interface.cpp
-        src/devices/kernel_launch_params.cpp
-        src/devices/queue.cpp
-        src/devices/queue_interface.cpp
-        src/devices/type.cpp
         src/random/random_impl.cpp
         src/random/random_impl.h
         src/random/standard_random_generator.cpp
@@ -222,10 +114,6 @@ add_roughpy_test(scalars
         src/test_pcg_standard_random.cpp
         src/test_scalar.cpp
         src/test_scalar_type.cpp
-        src/devices/test_cpu_device.cpp
-        src/devices/test_gpu_device.cpp
-        DEP
-        OpenCL::OpenCL
         NEEDS
         RoughPy::Scalars
 )

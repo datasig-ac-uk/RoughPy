@@ -29,9 +29,6 @@
 #ifndef ROUGHPY_SCALARS_SCALARS_FWD_H_
 #define ROUGHPY_SCALARS_SCALARS_FWD_H_
 
-#include "devices/core.h"
-#include "devices/macros.h"
-
 #include <roughpy/platform/errors.h>
 
 #include "roughpy_scalars_export.h"
