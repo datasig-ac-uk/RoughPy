@@ -53,8 +53,8 @@ using namespace pybind11::literals;
 static const char* LIE_DOC = R"edoc(
 
 Lie elements live in the free Lie Algebra.
-Group-like elements have a one-to-one correspondence with a :class:`stream`.
-That is, for every group-like element, there exists a :class:`stream` where the :py:meth:`~signature` of that :class:`stream` is the group-like element.
+Group-like elements have a one-to-one correspondence with a :class:`Stream`.
+That is, for every group-like element, there exists a :class:`Stream` where the :py:meth:`~signature` of that :class:`Stream` is the group-like element.
 For more information on Lie Algebras, see `Reutenauer <https://books.google.co.uk/books?id=cBvvAAAAMAAJ&redir_esc=y>`_ and `Bourbaki <https://link.springer.com/book/9783540642428>`_.
 
 You will most commonly encounter :class:`Lie` objects when taking the :py:meth:`~log_signature` of a path.
@@ -85,10 +85,10 @@ You will also need to provide the following parameters:
 Or
 
 :py:attr:`dtype`
-    Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a ``RoughPy`` data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a ``numpy`` dtype.
+    Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a RoughPy data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a Numpy dtype.
 
 :py:attr:`depth`
-    Maximum degree for :class:`Lie` and :class:`tensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
+    Maximum degree for :class:`Lie` and :class:`FreeTensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
 
 :py:attr:`width`
     Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`ctx` instead)

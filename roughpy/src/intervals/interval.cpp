@@ -38,26 +38,26 @@ using namespace pybind11::literals;
 
 static const char* INTERVAL_DOC = R"edoc(
 
-:class:`Interval` objects are used to query a :class:`stream` to get a :py:meth:`~signature` or a :py:meth:`~log_signature`.
+:class:`Interval` objects are used to query a :class:`Stream` to get a :py:meth:`~signature` or a :py:meth:`~log_signature`.
 They are a time-like axis which is closed on the left, open on the right, e.g. :math:`[0,1)`.
 
-``RoughPy`` is very careful in how it works with intervals.
+RoughPy is very careful in how it works with intervals.
 
-One design goal is that it should be able to handle jumps in the underlying signal that occur at particular times, including the beginning or end of the :class:`interval`, and still guarantee that if you combine the :py:meth:`~signature` over adjacent :class:`interval`, you always get the :py:meth:`~signature` over the entire :class:`interval`.
-This implies that there has to be a decision about whether data at the exact beginning or exact end of the :class:`interval` is included.
+One design goal is that it should be able to handle jumps in the underlying signal that occur at particular times, including the beginning or end of the :class:`Interval`, and still guarantee that if you combine the :py:meth:`~signature` over adjacent :class:`Interval`, you always get the :py:meth:`~signature` over the entire :class:`Interval`.
+This implies that there has to be a decision about whether data at the exact beginning or exact end of the :class:`Interval` is included.
 
-The convention in ``RoughPy`` are that we use clopen intervals, and that data at beginning of the :class:`interval` is seen, and data at the end of the :class:`interval` is seen in the next :class:`interval`.
-A second design goal is that the code should be efficient, and so the internal representation of a :class:`stream` involves caching the :py:meth:`~signature` over dyadic intervals of different resolutions.
-Recovering the :py:meth:`~signature` over any :class:`interval` using the cache has logarithmic complexity (using at most :math:`2n` tensor multiplications, when :math:`n` is the internal resolution of the :class:`stream`.
+The convention in RoughPy are that we use clopen intervals, and that data at beginning of the :class:`Interval` is seen, and data at the end of the :class:`Interval` is seen in the next :class:`Interval`.
+A second design goal is that the code should be efficient, and so the internal representation of a :class:`Stream` involves caching the :py:meth:`~signature` over dyadic intervals of different resolutions.
+Recovering the :py:meth:`~signature` over any :class:`Interval` using the cache has logarithmic complexity (using at most :math:`2n` tensor multiplications, when :math:`n` is the internal resolution of the :class:`Stream`.
 Resolution refers to the length of the finest granularity at which we will store information about the underlying data.
 
-Any event occurs within one of these finest granularity intervals, multiple events occur within the same :class:`interval` resolve to a more complex :py:meth:`~log_signature` which correctly reflects the time sequence of the events within this grain of time.
-However, no query of the :class:`stream` is allowed to see finer :py:attr:`~resolution` than the internal :py:attr:`~resolution` of the :class:`stream`, it is only allowed to access the information over :py:class:`interval` s that are a union of these finest :py:attr:`~resolution` granular intervals.
-For this reason, a query over any :class:`interval` is replaced by a query is replaced by a query over an :class:`interval` whose endpoints have been shifted to be consistent with the granular :py:attr:`~resolution`, obtained by rounding these points to the contained end-point of the unique clopen granular :class:`interval` containing this point.
-In particular, if both the left-hand and right-hand ends of the :class:`interval` are contained in the clopen granular :class:`interval`, we round the :class:`interval` to the empty :class:`interval`. Specifying a :py:attr:`~resolution` of :math:`32` or :math:`64` equates to using integer arithmetic.
+Any event occurs within one of these finest granularity intervals, multiple events occur within the same :class:`Interval` resolve to a more complex :py:meth:`~log_signature` which correctly reflects the time sequence of the events within this grain of time.
+However, no query of the :class:`Stream` is allowed to see finer :py:attr:`~resolution` than the internal :py:attr:`~resolution` of the :class:`Stream`, it is only allowed to access the information over :py:class:`Interval` objects that are a union of these finest :py:attr:`~resolution` granular intervals.
+For this reason, a query over any :class:`Interval` is replaced by a query is replaced by a query over an :class:`Interval` whose endpoints have been shifted to be consistent with the granular :py:attr:`~resolution`, obtained by rounding these points to the contained end-point of the unique clopen granular :class:`Interval` containing this point.
+In particular, if both the left-hand and right-hand ends of the :class:`Interval` are contained in the clopen granular :class:`Interval`, we round the :class:`Interval` to the empty :class:`Interval`. Specifying a :py:attr:`~resolution` of :math:`32` or :math:`64` equates to using respective integer arithmetic.
 
-We can create an :class:`~interval` to query a :class:`stream` over, for example to compute a :py:meth:`~signature`, in the following way.
-The example below is the interval :math:`[0,1)`, over the :math:`Reals`.
+We can create an :class:`Interval` to query a :class:`Stream` over, for example to compute a :py:meth:`~signature`, in the following way.
+The example below is the interval :math:`[0,1)`, over the Reals.
 
 .. code:: python
 

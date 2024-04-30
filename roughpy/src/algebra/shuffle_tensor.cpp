@@ -54,14 +54,14 @@ using namespace pybind11::literals;
 static const char* SHUFFLE_TENSOR_DOC
         = R"eadoc(Element of the shuffle tensor algebra.
 
-:class:`shuffle tensor` objects are one way of representing the linear functionals on :class:`free tensor` objects.
+:class:`ShuffleTensor` objects are one way of representing the linear functionals on :class:`FreeTensor` objects.
 The shuffle product corresponds to point-wise multiplication of the continuous functions on paths via the signature correspondence.
 For more information on shuffle tensors, see
 `Reutenauer, Free Lie Algebras <https://www.sciencedirect.com/science/article/abs/pii/S157079540380075X>`_.
 
-Shuffle tensors are useful because they represent functions on paths via the ``signature``.
+Shuffle tensors are useful because they represent functions on paths via the :py:meth:`signature`.
 
-You can construct :class:`shuffle tensor` objects in the following way, here we use polynomial coefficients:
+You can construct :class:`ShuffleTensor` objects in the following way, here we use polynomial coefficients:
 
 .. code:: python
 
@@ -87,10 +87,10 @@ As well as data, you will need to provide the following parameters:
 Or
 
 :py:attr:`dtype`
-    Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a ``RoughPy`` data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a ``numpy`` dtype.
+    Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a RoughPy data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a Numpy dtype.
 
 :py:attr:`depth`
-    Maximum degree for :class:`lie` objects, :class:`tensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
+    Maximum degree for :class:`Lie` objects, :class:`FreeTensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
 
 :py:attr:`width`
     Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`ctx` instead)

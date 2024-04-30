@@ -427,7 +427,7 @@ static const char* CONTEXT_DOC = R"rpydoc(
 A :class:`~Contexts` allows us to provide a :py:attr:`~width`, :py:attr:`~depth`, and a :py:attr:`~coefficient` field for a :class:`~Tensor`.
 They also provide access to the Baker-Campbell-Hausdorff formula.
 They are the environment in which calculations are done.
-They are used everywhere in ``RoughPy``, for any :class:`~Stream` or algebraic object.
+They are used everywhere in RoughPy, for any :class:`~Stream` or algebraic object.
 )rpydoc";
 
 PyTypeObject rpy::python::RPyContext_Type = {

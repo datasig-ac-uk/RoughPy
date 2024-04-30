@@ -55,12 +55,12 @@ using namespace rpy::streams;
 
 static const char* STREAM_DOC = R"rpydoc(
 
-A :class:`stream` means an object that provides the :py:meth:`~signature` or :py:meth:`~log_signature` over any :class:`interval`.
-For more information on :class:`stream` objects, see `Lyons and McLeod <http://arxiv.org/abs/2206.14674>`_ and `Lyons et al. <https://link.springer.com/book/10.1007/978-3-540-71285-5>`_.
+A :class:`Stream` means an object that provides the :py:meth:`~signature` or :py:meth:`~log_signature` over any :class:`Interval`.
+For more information on :class:`Stream` objects, see `Lyons and McLeod <http://arxiv.org/abs/2206.14674>`_ and `Lyons et al. <https://link.springer.com/book/10.1007/978-3-540-71285-5>`_.
 
 :class:`Stream` objects are parametrised sequential data viewed via Rough Path theory as a rough path.
 
-You can construct a :class:`stream` in many ways. You can use Lie increments:
+You can construct a :class:`Stream` in many ways. You can use Lie increments:
 
 .. code:: python
 
@@ -120,7 +120,7 @@ External source data:
     # here we use a sound file, but other formats are supported
     >>> roughpy.ExternalDataStream.from_uri("/path/to/sound_file.mp3", depth=2)
 
-All of these :class:`stream` objects are constructed with different data types.
+All of these :class:`Stream` objects are constructed with different data types.
 
 As well as data, you will need to provide the following parameters:
 
@@ -130,16 +130,16 @@ As well as data, you will need to provide the following parameters:
 Or
 
 :py:attr:`dtype`
-  Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a ``RoughPy`` data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a ``numpy`` dtype.
+  Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a RoughPy data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a Numpy dtype.
 
 :py:attr:`depth`
 
-  Maximum degree for :class:`Lie` objects, :class:`tensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
+  Maximum degree for :class:`Lie` objects, :class:`FreeTensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
 
 :py:attr:`width`
   Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`ctx` instead)
 
-Stream objects also have the following optional parameters:
+:class:`Stream` objects also have the following optional parameters:
 
 :py:attr:`schema`
     An abstract description of what the comprises the channels of the underlying space in schema form. Can be deduced from data/constructor. If provided must be "correct" (i.e. :py:attr:`width` must be correct).
@@ -151,13 +151,13 @@ Stream objects also have the following optional parameters:
     Bool, indicates whether the parameter value should be included as a :class:`stream` channel.
 
 :py:attr:`vtype`
-    Default vector type for algebras return from :class:`stream` methods. (:py:attr:`dense` or :py:attr:`sparse`). Default is currently :py:attr:`dense`, although this will change to be determined by the form of the underlying :class:`stream`.
+    Default vector type for algebras return from :class:`Stream` methods. (:py:attr:`dense` or :py:attr:`sparse`). Default is currently :py:attr:`dense`, although this will change to be determined by the form of the underlying :class:`Stream`.
 
 :py:attr:`resolution`
     Resolution for the dyadic dissection of the domain, and the default :py:attr:`resolution` used in :py:meth:`~signature` / :py:meth:`~log_signature` calculations.
 
 :py:attr:`support`
-    :class:`Interval` of parameter values on which the :class:`stream` has meaning.
+    :class:`Interval` of parameter values on which the :class:`Stream` has meaning.
 
 :py:attr:`indices`
     For :py:attr:`~LieIncrementStreams`, optionally provide a list/array of parameter values at which each row of the input data occurs. (default, row "i" occurs at parameter value "i"), or integer indicating the "column" of data that corresponds to the parameter. (Must be present in all rows)

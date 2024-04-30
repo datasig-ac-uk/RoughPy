@@ -82,7 +82,7 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
     }, "Set out by the basis, i.e. :py:attr:`~depth`.");
     klass.def_property_readonly("dtype", [](const Alg& arg) {
         return to_ctype_type(arg.coeff_type());
-    }, "Scalar type for the algebra (deprecated, use :py:attr:`~ctx` instead). Can be a ``RoughPy`` data type (:py:attr:`~rp.SPReal`, :py:attr:`~rp.DPReal`, :py:attr:`~rp.Rational`, :py:attr:`~rp.PolyRational`), or a numpy dtype.");
+    }, "Scalar type for the algebra (deprecated, use :py:attr:`~ctx` instead). Can be a RoughPy data type (:py:attr:`~rp.SPReal`, :py:attr:`~rp.DPReal`, :py:attr:`~rp.Rational`, :py:attr:`~rp.PolyRational`), or a numpy dtype.");
     klass.def_property_readonly("storage_type", [](const Alg& arg) {
         return arg.storage_type();
     }, ":py:attr:`~sparse` or :py:attr:`~dense`");
