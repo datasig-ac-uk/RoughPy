@@ -4,9 +4,10 @@
 
 #include "double_scalar_type.h"
 
-#include "devices/fundamental_types/double_type.h"
 
-#include <gtest/internal/gtest-internal.h>
+#include <roughpy/devices/device_handle.h>
+#include <roughpy/devices/host_device.h>
+
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -16,7 +17,7 @@ static constexpr RingCharacteristics
 
 DoubleType::DoubleType()
     : ScalarType(
-              devices::DoubleType::get(),
+              devices::get_type<double>(),
               devices::get_host_device(),
               double_ring_characteristics
       )

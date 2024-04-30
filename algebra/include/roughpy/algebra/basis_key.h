@@ -11,8 +11,8 @@
 
 #include <roughpy/platform/alloc.h>
 
-#include <roughpy/scalars/devices/core.h>
-#include <roughpy/scalars/devices/type.h>
+#include <roughpy/devices/core.h>
+#include <roughpy/devices/type.h>
 
 #include "algebra_fwd.h"
 #include "roughpy_algebra_export.h"

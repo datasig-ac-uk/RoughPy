@@ -4,7 +4,8 @@
 
 #ifndef COMPLEX_H
 #define COMPLEX_H
-#include "devices/core.h"
+
+#include <roughpy/devices/core.h>
 #include <complex>
 
 namespace rpy {

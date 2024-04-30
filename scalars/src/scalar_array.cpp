@@ -40,8 +40,8 @@
 #include "algorithms.h"
 #include "scalar/raw_bytes.h"
 
-#include "devices/buffer.h"
-#include "devices/host_device.h"
+#include <roughpy/devices/buffer.h>
+#include <roughpy/devices/host_device.h>
 
 #include <cereal/types/vector.hpp>
 

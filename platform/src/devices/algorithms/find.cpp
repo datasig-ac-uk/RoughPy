@@ -13,7 +13,7 @@ namespace {
 
 template <typename T>
 struct FindFunctor {
-    optional<dimn_t> operator()(const Buffer& buffer, Reference value) const
+    optional<dimn_t> operator()(const Buffer& buffer, ConstReference value) const
     {
         const auto slice = buffer.as_slice<T>();
         const auto begin = slice.begin();
@@ -28,7 +28,7 @@ struct FindFunctor {
 };// namespace
 
 optional<dimn_t>
-AlgorithmDrivers::find(const Buffer& buffer, Reference value) const
+AlgorithmDrivers::find(const Buffer& buffer, ConstReference value) const
 {
     const auto host_view = buffer.map();
     return algorithms::do_algorithm<optional<dimn_t>, FindFunctor>(

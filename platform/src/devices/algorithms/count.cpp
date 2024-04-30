@@ -13,7 +13,7 @@ namespace {
 template <typename T>
 struct CountFunctor {
     RPY_NO_DISCARD dimn_t
-    operator()(const Buffer& buffer, Reference value) const
+    operator()(const Buffer& buffer, ConstReference value) const
     {
         auto slice = buffer.as_slice<T>();
         return rpy::ranges::count(slice, value.value<T>());
@@ -22,7 +22,7 @@ struct CountFunctor {
 
 }// namespace
 
-dimn_t AlgorithmDrivers::count(const Buffer& buffer, Reference value) const
+dimn_t AlgorithmDrivers::count(const Buffer& buffer, ConstReference value) const
 {
     const auto host_view = buffer.map();
     return algorithms::do_algorithm<dimn_t, CountFunctor>(host_view, value);

@@ -4,7 +4,9 @@
 
 #include "half_scalar_type.h"
 
-#include "devices/fundamental_types/half_type.h"
+#include <roughpy/devices/host_device.h>
+
+#include "half_type.h"
 
 using namespace rpy;
 using namespace rpy::scalars;

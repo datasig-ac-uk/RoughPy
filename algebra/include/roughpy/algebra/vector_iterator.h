@@ -14,7 +14,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/scalars/devices/buffer.h>
+#include <roughpy/devices/buffer.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 

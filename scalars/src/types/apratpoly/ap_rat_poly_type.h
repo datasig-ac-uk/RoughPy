@@ -5,7 +5,7 @@
 #ifndef AP_RAT_POLY_TYPE_H
 #define AP_RAT_POLY_TYPE_H
 
-#include "devices/fundamental_type.h"
+#include <roughpy/device_support/fundamental_type.h>
 #include "scalar_implementations/poly_rational.h"
 
 namespace rpy {

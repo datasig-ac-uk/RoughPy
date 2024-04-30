@@ -6,8 +6,8 @@
 
 #include <roughpy/core/alloc.h>
 
-#include "devices/buffer.h"
-#include "devices/device_handle.h"
+#include <roughpy/devices/buffer.h>
+#include <roughpy/devices/device_handle.h>
 
 
 using namespace rpy;

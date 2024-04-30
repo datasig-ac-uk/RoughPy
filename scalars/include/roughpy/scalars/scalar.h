@@ -33,6 +33,7 @@
 #include "scalar_interface.h"
 #include "scalar_type.h"
 #include "scalars_fwd.h"
+#include <roughpy/devices/kernel_arg.h>
 
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/helpers.h>
@@ -600,15 +601,15 @@ std::ostream& operator<<(std::ostream&, const Scalar&);
 RPY_SERIAL_LOAD_FN_IMPL(Scalar)
 {
     devices::TypeInfo type_info;
-    RPY_SERIAL_SERIALIZE_VAL(type_info);
+    // RPY_SERIAL_SERIALIZE_VAL(type_info);
     containers::Vec<byte> raw_bytes;
     RPY_SERIAL_SERIALIZE_VAL(raw_bytes);
-    from_raw_bytes(type_info, raw_bytes);
+    // from_raw_bytes(type_info, raw_bytes);
 }
 
 RPY_SERIAL_SAVE_FN_IMPL(Scalar)
 {
-    RPY_SERIAL_SERIALIZE_NVP("type_info", type_info());
+    // RPY_SERIAL_SERIALIZE_NVP("type_info", type_info());
     RPY_SERIAL_SERIALIZE_NVP("raw_bytes", to_raw_bytes());
 }
 //

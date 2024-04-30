@@ -29,8 +29,9 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
 
-#include "devices.h"
-#include "devices/type.h"
+#include <roughpy/devices/core.h>
+#include <roughpy/devices/type.h>
+#include <roughpy/devices/device_handle.h>
 #include "scalars_fwd.h"
 
 #include "packed_scalar_type_ptr.h"
@@ -189,7 +190,7 @@ public:
      */
     RPY_NO_DISCARD bool is_cpu() const noexcept
     {
-        return m_device == devices::get_host_device();
+        return m_device->is_host();
     }
 
     /**

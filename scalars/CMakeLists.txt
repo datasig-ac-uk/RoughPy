@@ -66,6 +66,8 @@ add_roughpy_component(Scalars
         src/types/bfloat16/b_float_16_scalar_type.h
         src/types/bfloat16/bfloat16_random_generator.cpp
         src/types/bfloat16/bfloat16_random_generator.h
+        src/types/bfloat16/b_float_16_type.cpp
+        src/types/bfloat16/b_float_16_type.h
         src/types/double/double_scalar_type.cpp
         src/types/double/double_scalar_type.h
         src/types/float/float_scalar_type.cpp
@@ -74,6 +76,8 @@ add_roughpy_component(Scalars
         src/types/half/half_random_generator.h
         src/types/half/half_scalar_type.cpp
         src/types/half/half_scalar_type.h
+        src/types/half/half_type.cpp
+        src/types/half/half_type.h
         src/builtin_scalar_types.h
         src/builtin_scalars.h
         src/random.cpp

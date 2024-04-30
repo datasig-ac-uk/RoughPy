@@ -29,7 +29,7 @@
 #ifndef ROUGHPY_SCALARS_TRAITS_H_
 #define ROUGHPY_SCALARS_TRAITS_H_
 
-#include "devices/core.h"
+#include <roughpy/devices/core.h>
 #include <roughpy/core/helpers.h>
 
 namespace rpy {
@@ -50,6 +50,17 @@ constexpr dimn_t size_of(const devices::TypeInfo& info) noexcept
     return static_cast<dimn_t>(info.bytes);
 }
 
+/**
+ * @brief Get the alignment of a TypeInfo object.
+ *
+ * This constexpr function calculates and returns the alignment of a TypeInfo
+ * object based on its bytes value. The alignment is calculated using the
+ * formula 1 << static_log2p1(info.bytes).
+ *
+ * @param info       The TypeInfo object to get the alignment of.
+ *
+ * @return The alignment of the TypeInfo object.
+ */
 constexpr dimn_t align_of(const devices::TypeInfo& info) noexcept
 {
     return dimn_t(1) << static_log2p1(info.bytes);

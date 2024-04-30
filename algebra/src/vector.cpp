@@ -27,7 +27,7 @@
 
 #include <roughpy/core/ranges.h>
 #include <roughpy/scalars/algorithms.h>
-#include <roughpy/scalars/devices/core.h>
+#include <roughpy/devices/core.h>
 #include <roughpy/scalars/scalar.h>
 
 #include <algorithm>

@@ -7,8 +7,8 @@
 
 #include "common.h"
 
-#include <roughpy/scalars/devices/device_handle.h>
-#include <roughpy/scalars/devices/kernel.h>
+#include <roughpy/devices/device_handle.h>
+#include <roughpy/devices/kernel.h>
 
 #include "arg_data.h"
 #include "key_algorithms.h"

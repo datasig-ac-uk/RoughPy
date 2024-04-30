@@ -7,7 +7,7 @@
 
 #include "scalar_interface.h"
 
-#include "devices/buffer.h"
+#include <roughpy/devices/buffer.h>
 #include "scalar/packed_type.h"
 
 namespace rpy {

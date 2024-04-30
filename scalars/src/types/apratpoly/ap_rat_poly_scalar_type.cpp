@@ -8,8 +8,8 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+#include <roughpy/devices/host_device.h>
 
-#include "devices/host_device.h"
 #include "random.h"
 #include "scalar.h"
 #include "scalar_array.h"

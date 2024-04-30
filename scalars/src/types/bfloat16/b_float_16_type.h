@@ -6,7 +6,7 @@
 #define B_FLOAT_16_TYPE_H
 
 #include "scalar_implementations/bfloat.h"
-#include "devices/fundamental_type.h"
+#include <roughpy/device_support/fundamental_type.h>
 
 namespace rpy {
 namespace devices {

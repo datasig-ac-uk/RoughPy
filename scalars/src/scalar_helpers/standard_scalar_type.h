@@ -38,8 +38,8 @@
 #include "scalar_array.h"
 #include "scalar_type.h"
 
-#include "devices/device_handle.h"
-#include "devices/host_device.h"
+#include <roughpy/devices/device_handle.h>
+#include <roughpy/devices/host_device.h>
 
 #include "scalar/casts.h"
 

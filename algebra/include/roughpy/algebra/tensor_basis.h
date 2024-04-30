@@ -9,7 +9,7 @@
 #include "basis_key.h"
 
 #include <roughpy/core/container/vector.h>
-#include <roughpy/scalars/devices/buffer.h>
+#include <roughpy/devices/buffer.h>
 
 namespace rpy {
 namespace algebra {

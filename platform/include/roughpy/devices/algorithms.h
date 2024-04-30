@@ -5,7 +5,6 @@
 #ifndef ROUGHPY_DEVICES_ALGORITHMS_H
 #define ROUGHPY_DEVICES_ALGORITHMS_H
 
-
 #include "buffer.h"
 #include "core.h"
 #include "device_handle.h"
@@ -16,7 +15,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <roughpy/core/smart_ptr.h>
 
 namespace rpy {
 namespace devices {
@@ -32,8 +31,7 @@ namespace devices {
  *
  * @sa Buffer
  */
-class ROUGHPY_DEVICES_EXPORT AlgorithmDrivers
-    : public boost::intrusive_ref_counter<AlgorithmDrivers>
+class ROUGHPY_DEVICES_EXPORT AlgorithmDrivers : public RcBase<AlgorithmDrivers>
 {
 public:
     virtual ~AlgorithmDrivers();
@@ -56,7 +54,7 @@ public:
      * @sa Buffer
      */
     RPY_NO_DISCARD virtual optional<dimn_t>
-    find(const Buffer& buffer, Reference value) const;
+    find(const Buffer& buffer, ConstReference value) const;
 
     /**
      * @brief Counts the occurrences of a specific value in the given buffer.
@@ -71,7 +69,7 @@ public:
      * @return The number of occurrences of the value in the buffer.
      */
     RPY_NO_DISCARD virtual dimn_t
-    count(const Buffer& buffer, Reference value) const;
+    count(const Buffer& buffer, ConstReference value) const;
 
     /**
      * @brief Find the first position where two buffers differ.
@@ -136,7 +134,7 @@ public:
      *
      * @sa Buffer
      */
-    virtual void fill(Buffer& dst, Reference value) const;
+    virtual void fill(Buffer& dst, ConstReference value) const;
 
     /**
      * @brief Reverses the contents of the given buffer.
@@ -200,7 +198,7 @@ public:
      * @sa Buffer
      */
     virtual optional<dimn_t>
-    lower_bound(const Buffer& buffer, Reference value) const;
+    lower_bound(const Buffer& buffer, ConstReference value) const;
 
     /**
      * @brief Find the upper bound of a value in a buffer.
@@ -216,7 +214,7 @@ public:
      * @sa Buffer
      */
     virtual optional<dimn_t>
-    upper_bound(const Buffer& buffer, Reference value) const;
+    upper_bound(const Buffer& buffer, ConstReference value) const;
 
     /**
      * @brief Finds the maximum value in the given buffer and stores it in the
@@ -267,13 +265,13 @@ public:
      * @sa Buffer
      */
     virtual bool
-    lexicographacal_compare(const Buffer& left, const Buffer& rought) const;
+    lexicographacal_compare(const Buffer& left, const Buffer& right) const;
 };
 
 namespace algorithms {
 
 RPY_NO_DISCARD inline optional<dimn_t>
-find(const Buffer& buffer, Reference value)
+find(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return {}; }
     auto algo = buffer.device()->algorithms(buffer.content_type());
@@ -281,7 +279,7 @@ find(const Buffer& buffer, Reference value)
 }
 
 RPY_NO_DISCARD inline optional<dimn_t>
-lower_bound(const Buffer& buffer, Reference value)
+lower_bound(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return {}; }
     auto algo = buffer.device()->algorithms(buffer.content_type());
@@ -289,14 +287,14 @@ lower_bound(const Buffer& buffer, Reference value)
 }
 
 RPY_NO_DISCARD inline optional<dimn_t>
-upper_bound(const Buffer& buffer, Reference value)
+upper_bound(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return {}; }
     auto algo = buffer.device()->algorithms(buffer.content_type());
     return algo->lower_bound(buffer, value);
 }
 
-RPY_NO_DISCARD inline dimn_t count(const Buffer& buffer, Reference value)
+RPY_NO_DISCARD inline dimn_t count(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return 0; }
 
@@ -304,7 +302,7 @@ RPY_NO_DISCARD inline dimn_t count(const Buffer& buffer, Reference value)
     return algo->count(buffer, value);
 }
 
-RPY_NO_DISCARD inline bool contains(const Buffer& buffer, Reference value)
+RPY_NO_DISCARD inline bool contains(const Buffer& buffer, ConstReference value)
 {
     return static_cast<bool>(find(buffer, value));
 }
@@ -407,7 +405,7 @@ inline void shift_right(Buffer& buffer)
     algo->shift_left(buffer);
 }
 
-inline void fill(Buffer& buffer, Reference value)
+inline void fill(Buffer& buffer, ConstReference value)
 {
     if (buffer.empty()) { return; }
 

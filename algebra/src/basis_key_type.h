@@ -6,8 +6,8 @@
 #define ROUGHPY_BASIS_KEY_TYPE_H
 
 
-#include <roughpy/scalars/devices/core.h>
-#include <roughpy/scalars/devices/type.h>
+#include <roughpy/devices/core.h>
+#include <roughpy/devices/type.h>
 
 #include "roughpy_algebra_export.h"
 

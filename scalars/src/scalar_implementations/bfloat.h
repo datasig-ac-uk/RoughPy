@@ -5,7 +5,7 @@
 #ifndef BFLOAT_H
 #define BFLOAT_H
 
-#include "devices/core.h"
+#include <roughpy/devices/core.h>
 #include <Eigen/Core>
 
 namespace rpy {

@@ -10,9 +10,9 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/scalars/devices/buffer.h>
-#include <roughpy/scalars/devices/device_handle.h>
-#include <roughpy/scalars/devices/kernel.h>
+#include <roughpy/devices/buffer.h>
+#include <roughpy/devices/device_handle.h>
+#include <roughpy/devices/kernel.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 

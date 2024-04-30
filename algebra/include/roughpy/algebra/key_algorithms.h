@@ -8,8 +8,8 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/scalars/devices/algorithms.h>
-#include <roughpy/scalars/devices/device_handle.h>
+#include <roughpy/devices/algorithms.h>
+#include <roughpy/devices/device_handle.h>
 
 #include "key_array.h"
 #include "key_scalar_array.h"

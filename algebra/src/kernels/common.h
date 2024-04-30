@@ -7,8 +7,8 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
-#include <roughpy/scalars/devices/core.h>
 
+#include <roughpy/devices/core.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>

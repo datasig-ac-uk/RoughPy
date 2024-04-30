@@ -5,7 +5,7 @@
 #ifndef ARBITRARY_PRECISION_RATIONAL_H
 #define ARBITRARY_PRECISION_RATIONAL_H
 
-#include "devices/core.h"
+#include <roughpy/devices/core.h>
 #include <boost/multiprecision/gmp.hpp>
 
 #include <roughpy/platform/serialization.h>

@@ -42,7 +42,7 @@ class ROUGHPY_DEVICES_EXPORT DeviceProvider
 public:
     static void register_provider(std::unique_ptr<DeviceProvider>&& provider);
 
-    virtual ~DeviceProvider();
+    virtual ~DeviceProvider() = default;
 
     virtual bool supports(DeviceCategory category) const noexcept = 0;
     virtual int priority(const DeviceSpecification& spec) const noexcept = 0;

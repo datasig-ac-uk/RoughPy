@@ -8,8 +8,8 @@
 #include "scalar_type.h"
 #include "scalar_type_of.h"
 
-#include "devices/core.h"
-#include "devices/host_device.h"
+#include <roughpy/devices/core.h>
+#include <roughpy/devices/host_device.h>
 
 #include <roughpy/core/container/unordered_map.h>
 

@@ -36,7 +36,8 @@
 #include "do_macro.h"
 #include "type_promotion.h"
 
-#include "devices/host_device.h"
+#include <roughpy/devices/host_device.h>
+
 #include "traits.h"
 #include <roughpy/core/alloc.h>
 #include <roughpy/scalars/scalar.h>

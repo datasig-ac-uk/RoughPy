@@ -5,7 +5,7 @@
 #ifndef HALF_H
 #define HALF_H
 
-#include "devices/core.h"
+#include <roughpy/devices/core.h>
 
 #include <Eigen/Core>
 

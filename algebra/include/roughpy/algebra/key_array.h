@@ -11,7 +11,7 @@
 #include <roughpy/core/ranges.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/scalars/devices/buffer.h>
+#include <roughpy/devices/buffer.h>
 
 namespace rpy {
 namespace algebra {
@@ -26,42 +26,96 @@ public:
     using value_type = const BasisKey;
     using reference = const BasisKey&;
     using pointer = const BasisKey*;
-    using iterator_category = std::forward_iterator_tag;
+    using size_type = dimn_t;
+    using difference_type = idimn_t;
 
-    explicit KeyArrayIterator(pointer val) : p_current(val) {}
+    using iterator_category = std::random_access_iterator_tag;
 
-    KeyArrayIterator& operator++()
+    constexpr explicit KeyArrayIterator(pointer val) : p_current(val) {}
+
+    constexpr KeyArrayIterator& operator++() noexcept
     {
         ++p_current;
         return *this;
     }
-    const KeyArrayIterator operator++(int)
+
+    constexpr const KeyArrayIterator operator++(int) noexcept
     {
         KeyArrayIterator prev(*this);
         this->operator++();
         return prev;
     }
 
-    reference operator*()
+    constexpr KeyArrayIterator& operator--() noexcept
+    {
+        --p_current;
+        return *this;
+    }
+
+    constexpr const KeyArrayIterator operator--(int) noexcept
+    {
+        KeyArrayIterator prev(*this);
+        --prev;
+        return prev;
+    }
+
+    constexpr KeyArrayIterator& operator+=(difference_type n) noexcept
+    {
+        p_current += n;
+        return *this;
+    }
+
+    constexpr KeyArrayIterator& operator-=(difference_type n) noexcept
+    {
+        p_current -= n;
+        return *this;
+    }
+
+    constexpr reference operator*()
     {
         RPY_DBG_ASSERT(p_current != nullptr);
         return *p_current;
     }
-    pointer operator->()
+    constexpr pointer operator->()
     {
         RPY_DBG_ASSERT(p_current != nullptr);
         return p_current;
     }
 
-    bool operator==(const KeyArrayIterator& other) const
+    constexpr reference operator[](difference_type n) noexcept {
+        return p_current[n];
+    }
+
+    constexpr bool operator==(const KeyArrayIterator& other) const
     {
         return p_current == other.p_current;
     }
-    bool operator!=(const KeyArrayIterator& other) const
+    constexpr bool operator!=(const KeyArrayIterator& other) const
     {
         return p_current != other.p_current;
     }
 };
+
+constexpr KeyArrayIterator operator+(const KeyArrayIterator& it, idimn_t n) noexcept
+{
+    KeyArrayIterator next(it);
+    next += n;
+    return next;
+}
+
+constexpr KeyArrayIterator operator+(idimn_t n, const KeyArrayIterator& it) noexcept
+{
+    KeyArrayIterator next(it);
+    next += n;
+    return next;
+}
+
+constexpr KeyArrayIterator operator-(const KeyArrayIterator& it, idimn_t n) noexcept
+{
+    KeyArrayIterator prev(it);
+    prev -= n;
+    return prev;
+}
 
 class KeyArrayRange
 {

@@ -5,7 +5,7 @@
 #ifndef HALF_TYPE_H
 #define HALF_TYPE_H
 
-#include "devices/fundamental_type.h"
+#include <roughpy/device_support/fundamental_type.h>
 #include "scalar_implementations/half.h"
 
 namespace rpy {

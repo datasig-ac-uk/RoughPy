@@ -35,8 +35,6 @@
 
 #include <roughpy/platform/filesystem.h>
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
 #include <mutex>
 
@@ -65,7 +63,7 @@ struct ExtensionSourceAndOptions {
  * base class for specific device handle implementations.
  */
 class ROUGHPY_DEVICES_EXPORT DeviceHandle
-    : public boost::intrusive_ref_counter<DeviceHandle>
+    : public RcBase<DeviceHandle>
 {
     mutable std::recursive_mutex m_lock;
     mutable std::unordered_map<string, Kernel> m_kernel_cache;

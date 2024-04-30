@@ -7,10 +7,10 @@
 
 #include "scalars_fwd.h"
 
-#include "devices/algorithms.h"
-#include "devices/buffer.h"
-#include "devices/core.h"
-#include "devices/value.h"
+#include <roughpy/devices/algorithms.h>
+#include <roughpy/devices/buffer.h>
+#include <roughpy/devices/core.h>
+#include <roughpy/devices/value.h>
 #include "scalar.h"
 #include "scalar_array.h"
 #include "scalar_type.h"
@@ -32,7 +32,7 @@ namespace drivers = devices::algorithms;
 RPY_NO_DISCARD inline optional<dimn_t>
 find(const ScalarArray& range, const Scalar& value)
 {
-    return drivers::find(range.buffer(), devices::Reference(value.pointer()));
+    return drivers::find(range.buffer(), devices::ConstReference(value.pointer()));
 }
 
 /**
@@ -68,7 +68,7 @@ lower_bound(const ScalarArray& range, const Scalar& value)
 {
     return drivers::lower_bound(
             range.buffer(),
-            devices::Reference(value.pointer())
+            devices::ConstReference(value.pointer())
     );
 }
 
@@ -111,7 +111,7 @@ upper_bound(const ScalarArray& range, const Scalar& value)
 {
     return drivers::upper_bound(
             range.buffer(),
-            devices::Reference(value.pointer())
+            devices::ConstReference(value.pointer())
     );
 }
 
@@ -148,7 +148,7 @@ upper_bound(const ScalarArray& range, const T& value)
 RPY_NO_DISCARD inline dimn_t
 count(const ScalarArray& range, const Scalar& value)
 {
-    return drivers::count(range.buffer(), devices::Reference(value.pointer()));
+    return drivers::count(range.buffer(), devices::ConstReference(value.pointer()));
 }
 
 /**
@@ -178,7 +178,7 @@ contains(const ScalarArray& range, const Scalar& value)
 {
     return drivers::contains(
             range.buffer(),
-            devices::Reference(value.pointer())
+            devices::ConstReference(value.pointer())
     );
 }
 
@@ -323,7 +323,7 @@ inline void shift_right(ScalarArray& arr, dimn_t count)
  */
 inline void fill(ScalarArray& dst, const Scalar& value)
 {
-    drivers::fill(dst.mut_buffer(), devices::Reference(value.pointer()));
+    drivers::fill(dst.mut_buffer(), devices::ConstReference(value.pointer()));
 }
 
 /**

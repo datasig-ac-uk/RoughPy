@@ -3,9 +3,14 @@
 //
 
 #include "ap_rational_scalar_type.h"
+
+
+#include <roughpy/devices/host_device.h>
+
 #include "scalar.h"
 #include "scalar_array.h"
 #include "scalar_implementations/arbitrary_precision_rational.h"
+
 
 #include "ap_rational_type.h"
 

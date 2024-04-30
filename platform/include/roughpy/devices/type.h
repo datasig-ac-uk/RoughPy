@@ -10,6 +10,12 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
+#ifndef RPY_NO_RTTI
+
+#  include <typeinfo>
+
+#endif
+
 namespace rpy {
 namespace devices {
 
@@ -437,8 +443,31 @@ inline bool is_arithmetic(TypePtr const typePtr)
  * Type object. If the TypeInfo does not correspond to a fundamental type, an
  * exception of type std::runtime_error is thrown.
  */
-RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const devices::Type*
+RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type*
 get_type(devices::TypeInfo info);
+
+#ifndef RPY_NO_RTTI
+
+/**
+ * @brief Get the Type object associated with the given type_info.
+ *
+ * This function retrieves the Type object associated with the given type_info.
+ * The Type object provides information about various traits of the type.
+ *
+ * @param info The type_info object representing the type.
+ * @return The Type object associated with the type.
+ */
+RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type*
+get_type(const std::type_info& info);
+
+#endif
+
+template <typename T>
+const Type* get_type()
+{
+    return get_type(type_info<T>());
+}
+
 
 }// namespace devices
 

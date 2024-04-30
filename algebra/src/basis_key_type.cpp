@@ -6,8 +6,8 @@
 
 #include "basis_key.h"
 
-#include <roughpy/scalars/devices/buffer.h>
-#include <roughpy/scalars/devices/device_handle.h>
+#include <roughpy/devices/buffer.h>
+#include <roughpy/devices/device_handle.h>
 
 using namespace rpy;
 using namespace rpy::algebra;

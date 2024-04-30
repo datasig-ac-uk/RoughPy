@@ -33,6 +33,8 @@
 
 #include "roughpy_scalars_export.h"
 
+#include <roughpy/devices/core.h>
+
 namespace rpy {
 namespace scalars {
 using ScalarTypeCode = devices::TypeCode;
@@ -91,7 +93,6 @@ inline constexpr int min_scalar_type_alignment = 16;
  * @return The resulting type after performing promotion on
  * `left` and `right`.
  */
-
 RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT devices::TypeInfo
 compute_type_promotion(devices::TypeInfo left, devices::TypeInfo right);
 

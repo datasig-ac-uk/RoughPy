@@ -3,7 +3,7 @@
 //
 
 #include "key_array.h"
-#include <roughpy/scalars/devices/host_device.h>
+#include <roughpy/devices/host_device.h>
 
 using namespace rpy;
 using namespace rpy::algebra;

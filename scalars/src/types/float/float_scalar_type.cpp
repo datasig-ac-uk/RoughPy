@@ -2,7 +2,8 @@
 // Created by user on 06/11/23.
 
 #include "float_scalar_type.h"
-#include "devices/fundamental_types/float_type.h"
+
+#include <roughpy/devices/host_device.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
@@ -12,7 +13,7 @@ static constexpr RingCharacteristics
 
 FloatType::FloatType()
     : ScalarType(
-              devices::FloatType::get(),
+              devices::get_type<float>(),
               devices::get_host_device(),
               float_ring_characteristics
       )

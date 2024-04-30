@@ -5,7 +5,7 @@
 #ifndef AP_RATIONAL_TYPE_H
 #define AP_RATIONAL_TYPE_H
 
-#include "devices/fundamental_type.h"
+#include <roughpy/device_support/fundamental_type.h>
 #include "scalar_implementations/arbitrary_precision_rational.h"
 
 namespace rpy {
