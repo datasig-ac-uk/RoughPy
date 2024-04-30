@@ -38,6 +38,7 @@
 #include <type_traits>
 
 #include <boost/call_traits.hpp>
+#include <boost/callable_traits.hpp>
 
 #include <boost/type_traits/copy_cv.hpp>
 #include <boost/type_traits/copy_cv_ref.hpp>
@@ -53,6 +54,9 @@ using std::declval;
 using std::false_type;
 using std::integral_constant;
 using std::true_type;
+
+using std::integer_sequence;
+using std::make_integer_sequence;
 
 using std::is_array;
 using std::is_class;
@@ -218,6 +222,26 @@ using boost::void_t;
 template <typename F, typename... ArgTypes>
 using invoke_result_t = std::result_of_t<F(ArgTypes...)>;
 #endif
+
+
+using boost::callable_traits::add_member_volatile_t;
+using boost::callable_traits::add_noexcept_t;
+using boost::callable_traits::args_t;
+using boost::callable_traits::class_of_t;
+using boost::callable_traits::function_type_t;
+using boost::callable_traits::has_void_return;
+using boost::callable_traits::is_noexcept;
+using boost::callable_traits::is_volatile_member;
+using boost::callable_traits::remove_member_volatile_t;
+using boost::callable_traits::return_type_t;
+
+
+template <typename F>
+constexpr dimn_t num_args = std::tuple_size_v<args_t<F>>;
+
+template <typename F, dimn_t N>
+using arg_at_t = std::tuple_element_t<N, args_t<F>>;
+
 
 /**
  * @brief Ensure that the type T is a pointer.
