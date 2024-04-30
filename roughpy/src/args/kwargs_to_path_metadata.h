@@ -46,11 +46,11 @@ struct PyStreamMetaData {
     optional<resolution_t> resolution;
     intervals::IntervalType interval_type;
     std::shared_ptr<streams::StreamSchema> schema;
+    streams::ChannelType default_channel_type;
     bool include_param_as_data;
 };
 
-PyStreamMetaData kwargs_to_metadata(const py::kwargs& kwargs);
-
+PyStreamMetaData kwargs_to_metadata(py::kwargs& kwargs);
 
 resolution_t param_to_resolution(param_t accuracy) noexcept;
 

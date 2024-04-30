@@ -65,6 +65,7 @@ add_custom_target(NoteBookFiles
         COMMAND_EXPAND_LISTS
 )
 add_custom_target(Sphinx ALL
+
         COMMAND ${CMAKE_COMMAND} -E rm -r ${SPHINX_BUILD}
         COMMAND ${SPHINX_EXECUTABLE} -b html
         ${SPHINX_SOURCE} ${SPHINX_BUILD}
@@ -74,3 +75,4 @@ add_custom_target(Sphinx ALL
 
 #add_custom_command(TARGET Sphinx
 #        PRE_BUILD COMMAND ${CMAKE_COMMAND} -E rm -r ${SPHINX_BUILD})
+

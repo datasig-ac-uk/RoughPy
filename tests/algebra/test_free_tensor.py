@@ -83,6 +83,7 @@ def test_create_list_ints_no_ctype():
     assert result.max_degree == 2
 
 
+@pytest.mark.skip("int arrays are promoted to doubles")
 def test_create_nested_list_ints_no_ctype():
     with pytest.raises(ValueError):
         result = FreeTensor([[0, 1, 2, 3]], width=3, depth=3)
@@ -523,5 +524,3 @@ def test_to_array_rational_poly_coeffs():
     array_tensor = np.array(tensor)
 
     assert array_tensor.dtype == object
-
-

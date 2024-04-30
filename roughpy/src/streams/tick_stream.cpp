@@ -56,7 +56,7 @@ static const char* TICK_STREAM_DOC = R"rpydoc(Tick stream
 //                                 const py::handle &data,
 //                                 const py::kwargs &kwargs);
 
-static py::object construct(const py::object& data, const py::kwargs& kwargs)
+static py::object construct(const py::object& data, py::kwargs kwargs)
 {
 
     auto pmd = python::kwargs_to_metadata(kwargs);

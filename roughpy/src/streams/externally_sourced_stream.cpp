@@ -41,6 +41,7 @@
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 #include "stream.h"
+#include "streams/schema_finalization.h"
 
 #include <boost/url/parse.hpp>
 
@@ -59,7 +60,7 @@ static const char* EXTERNALLY_SOURCED_STREAM_DOC
 )rpydoc";
 
 static py::object
-external_stream_constructor(string uri_string, const py::kwargs& kwargs)
+external_stream_constructor(string uri_string, py::kwargs kwargs)
 {
     auto pmd = python::kwargs_to_metadata(kwargs);
 
@@ -115,7 +116,8 @@ external_stream_constructor(string uri_string, const py::kwargs& kwargs)
     if (pmd.resolution != 0) { factory.set_resolution(*pmd.resolution); }
     if (pmd.support) { factory.set_support(*pmd.support); }
     if (pmd.vector_type) { factory.set_vtype(*pmd.vector_type); }
-    if (pmd.schema) { factory.set_schema(pmd.schema); }
+
+    factory.set_schema(pmd.schema);
 
     PyObject* py_stream = python::RPyStream_FromStream(factory.construct());
 
