@@ -34,8 +34,8 @@
 #include "scalars_fwd.h"
 #include "traits.h"
 
-#include <roughpy/devices/buffer.h>
 #include <roughpy/core/container/vector.h>
+#include <roughpy/devices/buffer.h>
 #include <roughpy/platform/serialization.h>
 
 namespace rpy {
@@ -55,9 +55,12 @@ enum class ScalarArrayStorageModel
  * @class ScalarArray
  * @brief Represents an array of scalar values.
  *
- * This class provides functionality to store, manipulate, and access an array
- * of scalar values. It supports various constructors, assignment operators,
- * access operators, and utility functions.
+ * The ScalarArray class represents an array of scalar values. It provides
+ * various methods to manipulate and access the scalar array. The scalar array
+ * can be created with different types and sizes, and it can be copied, moved,
+ * assigned, and accessed using slice indexes. The ScalarArray class also
+ * provides methods to retrieve the type, size, capacity, and ownership status
+ * of the scalar array.
  */
 class ROUGHPY_SCALARS_EXPORT ScalarArray
 {

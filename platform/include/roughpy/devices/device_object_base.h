@@ -51,6 +51,18 @@ inline typename Interface::object_t clone_cast(Interface* iface) noexcept;
 
 namespace dtl {
 
+/**
+ * @class InterfaceBase
+ *
+ * @brief The base class for all interface classes.
+ *
+ * This class provides the common interface methods for all derived interface
+ * classes. It also implements reference counting functionality by overriding
+ * the `inc_ref` and `dec_ref` methods.
+ *
+ * @note All methods marked as `noexcept` are guaranteed not to throw any
+ * exceptions.
+ */
 class ROUGHPY_DEVICES_EXPORT InterfaceBase : public platform::SmallObjectBase
 {
 public:
@@ -106,6 +118,20 @@ protected:
     rc_count_t dec_ref() const noexcept override;
 };
 
+/**
+ * @class ObjectBase
+ *
+ * @brief The base class for all object classes.
+ *
+ * This class provides common functionality for all derived object classes. It
+ * stores a pointer to the implementation of an interface and provides methods
+ * to access and manipulate the object.
+ *
+ * @tparam Interface The interface class that the object is derived from.
+ *
+ * @note All methods marked as `noexcept` are guaranteed not to throw any
+ * exceptions.
+ */
 template <typename Interface, typename Derived>
 class ObjectBase
 {

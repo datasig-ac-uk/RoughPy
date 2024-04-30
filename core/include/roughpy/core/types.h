@@ -64,7 +64,7 @@ using param_t = double;
 using scalar_t = double;
 
 using resolution_t = int;
-using dyadic_multiplier_t = int;
+using dyadic_multiplier_t = int64_t;
 using dyadic_depth_t = resolution_t;
 
 using accuracy_t = param_t;
