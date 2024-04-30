@@ -37,6 +37,8 @@
 #include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>
 
+#include "value.h"
+
 namespace rpy {
 namespace devices {
 
@@ -566,6 +568,27 @@ public:
     const_iterator end() const noexcept;
     const_iterator cend() const noexcept;
 };
+
+
+template <>
+class BufferRange<Reference>
+{
+    Buffer m_buffer;
+
+public:
+    using value_type = Reference;
+    using reference = Reference;
+    using const_reference = Reference;
+    using pointer = void*;
+    using const_pointer = const void*;
+    using size_type = dimn_t;
+    using difference_type = idimn_t;
+
+    using iterator = BufferRangeIterator<Reference>;
+    using const_iterator = BufferRangeIterator<ConstReference>;
+};
+
+
 
 template <typename T>
 class BufferRangeIterator

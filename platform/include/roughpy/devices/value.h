@@ -11,22 +11,82 @@
 namespace rpy {
 namespace devices {
 
+class ConstReference;
+template <typename T>
+class TypedConstReference;
+class Reference;
+template <typename T>
+class TypedReference;
+
+class ConstReference
+{
+    const void* p_val;
+
+public:
+    constexpr explicit ConstReference(const void* val) : p_val(val) {}
+
+    template <typename T>
+    constexpr explicit operator TypedConstReference<T>() const noexcept
+    {
+        return TypedConstReference<T>(value<T>());
+    }
+
+    template <typename T>
+    constexpr add_const_t<T>& value() const
+    {
+        return *static_cast<add_const_t<T>*>(p_val);
+    }
+};
+
+template <typename T>
+class TypedConstReference : public ConstReference
+{
+public:
+    explicit TypedConstReference(const T& val)
+        : ConstReference(std::addressof(val))
+    {}
+
+    template <typename U>
+    explicit
+    operator enable_if_t<is_convertible_v<T, U>, TypedConstReference<U>>()
+    {
+        return TypedConstReference(ConstReference::value<U>());
+    }
+
+    using ConstReference::value;
+
+    constexpr add_const_t<T>& value() const noexcept
+    {
+        return ConstReference::value<T>();
+    }
+};
+
 class Reference
 {
     void* p_val;
 
 public:
-    explicit Reference(void* val) : p_val(val) {}
-    explicit Reference(const void* val) : p_val(const_cast<void*>(val)) {}
+    constexpr explicit Reference(void* val) : p_val(val) {}
 
-    template <typename T>
-    add_const_t<T>& value() const
+    constexpr operator ConstReference() const noexcept
     {
-        return *static_cast<add_const_t<T>*>(p_val);
+        return ConstReference(p_val);
     }
 
     template <typename T>
-    T& value()
+    explicit constexpr operator TypedConstReference<T>() noexcept
+    {
+        return TypedConstReference(value<T>());
+    }
+
+    template <typename T>
+    explicit constexpr operator TypedReference<T>() noexcept
+    {
+        return TypedReference(value<T>());
+    }
+
+    template <typename T>
+    constexpr T& value()
     {
         return *static_cast<T*>(p_val);
     }
@@ -36,14 +96,24 @@ template <typename T>
 class TypedReference : public Reference
 {
 public:
-    TypedReference(T& t)
+    constexpr TypedReference(T& t)
         : Reference(const_cast<remove_cv_t<T>*>(std::addressof(t)))
     {}
 
-    operator add_const_t<T>&() const { return *value<add_const_t<T>>(); }
+    using Reference::value;
+
+    constexpr operator TypedConstReference<T>() const noexcept
+    {
+        return TypedConstReference(value<T>());
+    }
+
+    constexpr operator add_const_t<T>&() const
+    {
+        return *value<add_const_t<T>>();
+    }
 
     template <typename U = remove_cv_ref_t<T>>
-    operator enable_if_t<is_convertible_v<T&, U&>, U&>()
+    constexpr operator enable_if_t<is_convertible_v<T&, U&>, U&>()
     {
         return static_cast<U&>(value<T>());
     }
