@@ -569,7 +569,6 @@ public:
     const_iterator cend() const noexcept;
 };
 
-
 template <>
 class BufferRange<Reference>
 {
@@ -587,8 +586,6 @@ public:
     using iterator = BufferRangeIterator<Reference>;
     using const_iterator = BufferRangeIterator<ConstReference>;
 };
-
-
 
 template <typename T>
 class BufferRangeIterator
