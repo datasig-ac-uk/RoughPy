@@ -47,7 +47,6 @@
 #include <boost/type_traits/is_detected.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
 
-
 namespace rpy {
 
 using std::declval;
@@ -223,7 +222,6 @@ template <typename F, typename... ArgTypes>
 using invoke_result_t = std::result_of_t<F(ArgTypes...)>;
 #endif
 
-
 using boost::callable_traits::add_member_volatile_t;
 using boost::callable_traits::add_noexcept_t;
 using boost::callable_traits::args_t;
@@ -235,13 +233,20 @@ using boost::callable_traits::is_volatile_member;
 using boost::callable_traits::remove_member_volatile_t;
 using boost::callable_traits::return_type_t;
 
-
+/**
+ * @brief Get the number of parameters of a function-like object
+ * @tparam F Function-like object
+ */
 template <typename F>
 constexpr dimn_t num_args = std::tuple_size_v<args_t<F>>;
 
+/**
+ * @brief Get the Nth argument of the function-like object F
+ * @tparam F Function like Object
+ * @tparam N position of argument to get
+ */
 template <typename F, dimn_t N>
 using arg_at_t = std::tuple_element_t<N, args_t<F>>;
-
 
 /**
  * @brief Ensure that the type T is a pointer.
