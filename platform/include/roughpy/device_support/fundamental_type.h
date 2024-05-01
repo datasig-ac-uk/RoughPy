@@ -36,7 +36,11 @@ class RPY_LOCAL FundamentalType : public Type
 public:
     FundamentalType(string_view id, string_view name)
         : Type(id, name, devices::type_info<T>(), devices::traits_of<T>())
-    {}
+    {
+// #ifndef RPY_NO_RTTI
+//         register_type(typeid(T), this);
+// #endif
+    }
 
     /**
      * @brief Returns a pointer to the static instance of FundamentalType<T>

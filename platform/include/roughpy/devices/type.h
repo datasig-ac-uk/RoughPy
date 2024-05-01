@@ -446,27 +446,38 @@ inline bool is_arithmetic(TypePtr const typePtr)
 RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type*
 get_type(devices::TypeInfo info);
 
-#ifndef RPY_NO_RTTI
-
-/**
- * @brief Get the Type object associated with the given type_info.
- *
- * This function retrieves the Type object associated with the given type_info.
- * The Type object provides information about various traits of the type.
- *
- * @param info The type_info object representing the type.
- * @return The Type object associated with the type.
- */
-RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type*
-get_type(const std::type_info& info);
-
-#endif
+// #ifndef RPY_NO_RTTI
+//
+// ROUGHPY_DEVICES_EXPORT
+// void register_type(const std::type_info& info, const Type* type);
+//
+//
+// /**
+//  * @brief Get the Type object associated with the given type_info.
+//  *
+//  * This function retrieves the Type object associated with the given type_info.
+//  * The Type object provides information about various traits of the type.
+//  *
+//  * @param info The type_info object representing the type.
+//  * @return The Type object associated with the type.
+//  */
+// RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type*
+// get_type(const std::type_info& info);
+//
+// template <typename T>
+// const Type* get_type()
+// {
+//     return get_type(typeid(T));
+// }
+// #else
 
 template <typename T>
 const Type* get_type()
 {
     return get_type(type_info<T>());
 }
+// #endif
+
 
 
 }// namespace devices

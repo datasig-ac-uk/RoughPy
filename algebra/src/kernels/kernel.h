@@ -103,18 +103,18 @@ protected:
         return static_cast<const Derived&>(*this);
     }
 
-    bool eval_device(string_view suffix, BoundArgs& bound) const
+    bool eval_device(const devices::Device& device, string_view suffix, BoundArgs& bound) const
     {
         if (auto kernel = dtl::get_kernel(
                     instance().kernel_name(),
                     suffix,
-                    bound.get_device()
+                    device
             )) {
             devices::KernelLaunchParams params(
                     devices::Size3{bound.size()},
                     devices::Dim3{1}
             );
-            bound.eval_host([k = *kernel, params](auto... args) {
+            bound.eval_device([k = *kernel, params](auto... args) {
                 return k(params, args...);
             });
             return true;
@@ -158,8 +158,8 @@ void VectorKernelBase<Derived, ArgSpec...>::operator()(arg_type<ArgSpec>... spec
 {
     BoundArgs bound_args(spec...);
     const auto suffix = bound_args.get_suffix();
-
-    if (!eval_device(suffix, bound_args)) {
+    const auto device = bound_args.get_device();
+    if (device->is_host() || !eval_device(device, suffix, bound_args)) {
         if (!eval_host(suffix, bound_args)) { eval_generic(bound_args); }
     }
 }

@@ -4,7 +4,7 @@
 
 #include "vector.h"
 
-#include "generic_kernels/kernel.h"
+#include "kernels/kernel.h"
 #include "key_algorithms.h"
 #include <roughpy/scalars/algorithms.h>
 

@@ -7,6 +7,7 @@ project(Roughpy_Platform VERSION 0.0.1)
 add_library(RoughPy_Device_Support INTERFACE
         include/roughpy/device_support/fundamental_type.h
         include/roughpy/device_support/host_kernel.h
+        include/roughpy/device_support/operators.h
 )
 
 target_include_directories(RoughPy_Device_Support INTERFACE

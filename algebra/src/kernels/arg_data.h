@@ -106,7 +106,7 @@ public:
     template <typename F>
     decltype(auto) eval_device(F&& func)
     {
-        return Derive::eval([f = std::forward<F>(func),
+        return Derive::eval_device([f = std::forward<F>(func),
                              this](auto... next_arg) {
             const auto size = p_data->size();
             auto scalars = p_data->scalars()[{0, size}].buffer();

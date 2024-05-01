@@ -12,47 +12,55 @@
 namespace rpy {
 namespace algebra {
 
-template <typename Op>
+template <template <typename> class Op, typename T>
 class VectorUnaryOperator
 {
+    using operator_type = Op<T>;
+
 public:
-    void operator()(Slice<T> out, Slice<const T> in)
+    void operator()(Slice<T> out, Slice<const T> in) const
     {
-        Op op;
+        operator_type op;
         for (auto&& [oscal, iscal] : views::zip(out, in)) { oscal = op(iscal); }
     }
 };
 
-template <typename T, typename Op>
+template <template <typename...> class Op, typename T>
 class VectorUnaryWithScalarOperator
 {
+    using operator_type = Op<T>;
+
 public:
-    void operator()(Slice<T> out, Slice<const T> in, const T& scal)
+    void operator()(Slice<T> out, Slice<const T> in, const T& scal) const
     {
-        Op op(scal);
+        operator_type op(scal);
         for (auto&& [oscal, iscal] : views::zip(out, in)) { oscal = op(iscal); }
     }
 };
 
-template <typename T, typename Op>
-class VectorUnaryInplaceOperator
+template <template <typename> class Op, typename T>
+class VectorInplaceUnaryOperator
 {
+    using operator_type = Op<T>;
+
 public:
-    void operator()(Slice<T> arg)
+    void operator()(Slice<T> arg) const
     {
-        Op op;
-        for (auto& oscal : arg) { oscal = op(oscal); }
+        operator_type op;
+        for (auto&& oscal : arg) { oscal = op(oscal); }
     }
 };
 
-template <typename T, typename Op>
+template <template <typename...> class Op, typename T>
 class VectorInplaceUnaryWithScalarOperator
 {
+    using operator_type = Op<T>;
+
 public:
-    void operator()(Slice<T> arg, const T& scal)
+    void operator()(Slice<T> arg, const T& scal) const
     {
-        Op op(scal);
-        for (auto& oscal : arg) { oscal = op(oscal); }
+        operator_type op(scal);
+        for (auto&& oscal : arg) { oscal = op(oscal); }
     }
 };
 

@@ -4,6 +4,7 @@
 
 #include "devices/type.h"
 
+#include <roughpy/core/container/unordered_map.h>
 #include <roughpy/platform/alloc.h>
 
 #include "devices/device_handle.h"
@@ -22,6 +23,9 @@
 #include "fundamental_types/double_type.h"
 #include "fundamental_types/float_type.h"
 // ReSharper restore CppUnusedIncludeDirective
+
+
+#include <typeindex>
 
 using namespace rpy;
 using namespace rpy::devices;
@@ -82,6 +86,69 @@ const Type* devices::get_type(TypeInfo info)
             "Only fundamental types can be read from TypeInfo"
     );
 }
+
+// #ifndef RPY_NO_RTTI
+//
+// namespace {
+//
+// struct Protected {
+//     containers::FlatHashMap<std::type_index, const Type*>& map;
+//     std::lock_guard<std::recursive_mutex> access;
+// };
+//
+// Protected get_cache() noexcept
+// {
+//     static std::recursive_mutex m_lock;
+//     static containers::FlatHashMap<std::type_index, const Type*> s_map;
+//     // {
+//     //     {typeid(float), FundamentalType<float>::get()},
+//     //     {typeid(double), FundamentalType<double>::get()},
+//     //     {typeid(int8_t), FundamentalType<int8_t>::get()},
+//     //     {typeid(int16_t), FundamentalType<int16_t>::get()},
+//     //     {typeid(int32_t), FundamentalType<int32_t>::get()},
+//     //     {typeid(int64_t), FundamentalType<int64_t>::get()},
+//     //     {typeid(uint8_t), FundamentalType<uint8_t>::get()},
+//     //     {typeid(uint16_t), FundamentalType<uint16_t>::get()},
+//     //     {typeid(uint32_t), FundamentalType<uint32_t>::get()},
+//     //     {typeid(uint64_t), FundamentalType<uint64_t>::get()},
+//     // };
+//     //
+//     return {s_map, std::lock_guard(m_lock)};
+// }
+//
+// }// namespace
+
+// void devices::register_type(const std::type_info& info, const Type* type)
+// {
+//     auto cache = get_cache();
+//     auto& entry = cache.map[std::type_index(info)];
+//     if (entry != nullptr) {
+//         RPY_THROW(
+//                 std::runtime_error,
+//                 "type " + string(info.name()) + " is already registered"
+//         );
+//     }
+//
+//     entry = type;
+// }
+//
+// const Type* devices::get_type(const std::type_info& info)
+// {
+//     const auto cache = get_cache();
+//
+//     const auto it = cache.map.find(std::type_index(info));
+//     if (it == cache.map.end()) {
+//         RPY_THROW(
+//                 std::runtime_error,
+//                 "no type matching type id " + string(info.name())
+//         );
+//     }
+//
+//     return it->second;
+// }
+//
+// #endif
+
 bool Type::convertible_to(const Type* dest_type) const noexcept
 {
     return dest_type->convertible_from(this);

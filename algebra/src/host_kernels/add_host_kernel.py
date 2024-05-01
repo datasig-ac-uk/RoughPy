@@ -1,34 +1,50 @@
+import re
+
 HEADER_TEMPLATE = """
 #ifndef ALGEBRA_HOST_KERNEL_{upper_name}_H
 #define ALGEBRA_HOST_KERNEL_{upper_name}_H
 
-#include "{operator_type}.h"
+#include "{header_name}.h"
 #include <roughpy/device_support/host_kernel.h>
+#include <roughpy/device_support/operators.h>
 
 #include <roughpy/core/macros.h>
 
-namespace ryp {{ namespace algebra {{
+namespace rpy {{ namespace algebra {{
 
-{extern_template_block}
+{extern_operators_block}
 
-}}}}
+}}
+
+namespace devices {{
+
+{extern_kernels_block}
+
+}}
+}}
 
 #endif //ALGEBRA_HOST_KERNEL_{upper_name}_H
 """
 
 CPPFILE_TEMPLATE = """
-#include "{lower_name}.h"
+#include "{snake_name}.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
 
 namespace rpy {{ namespace algebra {{
 
-template class {operator_name}<{typename}, {operator}>;
+template class {operator_name}<rpy::devices::operators::{operator}, {typename}>;
 
-template class HostKernel<{operator_name}<{typename}, {operator}>>;
+}}
 
-}}}}
+namespace devices {{
+
+template class HostKernel<algebra::{operator_name}<
+    rpy::devices::operators::{operator}, {typename}>>;
+
+}}
+}}
 """
 
 TYPES = [
@@ -37,48 +53,85 @@ TYPES = [
 ]
 
 OPERATORS = [
-    ("VectorUnaryOperator", "uminus"),
-    ("VectorUnaryWithScalarOperator", "left_scalar_multiply"),
-    ("VectorUnaryWithScalarOperator", "right_scalar_multiply"),
-    ("VectorUnaryWithScalarOperator", "right_scalar_divide"),
-    ("VectorBinaryOperator", "add"),
-    ("VectorBinaryOperator", "sub"),
-    ("VectorBinaryWithScalarOperator", "fused_left_scalar_multiply_add"),
-    ("VectorBinaryWithScalarOperator", "fused_right_scalar_multiply_add"),
-    ("VectorBinaryWithScalarOperator", "fused_scalar_divide_add"),
-    ("VectorBinaryWithScalarOperator", "fused_left_scalar_multiply_sub"),
-    ("VectorBinaryWithScalarOperator", "fused_right_scalar_multiply_sub"),
-    ("VectorBinaryWithScalarOperator", "fused_scalar_divide_sub"),
+    ("VectorUnaryOperator", "Uminus"),
+    ("VectorInplaceUnaryWithScalarOperator", "LeftScalarMultiply"),
+    ("VectorInplaceUnaryWithScalarOperator", "RightScalarMultiply"),
+    ("VectorInplaceUnaryWithScalarOperator", "RightScalarDivide"),
+    ("VectorUnaryWithScalarOperator", "LeftScalarMultiply"),
+    ("VectorUnaryWithScalarOperator", "RightScalarMultiply"),
+    ("VectorUnaryWithScalarOperator", "RightScalarDivide"),
+    ("VectorBinaryOperator", "Add"),
+    ("VectorBinaryOperator", "Sub"),
+    ("VectorInplaceBinaryOperator", "Add"),
+    ("VectorInplaceBinaryOperator", "Sub"),
+    ("VectorInplaceBinaryWithScalarOperator", "FusedLeftScalarMultiplyAdd"),
+    ("VectorInplaceBinaryWithScalarOperator", "FusedRightScalarMultiplyAdd"),
+    ("VectorInplaceBinaryWithScalarOperator", "FusedRightScalarDivideAdd"),
+    ("VectorInplaceBinaryWithScalarOperator", "FusedLeftScalarMultiplySub"),
+    ("VectorInplaceBinaryWithScalarOperator", "FusedRightScalarMultiplySub"),
+    ("VectorInplaceBinaryWithScalarOperator", "FusedRightScalarDivideSub"),
+
 ]
 
 EXTERN_TEMPLATE_OPERATOR = \
-    """extern template class {operator_name}<{typename}, {operator}>;"""
+    "extern template class {operator_name}<" \
+    "rpy::devices::operators::{operator}, {typename}>;"
+
+EXTERN_TEMPLATE_KERNEL = \
+    ("extern template class HostKernel<algebra::{operator_name}<"
+     "rpy::devices::operators::{operator}, {typename}>>;")
 
 
-def make_extern_block(operator_name, operator):
-    return "\n".join([
+def pascal_to_snake_case(name):
+    return re.sub('(?!^)([A-Z]+)', r'_\1', name).lower()
+
+
+def make_extern_kernel_block(operator_name, operator):
+    kernel_block = [
+        EXTERN_TEMPLATE_KERNEL.format(operator_name=operator_name,
+                                      typename=typename, operator=operator)
+        for typename in TYPES
+    ]
+
+    return "\n".join(kernel_block)
+
+
+def make_extern_operators_block(operator_name, operator):
+    operators_block = [
         EXTERN_TEMPLATE_OPERATOR.format(operator_name=operator_name,
                                         typename=typename, operator=operator)
         for typename in TYPES
-    ])
+    ]
+    return "\n".join(operators_block)
+
+
+def get_header(operator_name):
+    return "vector_unary_operator" if "Unary" in operator_name \
+        else "vector_binary_operator"
 
 
 def make_headers(operator_name, operator):
-    file = f"vector_{operator}.h"
+    vec_name = "vector_inplace" if "Inplace" in operator_name else "vector"
+    file = f"{vec_name}_{pascal_to_snake_case(operator)}.h"
     with open(file, "wt") as fp:
         fp.write(HEADER_TEMPLATE.format(upper_name=str.upper(operator),
                                         operator_type=operator_name,
-                                        extern_template_block=make_extern_block(
+                                        header_name=get_header(operator_name),
+                                        extern_operators_block=make_extern_operators_block(
+                                            operator_name, operator),
+                                        extern_kernels_block=make_extern_kernel_block(
                                             operator_name, operator)))
 
 
 def make_cpp(operator_name, operator, typename):
-    file = f"vector_{operator}_{typename}.cpp"
+    vec_name = "vector_inplace" if "Inplace" in operator_name else "vector"
+    file = f"{vec_name}_{pascal_to_snake_case(operator)}_{typename}.cpp"
     with open(file, "wt") as fp:
         fp.write(
-            CPPFILE_TEMPLATE.format(lower_name=f"vector_{operator.lower()}.h",
-                                    operator_name=operator_name,
-                                    typename=typename, operator=operator))
+            CPPFILE_TEMPLATE.format(
+                snake_name=f"{vec_name}_{pascal_to_snake_case(operator)}",
+                operator_name=operator_name,
+                typename=typename, operator=operator))
 
 
 def make_all():

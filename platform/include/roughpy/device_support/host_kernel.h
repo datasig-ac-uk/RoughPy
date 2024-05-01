@@ -31,6 +31,10 @@ public:
         : m_func_and_name(std::move(func), std::move(name))
     {}
 
+    explicit HostKernel(string name)
+        : m_func_and_name(F(), std::move(name))
+    {}
+
     RPY_NO_DISCARD bool is_host() const noexcept override;
     RPY_NO_DISCARD DeviceType type() const noexcept override;
     RPY_NO_DISCARD Device device() const noexcept override;
@@ -66,12 +70,12 @@ Device HostKernel<F>::device() const noexcept
 template <typename F>
 string HostKernel<F>::name() const
 {
-    return m_func_and_name.second;
+    return m_func_and_name.second();
 }
 template <typename F>
 dimn_t HostKernel<F>::num_args() const
 {
-    return num_args<F>;
+    return rpy::num_args<F>;
 }
 
 namespace dtl {
@@ -90,6 +94,37 @@ public:
 
     RPY_NO_DISCARD operator T() { return *p_data; }
 };
+
+template <typename T>
+class ConvertedKernelArgument<T&>
+{
+    T* p_data;
+
+public:
+    explicit ConvertedKernelArgument(KernelArgument& arg)
+    {
+        RPY_CHECK(arg.info() == type_info<T>());
+        p_data = static_cast<T*>(arg.pointer());
+    }
+
+    RPY_NO_DISCARD operator T&() { return *p_data; }
+};
+
+template <typename T>
+class ConvertedKernelArgument<const T&>
+{
+     const T* p_data;
+
+public:
+    explicit ConvertedKernelArgument(KernelArgument& arg)
+    {
+        RPY_CHECK(arg.info() == type_info<T>());
+        p_data = static_cast<const T*>(arg.const_pointer());
+    }
+
+    RPY_NO_DISCARD operator const T&() { return *p_data; }
+};
+
 
 template <typename T>
 class ConvertedKernelArgument<Slice<T>>
@@ -195,7 +230,7 @@ Event HostKernel<F>::launch_kernel_async(
         Slice<KernelArgument> args
 ) const
 {
-    dtl::invoke_kernel(m_func_and_name->first, params, args);
+    dtl::invoke_kernel(m_func_and_name.first(), params, args);
     return Event();
 }
 template <typename F>
@@ -205,7 +240,7 @@ EventStatus HostKernel<F>::launch_kernel_sync(
         Slice<KernelArgument> args
 ) const
 {
-    dtl::invoke_kernel(m_func_and_name->first, params, args);
+    dtl::invoke_kernel(m_func_and_name.first(), params, args);
     return EventStatus::CompletedSuccessfully;
 }
 

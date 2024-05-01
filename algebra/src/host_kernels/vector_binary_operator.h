@@ -8,27 +8,30 @@
 #include <roughpy/core/ranges.h>
 #include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/traits.h>
 
 namespace rpy {
 namespace algebra {
 
-template <typename T, typename Op>
+template <template <typename> class Op, typename T>
 class VectorBinaryOperator
 {
+    using operator_type = Op<T>;
 public:
     void
     operator()(Slice<T> out, Slice<const T> left, Slice<const T> right) const
     {
-        Op op;
+        operator_type op;
         for (auto&& [oscal, lscal, rscal] : views::zip(out, left, right)) {
-            out = op(left, right);
+            oscal = op(lscal, rscal);
         }
     }
 };
 
-template <typename T, typename Op>
+template <template <typename...> class Op, typename T>
 class VectorBinaryWithScalarOperator
 {
+    using operator_type = Op<T>;
 public:
     void operator()(
             Slice<T> out,
@@ -37,34 +40,36 @@ public:
             const T& scal
     ) const
     {
-        Op op(scal);
+        operator_type op(scal);
         for (auto&& [oscal, lscal, rscal] : views::zip(out, left, right)) {
-            out = op(left, right);
+            oscal = op(lscal, rscal);
         }
     }
 };
 
-template <typename T, typename Op>
+template <template <typename> class Op, typename T>
 class VectorInplaceBinaryOperator
 {
+    using operator_type = Op<T>;
 public:
     void operator()(Slice<T> left, Slice<const T> right) const
     {
-        Op op;
-        for (auto& [oscal, rscal] : views::zip(left, right)) {
+        operator_type op;
+        for (auto&& [oscal, rscal] : views::zip(left, right)) {
             oscal = op(oscal, rscal);
         }
     }
 };
 
-template <typename T, typename Op>
+template <template <typename...> class Op, typename T>
 class VectorInplaceBinaryWithScalarOperator
 {
+    using operator_type = Op<T>;
 public:
     void operator()(Slice<T> left, Slice<const T> right, const T& scal) const
     {
-        Op op(scal);
-        for (auto& [oscal, rscal] : views::zip(left, right)) {
+        operator_type op(scal);
+        for (auto&& [oscal, rscal] : views::zip(left, right)) {
             oscal = op(oscal, rscal);
         }
     }

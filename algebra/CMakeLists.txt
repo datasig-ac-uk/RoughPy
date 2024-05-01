@@ -10,12 +10,63 @@ include(GenerateExportHeader)
 
 
 add_library(RoughPy_Algebra_Host_Kernels STATIC
-        src/host_kernels/vector_binary_operator.h
-        src/host_kernels/vector_unary_operator.h
+    src/host_kernels/vector_add.h
+    src/host_kernels/vector_add_double.cpp
+    src/host_kernels/vector_add_float.cpp
+    src/host_kernels/vector_binary_operator.h
+    src/host_kernels/vector_inplace_add.h
+    src/host_kernels/vector_inplace_add_double.cpp
+    src/host_kernels/vector_inplace_add_float.cpp
+    src/host_kernels/vector_inplace_fused_left_scalar_multiply_add.h
+    src/host_kernels/vector_inplace_fused_left_scalar_multiply_add_double.cpp
+    src/host_kernels/vector_inplace_fused_left_scalar_multiply_add_float.cpp
+    src/host_kernels/vector_inplace_fused_left_scalar_multiply_sub.h
+    src/host_kernels/vector_inplace_fused_left_scalar_multiply_sub_double.cpp
+    src/host_kernels/vector_inplace_fused_left_scalar_multiply_sub_float.cpp
+    src/host_kernels/vector_inplace_fused_right_scalar_divide_add.h
+    src/host_kernels/vector_inplace_fused_right_scalar_divide_add_double.cpp
+    src/host_kernels/vector_inplace_fused_right_scalar_divide_add_float.cpp
+    src/host_kernels/vector_inplace_fused_right_scalar_divide_sub.h
+    src/host_kernels/vector_inplace_fused_right_scalar_divide_sub_double.cpp
+    src/host_kernels/vector_inplace_fused_right_scalar_divide_sub_float.cpp
+    src/host_kernels/vector_inplace_fused_right_scalar_multiply_add.h
+    src/host_kernels/vector_inplace_fused_right_scalar_multiply_add_double.cpp
+    src/host_kernels/vector_inplace_fused_right_scalar_multiply_add_float.cpp
+    src/host_kernels/vector_inplace_fused_right_scalar_multiply_sub.h
+    src/host_kernels/vector_inplace_fused_right_scalar_multiply_sub_double.cpp
+    src/host_kernels/vector_inplace_fused_right_scalar_multiply_sub_float.cpp
+    src/host_kernels/vector_inplace_left_scalar_multiply.h
+    src/host_kernels/vector_inplace_left_scalar_multiply_double.cpp
+    src/host_kernels/vector_inplace_left_scalar_multiply_float.cpp
+    src/host_kernels/vector_inplace_right_scalar_multiply.h
+    src/host_kernels/vector_inplace_right_scalar_multiply_double.cpp
+    src/host_kernels/vector_inplace_right_scalar_multiply_float.cpp
+    src/host_kernels/vector_inplace_sub.h
+    src/host_kernels/vector_inplace_sub_double.cpp
+    src/host_kernels/vector_inplace_sub_float.cpp
+    src/host_kernels/vector_left_scalar_multiply.h
+    src/host_kernels/vector_left_scalar_multiply_double.cpp
+    src/host_kernels/vector_left_scalar_multiply_float.cpp
+    src/host_kernels/vector_right_scalar_divide.h
+    src/host_kernels/vector_right_scalar_divide_double.cpp
+    src/host_kernels/vector_right_scalar_divide_float.cpp
+    src/host_kernels/vector_right_scalar_multiply.h
+    src/host_kernels/vector_right_scalar_multiply_double.cpp
+    src/host_kernels/vector_right_scalar_multiply_float.cpp
+    src/host_kernels/vector_sub.h
+    src/host_kernels/vector_sub_double.cpp
+    src/host_kernels/vector_sub_float.cpp
+    src/host_kernels/vector_uminus.h
+    src/host_kernels/vector_uminus_double.cpp
+    src/host_kernels/vector_uminus_float.cpp
+    src/host_kernels/vector_unary_operator.h
 )
 
 
-set_target_properties(RoughPy_Algebra_Host_Kernels PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(RoughPy_Algebra_Host_Kernels PROPERTIES
+    LINKER_LANGUAGE CXX
+    POSITION_INDEPENDENT_CODE ON
+    )
 
 target_link_libraries(RoughPy_Algebra_Host_Kernels PRIVATE RoughPy::Core RoughPy::Platform RoughPy_Device_Support)
 
@@ -127,6 +178,8 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/vector_iterator.h
         DEPENDENCIES PUBLIC
         Boost::boost
+        PRIVATE
+            RoughPy_Algebra_Host_Kernels
         NEEDS
         RoughPy::Core
         RoughPy::Platform
