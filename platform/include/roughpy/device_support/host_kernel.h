@@ -15,6 +15,12 @@
 namespace rpy {
 namespace devices {
 
+/**
+ * @brief The HostKernel class represents a host kernel.
+ *
+ * The HostKernel class is a concrete class that implements the KernelInterface
+ * interface. It allows for executing a host kernel.
+ */
 template <typename F>
 class HostKernel : public dtl::RefCountBase<KernelInterface>
 {
@@ -82,11 +88,8 @@ public:
         p_data = arg.const_pointer();
     }
 
-    RPY_NO_DISCARD
-    operator T() { return *p_data; }
+    RPY_NO_DISCARD operator T() { return *p_data; }
 };
-
-
 
 template <typename T>
 class ConvertedKernelArgument<Slice<T>>
@@ -110,14 +113,8 @@ public:
         m_slice = m_view.as_mut_slice<T>();
     }
 
-    RPY_NO_DISCARD
-    operator Slice<T> () const noexcept
-    {
-        return m_slice;
-    }
-
+    RPY_NO_DISCARD operator Slice<T>() const noexcept { return m_slice; }
 };
-
 
 template <typename T>
 class ConvertedKernelArgument<Slice<const T>>
@@ -141,12 +138,7 @@ public:
         m_slice = m_view.as_slice<const T>();
     }
 
-    RPY_NO_DISCARD
-    operator Slice<const T> () const noexcept
-    {
-        return m_slice;
-    }
-
+    RPY_NO_DISCARD operator Slice<const T>() const noexcept { return m_slice; }
 };
 /*
  * The problem we need to solve now is how to invoke a function that takes a
