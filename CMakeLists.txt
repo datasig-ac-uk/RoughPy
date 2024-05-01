@@ -114,6 +114,9 @@ include(cmake/roughpy_helpers.cmake)
 # variable. In this case, make sure that this is the version of Python that gets
 # found.
 set(PYBIND11_FINDPYTHON ON)
+if (Python3_EXECUTABLE)
+    message(DEBUG "Python executable ${Python3_EXECUTABLE}")
+endif()
 if (NOT PYTHON_FOUND AND SKBUILD)
     cmake_path(GET PYTHON_EXECUTABLE PARENT_PATH _sk_env_dir)
     message(STATUS "SKBuild environment: ${_sk_env_dir}")
