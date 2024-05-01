@@ -2,7 +2,7 @@
 // Created by sam on 4/17/24.
 //
 
-#include "kernels/kernel.h"
+#include "generic_kernels/kernel.h"
 
 #include <roughpy/core/types.h>
 

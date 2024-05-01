@@ -11,23 +11,23 @@
 #include "mutable_vector_element.h"
 #include "vector_iterator.h"
 
-#include "kernels/addition_kernel.h"
-#include "kernels/fused_add_left_scalar_multiply.h"
-#include "kernels/fused_add_right_scalar_multiply.h"
-#include "kernels/fused_sub_right_scalar_multiply_kernel.h"
-#include "kernels/inplace_addition_kernel.h"
-#include "kernels/inplace_left_scalar_multiply_kernel.h"
-#include "kernels/inplace_right_scalar_multiply_kernel.h"
-#include "kernels/inplace_subtraction_kernel.h"
-#include "kernels/left_scalar_multiply_kernel.h"
-#include "kernels/right_scalar_multiply_kernel.h"
-#include "kernels/sparse_write_kernel.h"
-#include "kernels/subtraction_kernel.h"
-#include "kernels/uminus_kernel.h"
+#include "generic_kernels/addition_kernel.h"
+#include "generic_kernels/fused_add_left_scalar_multiply.h"
+#include "generic_kernels/fused_add_right_scalar_multiply.h"
+#include "generic_kernels/fused_sub_right_scalar_multiply_kernel.h"
+#include "generic_kernels/inplace_addition_kernel.h"
+#include "generic_kernels/inplace_left_scalar_multiply_kernel.h"
+#include "generic_kernels/inplace_right_scalar_multiply_kernel.h"
+#include "generic_kernels/inplace_subtraction_kernel.h"
+#include "generic_kernels/left_scalar_multiply_kernel.h"
+#include "generic_kernels/right_scalar_multiply_kernel.h"
+#include "generic_kernels/sparse_write_kernel.h"
+#include "generic_kernels/subtraction_kernel.h"
+#include "generic_kernels/uminus_kernel.h"
 
 #include <roughpy/core/ranges.h>
-#include <roughpy/scalars/algorithms.h>
 #include <roughpy/devices/core.h>
+#include <roughpy/scalars/algorithms.h>
 #include <roughpy/scalars/scalar.h>
 
 #include <algorithm>

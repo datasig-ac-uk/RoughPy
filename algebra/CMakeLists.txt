@@ -9,6 +9,17 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 
+add_library(RoughPy_Algebra_Host_Kernels STATIC
+        src/host_kernels/vector_binary_operator.h
+        src/host_kernels/vector_unary_operator.h
+)
+
+
+set_target_properties(RoughPy_Algebra_Host_Kernels PROPERTIES LINKER_LANGUAGE CXX)
+
+target_link_libraries(RoughPy_Algebra_Host_Kernels PRIVATE RoughPy::Core RoughPy::Platform RoughPy_Device_Support)
+
+
 add_roughpy_component(Algebra
         SOURCES
         src/kernels/addition_kernel.cpp
