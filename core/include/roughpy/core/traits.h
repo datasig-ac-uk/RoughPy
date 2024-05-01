@@ -238,14 +238,14 @@ using boost::callable_traits::return_type_t;
  * @tparam F Function-like object
  */
 template <typename F>
-constexpr dimn_t num_args = std::tuple_size_v<args_t<F>>;
+constexpr size_t num_args = std::tuple_size_v<args_t<F>>;
 
 /**
  * @brief Get the Nth argument of the function-like object F
  * @tparam F Function like Object
  * @tparam N position of argument to get
  */
-template <typename F, dimn_t N>
+template <typename F, size_t N>
 using arg_at_t = std::tuple_element_t<N, args_t<F>>;
 
 /**
@@ -300,6 +300,10 @@ struct ConstLog2 : integral_constant<size_t, ConstLog2<N / 2>::value + 1> {
 template <>
 struct ConstLog2<1> : integral_constant<size_t, 0> {
 };
+
+
+template <typename T, typename...>
+using head_t = T;
 
 }// namespace rpy
 
