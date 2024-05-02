@@ -80,6 +80,7 @@ public:
 
 RPY_NO_DISCARD optional<devices::Kernel> get_kernel(
         string_view kernel_name,
+        string_view type_id,
         string_view suffix,
         const devices::Device& device
 );

@@ -196,11 +196,13 @@ public:
 
 optional<Kernel> algebra::dtl::get_kernel(
         string_view kernel_name,
+        string_view type_id,
         string_view suffix,
         const Device& device
 )
 {
     static const RegisterHostKernels _registered_kernels;
-    auto name = string(kernel_name) + '_' + string(suffix);
+    auto name = string(kernel_name) + '_' + string(type_id) + '_'
+            + string(suffix);
     return device->get_kernel(name);
 }
