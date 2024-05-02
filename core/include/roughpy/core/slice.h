@@ -34,7 +34,7 @@
 #include "types.h"
 
 #include <iterator>
-#include <vector>
+#include <utility>
 
 namespace rpy {
 
@@ -63,6 +63,11 @@ public:
 
     constexpr Slice(T& num) : p_data(&num), m_size(1) {}
 
+    constexpr Slice(std::initializer_list<T> data)
+        : p_data(data.data()),
+          m_size(data.size())
+    {}
+
     constexpr Slice(std::nullptr_t) : p_data(nullptr), m_size(0) {}
 
     template <
@@ -77,8 +82,7 @@ public:
     template <
             typename Container,
             typename = enable_if_t<
-                    is_same_v<remove_cv_t<typename Container::value_type>,
-                            T>>>
+                    is_same_v<remove_cv_t<typename Container::value_type>, T>>>
     constexpr Slice(const Container& container)
         : p_data(container.data()),
           m_size(container.size())
@@ -91,9 +95,9 @@ public:
 
     constexpr Slice(T* ptr, std::size_t N) : p_data(ptr), m_size(N) {}
 
-    constexpr operator Slice<add_const_t<T>> () const noexcept
+    constexpr operator Slice<add_const_t<T>>() const noexcept
     {
-        return { p_data, m_size };
+        return {p_data, m_size};
     }
 
     template <typename Container>
