@@ -51,7 +51,7 @@ public:
           p_basis(basis)
     {}
 
-    void operator()(VectorData& out, VectorData& left, VectorData& right) const;
+    void operator()(VectorData& out, const VectorData& left, const VectorData& right) const;
 };
 
 }// namespace dtl

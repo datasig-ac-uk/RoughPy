@@ -85,7 +85,7 @@ ScalarArray::ScalarArray(PackedScalarType type, void* data, dimn_t size)
 ScalarArray::ScalarArray(PackedScalarType type, devices::Buffer&& buffer)
     : m_buffer(std::move(buffer))
 {
-    RPY_CHECK(type_info_from(type) == m_buffer.type_info());
+    RPY_CHECK(m_buffer.is_null() || type_info_from(type) == m_buffer.type_info());
     if (type.is_pointer()) { p_type = type.get_pointer(); }
 
     auto dst_device = scalars::device_from(type);

@@ -44,11 +44,16 @@ public:
     using base_t::eval_host;
     using base_t::get_device;
     using base_t::get_suffix;
+    using base_t::get_type_id;
     using base_t::size;
+    using base_t::resize;
+    using base_t::get_type;
 
     template <typename... Args>
     explicit BoundArgs(Args&&... args) : base_t(std::forward<Args>(args)...)
     {}
+
+
 };
 
 template <>
@@ -72,10 +77,28 @@ public:
         return func();
     }
 
+    void resize(dimn_t size)
+    {
+        (void) this;
+    }
+
+    RPY_NO_DISCARD
     devices::Device get_device() const noexcept { return nullptr; }
 
     RPY_NO_DISCARD dimn_t size() const noexcept { return 0; }
     RPY_NO_DISCARD string get_suffix() const noexcept { return string(); }
+
+    RPY_NO_DISCARD
+    string_view get_type_id() const noexcept
+    {
+        return "";
+    }
+
+    RPY_NO_DISCARD
+    const scalars::ScalarType* get_type() const
+    {
+        RPY_THROW(std::runtime_error, "cannot determine scalar type");
+    }
 };
 
 RPY_NO_DISCARD optional<devices::Kernel> get_kernel(
@@ -108,6 +131,7 @@ protected:
     {
         if (auto kernel = dtl::get_kernel(
                     instance().kernel_name(),
+                    bound.get_type_id(),
                     suffix,
                     device
             )) {
@@ -115,8 +139,8 @@ protected:
                     devices::Size3{bound.size()},
                     devices::Dim3{1}
             );
-            bound.eval_device([k = *kernel, params](auto... args) {
-                return k(params, args...);
+            bound.eval_device([k = *kernel, params](auto&&... args) {
+                return k(params, std::forward<decltype(args)>(args)...);
             });
             return true;
         }
@@ -126,6 +150,7 @@ protected:
     {
         if (auto kernel = dtl::get_kernel(
                     instance().kernel_name(),
+                    bound.get_type_id(),
                     suffix,
                     bound.get_device()
             )) {
@@ -133,8 +158,8 @@ protected:
                     devices::Size3{bound.size()},
                     devices::Dim3{1}
             );
-            bound.eval_host([k = *kernel, params](auto... args) {
-                return k(params, args...);
+            bound.eval_host([k = *kernel, params](auto&&... args) {
+                return k(params, std::forward<decltype(args)>(args)...);
             });
             return true;
         }
@@ -160,6 +185,7 @@ void VectorKernelBase<Derived, ArgSpec...>::operator()(arg_type<ArgSpec>... spec
     BoundArgs bound_args(spec...);
     const auto suffix = bound_args.get_suffix();
     const auto device = bound_args.get_device();
+    bound_args.resize(bound_args.size());
     if (device->is_host() || !eval_device(device, suffix, bound_args)) {
         if (!eval_host(suffix, bound_args)) { eval_generic(bound_args); }
     }

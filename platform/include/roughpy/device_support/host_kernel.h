@@ -139,7 +139,7 @@ public:
         RPY_CHECK(arg.is_buffer() && !arg.is_const());
         auto& buffer = arg.buffer();
 
-        if (buffer.is_host()) {
+        if (!buffer.is_host()) {
             m_view = buffer.map(buffer.size(), 0);
         } else {
             m_view = buffer;
@@ -163,8 +163,9 @@ public:
         RPY_CHECK(arg.info() == type_info<T>());
         RPY_CHECK(arg.is_buffer() && !arg.is_const());
         const auto& buffer = arg.const_buffer();
+        RPY_CHECK(buffer.ref_count() > 0);
 
-        if (buffer.is_host()) {
+        if (!buffer.is_host()) {
             m_view = buffer.map(buffer.size(), 0);
         } else {
             m_view = buffer;

@@ -93,7 +93,7 @@ public:
 
     explicit KernelArgument(const Buffer& buffer)
         : p_const_buffer(&buffer),
-          m_mode(BufferPointer),
+          m_mode(ConstBufferPointer),
           m_info(buffer.type_info())
     {}
 

@@ -40,8 +40,8 @@ using namespace algebra;
 
 void Vector::resize_dim(rpy::dimn_t dim)
 {
-    const auto type = scalar_type();
-    RPY_CHECK(type.is_pointer());
+    const auto* type = scalar_type();
+    RPY_CHECK(type != nullptr);
 
     // TODO: Replace this with a better implementation.
 

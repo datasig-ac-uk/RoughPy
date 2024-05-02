@@ -167,8 +167,8 @@ protected:
 public:
     ObjectBase() = default;
 
-    ObjectBase(const ObjectBase& other);
-    ObjectBase(ObjectBase&& other) noexcept;
+    ObjectBase(const ObjectBase& other) = default;
+    ObjectBase(ObjectBase&& other) noexcept = default;
 
     explicit ObjectBase(Interface* iface) noexcept : p_impl(iface) {}
 
@@ -179,8 +179,8 @@ public:
         : p_impl(iface, false)
     {}
 
-    ObjectBase& operator=(const ObjectBase& other);
-    ObjectBase& operator=(ObjectBase&& other) noexcept;
+    ObjectBase& operator=(const ObjectBase& other) = default;
+    ObjectBase& operator=(ObjectBase&& other) noexcept = default;
 
     RPY_NO_DISCARD bool is_host() const noexcept;
     RPY_NO_DISCARD DeviceType type() const noexcept;
@@ -230,44 +230,43 @@ rc_count_t RefCountBase<Interface>::ref_count() const noexcept
     // return m_ref_count.load(std::memory_order_relaxed);
     return RcPolicy::load(m_ref_count);
 }
-template <typename Interface, typename Derived>
-ObjectBase<Interface, Derived>::ObjectBase(const ObjectBase& other)
-    : p_impl(other.p_impl)
-{}
-template <typename Interface, typename Derived>
-ObjectBase<Interface, Derived>::ObjectBase(ObjectBase&& other) noexcept
-    : p_impl(std::move(other.p_impl))
-{}
+// template <typename Interface, typename Derived>
+// ObjectBase<Interface, Derived>::ObjectBase(const ObjectBase& other)
+//     : p_impl(other.p_impl)
+// {}
+// template <typename Interface, typename Derived>
+// ObjectBase<Interface, Derived>::ObjectBase(ObjectBase&& other) noexcept
+//     : p_impl(std::move(other.p_impl))
+// {}
 template <typename Interface, typename Derived>
 bool ObjectBase<Interface, Derived>::is_host() const noexcept
 {
     return p_impl == nullptr || p_impl->is_host();
 }
 
-template <typename Interface, typename Derived>
-ObjectBase<Interface, Derived>&
-ObjectBase<Interface, Derived>::operator=(const ObjectBase& other)
-{
-    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
-    RPY_DBG_ASSERT(other.p_impl == nullptr || other.p_impl->ref_count() > 0);
-    if (&other != this) {
-        this->~ObjectBase();
-        if (other.p_impl != nullptr) { p_impl = other.p_impl; }
-    }
-    return *this;
-}
-template <typename Interface, typename Derived>
-ObjectBase<Interface, Derived>&
-ObjectBase<Interface, Derived>::operator=(ObjectBase&& other) noexcept
-{
-    RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
-    RPY_DBG_ASSERT(other.p_impl == nullptr || other.p_impl->ref_count() > 0);
-    if (&other != this) {
-        this->~ObjectBase();
-        std::swap(p_impl, other.p_impl);
-    }
-    return *this;
-}
+// template <typename Interface, typename Derived>
+// ObjectBase<Interface, Derived>&
+// ObjectBase<Interface, Derived>::operator=(const ObjectBase& other)
+// {
+//     RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
+//     RPY_DBG_ASSERT(other.p_impl == nullptr || other.p_impl->ref_count() > 0);
+//     if (&other != this) {
+//         p_impl = other.p_impl;
+//     }
+//     return *this;
+// }
+// template <typename Interface, typename Derived>
+// ObjectBase<Interface, Derived>&
+// ObjectBase<Interface, Derived>::operator=(ObjectBase&& other) noexcept
+// {
+//     RPY_DBG_ASSERT(p_impl == nullptr || p_impl->ref_count() > 0);
+//     RPY_DBG_ASSERT(other.p_impl == nullptr || other.p_impl->ref_count() > 0);
+//     if (&other != this) {
+//         this->~ObjectBase();
+//         std::swap(p_impl, other.p_impl);
+//     }
+//     return *this;
+// }
 template <typename Interface, typename Derived>
 DeviceType ObjectBase<Interface, Derived>::type() const noexcept
 {

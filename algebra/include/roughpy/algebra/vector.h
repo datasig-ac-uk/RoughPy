@@ -476,10 +476,12 @@ public:
      *
      * @note This method is noexcept, meaning it does not throw any exceptions.
      */
-    RPY_NO_DISCARD scalars::PackedScalarType scalar_type() const noexcept
+    RPY_NO_DISCARD const scalars::ScalarType* scalar_type() const noexcept
     {
         RPY_DBG_ASSERT(p_data != nullptr);
-        return p_data->scalars().type();
+        const auto ptr = p_data->scalars().type();
+        RPY_CHECK(ptr.is_pointer());
+        return ptr.get_pointer();
     }
 
     /**
