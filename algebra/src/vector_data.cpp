@@ -59,7 +59,7 @@ void VectorData::delete_element(dimn_t index)
 
 std::unique_ptr<VectorData> VectorData::make_dense(const Basis* basis) const
 {
-    RPY_CHECK(basis->is_ordered() && sparse());;
+    RPY_CHECK(basis->is_ordered() && sparse());
 
     const auto scalar_device = m_scalar_buffer.device();
     const auto key_device = m_key_buffer.device();
@@ -105,10 +105,18 @@ std::unique_ptr<VectorData> VectorData::make_dense(const Basis* basis) const
         key_buffer = dense_data->m_key_buffer.mut_buffer();
         ;
     } else {
-        dense_data->m_key_buffer.mut_buffer().to_device(key_buffer, scalar_device);
+        dense_data->m_key_buffer.mut_buffer().to_device(
+                key_buffer,
+                scalar_device
+        );
     }
 
-    auto kernel = dtl::get_kernel("sparse_write", "ds", scalar_device);
+    auto kernel = dtl::get_kernel(
+            "sparse_write",
+            scalar_type()->id(),
+            "ds",
+            scalar_device
+    );
     devices::KernelLaunchParams params(
             devices::Size3{m_size},
             devices::Dim3{1}
@@ -138,7 +146,6 @@ std::unique_ptr<VectorData> VectorData::make_sparse(const Basis* basis) const
     }
 
     sparse_data->m_key_buffer = std::move(keys);
-
 
     return sparse_data;
 }
