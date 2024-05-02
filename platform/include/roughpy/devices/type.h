@@ -9,6 +9,7 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/ranges.h>
 
 #ifndef RPY_NO_RTTI
 
@@ -86,6 +87,14 @@ struct TypeTraits {
     bool is_signed : 1;
     bool is_floating_point : 1;
     bool is_integral : 1;
+};
+
+enum class TypeComparison
+{
+    AreSame,
+    TriviallyConvertible,
+    Convertible,
+    NotConvertible
 };
 
 /**
@@ -227,6 +236,30 @@ public:
      * false otherwise.
      */
     RPY_NO_DISCARD virtual bool convertible_from(const Type* src_type
+    ) const noexcept;
+
+    /**
+     * @brief Compares the current Type object with another Type object.
+     *
+     * This method compares the current Type object with another Type object,
+     * and returns the result of the comparison.
+     *
+     * @param other A pointer to the Type object to compare with.
+     *
+     * @return The result of the comparison:
+     * - TypeComparison::AreSame if the two Type objects are the same.
+     * - TypeComparison::TriviallyConvertible if the other Type object is an
+     * arithmetic type.
+     * - TypeComparison::Convertible if the other Type object is convertible to
+     * the current Type object.
+     * - TypeComparison::NotConvertible if the other Type object is not
+     * convertible to the current Type object.
+     *
+     * @note This method is declared as constant, indicating that it does not
+     * modify the state of the object. The noexcept specifier indicates that
+     * this method will not throw any exceptions.
+     */
+    RPY_NO_DISCARD virtual TypeComparison compare_with(const Type* other
     ) const noexcept;
 };
 
@@ -455,7 +488,8 @@ get_type(devices::TypeInfo info);
 // /**
 //  * @brief Get the Type object associated with the given type_info.
 //  *
-//  * This function retrieves the Type object associated with the given type_info.
+//  * This function retrieves the Type object associated with the given
+//  type_info.
 //  * The Type object provides information about various traits of the type.
 //  *
 //  * @param info The type_info object representing the type.
@@ -478,7 +512,58 @@ const Type* get_type()
 }
 // #endif
 
+namespace dtl {
 
+RPY_NO_DISCARD inline const Type*
+compute_promotion(const Type* left, const Type* right)
+{
+    if (left == nullptr) { return right; }
+    if (right == nullptr) { return left; }
+    switch (left->compare_with(right)) {
+        case TypeComparison::AreSame:
+        case TypeComparison::TriviallyConvertible:
+        case TypeComparison::Convertible: return left;
+        case TypeComparison::NotConvertible: break;
+    }
+    // If we're here, it's because left is not convertible to right (or left has
+    // no knowledge of right), so check again with right.
+
+    switch (right->compare_with(left)) {
+        case TypeComparison::TriviallyConvertible:
+        case TypeComparison::Convertible: return right;
+        case TypeComparison::NotConvertible: break;
+        case TypeComparison::AreSame:
+            // This case cannot be reached since we would already have seen this
+            // in the first switch statement.
+            RPY_UNREACHABLE_RETURN(nullptr);
+    }
+
+    RPY_THROW(
+            std::invalid_argument,
+            "cannot compute a common promotion for types "
+                    + string(left->name()) + " and " + string(right->name())
+    );
+}
+
+}// namespace dtl
+
+/**
+ * @brief Computes the promotion of a collection of types.
+ *
+ * This method takes a slice of Type pointers and computes the promotion of
+ * these types using the dtl::compute_promotion function. The promotion of a
+ * type determines the resulting type when performing operations between
+ * different types. The resulting type is the most "general" type that can
+ * represent all the types in the collection.
+ *
+ * @param types A slice of Type pointers representing the types to compute
+ *              promotion for.
+ * @return The promotion of the types in the collection as a const Type pointer.
+ */
+RPY_NO_DISCARD inline const Type* compute_promotion(Slice<const Type*> types)
+{
+    return ranges::fold_left(types, nullptr, dtl::compute_promotion);
+}
 
 }// namespace devices
 

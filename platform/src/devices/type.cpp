@@ -160,3 +160,13 @@ bool Type::convertible_from(const Type* src_type) const noexcept
 
     return false;
 }
+TypeComparison Type::compare_with(const Type* other) const noexcept
+{
+    if (other == this) { return TypeComparison::AreSame; }
+
+    if (traits::is_arithmetic(other)) {
+        return TypeComparison::Convertible;
+    }
+
+    return TypeComparison::NotConvertible;
+}
