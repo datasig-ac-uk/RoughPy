@@ -40,188 +40,36 @@ void vector_kernel_eval_Ddd(
 
 template <typename T, typename Op>
 struct VectorBinaryOperator {
-    struct Ddd {
-        void operator()(Slice<T> out, Slice<const T> left, Slice<const T> right)
-                const
-        {
-            Op op;
-            for (auto&& [oscal, lscal, rscal] : views::zip(out, left, right)) {
-                oscal = op(lscal, rscal);
-            }
-        }
-    };
-
-    struct Dds {
-        void operator()(
-                Slice<T> out,
-                Slice<const T> left,
-                Slice<const dimn_t> right_keys,
-                Slice<const T> right
-        ) const
-        {
-            Op op;
-            T zero;
-            for (auto&& [oscal, lscal] : views::zip(out, left)) {
-                oscal = op(lscal, zero);
-            }
-            for (auto&& [i, rscal] : views::zip(right_keys, right)) {
-                out[i] += op(zero, rscal);
-            }
-        }
-    };
-
-    struct Dsd {
-        void operator()(
-                Slice<T> out,
-                Slice<const dimn_t> left_keys,
-                Slice<const T> left,
-                Slice<const T> right
-        ) const
-        {
-            Op op;
-            T zero;
-            for (auto&& [oscal, rscal] : views::zip(out, right)) {
-                oscal = op(zero, rscal);
-            }
-            for (auto&& [i, lscal] : views::zip(left_keys, left)) {
-                out[i] += op(lscal, zero);
-            }
-        }
-    };
-
-    struct Dss {
-        void operator()(
-                Slice<T> out,
-                Slice<const dimn_t> left_keys,
-                Slice<const T> left,
-                Slice<const dimn_t> right_keys,
-                Slice<const T> right
-        ) const
-        {
-            Op op;
-            T zero;
-            for (auto&& [i, lscal] : views::zip(left_keys, left)) {
-                out[i] += op(lscal, zero);
-            }
-            for (auto&& [i, rscal] : views::zip(right_keys, right)) {
-                out[i] += op(zero, rscal);
-            }
-        }
-    };
+    struct Ddd;
+    struct Dds;
+    struct Dsd;
+    struct Dss;
 
     static void register_kernels(const devices::Device& device);
 };
 
 template <typename T, typename Op>
 struct VectorBinaryWithScalarOperator {
-
-    struct Dddv {
-        void operator()(
-                Slice<T> out,
-                Slice<const T> left,
-                Slice<const T> right,
-                const T& scal
-        ) const
-        {
-            vector_kernel_eval_Ddd(Op(scal), out, left, right);
-        }
-    };
-
-    struct Ddsv {
-        void operator()(
-                Slice<T> out,
-                Slice<const T> left,
-                Slice<const dimn_t> right_keys,
-                Slice<const T> right,
-                const T& scal
-        ) const
-        {
-            vector_kernel_eval_Dds(Op(scal), out, left, right_keys, right);
-        }
-    };
-
-    struct Dsdv {
-        void operator()(
-                Slice<T> out,
-                Slice<const dimn_t> left_keys,
-                Slice<const T> left,
-                Slice<const T> right,
-                const T& scal
-        ) const
-        {
-            vector_kernel_eval_Dsd(Op(scal), out, left_keys, left, right);
-        }
-    };
-
-    struct Dssv {
-        void operator()(
-                Slice<T> out,
-                Slice<const dimn_t> left_keys,
-                Slice<const T> left,
-                Slice<const dimn_t> right_keys,
-                Slice<const T> right,
-                const T& scal
-        ) const
-        {
-            vector_kernel_eval_Dss(
-                    Op(scal),
-                    out,
-                    left_keys,
-                    left,
-                    right_keys,
-                    right
-            );
-        }
-    };
+    struct Dddv;
+    struct Ddsv;
+    struct Dsdv;
+    struct Dssv;
 
     static void register_kernels(const devices::Device& device);
 };
 
 template <typename T, typename Op>
 struct VectorInplaceBinaryOperator {
-
-    struct Dd {
-        void operator()(Slice<T> out, Slice<const T> right) const
-        {
-            vector_inplace_kernel_eval_Dd(Op(), out, right);
-        }
-    };
-
-    struct Ds {
-        void operator()(
-                Slice<T> out,
-                Slice<const dimn_t> right_keys,
-                Slice<const T> right
-        ) const
-        {
-            vector_inplace_kernel_eval_Ds(Op(), out, right_keys, right);
-        }
-    };
+    struct Dd;
+    struct Ds;
 
     static void register_kernels(const devices::Device& device);
 };
 
 template <typename T, typename Op>
 struct VectorInplaceBinaryWithScalarOperator {
-
-    struct Ddv {
-        void operator()(Slice<T> out, Slice<const T> right, const T& scal) const
-        {
-            vector_inplace_kernel_eval_Dd(Op(scal), out, right);
-        }
-    };
-
-    struct Dsv {
-        void operator()(
-                Slice<T> out,
-                Slice<const dimn_t> right_keys,
-                Slice<const T> right,
-                const T& scal
-        ) const
-        {
-            vector_inplace_kernel_eval_Ds(Op(scal), out, right_keys, right);
-        }
-    };
+    struct Ddv;
+    struct Dsv;
 
     static void register_kernels(const devices::Device& device);
 };
@@ -338,6 +186,79 @@ void vector_kernel_eval_Dss(
     }
 }
 
+template <typename Op, typename T>
+struct VectorBinaryOperator<Op, T>::Ddd {
+    void
+    operator()(Slice<T> out, Slice<const T> left, Slice<const T> right) const
+    {
+        Op op;
+        for (auto&& [oscal, lscal, rscal] : views::zip(out, left, right)) {
+            oscal = op(lscal, rscal);
+        }
+    }
+};
+
+template <typename Op, typename T>
+struct VectorBinaryOperator<Op, T>::Dds {
+    void operator()(
+            Slice<T> out,
+            Slice<const T> left,
+            Slice<const dimn_t> right_keys,
+            Slice<const T> right
+    ) const
+    {
+        Op op;
+        T zero;
+        for (auto&& [oscal, lscal] : views::zip(out, left)) {
+            oscal = op(lscal, zero);
+        }
+        for (auto&& [i, rscal] : views::zip(right_keys, right)) {
+            out[i] += op(zero, rscal);
+        }
+    }
+};
+
+template <typename Op, typename T>
+struct VectorBinaryOperator<Op, T>::Dsd {
+    void operator()(
+            Slice<T> out,
+            Slice<const dimn_t> left_keys,
+            Slice<const T> left,
+            Slice<const T> right
+    ) const
+    {
+        Op op;
+        T zero;
+        for (auto&& [oscal, rscal] : views::zip(out, right)) {
+            oscal = op(zero, rscal);
+        }
+        for (auto&& [i, lscal] : views::zip(left_keys, left)) {
+            out[i] += op(lscal, zero);
+        }
+    }
+};
+
+template <typename Op, typename T>
+struct VectorBinaryOperator<Op, T>::Dss {
+    void operator()(
+            Slice<T> out,
+            Slice<const dimn_t> left_keys,
+            Slice<const T> left,
+            Slice<const dimn_t> right_keys,
+            Slice<const T> right
+    ) const
+    {
+        Op op;
+        T zero;
+        for (auto&& [i, lscal] : views::zip(left_keys, left)) {
+            out[i] += op(lscal, zero);
+        }
+        for (auto&& [i, rscal] : views::zip(right_keys, right)) {
+            out[i] += op(zero, rscal);
+        }
+    }
+};
+
 template <typename T, typename Op>
 void VectorBinaryOperator<T, Op>::register_kernels(const devices::Device& device
 )
@@ -358,6 +279,69 @@ void VectorBinaryOperator<T, Op>::register_kernels(const devices::Device& device
             Kernel(new HostKernel<Dss>(name + '_' + IdOfType<T> + '_' + "Dss"))
     );
 }
+
+template <typename Op, typename T>
+struct VectorBinaryWithScalarOperator<Op, T>::Dddv {
+    void operator()(
+            Slice<T> out,
+            Slice<const T> left,
+            Slice<const T> right,
+            const T& scal
+    ) const
+    {
+        vector_kernel_eval_Ddd(Op(scal), out, left, right);
+    }
+};
+
+template <typename Op, typename T>
+struct VectorBinaryWithScalarOperator<Op, T>::Ddsv {
+    void operator()(
+            Slice<T> out,
+            Slice<const T> left,
+            Slice<const dimn_t> right_keys,
+            Slice<const T> right,
+            const T& scal
+    ) const
+    {
+        vector_kernel_eval_Dds(Op(scal), out, left, right_keys, right);
+    }
+};
+
+template <typename Op, typename T>
+struct VectorBinaryWithScalarOperator<Op, T>::Dsdv {
+    void operator()(
+            Slice<T> out,
+            Slice<const dimn_t> left_keys,
+            Slice<const T> left,
+            Slice<const T> right,
+            const T& scal
+    ) const
+    {
+        vector_kernel_eval_Dsd(Op(scal), out, left_keys, left, right);
+    }
+};
+
+template <typename Op, typename T>
+struct VectorBinaryWithScalarOperator<Op, T>::Dssv {
+    void operator()(
+            Slice<T> out,
+            Slice<const dimn_t> left_keys,
+            Slice<const T> left,
+            Slice<const dimn_t> right_keys,
+            Slice<const T> right,
+            const T& scal
+    ) const
+    {
+        vector_kernel_eval_Dss(
+                Op(scal),
+                out,
+                left_keys,
+                left,
+                right_keys,
+                right
+        );
+    }
+};
 
 template <typename T, typename Op>
 void VectorBinaryWithScalarOperator<T, Op>::register_kernels(
@@ -381,6 +365,26 @@ void VectorBinaryWithScalarOperator<T, Op>::register_kernels(
     ));
 }
 
+template <typename Op, typename T>
+struct VectorInplaceBinaryOperator<Op, T>::Dd {
+    void operator()(Slice<T> out, Slice<const T> right) const
+    {
+        vector_inplace_kernel_eval_Dd(Op(), out, right);
+    }
+};
+
+template <typename Op, typename T>
+struct VectorInplaceBinaryOperator<Op, T>::Ds {
+    void operator()(
+            Slice<T> out,
+            Slice<const dimn_t> right_keys,
+            Slice<const T> right
+    ) const
+    {
+        vector_inplace_kernel_eval_Ds(Op(), out, right_keys, right);
+    }
+};
+
 template <typename T, typename Op>
 void VectorInplaceBinaryOperator<T, Op>::register_kernels(
         const devices::Device& device
@@ -396,6 +400,28 @@ void VectorInplaceBinaryOperator<T, Op>::register_kernels(
             Kernel(new HostKernel<Ds>(name + '_' + IdOfType<T> + '_' + "Ddsv"))
     );
 }
+
+template <typename T, typename Op>
+struct VectorInplaceBinaryWithScalarOperator<T, Op>::Ddv {
+    void operator()(Slice<T> out, Slice<const T> right, const T& scal) const
+    {
+        vector_inplace_kernel_eval_Dd(Op(scal), out, right);
+    }
+};
+
+template <typename T, typename Op>
+struct VectorInplaceBinaryWithScalarOperator<T, Op>::Dsv {
+    void operator()(
+            Slice<T> out,
+            Slice<const dimn_t> right_keys,
+            Slice<const T> right,
+            const T& scal
+    ) const
+    {
+        vector_inplace_kernel_eval_Ds(Op(scal), out, right_keys, right);
+    }
+};
+
 template <typename T, typename Op>
 void VectorInplaceBinaryWithScalarOperator<T, Op>::register_kernels(
         const devices::Device& device
