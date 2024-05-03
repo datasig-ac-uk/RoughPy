@@ -44,7 +44,8 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const char* func
 )
 {
-    throw E(msg);
+    throw E(msg + " at line " + std::to_string(lineno) + " in file "
+            + filename + '(' + func + ')');
 }
 
 /**
