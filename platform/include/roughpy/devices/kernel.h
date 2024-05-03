@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_DEVICE_KERNEL_H_
 #define ROUGHPY_DEVICE_KERNEL_H_
@@ -33,8 +34,8 @@
 #include "event.h"
 #include "kernel_arg.h"
 
-#include <roughpy/core/macros.h>
 #include <roughpy/core/container/vector.h>
+#include <roughpy/core/macros.h>
 #include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>
 
@@ -52,7 +53,6 @@ class ROUGHPY_DEVICES_EXPORT KernelLaunchParams
     optional<Dim3> m_offsets;
 
 public:
-
     explicit KernelLaunchParams(Size3 work_dims)
         : m_work_dims(work_dims),
           m_group_size(),
@@ -60,7 +60,7 @@ public:
     {}
 
     explicit KernelLaunchParams(Size3 work_dims, Dim3 group_size)
-            : m_work_dims(work_dims),
+        : m_work_dims(work_dims),
           m_group_size(group_size),
           m_offsets()
     {}
@@ -93,7 +93,6 @@ public:
 class ROUGHPY_DEVICES_EXPORT KernelInterface : public dtl::InterfaceBase
 {
 public:
-
     using object_t = Kernel;
 
     /**
@@ -181,7 +180,6 @@ class ROUGHPY_DEVICES_EXPORT Kernel
     : public dtl::ObjectBase<KernelInterface, Kernel>
 {
     using base_t = dtl::ObjectBase<KernelInterface, Kernel>;
-
 
 public:
     using base_t::base_t;
@@ -284,8 +282,10 @@ public:
      * kernel or the launch parameters are not set, or if the queue is not valid
      * for this kernel, an empty Event object is returned.
      */
-    RPY_NO_DISCARD Event
-    launch_async(const KernelLaunchParams& params, Slice<KernelArgument> args) const;
+    RPY_NO_DISCARD Event launch_async(
+            const KernelLaunchParams& params,
+            Slice<KernelArgument> args
+    ) const;
 
     /**
      * @brief Launches a kernel synchronously with the specified launch
@@ -310,8 +310,10 @@ public:
      * device.
      *         - Error: There was an error during the kernel execution.
      */
-    RPY_NO_DISCARD EventStatus
-    launch_sync(const KernelLaunchParams& params, Slice<KernelArgument> args) const;
+    RPY_NO_DISCARD EventStatus launch_sync(
+            const KernelLaunchParams& params,
+            Slice<KernelArgument> args
+    ) const;
 
     RPY_NO_DISCARD static containers::Vec<bitmask_t>
     construct_work_mask(const KernelLaunchParams& params);
@@ -323,24 +325,24 @@ public:
 template <typename... Args>
 void Kernel::operator()(const KernelLaunchParams& params, Args&&... args) const
 {
-    KernelArgument kargs[] = {KernelArgument(args)...};
+    KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
     auto status = launch_sync(params, kargs);
     RPY_CHECK(status == EventStatus::CompletedSuccessfully);
 }
 
 template <typename... Args>
 RPY_NO_DISCARD Event
-launch_async(Kernel kernel, const KernelLaunchParams& params, Args... args)
+launch_async(Kernel kernel, const KernelLaunchParams& params, Args&&... args)
 {
-    KernelArgument kargs[] = {KernelArgument(args)...};
+    KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
     return kernel.launch_async(params, kargs);
 }
 
 template <typename... Args>
 EventStatus
-launch_sync(Kernel kernel, const KernelLaunchParams& params, Args... args)
+launch_sync(Kernel kernel, const KernelLaunchParams& params, Args&&... args)
 {
-    KernelArgument kargs[] = {KernelArgument(args)...};
+    KernelArgument kargs[] = {KernelArgument(std::forward<args>(args))...};
     return kernel.launch_sync(params, kargs);
 }
 
@@ -349,10 +351,10 @@ RPY_NO_DISCARD Event launch_async(
         Kernel kernel,
         Queue& queue,
         const KernelLaunchParams& params,
-        Args... args
+        Args&&... args
 )
 {
-    KernelArgument kargs[] = {KernelArgument(args)...};
+    KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
     return kernel.launch_async_in_queue(queue, params, kargs);
 }
 
@@ -361,10 +363,10 @@ EventStatus launch_sync(
         Kernel kernel,
         Queue& queue,
         const KernelLaunchParams& params,
-        Args... args
+        Args&&... args
 )
 {
-    KernelArgument kargs[] = {KernelArgument(args)...};
+    KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
     return kernel.launch_sync_in_queue(queue, params, kargs);
 }
 

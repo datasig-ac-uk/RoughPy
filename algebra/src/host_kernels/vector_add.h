@@ -1,0 +1,26 @@
+
+#ifndef ALGEBRA_HOST_KERNEL_ADD_H
+#define ALGEBRA_HOST_KERNEL_ADD_H
+
+#include "vector_binary_operator.h"
+#include <roughpy/device_support/host_kernel.h>
+#include <roughpy/device_support/operators.h>
+
+#include <roughpy/core/macros.h>
+
+namespace rpy { namespace algebra {
+
+extern template class VectorBinaryOperator<rpy::devices::operators::Add, float>;
+extern template class VectorBinaryOperator<rpy::devices::operators::Add, double>;
+
+}
+
+namespace devices {
+
+extern template class HostKernel<algebra::VectorBinaryOperator<rpy::devices::operators::Add, float>>;
+extern template class HostKernel<algebra::VectorBinaryOperator<rpy::devices::operators::Add, double>>;
+
+}
+}
+
+#endif //ALGEBRA_HOST_KERNEL_ADD_H

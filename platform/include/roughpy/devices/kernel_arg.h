@@ -66,16 +66,14 @@ class ROUGHPY_DEVICES_EXPORT KernelArgument
     {
         void* p_data;
         const void* p_const_data;
-        Buffer* p_buffer;
-        const Buffer* p_const_buffer;
+        Buffer m_buffer;
     };
 
     enum
     {
         Pointer,
         ConstPointer,
-        BufferPointer,
-        ConstBufferPointer
+        BufferObject,
     } m_mode;
 
     TypeInfo m_info;
@@ -85,26 +83,32 @@ public:
 
     KernelArgument(KernelArgument&&) noexcept = default;
 
-    explicit KernelArgument(Buffer& buffer)
-        : p_buffer(&buffer),
-          m_mode(BufferPointer),
+    explicit KernelArgument(Buffer&& buffer)
+        : m_buffer(std::move(buffer)),
+          m_mode(BufferObject),
           m_info(buffer.type_info())
     {}
 
-    explicit KernelArgument(const Buffer& buffer)
-        : p_const_buffer(&buffer),
-          m_mode(ConstBufferPointer),
-          m_info(buffer.type_info())
-    {}
-
-    template <typename T, enable_if_t<!is_same_v<T, KernelArgument>, int> = 0>
+    template <
+            typename T,
+            enable_if_t<
+                    !is_same_v<decay_t<T>, KernelArgument>
+                            && !is_same_v<decay_t<T>, Buffer>,
+                    int>
+            = 0>
     explicit KernelArgument(T& data)
         : p_data(&data),
           m_mode(Pointer),
           m_info(type_info<T>())
     {}
 
-    template <typename T, enable_if_t<!is_same_v<T, KernelArgument>, int> = 0>
+    template <
+            typename T,
+            enable_if_t<
+                    !is_same_v<decay_t<T>, KernelArgument>
+                            && !is_same_v<decay_t<T>, Buffer>,
+                    int>
+            = 0>
     explicit KernelArgument(const T& data)
         : p_const_data(&data),
           m_mode(ConstPointer),
@@ -123,17 +127,24 @@ public:
           m_info(info)
     {}
 
+    ~KernelArgument()
+    {
+        if (m_mode == BufferObject) { m_buffer.~Buffer(); }
+    }
+
     RPY_NO_DISCARD constexpr bool is_buffer() const noexcept
     {
-        return m_mode == BufferPointer || m_mode == ConstBufferPointer;
+        return m_mode == BufferObject;
     }
 
     RPY_NO_DISCARD constexpr bool is_const() const noexcept
     {
-        return m_mode == ConstPointer || m_mode == ConstBufferPointer;
+        return m_mode == ConstPointer
+                || (m_mode == BufferObject
+                    && m_buffer.mode() == BufferMode::Read);
     }
 
-    RPY_NO_DISCARD constexpr void* pointer() const noexcept
+    RPY_NO_DISCARD constexpr void* pointer() noexcept
     {
         RPY_DBG_ASSERT(m_mode == Pointer);
         return p_data;
@@ -145,17 +156,16 @@ public:
         return (m_mode == Pointer) ? p_data : p_const_data;
     }
 
-    RPY_NO_DISCARD constexpr Buffer& buffer() const noexcept
+    RPY_NO_DISCARD constexpr Buffer& buffer() noexcept
     {
-        RPY_DBG_ASSERT(m_mode == BufferPointer);
-        return *p_buffer;
+        RPY_DBG_ASSERT(m_mode == BufferObject);
+        return m_buffer;
     }
 
-    RPY_NO_DISCARD constexpr const Buffer& const_buffer() const noexcept
+    RPY_NO_DISCARD constexpr const Buffer& const_buffer() noexcept
     {
         RPY_DBG_ASSERT(is_buffer());
-        return (m_mode == BufferPointer) ? static_cast<const Buffer&>(*p_buffer)
-                                         : *p_const_buffer;
+        return m_buffer;
     }
 
     RPY_NO_DISCARD constexpr dimn_t size() const noexcept
