@@ -37,7 +37,35 @@ using namespace rpy::intervals;
 using namespace pybind11::literals;
 
 static const char* INTERVAL_DOC = R"edoc(
-Half-open interval in the real line.
+
+:class:`Interval` objects are used to query a :class:`Stream` to get a :py:meth:`~signature` or a :py:meth:`~log_signature`.
+They are a time-like axis which is closed on the left, open on the right, e.g. :math:`[0,1)`.
+
+RoughPy is very careful in how it works with intervals.
+
+One design goal is that it should be able to handle jumps in the underlying signal that occur at particular times, including the beginning or end of the :class:`Interval`, and still guarantee that if you combine the :py:meth:`~signature` over adjacent :class:`Interval`, you always get the :py:meth:`~signature` over the entire :class:`Interval`.
+This implies that there has to be a decision about whether data at the exact beginning or exact end of the :class:`Interval` is included.
+
+The convention in RoughPy are that we use clopen intervals, and that data at beginning of the :class:`Interval` is seen, and data at the end of the :class:`Interval` is seen in the next :class:`Interval`.
+A second design goal is that the code should be efficient, and so the internal representation of a :class:`Stream` involves caching the :py:meth:`~signature` over dyadic intervals of different resolutions.
+Recovering the :py:meth:`~signature` over any :class:`Interval` using the cache has logarithmic complexity (using at most :math:`2n` tensor multiplications, when :math:`n` is the internal resolution of the :class:`Stream`.
+Resolution refers to the length of the finest granularity at which we will store information about the underlying data.
+
+Any event occurs within one of these finest granularity intervals, multiple events occur within the same :class:`Interval` resolve to a more complex :py:meth:`~log_signature` which correctly reflects the time sequence of the events within this grain of time.
+However, no query of the :class:`Stream` is allowed to see finer :py:attr:`~resolution` than the internal :py:attr:`~resolution` of the :class:`Stream`, it is only allowed to access the information over :py:class:`Interval` objects that are a union of these finest :py:attr:`~resolution` granular intervals.
+For this reason, a query over any :class:`Interval` is replaced by a query is replaced by a query over an :class:`Interval` whose endpoints have been shifted to be consistent with the granular :py:attr:`~resolution`, obtained by rounding these points to the contained end-point of the unique clopen granular :class:`Interval` containing this point.
+In particular, if both the left-hand and right-hand ends of the :class:`Interval` are contained in the clopen granular :class:`Interval`, we round the :class:`Interval` to the empty :class:`Interval`. Specifying a :py:attr:`~resolution` of :math:`32` or :math:`64` equates to using respective integer arithmetic.
+
+We can create an :class:`Interval` to query a :class:`Stream` over, for example to compute a :py:meth:`~signature`, in the following way.
+The example below is the interval :math:`[0,1)`, over the Reals.
+
+.. code:: python
+
+    interval = rp.RealInterval(0, 1)
+
+.. note::
+     Clopen is currently the only supported interval type.
+
 )edoc";
 
 void python::init_interval(py::module_& m)
@@ -50,17 +78,17 @@ void python::init_interval(py::module_& m)
 
     klass.def_property_readonly("interval_type", &Interval::type);
 
-    klass.def("inf", &Interval::inf);
-    klass.def("sup", &Interval::sup);
-    klass.def("included_end", &Interval::included_end);
-    klass.def("excluded_end", &Interval::excluded_end);
+    klass.def("inf", &Interval::inf, "Returns the infimum of an :class:`Interval`.");
+    klass.def("sup", &Interval::sup, "Returns the supremum of an :class:`Interval`.");
+    klass.def("included_end", &Interval::included_end, "If the :class:`Interval` type is :py:attr:`clopen`, returns the infimum. If the :class:`~Interval` is :py:attr:`~opencl`, returns the supremum.");
+    klass.def("excluded_end", &Interval::excluded_end, "If the :class:`Interval` type is :py:attr:`~clopen`, returns the supremum. If the :class:`~Interval` is :py:attr:`~opencl`, returns the infimum.");
     klass.def("__eq__", [](const Interval& lhs, const Interval& rhs) {
         return lhs == rhs;
     });
     klass.def("__neq__", [](const Interval& lhs, const Interval& rhs) {
         return lhs != rhs;
     });
-    klass.def("intersects_with", &Interval::intersects_with, "other"_a);
+    klass.def("intersects_with", &Interval::intersects_with, "other"_a, "Checks whether two :class:`Interval` objects overlap.");
 
     klass.def("contains",
               static_cast<bool (Interval::*)(param_t) const noexcept>(
@@ -69,7 +97,7 @@ void python::init_interval(py::module_& m)
     klass.def("contains",
               static_cast<bool (Interval::*)(const Interval&) const noexcept>(
                       &Interval::contains),
-              "arg"_a);
+              "arg"_a, "Takes either a number, tells you if it's there or not, OR takes an :class:`Interval`, tells you if that :class:`~Interval` is fully contained in the other :class:`~Interval`.");
 
     klass.def("__repr__", [](const Interval& arg) {
         std::stringstream ss;

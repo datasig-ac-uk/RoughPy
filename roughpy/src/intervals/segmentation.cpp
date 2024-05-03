@@ -35,7 +35,7 @@ using namespace rpy::intervals;
 using namespace pybind11::literals;
 
 static const char* SEGMENT_DOC
-        = R"rpydoc(Perform dyadic segmentation on an interval.
+        = R"rpydoc(Perform dyadic segmentation on an :class:`Interval`.
 )rpydoc";
 
 void python::init_segmentation(py::module_& m)

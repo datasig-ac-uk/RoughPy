@@ -54,6 +54,69 @@ using namespace pybind11::literals;
 
 static const char* SHUFFLE_TENSOR_DOC
         = R"eadoc(Element of the shuffle tensor algebra.
+
+:class:`ShuffleTensor` objects are one way of representing the linear functionals on :class:`FreeTensor` objects.
+The shuffle product corresponds to point-wise multiplication of the continuous functions on paths via the signature correspondence.
+For more information on shuffle tensors, see
+`Reutenauer, Free Lie Algebras <https://www.sciencedirect.com/science/article/abs/pii/S157079540380075X>`_.
+
+Shuffle tensors are useful because they represent functions on paths via the :py:meth:`signature`.
+
+You can construct :class:`ShuffleTensor` objects in the following way, here we use polynomial coefficients:
+
+.. code:: python
+
+    >>> shuffle_tensor = ShuffleTensor([1 * Monomial(f"x{i}") for i in range(7)], width=2, depth=2, dtype=roughpy.RationalPoly)
+
+Which would look like this:
+
+.. code:: python
+
+    { { 1(x0) }() { 1(x1) }(1) { 1(x2) }(2) { 1(x3) }(1,1) { 1(x4) }(1,2) { 1(x5) }(2,1) { 1(x6) }(2,2) }
+
+You construct with data, which for the example above was the following list:
+
+.. code:: python
+
+    [{ 1(x0) }, { 1(x1) }, { 1(x2) }, { 1(x3) }, { 1(x4) }, { 1(x5) }, { 1(x6) }]
+
+As well as data, you will need to provide the following parameters:
+
+:py:attr:`ctx`
+    Provide an algebra context in which to create the algebra, takes priority over the next 3.
+
+Or
+
+:py:attr:`dtype`
+    Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a RoughPy data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a Numpy dtype.
+
+:py:attr:`depth`
+    Maximum degree for :class:`Lie` objects, :class:`FreeTensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
+
+:py:attr:`width`
+    Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`ctx` instead)
+
+Optional parameters:
+
+:py:attr:`vector_type`
+    :py:attr:`dense` or :py:attr:`sparse`
+
+:py:attr:`keys`
+    List/array of :py:attr:`keys` to go along with scalars provided as an array argument.
+
+You can shuffle two tensors together, using ``*``. For example, using ``x`` and ``y`` for indeterminate names for ``shuffle_tensor1`` and ``shuffle_tensor2``, for the above tensor we could do:
+
+.. code:: python
+
+    >>> result = shuffle_tensor1*shuffle_tensor2
+
+The result would look like this:
+
+.. code:: python
+
+    result={ { 1(x0 y0) }() { 1(x0 y1) 1(x1 y0) }(1) { 1(x0 y2) 1(x2 y0) }(2) { 1(x0 y3) 2(x1 y1) 1(x3 y0) }(1,1) { 1(x0 y4) 1(x1 y2) 1(x2 y1) 1(x4 y0) }(1,2) { 1(x0 y5) 1(x1 y2) 1(x2 y1) 1(x5 y0) }(2,1) { 1(x0 y6) 2(x2 y2) 1(x6 y0) }(2,2) }
+
+
 )eadoc";
 
 static ShuffleTensor construct_shuffle(py::object data, py::kwargs kwargs)
