@@ -125,9 +125,9 @@ std::unique_ptr<VectorData> VectorData::make_dense(const Basis* basis) const
 
     (*kernel)(
             params,
-            dense_data->mut_scalar_buffer(),
-            key_buffer,
-            m_scalar_buffer.buffer()
+            devices::Buffer(dense_data->mut_scalar_buffer()),
+            devices::Buffer(key_buffer),
+            devices::Buffer(m_scalar_buffer.buffer())
     );
 
     return dense_data;

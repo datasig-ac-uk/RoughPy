@@ -47,21 +47,27 @@ public:
     template <typename F>
     decltype(auto) eval_device(F&& func)
     {
+        RPY_DBG_ASSERT(
+                !p_data->scalars().is_null()
+                && p_data->scalars().size() >= p_data->size()
+        );
         return Derive::eval_device([func, this](auto&&... next_arg) {
             const auto size = p_data->size();
-            auto scalars = p_data->mut_scalars()[{0, size}].mut_buffer();
+            auto scalars = p_data->mut_scalar_buffer().slice(0, size);
+            RPY_DBG_ASSERT(!scalars.is_null() && scalars.size() == size);
             if (p_data->keys().empty()) {
                 // desnse data;
                 return func(
-                        scalars,
+                        std::move(scalars),
                         std::forward<decltype(next_arg)>(next_arg)...
                 );
             }
 
-            const auto keys = p_data->mut_keys()[{0, size}].mut_buffer();
+            auto keys = p_data->mut_key_buffer().slice(0, size);
+            RPY_DBG_ASSERT(!keys.is_null() && keys.size() == size);
             return func(
-                    keys,
-                    scalars,
+                    std::move(keys),
+                    std::move(scalars),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -70,23 +76,27 @@ public:
     template <typename F>
     decltype(auto) eval_host(F&& func)
     {
+        RPY_DBG_ASSERT(
+                !p_data->scalars().is_null()
+                && p_data->scalars().size() >= p_data->size()
+        );
         return Derive::eval_host([func, this](auto&&... next_arg) {
             const auto size = p_data->size();
-            auto scalars
-                    = p_data->mut_scalars().mut_view()[{0, size}].mut_buffer();
+            auto scalars = p_data->mut_scalar_buffer().slice(0, size);
+            RPY_DBG_ASSERT(!scalars.is_null() && scalars.size() == size);
             if (p_data->keys().empty()) {
                 // desnse data;
                 return func(
-                        scalars,
+                        std::move(scalars),
                         std::forward<decltype(next_arg)>(next_arg)...
                 );
             }
 
-            const auto keys
-                    = p_data->mut_keys().mut_view()[{0, size}].mut_buffer();
+            auto keys = p_data->mut_key_buffer().slice(0, size);
+            RPY_DBG_ASSERT(!keys.is_null() && keys.size() == size);
             return func(
-                    keys,
-                    scalars,
+                    std::move(keys),
+                    std::move(scalars),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -151,22 +161,26 @@ public:
     template <typename F>
     decltype(auto) eval_device(F&& func)
     {
+        RPY_DBG_ASSERT(
+                !p_data->scalars().is_null()
+                && p_data->scalars().size() >= p_data->size()
+        );
         return Derive::eval_device([f = std::forward<F>(func),
                                     this](auto&&... next_arg) {
             const auto size = p_data->size();
-            auto scalars = p_data->scalars()[{0, size}].buffer();
+            auto scalars = p_data->scalar_buffer().slice(0, size);
             if (p_data->keys().empty()) {
                 // desnse data;
                 return f(
-                        scalars,
+                        std::move(scalars),
                         std::forward<decltype(next_arg)>(next_arg)...
                 );
             }
 
-            const auto keys = p_data->keys()[{0, size}].buffer();
+            auto keys = p_data->key_buffer().slice(0, size);
             return f(
-                    keys,
-                    scalars,
+                    std::move(keys),
+                    std::move(scalars),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -175,22 +189,26 @@ public:
     template <typename F>
     decltype(auto) eval_host(F&& func)
     {
+        RPY_DBG_ASSERT(
+                !p_data->scalars().is_null()
+                && p_data->scalars().size() >= p_data->size()
+        );
         return Derive::eval_host([f = std::forward<F>(func),
                                   this](auto&&... next_arg) {
             const auto size = p_data->size();
-            auto scalars = p_data->scalars().view()[{0, size}].buffer();
+            auto scalars = p_data->scalar_buffer().slice(0, size);
             if (p_data->keys().empty()) {
                 // desnse data;
                 return f(
-                        scalars,
+                        std::move(scalars),
                         std::forward<decltype(next_arg)>(next_arg)...
                 );
             }
 
-            const auto keys = p_data->keys().view()[{0, size}].buffer();
+            auto keys = p_data->key_buffer().slice(0, size);
             return f(
-                    keys,
-                    scalars,
+                    std::move(keys),
+                    std::move(scalars),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
