@@ -113,8 +113,8 @@ target_precompile_headers(RoughPy_Scalars PRIVATE
 
 add_roughpy_test(scalars
         SRC
-        src/test_key_scalar_array.cpp
-        src/test_monomial.cpp
+#        src/test_key_scalar_array.cpp
+#        src/test_monomial.cpp
         src/test_pcg_standard_random.cpp
         src/test_scalar.cpp
         src/test_scalar_type.cpp

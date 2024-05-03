@@ -31,12 +31,11 @@
 //
 
 #include "ScalarTests.h"
+#include <roughpy/core/container/vector.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
-#include <roughpy/scalars/scalar_types.h>
 
 #include <roughpy/core/container/vector.h>
-#include <vector>
 
 using ScalarTypeTests = rpy::scalars::testing::ScalarTests;
 using namespace rpy::scalars;

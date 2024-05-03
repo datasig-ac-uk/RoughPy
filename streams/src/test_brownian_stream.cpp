@@ -32,7 +32,6 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/platform/archives.h>
-#include <roughpy/scalars/scalar_types.h>
 #include <roughpy/streams/brownian_stream.h>
 #include <sstream>
 

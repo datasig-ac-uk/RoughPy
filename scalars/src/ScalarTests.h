@@ -43,7 +43,6 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/scalar_types.h>
 
 namespace rpy {
 namespace scalars {
