@@ -5,8 +5,6 @@
 #ifndef VECTOR_BINARY_OPERATOR_H
 #define VECTOR_BINARY_OPERATOR_H
 
-#include "vector_binary_operator.h"
-
 #include <roughpy/core/ranges.h>
 #include <roughpy/core/slice.h>
 #include <roughpy/core/traits.h>
@@ -29,14 +27,6 @@ constexpr string_view IdOfType = IdOfTypeImpl<T>::value;
 
 template <typename Op>
 constexpr string_view NameOfOperator = Op::name;
-
-template <typename Op, typename T>
-void vector_kernel_eval_Ddd(
-        Op&& op,
-        Slice<T> out,
-        Slice<const T> left,
-        Slice<const T> right
-);
 
 template <typename T, typename Op>
 struct VectorBinaryOperator {
