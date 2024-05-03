@@ -103,7 +103,6 @@ std::unique_ptr<VectorData> VectorData::make_dense(const Basis* basis) const
     devices::Buffer key_buffer;
     if (scalar_device == key_device) {
         key_buffer = dense_data->m_key_buffer.mut_buffer();
-        ;
     } else {
         dense_data->m_key_buffer.mut_buffer().to_device(
                 key_buffer,
