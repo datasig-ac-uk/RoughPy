@@ -161,7 +161,7 @@ public:
     explicit ConvertedKernelArgument(KernelArgument& arg)
     {
         RPY_CHECK(arg.info() == type_info<T>());
-        RPY_CHECK(arg.is_buffer() && !arg.is_const());
+        RPY_CHECK(arg.is_buffer());
         const auto& buffer = arg.const_buffer();
         RPY_CHECK(buffer.ref_count() > 0);
 
@@ -208,6 +208,7 @@ RPY_INLINE_ALWAYS void invoke_kernel_inner(
         Slice<KernelArgument> args
 )
 {
+    RPY_DBG_ASSERT(indices.size() == args.size());
     kernel_fn(ConvertedKernelArgument<arg_at_t<F, Is>>(args[Is])...);
 }
 

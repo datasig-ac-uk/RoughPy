@@ -99,10 +99,7 @@ BufferMode Buffer::mode() const
     return impl()->mode();
 }
 
-TypeInfo BufferInterface::type_info() const noexcept
-{
-    return p_type->type_info();
-}
+
 dimn_t Buffer::size() const
 {
     if (impl() == nullptr) { return 0; }

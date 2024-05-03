@@ -71,8 +71,38 @@ CPUBuffer::CPUBuffer(rpy::dimn_t size, rpy::devices::TypeInfo info)
 CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, TypeInfo info)
     : base_t(get_type(info)),
       raw_buffer{raw_ptr, size * info.bytes},
-      m_flags(),
+      m_flags(IsNotConst),
       m_info(info),
+      m_num_elts(size)
+{}
+
+CPUBuffer::CPUBuffer(dimn_t size, const Type* type)
+    : base_t(type),
+      raw_buffer{nullptr, 0},
+      m_flags(IsOwned),
+      m_info(type->type_info()),
+      m_num_elts(size)
+{
+    if (size > 0) {
+        auto device = CPUDeviceHandle::get();
+        raw_buffer = device->allocate_raw_buffer(
+                size * m_info.bytes,
+                m_info.alignment
+        );
+    }
+}
+CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, const Type* type)
+    : base_t(type),
+      raw_buffer{raw_ptr, size * type->type_info().bytes},
+      m_flags(IsNotConst),
+      m_info(type->type_info()),
+      m_num_elts(size)
+{}
+CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, const Type* type)
+    : base_t(type),
+      raw_buffer{const_cast<void*>(raw_ptr), size * type->type_info().bytes},
+      m_flags(IsConst),
+      m_info(type->type_info()),
       m_num_elts(size)
 {}
 
@@ -89,8 +119,6 @@ CPUBuffer::~CPUBuffer()
     RPY_DBG_ASSERT(CPUBuffer::ref_count() == 0);
     if ((m_flags & IsOwned) != 0) {
         CPUDeviceHandle::get()->free_raw_buffer(raw_buffer);
-    } else if (!m_memory_owner.is_null()) {
-        m_memory_owner.~Buffer();
     }
 }
 dimn_t CPUBuffer::bytes() const { return raw_buffer.size; }
@@ -168,12 +196,12 @@ Buffer CPUBuffer::slice(dimn_t size, dimn_t offset) const
 
     const auto* ptr
             = static_cast<const byte*>(raw_buffer.ptr) + offset * m_info.bytes;
-    return Buffer(new CPUBuffer(ptr, size, m_info));
+    return Buffer(new CPUBuffer(ptr, size, content_type()));
 }
 Buffer CPUBuffer::mut_slice(dimn_t size, dimn_t offset)
 {
     RPY_CHECK(offset + size <= m_num_elts);
 
     auto* ptr = static_cast<byte*>(raw_buffer.ptr) + offset * m_info.bytes;
-    return Buffer(new CPUBuffer(ptr, size, m_info));
+    return Buffer(new CPUBuffer(ptr, size, content_type()));
 }

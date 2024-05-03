@@ -81,12 +81,26 @@ class ROUGHPY_DEVICES_EXPORT KernelArgument
 public:
     KernelArgument(const KernelArgument&) = default;
 
-    KernelArgument(KernelArgument&&) noexcept = default;
+    KernelArgument(KernelArgument&& other) noexcept
+        : p_data(nullptr), m_mode(other.m_mode), m_info(other.m_info)
+    {
+        switch (other.m_mode) {
+            case Pointer:
+                std::swap(p_data, other.p_data);
+                break;
+            case ConstPointer:
+                std::swap(p_const_data, other.p_const_data);
+                break;
+            case BufferObject:
+                std::swap(m_buffer, other.m_buffer);
+                break;
+        }
+    }
 
     explicit KernelArgument(Buffer&& buffer)
         : m_buffer(std::move(buffer)),
           m_mode(BufferObject),
-          m_info(buffer.type_info())
+          m_info(m_buffer.type_info())
     {}
 
     template <

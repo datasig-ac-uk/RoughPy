@@ -50,8 +50,9 @@ namespace devices {
 class CPUBuffer : public dtl::RefCountBase<BufferInterface>
 {
     using base_t = dtl::RefCountBase<BufferInterface>;
-    enum Flags
+    enum Flags : uint32_t
     {
+        IsNotConst = 0,
         IsConst = 1,
         IsOwned = 2,
     };
@@ -68,6 +69,10 @@ public:
     CPUBuffer(dimn_t size, TypeInfo info);
     CPUBuffer(void* raw_ptr, dimn_t size, TypeInfo info);
     CPUBuffer(const void* raw_ptr, dimn_t size, TypeInfo info);
+    CPUBuffer(dimn_t size, const Type* type);
+    CPUBuffer(void* raw_ptr, dimn_t size, const Type* type);
+    CPUBuffer(const void* raw_ptr, dimn_t size, const Type* type);
+
 
     ~CPUBuffer() override;
 
