@@ -5,10 +5,8 @@
 #ifndef ROUGHPY_CORE_ERRORS_H
 #define ROUGHPY_CORE_ERRORS_H
 
-
 #include "macros.h"
 #include "types.h"
-
 
 /*
  * Check macro definition.
@@ -22,7 +20,8 @@
  * is a std::runtime_error.
  */
 
-namespace rpy { namespace errors {
+namespace rpy {
+namespace errors {
 
 /**
  * @brief Throws an exception with a formatted error message.
@@ -73,11 +72,12 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const char* func
 )
 {
-    throw E(msg);
+    throw E(string(msg) + " at line " + std::to_string(lineno) + " in file "
+            + filename + '(' + func + ')');
 }
 
-}}
-
+}// namespace errors
+}// namespace rpy
 
 // Dispatch the check macro on the number of arguments
 // See: https://stackoverflow.com/a/16683147/9225581
@@ -121,4 +121,4 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
 #define RPY_THROW(...)                                                         \
     RPY_INVOKE_VA(RPY_THROW_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
-#endif //ROUGHPY_CORE_ERRORS_H
+#endif// ROUGHPY_CORE_ERRORS_H
