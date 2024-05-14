@@ -10,8 +10,7 @@
 
 namespace rpy { namespace algebra {
 
-extern template class VectorInplaceUnaryWithScalarOperator<rpy::devices::operators::RightScalarDivide, float>;
-extern template class VectorInplaceUnaryWithScalarOperator<rpy::devices::operators::RightScalarDivide, double>;
+
 
 }
 

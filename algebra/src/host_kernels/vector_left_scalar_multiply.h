@@ -10,8 +10,7 @@
 
 namespace rpy { namespace algebra {
 
-extern template class VectorUnaryWithScalarOperator<rpy::devices::operators::LeftScalarMultiply, float>;
-extern template class VectorUnaryWithScalarOperator<rpy::devices::operators::LeftScalarMultiply, double>;
+
 
 }
 

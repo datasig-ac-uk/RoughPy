@@ -10,8 +10,7 @@
 
 namespace rpy { namespace algebra {
 
-extern template class VectorUnaryOperator<rpy::devices::operators::Uminus, float>;
-extern template class VectorUnaryOperator<rpy::devices::operators::Uminus, double>;
+
 
 }
 

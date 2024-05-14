@@ -10,8 +10,7 @@
 
 namespace rpy { namespace algebra {
 
-extern template class VectorInplaceBinaryOperator<rpy::devices::operators::Sub, float>;
-extern template class VectorInplaceBinaryOperator<rpy::devices::operators::Sub, double>;
+
 
 }
 

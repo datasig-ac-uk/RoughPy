@@ -6,7 +6,7 @@ using namespace rpy::algebra;
 
 namespace rpy { namespace algebra {
 
-template class VectorUnaryOperator<rpy::devices::operators::Uminus, double>;
+//template class VectorUnaryOperator<rpy::devices::operators::Uminus, double>;
 
 }
 

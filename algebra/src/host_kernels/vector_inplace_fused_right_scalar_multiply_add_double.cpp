@@ -6,7 +6,7 @@ using namespace rpy::algebra;
 
 namespace rpy { namespace algebra {
 
-template class VectorInplaceBinaryWithScalarOperator<rpy::devices::operators::FusedRightScalarMultiplyAdd, double>;
+//template class VectorInplaceBinaryWithScalarOperator<rpy::devices::operators::FusedRightScalarMultiplyAdd, double>;
 
 }
 

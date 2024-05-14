@@ -34,7 +34,7 @@ using namespace rpy::algebra;
 
 namespace rpy {{ namespace algebra {{
 
-template class {operator_name}<rpy::devices::operators::{operator}, {typename}>;
+//template class {operator_name}<rpy::devices::operators::{operator}, {typename}>;
 
 }}
 
@@ -98,9 +98,9 @@ def make_extern_kernel_block(operator_name, operator):
 
 def make_extern_operators_block(operator_name, operator):
     operators_block = [
-        EXTERN_TEMPLATE_OPERATOR.format(operator_name=operator_name,
-                                        typename=typename, operator=operator)
-        for typename in TYPES
+        # EXTERN_TEMPLATE_OPERATOR.format(operator_name=operator_name,
+        #                                 typename=typename, operator=operator)
+        # for typename in TYPES
     ]
     return "\n".join(operators_block)
 
