@@ -189,7 +189,13 @@ void python::init_tick_construction_helper(py::module_& m)
 {
     using helper_t = python::RPyTickConstructionHelper;
 
-    py::class_<helper_t> klass(m, "TickStreamConstructionHelper");
+    static const char* TICK_STREAM_CONSTRUCTOR_DOC
+            = R"eadoc(
+            Helps the stream figure out what its schema should be.
+            A means of constructing the schema for a stream.
+            )eadoc";
+
+    py::class_<helper_t> klass(m, "TickStreamConstructionHelper", TICK_STREAM_CONSTRUCTOR_DOC);
 
     klass.def(py::init<>());
     klass.def(py::init<bool>(), "schema_only"_a);

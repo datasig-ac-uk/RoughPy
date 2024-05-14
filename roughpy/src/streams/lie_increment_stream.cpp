@@ -52,7 +52,7 @@ using namespace pybind11::literals;
 using scalars::scalar_cast;
 
 static const char* LIE_INCR_STREAM_DOC
-        = R"rpydoc(A basic stream type defined by a sequence of increments
+        = R"rpydoc(A basic :class:`Stream` type defined by a sequence of increments
 of fixed size at specified time intervals.
 )rpydoc";
 

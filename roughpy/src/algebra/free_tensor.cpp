@@ -52,41 +52,41 @@ using namespace pybind11::literals;
 static const char* FREE_TENSOR_DOC
         = R"eadoc(Element of the (truncated) tensor algebra.
 
-A :class:`tensor` object supports arithmetic operators, providing both objects are compatible,
+A :class:`FreeTensor` object supports arithmetic operators, providing both objects are compatible,
 along with comparison operators. The multiplication operator for this class is the free tensor
-multiplication (concatenation of tensor words). Moreover, :class:`tensor` objects are
+multiplication (concatenation of tensor words). Moreover, :class:`FreeTensor` objects are
 `iterable <https://docs.python.org/3/glossary.html#term-iterable>`_, where the items are tuples
-of :class:`tensor_key` and :class:`float` corresponding to the non-zero elements of the
-:class:`tensor`.
+of :class:`TensorKey` and :class:`float` corresponding to the non-zero elements of the
+:class:`FreeTensor`.
 
 The class also supports (implicit and explicit) conversion to a Numpy array type, so it can be
 used as an argument to any function that takes Numpy arrays. The array representation of a
-:class:`tensor` is one-dimensional. Alternatively, one can construct d-dimensional arrays
-containing the elements of degree d by using the :py:meth:`~tensor.degree_array` method.
+:class:`FreeTensor` is one-dimensional. Alternatively, one can construct d-dimensional arrays
+containing the elements of degree d by using the :py:meth:`degree_array` method.
 
-There are methods for computing the tensor :py:meth:`~tensor.exponential`,
-:py:meth:`~tensor.logarithm`, and :py:meth:`~tensor.inverse` (of group-like elements). See the
+There are methods for computing the tensor exponential, :py:meth:`exp`,
+logarithm, :py:meth:`log`, and the antipode, :py:meth:`antipode`. See the
 documentation of these methods for more information.
 
 A tensor can be created from an array-like object containing the coefficients of the keys, in
 their standard order. Since tensors must be created with both an alphabet size and depth, we need
-to provide at least the ``depth`` argument. However, it is recommended that you also provided
-the ``width`` argument, otherwise it is assumed that the tensor has degree 1 and the alphabet
+to provide at least the :py:attr:`~depth` argument. However, it is recommended that you also provided
+the :py:attr:`~width` argument, otherwise it is assumed that the tensor has degree 1 and the alphabet
 size will be determined from the length of the argument.
 
 .. code:: python
 
-    >>> ts1 = esig_paths.tensor([1.0, 2.0, 3.0], depth=2)
+    >>> ts1 = rp.FreeTensor([1.0, 2.0, 3.0], depth=2)
     >>> print(ts1)
     { 1() 2(1) 3(2) }
-    >>> ts2 = esig_paths.tensor([1.0, 2.0, 3.0], width=2, depth=2)
+    >>> ts2 = rp.FreeTensor([1.0, 2.0, 3.0], width=2, depth=2)
     >>> print(ts2)
     { 1() 2(1) 3(2) }
 
-If the width argument is provided, this construction can be used to construct tensors of any
-degree, up to the maximum. The :class:`~esig_paths.algebra_context` class provides a method
-:py:meth:`~esig_paths.algebra_context.tensor_size` that can be used to get the dimension of the
-tensor algebra_old up to a given degree.
+If the width argument is provided, this construction can be used to construct :class:`FreeTensor` objects of any
+degree, up to the maximum. The :class:`Context` class provides a method
+:py:meth:`tensor_size` that can be used to get the dimension of the
+tensor up to a given degree.
 )eadoc";
 
 static FreeTensor construct_free_tensor(py::object data, py::kwargs kwargs)
@@ -175,11 +175,11 @@ void python::init_free_tensor(py::module_& m)
              return self[static_cast<key_type>(tkey)];
          });
 
-    klass.def("exp", &FreeTensor::exp);
-    klass.def("log", &FreeTensor::log);
-    klass.def("antipode", &FreeTensor::antipode);
+    klass.def("exp", &FreeTensor::exp, "Computes the truncated exponential of a :class:`~FreeTensor` instance.");
+    klass.def("log", &FreeTensor::log, "Computes the truncated log of the argument up to degree :py:attr:`~max_degree`");
+    klass.def("antipode", &FreeTensor::antipode, "Compute the antipode of a :class:`~FreeTensor` instance");
 //    klass.def("inverse", &FreeTensor::inverse);
-    klass.def("fmexp", &FreeTensor::fmexp, "other"_a);
+    klass.def("fmexp", &FreeTensor::fmexp, "other"_a, "Fused multiply exponential operation for :py:attr:`~FreeTensor` objects. Computes :math:`a exp(x)`.");
 //
     klass.def("__repr__", [](const FreeTensor& self) {
         std::stringstream ss;

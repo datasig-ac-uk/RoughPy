@@ -2,7 +2,7 @@ import importlib.metadata as _ilm
 import os
 import platform
 
-from pathlib import Path
+from pathlib import Path as _Path
 
 try:
     __version__ = _ilm.version("RoughPy")
@@ -10,14 +10,14 @@ except _ilm.PackageNotFoundError:
     __version__ = "0.0.0"
 
 
-def _add_dynload_location(path: Path):
+def _add_dynload_location(path: _Path):
     if platform.system() == "Windows":
         os.add_dll_directory(str(path))
         return
 
 
 if platform.system() == "Windows":
-    LIBS_DIR = Path(__file__).parent.parent / "roughpy.libs"
+    LIBS_DIR = _Path(__file__).parent.parent / "roughpy.libs"
     if LIBS_DIR.exists():
         os.add_dll_directory(str(LIBS_DIR))
 

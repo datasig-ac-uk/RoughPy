@@ -47,9 +47,10 @@ using rpy::python::RPyContext;
 
 extern "C" {
 
-static const char* lie_size_DOC = R"rpydoc()rpydoc";
-static PyObject*
-RPyContext_lie_size(PyObject* self, PyObject* args, PyObject* kwargs)
+static const char* lie_size_DOC = R"rpydoc(A shortcut for :py:meth:`lie_basis.size`. )rpydoc";
+static PyObject* RPyContext_lie_size(PyObject * self,
+                                     PyObject * args,
+                                     PyObject * kwargs)
 {
     static const char* kwords[] = {"degree", nullptr};
     const auto& myself = ctx_cast(self);
@@ -79,9 +80,11 @@ RPyContext_lie_size(PyObject* self, PyObject* args, PyObject* kwargs)
     }
     return PyLong_FromSize_t(myself->lie_size(depth));
 }
-static const char* tensor_size_DOC = R"rpydoc()rpydoc";
-static PyObject*
-RPyContext_tensor_size(PyObject* self, PyObject* args, PyObject* kwargs)
+
+static const char* tensor_size_DOC = R"rpydoc(A shortcut for :py:meth:`tensor_basis.size`. )rpydoc";
+static PyObject* RPyContext_tensor_size(PyObject * self,
+                                        PyObject * args,
+                                        PyObject * kwargs)
 {
     static const char* kwords[] = {"degree", nullptr};
     const auto& myself = ctx_cast(self);
@@ -111,7 +114,7 @@ RPyContext_tensor_size(PyObject* self, PyObject* args, PyObject* kwargs)
     }
     return PyLong_FromSize_t(myself->tensor_size(depth));
 }
-static const char* cbh_DOC = R"rpydoc()rpydoc";
+static const char* cbh_DOC = R"rpydoc(Computes the Campbell-Baker-Haussdorff product of a number of :class:`~Lie` elements within that :class:`~Context`, using the truncation levels. :class:`~Lie` objects need to have the same :py:attr:`~width`, but truncation level might differ.)rpydoc";
 static PyObject*
 RPyContext_cbh(PyObject* self, PyObject* args, PyObject* kwargs)
 {
@@ -156,7 +159,7 @@ RPyContext_cbh(PyObject* self, PyObject* args, PyObject* kwargs)
 
     return python::cast_to_object(ctx->cbh(lies, vtp));
 }
-static const char* compute_signature_DOC = R"rpydoc()rpydoc";
+static const char* compute_signature_DOC = R"rpydoc(Computes the :py:attr:`~signature` of a :class:`~Stream`.)rpydoc";
 static PyObject*
 RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
 {
@@ -208,8 +211,9 @@ RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
 
     return python::cast_to_object(ctx->signature(request));
 }
-static const char* to_logsignature_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_to_logsignature(PyObject* self, PyObject* arg)
+
+static const char* to_logsignature_DOC = R"rpydoc(Takes some argument (:py:attr:`~signature`), equivalent to :py:obj:`tensor_to_lie(signature.log())`.)rpydoc";
+static PyObject* RPyContext_to_logsignature(PyObject * self, PyObject * arg)
 {
 
     py::handle py_sig(arg);
@@ -224,8 +228,9 @@ static PyObject* RPyContext_to_logsignature(PyObject* self, PyObject* arg)
 
     return python::cast_to_object(ctx->tensor_to_lie(sig.log()));
 }
-static const char* lie_to_tensor_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_lie_to_tensor(PyObject* self, PyObject* arg)
+
+static const char* lie_to_tensor_DOC = R"rpydoc(Linear embedding of the :class:`~Lie` algebra into the :class:`FreeTensor` algebra.)rpydoc";
+static PyObject* RPyContext_lie_to_tensor(PyObject * self, PyObject * arg)
 {
     py::handle py_lie(arg);
     if (!py::isinstance<algebra::Lie>(py_lie)) {
@@ -237,8 +242,9 @@ static PyObject* RPyContext_lie_to_tensor(PyObject* self, PyObject* arg)
     return python::cast_to_object(ctx->lie_to_tensor(py_lie.cast<const Lie&>())
     );
 }
-static const char* tensor_to_lie_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_tensor_to_lie(PyObject* self, PyObject* arg)
+
+static const char* tensor_to_lie_DOC = R"rpydoc(Linear embedding of the :class:`~FreeTensor` algebra into the :class:`~Lie` algebra.)rpydoc";
+static PyObject* RPyContext_tensor_to_lie(PyObject * self, PyObject * arg)
 {
     py::handle py_ft(arg);
     if (!py::isinstance<algebra::FreeTensor>(py_ft)) {
@@ -260,7 +266,7 @@ static PyObject* RPyContext_exit(PyObject* self, PyObject* RPY_UNUSED_VAR)
 }
 
 static const char* zero_lie_DOC
-        = R"rpydoc(Get a new Lie with value zero)rpydoc";
+    = R"rpydoc(Get a new :class:`~Lie` with value zero.)rpydoc";
 static PyObject*
 RPyContext_zero_lie(PyObject* self, PyObject* args, PyObject* kwargs)
 {
@@ -329,19 +335,18 @@ static PyObject* RPyContext_tensor_basis_getter(PyObject* self)
     return python::cast_to_object(ctx_cast(self)->get_tensor_basis());
 }
 
-#define ADD_GETSET(NAME)                                                       \
+#define ADD_GETSET(NAME, doc)                                                       \
     {                                                                          \
-        #NAME, (getter) & RPyContext_##NAME##_getter, nullptr, nullptr,        \
-                nullptr                                                        \
+        #NAME, (getter) &RPyContext_##NAME##_getter, nullptr, doc, nullptr \
     }
 
 static PyGetSetDef RPyContext_getset[] = {
-        ADD_GETSET(width),
-        ADD_GETSET(depth),
-        ADD_GETSET(ctype),
-        ADD_GETSET(lie_basis),
-        ADD_GETSET(tensor_basis),
-        {nullptr, nullptr, nullptr, nullptr, nullptr}
+    ADD_GETSET(width, "Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`~ctx` instead)."),
+    ADD_GETSET(depth, "Maximum degree for :class:`~Lie` objects, :class:`~FreeTensor` objects, etc. (deprecated, use :py:attr:`~ctx` instead)."),
+    ADD_GETSET(ctype, "Coefficient type. One of :py:attr:`~rp.SPReal`, :py:attr:`~rp.DPReal`, :py:attr:`~rp.Rational`, :py:attr:`~rp.PolyRational`."),
+    ADD_GETSET(lie_basis, "An instance of :class:`~LieBasis` with the :class:`~Context` 's :py:attr:`~width` and :py:attr:`~depth`."),
+    ADD_GETSET(tensor_basis, "An instance of :class:`~TensorBasis` with the :class:`~Context` 's :py:attr:`~width` and :py:attr:`~depth`."),
+    {nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 #undef ADD_GETSET
@@ -384,7 +389,13 @@ static PyObject* RPyContext_richcompare(PyObject* o1, PyObject* o2, int opid)
     return nullptr;
 }
 
-static const char* CONTEXT_DOC = R"rpydoc()rpydoc";
+static const char* CONTEXT_DOC = R"rpydoc(
+A :class:`~Contexts` allows us to provide a :py:attr:`~width`, :py:attr:`~depth`, and a :py:attr:`~coefficient` field for a :class:`~Tensor`.
+They also provide access to the Baker-Campbell-Hausdorff formula.
+They are the environment in which calculations are done.
+They are used everywhere in RoughPy, for any :class:`~Stream` or algebraic object.
+)rpydoc";
+
 PyTypeObject rpy::python::RPyContext_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)         //
         "_roughpy.Context",                       /* tp_name */
@@ -492,5 +503,7 @@ void python::init_context(py::module_& m)
           py_get_context,
           "width"_a,
           "depth"_a,
-          "coeffs"_a = py::none());
+          "coeffs"_a = py::none(),
+          "Takes :py:attr:`width`, :py:attr:`depth`, and :py:attr:`coeff` as minimum, returns a :class:`Context` with that configuration, has other keywords that aren't fully realised yet."
+          );
 }
