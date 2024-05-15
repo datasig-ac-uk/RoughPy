@@ -39,8 +39,8 @@
 
 #include "devices/host/host_buffer.h"
 
-#include <roughpy/core/macros.h>
 #include <roughpy/core/errors.h>
+#include <roughpy/core/macros.h>
 
 using namespace rpy;
 using namespace rpy::devices;
@@ -93,12 +93,33 @@ Buffer::Buffer(rpy::dimn_t size, rpy::devices::TypeInfo type)
     : base_t(new CPUBuffer(size, type))
 {}
 
+Buffer::Buffer(const Type* tp, dimn_t size) : base_t(new CPUBuffer(tp, size)) {}
+Buffer::Buffer(const Type* tp, void* ptr, dimn_t size)
+    : base_t(new CPUBuffer(tp, ptr, size))
+{}
+Buffer::Buffer(const Type* tp, const void* ptr, dimn_t size)
+    : base_t(new CPUBuffer(tp, ptr, size))
+{}
+
+Buffer::Buffer(const Type* tp, dimn_t size, Device device)
+    : Buffer(device->alloc(tp, size))
+{}
+Buffer::Buffer(const Type* tp, void* ptr, dimn_t size, Device device)
+    : base_t(nullptr)
+{
+    if (device == nullptr || device->is_host()) {
+        construct_inplace(this, Buffer(tp, ptr, size));
+    } else {
+        construct_inplace(this, device->alloc(tp, size));
+    }
+}
+Buffer::Buffer(const Type* tp, const void* ptr, dimn_t size, Device device) {}
+
 BufferMode Buffer::mode() const
 {
     if (impl() == nullptr) { return BufferMode::Read; }
     return impl()->mode();
 }
-
 
 dimn_t Buffer::size() const
 {

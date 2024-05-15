@@ -42,6 +42,36 @@
 using namespace rpy;
 using namespace rpy::devices;
 
+CPUBuffer::CPUBuffer(const Type* tp, dimn_t size) : base_t(tp),
+    raw_buffer{nullptr, 0},
+    m_flags(IsOwned),
+    m_info(tp->type_info()),
+    m_num_elts(size)
+{
+    if (size > 0) {
+        const auto& device = CPUDeviceHandle::get();
+        raw_buffer = device->allocate_raw_buffer(
+                size * m_info.bytes,
+                m_info.alignment
+        );
+    }
+}
+
+CPUBuffer::CPUBuffer(const Type* tp, void* ptr, dimn_t size)
+    : base_t(tp),
+      raw_buffer{ptr, size * tp->type_info().bytes},
+      m_flags(IsConst),
+      m_info(tp->type_info()),
+      m_num_elts(size)
+{}
+CPUBuffer::CPUBuffer(const Type* tp, const void* ptr, dimn_t size)
+    : base_t(tp),
+      raw_buffer{const_cast<void*>(ptr), size * tp->type_info().bytes},
+      m_flags(IsConst),
+      m_info(tp->type_info()),
+      m_num_elts(size)
+{}
+
 CPUBuffer::CPUBuffer(RawBuffer raw, uint32_t arg_flags, TypeInfo info)
     : base_t(get_type(info)),
       raw_buffer(std::move(raw)),

@@ -261,6 +261,35 @@ public:
      */
     RPY_NO_DISCARD virtual TypeComparison compare_with(const Type* other
     ) const noexcept;
+
+    /**
+     * @brief Get the number of bytes.
+     *
+     * Returns the number of bytes of the object.
+     *
+     * @return The number of bytes.
+     */
+    RPY_NO_DISCARD dimn_t bytes() const noexcept
+    {
+        return m_info.bytes;
+    }
+
+    /**
+     * @brief Returns the minimum alignment of the type.
+     *
+     * The `min_alignment` method returns the minimum alignment of the type. The
+     * alignment specifies the memory alignment requirement for objects of the
+     * type.
+     *
+     * @return The minimum alignment of the type.
+     *
+     * @see type.h
+     */
+    RPY_NO_DISCARD dimn_t min_alignment() const noexcept
+    {
+        return m_info.alignment;
+    }
+
 };
 
 /**
@@ -316,7 +345,21 @@ constexpr TypeTraits traits_of() noexcept
  * @note The returned value is not dependent on the number of instances
  * of the type, but rather on the size of a single instance of the type.
  */
-inline dimn_t size_of(const Type* type) { return type->type_info().bytes; }
+inline dimn_t size_of(const Type* type) { return type->bytes(); }
+
+/**
+ * @brief Get the alignment of a given type.
+ *
+ * This function returns the minimum alignment requirement of a given type. The
+ * alignment of a type is the byte offset at which an object must be allocated
+ * in memory.
+ *
+ * @param type Pointer to the type for which the alignment needs to be
+ * determined.
+ *
+ * @return The alignment of the given type.
+ */
+inline dimn_t align_of(const Type* type) { return type->min_alignment(); }
 
 namespace traits {
 

@@ -40,8 +40,6 @@
 
 #include <roughpy/core/types.h>
 
-
-
 namespace rpy {
 namespace devices {
 
@@ -59,6 +57,7 @@ public:
     DeviceInfo info() const noexcept override;
 
     Buffer alloc(TypeInfo info, dimn_t count) const override;
+    RPY_NO_DISCARD Buffer alloc(const Type* type, dimn_t count) const override;
 
     void raw_free(Buffer& buf) const override;
     RawBuffer allocate_raw_buffer(dimn_t size, dimn_t alignment) const;
@@ -75,7 +74,6 @@ public:
     Queue new_queue() const override;
     Queue get_default_queue() const override;
     bool supports_type(const TypeInfo& info) const noexcept override;
-
 
     Device compute_delegate() const override;
 };

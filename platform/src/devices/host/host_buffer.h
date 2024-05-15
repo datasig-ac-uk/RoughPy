@@ -66,13 +66,16 @@ class CPUBuffer : public dtl::RefCountBase<BufferInterface>
     CPUBuffer(RawBuffer raw, uint32_t arg_flags, TypeInfo info);
 
 public:
+    CPUBuffer(const Type* tp, dimn_t size);
+    CPUBuffer(const Type* tp, void* ptr, dimn_t size);
+    CPUBuffer(const Type* tp, const void* ptr, dimn_t size);
+
     CPUBuffer(dimn_t size, TypeInfo info);
     CPUBuffer(void* raw_ptr, dimn_t size, TypeInfo info);
     CPUBuffer(const void* raw_ptr, dimn_t size, TypeInfo info);
     CPUBuffer(dimn_t size, const Type* type);
     CPUBuffer(void* raw_ptr, dimn_t size, const Type* type);
     CPUBuffer(const void* raw_ptr, dimn_t size, const Type* type);
-
 
     ~CPUBuffer() override;
 

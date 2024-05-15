@@ -270,6 +270,12 @@ public:
     template <typename T>
     explicit Buffer(Slice<const T> data);
 
+    Buffer(const Type* tp, dimn_t size);
+    Buffer(const Type* tp, void* ptr, dimn_t size);
+    Buffer(const Type* tp, const void* ptr, dimn_t size);
+    Buffer(const Type* tp, dimn_t size, Device device);
+    Buffer(const Type* tp, void* ptr, dimn_t size, Device device);
+    Buffer(const Type* tp, const void* ptr, dimn_t size, Device device);
     /**
      * @brief Returns the content type of the buffer.
      *

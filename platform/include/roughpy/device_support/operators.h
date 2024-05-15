@@ -37,7 +37,7 @@ struct Uminus {
 
 template <typename T>
 struct Add {
-    static constexpr string_view name = "add";
+    static constexpr string_view name = "addition";
     RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T
     operator()(const T& left, const T& right) noexcept(noexcept(left + right))
     {
@@ -47,7 +47,7 @@ struct Add {
 
 template <typename T>
 struct Sub {
-    static constexpr string_view name = "sub";
+    static constexpr string_view name = "subtraction";
     RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T
     operator()(const T& left, const T& right) noexcept(noexcept(left - right))
     {

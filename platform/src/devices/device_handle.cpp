@@ -62,6 +62,11 @@ DeviceHandle::~DeviceHandle() = default;
 
 Buffer DeviceHandle::alloc(TypeInfo info, dimn_t count) const { return {}; }
 
+Buffer DeviceHandle::alloc(const Type* type, dimn_t count) const
+{
+    return this->alloc(type->type_info(), count);
+}
+
 void DeviceHandle::raw_free(Buffer& buf) const {}
 
 bool DeviceHandle::has_compiler() const noexcept { return false; }
