@@ -10,7 +10,7 @@ include(GenerateExportHeader)
 
 
 add_library(RoughPy_Algebra_Host_Kernels STATIC
-
+        src/host_kernels/common.h
         src/host_kernels/vector_binary_operator.h
         src/host_kernels/vector_unary_operator.h
 )

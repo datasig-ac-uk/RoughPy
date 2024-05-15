@@ -159,3 +159,111 @@ TEST(VectorTests, VectorEqualityWithDifferentSizeZero)
     Vector v2(basis, stype, {1., 2., 3., 4., 5., 6.});
     EXPECT_TRUE(v1 == v2);
 }
+
+TEST(VectorTests, VectorAdditionRational)
+{
+    const auto basis = TensorBasis::get(5, 2);
+    const auto stype = *scalars::get_type("Rational");
+
+    Vector v1(basis, stype, {1, 2, 3, 4, 5, 6});
+    Vector v2(basis, stype, {-2, 2, -2, 2, -2, 2});
+
+    Vector vresult(basis, stype, {-1, 4, 1, 6, 3, 8});
+
+    EXPECT_EQ(vresult, v1 + v2);
+}
+
+TEST(VectorTests, VectorSubtractionRational)
+{
+    const auto basis = TensorBasis::get(5, 2);
+    const auto stype = *scalars::get_type("Rational");
+
+    Vector v1(basis, stype, {6, 5, 4, 3, 2, 1});
+    Vector v2(basis, stype, {2, 2, 2, 2, 2, 2});
+
+    Vector vexpected(basis, stype, {4, 3, 2, 1, 0, -1});
+
+    EXPECT_EQ(vexpected, v1 - v2);
+}
+
+TEST(VectorTests, VectorMultiplicationByScalarRational)
+{
+    const auto basis = TensorBasis::get(5, 2);
+    const auto stype = *scalars::get_type("Rational");
+
+    Vector v1(basis, stype, {1, 2, 3, 4, 5, 6});
+    scalars::Scalar scalar(stype, 2);
+
+    Vector vexpected(basis, stype, {2, 4, 6, 8, 10, 12});
+
+    EXPECT_EQ(vexpected, v1 * scalar);
+}
+
+TEST(VectorTests, VectorDivisionByScalarRational)
+{
+    const auto basis = TensorBasis::get(5, 2);
+    const auto stype = *scalars::get_type("Rational");
+
+    Vector v1(basis, stype, {2, 4, 6, 8, 10, 12});
+    scalars::Scalar scalar(stype, 2);
+
+    Vector vexpected(basis, stype, {1, 2, 3, 4, 5, 6});
+
+    EXPECT_EQ(vexpected, v1 / scalar);
+}
+
+TEST(VectorTests, VectorInplaceAdditionRational)
+{
+    const auto basis = TensorBasis::get(5, 2);
+    const auto stype = *scalars::get_type("Rational");
+
+    Vector v1(basis, stype, {1, 2, 3, 4, 5, 6});
+    Vector v2(basis, stype, {-2, 2, -2, 2, -2, 2});
+
+    v1 += v2;
+    Vector vexpected(basis, stype, {-1, 4, 1, 6, 3, 8});
+
+    EXPECT_EQ(vexpected, v1);
+}
+
+TEST(VectorTests, VectorInplaceSubtractionRational)
+{
+    const auto basis = TensorBasis::get(5, 2);
+    const auto stype = *scalars::get_type("Rational");
+
+    Vector v1(basis, stype, {6, 5, 4, 3, 2, 1});
+    Vector v2(basis, stype, {2, 2, 2, 2, 2, 2});
+
+    v1 -= v2;
+    Vector vexpected(basis, stype, {4, 3, 2, 1, 0, -1});
+
+    EXPECT_EQ(vexpected, v1);
+}
+
+TEST(VectorTests, VectorInplaceScalarMultiplicationRational)
+{
+    const auto basis = TensorBasis::get(5, 2);
+    const auto stype = *scalars::get_type("Rational");
+
+    Vector v1(basis, stype, {1, 2, 3, 4, 5, 6});
+    scalars::Scalar scalar(stype, 2);
+
+    v1 *= scalar;
+    Vector vexpected(basis, stype, {2, 4, 6, 8, 10, 12});
+
+    EXPECT_EQ(vexpected, v1);
+}
+
+TEST(VectorTests, VectorInplaceScalarDivisionRational)
+{
+    const auto basis = TensorBasis::get(5, 2);
+    const auto stype = *scalars::get_type("Rational");
+
+    Vector v1(basis, stype, {2, 4, 6, 8, 10, 12});
+    scalars::Scalar scalar(stype, 2);
+
+    v1 /= scalar;
+    Vector vexpected(basis, stype, {1, 2, 3, 4, 5, 6});
+
+    EXPECT_EQ(vexpected, v1);
+}
