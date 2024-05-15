@@ -7,179 +7,122 @@
 
 #include <roughpy/core/types.h>
 
-#include "host_kernels/vector_add.h"
-#include "host_kernels/vector_inplace_add.h"
-#include "host_kernels/vector_inplace_fused_left_scalar_multiply_add.h"
-#include "host_kernels/vector_inplace_fused_left_scalar_multiply_sub.h"
-#include "host_kernels/vector_inplace_fused_right_scalar_divide_add.h"
-#include "host_kernels/vector_inplace_fused_right_scalar_divide_sub.h"
-#include "host_kernels/vector_inplace_fused_right_scalar_multiply_add.h"
-#include "host_kernels/vector_inplace_fused_right_scalar_multiply_sub.h"
-#include "host_kernels/vector_inplace_left_scalar_multiply.h"
-#include "host_kernels/vector_inplace_right_scalar_multiply.h"
-#include "host_kernels/vector_inplace_sub.h"
-#include "host_kernels/vector_left_scalar_multiply.h"
-#include "host_kernels/vector_right_scalar_divide.h"
-#include "host_kernels/vector_right_scalar_multiply.h"
-#include "host_kernels/vector_sub.h"
-#include "host_kernels/vector_uminus.h"
+// #include "host_kernels/vector_add.h"
+// #include "host_kernels/vector_inplace_add.h"
+// #include "host_kernels/vector_inplace_fused_left_scalar_multiply_add.h"
+// #include "host_kernels/vector_inplace_fused_left_scalar_multiply_sub.h"
+// #include "host_kernels/vector_inplace_fused_right_scalar_divide_add.h"
+// #include "host_kernels/vector_inplace_fused_right_scalar_divide_sub.h"
+// #include "host_kernels/vector_inplace_fused_right_scalar_multiply_add.h"
+// #include "host_kernels/vector_inplace_fused_right_scalar_multiply_sub.h"
+// #include "host_kernels/vector_inplace_left_scalar_multiply.h"
+// #include "host_kernels/vector_inplace_right_scalar_multiply.h"
+// #include "host_kernels/vector_inplace_sub.h"
+// #include "host_kernels/vector_left_scalar_multiply.h"
+// #include "host_kernels/vector_right_scalar_divide.h"
+// #include "host_kernels/vector_right_scalar_multiply.h"
+// #include "host_kernels/vector_sub.h"
+// #include "host_kernels/vector_uminus.h"
+
+#include "host_kernels/vector_binary_operator.h"
+#include "host_kernels/vector_unary_operator.h"
+#include <roughpy/device_support/operators.h>
 
 using namespace rpy;
 using namespace rpy::devices;
 
+namespace rpy {
+namespace algebra {
+namespace dtl {}// namespace dtl
+}// namespace algebra
+}// namespace rpy
+
 namespace {
-template <typename T>
-struct IdOfType;
-
-template <>
-struct IdOfType<float> {
-    static constexpr string_view value = "f32";
-};
-
-template <>
-struct IdOfType<double> {
-    static constexpr string_view value = "f64";
-};
-
-template <typename O>
-struct SuffixOfType;
-
-template <template <typename...> class Op, typename T>
-struct SuffixOfType<algebra::VectorUnaryOperator<Op, T>> {
-    static constexpr string_view value = "Dd";
-};
-
-template <template <typename...> class Op, typename T>
-struct SuffixOfType<algebra::VectorUnaryWithScalarOperator<Op, T>> {
-    static constexpr string_view value = "Ddv";
-};
-
-template <template <typename...> class Op, typename T>
-struct SuffixOfType<algebra::VectorInplaceUnaryOperator<Op, T>> {
-    static constexpr string_view value = "D";
-};
-
-template <template <typename...> class Op, typename T>
-struct SuffixOfType<algebra::VectorInplaceUnaryWithScalarOperator<Op, T>> {
-    static constexpr string_view value = "Dv";
-};
-
-template <template <typename...> class Op, typename T>
-struct SuffixOfType<algebra::VectorBinaryOperator<Op, T>> {
-    static constexpr string_view value = "Ddd";
-};
-
-template <template <typename...> class Op, typename T>
-struct SuffixOfType<algebra::VectorInplaceBinaryOperator<Op, T>> {
-    static constexpr string_view value = "Dd";
-};
-
-template <template <typename...> class Op, typename T>
-struct SuffixOfType<algebra::VectorBinaryWithScalarOperator<Op, T>> {
-    static constexpr string_view value = "Dddv";
-};
-
-template <template <typename...> class Op, typename T>
-struct SuffixOfType<algebra::VectorInplaceBinaryWithScalarOperator<Op, T>> {
-    static constexpr string_view value = "Ddv";
-};
 
 class RegisterHostKernels
 {
+    template <typename T>
+    using UminusOp = algebra::VectorUnaryOperator<operators::Uminus, T>;
 
-    template <template <typename...> class Op, typename T>
-    using VUO = algebra::VectorUnaryOperator<Op, T>;
+    template <typename T>
+    using LeftScalarMulOp = algebra::
+            VectorUnaryWithScalarOperator<operators::LeftScalarMultiply, T>;
 
-    template <template <typename...> class Op, typename T>
-    using VIUO = algebra::VectorInplaceUnaryOperator<Op, T>;
+    template <typename T>
+    using RightScalarMulOp = algebra::
+            VectorUnaryWithScalarOperator<operators::RightScalarMultiply, T>;
 
-    template <template <typename...> class Op, typename T>
-    using VUWSO = algebra::VectorUnaryWithScalarOperator<Op, T>;
+    template <typename T>
+    using AdditionOp = algebra::VectorBinaryOperator<operators::Add, T>;
 
-    template <template <typename...> class Op, typename T>
-    using VIUWSO = algebra::VectorInplaceUnaryWithScalarOperator<Op, T>;
+    template <typename T>
+    using SubtractionOp = algebra::VectorBinaryOperator<operators::Sub, T>;
 
-    template <template <typename...> class Op, typename T>
-    using VBO = algebra::VectorBinaryOperator<Op, T>;
+    template <typename T>
+    using LeftInplaceScalarMulOp
+            = algebra::VectorInplaceUnaryWithScalarOperator<
+                    operators::LeftScalarMultiply,
+                    T>;
 
-    template <template <typename...> class Op, typename T>
-    using VBWSO = algebra::VectorBinaryWithScalarOperator<Op, T>;
+    template <typename T>
+    using RightInplaceScalarMulOp
+            = algebra::VectorInplaceUnaryWithScalarOperator<
+                    operators::RightScalarMultiply,
+                    T>;
 
-    template <template <typename...> class Op, typename T>
-    using VIBO = algebra::VectorInplaceBinaryOperator<Op, T>;
+    template <typename T>
+    using InplaceAdditionOp
+            = algebra::VectorInplaceBinaryOperator<operators::Add, T>;
 
-    template <template <typename...> class Op, typename T>
-    using VIBWSO = algebra::VectorInplaceBinaryWithScalarOperator<Op, T>;
+    template <typename T>
+    using InplaceSubtractionOp
+            = algebra::VectorInplaceBinaryOperator<operators::Sub, T>;
 
-    template <
-            template <template <typename...> class, typename...>
-            class Wrapper,
-            template <typename...>
-            class Op,
-            typename T>
-    Kernel make_kernel(const string& name)
-    {
-        return Kernel(new HostKernel<Wrapper<Op, T>>(
-                name + string(SuffixOfType<Wrapper<Op, T>>::value)
-        ));
-    }
+    template <typename T>
+    using FusedLeftScalarMultiplyAddOp
+            = algebra::VectorInplaceBinaryWithScalarOperator<
+                    operators::FusedLeftScalarMultiplyAdd,
+                    T>;
+
+    template <typename T>
+    using FusedRightScalarMultiplyAddOp
+            = algebra::VectorInplaceBinaryWithScalarOperator<
+                    operators::FusedRightScalarMultiplyAdd,
+                    T>;
+
+    template <typename T>
+    using FusedLeftScalarMultiplySubOp
+            = algebra::VectorInplaceBinaryWithScalarOperator<
+                    operators::FusedLeftScalarMultiplySub,
+                    T>;
+
+    template <typename T>
+    using FusedRightScalarMultiplySubOp
+            = algebra::VectorInplaceBinaryWithScalarOperator<
+                    operators::FusedRightScalarMultiplySub,
+                    T>;
 
     template <typename T>
     void register_all_kernels(const HostDevice& host)
     {
-        using namespace operators;
+        UminusOp<T>::register_kernels(host);
 
-        static const auto type_id = static_cast<string>(IdOfType<T>::value);
+        LeftScalarMulOp<T>::register_kernels(host);
+        RightScalarMulOp<T>::register_kernels(host);
 
-        host->register_kernel(make_kernel<VUO, Uminus, T>("uminus_" + type_id));
-        host->register_kernel(make_kernel<VUWSO, LeftScalarMultiply, T>(
-                "left_scalar_multiply_" + type_id + "_"
-        ));
-        host->register_kernel(make_kernel<VUWSO, RightScalarMultiply, T>(
-                "right_scalar_mutliply_" + type_id + "_"
-        ));
+        AdditionOp<T>::register_kernels(host);
+        SubtractionOp<T>::register_kernels(host);
 
-        host->register_kernel(make_kernel<VIUWSO, LeftScalarMultiply, T>(
-                "inplace_left_scalar_multiply_" + type_id + "_"
-        ));
-        host->register_kernel(make_kernel<VIUWSO, RightScalarMultiply, T>(
-                "inplace_right_scalar_multiply_" + type_id + "_"
-        ));
+        LeftInplaceScalarMulOp<T>::register_kernels(host);
+        RightInplaceScalarMulOp<T>::register_kernels(host);
 
-        host->register_kernel(
-                make_kernel<VBO, Add, T>("addition_" + type_id + "_")
-        );
-        host->register_kernel(
-                make_kernel<VIBO, Add, T>("inplace_addition_" + type_id + "_")
-        );
-        host->register_kernel(
-                make_kernel<VBO, Sub, T>("subtraction_" + type_id + "_")
-        );
-        host->register_kernel(make_kernel<VIBO, Sub, T>(
-                "inplace_subtraction_" + type_id + "_"
-        ));
+        InplaceAdditionOp<T>::register_kernels(host);
+        InplaceSubtractionOp<T>::register_kernels(host);
 
-        host->register_kernel(
-                make_kernel<VIBWSO, FusedLeftScalarMultiplyAdd, T>(
-                        "fused_add_scalar_left_mul_" + type_id + "_"
-                )
-        );
-        host->register_kernel(
-                make_kernel<VIBWSO, FusedRightScalarMultiplyAdd, T>(
-                        "fused_add_scalar_right_mul_" + type_id + "_"
-                )
-        );
-
-        host->register_kernel(
-                make_kernel<VIBWSO, FusedLeftScalarMultiplySub, T>(
-                        "fused_sub_scalar_left_mul_" + type_id + "_"
-                )
-        );
-        host->register_kernel(
-                make_kernel<VIBWSO, FusedRightScalarMultiplySub, T>(
-                        "fused_sub_scalar_right_mul_" + type_id + "_"
-                )
-        );
+        FusedLeftScalarMultiplyAddOp<T>::register_kernels(host);
+        FusedRightScalarMultiplyAddOp<T>::register_kernels(host);
+        FusedLeftScalarMultiplySubOp<T>::register_kernels(host);
+        FusedRightScalarMultiplySubOp<T>::register_kernels(host);
     }
 
 public:
@@ -202,7 +145,6 @@ optional<Kernel> algebra::dtl::get_kernel(
 )
 {
     static const RegisterHostKernels _registered_kernels;
-    auto name = string(kernel_name) + '_' + string(type_id) + '_'
-            + string(suffix);
-    return device->get_kernel(name);
+    return device->get_kernel(string_cat(kernel_name, '_', type_id, '_', suffix)
+    );
 }

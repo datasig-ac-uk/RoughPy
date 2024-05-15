@@ -5,6 +5,7 @@
 #ifndef VECTOR_BINARY_OPERATOR_H
 #define VECTOR_BINARY_OPERATOR_H
 
+#include "common.h"
 #include <roughpy/core/ranges.h>
 #include <roughpy/core/slice.h>
 #include <roughpy/core/traits.h>
@@ -18,15 +19,6 @@ namespace rpy {
 namespace algebra {
 
 namespace dtl {
-
-template <typename T>
-struct IdOfTypeImpl;
-
-template <typename T>
-constexpr string_view IdOfType = IdOfTypeImpl<T>::value;
-
-template <typename Op>
-constexpr string_view NameOfOperator = Op::name;
 
 template <typename T, typename Op>
 struct VectorBinaryOperator {
@@ -117,7 +109,7 @@ void vector_kernel_eval_Dds(
         Slice<const T> right
 )
 {
-    constexpr T zero;
+    constexpr T zero{};
     for (auto&& [oscal, lscal] : views::zip(out, left)) {
         oscal = op(lscal, zero);
     }
@@ -135,7 +127,7 @@ void vector_kernel_eval_Dsd(
         Slice<const T> right
 )
 {
-    constexpr T zero;
+    constexpr T zero{};
     for (auto&& [oscal, rscal] : views::zip(out, right)) {
         oscal = op(zero, rscal);
     }
@@ -159,7 +151,7 @@ void vector_inplace_kernel_eval_Ds(
         Slice<const T> right
 )
 {
-    constexpr T zero;
+    constexpr T zero{};
     for (auto&& [i, rscal] : views::zip(right_keys, right)) {
         out[i] += op(zero, rscal);
     }
@@ -175,7 +167,7 @@ void vector_kernel_eval_Dss(
         Slice<const T> right
 )
 {
-    constexpr T zero;
+    constexpr T zero{};
     for (auto&& [i, lscal] : views::zip(left_keys, left)) {
         out[i] += op(lscal, zero);
     }
@@ -442,8 +434,8 @@ void vector_kernel_eval_Ssd(
     }
 }
 
-template <typename Op, typename T>
-struct VectorBinaryOperator<Op, T>::Ddd {
+template <typename T, typename Op>
+struct VectorBinaryOperator<T, Op>::Ddd {
     void
     operator()(Slice<T> out, Slice<const T> left, Slice<const T> right) const
     {
@@ -454,8 +446,8 @@ struct VectorBinaryOperator<Op, T>::Ddd {
     }
 };
 
-template <typename Op, typename T>
-struct VectorBinaryOperator<Op, T>::Dds {
+template <typename T, typename Op>
+struct VectorBinaryOperator<T, Op>::Dds {
     void operator()(
             Slice<T> out,
             Slice<const T> left,
@@ -474,8 +466,8 @@ struct VectorBinaryOperator<Op, T>::Dds {
     }
 };
 
-template <typename Op, typename T>
-struct VectorBinaryOperator<Op, T>::Dsd {
+template <typename T, typename Op>
+struct VectorBinaryOperator<T, Op>::Dsd {
     void operator()(
             Slice<T> out,
             Slice<const dimn_t> left_keys,
@@ -494,8 +486,8 @@ struct VectorBinaryOperator<Op, T>::Dsd {
     }
 };
 
-template <typename Op, typename T>
-struct VectorBinaryOperator<Op, T>::Dss {
+template <typename T, typename Op>
+struct VectorBinaryOperator<T, Op>::Dss {
     void operator()(
             Slice<T> out,
             Slice<const dimn_t> left_keys,
@@ -520,24 +512,23 @@ void VectorBinaryOperator<T, Op>::register_kernels(const devices::Device& device
 )
 {
     using devices::HostKernel;
-    const string name = NameOfOperator<Op>;
-
+    constexpr auto name = NameOfOperator<Op>;
     device->register_kernel(
-            Kernel(new HostKernel<Ddd>(name + '_' + IdOfType<T> + '_' + "Ddd"))
+            dtl::make_kernel<Ddd>(name, '_', IdOfType<T>, '_', "Ddd")
     );
     device->register_kernel(
-            Kernel(new HostKernel<Dds>(name + '_' + IdOfType<T> + '_' + "Dds"))
+            dtl::make_kernel<Dds>(name, '_', IdOfType<T>, '_', "Dds")
     );
     device->register_kernel(
-            Kernel(new HostKernel<Dsd>(name + '_' + IdOfType<T> + '_' + "Dsd"))
+            dtl::make_kernel<Dsd>(name, '_', IdOfType<T>, '_', "Dsd")
     );
     device->register_kernel(
-            Kernel(new HostKernel<Dss>(name + '_' + IdOfType<T> + '_' + "Dss"))
+            dtl::make_kernel<Dss>(name, '_', IdOfType<T>, '_', "Dss")
     );
 }
 
-template <typename Op, typename T>
-struct VectorBinaryWithScalarOperator<Op, T>::Dddv {
+template <typename T, typename Op>
+struct VectorBinaryWithScalarOperator<T, Op>::Dddv {
     void operator()(
             Slice<T> out,
             Slice<const T> left,
@@ -549,8 +540,8 @@ struct VectorBinaryWithScalarOperator<Op, T>::Dddv {
     }
 };
 
-template <typename Op, typename T>
-struct VectorBinaryWithScalarOperator<Op, T>::Ddsv {
+template <typename T, typename Op>
+struct VectorBinaryWithScalarOperator<T, Op>::Ddsv {
     void operator()(
             Slice<T> out,
             Slice<const T> left,
@@ -563,8 +554,8 @@ struct VectorBinaryWithScalarOperator<Op, T>::Ddsv {
     }
 };
 
-template <typename Op, typename T>
-struct VectorBinaryWithScalarOperator<Op, T>::Dsdv {
+template <typename T, typename Op>
+struct VectorBinaryWithScalarOperator<T, Op>::Dsdv {
     void operator()(
             Slice<T> out,
             Slice<const dimn_t> left_keys,
@@ -577,8 +568,8 @@ struct VectorBinaryWithScalarOperator<Op, T>::Dsdv {
     }
 };
 
-template <typename Op, typename T>
-struct VectorBinaryWithScalarOperator<Op, T>::Dssv {
+template <typename T, typename Op>
+struct VectorBinaryWithScalarOperator<T, Op>::Dssv {
     void operator()(
             Slice<T> out,
             Slice<const dimn_t> left_keys,
@@ -605,32 +596,31 @@ void VectorBinaryWithScalarOperator<T, Op>::register_kernels(
 )
 {
     using devices::HostKernel;
-    const string name = NameOfOperator<Op>;
-
-    device->register_kernel(Kernel(
-            new HostKernel<Dddv>(name + '_' + IdOfType<T> + '_' + "Dddv")
-    ));
-    device->register_kernel(Kernel(
-            new HostKernel<Ddsv>(name + '_' + IdOfType<T> + '_' + "Ddsv")
-    ));
-    device->register_kernel(Kernel(
-            new HostKernel<Dsdv>(name + '_' + IdOfType<T> + '_' + "Dsdv")
-    ));
-    device->register_kernel(Kernel(
-            new HostKernel<Dssv>(name + '_' + IdOfType<T> + '_' + "Dssv")
-    ));
+    constexpr auto name = NameOfOperator<Op>;
+    device->register_kernel(
+            dtl::make_kernel<Dddv>(name, '_', IdOfType<T>, '_', "Dddv")
+    );
+    device->register_kernel(
+            dtl::make_kernel<Ddsv>(name, '_', IdOfType<T>, '_', "Ddsv")
+    );
+    device->register_kernel(
+            dtl::make_kernel<Dsdv>(name, '_', IdOfType<T>, '_', "Dsdv")
+    );
+    device->register_kernel(
+            dtl::make_kernel<Dssv>(name, '_', IdOfType<T>, '_', "Dssv")
+    );
 }
 
-template <typename Op, typename T>
-struct VectorInplaceBinaryOperator<Op, T>::Dd {
+template <typename T, typename Op>
+struct VectorInplaceBinaryOperator<T, Op>::Dd {
     void operator()(Slice<T> out, Slice<const T> right) const
     {
         vector_inplace_kernel_eval_Dd(Op(), out, right);
     }
 };
 
-template <typename Op, typename T>
-struct VectorInplaceBinaryOperator<Op, T>::Ds {
+template <typename T, typename Op>
+struct VectorInplaceBinaryOperator<T, Op>::Ds {
     void operator()(
             Slice<T> out,
             Slice<const dimn_t> right_keys,
@@ -647,13 +637,12 @@ void VectorInplaceBinaryOperator<T, Op>::register_kernels(
 )
 {
     using devices::HostKernel;
-    const string name = NameOfOperator<Op>;
-
+    constexpr auto name = NameOfOperator<Op>;
     device->register_kernel(
-            Kernel(new HostKernel<Dd>(name + '_' + IdOfType<T> + '_' + "Dddv"))
+            dtl::make_kernel<Dd>(name, '_', IdOfType<T>, '_', "Dddv")
     );
     device->register_kernel(
-            Kernel(new HostKernel<Ds>(name + '_' + IdOfType<T> + '_' + "Ddsv"))
+            dtl::make_kernel<Ds>(name, '_', IdOfType<T>, '_', "Ddsv")
     );
 }
 
@@ -684,13 +673,12 @@ void VectorInplaceBinaryWithScalarOperator<T, Op>::register_kernels(
 )
 {
     using devices::HostKernel;
-    const string name = NameOfOperator<Op>;
-
+    constexpr auto name(NameOfOperator<Op>);
     device->register_kernel(
-            Kernel(new HostKernel<Ddv>(name + '_' + IdOfType<T> + '_' + "Dddv"))
+            dtl::make_kernel<Ddv>(name, '_', IdOfType<T>, '_', "Dddv")
     );
     device->register_kernel(
-            Kernel(new HostKernel<Dsv>(name + '_' + IdOfType<T> + '_' + "Ddsv"))
+            dtl::make_kernel<Dsv>(name, '_', IdOfType<T>, '_', "Ddsv")
     );
 }
 

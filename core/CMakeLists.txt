@@ -23,6 +23,7 @@ add_roughpy_component(Core INTERFACE
         include/roughpy/core/helpers.h
         include/roughpy/core/slice.h
         include/roughpy/core/smart_ptr.h
+        include/roughpy/core/strings.h
         DEPENDENCIES INTERFACE
         Boost::boost
         range-v3::range-v3

@@ -5,6 +5,7 @@
 #ifndef VECTOR_UNARY_OPERATOR_H
 #define VECTOR_UNARY_OPERATOR_H
 
+#include "common.h"
 #include <roughpy/core/ranges.h>
 #include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>
@@ -17,15 +18,6 @@ namespace rpy {
 namespace algebra {
 
 namespace dtl {
-
-template <typename T>
-struct IdOfTypeImpl;
-
-template <typename T>
-constexpr string_view IdOfType = IdOfTypeImpl<T>::value;
-
-template <typename Op>
-constexpr string_view NameOfOperator = Op::name;
 
 template <typename T, typename Op>
 struct VectorUnaryOperator {
@@ -61,6 +53,21 @@ struct VectorInplaceUnaryWithScalarOperator {
 
 }// namespace dtl
 
+template <template <typename...> class Operator, typename T>
+using VectorUnaryOperator = dtl::VectorUnaryOperator<T, Operator<T>>;
+
+template <template <typename...> class Operator, typename T>
+using VectorUnaryWithScalarOperator
+        = dtl::VectorUnaryWithScalarOperator<T, Operator<T>>;
+
+template <template <typename...> class Operator, typename T>
+using VectorInplaceUnaryOperator
+        = dtl::VectorInplaceUnaryOperator<T, Operator<T>>;
+
+template <template <typename...> class Operator, typename T>
+using VectorInplaceUnaryWithScalarOperator
+        = dtl::VectorInplaceUnaryWithScalarOperator<T, Operator<T>>;
+
 /*
  * All that follows are the details of the implementation.
  */
@@ -87,7 +94,7 @@ void vector_kernel_eval_Ds(
 template <typename Op, typename T>
 void vector_inplace_kernel_eval_D(Op&& op, Slice<T> arg)
 {
-    for (auto&& val : arg) { val = op(arg); }
+    for (auto&& val : arg) { val = op(val); }
 }
 
 template <typename T, typename Op>
@@ -112,13 +119,12 @@ template <typename T, typename Op>
 void VectorUnaryOperator<T, Op>::register_kernels(const devices::Device& device)
 {
     using devices::HostKernel;
-    const string name = NameOfOperator<Op>;
-
+    constexpr auto name = NameOfOperator<Op>;
     device->register_kernel(
-            Kernel(new HostKernel<Dd>(name + '_' + IdOfType<T> + '_' + "Dd"))
+            dtl::make_kernel<Dd>(name, '_', IdOfType<T>, '_', "Dd")
     );
     device->register_kernel(
-            Kernel(new HostKernel<Ds>(name + '_' + IdOfType<T> + '_' + "Ds"))
+            dtl::make_kernel<Ds>(name, '_', IdOfType<T>, '_', "Ds")
     );
 }
 
@@ -139,7 +145,7 @@ struct VectorUnaryWithScalarOperator<T, Op>::Dsv {
             const T& scal
     ) const
     {
-        vector_kernel_eval_Dd(Op(scal), out, in_keys, in);
+        vector_kernel_eval_Ds(Op(scal), out, in_keys, in);
     }
 };
 
@@ -149,28 +155,14 @@ void VectorUnaryWithScalarOperator<T, Op>::register_kernels(
 )
 {
     using devices::HostKernel;
-    const string name = NameOfOperator<Op>;
-
+    constexpr auto name = NameOfOperator<Op>;
     device->register_kernel(
-            Kernel(new HostKernel<Ddv>(name + '_' + IdOfType<T> + '_' + "Ddv"))
+            dtl::make_kernel<Ddv>(name, '_', IdOfType<T>, '_', "Ddv")
     );
     device->register_kernel(
-            Kernel(new HostKernel<Dsv>(name + '_' + IdOfType<T> + '_' + "Dsv"))
+            dtl::make_kernel<Dsv>(name, '_', IdOfType<T>, '_', "Dsv")
     );
 }
-
-template <typename T, typename Op>
-struct VectorInplaceUnaryOperator<T, Op>::D {
-    void operator()(Slice<T> arg) { vector_inplace_kernel_eval_D(Op(), arg); }
-};
-
-template <typename T, typename Op>
-struct VectorInplaceUnaryOperator<T, Op>::S {
-    void operator()(Slice<dimn_t> RPY_UNUSED_VAR keys, Slice<T> arg)
-    {
-        vector_inplace_kernel_eval_D(Op(), arg);
-    }
-};
 
 template <typename T, typename Op>
 void VectorInplaceUnaryOperator<T, Op>::register_kernels(
@@ -178,50 +170,42 @@ void VectorInplaceUnaryOperator<T, Op>::register_kernels(
 )
 {
     using devices::HostKernel;
-    const string name = NameOfOperator<Op>;
-
+    constexpr auto name = NameOfOperator<Op>;
     device->register_kernel(
-            Kernel(new HostKernel<D>(name + '_' + IdOfType<T> + '_' + "D"))
+            dtl::make_kernel<D>(name, '_', IdOfType<T>, '_', "D")
     );
     device->register_kernel(
-            Kernel(new HostKernel<S>(name + '_' + IdOfType<T> + '_' + "S"))
+            dtl::make_kernel<S>(name, '_', IdOfType<T>, '_', "S")
     );
 }
 
 template <typename T, typename Op>
 struct VectorInplaceUnaryWithScalarOperator<T, Op>::Dv {
-    void operator()(Slice<T> arg, const T& scalar)
+    void operator()(Slice<T> out, const T& scal) const
     {
-        vector_inplace_kernel_eval_D(Op(scalar), arg);
+        vector_inplace_kernel_eval_D(Op(scal), out);
     }
 };
 
 template <typename T, typename Op>
 struct VectorInplaceUnaryWithScalarOperator<T, Op>::Sv {
-    void operator()(
-            Slice<dimn_t> RPY_UNUSED_VAR keys,
-            Slice<T> values,
-            const T& scal
-    )
+    void operator()(Slice<dimn_t> out_keys, Slice<T> out, const T& scal) const
     {
-        vector_inplace_kernel_eval_D(Op(scal), values);
+        vector_inplace_kernel_eval_D(Op(scal), out);
     }
 };
-
 template <typename T, typename Op>
 void VectorInplaceUnaryWithScalarOperator<T, Op>::register_kernels(
         const devices::Device& device
 )
 {
-
     using devices::HostKernel;
-    const string name = NameOfOperator<Op>;
-
+    constexpr auto name(NameOfOperator<Op>);
     device->register_kernel(
-            Kernel(new HostKernel<Dv>(name + '_' + IdOfType<T> + '_' + "Dv"))
+            dtl::make_kernel<Dv>(name, '_', IdOfType<T>, '_', "Dv")
     );
     device->register_kernel(
-            Kernel(new HostKernel<Sv>(name + '_' + IdOfType<T> + '_' + "Sv"))
+            dtl::make_kernel<Sv>(name, '_', IdOfType<T>, '_', "Sv")
     );
 }
 
