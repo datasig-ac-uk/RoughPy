@@ -16,6 +16,11 @@ inline void string_append(string& result, const string& other)
     result.append(other);
 }
 
+inline void string_append(string& result, string&& other)
+{
+    result.append(std::move(other));
+}
+
 inline void string_append(string& result, const string_view& other)
 {
     result.append(other);
@@ -27,7 +32,7 @@ inline void string_append(string& result, const char& other)
 }
 
 template <size_t N>
-inline void string_append(string& result, const char (&other)[N])
+void string_append(string& result, const char (&other)[N])
 {
     result.append(other);
 }
@@ -40,11 +45,10 @@ void string_append(string& result, const T& other)
 inline void string_append_all(string& result) {}
 
 template <typename Arg, typename... Args>
-inline void
-string_append_all(string& result, const Arg& arg, const Args&... args)
+void string_append_all(string& result, Arg&& arg, Args&&... args)
 {
-    string_append(result, arg);
-    string_append_all(result, args...);
+    string_append(result, std::forward<Arg>(arg));
+    string_append_all(result, std::forward<Args>(args)...);
 }
 
 }// namespace dtl
@@ -65,10 +69,10 @@ string_append_all(string& result, const Arg& arg, const Args&... args)
  * @see std::string
  */
 template <typename... Args>
-string string_cat(const Args&... args)
+string string_cat(Args&&... args)
 {
     string result;
-    dtl::string_append_all(result, args...);
+    dtl::string_append_all(result, std::forward<Args>(args)...);
     return result;
 }
 
