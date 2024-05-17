@@ -108,7 +108,7 @@ Queue DeviceHandle::get_default_queue() const { return {}; }
 
 optional<boost::uuids::uuid> DeviceHandle::uuid() const noexcept { return {}; }
 optional<PCIBusInfo> DeviceHandle::pci_bus_info() const noexcept { return {}; }
-bool DeviceHandle::supports_type(const TypeInfo& info) const noexcept
+bool DeviceHandle::supports_type(const Type* type) const noexcept
 {
     return false;
 }
@@ -148,26 +148,26 @@ void DeviceHandle::check_type_compatibility(
     }
 }
 
-AlgorithmDriversPtr DeviceHandle::algorithms(
-        const Type* primary_type,
-        const Type* secondary_type,
-        bool check_conversion
-) const
-{
-    if (secondary_type == nullptr) { secondary_type = primary_type; }
-    if (check_conversion) {
-        check_type_compatibility(primary_type, secondary_type);
-    }
-
-    if (traits::is_arithmetic(primary_type)
-        && traits::is_arithmetic(secondary_type)) {
-        return algorithms::get_builtin_algorithms();
-    }
-
-    RPY_THROW(
-            std::runtime_error,
-            "no standard algorithms for primary type "
-                    + string(primary_type->name()) + " and secondary type "
-                    + string(secondary_type->name())
-    );
-}
+// const AlgorithmsDispatcher& DeviceHandle::algorithms(
+//         const Type* primary_type,
+//         const Type* secondary_type,
+//         bool check_conversion
+// ) const
+// {
+//     if (secondary_type == nullptr) { secondary_type = primary_type; }
+//     if (check_conversion) {
+//         check_type_compatibility(primary_type, secondary_type);
+//     }
+//
+//     if (traits::is_arithmetic(primary_type)
+//         && traits::is_arithmetic(secondary_type)) {
+//         return algorithms::get_builtin_algorithms();
+//     }
+//
+//     RPY_THROW(
+//             std::runtime_error,
+//             "no standard algorithms for primary type "
+//                     + string(primary_type->name()) + " and secondary type "
+//                     + string(secondary_type->name())
+//     );
+// }

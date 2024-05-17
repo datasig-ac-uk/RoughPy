@@ -29,12 +29,14 @@
 #ifndef ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 #define ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 
+#include "algorithms.h"
+
+#include <roughpy/core/container/unordered_map.h>
+#include <roughpy/core/container/vector.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
-#include <roughpy/core/container/vector.h>
 
 #include <roughpy/platform/filesystem.h>
-
 
 #include <mutex>
 
@@ -62,11 +64,12 @@ struct ExtensionSourceAndOptions {
  * This class provides an interface to interact with a device. It is used as a
  * base class for specific device handle implementations.
  */
-class ROUGHPY_DEVICES_EXPORT DeviceHandle
-    : public RcBase<DeviceHandle>
+class ROUGHPY_DEVICES_EXPORT DeviceHandle : public RcBase<DeviceHandle>
 {
     mutable std::recursive_mutex m_lock;
-    mutable std::unordered_map<string, Kernel> m_kernel_cache;
+    mutable containers::HashMap<string, Kernel> m_kernel_cache;
+
+    AlgorithmsDispatcher m_algorithms;
 
 protected:
     using lock_type = std::recursive_mutex;
@@ -282,8 +285,7 @@ public:
      * The method is marked as const, indicating that it does not modify the
      * internal state of the device handle.
      */
-    RPY_NO_DISCARD virtual bool supports_type(const TypeInfo& info
-    ) const noexcept;
+    RPY_NO_DISCARD virtual bool supports_type(const Type* info) const noexcept;
 
     RPY_NO_DISCARD virtual Event
     from_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;
@@ -314,12 +316,24 @@ public:
      * algorithms. If no standard algorithms are available for the given primary
      * and secondary types, the method throws a std::runtime_error exception.
      */
-    RPY_NO_DISCARD AlgorithmDriversPtr virtual algorithms(
+    RPY_NO_DISCARD const AlgorithmsDispatcher& algorithms(
             const Type* primary_type,
             const Type* secondary_type = nullptr,
             bool check_conversion = false
-    ) const;
+    ) const
+    {
+        return m_algorithms;
+    }
+
+    template <template <typename...> class Implementor, typename... Ts>
+    void register_algorithm_drivers() const;
 };
+
+template <template <typename...> class Implementor, typename... Ts>
+void DeviceHandle::register_algorithm_drivers() const
+{
+    m_algorithms.register_implementation<Implementor, Ts...>();
+}
 
 }// namespace devices
 }// namespace rpy

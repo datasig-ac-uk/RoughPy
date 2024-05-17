@@ -1,0 +1,9 @@
+#ifndef ROUGHPY_DEVICE_SUPPORT_SWAP_RANGES_H_
+#define ROUGHPY_DEVICE_SUPPORT_SWAP_RANGES_H_
+
+namespace rpy { namespace devices {
+
+}
+}
+
+#endif //ROUGHPY_DEVICE_SUPPORT_SWAP_RANGES_H_

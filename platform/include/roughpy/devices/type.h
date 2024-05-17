@@ -8,8 +8,8 @@
 #include "core.h"
 
 #include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
 #include <roughpy/core/ranges.h>
+#include <roughpy/core/types.h>
 
 #ifndef RPY_NO_RTTI
 
@@ -269,10 +269,7 @@ public:
      *
      * @return The number of bytes.
      */
-    RPY_NO_DISCARD dimn_t bytes() const noexcept
-    {
-        return m_info.bytes;
-    }
+    RPY_NO_DISCARD dimn_t bytes() const noexcept { return m_info.bytes; }
 
     /**
      * @brief Returns the minimum alignment of the type.
@@ -289,7 +286,6 @@ public:
     {
         return m_info.alignment;
     }
-
 };
 
 /**
@@ -501,6 +497,16 @@ inline bool is_arithmetic(TypePtr const typePtr)
 }
 
 }// namespace traits
+
+/**
+ *
+ */
+ROUGHPY_DEVICES_EXPORT void register_type(const Type* tp);
+
+/**
+ *
+ */
+RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type* get_type(string_view type_id);
 
 /**
  * @brief Retrieves the Type for a given TypeInfo object.

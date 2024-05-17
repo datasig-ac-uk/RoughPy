@@ -73,7 +73,7 @@ public:
     Event new_event() const override;
     Queue new_queue() const override;
     Queue get_default_queue() const override;
-    bool supports_type(const TypeInfo& info) const noexcept override;
+    bool supports_type(const Type* type) const noexcept override;
 
     Device compute_delegate() const override;
 };

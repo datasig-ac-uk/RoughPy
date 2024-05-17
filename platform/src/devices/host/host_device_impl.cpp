@@ -127,7 +127,7 @@ void CPUDeviceHandle::compile_kernels_from_src(
 Event CPUDeviceHandle::new_event() const { return Event(new CPUEvent); }
 Queue CPUDeviceHandle::new_queue() const { return Queue(); }
 Queue CPUDeviceHandle::get_default_queue() const { return Queue(); }
-bool CPUDeviceHandle::supports_type(const TypeInfo& info) const noexcept
+bool CPUDeviceHandle::supports_type(const Type* type) const noexcept
 {
     return true;
 }

@@ -5,9 +5,25 @@ project(Roughpy_Platform VERSION 0.0.1)
 
 
 add_library(RoughPy_Device_Support INTERFACE
+        include/roughpy/device_support/algorithms.h
         include/roughpy/device_support/fundamental_type.h
         include/roughpy/device_support/host_kernel.h
         include/roughpy/device_support/operators.h
+        include/roughpy/device_support/algorithm_drivers/algorithm_base.h
+        include/roughpy/device_support/algorithm_drivers/copy.h
+        include/roughpy/device_support/algorithm_drivers/count.h
+        include/roughpy/device_support/algorithm_drivers/fill.h
+        include/roughpy/device_support/algorithm_drivers/find.h
+        include/roughpy/device_support/algorithm_drivers/lexicographical_compare.h
+        include/roughpy/device_support/algorithm_drivers/lower_bound.h
+        include/roughpy/device_support/algorithm_drivers/max_element.h
+        include/roughpy/device_support/algorithm_drivers/min_element.h
+        include/roughpy/device_support/algorithm_drivers/mismatch.h
+        include/roughpy/device_support/algorithm_drivers/reverse.h
+        include/roughpy/device_support/algorithm_drivers/shift_left.h
+        include/roughpy/device_support/algorithm_drivers/shift_right.h
+        include/roughpy/device_support/algorithm_drivers/swap_ranges.h
+        include/roughpy/device_support/algorithm_drivers/upper_bound.h
 )
 
 target_include_directories(RoughPy_Device_Support INTERFACE
@@ -74,6 +90,7 @@ add_roughpy_component(Platform
         src/devices/fundamental_types/uint64_type.cpp
         src/devices/fundamental_types/uint64_type.h
         src/devices/algorithms/algorithm_impl.h
+        src/devices/algorithms/algorithms_dispatcher.cpp
         src/devices/algorithms/copy.cpp
         src/devices/algorithms/count.cpp
         src/devices/algorithms/fill.cpp
@@ -108,6 +125,7 @@ add_roughpy_component(Platform
         include/roughpy/devices/macros.h
         include/roughpy/devices/queue.h
         include/roughpy/devices/type.h
+        include/roughpy/devices/type_dispatcher.h
         include/roughpy/devices/value.h
         DEPENDENCIES
         PUBLIC

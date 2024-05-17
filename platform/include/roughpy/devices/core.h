@@ -29,12 +29,12 @@
 #ifndef ROUGHPY_DEVICE_CORE_H_
 #define ROUGHPY_DEVICE_CORE_H_
 
+#include <roughpy/core/errors.h>
 #include <roughpy/core/macros.h>
+#include <roughpy/core/slice.h>
+#include <roughpy/core/smart_ptr.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
-#include <roughpy/core/errors.h>
-#include <roughpy/core/smart_ptr.h>
-#include <roughpy/core/slice.h>
 
 #include <boost/uuid/uuid.hpp>
 
@@ -50,7 +50,7 @@
 #define ROUGHPY_DEVICES_DEPRECATED_EXPORT ROUGHPY_PLATFORM_DEPRECATED_EXPORT
 
 #ifdef ROUGHPY_PLATFORM_NO_DEPRECATED
-#define ROUGHPY_DEVICES_NO_DEPRECATED
+#  define ROUGHPY_DEVICES_NO_DEPRECATED
 #endif
 
 namespace rpy {
@@ -537,6 +537,77 @@ constexpr TypeInfo type_info() noexcept
             type_align_of<T, uint8_t>(),
             type_lanes_of<T, uint8_t>()};
 }
+
+namespace dtl {
+
+template <typename T>
+struct type_id_of_impl;
+
+template <>
+struct type_id_of_impl<int8_t> {
+    static constexpr string_view value = "i8";
+};
+
+template <>
+struct type_id_of_impl<int16_t> {
+    static constexpr string_view value = "i16";
+};
+
+template <>
+struct type_id_of_impl<int32_t> {
+    static constexpr string_view value = "i32";
+};
+
+template <>
+struct type_id_of_impl<int64_t> {
+    static constexpr string_view value = "i64";
+};
+
+template <>
+struct type_id_of_impl<uint8_t> {
+    static constexpr string_view value = "u8";
+};
+
+template <>
+struct type_id_of_impl<uint16_t> {
+    static constexpr string_view value = "u16";
+};
+
+template <>
+struct type_id_of_impl<uint32_t> {
+    static constexpr string_view value = "u32";
+};
+
+template <>
+struct type_id_of_impl<uint64_t> {
+    static constexpr string_view value = "u64";
+};
+
+template <>
+struct type_id_of_impl<float> {
+    static constexpr string_view value = "f32";
+};
+
+template <>
+struct type_id_of_impl<double> {
+    static constexpr string_view value = "f64";
+};
+
+}// namespace dtl
+
+template <typename T>
+/**
+ * @brief Represents the type ID of a given type.
+ *
+ * The `type_id_of` variable is a `constexpr` string view that stores the type
+ * ID of the specified type `T`. It is defined using the `type_id_of_impl`
+ * implementation.
+ *
+ * @note The implementation of `type_id_of_impl` should be provided separately.
+ *
+ * @see dtl::type_id_of_impl
+ */
+constexpr string_view type_id_of = dtl::type_id_of_impl<T>::value;
 
 ROUGHPY_DEVICES_EXPORT
 std::ostream& operator<<(std::ostream& os, const TypeInfo& code);

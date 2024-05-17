@@ -24,6 +24,7 @@
 #include "fundamental_types/float_type.h"
 // ReSharper restore CppUnusedIncludeDirective
 
+#include "roughpy/core/strings.h"
 
 #include <typeindex>
 
@@ -41,7 +42,7 @@ Type::~Type() = default;
 
 Buffer Type::allocate(Device device, dimn_t count) const
 {
-    return device->alloc(m_info, count);
+    return device->alloc(this, count);
 }
 
 void* Type::allocate_single() const
@@ -164,9 +165,68 @@ TypeComparison Type::compare_with(const Type* other) const noexcept
 {
     if (other == this) { return TypeComparison::AreSame; }
 
-    if (traits::is_arithmetic(other)) {
-        return TypeComparison::Convertible;
-    }
+    if (traits::is_arithmetic(other)) { return TypeComparison::Convertible; }
 
     return TypeComparison::NotConvertible;
+}
+
+namespace {
+
+template <typename Guarded, typename Mutex = std::mutex>
+class MutexLocked
+{
+    Guarded& r_guarded;
+    std::scoped_lock<Mutex> m_guard;
+
+public:
+    using mutex_type = Mutex;
+
+    MutexLocked(Guarded& guarded, Mutex& mutex)
+        : r_guarded(guarded),
+          m_guard(mutex)
+    {}
+
+    Guarded& value() noexcept { return r_guarded; }
+};
+
+using TypeCache = containers::HashMap<string_view, const Type*>;
+using GuardedTypeCache = MutexLocked<TypeCache>;
+
+GuardedTypeCache get_type_cache() noexcept
+{
+    static typename GuardedTypeCache::mutex_type lock;
+    static TypeCache s_cache;
+    return {s_cache, lock};
+}
+
+}// namespace
+
+void devices::register_type(const Type* tp)
+{
+    auto locked_cache = get_type_cache();
+    auto& cache = locked_cache.value();
+
+    auto& entry = cache[tp->id()];
+    if (entry == nullptr) {
+        entry = tp;
+    } else {
+        RPY_THROW(
+                std::runtime_error,
+                string_cat("type with id ", tp->id(), " already exists")
+        );
+    }
+}
+
+const Type* devices::get_type(string_view type_id)
+{
+    auto locked_cache = get_type_cache();
+    auto& cache = locked_cache.value();
+
+    const auto found = cache.find(type_id);
+    if (found != cache.end()) { return found->second; }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat("type id ", type_id, " not found")
+    );
 }

@@ -21,9 +21,15 @@ class TypedReference;
 class ConstReference
 {
     const void* p_val;
+    const Type* p_type;
 
 public:
-    constexpr explicit ConstReference(const void* val) : p_val(val) {}
+    constexpr explicit ConstReference(const void* val, const Type* type)
+        : p_val(val),
+          p_type(type)
+    {}
+
+    const Type* type() const noexcept { return p_type; }
 
     template <typename T>
     constexpr explicit operator TypedConstReference<T>() const noexcept
@@ -61,17 +67,12 @@ public:
     }
 };
 
-class Reference
+class Reference : public ConstReference
 {
-    void* p_val;
-
 public:
-    constexpr explicit Reference(void* val) : p_val(val) {}
-
-    constexpr operator ConstReference() const noexcept
-    {
-        return ConstReference(p_val);
-    }
+    constexpr explicit Reference(void* val, const Type* type)
+        : ConstReference(val, type)
+    {}
 
     template <typename T>
     explicit constexpr operator TypedConstReference<T>() noexcept
@@ -88,7 +89,7 @@ public:
     template <typename T>
     constexpr T& value()
     {
-        return *static_cast<T*>(p_val);
+        return const_cast<T&>(ConstReference::value<T>());
     }
 };
 

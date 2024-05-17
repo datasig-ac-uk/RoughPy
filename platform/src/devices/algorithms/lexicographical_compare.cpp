@@ -23,7 +23,8 @@ struct LexicographicalCompareFunctor {
 
 }// namespace
 
-bool AlgorithmDrivers::lexicographacal_compare(
+
+bool AlgorithmDrivers::lexicographical_compare(
         const Buffer& left,
         const Buffer& right
 ) const

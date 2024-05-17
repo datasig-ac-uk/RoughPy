@@ -1,0 +1,9 @@
+#ifndef ROUGHPY_DEVICE_SUPPORT_MISMATCH_H_
+#define ROUGHPY_DEVICE_SUPPORT_MISMATCH_H_
+
+namespace rpy { namespace devices {
+
+}
+}
+
+#endif //ROUGHPY_DEVICE_SUPPORT_MISMATCH_H_
