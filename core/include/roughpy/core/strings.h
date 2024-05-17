@@ -76,6 +76,27 @@ string string_cat(Args&&... args)
     return result;
 }
 
+/**
+ * @brief Concatenates multiple strings with a joiner.
+ *
+ * @param joiner The string used to join the arguments.
+ * @param args The strings to be joined.
+ * @return The joined string.
+ */
+template <typename S, typename... Args>
+string string_join(const S& joiner, Args&&... args)
+{
+    string result;
+    bool first = true;
+    auto append_arg = [&](const auto& arg) {
+        if (!first) { dtl::string_append(result, joiner); }
+        dtl::string_append(result, arg);
+        first = false;
+    };
+    (append_arg(std::forward<Args>(args)), ...);
+    return result;
+}
+
 }// namespace rpy
 
 #endif// ROUGHPY_CORE_STRINGS_H
