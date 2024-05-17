@@ -301,10 +301,97 @@ template <>
 struct ConstLog2<1> : integral_constant<size_t, 0> {
 };
 
-
 template <typename T, typename...>
 using head_t = T;
 
+namespace definitely_a_new_namespace {
+
+// ReSharper disable CppFunctionIsNotImplemented
+namespace __marker {
+struct type {
+};
+}// namespace __marker
+
+template <typename S, typename T>
+__marker::type operator<(const S&, const T&);
+
+template <typename S, typename T>
+struct is_less_comparable
+    : is_same<decltype(std::declval<const S&>() < std::declval<const T&>()),
+              __marker::type> {
+};
+
+template <typename S, typename T>
+__marker::type operator<=(const S&, const T&);
+
+template <typename S, typename T>
+struct is_less_equal_comparable
+    : is_same<decltype(std::declval<const S&>() <= std::declval<const T&>()),
+              __marker::type> {
+};
+
+template <typename S, typename T>
+__marker::type operator>(const S&, const T&);
+
+template <typename S, typename T>
+struct is_greater_comparable
+    : is_same<decltype(std::declval<const S&>() > std::declval<const T&>()),
+              __marker::type> {
+};
+
+template <typename S, typename T>
+__marker::type operator>=(const S&, const T&);
+
+template <typename S, typename T>
+struct is_greater_equal_comparable
+    : is_same<decltype(std::declval<const S&>() >= std::declval<const T&>()),
+              __marker::type> {
+};
+
+template <typename S, typename T>
+__marker::type operator==(const S&, const T&);
+
+template <typename S, typename T>
+struct is_equal_comparable
+    : is_same<decltype(std::declval<const S&>() == std::declval<const T&>()),
+              __marker::type> {
+};
+
+template <typename S, typename T>
+__marker::type operator!=(const S&, const T&);
+
+template <typename S, typename T>
+struct is_not_equal_comparable
+    : is_same<decltype(std::declval<const S&>() != std::declval<const T&>()),
+              __marker::type> {
+};
+
+// ReSharper restore CppFunctionIsNotImplemented
+}// namespace definitely_a_new_namespace
+
+template <typename S, typename T = S>
+constexpr bool is_less_comparable_v
+        = definitely_a_new_namespace::is_less_comparable<S, T>::value;
+
+template <typename S, typename T = S>
+constexpr bool is_less_equal_comparable_v
+        = definitely_a_new_namespace::is_less_equal_comparable<S, T>::value;
+
+template <typename S, typename T = S>
+constexpr bool is_greater_comparable_v
+        = definitely_a_new_namespace::is_greater_comparable<S, T>::value;
+
+template <typename S, typename T = S>
+constexpr bool is_greater_equal_comparable_v
+        = definitely_a_new_namespace::is_greater_equal_comparable<S, T>::value;
+
+template <typename S, typename T = S>
+constexpr bool is_equal_comparable_v
+        = definitely_a_new_namespace::is_equal_comparable<S, T>::value;
+
+template <typename S, typename T = S>
+constexpr bool is_not_equal_comparable_v
+        = definitely_a_new_namespace::is_not_equal_comparable<S, T>::value;
 }// namespace rpy
 
 #endif// ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
