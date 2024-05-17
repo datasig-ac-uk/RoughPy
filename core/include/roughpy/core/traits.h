@@ -304,6 +304,10 @@ struct ConstLog2<1> : integral_constant<size_t, 0> {
 template <typename T, typename...>
 using head_t = T;
 
+/*
+ * The following operator detection traits are
+ * based https://stackoverflow.com/a/5843622/9225581
+ */
 namespace definitely_a_new_namespace {
 
 // ReSharper disable CppFunctionIsNotImplemented
