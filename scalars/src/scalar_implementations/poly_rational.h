@@ -278,6 +278,14 @@ struct type_size_of_impl<scalars::Polynomial<scalars::Rational<T>>> {
     static constexpr dimn_t value = sizeof(T);
 };
 
+template <>
+struct type_id_of_impl<scalars::APPolyRat>
+{
+    static constexpr string_view value = "APRatPoly";
+};
+
+
+
 }// namespace dtl
 }// namespace devices
 

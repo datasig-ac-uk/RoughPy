@@ -148,7 +148,7 @@ public:
     constexpr type_info_t get_type_info() const noexcept
     {
         return bit_cast<type_info_t>(
-                static_cast<uint32_t>((m_data & TypeInfoMask) >> MaxEnumBits)
+                static_cast<uint32_t>((m_data & TypeInfoMask) >> NonPointerBits)
         );
     }
 

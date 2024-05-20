@@ -23,6 +23,13 @@ struct type_code_of_impl<scalars::Half>
     static constexpr TypeCode value = TypeCode::Float;
 };
 
+template <>
+struct type_id_of_impl<scalars::Half>
+{
+    static constexpr string_view value = "f16";
+};
+
+
 }}
 
 

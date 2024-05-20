@@ -183,8 +183,9 @@ bool rpy::scalars::dtl::scalar_convert_copy(
         dimn_t count
 ) noexcept
 {
+    const auto tp = type_info_from(src_type);
 #define X(TP) return convert_impl<TP>(dst, dst_type, (const TP*) src, count)
-    DO_FOR_EACH_X(type_info_from(src_type))
+    DO_FOR_EACH_X(tp)
 #undef X
     return false;
 }

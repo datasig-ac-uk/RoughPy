@@ -324,7 +324,7 @@ ScalarArray ScalarArray::operator[](SliceIndex index)
 
 ScalarArray ScalarArray::operator[](SliceIndex index) const
 {
-    RPY_DBG_ASSERT(index.begin < index.end);
+    RPY_DBG_ASSERT(index.begin <= index.end);
     const auto buffer_size = m_buffer.size();
     RPY_CHECK(
             index.end <= buffer_size,

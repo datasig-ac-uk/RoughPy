@@ -91,6 +91,11 @@ template <>
 struct type_code_of_impl<scalars::ArbitraryPrecisionRational> {
     static constexpr TypeCode value = TypeCode::ArbitraryPrecisionRational;
 };
+template <>
+struct type_id_of_impl<scalars::ArbitraryPrecisionRational>
+{
+    static constexpr string_view value = "Rational";
+};
 
 }// namespace dtl
 }// namespace devices

@@ -7,13 +7,13 @@
 
 #include "scalars_fwd.h"
 
+#include "scalar.h"
+#include "scalar_array.h"
+#include "scalar_type.h"
 #include <roughpy/devices/algorithms.h>
 #include <roughpy/devices/buffer.h>
 #include <roughpy/devices/core.h>
 #include <roughpy/devices/value.h>
-#include "scalar.h"
-#include "scalar_array.h"
-#include "scalar_type.h"
 
 namespace rpy {
 namespace scalars {
@@ -32,7 +32,10 @@ namespace drivers = devices::algorithms;
 RPY_NO_DISCARD inline optional<dimn_t>
 find(const ScalarArray& range, const Scalar& value)
 {
-    return drivers::find(range.buffer(), devices::ConstReference(value.pointer()));
+    return drivers::find(
+            range.buffer(),
+            devices::ConstReference(value.pointer(), value.type()->as_type())
+    );
 }
 
 /**
@@ -68,7 +71,7 @@ lower_bound(const ScalarArray& range, const Scalar& value)
 {
     return drivers::lower_bound(
             range.buffer(),
-            devices::ConstReference(value.pointer())
+            devices::ConstReference(value.pointer(), value.type()->as_type())
     );
 }
 
@@ -111,7 +114,7 @@ upper_bound(const ScalarArray& range, const Scalar& value)
 {
     return drivers::upper_bound(
             range.buffer(),
-            devices::ConstReference(value.pointer())
+            devices::ConstReference(value.pointer(), value.type()->as_type())
     );
 }
 
@@ -148,7 +151,10 @@ upper_bound(const ScalarArray& range, const T& value)
 RPY_NO_DISCARD inline dimn_t
 count(const ScalarArray& range, const Scalar& value)
 {
-    return drivers::count(range.buffer(), devices::ConstReference(value.pointer()));
+    return drivers::count(
+            range.buffer(),
+            devices::ConstReference(value.pointer(), value.type()->as_type())
+    );
 }
 
 /**
@@ -178,7 +184,7 @@ contains(const ScalarArray& range, const Scalar& value)
 {
     return drivers::contains(
             range.buffer(),
-            devices::ConstReference(value.pointer())
+            devices::ConstReference(value.pointer(), value.type()->as_type())
     );
 }
 
@@ -323,7 +329,10 @@ inline void shift_right(ScalarArray& arr, dimn_t count)
  */
 inline void fill(ScalarArray& dst, const Scalar& value)
 {
-    drivers::fill(dst.mut_buffer(), devices::ConstReference(value.pointer()));
+    drivers::fill(
+            dst.mut_buffer(),
+            devices::ConstReference(value.pointer(), value.type()->as_type())
+    );
 }
 
 /**
@@ -374,7 +383,10 @@ lexicographical_compare(const ScalarArray& left, const ScalarArray& right)
 RPY_NO_DISCARD inline Scalar min(const ScalarArray& range)
 {
     Scalar result(range.type());
-    drivers::min(range.buffer(), devices::Reference(result.mut_pointer()));
+    drivers::min(
+            range.buffer(),
+            devices::Reference(result.mut_pointer(), result.type()->as_type())
+    );
     return result;
 }
 
@@ -392,7 +404,10 @@ RPY_NO_DISCARD inline Scalar min(const ScalarArray& range)
 RPY_NO_DISCARD inline Scalar max(const ScalarArray& range)
 {
     Scalar result(range.type());
-    drivers::max(range.buffer(), devices::Reference(result.mut_pointer()));
+    drivers::max(
+            range.buffer(),
+            devices::Reference(result.mut_pointer(), result.type()->as_type())
+    );
     return result;
 }
 

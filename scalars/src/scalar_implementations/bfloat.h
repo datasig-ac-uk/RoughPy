@@ -23,6 +23,12 @@ struct type_code_of_impl<scalars::BFloat16> {
     static constexpr TypeCode value = TypeCode::BFloat;
 };
 
+template <>
+struct type_id_of_impl<scalars::BFloat16>
+{
+    static constexpr string_view value = "bf16";
+};
+
 }// namespace dtl
 }// namespace devices
 

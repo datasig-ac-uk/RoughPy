@@ -72,8 +72,7 @@
         case devices::TypeCode::ArbitraryPrecisionRational:                    \
             X(ArbitraryPrecisionRational);                                     \
         case devices::TypeCode::APRationalPolynomial: X(APPolyRat);            \
-        case devices::TypeCode::KeyType:                                       \
-            RPY_THROW(std::runtime_error, "keytype is not a scalar");          \
+        case devices::TypeCode::KeyType: break;                                \
     }
 
 #endif// ROUGHPY_SCALARS_SRC_SCALAR_DO_MACRO_H_

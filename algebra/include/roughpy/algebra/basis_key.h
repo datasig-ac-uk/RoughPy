@@ -170,6 +170,18 @@ const Key* cast_key(const BasisKey& arg)
 
 
 }// namespace algebra
+
+template <>
+struct devices::dtl::type_code_of_impl<rpy::algebra::BasisKey>
+{
+    static constexpr auto value = TypeCode::KeyType;
+};
+
+template <>
+struct devices::dtl::type_id_of_impl<rpy::algebra::BasisKey> {
+    static constexpr string_view value = "key";
+};
+
 }// namespace rpy
 
 #endif// ROUGHPY_ALGEBRA_BASIS_KEY_H
