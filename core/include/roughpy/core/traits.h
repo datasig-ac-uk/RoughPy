@@ -310,67 +310,31 @@ using head_t = T;
  */
 namespace definitely_a_new_namespace {
 
-// ReSharper disable CppFunctionIsNotImplemented
-namespace __marker {
-struct type {
-};
-}// namespace __marker
 
-template <typename S, typename T>
-__marker::type operator<(const S&, const T&);
+#define RPY_MAKE_COMPARE_TRAIT(name, op)                                       \
+    template <typename S, typename T, typename = void>                         \
+    struct name : false_type {                                                 \
+    };                                                                         \
+                                                                               \
+    template <typename S, typename T>                                          \
+    struct name<                                                               \
+            S,                                                                 \
+            T,                                                                 \
+            void_t<decltype(std::declval<const S&>()                           \
+                                    op std::declval<const T&>())>>             \
+        : true_type {                                                          \
+    };
 
-template <typename S, typename T>
-struct is_less_comparable
-    : is_same<decltype(std::declval<const S&>() < std::declval<const T&>()),
-              __marker::type> {
-};
 
-template <typename S, typename T>
-__marker::type operator<=(const S&, const T&);
+RPY_MAKE_COMPARE_TRAIT(is_less_comparable, <)
+RPY_MAKE_COMPARE_TRAIT(is_less_equal_comparable, <=)
+RPY_MAKE_COMPARE_TRAIT(is_greater_comparable, >)
+RPY_MAKE_COMPARE_TRAIT(is_greater_equal_comparable, >=)
+RPY_MAKE_COMPARE_TRAIT(is_equal_comparable, ==)
+RPY_MAKE_COMPARE_TRAIT(is_not_equal_comparable, !=)
 
-template <typename S, typename T>
-struct is_less_equal_comparable
-    : is_same<decltype(std::declval<const S&>() <= std::declval<const T&>()),
-              __marker::type> {
-};
+#undef RPY_MAKE_COMPARE_TRAIT
 
-template <typename S, typename T>
-__marker::type operator>(const S&, const T&);
-
-template <typename S, typename T>
-struct is_greater_comparable
-    : is_same<decltype(std::declval<const S&>() > std::declval<const T&>()),
-              __marker::type> {
-};
-
-template <typename S, typename T>
-__marker::type operator>=(const S&, const T&);
-
-template <typename S, typename T>
-struct is_greater_equal_comparable
-    : is_same<decltype(std::declval<const S&>() >= std::declval<const T&>()),
-              __marker::type> {
-};
-
-template <typename S, typename T>
-__marker::type operator==(const S&, const T&);
-
-template <typename S, typename T>
-struct is_equal_comparable
-    : is_same<decltype(std::declval<const S&>() == std::declval<const T&>()),
-              __marker::type> {
-};
-
-template <typename S, typename T>
-__marker::type operator!=(const S&, const T&);
-
-template <typename S, typename T>
-struct is_not_equal_comparable
-    : is_same<decltype(std::declval<const S&>() != std::declval<const T&>()),
-              __marker::type> {
-};
-
-// ReSharper restore CppFunctionIsNotImplemented
 }// namespace definitely_a_new_namespace
 
 template <typename S, typename T = S>

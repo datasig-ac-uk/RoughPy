@@ -31,19 +31,19 @@ namespace dtl {
  * @brief This class provides a guarded reference to an object. The reference
  * can only be accessed when locked by a mutex.
  *
- * @tparam _T The type of the object being guarded.
- * @tparam _M The type of the mutex used for synchronization.
+ * @tparam T The type of the object being guarded.
+ * @tparam M The type of the mutex used for synchronization.
  */
-template <typename _T, typename _M>
+template <typename T, typename M>
 class GuardedRef
 {
-    using reference = add_lvalue_reference_t<_T>;
-    using pointer = add_pointer_t<_T>;
-    UniqueLock<_M> m_lk;
+    using reference = add_lvalue_reference_t<T>;
+    using pointer = add_pointer_t<T>;
+    UniqueLock<M> m_lk;
     reference m_value;
 
 public:
-    GuardedRef(reference& value, _M& mutex) : m_lk(mutex), m_value(value) {}
+    GuardedRef(reference& value, M& mutex) : m_lk(mutex), m_value(value) {}
 
     GuardedRef(const GuardedRef&) = delete;
     GuardedRef& operator=(const GuardedRef&) = delete;
@@ -52,12 +52,18 @@ public:
     GuardedRef& operator=(GuardedRef&&) noexcept = default;
 
     // ReSharper disable CppNonExplicitConversionOperator
-    operator reference() noexcept
+    operator reference() noexcept // NOLINT(*-explicit-constructor)
     {
         RPY_DBG_ASSERT(m_lk.owns_lock());
         return m_value;
     }
     // ReSharper restore CppNonExplicitConversionOperator
+
+    reference operator*() noexcept
+    {
+        RPY_DBG_ASSERT(m_lk.owns_lock());
+        return m_value;
+    }
 
     pointer operator->() noexcept
     {
@@ -76,23 +82,23 @@ public:
  * held internally. It uses a mutex to ensure thread-safety and allows multiple
  * reader threads and exclusive writer threads.
  *
- * @tparam _T The type of the value to be stored.
- * @tparam _M The type of the mutex to be used for synchronization.
+ * @tparam T The type of the value to be stored.
+ * @tparam M The type of the mutex to be used for synchronization.
  *
  * @note This class template requires the synchronization to be managed
  * externally using the specified mutex type. @note The value_type and
  * mutex_type aliases provide convenient access to the template parameters.
  */
-template <typename _T, typename _M = Mutex>
+template <typename T, typename M = Mutex>
 class GuardedValue
 {
-    mutable _M m_mutex;
+    mutable M m_mutex {};
 
 public:
-    using value_type = remove_cv_ref_t<_T>;
-    using mutex_type = _M;
-    using reference = dtl::GuardedRef<value_type, _M>;
-    using const_reference = dtl::GuardedRef<const value_type, _M>;
+    using value_type = remove_cv_ref_t<T>;
+    using mutex_type = M;
+    using reference = dtl::GuardedRef<value_type, M>;
+    using const_reference = dtl::GuardedRef<const value_type, M>;
 
     using pointer = reference;
     using const_pointer = const_reference;
@@ -103,7 +109,6 @@ private:
 public:
     GuardedValue() = default;
 
-    GuardedValue(const GuardedValue& other) : m_value(other.value()) {}
 
     GuardedValue(GuardedValue&& other) noexcept
         : m_value(std::move(other.m_value))
@@ -117,22 +122,22 @@ public:
     explicit GuardedValue(Args&&... args) : m_value(std::forward<Args>(args)...)
     {}
 
-    template <typename _OM>
-    explicit GuardedValue(const GuardedValue<_T, _OM>& other)
+    template <typename OM>
+    explicit GuardedValue(const GuardedValue<T, OM>& other)
     {
         m_value = other.value();
     }
 
-    template <typename _OM>
-    explicit GuardedValue(GuardedValue<_T, _OM>&& other) noexcept
+    template <typename OM>
+    explicit GuardedValue(GuardedValue<T, OM>&& other) noexcept
         : m_value(other.take())
     {}
 
     GuardedValue& operator=(const GuardedValue& other)
     {
         if (&other != this) {
-            UniqueLock<_M> left_lk(m_mutex, defer_lock);
-            UniqueLock<_M> right_lk(other.m_mutex, defer_lock);
+            UniqueLock<M> left_lk(m_mutex, defer_lock);
+            UniqueLock<M> right_lk(other.m_mutex, defer_lock);
             lock(left_lk, right_lk);
 
             m_value = other.m_value;
@@ -140,28 +145,28 @@ public:
         return *this;
     }
 
-    GuardedValue& operator=(_T& value)
+    GuardedValue& operator=(T& value)
     {
         {
-            UniqueLock<_M> lk(m_mutex);
+            UniqueLock<M> lk(m_mutex);
             m_value = value;
         }
         return *this;
     }
 
-    template <typename _OM>
-    void swap(GuardedValue<_T, _OM>& other)
+    template <typename OM>
+    void swap(GuardedValue<T, OM>& other)
     {
         if (&other == this) { return; }
-        UniqueLock<_M> left_lk(m_mutex, defer_lock);
-        UniqueLock<_OM> right_lk(other.mutex(), defer_lock);
+        UniqueLock<M> left_lk(m_mutex, defer_lock);
+        UniqueLock<OM> right_lk(other.mutex(), defer_lock);
         lock(left_lk, right_lk);
         std::swap(m_value, other.m_value);
     }
 
-    void swap(_T& other)
+    void swap(T& other)
     {
-        LockGuard<_M> lk(m_mutex);
+        LockGuard<M> lk(m_mutex);
         std::swap(m_value, other);
     }
 
@@ -169,7 +174,7 @@ public:
 
     value_type value() const
     {
-        UniqueLock<_M> lk(m_mutex);
+        UniqueLock<M> lk(m_mutex);
         return m_value;
     }
 
