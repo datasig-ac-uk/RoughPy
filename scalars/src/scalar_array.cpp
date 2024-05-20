@@ -63,7 +63,7 @@ ScalarArray::ScalarArray(ScalarArray&& other) noexcept
 ScalarArray::ScalarArray(const ScalarType* type, dimn_t size) : p_type(type)
 {
     RPY_CHECK(type != nullptr);
-    m_buffer = devices::Buffer(type->device(), size, type->type_info());
+    m_buffer = devices::Buffer(type->as_type(), size, type->device());
 }
 
 ScalarArray::ScalarArray(devices::TypeInfo info, dimn_t size)
@@ -85,7 +85,9 @@ ScalarArray::ScalarArray(PackedScalarType type, void* data, dimn_t size)
 ScalarArray::ScalarArray(PackedScalarType type, devices::Buffer&& buffer)
     : m_buffer(std::move(buffer))
 {
-    RPY_CHECK(m_buffer.is_null() || type_info_from(type) == m_buffer.type_info());
+    RPY_CHECK(
+            m_buffer.is_null() || type_info_from(type) == m_buffer.type_info()
+    );
     if (type.is_pointer()) { p_type = type.get_pointer(); }
 
     auto dst_device = scalars::device_from(type);
