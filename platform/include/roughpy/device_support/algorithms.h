@@ -41,6 +41,11 @@ class HostDriversImpl : public AlgorithmDrivers
     const Type* p_secondary_type = get_type<T>();
 
 public:
+    explicit HostDriversImpl(std::tuple<const Type*, const Type*> types)
+        : p_primary_type(std::get<0>(types)),
+          p_secondary_type(std::get<1>(types))
+    {}
+
     pair<string_view, string_view> get_index() const noexcept
     {
         return {p_primary_type->id(), p_secondary_type->id()};
@@ -142,14 +147,14 @@ void HostDriversImpl<S, T>::shift_left(Buffer& buffer) const
 template <typename S, typename T>
 void HostDriversImpl<S, T>::shift_right(Buffer& buffer) const
 {
-    RPY_CHECK(
-            p_primary_type->compare_with(buffer.content_type())
-            == TypeComparison::AreSame
-    );
-    auto buffer_view = buffer.map();
-    auto buffer_slice = buffer_view.as_mut_slice<S>();
-
-    ranges::rotate(buffer_slice | views::reverse, buffer_slice.rbegin() + 1);
+    // RPY_CHECK(
+    //         p_primary_type->compare_with(buffer.content_type())
+    //         == TypeComparison::AreSame
+    // );
+    // auto buffer_view = buffer.map();
+    // auto buffer_slice = buffer_view.as_mut_slice<S>();
+    //
+    // ranges::rotate(buffer_slice | views::reverse, buffer_slice.rbegin() + 1);
 }
 
 template <typename S, typename T>
@@ -201,7 +206,6 @@ void HostDriversImpl<S, T>::min(const Buffer& buffer, Reference out) const
     func.type_check(p_secondary_type, out.type());
     func(buffer, out);
 }
-
 
 template <typename S, typename T>
 bool HostDriversImpl<S, T>::lexicographical_compare(

@@ -56,6 +56,7 @@ add_roughpy_component(Platform
         src/devices/queue.cpp
         src/devices/queue_interface.cpp
         src/devices/type.cpp
+        src/devices/value.cpp
         src/devices/host/host_buffer.cpp
         src/devices/host/host_buffer.h
         src/devices/host/host_decls.h

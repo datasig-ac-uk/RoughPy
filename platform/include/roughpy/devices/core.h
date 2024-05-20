@@ -444,7 +444,7 @@ struct type_lanes_of_impl {
 template <typename T>
 constexpr TypeCode type_code_of() noexcept
 {
-    return dtl::type_code_of_impl<T>::value;
+    return dtl::type_code_of_impl<remove_cv_ref_t<T>>::value;
 }
 
 /**
@@ -595,7 +595,6 @@ struct type_id_of_impl<double> {
 
 }// namespace dtl
 
-template <typename T>
 /**
  * @brief Represents the type ID of a given type.
  *
@@ -607,7 +606,9 @@ template <typename T>
  *
  * @see dtl::type_id_of_impl
  */
-constexpr string_view type_id_of = dtl::type_id_of_impl<T>::value;
+template <typename T>
+inline constexpr string_view type_id_of
+        = dtl::type_id_of_impl<remove_cv_ref_t<T>>::value;
 
 ROUGHPY_DEVICES_EXPORT
 std::ostream& operator<<(std::ostream& os, const TypeInfo& code);

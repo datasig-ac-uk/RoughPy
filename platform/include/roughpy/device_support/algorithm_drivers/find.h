@@ -39,9 +39,9 @@ struct Func<S, T, false> : dtl::AlgorithmFunctionBase<S, T, false> {
                 string_join(
                         ' ',
                         "types",
-                        type_id_of<S>(),
+                        type_id_of<S>,
                         "and",
-                        type_id_of<T>(),
+                        type_id_of<T>,
                         "are not convertible"
                 )
         );

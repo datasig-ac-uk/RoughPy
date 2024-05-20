@@ -80,9 +80,9 @@ TypeDispatcher<DispatchedType, Args...>::get_implementor(
         dtl::TypePtrify<Args>... types
 ) const
 {
-    const auto cache = *m_cache;
-    auto it = cache.find(std::make_tuple(types->id()...));
-    if (it != cache.end()) { return *it->second; }
+    auto cache = *m_cache;
+    auto it = cache->find(std::make_tuple(types->id()...));
+    if (it != cache->end()) { return *it->second; }
 
     RPY_THROW(
             std::runtime_error,
@@ -101,7 +101,7 @@ void TypeDispatcher<DispatchedType, Args...>::register_implementation()
     auto index = dtl::to_type_ids(types);
 
     auto cache = *m_cache;
-    auto& entry = cache[index];
+    auto& entry = (*cache)[index];
     if (entry == nullptr) {
         entry = dispatched_ptr(new Implementor<Ts...>(types));
     }

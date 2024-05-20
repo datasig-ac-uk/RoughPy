@@ -24,22 +24,24 @@ struct Func : dtl::AlgorithmFunctionBase<S, T, Cond> {
 };
 
 template <typename S, typename T>
-struct Func<S, T, false> : dtl::AlgorithmFunctionBase<S, T, false>
-{
+struct Func<S, T, false> : dtl::AlgorithmFunctionBase<S, T, false> {
     bool operator()(const Buffer& left_buffer, const Buffer& right_buffer) const
     {
         RPY_THROW(std::runtime_error, "bad");
     }
 };
 
-
 template <typename S, typename T>
-using func = Func<S, T, is_less_comparable_v<S, T> && is_equal_comparable_v<S, T>>;
+using func
+        = Func<S,
+               T,
+               is_less_comparable_v<S, T> && is_less_equal_comparable_v<S, T>
+                       && is_equal_comparable_v<S, T>>;
 
 }// namespace __lexicographical_compare
 
 template <typename S, typename T>
-constexpr __lexicographical_compare::func<S, T> lexicographical_compare_func {};
+constexpr __lexicographical_compare::func<S, T> lexicographical_compare_func{};
 
 }// namespace devices
 }// namespace rpy

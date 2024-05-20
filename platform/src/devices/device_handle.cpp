@@ -46,7 +46,9 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-DeviceHandle::DeviceHandle() {}
+DeviceHandle::DeviceHandle()
+    : p_algorithms(std::make_unique<AlgorithmsDispatcher>())
+{}
 
 bool DeviceHandle::is_host() const noexcept { return false; }
 

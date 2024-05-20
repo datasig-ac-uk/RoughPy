@@ -18,7 +18,11 @@ struct Func : dtl::AlgorithmFunctionBase<S, T, Cond> {
         auto buffer_view = buffer.map();
         auto buffer_slice = buffer_view.as_slice<S>();
 
-        auto bound = rpy::ranges::upper_bound(buffer_slice, bound_val);
+        auto bound = std::upper_bound(
+                buffer_slice.begin(),
+                buffer_slice.end(),
+                bound_val
+        );
 
         if (bound != buffer_slice.end()) {
             return rpy::ranges::distance(buffer_slice.begin(), bound);
@@ -38,7 +42,10 @@ struct Func<S, T, false> : dtl::AlgorithmFunctionBase<S, T, false> {
 };
 
 template <typename S, typename T>
-using func = Func<S, T, is_greater_comparable_v<S, T>>;
+using func
+        = Func<S,
+               T,
+               is_less_comparable_v<S, T> && is_greater_comparable_v<S, T>>;
 }// namespace __upper_bound
 
 template <typename S, typename T>

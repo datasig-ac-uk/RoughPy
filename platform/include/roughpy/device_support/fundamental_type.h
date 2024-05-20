@@ -5,11 +5,14 @@
 #ifndef ROUGHPY_DEVICE_SUPPORT_FINDAMENTAL_TYPE_H
 #define ROUGHPY_DEVICE_SUPPORT_FINDAMENTAL_TYPE_H
 
+#include "algorithms.h"
+
 #include <roughpy/core/errors.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
 #include <roughpy/devices/type.h>
+#include <roughpy/devices/host_device.h>
 
 namespace rpy {
 namespace devices {
@@ -40,6 +43,8 @@ public:
 // #ifndef RPY_NO_RTTI
 //         register_type(typeid(T), this);
 // #endif
+        const auto device = get_host_device();
+        device->register_algorithm_drivers<HostDriversImpl, T, T>();
     }
 
     /**

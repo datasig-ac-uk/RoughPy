@@ -16,8 +16,9 @@ struct Func : dtl::AlgorithmFunctionBase<S, T, Cond> {
     {
         auto buffer_view = buffer.map();
         auto buffer_slice = buffer_view.as_slice<S>();
-        out.value<S>()
-                = static_cast<S>(*rpy::ranges::max_element(buffer_slice));
+        out.value<S>() = static_cast<S>(
+                *std::max_element(buffer_slice.begin(), buffer_slice.end())
+        );
     }
 };
 

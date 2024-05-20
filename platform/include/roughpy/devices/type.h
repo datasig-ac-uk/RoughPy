@@ -97,6 +97,15 @@ enum class TypeComparison
     NotConvertible
 };
 
+struct TypeArithmetic
+{
+    std::function<void(void*, const void*)> add_inplace;
+    std::function<void(void*, const void*)> sub_inplace;
+    std::function<void(void*, const void*)> mul_inplace;
+    std::function<void(void*, const void*)> div_inplace;
+};
+
+
 /**
  * @class Type
  * @brief Represents a type with various traits and behavior.
@@ -112,6 +121,9 @@ class ROUGHPY_DEVICES_EXPORT Type
     string_view m_name;
     TypeInfo m_info;
     TypeTraits m_traits;
+
+    std::unique_ptr<const TypeArithmetic> p_arithmetic = nullptr;
+
 
 public:
     /**
@@ -285,6 +297,24 @@ public:
     RPY_NO_DISCARD dimn_t min_alignment() const noexcept
     {
         return m_info.alignment;
+    }
+
+
+    virtual void copy(void* dst, const void* src, dimn_t count) const;
+
+    virtual void move(void* dst, void* src, dimn_t count) const;
+
+    RPY_NO_DISCARD
+    bool has_arithmetic(const Type* other_type) const noexcept
+    {
+        return other_type == this && p_arithmetic != nullptr;
+    }
+
+    RPY_NO_DISCARD
+    const TypeArithmetic& arithmetic(const Type* other_type) const noexcept
+    {
+        RPY_DBG_ASSERT(has_arithmetic(other_type));
+        return *p_arithmetic;
     }
 };
 
@@ -557,7 +587,7 @@ get_type(devices::TypeInfo info);
 template <typename T>
 const Type* get_type()
 {
-    return get_type(type_info<T>());
+    return get_type(type_id_of<T>);
 }
 // #endif
 

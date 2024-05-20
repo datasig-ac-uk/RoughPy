@@ -327,13 +327,9 @@ public:
 
     template <template <typename...> class Implementor, typename... Ts>
     void register_algorithm_drivers() const;
+
 };
 
-template <template <typename...> class Implementor, typename... Ts>
-void DeviceHandle::register_algorithm_drivers() const
-{
-    p_algorithms->template register_implementation<Implementor, Ts...>();
-}
 
 }// namespace devices
 }// namespace rpy

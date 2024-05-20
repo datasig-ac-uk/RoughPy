@@ -36,7 +36,9 @@ Type::Type(string_view id, string_view name, TypeInfo info, TypeTraits traits)
       m_name(std::move(name)),
       m_info(info),
       m_traits(traits)
-{}
+{
+    register_type(this);
+}
 
 Type::~Type() = default;
 
@@ -230,3 +232,31 @@ const Type* devices::get_type(string_view type_id)
             string_cat("type id ", type_id, " not found")
     );
 }
+
+namespace {
+
+struct InitializeAllTheFundamentals
+{
+    InitializeAllTheFundamentals()
+    {
+        volatile const Type* ptr;
+        ptr = FundamentalType<int8_t>::get();
+        ptr = FundamentalType<int16_t>::get();
+        ptr = FundamentalType<int32_t>::get();
+        ptr = FundamentalType<int64_t>::get();
+
+        ptr = FundamentalType<uint8_t>::get();
+        ptr = FundamentalType<uint16_t>::get();
+        ptr = FundamentalType<uint32_t>::get();
+        ptr = FundamentalType<uint64_t>::get();
+
+        ptr = FloatType::get();
+        ptr = DoubleType::get();
+
+        (void) ptr;
+    }
+};
+
+}
+
+static InitializeAllTheFundamentals s_fundamentals {};

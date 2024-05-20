@@ -19,7 +19,7 @@ struct Func : dtl::AlgorithmFunctionBase<S, T, Cond> {
 };
 
 template <typename S, typename T>
-struct Func<S, T, false> : dtl::AlgorithmFunctionBase<S, T> {
+struct Func<S, T, false> : dtl::AlgorithmFunctionBase<S, T, false> {
     void operator()(Buffer& destination_buffer, ConstReference value) const
     {
         RPY_THROW(std::runtime_error, "bad");

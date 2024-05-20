@@ -19,9 +19,9 @@ struct Func : dtl::AlgorithmFunctionBase<S, T, Cond> {
         const auto source_view = source_buffer.map();
         auto destination_view = destination_buffer.map();
         const auto source_slice = source_view.as_slice<S>();
-        auto destination_slice = destination_view.as_slice<S>();
+        auto destination_slice = destination_view.as_mut_slice<S>();
 
-        std::copy(
+        ranges::copy(
                 source_slice.begin(),
                 source_slice.end(),
                 destination_slice.begin()

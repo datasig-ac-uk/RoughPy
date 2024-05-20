@@ -27,8 +27,8 @@ struct Func<T, T> : dtl::AlgorithmFunctionBase<T, T, true> {
     {
         auto left_view = left_buffer.map();
         auto right_view = right_buffer.map();
-        auto left_slice = left_view.as_mut_slice<S>();
-        auto right_slice = right_view.as_mut_slice<S>();
+        auto left_slice = left_view.as_mut_slice<T>();
+        auto right_slice = right_view.as_mut_slice<T>();
 
         rpy::ranges::swap_ranges(left_slice, right_slice);
     }

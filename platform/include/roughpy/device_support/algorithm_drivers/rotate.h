@@ -20,15 +20,19 @@ struct Func : dtl::AlgorithmFunctionBase<T, T, true> {
     void operator()(Buffer& buffer, dimn_t middle) const
     {
         auto buffer_view = buffer.map();
-        auto buffer_slice = buffer_view.as_slice<T>();
-        ranges::rotate(buffer_slice, buffer_slice.begin() + middle);
+        auto buffer_slice = buffer_view.as_mut_slice<T>();
+        std::rotate(
+                buffer_slice.begin(),
+                buffer_slice.begin() + middle,
+                buffer_slice.end()
+        );
     }
 };
 
 }// namespace __rotate
 
 template <typename S, typename T>
-constexpr __rotate::Func<S> rotate_func {};
+constexpr __rotate::Func<S> rotate_func{};
 
 }// namespace devices
 }// namespace rpy
