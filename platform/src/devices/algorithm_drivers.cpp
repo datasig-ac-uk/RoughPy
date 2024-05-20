@@ -7,10 +7,9 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-AlgorithmDriversPtr algorithms::get_builtin_algorithms() noexcept
-{
-    static AlgorithmDriversPtr algos(new AlgorithmDrivers);
-    return algos;
-}
+// AlgorithmDriversPtr algorithms::get_builtin_algorithms() noexcept
+// {
+    // return nullptr;
+// }
 
 AlgorithmDrivers::~AlgorithmDrivers() = default;

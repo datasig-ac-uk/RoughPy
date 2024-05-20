@@ -81,7 +81,7 @@ TypeDispatcher<DispatchedType, Args...>::get_implementor(
 ) const
 {
     const auto cache = *m_cache;
-    auto it = cache.find(std::make_tuple(types->id()));
+    auto it = cache.find(std::make_tuple(types->id()...));
     if (it != cache.end()) { return *it->second; }
 
     RPY_THROW(

@@ -13,7 +13,7 @@ namespace rpy {
 namespace devices {
 namespace algorithms {
 
-RPY_NO_DISCARD AlgorithmDriversPtr get_builtin_algorithms() noexcept;
+// RPY_NO_DISCARD AlgorithmDriversPtr get_builtin_algorithms() noexcept;
 
 }
 }// namespace devices

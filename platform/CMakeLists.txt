@@ -20,6 +20,7 @@ add_library(RoughPy_Device_Support INTERFACE
         include/roughpy/device_support/algorithm_drivers/min_element.h
         include/roughpy/device_support/algorithm_drivers/mismatch.h
         include/roughpy/device_support/algorithm_drivers/reverse.h
+        include/roughpy/device_support/algorithm_drivers/rotate.h
         include/roughpy/device_support/algorithm_drivers/shift_left.h
         include/roughpy/device_support/algorithm_drivers/shift_right.h
         include/roughpy/device_support/algorithm_drivers/swap_ranges.h

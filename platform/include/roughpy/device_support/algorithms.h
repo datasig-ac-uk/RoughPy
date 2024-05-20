@@ -25,6 +25,7 @@
 #include "algorithm_drivers/min_element.h"
 #include "algorithm_drivers/mismatch.h"
 #include "algorithm_drivers/reverse.h"
+#include "algorithm_drivers/rotate.h"
 #include "algorithm_drivers/shift_left.h"
 #include "algorithm_drivers/shift_right.h"
 #include "algorithm_drivers/swap_ranges.h"
@@ -104,20 +105,10 @@ void HostDriversImpl<S, T>::swap_ranges(
         Buffer& right_buffer
 ) const
 {
-    RPY_CHECK(
-            p_primary_type->compare_with(left_buffer.content_type())
-            == TypeComparison::AreSame
-    );
-    RPY_CHECK(
-            p_secondary_type->compare_with(right_buffer.content_type())
-            == TypeComparison::AreSame
-    );
-    auto left_view = left_buffer.map();
-    auto right_view = right_buffer.map();
-    auto left_slice = left_view.as_mut_slice<S>();
-    auto right_slice = right_view.as_mut_slice<S>();
-
-    rpy::ranges::swap_ranges(left_slice, right_slice);
+    constexpr auto func = swap_ranges_func<S, T>;
+    func.type_check(p_primary_type, left_buffer.content_type());
+    func.type_check(p_primary_type, left_buffer.content_type());
+    func(left_buffer, right_buffer);
 }
 
 template <typename S, typename T>
@@ -135,27 +126,17 @@ void HostDriversImpl<S, T>::fill(
 template <typename S, typename T>
 void HostDriversImpl<S, T>::reverse(Buffer& buffer) const
 {
-    RPY_CHECK(
-            p_primary_type->compare_with(buffer.content_type())
-            == TypeComparison::AreSame
-    );
-    auto buffer_view = buffer.map();
-    auto buffer_slice = buffer_view.as_mut_slice<S>();
-
-    ranges::reverse(buffer_slice);
+    constexpr auto func = reverse_func<S, T>;
+    func.type_check(p_primary_type, buffer.content_type());
+    func(buffer);
 }
 
 template <typename S, typename T>
 void HostDriversImpl<S, T>::shift_left(Buffer& buffer) const
 {
-    RPY_CHECK(
-            p_primary_type->compare_with(buffer.content_type())
-            == TypeComparison::AreSame
-    );
-    auto buffer_view = buffer.map();
-    auto buffer_slice = buffer_view.as_slice<S>();
-
-    ranges::rotate(buffer_slice, buffer_slice.begin() + 1);
+    constexpr auto func = rotate_func<S, T>;
+    func.type_check(p_primary_type, buffer.content_type());
+    func(buffer, 1);
 }
 
 template <typename S, typename T>
@@ -194,42 +175,33 @@ HostDriversImpl<S, T>::upper_bound(const Buffer& buffer, ConstReference value)
 }
 
 template <typename S, typename T>
+optional<dimn_t>
+HostDriversImpl<S, T>::mismatch(const Buffer& left, const Buffer& right) const
+{
+    constexpr auto func = mismatch_func<S, T>;
+    func.type_check(p_primary_type, left.content_type());
+    func.type_check(p_secondary_type, right.content_type());
+    return func(left, right);
+}
+
+template <typename S, typename T>
 void HostDriversImpl<S, T>::max(const Buffer& buffer, Reference out) const
 {
-    RPY_CHECK(
-            p_primary_type->compare_with(buffer.content_type())
-            == TypeComparison::AreSame
-    );
-    RPY_CHECK(
-            p_secondary_type->compare_with(out.type())
-            == TypeComparison::AreSame
-    );
-    auto buffer_view = buffer.map();
-    auto buffer_slice = buffer_view.as_slice<S>();
-
-    auto maximum = *rpy::ranges::max_element(buffer_slice);
-
-    out = maximum;
+    constexpr auto func = max_element_func<S, T>;
+    func.type_check(p_primary_type, buffer.content_type());
+    func.type_check(p_secondary_type, out.type());
+    func(buffer, out);
 }
 
 template <typename S, typename T>
 void HostDriversImpl<S, T>::min(const Buffer& buffer, Reference out) const
 {
-    RPY_CHECK(
-            p_primary_type->compare_with(buffer.content_type())
-            == TypeComparison::AreSame
-    );
-    RPY_CHECK(
-            p_secondary_type->compare_with(out.type())
-            == TypeComparison::AreSame
-    );
-    auto buffer_view = buffer.map();
-    auto buffer_slice = buffer_view.as_slice<S>();
-
-    auto minimum = *rpy::ranges::min_element(buffer_slice);
-
-    out = minimum;
+    constexpr auto func = min_element_func<S, T>;
+    func.type_check(p_primary_type, buffer.content_type());
+    func.type_check(p_secondary_type, out.type());
+    func(buffer, out);
 }
+
 
 template <typename S, typename T>
 bool HostDriversImpl<S, T>::lexicographical_compare(

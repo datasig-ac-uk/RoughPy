@@ -29,8 +29,6 @@
 #ifndef ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 #define ROUGHPY_DEVICE_DEVICE_HANDLE_H_
 
-#include "algorithms.h"
-
 #include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/container/vector.h>
 #include <roughpy/core/macros.h>
@@ -57,6 +55,8 @@ struct ExtensionSourceAndOptions {
     string link_options;
 };
 
+class AlgorithmsDispatcher;
+
 /**
  * @class DeviceHandle
  * @brief Represents a handle to a device
@@ -69,7 +69,7 @@ class ROUGHPY_DEVICES_EXPORT DeviceHandle : public RcBase<DeviceHandle>
     mutable std::recursive_mutex m_lock;
     mutable containers::HashMap<string, Kernel> m_kernel_cache;
 
-    AlgorithmsDispatcher m_algorithms;
+    std::unique_ptr<AlgorithmsDispatcher> p_algorithms;
 
 protected:
     using lock_type = std::recursive_mutex;
@@ -322,7 +322,7 @@ public:
             bool check_conversion = false
     ) const
     {
-        return m_algorithms;
+        return *p_algorithms;
     }
 
     template <template <typename...> class Implementor, typename... Ts>
@@ -332,7 +332,7 @@ public:
 template <template <typename...> class Implementor, typename... Ts>
 void DeviceHandle::register_algorithm_drivers() const
 {
-    m_algorithms.register_implementation<Implementor, Ts...>();
+    p_algorithms->template register_implementation<Implementor, Ts...>();
 }
 
 }// namespace devices

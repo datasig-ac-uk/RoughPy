@@ -270,6 +270,7 @@ public:
 
 class AlgorithmsDispatcher : public TypeDispatcher<AlgorithmDrivers, void, void>
 {
+public:
     /**
      * @brief Find the first position where a value occurs in a buffer.
      *
@@ -508,7 +509,7 @@ find(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return {}; }
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    return algo->find(buffer, value);
+    return algo.find(buffer, value);
 }
 
 RPY_NO_DISCARD inline optional<dimn_t>
@@ -516,7 +517,7 @@ lower_bound(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return {}; }
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    return algo->lower_bound(buffer, value);
+    return algo.lower_bound(buffer, value);
 }
 
 RPY_NO_DISCARD inline optional<dimn_t>
@@ -524,7 +525,7 @@ upper_bound(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return {}; }
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    return algo->lower_bound(buffer, value);
+    return algo.lower_bound(buffer, value);
 }
 
 RPY_NO_DISCARD inline dimn_t count(const Buffer& buffer, ConstReference value)
@@ -532,7 +533,7 @@ RPY_NO_DISCARD inline dimn_t count(const Buffer& buffer, ConstReference value)
     if (buffer.is_null()) { return 0; }
 
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    return algo->count(buffer, value);
+    return algo.count(buffer, value);
 }
 
 RPY_NO_DISCARD inline bool contains(const Buffer& buffer, ConstReference value)
@@ -553,7 +554,7 @@ mismatch(const Buffer& left, const Buffer& right)
     const auto device = get_best_device(devices);
 
     auto algo = device->algorithms(left.content_type(), right.content_type());
-    return algo->mismatch(left, right);
+    return algo.mismatch(left, right);
 }
 
 RPY_NO_DISCARD inline bool equal(const Buffer& left, const Buffer& right)
@@ -574,7 +575,7 @@ lexicographical_compare(const Buffer& left, const Buffer& right)
     const auto device = get_best_device(devices);
 
     auto algo = device->algorithms(left.content_type(), right.content_type());
-    return algo->lexicographacal_compare(left, right);
+    return algo.lexicographical_compare(left, right);
 }
 
 inline void copy(Buffer& dst, const Buffer& src)
@@ -593,7 +594,7 @@ inline void copy(Buffer& dst, const Buffer& src)
     }
 
     auto algo = device->algorithms(dst.content_type(), src_type, true);
-    return algo->copy(dst, src);
+    return algo.copy(dst, src);
 }
 
 inline void swap_ranges(Buffer& left, Buffer& right)
@@ -609,7 +610,7 @@ inline void swap_ranges(Buffer& left, Buffer& right)
     Device device = get_best_device(devices);
 
     auto algo = device->algorithms(left_type);
-    algo->swap_ranges(left, right);
+    algo.swap_ranges(left, right);
 }
 
 inline void reverse(Buffer& buffer)
@@ -617,7 +618,7 @@ inline void reverse(Buffer& buffer)
     if (buffer.empty()) { return; }
 
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    algo->reverse(buffer);
+    algo.reverse(buffer);
 }
 
 inline void shift_left(Buffer& buffer)
@@ -625,7 +626,7 @@ inline void shift_left(Buffer& buffer)
     if (buffer.empty()) { return; }
 
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    algo->shift_left(buffer);
+    algo.shift_left(buffer);
 }
 
 inline void shift_right(Buffer& buffer)
@@ -633,7 +634,7 @@ inline void shift_right(Buffer& buffer)
     if (buffer.empty()) { return; }
 
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    algo->shift_left(buffer);
+    algo.shift_left(buffer);
 }
 
 inline void fill(Buffer& buffer, ConstReference value)
@@ -641,7 +642,7 @@ inline void fill(Buffer& buffer, ConstReference value)
     if (buffer.empty()) { return; }
 
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    algo->fill(buffer, value);
+    algo.fill(buffer, value);
 }
 
 inline void min(const Buffer& buffer, Reference out)
@@ -649,7 +650,7 @@ inline void min(const Buffer& buffer, Reference out)
     if (buffer.empty()) { return; }
 
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    algo->min(buffer, out);
+    algo.min(buffer, out);
 }
 
 inline void max(const Buffer& buffer, Reference out)
@@ -657,7 +658,7 @@ inline void max(const Buffer& buffer, Reference out)
     if (buffer.empty()) { return; }
 
     auto algo = buffer.device()->algorithms(buffer.content_type());
-    algo->max(buffer, out);
+    algo.max(buffer, out);
 }
 
 }// namespace algorithms
