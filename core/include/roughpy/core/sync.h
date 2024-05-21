@@ -25,8 +25,6 @@ using LockGuard = std::lock_guard<M>;
 template <typename M>
 using UniqueLock = std::unique_lock<M>;
 
-namespace dtl {
-
 /**
  * @brief This class provides a guarded reference to an object. The reference
  * can only be accessed when locked by a mutex.
@@ -52,7 +50,7 @@ public:
     GuardedRef& operator=(GuardedRef&&) noexcept = default;
 
     // ReSharper disable CppNonExplicitConversionOperator
-    operator reference() noexcept // NOLINT(*-explicit-constructor)
+    operator reference() noexcept// NOLINT(*-explicit-constructor)
     {
         RPY_DBG_ASSERT(m_lk.owns_lock());
         return m_value;
@@ -70,9 +68,9 @@ public:
         RPY_DBG_ASSERT(m_lk.owns_lock());
         return std::addressof(m_value);
     }
-};
 
-}// namespace dtl
+    pointer raw_ptr() noexcept { return &m_value; }
+};
 
 /**
  * @brief A thread-safe container that holds a value and provides synchronized
@@ -92,13 +90,13 @@ public:
 template <typename T, typename M = Mutex>
 class GuardedValue
 {
-    mutable M m_mutex {};
+    mutable M m_mutex{};
 
 public:
     using value_type = remove_cv_ref_t<T>;
     using mutex_type = M;
-    using reference = dtl::GuardedRef<value_type, M>;
-    using const_reference = dtl::GuardedRef<const value_type, M>;
+    using reference = GuardedRef<value_type, M>;
+    using const_reference = GuardedRef<const value_type, M>;
 
     using pointer = reference;
     using const_pointer = const_reference;
@@ -108,7 +106,6 @@ private:
 
 public:
     GuardedValue() = default;
-
 
     GuardedValue(GuardedValue&& other) noexcept
         : m_value(std::move(other.m_value))
