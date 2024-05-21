@@ -38,7 +38,7 @@ template <
         typename H = Hash<K>,
         typename P = std::equal_to<K>,
         typename A = Allocator<pair<const K, M>>>
-using FlatNodeMap = boost::unordered::unordered_node_map<K, M, H, P, A>;
+using NodeHashMap = boost::unordered::unordered_node_map<K, M, H, P, A>;
 
 }// namespace containers
 }// namespace rpy
