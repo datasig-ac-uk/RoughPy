@@ -6,11 +6,18 @@
 
 using namespace rpy;
 using namespace rpy::devices;
+namespace rpy {
+namespace devices {
 
-FloatType::FloatType() : FundamentalType("f32", "SPReal") {}
+namespace dtl {
+template <>
+struct IDAndNameOfFType<float> {
+    static constexpr string_view id = "f32";
+    static constexpr string_view name = "f32";
+};
 
-const FloatType* FloatType::get() noexcept
-{
-    static const FloatType type;
-    return &type;
-}
+}// namespace dtl
+template class FundamentalType<float>;
+
+}// namespace devices
+}// namespace rpy

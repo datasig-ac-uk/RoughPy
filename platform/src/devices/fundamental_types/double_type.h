@@ -10,14 +10,7 @@
 namespace rpy {
 namespace devices {
 
-class RPY_LOCAL DoubleType : public FundamentalType<double>
-{
-
-public:
-    DoubleType();
-
-    RPY_NO_DISCARD static const DoubleType* get() noexcept;
-};
+extern template class FundamentalType<double>;
 
 }// namespace devices
 }// namespace rpy

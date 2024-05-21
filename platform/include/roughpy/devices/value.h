@@ -177,17 +177,8 @@ public:
 
     Reference& operator+=(ConstReference other)
     {
-        if (!type()->has_arithmetic(other.type())) {
-            RPY_THROW(
-                    std::runtime_error,
-                    string_cat(
-                            "type ",
-                            type()->id(),
-                            " does not have defined arithmetic"
-                    )
-            );
-        }
         const auto& arithmetic = type()->arithmetic(other.type());
+        RPY_CHECK(arithmetic.add_inplace != nullptr);
         if (type() == other.type()) {
             arithmetic.add_inplace(const_cast<void*>(data()), other.data());
         } else {
@@ -199,17 +190,8 @@ public:
 
     Reference& operator-=(ConstReference other)
     {
-        if (!type()->has_arithmetic(other.type())) {
-            RPY_THROW(
-                    std::runtime_error,
-                    string_cat(
-                            "type ",
-                            type()->id(),
-                            " does not have defined arithmetic"
-                    )
-            );
-        }
         const auto& arithmetic = type()->arithmetic(other.type());
+        RPY_CHECK(arithmetic.sub_inplace != nullptr);
         if (type() == other.type()) {
             arithmetic.sub_inplace(const_cast<void*>(data()), other.data());
         } else {
@@ -221,17 +203,8 @@ public:
 
     Reference& operator*=(ConstReference other)
     {
-        if (!type()->has_arithmetic(other.type())) {
-            RPY_THROW(
-                    std::runtime_error,
-                    string_cat(
-                            "type ",
-                            type()->id(),
-                            " does not have defined arithmetic"
-                    )
-            );
-        }
         const auto& arithmetic = type()->arithmetic(other.type());
+        RPY_CHECK(arithmetic.mul_inplace != nullptr);
         if (type() == other.type()) {
             arithmetic.mul_inplace(const_cast<void*>(data()), other.data());
         } else {
@@ -243,17 +216,8 @@ public:
 
     Reference& operator/=(ConstReference other)
     {
-        if (!type()->has_arithmetic(other.type())) {
-            RPY_THROW(
-                    std::runtime_error,
-                    string_cat(
-                            "type ",
-                            type()->id(),
-                            " does not have defined arithmetic"
-                    )
-            );
-        }
         const auto& arithmetic = type()->arithmetic(other.type());
+        RPY_CHECK(arithmetic.div_inplace != nullptr);
         if (type() == other.type()) {
             arithmetic.div_inplace(const_cast<void*>(data()), other.data());
         } else {
@@ -317,17 +281,8 @@ inline Value::operator Reference() noexcept
 
 inline Value& Value::operator+=(const ConstReference other)
 {
-    if (!p_type->has_arithmetic(other.type())) {
-        RPY_THROW(
-                std::runtime_error,
-                string_cat(
-                        "type ",
-                        p_type->id(),
-                        " does not have defined arithmetic"
-                )
-        );
-    }
     const auto& arithmetic = p_type->arithmetic(other.type());
+    RPY_CHECK(arithmetic.add_inplace != nullptr);
     if (p_type == other.type()) {
         arithmetic.add_inplace(this->data(), other.data());
     } else {
@@ -339,17 +294,8 @@ inline Value& Value::operator+=(const ConstReference other)
 
 inline Value& Value::operator-=(const ConstReference other)
 {
-    if (!p_type->has_arithmetic(other.type())) {
-        RPY_THROW(
-                std::runtime_error,
-                string_cat(
-                        "type ",
-                        p_type->id(),
-                        " does not have defined arithmetic"
-                )
-        );
-    }
     const auto& arithmetic = p_type->arithmetic(other.type());
+    RPY_CHECK(arithmetic.sub_inplace != nullptr);
     if (p_type == other.type()) {
         arithmetic.sub_inplace(this->data(), other.data());
     } else {
@@ -361,17 +307,8 @@ inline Value& Value::operator-=(const ConstReference other)
 
 inline Value& Value::operator*=(const ConstReference other)
 {
-    if (!p_type->has_arithmetic(other.type())) {
-        RPY_THROW(
-                std::runtime_error,
-                string_cat(
-                        "type ",
-                        p_type->id(),
-                        " does not have defined arithmetic"
-                )
-        );
-    }
     const auto& arithmetic = p_type->arithmetic(other.type());
+    RPY_CHECK(arithmetic.mul_inplace != nullptr);
     if (p_type == other.type()) {
         arithmetic.mul_inplace(this->data(), other.data());
     } else {
@@ -383,17 +320,8 @@ inline Value& Value::operator*=(const ConstReference other)
 
 inline Value& Value::operator/=(const ConstReference other)
 {
-    if (!p_type->has_arithmetic(other.type())) {
-        RPY_THROW(
-                std::runtime_error,
-                string_cat(
-                        "type ",
-                        p_type->id(),
-                        " does not have defined arithmetic"
-                )
-        );
-    }
     const auto& arithmetic = p_type->arithmetic(other.type());
+    RPY_CHECK(arithmetic.div_inplace != nullptr);
     if (p_type == other.type()) {
         arithmetic.div_inplace(this->data(), other.data());
     } else {

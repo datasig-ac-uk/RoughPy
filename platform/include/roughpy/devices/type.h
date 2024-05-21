@@ -7,8 +7,10 @@
 
 #include "core.h"
 
+#include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/ranges.h>
+#include <roughpy/core/sync.h>
 #include <roughpy/core/types.h>
 
 #ifndef RPY_NO_RTTI
@@ -97,14 +99,32 @@ enum class TypeComparison
     NotConvertible
 };
 
-struct TypeArithmetic
-{
+namespace type_support {
+struct TypeArithmetic {
     std::function<void(void*, const void*)> add_inplace;
     std::function<void(void*, const void*)> sub_inplace;
     std::function<void(void*, const void*)> mul_inplace;
     std::function<void(void*, const void*)> div_inplace;
 };
 
+struct TypeConversions {
+    std::function<void(void*, const void*)> convert;
+};
+
+struct TypeComparisons {
+    std::function<bool(const void*, const void*)> equals;
+    std::function<bool(const void*, const void*)> less;
+    std::function<bool(const void*, const void*)> less_equal;
+    std::function<bool(const void*, const void*)> greater;
+    std::function<bool(const void*, const void*)> greater_equal;
+};
+}// namespace type_support
+
+struct TypeSupport {
+    type_support::TypeArithmetic arithmetic;
+    type_support::TypeComparisons comparison;
+    type_support::TypeConversions conversions;
+};
 
 /**
  * @class Type
@@ -122,8 +142,9 @@ class ROUGHPY_DEVICES_EXPORT Type
     TypeInfo m_info;
     TypeTraits m_traits;
 
-    std::unique_ptr<const TypeArithmetic> p_arithmetic = nullptr;
+    class TypeSupportDispatcher;
 
+    std::unique_ptr<TypeSupportDispatcher> p_type_support;
 
 public:
     /**
@@ -299,23 +320,20 @@ public:
         return m_info.alignment;
     }
 
-
     virtual void copy(void* dst, const void* src, dimn_t count) const;
 
     virtual void move(void* dst, void* src, dimn_t count) const;
 
-    RPY_NO_DISCARD
-    bool has_arithmetic(const Type* other_type) const noexcept
-    {
-        return other_type == this && p_arithmetic != nullptr;
-    }
+    RPY_NO_DISCARD const type_support::TypeArithmetic&
+    arithmetic(const Type* other_type) const;
 
-    RPY_NO_DISCARD
-    const TypeArithmetic& arithmetic(const Type* other_type) const noexcept
-    {
-        RPY_DBG_ASSERT(has_arithmetic(other_type));
-        return *p_arithmetic;
-    }
+    RPY_NO_DISCARD const type_support::TypeComparisons&
+    comparisons(const Type* other_type) const;
+    RPY_NO_DISCARD const type_support::TypeConversions&
+    conversions(const Type* other_type) const;
+
+    RPY_NO_DISCARD GuardedRef<TypeSupport, std::mutex>
+    update_support(const Type* other) const;
 };
 
 /**

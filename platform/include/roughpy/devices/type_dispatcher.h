@@ -48,12 +48,14 @@ template <typename DispatchedType, typename... Args>
 class TypeDispatcher : public RcBase<TypeDispatcher<DispatchedType, Args...>>
 {
     using dispatched_type = DispatchedType;
-    using dispatched_ptr = std::unique_ptr<const DispatchedType>;
+    using dispatched_ptr = std::unique_ptr<DispatchedType>;
     using index_type = dtl::StringViewTupleify<Args...>;
     using lock_type = std::mutex;
-    using cache_type = containers::HashMap<index_type, dispatched_ptr>;
+    using cache_type = containers::NodeHashMap<index_type, dispatched_ptr>;
 
-    GuardedValue<cache_type, lock_type> m_cache;
+    GuardedValue<cache_type, lock_type> m_cache{};
+
+    using reference = typename GuardedValue<cache_type, lock_type>::reference;
 
 public:
     RPY_NO_DISCARD bool supports_types(dtl::TypePtrify<Args>... types
@@ -62,8 +64,15 @@ public:
     RPY_NO_DISCARD const dispatched_type&
     get_implementor(dtl::TypePtrify<Args>... types) const;
 
+    RPY_NO_DISCARD GuardedRef<dispatched_type, lock_type>
+    get_mut_implementor(dtl::TypePtrify<Args>... types);
+
     template <template <typename...> class Implementor, typename... Ts>
     void register_implementation();
+
+    reference get_guarded() { return *m_cache; }
+
+    lock_type& mutex() const noexcept { return m_cache.mutex(); }
 };
 
 template <typename DispatchedType, typename... Args>
@@ -91,6 +100,26 @@ TypeDispatcher<DispatchedType, Args...>::get_implementor(
                     string_join(", ", types->id()...)
             )
     );
+}
+
+template <typename DispatchedType, typename... Args>
+GuardedRef<
+        typename TypeDispatcher<DispatchedType, Args...>::dispatched_type,
+        typename TypeDispatcher<DispatchedType, Args...>::lock_type>
+TypeDispatcher<DispatchedType, Args...>::get_mut_implementor(
+        dtl::TypePtrify<Args>... types
+)
+{
+    // We need to be very careful about how we go about locking here.
+    DispatchedType* arg;
+    {
+        auto cache = *m_cache;
+        auto& ptr = (*cache)[std::make_tuple(types->id()...)];
+        if (!ptr) { ptr = std::make_unique<DispatchedType>(); }
+        arg = ptr.get();
+    }
+    // This isn't perfect, but it should be sufficient to prevent deadlocks.
+    return {*arg, m_cache.mutex()};
 }
 
 template <typename DispatchedType, typename... Args>

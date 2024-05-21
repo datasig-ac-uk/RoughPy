@@ -10,14 +10,7 @@
 namespace rpy {
 namespace devices {
 
-class RPY_LOCAL FloatType : public FundamentalType<float> {
-
-public:
-    FloatType();
-
-    RPY_NO_DISCARD
-    static const FloatType* get() noexcept;
-};
+extern template class RPY_LOCAL FundamentalType<float>;
 
 
 } // devices

@@ -3,6 +3,7 @@
 //
 
 #include "devices/type.h"
+#include "type_dispatcher.h"
 
 #include <roughpy/core/container/unordered_map.h>
 #include <roughpy/platform/alloc.h>
@@ -31,6 +32,29 @@
 using namespace rpy;
 using namespace rpy::devices;
 
+class Type::TypeSupportDispatcher : public TypeDispatcher<TypeSupport, void>
+{
+
+public:
+    const type_support::TypeArithmetic& arithmetic(const Type* right) const
+    {
+        const auto& impl = get_implementor(right);
+        return impl.arithmetic;
+    }
+
+    const type_support::TypeComparisons& comparison(const Type* right) const
+    {
+        const auto& impl = get_implementor(right);
+        return impl.comparison;
+    }
+
+    const type_support::TypeConversions& conversions(const Type* right) const
+    {
+        const auto& impl = get_implementor(right);
+        return impl.conversions;
+    }
+};
+
 Type::Type(string_view id, string_view name, TypeInfo info, TypeTraits traits)
     : m_id(std::move(id)),
       m_name(std::move(name)),
@@ -38,6 +62,8 @@ Type::Type(string_view id, string_view name, TypeInfo info, TypeTraits traits)
       m_traits(traits)
 {
     register_type(this);
+
+    p_type_support = std::make_unique<TypeSupportDispatcher>();
 }
 
 Type::~Type() = default;
@@ -77,8 +103,8 @@ const Type* devices::get_type(TypeInfo info)
             }
         case TypeCode::Float:
             switch (info.bytes) {
-                case 4: return FloatType::get();
-                case 8: return DoubleType::get();
+                case 4: return FundamentalType<float>::get();
+                case 8: return FundamentalType<double>::get();
                 default: break;
             }
         default: break;
@@ -172,6 +198,37 @@ TypeComparison Type::compare_with(const Type* other) const noexcept
     return TypeComparison::NotConvertible;
 }
 
+void Type::copy(void* dst, const void* src, dimn_t count) const
+{
+    RPY_THROW(std::runtime_error, "not implemented");
+}
+void Type::move(void* dst, void* src, dimn_t count) const
+{
+    RPY_THROW(std::runtime_error, "not implemented");
+}
+
+const type_support::TypeArithmetic& Type::arithmetic(const Type* other_type
+) const
+{
+    return p_type_support->arithmetic(other_type);
+}
+const type_support::TypeComparisons& Type::comparisons(const Type* other_type
+) const
+{
+    return p_type_support->comparison(other_type);
+}
+const type_support::TypeConversions& Type::conversions(const Type* other_type
+) const
+{
+    return p_type_support->conversions(other_type);
+}
+
+GuardedRef<TypeSupport, std::mutex> Type::update_support(const Type* other
+) const
+{
+    return p_type_support->get_mut_implementor(other);
+}
+
 namespace {
 
 template <typename Guarded, typename Mutex = std::mutex>
@@ -235,28 +292,25 @@ const Type* devices::get_type(string_view type_id)
 
 namespace {
 
-struct InitializeAllTheFundamentals
+template <typename T>
+void register_types_and_support(devices::dtl::TypeList<T>)
 {
+    register_all_supports<T>();
+}
+template <typename T, typename... Ts>
+void register_types_and_support(devices::dtl::TypeList<T, Ts...>)
+{
+    register_all_supports<T>();
+    register_types_and_support(devices::dtl::TypeList<Ts...>());
+}
+
+struct InitializeAllTheFundamentals {
     InitializeAllTheFundamentals()
     {
-        volatile const Type* ptr;
-        ptr = FundamentalType<int8_t>::get();
-        ptr = FundamentalType<int16_t>::get();
-        ptr = FundamentalType<int32_t>::get();
-        ptr = FundamentalType<int64_t>::get();
-
-        ptr = FundamentalType<uint8_t>::get();
-        ptr = FundamentalType<uint16_t>::get();
-        ptr = FundamentalType<uint32_t>::get();
-        ptr = FundamentalType<uint64_t>::get();
-
-        ptr = FloatType::get();
-        ptr = DoubleType::get();
-
-        (void) ptr;
+        register_types_and_support(devices::dtl::FundamentalTypesList());
     }
 };
 
-}
+}// namespace
 
-static InitializeAllTheFundamentals s_fundamentals {};
+static InitializeAllTheFundamentals s_fundamentals{};
