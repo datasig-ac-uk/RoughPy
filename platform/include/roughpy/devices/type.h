@@ -109,6 +109,7 @@ struct TypeArithmetic {
 
 struct TypeConversions {
     std::function<void(void*, const void*)> convert;
+    std::function<void(void*, void*)> move_convert;
 };
 
 struct TypeComparisons {
