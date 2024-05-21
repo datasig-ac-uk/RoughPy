@@ -24,7 +24,7 @@ class Reference;
 template <typename T>
 class TypedReference;
 
-class RPY_DEVICES_EXPORT Value
+class ROUGHPY_DEVICES_EXPORT Value
 {
     friend class ConstReference;
     friend class Reference;
@@ -58,6 +58,8 @@ public:
     Value(Value&& other) noexcept;
     explicit Value(ConstReference other);
 
+    Value(const Type* type) : p_type(type) {}
+
     template <
             typename T,
             typename = enable_if_t<
@@ -68,9 +70,9 @@ public:
     {
         T* this_ptr;
         if (is_inline_stored()) {
-            this_ptr = m_storage.bytes;
+            this_ptr = reinterpret_cast<T*>(m_storage.bytes);
         } else {
-            this_ptr = p_type->allocate_single();
+            this_ptr = static_cast<T*>(p_type->allocate_single());
         }
         construct_inplace(this_ptr, std::forward<T>(other));
     }
@@ -83,7 +85,7 @@ public:
     RPY_NO_DISCARD const T* data() const noexcept
     {
         if (is_inline_stored()) {
-            return static_cast<const T*>(m_storage.bytes);
+            return reinterpret_cast<const T*>(&m_storage.bytes[0]);
         }
         return static_cast<const T*>(m_storage.pointer);
     }
@@ -372,12 +374,7 @@ inline Value& Value::operator+=(const ConstReference other)
 {
     const auto& arithmetic = p_type->arithmetic(other.type());
     RPY_CHECK(arithmetic.add_inplace != nullptr);
-    if (p_type == other.type()) {
-        arithmetic.add_inplace(this->data(), other.data());
-    } else {
-        RPY_THROW(std::runtime_error, "Type mismatch error.");
-    }
-
+    arithmetic.add_inplace(this->data(), other.data());
     return *this;
 }
 
@@ -385,12 +382,7 @@ inline Value& Value::operator-=(const ConstReference other)
 {
     const auto& arithmetic = p_type->arithmetic(other.type());
     RPY_CHECK(arithmetic.sub_inplace != nullptr);
-    if (p_type == other.type()) {
-        arithmetic.sub_inplace(this->data(), other.data());
-    } else {
-        RPY_THROW(std::runtime_error, "Type mismatch error.");
-    }
-
+    arithmetic.sub_inplace(this->data(), other.data());
     return *this;
 }
 
@@ -398,12 +390,7 @@ inline Value& Value::operator*=(const ConstReference other)
 {
     const auto& arithmetic = p_type->arithmetic(other.type());
     RPY_CHECK(arithmetic.mul_inplace != nullptr);
-    if (p_type == other.type()) {
-        arithmetic.mul_inplace(this->data(), other.data());
-    } else {
-        RPY_THROW(std::runtime_error, "Type mismatch error.");
-    }
-
+    arithmetic.mul_inplace(this->data(), other.data());
     return *this;
 }
 
@@ -411,12 +398,7 @@ inline Value& Value::operator/=(const ConstReference other)
 {
     const auto& arithmetic = p_type->arithmetic(other.type());
     RPY_CHECK(arithmetic.div_inplace != nullptr);
-    if (p_type == other.type()) {
-        arithmetic.div_inplace(this->data(), other.data());
-    } else {
-        RPY_THROW(std::runtime_error, "Type mismatch error.");
-    }
-
+    arithmetic.div_inplace(this->data(), other.data());
     return *this;
 }
 
@@ -446,7 +428,7 @@ template <typename T>
 Value& Value::operator/=(const T& other)
 {
     if (other == T()) { RPY_THROW(std::domain_error, "division by zero"); }
-    return operator/=(constReference(&other, get_type<T>()));
+    return operator/=(ConstReference(&other, get_type<T>()));
 }
 
 inline Value& Value::operator+=(const Value& other)
@@ -724,6 +706,12 @@ inline bool operator<=(const ConstReference& left, const Value& right)
     auto& comparisons = left.type()->comparisons(right.type());
     RPY_CHECK(comparisons.less_equal);
     return comparisons.less_equal(left.data(), right.data());
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Value& value)
+{
+    value.type()->display(os, value.data());
+    return os;
 }
 
 }// namespace devices

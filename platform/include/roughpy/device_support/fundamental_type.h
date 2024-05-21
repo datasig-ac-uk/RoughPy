@@ -64,6 +64,8 @@ public:
      * FundamentalType<T>.
      */
     RPY_NO_DISCARD static const FundamentalType* get() noexcept;
+
+    void display(std::ostream& os, const void* ptr) const override;
 };
 
 template <typename T>
@@ -72,6 +74,12 @@ const FundamentalType<T>* FundamentalType<T>::get() noexcept
     using IDName = dtl::IDAndNameOfFType<T>;
     static const FundamentalType type(IDName::id, IDName::name);
     return &type;
+}
+
+template <typename T>
+void FundamentalType<T>::display(std::ostream& os, const void* ptr) const
+{
+    os << *static_cast<const T*>(ptr);
 }
 
 namespace dtl {
@@ -163,7 +171,7 @@ template <typename S, typename T, bool = is_convertible_v<const T&, S>>
 struct Convert {
     static void func(void* out, const void* in)
     {
-        *static_cast<S*>(out) = static_cast<S>(*static_cast<const T*>(in));
+        (*static_cast<S*>(out)) = static_cast<S>(*static_cast<const T*>(in));
     }
 };
 template <typename S, typename T>

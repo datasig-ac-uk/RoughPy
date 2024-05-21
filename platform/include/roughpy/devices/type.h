@@ -119,6 +119,7 @@ struct TypeComparisons {
     std::function<bool(const void*, const void*)> greater;
     std::function<bool(const void*, const void*)> greater_equal;
 };
+
 }// namespace type_support
 
 struct TypeSupport {
@@ -335,6 +336,8 @@ public:
 
     RPY_NO_DISCARD GuardedRef<TypeSupport, std::mutex>
     update_support(const Type* other) const;
+
+    virtual void display(std::ostream& os, const void* ptr) const;
 };
 
 /**

@@ -289,6 +289,10 @@ const Type* devices::get_type(string_view type_id)
             string_cat("type id ", type_id, " not found")
     );
 }
+void Type::display(std::ostream& os, const void* ptr) const
+{
+    os << "non-displayable type";
+}
 
 namespace {
 
