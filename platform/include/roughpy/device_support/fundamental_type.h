@@ -46,7 +46,7 @@ public:
         //         register_type(typeid(T), this);
         // #endif
         const auto device = get_host_device();
-        device->register_algorithm_drivers<HostDriversImpl, T, T>();
+        device->register_algorithm_drivers<HostDriversImpl, T, T>(this, this);
     }
 
     /**
