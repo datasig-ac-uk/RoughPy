@@ -666,7 +666,17 @@ inline void max(const Buffer& buffer, Reference out)
 template <template <typename...> class Implementor, typename... Ts>
 void DeviceHandle::register_algorithm_drivers() const
 {
-    p_algorithms->template register_implementation<Implementor, Ts...>();
+    p_algorithms->template register_implementation<Implementor, Ts...>(
+            get_type<Ts>()...
+    );
+}
+
+template <template <typename...> class Implementor, typename... Ts>
+void DeviceHandle::register_algorithm_drivers(dtl::TypePtrify<Ts>... types
+) const
+{
+    p_algorithms->template register_implementation<Implementor, Ts...>(types...
+    );
 }
 
 }// namespace devices

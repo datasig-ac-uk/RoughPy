@@ -328,8 +328,9 @@ public:
     template <template <typename...> class Implementor, typename... Ts>
     void register_algorithm_drivers() const;
 
+    template <template <typename...> class Implementor, typename... Ts>
+    void register_algorithm_drivers(dtl::TypePtrify<Ts>...) const;
 };
-
 
 }// namespace devices
 }// namespace rpy

@@ -39,9 +39,6 @@ StringViewTupleify<Ts...> to_type_ids(const std::tuple<Ts...>& arg) noexcept
     return to_type_ids_impl(arg, std::make_index_sequence<sizeof...(Ts)>());
 }
 
-template <typename T>
-using TypePtrify = const Type*;
-
 }// namespace dtl
 
 template <typename DispatchedType, typename... Args>
@@ -68,7 +65,7 @@ public:
     get_mut_implementor(dtl::TypePtrify<Args>... types);
 
     template <template <typename...> class Implementor, typename... Ts>
-    void register_implementation();
+    void register_implementation(dtl::TypePtrify<Args>... type_ptrs);
 
     reference get_guarded() { return *m_cache; }
 
@@ -124,9 +121,11 @@ TypeDispatcher<DispatchedType, Args...>::get_mut_implementor(
 
 template <typename DispatchedType, typename... Args>
 template <template <typename...> class Implementor, typename... Ts>
-void TypeDispatcher<DispatchedType, Args...>::register_implementation()
+void TypeDispatcher<DispatchedType, Args...>::register_implementation(
+        dtl::TypePtrify<Args>... type_ptrs
+)
 {
-    auto types = std::make_tuple(get_type<Ts>()...);
+    auto types = std::make_tuple(type_ptrs...);
     auto index = dtl::to_type_ids(types);
 
     auto cache = *m_cache;

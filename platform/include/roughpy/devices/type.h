@@ -606,11 +606,55 @@ get_type(devices::TypeInfo info);
 // }
 // #else
 
+/*
+ * The get_type template function is a nice way to get the abstract RoughPy type
+ * from a concrete C++ type. The intention is that the implementor will provide
+ * an override of type_id_of_impl<T> with the value that matches the id of the
+ * abstract type in the type index. (The id field of the Type.) Alternatively,
+ * if the library actually provides the C++ type, one can provide a exported
+ * specialisation of this template that short-circuits the call to the type
+ * cache.
+ */
+
 template <typename T>
 const Type* get_type()
 {
     return get_type(type_id_of<T>);
 }
+
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<int8_t>();
+
+// Specializations for int16_t, int32_t, and int64_t
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<int16_t>();
+
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<int32_t>();
+
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<int64_t>();
+
+// Specializations for uint8_t, uint16_t, uint32_t, and uint64_t
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<uint8_t>();
+
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<uint16_t>();
+
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<uint32_t>();
+
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<uint64_t>();
+
+// Specializations for float and double
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<float>();
+
+template <>
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<double>();
+
 // #endif
 
 namespace dtl {

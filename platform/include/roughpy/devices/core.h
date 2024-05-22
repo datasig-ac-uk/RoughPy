@@ -326,6 +326,8 @@ enum class EventStatus : int8_t
 
 class DeviceHandle;
 
+class Type;
+
 class BufferInterface;
 
 class Buffer;
@@ -612,6 +614,13 @@ inline constexpr string_view type_id_of
 
 ROUGHPY_DEVICES_EXPORT
 std::ostream& operator<<(std::ostream& os, const TypeInfo& code);
+
+namespace dtl {
+
+template <typename T>
+using TypePtrify = const Type*;
+
+}
 
 }// namespace devices
 }// namespace rpy
