@@ -118,6 +118,7 @@ struct TypeComparisons {
     std::function<bool(const void*, const void*)> less_equal;
     std::function<bool(const void*, const void*)> greater;
     std::function<bool(const void*, const void*)> greater_equal;
+    std::function<bool(const void*)> is_zero;
 };
 
 }// namespace type_support
@@ -322,21 +323,120 @@ public:
         return m_info.alignment;
     }
 
+    /**
+     * @brief Copies elements from source buffer to destination buffer.
+     *
+     * This method copies elements from the source buffer to the destination
+     * buffer.
+     *
+     * @param dst Pointer to the destination buffer.
+     * @param src Pointer to the source buffer.
+     * @param count Number of elements to copy.
+     *
+     * @note The size of the source and destination buffers must be large enough
+     * to accommodate the number of elements to copy.
+     *
+     * @note This method is virtual and can be overridden by derived classes.
+     */
     virtual void copy(void* dst, const void* src, dimn_t count) const;
 
+    /**
+     * @brief Moves a block of memory from one location to another.
+     *
+     * The move function is used to move a block of memory from the source
+     * address to the destination address. The size of the block of memory is
+     * specified in the count parameter.
+     *
+     * @param dst The destination address where the block of memory will be
+     * moved to.
+     * @param src The source address where the block of memory will be moved
+     * from.
+     * @param count The size of the block of memory in bytes.
+     */
     virtual void move(void* dst, void* src, dimn_t count) const;
 
+    /**
+     * @brief Returns the TypeArithmetic object for performing arithmetic
+     * operations with the given Type.
+     *
+     * The `arithmetic` method returns the TypeArithmetic object that provides
+     * support for performing arithmetic operations with the given Type and
+     * another type specified by `other_type`.
+     *
+     * @param other_type A pointer to the Type object representing the other
+     * type for arithmetic operations.
+     *
+     * @return The TypeArithmetic object that encapsulates the arithmetic
+     * operations supported by the Type and the `other_type`.
+     *
+     * @remark The returned TypeArithmetic object can be used to perform
+     * arithmetic operations such as addition, subtraction, multiplication, and
+     * division between values of the Type and `other_type`.
+     *
+     * @see TypeArithmetic
+     */
     RPY_NO_DISCARD const type_support::TypeArithmetic&
     arithmetic(const Type* other_type) const;
 
+    /**
+     * @brief Compares the current type with another type.
+     *
+     * The comparisons method compares the current type with another type and
+     * returns a TypeComparisons object which provides information about the
+     * comparison results.
+     *
+     * @param other_type A pointer to the other type to compare with.
+     *
+     * @return A TypeComparisons object containing information about the
+     * comparison results.
+     */
     RPY_NO_DISCARD const type_support::TypeComparisons&
     comparisons(const Type* other_type) const;
+    /**
+     * @brief Returns the conversions for a given type.
+     *
+     * The `conversions` method returns the conversions for a given type. It
+     * takes a pointer to another `Type` object and returns a reference to a
+     * `TypeConversions` object that contains the conversions from the current
+     * type to the other type.
+     *
+     * @param other_type A pointer to the other `Type` object for which the
+     *                   conversions are requested.
+     *
+     * @return A reference to the `TypeConversions` object that contains the
+     *         conversions from the current type to the other type.
+     */
     RPY_NO_DISCARD const type_support::TypeConversions&
     conversions(const Type* other_type) const;
 
+    /**
+     * @brief Updates the support for a given Type.
+     *
+     * This method updates the support for the given Type by calling the
+     * `get_mut_implementor` method of the `TypeSupport` class. It returns a
+     * `GuardedRef` object that provides a guarded reference to the updated
+     * `TypeSupport` object, ensuring thread safety with the provided mutex.
+     *
+     * @param other The pointer to the Type object for which the support needs
+     * to be updated.
+     *
+     * @return A `GuardedRef` object that provides a guarded reference to the
+     * updated `TypeSupport` object.
+     */
     RPY_NO_DISCARD GuardedRef<TypeSupport, std::mutex>
     update_support(const Type* other) const;
 
+    /**
+     * @brief Display the value of a type.
+     *
+     * The display method is used to display the value of a type. It outputs the
+     * value to the specified output stream.
+     *
+     * @param os The output stream to display the value.
+     * @param ptr A pointer to the value of the type.
+     *
+     * @note This method is intended to be called by the Type class.
+     */
     virtual void display(std::ostream& os, const void* ptr) const;
 };
 
