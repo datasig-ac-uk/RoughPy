@@ -19,6 +19,7 @@ struct IDAndNameOfFType<uint16_t> {
 
 template class FundamentalType<uint16_t>;
 
+template <>
+const Type* devices::get_type<uint16_t>() { return FundamentalType<uint16_t>::get(); }
 }
 }
-

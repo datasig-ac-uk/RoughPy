@@ -17,4 +17,9 @@ struct IDAndNameOfFType<double> {
 }
 template class FundamentalType<double>;
 
+template <>
+const Type* rpy::devices::get_type<double>()
+{
+    return FundamentalType<double>::get();
+}
 }}

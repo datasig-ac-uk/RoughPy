@@ -19,6 +19,8 @@ struct IDAndNameOfFType<uint8_t> {
 
 template class FundamentalType<uint8_t>;
 
-}
-}
+template <>
+const Type* devices::get_type<uint8_t>() { return FundamentalType<uint8_t>::get(); }
 
+}
+}

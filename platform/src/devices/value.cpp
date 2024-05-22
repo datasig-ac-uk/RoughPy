@@ -11,16 +11,13 @@ rpy::devices::Value::Value(const Value& other) : p_type(other.p_type)
     if (is_inline_stored()) {
         std::memcpy(m_storage.bytes, other.m_storage.bytes, sizeof(void*));
     } else if (p_type != nullptr) {
+        m_storage.pointer = p_type->allocate_single();
         p_type->copy(m_storage.pointer, other.m_storage.pointer, 1);
     }
 }
 rpy::devices::Value::Value(Value&& other) noexcept : p_type(other.p_type)
 {
-    if (is_inline_stored()) {
-        std::memcpy(m_storage.bytes, other.m_storage.bytes, sizeof(void*));
-    } else if (p_type != nullptr) {
-        p_type->move(m_storage.pointer, other.m_storage.pointer, 1);
-    }
+    std::swap(m_storage, other.m_storage);
 }
 
 rpy::devices::Value::Value(ConstReference other) : p_type(other.type())
@@ -28,12 +25,13 @@ rpy::devices::Value::Value(ConstReference other) : p_type(other.type())
     if (is_inline_stored()) {
         std::memcpy(m_storage.bytes, other.data(), 1);
     } else if (p_type != nullptr) {
+        m_storage.pointer = p_type->allocate_single();
         p_type->copy(m_storage.pointer, other.data(), 1);
     }
 }
 rpy::devices::Value::~Value()
 {
-    if (!is_inline_stored()) {
+    if (!is_inline_stored() && m_storage.pointer != nullptr) {
         RPY_DBG_ASSERT(p_type != nullptr);
         p_type->free_single(m_storage.pointer);
     }
@@ -44,6 +42,7 @@ rpy::devices::Value& rpy::devices::Value::operator=(const Value& other)
         if (p_type == nullptr || p_type == other.p_type) {
             construct_inplace(this, other);
         } else {
+
             const auto& conversion = p_type->conversions(other.p_type);
 
             auto convert = [tp = p_type,

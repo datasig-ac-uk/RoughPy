@@ -58,7 +58,18 @@ public:
     Value(Value&& other) noexcept;
     explicit Value(ConstReference other);
 
-    Value(const Type* type) : p_type(type) {}
+    Value(const Type* type) : p_type(type)
+    {
+        if (is_inline_stored()) {
+            m_storage.pointer = p_type->allocate_single();
+        }
+    }
+
+    template <typename T>
+    Value(const Type* type, T&& val) : p_type(type)
+    {
+        operator=(std::forward<T>(val));
+    }
 
     template <
             typename T,
@@ -73,6 +84,7 @@ public:
             this_ptr = reinterpret_cast<T*>(m_storage.bytes);
         } else {
             this_ptr = static_cast<T*>(p_type->allocate_single());
+            m_storage.pointer = this_ptr;
         }
         construct_inplace(this_ptr, std::forward<T>(other));
     }
@@ -87,6 +99,7 @@ public:
         if (is_inline_stored()) {
             return reinterpret_cast<const T*>(&m_storage.bytes[0]);
         }
+        RPY_DBG_ASSERT(m_storage.pointer != nullptr);
         return static_cast<const T*>(m_storage.pointer);
     }
 
@@ -94,6 +107,7 @@ public:
     RPY_NO_DISCARD T* data() noexcept
     {
         if (is_inline_stored()) { return static_cast<T*>(m_storage.bytes); }
+        RPY_DBG_ASSERT(m_storage.pointer != nullptr);
         return static_cast<T*>(m_storage.pointer);
     }
 
@@ -109,6 +123,11 @@ public:
     operator=(T&& other);
 
     void change_type(const Type* new_type);
+
+    RPY_NO_DISCARD bool fast_is_zero() const noexcept
+    {
+        return p_type == nullptr || m_storage.pointer == nullptr;
+    }
 
     // ReSharper disable CppNonExplicitConversionOperator
     operator ConstReference() const noexcept;// NOLINT(*-explicit-constructor)
@@ -338,6 +357,9 @@ enable_if_t<
 Value::operator=(T&& other)
 {
     if (p_type) {
+        if (!is_inline_stored() && m_storage.pointer == nullptr) {
+            m_storage.pointer = p_type->allocate_single();
+        }
         // Convert the value of other to the current type
         const auto& conversion = p_type->conversions(get_type<T>());
         if (is_rvalue_reference_v<T> && conversion.move_convert) {

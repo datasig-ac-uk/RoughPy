@@ -19,5 +19,10 @@ struct IDAndNameOfFType<float> {
 }// namespace dtl
 template class FundamentalType<float>;
 
+template <>
+const Type* rpy::devices::get_type<float>()
+{
+    return FundamentalType<float>::get();
+}
 }// namespace devices
 }// namespace rpy
