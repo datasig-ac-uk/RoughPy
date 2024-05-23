@@ -328,6 +328,8 @@ class DeviceHandle;
 
 class Type;
 
+using TypePtr = const Type*;
+
 class BufferInterface;
 
 class Buffer;

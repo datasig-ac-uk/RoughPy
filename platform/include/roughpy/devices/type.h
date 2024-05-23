@@ -100,6 +100,11 @@ enum class TypeComparison
 };
 
 namespace type_support {
+using MathFn = void (*)(void*, const void*);
+using CompareFn = bool (*)(void*, const void*) noexcept;
+using IsZeroFn = bool (*)(const void*) noexcept;
+using PowFn = void (*)(void*, const void*, unsigned*);
+
 struct TypeArithmetic {
     std::function<void(void*, const void*)> add_inplace;
     std::function<void(void*, const void*)> sub_inplace;
@@ -119,6 +124,23 @@ struct TypeComparisons {
     std::function<bool(const void*, const void*)> greater;
     std::function<bool(const void*, const void*)> greater_equal;
     std::function<bool(const void*)> is_zero;
+};
+
+struct NumTraits {
+    TypePtr rational_type;
+    TypePtr real_type;
+    TypePtr imag_type;
+
+    MathFn abs;
+    MathFn sqrt;
+    MathFn real;
+    MathFn imag;
+    MathFn conj;
+
+    PowFn pow;
+
+    MathFn exp;
+    MathFn log;
 };
 
 }// namespace type_support
@@ -148,6 +170,8 @@ class ROUGHPY_DEVICES_EXPORT Type
     class TypeSupportDispatcher;
 
     std::unique_ptr<TypeSupportDispatcher> p_type_support;
+
+    std::unique_ptr<type_support::NumTraits> p_num_traits;
 
 public:
     /**
@@ -438,6 +462,11 @@ public:
      * @note This method is intended to be called by the Type class.
      */
     virtual void display(std::ostream& os, const void* ptr) const;
+
+    const type_support::NumTraits* num_traits() const noexcept
+    {
+        return p_num_traits.get();
+    }
 };
 
 /**

@@ -23,6 +23,19 @@ class TypedConstReference;
 class Reference;
 template <typename T>
 class TypedReference;
+class Value;
+
+namespace dtl {
+
+template <typename T>
+inline constexpr bool value_like
+        = is_same_v<decay_t<T>, Value> || is_same_v<decay_t<T>, ConstReference>
+        || is_same_v<decay_t<T>, Reference>;
+
+template <typename T>
+using value_like_return = enable_if_t<value_like<T>, Value>;
+
+}// namespace dtl
 
 class ROUGHPY_DEVICES_EXPORT Value
 {
@@ -145,13 +158,13 @@ public:
     Value& operator/=(const Value& other);
 
     template <typename T>
-    Value& operator+=(const T& other);
+    enable_if_t<!is_base_of_v<Value, T>, Value&> operator+=(const T& other);
     template <typename T>
-    Value& operator-=(const T& other);
+    enable_if_t<!is_base_of_v<Value, T>, Value&> operator-=(const T& other);
     template <typename T>
-    Value& operator*=(const T& other);
+    enable_if_t<!is_base_of_v<Value, T>, Value&> operator*=(const T& other);
     template <typename T>
-    Value& operator/=(const T& other);
+    enable_if_t<!is_base_of_v<Value, T>, Value&> operator/=(const T& other);
 };
 
 class ConstReference
@@ -425,19 +438,19 @@ inline Value& Value::operator/=(const ConstReference other)
 }
 
 template <typename T>
-Value& Value::operator+=(const T& other)
+enable_if_t<!is_base_of_v<Value, T>, Value&> Value::operator+=(const T& other)
 {
     if (other != T()) { operator+=(ConstReference(&other, get_type<T>())); }
     return *this;
 }
 template <typename T>
-Value& Value::operator-=(const T& other)
+enable_if_t<!is_base_of_v<Value, T>, Value&> Value::operator-=(const T& other)
 {
     if (other != T()) { operator-=(ConstReference(&other, get_type<T>())); }
     return *this;
 }
 template <typename T>
-Value& Value::operator*=(const T& other)
+enable_if_t<!is_base_of_v<Value, T>, Value&> Value::operator*=(const T& other)
 {
     if (other != T()) {
         operator*=(ConstReference(&other, get_type<T>()));
@@ -447,7 +460,7 @@ Value& Value::operator*=(const T& other)
     return *this;
 }
 template <typename T>
-Value& Value::operator/=(const T& other)
+enable_if_t<!is_base_of_v<Value, T>, Value&> Value::operator/=(const T& other)
 {
     if (other == T()) { RPY_THROW(std::domain_error, "division by zero"); }
     return operator/=(ConstReference(&other, get_type<T>()));
@@ -735,6 +748,152 @@ inline std::ostream& operator<<(std::ostream& os, const Value& value)
     value.type()->display(os, value.data());
     return os;
 }
+
+namespace math {
+
+template <typename T>
+inline dtl::value_like_return<T> abs(const T& value)
+{
+    TypePtr tp = value.type();
+    if (tp == nullptr) { return Value(); }
+
+    const auto* num_traits = tp->num_traits();
+    RPY_CHECK(
+            num_traits != nullptr && num_traits->abs != nullptr
+            && num_traits->real_type != nullptr
+    );
+    RPY_DBG_ASSERT(num_traits->real_type != nullptr);
+    Value result(num_traits->real_type, 0);
+    num_traits->abs(result.data(), value.data());
+    return result;
+}
+
+//! sqrt function
+template <typename T>
+dtl::value_like_return<T> sqrt(const T& value)
+{
+    TypePtr tp = value.type();
+    if (tp == nullptr) { return Value(); }
+
+    const auto* num_traits = tp->num_traits();
+
+    RPY_CHECK(num_traits != nullptr && num_traits->sqrt != nullptr);
+
+    Value result(tp, 0);
+    num_traits->sqrt(result.data(), value.data());
+
+    return result;
+}
+
+//! real function
+template <typename T>
+dtl::value_like_return<T> real(const T& value)
+{
+    TypePtr tp = value.type();
+    if (tp == nullptr) { return Value(); }
+
+    const auto* num_traits = tp->num_traits();
+
+    RPY_CHECK(num_traits != nullptr && num_traits->real != nullptr);
+    RPY_DBG_ASSERT(num_traits->real_type != nullptr);
+
+    Value result(num_traits->real_type, 0);
+    num_traits->real(result.data(), value.data());
+
+    return result;
+}
+
+//! imag function
+template <typename T>
+dtl::value_like_return<T> imag(const T& value)
+{
+    TypePtr tp = value.type();
+    if (tp == nullptr) { return Value(); }
+
+    const auto* num_traits = tp->num_traits();
+
+    RPY_CHECK(num_traits != nullptr && num_traits->imag != nullptr);
+    RPY_DBG_ASSERT(num_traits->imag_type != nullptr);
+
+    Value result(num_traits->imag_type, 0);
+    num_traits->imag(result.data(), value.data());
+
+    return result;
+}
+
+//! conj function
+template <typename T>
+dtl::value_like_return<T> conj(const T& value)
+{
+    TypePtr tp = value.type();
+    if (tp == nullptr) { return Value(); }
+
+    const auto* num_traits = tp->num_traits();
+
+    RPY_CHECK(num_traits != nullptr && num_traits->conj != nullptr);
+
+    Value result(tp, 0);
+    num_traits->conj(result.data(), value.data());
+
+    return result;
+}
+
+template <typename T>
+dtl::value_like_return<T> pow(const T& value, unsigned power)
+{
+    TypePtr tp = value.type();
+    if (tp == nullptr) { return Value(); }
+    const auto* num_traits = tp->num_traits();
+
+    RPY_CHECK(num_traits != nullptr && num_traits->pow != nullptr);
+
+    Value result(tp, 0);
+    if (power == 0) {
+        result = 1;
+    } else if (power == 1) {
+        result = value;
+    } else {
+        num_traits->pow(result.data(), value.data(), power);
+    }
+
+    return result;
+}
+
+// exp function
+template <typename T>
+dtl::value_like_return<T> exp(const T& value)
+{
+    TypePtr tp = value.type();
+    if (tp == nullptr) { return Value(); }
+
+    const auto* num_traits = tp->num_traits();
+
+    RPY_CHECK(num_traits != nullptr && num_traits->exp != nullptr);
+
+    Value result(tp, 0);
+    num_traits->exp(result.data(), value.data());
+
+    return result;
+}
+
+// log function
+template <typename T>
+dtl::value_like_return<T> log(const T& value)
+{
+    TypePtr tp = value.type();
+    if (tp == nullptr) { return Value(); }
+
+    const auto* num_traits = tp->num_traits();
+
+    RPY_CHECK(num_traits != nullptr && num_traits->log != nullptr);
+
+    Value result(tp, 0);
+    num_traits->log(result.data(), value.data());
+
+    return result;
+}
+
+}// namespace math
 
 }// namespace devices
 }// namespace rpy
