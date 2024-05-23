@@ -103,7 +103,7 @@ namespace type_support {
 using MathFn = void (*)(void*, const void*);
 using CompareFn = bool (*)(void*, const void*) noexcept;
 using IsZeroFn = bool (*)(const void*) noexcept;
-using PowFn = void (*)(void*, const void*, unsigned*);
+using PowFn = void (*)(void*, const void*, unsigned) noexcept;
 
 struct TypeArithmetic {
     std::function<void(void*, const void*)> add_inplace;
@@ -172,6 +172,13 @@ class ROUGHPY_DEVICES_EXPORT Type
     std::unique_ptr<TypeSupportDispatcher> p_type_support;
 
     std::unique_ptr<type_support::NumTraits> p_num_traits;
+
+protected:
+    type_support::NumTraits& setup_num_traits()
+    {
+        p_num_traits = std::make_unique<type_support::NumTraits>();
+        return *p_num_traits;
+    }
 
 public:
     /**

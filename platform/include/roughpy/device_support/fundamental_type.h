@@ -14,6 +14,8 @@
 #include <roughpy/devices/host_device.h>
 #include <roughpy/devices/type.h>
 
+#include <cmath>
+
 namespace rpy {
 namespace devices {
 
@@ -25,6 +27,44 @@ template <typename... Ts>
 struct TypeList {
 };
 }// namespace dtl
+
+namespace math_fn_impls {
+
+using namespace std;
+
+template <typename T>
+void abs_fn(void* out, const void* in)
+{
+    *static_cast<T*>(out) = abs(static_cast<const T*>(in));
+}
+template <typename T>
+void real_fn(void* out, const void* in)
+{
+    *static_cast<T*>(out) = *static_cast<const T*>(in);
+}
+template <typename T>
+void pow_fn(void* out, const void* in, unsigned power) noexcept
+{
+    *static_cast<T*>(out) = pow(*static_cast<T*>(in), power);
+}
+
+template <typename T>
+void sqrt_fn(void* out, const void* in)
+{
+    *static_cast<T*>(out) = sqrt(*static_cast<const T*>(in));
+}
+template <typename T>
+void exp_fn(void* out, const void* in)
+{
+    *static_cast<T*>(out) = exp(*static_cast<const T*>(in));
+}
+template <typename T>
+void log_fn(void* out, const void* in)
+{
+    *static_cast<T*>(out) = log(*static_cast<const T*>(in));
+}
+
+}// namespace math_fn_impls
 
 /**
  * @class FundamentalType
@@ -47,6 +87,22 @@ public:
         // #endif
         const auto device = get_host_device();
         device->register_algorithm_drivers<HostDriversImpl, T, T>(this, this);
+
+        auto& num_traits = setup_num_traits();
+
+        num_traits.rational_type = this;
+        num_traits.real_type = this;
+        num_traits.imag_type = nullptr;
+
+        num_traits.abs = math_fn_impls::abs_fn<T>;
+        num_traits.real = math_fn_impls::real_fn<T>;
+        num_traits.pow = math_fn_impls::pow_fn<T>;
+
+        if RPY_IF_CONSTEXPR (is_floating_point_v<T>) {
+            num_traits.sqrt = math_fn_impls::sqrt_fn<T>;
+            num_traits.exp = math_fn_impls::exp_fn<T>;
+            num_traits.log = math_fn_impls::log_fn<T>;
+        }
     }
 
     /**
