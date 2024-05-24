@@ -36,14 +36,15 @@
 #include <roughpy/scalars/random.h>
 
 #include <mutex>
+#include <new>
 #include <random>
 #include <sstream>
 #include <vector>
 
 #include <roughpy/core/alloc.h>
 
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_type.h>
+// #include <roughpy/scalars/scalar.h>
+// #include <roughpy/scalars/scalar_type.h>
 
 #include "random_impl.h"
 #include <pcg_random.hpp>
@@ -75,7 +76,7 @@ class StandardRandomGenerator : public RandomGenerator
     mutable std::mutex m_lock;
 
 public:
-    StandardRandomGenerator(const ScalarType* stype, Slice<uint64_t> seed);
+    StandardRandomGenerator(TypePtr stype, Slice<uint64_t> seed);
 
     StandardRandomGenerator(const StandardRandomGenerator&) = delete;
     StandardRandomGenerator(StandardRandomGenerator&&) noexcept = delete;
@@ -114,12 +115,12 @@ string StandardRandomGenerator<ScalarImpl, BitGenerator>::get_type() const
 
 template <typename ScalarImpl, typename BitGenerator>
 StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
-        const ScalarType* stype,
+        TypePtr stype,
         Slice<uint64_t> seed
 )
     : RandomGenerator(stype)
 {
-    RPY_CHECK(p_type == *ScalarType::of<ScalarImpl>());
+    // RPY_CHECK(p_type == *ScalarType::of<ScalarImpl>());
     if (seed.empty()) {
         m_seed.resize(1);
         auto& s = m_seed[0];
@@ -199,7 +200,8 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
 
     ScalarArray result(p_type, count * dists.size());
 
-    auto* out = reinterpret_cast<scalar_type*>(result.mut_buffer().ptr());
+    auto* out = launder(reinterpret_cast<scalar_type*>(result.mut_buffer().ptr()
+    ));
     for (dimn_t i = 0; i < count; ++i) {
         for (auto& dist : dists) {
             construct_inplace(out++, dist(m_generator));
@@ -222,7 +224,9 @@ ScalarArray StandardRandomGenerator<ScalarImpl, BitGenerator>::normal_random(
             scalar_cast<scalar_type>(scale)
     );
 
-    auto* out = reinterpret_cast<scalar_type*>(result.mut_buffer().ptr());
+    auto* out = std::launder(
+            reinterpret_cast<scalar_type*>(result.mut_buffer().ptr())
+    );
     for (dimn_t i = 0; i < count; ++i) {
         construct_inplace(out++, dist(m_generator));
     }

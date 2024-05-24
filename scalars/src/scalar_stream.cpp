@@ -28,14 +28,14 @@
 
 #include "scalar_stream.h"
 
-#include "scalar.h"
+// #include "scalar.h"
 #include "scalar_array.h"
 
 using namespace rpy;
 using namespace rpy::scalars;
 
 ScalarStream::ScalarStream() : m_stream(), p_type(nullptr) {}
-ScalarStream::ScalarStream(const ScalarType* type) : m_stream(), p_type(type) {}
+ScalarStream::ScalarStream(TypePtr type) : m_stream(), p_type(type) {}
 
 ScalarStream::ScalarStream(const ScalarStream& other)
     : m_stream(other.m_stream),
@@ -49,8 +49,8 @@ ScalarStream::ScalarStream(ScalarStream&& other) noexcept
 ScalarStream::ScalarStream(ScalarArray base, containers::Vec<dimn_t> shape)
 {
     if (!base.is_null()) {
-        auto tp = base.type();
-        p_type = tp.is_pointer() ? tp.get_pointer() : nullptr;
+        auto tp = base.content_type();
+        p_type = tp;
 
         if (shape.empty()) {
             RPY_THROW(std::runtime_error, "strides cannot be empty");
@@ -106,13 +106,15 @@ ScalarArray ScalarStream::operator[](dimn_t row) const noexcept
     RPY_CHECK(row < m_stream.size());
     return m_stream[row];
 }
-Scalar ScalarStream::operator[](std::pair<dimn_t, dimn_t> index) const noexcept
+ScalarCRef ScalarStream::operator[](std::pair<dimn_t, dimn_t> index
+) const noexcept
 {
     RPY_CHECK(index.first < m_stream.size());
     return m_stream[index.first][index.second];
 }
-void ScalarStream::set_ctype(const scalars::ScalarType* type) noexcept
+void ScalarStream::set_ctype(TypePtr type) noexcept
 {
+    RPY_CHECK(m_stream.empty());
     p_type = type;
 }
 void ScalarStream::reserve_size(dimn_t num_rows) { m_stream.reserve(num_rows); }

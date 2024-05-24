@@ -30,6 +30,16 @@ using Rational32 = boost::rational<int32_t>;
 namespace devices {
 namespace dtl {
 
+template <>
+struct type_id_of_impl<scalars::Rational<int64_t>> {
+    static constexpr string_view value = "r64";
+};
+
+template <>
+struct type_id_of_impl<scalars::Rational<int32_t>> {
+    static constexpr string_view value = "r32";
+};
+
 template <typename T>
 struct type_code_of_impl<scalars::Rational<T>> {
     static constexpr TypeCode value = TypeCode::Rational;

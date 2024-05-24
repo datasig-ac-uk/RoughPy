@@ -8,7 +8,6 @@
 #include "scalar_interface.h"
 
 #include <roughpy/devices/buffer.h>
-#include "scalar/packed_type.h"
 
 namespace rpy {
 namespace scalars {

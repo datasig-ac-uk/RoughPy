@@ -23,7 +23,7 @@ class StandardRandomGenerator<Half, BitGenerator> : public RandomGenerator
     mutable std::mutex m_lock;
 
 public:
-    StandardRandomGenerator(const ScalarType* stype, Slice<seed_int_t> seed);
+    StandardRandomGenerator(TypePtr stype, Slice<seed_int_t> seed);
 
     void set_seed(Slice<seed_int_t> seed_data) override;
     void set_state(string_view state) override;
@@ -41,12 +41,11 @@ public:
 
 template <typename BitGenerator>
 StandardRandomGenerator<Half, BitGenerator>::StandardRandomGenerator(
-        const ScalarType* stype,
+        TypePtr stype,
         Slice<seed_int_t> seed
 )
     : RandomGenerator(stype)
 {
-    RPY_CHECK(p_type == *ScalarType::of<Half>());
     if (seed.empty()) {
         m_seed.resize(1);
         auto& s = m_seed[0];

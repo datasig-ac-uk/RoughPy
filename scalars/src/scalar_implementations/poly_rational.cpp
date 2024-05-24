@@ -4,7 +4,7 @@
 
 #include "poly_rational.h"
 #include "arbitrary_precision_rational.h"
-#include "scalar_serialization.h"
+// #include "scalar_serialization.h"
 
 using namespace rpy;
 using namespace rpy::scalars;

@@ -30,15 +30,7 @@
 
 #include <roughpy/core/container/vector.h>
 
-#include "scalar.h"
-#include "scalar/casts.h"
-#include "scalar_array_element.h"
-#include "scalar_serialization.h"
-#include "scalar_type.h"
-#include "traits.h"
-
 #include "algorithms.h"
-#include "scalar/raw_bytes.h"
 
 #include <roughpy/devices/buffer.h>
 #include <roughpy/devices/host_device.h>
@@ -50,259 +42,45 @@ using namespace scalars;
 
 ScalarArray::ScalarArray() = default;
 
-ScalarArray::ScalarArray(const ScalarArray& other)
-    : p_type(other.p_type),
-      m_buffer(other.m_buffer)
-{}
+ScalarArray::ScalarArray(const ScalarArray& other) : Buffer(other) {}
 
 ScalarArray::ScalarArray(ScalarArray&& other) noexcept
-    : p_type(other.p_type),
-      m_buffer(std::move(other.m_buffer))
+    : Buffer(std::move(other))
 {}
 
-ScalarArray::ScalarArray(const ScalarType* type, dimn_t size) : p_type(type)
+ScalarArray::ScalarArray(TypePtr type, dimn_t size)
+    : Buffer(type, size, devices::get_host_device())
+{}
+
+ScalarArray::ScalarArray(TypePtr type, const void* data, dimn_t size)
+    : Buffer(type, data, size)
+{}
+ScalarArray::ScalarArray(TypePtr type, void* data, dimn_t size)
+    : Buffer(type, data, size)
+{}
+
+const devices::Buffer& ScalarArray::buffer() const { return *this; }
+
+devices::Buffer& ScalarArray::mut_buffer()
 {
-    RPY_CHECK(type != nullptr);
-    m_buffer = devices::Buffer(type->as_type(), size, type->device());
-}
-
-ScalarArray::ScalarArray(devices::TypeInfo info, dimn_t size)
-    : m_buffer(size, info)
-{
-    RPY_CHECK(traits::is_fundamental(info));
-}
-
-ScalarArray::ScalarArray(PackedScalarType type, const void* data, dimn_t size)
-    : m_buffer(data, size, type_info_from(type))
-{
-    if (type.is_pointer()) { p_type = type.get_pointer(); }
-}
-ScalarArray::ScalarArray(PackedScalarType type, void* data, dimn_t size)
-    : m_buffer(data, size, type_info_from(type))
-{
-    if (type.is_pointer()) { p_type = type.get_pointer(); }
-}
-ScalarArray::ScalarArray(PackedScalarType type, devices::Buffer&& buffer)
-    : m_buffer(std::move(buffer))
-{
-    RPY_CHECK(
-            m_buffer.is_null() || type_info_from(type) == m_buffer.type_info()
-    );
-    if (type.is_pointer()) { p_type = type.get_pointer(); }
-
-    auto dst_device = scalars::device_from(type);
-    if (dst_device && (*dst_device) != m_buffer.device()) {}
-}
-
-// ScalarArray::ScalarArray(const ScalarType* type, devices::Buffer&& buffer)
-//     : p_type(type)
-// {
-//     RPY_CHECK(type != nullptr);
-//     auto source_device = buffer.device();
-//     auto target_device = type->device();
-//     const auto source_info = buffer.type_info();
-//     const auto target_info = type->type_info();
-//     if (source_info == target_info) {
-//         if (source_device == target_device) {
-//             m_buffer = std::move(buffer);
-//         } else {
-//             buffer.to_device(m_buffer, target_device);
-//         }
-//     } else {
-//         ScalarArray tmp(source_info, std::move(buffer));
-//         m_buffer = devices::Buffer(type->device(), tmp.size(), target_info);
-//         type->convert_copy(*this, tmp);
-//     }
-// }
-//
-// ScalarArray::ScalarArray(devices::TypeInfo info, devices::Buffer&& buffer)
-// {
-//     const auto source_info = buffer.type_info();
-//     if (buffer.type_info() == info) {
-//         if (buffer.is_host()) {
-//             m_buffer = std::move(buffer);
-//         } else {
-//             buffer.to_device(m_buffer, devices::get_host_device());
-//         }
-//     } else {
-//         RPY_CHECK(traits::is_fundamental(info));
-//         devices::Buffer tmp;
-//         if (m_buffer.is_host()) {
-//             tmp = std::move(buffer);
-//         } else {
-//             buffer.to_device(tmp, devices::get_host_device());
-//         }
-//
-//         m_buffer = devices::Buffer(tmp.size(), info);
-//
-//         if (!dtl::scalar_convert_copy(
-//                     m_buffer.ptr(),
-//                     info,
-//                     tmp.ptr(),
-//                     source_info,
-//                     tmp.size()
-//             )) {
-//             RPY_THROW(std::runtime_error, "failed to convert copy into
-//             target");
-//         }
-//     }
-// }
-
-ScalarArray::~ScalarArray()
-{
-    m_buffer.~Buffer();
-    p_type = nullptr;
-}
-
-ScalarArray& ScalarArray::operator=(const ScalarArray& other)
-{
-    if (&other != this) {
-        this->~ScalarArray();
-
-        const auto info = other.type_info();
-        const auto bytes = other.size();
-
-        if (traits::is_fundamental(info)) { RPY_CHECK(p_type != nullptr); }
-    }
+    RPY_CHECK(!is_const());
     return *this;
 }
 
-ScalarArray& ScalarArray::operator=(ScalarArray&& other) noexcept
+ScalarCRef ScalarArray::operator[](dimn_t i) const
 {
-    if (&other != this) {
-        this->~ScalarArray();
-        p_type = other.p_type;
-        m_buffer = std::move(other.m_buffer);
-    }
-    return *this;
+    RPY_CHECK(i < size() && is_host());
+    const TypePtr tp = content_type();
+    const auto* p = static_cast<const byte*>(ptr()) + i * size_of(tp);
+    return ScalarCRef(p, std::move(tp));
 }
 
-ScalarArray ScalarArray::copy_or_clone() && { return ScalarArray(); }
-
-PackedScalarType ScalarArray::type() const noexcept
+ScalarRef ScalarArray::operator[](dimn_t i)
 {
-    if (p_type != nullptr) { return p_type; }
-    return m_buffer.type_info();
-}
-
-devices::TypeInfo ScalarArray::type_info() const noexcept
-{
-    return m_buffer.type_info();
-}
-
-// const void* ScalarArray::raw_pointer(dimn_t i) const noexcept
-//{
-//     const void* ptr = nullptr;
-//
-//     switch (p_type_and_mode.get_enumeration()) {
-//         case dtl::ScalarArrayStorageModel::BorrowConst:
-//             ptr = const_borrowed;
-//             break;
-//         case dtl::ScalarArrayStorageModel::BorrowMut: ptr = mut_borrowed;
-//         break; case dtl::ScalarArrayStorageModel::Owned:
-//             ptr = owned_buffer.ptr();
-//             break;
-//     }
-//
-//     if (ptr == nullptr || i == 0) { return ptr; }
-//     const auto info = type_info();
-//
-//     return static_cast<const byte*>(ptr) + i * info.bytes;
-// }
-
-// void* ScalarArray::raw_mut_pointer(dimn_t i) noexcept
-//{
-//     void* ptr = nullptr;
-//
-//     switch (p_type_and_mode.get_enumeration()) {
-//         case dtl::ScalarArrayStorageModel::BorrowConst: break;
-//         case dtl::ScalarArrayStorageModel::BorrowMut: ptr = mut_borrowed;
-//         break; case dtl::ScalarArrayStorageModel::Owned:
-//             ptr = owned_buffer.ptr();
-//             break;
-//     }
-//
-//     if (ptr == nullptr || i == 0) { return ptr; }
-//     const auto info = type_info();
-//
-//     return static_cast<byte*>(ptr) + i * info.bytes;
-// }
-
-// const void* ScalarArray::pointer() const
-//{
-//     switch (p_type_and_mode.get_enumeration()) {
-//         case dtl::ScalarArrayStorageModel::BorrowConst: return
-//         const_borrowed; case dtl::ScalarArrayStorageModel::BorrowMut: return
-//         mut_borrowed; case dtl::ScalarArrayStorageModel::Owned:
-//             if (owned_buffer.device() == devices::get_host_device()
-//                 && owned_buffer.mode() != devices::BufferMode::Write) {
-//                 return owned_buffer.ptr();
-//             }
-//             RPY_THROW(
-//                     std::runtime_error,
-//                     "cannot get pointer from devices::Buffer object safely"
-//             );
-//     }
-//     RPY_UNREACHABLE_RETURN(nullptr);
-// }
-
-// void* ScalarArray::mut_pointer()
-//{
-//
-//     switch (p_type_and_mode.get_enumeration()) {
-//         case dtl::ScalarArrayStorageModel::BorrowConst:
-//             RPY_THROW(
-//                     std::runtime_error,
-//                     "attempting to mutable borrow a const value"
-//             );
-//         case dtl::ScalarArrayStorageModel::BorrowMut: return mut_borrowed;
-//         case dtl::ScalarArrayStorageModel::Owned:
-//             if (owned_buffer.device() == devices::get_host_device()
-//                 && owned_buffer.mode() != devices::BufferMode::Read) {
-//                 return owned_buffer.ptr();
-//             }
-//             RPY_THROW(
-//                     std::runtime_error,
-//                     "cannot get pointer from devices::Buffer object safely"
-//             );
-//     }
-//     RPY_UNREACHABLE_RETURN(nullptr);
-// }
-
-const devices::Buffer& ScalarArray::buffer() const { return m_buffer; }
-
-devices::Buffer& ScalarArray::mut_buffer() { return m_buffer; }
-
-Scalar ScalarArray::operator[](dimn_t i) const
-{
-    RPY_CHECK(i < size());
-    //    check_for_ptr_access();
-    //    RPY_CHECK(i < m_buffer.size());
-    //
-    //    if (p_type != nullptr) {
-    //        return Scalar(p_type_and_mode.get_pointer(), raw_pointer(i));
-    //    }
-    //    return Scalar(p_type_and_mode.get_type_info(), raw_pointer(i));
-    return Scalar(std::make_unique<ScalarArrayElement>(buffer(), i, p_type));
-}
-
-Scalar ScalarArray::operator[](dimn_t i)
-{
-    //    check_for_ptr_access(true);
-    //    RPY_CHECK(
-    //            i < m_size,
-    //            "index " + std::to_string(i) + " out of bounds for array of
-    //            size "
-    //                    + std::to_string(m_size)
-    //    );
-    //
-    //    if (p_type_and_mode.is_pointer()) {
-    //        return Scalar(p_type_and_mode.get_pointer(), raw_mut_pointer(i));
-    //    }
-    //    return Scalar(p_type_and_mode.get_type_info(), raw_mut_pointer(i));
-    RPY_CHECK(i < size());
-    return Scalar(std::make_unique<ScalarArrayElement>(mut_buffer(), i, p_type)
-    );
+    RPY_CHECK(i < size() && is_host() && !is_const());
+    const TypePtr tp = content_type();
+    auto* p = static_cast<byte*>(ptr()) + i * size_of(tp);
+    return ScalarRef(p, std::move(tp));
 }
 
 ScalarArray ScalarArray::operator[](SliceIndex index)
@@ -319,13 +97,13 @@ ScalarArray ScalarArray::operator[](SliceIndex index)
     const auto offset = index.begin;
     const auto sz = (index.end - index.begin);
 
-    return {p_type, m_buffer.slice(offset, sz)};
+    return {slice(offset, sz)};
 }
 
 ScalarArray ScalarArray::operator[](SliceIndex index) const
 {
     RPY_DBG_ASSERT(index.begin <= index.end);
-    const auto buffer_size = m_buffer.size();
+    const auto buffer_size = size();
     RPY_CHECK(
             index.end <= buffer_size,
             "index end " + std::to_string(index.end)
@@ -335,54 +113,46 @@ ScalarArray ScalarArray::operator[](SliceIndex index) const
     const auto offset = index.begin;
     const auto sz = (index.end - index.begin);
 
-    return {p_type, m_buffer.slice(offset, sz)};
+    return {slice(offset, sz)};
 }
 
 void ScalarArray::check_for_ptr_access(bool mut) const
 {
-    RPY_CHECK(m_buffer.is_host());
-    RPY_CHECK(!mut || m_buffer.mode() != devices::BufferMode::Read);
+    RPY_CHECK(is_host());
+    RPY_CHECK(!mut || mode() != devices::BufferMode::Read);
 }
-
-dimn_t ScalarArray::capacity() const noexcept { return m_buffer.size(); }
 
 containers::Vec<byte> ScalarArray::to_raw_bytes() const
 {
-    return dtl::to_raw_bytes(m_buffer.ptr(), m_buffer.size(), type());
+    // return dtl::to_raw_bytes(ptr(), size(), type());
+    return {};
 }
 
-void ScalarArray::from_raw_bytes(
-        PackedScalarType type,
-        dimn_t count,
-        Slice<byte> bytes
-)
+void ScalarArray::from_raw_bytes(TypePtr type, dimn_t count, Slice<byte> bytes)
 {
-    RPY_CHECK(is_null());
-    dtl::from_raw_bytes(m_buffer.ptr(), count, bytes, type);
+    // RPY_CHECK(is_null());
+    // dtl::from_raw_bytes(ptr(), count, bytes, type);
 }
 
-ScalarArray ScalarArray::borrow() const
-{
-    return ScalarArray(p_type, devices::Buffer(m_buffer));
-}
+ScalarArray ScalarArray::borrow() const { return *this; }
 
 ScalarArray ScalarArray::borrow_mut()
 {
-    return ScalarArray(p_type, devices::Buffer(m_buffer));
+    RPY_CHECK(!is_const());
+    return *this;
 }
 
 ScalarArray ScalarArray::to_device(devices::Device device) const
 {
     if (device == this->device()) { return *this; }
-
-    auto new_buffer = device->alloc(type_info(), this->size());
-    m_buffer.to_device(new_buffer, device);
-    return {p_type, std::move(new_buffer)};
+    auto new_buffer = device->alloc(this->content_type(), this->size());
+    Buffer::to_device(new_buffer, device);
+    return {std::move(new_buffer)};
 }
 
 void scalars::convert_copy(ScalarArray& dst, const ScalarArray& src)
 {
-    algorithms::copy(dst, src);
+    devices::algorithms::copy(dst, src);
 }
 
 #define RPY_EXPORT_MACRO ROUGHPY_SCALARS_EXPORT

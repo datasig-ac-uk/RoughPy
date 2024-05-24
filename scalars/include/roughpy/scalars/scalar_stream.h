@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,16 +18,16 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ROUGHPY_SCALARS_SCALAR_STREAM_H_
 #define ROUGHPY_SCALARS_SCALAR_STREAM_H_
-
 
 #include "scalars_fwd.h"
 
@@ -35,27 +35,29 @@
 
 #include <vector>
 
-namespace rpy { namespace scalars {
+namespace rpy {
+namespace scalars {
 
-class ROUGHPY_SCALARS_EXPORT ScalarStream {
+class ROUGHPY_SCALARS_EXPORT ScalarStream
+{
 protected:
     containers::Vec<ScalarArray> m_stream;
-    const ScalarType* p_type;
+    TypePtr p_type;
 
 public:
-    RPY_NO_DISCARD const ScalarType* type() const noexcept { return p_type; }
+    RPY_NO_DISCARD TypePtr type() const noexcept { return p_type; }
 
     ScalarStream();
     ScalarStream(const ScalarStream& other);
     ScalarStream(ScalarStream&& other) noexcept;
 
-    explicit ScalarStream(const ScalarType* type);
+    explicit ScalarStream(TypePtr type);
     ScalarStream(ScalarArray base, containers::Vec<dimn_t> shape);
 
     ScalarStream(
             containers::Vec<ScalarArray>&& stream,
             dimn_t row_elts,
-            const ScalarType* type
+            TypePtr type
     )
         : m_stream(std::move(stream)),
           p_type(type)
@@ -70,10 +72,10 @@ public:
     RPY_NO_DISCARD dimn_t max_row_size() const noexcept;
 
     RPY_NO_DISCARD ScalarArray operator[](dimn_t row) const noexcept;
-    RPY_NO_DISCARD Scalar operator[](std::pair<dimn_t, dimn_t> index
+    RPY_NO_DISCARD ScalarCRef operator[](std::pair<dimn_t, dimn_t> index
     ) const noexcept;
 
-    void set_ctype(const scalars::ScalarType* type) noexcept;
+    void set_ctype(TypePtr type) noexcept;
 
     void reserve_size(dimn_t num_rows);
 
@@ -81,6 +83,7 @@ public:
     void push_back(ScalarArray&& data);
 };
 
-}}
+}// namespace scalars
+}// namespace rpy
 
-#endif // ROUGHPY_SCALARS_SCALAR_STREAM_H_
+#endif// ROUGHPY_SCALARS_SCALAR_STREAM_H_

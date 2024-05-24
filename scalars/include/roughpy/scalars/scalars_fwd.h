@@ -35,6 +35,9 @@
 
 #include <roughpy/devices/core.h>
 
+#include <roughpy/devices/type.h>
+#include <roughpy/devices/value.h>
+
 namespace rpy {
 namespace scalars {
 using ScalarTypeCode = devices::TypeCode;
@@ -42,71 +45,47 @@ using BasicScalarInfo = devices::TypeInfo;
 
 using seed_int_t = uint64_t;
 
-template <typename E>
-class PackedScalarTypePointer;
+using devices::Type;
+using devices::TypePtr;
 
-namespace dtl {
-enum class EmptyEnum : uint8_t
-{
-};
-}
-
-using PackedScalarType = PackedScalarTypePointer<dtl::EmptyEnum>;
+using Scalar = devices::Value;
+using ScalarCRef = devices::ConstReference;
+using ScalarRef = devices::Reference;
 
 // Forward declarations
-class ROUGHPY_SCALARS_EXPORT ScalarType;
 class ROUGHPY_SCALARS_EXPORT ScalarInterface;
-class ROUGHPY_SCALARS_EXPORT Scalar;
 class ROUGHPY_SCALARS_EXPORT ScalarArray;
 class ROUGHPY_SCALARS_EXPORT ScalarStream;
 class ROUGHPY_SCALARS_EXPORT RandomGenerator;
 
-template <typename T>
-RPY_NO_DISCARD T scalar_cast(const Scalar& value);
+template <typename T, typename S>
+RPY_NO_DISCARD enable_if_t<
+        is_default_constructible_v<T> && devices::dtl::value_like<S>,
+        T>
+scalar_cast(const S& value)
+{
+    const auto type = devices::get_type<T>();
+    const auto val_type = value.type();
+    T result{};
+    if (type == val_type) {
+        result = *value.template data<T>();
+    } else {
+        const auto& conversions = type->conversions(val_type);
+        RPY_CHECK(conversions.convert != nullptr);
+        conversions.convert(&result, value.data());
+    }
+    return result;
+}
 
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT optional<const ScalarType*>
-get_type(string_view id);
+inline TypePtr rational_type_of(const TypePtr& type)
+{
+    RPY_DBG_ASSERT(type != nullptr);
 
-inline constexpr int min_scalar_type_alignment = 16;
+    const auto* num_traits = type->num_traits();
+    RPY_CHECK(num_traits != nullptr);
 
-#define RPY_SCALAR_TYPE_ALIGNMENT alignas(min_scalar_type_alignment)
-
-/**
- * @brief Determines the type promotion when performing an
- * operation with two types.
- *
- * This function takes two types and returns the result of the
- * type promotion according to the following rules:
- * - If both types are the same, the result is the same type.
- * - If one of the types is an integer and the other is a
- * floating-point, the result is a floating-point type.
- * - If one of the types is a long integer and the other is a
- * regular integer, the result is a long integer type.
- * - If one of the types is a long integer and the other is a
- * floating-point, the result is a floating-point type.
- * - If one of the types is a double precision floating-point and
- * the other is a regular floating-point, the result is a double
- * precision floating-point type.
- *
- * @param left The type of the left operand.
- * @param right The type of the right operand.
- * @return The resulting type after performing promotion on
- * `left` and `right`.
- */
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT devices::TypeInfo
-compute_type_promotion(devices::TypeInfo left, devices::TypeInfo right);
-
-template <typename T>
-RPY_NO_DISCARD PackedScalarType scalar_type_of();
-
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT PackedScalarType
-scalar_type_of(string_view id, devices::Device = nullptr);
-
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT PackedScalarType
-rational_type_of(PackedScalarType type);
-
-RPY_NO_DISCARD ROUGHPY_SCALARS_EXPORT PackedScalarType
-compute_type_promotion(PackedScalarType left, PackedScalarType right);
+    return num_traits->rational_type;
+}
 
 }// namespace scalars
 }// namespace rpy

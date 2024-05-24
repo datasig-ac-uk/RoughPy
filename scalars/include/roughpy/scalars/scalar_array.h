@@ -29,10 +29,8 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 #define ROUGHPY_SCALARS_SCALAR_ARRAY_H_
 
-#include "packed_scalar_type_ptr.h"
 #include "scalar_type.h"
 #include "scalars_fwd.h"
-#include "traits.h"
 
 #include <roughpy/core/container/vector.h>
 #include <roughpy/devices/buffer.h>
@@ -40,16 +38,6 @@
 
 namespace rpy {
 namespace scalars {
-
-namespace dtl {
-enum class ScalarArrayStorageModel
-{
-    BorrowConst = 0,
-    BorrowMut = 1,
-    Owned = 2,
-};
-
-}
 
 /**
  * @class ScalarArray
@@ -62,28 +50,21 @@ enum class ScalarArrayStorageModel
  * provides methods to retrieve the type, size, capacity, and ownership status
  * of the scalar array.
  */
-class ROUGHPY_SCALARS_EXPORT ScalarArray
+class ROUGHPY_SCALARS_EXPORT ScalarArray : public devices::Buffer
 {
-
-    // Scalar type is only necessary if the buffer type is not fundamental,
-    // in which case it must not be null
-    const ScalarType* p_type = nullptr;
-
-    // All memory is represented as a buffer now, even if it is a borrowed
-    // pointer from some other place. This should dramatically simplify things.
-    devices::Buffer m_buffer;
-
 public:
+    using Buffer::Buffer;
+
     ScalarArray();
     ScalarArray(const ScalarArray& other);
     ScalarArray(ScalarArray&& other) noexcept;
 
-    explicit ScalarArray(const ScalarType* type, dimn_t size = 0);
+    explicit ScalarArray(TypePtr type, dimn_t size = 0);
     explicit ScalarArray(devices::TypeInfo info, dimn_t size = 0);
 
-    ScalarArray(PackedScalarType type, const void* data, dimn_t size);
-    ScalarArray(PackedScalarType type, void* data, dimn_t size);
-    ScalarArray(PackedScalarType type, devices::Buffer&& buffer);
+    ScalarArray(TypePtr type, const void* data, dimn_t size);
+    ScalarArray(TypePtr type, void* data, dimn_t size);
+    ScalarArray(devices::Buffer&& buffer) : Buffer(std::move(buffer)) {}
 
     template <typename T>
     explicit ScalarArray(Slice<T> data);
@@ -97,82 +78,15 @@ public:
     template <typename T>
     ScalarArray(const T* data, dimn_t size);
 
-    ~ScalarArray();
+    ScalarArray& operator=(const ScalarArray& other) = default;
+    ScalarArray& operator=(ScalarArray&& other) noexcept = default;
 
-    ScalarArray& operator=(const ScalarArray& other);
-    ScalarArray& operator=(ScalarArray&& other) noexcept;
-
-    ScalarArray copy_or_clone() &&;
-
-    /**
-     * @brief Checks if the ScalarArray is owning its buffer.
-     *
-     * This method returns true if the ScalarArray is owning its buffer,
-     * and false otherwise. The ownership status is determined by the underlying
-     * buffer of the ScalarArray.
-     *
-     * @return True if the ScalarArray is owning its buffer, false otherwise.
-     */
-    RPY_NO_DISCARD bool is_owning() const noexcept
-    {
-        return m_buffer.is_owner();
-    }
-
-    /**
-     * @brief Retrieves the type of the packed scalar values in the ScalarArray.
-     *
-     * This method returns the PackedScalarType of the packed scalar values
-     * in the ScalarArray. The type represents the data type of the scalar
-     * values stored in the array.
-     *
-     * @return The PackedScalarType of the packed scalar values.
-     * @note The return value is only valid if the ScalarArray has been
-     * initialized with valid packed scalar values. If the ScalarArray is not
-     * initialized, the return value may be invalid.
-     * @remark The returned PackedScalarType value points to either a
-     * pre-defined type or a custom-defined type. It is recommended to use the
-     * appropriate access methods of the PackedScalarType class to retrieve the
-     * specific details and properties of the scalar type, such as size,
-     * precision, signed/unsigned, etc. Please refer to the PackedScalarType
-     * class documentation for more information.
-     * @remark The return type is constant and noexcept guaranteeing that the
-     * method will not throw any exceptions. However, the behavior is undefined
-     * if the ScalarArray is not valid.
-     */
-    RPY_NO_DISCARD PackedScalarType type() const noexcept;
-
-    /**
-     * @brief Returns the type information of the ScalarArray.
-     *
-     * This method returns the type information of the ScalarArray.
-     * It accesses the type information of the internal buffer and returns it.
-     *
-     * @return The type information of the ScalarArray.
-     */
-    RPY_NO_DISCARD devices::TypeInfo type_info() const noexcept;
-
-    /**
-     * @brief Retrieves the size of the ScalarArray.
-     *
-     * This method returns the size of the ScalarArray, which represents the
-     * number of elements in the array. The size is determined by the size of
-     * the internal buffer of the ScalarArray.
-     *
-     * @return The size of the ScalarArray.
-     * @note The return value represents the number of elements in the array and
-     * is not related to the memory occupied by the array.
-     * @remark The return type is constant and noexcept guaranteeing that the
-     * method will not throw any exceptions.
-     */
-    RPY_NO_DISCARD dimn_t size() const noexcept { return m_buffer.size(); }
-    RPY_NO_DISCARD dimn_t capacity() const noexcept;
     /**
      * @fn bool empty() const noexcept
      * @brief Checks if the scalar array is empty.
      *
      * This function checks whether the scalar array is empty or not. An empty
      * scalar array has no elements.
-     *
      * @return True if the scalar array is empty, false otherwise.
      *
      * @note This function does not modify the state of the object.
@@ -180,18 +94,7 @@ public:
      * @note This function has a constant time complexity.
      * @note This function is safe to use in a noexcept context.
      */
-    RPY_NO_DISCARD bool empty() const noexcept { return m_buffer.size() == 0; }
-    /**
-     * @brief Checks if the scalar array is null.
-     *
-     * This method checks if the scalar array is null by calling the `is_null()`
-     * method of the internal buffer.
-     *
-     * @return True if the scalar array is null, false otherwise.
-     *
-     * @see scalar_array.h
-     */
-    RPY_NO_DISCARD bool is_null() const noexcept { return m_buffer.is_null(); }
+    RPY_NO_DISCARD bool empty() const noexcept { return size() == 0; }
     /**
      * @brief Checks if the ScalarArray is read-only.
      *
@@ -204,33 +107,7 @@ public:
      */
     RPY_NO_DISCARD bool is_const() const noexcept
     {
-        return m_buffer.mode() == devices::BufferMode::Read;
-    }
-    /**
-     * @brief Retrieves the device associated with the device.
-     *
-     * This method returns the device associated with the device.
-     *
-     * @return The device associated with the device.
-     *
-     * @note This method does not throw any exceptions.
-     */
-    RPY_NO_DISCARD devices::Device device() const noexcept
-    {
-        return m_buffer.device();
-    }
-
-    /**
-     * @brief Returns the memory owner of the buffer.
-     *
-     * This method returns the memory owner of the buffer associated with the
-     * current object. The returned memory owner is of type devices::Buffer.
-     *
-     * @return The memory owner of the buffer.
-     */
-    RPY_NO_DISCARD devices::Buffer memory_owner() const noexcept
-    {
-        return m_buffer.memory_owner();
+        return mode() == devices::BufferMode::Read;
     }
 
     /**
@@ -258,8 +135,8 @@ public:
      */
     RPY_NO_DISCARD devices::Buffer& mut_buffer();
 
-    RPY_NO_DISCARD Scalar operator[](dimn_t i) const;
-    RPY_NO_DISCARD Scalar operator[](dimn_t i);
+    RPY_NO_DISCARD ScalarCRef operator[](dimn_t i) const;
+    RPY_NO_DISCARD ScalarRef operator[](dimn_t i);
 
     RPY_NO_DISCARD ScalarArray operator[](SliceIndex index);
     RPY_NO_DISCARD ScalarArray operator[](SliceIndex index) const;
@@ -272,10 +149,7 @@ public:
      *
      * @return A view of the ScalarArray.
      */
-    RPY_NO_DISCARD ScalarArray view() const
-    {
-        return {p_type, m_buffer.map(size())};
-    }
+    RPY_NO_DISCARD ScalarArray view() const { return ScalarArray(map(size())); }
 
     /**
      * @brief Provides a mutable view of the ScalarArray.
@@ -287,10 +161,7 @@ public:
      *
      * @return A mutable view of the ScalarArray.
      */
-    RPY_NO_DISCARD ScalarArray mut_view()
-    {
-        return {p_type, m_buffer.map(size())};
-    }
+    RPY_NO_DISCARD ScalarArray mut_view() { return ScalarArray(map(size())); }
 
     /**
      * @brief Returns a borrowed copy of the ScalarArray object.
@@ -332,7 +203,7 @@ public:
 private:
     void check_for_ptr_access(bool mut = false) const;
     RPY_NO_DISCARD containers::Vec<byte> to_raw_bytes() const;
-    void from_raw_bytes(PackedScalarType type, dimn_t count, Slice<byte> bytes);
+    void from_raw_bytes(TypePtr type, dimn_t count, Slice<byte> bytes);
 
 public:
     //    template <typename T>
@@ -355,47 +226,19 @@ private:
 };
 
 template <typename T>
-ScalarArray::ScalarArray(Slice<T> data) : m_buffer(data)
-{
-    const auto info = m_buffer.type_info();
-    if (!traits::is_fundamental(info)) {
-        auto tp = scalar_type_of<T>();
-        RPY_CHECK(tp);
-        p_type = *tp;
-    }
-}
+ScalarArray::ScalarArray(Slice<T> data) : Buffer(data)
+{}
 
 template <typename T>
-ScalarArray::ScalarArray(Slice<const T> data) : m_buffer(data)
-{
-    const auto info = m_buffer.type_info();
-    if (!traits::is_fundamental(info)) {
-        auto tp = scalar_type_of<T>();
-        RPY_CHECK(tp);
-        p_type = *tp;
-    }
-}
+ScalarArray::ScalarArray(Slice<const T> data) : Buffer(data)
+{}
 
 template <typename T>
-ScalarArray::ScalarArray(T* data, dimn_t size) : m_buffer({data, size})
-{
-    const auto info = m_buffer.type_info();
-    if (!traits::is_fundamental(info)) {
-        auto tp = scalar_type_of<T>();
-        RPY_CHECK(tp);
-        p_type = *tp;
-    }
-}
+ScalarArray::ScalarArray(T* data, dimn_t size) : Buffer({data, size})
+{}
 template <typename T>
-ScalarArray::ScalarArray(const T* data, dimn_t size) : m_buffer({data, size})
-{
-    const auto info = m_buffer.type_info();
-    if (!traits::is_fundamental(info)) {
-        auto tp = scalar_type_of<T>();
-        RPY_CHECK(tp);
-        p_type = *tp;
-    }
-}
+ScalarArray::ScalarArray(const T* data, dimn_t size) : Buffer({data, size})
+{}
 
 RPY_SERIAL_LOAD_FN_IMPL(ScalarArray)
 {

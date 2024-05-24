@@ -168,10 +168,11 @@ bool scalars::dtl::scalar_convert_copy(
         const Scalar& src
 ) noexcept
 {
-    auto src_info = src.type_info();
-#define X(TP) return convert_impl(dst, dst_type, (const TP*) src.pointer(), 1)
-    DO_FOR_EACH_X(src_info)
-#undef X
+    //     auto src_info = src.type_info();
+    // #define X(TP) return convert_impl(dst, dst_type, (const TP*)
+    // src.pointer(), 1)
+    //     DO_FOR_EACH_X(src_info)
+    // #undef X
     return false;
 }
 
