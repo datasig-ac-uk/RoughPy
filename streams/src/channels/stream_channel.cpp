@@ -78,13 +78,13 @@ void StreamChannel::convert_input(
 {
     if (src.empty() == 0) { return; }
     RPY_CHECK(!src.is_null());
-    RPY_CHECK(!dst.empty() || dst.type() != nullptr);
+    RPY_CHECK(!dst.empty() || dst.device_type() != nullptr);
 
     if (dst.empty()) {
-        dst = (*dst.type())->allocate(src.size());
+        dst = (*dst.device_type())->allocate(src.size());
     }
 
-    (*dst.type())->convert_copy(dst, src);
+    (*dst.device_type())->convert_copy(dst, src);
 }
 
 #define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT

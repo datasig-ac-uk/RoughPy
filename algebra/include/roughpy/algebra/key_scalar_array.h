@@ -90,7 +90,7 @@ public:
      */
     void allocate_scalars(dimn_t size, scalars::PackedScalarType type = nullptr)
     {
-        if (type.is_null()) { type = this->type(); }
+        if (type.is_null()) { type = this->device_type(); }
         RPY_CHECK(!type.is_null());
         *this = ScalarArray(type, size);
     }

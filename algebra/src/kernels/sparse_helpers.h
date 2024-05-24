@@ -103,7 +103,7 @@ void binary_operation_into_map(
         F&& func
 )
 {
-    const scalars::Scalar zero(left.type());
+    const scalars::Scalar zero(left.device_type());
     binary_operation_into_map_left(mapped, idk_left, left, func, zero);
     binary_operation_into_map_right(mapped, idk_right, right, func, zero);
 }

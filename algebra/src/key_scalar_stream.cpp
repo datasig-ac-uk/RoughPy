@@ -53,7 +53,7 @@ void rpy::algebra::KeyScalarStream::push_back(const KeyScalarArray& data)
 {
     if (m_type.is_null()) {
         RPY_DBG_ASSERT(m_parts.empty());
-        m_type = data.type();
+        m_type = data.device_type();
     }
 
     auto& back = m_parts.emplace_back(m_type, data.size());
@@ -65,10 +65,10 @@ void rpy::algebra::KeyScalarStream::push_back(KeyScalarArray&& data)
 {
     if (m_type.is_null()) {
         RPY_DBG_ASSERT(m_parts.empty());
-        m_type = data.type();
+        m_type = data.device_type();
     }
 
-    if (data.type() == m_type) {
+    if (data.device_type() == m_type) {
         m_parts.emplace_back(std::move(data));
     } else {
         auto& back = m_parts.emplace_back(m_type, data.size());

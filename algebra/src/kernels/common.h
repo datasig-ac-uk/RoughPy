@@ -9,14 +9,15 @@
 #include <roughpy/core/types.h>
 
 #include <roughpy/devices/core.h>
-#include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>
 
 #include "key_array.h"
 #include "vector.h"
 
-namespace rpy { namespace algebra { namespace dtl {
+namespace rpy {
+namespace algebra {
+namespace dtl {
 
 template <typename ArgType, typename Derived>
 class ArgData;
@@ -26,10 +27,11 @@ struct ConstVectorArg;
 struct ConstScalarArg;
 struct MutableScalarArg;
 
-
 template <typename... ArgSpec>
 class GenericKernel;
 
-}}}
+}// namespace dtl
+}// namespace algebra
+}// namespace rpy
 
-#endif //COMMON_H
+#endif// COMMON_H

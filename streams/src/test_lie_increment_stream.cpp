@@ -155,7 +155,7 @@ TEST_F(LieIncrementStreamTests, TestLogSignatureTwoIncrementsDepth1)
     algebra::VectorConstructionData edata{
             scalars::KeyScalarArray(ctx->ctype()), algebra::VectorType::Dense};
     edata.data.allocate_scalars(width);
-    (*edata.data.type())->convert_copy(edata.data, {md.data_scalar_type, data.pointer(), width});
+    (*edata.data.device_type())->convert_copy(edata.data, {md.data_scalar_type, data.pointer(), width});
     for (int i = 0; i < width; ++i) { edata.data[i] += data[i + width]; }
 
     auto idx = indices(2);

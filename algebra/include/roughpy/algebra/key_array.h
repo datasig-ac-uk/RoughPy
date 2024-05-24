@@ -82,7 +82,8 @@ public:
         return p_current;
     }
 
-    constexpr reference operator[](difference_type n) noexcept {
+    constexpr reference operator[](difference_type n) noexcept
+    {
         return p_current[n];
     }
 
@@ -96,21 +97,24 @@ public:
     }
 };
 
-constexpr KeyArrayIterator operator+(const KeyArrayIterator& it, idimn_t n) noexcept
+constexpr KeyArrayIterator
+operator+(const KeyArrayIterator& it, idimn_t n) noexcept
 {
     KeyArrayIterator next(it);
     next += n;
     return next;
 }
 
-constexpr KeyArrayIterator operator+(idimn_t n, const KeyArrayIterator& it) noexcept
+constexpr KeyArrayIterator
+operator+(idimn_t n, const KeyArrayIterator& it) noexcept
 {
     KeyArrayIterator next(it);
     next += n;
     return next;
 }
 
-constexpr KeyArrayIterator operator-(const KeyArrayIterator& it, idimn_t n) noexcept
+constexpr KeyArrayIterator
+operator-(const KeyArrayIterator& it, idimn_t n) noexcept
 {
     KeyArrayIterator prev(it);
     prev -= n;
@@ -185,8 +189,7 @@ public:
     {
 
         RPY_CHECK(
-                m_buffer.is_null()
-                || m_buffer.type_info().code == devices::TypeCode::KeyType
+                m_buffer.is_null() || m_buffer.content_type() == get_key_type()
         );
     }
 

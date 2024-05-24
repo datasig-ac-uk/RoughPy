@@ -263,7 +263,7 @@ void algebra::dtl::GenericKernel<
         m_func(tmp, scalars_left[i], scalars_right[i]);
     }
 
-    scalars::Scalar zero(scalars_out.type());
+    scalars::Scalar zero(scalars_out.device_type());
 
     for (dimn_t i = size; i < left.size(); ++i) {
         auto tmp = scalars_out[i];

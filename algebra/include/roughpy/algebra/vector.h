@@ -13,7 +13,6 @@
 #include <roughpy/devices/buffer.h>
 #include <roughpy/devices/device_handle.h>
 #include <roughpy/devices/kernel.h>
-#include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 
 #include "algebra_fwd.h"
@@ -43,7 +42,7 @@ public:
 
     VectorData() = default;
 
-    explicit VectorData(scalars::PackedScalarType type, dimn_t size)
+    explicit VectorData(scalars::TypePtr type, dimn_t size)
         : m_scalar_buffer(type, size),
           m_size(size)
     {}
@@ -54,8 +53,7 @@ public:
           m_size(scalars.size())
     {}
 
-    explicit VectorData(const scalars::ScalarType* type) : m_scalar_buffer(type)
-    {}
+    explicit VectorData(scalars::TypePtr type) : m_scalar_buffer(type) {}
 
     void reserve(dimn_t dim);
     void resize(dimn_t dim);
@@ -71,9 +69,9 @@ public:
         return m_scalar_buffer.empty();
     }
 
-    RPY_NO_DISCARD scalars::PackedScalarType scalar_type() const noexcept
+    RPY_NO_DISCARD scalars::TypePtr scalar_type() const noexcept
     {
-        return m_scalar_buffer.type();
+        return m_scalar_buffer.content_type();
     }
 
     RPY_NO_DISCARD bool sparse() const noexcept
@@ -280,7 +278,7 @@ public:
      * @param basis Pointer to the basis of the vector.
      * @param scalar_type Pointer to the scalar type of the vector.
      */
-    explicit Vector(BasisPointer basis, const scalars::ScalarType* scalar_type)
+    explicit Vector(BasisPointer basis, scalars::TypePtr scalar_type)
         : p_data(new VectorData(scalar_type)),
           p_basis(std::move(basis))
     {}
@@ -310,7 +308,7 @@ public:
      */
     template <typename T>
     Vector(BasisPointer basis,
-           const scalars::ScalarType* scalar_type,
+           scalars::TypePtr scalar_type,
            std::initializer_list<T> vals)
         : p_data(new VectorData(
                   scalar_type,
@@ -476,12 +474,10 @@ public:
      *
      * @note This method is noexcept, meaning it does not throw any exceptions.
      */
-    RPY_NO_DISCARD const scalars::ScalarType* scalar_type() const noexcept
+    RPY_NO_DISCARD scalars::TypePtr scalar_type() const noexcept
     {
         RPY_DBG_ASSERT(p_data != nullptr);
-        const auto ptr = p_data->scalars().type();
-        RPY_CHECK(ptr.is_pointer());
-        return ptr.get_pointer();
+        return p_data->scalars().content_type();
     }
 
     /**
@@ -834,8 +830,7 @@ std::ostream& operator<<(std::ostream& os, const Vector& value);
  */
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
-operator-(const V& arg)
+RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V> operator-(const V& arg)
 {
     return V(arg.uminus());
 }
@@ -876,16 +871,14 @@ operator/(const V& lhs, const scalars::Scalar& rhs)
 }
 
 template <typename V>
-enable_if_t<is_base_of_v<Vector, V>, V&>
-operator+=(V& lhs, const Vector& rhs)
+enable_if_t<is_base_of_v<Vector, V>, V&> operator+=(V& lhs, const Vector& rhs)
 {
     lhs.add_inplace(rhs);
     return lhs;
 }
 
 template <typename V>
-enable_if_t<is_base_of_v<Vector, V>, V&>
-operator-=(V& lhs, const Vector& rhs)
+enable_if_t<is_base_of_v<Vector, V>, V&> operator-=(V& lhs, const Vector& rhs)
 {
     lhs.sub_inplace(rhs);
     return lhs;

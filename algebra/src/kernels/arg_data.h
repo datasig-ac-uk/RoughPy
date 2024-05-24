@@ -23,9 +23,9 @@ public:
           p_data(&data)
     {}
 
-    const scalars::ScalarType* get_type() const
+    scalars::TypePtr get_type() const
     {
-        if (p_data->scalars().is_null() || p_data->scalars().type().is_null()) {
+        if (p_data->scalars().is_null() || p_data->scalars().content_type()) {
             return Derive::get_type();
         }
         return p_data->scalar_type();
@@ -33,7 +33,7 @@ public:
 
     void resize(dimn_t size)
     {
-        if (p_data->scalar_type().is_null()) {
+        if (p_data->scalar_type()) {
             p_data->mut_scalars() = scalars::ScalarArray();
         }
         if (p_data->empty() || p_data->size() < size) { p_data->resize(size); }
@@ -148,10 +148,7 @@ public:
 
     using Derive::resize;
 
-    RPY_NO_DISCARD const scalars::ScalarType* get_type() const
-    {
-        return nullptr;
-    }
+    RPY_NO_DISCARD scalars::TypePtr get_type() const { return nullptr; }
 
     RPY_NO_DISCARD string get_suffix() const noexcept
     {
@@ -240,15 +237,15 @@ public:
 };
 
 template <typename Derive>
-class ArgData<scalars::Scalar, Derive> : Derive
+class ArgData<scalars::ScalarRef, Derive> : Derive
 {
-    scalars::Scalar* p_data;
+    scalars::ScalarRef p_data;
 
 public:
-    template <typename... Args>
-    explicit ArgData(scalars::Scalar& data, Args&&... args)
+    template <typename S, typename... Args>
+    explicit ArgData(S&& data, Args&&... args)
         : Derive(std::forward<Args>(args)...),
-          p_data(&data)
+          p_data(std::forward<S>(data))
     {}
 
     using Derive::get_type;
@@ -266,7 +263,7 @@ public:
         return Derive::eval_device([f = std::forward<F>(func),
                                     this](auto&&... next_arg) {
             return f(
-                    to_kernel_arg(*p_data),
+                    to_kernel_arg(p_data),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -278,7 +275,7 @@ public:
         return Derive::eval_host([f = std::forward<F>(func),
                                   this](auto&&... next_arg) {
             return f(
-                    to_kernel_arg(*p_data),
+                    to_kernel_arg(p_data),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -289,7 +286,7 @@ public:
     {
         return Derive::eval_generic([f = std::forward<F>(func),
                                      this](auto&&... next_arg) {
-            return f(*p_data, std::forward<decltype(next_arg)>(next_arg)...);
+            return f(p_data, std::forward<decltype(next_arg)>(next_arg)...);
         });
     }
 
@@ -302,15 +299,15 @@ public:
 };
 
 template <typename Derive>
-class ArgData<const scalars::Scalar, Derive> : Derive
+class ArgData<scalars::ScalarCRef, Derive> : Derive
 {
-    const scalars::Scalar* p_data;
+    const scalars::ScalarCRef p_data;
 
 public:
-    template <typename... Args>
-    explicit ArgData(const scalars::Scalar& data, Args&&... args)
+    template <typename S, typename... Args>
+    explicit ArgData(S&& data, Args&&... args)
         : Derive(std::forward<Args>(args)...),
-          p_data(&data)
+          p_data(std::forward<S>(data))
     {}
 
     using Derive::get_type;
@@ -328,7 +325,7 @@ public:
         return Derive::eval_device([f = std::forward<F>(func),
                                     this](auto&&... next_arg) {
             return f(
-                    to_kernel_arg(*p_data),
+                    to_kernel_arg(p_data),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -340,7 +337,7 @@ public:
         return Derive::eval_host([f = std::forward<F>(func),
                                   this](auto&&... next_arg) {
             return f(
-                    to_kernel_arg(*p_data),
+                    to_kernel_arg(p_data),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -351,7 +348,7 @@ public:
     {
         return Derive::eval_generic([f = std::forward<F>(func),
                                      this](auto&&... next_arg) {
-            return f(*p_data, std::forward<decltype(next_arg)>(next_arg)...);
+            return f(p_data, std::forward<decltype(next_arg)>(next_arg)...);
         });
     }
 

@@ -15,7 +15,7 @@ void VectorData::reserve(dimn_t dim)
 {
     if (dim <= capacity()) { return; }
 
-    auto new_buffer = m_scalar_buffer.type()->allocate(dim);
+    auto new_buffer = m_scalar_buffer.device_type()->allocate(dim);
     scalars::algorithms::copy(new_buffer, m_scalar_buffer);
 
     if (!m_key_buffer.empty()) {
@@ -64,7 +64,7 @@ std::unique_ptr<VectorData> VectorData::make_dense(const Basis* basis) const
     const auto scalar_device = m_scalar_buffer.device();
     const auto key_device = m_key_buffer.device();
 
-    auto dense_data = std::make_unique<VectorData>(m_scalar_buffer.type());
+    auto dense_data = std::make_unique<VectorData>(m_scalar_buffer.device_type());
 
     dimn_t dimension;
     if (key_device->is_host()) {
