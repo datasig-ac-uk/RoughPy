@@ -235,7 +235,7 @@ py::array python::dtl::dense_data_to_array(const scalars::ScalarArray& data,
 
     py::dtype dtype(info_to_typenum(type_info));
 
-    auto result = python::dtl::new_zero_array_for_stype(*data.type(), dimension);
+    auto result = python::dtl::new_zero_array_for_stype(*data.device_type(), dimension);
 
     if (scalars::traits::is_fundamental(type_info)) {
         scalars::dtl::scalar_convert_copy(result.mutable_data(),

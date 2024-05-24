@@ -318,7 +318,7 @@ static inline void dl_copy_strided(
         scalars::ScalarArray& dst
 )
 {
-    const auto dst_type_o = dst.type();
+    const auto dst_type_o = dst.device_type();
     RPY_DBG_ASSERT(dst_type_o);
     const auto* dst_type = *dst_type_o;
     if (ndim == 1) {

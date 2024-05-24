@@ -132,8 +132,8 @@ void rpy::python::stride_copy(
     auto compressed_ndim
             = get_compressed_dims(ndim, info.bytes, shape, strides);
 
-    RPY_DBG_ASSERT(out.type());
-    auto tp = *out.type();
+    RPY_DBG_ASSERT(out.device_type());
+    auto tp = *out.device_type();
 
     if (compressed_ndim == ndim) {
         // Fully compressed already, just invoke copy-convert
