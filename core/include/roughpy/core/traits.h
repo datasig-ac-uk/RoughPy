@@ -35,6 +35,7 @@
 
 #include "macros.h"
 
+#include <new>
 #include <type_traits>
 
 #include <boost/call_traits.hpp>
@@ -222,6 +223,34 @@ template <typename F, typename... ArgTypes>
 using invoke_result_t = std::result_of_t<F(ArgTypes...)>;
 #endif
 
+#if defined(__cpp_lib_launder)
+using std::launder;
+#else
+#  if RPY_HAS_BUILTIN(__builtin_launder)
+template <typename T>
+RPY_NO_DISCARD constexpr T* launder(T* arg) noexcept
+{
+    static_assert(
+            !is_void_v<T>,
+            "launder of cv qualified void* is undedfined behavior"
+    );
+    static_assert(is_function_v<T>, "cannot launder functions");
+    return __builtin_launder(arg);
+}
+#  else
+template <typename T>
+RPY_NO_DISCARD constexpr T* launder(T* arg) noexcept
+{
+    static_assert(
+            !is_void_v<T>,
+            "launder of cv qualified void* is undedfined behavior"
+    );
+    static_assert(is_function_v<T>, "cannot launder functions");
+    return arg;
+}
+#  endif
+#endif
+
 using boost::callable_traits::add_member_volatile_t;
 using boost::callable_traits::add_noexcept_t;
 using boost::callable_traits::args_t;
@@ -301,15 +330,11 @@ template <>
 struct ConstLog2<1> : integral_constant<size_t, 0> {
 };
 
-template <typename T, typename...>
-using head_t = T;
-
 /*
  * The following operator detection traits are
  * based https://stackoverflow.com/a/5843622/9225581
  */
 namespace definitely_a_new_namespace {
-
 
 #define RPY_MAKE_COMPARE_TRAIT(name, op)                                       \
     template <typename S, typename T, typename = void>                         \
@@ -324,7 +349,6 @@ namespace definitely_a_new_namespace {
                                     op std::declval<const T&>())>>             \
         : true_type {                                                          \
     };
-
 
 RPY_MAKE_COMPARE_TRAIT(is_less_comparable, <)
 RPY_MAKE_COMPARE_TRAIT(is_less_equal_comparable, <=)
