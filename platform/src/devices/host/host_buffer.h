@@ -85,7 +85,7 @@ public:
     BufferMode mode() const override;
     dimn_t size() const override;
     void* ptr() noexcept override;
-    DeviceType type() const noexcept override;
+    DeviceType device_type() const noexcept override;
     const void* ptr() const noexcept override;
 
     Event

@@ -71,7 +71,7 @@ public:
      * @return A pointer to the Type representing the content type of the
      * object. Returns nullptr if the object is null.
      */
-    RPY_NO_DISCARD const Type* content_type() const noexcept { return p_type; }
+    RPY_NO_DISCARD const Type* type() const noexcept { return p_type; }
 
     /**
      * @brief Returns the mode of the buffer object.
@@ -84,14 +84,6 @@ public:
      * @see BufferMode
      */
     RPY_NO_DISCARD virtual BufferMode mode() const;
-    /**
-     * @brief Get the type information of the object.
-     *
-     * This method returns the type information of the object.
-     *
-     * @return The type information of the object.
-     */
-    RPY_NO_DISCARD TypeInfo type_info() const noexcept;
     /**
      * @brief Get the size of the buffer object.
      *
@@ -288,7 +280,7 @@ public:
      */
     RPY_NO_DISCARD const Type* content_type() const noexcept
     {
-        return is_null() ? nullptr : impl()->content_type();
+        return is_null() ? nullptr : impl()->type();
     }
     /**
      * @brief Get the size of the buffer.
@@ -311,16 +303,6 @@ public:
      * @return The size of the buffer in bytes as a `dimn_t` value.
      */
     RPY_NO_DISCARD dimn_t bytes() const;
-    /**
-     * @brief Get the type information of the buffer.
-     *
-     * This method returns the type information of the buffer object. If the
-     * implementation of the buffer is null, it returns the type information of
-     * the `char` type.
-     *
-     * @return The type information of the buffer.
-     */
-    RPY_NO_DISCARD TypeInfo type_info() const noexcept;
     /**
      * @brief Get the mode of the buffer.
      *

@@ -129,7 +129,7 @@ dimn_t Buffer::size() const
 dimn_t Buffer::bytes() const
 {
     if (impl() == nullptr) { return 0; }
-    return impl()->size() * impl()->type_info().bytes;
+    return impl()->size() * size_of(impl()->type());
 }
 
 static inline bool check_device_compatibility(Buffer& dst, const Device& device)
@@ -170,12 +170,6 @@ Buffer Buffer::map(rpy::dimn_t size, rpy::dimn_t offset) const
     if (impl() == nullptr) { return Buffer(); }
     if (size == 0) { size = this->size(); }
     return impl()->map(size, offset);
-}
-
-TypeInfo Buffer::type_info() const noexcept
-{
-    if (impl() == nullptr) { return rpy::devices::type_info<char>(); }
-    return impl()->type_info();
 }
 
 Buffer Buffer::memory_owner() const noexcept

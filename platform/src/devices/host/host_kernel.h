@@ -126,10 +126,7 @@ public:
 
 template <typename T>
 ConvertedKernelArgument<T>::ConvertedKernelArgument(KernelArgument& arg)
-{
-    RPY_CHECK(arg.info() == type_info<T>());
-    p_data = arg.const_pointer();
-}
+{}
 
 template <typename T>
 class ConvertedKernelArgument<T*>

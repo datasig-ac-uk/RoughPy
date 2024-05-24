@@ -42,11 +42,12 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-CPUBuffer::CPUBuffer(const Type* tp, dimn_t size) : base_t(tp),
-    raw_buffer{nullptr, 0},
-    m_flags(IsOwned),
-    m_info(tp->type_info()),
-    m_num_elts(size)
+CPUBuffer::CPUBuffer(const Type* tp, dimn_t size)
+    : base_t(tp),
+      raw_buffer{nullptr, 0},
+      m_flags(IsOwned),
+      m_info(tp->type_info()),
+      m_num_elts(size)
 {
     if (size > 0) {
         const auto& device = CPUDeviceHandle::get();
@@ -175,7 +176,7 @@ dimn_t CPUBuffer::size() const { return m_num_elts; }
 void* CPUBuffer::ptr() noexcept { return raw_buffer.ptr; }
 Device CPUBuffer::device() const noexcept { return CPUDeviceHandle::get(); }
 
-DeviceType CPUBuffer::type() const noexcept { return DeviceType::CPU; }
+DeviceType CPUBuffer::device_type() const noexcept { return DeviceType::CPU; }
 const void* CPUBuffer::ptr() const noexcept { return raw_buffer.ptr; }
 Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
         const
@@ -188,7 +189,7 @@ Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
          * either large enough or not. If it is exactly the right size, use
          * the buffer and otherwise reallocate. Finally, copy.
          */
-        if (dst.is_null() || dst.type_info() != m_info
+        if (dst.is_null() || dst.device_type() != device_type()
             || dst.size() != raw_buffer.size) {
             dst = device->alloc(m_info, raw_buffer.size);
         }
@@ -226,12 +227,12 @@ Buffer CPUBuffer::slice(dimn_t size, dimn_t offset) const
 
     const auto* ptr
             = static_cast<const byte*>(raw_buffer.ptr) + offset * m_info.bytes;
-    return Buffer(new CPUBuffer(ptr, size, content_type()));
+    return Buffer(new CPUBuffer(ptr, size, type()));
 }
 Buffer CPUBuffer::mut_slice(dimn_t size, dimn_t offset)
 {
     RPY_CHECK(offset + size <= m_num_elts);
 
     auto* ptr = static_cast<byte*>(raw_buffer.ptr) + offset * m_info.bytes;
-    return Buffer(new CPUBuffer(ptr, size, content_type()));
+    return Buffer(new CPUBuffer(ptr, size, type()));
 }

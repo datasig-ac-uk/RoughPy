@@ -69,7 +69,7 @@ public:
     virtual ~InterfaceBase();
 
     RPY_NO_DISCARD virtual bool is_host() const noexcept;
-    RPY_NO_DISCARD virtual DeviceType type() const noexcept;
+    RPY_NO_DISCARD virtual DeviceType device_type() const noexcept;
     RPY_NO_DISCARD virtual dimn_t ref_count() const noexcept;
     RPY_NO_DISCARD virtual Device device() const noexcept;
 
@@ -183,7 +183,7 @@ public:
     ObjectBase& operator=(ObjectBase&& other) noexcept = default;
 
     RPY_NO_DISCARD bool is_host() const noexcept;
-    RPY_NO_DISCARD DeviceType type() const noexcept;
+    RPY_NO_DISCARD DeviceType device_type() const noexcept;
     RPY_NO_DISCARD bool is_null() const noexcept { return !p_impl; }
     RPY_NO_DISCARD rc_count_t ref_count() const noexcept;
     RPY_NO_DISCARD Derived clone() const;
@@ -268,9 +268,9 @@ bool ObjectBase<Interface, Derived>::is_host() const noexcept
 //     return *this;
 // }
 template <typename Interface, typename Derived>
-DeviceType ObjectBase<Interface, Derived>::type() const noexcept
+DeviceType ObjectBase<Interface, Derived>::device_type() const noexcept
 {
-    if (p_impl) { return p_impl->type(); }
+    if (p_impl) { return p_impl->device_type(); }
     return DeviceType::CPU;
 }
 

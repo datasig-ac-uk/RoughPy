@@ -161,6 +161,16 @@ public:
      */
     RPY_NO_DISCARD virtual Buffer alloc(TypeInfo info, dimn_t count) const;
 
+    /**
+     * @brief Allocates a buffer of the specified size with the given type
+     *
+     * This method allocates a buffer on the device with the specified size and
+     * type. The buffer is returned as a `Buffer` object.
+     *
+     * @param type The type information for the buffer
+     * @param count The number of elements in the buffer
+     * @return A `Buffer` object representing the allocated buffer on the device
+     */
     RPY_NO_DISCARD virtual Buffer alloc(const Type* type, dimn_t count) const;
 
     /**

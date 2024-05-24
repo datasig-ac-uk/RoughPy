@@ -35,7 +35,11 @@ using namespace std;
 template <typename T>
 void abs_fn(void* out, const void* in)
 {
-    *static_cast<T*>(out) = abs(static_cast<const T*>(in));
+    if constexpr (is_signed_v<T>) {
+        *static_cast<T*>(out) = abs(*static_cast<const T*>(in));
+    } else {
+        *static_cast<T*>(out) = *static_cast<const T*>(in);
+    }
 }
 template <typename T>
 void real_fn(void* out, const void* in)
@@ -45,7 +49,7 @@ void real_fn(void* out, const void* in)
 template <typename T>
 void pow_fn(void* out, const void* in, unsigned power) noexcept
 {
-    *static_cast<T*>(out) = pow(*static_cast<T*>(in), power);
+    *static_cast<T*>(out) = pow(*static_cast<const T*>(in), power);
 }
 
 template <typename T>
@@ -96,9 +100,9 @@ public:
 
         num_traits.abs = math_fn_impls::abs_fn<T>;
         num_traits.real = math_fn_impls::real_fn<T>;
-        num_traits.pow = math_fn_impls::pow_fn<T>;
 
         if RPY_IF_CONSTEXPR (is_floating_point_v<T>) {
+            num_traits.pow = math_fn_impls::pow_fn<T>;
             num_traits.sqrt = math_fn_impls::sqrt_fn<T>;
             num_traits.exp = math_fn_impls::exp_fn<T>;
             num_traits.log = math_fn_impls::log_fn<T>;

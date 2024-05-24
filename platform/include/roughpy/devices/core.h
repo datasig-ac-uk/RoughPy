@@ -330,6 +330,10 @@ class Type;
 
 using TypePtr = const Type*;
 
+class Value;
+class Reference;
+class ConstReference;
+
 class BufferInterface;
 
 class Buffer;

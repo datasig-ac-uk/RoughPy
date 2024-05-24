@@ -12,6 +12,7 @@
 #include <roughpy/core/types.h>
 
 #include "core.h"
+#include "kernel_arg.h"
 #include "type.h"
 
 namespace rpy {
@@ -106,22 +107,36 @@ public:
 
     RPY_NO_DISCARD const Type* type() const noexcept { return p_type; }
 
-    template <typename T = void>
-    RPY_NO_DISCARD const T* data() const noexcept
+    RPY_NO_DISCARD const void* data() const noexcept
     {
-        if (is_inline_stored()) {
-            return reinterpret_cast<const T*>(&m_storage.bytes[0]);
-        }
-        RPY_DBG_ASSERT(m_storage.pointer != nullptr);
-        return static_cast<const T*>(m_storage.pointer);
+        if (is_inline_stored()) { return m_storage.bytes; }
+        return m_storage.pointer;
     }
 
-    template <typename T = void>
-    RPY_NO_DISCARD T* data() noexcept
+    template <typename T>
+    RPY_NO_DISCARD enable_if_t<!is_void_v<T>, const T*> data() const noexcept
     {
-        if (is_inline_stored()) { return static_cast<T*>(m_storage.bytes); }
+        if (is_inline_stored()) {
+            return launder(reinterpret_cast<const T*>(m_storage.bytes));
+        }
         RPY_DBG_ASSERT(m_storage.pointer != nullptr);
-        return static_cast<T*>(m_storage.pointer);
+        return launder(static_cast<const T*>(m_storage.pointer));
+    }
+
+    RPY_NO_DISCARD void* data() noexcept
+    {
+        if (is_inline_stored()) { return m_storage.bytes; }
+        return m_storage.pointer;
+    }
+
+    template <typename T>
+    RPY_NO_DISCARD enable_if_t<!is_void_v<T>, T*> data() noexcept
+    {
+        if (is_inline_stored()) {
+            return launder(reinterpret_cast<T*>(m_storage.bytes));
+        }
+        RPY_DBG_ASSERT(m_storage.pointer != nullptr);
+        return launder(static_cast<T*>(m_storage.pointer));
     }
 
     Value& operator=(const Value& other);
@@ -181,10 +196,11 @@ public:
     }
 
     RPY_NO_DISCARD const Type* type() const noexcept { return p_type; }
-    template <typename T = void>
-    RPY_NO_DISCARD const T* data() const noexcept
+    RPY_NO_DISCARD const void* data() const noexcept { return p_val; }
+    template <typename T>
+    RPY_NO_DISCARD enable_if_t<!is_void_v<T>, const T*> data() const noexcept
     {
-        return p_val;
+        return launder(static_cast<const T*>(p_val));
     }
 
     template <typename T>
@@ -196,7 +212,7 @@ public:
     template <typename T>
     constexpr add_const_t<T>& value() const
     {
-        return *static_cast<add_const_t<T>*>(p_val);
+        return *data<add_const_t<T>>();
     }
 };
 
@@ -240,10 +256,15 @@ public:
             Reference&>
     operator=(T&& other);
 
-    template <typename T = void>
-    RPY_NO_DISCARD T* data() noexcept
+    RPY_NO_DISCARD void* data() noexcept
     {
-        return const_cast<T*>(ConstReference::data<T>());
+        return const_cast<void*>(ConstReference::data());
+    }
+
+    template <typename T>
+    RPY_NO_DISCARD enable_if_t<!is_void_v<T>, T*> data() noexcept
+    {
+        return const_cast<T*>(ConstReference::template data<T>());
     }
 
     template <typename T>

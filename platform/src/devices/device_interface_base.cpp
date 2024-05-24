@@ -42,7 +42,7 @@ rpy::devices::dtl::InterfaceBase::~InterfaceBase() = default;
 
 dimn_t devices::dtl::InterfaceBase::ref_count() const noexcept { return 0; }
 
-DeviceType devices::dtl::InterfaceBase::type() const noexcept
+DeviceType devices::dtl::InterfaceBase::device_type() const noexcept
 {
     return DeviceType::CPU;
 }

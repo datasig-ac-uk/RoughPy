@@ -59,135 +59,56 @@ namespace devices {
  * KernelArgument arg3(constData); // Create an argument from constant data
  * @endcode
  */
-class ROUGHPY_DEVICES_EXPORT KernelArgument
+class KernelArgument
 {
-
-    union
-    {
-        void* p_data;
-        const void* p_const_data;
-        Buffer m_buffer;
-    };
+    const void* p_data;
 
     enum
     {
-        Pointer,
-        ConstPointer,
-        BufferObject,
+        Ref,
+        CRef,
+        Buf,
     } m_mode;
-
-    TypeInfo m_info;
 
 public:
     KernelArgument(const KernelArgument&) = default;
 
     KernelArgument(KernelArgument&& other) noexcept
-        : p_data(nullptr), m_mode(other.m_mode), m_info(other.m_info)
+        : p_data(nullptr),
+          m_mode(other.m_mode)
     {
-        switch (other.m_mode) {
-            case Pointer:
-                std::swap(p_data, other.p_data);
-                break;
-            case ConstPointer:
-                std::swap(p_const_data, other.p_const_data);
-                break;
-            case BufferObject:
-                std::swap(m_buffer, other.m_buffer);
-                break;
-        }
+        std::swap(p_data, other.p_data);
     }
 
-    explicit KernelArgument(Buffer&& buffer)
-        : m_buffer(std::move(buffer)),
-          m_mode(BufferObject),
-          m_info(m_buffer.type_info())
+    explicit KernelArgument(const Buffer& buffer) : p_data(&buffer), m_mode(Buf)
     {}
+    KernelArgument(const Reference& value) : p_data(&value), m_mode(Ref) {}
 
-    template <
-            typename T,
-            enable_if_t<
-                    !is_same_v<decay_t<T>, KernelArgument>
-                            && !is_same_v<decay_t<T>, Buffer>,
-                    int>
-            = 0>
-    explicit KernelArgument(T& data)
-        : p_data(&data),
-          m_mode(Pointer),
-          m_info(type_info<T>())
+    KernelArgument(const ConstReference& value) : p_data(&value), m_mode(CRef)
     {}
-
-    template <
-            typename T,
-            enable_if_t<
-                    !is_same_v<decay_t<T>, KernelArgument>
-                            && !is_same_v<decay_t<T>, Buffer>,
-                    int>
-            = 0>
-    explicit KernelArgument(const T& data)
-        : p_const_data(&data),
-          m_mode(ConstPointer),
-          m_info(type_info<T>())
-    {}
-
-    KernelArgument(TypeInfo info, void* pointer)
-        : p_data(pointer),
-          m_mode(Pointer),
-          m_info(info)
-    {}
-
-    KernelArgument(TypeInfo info, const void* pointer)
-        : p_const_data(pointer),
-          m_mode(ConstPointer),
-          m_info(info)
-    {}
-
-    ~KernelArgument()
-    {
-        if (m_mode == BufferObject) { m_buffer.~Buffer(); }
-    }
 
     RPY_NO_DISCARD constexpr bool is_buffer() const noexcept
     {
-        return m_mode == BufferObject;
+        return m_mode == Buf;
     }
 
-    RPY_NO_DISCARD constexpr bool is_const() const noexcept
+    RPY_NO_DISCARD constexpr const Reference& ref() const noexcept
     {
-        return m_mode == ConstPointer
-                || (m_mode == BufferObject
-                    && m_buffer.mode() == BufferMode::Read);
+        RPY_DBG_ASSERT(m_mode == Ref);
+        return *launder(static_cast<const Reference*>(p_data));
     }
 
-    RPY_NO_DISCARD constexpr void* pointer() noexcept
-    {
-        RPY_DBG_ASSERT(m_mode == Pointer);
-        return p_data;
-    }
-
-    RPY_NO_DISCARD constexpr const void* const_pointer() const noexcept
+    RPY_NO_DISCARD constexpr const ConstReference& cref() const noexcept
     {
         RPY_DBG_ASSERT(!is_buffer());
-        return (m_mode == Pointer) ? p_data : p_const_data;
+        return *launder(static_cast<const ConstReference*>(p_data));
     }
 
-    RPY_NO_DISCARD constexpr Buffer& buffer() noexcept
+    RPY_NO_DISCARD constexpr const Buffer& buffer() const noexcept
     {
-        RPY_DBG_ASSERT(m_mode == BufferObject);
-        return m_buffer;
+        RPY_DBG_ASSERT(m_mode == Buf);
+        return *launder(static_cast<const Buffer*>(p_data));
     }
-
-    RPY_NO_DISCARD constexpr const Buffer& const_buffer() noexcept
-    {
-        RPY_DBG_ASSERT(is_buffer());
-        return m_buffer;
-    }
-
-    RPY_NO_DISCARD constexpr dimn_t size() const noexcept
-    {
-        return (is_buffer()) ? sizeof(void*) : m_info.bytes;
-    }
-
-    RPY_NO_DISCARD constexpr TypeInfo info() const noexcept { return m_info; }
 };
 
 }// namespace devices
