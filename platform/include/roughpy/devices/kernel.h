@@ -370,6 +370,22 @@ EventStatus launch_sync(
     return kernel.launch_sync_in_queue(queue, params, kargs);
 }
 
+
+template <typename... Args>
+class TypedKernel : Kernel
+{
+public:
+    explicit TypedKernel(Kernel kernel)
+        : Kernel(std::move(kernel))
+    {}
+
+    void operator()(const KernelLaunchParams& params, Args&&... args) const
+    {
+        Kernel::operator()(params, std::forward<Args>(args)...);
+    }
+};
+
+
 }// namespace devices
 }// namespace rpy
 
