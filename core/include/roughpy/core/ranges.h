@@ -12,7 +12,7 @@
 
 namespace rpy {
 namespace ranges {
-using namespace ::ranges::v3;
+using namespace ::ranges;
 }
 
 namespace views = ranges::views;
