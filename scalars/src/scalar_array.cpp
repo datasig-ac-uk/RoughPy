@@ -70,7 +70,7 @@ devices::Buffer& ScalarArray::mut_buffer()
 ScalarCRef ScalarArray::operator[](dimn_t i) const
 {
     RPY_CHECK(i < size() && is_host());
-    const TypePtr tp = content_type();
+    const TypePtr tp = type();
     const auto* p = static_cast<const byte*>(ptr()) + i * size_of(tp);
     return ScalarCRef(p, std::move(tp));
 }
@@ -78,7 +78,7 @@ ScalarCRef ScalarArray::operator[](dimn_t i) const
 ScalarRef ScalarArray::operator[](dimn_t i)
 {
     RPY_CHECK(i < size() && is_host() && !is_const());
-    const TypePtr tp = content_type();
+    const TypePtr tp = type();
     auto* p = static_cast<byte*>(ptr()) + i * size_of(tp);
     return ScalarRef(p, std::move(tp));
 }
@@ -145,7 +145,7 @@ ScalarArray ScalarArray::borrow_mut()
 ScalarArray ScalarArray::to_device(devices::Device device) const
 {
     if (device == this->device()) { return *this; }
-    auto new_buffer = device->alloc(this->content_type(), this->size());
+    auto new_buffer = device->alloc(this->type(), this->size());
     Buffer::to_device(new_buffer, device);
     return {std::move(new_buffer)};
 }

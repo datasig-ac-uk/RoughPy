@@ -49,7 +49,7 @@ ScalarStream::ScalarStream(ScalarStream&& other) noexcept
 ScalarStream::ScalarStream(ScalarArray base, containers::Vec<dimn_t> shape)
 {
     if (!base.is_null()) {
-        auto tp = base.content_type();
+        auto tp = base.type();
         p_type = tp;
 
         if (shape.empty()) {
