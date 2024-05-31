@@ -18,9 +18,10 @@ struct IDAndNameOfFType<int8_t> {
 
 template class FundamentalType<int8_t>;
 
-template <>
-const Type* devices::get_type<int8_t>() { return FundamentalType<int8_t>::get(); }
-
-
 }// namespace devices
 }// namespace rpy
+template <>
+const Type* devices::get_type<int8_t>()
+{
+    return FundamentalType<int8_t>::get();
+}

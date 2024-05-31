@@ -19,7 +19,9 @@ struct IDAndNameOfFType<uint32_t> {
 
 template class FundamentalType<uint32_t>;
 
+
+}
+}
+
 template <>
 const Type* devices::get_type<uint32_t>() { return FundamentalType<uint32_t>::get(); }
-}
-}
