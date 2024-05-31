@@ -118,7 +118,7 @@ public:
 
 private:
     template <typename F>
-    ROUGHPY_SCALARS_NO_EXPORT RPY_NO_DISCARD Polynomial map_for_each(F&& func
+    RPY_NO_DISCARD ROUGHPY_SCALARS_NO_EXPORT Polynomial map_for_each(F&& func
     ) const;
 
 public:
