@@ -2,9 +2,12 @@
 #define ROUGHPY_CORE_ALLOC_H_
 
 #include <boost/align/aligned_alloc.hpp>
-#include <cstdlib>
 
 #include "traits.h"
+
+#include <cstdlib>
+#include <memory>
+#include <new>
 
 namespace rpy {
 
@@ -42,9 +45,10 @@ using boost::alignment::aligned_free;
  * 'Args...' is noexcept.
  */
 template <typename T, typename... Args>
-constexpr void construct_inplace(T* dst, Args&&... args) noexcept(
-        is_nothrow_constructible_v<T, Args...>
-)
+constexpr void construct_inplace(
+        T* dst,
+        Args&&... args
+) noexcept(is_nothrow_constructible_v<T, Args...>)
 {
     ::new (static_cast<void*>(dst)) T(std::forward<Args>(args)...);
 }
