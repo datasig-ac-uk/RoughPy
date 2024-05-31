@@ -20,15 +20,13 @@ namespace algebra {
 
 class ROUGHPY_ALGEBRA_EXPORT KeyScalarStream
 {
-    using PackedScalarType = scalars::PackedScalarType;
     containers::SmallVec<KeyScalarArray, 1> m_parts;
-    PackedScalarType m_type;
+    scalars::TypePtr p_type;
 
 public:
-
     KeyScalarStream() = default;
 
-    explicit KeyScalarStream(PackedScalarType type) : m_type(type) {}
+    explicit KeyScalarStream(scalars::TypePtr type) : p_type(type) {}
 
     RPY_NO_DISCARD bool empty() const noexcept { return m_parts.empty(); }
     RPY_NO_DISCARD dimn_t col_count(dimn_t i) const noexcept;
@@ -39,7 +37,7 @@ public:
     RPY_NO_DISCARD KeyScalarStream operator[](SliceIndex indices
     ) const noexcept;
 
-    void set_type(PackedScalarType type) noexcept;
+    void set_type(scalars::TypePtr type) noexcept;
 
     void reserve(dimn_t num_rows);
 

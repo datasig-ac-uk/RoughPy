@@ -71,7 +71,7 @@ public:
 
     RPY_NO_DISCARD scalars::TypePtr scalar_type() const noexcept
     {
-        return m_scalar_buffer.content_type();
+        return m_scalar_buffer.type();
     }
 
     RPY_NO_DISCARD bool sparse() const noexcept
@@ -477,7 +477,7 @@ public:
     RPY_NO_DISCARD scalars::TypePtr scalar_type() const noexcept
     {
         RPY_DBG_ASSERT(p_data != nullptr);
-        return p_data->scalars().content_type();
+        return p_data->scalars().type();
     }
 
     /**
@@ -548,14 +548,14 @@ public:
      * @param key Key to query
      * @return Non-mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::Scalar get(const BasisKey& key) const;
+    RPY_NO_DISCARD scalars::ScalarCRef get(const BasisKey& key) const;
 
     /**
      * @brief Get the coefficient of key in the vector mutably
      * @param key Key to query
      * @return Mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::Scalar get_mut(const BasisKey& key);
+    RPY_NO_DISCARD scalars::ScalarRef get_mut(const BasisKey& key);
 
     RPY_NO_DISCARD const_iterator begin() const noexcept;
     RPY_NO_DISCARD const_iterator end() const noexcept;
@@ -576,12 +576,12 @@ public:
     RPY_NO_DISCARD optional<dimn_t> get_index(const BasisKey& key
     ) const noexcept;
 
-    RPY_NO_DISCARD scalars::Scalar operator[](const BasisKey& key) const
+    RPY_NO_DISCARD scalars::ScalarCRef operator[](const BasisKey& key) const
     {
         return get(key);
     }
 
-    RPY_NO_DISCARD scalars::Scalar operator[](const BasisKey& key)
+    RPY_NO_DISCARD scalars::ScalarRef operator[](const BasisKey& key)
     {
         return get_mut(key);
     }

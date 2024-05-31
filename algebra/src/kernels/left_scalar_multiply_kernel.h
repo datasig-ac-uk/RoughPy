@@ -38,9 +38,9 @@ public:
     RPY_NO_DISCARD string_view kernel_name() const noexcept;
     RPY_NO_DISCARD dtl::GenericBinaryFunction generic_op() const noexcept
     {
-        return [](scalars::Scalar& out,
-                  const scalars::Scalar& arg,
-                  const scalars::Scalar& multiplier) {
+        return [](scalars::ScalarRef out,
+                  const scalars::ScalarCRef arg,
+                  const scalars::ScalarCRef multiplier) {
             out = multiplier * arg;
         };
     }

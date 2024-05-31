@@ -12,7 +12,7 @@ void algebra::dtl::GenericKernel<
         eval_sparse_sparse(
                 VectorData& out,
                 const VectorData& arg,
-                const scalars::Scalar& scal
+                scalars::ScalarCRef scal
         ) const
 {
     const auto scalars_in = arg.scalars().view();
@@ -35,7 +35,7 @@ void algebra::dtl::GenericKernel<
                 tmp_map,
                 views::enumerate(in_key_view),
                 scalars_in,
-                [&](scalars::Scalar& left, const scalars::Scalar& right) {
+                [&](scalars::ScalarRef left, scalars::ScalarCRef right) {
                     m_func(left, right, scal);
                 }
         );
@@ -50,7 +50,7 @@ void algebra::dtl::GenericKernel<
         eval_sparse_dense(
                 VectorData& out,
                 const VectorData& arg,
-                const scalars::Scalar& scal
+                scalars::ScalarCRef scal
         ) const
 {
     const auto size = arg.size();
@@ -78,7 +78,7 @@ void algebra::dtl::GenericKernel<
                               return std::make_tuple(idx, basis->to_key(idx));
                           }),
                 scalars_in,
-                [&](scalars::Scalar& left, const scalars::Scalar& right) {
+                [&](scalars::ScalarRef left, scalars::ScalarCRef right) {
                     m_func(left, right, scal);
                 }
         );
@@ -93,7 +93,7 @@ void algebra::dtl::GenericKernel<
         eval_dense_sparse(
                 VectorData& out,
                 const VectorData& arg,
-                const scalars::Scalar& scal
+                scalars::ScalarCRef scal
         ) const
 {
     RPY_CHECK(p_basis->is_ordered());
@@ -121,7 +121,7 @@ void algebra::dtl::GenericKernel<
         eval_dense_dense(
                 VectorData& out,
                 const VectorData& arg,
-                const scalars::Scalar& scal
+                scalars::ScalarCRef scal
         ) const
 {
     if (out.empty()) { out.resize(arg.size()); }
@@ -139,7 +139,7 @@ void algebra::dtl::GenericKernel<
         algebra::dtl::MutableVectorArg,
         algebra::dtl::ConstVectorArg,
         algebra::dtl::ConstScalarArg>::
-operator()(VectorData& out, const VectorData& arg, const scalars::Scalar& scal)
+operator()(VectorData& out, const VectorData& arg, scalars::ScalarCRef scal)
         const
 {
     switch (get_sparse_dense_config(out, arg)) {

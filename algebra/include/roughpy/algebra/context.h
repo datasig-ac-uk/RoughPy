@@ -32,9 +32,9 @@
 #include "algebra_fwd.h"
 #include "context_fwd.h"
 
+#include <roughpy/core/container/vector.h>
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
-#include <roughpy/core/container/vector.h>
 #include <roughpy/scalars/scalar_stream.h>
 #include <roughpy/scalars/scalar_type.h>
 
@@ -105,14 +105,14 @@ public:
  */
 class ROUGHPY_ALGEBRA_EXPORT Context : public ContextBase
 {
-    const scalars::ScalarType* p_ctype;
+    scalars::TypePtr p_ctype;
     string m_ctx_backend;
 
 protected:
     explicit
     Context(deg_t width,
             deg_t depth,
-            const scalars::ScalarType* ctype,
+            scalars::TypePtr ctype,
             string&& context_backend,
             const dimn_t* lie_sizes = nullptr,
             const dimn_t* tensor_sizes = nullptr)
@@ -122,27 +122,22 @@ protected:
     {}
 
 public:
-    RPY_NO_DISCARD const scalars::ScalarType* ctype() const noexcept
-    {
-        return p_ctype;
-    }
+    RPY_NO_DISCARD scalars::TypePtr ctype() const noexcept { return p_ctype; }
     RPY_NO_DISCARD const string& backend() const noexcept
     {
         return m_ctx_backend;
     }
 
     RPY_NO_DISCARD virtual context_pointer get_alike(deg_t new_depth) const = 0;
-    RPY_NO_DISCARD virtual context_pointer
-    get_alike(const scalars::ScalarType* new_ctype) const
-            = 0;
-    RPY_NO_DISCARD virtual context_pointer
-    get_alike(deg_t new_depth, const scalars::ScalarType* new_ctype) const
-            = 0;
-    RPY_NO_DISCARD virtual context_pointer get_alike(
-            deg_t new_width,
-            deg_t new_depth,
-            const scalars::ScalarType* new_ctype
+    RPY_NO_DISCARD virtual context_pointer get_alike(scalars::TypePtr new_ctype
     ) const = 0;
+    RPY_NO_DISCARD virtual context_pointer
+    get_alike(deg_t new_depth, scalars::TypePtr new_ctype) const
+            = 0;
+    RPY_NO_DISCARD virtual context_pointer
+    get_alike(deg_t new_width, deg_t new_depth, scalars::TypePtr new_ctype)
+            const
+            = 0;
     ;
 
     RPY_NO_DISCARD virtual LieBasis get_lie_basis() const = 0;
@@ -198,7 +193,7 @@ get_base_context(deg_t width, deg_t depth);
 ROUGHPY_ALGEBRA_EXPORT context_pointer get_context(
         deg_t width,
         deg_t depth,
-        const scalars::ScalarType* ctype,
+        scalars::TypePtr ctype,
         const containers::Vec<std::pair<string, string>>& preferences = {}
 );
 
@@ -234,12 +229,12 @@ public:
     virtual bool
     can_get(deg_t width,
             deg_t depth,
-            const scalars::ScalarType* ctype,
+            scalars::TypePtr ctype,
             const preference_list& preferences) const;
     virtual context_pointer get_context(
             deg_t width,
             deg_t depth,
-            const scalars::ScalarType* ctype,
+            scalars::TypePtr ctype,
             const preference_list& preferences
     ) const = 0;
     virtual optional<base_context_pointer>

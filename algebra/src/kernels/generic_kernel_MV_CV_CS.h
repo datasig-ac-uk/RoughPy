@@ -23,22 +23,22 @@ class GenericKernel<MutableVectorArg, ConstVectorArg, ConstScalarArg>
     void eval_sparse_sparse(
             VectorData& out,
             const VectorData& arg,
-            const scalars::Scalar& scal
+            scalars::ScalarCRef scal
     ) const;
     void eval_sparse_dense(
             VectorData& out,
             const VectorData& arg,
-            const scalars::Scalar& scal
+            scalars::ScalarCRef scal
     ) const;
     void eval_dense_sparse(
             VectorData& out,
             const VectorData& arg,
-            const scalars::Scalar& scal
+            scalars::ScalarCRef scal
     ) const;
     void eval_dense_dense(
             VectorData& out,
             const VectorData& arg,
-            const scalars::Scalar& scal
+            scalars::ScalarCRef scal
     ) const;
 
 public:
@@ -51,7 +51,7 @@ public:
     void operator()(
             VectorData& out,
             const VectorData& arg,
-            const scalars::Scalar& scal
+            scalars::ScalarCRef scal
     ) const;
 };
 

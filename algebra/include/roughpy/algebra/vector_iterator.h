@@ -15,7 +15,6 @@
 #include <roughpy/core/types.h>
 
 #include <roughpy/devices/buffer.h>
-#include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 
 namespace rpy {
@@ -29,14 +28,14 @@ class ROUGHPY_ALGEBRA_EXPORT VectorIterator
     dimn_t m_index;
 
 public:
-    using value_type = pair<BasisKey, scalars::Scalar>;
+    using value_type = pair<BasisKey, scalars::ScalarCRef>;
 
     class KVPairProxy
     {
         value_type m_pair;
 
     public:
-        KVPairProxy(BasisKey&& key, scalars::Scalar&& value)
+        KVPairProxy(BasisKey&& key, scalars::ScalarCRef&& value)
             : m_pair(std::move(key), std::move(value))
         {}
 

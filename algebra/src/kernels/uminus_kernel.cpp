@@ -23,5 +23,7 @@ std::string_view rpy::algebra::UminusKernel::kernel_name() const noexcept
 rpy::algebra::dtl::GenericUnaryFunction
 rpy::algebra::UminusKernel::generic_op() const noexcept
 {
-    return [](scalars::Scalar& out, const scalars::Scalar& arg) { out = -arg; };
+    return [](scalars::ScalarRef out, const scalars::ScalarCRef arg) {
+        out = -arg;
+    };
 }

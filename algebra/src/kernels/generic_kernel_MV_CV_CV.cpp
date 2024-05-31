@@ -263,7 +263,7 @@ void algebra::dtl::GenericKernel<
         m_func(tmp, scalars_left[i], scalars_right[i]);
     }
 
-    scalars::Scalar zero(scalars_out.device_type());
+    scalars::Scalar zero(scalars_out.type());
 
     for (dimn_t i = size; i < left.size(); ++i) {
         auto tmp = scalars_out[i];
@@ -279,7 +279,8 @@ void algebra::dtl::GenericKernel<
         algebra::dtl::MutableVectorArg,
         algebra::dtl::ConstVectorArg,
         algebra::dtl::ConstVectorArg>::
-operator()(VectorData& out, const VectorData& left, const VectorData& right) const
+operator()(VectorData& out, const VectorData& left, const VectorData& right)
+        const
 {
     switch (get_sparse_dense_config(out, left, right)) {
         case 0b000: eval_sss(out, left, right); break;

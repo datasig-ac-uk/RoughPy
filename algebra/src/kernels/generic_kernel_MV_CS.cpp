@@ -7,7 +7,7 @@
 void rpy::algebra::dtl::GenericKernel<
         rpy::algebra::dtl::MutableVectorArg,
         rpy::algebra::dtl::ConstScalarArg>::
-operator()(VectorData& data, const scalars::Scalar& scalar) const
+operator()(VectorData& data, scalars::ScalarCRef scalar) const
 {
     for (std::size_t i = 0; i < data.size(); ++i) {
         auto tmp = data.mut_scalars()[i];

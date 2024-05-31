@@ -13,7 +13,7 @@ using namespace rpy::algebra;
 TEST(VectorTests, VectorAddition)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
 
     Vector v1(basis, stype, {1., 2., 3., 4., 5., 6.});
     Vector v2(basis, stype, {-2., 2., -2., 2., -2., 2.});
@@ -25,7 +25,7 @@ TEST(VectorTests, VectorAddition)
 TEST(VectorTests, VectorSubtraction)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
 
     Vector v1(basis, stype, {6., 5., 4., 3., 2., 1.});
     Vector v2(basis, stype, {2., 2., 2., 2., 2., 2.});
@@ -38,7 +38,7 @@ TEST(VectorTests, VectorSubtraction)
 TEST(VectorTests, VectorMultiplicationByScalar)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
 
     Vector v1(basis, stype, {1., 2., 3., 4., 5., 6.});
     scalars::Scalar scalar(stype, 2.0);
@@ -51,7 +51,7 @@ TEST(VectorTests, VectorMultiplicationByScalar)
 TEST(VectorTests, VectorDivisionByScalar)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
 
     Vector v1(basis, stype, {2., 4., 6., 8., 10., 12.});
     scalars::Scalar scalar(stype, 2.0);
@@ -64,7 +64,7 @@ TEST(VectorTests, VectorDivisionByScalar)
 TEST(VectorTests, StreamOutOperator)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
     Vector v(basis, stype, {2., 4., 6., 8., 10., 12.});
     std::stringstream ss;
     ss << v;
@@ -75,7 +75,7 @@ TEST(VectorTests, StreamOutOperator)
 TEST(VectorTests, VectorInplaceAddition)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
     Vector v1(basis, stype, {1., 2., 3., 4., 5., 6.});
     Vector v2(basis, stype, {-2., 2., -2., 2., -2., 2.});
 
@@ -88,7 +88,7 @@ TEST(VectorTests, VectorInplaceAddition)
 TEST(VectorTests, VectorInplaceSubtraction)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
     Vector v1(basis, stype, {6., 5., 4., 3., 2., 1.});
     Vector v2(basis, stype, {2., 2., 2., 2., 2., 2.});
 
@@ -101,7 +101,7 @@ TEST(VectorTests, VectorInplaceSubtraction)
 TEST(VectorTests, VectorInplaceScalarMultiplication)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
     Vector v1(basis, stype, {1., 2., 3., 4., 5., 6.});
     scalars::Scalar scalar(stype, 2.0);
 
@@ -114,7 +114,7 @@ TEST(VectorTests, VectorInplaceScalarMultiplication)
 TEST(VectorTests, VectorInplaceScalarDivision)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
     Vector v1(basis, stype, {2., 4., 6., 8., 10., 12.});
     scalars::Scalar scalar(stype, 2.0);
 
@@ -127,7 +127,7 @@ TEST(VectorTests, VectorInplaceScalarDivision)
 TEST(VectorTests, VectorEquality)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
     Vector v1(basis, stype, {1., 2., 3., 4., 5., 6.});
     Vector v2(basis, stype, {1., 2., 3., 4., 5., 6.});
     EXPECT_TRUE(v1 == v2);
@@ -136,7 +136,7 @@ TEST(VectorTests, VectorEquality)
 TEST(VectorTests, VectorNonEquality)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
     Vector v1(basis, stype, {1., 2., 3., 4., 5., 6.});
     Vector v2(basis, stype, {6., 5., 4., 3., 2., 1.});
     EXPECT_TRUE(v1 != v2);
@@ -145,7 +145,7 @@ TEST(VectorTests, VectorNonEquality)
 TEST(VectorTests, VectorEqualityWithDifferentSize)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
     Vector v1(basis, stype, {1., 2., 3., 4., 5., 6., 7.});
     Vector v2(basis, stype, {1., 2., 3., 4., 5., 6.});
     EXPECT_TRUE(v1 != v2);
@@ -154,7 +154,7 @@ TEST(VectorTests, VectorEqualityWithDifferentSize)
 TEST(VectorTests, VectorEqualityWithDifferentSizeZero)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("f64");
+    const auto stype = scalars::get_type("f64");
     Vector v1(basis, stype, {1., 2., 3., 4., 5., 6., 0.});
     Vector v2(basis, stype, {1., 2., 3., 4., 5., 6.});
     EXPECT_TRUE(v1 == v2);
@@ -163,7 +163,7 @@ TEST(VectorTests, VectorEqualityWithDifferentSizeZero)
 TEST(VectorTests, VectorAdditionRational)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("Rational");
+    const auto stype = scalars::get_type("Rational");
 
     Vector v1(basis, stype, {1, 2, 3, 4, 5, 6});
     Vector v2(basis, stype, {-2, 2, -2, 2, -2, 2});
@@ -176,7 +176,7 @@ TEST(VectorTests, VectorAdditionRational)
 TEST(VectorTests, VectorSubtractionRational)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("Rational");
+    const auto stype = scalars::get_type("Rational");
 
     Vector v1(basis, stype, {6, 5, 4, 3, 2, 1});
     Vector v2(basis, stype, {2, 2, 2, 2, 2, 2});
@@ -189,7 +189,7 @@ TEST(VectorTests, VectorSubtractionRational)
 TEST(VectorTests, VectorMultiplicationByScalarRational)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("Rational");
+    const auto stype = scalars::get_type("Rational");
 
     Vector v1(basis, stype, {1, 2, 3, 4, 5, 6});
     scalars::Scalar scalar(stype, 2);
@@ -202,7 +202,7 @@ TEST(VectorTests, VectorMultiplicationByScalarRational)
 TEST(VectorTests, VectorDivisionByScalarRational)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("Rational");
+    const auto stype = scalars::get_type("Rational");
 
     Vector v1(basis, stype, {2, 4, 6, 8, 10, 12});
     scalars::Scalar scalar(stype, 2);
@@ -215,7 +215,7 @@ TEST(VectorTests, VectorDivisionByScalarRational)
 TEST(VectorTests, VectorInplaceAdditionRational)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("Rational");
+    const auto stype = scalars::get_type("Rational");
 
     Vector v1(basis, stype, {1, 2, 3, 4, 5, 6});
     Vector v2(basis, stype, {-2, 2, -2, 2, -2, 2});
@@ -229,7 +229,7 @@ TEST(VectorTests, VectorInplaceAdditionRational)
 TEST(VectorTests, VectorInplaceSubtractionRational)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("Rational");
+    const auto stype = scalars::get_type("Rational");
 
     Vector v1(basis, stype, {6, 5, 4, 3, 2, 1});
     Vector v2(basis, stype, {2, 2, 2, 2, 2, 2});
@@ -243,7 +243,7 @@ TEST(VectorTests, VectorInplaceSubtractionRational)
 TEST(VectorTests, VectorInplaceScalarMultiplicationRational)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("Rational");
+    const auto stype = scalars::get_type("Rational");
 
     Vector v1(basis, stype, {1, 2, 3, 4, 5, 6});
     scalars::Scalar scalar(stype, 2);
@@ -257,7 +257,7 @@ TEST(VectorTests, VectorInplaceScalarMultiplicationRational)
 TEST(VectorTests, VectorInplaceScalarDivisionRational)
 {
     const auto basis = TensorBasis::get(5, 2);
-    const auto stype = *scalars::get_type("Rational");
+    const auto stype = scalars::get_type("Rational");
 
     Vector v1(basis, stype, {2, 4, 6, 8, 10, 12});
     scalars::Scalar scalar(stype, 2);

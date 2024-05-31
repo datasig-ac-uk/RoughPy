@@ -8,8 +8,6 @@
 #include "arg_data.h"
 #include "common.h"
 
-#include <roughpy/scalars/scalar.h>
-
 #include <functional>
 
 namespace rpy {
@@ -17,14 +15,14 @@ namespace algebra {
 namespace dtl {
 
 using GenericUnaryFunction
-        = std::function<void(scalars::Scalar&, const scalars::Scalar&)>;
+        = std::function<void(scalars::ScalarRef, scalars::ScalarCRef)>;
 using GenericBinaryFunction = std::function<
-        void(scalars::Scalar&, const scalars::Scalar&, const scalars::Scalar&)>;
+        void(scalars::ScalarRef, scalars::ScalarCRef, scalars::ScalarCRef)>;
 using GenericTernaryFunction = std::function<
-        void(scalars::Scalar&,
-             const scalars::Scalar&,
-             const scalars::Scalar&,
-             const scalars::Scalar&)>;
+        void(scalars::ScalarRef,
+             scalars::ScalarCRef,
+             scalars::ScalarCRef,
+             scalars::ScalarCRef)>;
 
 inline int get_sparse_dense_config(const VectorData& arg) noexcept
 {
@@ -52,7 +50,7 @@ public:
           p_basis(basis)
     {}
 
-    scalars::Scalar operator[](const BasisKey& key)
+    scalars::ScalarRef operator[](const BasisKey& key)
     {
         return m_array[p_basis->to_index(key)];
     }

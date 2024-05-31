@@ -9,8 +9,6 @@
 #include "key_array.h"
 #include "vector.h"
 
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_interface.h>
 
 namespace rpy {
 namespace algebra {

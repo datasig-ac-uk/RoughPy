@@ -52,7 +52,7 @@ public:
           m_keys(keys)
     {}
 
-    explicit KeyScalarArray(scalars::PackedScalarType type, dimn_t size);
+    explicit KeyScalarArray(scalars::TypePtr type, dimn_t size);
 
     KeyScalarArray& operator=(const KeyScalarArray&) = default;
     KeyScalarArray& operator=(KeyScalarArray&&) noexcept = default;
@@ -85,13 +85,9 @@ public:
      */
     void allocate_keys(const dimn_t size) { m_keys = KeyArray(size); }
 
-    /**
-     *
-     */
-    void allocate_scalars(dimn_t size, scalars::PackedScalarType type = nullptr)
+    void allocate_scalars(dimn_t size, scalars::TypePtr type)
     {
-        if (type.is_null()) { type = this->device_type(); }
-        RPY_CHECK(!type.is_null());
+        RPY_CHECK(type != nullptr);
         *this = ScalarArray(type, size);
     }
 

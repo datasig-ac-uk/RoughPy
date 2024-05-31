@@ -59,7 +59,7 @@ context_pointer rpy::algebra::from_context_spec(const BasicContextSpec& spec)
     return get_context(
             spec.width,
             spec.depth,
-            *tp_o,
+            tp_o,
             {
                     {"backend", spec.backend}
     }
@@ -110,7 +110,7 @@ base_context_pointer rpy::algebra::get_base_context(deg_t width, deg_t depth)
 context_pointer rpy::algebra::get_context(
         deg_t width,
         deg_t depth,
-        const scalars::ScalarType* ctype,
+        scalars::TypePtr ctype,
         const containers::Vec<std::pair<string, string>>& preferences
 )
 {
@@ -156,7 +156,7 @@ rpy::algebra::register_context_maker(std::unique_ptr<ContextMaker> maker)
 bool ContextMaker::can_get(
         deg_t width,
         deg_t depth,
-        const scalars::ScalarType* ctype,
+        scalars::TypePtr ctype,
         const preference_list& preferences
 ) const
 {

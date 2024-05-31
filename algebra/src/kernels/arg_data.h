@@ -25,7 +25,7 @@ public:
 
     scalars::TypePtr get_type() const
     {
-        if (p_data->scalars().is_null() || p_data->scalars().content_type()) {
+        if (p_data->scalars().is_null() || p_data->scalars().type()) {
             return Derive::get_type();
         }
         return p_data->scalar_type();
@@ -263,7 +263,7 @@ public:
         return Derive::eval_device([f = std::forward<F>(func),
                                     this](auto&&... next_arg) {
             return f(
-                    to_kernel_arg(p_data),
+                    devices::KernelArgument(p_data),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -275,7 +275,7 @@ public:
         return Derive::eval_host([f = std::forward<F>(func),
                                   this](auto&&... next_arg) {
             return f(
-                    to_kernel_arg(p_data),
+                    devices::KernelArgument(p_data),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -325,7 +325,7 @@ public:
         return Derive::eval_device([f = std::forward<F>(func),
                                     this](auto&&... next_arg) {
             return f(
-                    to_kernel_arg(p_data),
+                    devices::KernelArgument(p_data),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });
@@ -337,7 +337,7 @@ public:
         return Derive::eval_host([f = std::forward<F>(func),
                                   this](auto&&... next_arg) {
             return f(
-                    to_kernel_arg(p_data),
+                    devices::KernelArgument(p_data),
                     std::forward<decltype(next_arg)>(next_arg)...
             );
         });

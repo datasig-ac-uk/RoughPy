@@ -188,9 +188,7 @@ public:
     explicit KeyArray(devices::Buffer&& data) : m_buffer(std::move(data))
     {
 
-        RPY_CHECK(
-                m_buffer.is_null() || m_buffer.content_type() == get_key_type()
-        );
+        RPY_CHECK(m_buffer.is_null() || m_buffer.type() == get_key_type());
     }
 
     explicit KeyArray(Slice<BasisKey> keys);
@@ -369,13 +367,13 @@ public:
      */
     RPY_NO_DISCARD KeyArray to_device(devices::Device device) const;
 
-    template <typename ViewFn>
-    friend constexpr auto
-    operator|(const KeyArray& array, views::view_closure<ViewFn>& view)
-            -> decltype(array.as_range() | view)
-    {
-        return array.as_range() | view;
-    }
+    // template <typename ViewFn>
+    // friend constexpr auto
+    // operator|(const KeyArray& array, views::view_closure<ViewFn>& view)
+    //         -> decltype(array.as_range() | view)
+    // {
+    //     return array.as_range() | view;
+    // }
 };
 
 }// namespace algebra

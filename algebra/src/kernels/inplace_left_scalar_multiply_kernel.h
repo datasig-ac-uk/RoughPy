@@ -35,8 +35,8 @@ public:
     RPY_NO_DISCARD string_view kernel_name() const noexcept;
     RPY_NO_DISCARD dtl::GenericUnaryFunction generic_op() const noexcept
     {
-        return [](scalars::Scalar& out,
-                  const scalars::Scalar& multiplier) {
+        return [](scalars::ScalarRef out,
+                  scalars::ScalarCRef multiplier) {
             out = multiplier*out;
         };
     }

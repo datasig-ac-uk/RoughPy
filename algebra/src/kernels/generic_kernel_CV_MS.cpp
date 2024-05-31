@@ -7,7 +7,7 @@
 void rpy::algebra::dtl::GenericKernel<
         rpy::algebra::dtl::ConstVectorArg,
         rpy::algebra::dtl::MutableScalarArg>::
-operator()(const VectorData& data, scalars::Scalar& scalar) const
+operator()(const VectorData& data, scalars::ScalarRef scalar) const
 {
     for (size_t i = 0; i < data.size(); ++i) {
         m_func(scalar, data.scalars()[i]);

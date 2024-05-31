@@ -34,9 +34,9 @@ public:
 
     dtl::GenericBinaryFunction generic_op() const noexcept
     {
-        return [](scalars::Scalar& out,
-                  const scalars::Scalar& left,
-                  const scalars::Scalar& multiplier) {
+        return [](scalars::ScalarRef out,
+                  scalars::ScalarCRef left,
+                  scalars::ScalarCRef multiplier) {
             out += (multiplier * left);
         };
     }

@@ -43,7 +43,7 @@ KeyScalarMap preload_map(
 
 inline bool filter_pairs(typename KeyScalarMap::reference val) noexcept
 {
-    return val.second.is_zero();
+    return val.second == scalars::Scalar(0);
 }
 
 inline void write_sparse_result(VectorData& data, KeyScalarMap& mapped)
@@ -64,33 +64,28 @@ inline void write_sparse_result(VectorData& data, KeyScalarMap& mapped)
     data.set_size(count);
 }
 
-
 template <typename IKR, typename F>
 void binary_operation_into_map_left(
-    KeyScalarMap& mapped,
-    IKR&& ikr,
-    const scalars::ScalarArray& left,
-    F&& func,
-    const scalars::Scalar& zero
-    )
+        KeyScalarMap& mapped,
+        IKR&& ikr,
+        const scalars::ScalarArray& left,
+        F&& func,
+        const scalars::Scalar& zero
+)
 {
-    for (auto [i, k] : ikr) {
-        func(mapped[k], left[i], zero);
-    }
+    for (auto [i, k] : ikr) { func(mapped[k], left[i], zero); }
 }
 
 template <typename IKR, typename F>
 void binary_operation_into_map_right(
-    KeyScalarMap& mapped,
-    IKR&& ikr,
-    const scalars::ScalarArray& right,
-    F&& func,
-    const scalars::Scalar& zero
-    )
+        KeyScalarMap& mapped,
+        IKR&& ikr,
+        const scalars::ScalarArray& right,
+        F&& func,
+        const scalars::Scalar& zero
+)
 {
-    for (auto [i, k] : ikr) {
-        func(mapped[k], zero, right[i]);
-    }
+    for (auto [i, k] : ikr) { func(mapped[k], zero, right[i]); }
 }
 
 template <typename IDK1, typename IDK2, typename F>
@@ -103,11 +98,10 @@ void binary_operation_into_map(
         F&& func
 )
 {
-    const scalars::Scalar zero(left.device_type());
+    const scalars::Scalar zero(left.type());
     binary_operation_into_map_left(mapped, idk_left, left, func, zero);
     binary_operation_into_map_right(mapped, idk_right, right, func, zero);
 }
-
 
 }// namespace algebra
 }// namespace rpy

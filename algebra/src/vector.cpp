@@ -8,7 +8,6 @@
 #include "basis.h"
 #include "basis_key.h"
 #include "key_algorithms.h"
-#include "mutable_vector_element.h"
 #include "vector_iterator.h"
 
 #include "kernels/addition_kernel.h"
@@ -28,7 +27,6 @@
 #include <roughpy/core/ranges.h>
 #include <roughpy/devices/core.h>
 #include <roughpy/scalars/algorithms.h>
-#include <roughpy/scalars/scalar.h>
 
 #include <algorithm>
 #include <ostream>
@@ -45,9 +43,9 @@ void Vector::resize_dim(rpy::dimn_t dim)
 
     // TODO: Replace this with a better implementation.
 
-    auto new_buffer = type->allocate(dim);
+    auto new_buffer = type->allocate(device(), dim);
     scalars::algorithms::copy(new_buffer, scalars());
-    std::swap(mut_scalars(), new_buffer);
+    mut_scalars() = std::move(new_buffer);
 
     if (is_sparse()) {
         const auto dhandle = device();
@@ -83,11 +81,8 @@ bool Vector::is_zero() const noexcept
 {
     if (fast_is_zero()) { return true; }
 
-    // TODO: This won't work if the scalars are not ordered
-    const auto max = scalars::algorithms::max(p_data->scalars());
-    const auto min = scalars::algorithms::min(p_data->scalars());
-
-    return max.is_zero() && min.is_zero();
+    return scalars::algorithms::count(scalars(), scalar_type()->zero())
+            == dimension();
 }
 
 void Vector::set_zero()
@@ -96,7 +91,7 @@ void Vector::set_zero()
         mut_scalars() = scalars::ScalarArray(scalar_type());
         mut_keys() = KeyArray();
     } else {
-        scalars::algorithms::fill(mut_scalars(), 0);
+        scalars::algorithms::fill(mut_scalars(), scalar_type()->zero());
     }
 }
 
@@ -248,18 +243,21 @@ Vector& Vector::operator=(Vector&& other) noexcept
     return *this;
 }
 
-scalars::Scalar Vector::get(const BasisKey& key) const
+scalars::ScalarCRef Vector::get(const BasisKey& key) const
 {
+    RPY_CHECK(device()->is_host());
     RPY_CHECK(p_basis->has_key(key));
     if (const auto index = get_index(key)) { return p_data->scalars()[*index]; }
-    return scalars::Scalar(p_data->scalar_type());
+    return scalar_type()->zero();
 }
 
-scalars::Scalar Vector::get_mut(const BasisKey& key)
+scalars::ScalarRef Vector::get_mut(const BasisKey& key)
 {
-    using scalars::Scalar;
+    RPY_CHECK(device()->is_host());
     RPY_CHECK(p_basis->has_key(key));
-    return Scalar(std::make_unique<MutableVectorElement>(this, key));
+    auto index = get_index(key);
+    RPY_DBG_ASSERT(index);
+    return p_data->mut_scalars()[*index];
 }
 
 Vector::const_iterator Vector::begin() const noexcept
@@ -365,7 +363,7 @@ Vector Vector::right_smul(const scalars::Scalar& other) const
 
 Vector Vector::sdiv(const scalars::Scalar& other) const
 {
-    return right_smul(other.reciprocal());
+    return right_smul(scalars::math::reciprocal(other));
 }
 
 Vector& Vector::add_inplace(const Vector& other)
@@ -403,7 +401,7 @@ Vector& Vector::smul_inplace(const scalars::Scalar& other)
 
 Vector& Vector::sdiv_inplace(const scalars::Scalar& other)
 {
-    return smul_inplace(other.reciprocal());
+    return smul_inplace(scalars::math::reciprocal(other));
 }
 
 Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
@@ -412,8 +410,7 @@ Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
         const FusedAddRightScalarMultiply kernel(&*p_basis);
         kernel(*p_data, *other.p_data, scalar);
     } else {
-        scalars::Scalar tmp(scalar.type_info(), 1, 1);
-        tmp += scalar;
+        auto tmp = scalar_type()->one() + scalar;
         this->smul_inplace(tmp);
     }
     return *this;
@@ -425,8 +422,7 @@ Vector& Vector::sub_scal_mul(const Vector& other, const scalars::Scalar& scalar)
         const FusedSubRightScalarMultiplyKernel kernel(&*p_basis);
         kernel(*p_data, *other.p_data, scalar);
     } else {
-        scalars::Scalar tmp(scalar.type_info(), 1, 1);
-        tmp -= scalar;
+        auto tmp = scalar_type()->one() - scalar;
         this->smul_inplace(tmp);
     }
     return *this;
@@ -436,10 +432,9 @@ Vector& Vector::add_scal_div(const Vector& other, const scalars::Scalar& scalar)
 {
     if (&other != this) {
         const FusedAddRightScalarMultiply kernel(&*p_basis);
-        kernel(*p_data, *other.p_data, scalar.reciprocal());
+        kernel(*p_data, *other.p_data, scalars::math::reciprocal(scalar));
     } else {
-        scalars::Scalar tmp(scalar.type_info(), 1, 1);
-        tmp += scalar.reciprocal();
+        auto tmp = scalar_type()->one() + scalars::math::reciprocal(scalar);
         this->smul_inplace(tmp);
     }
     return *this;
@@ -449,10 +444,9 @@ Vector& Vector::sub_scal_div(const Vector& other, const scalars::Scalar& scalar)
 {
     if (&other != this) {
         const FusedSubRightScalarMultiplyKernel kernel(&*p_basis);
-        kernel(*p_data, *other.p_data, scalar.reciprocal());
+        kernel(*p_data, *other.p_data, scalars::math::reciprocal(scalar));
     } else {
-        scalars::Scalar tmp(scalar.type_info(), 1, 1);
-        tmp -= scalar.reciprocal();
+        auto tmp = scalar_type()->one() - scalars::math::reciprocal(scalar);
         this->smul_inplace(tmp);
     }
     return *this;
@@ -553,7 +547,7 @@ void Vector::delete_element(const BasisKey& key, optional<dimn_t> index_hint)
             // value
             auto scalar_slice = p_data->mut_scalars()[{idx, p_data->size()}];
             auto key_slice = p_data->mut_keys()[{idx, p_data->size()}];
-            scalars::algorithms::shift_left(scalar_slice, 1);
+            scalars::algorithms::shift_left(scalar_slice);
             algorithms::shift_left(key_slice, 1);
 
             p_data->set_size(p_data->size() - 1);

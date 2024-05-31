@@ -34,9 +34,9 @@ public:
 
     auto generic_op() const noexcept
     {
-        return [](scalars::Scalar& out,
-                  const scalars::Scalar& arg,
-                  const scalars::Scalar& multiplier) {
+        return [](scalars::ScalarRef out,
+                  scalars::ScalarCRef arg,
+                  scalars::ScalarCRef multiplier) {
             out -= (arg * multiplier);
         };
     }

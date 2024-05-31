@@ -31,7 +31,7 @@ public:
 
     dtl::GenericUnaryFunction generic_op() const noexcept
     {
-        return [](scalars::Scalar& out, const scalars::Scalar& in) {
+        return [](scalars::ScalarRef out, const scalars::ScalarCRef in) {
             out = in;
         };
     }

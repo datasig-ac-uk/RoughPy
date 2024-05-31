@@ -22,10 +22,10 @@ extern template class VectorKernelBase<
         dtl::ConstScalarArg>;
 
 class FusedAddRightScalarMultiply : public VectorKernelBase<
-                                           FusedAddRightScalarMultiply,
-                                           dtl::MutableVectorArg,
-                                           dtl::ConstVectorArg,
-                                           dtl::ConstScalarArg>
+                                            FusedAddRightScalarMultiply,
+                                            dtl::MutableVectorArg,
+                                            dtl::ConstVectorArg,
+                                            dtl::ConstScalarArg>
 {
 public:
     using VectorKernelBase::VectorKernelBase;
@@ -34,9 +34,9 @@ public:
 
     dtl::GenericBinaryFunction generic_op() const noexcept
     {
-        return [](scalars::Scalar& out,
-                  const scalars::Scalar& left,
-                  const scalars::Scalar& multiplier) {
+        return [](scalars::ScalarRef out,
+                  scalars::ScalarCRef left,
+                  scalars::ScalarCRef multiplier) {
             out += (left * multiplier);
         };
     }

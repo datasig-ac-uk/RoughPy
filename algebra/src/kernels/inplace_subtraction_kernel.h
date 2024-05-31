@@ -44,7 +44,7 @@ public:
 
     RPY_NO_DISCARD dtl::GenericUnaryFunction generic_op() const noexcept
     {
-        return [](scalars::Scalar& out, const scalars::Scalar& arg) {
+        return [](scalars::ScalarRef out, scalars::ScalarCRef arg) {
             out -= arg;
         };
     }

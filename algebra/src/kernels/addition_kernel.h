@@ -28,16 +28,15 @@ class AdditionKernel : public VectorKernelBase<
                                dtl::ConstVectorArg>
 {
 public:
-
     using VectorKernelBase::VectorKernelBase;
 
     string_view kernel_name() const noexcept;
 
     dtl::GenericBinaryFunction generic_op() const noexcept
     {
-        return [](scalars::Scalar& out, const scalars::Scalar& left, const scalars::Scalar& right) {
-            out = left + right;
-        };
+        return [](scalars::ScalarRef out,
+                  scalars::ScalarCRef left,
+                  scalars::ScalarCRef right) { out = left + right; };
     }
 };
 

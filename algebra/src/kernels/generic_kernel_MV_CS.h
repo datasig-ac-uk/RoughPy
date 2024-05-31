@@ -29,7 +29,7 @@ public:
           p_basis(basis)
     {}
 
-    void operator()(VectorData& data, const scalars::Scalar& scalar) const;
+    void operator()(VectorData& data, scalars::ScalarCRef scalar) const;
 };
 
 }// namespace dtl
