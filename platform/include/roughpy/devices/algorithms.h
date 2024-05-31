@@ -508,7 +508,7 @@ RPY_NO_DISCARD inline optional<dimn_t>
 find(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return {}; }
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     return algo.find(buffer, value);
 }
 
@@ -516,7 +516,7 @@ RPY_NO_DISCARD inline optional<dimn_t>
 lower_bound(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return {}; }
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     return algo.lower_bound(buffer, value);
 }
 
@@ -524,7 +524,7 @@ RPY_NO_DISCARD inline optional<dimn_t>
 upper_bound(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return {}; }
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     return algo.lower_bound(buffer, value);
 }
 
@@ -532,7 +532,7 @@ RPY_NO_DISCARD inline dimn_t count(const Buffer& buffer, ConstReference value)
 {
     if (buffer.is_null()) { return 0; }
 
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     return algo.count(buffer, value);
 }
 
@@ -553,7 +553,7 @@ mismatch(const Buffer& left, const Buffer& right)
     Device devices[] = {left.device(), right.device()};
     const auto device = get_best_device(devices);
 
-    auto& algo = device->algorithms(left.content_type(), right.content_type());
+    auto& algo = device->algorithms(left.type(), right.type());
     return algo.mismatch(left, right);
 }
 
@@ -574,7 +574,7 @@ lexicographical_compare(const Buffer& left, const Buffer& right)
     Device devices[] = {left.device(), right.device()};
     const auto device = get_best_device(devices);
 
-    auto& algo = device->algorithms(left.content_type(), right.content_type());
+    auto& algo = device->algorithms(left.type(), right.type());
     return algo.lexicographical_compare(left, right);
 }
 
@@ -583,7 +583,7 @@ inline void copy(Buffer& dst, const Buffer& src)
     if (src.is_null()) { return; }
 
     Device device;
-    const auto* src_type = src.content_type();
+    const auto* src_type = src.type();
     if (dst.is_null()) {
         device = src.device();
         dst = src_type->allocate(device, src.size());
@@ -593,7 +593,7 @@ inline void copy(Buffer& dst, const Buffer& src)
         device = get_best_device(devices);
     }
 
-    auto& algo = device->algorithms(dst.content_type(), src_type, true);
+    auto& algo = device->algorithms(dst.type(), src_type, true);
     return algo.copy(dst, src);
 }
 
@@ -603,8 +603,8 @@ inline void swap_ranges(Buffer& left, Buffer& right)
     RPY_CHECK(!left.is_null() && !right.is_null());
 
     RPY_CHECK(left.size() == right.size());
-    const auto left_type = left.content_type();
-    RPY_CHECK(left_type == right.content_type());
+    const auto left_type = left.type();
+    RPY_CHECK(left_type == right.type());
 
     Device devices[] = {left.device(), right.device()};
     Device device = get_best_device(devices);
@@ -617,7 +617,7 @@ inline void reverse(Buffer& buffer)
 {
     if (buffer.empty()) { return; }
 
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     algo.reverse(buffer);
 }
 
@@ -625,7 +625,7 @@ inline void shift_left(Buffer& buffer)
 {
     if (buffer.empty()) { return; }
 
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     algo.shift_left(buffer);
 }
 
@@ -633,7 +633,7 @@ inline void shift_right(Buffer& buffer)
 {
     if (buffer.empty()) { return; }
 
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     algo.shift_left(buffer);
 }
 
@@ -641,7 +641,7 @@ inline void fill(Buffer& buffer, ConstReference value)
 {
     if (buffer.empty()) { return; }
 
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     algo.fill(buffer, value);
 }
 
@@ -649,7 +649,7 @@ inline void min(const Buffer& buffer, Reference out)
 {
     if (buffer.empty()) { return; }
 
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     algo.min(buffer, out);
 }
 
@@ -657,7 +657,7 @@ inline void max(const Buffer& buffer, Reference out)
 {
     if (buffer.empty()) { return; }
 
-    auto& algo = buffer.device()->algorithms(buffer.content_type());
+    auto& algo = buffer.device()->algorithms(buffer.type());
     algo.max(buffer, out);
 }
 

@@ -278,7 +278,7 @@ public:
      * @note The pointer should not be deleted and can become invalid if the
      * buffer is modified.
      */
-    RPY_NO_DISCARD const Type* content_type() const noexcept
+    RPY_NO_DISCARD const Type* type() const noexcept
     {
         return is_null() ? nullptr : impl()->type();
     }

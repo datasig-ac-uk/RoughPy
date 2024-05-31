@@ -33,9 +33,6 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
-#include <roughpy/core/types.h>
-
-#include "buffer.h"
 
 namespace rpy {
 namespace devices {
@@ -59,7 +56,7 @@ namespace devices {
  * KernelArgument arg3(constData); // Create an argument from constant data
  * @endcode
  */
-class KernelArgument
+class ROUGHPY_DEVICES_EXPORT KernelArgument
 {
     const void* p_data;
 
@@ -68,6 +65,7 @@ class KernelArgument
         Ref,
         CRef,
         Buf,
+        CBuf,
     } m_mode;
 
 public:
@@ -89,26 +87,26 @@ public:
 
     RPY_NO_DISCARD constexpr bool is_buffer() const noexcept
     {
-        return m_mode == Buf;
+        return m_mode == Buf || m_mode == CBuf;
     }
 
-    RPY_NO_DISCARD constexpr const Reference& ref() const noexcept
+    RPY_NO_DISCARD constexpr bool is_ref() const noexcept
     {
-        RPY_DBG_ASSERT(m_mode == Ref);
-        return *launder(static_cast<const Reference*>(p_data));
+        return m_mode == Ref || m_mode == CRef;
     }
 
-    RPY_NO_DISCARD constexpr const ConstReference& cref() const noexcept
+    RPY_NO_DISCARD constexpr bool is_const() const noexcept
     {
-        RPY_DBG_ASSERT(!is_buffer());
-        return *launder(static_cast<const ConstReference*>(p_data));
+        return m_mode == CRef || m_mode == CBuf;
     }
 
-    RPY_NO_DISCARD constexpr const Buffer& buffer() const noexcept
-    {
-        RPY_DBG_ASSERT(m_mode == Buf);
-        return *launder(static_cast<const Buffer*>(p_data));
-    }
+    RPY_NO_DISCARD const Reference& ref() const noexcept;
+
+    RPY_NO_DISCARD const ConstReference& cref() const noexcept;
+
+    RPY_NO_DISCARD const Buffer& buffer() const noexcept;
+
+    RPY_NO_DISCARD const Buffer& cbuffer() const noexcept;
 };
 
 }// namespace devices

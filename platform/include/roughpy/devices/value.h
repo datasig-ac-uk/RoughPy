@@ -26,12 +26,16 @@ template <typename T>
 class TypedReference;
 class Value;
 
-namespace dtl {
+template <typename T>
+inline constexpr bool is_reference_like = is_same_v<decay_t<T>, ConstReference>
+        || is_same_v<decay_t<T>, Reference>;
 
 template <typename T>
 inline constexpr bool value_like
         = is_same_v<decay_t<T>, Value> || is_same_v<decay_t<T>, ConstReference>
         || is_same_v<decay_t<T>, Reference>;
+
+namespace dtl {
 
 template <typename T>
 using value_like_return = enable_if_t<value_like<T>, Value>;
@@ -93,7 +97,7 @@ public:
                     || !is_same_v<decay_t<T>, Reference>>>
     explicit Value(T&& other) noexcept : p_type(get_type<T>())
     {
-        T* this_ptr;
+        decay_t<T>* this_ptr;
         if (is_inline_stored()) {
             this_ptr = reinterpret_cast<T*>(m_storage.bytes);
         } else {
@@ -150,6 +154,9 @@ public:
             Value&>
     operator=(T&& other);
 
+    template <typename T>
+    enable_if_t<is_reference_like<T>, Value&> operator=(const T& other);
+
     void change_type(const Type* new_type);
 
     RPY_NO_DISCARD bool fast_is_zero() const noexcept
@@ -173,13 +180,13 @@ public:
     Value& operator/=(const Value& other);
 
     template <typename T>
-    enable_if_t<!is_base_of_v<Value, T>, Value&> operator+=(const T& other);
+    enable_if_t<!value_like<T>, Value&> operator+=(const T& other);
     template <typename T>
-    enable_if_t<!is_base_of_v<Value, T>, Value&> operator-=(const T& other);
+    enable_if_t<!value_like<T>, Value&> operator-=(const T& other);
     template <typename T>
-    enable_if_t<!is_base_of_v<Value, T>, Value&> operator*=(const T& other);
+    enable_if_t<!value_like<T>, Value&> operator*=(const T& other);
     template <typename T>
-    enable_if_t<!is_base_of_v<Value, T>, Value&> operator/=(const T& other);
+    enable_if_t<!value_like<T>, Value&> operator/=(const T& other);
 };
 
 class ConstReference
@@ -256,13 +263,17 @@ public:
             Reference&>
     operator=(T&& other);
 
-    RPY_NO_DISCARD void* data() noexcept
+    Reference& operator=(const ConstReference& other);
+    Reference& operator=(const Value& other);
+    Reference& operator=(Value&& other);
+
+    RPY_NO_DISCARD void* data() const noexcept
     {
         return const_cast<void*>(ConstReference::data());
     }
 
     template <typename T>
-    RPY_NO_DISCARD enable_if_t<!is_void_v<T>, T*> data() noexcept
+    RPY_NO_DISCARD enable_if_t<!is_void_v<T>, T*> data() const noexcept
     {
         return const_cast<T*>(ConstReference::template data<T>());
     }
@@ -425,7 +436,35 @@ Reference::operator=(T&& other)
     }
     return *this;
 }
+inline Value& Value::operator+=(const Value& other)
+{
+    if (other.p_type != nullptr) {
+        return operator+=(static_cast<ConstReference>(other));
+    }
+    return *this;
+}
+inline Value& Value::operator-=(const Value& other)
+{
+    if (other.p_type != nullptr) {
+        return operator-=(static_cast<ConstReference>(other));
+    }
+    return *this;
+}
+inline Value& Value::operator*=(const Value& other)
+{
+    if (other.p_type != nullptr) {
+        return operator*=(static_cast<ConstReference>(other));
+    }
+    return operator=(0);
+}
+inline Value& Value::operator/=(const Value& other)
+{
+    if (other.p_type != nullptr) {
+        return operator/=(static_cast<ConstReference>(other));
+    }
 
+    RPY_THROW(std::domain_error, "division by zero");
+}
 inline Value& Value::operator+=(const ConstReference other)
 {
     const auto& arithmetic = p_type->arithmetic(other.type());
@@ -459,19 +498,19 @@ inline Value& Value::operator/=(const ConstReference other)
 }
 
 template <typename T>
-enable_if_t<!is_base_of_v<Value, T>, Value&> Value::operator+=(const T& other)
+enable_if_t<!value_like<T>, Value&> Value::operator+=(const T& other)
 {
     if (other != T()) { operator+=(ConstReference(&other, get_type<T>())); }
     return *this;
 }
 template <typename T>
-enable_if_t<!is_base_of_v<Value, T>, Value&> Value::operator-=(const T& other)
+enable_if_t<!value_like<T>, Value&> Value::operator-=(const T& other)
 {
     if (other != T()) { operator-=(ConstReference(&other, get_type<T>())); }
     return *this;
 }
 template <typename T>
-enable_if_t<!is_base_of_v<Value, T>, Value&> Value::operator*=(const T& other)
+enable_if_t<!value_like<T>, Value&> Value::operator*=(const T& other)
 {
     if (other != T()) {
         operator*=(ConstReference(&other, get_type<T>()));
@@ -481,287 +520,106 @@ enable_if_t<!is_base_of_v<Value, T>, Value&> Value::operator*=(const T& other)
     return *this;
 }
 template <typename T>
-enable_if_t<!is_base_of_v<Value, T>, Value&> Value::operator/=(const T& other)
+enable_if_t<!value_like<T>, Value&> Value::operator/=(const T& other)
 {
     if (other == T()) { RPY_THROW(std::domain_error, "division by zero"); }
     return operator/=(ConstReference(&other, get_type<T>()));
 }
 
-inline Value& Value::operator+=(const Value& other)
+template <typename T>
+dtl::value_like_return<T> operator-(const T& arg)
 {
-    if (other.p_type != nullptr) {
-        return operator+=(static_cast<ConstReference>(other));
-    }
-    return *this;
-}
-inline Value& Value::operator-=(const Value& other)
-{
-    if (other.p_type != nullptr) {
-        return operator-=(static_cast<ConstReference>(other));
-    }
-    return *this;
-}
-inline Value& Value::operator*=(const Value& other)
-{
-    if (other.p_type != nullptr) {
-        return operator*=(static_cast<ConstReference>(other));
-    }
-    return operator=(0);
-}
-inline Value& Value::operator/=(const Value& other)
-{
-    if (other.p_type != nullptr) {
-        return operator/=(static_cast<ConstReference>(other));
-    }
-
-    RPY_THROW(std::domain_error, "division by zero");
+    Value result(arg.type(), 0);
+    result -= arg;
+    return result;
 }
 
-inline Value operator+(const Value& left, const Value& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, Value>
+operator+(S&& left, const T& right)
 {
-    Value result(left);
+    Value result(std::forward<S>(left));
     result += right;
     return result;
 }
 
-inline Value operator-(const Value& left, const Value& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, Value>
+operator-(S&& left, const T& right)
 {
-    Value result(left);
+    Value result(std::forward<S>(left));
     result -= right;
     return result;
 }
-
-inline Value operator*(const Value& left, const Value& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, Value>
+operator*(S&& left, const T& right)
 {
-    Value result(left);
+    Value result(std::forward<S>(left));
     result *= right;
     return result;
 }
-
-inline Value operator/(const Value& left, const Value& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, Value>
+operator/(S&& left, const T& right)
 {
-    Value result(left);
+    Value result(std::forward<S>(left));
     result /= right;
     return result;
 }
 
-inline Value operator+(const ConstReference& left, const ConstReference& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, bool>
+operator==(const S& left, const T& right)
 {
-    Value result(left);
-    result += right;
-    return result;
-}
-
-inline Value operator-(const ConstReference& left, const ConstReference& right)
-{
-    Value result(left);
-    result -= right;
-    return result;
-}
-
-inline Value operator*(const ConstReference& left, const ConstReference& right)
-{
-    Value result(left);
-    result *= right;
-    return result;
-}
-
-inline Value operator/(const ConstReference& left, const ConstReference& right)
-{
-    Value result(left);
-    result /= right;
-    return result;
-}
-
-RPY_NO_DISCARD inline bool operator==(const Value& left, const Value& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(right.type());
     RPY_CHECK(comparisons.equals);
     return comparisons.equals(left.data(), right.data());
 }
 
-// Inequality operator
-RPY_NO_DISCARD inline bool operator!=(const Value& left, const Value& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, bool>
+operator!=(const S& left, const T& right)
 {
-    auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(right.type());
     RPY_CHECK(comparisons.equals);
-    return !comparisons.equals(left.data(), right.data());
+    return !comparisons.equal(left.data(), right.data());
 }
 
-// Greater than operator
-RPY_NO_DISCARD inline bool operator>(const Value& left, const Value& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, bool>
+operator<(const S& left, const T& right)
 {
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.greater);
-    return comparisons.greater(left.data(), right.data());
-}
-
-// Less than operator
-RPY_NO_DISCARD inline bool operator<(const Value& left, const Value& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(right.type());
     RPY_CHECK(comparisons.less);
     return comparisons.less(left.data(), right.data());
 }
 
-// Greater than or equal operator
-RPY_NO_DISCARD inline bool operator>=(const Value& left, const Value& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, bool>
+operator<=(const S& left, const T& right)
 {
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.greater_equal);
-    return comparisons.greater_equal(left.data(), right.data());
-}
-
-// Less than or equal operator
-RPY_NO_DISCARD inline bool operator<=(const Value& left, const Value& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(right.type());
     RPY_CHECK(comparisons.less_equal);
     return comparisons.less_equal(left.data(), right.data());
 }
 
-// Equality operator
-inline bool operator==(const ConstReference& left, const ConstReference& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, bool>
+operator>(const S& left, const T& right)
 {
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.equals);
-    return comparisons.equals(left.data(), right.data());
-}
-
-// Inequality operator
-inline bool operator!=(const ConstReference& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.equals);
-    return !comparisons.equals(left.data(), right.data());
-}
-
-// Greater than operator
-inline bool operator>(const ConstReference& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(right.type());
     RPY_CHECK(comparisons.greater);
     return comparisons.greater(left.data(), right.data());
 }
 
-// Less than operator
-inline bool operator<(const ConstReference& left, const ConstReference& right)
+template <typename S, typename T>
+enable_if_t<value_like<S> && value_like<T>, bool>
+operator>=(const S& left, const T& right)
 {
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.less);
-    return comparisons.less(left.data(), right.data());
-}
-
-// Greater than or equal operator
-inline bool operator>=(const ConstReference& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(right.type());
     RPY_CHECK(comparisons.greater_equal);
     return comparisons.greater_equal(left.data(), right.data());
-}
-
-// Less than or equal operator
-inline bool operator<=(const ConstReference& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.less_equal);
-    return comparisons.less_equal(left.data(), right.data());
-}
-
-// Equality operator
-inline bool operator==(const Value& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.equals);
-    return comparisons.equals(left.data(), right.data());
-}
-
-// Inequality operator
-inline bool operator!=(const Value& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.equals);
-    return !comparisons.equals(left.data(), right.data());
-}
-
-// Greater than operator
-inline bool operator>(const Value& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.greater);
-    return comparisons.greater(left.data(), right.data());
-}
-
-// Less than operator
-inline bool operator<(const Value& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.less);
-    return comparisons.less(left.data(), right.data());
-}
-
-// Greater than or equal operator
-inline bool operator>=(const Value& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.greater_equal);
-    return comparisons.greater_equal(left.data(), right.data());
-}
-
-// Less than or equal operator
-inline bool operator<=(const Value& left, const ConstReference& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.less_equal);
-    return comparisons.less_equal(left.data(), right.data());
-}
-
-// Equality operator
-inline bool operator==(const ConstReference& left, const Value& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.equals);
-    return comparisons.equals(left.data(), right.data());
-}
-
-// Inequality operator
-inline bool operator!=(const ConstReference& left, const Value& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.equals);
-    return !comparisons.equals(left.data(), right.data());
-}
-
-// Greater than operator
-inline bool operator>(const ConstReference& left, const Value& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.greater);
-    return comparisons.greater(left.data(), right.data());
-}
-
-// Less than operator
-inline bool operator<(const ConstReference& left, const Value& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.less);
-    return comparisons.less(left.data(), right.data());
-}
-
-// Greater than or equal operator
-inline bool operator>=(const ConstReference& left, const Value& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.greater_equal);
-    return comparisons.greater_equal(left.data(), right.data());
-}
-
-// Less than or equal operator
-inline bool operator<=(const ConstReference& left, const Value& right)
-{
-    auto& comparisons = left.type()->comparisons(right.type());
-    RPY_CHECK(comparisons.less_equal);
-    return comparisons.less_equal(left.data(), right.data());
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Value& value)
@@ -772,6 +630,12 @@ inline std::ostream& operator<<(std::ostream& os, const Value& value)
 
 namespace math {
 
+/**
+ * @brief Compute the absolute value of a given value.
+ *
+ * @param value The input value.
+ * @return The absolute value of the input value.
+ */
 template <typename T>
 inline dtl::value_like_return<T> abs(const T& value)
 {
@@ -790,6 +654,12 @@ inline dtl::value_like_return<T> abs(const T& value)
 }
 
 //! sqrt function
+/**
+ * @brief Compute the square root of a given value.
+ *
+ * @param value The input value for which the square root needs to be computed.
+ * @return The square root of the input value.
+ */
 template <typename T>
 dtl::value_like_return<T> sqrt(const T& value)
 {
@@ -806,7 +676,17 @@ dtl::value_like_return<T> sqrt(const T& value)
     return result;
 }
 
-//! real function
+/**
+ * @brief Extracts the real part of a given value.
+ *
+ * This function calculates the real part of the given value using the
+ * num_traits of its type. If the given value is not of a numeric type that has
+ * a real part, the function returns a default constructed value.
+ *
+ * @tparam T The type of the value.
+ * @param value The value from which to extract the real part.
+ * @return The real part of the value.
+ */
 template <typename T>
 dtl::value_like_return<T> real(const T& value)
 {
@@ -824,8 +704,13 @@ dtl::value_like_return<T> real(const T& value)
     return result;
 }
 
-//! imag function
 template <typename T>
+/**
+ * @brief Calculates the imaginary part of a given value.
+ *
+ * @param value The value for which the imaginary part needs to be calculated.
+ * @return A value containing the imaginary part.
+ */
 dtl::value_like_return<T> imag(const T& value)
 {
     TypePtr tp = value.type();
@@ -842,7 +727,16 @@ dtl::value_like_return<T> imag(const T& value)
     return result;
 }
 
-//! conj function
+/**
+ * @brief Calculates the complex conjugate of a given value.
+ *
+ * This method calculates the conjugate of a given value. The conjugate of a
+ * complex number is obtained by changing the sign of its imaginary part. For
+ * other types, this method returns the value unchanged.
+ *
+ * @param value The value for which the conjugate needs to be calculated.
+ * @return A value containing the conjugate of the given value.
+ */
 template <typename T>
 dtl::value_like_return<T> conj(const T& value)
 {
@@ -859,6 +753,19 @@ dtl::value_like_return<T> conj(const T& value)
     return result;
 }
 
+/**
+ * @brief Calculates the power of a given value.
+ *
+ * This function calculates the power of a given value to the specified power.
+ *
+ * @param value The value for which the power needs to be calculated.
+ * @param power The power to calculate.
+ *
+ * @return A value containing the result of the power calculation.
+ *
+ * @pre The type of the value must support the pow operation.
+ * @post The returned value will be of the same type as the input value.
+ */
 template <typename T>
 dtl::value_like_return<T> pow(const T& value, unsigned power)
 {
@@ -880,7 +787,18 @@ dtl::value_like_return<T> pow(const T& value, unsigned power)
     return result;
 }
 
-// exp function
+/**
+ * @brief Calculates the exponential value of a given number.
+ *
+ * This method calculates the exponential value of a given number by using the
+ * exp function provided by the num_traits of the value's type. If the
+ * num_traits or exp function is not available for the given value's type, the
+ * method will return a default Value object.
+ *
+ * @param value The value for which the exponential value needs to be
+ * calculated.
+ * @return A Value object containing the exponential value of the given number.
+ */
 template <typename T>
 dtl::value_like_return<T> exp(const T& value)
 {
@@ -897,7 +815,17 @@ dtl::value_like_return<T> exp(const T& value)
     return result;
 }
 
-// log function
+/**
+ * @brief Calculates the logarithm of a given value.
+ *
+ * This method calculates the logarithm of the given value using the logarithm
+ * function defined in the num_traits for the value's type.
+ *
+ * @param value The value for which the logarithm needs to be calculated.
+ * @return A value containing the logarithm of the given value.
+ * @remarks If the type of value is not supported or if the value is invalid, an
+ * empty Value is returned.
+ */
 template <typename T>
 dtl::value_like_return<T> log(const T& value)
 {

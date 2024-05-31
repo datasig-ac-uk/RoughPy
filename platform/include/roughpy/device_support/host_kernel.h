@@ -31,12 +31,10 @@ public:
         : m_func_and_name(std::move(func), std::move(name))
     {}
 
-    explicit HostKernel(string name)
-        : m_func_and_name(F(), std::move(name))
-    {}
+    explicit HostKernel(string name) : m_func_and_name(F(), std::move(name)) {}
 
     RPY_NO_DISCARD bool is_host() const noexcept override;
-    RPY_NO_DISCARD DeviceType type() const noexcept override;
+    RPY_NO_DISCARD DeviceType device_type() const noexcept override;
     RPY_NO_DISCARD Device device() const noexcept override;
     RPY_NO_DISCARD string name() const override;
     RPY_NO_DISCARD dimn_t num_args() const override;
@@ -58,7 +56,7 @@ bool HostKernel<F>::is_host() const noexcept
     return true;
 }
 template <typename F>
-DeviceType HostKernel<F>::type() const noexcept
+DeviceType HostKernel<F>::device_type() const noexcept
 {
     return DeviceType::CPU;
 }
@@ -81,19 +79,7 @@ dimn_t HostKernel<F>::num_args() const
 namespace dtl {
 
 template <typename T>
-class ConvertedKernelArgument
-{
-    T* p_data;
-
-public:
-    explicit ConvertedKernelArgument(KernelArgument& arg)
-    {
-        RPY_CHECK(arg.info() == type_info<T>());
-        p_data = arg.const_pointer();
-    }
-
-    RPY_NO_DISCARD operator T() { return *p_data; }
-};
+class ConvertedKernelArgument;
 
 template <typename T>
 class ConvertedKernelArgument<T&>
@@ -101,10 +87,12 @@ class ConvertedKernelArgument<T&>
     T* p_data;
 
 public:
-    explicit ConvertedKernelArgument(KernelArgument& arg)
+    explicit ConvertedKernelArgument(const KernelArgument& arg)
     {
-        RPY_CHECK(arg.info() == type_info<T>());
-        p_data = static_cast<T*>(arg.pointer());
+        RPY_CHECK(arg.is_ref() && !arg.is_const());
+        const auto& ref = arg.ref();
+        RPY_CHECK(ref.type() == get_type<T>());
+        p_data = static_cast<T*>(ref.data<T>());
     }
 
     RPY_NO_DISCARD operator T&() { return *p_data; }
@@ -113,18 +101,19 @@ public:
 template <typename T>
 class ConvertedKernelArgument<const T&>
 {
-     const T* p_data;
+    const T* p_data;
 
 public:
     explicit ConvertedKernelArgument(KernelArgument& arg)
     {
-        RPY_CHECK(arg.info() == type_info<T>());
-        p_data = static_cast<const T*>(arg.const_pointer());
+        RPY_CHECK(arg.is_ref());
+        const auto& ref = arg.cref();
+        RPY_CHECK(ref.type() == get_type<T>());
+        p_data = static_cast<const T*>(ref.data<T>());
     }
 
     RPY_NO_DISCARD operator const T&() { return *p_data; }
 };
-
 
 template <typename T>
 class ConvertedKernelArgument<Slice<T>>
@@ -135,7 +124,6 @@ class ConvertedKernelArgument<Slice<T>>
 public:
     explicit ConvertedKernelArgument(KernelArgument& arg)
     {
-        RPY_CHECK(arg.info() == type_info<T>());
         RPY_CHECK(arg.is_buffer() && !arg.is_const());
         auto& buffer = arg.buffer();
 
@@ -160,9 +148,8 @@ class ConvertedKernelArgument<Slice<const T>>
 public:
     explicit ConvertedKernelArgument(KernelArgument& arg)
     {
-        RPY_CHECK(arg.info() == type_info<T>());
         RPY_CHECK(arg.is_buffer());
-        const auto& buffer = arg.const_buffer();
+        const auto& buffer = arg.buffer();
         RPY_CHECK(buffer.ref_count() > 0);
 
         if (!buffer.is_host()) {

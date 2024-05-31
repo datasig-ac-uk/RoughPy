@@ -141,7 +141,7 @@ class AlgoFunctorEvalutor
                 "Head must be a Buffer or or const Buffer"
         );
 
-        const auto* type = head.content_type();
+        const auto* type = head.type();
         const auto info = type->type_info();
 
 #define X(tp)                                                                  \

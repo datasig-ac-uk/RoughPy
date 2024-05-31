@@ -34,9 +34,12 @@
 #define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_KERNEL_H_
 
 #include "devices/buffer.h"
+#include "devices/core.h"
 #include "devices/event.h"
 #include "devices/kernel.h"
+#include "devices/type.h"
 
+#include "device_support/fundamental_type.h"
 #include "host_event.h"
 
 #include <exception>
@@ -116,71 +119,81 @@ namespace dtl {
 template <typename T>
 class ConvertedKernelArgument
 {
-    T* p_data;
+    Reference m_ref;
 
 public:
-    explicit ConvertedKernelArgument(KernelArgument& arg);
+    explicit ConvertedKernelArgument(const KernelArgument& arg)
+        : m_ref(arg.ref())
+    {}
 
-    operator T() { return *p_data; }
+    RPY_NO_DISCARD operator T&() const noexcept { return *m_ref.data<T>(); }
 };
 
 template <typename T>
-ConvertedKernelArgument<T>::ConvertedKernelArgument(KernelArgument& arg)
-{}
+class ConvertedKernelArgument<const T>
+{
+    ConstReference m_ref;
+
+public:
+    explicit ConvertedKernelArgument(const KernelArgument& arg)
+        : m_ref(arg.cref())
+    {}
+
+    RPY_NO_DISCARD operator const T&() const noexcept
+    {
+        return *m_ref.data<const T>();
+    }
+};
 
 template <typename T>
-class ConvertedKernelArgument<T*>
+class ConvertedKernelArgument<Slice<T>>
 {
-    T* p_data;
     Buffer m_view;
 
 public:
-    explicit ConvertedKernelArgument(KernelArgument& arg);
+    explicit ConvertedKernelArgument(const KernelArgument& arg)
+    {
+        RPY_CHECK(arg.is_buffer() && !arg.is_const());
+        const auto& buf_ref = arg.buffer();
+        RPY_CHECK(buf_ref.type() == get_type<T>());
 
-    operator T*() { return p_data; }
+        if (buf_ref.is_host()) {
+            m_view = buf_ref;
+        } else {
+            m_view = buf_ref.map();
+        }
+    }
+
+    RPY_NO_DISCARD operator Slice<T>() const noexcept
+    {
+        return m_view.as_mut_slice<T>();
+    }
 };
 
 template <typename T>
-ConvertedKernelArgument<T*>::ConvertedKernelArgument(KernelArgument& arg)
+class ConvertedKernelArgument<Slice<const T>>
 {
-    RPY_CHECK(arg.info() == type_info<T>());
-    RPY_CHECK(arg.is_buffer() && !arg.is_const());
-    auto& buffer = arg.buffer();
-
-    if (buffer.device() != get_host_device()) {
-        m_view = buffer.map(buffer.size(), 0);
-        p_data = reinterpret_cast<T*>(m_view.ptr());
-    } else {
-        p_data = buffer.ptr();
-    }
-}
-
-template <typename T>
-class ConvertedKernelArgument<const T*>
-{
-    const T* p_data;
     Buffer m_view;
 
 public:
-    explicit ConvertedKernelArgument(KernelArgument& arg);
+    explicit ConvertedKernelArgument(const KernelArgument& arg)
+    {
+        RPY_CHECK(arg.is_buffer());
+        const auto& buf_ref = arg.buffer();
+        RPY_CHECK(buf_ref.type() == get_type<T>());
 
-    operator const T*() { return p_data; }
-};
-
-template <typename T>
-ConvertedKernelArgument<const T*>::ConvertedKernelArgument(KernelArgument& arg)
-{
-    RPY_CHECK(arg.info() == type_info<T>());
-    RPY_CHECK(arg.is_buffer() && !arg.is_const());
-    const auto& buffer = arg.const_buffer();
-
-    if (buffer.device() != get_host_device()) {
-        m_view = buffer.map();
-        p_data = reinterpret_cast<T*>(m_view.ptr());
-    } else {
-        p_data = buffer.ptr();
+        if (buf_ref.is_host()) {
+            m_view = buf_ref;
+        } else {
+            m_view = buf_ref.map();
+        }
     }
-}
+
+    RPY_NO_DISCARD operator Slice<const T>() const noexcept
+    {
+        return m_view.as_slice<T>();
+    }
+};
 
 /*
  * The problem we need to solve now is how to invoke a function that takes a

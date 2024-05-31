@@ -367,8 +367,8 @@ ROUGHPY_DEVICES_EXPORT Device get_default_device();
 ROUGHPY_DEVICES_EXPORT optional<Device>
 get_device(const DeviceSpecification& spec);
 
-ROUGHPY_DEVICES_EXPORT
-RPY_NO_DISCARD Device get_best_device(Slice<Device> devices);
+RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT Device
+get_best_device(Slice<Device> devices);
 
 constexpr bool operator==(const DeviceInfo& lhs, const DeviceInfo& rhs) noexcept
 {

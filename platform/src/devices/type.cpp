@@ -318,3 +318,25 @@ struct InitializeAllTheFundamentals {
 }// namespace
 
 static InitializeAllTheFundamentals s_fundamentals{};
+
+ConstReference Type::zero() const
+{
+    RPY_THROW(
+            std::runtime_error,
+            string_cat("type ", id(), " does not have a zero element")
+    );
+}
+ConstReference Type::one() const
+{
+    RPY_THROW(
+            std::runtime_error,
+            string_cat("type ", id(), " does not have a one element")
+    );
+}
+ConstReference Type::mone() const
+{
+    RPY_THROW(
+            std::runtime_error,
+            string_cat("type ", id(), " does not have a one element")
+    );
+}

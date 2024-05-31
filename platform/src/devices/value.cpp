@@ -174,3 +174,96 @@ void rpy::devices::Value::change_type(const Type* new_type)
         p_type = new_type;
     }
 }
+
+rpy::devices::Reference&
+rpy::devices::Reference::operator=(const ConstReference& other)
+{
+    if (type() == other.type()) {
+        type()->copy(data(), other.data(), 1);
+        return *this;
+    }
+
+    const auto& conversion = type()->conversions(other.type());
+
+    if (conversion.convert) {
+        conversion.convert(data(), other.data());
+        return *this;
+    }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_join(
+                    "no valid conversion from type ",
+                    type()->id(),
+                    " to type ",
+                    other.type()->id()
+            )
+    );
+
+    return *this;
+}
+
+rpy::devices::Reference& rpy::devices::Reference::operator=(const Value& other)
+{
+    if (type() == other.type()) {
+        type()->copy(data(), other.data(), 1);
+        return *this;
+    }
+
+    const auto& conversion = type()->conversions(other.type());
+
+    if (conversion.convert) {
+        conversion.convert(data(), other.data());
+        return *this;
+    }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_join(
+                    "no valid conversion from type ",
+                    type()->id(),
+                    " to type ",
+                    other.type()->id()
+            )
+    );
+
+    return *this;
+}
+
+rpy::devices::Reference& rpy::devices::Reference::operator=(Value&& other)
+{
+    if (type() == other.type()) {
+        type()->move(data(), other.data(), 1);
+    } else {
+        const auto& conversion = type()->conversions(other.p_type);
+
+        auto convert = [tp = type(),
+                        ntp = other.p_type,
+                        &conversion](auto* dst, auto* src) {
+            // We always prefer a move construction if it is possible
+            if (conversion.move_convert) {
+                conversion.move_convert(dst, src);
+                return;
+            }
+
+            if (conversion.convert) {
+                conversion.convert(dst, src);
+                return;
+            }
+
+            RPY_THROW(
+                    std::runtime_error,
+                    string_join(
+                            "no valid conversion from type ",
+                            tp->id(),
+                            " to type ",
+                            ntp->id()
+                    )
+            );
+        };
+
+        convert(data(), other.data());
+    }
+
+    return *this;
+}
