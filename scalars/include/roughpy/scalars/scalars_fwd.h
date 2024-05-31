@@ -45,6 +45,7 @@ using BasicScalarInfo = devices::TypeInfo;
 
 using seed_int_t = uint64_t;
 
+using devices::get_type;
 using devices::Type;
 using devices::TypePtr;
 
@@ -59,10 +60,9 @@ class ROUGHPY_SCALARS_EXPORT ScalarStream;
 class ROUGHPY_SCALARS_EXPORT RandomGenerator;
 
 template <typename T, typename S>
-RPY_NO_DISCARD enable_if_t<
-        is_default_constructible_v<T> && devices::dtl::value_like<S>,
-        T>
-scalar_cast(const S& value)
+RPY_NO_DISCARD
+        enable_if_t<is_default_constructible_v<T> && devices::value_like<S>, T>
+        scalar_cast(const S& value)
 {
     const auto type = devices::get_type<T>();
     const auto val_type = value.type();
