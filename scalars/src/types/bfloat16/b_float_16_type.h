@@ -11,19 +11,16 @@
 namespace rpy {
 namespace devices {
 
-class RPY_LOCAL BFloat16Type : public FundamentalType<scalars::BFloat16> {
+class RPY_LOCAL BFloat16Type : public Type
+{
 
 public:
-
     BFloat16Type();
 
-    RPY_NO_DISCARD
-    static const BFloat16Type* get() noexcept;
+    RPY_NO_DISCARD static const BFloat16Type* get() noexcept;
 };
 
+}// namespace devices
+}// namespace rpy
 
-
-} // devices
-} // rpy
-
-#endif //B_FLOAT_16_TYPE_H
+#endif// B_FLOAT_16_TYPE_H

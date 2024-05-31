@@ -147,12 +147,7 @@ public:
     Value& operator=(Value&& other) noexcept;
 
     template <typename T>
-    enable_if_t<
-            !(is_same_v<decay_t<T>, Value>
-              || is_same_v<decay_t<T>, ConstReference>
-              || is_same_v<decay_t<T>, Reference>),
-            Value&>
-    operator=(T&& other);
+    enable_if_t<!value_like<T>, Value&> operator=(T&& other);
 
     template <typename T>
     enable_if_t<is_reference_like<T>, Value&> operator=(const T& other);
@@ -163,6 +158,7 @@ public:
     {
         return p_type == nullptr || m_storage.pointer == nullptr;
     }
+    RPY_NO_DISCARD bool is_zero() const;
 
     // ReSharper disable CppNonExplicitConversionOperator
     operator ConstReference() const noexcept;// NOLINT(*-explicit-constructor)
@@ -257,11 +253,7 @@ public:
     using ConstReference::data;
 
     template <typename T>
-    enable_if_t<
-            !(is_same_v<decay_t<T>, Value> || is_same_v<decay_t<T>, Reference>
-              || is_same_v<decay_t<T>, ConstReference>),
-            Reference&>
-    operator=(T&& other);
+    enable_if_t<!value_like<T>, Reference&> operator=(T&& other);
 
     Reference& operator=(const ConstReference& other);
     Reference& operator=(const Value& other);
@@ -394,12 +386,19 @@ inline Value::operator Reference() noexcept
     return Reference(data(), p_type);
 }
 
+inline bool Value::is_zero() const
+{
+    if (fast_is_zero()) { return true; }
+    const auto& comparisons = type()->comparisons(type());
+    if (comparisons.is_zero) { return comparisons.is_zero(data()); }
+    if (comparisons.equals) {
+        return comparisons.equals(data(), type()->zero().data());
+    }
+    RPY_THROW(std::runtime_error, "no comparison to zero is available");
+}
+
 template <typename T>
-enable_if_t<
-        !(is_same_v<decay_t<T>, Value> || is_same_v<decay_t<T>, ConstReference>
-          || is_same_v<decay_t<T>, Reference>),
-        Value&>
-Value::operator=(T&& other)
+enable_if_t<!value_like<T>, Value&> Value::operator=(T&& other)
 {
     if (p_type) {
         if (!is_inline_stored() && m_storage.pointer == nullptr) {
@@ -420,20 +419,26 @@ Value::operator=(T&& other)
 }
 
 template <typename T>
-enable_if_t<
-        !(is_same_v<decay_t<T>, Value> || is_same_v<decay_t<T>, Reference>
-          || is_same_v<decay_t<T>, ConstReference>),
-        Reference&>
-Reference::operator=(T&& other)
+enable_if_t<is_reference_like<T>, Value&> Value::operator=(const T& other)
+{
+    Reference this_val(*this);
+    this_val = other;
+    return *this;
+}
+
+template <typename T>
+enable_if_t<!value_like<T>, Reference&> Reference::operator=(T&& other)
 {
     RPY_DBG_ASSERT(type() != nullptr);
     const auto* tp = get_type<T>();
     const auto& conversion = type()->conversions(tp);
-    if (is_rvalue_reference_v<T> && conversion.move_convert) {
-        conversion.move_convert(data(), &other);
-    } else {
-        conversion.convert(data(), &other);
+    if constexpr (is_rvalue_reference_v<T&&>) {
+        if (conversion.move_convert) {
+            conversion.move_convert(data(), &other);
+            return *this;
+        }
     }
+    conversion.convert(data(), &other);
     return *this;
 }
 inline Value& Value::operator+=(const Value& other)
@@ -622,7 +627,9 @@ operator>=(const S& left, const T& right)
     return comparisons.greater_equal(left.data(), right.data());
 }
 
-inline std::ostream& operator<<(std::ostream& os, const Value& value)
+template <typename T>
+enable_if_t<value_like<T>, std::ostream&>
+operator<<(std::ostream& os, const T& value)
 {
     value.type()->display(os, value.data());
     return os;
@@ -839,6 +846,14 @@ dtl::value_like_return<T> log(const T& value)
     Value result(tp, 0);
     num_traits->log(result.data(), value.data());
 
+    return result;
+}
+
+template <typename T>
+dtl::value_like_return<T> reciprocal(T&& val)
+{
+    Value result(val.type()->one());
+    result /= val;
     return result;
 }
 

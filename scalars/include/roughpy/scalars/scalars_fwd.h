@@ -48,6 +48,7 @@ using seed_int_t = uint64_t;
 using devices::get_type;
 using devices::Type;
 using devices::TypePtr;
+namespace math = devices::math;
 
 using Scalar = devices::Value;
 using ScalarCRef = devices::ConstReference;

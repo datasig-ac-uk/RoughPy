@@ -60,7 +60,6 @@ public:
     ScalarArray(ScalarArray&& other) noexcept;
 
     explicit ScalarArray(TypePtr type, dimn_t size = 0);
-    explicit ScalarArray(devices::TypeInfo info, dimn_t size = 0);
 
     ScalarArray(TypePtr type, const void* data, dimn_t size);
     ScalarArray(TypePtr type, void* data, dimn_t size);

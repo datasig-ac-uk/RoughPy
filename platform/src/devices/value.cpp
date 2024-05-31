@@ -203,6 +203,7 @@ rpy::devices::Reference::operator=(const ConstReference& other)
     return *this;
 }
 
+
 rpy::devices::Reference& rpy::devices::Reference::operator=(const Value& other)
 {
     if (type() == other.type()) {

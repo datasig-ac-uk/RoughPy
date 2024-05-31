@@ -11,7 +11,7 @@
 namespace rpy {
 namespace devices {
 
-class RPY_LOCAL APRatPolyType : public FundamentalType<scalars::APPolyRat>
+class RPY_LOCAL APRatPolyType : public Type
 {
 public:
 

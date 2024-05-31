@@ -7,7 +7,15 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-BFloat16Type::BFloat16Type() : FundamentalType("bf16", "BFloat16") {}
+BFloat16Type::BFloat16Type()
+    : Type("bf16",
+           "BFloat16",
+           {TypeCode::BFloat,
+            sizeof(scalars::BFloat16),
+            alignof(scalars::BFloat16),
+            1},
+           traits_of<scalars::BFloat16>())
+{}
 
 const BFloat16Type* BFloat16Type::get() noexcept
 {

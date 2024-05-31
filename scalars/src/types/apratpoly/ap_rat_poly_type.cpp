@@ -8,14 +8,19 @@ using namespace rpy;
 using namespace rpy::devices;
 
 APRatPolyType::APRatPolyType()
-    : FundamentalType("APRatPoly", "APRatPoly")
+    : Type("APRatPoly",
+           "APRatPoly",
+           {TypeCode::APRationalPolynomial,
+            sizeof(scalars::APPolyRat),
+            alignof(scalars::APPolyRat),
+            1},
+           traits_of<scalars::APPolyRat>())
 {}
 
 Buffer APRatPolyType::allocate(Device device, dimn_t count) const
 {
     RPY_CHECK(device->is_host());
     auto buf = Type::allocate(device, count);
-
 
     return buf;
 }
