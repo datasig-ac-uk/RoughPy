@@ -474,6 +474,41 @@ public:
     {
         return p_num_traits.get();
     }
+
+    /**
+     * @brief Returns the zero element for the type.
+     *
+     * The zero method returns the zero element for the type. If the type does
+     * not have a zero element, a runtime_error exception is thrown.
+     *
+     * @return The zero element for the type.
+     *
+     * @throws std::runtime_error If the type does not have a zero element.
+     */
+    RPY_NO_DISCARD virtual ConstReference zero() const;
+    /**
+     * @brief Retrieve the one element of the Type.
+     *
+     * This function returns the one element of the Type.
+     * If the Type does not have a one element, an exception of type
+     * std::runtime_error is thrown.
+     *
+     * @return The one element of the Type.
+     *
+     * @throws std::runtime_error if the Type does not have a one element.
+     */
+    RPY_NO_DISCARD virtual ConstReference one() const;
+    /**
+     * @brief Returns a constant reference to the minus one element of the type.
+     *
+     * The mone() method returns a constant reference to the minus one element
+     * of the type. If the type does not have a one element, an exception of
+     * type std::runtime_error is thrown.
+     *
+     * @return A constant reference to the one element of the type.
+     * @throws std::runtime_error if the type does not have a minus one element.
+     */
+    RPY_NO_DISCARD virtual ConstReference mone() const;
 };
 
 /**

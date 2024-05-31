@@ -126,6 +126,10 @@ public:
     RPY_NO_DISCARD static const FundamentalType* get() noexcept;
 
     void display(std::ostream& os, const void* ptr) const override;
+
+    RPY_NO_DISCARD ConstReference zero() const override;
+    RPY_NO_DISCARD ConstReference one() const override;
+    RPY_NO_DISCARD ConstReference mone() const override;
 };
 
 template <typename T>
@@ -140,6 +144,29 @@ template <typename T>
 void FundamentalType<T>::display(std::ostream& os, const void* ptr) const
 {
     os << *static_cast<const T*>(ptr);
+}
+
+template <typename T>
+ConstReference FundamentalType<T>::zero() const
+{
+    static constexpr T zero {};
+    return {&zero, this};
+}
+template <typename T>
+ConstReference FundamentalType<T>::one() const
+{
+    static constexpr T one (1);
+    return {&one, this};
+}
+template <typename T>
+ConstReference FundamentalType<T>::mone() const
+{
+    if constexpr (is_signed_v<T>) {
+        static constexpr T mone(-1);
+        return {&mone, this};
+    } else {
+        return Type::mone();
+    }
 }
 
 namespace dtl {
