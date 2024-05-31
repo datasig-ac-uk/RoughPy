@@ -149,13 +149,13 @@ void FundamentalType<T>::display(std::ostream& os, const void* ptr) const
 template <typename T>
 ConstReference FundamentalType<T>::zero() const
 {
-    static constexpr T zero {};
+    static constexpr T zero{};
     return {&zero, this};
 }
 template <typename T>
 ConstReference FundamentalType<T>::one() const
 {
-    static constexpr T one (1);
+    static constexpr T one(1);
     return {&one, this};
 }
 template <typename T>
