@@ -17,8 +17,9 @@
 
 namespace rpy {
 namespace scalars {
-namespace algorithms {
-namespace drivers = devices::algorithms;
+namespace algorithms = devices::algorithms;
+// namespace algorithms {
+// namespace drivers = devices::algorithms;
 //
 // /**
 //  * @brief Find the first occurrence of a given value in a ScalarArray range.
@@ -431,7 +432,7 @@ namespace drivers = devices::algorithms;
 //     return result;
 // }
 
-}// namespace algorithms
+// }// namespace algorithms
 }// namespace scalars
 }// namespace rpy
 
