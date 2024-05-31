@@ -36,3 +36,24 @@ target_compile_definitions(RoughPy_Core INTERFACE NOMINMAX=1)
 if (MSVC)
     target_compile_options(RoughPy_Core INTERFACE /permissive-)
 endif ()
+
+
+target_precompile_headers(RoughPy_Core
+        INTERFACE
+        include/roughpy/core/container/map.h
+        include/roughpy/core/container/unordered_map.h
+        include/roughpy/core/container/unordered_set.h
+        include/roughpy/core/container/vector.h
+        include/roughpy/core/alloc.h
+        include/roughpy/core/errors.h
+        include/roughpy/core/hash.h
+        include/roughpy/core/types.h
+        include/roughpy/core/traits.h
+        include/roughpy/core/macros.h
+        include/roughpy/core/ranges.h
+        include/roughpy/core/helpers.h
+        include/roughpy/core/slice.h
+        include/roughpy/core/smart_ptr.h
+        include/roughpy/core/strings.h
+        include/roughpy/core/sync.h
+)
