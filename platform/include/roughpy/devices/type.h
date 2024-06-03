@@ -513,7 +513,8 @@ public:
 
 
 
-extern ROUGHPY_DEVICES_EXPORT const Type void_type;
+
+RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr void_type() noexcept;
 
 
 /**

@@ -341,9 +341,14 @@ ConstReference Type::mone() const
     );
 }
 
-const Type devices::void_type(
-        "void",
-        "void",
-        TypeInfo{TypeCode::Int, 1, 1, 1},
-        traits_of<void>()
-);
+TypePtr devices::void_type() noexcept
+{
+    static const Type void_type(
+            "void",
+            "void",
+            TypeInfo{TypeCode::Int, 1, 1, 1},
+            traits_of<void>()
+    );
+
+    return &void_type;
+}
