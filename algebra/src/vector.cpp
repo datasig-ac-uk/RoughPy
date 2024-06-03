@@ -471,7 +471,7 @@ bool Vector::operator==(const Vector& other) const
             // Check if the content of other[size, ...] is zero
             auto count = scalars::algorithms::count(
                     other.scalars()[{*mismatch, other.p_data->size()}],
-                    scalars::Scalar(other.scalar_type())
+                    scalar_type()->zero()
             );
             return count == (other.p_data->size() - *mismatch);
         }
