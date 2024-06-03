@@ -23,7 +23,7 @@ rpy::devices::Value::Value(Value&& other) noexcept : p_type(other.p_type)
 rpy::devices::Value::Value(ConstReference other) : p_type(other.type())
 {
     if (is_inline_stored()) {
-        std::memcpy(m_storage.bytes, other.data(), 1);
+        std::memcpy(m_storage.bytes, other.data(), size_of(p_type));
     } else if (p_type != nullptr) {
         m_storage.pointer = p_type->allocate_single();
         p_type->copy(m_storage.pointer, other.data(), 1);
