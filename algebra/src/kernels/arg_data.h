@@ -33,7 +33,7 @@ public:
 
     void resize(dimn_t size)
     {
-        if (p_data->scalar_type()) {
+        if (!p_data->scalar_type()) {
             p_data->mut_scalars() = scalars::ScalarArray();
         }
         if (p_data->empty() || p_data->size() < size) { p_data->resize(size); }
