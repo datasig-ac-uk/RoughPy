@@ -22,8 +22,14 @@ public:
     void free_single(void* ptr) const override;
     bool supports_device(const Device& device) const noexcept override;
 
-    RPY_NO_DISCARD
-    static const APRatPolyType* get() noexcept;
+    RPY_NO_DISCARD static const APRatPolyType* get() noexcept;
+
+    void copy(void* dst, const void* src, dimn_t count) const override;
+    void move(void* dst, void* src, dimn_t count) const override;
+    void display(std::ostream& os, const void* ptr) const override;
+    RPY_NO_DISCARD ConstReference zero() const override;
+    RPY_NO_DISCARD ConstReference one() const override;
+    RPY_NO_DISCARD ConstReference mone() const override;
 };
 
 
