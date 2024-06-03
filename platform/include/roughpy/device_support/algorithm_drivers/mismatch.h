@@ -23,6 +23,14 @@ struct Func : dtl::AlgorithmFunctionBase<S, T, Cond> {
 
         auto mismatch = ranges::mismatch(left_slice, right_slice);
 
+        if (mismatch.in1 != left_slice.end()) {
+            return static_cast<dimn_t>(mismatch.in1 - left_slice.begin());
+        }
+
+        if (mismatch.in2 != right_slice.end()) {
+            return static_cast<dimn_t>(mismatch.in2 - right_slice.begin());
+        }
+
         return {};
     }
 };
