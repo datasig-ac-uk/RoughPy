@@ -36,11 +36,14 @@ BasisKey clone_key(const void* kptr)
 VectorIterator::reference VectorIterator::operator*()
 {
     if (m_key_view.empty()) {
-        return {BasisKey(m_index), std::move(m_scalar_view[m_index])};
+        return {BasisKey(m_index),
+                std::move(static_cast<const scalars::ScalarArray&>(m_scalar_view
+                )[m_index])};
     }
     auto* ptr
             = static_cast<const BasisKey*>(m_key_view.buffer().ptr()) + m_index;
-    return {clone_key(ptr), m_scalar_view[m_index]};
+    return {clone_key(ptr),
+            static_cast<const scalars::ScalarArray&>(m_scalar_view)[m_index]};
 }
 
 VectorIterator::pointer VectorIterator::operator->()
