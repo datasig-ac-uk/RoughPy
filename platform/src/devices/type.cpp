@@ -340,3 +340,10 @@ ConstReference Type::mone() const
             string_cat("type ", id(), " does not have a one element")
     );
 }
+
+const Type devices::void_type(
+        "void",
+        "void",
+        TypeInfo{TypeCode::Int, 1, 1, 1},
+        traits_of<void>()
+);

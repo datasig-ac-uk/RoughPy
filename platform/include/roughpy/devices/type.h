@@ -511,6 +511,11 @@ public:
     RPY_NO_DISCARD virtual ConstReference mone() const;
 };
 
+
+
+extern ROUGHPY_DEVICES_EXPORT const Type void_type;
+
+
 /**
  * @brief Get the type traits for a given type.
  *
