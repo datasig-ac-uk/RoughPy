@@ -130,6 +130,9 @@ public:
     RPY_NO_DISCARD ConstReference zero() const override;
     RPY_NO_DISCARD ConstReference one() const override;
     RPY_NO_DISCARD ConstReference mone() const override;
+
+    void copy(void* dst, const void* src, dimn_t count) const override;
+    void move(void* dst, void* src, dimn_t count) const override;
 };
 
 template <typename T>
@@ -310,6 +313,26 @@ void register_all_supports()
 {
     const auto* tp = FundamentalType<ThisT>::get();
     dtl::register_type_support<ThisT>(tp, dtl::FundamentalTypesList());
+}
+
+
+template <typename T>
+void FundamentalType<T>::copy(void* dst, const void* src, dimn_t count) const
+{
+    auto* optr = static_cast<T*>(dst);
+    const auto* sprt = static_cast<const T*>(src);
+    for (dimn_t i=0; i<count; ++i) {
+        optr[i] = sprt[i];
+    }
+}
+template <typename T>
+void FundamentalType<T>::move(void* dst, void* src, dimn_t count) const
+{
+    auto* optr = static_cast<T*>(dst);
+    auto* sptr = static_cast<T*>(src);
+    for (dimn_t i=0; i<count; ++i) {
+        optr[i] = std::move(sptr[i]);
+    }
 }
 
 }// namespace devices
