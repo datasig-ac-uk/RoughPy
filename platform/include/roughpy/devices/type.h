@@ -511,9 +511,14 @@ public:
     RPY_NO_DISCARD virtual ConstReference mone() const;
 };
 
-
-
-
+/**
+ * @brief The void_type struct.
+ *
+ * The void_type struct represents the type `void`. The `void` type is an empty
+ * type that is used to indicate the absence of value or a function that does
+ * not return a value. This struct is mainly used as a placeholder or when
+ * specializing templates.
+ */
 RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr void_type() noexcept;
 
 
