@@ -193,9 +193,9 @@ struct NotImplemented {
                 std::runtime_error,
                 string_cat(
                         "operation is not implemented for types ",
-                        FundamentalType<S>::get()->id(),
+                        get_type<S>()->id(),
                         " and ",
-                        FundamentalType<T>::get()->id()
+                        get_type<T>()->id()
                 )
         );
     }
@@ -232,8 +232,8 @@ RPY_DEFINE_OP_OVERRIDE(DivInplace, /=)
             RPY_THROW(std::runtime_error,                                      \
                 string_cat("operation " RPY_STRINGIFY(op)                      \
                          " is not defined for types ",                         \
-                FundamentalType<S>::get()->id(), " and ",                      \
-                FundamentalType<T>::get()->id())); \
+                get_type<S>()->id(), " and ",                      \
+                get_type<T>()->id())); \
         }                                                                        \
     };                                                                           \
     template <typename S, typename T>                                            \
@@ -273,7 +273,7 @@ struct SupportRegistration {
 
     static void register_support(const Type* type)
     {
-        const auto* other_type = FundamentalType<T>::get();
+        const auto* other_type = get_type<T>();
         auto support = type->update_support(other_type);
 
         support->arithmetic.add_inplace = AddInplace<S, T>::func;
@@ -315,24 +315,19 @@ void register_all_supports()
     dtl::register_type_support<ThisT>(tp, dtl::FundamentalTypesList());
 }
 
-
 template <typename T>
 void FundamentalType<T>::copy(void* dst, const void* src, dimn_t count) const
 {
     auto* optr = static_cast<T*>(dst);
     const auto* sprt = static_cast<const T*>(src);
-    for (dimn_t i=0; i<count; ++i) {
-        optr[i] = sprt[i];
-    }
+    for (dimn_t i = 0; i < count; ++i) { optr[i] = sprt[i]; }
 }
 template <typename T>
 void FundamentalType<T>::move(void* dst, void* src, dimn_t count) const
 {
     auto* optr = static_cast<T*>(dst);
     auto* sptr = static_cast<T*>(src);
-    for (dimn_t i=0; i<count; ++i) {
-        optr[i] = std::move(sptr[i]);
-    }
+    for (dimn_t i = 0; i < count; ++i) { optr[i] = std::move(sptr[i]); }
 }
 
 }// namespace devices
