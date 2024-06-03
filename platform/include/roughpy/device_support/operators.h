@@ -23,6 +23,18 @@ namespace rpy {
 namespace devices {
 namespace operators {
 
+
+template <typename T>
+struct Identity
+{
+    static constexpr string_view name = "identity";
+
+    RPY_NO_DISCARD RPY_HOST_DEVICE T operator()(const T& arg) const
+    {
+        return arg;
+    }
+};
+
 template <typename T>
 struct Uminus {
 
