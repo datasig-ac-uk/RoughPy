@@ -41,14 +41,17 @@ protected:
             Op&& op
     )
     {
-        auto fn = [&op, &left, &right](O& out_val, const WorkPacket& packet) {
+        for (dimn_t i=0; i<packets.size(); ++i) {
+            auto& out_val = out[i];
+            const auto& packet = packets[i];
             const auto& left_coeff = left[packet.left_index];
-            for (const auto& right_coeff : right) {
-                out_val += op(left_coeff * right_coeff);
+            if (packet.coeffs != nullptr) {
+                for (dimn_t j=0; j<packet.right_indices.size(); ++j) {
+                    const auto& right_coeff = right[j];
+                    out_val += packet.coeffs[j] * op(left_coeff * right_coeff);
+                }
             }
-        };
-
-        ranges::for_each(views::zip(out, packets), fn);
+        }
     }
 
     template <typename O, typename S, typename T>
