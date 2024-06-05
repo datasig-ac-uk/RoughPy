@@ -9,26 +9,227 @@
 #include "roughpy_algebra_export.h"
 #include "vector.h"
 
+#include <roughpy/core/errors.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+
+#include <roughpy/device_support/operators.h>
 
 namespace rpy {
 namespace algebra {
 
 namespace dtl {
 
+namespace ops = devices::operators;
+
+template <typename M, typename Op, typename SFINAE = void>
+struct HasFMA {
+    void operator()(
+            const M& mul,
+            Vector& out,
+            const Vector& left,
+            const Vector& right,
+            Op&& op
+    ) const
+    {
+        for (const auto& lhs_item : left) {
+            for (const auto& rhs_item : right) {
+                out.add_scal_mul(
+                        mul.key_product(lhs_item->first, rhs_item->first),
+                        op(lhs_item->second, rhs_item->second)
+                );
+            }
+        }
+    }
+};
+
+template <typename M, typename Op>
+struct HasFMA<
+        M,
+        Op,
+        void_t<decltype(std::declval<const M&>()
+                                .fma(std::declval<Vector&>(),
+                                     std::declval<const Vector&>(),
+                                     std::declval<const Vector&>(),
+                                     std::declval<Op&&>()))>> {
+    void operator()(
+            const M& mul,
+            Vector& out,
+            const Vector& left,
+            const Vector& right,
+            Op&& op
+    ) const
+    {
+        mul.fma(out, left, right, std::forward<Op>(op));
+    }
+};
+
+template <typename M, typename Op, typename SFINAE = void>
+struct HasDenseFMA : HasFMA<M, Op> {
+};
+
+template <typename M, typename Op>
+struct HasDenseFMA<
+        M,
+        Op,
+        void_t<decltype(std::declval<const M&>().fma_dense(
+                std::declval<Vector&>(),
+                std::declval<const Vector&>(),
+                std::declval<const Vector&>(),
+                std::declval<Op&&>()
+        ))>> : HasFMA<M, Op> {
+    void operator()(
+            const M& mul,
+            Vector& out,
+            const Vector& left,
+            const Vector& right,
+            Op&& op
+    ) const
+    {
+        if (out.is_dense() && left.is_dense() && right.is_dense()) {
+            mul.fma_dense(out, left, right, std::forward<Op>(op));
+        } else {
+            HasFMA<M,
+                   Op>::operator()(mul, out, left, right, std::forward<Op>(op));
+        }
+    }
+};
+
+template <typename M, typename Op, typename SFINAE = void>
+struct HasInplace {
+    void
+    operator()(const M& mul, Vector& left, const Vector& right, Op&& op) const
+    {
+        HasDenseFMA<M, Op> fma;
+        Vector tmp(left);
+        fma(mul, tmp, left, right, std::forward<Op>(op));
+        std::swap(left, tmp);
+    }
+};
+
+template <typename M, typename Op>
+struct HasInplace<
+        M,
+        Op,
+        void_t<decltype(std::declval<const M&>().multiply_inplace(
+                std::declval<Vector&>(),
+                std::declval<const Vector&>(),
+                std::declval<Op&&>()
+        ))>> {
+    void
+    operator()(const M& mul, Vector& left, const Vector& right, Op&& op) const
+    {
+        mul.multiply_inplace(left, right, std::forward<Op>(op));
+    }
+};
+
+template <typename M, typename Op, typename SFINAE = void>
+struct HasDenseInplace : HasInplace<M, Op> {
+};
+
+template <typename M, typename Op>
+struct HasDenseInplace<
+        M,
+        Op,
+        void_t<decltype(std::declval<const M&>().multiply_inplace_dense(
+                std::declval<Vector&>(),
+                std::declval<const Vector&>(),
+                std::declval<Op&&>()
+        ))>> : HasInplace<M, Op> {
+    void
+    operator()(const M& mul, Vector& left, const Vector& right, Op&& op) const
+    {
+        if (left.is_dense() && right.is_dense()) {
+            mul.multiply_inplace_dense(left, right, std::forward<Op>(op));
+        } else {
+            HasInplace<M, Op>::operator()(
+                    mul,
+                    left,
+                    right,
+                    std::forward<Op>(op)
+            );
+        }
+    }
+};
+
 template <typename Multiplication>
 struct MultiplicationTraits {
 
     static bool basis_compatibility_check(const Basis& basis)
     {
-        return Multiplication::basis_compatibility_checK(basis);
+        return Multiplication::basis_compatibility_check(basis);
     }
 
-    static void fma(Vector& out, const Vector& left, const Vector& right)
+    static void
+    fma(const Multiplication& mul,
+        Vector& out,
+        const Vector& left,
+        const Vector& right)
     {
-        Multiplication::fma(out, left, right);
+        using Op = ops::Identity<scalars::Scalar>;
+        HasDenseFMA<Multiplication, Op> fma;
+        fma(mul, out, left, right, Op());
     }
+
+    static void
+    fms(const Multiplication& mul,
+        Vector& out,
+        const Vector& left,
+        const Vector& right)
+    {
+        using Op = ops::Uminus<scalars::Scalar>;
+        HasDenseFMA<Multiplication, Op> fma;
+        fma(mul, out, left, right, Op());
+    }
+
+    static void
+    fma_pm(const Multiplication& mul,
+           Vector& out,
+           const Vector& left,
+           const Vector& right,
+           const scalars::Scalar& multiplier)
+    {
+        using Op = ops::RightScalarMultiply<scalars::Scalar>;
+        HasDenseFMA<Multiplication, Op> fma;
+        fma(mul, out, left, right, Op(multiplier));
+    }
+
+    static void
+    fms_pm(const Multiplication& mul,
+           Vector& out,
+           const Vector& left,
+           const Vector& right,
+           const scalars::Scalar& multiplier)
+    {
+        using Op = ops::RightScalarMultiply<scalars::Scalar>;
+        HasDenseFMA<Multiplication, Op> fma;
+        fma(mul, out, left, right, Op(-multiplier));
+    }
+
+    static void
+    fma_pd(const Multiplication& mul,
+           Vector& out,
+           const Vector& left,
+           const Vector& right,
+           const scalars::Scalar& divisor)
+    {
+        using Op = ops::RightScalarMultiply<scalars::Scalar>;
+        HasDenseFMA<Multiplication, Op> fma;
+        fma(mul, out, left, right, Op(devices::math::reciprocal(divisor)));
+    }
+
+    static void
+    fms_pd(const Multiplication& mul,
+           Vector& out,
+           const Vector& left,
+           const Vector& right,
+           const scalars::Scalar& divisor)
+    {
+        using Op = ops::RightScalarMultiply<scalars::Scalar>;
+        HasDenseFMA<Multiplication, Op> fma;
+        fma(mul, out, left, right, Op(-devices::math::reciprocal(divisor)));
+    }
+
     static void multiply_into(Vector& out, const Vector& other)
     {
         Multiplication::multiply_into(out, other);
