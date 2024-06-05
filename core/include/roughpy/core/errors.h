@@ -7,6 +7,7 @@
 
 #include "macros.h"
 #include "types.h"
+#include "strings.h"
 
 /*
  * Check macro definition.
@@ -44,8 +45,8 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const char* func
 )
 {
-    throw E(msg + " at line " + std::to_string(lineno) + " in file "
-            + filename + '(' + func + ')');
+    throw E(msg + " at line " + std::to_string(lineno) + " in file " + filename
+            + '(' + func + ')');
 }
 
 /**
@@ -96,7 +97,8 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
 
 #define RPY_CHECK_2(EXPR, MSG) RPY_CHECK_3(EXPR, MSG, std::runtime_error)
 
-#define RPY_CHECK_1(EXPR) RPY_CHECK_2(EXPR, "failed check \"" #EXPR "\"")
+#define RPY_CHECK_1(EXPR)                                                      \
+    RPY_CHECK_2(EXPR, "failed check \"" RPY_STRINGIFY(EXPR) "\"")
 
 #define RPY_CHECK_CNT_IMPL(_1, _2, _3, COUNT, ...) COUNT
 // Always pass one more argument than expected, so clang doesn't complain about
@@ -107,19 +109,18 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
 #define RPY_CHECK(...)                                                         \
     RPY_INVOKE_VA(RPY_CHECK_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
-#define RPY_THROW_2(EXC_TYPE, MSG)                                             \
+#define RPY_CHECK_EQ(LEFT, RIGHT, ...)                                         \
+    RPY_CHECK(((LEFT) == (RIGHT)), __VA_ARGS__)
+
+#define RPY_CHECK_NOTNULL(PTR, ...) RPY_CHECK(((PTR) != nullptr), __VA_ARGS__)
+#define RPY_CHECK_ZERO(VAL, ...) RPY_CHECK(((VAL) == 0), __VA_ARGS__)
+
+#define RPY_THROW(EXC_TYPE, ...)                                               \
     ::rpy::errors::throw_exception<EXC_TYPE>(                                  \
-            MSG,                                                               \
+            ::rpy::string_join(__VA_ARGS__),                                   \
             __FILE__,                                                          \
             __LINE__,                                                          \
             RPY_FUNC_NAME                                                      \
     )
-#define RPY_THROW_1(MSG) RPY_THROW_2(std::runtime_error, MSG)
-
-#define RPY_THROW_SEL(NUM) RPY_JOIN(RPY_THROW_, NUM)
-#define RPY_THROW_CNT_IMPL(_1, _2, COUNT, ...) COUNT
-#define RPY_THROW_CNT(...) RPY_THROW_CNT_IMPL(__VA_ARGS__, 2, 1, 0)
-#define RPY_THROW(...)                                                         \
-    RPY_INVOKE_VA(RPY_THROW_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
 #endif// ROUGHPY_CORE_ERRORS_H
