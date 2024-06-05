@@ -81,7 +81,6 @@ public:
     ScalarArray& operator=(ScalarArray&& other) noexcept = default;
 
     /**
-     * @fn bool empty() const noexcept
      * @brief Checks if the scalar array is empty.
      *
      * This function checks whether the scalar array is empty or not. An empty
@@ -120,7 +119,6 @@ public:
      */
     RPY_NO_DISCARD const devices::Buffer& buffer() const;
     /**
-     * @fn devices::Buffer& ScalarArray::mut_buffer()
      * @brief Retrieves a mutable reference to the buffer object associated with
      * the ScalarArray.
      *
@@ -174,7 +172,6 @@ public:
      */
     RPY_NO_DISCARD ScalarArray borrow() const;
     /**
-     * @fn ScalarArray::borrow_mut()
      * @brief Borrows a mutable reference to the scalar array.
      *
      * This method returns a mutable reference to the scalar array. It allows
