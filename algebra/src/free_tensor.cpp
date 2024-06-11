@@ -24,7 +24,7 @@ FreeTensor FreeTensor::fused_multiply_exp(const FreeTensor& other) const
 {
     return FreeTensor(this->basis(), scalar_type());
 }
-FreeTensor& FreeTensor::fused_multiply_exp_inplcae(const FreeTensor& other)
+FreeTensor& FreeTensor::fused_multiply_exp_inplace(const FreeTensor& other)
 {
     return *this;
 }

@@ -110,10 +110,6 @@ protected:
 public:
 };
 
-class TriangularMultiplicationBase
-{
-};
-
 struct MultiplicationFrame {
     dimn_t left_index;
     dimn_t right_index_begin;
@@ -126,10 +122,8 @@ struct MultiplicationFrameHeader {
     MultiplicationFrame first_frame[1];
 };
 
-using KeyProductResult
-        = containers::SmallVec<pair<BasisKey, scalars::Scalar>, 1>;
 using KeyProductFunction
-        = std::function<KeyProductResult(const BasisKey&, const BasisKey&)>;
+        = std::function<Vector(const BasisKey&, const BasisKey&)>;
 }// namespace algebra
 }// namespace rpy
 

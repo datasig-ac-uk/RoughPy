@@ -116,7 +116,7 @@ public:
      * @param other The FreeTensor object to multiply and exponentiate with.
      * @return A reference to the current FreeTensor object after the operation.
      */
-    FreeTensor& fused_multiply_exp_inplcae(const FreeTensor& other);
+    FreeTensor& fused_multiply_exp_inplace(const FreeTensor& other);
 };
 
 }// namespace algebra

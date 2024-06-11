@@ -138,7 +138,6 @@ public:
     get_alike(deg_t new_width, deg_t new_depth, scalars::TypePtr new_ctype)
             const
             = 0;
-    ;
 
     RPY_NO_DISCARD virtual LieBasis get_lie_basis() const = 0;
     RPY_NO_DISCARD virtual TensorBasis get_tensor_basis() const = 0;
