@@ -13,7 +13,16 @@ namespace algebra {
 namespace dtl {
 template <typename Multiplication>
 struct UnitalAlgebraTraits {
-    static BasisKey unit_key(const BasisPointer& basis) noexcept;
+    /**
+     * @brief Get the key associated with a unit for a given multiplication and
+     * basis.
+     *
+     * @param mul The multiplication object to query for the unit
+     * @param basis The basis object to query for the unit
+     * @return The key associated with the unit element.
+     */
+    static BasisKey
+    unit_key(const Multiplication& mul, const BasisPointer& basis) noexcept;
 };
 }// namespace dtl
 
