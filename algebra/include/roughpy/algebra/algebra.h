@@ -25,6 +25,9 @@ namespace ops = devices::operators;
 template <typename M>
 inline constexpr bool is_graded = M::is_graded;
 
+template <typename M>
+inline constexpr bool is_unital = M::is_unital;
+
 template <typename M, typename Op, typename SFINAE = void>
 struct HasFMA {
     void operator()(
