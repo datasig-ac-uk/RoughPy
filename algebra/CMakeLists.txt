@@ -83,6 +83,7 @@ add_roughpy_component(Algebra
         src/basis_key_type.h
         src/context.cpp
         src/free_tensor.cpp
+        src/free_tensor_multiplication.cpp
         src/hall_set_size.cpp
         src/hall_set_size.h
         src/hall_word.cpp
