@@ -5,28 +5,14 @@
 #ifndef ROUGHPY_DEVICE_SUPPORT_OPERATORS_H
 #define ROUGHPY_DEVICE_SUPPORT_OPERATORS_H
 
-#include <roughpy/core/macros.h>
-
-#ifndef RPY_HOST
-#  define RPY_HOST
-#endif
-
-#ifndef RPY_DEVICE
-#  define RPY_DEVICE
-#endif
-
-#ifndef RPY_HOST_DEVICE
-#  define RPY_HOST_DEVICE RPY_HOST RPY_DEVICE
-#endif
+#include "macros.h"
 
 namespace rpy {
 namespace devices {
 namespace operators {
 
-
 template <typename T>
-struct Identity
-{
+struct Identity {
     static constexpr string_view name = "identity";
 
     RPY_NO_DISCARD RPY_HOST_DEVICE T operator()(const T& arg) const

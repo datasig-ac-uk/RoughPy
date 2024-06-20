@@ -8,6 +8,7 @@ add_library(RoughPy_Device_Support INTERFACE
         include/roughpy/device_support/algorithms.h
         include/roughpy/device_support/fundamental_type.h
         include/roughpy/device_support/host_kernel.h
+        include/roughpy/device_support/macros.h
         include/roughpy/device_support/operators.h
         include/roughpy/device_support/algorithm_drivers/algorithm_base.h
         include/roughpy/device_support/algorithm_drivers/copy.h
