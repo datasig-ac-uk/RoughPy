@@ -18,9 +18,9 @@
 namespace rpy {
 namespace algebra {
 
-namespace dtl {
-
 namespace ops = devices::operators;
+
+namespace dtl {
 
 template <typename M>
 inline constexpr bool is_graded = M::is_graded;
@@ -178,7 +178,6 @@ struct HasDenseInplace<
     }
 };
 
-template <typename Multiplication>
 /**
  * @brief Class containing static methods for multiplication operations on an
  * algebra.
@@ -191,6 +190,7 @@ template <typename Multiplication>
  * Users can use the methods in this class directly or through the
  * multiplication_traits typedef.
  */
+template <typename Multiplication>
 struct MultiplicationTraits {
 
     /**

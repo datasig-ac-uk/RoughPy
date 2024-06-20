@@ -22,8 +22,28 @@ namespace algebra {
  */
 class ROUGHPY_ALGEBRA_EXPORT FreeTensorMultiplication
 {
+    using Identity = ops::Identity<scalars::Scalar>;
+    using Uminus = ops::Uminus<scalars::Scalar>;
+    using PostMultiply = ops::RightScalarMultiply<scalars::Scalar>;
+
+    containers::Vec<dimn_t> m_sizes;
+    containers::Vec<dimn_t> m_reverses;
+    containers::Vec<dimn_t> m_offsets;
+    deg_t m_width;
+    deg_t m_max_degree;
+    deg_t m_tile_letters;
+
+    FreeTensorMultiplication(deg_t width, deg_t tile_letters, deg_t degree);
 
 public:
+    static constexpr bool is_graded = true;
+    static constexpr bool is_unital = true;
+
+    static BasisKey unit_key() noexcept
+    {
+        return BasisKey(static_cast<dimn_t>(0));
+    }
+
     /**
      * @brief Check if the given basis is compatible with the specific algebraic
      * operation.
@@ -37,8 +57,44 @@ public:
      */
     static bool basis_compatibility_check(const Basis& basis) noexcept;
 
-    static void fma(Vector& out, const Vector& left, const Vector& right);
-    static void multiply_into(Vector& out, const Vector& right);
+    void
+    fma(Vector& out, const Vector& left, const Vector& right, Identity&& op
+    ) const;
+    void
+    fma(Vector& out, const Vector& left, const Vector& right, Uminus&& op
+    ) const;
+    void
+    fma(Vector& out, const Vector& left, const Vector& right, PostMultiply&& op
+    ) const;
+
+    void fma_dense(
+            Vector& out,
+            const Vector& left,
+            const Vector& right,
+            Identity&& op
+    ) const;
+    void
+    fma_dense(Vector& out, const Vector& left, const Vector& right, Uminus&& op)
+            const;
+    void fma_dense(
+            Vector& out,
+            const Vector& left,
+            const Vector& right,
+            PostMultiply&& op
+    ) const;
+
+    void multiply_into(Vector& out, const Vector& right, Identity&& op) const;
+    void multiply_into(Vector& out, const Vector& right, Uminus&& op) const;
+    void
+    multiply_into(Vector& out, const Vector& right, PostMultiply&& op) const;
+
+    void
+    multiply_into_dense(Vector& out, const Vector& right, Identity&& op) const;
+    void
+    multiply_into_dense(Vector& out, const Vector& right, Uminus&& op) const;
+    void
+    multiply_into_dense(Vector& out, const Vector& right, PostMultiply&& op)
+            const;
 };
 
 /**
