@@ -16,3 +16,9 @@ target_link_libraries(RoughPy_Scalar_Type_rational
     PRIVATE
     Boost::boost
 )
+
+target_include_directories(RoughPy_Scalar_Type_rational PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>)
+
+set_target_properties(RoughPy_Scalar_Type_rational
+    PROPERTIES POSITION_INDEPENDENT_CODE ON)

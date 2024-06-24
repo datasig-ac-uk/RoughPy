@@ -8,7 +8,9 @@ target_link_libraries(RoughPy_monomial INTERFACE RoughPy::Core RoughPy::Platform
 target_include_directories(RoughPy_monomial INTERFACE ${CMAKE_CURRENT_LIST_DIR})
 
 add_library(RoughPy_Scalar_Type_polynomial STATIC
-    poly_rational.h)
+    poly_rational.h
+    poly_rational_type.cpp
+    poly_rational_type.h)
 
 
 target_link_libraries(RoughPy_Scalar_Type_polynomial
