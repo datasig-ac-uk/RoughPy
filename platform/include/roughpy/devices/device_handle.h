@@ -171,7 +171,7 @@ public:
      * @param count The number of elements in the buffer
      * @return A `Buffer` object representing the allocated buffer on the device
      */
-    RPY_NO_DISCARD virtual Buffer alloc(const Type* type, dimn_t count) const;
+    RPY_NO_DISCARD virtual Buffer alloc(const Type& type, dimn_t count) const;
 
     /**
      * @brief Free the underlying resources associated with a buffer
@@ -295,7 +295,7 @@ public:
      * The method is marked as const, indicating that it does not modify the
      * internal state of the device handle.
      */
-    RPY_NO_DISCARD virtual bool supports_type(const Type* info) const noexcept;
+    RPY_NO_DISCARD virtual bool supports_type(const Type& info) const noexcept;
 
     RPY_NO_DISCARD virtual Event
     from_host(Buffer& dst, const BufferInterface& src, Queue& queue) const;

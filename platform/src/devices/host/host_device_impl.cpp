@@ -127,7 +127,7 @@ void CPUDeviceHandle::compile_kernels_from_src(
 Event CPUDeviceHandle::new_event() const { return Event(new CPUEvent); }
 Queue CPUDeviceHandle::new_queue() const { return Queue(); }
 Queue CPUDeviceHandle::get_default_queue() const { return Queue(); }
-bool CPUDeviceHandle::supports_type(const Type* type) const noexcept
+bool CPUDeviceHandle::supports_type(const Type& type) const noexcept
 {
     return true;
 }
@@ -145,11 +145,11 @@ Device CPUDeviceHandle::compute_delegate() const
     );
 }
 
-Buffer CPUDeviceHandle::alloc(const Type* type, dimn_t count) const
+Buffer CPUDeviceHandle::alloc(const Type& type, dimn_t count) const
 {
-    if (count == 0) { return Buffer(type, 0); }
+    if (count == 0) { return Buffer(&type, 0); }
 
-    return Buffer(new CPUBuffer(type, count));
+    return Buffer(new CPUBuffer(&type, count));
 }
 
 Buffer CPUDeviceHandle::alloc(TypeInfo info, dimn_t count) const

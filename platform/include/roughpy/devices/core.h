@@ -328,7 +328,7 @@ class DeviceHandle;
 
 class Type;
 
-using TypePtr = const Type*;
+using TypePtr = Rc<const Type>;
 
 class Value;
 class Reference;
@@ -624,7 +624,7 @@ std::ostream& operator<<(std::ostream& os, const TypeInfo& code);
 namespace dtl {
 
 template <typename T>
-using TypePtrify = const Type*;
+using TypePtrify = TypePtr;
 
 }
 

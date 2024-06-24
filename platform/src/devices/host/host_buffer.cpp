@@ -42,8 +42,8 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-CPUBuffer::CPUBuffer(const Type* tp, dimn_t size)
-    : base_t(tp),
+CPUBuffer::CPUBuffer(TypePtr tp, dimn_t size)
+    : base_t(std::move(tp)),
       raw_buffer{nullptr, 0},
       m_flags(IsOwned),
       m_info(tp->type_info()),
@@ -58,14 +58,14 @@ CPUBuffer::CPUBuffer(const Type* tp, dimn_t size)
     }
 }
 
-CPUBuffer::CPUBuffer(const Type* tp, void* ptr, dimn_t size)
+CPUBuffer::CPUBuffer(TypePtr tp, void* ptr, dimn_t size)
     : base_t(tp),
       raw_buffer{ptr, size * tp->type_info().bytes},
       m_flags(IsConst),
       m_info(tp->type_info()),
       m_num_elts(size)
 {}
-CPUBuffer::CPUBuffer(const Type* tp, const void* ptr, dimn_t size)
+CPUBuffer::CPUBuffer(TypePtr tp, const void* ptr, dimn_t size)
     : base_t(tp),
       raw_buffer{const_cast<void*>(ptr), size * tp->type_info().bytes},
       m_flags(IsConst),
@@ -107,8 +107,8 @@ CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, TypeInfo info)
       m_num_elts(size)
 {}
 
-CPUBuffer::CPUBuffer(dimn_t size, const Type* type)
-    : base_t(type),
+CPUBuffer::CPUBuffer(dimn_t size, TypePtr type)
+    : base_t(std::move(type)),
       raw_buffer{nullptr, 0},
       m_flags(IsOwned),
       m_info(type->type_info()),
@@ -122,15 +122,15 @@ CPUBuffer::CPUBuffer(dimn_t size, const Type* type)
         );
     }
 }
-CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, const Type* type)
-    : base_t(type),
+CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, TypePtr type)
+    : base_t(std::move(type)),
       raw_buffer{raw_ptr, size * type->type_info().bytes},
       m_flags(IsNotConst),
       m_info(type->type_info()),
       m_num_elts(size)
 {}
-CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, const Type* type)
-    : base_t(type),
+CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, TypePtr type)
+    : base_t(std::move(type)),
       raw_buffer{const_cast<void*>(raw_ptr), size * type->type_info().bytes},
       m_flags(IsConst),
       m_info(type->type_info()),
