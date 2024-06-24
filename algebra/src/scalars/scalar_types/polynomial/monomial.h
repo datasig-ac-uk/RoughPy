@@ -2,10 +2,8 @@
 // Created by sam on 3/26/24.
 //
 
-#ifndef MONOMIAL_H
-#define MONOMIAL_H
-
-#include <roughpy/scalars/scalars_fwd.h>
+#ifndef ROUGHPY_SCALAR_IMPLEMENTATIONS_MONOMIAL_H
+#define ROUGHPY_SCALAR_IMPLEMENTATIONS_MONOMIAL_H
 
 #include <roughpy/core/container/map.h>
 #include <roughpy/core/hash.h>
@@ -131,6 +129,16 @@ void PackedInteger<Base, Packed>::serialize(
     RPY_SERIAL_SERIALIZE_BARE(m_data);
 }
 
+template <typename Base, typename Packed>
+inline std::ostream&
+operator<<(std::ostream& os, const PackedInteger<Base, Packed>& letter)
+{
+    os << letter.packed();
+    const auto id = letter.base();
+    if (RPY_LIKELY(id != 0)) { os << id; }
+    return os;
+}
+
 }// namespace dtl
 
 using indeterminate_type = dtl::PackedInteger<deg_t, char>;
@@ -189,7 +197,10 @@ public:
      *
      * @see Monomial
      */
-    RPY_NO_DISCARD deg_t degree() const noexcept;
+    RPY_NO_DISCARD deg_t degree() const noexcept
+    {
+        return ranges::accumulate(m_data | views::values, 0, std::plus<>());
+    }
 
     /**
      * @brief Returns the type of the monomial
@@ -222,8 +233,16 @@ public:
         return m_data[arg];
     }
 
-    Monomial& operator*=(const Monomial& rhs);
-    Monomial& operator*=(indeterminate_type rhs);
+    Monomial& operator*=(const Monomial& rhs)
+    {
+        for (const auto& [key, value] : rhs.m_data) { m_data[key] += value; }
+        return *this;
+    }
+    Monomial& operator*=(indeterminate_type rhs)
+    {
+        m_data[rhs] += 1;
+        return *this;
+    }
 
     RPY_SERIAL_SERIALIZE_FN();
 };
@@ -286,8 +305,20 @@ RPY_NO_DISCARD inline hash_t hash_value(const Monomial& arg) noexcept
     return result;
 }
 
-ROUGHPY_SCALARS_EXPORT std::ostream&
-operator<<(std::ostream& os, const Monomial& arg);
+inline std::ostream& operator<<(std::ostream& os, const Monomial& arg)
+{
+    bool first = true;
+    for (const auto& item : arg) {
+        if (first) {
+            first = false;
+        } else {
+            os << ' ';
+        }
+        os << item.first;
+        if (item.second > 1) { os << '^' << item.second; }
+    }
+    return os;
+}
 
 RPY_NO_DISCARD inline Monomial
 operator*(const Monomial& lhs, const Monomial& rhs)
@@ -302,4 +333,4 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(Monomial) { RPY_SERIAL_SERIALIZE_BARE(m_data); }
 }// namespace scalars
 }// namespace rpy
 
-#endif// MONOMIAL_H
+#endif// ROUGHPY_SCALAR_IMPLEMENTATIONS_MONOMIAL_H
