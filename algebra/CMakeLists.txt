@@ -154,6 +154,11 @@ add_roughpy_component(Algebra
     RoughPy_Algebra_headers
         PRIVATE
         RoughPy_Algebra_Host_Kernels
+        RoughPy_scalars
+        RoughPy_Scalar_Type_half
+        RoughPy_Scalar_Type_bfloat16
+        RoughPy_Scalar_Type_rational
+        RoughPy_Scalar_Type_polynomial
         NEEDS
         RoughPy::Core
         RoughPy::Platform
