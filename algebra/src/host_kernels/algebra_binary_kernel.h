@@ -110,9 +110,6 @@ protected:
 public:
 };
 
-class TriangularMultiplicationBase
-{
-};
 
 struct MultiplicationFrame {
     dimn_t left_index;
