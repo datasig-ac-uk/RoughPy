@@ -5,114 +5,17 @@ project(RoughPyScalars
         LANGUAGES CXX)
 
 
-add_roughpy_component(Scalars
-        PUBLIC_HEADERS
-        include/roughpy/scalars/types/monomial.h
-        include/roughpy/scalars/algorithms.h
-        include/roughpy/scalars/random.h
-        include/roughpy/scalars/scalar_array.h
-        include/roughpy/scalars/scalar_stream.h
-        include/roughpy/scalars/scalars_fwd.h
-        include/roughpy/scalars.h
-        SOURCES
-        src/random/random_impl.cpp
-        src/random/random_impl.h
-        src/random/standard_random_generator.cpp
-        src/random/standard_random_generator.h
-        #        src/scalar/arithmetic.cpp
-        #        src/scalar/arithmetic.h
-        #        src/scalar/casts.cpp
-        #        src/scalar/casts.h
-        #        src/scalar/comparison.cpp
-        #        src/scalar/comparison.h
-        #        src/scalar/do_macro.h
-        #        src/scalar/packed_type.h
-        #        src/scalar/print.cpp
-        #        src/scalar/print.h
-        #        src/scalar/raw_bytes.cpp
-        #        src/scalar/raw_bytes.h
-        #        src/scalar/serialization.cpp
-        #        src/scalar/serialization.h
-        #        src/scalar/type_promotion.cpp
-        #        src/scalar/type_promotion.h
-        #        src/scalar_helpers/standard_scalar_type.h
-        src/scalar_implementations/arbitrary_precision_rational.cpp
-        src/scalar_implementations/arbitrary_precision_rational.h
-        src/scalar_implementations/bfloat.cpp
-        src/scalar_implementations/bfloat.h
-        src/scalar_implementations/complex.cpp
-        src/scalar_implementations/complex.h
-        src/scalar_implementations/half.cpp
-        src/scalar_implementations/half.h
-        src/scalar_implementations/monomial.cpp
-        src/scalar_implementations/poly_rational.cpp
-        src/scalar_implementations/poly_rational.h
-        src/scalar_implementations/rational.cpp
-        src/scalar_implementations/rational.h
-        #        src/types/aprational/ap_rational_scalar_type.cpp
-        #        src/types/aprational/ap_rational_scalar_type.h
-        src/types/aprational/ap_rational_type.cpp
-        src/types/aprational/ap_rational_type.h
-        #        src/types/apratpoly/ap_rat_poly_scalar_type.cpp
-        #        src/types/apratpoly/ap_rat_poly_scalar_type.h
-        src/types/apratpoly/ap_rat_poly_type.cpp
-        src/types/apratpoly/ap_rat_poly_type.h
-        #        src/types/bfloat16/b_float_16_scalar_type.cpp
-        #        src/types/bfloat16/b_float_16_scalar_type.h
-        src/types/bfloat16/bfloat16_random_generator.cpp
-        src/types/bfloat16/bfloat16_random_generator.h
-        src/types/bfloat16/b_float_16_type.cpp
-        src/types/bfloat16/b_float_16_type.h
-        #        src/types/double/double_scalar_type.cpp
-        #        src/types/double/double_scalar_type.h
-        #        src/types/float/float_scalar_type.cpp
-        #        src/types/float/float_scalar_type.h
-        src/types/half/half_random_generator.cpp
-        src/types/half/half_random_generator.h
-        #        src/types/half/half_scalar_type.cpp
-        #        src/types/half/half_scalar_type.h
-        src/types/half/half_type.cpp
-        src/types/half/half_type.h
-        #        src/builtin_scalar_types.h
-        src/builtin_scalars.h
-        src/random.cpp
-        src/rational_type_of.cpp
-        #        src/scalar.cpp
-        src/scalar_array.cpp
-        #        src/scalar_array_element.cpp
-        #        src/scalar_array_element.h
-        #        src/scalar_interface.cpp
-        #        src/scalar_serialization.cpp
-        #        src/scalar_serialization.h
-        src/scalar_stream.cpp
-        #        src/scalar_type.cpp
-        #        src/scalar_type_of.cpp
-        #        src/scalar_type_of.h
-        DEPENDENCIES
-        PUBLIC
-        Boost::boost
-        PRIVATE
-        PCGRandom::pcg_random
-        OpenCL::OpenCL
-        GMP::GMP
-        Eigen3::Eigen
-        NEEDS
-        RoughPy::Core
-        RoughPy::Platform
-)
-
-target_precompile_headers(RoughPy_Scalars PRIVATE
-        <boost/multiprecision/gmp.hpp>
-)
 
 
-add_roughpy_test(scalars
-        SRC
-        #        src/test_key_scalar_array.cpp
-        #        src/test_monomial.cpp
-        src/test_pcg_standard_random.cpp
-        src/test_scalar.cpp
-        src/test_scalar_type.cpp
-        NEEDS
-        RoughPy::Scalars
-)
+
+
+#add_roughpy_test(scalars
+#        SRC
+#        #        src/test_key_scalar_array.cpp
+#        #        src/test_monomial.cpp
+#        src/test_pcg_standard_random.cpp
+#        src/test_scalar.cpp
+#        src/test_scalar_type.cpp
+#        NEEDS
+#        RoughPy::Scalars
+#)

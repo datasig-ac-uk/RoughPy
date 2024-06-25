@@ -171,7 +171,6 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         Boost::boost
         RoughPy::Core
         RoughPy::Platform
-        RoughPy::Scalars
         RoughPy::Intervals
         RoughPy::Algebra
         RoughPy::Streams
@@ -190,7 +189,6 @@ target_link_libraries(RoughPy_PyModule PRIVATE
 #)
 
 set(RPY_TARGETS RoughPy::Platform
-        RoughPy::Scalars
         RoughPy::Algebra
         RoughPy::Intervals
         RoughPy::Streams)
@@ -206,7 +204,6 @@ endif ()
 
 get_target_property(RoughPy_Core_VERSION RoughPy::Core VERSION)
 get_target_property(RoughPy_Platform_VERSION RoughPy::Platform VERSION)
-get_target_property(RoughPy_Scalars_VERSION RoughPy::Scalars VERSION)
 get_target_property(RoughPy_Intervals_VERSION RoughPy::Intervals VERSION)
 get_target_property(RoughPy_Algebra_VERSION RoughPy::Algebra VERSION)
 get_target_property(RoughPy_Streams_VERSION RoughPy::Streams VERSION)

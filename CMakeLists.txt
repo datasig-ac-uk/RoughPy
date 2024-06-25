@@ -352,7 +352,6 @@ endif ()
 
 add_subdirectory(core)
 add_subdirectory(platform)
-add_subdirectory(scalars)
 add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
@@ -374,7 +373,6 @@ endif ()
 install(TARGETS
         RoughPy_Platform
         RoughPy_Intervals
-        RoughPy_Scalars
         RoughPy_Algebra
         #        RoughPy_Streams
         #    RoughPy_PyModule
