@@ -2,8 +2,8 @@
 // Created by sam on 24/06/24.
 //
 
-#ifndef ROUGHPY_SCALARS_VECTOR_H
-#define ROUGHPY_SCALARS_VECTOR_H
+#ifndef ROUGHPY_SCALARS_SCALAR_VECTOR_H
+#define ROUGHPY_SCALARS_SCALAR_VECTOR_H
 
 
 #include "scalars_fwd.h"
@@ -24,7 +24,7 @@ namespace rpy { namespace scalars {
 
 namespace dtl {
 
-class ROUGHPY_SCALARS_EXPORT VectorData : public platform::SmallObjectBase,
+class ROUGHPY_SCALARS_SCALARS_EXPORT VectorData : public platform::SmallObjectBase,
                                           public RcBase<VectorData>
 {
     ScalarArray m_scalar_buffer{};
@@ -104,7 +104,7 @@ class ScalarVectorIterator
 }
 
 
-class ROUGHPY_SCALARS_EXPORT ScalarVector
+class ROUGHPY_SCALARS_SCALARS_EXPORT ScalarVector
 {
     using VectorDataPtr = Rc<dtl::VectorData>;
 
@@ -236,4 +236,4 @@ public:
 }}
 
 
-#endif //ROUGHPY_SCALARS_VECTOR_H
+#endif //ROUGHPY_SCALARS_SCALAR_VECTOR_H
