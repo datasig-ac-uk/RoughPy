@@ -15,6 +15,8 @@
 #include <roughpy/devices/kernel.h>
 #include <roughpy/scalars/scalar_array.h>
 
+#include <roughpy/scalars/scalar_vector.h>
+
 #include "algebra_fwd.h"
 #include "basis.h"
 #include "basis_key.h"
@@ -25,104 +27,10 @@
 namespace rpy {
 namespace algebra {
 
-class ROUGHPY_ALGEBRA_EXPORT VectorData : public platform::SmallObjectBase,
-                                          public RcBase<VectorData>
-{
-    scalars::ScalarArray m_scalar_buffer{};
-    KeyArray m_key_buffer{};
-    dimn_t m_size = 0;
 
-public:
-    void set_size(dimn_t size)
-    {
-        RPY_CHECK(size <= m_scalar_buffer.size());
-        RPY_CHECK(m_key_buffer.empty() || size <= m_scalar_buffer.size());
-        m_size = size;
-    }
-
-    VectorData() = default;
-
-    explicit VectorData(scalars::TypePtr type, dimn_t size)
-        : m_scalar_buffer(type, size),
-          m_size(size)
-    {}
-
-    explicit VectorData(scalars::ScalarArray&& scalars, KeyArray&& keys)
-        : m_scalar_buffer(std::move(scalars)),
-          m_key_buffer(std::move(keys)),
-          m_size(scalars.size())
-    {}
-
-    explicit VectorData(scalars::TypePtr type) : m_scalar_buffer(type) {}
-
-    void reserve(dimn_t dim);
-    void resize(dimn_t dim);
-
-    RPY_NO_DISCARD dimn_t capacity() const noexcept
-    {
-        return m_scalar_buffer.size();
-    }
-    RPY_NO_DISCARD dimn_t size() const noexcept { return m_size; }
-
-    RPY_NO_DISCARD bool empty() const noexcept
-    {
-        return m_scalar_buffer.empty();
-    }
-
-    RPY_NO_DISCARD scalars::TypePtr scalar_type() const noexcept
-    {
-        return m_scalar_buffer.type();
-    }
-
-    RPY_NO_DISCARD bool sparse() const noexcept
-    {
-        return !m_key_buffer.empty();
-    }
-
-    RPY_NO_DISCARD devices::Buffer& mut_scalar_buffer() noexcept
-    {
-        return m_scalar_buffer.mut_buffer();
-    }
-    RPY_NO_DISCARD devices::Buffer& mut_key_buffer() noexcept
-    {
-        return m_key_buffer.mut_buffer();
-    }
-    RPY_NO_DISCARD const devices::Buffer& scalar_buffer() const noexcept
-    {
-        return m_scalar_buffer.buffer();
-    }
-    RPY_NO_DISCARD const devices::Buffer& key_buffer() const noexcept
-    {
-        return m_key_buffer.buffer();
-    }
-
-    RPY_NO_DISCARD scalars::ScalarArray& mut_scalars() noexcept
-    {
-        return m_scalar_buffer;
-    }
-    RPY_NO_DISCARD KeyArray& mut_keys() noexcept { return m_key_buffer; }
-    RPY_NO_DISCARD const scalars::ScalarArray& scalars() const noexcept
-    {
-        return m_scalar_buffer;
-    }
-    RPY_NO_DISCARD const KeyArray& keys() const noexcept
-    {
-        return m_key_buffer;
-    }
-
-    void insert_element(
-            dimn_t index,
-            dimn_t next_size,
-            const BasisKey& key,
-            scalars::Scalar value
-    );
-    void delete_element(dimn_t index);
-
-    std::unique_ptr<VectorData> make_dense(const Basis* basis) const;
-    std::unique_ptr<VectorData> make_sparse(const Basis* basis) const;
-};
 
 class VectorIterator;
+
 
 /**
  * @brief The Vector class represents a mathematical vector in a given basis.
@@ -136,13 +44,9 @@ class VectorIterator;
  * @see Basis
  * @see VectorData
  */
-class ROUGHPY_ALGEBRA_EXPORT Vector
+class ROUGHPY_ALGEBRA_EXPORT Vector : public scalars::ScalarVector
 {
-    using VectorDataPtr = Rc<VectorData>;
-
-    VectorDataPtr p_data = nullptr;
     BasisPointer p_basis = nullptr;
-    VectorDataPtr p_fibre = nullptr;
 
     friend class MutableVectorElement;
 
@@ -153,40 +57,6 @@ public:
     using Scalar = scalars::Scalar;
 
 protected:
-    /**
-     * @brief Reallocate and move contents to a new buffer with the given size
-     * @param dim target dimension
-     */
-    void resize_dim(dimn_t dim);
-
-    /**
-     * @brief Get the current size of the buffer
-     * @return
-     */
-    RPY_NO_DISCARD dimn_t buffer_size() const noexcept
-    {
-        return p_data->size();
-    }
-
-    /**
-     * @brief Check if the vector is zero.
-     *
-     * This method checks if the vector is zero. It returns true if any of the
-     * following conditions are met:
-     * - p_basis is nullptr
-     * - p_data is nullptr
-     * - p_data is empty
-     *
-     * @return true if the vector is zero, false otherwise.
-     *
-     * @note This is a fast check and does not loop through
-     * the data elements. The method is designed to be used in a noexcept
-     * context.
-     */
-    RPY_NO_DISCARD bool fast_is_zero() const noexcept
-    {
-        return p_basis == nullptr || p_data == nullptr || p_data->empty();
-    }
 
     /**
      * @brief Sets all the coefficients of the vector to zero.
@@ -232,9 +102,8 @@ protected:
     void delete_element(const BasisKey& key, optional<dimn_t> index_hint);
 
     explicit Vector(BasisPointer basis, VectorDataPtr base, VectorDataPtr fibre)
-        : p_data(std::move(base)),
-          p_basis(std::move(basis)),
-          p_fibre(std::move(fibre))
+        : ScalarVector(std::move(base), std::move(fibre)),
+          p_basis(std::move(basis))
     {}
 
     RPY_NO_DISCARD static bool basis_compatibility_check(const Basis& basis
@@ -362,7 +231,6 @@ public:
         return V(p_basis, p_data, p_fibre);
     }
 
-    template <typename V>
     /**
      * @brief Mutably borrows the vector and checks compatibility with the
      * basis.
@@ -380,6 +248,7 @@ public:
      * @see basis_compatibility_check
      * @see borrow
      */
+    template <typename V>
     enable_if_t<is_base_of_v<Vector, V>, V> borrow_mut()
     {
         RPY_CHECK(V::basis_compatibility_check(*p_basis));

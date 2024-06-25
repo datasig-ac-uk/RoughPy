@@ -40,14 +40,10 @@ namespace dtl {
 template <typename T>
 using value_like_return = enable_if_t<value_like<T>, Value>;
 
-}// namespace dtl
 
-class ROUGHPY_DEVICES_EXPORT Value
+struct ValueStorage
 {
-    friend class ConstReference;
-    friend class Reference;
 
-    TypePtr p_type = nullptr;
     union Storage
     {
         constexpr Storage() : pointer(nullptr) {}
@@ -64,9 +60,36 @@ class ROUGHPY_DEVICES_EXPORT Value
                 && size_of(*type) <= sizeof(void*);
     }
 
+    void* data(const Type* type) noexcept
+    {
+        if (is_inline_stored(type)) {
+            return m_storage.bytes;
+        }
+        return m_storage.pointer;
+    }
+
+    const void* data(const Type* type) const noexcept
+    {
+        if (is_inline_stored(type)) {
+            return m_storage.bytes;
+        }
+        return m_storage.pointer;
+    }
+
+};
+
+}// namespace dtl
+
+class ROUGHPY_DEVICES_EXPORT Value : protected dtl::ValueStorage
+{
+    friend class ConstReference;
+    friend class Reference;
+
+    TypePtr p_type = nullptr;
+
     RPY_NO_DISCARD bool is_inline_stored() const noexcept
     {
-        return is_inline_stored(p_type.get());
+        return ValueStorage::is_inline_stored(p_type.get());
     }
 
 public:
@@ -113,34 +136,24 @@ public:
 
     RPY_NO_DISCARD const void* data() const noexcept
     {
-        if (is_inline_stored()) { return m_storage.bytes; }
-        return m_storage.pointer;
+        return ValueStorage::data(&*p_type);
     }
 
     template <typename T>
     RPY_NO_DISCARD enable_if_t<!is_void_v<T>, const T*> data() const noexcept
     {
-        if (is_inline_stored()) {
-            return launder(reinterpret_cast<const T*>(m_storage.bytes));
-        }
-        RPY_DBG_ASSERT(m_storage.pointer != nullptr);
-        return launder(static_cast<const T*>(m_storage.pointer));
+        return launder(static_cast<const T*>(ValueStorage::data(&*p_type)));
     }
 
     RPY_NO_DISCARD void* data() noexcept
     {
-        if (is_inline_stored()) { return m_storage.bytes; }
-        return m_storage.pointer;
+        return ValueStorage::data(&*p_type);
     }
 
     template <typename T>
     RPY_NO_DISCARD enable_if_t<!is_void_v<T>, T*> data() noexcept
     {
-        if (is_inline_stored()) {
-            return launder(reinterpret_cast<T*>(m_storage.bytes));
-        }
-        RPY_DBG_ASSERT(m_storage.pointer != nullptr);
-        return launder(static_cast<T*>(m_storage.pointer));
+        return launder(static_cast<T*>(ValueStorage::data(&*p_type)));
     }
 
     Value& operator=(const Value& other);
