@@ -158,12 +158,12 @@ void rpy::devices::Value::change_type(const Type* new_type)
 
         Storage tmp_storage;
         std::memcpy(&tmp_storage, &m_storage, sizeof(Storage));
-        if (is_inline_stored(new_type) && is_inline_stored()) {
+        if (ValueStorage::is_inline_stored(new_type) && is_inline_stored()) {
             convert(m_storage.bytes, tmp_storage.bytes);
-        } else if (is_inline_stored(new_type) && !is_inline_stored()) {
+        } else if (ValueStorage::is_inline_stored(new_type) && !is_inline_stored()) {
             convert(m_storage.bytes, tmp_storage.pointer);
             p_type->free_single(tmp_storage.pointer);
-        } else if (is_inline_stored() && !is_inline_stored(new_type)) {
+        } else if (is_inline_stored() && !ValueStorage::is_inline_stored(new_type)) {
             tmp_storage.pointer = new_type->allocate_single();
             convert(tmp_storage.pointer, tmp_storage.bytes);
         } else {

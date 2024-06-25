@@ -24,7 +24,7 @@ namespace rpy { namespace scalars {
 
 namespace dtl {
 
-class ROUGHPY_SCALARS_SCALARS_EXPORT VectorData : public platform::SmallObjectBase,
+class ROUGHPY_SCALARS_EXPORT VectorData : public platform::SmallObjectBase,
                                           public RcBase<VectorData>
 {
     ScalarArray m_scalar_buffer{};
@@ -104,7 +104,7 @@ class ScalarVectorIterator
 }
 
 
-class ROUGHPY_SCALARS_SCALARS_EXPORT ScalarVector
+class ROUGHPY_SCALARS_EXPORT ScalarVector
 {
     using VectorDataPtr = Rc<dtl::VectorData>;
 
@@ -147,7 +147,8 @@ protected:
 
 public:
 
-    
+    ScalarVector() = default;
+
 
     ScalarVector(TypePtr scalar_type, dimn_t size=0)
         : p_base(new dtl::VectorData(std::move(scalar_type), size)),
