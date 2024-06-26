@@ -40,14 +40,10 @@ namespace dtl {
 template <typename T>
 using value_like_return = enable_if_t<value_like<T>, Value>;
 
-}// namespace dtl
 
-class ROUGHPY_DEVICES_EXPORT Value
+struct ValueStorage
 {
-    friend class ConstReference;
-    friend class Reference;
 
-    const Type* p_type = nullptr;
     union Storage
     {
         constexpr Storage() : pointer(nullptr) {}
@@ -60,13 +56,40 @@ class ROUGHPY_DEVICES_EXPORT Value
 
     RPY_NO_DISCARD static bool is_inline_stored(const Type* type) noexcept
     {
-        return type != nullptr && traits::is_arithmetic(type)
-                && size_of(type) <= sizeof(void*);
+        return type != nullptr && traits::is_arithmetic(*type)
+                && size_of(*type) <= sizeof(void*);
     }
+
+    void* data(const Type* type) noexcept
+    {
+        if (is_inline_stored(type)) {
+            return m_storage.bytes;
+        }
+        return m_storage.pointer;
+    }
+
+    const void* data(const Type* type) const noexcept
+    {
+        if (is_inline_stored(type)) {
+            return m_storage.bytes;
+        }
+        return m_storage.pointer;
+    }
+
+};
+
+}// namespace dtl
+
+class ROUGHPY_DEVICES_EXPORT Value : protected dtl::ValueStorage
+{
+    friend class ConstReference;
+    friend class Reference;
+
+    TypePtr p_type = nullptr;
 
     RPY_NO_DISCARD bool is_inline_stored() const noexcept
     {
-        return is_inline_stored(p_type);
+        return ValueStorage::is_inline_stored(p_type.get());
     }
 
 public:
@@ -76,7 +99,7 @@ public:
     Value(Value&& other) noexcept;
     explicit Value(ConstReference other);
 
-    Value(const Type* type) : p_type(type)
+    Value(TypePtr type) : p_type(std::move(type))
     {
         if (is_inline_stored()) {
             m_storage.pointer = p_type->allocate_single();
@@ -84,7 +107,7 @@ public:
     }
 
     template <typename T>
-    Value(const Type* type, T&& val) : p_type(type)
+    Value(TypePtr type, T&& val) : p_type(std::move(type))
     {
         operator=(std::forward<T>(val));
     }
@@ -109,38 +132,28 @@ public:
 
     ~Value();
 
-    RPY_NO_DISCARD const Type* type() const noexcept { return p_type; }
+    RPY_NO_DISCARD TypePtr type() const noexcept { return p_type; }
 
     RPY_NO_DISCARD const void* data() const noexcept
     {
-        if (is_inline_stored()) { return m_storage.bytes; }
-        return m_storage.pointer;
+        return ValueStorage::data(&*p_type);
     }
 
     template <typename T>
     RPY_NO_DISCARD enable_if_t<!is_void_v<T>, const T*> data() const noexcept
     {
-        if (is_inline_stored()) {
-            return launder(reinterpret_cast<const T*>(m_storage.bytes));
-        }
-        RPY_DBG_ASSERT(m_storage.pointer != nullptr);
-        return launder(static_cast<const T*>(m_storage.pointer));
+        return launder(static_cast<const T*>(ValueStorage::data(&*p_type)));
     }
 
     RPY_NO_DISCARD void* data() noexcept
     {
-        if (is_inline_stored()) { return m_storage.bytes; }
-        return m_storage.pointer;
+        return ValueStorage::data(&*p_type);
     }
 
     template <typename T>
     RPY_NO_DISCARD enable_if_t<!is_void_v<T>, T*> data() noexcept
     {
-        if (is_inline_stored()) {
-            return launder(reinterpret_cast<T*>(m_storage.bytes));
-        }
-        RPY_DBG_ASSERT(m_storage.pointer != nullptr);
-        return launder(static_cast<T*>(m_storage.pointer));
+        return launder(static_cast<T*>(ValueStorage::data(&*p_type)));
     }
 
     Value& operator=(const Value& other);
@@ -188,17 +201,17 @@ public:
 class ConstReference
 {
     const void* p_val;
-    const Type* p_type;
+    TypePtr p_type;
 
 public:
-    constexpr explicit ConstReference(const void* val, const Type* type)
+    explicit ConstReference(const void* val, TypePtr type)
         : p_val(val),
-          p_type(type)
+          p_type(std::move(type))
     {
-        RPY_CHECK(type != nullptr);
+        RPY_CHECK(p_type != nullptr);
     }
 
-    RPY_NO_DISCARD const Type* type() const noexcept { return p_type; }
+    RPY_NO_DISCARD TypePtr type() const noexcept { return p_type; }
     RPY_NO_DISCARD const void* data() const noexcept { return p_val; }
     template <typename T>
     RPY_NO_DISCARD enable_if_t<!is_void_v<T>, const T*> data() const noexcept
@@ -246,8 +259,8 @@ class Reference : public ConstReference
 {
 public:
     // ReSharper disable once CppParameterMayBeConstPtrOrRef
-    constexpr explicit Reference(void* val, const Type* type)
-        : ConstReference(val, type)
+    explicit Reference(void* val, TypePtr type)
+        : ConstReference(val, std::move(type))
     {}
 
     using ConstReference::data;
@@ -290,7 +303,7 @@ public:
 
     Reference& operator+=(const ConstReference other)
     {
-        const auto& arithmetic = type()->arithmetic(other.type());
+        const auto& arithmetic = type()->arithmetic(*other.type());
         RPY_CHECK(arithmetic.add_inplace != nullptr);
         if (type() == other.type()) {
             arithmetic.add_inplace(data(), other.data());
@@ -303,7 +316,7 @@ public:
 
     Reference& operator-=(const ConstReference other)
     {
-        const auto& arithmetic = type()->arithmetic(other.type());
+        const auto& arithmetic = type()->arithmetic(*other.type());
         RPY_CHECK(arithmetic.sub_inplace != nullptr);
         if (type() == other.type()) {
             arithmetic.sub_inplace(data(), other.data());
@@ -316,7 +329,7 @@ public:
 
     Reference& operator*=(const ConstReference other)
     {
-        const auto& arithmetic = type()->arithmetic(other.type());
+        const auto& arithmetic = type()->arithmetic(*other.type());
         RPY_CHECK(arithmetic.mul_inplace != nullptr);
         if (type() == other.type()) {
             arithmetic.mul_inplace(data(), other.data());
@@ -329,7 +342,7 @@ public:
 
     Reference& operator/=(const ConstReference other)
     {
-        const auto& arithmetic = type()->arithmetic(other.type());
+        const auto& arithmetic = type()->arithmetic(*other.type());
         RPY_CHECK(arithmetic.div_inplace != nullptr);
         if (type() == other.type()) {
             arithmetic.div_inplace(data(), other.data());
@@ -389,7 +402,7 @@ inline Value::operator Reference() noexcept
 inline bool Value::is_zero() const
 {
     if (fast_is_zero()) { return true; }
-    const auto& comparisons = type()->comparisons(type());
+    const auto& comparisons = type()->comparisons(*type());
     if (comparisons.is_zero) { return comparisons.is_zero(data()); }
     if (comparisons.equals) {
         return comparisons.equals(data(), type()->zero().data());
@@ -405,7 +418,7 @@ enable_if_t<!value_like<T>, Value&> Value::operator=(T&& other)
             m_storage.pointer = p_type->allocate_single();
         }
         // Convert the value of other to the current type
-        const auto& conversion = p_type->conversions(get_type<T>());
+        const auto& conversion = p_type->conversions(*get_type<T>());
         if (is_rvalue_reference_v<T> && conversion.move_convert) {
             conversion.move_convert(data(), &other);
         } else {
@@ -472,7 +485,7 @@ inline Value& Value::operator/=(const Value& other)
 }
 inline Value& Value::operator+=(const ConstReference other)
 {
-    const auto& arithmetic = p_type->arithmetic(other.type());
+    const auto& arithmetic = p_type->arithmetic(*other.type());
     RPY_CHECK(arithmetic.add_inplace != nullptr);
     arithmetic.add_inplace(this->data(), other.data());
     return *this;
@@ -480,7 +493,7 @@ inline Value& Value::operator+=(const ConstReference other)
 
 inline Value& Value::operator-=(const ConstReference other)
 {
-    const auto& arithmetic = p_type->arithmetic(other.type());
+    const auto& arithmetic = p_type->arithmetic(*other.type());
     RPY_CHECK(arithmetic.sub_inplace != nullptr);
     arithmetic.sub_inplace(this->data(), other.data());
     return *this;
@@ -488,7 +501,7 @@ inline Value& Value::operator-=(const ConstReference other)
 
 inline Value& Value::operator*=(const ConstReference other)
 {
-    const auto& arithmetic = p_type->arithmetic(other.type());
+    const auto& arithmetic = p_type->arithmetic(*other.type());
     RPY_CHECK(arithmetic.mul_inplace != nullptr);
     arithmetic.mul_inplace(this->data(), other.data());
     return *this;
@@ -496,7 +509,7 @@ inline Value& Value::operator*=(const ConstReference other)
 
 inline Value& Value::operator/=(const ConstReference other)
 {
-    const auto& arithmetic = p_type->arithmetic(other.type());
+    const auto& arithmetic = p_type->arithmetic(*other.type());
     RPY_CHECK(arithmetic.div_inplace != nullptr);
     arithmetic.div_inplace(this->data(), other.data());
     return *this;

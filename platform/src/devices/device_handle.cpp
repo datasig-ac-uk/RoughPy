@@ -64,9 +64,9 @@ DeviceHandle::~DeviceHandle() = default;
 
 Buffer DeviceHandle::alloc(TypeInfo info, dimn_t count) const { return {}; }
 
-Buffer DeviceHandle::alloc(const Type* type, dimn_t count) const
+Buffer DeviceHandle::alloc(const Type& type, dimn_t count) const
 {
-    return this->alloc(type->type_info(), count);
+    return this->alloc(type.type_info(), count);
 }
 
 void DeviceHandle::raw_free(Buffer& buf) const {}
@@ -110,7 +110,7 @@ Queue DeviceHandle::get_default_queue() const { return {}; }
 
 optional<boost::uuids::uuid> DeviceHandle::uuid() const noexcept { return {}; }
 optional<PCIBusInfo> DeviceHandle::pci_bus_info() const noexcept { return {}; }
-bool DeviceHandle::supports_type(const Type* type) const noexcept
+bool DeviceHandle::supports_type(const Type& type) const noexcept
 {
     return false;
 }
@@ -139,7 +139,7 @@ void DeviceHandle::check_type_compatibility(
 ) const
 {
     if (secondary != nullptr && secondary != primary) {
-        if (!primary->convertible_from(secondary)) {
+        if (!primary->convertible_from(*secondary)) {
             RPY_THROW(
                     std::runtime_error,
                     "secondary type " + string(secondary->name())

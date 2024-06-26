@@ -9,9 +9,8 @@
 #include <roughpy/core/types.h>
 
 #include <roughpy/devices/core.h>
-#include <roughpy/scalars/scalar_array.h>
-#include <roughpy/scalars/scalar_type.h>
 
+#include <roughpy/scalars/scalars_fwd.h>
 #include "key_array.h"
 #include "vector.h"
 

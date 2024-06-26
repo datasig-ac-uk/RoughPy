@@ -57,7 +57,7 @@ public:
     DeviceInfo info() const noexcept override;
 
     Buffer alloc(TypeInfo info, dimn_t count) const override;
-    RPY_NO_DISCARD Buffer alloc(const Type* type, dimn_t count) const override;
+    RPY_NO_DISCARD Buffer alloc(const Type& type, dimn_t count) const override;
 
     void raw_free(Buffer& buf) const override;
     RawBuffer allocate_raw_buffer(dimn_t size, dimn_t alignment) const;
@@ -73,7 +73,7 @@ public:
     Event new_event() const override;
     Queue new_queue() const override;
     Queue get_default_queue() const override;
-    bool supports_type(const Type* type) const noexcept override;
+    bool supports_type(const Type& type) const noexcept override;
 
     Device compute_delegate() const override;
 };

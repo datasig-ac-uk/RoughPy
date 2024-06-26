@@ -110,6 +110,7 @@ protected:
 public:
 };
 
+
 struct MultiplicationFrame {
     dimn_t left_index;
     dimn_t right_index_begin;

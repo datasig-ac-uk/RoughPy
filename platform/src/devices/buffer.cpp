@@ -31,7 +31,10 @@
 //
 
 #include "devices/buffer.h"
+
+#include "algorithm_drivers.h"
 #include "devices/device_handle.h"
+#include "devices/algorithms.h"
 
 #include "devices/core.h"
 #include "devices/event.h"
@@ -54,66 +57,36 @@ template class RPY_DLL_EXPORT ObjectBase<BufferInterface, Buffer>;
 }// namespace devices
 }// namespace rpy
 
-Buffer::Buffer(
-        rpy::devices::Device device,
-        void* ptr,
-        rpy::dimn_t size,
-        rpy::devices::TypeInfo type
-)
-{
-    Buffer tmp(ptr, size, type);
-    tmp.to_device(*this, device);
-}
-
-Buffer::Buffer(
-        rpy::devices::Device device,
-        const void* ptr,
-        rpy::dimn_t size,
-        rpy::devices::TypeInfo type
-)
-{
-    Buffer tmp(ptr, size, type);
-    tmp.to_device(*this, device);
-}
-
-Buffer::Buffer(void* ptr, dimn_t size, TypeInfo info)
-    : base_t(new CPUBuffer(ptr, size, info))
+Buffer::Buffer(TypePtr tp, dimn_t size) : base_t(new CPUBuffer(std::move(tp), size)) {}
+Buffer::Buffer(TypePtr tp, void* ptr, dimn_t size)
+    : base_t(new CPUBuffer(std::move(tp), ptr, size))
+{}
+Buffer::Buffer(TypePtr tp, const void* ptr, dimn_t size)
+    : base_t(new CPUBuffer(std::move(tp), ptr, size))
 {}
 
-Buffer::Buffer(const void* ptr, dimn_t size, TypeInfo info)
-    : base_t(new CPUBuffer(ptr, size, info))
+Buffer::Buffer(TypePtr tp, dimn_t size, Device device)
+    : Buffer(device->alloc(*tp, size))
 {}
-
-Buffer::Buffer(Device device, dimn_t size, TypeInfo type)
-{
-    *this = device->alloc(type, size);
-}
-
-Buffer::Buffer(rpy::dimn_t size, rpy::devices::TypeInfo type)
-    : base_t(new CPUBuffer(size, type))
-{}
-
-Buffer::Buffer(const Type* tp, dimn_t size) : base_t(new CPUBuffer(tp, size)) {}
-Buffer::Buffer(const Type* tp, void* ptr, dimn_t size)
-    : base_t(new CPUBuffer(tp, ptr, size))
-{}
-Buffer::Buffer(const Type* tp, const void* ptr, dimn_t size)
-    : base_t(new CPUBuffer(tp, ptr, size))
-{}
-
-Buffer::Buffer(const Type* tp, dimn_t size, Device device)
-    : Buffer(device->alloc(tp, size))
-{}
-Buffer::Buffer(const Type* tp, void* ptr, dimn_t size, Device device)
+Buffer::Buffer(TypePtr tp, void* ptr, dimn_t size, Device device)
     : base_t(nullptr)
 {
     if (device == nullptr || device->is_host()) {
         construct_inplace(this, Buffer(tp, ptr, size));
     } else {
-        construct_inplace(this, device->alloc(tp, size));
+        construct_inplace(this, device->alloc(*tp, size));
+        algorithms::copy(*this, Buffer(tp, ptr, size));
     }
 }
-Buffer::Buffer(const Type* tp, const void* ptr, dimn_t size, Device device) {}
+Buffer::Buffer(TypePtr tp, const void* ptr, dimn_t size, Device device)
+{
+    if (device == nullptr || device->is_host()) {
+        construct_inplace(this, Buffer(tp, ptr, size));
+    } else {
+        construct_inplace(this, device->alloc(*tp, size));
+        algorithms::copy(*this, Buffer(tp, ptr, size));
+    }
+}
 
 BufferMode Buffer::mode() const
 {
@@ -129,7 +102,7 @@ dimn_t Buffer::size() const
 dimn_t Buffer::bytes() const
 {
     if (impl() == nullptr) { return 0; }
-    return impl()->size() * size_of(impl()->type());
+    return impl()->size() * size_of(*impl()->type());
 }
 
 static inline bool check_device_compatibility(Buffer& dst, const Device& device)

@@ -56,12 +56,12 @@ class ROUGHPY_DEVICES_EXPORT BufferInterface : public dtl::InterfaceBase
      * because the Buffer class isn't defined until later. Instead, the
      * implementations will have to handle this by themselves.
      */
-    const Type* p_type;
+    TypePtr p_type;
 
 public:
     using object_t = Buffer;
 
-    explicit BufferInterface(const Type* type) : p_type(type) {}
+    explicit BufferInterface(TypePtr type) : p_type(std::move(type)) {}
 
     /**
      * @brief Get the content type of the object.
@@ -71,7 +71,7 @@ public:
      * @return A pointer to the Type representing the content type of the
      * object. Returns nullptr if the object is null.
      */
-    RPY_NO_DISCARD const Type* type() const noexcept { return p_type; }
+    RPY_NO_DISCARD TypePtr type() const noexcept { return p_type; }
 
     /**
      * @brief Returns the mode of the buffer object.
@@ -242,13 +242,13 @@ class ROUGHPY_DEVICES_EXPORT Buffer
 public:
     using base_t::base_t;
 
-    Buffer(Device device, dimn_t size, TypeInfo type);
-    Buffer(dimn_t size, TypeInfo type);
-    Buffer(Device device, void* ptr, dimn_t size, TypeInfo type);
-    Buffer(Device device, const void* ptr, dimn_t size, TypeInfo type);
+    Buffer(Device device, dimn_t size, TypePtr type);
+    Buffer(dimn_t size, TypePtr type);
+    Buffer(Device device, void* ptr, dimn_t size, TypePtr type);
+    Buffer(Device device, const void* ptr, dimn_t size, TypePtr type);
 
-    Buffer(void* ptr, dimn_t size, TypeInfo info);
-    Buffer(const void* ptr, dimn_t size, TypeInfo info);
+    Buffer(void* ptr, dimn_t size, TypePtr info);
+    Buffer(const void* ptr, dimn_t size, TypePtr info);
 
     template <typename T>
     explicit Buffer(Device device, Slice<T> data);
@@ -262,12 +262,12 @@ public:
     template <typename T>
     explicit Buffer(Slice<const T> data);
 
-    Buffer(const Type* tp, dimn_t size);
-    Buffer(const Type* tp, void* ptr, dimn_t size);
-    Buffer(const Type* tp, const void* ptr, dimn_t size);
-    Buffer(const Type* tp, dimn_t size, Device device);
-    Buffer(const Type* tp, void* ptr, dimn_t size, Device device);
-    Buffer(const Type* tp, const void* ptr, dimn_t size, Device device);
+    Buffer(TypePtr tp, dimn_t size);
+    Buffer(TypePtr tp, void* ptr, dimn_t size);
+    Buffer(TypePtr tp, const void* ptr, dimn_t size);
+    Buffer(TypePtr tp, dimn_t size, Device device);
+    Buffer(TypePtr tp, void* ptr, dimn_t size, Device device);
+    Buffer(TypePtr tp, const void* ptr, dimn_t size, Device device);
     /**
      * @brief Returns the content type of the buffer.
      *
@@ -278,7 +278,7 @@ public:
      * @note The pointer should not be deleted and can become invalid if the
      * buffer is modified.
      */
-    RPY_NO_DISCARD const Type* type() const noexcept
+    RPY_NO_DISCARD TypePtr type() const noexcept
     {
         return is_null() ? nullptr : impl()->type();
     }

@@ -70,7 +70,7 @@ Type::~Type() = default;
 
 Buffer Type::allocate(Device device, dimn_t count) const
 {
-    return device->alloc(this, count);
+    return device->alloc(*this, count);
 }
 
 void* Type::allocate_single() const
@@ -82,7 +82,7 @@ void Type::free_single(void* ptr) const { aligned_free(ptr); }
 
 bool Type::supports_device(const Device& device) const noexcept { return true; }
 
-const Type* devices::get_type(TypeInfo info)
+TypePtr devices::get_type(TypeInfo info)
 {
     switch (info.code) {
         case TypeCode::Int:
@@ -178,20 +178,20 @@ const Type* devices::get_type(TypeInfo info)
 //
 // #endif
 
-bool Type::convertible_to(const Type* dest_type) const noexcept
+bool Type::convertible_to(const Type& dest_type) const noexcept
 {
-    return dest_type->convertible_from(this);
+    return dest_type.convertible_from(*this);
 }
-bool Type::convertible_from(const Type* src_type) const noexcept
+bool Type::convertible_from(const Type& src_type) const noexcept
 {
-    if (src_type == this) { return true; }
+    if (&src_type == this) { return true; }
     if (traits::is_arithmetic(src_type)) { return true; }
 
     return false;
 }
-TypeComparison Type::compare_with(const Type* other) const noexcept
+TypeComparison Type::compare_with(const Type& other) const noexcept
 {
-    if (other == this) { return TypeComparison::AreSame; }
+    if (&other == this) { return TypeComparison::AreSame; }
 
     if (traits::is_arithmetic(other)) { return TypeComparison::Convertible; }
 
@@ -207,26 +207,26 @@ void Type::move(void* dst, void* src, dimn_t count) const
     RPY_THROW(std::runtime_error, "not implemented");
 }
 
-const type_support::TypeArithmetic& Type::arithmetic(const Type* other_type
+const type_support::TypeArithmetic& Type::arithmetic(const Type& other_type
 ) const
 {
-    return p_type_support->arithmetic(other_type);
+    return p_type_support->arithmetic(&other_type);
 }
-const type_support::TypeComparisons& Type::comparisons(const Type* other_type
+const type_support::TypeComparisons& Type::comparisons(const Type& other_type
 ) const
 {
-    return p_type_support->comparison(other_type);
+    return p_type_support->comparison(&other_type);
 }
-const type_support::TypeConversions& Type::conversions(const Type* other_type
+const type_support::TypeConversions& Type::conversions(const Type& other_type
 ) const
 {
-    return p_type_support->conversions(other_type);
+    return p_type_support->conversions(&other_type);
 }
 
-GuardedRef<TypeSupport, std::mutex> Type::update_support(const Type* other
+GuardedRef<TypeSupport, std::mutex> Type::update_support(const Type& other
 ) const
 {
-    return p_type_support->get_mut_implementor(other);
+    return p_type_support->get_mut_implementor(&other);
 }
 
 namespace {
@@ -248,7 +248,7 @@ public:
     Guarded& value() noexcept { return r_guarded; }
 };
 
-using TypeCache = containers::HashMap<string_view, const Type*>;
+using TypeCache = containers::HashMap<string_view, TypePtr>;
 using GuardedTypeCache = MutexLocked<TypeCache>;
 
 GuardedTypeCache get_type_cache() noexcept
@@ -260,14 +260,14 @@ GuardedTypeCache get_type_cache() noexcept
 
 }// namespace
 
-void devices::register_type(const Type* tp)
+void devices::register_type(TypePtr tp)
 {
     auto locked_cache = get_type_cache();
     auto& cache = locked_cache.value();
 
     auto& entry = cache[tp->id()];
     if (entry == nullptr) {
-        entry = tp;
+        entry = std::move(tp);
     } else {
         RPY_THROW(
                 std::runtime_error,
@@ -276,7 +276,7 @@ void devices::register_type(const Type* tp)
     }
 }
 
-const Type* devices::get_type(string_view type_id)
+TypePtr devices::get_type(string_view type_id)
 {
     auto locked_cache = get_type_cache();
     auto& cache = locked_cache.value();
@@ -346,7 +346,7 @@ TypePtr devices::void_type() noexcept
     static const Type void_type(
             "void",
             "void",
-            TypeInfo{TypeCode::Int, 1, 1, 1},
+            TypeInfo{TypeCode::Int, 0, 0, 0},
             traits_of<void>()
     );
 

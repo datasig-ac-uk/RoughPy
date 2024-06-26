@@ -37,13 +37,13 @@ namespace devices {
 template <typename S, typename T = S>
 class HostDriversImpl : public AlgorithmDrivers
 {
-    const Type* p_primary_type = get_type<S>();
-    const Type* p_secondary_type = get_type<T>();
+    TypePtr p_primary_type = get_type<S>();
+    TypePtr p_secondary_type = get_type<T>();
 
 public:
-    explicit HostDriversImpl(std::tuple<const Type*, const Type*> types)
-        : p_primary_type(std::get<0>(types)),
-          p_secondary_type(std::get<1>(types))
+    explicit HostDriversImpl(std::tuple<TypePtr, TypePtr> types)
+        : p_primary_type(std::move(std::get<0>(types))),
+          p_secondary_type(std::move(std::get<1>(types)))
     {}
 
     pair<string_view, string_view> get_index() const noexcept
@@ -78,8 +78,8 @@ optional<dimn_t>
 HostDriversImpl<S, T>::find(const Buffer& buffer, ConstReference value) const
 {
     constexpr auto func = find_func<S, T>;
-    func.type_check(p_primary_type, buffer.type());
-    func.type_check(p_secondary_type, value.type());
+    func.type_check(*p_primary_type, *buffer.type());
+    func.type_check(*p_secondary_type, *value.type());
     return func(buffer, value);
 }
 template <typename S, typename T>
@@ -87,8 +87,8 @@ dimn_t
 HostDriversImpl<S, T>::count(const Buffer& buffer, ConstReference value) const
 {
     constexpr auto func = count_func<S, T>;
-    func.type_check(p_primary_type, buffer.type());
-    func.type_check(p_secondary_type, value.type());
+    func.type_check(*p_primary_type, *buffer.type());
+    func.type_check(*p_secondary_type, *value.type());
     return func(buffer, value);
 }
 
@@ -99,8 +99,8 @@ void HostDriversImpl<S, T>::copy(
 ) const
 {
     constexpr auto func = copy_func<S, T>;
-    func.type_check(p_primary_type, destination_buffer.type());
-    func.type_check(p_secondary_type, source_buffer.type());
+    func.type_check(*p_primary_type, *destination_buffer.type());
+    func.type_check(*p_secondary_type, *source_buffer.type());
     func(destination_buffer, source_buffer);
 }
 
@@ -111,8 +111,8 @@ void HostDriversImpl<S, T>::swap_ranges(
 ) const
 {
     constexpr auto func = swap_ranges_func<S, T>;
-    func.type_check(p_primary_type, left_buffer.type());
-    func.type_check(p_primary_type, left_buffer.type());
+    func.type_check(*p_primary_type, *left_buffer.type());
+    func.type_check(*p_primary_type, *left_buffer.type());
     func(left_buffer, right_buffer);
 }
 
@@ -123,8 +123,8 @@ void HostDriversImpl<S, T>::fill(
 ) const
 {
     constexpr auto func = fill_func<S, T>;
-    func.type_check(p_primary_type, destination_buffer.type());
-    func.type_check(p_secondary_type, value.type());
+    func.type_check(*p_primary_type, *destination_buffer.type());
+    func.type_check(*p_secondary_type, *value.type());
     return func(destination_buffer, value);
 }
 
@@ -132,7 +132,7 @@ template <typename S, typename T>
 void HostDriversImpl<S, T>::reverse(Buffer& buffer) const
 {
     constexpr auto func = reverse_func<S, T>;
-    func.type_check(p_primary_type, buffer.type());
+    func.type_check(*p_primary_type, *buffer.type());
     func(buffer);
 }
 
@@ -140,7 +140,7 @@ template <typename S, typename T>
 void HostDriversImpl<S, T>::shift_left(Buffer& buffer) const
 {
     constexpr auto func = rotate_func<S, T>;
-    func.type_check(p_primary_type, buffer.type());
+    func.type_check(*p_primary_type, *buffer.type());
     func(buffer, 1);
 }
 
@@ -163,8 +163,8 @@ HostDriversImpl<S, T>::lower_bound(const Buffer& buffer, ConstReference value)
         const
 {
     constexpr auto func = lower_bound_func<S, T>;
-    func.type_check(p_primary_type, buffer.type());
-    func.type_check(p_secondary_type, value.type());
+    func.type_check(*p_primary_type, *buffer.type());
+    func.type_check(*p_secondary_type, *value.type());
     return func(buffer, value);
 }
 
@@ -174,8 +174,8 @@ HostDriversImpl<S, T>::upper_bound(const Buffer& buffer, ConstReference value)
         const
 {
     constexpr auto func = upper_bound_func<S, T>;
-    func.type_check(p_primary_type, buffer.type());
-    func.type_check(p_secondary_type, value.type());
+    func.type_check(*p_primary_type, *buffer.type());
+    func.type_check(*p_secondary_type, *value.type());
     return func(buffer, value);
 }
 
@@ -184,8 +184,8 @@ optional<dimn_t>
 HostDriversImpl<S, T>::mismatch(const Buffer& left, const Buffer& right) const
 {
     constexpr auto func = mismatch_func<S, T>;
-    func.type_check(p_primary_type, left.type());
-    func.type_check(p_secondary_type, right.type());
+    func.type_check(*p_primary_type, *left.type());
+    func.type_check(*p_secondary_type, *right.type());
     return func(left, right);
 }
 
@@ -193,8 +193,8 @@ template <typename S, typename T>
 void HostDriversImpl<S, T>::max(const Buffer& buffer, Reference out) const
 {
     constexpr auto func = max_element_func<S, T>;
-    func.type_check(p_primary_type, buffer.type());
-    func.type_check(p_secondary_type, out.type());
+    func.type_check(*p_primary_type, *buffer.type());
+    func.type_check(*p_secondary_type, *out.type());
     func(buffer, out);
 }
 
@@ -202,8 +202,8 @@ template <typename S, typename T>
 void HostDriversImpl<S, T>::min(const Buffer& buffer, Reference out) const
 {
     constexpr auto func = min_element_func<S, T>;
-    func.type_check(p_primary_type, buffer.type());
-    func.type_check(p_secondary_type, out.type());
+    func.type_check(*p_primary_type, *buffer.type());
+    func.type_check(*p_secondary_type, *out.type());
     func(buffer, out);
 }
 
@@ -214,8 +214,8 @@ bool HostDriversImpl<S, T>::lexicographical_compare(
 ) const
 {
     constexpr auto func = lexicographical_compare_func<S, T>;
-    func.type_check(p_primary_type, left_buffer.type());
-    func.type_check(p_secondary_type, right_buffer.type());
+    func.type_check(*p_primary_type, *left_buffer.type());
+    func.type_check(*p_secondary_type, *right_buffer.type());
     return func(left_buffer, right_buffer);
 }
 

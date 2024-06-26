@@ -14,15 +14,15 @@ namespace dtl {
 template <typename S, typename T, bool>
 struct AlgorithmFunctionBase {
 
-    static void type_check(const Type* left, const Type* right)
+    static void type_check(const Type& left, const Type& right)
     {
-        RPY_CHECK(left->compare_with(right) == TypeComparison::AreSame);
+        RPY_CHECK(left.compare_with(right) == TypeComparison::AreSame);
     }
 };
 
 template <typename S, typename T>
 struct AlgorithmFunctionBase<S, T, false> {
-    static void type_check(const Type*, const Type*) {}
+    static void type_check(const Type&, const Type&) {}
 };
 
 }// namespace dtl

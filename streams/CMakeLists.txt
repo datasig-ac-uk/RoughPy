@@ -63,7 +63,6 @@ add_roughpy_component(Streams
         RoughPy::Core
         RoughPy::Platform
         RoughPy::Intervals
-        RoughPy::Scalars
         RoughPy::Algebra
 )
 

@@ -160,7 +160,7 @@ struct TypeSupport {
  * working with the type, such as allocating memory for scalars, checking type
  * compatibility, and converting between types.
  */
-class ROUGHPY_DEVICES_EXPORT Type
+class ROUGHPY_DEVICES_EXPORT Type : public RcBase<Type>
 {
     string_view m_id;
     string_view m_name;
@@ -288,7 +288,7 @@ public:
      * @return True if the current object is convertible to the destination
      * type, false otherwise.
      */
-    RPY_NO_DISCARD virtual bool convertible_to(const Type* dest_type
+    RPY_NO_DISCARD virtual bool convertible_to(const Type& dest_type
     ) const noexcept;
 
     /**
@@ -302,7 +302,7 @@ public:
      * @return true if the current type is convertible from the source type,
      * false otherwise.
      */
-    RPY_NO_DISCARD virtual bool convertible_from(const Type* src_type
+    RPY_NO_DISCARD virtual bool convertible_from(const Type& src_type
     ) const noexcept;
 
     /**
@@ -326,7 +326,7 @@ public:
      * modify the state of the object. The noexcept specifier indicates that
      * this method will not throw any exceptions.
      */
-    RPY_NO_DISCARD virtual TypeComparison compare_with(const Type* other
+    RPY_NO_DISCARD virtual TypeComparison compare_with(const Type& other
     ) const noexcept;
 
     /**
@@ -407,7 +407,7 @@ public:
      * @see TypeArithmetic
      */
     RPY_NO_DISCARD const type_support::TypeArithmetic&
-    arithmetic(const Type* other_type) const;
+    arithmetic(const Type& other_type) const;
 
     /**
      * @brief Compares the current type with another type.
@@ -422,7 +422,7 @@ public:
      * comparison results.
      */
     RPY_NO_DISCARD const type_support::TypeComparisons&
-    comparisons(const Type* other_type) const;
+    comparisons(const Type& other_type) const;
     /**
      * @brief Returns the conversions for a given type.
      *
@@ -438,7 +438,7 @@ public:
      *         conversions from the current type to the other type.
      */
     RPY_NO_DISCARD const type_support::TypeConversions&
-    conversions(const Type* other_type) const;
+    conversions(const Type& other_type) const;
 
     /**
      * @brief Updates the support for a given Type.
@@ -455,7 +455,7 @@ public:
      * updated `TypeSupport` object.
      */
     RPY_NO_DISCARD GuardedRef<TypeSupport, std::mutex>
-    update_support(const Type* other) const;
+    update_support(const Type& other) const;
 
     /**
      * @brief Display the value of a type.
@@ -575,7 +575,7 @@ constexpr TypeTraits traits_of() noexcept
  * @note The returned value is not dependent on the number of instances
  * of the type, but rather on the size of a single instance of the type.
  */
-inline dimn_t size_of(const Type* type) { return type->bytes(); }
+inline dimn_t size_of(const Type& type) { return type.bytes(); }
 
 /**
  * @brief Get the alignment of a given type.
@@ -589,158 +589,149 @@ inline dimn_t size_of(const Type* type) { return type->bytes(); }
  *
  * @return The alignment of the given type.
  */
-inline dimn_t align_of(const Type* type) { return type->min_alignment(); }
+inline dimn_t align_of(const Type& type) { return type.min_alignment(); }
 
 namespace traits {
-
-using TypePtr = const Type*;
-
 /**
  * @brief Check if the given type has standard layout
- * @param typePtr A pointer to the Type object
+ * @param type A reference to the Type object
  * @return A boolean value indicating whether the type has standard layout
  */
-inline bool is_standard_layout(TypePtr const typePtr)
+inline bool is_standard_layout(Type const& type)
 {
-    return typePtr->type_traits().standard_layout;
+    return type.type_traits().standard_layout;
 }
 
 /**
  * @brief Check if the given type is trivially copyable
- * @param typePtr A pointer to the Type object
+ * @param type A reference to the Type object
  * @return A boolean value indicating whether the type is trivially copyable
  */
-inline bool is_trivially_copyable(TypePtr const typePtr)
+inline bool is_trivially_copyable(Type const& type)
 {
-    return typePtr->type_traits().trivially_copyable;
+    return type.type_traits().trivially_copyable;
 }
 
 /**
  * @brief Check if the given type is trivially constructible
- * @param typePtr A pointer to the Type object
- * @return A boolean value indicating whether the type is trivially
- * constructible
+ * @param type A reference to the Type object
+ * @return A boolean value indicating whether the type is trivially constructible
  */
-inline bool is_trivially_constructible(TypePtr const typePtr)
+inline bool is_trivially_constructible(Type const& type)
 {
-    return typePtr->type_traits().trivially_constructible;
+    return type.type_traits().trivially_constructible;
 }
 
 /**
  * @brief Check if the given type is trivially default constructible
- * @param typePtr A pointer to the Type object
- * @return A boolean value indicating whether the type is trivially default
- * constructible
+ * @param type A reference to the Type object
+ * @return A boolean value indicating whether the type is trivially default constructible
  */
-inline bool is_trivially_default_constructible(TypePtr const typePtr)
+inline bool is_trivially_default_constructible(Type const& type)
 {
-    return typePtr->type_traits().trivially_default_constructible;
+    return type.type_traits().trivially_default_constructible;
 }
 
 /**
  * @brief Check if the given type is trivially copy constructible
- * @param typePtr A pointer to the Type object
- * @return A boolean value indicating whether the type is trivially copy
- * constructible
+ * @param type A reference to the Type object
+ * @return A boolean value indicating whether the type is trivially copy constructible
  */
-inline bool is_trivially_copy_constructible(TypePtr const typePtr)
+inline bool is_trivially_copy_constructible(Type const& type)
 {
-    return typePtr->type_traits().trivially_copy_constructible;
+    return type.type_traits().trivially_copy_constructible;
 }
 
 /**
  * @brief Check if the given type is trivially copy assignable
- * @param typePtr A pointer to the Type object
- * @return A boolean value indicating whether the type is trivially copy
- * assignable
+ * @param type A reference to the Type object
+ * @return A boolean value indicating whether the type is trivially copy assignable
  */
-inline bool is_trivially_copy_assignable(TypePtr const typePtr)
+inline bool is_trivially_copy_assignable(Type const& type)
 {
-    return typePtr->type_traits().trivially_copy_assignable;
+    return type.type_traits().trivially_copy_assignable;
 }
 
 /**
  * @brief Check if the given type is trivially destructible
- * @param typePtr A pointer to the Type object
+ * @param type A reference to the Type object
  * @return A boolean value indicating whether the type is trivially destructible
  */
-inline bool is_trivially_destructible(TypePtr const typePtr)
+inline bool is_trivially_destructible(Type const& type)
 {
-    return typePtr->type_traits().trivially_destructible;
+    return type.type_traits().trivially_destructible;
 }
 
 /**
  * @brief Check if the given type is polymorphic
- * @param typePtr A pointer to the Type object
+ * @param type A reference to the Type object
  * @return A boolean value indicating whether the type is polymorphic
  */
-inline bool is_polymorphic(TypePtr const typePtr)
+inline bool is_polymorphic(Type const& type)
 {
-    return typePtr->type_traits().polymorphic;
+    return type.type_traits().polymorphic;
 }
 
 /**
  * @brief Check if the given type is signed
- * @param typePtr A pointer to the Type object
+ * @param type A reference to the Type object
  * @return A boolean value indicating whether the type is signed
  */
-inline bool is_signed(TypePtr const typePtr)
+inline bool is_signed(Type const& type)
 {
-    return typePtr->type_traits().is_signed;
+    return type.type_traits().is_signed;
 }
 
 /**
  * @brief Check if the given type is unsigned
- * @param typePtr A pointer to the Type object
+ * @param type A reference to the Type object
  * @return A boolean value indicating whether the type is unsigned
  */
-inline bool is_unsigned(TypePtr const typePtr)
+inline bool is_unsigned(Type const& type)
 {
-    return !typePtr->type_traits().is_signed;
+    return !type.type_traits().is_signed;
 }
 
 /**
  * @brief Check if the given type is floating point
- * @param typePtr A pointer to the Type object
+ * @param type A reference to the Type object
  * @return A boolean value indicating whether the type is floating point
  */
-inline bool is_floating_point(TypePtr const typePtr)
+inline bool is_floating_point(Type const& type)
 {
-    return typePtr->type_traits().is_floating_point;
+    return type.type_traits().is_floating_point;
 }
 
 /**
  * @brief Check if the given type is integral
- * @param typePtr A pointer to the Type object
+ * @param type A reference to the Type object
  * @return A boolean value indicating whether the type is integral
  */
-inline bool is_integral(TypePtr const typePtr)
+inline bool is_integral(Type const& type)
 {
-    return typePtr->type_traits().is_integral;
+    return type.type_traits().is_integral;
 }
 
 /**
  * @brief Check if the given type is either integral or floating point
- * @param typePtr A pointer to the Type object
- * @return A boolean value indicating whether the type is either integral or
- * floating point
+ * @param type A reference to the Type object
+ * @return A boolean value indicating whether the type is either integral or floating point
  */
-inline bool is_arithmetic(TypePtr const typePtr)
+inline bool is_arithmetic(Type const& type)
 {
-    return is_integral(typePtr) || is_floating_point(typePtr);
+    return is_integral(type) || is_floating_point(type);
 }
-
 }// namespace traits
 
 /**
  *
  */
-ROUGHPY_DEVICES_EXPORT void register_type(const Type* tp);
+ROUGHPY_DEVICES_EXPORT void register_type(TypePtr tp);
 
 /**
  *
  */
-RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type* get_type(string_view type_id);
+RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr get_type(string_view type_id);
 
 /**
  * @brief Retrieves the Type for a given TypeInfo object.
@@ -759,7 +750,7 @@ RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type* get_type(string_view type_id);
  * Type object. If the TypeInfo does not correspond to a fundamental type, an
  * exception of type std::runtime_error is thrown.
  */
-RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type*
+RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr
 get_type(devices::TypeInfo info);
 
 // #ifndef RPY_NO_RTTI
@@ -841,12 +832,12 @@ ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<double>();
 
 namespace dtl {
 
-RPY_NO_DISCARD inline const Type*
-compute_promotion(const Type* left, const Type* right)
+RPY_NO_DISCARD inline TypePtr
+compute_promotion(const TypePtr& left, const TypePtr& right)
 {
     if (left == nullptr) { return right; }
     if (right == nullptr) { return left; }
-    switch (left->compare_with(right)) {
+    switch (left->compare_with(*right)) {
         case TypeComparison::AreSame:
         case TypeComparison::TriviallyConvertible:
         case TypeComparison::Convertible: return left;
@@ -855,7 +846,7 @@ compute_promotion(const Type* left, const Type* right)
     // If we're here, it's because left is not convertible to right (or left has
     // no knowledge of right), so check again with right.
 
-    switch (right->compare_with(left)) {
+    switch (right->compare_with(*left)) {
         case TypeComparison::TriviallyConvertible:
         case TypeComparison::Convertible: return right;
         case TypeComparison::NotConvertible: break;
@@ -887,7 +878,7 @@ compute_promotion(const Type* left, const Type* right)
  *              promotion for.
  * @return The promotion of the types in the collection as a const Type pointer.
  */
-RPY_NO_DISCARD inline const Type* compute_promotion(Slice<const Type*> types)
+RPY_NO_DISCARD inline TypePtr compute_promotion(Slice<TypePtr> types)
 {
     return ranges::fold_left(types, nullptr, dtl::compute_promotion);
 }

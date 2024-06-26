@@ -16,6 +16,18 @@ add_library(RoughPy_Algebra_Host_Kernels STATIC
         src/host_kernels/algebra_binary_kernel.h
 )
 
+add_library(RoughPy_Algebra_headers INTERFACE)
+target_include_directories(RoughPy_Algebra_headers INTERFACE include)
+target_link_libraries(RoughPy_Algebra_headers INTERFACE
+    RoughPy::Core
+    RoughPy::Platform
+    Boost::boost
+)
+
+set(ROUGHPY_ALGEBRA_PRIVATE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/algebra)
+set(ROUGHPY_SCALARS_PRIVATE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/scalars)
+
+add_subdirectory(src/scalars)
 
 set_target_properties(RoughPy_Algebra_Host_Kernels PROPERTIES
         LINKER_LANGUAGE CXX
@@ -74,43 +86,42 @@ add_roughpy_component(Algebra
         src/kernels/subtraction_kernel.h
         src/kernels/uminus_kernel.cpp
         src/kernels/uminus_kernel.h
-        src/algebra.cpp
-        src/augmented_basis.cpp
-        src/augmented_basis.h
-        src/basis.cpp
-        src/basis_key.cpp
-        src/basis_key_type.cpp
-        src/basis_key_type.h
-        src/context.cpp
-        src/free_tensor.cpp
-        src/free_tensor_multiplication.cpp
-        src/hall_set_size.cpp
-        src/hall_set_size.h
-        src/hall_word.cpp
-        src/hall_word.h
-        src/hall_word_iterator_state.cpp
-        src/hall_word_iterator_state.h
-        src/key_array.cpp
-        src/key_iterator_state.cpp
-        src/key_range.cpp
-        src/key_scalar_array.cpp
-        src/key_scalar_stream.cpp
-        src/lie.cpp
-        src/lie_basis.cpp
+    src/algebra/algebra.cpp
+    src/algebra/augmented_basis.cpp
+    src/algebra/augmented_basis.h
+    src/algebra/basis.cpp
+    src/algebra/basis_key.cpp
+    src/algebra/basis_key_type.cpp
+    src/algebra/basis_key_type.h
+    src/algebra/context.cpp
+    src/algebra/free_tensor.cpp
+    src/algebra/hall_set_size.cpp
+    src/algebra/hall_set_size.h
+    src/algebra/hall_word.cpp
+    src/algebra/hall_word.h
+    src/algebra/hall_word_iterator_state.cpp
+    src/algebra/hall_word_iterator_state.h
+    src/algebra/key_array.cpp
+    src/algebra/key_iterator_state.cpp
+    src/algebra/key_range.cpp
+    src/algebra/key_scalar_array.cpp
+    src/algebra/key_scalar_stream.cpp
+    src/algebra/lie.cpp
+    src/algebra/lie_basis.cpp
         #        src/mutable_vector_element.cpp
         #        src/mutable_vector_element.h
-        src/tensor_basis.cpp
-        src/tensor_key_iterator_state.cpp
-        src/tensor_key_iterator_state.h
-        src/tensor_product_basis.cpp
-        src/tensor_product_basis.h
-        src/tensor_product_basis_key.cpp
-        src/tensor_product_basis_key.h
-        src/tensor_word.cpp
-        src/tensor_word.h
-        src/vector.cpp
-        src/vector_data.cpp
-        src/vector_iterator.cpp
+    src/algebra/tensor_basis.cpp
+    src/algebra/tensor_key_iterator_state.cpp
+    src/algebra/tensor_key_iterator_state.h
+    src/algebra/tensor_product_basis.cpp
+    src/algebra/tensor_product_basis.h
+    src/algebra/tensor_product_basis_key.cpp
+    src/algebra/tensor_product_basis_key.h
+    src/algebra/tensor_word.cpp
+    src/algebra/tensor_word.h
+    src/algebra/vector.cpp
+    src/algebra/vector_data.cpp
+    src/algebra/vector_iterator.cpp
         PUBLIC_HEADERS
         include/roughpy/algebra/algebra.h
         include/roughpy/algebra/algebra_fwd.h
@@ -131,20 +142,32 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/unital_algebra.h
         include/roughpy/algebra/vector.h
         include/roughpy/algebra/vector_iterator.h
+    src/scalars/scalar_types/polynomial/monomial.h
+        include/roughpy/scalars/scalar_array.h
+        include/roughpy/scalars/scalar_stream.h
+        include/roughpy/scalars/scalar_value.h
+        include/roughpy/scalars/scalar_vector.h
+        include/roughpy/scalars/scalars_fwd.h
+
         DEPENDENCIES PUBLIC
         Boost::boost
+    RoughPy_Algebra_headers
         PRIVATE
         RoughPy_Algebra_Host_Kernels
+        RoughPy_scalars
+        RoughPy_Scalar_Type_half
+        RoughPy_Scalar_Type_bfloat16
+        RoughPy_Scalar_Type_rational
+        RoughPy_Scalar_Type_polynomial
         NEEDS
         RoughPy::Core
         RoughPy::Platform
-        RoughPy::Scalars
 )
 
 
 add_roughpy_test(Algebra
         SRC
-        src/test_vector.cpp
+    src/algebra/test_vector.cpp
         NEEDS
         RoughPy::Algebra
 )

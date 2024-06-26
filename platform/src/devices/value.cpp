@@ -23,7 +23,7 @@ rpy::devices::Value::Value(Value&& other) noexcept : p_type(other.p_type)
 rpy::devices::Value::Value(ConstReference other) : p_type(other.type())
 {
     if (is_inline_stored()) {
-        std::memcpy(m_storage.bytes, other.data(), size_of(p_type));
+        std::memcpy(m_storage.bytes, other.data(), size_of(*p_type));
     } else if (p_type != nullptr) {
         m_storage.pointer = p_type->allocate_single();
         p_type->copy(m_storage.pointer, other.data(), 1);
@@ -43,7 +43,7 @@ rpy::devices::Value& rpy::devices::Value::operator=(const Value& other)
             construct_inplace(this, other);
         } else {
 
-            const auto& conversion = p_type->conversions(other.p_type);
+            const auto& conversion = p_type->conversions(*other.p_type);
 
             auto convert = [tp = p_type,
                             ntp = other.p_type,
@@ -83,7 +83,7 @@ rpy::devices::Value& rpy::devices::Value::operator=(Value&& other) noexcept
         if (p_type == nullptr || p_type == other.p_type) {
             construct_inplace(this, std::move(other));
         } else {
-            const auto& conversion = p_type->conversions(other.p_type);
+            const auto& conversion = p_type->conversions(*other.p_type);
 
             auto convert = [tp = p_type,
                             ntp = other.p_type,
@@ -129,7 +129,7 @@ void rpy::devices::Value::change_type(const Type* new_type)
     if (p_type == nullptr) {
         p_type = new_type;
     } else if (new_type != p_type) {
-        const auto& conversion = new_type->conversions(p_type);
+        const auto& conversion = new_type->conversions(*p_type);
 
         auto convert = [tp = p_type,
                         ntp = new_type,
@@ -158,12 +158,12 @@ void rpy::devices::Value::change_type(const Type* new_type)
 
         Storage tmp_storage;
         std::memcpy(&tmp_storage, &m_storage, sizeof(Storage));
-        if (is_inline_stored(new_type) && is_inline_stored()) {
+        if (ValueStorage::is_inline_stored(new_type) && is_inline_stored()) {
             convert(m_storage.bytes, tmp_storage.bytes);
-        } else if (is_inline_stored(new_type) && !is_inline_stored()) {
+        } else if (ValueStorage::is_inline_stored(new_type) && !is_inline_stored()) {
             convert(m_storage.bytes, tmp_storage.pointer);
             p_type->free_single(tmp_storage.pointer);
-        } else if (is_inline_stored() && !is_inline_stored(new_type)) {
+        } else if (is_inline_stored() && !ValueStorage::is_inline_stored(new_type)) {
             tmp_storage.pointer = new_type->allocate_single();
             convert(tmp_storage.pointer, tmp_storage.bytes);
         } else {
@@ -183,7 +183,7 @@ rpy::devices::Reference::operator=(const ConstReference& other)
         return *this;
     }
 
-    const auto& conversion = type()->conversions(other.type());
+    const auto& conversion = type()->conversions(*other.type());
 
     if (conversion.convert) {
         conversion.convert(data(), other.data());
@@ -211,7 +211,7 @@ rpy::devices::Reference& rpy::devices::Reference::operator=(const Value& other)
         return *this;
     }
 
-    const auto& conversion = type()->conversions(other.type());
+    const auto& conversion = type()->conversions(*other.type());
 
     if (conversion.convert) {
         conversion.convert(data(), other.data());
@@ -236,7 +236,7 @@ rpy::devices::Reference& rpy::devices::Reference::operator=(Value&& other)
     if (type() == other.type()) {
         type()->move(data(), other.data(), 1);
     } else {
-        const auto& conversion = type()->conversions(other.p_type);
+        const auto& conversion = type()->conversions(*other.p_type);
 
         auto convert = [tp = type(),
                         ntp = other.p_type,

@@ -41,7 +41,7 @@ using namespace rpy::devices;
 BufferMode BufferInterface::mode() const { return BufferMode::Read; }
 
 dimn_t BufferInterface::size() const { return 0; }
-dimn_t BufferInterface::bytes() const { return size() * size_of(p_type); }
+dimn_t BufferInterface::bytes() const { return size() * size_of(*p_type); }
 Event BufferInterface::to_device(
         Buffer& dst,
         const Device& device,
