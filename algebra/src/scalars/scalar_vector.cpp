@@ -77,6 +77,9 @@ ScalarVector::const_iterator ScalarVector::end() const noexcept
 ScalarVector ScalarVector::uminus() const
 {
     ScalarVector result(scalar_type(), dimension());
+
+
+    return result;
 }
 
 ScalarVector ScalarVector::add(const ScalarVector& other) const
