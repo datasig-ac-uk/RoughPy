@@ -56,7 +56,7 @@ Event CPUKernel::new_kernel_event(string_view name)const
 Event CPUKernel::launch_kernel_async(
         Queue& queue,
         const KernelLaunchParams& params,
-        Slice<KernelArgument> args
+        const KernelArguments&  args
 )const
 {
     auto event = new_kernel_event(m_name);
@@ -70,7 +70,7 @@ Event CPUKernel::launch_kernel_async(
 EventStatus CPUKernel::launch_kernel_sync(
         rpy::devices::Queue& queue,
         const rpy::devices::KernelLaunchParams& params,
-        Slice<rpy::devices::KernelArgument> args
+        const KernelArguments&  args
 )const
 {
     auto event = new_kernel_event(m_name);

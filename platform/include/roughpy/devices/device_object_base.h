@@ -203,6 +203,11 @@ public:
         return *p_impl;
     }
 
+    RPY_NO_DISCARD Interface* release() noexcept
+    {
+        return p_impl.detach();
+    }
+
     bool operator==(const ObjectBase& other) const noexcept
     {
         return p_impl == other.p_impl;

@@ -31,6 +31,7 @@
 //
 
 #include "devices/kernel.h"
+#include "standard_kernel_arguments.h"
 
 #include "devices/device_handle.h"
 #include "devices/queue.h"
@@ -45,7 +46,7 @@ dimn_t KernelInterface::num_args() const { return 0; }
 Event KernelInterface::launch_kernel_async(
         Queue& queue,
         const KernelLaunchParams& params,
-        Slice<KernelArgument> args
+        const KernelArguments& args
 ) const
 {
     return Event();
@@ -54,7 +55,7 @@ Event KernelInterface::launch_kernel_async(
 EventStatus KernelInterface::launch_kernel_sync(
         Queue& queue,
         const rpy::devices::KernelLaunchParams& params,
-        Slice<KernelArgument> args
+        const KernelArguments& args
 ) const
 {
     auto event = launch_kernel_async(queue, params, args);

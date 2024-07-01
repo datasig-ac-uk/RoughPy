@@ -51,11 +51,15 @@ add_roughpy_component(Platform
         src/devices/get_best_device.cpp
         src/devices/get_device.cpp
         src/devices/kernel.cpp
-        src/devices/kernel_arg.cpp
+        src/devices/kernel_arguments.cpp
         src/devices/kernel_interface.cpp
         src/devices/kernel_launch_params.cpp
+        src/devices/kernel_operators.cpp
+        src/devices/kernel_spec.cpp
         src/devices/queue.cpp
         src/devices/queue_interface.cpp
+        src/devices/standard_kernel_arguments.cpp
+        src/devices/standard_kernel_arguments.h
         src/devices/type.cpp
         src/devices/value.cpp
         src/devices/host/host_buffer.cpp
@@ -124,7 +128,6 @@ add_roughpy_component(Platform
         include/roughpy/devices/event.h
         include/roughpy/devices/host_device.h
         include/roughpy/devices/kernel.h
-        include/roughpy/devices/kernel_arg.h
         include/roughpy/devices/macros.h
         include/roughpy/devices/queue.h
         include/roughpy/devices/type.h
