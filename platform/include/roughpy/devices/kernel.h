@@ -38,7 +38,6 @@
 
 #include "device_object_base.h"
 #include "event.h"
-#include "kernel_arg.h"
 #include "value.h"
 
 namespace rpy {
@@ -141,11 +140,11 @@ public:
     RPY_NO_DISCARD virtual Kind kind() const noexcept = 0;
 };
 
-class ROUGHPY_DEVICES_EXPORT IdentityOperator : Operator
+class ROUGHPY_DEVICES_EXPORT IdentityOperator : public Operator
 {
 public:
-    template <typename T>
-    using op_type = Identity<T>;
+    // template <typename T>
+    // using op_type = Identity<T>;
 
     RPY_NO_DISCARD Kind kind() const noexcept override { return Identity; };
 
@@ -155,11 +154,11 @@ public:
     }
 };
 
-class ROUGHPY_DEVICES_EXPORT UnaryMinusOperator : Operator
+class ROUGHPY_DEVICES_EXPORT UnaryMinusOperator : public Operator
 {
 public:
-    template <typename T>
-    using op_type = Uminus<T>;
+    // template <typename T>
+    // using op_type = Uminus<T>;
 
     RPY_NO_DISCARD Kind kind() const noexcept override { return UnaryMinus; };
 
@@ -172,9 +171,8 @@ public:
 class ROUGHPY_DEVICES_EXPORT AdditionOperator : public Operator
 {
 public:
-    template <typename T>
-    using op_type = Add<T>;
-
+    // template <typename T>
+    // using op_type = Add<T>;
     Kind kind() const noexcept override { return Addition; }
 
     ConstReference operator()(ConstReference a, ConstReference b) const noexcept
@@ -204,8 +202,8 @@ class ROUGHPY_DEVICES_EXPORT LeftMultiplyOperator : public Operator
 public:
     explicit LeftMultiplyOperator(ConstReference value) : multiplier(value) {}
 
-    template <typename T>
-    using op_type = LeftMultiply<T>;
+    // template <typename T>
+    // using op_type = LeftMultiply<T>;
 
     Kind kind() const noexcept override { return LeftMultiply; }
 
@@ -222,8 +220,8 @@ class ROUGHPY_DEVICES_EXPORT RightMultiplyOperator : public Operator
 public:
     explicit RightMultiplyOperator(ConstReference value) : multiplier(value) {}
 
-    template <typename T>
-    using op_type = RightMultiply<T>;
+    // template <typename T>
+    // using op_type = RightMultiply<T>;
 
     Kind kind() const noexcept override { return RightMultiply; }
 
@@ -241,8 +239,8 @@ public:
     explicit FusedLeftMultiplyOperator(ConstReference value) : multiplier(value)
     {}
 
-    template <typename T>
-    using op_type = FusedLeftMultiplyAdd<T>;
+    // template <typename T>
+    // using op_type = FusedLeftMultiplyAdd<T>;
 
     Kind kind() const noexcept override { return FusedLeftMultiplyAdd; }
 
@@ -262,8 +260,8 @@ public:
         : multiplier(value)
     {}
 
-    template <typename T>
-    using op_type = FusedRightMultiplyAdd<T>;
+    // template <typename T>
+    // using op_type = FusedRightMultiplyAdd<T>;
 
     Kind kind() const noexcept override { return FusedRightMultiplyAdd; }
 
@@ -279,10 +277,12 @@ class ROUGHPY_DEVICES_EXPORT FusedLeftMultiplySubOperator : public Operator
     ConstReference multiplier;
 
 public:
-    FusedLeftMultiplySubOperator(ConstReference value) : multiplier(value) {}
+    explicit FusedLeftMultiplySubOperator(ConstReference value)
+        : multiplier(value)
+    {}
 
-    template <typename T>
-    using op_type = FusedLeftMultiplySub<T>;
+    // template <typename T>
+    // using op_type = FusedLeftMultiplySub<T>;
 
     Kind kind() const noexcept override { return FusedLeftMultiplySub; }
 
@@ -298,10 +298,12 @@ class ROUGHPY_DEVICES_EXPORT FusedRightMultiplySubOperator : public Operator
     ConstReference multiplier;
 
 public:
-    FusedRightMultiplySubOperator(ConstReference value) : multiplier(value) {}
+    explicit FusedRightMultiplySubOperator(ConstReference value)
+        : multiplier(value)
+    {}
 
-    template <typename T>
-    using op_type = FusedRightMultiplySub<T>;
+    // template <typename T>
+    // using op_type = FusedRightMultiplySub<T>;
 
     Kind kind() const noexcept override { return FusedRightMultiplySub; }
 
@@ -314,6 +316,19 @@ public:
 
 }// namespace operators
 
+enum class KernelArgumentType : uint8_t
+{
+    ResultBuffer,
+    ArgBuffer,
+    ResultValue,
+    ArgValue,
+    Operator
+};
+
+/**
+ * @class KernelArguments
+ * @brief Class representing the arguments for a kernel.
+ */
 class ROUGHPY_DEVICES_EXPORT KernelArguments
 {
 public:
@@ -321,7 +336,7 @@ public:
 
     virtual containers::Vec<void*> raw_pointers() const = 0;
     virtual Device get_device() const noexcept = 0;
-    virtual Type get_type(dimn_t idx) const noexcept = 0;
+    virtual Slice<const TypePtr> get_types() const noexcept = 0;
 
     virtual void bind(Buffer buffer) = 0;
     virtual void bind(ConstReference value) = 0;
@@ -333,6 +348,22 @@ public:
 
     virtual dimn_t num_args() const noexcept = 0;
     virtual dimn_t true_num_args() const noexcept;
+    virtual dimn_t num_bound_args() const noexcept = 0;
+};
+
+class ROUGHPY_DEVICES_EXPORT KernelSpec
+{
+    string m_name;
+    const KernelArguments* p_kernel_args;
+
+public:
+    explicit KernelSpec(string name, const KernelArguments& kargs)
+        : m_name(std::move(name)),
+          p_kernel_args(&kargs)
+    {}
+
+    RPY_NO_DISCARD Device get_device() const noexcept;
+    RPY_NO_DISCARD Slice<const TypePtr> get_types() const noexcept;
 };
 
 /**
@@ -354,6 +385,9 @@ public:
      * @return The name of the kernel.
      */
     RPY_NO_DISCARD virtual string name() const;
+
+    RPY_NO_DISCARD virtual std::unique_ptr<KernelArguments>
+    new_argument_binding() const noexcept;
 
     /**
      * @brief Get the number of arguments required by the kernel.
@@ -379,7 +413,7 @@ public:
     RPY_NO_DISCARD virtual Event launch_kernel_async(
             Queue& queue,
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const;
 
     /**
@@ -397,7 +431,7 @@ public:
     virtual EventStatus launch_kernel_sync(
             Queue& queue,
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const;
 };
 
@@ -493,7 +527,7 @@ public:
     RPY_NO_DISCARD Event launch_async_in_queue(
             Queue& queue,
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const;
 
     /**
@@ -517,7 +551,7 @@ public:
     RPY_NO_DISCARD EventStatus launch_sync_in_queue(
             Queue& queue,
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const;
 
     /**
@@ -537,7 +571,7 @@ public:
      */
     RPY_NO_DISCARD Event launch_async(
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const;
 
     /**
@@ -565,75 +599,75 @@ public:
      */
     RPY_NO_DISCARD EventStatus launch_sync(
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const;
 
     RPY_NO_DISCARD static containers::Vec<bitmask_t>
     construct_work_mask(const KernelLaunchParams& params);
 
-    template <typename... Args>
-    void operator()(const KernelLaunchParams& params, Args&&... args) const;
+    // template <typename... Args>
+    // void operator()(const KernelLaunchParams& params, Args&&... args) const;
 };
 
-template <typename... Args>
-void Kernel::operator()(const KernelLaunchParams& params, Args&&... args) const
-{
-    KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
-    auto status = launch_sync(params, kargs);
-    RPY_CHECK(status == EventStatus::CompletedSuccessfully);
-}
+// template <typename... Args>
+// void Kernel::operator()(const KernelLaunchParams& params, Args&&... args) const
+// {
+//     KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
+//     auto status = launch_sync(params, kargs);
+//     RPY_CHECK(status == EventStatus::CompletedSuccessfully);
+// }
+//
+// template <typename... Args>
+// RPY_NO_DISCARD Event
+// launch_async(Kernel kernel, const KernelLaunchParams& params, Args&&... args)
+// {
+//     KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
+//     return kernel.launch_async(params, kargs);
+// }
+//
+// template <typename... Args>
+// EventStatus
+// launch_sync(Kernel kernel, const KernelLaunchParams& params, Args&&... args)
+// {
+//     KernelArgument kargs[] = {KernelArgument(std::forward<args>(args))...};
+//     return kernel.launch_sync(params, kargs);
+// }
+//
+// template <typename... Args>
+// RPY_NO_DISCARD Event launch_async(
+//         Kernel kernel,
+//         Queue& queue,
+//         const KernelLaunchParams& params,
+//         Args&&... args
+// )
+// {
+//     KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
+//     return kernel.launch_async_in_queue(queue, params, kargs);
+// }
+//
+// template <typename... Args>
+// EventStatus launch_sync(
+//         Kernel kernel,
+//         Queue& queue,
+//         const KernelLaunchParams& params,
+//         Args&&... args
+// )
+// {
+//     KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
+//     return kernel.launch_sync_in_queue(queue, params, kargs);
+// }
 
-template <typename... Args>
-RPY_NO_DISCARD Event
-launch_async(Kernel kernel, const KernelLaunchParams& params, Args&&... args)
-{
-    KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
-    return kernel.launch_async(params, kargs);
-}
-
-template <typename... Args>
-EventStatus
-launch_sync(Kernel kernel, const KernelLaunchParams& params, Args&&... args)
-{
-    KernelArgument kargs[] = {KernelArgument(std::forward<args>(args))...};
-    return kernel.launch_sync(params, kargs);
-}
-
-template <typename... Args>
-RPY_NO_DISCARD Event launch_async(
-        Kernel kernel,
-        Queue& queue,
-        const KernelLaunchParams& params,
-        Args&&... args
-)
-{
-    KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
-    return kernel.launch_async_in_queue(queue, params, kargs);
-}
-
-template <typename... Args>
-EventStatus launch_sync(
-        Kernel kernel,
-        Queue& queue,
-        const KernelLaunchParams& params,
-        Args&&... args
-)
-{
-    KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
-    return kernel.launch_sync_in_queue(queue, params, kargs);
-}
-
-template <typename... Args>
-class TypedKernel : Kernel
-{
-public:
-    explicit TypedKernel(Kernel kernel) : Kernel(std::move(kernel)) {}
-
-    void operator()(const KernelLaunchParams& params, Args&&... args) const
-    {
-        Kernel::operator()(params, std::forward<Args>(args)...);
-    }
-};
+// template <typename... Args>
+// class TypedKernel : Kernel
+// {
+// public:
+//     explicit TypedKernel(Kernel kernel) : Kernel(std::move(kernel)) {}
+//
+//     void operator()(const KernelLaunchParams& params, Args&&... args) const
+//     {
+//         Kernel::operator()(params, std::forward<Args>(args)...);
+//     }
+// };
 
 }// namespace devices
 }// namespace rpy

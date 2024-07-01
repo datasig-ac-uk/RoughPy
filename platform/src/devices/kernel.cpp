@@ -63,25 +63,15 @@ dimn_t Kernel::num_args() const
     return impl()->num_args();
 }
 
+
+
 Event Kernel::launch_async_in_queue(
         Queue& queue,
         const KernelLaunchParams& params,
-        Slice<KernelArgument> args
+        const KernelArguments& args
 ) const
 {
     if (!impl() || !params.has_work()) { return Event(); }
-
-    auto nargs = impl()->num_args();
-    if (nargs != args.size()) {
-        RPY_THROW(
-                std::runtime_error,
-                "kernel '" + impl()->name()
-                        + "' called with incorrect number of arguments: "
-                          "expected "
-                        + std::to_string(nargs) + " arguments but got "
-                        + std::to_string(args.size())
-        );
-    }
 
     if (!queue.is_default() && queue.device() != device()) {
         RPY_THROW(
@@ -95,14 +85,14 @@ Event Kernel::launch_async_in_queue(
 EventStatus Kernel::launch_sync_in_queue(
         Queue& queue,
         const KernelLaunchParams& params,
-        Slice<KernelArgument> args
+        const KernelArguments& args
 ) const
 {
     return impl()->launch_kernel_sync(queue, params, args);
 }
 Event Kernel::launch_async(
         const KernelLaunchParams& params,
-        Slice<KernelArgument> args
+        const KernelArguments& args
 ) const
 {
     auto queue = device()->get_default_queue();
@@ -110,7 +100,7 @@ Event Kernel::launch_async(
 }
 EventStatus Kernel::launch_sync(
         const KernelLaunchParams& params,
-        Slice<KernelArgument> args
+        const KernelArguments& args
 ) const
 {
     auto queue = device()->get_default_queue();
