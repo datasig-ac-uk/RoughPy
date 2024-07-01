@@ -12,7 +12,6 @@
 #include <roughpy/core/types.h>
 
 #include "core.h"
-#include "kernel_arg.h"
 #include "type.h"
 
 namespace rpy {
