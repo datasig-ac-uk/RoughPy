@@ -83,7 +83,7 @@ class CPUKernel : public dtl::RefCountBase<KernelInterface>
     using wrapped_kernel_t = std::function<
             void(LaunchContext*,
                  const KernelLaunchParams&,
-                 Slice<KernelArgument>)>;
+                 const KernelArguments&)>;
 
     Event new_kernel_event(string_view name) const;
 
@@ -105,235 +105,22 @@ public:
     Event launch_kernel_async(
             Queue& queue,
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const override;
     EventStatus launch_kernel_sync(
             Queue& queue,
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const override;
 };
 
-namespace dtl {
-
-template <typename T>
-class ConvertedKernelArgument
-{
-    Reference m_ref;
-
-public:
-    explicit ConvertedKernelArgument(const KernelArgument& arg)
-        : m_ref(arg.ref())
-    {}
-
-    RPY_NO_DISCARD operator T&() const noexcept { return *m_ref.data<T>(); }
-};
-
-template <typename T>
-class ConvertedKernelArgument<const T>
-{
-    ConstReference m_ref;
-
-public:
-    explicit ConvertedKernelArgument(const KernelArgument& arg)
-        : m_ref(arg.cref())
-    {}
-
-    RPY_NO_DISCARD operator const T&() const noexcept
-    {
-        return *m_ref.data<const T>();
-    }
-};
-
-template <typename T>
-class ConvertedKernelArgument<Slice<T>>
-{
-    Buffer m_view;
-
-public:
-    explicit ConvertedKernelArgument(const KernelArgument& arg)
-    {
-        RPY_CHECK(arg.is_buffer() && !arg.is_const());
-        const auto& buf_ref = arg.buffer();
-        RPY_CHECK(buf_ref.type() == get_type<T>());
-
-        if (buf_ref.is_host()) {
-            m_view = buf_ref;
-        } else {
-            m_view = buf_ref.map();
-        }
-    }
-
-    RPY_NO_DISCARD operator Slice<T>() const noexcept
-    {
-        return m_view.as_mut_slice<T>();
-    }
-};
-
-template <typename T>
-class ConvertedKernelArgument<Slice<const T>>
-{
-    Buffer m_view;
-
-public:
-    explicit ConvertedKernelArgument(const KernelArgument& arg)
-    {
-        RPY_CHECK(arg.is_buffer());
-        const auto& buf_ref = arg.buffer();
-        RPY_CHECK(buf_ref.type() == get_type<T>());
-
-        if (buf_ref.is_host()) {
-            m_view = buf_ref;
-        } else {
-            m_view = buf_ref.map();
-        }
-    }
-
-    RPY_NO_DISCARD operator Slice<const T>() const noexcept
-    {
-        return m_view.as_slice<T>();
-    }
-};
-
-/*
- * The problem we need to solve now is how to invoke a function that takes a
- * normal list of arguments, given an array of KernelArguments. To do this,
- * we're going to use the power of variadic templates to do the unpacking.
- *
- * We'd like to do something very simple like the following
- *
- * template <typename... Args>
- * void invoke(void (*)(Args... args) fn, Slice<KernelArgument> args, ...) {
- *      auto* aptr = args.data();
- *      fn(cast<Args>(aptr++)...);
- * }
- *
- * However, this invokes undefined behaviour: the increment operators are not
- * guaranteed to happen in order. To get around this, we have to explicitly
- * index into the argument array by first making an index template pack that
- * can be unpacked at the same time to disambiguate the increment operations.
- * This is based on answers on SO: https://stackoverflow.com/a/11044592/9225581,
- * https://stackoverflow.com/a/10930078/9225581, and the referenced article
- * http://loungecpp.wikidot.com/tips-and-tricks%3aindices
- *
- */
-
-template <size_t... Is>
-struct Indices {
-};
-
-template <size_t N, size_t... Is>
-struct BuildIndices {
-    using type = typename BuildIndices<N - 1, N - 1, Is...>::type;
-};
-
-template <size_t... Is>
-struct BuildIndices<0, Is...> {
-    using type = Indices<Is...>;
-};
-
-template <typename... Ts>
-using indices_for = BuildIndices<sizeof...(Ts)>;
-
-template <typename... Ts, size_t... Is>
-RPY_INLINE_ALWAYS void invoke_kernel_inner(
-        std::function<void(Ts...)> fn,
-        const KernelLaunchParams& params,
-        Indices<Is...> RPY_UNUSED_VAR indices,
-        Slice<KernelArgument> args
-)
-{
-    fn(ConvertedKernelArgument<Ts>(args[Is])...);
-}
-
-template <typename... Ts>
-RPY_INLINE_ALWAYS void invoke_kernel(
-        std::function<void(Ts...)> fn,
-        const KernelLaunchParams& params,
-        Slice<KernelArgument> args
-)
-{
-    invoke_kernel_inner(std::move(fn), params, indices_for<Ts...>(), args);
-}
-
-template <typename... Ts, size_t... Is>
-RPY_INLINE_ALWAYS void invoke_kernel_inner(
-        raw_kfn_ptr<Ts...> fn,
-        const KernelLaunchParams& params,
-        Indices<Is...>,
-        Slice<KernelArgument> args
-)
-{
-    fn(ConvertedKernelArgument<Ts>(args[Is])...);
-}
-
-template <typename... Ts>
-RPY_INLINE_ALWAYS void invoke_kernel(
-        raw_kfn_ptr<void(Ts...)> fn,
-        const KernelLaunchParams& params,
-        Slice<KernelArgument> args
-)
-{
-    invoke_kernel_inner(fn, params, indices_for<Ts...>(), args);
-}
-
-template <typename F>
-void invoke_locking(
-        F&& fn,
-        HostEventContext* event_ctx,
-        ThreadingContext* RPY_UNUSED_VAR thread_ctx,
-        const KernelLaunchParams& params,
-        Slice<KernelArgument> args
-) noexcept
-{
-    std::unique_lock<std::mutex> lk(event_ctx->lock);
-    event_ctx->status = EventStatus::Running;
-    lk.unlock();
-    event_ctx->condition.notify_all();
-
-    try {
-        invoke_kernel(std::forward<F>(fn), params, args);
-        lk.lock();
-        event_ctx->status = EventStatus::CompletedSuccessfully;
-    } catch (...) {
-        lk.lock();
-        event_ctx->status = EventStatus::Error;
-        event_ctx->error_state = std::current_exception();
-    }
-    lk.unlock();
-    event_ctx->condition.notify_all();
-}
-
-template <typename F>
-void invoke_nonlocking(
-        F&& fn,
-        HostEventContext* event_ctx,
-        const KernelLaunchParams& params,
-        Slice<KernelArgument> args
-) noexcept
-{
-    event_ctx->status = EventStatus::Running;
-    try {
-        invoke_kernel(std::forward<F>(fn), params, args);
-        event_ctx->status = EventStatus::CompletedSuccessfully;
-    } catch (...) {
-        event_ctx->status = EventStatus::Error;
-        event_ctx->error_state = std::current_exception();
-    }
-}
-
-}// namespace dtl
 
 template <typename... Ts>
 CPUKernel::CPUKernel(raw_kfn_ptr<Ts...> fn, string name)
     : m_kernel([fn](LaunchContext* ctx,
                     const KernelLaunchParams& params,
-                    Slice<KernelArgument> args) {
-          if (ctx->threads != nullptr) {
-              dtl::invoke_locking(fn, ctx->event, ctx->threads, params, args);
-          } else {
-              dtl::invoke_nonlocking(fn, ctx->event, params, args);
-          }
+                    const KernelArguments& args) {
+
       }),
       m_nargs(sizeof...(Ts)),
       m_name(std::move(name))
@@ -344,12 +131,8 @@ CPUKernel::CPUKernel(std::function<void(Ts...)> fn, string name)
     : m_kernel([fn = std::move(fn
                 )](LaunchContext* ctx,
                    const KernelLaunchParams& params,
-                   Slice<KernelArgument> args) {
-          if (ctx->threads != nullptr) {
-              dtl::invoke_locking(fn, ctx->event, ctx->threads, params, args);
-          } else {
-              dtl::invoke_nonlocking(fn, ctx->event, params, args);
-          }
+                   const KernelArguments& args) {
+
       }),
       m_nargs(sizeof...(Ts)),
       m_name(std::move(name))
