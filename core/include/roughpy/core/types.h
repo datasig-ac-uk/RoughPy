@@ -39,9 +39,11 @@
 #ifdef RPY_CPP_17
 #  include <optional>
 #  include <string_view>
+#  include <variant>
 #else
 #  include <boost/optional.hpp>
 #  include <boost/utility/string_view.hpp>
+#  include <boost/variant/variant.hpp>
 #endif
 
 namespace rpy {
@@ -83,6 +85,10 @@ struct SliceIndex {
 #ifdef RPY_CPP_17
 using std::optional;
 using std::string_view;
+using std::variant;
+
+using std::holds_alternative;
+using std::get;
 #else
 using boost::optional;
 using boost::string_view;

@@ -305,12 +305,10 @@ struct select_first_impl<First, Ts...> {
 template <typename... Ts>
 using select_first_t = typename dtl::select_first_impl<Ts...>::type;
 
-namespace dtl {
 struct EmptyBase {
 };
-}// namespace dtl
 
-template <typename T, typename B = dtl::EmptyBase>
+template <typename T, typename B = EmptyBase>
 using void_or_base = conditional_t<is_void_v<T>, B, T>;
 
 /**
