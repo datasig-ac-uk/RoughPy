@@ -55,6 +55,7 @@ add_roughpy_component(Platform
         src/devices/kernel_interface.cpp
         src/devices/kernel_launch_params.cpp
         src/devices/kernel_operators.cpp
+        src/devices/kernel_signature.cpp
         src/devices/kernel_spec.cpp
         src/devices/queue.cpp
         src/devices/queue_interface.cpp
