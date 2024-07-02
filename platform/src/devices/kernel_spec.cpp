@@ -23,5 +23,3 @@ Slice<const TypePtr> KernelSpec::get_types() const noexcept
 {
     return p_kernel_args->get_types();
 }
-
-
