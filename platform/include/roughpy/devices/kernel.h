@@ -325,6 +325,44 @@ enum class KernelArgumentType : uint8_t
     Operator
 };
 
+class ROUGHPY_DEVICES_EXPORT KernelSignature
+{
+public:
+    struct Parameter {
+        uint8_t type_index;
+        KernelArgumentType param_type;
+    };
+
+private:
+    containers::SmallVec<Parameter, 3> m_params;
+
+    /*
+     * The type array is kept separate from the parameters, which means first
+     * that we don't have to store multiple copies of the same type, but also to
+     * allows for types to be unset until the point of binding - essentially
+     * template arguments - whilst still retaining the ability to enforce types
+     * for arguments that don't need to be flexible.
+     */
+    containers::SmallVec<TypePtr, 1> m_types;
+
+public:
+    dimn_t add_type_param();
+    dimn_t add_type_param(const Type& tp);
+
+    void
+    add_param(KernelArgumentType kind, std::variant<dimn_t, const Type&> type);
+
+    RPY_NO_DISCARD Slice<const Parameter> parameters() const noexcept
+    {
+        return {m_params.data(), m_params.size()};
+    }
+
+    RPY_NO_DISCARD Slice<const TypePtr> types() const noexcept
+    {
+        return {m_types.data(), m_types.size()};
+    }
+};
+
 /**
  * @class KernelArguments
  * @brief Class representing the arguments for a kernel.
@@ -610,7 +648,8 @@ public:
 };
 
 // template <typename... Args>
-// void Kernel::operator()(const KernelLaunchParams& params, Args&&... args) const
+// void Kernel::operator()(const KernelLaunchParams& params, Args&&... args)
+// const
 // {
 //     KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
 //     auto status = launch_sync(params, kargs);
