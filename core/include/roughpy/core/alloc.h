@@ -50,7 +50,7 @@ constexpr void construct_inplace(
         Args&&... args
 ) noexcept(is_nothrow_constructible_v<T, Args...>)
 {
-    ::new (static_cast<void*>(dst)) T(std::forward<Args>(args)...);
+    ::new (static_cast<void*>(dst)) T{std::forward<Args>(args)...};
 }
 
 template <typename T>
