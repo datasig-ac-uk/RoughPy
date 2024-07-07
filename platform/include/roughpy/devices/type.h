@@ -521,7 +521,6 @@ public:
  */
 RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr void_type() noexcept;
 
-
 /**
  * @brief Get the type traits for a given type.
  *
@@ -615,7 +614,8 @@ inline bool is_trivially_copyable(Type const& type)
 /**
  * @brief Check if the given type is trivially constructible
  * @param type A reference to the Type object
- * @return A boolean value indicating whether the type is trivially constructible
+ * @return A boolean value indicating whether the type is trivially
+ * constructible
  */
 inline bool is_trivially_constructible(Type const& type)
 {
@@ -625,7 +625,8 @@ inline bool is_trivially_constructible(Type const& type)
 /**
  * @brief Check if the given type is trivially default constructible
  * @param type A reference to the Type object
- * @return A boolean value indicating whether the type is trivially default constructible
+ * @return A boolean value indicating whether the type is trivially default
+ * constructible
  */
 inline bool is_trivially_default_constructible(Type const& type)
 {
@@ -635,7 +636,8 @@ inline bool is_trivially_default_constructible(Type const& type)
 /**
  * @brief Check if the given type is trivially copy constructible
  * @param type A reference to the Type object
- * @return A boolean value indicating whether the type is trivially copy constructible
+ * @return A boolean value indicating whether the type is trivially copy
+ * constructible
  */
 inline bool is_trivially_copy_constructible(Type const& type)
 {
@@ -645,7 +647,8 @@ inline bool is_trivially_copy_constructible(Type const& type)
 /**
  * @brief Check if the given type is trivially copy assignable
  * @param type A reference to the Type object
- * @return A boolean value indicating whether the type is trivially copy assignable
+ * @return A boolean value indicating whether the type is trivially copy
+ * assignable
  */
 inline bool is_trivially_copy_assignable(Type const& type)
 {
@@ -677,10 +680,7 @@ inline bool is_polymorphic(Type const& type)
  * @param type A reference to the Type object
  * @return A boolean value indicating whether the type is signed
  */
-inline bool is_signed(Type const& type)
-{
-    return type.type_traits().is_signed;
-}
+inline bool is_signed(Type const& type) { return type.type_traits().is_signed; }
 
 /**
  * @brief Check if the given type is unsigned
@@ -715,7 +715,8 @@ inline bool is_integral(Type const& type)
 /**
  * @brief Check if the given type is either integral or floating point
  * @param type A reference to the Type object
- * @return A boolean value indicating whether the type is either integral or floating point
+ * @return A boolean value indicating whether the type is either integral or
+ * floating point
  */
 inline bool is_arithmetic(Type const& type)
 {
@@ -750,8 +751,7 @@ RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr get_type(string_view type_id);
  * Type object. If the TypeInfo does not correspond to a fundamental type, an
  * exception of type std::runtime_error is thrown.
  */
-RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr
-get_type(devices::TypeInfo info);
+RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr get_type(devices::TypeInfo info);
 
 // #ifndef RPY_NO_RTTI
 //
