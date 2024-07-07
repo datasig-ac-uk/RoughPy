@@ -8,7 +8,6 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/devices/host_device.h>
 #include <roughpy/devices/kernel.h>
-#include <roughpy/devices/kernel_arg.h>
 
 #include <boost/compressed_pair.hpp>
 
@@ -21,14 +20,23 @@ namespace devices {
  * The HostKernel class is a concrete class that implements the KernelInterface
  * interface. It allows for executing a host kernel.
  */
-template <typename F>
+template <typename F, typename... ArgSpec>
 class HostKernel : public dtl::RefCountBase<KernelInterface>
 {
+    using signature_t = StandardKernelSignature<ArgSpec...>;
     boost::compressed_pair<F, string> m_func_and_name;
+
+    using ArgBinder = ArgumentBinder<typename signature_t::Parameter, F>;
+
+    static_assert(
+            std::tuple_size_v<args_t<F>> == signature_t::num_params,
+            "Wrong number of arguments"
+    );
 
 public:
     HostKernel(F&& func, string name)
-        : m_func_and_name(std::move(func), std::move(name))
+        : RefCountBase(StandardKernelSignature<ArgSpec...>::make()),
+          m_func_and_name(std::move(func), std::move(name))
     {}
 
     explicit HostKernel(string name) : m_func_and_name(F(), std::move(name)) {}
@@ -41,195 +49,60 @@ public:
     RPY_NO_DISCARD Event launch_kernel_async(
             Queue& queue,
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const override;
     EventStatus launch_kernel_sync(
             Queue& queue,
             const KernelLaunchParams& params,
-            Slice<KernelArgument> args
+            const KernelArguments& args
     ) const override;
 };
 
-template <typename F>
-bool HostKernel<F>::is_host() const noexcept
+template <typename F, typename... ArgSpec>
+bool HostKernel<F, ArgSpec...>::is_host() const noexcept
 {
     return true;
 }
-template <typename F>
-DeviceType HostKernel<F>::device_type() const noexcept
+template <typename F, typename... ArgSpec>
+DeviceType HostKernel<F, ArgSpec...>::device_type() const noexcept
 {
     return DeviceType::CPU;
 }
-template <typename F>
-Device HostKernel<F>::device() const noexcept
+template <typename F, typename... ArgSpec>
+Device HostKernel<F, ArgSpec...>::device() const noexcept
 {
     return get_host_device();
 }
-template <typename F>
-string HostKernel<F>::name() const
+template <typename F, typename... ArgSpec>
+string HostKernel<F, ArgSpec...>::name() const
 {
-    return m_func_and_name.second();
+    return m_func_and_name.second;
+    ;
 }
-template <typename F>
-dimn_t HostKernel<F>::num_args() const
+template <typename F, typename... ArgSpec>
+dimn_t HostKernel<F, ArgSpec...>::num_args() const
 {
-    return rpy::num_args<F>;
-}
-
-namespace dtl {
-
-template <typename T>
-class ConvertedKernelArgument;
-
-template <typename T>
-class ConvertedKernelArgument<T&>
-{
-    T* p_data;
-
-public:
-    explicit ConvertedKernelArgument(const KernelArgument& arg)
-    {
-        RPY_CHECK(arg.is_ref() && !arg.is_const());
-        const auto& ref = arg.ref();
-        RPY_CHECK(ref.type() == get_type<T>());
-        p_data = static_cast<T*>(ref.data<T>());
-    }
-
-    RPY_NO_DISCARD operator T&() { return *p_data; }
-};
-
-template <typename T>
-class ConvertedKernelArgument<const T&>
-{
-    const T* p_data;
-
-public:
-    explicit ConvertedKernelArgument(KernelArgument& arg)
-    {
-        RPY_CHECK(arg.is_ref());
-        const auto& ref = arg.cref();
-        RPY_CHECK(ref.type() == get_type<T>());
-        p_data = static_cast<const T*>(ref.data<T>());
-    }
-
-    RPY_NO_DISCARD operator const T&() { return *p_data; }
-};
-
-template <typename T>
-class ConvertedKernelArgument<Slice<T>>
-{
-    Slice<T> m_slice;
-    Buffer m_view;
-
-public:
-    explicit ConvertedKernelArgument(KernelArgument& arg)
-    {
-        RPY_CHECK(arg.is_buffer() && !arg.is_const());
-        auto& buffer = arg.buffer();
-
-        if (!buffer.is_host()) {
-            m_view = buffer.map(buffer.size(), 0);
-        } else {
-            m_view = buffer;
-        }
-
-        m_slice = m_view.as_mut_slice<T>();
-    }
-
-    RPY_NO_DISCARD operator Slice<T>() const noexcept { return m_slice; }
-};
-
-template <typename T>
-class ConvertedKernelArgument<Slice<const T>>
-{
-    Slice<const T> m_slice;
-    Buffer m_view;
-
-public:
-    explicit ConvertedKernelArgument(KernelArgument& arg)
-    {
-        RPY_CHECK(arg.is_buffer());
-        const auto& buffer = arg.buffer();
-        RPY_CHECK(buffer.ref_count() > 0);
-
-        if (!buffer.is_host()) {
-            m_view = buffer.map(buffer.size(), 0);
-        } else {
-            m_view = buffer;
-        }
-
-        m_slice = m_view.as_slice<const T>();
-    }
-
-    RPY_NO_DISCARD operator Slice<const T>() const noexcept { return m_slice; }
-};
-/*
- * The problem we need to solve now is how to invoke a function that takes a
- * normal list of arguments, given an array of KernelArguments. To do this,
- * we're going to use the power of variadic templates to do the unpacking.
- *
- * We'd like to do something very simple like the following
- *
- * template <typename... Args>
- * void invoke(void (*)(Args... args) fn, Slice<KernelArgument> args, ...) {
- *      auto* aptr = args.data();
- *      fn(cast<Args>(aptr++)...);
- * }
- *
- * However, this invokes undefined behaviour: the increment operators are
- * not guaranteed to happen in order. To get around this, we have to
- * explicitly index into the argument array by first making an index
- * template pack that can be unpacked at the same time to disambiguate the
- * increment operations. This is based on answers on SO:
- * https://stackoverflow.com/a/11044592/9225581,
- * https://stackoverflow.com/a/10930078/9225581, and the referenced article
- * http://loungecpp.wikidot.com/tips-and-tricks%3aindices
- *
- */
-
-template <typename F, dimn_t... Is>
-RPY_INLINE_ALWAYS void invoke_kernel_inner(
-        F&& kernel_fn,
-        const KernelLaunchParams& RPY_UNUSED_VAR params,
-        integer_sequence<dimn_t, Is...> RPY_UNUSED_VAR indices,
-        Slice<KernelArgument> args
-)
-{
-    RPY_DBG_ASSERT(indices.size() == args.size());
-    kernel_fn(ConvertedKernelArgument<arg_at_t<F, Is>>(args[Is])...);
+    return signature().num_parameters();
 }
 
-template <typename F>
-RPY_INLINE_ALWAYS void invoke_kernel(
-        F&& kernel_fn,
-        const KernelLaunchParams& params,
-        Slice<KernelArgument> args
-)
-{
-    using seq = make_integer_sequence<dimn_t, num_args<F>>;
-    invoke_kernel_inner(std::forward<F>(kernel_fn), params, seq(), args);
-}
-
-}// namespace dtl
-
-template <typename F>
-Event HostKernel<F>::launch_kernel_async(
+template <typename F, typename... ArgSpec>
+Event HostKernel<F, ArgSpec...>::launch_kernel_async(
         Queue& queue,
         const KernelLaunchParams& params,
-        Slice<KernelArgument> args
+        const KernelArguments& args
 ) const
 {
-    dtl::invoke_kernel(m_func_and_name.first(), params, args);
+    ArgBinder::eval(m_func_and_name.first(), params, args);
     return Event();
 }
-template <typename F>
-EventStatus HostKernel<F>::launch_kernel_sync(
+template <typename F, typename... ArgSpec>
+EventStatus HostKernel<F, ArgSpec...>::launch_kernel_sync(
         Queue& queue,
         const KernelLaunchParams& params,
-        Slice<KernelArgument> args
+        const KernelArguments& args
 ) const
 {
-    dtl::invoke_kernel(m_func_and_name.first(), params, args);
+    ArgBinder::eval(m_func_and_name.first(), params, args);
     return EventStatus::CompletedSuccessfully;
 }
 
