@@ -39,9 +39,7 @@ namespace dtl {
 template <typename T>
 using value_like_return = enable_if_t<value_like<T>, Value>;
 
-
-struct ValueStorage
-{
+struct ValueStorage {
 
     union Storage
     {
@@ -61,20 +59,15 @@ struct ValueStorage
 
     void* data(const Type* type) noexcept
     {
-        if (is_inline_stored(type)) {
-            return m_storage.bytes;
-        }
+        if (is_inline_stored(type)) { return m_storage.bytes; }
         return m_storage.pointer;
     }
 
     const void* data(const Type* type) const noexcept
     {
-        if (is_inline_stored(type)) {
-            return m_storage.bytes;
-        }
+        if (is_inline_stored(type)) { return m_storage.bytes; }
         return m_storage.pointer;
     }
-
 };
 
 }// namespace dtl
@@ -453,6 +446,143 @@ enable_if_t<!value_like<T>, Reference&> Reference::operator=(T&& other)
     conversion.convert(data(), &other);
     return *this;
 }
+
+namespace dtl {
+
+struct AdditionCheck {
+    bool check(const type_support::TypeArithmetic* impl) const
+    {
+        RPY_CHECK(impl->add_inplace != nullptr);
+        return true;
+    }
+};
+
+// Check struct for subtraction
+struct SubtractionCheck {
+    bool check(const type_support::TypeArithmetic* impl) const
+    {
+        RPY_CHECK(impl->sub_inplace != nullptr);
+        return true;
+    }
+};
+
+// Check struct for multiplication
+struct MultiplicationCheck {
+    bool check(const type_support::TypeArithmetic* impl) const
+    {
+        RPY_CHECK(impl->mul_inplace != nullptr);
+        return true;
+    }
+};
+
+// Check struct for division
+struct DivisionCheck {
+    bool check(const type_support::TypeArithmetic* impl) const
+    {
+        RPY_CHECK(impl->div_inplace != nullptr);
+        return true;
+    }
+};
+}// namespace dtl
+
+inline constexpr dtl::AdditionCheck check_addition;
+inline constexpr dtl::SubtractionCheck check_subtraction;
+inline constexpr dtl::MultiplicationCheck check_multiplication;
+inline constexpr dtl::DivisionCheck check_division;
+
+/**
+ * @brief Helper for performing arithmetic between generic values
+ *
+ * The arithmetic operations on Values/Referencs/ConstReferences do not scale
+ * particularly well because each operation incurs the cost of a blocking wait
+ * on the Type's Mutex lock in order to get the arithemetic traits. This class
+ * is designed to circumvent this cost by performing the locked lookup once, and
+ * then using the same instance of the arithemetic trait for all the
+ * calculations
+ *
+ * This is intended to be used when defining generic kernel definitions via a
+ * captured parameter or similarly.
+ */
+class Arithmetic
+{
+    const type_support::TypeArithmetic* p_impl;
+
+public:
+    template <typename... Checks>
+    explicit Arithmetic(const Type* main, const Checks&... checks)
+        : p_impl(&main->arithmetic(*main))
+    {
+        RPY_CHECK(... && checks.check(p_impl));
+    }
+
+    template <typename... Checks>
+    explicit Arithmetic(
+            const Type* primary,
+            const Type* secondary,
+            const Checks&... checks
+    )
+        : p_impl(&primary->arithmetic(*secondary))
+    {
+        RPY_CHECK(... && checks.check(p_impl));
+    }
+
+    RPY_NO_DISCARD RPY_INLINE_ALWAYS Value
+    add(ConstReference left, ConstReference right) const
+    {
+        Value result(left);
+        p_impl->add_inplace(result.data(), right.data());
+        return result;
+    }
+
+    RPY_NO_DISCARD RPY_INLINE_ALWAYS Value
+    sub(ConstReference left, ConstReference right) const
+    {
+        Value result(left);
+        p_impl->sub_inplace(result.data(), right.data());
+        return result;
+    }
+
+    RPY_NO_DISCARD RPY_INLINE_ALWAYS Value
+    mul(ConstReference left, ConstReference right) const
+    {
+        Value result(left);
+        p_impl->mul_inplace(result.data(), right.data());
+        return result;
+    }
+
+    RPY_NO_DISCARD RPY_INLINE_ALWAYS Value
+    div(ConstReference left, ConstReference right) const
+    {
+        Value result(left);
+        p_impl->div_inplace(result.data(), right.data());
+        return result;
+    }
+
+    RPY_INLINE_ALWAYS void
+    add_inplace(Reference left, ConstReference right) const
+    {
+        p_impl->add_inplace(left.data(), right.data());
+    }
+
+    RPY_INLINE_ALWAYS void
+    sub_inplace(Reference left, ConstReference right) const
+    {
+        p_impl->sub_inplace(left.data(), right.data());
+    }
+
+    RPY_INLINE_ALWAYS void
+    mul_inplace(Reference left, ConstReference right) const
+    {
+        p_impl->mul_inplace(left.data(), right.data());
+    }
+
+    RPY_INLINE_ALWAYS void
+    div_inplace(Reference left, ConstReference right) const
+    {
+        p_impl->div_inplace(left.data(), right.data());
+    }
+};
+
 inline Value& Value::operator+=(const Value& other)
 {
     if (other.p_type != nullptr) {
