@@ -12,16 +12,19 @@
 namespace rpy {
 namespace devices {
 
-
-struct KernelArg
+class StandardKernelArguments : public KernelArguments
 {
-    void* ptr;
-};
 
-class StandardKernelArguments : public KernelArguments {
+    struct KernelArg {
+        void* ptr;
+    };
+
     containers::SmallVec<KernelArg, 4> m_args;
     containers::SmallVec<TypePtr, 1> m_types;
-    containers::SmallVec<KernelArgumentType, 4> m_signature;
+
+    using Param = typename KernelSignature::Parameter;
+
+    containers::SmallVec<Param, 4> m_signature;
 
     void add_type(TypePtr tp) noexcept
     {
@@ -30,17 +33,12 @@ class StandardKernelArguments : public KernelArguments {
         }
     }
 
-public:
+    void check_or_set_type(dimn_t index, const TypePtr& type);
 
-    explicit StandardKernelArguments(containers::SmallVec<KernelArgumentType, 4> signature)
-        : m_signature(std::move(signature))
-    {
-        m_args.reserve(m_signature.size());
-    }
+public:
+    explicit StandardKernelArguments(const KernelSignature& signature);
 
     ~StandardKernelArguments() override;
-
-
 
     containers::Vec<void*> raw_pointers() const override;
     Device get_device() const noexcept override;
@@ -54,9 +52,12 @@ public:
     dimn_t num_args() const noexcept override;
     dimn_t true_num_args() const noexcept override;
     dimn_t num_bound_args() const noexcept override;
+
+    const Type* get_type(dimn_t index) const override;
+    void* get_raw_ptr(dimn_t index) const override;
 };
 
-} // devices
-} // rpy
+}// namespace devices
+}// namespace rpy
 
-#endif //STANDARD_KERNEL_ARGUMENTS_H
+#endif// STANDARD_KERNEL_ARGUMENTS_H

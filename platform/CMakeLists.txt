@@ -129,6 +129,8 @@ add_roughpy_component(Platform
         include/roughpy/devices/event.h
         include/roughpy/devices/host_device.h
         include/roughpy/devices/kernel.h
+        include/roughpy/devices/kernel_operators.h
+        include/roughpy/devices/kernel_parameters.h
         include/roughpy/devices/macros.h
         include/roughpy/devices/queue.h
         include/roughpy/devices/type.h

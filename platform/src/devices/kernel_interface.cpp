@@ -35,6 +35,7 @@
 
 #include "devices/device_handle.h"
 #include "devices/queue.h"
+#include "standard_kernel_arguments.h"
 
 using namespace rpy;
 using namespace rpy::devices;

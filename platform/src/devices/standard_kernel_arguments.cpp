@@ -8,29 +8,66 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/ranges.h>
 
-#include "host_device.h"
 #include "buffer.h"
+#include "host_device.h"
+#include "kernel_parameters.h"
 
 using namespace rpy;
 using namespace rpy::devices;
 
-static constexpr string_view name_of(const KernelArgumentType& tp) noexcept
+StandardKernelArguments::StandardKernelArguments(
+        const KernelSignature& signature
+)
+{}
+
+static constexpr string_view
+name_of(const typename KernelSignature::Parameter& tp) noexcept
 {
-    switch (tp) {
-        case KernelArgumentType::ResultBuffer: return "result buffer";
-        case KernelArgumentType::ArgBuffer: return "argument buffer";
-        case KernelArgumentType::ResultValue: return "result value";
-        case KernelArgumentType::ArgValue: return "argument value";
-        case KernelArgumentType::Operator: return "operator";
+    switch (tp.param_kind) {
+        case static_cast<uint8_t>(params::ParameterType::ResultBuffer):
+            return "result buffer";
+        case static_cast<uint8_t>(params::ParameterType::ArgBuffer):
+            return "argument buffer";
+        case static_cast<uint8_t>(params::ParameterType::ResultValue):
+            return "result value";
+        case static_cast<uint8_t>(params::ParameterType::ArgValue):
+            return "argument value";
+        case static_cast<uint8_t>(params::ParameterType::Operator):
+            return "operator";
+        default: return "unknown";
     }
     RPY_UNREACHABLE_RETURN("");
+}
+
+void StandardKernelArguments::check_or_set_type(
+        const dimn_t index,
+        const TypePtr& type
+)
+{
+    RPY_CHECK(index < m_types.size());
+    auto& tp = m_types[index];
+    if (!tp) {
+        // Type is not yet set. Set the type
+        tp = type;
+    } else if (tp != type) {
+        // Type is set and it does not match
+        RPY_THROW(
+                std::invalid_argument,
+                string_cat(
+                        "Unable to bind ",
+                        type->name(),
+                        " to parameter with type ",
+                        tp->name()
+                )
+        );
+    }
 }
 
 StandardKernelArguments::~StandardKernelArguments()
 {
     for (const auto& [tp, arg] : views::zip(m_signature, m_args)) {
-        if (tp == KernelArgumentType::ResultBuffer
-            || tp == KernelArgumentType::ArgBuffer) {
+        if (tp.param_kind == params::ParameterType::ResultBuffer
+            || tp.param_kind == params::ParameterType::ArgBuffer) {
             // make sure all the buffer arguments are properly cleaned up.
             auto retake_ownership
                     = steal_cast(static_cast<BufferInterface*>(arg.ptr));
@@ -72,9 +109,9 @@ void StandardKernelArguments::update_arg(dimn_t idx, Buffer buffer)
 {
     RPY_CHECK(idx < m_signature.size());
 
-    if (m_signature[idx] == KernelArgumentType::ResultBuffer) {
+    if (m_signature[idx].param_kind == params::ParameterType::ResultBuffer) {
         RPY_CHECK(buffer.mode() != BufferMode::Read);
-    } else if (m_signature[idx] == KernelArgumentType::ArgBuffer) {
+    } else if (m_signature[idx].param_kind == params::ParameterType::ArgBuffer) {
         RPY_CHECK(buffer.mode() != BufferMode::Write);
     } else {
         RPY_THROW(
@@ -87,33 +124,35 @@ void StandardKernelArguments::update_arg(dimn_t idx, Buffer buffer)
         );
     }
 
+    const auto& param_data = m_signature[idx];
+    check_or_set_type(param_data.type_index, buffer.type());
+
     if (RPY_LIKELY(idx == m_args.size())) {
         // Argument is the next one to be added
-        add_type(buffer.type());
         m_args.push_back(KernelArg{static_cast<void*>(buffer.release())});
-    } else if (idx == m_args.size()) {
+    } else if (idx < m_args.size()) {
         // Argument already exists, modify inplace.
-        auto old_value = steal_cast(static_cast<BufferInterface*>(m_args[idx].ptr));
-        // Buffers must have the same underlying type
-        RPY_CHECK(buffer.type() == old_value.type());
+        auto old_value
+                = steal_cast(static_cast<BufferInterface*>(m_args[idx].ptr));
         m_args[idx].ptr = buffer.release();
     } else {
         RPY_THROW(std::runtime_error, "Unable to modify argument");
     }
-
 }
 void StandardKernelArguments::update_arg(dimn_t idx, ConstReference value)
 {
     RPY_CHECK(idx < m_signature.size());
     RPY_CHECK(
-            m_signature[idx] == KernelArgumentType::ArgValue,
+            m_signature[idx].param_kind == params::ParameterType::ArgValue,
             string_cat("Expected ", name_of(m_signature[idx]), " but got value")
     );
+
+    const auto& param_data = m_signature[idx];
+    check_or_set_type(param_data.type_index, value.type());
 
     if (RPY_LIKELY(idx == m_args.size())) {
         // Argument is the next one to be added
         m_args.emplace_back(KernelArg{const_cast<void*>(value.data())});
-        add_type(value.type());
     } else if (idx < m_args.size()) {
         // Update an existing argument
         m_args[idx].ptr = const_cast<void*>(value.data());
@@ -128,7 +167,7 @@ void StandardKernelArguments::update_arg(
 {
     RPY_CHECK(idx < m_signature.size());
     RPY_CHECK(
-            m_signature[idx] == KernelArgumentType::Operator,
+            m_signature[idx].param_kind == params::ParameterType::Operator,
             string_cat(
                     "Expected ",
                     name_of(m_signature[idx]),
@@ -138,7 +177,9 @@ void StandardKernelArguments::update_arg(
 
     if (RPY_LIKELY(idx == m_args.size())) {
         // Argument is the next one to be added
-        m_args.emplace_back(KernelArg{const_cast<void*>(static_cast<const void*>(&op))});
+        m_args.emplace_back(
+                KernelArg{const_cast<void*>(static_cast<const void*>(&op))}
+        );
     } else if (idx < m_args.size()) {
         // Update an existing argument
         m_args[idx].ptr = const_cast<void*>(static_cast<const void*>(&op));
@@ -158,4 +199,15 @@ dimn_t StandardKernelArguments::true_num_args() const noexcept
 dimn_t StandardKernelArguments::num_bound_args() const noexcept
 {
     return m_args.size();
+}
+
+const Type* StandardKernelArguments::get_type(dimn_t index) const
+{
+    RPY_CHECK(index < m_args.size());
+    return m_types[static_cast<dimn_t>(m_signature[index].type_index)].get();
+}
+void* StandardKernelArguments::get_raw_ptr(dimn_t index) const
+{
+    RPY_CHECK(index < m_args.size());
+    return m_args[index].ptr;
 }
