@@ -26,6 +26,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// ReSharper disable CppClassCanBeFinal
 #ifndef ROUGHPY_DEVICE_KERNEL_H_
 #define ROUGHPY_DEVICE_KERNEL_H_
 
@@ -36,8 +37,13 @@
 #include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>
 
+#include <limits>
+
+#include "buffer.h"
 #include "device_object_base.h"
 #include "event.h"
+#include "kernel_operators.h"
+#include "kernel_parameters.h"
 #include "value.h"
 
 namespace rpy {
@@ -83,291 +89,250 @@ public:
     KernelLaunchParams();
 };
 
-namespace operators {
+class KernelArguments;
 
-// The actual definitions are given in  device_support/operators.h
-template <typename T>
-struct Identity;
-template <typename T>
-struct Uminus;
-template <typename T>
-struct Add;
-template <typename T>
-struct Sub;
-template <typename T>
-struct LeftMultiply;
-template <typename T>
-struct RightMultiply;
-template <typename T>
-struct FusedLeftMultiplyAdd;
-template <typename T>
-struct FusedRightMultiplyAdd;
-template <typename T>
-struct FusedLeftMultiplySub;
-template <typename T>
-struct FusedRightMultiplySub;
-
-class ROUGHPY_DEVICES_EXPORT Operator
-{
-public:
-    enum class Kind
-    {
-        Identity = 0,
-        UnaryMinus,
-        Addition,
-        Subtraction,
-        LeftMultiply,
-        RightMultiply,
-        FusedLeftMultiplyAdd,
-        FusedRightMultiplyAdd,
-        FusedLeftMultiplySub,
-        FusedRightMultiplySub
-    };
-
-    static constexpr Kind Identity = Kind::Identity;
-    static constexpr Kind UnaryMinus = Kind::UnaryMinus;
-    static constexpr Kind Addition = Kind::Addition;
-    static constexpr Kind Subtraction = Kind::Subtraction;
-    static constexpr Kind LeftMultiply = Kind::LeftMultiply;
-    static constexpr Kind RightMultiply = Kind::RightMultiply;
-    static constexpr Kind FusedLeftMultiplyAdd = Kind::FusedLeftMultiplyAdd;
-    static constexpr Kind FusedRightMultiplyAdd = Kind::FusedRightMultiplyAdd;
-    static constexpr Kind FusedLeftMultiplySub = Kind::FusedLeftMultiplySub;
-    static constexpr Kind FusedRightMultiplySub = Kind::FusedRightMultiplySub;
-
-    virtual ~Operator();
-
-    RPY_NO_DISCARD virtual Kind kind() const noexcept = 0;
-};
-
-class ROUGHPY_DEVICES_EXPORT IdentityOperator : public Operator
-{
-public:
-    // template <typename T>
-    // using op_type = Identity<T>;
-
-    RPY_NO_DISCARD Kind kind() const noexcept override { return Identity; };
-
-    ConstReference operator()(ConstReference value) const noexcept
-    {
-        return value;
-    }
-};
-
-class ROUGHPY_DEVICES_EXPORT UnaryMinusOperator : public Operator
-{
-public:
-    // template <typename T>
-    // using op_type = Uminus<T>;
-
-    RPY_NO_DISCARD Kind kind() const noexcept override { return UnaryMinus; };
-
-    ConstReference operator()(ConstReference value) const noexcept
-    {
-        return value;
-    }
-};
-
-class ROUGHPY_DEVICES_EXPORT AdditionOperator : public Operator
-{
-public:
-    // template <typename T>
-    // using op_type = Add<T>;
-    Kind kind() const noexcept override { return Addition; }
-
-    ConstReference operator()(ConstReference a, ConstReference b) const noexcept
-    {
-        return a + b;
-    }
-};
-
-class ROUGHPY_DEVICES_EXPORT SubtractionOperator : public Operator
-{
-public:
-    template <typename T>
-    using op_type = Sub<T>;
-
-    Kind kind() const noexcept override { return Subtraction; }
-
-    ConstReference operator()(ConstReference a, ConstReference b) const noexcept
-    {
-        return a - b;
-    }
-};
-
-class ROUGHPY_DEVICES_EXPORT LeftMultiplyOperator : public Operator
-{
-    ConstReference multiplier;
-
-public:
-    explicit LeftMultiplyOperator(ConstReference value) : multiplier(value) {}
-
-    // template <typename T>
-    // using op_type = LeftMultiply<T>;
-
-    Kind kind() const noexcept override { return LeftMultiply; }
-
-    ConstReference operator()(ConstReference value) const noexcept
-    {
-        return multiplier * value;
-    }
-};
-
-class ROUGHPY_DEVICES_EXPORT RightMultiplyOperator : public Operator
-{
-    ConstReference multiplier;
-
-public:
-    explicit RightMultiplyOperator(ConstReference value) : multiplier(value) {}
-
-    // template <typename T>
-    // using op_type = RightMultiply<T>;
-
-    Kind kind() const noexcept override { return RightMultiply; }
-
-    ConstReference operator()(ConstReference value) const noexcept
-    {
-        return value * multiplier;
-    }
-};
-
-class ROUGHPY_DEVICES_EXPORT FusedLeftMultiplyOperator : public Operator
-{
-    ConstReference multiplier;
-
-public:
-    explicit FusedLeftMultiplyOperator(ConstReference value) : multiplier(value)
-    {}
-
-    // template <typename T>
-    // using op_type = FusedLeftMultiplyAdd<T>;
-
-    Kind kind() const noexcept override { return FusedLeftMultiplyAdd; }
-
-    ConstReference
-    operator()(ConstReference left, ConstReference right) const noexcept
-    {
-        return left + multiplier * right;
-    }
-};
-
-class ROUGHPY_DEVICES_EXPORT FusedRightMultiplyOperator : public Operator
-{
-    ConstReference multiplier;
-
-public:
-    explicit FusedRightMultiplyOperator(ConstReference value)
-        : multiplier(value)
-    {}
-
-    // template <typename T>
-    // using op_type = FusedRightMultiplyAdd<T>;
-
-    Kind kind() const noexcept override { return FusedRightMultiplyAdd; }
-
-    ConstReference
-    operator()(ConstReference left, ConstReference right) const noexcept
-    {
-        return left + right * multiplier;
-    }
-};
-
-class ROUGHPY_DEVICES_EXPORT FusedLeftMultiplySubOperator : public Operator
-{
-    ConstReference multiplier;
-
-public:
-    explicit FusedLeftMultiplySubOperator(ConstReference value)
-        : multiplier(value)
-    {}
-
-    // template <typename T>
-    // using op_type = FusedLeftMultiplySub<T>;
-
-    Kind kind() const noexcept override { return FusedLeftMultiplySub; }
-
-    ConstReference
-    operator()(ConstReference left, ConstReference right) const noexcept
-    {
-        return left - multiplier * right;
-    }
-};
-
-class ROUGHPY_DEVICES_EXPORT FusedRightMultiplySubOperator : public Operator
-{
-    ConstReference multiplier;
-
-public:
-    explicit FusedRightMultiplySubOperator(ConstReference value)
-        : multiplier(value)
-    {}
-
-    // template <typename T>
-    // using op_type = FusedRightMultiplySub<T>;
-
-    Kind kind() const noexcept override { return FusedRightMultiplySub; }
-
-    ConstReference
-    operator()(ConstReference left, ConstReference right) const noexcept
-    {
-        return left - right * multiplier;
-    }
-};
-
-}// namespace operators
-
-enum class KernelArgumentType : uint8_t
-{
-    ResultBuffer,
-    ArgBuffer,
-    ResultValue,
-    ArgValue,
-    Operator
-};
-
-class ROUGHPY_DEVICES_EXPORT KernelSignature
+class ROUGHPY_DEVICES_EXPORT KernelSignature : public platform::SmallObjectBase
 {
 public:
     struct Parameter {
         uint8_t type_index;
-        KernelArgumentType param_type;
+
+        /**
+         *  @brief Kind of the parameter
+         *
+         *  We don't use the params::ParameterType enumerator here because we
+         *  want to leave open the possibility that the signature contains
+         *  parameter types that are not one of those listed above. However, for
+         *  basic kernels, the signature will only ever contain one of the
+         *  values in the enumerator.
+         */
+        uint8_t param_kind;
     };
 
-private:
-    containers::SmallVec<Parameter, 3> m_params;
+    virtual ~KernelSignature();
 
-    /*
-     * The type array is kept separate from the parameters, which means first
-     * that we don't have to store multiple copies of the same type, but also to
-     * allows for types to be unset until the point of binding - essentially
-     * template arguments - whilst still retaining the ability to enforce types
-     * for arguments that don't need to be flexible.
-     */
-    containers::SmallVec<TypePtr, 1> m_types;
+    RPY_NO_DISCARD virtual std::unique_ptr<KernelArguments> new_binding() const;
+
+    RPY_NO_DISCARD virtual Slice<const Parameter> parameters() const noexcept
+            = 0;
+
+    RPY_NO_DISCARD virtual dimn_t num_parameters() const noexcept = 0;
+
+    RPY_NO_DISCARD virtual Slice<const TypePtr> types() const noexcept = 0;
+};
+
+namespace dtl {
+template <typename T, dimn_t N>
+inline constexpr bool store_inline = N * sizeof(T) <= sizeof(void*);
+
+template <typename T>
+struct GetType {
+    static TypePtr get_type() { return devices::get_type<T>(); }
+};
+
+template <int N>
+struct GetType<params::GenericParam<N>> {
+    static TypePtr get_type() { return nullptr; }
+};
+
+template <typename T, typename... Ts>
+constexpr bool contains_type() noexcept
+{
+    return (... || is_same_v<T, Ts>);
+}
+
+template <typename... Ts>
+struct ParamTypeList {
+
+    template <typename T>
+    using push_back = conditional_t<
+            contains_type<T, Ts...>(),
+            ParamTypeList,
+            ParamTypeList<Ts..., T>>;
+
+    static constexpr auto size = sizeof...(Ts);
+};
+
+template <typename Q, typename T, typename... Ts>
+constexpr dimn_t index_of_type(ParamTypeList<Ts...>) noexcept
+{
+    return is_same_v<Q, T> ? 0 : (index_of_type<Q>(ParamTypeList<Ts...>()) + 1);
+}
+
+template <typename Q, typename T>
+constexpr dimn_t index_of_type(ParamTypeList<T>) noexcept
+{
+    static_assert(
+            is_same_v<Q, T>,
+            "The query type does not appear in the list"
+    );
+    return 0;
+}
+
+template <typename... Ts>
+constexpr dimn_t param_list_size(ParamTypeList<Ts...>) noexcept
+{
+    return sizeof...(Ts);
+}
+
+template <typename T, dimn_t N, bool = store_inline<T, N>>
+struct StaticInlineArray {
+    T values[N]{};
+};
+
+template <typename T, dimn_t N>
+struct StaticInlineArray<T, N, false> {
+    T* values;
+
+    StaticInlineArray()
+        : values(static_cast<T*>(platform::alloc_small(sizeof(T) * N)))
+    {}
+
+    ~StaticInlineArray() { platform::free_small(values, sizeof(T) * N); }
+};
+
+template <typename... ArgSpecs>
+struct SignatureHelper;
+
+template <typename, typename = void>
+struct TypeOfArgImpl {
+    using type = void;
+};
+
+template <typename T>
+struct TypeOfArgImpl<T, void_t<typename T::bind_type>> {
+    using type = typename T::bind_type;
+};
+
+template <typename T>
+using TypeOfArg = TypeOfArgImpl<T>;
+
+template <typename T>
+struct DoNoInit {
+    template <typename TypeList>
+    static constexpr typename KernelSignature::Parameter*
+    init_param(TypeList, typename KernelSignature::Parameter* ptr)
+    {
+        return ptr;
+    }
+};
+
+template <typename T>
+struct DoInit {
+    template <typename TypeList>
+    static constexpr typename KernelSignature::Parameter*
+    init_param(TypeList type_list, typename KernelSignature::Parameter* ptr)
+    {
+        static_assert(
+                index_of_type<T>(type_list)
+                        <= std::numeric_limits<uint8_t>::max(),
+                "the number of arguments exceeds the maximum size of the "
+                "storage type"
+        );
+        construct_inplace(
+                ptr,
+                static_cast<uint8_t>(T::kind),
+                static_cast<uint8_t>(index_of_type<T>(type_list))
+        );
+        return ++ptr;
+    }
+};
+
+template <typename T>
+using InitParam
+        = conditional_t<params::is_parameter<T>, DoInit<T>, DoNoInit<T>>;
+
+template <typename ArgSpec, typename... ArgSpecs>
+struct SignatureHelper<ArgSpec, ArgSpecs...> {
+    using next_t = SignatureHelper<ArgSpecs...>;
+
+    using Parameter = typename KernelSignature::Parameter;
+    using type_list =
+            typename next_t::type_list::template push_back<TypeOfArg<ArgSpec>>;
+    using param_list = typename next_t::param_list::template push_back<ArgSpec>;
+
+    // The ArgSpec might not contribute any params to the list
+    static constexpr dimn_t num_params
+            = next_t::num_params + (params::is_parameter<ArgSpec> ? 1 : 0);
+
+    template <typename... Ts>
+    static constexpr void
+    init_params(ParamTypeList<Ts...> list, Parameter* ptr) noexcept
+    {
+        next_t::init_params(
+                std::move(list),
+                InitParam<ArgSpec>::init_param(list, ptr)
+        );
+    }
+};
+
+template <>
+struct SignatureHelper<> {
+    using Parameter = typename KernelSignature::Parameter;
+    static constexpr dimn_t num_params = 0;
+    using type_list = ParamTypeList<>;
+    using param_list = params::ParamList<>;
+
+    template <typename... Ts>
+    static constexpr void
+    init_params(ParamTypeList<Ts...>, Parameter* RPY_UNUSED_VAR ptr) noexcept
+    {
+        // We've finished initialising now.
+    }
+};
+
+template <typename T>
+inline void init_types(ParamTypeList<T>, TypePtr* ptr)
+{
+    construct_inplace(ptr, GetType<T>::get_type());
+}
+
+template <typename T, typename... Ts>
+inline void init_types(ParamTypeList<T, Ts...>, TypePtr* ptr)
+{
+    construct_inplace(ptr, GetType<T>::get_type());
+    init_types(ParamTypeList<Ts...>{}, ++ptr);
+}
+
+}// namespace dtl
+
+template <typename... ArgSpec>
+class StandardKernelSignature : public KernelSignature
+{
+    using helper_t = dtl::SignatureHelper<ArgSpec...>;
+    using ParamsList = typename helper_t::param_list;
+    using ParamTypeList = typename helper_t::type_list;
+
+    static constexpr auto num_params = ParamsList::num_params;
+
+    dtl::StaticInlineArray<Parameter, helper_t::num_params> m_parameters;
+    dtl::StaticInlineArray<TypePtr, param_list_size(ParamTypeList())> m_types;
+
+    StandardKernelSignature()
+    {
+        init_types(ParamTypeList{}, m_types.value);
+        helper_t::init_params(ParamTypeList(), m_parameters.value);
+    }
 
 public:
-    dimn_t add_type_param();
-    dimn_t add_type_param(const Type& tp);
+    /// The standard signature uses the default argument binding.
+    using KernelSignature::new_binding;
 
-    void
-    add_param(KernelArgumentType kind, std::variant<dimn_t, const Type&> type);
+    RPY_NO_DISCARD Slice<const Parameter> parameters() const noexcept override;
+    RPY_NO_DISCARD Slice<const TypePtr> types() const noexcept override;
 
-    RPY_NO_DISCARD Slice<const Parameter> parameters() const noexcept
+    RPY_NO_DISCARD dimn_t num_parameters() const noexcept override
     {
-        return {m_params.data(), m_params.size()};
+        return num_params;
     }
-
-    RPY_NO_DISCARD Slice<const TypePtr> types() const noexcept
-    {
-        return {m_types.data(), m_types.size()};
-    }
+    static const StandardKernelSignature* make() noexcept;
 };
 
 /**
  * @class KernelArguments
- * @brief Class representing the arguments for a kernel.
+ * @brief Class representing the bound arguments for a kernel.
  */
-class ROUGHPY_DEVICES_EXPORT KernelArguments
+class ROUGHPY_DEVICES_EXPORT KernelArguments : public platform::SmallObjectBase
 {
 public:
     virtual ~KernelArguments();
@@ -387,7 +352,174 @@ public:
     virtual dimn_t num_args() const noexcept = 0;
     virtual dimn_t true_num_args() const noexcept;
     virtual dimn_t num_bound_args() const noexcept = 0;
+
+    virtual const Type* get_type(dimn_t index) const = 0;
+    virtual void* get_raw_ptr(dimn_t index) const = 0;
 };
+
+/*
+ * Now comes the most difficult part of the argument binding process, unpacking
+ * the bound arguments to call the C++ function that defines the kernel. This
+ * might not be necessary for all kernels (CUDA kernels for instance will be
+ * invoked by passing arg pointers as void** to the driver), but in most cases
+ * the kernel will wrap a standard function. To make this process more smooth,
+ * we set up some mechanisms to automate wherever possible.
+ */
+
+template <typename T>
+struct ElementType {
+    using type = T;
+};
+
+template <typename T>
+struct ElementType<Slice<T>> {
+    using type = T;
+};
+
+template <typename T>
+using element_type = typename ElementType<T>::type;
+
+template <typename T, typename = void>
+inline constexpr bool is_callable = false;
+
+template <typename T>
+inline constexpr bool is_callable<T, void_t<return_type_t<T>>> = true;
+
+template <typename BoundType, typename ArgType, typename SFINAE = void>
+inline constexpr bool is_param_compatible = false;
+
+template <typename T>
+inline constexpr bool is_param_compatible<Buffer<T>, Slice<const T>, void>
+        = true;
+
+template <typename BoundType, typename ArgType, typename SFINAE = void>
+struct ArgumentDecoder;
+
+template <typename T>
+struct ArgumentDecoder<params::Buffer<T>, Slice<const T>> {
+    static Slice<const T> decode(const void* arg)
+    {
+        return static_cast<const Buffer*>(arg)->as_slice<T>();
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Buffer<params::GenericParam<N>>,
+        Slice<const T>> {
+    static Slice<const T> decode(const void* arg)
+    {
+        return static_cast<const Buffer*>(arg)->as_slice<T>();
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::ResultBuffer<T>, Slice<T>> {
+    static Slice<T> decode(void* arg)
+    {
+        return static_cast<Buffer*>(arg)->as_mut_slice<T>();
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::ResultBuffer<params::GenericParam<N>>,
+        Slice<T>> {
+    static Slice<const T> decode(void* arg)
+    {
+        return static_cast<const Buffer*>(arg)->as_mut_slice<T>();
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Value<T>, T> {
+    static T decode(void* arg) { return *static_cast<const T*>(arg); }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<params::Value<params::GenericParam<N>>, T> {
+    static T decode(void* arg) { return *static_cast<const T*>(arg); }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Operator<T>, const operators::Operator&> {
+    static const operators::Operator& decode(const void* arg)
+    {
+        return *static_cast<const operators::Operator*>(arg);
+    }
+};
+
+namespace dtl {
+
+template <typename List, typename ArgTuple>
+class ArgumentBinder;
+
+template <typename Param, typename... Params, typename Arg, typename... Args>
+class ArgumentBinder<
+        params::ParamList<Param, Params...>,
+        params::ParamList<Arg, Args...>>
+{
+    using Decoder = ArgumentDecoder<Param, Arg>;
+    using next_t = ArgumentBinder<
+            params::ParamList<Params...>,
+            params::ParamList<Args...>>;
+
+    template <typename PL, typename AL>
+    friend class ArgumentBinder<PL, AL>;
+
+    template <typename F>
+    static decltype(auto)
+    eval_impl(F&& fn, const KernelArguments& args, dimn_t idx)
+    {
+        return next_t::template eval_impl<F>(
+                [f = std::forward<F>(fn),
+                 value = args.get_raw_ptr(idx)](auto&&... remaining) {
+                    return f(
+                            Decoder::decode(value),
+                            std::forward<decltype(remaining)>(remaining)...
+                    );
+                },
+                args,
+                ++idx
+        );
+    }
+
+public:
+    template <typename F>
+    static decltype(auto) eval(F&& fn, const KernelArguments& args)
+    {
+        return eval_impl(std::forward<F>(fn), args, 0);
+    }
+};
+
+template <typename Param, typename Arg>
+class ArgumentBinder<params::ParamList<Param>, params::ParamList<Arg>>
+{
+    using Decoder = ArgumentDecoder<Param, Arg>;
+
+    template <typename PL, typename AL>
+    friend class ArgumentBinder<PL, AL>;
+
+    template <typename F>
+    static decltype(auto)
+    eval_impl(F&& fn, const KernelArguments& args, dimn_t idx)
+    {
+        return fn(Decoder::decode(args.get_raw_ptr(idx)));
+    }
+
+public:
+    template <typename F>
+    static decltype(auto) eval(F&& fn, const KernelArguments& args)
+    {
+        return eval_impl(std::forward<F>(fn), args, 0);
+    }
+};
+
+}// namespace dtl
+
+template <typename ParamList, typename F>
+using ArgumentBinder
+        = dtl::ArgumentBinder<ParamList, args_t<F, params::ParamList>>;
 
 class ROUGHPY_DEVICES_EXPORT KernelSpec
 {
@@ -414,8 +546,16 @@ public:
  */
 class ROUGHPY_DEVICES_EXPORT KernelInterface : public dtl::InterfaceBase
 {
+    const KernelSignature* p_signature;
+
 public:
     using object_t = Kernel;
+
+    explicit KernelInterface(const KernelSignature* signature)
+        : p_signature(signature)
+    {
+        RPY_DBG_ASSERT(p_signature != nullptr);
+    }
 
     /**
      * @brief Returns the name of the kernel.
@@ -423,9 +563,6 @@ public:
      * @return The name of the kernel.
      */
     RPY_NO_DISCARD virtual string name() const;
-
-    RPY_NO_DISCARD virtual std::unique_ptr<KernelArguments>
-    new_argument_binding() const noexcept;
 
     /**
      * @brief Get the number of arguments required by the kernel.
@@ -436,6 +573,14 @@ public:
      * @return The number of arguments required by the kernel.
      */
     RPY_NO_DISCARD virtual dimn_t num_args() const;
+
+    /**
+     *
+     */
+    RPY_NO_DISCARD const KernelSignature& signature() const noexcept
+    {
+        return *p_signature;
+    };
 
     /**
      * @brief Asynchronously launches a kernel on a specified queue.
@@ -547,6 +692,15 @@ public:
     RPY_NO_DISCARD dimn_t num_args() const;
 
     /**
+     *
+     */
+    RPY_NO_DISCARD const KernelSignature& signature() const noexcept
+    {
+        RPY_DBG_ASSERT(!is_null());
+        return impl()->signature();
+    }
+
+    /**
      * @brief Launches a kernel asynchronously in a queue.
      *
      * This method launches a kernel asynchronously in the specified queue with
@@ -647,66 +801,69 @@ public:
     // void operator()(const KernelLaunchParams& params, Args&&... args) const;
 };
 
-// template <typename... Args>
-// void Kernel::operator()(const KernelLaunchParams& params, Args&&... args)
-// const
-// {
-//     KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
-//     auto status = launch_sync(params, kargs);
-//     RPY_CHECK(status == EventStatus::CompletedSuccessfully);
-// }
-//
-// template <typename... Args>
-// RPY_NO_DISCARD Event
-// launch_async(Kernel kernel, const KernelLaunchParams& params, Args&&... args)
-// {
-//     KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
-//     return kernel.launch_async(params, kargs);
-// }
-//
-// template <typename... Args>
-// EventStatus
-// launch_sync(Kernel kernel, const KernelLaunchParams& params, Args&&... args)
-// {
-//     KernelArgument kargs[] = {KernelArgument(std::forward<args>(args))...};
-//     return kernel.launch_sync(params, kargs);
-// }
-//
-// template <typename... Args>
-// RPY_NO_DISCARD Event launch_async(
-//         Kernel kernel,
-//         Queue& queue,
-//         const KernelLaunchParams& params,
-//         Args&&... args
-// )
-// {
-//     KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
-//     return kernel.launch_async_in_queue(queue, params, kargs);
-// }
-//
-// template <typename... Args>
-// EventStatus launch_sync(
-//         Kernel kernel,
-//         Queue& queue,
-//         const KernelLaunchParams& params,
-//         Args&&... args
-// )
-// {
-//     KernelArgument kargs[] = {KernelArgument(std::forward<Args>(args))...};
-//     return kernel.launch_sync_in_queue(queue, params, kargs);
-// }
+template <typename... ArgSpec>
+Slice<const KernelSignature::Parameter>
+StandardKernelSignature<ArgSpec...>::parameters() const noexcept
+{
+    return {m_parameters.value, helper_t::num_params};
+}
+template <typename... ArgSpec>
+Slice<const TypePtr> StandardKernelSignature<ArgSpec...>::types() const noexcept
+{
+    return {m_types.value, dtl::param_list_size(ParamTypeList())};
+}
 
-// template <typename... Args>
-// class TypedKernel : Kernel
-// {
-// public:
-//     explicit TypedKernel(Kernel kernel) : Kernel(std::move(kernel)) {}
-//
-//     void operator()(const KernelLaunchParams& params, Args&&... args) const
-//     {
-//         Kernel::operator()(params, std::forward<Args>(args)...);
-//     }
-// };
+template <typename... ArgSpec>
+const StandardKernelSignature<ArgSpec...>*
+StandardKernelSignature<ArgSpec...>::make() noexcept
+{
+    static const StandardKernelSignature value;
+    return &value;
+}
+
+namespace dtl {
+
+template <typename T>
+void bind_args(KernelArguments& binding, T&& arg)
+{
+    binding.bind(std::forward<T>(arg));
+}
+
+template <typename T, typename... Ts>
+void bind_args(KernelArguments& binding, T&& first, Ts&&... remaining)
+{
+    binding.bind(std::forward<T>(first));
+    bind_args(binding, std::forward<Ts>(remaining)...);
+}
+
+}// namespace dtl
+
+template <typename... Args>
+EventStatus launch_kernel_sync(
+        Kernel kernel,
+        const KernelLaunchParams& params,
+        Args&&... args
+)
+{
+    RPY_CHECK(!kernel.is_null());
+    auto binding = kernel.signature().new_binding();
+    dtl::bind_args(*binding, std::forward<Args>(args)...);
+    return kernel.launch_sync(params, *binding);
+}
+
+template <typename... Args>
+Event launch_kernel_async(
+        Kernel kernel,
+        Queue& queue,
+        const KernelLaunchParams& params,
+        Args&&... args
+)
+{
+    RPY_CHECK(!kernel.is_null());
+    auto binding = kernel.signature().new_binding();
+    dtl::bind_args(*binding, std::forward<Args>(args)...);
+    return kernel.launch_async_in_queue(queue, params, *binding);
+}
 
 }// namespace devices
 }// namespace rpy
