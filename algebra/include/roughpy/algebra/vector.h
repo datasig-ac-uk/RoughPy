@@ -27,10 +27,7 @@
 namespace rpy {
 namespace algebra {
 
-
-
 class VectorIterator;
-
 
 /**
  * @brief The Vector class represents a mathematical vector in a given basis.
@@ -57,7 +54,6 @@ public:
     using Scalar = scalars::Scalar;
 
 protected:
-
     /**
      * @brief Sets all the coefficients of the vector to zero.
      *
@@ -135,7 +131,7 @@ public:
      * @param scalar Scalar value for the vector.
      */
     explicit Vector(BasisPointer basis, BasisKey key, Scalar scalar)
-        : p_data(new VectorData(scalar.type())),
+        : ScalarVector(std::move(scalar.type())),
           p_basis(std::move(basis))
     {
         insert_element(std::move(key), std::move(scalar));
@@ -148,14 +144,14 @@ public:
      * @param scalar_type Pointer to the scalar type of the vector.
      */
     explicit Vector(BasisPointer basis, scalars::TypePtr scalar_type)
-        : p_data(new VectorData(scalar_type)),
+        : ScalarVector(std::move(scalar_type)),
           p_basis(std::move(basis))
     {}
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
-        : p_data(new VectorData(std::move(scalar_data), std::move(key_buffer))),
+        : ScalarVector(std::move(scalar_data), std::move(key_buffer)),
           p_basis(std::move(basis))
     {}
 
@@ -179,33 +175,16 @@ public:
     Vector(BasisPointer basis,
            scalars::TypePtr scalar_type,
            std::initializer_list<T> vals)
-        : p_data(new VectorData(
-                  scalar_type,
-                  basis->dense_dimension(vals.size())
-          )),
+        : ScalarVector(scalar_type, basis->dense_dimension(vals.size())),
           p_basis(std::move(basis))
     {
-        auto& scalar_vals = p_data->mut_scalars();
+        auto& scalar_vals = mut_scalars();
         for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
     }
 
     Vector& operator=(const Vector& other);
 
     Vector& operator=(Vector&& other) noexcept;
-
-    RPY_NO_DISCARD const scalars::ScalarArray& scalars() const noexcept
-    {
-        return p_data->scalars();
-    }
-    RPY_NO_DISCARD const KeyArray& keys() const noexcept
-    {
-        return p_data->keys();
-    }
-    RPY_NO_DISCARD scalars::ScalarArray& mut_scalars() noexcept
-    {
-        return p_data->mut_scalars();
-    }
-    RPY_NO_DISCARD KeyArray& mut_keys() noexcept { return p_data->mut_keys(); }
 
     /**
      * @brief Borrows a vector if the type of V is a subclass of Vector.
@@ -228,7 +207,7 @@ public:
     enable_if_t<is_base_of_v<Vector, V>, V> borrow() const
     {
         RPY_CHECK(V::basis_compatibility_check(*p_basis));
-        return V(p_basis, p_data, p_fibre);
+        return V(p_basis, ScalarVector::borrow<ScalarVector>());
     }
 
     /**
@@ -252,7 +231,7 @@ public:
     enable_if_t<is_base_of_v<Vector, V>, V> borrow_mut()
     {
         RPY_CHECK(V::basis_compatibility_check(*p_basis));
-        return V(p_basis, p_data, p_fibre);
+        return V(p_basis, ScalarVector::borrow_mut<ScalarVector>());
     }
 
     /**
@@ -265,10 +244,7 @@ public:
      *
      * @return `true` if the vector is dense, `false` otherwise.
      */
-    RPY_NO_DISCARD bool is_dense() const noexcept
-    {
-        return p_data->key_buffer().empty();
-    }
+    RPY_NO_DISCARD bool is_dense() const noexcept;
 
     /**
      * @brief Checks whether the vector is sparse.
@@ -281,10 +257,7 @@ public:
      *
      * @return True if the vector is sparse, false otherwise.
      */
-    RPY_NO_DISCARD bool is_sparse() const noexcept
-    {
-        return !p_data->key_buffer().empty();
-    }
+    RPY_NO_DISCARD bool is_sparse() const noexcept;
 
     /**
      * @brief Retrieves the type of the vector
@@ -317,88 +290,6 @@ public:
      * @return A pointer to the basis of the vector.
      */
     RPY_NO_DISCARD BasisPointer basis() const noexcept { return p_basis; }
-
-    /**
-     * @brief Retrieves the device of the scalar buffer
-     *
-     * This method returns the device of the scalar buffer associated with the
-     * device object.
-     *
-     * @return The device of the scalar buffer.
-     *
-     * @note This method is noexcept, meaning it does not throw any exceptions.
-     */
-    RPY_NO_DISCARD devices::Device device() const noexcept
-    {
-        return p_data->scalar_buffer().device();
-    }
-
-    /**
-     * @brief Retrieves the type of the scalar buffer
-     *
-     * This method returns the type of the scalar buffer associated with the
-     * scalar object.
-     *
-     * @return The type of the scalar buffer.
-     *
-     * @note This method is noexcept, meaning it does not throw any exceptions.
-     */
-    RPY_NO_DISCARD scalars::TypePtr scalar_type() const noexcept
-    {
-        RPY_DBG_ASSERT(p_data != nullptr);
-        return p_data->scalars().type();
-    }
-
-    /**
-     * @brief Returns the dimension of the vector.
-     *
-     * The dimension of a vector is the number of elements it contains.
-     * This method returns the number of elements in the vector.
-     *
-     * @return The dimension of the vector.
-     *
-     * @note This method assumes that the vector is not null.
-     * It is the responsibility of the caller to ensure that the vector is not
-     * null before calling this method. If the vector is null, the behavior is
-     * undefined.
-     */
-    RPY_NO_DISCARD dimn_t dimension() const noexcept;
-
-    /**
-     * @brief Returns the size of the Vector.
-     *
-     * This method returns the size of the Vector, which represents the number
-     * of non-zero elements in the Vector. If the vector is sparse, this number
-     * coincides with the dimension.
-     *
-     * @note This method does not modify the contents of the Vector.
-     *
-     * @return The size of the Vector as a dimn_t.
-     *
-     */
-    RPY_NO_DISCARD dimn_t size() const noexcept;
-
-    /**
-     * @brief Returns true if all elements in the vector are zero; otherwise,
-     * returns false.
-     *
-     * This method checks if all elements in the vector are zero. It first calls
-     * the private method `fast_is_zero()` to quickly check if all elements are
-     * zero. If `fast_is_zero()` returns false, it then compares the maximum and
-     * minimum values of the vector's scalars using the `max` and `min`
-     * algorithms from the `scalars::algorithms` namespace. If both the maximum
-     * and minimum values are zero, the method returns true; otherwise, it
-     * returns false.
-     *
-     * @return true if all elements in the vector are zero; otherwise, false.
-     *
-     * @note This method assumes that the scalars of the vector are ordered.
-     *
-     * @see fast_is_zero()
-     * @see scalars::algorithms::max()
-     * @see scalars::algorithms::min()
-     */
-    RPY_NO_DISCARD bool is_zero() const noexcept;
 
     /**
      * @brief Change the internal representation to dense if possible.

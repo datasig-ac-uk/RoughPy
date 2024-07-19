@@ -62,7 +62,6 @@ FreeTensorMultiplication::FreeTensorMultiplication(
 namespace {
 
 struct TensorInfo {
-    Slice<const dimn_t> sizes;
     deg_t max_degree;
     deg_t left_max_deg = 0;
     deg_t right_max_deg = 0;
@@ -96,18 +95,15 @@ void dense_fma_untiled(
         Slice<const T> right,
         Op&& op,
         deg_t max_degree,
+        const containers::Vec<dimn_t> sizes,
+        const containers::Vec<dimn_t> offsets,
         const TensorInfo& info
 )
 {
-    auto start_of_degree = [&info](deg_t deg) {
-        dimn_t offset = 0;
-        for (deg_t i = 0; i < deg; ++i) { offset += info.sizes[i]; }
-        return offset;
-    };
 
     for (deg_t out_deg = max_degree; out_deg > 0; --out_deg) {
 
-        T* optr = out.data() + start_of_degree(out_deg);
+        T* optr = out.data() + offsets[out_deg];
         deg_t left_deg_max
                 = std::min(info.left_max_deg, out_deg - info.right_min_deg);
         deg_t left_deg_min
@@ -116,15 +112,15 @@ void dense_fma_untiled(
         for (deg_t left_deg = left_deg_max; left_deg >= left_deg_min;
              --left_deg) {
             deg_t right_deg = out_deg - left_deg;
-            const auto* lptr = left.data() + start_of_degree(left_deg);
-            const auto* rptr = right.data() + start_of_degree(right_deg);
+            const auto* lptr = left.data() + offsets[left_deg];
+            const auto* rptr = right.data() + offsets[right_deg];
             square_multiply(
                     optr,
                     lptr,
                     rptr,
-                    info.sizes[left_deg],
-                    info.sizes[right_deg],
-                    info.sizes[left_deg],
+                    sizes[left_deg],
+                    sizes[right_deg],
+                    sizes[left_deg],
                     op
             );
         }

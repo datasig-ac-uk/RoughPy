@@ -40,6 +40,13 @@
 #include "value.h"
 
 namespace rpy {
+
+template <>
+class Slice<devices::Value>;
+
+template <>
+class Slice<const devices::Value>;
+
 namespace devices {
 
 /**
@@ -226,6 +233,13 @@ extern template class ROUGHPY_DEVICES_EXPORT
 }
 #endif
 
+namespace dtl {
+
+template <typename T>
+class BufferRange;
+
+}
+
 /**
  * @class Buffer
  * @brief Buffer class for manipulating buffer objects.
@@ -397,6 +411,10 @@ public:
      */
     RPY_NO_DISCARD Buffer slice(dimn_t offset, dimn_t size) const;
 
+    RPY_NO_DISCARD Slice<const Value> as_value_slice() const noexcept;
+
+    RPY_NO_DISCARD Slice<Value> as_mut_value_slice();
+
     /**
      * @brief Transfers the contents of this buffer to the specified destination
      * buffer on the given device.
@@ -499,6 +517,12 @@ public:
         // This is a really bad implementation, but it will do for now
         return memory_owner().impl() == impl();
     }
+
+    template <typename T>
+    RPY_NO_DISCARD enable_if_t<
+            is_same_v<T, Reference> || is_same_v<T, ConstReference>,
+            dtl::BufferRange<T>>
+    as_range() const;
 };
 
 template <typename T>
@@ -747,5 +771,60 @@ typename BufferRange<T>::const_iterator BufferRange<T>::cend() const noexcept
 }// namespace dtl
 
 }// namespace devices
+
+namespace dtl {
+
+template <typename T>
+class SliceIterator
+{
+    devices::TypePtr p_type;
+    copy_cv_t<T, byte>* p_data;
+};
+
+}// namespace dtl
+
+template <>
+class Slice<const devices::Value>
+{
+    devices::Buffer m_buffer;
+    const void* p_data;
+    dimn_t m_size;
+
+public:
+    explicit Slice(devices::Buffer buffer)
+        : m_buffer(std::move(buffer)),
+          p_data(m_buffer.ptr()),
+          m_size(m_buffer.size())
+    {}
+};
+
+template <>
+class Slice<devices::Value>
+{
+    devices::Buffer m_buffer;
+    void* p_data;
+    dimn_t m_size;
+
+public:
+    explicit Slice(devices::Buffer buffer)
+        : m_buffer(std::move(buffer)),
+          p_data(buffer.ptr()),
+          m_size(buffer.size())
+    {}
+};
+
+namespace devices {
+
+inline Slice<const Value> Buffer::as_value_slice() const noexcept
+{
+    return Slice<const Value>(this->map());
+}
+inline Slice<Value> Buffer::as_mut_value_slice()
+{
+    return Slice<Value>(this->map());
+}
+
+}// namespace devices
+
 }// namespace rpy
 #endif// ROUGHPY_DEVICE_BUFFER_H_

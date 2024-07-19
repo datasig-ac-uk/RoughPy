@@ -5,113 +5,48 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_VECTOR_H
 #define ROUGHPY_SCALARS_SCALAR_VECTOR_H
 
-
 #include "scalars_fwd.h"
 #include <roughpy/core/smart_ptr.h>
 #include <roughpy/platform/alloc.h>
 
-#include <roughpy/devices/core.h>
 #include <roughpy/devices/buffer.h>
-#include <roughpy/devices/type.h>
+#include <roughpy/devices/core.h>
 #include <roughpy/devices/device_handle.h>
 #include <roughpy/devices/host_device.h>
-
+#include <roughpy/devices/type.h>
 
 #include "scalar_array.h"
 
-namespace rpy { namespace scalars {
-
+namespace rpy {
+namespace scalars {
 
 namespace dtl {
 
-class ROUGHPY_SCALARS_EXPORT VectorData : public platform::SmallObjectBase,
-                                          public RcBase<VectorData>
-{
-    ScalarArray m_scalar_buffer{};
-    dimn_t m_size = 0;
-
-public:
-    void set_size(dimn_t size)
-    {
-        RPY_CHECK(size <= m_scalar_buffer.size());
-        m_size = size;
-    }
-
-    VectorData() = default;
-
-    explicit VectorData(TypePtr type, dimn_t size)
-        : m_scalar_buffer(type, size),
-          m_size(size)
-    {}
-
-    explicit VectorData(ScalarArray&& scalars)
-        : m_scalar_buffer(std::move(scalars)),
-          m_size(scalars.size())
-    {}
-
-    explicit VectorData(TypePtr type) : m_scalar_buffer(type) {}
-
-    void reserve(dimn_t dim);
-    void resize(dimn_t dim);
-
-    RPY_NO_DISCARD dimn_t capacity() const noexcept
-    {
-        return m_scalar_buffer.size();
-    }
-    RPY_NO_DISCARD dimn_t size() const noexcept { return m_size; }
-
-    RPY_NO_DISCARD bool empty() const noexcept
-    {
-        return m_scalar_buffer.empty();
-    }
-
-    RPY_NO_DISCARD TypePtr scalar_type() const noexcept
-    {
-        return m_scalar_buffer.type();
-    }
-
-    RPY_NO_DISCARD devices::Buffer& mut_scalar_buffer() noexcept
-    {
-        return m_scalar_buffer.mut_buffer();
-    }
-    RPY_NO_DISCARD const devices::Buffer& scalar_buffer() const noexcept
-    {
-        return m_scalar_buffer.buffer();
-    }
-
-    RPY_NO_DISCARD ScalarArray& mut_scalars() noexcept
-    {
-        return m_scalar_buffer;
-    }
-    RPY_NO_DISCARD const ScalarArray& scalars() const noexcept
-    {
-        return m_scalar_buffer;
-    }
-
-    void insert_element(
-            dimn_t index,
-            dimn_t next_size,
-            Scalar value
-    );
-    void delete_element(dimn_t index);
-
-};
+class VectorData;
 
 class ScalarVectorIterator
 {
-
 };
-}
+}// namespace dtl
 
+class VectorOperation;
 
 class ROUGHPY_SCALARS_EXPORT ScalarVector
 {
+public:
     using VectorDataPtr = Rc<dtl::VectorData>;
 
+private:
     VectorDataPtr p_base = nullptr;
     VectorDataPtr p_fibre = nullptr;
 
     friend class MutableVectorElement;
+    friend class VectorOperation;
+
+    dtl::VectorData& base_data() noexcept { return *p_base; }
+    const dtl::VectorData& base_data() const noexcept { return *p_base; }
+    dtl::VectorData& fibre_data() noexcept { return *p_fibre; }
+    const dtl::VectorData& fibre_data() const noexcept { return *p_fibre; }
 
 public:
     using iterator = dtl::ScalarVectorIterator;
@@ -122,62 +57,28 @@ public:
 
 protected:
     void resize_dim(dimn_t new_dim);
-
-    RPY_NO_DISCARD dimn_t buffer_size() const noexcept
-    {
-        return fast_is_zero() ? 0 : p_base->size();
-    }
+    RPY_NO_DISCARD dimn_t buffer_size() const noexcept;
 
     void set_zero() const noexcept;
 
-    ScalarVector(VectorDataPtr base, VectorDataPtr fibre)
-        : p_base(std::move(base)), p_fibre(std::move(fibre))
-    {}
+    ScalarVector(VectorDataPtr base, VectorDataPtr fibre);
 
-    ScalarArray& mut_scalars() const noexcept
-    {
-        RPY_DBG_ASSERT(p_base != nullptr);
-        return p_base->mut_scalars();
-    }
-    const ScalarArray& scalars() const noexcept
-    {
-        RPY_DBG_ASSERT(p_base != nullptr);
-        return p_base->scalars();
-    }
+    ScalarArray& mut_scalars() const noexcept;
+    const ScalarArray& scalars() const noexcept;
 
 public:
+    ScalarVector();
+    explicit ScalarVector(TypePtr scalar_type, dimn_t size = 0);
 
-    ScalarVector() = default;
+    ~ScalarVector();
 
-
-    ScalarVector(TypePtr scalar_type, dimn_t size=0)
-        : p_base(new dtl::VectorData(std::move(scalar_type), size)),
-          p_fibre(nullptr)
-    {}
-
-    RPY_NO_DISCARD bool fast_is_zero() const noexcept
-    {
-        return p_base == nullptr || p_base->empty();
-    }
+    RPY_NO_DISCARD bool fast_is_zero() const noexcept;
 
     RPY_NO_DISCARD ScalarVector base() const noexcept;
     RPY_NO_DISCARD ScalarVector fibre() const noexcept;
 
-    RPY_NO_DISCARD
-    devices::Device device() const noexcept
-    {
-        return fast_is_zero() ? static_cast<devices::Device>(devices::get_host_device())
-                              : p_base->scalars().device();
-    }
-
-    RPY_NO_DISCARD
-    TypePtr scalar_type() const noexcept
-    {
-        RPY_DBG_ASSERT(p_base != nullptr);
-        return p_base->scalar_type();
-    }
-
-
+    RPY_NO_DISCARD devices::Device device() const noexcept;
+    RPY_NO_DISCARD TypePtr scalar_type() const noexcept;
     RPY_NO_DISCARD dimn_t dimension() const noexcept;
     RPY_NO_DISCARD dimn_t size() const noexcept;
     RPY_NO_DISCARD bool is_zero() const noexcept;
@@ -189,19 +90,16 @@ public:
     RPY_NO_DISCARD const_iterator end() const noexcept;
 
     template <typename V>
-    RPY_NO_DISCARD
-    enable_if_t<is_base_of_v<ScalarVector, V>, V> borrow() const
+    RPY_NO_DISCARD enable_if_t<is_base_of_v<ScalarVector, V>, V> borrow() const
     {
         return V(p_base, p_fibre);
     }
 
     template <typename V>
-    RPY_NO_DISCARD enable_if_t<is_base_of_v<ScalarVector, V>,V>
-    borrow_mut()
+    RPY_NO_DISCARD enable_if_t<is_base_of_v<ScalarVector, V>, V> borrow_mut()
     {
         return V(p_base, p_fibre);
     }
-
 
     RPY_NO_DISCARD ScalarVector uminus() const;
 
@@ -212,7 +110,6 @@ public:
     RPY_NO_DISCARD ScalarVector left_smul(const Scalar& scalar) const;
     RPY_NO_DISCARD ScalarVector right_smul(const Scalar& scalar) const;
     RPY_NO_DISCARD ScalarVector sdiv(const Scalar& scalar) const;
-
 
     ScalarVector& add_inplace(const ScalarVector& other);
     ScalarVector& sub_inplace(const ScalarVector& other);
@@ -231,10 +128,85 @@ public:
     {
         return !operator==(other);
     }
-
 };
 
-}}
+namespace ops = devices::operators;
 
+class ROUGHPY_SCALARS_EXPORT VectorOperation
+{
+protected:
+    void resize_destination(ScalarVector& arg, dimn_t new_size) const;
 
-#endif //ROUGHPY_SCALARS_SCALAR_VECTOR_H
+public:
+    virtual ~VectorOperation();
+
+    virtual dimn_t arity() const noexcept = 0;
+};
+
+class ROUGHPY_SCALARS_EXPORT UnaryVectorOperation : public VectorOperation
+{
+
+public:
+    static constexpr dimn_t my_arity = 1;
+    dimn_t arity() const noexcept override { return my_arity; }
+
+    virtual void
+    eval(ScalarVector& destination,
+         const ScalarVector& source,
+         const ops::Operator& op) const;
+
+    virtual void eval_inplace(ScalarVector& arg, const ops::Operator& op) const;
+};
+
+class ROUGHPY_SCALARS_EXPORT BinaryVectorOperation : public VectorOperation
+{
+public:
+    static constexpr dimn_t my_arity = 2;
+
+    dimn_t arity() const noexcept override { return my_arity; }
+    virtual void
+    eval(ScalarVector& destination,
+         const ScalarVector& left,
+         const ScalarVector& right,
+         const ops::Operator& op) const;
+
+    virtual void eval_inplace(
+            ScalarVector& left,
+            const ScalarVector& right,
+            const ops::Operator& op
+    ) const;
+};
+
+class ROUGHPY_SCALARS_EXPORT TernaryVectorOperation : public VectorOperation
+{
+public:
+    static constexpr dimn_t my_arity = 3;
+
+    dimn_t arity() const noexcept override { return my_arity; }
+    virtual void
+    eval(ScalarVector& destination,
+         const ScalarVector& first,
+         const ScalarVector& second,
+         const ScalarVector& third,
+         const ops::Operator& op) const;
+
+    virtual void eval_inplace(
+            ScalarVector& first,
+            const ScalarVector& second,
+            const ScalarVector& third,
+            const ops::Operator& op
+    ) const;
+};
+
+template <typename Op>
+enable_if_t<is_base_of_v<VectorOperation, Op>, const Op&>
+op_cast(const VectorOperation& op)
+{
+    RPY_CHECK(Op::my_arity == op.arity());
+    return static_cast<const Op&>(op);
+}
+
+}// namespace scalars
+}// namespace rpy
+
+#endif// ROUGHPY_SCALARS_SCALAR_VECTOR_H

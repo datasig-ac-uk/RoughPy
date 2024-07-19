@@ -199,8 +199,8 @@ struct ParamList {
     template <typename Param>
     using push_back = conditional_t<
             is_parameter<Param>,
-            Param,
-            ParamList<Params..., Param>>;
+            ParamList<Param, Params...>,
+            ParamList>;
 };
 
 /*

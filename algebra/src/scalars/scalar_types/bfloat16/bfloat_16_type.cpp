@@ -5,7 +5,7 @@
 #include "bfloat_16_type.h"
 
 #include <roughpy/devices/buffer.h>
-
+#include <roughpy/devices/device_handle.h>
 
 #include "bfloat16.h"
 

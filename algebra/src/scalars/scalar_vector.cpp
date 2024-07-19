@@ -3,11 +3,53 @@
 //
 
 #include "scalar_vector.h"
-
+#include "vector_data.h"
 #include <roughpy/devices/algorithms.h>
 
 using namespace rpy;
 using namespace rpy::scalars;
+
+ScalarVector::ScalarVector() = default;
+ScalarVector::ScalarVector(TypePtr scalar_type, dimn_t size)
+    : p_base(new dtl::VectorData(std::move(scalar_type), size)),
+      p_fibre(nullptr)
+{}
+
+ScalarVector::~ScalarVector() = default;
+
+void UnaryVectorOperation::eval_inplace(
+        ScalarVector& arg,
+        const ops::Operator& op
+) const
+{}
+void BinaryVectorOperation::eval(
+        ScalarVector& destination,
+        const ScalarVector& left,
+        const ScalarVector& right,
+        const ops::Operator& op
+) const
+{}
+void BinaryVectorOperation::eval_inplace(
+        ScalarVector& left,
+        const ScalarVector& right,
+        const ops::Operator& op
+) const
+{}
+void TernaryVectorOperation::eval(
+        ScalarVector& destination,
+        const ScalarVector& first,
+        const ScalarVector& second,
+        const ScalarVector& third,
+        const ops::Operator& op
+) const
+{}
+void TernaryVectorOperation::eval_inplace(
+        ScalarVector& first,
+        const ScalarVector& second,
+        const ScalarVector& third,
+        const ops::Operator& op
+) const
+{}
 
 void ScalarVector::resize_dim(dimn_t new_dim)
 {
@@ -49,6 +91,10 @@ dimn_t ScalarVector::size() const noexcept
     return p_base->size()
             - devices::algorithms::count(scalars(), scalar_type()->zero());
 }
+bool ScalarVector::fast_is_zero() const noexcept
+{
+    return p_base == nullptr || p_base->empty();
+}
 bool ScalarVector::is_zero() const noexcept
 {
     if (fast_is_zero()) { return true; }
@@ -66,45 +112,21 @@ ScalarVector::reference ScalarVector::get_mut(dimn_t index)
     RPY_CHECK(index < dimension());
     return mut_scalars()[index];
 }
-ScalarVector::const_iterator ScalarVector::begin() const noexcept
-{
-    return {};
-}
-ScalarVector::const_iterator ScalarVector::end() const noexcept
-{
-    return {};
-}
+ScalarVector::const_iterator ScalarVector::begin() const noexcept { return {}; }
+ScalarVector::const_iterator ScalarVector::end() const noexcept { return {}; }
 ScalarVector ScalarVector::uminus() const
 {
     ScalarVector result(scalar_type(), dimension());
 
-
     return result;
 }
 
-ScalarVector ScalarVector::add(const ScalarVector& other) const
-{
+ScalarVector ScalarVector::add(const ScalarVector& other) const { return {}; }
+ScalarVector ScalarVector::sub(const ScalarVector& other) const { return {}; }
+ScalarVector ScalarVector::left_smul(const Scalar& scalar) const { return {}; }
 
-
-    return {};
-}
-ScalarVector ScalarVector::sub(const ScalarVector& other) const
-{
-    return {};
-}
-ScalarVector ScalarVector::left_smul(const Scalar& scalar) const
-{
-    return {};
-}
-
-ScalarVector ScalarVector::right_smul(const Scalar& scalar) const
-{
-    return {};
-}
-ScalarVector ScalarVector::sdiv(const Scalar& scalar) const
-{
-    return {};
-}
+ScalarVector ScalarVector::right_smul(const Scalar& scalar) const { return {}; }
+ScalarVector ScalarVector::sdiv(const Scalar& scalar) const { return {}; }
 ScalarVector& ScalarVector::add_inplace(const ScalarVector& other)
 {
 
@@ -124,11 +146,7 @@ ScalarVector& ScalarVector::right_smul_inplace(const Scalar& other)
 {
     return *this;
 }
-ScalarVector& ScalarVector::sdiv_inplace(const Scalar& other)
-{
-
-    return *this;
-}
+ScalarVector& ScalarVector::sdiv_inplace(const Scalar& other) { return *this; }
 ScalarVector&
 ScalarVector::add_scal_mul(const ScalarVector& other, const Scalar& scalar)
 {

@@ -10,6 +10,7 @@
 #include <roughpy/devices/type.h>
 #include <roughpy/devices/buffer.h>
 #include <roughpy/devices/value.h>
+#include <roughpy/devices/device_handle.h>
 
 #include "rational.h"
 

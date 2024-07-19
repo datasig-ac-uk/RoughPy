@@ -26,7 +26,7 @@ class HostKernel : public dtl::RefCountBase<KernelInterface>
     using signature_t = StandardKernelSignature<ArgSpec...>;
     boost::compressed_pair<F, string> m_func_and_name;
 
-    using ArgBinder = ArgumentBinder<typename signature_t::Parameter, F>;
+    using ArgBinder = ArgumentBinder<typename signature_t::ParamsList, F>;
 
     static_assert(
             std::tuple_size_v<args_t<F>> == signature_t::num_params,

@@ -35,6 +35,7 @@
 #include <roughpy/core/container/vector.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/slice.h>
+#include <roughpy/core/sync.h>
 #include <roughpy/core/types.h>
 
 #include <limits>
@@ -154,7 +155,7 @@ struct ParamTypeList {
 };
 
 template <typename Q, typename T, typename... Ts>
-constexpr dimn_t index_of_type(ParamTypeList<Ts...>) noexcept
+constexpr dimn_t index_of_type(ParamTypeList<T, Ts...>) noexcept
 {
     return is_same_v<Q, T> ? 0 : (index_of_type<Q>(ParamTypeList<Ts...>()) + 1);
 }
@@ -300,21 +301,22 @@ template <typename... ArgSpec>
 class StandardKernelSignature : public KernelSignature
 {
     using helper_t = dtl::SignatureHelper<ArgSpec...>;
+
+public:
     using ParamsList = typename helper_t::param_list;
     using ParamTypeList = typename helper_t::type_list;
 
-    static constexpr auto num_params = ParamsList::num_params;
+    static constexpr auto num_params = ParamsList::size;
 
     dtl::StaticInlineArray<Parameter, helper_t::num_params> m_parameters;
     dtl::StaticInlineArray<TypePtr, param_list_size(ParamTypeList())> m_types;
 
     StandardKernelSignature()
     {
-        init_types(ParamTypeList{}, m_types.value);
-        helper_t::init_params(ParamTypeList(), m_parameters.value);
+        init_types(ParamTypeList{}, m_types.values);
+        helper_t::init_params(ParamTypeList(), m_parameters.values);
     }
 
-public:
     /// The standard signature uses the default argument binding.
     using KernelSignature::new_binding;
 
@@ -386,20 +388,29 @@ template <typename T>
 inline constexpr bool is_callable<T, void_t<return_type_t<T>>> = true;
 
 template <typename BoundType, typename ArgType, typename SFINAE = void>
-inline constexpr bool is_param_compatible = false;
+struct ArgumentDecoder;
 
 template <typename T>
-inline constexpr bool is_param_compatible<Buffer<T>, Slice<const T>, void>
-        = true;
-
-template <typename BoundType, typename ArgType, typename SFINAE = void>
-struct ArgumentDecoder;
+struct ArgumentDecoder<params::Buffer<T>, const Buffer&> {
+    static const Buffer& decode(const void* arg)
+    {
+        return *static_cast<const Buffer*>(arg);
+    }
+};
 
 template <typename T>
 struct ArgumentDecoder<params::Buffer<T>, Slice<const T>> {
     static Slice<const T> decode(const void* arg)
     {
         return static_cast<const Buffer*>(arg)->as_slice<T>();
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Buffer<T>, Slice<const Value>> {
+    static Slice<const Value> decode(const void* arg)
+    {
+        return static_cast<const Buffer*>(arg)->as_value_slice();
     }
 };
 
@@ -414,10 +425,23 @@ struct ArgumentDecoder<
 };
 
 template <typename T>
+struct ArgumentDecoder<params::ResultBuffer<T>, Buffer&> {
+    static Buffer& decode(void* arg) { return *static_cast<Buffer*>(arg); }
+};
+
+template <typename T>
 struct ArgumentDecoder<params::ResultBuffer<T>, Slice<T>> {
     static Slice<T> decode(void* arg)
     {
         return static_cast<Buffer*>(arg)->as_mut_slice<T>();
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::ResultBuffer<T>, Slice<Value>> {
+    static Slice<Value> decode(void* arg)
+    {
+        return static_cast<Buffer*>(arg)->as_mut_value_slice();
     }
 };
 
@@ -428,6 +452,14 @@ struct ArgumentDecoder<
     static Slice<const T> decode(void* arg)
     {
         return static_cast<const Buffer*>(arg)->as_mut_slice<T>();
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Value<T>, ConstReference> {
+    static ConstReference decode(const void* arg)
+    {
+        return ConstReference(get_type<T>(), arg);
     }
 };
 
@@ -454,6 +486,34 @@ namespace dtl {
 template <typename List, typename ArgTuple>
 class ArgumentBinder;
 
+template <typename Param, typename Arg>
+class ArgumentBinder<params::ParamList<Param>, params::ParamList<Arg>>
+{
+    using Decoder = ArgumentDecoder<Param, Arg>;
+
+    template <typename PL, typename AL>
+    friend class ArgumentBinder;
+
+    template <typename F>
+    static decltype(auto) eval_impl(
+            F&& fn,
+            const KernelLaunchParams& params,
+            const KernelArguments& args,
+            dimn_t idx
+    )
+    {
+        return fn(Decoder::decode(args.get_raw_ptr(idx)));
+    }
+
+public:
+    template <typename F>
+    static decltype(auto)
+    eval(F&& fn, const KernelLaunchParams& params, const KernelArguments& args)
+    {
+        return eval_impl(std::forward<F>(fn), params, args, 0);
+    }
+};
+
 template <typename Param, typename... Params, typename Arg, typename... Args>
 class ArgumentBinder<
         params::ParamList<Param, Params...>,
@@ -465,20 +525,26 @@ class ArgumentBinder<
             params::ParamList<Args...>>;
 
     template <typename PL, typename AL>
-    friend class ArgumentBinder<PL, AL>;
+    friend class ArgumentBinder;
 
     template <typename F>
-    static decltype(auto)
-    eval_impl(F&& fn, const KernelArguments& args, dimn_t idx)
+    static decltype(auto) eval_impl(
+            F&& fn,
+            const KernelLaunchParams& params,
+            const KernelArguments& args,
+            dimn_t idx
+    )
     {
-        return next_t::template eval_impl<F>(
+        return next_t::template eval_impl(
                 [f = std::forward<F>(fn),
-                 value = args.get_raw_ptr(idx)](auto&&... remaining) {
+                 value = Decoder::decode(args.get_raw_ptr(idx)
+                 )](auto&&... remaining) {
                     return f(
-                            Decoder::decode(value),
+                            value,
                             std::forward<decltype(remaining)>(remaining)...
                     );
                 },
+                params,
                 args,
                 ++idx
         );
@@ -486,32 +552,10 @@ class ArgumentBinder<
 
 public:
     template <typename F>
-    static decltype(auto) eval(F&& fn, const KernelArguments& args)
-    {
-        return eval_impl(std::forward<F>(fn), args, 0);
-    }
-};
-
-template <typename Param, typename Arg>
-class ArgumentBinder<params::ParamList<Param>, params::ParamList<Arg>>
-{
-    using Decoder = ArgumentDecoder<Param, Arg>;
-
-    template <typename PL, typename AL>
-    friend class ArgumentBinder<PL, AL>;
-
-    template <typename F>
     static decltype(auto)
-    eval_impl(F&& fn, const KernelArguments& args, dimn_t idx)
+    eval(F&& fn, const KernelLaunchParams& params, const KernelArguments& args)
     {
-        return fn(Decoder::decode(args.get_raw_ptr(idx)));
-    }
-
-public:
-    template <typename F>
-    static decltype(auto) eval(F&& fn, const KernelArguments& args)
-    {
-        return eval_impl(std::forward<F>(fn), args, 0);
+        return eval_impl(std::forward<F>(fn), params, args, 0);
     }
 };
 
@@ -531,6 +575,8 @@ public:
         : m_name(std::move(name)),
           p_kernel_args(&kargs)
     {}
+
+    RPY_NO_DISCARD string_view name() const noexcept { return m_name; }
 
     RPY_NO_DISCARD Device get_device() const noexcept;
     RPY_NO_DISCARD Slice<const TypePtr> get_types() const noexcept;

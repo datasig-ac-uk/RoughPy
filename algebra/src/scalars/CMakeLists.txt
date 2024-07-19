@@ -10,6 +10,9 @@ add_library(RoughPy_scalars STATIC
     scalar_vector.cpp
     vector_data.cpp
     scalar_vector_iterator.cpp
+        vector_operation.cpp
+        vector_unary_operation.cpp
+        vector_data.h
 )
 target_link_libraries(RoughPy_scalars PUBLIC RoughPy::Core RoughPy::Platform)
 target_include_directories(RoughPy_scalars PRIVATE ${ROUGHPY_SCALARS_PRIVATE_HEADERS})

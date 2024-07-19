@@ -57,6 +57,7 @@ add_roughpy_component(Platform
         src/devices/kernel_operators.cpp
         src/devices/kernel_signature.cpp
         src/devices/kernel_spec.cpp
+        src/devices/operations.cpp
         src/devices/queue.cpp
         src/devices/queue_interface.cpp
         src/devices/standard_kernel_arguments.cpp
@@ -132,6 +133,7 @@ add_roughpy_component(Platform
         include/roughpy/devices/kernel_operators.h
         include/roughpy/devices/kernel_parameters.h
         include/roughpy/devices/macros.h
+        include/roughpy/devices/operation.h
         include/roughpy/devices/queue.h
         include/roughpy/devices/type.h
         include/roughpy/devices/type_dispatcher.h
