@@ -38,31 +38,3 @@ optional<Event> Operation::eval(
 using T1ResultBuffer = params::ResultBuffer<params::T1>;
 using T1Buffer = params::Buffer<params::T1>;
 using T1Operator = params::Operator<params::T1>;
-
-RPY_MAKE_STANDARD_OPERATION_DECLARE(
-        AdditionOperation,
-        ROUGHPY_DEVICES_EXPORT,
-        T1ResultBuffer,
-        T1Buffer,
-        T1Buffer,
-        T1Operator
-);
-
-RPY_MAKE_STANDARD_OPERATION_IMPL(AdditionOperation, "addition")
-{
-    auto fn = [](Buffer& out,
-                 const Buffer& left,
-                 const Buffer& right,
-                 const operators::Operator& op) {
-        auto dim = rpy::ranges::min(left.size(), right.size());
-
-        // for (dimn_t i = 0; i < dim; ++i) { out = op(left[i], right[i]); }
-    };
-
-    using Binder
-            = ArgumentBinder<typename signature_t::ParamsList, decltype(fn)>;
-
-    Binder::eval(fn, params, args);
-
-    return EventStatus::CompletedSuccessfully;
-}

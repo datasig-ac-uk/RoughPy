@@ -106,6 +106,114 @@ EventStatus HostKernel<F, ArgSpec...>::launch_kernel_sync(
     return EventStatus::CompletedSuccessfully;
 }
 
+namespace dtl {
+
+template <typename Impl, typename... ArgSpec>
+class HostKernelBase : public RefCountBase<KernelInterface>
+{
+
+protected:
+    using siganture_t = StandardKernelSignature<ArgSpec...>;
+
+public:
+    RPY_NO_DISCARD bool is_host() const noexcept override;
+    RPY_NO_DISCARD DeviceType device_type() const noexcept override;
+    RPY_NO_DISCARD Device device() const noexcept override;
+
+    RPY_NO_DISCARD string name() const override;
+    RPY_NO_DISCARD dimn_t num_args() const override;
+    RPY_NO_DISCARD Event launch_kernel_async(
+            Queue& queue,
+            const KernelLaunchParams& params,
+            const KernelArguments& args
+    ) const override;
+    EventStatus launch_kernel_sync(
+            Queue& queue,
+            const KernelLaunchParams& params,
+            const KernelArguments& args
+    ) const override;
+};
+
+template <typename Impl, typename... ArgSpec>
+bool HostKernelBase<Impl, ArgSpec...>::is_host() const noexcept
+{
+    return true;
+}
+template <typename Impl, typename... ArgSpec>
+DeviceType HostKernelBase<Impl, ArgSpec...>::device_type() const noexcept
+{
+    return DeviceType::CPU;
+}
+template <typename Impl, typename... ArgSpec>
+Device HostKernelBase<Impl, ArgSpec...>::device() const noexcept
+{
+    return get_host_device();
+}
+template <typename Impl, typename... ArgSpec>
+string HostKernelBase<Impl, ArgSpec...>::name() const
+{
+    return Impl::get_name();
+}
+template <typename Impl, typename... ArgSpec>
+dimn_t HostKernelBase<Impl, ArgSpec...>::num_args() const
+{
+    return siganture_t::num_args;
+}
+template <typename Impl, typename... ArgSpec>
+Event HostKernelBase<Impl, ArgSpec...>::launch_kernel_async(
+        Queue& queue,
+        const KernelLaunchParams& params,
+        const KernelArguments& args
+) const
+{
+    using Binding = devices::ArgumentBinder<
+            typename siganture_t::ParamsList,
+            decltype(Impl::run)>;
+    Binding::eval(Impl::run, params, args);
+    return Event::completed_event(EventStatus::CompletedSuccessfully);
+}
+template <typename Impl, typename... ArgSpec>
+EventStatus HostKernelBase<Impl, ArgSpec...>::launch_kernel_sync(
+        Queue& queue,
+        const KernelLaunchParams& params,
+        const KernelArguments& args
+) const
+{
+    using Binding = devices::ArgumentBinder<
+            typename siganture_t::ParamsList,
+            decltype(Impl::run)>;
+    Binding::eval(Impl::run, params, args);
+    return EventStatus::CompletedSuccessfully;
+}
+
+}// namespace dtl
+
+template <typename T, template <typename> class Operator>
+class BinaryHostKernel : public dtl::HostKernelBase<
+                                 BinaryHostKernel<T, Operator>,
+                                 params::ResultBuffer<T>,
+                                 params::Buffer<T>,
+                                 params::Buffer<T>,
+                                 params::Operator<T>>
+{
+
+public:
+    static void
+    run(Slice<T> result,
+        Slice<const T> left,
+        Slice<const T> right,
+        Operator<T>&& op)
+    {
+        const auto dim = result.size();
+        RPY_DBG_ASSERT(dim <= left.size());
+        RPY_DBG_ASSERT(dim <= right.size());
+
+        for (size_t i = 0; i < dim; ++i) {
+            result[i] = op(result[i], right[i]);
+        }
+    }
+};
+
 }// namespace devices
 }// namespace rpy
 

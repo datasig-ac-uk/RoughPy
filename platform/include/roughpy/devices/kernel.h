@@ -50,6 +50,51 @@
 namespace rpy {
 namespace devices {
 
+#ifndef ROUGHPY_DEVICE_SUPPORT_OPERATORS_H
+namespace operators {
+
+template <typename T>
+struct Identity;
+
+template <typename T>
+struct Uminus;
+
+template <typename T>
+struct Add;
+
+template <typename T>
+struct Sub;
+
+template <typename T>
+struct LeftScalarMultiply;
+
+template <typename T>
+struct RightScalarMultiply;
+
+template <typename T, typename S>
+struct RightScalarDivide;
+
+template <typename T>
+struct FusedLeftScalarMultiplyAdd;
+
+template <typename T>
+struct FusedRightScalarMultiplyAdd;
+
+template <typename T>
+struct FusedLeftScalarMultiplySub;
+
+template <typename T>
+struct FusedRightScalarMultiplySub;
+
+template <typename T, typename S>
+struct FusedRightScalarDivideAdd;
+
+template <typename T, typename S>
+struct FusedRightScalarDivideSub;
+
+}// namespace operators
+#endif
+
 /**
  * @class KernelLaunchParams
  * @brief Class representing the launch parameters for a kernel.
@@ -478,6 +523,218 @@ struct ArgumentDecoder<params::Operator<T>, const operators::Operator&> {
     static const operators::Operator& decode(const void* arg)
     {
         return *static_cast<const operators::Operator*>(arg);
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Operator<T>, operators::Identity<T>> {
+    static operators::Identity<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::Identity);
+        return operators::Identity<T>();
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Operator<T>, operators::Uminus<T>> {
+    static operators::Uminus<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::UnaryMinus);
+        return operators::Uminus<T>();
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Operator<T>, operators::LeftScalarMultiply<T>> {
+    static operators::LeftScalarMultiply<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::LeftMultiply);
+        const auto& data
+                = operators::op_cast<operators::LeftMultiplyOperator>(op).data(
+                );
+        return operators::LeftScalarMultiply<T>(value_cast<T>(data));
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Operator<T>, operators::RightScalarMultiply<T>> {
+    static operators::RightScalarMultiply<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::RightMultiply);
+        const auto& data
+                = operators::op_cast<operators::RightMultiplyOperator>(op).data(
+                );
+        return operators::RightScalarMultiply<T>(value_cast<T>(data));
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Operator<T>, operators::Add<T>> {
+    static operators::Add<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::Addition);
+        return operators::Add<T>();
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<params::Operator<T>, operators::Sub<T>> {
+    static operators::Sub<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::Subtraction);
+        return operators::Sub<T>();
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<
+        params::Operator<T>,
+        operators::FusedLeftScalarMultiplyAdd<T>> {
+    static operators::FusedLeftScalarMultiplyAdd<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplyAdd);
+        const auto& data
+                = operators::op_cast<operators::FusedLeftMultiplyOperator>(op)
+                          .data();
+        return operators::FusedLeftScalarMultiplyAdd<T>(value_cast<T>(data));
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<
+        params::Operator<T>,
+        operators::FusedRightScalarMultiplyAdd<T>> {
+    static operators::FusedRightScalarMultiplyAdd<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplyAdd);
+        const auto& data
+                = operators::op_cast<operators::FusedRightMultiplyOperator>(op)
+                          .data();
+        return operators::FusedRightScalarMultiplyAdd<T>(value_cast<T>(data));
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::Identity<T>> {
+    static operators::Identity<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<
+                const params::Operator<params::GenericParam<N>>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::Identity);
+        return operators::Identity<T>();
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::Uminus<T>> {
+    static operators::Uminus<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<
+                const params::Operator<params::GenericParam<N>>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::UnaryMinus);
+        return operators::Uminus<T>();
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::LeftScalarMultiply<T>> {
+    static operators::LeftScalarMultiply<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<
+                const params::Operator<params::GenericParam<N>>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::LeftMultiply);
+        const auto& data
+                = operators::op_cast<operators::LeftMultiplyOperator>(op).data(
+                );
+        return operators::LeftScalarMultiply<T>(value_cast<T>(data));
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::RightScalarMultiply<T>> {
+    static operators::RightScalarMultiply<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<
+                const params::Operator<params::GenericParam<N>>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::RightMultiply);
+        const auto& data
+                = operators::op_cast<operators::RightMultiplyOperator>(op).data(
+                );
+        return operators::RightScalarMultiply<T>(value_cast<T>(data));
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::Add<T>> {
+    static operators::Add<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<
+                const params::Operator<params::GenericParam<N>>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::Addition);
+        return operators::Add<T>();
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::Sub<T>> {
+    static operators::Sub<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<
+                const params::Operator<params::GenericParam<N>>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::Subtraction);
+        return operators::Sub<T>();
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::FusedLeftScalarMultiplyAdd<T>> {
+    static operators::FusedLeftScalarMultiplyAdd<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<
+                const params::Operator<params::GenericParam<N>>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplyAdd);
+        const auto& data
+                = operators::op_cast<operators::FusedLeftMultiplyOperator>(op)
+                          .data();
+        return operators::FusedLeftScalarMultiplyAdd<T>(value_cast<T>(data));
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::FusedRightScalarMultiplyAdd<T>> {
+    static operators::FusedRightScalarMultiplyAdd<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<
+                const params::Operator<params::GenericParam<N>>*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplyAdd);
+        const auto& data
+                = operators::op_cast<operators::FusedRightMultiplyOperator>(op)
+                          .data();
+        return operators::FusedRightScalarMultiplyAdd<T>(value_cast<T>(data));
     }
 };
 

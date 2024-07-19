@@ -8,6 +8,7 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
+#include "device_support/operators.h"
 #include "value.h"
 
 namespace rpy {
@@ -52,8 +53,9 @@ class ROUGHPY_DEVICES_EXPORT IdentityOperator : public Operator
 public:
     // template <typename T>
     // using op_type = Identity<T>;
+    static constexpr Kind op_kind = Identity;
 
-    RPY_NO_DISCARD Kind kind() const noexcept override { return Identity; };
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; };
 
     ConstReference operator()(ConstReference value) const noexcept
     {
@@ -66,8 +68,9 @@ class ROUGHPY_DEVICES_EXPORT UnaryMinusOperator : public Operator
 public:
     // template <typename T>
     // using op_type = Uminus<T>;
+    static constexpr Kind op_kind = UnaryMinus;
 
-    RPY_NO_DISCARD Kind kind() const noexcept override { return UnaryMinus; };
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; };
 
     Value operator()(ConstReference value) const noexcept { return -value; }
 };
@@ -77,7 +80,8 @@ class ROUGHPY_DEVICES_EXPORT AdditionOperator : public Operator
 public:
     // template <typename T>
     // using op_type = Add<T>;
-    Kind kind() const noexcept override { return Addition; }
+    static constexpr Kind op_kind = Addition;
+    Kind kind() const noexcept override { return op_kind; }
 
     Value operator()(ConstReference a, ConstReference b) const noexcept
     {
@@ -88,7 +92,8 @@ public:
 class ROUGHPY_DEVICES_EXPORT SubtractionOperator : public Operator
 {
 public:
-    Kind kind() const noexcept override { return Subtraction; }
+    static constexpr Kind op_kind = Subtraction;
+    Kind kind() const noexcept override { return op_kind; }
 
     Value operator()(ConstReference a, ConstReference b) const noexcept
     {
@@ -106,7 +111,9 @@ public:
     // template <typename T>
     // using op_type = LeftMultiply<T>;
 
-    Kind kind() const noexcept override { return LeftMultiply; }
+    static constexpr Kind op_kind = LeftMultiply;
+    Kind kind() const noexcept override { return op_kind; }
+    const ConstReference& data() const noexcept  { return multiplier; }
 
     Value operator()(ConstReference value) const noexcept
     {
@@ -124,7 +131,9 @@ public:
     // template <typename T>
     // using op_type = RightMultiply<T>;
 
-    Kind kind() const noexcept override { return RightMultiply; }
+    static constexpr Kind op_kind = RightMultiply;
+    Kind kind() const noexcept override { return op_kind; }
+    const ConstReference& data() const noexcept  { return multiplier; }
 
     Value operator()(ConstReference value) const noexcept
     {
@@ -143,7 +152,9 @@ public:
     // template <typename T>
     // using op_type = FusedLeftMultiplyAdd<T>;
 
-    Kind kind() const noexcept override { return FusedLeftMultiplyAdd; }
+    static constexpr Kind op_kind = FusedLeftMultiplyAdd;
+    Kind kind() const noexcept override { return op_kind; }
+    const ConstReference& data() const noexcept  { return multiplier; }
 
     Value operator()(ConstReference left, ConstReference right) const noexcept
     {
@@ -163,7 +174,9 @@ public:
     // template <typename T>
     // using op_type = FusedRightMultiplyAdd<T>;
 
-    Kind kind() const noexcept override { return FusedRightMultiplyAdd; }
+    static constexpr Kind op_kind = FusedRightMultiplyAdd;
+    Kind kind() const noexcept override { return op_kind; }
+    const ConstReference& data() const noexcept  { return multiplier; }
 
     Value operator()(ConstReference left, ConstReference right) const noexcept
     {
@@ -183,7 +196,10 @@ public:
     // template <typename T>
     // using op_type = FusedLeftMultiplySub<T>;
 
-    Kind kind() const noexcept override { return FusedLeftMultiplySub; }
+    static constexpr Kind op_kind = FusedLeftMultiplySub;
+    Kind kind() const noexcept override { return op_kind; }
+
+    const ConstReference& data() const noexcept  { return multiplier; }
 
     Value operator()(ConstReference left, ConstReference right) const noexcept
     {
@@ -203,13 +219,23 @@ public:
     // template <typename T>
     // using op_type = FusedRightMultiplySub<T>;
 
-    Kind kind() const noexcept override { return FusedRightMultiplySub; }
+    static constexpr Kind op_kind = FusedRightMultiplySub;
+    Kind kind() const noexcept override { return op_kind; }
+    const ConstReference& data() const noexcept  { return multiplier; }
 
     Value operator()(ConstReference left, ConstReference right) const noexcept
     {
         return left - right * multiplier;
     }
 };
+
+
+template <typename Op>
+enable_if_t<is_base_of_v<Operator, Op>, const Op&> op_cast(const Operator& op)
+{
+    RPY_CHECK(op.kind() == Op::op_kind);
+    return static_cast<const Op&>(op);
+}
 
 }// namespace operators
 }// namespace devices

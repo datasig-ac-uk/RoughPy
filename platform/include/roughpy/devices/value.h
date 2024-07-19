@@ -148,6 +148,12 @@ public:
         return launder(static_cast<T*>(ValueStorage::data(&*p_type)));
     }
 
+    template <typename T>
+    constexpr add_const_t<T>& value() const
+    {
+        return *data<add_const_t<T>>();
+    }
+
     Value& operator=(const Value& other);
     Value& operator=(Value&& other) noexcept;
 
@@ -1000,6 +1006,15 @@ dtl::value_like_return<T> reciprocal(T&& val)
 }
 
 }// namespace math
+
+
+template <typename T, typename V>
+enable_if_t<value_like<V>, const T&> value_cast(const V& val)
+{
+    RPY_CHECK(val.type() == get_type<T>());
+    return val.template value<T>();
+}
+
 
 }// namespace devices
 }// namespace rpy
