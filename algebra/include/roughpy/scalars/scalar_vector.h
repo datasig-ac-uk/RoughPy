@@ -15,14 +15,15 @@
 #include <roughpy/devices/host_device.h>
 #include <roughpy/devices/type.h>
 
+#include <roughpy/device_support/host_kernel.h>
+
+#include "roughpy/devices/operation.h"
 #include "scalar_array.h"
 
 namespace rpy {
 namespace scalars {
 
 namespace dtl {
-
-class VectorData;
 
 class ScalarVectorIterator
 {
@@ -31,22 +32,14 @@ class ScalarVectorIterator
 
 class VectorOperation;
 
-class ROUGHPY_SCALARS_EXPORT ScalarVector
+class ROUGHPY_SCALARS_EXPORT ScalarVector : public RcBase<ScalarVector>,
+                                            public platform::SmallObjectBase
 {
-public:
-    using VectorDataPtr = Rc<dtl::VectorData>;
-
-private:
-    VectorDataPtr p_base = nullptr;
-    VectorDataPtr p_fibre = nullptr;
+    ScalarArray m_base_data;
+    ScalarArray m_fibre_data;
 
     friend class MutableVectorElement;
     friend class VectorOperation;
-
-    dtl::VectorData& base_data() noexcept { return *p_base; }
-    const dtl::VectorData& base_data() const noexcept { return *p_base; }
-    dtl::VectorData& fibre_data() noexcept { return *p_fibre; }
-    const dtl::VectorData& fibre_data() const noexcept { return *p_fibre; }
 
 public:
     using iterator = dtl::ScalarVectorIterator;
@@ -56,15 +49,34 @@ public:
     using const_reference = ScalarCRef;
 
 protected:
-    void resize_dim(dimn_t new_dim);
-    RPY_NO_DISCARD dimn_t buffer_size() const noexcept;
+    void resize_base_dim(dimn_t new_dim);
+    void resize_fibre_dim(dimn_t new_dim);
 
-    void set_zero() const noexcept;
+    RPY_NO_DISCARD dimn_t base_buffer_size() const noexcept
+    {
+        return m_base_data.size();
+    };
+    RPY_NO_DISCARD dimn_t fibre_buffer_size() const noexcept
+    {
+        return m_fibre_data.size();
+    };
 
-    ScalarVector(VectorDataPtr base, VectorDataPtr fibre);
+    void set_base_zero();
+    void set_fibre_zero();
+    void set_zero()
+    {
+        set_base_zero();
+        set_fibre_zero();
+    }
 
-    ScalarArray& mut_scalars() const noexcept;
-    const ScalarArray& scalars() const noexcept;
+    ScalarArray& mut_base_data();
+    const ScalarArray& base_data() const noexcept { return m_base_data; };
+    ScalarArray& mut_fibre_data();
+    const ScalarArray& fibre_data() const noexcept { return m_fibre_data; };
+
+    ScalarVector(ScalarArray base, ScalarArray fibre)
+        : m_base_data(std::move(base)),
+          m_fibre_data(std::move(fibre)){};
 
 public:
     ScalarVector();
@@ -72,14 +84,33 @@ public:
 
     ~ScalarVector();
 
-    RPY_NO_DISCARD bool fast_is_zero() const noexcept;
+    RPY_NO_DISCARD bool fast_is_zero() const noexcept
+    {
+        return m_base_data.empty();
+    }
 
-    RPY_NO_DISCARD ScalarVector base() const noexcept;
-    RPY_NO_DISCARD ScalarVector fibre() const noexcept;
+    RPY_NO_DISCARD ScalarVector base() const noexcept
+    {
+        return {m_base_data, {}};
+    }
+    RPY_NO_DISCARD ScalarVector fibre() const noexcept
+    {
+        return {m_fibre_data, {}};
+    }
 
-    RPY_NO_DISCARD devices::Device device() const noexcept;
-    RPY_NO_DISCARD TypePtr scalar_type() const noexcept;
-    RPY_NO_DISCARD dimn_t dimension() const noexcept;
+    RPY_NO_DISCARD devices::Device device() const noexcept
+    {
+        return m_base_data.device();
+    }
+
+    RPY_NO_DISCARD TypePtr scalar_type() const noexcept
+    {
+        return m_base_data.type();
+    };
+    RPY_NO_DISCARD dimn_t dimension() const noexcept
+    {
+        return base_buffer_size();
+    };
     RPY_NO_DISCARD dimn_t size() const noexcept;
     RPY_NO_DISCARD bool is_zero() const noexcept;
 
@@ -88,18 +119,6 @@ public:
 
     RPY_NO_DISCARD const_iterator begin() const noexcept;
     RPY_NO_DISCARD const_iterator end() const noexcept;
-
-    template <typename V>
-    RPY_NO_DISCARD enable_if_t<is_base_of_v<ScalarVector, V>, V> borrow() const
-    {
-        return V(p_base, p_fibre);
-    }
-
-    template <typename V>
-    RPY_NO_DISCARD enable_if_t<is_base_of_v<ScalarVector, V>, V> borrow_mut()
-    {
-        return V(p_base, p_fibre);
-    }
 
     RPY_NO_DISCARD ScalarVector uminus() const;
 
@@ -137,6 +156,12 @@ class ROUGHPY_SCALARS_EXPORT VectorOperation
 protected:
     void resize_destination(ScalarVector& arg, dimn_t new_size) const;
 
+    virtual optional<devices::Kernel> get_kernel(
+            devices::Device device,
+            string_view base_name,
+            Slice<const Type*> types
+    ) const;
+
 public:
     virtual ~VectorOperation();
 
@@ -145,6 +170,8 @@ public:
 
 class ROUGHPY_SCALARS_EXPORT UnaryVectorOperation : public VectorOperation
 {
+protected:
+    using VectorOperation::VectorOperation;
 
 public:
     static constexpr dimn_t my_arity = 1;
@@ -153,13 +180,18 @@ public:
     virtual void
     eval(ScalarVector& destination,
          const ScalarVector& source,
-         const ops::Operator& op) const;
+         const ops::Operator& op) const
+            = 0;
 
-    virtual void eval_inplace(ScalarVector& arg, const ops::Operator& op) const;
+    virtual void eval_inplace(ScalarVector& arg, const ops::Operator& op) const
+            = 0;
 };
 
 class ROUGHPY_SCALARS_EXPORT BinaryVectorOperation : public VectorOperation
 {
+protected:
+    using VectorOperation::VectorOperation;
+
 public:
     static constexpr dimn_t my_arity = 2;
 
@@ -168,17 +200,21 @@ public:
     eval(ScalarVector& destination,
          const ScalarVector& left,
          const ScalarVector& right,
-         const ops::Operator& op) const;
+         const ops::Operator& op) const
+            = 0;
 
     virtual void eval_inplace(
             ScalarVector& left,
             const ScalarVector& right,
             const ops::Operator& op
-    ) const;
+    ) const = 0;
 };
 
 class ROUGHPY_SCALARS_EXPORT TernaryVectorOperation : public VectorOperation
 {
+protected:
+    using VectorOperation::VectorOperation;
+
 public:
     static constexpr dimn_t my_arity = 3;
 
@@ -188,22 +224,107 @@ public:
          const ScalarVector& first,
          const ScalarVector& second,
          const ScalarVector& third,
-         const ops::Operator& op) const;
+         const ops::Operator& op) const
+            = 0;
 
     virtual void eval_inplace(
             ScalarVector& first,
             const ScalarVector& second,
             const ScalarVector& third,
             const ops::Operator& op
-    ) const;
+    ) const = 0;
 };
 
-template <typename Op>
-enable_if_t<is_base_of_v<VectorOperation, Op>, const Op&>
-op_cast(const VectorOperation& op)
+template <template <typename> class Operation>
+class StandardUnaryVectorOperation : public UnaryVectorOperation
 {
-    RPY_CHECK(Op::my_arity == op.arity());
-    return static_cast<const Op&>(op);
+
+    template <typename T>
+    using KernelType = devices::UnaryHostKernel<Operation, T>;
+
+    template <typename T>
+    using InplaceKernelType = devices::UnaryInplaceHostKernel<Operation, T>;
+
+    using GenericKernelType = KernelType<devices::Value>;
+    using GenericInplaceKernelType = InplaceKernelType<devices::Value>;
+
+    void eval_impl(
+            string_view base_name,
+            const devices::Kernel& generic_kernel,
+            const devices::KernelLaunchParams& params,
+            const devices::KernelArguments& kernel_args
+    ) const;
+
+public:
+    StandardUnaryVectorOperation();
+
+    void
+    eval(ScalarVector& destination,
+         const ScalarVector& source,
+         const ops::Operator& op) const override;
+    void
+    eval_inplace(ScalarVector& arg, const ops::Operator& op) const override;
+};
+
+template <template <typename> class Operation>
+StandardUnaryVectorOperation<Operation>::StandardUnaryVectorOperation()
+    : UnaryVectorOperation(GenericKernelType::get_base_name())
+{
+    // TODO: Register the host kernels.
+}
+
+template <template <typename> class Operation>
+inline void StandardUnaryVectorOperation<Operation>::eval_impl(
+        string_view base_name,
+        const devices::Kernel& generic_kernel,
+        const devices::KernelLaunchParams& params,
+        const devices::KernelArguments& kernel_args
+) const
+{
+    const auto generic_types = kernel_args.get_generic_types();
+    devices::EventStatus result;
+    if (auto kernel
+        = get_kernel(kernel_args.get_device(), base_name, generic_types)) {
+        result = launch_kernel_sync(*kernel, params, kernel_args);
+    } else {
+        result = launch_kernel_sync(generic_kernel, params, kernel_args);
+    }
+    RPY_CHECK(result == devices::EventStatus::CompletedSuccessfully);
+}
+
+template <template <typename> class Operation>
+void StandardUnaryVectorOperation<Operation>::eval(
+        ScalarVector& destination,
+        const ScalarVector& source,
+        const ops::Operator& op
+) const
+{
+    // TODO: resizing logic
+
+    devices::KernelLaunchParams params;
+
+    auto binding = GenericKernelType::new_binding();
+    binding->bind(destination);
+    binding->bind(source);
+    binding->bind(op);
+
+    eval_impl(GenericKernelType::get_base_name(), params, *binding);
+}
+template <template <typename> class Operation>
+void StandardUnaryVectorOperation<Operation>::eval_inplace(
+        ScalarVector& arg,
+        const ops::Operator& op
+) const
+{
+    // TODO: resizing logic
+
+    devices::KernelLaunchParams params;
+
+    auto binding = GenericInplaceKernelType::new_binding();
+    binding->bind(arg);
+    binding->bind(op);
+
+    eval_impl(GenericInplaceKernelType::get_base_name(), params, *binding);
 }
 
 }// namespace scalars

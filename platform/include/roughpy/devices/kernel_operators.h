@@ -8,7 +8,6 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
-#include "device_support/operators.h"
 #include "value.h"
 
 namespace rpy {

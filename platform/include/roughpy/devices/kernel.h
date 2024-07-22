@@ -101,14 +101,12 @@ struct FusedRightScalarDivideSub;
  */
 class ROUGHPY_DEVICES_EXPORT KernelLaunchParams
 {
-    Size3 m_work_dims {1, 1, 1};
-    Size3 m_group_size {1, 1, 1};
-    optional<Dim3> m_offsets {};
+    Size3 m_work_dims{1, 1, 1};
+    Size3 m_group_size{1, 1, 1};
+    optional<Dim3> m_offsets{};
 
 public:
-    explicit KernelLaunchParams(Size3 work_dims)
-        : m_work_dims(work_dims)
-    {}
+    explicit KernelLaunchParams(Size3 work_dims) : m_work_dims(work_dims) {}
 
     explicit KernelLaunchParams(Size3 work_dims, Size3 group_size)
         : m_work_dims(work_dims),
@@ -383,6 +381,8 @@ public:
     virtual containers::Vec<void*> raw_pointers() const = 0;
     virtual Device get_device() const noexcept = 0;
     virtual Slice<const TypePtr> get_types() const noexcept = 0;
+    virtual containers::SmallVec<const Type*, 1> get_generic_types() const noexcept
+            = 0;
 
     virtual void bind(Buffer buffer) = 0;
     virtual void bind(ConstReference value) = 0;

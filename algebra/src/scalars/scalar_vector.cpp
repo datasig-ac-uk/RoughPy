@@ -11,90 +11,58 @@ using namespace rpy::scalars;
 
 ScalarVector::ScalarVector() = default;
 ScalarVector::ScalarVector(TypePtr scalar_type, dimn_t size)
-    : p_base(new dtl::VectorData(std::move(scalar_type), size)),
-      p_fibre(nullptr)
+    : m_base_data(std::move(scalar_type), size)
 {}
+
 
 ScalarVector::~ScalarVector() = default;
 
-void UnaryVectorOperation::eval_inplace(
-        ScalarVector& arg,
-        const ops::Operator& op
-) const
-{}
-void BinaryVectorOperation::eval(
-        ScalarVector& destination,
-        const ScalarVector& left,
-        const ScalarVector& right,
-        const ops::Operator& op
-) const
-{}
-void BinaryVectorOperation::eval_inplace(
-        ScalarVector& left,
-        const ScalarVector& right,
-        const ops::Operator& op
-) const
-{}
-void TernaryVectorOperation::eval(
-        ScalarVector& destination,
-        const ScalarVector& first,
-        const ScalarVector& second,
-        const ScalarVector& third,
-        const ops::Operator& op
-) const
-{}
-void TernaryVectorOperation::eval_inplace(
-        ScalarVector& first,
-        const ScalarVector& second,
-        const ScalarVector& third,
-        const ops::Operator& op
-) const
-{}
+ScalarArray& ScalarVector::mut_base_data()
+{
+    RPY_CHECK(!m_base_data.is_const());
+    return m_base_data;
+}
+ScalarArray& ScalarVector::mut_fibre_data()
+{
+    RPY_CHECK(!m_fibre_data.is_const());
+    return m_fibre_data;
+}
 
-void ScalarVector::resize_dim(dimn_t new_dim)
+void ScalarVector::resize_base_dim(dimn_t new_dim)
 {
     const auto type = scalar_type();
     RPY_CHECK(type != nullptr);
 
     auto new_buffer = type->allocate(device(), new_dim);
-    devices::algorithms::copy(new_buffer, p_base->scalar_buffer());
-    p_base->mut_scalar_buffer() = std::move(new_buffer);
+    devices::algorithms::copy(new_buffer, base_data());
+    mut_base_data() = ScalarArray(std::move(new_buffer));
 }
-void ScalarVector::set_zero() const noexcept
+void ScalarVector::resize_fibre_dim(dimn_t new_dim)
 {
-    if (p_base != nullptr) {
-        devices::algorithms::fill(p_base->mut_scalars(), scalar_type()->zero());
-    }
-    if (p_fibre != nullptr) {
-        devices::algorithms::fill(
-                p_fibre->mut_scalars(),
-                scalar_type()->zero()
-        );
-    }
+    const auto type = scalar_type();
+    RPY_CHECK(type != nullptr);
+
+    auto new_buffer = type->allocate(device(), new_dim);
+    devices::algorithms::copy(new_buffer, fibre_data());
+    mut_base_data() = ScalarArray(std::move(new_buffer));
 }
-ScalarVector ScalarVector::base() const noexcept
+
+
+void ScalarVector::set_base_zero() noexcept
 {
-    return ScalarVector(p_base, nullptr);
+    devices::algorithms::fill(mut_base_data(), scalar_type()->zero());
 }
-ScalarVector ScalarVector::fibre() const noexcept
+void ScalarVector::set_fibre_zero() noexcept
 {
-    return ScalarVector(p_fibre, nullptr);
+    devices::algorithms::fill(mut_fibre_data(), scalar_type()->zero());
 }
-dimn_t ScalarVector::dimension() const noexcept
-{
-    return (p_base == nullptr) ? 0 : p_base->size();
-}
+
 dimn_t ScalarVector::size() const noexcept
 {
-    if (p_base == nullptr) { return 0; }
+    return base_buffer_size()
+            - devices::algorithms::count(base_data(), scalar_type()->zero());
+}
 
-    return p_base->size()
-            - devices::algorithms::count(scalars(), scalar_type()->zero());
-}
-bool ScalarVector::fast_is_zero() const noexcept
-{
-    return p_base == nullptr || p_base->empty();
-}
 bool ScalarVector::is_zero() const noexcept
 {
     if (fast_is_zero()) { return true; }
@@ -103,14 +71,14 @@ bool ScalarVector::is_zero() const noexcept
 ScalarVector::const_reference ScalarVector::get(dimn_t index) const
 {
     RPY_CHECK(device()->is_host());
-    if (index < dimension()) { return p_base->scalars()[index]; }
+    if (index < dimension()) { return base_data()[index]; }
     return scalar_type()->zero();
 }
 ScalarVector::reference ScalarVector::get_mut(dimn_t index)
 {
     RPY_CHECK(device()->is_host());
     RPY_CHECK(index < dimension());
-    return mut_scalars()[index];
+    return mut_base_data()[index];
 }
 ScalarVector::const_iterator ScalarVector::begin() const noexcept { return {}; }
 ScalarVector::const_iterator ScalarVector::end() const noexcept { return {}; }

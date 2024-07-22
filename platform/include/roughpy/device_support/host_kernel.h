@@ -5,6 +5,8 @@
 #ifndef ROUGHPY_DEVICES_HOST_KERNEL_H
 #define ROUGHPY_DEVICES_HOST_KERNEL_H
 
+#include "../../../src/devices/fundamental_types/double_type.h"
+
 #include <roughpy/core/traits.h>
 #include <roughpy/devices/host_device.h>
 #include <roughpy/devices/kernel.h>
@@ -25,6 +27,12 @@ protected:
     using signature_t = StandardKernelSignature<ArgSpec...>;
 
 public:
+
+    RPY_NO_DISCARD static std::unique_ptr<KernelArguments> new_binding()
+    {
+        return signature_t::make()->new_binding();
+    }
+
     RPY_NO_DISCARD bool is_host() const noexcept override;
     RPY_NO_DISCARD DeviceType device_type() const noexcept override;
     RPY_NO_DISCARD Device device() const noexcept override;
@@ -41,6 +49,10 @@ public:
             const KernelLaunchParams& params,
             const KernelArguments& args
     ) const override;
+
+
+    static Kernel get() noexcept;
+
 };
 
 template <typename Impl, typename... ArgSpec>
@@ -111,6 +123,18 @@ class UnaryHostKernel : public dtl::HostKernelBase<
                                 params::Operator<T>>
 {
 public:
+    RPY_NO_DISCARD
+    static string_view get_base_name() noexcept
+    {
+        static string name = string_cat("unary_", Operator<Value>::name);
+        return name;
+    }
+    RPY_NO_DISCARD static string_view get_name() noexcept
+    {
+        static string name = string_cat(get_base_name(), '_', devices::type_id_of<T>);
+        return name;
+    }
+
     static void
     run(const KernelLaunchParams& params,
         Slice<T> result,
@@ -140,6 +164,17 @@ class UnaryInplaceHostKernel : public dtl::HostKernelBase<UnaryHostKernel<Operat
     params::ResultBuffer<T>, params::Operator<T>>
 {
 public:
+    RPY_NO_DISCARD
+    static string_view get_base_name() noexcept
+    {
+        static string name = string_cat("inplace_unary_", Operator<Value>::name);
+        return name;
+    }
+    RPY_NO_DISCARD static string_view get_name() noexcept
+    {
+        static string name = string_cat(get_base_name(), '_', devices::type_id_of<T>);
+        return name;
+    }
 
     static void run(const KernelLaunchParams& params, Slice<T> buffer)
     {
@@ -171,6 +206,19 @@ class BinaryHostKernel : public dtl::HostKernelBase<
                                  params::Operator<T>>
 {
 public:
+
+    RPY_NO_DISCARD
+    static string_view get_base_name() noexcept
+    {
+        static string name = string_cat("binary_", Operator<Value>::name);
+        return name;
+    }
+    RPY_NO_DISCARD static string_view get_name() noexcept
+    {
+        static string name = string_cat(get_base_name(), '_', devices::type_id_of<T>);
+        return name;
+    }
+
     static void
     run(const KernelLaunchParams& params,
         Slice<T> result,
@@ -209,6 +257,19 @@ class BinaryInplaceHostKernel : public dtl::HostKernelBase<
                                         params::Operator<T>>
 {
 public:
+    RPY_NO_DISCARD
+    static string_view get_base_name() noexcept
+    {
+        static string name = string_cat("inplace_binary_", Operator<Value>::name);
+        return name;
+    }
+
+    RPY_NO_DISCARD static string_view get_name() noexcept
+    {
+        static string name = string_cat(get_base_name(), '_', devices::type_id_of<T>);
+        return name;
+    }
+
     static void
     run(const KernelLaunchParams& params,
         Slice<T> result_left,
@@ -233,6 +294,16 @@ public:
         }
     }
 };
+
+namespace dtl {
+
+template <typename Impl, typename... ArgSpec>
+Kernel HostKernelBase<Impl, ArgSpec...>::get() noexcept
+{
+    return Kernel(new Impl());
+}
+
+}// namespace dtl
 
 }// namespace devices
 }// namespace rpy
