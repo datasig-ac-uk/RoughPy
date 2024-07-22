@@ -182,34 +182,145 @@ EventStatus HostKernelBase<Impl, ArgSpec...>::launch_kernel_sync(
     using Binding = devices::ArgumentBinder<
             typename siganture_t::ParamsList,
             decltype(Impl::run)>;
-    Binding::eval(Impl::run, params, args);
+    Binding::eval(
+            [&params](auto&&... kargs) {
+                Impl::run(params, std::forward<decltype(kargs)>(kargs)...);
+            },
+            params,
+            args
+    );
     return EventStatus::CompletedSuccessfully;
 }
 
 }// namespace dtl
 
-template <typename T, template <typename> class Operator>
+template <template <typename> class Operator, typename T>
+class UnaryHostKernel : public dtl::HostKernelBase<
+                                UnaryHostKernel<Operator, T>,
+                                params::ResultBuffer<T>,
+                                params::Buffer<T>,
+                                params::Operator<T>>
+{
+public:
+    static void
+    run(const KernelLaunchParams& params,
+        Slice<T> result,
+        Slice<const T> arg,
+        Operator<T>&& op)
+    {
+        const auto dim = params.total_work_size();
+        RPY_DBG_ASSERT(dim <= result.size());
+        RPY_DBG_ASSERT(dim <= arg.size());
+
+        const auto& work_dims = params.work_groups();
+        const auto& group_size = params.work_groups();
+
+        for (dimn_t ix = 0; ix < work_dims.x; ++ix) {
+            for (dimn_t iy = 0; iy < work_dims.y; ++iy) {
+                for (dimn_t iz = 0; iz < work_dims.z; ++iz) {
+                    const auto index = (ix*group_size.y + iy)*group_size.z + iz;
+                    result[index] = op(index);
+                }
+            }
+        }
+    }
+};
+
+template <template <typename> class Operator, typename T>
+class UnaryInplaceHostKernel : public dtl::HostKernelBase<UnaryHostKernel<Operator, T>,
+    params::ResultBuffer<T>, params::Operator<T>>
+{
+public:
+
+    static void run(const KernelLaunchParams& params, Slice<T> buffer)
+    {
+
+        const auto dim = params.total_work_size();
+        RPY_DBG_ASSERT(dim <= buffer.size());
+
+        const auto& work_dims = params.work_groups();
+        const auto& group_size = params.work_groups();
+
+        for (dimn_t ix = 0; ix < work_dims.x; ++ix) {
+            for (dimn_t iy = 0; iy < work_dims.y; ++iy) {
+                for (dimn_t iz = 0; iz < work_dims.z; ++iz) {
+                    const auto index
+                            = (ix * group_size.y + iy) * group_size.z + iz;
+                    buffer[index] = op(buffer[index]);
+                }
+            }
+        }
+    }
+};
+
+template <template <typename> class Operator, typename T>
 class BinaryHostKernel : public dtl::HostKernelBase<
-                                 BinaryHostKernel<T, Operator>,
+                                 BinaryHostKernel<Operator, T>,
                                  params::ResultBuffer<T>,
                                  params::Buffer<T>,
                                  params::Buffer<T>,
                                  params::Operator<T>>
 {
-
 public:
     static void
-    run(Slice<T> result,
+    run(const KernelLaunchParams& params,
+        Slice<T> result,
         Slice<const T> left,
         Slice<const T> right,
         Operator<T>&& op)
     {
-        const auto dim = result.size();
+        const auto dim = params.total_work_size();
+        RPY_DBG_ASSERT(dim <= result.size());
         RPY_DBG_ASSERT(dim <= left.size());
         RPY_DBG_ASSERT(dim <= right.size());
 
-        for (size_t i = 0; i < dim; ++i) {
-            result[i] = op(result[i], right[i]);
+        const auto& work_dims = params.work_groups();
+        const auto& group_size = params.work_groups();
+
+        // TODO: Add different branches for parameters where the number of dims
+        // is 1/2?
+
+        for (dimn_t ix = 0; ix < work_dims.x; ++ix) {
+            for (dimn_t iy = 0; iy < work_dims.y; ++iy) {
+                for (dimn_t iz = 0; iz < work_dims.z; ++iz) {
+                    const auto index
+                            = (ix * group_size.y + iy) * group_size.y + iz;
+                    result[index] = op(left[index], right[index]);
+                }
+            }
+        }
+    }
+};
+
+template <template <typename> class Operator, typename T>
+class BinaryInplaceHostKernel : public dtl::HostKernelBase<
+                                        BinaryInplaceHostKernel<Operator, T>,
+                                        params::ResultBuffer<T>,
+                                        params::Buffer<T>,
+                                        params::Operator<T>>
+{
+public:
+    static void
+    run(const KernelLaunchParams& params,
+        Slice<T> result_left,
+        Slice<const T> right,
+        Operator<T>&& op)
+    {
+        const auto dim = params.total_work_size();
+        RPY_DBG_ASSERT(dim <= result_left.size());
+        RPY_DBG_ASSERT(dim <= right.size());
+
+        const auto& work_dims = params.work_groups();
+        const auto& group_size = params.work_groups();
+
+        for (dimn_t ix = 0; ix < work_dims.x; ++ix) {
+            for (dimn_t iy = 0; iy < work_dims.y; ++iy) {
+                for (dimn_t iz = 0; iz < work_dims.z; ++iz) {
+                    const auto index
+                            = (ix * group_size.y + iy) * group_size.z + iz;
+                    result_left[index] = op(result_left[index], right[index]);
+                }
+            }
         }
     }
 };
