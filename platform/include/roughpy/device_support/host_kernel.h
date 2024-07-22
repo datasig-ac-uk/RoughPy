@@ -14,106 +14,15 @@
 namespace rpy {
 namespace devices {
 
-/**
- * @brief The HostKernel class represents a host kernel.
- *
- * The HostKernel class is a concrete class that implements the KernelInterface
- * interface. It allows for executing a host kernel.
- */
-template <typename F, typename... ArgSpec>
-class HostKernel : public dtl::RefCountBase<KernelInterface>
-{
-    using signature_t = StandardKernelSignature<ArgSpec...>;
-    boost::compressed_pair<F, string> m_func_and_name;
-
-    using ArgBinder = ArgumentBinder<typename signature_t::ParamsList, F>;
-
-    static_assert(
-            std::tuple_size_v<args_t<F>> == signature_t::num_params,
-            "Wrong number of arguments"
-    );
-
-public:
-    HostKernel(F&& func, string name)
-        : RefCountBase(StandardKernelSignature<ArgSpec...>::make()),
-          m_func_and_name(std::move(func), std::move(name))
-    {}
-
-    explicit HostKernel(string name) : m_func_and_name(F(), std::move(name)) {}
-
-    RPY_NO_DISCARD bool is_host() const noexcept override;
-    RPY_NO_DISCARD DeviceType device_type() const noexcept override;
-    RPY_NO_DISCARD Device device() const noexcept override;
-    RPY_NO_DISCARD string name() const override;
-    RPY_NO_DISCARD dimn_t num_args() const override;
-    RPY_NO_DISCARD Event launch_kernel_async(
-            Queue& queue,
-            const KernelLaunchParams& params,
-            const KernelArguments& args
-    ) const override;
-    EventStatus launch_kernel_sync(
-            Queue& queue,
-            const KernelLaunchParams& params,
-            const KernelArguments& args
-    ) const override;
-};
-
-template <typename F, typename... ArgSpec>
-bool HostKernel<F, ArgSpec...>::is_host() const noexcept
-{
-    return true;
-}
-template <typename F, typename... ArgSpec>
-DeviceType HostKernel<F, ArgSpec...>::device_type() const noexcept
-{
-    return DeviceType::CPU;
-}
-template <typename F, typename... ArgSpec>
-Device HostKernel<F, ArgSpec...>::device() const noexcept
-{
-    return get_host_device();
-}
-template <typename F, typename... ArgSpec>
-string HostKernel<F, ArgSpec...>::name() const
-{
-    return m_func_and_name.second;
-    ;
-}
-template <typename F, typename... ArgSpec>
-dimn_t HostKernel<F, ArgSpec...>::num_args() const
-{
-    return signature().num_parameters();
-}
-
-template <typename F, typename... ArgSpec>
-Event HostKernel<F, ArgSpec...>::launch_kernel_async(
-        Queue& queue,
-        const KernelLaunchParams& params,
-        const KernelArguments& args
-) const
-{
-    ArgBinder::eval(m_func_and_name.first(), params, args);
-    return Event();
-}
-template <typename F, typename... ArgSpec>
-EventStatus HostKernel<F, ArgSpec...>::launch_kernel_sync(
-        Queue& queue,
-        const KernelLaunchParams& params,
-        const KernelArguments& args
-) const
-{
-    ArgBinder::eval(m_func_and_name.first(), params, args);
-    return EventStatus::CompletedSuccessfully;
-}
-
 namespace dtl {
 
 template <typename Impl, typename... ArgSpec>
 class HostKernelBase : public RefCountBase<KernelInterface>
 {
+    using implementation_t = Impl;
 
 protected:
-    using siganture_t = StandardKernelSignature<ArgSpec...>;
+    using signature_t = StandardKernelSignature<ArgSpec...>;
 
 public:
     RPY_NO_DISCARD bool is_host() const noexcept override;
@@ -157,7 +66,7 @@ string HostKernelBase<Impl, ArgSpec...>::name() const
 template <typename Impl, typename... ArgSpec>
 dimn_t HostKernelBase<Impl, ArgSpec...>::num_args() const
 {
-    return siganture_t::num_args;
+    return signature_t::num_args;
 }
 template <typename Impl, typename... ArgSpec>
 Event HostKernelBase<Impl, ArgSpec...>::launch_kernel_async(
@@ -167,7 +76,7 @@ Event HostKernelBase<Impl, ArgSpec...>::launch_kernel_async(
 ) const
 {
     using Binding = devices::ArgumentBinder<
-            typename siganture_t::ParamsList,
+            typename signature_t::ParamsList,
             decltype(Impl::run)>;
     Binding::eval(Impl::run, params, args);
     return Event::completed_event(EventStatus::CompletedSuccessfully);
@@ -180,7 +89,7 @@ EventStatus HostKernelBase<Impl, ArgSpec...>::launch_kernel_sync(
 ) const
 {
     using Binding = devices::ArgumentBinder<
-            typename siganture_t::ParamsList,
+            typename signature_t::ParamsList,
             decltype(Impl::run)>;
     Binding::eval(
             [&params](auto&&... kargs) {
