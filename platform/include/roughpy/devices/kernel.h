@@ -101,36 +101,32 @@ struct FusedRightScalarDivideSub;
  */
 class ROUGHPY_DEVICES_EXPORT KernelLaunchParams
 {
-    Size3 m_work_dims;
-    Dim3 m_group_size;
-    optional<Dim3> m_offsets;
+    Size3 m_work_dims {1, 1, 1};
+    Size3 m_group_size {1, 1, 1};
+    optional<Dim3> m_offsets {};
 
 public:
     explicit KernelLaunchParams(Size3 work_dims)
-        : m_work_dims(work_dims),
-          m_group_size(),
-          m_offsets()
+        : m_work_dims(work_dims)
     {}
 
-    explicit KernelLaunchParams(Size3 work_dims, Dim3 group_size)
+    explicit KernelLaunchParams(Size3 work_dims, Size3 group_size)
         : m_work_dims(work_dims),
-          m_group_size(group_size),
-          m_offsets()
+          m_group_size(group_size)
     {}
 
     RPY_NO_DISCARD bool has_work() const noexcept;
 
-    RPY_NO_DISCARD Size3 total_work_dims() const noexcept;
+    RPY_NO_DISCARD Size3 work_dims() const noexcept { return m_work_dims; }
+    RPY_NO_DISCARD Size3 work_groups() const noexcept { return m_group_size; }
 
     RPY_NO_DISCARD dimn_t total_work_size() const noexcept;
 
     RPY_NO_DISCARD dsize_t num_dims() const noexcept;
 
-    RPY_NO_DISCARD Dim3 num_work_groups() const noexcept;
+    RPY_NO_DISCARD Size3 num_work_groups() const noexcept;
 
     RPY_NO_DISCARD Size3 underflow_of_groups() const noexcept;
-
-    RPY_NO_DISCARD Dim3 work_groups() const noexcept;
 
     KernelLaunchParams();
 };
@@ -878,7 +874,12 @@ public:
     RPY_NO_DISCARD virtual dimn_t num_args() const;
 
     /**
+     * @brief Returns a constant reference to the kernel signature.
      *
+     * This method returns a constant reference to the kernel signature. The
+     * kernel signature represents the launch parameters for a kernel.
+     *
+     * @return A constant reference to the kernel signature.
      */
     RPY_NO_DISCARD const KernelSignature& signature() const noexcept
     {
@@ -995,7 +996,14 @@ public:
     RPY_NO_DISCARD dimn_t num_args() const;
 
     /**
-     *
+     * @fn const KernelSignature& Kernel::signature() const noexcept
+     * @brief Returns the signature of the kernel.
+     * @details This method returns the signature of the kernel. The signature
+     * represents the types of the kernel's arguments and return value.
+     * @pre The kernel object must not be null.
+     * @return A constant reference to the KernelSignature object representing
+     * the signature of the kernel.
+     * @see KernelSignature
      */
     RPY_NO_DISCARD const KernelSignature& signature() const noexcept
     {

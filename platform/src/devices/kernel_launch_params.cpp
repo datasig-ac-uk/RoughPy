@@ -45,15 +45,6 @@ KernelLaunchParams::KernelLaunchParams()
 
 bool KernelLaunchParams::has_work() const noexcept { return m_work_dims.x > 0; }
 
-Size3 KernelLaunchParams::total_work_dims() const noexcept
-{
-    return m_work_dims;
-}
-
-Dim3 KernelLaunchParams::work_groups() const noexcept
-{
-    return m_group_size;
-}
 
 dimn_t KernelLaunchParams::total_work_size() const noexcept
 {
@@ -76,9 +67,9 @@ dsize_t KernelLaunchParams::num_dims() const noexcept
     return 1;
 }
 
-Dim3 KernelLaunchParams::num_work_groups() const noexcept
+Size3 KernelLaunchParams::num_work_groups() const noexcept
 {
-    Dim3 result;
+    Size3 result;
     if (m_group_size.x > 0) {
         result.x = round_up_divide(m_work_dims.x, m_group_size.x);
         if (m_group_size.y > 0) {
