@@ -33,7 +33,7 @@ For example, we can create data using a linearly spaced time array.
 
 To create a stream, we should also provide a **context**. For more information, see :doc:`fundamentals.contexts`.
 
-For example, we can create the following context, with Width 2, Depth 6, and Real coefficients. The depth specification for constructing the stream is not the depth of the data, but it is the depth of the stream. The depth of the data must be less than or equal to the depth of the stream.
+For example, we can create the following context, with width 2, depth 6, and Real coefficients. The depth specification for constructing the stream is not the depth of the data, but it is the depth of the stream. The depth of the data must be less than or equal to the depth of the stream.
 
 ::
 

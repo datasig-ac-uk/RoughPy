@@ -8,7 +8,7 @@ Contexts
 What are contexts
 ^^^^^^^^^^^^^^^^^^^^^
 
-Contexts allow us to provide a Width, Depth, and a coefficient field for a tensor. They also provide access to the Baker-Campbell-Hausdorff formula.
+Contexts allow us to provide a width, depth, and a coefficient field/type for a tensor. They also provide access to the Baker-Campbell-Hausdorff formula.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 How do contexts fit into RoughPy
