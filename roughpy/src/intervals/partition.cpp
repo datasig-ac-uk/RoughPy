@@ -35,11 +35,15 @@
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
 
+#include <algorithm>
+
 using namespace rpy;
 using namespace intervals;
 using namespace pybind11::literals;
 
-PyDoc_VAR(PyPartition_doc) = R"rpydoc(Partition of an interval in the real line.
+PyDoc_VAR(PyPartition_doc) = R"rpydoc(
+An :class:`Interval` into which there are a number of intermediate points which represent the end points of sub intervals.
+Partition of an :class:`Interval` in the real line.
 )rpydoc";
 
 namespace {
@@ -47,11 +51,17 @@ namespace {
 Partition partition_py_ctor(const RealInterval& interval,
                             const py::iterable& py_intermediates)
 {
+    const auto inf = interval.inf();
+    const auto sup = interval.sup();
     std::vector<param_t> intermediates;
     for (auto&& mid : py_intermediates) {
-        intermediates.push_back(mid.cast<param_t>());
+        auto param = mid.cast<param_t>();
+        if (interval.contains_point(param) && param != inf && param != sup) {
+            intermediates.push_back(param);
+        }
     }
 
+    std::sort(intermediates.begin(), intermediates.end());
     return Partition(interval, std::move(intermediates));
 }
 
@@ -67,11 +77,11 @@ void python::init_partition(py::module_& m)
 
     cls.def("__len__", &Partition::size);
     cls.def("__getitem__", &Partition::operator[], "index"_a);
-    cls.def("refine_midpoints", &Partition::refine_midpoints);
-    cls.def("mesh", &Partition::mesh);
-    cls.def("intermediates", &Partition::intermediates);
-    cls.def("insert_intermediate", &Partition::insert_intermediate);
-    cls.def("merge", &Partition::merge);
+    cls.def("refine_midpoints", &Partition::refine_midpoints, "Inserts the midpoint between all of the intermediates.");
+    cls.def("mesh", &Partition::mesh, "Length of the largest sub interval.");
+    cls.def("intermediates", &Partition::intermediates, "List of intermediate end points.");
+    cls.def("insert_intermediate", &Partition::insert_intermediate, "Cuts one of the intermediate intervals in half.");
+    cls.def("merge", &Partition::merge, "The union of the partitions.");
 
     cls.def("__str__", [](const Partition& self) {
         std::stringstream ss;

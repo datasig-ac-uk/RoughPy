@@ -66,6 +66,12 @@ jobs:
       run: |
         echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
 
+    - name: install pkgconfig on windows
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        choco install pkgconfiglite
+
     - name: Python dependencies
       shell: bash
       run: |

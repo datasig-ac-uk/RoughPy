@@ -342,8 +342,7 @@
 #  define RPY_FILE_NAME __FILE__
 #endif
 
-
-
+#ifndef __CLION_IDE__
 #ifdef RPY_DEBUG
 #  if defined(RPY_GCC) || defined(RPY_CLANG)
 #    define RPY_DBG_ASSERT(ARG) assert(ARG)
@@ -352,6 +351,9 @@
 #  endif
 #else
 #  define RPY_DBG_ASSERT(ARG) (void) 0
+#endif
+#else
+#  define RPY_DBG_ASSERT(ARG)
 #endif
 
 #endif// ROUGHPY_CORE_MACROS_H

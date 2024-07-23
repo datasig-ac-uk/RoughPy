@@ -26,7 +26,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "kwargs_to_path_metadata.h"
-
+#include "parse_algebra_configuration.h"
 
 #include "algebra/context.h"
 #include "scalars/scalar_type.h"
@@ -39,41 +39,53 @@
 
 using namespace rpy;
 
-python::PyStreamMetaData
-python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
+python::PyStreamMetaData python::kwargs_to_metadata(pybind11::kwargs& kwargs)
 {
 
     PyStreamMetaData md{
-            0,                              // width
-            0,                              // depth
-            {},                             // support
-            nullptr,                        // context
-            nullptr,                        // scalar type
-            {},                             // vector type
-            {},                              // default resolution
-            intervals::IntervalType::Clopen,// interval type
-            nullptr,                        // schema
-            false                           // include_param_as_data
+            0,                                   // width
+            0,                                   // depth
+            {},                                  // support
+            nullptr,                             // context
+            nullptr,                             // scalar type
+            {},                                  // vector type
+            {},                                  // default resolution
+            intervals::IntervalType::Clopen,     // interval type
+            nullptr,                             // schema
+            rpy::streams::ChannelType::Increment,// default channel type
+            false                                // include_param_as_data
     };
 
     streams::ChannelType ch_type;
 
     if (kwargs.contains("schema")) {
-        auto schema = kwargs["schema"];
+        auto schema = kwargs_pop(kwargs, "schema");
         if (py::isinstance<streams::StreamSchema>(schema)) {
             md.schema = schema.cast<std::shared_ptr<streams::StreamSchema>>();
         } else {
             md.schema = parse_schema(schema);
         }
-        if (!md.schema->is_final()) { md.schema->finalize(); }
-    } else if (kwargs.contains("channel_types")) {
-        auto channels = kwargs["channel_types"];
+        if (!md.schema->is_final()) { md.schema->finalize(0); }
+    }
+
+    if (kwargs.contains("channel_types")) {
+        if (md.schema && md.schema->is_final()) {
+            PyErr_WarnEx(
+                    PyExc_RuntimeWarning,
+                    "specifying both a finalized schema and "
+                    "\"channel_types\" ignores "
+                    "the \"channel_types\" argument",
+                    1
+            );
+        }
+        auto channels = kwargs_pop(kwargs, "channel_types");
 
         // homogeneous channel types
         if (py::isinstance<streams::ChannelType>(channels)) {
-            ch_type = channels.cast<streams::ChannelType>();
+            md.default_channel_type = channels.cast<streams::ChannelType>();
         } else if (py::isinstance<py::str>(channels)) {
-            ch_type = string_to_channel_type(channels.cast<string>());
+            md.default_channel_type
+                    = string_to_channel_type(channels.cast<string>());
 
             // labelled heterogeneous channel types
         } else if (py::isinstance<py::dict>(channels)) {
@@ -126,77 +138,17 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
 
         // Unset channel to, assume homogeneous increments
     } else {
-        ch_type = streams::ChannelType::Increment;
+        md.default_channel_type = streams::ChannelType::Increment;
     }
 
-    if (kwargs.contains("ctx")) {
-        auto ctx = kwargs["ctx"];
-        if (!py::isinstance(
-                    ctx, reinterpret_cast<PyObject*>(&RPyContext_Type)
-            )) {
-            RPY_THROW(py::type_error, "expected a Context object");
-        }
-        md.ctx = python::ctx_cast(ctx.ptr());
-        md.width = md.ctx->width();
-        md.scalar_type = md.ctx->ctype();
-
-        if (!md.schema) {
-            md.schema = std::make_shared<streams::StreamSchema>();
-            for (deg_t i = 0; i < md.width; ++i) {
-                switch (ch_type) {
-                    case streams::ChannelType::Increment:
-                        md.schema->insert_increment("");
-                        break;
-                    case streams::ChannelType::Value:
-                        md.schema->insert_value("");
-                        break;
-                    case streams::ChannelType::Categorical:
-                        md.schema->insert_categorical("");
-                        break;
-                    case streams::ChannelType::Lie:
-                        md.schema->insert_lie("");
-                        break;
-                }
-            }
-        }
-
-        auto schema_width = static_cast<deg_t>(md.schema->width());
-        if (schema_width != md.width) {
-            md.width = schema_width;
-            md.ctx = md.ctx->get_alike(
-                    md.width, md.ctx->depth(), md.scalar_type
-            );
-        }
-    } else {
-        if (md.schema) {
-            md.width = static_cast<deg_t>(md.schema->width());
-        } else if (kwargs.contains("width")) {
-            md.width = kwargs["width"].cast<rpy::deg_t>();
-        }
-
-        if (kwargs.contains("depth")) {
-            md.depth = kwargs["depth"].cast<rpy::deg_t>();
-        }
-        if (kwargs.contains("dtype")) {
-            auto dtype = kwargs["dtype"];
-#ifdef ROUGHPY_WITH_NUMPY
-            if (py::isinstance<py::dtype>(dtype)) {
-                md.scalar_type = npy_dtype_to_ctype(dtype);
-            } else {
-                md.scalar_type = py_arg_to_ctype(dtype);
-            }
-#else
-            md.scalar_type = py_arg_to_ctype(dtype);
-#endif
-        }
+    if (!md.schema) {
+        // No schema was given, but a width was given so construct an empty
+        // Schema.
+        md.schema = std::make_shared<streams::StreamSchema>();
     }
 
     if (kwargs.contains("include_time")
-        && kwargs["include_time"].cast<bool>()) {
-
-        if (!md.schema) {
-            md.schema = std::make_shared<streams::StreamSchema>();
-        }
+        && kwargs_pop(kwargs, "include_time").cast<bool>()) {
 
         if (md.schema->is_final()) {
             RPY_THROW(
@@ -210,16 +162,47 @@ python::kwargs_to_metadata(const pybind11::kwargs& kwargs)
         md.include_param_as_data = true;
     }
 
+    // Now parse the algebra config
+    auto algebra_config = parse_algebra_configuration(kwargs);
+
+    if (algebra_config.ctx) {
+        md.ctx = std::move(algebra_config.ctx);
+        md.width = md.ctx->width();
+        md.depth = md.ctx->depth();
+        md.scalar_type = md.ctx->ctype();
+    } else {
+        if (algebra_config.width) { md.width = *algebra_config.width; }
+        if (algebra_config.depth) { md.depth = *algebra_config.depth; }
+        if (algebra_config.scalar_type != nullptr) {
+            md.scalar_type = algebra_config.scalar_type;
+        }
+    }
+
+    if (md.schema->is_final()) {
+        if (!algebra_config.width) {
+            algebra_config.width = md.schema->width();
+            RPY_DBG_ASSERT(md.width == 0);
+            md.width = *algebra_config.width;
+        } else if (md.schema->width() != *algebra_config.width) {
+            RPY_THROW(
+                    py::value_error,
+                    "specified width does not match the schema width"
+            );
+        }
+    }
+
+    // Additional information that will not effect the algebra config.
     if (kwargs.contains("vtype")) {
-        md.vector_type = kwargs["vtype"].cast<algebra::VectorType>();
+        md.vector_type
+                = kwargs_pop(kwargs, "vtype").cast<algebra::VectorType>();
     }
 
     if (kwargs.contains("resolution")) {
-        md.resolution = kwargs["resolution"].cast<resolution_t>();
+        md.resolution = kwargs_pop(kwargs, "resolution").cast<resolution_t>();
     }
 
     if (kwargs.contains("support")) {
-        auto support = kwargs["support"];
+        auto support = kwargs_pop(kwargs, "support");
         if (!py::isinstance<intervals::Interval>(support)) {
             md.support = intervals::RealInterval(
                     support.cast<const intervals::Interval&>()

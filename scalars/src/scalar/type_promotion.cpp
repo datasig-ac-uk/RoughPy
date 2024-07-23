@@ -121,18 +121,26 @@ devices::TypeInfo compute_promotion(
     const auto dst_info = type_info_from(dst_type);
     const auto src_info = type_info_from(src_type);
 
-    switch (dst_info.code) {
+    return compute_type_promotion(src_info, dst_info);
+}
+
+}// namespace
+
+devices::TypeInfo
+scalars::compute_type_promotion(devices::TypeInfo left, devices::TypeInfo right)
+{
+    if (left == right) { return left; }
+    switch (right.code) {
         case devices::TypeCode::Int:
-        case devices::TypeCode::UInt:
-            return compute_int_promotion(dst_info, src_info);
+        case devices::TypeCode::UInt: return compute_int_promotion(right, left);
         case devices::TypeCode::Float:
-            return compute_float_promotion(dst_info, src_info);
+            return compute_float_promotion(right, left);
         case devices::TypeCode::BFloat:
-            return compute_bfloat_promotion(dst_info, src_info);
+            return compute_bfloat_promotion(right, left);
         case devices::TypeCode::ArbitraryPrecisionRational:
-            return compute_aprational_promotion(dst_info, src_info);
+            return compute_aprational_promotion(right, left);
         case devices::TypeCode::APRationalPolynomial:
-            return compute_aprpoly_promotion(dst_info, src_info);
+            return compute_aprpoly_promotion(right, left);
         case devices::TypeCode::Bool:
         case devices::TypeCode::OpaqueHandle:
         case devices::TypeCode::Complex:
@@ -142,11 +150,9 @@ devices::TypeInfo compute_promotion(
         case devices::TypeCode::ArbitraryPrecisionFloat:
         case devices::TypeCode::ArbitraryPrecisionComplex: break;
     }
-
     RPY_THROW(std::runtime_error, "cannot find suitable promotion");
 }
 
-}// namespace
 
 devices::TypeInfo scalars::dtl::compute_dest_type(
         PackedScalarTypePointer<ScalarContentType> dst_type,

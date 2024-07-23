@@ -30,10 +30,12 @@
 
 #include <pybind11/stl.h>
 
+#include "args/parse_data_argument.h"
 #include "lie_key_iterator.h"
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
 #include "tensor_key_iterator.h"
+#include <roughpy/algebra/context.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -43,19 +45,74 @@ using rpy::python::RPyContext;
 
 extern "C" {
 
-static const char* lie_size_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_lie_size(PyObject* self, PyObject* degree)
+static const char* lie_size_DOC = R"rpydoc(A shortcut for :py:meth:`lie_basis.size`. )rpydoc";
+static PyObject* RPyContext_lie_size(PyObject * self,
+                                     PyObject * args,
+                                     PyObject * kwargs)
 {
-    auto deg = static_cast<deg_t>(PyLong_AsLong(degree));
-    return PyLong_FromSize_t(ctx_cast(self)->lie_size(deg));
+    static const char* kwords[] = {"degree", nullptr};
+    const auto& myself = ctx_cast(self);
+    const deg_t max_degree = myself->depth();
+    deg_t depth = max_degree;
+
+    if (PyArg_ParseTupleAndKeywords(
+                args,
+                kwargs,
+                "|i",
+                const_cast<char**>(kwords),
+                &depth
+        )
+        == 0) {
+        return nullptr;
+    }
+
+    if (depth < 0) {
+        depth = max_degree;
+    } else if (depth > max_degree) {
+        PyErr_SetString(
+                PyExc_ValueError,
+                "the requested degree exceeds the"
+                " maximum degree for this basis"
+        );
+        return nullptr;
+    }
+    return PyLong_FromSize_t(myself->lie_size(depth));
 }
-static const char* tensor_size_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_tensor_size(PyObject* self, PyObject* degree)
+
+static const char* tensor_size_DOC = R"rpydoc(A shortcut for :py:meth:`tensor_basis.size`. )rpydoc";
+static PyObject* RPyContext_tensor_size(PyObject * self,
+                                        PyObject * args,
+                                        PyObject * kwargs)
 {
-    auto deg = static_cast<deg_t>(PyLong_AsLong(degree));
-    return PyLong_FromSize_t(ctx_cast(self)->tensor_size(deg));
+    static const char* kwords[] = {"degree", nullptr};
+    const auto& myself = ctx_cast(self);
+    const deg_t max_degree = myself->depth();
+    deg_t depth = max_degree;
+
+    if (PyArg_ParseTupleAndKeywords(
+                args,
+                kwargs,
+                "|i",
+                const_cast<char**>(kwords),
+                &depth
+        )
+        == 0) {
+        return nullptr;
+    }
+
+    if (depth < 0) {
+        depth = max_degree;
+    } else if (depth > max_degree) {
+        PyErr_SetString(
+                PyExc_ValueError,
+                "the requested degree exceeds the"
+                " maximum degree for this basis"
+        );
+        return nullptr;
+    }
+    return PyLong_FromSize_t(myself->tensor_size(depth));
 }
-static const char* cbh_DOC = R"rpydoc()rpydoc";
+static const char* cbh_DOC = R"rpydoc(Computes the Campbell-Baker-Haussdorff product of a number of :class:`~Lie` elements within that :class:`~Context`, using the truncation levels. :class:`~Lie` objects need to have the same :py:attr:`~width`, but truncation level might differ.)rpydoc";
 static PyObject*
 RPyContext_cbh(PyObject* self, PyObject* args, PyObject* kwargs)
 {
@@ -100,7 +157,7 @@ RPyContext_cbh(PyObject* self, PyObject* args, PyObject* kwargs)
 
     return python::cast_to_object(ctx->cbh(lies, vtp));
 }
-static const char* compute_signature_DOC = R"rpydoc()rpydoc";
+static const char* compute_signature_DOC = R"rpydoc(Computes the :py:attr:`~signature` of a :class:`~Stream`.)rpydoc";
 static PyObject*
 RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
 {
@@ -122,79 +179,39 @@ RPyContext_compute_signature(PyObject* self, PyObject* args, PyObject* kwargs)
         return nullptr;
     }
 
-    python::PyToBufferOptions options;
+    python::DataArgOptions options;
     options.allow_scalar = false;
     options.max_nested = 2;
+    options.scalar_type = ctx->ctype();
 
-    scalars::KeyScalarArray buffer;
+    python::ParsedData parsed_data;
 
+    SignatureData request;
     try {
-        buffer = python::py_to_buffer(py_data, options);
+        parsed_data = python::parse_data_argument(py_data, options);
+        parsed_data.fill_ks_stream(request.data_stream);
     } catch (std::exception& exc) {
         PyErr_SetString(PyExc_RuntimeError, exc.what());
         return nullptr;
     }
 
-    SignatureData request;
-    request.vector_type = VectorType::Sparse;
-    if (py_vtype) { request.vector_type = py_vtype.cast<VectorType>(); }
-
-    if (buffer.size() == 0) {
+    if (parsed_data.size() == 0) {
         auto result = ctx->zero_free_tensor(request.vector_type);
     }
 
-    const auto* ctype = ctx->ctype();
-    const auto info = ctype->type_info();
-    request.data_stream.set_ctype(ctype);
-    const auto itemsize = info.bytes;
-
-    const auto* p_buffer = static_cast<const char*>(buffer.pointer());
-    if (!buffer.has_keys()) {
-        if (!py_vtype) { request.vector_type = VectorType::Dense; }
-
-        if (options.shape.empty() || options.shape.size() > 2) {
-            PyErr_SetString(PyExc_ValueError, "invalid shape");
-            return nullptr;
-        }
-
-        dimn_t width;
-        dimn_t n_increments;
-        if (options.shape.size() == 1) {
-            width = options.shape[0];
-            n_increments = 1;
-        } else {
-            width = options.shape[1];
-            n_increments = options.shape[0];
-        }
-
-        request.data_stream.reserve_size(n_increments);
-        for (dimn_t i = 0; i < n_increments; ++i) {
-            request.data_stream.push_back(scalars::ScalarArray{
-                    ctype,
-                    p_buffer + i * width * itemsize,
-                    width});
-        }
-    } else {
-        request.data_stream.reserve_size(options.shape.size());
-        request.key_stream.reserve(options.shape.size());
-        const key_type* p_keys = buffer.keys();
-
-        auto n_increments = options.shape.size();
-        for (dimn_t i = 0; i < n_increments; ++i) {
-            request.data_stream.push_back(scalars::ScalarArray{
-                    ctype,
-                    p_buffer,
-                    static_cast<dimn_t>(options.shape[i])});
-            request.key_stream.push_back(p_keys);
-            p_buffer += options.shape[i] * itemsize;
-            p_keys += options.shape[i];
-        }
+    request.vector_type = VectorType::Sparse;
+    if (py_vtype) {
+        request.vector_type = py_vtype.cast<VectorType>();
+    } else if (parsed_data.size() == 1 && parsed_data.front().value_type == python::ValueType::Value) {
+        request.vector_type = VectorType::Dense;
     }
+
 
     return python::cast_to_object(ctx->signature(request));
 }
-static const char* to_logsignature_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_to_logsignature(PyObject* self, PyObject* arg)
+
+static const char* to_logsignature_DOC = R"rpydoc(Takes some argument (:py:attr:`~signature`), equivalent to :py:obj:`tensor_to_lie(signature.log())`.)rpydoc";
+static PyObject* RPyContext_to_logsignature(PyObject * self, PyObject * arg)
 {
 
     py::handle py_sig(arg);
@@ -209,8 +226,9 @@ static PyObject* RPyContext_to_logsignature(PyObject* self, PyObject* arg)
 
     return python::cast_to_object(ctx->tensor_to_lie(sig.log()));
 }
-static const char* lie_to_tensor_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_lie_to_tensor(PyObject* self, PyObject* arg)
+
+static const char* lie_to_tensor_DOC = R"rpydoc(Linear embedding of the :class:`~Lie` algebra into the :class:`FreeTensor` algebra.)rpydoc";
+static PyObject* RPyContext_lie_to_tensor(PyObject * self, PyObject * arg)
 {
     py::handle py_lie(arg);
     if (!py::isinstance<algebra::Lie>(py_lie)) {
@@ -222,8 +240,9 @@ static PyObject* RPyContext_lie_to_tensor(PyObject* self, PyObject* arg)
     return python::cast_to_object(ctx->lie_to_tensor(py_lie.cast<const Lie&>())
     );
 }
-static const char* tensor_to_lie_DOC = R"rpydoc()rpydoc";
-static PyObject* RPyContext_tensor_to_lie(PyObject* self, PyObject* arg)
+
+static const char* tensor_to_lie_DOC = R"rpydoc(Linear embedding of the :class:`~FreeTensor` algebra into the :class:`~Lie` algebra.)rpydoc";
+static PyObject* RPyContext_tensor_to_lie(PyObject * self, PyObject * arg)
 {
     py::handle py_ft(arg);
     if (!py::isinstance<algebra::FreeTensor>(py_ft)) {
@@ -245,7 +264,7 @@ static PyObject* RPyContext_exit(PyObject* self, PyObject* RPY_UNUSED_VAR)
 }
 
 static const char* zero_lie_DOC
-        = R"rpydoc(Get a new Lie with value zero)rpydoc";
+    = R"rpydoc(Get a new :class:`~Lie` with value zero.)rpydoc";
 static PyObject*
 RPyContext_zero_lie(PyObject* self, PyObject* args, PyObject* kwargs)
 {
@@ -274,12 +293,12 @@ RPyContext_zero_lie(PyObject* self, PyObject* args, PyObject* kwargs)
 
 #define ADD_METHOD(NAME, FLAGS)                                                \
     {                                                                          \
-        #NAME, (PyCFunction) &RPyContext_##NAME, (FLAGS), NAME##_DOC           \
+        #NAME, (PyCFunction) & RPyContext_##NAME, (FLAGS), NAME##_DOC          \
     }
 
 static PyMethodDef RPyContext_members[] = {
-        ADD_METHOD(lie_size, METH_O),
-        ADD_METHOD(tensor_size, METH_O),
+        ADD_METHOD(lie_size, METH_VARARGS | METH_KEYWORDS),
+        ADD_METHOD(tensor_size, METH_VARARGS | METH_KEYWORDS),
         ADD_METHOD(cbh, METH_VARARGS | METH_KEYWORDS),
         ADD_METHOD(compute_signature, METH_VARARGS | METH_KEYWORDS),
         ADD_METHOD(to_logsignature, METH_O),
@@ -314,18 +333,18 @@ static PyObject* RPyContext_tensor_basis_getter(PyObject* self)
     return python::cast_to_object(ctx_cast(self)->get_tensor_basis());
 }
 
-#define ADD_GETSET(NAME)                                                       \
+#define ADD_GETSET(NAME, doc)                                                       \
     {                                                                          \
-        #NAME, (getter) &RPyContext_##NAME##_getter, nullptr, nullptr, nullptr \
+        #NAME, (getter) &RPyContext_##NAME##_getter, nullptr, doc, nullptr \
     }
 
 static PyGetSetDef RPyContext_getset[] = {
-        ADD_GETSET(width),
-        ADD_GETSET(depth),
-        ADD_GETSET(ctype),
-        ADD_GETSET(lie_basis),
-        ADD_GETSET(tensor_basis),
-        {nullptr, nullptr, nullptr, nullptr, nullptr}
+    ADD_GETSET(width, "Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`~ctx` instead)."),
+    ADD_GETSET(depth, "Maximum degree for :class:`~Lie` objects, :class:`~FreeTensor` objects, etc. (deprecated, use :py:attr:`~ctx` instead)."),
+    ADD_GETSET(ctype, "Coefficient type. One of :py:attr:`~rp.SPReal`, :py:attr:`~rp.DPReal`, :py:attr:`~rp.Rational`, :py:attr:`~rp.PolyRational`."),
+    ADD_GETSET(lie_basis, "An instance of :class:`~LieBasis` with the :class:`~Context` 's :py:attr:`~width` and :py:attr:`~depth`."),
+    ADD_GETSET(tensor_basis, "An instance of :class:`~TensorBasis` with the :class:`~Context` 's :py:attr:`~width` and :py:attr:`~depth`."),
+    {nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 #undef ADD_GETSET
@@ -349,37 +368,32 @@ RPyContext_new(PyObject* self, PyObject* args, PyObject* kwargs)
     RPY_UNREACHABLE_RETURN(nullptr);
 }
 
-static PyObject *
-    RPyContext_richcompare(PyObject * o1, PyObject * o2, int
-opid ) {
+static PyObject* RPyContext_richcompare(PyObject* o1, PyObject* o2, int opid)
+{
 
-switch ( opid ) {
-case Py_EQ :
-if ( ctx_cast(o1) == ctx_cast(o2)) {
-Py_RETURN_TRUE ;
-}
-Py_RETURN_FALSE;
-case Py_NE:
-if (
-ctx_cast(o1)
-==
-ctx_cast(o2)
-) {
-Py_RETURN_FALSE;
-}
-Py_RETURN_TRUE;
-case Py_LT:
-case Py_LE:
-case Py_GT:
-case Py_GE:
-break;
+    switch (opid) {
+        case Py_EQ:
+            if (ctx_cast(o1) == ctx_cast(o2)) { Py_RETURN_TRUE; }
+            Py_RETURN_FALSE;
+        case Py_NE:
+            if (ctx_cast(o1) == ctx_cast(o2)) { Py_RETURN_FALSE; }
+            Py_RETURN_TRUE;
+        case Py_LT:
+        case Py_LE:
+        case Py_GT:
+        case Py_GE: break;
+    }
+
+    return nullptr;
 }
 
-return nullptr;
-}
+static const char* CONTEXT_DOC = R"rpydoc(
+A :class:`~Contexts` allows us to provide a :py:attr:`~width`, :py:attr:`~depth`, and a :py:attr:`~coefficient` field for a :class:`~Tensor`.
+They also provide access to the Baker-Campbell-Hausdorff formula.
+They are the environment in which calculations are done.
+They are used everywhere in RoughPy, for any :class:`~Stream` or algebraic object.
+)rpydoc";
 
-
-static const char* CONTEXT_DOC = R"rpydoc()rpydoc";
 PyTypeObject rpy::python::RPyContext_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)         //
         "_roughpy.Context",                       /* tp_name */
@@ -487,5 +501,7 @@ void python::init_context(py::module_& m)
           py_get_context,
           "width"_a,
           "depth"_a,
-          "coeffs"_a = py::none());
+          "coeffs"_a = py::none(),
+          "Takes :py:attr:`width`, :py:attr:`depth`, and :py:attr:`coeff` as minimum, returns a :class:`Context` with that configuration, has other keywords that aren't fully realised yet."
+          );
 }

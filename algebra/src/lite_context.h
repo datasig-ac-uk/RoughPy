@@ -1,7 +1,7 @@
 // Copyright (c) 2023 the RoughPy Developers. All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 // 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
@@ -18,12 +18,13 @@
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Created by user on 06/03/23.
@@ -35,9 +36,6 @@
 #include <roughpy/scalars.h>
 #include <roughpy/scalars/scalar_types.h>
 
-#include <roughpy/algebra/interfaces/free_tensor_interface.h>
-#include <roughpy/algebra/interfaces/lie_interface.h>
-#include <roughpy/algebra/interfaces/shuffle_tensor_interface.h>
 #include "implementors/algebra_impl.h"
 #include "implementors/free_tensor_impl.h"
 #include <roughpy/algebra/algebra_base.h>
@@ -48,11 +46,14 @@
 #include <roughpy/algebra/basis_impl.h>
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/free_tensor.h>
-#include <roughpy/algebra/lie.h>
-#include <roughpy/algebra/shuffle_tensor.h>
 #include <roughpy/algebra/implementors/free_tensor_impl.h>
 #include <roughpy/algebra/implementors/lie_impl.h>
 #include <roughpy/algebra/implementors/shuffle_tensor_impl.h>
+#include <roughpy/algebra/interfaces/free_tensor_interface.h>
+#include <roughpy/algebra/interfaces/lie_interface.h>
+#include <roughpy/algebra/interfaces/shuffle_tensor_interface.h>
+#include <roughpy/algebra/lie.h>
+#include <roughpy/algebra/shuffle_tensor.h>
 
 #include "libalgebra_lite_internal/algebra_type_caster.h"
 #include "libalgebra_lite_internal/algebra_type_helper.h"
@@ -85,10 +86,12 @@ protected:
 
     LiteContextBasisHolder(deg_t width, deg_t depth)
         : p_tbasis(lal::basis_registry<lal::tensor_basis>::get(
-                lal::deg_t(width), lal::deg_t(depth)
-        )),
+                  lal::deg_t(width),
+                  lal::deg_t(depth)
+          )),
           p_lbasis(lal::basis_registry<lal::hall_basis>::get(
-                  lal::deg_t(width), lal::deg_t(depth)
+                  lal::deg_t(width),
+                  lal::deg_t(depth)
           ))
     {}
 };
@@ -119,10 +122,14 @@ private:
 
     template <AlgebraType AType, VectorType VType>
     using arg_type_caster = algebra_type_caster<
-            Coefficients, algebra_type_tag<AType>, vector_type_tag<VType>>;
+            Coefficients,
+            algebra_type_tag<AType>,
+            vector_type_tag<VType>>;
 
     using binary_invoker = UnspecifiedFunctionInvoker<
-            arg_type_caster, LiteContext, ConstRawUnspecifiedAlgebraType,
+            arg_type_caster,
+            LiteContext,
+            ConstRawUnspecifiedAlgebraType,
             ConstRawUnspecifiedAlgebraType>;
 
     template <typename T>
@@ -184,8 +191,8 @@ private:
     free_tensor_t<VType> compute_signature(const SignatureData& data) const;
     template <VectorType VType>
     free_tensor_t<VType>
-    Ad_x_n(deg_t d, const free_tensor_t<VType>& x,
-           const free_tensor_t<VType>& y) const;
+    Ad_x_n(deg_t d, const free_tensor_t<VType>& x, const free_tensor_t<VType>& y
+    ) const;
     template <VectorType VType>
     free_tensor_t<VType> derive_series_compute(
             const free_tensor_t<VType>& increment,
@@ -227,10 +234,12 @@ public:
     context_pointer get_alike(const scalars::ScalarType* new_ctype
     ) const override;
     context_pointer get_alike(
-            deg_t new_depth, const scalars::ScalarType* new_ctype
+            deg_t new_depth,
+            const scalars::ScalarType* new_ctype
     ) const override;
     context_pointer get_alike(
-            deg_t new_width, deg_t new_depth,
+            deg_t new_width,
+            deg_t new_depth,
             const scalars::ScalarType* new_ctype
     ) const override;
     LieBasis get_lie_basis() const override;
@@ -249,7 +258,8 @@ public:
     ) const override;
     Lie construct_lie(const VectorConstructionData& arg) const override;
     UnspecifiedAlgebraType construct(
-            AlgebraType type, const VectorConstructionData& data
+            AlgebraType type,
+            const VectorConstructionData& data
     ) const override;
 
     FreeTensor lie_to_tensor(const Lie& arg) const override;
@@ -257,13 +267,16 @@ public:
     FreeTensor signature(const SignatureData& data) const override;
     Lie log_signature(const SignatureData& data) const override;
     FreeTensor sig_derivative(
-            const std::vector<DerivativeComputeInfo>& info, VectorType vtype
+            const std::vector<DerivativeComputeInfo>& info,
+            VectorType vtype
     ) const override;
 
 private:
     template <typename Left, typename Right, typename FreeFunctionWrapper>
     UnspecifiedAlgebraType algebra_free_multiply_func_impl2(
-            const Left& left, const Right& right, FreeFunctionWrapper&& wrapper
+            const Left& left,
+            const Right& right,
+            FreeFunctionWrapper&& wrapper
     ) const
     {
         using OutType = decltype(wrapper(left, right));
@@ -295,16 +308,22 @@ class LiteContextMaker : public ContextMaker
 {
     using ContextMaker::preference_list;
     context_pointer create_context(
-            deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+            deg_t width,
+            deg_t depth,
+            const scalars::ScalarType* ctype,
             const preference_list& preferences
     ) const;
 
 public:
     bool
-    can_get(deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+    can_get(deg_t width,
+            deg_t depth,
+            const scalars::ScalarType* ctype,
             const preference_list& preferences) const override;
     context_pointer get_context(
-            deg_t width, deg_t depth, const scalars::ScalarType* ctype,
+            deg_t width,
+            deg_t depth,
+            const scalars::ScalarType* ctype,
             const preference_list& preferences
     ) const override;
     optional<base_context_pointer>
@@ -429,7 +448,7 @@ OutType LiteContext<Coefficients>::construct_impl(
 
     Slice<const scalar_type> raw_data;
 
-    const auto size = data.data.size();
+    const auto size = std::min(data.data.size(), basis->size(-1));
     std::vector<scalar_type> tmp;
     const auto* this_type = ctype();
     if (data.data.type() != this_type) {
@@ -474,7 +493,8 @@ LiteContext<Coefficients>::lie_to_tensor_impl(const Lie& arg) const
     }
 
     if (arg_context->width() != width()) {
-        RPY_THROW(std::invalid_argument,
+        RPY_THROW(
+                std::invalid_argument,
                 "cannot perform conversion on algebras with different bases"
         );
     }
@@ -493,7 +513,8 @@ LiteContext<Coefficients>::tensor_to_lie_impl(const FreeTensor& arg) const
     }
 
     if (arg_context->width() != width()) {
-        RPY_THROW(std::invalid_argument,
+        RPY_THROW(
+                std::invalid_argument,
                 "cannot perform conversion on algebras with different bases"
         );
     }
@@ -524,11 +545,7 @@ LiteContext<Coefficients>::compute_signature(const SignatureData& data) const
     const auto nrows = data.data_stream.row_count();
 
     for (dimn_t i = 0; i < nrows; ++i) {
-        auto row = data.data_stream[i];
-        const auto* keys
-                = data.key_stream.empty() ? nullptr : data.key_stream[i];
-        VectorConstructionData row_cdata{
-                scalars::KeyScalarArray(row, keys), VType};
+        VectorConstructionData row_cdata{data.data_stream[i], VType};
 
         auto lie_row
                 = construct_impl<lie_t<VType>>(row_cdata, p_lbasis, p_liemul);
@@ -544,7 +561,8 @@ template <typename Coefficients>
 template <VectorType VType>
 typename LiteContext<Coefficients>::template free_tensor_t<VType>
 LiteContext<Coefficients>::Ad_x_n(
-        deg_t d, const LiteContext::free_tensor_t<VType>& x,
+        deg_t d,
+        const LiteContext::free_tensor_t<VType>& x,
         const LiteContext::free_tensor_t<VType>& y
 ) const
 {
@@ -620,7 +638,8 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
     UnspecifiedAlgebraType(new FreeTensorImplementation<                       \
-                           free_tensor_t<(VTYPE)>, OwnedStorageModel>(         \
+                           free_tensor_t<(VTYPE)>,                             \
+                           OwnedStorageModel>(                                 \
             this,                                                              \
             construct_impl<free_tensor_t<(VTYPE)>>(data, p_tbasis, p_ftmul)    \
     ))
@@ -634,7 +653,8 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
     UnspecifiedAlgebraType(new AlgebraImplementation<                          \
-                           ShuffleTensorInterface, shuffle_tensor_t<(VTYPE)>,  \
+                           ShuffleTensorInterface,                             \
+                           shuffle_tensor_t<(VTYPE)>,                          \
                            OwnedStorageModel>(                                 \
             this,                                                              \
             construct_impl<shuffle_tensor_t<(VTYPE)>>(data, p_tbasis, p_stmul) \
@@ -649,8 +669,11 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
     UnspecifiedAlgebraType(new AlgebraImplementation<                          \
-                           LieInterface, lie_t<(VTYPE)>, OwnedStorageModel>(   \
-            this, construct_impl<lie_t<(VTYPE)>>(data, p_lbasis, p_liemul)     \
+                           LieInterface,                                       \
+                           lie_t<(VTYPE)>,                                     \
+                           OwnedStorageModel>(                                 \
+            this,                                                              \
+            construct_impl<lie_t<(VTYPE)>>(data, p_lbasis, p_liemul)           \
     ))
     RPY_MAKE_VTYPE_SWITCH(data.vector_type)
 #undef RPY_SWITCH_FN
@@ -680,10 +703,14 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::
 template <typename Coefficients>
 LiteContext<Coefficients>::LiteContext(deg_t width, deg_t depth)
     : dtl::LiteContextBasisHolder(width, depth),
-      Context(width, depth, *scalars::ScalarType::of<scalar_type>(),
-              string("libalgebra_lite"), p_lbasis->sizes().data(),
+      Context(width,
+              depth,
+              *scalars::ScalarType::of<scalar_type>(),
+              string("libalgebra_lite"),
+              p_lbasis->sizes().data(),
               p_tbasis->sizes().data()),
-      m_tensor_basis(&*p_tbasis), m_lie_basis(&*p_lbasis),
+      m_tensor_basis(&*p_tbasis),
+      m_lie_basis(&*p_lbasis),
       p_ftmul(lal::multiplication_registry<
               lal::free_tensor_multiplication>::get(*p_tbasis)),
       p_liemul(lal::multiplication_registry<lal::lie_multiplication>::get(
@@ -698,7 +725,9 @@ template <typename Coefficients>
 context_pointer LiteContext<Coefficients>::get_alike(deg_t new_depth) const
 {
     return get_context(
-            width(), new_depth, ctype(),
+            width(),
+            new_depth,
+            ctype(),
             {
                     {"backend", "libalgebra_lite"}
     }
@@ -709,7 +738,9 @@ context_pointer
 LiteContext<Coefficients>::get_alike(const scalars::ScalarType* new_ctype) const
 {
     return get_context(
-            width(), depth(), new_ctype,
+            width(),
+            depth(),
+            new_ctype,
             {
                     {"backend", "libalgebra_lite"}
     }
@@ -717,11 +748,14 @@ LiteContext<Coefficients>::get_alike(const scalars::ScalarType* new_ctype) const
 }
 template <typename Coefficients>
 context_pointer LiteContext<Coefficients>::get_alike(
-        deg_t new_depth, const scalars::ScalarType* new_ctype
+        deg_t new_depth,
+        const scalars::ScalarType* new_ctype
 ) const
 {
     return get_context(
-            width(), new_depth, new_ctype,
+            width(),
+            new_depth,
+            new_ctype,
             {
                     {"backend", "libalgebra_lite"}
     }
@@ -729,11 +763,15 @@ context_pointer LiteContext<Coefficients>::get_alike(
 }
 template <typename Coefficients>
 context_pointer LiteContext<Coefficients>::get_alike(
-        deg_t new_width, deg_t new_depth, const scalars::ScalarType* new_ctype
+        deg_t new_width,
+        deg_t new_depth,
+        const scalars::ScalarType* new_ctype
 ) const
 {
     return get_context(
-            new_width, new_depth, new_ctype,
+            new_width,
+            new_depth,
+            new_ctype,
             {
                     {"backend", "libalgebra_lite"}
     }
@@ -752,7 +790,8 @@ TensorBasis LiteContext<Coefficients>::get_tensor_basis() const
 
 template <typename Coefficients>
 FreeTensor LiteContext<Coefficients>::convert(
-        const FreeTensor& arg, optional<VectorType> new_vec_type
+        const FreeTensor& arg,
+        optional<VectorType> new_vec_type
 ) const
 {
     auto vtype
@@ -763,7 +802,8 @@ FreeTensor LiteContext<Coefficients>::convert(
 }
 template <typename Coefficients>
 ShuffleTensor LiteContext<Coefficients>::convert(
-        const ShuffleTensor& arg, optional<VectorType> new_vec_type
+        const ShuffleTensor& arg,
+        optional<VectorType> new_vec_type
 ) const
 {
     auto vtype
@@ -774,7 +814,8 @@ ShuffleTensor LiteContext<Coefficients>::convert(
 }
 template <typename Coefficients>
 Lie LiteContext<Coefficients>::convert(
-        const Lie& arg, optional<VectorType> new_vec_type
+        const Lie& arg,
+        optional<VectorType> new_vec_type
 ) const
 {
     auto vtype
@@ -820,7 +861,8 @@ Lie LiteContext<Coefficients>::construct_lie(const VectorConstructionData& arg
 }
 template <typename Coefficients>
 UnspecifiedAlgebraType LiteContext<Coefficients>::construct(
-        AlgebraType type, const VectorConstructionData& data
+        AlgebraType type,
+        const VectorConstructionData& data
 ) const
 {
 #define RPY_SWITCH_FN(ATYPE) construct_impl(data, algebra_type_tag<ATYPE>())
@@ -856,7 +898,8 @@ Lie LiteContext<Coefficients>::log_signature(const SignatureData& data) const
 }
 template <typename Coefficients>
 FreeTensor LiteContext<Coefficients>::sig_derivative(
-        const std::vector<DerivativeComputeInfo>& info, VectorType vtype
+        const std::vector<DerivativeComputeInfo>& info,
+        VectorType vtype
 ) const
 {
 #define RPY_SWITCH_FN(VTYPE) FreeTensor(this, sig_derivative_impl<VTYPE>(info))
@@ -934,7 +977,10 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::free_multiply(
 ) const
 {
     return binary_invoker::eval(
-            this, wrappers::FreeMultiply(), std::move(left), std::move(right)
+            this,
+            wrappers::FreeMultiply(),
+            std::move(left),
+            std::move(right)
     );
 }
 template <typename Coefficients>
@@ -944,7 +990,10 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::shuffle_multiply(
 ) const
 {
     return binary_invoker::eval(
-            this, wrappers::ShuffleMultiply(), std::move(left), std::move(right)
+            this,
+            wrappers::ShuffleMultiply(),
+            std::move(left),
+            std::move(right)
     );
 }
 template <typename Coefficients>
@@ -954,7 +1003,10 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::half_shuffle_multiply(
 ) const
 {
     return binary_invoker::eval(
-            this, wrappers::HalfShuffleMultiply(), std::move(left), std::move(right)
+            this,
+            wrappers::HalfShuffleMultiply(),
+            std::move(left),
+            std::move(right)
     );
 }
 template <typename Coefficients>
@@ -964,7 +1016,9 @@ UnspecifiedAlgebraType LiteContext<Coefficients>::adjoint_to_left_multiply_by(
 ) const
 {
     return binary_invoker::eval(
-            this, wrappers::AdjointFreeMultiply(), std::move(multiplier),
+            this,
+            wrappers::AdjointFreeMultiply(),
+            std::move(multiplier),
             std::move(argument)
     );
 }

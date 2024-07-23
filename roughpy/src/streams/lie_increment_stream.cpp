@@ -34,12 +34,14 @@
 #include <roughpy/streams/stream.h>
 
 #include "args/kwargs_to_path_metadata.h"
-#include "scalars/parse_key_scalar_stream.h"
+#include "args/parse_data_argument.h"
 #include "scalars/scalar_type.h"
 #include "scalars/scalars.h"
+#include "schema_finalization.h"
 #include "stream.h"
 
 #include <limits>
+#include <pybind11/pytypes.h>
 
 using namespace rpy;
 using namespace rpy::python;
@@ -48,7 +50,7 @@ using namespace pybind11::literals;
 using scalars::scalar_cast;
 
 static const char* LIE_INCR_STREAM_DOC
-        = R"rpydoc(A basic stream type defined by a sequence of increments
+        = R"rpydoc(A basic :class:`Stream` type defined by a sequence of increments
 of fixed size at specified time intervals.
 )rpydoc";
 
@@ -64,27 +66,28 @@ void buffer_to_indices(
     (*scalars::scalar_type_of<param_t>())->convert_copy(dst, src);
 }
 
-static py::object lie_increment_stream_from_increments(
-        const py::object& data,
-        const py::kwargs& kwargs
-)
+static py::object lie_increment_stream_from_increments(py::object data, py::kwargs kwargs)
 {
     auto md = kwargs_to_metadata(kwargs);
 
     std::vector<param_t> indices;
 
-    python::PyToBufferOptions options;
-    options.type = md.scalar_type;
+    python::DataArgOptions options;
+    options.scalar_type = md.scalar_type;
     options.max_nested = 2;
     options.allow_scalar = false;
 
     //    auto buffer = python::py_to_buffer(data, options);
-    python::ParsedKeyScalarStream ks_stream;
-    python::parse_key_scalar_stream(ks_stream, data, options);
+    auto parsedData = parse_data_argument(data, options);
+
+    scalars::KeyScalarStream ks_stream;
+    // Now we have to construct the key scalar stream entries
+    ks_stream.set_ctype(options.scalar_type);
+    parsedData.fill_ks_stream(ks_stream);
 
     if (md.scalar_type == nullptr) {
-        if (options.type != nullptr) {
-            md.scalar_type = options.type;
+        if (options.scalar_type != nullptr) {
+            md.scalar_type = options.scalar_type;
         } else {
             RPY_THROW(py::type_error, "unable to deduce suitable scalar type");
         }
@@ -93,7 +96,7 @@ static py::object lie_increment_stream_from_increments(
     RPY_CHECK(md.scalar_type != nullptr);
     if (!md.ctx) {
         if (md.width == 0) {
-            md.width = static_cast<deg_t>(ks_stream.data_stream.max_row_size());
+            md.width = static_cast<deg_t>(ks_stream.max_row_size());
         }
 
         if (md.width == 0 || md.depth == 0) {
@@ -105,13 +108,13 @@ static py::object lie_increment_stream_from_increments(
         md.ctx = algebra::get_context(md.width, md.depth, md.scalar_type);
     }
 
-    dimn_t num_increments = ks_stream.data_stream.row_count();
+    dimn_t num_increments = ks_stream.row_count();
 
     auto effective_support
             = intervals::RealInterval::right_unbounded(0.0, md.interval_type);
 
     if (kwargs.contains("indices")) {
-        auto indices_arg = kwargs["indices"];
+        auto indices_arg = kwargs_pop(kwargs, "indices");
 
         if (py::isinstance<py::buffer>(indices_arg)) {
             auto info
@@ -132,7 +135,7 @@ static py::object lie_increment_stream_from_increments(
             };
 
             for (dimn_t i = 0; i < num_increments; ++i) {
-                auto row = ks_stream.data_stream[i];
+                auto row = ks_stream[i];
 
                 if (row.has_keys()) {
 
@@ -181,9 +184,6 @@ static py::object lie_increment_stream_from_increments(
 
 
 
-    if (!md.schema) {
-        md.schema = std::make_shared<streams::StreamSchema>(md.width);
-    }
 
     if (!md.resolution) {
         RPY_DBG_ASSERT(!indices.empty());
@@ -209,9 +209,14 @@ static py::object lie_increment_stream_from_increments(
         );
     }
 
+    // Everything is finished except building the stream. Check for extra kword
+    // args
+    python::check_for_excess_arguments(kwargs);
+
+    python::finalize_schema(md);
 
     auto result = streams::Stream(streams::LieIncrementStream(
-            ks_stream.data_stream,
+            ks_stream,
             indices,
             {md.width,
              effective_support,

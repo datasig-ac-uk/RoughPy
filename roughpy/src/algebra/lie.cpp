@@ -40,6 +40,7 @@ RPY_MSVC_DISABLE_WARNING(4661)
 
 #include "args/kwargs_to_vector_construction.h"
 #include "args/numpy.h"
+#include "args/parse_data_argument.h"
 #include "scalars/scalars.h"
 
 #include "lie_key.h"
@@ -51,25 +52,83 @@ using namespace rpy::algebra;
 using namespace pybind11::literals;
 
 static const char* LIE_DOC = R"edoc(
-Element of the free Lie algebra.
+
+Lie elements live in the free Lie Algebra.
+Group-like elements have a one-to-one correspondence with a :class:`Stream`.
+That is, for every group-like element, there exists a :class:`Stream` where the :py:meth:`~signature` of that :class:`Stream` is the group-like element.
+For more information on Lie Algebras, see `Reutenauer <https://books.google.co.uk/books?id=cBvvAAAAMAAJ&redir_esc=y>`_ and `Bourbaki <https://link.springer.com/book/9783540642428>`_.
+
+You will most commonly encounter :class:`Lie` objects when taking the :py:meth:`~log_signature` of a path.
+We can use the Dynkin map to transfer between :class:`Lie` and :py:attr:`~signature` objects.
+
+To construct a :class:`Lie`, you will need :py:data:`~data`. For example, we can construct a :class:`Lie` using a list of polynomials.
+
+.. code:: python
+
+    >>> lie_data_x = [
+        1 * roughpy.Monomial("x1"),  # channel (1)
+        1 * roughpy.Monomial("x2"),  # channel (2)
+        1 * roughpy.Monomial("x3"),  # channel (3)
+        1 * roughpy.Monomial("x4"),  # channel ([1, 2])
+        1 * roughpy.Monomial("x5"),  # channel ([1, 3])
+        1 * roughpy.Monomial("x6"),  # channel ([2, 3])
+        ]
+
+    >>> lie_x = rp.Lie(lie_data_x, width=3, depth=2, dtype=rp.RationalPoly)
+    >>> print(f"{lie_x=!s}")
+        lie_x={ { 1(x1) }(1) { 1(x2) }(2) { 1(x3) }(3) { 1(x4) }([1,2]) { 1(x5) }([1,3]) { 1(x6) }([2,3]) }
+
+You will also need to provide the following parameters:
+
+:py:attr:`ctx`
+    Provide an algebra context in which to create the algebra, takes priority over the next 3.
+
+Or
+
+:py:attr:`dtype`
+    Scalar type for the algebra (deprecated, use :py:attr:`ctx` instead). Can be a RoughPy data type (:py:attr:`rp.SPReal`, :py:attr:`rp.DPReal`, :py:attr:`rp.Rational`, :py:attr:`rp.PolyRational`), or a Numpy dtype.
+
+:py:attr:`depth`
+    Maximum degree for :class:`Lie` and :class:`FreeTensor` objects, etc. (deprecated, use :py:attr:`ctx` instead)
+
+:py:attr:`width`
+    Alphabet size, dimension of the underlying space (deprecated, use :py:attr:`ctx` instead)
+
+Optional parameters:
+
+:py:attr:`vector_type`
+    :py:attr:`dense` or :py:attr:`sparse`
+
+:py:attr:`keys`
+    List/array of :py:attr:`keys` to go along with scalars provided as an array argument.
+
 )edoc";
 
 static Lie construct_lie(py::object data, py::kwargs kwargs)
 {
     auto helper = python::kwargs_to_construction_data(kwargs);
 
-    python::PyToBufferOptions options;
-    options.type = helper.ctype;
+    python::DataArgOptions options;
+    options.scalar_type = helper.ctype;
     options.allow_scalar = false;
+    options.max_nested = 1;
 
-    auto buffer = py_to_buffer(data, options);
+    auto parsed_data = python::parse_data_argument(data, options);
+
+    bool is_sparse = false;
+    scalars::KeyScalarArray buffer;
+    if (parsed_data.size() == 1) {
+        auto& leaf = parsed_data.back();
+        buffer = std::move(leaf.data);
+        is_sparse = leaf.value_type == python::ValueType::KeyValue;
+    }
 
     if (helper.ctype == nullptr) {
-        if (options.type == nullptr) {
+        if (options.scalar_type == nullptr) {
             RPY_THROW(py::value_error,"could not deduce an appropriate scalar_type"
             );
         }
-        helper.ctype = options.type;
+        helper.ctype = options.scalar_type;
     }
 
     if (helper.width == 0 && buffer.size() > 0) {

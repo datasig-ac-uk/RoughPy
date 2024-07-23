@@ -67,8 +67,8 @@ void python::init_dyadic(py::module_& m)
         return ss.str();
     });
 
-    klass.def_static("dyadic_equals", &dyadic_equals, "lhs"_a, "rhs"_a);
-    klass.def_static("rational_equals", &rational_equals, "lhs"_a, "rhs"_a);
+    klass.def_static("dyadic_equals", &dyadic_equals, "lhs"_a, "rhs"_a, "Check if two dyadic rationals are equivalent, :math:`k_1=k_2`, :math:`n_1=n_2`.");
+    klass.def_static("rational_equals", &rational_equals, "lhs"_a, "rhs"_a, "Check if :math:`\\frac{k_1}{2^{n_1}} = \\frac{k_2}{2^{n_2}}` as rational numbers, e.g. :math:`\\frac{2}{2^1} = \\frac{1}{2^0}` as rationals, but not as dyadics, as neither :math:`k_1=k_2` nor :math:`n_1=n_2`.");
 
     klass.def_property_readonly("k", &Dyadic::multiplier);
     klass.def_property_readonly("n", &Dyadic::power);
