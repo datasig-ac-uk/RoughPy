@@ -140,6 +140,6 @@ bool ScalarVector::operator==(const ScalarVector& other) const
     if (&other == this) { return true; }
 
     const auto mismatch
-            = devices::algorithms::mismatch(scalars(), other.scalars());
+            = devices::algorithms::mismatch(base_data(), other.base_data());
     return static_cast<bool>(mismatch);
 }

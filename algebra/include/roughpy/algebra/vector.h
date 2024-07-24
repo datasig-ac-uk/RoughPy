@@ -29,6 +29,77 @@ namespace algebra {
 
 class VectorIterator;
 
+class Vector;
+
+class ROUGHPY_ALGEBRA_EXPORT VectorFactory : public platform::SmallObjectBase
+{
+public:
+    virtual ~VectorFactory();
+
+    virtual Vector construct_empty() const = 0;
+    virtual Vector construct_from(const scalars::ScalarVector& base) const = 0;
+    virtual Vector construct_with_dim(dimn_t dimension) const = 0;
+};
+
+class ROUGHPY_ALGEBRA_EXPORT VectorContext : public platform::SmallObjectBase
+{
+    BasisPointer p_basis;
+
+protected:
+    VectorContext(BasisPointer basis) : p_basis(std::move(basis)) {}
+
+public:
+    virtual ~VectorContext();
+
+    RPY_NO_DISCARD virtual std::unique_ptr<VectorFactory>
+    factory() const noexcept;
+
+    const Basis& basis() const noexcept { return *p_basis; };
+
+    virtual bool is_sparse() const noexcept;
+
+    RPY_NO_DISCARD virtual Rc<VectorContext> copy() const;
+
+    RPY_NO_DISCARD virtual VectorIterator
+    make_iterator(typename scalars::ScalarVector::iterator it) const;
+
+    RPY_NO_DISCARD virtual VectorIterator
+    make_const_iterator(typename scalars::ScalarVector::const_iterator it
+    ) const;
+
+    virtual dimn_t size(const Vector& vector) const noexcept;
+    virtual dimn_t dimension(const Vector& vector) const noexcept;
+
+    virtual void inplace_unary(
+            const scalars::UnaryVectorOperation& operation,
+            Vector& arg,
+            const scalars::ops::Operator& op
+    );
+
+    virtual void
+    unary(const scalars::UnaryVectorOperation& operation,
+          Vector& dst,
+          const Vector& arg,
+          const scalars::ops::Operator& op) const;
+
+    virtual void binary_inplace(
+            const scalars::BinaryVectorOperation& operation,
+            Vector& left,
+            const Vector& right,
+            const scalars::ops::Operator& op
+    );
+
+    virtual void
+    binary(const scalars::BinaryVectorOperation& operation,
+           Vector& dst,
+           const Vector& left,
+           const Vector& right,
+           const scalars::ops::Operator& op) const;
+
+    RPY_NO_DISCARD virtual bool
+    is_equal(const Vector& left, const Vector& right) const noexcept;
+};
+
 /**
  * @brief The Vector class represents a mathematical vector in a given basis.
  *
@@ -46,6 +117,9 @@ class ROUGHPY_ALGEBRA_EXPORT Vector : public scalars::ScalarVector
     BasisPointer p_basis = nullptr;
 
     friend class MutableVectorElement;
+
+    Rc<VectorContext> p_context;
+    friend class VectorContext;
 
 public:
     using iterator = VectorIterator;
@@ -97,11 +171,6 @@ protected:
      */
     void delete_element(const BasisKey& key, optional<dimn_t> index_hint);
 
-    explicit Vector(BasisPointer basis, VectorDataPtr base, VectorDataPtr fibre)
-        : ScalarVector(std::move(base), std::move(fibre)),
-          p_basis(std::move(basis))
-    {}
-
     RPY_NO_DISCARD static bool basis_compatibility_check(const Basis& basis
     ) noexcept
     {
@@ -110,8 +179,6 @@ protected:
 
 public:
     Vector();
-
-    ~Vector();
 
     Vector(const Vector& other);
 
@@ -151,7 +218,7 @@ public:
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
-        : ScalarVector(std::move(scalar_data), std::move(key_buffer)),
+        : ScalarVector(std::move(scalar_data)),
           p_basis(std::move(basis))
     {}
 
@@ -178,7 +245,7 @@ public:
         : ScalarVector(scalar_type, basis->dense_dimension(vals.size())),
           p_basis(std::move(basis))
     {
-        auto& scalar_vals = mut_scalars();
+        auto& scalar_vals = mut_base_data();
         for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
     }
 
@@ -207,7 +274,7 @@ public:
     enable_if_t<is_base_of_v<Vector, V>, V> borrow() const
     {
         RPY_CHECK(V::basis_compatibility_check(*p_basis));
-        return V(p_basis, ScalarVector::borrow<ScalarVector>());
+        return V(p_basis, *this);
     }
 
     /**
@@ -231,7 +298,7 @@ public:
     enable_if_t<is_base_of_v<Vector, V>, V> borrow_mut()
     {
         RPY_CHECK(V::basis_compatibility_check(*p_basis));
-        return V(p_basis, ScalarVector::borrow_mut<ScalarVector>());
+        return V(p_basis, *this);
     }
 
     /**
@@ -574,19 +641,28 @@ public:
      */
     Vector& sub_scal_div(const Vector& other, const scalars::Scalar& scalar);
 
-    RPY_NO_DISCARD bool operator==(const Vector& other) const;
-    RPY_NO_DISCARD bool operator!=(const Vector& other) const
+    void print(std::ostream& out) const;
+
+    RPY_NO_DISCARD friend bool
+    operator==(const Vector& lhs, const Vector& rhs) noexcept
     {
-        return !operator==(other);
+        return lhs.p_context->is_equal(lhs, rhs);
+    }
+
+    RPY_NO_DISCARD friend bool
+    operator!=(const Vector& lhs, const Vector& rhs) noexcept
+    {
+        return !(lhs == rhs);
     }
 };
 
 ROUGHPY_ALGEBRA_EXPORT
 std::ostream& operator<<(std::ostream& os, const Vector& value);
 
+
 /*
- * Arithmetic operators are templated so we don't have to reimplement them for
- * any classes that build on top of these.
+ * Arithmetic operators are templated so we don't have to reimplement
+ * them for any classes that build on top of these.
  */
 
 template <typename V>

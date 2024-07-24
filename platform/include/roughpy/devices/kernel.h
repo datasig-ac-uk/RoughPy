@@ -381,8 +381,9 @@ public:
     virtual containers::Vec<void*> raw_pointers() const = 0;
     virtual Device get_device() const noexcept = 0;
     virtual Slice<const TypePtr> get_types() const noexcept = 0;
-    virtual containers::SmallVec<const Type*, 1> get_generic_types() const noexcept
-            = 0;
+    virtual Slice<const Type* const> get_generic_types() const noexcept = 0;
+
+    virtual containers::SmallVec<dimn_t, 2> get_sizes() const noexcept = 0;
 
     virtual void bind(Buffer buffer) = 0;
     virtual void bind(ConstReference value) = 0;

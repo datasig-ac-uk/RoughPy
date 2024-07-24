@@ -5,7 +5,6 @@
 #ifndef ROUGHPY_DEVICES_HOST_KERNEL_H
 #define ROUGHPY_DEVICES_HOST_KERNEL_H
 
-#include "../../../src/devices/fundamental_types/double_type.h"
 
 #include <roughpy/core/traits.h>
 #include <roughpy/devices/host_device.h>

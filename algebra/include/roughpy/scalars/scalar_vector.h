@@ -82,6 +82,11 @@ public:
     ScalarVector();
     explicit ScalarVector(TypePtr scalar_type, dimn_t size = 0);
 
+    explicit ScalarVector(ScalarArray&& data)
+        : m_base_data(std::move(data)),
+          m_fibre_data(m_base_data.type())
+    {}
+
     ~ScalarVector();
 
     RPY_NO_DISCARD bool fast_is_zero() const noexcept
@@ -159,8 +164,30 @@ protected:
     virtual optional<devices::Kernel> get_kernel(
             devices::Device device,
             string_view base_name,
-            Slice<const Type*> types
+            Slice<const Type* const> types
     ) const;
+
+    virtual devices::KernelLaunchParams
+    get_launch_params(const devices::KernelArguments& args) const noexcept;
+
+    void eval_impl(
+            string_view base_name,
+            const devices::Kernel& generic_kernel,
+            const devices::KernelArguments& kernel_args
+    ) const
+    {
+        auto params = get_launch_params(kernel_args);
+
+        const auto generic_types = kernel_args.get_generic_types();
+        devices::EventStatus result;
+        if (auto kernel
+            = get_kernel(kernel_args.get_device(), base_name, generic_types)) {
+            result = launch_kernel_sync(*kernel, params, kernel_args);
+        } else {
+            result = launch_kernel_sync(generic_kernel, params, kernel_args);
+        }
+        RPY_CHECK(result == devices::EventStatus::CompletedSuccessfully);
+    }
 
 public:
     virtual ~VectorOperation();
@@ -219,6 +246,7 @@ public:
     static constexpr dimn_t my_arity = 3;
 
     dimn_t arity() const noexcept override { return my_arity; }
+
     virtual void
     eval(ScalarVector& destination,
          const ScalarVector& first,
@@ -248,13 +276,6 @@ class StandardUnaryVectorOperation : public UnaryVectorOperation
     using GenericKernelType = KernelType<devices::Value>;
     using GenericInplaceKernelType = InplaceKernelType<devices::Value>;
 
-    void eval_impl(
-            string_view base_name,
-            const devices::Kernel& generic_kernel,
-            const devices::KernelLaunchParams& params,
-            const devices::KernelArguments& kernel_args
-    ) const;
-
 public:
     StandardUnaryVectorOperation();
 
@@ -268,28 +289,8 @@ public:
 
 template <template <typename> class Operation>
 StandardUnaryVectorOperation<Operation>::StandardUnaryVectorOperation()
-    : UnaryVectorOperation(GenericKernelType::get_base_name())
 {
     // TODO: Register the host kernels.
-}
-
-template <template <typename> class Operation>
-inline void StandardUnaryVectorOperation<Operation>::eval_impl(
-        string_view base_name,
-        const devices::Kernel& generic_kernel,
-        const devices::KernelLaunchParams& params,
-        const devices::KernelArguments& kernel_args
-) const
-{
-    const auto generic_types = kernel_args.get_generic_types();
-    devices::EventStatus result;
-    if (auto kernel
-        = get_kernel(kernel_args.get_device(), base_name, generic_types)) {
-        result = launch_kernel_sync(*kernel, params, kernel_args);
-    } else {
-        result = launch_kernel_sync(generic_kernel, params, kernel_args);
-    }
-    RPY_CHECK(result == devices::EventStatus::CompletedSuccessfully);
 }
 
 template <template <typename> class Operation>
@@ -299,16 +300,18 @@ void StandardUnaryVectorOperation<Operation>::eval(
         const ops::Operator& op
 ) const
 {
-    // TODO: resizing logic
-
-    devices::KernelLaunchParams params;
+    resize_destination(destination, source.dimension());
 
     auto binding = GenericKernelType::new_binding();
     binding->bind(destination);
     binding->bind(source);
     binding->bind(op);
 
-    eval_impl(GenericKernelType::get_base_name(), params, *binding);
+    eval_impl(
+            GenericKernelType::get_base_name(),
+            *GenericKernelType::get(),
+            *binding
+    );
 }
 template <template <typename> class Operation>
 void StandardUnaryVectorOperation<Operation>::eval_inplace(
@@ -316,15 +319,91 @@ void StandardUnaryVectorOperation<Operation>::eval_inplace(
         const ops::Operator& op
 ) const
 {
-    // TODO: resizing logic
-
-    devices::KernelLaunchParams params;
-
+    // No resizing should be necessary.
     auto binding = GenericInplaceKernelType::new_binding();
     binding->bind(arg);
     binding->bind(op);
 
-    eval_impl(GenericInplaceKernelType::get_base_name(), params, *binding);
+    eval_impl(
+            GenericInplaceKernelType::get_base_name(),
+            *GenericInplaceKernelType::get(),
+            *binding
+    );
+}
+
+template <template <typename> class Operation>
+class StandardBinaryVectorOperation : public BinaryVectorOperation
+{
+
+    template <typename T>
+    using KernelType = devices::BinaryHostKernel<Operation, T>;
+    template <typename T>
+    using InplaceKernelType = devices::BinaryInplaceHostKernel<Operation, T>;
+
+    using GenericKernelType = KernelType<devices::Value>;
+    using GenericInplaceKernelType = InplaceKernelType<devices::Value>;
+
+public:
+    StandardBinaryVectorOperation();
+
+    void
+    eval(ScalarVector& destination,
+         const ScalarVector& left,
+         const ScalarVector& right,
+         const ops::Operator& op) const override;
+    void eval_inplace(
+            ScalarVector& left,
+            const ScalarVector& right,
+            const ops::Operator& op
+    ) const override;
+};
+
+template <template <typename> class Operation>
+StandardBinaryVectorOperation<Operation>::StandardBinaryVectorOperation()
+{}
+template <template <typename> class Operation>
+void StandardBinaryVectorOperation<Operation>::eval(
+        ScalarVector& destination,
+        const ScalarVector& left,
+        const ScalarVector& right,
+        const ops::Operator& op
+) const
+{
+    const auto max_dim = std::max(left.dimension(), right.dimension());
+    resize_destination(destination, max_dim);
+
+    auto binding = GenericKernelType::new_binding();
+    binding->bind(destination);
+    binding->bind(left);
+    binding->bind(right);
+    binding->bind(op);
+
+    eval_impl(
+            GenericKernelType::get_base_name(),
+            *GenericKernelType::get(),
+            *binding
+    );
+}
+template <template <typename> class Operation>
+void StandardBinaryVectorOperation<Operation>::eval_inplace(
+        ScalarVector& left,
+        const ScalarVector& right,
+        const ops::Operator& op
+) const
+{
+    const auto max_dim = std::max(left.dimension(), right.dimension());
+    resize_destination(left, max_dim);
+
+    auto binding = GenericInplaceKernelType::new_binding();
+    binding->bind(left);
+    binding->bind(right);
+    binding->bind(op);
+
+    eval_impl(
+            GenericInplaceKernelType::get_base_name(),
+            GenericInplaceKernelType::get(),
+            *binding
+    );
 }
 
 }// namespace scalars

@@ -6,7 +6,7 @@
 
 #include <roughpy/core/ranges.h>
 
-#include <roughpy/scalars/algorithms.h>
+#include <roughpy/devices/algorithms.h>
 
 rpy::dimn_t rpy::algebra::KeyScalarStream::col_count(dimn_t i) const noexcept
 {
@@ -73,7 +73,7 @@ void rpy::algebra::KeyScalarStream::push_back(KeyScalarArray&& data)
         m_parts.emplace_back(std::move(data));
     } else {
         auto& back = m_parts.emplace_back(p_type, data.size());
-        scalars::algorithms::copy(back, data);
+        devices::algorithms::copy(back, data);
         if (data.has_keys()) { back.keys() = std::move(data.keys()); }
     }
 }

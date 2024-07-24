@@ -36,7 +36,6 @@
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/scalars/scalar_stream.h>
-#include <roughpy/scalars/scalar_type.h>
 
 #include "free_tensor.h"
 #include "key_scalar_array.h"
@@ -207,8 +206,8 @@ inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2)
         RPY_THROW(std::invalid_argument, "contexts have incompatible width");
     }
 
-    const auto* ctype1 = ctx1.ctype();
-    const auto* ctype2 = ctx2.ctype();
+    const auto ctype1 = ctx1.ctype();
+    const auto ctype2 = ctx2.ctype();
     if (ctype1 == ctype2) {
         // Both are OK if the ctypes are identical
         return;

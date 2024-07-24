@@ -9,8 +9,6 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/scalars/scalar_stream.h>
-#include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/scalars_fwd.h>
 
 #include "key_scalar_array.h"

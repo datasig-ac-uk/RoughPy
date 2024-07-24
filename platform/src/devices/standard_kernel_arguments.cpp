@@ -93,6 +93,26 @@ Slice<const TypePtr> StandardKernelArguments::get_types() const noexcept
 {
     return {m_types.data(), m_types.size()};
 }
+
+Slice<const Type* const>
+StandardKernelArguments::get_generic_types() const noexcept
+{
+    return {m_generics.data(), m_generics.size()};
+}
+containers::SmallVec<dimn_t, 2>
+StandardKernelArguments::get_sizes() const noexcept
+{
+    containers::SmallVec<dimn_t, 2> result;
+    result.reserve(m_args.size());
+    for (const auto& [tp, arg] : views::zip(m_signature, m_args)) {
+        if (tp.param_kind == params::ParameterType::ResultBuffer
+            || tp.param_kind == params::ParameterType::ArgBuffer) {
+            result.push_back(static_cast<const Buffer*>(arg.ptr)->size());
+        }
+    }
+    return result;
+}
+
 void StandardKernelArguments::bind(Buffer buffer)
 {
     update_arg(m_args.size(), std::move(buffer));

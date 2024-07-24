@@ -19,8 +19,9 @@ class StandardKernelArguments : public KernelArguments
         void* ptr;
     };
 
-    containers::SmallVec<KernelArg, 4> m_args;
+    containers::SmallVec<KernelArg, 2> m_args;
     containers::SmallVec<TypePtr, 1> m_types;
+    containers::SmallVec<const Type*, 1> m_generics;
 
     using Param = typename KernelSignature::Parameter;
 
@@ -43,6 +44,11 @@ public:
     containers::Vec<void*> raw_pointers() const override;
     Device get_device() const noexcept override;
     Slice<const TypePtr> get_types() const noexcept override;
+
+    Slice<const Type* const>
+    get_generic_types() const noexcept override;
+    containers::SmallVec<dimn_t, 2> get_sizes() const noexcept override;
+
     void bind(Buffer buffer) override;
     void bind(ConstReference value) override;
     void bind(const operators::Operator& op) override;
