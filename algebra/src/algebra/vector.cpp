@@ -67,13 +67,33 @@ typename Vector::const_iterator Vector::end() const
     return p_context->make_const_iterator(this->ScalarVector::end());
 }
 
-
-
 void Vector::check_and_resize_for_operands(const Vector& lhs, const Vector& rhs)
 {
+    if (RPY_UNLIKELY(lhs.p_context == nullptr && rhs.p_context == nullptr)) {
+        RPY_THROW(std::runtime_error, "Invalid vector arguments");
+    }
+    const auto& context = lhs.p_context ? *rhs.p_context : *lhs.p_context;
 
+    dimn_t new_base_size = 0;
+    dimn_t new_fibre_size = 0;
+
+    {
+        // TODO: handle sparsity
+        new_base_size = std::max(lhs.size(), rhs.size());
+        new_fibre_size
+                = std::max(lhs.fibre_data().size(), rhs.fibre_data().size());
+    }
+
+    // We need to separate the part where we interact with this because lhs
+    // might alias so we gather together the operations that interact with this
+    // below. We might need to put in a barrier instruction of some sort to
+    // prevent the compiler from messing with this ordering.
+
+    if (!p_context) { p_context = context.empty_like(); }
+
+    this->resize_base_dim(new_base_size);
+    if (new_fibre_size > 0) { this->resize_fibre_dim(new_fibre_size); }
 }
-
 
 Vector Vector::uminus() const
 {
@@ -90,6 +110,7 @@ Vector Vector::uminus() const
 Vector Vector::add(const Vector& other) const
 {
     Vector result(p_context->empty_like(), scalar_type());
+    result.check_and_resize_for_operands(*this, other);
     AdditionOperator add;
 
     p_context->binary(
@@ -105,6 +126,7 @@ Vector Vector::add(const Vector& other) const
 Vector Vector::sub(const Vector& other) const
 {
     Vector result(p_context->empty_like(), scalar_type());
+    result.check_and_resize_for_operands(*this, other);
     SubtractionOperator sub;
 
     p_context->binary(
@@ -121,6 +143,7 @@ Vector Vector::sub(const Vector& other) const
 Vector& Vector::add_inplace(const Vector& other)
 {
     AdditionOperator add_inplace;
+    check_and_resize_for_operands(*this, other);
 
     p_context->binary_inplace(
             add_inplace,
@@ -134,6 +157,8 @@ Vector& Vector::add_inplace(const Vector& other)
 Vector& Vector::sub_inplace(const Vector& other)
 {
     SubtractionOperator sub_inplace;
+    check_and_resize_for_operands(*this, other);
+
     p_context->binary_inplace(
             sub_inplace,
             *this,
@@ -213,6 +238,7 @@ Vector& Vector::sdiv_inplace(const scalars::Scalar& other)
 Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
     ASMOperator add_scal_mul;
+    check_and_resize_for_operands(*this, other);
 
     p_context->binary_inplace(
             add_scal_mul,
@@ -227,6 +253,7 @@ Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 Vector& Vector::sub_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
     SSMOperator sub_scal_mul;
+    check_and_resize_for_operands(*this, other);
 
     p_context->binary_inplace(
             sub_scal_mul,
@@ -249,8 +276,6 @@ Vector& Vector::sub_scal_div(const Vector& other, const scalars::Scalar& scalar)
     auto recip = scalars::math::reciprocal(scalar);
     return sub_scal_mul(other, recip);
 }
-
-
 
 std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
 {
