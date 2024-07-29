@@ -41,6 +41,9 @@
 namespace rpy {
 namespace algebra {
 
+
+
+
 class ROUGHPY_ALGEBRA_EXPORT KeyIteratorState
 {
 public:
@@ -575,6 +578,9 @@ public:
      */
     RPY_NO_DISCARD virtual BasisComparison compare(BasisPointer other
     ) const noexcept;
+
+    virtual Rc<VectorContext> default_vector_context() const;
+
 };
 
 /**

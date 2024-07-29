@@ -45,18 +45,18 @@ class ROUGHPY_ALGEBRA_EXPORT VectorContext : public platform::SmallObjectBase
 {
     BasisPointer p_basis;
 
-protected:
-    VectorContext(BasisPointer basis) : p_basis(std::move(basis)) {}
-
 public:
+    explicit VectorContext(BasisPointer basis) : p_basis(std::move(basis)) {}
+
     virtual ~VectorContext();
 
-    RPY_NO_DISCARD virtual std::unique_ptr<VectorFactory>
-    factory() const noexcept;
+    virtual Rc<VectorContext> empty_like() const noexcept;
 
     const Basis& basis() const noexcept { return *p_basis; };
 
     virtual bool is_sparse() const noexcept;
+
+    virtual optional<dimn_t> get_index(const BasisKey& key) const noexcept;
 
     RPY_NO_DISCARD virtual Rc<VectorContext> copy() const;
 
@@ -70,7 +70,7 @@ public:
     virtual dimn_t size(const Vector& vector) const noexcept;
     virtual dimn_t dimension(const Vector& vector) const noexcept;
 
-    virtual void inplace_unary(
+    virtual void unary_inplace(
             const scalars::UnaryVectorOperation& operation,
             Vector& arg,
             const scalars::ops::Operator& op
@@ -114,8 +114,6 @@ public:
  */
 class ROUGHPY_ALGEBRA_EXPORT Vector : public scalars::ScalarVector
 {
-    BasisPointer p_basis = nullptr;
-
     friend class MutableVectorElement;
 
     Rc<VectorContext> p_context;
@@ -199,7 +197,7 @@ public:
      */
     explicit Vector(BasisPointer basis, BasisKey key, Scalar scalar)
         : ScalarVector(std::move(scalar.type())),
-          p_basis(std::move(basis))
+          p_context(basis->default_vector_context())
     {
         insert_element(std::move(key), std::move(scalar));
     }
@@ -212,14 +210,21 @@ public:
      */
     explicit Vector(BasisPointer basis, scalars::TypePtr scalar_type)
         : ScalarVector(std::move(scalar_type)),
-          p_basis(std::move(basis))
+          p_context(basis->default_vector_context())
     {}
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
         : ScalarVector(std::move(scalar_data)),
-          p_basis(std::move(basis))
+          p_context(basis->default_vector_context())
+    {}
+
+    Vector(Rc<VectorContext> context,
+           scalars::TypePtr scalar_type,
+           dimn_t dim = 0)
+        : ScalarVector(std::move(scalar_type), dim),
+          p_context(std::move(context))
     {}
 
     /**
@@ -243,7 +248,7 @@ public:
            scalars::TypePtr scalar_type,
            std::initializer_list<T> vals)
         : ScalarVector(scalar_type, basis->dense_dimension(vals.size())),
-          p_basis(std::move(basis))
+          p_context(basis->default_vector_context())
     {
         auto& scalar_vals = mut_base_data();
         for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
@@ -273,8 +278,8 @@ public:
     template <typename V>
     enable_if_t<is_base_of_v<Vector, V>, V> borrow() const
     {
-        RPY_CHECK(V::basis_compatibility_check(*p_basis));
-        return V(p_basis, *this);
+        RPY_CHECK(V::basis_compatibility_check(p_context->basis()));
+        return V(*this, p_context);
     }
 
     /**
@@ -297,8 +302,8 @@ public:
     template <typename V>
     enable_if_t<is_base_of_v<Vector, V>, V> borrow_mut()
     {
-        RPY_CHECK(V::basis_compatibility_check(*p_basis));
-        return V(p_basis, *this);
+        RPY_CHECK(V::basis_compatibility_check(p_context->basis()));
+        return V(*this, p_context);
     }
 
     /**
@@ -311,7 +316,10 @@ public:
      *
      * @return `true` if the vector is dense, `false` otherwise.
      */
-    RPY_NO_DISCARD bool is_dense() const noexcept;
+    RPY_NO_DISCARD bool is_dense() const noexcept
+    {
+        return !p_context->is_sparse();
+    }
 
     /**
      * @brief Checks whether the vector is sparse.
@@ -324,7 +332,10 @@ public:
      *
      * @return True if the vector is sparse, false otherwise.
      */
-    RPY_NO_DISCARD bool is_sparse() const noexcept;
+    RPY_NO_DISCARD bool is_sparse() const noexcept
+    {
+        return p_context->is_sparse();
+    }
 
     /**
      * @brief Retrieves the type of the vector
@@ -356,7 +367,10 @@ public:
      *
      * @return A pointer to the basis of the vector.
      */
-    RPY_NO_DISCARD BasisPointer basis() const noexcept { return p_basis; }
+    RPY_NO_DISCARD BasisPointer basis() const noexcept
+    {
+        return &p_context->basis();
+    }
 
     /**
      * @brief Change the internal representation to dense if possible.
@@ -401,7 +415,10 @@ public:
      * @sa BasisKey
      */
     RPY_NO_DISCARD optional<dimn_t> get_index(const BasisKey& key
-    ) const noexcept;
+    ) const noexcept
+    {
+        return p_context->get_index(key);
+    }
 
     RPY_NO_DISCARD scalars::ScalarCRef operator[](const BasisKey& key) const
     {
@@ -417,14 +434,14 @@ public:
     RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
     operator[](I index) const
     {
-        return operator[](p_basis->to_key(index));
+        return ScalarVector::get(static_cast<dimn_t>(index));
     }
 
     template <typename I>
     RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
     operator[](I index)
     {
-        return operator[](p_basis->to_key(index));
+        return ScalarVector::get_mut(static_cast<dimn_t>(index));
     }
 
 private:
@@ -641,8 +658,6 @@ public:
      */
     Vector& sub_scal_div(const Vector& other, const scalars::Scalar& scalar);
 
-    void print(std::ostream& out) const;
-
     RPY_NO_DISCARD friend bool
     operator==(const Vector& lhs, const Vector& rhs) noexcept
     {
@@ -658,7 +673,6 @@ public:
 
 ROUGHPY_ALGEBRA_EXPORT
 std::ostream& operator<<(std::ostream& os, const Vector& value);
-
 
 /*
  * Arithmetic operators are templated so we don't have to reimplement

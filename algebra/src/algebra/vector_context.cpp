@@ -22,10 +22,11 @@ using scalars::ScalarVector;
 VectorContext::~VectorContext() = default;
 
 
-std::unique_ptr<VectorFactory> VectorContext::factory() const noexcept
+Rc<VectorContext> VectorContext::empty_like() const noexcept
 {
-    return std::make_unique<DenseVectorFactory>(p_basis);
+    return new VectorContext(p_basis);
 }
+
 
 bool VectorContext::is_sparse() const noexcept { return false; }
 
@@ -57,7 +58,7 @@ dimn_t VectorContext::dimension(const Vector& vector) const noexcept
     return vector.ScalarVector::dimension();
 }
 
-void VectorContext::inplace_unary(
+void VectorContext::unary_inplace(
         const scalars::UnaryVectorOperation& operation,
         Vector& arg,
         const scalars::ops::Operator& op
@@ -105,6 +106,3 @@ bool VectorContext::is_equal(const Vector& left, const Vector& right)
     }
     return static_cast<const ScalarVector&>(left) == static_cast<const ScalarVector&>(right);
 }
-
-
-

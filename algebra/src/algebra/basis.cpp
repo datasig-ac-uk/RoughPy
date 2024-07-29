@@ -32,6 +32,9 @@
 #include "basis_key.h"
 #include <roughpy/algebra/basis.h>
 
+
+#include "vector.h"
+
 using namespace rpy;
 using namespace rpy::algebra;
 
@@ -120,4 +123,9 @@ BasisComparison Basis::compare(BasisPointer other) const noexcept
 dimn_t Basis::dimension_to_degree(deg_t degree) const
 {
     RPY_THROW(std::runtime_error, "basis is not graded");
+}
+
+Rc<VectorContext> Basis::default_vector_context() const
+{
+    return new VectorContext(this);
 }
