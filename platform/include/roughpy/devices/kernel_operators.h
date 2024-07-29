@@ -140,12 +140,12 @@ public:
     }
 };
 
-class ROUGHPY_DEVICES_EXPORT FusedLeftMultiplyOperator : public Operator
+class ROUGHPY_DEVICES_EXPORT FusedLeftMultiplyAddOperator : public Operator
 {
     ConstReference multiplier;
 
 public:
-    explicit FusedLeftMultiplyOperator(ConstReference value) : multiplier(value)
+    explicit FusedLeftMultiplyAddOperator(ConstReference value) : multiplier(value)
     {}
 
     // template <typename T>
@@ -161,12 +161,12 @@ public:
     }
 };
 
-class ROUGHPY_DEVICES_EXPORT FusedRightMultiplyOperator : public Operator
+class ROUGHPY_DEVICES_EXPORT FusedRightMultiplyAddOperator : public Operator
 {
     ConstReference multiplier;
 
 public:
-    explicit FusedRightMultiplyOperator(ConstReference value)
+    explicit FusedRightMultiplyAddOperator(ConstReference value)
         : multiplier(value)
     {}
 
