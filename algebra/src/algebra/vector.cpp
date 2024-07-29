@@ -41,8 +41,16 @@ using SSMOperator = scalars::StandardBinaryVectorOperation<
 
 using scalars::ScalarVector;
 
+#define RPY_CONTEXT_CHECK()                                                    \
+    do {                                                                       \
+        if (RPY_UNLIKELY(!p_context)) {                                        \
+            RPY_THROW(std::runtime_error, "vector has an invalid context");    \
+        }                                                                      \
+    } while (0)
+
 scalars::ScalarCRef Vector::get(const BasisKey& key) const
 {
+    RPY_CONTEXT_CHECK();
     if (auto index = p_context->get_index(key)) {
         return this->ScalarVector::get(*index);
     }
@@ -51,6 +59,7 @@ scalars::ScalarCRef Vector::get(const BasisKey& key) const
 
 scalars::ScalarRef Vector::get_mut(const BasisKey& key)
 {
+    RPY_CONTEXT_CHECK();
     if (auto index = p_context->get_index(key)) {
         return this->ScalarVector::get_mut(*index);
     }
@@ -59,11 +68,13 @@ scalars::ScalarRef Vector::get_mut(const BasisKey& key)
 
 typename Vector::const_iterator Vector::begin() const
 {
+    RPY_CONTEXT_CHECK();
     return p_context->make_const_iterator(this->ScalarVector::begin());
 }
 
 typename Vector::const_iterator Vector::end() const
 {
+    RPY_CONTEXT_CHECK();
     return p_context->make_const_iterator(this->ScalarVector::end());
 }
 
@@ -72,7 +83,7 @@ void Vector::check_and_resize_for_operands(const Vector& lhs, const Vector& rhs)
     if (RPY_UNLIKELY(lhs.p_context == nullptr && rhs.p_context == nullptr)) {
         RPY_THROW(std::runtime_error, "Invalid vector arguments");
     }
-    const auto& context = lhs.p_context ? *rhs.p_context : *lhs.p_context;
+    const auto& context = lhs.p_context ? lhs.p_context : rhs.p_context;
 
     dimn_t new_base_size = 0;
     dimn_t new_fibre_size = 0;
@@ -89,14 +100,33 @@ void Vector::check_and_resize_for_operands(const Vector& lhs, const Vector& rhs)
     // below. We might need to put in a barrier instruction of some sort to
     // prevent the compiler from messing with this ordering.
 
-    if (!p_context) { p_context = context.empty_like(); }
+    if (!p_context) { p_context = context->empty_like(); }
 
     this->resize_base_dim(new_base_size);
     if (new_fibre_size > 0) { this->resize_fibre_dim(new_fibre_size); }
 }
 
+void Vector::set_zero()
+{
+    if (RPY_LIKELY(p_context)) {
+        // TODO: handle sparsity
+        this->ScalarVector::set_zero();
+    }
+}
+
+void Vector::insert_element(const BasisKey& key, scalars::Scalar value)
+{
+    RPY_CONTEXT_CHECK();
+}
+
+void Vector::delete_element(const BasisKey& key)
+{
+    RPY_CONTEXT_CHECK();
+}
+
 Vector Vector::uminus() const
 {
+    RPY_CONTEXT_CHECK();
     UMinusOperator uminus;
     Vector result(
             p_context->copy(),
@@ -109,6 +139,7 @@ Vector Vector::uminus() const
 
 Vector Vector::add(const Vector& other) const
 {
+    RPY_CONTEXT_CHECK();
     Vector result(p_context->empty_like(), scalar_type());
     result.check_and_resize_for_operands(*this, other);
     AdditionOperator add;
@@ -125,6 +156,7 @@ Vector Vector::add(const Vector& other) const
 
 Vector Vector::sub(const Vector& other) const
 {
+    RPY_CONTEXT_CHECK();
     Vector result(p_context->empty_like(), scalar_type());
     result.check_and_resize_for_operands(*this, other);
     SubtractionOperator sub;
@@ -142,6 +174,7 @@ Vector Vector::sub(const Vector& other) const
 
 Vector& Vector::add_inplace(const Vector& other)
 {
+    RPY_CONTEXT_CHECK();
     AdditionOperator add_inplace;
     check_and_resize_for_operands(*this, other);
 
@@ -156,6 +189,7 @@ Vector& Vector::add_inplace(const Vector& other)
 
 Vector& Vector::sub_inplace(const Vector& other)
 {
+    RPY_CONTEXT_CHECK();
     SubtractionOperator sub_inplace;
     check_and_resize_for_operands(*this, other);
 
@@ -170,6 +204,7 @@ Vector& Vector::sub_inplace(const Vector& other)
 
 Vector Vector::left_smul(const scalars::Scalar& other) const
 {
+    RPY_CONTEXT_CHECK();
     Vector result(
             p_context->copy(),
             scalar_type(),
@@ -190,6 +225,7 @@ Vector Vector::left_smul(const scalars::Scalar& other) const
 
 Vector Vector::right_smul(const scalars::Scalar& other) const
 {
+    RPY_CONTEXT_CHECK();
     Vector result(
             p_context->copy(),
             scalar_type(),
@@ -210,6 +246,7 @@ Vector Vector::right_smul(const scalars::Scalar& other) const
 
 Vector& Vector::smul_inplace(const scalars::Scalar& other)
 {
+    RPY_CONTEXT_CHECK();
     RightSMulOperator right_smul_inplace;
 
     p_context->unary_inplace(
@@ -237,6 +274,7 @@ Vector& Vector::sdiv_inplace(const scalars::Scalar& other)
 
 Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
+    RPY_CONTEXT_CHECK();
     ASMOperator add_scal_mul;
     check_and_resize_for_operands(*this, other);
 
@@ -252,6 +290,7 @@ Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 
 Vector& Vector::sub_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
+    RPY_CONTEXT_CHECK();
     SSMOperator sub_scal_mul;
     check_and_resize_for_operands(*this, other);
 

@@ -19,6 +19,11 @@ class VectorIterator {};
 
 using scalars::ScalarVector;
 
+const VectorContext& VectorContext::get_context(const Vector& vec) noexcept
+{
+    return *vec.p_context;
+}
+
 VectorContext::~VectorContext() = default;
 
 
@@ -29,6 +34,29 @@ Rc<VectorContext> VectorContext::empty_like() const noexcept
 
 
 bool VectorContext::is_sparse() const noexcept { return false; }
+
+
+void VectorContext::resize_by_dim(Vector& dst, dimn_t base_dim, dimn_t fibre_dim)
+{
+    dst.resize_base_dim(base_dim);
+    dst.resize_fibre_dim(fibre_dim);
+}
+
+void VectorContext::resize_for_operands(
+        Vector& dst,
+        const Vector& lhs,
+        const Vector& rhs
+)
+{
+
+    auto base_dim = std::max(lhs.base_data().size(), rhs.base_data().size());
+    auto fibre_dim = std::max(lhs.fibre_data().size(), rhs.fibre_data().size());
+
+    resize_by_dim(dst, base_dim, fibre_dim);
+
+}
+
+
 
 Rc<VectorContext> VectorContext::copy() const
 {

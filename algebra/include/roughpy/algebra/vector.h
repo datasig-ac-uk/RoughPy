@@ -45,6 +45,10 @@ class ROUGHPY_ALGEBRA_EXPORT VectorContext : public platform::SmallObjectBase
 {
     BasisPointer p_basis;
 
+protected:
+
+    static const VectorContext& get_context(const Vector& vec) noexcept;
+
 public:
     explicit VectorContext(BasisPointer basis) : p_basis(std::move(basis)) {}
 
@@ -55,6 +59,13 @@ public:
     const Basis& basis() const noexcept { return *p_basis; };
 
     virtual bool is_sparse() const noexcept;
+
+
+    virtual void resize_by_dim(Vector& dst, dimn_t base_dim, dimn_t fibre_dim);
+
+    virtual void resize_for_operands(Vector& dst, const Vector& lhs, const Vector& rhs);
+
+
 
     virtual optional<dimn_t> get_index(const BasisKey& key) const noexcept;
 
@@ -161,13 +172,11 @@ protected:
      * optimize the search for the element.
      *
      * @param key The basis key specifying the element to delete.
-     * @param index_hint (optional) A hint for the index of the element to
-     * optimize the search. If not provided, a default hint is used.
      *
      * @note This function assumes that the vector is already initialized and
      * contains the basis key.
      */
-    void delete_element(const BasisKey& key, optional<dimn_t> index_hint);
+    void delete_element(const BasisKey& key);
 
     RPY_NO_DISCARD static bool basis_compatibility_check(const Basis& basis
     ) noexcept
@@ -318,7 +327,7 @@ public:
      */
     RPY_NO_DISCARD bool is_dense() const noexcept
     {
-        return !p_context->is_sparse();
+        return p_context ? !p_context->is_sparse() : false;
     }
 
     /**
@@ -334,7 +343,7 @@ public:
      */
     RPY_NO_DISCARD bool is_sparse() const noexcept
     {
-        return p_context->is_sparse();
+        return p_context ? p_context->is_sparse() : true;
     }
 
     /**
@@ -433,7 +442,6 @@ public:
     }
 
 private:
-
     /**
      * @brief Check vector compatibility and resize *this
      * @param lhs left reference vector
