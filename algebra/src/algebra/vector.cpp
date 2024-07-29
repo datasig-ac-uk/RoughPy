@@ -34,6 +34,34 @@ using LeftSMulOperator = scalars::StandardUnaryVectorOperation<
 using RightSMulOperator = scalars::StandardUnaryVectorOperation<
         scalars::ops::RightScalarMultiply>;
 
+using scalars::ScalarVector;
+
+scalars::ScalarCRef Vector::get(const BasisKey& key) const
+{
+    if (auto index = p_context->get_index(key)) {
+        return this->ScalarVector::get(*index);
+    }
+    RPY_THROW(std::runtime_error, "Invalid BasisKey");
+}
+
+scalars::ScalarRef Vector::get_mut(const BasisKey& key)
+{
+    if (auto index = p_context->get_index(key)) {
+        return this->ScalarVector::get_mut(*index);
+    }
+    RPY_THROW(std::runtime_error, "Invalid BasisKey");
+}
+
+typename Vector::const_iterator Vector::begin() const
+{
+    return p_context->make_const_iterator(this->ScalarVector::begin());
+}
+
+typename Vector::const_iterator Vector::end() const
+{
+    return p_context->make_const_iterator(this->ScalarVector::end());
+}
+
 Vector Vector::uminus() const
 {
     UMinusOperator uminus;

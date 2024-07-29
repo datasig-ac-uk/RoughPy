@@ -32,7 +32,7 @@ bool VectorContext::is_sparse() const noexcept { return false; }
 
 Rc<VectorContext> VectorContext::copy() const
 {
-    return new VectorContext(p_basis);
+    return new VectorContext(*this);
 }
 
 VectorIterator VectorContext::make_iterator(ScalarVector::iterator it

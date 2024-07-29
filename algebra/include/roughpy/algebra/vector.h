@@ -176,11 +176,11 @@ protected:
     }
 
 public:
-    Vector();
+    Vector() = default;
 
-    Vector(const Vector& other);
+    Vector(const Vector& other) = default;
 
-    Vector(Vector&& other) noexcept;
+    Vector(Vector&& other) noexcept = default;
 
     /**
      * @brief Constructs a Vector object with a given basis, basis key, and
@@ -254,9 +254,9 @@ public:
         for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
     }
 
-    Vector& operator=(const Vector& other);
+    Vector& operator=(const Vector& other) = default;
 
-    Vector& operator=(Vector&& other) noexcept;
+    Vector& operator=(Vector&& other) noexcept = default;
 
     /**
      * @brief Borrows a vector if the type of V is a subclass of Vector.
@@ -373,18 +373,6 @@ public:
     }
 
     /**
-     * @brief Change the internal representation to dense if possible.
-     */
-    void make_dense();
-
-    /**
-     * @brief Change the internal representation to sparse.
-     *
-     * Can only fail if the there is a problem with allocation/copying.
-     */
-    void make_sparse();
-
-    /**
      * @brief Get the coefficient of key in the vector
      * @param key Key to query
      * @return Non-mutable scalar containing coefficient of key
@@ -398,8 +386,8 @@ public:
      */
     RPY_NO_DISCARD scalars::ScalarRef get_mut(const BasisKey& key);
 
-    RPY_NO_DISCARD const_iterator begin() const noexcept;
-    RPY_NO_DISCARD const_iterator end() const noexcept;
+    RPY_NO_DISCARD const_iterator begin() const;
+    RPY_NO_DISCARD const_iterator end() const;
 
     /**
      * @brief Gets the index of the given BasisKey in the Vector
