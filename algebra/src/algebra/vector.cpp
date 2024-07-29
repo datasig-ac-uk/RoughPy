@@ -34,6 +34,11 @@ using LeftSMulOperator = scalars::StandardUnaryVectorOperation<
 using RightSMulOperator = scalars::StandardUnaryVectorOperation<
         scalars::ops::RightScalarMultiply>;
 
+using ASMOperator = scalars::StandardBinaryVectorOperation<
+        scalars::ops::FusedRightScalarMultiplyAdd>;
+using SSMOperator = scalars::StandardBinaryVectorOperation<
+        scalars::ops::FusedRightScalarMultiplySub>;
+
 using scalars::ScalarVector;
 
 scalars::ScalarCRef Vector::get(const BasisKey& key) const
@@ -61,6 +66,14 @@ typename Vector::const_iterator Vector::end() const
 {
     return p_context->make_const_iterator(this->ScalarVector::end());
 }
+
+
+
+void Vector::check_and_resize_for_operands(const Vector& lhs, const Vector& rhs)
+{
+
+}
+
 
 Vector Vector::uminus() const
 {
@@ -182,6 +195,62 @@ Vector& Vector::smul_inplace(const scalars::Scalar& other)
 
     return *this;
 }
+
+Vector Vector::sdiv(const scalars::Scalar& other) const
+{
+    // This should catch division by zero or bad conversions
+    auto recip = scalars::math::reciprocal(other);
+
+    return right_smul(recip);
+}
+
+Vector& Vector::sdiv_inplace(const scalars::Scalar& other)
+{
+    auto recip = scalars::math::reciprocal(other);
+    return smul_inplace(recip);
+}
+
+Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
+{
+    ASMOperator add_scal_mul;
+
+    p_context->binary_inplace(
+            add_scal_mul,
+            *this,
+            other,
+            scalars::ops::FusedRightMultiplyAddOperator(scalar)
+    );
+
+    return *this;
+}
+
+Vector& Vector::sub_scal_mul(const Vector& other, const scalars::Scalar& scalar)
+{
+    SSMOperator sub_scal_mul;
+
+    p_context->binary_inplace(
+            sub_scal_mul,
+            *this,
+            other,
+            scalars::ops::FusedRightMultiplySubOperator(scalar)
+    );
+
+    return *this;
+}
+
+Vector& Vector::add_scal_div(const Vector& other, const scalars::Scalar& scalar)
+{
+    auto recip = scalars::math::reciprocal(scalar);
+    return add_scal_mul(other, recip);
+}
+
+Vector& Vector::sub_scal_div(const Vector& other, const scalars::Scalar& scalar)
+{
+    auto recip = scalars::math::reciprocal(scalar);
+    return sub_scal_mul(other, recip);
+}
+
+
 
 std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
 {

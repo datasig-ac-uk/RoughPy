@@ -433,6 +433,7 @@ public:
     }
 
 private:
+
     /**
      * @brief Check vector compatibility and resize *this
      * @param lhs left reference vector
