@@ -51,7 +51,7 @@ using scalars::ScalarVector;
 scalars::ScalarCRef Vector::get(const BasisKey& key) const
 {
     RPY_CONTEXT_CHECK();
-    if (auto index = p_context->get_index(key)) {
+    if (auto index = p_context->get_index(*this, key)) {
         return this->ScalarVector::get(*index);
     }
     RPY_THROW(std::runtime_error, "Invalid BasisKey");
@@ -60,7 +60,7 @@ scalars::ScalarCRef Vector::get(const BasisKey& key) const
 scalars::ScalarRef Vector::get_mut(const BasisKey& key)
 {
     RPY_CONTEXT_CHECK();
-    if (auto index = p_context->get_index(key)) {
+    if (auto index = p_context->get_index(*this, key)) {
         return this->ScalarVector::get_mut(*index);
     }
     RPY_THROW(std::runtime_error, "Invalid BasisKey");
@@ -119,10 +119,7 @@ void Vector::insert_element(const BasisKey& key, scalars::Scalar value)
     RPY_CONTEXT_CHECK();
 }
 
-void Vector::delete_element(const BasisKey& key)
-{
-    RPY_CONTEXT_CHECK();
-}
+void Vector::delete_element(const BasisKey& key) { RPY_CONTEXT_CHECK(); }
 
 Vector Vector::uminus() const
 {
@@ -133,7 +130,8 @@ Vector Vector::uminus() const
             scalar_type(),
             p_context->dimension(*this)
     );
-    p_context->unary(uminus, result, *this, scalars::ops::UnaryMinusOperator());
+    result.p_context
+            ->unary(uminus, result, *this, scalars::ops::UnaryMinusOperator());
     return result;
 }
 
@@ -141,10 +139,9 @@ Vector Vector::add(const Vector& other) const
 {
     RPY_CONTEXT_CHECK();
     Vector result(p_context->empty_like(), scalar_type());
-    result.check_and_resize_for_operands(*this, other);
     AdditionOperator add;
 
-    p_context->binary(
+    result.p_context->binary(
             add,
             result,
             *this,
@@ -158,10 +155,9 @@ Vector Vector::sub(const Vector& other) const
 {
     RPY_CONTEXT_CHECK();
     Vector result(p_context->empty_like(), scalar_type());
-    result.check_and_resize_for_operands(*this, other);
     SubtractionOperator sub;
 
-    p_context->binary(
+    result.p_context->binary(
             sub,
             result,
             *this,
@@ -176,7 +172,6 @@ Vector& Vector::add_inplace(const Vector& other)
 {
     RPY_CONTEXT_CHECK();
     AdditionOperator add_inplace;
-    check_and_resize_for_operands(*this, other);
 
     p_context->binary_inplace(
             add_inplace,
@@ -191,7 +186,6 @@ Vector& Vector::sub_inplace(const Vector& other)
 {
     RPY_CONTEXT_CHECK();
     SubtractionOperator sub_inplace;
-    check_and_resize_for_operands(*this, other);
 
     p_context->binary_inplace(
             sub_inplace,
@@ -213,7 +207,7 @@ Vector Vector::left_smul(const scalars::Scalar& other) const
 
     LeftSMulOperator left_smul;
 
-    p_context->unary(
+    result.p_context->unary(
             left_smul,
             result,
             *this,
@@ -234,7 +228,7 @@ Vector Vector::right_smul(const scalars::Scalar& other) const
 
     RightSMulOperator right_smul;
 
-    p_context->unary(
+    result.p_context->unary(
             right_smul,
             result,
             *this,
@@ -262,7 +256,6 @@ Vector Vector::sdiv(const scalars::Scalar& other) const
 {
     // This should catch division by zero or bad conversions
     auto recip = scalars::math::reciprocal(other);
-
     return right_smul(recip);
 }
 
@@ -276,7 +269,6 @@ Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
     RPY_CONTEXT_CHECK();
     ASMOperator add_scal_mul;
-    check_and_resize_for_operands(*this, other);
 
     p_context->binary_inplace(
             add_scal_mul,
@@ -292,7 +284,6 @@ Vector& Vector::sub_scal_mul(const Vector& other, const scalars::Scalar& scalar)
 {
     RPY_CONTEXT_CHECK();
     SSMOperator sub_scal_mul;
-    check_and_resize_for_operands(*this, other);
 
     p_context->binary_inplace(
             sub_scal_mul,
