@@ -46,7 +46,6 @@ class ROUGHPY_ALGEBRA_EXPORT VectorContext : public platform::SmallObjectBase
     BasisPointer p_basis;
 
 protected:
-
     static const VectorContext& get_context(const Vector& vec) noexcept;
 
 public:
@@ -60,14 +59,13 @@ public:
 
     virtual bool is_sparse() const noexcept;
 
-
     virtual void resize_by_dim(Vector& dst, dimn_t base_dim, dimn_t fibre_dim);
 
-    virtual void resize_for_operands(Vector& dst, const Vector& lhs, const Vector& rhs);
+    virtual void
+    resize_for_operands(Vector& dst, const Vector& lhs, const Vector& rhs);
 
-
-
-    virtual optional<dimn_t> get_index(const BasisKey& key) const noexcept;
+    virtual optional<dimn_t>
+    get_index(const Vector& vector, const BasisKey& key) const noexcept;
 
     RPY_NO_DISCARD virtual Rc<VectorContext> copy() const;
 
@@ -91,7 +89,7 @@ public:
     unary(const scalars::UnaryVectorOperation& operation,
           Vector& dst,
           const Vector& arg,
-          const scalars::ops::Operator& op) const;
+          const scalars::ops::Operator& op);
 
     virtual void binary_inplace(
             const scalars::BinaryVectorOperation& operation,
@@ -105,7 +103,7 @@ public:
            Vector& dst,
            const Vector& left,
            const Vector& right,
-           const scalars::ops::Operator& op) const;
+           const scalars::ops::Operator& op);
 
     RPY_NO_DISCARD virtual bool
     is_equal(const Vector& left, const Vector& right) const noexcept;
@@ -414,7 +412,11 @@ public:
     RPY_NO_DISCARD optional<dimn_t> get_index(const BasisKey& key
     ) const noexcept
     {
-        return p_context->get_index(key);
+        optional<dimn_t> result{};
+        if (RPY_LIKELY(p_context)) {
+            result = p_context->get_index(*this, key);
+        }
+        return result;
     }
 
     RPY_NO_DISCARD scalars::ScalarCRef operator[](const BasisKey& key) const
