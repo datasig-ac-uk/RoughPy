@@ -9,14 +9,6 @@
 using namespace rpy;
 using namespace rpy::algebra;
 
-namespace rpy {
-namespace algebra {
-class VectorIterator
-{
-};
-}// namespace algebra
-}// namespace rpy
-
 using scalars::ScalarVector;
 
 const VectorContext& VectorContext::get_context(const Vector& vec) noexcept
