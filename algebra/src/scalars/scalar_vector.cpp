@@ -14,7 +14,6 @@ ScalarVector::ScalarVector(TypePtr scalar_type, dimn_t size)
     : m_base_data(std::move(scalar_type), size)
 {}
 
-
 ScalarVector::~ScalarVector() = default;
 
 ScalarArray& ScalarVector::mut_base_data()
@@ -46,7 +45,6 @@ void ScalarVector::resize_fibre_dim(dimn_t new_dim)
     devices::algorithms::copy(new_buffer, fibre_data());
     mut_base_data() = ScalarArray(std::move(new_buffer));
 }
-
 
 void ScalarVector::set_base_zero() noexcept
 {
@@ -142,4 +140,15 @@ bool ScalarVector::operator==(const ScalarVector& other) const
     const auto mismatch
             = devices::algorithms::mismatch(base_data(), other.base_data());
     return static_cast<bool>(mismatch);
+}
+
+dimn_t ScalarVector::base_size() const noexcept
+{
+    return base_buffer_size()
+            - devices::algorithms::count(base_data(), scalar_type()->zero());
+}
+dimn_t ScalarVector::fibre_size() const noexcept
+{
+    return fibre_buffer_size()
+            - devices::algorithms::count(fibre_data(), scalar_type()->zero());
 }

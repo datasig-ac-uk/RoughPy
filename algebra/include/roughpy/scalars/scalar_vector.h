@@ -116,7 +116,20 @@ public:
     {
         return base_buffer_size();
     };
+
+    RPY_NO_DISCARD dimn_t base_dimension() const noexcept
+    {
+        return m_base_data.size();
+    }
+    RPY_NO_DISCARD dimn_t fibre_dimension() const noexcept
+    {
+        return m_fibre_data.size();
+    }
+
     RPY_NO_DISCARD dimn_t size() const noexcept;
+    RPY_NO_DISCARD dimn_t base_size() const noexcept;
+    RPY_NO_DISCARD dimn_t fibre_size() const noexcept;
+
     RPY_NO_DISCARD bool is_zero() const noexcept;
 
     RPY_NO_DISCARD const_reference get(dimn_t index) const;
