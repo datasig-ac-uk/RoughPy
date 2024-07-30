@@ -598,7 +598,8 @@ struct ArgumentDecoder<
         const auto& op = *static_cast<const params::Operator<T>*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplyAdd);
         const auto& data
-                = operators::op_cast<operators::FusedLeftMultiplyOperator>(op)
+                = operators::op_cast<operators::FusedLeftMultiplyAddOperator>(op
+                )
                           .data();
         return operators::FusedLeftScalarMultiplyAdd<T>(value_cast<T>(data));
     }
@@ -613,7 +614,9 @@ struct ArgumentDecoder<
         const auto& op = *static_cast<const params::Operator<T>*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplyAdd);
         const auto& data
-                = operators::op_cast<operators::FusedRightMultiplyOperator>(op)
+                = operators::op_cast<operators::FusedRightMultiplyAddOperator>(
+                          op
+                )
                           .data();
         return operators::FusedRightScalarMultiplyAdd<T>(value_cast<T>(data));
     }
@@ -713,7 +716,8 @@ struct ArgumentDecoder<
                 const params::Operator<params::GenericParam<N>>*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplyAdd);
         const auto& data
-                = operators::op_cast<operators::FusedLeftMultiplyOperator>(op)
+                = operators::op_cast<operators::FusedLeftMultiplyAddOperator>(op
+                )
                           .data();
         return operators::FusedLeftScalarMultiplyAdd<T>(value_cast<T>(data));
     }
@@ -729,7 +733,9 @@ struct ArgumentDecoder<
                 const params::Operator<params::GenericParam<N>>*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplyAdd);
         const auto& data
-                = operators::op_cast<operators::FusedRightMultiplyOperator>(op)
+                = operators::op_cast<operators::FusedRightMultiplyAddOperator>(
+                          op
+                )
                           .data();
         return operators::FusedRightScalarMultiplyAdd<T>(value_cast<T>(data));
     }
