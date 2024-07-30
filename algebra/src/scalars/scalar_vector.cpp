@@ -46,11 +46,11 @@ void ScalarVector::resize_fibre_dim(dimn_t new_dim)
     mut_base_data() = ScalarArray(std::move(new_buffer));
 }
 
-void ScalarVector::set_base_zero() noexcept
+void ScalarVector::set_base_zero()
 {
     devices::algorithms::fill(mut_base_data(), scalar_type()->zero());
 }
-void ScalarVector::set_fibre_zero() noexcept
+void ScalarVector::set_fibre_zero()
 {
     devices::algorithms::fill(mut_fibre_data(), scalar_type()->zero());
 }

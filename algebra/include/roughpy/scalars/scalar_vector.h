@@ -195,9 +195,9 @@ protected:
         devices::EventStatus result;
         if (auto kernel
             = get_kernel(kernel_args.get_device(), base_name, generic_types)) {
-            result = launch_kernel_sync(*kernel, params, kernel_args);
+            result = kernel->launch_sync(params, kernel_args);
         } else {
-            result = launch_kernel_sync(generic_kernel, params, kernel_args);
+            result = generic_kernel.launch_sync(params, kernel_args);
         }
         RPY_CHECK(result == devices::EventStatus::CompletedSuccessfully);
     }
