@@ -26,6 +26,7 @@ protected:
     using signature_t = StandardKernelSignature<ArgSpec...>;
 
 public:
+    HostKernelBase();
 
     RPY_NO_DISCARD static std::unique_ptr<KernelArguments> new_binding()
     {
@@ -49,10 +50,13 @@ public:
             const KernelArguments& args
     ) const override;
 
-
     static Kernel get() noexcept;
-
 };
+
+template <typename Impl, typename... ArgSpec>
+HostKernelBase<Impl, ArgSpec...>::HostKernelBase()
+    : RefCountBase(signature_t::make())
+{}
 
 template <typename Impl, typename... ArgSpec>
 bool HostKernelBase<Impl, ArgSpec...>::is_host() const noexcept
