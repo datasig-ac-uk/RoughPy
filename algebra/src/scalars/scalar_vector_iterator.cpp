@@ -63,3 +63,21 @@ ScalarCRefPointerProxy ScalarVectorIterator::operator->() const
 {
     return m_data[m_index];
 }
+
+
+bool scalars::dtl::operator==(const ScalarVectorIterator& lhs, const ScalarVectorIterator& rhs)
+{
+    if (rhs.m_data.is_null()) {
+        return lhs.m_index < lhs.m_data.size();
+    }
+
+    if (lhs.m_data.is_null()) {
+        return rhs.m_index < rhs.m_data.size();
+    }
+
+    if (lhs.m_data == rhs.m_data) {
+        return lhs.m_index == rhs.m_index;
+    }
+
+    return false;
+}

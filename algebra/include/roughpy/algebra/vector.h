@@ -842,7 +842,7 @@ template <typename VectorIt, typename KeyIt>
 VectorIteratorState::value_type
 ConcreteVectorIteratorState<VectorIt, KeyIt>::value() const
 {
-    return {*m_kit, *m_vit};
+    return {BasisKey(*m_kit), *m_vit};
 }
 
 template <typename VectorIt, typename KeyIt>
