@@ -245,7 +245,7 @@ struct TypeOfArgImpl<T, void_t<typename T::bind_type>> {
 };
 
 template <typename T>
-using TypeOfArg = TypeOfArgImpl<T>;
+using TypeOfArg = typename TypeOfArgImpl<T>::type;
 
 template <typename T>
 struct DoNoInit {
