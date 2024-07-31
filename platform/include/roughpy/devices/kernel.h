@@ -175,6 +175,12 @@ struct GetType<params::GenericParam<N>> {
     static TypePtr get_type() { return nullptr; }
 };
 
+template <>
+struct GetType<Value>
+{
+    static TypePtr get_type() { return nullptr;}
+};
+
 template <typename T, typename... Ts>
 constexpr bool contains_type() noexcept
 {
@@ -245,7 +251,7 @@ struct TypeOfArgImpl<T, void_t<typename T::bind_type>> {
 };
 
 template <typename T>
-using TypeOfArg = typename TypeOfArgImpl<T>::type;
+using TypeOfArg = typename T::bind_type;
 
 template <typename T>
 struct DoNoInit {
@@ -264,7 +270,7 @@ struct DoInit {
     init_param(TypeList type_list, typename KernelSignature::Parameter* ptr)
     {
         static_assert(
-                index_of_type<T>(type_list)
+                index_of_type<TypeOfArg<T>>(type_list)
                         <= std::numeric_limits<uint8_t>::max(),
                 "the number of arguments exceeds the maximum size of the "
                 "storage type"
@@ -272,7 +278,7 @@ struct DoInit {
         construct_inplace(
                 ptr,
                 static_cast<uint8_t>(T::kind),
-                static_cast<uint8_t>(index_of_type<T>(type_list))
+                static_cast<uint8_t>(index_of_type<TypeOfArg<T>>(type_list))
         );
         return ++ptr;
     }
@@ -757,7 +763,6 @@ class ArgumentBinder<params::ParamList<Param>, params::ParamList<Arg>>
     template <typename F>
     static decltype(auto) eval_impl(
             F&& fn,
-            const KernelLaunchParams& params,
             const KernelArguments& args,
             dimn_t idx
     )
@@ -768,9 +773,9 @@ class ArgumentBinder<params::ParamList<Param>, params::ParamList<Arg>>
 public:
     template <typename F>
     static decltype(auto)
-    eval(F&& fn, const KernelLaunchParams& params, const KernelArguments& args)
+    eval(F&& fn, const KernelArguments& args)
     {
-        return eval_impl(std::forward<F>(fn), params, args, 0);
+        return eval_impl(std::forward<F>(fn), args, 0);
     }
 };
 
@@ -790,7 +795,6 @@ class ArgumentBinder<
     template <typename F>
     static decltype(auto) eval_impl(
             F&& fn,
-            const KernelLaunchParams& params,
             const KernelArguments& args,
             dimn_t idx
     )
@@ -804,7 +808,6 @@ class ArgumentBinder<
                             std::forward<decltype(remaining)>(remaining)...
                     );
                 },
-                params,
                 args,
                 ++idx
         );
@@ -813,9 +816,9 @@ class ArgumentBinder<
 public:
     template <typename F>
     static decltype(auto)
-    eval(F&& fn, const KernelLaunchParams& params, const KernelArguments& args)
+    eval(F&& fn, const KernelArguments& args)
     {
-        return eval_impl(std::forward<F>(fn), params, args, 0);
+        return eval_impl(std::forward<F>(fn), args, 0);
     }
 };
 
@@ -1123,12 +1126,12 @@ template <typename... ArgSpec>
 Slice<const KernelSignature::Parameter>
 StandardKernelSignature<ArgSpec...>::parameters() const noexcept
 {
-    return {m_parameters.value, helper_t::num_params};
+    return {m_parameters.values, helper_t::num_params};
 }
 template <typename... ArgSpec>
 Slice<const TypePtr> StandardKernelSignature<ArgSpec...>::types() const noexcept
 {
-    return {m_types.value, dtl::param_list_size(ParamTypeList())};
+    return {m_types.values, dtl::param_list_size(ParamTypeList())};
 }
 
 template <typename... ArgSpec>
