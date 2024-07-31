@@ -756,7 +756,7 @@ RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr get_type(devices::TypeInfo info);
 // #ifndef RPY_NO_RTTI
 //
 // ROUGHPY_DEVICES_EXPORT
-// void register_type(const std::type_info& info, const Type* type);
+// void register_type(const std::type_info& info, TypePtr type);
 //
 //
 // /**
@@ -769,11 +769,11 @@ RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr get_type(devices::TypeInfo info);
 //  * @param info The type_info object representing the type.
 //  * @return The Type object associated with the type.
 //  */
-// RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT const Type*
+// RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr
 // get_type(const std::type_info& info);
 //
 // template <typename T>
-// const Type* get_type()
+// TypePtr get_type()
 // {
 //     return get_type(typeid(T));
 // }
@@ -790,43 +790,43 @@ RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr get_type(devices::TypeInfo info);
  */
 
 template <typename T>
-const Type* get_type()
+TypePtr get_type()
 {
     return get_type(type_id_of<T>);
 }
 
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<int8_t>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<int8_t>();
 
 // Specializations for int16_t, int32_t, and int64_t
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<int16_t>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<int16_t>();
 
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<int32_t>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<int32_t>();
 
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<int64_t>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<int64_t>();
 
 // Specializations for uint8_t, uint16_t, uint32_t, and uint64_t
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<uint8_t>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<uint8_t>();
 
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<uint16_t>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<uint16_t>();
 
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<uint32_t>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<uint32_t>();
 
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<uint64_t>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<uint64_t>();
 
 // Specializations for float and double
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<float>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<float>();
 
 template <>
-ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD const Type* get_type<double>();
+ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<double>();
 
 // #endif
 

@@ -4,7 +4,6 @@
 using namespace rpy;
 using namespace rpy::devices;
 
-
 namespace rpy {
 namespace devices {
 
@@ -15,13 +14,15 @@ struct IDAndNameOfFType<uint32_t> {
     static constexpr string_view name = "uint32";
 };
 
-}
+}// namespace dtl
 
 template class FundamentalType<uint32_t>;
 
-
-}
-}
+}// namespace devices
+}// namespace rpy
 
 template <>
-const Type* devices::get_type<uint32_t>() { return FundamentalType<uint32_t>::get(); }
+TypePtr devices::get_type<uint32_t>()
+{
+    return FundamentalType<uint32_t>::get();
+}

@@ -22,7 +22,7 @@ template class FundamentalType<float>;
 }// namespace devices
 }// namespace rpy
 template <>
-const Type* rpy::devices::get_type<float>()
+TypePtr rpy::devices::get_type<float>()
 {
     return FundamentalType<float>::get();
 }

@@ -21,7 +21,7 @@ template class FundamentalType<int8_t>;
 }// namespace devices
 }// namespace rpy
 template <>
-const Type* devices::get_type<int8_t>()
+TypePtr devices::get_type<int8_t>()
 {
     return FundamentalType<int8_t>::get();
 }

@@ -21,7 +21,7 @@ template class FundamentalType<uint16_t>;
 }// namespace devices
 }// namespace rpy
 template <>
-const Type* devices::get_type<uint16_t>()
+TypePtr devices::get_type<uint16_t>()
 {
     return FundamentalType<uint16_t>::get();
 }

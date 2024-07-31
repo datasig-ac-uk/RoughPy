@@ -273,7 +273,7 @@ struct SupportRegistration {
 
     static void register_support(const Type* type)
     {
-        const auto* other_type = get_type<T>();
+        const auto other_type = get_type<T>();
         auto support = type->update_support(*other_type);
 
         support->arithmetic.add_inplace = AddInplace<S, T>::func;

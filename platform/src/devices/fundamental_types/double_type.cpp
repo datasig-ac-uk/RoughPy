@@ -23,7 +23,7 @@ template class FundamentalType<double>;
 }// namespace devices
 }// namespace rpy
 template <>
-const Type* rpy::devices::get_type<double>()
+TypePtr rpy::devices::get_type<double>()
 {
     return FundamentalType<double>::get();
 }

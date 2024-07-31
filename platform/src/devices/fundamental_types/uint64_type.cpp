@@ -22,7 +22,7 @@ template class FundamentalType<uint64_t>;
 }// namespace rpy
 
 template <>
-const Type* devices::get_type<uint64_t>()
+TypePtr devices::get_type<uint64_t>()
 {
     return FundamentalType<uint64_t>::get();
 }
