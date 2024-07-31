@@ -25,8 +25,41 @@ namespace scalars {
 
 namespace dtl {
 
+class ScalarCRefPointerProxy
+{
+    ScalarCRef m_ref;
+
+
+public:
+
+    ScalarCRefPointerProxy(ScalarCRef ref) : m_ref(std::move(ref)) {}
+
+    const ScalarCRef* operator->() const noexcept { return &m_ref; }
+
+};
+
 class ScalarVectorIterator
 {
+    ScalarArray m_data;
+    dimn_t m_index;
+
+
+public:
+
+    ScalarVectorIterator();
+    ScalarVectorIterator(const ScalarVectorIterator& other);
+    ScalarVectorIterator(ScalarVectorIterator&& other) noexcept;
+
+
+    ScalarVectorIterator& operator=(const ScalarVectorIterator& other);
+    ScalarVectorIterator& operator=(ScalarVectorIterator&& other) noexcept;
+
+    ScalarVectorIterator& operator++();
+    const ScalarVectorIterator operator++(int) ;
+
+    ScalarCRef operator*() const;
+    ScalarCRefPointerProxy operator->() const;
+
 };
 }// namespace dtl
 
