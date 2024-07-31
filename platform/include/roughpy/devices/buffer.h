@@ -523,6 +523,12 @@ public:
             is_same_v<T, Reference> || is_same_v<T, ConstReference>,
             dtl::BufferRange<T>>
     as_range() const;
+
+
+    friend bool operator==(const Buffer& lhs, const Buffer& rhs) noexcept
+    {
+        return lhs.impl() == rhs.impl();
+    }
 };
 
 template <typename T>
