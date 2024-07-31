@@ -74,8 +74,9 @@ public:
     make_iterator(typename scalars::ScalarVector::iterator it) const;
 
     RPY_NO_DISCARD virtual VectorIterator
-    make_const_iterator(typename scalars::ScalarVector::const_iterator it
-    ) const;
+    begin_iterator(typename scalars::ScalarVector::const_iterator it) const;
+    RPY_NO_DISCARD virtual VectorIterator
+    end_iterator(typename scalars::ScalarVector::const_iterator it) const;
 
     virtual dimn_t size(const Vector& vector) const noexcept;
     virtual dimn_t dimension(const Vector& vector) const noexcept;
@@ -781,7 +782,7 @@ class ROUGHPY_ALGEBRA_EXPORT VectorIteratorState
 public:
     using value_type = IteratorItemProxy<pair<BasisKey, scalars::ScalarCRef>>;
 
-    virtual ~VectorIteratorState();
+    virtual ~VectorIteratorState() = default;
 
     RPY_NO_DISCARD virtual std::unique_ptr<VectorIteratorState> copy() const
             = 0;
@@ -808,6 +809,9 @@ public:
     RPY_NO_DISCARD std::unique_ptr<VectorIteratorState> copy() const override;
     void advance() noexcept override;
     value_type value() const override;
+
+    bool is_same(const VectorIteratorState& other_state
+    ) const noexcept override;
 };
 
 template <typename VectorIt, typename KeyIt>
@@ -839,6 +843,17 @@ VectorIteratorState::value_type
 ConcreteVectorIteratorState<VectorIt, KeyIt>::value() const
 {
     return {*m_kit, *m_vit};
+}
+
+template <typename VectorIt, typename KeyIt>
+bool ConcreteVectorIteratorState<VectorIt, KeyIt>::is_same(
+        const VectorIteratorState& other_state
+) const noexcept
+{
+    if (const auto* other = dynamic_cast<const ConcreteVectorIteratorState*>(&other_state)) {
+        return m_vit == other->m_vit && m_kit == other->m_kit;
+    }
+    return false;
 }
 
 }// namespace dtl

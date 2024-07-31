@@ -43,7 +43,6 @@ void VectorContext::resize_for_operands(
         const Vector& rhs
 )
 {
-
     auto base_dim = std::max(lhs.base_data().size(), rhs.base_data().size());
     auto fibre_dim = std::max(lhs.fibre_data().size(), rhs.fibre_data().size());
 
@@ -71,17 +70,19 @@ Rc<VectorContext> VectorContext::copy() const
     return new VectorContext(*this);
 }
 
-VectorIterator VectorContext::make_iterator(ScalarVector::iterator it) const
+VectorIterator
+VectorContext::begin_iterator(typename scalars::ScalarVector::const_iterator it) const
 {
-
-    return {};
+    return {std::move(it), p_basis->iterate_keys().begin()};
 }
 
 VectorIterator
-VectorContext::make_const_iterator(ScalarVector::const_iterator it) const
+VectorContext::end_iterator(typename scalars::ScalarVector::const_iterator it) const
 {
-    return {};
+    return {std::move(it), p_basis->iterate_keys().end()};
 }
+
+
 
 dimn_t VectorContext::size(const Vector& vector) const noexcept
 {

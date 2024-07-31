@@ -65,16 +65,16 @@ scalars::ScalarRef Vector::get_mut(const BasisKey& key)
     RPY_THROW(std::runtime_error, "Invalid BasisKey");
 }
 
-typename Vector::const_iterator Vector::begin() const
+VectorIterator Vector::begin() const
 {
     RPY_CONTEXT_CHECK();
-    return p_context->make_const_iterator(this->ScalarVector::begin());
+    return p_context->begin_iterator(this->ScalarVector::begin());
 }
 
-typename Vector::const_iterator Vector::end() const
+VectorIterator Vector::end() const
 {
     RPY_CONTEXT_CHECK();
-    return p_context->make_const_iterator(this->ScalarVector::end());
+    return p_context->end_iterator(this->ScalarVector::end());
 }
 
 void Vector::check_and_resize_for_operands(const Vector& lhs, const Vector& rhs)
