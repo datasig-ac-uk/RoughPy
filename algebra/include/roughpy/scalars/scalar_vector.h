@@ -429,9 +429,9 @@ void StandardBinaryVectorOperation<Operation>::eval(
     resize_destination(destination, max_dim);
 
     auto binding = GenericKernelType::new_binding();
-    binding->bind(destination);
-    binding->bind(left);
-    binding->bind(right);
+    binding->bind(destination.mut_base_data());
+    binding->bind(left.base_data());
+    binding->bind(right.base_data());
     binding->bind(op);
 
     eval_impl(
@@ -451,8 +451,8 @@ void StandardBinaryVectorOperation<Operation>::eval_inplace(
     resize_destination(left, max_dim);
 
     auto binding = GenericInplaceKernelType::new_binding();
-    binding->bind(left);
-    binding->bind(right);
+    binding->bind(left.mut_base_data());
+    binding->bind(right.base_data());
     binding->bind(op);
 
     eval_impl(
