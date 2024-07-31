@@ -801,6 +801,11 @@ class ConcreteVectorIteratorState : public VectorIteratorState
     KeyIt m_kit;
 
 public:
+    ConcreteVectorIteratorState(const VectorIt& vit, const KeyIt& kit)
+        : m_vit(vit),
+          m_kit(kit)
+    {}
+
     ConcreteVectorIteratorState(VectorIt&& vit, KeyIt&& kit)
         : m_vit(std::move(vit)),
           m_kit(std::move(kit))
@@ -850,7 +855,8 @@ bool ConcreteVectorIteratorState<VectorIt, KeyIt>::is_same(
         const VectorIteratorState& other_state
 ) const noexcept
 {
-    if (const auto* other = dynamic_cast<const ConcreteVectorIteratorState*>(&other_state)) {
+    if (const auto* other
+        = dynamic_cast<const ConcreteVectorIteratorState*>(&other_state)) {
         return m_vit == other->m_vit && m_kit == other->m_kit;
     }
     return false;
