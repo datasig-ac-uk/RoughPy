@@ -436,7 +436,7 @@ void StandardBinaryVectorOperation<Operation>::eval(
 
     eval_impl(
             GenericKernelType::get_base_name(),
-            *GenericKernelType::get(),
+            GenericKernelType::get(),
             *binding
     );
 }
