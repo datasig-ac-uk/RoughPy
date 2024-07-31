@@ -13,9 +13,10 @@ namespace algebra {
 class DenseVectorFactory : public VectorFactory
 {
     BasisPointer p_basis;
+    scalars::TypePtr p_type;
+
 public:
-    explicit DenseVectorFactory(BasisPointer basis)
-        : p_basis(std::move(basis))
+    explicit DenseVectorFactory(BasisPointer basis) : p_basis(std::move(basis))
     {}
 
     Vector construct_empty() const override;

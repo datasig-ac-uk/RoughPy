@@ -11,16 +11,15 @@
 #include <roughpy/devices/type.h>
 #include <roughpy/devices/value.h>
 
-
 #if RPY_HAS_INCLUDE("roughpy_algebra_export.h")
 #  include "roughpy_algebra_export.h"
-#elif RPY_HAS_INCLUDE(<roughpy/algebra/roughpy_platform_export.h>)
+#elif RPY_HAS_INCLUDE(<roughpy / algebra / roughpy_platform_export.h>)
 #  include <roughpy/algebra/roughpy_algebra_export.h>
 #else
-#define ROUGHPY_ALGEBRA_EXPORT
-#define ROUGHPY_ALGEBRA_NO_EXPORT
-#define ROUGHPY_ALGEBRA_DEPRECATED
-#define ROUGHPY_ALGEBRA_DEPRECATED_EXPORT
+#  define ROUGHPY_ALGEBRA_EXPORT
+#  define ROUGHPY_ALGEBRA_NO_EXPORT
+#  define ROUGHPY_ALGEBRA_DEPRECATED
+#  define ROUGHPY_ALGEBRA_DEPRECATED_EXPORT
 #endif
 
 #define ROUGHPY_SCALARS_EXPORT ROUGHPY_ALGEBRA_EXPORT
@@ -29,12 +28,11 @@
 #define ROUGHPY_SCALARS_DEPRECATED_EXPORT ROUGHPY_ALGEBRA_DEPRECATED_EXPORT
 
 #ifdef ROUGHPY_ALGEBRA_NO_DEPRECATED
-#define ROUGHPY_SCALARS_NO_DEPRECATED
+#  define ROUGHPY_SCALARS_NO_DEPRECATED
 #endif
 
-
-namespace rpy { namespace scalars {
-
+namespace rpy {
+namespace scalars {
 
 using ScalarTypeCode = devices::TypeCode;
 
@@ -49,13 +47,15 @@ using Scalar = devices::Value;
 using ScalarCRef = devices::ConstReference;
 using ScalarRef = devices::Reference;
 
+using devices::value_cast;
+
 class ScalarArray;
 class ScalarStream;
 class ScalarVector;
 
 class ScalarRandomGenerator;
 
+}// namespace scalars
+}// namespace rpy
 
-}}
-
-#endif //ROUGHPY_SCALARS_SCALARS_FWD_H
+#endif// ROUGHPY_SCALARS_SCALARS_FWD_H

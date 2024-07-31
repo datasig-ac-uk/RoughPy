@@ -14,11 +14,12 @@
 #include <roughpy/platform/alloc.h>
 #include <roughpy/platform/errors.h>
 
+#include "scalars_fwd.h"
 
+#include "arbitrary_precision_rational.h"
 #include "monomial.h"
 #include "rational.h"
 #include "rational_type.h"
-#include "arbitrary_precision_rational.h"
 
 namespace rpy {
 namespace scalars {
@@ -118,8 +119,7 @@ public:
 
 private:
     template <typename F>
-    RPY_NO_DISCARD RPY_LOCAL Polynomial map_for_each(F&& func
-    ) const;
+    RPY_NO_DISCARD RPY_LOCAL Polynomial map_for_each(F&& func) const;
 
 public:
     friend Polynomial operator-(const Polynomial& pol)
@@ -216,7 +216,7 @@ Polynomial<Sca>::Polynomial(Monomial mon)
 template <typename Sca>
 Polynomial<Sca>::Polynomial(Monomial mon, const Scalar& scalar)
     : m_data{
-              {mon, scalar_cast<Sca>(scalar)}
+              {mon, value_cast<Sca>(scalar)}
 }
 {}
 
@@ -249,8 +249,7 @@ bool operator!=(const Polynomial<Sca>& lhs, const Polynomial<Sca>& rhs) noexcept
 //     RPY_SERIAL_SERIALIZE_VAL(m_data);
 // }
 
-extern template class RPY_LOCAL
-        Polynomial<ArbitraryPrecisionRational>;
+extern template class RPY_LOCAL Polynomial<ArbitraryPrecisionRational>;
 extern template class RPY_LOCAL Polynomial<Rational64>;
 extern template class RPY_LOCAL Polynomial<Rational32>;
 
@@ -265,22 +264,24 @@ namespace devices {
 namespace dtl {
 
 template <>
-struct type_code_of_impl<scalars::APPolyRat> {
+struct type_code_of_impl<scalars::implementations::APPolyRat> {
     static constexpr TypeCode value = TypeCode::APRationalPolynomial;
 };
 
 template <typename T>
-struct type_code_of_impl<scalars::Polynomial<scalars::Rational<T>>> {
+struct type_code_of_impl<scalars::implementations::Polynomial<
+        scalars::implementations::Rational<T>>> {
     static constexpr TypeCode value = TypeCode::Polynomial;
 };
 
 template <typename T>
-struct type_size_of_impl<scalars::Polynomial<scalars::Rational<T>>> {
+struct type_size_of_impl<scalars::implementations::Polynomial<
+        scalars::implementations::Rational<T>>> {
     static constexpr dimn_t value = sizeof(T);
 };
 
 template <>
-struct type_id_of_impl<scalars::APPolyRat> {
+struct type_id_of_impl<scalars::implementations::APPolyRat> {
     static constexpr string_view value = "APRatPoly";
 };
 

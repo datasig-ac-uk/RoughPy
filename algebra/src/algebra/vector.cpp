@@ -8,7 +8,6 @@
 #include "basis.h"
 #include "basis_key.h"
 #include "key_algorithms.h"
-#include "vector_iterator.h"
 
 #include <roughpy/core/ranges.h>
 #include <roughpy/devices/algorithms.h>
@@ -311,7 +310,7 @@ std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
 {
     const auto basis = value.basis();
     os << '{';
-    for (const auto& item : value) {
+    for (auto&& item : value) {
         os << ' ' << item->second << '(' << basis->to_string(item->first)
            << ')';
     }

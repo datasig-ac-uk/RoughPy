@@ -147,7 +147,7 @@ using indeterminate_type = dtl::PackedInteger<deg_t, char>;
  * @class Monomial
  * @brief A class representing a monomial
  */
-class ROUGHPY_SCALARS_EXPORT Monomial
+class Monomial
 {
 
 private:

@@ -69,11 +69,6 @@ protected:
         set_fibre_zero();
     }
 
-    ScalarArray& mut_base_data();
-    const ScalarArray& base_data() const noexcept { return m_base_data; };
-    ScalarArray& mut_fibre_data();
-    const ScalarArray& fibre_data() const noexcept { return m_fibre_data; };
-
     ScalarVector(ScalarArray base, ScalarArray fibre)
         : m_base_data(std::move(base)),
           m_fibre_data(std::move(fibre)){};
@@ -88,6 +83,11 @@ public:
     {}
 
     ~ScalarVector();
+
+    ScalarArray& mut_base_data();
+    const ScalarArray& base_data() const noexcept { return m_base_data; };
+    ScalarArray& mut_fibre_data();
+    const ScalarArray& fibre_data() const noexcept { return m_fibre_data; };
 
     RPY_NO_DISCARD bool fast_is_zero() const noexcept
     {
@@ -316,13 +316,13 @@ void StandardUnaryVectorOperation<Operation>::eval(
     resize_destination(destination, source.dimension());
 
     auto binding = GenericKernelType::new_binding();
-    binding->bind(destination);
-    binding->bind(source);
+    binding->bind(destination.mut_base_data());
+    binding->bind(source.base_data());
     binding->bind(op);
 
     eval_impl(
             GenericKernelType::get_base_name(),
-            *GenericKernelType::get(),
+            GenericKernelType::get(),
             *binding
     );
 }
@@ -334,12 +334,12 @@ void StandardUnaryVectorOperation<Operation>::eval_inplace(
 {
     // No resizing should be necessary.
     auto binding = GenericInplaceKernelType::new_binding();
-    binding->bind(arg);
+    binding->bind(arg.mut_base_data());
     binding->bind(op);
 
     eval_impl(
             GenericInplaceKernelType::get_base_name(),
-            *GenericInplaceKernelType::get(),
+            GenericInplaceKernelType::get(),
             *binding
     );
 }

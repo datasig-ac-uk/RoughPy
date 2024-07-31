@@ -5,15 +5,15 @@
 #ifndef POLY_RATIONAL_TYPE_H
 #define POLY_RATIONAL_TYPE_H
 
-#include <roughpy/core/types.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/ranges.h>
+#include <roughpy/core/types.h>
 
-#include <roughpy/platform/alloc.h>
-#include <roughpy/devices/core.h>
-#include <roughpy/devices/type.h>
 #include <roughpy/devices/buffer.h>
+#include <roughpy/devices/core.h>
 #include <roughpy/devices/device_handle.h>
+#include <roughpy/devices/type.h>
+#include <roughpy/platform/alloc.h>
 
 #include "poly_rational.h"
 
@@ -49,7 +49,45 @@ public:
 };
 
 template <typename Sca>
-PolyRationalType<Sca>::PolyRationalType() : Type()
+struct PolyTraits;
+
+template <>
+struct PolyTraits<Rational32> {
+    static constexpr char id[] = "pr32";
+    static constexpr char name[] = "PolyRational32";
+    static constexpr devices::TypeInfo
+            info{devices::TypeCode::Polynomial, 4, 4, 1};
+    using type = Polynomial<Rational32>;
+};
+
+template <>
+struct PolyTraits<Rational64> {
+    static constexpr char id[] = "pr64";
+    static constexpr char name[] = "PolyRational64";
+    static constexpr devices::TypeInfo
+            info{devices::TypeCode::Polynomial, 8, 8, 1};
+    using type = Polynomial<Rational64>;
+};
+
+template <>
+struct PolyTraits<ArbitraryPrecisionRational> {
+    static constexpr char id[] = "aprp";
+    static constexpr char name[] = "PolyRat";
+    static constexpr devices::TypeInfo info{
+            devices::TypeCode::APRationalPolynomial,
+            sizeof(APPolyRat),
+            alignof(APPolyRat),
+            1
+    };
+    using type = APPolyRat;
+};
+
+template <typename Sca>
+PolyRationalType<Sca>::PolyRationalType()
+    : Type(PolyTraits<Sca>::id,
+           PolyTraits<Sca>::name,
+           PolyTraits<Sca>::info,
+           devices::traits_of<typename PolyTraits<Sca>::type>())
 {}
 template <typename Sca>
 devices::Buffer

@@ -21,7 +21,7 @@ KeyArray::KeyArray(devices::Device device, dimn_t size)
 {}
 
 KeyArray::KeyArray(Slice<BasisKey> keys)
-    : m_buffer(keys.data(), keys.size(), basis_key_type_info)
+    : m_buffer(keys.data(), keys.size(), get_key_type())
 {}
 
 KeyArray::~KeyArray()

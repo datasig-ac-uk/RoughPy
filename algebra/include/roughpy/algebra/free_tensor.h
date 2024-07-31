@@ -21,6 +21,7 @@ namespace algebra {
  * FreeTensor objects.
  */
 class ROUGHPY_ALGEBRA_EXPORT FreeTensorMultiplication
+    : public RcBase<FreeTensorMultiplication>
 {
     using Identity = ops::Identity<scalars::Scalar>;
     using Uminus = ops::Uminus<scalars::Scalar>;

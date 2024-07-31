@@ -25,6 +25,7 @@ namespace algebra {
  *
  */
 class ROUGHPY_ALGEBRA_EXPORT LieMultiplication
+    : public RcBase<LieMultiplication>
 {
 public:
     static bool basis_compatibility_check(const Basis& basis) noexcept;

@@ -41,7 +41,8 @@ public:
     virtual Vector construct_with_dim(dimn_t dimension) const = 0;
 };
 
-class ROUGHPY_ALGEBRA_EXPORT VectorContext : public platform::SmallObjectBase
+class ROUGHPY_ALGEBRA_EXPORT VectorContext : public RcBase<VectorContext>,
+                                             public platform::SmallObjectBase
 {
     BasisPointer p_basis;
 
@@ -202,7 +203,7 @@ public:
      * @param key Key for the basis.
      * @param scalar Scalar value for the vector.
      */
-    explicit Vector(BasisPointer basis, BasisKey key, Scalar scalar)
+    explicit Vector(const BasisPointer& basis, BasisKey key, Scalar scalar)
         : ScalarVector(std::move(scalar.type())),
           p_context(basis->default_vector_context())
     {
@@ -747,6 +748,176 @@ operator/=(V& lhs, const scalars::Scalar& rhs)
 {
     lhs.sdiv_inplace(rhs);
     return lhs;
+}
+
+namespace dtl {
+
+class VectorIteratorState;
+
+template <typename T>
+class IteratorItemProxy
+{
+    T m_data;
+
+public:
+    template <typename... Args>
+    IteratorItemProxy(Args&&... args) : m_data(std::forward<Args>(args)...)
+    {}
+
+    operator const T&() const noexcept { return m_data; }
+
+    const T& operator*() const noexcept { return m_data; }
+    const T* operator->() const noexcept { return &m_data; }
+    operator T&() noexcept { return m_data; }
+
+    T& operator*() noexcept { return m_data; }
+
+    T* operator->() noexcept { return &m_data; }
+};
+
+class ROUGHPY_ALGEBRA_EXPORT VectorIteratorState
+    : public platform::SmallObjectBase
+{
+public:
+    using value_type = IteratorItemProxy<pair<BasisKey, scalars::ScalarCRef>>;
+
+    virtual ~VectorIteratorState();
+
+    RPY_NO_DISCARD virtual std::unique_ptr<VectorIteratorState> copy() const
+            = 0;
+    virtual void advance() noexcept = 0;
+
+    virtual value_type value() const = 0;
+
+    virtual bool is_same(const VectorIteratorState& other_state) const noexcept
+            = 0;
+};
+
+template <typename VectorIt, typename KeyIt>
+class ConcreteVectorIteratorState : public VectorIteratorState
+{
+    VectorIt m_vit;
+    KeyIt m_kit;
+
+public:
+    ConcreteVectorIteratorState(VectorIt&& vit, KeyIt&& kit)
+        : m_vit(std::move(vit)),
+          m_kit(std::move(kit))
+    {}
+
+    RPY_NO_DISCARD std::unique_ptr<VectorIteratorState> copy() const override;
+    void advance() noexcept override;
+    value_type value() const override;
+};
+
+template <typename VectorIt, typename KeyIt>
+std::unique_ptr<VectorIteratorState>
+make_iterator_state(VectorIt&& vit, KeyIt&& kit)
+{
+    using type = ConcreteVectorIteratorState<decay_t<VectorIt>, decay_t<KeyIt>>;
+    return std::make_unique<type>(
+            std::forward<VectorIt>(vit),
+            std::forward<KeyIt>(kit)
+    );
+}
+
+template <typename VectorIt, typename KeyIt>
+std::unique_ptr<VectorIteratorState>
+ConcreteVectorIteratorState<VectorIt, KeyIt>::copy() const
+{
+    return make_iterator_state(m_vit, m_kit);
+}
+
+template <typename VectorIt, typename KeyIt>
+void ConcreteVectorIteratorState<VectorIt, KeyIt>::advance() noexcept
+{
+    ++m_vit;
+    ++m_kit;
+}
+template <typename VectorIt, typename KeyIt>
+VectorIteratorState::value_type
+ConcreteVectorIteratorState<VectorIt, KeyIt>::value() const
+{
+    return {*m_kit, *m_vit};
+}
+
+}// namespace dtl
+
+class VectorIterator
+{
+    std::unique_ptr<dtl::VectorIteratorState> m_state;
+
+public:
+    using value_type = pair<BasisKey, scalars::ScalarCRef>;
+    using reference = dtl::IteratorItemProxy<value_type>;
+    using pointer = dtl::IteratorItemProxy<value_type>;
+    using difference_type = ptrdiff_t;
+    using iterator_tag = std::forward_iterator_tag;
+
+    template <typename VectorIt, typename KeyIt>
+    VectorIterator(VectorIt&& vit, KeyIt&& kit)
+        : m_state(dtl::make_iterator_state(
+                  std::forward<VectorIt>(vit),
+                  std::forward<KeyIt>(kit)
+          ))
+    {}
+
+    VectorIterator() {}
+    VectorIterator(const VectorIterator& other) : m_state(other.m_state->copy())
+    {}
+    VectorIterator(VectorIterator&& other) noexcept
+        : m_state(std::move(other.m_state))
+    {}
+
+    VectorIterator& operator=(const VectorIterator& other)
+    {
+        if (this != &other) { m_state = other.m_state->copy(); }
+        return *this;
+    }
+
+    VectorIterator& operator=(VectorIterator&& other) noexcept
+    {
+        if (this != &other) { m_state = std::move(other.m_state); }
+        return *this;
+    }
+
+    VectorIterator& operator++() noexcept
+    {
+        m_state->advance();
+        return *this;
+    }
+
+    RPY_NO_DISCARD const VectorIterator operator++(int) noexcept
+    {
+        VectorIterator result(*this);
+        operator++();
+        return result;
+    }
+
+    RPY_NO_DISCARD reference operator*() const noexcept
+    {
+        return m_state->value();
+    }
+
+    RPY_NO_DISCARD pointer operator->() const noexcept
+    {
+        return m_state->value();
+    }
+
+    RPY_NO_DISCARD friend bool
+    operator==(const VectorIterator& lhs, const VectorIterator& rhs) noexcept
+    {
+        if (lhs.m_state && rhs.m_state) {
+            return lhs.m_state->is_same(*rhs.m_state);
+        }
+        return false;
+    }
+};
+
+RPY_NO_DISCARD inline bool
+operator!=(const VectorIterator& lhs, const VectorIterator& rhs) noexcept
+{
+    return !(lhs == rhs);
 }
 
 }// namespace algebra

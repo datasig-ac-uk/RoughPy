@@ -13,7 +13,7 @@
 namespace rpy {
 namespace algebra {
 
-class ShuffleTensorMultiplication
+class ShuffleTensorMultiplication : public RcBase<ShuffleTensorMultiplication>
 {
 public:
     static bool basis_compatibility_check(const Basis& basis) noexcept;
