@@ -12,6 +12,7 @@
 #include <roughpy/core/ranges.h>
 #include <roughpy/devices/algorithms.h>
 #include <roughpy/devices/core.h>
+#include <roughpy/device_support/operators.h>
 
 #include <algorithm>
 #include <ostream>
