@@ -38,12 +38,10 @@ public:
 
 };
 
-class ScalarVectorIterator
+class ROUGHPY_SCALARS_EXPORT ScalarVectorIterator
 {
     ScalarArray m_data;
     dimn_t m_index;
-
-
 public:
 
     ScalarVectorIterator();
@@ -60,7 +58,19 @@ public:
     ScalarCRef operator*() const;
     ScalarCRefPointerProxy operator->() const;
 
+    friend bool operator==(const ScalarVectorIterator& lhs, const ScalarVectorIterator& rhs);
+
+
 };
+
+ROUGHPY_SCALARS_EXPORT
+bool operator==(const ScalarVectorIterator& lhs, const ScalarVectorIterator& rhs);
+
+inline bool operator!=(const ScalarVectorIterator& lhs, const ScalarVectorIterator& rhs)
+{
+    return !(lhs == rhs);
+}
+
 }// namespace dtl
 
 class VectorOperation;
