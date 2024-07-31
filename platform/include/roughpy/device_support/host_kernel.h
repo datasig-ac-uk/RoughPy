@@ -76,12 +76,12 @@ Device HostKernelBase<Impl, ArgSpec...>::device() const noexcept
 template <typename Impl, typename... ArgSpec>
 string HostKernelBase<Impl, ArgSpec...>::name() const
 {
-    return Impl::get_name();
+    return string(Impl::get_name());
 }
 template <typename Impl, typename... ArgSpec>
 dimn_t HostKernelBase<Impl, ArgSpec...>::num_args() const
 {
-    return signature_t::num_args;
+    return signature_t::num_params;
 }
 template <typename Impl, typename... ArgSpec>
 Event HostKernelBase<Impl, ArgSpec...>::launch_kernel_async(
@@ -90,10 +90,14 @@ Event HostKernelBase<Impl, ArgSpec...>::launch_kernel_async(
         const KernelArguments& args
 ) const
 {
+    auto wrapper = [&params](auto&&... kargs) {
+        Impl::run(params, std::forward<decltype(kargs)>(kargs)...);
+    };
+
     using Binding = devices::ArgumentBinder<
             typename signature_t::ParamsList,
-            decltype(Impl::run)>;
-    Binding::eval(Impl::run, params, args);
+            decltype(wrapper)>;
+    Binding::eval(wrapper, args);
     return Event::completed_event(EventStatus::CompletedSuccessfully);
 }
 template <typename Impl, typename... ArgSpec>
@@ -103,14 +107,15 @@ EventStatus HostKernelBase<Impl, ArgSpec...>::launch_kernel_sync(
         const KernelArguments& args
 ) const
 {
+    auto wrapper = [&params](auto&&... kargs) {
+        Impl::run(params, std::forward<decltype(kargs)>(kargs)...);
+    };
+
     using Binding = devices::ArgumentBinder<
             typename signature_t::ParamsList,
-            decltype(Impl::run)>;
+            decltype(wrapper)>;
     Binding::eval(
-            [&params](auto&&... kargs) {
-                Impl::run(params, std::forward<decltype(kargs)>(kargs)...);
-            },
-            params,
+        wrapper,
             args
     );
     return EventStatus::CompletedSuccessfully;
