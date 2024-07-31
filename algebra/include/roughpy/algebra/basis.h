@@ -106,9 +106,9 @@ private:
     }
 
 public:
-    reference operator*() noexcept { return m_value; }
+    reference operator*() const noexcept { return m_value; }
 
-    pointer operator->() noexcept { return &m_value; }
+    pointer operator->() const noexcept { return &m_value; }
 
     friend bool operator==(
             const KeyRangeIterator& lhs,
