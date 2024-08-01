@@ -9,7 +9,6 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 
-
 add_library(RoughPy_Algebra_headers INTERFACE)
 target_include_directories(RoughPy_Algebra_headers INTERFACE include)
 target_link_libraries(RoughPy_Algebra_headers INTERFACE
@@ -22,8 +21,6 @@ set(ROUGHPY_ALGEBRA_PRIVATE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/al
 set(ROUGHPY_SCALARS_PRIVATE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/scalars)
 
 add_subdirectory(src/scalars)
-
-
 
 
 add_roughpy_component(Algebra
@@ -65,6 +62,7 @@ add_roughpy_component(Algebra
         src/algebra/tensor_word.cpp
         src/algebra/tensor_word.h
         src/algebra/vector.cpp
+        src/algebra/vector_factory.cpp
         src/algebra/vector_context.cpp
         src/algebra/vector_iterator.cpp
         PUBLIC_HEADERS
