@@ -9,13 +9,37 @@
 
 namespace rpy {
 namespace devices {
+
+class Value;
+class ConstReference;
+class Reference;
+
 namespace operators {
 
 template <typename T>
+struct ArgumentTraits {
+    using value_type = T;
+    using reference = T&;
+    using const_reference = const T&;
+};
+
+template <>
+struct ArgumentTraits<Value> {
+    using value_type = Value;
+    using reference = Reference;
+    using const_reference = ConstReference;
+};
+
+template <typename T>
 struct Identity {
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+
     static constexpr string_view name = "identity";
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE T operator()(const T& arg) const
+    RPY_NO_DISCARD RPY_HOST_DEVICE value_type operator()(const_reference arg
+    ) const
     {
         return arg;
     }
@@ -23,11 +47,14 @@ struct Identity {
 
 template <typename T>
 struct Uminus {
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
 
     static constexpr string_view name = "uminus";
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(const T& arg
-    ) noexcept(noexcept(-arg))
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type
+    operator()(const_reference arg) noexcept(noexcept(-arg))
     {
         return -arg;
     }
@@ -35,9 +62,16 @@ struct Uminus {
 
 template <typename T>
 struct Add {
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+
     static constexpr string_view name = "addition";
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T
-    operator()(const T& left, const T& right) noexcept(noexcept(left + right))
+
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
+            const_reference left,
+            const_reference right
+    ) noexcept(noexcept(left + right))
     {
         return left + right;
     }
@@ -45,9 +79,16 @@ struct Add {
 
 template <typename T>
 struct Sub {
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+
     static constexpr string_view name = "subtraction";
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T
-    operator()(const T& left, const T& right) noexcept(noexcept(left - right))
+
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
+            const_reference left,
+            const_reference right
+    ) noexcept(noexcept(left - right))
     {
         return left - right;
     }
@@ -55,13 +96,17 @@ struct Sub {
 
 template <typename T>
 struct LeftScalarMultiply {
-    const T& data;
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+
+    const_reference data;
 
     static constexpr string_view name = "left_scalar_multiply";
-    constexpr explicit LeftScalarMultiply(const T& d) : data(d) {}
+    constexpr explicit LeftScalarMultiply(const_reference d) : data(d) {}
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(const T& arg
-    ) noexcept(noexcept(data * arg))
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type
+    operator()(const_reference arg) noexcept(noexcept(data * arg))
     {
         return data * arg;
     }
@@ -69,13 +114,17 @@ struct LeftScalarMultiply {
 
 template <typename T>
 struct RightScalarMultiply {
-    const T& data;
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+
+    const_reference data;
 
     static constexpr string_view name = "right_scalar_multiply";
-    constexpr explicit RightScalarMultiply(const T& d) : data(d) {}
+    constexpr explicit RightScalarMultiply(const_reference d) : data(d) {}
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(const T& arg
-    ) noexcept(noexcept(arg * data))
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type
+    operator()(const_reference arg) noexcept(noexcept(arg * data))
     {
         return arg * data;
     }
@@ -83,13 +132,20 @@ struct RightScalarMultiply {
 
 template <typename T, typename S = T>
 struct RightScalarDivide {
-    const S& data;
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+
+    typename ArgumentTraits<S>::const_reference data;
 
     static constexpr string_view name = "right_scalar_divide";
-    constexpr explicit RightScalarDivide(const S& divisor) : data(divisor) {}
+    constexpr explicit
+    RightScalarDivide(typename ArgumentTraits<S>::const_reference divisor)
+        : data(divisor)
+    {}
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(const T& arg
-    ) noexcept(noexcept(arg / data))
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type
+    operator()(const_reference arg) noexcept(noexcept(arg / data))
     {
         return arg / data;
     }
@@ -97,14 +153,18 @@ struct RightScalarDivide {
 
 template <typename T>
 struct FusedLeftScalarMultiplyAdd {
-    const T& data;
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+    const_reference data;
 
     static constexpr string_view name = "fused_add_scalar_left_mul";
-    constexpr explicit FusedLeftScalarMultiplyAdd(const T& d) : data(d) {}
+    constexpr explicit FusedLeftScalarMultiplyAdd(const_reference d) : data(d)
+    {}
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(
-            const T& left,
-            const T& right
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
+            const_reference left,
+            const_reference right
     ) noexcept(noexcept(left + data * right))
     {
         return left + data * right;
@@ -113,14 +173,18 @@ struct FusedLeftScalarMultiplyAdd {
 
 template <typename T>
 struct FusedRightScalarMultiplyAdd {
-    const T& data;
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+    const_reference data;
 
     static constexpr string_view name = "fused_add_scalar_right_mul";
-    constexpr explicit FusedRightScalarMultiplyAdd(const T& d) : data(d) {}
+    constexpr explicit FusedRightScalarMultiplyAdd(const_reference d) : data(d)
+    {}
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(
-            const T& left,
-            const T& right
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
+            const_reference left,
+            const_reference right
     ) noexcept(noexcept(left + right * data))
     {
         return left + right * data;
@@ -129,14 +193,18 @@ struct FusedRightScalarMultiplyAdd {
 
 template <typename T>
 struct FusedLeftScalarMultiplySub {
-    const T& data;
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+    const_reference data;
 
     static constexpr string_view name = "fused_sub_scalar_left_mul";
-    constexpr explicit FusedLeftScalarMultiplySub(const T& d) : data(d) {}
+    constexpr explicit FusedLeftScalarMultiplySub(const_reference d) : data(d)
+    {}
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(
-            const T& left,
-            const T& right
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
+            const_reference left,
+            const_reference right
     ) noexcept(noexcept(left - data * right))
     {
         return left - data * right;
@@ -145,14 +213,18 @@ struct FusedLeftScalarMultiplySub {
 
 template <typename T>
 struct FusedRightScalarMultiplySub {
-    const T& data;
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+    const_reference data;
 
     static constexpr string_view name = "fused_sub_scalar_right_mul";
-    constexpr explicit FusedRightScalarMultiplySub(const T& d) : data(d) {}
+    constexpr explicit FusedRightScalarMultiplySub(const_reference d) : data(d)
+    {}
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(
-            const T& left,
-            const T& right
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
+            const_reference left,
+            const_reference right
     ) noexcept(noexcept(left - right * data))
     {
         return left - right * data;
@@ -161,14 +233,21 @@ struct FusedRightScalarMultiplySub {
 
 template <typename T, typename S = T>
 struct FusedRightScalarDivideAdd {
-    const S& data;
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+
+    typename ArgumentTraits<S>::const_reference data;
 
     static constexpr string_view name = "fused_add_scalar_right_divide";
-    constexpr explicit FusedRightScalarDivideAdd(const S& d) : data(d) {}
+    constexpr explicit
+    FusedRightScalarDivideAdd(typename ArgumentTraits<S>::const_reference d)
+        : data(d)
+    {}
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(
-            const T& left,
-            const T& right
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
+            const_reference left,
+            const_reference right
     ) noexcept(noexcept(left + right / data))
     {
         return left + right / data;
@@ -177,14 +256,20 @@ struct FusedRightScalarDivideAdd {
 
 template <typename T, typename S = T>
 struct FusedRightScalarDivideSub {
-    const S& data;
+    using value_type = typename ArgumentTraits<T>::value_type;
+    using reference = typename ArgumentTraits<T>::reference;
+    using const_reference = typename ArgumentTraits<T>::const_reference;
+    typename ArgumentTraits<S>::const_reference data;
 
     static constexpr string_view name = "fused_sub_scalar_right_divide";
-    constexpr explicit FusedRightScalarDivideSub(const S& d) : data(d) {}
+    constexpr explicit
+    FusedRightScalarDivideSub(typename ArgumentTraits<S>::const_reference d)
+        : data(d)
+    {}
 
-    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr T operator()(
-            const T& left,
-            const T& right
+    RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
+            const_reference left,
+            const_reference right
     ) noexcept(noexcept(left - right / data))
     {
         return left - right / data;
