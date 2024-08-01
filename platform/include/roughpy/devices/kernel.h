@@ -884,10 +884,11 @@ class ArgumentBinder<
     static decltype(auto)
     eval_impl(F&& fn, const KernelArguments& args, dimn_t idx)
     {
+        auto* arg_ptr = args.get_raw_ptr(idx);
+
         return next_t::template eval_impl(
                 [f = std::forward<F>(fn),
-                 value = Decoder::decode(args.get_raw_ptr(idx)
-                 )](auto&&... remaining) {
+                 value = Decoder::decode(arg_ptr)](auto&&... remaining) {
                     return f(
                             value,
                             std::forward<decltype(remaining)>(remaining)...
