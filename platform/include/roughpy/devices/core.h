@@ -601,6 +601,21 @@ struct type_id_of_impl<double> {
     static constexpr string_view value = "f64";
 };
 
+template <>
+struct type_id_of_impl<Value> {
+    static constexpr string_view value = "generic";
+};
+
+template <>
+struct type_id_of_impl<ConstReference> {
+    static constexpr string_view value = "generic";
+};
+
+template <>
+struct type_id_of_impl<Reference> {
+    static constexpr string_view value = "generic";
+};
+
 }// namespace dtl
 
 /**
