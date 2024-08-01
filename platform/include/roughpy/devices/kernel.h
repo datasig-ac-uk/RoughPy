@@ -176,9 +176,8 @@ struct GetType<params::GenericParam<N>> {
 };
 
 template <>
-struct GetType<Value>
-{
-    static TypePtr get_type() { return nullptr;}
+struct GetType<Value> {
+    static TypePtr get_type() { return nullptr; }
 };
 
 template <typename T, typename... Ts>
@@ -447,15 +446,28 @@ struct ArgumentDecoder<params::Buffer<T>, const Buffer&> {
 };
 
 template <typename T>
-struct ArgumentDecoder<params::Buffer<T>, Slice<const T>> {
+struct ArgumentDecoder<
+        params::Buffer<T>,
+        Slice<const T>,
+        enable_if_t<!is_same_v<T, Value>>> {
     static Slice<const T> decode(const void* arg)
     {
         return static_cast<const Buffer*>(arg)->as_slice<T>();
     }
 };
 
-template <typename T>
-struct ArgumentDecoder<params::Buffer<T>, Slice<const Value>> {
+template <>
+struct ArgumentDecoder<params::Buffer<Value>, Slice<const Value>> {
+    static Slice<const Value> decode(const void* arg)
+    {
+        return static_cast<const Buffer*>(arg)->as_value_slice();
+    }
+};
+
+template <int N>
+struct ArgumentDecoder<
+        params::Buffer<params::GenericParam<N>>,
+        Slice<const Value>> {
     static Slice<const Value> decode(const void* arg)
     {
         return static_cast<const Buffer*>(arg)->as_value_slice();
@@ -465,7 +477,8 @@ struct ArgumentDecoder<params::Buffer<T>, Slice<const Value>> {
 template <int N, typename T>
 struct ArgumentDecoder<
         params::Buffer<params::GenericParam<N>>,
-        Slice<const T>> {
+        Slice<const T>,
+        enable_if_t<!is_same_v<T, Value>>> {
     static Slice<const T> decode(const void* arg)
     {
         return static_cast<const Buffer*>(arg)->as_slice<T>();
@@ -478,15 +491,28 @@ struct ArgumentDecoder<params::ResultBuffer<T>, Buffer&> {
 };
 
 template <typename T>
-struct ArgumentDecoder<params::ResultBuffer<T>, Slice<T>> {
+struct ArgumentDecoder<
+        params::ResultBuffer<T>,
+        Slice<T>,
+        enable_if_t<!is_same_v<T, Value>>> {
     static Slice<T> decode(void* arg)
     {
         return static_cast<Buffer*>(arg)->as_mut_slice<T>();
     }
 };
 
-template <typename T>
-struct ArgumentDecoder<params::ResultBuffer<T>, Slice<Value>> {
+template <>
+struct ArgumentDecoder<params::ResultBuffer<Value>, Slice<Value>> {
+    static Slice<Value> decode(void* arg)
+    {
+        return static_cast<Buffer*>(arg)->as_mut_value_slice();
+    }
+};
+
+template <int N>
+struct ArgumentDecoder<
+        params::ResultBuffer<params::GenericParam<N>>,
+        Slice<Value>> {
     static Slice<Value> decode(void* arg)
     {
         return static_cast<Buffer*>(arg)->as_mut_value_slice();
@@ -496,7 +522,8 @@ struct ArgumentDecoder<params::ResultBuffer<T>, Slice<Value>> {
 template <int N, typename T>
 struct ArgumentDecoder<
         params::ResultBuffer<params::GenericParam<N>>,
-        Slice<T>> {
+        Slice<T>,
+        enable_if_t<!is_same_v<T, Value>>> {
     static Slice<const T> decode(void* arg)
     {
         return static_cast<const Buffer*>(arg)->as_mut_slice<T>();
@@ -533,7 +560,7 @@ template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::Identity<T>> {
     static operators::Identity<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::Identity);
         return operators::Identity<T>();
     }
@@ -543,7 +570,7 @@ template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::Uminus<T>> {
     static operators::Uminus<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::UnaryMinus);
         return operators::Uminus<T>();
     }
@@ -553,7 +580,7 @@ template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::LeftScalarMultiply<T>> {
     static operators::LeftScalarMultiply<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::LeftMultiply);
         const auto& data
                 = operators::op_cast<operators::LeftMultiplyOperator>(op).data(
@@ -566,7 +593,7 @@ template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::RightScalarMultiply<T>> {
     static operators::RightScalarMultiply<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::RightMultiply);
         const auto& data
                 = operators::op_cast<operators::RightMultiplyOperator>(op).data(
@@ -579,7 +606,7 @@ template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::Add<T>> {
     static operators::Add<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::Addition);
         return operators::Add<T>();
     }
@@ -589,7 +616,7 @@ template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::Sub<T>> {
     static operators::Sub<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::Subtraction);
         return operators::Sub<T>();
     }
@@ -601,7 +628,7 @@ struct ArgumentDecoder<
         operators::FusedLeftScalarMultiplyAdd<T>> {
     static operators::FusedLeftScalarMultiplyAdd<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplyAdd);
         const auto& data
                 = operators::op_cast<operators::FusedLeftMultiplyAddOperator>(op
@@ -617,7 +644,7 @@ struct ArgumentDecoder<
         operators::FusedRightScalarMultiplyAdd<T>> {
     static operators::FusedRightScalarMultiplyAdd<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<const params::Operator<T>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplyAdd);
         const auto& data
                 = operators::op_cast<operators::FusedRightMultiplyAddOperator>(
@@ -634,8 +661,7 @@ struct ArgumentDecoder<
         operators::Identity<T>> {
     static operators::Identity<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<
-                const params::Operator<params::GenericParam<N>>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::Identity);
         return operators::Identity<T>();
     }
@@ -647,8 +673,7 @@ struct ArgumentDecoder<
         operators::Uminus<T>> {
     static operators::Uminus<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<
-                const params::Operator<params::GenericParam<N>>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::UnaryMinus);
         return operators::Uminus<T>();
     }
@@ -660,8 +685,7 @@ struct ArgumentDecoder<
         operators::LeftScalarMultiply<T>> {
     static operators::LeftScalarMultiply<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<
-                const params::Operator<params::GenericParam<N>>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::LeftMultiply);
         const auto& data
                 = operators::op_cast<operators::LeftMultiplyOperator>(op).data(
@@ -676,8 +700,7 @@ struct ArgumentDecoder<
         operators::RightScalarMultiply<T>> {
     static operators::RightScalarMultiply<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<
-                const params::Operator<params::GenericParam<N>>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::RightMultiply);
         const auto& data
                 = operators::op_cast<operators::RightMultiplyOperator>(op).data(
@@ -692,8 +715,7 @@ struct ArgumentDecoder<
         operators::Add<T>> {
     static operators::Add<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<
-                const params::Operator<params::GenericParam<N>>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::Addition);
         return operators::Add<T>();
     }
@@ -705,8 +727,7 @@ struct ArgumentDecoder<
         operators::Sub<T>> {
     static operators::Sub<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<
-                const params::Operator<params::GenericParam<N>>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::Subtraction);
         return operators::Sub<T>();
     }
@@ -718,8 +739,7 @@ struct ArgumentDecoder<
         operators::FusedLeftScalarMultiplyAdd<T>> {
     static operators::FusedLeftScalarMultiplyAdd<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<
-                const params::Operator<params::GenericParam<N>>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplyAdd);
         const auto& data
                 = operators::op_cast<operators::FusedLeftMultiplyAddOperator>(op
@@ -735,8 +755,7 @@ struct ArgumentDecoder<
         operators::FusedRightScalarMultiplyAdd<T>> {
     static operators::FusedRightScalarMultiplyAdd<T> decode(const void* arg)
     {
-        const auto& op = *static_cast<
-                const params::Operator<params::GenericParam<N>>*>(arg);
+        const auto& op = *static_cast<const operators::Operator*>(arg);
         RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplyAdd);
         const auto& data
                 = operators::op_cast<operators::FusedRightMultiplyAddOperator>(
@@ -755,25 +774,21 @@ class ArgumentBinder;
 template <typename Param, typename Arg>
 class ArgumentBinder<params::ParamList<Param>, params::ParamList<Arg>>
 {
-    using Decoder = ArgumentDecoder<Param, Arg>;
+    using Decoder = ArgumentDecoder<Param, decay_t<Arg>>;
 
     template <typename PL, typename AL>
     friend class ArgumentBinder;
 
     template <typename F>
-    static decltype(auto) eval_impl(
-            F&& fn,
-            const KernelArguments& args,
-            dimn_t idx
-    )
+    static decltype(auto)
+    eval_impl(F&& fn, const KernelArguments& args, dimn_t idx)
     {
         return fn(Decoder::decode(args.get_raw_ptr(idx)));
     }
 
 public:
     template <typename F>
-    static decltype(auto)
-    eval(F&& fn, const KernelArguments& args)
+    static decltype(auto) eval(F&& fn, const KernelArguments& args)
     {
         return eval_impl(std::forward<F>(fn), args, 0);
     }
@@ -784,7 +799,15 @@ class ArgumentBinder<
         params::ParamList<Param, Params...>,
         params::ParamList<Arg, Args...>>
 {
-    using Decoder = ArgumentDecoder<Param, Arg>;
+    using params_list_t = params::ParamList<Param, Params...>;
+    using args_list_t = params::ParamList<Arg, Args...>;
+
+    static_assert(
+            params_list_t::size == args_list_t::size,
+            "mismatch between number of args and number of parameters"
+    );
+
+    using Decoder = ArgumentDecoder<Param, decay_t<Arg>>;
     using next_t = ArgumentBinder<
             params::ParamList<Params...>,
             params::ParamList<Args...>>;
@@ -793,11 +816,8 @@ class ArgumentBinder<
     friend class ArgumentBinder;
 
     template <typename F>
-    static decltype(auto) eval_impl(
-            F&& fn,
-            const KernelArguments& args,
-            dimn_t idx
-    )
+    static decltype(auto)
+    eval_impl(F&& fn, const KernelArguments& args, dimn_t idx)
     {
         return next_t::template eval_impl(
                 [f = std::forward<F>(fn),
@@ -815,18 +835,31 @@ class ArgumentBinder<
 
 public:
     template <typename F>
-    static decltype(auto)
-    eval(F&& fn, const KernelArguments& args)
+    static decltype(auto) eval(F&& fn, const KernelArguments& args)
     {
         return eval_impl(std::forward<F>(fn), args, 0);
     }
 };
 
+template <typename L>
+struct KernelParamTypesImpl {
+    using type = L;
+};
+
+template <typename... Ts>
+struct KernelParamTypesImpl<
+        params::ParamList<const KernelLaunchParams&, Ts...>> {
+    using type = params::ParamList<Ts...>;
+};
+
+template <typename F>
+using kernel_fn_args =
+        typename KernelParamTypesImpl<args_t<F, params::ParamList>>::type;
+
 }// namespace dtl
 
 template <typename ParamList, typename F>
-using ArgumentBinder
-        = dtl::ArgumentBinder<ParamList, args_t<F, params::ParamList>>;
+using ArgumentBinder = dtl::ArgumentBinder<ParamList, dtl::kernel_fn_args<F>>;
 
 class ROUGHPY_DEVICES_EXPORT KernelSpec
 {
