@@ -5,7 +5,6 @@
 #ifndef ROUGHPY_DEVICES_HOST_KERNEL_H
 #define ROUGHPY_DEVICES_HOST_KERNEL_H
 
-
 #include <roughpy/core/traits.h>
 #include <roughpy/devices/host_device.h>
 #include <roughpy/devices/kernel.h>
@@ -90,14 +89,18 @@ Event HostKernelBase<Impl, ArgSpec...>::launch_kernel_async(
         const KernelArguments& args
 ) const
 {
-    auto wrapper = [&params](auto&&... kargs) {
-        Impl::run(params, std::forward<decltype(kargs)>(kargs)...);
-    };
 
     using Binding = devices::ArgumentBinder<
             typename signature_t::ParamsList,
-            decltype(wrapper)>;
-    Binding::eval(wrapper, args);
+            decltype(Impl::run)>;
+
+    Binding::eval(
+            [&params](auto&&... kargs) {
+                Impl::run(params, std::forward<decltype(kargs)>(kargs)...);
+            },
+            args
+    );
+
     return Event::completed_event(EventStatus::CompletedSuccessfully);
 }
 template <typename Impl, typename... ArgSpec>
@@ -107,15 +110,13 @@ EventStatus HostKernelBase<Impl, ArgSpec...>::launch_kernel_sync(
         const KernelArguments& args
 ) const
 {
-    auto wrapper = [&params](auto&&... kargs) {
-        Impl::run(params, std::forward<decltype(kargs)>(kargs)...);
-    };
-
     using Binding = devices::ArgumentBinder<
             typename signature_t::ParamsList,
-            decltype(wrapper)>;
+            decltype(Impl::run)>;
     Binding::eval(
-        wrapper,
+            [&params](auto&&... kargs) {
+                Impl::run(params, std::forward<decltype(kargs)>(kargs)...);
+            },
             args
     );
     return EventStatus::CompletedSuccessfully;
@@ -131,15 +132,15 @@ class UnaryHostKernel : public dtl::HostKernelBase<
                                 params::Operator<T>>
 {
 public:
-    RPY_NO_DISCARD
-    static string_view get_base_name() noexcept
+    RPY_NO_DISCARD static string_view get_base_name() noexcept
     {
         static string name = string_cat("unary_", Operator<Value>::name);
         return name;
     }
     RPY_NO_DISCARD static string_view get_name() noexcept
     {
-        static string name = string_cat(get_base_name(), '_', devices::type_id_of<T>);
+        static string name
+                = string_cat(get_base_name(), '_', devices::type_id_of<T>);
         return name;
     }
 
@@ -159,8 +160,9 @@ public:
         for (dimn_t ix = 0; ix < work_dims.x; ++ix) {
             for (dimn_t iy = 0; iy < work_dims.y; ++iy) {
                 for (dimn_t iz = 0; iz < work_dims.z; ++iz) {
-                    const auto index = (ix*group_size.y + iy)*group_size.z + iz;
-                    result[index] = op(index);
+                    const auto index
+                            = (ix * group_size.y + iy) * group_size.z + iz;
+                    result[index] = op(arg[index]);
                 }
             }
         }
@@ -168,19 +170,22 @@ public:
 };
 
 template <template <typename> class Operator, typename T>
-class UnaryInplaceHostKernel : public dtl::HostKernelBase<UnaryHostKernel<Operator, T>,
-    params::ResultBuffer<T>, params::Operator<T>>
+class UnaryInplaceHostKernel : public dtl::HostKernelBase<
+                                       UnaryHostKernel<Operator, T>,
+                                       params::ResultBuffer<T>,
+                                       params::Operator<T>>
 {
 public:
-    RPY_NO_DISCARD
-    static string_view get_base_name() noexcept
+    RPY_NO_DISCARD static string_view get_base_name() noexcept
     {
-        static string name = string_cat("inplace_unary_", Operator<Value>::name);
+        static string name
+                = string_cat("inplace_unary_", Operator<Value>::name);
         return name;
     }
     RPY_NO_DISCARD static string_view get_name() noexcept
     {
-        static string name = string_cat(get_base_name(), '_', devices::type_id_of<T>);
+        static string name
+                = string_cat(get_base_name(), '_', devices::type_id_of<T>);
         return name;
     }
 
@@ -214,16 +219,15 @@ class BinaryHostKernel : public dtl::HostKernelBase<
                                  params::Operator<T>>
 {
 public:
-
-    RPY_NO_DISCARD
-    static string_view get_base_name() noexcept
+    RPY_NO_DISCARD static string_view get_base_name() noexcept
     {
         static string name = string_cat("binary_", Operator<Value>::name);
         return name;
     }
     RPY_NO_DISCARD static string_view get_name() noexcept
     {
-        static string name = string_cat(get_base_name(), '_', devices::type_id_of<T>);
+        static string name
+                = string_cat(get_base_name(), '_', devices::type_id_of<T>);
         return name;
     }
 
@@ -265,16 +269,17 @@ class BinaryInplaceHostKernel : public dtl::HostKernelBase<
                                         params::Operator<T>>
 {
 public:
-    RPY_NO_DISCARD
-    static string_view get_base_name() noexcept
+    RPY_NO_DISCARD static string_view get_base_name() noexcept
     {
-        static string name = string_cat("inplace_binary_", Operator<Value>::name);
+        static string name
+                = string_cat("inplace_binary_", Operator<Value>::name);
         return name;
     }
 
     RPY_NO_DISCARD static string_view get_name() noexcept
     {
-        static string name = string_cat(get_base_name(), '_', devices::type_id_of<T>);
+        static string name
+                = string_cat(get_base_name(), '_', devices::type_id_of<T>);
         return name;
     }
 
