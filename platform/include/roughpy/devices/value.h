@@ -440,7 +440,7 @@ enable_if_t<!value_like<T>, Reference&> Reference::operator=(T&& other)
 {
     RPY_DBG_ASSERT(type() != nullptr);
     const auto tp = get_type<T>();
-    const auto& conversion = type()->conversions(tp);
+    const auto& conversion = type()->conversions(*tp);
     if constexpr (is_rvalue_reference_v<T&&>) {
         if (conversion.move_convert) {
             conversion.move_convert(data(), &other);
