@@ -202,7 +202,7 @@ class ConstReference
     TypePtr p_type;
 
 public:
-    explicit ConstReference(const void* val, TypePtr type)
+    ConstReference(const void* val, TypePtr type)
         : p_val(val),
           p_type(std::move(type))
     {
@@ -257,9 +257,7 @@ class Reference : public ConstReference
 {
 public:
     // ReSharper disable once CppParameterMayBeConstPtrOrRef
-    explicit Reference(void* val, TypePtr type)
-        : ConstReference(val, std::move(type))
-    {}
+    Reference(void* val, TypePtr type) : ConstReference(val, std::move(type)) {}
 
     using ConstReference::data;
 
