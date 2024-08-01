@@ -524,7 +524,6 @@ public:
             dtl::BufferRange<T>>
     as_range() const;
 
-
     friend bool operator==(const Buffer& lhs, const Buffer& rhs) noexcept
     {
         return lhs.impl() == rhs.impl();
@@ -793,30 +792,54 @@ template <>
 class Slice<const devices::Value>
 {
     devices::Buffer m_buffer;
-    const void* p_data;
+    const byte* p_data;
     dimn_t m_size;
+    dimn_t m_itemsize;
 
 public:
     explicit Slice(devices::Buffer buffer)
         : m_buffer(std::move(buffer)),
-          p_data(m_buffer.ptr()),
-          m_size(m_buffer.size())
+          p_data(static_cast<const byte*>(m_buffer.ptr())),
+          m_size(m_buffer.size()),
+          m_itemsize(m_buffer.type()->bytes())
     {}
+
+    constexpr dimn_t size() const noexcept { return m_size; }
+
+    template <typename I>
+    enable_if_t<is_integral_v<I>, devices::ConstReference> operator[](I index
+    ) const noexcept
+    {
+        RPY_DBG_ASSERT(static_cast<dimn_t>(index) < m_size);
+        return {m_buffer.type(), p_data + index * m_itemsize};
+    }
 };
 
 template <>
 class Slice<devices::Value>
 {
     devices::Buffer m_buffer;
-    void* p_data;
+    byte* p_data;
     dimn_t m_size;
+    dimn_t m_itemsize;
 
 public:
     explicit Slice(devices::Buffer buffer)
         : m_buffer(std::move(buffer)),
-          p_data(buffer.ptr()),
-          m_size(buffer.size())
+          p_data(static_cast<byte*>(buffer.ptr())),
+          m_size(buffer.size()),
+          m_itemsize(m_buffer.type()->bytes())
     {}
+
+    constexpr dimn_t size() const noexcept { return m_size; }
+
+    template <typename I>
+    enable_if_t<is_integral_v<I>, devices::Reference> operator[](I index
+    ) noexcept
+    {
+        RPY_DBG_ASSERT(static_cast<dimn_t>(index) < m_size);
+        return {m_buffer.type(), p_data + index * m_itemsize};
+    }
 };
 
 namespace devices {
