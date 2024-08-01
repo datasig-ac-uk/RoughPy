@@ -655,6 +655,39 @@ struct ArgumentDecoder<
     }
 };
 
+template <typename T>
+struct ArgumentDecoder<
+        params::Operator<T>,
+        operators::FusedLeftScalarMultiplySub<T>> {
+    static operators::FusedLeftScalarMultiplySub<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const operators::Operator*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplySub);
+        const auto& data
+                = operators::op_cast<operators::FusedLeftMultiplySubOperator>(op
+                )
+                          .data();
+        return operators::FusedLeftScalarMultiplySub<T>(value_cast<T>(data));
+    }
+};
+
+template <typename T>
+struct ArgumentDecoder<
+        params::Operator<T>,
+        operators::FusedRightScalarMultiplySub<T>> {
+    static operators::FusedRightScalarMultiplySub<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const operators::Operator*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplySub);
+        const auto& data
+                = operators::op_cast<operators::FusedRightMultiplySubOperator>(
+                          op
+                )
+                          .data();
+        return operators::FusedRightScalarMultiplySub<T>(value_cast<T>(data));
+    }
+};
+
 template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
@@ -766,6 +799,38 @@ struct ArgumentDecoder<
     }
 };
 
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::FusedLeftScalarMultiplySub<T>> {
+    static operators::FusedLeftScalarMultiplySub<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const operators::Operator*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplySub);
+        const auto& data
+                = operators::op_cast<operators::FusedLeftMultiplySubOperator>(op
+                )
+                          .data();
+        return operators::FusedLeftScalarMultiplySub<T>(value_cast<T>(data));
+    }
+};
+
+template <int N, typename T>
+struct ArgumentDecoder<
+        params::Operator<params::GenericParam<N>>,
+        operators::FusedRightScalarMultiplySub<T>> {
+    static operators::FusedRightScalarMultiplySub<T> decode(const void* arg)
+    {
+        const auto& op = *static_cast<const operators::Operator*>(arg);
+        RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplySub);
+        const auto& data
+                = operators::op_cast<operators::FusedRightMultiplySubOperator>(
+                          op
+                )
+                          .data();
+        return operators::FusedRightScalarMultiplySub<T>(value_cast<T>(data));
+    }
+};
 namespace dtl {
 
 template <typename List, typename ArgTuple>
