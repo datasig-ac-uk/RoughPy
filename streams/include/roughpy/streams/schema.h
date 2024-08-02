@@ -41,7 +41,6 @@
 #include <roughpy/intervals/interval.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
-#include <roughpy/scalars/key_scalar_array.h>
 
 #include <boost/container/flat_map.hpp>
 
