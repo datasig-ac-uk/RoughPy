@@ -43,6 +43,7 @@
 #include "buffer.h"
 #include "device_object_base.h"
 #include "event.h"
+#include "kernel.h"
 #include "kernel_operators.h"
 #include "kernel_parameters.h"
 #include "value.h"
@@ -404,6 +405,10 @@ public:
 
     virtual const Type* get_type(dimn_t index) const = 0;
     virtual void* get_raw_ptr(dimn_t index) const = 0;
+
+    virtual Buffer get_buffer(dimn_t index) const = 0;
+    virtual ConstReference get_value(dimn_t index) const = 0;
+    virtual const operators::Operator& get_operator(dimn_t index) const = 0;
 };
 
 /*
@@ -438,29 +443,21 @@ template <typename BoundType, typename ArgType, typename SFINAE = void>
 struct ArgumentDecoder;
 
 template <typename T>
-struct ArgumentDecoder<params::Buffer<T>, const Buffer&> {
-    static const Buffer& decode(const void* arg)
-    {
-        return *static_cast<const Buffer*>(arg);
-    }
-};
-
-template <typename T>
 struct ArgumentDecoder<
         params::Buffer<T>,
         Slice<const T>,
         enable_if_t<!is_same_v<T, Value>>> {
-    static Slice<const T> decode(const void* arg)
+    static Slice<const T> decode(const KernelArguments& args, dimn_t index)
     {
-        return static_cast<const Buffer*>(arg)->as_slice<T>();
+        return args.get_buffer(index).as_slice<T>();
     }
 };
 
 template <>
 struct ArgumentDecoder<params::Buffer<Value>, Slice<const Value>> {
-    static Slice<const Value> decode(const void* arg)
+    static Slice<const Value> decode(const KernelArguments& args, dimn_t index)
     {
-        return static_cast<const Buffer*>(arg)->as_value_slice();
+        return args.get_buffer(index).as_value_slice();
     }
 };
 
@@ -468,9 +465,9 @@ template <int N>
 struct ArgumentDecoder<
         params::Buffer<params::GenericParam<N>>,
         Slice<const Value>> {
-    static Slice<const Value> decode(const void* arg)
+    static Slice<const Value> decode(const KernelArguments& args, dimn_t index)
     {
-        return static_cast<const Buffer*>(arg)->as_value_slice();
+        return args.get_buffer(index).as_value_slice();
     }
 };
 
@@ -479,15 +476,10 @@ struct ArgumentDecoder<
         params::Buffer<params::GenericParam<N>>,
         Slice<const T>,
         enable_if_t<!is_same_v<T, Value>>> {
-    static Slice<const T> decode(const void* arg)
+    static Slice<const T> decode(const KernelArguments& args, dimn_t index)
     {
-        return static_cast<const Buffer*>(arg)->as_slice<T>();
+        return args.get_buffer(index).as_slice<T>();
     }
-};
-
-template <typename T>
-struct ArgumentDecoder<params::ResultBuffer<T>, Buffer&> {
-    static Buffer& decode(void* arg) { return *static_cast<Buffer*>(arg); }
 };
 
 template <typename T>
@@ -495,17 +487,17 @@ struct ArgumentDecoder<
         params::ResultBuffer<T>,
         Slice<T>,
         enable_if_t<!is_same_v<T, Value>>> {
-    static Slice<T> decode(void* arg)
+    static Slice<T> decode(const KernelArguments& args, dimn_t index)
     {
-        return static_cast<Buffer*>(arg)->as_mut_slice<T>();
+        return args.get_buffer(index).as_mut_slice<T>();
     }
 };
 
 template <>
 struct ArgumentDecoder<params::ResultBuffer<Value>, Slice<Value>> {
-    static Slice<Value> decode(void* arg)
+    static Slice<Value> decode(const KernelArguments& args, dimn_t index)
     {
-        return static_cast<Buffer*>(arg)->as_mut_value_slice();
+        return args.get_buffer(index).as_mut_value_slice();
     }
 };
 
@@ -513,9 +505,9 @@ template <int N>
 struct ArgumentDecoder<
         params::ResultBuffer<params::GenericParam<N>>,
         Slice<Value>> {
-    static Slice<Value> decode(void* arg)
+    static Slice<Value> decode(const KernelArguments& args, dimn_t index)
     {
-        return static_cast<Buffer*>(arg)->as_mut_value_slice();
+        return args.get_buffer(index).as_mut_value_slice();
     }
 };
 
@@ -524,43 +516,51 @@ struct ArgumentDecoder<
         params::ResultBuffer<params::GenericParam<N>>,
         Slice<T>,
         enable_if_t<!is_same_v<T, Value>>> {
-    static Slice<const T> decode(void* arg)
+    static Slice<const T> decode(const KernelArguments& args, dimn_t index)
     {
-        return static_cast<const Buffer*>(arg)->as_mut_slice<T>();
+        return args.get_buffer(index).as_mut_slice<T>();
     }
 };
 
 template <typename T>
 struct ArgumentDecoder<params::Value<T>, ConstReference> {
-    static ConstReference decode(const void* arg)
+    static ConstReference decode(const KernelArguments& args, dimn_t index)
     {
-        return ConstReference(get_type<T>(), arg);
+        return args.get_value(index);
     }
 };
 
 template <typename T>
 struct ArgumentDecoder<params::Value<T>, T> {
-    static T decode(void* arg) { return *static_cast<const T*>(arg); }
+    static T decode(const KernelArguments& args, dimn_t index)
+    {
+        return args.get_value(index).value<T>();
+    }
 };
 
 template <int N, typename T>
 struct ArgumentDecoder<params::Value<params::GenericParam<N>>, T> {
-    static T decode(void* arg) { return *static_cast<const T*>(arg); }
+    static T decode(const KernelArguments& args, dimn_t index)
+    {
+        return args.get_value(index).value<T>();
+    }
 };
 
 template <typename T>
 struct ArgumentDecoder<params::Operator<T>, const operators::Operator&> {
-    static const operators::Operator& decode(const void* arg)
+    static const operators::Operator&
+    decode(const KernelArguments& args, dimn_t index)
     {
-        return *static_cast<const operators::Operator*>(arg);
+        return args.get_operator(index);
     }
 };
 
 template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::Identity<T>> {
-    static operators::Identity<T> decode(const void* arg)
+    static operators::Identity<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::Identity);
         return operators::Identity<T>();
     }
@@ -568,9 +568,10 @@ struct ArgumentDecoder<params::Operator<T>, operators::Identity<T>> {
 
 template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::Uminus<T>> {
-    static operators::Uminus<T> decode(const void* arg)
+    static operators::Uminus<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator((index));
         RPY_CHECK(op.kind() == operators::Operator::UnaryMinus);
         return operators::Uminus<T>();
     }
@@ -578,9 +579,10 @@ struct ArgumentDecoder<params::Operator<T>, operators::Uminus<T>> {
 
 template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::LeftScalarMultiply<T>> {
-    static operators::LeftScalarMultiply<T> decode(const void* arg)
+    static operators::LeftScalarMultiply<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::LeftMultiply);
         const auto& data
                 = operators::op_cast<operators::LeftMultiplyOperator>(op).data(
@@ -591,9 +593,10 @@ struct ArgumentDecoder<params::Operator<T>, operators::LeftScalarMultiply<T>> {
 
 template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::RightScalarMultiply<T>> {
-    static operators::RightScalarMultiply<T> decode(const void* arg)
+    static operators::RightScalarMultiply<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::RightMultiply);
         const auto& data
                 = operators::op_cast<operators::RightMultiplyOperator>(op).data(
@@ -604,9 +607,9 @@ struct ArgumentDecoder<params::Operator<T>, operators::RightScalarMultiply<T>> {
 
 template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::Add<T>> {
-    static operators::Add<T> decode(const void* arg)
+    static operators::Add<T> decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::Addition);
         return operators::Add<T>();
     }
@@ -614,9 +617,9 @@ struct ArgumentDecoder<params::Operator<T>, operators::Add<T>> {
 
 template <typename T>
 struct ArgumentDecoder<params::Operator<T>, operators::Sub<T>> {
-    static operators::Sub<T> decode(const void* arg)
+    static operators::Sub<T> decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::Subtraction);
         return operators::Sub<T>();
     }
@@ -626,9 +629,10 @@ template <typename T>
 struct ArgumentDecoder<
         params::Operator<T>,
         operators::FusedLeftScalarMultiplyAdd<T>> {
-    static operators::FusedLeftScalarMultiplyAdd<T> decode(const void* arg)
+    static operators::FusedLeftScalarMultiplyAdd<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplyAdd);
         const auto& data
                 = operators::op_cast<operators::FusedLeftMultiplyAddOperator>(op
@@ -642,9 +646,10 @@ template <typename T>
 struct ArgumentDecoder<
         params::Operator<T>,
         operators::FusedRightScalarMultiplyAdd<T>> {
-    static operators::FusedRightScalarMultiplyAdd<T> decode(const void* arg)
+    static operators::FusedRightScalarMultiplyAdd<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplyAdd);
         const auto& data
                 = operators::op_cast<operators::FusedRightMultiplyAddOperator>(
@@ -659,9 +664,10 @@ template <typename T>
 struct ArgumentDecoder<
         params::Operator<T>,
         operators::FusedLeftScalarMultiplySub<T>> {
-    static operators::FusedLeftScalarMultiplySub<T> decode(const void* arg)
+    static operators::FusedLeftScalarMultiplySub<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplySub);
         const auto& data
                 = operators::op_cast<operators::FusedLeftMultiplySubOperator>(op
@@ -675,9 +681,10 @@ template <typename T>
 struct ArgumentDecoder<
         params::Operator<T>,
         operators::FusedRightScalarMultiplySub<T>> {
-    static operators::FusedRightScalarMultiplySub<T> decode(const void* arg)
+    static operators::FusedRightScalarMultiplySub<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplySub);
         const auto& data
                 = operators::op_cast<operators::FusedRightMultiplySubOperator>(
@@ -692,9 +699,10 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::Identity<T>> {
-    static operators::Identity<T> decode(const void* arg)
+    static operators::Identity<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::Identity);
         return operators::Identity<T>();
     }
@@ -704,9 +712,10 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::Uminus<T>> {
-    static operators::Uminus<T> decode(const void* arg)
+    static operators::Uminus<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::UnaryMinus);
         return operators::Uminus<T>();
     }
@@ -716,9 +725,10 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::LeftScalarMultiply<T>> {
-    static operators::LeftScalarMultiply<T> decode(const void* arg)
+    static operators::LeftScalarMultiply<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::LeftMultiply);
         const auto& data
                 = operators::op_cast<operators::LeftMultiplyOperator>(op).data(
@@ -731,9 +741,10 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::RightScalarMultiply<T>> {
-    static operators::RightScalarMultiply<T> decode(const void* arg)
+    static operators::RightScalarMultiply<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::RightMultiply);
         const auto& data
                 = operators::op_cast<operators::RightMultiplyOperator>(op).data(
@@ -746,9 +757,9 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::Add<T>> {
-    static operators::Add<T> decode(const void* arg)
+    static operators::Add<T> decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::Addition);
         return operators::Add<T>();
     }
@@ -758,9 +769,9 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::Sub<T>> {
-    static operators::Sub<T> decode(const void* arg)
+    static operators::Sub<T> decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::Subtraction);
         return operators::Sub<T>();
     }
@@ -770,9 +781,10 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::FusedLeftScalarMultiplyAdd<T>> {
-    static operators::FusedLeftScalarMultiplyAdd<T> decode(const void* arg)
+    static operators::FusedLeftScalarMultiplyAdd<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplyAdd);
         const auto& data
                 = operators::op_cast<operators::FusedLeftMultiplyAddOperator>(op
@@ -786,9 +798,10 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::FusedRightScalarMultiplyAdd<T>> {
-    static operators::FusedRightScalarMultiplyAdd<T> decode(const void* arg)
+    static operators::FusedRightScalarMultiplyAdd<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplyAdd);
         const auto& data
                 = operators::op_cast<operators::FusedRightMultiplyAddOperator>(
@@ -803,9 +816,10 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::FusedLeftScalarMultiplySub<T>> {
-    static operators::FusedLeftScalarMultiplySub<T> decode(const void* arg)
+    static operators::FusedLeftScalarMultiplySub<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::FusedLeftMultiplySub);
         const auto& data
                 = operators::op_cast<operators::FusedLeftMultiplySubOperator>(op
@@ -819,9 +833,10 @@ template <int N, typename T>
 struct ArgumentDecoder<
         params::Operator<params::GenericParam<N>>,
         operators::FusedRightScalarMultiplySub<T>> {
-    static operators::FusedRightScalarMultiplySub<T> decode(const void* arg)
+    static operators::FusedRightScalarMultiplySub<T>
+    decode(const KernelArguments& args, dimn_t index)
     {
-        const auto& op = *static_cast<const operators::Operator*>(arg);
+        const auto& op = args.get_operator(index);
         RPY_CHECK(op.kind() == operators::Operator::FusedRightMultiplySub);
         const auto& data
                 = operators::op_cast<operators::FusedRightMultiplySubOperator>(
@@ -848,7 +863,7 @@ class ArgumentBinder<params::ParamList<Param>, params::ParamList<Arg>>
     static decltype(auto)
     eval_impl(F&& fn, const KernelArguments& args, dimn_t idx)
     {
-        return fn(Decoder::decode(args.get_raw_ptr(idx)));
+        return fn(Decoder::decode(args, idx));
     }
 
 public:
@@ -884,11 +899,10 @@ class ArgumentBinder<
     static decltype(auto)
     eval_impl(F&& fn, const KernelArguments& args, dimn_t idx)
     {
-        auto* arg_ptr = args.get_raw_ptr(idx);
-
+        const auto index = idx;
         return next_t::template eval_impl(
                 [f = std::forward<F>(fn),
-                 value = Decoder::decode(arg_ptr)](auto&&... remaining) {
+                 value = Decoder::decode(args, index)](auto&&... remaining) {
                     return f(
                             value,
                             std::forward<decltype(remaining)>(remaining)...
