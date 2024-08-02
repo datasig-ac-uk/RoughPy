@@ -18,7 +18,21 @@ using namespace rpy::devices;
 StandardKernelArguments::StandardKernelArguments(
         const KernelSignature& signature
 )
-{}
+{
+    m_args.reserve(signature.num_parameters());
+
+    {
+        const auto sig_types = signature.types();
+        m_types.assign(sig_types.begin(), sig_types.end());
+    }
+
+    {
+        const auto params = signature.parameters();
+        m_signature.assign(params.begin(), params.end());
+    }
+
+
+}
 
 static constexpr string_view
 name_of(const typename KernelSignature::Parameter& tp) noexcept
@@ -49,6 +63,7 @@ void StandardKernelArguments::check_or_set_type(
     if (!tp) {
         // Type is not yet set. Set the type
         tp = type;
+        m_generics.push_back(&*tp);
     } else if (tp != type) {
         // Type is set and it does not match
         RPY_THROW(
