@@ -30,8 +30,6 @@ StandardKernelArguments::StandardKernelArguments(
         const auto params = signature.parameters();
         m_signature.assign(params.begin(), params.end());
     }
-
-
 }
 
 static constexpr string_view
@@ -122,7 +120,7 @@ StandardKernelArguments::get_sizes() const noexcept
     for (const auto& [tp, arg] : views::zip(m_signature, m_args)) {
         if (tp.param_kind == params::ParameterType::ResultBuffer
             || tp.param_kind == params::ParameterType::ArgBuffer) {
-            result.push_back(static_cast<const Buffer*>(arg.ptr)->size());
+            result.push_back(static_cast<const BufferInterface*>(arg.ptr)->size());
         }
     }
     return result;
@@ -245,4 +243,47 @@ void* StandardKernelArguments::get_raw_ptr(dimn_t index) const
 {
     RPY_CHECK(index < m_args.size());
     return m_args[index].ptr;
+}
+
+Buffer StandardKernelArguments::get_buffer(dimn_t index) const
+{
+    RPY_CHECK(
+            m_signature[index].param_kind == params::ParameterType::ArgBuffer
+                    || m_signature[index].param_kind
+                            == params::ParameterType::ResultBuffer,
+            string_cat(
+                    "requested buffer but param at index ",
+                    std::to_string(index),
+                    " is of type ",
+                    name_of(m_signature[index])
+            )
+    );
+    return Buffer(static_cast<BufferInterface*>(m_args[index].ptr));
+}
+ConstReference StandardKernelArguments::get_value(dimn_t index) const
+{
+    RPY_CHECK(
+            m_signature[index].param_kind == params::ParameterType::ArgValue,
+            string_cat(
+                    "requested value but param at index ",
+                    std::to_string(index),
+                    " is of type ",
+                    name_of(m_signature[index])
+            )
+    );
+    return ConstReference(m_args[index].ptr, m_types[m_signature[index].type_index]);
+}
+const operators::Operator& StandardKernelArguments::get_operator(dimn_t index
+) const
+{
+    RPY_CHECK(
+            m_signature[index].param_kind == params::ParameterType::Operator,
+            string_cat(
+                    "requested operator but param at index ",
+                    std::to_string(index),
+                    " is of type ",
+                    name_of(m_signature[index])
+            )
+    );
+    return *static_cast<const operators::Operator*>(m_args[index].ptr);
 }

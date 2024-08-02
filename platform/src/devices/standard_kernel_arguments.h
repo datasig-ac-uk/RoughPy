@@ -61,6 +61,10 @@ public:
 
     const Type* get_type(dimn_t index) const override;
     void* get_raw_ptr(dimn_t index) const override;
+
+    Buffer get_buffer(dimn_t index) const override;
+    ConstReference get_value(dimn_t index) const override;
+    const operators::Operator& get_operator(dimn_t index) const override;
 };
 
 }// namespace devices
