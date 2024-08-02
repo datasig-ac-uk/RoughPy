@@ -276,8 +276,8 @@ struct DoInit {
         );
         construct_inplace(
                 ptr,
-                static_cast<uint8_t>(T::kind),
-                static_cast<uint8_t>(index_of_type<TypeOfArg<T>>(type_list))
+                static_cast<uint8_t>(index_of_type<TypeOfArg<T>>(type_list)),
+                static_cast<uint8_t>(T::kind)
         );
         return ++ptr;
     }
