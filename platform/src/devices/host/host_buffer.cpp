@@ -46,7 +46,7 @@ CPUBuffer::CPUBuffer(TypePtr tp, dimn_t size)
     : base_t(std::move(tp)),
       raw_buffer{nullptr, 0},
       m_flags(IsOwned),
-      m_info(tp->type_info()),
+      m_info(type()->type_info()),
       m_num_elts(size)
 {
     if (size > 0) {
