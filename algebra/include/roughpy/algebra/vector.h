@@ -71,9 +71,6 @@ public:
     RPY_NO_DISCARD virtual Rc<VectorContext> copy() const;
 
     RPY_NO_DISCARD virtual VectorIterator
-    make_iterator(typename scalars::ScalarVector::iterator it) const;
-
-    RPY_NO_DISCARD virtual VectorIterator
     begin_iterator(typename scalars::ScalarVector::const_iterator it) const;
     RPY_NO_DISCARD virtual VectorIterator
     end_iterator(typename scalars::ScalarVector::const_iterator it) const;
