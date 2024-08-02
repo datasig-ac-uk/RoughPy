@@ -239,24 +239,7 @@ RPY_SERIAL_EXTERN_SAVE_CLS_IMP(ScalarArray)
 RPY_SERIAL_EXTERN_LOAD_CLS_IMP(ScalarArray)
 #endif
 
-/**
- * @brief Converts and copies the contents of one ScalarArray to another.
- *
- * This function copies the scalar values from the source ScalarArray to the
- * destination ScalarArray, converting them if necessary. The destination
- * ScalarArray must be pre-allocated with enough capacity to hold all the
- * elements of the source ScalarArray.
- *
- * @param dst The destination ScalarArray to copy the elements to.
- * @param src The source ScalarArray to copy the elements from.
- *
- * @note The size and capacity of the destination ScalarArray will be modified
- * to match that of the source ScalarArray.
- * @note The data in the destination ScalarArray will be overwritten.
- * @note Both the source and destination ScalarArrays must have the same length.
- */
-ROUGHPY_SCALARS_EXPORT void
-convert_copy(ScalarArray& dst, const ScalarArray& src);
+
 
 }// namespace scalars
 }// namespace rpy
