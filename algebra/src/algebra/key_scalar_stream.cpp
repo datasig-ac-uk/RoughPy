@@ -58,7 +58,7 @@ void rpy::algebra::KeyScalarStream::push_back(const KeyScalarArray& data)
     }
 
     auto& back = m_parts.emplace_back(p_type, data.size());
-    scalars::convert_copy(back, data);
+    devices::algorithms::copy(back, data);
 
     if (data.has_keys()) { back.keys() = data.keys(); }
 }
