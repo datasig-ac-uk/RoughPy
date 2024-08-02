@@ -256,14 +256,6 @@ class ROUGHPY_DEVICES_EXPORT Buffer
 public:
     using base_t::base_t;
 
-    Buffer(Device device, dimn_t size, TypePtr type);
-    Buffer(dimn_t size, TypePtr type);
-    Buffer(Device device, void* ptr, dimn_t size, TypePtr type);
-    Buffer(Device device, const void* ptr, dimn_t size, TypePtr type);
-
-    Buffer(void* ptr, dimn_t size, TypePtr info);
-    Buffer(const void* ptr, dimn_t size, TypePtr info);
-
     template <typename T>
     explicit Buffer(Device device, Slice<T> data);
 
