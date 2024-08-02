@@ -812,8 +812,8 @@ class Slice<devices::Value>
 public:
     explicit Slice(devices::Buffer buffer)
         : m_buffer(std::move(buffer)),
-          p_data(static_cast<byte*>(buffer.ptr())),
-          m_size(buffer.size()),
+          p_data(static_cast<byte*>(m_buffer.ptr())),
+          m_size(m_buffer.size()),
           m_itemsize(m_buffer.type()->bytes())
     {}
 
