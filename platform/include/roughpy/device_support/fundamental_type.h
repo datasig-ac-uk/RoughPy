@@ -139,8 +139,8 @@ template <typename T>
 const FundamentalType<T>* FundamentalType<T>::get() noexcept
 {
     using IDName = dtl::IDAndNameOfFType<T>;
-    static const FundamentalType type(IDName::id, IDName::name);
-    return &type;
+    static const Rc<const FundamentalType> type(new FundamentalType(IDName::id, IDName::name));
+    return &*type;
 }
 
 template <typename T>
