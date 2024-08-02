@@ -126,7 +126,7 @@ struct TypeComparisons {
     std::function<bool(const void*)> is_zero;
 };
 
-struct NumTraits {
+struct NumberTraits {
     TypePtr rational_type;
     TypePtr real_type;
     TypePtr imag_type;
@@ -171,12 +171,12 @@ class ROUGHPY_DEVICES_EXPORT Type : public RcBase<Type>
 
     std::unique_ptr<TypeSupportDispatcher> p_type_support;
 
-    std::unique_ptr<type_support::NumTraits> p_num_traits;
+    std::unique_ptr<type_support::NumberTraits> p_num_traits;
 
 protected:
-    type_support::NumTraits& setup_num_traits()
+    type_support::NumberTraits& setup_num_traits()
     {
-        p_num_traits = std::make_unique<type_support::NumTraits>();
+        p_num_traits = std::make_unique<type_support::NumberTraits>();
         return *p_num_traits;
     }
 
@@ -470,7 +470,7 @@ public:
      */
     virtual void display(std::ostream& os, const void* ptr) const;
 
-    const type_support::NumTraits* num_traits() const noexcept
+    const type_support::NumberTraits* num_traits() const noexcept
     {
         return p_num_traits.get();
     }
