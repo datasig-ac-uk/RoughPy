@@ -122,11 +122,11 @@ CPUBuffer::CPUBuffer(dimn_t size, TypePtr type)
         );
     }
 }
-CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, TypePtr type)
-    : base_t(std::move(type)),
-      raw_buffer{raw_ptr, size * type->type_info().bytes},
+CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, TypePtr tp)
+    : base_t(std::move(tp)),
+      raw_buffer{raw_ptr, size * type()->type_info().bytes},
       m_flags(IsNotConst),
-      m_info(type->type_info()),
+      m_info(type()->type_info()),
       m_num_elts(size)
 {}
 CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, TypePtr tp)
