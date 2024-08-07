@@ -22,6 +22,12 @@ ScalarVectorIterator::ScalarVectorIterator(ScalarVectorIterator&& other
       m_index(other.m_index)
 {}
 
+ScalarVectorIterator::ScalarVectorIterator(ScalarArray data, dimn_t index)
+    : m_data(std::move(data)), m_index(index)
+{
+}
+
+
 ScalarVectorIterator&
 ScalarVectorIterator::operator=(const ScalarVectorIterator& other)
 {

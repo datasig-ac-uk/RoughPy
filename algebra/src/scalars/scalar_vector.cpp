@@ -78,8 +78,14 @@ ScalarVector::reference ScalarVector::get_mut(dimn_t index)
     RPY_CHECK(index < dimension());
     return mut_base_data()[index];
 }
-ScalarVector::const_iterator ScalarVector::begin() const noexcept { return {}; }
-ScalarVector::const_iterator ScalarVector::end() const noexcept { return {}; }
+ScalarVector::const_iterator ScalarVector::begin() const noexcept
+{
+    return {base_data(), 0};
+}
+ScalarVector::const_iterator ScalarVector::end() const noexcept
+{
+    return {base_data(), dimension()};
+}
 ScalarVector ScalarVector::uminus() const
 {
     ScalarVector result(scalar_type(), dimension());
