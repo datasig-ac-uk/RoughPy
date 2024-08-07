@@ -29,44 +29,47 @@ class ScalarCRefPointerProxy
 {
     ScalarCRef m_ref;
 
-
 public:
-
     ScalarCRefPointerProxy(ScalarCRef ref) : m_ref(std::move(ref)) {}
 
     const ScalarCRef* operator->() const noexcept { return &m_ref; }
-
 };
 
 class ROUGHPY_SCALARS_EXPORT ScalarVectorIterator
 {
     ScalarArray m_data;
     dimn_t m_index;
-public:
 
+public:
     ScalarVectorIterator();
     ScalarVectorIterator(const ScalarVectorIterator& other);
     ScalarVectorIterator(ScalarVectorIterator&& other) noexcept;
 
+    ScalarVectorIterator(ScalarArray data, dimn_t index);
 
     ScalarVectorIterator& operator=(const ScalarVectorIterator& other);
     ScalarVectorIterator& operator=(ScalarVectorIterator&& other) noexcept;
 
     ScalarVectorIterator& operator++();
-    const ScalarVectorIterator operator++(int) ;
+    const ScalarVectorIterator operator++(int);
 
     ScalarCRef operator*() const;
     ScalarCRefPointerProxy operator->() const;
 
-    friend bool operator==(const ScalarVectorIterator& lhs, const ScalarVectorIterator& rhs);
-
-
+    friend bool operator==(
+            const ScalarVectorIterator& lhs,
+            const ScalarVectorIterator& rhs
+    );
 };
 
 ROUGHPY_SCALARS_EXPORT
-bool operator==(const ScalarVectorIterator& lhs, const ScalarVectorIterator& rhs);
+bool operator==(
+        const ScalarVectorIterator& lhs,
+        const ScalarVectorIterator& rhs
+);
 
-inline bool operator!=(const ScalarVectorIterator& lhs, const ScalarVectorIterator& rhs)
+inline bool
+operator!=(const ScalarVectorIterator& lhs, const ScalarVectorIterator& rhs)
 {
     return !(lhs == rhs);
 }
@@ -211,6 +214,16 @@ public:
 };
 
 namespace ops = devices::operators;
+
+inline std::ostream& operator<<(std::ostream& os, const ScalarVector& vector)
+{
+    os << '{';
+    if (!vector.base_data().is_null()) {
+        for (const auto& term : vector) { os << ' ' << term; }
+    }
+    os << " }";
+    return os;
+}
 
 class ROUGHPY_SCALARS_EXPORT VectorOperation
 {
