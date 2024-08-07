@@ -139,7 +139,7 @@ bool ScalarVector::operator==(const ScalarVector& other) const
 
     const auto mismatch
             = devices::algorithms::mismatch(base_data(), other.base_data());
-    return static_cast<bool>(mismatch);
+    return !static_cast<bool>(mismatch);
 }
 
 dimn_t ScalarVector::base_size() const noexcept
