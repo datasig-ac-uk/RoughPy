@@ -42,7 +42,10 @@ VectorOperation::get_launch_params(const devices::KernelArguments& arguments
     auto sizes = arguments.get_sizes();
     auto min_size = sizes.empty() ? 0 : *ranges::min_element(sizes);
 
-    devices::KernelLaunchParams params(devices::Size3{min_size, 1, 1});
+    devices::KernelLaunchParams params(
+            devices::Size3{1, 1, 1},
+            devices::Size3{min_size, 1, 1}
+    );
 
     return params;
 }
