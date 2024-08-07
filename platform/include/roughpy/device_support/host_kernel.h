@@ -171,7 +171,7 @@ public:
 
 template <template <typename> class Operator, typename T>
 class UnaryInplaceHostKernel : public dtl::HostKernelBase<
-                                       UnaryHostKernel<Operator, T>,
+                                       UnaryInplaceHostKernel<Operator, T>,
                                        params::ResultBuffer<T>,
                                        params::Operator<T>>
 {
@@ -189,7 +189,8 @@ public:
         return name;
     }
 
-    static void run(const KernelLaunchParams& params, Slice<T> buffer)
+    static void
+    run(const KernelLaunchParams& params, Slice<T> buffer, Operator<T>&& op)
     {
 
         const auto dim = params.total_work_size();

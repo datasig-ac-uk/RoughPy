@@ -120,7 +120,8 @@ StandardKernelArguments::get_sizes() const noexcept
     for (const auto& [tp, arg] : views::zip(m_signature, m_args)) {
         if (tp.param_kind == params::ParameterType::ResultBuffer
             || tp.param_kind == params::ParameterType::ArgBuffer) {
-            result.push_back(static_cast<const BufferInterface*>(arg.ptr)->size());
+            result.push_back(static_cast<const BufferInterface*>(arg.ptr)->size(
+            ));
         }
     }
     return result;
@@ -247,10 +248,10 @@ void* StandardKernelArguments::get_raw_ptr(dimn_t index) const
 
 Buffer StandardKernelArguments::get_buffer(dimn_t index) const
 {
+    const auto& param = m_signature[index];
     RPY_CHECK(
-            m_signature[index].param_kind == params::ParameterType::ArgBuffer
-                    || m_signature[index].param_kind
-                            == params::ParameterType::ResultBuffer,
+            param.param_kind == params::ParameterType::ArgBuffer
+                    || param.param_kind == params::ParameterType::ResultBuffer,
             string_cat(
                     "requested buffer but param at index ",
                     std::to_string(index),
@@ -271,7 +272,10 @@ ConstReference StandardKernelArguments::get_value(dimn_t index) const
                     name_of(m_signature[index])
             )
     );
-    return ConstReference(m_args[index].ptr, m_types[m_signature[index].type_index]);
+    return ConstReference(
+            m_args[index].ptr,
+            m_types[m_signature[index].type_index]
+    );
 }
 const operators::Operator& StandardKernelArguments::get_operator(dimn_t index
 ) const
