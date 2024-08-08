@@ -4,20 +4,95 @@
 
 #include "arbitrary_precision_rational_type.h"
 
-
 #include <roughpy/core/smart_ptr.h>
 #include <roughpy/devices/buffer.h>
 #include <roughpy/devices/device_handle.h>
 
-namespace rpy {
-namespace scalars {
-namespace implementations {
+#include <roughpy/device_support/fundamental_type.h>
+
+using namespace rpy;
+using namespace rpy::scalars;
+using namespace scalars::implementations;
+
+namespace math_fn_impls = devices::math_fn_impls;
+
+using devices::dtl::AddInplace;
+using devices::dtl::CompareEqual;
+using devices::dtl::CompareGreater;
+using devices::dtl::CompareGreaterEqual;
+using devices::dtl::CompareLess;
+using devices::dtl::CompareLessEqual;
+using devices::dtl::Convert;
+using devices::dtl::DivInplace;
+using devices::dtl::MulInplace;
+using devices::dtl::SubInplace;
+
+namespace {}
+
 ArbitraryPrecisionRationalType::ArbitraryPrecisionRationalType()
     : Type("rap",
            "Rational",
-           {devices::TypeCode::ArbitraryPrecisionRational, 0, 0, 0},
+           {devices::TypeCode::ArbitraryPrecisionRational,
+            sizeof(ArbitraryPrecisionRational),
+            alignof(ArbitraryPrecisionRational),
+            1},
            devices::traits_of<ArbitraryPrecisionRational>())
-{}
+{
+    using type = ArbitraryPrecisionRational;
+    const auto& device = devices::get_host_device();
+    device->register_algorithm_drivers<devices::HostDriversImpl, type, type>(
+            this,
+            this
+    );
+
+    auto& num_traits = setup_num_traits();
+
+    num_traits.rational_type = this;
+    num_traits.real_type = this;
+    num_traits.imag_type = this;
+
+    num_traits.abs = math_fn_impls::abs_fn<type>;
+    num_traits.real = math_fn_impls::real_fn<type>;
+
+    auto support = this->update_support(*this);
+    support->arithmetic.add_inplace = +[](void* out, const void* in) {
+        (*static_cast<type*>(out)) += *static_cast<const type*>(in);
+    };
+    support->arithmetic.sub_inplace = +[](void* out, const void* in) {
+        *static_cast<type*>(out) -= *static_cast<const type*>(in);
+    };
+    support->arithmetic.mul_inplace = +[](void* out, const void* in) {
+        *static_cast<type*>(out) *= *static_cast<const type*>(in);
+    };
+    support->arithmetic.div_inplace = +[](void* out, const void* in) {
+        *static_cast<type*>(out) /= *static_cast<const type*>(in);
+    };
+
+    support->comparison.equals = +[](const void* lhs, const void* rhs) {
+        return *static_cast<const type*>(lhs) == *static_cast<const type*>(rhs);
+    };
+    support->comparison.less = +[](const void* lhs, const void* rhs) {
+        return *static_cast<const type*>(lhs) < *static_cast<const type*>(rhs);
+    };
+    support->comparison.less_equal = +[](const void* lhs, const void* rhs) {
+        return *static_cast<const type*>(lhs) <= *static_cast<const type*>(rhs);
+    };
+    support->comparison.greater = +[](const void* lhs, const void* rhs) {
+        return *static_cast<const type*>(lhs) > *static_cast<const type*>(rhs);
+    };
+    support->comparison.greater_equal = +[](const void* lhs, const void* rhs) {
+        return *static_cast<const type*>(lhs) >= *static_cast<const type*>(rhs);
+    };
+
+    support->conversions.convert = +[](void* out, const void* in) {
+        *static_cast<type*>(out) = *static_cast<const type*>(in);
+    };
+
+    // devices::dtl::register_type_support<type>(
+    //         this,
+    //         devices::dtl::FundamentalTypesList()
+    // );
+}
 
 devices::Buffer ArbitraryPrecisionRationalType::allocate(
         devices::Device device,
@@ -81,6 +156,8 @@ devices::ConstReference ArbitraryPrecisionRationalType::mone() const
     return devices::ConstReference{&mone, this};
 }
 
-}// namespace implementations
-}// namespace scalars
-}// namespace rpy
+const ArbitraryPrecisionRationalType*
+ArbitraryPrecisionRationalType::get() noexcept
+{
+    return new ArbitraryPrecisionRationalType();
+}

@@ -21,6 +21,7 @@ target_link_libraries(RoughPy_Scalar_Type_polynomial
 target_include_directories(RoughPy_Scalar_Type_polynomial PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
         $<BUILD_INTERFACE:${ROUGHPY_SCALARS_PRIVATE_HEADERS}>
+        ${CMAKE_CURRENT_LIST_DIR}
 )
 
 set_target_properties(RoughPy_Scalar_Type_polynomial

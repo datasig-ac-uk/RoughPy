@@ -35,8 +35,16 @@
 #include <roughpy/platform/errors.h>
 
 #include "roughpy_algebra_export.h"
+#include <roughpy/scalars/scalars_fwd.h>
 
 namespace rpy {
+
+namespace scalars {
+
+extern ROUGHPY_SCALARS_EXPORT const BuiltinTypes builtin_types;
+
+}
+
 namespace algebra {
 
 enum class ImplementationType

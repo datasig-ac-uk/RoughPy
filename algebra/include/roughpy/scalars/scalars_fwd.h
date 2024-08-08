@@ -55,6 +55,57 @@ class ScalarVector;
 
 class ScalarRandomGenerator;
 
+class ROUGHPY_SCALARS_EXPORT BuiltinTypes
+{
+    TypePtr int8;
+    TypePtr int16;
+    TypePtr int32;
+    TypePtr int64;
+
+    TypePtr uint8;
+    TypePtr uint16;
+    TypePtr uint32;
+    TypePtr uint64;
+
+    TypePtr float16;
+    TypePtr float32;
+    TypePtr float64;
+
+    TypePtr bfloat16;
+
+    TypePtr rational;
+
+    TypePtr polynomial;
+
+public:
+    BuiltinTypes();
+
+    TypePtr get_int8() const noexcept { return int8; }
+    TypePtr get_int16() const noexcept { return int16; }
+    TypePtr get_int32() const noexcept { return int32; }
+    TypePtr get_int64() const noexcept { return int64; }
+
+    TypePtr get_uint8() const noexcept { return uint8; }
+    TypePtr get_uint16() const noexcept { return int16; }
+    TypePtr get_uint32() const noexcept { return int32; }
+    TypePtr get_uint64() const noexcept { return int64; }
+
+    TypePtr get_float16() const noexcept { return float16; }
+    TypePtr get_float32() const noexcept { return float32; }
+    TypePtr get_float64() const noexcept { return float64; }
+
+    TypePtr get_bfloat16() const noexcept { return bfloat16; }
+
+    TypePtr get_rational() const noexcept { return rational; }
+    TypePtr get_polynomial() const noexcept { return polynomial; }
+
+    TypePtr get_int(dimn_t bits) const;
+    TypePtr get_uint(dimn_t bits) const;
+    TypePtr get_rational(dimn_t bits) const;
+};
+
+extern ROUGHPY_SCALARS_EXPORT const BuiltinTypes builtin_types;
+
 }// namespace scalars
 }// namespace rpy
 

@@ -65,6 +65,7 @@ add_roughpy_component(Algebra
         src/algebra/vector_factory.cpp
         src/algebra/vector_context.cpp
         src/algebra/vector_iterator.cpp
+        src/scalars/builtin_types.cpp
         PUBLIC_HEADERS
         include/roughpy/algebra/kernels/dense_free_tensor_multiplication.h
         include/roughpy/algebra/algebra.h

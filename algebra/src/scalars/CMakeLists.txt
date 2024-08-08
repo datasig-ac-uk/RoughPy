@@ -11,7 +11,8 @@ add_library(RoughPy_scalars STATIC
         vector_operation.cpp
         vector_data.h
 )
-target_link_libraries(RoughPy_scalars PUBLIC RoughPy::Core RoughPy::Platform)
+target_link_libraries(RoughPy_scalars PUBLIC RoughPy::Core RoughPy::Platform
+)
 target_include_directories(RoughPy_scalars PRIVATE ${ROUGHPY_SCALARS_PRIVATE_HEADERS})
 set_target_properties(RoughPy_scalars PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
