@@ -256,6 +256,7 @@ public:
         : ScalarVector(scalar_type, basis->dense_dimension(vals.size())),
           p_context(basis->default_vector_context())
     {
+        RPY_DBG_ASSERT(base_data().size() >= vals.size());
         auto& scalar_vals = mut_base_data();
         for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
     }

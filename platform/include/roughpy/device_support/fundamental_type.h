@@ -139,7 +139,9 @@ template <typename T>
 const FundamentalType<T>* FundamentalType<T>::get() noexcept
 {
     using IDName = dtl::IDAndNameOfFType<T>;
-    static const Rc<const FundamentalType> type(new FundamentalType(IDName::id, IDName::name));
+    static const Rc<const FundamentalType> type(
+            new FundamentalType(IDName::id, IDName::name)
+    );
     return &*type;
 }
 
@@ -261,7 +263,9 @@ template <typename S, typename T, bool = is_convertible_v<const T&, S>>
 struct Convert {
     static void func(void* out, const void* in)
     {
-        (*static_cast<S*>(out)) = static_cast<S>(*static_cast<const T*>(in));
+        auto& dst = *static_cast<S*>(out);
+        const auto& src = *static_cast<const T*>(in);
+        dst = static_cast<S>(src);
     }
 };
 template <typename S, typename T>

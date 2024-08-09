@@ -53,45 +53,52 @@ ArbitraryPrecisionRationalType::ArbitraryPrecisionRationalType()
 
     num_traits.abs = math_fn_impls::abs_fn<type>;
     num_traits.real = math_fn_impls::real_fn<type>;
+    {
+        auto support = this->update_support(*this);
+        support->arithmetic.add_inplace = +[](void* out, const void* in) {
+            (*static_cast<type*>(out)) += *static_cast<const type*>(in);
+        };
+        support->arithmetic.sub_inplace = +[](void* out, const void* in) {
+            *static_cast<type*>(out) -= *static_cast<const type*>(in);
+        };
+        support->arithmetic.mul_inplace = +[](void* out, const void* in) {
+            *static_cast<type*>(out) *= *static_cast<const type*>(in);
+        };
+        support->arithmetic.div_inplace = +[](void* out, const void* in) {
+            *static_cast<type*>(out) /= *static_cast<const type*>(in);
+        };
 
-    auto support = this->update_support(*this);
-    support->arithmetic.add_inplace = +[](void* out, const void* in) {
-        (*static_cast<type*>(out)) += *static_cast<const type*>(in);
-    };
-    support->arithmetic.sub_inplace = +[](void* out, const void* in) {
-        *static_cast<type*>(out) -= *static_cast<const type*>(in);
-    };
-    support->arithmetic.mul_inplace = +[](void* out, const void* in) {
-        *static_cast<type*>(out) *= *static_cast<const type*>(in);
-    };
-    support->arithmetic.div_inplace = +[](void* out, const void* in) {
-        *static_cast<type*>(out) /= *static_cast<const type*>(in);
-    };
+        support->comparison.equals = +[](const void* lhs, const void* rhs) {
+            return *static_cast<const type*>(lhs)
+                    == *static_cast<const type*>(rhs);
+        };
+        support->comparison.less = +[](const void* lhs, const void* rhs) {
+            return *static_cast<const type*>(lhs)
+                    < *static_cast<const type*>(rhs);
+        };
+        support->comparison.less_equal = +[](const void* lhs, const void* rhs) {
+            return *static_cast<const type*>(lhs)
+                    <= *static_cast<const type*>(rhs);
+        };
+        support->comparison.greater = +[](const void* lhs, const void* rhs) {
+            return *static_cast<const type*>(lhs)
+                    > *static_cast<const type*>(rhs);
+        };
+        support->comparison.greater_equal
+                = +[](const void* lhs, const void* rhs) {
+                      return *static_cast<const type*>(lhs)
+                              >= *static_cast<const type*>(rhs);
+                  };
 
-    support->comparison.equals = +[](const void* lhs, const void* rhs) {
-        return *static_cast<const type*>(lhs) == *static_cast<const type*>(rhs);
-    };
-    support->comparison.less = +[](const void* lhs, const void* rhs) {
-        return *static_cast<const type*>(lhs) < *static_cast<const type*>(rhs);
-    };
-    support->comparison.less_equal = +[](const void* lhs, const void* rhs) {
-        return *static_cast<const type*>(lhs) <= *static_cast<const type*>(rhs);
-    };
-    support->comparison.greater = +[](const void* lhs, const void* rhs) {
-        return *static_cast<const type*>(lhs) > *static_cast<const type*>(rhs);
-    };
-    support->comparison.greater_equal = +[](const void* lhs, const void* rhs) {
-        return *static_cast<const type*>(lhs) >= *static_cast<const type*>(rhs);
-    };
+        support->conversions.convert = +[](void* out, const void* in) {
+            *static_cast<type*>(out) = *static_cast<const type*>(in);
+        };
+    }
 
-    support->conversions.convert = +[](void* out, const void* in) {
-        *static_cast<type*>(out) = *static_cast<const type*>(in);
-    };
-
-    // devices::dtl::register_type_support<type>(
-    //         this,
-    //         devices::dtl::FundamentalTypesList()
-    // );
+    devices::dtl::register_type_support<type>(
+            this,
+            devices::dtl::FundamentalTypesList()
+    );
 }
 
 devices::Buffer ArbitraryPrecisionRationalType::allocate(
@@ -99,7 +106,12 @@ devices::Buffer ArbitraryPrecisionRationalType::allocate(
         dimn_t count
 ) const
 {
-    return Type::allocate(device, count);
+    auto buffer = Type::allocate(device, count);
+    std::uninitialized_default_construct_n(
+            static_cast<ArbitraryPrecisionRational*>(buffer.ptr()),
+            count
+    );
+    return buffer;
 }
 void* ArbitraryPrecisionRationalType::allocate_single() const
 {
@@ -133,7 +145,9 @@ void ArbitraryPrecisionRationalType::copy(
 void ArbitraryPrecisionRationalType::move(void* dst, void* src, dimn_t count)
         const
 {
-    Type::move(dst, src, count);
+    auto* out = static_cast<ArbitraryPrecisionRational*>(dst);
+    auto* in = static_cast<ArbitraryPrecisionRational*>(src);
+    for (dimn_t i = 0; i < count; ++i) { out[i] = std::move(in[i]); }
 }
 void ArbitraryPrecisionRationalType::display(std::ostream& os, const void* ptr)
         const

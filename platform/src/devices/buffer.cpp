@@ -33,8 +33,8 @@
 #include "devices/buffer.h"
 
 #include "algorithm_drivers.h"
-#include "devices/device_handle.h"
 #include "devices/algorithms.h"
+#include "devices/device_handle.h"
 
 #include "devices/core.h"
 #include "devices/event.h"
@@ -57,7 +57,9 @@ template class RPY_DLL_EXPORT ObjectBase<BufferInterface, Buffer>;
 }// namespace devices
 }// namespace rpy
 
-Buffer::Buffer(TypePtr tp, dimn_t size) : base_t(new CPUBuffer(std::move(tp), size)) {}
+Buffer::Buffer(TypePtr tp, dimn_t size)
+    : base_t(new CPUBuffer(std::move(tp), size))
+{}
 Buffer::Buffer(TypePtr tp, void* ptr, dimn_t size)
     : base_t(new CPUBuffer(std::move(tp), ptr, size))
 {}
@@ -66,7 +68,7 @@ Buffer::Buffer(TypePtr tp, const void* ptr, dimn_t size)
 {}
 
 Buffer::Buffer(TypePtr tp, dimn_t size, Device device)
-    : Buffer(device->alloc(*tp, size))
+    : Buffer(tp->allocate(device, size))
 {}
 Buffer::Buffer(TypePtr tp, void* ptr, dimn_t size, Device device)
     : base_t(nullptr)

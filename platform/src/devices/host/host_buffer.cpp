@@ -36,6 +36,7 @@
 #include "devices/device_object_base.h"
 #include "devices/host_device.h"
 
+#include "algorithms.h"
 #include "devices/type.h"
 #include "host_device_impl.h"
 
