@@ -139,13 +139,36 @@ ScalarVector::sub_scal_div(const ScalarVector& other, const Scalar& scalar)
 {
     return *this;
 }
+
+namespace {
+
+bool check_all_zero(ScalarArray array)
+{
+    auto count = devices::algorithms::count(array, array.type()->zero());
+    return count == array.size();
+}
+
+}// namespace
+
 bool ScalarVector::operator==(const ScalarVector& other) const
 {
     if (&other == this) { return true; }
 
     const auto mismatch
             = devices::algorithms::mismatch(base_data(), other.base_data());
-    return !static_cast<bool>(mismatch);
+    if (!mismatch) { return true; }
+
+    const auto& index = *mismatch;
+
+    if (index >= base_dimension()) {
+        return check_all_zero(other.base_data()[{index, other.base_dimension()}]);
+    }
+
+    if (index >= other.base_dimension()) {
+        return check_all_zero(base_data()[{index, base_dimension()}]);
+    }
+
+    return false;
 }
 
 dimn_t ScalarVector::base_size() const noexcept
