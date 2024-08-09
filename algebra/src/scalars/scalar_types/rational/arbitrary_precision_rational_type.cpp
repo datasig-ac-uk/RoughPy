@@ -138,9 +138,10 @@ void ArbitraryPrecisionRationalType::copy(
         dimn_t count
 ) const
 {
-    const auto* begin = static_cast<const ArbitraryPrecisionRational*>(dst);
+    const auto* begin = static_cast<const ArbitraryPrecisionRational*>(src);
     const auto* end = begin + count;
-    ranges::copy(begin, end, static_cast<ArbitraryPrecisionRational*>(dst));
+    auto* out = static_cast<ArbitraryPrecisionRational*>(dst);
+    ranges::copy(begin, end, out);
 }
 void ArbitraryPrecisionRationalType::move(void* dst, void* src, dimn_t count)
         const
