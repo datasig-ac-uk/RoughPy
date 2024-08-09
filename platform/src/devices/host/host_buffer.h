@@ -74,8 +74,18 @@ public:
     CPUBuffer(void* raw_ptr, dimn_t size, TypeInfo info);
     CPUBuffer(const void* raw_ptr, dimn_t size, TypeInfo info);
     CPUBuffer(dimn_t size, TypePtr type);
-    CPUBuffer(void* raw_ptr, dimn_t size, TypePtr type);
-    CPUBuffer(const void* raw_ptr, dimn_t size, TypePtr type);
+    CPUBuffer(
+            void* raw_ptr,
+            dimn_t size,
+            TypePtr type,
+            const BufferInterface* mem_owner = nullptr
+    );
+    CPUBuffer(
+            const void* raw_ptr,
+            dimn_t size,
+            TypePtr type,
+            const BufferInterface* mem_owner = nullptr
+    );
 
     ~CPUBuffer() override;
 

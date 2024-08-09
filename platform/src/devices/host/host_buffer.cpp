@@ -123,16 +123,28 @@ CPUBuffer::CPUBuffer(dimn_t size, TypePtr type)
         );
     }
 }
-CPUBuffer::CPUBuffer(void* raw_ptr, dimn_t size, TypePtr tp)
+CPUBuffer::CPUBuffer(
+        void* raw_ptr,
+        dimn_t size,
+        TypePtr tp,
+        const BufferInterface* owner
+)
     : base_t(std::move(tp)),
       raw_buffer{raw_ptr, size * type()->type_info().bytes},
+      m_memory_owner(const_cast<BufferInterface*>(owner)),
       m_flags(IsNotConst),
       m_info(type()->type_info()),
       m_num_elts(size)
 {}
-CPUBuffer::CPUBuffer(const void* raw_ptr, dimn_t size, TypePtr tp)
+CPUBuffer::CPUBuffer(
+        const void* raw_ptr,
+        dimn_t size,
+        TypePtr tp,
+        const BufferInterface* owner
+)
     : base_t(std::move(tp)),
       raw_buffer{const_cast<void*>(raw_ptr), size * type()->type_info().bytes},
+      m_memory_owner(const_cast<BufferInterface*>(owner)),
       m_flags(IsConst),
       m_info(type()->type_info()),
       m_num_elts(size)
@@ -192,7 +204,7 @@ Event CPUBuffer::to_device(Buffer& dst, const Device& device, Queue& queue)
          */
         if (dst.is_null() || dst.device_type() != device_type()
             || dst.size() != raw_buffer.size) {
-            dst = device->alloc(m_info, raw_buffer.size);
+            dst = device->alloc(*type(), raw_buffer.size);
         }
 
         std::memcpy(dst.ptr(), raw_buffer.ptr, raw_buffer.size);
@@ -228,12 +240,12 @@ Buffer CPUBuffer::slice(dimn_t size, dimn_t offset) const
 
     const auto* ptr
             = static_cast<const byte*>(raw_buffer.ptr) + offset * m_info.bytes;
-    return Buffer(new CPUBuffer(ptr, size, type()));
+    return Buffer(new CPUBuffer(ptr, size, type(), this));
 }
 Buffer CPUBuffer::mut_slice(dimn_t size, dimn_t offset)
 {
     RPY_CHECK(offset + size <= m_num_elts);
 
     auto* ptr = static_cast<byte*>(raw_buffer.ptr) + offset * m_info.bytes;
-    return Buffer(new CPUBuffer(ptr, size, type()));
+    return Buffer(new CPUBuffer(ptr, size, type(), this));
 }

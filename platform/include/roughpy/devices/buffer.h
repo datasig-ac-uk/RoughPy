@@ -274,6 +274,11 @@ public:
     Buffer(TypePtr tp, dimn_t size, Device device);
     Buffer(TypePtr tp, void* ptr, dimn_t size, Device device);
     Buffer(TypePtr tp, const void* ptr, dimn_t size, Device device);
+
+    Buffer(const Buffer& owner, void* ptr, dimn_t size);
+    Buffer(const Buffer& owner, const void* ptr, dimn_t size);
+
+
     /**
      * @brief Returns the content type of the buffer.
      *

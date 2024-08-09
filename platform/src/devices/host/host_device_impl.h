@@ -56,7 +56,6 @@ public:
     DeviceCategory category() const noexcept override;
     DeviceInfo info() const noexcept override;
 
-    Buffer alloc(TypeInfo info, dimn_t count) const override;
     RPY_NO_DISCARD Buffer alloc(const Type& type, dimn_t count) const override;
 
     void raw_free(Buffer& buf) const override;

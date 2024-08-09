@@ -62,11 +62,9 @@ optional<fs::path> DeviceHandle::runtime_library() const noexcept { return {}; }
 
 DeviceHandle::~DeviceHandle() = default;
 
-Buffer DeviceHandle::alloc(TypeInfo info, dimn_t count) const { return {}; }
-
 Buffer DeviceHandle::alloc(const Type& type, dimn_t count) const
 {
-    return this->alloc(type.type_info(), count);
+    return {};
 }
 
 void DeviceHandle::raw_free(Buffer& buf) const {}

@@ -13,11 +13,11 @@ KeyArray::KeyArray(const KeyArray&) = default;
 KeyArray::KeyArray(rpy::algebra::KeyArray&&) noexcept = default;
 
 KeyArray::KeyArray(dimn_t size)
-    : m_buffer(devices::get_host_device()->alloc(basis_key_type_info, size))
+    : m_buffer(devices::get_host_device()->alloc(*get_key_type(), size))
 {}
 
 KeyArray::KeyArray(devices::Device device, dimn_t size)
-    : m_buffer(device->alloc(basis_key_type_info, size))
+    : m_buffer(device->alloc(*get_key_type(), size))
 {}
 
 KeyArray::KeyArray(Slice<BasisKey> keys)
@@ -62,7 +62,7 @@ BasisKey& KeyArray::operator[](dimn_t index)
 KeyArray KeyArray::to_device(devices::Device device) const
 {
     devices::Buffer new_buffer
-            = device->alloc(basis_key_type_info, this->size());
+            = device->alloc(*get_key_type(), this->size());
     m_buffer.to_device(new_buffer, device);
     return KeyArray(std::move(new_buffer));
 }
