@@ -160,13 +160,11 @@ bool ScalarVector::operator==(const ScalarVector& other) const
 
     const auto& index = *mismatch;
 
-    if (index >= base_dimension()) {
-        return check_all_zero(other.base_data()[{index, other.base_dimension()}]);
+    if (index < other.base_dimension()) {
+        return check_all_zero(other.base_data(), index);
     }
 
-    if (index >= other.base_dimension()) {
-        return check_all_zero(base_data()[{index, base_dimension()}]);
-    }
+    if (index < base_dimension()) { return check_all_zero(base_data(), index); }
 
     return false;
 }
