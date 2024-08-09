@@ -157,17 +157,17 @@ void ArbitraryPrecisionRationalType::display(std::ostream& os, const void* ptr)
 }
 devices::ConstReference ArbitraryPrecisionRationalType::zero() const
 {
-    ArbitraryPrecisionRational zero{};
+    static const ArbitraryPrecisionRational zero{};
     return devices::ConstReference{&zero, this};
 }
 devices::ConstReference ArbitraryPrecisionRationalType::one() const
 {
-    ArbitraryPrecisionRational one{1};
+    static const ArbitraryPrecisionRational one{1};
     return devices::ConstReference{&one, this};
 }
 devices::ConstReference ArbitraryPrecisionRationalType::mone() const
 {
-    ArbitraryPrecisionRational mone{-1};
+    static const ArbitraryPrecisionRational mone{-1};
     return devices::ConstReference{&mone, this};
 }
 
