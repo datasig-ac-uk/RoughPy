@@ -731,7 +731,7 @@ template <typename S, typename T>
 enable_if_t<value_like<S> && value_like<T>, bool>
 operator==(const S& left, const T& right)
 {
-    const auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(*right.type());
     RPY_CHECK(comparisons.equals);
     return comparisons.equals(left.data(), right.data());
 }
@@ -740,7 +740,7 @@ template <typename S, typename T>
 enable_if_t<value_like<S> && value_like<T>, bool>
 operator!=(const S& left, const T& right)
 {
-    const auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(*right.type());
     RPY_CHECK(comparisons.equals);
     return !comparisons.equal(left.data(), right.data());
 }
@@ -749,7 +749,7 @@ template <typename S, typename T>
 enable_if_t<value_like<S> && value_like<T>, bool>
 operator<(const S& left, const T& right)
 {
-    const auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(*right.type());
     RPY_CHECK(comparisons.less);
     return comparisons.less(left.data(), right.data());
 }
@@ -758,7 +758,7 @@ template <typename S, typename T>
 enable_if_t<value_like<S> && value_like<T>, bool>
 operator<=(const S& left, const T& right)
 {
-    const auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(*right.type());
     RPY_CHECK(comparisons.less_equal);
     return comparisons.less_equal(left.data(), right.data());
 }
@@ -767,7 +767,7 @@ template <typename S, typename T>
 enable_if_t<value_like<S> && value_like<T>, bool>
 operator>(const S& left, const T& right)
 {
-    const auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(*right.type());
     RPY_CHECK(comparisons.greater);
     return comparisons.greater(left.data(), right.data());
 }
@@ -776,7 +776,7 @@ template <typename S, typename T>
 enable_if_t<value_like<S> && value_like<T>, bool>
 operator>=(const S& left, const T& right)
 {
-    const auto& comparisons = left.type()->comparisons(right.type());
+    const auto& comparisons = left.type()->comparisons(*right.type());
     RPY_CHECK(comparisons.greater_equal);
     return comparisons.greater_equal(left.data(), right.data());
 }
