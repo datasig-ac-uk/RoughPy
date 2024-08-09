@@ -587,6 +587,14 @@ public:
     }
 };
 
+template <typename T>
+enable_if_t<value_like<T>, std::ostream&>
+operator<<(std::ostream& os, const T& value)
+{
+    value.type()->display(os, value.data());
+    return os;
+}
+
 inline Value& Value::operator+=(const Value& other)
 {
     if (other.p_type != nullptr) {
@@ -773,13 +781,7 @@ operator>=(const S& left, const T& right)
     return comparisons.greater_equal(left.data(), right.data());
 }
 
-template <typename T>
-enable_if_t<value_like<T>, std::ostream&>
-operator<<(std::ostream& os, const T& value)
-{
-    value.type()->display(os, value.data());
-    return os;
-}
+
 
 namespace math {
 
