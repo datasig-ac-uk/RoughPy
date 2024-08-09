@@ -102,6 +102,7 @@ add_roughpy_component(Platform
         src/devices/algorithms/algorithms_dispatcher.cpp
         src/devices/algorithms/copy.cpp
         src/devices/algorithms/count.cpp
+        src/devices/algorithms/default_fill.cpp
         src/devices/algorithms/fill.cpp
         src/devices/algorithms/find.cpp
         src/devices/algorithms/lexicographical_compare.cpp
