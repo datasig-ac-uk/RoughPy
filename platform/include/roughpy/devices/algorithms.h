@@ -287,6 +287,8 @@ public:
 class AlgorithmsDispatcher : public TypeDispatcher<AlgorithmDrivers, void, void>
 {
 public:
+    void default_fill(Buffer& buffer) const;
+
     /**
      * @brief Find the first position where a value occurs in a buffer.
      *
@@ -519,6 +521,14 @@ public:
 };
 
 namespace algorithms {
+
+inline void default_fill(Buffer& buffer)
+{
+    if (!buffer.is_null()) {
+        auto& algo = buffer.device()->algorithms(buffer.type().get());
+        algo.default_fill(buffer);
+    }
+}
 
 RPY_NO_DISCARD inline optional<dimn_t>
 find(const Buffer& buffer, ConstReference value)

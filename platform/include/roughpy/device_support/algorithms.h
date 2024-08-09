@@ -17,6 +17,7 @@
 
 #include "algorithm_drivers/copy.h"
 #include "algorithm_drivers/count.h"
+#include "algorithm_drivers/default_fill.h"
 #include "algorithm_drivers/fill.h"
 #include "algorithm_drivers/find.h"
 #include "algorithm_drivers/lexicographical_compare.h"
@@ -51,6 +52,7 @@ public:
         return {p_primary_type->id(), p_secondary_type->id()};
     }
 
+    void default_fill(Buffer& buffer) const override;
     RPY_NO_DISCARD optional<dimn_t>
     find(const Buffer& buffer, ConstReference value) const override;
     RPY_NO_DISCARD dimn_t
@@ -73,6 +75,13 @@ public:
             const override;
 };
 
+template <typename S, typename T>
+void HostDriversImpl<S, T>::default_fill(Buffer& buffer) const
+{
+    constexpr auto func = default_fill_func<S>;
+    func.type_check(*p_primary_type, *buffer.type());
+    return func(buffer);
+}
 template <typename S, typename T>
 optional<dimn_t>
 HostDriversImpl<S, T>::find(const Buffer& buffer, ConstReference value) const
