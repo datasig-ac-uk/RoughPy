@@ -29,9 +29,6 @@ add_roughpy_component(Algebra
         src/algebra/augmented_basis.cpp
         src/algebra/augmented_basis.h
         src/algebra/basis.cpp
-        src/algebra/basis_key.cpp
-        src/algebra/basis_key_type.cpp
-        src/algebra/basis_key_type.h
         src/algebra/context.cpp
         src/algebra/dense_vector_factory.cpp
         src/algebra/dense_vector_factory.h
@@ -71,7 +68,6 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/algebra.h
         include/roughpy/algebra/algebra_fwd.h
         include/roughpy/algebra/basis.h
-        include/roughpy/algebra/basis_key.h
         include/roughpy/algebra/context.h
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/free_tensor.h

@@ -47,13 +47,12 @@ extern ROUGHPY_SCALARS_EXPORT const BuiltinTypes builtin_types;
 
 namespace algebra {
 
-enum class ImplementationType
-{
-    Owned,
-    Borrowed,
-    DeviceOwned,
-    DeviceBorrowed
-};
+
+using BasisKey = devices::Value;
+using BasisKeyCRef = devices::ConstReference;
+using BasisKeyRef = devices::Reference;
+using BasisKeyCPtr = devices::ConstPointer;
+using BasisKeyPtr = devices::Pointer;
 
 enum class VectorType : uint16_t
 {
@@ -61,27 +60,11 @@ enum class VectorType : uint16_t
     Sparse
 };
 
-template <VectorType>
-struct vector_type_tag {
-};
-
-/**
- * @brief Different algebra types required by RoughPy
- */
-enum class AlgebraType : uint16_t
-{
-    FreeTensor,
-    ShuffleTensor,
-    Lie,
-    FreeTensorBundle,
-    ShuffleTensorBundle,
-    LieBundle
-};
-
 class Basis;
 
-class BasisKeyInterface;
-class BasisKey;
+
+
+
 
 using BasisPointer = Rc<const Basis>;
 

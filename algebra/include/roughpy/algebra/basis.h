@@ -35,142 +35,109 @@
 #include <roughpy/core/smart_ptr.h>
 #include <roughpy/core/traits.h>
 
-#include "basis_key.h"
 #include "roughpy_algebra_export.h"
 
 namespace rpy {
 namespace algebra {
 
-
-
-
-class ROUGHPY_ALGEBRA_EXPORT KeyIteratorState
-{
-public:
-    void* operator new(std::size_t count);
-    void operator delete(void* ptr, std::size_t count);
-
-    virtual ~KeyIteratorState();
-    virtual void advance() noexcept = 0;
-
-    virtual bool finished() const noexcept = 0;
-
-    virtual BasisKey value() const noexcept = 0;
-
-    virtual bool equals(BasisKey k1, BasisKey k2) const noexcept = 0;
-};
-
 namespace dtl {
 
-class KeyRangeIterator
+using NextKeyFn = std::function<optional<BasisKey>(const BasisKey&)>;
+
+class BasisIterator
 {
-    KeyIteratorState* p_state;
-    BasisKey m_value;
+    NextKeyFn m_next{};
+    optional<BasisKey> m_current{};
 
 public:
-    using value_type = BasisKey;
-    using pointer = const BasisKey*;
-    using reference = const BasisKey&;
-    using difference_type = idimn_t;
-    using iterator_tag = std::forward_iterator_tag;
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = BasisKeyCRef;
+    using reference = BasisKeyCRef;
+    using pointer = BasisKeyCPtr;
+    using difference_type = std::ptrdiff_t;
 
-    KeyRangeIterator() = default;
+    BasisIterator() = default;
+    BasisIterator(const BasisIterator&) = default;
+    BasisIterator(BasisIterator&&) noexcept = default;
 
-    explicit KeyRangeIterator(KeyIteratorState* state) : p_state(state)
+    BasisIterator& operator=(const BasisIterator&) = default;
+    BasisIterator& operator=(BasisIterator&&) noexcept = default;
+
+    template <typename F>
+    BasisIterator(F&& next, optional<BasisKey> current)
+        : m_next(std::forward<F>(next)),
+          m_current(std::move(current))
     {
-        update_value();
+        RPY_CHECK(m_next != nullptr || !m_current);
     }
 
-    KeyRangeIterator& operator++() noexcept
+    BasisIterator& operator++()
     {
-        if (p_state != nullptr) {
-            p_state->advance();
-            update_value();
+        if (m_current) {
+            RPY_DBG_ASSERT(m_next);
+            m_current = m_next(*m_current);
         }
         return *this;
     }
 
-    const KeyRangeIterator operator++(int) noexcept
+    RPY_NO_DISCARD const BasisIterator operator++(int)
     {
-        KeyRangeIterator prev(*this);
-        operator++();
+        BasisIterator prev(*this);
+        this->operator++();
         return prev;
     }
 
-private:
-    void update_value() noexcept
+    BasisKeyCRef operator*() const noexcept
     {
-        if (!m_value && p_state != nullptr && !p_state->finished()) {
-            m_value = p_state->value();
-        }
+        RPY_DBG_ASSERT(m_current);
+        return BasisKeyCRef(*m_current);
     }
 
-public:
-    reference operator*() const noexcept { return m_value; }
-
-    pointer operator->() const noexcept { return &m_value; }
-
-    friend bool operator==(
-            const KeyRangeIterator& lhs,
-            const KeyRangeIterator& rhs
-    ) noexcept
+    BasisKeyCPtr operator->() const noexcept
     {
-        if (lhs.p_state == nullptr) {
-            return rhs.p_state == nullptr || rhs.p_state->finished();
-        }
-        if (rhs.p_state == nullptr) { return lhs.p_state->finished(); }
-
-        return lhs.p_state == rhs.p_state
-                && lhs.p_state->equals(lhs.m_value, rhs.m_value);
+        RPY_DBG_ASSERT(m_current);
+        return BasisKeyCPtr(*m_current);
     }
 
-    friend bool operator!=(
-            const KeyRangeIterator& lhs,
-            const KeyRangeIterator& rhs
-    ) noexcept
+    friend bool operator==(const BasisIterator& lhs, const BasisIterator& rhs)
     {
-        if (lhs.p_state == nullptr) {
-            return rhs.p_state != nullptr && !rhs.p_state->finished();
+        if (!lhs.m_next && !rhs.m_next) {
+            // Both are sentinels, true
+            return true;
         }
-        if (rhs.p_state == nullptr) { return !lhs.p_state->finished(); }
 
-        return lhs.p_state != rhs.p_state
-                || lhs.p_state->equals(lhs.m_value, rhs.m_value);
+        if (RPY_LIKELY(!rhs.m_next)) {
+            // The most likely case is that the rhs is a sentinel value.
+            // Equality happens if lhs has no value
+            return !static_cast<bool>(lhs.m_current);
+        }
+
+        if (!lhs.m_next) {
+            // lhs is a sentinel, equality happens if rhs has no value
+            return !static_cast<bool>(rhs.m_current);
+        }
+
+        // Neither is a sentinel.
+        if (!lhs.m_current && !rhs.m_current) {
+            // Neither holds a value, so they are both finished
+            return true;
+        }
+
+        if (!lhs.m_current || !rhs.m_current) {
+            // One is finished but the other is not
+            return false;
+        }
+
+        return *lhs.m_current == *rhs.m_current;
+    }
+
+    friend bool operator!=(const BasisIterator& lhs, const BasisIterator& rhs)
+    {
+        return !(lhs == rhs);
     }
 };
 
 }// namespace dtl
-
-class KeyRange
-{
-    KeyIteratorState* p_state = nullptr;
-
-public:
-    using iterator = dtl::KeyRangeIterator;
-    using const_iterator = iterator;
-
-    KeyRange();
-
-    explicit KeyRange(KeyIteratorState* state) noexcept;
-
-    KeyRange(const KeyRange& other) = delete;
-
-    KeyRange(KeyRange&& other) noexcept;
-
-    ~KeyRange();
-
-    KeyRange& operator=(const KeyRange& other) = delete;
-
-    KeyRange& operator=(KeyRange&& other) noexcept;
-
-    const_iterator begin() const noexcept { return const_iterator(p_state); }
-
-    const_iterator end() const noexcept
-    {
-        (void) this;
-        return const_iterator();
-    }
-};
 
 /**
  * @brief The BasisComparison enum class represents the comparison between two
@@ -438,6 +405,9 @@ public:
      */
     RPY_NO_DISCARD virtual KeyRange iterate_keys() const;
 
+    RPY_NO_DISCARD virtual dtl::BasisIterator keys_begin() const;
+    RPY_NO_DISCARD virtual dtl::BasisIterator keys_end() const;
+
     /*
      * Graded basis functions
      */
@@ -580,7 +550,6 @@ public:
     ) const noexcept;
 
     virtual Rc<VectorContext> default_vector_context() const;
-
 };
 
 /**

@@ -19,7 +19,6 @@
 
 #include "algebra_fwd.h"
 #include "basis.h"
-#include "basis_key.h"
 #include "key_array.h"
 
 #include <initializer_list>

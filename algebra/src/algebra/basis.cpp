@@ -29,9 +29,7 @@
 //
 // Created by user on 02/03/23.
 //
-#include "basis_key.h"
 #include <roughpy/algebra/basis.h>
-
 
 #include "vector.h"
 
@@ -42,10 +40,7 @@ Basis::~Basis() = default;
 
 dimn_t Basis::max_dimension() const noexcept { return 0; }
 
-dimn_t Basis::dense_dimension(dimn_t size) const
-{
-    return size;
-}
+dimn_t Basis::dense_dimension(dimn_t size) const { return size; }
 
 bool Basis::less(BasisKey RPY_UNUSED_VAR k1, BasisKey RPY_UNUSED_VAR k2) const
 {
@@ -65,6 +60,15 @@ BasisKey Basis::to_key(dimn_t index) const
 KeyRange Basis::iterate_keys() const
 {
     RPY_THROW(std::runtime_error, "basis is not ordered");
+}
+
+algebra::dtl::BasisIterator Basis::keys_begin() const
+{
+    return dtl::BasisIterator();
+}
+algebra::dtl::BasisIterator Basis::keys_end() const
+{
+    return dtl::BasisIterator();
 }
 
 deg_t Basis::max_degree() const
