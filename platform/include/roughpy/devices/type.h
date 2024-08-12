@@ -101,7 +101,7 @@ enum class TypeComparison
 
 namespace type_support {
 using MathFn = void (*)(void*, const void*);
-using CompareFn = bool (*)(void*, const void*) noexcept;
+using CompareFn = bool (*)(const void*, const void*) noexcept;
 using IsZeroFn = bool (*)(const void*) noexcept;
 using PowFn = void (*)(void*, const void*, unsigned) noexcept;
 
@@ -118,7 +118,8 @@ struct TypeConversions {
 };
 
 struct TypeComparisons {
-    std::function<bool(const void*, const void*)> equals;
+    CompareFn equals;
+    CompareFn not_equals;
     std::function<bool(const void*, const void*)> less;
     std::function<bool(const void*, const void*)> less_equal;
     std::function<bool(const void*, const void*)> greater;
