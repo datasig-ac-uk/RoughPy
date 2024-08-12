@@ -101,9 +101,9 @@ enum class TypeComparison
 
 namespace type_support {
 using MathFn = void (*)(void*, const void*);
-using CompareFn = bool (*)(const void*, const void*) noexcept;
+using CompareFn = bool (*)(const void*, const void*);
 using IsZeroFn = bool (*)(const void*) noexcept;
-using PowFn = void (*)(void*, const void*, unsigned) noexcept;
+using PowFn = void (*)(void*, const void*, unsigned);
 
 struct TypeArithmetic {
     std::function<void(void*, const void*)> add_inplace;
