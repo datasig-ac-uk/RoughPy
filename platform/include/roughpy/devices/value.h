@@ -230,6 +230,22 @@ public:
     }
 };
 
+class ConstPointer : ConstReference
+{
+public:
+    using ConstReference::ConstReference;
+
+    ConstReference operator*() const noexcept
+    {
+        return static_cast<ConstReference>(*this);
+    }
+
+    const ConstReference* operator->() const noexcept
+    {
+        return static_cast<const ConstReference*>(this);
+    }
+};
+
 template <typename T>
 class TypedConstReference : public ConstReference
 {
@@ -347,6 +363,24 @@ public:
         }
 
         return *this;
+    }
+};
+
+class Pointer : Reference
+{
+public:
+    using Reference::Reference;
+
+    Reference operator*() noexcept { return static_cast<Reference>(*this); }
+    ConstReference operator*() const noexcept
+    {
+        return static_cast<ConstReference>(*this);
+    }
+
+    Reference* operator->() noexcept { return static_cast<Reference*>(this); }
+    const ConstReference* operator->() const noexcept
+    {
+        return static_cast<const ConstReference*>(this);
     }
 };
 
