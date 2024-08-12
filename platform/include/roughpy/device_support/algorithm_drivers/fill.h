@@ -32,7 +32,7 @@ using func = Func<S, T, is_constructible_v<S, const T&>>;
 }// namespace __fill
 
 template <typename S, typename T>
-constexpr __fill::func<S, T> fill_func{};
+inline constexpr __fill::func<S, T> fill_func{};
 
 }// namespace devices
 }// namespace rpy

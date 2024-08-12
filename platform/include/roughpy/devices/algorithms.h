@@ -37,6 +37,22 @@ public:
     virtual ~AlgorithmDrivers();
 
     /**
+     * @fn void AlgorithmDrivers::default_fill(Buffer& buffer) const
+     * @brief Fills the buffer using the default fill algorithm.
+     *
+     * This function fills the given buffer with values using the default fill
+     * algorithm. The default fill algorithm is implemented by the
+     * `DefaultFillFunctor` from the `algorithms` namespace.
+     *
+     * @param buffer The buffer to be filled.
+     *
+     * @note The buffer must be mapped before calling this function.
+     *
+     * @sa DefaultFillFunctor, algorithms, Buffer::map()
+     */
+    virtual void default_fill(Buffer& buffer) const;
+
+    /**
      * @brief Find the first position where a value occurs in a buffer.
      *
      * This method is used to find the position of the first occurrence
@@ -271,6 +287,8 @@ public:
 class AlgorithmsDispatcher : public TypeDispatcher<AlgorithmDrivers, void, void>
 {
 public:
+    void default_fill(Buffer& buffer) const;
+
     /**
      * @brief Find the first position where a value occurs in a buffer.
      *
@@ -503,6 +521,14 @@ public:
 };
 
 namespace algorithms {
+
+inline void default_fill(Buffer& buffer)
+{
+    if (!buffer.is_null()) {
+        auto& algo = buffer.device()->algorithms(buffer.type().get());
+        algo.default_fill(buffer);
+    }
+}
 
 RPY_NO_DISCARD inline optional<dimn_t>
 find(const Buffer& buffer, ConstReference value)

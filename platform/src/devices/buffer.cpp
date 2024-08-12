@@ -59,17 +59,25 @@ template class RPY_DLL_EXPORT ObjectBase<BufferInterface, Buffer>;
 
 Buffer::Buffer(TypePtr tp, dimn_t size)
     : base_t(new CPUBuffer(std::move(tp), size))
-{}
+{
+    algorithms::default_fill(*this);
+}
 Buffer::Buffer(TypePtr tp, void* ptr, dimn_t size)
     : base_t(new CPUBuffer(std::move(tp), ptr, size))
-{}
+{
+}
 Buffer::Buffer(TypePtr tp, const void* ptr, dimn_t size)
     : base_t(new CPUBuffer(std::move(tp), ptr, size))
-{}
+{
+
+
+}
 
 Buffer::Buffer(TypePtr tp, dimn_t size, Device device)
     : Buffer(tp->allocate(device, size))
-{}
+{
+    algorithms::default_fill(*this);
+}
 Buffer::Buffer(TypePtr tp, void* ptr, dimn_t size, Device device)
     : base_t(nullptr)
 {

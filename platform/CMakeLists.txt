@@ -13,6 +13,7 @@ add_library(RoughPy_Device_Support INTERFACE
         include/roughpy/device_support/algorithm_drivers/algorithm_base.h
         include/roughpy/device_support/algorithm_drivers/copy.h
         include/roughpy/device_support/algorithm_drivers/count.h
+        include/roughpy/device_support/algorithm_drivers/default_fill.h
         include/roughpy/device_support/algorithm_drivers/fill.h
         include/roughpy/device_support/algorithm_drivers/find.h
         include/roughpy/device_support/algorithm_drivers/lexicographical_compare.h
@@ -102,6 +103,7 @@ add_roughpy_component(Platform
         src/devices/algorithms/algorithms_dispatcher.cpp
         src/devices/algorithms/copy.cpp
         src/devices/algorithms/count.cpp
+        src/devices/algorithms/default_fill.cpp
         src/devices/algorithms/fill.cpp
         src/devices/algorithms/find.cpp
         src/devices/algorithms/lexicographical_compare.cpp

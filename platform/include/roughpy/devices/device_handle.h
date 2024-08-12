@@ -149,19 +149,6 @@ public:
     //                               ) = 0;
 
     /**
-     * @brief Allocates a buffer on the device with the specified information
-     * and count.
-     *
-     * This method is used to allocate a buffer on the device with the specified
-     * type information and the number of elements in the buffer.
-     *
-     * @param info The type information of the buffer.
-     * @param count The number of elements in the buffer.
-     * @return The allocated buffer on the device.
-     */
-    RPY_NO_DISCARD virtual Buffer alloc(TypeInfo info, dimn_t count) const;
-
-    /**
      * @brief Allocates a buffer of the specified size with the given type
      *
      * This method allocates a buffer on the device with the specified size and

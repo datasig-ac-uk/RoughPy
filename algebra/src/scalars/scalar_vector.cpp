@@ -32,7 +32,7 @@ void ScalarVector::resize_base_dim(dimn_t new_dim)
     const auto type = scalar_type();
     RPY_CHECK(type != nullptr);
 
-    auto new_buffer = type->allocate(device(), new_dim);
+    auto new_buffer = device()->alloc(*type, new_dim);
     devices::algorithms::copy(new_buffer, base_data());
     mut_base_data() = ScalarArray(std::move(new_buffer));
 }
@@ -139,13 +139,35 @@ ScalarVector::sub_scal_div(const ScalarVector& other, const Scalar& scalar)
 {
     return *this;
 }
+
+namespace {
+
+bool check_all_zero(const ScalarArray& array, dimn_t offset)
+{
+    const auto sliced_array = array[{offset, array.size()}];
+    auto count = devices::algorithms::count(sliced_array, array.type()->zero());
+    return count == sliced_array.size();
+}
+
+}// namespace
+
 bool ScalarVector::operator==(const ScalarVector& other) const
 {
     if (&other == this) { return true; }
 
     const auto mismatch
             = devices::algorithms::mismatch(base_data(), other.base_data());
-    return !static_cast<bool>(mismatch);
+    if (!mismatch) { return true; }
+
+    const auto& index = *mismatch;
+
+    if (index < other.base_dimension()) {
+        return check_all_zero(other.base_data(), index);
+    }
+
+    if (index < base_dimension()) { return check_all_zero(base_data(), index); }
+
+    return false;
 }
 
 dimn_t ScalarVector::base_size() const noexcept

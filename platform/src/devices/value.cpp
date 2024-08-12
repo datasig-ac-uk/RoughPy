@@ -28,6 +28,7 @@ rpy::devices::Value::Value(ConstReference other) : p_type(other.type())
         m_storage.pointer = p_type->allocate_single();
         p_type->copy(m_storage.pointer, other.data(), 1);
     }
+    RPY_DBG_ASSERT(*this == other);
 }
 rpy::devices::Value::~Value()
 {

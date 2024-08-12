@@ -152,17 +152,6 @@ Buffer CPUDeviceHandle::alloc(const Type& type, dimn_t count) const
     return Buffer(new CPUBuffer(&type, count));
 }
 
-Buffer CPUDeviceHandle::alloc(TypeInfo info, dimn_t count) const
-{
-    if (count == 0) { return Buffer(); }
-
-    // This is a bit circular, since CPUBuffer will actually call
-    // allocate_raw_buffer as part of it's own allocation, but we don't want to
-    // necessarily expose the internals of CPUBuffer to make it externally
-    // constructible.
-    return Buffer(new CPUBuffer(count, info));
-}
-
 void CPUDeviceHandle::raw_free(Buffer& buf) const
 {
     RPY_CHECK(buf.device() == this);
