@@ -6,6 +6,7 @@
 #define ROUGHPY_DEVICES_TYPE_H
 
 #include "core.h"
+#include "value.h"
 
 #include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/macros.h>
@@ -144,6 +145,8 @@ struct NumberTraits {
     MathFn log;
 };
 
+using HashFn = hash_t (*)(const void*);
+
 }// namespace type_support
 
 struct TypeSupport {
@@ -171,10 +174,13 @@ class ROUGHPY_DEVICES_EXPORT Type : public RcBase<Type>
     class TypeSupportDispatcher;
 
     std::unique_ptr<TypeSupportDispatcher> p_type_support;
-
     std::unique_ptr<type_support::NumberTraits> p_num_traits;
 
+    type_support::HashFn p_hash = nullptr;
+
 protected:
+    void set_hash_fn(type_support::HashFn hash);
+
     type_support::NumberTraits& setup_num_traits()
     {
         p_num_traits = std::make_unique<type_support::NumberTraits>();
@@ -440,6 +446,36 @@ public:
      */
     RPY_NO_DISCARD const type_support::TypeConversions&
     conversions(const Type& other_type) const;
+
+    /**
+     * @brief Returns the hash function for the type.
+     *
+     * The `hash_function` method returns the hash function associated with the
+     * type. The function is provided by the `type_support` namespace and is of
+     * type `HashFn`.
+     *
+     * @return The hash function for the type.
+     *
+     * @sa type_support::HashFn
+     */
+    RPY_NO_DISCARD type_support::HashFn hash_function() const noexcept
+    {
+        return p_hash;
+    }
+
+    /**
+     * @brief Checks if the type is hashable.
+     *
+     * The is_hashable method checks if the type is hashable by verifying if the
+     * internal pointer p_hash is not null.
+     *
+     * @return true if the type is hashable, false otherwise.
+     *
+     */
+    RPY_NO_DISCARD bool is_hashable() const noexcept
+    {
+        return p_hash != nullptr;
+    }
 
     /**
      * @brief Updates the support for a given Type.

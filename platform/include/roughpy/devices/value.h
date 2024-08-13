@@ -10,6 +10,7 @@
 
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/hash.h>
 
 #include "core.h"
 #include "type.h"
@@ -469,6 +470,27 @@ enable_if_t<is_reference_like<T>, Value&> Value::operator=(const T& other)
     return *this;
 }
 
+/**
+ * @brief Calculates the hash value for a Value.
+ *
+ * The hash_value function calculates the hash value for a given object. The
+ * hash value of an object is an integer value that is used to determine its
+ * uniqueness in a hash table or other data structures that rely on hashing.
+ *
+ * @tparam T The type of the object.
+ * @param value The object for which to calculate the hash value.
+ * @return The hash value of the object.
+ */
+template <typename T>
+enable_if_t<value_like<T>, hash_t> hash_value(const T& value)
+{
+    const auto& tp = value.type();
+    if (tp == nullptr || value.data() == nullptr) { return 0; }
+    const auto hash = tp->jhash;
+    RPY_CHECK(hash != nullptr);
+    return hash(value.data());
+}
+
 template <typename T>
 enable_if_t<!value_like<T>, Reference&> Reference::operator=(T&& other)
 {
@@ -814,8 +836,6 @@ operator>=(const S& left, const T& right)
     RPY_CHECK(comparisons.greater_equal);
     return comparisons.greater_equal(left.data(), right.data());
 }
-
-
 
 namespace math {
 

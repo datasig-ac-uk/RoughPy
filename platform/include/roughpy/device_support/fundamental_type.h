@@ -10,6 +10,7 @@
 #include <roughpy/core/errors.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+#include <roughpy/core/hash.h>
 
 #include <roughpy/devices/host_device.h>
 #include <roughpy/devices/type.h>
@@ -82,6 +83,12 @@ template <typename T>
 class RPY_LOCAL FundamentalType : public Type
 {
 
+    static hash_t hash_function(const void* value_ptr)
+    {
+        Hash<T> hash;
+        return hash(*static_cast<const T*>(value_ptr));
+    }
+
 public:
     FundamentalType(string_view id, string_view name)
         : Type(id, name, devices::type_info<T>(), devices::traits_of<T>())
@@ -107,6 +114,9 @@ public:
             num_traits.exp = math_fn_impls::exp_fn<T>;
             num_traits.log = math_fn_impls::log_fn<T>;
         }
+
+
+        set_hash_fn(hash_function);
     }
 
     /**
