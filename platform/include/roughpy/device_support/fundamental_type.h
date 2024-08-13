@@ -8,9 +8,9 @@
 #include "algorithms.h"
 
 #include <roughpy/core/errors.h>
+#include <roughpy/core/hash.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
-#include <roughpy/core/hash.h>
 
 #include <roughpy/devices/host_device.h>
 #include <roughpy/devices/type.h>
@@ -114,7 +114,6 @@ public:
             num_traits.exp = math_fn_impls::exp_fn<T>;
             num_traits.log = math_fn_impls::log_fn<T>;
         }
-
 
         set_hash_fn(hash_function);
     }

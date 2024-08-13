@@ -8,9 +8,9 @@
 #ifndef ROUGHPY_DEVICES_VALUE_H
 #define ROUGHPY_DEVICES_VALUE_H
 
+#include <roughpy/core/hash.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
-#include <roughpy/core/hash.h>
 
 #include "core.h"
 #include "type.h"

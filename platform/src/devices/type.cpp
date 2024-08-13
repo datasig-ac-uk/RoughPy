@@ -68,6 +68,13 @@ Type::Type(string_view id, string_view name, TypeInfo info, TypeTraits traits)
 
 Type::~Type() = default;
 
+void Type::set_hash_fn(type_support::HashFn hash)
+{
+    RPY_CHECK(p_hash == nullptr);
+    RPY_CHECK(hash != nullptr);
+    p_hash = hash;
+}
+
 Buffer Type::allocate(Device device, dimn_t count) const
 {
     return device->alloc(*this, count);
@@ -222,7 +229,6 @@ const type_support::TypeConversions& Type::conversions(const Type& other_type
 {
     return p_type_support->conversions(&other_type);
 }
-
 GuardedRef<TypeSupport, std::mutex> Type::update_support(const Type& other
 ) const
 {
