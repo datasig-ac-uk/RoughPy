@@ -21,6 +21,7 @@ set(ROUGHPY_ALGEBRA_PRIVATE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/al
 set(ROUGHPY_SCALARS_PRIVATE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/scalars)
 
 add_subdirectory(src/scalars)
+add_subdirectory(src/algebra/basis_keys)
 
 
 add_roughpy_component(Algebra
@@ -38,10 +39,7 @@ add_roughpy_component(Algebra
         src/algebra/hall_set_size.h
         src/algebra/hall_word.cpp
         src/algebra/hall_word.h
-        src/algebra/hall_word_iterator_state.cpp
-        src/algebra/hall_word_iterator_state.h
         src/algebra/key_array.cpp
-        src/algebra/key_iterator_state.cpp
         src/algebra/key_range.cpp
         src/algebra/key_scalar_array.cpp
         src/algebra/key_scalar_stream.cpp
@@ -50,14 +48,10 @@ add_roughpy_component(Algebra
         #        src/mutable_vector_element.cpp
         #        src/mutable_vector_element.h
         src/algebra/tensor_basis.cpp
-        src/algebra/tensor_key_iterator_state.cpp
-        src/algebra/tensor_key_iterator_state.h
-        src/algebra/tensor_product_basis.cpp
-        src/algebra/tensor_product_basis.h
-        src/algebra/tensor_product_basis_key.cpp
-        src/algebra/tensor_product_basis_key.h
         src/algebra/tensor_word.cpp
         src/algebra/tensor_word.h
+        src/algebra/tensor_word_type.cpp
+        src/algebra/tensor_word_type.h
         src/algebra/vector.cpp
         src/algebra/vector_factory.cpp
         src/algebra/vector_context.cpp
@@ -98,6 +92,8 @@ add_roughpy_component(Algebra
         RoughPy_Scalar_Type_bfloat16
         RoughPy_Scalar_Type_rational
         RoughPy_Scalar_Type_polynomial
+        RoughPy_tensor_word
+        RoughPy_lie_word
         NEEDS
         RoughPy::Core
         RoughPy::Platform

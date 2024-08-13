@@ -5,7 +5,7 @@
 #ifndef ROUGHPY_KEY_ARRAY_H
 #define ROUGHPY_KEY_ARRAY_H
 
-#include "basis_key.h"
+#include "algebra_fwd.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/ranges.h>
@@ -20,7 +20,7 @@ namespace dtl {
 
 class KeyArrayIterator
 {
-    const BasisKey* p_current;
+    const BasisKey* p_current = nullptr;
 
 public:
     using value_type = const BasisKey;
@@ -31,7 +31,14 @@ public:
 
     using iterator_category = std::random_access_iterator_tag;
 
+    KeyArrayIterator() = default;
+    KeyArrayIterator(const KeyArrayIterator&) = default;
+    KeyArrayIterator(KeyArrayIterator&&) noexcept = default;
+
     constexpr explicit KeyArrayIterator(pointer val) : p_current(val) {}
+
+    KeyArrayIterator& operator=(const KeyArrayIterator&) = default;
+    KeyArrayIterator& operator=(KeyArrayIterator&&) noexcept = default;
 
     constexpr KeyArrayIterator& operator++() noexcept
     {
@@ -123,9 +130,7 @@ operator-(const KeyArrayIterator& it, idimn_t n) noexcept
 
 class KeyArrayRange
 {
-    devices::Buffer m_mapped_buffer;
-    const BasisKey* p_begin;
-    const BasisKey* p_end;
+    devices::Buffer m_mapped_buffer{};
 
 public:
     using reference = const BasisKey&;
@@ -135,26 +140,13 @@ public:
 
     explicit KeyArrayRange(devices::Buffer&& mapped) noexcept
         : m_mapped_buffer(std::move(mapped))
-    {
-        auto slice = m_mapped_buffer.as_slice<BasisKey>();
-        p_begin = slice.begin();
-        p_end = slice.end();
-    }
+    {}
 
-    RPY_NO_DISCARD const_iterator begin() const noexcept
-    {
-        return KeyArrayIterator(p_begin);
-    }
-    RPY_NO_DISCARD const_iterator end() const noexcept
-    {
-        return KeyArrayIterator(p_end);
-    }
+    RPY_NO_DISCARD const_iterator begin() const noexcept { return {}; }
+    RPY_NO_DISCARD const_iterator end() const noexcept { return {}; }
 
-    RPY_NO_DISCARD iterator begin() noexcept
-    {
-        return KeyArrayIterator(p_begin);
-    }
-    RPY_NO_DISCARD iterator end() noexcept { return KeyArrayIterator(p_end); }
+    RPY_NO_DISCARD iterator begin() noexcept { return KeyArrayIterator(); }
+    RPY_NO_DISCARD iterator end() noexcept { return KeyArrayIterator(); }
 };
 
 }// namespace dtl
@@ -185,11 +177,7 @@ public:
     KeyArray(const KeyArray&);
     KeyArray(KeyArray&&) noexcept;
 
-    explicit KeyArray(devices::Buffer&& data) : m_buffer(std::move(data))
-    {
-
-        RPY_CHECK(m_buffer.is_null() || m_buffer.type() == get_key_type());
-    }
+    explicit KeyArray(devices::Buffer&& data) : m_buffer(std::move(data)) {}
 
     explicit KeyArray(Slice<BasisKey> keys);
 
@@ -291,7 +279,7 @@ public:
      */
     RPY_NO_DISCARD Slice<const BasisKey> as_slice() const
     {
-        return m_buffer.as_slice<BasisKey>();
+        return m_buffer.as_value_slice();
     }
 
     /**
@@ -310,7 +298,7 @@ public:
      */
     RPY_NO_DISCARD Slice<BasisKey> as_mut_slice()
     {
-        return m_buffer.as_mut_slice<BasisKey>();
+        return m_buffer.as_mut_value_slice();
     }
 
     /**

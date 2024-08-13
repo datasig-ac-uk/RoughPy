@@ -96,7 +96,7 @@ public:
     BasisKeyCPtr operator->() const noexcept
     {
         RPY_DBG_ASSERT(m_current);
-        return BasisKeyCPtr(*m_current);
+        return BasisKeyCPtr(m_current->data(), m_current->type());
     }
 
     friend bool operator==(const BasisIterator& lhs, const BasisIterator& rhs)
@@ -138,6 +138,24 @@ public:
 };
 
 }// namespace dtl
+
+class KeyRange
+{
+    dtl::BasisIterator m_begin{};
+    dtl::BasisIterator m_end{};
+
+public:
+    using const_iterator = dtl::BasisIterator;
+
+    explicit KeyRange(dtl::BasisIterator begin, dtl::BasisIterator end = {})
+        : m_begin(std::move(begin)),
+          m_end(std::move(end))
+    {}
+
+    const_iterator begin() const noexcept { return m_begin; }
+
+    const_iterator end() const noexcept { return m_end; }
+};
 
 /**
  * @brief The BasisComparison enum class represents the comparison between two

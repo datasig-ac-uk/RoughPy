@@ -5,13 +5,14 @@
 #ifndef ROUGPY_ALGEBRA_KEY_SCALAR_ARRAY_H
 #define ROUGPY_ALGEBRA_KEY_SCALAR_ARRAY_H
 
+#include "algebra_fwd.h"
+
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
 #include <roughpy/devices/core.h>
 #include <roughpy/scalars/scalar_array.h>
 
-#include "basis_key.h"
 #include "key_array.h"
 #include "roughpy/core/container/vector.h"
 

@@ -6,7 +6,6 @@
 #define ROUGHPY_ALGEBRA_LIE_BASIS_H
 
 #include "basis.h"
-#include "basis_key.h"
 #include "roughpy_algebra_export.h"
 
 namespace rpy {

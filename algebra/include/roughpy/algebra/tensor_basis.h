@@ -6,7 +6,6 @@
 #define ROUGHPY_ALGEBRA_TENSOR_BASIS_H
 
 #include "basis.h"
-#include "basis_key.h"
 
 #include <roughpy/core/container/vector.h>
 #include <roughpy/devices/buffer.h>

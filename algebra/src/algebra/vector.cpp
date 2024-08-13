@@ -6,13 +6,12 @@
 #include "roughpy/core/container/vector.h"
 
 #include "basis.h"
-#include "basis_key.h"
 #include "key_algorithms.h"
 
 #include <roughpy/core/ranges.h>
+#include <roughpy/device_support/operators.h>
 #include <roughpy/devices/algorithms.h>
 #include <roughpy/devices/core.h>
-#include <roughpy/device_support/operators.h>
 
 #include <algorithm>
 #include <ostream>

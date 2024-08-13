@@ -20,3 +20,13 @@ deg_t TensorWord::min_width() const noexcept
             *std::max_element(m_letters.begin(), m_letters.end())
     );
 }
+
+hash_t algebra::hash_value(const TensorWord& tensor_word)
+{
+    hash_t result = 0;
+    Hash<let_t> hasher;
+    for (const auto& letter : tensor_word) {
+        hash_combine(result, hasher(letter));
+    }
+    return result;
+}

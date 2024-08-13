@@ -5,19 +5,17 @@
 #ifndef ROUGHPY_HALL_WORD_H
 #define ROUGHPY_HALL_WORD_H
 
-#include "basis_key.h"
-
+#include "algebra_fwd.h"
+#include <roughpy/core/container/vector.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
-
-#include <boost/container/small_vector.hpp>
 
 namespace rpy {
 namespace algebra {
 
-class HallWord : public BasisKeyInterface
+class HallWord
 {
-    using container_t = boost::container::small_vector<int16_t, 2>;
+    using container_t = containers::SmallVec<int16_t, 2>;
     using iterator = typename container_t::iterator;
     using const_iterator = typename container_t::const_iterator;
 
@@ -80,9 +78,9 @@ public:
 
     HallWord(const HallWord* left, const HallWord* right);
 
-    ~HallWord() override;
+    ~HallWord();
 
-    string_view key_type() const noexcept override;
+    string_view key_type() const noexcept;
 
     RPY_NO_DISCARD deg_t degree() const;
     RPY_NO_DISCARD pair<optional<BasisKey>, optional<BasisKey>> parents() const;
@@ -96,9 +94,8 @@ public:
 
 RPY_NO_DISCARD inline const HallWord* cast_to_hallword(const BasisKey& key)
 {
-    RPY_CHECK(key.is_valid_pointer());
-    auto* ptr = key.get_pointer();
-    RPY_CHECK(ptr->key_type() == HallWord::key_name);
+    auto* ptr = key.data();
+    // RPY_CHECK(ptr->key_type() == HallWord::key_name);
     return static_cast<const HallWord*>(ptr);
 }
 
