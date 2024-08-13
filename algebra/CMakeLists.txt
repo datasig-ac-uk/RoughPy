@@ -37,8 +37,6 @@ add_roughpy_component(Algebra
         src/algebra/free_tensor_multiplication.cpp
         src/algebra/hall_set_size.cpp
         src/algebra/hall_set_size.h
-        src/algebra/hall_word.cpp
-        src/algebra/hall_word.h
         src/algebra/key_array.cpp
         src/algebra/key_range.cpp
         src/algebra/key_scalar_array.cpp
@@ -48,10 +46,6 @@ add_roughpy_component(Algebra
         #        src/mutable_vector_element.cpp
         #        src/mutable_vector_element.h
         src/algebra/tensor_basis.cpp
-        src/algebra/tensor_word.cpp
-        src/algebra/tensor_word.h
-        src/algebra/tensor_word_type.cpp
-        src/algebra/tensor_word_type.h
         src/algebra/vector.cpp
         src/algebra/vector_factory.cpp
         src/algebra/vector_context.cpp
