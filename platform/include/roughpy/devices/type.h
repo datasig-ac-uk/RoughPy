@@ -6,7 +6,6 @@
 #define ROUGHPY_DEVICES_TYPE_H
 
 #include "core.h"
-#include "value.h"
 
 #include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/macros.h>
