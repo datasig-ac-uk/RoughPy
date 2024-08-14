@@ -5,11 +5,123 @@
 #ifndef LIE_WORD_H
 #define LIE_WORD_H
 
+#include <roughpy/core/container/vector.h>
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+
+#include <roughpy/platform/alloc.h>
+
 namespace rpy {
 namespace algebra {
 
-class LieWord
+namespace dtl {
+
+using LieLetterType = int16_t;
+
+inline constexpr dimn_t small_vec_size = sizeof(void*) / sizeof(LieLetterType);
+
+}// namespace dtl
+
+class LieWord : public platform::SmallObjectBase,
+                containers::SmallVec<dtl::LieLetterType, dtl::small_vec_size>
 {
+    using container_t
+            = containers::SmallVec<dtl::LieLetterType, dtl::small_vec_size>;
+
+    template <typename I>
+    static constexpr dtl::LieLetterType letter(I let) noexcept
+    {
+        return static_cast<dtl::LieLetterType>(let);
+    }
+
+    template <typename I>
+    static constexpr dtl::LieLetterType offset(I offset) noexcept
+    {
+        return -static_cast<dtl::LieLetterType>(offset);
+    }
+
+    template <typename It>
+    static constexpr bool is_offset(It val) noexcept
+    {
+        return *val < 0;
+    }
+
+    template <typename It>
+    static constexpr bool is_letter(It val) noexcept
+    {
+        return *val > 0;
+    }
+
+    template <typename It>
+    static constexpr let_t get_letter(It pos) noexcept
+    {
+        RPY_DBG_ASSERT(is_letter(pos));
+        return static_cast<let_t>(*pos);
+    }
+
+    template <typename It>
+    static constexpr It follow_offset(It offset) noexcept
+    {
+        return offset - *offset;
+    }
+
+    template <typename It>
+    static constexpr It get_companion(It val) noexcept
+    {
+        return val + 1;
+    }
+
+    template <typename LetterFn, typename BinOp>
+    static auto compute_over_tree(
+            const_iterator root,
+            LetterFn&& letter_fn,
+            BinOp&& binary_op
+    ) -> decltype(letter_fn(std::declval<let_t>()))
+    {
+        if (is_letter(root)) { return letter_fn(get_letter(*root)); }
+
+        RPY_DBG_ASSERT(is_offset(root));
+
+        auto left = follow_offset(root);
+        auto right = get_companion(root);
+
+        return binary_op(
+                compute_over_tree(left, letter_fn, binary_op),
+                compute_over_tree(right, letter_fn, binary_op)
+        );
+    }
+
+    static dimn_t
+    copy_tree(container_t& container, const_iterator root) noexcept;
+
+    LieWord(container_t&& container) : container_t{std::move(container)} {}
+
+public:
+    using iterator = typename container_t::iterator;
+    using const_iterator = typename container_t::const_iterator;
+
+    using container_t::begin;
+    using container_t::end;
+    using container_t::size;
+
+    explicit LieWord(const_iterator root, dimn_t size_hint = 0);
+
+    LieWord(let_t one_letter) : container_t{letter(one_letter)} {}
+
+    LieWord(let_t left, let_t right) : container_t{letter(left), letter(right)}
+    {}
+
+    LieWord(const LieWord& left, const LieWord& right);
+
+    RPY_NO_DISCARD bool is_letter() const noexcept { return size() == 1; }
+
+    RPY_NO_DISCARD deg_t degree() const noexcept;
+    RPY_NO_DISCARD optional<const_iterator> left_parent() const noexcept;
+    RPY_NO_DISCARD optional<const_iterator> right_parent() const noexcept;
+
+    void print(std::ostream& out) const;
+
+    RPY_NO_DISCARD deg_t min_alphabet_size();
 };
 
 }// namespace algebra

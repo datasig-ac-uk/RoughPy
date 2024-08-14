@@ -4,6 +4,8 @@
 
 #include "lie_word_type.h"
 
+#include <roughpy/devices/device_handle.h>
+
 #include "lie_word.h"
 
 using namespace rpy;
@@ -15,10 +17,15 @@ LieWordType::LieWordType()
            {devices::TypeCode::KeyType, sizeof(LieWord), alignof(LieWord), 1},
            devices::traits_of<LieWord>())
 {}
-void LieWordType::free_single(void* ptr) const { Type::free_single(ptr); }
+
+void* LieWordType::allocate_single() const { return new LieWord{}; }
+void LieWordType::free_single(void* ptr) const
+{
+    delete static_cast<LieWord*>(ptr);
+}
 bool LieWordType::supports_device(const devices::Device& device) const noexcept
 {
-    return Type::supports_device(device);
+    return device->is_host();
 }
 bool LieWordType::convertible_to(const Type& dest_type) const noexcept
 {

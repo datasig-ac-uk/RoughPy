@@ -15,6 +15,7 @@ class LieWordType : public devices::Type {
 public:
     LieWordType();
 
+    RPY_NO_DISCARD void* allocate_single() const override;
     void free_single(void* ptr) const override;
     RPY_NO_DISCARD bool supports_device(const devices::Device& device
     ) const noexcept override;
