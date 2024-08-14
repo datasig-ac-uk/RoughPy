@@ -16,7 +16,33 @@ LieWordType::LieWordType()
            "LieWord",
            {devices::TypeCode::KeyType, sizeof(LieWord), alignof(LieWord), 1},
            devices::traits_of<LieWord>())
-{}
+{
+
+    {
+        auto support = update_support(*this);
+        auto& cmps = support->comparison;
+
+        cmps.equals = +[](const void* lptr, const void* rptr) {
+            const LieWord& left = *static_cast<const LieWord*>(lptr);
+            const LieWord& right = *static_cast<const LieWord*>(rptr);
+            return left == right;
+        };
+
+        cmps.not_equals = +[](const void* lptr, const void* rptr) {
+            const LieWord& left = *static_cast<const LieWord*>(lptr);
+            const LieWord& right = *static_cast<const LieWord*>(rptr);
+            return left != right;
+        };
+
+
+    }
+
+
+
+    set_hash_fn(+[](const void* val) {
+        return hash_value(*static_cast<const LieWord*>(val));
+    });
+}
 
 void* LieWordType::allocate_single() const { return new LieWord{}; }
 void LieWordType::free_single(void* ptr) const
@@ -42,13 +68,22 @@ devices::TypeComparison LieWordType::compare_with(const Type& other
 }
 void LieWordType::copy(void* dst, const void* src, dimn_t count) const
 {
-    Type::copy(dst, src, count);
+    const auto* src_ptr = static_cast<const LieWord*>(src);
+    auto* dst_ptr = static_cast<LieWord*>(dst);
+
+    ranges::copy_n(src_ptr, count, dst_ptr);
 }
 void LieWordType::move(void* dst, void* src, dimn_t count) const
 {
-    Type::move(dst, src, count);
+    auto* src_ptr = static_cast<LieWord*>(src);
+    auto* dst_ptr = static_cast<LieWord*>(dst);
+
+    for (dimn_t i = 0; i < count; ++i) {
+        dst_ptr[i] = std::move(src_ptr[i]);
+    }
 }
 void LieWordType::display(std::ostream& os, const void* ptr) const
 {
-    Type::display(os, ptr);
+    const auto& word = *static_cast<const LieWord*>(ptr);
+    word.print(os);
 }

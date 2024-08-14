@@ -9,7 +9,6 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/ranges.h>
 
-#include "tensor_word.h"
 #include <roughpy/platform/errors.h>
 
 #include <algorithm>
