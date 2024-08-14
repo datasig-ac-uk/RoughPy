@@ -14,22 +14,29 @@ dimn_t LieWord::copy_tree(
         typename LieWord::const_iterator root
 ) noexcept
 {
-    if (is_letter(root)) {
-        container.emplace_back(root);
-        return 1;
+    dimn_t additional_size = 0;
+    auto left_root = root;
+    auto right_root = get_companion(left_root);
+
+    auto new_left_root = container.insert(container.end(), 0);
+    auto new_right_root = container.insert(container.end(), 0);
+
+    if (is_letter(left_root)) {
+        *new_left_root = *left_root;
+    } else {
+        // New left data will start after this pair
+        *new_left_root = offset(2);
+        additional_size += copy_tree(container, follow_offset(left_root));
     }
 
-    auto left_root = follow_offset(root);
-    auto right_root = get_companion(root);
+    if (is_letter(right_root)) {
+        *new_right_root = *right_root;
+    } else {
+        *new_right_root = offset(additional_size);
+        additional_size += copy_tree(container, follow_offset(right_root));
+    }
 
-    container.emplace_back(2);
-    auto& offset = container.emplace_back(0);
-
-    auto size = copy_tree(container, left_root);
-    offset = offset(size);
-
-    size += copy_tree(container, right_root);
-    return size;
+    return 2 + additional_size;
 }
 
 LieWord::LieWord(const_iterator root, dimn_t size_hint)
@@ -135,14 +142,62 @@ deg_t LieWord::min_alphabet_size()
     return static_cast<deg_t>(*ranges::max_element(*this));
 }
 
-optional<typename LieWord::const_iterator> LieWord::left_parent() const noexcept
+optional<LieWord> LieWord::left_parent() const noexcept
 {
     if (empty()) { return {}; }
-    return begin();
+    auto root = begin();
+
+    if (is_letter(root)) { return LieWord{get_letter(root)}; }
+
+    RPY_DBG_ASSERT(is_offset(begin()));
+    dimn_t size_hint = size();
+    if (is_letter(get_companion(begin()))) {
+        size_hint -= 1;
+    } else {
+        size_hint /= 2;
+    }
+
+    return LieWord(follow_offset(root), size_hint);
 }
-optional<typename LieWord::const_iterator>
-LieWord::right_parent() const noexcept
+optional<LieWord> LieWord::right_parent() const noexcept
 {
     if (size() <= 1) { return {}; }
-    return get_companion(begin());
+    auto root = get_companion(begin());
+    if (is_letter(root)) { return LieWord{get_letter(root)}; }
+
+    dimn_t size_hint = size();
+    if (is_letter(begin())) {
+        size_hint -= 1;
+    } else {
+        size_hint /= 2;
+    }
+
+    return LieWord(follow_offset(root), size_hint);
+}
+
+bool LieWord::check_equal(const_iterator left, const_iterator right) noexcept
+{
+    if (is_letter(left) && is_letter(right)) {
+        if (get_letter(left) != get_letter(right)) { return false; }
+    } else if (is_offset(left) && is_offset(right)) {
+        if (!check_equal(follow_offset(left), follow_offset(right))) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    left = get_companion(left);
+    right = get_companion(right);
+    if (is_letter(left) && is_letter(right)) {
+        if (get_letter(left) != get_letter(right)) { return false; }
+    } else if (is_offset(left) && is_offset(right)) {
+        if (!check_equal(follow_offset(left), follow_offset(right))) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    return true;
 }

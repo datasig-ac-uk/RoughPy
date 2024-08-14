@@ -62,6 +62,7 @@ class LieWord : public platform::SmallObjectBase,
     template <typename It>
     static constexpr It follow_offset(It offset) noexcept
     {
+        RPY_DBG_ASSERT(is_offset(offset));
         return offset - *offset;
     }
 
@@ -78,21 +79,38 @@ class LieWord : public platform::SmallObjectBase,
             BinOp&& binary_op
     ) -> decltype(letter_fn(std::declval<let_t>()))
     {
-        if (is_letter(root)) { return letter_fn(get_letter(*root)); }
-
-        RPY_DBG_ASSERT(is_offset(root));
-
-        auto left = follow_offset(root);
+        auto left = root;
         auto right = get_companion(root);
 
-        return binary_op(
-                compute_over_tree(left, letter_fn, binary_op),
-                compute_over_tree(right, letter_fn, binary_op)
-        );
+        return_type_t<LetterFn> left_result, right_result;
+
+        if (is_offset(left)) {
+            left_result = compute_over_tree(
+                    follow_offset(left),
+                    letter_fn,
+                    binary_op
+            );
+        } else {
+            left_result = letter_fn(get_letter(left));
+        }
+
+        if (is_offset(right)) {
+            right_result = compute_over_tree(
+                    follow_offset(right),
+                    letter_fn,
+                    binary_op
+            );
+        } else {
+            right_result = letter_fn(get_letter(right));
+        }
+
+        return binary_op(left_result, right_result);
     }
 
     static dimn_t
     copy_tree(container_t& container, const_iterator root) noexcept;
+
+    static bool check_equal(const_iterator left, const_iterator right) noexcept;
 
     LieWord(container_t&& container) : container_t{std::move(container)} {}
 
@@ -104,6 +122,10 @@ public:
     using container_t::end;
     using container_t::size;
 
+    LieWord() = default;
+    LieWord(const LieWord&) = default;
+    LieWord(LieWord&&) noexcept = default;
+
     explicit LieWord(const_iterator root, dimn_t size_hint = 0);
 
     LieWord(let_t one_letter) : container_t{letter(one_letter)} {}
@@ -113,16 +135,39 @@ public:
 
     LieWord(const LieWord& left, const LieWord& right);
 
+    LieWord& operator=(const LieWord&) = default;
+    LieWord& operator=(LieWord&&) noexcept = default;
+
     RPY_NO_DISCARD bool is_letter() const noexcept { return size() == 1; }
 
     RPY_NO_DISCARD deg_t degree() const noexcept;
-    RPY_NO_DISCARD optional<const_iterator> left_parent() const noexcept;
-    RPY_NO_DISCARD optional<const_iterator> right_parent() const noexcept;
+    RPY_NO_DISCARD optional<LieWord> left_parent() const noexcept;
+    RPY_NO_DISCARD optional<LieWord> right_parent() const noexcept;
 
     void print(std::ostream& out) const;
 
     RPY_NO_DISCARD deg_t min_alphabet_size();
+
+    friend bool operator==(const LieWord& left, const LieWord& right) noexcept
+    {
+        if (left.empty() && right.empty()) { return true; }
+        if (left.is_letter() && right.is_letter()) {
+            return get_letter(left.begin()) == get_letter(right.begin());
+        }
+        return check_equal(left.begin(), right.begin());
+    }
 };
+
+inline bool operator!=(const LieWord& left, const LieWord& right) noexcept
+{
+    return !(left == right);
+}
+
+inline std::ostream& operator<<(std::ostream& os, const LieWord& word)
+{
+    word.print(os);
+    return os;
+}
 
 }// namespace algebra
 }// namespace rpy
