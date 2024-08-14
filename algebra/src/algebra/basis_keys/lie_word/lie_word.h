@@ -43,13 +43,13 @@ class LieWord : public platform::SmallObjectBase,
     template <typename It>
     static constexpr bool is_offset(It val) noexcept
     {
-        return *val < 0;
+        return (*val) < 0;
     }
 
     template <typename It>
     static constexpr bool is_letter(It val) noexcept
     {
-        return *val > 0;
+        return (*val) > 0;
     }
 
     template <typename It>
@@ -156,6 +156,9 @@ public:
         }
         return check_equal(left.begin(), right.begin());
     }
+
+
+    friend hash_t hash_value(const LieWord& word) noexcept;
 };
 
 inline bool operator!=(const LieWord& left, const LieWord& right) noexcept
@@ -168,6 +171,8 @@ inline std::ostream& operator<<(std::ostream& os, const LieWord& word)
     word.print(os);
     return os;
 }
+
+hash_t hash_value(const LieWord& word) noexcept;
 
 }// namespace algebra
 }// namespace rpy

@@ -7,6 +7,7 @@
 
 #include <roughpy/devices/type.h>
 
+
 namespace rpy {
 namespace algebra {
 

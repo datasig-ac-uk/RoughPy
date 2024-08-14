@@ -207,3 +207,87 @@ TEST(LieWordTests, TestParentsCompound)
     EXPECT_EQ(*left, left_word);
     EXPECT_EQ(*right, right_word);
 }
+
+TEST(LieWordTests, TestHashValueSingleLetter)
+{
+    LieWord word{let_t(1)};
+    rpy::Hash<LieWord> hash_fn;
+    auto hash_value1 = hash_fn(word);
+
+    LieWord same_word{let_t(1)};
+    auto hash_value2 = hash_fn(same_word);
+
+    EXPECT_EQ(hash_value1, hash_value2);
+}
+
+TEST(LieWordTests, TestHashValueDifferentLetters)
+{
+    LieWord word1{let_t(1)};
+    LieWord word2{let_t(2)};
+    rpy::Hash<LieWord> hash_fn;
+
+    auto hash_value1 = hash_fn(word1);
+    auto hash_value2 = hash_fn(word2);
+
+    EXPECT_NE(hash_value1, hash_value2);
+}
+
+TEST(LieWordTests, TestHashValueSamePairs)
+{
+    LieWord word1{let_t(1), let_t(2)};
+    LieWord word2{let_t(1), let_t(2)};
+    rpy::Hash<LieWord> hash_fn;
+
+    auto hash_value1 = hash_fn(word1);
+    auto hash_value2 = hash_fn(word2);
+
+    EXPECT_EQ(hash_value1, hash_value2);
+}
+
+TEST(LieWordTests, TestHashValueDifferentPairs)
+{
+    LieWord word1{let_t(1), let_t(2)};
+    LieWord word2{let_t(2), let_t(1)};
+    rpy::Hash<LieWord> hash_fn;
+
+    auto hash_value1 = hash_fn(word1);
+    auto hash_value2 = hash_fn(word2);
+
+    EXPECT_NE(hash_value1, hash_value2);
+}
+
+TEST(LieWordTests, TestHashValueSameCompoundWords)
+{
+    LieWord left1{let_t(1)};
+    LieWord right1{let_t(1), let_t(2)};
+    LieWord word1{left1, right1};
+
+    LieWord left2{let_t(1)};
+    LieWord right2{let_t(1), let_t(2)};
+    LieWord word2{left2, right2};
+
+    rpy::Hash<LieWord> hash_fn;
+
+    auto hash_value1 = hash_fn(word1);
+    auto hash_value2 = hash_fn(word2);
+
+    EXPECT_EQ(hash_value1, hash_value2);
+}
+
+TEST(LieWordTests, TestHashValueDifferentCompoundWords)
+{
+    LieWord left1{let_t(1)};
+    LieWord right1{let_t(1), let_t(2)};
+    LieWord word1{left1, right1};
+
+    LieWord left2{let_t(2)};
+    LieWord right2{let_t(1), let_t(2)};
+    LieWord word2{left2, right2};
+
+    rpy::Hash<LieWord> hash_fn;
+
+    auto hash_value1 = hash_fn(word1);
+    auto hash_value2 = hash_fn(word2);
+
+    EXPECT_NE(hash_value1, hash_value2);
+}
