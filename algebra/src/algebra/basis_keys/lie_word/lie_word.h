@@ -157,7 +157,6 @@ public:
         return check_equal(left.begin(), right.begin());
     }
 
-
     friend hash_t hash_value(const LieWord& word) noexcept;
 };
 
@@ -173,6 +172,21 @@ inline std::ostream& operator<<(std::ostream& os, const LieWord& word)
 }
 
 hash_t hash_value(const LieWord& word) noexcept;
+
+inline LieWord operator*(const LieWord& left, const LieWord& right)
+{
+    return LieWord(left, right);
+}
+
+inline LieWord operator*(const LieWord& left, let_t right)
+{
+    return LieWord(left, LieWord(right));
+}
+
+inline LieWord operator*(let_t left, const LieWord& right)
+{
+    return LieWord{LieWord(left), right};
+}
 
 }// namespace algebra
 }// namespace rpy
