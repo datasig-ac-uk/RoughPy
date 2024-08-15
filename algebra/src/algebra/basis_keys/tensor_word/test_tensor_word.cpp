@@ -2,6 +2,7 @@
 // Created by sam on 8/15/24.
 //
 
+// ReSharper disable CppLocalVariableMayBeConst
 #include <gtest/gtest.h>
 
 #include "tensor_word.h"
