@@ -63,3 +63,19 @@ bool algebra::operator==(
 {
     return ranges::equal(left, right);
 }
+
+bool algebra::operator<(
+        const TensorWord& left,
+        const TensorWord& right
+) noexcept
+{
+    const auto left_degree = left.degree();
+    const auto right_degree = right.degree();
+
+    if (left_degree < right_degree) { return true; }
+    if (left_degree == right_degree) {
+        return ranges::lexicographical_compare(left, right);
+    }
+
+    return false;
+}

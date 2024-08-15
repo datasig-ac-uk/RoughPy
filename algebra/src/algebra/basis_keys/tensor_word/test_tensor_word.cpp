@@ -286,3 +286,56 @@ TEST(TensorWordTests, TestHashValueDifferentSizes)
     auto hash_value2 = rpy::Hash<TensorWord>()(word2);
     EXPECT_NE(hash_value1, hash_value2);
 }
+
+// Test case for less than comparison
+TEST(TensorWordTests, LessThanComparisons)
+{
+    TensorWord word1{1, 2, 3};
+    TensorWord word2{1, 2, 3, 4};
+    TensorWord word3{1, 2, 4};
+    TensorWord word4{1, 2, 3};// same as word1
+
+    EXPECT_TRUE(word1 < word2); // word1 has less degree than word2
+    EXPECT_TRUE(word1 < word3); // word1 precedes word3 lexicographically
+    EXPECT_FALSE(word1 < word4);// word1 is equal to word4
+    EXPECT_FALSE(word2 < word1);// word2 has higher degree than word1
+}
+
+// Test case for not less than comparison
+TEST(TensorWordTests, NotLessThanComparisons)
+{
+    TensorWord word1{1, 2, 3};
+    TensorWord word2{1, 2, 3, 4};
+    TensorWord word3{1, 2, 4};
+    TensorWord word4{1, 2, 3};// same as word1
+
+    EXPECT_FALSE(word2 < word1);// word2 has higher degree than word1
+    EXPECT_FALSE(word3 < word1);// word1 precedes word3 lexicographically
+    EXPECT_FALSE(word4 < word1);// word1 is equal to word4
+}
+
+// Test case for equals comparison
+TEST(TensorWordTests, EqualsComparisons)
+{
+    TensorWord word1{1, 2, 3};
+    TensorWord word2{1, 2, 3, 4};
+    TensorWord word3{1, 2, 4};
+    TensorWord word4{1, 2, 3};// same as word1
+
+    EXPECT_TRUE(word1 == word4); // word1 is equal to word4
+    EXPECT_FALSE(word1 == word2);// word1 is not equal to word2
+    EXPECT_FALSE(word1 == word3);// word1 is not equal to word3
+}
+
+// Test case for not equals comparison
+TEST(TensorWordTests, NotEqualsComparisons)
+{
+    TensorWord word1{1, 2, 3};
+    TensorWord word2{1, 2, 3, 4};
+    TensorWord word3{1, 2, 4};
+    TensorWord word4{1, 2, 3};// same as word1
+
+    EXPECT_TRUE(word1 != word2); // word1 is not equal to word2
+    EXPECT_TRUE(word1 != word3); // word1 is not equal to word3
+    EXPECT_FALSE(word1 != word4);// word1 is equal to word4
+}

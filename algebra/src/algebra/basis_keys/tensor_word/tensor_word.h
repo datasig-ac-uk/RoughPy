@@ -89,6 +89,20 @@ inline bool operator!=(const TensorWord& left, const TensorWord& right) noexcept
     return !(left == right);
 }
 
+bool operator<(const TensorWord& left, const TensorWord& right) noexcept;
+inline bool operator>(const TensorWord& left, const TensorWord& right) noexcept
+{
+    return right < left;
+}
+inline bool operator<=(const TensorWord& left, const TensorWord& right) noexcept
+{
+    return !(left > right);
+}
+inline bool operator>=(const TensorWord& left, const TensorWord& right) noexcept
+{
+    return !(left < right);
+}
+
 }// namespace algebra
 }// namespace rpy
 
