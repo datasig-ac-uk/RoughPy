@@ -39,8 +39,11 @@ public:
     TensorWord(TensorWord&&) noexcept = default;
 
     template <typename I, typename = enable_if_t<is_integral_v<I>>>
-    TensorWord(std::initializer_list<I> args) : container_t(std::move(args))
-    {}
+    TensorWord(std::initializer_list<I> args)
+    {
+        reserve(args.size());
+        for (auto&& arg : args) { emplace_back(arg); }
+    }
 
     TensorWord(const TensorWord& left, const TensorWord& right);
 
@@ -77,6 +80,13 @@ inline TensorWord operator*(let_t left, const TensorWord& right)
 inline TensorWord operator*(const TensorWord& left, let_t right)
 {
     return {left, TensorWord{right}};
+}
+
+bool operator==(const TensorWord& left, const TensorWord& right) noexcept;
+
+inline bool operator!=(const TensorWord& left, const TensorWord& right) noexcept
+{
+    return !(left == right);
 }
 
 }// namespace algebra

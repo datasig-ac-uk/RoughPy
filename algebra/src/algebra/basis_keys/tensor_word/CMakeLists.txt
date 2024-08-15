@@ -14,3 +14,16 @@ target_link_libraries(RoughPy_tensor_word PUBLIC
         RoughPy::Core
         RoughPy::Platform
 )
+
+
+if (ROUGHPY_BUILD_TESTS)
+    add_executable(test_tensor_word
+            test_tensor_word.cpp)
+
+    target_link_libraries(test_tensor_word PRIVATE
+            RoughPy_tensor_word
+            GTest::gtest_main
+    )
+
+    gtest_discover_tests(test_tensor_word)
+endif ()

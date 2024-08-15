@@ -56,3 +56,10 @@ hash_t algebra::hash_value(const TensorWord& tensor_word)
     }
     return result;
 }
+bool algebra::operator==(
+        const TensorWord& left,
+        const TensorWord& right
+) noexcept
+{
+    return ranges::equal(left, right);
+}
