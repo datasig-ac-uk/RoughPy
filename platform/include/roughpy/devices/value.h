@@ -25,6 +25,8 @@ class Reference;
 template <typename T>
 class TypedReference;
 class Value;
+class Pointer;
+class ConstPointer;
 
 template <typename T>
 inline constexpr bool is_reference_like = is_same_v<decay_t<T>, ConstReference>
@@ -38,7 +40,7 @@ inline constexpr bool value_like
 namespace dtl {
 
 template <typename T>
-using value_like_return = enable_if_t<value_like<T>, Value>;
+using value_like_return = enable_if_t<value_like<T>, typename T::value_type>;
 
 struct ValueStorage {
 
@@ -86,6 +88,12 @@ class ROUGHPY_DEVICES_EXPORT Value : protected dtl::ValueStorage
     }
 
 public:
+    using value_type = Value;
+    using const_reference_type = ConstReference;
+    using reference_type = Reference;
+    using const_pointer_type = ConstPointer;
+    using pointer_type = Pointer;
+
     Value() = default;
 
     Value(const Value& other);
@@ -203,6 +211,12 @@ class ConstReference
     TypePtr p_type;
 
 public:
+    using value_type = Value;
+    using const_reference_type = ConstReference;
+    using reference_type = Reference;
+    using const_pointer_type = ConstPointer;
+    using pointer_type = Pointer;
+
     ConstReference(const void* val, TypePtr type)
         : p_val(val),
           p_type(std::move(type))
@@ -234,6 +248,12 @@ public:
 class ConstPointer : ConstReference
 {
 public:
+    using value_type = Value;
+    using const_reference_type = ConstReference;
+    using reference_type = Reference;
+    using const_pointer_type = ConstPointer;
+    using pointer_type = Pointer;
+
     using ConstReference::ConstReference;
 
     ConstReference operator*() const noexcept
@@ -251,6 +271,12 @@ template <typename T>
 class TypedConstReference : public ConstReference
 {
 public:
+    using value_type = Value;
+    using const_reference_type = ConstReference;
+    using reference_type = Reference;
+    using const_pointer_type = ConstPointer;
+    using pointer_type = Pointer;
+
     explicit TypedConstReference(const T& val)
         : ConstReference(std::addressof(val), get_type<T>())
     {}
@@ -273,6 +299,12 @@ public:
 class Reference : public ConstReference
 {
 public:
+    using value_type = Value;
+    using const_reference_type = ConstReference;
+    using reference_type = Reference;
+    using const_pointer_type = ConstPointer;
+    using pointer_type = Pointer;
+
     // ReSharper disable once CppParameterMayBeConstPtrOrRef
     Reference(void* val, TypePtr type) : ConstReference(val, std::move(type)) {}
 
@@ -370,6 +402,12 @@ public:
 class Pointer : Reference
 {
 public:
+    using value_type = Value;
+    using const_reference_type = ConstReference;
+    using reference_type = Reference;
+    using const_pointer_type = ConstPointer;
+    using pointer_type = Pointer;
+
     using Reference::Reference;
 
     Reference operator*() noexcept { return static_cast<Reference>(*this); }
@@ -389,6 +427,12 @@ template <typename T>
 class TypedReference : public Reference
 {
 public:
+    using value_type = Value;
+    using const_reference_type = ConstReference;
+    using reference_type = Reference;
+    using const_pointer_type = ConstPointer;
+    using pointer_type = Pointer;
+
     constexpr TypedReference(T& t)// NOLINT(*-explicit-constructor)
         : Reference(
                   const_cast<remove_cv_t<T>*>(std::addressof(t)),
@@ -486,7 +530,7 @@ enable_if_t<value_like<T>, hash_t> hash_value(const T& value)
 {
     const auto& tp = value.type();
     if (tp == nullptr || value.data() == nullptr) { return 0; }
-    const auto hash = tp->jhash;
+    const auto hash = tp->hash;
     RPY_CHECK(hash != nullptr);
     return hash(value.data());
 }
