@@ -10,80 +10,74 @@
 #include <roughpy/core/container/vector.h>
 #include <roughpy/platform/alloc.h>
 
+#include <initializer_list>
+
 namespace rpy {
 namespace algebra {
 
-class TensorWord : public platform::SmallObjectBase
-{
-    using container_t = containers::SmallVec<let_t, 1>;
+namespace dtl {
 
-    container_t m_letters{};
+using TensorLetterType = let_t;
+inline constexpr dimn_t tensor_word_inline_size
+        = sizeof(void*) / sizeof(TensorLetterType);
+
+}// namespace dtl
+
+class TensorWord
+    : public platform::SmallObjectBase,
+      containers::SmallVec<dtl::TensorLetterType, dtl::tensor_word_inline_size>
+{
+    using container_t = containers::
+            SmallVec<dtl::TensorLetterType, dtl::tensor_word_inline_size>;
 
 public:
-    static constexpr string_view key_name = "tensor_word";
+    using typename container_t::const_iterator;
+    using typename container_t::iterator;
 
-    using iterator = typename container_t::iterator;
-    using const_iterator = typename container_t::const_iterator;
-    using reverse_iterator = typename container_t::reverse_iterator;
-    using const_reverse_iterator = typename container_t::const_reverse_iterator;
+    TensorWord() = default;
+    TensorWord(const TensorWord&) = default;
+    TensorWord(TensorWord&&) noexcept = default;
 
-    explicit TensorWord(dimn_t capacity) : m_letters()
-    {
-        m_letters.reserve(capacity);
-    }
+    template <typename I, typename = enable_if_t<is_integral_v<I>>>
+    TensorWord(std::initializer_list<I> args) : container_t(std::move(args))
+    {}
 
-    void push_back(let_t letter) { m_letters.push_back(letter); }
+    TensorWord(const TensorWord& left, const TensorWord& right);
 
-    string_view key_type() const noexcept;
+    TensorWord& operator=(const TensorWord&) = default;
+    TensorWord& operator=(TensorWord&&) noexcept = default;
 
-    dimn_t degree() const noexcept { return m_letters.size(); }
+    using container_t::begin;
+    using container_t::end;
 
-    auto begin() noexcept -> decltype(m_letters.begin())
-    {
-        return m_letters.begin();
-    }
-    auto end() noexcept -> decltype(m_letters.end()) { return m_letters.end(); }
+    RPY_NO_DISCARD bool is_letter() const noexcept { return size() == 1; }
 
-    auto begin() const noexcept -> decltype(m_letters.begin())
-    {
-        return m_letters.begin();
-    }
-    auto end() const noexcept -> decltype(m_letters.end())
-    {
-        return m_letters.end();
-    }
+    RPY_NO_DISCARD deg_t degree() const noexcept { return size(); }
 
-    auto cbegin() const noexcept -> decltype(m_letters.cbegin())
-    {
-        return m_letters.cbegin();
-    }
-    auto cend() const noexcept -> decltype(m_letters.cend())
-    {
-        return m_letters.cend();
-    }
+    RPY_NO_DISCARD optional<TensorWord> left_parent() const noexcept;
+    RPY_NO_DISCARD optional<TensorWord> right_parent() const noexcept;
 
-    auto rbegin() const noexcept -> decltype(m_letters.rbegin())
-    {
-        return m_letters.rbegin();
-    }
-    auto rend() const noexcept -> decltype(m_letters.rbegin())
-    {
-        return m_letters.rbegin();
-    }
+    void print(std::ostream& os) const;
 
-    auto rbegin() noexcept -> decltype(m_letters.rbegin())
-    {
-        return m_letters.rbegin();
-    }
-    auto rend() noexcept -> decltype(m_letters.rbegin())
-    {
-        return m_letters.rbegin();
-    }
-
-    RPY_NO_DISCARD deg_t min_width() const noexcept;
+    RPY_NO_DISCARD deg_t min_alphabet_size() const noexcept;
 };
 
 hash_t hash_value(const TensorWord& tensor_word);
+
+inline TensorWord operator*(const TensorWord& left, const TensorWord& right)
+{
+    return {left, right};
+}
+
+inline TensorWord operator*(let_t left, const TensorWord& right)
+{
+    return {TensorWord{left}, right};
+}
+
+inline TensorWord operator*(const TensorWord& left, let_t right)
+{
+    return {left, TensorWord{right}};
+}
 
 }// namespace algebra
 }// namespace rpy
