@@ -33,11 +33,7 @@ LieWordType::LieWordType()
             const LieWord& right = *static_cast<const LieWord*>(rptr);
             return left != right;
         };
-
-
     }
-
-
 
     set_hash_fn(+[](const void* val) {
         return hash_value(*static_cast<const LieWord*>(val));
@@ -53,14 +49,7 @@ bool LieWordType::supports_device(const devices::Device& device) const noexcept
 {
     return device->is_host();
 }
-bool LieWordType::convertible_to(const Type& dest_type) const noexcept
-{
-    return Type::convertible_to(dest_type);
-}
-bool LieWordType::convertible_from(const Type& src_type) const noexcept
-{
-    return Type::convertible_from(src_type);
-}
+
 devices::TypeComparison LieWordType::compare_with(const Type& other
 ) const noexcept
 {
@@ -78,9 +67,7 @@ void LieWordType::move(void* dst, void* src, dimn_t count) const
     auto* src_ptr = static_cast<LieWord*>(src);
     auto* dst_ptr = static_cast<LieWord*>(dst);
 
-    for (dimn_t i = 0; i < count; ++i) {
-        dst_ptr[i] = std::move(src_ptr[i]);
-    }
+    for (dimn_t i = 0; i < count; ++i) { dst_ptr[i] = std::move(src_ptr[i]); }
 }
 void LieWordType::display(std::ostream& os, const void* ptr) const
 {

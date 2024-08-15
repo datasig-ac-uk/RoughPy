@@ -10,7 +10,7 @@
 namespace rpy {
 namespace algebra {
 
-class TensorWordType : public devices::Type
+class TensorWordType final : public devices::Type
 {
 
 public:
