@@ -56,6 +56,7 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/algebra.h
         include/roughpy/algebra/algebra_fwd.h
         include/roughpy/algebra/basis.h
+        include/roughpy/algebra/basis_keys.h
         include/roughpy/algebra/context.h
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/free_tensor.h

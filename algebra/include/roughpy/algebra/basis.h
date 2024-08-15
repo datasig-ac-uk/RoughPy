@@ -37,6 +37,8 @@
 
 #include "roughpy_algebra_export.h"
 
+#include "basis_keys.h"
+
 namespace rpy {
 namespace algebra {
 

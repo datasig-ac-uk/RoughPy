@@ -47,12 +47,16 @@ extern ROUGHPY_SCALARS_EXPORT const BuiltinTypes builtin_types;
 
 namespace algebra {
 
-
-using BasisKey = devices::Value;
-using BasisKeyCRef = devices::ConstReference;
-using BasisKeyRef = devices::Reference;
-using BasisKeyCPtr = devices::ConstPointer;
-using BasisKeyPtr = devices::Pointer;
+// using BasisKey = devices::Value;
+// using BasisKeyCRef = devices::ConstReference;
+// using BasisKeyRef = devices::Reference;
+// using BasisKeyCPtr = devices::ConstPointer;
+// using BasisKeyPtr = devices::Pointer;
+class BasisKey;
+class BasisKeyCRef;
+class BasisKeyRef;
+class BasisKeyCPtr;
+class BasisKeyPtr;
 
 enum class VectorType : uint16_t
 {
@@ -61,10 +65,6 @@ enum class VectorType : uint16_t
 };
 
 class Basis;
-
-
-
-
 
 using BasisPointer = Rc<const Basis>;
 
