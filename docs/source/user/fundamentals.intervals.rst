@@ -16,10 +16,10 @@ How do intervals fit into RoughPy
 
 RoughPy is very careful in how it works with intervals.
 
-One design goal is that it should be able to handle jumps in the underlying signal that occur at particular times, including the beginning or end of the interval, and still guarantee that if you combine the signature over adjacent interval, you always get the signature over the entire interval.
+One design goal is that it should be able to handle jumps in the underlying signal that occur at particular times, including the beginning or end of the interval, and still guarantee that if you combine the signature over adjacent interval, you always get the signature over the entire interval (i.e. Chen's identity is satisfied).
 This implies that there has to be a decision about whether data at the exact beginning or exact end of the interval is included.
-
 The convention in RoughPy are that we use clopen intervals, and that data at beginning of the interval is seen, and data at the end of the interval is seen in the next interval.
+
 A second design goal is that the code should be efficient, and so the internal representation of a stream involves caching the signature over dyadic intervals of different resolutions.
 Recovering the signature over any interval using the cache has logarithmic complexity (using at most 2n tensor multiplications, when n is the internal resolution of the stream).
 Resolution refers to the length of the finest granularity at which we will store information about the underlying data.

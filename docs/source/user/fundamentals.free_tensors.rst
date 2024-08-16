@@ -12,7 +12,7 @@ Free tensors live in a tensor algebra. Equipped with addition, scalar multiplica
 a tensor algebra is a real, non-commutative unital algebra, with unit :math:`\mathbb{1} = (1, 0, 0, ...)`.
 It is within the tensor algebra that the signature of a path lives.
 
-For a more accurate defnintion of the tensor algebra, see :cite:t:`lyons_signature_2024`. See also :cite:t:`reutenauer_free_1993` and :cite:t:`bourbaki_algebra_1998`.
+For a more accurate definition of the tensor algebra, see :cite:t:`lyons_signature_2024`. See also :cite:t:`reutenauer_free_1993` and :cite:t:`bourbaki_algebra_1998`.
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -27,7 +27,7 @@ How to work with free tensors
 
 We can create a **free tensor** in many ways using RoughPy.
 
-We create a free tensor using data, a Width and a Depth. The data you use can take many forms, here are some example constructors:
+We create a free tensor using data, a width and a depth. The data you use can take many forms, here are some example constructors:
 
 ::
 
