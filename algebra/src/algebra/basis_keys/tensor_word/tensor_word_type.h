@@ -12,7 +12,6 @@ namespace algebra {
 
 class TensorWordType final : public devices::Type
 {
-
 public:
     TensorWordType();
 

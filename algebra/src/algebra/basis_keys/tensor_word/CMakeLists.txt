@@ -15,6 +15,7 @@ target_link_libraries(RoughPy_tensor_word PUBLIC
         RoughPy::Platform
 )
 
+target_include_directories(RoughPy_tensor_word PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 if (ROUGHPY_BUILD_TESTS)
     add_executable(test_tensor_word
