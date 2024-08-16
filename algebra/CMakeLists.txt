@@ -22,13 +22,12 @@ set(ROUGHPY_SCALARS_PRIVATE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/sc
 
 add_subdirectory(src/scalars)
 add_subdirectory(src/algebra/basis_keys)
+add_subdirectory(src/algebra/bases)
 
 
 add_roughpy_component(Algebra
         SOURCES
         src/algebra/algebra.cpp
-        src/algebra/augmented_basis.cpp
-        src/algebra/augmented_basis.h
         src/algebra/basis.cpp
         src/algebra/context.cpp
         src/algebra/dense_vector_factory.cpp
