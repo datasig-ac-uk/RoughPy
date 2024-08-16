@@ -42,12 +42,12 @@ dimn_t Basis::max_dimension() const noexcept { return 0; }
 
 dimn_t Basis::dense_dimension(dimn_t size) const { return size; }
 
-bool Basis::less(BasisKey RPY_UNUSED_VAR k1, BasisKey RPY_UNUSED_VAR k2) const
+bool Basis::less(BasisKeyCRef RPY_UNUSED_VAR k1, BasisKeyCRef RPY_UNUSED_VAR k2) const
 {
     RPY_THROW(std::runtime_error, "basis is not ordered");
 }
 
-dimn_t Basis::to_index(BasisKey RPY_UNUSED_VAR key) const
+dimn_t Basis::to_index(BasisKeyCRef RPY_UNUSED_VAR key) const
 {
     RPY_THROW(std::runtime_error, "basis is not ordered");
 }
@@ -76,7 +76,7 @@ deg_t Basis::max_degree() const
     RPY_THROW(std::runtime_error, "basis is not graded");
 }
 
-deg_t Basis::degree(BasisKey RPY_UNUSED_VAR key) const
+deg_t Basis::degree(BasisKeyCRef RPY_UNUSED_VAR key) const
 {
     RPY_THROW(std::runtime_error, "basis is not graded");
 }
@@ -91,34 +91,21 @@ deg_t Basis::alphabet_size() const
     RPY_THROW(std::runtime_error, "basis is not word-like");
 }
 
-bool Basis::is_letter(BasisKey RPY_UNUSED_VAR key) const
+bool Basis::is_letter(BasisKeyCRef RPY_UNUSED_VAR key) const
 {
     RPY_THROW(std::runtime_error, "basis is not word-like");
 }
 
-let_t Basis::get_letter(BasisKey RPY_UNUSED_VAR key) const
+let_t Basis::get_letter(BasisKeyCRef RPY_UNUSED_VAR key) const
 {
     RPY_THROW(std::runtime_error, "basis is not word-like");
 }
 
-pair<optional<BasisKey>, optional<BasisKey>>
-Basis::parents(BasisKey RPY_UNUSED_VAR key) const
+pair<BasisKey, BasisKey>
+Basis::parents(BasisKeyCRef RPY_UNUSED_VAR key) const
 {
     RPY_THROW(std::runtime_error, "basis is not word-like");
 }
-
-void rpy::algebra::intrusive_ptr_add_ref(const Basis* ptr) noexcept
-{
-    using ptr_type = boost::intrusive_ref_counter<Basis>;
-    intrusive_ptr_add_ref(static_cast<const ptr_type*>(ptr));
-}
-
-void rpy::algebra::intrusive_ptr_release(const Basis* ptr) noexcept
-{
-    using ptr_type = boost::intrusive_ref_counter<Basis>;
-    intrusive_ptr_release(static_cast<const ptr_type*>(ptr));
-}
-
 BasisComparison Basis::compare(BasisPointer other) const noexcept
 {
     if (other == this) { return BasisComparison::IsSame; }

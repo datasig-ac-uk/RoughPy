@@ -44,12 +44,12 @@ namespace algebra {
 
 namespace dtl {
 
-using NextKeyFn = std::function<optional<BasisKey>(const BasisKey&)>;
+using NextKeyFn = std::function<BasisKey(const BasisKeyCRef&)>;
 
 class BasisIterator
 {
     NextKeyFn m_next{};
-    optional<BasisKey> m_current{};
+    BasisKey m_current{};
 
 public:
     using iterator_category = std::forward_iterator_tag;
@@ -66,18 +66,18 @@ public:
     BasisIterator& operator=(BasisIterator&&) noexcept = default;
 
     template <typename F>
-    BasisIterator(F&& next, optional<BasisKey> current)
+    BasisIterator(F&& next, optional<BasisKeyCRef> current)
         : m_next(std::forward<F>(next)),
           m_current(std::move(current))
     {
-        RPY_CHECK(m_next != nullptr || !m_current);
+        RPY_CHECK(m_next != nullptr || !m_current.fast_is_zero());
     }
 
     BasisIterator& operator++()
     {
-        if (m_current) {
+        if (!m_current.fast_is_zero()) {
             RPY_DBG_ASSERT(m_next);
-            m_current = m_next(*m_current);
+            m_current = m_next(m_current);
         }
         return *this;
     }
@@ -91,14 +91,14 @@ public:
 
     BasisKeyCRef operator*() const noexcept
     {
-        RPY_DBG_ASSERT(m_current);
+        RPY_DBG_ASSERT(!m_current.fast_is_zero());
         return BasisKeyCRef(*m_current);
     }
 
     BasisKeyCPtr operator->() const noexcept
     {
-        RPY_DBG_ASSERT(m_current);
-        return BasisKeyCPtr(m_current->data(), m_current->type());
+        RPY_DBG_ASSERT(!m_current.fast_is_zero());
+        return BasisKeyCPtr(m_current.data(), m_current.type());
     }
 
     friend bool operator==(const BasisIterator& lhs, const BasisIterator& rhs)
@@ -111,26 +111,29 @@ public:
         if (RPY_LIKELY(!rhs.m_next)) {
             // The most likely case is that the rhs is a sentinel value.
             // Equality happens if lhs has no value
-            return !static_cast<bool>(lhs.m_current);
+            return lhs.m_current.fast_is_zero();
         }
 
         if (!lhs.m_next) {
             // lhs is a sentinel, equality happens if rhs has no value
-            return !static_cast<bool>(rhs.m_current);
+            return rhs.m_current.fast_is_zero();
         }
 
         // Neither is a sentinel.
-        if (!lhs.m_current && !rhs.m_current) {
+        if (lhs.m_current.fast_is_zero() && rhs.m_current.fast_is_zero()) {
             // Neither holds a value, so they are both finished
             return true;
         }
 
-        if (!lhs.m_current || !rhs.m_current) {
+        if (lhs.m_current.fast_is_zero() || rhs.m_current.fast_is_zero()) {
             // One is finished but the other is not
             return false;
         }
 
-        return *lhs.m_current == *rhs.m_current;
+        // return lhs.m_current == rhs.m_current;
+        // TODO: fix this when the value_like trait is amended.
+        return static_cast<const devices::Value>(lhs.m_current)
+                == static_cast<const devices::Value>(rhs.m_current);
     }
 
     friend bool operator!=(const BasisIterator& lhs, const BasisIterator& rhs)
@@ -191,10 +194,10 @@ enum class BasisComparison
  * space. It provides functions to query information about the basis such as its
  * ID, flags, and various properties related to the keys of the basis.
  *
- * The keys of the basis are objects of type BasisKey, which must derive from
- * BasisKey class. The keys can be used to perform various operations on the
- * basis such as determining equality, computing the hash, and obtaining a
- * string representation.
+ * The keys of the basis are objects of type BasisKeyCRef, which must derive
+ * from BasisKeyCRef class. The keys can be used to perform various operations
+ * on the basis such as determining equality, computing the hash, and obtaining
+ * a string representation.
  *
  * In addition, the Basis class provides functions specific to different types
  * of bases such as ordered bases, graded bases, and word-like bases.
@@ -205,13 +208,15 @@ enum class BasisComparison
  */
 class ROUGHPY_ALGEBRA_EXPORT Basis : public RcBase<Basis>
 {
+protected:
     struct Flags {
         bool is_ordered : 1;
         bool is_graded : 1;
         bool is_word_like : 1;
     };
 
-    const string_view m_basis_id;
+private:
+    string_view m_basis_id;
 
     Flags m_flags;
 
@@ -239,7 +244,7 @@ public:
      * @remark This method does not modify the state of the basis object and can
      * be safely called on const instances.
      *
-     * @see BasisKey
+     * @see BasisKeyCRef
      */
     RPY_NO_DISCARD string_view id() const noexcept { return m_basis_id; }
 
@@ -300,12 +305,13 @@ public:
      * @brief Checks if the given key exists in the basis
      *
      * This method checks if the given key exists in the basis. The key is
-     * passed as a parameter and its type must derive from the BasisKey class.
+     * passed as a parameter and its type must derive from the BasisKeyCRef
+     * class.
      *
      * @param key The key to check for existence in the basis
      * @return True if the key exists in the basis, False otherwise
      */
-    RPY_NO_DISCARD virtual bool has_key(BasisKey key) const noexcept = 0;
+    RPY_NO_DISCARD virtual bool has_key(BasisKeyCRef key) const noexcept = 0;
 
     /**
      * @brief Converts a basis key to a string representation
@@ -317,7 +323,7 @@ public:
      * @param key The basis key to convert to a string
      * @return The string representation of the basis key
      */
-    RPY_NO_DISCARD virtual string to_string(BasisKey key) const = 0;
+    RPY_NO_DISCARD virtual string to_string(BasisKeyCRef key) const = 0;
 
     /**
      * @brief Determine if two keys are equal
@@ -326,14 +332,15 @@ public:
      * @return true if both keys belong to the basis and are equal, otherwise
      * false
      */
-    RPY_NO_DISCARD virtual bool equals(BasisKey k1, BasisKey k2) const = 0;
+    RPY_NO_DISCARD virtual bool equals(BasisKeyCRef k1, BasisKeyCRef k2) const
+            = 0;
 
     /**
      * @brief Get the hash of a key
      * @param k1 Key to hash
      * @return hash of the key
      */
-    RPY_NO_DISCARD virtual hash_t hash(BasisKey k1) const = 0;
+    RPY_NO_DISCARD virtual hash_t hash(BasisKeyCRef k1) const = 0;
 
     /**
      * @brief Get the max dimension supported by this basis
@@ -368,7 +375,8 @@ public:
      * @brief Determines if a basis key k1 is less than another basis key k2
      *
      * This method compares two basis keys, k1 and k2, and determines if k1 is
-     * less than k2. The basis keys are objects derived from the BasisKey class.
+     * less than k2. The basis keys are objects derived from the BasisKeyCRef
+     * class.
      *
      * @param k1 The first basis key to compare
      * @param k2 The second basis key to compare
@@ -378,35 +386,37 @@ public:
      * @note This method throws a std::runtime_error if the basis is not
      * ordered.
      */
-    RPY_NO_DISCARD virtual bool less(BasisKey k1, BasisKey k2) const;
+    RPY_NO_DISCARD virtual bool less(BasisKeyCRef k1, BasisKeyCRef k2) const;
 
     /**
-     * @brief Converts a BasisKey to its corresponding index in the basis
+     * @brief Converts a BasisKeyCRef to its corresponding index in the basis
      *
-     * This method converts a BasisKey object to its corresponding index in the
-     * basis. The index represents the position of the key within the basis.
+     * This method converts a BasisKeyCRef object to its corresponding index in
+     * the basis. The index represents the position of the key within the basis.
      *
-     * @param key The BasisKey object to convert to index
+     * @param key The BasisKeyCRef object to convert to index
      *
-     * @return The index of the given BasisKey in the basis
+     * @return The index of the given BasisKeyCRef in the basis
      *
      * @throw std::runtime_error if the basis is not ordered
      */
-    RPY_NO_DISCARD virtual dimn_t to_index(BasisKey key) const;
+    RPY_NO_DISCARD virtual dimn_t to_index(BasisKeyCRef key) const;
 
     /**
-     * @brief Converts the given index to a BasisKey
+     * @brief Converts the given index to a BasisKeyCRef
      *
-     * This method converts the given index to a BasisKey object. The index
-     * represents the position of an element in the basis. The returned BasisKey
-     * object can be used in various operations related to the basis.
+     * This method converts the given index to a BasisKeyCRef object. The index
+     * represents the position of an element in the basis. The returned
+     * BasisKeyCRef object can be used in various operations related to the
+     * basis.
      *
      * Note that this method is virtual and must be overridden in derived
      * classes to provide the desired functionality specific to the basis type.
      *
      * @param index The index of the element in the basis
      *
-     * @return The BasisKey object representing the element at the given index
+     * @return The BasisKeyCRef object representing the element at the given
+     * index
      *
      * @throws std::runtime_error if the basis is not ordered
      */
@@ -455,7 +465,7 @@ public:
      *
      * @return The degree of the basis key
      */
-    RPY_NO_DISCARD virtual deg_t degree(BasisKey key) const;
+    RPY_NO_DISCARD virtual deg_t degree(BasisKeyCRef key) const;
 
     /**
      * @brief Converts a degree to its corresponding dimension in the basis
@@ -503,18 +513,18 @@ public:
     RPY_NO_DISCARD virtual deg_t alphabet_size() const;
 
     /**
-     * @brief Check if a BasisKey represents a letter in a word-like basis
+     * @brief Check if a BasisKeyCRef represents a letter in a word-like basis
      *
-     * This method is used to check if a given BasisKey object represents a
+     * This method is used to check if a given BasisKeyCRef object represents a
      * letter in a word-like basis. The word-like basis is a type of basis where
      * the keys represent letters in a word.
      *
-     * @param key The BasisKey object to be checked
+     * @param key The BasisKeyCRef object to be checked
      *
-     * @return True if the given BasisKey represents a letter in a word-like
+     * @return True if the given BasisKeyCRef represents a letter in a word-like
      * basis, false otherwise
      *
-     * @see BasisKey
+     * @see BasisKeyCRef
      * @see Basis
      * @see is_word_like
      * @see is_ordered
@@ -523,7 +533,7 @@ public:
      * @note This method throws a std::runtime_error if the basis is not
      * word-like.
      */
-    RPY_NO_DISCARD virtual bool is_letter(BasisKey key) const;
+    RPY_NO_DISCARD virtual bool is_letter(BasisKeyCRef key) const;
 
     /**
      * @brief Get the letter corresponding to the given basis key
@@ -538,7 +548,7 @@ public:
      * @throws std::runtime_error if the basis is not word-like and the method
      * is not overridden
      */
-    RPY_NO_DISCARD virtual let_t get_letter(BasisKey key) const;
+    RPY_NO_DISCARD virtual let_t get_letter(BasisKeyCRef key) const;
 
     /**
      * @brief Returns the parents of a basis key
@@ -554,8 +564,8 @@ public:
      * @note This method assumes that the basis is word-like. If this is not the
      * case, a runtime_error will be thrown with an appropriate error message.
      */
-    RPY_NO_DISCARD virtual pair<optional<BasisKey>, optional<BasisKey>>
-    parents(BasisKey key) const;
+    RPY_NO_DISCARD virtual pair<BasisKey, BasisKey> parents(BasisKeyCRef key
+    ) const;
 
     /**
      * @brief Compares the basis with another basis.
@@ -594,47 +604,45 @@ inline BasisComparison compare(BasisPointer lhs, BasisPointer rhs)
     return (lhs && rhs) ? lhs->compare(rhs) : BasisComparison::IsNotCompatible;
 }
 
-// Just for completeness, declare these functions again
-ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_add_ref(const Basis* ptr) noexcept;
-
-ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_release(const Basis* ptr) noexcept;
-
 /**
- * @brief The KeyHash struct represents a hash function for BasisKey objects
+ * @brief The KeyHash struct represents a hash function for BasisKeyCRef objects
  *
- * The KeyHash struct provides a hash function for BasisKey objects. It takes
- * a const pointer to a Basis object as a member variable. The hash function
- * can be used to compute the hash value for a BasisKey object. It delegates the
- * hashing to the hash function implemented in the Basis class, using the given
- * Basis object.
+ * The KeyHash struct provides a hash function for BasisKeyCRef objects. It
+ * takes a const pointer to a Basis object as a member variable. The hash
+ * function can be used to compute the hash value for a BasisKeyCRef object. It
+ * delegates the hashing to the hash function implemented in the Basis class,
+ * using the given Basis object.
  *
  * To use the KeyHash struct, create an instance and assign a Basis object to
  * its p_basis member variable. Then, use the () operator to compute the hash
- * value for a BasisKey object.
+ * value for a BasisKeyCRef object.
  *
  * Example usage:
  * @code{.cpp}
  * Basis basis;
  * KeyHash keyHash;
  * keyHash.p_basis = &basis;
- * hash_t hashValue = keyHash(someBasisKey);
+ * hash_t hashValue = keyHash(someBasisKeyCRef);
  * @endcode
  *
- * @see Basis, BasisKey
+ * @see Basis, BasisKeyCRef
  */
 struct KeyHash {
     const Basis* p_basis;
 
-    hash_t operator()(const BasisKey& arg) const { return p_basis->hash(arg); }
+    hash_t operator()(const BasisKeyCRef& arg) const
+    {
+        return p_basis->hash(arg);
+    }
 };
 
 /**
  * @brief The KeyEquals struct represents a comparison function object for
- * BasisKey objects
+ * BasisKeyCRef objects
  *
  * The KeyEquals struct is a comparison function object that is used to compare
- * two BasisKey objects for equality. It is designed to be used in conjunction
- * with containers and algorithms that require comparators, such as
+ * two BasisKeyCRef objects for equality. It is designed to be used in
+ * conjunction with containers and algorithms that require comparators, such as
  * std::unordered_map or std::sort.
  *
  * The KeyEquals struct holds a pointer to a Basis object, which is used to
@@ -647,14 +655,14 @@ struct KeyHash {
  * KeyEquals comparator;
  * comparator.p_basis = &basis;
  *
- * BasisKey key1, key2; // Assuming two BasisKey objects have been created
- * bool equal = comparator(key1, key2);
+ * BasisKeyCRef key1, key2; // Assuming two BasisKeyCRef objects have been
+ * created bool equal = comparator(key1, key2);
  * @endcode
  */
 struct KeyEquals {
     const Basis* p_basis;
 
-    bool operator()(const BasisKey& left, const BasisKey& right) const
+    bool operator()(const BasisKeyCRef& left, const BasisKeyCRef& right) const
     {
         return p_basis->equals(left, right);
     }
@@ -662,7 +670,7 @@ struct KeyEquals {
 
 BasisPointer tensor_product_basis(
         Slice<BasisPointer> bases,
-        std::function<dimn_t(BasisKey)> index_function = nullptr,
+        std::function<dimn_t(BasisKeyCRef)> index_function = nullptr,
         std::function<BasisKey(dimn_t)> key_function = nullptr
 );
 
