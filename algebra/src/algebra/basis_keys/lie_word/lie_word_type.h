@@ -12,7 +12,6 @@ namespace algebra {
 
 class LieWordType final : public devices::Type
 {
-
 public:
     LieWordType();
 
@@ -25,6 +24,8 @@ public:
     void copy(void* dst, const void* src, dimn_t count) const override;
     void move(void* dst, void* src, dimn_t count) const override;
     void display(std::ostream& os, const void* ptr) const override;
+
+    static devices::TypePtr get();
 };
 
 }// namespace algebra

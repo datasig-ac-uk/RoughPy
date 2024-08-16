@@ -11,6 +11,7 @@ set_target_properties(RoughPy_lie_word PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_link_libraries(RoughPy_lie_word PUBLIC RoughPy::Core RoughPy::Platform)
 
+target_include_directories(RoughPy_lie_word PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 if (ROUGHPY_BUILD_TESTS)
     add_executable(test_lie_word test_lie_word.cpp)
