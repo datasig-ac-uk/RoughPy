@@ -7,9 +7,9 @@
 #include "lie_word.h"
 #include "lie_word_type.h"
 
-#include <roughpy/core/slice.h>
-#include <roughpy/core/ranges.h>
 #include <roughpy/core/hash.h>
+#include <roughpy/core/ranges.h>
+#include <roughpy/core/slice.h>
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -24,6 +24,8 @@ public:
     optional<dimn_t> pair_to_index(dimn_t left, dimn_t right) const noexcept;
 
     Slice<const dimn_t> sizes() const noexcept;
+
+    pair<dimn_t, dimn_t> parents(dimn_t index) const noexcept;
 
     template <typename LetterFn, typename Binop>
     decltype(auto)
@@ -135,17 +137,18 @@ bool HallBasis::equals(BasisKeyCRef k1, BasisKeyCRef k2) const
 }
 hash_t HallBasis::hash(BasisKeyCRef k1) const
 {
-    if (is_lie_word(k1.type())) {
-        return hash_value(*cast_word(k1));
-    }
+    if (is_lie_word(k1.type())) { return hash_value(*cast_word(k1)); }
     if (is_index_key(k1.type())) {
-        return p_hall_set->foliage_map(cast_index(k1), [](let_t letter) {
-            Hash<let_t> hasher;
-            return hasher(letter);
-        },
-        [](hash_t left, hash_t right) {
-            return hash_combine(left, right);
-        });
+        return p_hall_set->foliage_map(
+                cast_index(k1),
+                [](let_t letter) {
+                    Hash<let_t> hasher;
+                    return hasher(letter);
+                },
+                [](hash_t left, hash_t right) {
+                    return hash_combine(left, right);
+                }
+        );
     }
 
     RPY_THROW(
@@ -178,7 +181,18 @@ dimn_t HallBasis::to_index(BasisKeyCRef key) const
 {
     return Basis::to_index(key);
 }
-BasisKey HallBasis::to_key(dimn_t index) const { return Basis::to_key(index); }
+BasisKey HallBasis::to_key(dimn_t index) const
+{
+    RPY_CHECK(index < p_hall_set->size(m_max_degree));
+
+    return BasisKey(p_hall_set->foliage_map(
+            index,
+            [](let_t letter) { return LieWord(letter); },
+            [](const LieWord& left, const LieWord& right) {
+                return left * right;
+            }
+    ));
+}
 KeyRange HallBasis::iterate_keys() const { return Basis::iterate_keys(); }
 algebra::dtl::BasisIterator HallBasis::keys_begin() const
 {
@@ -188,12 +202,10 @@ algebra::dtl::BasisIterator HallBasis::keys_end() const
 {
     return Basis::keys_end();
 }
-deg_t HallBasis::max_degree() const { return m_max_degree;}
+deg_t HallBasis::max_degree() const { return m_max_degree; }
 deg_t HallBasis::degree(BasisKeyCRef key) const
 {
-    if (is_lie_word(key.type())) {
-        return cast_word(key)->degree();
-    }
+    if (is_lie_word(key.type())) { return cast_word(key)->degree(); }
     if (is_index_key(key.type())) {
         return HallBasis::dimension_to_degree(cast_index(key));
     }
@@ -236,9 +248,7 @@ let_t HallBasis::get_letter(BasisKeyCRef key) const
         return p_hall_set->index_to_letter(cast_index(key));
     }
 
-    if (is_lie_word(key.type())) {
-        return cast_word(key)->get_letter();
-    }
+    if (is_lie_word(key.type())) { return cast_word(key)->get_letter(); }
 
     RPY_THROW(
             std::runtime_error,
@@ -254,6 +264,24 @@ pair<BasisKey, BasisKey> HallBasis::parents(BasisKeyCRef key) const
     RPY_CHECK(has_key(key));
     if (is_lie_word(key.type())) {
         const auto* lkey = cast_word(key);
-        return {lkey->left_parent(), lkey->right_parent()};
+        return {BasisKey(lkey->left_parent()), BasisKey(lkey->right_parent())};
     }
+
+    if (is_index_key(key.type())) {
+        const auto index = cast_index(key);
+        if (index < p_hall_set->size(m_max_degree)) {
+            const auto parents = p_hall_set->parents(index);
+            return {BasisKey(index_key_type(), parents.first),
+                    BasisKey(index_key_type(), parents.second)};
+        }
+    }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat(
+                    "key ",
+                    to_string_nofail(key),
+                    " does not belong to this basis"
+            )
+    );
 }
