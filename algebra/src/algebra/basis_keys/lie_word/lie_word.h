@@ -140,6 +140,12 @@ public:
 
     RPY_NO_DISCARD bool is_letter() const noexcept { return size() == 1; }
 
+    RPY_NO_DISCARD let_t get_letter() const noexcept
+    {
+        RPY_DBG_ASSERT(is_letter());
+        return static_cast<let_t>(*begin());
+    }
+
     RPY_NO_DISCARD deg_t degree() const noexcept;
     RPY_NO_DISCARD optional<LieWord> left_parent() const noexcept;
     RPY_NO_DISCARD optional<LieWord> right_parent() const noexcept;
