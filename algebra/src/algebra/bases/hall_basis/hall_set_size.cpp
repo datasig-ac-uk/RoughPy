@@ -32,7 +32,7 @@
 
 #include "hall_set_size.h"
 
-#include "roughpy/core/container/vector.h"
+#include "../../../../../core/include/roughpy/core/container/vector.h"
 
 #include <mutex>
 

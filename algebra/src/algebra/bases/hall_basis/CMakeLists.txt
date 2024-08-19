@@ -3,7 +3,9 @@
 
 add_library(RoughPy_hall_basis STATIC
         hall_basis.cpp
-        hall_basis.h)
+        hall_basis.h
+        hall_set_size.cpp
+        hall_set_size.h)
 
 set_target_properties(RoughPy_hall_basis PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

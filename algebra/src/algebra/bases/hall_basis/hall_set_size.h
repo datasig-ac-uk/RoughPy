@@ -33,7 +33,7 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_HALL_SET_SIZE_H
 #define ROUGHPY_ALGEBRA_SRC_HALL_SET_SIZE_H
 
-#include <roughpy/core/types.h>
+#include <../../../../../core/include/roughpy/core/types.h>
 
 #include <algorithm>
 #include <cmath>

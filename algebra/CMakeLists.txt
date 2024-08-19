@@ -34,8 +34,6 @@ add_roughpy_component(Algebra
         src/algebra/dense_vector_factory.h
         src/algebra/free_tensor.cpp
         src/algebra/free_tensor_multiplication.cpp
-        src/algebra/hall_set_size.cpp
-        src/algebra/hall_set_size.h
         src/algebra/key_array.cpp
         src/algebra/key_range.cpp
         src/algebra/key_scalar_array.cpp

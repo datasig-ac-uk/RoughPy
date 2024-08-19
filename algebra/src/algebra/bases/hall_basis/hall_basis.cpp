@@ -10,15 +10,20 @@
 #include <roughpy/core/hash.h>
 #include <roughpy/core/ranges.h>
 #include <roughpy/core/slice.h>
+#include <roughpy/core/sync.h>
 
 #include <roughpy/core/container/map.h>
 #include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/container/vector.h>
 
+#include <memory>
+
+#include "hall_set_size.h"
+
 using namespace rpy;
 using namespace rpy::algebra;
 
-class HallBasis::HallSet : public RcBase<HallSet>
+class HallBasis::HallSet
 {
     using parent_type = pair<dimn_t, dimn_t>;
 
@@ -52,11 +57,25 @@ class HallBasis::HallSet : public RcBase<HallSet>
         return index < m_elements.size();
     }
 
+    HallSet(deg_t width, deg_t depth);
+
+    HallSet(const HallSet& other, deg_t depth);
+
 public:
+    deg_t width() const noexcept
+    {
+        return static_cast<deg_t>(m_degree_sizes[1]);
+    }
+
     dimn_t size(deg_t degree) const noexcept
     {
         return degree > m_degree_sizes.size() ? m_degree_sizes.back()
                                               : m_degree_sizes[degree];
+    }
+
+    deg_t max_degree() const noexcept
+    {
+        return m_degree_sizes.size() - 1;
     }
     dimn_t letter_to_index(let_t letter) const noexcept
     {
@@ -96,7 +115,61 @@ public:
         if (is_letter(index)) { return letter_fn(index); }
         return do_foliage_map(index, letter_fn, binop);
     }
+
+private:
+    void grow(deg_t depth);
+
+public:
+    static std::shared_ptr<const HallSet> get(deg_t width, deg_t depth);
 };
+
+HallBasis::HallSet::HallSet(deg_t width, deg_t depth)
+{
+
+}
+
+void HallBasis::HallSet::grow(deg_t depth)
+{
+
+}
+
+HallBasis::HallSet::HallSet(const HallSet& other, deg_t depth)
+{
+
+
+}
+
+
+std::shared_ptr<const typename HallBasis::HallSet> HallBasis::HallSet::get(deg_t width, deg_t depth)
+{
+    static Mutex lock;
+    static containers::HashMap<deg_t, std::shared_ptr<HallSet>> cache;
+
+    LockGuard<Mutex> access(lock);
+    auto& entry = cache[width];
+    if (entry) {
+        if (entry->max_degree() < depth) {
+            // Entry exists but is not big enough.
+            // Copy the old one, and grow until it is the correct size
+            auto new_hallset = std::make_shared<HallSet>(*entry, depth);
+
+            // Swap the old cached Hall set with the new. This way bases that use
+            // the old set will continue to use them. New bases will use the
+            // existing one
+            std::swap(entry, new_hallset);
+        }
+    } else {
+        // The entry does not exist. Create it
+        entry = std::make_shared<HallSet>(width, depth);
+    }
+
+    return entry;
+}
+
+/* -----------------------------------------------------------------------------
+ * Implementation of Hall Basis
+ * -----------------------------------------------------------------------------
+ */
 
 HallBasis::HallBasis(deg_t width, deg_t depth)
     : Basis("hall_basis", {true, true, true}),
