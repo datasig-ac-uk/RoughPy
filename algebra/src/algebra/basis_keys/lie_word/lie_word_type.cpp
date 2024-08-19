@@ -74,3 +74,8 @@ void LieWordType::display(std::ostream& os, const void* ptr) const
     const auto& word = *static_cast<const LieWord*>(ptr);
     word.print(os);
 }
+devices::TypePtr LieWordType::get()
+{
+    static devices::TypePtr tp(new LieWordType);
+    return tp;
+}
