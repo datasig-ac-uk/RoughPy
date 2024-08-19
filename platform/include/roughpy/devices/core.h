@@ -643,6 +643,11 @@ using TypePtrify = TypePtr;
 
 }
 
+
+
+template <typename T>
+TypePtr get_type();
+
 }// namespace devices
 }// namespace rpy
 
