@@ -84,8 +84,8 @@ public:
 
     pair<dimn_t, dimn_t> parents(dimn_t index) const noexcept
     {
-        RPY_CHECK(index < m_elements.size());
-
+        RPY_DBG_ASSERT(index < m_elements.size());
+        return m_elements[index];
     }
 
     template <typename LetterFn, typename Binop>
@@ -156,7 +156,10 @@ string HallBasis::to_string_nofail(const BasisKeyCRef& key) const noexcept
         return ss.str();
     }
 
-    return "";
+    const auto& tp = key.type();
+    if (tp) { return string_cat("of type ", tp->name()); }
+
+    return "undefined type";
 }
 
 bool HallBasis::has_key(BasisKeyCRef key) const noexcept
@@ -255,6 +258,11 @@ dimn_t HallBasis::to_index(BasisKeyCRef key) const
         RPY_CHECK(index < p_hall_set->size(m_max_degree));
         return index;
     }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat("unsupported key type ", key.type()->name())
+    );
 }
 BasisKey HallBasis::to_key(dimn_t index) const
 {
