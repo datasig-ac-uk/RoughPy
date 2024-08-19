@@ -142,7 +142,7 @@ deg_t LieWord::min_alphabet_size()
     return static_cast<deg_t>(*ranges::max_element(*this));
 }
 
-optional<LieWord> LieWord::left_parent() const noexcept
+LieWord LieWord::left_parent() const noexcept
 {
     if (empty()) { return {}; }
     auto root = begin();
@@ -159,7 +159,7 @@ optional<LieWord> LieWord::left_parent() const noexcept
 
     return LieWord(follow_offset(root), size_hint);
 }
-optional<LieWord> LieWord::right_parent() const noexcept
+LieWord LieWord::right_parent() const noexcept
 {
     if (size() <= 1) { return {}; }
     auto root = get_companion(begin());

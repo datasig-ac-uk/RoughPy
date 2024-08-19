@@ -138,6 +138,7 @@ public:
     LieWord& operator=(const LieWord&) = default;
     LieWord& operator=(LieWord&&) noexcept = default;
 
+    RPY_NO_DISCARD bool is_valid() const noexcept { return !empty(); }
     RPY_NO_DISCARD bool is_letter() const noexcept { return size() == 1; }
 
     RPY_NO_DISCARD let_t get_letter() const noexcept
@@ -147,8 +148,8 @@ public:
     }
 
     RPY_NO_DISCARD deg_t degree() const noexcept;
-    RPY_NO_DISCARD optional<LieWord> left_parent() const noexcept;
-    RPY_NO_DISCARD optional<LieWord> right_parent() const noexcept;
+    RPY_NO_DISCARD LieWord left_parent() const noexcept;
+    RPY_NO_DISCARD LieWord right_parent() const noexcept;
 
     void print(std::ostream& out) const;
 

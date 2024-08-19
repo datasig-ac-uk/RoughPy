@@ -173,9 +173,9 @@ TEST(LieWordTests, TestParentsLetter)
     auto left = word.left_parent();
     auto right = word.right_parent();
 
-    ASSERT_TRUE(left);
-    EXPECT_FALSE(right);
-    EXPECT_EQ(*left, word);
+    ASSERT_TRUE(left.is_valid());
+    EXPECT_FALSE(right.is_valid());
+    EXPECT_EQ(left, word);
 }
 
 TEST(LieWordTests, TestParentsPair)
@@ -185,11 +185,11 @@ TEST(LieWordTests, TestParentsPair)
 
     auto left = word.left_parent();
     auto right = word.right_parent();
-    ASSERT_TRUE(left);
-    ASSERT_TRUE(right);
+    ASSERT_TRUE(left.is_valid());
+    ASSERT_TRUE(right.is_valid());
 
-    EXPECT_EQ(*left, left_word);
-    EXPECT_EQ(*right, right_word);
+    EXPECT_EQ(left, left_word);
+    EXPECT_EQ(right, right_word);
 }
 
 TEST(LieWordTests, TestParentsCompound)
@@ -201,11 +201,11 @@ TEST(LieWordTests, TestParentsCompound)
     auto left = word.left_parent();
     auto right = word.right_parent();
 
-    ASSERT_TRUE(left);
-    ASSERT_TRUE(right);
+    ASSERT_TRUE(left.is_valid());
+    ASSERT_TRUE(right.is_valid());
 
-    EXPECT_EQ(*left, left_word);
-    EXPECT_EQ(*right, right_word);
+    EXPECT_EQ(left, left_word);
+    EXPECT_EQ(right, right_word);
 }
 
 TEST(LieWordTests, TestHashValueSingleLetter)
