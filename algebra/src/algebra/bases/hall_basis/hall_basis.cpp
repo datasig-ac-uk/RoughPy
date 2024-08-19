@@ -11,25 +11,91 @@
 #include <roughpy/core/ranges.h>
 #include <roughpy/core/slice.h>
 
+#include <roughpy/core/container/map.h>
+#include <roughpy/core/container/unordered_map.h>
+#include <roughpy/core/container/vector.h>
+
 using namespace rpy;
 using namespace rpy::algebra;
 
 class HallBasis::HallSet : public RcBase<HallSet>
 {
+    using parent_type = pair<dimn_t, dimn_t>;
 
-public:
-    dimn_t size(deg_t degree) const noexcept;
-    dimn_t letter_to_index(let_t letter) const noexcept;
-    let_t index_to_letter(dimn_t index) const noexcept;
-    optional<dimn_t> pair_to_index(dimn_t left, dimn_t right) const noexcept;
+    containers::FlatMap<parent_type, dimn_t> m_reverse_map;
+    containers::Vec<parent_type> m_elements;
+    containers::Vec<let_t> m_letters;
+    containers::Vec<dimn_t> m_degree_sizes;
+    containers::Vec<dimn_t> m_letter_to_key;
+    containers::Vec<pair<dimn_t, dimn_t>> m_degree_ranges;
 
-    Slice<const dimn_t> sizes() const noexcept;
-
-    pair<dimn_t, dimn_t> parents(dimn_t index) const noexcept;
+    bool is_letter(dimn_t index) const noexcept
+    {
+        return ranges::contains(m_letter_to_key, index);
+    }
 
     template <typename LetterFn, typename Binop>
     decltype(auto)
-    foliage_map(dimn_t index, LetterFn&& letter_fn, Binop&& binop) const;
+    do_foliage_map(dimn_t index, LetterFn&& letter_fn, const Binop& binop) const
+    {
+        // We have already checked that index belongs to the set.
+        const auto pars = m_elements[index];
+        if (pars.second == 0) { return letter_fn(index_to_letter(pars.first)); }
+        return binop(
+                foliage_map(pars.first, letter_fn, binop),
+                foliage_map(pars.second, letter_fn, binop)
+        );
+    }
+
+    bool check_index(dimn_t index) const noexcept
+    {
+        return index < m_elements.size();
+    }
+
+public:
+    dimn_t size(deg_t degree) const noexcept
+    {
+        return degree > m_degree_sizes.size() ? m_degree_sizes.back()
+                                              : m_degree_sizes[degree];
+    }
+    dimn_t letter_to_index(let_t letter) const noexcept
+    {
+        return m_letter_to_key[letter];
+    }
+    let_t index_to_letter(dimn_t index) const
+    {
+        const auto begin = m_letter_to_key.begin();
+        const auto end = m_letter_to_key.end();
+        const auto pos = ranges::find(begin, end, index);
+        RPY_CHECK(pos != end);
+        return static_cast<let_t>(pos - begin);
+    }
+    optional<dimn_t> pair_to_index(dimn_t left, dimn_t right) const noexcept
+    {
+        const auto found = m_reverse_map.find({left, right});
+        if (found != m_reverse_map.end()) { return found->second; }
+        return {};
+    }
+
+    Slice<const dimn_t> sizes() const noexcept
+    {
+        return {m_degree_sizes.data(), m_degree_sizes.size()};
+    }
+
+    pair<dimn_t, dimn_t> parents(dimn_t index) const noexcept
+    {
+        RPY_CHECK(index < m_elements.size());
+
+    }
+
+    template <typename LetterFn, typename Binop>
+    decltype(auto)
+    foliage_map(dimn_t index, LetterFn&& letter_fn, Binop&& binop) const
+    {
+        RPY_CHECK(check_index(index));
+        if (is_letter(index)) { return letter_fn(index); }
+        return do_foliage_map(index, letter_fn, binop);
+    }
 };
 
 HallBasis::HallBasis(deg_t width, deg_t depth)
@@ -113,7 +179,7 @@ string HallBasis::to_string(BasisKeyCRef key) const
     if (is_index_key(key.type())) {
         return p_hall_set->foliage_map(
                 cast_index(key),
-                [](let_t letter) { return std::toupper(letter); },
+                [](let_t letter) { return std::to_string(letter); },
                 [](const string& left, const string& right) {
                     return string_cat('[', left, ',', right, ']');
                 }
@@ -175,7 +241,7 @@ dimn_t HallBasis::dense_dimension(dimn_t size) const
 }
 bool HallBasis::less(BasisKeyCRef k1, BasisKeyCRef k2) const
 {
-    return Basis::less(k1, k2);
+    return to_index(k1) < to_index(k2);
 }
 dimn_t HallBasis::to_index(BasisKeyCRef key) const
 {
@@ -189,8 +255,6 @@ dimn_t HallBasis::to_index(BasisKeyCRef key) const
         RPY_CHECK(index < p_hall_set->size(m_max_degree));
         return index;
     }
-
-
 }
 BasisKey HallBasis::to_key(dimn_t index) const
 {
