@@ -158,6 +158,16 @@ public:
     }
 
     friend hash_t hash_value(const LieWord& word) noexcept;
+
+    template <typename LetterFn, typename BinOp>
+    decltype(auto) foliage_map(LetterFn&& letter, BinOp&& binary_op) const
+    {
+        return compute_over_tree(
+                begin(),
+                std::forward<LetterFn>(letter),
+                std::forward<BinOp>(binary_op)
+        );
+    }
 };
 
 inline bool operator!=(const LieWord& left, const LieWord& right) noexcept
