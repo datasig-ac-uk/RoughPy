@@ -111,7 +111,7 @@ BasisComparison Basis::compare(BasisPointer other) const noexcept
     if (other == this) { return BasisComparison::IsSame; }
     return BasisComparison::IsNotCompatible;
 }
-dimn_t Basis::dimension_to_degree(deg_t degree) const
+deg_t Basis::dimension_to_degree(dimn_t dimension) const
 {
     RPY_THROW(std::runtime_error, "basis is not graded");
 }

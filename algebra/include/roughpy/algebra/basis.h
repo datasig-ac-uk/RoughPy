@@ -479,11 +479,11 @@ public:
      * basis. The dimension represents the number of elements in the basis at
      * the given degree.
      *
-     * @param degree The degree for which to determine the dimension
+     * @param dimension The degree for which to determine the dimension
      * @return The dimension of the basis at the given degree
      * @throws std::runtime_error if the basis is not graded
      */
-    RPY_NO_DISCARD virtual dimn_t dimension_to_degree(deg_t degree) const;
+    RPY_NO_DISCARD virtual deg_t dimension_to_degree(dimn_t dimension) const;
 
     /**
      * @brief Iterates over the keys of a specified degree in the basis
