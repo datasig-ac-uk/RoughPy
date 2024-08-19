@@ -3,6 +3,7 @@
 //
 
 #include "lie_word.h"
+#include "lie_word_type.h"
 
 #include <roughpy/core/strings.h>
 
@@ -215,4 +216,10 @@ hash_t algebra::hash_value(const LieWord& word) noexcept
     }
 
     return result;
+}
+
+template <>
+devices::TypePtr devices::get_type<LieWord>()
+{
+    return LieWordType::get();
 }

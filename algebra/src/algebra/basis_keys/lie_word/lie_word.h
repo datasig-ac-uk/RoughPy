@@ -5,6 +5,8 @@
 #ifndef LIE_WORD_H
 #define LIE_WORD_H
 
+#include "roughpy/devices/core.h"
+
 #include <roughpy/core/container/vector.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
@@ -205,7 +207,19 @@ inline LieWord operator*(let_t left, const LieWord& right)
     return LieWord{LieWord(left), right};
 }
 
+
+
+
 }// namespace algebra
+
+namespace devices {
+
+template <>
+TypePtr get_type<algebra::LieWord>();
+
+
+}
+
 }// namespace rpy
 
 #endif// LIE_WORD_H
