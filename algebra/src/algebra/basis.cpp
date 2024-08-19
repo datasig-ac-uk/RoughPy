@@ -115,8 +115,11 @@ dimn_t Basis::dimension_to_degree(deg_t degree) const
 {
     RPY_THROW(std::runtime_error, "basis is not graded");
 }
-
-Rc<VectorContext> Basis::default_vector_context() const
+bool Basis::supports_key_type(const devices::TypePtr& type) const noexcept
 {
-    return new VectorContext(this);
+    return false;
+}
+Slice<const devices::TypePtr> Basis::supported_key_types() const noexcept
+{
+    return {};
 }

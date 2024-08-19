@@ -248,6 +248,11 @@ public:
      */
     RPY_NO_DISCARD string_view id() const noexcept { return m_basis_id; }
 
+
+    RPY_NO_DISCARD virtual bool supports_key_type(const devices::TypePtr& type) const noexcept;
+
+    RPY_NO_DISCARD virtual Slice<const devices::TypePtr> supported_key_types() const noexcept;
+
     /**
      * @brief Checks if the basis is ordered
      *
@@ -578,8 +583,6 @@ public:
      */
     RPY_NO_DISCARD virtual BasisComparison compare(BasisPointer other
     ) const noexcept;
-
-    virtual Rc<VectorContext> default_vector_context() const;
 };
 
 /**
