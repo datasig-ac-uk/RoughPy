@@ -179,7 +179,18 @@ bool HallBasis::less(BasisKeyCRef k1, BasisKeyCRef k2) const
 }
 dimn_t HallBasis::to_index(BasisKeyCRef key) const
 {
-    return Basis::to_index(key);
+    if (is_lie_word(key.type())) {
+        auto oindex = key_to_oindex(key);
+        RPY_CHECK(oindex);
+        return *oindex;
+    }
+    if (is_index_key(key.type())) {
+        auto index = cast_index(key);
+        RPY_CHECK(index < p_hall_set->size(m_max_degree));
+        return index;
+    }
+
+
 }
 BasisKey HallBasis::to_key(dimn_t index) const
 {
