@@ -202,7 +202,7 @@ public:
      */
     explicit Vector(const BasisPointer& basis, BasisKey key, Scalar scalar)
         : ScalarVector(std::move(scalar.type())),
-          p_context(basis->default_vector_context())
+          p_context(nullptr)
     {
         insert_element(std::move(key), std::move(scalar));
     }
@@ -215,14 +215,14 @@ public:
      */
     explicit Vector(BasisPointer basis, scalars::TypePtr scalar_type)
         : ScalarVector(std::move(scalar_type)),
-          p_context(basis->default_vector_context())
+          p_context(nullptr)
     {}
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
         : ScalarVector(std::move(scalar_data)),
-          p_context(basis->default_vector_context())
+          p_context(nullptr)
     {}
 
     Vector(Rc<VectorContext> context,
@@ -253,7 +253,7 @@ public:
            scalars::TypePtr scalar_type,
            std::initializer_list<T> vals)
         : ScalarVector(scalar_type, basis->dense_dimension(vals.size())),
-          p_context(basis->default_vector_context())
+          p_context(nullptr)
     {
         RPY_DBG_ASSERT(base_data().size() >= vals.size());
         auto& scalar_vals = mut_base_data();

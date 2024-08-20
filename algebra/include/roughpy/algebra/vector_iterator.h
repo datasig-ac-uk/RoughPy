@@ -8,7 +8,7 @@
 #include "algebra_fwd.h"
 #include "roughpy_algebra_export.h"
 
-#include "basis_key.h"
+#include "basis_keys.h"
 #include "key_array.h"
 
 #include <roughpy/core/macros.h>

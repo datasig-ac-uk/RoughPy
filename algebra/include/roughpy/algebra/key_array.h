@@ -13,6 +13,9 @@
 
 #include <roughpy/devices/buffer.h>
 
+
+#include "basis_keys.h"
+
 namespace rpy {
 namespace algebra {
 
@@ -277,10 +280,10 @@ public:
      * @note This method does not throw any exceptions.
      * @see devices::Buffer::as_slice()
      */
-    RPY_NO_DISCARD Slice<const BasisKey> as_slice() const
-    {
-        return m_buffer.as_value_slice();
-    }
+    // RPY_NO_DISCARD Slice<const BasisKey> as_slice() const
+    // {
+    //     return m_buffer.as_value_slice();
+    // }
 
     /**
      * @brief Returns a mutable slice of BasisKey objects from the KeyArray.
@@ -296,10 +299,10 @@ public:
      * @note This method does not throw any exceptions.
      * @see devices::Buffer::as_mut_slice()
      */
-    RPY_NO_DISCARD Slice<BasisKey> as_mut_slice()
-    {
-        return m_buffer.as_mut_value_slice();
-    }
+    // RPY_NO_DISCARD Slice<BasisKey> as_mut_slice()
+    // {
+    //     return m_buffer.as_mut_value_slice();
+    // }
 
     /**
      * @brief Returns a KeyArray object representing a view of the data in the

@@ -567,3 +567,8 @@ pair<BasisKey, BasisKey> HallBasis::parents(BasisKeyCRef key) const
             )
     );
 }
+
+Rc<const HallBasis> HallBasis::get(deg_t width, deg_t depth)
+{
+    return new HallBasis(width, depth);
+}

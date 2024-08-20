@@ -78,6 +78,8 @@ public:
     RPY_NO_DISCARD let_t get_letter(BasisKeyCRef key) const override;
     RPY_NO_DISCARD pair<BasisKey, BasisKey> parents(BasisKeyCRef key
     ) const override;
+
+    static Rc<const HallBasis> get(deg_t width, deg_t depth);
 };
 
 }// namespace algebra

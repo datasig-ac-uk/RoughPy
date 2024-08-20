@@ -92,7 +92,7 @@ public:
     BasisKeyCRef operator*() const noexcept
     {
         RPY_DBG_ASSERT(!m_current.fast_is_zero());
-        return BasisKeyCRef(*m_current);
+        return BasisKeyCRef(m_current);
     }
 
     BasisKeyCPtr operator->() const noexcept
@@ -132,8 +132,8 @@ public:
 
         // return lhs.m_current == rhs.m_current;
         // TODO: fix this when the value_like trait is amended.
-        return static_cast<const devices::Value>(lhs.m_current)
-                == static_cast<const devices::Value>(rhs.m_current);
+        return static_cast<const devices::Value&>(lhs.m_current)
+                == static_cast<const devices::Value&>(rhs.m_current);
     }
 
     friend bool operator!=(const BasisIterator& lhs, const BasisIterator& rhs)

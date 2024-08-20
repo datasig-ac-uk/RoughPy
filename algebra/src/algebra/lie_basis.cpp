@@ -5,7 +5,7 @@
 #include "lie_basis.h"
 
 #include "bases/hall_basis/hall_set_size.h"
-#include "hall_word.h"
+#include <algebra/basis_keys/lie_word/lie_word.h>
 
 #include <mutex>
 #include <roughpy/core/ranges.h>

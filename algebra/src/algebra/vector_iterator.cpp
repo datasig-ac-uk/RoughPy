@@ -4,7 +4,7 @@
 
 #include "vector_iterator.h"
 
-#include "basis_key.h"
+#include "basis_keys.h"
 
 using namespace rpy;
 using namespace rpy::algebra;

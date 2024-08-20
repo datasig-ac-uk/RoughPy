@@ -22,7 +22,6 @@ set(ROUGHPY_SCALARS_PRIVATE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/sc
 
 add_subdirectory(src/scalars)
 add_subdirectory(src/algebra/basis_keys)
-add_subdirectory(src/algebra/bases)
 
 
 add_roughpy_component(Algebra
@@ -34,10 +33,10 @@ add_roughpy_component(Algebra
         src/algebra/dense_vector_factory.h
         src/algebra/free_tensor.cpp
         src/algebra/free_tensor_multiplication.cpp
-        src/algebra/key_array.cpp
-        src/algebra/key_range.cpp
-        src/algebra/key_scalar_array.cpp
-        src/algebra/key_scalar_stream.cpp
+#        src/algebra/key_array.cpp
+#        src/algebra/key_range.cpp
+#        src/algebra/key_scalar_array.cpp
+#        src/algebra/key_scalar_stream.cpp
         src/algebra/lie.cpp
         src/algebra/lie_basis.cpp
         #        src/mutable_vector_element.cpp
@@ -59,9 +58,9 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/free_tensor.h
         include/roughpy/algebra/graded_vector.h
         include/roughpy/algebra/key_algorithms.h
-        include/roughpy/algebra/key_array.h
-        include/roughpy/algebra/key_scalar_array.h
-        include/roughpy/algebra/key_scalar_stream.h
+#        include/roughpy/algebra/key_array.h
+#        include/roughpy/algebra/key_scalar_array.h
+#        include/roughpy/algebra/key_scalar_stream.h
         include/roughpy/algebra/lie.h
         include/roughpy/algebra/lie_basis.h
         include/roughpy/algebra/shuffle_tensor.h
@@ -91,6 +90,7 @@ add_roughpy_component(Algebra
         RoughPy::Platform
 )
 
+add_subdirectory(src/algebra/bases)
 
 add_roughpy_test(Algebra
         SRC
