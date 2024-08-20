@@ -4,7 +4,7 @@
 
 #include "lie_basis.h"
 
-#include "hall_set_size.h"
+#include "bases/hall_basis/hall_set_size.h"
 #include "hall_word.h"
 
 #include <mutex>
