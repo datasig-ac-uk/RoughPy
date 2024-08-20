@@ -145,12 +145,11 @@ deg_t LieWord::min_alphabet_size()
 
 LieWord LieWord::left_parent() const noexcept
 {
-    if (empty()) { return {}; }
+    if (size() <= 1) { return {}; }
     auto root = begin();
-
     if (is_letter(root)) { return LieWord{get_letter(root)}; }
 
-    RPY_DBG_ASSERT(is_offset(begin()));
+    RPY_DBG_ASSERT(is_offset(root));
     dimn_t size_hint = size();
     if (is_letter(get_companion(begin()))) {
         size_hint -= 1;
@@ -162,7 +161,11 @@ LieWord LieWord::left_parent() const noexcept
 }
 LieWord LieWord::right_parent() const noexcept
 {
-    if (size() <= 1) { return {}; }
+    if (empty()) { return {}; }
+    if (is_letter()) {
+        return LieWord{get_letter(begin())};
+    }
+
     auto root = get_companion(begin());
     if (is_letter(root)) { return LieWord{get_letter(root)}; }
 
