@@ -173,9 +173,9 @@ TEST(LieWordTests, TestParentsLetter)
     auto left = word.left_parent();
     auto right = word.right_parent();
 
-    ASSERT_TRUE(left.is_valid());
-    EXPECT_FALSE(right.is_valid());
-    EXPECT_EQ(left, word);
+    ASSERT_FALSE(left.is_valid());
+    ASSERT_TRUE(right.is_valid());
+    EXPECT_EQ(right, word);
 }
 
 TEST(LieWordTests, TestParentsPair)
