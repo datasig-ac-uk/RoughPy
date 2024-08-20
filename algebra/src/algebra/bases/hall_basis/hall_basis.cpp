@@ -73,10 +73,7 @@ public:
                                               : m_degree_sizes[degree];
     }
 
-    deg_t max_degree() const noexcept
-    {
-        return m_degree_sizes.size() - 1;
-    }
+    deg_t max_degree() const noexcept { return m_degree_sizes.size() - 1; }
     dimn_t letter_to_index(let_t letter) const noexcept
     {
         return m_letter_to_key[letter];
@@ -125,22 +122,110 @@ public:
 
 HallBasis::HallSet::HallSet(deg_t width, deg_t depth)
 {
+    m_letters.reserve(width);
+    m_letter_to_key.resize(width);
 
+    HallSetSizeHelper helper(width);
+    const auto hs_size = helper(std::max(depth, 1));
+
+    m_elements.reserve(hs_size);
+    m_reverse_map.reserve(hs_size);
+
+    m_degree_ranges.reserve(1 + depth);
+    m_degree_ranges.emplace_back(0, 0);
+
+    m_degree_sizes.reserve(1 + depth);
+    m_degree_sizes.emplace_back(0);
+
+    for (let_t l = 1; l <= static_cast<let_t>(width); ++l) {
+        dimn_t index = l;
+        parent_type parents{0, l};
+
+        m_letters.emplace_back(l);
+        m_elements.emplace_back(parents);
+        m_reverse_map.emplace(parents, index);
+        m_letter_to_key.emplace_back(l);
+    }
+
+    m_degree_sizes.emplace_back(1 + width);
+    m_degree_ranges.emplace_back(1, m_elements.size());
+
+    grow(depth);
 }
 
 void HallBasis::HallSet::grow(deg_t depth)
 {
+    auto degree = max_degree();
 
+    if (degree >= depth) { return; }
+
+    for (auto d = degree + 1; d <= degree; ++d) {
+        dimn_t index = m_elements.size();
+
+        for (deg_t e = 1; 2 * e <= d; ++e) {
+            auto i_bounds = m_degree_ranges[e];
+            auto j_bounds = m_degree_ranges[d - e];
+
+            for (auto i = i_bounds.first; i <= j_bounds.second; ++i) {
+                const auto jmin = std::max(j_bounds.first, i + 1);
+
+                for (auto j = jmin; j <= j_bounds.second; ++j) {
+                    if (m_elements[j].first <= i) {
+                        dimn_t key = index++;
+                        parent_type parents{i, j};
+
+                        m_elements.emplace_back(parents);
+                        m_reverse_map.emplace(parents, key);
+                    }
+                }
+            }
+        }
+
+        m_degree_ranges.emplace_back(m_degree_ranges.back().second, index);
+        m_degree_sizes.push_back(index);
+        ++degree;
+    }
 }
 
 HallBasis::HallSet::HallSet(const HallSet& other, deg_t depth)
+    : m_letters(other.m_letters),
+      m_letter_to_key(other.m_letter_to_key)
 {
+    HallSetSizeHelper helper(other.width());
+    RPY_DBG_ASSERT(depth > other.max_degree());
 
+    const auto hs_size = helper(depth);
 
+    m_elements.reserve(hs_size);
+    m_elements.insert(
+            m_elements.end(),
+            other.m_elements.begin(),
+            other.m_elements.end()
+    );
+    m_reverse_map.reserve(hs_size);
+    m_reverse_map.insert(
+            other.m_reverse_map.begin(),
+            other.m_reverse_map.end()
+    );
+
+    m_degree_ranges.reserve(depth);
+    m_degree_ranges.insert(
+            m_degree_ranges.end(),
+            other.m_degree_ranges.begin(),
+            other.m_degree_ranges.end()
+    );
+    m_degree_sizes.reserve(depth);
+    m_degree_sizes.insert(
+            m_degree_sizes.end(),
+            other.m_degree_sizes.begin(),
+            other.m_degree_sizes.end()
+    );
+
+    grow(depth);
 }
 
-
-std::shared_ptr<const typename HallBasis::HallSet> HallBasis::HallSet::get(deg_t width, deg_t depth)
+std::shared_ptr<const typename HallBasis::HallSet>
+HallBasis::HallSet::get(deg_t width, deg_t depth)
 {
     static Mutex lock;
     static containers::HashMap<deg_t, std::shared_ptr<HallSet>> cache;
@@ -153,8 +238,8 @@ std::shared_ptr<const typename HallBasis::HallSet> HallBasis::HallSet::get(deg_t
             // Copy the old one, and grow until it is the correct size
             auto new_hallset = std::make_shared<HallSet>(*entry, depth);
 
-            // Swap the old cached Hall set with the new. This way bases that use
-            // the old set will continue to use them. New bases will use the
+            // Swap the old cached Hall set with the new. This way bases that
+            // use the old set will continue to use them. New bases will use the
             // existing one
             std::swap(entry, new_hallset);
         }
@@ -165,6 +250,25 @@ std::shared_ptr<const typename HallBasis::HallSet> HallBasis::HallSet::get(deg_t
 
     return entry;
 }
+
+namespace {
+
+constexpr bool is_hs_null(dimn_t index) noexcept { return index == 0; }
+constexpr dimn_t to_hs_index(dimn_t index) noexcept { return index + 1; }
+constexpr dimn_t from_hs_index(dimn_t index) noexcept
+{
+    RPY_DBG_ASSERT(!is_hs_null(index));
+    return index - 1;
+}
+
+constexpr dimn_t to_hs_dim(dimn_t dim) noexcept { return dim + 1; }
+constexpr dimn_t adjust_hs_dim(dimn_t dim) noexcept { return dim - 1; }
+constexpr bool check_hs_index(dimn_t index, dimn_t dim) noexcept
+{
+    return to_hs_index(index) < dim;
+}
+
+}// namespace
 
 /* -----------------------------------------------------------------------------
  * Implementation of Hall Basis
@@ -241,7 +345,7 @@ bool HallBasis::has_key(BasisKeyCRef key) const noexcept
         return static_cast<bool>(key_to_oindex(key));
     }
     if (is_index_key(key.type())) {
-        return cast_index(key) < p_hall_set->size(m_max_degree);
+        return check_hs_index(cast_index(key), p_hall_set->size(m_max_degree));
     }
     return false;
 }
@@ -254,7 +358,7 @@ string HallBasis::to_string(BasisKeyCRef key) const
     }
     if (is_index_key(key.type())) {
         return p_hall_set->foliage_map(
-                cast_index(key),
+                to_hs_index(cast_index(key)),
                 [](let_t letter) { return std::to_string(letter); },
                 [](const string& left, const string& right) {
                     return string_cat('[', left, ',', right, ']');
@@ -282,7 +386,7 @@ hash_t HallBasis::hash(BasisKeyCRef k1) const
     if (is_lie_word(k1.type())) { return hash_value(*cast_word(k1)); }
     if (is_index_key(k1.type())) {
         return p_hall_set->foliage_map(
-                cast_index(k1),
+                to_hs_index(cast_index(k1)),
                 [](let_t letter) {
                     Hash<let_t> hasher;
                     return hasher(letter);
@@ -304,16 +408,16 @@ hash_t HallBasis::hash(BasisKeyCRef k1) const
 }
 dimn_t HallBasis::max_dimension() const noexcept
 {
-    return p_hall_set->size(m_max_degree);
+    return adjust_hs_dim(p_hall_set->size(m_max_degree));
 }
 dimn_t HallBasis::dense_dimension(dimn_t size) const
 {
     const auto sizes = p_hall_set->sizes();
     const auto begin = sizes.begin();
     const auto end = sizes.end();
-    auto pos = ranges::lower_bound(begin, end, size);
+    auto pos = ranges::lower_bound(begin, end, to_hs_dim(size));
     RPY_CHECK(pos != end);
-    return *pos;
+    return adjust_hs_dim(*pos);
 }
 bool HallBasis::less(BasisKeyCRef k1, BasisKeyCRef k2) const
 {
@@ -328,7 +432,7 @@ dimn_t HallBasis::to_index(BasisKeyCRef key) const
     }
     if (is_index_key(key.type())) {
         auto index = cast_index(key);
-        RPY_CHECK(index < p_hall_set->size(m_max_degree));
+        RPY_CHECK(check_hs_index(index, p_hall_set->size(m_max_degree)));
         return index;
     }
 
@@ -339,10 +443,10 @@ dimn_t HallBasis::to_index(BasisKeyCRef key) const
 }
 BasisKey HallBasis::to_key(dimn_t index) const
 {
-    RPY_CHECK(index < p_hall_set->size(m_max_degree));
+    RPY_CHECK(check_hs_index(index, p_hall_set->size(m_max_degree)));
 
     return BasisKey(p_hall_set->foliage_map(
-            index,
+            to_hs_index(index),
             [](let_t letter) { return LieWord(letter); },
             [](const LieWord& left, const LieWord& right) {
                 return left * right;
@@ -382,17 +486,26 @@ deg_t HallBasis::dimension_to_degree(dimn_t dimension) const
     const auto begin = sizes.begin();
     const auto end = sizes.end();
 
-    auto pos = ranges::lower_bound(begin, end, dimension);
+    /*
+     * The size array as provided by the HallSet is of the form
+     *
+     *  { 1, 1 + width, ... }
+     *
+     *  which means we need to look for the adjusted dimension. Using lower
+     *  bound, the result will be the index of the start of the next degree,
+     *  so we have to adjust by decrementing to get the start of the degree
+     *  in which the index actually appears.
+     */
 
-    RPY_CHECK(pos != begin);
-
+    auto pos = ranges::lower_bound(begin, end, to_hs_dim(dimension));
+    RPY_DBG_ASSERT(pos != begin);
     return static_cast<deg_t>((--pos) - begin);
 }
 KeyRange HallBasis::iterate_keys_of_degree(deg_t degree) const
 {
     return Basis::iterate_keys_of_degree(degree);
 }
-deg_t HallBasis::alphabet_size() const { return Basis::alphabet_size(); }
+deg_t HallBasis::alphabet_size() const { return m_width; }
 bool HallBasis::is_letter(BasisKeyCRef key) const
 {
     return HallBasis::degree(key) == 1;
@@ -425,10 +538,23 @@ pair<BasisKey, BasisKey> HallBasis::parents(BasisKeyCRef key) const
 
     if (is_index_key(key.type())) {
         const auto index = cast_index(key);
-        if (index < p_hall_set->size(m_max_degree)) {
+        if (check_hs_index(index, p_hall_set->size(m_max_degree))) {
             const auto parents = p_hall_set->parents(index);
-            return {BasisKey(index_key_type(), parents.first),
-                    BasisKey(index_key_type(), parents.second)};
+
+            pair<BasisKey, BasisKey> result;
+
+            // The first element is zero if the key is a letter.
+            if (!is_hs_null(parents.first)) {
+                result.first = BasisKey(
+                        index_key_type(),
+                        from_hs_index(parents.first)
+                );
+            }
+
+            // The second element is always valid
+            result.second = BasisKey(index_key_type(), from_hs_index(index));
+
+            return result;
         }
     }
 
