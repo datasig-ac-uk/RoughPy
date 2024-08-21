@@ -83,6 +83,7 @@ add_roughpy_component(Algebra
         RoughPy_Scalar_Type_polynomial
         RoughPy_tensor_word
         RoughPy_lie_word
+        RoughPy_index_key
         NEEDS
         RoughPy::Core
         RoughPy::Platform

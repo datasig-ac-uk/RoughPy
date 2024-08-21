@@ -4,6 +4,7 @@
 
 #include "hall_basis.h"
 
+#include "index_key_type.h"
 #include "lie_word.h"
 #include "lie_word_type.h"
 
@@ -15,7 +16,6 @@
 #include <roughpy/core/container/map.h>
 #include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/container/vector.h>
-
 
 #include <roughpy/devices/type.h>
 
@@ -31,24 +31,29 @@ class HallBasis::HallSet
     using parent_type = pair<dimn_t, dimn_t>;
 
     containers::FlatMap<parent_type, dimn_t> m_reverse_map;
+    containers::FlatMap<dimn_t, let_t> m_letters;
     containers::Vec<parent_type> m_elements;
-    containers::Vec<let_t> m_letters;
     containers::Vec<dimn_t> m_degree_sizes;
-    containers::Vec<dimn_t> m_letter_to_key;
     containers::Vec<pair<dimn_t, dimn_t>> m_degree_ranges;
 
     bool is_letter(dimn_t index) const noexcept
     {
-        return ranges::contains(m_letter_to_key, index);
+        return m_letters.contains(index);
     }
 
     template <typename LetterFn, typename Binop>
     decltype(auto)
-    do_foliage_map(dimn_t index, const LetterFn& letter_fn, const Binop& binop) const
+    do_foliage_map(dimn_t index, const LetterFn& letter_fn, const Binop& binop)
+            const
     {
+        RPY_DBG_ASSERT(index > 0);
         // We have already checked that index belongs to the set.
         const auto& pars = m_elements[index];
-        if (pars.first == 0) { return letter_fn(index_to_letter(pars.first)); }
+        if (pars.first == 0) {
+            const auto it = m_letters.find(pars.second);
+            RPY_DBG_ASSERT(it != m_letters.end());
+            return letter_fn(it->second);
+        }
         return binop(
                 do_foliage_map(pars.first, letter_fn, binop),
                 do_foliage_map(pars.second, letter_fn, binop)
@@ -79,15 +84,17 @@ public:
     deg_t max_degree() const noexcept { return m_degree_sizes.size() - 1; }
     dimn_t letter_to_index(let_t letter) const noexcept
     {
-        return m_letter_to_key[letter];
+        const auto it = ranges::find(m_letters, letter, [](const auto& p) {
+            return p.second;
+        });
+        RPY_DBG_ASSERT(it != m_letters.end());
+        return it->first;
     }
     let_t index_to_letter(dimn_t index) const
     {
-        const auto begin = m_letter_to_key.begin();
-        const auto end = m_letter_to_key.end();
-        const auto pos = ranges::find(begin, end, index);
-        RPY_CHECK(pos != end);
-        return static_cast<let_t>(pos - begin);
+        const auto it = m_letters.find(index);
+        RPY_CHECK(it != m_letters.end());
+        return it->second;
     }
     optional<dimn_t> pair_to_index(dimn_t left, dimn_t right) const noexcept
     {
@@ -126,12 +133,12 @@ public:
 HallBasis::HallSet::HallSet(deg_t width, deg_t depth)
 {
     m_letters.reserve(width);
-    m_letter_to_key.resize(width);
 
     HallSetSizeHelper helper(width);
     const auto hs_size = helper(std::max(depth, 1));
 
-    m_elements.reserve(hs_size);
+    m_elements.reserve(hs_size + 1);
+    m_elements.emplace_back(0, 0);
     m_reverse_map.reserve(hs_size);
 
     m_degree_ranges.reserve(1 + depth);
@@ -144,10 +151,9 @@ HallBasis::HallSet::HallSet(deg_t width, deg_t depth)
         dimn_t index = l;
         parent_type parents{0, l};
 
-        m_letters.emplace_back(l);
+        m_letters.emplace(index, l);
         m_elements.emplace_back(parents);
         m_reverse_map.emplace(parents, index);
-        m_letter_to_key.emplace_back(l);
     }
 
     m_degree_sizes.emplace_back(1 + width);
@@ -162,14 +168,14 @@ void HallBasis::HallSet::grow(deg_t depth)
 
     if (degree >= depth) { return; }
 
-    for (auto d = degree + 1; d <= degree; ++d) {
-        dimn_t index = m_elements.size();
+    for (auto d = degree + 1; d <= depth; ++d) {
+        dimn_t index = m_elements.size() - 1;
 
         for (deg_t e = 1; 2 * e <= d; ++e) {
             auto i_bounds = m_degree_ranges[e];
             auto j_bounds = m_degree_ranges[d - e];
 
-            for (auto i = i_bounds.first; i <= j_bounds.second; ++i) {
+            for (auto i = i_bounds.first; i <= i_bounds.second; ++i) {
                 const auto jmin = std::max(j_bounds.first, i + 1);
 
                 for (auto j = jmin; j <= j_bounds.second; ++j) {
@@ -181,18 +187,17 @@ void HallBasis::HallSet::grow(deg_t depth)
                         m_reverse_map.emplace(parents, key);
                     }
                 }
+                RPY_DBG_ASSERT(m_elements.size() == index + 1);
             }
         }
 
-        m_degree_ranges.emplace_back(m_degree_ranges.back().second, index);
+        m_degree_ranges.emplace_back(m_degree_ranges.back().second, m_elements.size());
         m_degree_sizes.push_back(index);
-        ++degree;
     }
 }
 
 HallBasis::HallSet::HallSet(const HallSet& other, deg_t depth)
-    : m_letters(other.m_letters),
-      m_letter_to_key(other.m_letter_to_key)
+    : m_letters(other.m_letters)
 {
     HallSetSizeHelper helper(other.width());
     RPY_DBG_ASSERT(depth > other.max_degree());
@@ -283,7 +288,7 @@ HallBasis::HallBasis(deg_t width, deg_t depth)
       p_hall_set(HallSet::get(width, depth)),
       m_width(width),
       m_max_degree(depth),
-      m_supported_types{LieWordType::get(), nullptr}
+      m_supported_types{LieWordType::get(), IndexKeyType::get()}
 {}
 
 HallBasis::~HallBasis() = default;
@@ -316,6 +321,15 @@ inline const dimn_t cast_index(const BasisKeyCRef& key) noexcept
 optional<dimn_t> HallBasis::key_to_oindex(const BasisKeyCRef& key
 ) const noexcept
 {
+    auto* key_ptr = cast_word(key);
+    if (key_ptr->is_letter()) {
+        try {
+            return get_letter(key);
+        } catch (...) {
+            return {};
+        }
+    }
+
     return cast_word(key)->foliage_map(
             [this](let_t letter) {
                 return optional<dimn_t>(p_hall_set->letter_to_index(letter));
@@ -433,7 +447,7 @@ dimn_t HallBasis::to_index(BasisKeyCRef key) const
     if (is_lie_word(key.type())) {
         auto oindex = key_to_oindex(key);
         RPY_CHECK(oindex);
-        return *oindex;
+        return from_hs_index(*oindex);
     }
     if (is_index_key(key.type())) {
         auto index = cast_index(key);
