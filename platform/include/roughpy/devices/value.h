@@ -30,17 +30,27 @@ class ConstPointer;
 
 template <typename T>
 inline constexpr bool is_reference_like = is_same_v<decay_t<T>, ConstReference>
-        || is_same_v<decay_t<T>, Reference>;
+        || is_base_of_v<ConstReference, decay_t<T>>
+        || is_same_v<decay_t<T>, Reference>
+        || is_base_of_v<Reference, decay_t<T>>;
 
 template <typename T>
-inline constexpr bool value_like
-        = is_same_v<decay_t<T>, Value> || is_same_v<decay_t<T>, ConstReference>
-        || is_same_v<decay_t<T>, Reference>;
+inline constexpr bool value_like = is_same_v<decay_t<T>, Value>
+        || is_base_of_v<Value, decay_t<T>> || is_reference_like<T>;
+
+template <typename T>
+using value_of_t = typename decay_t<T>::value_type;
+
+template <typename T>
+using reference_of_t = typename decay_t<T>::reference_type;
+
+template <typename T>
+using const_reference_of_t = typename decay_t<T>::const_reference_type;
 
 namespace dtl {
 
 template <typename T>
-using value_like_return = enable_if_t<value_like<T>, typename T::value_type>;
+using value_like_return = enable_if_t<value_like<T>, value_of_t<T>>;
 
 struct ValueStorage {
 
@@ -115,17 +125,15 @@ public:
 
     template <
             typename T,
-            typename = enable_if_t<
-                    !is_same_v<decay_t<T>, Value>
-                    || !is_same_v<decay_t<T>, ConstReference>
-                    || !is_same_v<decay_t<T>, Reference>>>
-    explicit Value(T&& other) noexcept : p_type(get_type<T>())
+            typename = enable_if_t<!value_like<T>>>
+    explicit Value(T&& other) noexcept : p_type(get_type<remove_cv_ref_t<T>>())
     {
-        decay_t<T>* this_ptr;
+        using ptr_type = remove_cv_ref_t<T>*;
+        ptr_type this_ptr;
         if (is_inline_stored()) {
-            this_ptr = reinterpret_cast<T*>(m_storage.bytes);
+            this_ptr = reinterpret_cast<ptr_type>(m_storage.bytes);
         } else {
-            this_ptr = static_cast<T*>(p_type->allocate_single());
+            this_ptr = static_cast<ptr_type>(p_type->allocate_single());
             m_storage.pointer = this_ptr;
         }
         construct_inplace(this_ptr, std::forward<T>(other));
@@ -901,7 +909,8 @@ inline dtl::value_like_return<T> abs(const T& value)
             && num_traits->real_type != nullptr
     );
     RPY_DBG_ASSERT(num_traits->real_type != nullptr);
-    Value result(num_traits->real_type, 0);
+
+    value_of_t<T> result(num_traits->real_type, 0);
     num_traits->abs(result.data(), value.data());
     return result;
 }
@@ -923,7 +932,7 @@ dtl::value_like_return<T> sqrt(const T& value)
 
     RPY_CHECK(num_traits != nullptr && num_traits->sqrt != nullptr);
 
-    Value result(tp, 0);
+    value_of_t<T> result(tp, 0);
     num_traits->sqrt(result.data(), value.data());
 
     return result;
@@ -951,7 +960,7 @@ dtl::value_like_return<T> real(const T& value)
     RPY_CHECK(num_traits != nullptr && num_traits->real != nullptr);
     RPY_DBG_ASSERT(num_traits->real_type != nullptr);
 
-    Value result(num_traits->real_type, 0);
+    value_of_t<T> result(num_traits->real_type, 0);
     num_traits->real(result.data(), value.data());
 
     return result;
@@ -974,7 +983,7 @@ dtl::value_like_return<T> imag(const T& value)
     RPY_CHECK(num_traits != nullptr && num_traits->imag != nullptr);
     RPY_DBG_ASSERT(num_traits->imag_type != nullptr);
 
-    Value result(num_traits->imag_type, 0);
+    value_of_t<T> result(num_traits->imag_type, 0);
     num_traits->imag(result.data(), value.data());
 
     return result;
@@ -1028,7 +1037,7 @@ dtl::value_like_return<T> pow(const T& value, unsigned power)
 
     RPY_CHECK(num_traits != nullptr && num_traits->pow != nullptr);
 
-    Value result(tp, 0);
+    value_of_t<T> result(tp, 0);
     if (power == 0) {
         result = 1;
     } else if (power == 1) {
@@ -1062,7 +1071,7 @@ dtl::value_like_return<T> exp(const T& value)
 
     RPY_CHECK(num_traits != nullptr && num_traits->exp != nullptr);
 
-    Value result(tp, 0);
+    value_of_t<T> result(tp, 0);
     num_traits->exp(result.data(), value.data());
 
     return result;
@@ -1089,7 +1098,7 @@ dtl::value_like_return<T> log(const T& value)
 
     RPY_CHECK(num_traits != nullptr && num_traits->log != nullptr);
 
-    Value result(tp, 0);
+    value_of_t<T> result(tp, 0);
     num_traits->log(result.data(), value.data());
 
     return result;
@@ -1098,7 +1107,7 @@ dtl::value_like_return<T> log(const T& value)
 template <typename T>
 dtl::value_like_return<T> reciprocal(T&& val)
 {
-    Value result(val.type()->one());
+    value_of_t<T> result(val.type()->one());
     result /= val;
     return result;
 }
