@@ -195,7 +195,7 @@ void HallBasis::HallSet::grow(deg_t depth)
                 m_degree_ranges.back().second,
                 m_elements.size()
         );
-        m_degree_sizes.push_back(index);
+        m_degree_sizes.push_back(m_elements.size());
     }
 }
 
