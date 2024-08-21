@@ -6,7 +6,6 @@
 #define ROUGHPY_ALGEBRA_LIE_H
 
 #include "algebra.h"
-#include "lie_basis.h"
 
 #include "roughpy_algebra_export.h"
 

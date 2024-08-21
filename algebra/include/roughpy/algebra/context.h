@@ -41,7 +41,6 @@
 #include "key_scalar_array.h"
 #include "key_scalar_stream.h"
 #include "lie.h"
-#include "lie_basis.h"
 #include "shuffle_tensor.h"
 #include "tensor_basis.h"
 
@@ -138,8 +137,8 @@ public:
             const
             = 0;
 
-    RPY_NO_DISCARD virtual LieBasis get_lie_basis() const = 0;
-    RPY_NO_DISCARD virtual TensorBasis get_tensor_basis() const = 0;
+    RPY_NO_DISCARD virtual BasisPointer get_lie_basis() const = 0;
+    RPY_NO_DISCARD virtual BasisPointer get_tensor_basis() const = 0;
 
     RPY_NO_DISCARD virtual FreeTensor
     convert(const FreeTensor& arg, optional<VectorType> new_vec_type) const
