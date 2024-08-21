@@ -33,15 +33,14 @@ add_roughpy_component(Algebra
         src/algebra/dense_vector_factory.h
         src/algebra/free_tensor.cpp
         src/algebra/free_tensor_multiplication.cpp
-#        src/algebra/key_array.cpp
+        src/algebra/key_array.cpp
 #        src/algebra/key_range.cpp
 #        src/algebra/key_scalar_array.cpp
 #        src/algebra/key_scalar_stream.cpp
         src/algebra/lie.cpp
-        src/algebra/lie_basis.cpp
         #        src/mutable_vector_element.cpp
         #        src/mutable_vector_element.h
-        src/algebra/tensor_basis.cpp
+#        src/algebra/tensor_basis.cpp
         src/algebra/vector.cpp
         src/algebra/vector_factory.cpp
         src/algebra/vector_context.cpp
@@ -58,13 +57,12 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/free_tensor.h
         include/roughpy/algebra/graded_vector.h
         include/roughpy/algebra/key_algorithms.h
-#        include/roughpy/algebra/key_array.h
+        include/roughpy/algebra/key_array.h
 #        include/roughpy/algebra/key_scalar_array.h
 #        include/roughpy/algebra/key_scalar_stream.h
         include/roughpy/algebra/lie.h
-        include/roughpy/algebra/lie_basis.h
         include/roughpy/algebra/shuffle_tensor.h
-        include/roughpy/algebra/tensor_basis.h
+#        include/roughpy/algebra/tensor_basis.h
         include/roughpy/algebra/unital_algebra.h
         include/roughpy/algebra/vector.h
         include/roughpy/algebra/vector_iterator.h
