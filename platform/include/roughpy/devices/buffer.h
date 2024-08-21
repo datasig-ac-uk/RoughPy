@@ -268,6 +268,9 @@ public:
     template <typename T>
     explicit Buffer(Slice<const T> data);
 
+    explicit Buffer(Slice<Value> data);
+    explicit Buffer(Slice<const Value> data);
+
     Buffer(TypePtr tp, dimn_t size);
     Buffer(TypePtr tp, void* ptr, dimn_t size);
     Buffer(TypePtr tp, const void* ptr, dimn_t size);
@@ -797,6 +800,8 @@ public:
 
     constexpr dimn_t size() const noexcept { return m_size; }
 
+    devices::Buffer buffer() const noexcept { return m_buffer; }
+
     template <typename I>
     enable_if_t<is_integral_v<I>, devices::ConstReference> operator[](I index
     ) const noexcept
@@ -823,6 +828,8 @@ public:
     {}
 
     constexpr dimn_t size() const noexcept { return m_size; }
+
+    devices::Buffer buffer() const noexcept { return m_buffer; }
 
     template <typename I>
     enable_if_t<is_integral_v<I>, devices::Reference> operator[](I index
