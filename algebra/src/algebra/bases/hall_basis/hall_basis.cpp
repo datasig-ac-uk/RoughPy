@@ -175,10 +175,10 @@ void HallBasis::HallSet::grow(deg_t depth)
             auto i_bounds = m_degree_ranges[e];
             auto j_bounds = m_degree_ranges[d - e];
 
-            for (auto i = i_bounds.first; i <= i_bounds.second; ++i) {
+            for (auto i = i_bounds.first; i < i_bounds.second; ++i) {
                 const auto jmin = std::max(j_bounds.first, i + 1);
 
-                for (auto j = jmin; j <= j_bounds.second; ++j) {
+                for (auto j = jmin; j < j_bounds.second; ++j) {
                     if (m_elements[j].first <= i) {
                         dimn_t key = index++;
                         parent_type parents{i, j};
@@ -191,7 +191,10 @@ void HallBasis::HallSet::grow(deg_t depth)
             }
         }
 
-        m_degree_ranges.emplace_back(m_degree_ranges.back().second, m_elements.size());
+        m_degree_ranges.emplace_back(
+                m_degree_ranges.back().second,
+                m_elements.size()
+        );
         m_degree_sizes.push_back(index);
     }
 }
