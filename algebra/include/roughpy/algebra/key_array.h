@@ -172,12 +172,13 @@ public:
     using const_iterator = dtl::KeyArrayIterator;
     using reference = BasisKeyRef;
     using const_reference = BasisKeyCRef;
+
     using Buffer::Buffer;
 
     explicit KeyArray(Buffer&& buffer) noexcept : Buffer(std::move(buffer)) {}
 
-    KeyArray& operator=(const KeyArray&);
-    KeyArray& operator=(KeyArray&&) noexcept;
+    // KeyArray& operator=(const KeyArray&);
+    // KeyArray& operator=(KeyArray&&) noexcept;
 
     RPY_NO_DISCARD bool is_const() const noexcept
     {
