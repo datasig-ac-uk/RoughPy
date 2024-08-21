@@ -23,37 +23,37 @@ namespace drivers = devices::algorithms;
 RPY_NO_DISCARD inline optional<dimn_t>
 find(const KeyArray& range, const BasisKey& value)
 {
-    return drivers::find(range.buffer(), devices::TypedReference(value));
+    return drivers::find(range.buffer(), value);
 }
 
 RPY_NO_DISCARD inline dimn_t count(const KeyArray& range, const BasisKey& value)
 {
-    return drivers::count(range.buffer(), devices::TypedReference(value));
+    return drivers::count(range.buffer(), value);
 }
 
 RPY_NO_DISCARD inline optional<dimn_t>
 lower_bound(const KeyArray& range, const BasisKey& value)
 {
-    return drivers::lower_bound(range.buffer(), devices::TypedReference(value));
+    return drivers::lower_bound(range.buffer(), value);
 }
 
 RPY_NO_DISCARD inline optional<dimn_t>
 upper_bound(const KeyArray& range, const BasisKey& value)
 {
-    return drivers::upper_bound(range.buffer(), devices::TypedReference(value));
+    return drivers::upper_bound(range.buffer(), value);
 }
 
 RPY_NO_DISCARD inline bool
 contains(const KeyArray& range, const BasisKey& value)
 {
     return static_cast<bool>(
-            drivers::find(range.buffer(), devices::TypedReference(value))
+            drivers::find(range.buffer(), value)
     );
 }
 
 inline void fill(KeyArray& range, const BasisKey& value)
 {
-    drivers::fill(range.mut_buffer(), devices::TypedReference(value));
+    drivers::fill(range.mut_buffer(), value);
 }
 
 // mismatch
@@ -107,14 +107,14 @@ lexicographical_compare(const KeyArray& left, const KeyArray& right)
 RPY_NO_DISCARD inline BasisKey min(const KeyArray& range)
 {
     BasisKey result;
-    drivers::min(range.buffer(), devices::TypedReference(result));
+    drivers::min(range.buffer(), result);
     return result;
 }
 
 RPY_NO_DISCARD inline BasisKey max(const KeyArray& range)
 {
     BasisKey result;
-    drivers::max(range.buffer(), devices::TypedReference(result));
+    drivers::max(range.buffer(), result);
     return result;
 }
 
