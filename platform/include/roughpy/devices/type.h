@@ -826,10 +826,8 @@ RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr get_type(devices::TypeInfo info);
  */
 
 template <typename T>
-TypePtr get_type()
-{
-    return get_type(type_id_of<T>);
-}
+TypePtr get_type();
+
 
 template <>
 ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<int8_t>();
