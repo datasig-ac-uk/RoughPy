@@ -97,7 +97,22 @@ Buffer::Buffer(TypePtr tp, const void* ptr, dimn_t size, Device device)
         algorithms::copy(*this, Buffer(tp, ptr, size));
     }
 }
+Buffer::Buffer(Slice<Value> data)
+{
+    construct_inplace(this, data.buffer());
+}
+Buffer::Buffer(Slice<const Value> data)
+{
+    construct_inplace(this, data.buffer());
+}
+Buffer::Buffer(const Buffer& owner, void* ptr, dimn_t size)
+    : base_t(new CPUBuffer(ptr, size, owner.type(), owner.impl()))
+{
 
+}
+Buffer::Buffer(const Buffer& owner, const void* ptr, dimn_t size)
+    : base_t(new CPUBuffer(ptr, size, owner.type(), owner.impl()))
+{}
 BufferMode Buffer::mode() const
 {
     if (impl() == nullptr) { return BufferMode::Read; }
