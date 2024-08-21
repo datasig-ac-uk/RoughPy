@@ -84,9 +84,13 @@ public:
      * This method allocates the keys for the KeyScalarArray with the given
      * size. The keys are represented by an instance of the KeyArray class.
      */
-    void allocate_keys(const dimn_t size) { m_keys = KeyArray(size); }
+    void allocate_keys(KeyTypePtr key_type, dimn_t size)
+    {
+        RPY_CHECK(key_type != nullptr);
+        m_keys = KeyArray(key_type, size);
+    }
 
-    void allocate_scalars(dimn_t size, scalars::TypePtr type)
+    void allocate_scalars(scalars::TypePtr type, dimn_t size)
     {
         RPY_CHECK(type != nullptr);
         *this = ScalarArray(type, size);
