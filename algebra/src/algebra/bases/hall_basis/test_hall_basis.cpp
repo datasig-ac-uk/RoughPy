@@ -4,22 +4,18 @@
 
 #include <gtest/gtest.h>
 
-
 #include "hall_basis.h"
-
-
 
 using namespace rpy::algebra;
 
 namespace {
-
 
 class HallBasisTests : public ::testing::Test
 {
 public:
     rpy::deg_t width;
     rpy::deg_t depth;
-    rpy::Rc <const HallBasis> basis;
+    rpy::Rc<const HallBasis> basis;
 
     void SetUp() override
     {
@@ -27,10 +23,9 @@ public:
         depth = 5;
         basis = HallBasis::get(width, depth);
     }
-
 };
 
-}
+}// namespace
 
 TEST_F(HallBasisTests, TestWidthAndDepth)
 {
@@ -60,17 +55,14 @@ TEST_F(HallBasisTests, CheckHasKeyIndexKey)
 {
     const auto index_type = basis->supported_key_types()[1];
 
-    const rpy::dimn_t indexes[] = {0, 1, 2, 5, 100, 10000};
+    const rpy::dimn_t indexes[] = {0, 1, 2, 5, 25};
     for (auto& index : indexes) {
         EXPECT_TRUE(basis->has_key({&index, index_type}));
     }
 
     rpy::dimn_t bad_index = 12876;
     EXPECT_FALSE(basis->has_key({&bad_index, index_type}));
-
 }
-
-
 
 TEST_F(HallBasisTests, CheckKeyTypeConversionLetters)
 {
@@ -91,7 +83,7 @@ TEST_F(HallBasisTests, CheckKeyTypeConversionPairs)
     const auto word_type = basis->supported_key_types()[0];
     const auto index_type = basis->supported_key_types()[1];
 
-    rpy::dimn_t index = 3;  //  [1, 2]
+    rpy::dimn_t index = 3;//  [1, 2]
     auto key = basis->to_key(index);
     auto roundtrip_index = basis->to_index(key);
     EXPECT_EQ(index, roundtrip_index) << key;
