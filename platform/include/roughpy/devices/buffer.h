@@ -256,16 +256,16 @@ class ROUGHPY_DEVICES_EXPORT Buffer
 public:
     using base_t::base_t;
 
-    template <typename T>
+    template <typename T, typename SFINAE = enable_if_t<value_like<T>>>
     explicit Buffer(Device device, Slice<T> data);
 
-    template <typename T>
+    template <typename T, typename SFINAE = enable_if_t<value_like<T>>>
     explicit Buffer(Device device, Slice<const T> data);
 
-    template <typename T>
+    template <typename T, typename SFINAE = enable_if_t<value_like<T>>>
     explicit Buffer(Slice<T> data);
 
-    template <typename T>
+    template <typename T, typename SFINAE = enable_if_t<value_like<T>>>
     explicit Buffer(Slice<const T> data);
 
     explicit Buffer(Slice<Value> data);
@@ -280,7 +280,6 @@ public:
 
     Buffer(const Buffer& owner, void* ptr, dimn_t size);
     Buffer(const Buffer& owner, const void* ptr, dimn_t size);
-
 
     /**
      * @brief Returns the content type of the buffer.
@@ -524,30 +523,25 @@ public:
     }
 };
 
-template <typename T>
+template <typename T, typename>
 Buffer::Buffer(rpy::devices::Device device, Slice<T> data)
-    : Buffer(device, data.data(), data.size(), devices::type_info<T>())
+    : Buffer(get_type<T>(), data.data(), data.size(), device)
 {}
 
-template <typename T>
+template <typename T, typename>
 Buffer::Buffer(rpy::devices::Device device, Slice<const T> data)
-    : Buffer(device, data.data(), data.size(), devices::type_info<T>())
+    : Buffer(get_type<T>(), data.data(), data.size(), device)
 {}
 
-template <typename T>
+template <typename T, typename>
 Buffer::Buffer(Slice<T> data)
-    : Buffer(get_host_device(),
-             data.data(),
-             data.size(),
-             devices::type_info<T>())
+    : Buffer(get_type<T>(), data.data(), data.size(), get_host_device())
 {}
 
-template <typename T>
+template <typename T, typename>
 Buffer::Buffer(Slice<const T> data)
-    : Buffer(get_host_device(),
-             data.data(),
-             data.size(),
-             devices::type_info<T>())
+    : Buffer(devices::get_type<T>(), data.data(), data.size(), get_host_device()
+      )
 {}
 
 namespace dtl {
