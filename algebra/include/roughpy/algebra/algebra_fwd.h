@@ -67,11 +67,6 @@ enum class VectorType : uint16_t
 class Basis;
 
 using BasisPointer = Rc<const Basis>;
-
-ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_add_ref(const Basis*) noexcept;
-
-ROUGHPY_ALGEBRA_EXPORT void intrusive_ptr_release(const Basis*) noexcept;
-
 class VectorContext;
 class Vector;
 
