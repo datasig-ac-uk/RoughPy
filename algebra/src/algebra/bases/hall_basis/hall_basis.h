@@ -19,7 +19,7 @@ class HallBasis : public Basis
     deg_t m_max_degree;
 
     class HallSet;
-    Rc<const HallSet> p_hall_set;
+    std::shared_ptr<const HallSet> p_hall_set;
 
     std::array<devices::TypePtr, 2> m_supported_types;
 

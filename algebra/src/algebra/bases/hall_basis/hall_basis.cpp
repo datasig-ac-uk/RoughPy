@@ -16,6 +16,9 @@
 #include <roughpy/core/container/unordered_map.h>
 #include <roughpy/core/container/vector.h>
 
+
+#include <roughpy/devices/type.h>
+
 #include <memory>
 
 #include "hall_set_size.h"
@@ -41,14 +44,14 @@ class HallBasis::HallSet
 
     template <typename LetterFn, typename Binop>
     decltype(auto)
-    do_foliage_map(dimn_t index, LetterFn&& letter_fn, const Binop& binop) const
+    do_foliage_map(dimn_t index, const LetterFn& letter_fn, const Binop& binop) const
     {
         // We have already checked that index belongs to the set.
-        const auto pars = m_elements[index];
-        if (pars.second == 0) { return letter_fn(index_to_letter(pars.first)); }
+        const auto& pars = m_elements[index];
+        if (pars.first == 0) { return letter_fn(index_to_letter(pars.first)); }
         return binop(
-                foliage_map(pars.first, letter_fn, binop),
-                foliage_map(pars.second, letter_fn, binop)
+                do_foliage_map(pars.first, letter_fn, binop),
+                do_foliage_map(pars.second, letter_fn, binop)
         );
     }
 
@@ -57,11 +60,11 @@ class HallBasis::HallSet
         return index < m_elements.size();
     }
 
+public:
     HallSet(deg_t width, deg_t depth);
 
     HallSet(const HallSet& other, deg_t depth);
 
-public:
     deg_t width() const noexcept
     {
         return static_cast<deg_t>(m_degree_sizes[1]);
@@ -277,6 +280,7 @@ constexpr bool check_hs_index(dimn_t index, dimn_t dim) noexcept
 
 HallBasis::HallBasis(deg_t width, deg_t depth)
     : Basis("hall_basis", {true, true, true}),
+      p_hall_set(HallSet::get(width, depth)),
       m_width(width),
       m_max_degree(depth),
       m_supported_types{LieWordType::get(), nullptr}
@@ -295,13 +299,13 @@ Slice<const devices::TypePtr> HallBasis::supported_key_types() const noexcept
 
 namespace {
 
-constexpr const LieWord* cast_word(const BasisKeyCRef& key) noexcept
+inline const LieWord* cast_word(const BasisKeyCRef& key) noexcept
 {
     RPY_DBG_ASSERT(key.type()->id() == "lie_word");
     return key.data<LieWord>();
 }
 
-constexpr const dimn_t cast_index(const BasisKeyCRef& key) noexcept
+inline const dimn_t cast_index(const BasisKeyCRef& key) noexcept
 {
     RPY_DBG_ASSERT(key.type()->id() == "index_key");
     return key.value<dimn_t>();
@@ -317,7 +321,7 @@ optional<dimn_t> HallBasis::key_to_oindex(const BasisKeyCRef& key
                 return optional<dimn_t>(p_hall_set->letter_to_index(letter));
             },
             [this](optional<dimn_t> left, optional<dimn_t> right) {
-                if (!left || !right) { return {}; }
+                if (!left || !right) { return left; }
 
                 return p_hall_set->pair_to_index(*left, *right);
             }
@@ -392,7 +396,8 @@ hash_t HallBasis::hash(BasisKeyCRef k1) const
                     return hasher(letter);
                 },
                 [](hash_t left, hash_t right) {
-                    return hash_combine(left, right);
+                    hash_combine(left, right);
+                    return left;
                 }
         );
     }
