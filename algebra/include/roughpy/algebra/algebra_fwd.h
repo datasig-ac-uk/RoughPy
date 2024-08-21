@@ -58,6 +58,8 @@ class BasisKeyRef;
 class BasisKeyCPtr;
 class BasisKeyPtr;
 
+using KeyTypePtr = devices::TypePtr;
+
 enum class VectorType : uint16_t
 {
     Dense,
