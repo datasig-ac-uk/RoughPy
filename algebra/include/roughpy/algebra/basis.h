@@ -352,9 +352,7 @@ public:
      * @return maximum dimension of the basis
      *
      * In mathematical terms, this is simply the dimension of the vector space
-     * spanned by the basis. However, in this context, a basis might actually
-     * represent a family of graded bases and so the dimension might not be a
-     * well defined number. The maximum dimension is well defined.
+     * spanned by the basis.
      */
     RPY_NO_DISCARD virtual dimn_t max_dimension() const noexcept;
 
