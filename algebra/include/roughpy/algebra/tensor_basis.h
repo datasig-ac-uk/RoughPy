@@ -33,28 +33,33 @@ class ROUGHPY_ALGEBRA_EXPORT TensorBasis : public Basis
 
 public:
     static constexpr string_view basis_id = "tensor_basis";
-
-    dimn_t max_dimension() const noexcept override;
-    RPY_NO_DISCARD dimn_t dense_dimension(dimn_t size) const override;
-    bool has_key(BasisKey key) const noexcept override;
-    string to_string(BasisKey key) const override;
-    bool equals(BasisKey k1, BasisKey k2) const override;
-    hash_t hash(BasisKey k1) const override;
-
-    bool less(BasisKey k1, BasisKey k2) const override;
-    dimn_t to_index(BasisKey key) const override;
-    BasisKey to_key(dimn_t index) const override;
-    KeyRange iterate_keys() const override;
-    deg_t max_degree() const noexcept override;
-    deg_t degree(BasisKey key) const override;
-    KeyRange iterate_keys_of_degree(deg_t degree) const override;
-    deg_t alphabet_size() const noexcept override;
-    bool is_letter(BasisKey key) const override;
-    let_t get_letter(BasisKey key) const override;
-    pair<optional<BasisKey>, optional<BasisKey>> parents(BasisKey key
-    ) const override;
-
     BasisComparison compare(BasisPointer other) const noexcept override;
+
+    RPY_NO_DISCARD bool supports_key_type(const devices::TypePtr& type
+    ) const noexcept override;
+    RPY_NO_DISCARD Slice<const devices::TypePtr>
+    supported_key_types() const noexcept override;
+    RPY_NO_DISCARD bool has_key(BasisKeyCRef key) const noexcept override;
+    RPY_NO_DISCARD string to_string(BasisKeyCRef key) const override;
+    RPY_NO_DISCARD bool equals(BasisKeyCRef k1, BasisKeyCRef k2) const override;
+    RPY_NO_DISCARD hash_t hash(BasisKeyCRef k1) const override;
+    RPY_NO_DISCARD dimn_t max_dimension() const noexcept override;
+    RPY_NO_DISCARD dimn_t dense_dimension(dimn_t size) const override;
+    RPY_NO_DISCARD bool less(BasisKeyCRef k1, BasisKeyCRef k2) const override;
+    RPY_NO_DISCARD dimn_t to_index(BasisKeyCRef key) const override;
+    RPY_NO_DISCARD BasisKey to_key(dimn_t index) const override;
+    RPY_NO_DISCARD KeyRange iterate_keys() const override;
+    RPY_NO_DISCARD dtl::BasisIterator keys_begin() const override;
+    RPY_NO_DISCARD dtl::BasisIterator keys_end() const override;
+    RPY_NO_DISCARD deg_t max_degree() const override;
+    RPY_NO_DISCARD deg_t degree(BasisKeyCRef key) const override;
+    RPY_NO_DISCARD deg_t dimension_to_degree(dimn_t dimension) const override;
+    RPY_NO_DISCARD KeyRange iterate_keys_of_degree(deg_t degree) const override;
+    RPY_NO_DISCARD deg_t alphabet_size() const override;
+    RPY_NO_DISCARD bool is_letter(BasisKeyCRef key) const override;
+    RPY_NO_DISCARD let_t get_letter(BasisKeyCRef key) const override;
+    RPY_NO_DISCARD pair<BasisKey, BasisKey> parents(BasisKeyCRef key
+    ) const override;
 
     static BasisPointer get(deg_t width, deg_t depth);
 };
