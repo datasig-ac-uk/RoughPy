@@ -89,10 +89,11 @@ LieWord::LieWord(const LieWord& left, const LieWord& right)
          */
 
         emplace_back(offset(2));
-        emplace_back(offset(left.size()));
+        emplace_back(offset(1 + left.size()));
+        RPY_DBG_ASSERT(size() == 2);
 
-        auto it = insert(end(), left.begin(), left.end());
-        insert(it, right.begin(), right.end());
+        insert(end(), left.begin(), left.end());
+        insert(end(), right.begin(), right.end());
     }
 }
 
@@ -162,9 +163,7 @@ LieWord LieWord::left_parent() const noexcept
 LieWord LieWord::right_parent() const noexcept
 {
     if (empty()) { return {}; }
-    if (is_letter()) {
-        return LieWord{get_letter(begin())};
-    }
+    if (is_letter()) { return LieWord{get_letter(begin())}; }
 
     auto root = get_companion(begin());
     if (is_letter(root)) { return LieWord{get_letter(root)}; }

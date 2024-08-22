@@ -207,16 +207,12 @@ inline LieWord operator*(let_t left, const LieWord& right)
     return LieWord{LieWord(left), right};
 }
 
-
-
-
 }// namespace algebra
 
 namespace devices {
 
 template <>
 TypePtr get_type<algebra::LieWord>();
-
 
 }
 
