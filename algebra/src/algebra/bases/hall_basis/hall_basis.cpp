@@ -574,7 +574,8 @@ pair<BasisKey, BasisKey> HallBasis::parents(BasisKeyCRef key) const
             }
 
             // The second element is always valid
-            result.second = BasisKey(index_key_type(), from_hs_index(index));
+            result.second
+                    = BasisKey(index_key_type(), from_hs_index(parents.second));
 
             return result;
         }
