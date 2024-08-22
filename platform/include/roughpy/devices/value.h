@@ -123,9 +123,7 @@ public:
         operator=(std::forward<T>(val));
     }
 
-    template <
-            typename T,
-            typename = enable_if_t<!value_like<T>>>
+    template <typename T, typename = enable_if_t<!value_like<T>>>
     explicit Value(T&& other) noexcept : p_type(get_type<remove_cv_ref_t<T>>())
     {
         using ptr_type = remove_cv_ref_t<T>*;
@@ -547,7 +545,7 @@ template <typename T>
 enable_if_t<!value_like<T>, Reference&> Reference::operator=(T&& other)
 {
     RPY_DBG_ASSERT(type() != nullptr);
-    const auto tp = get_type<T>();
+    const auto tp = get_type<decay_t<T>>();
     const auto& conversion = type()->conversions(*tp);
     if constexpr (is_rvalue_reference_v<T&&>) {
         if (conversion.move_convert) {
