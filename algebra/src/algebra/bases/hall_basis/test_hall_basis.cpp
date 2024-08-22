@@ -151,7 +151,7 @@ TEST_F(HallBasisTests, CheckKeyEquals)
     for (auto& index : indices) {
         auto key = basis->to_key(index);
         EXPECT_TRUE(basis->equals(key, {&index, index_type}))
-                << key << ' ' << BasisKeyCRef{&index, index_type};
+                << key << ' ' << basis->to_string({&index, index_type});
     }
 }
 
@@ -174,7 +174,7 @@ TEST_F(HallBasisTests, CheckKeyHashEqual)
     for (auto& index : indices) {
         auto key = basis->to_key(index);
         EXPECT_EQ(basis->hash(key), basis->hash({&index, index_type}))
-                << key << ' ' << BasisKeyCRef{&index, index_type};
+                << key << ' ' << basis->to_string({&index, index_type});
     }
 }
 
