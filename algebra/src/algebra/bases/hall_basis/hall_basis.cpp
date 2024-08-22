@@ -489,7 +489,7 @@ deg_t HallBasis::degree(BasisKeyCRef key) const
 {
     if (is_lie_word(key.type())) { return cast_word(key)->degree(); }
     if (is_index_key(key.type())) {
-        return HallBasis::dimension_to_degree(cast_index(key));
+        return HallBasis::dimension_to_degree(to_hs_index(cast_index(key)));
     }
 
     RPY_THROW(
