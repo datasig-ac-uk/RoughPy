@@ -145,7 +145,7 @@ HallBasis::HallSet::HallSet(deg_t width, deg_t depth)
     m_degree_ranges.emplace_back(0, 0);
 
     m_degree_sizes.reserve(1 + depth);
-    m_degree_sizes.emplace_back(0);
+    m_degree_sizes.emplace_back(1);
 
     for (let_t l = 1; l <= static_cast<let_t>(width); ++l) {
         dimn_t index = l;
