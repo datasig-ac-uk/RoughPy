@@ -828,11 +828,10 @@ RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr get_type(devices::TypeInfo info);
 template <typename T>
 TypePtr get_type();
 
-
+// Specializations for int8_t, int16_t, int32_t, and int64_t
 template <>
 ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<int8_t>();
 
-// Specializations for int16_t, int32_t, and int64_t
 template <>
 ROUGHPY_DEVICES_EXPORT RPY_NO_DISCARD TypePtr get_type<int16_t>();
 
