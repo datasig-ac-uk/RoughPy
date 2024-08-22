@@ -210,7 +210,7 @@ TEST_F(HallBasisTests, CheckParentsIndexLetter)
         BasisKeyCRef key{&index, index_type};
         auto parents = basis->parents(key);
 
-        EXPECT_FALSE(parents.first.fast_is_zero());
+        EXPECT_TRUE(parents.first.fast_is_zero());
         EXPECT_EQ(parents.second, key);
     }
 }
@@ -279,14 +279,14 @@ TEST_F(HallBasisTests, ChecKToStringIndexLetter)
 
 TEST_F(HallBasisTests, ChecKToStringIndexPair)
 {
-    BasisKey key(basis->supported_key_types()[1], 0);// [1,2]
+    BasisKey key(basis->supported_key_types()[1], 3);// [1,2]
 
     EXPECT_EQ(basis->to_string(key), "[1,2]");
 }
 
 TEST_F(HallBasisTests, CheckToStringIndexHigher)
 {
-    BasisKey key(basis->supported_key_types()[1], 0);// [1,[1,2]]
+    BasisKey key(basis->supported_key_types()[1], 6);// [1,[1,2]]
 
     EXPECT_EQ(basis->to_string(key), "[1,[1,2]]");
 }
