@@ -561,7 +561,7 @@ pair<BasisKey, BasisKey> HallBasis::parents(BasisKeyCRef key) const
     if (is_index_key(key.type())) {
         const auto index = cast_index(key);
         if (check_hs_index(index, p_hall_set->size(m_max_degree))) {
-            const auto parents = p_hall_set->parents(index);
+            const auto parents = p_hall_set->parents(to_hs_dim(index));
 
             pair<BasisKey, BasisKey> result;
 
