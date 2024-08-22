@@ -3,241 +3,205 @@
 //
 
 #include "tensor_basis.h"
-#include <roughpy/core/container/unordered_map.h>
-#include <roughpy/core/container/vector.h>
-#include <roughpy/core/helpers.h>
-#include <roughpy/core/macros.h>
+
+#include <roughpy/core/hash.h>
 #include <roughpy/core/ranges.h>
+#include <roughpy/core/traits.h>
+#include <roughpy/core/types.h>
 
-#include <roughpy/platform/errors.h>
-
-#include <algorithm>
-#include <functional>
-#include <mutex>
+#include "index_key_type.h"
+#include "tensor_word.h"
+#include "tensor_word_type.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
 
-TensorBasis::TensorBasis(rpy::deg_t width, rpy::deg_t depth)
-    : Basis(basis_id, {true, true, true}),
-      m_width(width),
-      m_depth(depth)
-{
-    m_degree_sizes.reserve(depth + 1);
-
-    m_max_dimension = 1;
-    for (deg_t i = 0; i <= depth; ++i) {
-        m_degree_sizes.push_back(m_max_dimension);
-        m_max_dimension = 1 + width * m_max_dimension;
-    }
-}
-
-dimn_t TensorBasis::max_dimension() const noexcept { return m_max_dimension; }
-
-dimn_t TensorBasis::dense_dimension(dimn_t size) const
-{
-    const auto end = m_degree_sizes.end();
-    auto pos = ranges::lower_bound(m_degree_sizes.begin(), end, size);
-    RPY_CHECK(pos != end);
-    return *pos;
-}
-
 namespace {
 
-template <typename F>
-void do_for_each_letter_in_index(deg_t width, dimn_t index, F&& op)
+constexpr const TensorWord* cast_word(const BasisKeyCRef& key) noexcept
 {
-    const auto divisor = static_cast<dimn_t>(width);
-
-    while (index > 0) {
-        auto [div, rem] = remquo(index - 1, divisor);
-        op(rem + 1);
-        index = div;
-    }
+    return key.data<TensorWord>();
 }
 
-deg_t index_to_degree(
-        const containers::Vec<dimn_t>& degree_sizes,
-        dimn_t arg
-) noexcept
+constexpr dimn_t cast_index(const BasisKeyCRef& key) noexcept
 {
-    if (arg == 0) { return 0; }
-    auto begin = degree_sizes.begin();
-    auto end = degree_sizes.end();
-
-    auto it = std::lower_bound(begin, end, arg, std::less_equal<>());
-
-    RPY_DBG_ASSERT(it != degree_sizes.end());
-    return static_cast<deg_t>(it - begin);
-}
-
-const TensorWord* cast_pointer_key(const BasisKey& key)
-{
-    RPY_CHECK(key.is_valid_pointer());
-    const auto* ptr = key.get_pointer();
-    RPY_CHECK(ptr->key_type() == TensorWord::key_name);
-    return reinterpret_cast<const TensorWord*>(ptr);
-}
-void print_word(string& out, const TensorWord* word) noexcept
-{
-    if (word->degree() == 0) { return; }
-
-    auto it = word->begin();
-    auto end = word->end();
-
-    out += std::to_string(*(it++));
-
-    for (; it != end; ++it) {
-        out.push_back(',');
-        out += std::to_string(*it);
-    }
-}
-
-bool word_is_valid(deg_t width, deg_t depth, const TensorWord* word) noexcept
-{
-    if (word->degree() > depth) { return false; }
-
-    return std::all_of(word->cbegin(), word->cend(), [width](auto letter) {
-        return letter > 0 && static_cast<deg_t>(letter) <= width;
-    });
+    return key.value<dimn_t>();
 }
 
 }// namespace
 
-bool rpy::algebra::TensorBasis::has_key(BasisKey key) const noexcept
+class TensorBasis::Details : containers::Vec<dimn_t>
 {
-    if (key.is_index()) { return key.get_index() < max_dimension(); }
+    deg_t m_depth;
 
-    if (!key.is_valid_pointer()) { return false; }
-
-    const auto* ptr = key.get_pointer();
-    if (ptr->key_type() != "tensor_word") { return false; }
-
-    return word_is_valid(m_width, m_depth, static_cast<const TensorWord*>(ptr));
-}
-string rpy::algebra::TensorBasis::to_string(BasisKey key) const
-{
-    string result;
-    if (key.is_index()) {
-        bool first = true;
-        do_for_each_letter_in_index(
-                m_width,
-                key.get_index(),
-                [&result, &first](dimn_t letter) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        result.push_back(',');
-                    }
-                    result += std::to_string(letter);
-                }
-        );
-    } else {
-        print_word(result, cast_pointer_key(key));
-    }
-    return result;
-}
-bool rpy::algebra::TensorBasis::equals(BasisKey k1, BasisKey k2) const
-{
-    return to_index(k1) == to_index(k2);
-}
-hash_t rpy::algebra::TensorBasis::hash(BasisKey k1) const
-{
-    return static_cast<hash_t>(to_index(k1));
-}
-bool TensorBasis::less(BasisKey k1, BasisKey k2) const
-{
-    return to_index(k1) < to_index(k2);
-}
-dimn_t TensorBasis::to_index(BasisKey key) const
-{
-    if (key.is_index()) {
-        auto index = key.get_index();
-        RPY_CHECK(index <= max_dimension());
-        return index;
+    void grow(deg_t depth)
+    {
+        const auto& width = operator[](1);
+        for (; m_depth <= depth; ++m_depth) {
+            emplace_back(1 + width * back());
+        }
     }
 
-    const auto* word = cast_pointer_key(key);
-
-    dimn_t index = 0;
-    for (const auto& let : *word) {
-        RPY_CHECK(let <= m_width);
-        index *= m_width;
-        index += let;
+public:
+    Details(deg_t width, deg_t depth) : m_depth{2}
+    {
+        reserve(depth + 1);
+        emplace_back(1);
+        emplace_back(width);
+        grow(depth);
     }
 
-    return index;
+    Details(const Details& old, deg_t depth) : m_depth(old.m_depth)
+    {
+        RPY_DBG_ASSERT(depth > old.m_depth);
+        reserve(depth + 1);
+        insert(end(), old.begin(), old.end());
+
+        grow(depth);
+    }
+
+    deg_t max_depth() const noexcept { return static_cast<deg_t>(size() - 1); }
+
+    Slice<const dimn_t> sizes(deg_t depth) const noexcept
+    {
+        RPY_DBG_ASSERT(depth < size());
+        return {data(), static_cast<dimn_t>(1 + depth)};
+    }
+
+    static std::shared_ptr<const Details> get(deg_t width, deg_t depth)
+    {
+        static Mutex lock;
+        static containers::HashMap<deg_t, std::shared_ptr<Details>> cache;
+
+        LockGuard<Mutex> access(lock);
+
+        auto entry = cache[width];
+        if (entry) {
+            if (entry->max_depth() < depth) {
+                entry = std::make_shared<Details>(*entry, depth);
+            }
+        } else {
+            entry = std::make_shared<Details>(width, depth);
+        }
+
+        return entry;
+    }
+};
+
+bool TensorBasis::is_word(const BasisKeyCRef& key) const noexcept
+{
+    return key.type() == m_supported_key_types[0];
+}
+bool TensorBasis::is_index(const BasisKeyCRef& key) const noexcept
+{
+    return key.type() == m_supported_key_types[1];
+}
+
+TensorBasis::TensorBasis(deg_t width, deg_t depth)
+    : Basis(basis_id, {true, true, true}),
+      m_width(width),
+      m_depth(depth),
+      m_supported_key_types{TensorWordType::get(), IndexKeyType::get()},
+      p_details(Details::get(width, depth))
+{}
+
+BasisComparison TensorBasis::compare(BasisPointer other) const noexcept
+{
+    if (this == other) { return BasisComparison::IsSame; }
+    if (other->id() == basis_id) {
+        const auto* ptr = static_cast<const TensorBasis*>(other.get());
+        if (ptr->m_width == m_width && ptr->m_depth == m_depth) {
+            return BasisComparison::IsSame;
+        }
+
+        if (ptr->m_width == m_width) { return BasisComparison::IsSame; }
+    }
+
+    return BasisComparison::IsNotCompatible;
+}
+bool TensorBasis::supports_key_type(const devices::TypePtr& type) const noexcept
+{
+    return ranges::contains(m_supported_key_types, type);
+}
+Slice<const devices::TypePtr> TensorBasis::supported_key_types() const noexcept
+{
+    return {m_supported_key_types.data(), m_supported_key_types.size()};
+}
+bool TensorBasis::has_key(BasisKeyCRef key) const noexcept
+{
+    if (is_word(key)) { return true; }
+    if (is_index(key)) { return true; }
+
+    return false;
+}
+string TensorBasis::to_string(BasisKeyCRef key) const
+{
+    if (is_word(key)) {
+        std::stringstream ss;
+        cast_word(key)->print(ss);
+        return ss.str();
+    }
+    if (is_index(key)) { const auto index = cast_index(key); }
+}
+bool TensorBasis::equals(BasisKeyCRef k1, BasisKeyCRef k2) const {}
+hash_t TensorBasis::hash(BasisKeyCRef k1) const {}
+dimn_t TensorBasis::max_dimension() const noexcept
+{
+    return Basis::max_dimension();
+}
+dimn_t TensorBasis::dense_dimension(dimn_t size) const
+{
+    return Basis::dense_dimension(size);
+}
+bool TensorBasis::less(BasisKeyCRef k1, BasisKeyCRef k2) const
+{
+    return Basis::less(k1, k2);
+}
+dimn_t TensorBasis::to_index(BasisKeyCRef key) const
+{
+    return Basis::to_index(key);
 }
 BasisKey TensorBasis::to_key(dimn_t index) const
 {
-    RPY_CHECK(index < m_max_dimension);
-    auto degree = index_to_degree(m_degree_sizes, index);
-    auto word = std::make_unique<TensorWord>(degree);
-
-    index -= m_degree_sizes[degree];
-    dimn_t tmp;
-    while (index > m_width) {
-        tmp = index;
-        index /= m_width;
-        word->push_back(1 + tmp - index * m_width);
-    }
-
-    std::reverse(word->begin(), word->end());
-
-    return BasisKey(word.release());
+    return Basis::to_key(index);
 }
 KeyRange TensorBasis::iterate_keys() const { return Basis::iterate_keys(); }
-deg_t TensorBasis::max_degree() const noexcept { return m_depth; }
-deg_t TensorBasis::degree(BasisKey key) const
+algebra::dtl::BasisIterator TensorBasis::keys_begin() const
 {
-    RPY_CHECK(has_key(key));
-    if (key.is_pointer()) {
-        RPY_CHECK(key.is_valid_pointer());
-
-        const auto* ptr = cast_pointer_key(key);
-        return static_cast<deg_t>(ptr->degree());
-    }
-
-    return index_to_degree(m_degree_sizes, key.get_index());
+    return Basis::keys_begin();
 }
-
+algebra::dtl::BasisIterator TensorBasis::keys_end() const
+{
+    return Basis::keys_end();
+}
+deg_t TensorBasis::max_degree() const { return Basis::max_degree(); }
+deg_t TensorBasis::degree(BasisKeyCRef key) const { return Basis::degree(key); }
+deg_t TensorBasis::dimension_to_degree(dimn_t dimension) const
+{
+    return Basis::dimension_to_degree(dimension);
+}
+dimn_t TensorBasis::degree_to_dimension(deg_t degree) const
+{
+    return Basis::degree_to_dimension(degree);
+}
 KeyRange TensorBasis::iterate_keys_of_degree(deg_t degree) const
 {
     return Basis::iterate_keys_of_degree(degree);
 }
-deg_t TensorBasis::alphabet_size() const noexcept { return m_width; }
-bool TensorBasis::is_letter(BasisKey key) const { return degree(key) == 1; }
-let_t TensorBasis::get_letter(BasisKey key) const
+deg_t TensorBasis::alphabet_size() const { return Basis::alphabet_size(); }
+bool TensorBasis::is_letter(BasisKeyCRef key) const
 {
-    RPY_DBG_ASSERT(is_letter(key));
-
-    return 0;
+    return Basis::is_letter(key);
 }
-pair<optional<BasisKey>, optional<BasisKey>> TensorBasis::parents(BasisKey key
-) const
+let_t TensorBasis::get_letter(BasisKeyCRef key) const
+{
+    return Basis::get_letter(key);
+}
+pair<BasisKey, BasisKey> TensorBasis::parents(BasisKeyCRef key) const
 {
     return Basis::parents(key);
 }
-
-static std::mutex s_tensor_basis_lock;
-static containers::HashMap<pair<deg_t, deg_t>, BasisPointer>
-        s_tensor_basis_cache;
-
 BasisPointer TensorBasis::get(deg_t width, deg_t depth)
 {
-    std::lock_guard<std::mutex> access(s_tensor_basis_lock);
-    auto& basis = s_tensor_basis_cache[{width, depth}];
-    if (!basis) { basis = new TensorBasis(width, depth); }
-    return basis;
-}
-
-BasisComparison TensorBasis::compare(BasisPointer other) const noexcept
-{
-    if (other == this) { return BasisComparison::IsSame; }
-
-    if (other->id() == basis_id && other->alphabet_size() == m_width) {
-        return BasisComparison::IsCompatible;
-    }
-
-    return BasisComparison::IsNotCompatible;
+    return new TensorBasis(width, depth);
 }

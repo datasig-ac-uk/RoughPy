@@ -10,6 +10,8 @@
 #include <roughpy/core/container/vector.h>
 #include <roughpy/devices/buffer.h>
 
+#include <memory>
+
 namespace rpy {
 namespace algebra {
 
@@ -25,11 +27,17 @@ class ROUGHPY_ALGEBRA_EXPORT TensorBasis : public Basis
 {
     deg_t m_width;
     deg_t m_depth;
-    dimn_t m_max_dimension;
 
-    containers::Vec<dimn_t> m_degree_sizes;
+    class Details;
+    std::shared_ptr<const Details> p_details;
+
+    Slice<const dimn_t> m_degree_sizes;
+    std::array<KeyTypePtr, 2> m_supported_key_types;
 
     TensorBasis(deg_t width, deg_t depth);
+
+    bool is_word(const BasisKeyCRef& key) const noexcept;
+    bool is_index(const BasisKeyCRef& key) const noexcept;
 
 public:
     static constexpr string_view basis_id = "tensor_basis";
