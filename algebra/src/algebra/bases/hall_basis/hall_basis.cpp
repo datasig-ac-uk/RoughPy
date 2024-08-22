@@ -408,14 +408,8 @@ hash_t HallBasis::hash(BasisKeyCRef k1) const
     if (is_index_key(k1.type())) {
         return p_hall_set->foliage_map(
                 to_hs_index(cast_index(k1)),
-                [](let_t letter) {
-                    Hash<let_t> hasher;
-                    return hasher(letter);
-                },
-                [](hash_t left, hash_t right) {
-                    hash_combine(left, right);
-                    return left;
-                }
+                LieWord::letter_hash,
+                LieWord::hash_binop
         );
     }
 
