@@ -115,6 +115,10 @@ deg_t Basis::dimension_to_degree(dimn_t dimension) const
 {
     RPY_THROW(std::runtime_error, "basis is not graded");
 }
+dimn_t Basis::degree_to_dimension(deg_t degree) const
+{
+    RPY_THROW(std::runtime_error, "basis is not graded");
+}
 bool Basis::supports_key_type(const devices::TypePtr& type) const noexcept
 {
     return false;

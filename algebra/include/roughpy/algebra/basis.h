@@ -248,10 +248,11 @@ public:
      */
     RPY_NO_DISCARD string_view id() const noexcept { return m_basis_id; }
 
+    RPY_NO_DISCARD virtual bool supports_key_type(const devices::TypePtr& type
+    ) const noexcept;
 
-    RPY_NO_DISCARD virtual bool supports_key_type(const devices::TypePtr& type) const noexcept;
-
-    RPY_NO_DISCARD virtual Slice<const devices::TypePtr> supported_key_types() const noexcept;
+    RPY_NO_DISCARD virtual Slice<const devices::TypePtr>
+    supported_key_types() const noexcept;
 
     /**
      * @brief Checks if the basis is ordered
@@ -482,6 +483,8 @@ public:
      * @throws std::runtime_error if the basis is not graded
      */
     RPY_NO_DISCARD virtual deg_t dimension_to_degree(dimn_t dimension) const;
+
+    RPY_NO_DISCARD virtual dimn_t degree_to_dimension(deg_t degree) const;
 
     /**
      * @brief Iterates over the keys of a specified degree in the basis
