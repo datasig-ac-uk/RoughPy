@@ -50,7 +50,6 @@ class HallBasis : public Basis
 public:
     HallBasis(deg_t width, deg_t depth);
 
-
     ~HallBasis() override;
 
     RPY_NO_DISCARD bool supports_key_type(const devices::TypePtr& type
@@ -72,6 +71,7 @@ public:
     RPY_NO_DISCARD deg_t max_degree() const override;
     RPY_NO_DISCARD deg_t degree(BasisKeyCRef key) const override;
     RPY_NO_DISCARD deg_t dimension_to_degree(dimn_t dimension) const override;
+    RPY_NO_DISCARD dimn_t degree_to_dimension(deg_t degree) const override;
     RPY_NO_DISCARD KeyRange iterate_keys_of_degree(deg_t degree) const override;
     RPY_NO_DISCARD deg_t alphabet_size() const override;
     RPY_NO_DISCARD bool is_letter(BasisKeyCRef key) const override;

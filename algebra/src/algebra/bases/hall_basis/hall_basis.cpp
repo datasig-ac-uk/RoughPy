@@ -514,6 +514,12 @@ deg_t HallBasis::dimension_to_degree(dimn_t dimension) const
     RPY_DBG_ASSERT(pos != begin);
     return static_cast<deg_t>(pos - begin);
 }
+dimn_t HallBasis::degree_to_dimension(deg_t degree) const
+{
+    RPY_CHECK(degree <= m_max_degree);
+
+    return adjust_hs_dim(p_hall_set->size(degree));
+}
 KeyRange HallBasis::iterate_keys_of_degree(deg_t degree) const
 {
     return Basis::iterate_keys_of_degree(degree);
