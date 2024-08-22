@@ -229,7 +229,6 @@ TEST_F(HallBasisTests, CheckIsLetter)
     }
 }
 
-
 TEST_F(HallBasisTests, ChecKToStringWordLetter)
 {
     auto key = basis->to_key(0);
@@ -246,11 +245,10 @@ TEST_F(HallBasisTests, ChecKToStringWordPair)
 
 TEST_F(HallBasisTests, CheckToStringWordHigher)
 {
-    auto key = basis->to_key(6); // [1,[1,2]]
+    auto key = basis->to_key(6);// [1,[1,2]]
 
     EXPECT_EQ(basis->to_string(key), "[1,[1,2]]");
 }
-
 
 TEST_F(HallBasisTests, ChecKToStringIndexLetter)
 {
@@ -261,7 +259,7 @@ TEST_F(HallBasisTests, ChecKToStringIndexLetter)
 
 TEST_F(HallBasisTests, ChecKToStringIndexPair)
 {
-    BasisKey key(basis->supported_key_types()[1], 0); // [1,2]
+    BasisKey key(basis->supported_key_types()[1], 0);// [1,2]
 
     EXPECT_EQ(basis->to_string(key), "[1,2]");
 }
