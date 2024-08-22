@@ -44,6 +44,19 @@ TEST_F(HallBasisTests, TestSizeOfHallSet)
     EXPECT_EQ(basis->max_dimension(), 80);
 }
 
+TEST_F(HallBasisTests, TestDimensionToDegree)
+{
+    EXPECT_EQ(basis->dimension_to_degree(1), 1);
+    EXPECT_EQ(basis->dimension_to_degree(3), 2);
+    EXPECT_EQ(basis->dimension_to_degree(5), 2);
+    EXPECT_EQ(basis->dimension_to_degree(6), 3);
+    EXPECT_EQ(basis->dimension_to_degree(13), 3);
+    EXPECT_EQ(basis->dimension_to_degree(14), 4);
+    EXPECT_EQ(basis->dimension_to_degree(31), 4);
+    EXPECT_EQ(basis->dimension_to_degree(32), 5);
+    EXPECT_EQ(basis->dimension_to_degree(79), 5);
+}
+
 TEST_F(HallBasisTests, ChecKSupportedKeyTypes)
 {
     const auto supported_types = basis->supported_key_types();
