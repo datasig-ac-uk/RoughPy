@@ -204,22 +204,6 @@ bool LieWord::check_equal(const_iterator left, const_iterator right) noexcept
 
     return true;
 }
-
-hash_t algebra::hash_value(const LieWord& word) noexcept
-{
-    hash_t result = 0;
-
-    for (auto it = word.begin(); it != word.end(); ++it) {
-        if (LieWord::is_letter(it)) {
-            hash_combine(result, *it);
-        } else {
-            hash_combine(result, 0x53F70EA1);
-        }
-    }
-
-    return result;
-}
-
 template <>
 devices::TypePtr devices::get_type<LieWord>()
 {

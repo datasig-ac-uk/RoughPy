@@ -166,11 +166,25 @@ public:
         return check_equal(left.begin(), right.begin());
     }
 
-    friend hash_t hash_value(const LieWord& word) noexcept;
+    static inline hash_t letter_hash(let_t letter) noexcept
+    {
+        Hash<let_t> hasher;
+        return hasher(letter);
+    }
+
+    static inline hash_t hash_binop(hash_t left, hash_t right) noexcept
+    {
+        hash_combine(left, right);
+        return left;
+    }
 
     template <typename LetterFn, typename BinOp>
     decltype(auto) foliage_map(LetterFn&& letter, BinOp&& binary_op) const
     {
+        RPY_DBG_ASSERT(is_valid());
+
+        if (is_letter()) { return letter(get_letter()); }
+
         return compute_over_tree(
                 begin(),
                 std::forward<LetterFn>(letter),
@@ -205,6 +219,11 @@ inline LieWord operator*(const LieWord& left, let_t right)
 inline LieWord operator*(let_t left, const LieWord& right)
 {
     return LieWord{LieWord(left), right};
+}
+
+inline hash_t hash_value(const LieWord& word) noexcept
+{
+    return word.foliage_map(LieWord::letter_hash, LieWord::hash_binop);
 }
 
 }// namespace algebra
