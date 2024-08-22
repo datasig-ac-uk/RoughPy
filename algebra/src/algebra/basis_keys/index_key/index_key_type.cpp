@@ -3,6 +3,7 @@
 //
 
 #include "index_key_type.h"
+#include <roughpy/device_support/fundamental_type.h>
 
 #include <roughpy/devices/value.h>
 
@@ -56,6 +57,14 @@ IndexKeyType::IndexKeyType()
             return *static_cast<const dimn_t*>(arg) == 0;
         };
     }
+
+    using UnsignedInts
+            = devices::dtl::TypeList<uint8_t, uint16_t, uint32_t, uint64_t>;
+    using SignedInts
+            = devices::dtl::TypeList<int8_t, int16_t, int32_t, int64_t>;
+
+    devices::dtl::register_type_support<dimn_t>(this, UnsignedInts{});
+    devices::dtl::register_type_support<dimn_t>(this, SignedInts{});
 
     set_hash_fn(+[](const void* arg) {
         return *static_cast<const dimn_t*>(arg);
