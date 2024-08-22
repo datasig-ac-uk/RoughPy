@@ -107,3 +107,8 @@ void TensorWordType::display(std::ostream& os, const void* ptr) const
         for (; it != end; ++it) { os << ',' << *it; }
     }
 }
+devices::TypePtr TensorWordType::get()
+{
+    static devices::TypePtr type(new TensorWordType);
+    return type;
+}
