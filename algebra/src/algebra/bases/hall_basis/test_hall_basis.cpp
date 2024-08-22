@@ -212,7 +212,6 @@ TEST_F(HallBasisTests, CheckParentsIndexPair)
     EXPECT_EQ(parents.second, right);
 }
 
-
 TEST_F(HallBasisTests, CheckIsLetter)
 {
     const auto index_type = basis->supported_key_types()[1];
@@ -224,7 +223,7 @@ TEST_F(HallBasisTests, CheckIsLetter)
         EXPECT_TRUE(basis->is_letter(key));
     }
 
-    rpy::dimn_t words[] = { 4, 7, 15, 22, 55, 72};
+    rpy::dimn_t words[] = {4, 7, 15, 22, 55, 72};
     for (auto& index : words) {
         EXPECT_FALSE(basis->is_letter({&index, index_type}));
     }
