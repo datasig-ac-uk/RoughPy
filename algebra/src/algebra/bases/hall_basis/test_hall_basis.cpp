@@ -35,6 +35,12 @@ TEST_F(HallBasisTests, TestWidthAndDepth)
 
 TEST_F(HallBasisTests, TestSizeOfHallSet)
 {
+    EXPECT_EQ(basis->degree_to_dimension(1), 3);
+    EXPECT_EQ(basis->degree_to_dimension(2), 6);
+    EXPECT_EQ(basis->degree_to_dimension(3), 14);
+    EXPECT_EQ(basis->degree_to_dimension(4), 32);
+    EXPECT_EQ(basis->degree_to_dimension(5), 80);
+
     EXPECT_EQ(basis->max_dimension(), 80);
 }
 
