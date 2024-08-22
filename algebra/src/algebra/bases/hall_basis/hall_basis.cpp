@@ -36,11 +36,6 @@ class HallBasis::HallSet
     containers::Vec<dimn_t> m_degree_sizes;
     containers::Vec<pair<dimn_t, dimn_t>> m_degree_ranges;
 
-    bool is_letter(dimn_t index) const noexcept
-    {
-        return m_letters.contains(index);
-    }
-
     template <typename LetterFn, typename Binop>
     decltype(auto)
     do_foliage_map(dimn_t index, const LetterFn& letter_fn, const Binop& binop)
@@ -79,6 +74,11 @@ public:
     {
         return degree > m_degree_sizes.size() ? m_degree_sizes.back()
                                               : m_degree_sizes[degree];
+    }
+
+    bool is_valid_letter(let_t letter) const noexcept
+    {
+        return ranges::contains(m_letters | views::values, letter);
     }
 
     deg_t max_degree() const noexcept { return m_degree_sizes.size() - 1; }
@@ -121,6 +121,20 @@ public:
         RPY_CHECK(check_index(index));
         if (is_letter(index)) { return letter_fn(index); }
         return do_foliage_map(index, letter_fn, binop);
+    }
+
+    deg_t degree(dimn_t index) const noexcept
+    {
+        const auto begin = m_degree_sizes.begin();
+        const auto end = m_degree_sizes.end();
+        auto it = ranges::lower_bound(begin + 1, end, index, std::less_equal{});
+
+        return static_cast<deg_t>(it - begin);
+    }
+
+    bool is_letter(dimn_t index) const noexcept
+    {
+        return m_elements[index].first == 0;
     }
 
 private:
@@ -431,7 +445,12 @@ dimn_t HallBasis::dense_dimension(dimn_t size) const
     const auto sizes = p_hall_set->sizes();
     const auto begin = sizes.begin();
     const auto end = sizes.end();
-    auto pos = ranges::lower_bound(begin, end, to_hs_dim(size));
+    auto pos = ranges::lower_bound(
+            begin,
+            end,
+            to_hs_dim(size),
+            std::less_equal{}
+    );
     RPY_CHECK(pos != end);
     return adjust_hs_dim(*pos);
 }
@@ -483,7 +502,7 @@ deg_t HallBasis::degree(BasisKeyCRef key) const
 {
     if (is_lie_word(key.type())) { return cast_word(key)->degree(); }
     if (is_index_key(key.type())) {
-        return HallBasis::dimension_to_degree(to_hs_index(cast_index(key)));
+        return p_hall_set->degree(to_hs_index(cast_index(key)));
     }
 
     RPY_THROW(
@@ -510,8 +529,12 @@ deg_t HallBasis::dimension_to_degree(dimn_t dimension) const
      *  which means we need to look for the adjusted dimension.
      */
 
-    auto pos = ranges::lower_bound(begin, end, to_hs_dim(dimension));
-    RPY_DBG_ASSERT(pos != begin);
+    auto pos = ranges::lower_bound(
+            begin + 1,
+            end,
+            to_hs_dim(dimension),
+            std::less_equal{}
+    );
     return static_cast<deg_t>(pos - begin);
 }
 dimn_t HallBasis::degree_to_dimension(deg_t degree) const
@@ -527,13 +550,34 @@ KeyRange HallBasis::iterate_keys_of_degree(deg_t degree) const
 deg_t HallBasis::alphabet_size() const { return m_width; }
 bool HallBasis::is_letter(BasisKeyCRef key) const
 {
-    return HallBasis::degree(key) == 1;
+    if (is_lie_word(key.type())) {
+        if (cast_word(key)->is_letter()) {
+            const auto letter = cast_word(key)->get_letter();
+            RPY_CHECK(p_hall_set->is_valid_letter(letter));
+            return true;
+        }
+        return false;
+    }
+    if (is_index_key(key.type())) {
+        auto index = cast_index(key);
+        RPY_CHECK(check_hs_index(index, p_hall_set->size(m_max_degree)));
+        return p_hall_set->is_letter(to_hs_index(index));
+    }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat(
+                    "key ",
+                    to_string_nofail(key),
+                    " does not belong to this basis"
+            )
+    );
 }
 let_t HallBasis::get_letter(BasisKeyCRef key) const
 {
     RPY_CHECK(is_letter(key));
     if (is_index_key(key.type())) {
-        return p_hall_set->index_to_letter(cast_index(key));
+        return p_hall_set->index_to_letter(to_hs_index(cast_index(key)));
     }
 
     if (is_lie_word(key.type())) { return cast_word(key)->get_letter(); }
