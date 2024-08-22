@@ -513,15 +513,12 @@ deg_t HallBasis::dimension_to_degree(dimn_t dimension) const
      *
      *  { 1, 1 + width, ... }
      *
-     *  which means we need to look for the adjusted dimension. Using lower
-     *  bound, the result will be the index of the start of the next degree,
-     *  so we have to adjust by decrementing to get the start of the degree
-     *  in which the index actually appears.
+     *  which means we need to look for the adjusted dimension.
      */
 
     auto pos = ranges::lower_bound(begin, end, to_hs_dim(dimension));
     RPY_DBG_ASSERT(pos != begin);
-    return static_cast<deg_t>((--pos) - begin);
+    return static_cast<deg_t>(pos - begin);
 }
 KeyRange HallBasis::iterate_keys_of_degree(deg_t degree) const
 {
