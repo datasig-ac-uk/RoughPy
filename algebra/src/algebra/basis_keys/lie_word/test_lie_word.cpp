@@ -291,3 +291,18 @@ TEST(LieWordTests, TestHashValueDifferentCompoundWords)
 
     EXPECT_NE(hash_value1, hash_value2);
 }
+
+TEST(LieWordTests, TestDeepCombination)
+{
+    LieWord left{2, 3};
+    LieWord right{
+            LieWord{3},
+            LieWord{1, 2}
+    };
+
+    auto word = left * right;
+    std::stringstream ss;
+    word.print(ss);
+
+    EXPECT_EQ(ss.str(), "[[2,3],[3,[1,2]]]");
+}
