@@ -137,11 +137,21 @@ TEST_F(HallBasisTests, CheckKeyEquals)
     const auto word_type = basis->supported_key_types()[0];
     const auto index_type = basis->supported_key_types()[1];
 
-    const rpy::dimn_t indices[] = {0, 1, 2, 5, 10, 27, 40, 77};
+    const rpy::dimn_t indices[] = {
+            0, // 1
+            1, // 2
+            2, // 3
+            5, // [2,3]
+            10,// [2,[2,3]]
+            27,// [3,[3,[1,3]]]
+            40,// [2,[2,[2,[2,3]]]]
+            77 // [[2,3],[3,[1,2]]]
+    };
 
     for (auto& index : indices) {
         auto key = basis->to_key(index);
-        EXPECT_TRUE(basis->equals(key, {&index, index_type}));
+        EXPECT_TRUE(basis->equals(key, {&index, index_type}))
+                << key << ' ' << BasisKeyCRef{&index, index_type};
     }
 }
 
@@ -150,11 +160,21 @@ TEST_F(HallBasisTests, CheckKeyHashEqual)
     const auto word_type = basis->supported_key_types()[0];
     const auto index_type = basis->supported_key_types()[1];
 
-    const rpy::dimn_t indices[] = {0, 1, 2, 5, 10, 27, 40, 77};
+    const rpy::dimn_t indices[] = {
+            0, // 1
+            1, // 2
+            2, // 3
+            5, // [2,3]
+            10,// [2,[2,3]]
+            27,// [3,[3,[1,3]]]
+            40,// [2,[2,[2,[2,3]]]]
+            77 // [[2,3],[3,[1,2]]]
+    };
 
     for (auto& index : indices) {
         auto key = basis->to_key(index);
-        EXPECT_EQ(basis->hash(key), basis->hash({&index, index_type}));
+        EXPECT_EQ(basis->hash(key), basis->hash({&index, index_type}))
+                << key << ' ' << BasisKeyCRef{&index, index_type};
     }
 }
 
@@ -203,11 +223,11 @@ TEST_F(HallBasisTests, CheckParentsIndexPair)
     BasisKeyCRef key{&index, index_type};
     auto parents = basis->parents(key);
 
-    rpy::dimn_t left_idx = 0;
+    rpy::dimn_t left_idx = 0;// 1
     BasisKeyCRef left{&left_idx, index_type};
     EXPECT_EQ(parents.first, left);
 
-    rpy::dimn_t right_idx = 11;
+    rpy::dimn_t right_idx = 1;// 2
     BasisKeyCRef right{&right_idx, index_type};
     EXPECT_EQ(parents.second, right);
 }
@@ -270,3 +290,86 @@ TEST_F(HallBasisTests, CheckToStringIndexHigher)
 
     EXPECT_EQ(basis->to_string(key), "[1,[1,2]]");
 }
+
+// This is the hall set we use in the tests above. The first number is the index
+// and the second part is the expanded key form.
+// 0  1
+// 1  2
+// 2  3
+// 3  [1,2]
+// 4  [1,3]
+// 5  [2,3]
+// 6  [1,[1,2]]
+// 7  [1,[1,3]]
+// 8  [2,[1,2]]
+// 9  [2,[1,3]]
+// 10 [2,[2,3]]
+// 11 [3,[1,2]]
+// 12 [3,[1,3]]
+// 13 [3,[2,3]]
+// 14 [1,[1,[1,2]]]
+// 15 [1,[1,[1,3]]]
+// 16 [2,[1,[1,2]]]
+// 17 [2,[1,[1,3]]]
+// 18 [2,[2,[1,2]]]
+// 19 [2,[2,[1,3]]]
+// 20 [2,[2,[2,3]]]
+// 21 [3,[1,[1,2]]]
+// 22 [3,[1,[1,3]]]
+// 23 [3,[2,[1,2]]]
+// 24 [3,[2,[1,3]]]
+// 25 [3,[2,[2,3]]]
+// 26 [3,[3,[1,2]]]
+// 27 [3,[3,[1,3]]]
+// 28 [3,[3,[2,3]]]
+// 29 [[1,2],[1,3]]
+// 30 [[1,2],[2,3]]
+// 31 [[1,3],[2,3]]
+// 32 [1,[1,[1,[1,2]]]]
+// 33 [1,[1,[1,[1,3]]]]
+// 34 [2,[1,[1,[1,2]]]]
+// 35 [2,[1,[1,[1,3]]]]
+// 36 [2,[2,[1,[1,2]]]]
+// 37 [2,[2,[1,[1,3]]]]
+// 38 [2,[2,[2,[1,2]]]]
+// 39 [2,[2,[2,[1,3]]]]
+// 40 [2,[2,[2,[2,3]]]]
+// 41 [3,[1,[1,[1,2]]]]
+// 42 [3,[1,[1,[1,3]]]]
+// 43 [3,[2,[1,[1,2]]]]
+// 44 [3,[2,[1,[1,3]]]]
+// 45 [3,[2,[2,[1,2]]]]
+// 46 [3,[2,[2,[1,3]]]]
+// 47 [3,[2,[2,[2,3]]]]
+// 48 [3,[3,[1,[1,2]]]]
+// 49 [3,[3,[1,[1,3]]]]
+// 50 [3,[3,[2,[1,2]]]]
+// 51 [3,[3,[2,[1,3]]]]
+// 52 [3,[3,[2,[2,3]]]]
+// 53 [3,[3,[3,[1,2]]]]
+// 54 [3,[3,[3,[1,3]]]]
+// 55 [3,[3,[3,[2,3]]]]
+// 56 [[1,2],[1,[1,2]]]
+// 57 [[1,2],[1,[1,3]]]
+// 58 [[1,2],[2,[1,2]]]
+// 59 [[1,2],[2,[1,3]]]
+// 60 [[1,2],[2,[2,3]]]
+// 61 [[1,2],[3,[1,2]]]
+// 62 [[1,2],[3,[1,3]]]
+// 63 [[1,2],[3,[2,3]]]
+// 64 [[1,3],[1,[1,2]]]
+// 65 [[1,3],[1,[1,3]]]
+// 66 [[1,3],[2,[1,2]]]
+// 67 [[1,3],[2,[1,3]]]
+// 68 [[1,3],[2,[2,3]]]
+// 69 [[1,3],[3,[1,2]]]
+// 70 [[1,3],[3,[1,3]]]
+// 71 [[1,3],[3,[2,3]]]
+// 72 [[2,3],[1,[1,2]]]
+// 73 [[2,3],[1,[1,3]]]
+// 74 [[2,3],[2,[1,2]]]
+// 75 [[2,3],[2,[1,3]]]
+// 76 [[2,3],[2,[2,3]]]
+// 77 [[2,3],[3,[1,2]]]
+// 78 [[2,3],[3,[1,3]]]
+// 79 [[2,3],[3,[2,3]]]
