@@ -169,7 +169,7 @@ void HallBasis::HallSet::grow(deg_t depth)
     if (degree >= depth) { return; }
 
     for (auto d = degree + 1; d <= depth; ++d) {
-        dimn_t index = m_elements.size() - 1;
+        dimn_t index = m_elements.size();
 
         for (deg_t e = 1; 2 * e <= d; ++e) {
             auto i_bounds = m_degree_ranges[e];
@@ -187,7 +187,7 @@ void HallBasis::HallSet::grow(deg_t depth)
                         m_reverse_map.emplace(parents, key);
                     }
                 }
-                RPY_DBG_ASSERT(m_elements.size() == index + 1);
+                RPY_DBG_ASSERT(m_elements.size() == index);
             }
         }
 
