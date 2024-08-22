@@ -228,3 +228,47 @@ TEST_F(HallBasisTests, CheckIsLetter)
         EXPECT_FALSE(basis->is_letter({&index, index_type}));
     }
 }
+
+
+TEST_F(HallBasisTests, ChecKToStringWordLetter)
+{
+    auto key = basis->to_key(0);
+
+    EXPECT_EQ(basis->to_string(key), "1");
+}
+
+TEST_F(HallBasisTests, ChecKToStringWordPair)
+{
+    auto key = basis->to_key(3);
+
+    EXPECT_EQ(basis->to_string(key), "[1,2]");
+}
+
+TEST_F(HallBasisTests, CheckToStringWordHigher)
+{
+    auto key = basis->to_key(6); // [1,[1,2]]
+
+    EXPECT_EQ(basis->to_string(key), "[1,[1,2]]");
+}
+
+
+TEST_F(HallBasisTests, ChecKToStringIndexLetter)
+{
+    BasisKey key(basis->supported_key_types()[1], 0);
+
+    EXPECT_EQ(basis->to_string(key), "1");
+}
+
+TEST_F(HallBasisTests, ChecKToStringIndexPair)
+{
+    BasisKey key(basis->supported_key_types()[1], 0); // [1,2]
+
+    EXPECT_EQ(basis->to_string(key), "[1,2]");
+}
+
+TEST_F(HallBasisTests, CheckToStringIndexHigher)
+{
+    BasisKey key(basis->supported_key_types()[1], 0);// [1,[1,2]]
+
+    EXPECT_EQ(basis->to_string(key), "[1,[1,2]]");
+}
