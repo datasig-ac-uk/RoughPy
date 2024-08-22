@@ -42,7 +42,8 @@ dimn_t Basis::max_dimension() const noexcept { return 0; }
 
 dimn_t Basis::dense_dimension(dimn_t size) const { return size; }
 
-bool Basis::less(BasisKeyCRef RPY_UNUSED_VAR k1, BasisKeyCRef RPY_UNUSED_VAR k2) const
+bool Basis::less(BasisKeyCRef RPY_UNUSED_VAR k1, BasisKeyCRef RPY_UNUSED_VAR k2)
+        const
 {
     RPY_THROW(std::runtime_error, "basis is not ordered");
 }
@@ -101,8 +102,7 @@ let_t Basis::get_letter(BasisKeyCRef RPY_UNUSED_VAR key) const
     RPY_THROW(std::runtime_error, "basis is not word-like");
 }
 
-pair<BasisKey, BasisKey>
-Basis::parents(BasisKeyCRef RPY_UNUSED_VAR key) const
+pair<BasisKey, BasisKey> Basis::parents(BasisKeyCRef RPY_UNUSED_VAR key) const
 {
     RPY_THROW(std::runtime_error, "basis is not word-like");
 }
