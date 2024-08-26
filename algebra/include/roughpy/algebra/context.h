@@ -42,7 +42,6 @@
 #include "key_scalar_stream.h"
 #include "lie.h"
 #include "shuffle_tensor.h"
-#include "tensor_basis.h"
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>

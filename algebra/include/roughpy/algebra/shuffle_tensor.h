@@ -7,7 +7,6 @@
 
 #include "algebra.h"
 #include "roughpy_algebra_export.h"
-#include "tensor_basis.h"
 #include "unital_algebra.h"
 
 namespace rpy {
