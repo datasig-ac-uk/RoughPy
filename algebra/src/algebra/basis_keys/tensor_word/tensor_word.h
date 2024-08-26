@@ -54,6 +54,11 @@ public:
     using container_t::end;
 
     RPY_NO_DISCARD bool is_letter() const noexcept { return size() == 1; }
+    RPY_NO_DISCARD let_t get_letter() const noexcept
+    {
+        RPY_DBG_ASSERT(is_letter());
+        return *begin();
+    }
 
     RPY_NO_DISCARD deg_t degree() const noexcept { return size(); }
 
