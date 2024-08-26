@@ -39,6 +39,9 @@ class ROUGHPY_ALGEBRA_EXPORT TensorBasis : public Basis
     bool is_word(const BasisKeyCRef& key) const noexcept;
     bool is_index(const BasisKeyCRef& key) const noexcept;
 
+
+    string to_string_nofail(const BasisKeyCRef& key) const noexcept;
+
 public:
     static constexpr string_view basis_id = "tensor_basis";
     BasisComparison compare(BasisPointer other) const noexcept override;

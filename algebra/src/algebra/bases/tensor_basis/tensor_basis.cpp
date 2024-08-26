@@ -18,12 +18,12 @@ using namespace rpy::algebra;
 
 namespace {
 
-constexpr const TensorWord* cast_word(const BasisKeyCRef& key) noexcept
+inline const TensorWord* cast_word(const BasisKeyCRef& key) noexcept
 {
     return key.data<TensorWord>();
 }
 
-constexpr dimn_t cast_index(const BasisKeyCRef& key) noexcept
+inline dimn_t cast_index(const BasisKeyCRef& key) noexcept
 {
     return key.value<dimn_t>();
 }
@@ -32,6 +32,7 @@ constexpr dimn_t cast_index(const BasisKeyCRef& key) noexcept
 
 class TensorBasis::Details : containers::Vec<dimn_t>
 {
+    using base_t = containers::Vec<dimn_t>;
     deg_t m_depth;
 
     void grow(deg_t depth)
@@ -97,6 +98,22 @@ bool TensorBasis::is_index(const BasisKeyCRef& key) const noexcept
     return key.type() == m_supported_key_types[1];
 }
 
+string TensorBasis::to_string_nofail(const BasisKeyCRef& key) const noexcept
+{
+
+    if (is_index(key)) { return std::to_string(cast_index(key)); }
+    if (is_word(key)) {
+        std::stringstream ss;
+        cast_word(key)->print(ss);
+        return ss.str();
+    }
+
+    const auto& tp = key.type();
+    if (tp) { return string_cat("of type ", tp->name()); }
+
+    return "undefined type";
+}
+
 TensorBasis::TensorBasis(deg_t width, deg_t depth)
     : Basis(basis_id, {true, true, true}),
       m_width(width),
@@ -143,8 +160,14 @@ string TensorBasis::to_string(BasisKeyCRef key) const
     }
     if (is_index(key)) { const auto index = cast_index(key); }
 }
-bool TensorBasis::equals(BasisKeyCRef k1, BasisKeyCRef k2) const {}
-hash_t TensorBasis::hash(BasisKeyCRef k1) const {}
+bool TensorBasis::equals(BasisKeyCRef k1, BasisKeyCRef k2) const
+{
+    return to_index(k1) == to_index(k2);
+}
+hash_t TensorBasis::hash(BasisKeyCRef k1) const
+{
+    return static_cast<hash_t>(to_index(k1));
+}
 dimn_t TensorBasis::max_dimension() const noexcept
 {
     return Basis::max_dimension();
@@ -155,7 +178,7 @@ dimn_t TensorBasis::dense_dimension(dimn_t size) const
 }
 bool TensorBasis::less(BasisKeyCRef k1, BasisKeyCRef k2) const
 {
-    return Basis::less(k1, k2);
+    return to_index(k1) < to_index(k2);
 }
 dimn_t TensorBasis::to_index(BasisKeyCRef key) const
 {
@@ -174,28 +197,79 @@ algebra::dtl::BasisIterator TensorBasis::keys_end() const
 {
     return Basis::keys_end();
 }
-deg_t TensorBasis::max_degree() const { return Basis::max_degree(); }
-deg_t TensorBasis::degree(BasisKeyCRef key) const { return Basis::degree(key); }
+deg_t TensorBasis::max_degree() const { return m_depth; }
+deg_t TensorBasis::degree(BasisKeyCRef key) const
+{
+    if (is_word(key)) { return cast_word(key)->degree(); }
+    if (is_index(key)) {
+        const auto index = cast_index(key);
+        RPY_CHECK(index < max_dimension());
+
+        const auto sizes = p_details->sizes(m_depth);
+        const auto begin = sizes.begin();
+        const auto end = sizes.end();
+
+        auto it = ranges::lower_bound(begin, end, index);
+        return static_cast<deg_t>(it - begin);
+    }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat(
+                    "key ",
+                    to_string_nofail(key),
+                    " does not belong to this basis"
+            )
+    );
+}
 deg_t TensorBasis::dimension_to_degree(dimn_t dimension) const
 {
-    return Basis::dimension_to_degree(dimension);
+    const auto sizes = p_details->sizes(m_depth);
+    const auto begin = sizes.begin();
+    const auto end = sizes.end();
+
+    const auto it = ranges::lower_bound(begin, end, dimension, std::less_equal{});
+
+    return static_cast<deg_t>(it - begin);
 }
 dimn_t TensorBasis::degree_to_dimension(deg_t degree) const
 {
-    return Basis::degree_to_dimension(degree);
+    RPY_CHECK(degree <= m_depth);
+    const auto sizes = p_details->sizes(m_depth);
+    return sizes[degree];
 }
 KeyRange TensorBasis::iterate_keys_of_degree(deg_t degree) const
 {
     return Basis::iterate_keys_of_degree(degree);
 }
-deg_t TensorBasis::alphabet_size() const { return Basis::alphabet_size(); }
+deg_t TensorBasis::alphabet_size() const { return m_width; }
 bool TensorBasis::is_letter(BasisKeyCRef key) const
 {
-    return Basis::is_letter(key);
+    if (is_word(key)) { return cast_word(key)->is_letter(); }
+    if (is_index(key)) {
+        const auto index = cast_index(key);
+        return 0 < index && index <= static_cast<dimn_t>(m_width);
+    }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat(
+                    "key ",
+                    to_string_nofail(key),
+                    " does not belong to this basis"
+            )
+    );
 }
 let_t TensorBasis::get_letter(BasisKeyCRef key) const
 {
-    return Basis::get_letter(key);
+    RPY_DBG_ASSERT(is_letter(key));
+    if (is_word(key)) {
+        return cast_word(key)->get_letter();
+    }
+    if (is_index(key)) {
+        const auto index = cast_index(key);
+        return static_cast<let_t>(index);
+    }
 }
 pair<BasisKey, BasisKey> TensorBasis::parents(BasisKeyCRef key) const
 {
