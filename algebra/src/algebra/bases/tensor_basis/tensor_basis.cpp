@@ -228,7 +228,8 @@ deg_t TensorBasis::dimension_to_degree(dimn_t dimension) const
     const auto begin = sizes.begin();
     const auto end = sizes.end();
 
-    const auto it = ranges::lower_bound(begin, end, dimension, std::less_equal{});
+    const auto it
+            = ranges::lower_bound(begin, end, dimension, std::less_equal{});
 
     return static_cast<deg_t>(it - begin);
 }
@@ -263,9 +264,7 @@ bool TensorBasis::is_letter(BasisKeyCRef key) const
 let_t TensorBasis::get_letter(BasisKeyCRef key) const
 {
     RPY_DBG_ASSERT(is_letter(key));
-    if (is_word(key)) {
-        return cast_word(key)->get_letter();
-    }
+    if (is_word(key)) { return cast_word(key)->get_letter(); }
     if (is_index(key)) {
         const auto index = cast_index(key);
         return static_cast<let_t>(index);
@@ -273,7 +272,44 @@ let_t TensorBasis::get_letter(BasisKeyCRef key) const
 }
 pair<BasisKey, BasisKey> TensorBasis::parents(BasisKeyCRef key) const
 {
-    return Basis::parents(key);
+    if (is_word(key)) {
+        const auto* word = cast_word(key);
+        return {BasisKey(word->left_parent()), BasisKey(word->right_parent())};
+    }
+
+    if (is_index(key)) {
+        auto index = cast_index(key);
+        if (index == 0) { return {BasisKey(key), BasisKey(key)}; }
+
+        const auto sizes = p_details->sizes(m_depth);
+        const auto begin = sizes.begin();
+        const auto end = sizes.end();
+
+        auto it = ranges::lower_bound(begin + 1, end, index, std::less{});
+        --it;
+        RPY_DBG_ASSERT(*it <= index);
+
+        auto split_deg = static_cast<deg_t>(it - begin);
+
+        index -= *it;
+
+        auto split = sizes[split_deg+1] - sizes[split_deg];
+
+        auto left_index = index / split;
+        auto right_index = index % split;
+
+        return {BasisKey(index_key_type(), left_index), BasisKey(index_key_type(), right_index)};
+
+    }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat(
+                    "key ",
+                    to_string_nofail(key),
+                    " does not belong to this basis"
+            )
+    );
 }
 BasisPointer TensorBasis::get(deg_t width, deg_t depth)
 {
