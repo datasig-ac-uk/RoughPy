@@ -26,6 +26,7 @@ public:
 
 class ToLetterIterator
 {
+    Slice<const dimn_t> m_powers;
     dimn_t m_index = 0;
     deg_t m_width = 0;
     deg_t m_degree = 0;
@@ -39,8 +40,14 @@ public:
 
     constexpr ToLetterIterator() = default;
 
-    constexpr ToLetterIterator(dimn_t index, deg_t width, deg_t degree)
-        : m_index(index),
+    constexpr ToLetterIterator(
+            Slice<const dimn_t> powers,
+            dimn_t index,
+            deg_t width,
+            deg_t degree
+    )
+        : m_powers(powers),
+          m_index(index),
           m_width(width),
           m_degree(degree)
     {
@@ -49,7 +56,8 @@ public:
 
     constexpr reference operator*() const noexcept
     {
-        return static_cast<value_type>(m_index % m_width);
+        if (m_degree == 0) { return 1 + static_cast<value_type>(1 + m_index); }
+        return static_cast<value_type>(1 + (m_index / m_powers[m_degree - 1]));
     }
 
     constexpr pointer operator->() const noexcept
@@ -59,7 +67,8 @@ public:
 
     constexpr ToLetterIterator& operator++() noexcept
     {
-        m_index /= m_width;
+        m_index %= m_powers[m_degree - 1];
+        --m_degree;
         return *this;
     }
 
@@ -96,8 +105,13 @@ public:
     using iterator = ToLetterIterator;
     using const_iterator = ToLetterIterator;
 
-    ToLetterRange(dimn_t index, deg_t width, deg_t degree)
-        : m_begin(index, width, degree)
+    ToLetterRange(
+            Slice<const dimn_t> powers,
+            dimn_t index,
+            deg_t width,
+            deg_t degree
+    )
+        : m_begin(powers, index, width, degree)
     {}
 
     constexpr const_iterator begin() const noexcept { return m_begin; }
