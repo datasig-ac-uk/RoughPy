@@ -92,11 +92,11 @@ TEST_F(HallBasisTests, CheckHasKeyIndexKey)
 
     const rpy::dimn_t indexes[] = {0, 1, 2, 5, 25};
     for (auto& index : indexes) {
-        EXPECT_TRUE(basis->has_key({&index, index_type}));
+        EXPECT_TRUE(basis->has_key({index_type, &index}));
     }
 
     rpy::dimn_t bad_index = 12876;
-    EXPECT_FALSE(basis->has_key({&bad_index, index_type}));
+    EXPECT_FALSE(basis->has_key({index_type, &bad_index}));
 }
 
 TEST_F(HallBasisTests, CheckKeyTypeConversionLetters)
@@ -150,7 +150,7 @@ TEST_F(HallBasisTests, CheckDegreeFunctionLetters)
     for (auto& index : letters) {
         auto key = basis->to_key(index);
         EXPECT_EQ(basis->degree(key), 1) << key;
-        EXPECT_EQ(basis->degree({&index, index_type}), 1) << "Index " << index;
+        EXPECT_EQ(basis->degree({index_type, &index}), 1) << "Index " << index;
     }
 }
 
@@ -163,7 +163,7 @@ TEST_F(HallBasisTests, CheckDegreeFunctionPairs)
     for (auto& index : pairs) {
         auto key = basis->to_key(index);
         EXPECT_EQ(basis->degree(key), 2);
-        EXPECT_EQ(basis->degree({&index, index_type}), 2) << index;
+        EXPECT_EQ(basis->degree({index_type, &index}), 2) << index;
     }
 }
 
@@ -185,8 +185,8 @@ TEST_F(HallBasisTests, CheckKeyEquals)
 
     for (auto& index : indices) {
         auto key = basis->to_key(index);
-        EXPECT_TRUE(basis->equals(key, {&index, index_type}))
-                << key << ' ' << basis->to_string({&index, index_type});
+        EXPECT_TRUE(basis->equals(key, {index_type, &index}))
+                << key << ' ' << basis->to_string({index_type, &index});
     }
 }
 
@@ -208,8 +208,8 @@ TEST_F(HallBasisTests, CheckKeyHashEqual)
 
     for (auto& index : indices) {
         auto key = basis->to_key(index);
-        EXPECT_EQ(basis->hash(key), basis->hash({&index, index_type}))
-                << key << ' ' << basis->to_string({&index, index_type});
+        EXPECT_EQ(basis->hash(key), basis->hash({index_type, &index}))
+                << key << ' ' << basis->to_string({index_type, &index});
     }
 }
 
@@ -242,7 +242,7 @@ TEST_F(HallBasisTests, CheckParentsIndexLetter)
     const rpy::dimn_t letters[] = {0, 1, 2};
 
     for (auto& index : letters) {
-        BasisKeyCRef key{&index, index_type};
+        BasisKeyCRef key{index_type, &index};
         auto parents = basis->parents(key);
 
         EXPECT_TRUE(parents.first.fast_is_zero());
@@ -255,15 +255,15 @@ TEST_F(HallBasisTests, CheckParentsIndexPair)
     const auto index_type = basis->supported_key_types()[1];
 
     rpy::dimn_t index = 3;// [1,2]
-    BasisKeyCRef key{&index, index_type};
+    BasisKeyCRef key{index_type, &index};
     auto parents = basis->parents(key);
 
     rpy::dimn_t left_idx = 0;// 1
-    BasisKeyCRef left{&left_idx, index_type};
+    BasisKeyCRef left{index_type, &left_idx};
     EXPECT_EQ(parents.first, left);
 
     rpy::dimn_t right_idx = 1;// 2
-    BasisKeyCRef right{&right_idx, index_type};
+    BasisKeyCRef right{index_type, &right_idx};
     EXPECT_EQ(parents.second, right);
 }
 
@@ -273,15 +273,15 @@ TEST_F(HallBasisTests, CheckIsLetter)
     const rpy::dimn_t letters[] = {0, 1, 2};
 
     for (auto& index : letters) {
-        BasisKeyCRef key{&index, index_type};
+        BasisKeyCRef key{index_type, &index};
 
         EXPECT_TRUE(basis->is_letter(key)) << basis->to_string(key);
     }
 
     rpy::dimn_t words[] = {4, 7, 15, 22, 55, 72};
     for (auto& index : words) {
-        EXPECT_FALSE(basis->is_letter({&index, index_type}))
-                << basis->to_string({&index, index_type});
+        EXPECT_FALSE(basis->is_letter({index_type, &index}))
+                << basis->to_string({index_type, &index});
     }
 }
 
