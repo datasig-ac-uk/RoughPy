@@ -499,9 +499,13 @@ enable_if_t<!value_like<T>, Value&> Value::operator=(T&& other)
             m_storage.pointer = p_type->allocate_single();
         }
         // Convert the value of other to the current type
-        const auto& conversion = p_type->conversions(*get_type<T>());
-        if (is_rvalue_reference_v<T> && conversion.move_convert) {
-            conversion.move_convert(data(), &other);
+        const auto& conversion = p_type->conversions(*get_type<decay_t<T>>());
+        if constexpr (is_rvalue_reference_v<T&&>) {
+            if (conversion.move_convert) {
+                conversion.move_convert(data(), &other);
+            } else {
+                conversion.convert(data(), &other);
+            }
         } else {
             conversion.convert(data(), &other);
         }
