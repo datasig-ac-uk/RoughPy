@@ -16,4 +16,5 @@ if (ROUGHPY_BUILD_TESTS)
 
     target_link_libraries(test_tensor_basis PRIVATE RoughPy_Algebra GTest::gtest_main)
 
+    gtest_discover_tests(test_tensor_basis)
 endif ()
