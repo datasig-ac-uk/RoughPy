@@ -405,7 +405,7 @@ pair<BasisKey, BasisKey> TensorBasis::parents(BasisKeyCRef key) const
         auto [rem, quo] = remquo(index, split);
 
         return {BasisKey(index_key_type(), 1 + quo),
-                BasisKey(index_key_type(), *(it - 1) + rem)};
+                BasisKey(index_key_type(), *(--it) + rem)};
     }
 
     RPY_THROW(
