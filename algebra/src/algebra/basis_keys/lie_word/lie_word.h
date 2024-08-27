@@ -174,8 +174,10 @@ public:
 
     static inline hash_t hash_binop(hash_t left, hash_t right) noexcept
     {
-        hash_combine(left, right);
-        return left;
+        hash_t result = 0;
+        hash_combine(result, left);
+        hash_combine(result, right);
+        return result;
     }
 
     template <typename LetterFn, typename BinOp>
