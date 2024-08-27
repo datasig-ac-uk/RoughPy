@@ -195,7 +195,7 @@ hash_t TensorBasis::hash(BasisKeyCRef k1) const
 }
 dimn_t TensorBasis::max_dimension() const noexcept
 {
-    return Basis::max_dimension();
+    return p_details->sizes(m_depth)[m_depth];
 }
 dimn_t TensorBasis::dense_dimension(dimn_t size) const
 {
