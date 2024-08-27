@@ -264,11 +264,34 @@ bool TensorBasis::less(BasisKeyCRef k1, BasisKeyCRef k2) const
 }
 dimn_t TensorBasis::to_index(BasisKeyCRef key) const
 {
-    return Basis::to_index(key);
+    if (is_index(key)) { return cast_index(key); }
+    if (is_word(key)) {
+        const auto* word = cast_word(key);
+
+        return ranges::fold_left(
+                *word,
+                static_cast<dimn_t>(0),
+                [width = static_cast<dimn_t>(m_width
+                 )](const auto& acc, const auto& letter) {
+                    return acc * width + static_cast<dimn_t>(letter);
+                }
+        );
+    }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat(
+                    "key ",
+                    to_string_nofail(key),
+                    " does not belong to this basis"
+            )
+    );
 }
 BasisKey TensorBasis::to_key(dimn_t index) const
 {
-    return Basis::to_key(index);
+    RPY_CHECK(index < max_dimension());
+    const auto letter_range = p_details->iterate_letters(index);
+    return BasisKey(TensorWord(letter_range.begin(), letter_range.end()));
 }
 KeyRange TensorBasis::iterate_keys() const { return Basis::iterate_keys(); }
 algebra::dtl::BasisIterator TensorBasis::keys_begin() const
