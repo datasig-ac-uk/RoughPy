@@ -41,8 +41,6 @@ class ROUGHPY_ALGEBRA_EXPORT TensorBasis : public Basis
 
     string to_string_nofail(const BasisKeyCRef& key) const noexcept;
 
-    constexpr const devices::Type* index_word_type() const noexcept { return m_supported_key_types[0].get(); }
-    constexpr const devices::Type* index_key_type() const noexcept { return m_supported_key_types[1].get(); }
     const devices::Type* index_word_type() const noexcept
     {
         return m_supported_key_types[0].get();
