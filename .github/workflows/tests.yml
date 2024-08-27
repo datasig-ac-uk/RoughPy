@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      with:
+        with:
         submodules: true
 
       - uses: actions/setup-python@v5
