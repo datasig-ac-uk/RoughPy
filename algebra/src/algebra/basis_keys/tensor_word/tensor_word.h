@@ -5,6 +5,8 @@
 #ifndef ROUGHPY_TENSOR_WORD_H
 #define ROUGHPY_TENSOR_WORD_H
 
+#include "roughpy/devices/core.h"
+
 #include <boost/container/small_vector.hpp>
 
 #include <roughpy/core/container/vector.h>
@@ -62,8 +64,8 @@ public:
 
     RPY_NO_DISCARD deg_t degree() const noexcept { return size(); }
 
-    RPY_NO_DISCARD optional<TensorWord> left_parent() const noexcept;
-    RPY_NO_DISCARD optional<TensorWord> right_parent() const noexcept;
+    RPY_NO_DISCARD TensorWord left_parent() const noexcept;
+    RPY_NO_DISCARD TensorWord right_parent() const noexcept;
 
     void print(std::ostream& os) const;
 
@@ -109,6 +111,14 @@ inline bool operator>=(const TensorWord& left, const TensorWord& right) noexcept
 }
 
 }// namespace algebra
+
+namespace devices {
+
+template <>
+TypePtr get_type<algebra::TensorWord>();
+
+}
+
 }// namespace rpy
 
 #endif// ROUGHPY_TENSOR_WORD_H

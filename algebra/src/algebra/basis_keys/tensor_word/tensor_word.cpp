@@ -3,6 +3,7 @@
 //
 
 #include "tensor_word.h"
+#include "tensor_word_type.h"
 
 #include <roughpy/core/ranges.h>
 
@@ -16,14 +17,14 @@ TensorWord::TensorWord(const TensorWord& left, const TensorWord& right)
     insert(pos, right.begin(), right.end());
 }
 
-optional<TensorWord> TensorWord::left_parent() const noexcept
+TensorWord TensorWord::left_parent() const noexcept
 {
     if (empty()) { return TensorWord{}; }
 
     return TensorWord{*begin()};
 }
 
-optional<TensorWord> TensorWord::right_parent() const noexcept
+TensorWord TensorWord::right_parent() const noexcept
 {
     if (empty()) { return TensorWord{}; }
     TensorWord result;
@@ -78,4 +79,10 @@ bool algebra::operator<(
     }
 
     return false;
+}
+
+template <>
+devices::TypePtr devices::get_type<TensorWord>()
+{
+    return TensorWordType::get();
 }
