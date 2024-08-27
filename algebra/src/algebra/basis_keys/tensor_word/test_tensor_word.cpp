@@ -54,7 +54,7 @@ TEST(TensorWordTests, TestLeftParentOnEmptyWord)
 TEST(TensorWordTests, TestLeftParentOnSingleLetter)
 {
     TensorWord word{let_t(1)};
-    TensorWord expected{let_t(1)};
+    TensorWord expected{};
     EXPECT_EQ(word.left_parent(), expected);
 }
 
@@ -81,7 +81,7 @@ TEST(TensorWordTests, TestRightParentOnEmptyWord)
 TEST(TensorWordTests, TestRightParentOnSingleLetter)
 {
     TensorWord word{let_t(1)};
-    TensorWord expected;
+    TensorWord expected {1};
     EXPECT_EQ(word.right_parent(), expected);
 }
 
