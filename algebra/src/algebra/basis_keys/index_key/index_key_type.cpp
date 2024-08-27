@@ -95,12 +95,12 @@ void IndexKeyType::display(std::ostream& os, const void* ptr) const
 devices::ConstReference IndexKeyType::zero() const
 {
     static constexpr dimn_t zero = 0;
-    return devices::ConstReference{&zero, this};
+    return devices::ConstReference{this, &zero};
 }
 devices::ConstReference IndexKeyType::one() const
 {
     static constexpr dimn_t one = 1;
-    return devices::ConstReference{&one, this};
+    return devices::ConstReference{this, &one};
 }
 
 devices::TypePtr IndexKeyType::get()
