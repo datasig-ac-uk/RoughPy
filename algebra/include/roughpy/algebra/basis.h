@@ -98,7 +98,7 @@ public:
     BasisKeyCPtr operator->() const noexcept
     {
         RPY_DBG_ASSERT(!m_current.fast_is_zero());
-        return BasisKeyCPtr(m_current.data(), m_current.type());
+        return BasisKeyCPtr(m_current.type(), m_current.data());
     }
 
     friend bool operator==(const BasisIterator& lhs, const BasisIterator& rhs)
