@@ -12,6 +12,7 @@
 #include "index_key_type.h"
 #include "tensor_word.h"
 #include "tensor_word_type.h"
+#include "to_letter_iterator.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
@@ -46,6 +47,9 @@ class TensorBasis::Details : containers::Vec<dimn_t>
     }
 
 public:
+    using typename base_t::const_iterator;
+    using typename base_t::iterator;
+
     Details(deg_t width, deg_t depth) : m_depth{2}
     {
         reserve(depth + 1);
@@ -71,6 +75,9 @@ public:
 
         grow(depth);
     }
+
+    using base_t::begin;
+    using base_t::end;
 
     deg_t max_depth() const noexcept { return static_cast<deg_t>(size() - 1); }
 
@@ -102,6 +109,17 @@ public:
         }
 
         return entry;
+    }
+
+    template <typename Predicate = std::less_equal<>>
+    const_iterator
+    boundary_before_index(dimn_t index, Predicate pred = Predicate{})
+            const noexcept
+    {
+        auto it = ranges::lower_bound(begin() + 1, end(), index, pred);
+        --it;
+        RPY_DBG_ASSERT(pred(*it, index));
+        return it;
     }
 };
 
@@ -182,7 +200,29 @@ string TensorBasis::to_string(BasisKeyCRef key) const
         cast_word(key)->print(ss);
         return ss.str();
     }
-    if (is_index(key)) { const auto index = cast_index(key); }
+    if (is_index(key)) {
+        auto index = cast_index(key);
+        deg_t degree = 0;
+        {
+            auto it = p_details->boundary_before_index(index);
+            degree = static_cast<deg_t>(it - p_details->begin());
+            RPY_CHECK(degree <= m_depth);
+
+            index -= *it;
+        }
+
+        std::stringstream ss;
+        bool first = true;
+        for (const auto letter : dtl::ToLetterRange(index, m_width, degree)) {
+            if (!first) {
+                ss << ',';
+            } else {
+                first = false;
+            }
+            ss << letter;
+        }
+        return ss.str();
+    }
 
     RPY_THROW(
             std::runtime_error,
