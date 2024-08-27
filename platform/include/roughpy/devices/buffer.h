@@ -801,7 +801,7 @@ public:
     ) const noexcept
     {
         RPY_DBG_ASSERT(static_cast<dimn_t>(index) < m_size);
-        return {p_data + index * m_itemsize, m_buffer.type()};
+        return {m_buffer.type(), p_data + index * m_itemsize};
     }
 };
 
