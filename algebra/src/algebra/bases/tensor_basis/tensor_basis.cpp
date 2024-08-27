@@ -132,10 +132,10 @@ string TensorBasis::to_string_nofail(const BasisKeyCRef& key) const noexcept
 
 TensorBasis::TensorBasis(deg_t width, deg_t depth)
     : Basis(basis_id, {true, true, true}),
-      m_width(width),
-      m_depth(depth),
       m_supported_key_types{TensorWordType::get(), IndexKeyType::get()},
-      p_details(Details::get(width, depth))
+      p_details(Details::get(width, depth)),
+      m_width(width),
+      m_depth(depth)
 {}
 
 BasisComparison TensorBasis::compare(BasisPointer other) const noexcept

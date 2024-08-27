@@ -25,14 +25,16 @@ namespace algebra {
  */
 class ROUGHPY_ALGEBRA_EXPORT TensorBasis : public Basis
 {
-    deg_t m_width;
-    deg_t m_depth;
+    Slice<const dimn_t> m_degree_sizes;
+    std::array<KeyTypePtr, 2> m_supported_key_types;
 
     class Details;
     std::shared_ptr<const Details> p_details;
 
-    Slice<const dimn_t> m_degree_sizes;
-    std::array<KeyTypePtr, 2> m_supported_key_types;
+    deg_t m_width;
+    deg_t m_depth;
+
+
 
     TensorBasis(deg_t width, deg_t depth);
 
