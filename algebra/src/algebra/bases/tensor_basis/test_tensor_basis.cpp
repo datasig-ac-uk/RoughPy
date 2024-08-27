@@ -214,16 +214,56 @@ TEST_F(TensorBasisTests, CheckKeyHashEqual)
     }
 }
 
-TEST_F(TensorBasisTests, CheckParentsEmptyWord)
+TEST_F(TensorBasisTests, CheckParentsWordEmptyWord)
 {
     const auto word_type = basis->supported_key_types()[0];
-    const auto index_type = basis->supported_key_types()[1];
 
     BasisKey word(word_type);
     const auto word_parents = basis->parents(word);
 
     EXPECT_EQ(word_parents.first, word);
     EXPECT_EQ(word_parents.second, word);
+}
+
+TEST_F(TensorBasisTests, CheckParentsWordLetter)
+{
+    const auto word_type = basis->supported_key_types()[0];
+
+    const rpy::dimn_t index = 2;
+    auto word = basis->to_key(index);
+
+    const auto word_parents = basis->parents(word);
+    EXPECT_EQ(word_parents.first, BasisKey(word_type));
+    EXPECT_EQ(word_parents.second, word);
+}
+
+TEST_F(TensorBasisTests, CheckParentsWordPair)
+{
+    const auto word_type = basis->supported_key_types()[0];
+
+    const rpy::dimn_t index = 5;// (1,2)
+    auto word = basis->to_key(index);
+
+    const auto word_parents = basis->parents(word);
+    EXPECT_EQ(word_parents.first, BasisKey(word_type, 1));
+    EXPECT_EQ(word_parents.second, BasisKey(word_type, 2));
+}
+
+TEST_F(TensorBasisTests, CheckParentsWordDeg3)
+{
+    const auto word_type = basis->supported_key_types()[0];
+
+    const rpy::dimn_t index = 16;// (1,2,3)
+    auto word = basis->to_key(index);
+
+    const auto word_parents = basis->parents(word);
+    EXPECT_EQ(word_parents.first, BasisKey(word_type, 1));
+    EXPECT_EQ(word_parents.second, basis->to_key(5));
+}
+
+TEST_F(TensorBasisTests, CheckParentsIndexEmptyWord)
+{
+    const auto index_type = basis->supported_key_types()[1];
 
     BasisKey index(index_type, 0);
     const auto index_parents = basis->parents(index);
@@ -232,51 +272,33 @@ TEST_F(TensorBasisTests, CheckParentsEmptyWord)
     EXPECT_EQ(index_parents.second, index);
 }
 
-TEST_F(TensorBasisTests, CheckParentsLetter)
+TEST_F(TensorBasisTests, CheckParentsIndexLetter)
 {
-    const auto word_type = basis->supported_key_types()[0];
     const auto index_type = basis->supported_key_types()[1];
 
     const rpy::dimn_t index = 2;
-    auto word = basis->to_key(index);
-
-    const auto word_parents = basis->parents(word);
-    EXPECT_EQ(word_parents.first, BasisKey(word_type));
-    EXPECT_EQ(word_parents.second, word);
 
     const auto index_parents = basis->parents({&index, index_type});
     EXPECT_EQ(index_parents.first, BasisKey(index_type, 0));
     EXPECT_EQ(index_parents.second, BasisKey(index_type, index));
 }
 
-TEST_F(TensorBasisTests, CheckParentsPair)
+TEST_F(TensorBasisTests, CheckParentsIndexPair)
 {
-    const auto word_type = basis->supported_key_types()[0];
     const auto index_type = basis->supported_key_types()[1];
 
     const rpy::dimn_t index = 5;// (1,2)
-    auto word = basis->to_key(index);
-
-    const auto word_parents = basis->parents(word);
-    EXPECT_EQ(word_parents.first, BasisKey(word_type, 1));
-    EXPECT_EQ(word_parents.second, BasisKey(word_type, 2));
 
     const auto index_parents = basis->parents({&index, index_type});
     EXPECT_EQ(index_parents.first, BasisKey(index_type, 1));
     EXPECT_EQ(index_parents.second, BasisKey(index_type, 2));
 }
 
-TEST_F(TensorBasisTests, CheckParentsDeg3)
+TEST_F(TensorBasisTests, CheckParentsIndexDeg3)
 {
-    const auto word_type = basis->supported_key_types()[0];
     const auto index_type = basis->supported_key_types()[1];
 
     const rpy::dimn_t index = 16;// (1,2,3)
-    auto word = basis->to_key(index);
-
-    const auto word_parents = basis->parents(word);
-    EXPECT_EQ(word_parents.first, BasisKey(word_type, 1));
-    EXPECT_EQ(word_parents.second, basis->to_key(5));
 
     const auto index_parents = basis->parents({&index, index_type});
     EXPECT_EQ(index_parents.first, BasisKey(index_type, 1));
@@ -285,7 +307,6 @@ TEST_F(TensorBasisTests, CheckParentsDeg3)
 
 TEST_F(TensorBasisTests, CheckIsLetterEmptyWord)
 {
-
     const auto word_type = basis->supported_key_types()[0];
     const auto index_type = basis->supported_key_types()[1];
 
