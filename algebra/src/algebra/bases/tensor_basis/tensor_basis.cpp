@@ -294,6 +294,15 @@ let_t TensorBasis::get_letter(BasisKeyCRef key) const
         const auto index = cast_index(key);
         return static_cast<let_t>(index);
     }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat(
+                    "key ",
+                    to_string_nofail(key),
+                    " does not belong to this basis"
+            )
+    );
 }
 pair<BasisKey, BasisKey> TensorBasis::parents(BasisKeyCRef key) const
 {
