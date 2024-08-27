@@ -112,7 +112,7 @@ public:
 
     Value(TypePtr type) : p_type(std::move(type))
     {
-        if (is_inline_stored()) {
+        if (!is_inline_stored()) {
             m_storage.pointer = p_type->allocate_single();
         }
     }
