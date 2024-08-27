@@ -39,7 +39,13 @@ public:
 
     constexpr ToLetterIterator() = default;
 
-    constexpr ToLetterIterator(dimn_t index, deg_t width, deg_t degree);
+    constexpr ToLetterIterator(dimn_t index, deg_t width, deg_t degree)
+        : m_index(index),
+          m_width(width),
+          m_degree(degree)
+    {
+        RPY_DBG_ASSERT(index < const_power(static_cast<dimn_t>(width), degree));
+    }
 
     constexpr reference operator*() const noexcept
     {
@@ -81,14 +87,12 @@ public:
     }
 };
 
-
 class ToLetterRange
 {
     ToLetterIterator m_begin;
-    ToLetterIterator m_end {};
+    ToLetterIterator m_end{};
 
 public:
-
     using iterator = ToLetterIterator;
     using const_iterator = ToLetterIterator;
 
@@ -96,10 +100,8 @@ public:
         : m_begin(index, width, degree)
     {}
 
-
     constexpr const_iterator begin() const noexcept { return m_begin; }
     constexpr const_iterator end() const noexcept { return m_end; }
-
 };
 
 }// namespace dtl
