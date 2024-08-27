@@ -175,6 +175,15 @@ string TensorBasis::to_string(BasisKeyCRef key) const
         return ss.str();
     }
     if (is_index(key)) { const auto index = cast_index(key); }
+
+    RPY_THROW(
+            std::runtime_error,
+            string_cat(
+                    "key ",
+                    to_string_nofail(key),
+                    " does not belong to this basis"
+            )
+    );
 }
 bool TensorBasis::equals(BasisKeyCRef k1, BasisKeyCRef k2) const
 {
