@@ -81,43 +81,6 @@ RPY_NO_DISCARD constexpr size_t static_log2p1(size_t value) noexcept
     return (value == 0) ? 0 : 1 + static_log2p1(value >> 1);
 }
 
-/**
- * @brief
- * @tparam T
- */
-template <typename T>
-class MaybeOwned
-{
-    enum State
-    {
-        IsOwned,
-        IsBorrowed
-    };
-
-    T* p_data;
-    State m_state;
-
-public:
-    constexpr MaybeOwned(std::nullptr_t) : p_data(nullptr), m_state(IsOwned) {}
-    constexpr MaybeOwned(T* ptr) : p_data(ptr), m_state(IsBorrowed) {}
-
-    ~MaybeOwned()
-    {
-        if (m_state == IsOwned) { delete[] p_data; }
-    }
-
-    constexpr MaybeOwned& operator=(T* ptr)
-    {
-        p_data = ptr;
-        m_state = IsOwned;
-        return *this;
-    }
-
-    RPY_NO_DISCARD operator T*() const noexcept { return p_data; }
-
-    RPY_NO_DISCARD operator bool() const noexcept { return p_data != nullptr; }
-};
-
 template <typename I, typename J>
 RPY_NO_DISCARD constexpr enable_if_t<is_integral_v<I>, I>
 round_up_divide(I value, J divisor) noexcept
@@ -154,6 +117,32 @@ RPY_NO_DISCARD constexpr enable_if_t<is_integral_v<I>, I> const_log(I arg
     return arg >= static_cast<I>(Base)
             ? 1 + const_log<Base>(static_cast<I>(arg / Base))
             : 0;
+}
+
+template <typename I>
+RPY_NO_DISCARD enable_if_t<is_integral_v<I>, bool> is_odd(I arg) noexcept
+{
+    return (arg % 2) == 1;
+}
+
+template <typename I>
+RPY_NO_DISCARD enable_if_t<is_integral_v<I>, bool> is_even(I arg) noexcept
+{
+    return (arg % 2) == 0;
+}
+
+template <typename I, typename E>
+RPY_NO_DISCARD constexpr enable_if_t<is_integral_v<E>, I>
+const_power(I arg, E exponent) noexcept
+{
+    if (exponent == 0) { return 1; }
+    if (exponent == 1) { return arg; }
+
+    const auto half_power = const_power(arg, exponent / 2);
+
+    if (is_odd(exponent)) { return arg * half_power * half_power; }
+
+    return half_power * half_power;
 }
 
 /**
