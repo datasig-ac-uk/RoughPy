@@ -19,7 +19,7 @@ TensorWord::TensorWord(const TensorWord& left, const TensorWord& right)
 
 TensorWord TensorWord::left_parent() const noexcept
 {
-    if (empty()) { return TensorWord{}; }
+    if (size() <= 1) { return TensorWord{}; }
 
     return TensorWord{*begin()};
 }
@@ -27,8 +27,9 @@ TensorWord TensorWord::left_parent() const noexcept
 TensorWord TensorWord::right_parent() const noexcept
 {
     if (empty()) { return TensorWord{}; }
+    if (is_letter()) { return *this; }
     TensorWord result;
-    result.assign(++begin(), end());
+    result.assign(begin() + 1, end());
     return result;
 }
 

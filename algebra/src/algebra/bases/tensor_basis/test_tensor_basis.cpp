@@ -245,8 +245,8 @@ TEST_F(TensorBasisTests, CheckParentsWordPair)
     auto word = basis->to_key(index);
 
     const auto word_parents = basis->parents(word);
-    EXPECT_EQ(word_parents.first, BasisKey(word_type, 1));
-    EXPECT_EQ(word_parents.second, BasisKey(word_type, 2));
+    EXPECT_EQ(word_parents.first, basis->to_key(1));
+    EXPECT_EQ(word_parents.second, basis->to_key(2));
 }
 
 TEST_F(TensorBasisTests, CheckParentsWordDeg3)
@@ -257,7 +257,7 @@ TEST_F(TensorBasisTests, CheckParentsWordDeg3)
     auto word = basis->to_key(index);
 
     const auto word_parents = basis->parents(word);
-    EXPECT_EQ(word_parents.first, BasisKey(word_type, 1));
+    EXPECT_EQ(word_parents.first, basis->to_key(1));
     EXPECT_EQ(word_parents.second, basis->to_key(5));
 }
 
