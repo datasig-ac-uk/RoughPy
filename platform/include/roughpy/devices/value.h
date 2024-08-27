@@ -223,7 +223,7 @@ public:
     using const_pointer_type = ConstPointer;
     using pointer_type = Pointer;
 
-    ConstReference(const void* val, TypePtr type)
+    ConstReference(TypePtr type, const void* val)
         : p_val(val),
           p_type(std::move(type))
     {
@@ -284,7 +284,7 @@ public:
     using pointer_type = Pointer;
 
     explicit TypedConstReference(const T& val)
-        : ConstReference(std::addressof(val), get_type<T>())
+        : ConstReference(get_type<T>(), std::addressof(val))
     {}
 
     template <typename U>
@@ -312,7 +312,7 @@ public:
     using pointer_type = Pointer;
 
     // ReSharper disable once CppParameterMayBeConstPtrOrRef
-    Reference(void* val, TypePtr type) : ConstReference(val, std::move(type)) {}
+    Reference(TypePtr type, void* val) : ConstReference(std::move(type), val) {}
 
     using ConstReference::data;
 
@@ -441,8 +441,8 @@ public:
 
     constexpr TypedReference(T& t)// NOLINT(*-explicit-constructor)
         : Reference(
-                  const_cast<remove_cv_t<T>*>(std::addressof(t)),
-                  devices::get_type<T>()
+                  devices::get_type<T>(),
+                  const_cast<remove_cv_t<T>*>(std::addressof(t))
           )
     {}
 
@@ -472,12 +472,12 @@ public:
 
 inline Value::operator ConstReference() const noexcept
 {
-    return ConstReference(data(), p_type);
+    return ConstReference(p_type, data());
 }
 
 inline Value::operator Reference() noexcept
 {
-    return Reference(data(), p_type);
+    return Reference(p_type, data());
 }
 
 inline bool Value::is_zero() const
