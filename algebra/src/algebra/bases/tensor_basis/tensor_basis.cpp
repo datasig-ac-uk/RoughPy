@@ -34,12 +34,14 @@ class TensorBasis::Details : containers::Vec<dimn_t>
 {
     using base_t = containers::Vec<dimn_t>;
     deg_t m_depth;
+    containers::Vec<dimn_t> m_powers;
 
     void grow(deg_t depth)
     {
-        const auto& width = operator[](1);
+        const auto& width = m_powers[1];
         for (; m_depth <= depth; ++m_depth) {
             emplace_back(1 + width * back());
+            m_powers.emplace_back(m_powers.back() * width);
         }
     }
 
@@ -48,7 +50,13 @@ public:
     {
         reserve(depth + 1);
         emplace_back(1);
-        emplace_back(width);
+        emplace_back(1 + width);
+
+        m_powers.reserve(depth + 1);
+        m_powers.insert(
+                m_powers.end(),
+                {static_cast<dimn_t>(1), static_cast<dimn_t>(width)}
+        );
         grow(depth);
     }
 
@@ -57,6 +65,9 @@ public:
         RPY_DBG_ASSERT(depth > old.m_depth);
         reserve(depth + 1);
         insert(end(), old.begin(), old.end());
+
+        m_powers.reserve(depth + 1);
+        insert(m_powers.end(), old.m_powers.begin(), old.m_powers.end());
 
         grow(depth);
     }
@@ -67,6 +78,11 @@ public:
     {
         RPY_DBG_ASSERT(depth < size());
         return {data(), static_cast<dimn_t>(1 + depth)};
+    }
+
+    Slice<const dimn_t> powers() const noexcept
+    {
+        return {m_powers.data(), m_powers.size()};
     }
 
     static std::shared_ptr<const Details> get(deg_t width, deg_t depth)
