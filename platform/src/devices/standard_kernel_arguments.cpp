@@ -273,8 +273,8 @@ ConstReference StandardKernelArguments::get_value(dimn_t index) const
             )
     );
     return ConstReference(
-            m_args[index].ptr,
-            m_types[m_signature[index].type_index]
+            m_types[m_signature[index].type_index],
+            m_args[index].ptr
     );
 }
 const operators::Operator& StandardKernelArguments::get_operator(dimn_t index
