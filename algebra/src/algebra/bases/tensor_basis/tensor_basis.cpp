@@ -396,13 +396,13 @@ pair<BasisKey, BasisKey> TensorBasis::parents(BasisKeyCRef key) const
 
         auto it = p_details->boundary_before_index(index);
 
-        auto degree = static_cast<deg_t>(it - p_details->begin()) - 1;
+        auto degree = static_cast<deg_t>(it - p_details->begin());
 
         index -= *it;
 
         auto split = p_details->powers()[degree - 1];
 
-        auto [rem, quo] = remquo(index, split);
+        auto [quo, rem] = remquo(index, split);
 
         return {BasisKey(index_key_type(), 1 + quo),
                 BasisKey(index_key_type(), *(--it) + rem)};
