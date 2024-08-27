@@ -7,10 +7,7 @@
 using namespace rpy;
 using namespace rpy::scalars;
 
-const devices::Buffer& ScalarArray::buffer() const
-{
-    return *this;
-}
+const devices::Buffer& ScalarArray::buffer() const { return *this; }
 devices::Buffer& ScalarArray::mut_buffer()
 {
     RPY_CHECK(!is_const());
@@ -21,10 +18,7 @@ void ScalarArray::check_for_ptr_access(bool mut) const
     RPY_CHECK(is_host());
     RPY_CHECK(!mut || mode() != devices::BufferMode::Read);
 }
-ScalarArray ScalarArray::borrow() const
-{
-    return *this;
-}
+ScalarArray ScalarArray::borrow() const { return *this; }
 
 ScalarArray ScalarArray::borrow_mut()
 {
@@ -37,7 +31,7 @@ ScalarCRef ScalarArray::operator[](dimn_t i) const
     RPY_CHECK(i < size() && is_host());
     const TypePtr tp = type();
     const auto* p = static_cast<const byte*>(ptr()) + i * size_of(*tp);
-    return ScalarCRef(p, std::move(tp));
+    return ScalarCRef(std::move(tp), p);
 }
 
 ScalarRef ScalarArray::operator[](dimn_t i)
@@ -45,7 +39,7 @@ ScalarRef ScalarArray::operator[](dimn_t i)
     RPY_CHECK(i < size() && is_host() && !is_const());
     const TypePtr tp = type();
     auto* p = static_cast<byte*>(ptr()) + i * size_of(*tp);
-    return ScalarRef(p, std::move(tp));
+    return ScalarRef(std::move(tp), p);
 }
 
 ScalarArray ScalarArray::operator[](SliceIndex index)
