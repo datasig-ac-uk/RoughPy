@@ -40,6 +40,11 @@ public:
     TensorWord(const TensorWord&) = default;
     TensorWord(TensorWord&&) noexcept = default;
 
+    template <typename It>
+    TensorWord(It&& begin, It&& end)
+        : container_t(std::forward<It>(begin), std::forward<It>(end))
+    {}
+
     template <typename I, typename = enable_if_t<is_integral_v<I>>>
     TensorWord(std::initializer_list<I> args)
     {
