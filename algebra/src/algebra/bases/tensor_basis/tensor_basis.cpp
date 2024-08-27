@@ -162,8 +162,16 @@ Slice<const devices::TypePtr> TensorBasis::supported_key_types() const noexcept
 }
 bool TensorBasis::has_key(BasisKeyCRef key) const noexcept
 {
-    if (is_word(key)) { return true; }
-    if (is_index(key)) { return true; }
+    if (is_word(key)) {
+        const auto* word = cast_word(key);
+
+        if (word->degree() > m_depth) { return false; }
+
+        return ranges::all_of(*word, [width = m_width](const auto& letter) {
+            return 0 < letter && letter <= static_cast<decltype(letter)>(width);
+        });
+    }
+    if (is_index(key)) { return cast_index(key) < max_dimension(); }
 
     return false;
 }
