@@ -5,7 +5,7 @@
 #ifndef ROUGHPY_ALGEBRA_TENSOR_BASIS_H
 #define ROUGHPY_ALGEBRA_TENSOR_BASIS_H
 
-#include "basis.h"
+#include <roughpy/algebra/basis.h>
 
 #include <roughpy/core/container/vector.h>
 #include <roughpy/devices/buffer.h>
