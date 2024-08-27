@@ -164,20 +164,20 @@ template <typename T>
 ConstReference FundamentalType<T>::zero() const
 {
     static constexpr T zero{};
-    return ConstReference{&zero, this};
+    return ConstReference{this, &zero};
 }
 template <typename T>
 ConstReference FundamentalType<T>::one() const
 {
     static constexpr T one{1};
-    return ConstReference{&one, this};
+    return ConstReference{this, &one};
 }
 template <typename T>
 ConstReference FundamentalType<T>::mone() const
 {
     if constexpr (is_signed_v<T>) {
         static constexpr T mone{-1};
-        return ConstReference{&mone, this};
+        return ConstReference{this, &mone};
     } else {
         return Type::mone();
     }
