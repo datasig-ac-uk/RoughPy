@@ -95,7 +95,7 @@ TEST_F(TensorBasisTests, CheckHasKeyIndexKey)
     const auto index_type = basis->supported_key_types()[1];
 
     for (rpy::dimn_t index : {0, 1, 3, 10, 26, 65, 193}) {
-        EXPECT_TRUE(basis->has_key({&index, index_type}));
+        EXPECT_TRUE(basis->has_key({index_type, &index}));
     }
 }
 
@@ -157,7 +157,7 @@ TEST_F(TensorBasisTests, CheckDegreeFunctionLetter)
         auto word = basis->to_key(index);
 
         EXPECT_EQ(basis->degree(word), 1);
-        EXPECT_EQ(basis->degree({&index, index_type}), 1);
+        EXPECT_EQ(basis->degree({index_type, &index}), 1);
     }
 }
 
@@ -169,7 +169,7 @@ TEST_F(TensorBasisTests, CheckDegreeFunctionPairs)
         auto word = basis->to_key(index);
 
         EXPECT_EQ(basis->degree(word), 2);
-        EXPECT_EQ(basis->degree({&index, index_type}), 2);
+        EXPECT_EQ(basis->degree({index_type, &index}), 2);
     }
 }
 
@@ -181,7 +181,7 @@ TEST_F(TensorBasisTests, CheckDegreeFunctionDegree3)
         auto word = basis->to_key(index);
 
         EXPECT_EQ(basis->degree(word), 3);
-        EXPECT_EQ(basis->degree({&index, index_type}), 3);
+        EXPECT_EQ(basis->degree({index_type, &index}), 3);
     }
 }
 
@@ -195,9 +195,9 @@ TEST_F(TensorBasisTests, CheckKeyEquals)
     for (auto& index : indices) {
         auto key = basis->to_key(index);
         EXPECT_TRUE(basis->equals(key, key));
-        EXPECT_TRUE(basis->equals({&index, index_type}, {&index, index_type}));
-        EXPECT_TRUE(basis->equals(key, {&index, index_type}))
-                << key << ' ' << basis->to_string({&index, index_type});
+        EXPECT_TRUE(basis->equals({index_type, &index}, {index_type, &index}));
+        EXPECT_TRUE(basis->equals(key, {index_type, &index}))
+                << key << ' ' << basis->to_string({index_type, &index});
     }
 }
 
@@ -210,7 +210,7 @@ TEST_F(TensorBasisTests, CheckKeyHashEqual)
 
     for (auto& index : indices) {
         auto key = basis->to_key(index);
-        EXPECT_EQ(basis->hash(key), basis->hash({&index, index_type}));
+        EXPECT_EQ(basis->hash(key), basis->hash({index_type, &index}));
     }
 }
 
@@ -278,7 +278,7 @@ TEST_F(TensorBasisTests, CheckParentsIndexLetter)
 
     const rpy::dimn_t index = 2;
 
-    const auto index_parents = basis->parents({&index, index_type});
+    const auto index_parents = basis->parents({index_type, &index});
     EXPECT_TRUE(index_parents.first.fast_is_zero());
     EXPECT_EQ(index_parents.second, BasisKey(index_type, index));
 }
@@ -289,7 +289,7 @@ TEST_F(TensorBasisTests, CheckParentsIndexPair)
 
     const rpy::dimn_t index = 5;// (1,2)
 
-    const auto index_parents = basis->parents({&index, index_type});
+    const auto index_parents = basis->parents({index_type, &index});
     EXPECT_EQ(index_parents.first, BasisKey(index_type, 1));
     EXPECT_EQ(index_parents.second, BasisKey(index_type, 2));
 }
@@ -300,7 +300,7 @@ TEST_F(TensorBasisTests, CheckParentsIndexDeg3)
 
     const rpy::dimn_t index = 18;// (1,2,3)
 
-    const auto index_parents = basis->parents({&index, index_type});
+    const auto index_parents = basis->parents({index_type, &index});
     EXPECT_EQ(index_parents.first, BasisKey(index_type, 1));
     EXPECT_EQ(index_parents.second, BasisKey(index_type, 9));
 }
@@ -325,7 +325,7 @@ TEST_F(TensorBasisTests, CheckIsLetterLetters)
     for (rpy::dimn_t index : {1, 2, 3}) {
         auto key = basis->to_key(index);
         EXPECT_TRUE(basis->is_letter(key));
-        EXPECT_TRUE(basis->is_letter({&index, index_type}));
+        EXPECT_TRUE(basis->is_letter({index_type, &index}));
     }
 }
 
@@ -337,7 +337,7 @@ TEST_F(TensorBasisTests, CheckIsLetterHigherDegree)
     for (rpy::dimn_t index : {4, 8, 15, 22, 36, 49, 63, 125, 183, 211}) {
         auto key = basis->to_key(index);
         EXPECT_FALSE(basis->is_letter(key));
-        EXPECT_FALSE(basis->is_letter({&index, index_type}));
+        EXPECT_FALSE(basis->is_letter({index_type, &index}));
     }
 }
 
@@ -388,7 +388,7 @@ TEST_F(TensorBasisTests, CheckToStringIndexLetter)
     const auto index_type = basis->supported_key_types()[1];
     rpy::dimn_t index = 2;
 
-    EXPECT_EQ(basis->to_string({&index, index_type}), "2");
+    EXPECT_EQ(basis->to_string({index_type, &index}), "2");
 }
 
 TEST_F(TensorBasisTests, CheckToStringIndexPair)
@@ -396,14 +396,14 @@ TEST_F(TensorBasisTests, CheckToStringIndexPair)
     const auto index_type = basis->supported_key_types()[1];
     rpy::dimn_t index = 5;
 
-    EXPECT_EQ(basis->to_string({&index, index_type}), "1,2");
+    EXPECT_EQ(basis->to_string({index_type, &index}), "1,2");
 }
 
 TEST_F(TensorBasisTests, CheckToStringIndexDeg3)
 {
     const auto index_type = basis->supported_key_types()[1];
     rpy::dimn_t index = 18;
-    EXPECT_EQ(basis->to_string({&index, index_type}), "1,2,3");
+    EXPECT_EQ(basis->to_string({index_type, &index}), "1,2,3");
 }
 
 // The dimension of the tensor algebra for each degree is as follows
