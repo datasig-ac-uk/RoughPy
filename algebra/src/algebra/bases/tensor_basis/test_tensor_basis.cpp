@@ -258,7 +258,7 @@ TEST_F(TensorBasisTests, CheckParentsWordDeg3)
 
     const auto word_parents = basis->parents(word);
     EXPECT_EQ(word_parents.first, basis->to_key(1));
-    EXPECT_EQ(word_parents.second, basis->to_key(5));
+    EXPECT_EQ(word_parents.second, basis->to_key(9));
 }
 
 TEST_F(TensorBasisTests, CheckParentsIndexEmptyWord)
@@ -302,7 +302,7 @@ TEST_F(TensorBasisTests, CheckParentsIndexDeg3)
 
     const auto index_parents = basis->parents({&index, index_type});
     EXPECT_EQ(index_parents.first, BasisKey(index_type, 1));
-    EXPECT_EQ(index_parents.second, BasisKey(index_type, 5));
+    EXPECT_EQ(index_parents.second, BasisKey(index_type, 9));
 }
 
 TEST_F(TensorBasisTests, CheckIsLetterEmptyWord)
