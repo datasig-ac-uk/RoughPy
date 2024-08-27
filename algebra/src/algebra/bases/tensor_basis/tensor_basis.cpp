@@ -383,32 +383,29 @@ pair<BasisKey, BasisKey> TensorBasis::parents(BasisKeyCRef key) const
 {
     if (is_word(key)) {
         const auto* word = cast_word(key);
+        if (word->is_letter()) { return {BasisKey(), BasisKey(*word)}; }
         return {BasisKey(word->left_parent()), BasisKey(word->right_parent())};
     }
 
     if (is_index(key)) {
         auto index = cast_index(key);
         if (index == 0) { return {BasisKey(key), BasisKey(key)}; }
+        if (p_details->is_letter(index)) {
+            return {BasisKey(), BasisKey(key.type(), index)};
+        }
 
-        const auto sizes = p_details->sizes(m_depth);
-        const auto begin = sizes.begin();
-        const auto end = sizes.end();
+        auto it = p_details->boundary_before_index(index);
 
-        auto it = ranges::lower_bound(begin + 1, end, index, std::less{});
-        --it;
-        RPY_DBG_ASSERT(*it <= index);
-
-        auto split_deg = static_cast<deg_t>(it - begin);
+        auto degree = static_cast<deg_t>(it - p_details->begin()) - 1;
 
         index -= *it;
 
-        auto split = sizes[split_deg + 1] - sizes[split_deg];
+        auto split = p_details->powers()[degree - 1];
 
-        auto left_index = index / split;
-        auto right_index = index % split;
+        auto [rem, quo] = remquo(index, split);
 
-        return {BasisKey(index_key_type(), left_index),
-                BasisKey(index_key_type(), right_index)};
+        return {BasisKey(index_key_type(), 1 + quo),
+                BasisKey(index_key_type(), *(it - 1) + rem)};
     }
 
     RPY_THROW(
