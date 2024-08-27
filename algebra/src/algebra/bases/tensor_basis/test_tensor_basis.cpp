@@ -253,7 +253,7 @@ TEST_F(TensorBasisTests, CheckParentsWordDeg3)
 {
     const auto word_type = basis->supported_key_types()[0];
 
-    const rpy::dimn_t index = 16;// (1,2,3)
+    const rpy::dimn_t index = 18;// (1,2,3)
     auto word = basis->to_key(index);
 
     const auto word_parents = basis->parents(word);
@@ -298,7 +298,7 @@ TEST_F(TensorBasisTests, CheckParentsIndexDeg3)
 {
     const auto index_type = basis->supported_key_types()[1];
 
-    const rpy::dimn_t index = 16;// (1,2,3)
+    const rpy::dimn_t index = 18;// (1,2,3)
 
     const auto index_parents = basis->parents({&index, index_type});
     EXPECT_EQ(index_parents.first, BasisKey(index_type, 1));
