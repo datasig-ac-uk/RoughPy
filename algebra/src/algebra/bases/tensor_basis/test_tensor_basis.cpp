@@ -62,13 +62,15 @@ TEST_F(TensorBasisTests, TestDimensionToDegree)
 
 TEST_F(TensorBasisTests, TestDenseDimensionAdjustment)
 {
-    EXPECT_EQ(basis->dense_dimension(0), 1);
+    EXPECT_EQ(basis->dense_dimension(0), 0);
     EXPECT_EQ(basis->dense_dimension(1), 1);
     EXPECT_EQ(basis->dense_dimension(2), 4);
     EXPECT_EQ(basis->dense_dimension(4), 4);
     EXPECT_EQ(basis->dense_dimension(5), 13);
     EXPECT_EQ(basis->dense_dimension(13), 13);
-    EXPECT_EQ(basis->dense_dimension(14), 121);
+    EXPECT_EQ(basis->dense_dimension(14), 40);
+    EXPECT_EQ(basis->dense_dimension(40), 40);
+    EXPECT_EQ(basis->dense_dimension(41), 121);
     EXPECT_EQ(basis->dense_dimension(121), 121);
     EXPECT_EQ(basis->dense_dimension(122), 364);
     EXPECT_EQ(basis->dense_dimension(364), 364);
