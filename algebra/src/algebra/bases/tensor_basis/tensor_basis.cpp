@@ -52,9 +52,8 @@ public:
 
     Details(deg_t width, deg_t depth) : m_depth{2}
     {
-        reserve(depth + 1);
-        emplace_back(1);
-        emplace_back(1 + width);
+        reserve(depth + 2);
+        insert(end(), {0, 1, 1 + width});
 
         m_powers.reserve(depth + 1);
         m_powers.insert(
@@ -67,7 +66,7 @@ public:
     Details(const Details& old, deg_t depth) : m_depth(old.m_depth)
     {
         RPY_DBG_ASSERT(depth > old.m_depth);
-        reserve(depth + 1);
+        reserve(depth + 2);
         insert(end(), old.begin(), old.end());
 
         m_powers.reserve(depth + 1);
@@ -79,11 +78,20 @@ public:
     using base_t::begin;
     using base_t::end;
 
-    deg_t max_depth() const noexcept { return static_cast<deg_t>(size() - 1); }
+    deg_t max_depth() const noexcept { return static_cast<deg_t>(size() - 2); }
+    deg_t alphabet_size() const noexcept
+    {
+        return static_cast<deg_t>(m_powers[1]);
+    }
 
     Slice<const dimn_t> sizes(deg_t depth) const noexcept
     {
         RPY_DBG_ASSERT(depth < size());
+        return {data() + 1, static_cast<dimn_t>(2 + depth)};
+    }
+
+    Slice<const dimn_t> start_of_degrees(deg_t depth) const noexcept
+    {
         return {data(), static_cast<dimn_t>(1 + depth)};
     }
 
@@ -120,6 +128,15 @@ public:
         --it;
         RPY_DBG_ASSERT(pred(*it, index));
         return it;
+    }
+
+    dtl::ToLetterRange iterate_letters(dimn_t index) const noexcept
+    {
+        auto boundary = boundary_before_index(index);
+        return {powers(),
+                index - *boundary,
+                alphabet_size(),
+                static_cast<deg_t>(boundary - begin())};
     }
 };
 
