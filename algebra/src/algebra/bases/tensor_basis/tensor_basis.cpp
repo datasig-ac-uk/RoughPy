@@ -315,12 +315,8 @@ deg_t TensorBasis::degree(BasisKeyCRef key) const
         const auto index = cast_index(key);
         RPY_CHECK(index < max_dimension());
 
-        const auto sizes = p_details->sizes(m_depth);
-        const auto begin = sizes.begin();
-        const auto end = sizes.end();
-
-        auto it = ranges::lower_bound(begin, end, index);
-        return static_cast<deg_t>(it - begin);
+        auto it = p_details->boundary_before_index(index);
+        return static_cast<deg_t>(it - p_details->begin());
     }
 
     RPY_THROW(
