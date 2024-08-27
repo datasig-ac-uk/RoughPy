@@ -97,12 +97,12 @@ public:
 inline BasisKey::operator typename BasisKey::const_reference_type(
 ) const noexcept
 {
-    return const_reference_type(data(), type());
+    return const_reference_type(type(), data());
 }
 
 inline BasisKey::operator typename BasisKey::reference_type()
 {
-    return reference_type(data(), type());
+    return reference_type(type(), data());
 }
 
 }// namespace algebra
