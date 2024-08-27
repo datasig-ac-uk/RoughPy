@@ -32,7 +32,6 @@
 
 #include <roughpy/algebra/context.h>
 
-
 #include <mutex>
 #include <unordered_map>
 
@@ -210,9 +209,7 @@ ContextBase::ContextBase(
         const dimn_t* lie_sizes,
         const dimn_t* tensor_sizes
 )
-    : p_lie_sizes(lie_sizes),
-      p_tensor_sizes(tensor_sizes),
-      m_width(width),
+    : m_width(width),
       m_depth(depth)
 {}
 ContextBase::~ContextBase() {}
