@@ -83,6 +83,10 @@ public:
     {
         return static_cast<deg_t>(m_powers[1]);
     }
+    bool is_letter(dimn_t index) const noexcept
+    {
+        return 0 < index && index <= alphabet_size();
+    }
 
     Slice<const dimn_t> sizes(deg_t depth) const noexcept
     {
