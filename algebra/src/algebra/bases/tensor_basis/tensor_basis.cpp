@@ -330,14 +330,8 @@ deg_t TensorBasis::degree(BasisKeyCRef key) const
 }
 deg_t TensorBasis::dimension_to_degree(dimn_t dimension) const
 {
-    const auto sizes = p_details->sizes(m_depth);
-    const auto begin = sizes.begin();
-    const auto end = sizes.end();
-
-    const auto it
-            = ranges::lower_bound(begin, end, dimension, std::less_equal{});
-
-    return static_cast<deg_t>(it - begin);
+    auto it = p_details->boundary_before_index(dimension);
+    return static_cast<deg_t>(it - p_details->begin());
 }
 dimn_t TensorBasis::degree_to_dimension(deg_t degree) const
 {
