@@ -233,7 +233,7 @@ TEST_F(TensorBasisTests, CheckParentsWordLetter)
     auto word = basis->to_key(index);
 
     const auto word_parents = basis->parents(word);
-    EXPECT_EQ(word_parents.first, BasisKey(word_type));
+    EXPECT_TRUE(word_parents.first.fast_is_zero());
     EXPECT_EQ(word_parents.second, word);
 }
 
@@ -279,7 +279,7 @@ TEST_F(TensorBasisTests, CheckParentsIndexLetter)
     const rpy::dimn_t index = 2;
 
     const auto index_parents = basis->parents({&index, index_type});
-    EXPECT_EQ(index_parents.first, BasisKey(index_type, 0));
+    EXPECT_TRUE(index_parents.first.fast_is_zero());
     EXPECT_EQ(index_parents.second, BasisKey(index_type, index));
 }
 
