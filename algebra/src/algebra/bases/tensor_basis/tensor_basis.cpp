@@ -53,7 +53,7 @@ public:
     Details(deg_t width, deg_t depth) : m_depth{2}
     {
         reserve(depth + 2);
-        insert(end(), {0, 1, 1 + width});
+        insert(end(), {0, 1, static_cast<dimn_t>(1 + width)});
 
         m_powers.reserve(depth + 1);
         m_powers.insert(
@@ -407,13 +407,13 @@ pair<BasisKey, BasisKey> TensorBasis::parents(BasisKeyCRef key) const
 
         index -= *it;
 
-        auto split = sizes[split_deg+1] - sizes[split_deg];
+        auto split = sizes[split_deg + 1] - sizes[split_deg];
 
         auto left_index = index / split;
         auto right_index = index % split;
 
-        return {BasisKey(index_key_type(), left_index), BasisKey(index_key_type(), right_index)};
-
+        return {BasisKey(index_key_type(), left_index),
+                BasisKey(index_key_type(), right_index)};
     }
 
     RPY_THROW(
