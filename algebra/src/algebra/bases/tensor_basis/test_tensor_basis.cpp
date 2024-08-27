@@ -345,7 +345,7 @@ TEST_F(TensorBasisTests, CheckToStringWordPair)
 
 TEST_F(TensorBasisTests, CheckToStringWordDeg3)
 {
-    rpy::dimn_t index = 16;
+    rpy::dimn_t index = 18;
     auto word = basis->to_key(index);
 
     EXPECT_EQ(basis->to_string(word), "1,2,3");
@@ -379,7 +379,7 @@ TEST_F(TensorBasisTests, CheckToStringIndexPair)
 TEST_F(TensorBasisTests, CheckToStringIndexDeg3)
 {
     const auto index_type = basis->supported_key_types()[1];
-    rpy::dimn_t index = 16;
+    rpy::dimn_t index = 18;
     EXPECT_EQ(basis->to_string({&index, index_type}), "1,2,3");
 }
 
