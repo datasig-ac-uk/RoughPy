@@ -219,18 +219,10 @@ string TensorBasis::to_string(BasisKeyCRef key) const
     }
     if (is_index(key)) {
         auto index = cast_index(key);
-        deg_t degree = 0;
-        {
-            auto it = p_details->boundary_before_index(index);
-            degree = static_cast<deg_t>(it - p_details->begin());
-            RPY_CHECK(degree <= m_depth);
-
-            index -= *it;
-        }
 
         std::stringstream ss;
         bool first = true;
-        for (const auto letter : dtl::ToLetterRange(index, m_width, degree)) {
+        for (const auto letter : p_details->iterate_letters(index)) {
             if (!first) {
                 ss << ',';
             } else {
