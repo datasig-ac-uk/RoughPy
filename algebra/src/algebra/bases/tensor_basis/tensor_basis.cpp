@@ -256,7 +256,8 @@ dimn_t TensorBasis::max_dimension() const noexcept
 }
 dimn_t TensorBasis::dense_dimension(dimn_t size) const
 {
-    return Basis::dense_dimension(size);
+    RPY_CHECK(size <= max_dimension());
+    return *ranges::lower_bound(*p_details, size);
 }
 bool TensorBasis::less(BasisKeyCRef k1, BasisKeyCRef k2) const
 {
