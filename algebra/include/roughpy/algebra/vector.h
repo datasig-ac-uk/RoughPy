@@ -30,71 +30,69 @@ class VectorIterator;
 
 class Vector;
 
-class ROUGHPY_ALGEBRA_EXPORT VectorContext : public RcBase<VectorContext>,
-                                             public platform::SmallObjectBase
+class ROUGHPY_ALGEBRA_EXPORT VectorData : public RcBase<VectorData>,
+                                          public platform::SmallObjectBase
 {
     BasisPointer p_basis;
 
 protected:
-    static const VectorContext& get_context(const Vector& vec) noexcept;
+    explicit VectorData(BasisPointer basis) : p_basis(std::move(basis)){};
 
 public:
-    explicit VectorContext(BasisPointer basis) : p_basis(std::move(basis)) {}
+    virtual ~VectorData();
 
-    virtual ~VectorContext();
+    virtual Rc<VectorData> empty_like() const noexcept;
 
-    virtual Rc<VectorContext> empty_like() const noexcept;
-
-    const Basis& basis() const noexcept { return *p_basis; };
+    RPY_NO_DISCARD BasisPointer basis() const noexcept { return p_basis; };
 
     virtual bool is_sparse() const noexcept;
+    virtual bool is_contiguous() const noexcept;
 
-    virtual void resize_by_dim(Vector& dst, dimn_t base_dim, dimn_t fibre_dim);
+    virtual void resize_by_dim(dimn_t base_dim, dimn_t fibre_dim) = 0;
 
     virtual void
-    resize_for_operands(Vector& dst, const Vector& lhs, const Vector& rhs);
+    resize_for_operands(const VectorData& lhs, const VectorData& rhs)
+            = 0;
 
-    virtual optional<dimn_t>
-    get_index(const Vector& vector, const BasisKey& key) const noexcept;
+    virtual optional<dimn_t> get_index(BasisKeyCRef key) const noexcept = 0;
 
-    RPY_NO_DISCARD virtual Rc<VectorContext> copy() const;
+    RPY_NO_DISCARD virtual Rc<VectorData> copy() const = 0;
 
-    RPY_NO_DISCARD virtual VectorIterator
-    begin_iterator(typename scalars::ScalarVector::const_iterator it) const;
-    RPY_NO_DISCARD virtual VectorIterator
-    end_iterator(typename scalars::ScalarVector::const_iterator it) const;
+    virtual VectorIterator begin() const = 0;
+    virtual VectorIterator end() const = 0;
 
-    virtual dimn_t size(const Vector& vector) const noexcept;
-    virtual dimn_t dimension(const Vector& vector) const noexcept;
+    virtual dimn_t size() const noexcept = 0;
+    virtual dimn_t dimension() const noexcept = 0;
 
     virtual void unary_inplace(
             const scalars::UnaryVectorOperation& operation,
-            Vector& arg,
             const scalars::ops::Operator& op
-    );
+    ) = 0;
 
     virtual void
     unary(const scalars::UnaryVectorOperation& operation,
-          Vector& dst,
           const Vector& arg,
-          const scalars::ops::Operator& op);
+          const scalars::ops::Operator& op)
+            = 0;
 
     virtual void binary_inplace(
             const scalars::BinaryVectorOperation& operation,
-            Vector& left,
             const Vector& right,
             const scalars::ops::Operator& op
-    );
+    ) = 0;
 
     virtual void
     binary(const scalars::BinaryVectorOperation& operation,
-           Vector& dst,
            const Vector& left,
            const Vector& right,
-           const scalars::ops::Operator& op);
+           const scalars::ops::Operator& op)
+            = 0;
 
-    RPY_NO_DISCARD virtual bool
-    is_equal(const Vector& left, const Vector& right) const noexcept;
+    RPY_NO_DISCARD virtual bool is_equal(const Vector& right) const noexcept
+            = 0;
+
+    static RPY_NO_DISCARD Rc<VectorData> make_default(BasisPointer basis
+    ) noexcept;
 };
 
 /**
@@ -109,20 +107,18 @@ public:
  * @see Basis
  * @see VectorData
  */
-class ROUGHPY_ALGEBRA_EXPORT Vector : public scalars::ScalarVector
+class ROUGHPY_ALGEBRA_EXPORT Vector
 {
     friend class MutableVectorElement;
 
-    Rc<VectorContext> p_context;
-    friend class VectorContext;
+    Rc<VectorData> p_data;
+    friend class VectorData;
 
 public:
     using iterator = VectorIterator;
     using const_iterator = VectorIterator;
 
     using Scalar = scalars::Scalar;
-
-    using context_interface_t = VectorContext;
 
 protected:
     /**
@@ -148,7 +144,7 @@ protected:
      * element should be inserted.
      * @param value The `scalars::Scalar` value of the element to be inserted.
      */
-    void insert_element(const BasisKey& key, scalars::Scalar value);
+    void insert_element(BasisKeyCRef key, scalars::Scalar value);
 
     /**
      * @brief Deletes an element from the vector given a basis key and,
@@ -164,7 +160,7 @@ protected:
      * @note This function assumes that the vector is already initialized and
      * contains the basis key.
      */
-    void delete_element(const BasisKey& key);
+    void delete_element(BasisKeyCRef key);
 
     RPY_NO_DISCARD static bool basis_compatibility_check(const Basis& basis
     ) noexcept
@@ -192,11 +188,11 @@ public:
      * @param key Key for the basis.
      * @param scalar Scalar value for the vector.
      */
-    explicit Vector(const BasisPointer& basis, BasisKey key, Scalar scalar)
+    explicit Vector(const BasisPointer& basis, BasisKeyCRef key, Scalar scalar)
         : ScalarVector(std::move(scalar.type())),
-          p_context(nullptr)
+          p_data(VectorData::make_default(basis))
     {
-        insert_element(std::move(key), std::move(scalar));
+        insert_element(key, std::move(scalar));
     }
 
     /**
@@ -207,21 +203,19 @@ public:
      */
     explicit Vector(BasisPointer basis, scalars::TypePtr scalar_type)
         : ScalarVector(std::move(scalar_type)),
-          p_context(nullptr)
+          p_data(VectorData::make_default(basis))
     {}
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
         : ScalarVector(std::move(scalar_data)),
-          p_context(nullptr)
+          p_data(VectorData::make_default(basis))
     {}
 
-    Vector(Rc<VectorContext> context,
-           scalars::TypePtr scalar_type,
-           dimn_t dim = 0)
+    Vector(Rc<VectorData> data, scalars::TypePtr scalar_type, dimn_t dim = 0)
         : ScalarVector(std::move(scalar_type), dim),
-          p_context(std::move(context))
+          p_data(std::move(data))
     {}
 
     /**
@@ -245,7 +239,7 @@ public:
            scalars::TypePtr scalar_type,
            std::initializer_list<T> vals)
         : ScalarVector(scalar_type, basis->dense_dimension(vals.size())),
-          p_context(nullptr)
+          p_data(VectorData::make_default(std::move(basis)))
     {
         RPY_DBG_ASSERT(base_data().size() >= vals.size());
         auto& scalar_vals = mut_base_data();
@@ -276,8 +270,8 @@ public:
     template <typename V>
     enable_if_t<is_base_of_v<Vector, V>, V> borrow() const
     {
-        RPY_CHECK(V::basis_compatibility_check(p_context->basis()));
-        return V(*this, p_context);
+        RPY_CHECK(V::basis_compatibility_check(p_data->basis()));
+        return V(*this, p_data);
     }
 
     /**
@@ -300,8 +294,8 @@ public:
     template <typename V>
     enable_if_t<is_base_of_v<Vector, V>, V> borrow_mut()
     {
-        RPY_CHECK(V::basis_compatibility_check(p_context->basis()));
-        return V(*this, p_context);
+        RPY_CHECK(V::basis_compatibility_check(p_data->basis()));
+        return V(*this, p_data);
     }
 
     /**
@@ -316,7 +310,7 @@ public:
      */
     RPY_NO_DISCARD bool is_dense() const noexcept
     {
-        return p_context ? !p_context->is_sparse() : false;
+        return p_data ? !p_data->is_sparse() : false;
     }
 
     /**
@@ -332,7 +326,7 @@ public:
      */
     RPY_NO_DISCARD bool is_sparse() const noexcept
     {
-        return p_context ? p_context->is_sparse() : true;
+        return p_data ? p_data->is_sparse() : true;
     }
 
     /**
@@ -367,7 +361,7 @@ public:
      */
     RPY_NO_DISCARD BasisPointer basis() const noexcept
     {
-        return &p_context->basis();
+        return p_data->basis();
     }
 
     /**
@@ -375,14 +369,14 @@ public:
      * @param key Key to query
      * @return Non-mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::ScalarCRef get(const BasisKey& key) const;
+    RPY_NO_DISCARD scalars::ScalarCRef get(BasisKeyCRef key) const;
 
     /**
      * @brief Get the coefficient of key in the vector mutably
      * @param key Key to query
      * @return Mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::ScalarRef get_mut(const BasisKey& key);
+    RPY_NO_DISCARD scalars::ScalarRef get_mut(BasisKeyCRef key);
 
     RPY_NO_DISCARD const_iterator begin() const;
     RPY_NO_DISCARD const_iterator end() const;
@@ -400,13 +394,10 @@ public:
      *
      * @sa BasisKey
      */
-    RPY_NO_DISCARD optional<dimn_t> get_index(const BasisKey& key
-    ) const noexcept
+    RPY_NO_DISCARD optional<dimn_t> get_index(BasisKeyCRef key) const noexcept
     {
         optional<dimn_t> result{};
-        if (RPY_LIKELY(p_context)) {
-            result = p_context->get_index(*this, key);
-        }
+        if (RPY_LIKELY(p_data)) { result = p_data->get_index(key); }
         return result;
     }
 
@@ -651,7 +642,7 @@ public:
     RPY_NO_DISCARD friend bool
     operator==(const Vector& lhs, const Vector& rhs) noexcept
     {
-        return lhs.p_context->is_equal(lhs, rhs);
+        return lhs.p_data->is_equal(rhs);
     }
 
     RPY_NO_DISCARD friend bool
@@ -739,6 +730,47 @@ operator/=(V& lhs, const scalars::Scalar& rhs)
     lhs.sdiv_inplace(rhs);
     return lhs;
 }
+
+class ROUGHPY_ALGEBRA_EXPORT DenseVectorData : public VectorData
+{
+    scalars::ScalarVector m_vector;
+
+public:
+    explicit DenseVectorData(BasisPointer basis) : VectorData(std::move(basis))
+    {}
+
+    Rc<VectorData> empty_like() const noexcept override;
+    bool is_sparse() const noexcept override;
+    bool is_contiguous() const noexcept override;
+    void resize_by_dim(dimn_t base_dim, dimn_t fibre_dim) override;
+    void
+    resize_for_operands(const VectorData& lhs, const VectorData& rhs) override;
+    optional<dimn_t> get_index(BasisKeyCRef key) const noexcept override;
+    RPY_NO_DISCARD Rc<VectorData> copy() const override;
+    VectorIterator begin() const override;
+    VectorIterator end() const override;
+    dimn_t size() const noexcept override;
+    dimn_t dimension() const noexcept override;
+    void unary_inplace(
+            const scalars::UnaryVectorOperation& operation,
+            const scalars::ops::Operator& op
+    ) override;
+    void
+    unary(const scalars::UnaryVectorOperation& operation,
+          const Vector& arg,
+          const scalars::ops::Operator& op) override;
+    void binary_inplace(
+            const scalars::BinaryVectorOperation& operation,
+            const Vector& right,
+            const scalars::ops::Operator& op
+    ) override;
+    void
+    binary(const scalars::BinaryVectorOperation& operation,
+           const Vector& left,
+           const Vector& right,
+           const scalars::ops::Operator& op) override;
+    RPY_NO_DISCARD bool is_equal(const Vector& right) const noexcept override;
+};
 
 namespace dtl {
 

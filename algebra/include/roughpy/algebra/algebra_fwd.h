@@ -69,7 +69,7 @@ enum class VectorType : uint16_t
 class Basis;
 
 using BasisPointer = Rc<const Basis>;
-class VectorContext;
+class VectorData;
 class Vector;
 
 class FreeTensor;

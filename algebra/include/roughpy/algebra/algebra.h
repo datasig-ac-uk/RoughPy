@@ -310,6 +310,12 @@ struct MultiplicationTraits {
     }
 };
 
+template <typename Base>
+class AlgebraContext : public Base::context_interface_t
+{
+public:
+};
+
 }// namespace dtl
 
 /**
@@ -337,6 +343,7 @@ protected:
     }
 
 public:
+    using context_interface_t = dtl::AlgebraContext<Base>;
     using multiplication_type = Multiplication;
 
 private:

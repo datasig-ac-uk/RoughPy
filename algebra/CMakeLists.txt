@@ -42,7 +42,7 @@ add_roughpy_component(Algebra
         #        src/mutable_vector_element.h
         src/algebra/vector.cpp
         src/algebra/vector_factory.cpp
-        src/algebra/vector_context.cpp
+        src/algebra/vector_data.cpp
         src/algebra/vector_iterator.cpp
         src/scalars/builtin_types.cpp
         PUBLIC_HEADERS
