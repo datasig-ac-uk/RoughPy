@@ -47,6 +47,8 @@ class HallBasis : public Basis
 
     string to_string_nofail(const BasisKeyCRef& key) const noexcept;
 
+    dtl::BasisIterator make_iterator(dimn_t index) const noexcept;
+
 public:
     HallBasis(deg_t width, deg_t depth);
 
