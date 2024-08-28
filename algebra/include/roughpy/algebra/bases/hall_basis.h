@@ -5,6 +5,7 @@
 #ifndef HALL_BASIS_H
 #define HALL_BASIS_H
 
+#include <roughpy/algebra/algebra_fwd.h>
 #include "roughpy/algebra/basis.h"
 #include <roughpy/devices/core.h>
 
@@ -13,7 +14,7 @@
 namespace rpy {
 namespace algebra {
 
-class ROUGHPY_ALGEBEA_EXPORT HallBasis : public Basis
+class ROUGHPY_ALGEBRA_EXPORT HallBasis : public Basis
 {
     deg_t m_width;
     deg_t m_max_degree;
