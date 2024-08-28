@@ -340,10 +340,14 @@ TEST_F(HallBasisTests, TestIterateOverDegree2)
     const auto index_type = basis->supported_key_types()[1];
     auto range = basis->iterate_keys_of_degree(2);
 
+    rpy::dimn_t count = 0;
     for (auto&& [i, key] : rpy::views::enumerate(range)) {
         auto index = i + 3;
+        ++count;
         EXPECT_EQ(key, BasisKeyCRef(index_type, &index));
     }
+
+    EXPECT_EQ(count, 3);
 }
 
 // This is the hall set we use in the tests above. The first number is the index
