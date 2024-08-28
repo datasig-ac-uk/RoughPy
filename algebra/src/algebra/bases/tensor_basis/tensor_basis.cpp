@@ -142,6 +142,12 @@ public:
                 alphabet_size(),
                 static_cast<deg_t>(boundary - begin())};
     }
+
+    pair<dimn_t, dimn_t> range_of_degree(deg_t degree) const noexcept
+    {
+        RPY_DBG_ASSERT(degree + 1 < size());
+        return {operator[](degree), operator[](degree + 1)};
+    }
 };
 
 bool TensorBasis::is_word(const BasisKeyCRef& key) const noexcept
@@ -356,10 +362,8 @@ dimn_t TensorBasis::degree_to_dimension(deg_t degree) const
 KeyRange TensorBasis::iterate_keys_of_degree(deg_t degree) const
 {
     RPY_CHECK(degree <= m_depth);
-    return KeyRange(
-            make_iterator(p_details->start_of_degrees(m_depth)[degree]),
-            make_iterator(p_details->sizes(m_depth)[degree])
-    );
+    auto range = p_details->range_of_degree(degree);
+    return KeyRange(make_iterator(range.first), make_iterator(range.second));
 }
 deg_t TensorBasis::alphabet_size() const { return m_width; }
 bool TensorBasis::is_letter(BasisKeyCRef key) const
