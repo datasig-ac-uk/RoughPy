@@ -416,6 +416,21 @@ TEST_F(TensorBasisTests, TestIteratorRangeCount)
     EXPECT_EQ(count, basis->max_dimension());
 }
 
+TEST_F(TensorBasisTests, TestIterateKeysOfDegree2)
+{
+    const auto index_type = basis->supported_key_types()[1];
+    auto range = basis->iterate_keys_of_degree(2);
+
+    rpy::dimn_t count = 0;
+    for (auto [i, key] : rpy::views::enumerate(range)) {
+        auto index = i + 4;
+        ++count;
+        EXPECT_EQ(key, BasisKeyCRef(index_type, &index));
+    }
+
+    EXPECT_EQ(count, 9);
+}
+
 // The dimension of the tensor algebra for each degree is as follows
 // 0     1
 // 1     4
