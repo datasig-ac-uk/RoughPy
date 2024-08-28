@@ -13,8 +13,8 @@
 #include <roughpy/devices/buffer.h>
 #include <roughpy/devices/device_handle.h>
 #include <roughpy/devices/kernel.h>
-#include <roughpy/scalars/scalar_array.h>
 
+#include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_vector.h>
 
 #include "algebra_fwd.h"
@@ -29,16 +29,6 @@ namespace algebra {
 class VectorIterator;
 
 class Vector;
-
-class ROUGHPY_ALGEBRA_EXPORT VectorFactory : public platform::SmallObjectBase
-{
-public:
-    virtual ~VectorFactory();
-
-    virtual Vector construct_empty() const = 0;
-    virtual Vector construct_from(const scalars::ScalarVector& base) const = 0;
-    virtual Vector construct_with_dim(dimn_t dimension) const = 0;
-};
 
 class ROUGHPY_ALGEBRA_EXPORT VectorContext : public RcBase<VectorContext>,
                                              public platform::SmallObjectBase
@@ -131,6 +121,8 @@ public:
     using const_iterator = VectorIterator;
 
     using Scalar = scalars::Scalar;
+
+    using context_interface_t = VectorContext;
 
 protected:
     /**
