@@ -137,6 +137,12 @@ public:
         return m_elements[index].first == 0;
     }
 
+    pair<dimn_t, dimn_t> range_of_degree(deg_t degree) const noexcept
+    {
+        RPY_DBG_ASSERT(degree < m_degree_ranges.size());
+        return m_degree_ranges[degree];
+    }
+
 private:
     void grow(deg_t depth);
 
@@ -335,6 +341,16 @@ inline const dimn_t cast_index(const BasisKeyCRef& key) noexcept
 
 }// namespace
 
+algebra::dtl::BasisIterator HallBasis::make_iterator(dimn_t index
+) const noexcept
+{
+    return dtl::BasisIterator(
+            +[](BasisKeyCRef current) {
+                return BasisKey(current.type(), cast_index(current) + 1);
+            },
+            BasisKey(index_key_type(), index)
+    );
+}
 optional<dimn_t> HallBasis::key_to_oindex(const BasisKeyCRef& key
 ) const noexcept
 {
@@ -488,14 +504,17 @@ BasisKey HallBasis::to_key(dimn_t index) const
             }
     ));
 }
-KeyRange HallBasis::iterate_keys() const { return Basis::iterate_keys(); }
+KeyRange HallBasis::iterate_keys() const
+{
+    return KeyRange(keys_begin(), keys_end());
+}
 algebra::dtl::BasisIterator HallBasis::keys_begin() const
 {
-    return Basis::keys_begin();
+    return make_iterator(0);
 }
 algebra::dtl::BasisIterator HallBasis::keys_end() const
 {
-    return Basis::keys_end();
+    return make_iterator(max_dimension());
 }
 deg_t HallBasis::max_degree() const { return m_max_degree; }
 deg_t HallBasis::degree(BasisKeyCRef key) const
@@ -545,7 +564,12 @@ dimn_t HallBasis::degree_to_dimension(deg_t degree) const
 }
 KeyRange HallBasis::iterate_keys_of_degree(deg_t degree) const
 {
-    return Basis::iterate_keys_of_degree(degree);
+    RPY_CHECK(degree <= m_max_degree);
+    const auto range = p_hall_set->range_of_degree(degree);
+    return KeyRange(
+            make_iterator(from_hs_index(range.first)),
+            make_iterator(from_hs_index(range.second))
+    );
 }
 deg_t HallBasis::alphabet_size() const { return m_width; }
 bool HallBasis::is_letter(BasisKeyCRef key) const
