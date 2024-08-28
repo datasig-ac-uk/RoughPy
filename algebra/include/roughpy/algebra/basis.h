@@ -75,7 +75,7 @@ public:
 
     BasisIterator& operator++()
     {
-        if (!m_current.fast_is_zero()) {
+        if (m_current.is_valid()) {
             RPY_DBG_ASSERT(m_next);
             m_current = m_next(m_current);
         }
@@ -91,7 +91,7 @@ public:
 
     BasisKeyCRef operator*() const noexcept
     {
-        RPY_DBG_ASSERT(!m_current.fast_is_zero());
+        RPY_DBG_ASSERT(m_current.type());
         return BasisKeyCRef(m_current);
     }
 
@@ -111,21 +111,21 @@ public:
         if (RPY_LIKELY(!rhs.m_next)) {
             // The most likely case is that the rhs is a sentinel value.
             // Equality happens if lhs has no value
-            return lhs.m_current.fast_is_zero();
+            return !lhs.m_current.is_valid();
         }
 
         if (!lhs.m_next) {
             // lhs is a sentinel, equality happens if rhs has no value
-            return rhs.m_current.fast_is_zero();
+            return !rhs.m_current.is_valid();
         }
 
         // Neither is a sentinel.
-        if (lhs.m_current.fast_is_zero() && rhs.m_current.fast_is_zero()) {
+        if (!lhs.m_current.is_valid() && !rhs.m_current.is_valid()) {
             // Neither holds a value, so they are both finished
             return true;
         }
 
-        if (lhs.m_current.fast_is_zero() || rhs.m_current.fast_is_zero()) {
+        if (!lhs.m_current.is_valid() || !rhs.m_current.is_valid()) {
             // One is finished but the other is not
             return false;
         }
