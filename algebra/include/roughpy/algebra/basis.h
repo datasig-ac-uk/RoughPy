@@ -66,7 +66,7 @@ public:
     BasisIterator& operator=(BasisIterator&&) noexcept = default;
 
     template <typename F>
-    BasisIterator(F&& next, optional<BasisKeyCRef> current)
+    BasisIterator(F&& next, BasisKeyCRef current)
         : m_next(std::forward<F>(next)),
           m_current(std::move(current))
     {
