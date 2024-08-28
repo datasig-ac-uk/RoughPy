@@ -327,6 +327,25 @@ TEST_F(HallBasisTests, CheckToStringIndexHigher)
     EXPECT_EQ(basis->to_string(key), "[1,[1,2]]");
 }
 
+TEST_F(HallBasisTests, TestCountOfBasisIterator)
+{
+    auto count = ranges::count_if(basis->iterate_keys(), [](const auto& arg) {
+        return true;
+    });
+    EXPECT_EQ(count, basis->max_dimension());
+}
+
+TEST_F(HallBasisTests, TestIterateOverDegree2)
+{
+    const auto index_type = basis->supported_key_types()[1];
+    auto range = basis->iterate_keys_of_degree(2);
+
+    for (auto&& [i, key] : rpy::views::enumerate(range)) {
+        auto index = i + 3;
+        EXPECT_EQ(key, BasisKeyCRef(index_type, &index));
+    }
+}
+
 // This is the hall set we use in the tests above. The first number is the index
 // and the second part is the expanded key form.
 // 0  1
