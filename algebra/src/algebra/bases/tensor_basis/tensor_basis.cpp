@@ -2,7 +2,7 @@
 // Created by sam on 16/02/24.
 //
 
-#include "tensor_basis.h"
+#include "bases/tensor_basis.h"
 
 #include <roughpy/core/hash.h>
 #include <roughpy/core/ranges.h>

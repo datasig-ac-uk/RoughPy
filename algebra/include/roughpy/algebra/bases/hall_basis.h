@@ -13,7 +13,7 @@
 namespace rpy {
 namespace algebra {
 
-class HallBasis : public Basis
+class ROUGHPY_ALGEBEA_EXPORT HallBasis : public Basis
 {
     deg_t m_width;
     deg_t m_max_degree;

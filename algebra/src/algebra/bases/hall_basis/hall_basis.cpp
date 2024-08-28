@@ -2,7 +2,7 @@
 // Created by sam on 8/15/24.
 //
 
-#include "hall_basis.h"
+#include "bases/hall_basis.h"
 
 #include "index_key_type.h"
 #include "lie_word.h"
