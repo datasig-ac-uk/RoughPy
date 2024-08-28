@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include "hall_basis.h"
+#include "roughpy/algebra/bases/hall_basis.h"
 
 using namespace rpy::algebra;
 
@@ -61,15 +61,10 @@ TEST_F(HallBasisTests, TestDimensionToDegree)
 TEST_F(HallBasisTests, TestDenseDimensionAdjustment)
 {
     EXPECT_EQ(basis->dense_dimension(1), 3);
-
     EXPECT_EQ(basis->dense_dimension(3), 6);
-
     EXPECT_EQ(basis->dense_dimension(12), 14);
-
     EXPECT_EQ(basis->dense_dimension(31), 32);
-
     EXPECT_EQ(basis->dense_dimension(32), 80);
-
     EXPECT_EQ(basis->dense_dimension(64), 80);
 }
 

@@ -9,7 +9,7 @@
 
 #include "roughpy/algebra/algebra_fwd.h"
 #include "roughpy/algebra/basis.h"
-#include "tensor_basis.h"
+#include "roughpy/algebra/bases/tensor_basis.h"
 
 using namespace rpy::algebra;
 
