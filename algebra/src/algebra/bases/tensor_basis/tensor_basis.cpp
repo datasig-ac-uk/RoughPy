@@ -169,6 +169,17 @@ string TensorBasis::to_string_nofail(const BasisKeyCRef& key) const noexcept
     return "undefined type";
 }
 
+algebra::dtl::BasisIterator TensorBasis::make_iterator(dimn_t index
+) const noexcept
+{
+    return dtl::BasisIterator(
+            [](BasisKeyCRef key) {
+                return BasisKey(key.type(), cast_index(key) + 1);
+            },
+            BasisKey(index_type(), index)
+    );
+}
+
 TensorBasis::TensorBasis(deg_t width, deg_t depth)
     : Basis(basis_id, {true, true, true}),
       m_supported_key_types{TensorWordType::get(), IndexKeyType::get()},
@@ -298,14 +309,17 @@ BasisKey TensorBasis::to_key(dimn_t index) const
     const auto letter_range = p_details->iterate_letters(index);
     return BasisKey(TensorWord(letter_range.begin(), letter_range.end()));
 }
-KeyRange TensorBasis::iterate_keys() const { return Basis::iterate_keys(); }
+KeyRange TensorBasis::iterate_keys() const
+{
+    return KeyRange(keys_begin(), keys_end());
+}
 algebra::dtl::BasisIterator TensorBasis::keys_begin() const
 {
-    return Basis::keys_begin();
+    return make_iterator(0);
 }
 algebra::dtl::BasisIterator TensorBasis::keys_end() const
 {
-    return Basis::keys_end();
+    return make_iterator(max_dimension());
 }
 deg_t TensorBasis::max_degree() const { return m_depth; }
 deg_t TensorBasis::degree(BasisKeyCRef key) const
@@ -341,7 +355,11 @@ dimn_t TensorBasis::degree_to_dimension(deg_t degree) const
 }
 KeyRange TensorBasis::iterate_keys_of_degree(deg_t degree) const
 {
-    return Basis::iterate_keys_of_degree(degree);
+    RPY_CHECK(degree <= m_depth);
+    return KeyRange(
+            make_iterator(p_details->start_of_degrees(m_depth)[degree]),
+            make_iterator(p_details->sizes(m_depth)[degree])
+    );
 }
 deg_t TensorBasis::alphabet_size() const { return m_width; }
 bool TensorBasis::is_letter(BasisKeyCRef key) const
