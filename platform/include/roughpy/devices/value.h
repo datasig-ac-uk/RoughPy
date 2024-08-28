@@ -274,9 +274,9 @@ public:
     using const_pointer_type = ConstPointer;
     using pointer_type = Pointer;
 
-    using ConstReference::is_valid;
-    using ConstReference::fast_is_zero;
     using ConstReference::ConstReference;
+    using ConstReference::fast_is_zero;
+    using ConstReference::is_valid;
 
     ConstReference operator*() const noexcept
     {
@@ -430,8 +430,8 @@ public:
     using const_pointer_type = ConstPointer;
     using pointer_type = Pointer;
 
-    using Reference::is_valid;
     using Reference::fast_is_zero;
+    using Reference::is_valid;
     using Reference::Reference;
 
     Reference operator*() noexcept { return static_cast<Reference>(*this); }
