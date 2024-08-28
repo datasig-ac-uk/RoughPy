@@ -10,6 +10,7 @@
 #include <roughpy/core/container/vector.h>
 #include <roughpy/devices/buffer.h>
 
+#include <array>
 #include <memory>
 
 namespace rpy {

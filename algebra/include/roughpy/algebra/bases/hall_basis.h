@@ -10,6 +10,7 @@
 #include <roughpy/devices/core.h>
 
 #include <array>
+#include <memory>
 
 namespace rpy {
 namespace algebra {
