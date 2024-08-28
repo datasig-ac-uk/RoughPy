@@ -5,8 +5,8 @@
 #ifndef ROUGHPY_ALGEBRA_HALL_BASIS_H
 #define ROUGHPY_ALGEBRA_HALL_BASIS_H
 
-#include <roughpy/algebra/algebra_fwd.h>
 #include "roughpy/algebra/basis.h"
+#include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/devices/core.h>
 
 #include <array>
