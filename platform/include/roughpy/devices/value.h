@@ -180,9 +180,12 @@ public:
 
     void change_type(const Type* new_type);
 
+    RPY_NO_DISCARD bool is_valid() const noexcept
+    { return static_cast<bool>(p_type); }
+
     RPY_NO_DISCARD bool fast_is_zero() const noexcept
     {
-        return p_type == nullptr || m_storage.pointer == nullptr;
+        return !is_valid() || m_storage.pointer == nullptr;
     }
     RPY_NO_DISCARD bool is_zero() const;
 
