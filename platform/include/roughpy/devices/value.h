@@ -181,7 +181,9 @@ public:
     void change_type(const Type* new_type);
 
     RPY_NO_DISCARD bool is_valid() const noexcept
-    { return static_cast<bool>(p_type); }
+    {
+        return static_cast<bool>(p_type);
+    }
 
     RPY_NO_DISCARD bool fast_is_zero() const noexcept
     {
@@ -233,6 +235,15 @@ public:
         RPY_CHECK(p_type != nullptr);
     }
 
+    RPY_NO_DISCARD bool is_valid() const noexcept
+    {
+        return static_cast<bool>(p_type);
+    }
+    RPY_NO_DISCARD bool fast_is_zero() const noexcept
+    {
+        return !is_valid() || p_val == nullptr;
+    }
+
     RPY_NO_DISCARD TypePtr type() const noexcept { return p_type; }
     RPY_NO_DISCARD const void* data() const noexcept { return p_val; }
     template <typename T>
@@ -263,6 +274,8 @@ public:
     using const_pointer_type = ConstPointer;
     using pointer_type = Pointer;
 
+    using ConstReference::is_valid;
+    using ConstReference::fast_is_zero;
     using ConstReference::ConstReference;
 
     ConstReference operator*() const noexcept
@@ -417,6 +430,8 @@ public:
     using const_pointer_type = ConstPointer;
     using pointer_type = Pointer;
 
+    using Reference::is_valid;
+    using Reference::fast_is_zero;
     using Reference::Reference;
 
     Reference operator*() noexcept { return static_cast<Reference>(*this); }
