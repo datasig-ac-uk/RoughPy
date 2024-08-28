@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include <roughpy/core/helpers.h>
+#include <roughpy/core/ranges.h>
 
 #include "roughpy/algebra/algebra_fwd.h"
 #include "roughpy/algebra/basis.h"
@@ -404,6 +405,15 @@ TEST_F(TensorBasisTests, CheckToStringIndexDeg3)
     const auto index_type = basis->supported_key_types()[1];
     rpy::dimn_t index = 18;
     EXPECT_EQ(basis->to_string({index_type, &index}), "1,2,3");
+}
+
+TEST_F(TensorBasisTests, TestIteratorRangeCount)
+{
+    auto count = ranges::count_if(basis->iterate_keys(), [](const auto& arg) {
+        return true;
+    });
+
+    EXPECT_EQ(count, basis->max_dimension());
 }
 
 // The dimension of the tensor algebra for each degree is as follows
