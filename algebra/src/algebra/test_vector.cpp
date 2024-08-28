@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include <roughpy/algebra/tensor_basis.h>
+#include <roughpy/algebra/bases/tensor_basis.h>
 #include <roughpy/algebra/vector.h>
 #include <roughpy/scalars/scalars_fwd.h>
 
