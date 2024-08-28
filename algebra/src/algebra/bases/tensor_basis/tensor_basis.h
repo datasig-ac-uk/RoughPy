@@ -34,8 +34,6 @@ class ROUGHPY_ALGEBRA_EXPORT TensorBasis : public Basis
     deg_t m_width;
     deg_t m_depth;
 
-
-
     TensorBasis(deg_t width, deg_t depth);
 
     bool is_word(const BasisKeyCRef& key) const noexcept;
@@ -51,6 +49,11 @@ class ROUGHPY_ALGEBRA_EXPORT TensorBasis : public Basis
     {
         return m_supported_key_types[1].get();
     }
+
+    dtl::BasisIterator make_iterator(dimn_t index) const noexcept;
+
+    KeyTypePtr word_type() const noexcept { return m_supported_key_types[0]; }
+    KeyTypePtr index_type() const noexcept { return m_supported_key_types[1]; }
 
 public:
     static constexpr string_view basis_id = "tensor_basis";
