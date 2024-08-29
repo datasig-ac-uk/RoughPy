@@ -8,23 +8,7 @@
 #include "vector.h"
 
 namespace rpy {
-namespace algebra {
-
-class DenseVectorFactory : public VectorFactory
-{
-    BasisPointer p_basis;
-    scalars::TypePtr p_type;
-
-public:
-    explicit DenseVectorFactory(BasisPointer basis) : p_basis(std::move(basis))
-    {}
-
-    Vector construct_empty() const override;
-    Vector construct_from(const scalars::ScalarVector& base) const override;
-    Vector construct_with_dim(dimn_t dimension) const override;
-};
-
-}// namespace algebra
+namespace algebra {}// namespace algebra
 }// namespace rpy
 
 #endif// DENSE_VECTOR_FACTORY_H

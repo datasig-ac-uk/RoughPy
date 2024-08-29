@@ -6,5 +6,3 @@
 
 using namespace rpy;
 using namespace rpy::algebra;
-
-VectorFactory::~VectorFactory() = default;
