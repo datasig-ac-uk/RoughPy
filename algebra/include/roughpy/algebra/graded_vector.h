@@ -34,7 +34,7 @@ public:
  * This class extends the Base class and provides additional functionality for
  * graded vectors.
  */
-template <typename Base = Vector>
+template <typename Base>
 class GradedVector : public Base
 {
 
