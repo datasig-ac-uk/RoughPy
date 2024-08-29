@@ -765,8 +765,6 @@ typename BufferRange<T>::const_iterator BufferRange<T>::cend() const noexcept
 
 }// namespace devices
 
-
-
 template <>
 class Slice<const devices::Value>
 {
