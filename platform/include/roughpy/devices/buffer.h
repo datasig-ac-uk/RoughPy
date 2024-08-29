@@ -765,16 +765,7 @@ typename BufferRange<T>::const_iterator BufferRange<T>::cend() const noexcept
 
 }// namespace devices
 
-namespace dtl {
 
-template <typename T>
-class SliceIterator
-{
-    devices::TypePtr p_type;
-    copy_cv_t<T, byte>* p_data;
-};
-
-}// namespace dtl
 
 template <>
 class Slice<const devices::Value>
