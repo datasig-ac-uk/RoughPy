@@ -103,8 +103,7 @@ public:
 
     RPY_NO_DISCARD virtual bool is_equal(const VectorData& right) const noexcept
             = 0;
-
-    static RPY_NO_DISCARD Rc<VectorData> make_default(BasisPointer basis
+    RPY_NO_DISCARD static Rc<VectorData> make_default(BasisPointer basis
     ) noexcept;
 };
 
