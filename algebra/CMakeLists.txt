@@ -87,7 +87,7 @@ add_roughpy_component(Algebra
         RoughPy::Platform
 )
 
-add_subdirectory(src/algebra/bases)
+add_subdirectory(src/algebra)
 
 add_roughpy_test(Algebra
         SRC

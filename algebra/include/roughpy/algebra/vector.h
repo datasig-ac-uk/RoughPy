@@ -39,11 +39,18 @@ protected:
     explicit VectorData(BasisPointer basis) : p_basis(std::move(basis)){};
 
 public:
+    using ScalarRef = scalars::ScalarRef;
+    using ScalarCRef = scalars::ScalarCRef;
+    using Scalar = scalars::Scalar;
+    using const_iterator = VectorIterator;
+    using ScalarType = devices::TypePtr;
+
     virtual ~VectorData();
 
     virtual Rc<VectorData> empty_like() const noexcept;
 
     RPY_NO_DISCARD BasisPointer basis() const noexcept { return p_basis; };
+    RPY_NO_DISCARD virtual ScalarType scalar_type() const noexcept = 0;
 
     virtual bool is_sparse() const noexcept;
     virtual bool is_contiguous() const noexcept;
@@ -55,6 +62,12 @@ public:
             = 0;
 
     virtual optional<dimn_t> get_index(BasisKeyCRef key) const noexcept = 0;
+
+    virtual scalars::ScalarVector& as_mut_scalar_vector() = 0;
+    virtual const scalars::ScalarVector& as_scalar_vector() const = 0;
+
+    virtual ScalarRef get_mut(BasisKeyCRef key);
+    virtual ScalarCRef get(BasisKeyCRef key);
 
     RPY_NO_DISCARD virtual Rc<VectorData> copy() const = 0;
 
@@ -71,24 +84,24 @@ public:
 
     virtual void
     unary(const scalars::UnaryVectorOperation& operation,
-          const Vector& arg,
+          const VectorData& arg,
           const scalars::ops::Operator& op)
             = 0;
 
     virtual void binary_inplace(
             const scalars::BinaryVectorOperation& operation,
-            const Vector& right,
+            const VectorData& right,
             const scalars::ops::Operator& op
     ) = 0;
 
     virtual void
     binary(const scalars::BinaryVectorOperation& operation,
-           const Vector& left,
-           const Vector& right,
+           const VectorData& left,
+           const VectorData& right,
            const scalars::ops::Operator& op)
             = 0;
 
-    RPY_NO_DISCARD virtual bool is_equal(const Vector& right) const noexcept
+    RPY_NO_DISCARD virtual bool is_equal(const VectorData& right) const noexcept
             = 0;
 
     static RPY_NO_DISCARD Rc<VectorData> make_default(BasisPointer basis
@@ -169,6 +182,8 @@ protected:
     }
 
 public:
+    using ScalarType = devices::TypePtr;
+
     Vector() = default;
 
     Vector(const Vector& other) = default;
@@ -189,8 +204,7 @@ public:
      * @param scalar Scalar value for the vector.
      */
     explicit Vector(const BasisPointer& basis, BasisKeyCRef key, Scalar scalar)
-        : ScalarVector(std::move(scalar.type())),
-          p_data(VectorData::make_default(basis))
+        : p_data(VectorData::make_default(basis))
     {
         insert_element(key, std::move(scalar));
     }
@@ -202,20 +216,17 @@ public:
      * @param scalar_type Pointer to the scalar type of the vector.
      */
     explicit Vector(BasisPointer basis, scalars::TypePtr scalar_type)
-        : ScalarVector(std::move(scalar_type)),
-          p_data(VectorData::make_default(basis))
+        : p_data(VectorData::make_default(basis))
     {}
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
-        : ScalarVector(std::move(scalar_data)),
-          p_data(VectorData::make_default(basis))
+        : p_data(VectorData::make_default(basis))
     {}
 
     Vector(Rc<VectorData> data, scalars::TypePtr scalar_type, dimn_t dim = 0)
-        : ScalarVector(std::move(scalar_type), dim),
-          p_data(std::move(data))
+        : p_data(std::move(data))
     {}
 
     /**
@@ -238,12 +249,11 @@ public:
     Vector(BasisPointer basis,
            scalars::TypePtr scalar_type,
            std::initializer_list<T> vals)
-        : ScalarVector(scalar_type, basis->dense_dimension(vals.size())),
-          p_data(VectorData::make_default(std::move(basis)))
+        : p_data(VectorData::make_default(std::move(basis)))
     {
-        RPY_DBG_ASSERT(base_data().size() >= vals.size());
-        auto& scalar_vals = mut_base_data();
-        for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
+        // RPY_DBG_ASSERT(base_data().size() >= vals.size());
+        // auto& scalar_vals = mut_base_data();
+        // for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
     }
 
     Vector& operator=(const Vector& other) = default;
@@ -361,7 +371,14 @@ public:
      */
     RPY_NO_DISCARD BasisPointer basis() const noexcept
     {
+        RPY_DBG_ASSERT(p_data);
         return p_data->basis();
+    }
+
+    RPY_NO_DISCARD ScalarType scalar_type() const noexcept
+    {
+        RPY_DBG_ASSERT(p_data);
+        return p_data->scalar_type();
     }
 
     /**
@@ -369,14 +386,22 @@ public:
      * @param key Key to query
      * @return Non-mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::ScalarCRef get(BasisKeyCRef key) const;
+    RPY_NO_DISCARD scalars::ScalarCRef get(BasisKeyCRef key) const
+    {
+        RPY_CHECK(p_data);
+        return p_data->get(key);
+    }
 
     /**
      * @brief Get the coefficient of key in the vector mutably
      * @param key Key to query
      * @return Mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::ScalarRef get_mut(BasisKeyCRef key);
+    RPY_NO_DISCARD scalars::ScalarRef get_mut(BasisKeyCRef key)
+    {
+        RPY_CHECK(p_data);
+        return p_data->get_mut(key);
+    }
 
     RPY_NO_DISCARD const_iterator begin() const;
     RPY_NO_DISCARD const_iterator end() const;
@@ -415,14 +440,14 @@ public:
     RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
     operator[](I index) const
     {
-        return ScalarVector::get(static_cast<dimn_t>(index));
+        return p_data->get(static_cast<dimn_t>(index));
     }
 
     template <typename I>
     RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
     operator[](I index)
     {
-        return ScalarVector::get_mut(static_cast<dimn_t>(index));
+        return p_data->get_mut(static_cast<dimn_t>(index));
     }
 
 private:
@@ -642,7 +667,7 @@ public:
     RPY_NO_DISCARD friend bool
     operator==(const Vector& lhs, const Vector& rhs) noexcept
     {
-        return lhs.p_data->is_equal(rhs);
+        return lhs.p_data->is_equal(*rhs.p_data);
     }
 
     RPY_NO_DISCARD friend bool
@@ -740,12 +765,18 @@ public:
     {}
 
     Rc<VectorData> empty_like() const noexcept override;
+    RPY_NO_DISCARD ScalarType scalar_type() const noexcept override
+    {
+        return m_vector.scalar_type();
+    }
     bool is_sparse() const noexcept override;
     bool is_contiguous() const noexcept override;
     void resize_by_dim(dimn_t base_dim, dimn_t fibre_dim) override;
     void
     resize_for_operands(const VectorData& lhs, const VectorData& rhs) override;
     optional<dimn_t> get_index(BasisKeyCRef key) const noexcept override;
+    scalars::ScalarVector& as_mut_scalar_vector() override;
+    const scalars::ScalarVector& as_scalar_vector() const override;
     RPY_NO_DISCARD Rc<VectorData> copy() const override;
     VectorIterator begin() const override;
     VectorIterator end() const override;
@@ -757,19 +788,20 @@ public:
     ) override;
     void
     unary(const scalars::UnaryVectorOperation& operation,
-          const Vector& arg,
+          const VectorData& arg,
           const scalars::ops::Operator& op) override;
     void binary_inplace(
             const scalars::BinaryVectorOperation& operation,
-            const Vector& right,
+            const VectorData& right,
             const scalars::ops::Operator& op
     ) override;
     void
     binary(const scalars::BinaryVectorOperation& operation,
-           const Vector& left,
-           const Vector& right,
+           const VectorData& left,
+           const VectorData& right,
            const scalars::ops::Operator& op) override;
-    RPY_NO_DISCARD bool is_equal(const Vector& right) const noexcept override;
+    RPY_NO_DISCARD bool is_equal(const VectorData& right
+    ) const noexcept override;
 };
 
 namespace dtl {
@@ -960,6 +992,17 @@ RPY_NO_DISCARD inline bool
 operator!=(const VectorIterator& lhs, const VectorIterator& rhs) noexcept
 {
     return !(lhs == rhs);
+}
+
+inline Vector::const_iterator Vector::begin() const
+{
+    RPY_DBG_ASSERT(p_data);
+    return p_data->begin();
+}
+inline Vector::const_iterator Vector::end() const
+{
+    RPY_DBG_ASSERT(p_data);
+    return p_data->end();
 }
 
 }// namespace algebra
