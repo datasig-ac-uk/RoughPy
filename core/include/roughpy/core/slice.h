@@ -30,15 +30,24 @@
 #define ROUGHPY_CORE_SLICE_H_
 
 #include "container/vector.h"
+#include "ranges.h"
 #include "traits.h"
 #include "types.h"
 
 #include <iterator>
+#include <memory>
 #include <utility>
 
 namespace rpy {
 
 namespace dtl {
+
+/*
+ * This SliceIterator type is based heavily on the implementation of
+ * the __bounded_iter from LLVM libstdcxx and the span_iterator from the
+ * Microsoft GSL library. It implements bounds checks on iterator access to
+ * prevent accesses outside of the given range.
+ */
 
 template <typename ElementType>
 class SliceIterator
@@ -51,12 +60,14 @@ public:
     using reference = ElementType&;
 
 private:
-    pointer p_begin{};
-    pointer p_end{};
-    pointer p_current{};
+    pointer p_begin;
+    pointer p_end;
+    pointer p_current;
 
 public:
     constexpr SliceIterator() noexcept = default;
+    constexpr SliceIterator(const SliceIterator& other) noexcept = default;
+    constexpr SliceIterator(SliceIterator&& other) noexcept = default;
 
     constexpr
     SliceIterator(pointer begin, pointer end, pointer current) noexcept
@@ -65,7 +76,12 @@ public:
           p_current(current)
     {}
 
-    constexpr operator SliceIterator<const ElementType>() const noexcept
+    constexpr SliceIterator& operator=(const SliceIterator& other) noexcept
+            = default;
+    constexpr SliceIterator& operator=(SliceIterator&& other) noexcept
+            = default;
+
+    constexpr operator SliceIterator<const value_type>() const noexcept
     {
         return {p_begin, p_end, p_current};
     }
@@ -77,7 +93,7 @@ public:
         return *p_current;
     }
 
-    RPY_NO_DISCARD constexpr reference operator[](difference_type index)
+    RPY_NO_DISCARD constexpr reference operator[](difference_type index) const
     {
         return *(*this + index);
     }
@@ -89,7 +105,7 @@ public:
         return p_current;
     }
 
-    constexpr SliceIterator operator++() noexcept
+    constexpr SliceIterator& operator++() noexcept
     {
         RPY_DBG_ASSERT(p_current != nullptr && p_end != nullptr);
         RPY_DBG_ASSERT(p_current < p_end);
@@ -242,6 +258,10 @@ public:
         RPY_DBG_ASSERT(p_current == rhs.p_current && p_end == rhs.p_end);
         return p_current >= rhs.p_current;
     }
+
+private:
+    template <typename Ptr>
+    friend class std::pointer_traits;
 };
 
 }// namespace dtl
@@ -274,10 +294,11 @@ public:
     using size_type = dimn_t;
     using difference_type = idimn_t;
 
+    // using iterator = T*;
     using iterator = dtl::SliceIterator<element_type>;
-    using const_iterator = dtl::SliceIterator<const value_type>;
+    // using const_iterator = dtl::SliceIterator<const value_type>;
     using reverse_iterator = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+    // using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     constexpr Slice() noexcept = default;
     constexpr Slice(const Slice&) noexcept = default;
@@ -363,38 +384,24 @@ public:
 
     RPY_NO_DISCARD constexpr T* data() const noexcept { return p_data; }
 
-    RPY_NO_DISCARD constexpr iterator begin() noexcept
+    RPY_NO_DISCARD constexpr iterator begin() const noexcept
     {
         return {p_data, p_data + m_size, p_data};
+        // return p_data;
     }
-    RPY_NO_DISCARD constexpr iterator end() noexcept
+    RPY_NO_DISCARD constexpr iterator end() const noexcept
     {
         return {p_data, p_data + m_size, p_data + m_size};
-    }
-    RPY_NO_DISCARD constexpr const_iterator begin() const noexcept
-    {
-        return {p_data, p_data + m_size, p_data};
-    }
-    RPY_NO_DISCARD constexpr const_iterator end() const noexcept
-    {
-        return {p_data, p_data + m_size, p_data + m_size};
+        // return p_data + m_size;
     }
 
-    RPY_NO_DISCARD constexpr reverse_iterator rbegin() noexcept
+    RPY_NO_DISCARD constexpr reverse_iterator rbegin() const noexcept
     {
         return reverse_iterator{end()};
     }
-    RPY_NO_DISCARD constexpr reverse_iterator rend() noexcept
+    RPY_NO_DISCARD constexpr reverse_iterator rend() const noexcept
     {
         return reverse_iterator{begin()};
-    }
-    RPY_NO_DISCARD constexpr const_reverse_iterator rbegin() const noexcept
-    {
-        return const_reverse_iterator(end());
-    }
-    RPY_NO_DISCARD constexpr const_reverse_iterator rend() const noexcept
-    {
-        return const_reverse_iterator(begin());
     }
 
     RPY_NO_DISCARD operator containers::Vec<remove_const_t<T>>() const
@@ -451,6 +458,26 @@ public:
     RPY_NO_DISCARD constexpr void* data() const noexcept { return p_data; }
 };
 
+using CHECK_ME_begin
+        = decltype(ranges::begin(std::declval<const Slice<float>&>()));
+using CHECK_ME_end = decltype(ranges::end(std::declval<const Slice<float>&>()));
+
 }// namespace rpy
+
+namespace std {
+
+template <typename EltType>
+struct pointer_traits<::rpy::dtl::SliceIterator<EltType>> {
+    using pointer = ::rpy::dtl::SliceIterator<EltType>;
+    using element_type = EltType;
+    using difference_type = ptrdiff_t;
+
+    static constexpr element_type* to_address(const pointer i)
+    {
+        return i.p_current;
+    }
+};
+
+}// namespace std
 
 #endif// ROUGHPY_CORE_SLICE_H_
