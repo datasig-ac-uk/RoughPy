@@ -38,6 +38,214 @@
 
 namespace rpy {
 
+namespace dtl {
+
+template <typename ElementType>
+class SliceIterator
+{
+public:
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = remove_cv_t<ElementType>;
+    using difference_type = idimn_t;
+    using pointer = ElementType*;
+    using reference = ElementType&;
+
+private:
+    pointer p_begin{};
+    pointer p_end{};
+    pointer p_current{};
+
+public:
+    constexpr SliceIterator() noexcept = default;
+
+    constexpr
+    SliceIterator(pointer begin, pointer end, pointer current) noexcept
+        : p_begin(begin),
+          p_end(end),
+          p_current(current)
+    {}
+
+    constexpr operator SliceIterator<const ElementType>() const noexcept
+    {
+        return {p_begin, p_end, p_current};
+    }
+
+    RPY_NO_DISCARD constexpr reference operator*() const noexcept
+    {
+        RPY_DBG_ASSERT(p_begin != nullptr && p_end != nullptr);
+        RPY_DBG_ASSERT(p_begin <= p_current && p_current < p_end);
+        return *p_current;
+    }
+
+    RPY_NO_DISCARD constexpr reference operator[](difference_type index)
+    {
+        return *(*this + index);
+    }
+
+    RPY_NO_DISCARD constexpr pointer operator->() const noexcept
+    {
+        RPY_DBG_ASSERT(p_begin != nullptr && p_end != nullptr);
+        RPY_DBG_ASSERT(p_begin <= p_current && p_current < p_end);
+        return p_current;
+    }
+
+    constexpr SliceIterator operator++() noexcept
+    {
+        RPY_DBG_ASSERT(p_current != nullptr && p_end != nullptr);
+        RPY_DBG_ASSERT(p_current < p_end);
+        ++p_current;
+        return *this;
+    }
+
+    RPY_NO_DISCARD constexpr SliceIterator operator++(int) noexcept
+    {
+        SliceIterator prev(*this);
+        ++(*this);
+        return prev;
+    }
+
+    constexpr SliceIterator& operator--() noexcept
+    {
+        RPY_DBG_ASSERT(p_begin != nullptr && p_end != nullptr);
+        RPY_DBG_ASSERT(p_begin < p_current);
+        ++p_current;
+        return *this;
+    }
+
+    RPY_NO_DISCARD constexpr SliceIterator operator--(int) noexcept
+    {
+        SliceIterator next(*this);
+        --(*this);
+        return next;
+    }
+
+    constexpr SliceIterator& operator+=(difference_type n) noexcept
+    {
+        RPY_DBG_ASSERT(
+                n == 0
+                || (p_begin != nullptr && p_current != nullptr
+                    && p_end != nullptr)
+        );
+        RPY_DBG_ASSERT(
+                n > 0 ? p_end - p_current >= n
+                      : (n == 0 || (p_current - p_begin) >= -n)
+        );
+
+        p_current += n;
+        return *this;
+    }
+
+    RPY_NO_DISCARD constexpr SliceIterator operator+(difference_type n
+    ) const noexcept
+    {
+        SliceIterator advanced(*this);
+        advanced += n;
+        return advanced;
+    }
+
+    RPY_NO_DISCARD friend constexpr SliceIterator
+    operator+(difference_type n, const SliceIterator& rhs) noexcept
+    {
+        return rhs + n;
+    }
+
+    constexpr SliceIterator& operator-=(difference_type n) noexcept
+    {
+        RPY_DBG_ASSERT(
+                n == 0
+                || (p_begin != nullptr && p_current != nullptr
+                    && p_end != nullptr)
+        );
+        RPY_DBG_ASSERT(
+                n < 0 ? p_end - p_current >= -n
+                      : (n == 0 || (p_current - p_begin) >= n)
+        );
+
+        p_current -= n;
+        return *this;
+    }
+
+    RPY_NO_DISCARD constexpr SliceIterator operator-(difference_type n
+    ) const noexcept
+    {
+        SliceIterator advanced(*this);
+        advanced -= n;
+        return advanced;
+    }
+
+    template <
+            typename EltType,
+            typename = enable_if_t<is_same_v<remove_cv_t<EltType>, value_type>>>
+    RPY_NO_DISCARD constexpr difference_type
+    operator-(const SliceIterator<EltType>& rhs) const noexcept
+    {
+        RPY_DBG_ASSERT(p_current == rhs.p_current && p_end == rhs.p_end);
+        return p_current - rhs.p_current;
+    }
+
+    template <
+            typename EltType,
+            typename = enable_if_t<is_same_v<remove_cv_t<EltType>, value_type>>>
+    RPY_NO_DISCARD constexpr bool operator==(const SliceIterator<EltType>& rhs
+    ) const noexcept
+    {
+        RPY_DBG_ASSERT(p_current == rhs.p_current && p_end == rhs.p_end);
+        return p_current == rhs.p_current;
+    }
+
+    template <
+            typename EltType,
+            typename = enable_if_t<is_same_v<remove_cv_t<EltType>, value_type>>>
+    RPY_NO_DISCARD constexpr bool operator!=(const SliceIterator<EltType>& rhs
+    ) const noexcept
+    {
+        RPY_DBG_ASSERT(p_current == rhs.p_current && p_end == rhs.p_end);
+        return p_current != rhs.p_current;
+    }
+
+    template <
+            typename EltType,
+            typename = enable_if_t<is_same_v<remove_cv_t<EltType>, value_type>>>
+    RPY_NO_DISCARD constexpr bool operator<(const SliceIterator<EltType>& rhs
+    ) const noexcept
+    {
+        RPY_DBG_ASSERT(p_current == rhs.p_current && p_end == rhs.p_end);
+        return p_current < rhs.p_current;
+    }
+
+    template <
+            typename EltType,
+            typename = enable_if_t<is_same_v<remove_cv_t<EltType>, value_type>>>
+    RPY_NO_DISCARD constexpr bool operator<=(const SliceIterator<EltType>& rhs
+    ) const noexcept
+    {
+        RPY_DBG_ASSERT(p_current == rhs.p_current && p_end == rhs.p_end);
+        return p_current <= rhs.p_current;
+    }
+
+    template <
+            typename EltType,
+            typename = enable_if_t<is_same_v<remove_cv_t<EltType>, value_type>>>
+    RPY_NO_DISCARD constexpr bool operator>(const SliceIterator<EltType>& rhs
+    ) const noexcept
+    {
+        RPY_DBG_ASSERT(p_current == rhs.p_current && p_end == rhs.p_end);
+        return p_current > rhs.p_current;
+    }
+
+    template <
+            typename EltType,
+            typename = enable_if_t<is_same_v<remove_cv_t<EltType>, value_type>>>
+    RPY_NO_DISCARD constexpr bool operator>=(const SliceIterator<EltType>& rhs
+    ) const noexcept
+    {
+        RPY_DBG_ASSERT(p_current == rhs.p_current && p_end == rhs.p_end);
+        return p_current >= rhs.p_current;
+    }
+};
+
+}// namespace dtl
+
 /**
  * @brief Common access for contiguous array-like data
  *
@@ -54,27 +262,41 @@ template <typename T>
 class Slice
 {
     T* p_data = nullptr;
-    std::size_t m_size = 0;
+    dimn_t m_size = 0;
 
 public:
-    constexpr Slice() = default;
-    Slice(const Slice&) = default;
-    Slice(Slice&&) noexcept = default;
+    using element_type = T;
+    using value_type = remove_cv_t<T>;
+    using reference = T&;
+    using const_reference = const T&;
+    using pointer = T*;
+    using const_pointer = const T*;
+    using size_type = dimn_t;
+    using difference_type = idimn_t;
 
-    constexpr Slice(T& num) : p_data(&num), m_size(1) {}
+    using iterator = dtl::SliceIterator<element_type>;
+    using const_iterator = dtl::SliceIterator<const value_type>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-    constexpr Slice(std::initializer_list<T> data)
+    constexpr Slice() noexcept = default;
+    constexpr Slice(const Slice&) noexcept = default;
+    constexpr Slice(Slice&&) noexcept = default;
+
+    constexpr Slice(T& num) noexcept : p_data(&num), m_size(1) {}
+
+    constexpr Slice(std::initializer_list<T> data) noexcept
         : p_data(data.data()),
           m_size(data.size())
     {}
 
-    constexpr Slice(std::nullptr_t) : p_data(nullptr), m_size(0) {}
+    constexpr Slice(std::nullptr_t) noexcept : p_data(nullptr), m_size(0) {}
 
     template <
             typename Container,
             typename
             = enable_if_t<is_same_v<typename Container::value_type, T>>>
-    constexpr Slice(Container& container)
+    constexpr Slice(Container& container) noexcept
         : p_data(container.data()),
           m_size(container.size())
     {}
@@ -83,17 +305,17 @@ public:
             typename Container,
             typename = enable_if_t<
                     is_same_v<remove_cv_t<typename Container::value_type>, T>>>
-    constexpr Slice(const Container& container)
+    constexpr Slice(const Container& container) noexcept
         : p_data(container.data()),
           m_size(container.size())
     {}
 
     template <std::size_t N>
-    constexpr Slice(T (&array)[N]) : p_data(array),
-                                     m_size(N)
+    constexpr Slice(T (&array)[N]) noexcept : p_data(array),
+                                              m_size(N)
     {}
 
-    constexpr Slice(T* ptr, std::size_t N) : p_data(ptr), m_size(N) {}
+    constexpr Slice(T* ptr, size_type N) noexcept : p_data(ptr), m_size(N) {}
 
     constexpr operator Slice<add_const_t<T>>() const noexcept
     {
@@ -114,8 +336,8 @@ public:
         return *this;
     }
 
-    Slice& operator=(const Slice&) = default;
-    Slice& operator=(Slice&&) noexcept = default;
+    constexpr Slice& operator=(const Slice&) = default;
+    constexpr Slice& operator=(Slice&&) noexcept = default;
 
     template <typename I>
     constexpr enable_if_t<is_integral_v<I>, T&> operator[](I i) noexcept
@@ -137,35 +359,42 @@ public:
         return p_data == nullptr || m_size == 0;
     }
 
-    RPY_NO_DISCARD constexpr std::size_t size() const noexcept
-    {
-        return m_size;
-    }
+    RPY_NO_DISCARD constexpr size_type size() const noexcept { return m_size; }
 
     RPY_NO_DISCARD constexpr T* data() const noexcept { return p_data; }
 
-    RPY_NO_DISCARD constexpr T* begin() noexcept { return p_data; }
-    RPY_NO_DISCARD constexpr T* end() noexcept { return p_data + m_size; }
-    RPY_NO_DISCARD constexpr const T* begin() const { return p_data; }
-    RPY_NO_DISCARD constexpr const T* end() const { return p_data + m_size; }
+    RPY_NO_DISCARD constexpr iterator begin() noexcept
+    {
+        return {p_data, p_data + m_size, p_data};
+    }
+    RPY_NO_DISCARD constexpr iterator end() noexcept
+    {
+        return {p_data, p_data + m_size, p_data + m_size};
+    }
+    RPY_NO_DISCARD constexpr const_iterator begin() const noexcept
+    {
+        return {p_data, p_data + m_size, p_data};
+    }
+    RPY_NO_DISCARD constexpr const_iterator end() const noexcept
+    {
+        return {p_data, p_data + m_size, p_data + m_size};
+    }
 
-    RPY_NO_DISCARD constexpr std::reverse_iterator<T*> rbegin() noexcept
+    RPY_NO_DISCARD constexpr reverse_iterator rbegin() noexcept
     {
-        return std::reverse_iterator<T*>(p_data + m_size);
+        return reverse_iterator{end()};
     }
-    RPY_NO_DISCARD constexpr std::reverse_iterator<T*> rend() noexcept
+    RPY_NO_DISCARD constexpr reverse_iterator rend() noexcept
     {
-        return std::reverse_iterator<T*>(p_data);
+        return reverse_iterator{begin()};
     }
-    RPY_NO_DISCARD constexpr std::reverse_iterator<const T*>
-    rbegin() const noexcept
+    RPY_NO_DISCARD constexpr const_reverse_iterator rbegin() const noexcept
     {
-        return std::reverse_iterator<const T*>(p_data + m_size);
+        return const_reverse_iterator(end());
     }
-    RPY_NO_DISCARD constexpr std::reverse_iterator<const T*>
-    rend() const noexcept
+    RPY_NO_DISCARD constexpr const_reverse_iterator rend() const noexcept
     {
-        return std::reverse_iterator<const T*>(p_data);
+        return const_reverse_iterator(begin());
     }
 
     RPY_NO_DISCARD operator containers::Vec<remove_const_t<T>>() const
