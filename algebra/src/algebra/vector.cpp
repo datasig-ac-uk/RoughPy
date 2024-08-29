@@ -57,22 +57,22 @@ void Vector::check_and_resize_for_operands(const Vector& lhs, const Vector& rhs)
     dimn_t new_base_size = 0;
     dimn_t new_fibre_size = 0;
 
-    {
-        // TODO: handle sparsity
-        new_base_size = std::max(lhs.size(), rhs.size());
-        new_fibre_size
-                = std::max(lhs.fibre_data().size(), rhs.fibre_data().size());
-    }
+    // {
+    // TODO: handle sparsity
+    // new_base_size = std::max(lhs.size(), rhs.size());
+    // new_fibre_size
+    // = std::max(lhs.fibre_data().size(), rhs.fibre_data().size());
+    // }
 
     // We need to separate the part where we interact with this because lhs
     // might alias so we gather together the operations that interact with this
     // below. We might need to put in a barrier instruction of some sort to
     // prevent the compiler from messing with this ordering.
 
-    if (!p_data) { p_data = context->empty_like(); }
+    // if (!p_data) { p_data = context->empty_like(); }
 
-    this->resize_base_dim(new_base_size);
-    if (new_fibre_size > 0) { this->resize_fibre_dim(new_fibre_size); }
+    // this->resize_base_dim(new_base_size);
+    // if (new_fibre_size > 0) { this->resize_fibre_dim(new_fibre_size); }
 }
 
 void Vector::set_zero()

@@ -25,7 +25,10 @@ void DenseVectorData::resize_for_operands(
         const VectorData& rhs
 )
 {}
-optional<dimn_t> DenseVectorData::get_index(BasisKeyCRef key) const noexcept {}
+optional<dimn_t> DenseVectorData::get_index(BasisKeyCRef key) const noexcept
+{
+    return {};
+}
 
 scalars::ScalarVector& DenseVectorData::as_mut_scalar_vector()
 {

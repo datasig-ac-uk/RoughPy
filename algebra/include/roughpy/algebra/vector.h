@@ -439,14 +439,14 @@ public:
     RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
     operator[](I index) const
     {
-        return p_data->get(static_cast<dimn_t>(index));
+        return {};
     }
 
     template <typename I>
     RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
     operator[](I index)
     {
-        return p_data->get_mut(static_cast<dimn_t>(index));
+        return {};
     }
 
 private:
