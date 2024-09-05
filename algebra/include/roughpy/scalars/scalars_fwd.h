@@ -10,6 +10,7 @@
 #include <roughpy/devices/core.h>
 #include <roughpy/devices/type.h>
 #include <roughpy/devices/value.h>
+#include <roughpy/devices/algorithms.h>
 
 #if RPY_HAS_INCLUDE("roughpy_algebra_export.h")
 #  include "roughpy_algebra_export.h"
@@ -42,6 +43,7 @@ using devices::get_type;
 using devices::Type;
 using devices::TypePtr;
 namespace math = devices::math;
+namespace algorithms = devices::algorithms;
 
 using Scalar = devices::Value;
 using ScalarCRef = devices::ConstReference;
