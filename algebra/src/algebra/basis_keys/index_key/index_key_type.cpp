@@ -58,10 +58,8 @@ IndexKeyType::IndexKeyType()
         };
     }
 
-    using UnsignedInts
-            = devices::dtl::TypeList<uint8_t, uint16_t, uint32_t, uint64_t>;
-    using SignedInts
-            = devices::dtl::TypeList<int8_t, int16_t, int32_t, int64_t>;
+    using UnsignedInts = TypeList<uint8_t, uint16_t, uint32_t, uint64_t>;
+    using SignedInts = TypeList<int8_t, int16_t, int32_t, int64_t>;
 
     devices::dtl::register_type_support<dimn_t>(this, UnsignedInts{});
     devices::dtl::register_type_support<dimn_t>(this, SignedInts{});
