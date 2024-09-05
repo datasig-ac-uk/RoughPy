@@ -1051,7 +1051,7 @@ struct SupportRegistration {
 template <typename ThisT, typename T>
 void register_type_support(const Type* type, TypeList<T>)
 {
-    if constexpr (is_same_v<ThisT, T>) {
+    if constexpr (!is_same_v<ThisT, T>) {
         using reg = SupportRegistration<ThisT, T>;
         reg::register_support(type);
     }
@@ -1060,7 +1060,7 @@ void register_type_support(const Type* type, TypeList<T>)
 template <typename ThisT, typename T, typename... Ts>
 void register_type_support(const Type* type, TypeList<T, Ts...>)
 {
-    if constexpr (is_same_v<ThisT, T>) {
+    if constexpr (!is_same_v<ThisT, T>) {
         using reg = SupportRegistration<ThisT, T>;
         reg::register_support(type);
     }
