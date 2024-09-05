@@ -63,7 +63,7 @@ ArbitraryPrecisionRationalType::ArbitraryPrecisionRationalType()
     num_traits.abs = math_fn_impls::abs_fn<type>;
     num_traits.real = math_fn_impls::real_fn<type>;
     {
-        auto support = this->update_support(*this);
+        auto* support = &this->setup_self_type_support();
         support->arithmetic.add_inplace = +[](void* out, const void* in) {
             (*static_cast<type*>(out)) += *static_cast<const type*>(in);
         };
