@@ -29,6 +29,15 @@ using devices::dtl::SubInplace;
 
 namespace {}
 
+namespace rpy { namespace devices {
+
+template <> TypePtr get_type<ArbitraryPrecisionRational>()
+{
+    return ArbitraryPrecisionRationalType::get();
+}
+
+}}
+
 ArbitraryPrecisionRationalType::ArbitraryPrecisionRationalType()
     : Type("rap",
            "Rational",
