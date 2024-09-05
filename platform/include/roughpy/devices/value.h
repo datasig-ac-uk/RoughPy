@@ -909,7 +909,29 @@ operator>=(const S& left, const T& right)
     return comparisons.greater_equal(left.data(), right.data());
 }
 
+
+template <typename T>
+inline enable_if_t<value_like<T>, bool> is_zero(const T& value)
+{
+    if (value.fast_is_zero()) {
+        return true;
+    }
+
+    const auto& tp = value.type();
+    const auto comparisons = tp->comparisons(*tp);
+    if (comparisons.is_zero != nullptr) {
+        return comparisons.is_zero(value.data());
+    }
+    if (comparisons.equals != nullptr) {
+        return comparisons.equals(value.data(), tp->zero().data());;
+    }
+
+    RPY_THROW(std::runtime_error, string_cat("type ", tp->name(), " is not comparable to zero"));
+}
+
 namespace math {
+
+
 
 /**
  * @brief Compute the absolute value of a given value.
