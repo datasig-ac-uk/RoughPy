@@ -94,7 +94,6 @@ public:
     using reference = ScalarRef;
     using const_reference = ScalarCRef;
 
-protected:
     void resize_base_dim(dimn_t new_dim);
     void resize_fibre_dim(dimn_t new_dim);
 
@@ -115,6 +114,7 @@ protected:
         set_fibre_zero();
     }
 
+protected:
     ScalarVector(ScalarArray base, ScalarArray fibre)
         : m_base_data(std::move(base)),
           m_fibre_data(std::move(fibre)){};
@@ -178,8 +178,10 @@ public:
 
     RPY_NO_DISCARD bool is_zero() const noexcept;
 
-    RPY_NO_DISCARD const_reference get(dimn_t index) const;
-    RPY_NO_DISCARD reference get_mut(dimn_t index);
+    RPY_NO_DISCARD const_reference base_get(dimn_t index) const;
+    RPY_NO_DISCARD reference base_get_mut(dimn_t index);
+    RPY_NO_DISCARD const_reference fibre_get(dimn_t index) const;
+    RPY_NO_DISCARD reference fibre_get_mut(dimn_t index);
 
     RPY_NO_DISCARD const_iterator begin() const noexcept;
     RPY_NO_DISCARD const_iterator end() const noexcept;
@@ -190,21 +192,37 @@ public:
 
     RPY_NO_DISCARD ScalarVector sub(const ScalarVector& other) const;
 
-    RPY_NO_DISCARD ScalarVector left_smul(const Scalar& scalar) const;
-    RPY_NO_DISCARD ScalarVector right_smul(const Scalar& scalar) const;
-    RPY_NO_DISCARD ScalarVector sdiv(const Scalar& scalar) const;
+    RPY_NO_DISCARD ScalarVector left_smul(ScalarCRef scalar) const;
+    RPY_NO_DISCARD ScalarVector right_smul(ScalarCRef scalar) const;
+    RPY_NO_DISCARD ScalarVector sdiv(ScalarCRef scalar) const
+    {
+        const auto recip = math::reciprocal(scalar);
+        return right_smul(recip);
+    }
 
     ScalarVector& add_inplace(const ScalarVector& other);
     ScalarVector& sub_inplace(const ScalarVector& other);
-    ScalarVector& left_smul_inplace(const Scalar& other);
-    ScalarVector& right_smul_inplace(const Scalar& other);
-    ScalarVector& sdiv_inplace(const Scalar& other);
+    ScalarVector& left_smul_inplace(ScalarCRef other);
+    ScalarVector& right_smul_inplace(ScalarCRef other);
+    ScalarVector& sdiv_inplace(ScalarCRef other)
+    {
+        const auto recip = math::reciprocal(other);
+        return right_smul_inplace(recip);
+    }
 
-    ScalarVector& add_scal_mul(const ScalarVector& other, const Scalar& scalar);
-    ScalarVector& sub_scal_mul(const ScalarVector& other, const Scalar& scalar);
+    ScalarVector& add_scal_mul(const ScalarVector& other, ScalarCRef scalar);
+    ScalarVector& sub_scal_mul(const ScalarVector& other, ScalarCRef scalar);
 
-    ScalarVector& add_scal_div(const ScalarVector& other, const Scalar& scalar);
-    ScalarVector& sub_scal_div(const ScalarVector& other, const Scalar& scalar);
+    ScalarVector& add_scal_div(const ScalarVector& other, ScalarCRef scalar)
+    {
+        const auto recip = math::reciprocal(scalar);
+        return add_scal_mul(other, recip);
+    }
+    ScalarVector& sub_scal_div(const ScalarVector& other, ScalarCRef scalar)
+    {
+        const auto recip = math::reciprocal(scalar);
+        return sub_scal_mul(other, recip);
+    }
 
     RPY_NO_DISCARD bool operator==(const ScalarVector& other) const;
     RPY_NO_DISCARD bool operator!=(const ScalarVector& other) const
