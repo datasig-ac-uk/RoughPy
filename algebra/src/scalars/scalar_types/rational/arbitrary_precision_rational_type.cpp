@@ -29,14 +29,17 @@ using devices::dtl::SubInplace;
 
 namespace {}
 
-namespace rpy { namespace devices {
+namespace rpy {
+namespace devices {
 
-template <> TypePtr get_type<ArbitraryPrecisionRational>()
+template <>
+TypePtr get_type<ArbitraryPrecisionRational>()
 {
     return ArbitraryPrecisionRationalType::get();
 }
 
-}}
+}// namespace devices
+}// namespace rpy
 
 ArbitraryPrecisionRationalType::ArbitraryPrecisionRationalType()
     : Type("rap",
@@ -104,10 +107,7 @@ ArbitraryPrecisionRationalType::ArbitraryPrecisionRationalType()
         };
     }
 
-    devices::dtl::register_type_support<type>(
-            this,
-            devices::dtl::FundamentalTypesList()
-    );
+    devices::register_type_support<type, devices::BuiltinTypesList>(this);
 }
 
 devices::Buffer ArbitraryPrecisionRationalType::allocate(
