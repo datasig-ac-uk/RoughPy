@@ -154,6 +154,146 @@ struct TypeSupport {
     type_support::TypeConversions conversions;
 };
 
+
+namespace dtl {
+using FundamentalTypesList = TypeList<
+        int8_t,
+        int16_t,
+        int32_t,
+        int64_t,
+        uint8_t,
+        uint16_t,
+        uint32_t,
+        uint64_t,
+        float,
+        double>;
+
+template <typename S, typename T>
+struct NotImplemented {
+    static void func(void*, const void*)
+    {
+        RPY_THROW(
+                std::runtime_error,
+                string_cat(
+                        "operation is not implemented for types ",
+                        get_type<S>()->id(),
+                        " and ",
+                        get_type<T>()->id()
+                )
+        );
+    }
+};
+
+#define RPY_DEFINE_OP_OVERRIDE(name, op)                                       \
+    template <typename S, typename T, typename SFINAE = void>                  \
+    struct name : NotImplemented<S, T> {                                       \
+    };                                                                         \
+    template <typename S, typename T>                                          \
+    struct name<                                                               \
+            S,                                                                 \
+            T,                                                                 \
+            void_t<decltype(std::declval<S&>() op std::declval<const T&>()     \
+            )>> {                                                              \
+        static void func(void* left, const void* right)                        \
+        {                                                                      \
+            *static_cast<S*>(left) op* static_cast<const T*>(right);           \
+        }                                                                      \
+    };
+
+RPY_DEFINE_OP_OVERRIDE(AddInplace, +=)
+RPY_DEFINE_OP_OVERRIDE(SubInplace, -=)
+RPY_DEFINE_OP_OVERRIDE(MulInplace, *=)
+RPY_DEFINE_OP_OVERRIDE(DivInplace, /=)
+
+#undef RPY_DEFINE_OP_OVERRIDE
+
+#define RPY_DEFINE_OP_OVERRIDE(name, op)                                         \
+    template <typename S, typename T, typename SFINAE = void>                    \
+    struct name {                                                                \
+        static bool func(const void*, const void*)                               \
+        {                                                                        \
+            RPY_THROW(std::runtime_error,                                      \
+                string_cat("operation " RPY_STRINGIFY(op)                      \
+                         " is not defined for types ",                         \
+                get_type<S>()->id(), " and ",                      \
+                get_type<T>()->id())); \
+        }                                                                        \
+    };                                                                           \
+    template <typename S, typename T>                                            \
+    struct name<                                                                 \
+            S,                                                                   \
+            T,                                                                   \
+            void_t<decltype(std::declval<const S&>()                             \
+                                    op std::declval<const T&>())>> {             \
+        static bool func(const void* left, const void* right)                    \
+        {                                                                        \
+            return *static_cast<const S*>(left) op                               \
+                    * static_cast<const T*>(right);                              \
+        }                                                                        \
+    };
+
+RPY_DEFINE_OP_OVERRIDE(CompareEqual, ==)
+RPY_DEFINE_OP_OVERRIDE(CompareLess, <)
+RPY_DEFINE_OP_OVERRIDE(CompareLessEqual, <=)
+RPY_DEFINE_OP_OVERRIDE(CompareGreater, >)
+RPY_DEFINE_OP_OVERRIDE(CompareGreaterEqual, >=)
+
+#undef RPY_DEFINE_OP_OVERRIDE
+
+template <typename S, typename T, bool = is_constructible_v<S, const T&>>
+struct Convert {
+    static void func(void* out, const void* in)
+    {
+        auto& dst = *static_cast<S*>(out);
+        const auto& src = *static_cast<const T*>(in);
+        dst = static_cast<S>(src);
+    }
+};
+template <typename S, typename T>
+struct Convert<S, T, false> : NotImplemented<S, T> {
+};
+
+template <typename S, typename T>
+struct SupportRegistration {
+
+    static void register_support(const Type* type)
+    {
+        const auto other_type = get_type<T>();
+        auto support = type->update_support(*other_type);
+
+        support->arithmetic.add_inplace = AddInplace<S, T>::func;
+        support->arithmetic.sub_inplace = SubInplace<S, T>::func;
+        support->arithmetic.mul_inplace = MulInplace<S, T>::func;
+        support->arithmetic.div_inplace = DivInplace<S, T>::func;
+
+        support->comparison.equals = CompareEqual<S, T>::func;
+        support->comparison.less = CompareLess<S, T>::func;
+        support->comparison.less_equal = CompareLessEqual<S, T>::func;
+        support->comparison.greater = CompareGreater<S, T>::func;
+        support->comparison.greater_equal = CompareGreaterEqual<S, T>::func;
+
+        support->conversions.convert = Convert<S, T>::func;
+    }
+};
+
+template <typename ThisT, typename T>
+void register_type_support(const Type* type, TypeList<T>)
+{
+    using reg = SupportRegistration<ThisT, T>;
+    reg::register_support(type);
+}
+
+template <typename ThisT, typename T, typename... Ts>
+void register_type_support(const Type* type, TypeList<T, Ts...>)
+{
+    using reg = SupportRegistration<ThisT, T>;
+    reg::register_support(type);
+    register_type_support<ThisT>(type, TypeList<Ts...>());
+}
+
+}// namespace dtl
+
+
 /**
  * @class Type
  * @brief Represents a type with various traits and behavior.
