@@ -28,85 +28,6 @@ namespace algebra {
 
 class VectorIterator;
 
-class Vector;
-
-class ROUGHPY_ALGEBRA_EXPORT VectorData : public RcBase<VectorData>,
-                                          public platform::SmallObjectBase
-{
-    BasisPointer p_basis;
-
-protected:
-    explicit VectorData(BasisPointer basis) : p_basis(std::move(basis)){};
-
-public:
-    using ScalarRef = scalars::ScalarRef;
-    using ScalarCRef = scalars::ScalarCRef;
-    using Scalar = scalars::Scalar;
-    using const_iterator = VectorIterator;
-    using ScalarType = devices::TypePtr;
-
-    virtual ~VectorData();
-
-    virtual Rc<VectorData> empty_like() const noexcept;
-
-    RPY_NO_DISCARD BasisPointer basis() const noexcept { return p_basis; };
-    RPY_NO_DISCARD virtual ScalarType scalar_type() const noexcept = 0;
-
-    virtual bool is_sparse() const noexcept;
-    virtual bool is_contiguous() const noexcept;
-
-    virtual void resize_by_dim(dimn_t base_dim, dimn_t fibre_dim) = 0;
-
-    virtual void
-    resize_for_operands(const VectorData& lhs, const VectorData& rhs)
-            = 0;
-
-    virtual optional<dimn_t> get_index(BasisKeyCRef key) const noexcept = 0;
-
-    virtual scalars::ScalarVector& as_mut_scalar_vector() = 0;
-    virtual const scalars::ScalarVector& as_scalar_vector() const = 0;
-
-    virtual ScalarRef get_mut(BasisKeyCRef key);
-    virtual ScalarCRef get(BasisKeyCRef key);
-
-    RPY_NO_DISCARD virtual Rc<VectorData> copy() const = 0;
-
-    virtual VectorIterator begin() const = 0;
-    virtual VectorIterator end() const = 0;
-
-    virtual dimn_t size() const noexcept = 0;
-    virtual dimn_t dimension() const noexcept = 0;
-
-    virtual void unary_inplace(
-            const scalars::UnaryVectorOperation& operation,
-            const scalars::ops::Operator& op
-    ) = 0;
-
-    virtual void
-    unary(const scalars::UnaryVectorOperation& operation,
-          const VectorData& arg,
-          const scalars::ops::Operator& op)
-            = 0;
-
-    virtual void binary_inplace(
-            const scalars::BinaryVectorOperation& operation,
-            const VectorData& right,
-            const scalars::ops::Operator& op
-    ) = 0;
-
-    virtual void
-    binary(const scalars::BinaryVectorOperation& operation,
-           const VectorData& left,
-           const VectorData& right,
-           const scalars::ops::Operator& op)
-            = 0;
-
-    RPY_NO_DISCARD virtual bool is_equal(const VectorData& right) const noexcept
-            = 0;
-    RPY_NO_DISCARD static Rc<VectorData> make_default(BasisPointer basis
-    ) noexcept;
-};
-
 /**
  * @brief The Vector class represents a mathematical vector in a given basis.
  *
@@ -119,18 +40,18 @@ public:
  * @see Basis
  * @see VectorData
  */
-class ROUGHPY_ALGEBRA_EXPORT Vector
+class ROUGHPY_ALGEBRA_EXPORT Vector : public scalars::ScalarVector
 {
     friend class MutableVectorElement;
 
-    Rc<VectorData> p_data;
-    friend class VectorData;
+    BasisPointer p_basis;
 
 public:
     using iterator = VectorIterator;
     using const_iterator = VectorIterator;
 
     using Scalar = scalars::Scalar;
+    using ScalarCRef = scalars::ScalarCRef;
 
 protected:
     /**
@@ -143,7 +64,7 @@ protected:
      *
      * @note This method modifies the vector in place.
      */
-    void set_zero();
+    virtual void set_zero();
 
     /**
      * @brief Insert an element into the vector
@@ -156,7 +77,7 @@ protected:
      * element should be inserted.
      * @param value The `scalars::Scalar` value of the element to be inserted.
      */
-    void insert_element(BasisKeyCRef key, scalars::Scalar value);
+    virtual void insert_element(BasisKeyCRef key, scalars::Scalar value);
 
     /**
      * @brief Deletes an element from the vector given a basis key and,
@@ -172,13 +93,12 @@ protected:
      * @note This function assumes that the vector is already initialized and
      * contains the basis key.
      */
-    void delete_element(BasisKeyCRef key);
+    virtual void delete_element(BasisKeyCRef key);
 
-    RPY_NO_DISCARD static bool basis_compatibility_check(const Basis& basis
-    ) noexcept
-    {
-        return true;
-    }
+    explicit Vector(ScalarVector&& base, BasisPointer&& basis)
+        : ScalarVector(std::move(base)),
+          p_basis(std::move(basis))
+    {}
 
 public:
     using ScalarType = devices::TypePtr;
@@ -202,10 +122,10 @@ public:
      * @param key Key for the basis.
      * @param scalar Scalar value for the vector.
      */
-    explicit Vector(const BasisPointer& basis, BasisKeyCRef key, Scalar scalar)
-        : p_data(VectorData::make_default(basis))
+    explicit Vector(BasisPointer basis, BasisKeyCRef key, Scalar scalar)
+        : p_basis(std::move(basis))
     {
-        insert_element(key, std::move(scalar));
+        Vector::insert_element(key, std::move(scalar));
     }
 
     /**
@@ -215,18 +135,18 @@ public:
      * @param scalar_type Pointer to the scalar type of the vector.
      */
     explicit Vector(BasisPointer basis, scalars::TypePtr scalar_type)
-        : p_data(VectorData::make_default(basis))
+        : ScalarVector(std::move(scalar_type)),
+          p_basis(std::move(basis))
     {}
 
     Vector(BasisPointer basis,
            scalars::ScalarArray&& scalar_data,
            KeyArray&& key_buffer)
-        : p_data(VectorData::make_default(basis))
+        : ScalarVector(scalar_data.type()),
+          p_basis(std::move(basis))
     {}
 
-    Vector(Rc<VectorData> data, scalars::TypePtr scalar_type, dimn_t dim = 0)
-        : p_data(std::move(data))
-    {}
+    virtual ~Vector();
 
     /**
      * @brief Constructs a Vector object with the provided basis, scalar type,
@@ -248,64 +168,20 @@ public:
     Vector(BasisPointer basis,
            scalars::TypePtr scalar_type,
            std::initializer_list<T> vals)
-        : p_data(VectorData::make_default(std::move(basis)))
+        : ScalarVector(
+                  devices::get_type<T>(),
+                  basis->dense_dimension(vals.size())
+          ),
+          p_basis(std::move(basis))
     {
-        // RPY_DBG_ASSERT(base_data().size() >= vals.size());
-        // auto& scalar_vals = mut_base_data();
-        // for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
+        RPY_DBG_ASSERT(base_data().size() >= vals.size());
+        auto& scalar_vals = mut_base_data();
+        for (auto&& [i, v] : views::enumerate(vals)) { scalar_vals[i] = v; }
     }
 
     Vector& operator=(const Vector& other) = default;
 
     Vector& operator=(Vector&& other) noexcept = default;
-
-    /**
-     * @brief Borrows a vector if the type of V is a subclass of Vector.
-     *
-     * This method returns a borrowed vector if the type of V is a subclass of
-     * Vector. It checks the compatibility of V's basis with the basis stored in
-     * this object. If compatibility is confirmed, it creates a new vector of
-     * type V using the same basis, data, and fibre as this object and returns
-     * it.
-     *
-     * @tparam V The type of vector to borrow. Must be a subclass of Vector.
-     *
-     * @return A borrowed vector of type V with the same basis, data, and fibre
-     * as this object.
-     *
-     * @see Vector
-     * @see borrow_mut
-     */
-    template <typename V>
-    enable_if_t<is_base_of_v<Vector, V>, V> borrow() const
-    {
-        RPY_CHECK(V::basis_compatibility_check(p_data->basis()));
-        return V(*this, p_data);
-    }
-
-    /**
-     * @brief Mutably borrows the vector and checks compatibility with the
-     * basis.
-     *
-     * The `borrow_mut` method mutably borrows the vector and checks
-     * compatibility with the basis associated with the vector. If the vector is
-     * not compatible with the basis, an exception is thrown. The method then
-     * returns a mutable reference to the borrowed vector.
-     *
-     * @tparam V The type of vector.
-     * @return A mutable reference to the borrowed vector.
-     *
-     * @note This method requires that `V` is a derived of `Vector`.
-     *
-     * @see basis_compatibility_check
-     * @see borrow
-     */
-    template <typename V>
-    enable_if_t<is_base_of_v<Vector, V>, V> borrow_mut()
-    {
-        RPY_CHECK(V::basis_compatibility_check(p_data->basis()));
-        return V(*this, p_data);
-    }
 
     /**
      * @brief Checks if the vector is dense.
@@ -317,10 +193,7 @@ public:
      *
      * @return `true` if the vector is dense, `false` otherwise.
      */
-    RPY_NO_DISCARD bool is_dense() const noexcept
-    {
-        return p_data ? !p_data->is_sparse() : false;
-    }
+    RPY_NO_DISCARD virtual bool is_dense() const noexcept { return true; }
 
     /**
      * @brief Checks whether the vector is sparse.
@@ -333,10 +206,7 @@ public:
      *
      * @return True if the vector is sparse, false otherwise.
      */
-    RPY_NO_DISCARD bool is_sparse() const noexcept
-    {
-        return p_data ? p_data->is_sparse() : true;
-    }
+    RPY_NO_DISCARD bool is_sparse() const noexcept { return !is_dense(); }
 
     /**
      * @brief Retrieves the type of the vector
@@ -368,85 +238,68 @@ public:
      *
      * @return A pointer to the basis of the vector.
      */
-    RPY_NO_DISCARD BasisPointer basis() const noexcept
+    RPY_NO_DISCARD const BasisPointer& basis() const noexcept
     {
-        RPY_DBG_ASSERT(p_data);
-        return p_data->basis();
+        return p_basis;
     }
 
-    RPY_NO_DISCARD ScalarType scalar_type() const noexcept
+protected:
+    RPY_NO_DISCARD virtual optional<dimn_t> get_index(BasisKeyCRef key) const
     {
-        RPY_DBG_ASSERT(p_data);
-        return p_data->scalar_type();
+        RPY_CHECK(p_basis->has_key(key));
+        auto index = p_basis->to_index(key);
+        if (index < dimension()) { return index; }
+        return nullopt;
     }
+
+public:
+    RPY_NO_DISCARD virtual const_iterator base_begin() const;
+    RPY_NO_DISCARD virtual const_iterator base_end() const;
+    RPY_NO_DISCARD virtual const_iterator fibre_begin() const;
+    RPY_NO_DISCARD virtual const_iterator fibre_end() const;
+
+    RPY_NO_DISCARD const_iterator begin() const;
+    RPY_NO_DISCARD const_iterator end() const;
+
+    RPY_NO_DISCARD scalars::ScalarCRef base_get(BasisKeyCRef key) const;
+    RPY_NO_DISCARD scalars::ScalarCRef fibre_get(BasisKeyCRef key) const;
 
     /**
      * @brief Get the coefficient of key in the vector
      * @param key Key to query
      * @return Non-mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::ScalarCRef get(BasisKeyCRef key) const
-    {
-        RPY_CHECK(p_data);
-        return p_data->get(key);
-    }
+    RPY_NO_DISCARD scalars::ScalarCRef get(BasisKeyCRef key) const;
+    // {
+    //     if (const auto index = get_index(std::move(key))) {
+    //         return ScalarVector::get(*index);
+    //     }
+    //     return scalar_type()->zero();
+    // }
+
+    RPY_NO_DISCARD scalars::Scalar base_get_mut(BasisKeyCRef key);
+    RPY_NO_DISCARD scalars::Scalar fibre_get_mut(BasisKeyCRef key);
 
     /**
      * @brief Get the coefficient of key in the vector mutably
      * @param key Key to query
      * @return Mutable scalar containing coefficient of key
      */
-    RPY_NO_DISCARD scalars::ScalarRef get_mut(BasisKeyCRef key)
-    {
-        RPY_CHECK(p_data);
-        return p_data->get_mut(key);
-    }
-
-    RPY_NO_DISCARD const_iterator begin() const;
-    RPY_NO_DISCARD const_iterator end() const;
-
-    /**
-     * @brief Gets the index of the given BasisKey in the Vector
-     *
-     * This method retrieves the index of the specified BasisKey in the Vector.
-     *
-     * @param key The BasisKey to find the index for
-     *
-     * @return The index of the BasisKey, or an empty optional if the BasisKey
-     * is not found
-     * @note The returned index is zero-based.
-     *
-     * @sa BasisKey
-     */
-    RPY_NO_DISCARD optional<dimn_t> get_index(BasisKeyCRef key) const noexcept
-    {
-        optional<dimn_t> result{};
-        if (RPY_LIKELY(p_data)) { result = p_data->get_index(key); }
-        return result;
-    }
+    RPY_NO_DISCARD scalars::Scalar get_mut(BasisKeyCRef key);
+    // {
+    //     if (const auto index = get_index(std::move(key))) {
+    //         return ScalarVector::get_mut(*index);
+    //     }
+    // }
 
     RPY_NO_DISCARD scalars::ScalarCRef operator[](const BasisKey& key) const
     {
         return get(key);
     }
 
-    RPY_NO_DISCARD scalars::ScalarRef operator[](const BasisKey& key)
+    RPY_NO_DISCARD scalars::Scalar operator[](const BasisKey& key)
     {
         return get_mut(key);
-    }
-
-    template <typename I>
-    RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
-    operator[](I index) const
-    {
-        return {};
-    }
-
-    template <typename I>
-    RPY_NO_DISCARD enable_if_t<is_integral_v<I>, scalars::Scalar>
-    operator[](I index)
-    {
-        return {};
     }
 
 private:
@@ -469,7 +322,7 @@ public:
      *
      * @return A new vector that is the negation of the current vector
      */
-    RPY_NO_DISCARD Vector uminus() const;
+    RPY_NO_DISCARD virtual Vector uminus() const;
 
     /**
      * @brief Adds another vector to the current vector.
@@ -481,7 +334,7 @@ public:
      * @param other The vector to be added.
      * @return A new vector representing the result of the addition.
      */
-    RPY_NO_DISCARD Vector add(const Vector& other) const;
+    RPY_NO_DISCARD virtual Vector add(const Vector& other) const;
 
     /**
      * @brief Subtract a vector from the current vector
@@ -492,7 +345,7 @@ public:
      * @param other The vector to subtract from the current vector
      * @return The resulting vector after subtraction
      */
-    RPY_NO_DISCARD Vector sub(const Vector& other) const;
+    RPY_NO_DISCARD virtual Vector sub(const Vector& other) const;
 
     /**
      * @brief Left scalar multiplication of a vector.
@@ -506,7 +359,7 @@ public:
      * @note This method creates a new vector and does not modify the original
      * vector.
      */
-    RPY_NO_DISCARD Vector left_smul(const scalars::Scalar& other) const;
+    RPY_NO_DISCARD virtual Vector left_smul(ScalarCRef other) const;
 
     /**
      * @brief Right scalar multiplication of a vector.
@@ -518,7 +371,7 @@ public:
      * @param other The scalar to multiply with.
      * @return A new vector resulting from right scalar multiplication.
      */
-    RPY_NO_DISCARD Vector right_smul(const scalars::Scalar& other) const;
+    RPY_NO_DISCARD virtual Vector right_smul(ScalarCRef other) const;
 
     /**
      * @brief Perform element-wise division of the vector by a scalar value.
@@ -531,7 +384,11 @@ public:
      * @return A new Vector object containing the result of the element-wise
      * division.
      */
-    RPY_NO_DISCARD Vector sdiv(const scalars::Scalar& other) const;
+    RPY_NO_DISCARD virtual Vector sdiv(ScalarCRef other) const
+    {
+        auto recip = scalars::math::reciprocal(other);
+        return right_smul(recip);
+    }
 
     /**
      * @brief Adds another vector to the current vector in place.
@@ -548,7 +405,7 @@ public:
      *
      * @see Vector::add
      */
-    Vector& add_inplace(const Vector& other);
+    virtual Vector& add_inplace(const Vector& other);
 
     /**
      * @brief Subtract another vector from this vector in place.
@@ -565,7 +422,7 @@ public:
      * @note If the other vector is the same as this vector, all coefficients in
      * this vector will be set to zero.
      */
-    Vector& sub_inplace(const Vector& other);
+    virtual Vector& sub_inplace(const Vector& other);
 
     /**
      * @brief Multiplies the vector by the given scalar in place
@@ -581,7 +438,7 @@ public:
      * @note This method assumes that the vector and the scalar value are
      * compatible for multiplication.
      */
-    Vector& smul_inplace(const scalars::Scalar& other);
+    virtual Vector& smul_inplace(ScalarCRef other);
 
     /**
      * @brief Divides the vector element-wise by the given scalar value.
@@ -593,7 +450,11 @@ public:
      *
      * @return A reference to the modified vector.
      */
-    Vector& sdiv_inplace(const scalars::Scalar& other);
+    Vector& sdiv_inplace(ScalarCRef other)
+    {
+        const auto recip = devices::math::reciprocal(other);
+        return smul_inplace(recip);
+    }
 
     /**
      * @brief Adds the scaled product of another vector and a scalar to the
@@ -610,7 +471,7 @@ public:
      *
      * @return A reference to the current vector after the addition operation.
      */
-    Vector& add_scal_mul(const Vector& other, const scalars::Scalar& scalar);
+    virtual Vector& add_scal_mul(const Vector& other, ScalarCRef scalar);
 
     /**
      * @brief Subtract another vector scaled by a scalar from the current
@@ -625,7 +486,7 @@ public:
      * @return A reference to the current vector after the subtraction and
      * scaling operation.
      */
-    Vector& sub_scal_mul(const Vector& other, const scalars::Scalar& scalar);
+    virtual Vector& sub_scal_mul(const Vector& other, ScalarCRef scalar);
 
     /**
      * @brief Adds the scaled product of another vector to the current vector.
@@ -642,7 +503,11 @@ public:
      *
      * @return A reference to the current vector after the addition operation.
      */
-    Vector& add_scal_div(const Vector& other, const scalars::Scalar& scalar);
+    Vector& add_scal_div(const Vector& other, ScalarCRef scalar)
+    {
+        auto recip = scalars::math::reciprocal(scalar);
+        return add_scal_mul(other, recip);
+    }
 
     /**
      * @brief Subtract the scaled product of another vector to the current
@@ -661,12 +526,18 @@ public:
      * @return A reference to the current vector after the subtraction
      * operation.
      */
-    Vector& sub_scal_div(const Vector& other, const scalars::Scalar& scalar);
+    Vector& sub_scal_div(const Vector& other, ScalarCRef scalar)
+    {
+        auto recip = scalars::math::reciprocal(scalar);
+        return sub_scal_mul(other, recip);
+    }
+
+    RPY_NO_DISCARD virtual bool is_equal(const Vector& other) const noexcept;
 
     RPY_NO_DISCARD friend bool
     operator==(const Vector& lhs, const Vector& rhs) noexcept
     {
-        return lhs.p_data->is_equal(*rhs.p_data);
+        return lhs.is_equal(rhs);
     }
 
     RPY_NO_DISCARD friend bool
@@ -706,21 +577,21 @@ operator-(const V& lhs, const Vector& rhs)
 
 template <typename V>
 RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
-operator*(const V& lhs, const scalars::Scalar& rhs)
+operator*(const V& lhs, scalars::ScalarCRef rhs)
 {
     return V(lhs.right_smul(rhs));
 }
 
 template <typename V>
 RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
-operator*(const scalars::Scalar& lhs, const V& rhs)
+operator*(scalars::ScalarCRef lhs, const V& rhs)
 {
     return V(rhs.left_smul(lhs));
 }
 
 template <typename V>
 RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
-operator/(const V& lhs, const scalars::Scalar& rhs)
+operator/(const V& lhs, scalars::ScalarCRef rhs)
 {
     return V(lhs.sdiv(rhs));
 }
@@ -741,7 +612,7 @@ enable_if_t<is_base_of_v<Vector, V>, V&> operator-=(V& lhs, const Vector& rhs)
 
 template <typename V>
 enable_if_t<is_base_of_v<Vector, V>, V&>
-operator*=(V& lhs, const scalars::Scalar& rhs)
+operator*=(V& lhs, scalars::ScalarCRef rhs)
 {
     lhs.smul_inplace(rhs);
     return lhs;
@@ -749,59 +620,11 @@ operator*=(V& lhs, const scalars::Scalar& rhs)
 
 template <typename V>
 enable_if_t<is_base_of_v<Vector, V>, V&>
-operator/=(V& lhs, const scalars::Scalar& rhs)
+operator/=(V& lhs, scalars::ScalarCRef rhs)
 {
     lhs.sdiv_inplace(rhs);
     return lhs;
 }
-
-class ROUGHPY_ALGEBRA_EXPORT DenseVectorData : public VectorData
-{
-    scalars::ScalarVector m_vector;
-
-public:
-    explicit DenseVectorData(BasisPointer basis) : VectorData(std::move(basis))
-    {}
-
-    Rc<VectorData> empty_like() const noexcept override;
-    RPY_NO_DISCARD ScalarType scalar_type() const noexcept override
-    {
-        return m_vector.scalar_type();
-    }
-    bool is_sparse() const noexcept override;
-    bool is_contiguous() const noexcept override;
-    void resize_by_dim(dimn_t base_dim, dimn_t fibre_dim) override;
-    void
-    resize_for_operands(const VectorData& lhs, const VectorData& rhs) override;
-    optional<dimn_t> get_index(BasisKeyCRef key) const noexcept override;
-    scalars::ScalarVector& as_mut_scalar_vector() override;
-    const scalars::ScalarVector& as_scalar_vector() const override;
-    RPY_NO_DISCARD Rc<VectorData> copy() const override;
-    VectorIterator begin() const override;
-    VectorIterator end() const override;
-    dimn_t size() const noexcept override;
-    dimn_t dimension() const noexcept override;
-    void unary_inplace(
-            const scalars::UnaryVectorOperation& operation,
-            const scalars::ops::Operator& op
-    ) override;
-    void
-    unary(const scalars::UnaryVectorOperation& operation,
-          const VectorData& arg,
-          const scalars::ops::Operator& op) override;
-    void binary_inplace(
-            const scalars::BinaryVectorOperation& operation,
-            const VectorData& right,
-            const scalars::ops::Operator& op
-    ) override;
-    void
-    binary(const scalars::BinaryVectorOperation& operation,
-           const VectorData& left,
-           const VectorData& right,
-           const scalars::ops::Operator& op) override;
-    RPY_NO_DISCARD bool is_equal(const VectorData& right
-    ) const noexcept override;
-};
 
 namespace dtl {
 
@@ -817,6 +640,7 @@ public:
     IteratorItemProxy(Args&&... args) : m_data(std::forward<Args>(args)...)
     {}
 
+    operator T() && noexcept { return std::move(m_data); }
     operator const T&() const noexcept { return m_data; }
 
     const T& operator*() const noexcept { return m_data; }
@@ -832,7 +656,8 @@ class ROUGHPY_ALGEBRA_EXPORT VectorIteratorState
     : public platform::SmallObjectBase
 {
 public:
-    using value_type = IteratorItemProxy<pair<BasisKey, scalars::ScalarCRef>>;
+    using value_type = pair<BasisKey, scalars::ScalarCRef>;
+    using proxy_type = IteratorItemProxy<value_type>;
 
     virtual ~VectorIteratorState() = default;
 
@@ -841,6 +666,7 @@ public:
     virtual void advance() noexcept = 0;
 
     virtual value_type value() const = 0;
+    virtual proxy_type proxy() const = 0;
 
     virtual bool is_same(const VectorIteratorState& other_state) const noexcept
             = 0;
@@ -865,7 +691,10 @@ public:
 
     RPY_NO_DISCARD std::unique_ptr<VectorIteratorState> copy() const override;
     void advance() noexcept override;
+    RPY_NO_DISCARD
     value_type value() const override;
+    RPY_NO_DISCARD
+    proxy_type proxy() const override;
 
     bool is_same(const VectorIteratorState& other_state
     ) const noexcept override;
@@ -901,7 +730,12 @@ ConcreteVectorIteratorState<VectorIt, KeyIt>::value() const
 {
     return {BasisKey(*m_kit), *m_vit};
 }
-
+template <typename VectorIt, typename KeyIt>
+VectorIteratorState::proxy_type
+ConcreteVectorIteratorState<VectorIt, KeyIt>::proxy() const
+{
+    return {BasisKey(*m_kit), *m_vit};
+}
 template <typename VectorIt, typename KeyIt>
 bool ConcreteVectorIteratorState<VectorIt, KeyIt>::is_same(
         const VectorIteratorState& other_state
@@ -918,11 +752,11 @@ bool ConcreteVectorIteratorState<VectorIt, KeyIt>::is_same(
 
 class VectorIterator
 {
-    std::unique_ptr<dtl::VectorIteratorState> m_state;
+    std::unique_ptr<dtl::VectorIteratorState> m_state ;
 
 public:
     using value_type = pair<BasisKey, scalars::ScalarCRef>;
-    using reference = dtl::IteratorItemProxy<value_type>;
+    using reference = value_type; // dtl::IteratorItemProxy<value_type>;
     using pointer = dtl::IteratorItemProxy<value_type>;
     using difference_type = ptrdiff_t;
     using iterator_tag = std::forward_iterator_tag;
@@ -935,7 +769,7 @@ public:
           ))
     {}
 
-    VectorIterator() {}
+    VectorIterator() = default;
     VectorIterator(const VectorIterator& other) : m_state(other.m_state->copy())
     {}
     VectorIterator(VectorIterator&& other) noexcept
@@ -960,7 +794,7 @@ public:
         return *this;
     }
 
-    RPY_NO_DISCARD const VectorIterator operator++(int) noexcept
+    RPY_NO_DISCARD VectorIterator operator++(int) noexcept
     {
         VectorIterator result(*this);
         operator++();
@@ -974,7 +808,7 @@ public:
 
     RPY_NO_DISCARD pointer operator->() const noexcept
     {
-        return m_state->value();
+        return m_state->proxy();
     }
 
     RPY_NO_DISCARD friend bool
@@ -991,17 +825,6 @@ RPY_NO_DISCARD inline bool
 operator!=(const VectorIterator& lhs, const VectorIterator& rhs) noexcept
 {
     return !(lhs == rhs);
-}
-
-inline Vector::const_iterator Vector::begin() const
-{
-    RPY_DBG_ASSERT(p_data);
-    return p_data->begin();
-}
-inline Vector::const_iterator Vector::end() const
-{
-    RPY_DBG_ASSERT(p_data);
-    return p_data->end();
 }
 
 }// namespace algebra
