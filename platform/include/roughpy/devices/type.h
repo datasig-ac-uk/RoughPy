@@ -312,6 +312,7 @@ class ROUGHPY_DEVICES_EXPORT Type : public RcBase<Type>
 
     class TypeSupportDispatcher;
 
+    std::unique_ptr<TypeSupport> p_this_type_support;
     std::unique_ptr<TypeSupportDispatcher> p_type_support;
     std::unique_ptr<type_support::NumberTraits> p_num_traits;
 
@@ -322,8 +323,18 @@ protected:
 
     type_support::NumberTraits& setup_num_traits()
     {
-        p_num_traits = std::make_unique<type_support::NumberTraits>();
+        if (!p_num_traits) {
+            p_num_traits = std::make_unique<type_support::NumberTraits>();
+        }
         return *p_num_traits;
+    }
+
+    TypeSupport& setup_self_type_support()
+    {
+        if (!p_this_type_support) {
+            p_this_type_support = std::make_unique<TypeSupport>();
+        }
+        return *p_this_type_support;
     }
 
 public:

@@ -217,16 +217,25 @@ void Type::move(void* dst, void* src, dimn_t count) const
 const type_support::TypeArithmetic& Type::arithmetic(const Type& other_type
 ) const
 {
+    if (&other_type == this && p_this_type_support) {
+        return p_this_type_support->arithmetic;
+    }
     return p_type_support->arithmetic(&other_type);
 }
 const type_support::TypeComparisons& Type::comparisons(const Type& other_type
 ) const
 {
+    if (&other_type == this && p_this_type_support) {
+        return p_this_type_support->comparison;
+    }
     return p_type_support->comparison(&other_type);
 }
 const type_support::TypeConversions& Type::conversions(const Type& other_type
 ) const
 {
+    if (&other_type == this && p_this_type_support) {
+        return p_this_type_support->conversions;
+    }
     return p_type_support->conversions(&other_type);
 }
 GuardedRef<TypeSupport, std::mutex> Type::update_support(const Type& other

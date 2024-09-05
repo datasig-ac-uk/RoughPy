@@ -90,12 +90,14 @@ TypeDispatcher<DispatchedType, Args...>::get_implementor(
     auto it = cache->find(std::make_tuple(types->id()...));
     if (it != cache->end()) { return *it->second; }
 
-    RPY_THROW(
-            std::runtime_error,
+    auto msg =
             string_cat(
                     "type combination is not supported: ",
-                    string_join(", ", types->id()...)
-            )
+                    string_join(", ", (types ? types->id() : "?")...)
+            );
+    RPY_THROW(
+            std::runtime_error,
+            msg
     );
 }
 
