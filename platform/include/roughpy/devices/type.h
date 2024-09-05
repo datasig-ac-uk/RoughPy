@@ -1048,26 +1048,33 @@ struct SupportRegistration {
     }
 };
 
-template <typename ThisT, typename T>
+template <typename ThisT, bool AllowSame, typename T>
 void register_type_support(const Type* type, TypeList<T>)
 {
-    if constexpr (!is_same_v<ThisT, T>) {
+    if constexpr (AllowSame || !is_same_v<ThisT, T>) {
         using reg = SupportRegistration<ThisT, T>;
         reg::register_support(type);
     }
 }
 
-template <typename ThisT, typename T, typename... Ts>
+template <typename ThisT, bool AllowSame, typename T, typename... Ts>
 void register_type_support(const Type* type, TypeList<T, Ts...>)
 {
-    if constexpr (!is_same_v<ThisT, T>) {
+    if constexpr (AllowSame || !is_same_v<ThisT, T>) {
         using reg = SupportRegistration<ThisT, T>;
         reg::register_support(type);
     }
-    register_type_support<ThisT>(type, TypeList<Ts...>());
+    register_type_support<ThisT, AllowSame>(type, TypeList<Ts...>());
 }
 
 }// namespace dtl
+
+template <typename ThisT, typename Types, bool AllowSame=false>
+void register_type_support(const Type* type)
+{
+    dtl::register_type_support<ThisT, AllowSame>(type, Types{});
+}
+
 }// namespace devices
 
 }// namespace rpy

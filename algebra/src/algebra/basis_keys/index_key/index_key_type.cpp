@@ -61,8 +61,8 @@ IndexKeyType::IndexKeyType()
     using UnsignedInts = TypeList<uint8_t, uint16_t, uint32_t, uint64_t>;
     using SignedInts = TypeList<int8_t, int16_t, int32_t, int64_t>;
 
-    devices::dtl::register_type_support<dimn_t>(this, UnsignedInts{});
-    devices::dtl::register_type_support<dimn_t>(this, SignedInts{});
+    devices::register_type_support<dimn_t, SignedInts>(this);
+    devices::register_type_support<dimn_t, UnsignedInts, true>(this);
 
     set_hash_fn(+[](const void* arg) {
         return *static_cast<const dimn_t*>(arg);

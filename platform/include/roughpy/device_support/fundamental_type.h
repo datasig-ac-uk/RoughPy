@@ -230,7 +230,7 @@ template <typename ThisT>
 void register_all_supports()
 {
     const auto* tp = FundamentalType<ThisT>::get();
-    dtl::register_type_support<ThisT>(tp, dtl::FundamentalTypesList());
+    register_type_support<ThisT, dtl::FundamentalTypesList>(tp);
 }
 
 template <typename T>
