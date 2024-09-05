@@ -117,7 +117,7 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
 
 #define RPY_THROW(EXC_TYPE, ...)                                               \
     ::rpy::errors::throw_exception<EXC_TYPE>(                                  \
-            ::rpy::string_join(__VA_ARGS__),                                   \
+            (__VA_ARGS__),                                   \
             __FILE__,                                                          \
             __LINE__,                                                          \
             RPY_FUNC_NAME                                                      \
