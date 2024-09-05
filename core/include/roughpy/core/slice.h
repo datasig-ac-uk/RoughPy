@@ -195,7 +195,7 @@ public:
     RPY_NO_DISCARD constexpr difference_type
     operator-(const SliceIterator<EltType>& rhs) const noexcept
     {
-        RPY_DBG_ASSERT(p_current == rhs.p_current && p_end == rhs.p_end);
+        RPY_DBG_ASSERT(p_begin == rhs.p_begin && p_end == rhs.p_end);
         return p_current - rhs.p_current;
     }
 
