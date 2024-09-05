@@ -43,15 +43,12 @@ struct HasFMA {
             const auto max_deg = basis->max_degree();
             for (const auto& lhs_item : left) {
                 for (const auto& rhs_item : right) {
-                    if (basis->degree(lhs_item->first)
-                                + basis->degree(rhs_item->first)
+                    if (basis->degree(lhs_item.first)
+                                + basis->degree(rhs_item.first)
                         <= max_deg) {
                         out.add_scal_mul(
-                                mul.key_product(
-                                        lhs_item->first,
-                                        rhs_item->first
-                                ),
-                                op(lhs_item->second, rhs_item->second)
+                                mul.key_product(lhs_item.first, rhs_item.first),
+                                op(lhs_item.second, rhs_item.second)
                         );
                     }
                 }
@@ -60,8 +57,8 @@ struct HasFMA {
             for (const auto& lhs_item : left) {
                 for (const auto& rhs_item : right) {
                     out.add_scal_mul(
-                            mul.key_product(lhs_item->first, rhs_item->first),
-                            op(lhs_item->second, rhs_item->second)
+                            mul.key_product(lhs_item.first, rhs_item.first),
+                            op(lhs_item.second, rhs_item.second)
                     );
                 }
             }
