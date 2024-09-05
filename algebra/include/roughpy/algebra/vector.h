@@ -743,7 +743,7 @@ bool ConcreteVectorIteratorState<VectorIt, KeyIt>::is_same(
 {
     if (const auto* other
         = dynamic_cast<const ConcreteVectorIteratorState*>(&other_state)) {
-        return m_vit == other->m_vit && m_kit == other->m_kit;
+        return m_vit == other->m_vit;
     }
     return false;
 }

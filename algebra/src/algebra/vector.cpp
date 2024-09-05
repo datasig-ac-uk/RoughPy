@@ -332,7 +332,6 @@ bool Vector::is_equal(const Vector& other) const noexcept
         return index && other.ScalarVector::base_get(*index) == kv.second;
     });
 
-    return true;
 }
 
 std::ostream& algebra::operator<<(std::ostream& os, const Vector& value)
