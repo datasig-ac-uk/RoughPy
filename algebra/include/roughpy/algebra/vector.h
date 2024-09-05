@@ -169,7 +169,7 @@ public:
            scalars::TypePtr scalar_type,
            std::initializer_list<T> vals)
         : ScalarVector(
-                  devices::get_type<T>(),
+                  std::move(scalar_type),
                   basis->dense_dimension(vals.size())
           ),
           p_basis(std::move(basis))
@@ -691,10 +691,8 @@ public:
 
     RPY_NO_DISCARD std::unique_ptr<VectorIteratorState> copy() const override;
     void advance() noexcept override;
-    RPY_NO_DISCARD
-    value_type value() const override;
-    RPY_NO_DISCARD
-    proxy_type proxy() const override;
+    RPY_NO_DISCARD value_type value() const override;
+    RPY_NO_DISCARD proxy_type proxy() const override;
 
     bool is_same(const VectorIteratorState& other_state
     ) const noexcept override;
@@ -752,11 +750,11 @@ bool ConcreteVectorIteratorState<VectorIt, KeyIt>::is_same(
 
 class VectorIterator
 {
-    std::unique_ptr<dtl::VectorIteratorState> m_state ;
+    std::unique_ptr<dtl::VectorIteratorState> m_state;
 
 public:
     using value_type = pair<BasisKey, scalars::ScalarCRef>;
-    using reference = value_type; // dtl::IteratorItemProxy<value_type>;
+    using reference = value_type;// dtl::IteratorItemProxy<value_type>;
     using pointer = dtl::IteratorItemProxy<value_type>;
     using difference_type = ptrdiff_t;
     using iterator_tag = std::forward_iterator_tag;
@@ -835,23 +833,11 @@ inline Vector::const_iterator Vector::base_end() const
 {
     return {ScalarVector::end(), p_basis->keys_end()};
 }
-inline Vector::const_iterator Vector::fibre_begin() const
-{
-    return {};
-}
+inline Vector::const_iterator Vector::fibre_begin() const { return {}; }
 
-inline Vector::const_iterator Vector::fibre_end() const
-{
-    return {};
-}
-inline Vector::const_iterator Vector::begin() const
-{
-    return base_begin();
-}
-inline Vector::const_iterator Vector::end() const
-{
-    return base_end();
-}
+inline Vector::const_iterator Vector::fibre_end() const { return {}; }
+inline Vector::const_iterator Vector::begin() const { return base_begin(); }
+inline Vector::const_iterator Vector::end() const { return base_end(); }
 
 }// namespace algebra
 }// namespace rpy
