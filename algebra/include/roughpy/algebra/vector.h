@@ -827,6 +827,32 @@ operator!=(const VectorIterator& lhs, const VectorIterator& rhs) noexcept
     return !(lhs == rhs);
 }
 
+inline Vector::const_iterator Vector::base_begin() const
+{
+    return {ScalarVector::begin(), p_basis->keys_begin()};
+}
+inline Vector::const_iterator Vector::base_end() const
+{
+    return {ScalarVector::end(), p_basis->keys_end()};
+}
+inline Vector::const_iterator Vector::fibre_begin() const
+{
+    return {};
+}
+
+inline Vector::const_iterator Vector::fibre_end() const
+{
+    return {};
+}
+inline Vector::const_iterator Vector::begin() const
+{
+    return base_begin();
+}
+inline Vector::const_iterator Vector::end() const
+{
+    return base_end();
+}
+
 }// namespace algebra
 }// namespace rpy
 
