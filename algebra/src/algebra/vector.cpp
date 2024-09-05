@@ -78,159 +78,23 @@ void Vector::set_zero()
     scalars::algorithms::fill(mut_base_data(), scalar_type()->zero());
 }
 
-// Vector Vector::uminus() const
-// {
-//     RPY_CONTEXT_CHECK();
-//     UMinusOperator uminus;
-//     Vector result(p_data->copy(), scalar_type(), p_data->dimension());
-//     result.p_data->unary(uminus, *p_data,
-//     scalars::ops::UnaryMinusOperator()); return result;
-// }
-//
-// Vector Vector::add(const Vector& other) const
-// {
-//     RPY_CONTEXT_CHECK();
-//     Vector result(p_data->empty_like(), scalar_type());
-//     AdditionOperator add;
-//
-//     result.p_data->binary(
-//             add,
-//             *p_data,
-//             *other.p_data,
-//             scalars::ops::AdditionOperator()
-//     );
-//     return result;
-// }
-//
-// Vector Vector::sub(const Vector& other) const
-// {
-//     RPY_CONTEXT_CHECK();
-//     Vector result(p_data->empty_like(), scalar_type());
-//     SubtractionOperator sub;
-//
-//     result.p_data->binary(
-//             sub,
-//             *p_data,
-//             *other.p_data,
-//             scalars::ops::SubtractionOperator()
-//     );
-//
-//     return result;
-// }
-//
-// Vector& Vector::add_inplace(const Vector& other)
-// {
-//     RPY_CONTEXT_CHECK();
-//     AdditionOperator add_inplace;
-//
-//     p_data->binary_inplace(
-//             add_inplace,
-//             *other.p_data,
-//             scalars::ops::AdditionOperator()
-//     );
-//     return *this;
-// }
-//
-// Vector& Vector::sub_inplace(const Vector& other)
-// {
-//     RPY_CONTEXT_CHECK();
-//     SubtractionOperator sub_inplace;
-//
-//     p_data->binary_inplace(
-//             sub_inplace,
-//             *other.p_data,
-//             scalars::ops::SubtractionOperator()
-//     );
-//     return *this;
-// }
-//
-// Vector Vector::left_smul(const scalars::Scalar& other) const
-// {
-//     RPY_CONTEXT_CHECK();
-//     Vector result(p_data->copy(), scalar_type(), p_data->dimension());
-//
-//     LeftSMulOperator left_smul;
-//
-//     result.p_data->unary(
-//             left_smul,
-//             *p_data,
-//             scalars::ops::LeftMultiplyOperator(other)
-//     );
-//
-//     return result;
-// }
-//
-// Vector Vector::right_smul(const scalars::Scalar& other) const
-// {
-//     RPY_CONTEXT_CHECK();
-//     Vector result(p_data->copy(), scalar_type(), p_data->dimension());
-//
-//     RightSMulOperator right_smul;
-//
-//     result.p_data->unary(
-//             right_smul,
-//             *p_data,
-//             scalars::ops::RightMultiplyOperator(other)
-//     );
-//
-//     return result;
-// }
-//
-// Vector& Vector::smul_inplace(const scalars::Scalar& other)
-// {
-//     RPY_CONTEXT_CHECK();
-//     RightSMulOperator right_smul_inplace;
-//
-//     p_data->unary_inplace(
-//             right_smul_inplace,
-//             scalars::ops::RightMultiplyOperator(other)
-//     );
-//
-//     return *this;
-// }
-//
-// Vector Vector::sdiv(const scalars::Scalar& other) const
-// {
-//     // This should catch division by zero or bad conversions
-//     auto recip = scalars::math::reciprocal(other);
-//     return right_smul(recip);
-// }
-//
-// Vector& Vector::sdiv_inplace(const scalars::Scalar& other)
-// {
-//     auto recip = scalars::math::reciprocal(other);
-//     return smul_inplace(recip);
-// }
-//
-// Vector& Vector::add_scal_mul(const Vector& other, const scalars::Scalar&
-// scalar)
-// {
-//     RPY_CONTEXT_CHECK();
-//     ASMOperator add_scal_mul;
-//
-//     p_data->binary_inplace(
-//             add_scal_mul,
-//             *other.p_data,
-//             scalars::ops::FusedRightMultiplyAddOperator(scalar)
-//     );
-//
-//     return *this;
-// }
-//
-// Vector& Vector::sub_scal_mul(const Vector& other, const scalars::Scalar&
-// scalar)
-// {
-//     RPY_CONTEXT_CHECK();
-//     SSMOperator sub_scal_mul;
-//
-//     p_data->binary_inplace(
-//             sub_scal_mul,
-//             *other.p_data,
-//             scalars::ops::FusedRightMultiplySubOperator(scalar)
-//     );
-//
-//     return *this;
-// }
+void Vector::insert_element(BasisKeyCRef key, scalars::Scalar value)
+{
+    const auto index = p_basis->to_index(std::move(key));
+    if (RPY_UNLIKELY(index < dimension())) {
+        resize_base_dim(p_basis->dense_dimension(index+1));
+    }
+
+    ScalarVector::base_get_mut(index) = std::move(value);
+}
+
+void Vector::delete_element(BasisKeyCRef key)
+{
+    if (const auto index = get_index(std::move(key))) {
+        ScalarVector::base_get_mut(*index) = scalar_type()->zero();
+    }
+}
+
 
 Vector Vector::uminus() const
 {
@@ -458,14 +322,14 @@ bool Vector::is_equal(const Vector& other) const noexcept
 
     if (other.is_dense()) {
         return ranges::all_of(other, [this](const auto& kv) {
-            const auto index = this->get_index(kv->first);
-            return index && ScalarVector::base_get(*index) == kv->second;
+            const auto index = this->get_index(kv.first);
+            return index && ScalarVector::base_get(*index) == kv.second;
         });
     }
 
     return ranges::all_of(*this, [other](const auto& kv) {
-        const auto index = other.get_index(kv->first);
-        return index && other.ScalarVector::base_get(*index) == kv->second;
+        const auto index = other.get_index(kv.first);
+        return index && other.ScalarVector::base_get(*index) == kv.second;
     });
 
     return true;
