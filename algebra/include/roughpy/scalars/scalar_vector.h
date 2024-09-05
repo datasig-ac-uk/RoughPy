@@ -493,6 +493,8 @@ void StandardBinaryVectorOperation<Operation>::eval_inplace(
     );
 }
 
+
+
 }// namespace scalars
 }// namespace rpy
 
