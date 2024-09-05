@@ -96,6 +96,52 @@ public:
         const auto device = get_host_device();
         device->register_algorithm_drivers<HostDriversImpl, T, T>(this, this);
 
+        {
+            auto& support = setup_self_type_support();
+
+            support.arithmetic.add_inplace = +[](void* p_lhs, const void* p_rhs) {
+                *static_cast<T*>(p_lhs) += *static_cast<const T*>(p_rhs);
+            };
+            support.arithmetic.sub_inplace = +[](void* p_lhs, const void* p_rhs) {
+                *static_cast<T*>(p_lhs) -= *static_cast<const T*>(p_rhs);
+            };
+            support.arithmetic.mul_inplace = +[](void* p_lhs, const void* p_rhs) {
+                *static_cast<T*>(p_lhs) *= *static_cast<const T*>(p_rhs);
+            };
+            support.arithmetic.div_inplace = +[](void* p_lhs, const void* p_rhs) {
+                *static_cast<T*>(p_lhs) /= *static_cast<const T*>(p_rhs);
+            };
+
+            support.comparison.equals = +[](const void* lhs, const void* rhs) {
+                return *static_cast<const T*>(lhs) == *static_cast<const T*>(rhs);
+            };
+            support.comparison.not_equals = +[](const void* lhs, const void* rhs) {
+                return *static_cast<const T*>(lhs) != *static_cast<const T*>(rhs);
+            };
+            support.comparison.is_zero = +[](const void* lhs) {
+                return *static_cast<const T*>(lhs) == static_cast<T>(0);
+            };
+            support.comparison.less = +[](const void* lhs, const void* rhs) {
+                return *static_cast<const T*>(lhs) < *static_cast<const T*>(rhs);
+            };
+            support.comparison.less_equal = +[](const void* lhs, const void* rhs) {
+                return *static_cast<const T*>(lhs) <= *static_cast<const T*>(rhs);
+            };
+            support.comparison.greater = +[](const void* lhs, const void* rhs) {
+                return *static_cast<const T*>(lhs) > *static_cast<const T*>(rhs);
+            };
+            support.comparison.greater_equal = +[](const void* lhs, const void* rhs) {
+                return *static_cast<const T*>(lhs) >= *static_cast<const T*>(rhs);
+            };
+
+            support.conversions.convert = +[](void* dst, const void* src) {
+                *static_cast<T*>(dst) = *static_cast<const T*>(src);
+            };
+            support.conversions.move_convert = +[](void* dst, void* src) {
+                *static_cast<T*>(dst) = *static_cast<const T*>(src);
+            };
+        }
+
         auto& num_traits = setup_num_traits();
 
         num_traits.rational_type = this;
