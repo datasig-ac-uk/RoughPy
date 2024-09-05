@@ -382,6 +382,16 @@ constexpr bool is_equal_comparable_v
 template <typename S, typename T = S>
 constexpr bool is_not_equal_comparable_v
         = definitely_a_new_namespace::is_not_equal_comparable<S, T>::value;
+
+
+
+template <typename... Ts>
+struct TypeList {
+    static constexpr size_t size = sizeof...(Ts);
+};
+
+
+
 }// namespace rpy
 
 #endif// ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
