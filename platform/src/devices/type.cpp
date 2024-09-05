@@ -312,15 +312,15 @@ void Type::display(std::ostream& os, const void* ptr) const
 namespace {
 
 template <typename T>
-void register_types_and_support(devices::dtl::TypeList<T>)
+void register_types_and_support(TypeList<T>)
 {
     register_all_supports<T>();
 }
 template <typename T, typename... Ts>
-void register_types_and_support(devices::dtl::TypeList<T, Ts...>)
+void register_types_and_support(TypeList<T, Ts...>)
 {
     register_all_supports<T>();
-    register_types_and_support(devices::dtl::TypeList<Ts...>());
+    register_types_and_support(TypeList<Ts...>());
 }
 
 struct InitializeAllTheFundamentals {
