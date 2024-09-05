@@ -84,6 +84,7 @@ struct SliceIndex {
 
 #ifdef RPY_CPP_17
 using std::optional;
+using std::nullopt;
 using std::string_view;
 using std::variant;
 
