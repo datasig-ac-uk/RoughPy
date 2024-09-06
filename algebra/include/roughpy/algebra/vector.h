@@ -839,6 +839,33 @@ inline Vector::const_iterator Vector::fibre_end() const { return {}; }
 inline Vector::const_iterator Vector::begin() const { return base_begin(); }
 inline Vector::const_iterator Vector::end() const { return base_end(); }
 
+
+template <typename VecType>
+struct VectorTraits
+{
+    static constexpr bool is_vector = is_base_of_v<Vector, VecType>;
+
+    static Vector& as_mut_vector(VecType& arg) noexcept
+    {
+        static_assert(is_vector, "VecType must be a vector");
+        return static_cast<VecType&>(arg); // NOLINT(*-redundant-casting)
+    }
+    static const Vector& as_vector(const VecType& arg) noexcept
+    {
+        static_assert(is_vector, "VecType must be a vector");
+        return static_cast<const VecType&>(arg); // NOLINT(*-redundant-casting)
+    }
+
+    static VecType new_like(const VecType& arg) noexcept
+    {
+        return VecType(arg.basis(), arg.scalar_type());
+    }
+
+
+};
+
+
+
 }// namespace algebra
 }// namespace rpy
 
