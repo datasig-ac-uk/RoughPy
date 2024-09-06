@@ -16,7 +16,6 @@ ScalarVector::ScalarVector(TypePtr scalar_type, dimn_t size)
     : m_base_data(std::move(scalar_type), size)
 {}
 
-ScalarVector::~ScalarVector() = default;
 
 ScalarArray& ScalarVector::mut_base_data()
 {

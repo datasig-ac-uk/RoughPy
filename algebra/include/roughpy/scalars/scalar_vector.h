@@ -128,7 +128,6 @@ public:
           m_fibre_data(m_base_data.type())
     {}
 
-    ~ScalarVector();
 
     ScalarArray& mut_base_data();
     const ScalarArray& base_data() const noexcept { return m_base_data; };
