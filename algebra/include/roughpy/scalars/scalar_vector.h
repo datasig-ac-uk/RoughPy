@@ -247,12 +247,14 @@ class ROUGHPY_SCALARS_EXPORT VectorOperation
 protected:
     void resize_destination(ScalarVector& arg, dimn_t new_size) const;
 
+    RPY_NO_DISCARD
     virtual optional<devices::Kernel> get_kernel(
             devices::Device device,
             string_view base_name,
             Slice<const Type* const> types
     ) const;
 
+    RPY_NO_DISCARD
     virtual devices::KernelLaunchParams
     get_launch_params(const devices::KernelArguments& args) const noexcept;
 
@@ -278,6 +280,7 @@ protected:
 public:
     virtual ~VectorOperation();
 
+    RPY_NO_DISCARD
     virtual dimn_t arity() const noexcept = 0;
 };
 
@@ -288,6 +291,7 @@ protected:
 
 public:
     static constexpr dimn_t my_arity = 1;
+    RPY_NO_DISCARD
     dimn_t arity() const noexcept override { return my_arity; }
 
     virtual void
@@ -308,6 +312,7 @@ protected:
 public:
     static constexpr dimn_t my_arity = 2;
 
+    RPY_NO_DISCARD
     dimn_t arity() const noexcept override { return my_arity; }
     virtual void
     eval(ScalarVector& destination,
@@ -329,6 +334,7 @@ protected:
     using VectorOperation::VectorOperation;
 
 public:
+    RPY_NO_DISCARD
     static constexpr dimn_t my_arity = 3;
 
     dimn_t arity() const noexcept override { return my_arity; }
