@@ -2,8 +2,8 @@
 // Created by sam on 4/26/24.
 //
 
-#ifndef ROUGHPY_DEVICE_SUPPORT_FINDAMENTAL_TYPE_H
-#define ROUGHPY_DEVICE_SUPPORT_FINDAMENTAL_TYPE_H
+#ifndef ROUGHPY_DEVICE_SUPPORT_FUNDAMENTAL_TYPE_H
+#define ROUGHPY_DEVICE_SUPPORT_FUNDAMENTAL_TYPE_H
 
 #include "algorithms.h"
 
@@ -251,4 +251,4 @@ void FundamentalType<T>::move(void* dst, void* src, dimn_t count) const
 }// namespace devices
 }// namespace rpy
 
-#endif// ROUGHPY_DEVICE_SUPPORT_FINDAMENTAL_TYPE_H
+#endif// ROUGHPY_DEVICE_SUPPORT_FUNDAMENTAL_TYPE_H
