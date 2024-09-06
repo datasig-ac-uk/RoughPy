@@ -54,14 +54,12 @@ add_roughpy_component(Algebra
         include/roughpy/algebra/context.h
         include/roughpy/algebra/context_fwd.h
         include/roughpy/algebra/free_tensor.h
-        include/roughpy/algebra/graded_vector.h
         include/roughpy/algebra/key_algorithms.h
         include/roughpy/algebra/key_array.h
         #        include/roughpy/algebra/key_scalar_array.h
         #        include/roughpy/algebra/key_scalar_stream.h
         include/roughpy/algebra/lie.h
         include/roughpy/algebra/shuffle_tensor.h
-        include/roughpy/algebra/unital_algebra.h
         include/roughpy/algebra/vector.h
         include/roughpy/algebra/vector_iterator.h
         src/scalars/scalar_types/polynomial/monomial.h
