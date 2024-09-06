@@ -5,7 +5,6 @@
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_H
 #define ROUGHPY_ALGEBRA_ALGEBRA_H
 
-#include "graded_vector.h"
 #include "roughpy_algebra_export.h"
 #include "vector.h"
 
@@ -13,305 +12,38 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
-#include <roughpy/device_support/operators.h>
 
 namespace rpy {
 namespace algebra {
 
-namespace ops = devices::operators;
+
+template <typename Derived>
+class AlgebraBase;
 
 namespace dtl {
 
-template <typename M>
-inline constexpr bool is_graded = M::is_graded;
-
-template <typename M>
-inline constexpr bool is_unital = M::is_unital;
-
-template <typename M, typename Op, typename SFINAE = void>
-struct HasFMA {
-    void operator()(
-            const M& mul,
-            Vector& out,
-            const Vector& left,
-            const Vector& right,
-            Op&& op
-    ) const
-    {
-        if constexpr (is_graded<M>) {
-            const auto basis = out.basis();
-            const auto max_deg = basis->max_degree();
-            for (const auto& lhs_item : left) {
-                for (const auto& rhs_item : right) {
-                    if (basis->degree(lhs_item.first)
-                                + basis->degree(rhs_item.first)
-                        <= max_deg) {
-                        out.add_scal_mul(
-                                mul.key_product(lhs_item.first, rhs_item.first),
-                                op(lhs_item.second, rhs_item.second)
-                        );
-                    }
-                }
-            }
-        } else {
-            for (const auto& lhs_item : left) {
-                for (const auto& rhs_item : right) {
-                    out.add_scal_mul(
-                            mul.key_product(lhs_item.first, rhs_item.first),
-                            op(lhs_item.second, rhs_item.second)
-                    );
-                }
-            }
-        }
-    }
-};
-
-template <typename M, typename Op>
-struct HasFMA<
-        M,
-        Op,
-        void_t<decltype(std::declval<const M&>()
-                                .fma(std::declval<Vector&>(),
-                                     std::declval<const Vector&>(),
-                                     std::declval<const Vector&>(),
-                                     std::declval<Op&&>()))>> {
-    void operator()(
-            const M& mul,
-            Vector& out,
-            const Vector& left,
-            const Vector& right,
-            Op&& op
-    ) const
-    {
-        mul.fma(out, left, right, std::forward<Op>(op));
-    }
-};
-
-template <typename M, typename Op, typename SFINAE = void>
-struct HasDenseFMA : HasFMA<M, Op> {
-};
-
-template <typename M, typename Op>
-struct HasDenseFMA<
-        M,
-        Op,
-        void_t<decltype(std::declval<const M&>().fma_dense(
-                std::declval<Vector&>(),
-                std::declval<const Vector&>(),
-                std::declval<const Vector&>(),
-                std::declval<Op&&>()
-        ))>> : HasFMA<M, Op> {
-    void operator()(
-            const M& mul,
-            Vector& out,
-            const Vector& left,
-            const Vector& right,
-            Op&& op
-    ) const
-    {
-        if (out.is_dense() && left.is_dense() && right.is_dense()) {
-            mul.fma_dense(out, left, right, std::forward<Op>(op));
-        } else {
-            HasFMA<M,
-                   Op>::operator()(mul, out, left, right, std::forward<Op>(op));
-        }
-    }
-};
-
-template <typename M, typename Op, typename SFINAE = void>
-struct HasInplace {
-    void
-    operator()(const M& mul, Vector& left, const Vector& right, Op&& op) const
-    {
-        HasDenseFMA<M, Op> fma;
-        Vector tmp(left);
-        fma(mul, tmp, left, right, std::forward<Op>(op));
-        std::swap(left, tmp);
-    }
-};
-
-template <typename M, typename Op>
-struct HasInplace<
-        M,
-        Op,
-        void_t<decltype(std::declval<const M&>().multiply_inplace(
-                std::declval<Vector&>(),
-                std::declval<const Vector&>(),
-                std::declval<Op&&>()
-        ))>> {
-    void
-    operator()(const M& mul, Vector& left, const Vector& right, Op&& op) const
-    {
-        mul.multiply_inplace(left, right, std::forward<Op>(op));
-    }
-};
-
-template <typename M, typename Op, typename SFINAE = void>
-struct HasDenseInplace : HasInplace<M, Op> {
-};
-
-template <typename M, typename Op>
-struct HasDenseInplace<
-        M,
-        Op,
-        void_t<decltype(std::declval<const M&>().multiply_inplace_dense(
-                std::declval<Vector&>(),
-                std::declval<const Vector&>(),
-                std::declval<Op&&>()
-        ))>> : HasInplace<M, Op> {
-    void
-    operator()(const M& mul, Vector& left, const Vector& right, Op&& op) const
-    {
-        if (left.is_dense() && right.is_dense()) {
-            mul.multiply_inplace_dense(left, right, std::forward<Op>(op));
-        } else {
-            HasInplace<M, Op>::operator()(
-                    mul,
-                    left,
-                    right,
-                    std::forward<Op>(op)
-            );
-        }
-    }
-};
-
-/**
- * @brief Class containing static methods for multiplication operations on an
- * algebra.
- *
- * The MultiplicationTraits class provides static methods for performing various
- * multiplication operations on an algebra. These operations include multiplying
- * two vectors, multiplying a vector by a scalar, and performing fused
- * multiply-add operations.
- *
- * Users can use the methods in this class directly or through the
- * multiplication_traits typedef.
- */
-template <typename Multiplication>
-struct MultiplicationTraits {
-
-    /**
-     * @brief Check if the given basis is compatible with the multiplication
-     * operation.
-     *
-     * This method checks if the given basis is compatible with the
-     * multiplication operation. A basis is considered compatible if it
-     * satisfies certain conditions defined by the multiplication operation.
-     *
-     * @param basis The basis to check for compatibility.
-     * @return True if the basis is compatible with the multiplication
-     * operation, false otherwise.
-     */
-    static bool basis_compatibility_check(const Basis& basis)
-    {
-        return Multiplication::basis_compatibility_check(basis);
-    }
-
-    static void
-    fma(const Multiplication& mul,
-        Vector& out,
-        const Vector& left,
-        const Vector& right)
-    {
-        using Op = ops::Identity<scalars::Scalar>;
-        HasDenseFMA<Multiplication, Op> fma;
-        fma(mul, out, left, right, Op());
-    }
-
-    static void
-    fms(const Multiplication& mul,
-        Vector& out,
-        const Vector& left,
-        const Vector& right)
-    {
-        using Op = ops::Uminus<scalars::Scalar>;
-        HasDenseFMA<Multiplication, Op> fma;
-        fma(mul, out, left, right, Op());
-    }
-
-    static void
-    fma_pm(const Multiplication& mul,
-           Vector& out,
-           const Vector& left,
-           const Vector& right,
-           const scalars::Scalar& multiplier)
-    {
-        using Op = ops::RightScalarMultiply<scalars::Scalar>;
-        HasDenseFMA<Multiplication, Op> fma;
-        fma(mul, out, left, right, Op(multiplier));
-    }
-
-    static void
-    fms_pm(const Multiplication& mul,
-           Vector& out,
-           const Vector& left,
-           const Vector& right,
-           const scalars::Scalar& multiplier)
-    {
-        using Op = ops::RightScalarMultiply<scalars::Scalar>;
-        HasDenseFMA<Multiplication, Op> fma;
-        fma(mul, out, left, right, Op(-multiplier));
-    }
-
-    static void
-    fma_pd(const Multiplication& mul,
-           Vector& out,
-           const Vector& left,
-           const Vector& right,
-           const scalars::Scalar& divisor)
-    {
-        using Op = ops::RightScalarMultiply<scalars::Scalar>;
-        HasDenseFMA<Multiplication, Op> fma;
-        fma(mul, out, left, right, Op(devices::math::reciprocal(divisor)));
-    }
-
-    static void
-    fms_pd(const Multiplication& mul,
-           Vector& out,
-           const Vector& left,
-           const Vector& right,
-           const scalars::Scalar& divisor)
-    {
-        using Op = ops::RightScalarMultiply<scalars::Scalar>;
-        HasDenseFMA<Multiplication, Op> fma;
-        fma(mul, out, left, right, Op(-devices::math::reciprocal(divisor)));
-    }
-
-    static void multiply_into(Vector& out, const Vector& other)
-    {
-        Multiplication::multiply_into(out, other);
-    }
-
-    static void multiply_into_pm(
-            const Multiplication& mul,
-            Vector& left,
-            const Vector& right,
-            const scalars::ScalarCRef scalar
-    )
-    {
-        using Op = ops::RightScalarMultiply<scalars::Scalar>;
-        HasInplace<Multiplication, Op> inplace;
-        inplace(mul, left, right, Op(scalars::Scalar(scalar)));
-    }
-
-    static void multiply_into_pd(
-            const Multiplication& mul,
-            Vector& left,
-            const Vector& right,
-            const scalars::ScalarCRef divisor
-    )
-    {
-        using Op = ops::RightScalarMultiply<scalars::Scalar>;
-        HasInplace<Multiplication, Op> inplace;
-        inplace(mul, left, right, Op(devices::math::reciprocal(divisor)));
-    }
-};
-
-template <typename Base>
-class AlgebraContext : public Base::context_interface_t
+template <typename Derived>
+constexpr Derived& cast_algebra_to_derived(AlgebraBase<Derived>& arg)
 {
-public:
-};
+    static_assert(
+            is_base_of_v<AlgebraBase<Derived>, Derived>,
+            "Derived must be derived from AlgebraBase<Derived>"
+    );
+
+    return static_cast<Derived&>(arg);
+}
+
+template <typename Derived>
+constexpr const Derived& cast_algebra_to_derived(const AlgebraBase<Derived>& arg
+)
+{
+    static_assert(
+            is_base_of_v<AlgebraBase<Derived>, Derived>,
+            "Derived must be derived from AlgebraBase<Derived>"
+    );
+
+    return static_cast<const Derived&>(arg);
+}
 
 }// namespace dtl
 
@@ -326,57 +58,180 @@ public:
  * @see Base
  * @see Multiplication
  */
-template <typename Multiplication, typename Base = Vector>
-class Algebra : public Base
+template <typename Derived>
+class AlgebraBase
 {
+    Rc<Vector> p_vector;
 
 protected:
-    using multiplication_traits = dtl::MultiplicationTraits<Multiplication>;
+    using multiplication_traits
+            = dtl::MultiplicationTraits<typename Derived::multiplication_t>;
 
-    static bool basis_compatibility_check(const Basis& basis) noexcept
+public:
+    using Scalar = scalars::Scalar;
+    using ScalarCRef = scalars::ScalarCRef;
+    using const_iterator = Vector::const_iterator;
+
+protected:
+    Derived& instance() noexcept { return dtl::cast_algebra_to_derived(*this); }
+    const Derived& instance() const noexcept
     {
-        return multiplication_traits::basis_compatibility_check(basis)
-                && Base::basis_compatibility_check(basis);
+        return dtl::cast_algebra_to_derived(*this);
+    }
+
+    const typename Derived::multiplication_t& multiplication() const noexcept
+    {
+        return instance().multiplication();
     }
 
 public:
-    using context_interface_t = dtl::AlgebraContext<Base>;
-    using multiplication_type = Multiplication;
-
-private:
-    Rc<const Multiplication> p_multiplication;
-
-protected:
-    Rc<const Multiplication> get_multiplication() const noexcept
+    RPY_NO_DISCARD Vector& as_vector() noexcept { return *p_vector; }
+    RPY_NO_DISCARD const Vector& as_vector() const noexcept
     {
-        return p_multiplication;
+        return *p_vector;
     }
 
-public:
-    /**
-     * @brief Returns a const reference to the Multiplication object associated
-     * with the Algebra.
-     *
-     * This method returns a const reference to the Multiplication object
-     * associated with the Algebra. The Multiplication object is responsible for
-     * performing multiplication operations on the Algebra.
-     *
-     * @return const Reference to the Multiplication object associated with the
-     * Algebra.
-     *
-     * @see Algebra::right_multiply()
-     * @see Algebra::left_multiply()
-     * @see Algebra::multiply_inplace()
-     * @see Algebra::add_multiply()
-     * @see Algebra::post_scalar_multiply()
-     * @see Algebra::post_scalar_divide()
-     */
-    const Multiplication& multiplication() const noexcept
+    RPY_NO_DISCARD bool is_dense() const noexcept
     {
-        return *p_multiplication;
+        return p_vector->is_dense();
+    }
+    RPY_NO_DISCARD bool is_sparse() const noexcept
+    {
+        return p_vector->is_sparse();
+    }
+    RPY_NO_DISCARD VectorType vector_type() const noexcept
+    {
+        return p_vector->vector_type();
     }
 
-    using Base::Base;
+    RPY_NO_DISCARD const BasisPointer& basis() const noexcept
+    {
+        return p_vector->basis();
+    }
+
+    RPY_NO_DISCARD const_iterator base_begin() const noexcept
+    {
+        return p_vector->base_begin();
+    }
+    RPY_NO_DISCARD const_iterator base_end() const noexcept
+    {
+        return p_vector->base_end();
+    }
+
+    RPY_NO_DISCARD const_iterator fibre_begin() const noexcept
+    {
+        return p_vector->fibre_begin();
+    }
+    RPY_NO_DISCARD const_iterator fibre_end() const noexcept
+    {
+        return p_vector->fibre_end();
+    }
+
+    RPY_NO_DISCARD const_iterator begin() const noexcept
+    {
+        return p_vector->begin();
+    }
+
+    RPY_NO_DISCARD const_iterator end() const noexcept
+    {
+        return p_vector->end();
+    }
+
+    RPY_NO_DISCARD ScalarCRef base_get(BasisKeyCRef key) const
+    {
+        return p_vector->base_get(std::move(key));
+    }
+    RPY_NO_DISCARD ScalarCRef fibre_get(BasisKeyCRef key) const
+    {
+        return p_vector->fibre_get(std::move(key));
+    }
+
+    RPY_NO_DISCARD Scalar base_get_mut(BasisKeyCRef key)
+    {
+        return p_vector->base_get_mut(std::move(key));
+    }
+    RPY_NO_DISCARD Scalar fibre_get_mut(BasisKeyCRef key)
+    {
+        return p_vector->fibre_get_mut(std::move(key));
+    }
+
+    RPY_NO_DISCARD Derived minus() const { return p_vector->uminus(); }
+    RPY_NO_DISCARD Derived left_smul(ScalarCRef scalar) const
+    {
+        return p_vector->left_smul(std::move(scalar));
+    }
+    RPY_NO_DISCARD Derived right_smul(ScalarCRef scalar) const
+    {
+        return p_vector->right_smul(std::move(scalar));
+    }
+    RPY_NO_DISCARD Derived sdiv(ScalarCRef scalar) const
+    {
+        const auto recip = devices::math::reciprocal(scalar);
+        return right_smul(recip);
+    }
+
+    RPY_NO_DISCARD Derived add(const AlgebraBase& other) const
+    {
+        return p_vector->add(*other.p_vector);
+    }
+    RPY_NO_DISCARD Derived sub(const AlgebraBase& other) const
+    {
+        return p_vector->sub(*other.p_vector);
+    }
+
+    Derived& left_smul_inplace(ScalarCRef other)
+    {
+        p_vector->left_smul_inplace(std::move(other));
+        return instance();
+    }
+    Derived& right_smul_inplace(ScalarCRef other)
+    {
+        p_vector->right_smul_inplace(std::move(other));
+        return instance();
+    }
+    Derived& sdiv_inplace(ScalarCRef other)
+    {
+        const auto recip = devices::math::reciprocal(other);
+        return right_smul_inplace(recip);
+    }
+
+    Derived& add_inplace(const AlgebraBase& other)
+    {
+        p_vector->add_inplace(*other.p_vector);
+        return instance();
+    }
+    Derived& sub_inplace(const AlgebraBase& other)
+    {
+        p_vector->sub_inplace(*other.p_vector);
+        return instance();
+    }
+
+    Derived& add_scal_mul(const AlgebraBase& other, ScalarCRef scalar)
+    {
+        p_vector->add_scal_mul(*other.p_vector, std::move(scalar));
+        return instance();
+    }
+    Derived& sub_scal_mul(const AlgebraBase& other, ScalarCRef scalar)
+    {
+        p_vector->sub_scal_mul(*other.p_vector, std::move(scalar));
+        return instance();
+    }
+
+    Derived& add_scal_div(const AlgebraBase& other, ScalarCRef scalar)
+    {
+        const auto recip = devices::math::reciprocal(scalar);
+        return add_scal_mul(other, recip);
+    }
+    Derived& sub_scal_div(const AlgebraBase& other, ScalarCRef scalar)
+    {
+        const auto recip = devices::math::reciprocal(scalar);
+        return add_scal_mul(other, recip);
+    }
+
+    RPY_NO_DISCARD bool is_equal(const AlgebraBase& other) const noexcept
+    {
+        return p_vector->is_equal(*other.p_vector);
+    }
 
     /**
      * @brief Multiply the algebra by another vector on the right.
@@ -386,12 +241,7 @@ public:
      * @param other The vector to multiply with.
      * @return Algebra The result of the multiplication.
      */
-    RPY_NO_DISCARD Algebra right_multiply(const Vector& other) const
-    {
-        Algebra result(this->basis(), this->p_multiplication);
-        multiplication_traits::fma(multiplication(), result, *this, other);
-        return result;
-    }
+    RPY_NO_DISCARD Derived right_multiply(const Vector& other) const;
 
     /**
      * @brief Multiply the algebra by another vector on left.
@@ -401,12 +251,7 @@ public:
      * @param other The vector to multiply with.
      * @return Algebra The result of the multiplication.
      */
-    RPY_NO_DISCARD Algebra left_multiply(const Vector& other) const
-    {
-        Algebra result(this->basis(), this->p_multiplication);
-        multiplication_traits::fma(multiplication(), result, other, *this);
-        return result;
-    }
+    RPY_NO_DISCARD Derived left_multiply(const Vector& other) const;
 
     /**
      * @brief Multiply the algebra in place by another vector.
@@ -421,11 +266,7 @@ public:
      * @see Algebra<Multiplication, Base>
      * @see multiplication_traits::multiply_into()
      */
-    Algebra& multiply_inplace(const Vector& other)
-    {
-        multiplication_traits::multiply_into(multiplication(), *this, other);
-        return *this;
-    }
+    Derived& multiply_inplace(const Vector& other);
 
     /**
      * @brief Multiply two vectors and add the result to the current algebra
@@ -441,11 +282,8 @@ public:
      *
      * @see multiplication_traits::fma()
      */
-    Algebra& add_multiply(const Vector& left, const Vector& right)
-    {
-        multiplication_traits::fma(multiplication(), *this, left, right);
-        return *this;
-    }
+    Derived& add_multiply(const Vector& left, const Vector& right);
+
     /**
      * @brief Multiply the current algebra object by two vectors and store the
      * result in the algebra object itself.
@@ -461,11 +299,7 @@ public:
      *
      * @see multiplication_traits::fms()
      */
-    Algebra& sub_multiply(const Vector& left, const Vector& right)
-    {
-        multiplication_traits::fms(multiplication(), *this, left, right);
-        return *this;
-    }
+    Derived& sub_multiply(const Vector& left, const Vector& right);
 
     /**
      * @brief Multiply the result of a post-scalar multiplication by another
@@ -481,12 +315,7 @@ public:
      * result.
      * @return Algebra The result of the multiplication.
      */
-    Algebra&
-    multiply_post_smul(const Vector& rhs, const scalars::ScalarCRef multiplier)
-    {
-        multiplication_traits::multiply_into_pm(rhs, std::move(multiplier));
-        return *this;
-    }
+    Derived& multiply_post_smul(const Vector& rhs, ScalarCRef multiplier);
 
     /**
      * @brief Multiply the result of a post-scalar division operation by a
@@ -499,56 +328,235 @@ public:
      * @param rhs The vector to multiply into the current value
      * @param divisor The scalar value to multiply the matrix by.
      */
-    Algebra& multiply_post_sdiv(const Vector& rhs, scalars::ScalarCRef divisor)
-    {
-        multiplication_traits::multiply_into_pd(rhs, std::move(divisor));
-        return *this;
-    }
+    Derived& multiply_post_sdiv(const Vector& rhs, ScalarCRef divisor);
 };
 
-template <typename Multiplication>
-using GradedAlgebra = Algebra<Multiplication, GradedVector<>>;
+template <typename Derived>
+inline constexpr bool is_algebra_v
+        = is_base_of_v<AlgebraBase<Derived>, Derived>;
 
 namespace dtl {
 
-template <typename, typename = void>
-constexpr bool is_algebra = false;
+template <typename Return, bool AndCondition=true>
+using algebra_like_return
+        = enable_if_t<is_algebra_v<remove_cv_ref_t<Return>> && AndCondition, Return>;
 
-template <typename T>
-constexpr bool is_algebra<
-        T,
-        void_t<typename T::multiplication_type,
-               decltype(std::declval<const T&>()
-                                .left_multiply(std::declval<const Vector&>())),
-               decltype(std::declval<const T&>()
-                                .right_multiply(std::declval<const Vector&>())),
-               decltype(std::declval<T&>().multiply_inplace(std::declval<
-                                                            const Vector&>()))>>
-        = true;
-
-}// namespace dtl
-
-template <typename A>
-RPY_NO_DISCARD enable_if_t<dtl::is_algebra<A>, A>
-operator*(const A& left, const Vector& right)
-{
-    return A(left.right_multiply(right));
 }
 
-template <typename A>
-RPY_NO_DISCARD enable_if_t<dtl::is_algebra<A>, A>
-operator*(const Vector& left, const A& right)
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived> operator-(const Derived& arg)
 {
-    return A(right.left_multiply(left));
+    return arg.minus();
 }
 
-template <typename A>
-RPY_NO_DISCARD enable_if_t<dtl::is_algebra<A>, A&>
-operator*=(A& left, const Vector& right)
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived>
+operator*(const Derived& vec, scalars::ScalarCRef scalar)
 {
-    left.multiply_inplace(right);
-    return left;
+    return vec.right_smul(std::move(scalar));
 }
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived>
+operator*(scalars::ScalarCRef scalar, const Derived& vec)
+{
+    return vec.left_smul(std::move(scalar));
+}
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived>
+operator/(const Derived& vec, scalars::ScalarCRef scalar)
+{
+    const auto recip = devices::math::reciprocal(scalar);
+    return vec.right_smul(recip);
+}
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived>
+operator+(const Derived& lhs, const Vector& rhs)
+{
+    return Derived::from(lhs.as_vector().add(rhs));
+}
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived>
+operator+(const Vector& lhs, const Derived& rhs)
+{
+    return Derived::from(lhs.add(rhs.as_vector()));
+}
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived>
+operator-(const Derived& lhs, const Vector& rhs)
+{
+    return Derived::from(lhs.as_vector().sub(rhs));
+}
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived>
+operator-(const Vector& lhs, const Derived& rhs)
+{
+    return Derived::from(lhs.sub(rhs.as_vector()));
+}
+
+template <typename Derived, typename OtherDerived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived>
+operator+(const Derived& lhs, const AlgebraBase<OtherDerived>& rhs)
+{
+    return Derived::from(lhs.as_vector().add(rhs.as_vector()));
+}
+
+template <typename Derived, typename OtherDerived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived>
+operator-(const Derived& lhs, const AlgebraBase<OtherDerived>& rhs)
+{
+    return Derived::from(lhs.as_vector().sub(rhs.as_vector()));
+}
+
+template <typename Derived>
+dtl::algebra_like_return<Derived&>
+operator*=(Derived& lhs, scalars::ScalarCRef scalar)
+{
+    return lhs.right_smul_inplace(scalar);
+}
+
+template <typename Derived>
+dtl::algebra_like_return<Derived&>
+operator/=(Derived& vec, scalars::ScalarCRef scalar)
+{
+    const auto recip = devices::math::reciprocal(scalar);
+    return vec.right_smul_inplace(recip);
+}
+
+template <typename Derived>
+dtl::algebra_like_return<Derived&> operator+=(Derived& lhs, const Vector& rhs)
+{
+    lhs.as_vector().add_inplace(rhs);
+    return lhs;
+}
+
+template <typename Derived, typename OtherDerived>
+dtl::algebra_like_return<Derived&>
+operator+=(Derived& lhs, const AlgebraBase<OtherDerived>& rhs)
+{
+    lhs.add_inplace(rhs);
+    return lhs;
+}
+
+template <typename Derived>
+dtl::algebra_like_return<Derived&>
+operator-=(AlgebraBase<Derived>& lhs, const Vector& rhs)
+{
+    lhs.as_vector().subinplace(rhs);
+    return lhs;
+}
+
+template <typename Derived, typename OtherDerived>
+dtl::algebra_like_return<Derived&>
+operator-=(Derived& lhs, const AlgebraBase<OtherDerived>& rhs)
+{
+    lhs.sub_inplace(rhs);
+    return lhs;
+}
+
+template <typename Derived, typename OtherDerived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived> add_scalar_multiply(
+        const Derived& lhs,
+        const AlgebraBase<OtherDerived>& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    auto result = Derived::new_like(lhs);
+    result.as_vector().add_scal_mul(rhs.as_vector(), std::move(scalar));
+    return result;
+}
+
+template <typename Derived, typename OtherDerived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived> add_scalar_multiply(
+        const Derived& lhs,
+        scalars::ScalarCRef scalar,
+        const AlgebraBase<OtherDerived>& rhs
+)
+{
+    auto result = Derived::new_like(lhs);
+    result.as_vector().add_scal_mul(rhs.as_vector(), std::move(scalar));
+    return result;
+}
+
+template <typename Derived, typename OtherDerived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived> sub_scalar_multiply(
+        const Derived& lhs,
+        const AlgebraBase<OtherDerived>& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    auto result = Derived::new_like(lhs);
+    result.as_vector().sub_scal_mul(rhs.as_vector(), std::move(scalar));
+    return result;
+}
+
+template <typename Derived, typename OtherDerived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived> sub_scalar_multiply(
+        const Derived& lhs,
+        scalars::ScalarCRef scalar,
+        const AlgebraBase<OtherDerived>& rhs
+)
+{
+    auto result = Derived::new_like(lhs);
+    result.as_vector().sub_scal_mul(rhs.as_vector(), std::move(scalar));
+    return result;
+}
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived> add_scalar_multiply(
+        const Derived& lhs,
+        const Vector& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    auto result = Derived::new_like(lhs);
+    result.as_vector().add_scal_mul(rhs, std::move(scalar));
+    return result;
+}
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived> add_scalar_multiply(
+        const Derived& lhs,
+        scalars::ScalarCRef scalar,
+        const Vector& rhs
+)
+{
+    auto result = Derived::new_like(lhs);
+    result.as_vector().add_scal_mul(rhs, std::move(scalar));
+    return result;
+}
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived> sub_scalar_multiply(
+        const Derived& lhs,
+        const Vector& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    auto result = Derived::new_like(lhs);
+    result.as_vector().sub_scal_mul(rhs, std::move(scalar));
+    return result;
+}
+
+template <typename Derived>
+RPY_NO_DISCARD dtl::algebra_like_return<Derived> sub_scalar_multiply(
+        const Derived& lhs,
+        scalars::ScalarCRef scalar,
+        const Vector& rhs
+)
+{
+    auto result = Derived::new_like(lhs);
+    result.as_vector().sub_scal_mul(rhs, std::move(scalar));
+    return result;
+}
+
+
+
 
 }// namespace algebra
 }// namespace rpy
