@@ -37,7 +37,7 @@ public:
     RPY_NO_DISCARD devices::ConstReference mone() const override;
 
 
-    static const ArbitraryPrecisionRationalType* get() noexcept;
+    static const ArbitraryPrecisionRationalType* get() ;
 };
 
 } // implementations

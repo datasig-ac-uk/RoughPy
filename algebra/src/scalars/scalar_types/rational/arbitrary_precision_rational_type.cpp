@@ -181,7 +181,7 @@ devices::ConstReference ArbitraryPrecisionRationalType::mone() const
 }
 
 const ArbitraryPrecisionRationalType*
-ArbitraryPrecisionRationalType::get() noexcept
+ArbitraryPrecisionRationalType::get()
 {
     return new ArbitraryPrecisionRationalType();
 }
