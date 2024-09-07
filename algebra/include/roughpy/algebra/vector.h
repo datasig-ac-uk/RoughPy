@@ -861,7 +861,7 @@ template <typename V>
 enable_if_t<VectorTraits<V>::is_vector, V&>
 operator*=(V& vec, scalars::ScalarCRef scalar)
 {
-    VectorTraits<V>::as_vector(vec).right_smul(std::move(scalar));
+    VectorTraits<V>::as_mut_vector(vec).right_smul_inplace(std::move(scalar));
     return vec;
 }
 
