@@ -9,20 +9,20 @@ using namespace rpy::algebra;
 
 FreeTensor FreeTensor::exp() const
 {
-    return FreeTensor(basis(), scalar_type());
+    return FreeTensor();
 }
 FreeTensor FreeTensor::log() const
 {
-    return FreeTensor(basis(), scalar_type());
+    return FreeTensor();
 }
 FreeTensor FreeTensor::antipode() const
 {
-    return FreeTensor(basis(), scalar_type());
+    return FreeTensor();
 }
 
 FreeTensor FreeTensor::fused_multiply_exp(const FreeTensor& other) const
 {
-    return FreeTensor(this->basis(), scalar_type());
+    return FreeTensor();
 }
 FreeTensor& FreeTensor::fused_multiply_exp_inplace(const FreeTensor& other)
 {
