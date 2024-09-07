@@ -334,7 +334,6 @@ protected:
     using VectorOperation::VectorOperation;
 
 public:
-    RPY_NO_DISCARD
     static constexpr dimn_t my_arity = 3;
 
     dimn_t arity() const noexcept override { return my_arity; }
