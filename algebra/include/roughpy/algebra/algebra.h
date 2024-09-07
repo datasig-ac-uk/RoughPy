@@ -152,7 +152,7 @@ public:
         return p_vector->fibre_get_mut(std::move(key));
     }
 
-    RPY_NO_DISCARD Derived minus() const { return p_vector->uminus(); }
+    RPY_NO_DISCARD Derived minus() const { return p_vector->minus(); }
     RPY_NO_DISCARD Derived left_smul(ScalarCRef scalar) const
     {
         return p_vector->left_smul(std::move(scalar));
@@ -356,6 +356,11 @@ struct VectorTraits<Derived, enable_if_t<is_algebra_v<Derived>>>
         return arg.as_vector();
     }
 
+    static Derived clone(const Derived& arg) noexcept
+    {
+        return Derived::clone(arg);
+    }
+
     static Derived new_like(const Derived& arg) noexcept
     {
         return Derived::new_like(arg.as_vector());
@@ -374,102 +379,6 @@ struct VectorTraits<Derived, enable_if_t<is_algebra_v<Derived>>>
 
 };
 
-
-template <typename Derived, typename OtherDerived>
-RPY_NO_DISCARD dtl::algebra_like_return<Derived> add_scalar_multiply(
-        const Derived& lhs,
-        const AlgebraBase<OtherDerived>& rhs,
-        scalars::ScalarCRef scalar
-)
-{
-    auto result = Derived::new_like(lhs);
-    result.as_vector().add_scal_mul(rhs.as_vector(), std::move(scalar));
-    return result;
-}
-
-template <typename Derived, typename OtherDerived>
-RPY_NO_DISCARD dtl::algebra_like_return<Derived> add_scalar_multiply(
-        const Derived& lhs,
-        scalars::ScalarCRef scalar,
-        const AlgebraBase<OtherDerived>& rhs
-)
-{
-    auto result = Derived::new_like(lhs);
-    result.as_vector().add_scal_mul(rhs.as_vector(), std::move(scalar));
-    return result;
-}
-
-template <typename Derived, typename OtherDerived>
-RPY_NO_DISCARD dtl::algebra_like_return<Derived> sub_scalar_multiply(
-        const Derived& lhs,
-        const AlgebraBase<OtherDerived>& rhs,
-        scalars::ScalarCRef scalar
-)
-{
-    auto result = Derived::new_like(lhs);
-    result.as_vector().sub_scal_mul(rhs.as_vector(), std::move(scalar));
-    return result;
-}
-
-template <typename Derived, typename OtherDerived>
-RPY_NO_DISCARD dtl::algebra_like_return<Derived> sub_scalar_multiply(
-        const Derived& lhs,
-        scalars::ScalarCRef scalar,
-        const AlgebraBase<OtherDerived>& rhs
-)
-{
-    auto result = Derived::new_like(lhs);
-    result.as_vector().sub_scal_mul(rhs.as_vector(), std::move(scalar));
-    return result;
-}
-
-template <typename Derived>
-RPY_NO_DISCARD dtl::algebra_like_return<Derived> add_scalar_multiply(
-        const Derived& lhs,
-        const Vector& rhs,
-        scalars::ScalarCRef scalar
-)
-{
-    auto result = Derived::new_like(lhs);
-    result.as_vector().add_scal_mul(rhs, std::move(scalar));
-    return result;
-}
-
-template <typename Derived>
-RPY_NO_DISCARD dtl::algebra_like_return<Derived> add_scalar_multiply(
-        const Derived& lhs,
-        scalars::ScalarCRef scalar,
-        const Vector& rhs
-)
-{
-    auto result = Derived::new_like(lhs);
-    result.as_vector().add_scal_mul(rhs, std::move(scalar));
-    return result;
-}
-
-template <typename Derived>
-RPY_NO_DISCARD dtl::algebra_like_return<Derived> sub_scalar_multiply(
-        const Derived& lhs,
-        const Vector& rhs,
-        scalars::ScalarCRef scalar
-)
-{
-    auto result = Derived::new_like(lhs);
-    result.as_vector().sub_scal_mul(rhs, std::move(scalar));
-    return result;
-}
-
-template <typename Derived>
-RPY_NO_DISCARD dtl::algebra_like_return<Derived> sub_scalar_multiply(
-        const Derived& lhs,
-        scalars::ScalarCRef scalar,
-        const Vector& rhs
-)
-{
-    auto result = Derived::new_like(lhs);
-    result.as_vector().sub_scal_mul(rhs, std::move(scalar));
-    return result;
-}
 
 
 

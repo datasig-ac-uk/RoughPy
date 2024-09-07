@@ -96,7 +96,7 @@ void Vector::delete_element(BasisKeyCRef key)
 }
 
 
-Vector Vector::uminus() const
+Vector Vector::minus() const
 {
     const UMinusOperator uminus;
     Vector result(

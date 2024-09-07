@@ -322,7 +322,7 @@ public:
      *
      * @return A new vector that is the negation of the current vector
      */
-    RPY_NO_DISCARD virtual Vector uminus() const;
+    RPY_NO_DISCARD virtual Vector minus() const;
 
     /**
      * @brief Adds another vector to the current vector.
