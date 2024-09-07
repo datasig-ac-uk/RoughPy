@@ -7,7 +7,6 @@
 
 #include "algebra.h"
 #include "roughpy_algebra_export.h"
-#include "unital_algebra.h"
 
 namespace rpy {
 namespace algebra {
@@ -37,12 +36,7 @@ public:
  * and grading structure.
  */
 class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor
-    : public GradedUnitalAlgebra<ShuffleTensorMultiplication>
 {
-    using base_t = GradedUnitalAlgebra<ShuffleTensorMultiplication>;
-
-public:
-    using base_t::base_t;
 };
 
 }// namespace algebra

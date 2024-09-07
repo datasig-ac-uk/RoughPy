@@ -41,13 +41,8 @@ public:
  * algebra operations. It inherits all the member variables and functions from
  * the base class.
  */
-class ROUGHPY_ALGEBRA_EXPORT Lie : public GradedAlgebra<LieMultiplication>
+class ROUGHPY_ALGEBRA_EXPORT Lie
 {
-    using base_t = GradedAlgebra<LieMultiplication>;
-
-public:
-    using base_t::base_t;
-
     RPY_SERIAL_SERIALIZE_FN();
 };
 

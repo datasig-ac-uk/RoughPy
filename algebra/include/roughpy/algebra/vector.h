@@ -555,76 +555,7 @@ std::ostream& operator<<(std::ostream& os, const Vector& value);
  * them for any classes that build on top of these.
  */
 
-template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V> operator-(const V& arg)
-{
-    return V(arg.uminus());
-}
 
-template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
-operator+(const V& lhs, const Vector& rhs)
-{
-    return V(lhs.add(rhs));
-}
-
-template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
-operator-(const V& lhs, const Vector& rhs)
-{
-    return V(lhs.sub(rhs));
-}
-
-template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
-operator*(const V& lhs, scalars::ScalarCRef rhs)
-{
-    return V(lhs.right_smul(rhs));
-}
-
-template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
-operator*(scalars::ScalarCRef lhs, const V& rhs)
-{
-    return V(rhs.left_smul(lhs));
-}
-
-template <typename V>
-RPY_NO_DISCARD enable_if_t<is_base_of_v<Vector, V>, V>
-operator/(const V& lhs, scalars::ScalarCRef rhs)
-{
-    return V(lhs.sdiv(rhs));
-}
-
-template <typename V>
-enable_if_t<is_base_of_v<Vector, V>, V&> operator+=(V& lhs, const Vector& rhs)
-{
-    lhs.add_inplace(rhs);
-    return lhs;
-}
-
-template <typename V>
-enable_if_t<is_base_of_v<Vector, V>, V&> operator-=(V& lhs, const Vector& rhs)
-{
-    lhs.sub_inplace(rhs);
-    return lhs;
-}
-
-template <typename V>
-enable_if_t<is_base_of_v<Vector, V>, V&>
-operator*=(V& lhs, scalars::ScalarCRef rhs)
-{
-    lhs.smul_inplace(rhs);
-    return lhs;
-}
-
-template <typename V>
-enable_if_t<is_base_of_v<Vector, V>, V&>
-operator/=(V& lhs, scalars::ScalarCRef rhs)
-{
-    lhs.sdiv_inplace(rhs);
-    return lhs;
-}
 
 namespace dtl {
 
@@ -839,21 +770,19 @@ inline Vector::const_iterator Vector::fibre_end() const { return {}; }
 inline Vector::const_iterator Vector::begin() const { return base_begin(); }
 inline Vector::const_iterator Vector::end() const { return base_end(); }
 
-
-template <typename VecType>
-struct VectorTraits
-{
+template <typename VecType, typename SFINAE = enable_if_t<is_base_of_v<Vector, VecType>>>
+struct VectorTraits {
     static constexpr bool is_vector = is_base_of_v<Vector, VecType>;
 
     static Vector& as_mut_vector(VecType& arg) noexcept
     {
         static_assert(is_vector, "VecType must be a vector");
-        return static_cast<VecType&>(arg); // NOLINT(*-redundant-casting)
+        return static_cast<VecType&>(arg);// NOLINT(*-redundant-casting)
     }
     static const Vector& as_vector(const VecType& arg) noexcept
     {
         static_assert(is_vector, "VecType must be a vector");
-        return static_cast<const VecType&>(arg); // NOLINT(*-redundant-casting)
+        return static_cast<const VecType&>(arg);// NOLINT(*-redundant-casting)
     }
 
     static VecType new_like(const VecType& arg) noexcept
@@ -861,9 +790,118 @@ struct VectorTraits
         return VecType(arg.basis(), arg.scalar_type());
     }
 
+    static Rc<Vector> new_ptr_like(const VecType& arg) noexcept
+    {
+        return new VecType(arg.basis(), arg.scalar_type());
+    }
 
+    static VecType from(Vector&& arg) noexcept
+    {
+        return VecType(std::move(arg));
+    }
 };
 
+template <typename V>
+RPY_NO_DISCARD enable_if_t<VectorTraits<V>::is_vector, V> operator-(const V& arg
+)
+{
+    return VectorTraits<V>::from(VectorTraits<V>::as_vector(arg).uminus());
+}
+
+template <typename V>
+RPY_NO_DISCARD enable_if_t<VectorTraits<V>::is_vector, V>
+operator*(const V& arg, scalars::ScalarCRef scalar)
+{
+    return VectorTraits<V>::from(
+            VectorTraits<V>::as_vector(arg).right_smul(std::move(scalar))
+    );
+}
+
+template <typename V>
+RPY_NO_DISCARD enable_if_t<VectorTraits<V>::is_vector, V>
+operator*(scalars::ScalarCRef scalar, const V& arg)
+{
+    return VectorTraits<V>::from(
+            VectorTraits<V>::as_vector(arg).left_smul(std::move(scalar))
+    );
+}
+
+template <typename V>
+RPY_NO_DISCARD enable_if_t<VectorTraits<V>::is_vector, V>
+operator/(const V& arg, scalars::ScalarCRef scalar)
+{
+    return VectorTraits<V>::from(
+            VectorTraits<V>::as_vector(arg).sdiv(std::move(scalar))
+    );
+}
+
+template <typename V1, typename V2>
+RPY_NO_DISCARD enable_if_t<
+        VectorTraits<V1>::is_vector && VectorTraits<V2>::is_vector,
+        V1>
+operator+(const V1& lhs, const V2& rhs)
+{
+    return VectorTraits<V1>::from(VectorTraits<V1>::as_vector(lhs).add(
+            VectorTraits<V2>::as_vector(rhs)
+    ));
+}
+
+template <typename V1, typename V2>
+RPY_NO_DISCARD enable_if_t<
+        VectorTraits<V1>::is_vector && VectorTraits<V2>::is_vector,
+        V1>
+operator-(const V1& lhs, const V2& rhs)
+{
+    return VectorTraits<V1>::from(VectorTraits<V1>::as_vector(lhs).sub(
+            VectorTraits<V2>::as_vector(rhs)
+    ));
+}
+
+template <typename V>
+enable_if_t<VectorTraits<V>::is_vector, V&>
+operator*=(V& vec, scalars::ScalarCRef scalar)
+{
+    VectorTraits<V>::as_vector(vec).right_smul(std::move(scalar));
+    return vec;
+}
+
+template <typename V>
+enable_if_t<VectorTraits<V>::is_vector, V&>
+operator/=(V& vec, scalars::ScalarCRef scalar)
+{
+    VectorTraits<V>::as_mut_vector(vec).sdiv_inplace(std::move(scalar));
+    return vec;
+}
+
+template <typename V, typename V2>
+enable_if_t<VectorTraits<V>::is_vector && VectorTraits<V2>::is_vector, V&>
+operator+=(V& lhs, const V2& rhs)
+{
+    VectorTraits<V>::as_mut_vector(lhs).add_inplace(
+            VectorTraits<V2>::as_vector(rhs)
+    );
+    return lhs;
+}
+
+template <typename V, typename V2>
+enable_if_t<VectorTraits<V>::is_vector && VectorTraits<V2>::is_vector, V&>
+operator-=(V& lhs, const V2& rhs)
+{
+    VectorTraits<V>::as_mut_vector(lhs).sub_inplace(
+            VectorTraits<V2>::as_vector(rhs)
+    );
+    return lhs;
+}
+
+
+
+template <typename V>
+enable_if_t<VectorTraits<V>::is_vector, std::ostream&>
+operator<<(std::ostream& os, const V& arg)
+{
+    os << VectorTraits<V>::as_vector(arg);
+    return os;
+}
 
 
 }// namespace algebra

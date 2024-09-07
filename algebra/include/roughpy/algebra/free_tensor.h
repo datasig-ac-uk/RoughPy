@@ -6,11 +6,12 @@
 #define ROUGHPY_ALGEBRA_FREE_TENSOR_H
 
 #include "algebra.h"
-#include "unital_algebra.h"
+#include <roughpy/devices/kernel_operators.h>
 
 namespace rpy {
 namespace algebra {
 
+namespace ops = devices::operators;
 /**
  * @class FreeTensorMultiplication
  *
@@ -109,12 +110,8 @@ public:
  * objects, including calculating the exponential value, logarithm, antipode,
  * and performing fused multiplication and exponentiation operations.
  */
-class FreeTensor : public GradedUnitalAlgebra<FreeTensorMultiplication>
+class FreeTensor
 {
-    using base_t = GradedUnitalAlgebra<FreeTensorMultiplication>;
-
-public:
-    using base_t::base_t;
 
     /**
      * @brief Calculates the exponential value of a FreeTensor object.

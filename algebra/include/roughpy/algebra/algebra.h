@@ -63,9 +63,6 @@ class AlgebraBase
 {
     Rc<Vector> p_vector;
 
-protected:
-    using multiplication_traits
-            = dtl::MultiplicationTraits<typename Derived::multiplication_t>;
 
 public:
     using Scalar = scalars::Scalar;
@@ -331,6 +328,7 @@ public:
     Derived& multiply_post_sdiv(const Vector& rhs, ScalarCRef divisor);
 };
 
+
 template <typename Derived>
 inline constexpr bool is_algebra_v
         = is_base_of_v<AlgebraBase<Derived>, Derived>;
@@ -342,6 +340,39 @@ using algebra_like_return
         = enable_if_t<is_algebra_v<remove_cv_ref_t<Return>> && AndCondition, Return>;
 
 }
+
+template <typename Derived>
+struct VectorTraits<Derived, enable_if_t<is_algebra_v<Derived>>>
+{
+    static constexpr bool is_vector = true;
+
+    static Vector& as_mut_vector(Derived& arg) noexcept
+    {
+        return arg.as_vector();
+    }
+
+    static const Vector& as_vector(const Derived& arg) noexcept
+    {
+        return arg.as_vector();
+    }
+
+    static Derived new_like(const Derived& arg) noexcept
+    {
+        return Derived::new_like(arg.as_vector());
+    }
+
+    static Rc<Vector> new_ptr_like(const Derived& arg) noexcept
+    {
+        return new Derived(new_like(arg));
+    }
+
+    static Derived from(Vector&& arg)
+    {
+        return Derived(new Vector(std::move(arg)));
+    }
+
+
+};
 
 template <typename Derived>
 RPY_NO_DISCARD dtl::algebra_like_return<Derived> operator-(const Derived& arg)
