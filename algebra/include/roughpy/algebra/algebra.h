@@ -375,37 +375,6 @@ struct VectorTraits<Derived, enable_if_t<is_algebra_v<Derived>>>
 };
 
 
-template <typename Derived>
-dtl::algebra_like_return<Derived&> operator+=(Derived& lhs, const Vector& rhs)
-{
-    lhs.as_vector().add_inplace(rhs);
-    return lhs;
-}
-
-template <typename Derived, typename OtherDerived>
-dtl::algebra_like_return<Derived&>
-operator+=(Derived& lhs, const AlgebraBase<OtherDerived>& rhs)
-{
-    lhs.add_inplace(rhs);
-    return lhs;
-}
-
-template <typename Derived>
-dtl::algebra_like_return<Derived&>
-operator-=(AlgebraBase<Derived>& lhs, const Vector& rhs)
-{
-    lhs.as_vector().subinplace(rhs);
-    return lhs;
-}
-
-template <typename Derived, typename OtherDerived>
-dtl::algebra_like_return<Derived&>
-operator-=(Derived& lhs, const AlgebraBase<OtherDerived>& rhs)
-{
-    lhs.sub_inplace(rhs);
-    return lhs;
-}
-
 template <typename Derived, typename OtherDerived>
 RPY_NO_DISCARD dtl::algebra_like_return<Derived> add_scalar_multiply(
         const Derived& lhs,

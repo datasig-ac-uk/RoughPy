@@ -555,8 +555,6 @@ std::ostream& operator<<(std::ostream& os, const Vector& value);
  * them for any classes that build on top of these.
  */
 
-
-
 namespace dtl {
 
 class VectorIteratorState;
@@ -770,9 +768,17 @@ inline Vector::const_iterator Vector::fibre_end() const { return {}; }
 inline Vector::const_iterator Vector::begin() const { return base_begin(); }
 inline Vector::const_iterator Vector::end() const { return base_end(); }
 
-template <typename VecType, typename SFINAE = enable_if_t<is_base_of_v<Vector, VecType>>>
+template <typename VecType, typename SFINAE = void>
 struct VectorTraits {
-    static constexpr bool is_vector = is_base_of_v<Vector, VecType>;
+    static constexpr bool is_vector = false;
+};
+
+template <typename V>
+inline constexpr bool is_vector_v = VectorTraits<V>::is_vector;
+
+template <typename VecType>
+struct VectorTraits<VecType, enable_if_t<is_base_of_v<Vector, VecType>>> {
+    static constexpr bool is_vector = true;
 
     static Vector& as_mut_vector(VecType& arg) noexcept
     {
@@ -784,6 +790,8 @@ struct VectorTraits {
         static_assert(is_vector, "VecType must be a vector");
         return static_cast<const VecType&>(arg);// NOLINT(*-redundant-casting)
     }
+
+    static VecType clone(const VecType& arg) noexcept { return arg.clone(); }
 
     static VecType new_like(const VecType& arg) noexcept
     {
@@ -802,14 +810,13 @@ struct VectorTraits {
 };
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<VectorTraits<V>::is_vector, V> operator-(const V& arg
-)
+RPY_NO_DISCARD enable_if_t<is_vector_v<V>, V> operator-(const V& arg)
 {
     return VectorTraits<V>::from(VectorTraits<V>::as_vector(arg).uminus());
 }
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<VectorTraits<V>::is_vector, V>
+RPY_NO_DISCARD enable_if_t<is_vector_v<V>, V>
 operator*(const V& arg, scalars::ScalarCRef scalar)
 {
     return VectorTraits<V>::from(
@@ -818,7 +825,7 @@ operator*(const V& arg, scalars::ScalarCRef scalar)
 }
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<VectorTraits<V>::is_vector, V>
+RPY_NO_DISCARD enable_if_t<is_vector_v<V>, V>
 operator*(scalars::ScalarCRef scalar, const V& arg)
 {
     return VectorTraits<V>::from(
@@ -827,7 +834,7 @@ operator*(scalars::ScalarCRef scalar, const V& arg)
 }
 
 template <typename V>
-RPY_NO_DISCARD enable_if_t<VectorTraits<V>::is_vector, V>
+RPY_NO_DISCARD enable_if_t<is_vector_v<V>, V>
 operator/(const V& arg, scalars::ScalarCRef scalar)
 {
     return VectorTraits<V>::from(
@@ -858,23 +865,21 @@ operator-(const V1& lhs, const V2& rhs)
 }
 
 template <typename V>
-enable_if_t<VectorTraits<V>::is_vector, V&>
-operator*=(V& vec, scalars::ScalarCRef scalar)
+enable_if_t<is_vector_v<V>, V&> operator*=(V& vec, scalars::ScalarCRef scalar)
 {
     VectorTraits<V>::as_mut_vector(vec).right_smul_inplace(std::move(scalar));
     return vec;
 }
 
 template <typename V>
-enable_if_t<VectorTraits<V>::is_vector, V&>
-operator/=(V& vec, scalars::ScalarCRef scalar)
+enable_if_t<is_vector_v<V>, V&> operator/=(V& vec, scalars::ScalarCRef scalar)
 {
     VectorTraits<V>::as_mut_vector(vec).sdiv_inplace(std::move(scalar));
     return vec;
 }
 
 template <typename V, typename V2>
-enable_if_t<VectorTraits<V>::is_vector && VectorTraits<V2>::is_vector, V&>
+enable_if_t<is_vector_v<V> && VectorTraits<V2>::is_vector, V&>
 operator+=(V& lhs, const V2& rhs)
 {
     VectorTraits<V>::as_mut_vector(lhs).add_inplace(
@@ -884,7 +889,7 @@ operator+=(V& lhs, const V2& rhs)
 }
 
 template <typename V, typename V2>
-enable_if_t<VectorTraits<V>::is_vector && VectorTraits<V2>::is_vector, V&>
+enable_if_t<is_vector_v<V> && VectorTraits<V2>::is_vector, V&>
 operator-=(V& lhs, const V2& rhs)
 {
     VectorTraits<V>::as_mut_vector(lhs).sub_inplace(
@@ -893,16 +898,109 @@ operator-=(V& lhs, const V2& rhs)
     return lhs;
 }
 
-
-
 template <typename V>
-enable_if_t<VectorTraits<V>::is_vector, std::ostream&>
+enable_if_t<is_vector_v<V>, std::ostream&>
 operator<<(std::ostream& os, const V& arg)
 {
     os << VectorTraits<V>::as_vector(arg);
     return os;
 }
 
+template <typename V, typename V2>
+RPY_NO_DISCARD enable_if_t<is_vector_v<V> && is_vector_v<V2>, V>
+fused_add_scalar_multiply(
+        const V& lhs,
+        const V2& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    using VTraits = VectorTraits<V>;
+    auto result = VTraits::clone(lhs);
+
+    VTraits::as_mut_vector(result).add_scal_mul(
+            VectorTraits<V2>::as_vector(rhs),
+            std::move(scalar)
+    );
+    return result;
+}
+
+template <typename V, typename V2>
+RPY_NO_DISCARD enable_if_t<is_vector_v<V> && is_vector_v<V2>, V>
+fused_add_scalar_multiply(
+        const V& lhs,
+        scalars::ScalarCRef scalar,
+        const V2& rhs
+)
+{
+    using VTraits = VectorTraits<V>;
+
+    auto tmp = VTraits::as_vector(lhs).add(
+            VectorTraits<V2>::as_vector(rhs).left_smul(std::move(scalar))
+    );
+    return VTraits::from(std::move(tmp));
+}
+
+template <typename V, typename V2>
+RPY_NO_DISCARD enable_if_t<is_vector_v<V> && is_vector_v<V2>, V>
+fused_sub_scalar_multiply(
+        const V& lhs,
+        const V2& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    using VTraits = VectorTraits<V>;
+    auto result = VTraits::clone(lhs);
+
+    VTraits::as_mut_vector(result).sub_scal_mul(
+            VectorTraits<V2>::as_vector(rhs),
+            std::move(scalar)
+    );
+    return result;
+}
+
+template <typename V, typename V2>
+RPY_NO_DISCARD enable_if_t<is_vector_v<V> && is_vector_v<V2>, V>
+fused_sub_scalar_multiply(
+        const V& lhs,
+        scalars::ScalarCRef scalar,
+        const V2& rhs
+)
+{
+    using VTraits = VectorTraits<V>;
+
+    auto tmp = VTraits::as_vector(lhs).sub(
+            VectorTraits<V2>::as_vector(rhs).left_smul(std::move(scalar))
+    );
+    return VTraits::from(std::move(tmp));
+}
+
+template <typename V, typename V2>
+RPY_NO_DISCARD enable_if_t<is_vector_v<V> && is_vector_v<V2>, V>
+fused_add_scalar_divide(const V& lhs, const V2& rhs, scalars::ScalarCRef scalar)
+{
+    using VTraits = VectorTraits<V>;
+    auto result = VTraits::clone(lhs);
+
+    VTraits::as_mut_vector(result).sub_scal_div(
+            VectorTraits<V2>::as_vector(rhs),
+            std::move(scalar)
+    );
+    return result;
+}
+
+template <typename V, typename V2>
+RPY_NO_DISCARD enable_if_t<is_vector_v<V> && is_vector_v<V2>, V>
+fused_sub_scalar_divide(const V& lhs, const V2& rhs, scalars::ScalarCRef scalar)
+{
+    using VTraits = VectorTraits<V>;
+    auto result = VTraits::clone(lhs);
+
+    VTraits::as_mut_vector(result).sub_scal_mul(
+            VectorTraits<V2>::as_vector(rhs),
+            std::move(scalar)
+    );
+    return result;
+}
 
 }// namespace algebra
 }// namespace rpy
