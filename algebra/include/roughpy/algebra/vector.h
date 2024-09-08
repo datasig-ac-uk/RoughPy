@@ -1002,6 +1002,105 @@ fused_sub_scalar_divide(const V& lhs, const V2& rhs, scalars::ScalarCRef scalar)
     return result;
 }
 
+template <typename V, typename V2>
+enable_if_t<is_vector_v<V> && is_vector_v<V2>, V&>
+inplace_fused_add_scalar_multiply(
+        V& lhs,
+        const V2& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    using VTraits = VectorTraits<V>;
+    VTraits::as_mut_vector(lhs).add_scal_mul(
+            VectorTraits<V2>::as_vector(rhs),
+            std::move(scalar)
+    );
+    return lhs;
+}
+
+template <typename V, typename V2>
+enable_if_t<is_vector_v<V> && is_vector_v<V2>, V&>
+inplace_fused_add_scalar_multiply(
+        V& lhs,
+        scalars::ScalarCRef scalar,
+        const V2& rhs
+)
+{
+    using VTraits = VectorTraits<V>;
+
+    VTraits::as_mut_vector(lhs).add_inplace(
+            VectorTraits<V2>::as_vector(rhs).left_smul(std::move(scalar))
+    );
+    return lhs;
+}
+
+template <typename V, typename V2>
+enable_if_t<is_vector_v<V> && is_vector_v<V2>, V&>
+inplace_fused_sub_scalar_multiply(
+        V& lhs,
+        const V2& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    using VTraits = VectorTraits<V>;
+
+    VTraits::as_mut_vector(lhs).sub_scal_mul(
+            VectorTraits<V2>::as_vector(rhs),
+            std::move(scalar)
+    );
+    return lhs;
+}
+
+template <typename V, typename V2>
+enable_if_t<is_vector_v<V> && is_vector_v<V2>, V&>
+inplace_fused_sub_scalar_multiply(
+        V& lhs,
+        scalars::ScalarCRef scalar,
+        const V2& rhs
+)
+{
+    using VTraits = VectorTraits<V>;
+
+    VTraits::as_vector(lhs).sub_inplace(
+            VectorTraits<V2>::as_vector(rhs).left_smul(std::move(scalar))
+    );
+    return lhs;
+}
+
+template <typename V, typename V2>
+enable_if_t<is_vector_v<V> && is_vector_v<V2>, V&>
+inplace_fused_add_scalar_divide(
+        V& lhs,
+        const V2& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    using VTraits = VectorTraits<V>;
+
+    VTraits::as_mut_vector(lhs).sub_scal_div(
+            VectorTraits<V2>::as_vector(rhs),
+            std::move(scalar)
+    );
+    return lhs;
+}
+
+template <typename V, typename V2>
+enable_if_t<is_vector_v<V> && is_vector_v<V2>, V&>
+inplace_fused_sub_scalar_divide(
+        V& lhs,
+        const V2& rhs,
+        scalars::ScalarCRef scalar
+)
+{
+    using VTraits = VectorTraits<V>;
+
+    VTraits::as_mut_vector(lhs).sub_scal_mul(
+            VectorTraits<V2>::as_vector(rhs),
+            std::move(scalar)
+    );
+    return lhs;
+}
+
 }// namespace algebra
 }// namespace rpy
 
