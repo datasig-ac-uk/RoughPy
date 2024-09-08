@@ -12,10 +12,8 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
-
 namespace rpy {
 namespace algebra {
-
 
 template <typename Derived>
 class AlgebraBase;
@@ -62,7 +60,6 @@ template <typename Derived>
 class AlgebraBase
 {
     Rc<Vector> p_vector;
-
 
 public:
     using Scalar = scalars::Scalar;
@@ -328,22 +325,21 @@ public:
     Derived& multiply_post_sdiv(const Vector& rhs, ScalarCRef divisor);
 };
 
-
 template <typename Derived>
 inline constexpr bool is_algebra_v
         = is_base_of_v<AlgebraBase<Derived>, Derived>;
 
 namespace dtl {
 
-template <typename Return, bool AndCondition=true>
-using algebra_like_return
-        = enable_if_t<is_algebra_v<remove_cv_ref_t<Return>> && AndCondition, Return>;
+template <typename Return, bool AndCondition = true>
+using algebra_like_return = enable_if_t<
+        is_algebra_v<remove_cv_ref_t<Return>> && AndCondition,
+        Return>;
 
 }
 
 template <typename Derived>
-struct VectorTraits<Derived, enable_if_t<is_algebra_v<Derived>>>
-{
+struct VectorTraits<Derived, enable_if_t<is_algebra_v<Derived>>> {
     static constexpr bool is_vector = true;
 
     static Vector& as_mut_vector(Derived& arg) noexcept
@@ -375,13 +371,52 @@ struct VectorTraits<Derived, enable_if_t<is_algebra_v<Derived>>>
     {
         return Derived(new Vector(std::move(arg)));
     }
-
-
 };
 
+template <typename Alg, typename Vec>
+RPY_NO_DISCARD enable_if_t<is_algebra_v<Alg> && is_vector_v<Vec>, Alg>
+operator*(const Alg& lhs, const Vec& rhs)
+{
+    return lhs.right_multiply(VectorTraits<Vec>::as_vector(rhs));
+    ;
+}
 
+template <typename Alg, typename Vec>
+RPY_NO_DISCARD enable_if_t<
+        is_algebra_v<Alg> && is_vector_v<Vec> && !is_algebra_v<Vec>,
+        Alg>
+operator*(const Vec& lhs, const Alg& rhs)
+{
+    return rhs.left_multiply(VectorTraits<Vec>::as_vector(lhs));
+    ;
+}
 
+template <typename Alg, typename Vec>
+RPY_NO_DISCARD enable_if_t<is_algebra_v<Alg> && is_vector_v<Vec>, Alg&>
+operator*=(Alg& lhs, const Vec& rhs)
+{
+    lhs.right_multiply_inplace(VectorTraits<Vec>::as_vector(rhs));
+    return lhs;
+}
 
+template <typename Alg, typename Vec1, typename Vec2>
+RPY_NO_DISCARD enable_if_t<
+        is_algebra_v<Alg> && is_vector_v<Vec1> && is_vector_v<Vec2>,
+        Alg>
+fused_multiply_add(const Alg& a, const Vec1& b, const Vec2& c)
+{
+    auto result = Alg::clone(a);
+    result.fma(b, c);
+    return result;
+}
+
+template <typename Alg, typename Vec1, typename Vec2>
+enable_if_t<is_algebra_v<Alg> && is_vector_v<Vec1> && is_vector_v<Vec2>, Alg&>
+inplace_fused_multiply_add(Alg& a, const Vec1& b, const Vec2& c)
+{
+    a.fma(b, c);
+    return a;
+}
 
 }// namespace algebra
 }// namespace rpy
