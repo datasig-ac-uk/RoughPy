@@ -418,6 +418,16 @@ inplace_fused_multiply_add(Alg& a, const Vec1& b, const Vec2& c)
     return a;
 }
 
+template <typename Alg, typename Vec>
+enable_if_t<is_algebra_v<Alg> && is_vector_v<Vec>, Alg>
+commutator(const Alg& a, const Vec& b)
+{
+    auto result = a.right_multiply(VectorTraits<Vec>::as_vector(b));
+    inplcae_fused_multiply_add(result, b, a);
+    return result;
+}
+
+
 }// namespace algebra
 }// namespace rpy
 
