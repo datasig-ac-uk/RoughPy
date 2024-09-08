@@ -110,8 +110,17 @@ public:
  * objects, including calculating the exponential value, logarithm, antipode,
  * and performing fused multiplication and exponentiation operations.
  */
-class FreeTensor
+class FreeTensor : public AlgebraBase<FreeTensor>
 {
+
+
+public:
+
+    static FreeTensor new_like(const FreeTensor& arg) noexcept;
+    static FreeTensor clone(const FreeTensor& arg) noexcept;
+    static FreeTensor from(Vector&& arg) noexcept;
+
+
 
     /**
      * @brief Calculates the exponential value of a FreeTensor object.
