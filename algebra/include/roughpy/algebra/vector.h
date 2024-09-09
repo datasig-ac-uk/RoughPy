@@ -2,6 +2,7 @@
 // Created by sam on 1/27/24.
 //
 
+// ReSharper disable CppHidingFunction
 #ifndef ROUGHPY_ALGEBRA_VECTOR_H
 #define ROUGHPY_ALGEBRA_VECTOR_H
 
@@ -548,7 +549,7 @@ public:
 };
 
 ROUGHPY_ALGEBRA_EXPORT
-std::ostream& operator<<(std::ostream& os, const Vector& value);
+std::ostream& operator<<(std::ostream& os, const Vector& value); // NOLINT(*-identifier-length)
 
 /*
  * Arithmetic operators are templated so we don't have to reimplement
@@ -566,19 +567,29 @@ class IteratorItemProxy
 
 public:
     template <typename... Args>
-    IteratorItemProxy(Args&&... args) : m_data(std::forward<Args>(args)...)
+    // ReSharper disable once CppNonExplicitConvertingConstructor
+    IteratorItemProxy(Args&&... args)// NOLINT(*-explicit-constructor)
+        : m_data(std::forward<Args>(args)...)
     {}
 
-    operator T() && noexcept { return std::move(m_data); }
-    operator const T&() const noexcept { return m_data; }
+    // ReSharper disable CppNonExplicitConversionOperator
+    operator T() && noexcept// NOLINT(*-explicit-constructor)
+    {
+        return std::move(m_data);
+    }
+    operator const T&() const noexcept// NOLINT(*-explicit-constructor)
+    {
+        return m_data;
+    }
 
     const T& operator*() const noexcept { return m_data; }
     const T* operator->() const noexcept { return &m_data; }
-    operator T&() noexcept { return m_data; }
+    operator T&() noexcept { return m_data; }// NOLINT(*-explicit-constructor)
 
     T& operator*() noexcept { return m_data; }
 
     T* operator->() noexcept { return &m_data; }
+    // ReSharper restore CppNonExplicitConversionOperator
 };
 
 class ROUGHPY_ALGEBRA_EXPORT VectorIteratorState
@@ -594,10 +605,11 @@ public:
             = 0;
     virtual void advance() noexcept = 0;
 
-    virtual value_type value() const = 0;
-    virtual proxy_type proxy() const = 0;
+    RPY_NO_DISCARD virtual value_type value() const = 0;
+    RPY_NO_DISCARD virtual proxy_type proxy() const = 0;
 
-    virtual bool is_same(const VectorIteratorState& other_state) const noexcept
+    RPY_NO_DISCARD virtual bool is_same(const VectorIteratorState& other_state
+    ) const noexcept
             = 0;
 };
 
@@ -623,7 +635,7 @@ public:
     RPY_NO_DISCARD value_type value() const override;
     RPY_NO_DISCARD proxy_type proxy() const override;
 
-    bool is_same(const VectorIteratorState& other_state
+    RPY_NO_DISCARD bool is_same(const VectorIteratorState& other_state
     ) const noexcept override;
 };
 
@@ -911,7 +923,7 @@ operator-=(V& lhs, const V2& rhs)
 
 template <typename V>
 enable_if_t<is_vector_v<V>, std::ostream&>
-operator<<(std::ostream& os, const V& arg)
+operator<<(std::ostream& os, const V& arg)// NOLINT(*-identifier-length)
 {
     os << VectorTraits<V>::as_vector(arg);
     return os;
