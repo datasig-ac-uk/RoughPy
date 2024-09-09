@@ -12,8 +12,12 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
+#include <roughpy/devices/kernel_operators.h>
+
 namespace rpy {
 namespace algebra {
+
+namespace ops = devices::operators;
 
 template <typename Derived>
 class AlgebraBase;
@@ -73,10 +77,8 @@ protected:
         return dtl::cast_algebra_to_derived(*this);
     }
 
-    const typename Derived::multiplication_t& multiplication() const noexcept
-    {
-        return instance().multiplication();
-    }
+    explicit AlgebraBase(Vector&& data) : p_vector(new Vector(std::move(data)))
+    {}
 
 public:
     RPY_NO_DISCARD Vector& as_vector() noexcept { return *p_vector; }
@@ -101,6 +103,10 @@ public:
     RPY_NO_DISCARD const BasisPointer& basis() const noexcept
     {
         return p_vector->basis();
+    }
+    RPY_NO_DISCARD scalars::TypePtr scalar_type() const noexcept
+    {
+        return p_vector->scalar_type();
     }
 
     RPY_NO_DISCARD const_iterator base_begin() const noexcept
@@ -235,7 +241,12 @@ public:
      * @param other The vector to multiply with.
      * @return Algebra The result of the multiplication.
      */
-    RPY_NO_DISCARD Derived right_multiply(const Vector& other) const;
+    RPY_NO_DISCARD Derived right_multiply(const Vector& other) const
+    {
+        auto result = Derived::new_like(*this);
+        result.fma(other, *this, ops::IdentityOperator{});
+        return result;
+    }
 
     /**
      * @brief Multiply the algebra by another vector on left.
@@ -245,7 +256,12 @@ public:
      * @param other The vector to multiply with.
      * @return Algebra The result of the multiplication.
      */
-    RPY_NO_DISCARD Derived left_multiply(const Vector& other) const;
+    RPY_NO_DISCARD Derived left_multiply(const Vector& other) const
+    {
+        auto result = Derived::new_like(*this);
+        result.fma(other, *this, ops::IdentityOperator{});
+        return result;
+    }
 
     /**
      * @brief Multiply the algebra in place by another vector.
@@ -260,7 +276,11 @@ public:
      * @see Algebra<Multiplication, Base>
      * @see multiplication_traits::multiply_into()
      */
-    Derived& multiply_inplace(const Vector& other);
+    Derived& multiply_inplace(const Vector& other)
+    {
+        instance().multiply_inplace(other, ops::IdentityOperator{});
+        return instance();
+    }
 
     /**
      * @brief Multiply two vectors and add the result to the current algebra
@@ -276,7 +296,11 @@ public:
      *
      * @see multiplication_traits::fma()
      */
-    Derived& add_multiply(const Vector& left, const Vector& right);
+    Derived& add_multiply(const Vector& left, const Vector& right)
+    {
+        instance().fma(left, right, ops::IdentityOperator{});
+        return instance();
+    }
 
     /**
      * @brief Multiply the current algebra object by two vectors and store the
@@ -293,7 +317,11 @@ public:
      *
      * @see multiplication_traits::fms()
      */
-    Derived& sub_multiply(const Vector& left, const Vector& right);
+    Derived& sub_multiply(const Vector& left, const Vector& right)
+    {
+        instance().fma(left, right, ops::UnaryMinusOperator{});
+        return instance();
+    }
 
     /**
      * @brief Multiply the result of a post-scalar multiplication by another
@@ -309,7 +337,14 @@ public:
      * result.
      * @return Algebra The result of the multiplication.
      */
-    Derived& multiply_post_smul(const Vector& rhs, ScalarCRef multiplier);
+    Derived& multiply_post_smul(const Vector& rhs, ScalarCRef multiplier)
+    {
+        instance().multiply_inplace(
+                rhs,
+                ops::RightMultiplyOperator(std::move(multiplier))
+        );
+        return instance();
+    }
 
     /**
      * @brief Multiply the result of a post-scalar division operation by a
@@ -322,7 +357,11 @@ public:
      * @param rhs The vector to multiply into the current value
      * @param divisor The scalar value to multiply the matrix by.
      */
-    Derived& multiply_post_sdiv(const Vector& rhs, ScalarCRef divisor);
+    Derived& multiply_post_sdiv(const Vector& rhs, ScalarCRef divisor)
+    {
+        auto recip = devices::math::reciprocal(divisor);
+        return multiply_post_smul(rhs, recip);
+    }
 };
 
 template <typename Derived>
@@ -367,11 +406,115 @@ struct VectorTraits<Derived, enable_if_t<is_algebra_v<Derived>>> {
         return new Derived(new_like(arg));
     }
 
-    static Derived from(Vector&& arg)
+    static Derived from_like(const Derived& RPY_UNUSED_VAR like, Vector&& arg)
     {
         return Derived(new Vector(std::move(arg)));
     }
 };
+
+/**
+ * @brief Abstract base class for implementing multiplication operations on
+ * vectors.
+ *
+ * The Multiplication class provides a common interface for various
+ * multiplication operations that can be performed on vectors using certain
+ * operators.
+ */
+class Multiplication : public RcBase<Multiplication>
+{
+public:
+    virtual ~Multiplication() = default;
+
+    virtual void
+    fma(Vector& a, const Vector& b, const Vector& b, const ops::Operator& op
+    ) const = 0;
+
+    virtual void
+    inplace_multiply(Vector& lhs, const Vector& rhs, const ops::Operator& op)
+            const
+            = 0;
+};
+
+using MultiplicationPtr = Rc<const Multiplication>;
+
+/**
+ * @class Algebra
+ * @brief Represents algebraic structures and operations.
+ *
+ * This class encapsulates various algebraic operations and provides methods
+ * to perform calculations commonly used in algebra.
+ */
+class Algebra : public AlgebraBase<Algebra>
+{
+    MultiplicationPtr p_multiplication;
+
+public:
+    static Algebra clone(const Algebra& other) noexcept;
+    static Algebra new_like(const Algebra& other) noexcept;
+    static Algebra from(Vector&& arg) noexcept;
+
+    Algebra(BasisPointer basis,
+            scalars::TypePtr scalar_type,
+            MultiplicationPtr multiplication) noexcept;
+    Algebra(Vector&& data, MultiplicationPtr multiplication) noexcept;
+
+    RPY_NO_DISCARD const Rc<const Multiplication>&
+    multiplication() const noexcept
+    {
+        return p_multiplication;
+    }
+
+    Algebra& fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op)
+    {
+        p_multiplication->fma(as_vector(), lhs, rhs, op);
+        return *this;
+    }
+
+    Algebra& inplace_multiply(const Vector& rhs, const ops::Operator& op)
+    {
+        p_multiplication->inplace_multiply(as_vector(), rhs, op);
+        return *this;
+    }
+};
+
+template <>
+struct VectorTraits<Algebra, void> {
+    static constexpr bool is_vector = true;
+
+    static Vector& as_mut_vector(Algebra& arg) noexcept
+    {
+        return arg.as_vector();
+    }
+
+    static const Vector& as_vector(const Algebra& arg) noexcept
+    {
+        return arg.as_vector();
+    }
+
+    static Algebra clone(const Algebra& arg) noexcept { return {arg}; }
+
+    static Algebra new_like(const Algebra& arg) noexcept
+    {
+        return {arg.basis(), arg.scalar_type(), arg.multiplication()};
+    }
+
+    static Algebra from_like(const Algebra& like, Vector&& arg)
+    {
+        RPY_CHECK(like.basis() == arg.basis());
+
+        return {std::move(arg), like.multiplication()};
+    }
+};
+
+
+
+
+
+
+/******************************************************************************
+ *  Implementations of all the free-standing operators for algebras.          *
+ ******************************************************************************/
+
 
 template <typename Alg, typename Vec>
 RPY_NO_DISCARD enable_if_t<is_algebra_v<Alg> && is_vector_v<Vec>, Alg>
@@ -426,8 +569,6 @@ commutator(const Alg& a, const Vec& b)
     inplcae_fused_multiply_add(result, b, a);
     return result;
 }
-
-
 }// namespace algebra
 }// namespace rpy
 
