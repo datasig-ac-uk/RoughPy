@@ -5,11 +5,13 @@
 #ifndef ROUGHPY_ALGEBRA_LIE_H
 #define ROUGHPY_ALGEBRA_LIE_H
 
-#include "algebra.h"
-
-#include "roughpy_algebra_export.h"
 
 #include <roughpy/platform/serialization.h>
+
+
+#include "algebra.h"
+#include "roughpy_algebra_export.h"
+
 
 namespace rpy {
 namespace algebra {
@@ -41,9 +43,21 @@ public:
  * algebra operations. It inherits all the member variables and functions from
  * the base class.
  */
-class ROUGHPY_ALGEBRA_EXPORT Lie
+class ROUGHPY_ALGEBRA_EXPORT Lie : AlgebraBase<Lie>
 {
     RPY_SERIAL_SERIALIZE_FN();
+
+public:
+
+    static Lie new_like(const Lie& arg) noexcept;
+    static Lie clone(const Lie& arg) noexcept;
+    static Lie from_lie(const Lie& arg, Vector&& data) noexcept;
+
+    Lie();
+
+    Lie& fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
+    Lie& multiply_inplace(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
+
 };
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(Lie) {}
