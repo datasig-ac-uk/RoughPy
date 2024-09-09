@@ -43,7 +43,7 @@ public:
  * algebra operations. It inherits all the member variables and functions from
  * the base class.
  */
-class ROUGHPY_ALGEBRA_EXPORT Lie : AlgebraBase<Lie>
+class ROUGHPY_ALGEBRA_EXPORT Lie : public AlgebraBase<Lie>
 {
     RPY_SERIAL_SERIALIZE_FN();
 
