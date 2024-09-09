@@ -35,8 +35,19 @@ public:
  * manipulating ShuffleTensor objects, such as tensor product, multiplication,
  * and grading structure.
  */
-class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor
+class ROUGHPY_ALGEBRA_EXPORT ShuffleTensor : public AlgebraBase<ShuffleTensor>
 {
+public:
+    static ShuffleTensor new_like(const ShuffleTensor& arg) noexcept;
+    static ShuffleTensor clone(const ShuffleTensor& arg) noexcept;
+    static ShuffleTensor
+    from_like(const ShuffleTensor& like, Vector&& data) noexcept;
+
+    ShuffleTensor();
+
+    ShuffleTensor&
+    fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
+    ShuffleTensor& inplace_multiply(const Vector& rhs, const ops::Operator& op);
 };
 
 }// namespace algebra
