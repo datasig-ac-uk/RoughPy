@@ -5,14 +5,14 @@
 #ifndef ROUGHPY_ALGEBRA_ALGEBRA_H
 #define ROUGHPY_ALGEBRA_ALGEBRA_H
 
-#include "roughpy_algebra_export.h"
-#include "vector.h"
-
 #include <roughpy/core/errors.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
 #include <roughpy/devices/kernel_operators.h>
+
+#include "roughpy_algebra_export.h"
+#include "vector.h"
 
 namespace rpy {
 namespace algebra {
@@ -76,14 +76,14 @@ public:
     using const_iterator = Vector::const_iterator;
 
 protected:
-    RPY_NO_DISCARD
-    Derived& instance() noexcept { return dtl::cast_algebra_to_derived(*this); }
-    RPY_NO_DISCARD
-    const Derived& instance() const noexcept
+    RPY_NO_DISCARD Derived& instance() noexcept
     {
         return dtl::cast_algebra_to_derived(*this);
     }
-
+    RPY_NO_DISCARD const Derived& instance() const noexcept
+    {
+        return dtl::cast_algebra_to_derived(*this);
+    }
 
 public:
     RPY_NO_DISCARD Vector& as_vector() noexcept { return *p_vector; }
@@ -153,89 +153,13 @@ public:
 
     RPY_NO_DISCARD Scalar base_get_mut(BasisKeyCRef key)
     {
+        ignore_unused(this);
         return p_vector->base_get_mut(std::move(key));
     }
     RPY_NO_DISCARD Scalar fibre_get_mut(BasisKeyCRef key)
     {
+        ignore_unused(this);
         return p_vector->fibre_get_mut(std::move(key));
-    }
-
-    RPY_NO_DISCARD Derived minus() const { return p_vector->minus(); }
-    RPY_NO_DISCARD Derived left_smul(ScalarCRef scalar) const
-    {
-        return p_vector->left_smul(std::move(scalar));
-    }
-    RPY_NO_DISCARD Derived right_smul(ScalarCRef scalar) const
-    {
-        return p_vector->right_smul(std::move(scalar));
-    }
-    RPY_NO_DISCARD Derived sdiv(ScalarCRef scalar) const
-    {
-        const auto recip = devices::math::reciprocal(scalar);
-        return right_smul(recip);
-    }
-
-    RPY_NO_DISCARD Derived add(const AlgebraBase& other) const
-    {
-        return p_vector->add(*other.p_vector);
-    }
-    RPY_NO_DISCARD Derived sub(const AlgebraBase& other) const
-    {
-        return p_vector->sub(*other.p_vector);
-    }
-
-    Derived& left_smul_inplace(ScalarCRef other)
-    {
-        p_vector->left_smul_inplace(std::move(other));
-        return instance();
-    }
-    Derived& right_smul_inplace(ScalarCRef other)
-    {
-        p_vector->right_smul_inplace(std::move(other));
-        return instance();
-    }
-    Derived& sdiv_inplace(ScalarCRef other)
-    {
-        const auto recip = devices::math::reciprocal(other);
-        return right_smul_inplace(recip);
-    }
-
-    Derived& add_inplace(const AlgebraBase& other)
-    {
-        p_vector->add_inplace(*other.p_vector);
-        return instance();
-    }
-    Derived& sub_inplace(const AlgebraBase& other)
-    {
-        p_vector->sub_inplace(*other.p_vector);
-        return instance();
-    }
-
-    Derived& add_scal_mul(const AlgebraBase& other, ScalarCRef scalar)
-    {
-        p_vector->add_scal_mul(*other.p_vector, std::move(scalar));
-        return instance();
-    }
-    Derived& sub_scal_mul(const AlgebraBase& other, ScalarCRef scalar)
-    {
-        p_vector->sub_scal_mul(*other.p_vector, std::move(scalar));
-        return instance();
-    }
-
-    Derived& add_scal_div(const AlgebraBase& other, ScalarCRef scalar)
-    {
-        const auto recip = devices::math::reciprocal(scalar);
-        return add_scal_mul(other, recip);
-    }
-    Derived& sub_scal_div(const AlgebraBase& other, ScalarCRef scalar)
-    {
-        const auto recip = devices::math::reciprocal(scalar);
-        return add_scal_mul(other, recip);
-    }
-
-    RPY_NO_DISCARD bool is_equal(const AlgebraBase& other) const noexcept
-    {
-        return p_vector->is_equal(*other.p_vector);
     }
 
     /**
@@ -431,7 +355,8 @@ class Multiplication : public RcBase<Multiplication>
 public:
     virtual ~Multiplication() = default;
 
-    virtual void fma(Vector& a, const Vector& b, const Vector& c, const ops::Operator& op
+    virtual void
+    fma(Vector& a, const Vector& b, const Vector& c, const ops::Operator& op
     ) const = 0;
 
     virtual void
@@ -440,7 +365,6 @@ public:
             = 0;
     // NOLINTEND
 };
-
 
 using MultiplicationPtr = Rc<const Multiplication>;
 
@@ -451,7 +375,7 @@ using MultiplicationPtr = Rc<const Multiplication>;
  * This class encapsulates various algebraic operations and provides methods
  * to perform calculations commonly used in algebra.
  */
-class Algebra : public AlgebraBase<Algebra>
+class ROUGHPY_ALGEBRA_EXPORT Algebra : public AlgebraBase<Algebra>
 {
     MultiplicationPtr p_multiplication;
 
@@ -575,7 +499,6 @@ commutator(const Alg& a, const Vec& b)
 }
 
 // NOLINTEND
-
 
 }// namespace algebra
 }// namespace rpy
