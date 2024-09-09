@@ -422,18 +422,20 @@ struct VectorTraits<Derived, enable_if_t<is_algebra_v<Derived>>> {
  */
 class Multiplication : public RcBase<Multiplication>
 {
+    // NOLINTBEGIN: readability-identifier-length
 public:
     virtual ~Multiplication() = default;
 
-    virtual void
-    fma(Vector& a, const Vector& b, const Vector& b, const ops::Operator& op
+    virtual void fma(Vector& a, const Vector& b, const Vector& c, const ops::Operator& op
     ) const = 0;
 
     virtual void
     inplace_multiply(Vector& lhs, const Vector& rhs, const ops::Operator& op)
             const
             = 0;
+    // NOLINTEND
 };
+
 
 using MultiplicationPtr = Rc<const Multiplication>;
 
@@ -464,12 +466,14 @@ public:
         return p_multiplication;
     }
 
+    // NOLINTNEXTLINE: readability-identifier-length
     Algebra& fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op)
     {
         p_multiplication->fma(as_vector(), lhs, rhs, op);
         return *this;
     }
 
+    // NOLINTNEXTLINE: readability-identifier-length
     Algebra& inplace_multiply(const Vector& rhs, const ops::Operator& op)
     {
         p_multiplication->inplace_multiply(as_vector(), rhs, op);
@@ -506,15 +510,9 @@ struct VectorTraits<Algebra, void> {
     }
 };
 
-
-
-
-
-
 /******************************************************************************
  *  Implementations of all the free-standing operators for algebras.          *
  ******************************************************************************/
-
 
 template <typename Alg, typename Vec>
 RPY_NO_DISCARD enable_if_t<is_algebra_v<Alg> && is_vector_v<Vec>, Alg>
@@ -542,6 +540,7 @@ operator*=(Alg& lhs, const Vec& rhs)
     return lhs;
 }
 
+// NOLINTBEGIN: readability-identifier-length
 template <typename Alg, typename Vec1, typename Vec2>
 RPY_NO_DISCARD enable_if_t<
         is_algebra_v<Alg> && is_vector_v<Vec1> && is_vector_v<Vec2>,
@@ -569,6 +568,10 @@ commutator(const Alg& a, const Vec& b)
     inplcae_fused_multiply_add(result, b, a);
     return result;
 }
+
+// NOLINTEND
+
+
 }// namespace algebra
 }// namespace rpy
 
