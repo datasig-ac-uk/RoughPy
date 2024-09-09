@@ -116,10 +116,15 @@ public:
     static FreeTensor clone(const FreeTensor& arg) noexcept;
     static FreeTensor from(Vector&& arg) noexcept;
 
+    FreeTensor();
+
     FreeTensor&
-    fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op) const;
-    FreeTensor&
-    multiply_inplace(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
+    fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
+    FreeTensor& multiply_inplace(
+            const Vector& lhs,
+            const Vector& rhs,
+            const ops::Operator& op
+    );
 
     /**
      * @brief Calculates the exponential value of a FreeTensor object.
