@@ -383,14 +383,23 @@ template <typename S, typename T = S>
 constexpr bool is_not_equal_comparable_v
         = definitely_a_new_namespace::is_not_equal_comparable<S, T>::value;
 
-
-
 template <typename... Ts>
 struct TypeList {
     static constexpr size_t size = sizeof...(Ts);
 };
 
 
+// Ignore unused values function
+// Idea from boost/core
+
+template <typename... Ts>
+RPY_INLINE_ALWAYS constexpr void ignore_unused(Ts&& RPY_UNUSED_VAR... args
+) noexcept
+{}
+
+template <typename...>
+RPY_INLINE_ALWAYS constexpr void ignore_unused()
+{}
 
 }// namespace rpy
 
