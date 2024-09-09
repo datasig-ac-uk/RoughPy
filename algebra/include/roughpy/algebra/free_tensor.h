@@ -6,12 +6,10 @@
 #define ROUGHPY_ALGEBRA_FREE_TENSOR_H
 
 #include "algebra.h"
-#include <roughpy/devices/kernel_operators.h>
 
 namespace rpy {
 namespace algebra {
 
-namespace ops = devices::operators;
 /**
  * @class FreeTensorMultiplication
  *
@@ -113,14 +111,15 @@ public:
 class FreeTensor : public AlgebraBase<FreeTensor>
 {
 
-
 public:
-
     static FreeTensor new_like(const FreeTensor& arg) noexcept;
     static FreeTensor clone(const FreeTensor& arg) noexcept;
     static FreeTensor from(Vector&& arg) noexcept;
 
-
+    FreeTensor&
+    fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op) const;
+    FreeTensor&
+    multiply_inplace(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
 
     /**
      * @brief Calculates the exponential value of a FreeTensor object.
