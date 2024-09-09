@@ -134,6 +134,7 @@ public:
      *
      * @return A new FreeTensor object representing the exponential value.
      */
+    RPY_NO_DISCARD
     FreeTensor exp() const;
 
     /**
@@ -144,6 +145,7 @@ public:
      *
      * @return The logarithm of the FreeTensor object.
      */
+    RPY_NO_DISCARD
     FreeTensor log() const;
 
     /**
@@ -154,6 +156,7 @@ public:
      *
      * @return The antipode of the FreeTensor object.
      */
+    RPY_NO_DISCARD
     FreeTensor antipode() const;
 
     /**
@@ -168,6 +171,7 @@ public:
      * @return A new FreeTensor object that represents the result of the fused
      * multiplication and exponentiation operation.
      */
+    RPY_NO_DISCARD
     FreeTensor fused_multiply_exp(const FreeTensor& other) const;
 
     /**
