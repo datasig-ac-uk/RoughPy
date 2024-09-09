@@ -65,20 +65,25 @@ class AlgebraBase
 {
     Rc<Vector> p_vector;
 
+    friend Derived;
+
+    explicit AlgebraBase(Vector&& data) : p_vector(new Vector(std::move(data)))
+    {}
+
 public:
     using Scalar = scalars::Scalar;
     using ScalarCRef = scalars::ScalarCRef;
     using const_iterator = Vector::const_iterator;
 
 protected:
+    RPY_NO_DISCARD
     Derived& instance() noexcept { return dtl::cast_algebra_to_derived(*this); }
+    RPY_NO_DISCARD
     const Derived& instance() const noexcept
     {
         return dtl::cast_algebra_to_derived(*this);
     }
 
-    explicit AlgebraBase(Vector&& data) : p_vector(new Vector(std::move(data)))
-    {}
 
 public:
     RPY_NO_DISCARD Vector& as_vector() noexcept { return *p_vector; }
