@@ -803,7 +803,7 @@ struct VectorTraits<VecType, enable_if_t<is_base_of_v<Vector, VecType>>> {
         return new VecType(arg.basis(), arg.scalar_type());
     }
 
-    static VecType from(Vector&& arg) noexcept
+    static VecType from_like(const VecType& RPY_UNUSED_VAR like, Vector&& arg) noexcept
     {
         return VecType(std::move(arg));
     }
