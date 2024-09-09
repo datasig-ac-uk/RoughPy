@@ -803,7 +803,8 @@ struct VectorTraits<VecType, enable_if_t<is_base_of_v<Vector, VecType>>> {
         return new VecType(arg.basis(), arg.scalar_type());
     }
 
-    static VecType from_like(const VecType& RPY_UNUSED_VAR like, Vector&& arg) noexcept
+    static VecType
+    from_like(const VecType& RPY_UNUSED_VAR like, Vector&& arg) noexcept
     {
         return VecType(std::move(arg));
     }
@@ -812,14 +813,18 @@ struct VectorTraits<VecType, enable_if_t<is_base_of_v<Vector, VecType>>> {
 template <typename V>
 RPY_NO_DISCARD enable_if_t<is_vector_v<V>, V> operator-(const V& arg)
 {
-    return VectorTraits<V>::from(VectorTraits<V>::as_vector(arg).uminus());
+    return VectorTraits<V>::from_like(
+            arg,
+            VectorTraits<V>::as_vector(arg).uminus()
+    );
 }
 
 template <typename V>
 RPY_NO_DISCARD enable_if_t<is_vector_v<V>, V>
 operator*(const V& arg, scalars::ScalarCRef scalar)
 {
-    return VectorTraits<V>::from(
+    return VectorTraits<V>::from_like(
+            arg,
             VectorTraits<V>::as_vector(arg).right_smul(std::move(scalar))
     );
 }
@@ -828,7 +833,8 @@ template <typename V>
 RPY_NO_DISCARD enable_if_t<is_vector_v<V>, V>
 operator*(scalars::ScalarCRef scalar, const V& arg)
 {
-    return VectorTraits<V>::from(
+    return VectorTraits<V>::from_like(
+            arg,
             VectorTraits<V>::as_vector(arg).left_smul(std::move(scalar))
     );
 }
@@ -837,7 +843,8 @@ template <typename V>
 RPY_NO_DISCARD enable_if_t<is_vector_v<V>, V>
 operator/(const V& arg, scalars::ScalarCRef scalar)
 {
-    return VectorTraits<V>::from(
+    return VectorTraits<V>::from_like(
+            arg,
             VectorTraits<V>::as_vector(arg).sdiv(std::move(scalar))
     );
 }
@@ -848,9 +855,11 @@ RPY_NO_DISCARD enable_if_t<
         V1>
 operator+(const V1& lhs, const V2& rhs)
 {
-    return VectorTraits<V1>::from(VectorTraits<V1>::as_vector(lhs).add(
-            VectorTraits<V2>::as_vector(rhs)
-    ));
+    return VectorTraits<V1>::from_like(
+            lhs,
+            VectorTraits<V1>::as_vector(lhs).add(VectorTraits<V2>::as_vector(rhs
+            ))
+    );
 }
 
 template <typename V1, typename V2>
@@ -859,9 +868,11 @@ RPY_NO_DISCARD enable_if_t<
         V1>
 operator-(const V1& lhs, const V2& rhs)
 {
-    return VectorTraits<V1>::from(VectorTraits<V1>::as_vector(lhs).sub(
-            VectorTraits<V2>::as_vector(rhs)
-    ));
+    return VectorTraits<V1>::from_like(
+            lhs,
+            VectorTraits<V1>::as_vector(lhs).sub(VectorTraits<V2>::as_vector(rhs
+            ))
+    );
 }
 
 template <typename V>
