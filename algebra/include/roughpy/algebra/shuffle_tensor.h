@@ -46,8 +46,14 @@ public:
     ShuffleTensor();
 
     ShuffleTensor&
-    fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
-    ShuffleTensor& inplace_multiply(const Vector& rhs, const ops::Operator& op);
+    fma(const Vector& lhs,
+        const Vector& rhs,
+        const ops::Operator& op// NOLINT(*-identifier-length)
+    );
+    ShuffleTensor& inplace_multiply(
+            const Vector& rhs,
+            const ops::Operator& op// NOLINT(*-identifier-length)
+    );
 };
 
 }// namespace algebra

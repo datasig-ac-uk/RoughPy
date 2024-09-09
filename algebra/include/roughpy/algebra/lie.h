@@ -55,8 +55,8 @@ public:
 
     Lie();
 
-    Lie& fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
-    Lie& multiply_inplace(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
+    Lie& fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op); // NOLINT(*-identifier-length)
+    Lie& multiply_inplace(const Vector& lhs, const Vector& rhs, const ops::Operator& op); // NOLINT(*-identifier-length)
 
 };
 
