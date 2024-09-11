@@ -335,6 +335,8 @@ else()
     message(FATAL_ERROR "Could not locate gmp, no vcpkg")
 endif()
 
+set(CMAKE_CXX_FLAGS -I/.venv-for-cmake/lib/python3.11/site-packages/numpy/_core/include/numpy)
+
 # Now we get to adding our components. Let's do some global setup such as
 # setting the CXX standard and the shared library details.
 set(CMAKE_CXX_STANDARD 17)
