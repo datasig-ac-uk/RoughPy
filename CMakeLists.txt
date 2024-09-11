@@ -156,7 +156,6 @@ endif ()
 
 find_package(Python 3.8 REQUIRED COMPONENTS ${PYTHON_COMPONENTS_NEEDED})
 
-
 if (NOT DEFINED pybind11_ROOT)
     execute_process(COMMAND
         "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
@@ -334,8 +333,6 @@ elseif(DEFINED VCPKG_INSTALLED_DIR)
 else()
     message(FATAL_ERROR "Could not locate gmp, no vcpkg")
 endif()
-
-set(CMAKE_CXX_FLAGS -I/ENV{VIRTUAL_ENV}/lib/python3.11/site-packages/numpy/_core/include/numpy)
 
 # Now we get to adding our components. Let's do some global setup such as
 # setting the CXX standard and the shared library details.
