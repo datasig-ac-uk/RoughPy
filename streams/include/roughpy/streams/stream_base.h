@@ -148,6 +148,7 @@ protected:
     ) const = 0;
 
 public:
+
     RPY_NO_DISCARD virtual algebra::Lie log_signature(
             const intervals::Interval& interval,
             const algebra::Context& ctx

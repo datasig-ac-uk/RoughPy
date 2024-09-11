@@ -40,6 +40,7 @@ static const char* STREAM_INTERFACE_DOC
 an example of streaming data into a rough path.
 )rpydoc";
 
+
 void python::init_base_stream(py::module_& m)
 {
 
@@ -48,7 +49,27 @@ void python::init_base_stream(py::module_& m)
     );
 
     // TODO: Finish this off.
+
+    py::class_<streams::StreamMetadata> pymd(
+            m, "StreamMetadata", STREAM_INTERFACE_DOC
+    );
+
+    pymd.def_property_readonly("width", [](const streams::StreamMetadata& md){return md.width;});
+
+
+    //// STEP 1: Define a Python class that wraps around the Metadata struct
+    klass.def("stream_metadata", [](const streams::StreamInterface& obj){return obj.metadata();}, "Returns the metadata of the stream");
 }
+
+// STEP 2: Add a method to the trampoline class that returns the metadata so that is accessible in Python
+streams::StreamMetadata PyBaseStream::get_stream_metadata()
+{
+//    PYBIND11_OVERRIDE(streams::StreamMetadata, streams::StreamInterface, get_stream_metadata);
+    return metadata();
+}
+
+// STEP 3: Add a constructor to the trampoline, takes a dict of properties, constructs the actual StreamMetadata, and passes it to the interface
+// TODO, does this live in init_base_stream??
 
 algebra::Lie PyBaseStream::log_signature_impl(
         const intervals::Interval& interval, const algebra::Context& ctx

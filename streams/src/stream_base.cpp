@@ -41,6 +41,7 @@ void StreamInterface::set_metadata(StreamMetadata&& md) noexcept
 
 StreamInterface::~StreamInterface() noexcept = default;
 
+
 bool StreamInterface::empty(const intervals::Interval& interval) const noexcept
 {
     if (interval.type() == intervals::IntervalType::Clopen) {

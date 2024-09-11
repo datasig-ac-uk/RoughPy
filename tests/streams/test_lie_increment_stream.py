@@ -29,31 +29,36 @@
 
 
 import pytest
+import numpy as np
 import roughpy as rp
 
 
 from roughpy.streams.lie_increment_stream import LieIncrementStream
 
-# Create tests using example test cases from
-# "RoughPy/streams/src/test_lie_increment_stream.cpp"
-# and/or
-# "RoughPy/tests/streams/test_lie_increment_stream.py"
+def test_lie_increment_stream_metadata():
 
-def test_lie_increment_stream_log_signature_impl():
-
-    stream = LieIncrementStream() # TODO: improve constructor, stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2)
+    stream = LieIncrementStream(np.array([[0., 1., 2.], [3., 4., 5.]]), depth=2) # TODO: improve constructor, stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2)
 
     interval = rp.RealInterval(0.0, 0.1)
     ctx = rp.get_context(width=3, depth=2, coeffs=rp.DPReal)
 
-    expected = rp.Lie([0., 1., 2.], ctx=stream.ctx)
+    assert stream.stream_metadata().width == 0
+
+def test_lie_increment_stream_log_signature_impl():
+
+    stream = LieIncrementStream(np.array([[0., 1., 2.], [3., 4., 5.]]), depth=2) # TODO: improve constructor, stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2)
+
+    interval = rp.RealInterval(0.0, 0.1)
+    ctx = rp.get_context(width=3, depth=2, coeffs=rp.DPReal)
+
+    expected = rp.Lie([0., 1., 2.], ctx=ctx)
     result = stream.log_signature_impl(interval, ctx)
 
     assert expected == result
 
 def test_lie_increment_stream_log_signature_empty_false():
 
-    stream = LieIncrementStream() # TODO: improve constructor, stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2)
+    stream = LieIncrementStream(np.array([[0., 1., 2.], [3., 4., 5.]]), depth=2) # TODO: improve constructor, stream = LieIncrementStream.from_increments(np.array([[0., 1., 2.],[3., 4., 5.]]), depth=2)
 
     interval = rp.RealInterval(0.0, 0.1)
 

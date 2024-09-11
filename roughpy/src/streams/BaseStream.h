@@ -42,6 +42,17 @@ namespace python {
 class PyBaseStream : public streams::StreamInterface
 {
 public:
+
+
+    // STEP 2: Add a method to the trampoline class that returns the metadata so that is accessible in Python
+
+    streams::StreamMetadata get_stream_metadata();
+
+    // STEP 3: Add a constructor to the trampoline, takes a dict of properties, constructs the actual StreamMetadata, and passes it to the interface
+
+    using StreamInterface::StreamInterface; // Inherit constructors
+
+
     algebra::Lie log_signature_impl(
             const intervals::Interval& interval, const algebra::Context& ctx
     ) const override;
