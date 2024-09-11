@@ -244,8 +244,6 @@ py::array python::dtl::dense_data_to_array(const scalars::ScalarArray& data,
                                           type_info,
                                           data.size());
     } else {
-//        PyArray_FillObjectArray(reinterpret_cast<PyArrayObject*>(result.ptr()),
-//                                Py_None);
         PyArray_FillWithScalar(reinterpret_cast<PyArrayObject*>(result.ptr()), Py_None);
 
         auto** raw = static_cast<PyObject**>(result.mutable_data());
@@ -289,8 +287,6 @@ py::array python::dtl::new_zero_array_for_stype(const scalars::ScalarType* type,
     py::array result(dtype, {static_cast<py::ssize_t>(dimension)}, {});
 
     if (typenum == NPY_OBJECT) {
-//        PyArray_FillObjectArray(reinterpret_cast<PyArrayObject*>(result.ptr()),
-//                                Py_None);
         PyArray_FillWithScalar(reinterpret_cast<PyArrayObject*>(result.ptr()), Py_None);
     } else {
         PyArray_FILLWBYTE(reinterpret_cast<PyArrayObject*>(result.ptr()), 0);
