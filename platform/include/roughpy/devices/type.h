@@ -125,12 +125,13 @@ struct TypeComparisons {
 struct NumberTraits {
     TypePtr rational_type = nullptr;
     TypePtr real_type = nullptr;
-    TypePtr imag_type = nullptr;
+    TypePtr imaginary_type = nullptr;
 
+    MathFn minus = nullptr;
     MathFn abs = nullptr;
     MathFn sqrt = nullptr;
     MathFn real = nullptr;
-    MathFn imag = nullptr;
+    MathFn imaginary = nullptr;
     MathFn conj = nullptr;
 
     PowFn pow = nullptr;
