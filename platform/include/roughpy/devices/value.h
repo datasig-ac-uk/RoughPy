@@ -5,6 +5,7 @@
 // ReSharper disable CppUseStructuredBinding
 // ReSharper disable CppTooWideScopeInitStatement
 // ReSharper disable CppNonExplicitConvertingConstructor
+// ReSharper disable CppPassValueParameterByConstReference
 #ifndef ROUGHPY_DEVICES_VALUE_H
 #define ROUGHPY_DEVICES_VALUE_H
 
@@ -62,7 +63,7 @@ struct ValueStorage {
         void* pointer;
     };
 
-    Storage m_storage;
+    Storage m_storage;// NOLINT(*-non-private-member-variables-in-classes)
 
     RPY_NO_DISCARD static bool is_inline_stored(const Type* type) noexcept
     {
@@ -110,7 +111,8 @@ public:
     Value(Value&& other) noexcept;
     explicit Value(ConstReference other);
 
-    Value(TypePtr type) : p_type(std::move(type))
+    explicit Value(TypePtr type)
+        : p_type(std::move(type))// NOLINT(*-explicit-constructor)
     {
         if (!is_inline_stored()) {
             m_storage.pointer = p_type->allocate_single();
@@ -172,11 +174,11 @@ public:
     Value& operator=(const Value& other);
     Value& operator=(Value&& other) noexcept;
 
-    template <typename T>
-    enable_if_t<!value_like<T>, Value&> operator=(T&& other);
+    template <typename T, typename = enable_if_t<!value_like<T>>>
+    Value& operator=(T&& other);
 
-    template <typename T>
-    enable_if_t<is_reference_like<T>, Value&> operator=(const T& other);
+    template <typename T, typename = enable_if_t<is_reference_like<T>>>
+    Value& operator=(const T& other);
 
     void change_type(const Type* new_type);
 
@@ -228,11 +230,11 @@ public:
     using const_pointer_type = ConstPointer;
     using pointer_type = Pointer;
 
-    ConstReference(TypePtr type, const void* val)
+    ConstReference(TypePtr type, const void* val) noexcept
         : p_val(val),
           p_type(std::move(type))
     {
-        RPY_CHECK(p_type != nullptr);
+        RPY_DBG_ASSERT(p_type != nullptr);
     }
 
     RPY_NO_DISCARD bool is_valid() const noexcept
@@ -328,12 +330,14 @@ public:
     using pointer_type = Pointer;
 
     // ReSharper disable once CppParameterMayBeConstPtrOrRef
-    Reference(TypePtr type, void* val) : ConstReference(std::move(type), val) {}
+    Reference(TypePtr type, void* val) noexcept
+        : ConstReference(std::move(type), val)
+    {}
 
     using ConstReference::data;
 
-    template <typename T>
-    enable_if_t<!value_like<T>, Reference&> operator=(T&& other);
+    template <typename T, typename = enable_if_t<!value_like<T>>>
+    Reference& operator=(T&& other);
 
     Reference& operator=(const ConstReference& other);
     Reference& operator=(const Value& other);
@@ -347,7 +351,7 @@ public:
     template <typename T>
     RPY_NO_DISCARD enable_if_t<!is_void_v<T>, T*> data() const noexcept
     {
-        return const_cast<T*>(ConstReference::template data<T>());
+        return const_cast<T*>(ConstReference::data<T>());
     }
 
     template <typename T>
@@ -368,6 +372,7 @@ public:
         return const_cast<T&>(ConstReference::value<T>());
     }
 
+    // ReSharper disable once CppPassValueParameterByConstReference
     Reference& operator+=(const ConstReference other)
     {
         const auto& arithmetic = type()->arithmetic(*other.type());
@@ -381,6 +386,7 @@ public:
         return *this;
     }
 
+    // ReSharper disable once CppPassValueParameterByConstReference
     Reference& operator-=(const ConstReference other)
     {
         const auto& arithmetic = type()->arithmetic(*other.type());
@@ -394,6 +400,7 @@ public:
         return *this;
     }
 
+    // ReSharper disable once CppPassValueParameterByConstReference
     Reference& operator*=(const ConstReference other)
     {
         const auto& arithmetic = type()->arithmetic(*other.type());
@@ -407,6 +414,7 @@ public:
         return *this;
     }
 
+    // ReSharper disable once CppPassValueParameterByConstReference
     Reference& operator/=(const ConstReference other)
     {
         const auto& arithmetic = type()->arithmetic(*other.type());
@@ -457,10 +465,10 @@ public:
     using const_pointer_type = ConstPointer;
     using pointer_type = Pointer;
 
-    constexpr TypedReference(T& t)// NOLINT(*-explicit-constructor)
+    constexpr TypedReference(T& value)// NOLINT(*-explicit-constructor)
         : Reference(
                   devices::get_type<T>(),
-                  const_cast<remove_cv_t<T>*>(std::addressof(t))
+                  const_cast<remove_cv_t<T>*>(std::addressof(value))
           )
     {}
 
@@ -490,27 +498,24 @@ public:
 
 inline Value::operator ConstReference() const noexcept
 {
-    return ConstReference(p_type, data());
+    return {p_type, data()};
 }
 
-inline Value::operator Reference() noexcept
-{
-    return Reference(p_type, data());
-}
+inline Value::operator Reference() noexcept { return {p_type, data()}; }
 
 inline bool Value::is_zero() const
 {
     if (fast_is_zero()) { return true; }
     const auto& comparisons = type()->comparisons(*type());
-    if (comparisons.is_zero) { return comparisons.is_zero(data()); }
-    if (comparisons.equals) {
+    if (comparisons.is_zero == nullptr) { return comparisons.is_zero(data()); }
+    if (comparisons.equals == nullptr) {
         return comparisons.equals(data(), type()->zero().data());
     }
     RPY_THROW(std::runtime_error, "no comparison to zero is available");
 }
 
-template <typename T>
-enable_if_t<!value_like<T>, Value&> Value::operator=(T&& other)
+template <typename T, typename>
+Value& Value::operator=(T&& other)
 {
     if (p_type) {
         if (!is_inline_stored() && m_storage.pointer == nullptr) {
@@ -534,10 +539,12 @@ enable_if_t<!value_like<T>, Value&> Value::operator=(T&& other)
     return *this;
 }
 
-template <typename T>
-enable_if_t<is_reference_like<T>, Value&> Value::operator=(const T& other)
+template <typename T, typename>
+Value& Value::operator=(const T& other)
 {
     Reference this_val(*this);
+    ignore_unused(this_val, other);
+    // ReSharper disable once CppDFAUnusedValue
     this_val = other;
     return *this;
 }
@@ -556,18 +563,18 @@ enable_if_t<is_reference_like<T>, Value&> Value::operator=(const T& other)
 template <typename T>
 enable_if_t<value_like<T>, hash_t> hash_value(const T& value)
 {
-    const auto& tp = value.type();
+    const auto& tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr || value.data() == nullptr) { return 0; }
     const auto hash = tp->hash;
     RPY_CHECK(hash != nullptr);
     return hash(value.data());
 }
 
-template <typename T>
-enable_if_t<!value_like<T>, Reference&> Reference::operator=(T&& other)
+template <typename T, typename>
+Reference& Reference::operator=(T&& other)
 {
     RPY_DBG_ASSERT(type() != nullptr);
-    const auto tp = get_type<decay_t<T>>();
+    const auto tp = get_type<decay_t<T>>();// NOLINT(*-identifier-length)
     const auto& conversion = type()->conversions(*tp);
     if constexpr (is_rvalue_reference_v<T&&>) {
         if (conversion.move_convert) {
@@ -585,6 +592,7 @@ struct AdditionCheck {
     bool check(const type_support::TypeArithmetic* impl) const
     {
         RPY_CHECK(impl->add_inplace != nullptr);
+        ignore_unused(this);
         return true;
     }
 };
@@ -594,6 +602,7 @@ struct SubtractionCheck {
     bool check(const type_support::TypeArithmetic* impl) const
     {
         RPY_CHECK(impl->sub_inplace != nullptr);
+        ignore_unused(this);
         return true;
     }
 };
@@ -603,6 +612,7 @@ struct MultiplicationCheck {
     bool check(const type_support::TypeArithmetic* impl) const
     {
         RPY_CHECK(impl->mul_inplace != nullptr);
+        ignore_unused(this);
         return true;
     }
 };
@@ -612,6 +622,7 @@ struct DivisionCheck {
     bool check(const type_support::TypeArithmetic* impl) const
     {
         RPY_CHECK(impl->div_inplace != nullptr);
+        ignore_unused(this);
         return true;
     }
 };
@@ -658,10 +669,11 @@ public:
         RPY_CHECK(... && checks.check(p_impl));
     }
 
+    // NOLINTBEGIN(*-easily-swappable-parameters)
     RPY_NO_DISCARD RPY_INLINE_ALWAYS Value
     add(ConstReference left, ConstReference right) const
     {
-        Value result(left);
+        Value result(std::move(left));
         p_impl->add_inplace(result.data(), right.data());
         return result;
     }
@@ -669,7 +681,7 @@ public:
     RPY_NO_DISCARD RPY_INLINE_ALWAYS Value
     sub(ConstReference left, ConstReference right) const
     {
-        Value result(left);
+        Value result(std::move(left));
         p_impl->sub_inplace(result.data(), right.data());
         return result;
     }
@@ -677,7 +689,7 @@ public:
     RPY_NO_DISCARD RPY_INLINE_ALWAYS Value
     mul(ConstReference left, ConstReference right) const
     {
-        Value result(left);
+        Value result(std::move(left));
         p_impl->mul_inplace(result.data(), right.data());
         return result;
     }
@@ -685,7 +697,7 @@ public:
     RPY_NO_DISCARD RPY_INLINE_ALWAYS Value
     div(ConstReference left, ConstReference right) const
     {
-        Value result(left);
+        Value result(std::move(left));
         p_impl->div_inplace(result.data(), right.data());
         return result;
     }
@@ -713,11 +725,13 @@ public:
     {
         p_impl->div_inplace(left.data(), right.data());
     }
+
+    // NOLINTEND(*-easily-swappable-parameters)
 };
 
 template <typename T>
 enable_if_t<value_like<T>, std::ostream&>
-operator<<(std::ostream& os, const T& value)
+operator<<(std::ostream& os, const T& value)// NOLINT(*-identifier-length)
 {
     value.type()->display(os, value.data());
     return os;
@@ -909,29 +923,28 @@ operator>=(const S& left, const T& right)
     return comparisons.greater_equal(left.data(), right.data());
 }
 
-
 template <typename T>
 inline enable_if_t<value_like<T>, bool> is_zero(const T& value)
 {
-    if (value.fast_is_zero()) {
-        return true;
-    }
+    if (value.fast_is_zero()) { return true; }
 
-    const auto& tp = value.type();
+    const auto& tp = value.type();// NOLINT(*-identifier-length)
     const auto comparisons = tp->comparisons(*tp);
     if (comparisons.is_zero != nullptr) {
         return comparisons.is_zero(value.data());
     }
     if (comparisons.equals != nullptr) {
-        return comparisons.equals(value.data(), tp->zero().data());;
+        return comparisons.equals(value.data(), tp->zero().data());
+        ;
     }
 
-    RPY_THROW(std::runtime_error, string_cat("type ", tp->name(), " is not comparable to zero"));
+    RPY_THROW(
+            std::runtime_error,
+            string_cat("type ", tp->name(), " is not comparable to zero")
+    );
 }
 
 namespace math {
-
-
 
 /**
  * @brief Compute the absolute value of a given value.
@@ -942,7 +955,7 @@ namespace math {
 template <typename T>
 inline dtl::value_like_return<T> abs(const T& value)
 {
-    TypePtr tp = value.type();
+    const TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
 
     const auto* num_traits = tp->num_traits();
@@ -967,7 +980,7 @@ inline dtl::value_like_return<T> abs(const T& value)
 template <typename T>
 dtl::value_like_return<T> sqrt(const T& value)
 {
-    TypePtr tp = value.type();
+    TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
 
     const auto* num_traits = tp->num_traits();
@@ -994,7 +1007,7 @@ dtl::value_like_return<T> sqrt(const T& value)
 template <typename T>
 dtl::value_like_return<T> real(const T& value)
 {
-    TypePtr tp = value.type();
+    const TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
 
     const auto* num_traits = tp->num_traits();
@@ -1008,25 +1021,25 @@ dtl::value_like_return<T> real(const T& value)
     return result;
 }
 
-template <typename T>
 /**
  * @brief Calculates the imaginary part of a given value.
  *
  * @param value The value for which the imaginary part needs to be calculated.
  * @return A value containing the imaginary part.
  */
+template <typename T>
 dtl::value_like_return<T> imag(const T& value)
 {
-    TypePtr tp = value.type();
+    const TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
 
     const auto* num_traits = tp->num_traits();
 
-    RPY_CHECK(num_traits != nullptr && num_traits->imag != nullptr);
-    RPY_DBG_ASSERT(num_traits->imag_type != nullptr);
+    RPY_CHECK(num_traits != nullptr && num_traits->imaginary != nullptr);
+    RPY_DBG_ASSERT(num_traits->imaginary_type != nullptr);
 
-    value_of_t<T> result(num_traits->imag_type, 0);
-    num_traits->imag(result.data(), value.data());
+    value_of_t<T> result(num_traits->imaginary_type, 0);
+    num_traits->imaginary(result.data(), value.data());
 
     return result;
 }
@@ -1044,7 +1057,7 @@ dtl::value_like_return<T> imag(const T& value)
 template <typename T>
 dtl::value_like_return<T> conj(const T& value)
 {
-    TypePtr tp = value.type();
+    const TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
 
     const auto* num_traits = tp->num_traits();
@@ -1073,7 +1086,7 @@ dtl::value_like_return<T> conj(const T& value)
 template <typename T>
 dtl::value_like_return<T> pow(const T& value, unsigned power)
 {
-    TypePtr tp = value.type();
+    const TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
     const auto* num_traits = tp->num_traits();
 
@@ -1106,7 +1119,7 @@ dtl::value_like_return<T> pow(const T& value, unsigned power)
 template <typename T>
 dtl::value_like_return<T> exp(const T& value)
 {
-    TypePtr tp = value.type();
+    const TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
 
     const auto* num_traits = tp->num_traits();
@@ -1133,7 +1146,7 @@ dtl::value_like_return<T> exp(const T& value)
 template <typename T>
 dtl::value_like_return<T> log(const T& value)
 {
-    TypePtr tp = value.type();
+    const TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
 
     const auto* num_traits = tp->num_traits();
