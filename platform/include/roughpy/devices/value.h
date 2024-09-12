@@ -1028,7 +1028,7 @@ dtl::value_like_return<T> real(const T& value)
  * @return A value containing the imaginary part.
  */
 template <typename T>
-dtl::value_like_return<T> imag(const T& value)
+dtl::value_like_return<T> imaginary(const T& value)
 {
     const TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
@@ -1159,7 +1159,6 @@ dtl::value_like_return<T> log(const T& value)
     return result;
 }
 
-template <typename T>
 /**
  * @brief Computes the reciprocal of a given value.
  *
@@ -1169,6 +1168,7 @@ template <typename T>
  * @param val The value for which the reciprocal is to be computed.
  * @return The reciprocal of the input value.
  */
+template <typename T>
 dtl::value_like_return<T> reciprocal(T&& val)
 {
     value_of_t<T> result(val.type()->one());
@@ -1177,14 +1177,14 @@ dtl::value_like_return<T> reciprocal(T&& val)
 }
 
 /**
- * @brief Converts a rational number to another type.
+ * @brief Converts a rational number to another numeric type
  *
- * This function converts a given rational number, specified by the numerator
- * and denominator, into another type.
+ * This function takes a rational number represented as a fraction and converts
+ * it to another numeric type such as an integer or floating-point number.
  *
- * @param numerator The numerator of the rational number.
- * @param denominator The denominator of the rational number.
- * @return The converted value of the rational number.
+ * @param numerator the numerator part of the rational number
+ * @param denominator the denominator part of the rational number
+ * @return the converted numeric value
  */
 inline Value from_rational(TypePtr type, const long numerator, const long denominator)
 {
