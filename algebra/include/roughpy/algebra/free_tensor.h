@@ -112,11 +112,12 @@ public:
  */
 class FreeTensor : public AlgebraBase<FreeTensor>
 {
-
+    Rc<const FreeTensorMultiplication> p_multiplication;
 public:
     static FreeTensor new_like(const FreeTensor& arg) noexcept;
     static FreeTensor clone(const FreeTensor& arg) noexcept;
     static FreeTensor from(Vector&& arg) noexcept;
+    static FreeTensor unit_like(const FreeTensor& arg) noexcept;
 
     FreeTensor();
 
@@ -125,10 +126,24 @@ public:
         const Vector& rhs,
         const ops::Operator& op// NOLINT(*-identifier-length)
     );
+    FreeTensor&
+    fma(const Vector& lhs,
+        const Vector& rhs,
+        ops::Operator&& op,// NOLINT(*-identifier-length)
+        deg_t max_degree,
+        deg_t lhs_min_deg = 0,
+        deg_t rhs_min_deg = 0);
+
     FreeTensor& multiply_inplace(
-            const Vector& lhs,
             const Vector& rhs,
             const ops::Operator& op// NOLINT(*-identifier-length)
+    );
+    FreeTensor& multiply_inplace(
+            const Vector& rhs,
+            const ops::Operator& op,// NOLINT(*-identifier-length)
+            deg_t max_degree,
+            deg_t lhs_min_deg=0,
+            deg_t rhs_min_deg=0
     );
 
     /**
