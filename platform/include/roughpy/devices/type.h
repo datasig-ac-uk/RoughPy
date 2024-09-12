@@ -131,13 +131,15 @@ struct NumberTraits {
     MathFn abs = nullptr;
     MathFn sqrt = nullptr;
     MathFn real = nullptr;
+    MathFn exp = nullptr;
+    MathFn log = nullptr;
+
     MathFn imaginary = nullptr;
     MathFn conj = nullptr;
 
     PowFn pow = nullptr;
 
-    MathFn exp = nullptr;
-    MathFn log = nullptr;
+    void (*from_rational)(void*, long, long) = nullptr;
 };
 
 using HashFn = hash_t (*)(const void*);

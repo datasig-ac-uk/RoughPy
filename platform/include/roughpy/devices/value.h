@@ -1160,12 +1160,47 @@ dtl::value_like_return<T> log(const T& value)
 }
 
 template <typename T>
+/**
+ * @brief Computes the reciprocal of a given value.
+ *
+ * This function calculates the reciprocal of a given value by dividing the
+ * type's one equivalent by the given value.
+ *
+ * @param val The value for which the reciprocal is to be computed.
+ * @return The reciprocal of the input value.
+ */
 dtl::value_like_return<T> reciprocal(T&& val)
 {
     value_of_t<T> result(val.type()->one());
     result /= val;
     return result;
 }
+
+/**
+ * @brief Converts a rational number to another type.
+ *
+ * This function converts a given rational number, specified by the numerator
+ * and denominator, into another type.
+ *
+ * @param numerator The numerator of the rational number.
+ * @param denominator The denominator of the rational number.
+ * @return The converted value of the rational number.
+ */
+inline Value from_rational(TypePtr type, const long numerator, const long denominator)
+{
+    RPY_CHECK(type != nullptr);
+
+    const auto* num_traits = type->num_traits();
+    RPY_CHECK(num_traits->from_rational != nullptr);
+
+    RPY_CHECK(denominator != 0);
+
+    Value result(std::move(type));
+    num_traits->from_rational(result.data(), numerator, denominator);
+
+    return result;
+}
+
 
 }// namespace math
 
