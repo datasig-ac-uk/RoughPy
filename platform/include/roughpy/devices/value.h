@@ -1084,7 +1084,7 @@ dtl::value_like_return<T> conj(const T& value)
  * @post The returned value will be of the same type as the input value.
  */
 template <typename T>
-dtl::value_like_return<T> pow(const T& value, unsigned power)
+dtl::value_like_return<T> pow(const T& value, const unsigned power)
 {
     const TypePtr tp = value.type();// NOLINT(*-identifier-length)
     if (tp == nullptr) { return Value(); }
