@@ -41,6 +41,7 @@ public:
 
     static BasisKey unit_key() noexcept
     {
+        // NOLINTNEXTLINE(*-return-braced-init-list)
         return BasisKey(static_cast<dimn_t>(0));
     }
 
@@ -57,6 +58,7 @@ public:
      */
     static bool basis_compatibility_check(const Basis& basis) noexcept;
 
+    // NOLINTBEGIN(*-identifier-length)
     void
     fma(Vector& out, const Vector& left, const Vector& right, Identity&& op
     ) const;
@@ -82,7 +84,6 @@ public:
             const Vector& right,
             PostMultiply&& op
     ) const;
-
     void multiply_into(Vector& out, const Vector& right, Identity&& op) const;
     void multiply_into(Vector& out, const Vector& right, Uminus&& op) const;
     void
@@ -95,6 +96,7 @@ public:
     void
     multiply_into_dense(Vector& out, const Vector& right, PostMultiply&& op)
             const;
+    // NOLINTEND(*-identifier-length)
 };
 
 /**
@@ -119,11 +121,14 @@ public:
     FreeTensor();
 
     FreeTensor&
-    fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op);
+    fma(const Vector& lhs,
+        const Vector& rhs,
+        const ops::Operator& op// NOLINT(*-identifier-length)
+    );
     FreeTensor& multiply_inplace(
             const Vector& lhs,
             const Vector& rhs,
-            const ops::Operator& op
+            const ops::Operator& op// NOLINT(*-identifier-length)
     );
 
     /**
@@ -134,8 +139,7 @@ public:
      *
      * @return A new FreeTensor object representing the exponential value.
      */
-    RPY_NO_DISCARD
-    FreeTensor exp() const;
+    RPY_NO_DISCARD FreeTensor exp() const;
 
     /**
      * @brief Calculates the logarithm of a FreeTensor object.
@@ -145,8 +149,7 @@ public:
      *
      * @return The logarithm of the FreeTensor object.
      */
-    RPY_NO_DISCARD
-    FreeTensor log() const;
+    RPY_NO_DISCARD FreeTensor log() const;
 
     /**
      * @brief Calculates the antipode of a FreeTensor object.
@@ -156,8 +159,7 @@ public:
      *
      * @return The antipode of the FreeTensor object.
      */
-    RPY_NO_DISCARD
-    FreeTensor antipode() const;
+    RPY_NO_DISCARD FreeTensor antipode() const;
 
     /**
      * @brief Function to perform a fused multiplication and exponentiation
@@ -171,8 +173,7 @@ public:
      * @return A new FreeTensor object that represents the result of the fused
      * multiplication and exponentiation operation.
      */
-    RPY_NO_DISCARD
-    FreeTensor fused_multiply_exp(const FreeTensor& other) const;
+    RPY_NO_DISCARD FreeTensor fused_multiply_exp(const FreeTensor& other) const;
 
     /**
      * @brief Function to perform a fused multiplication and exponentiation in
