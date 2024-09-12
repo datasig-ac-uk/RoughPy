@@ -13,12 +13,6 @@
 #include <roughpy/core/sync.h>
 #include <roughpy/core/types.h>
 
-#ifndef RPY_NO_RTTI
-
-#  include <typeinfo>
-
-#endif
-
 namespace rpy {
 namespace devices {
 
@@ -101,47 +95,48 @@ enum class TypeComparison
 
 namespace type_support {
 using MathFn = void (*)(void*, const void*);
+using ConvertFn = void (*)(void*, const void*);
 using CompareFn = bool (*)(const void*, const void*);
 using IsZeroFn = bool (*)(const void*) noexcept;
 using PowFn = void (*)(void*, const void*, unsigned);
 
 struct TypeArithmetic {
-    std::function<void(void*, const void*)> add_inplace;
-    std::function<void(void*, const void*)> sub_inplace;
-    std::function<void(void*, const void*)> mul_inplace;
-    std::function<void(void*, const void*)> div_inplace;
+    MathFn add_inplace = nullptr;
+    MathFn sub_inplace = nullptr;
+    MathFn mul_inplace = nullptr;
+    MathFn div_inplace = nullptr;
 };
 
 struct TypeConversions {
-    std::function<void(void*, const void*)> convert;
-    std::function<void(void*, void*)> move_convert;
+    ConvertFn convert = nullptr;
+    ConvertFn move_convert = nullptr;
 };
 
 struct TypeComparisons {
-    CompareFn equals;
-    CompareFn not_equals;
-    std::function<bool(const void*, const void*)> less;
-    std::function<bool(const void*, const void*)> less_equal;
-    std::function<bool(const void*, const void*)> greater;
-    std::function<bool(const void*, const void*)> greater_equal;
-    std::function<bool(const void*)> is_zero;
+    CompareFn equals = nullptr;
+    CompareFn not_equals = nullptr;
+    CompareFn less = nullptr;
+    CompareFn less_equal = nullptr;
+    CompareFn greater = nullptr;
+    CompareFn greater_equal = nullptr;
+    bool (*is_zero)(const void*) = nullptr;
 };
 
 struct NumberTraits {
-    TypePtr rational_type;
-    TypePtr real_type;
-    TypePtr imag_type;
+    TypePtr rational_type = nullptr;
+    TypePtr real_type = nullptr;
+    TypePtr imag_type = nullptr;
 
-    MathFn abs;
-    MathFn sqrt;
-    MathFn real;
-    MathFn imag;
-    MathFn conj;
+    MathFn abs = nullptr;
+    MathFn sqrt = nullptr;
+    MathFn real = nullptr;
+    MathFn imag = nullptr;
+    MathFn conj = nullptr;
 
-    PowFn pow;
+    PowFn pow = nullptr;
 
-    MathFn exp;
-    MathFn log;
+    MathFn exp = nullptr;
+    MathFn log = nullptr;
 };
 
 using HashFn = hash_t (*)(const void*);
@@ -207,6 +202,7 @@ public:
      * @param traits The type traits of this type
      */
     explicit
+    // NOLINTNEXTLINE(*-identifier-length)
     Type(string_view id, string_view name, TypeInfo info, TypeTraits traits);
 
     Type() = delete;
@@ -515,6 +511,7 @@ public:
      *
      * @note This method is intended to be called by the Type class.
      */
+    // NOLINTNEXTLINE(*-identifier-length)
     virtual void display(std::ostream& os, const void* ptr) const;
 
     const type_support::NumberTraits* num_traits() const noexcept
@@ -774,6 +771,7 @@ inline bool is_arithmetic(Type const& type)
 /**
  *
  */
+// NOLINTNEXTLINE(*-identifier-length)
 ROUGHPY_DEVICES_EXPORT void register_type(TypePtr tp);
 
 /**
@@ -837,7 +835,8 @@ RPY_NO_DISCARD ROUGHPY_DEVICES_EXPORT TypePtr get_type(devices::TypeInfo info);
  */
 
 template <typename T>
-TypePtr get_type();
+// ReSharper disable once CppFunctionIsNotImplemented
+TypePtr get_type();// NOLINT(*-redundant-declaration)
 
 // Specializations for int8_t, int16_t, int32_t, and int64_t
 template <>
@@ -942,7 +941,7 @@ using FundamentalTypesList = TypeList<
 
 template <typename S, typename T>
 struct NotImplemented {
-    static void func(void*, const void*)
+    static void func(void* RPY_UNUSED_VAR arg1, const void* RPY_UNUSED_VAR arg2)
     {
         RPY_THROW(
                 std::runtime_error,
@@ -1014,12 +1013,14 @@ RPY_DEFINE_OP_OVERRIDE(CompareGreaterEqual, >=)
 
 template <typename S, typename T, bool = is_constructible_v<S, const T&>>
 struct Convert {
+    // NOLINTBEGIN(*-easily-swappable-parameters,*-identifier-length)
     static void func(void* out, const void* in)
     {
         auto& dst = *static_cast<S*>(out);
         const auto& src = *static_cast<const T*>(in);
         dst = static_cast<S>(src);
     }
+    // NOLINTEND(*-easily-swappable-parameters,*-identifier-length)
 };
 template <typename S, typename T>
 struct Convert<S, T, false> : NotImplemented<S, T> {
@@ -1049,7 +1050,7 @@ struct SupportRegistration {
 };
 
 template <typename ThisT, bool AllowSame, typename T>
-void register_type_support(const Type* type, TypeList<T>)
+void register_type_support(const Type* type, TypeList<T> RPY_UNUSED_VAR tp_list)
 {
     if constexpr (AllowSame || !is_same_v<ThisT, T>) {
         using reg = SupportRegistration<ThisT, T>;
@@ -1058,7 +1059,10 @@ void register_type_support(const Type* type, TypeList<T>)
 }
 
 template <typename ThisT, bool AllowSame, typename T, typename... Ts>
-void register_type_support(const Type* type, TypeList<T, Ts...>)
+void register_type_support(
+        const Type* type,
+        TypeList<T, Ts...> RPY_UNUSED_VAR tp_list
+)
 {
     if constexpr (AllowSame || !is_same_v<ThisT, T>) {
         using reg = SupportRegistration<ThisT, T>;
@@ -1069,7 +1073,7 @@ void register_type_support(const Type* type, TypeList<T, Ts...>)
 
 }// namespace dtl
 
-template <typename ThisT, typename Types, bool AllowSame=false>
+template <typename ThisT, typename Types, bool AllowSame = false>
 void register_type_support(const Type* type)
 {
     dtl::register_type_support<ThisT, AllowSame>(type, Types{});
