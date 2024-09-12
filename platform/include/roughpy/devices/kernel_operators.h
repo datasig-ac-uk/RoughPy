@@ -22,7 +22,7 @@ public:
     enum class Kind
     {
         Identity = 0,
-        UnaryMinus,
+        Minus,
         Addition,
         Subtraction,
         LeftMultiply,
@@ -33,16 +33,16 @@ public:
         FusedRightMultiplySub
     };
 
-    static constexpr Kind Identity = Kind::Identity;
-    static constexpr Kind UnaryMinus = Kind::UnaryMinus;
-    static constexpr Kind Addition = Kind::Addition;
-    static constexpr Kind Subtraction = Kind::Subtraction;
-    static constexpr Kind LeftMultiply = Kind::LeftMultiply;
-    static constexpr Kind RightMultiply = Kind::RightMultiply;
-    static constexpr Kind FusedLeftMultiplyAdd = Kind::FusedLeftMultiplyAdd;
-    static constexpr Kind FusedRightMultiplyAdd = Kind::FusedRightMultiplyAdd;
-    static constexpr Kind FusedLeftMultiplySub = Kind::FusedLeftMultiplySub;
-    static constexpr Kind FusedRightMultiplySub = Kind::FusedRightMultiplySub;
+    static constexpr auto Identity = Kind::Identity;
+    static constexpr auto Minus = Kind::Minus;
+    static constexpr auto Addition = Kind::Addition;
+    static constexpr auto Subtraction = Kind::Subtraction;
+    static constexpr auto LeftMultiply = Kind::LeftMultiply;
+    static constexpr auto RightMultiply = Kind::RightMultiply;
+    static constexpr auto FusedLeftMultiplyAdd = Kind::FusedLeftMultiplyAdd;
+    static constexpr auto FusedRightMultiplyAdd = Kind::FusedRightMultiplyAdd;
+    static constexpr auto FusedLeftMultiplySub = Kind::FusedLeftMultiplySub;
+    static constexpr auto FusedRightMultiplySub = Kind::FusedRightMultiplySub;
 
     virtual ~Operator();
 
@@ -50,7 +50,7 @@ public:
 };
 
 class IdentityOperator;
-class UnaryMinusOperator;
+class MinusOperator;
 class LeftMultiplyOperator;
 class RightMultiplyOperator;
 class AdditionOperator;
@@ -101,14 +101,14 @@ struct Identity : dtl::OpKindTag<Operator::Identity> {
 };
 
 template <typename T>
-struct Uminus : dtl::OpKindTag<Operator::UnaryMinus> {
+struct Minus : dtl::OpKindTag<Operator::Minus> {
     using value_type = typename ArgumentTraits<T>::value_type;
     using reference = typename ArgumentTraits<T>::reference;
     using const_reference = typename ArgumentTraits<T>::const_reference;
 
-    static constexpr string_view name = "uminus";
+    static constexpr string_view name = "minus";
 
-    using abstract_type = UnaryMinusOperator;
+    using abstract_type = MinusOperator;
 
     RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type
     operator()(const_reference arg) noexcept(noexcept(-arg))
@@ -155,21 +155,26 @@ struct Sub : dtl::OpKindTag<Operator::Subtraction> {
 
 template <typename T>
 struct LeftScalarMultiply : dtl::OpKindTag<Operator::LeftMultiply> {
+
     using value_type = typename ArgumentTraits<T>::value_type;
     using reference = typename ArgumentTraits<T>::reference;
     using const_reference = typename ArgumentTraits<T>::const_reference;
 
-    const_reference data;
     using abstract_type = LeftMultiplyOperator;
 
     static constexpr string_view name = "left_scalar_multiply";
-    constexpr explicit LeftScalarMultiply(const_reference d) : data(d) {}
+    constexpr explicit LeftScalarMultiply(const_reference multiplier)
+        : data(std::move(multiplier))
+    {}
 
     RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type
     operator()(const_reference arg) noexcept(noexcept(data * arg))
     {
         return data * arg;
     }
+
+private:
+    const_reference data;
 };
 
 template <typename T>
@@ -178,17 +183,21 @@ struct RightScalarMultiply : dtl::OpKindTag<Operator::RightMultiply> {
     using reference = typename ArgumentTraits<T>::reference;
     using const_reference = typename ArgumentTraits<T>::const_reference;
 
-    const_reference data;
     using abstract_type = RightMultiplyOperator;
 
     static constexpr string_view name = "right_scalar_multiply";
-    constexpr explicit RightScalarMultiply(const_reference d) : data(d) {}
+    constexpr explicit RightScalarMultiply(const_reference multiplier)
+        : data(std::move(multiplier))
+    {}
 
     RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type
     operator()(const_reference arg) noexcept(noexcept(arg * data))
     {
         return arg * data;
     }
+
+private:
+    const_reference data;
 };
 
 template <typename T>
@@ -197,11 +206,11 @@ struct FusedLeftScalarMultiplyAdd
     using value_type = typename ArgumentTraits<T>::value_type;
     using reference = typename ArgumentTraits<T>::reference;
     using const_reference = typename ArgumentTraits<T>::const_reference;
-    const_reference data;
     using abstract_type = FusedLeftMultiplyAddOperator;
 
     static constexpr string_view name = "fused_add_scalar_left_mul";
-    constexpr explicit FusedLeftScalarMultiplyAdd(const_reference d) : data(d)
+    constexpr explicit FusedLeftScalarMultiplyAdd(const_reference multiplier)
+        : data(std::move(multiplier))
     {}
 
     RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
@@ -211,6 +220,9 @@ struct FusedLeftScalarMultiplyAdd
     {
         return left + data * right;
     }
+
+private:
+    const_reference data;
 };
 
 template <typename T>
@@ -219,11 +231,11 @@ struct FusedRightScalarMultiplyAdd
     using value_type = typename ArgumentTraits<T>::value_type;
     using reference = typename ArgumentTraits<T>::reference;
     using const_reference = typename ArgumentTraits<T>::const_reference;
-    const_reference data;
     using abstract_type = FusedRightMultiplyAddOperator;
 
     static constexpr string_view name = "fused_add_scalar_right_mul";
-    constexpr explicit FusedRightScalarMultiplyAdd(const_reference d) : data(d)
+    constexpr explicit FusedRightScalarMultiplyAdd(const_reference multiplier)
+        : data(std::move(multiplier))
     {}
 
     RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
@@ -233,6 +245,9 @@ struct FusedRightScalarMultiplyAdd
     {
         return left + right * data;
     }
+
+private:
+    const_reference data;
 };
 
 template <typename T>
@@ -241,11 +256,11 @@ struct FusedLeftScalarMultiplySub
     using value_type = typename ArgumentTraits<T>::value_type;
     using reference = typename ArgumentTraits<T>::reference;
     using const_reference = typename ArgumentTraits<T>::const_reference;
-    const_reference data;
     using abstract_type = FusedLeftMultiplySubOperator;
 
     static constexpr string_view name = "fused_sub_scalar_left_mul";
-    constexpr explicit FusedLeftScalarMultiplySub(const_reference d) : data(d)
+    constexpr explicit FusedLeftScalarMultiplySub(const_reference multiplier)
+        : data(std::move(multiplier))
     {}
 
     RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
@@ -255,6 +270,9 @@ struct FusedLeftScalarMultiplySub
     {
         return left - data * right;
     }
+
+private:
+    const_reference data;
 };
 
 template <typename T>
@@ -263,11 +281,11 @@ struct FusedRightScalarMultiplySub
     using value_type = typename ArgumentTraits<T>::value_type;
     using reference = typename ArgumentTraits<T>::reference;
     using const_reference = typename ArgumentTraits<T>::const_reference;
-    const_reference data;
     using abstract_type = FusedRightMultiplySubOperator;
 
     static constexpr string_view name = "fused_sub_scalar_right_mul";
-    constexpr explicit FusedRightScalarMultiplySub(const_reference d) : data(d)
+    constexpr explicit FusedRightScalarMultiplySub(const_reference multiplier)
+        : data(std::move(multiplier))
     {}
 
     RPY_NO_DISCARD RPY_HOST_DEVICE constexpr value_type operator()(
@@ -277,6 +295,9 @@ struct FusedRightScalarMultiplySub
     {
         return left - right * data;
     }
+
+private:
+    const_reference data;
 };
 
 class ROUGHPY_DEVICES_EXPORT IdentityOperator : public Operator
@@ -290,6 +311,7 @@ public:
     template <typename T = Value>
     op_type<T> into() const
     {
+        ignore_unused(this);
         return {};
     }
 
@@ -301,23 +323,25 @@ public:
     }
 };
 
-class ROUGHPY_DEVICES_EXPORT UnaryMinusOperator : public Operator
+class ROUGHPY_DEVICES_EXPORT MinusOperator : public Operator
 {
 public:
     template <typename T>
-    using op_type = operators::Uminus<T>;
+    using op_type = operators::Minus<T>;
 
-    static constexpr Kind op_kind = UnaryMinus;
+    static constexpr Kind op_kind = Minus;
 
     template <typename T = Value>
     op_type<T> into() const
     {
+        ignore_unused(this);
         return {};
     }
 
     RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; };
 
-    Value operator()(ConstReference value) const noexcept { return -value; }
+    // ReSharper disable once CppPassValueParameterByConstReference
+    Value operator()(ConstReference value) const { return -value; }
 };
 
 class ROUGHPY_DEVICES_EXPORT AdditionOperator : public Operator
@@ -327,17 +351,20 @@ public:
     using op_type = operators::Add<T>;
 
     static constexpr Kind op_kind = Addition;
-    Kind kind() const noexcept override { return op_kind; }
+
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; }
 
     template <typename T = Value>
     op_type<T> into() const
     {
+        ignore_unused(this);
         return {};
     }
 
-    Value operator()(ConstReference a, ConstReference b) const noexcept
+    // ReSharper disable once CppPassValueParameterByConstReference
+    Value operator()(ConstReference lhs, ConstReference rhs) const
     {
-        return a + b;
+        return lhs + rhs;
     }
 };
 
@@ -348,16 +375,19 @@ public:
     using op_type = operators::Sub<T>;
 
     static constexpr Kind op_kind = Subtraction;
-    Kind kind() const noexcept override { return op_kind; }
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; }
 
     template <typename T = Value>
     op_type<T> into() const
     {
+        ignore_unused(this);
         return {};
     }
-    Value operator()(ConstReference a, ConstReference b) const noexcept
+
+    // ReSharper disable once CppPassValueParameterByConstReference
+    Value operator()(ConstReference lhs, ConstReference rhs) const
     {
-        return a - b;
+        return lhs - rhs;
     }
 };
 
@@ -366,14 +396,21 @@ class ROUGHPY_DEVICES_EXPORT LeftMultiplyOperator : public Operator
     ConstReference multiplier;
 
 public:
-    explicit LeftMultiplyOperator(ConstReference value) : multiplier(value) {}
+    explicit LeftMultiplyOperator(ConstReference value)
+        : multiplier(std::move(value))
+    {}
 
     template <typename T>
     using op_type = operators::LeftScalarMultiply<T>;
 
     static constexpr Kind op_kind = LeftMultiply;
-    Kind kind() const noexcept override { return op_kind; }
-    const ConstReference& data() const noexcept { return multiplier; }
+
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; }
+
+    RPY_NO_DISCARD const ConstReference& data() const noexcept
+    {
+        return multiplier;
+    }
 
     template <typename T = Value>
     op_type<T> into() const
@@ -385,10 +422,8 @@ public:
         }
     }
 
-    Value operator()(ConstReference value) const noexcept
-    {
-        return multiplier * value;
-    }
+    // ReSharper disable once CppPassValueParameterByConstReference
+    Value operator()(ConstReference value) const { return multiplier * value; }
 };
 
 class ROUGHPY_DEVICES_EXPORT RightMultiplyOperator : public Operator
@@ -396,14 +431,20 @@ class ROUGHPY_DEVICES_EXPORT RightMultiplyOperator : public Operator
     ConstReference multiplier;
 
 public:
-    explicit RightMultiplyOperator(ConstReference value) : multiplier(value) {}
+    explicit RightMultiplyOperator(ConstReference value)
+        : multiplier(std::move(value))
+    {}
 
     template <typename T>
     using op_type = operators::RightScalarMultiply<T>;
 
     static constexpr Kind op_kind = RightMultiply;
-    Kind kind() const noexcept override { return op_kind; }
-    const ConstReference& data() const noexcept { return multiplier; }
+
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; }
+    RPY_NO_DISCARD const ConstReference& data() const noexcept
+    {
+        return multiplier;
+    }
 
     template <typename T = Value>
     op_type<T> into() const
@@ -414,10 +455,9 @@ public:
             return op_type<T>(value_cast<T>(multiplier));
         }
     }
-    Value operator()(ConstReference value) const noexcept
-    {
-        return value * multiplier;
-    }
+
+    // ReSharper disable once CppPassValueParameterByConstReference
+    Value operator()(ConstReference value) const { return value * multiplier; }
 };
 
 class ROUGHPY_DEVICES_EXPORT FusedLeftMultiplyAddOperator : public Operator
@@ -426,15 +466,19 @@ class ROUGHPY_DEVICES_EXPORT FusedLeftMultiplyAddOperator : public Operator
 
 public:
     explicit FusedLeftMultiplyAddOperator(ConstReference value)
-        : multiplier(value)
+        : multiplier(std::move(value))
     {}
 
     template <typename T>
     using op_type = operators::FusedLeftScalarMultiplyAdd<T>;
 
     static constexpr Kind op_kind = FusedLeftMultiplyAdd;
-    Kind kind() const noexcept override { return op_kind; }
-    const ConstReference& data() const noexcept { return multiplier; }
+
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; }
+    RPY_NO_DISCARD const ConstReference& data() const noexcept
+    {
+        return multiplier;
+    }
 
     template <typename T = Value>
     op_type<T> into() const
@@ -446,9 +490,10 @@ public:
         }
     }
 
-    Value operator()(ConstReference left, ConstReference right) const noexcept
+    // ReSharper disable once CppPassValueParameterByConstReference
+    Value operator()(ConstReference lhs, ConstReference rhs) const
     {
-        return left + multiplier * right;
+        return lhs + multiplier * rhs;
     }
 };
 
@@ -458,15 +503,18 @@ class ROUGHPY_DEVICES_EXPORT FusedRightMultiplyAddOperator : public Operator
 
 public:
     explicit FusedRightMultiplyAddOperator(ConstReference value)
-        : multiplier(value)
+        : multiplier(std::move(value))
     {}
 
     template <typename T>
     using op_type = operators::FusedRightScalarMultiplyAdd<T>;
 
     static constexpr Kind op_kind = FusedRightMultiplyAdd;
-    Kind kind() const noexcept override { return op_kind; }
-    const ConstReference& data() const noexcept { return multiplier; }
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; }
+    RPY_NO_DISCARD const ConstReference& data() const noexcept
+    {
+        return multiplier;
+    }
 
     template <typename T = Value>
     op_type<T> into() const
@@ -477,9 +525,11 @@ public:
             return op_type<T>(value_cast<T>(multiplier));
         }
     }
-    Value operator()(ConstReference left, ConstReference right) const noexcept
+
+    // ReSharper disable once CppPassValueParameterByConstReference
+    Value operator()(ConstReference lhs, ConstReference rhs) const
     {
-        return left + right * multiplier;
+        return lhs + rhs * multiplier;
     }
 };
 
@@ -489,16 +539,19 @@ class ROUGHPY_DEVICES_EXPORT FusedLeftMultiplySubOperator : public Operator
 
 public:
     explicit FusedLeftMultiplySubOperator(ConstReference value)
-        : multiplier(value)
+        : multiplier(std::move(value))
     {}
 
     template <typename T>
     using op_type = operators::FusedLeftScalarMultiplySub<T>;
 
     static constexpr Kind op_kind = FusedLeftMultiplySub;
-    Kind kind() const noexcept override { return op_kind; }
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; }
 
-    const ConstReference& data() const noexcept { return multiplier; }
+    RPY_NO_DISCARD const ConstReference& data() const noexcept
+    {
+        return multiplier;
+    }
 
     template <typename T = Value>
     op_type<T> into() const
@@ -510,9 +563,10 @@ public:
         }
     }
 
-    Value operator()(ConstReference left, ConstReference right) const noexcept
+    // ReSharper disable once CppPassValueParameterByConstReference
+    Value operator()(ConstReference lhs, ConstReference rhs) const
     {
-        return left - multiplier * right;
+        return lhs - multiplier * rhs;
     }
 };
 
@@ -522,15 +576,18 @@ class ROUGHPY_DEVICES_EXPORT FusedRightMultiplySubOperator : public Operator
 
 public:
     explicit FusedRightMultiplySubOperator(ConstReference value)
-        : multiplier(value)
+        : multiplier(std::move(value))
     {}
 
     template <typename T>
     using op_type = operators::FusedRightScalarMultiplySub<T>;
 
     static constexpr Kind op_kind = FusedRightMultiplySub;
-    Kind kind() const noexcept override { return op_kind; }
-    const ConstReference& data() const noexcept { return multiplier; }
+    RPY_NO_DISCARD Kind kind() const noexcept override { return op_kind; }
+    RPY_NO_DISCARD const ConstReference& data() const noexcept
+    {
+        return multiplier;
+    }
 
     template <typename T = Value>
     op_type<T> into() const
@@ -542,13 +599,15 @@ public:
         }
     }
 
-    Value operator()(ConstReference left, ConstReference right) const noexcept
+    // ReSharper disable once CppPassValueParameterByConstReference
+    Value operator()(ConstReference lhs, ConstReference rhs) const
     {
-        return left - right * multiplier;
+        return lhs - rhs * multiplier;
     }
 };
 
 template <typename Op>
+// NOLINTNEXTLINE(*-identifier-length)
 enable_if_t<is_base_of_v<Operator, Op>, const Op&> op_cast(const Operator& op)
 {
     RPY_CHECK(op.kind() == Op::op_kind);
