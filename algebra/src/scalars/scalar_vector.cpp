@@ -104,8 +104,8 @@ ScalarVector::const_iterator ScalarVector::end() const noexcept
 ScalarVector ScalarVector::uminus() const
 {
     ScalarVector result(scalar_type(), dimension());
-    const StandardUnaryVectorOperation<ops::Uminus> op;
-    op.eval(result, *this, ops::UnaryMinusOperator());
+    const StandardUnaryVectorOperation<ops::Minus> op;
+    op.eval(result, *this, ops::MinusOperator());
     return result;
 }
 

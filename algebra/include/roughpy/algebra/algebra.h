@@ -248,7 +248,7 @@ public:
      */
     Derived& sub_multiply(const Vector& left, const Vector& right)
     {
-        instance().fma(left, right, ops::UnaryMinusOperator{});
+        instance().fma(left, right, ops::MinusOperator{});
         return instance();
     }
 

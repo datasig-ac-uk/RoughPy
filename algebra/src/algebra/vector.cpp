@@ -23,7 +23,7 @@ using namespace rpy;
 using namespace algebra;
 
 using UMinusOperator
-        = scalars::StandardUnaryVectorOperation<scalars::ops::Uminus>;
+        = scalars::StandardUnaryVectorOperation<scalars::ops::Minus>;
 using AdditionOperator
         = scalars::StandardBinaryVectorOperation<scalars::ops::Add>;
 using SubtractionOperator
@@ -103,7 +103,7 @@ Vector Vector::minus() const
             ScalarVector(scalar_type(), dimension()),
             BasisPointer(p_basis)
     );
-    uminus.eval(result, *this, scalars::ops::UnaryMinusOperator());
+    uminus.eval(result, *this, scalars::ops::MinusOperator());
     return result;
 }
 

@@ -23,7 +23,7 @@ class ROUGHPY_ALGEBRA_EXPORT FreeTensorMultiplication
     : public RcBase<FreeTensorMultiplication>
 {
     using Identity = ops::Identity<scalars::Scalar>;
-    using Uminus = ops::Uminus<scalars::Scalar>;
+    using Uminus = ops::Minus<scalars::Scalar>;
     using PostMultiply = ops::RightScalarMultiply<scalars::Scalar>;
 
     containers::Vec<dimn_t> m_sizes;
