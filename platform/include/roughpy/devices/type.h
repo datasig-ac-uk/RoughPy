@@ -139,7 +139,7 @@ struct NumberTraits {
 
     PowFn pow = nullptr;
 
-    void (*from_rational)(void*, long, long) = nullptr;
+    void (*from_rational)(void*, long long, long long) = nullptr;
 };
 
 using HashFn = hash_t (*)(const void*);

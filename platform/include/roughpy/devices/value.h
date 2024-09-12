@@ -1182,11 +1182,13 @@ dtl::value_like_return<T> reciprocal(T&& val)
  * This function takes a rational number represented as a fraction and converts
  * it to another numeric type such as an integer or floating-point number.
  *
+ * @param type the type of the output
  * @param numerator the numerator part of the rational number
  * @param denominator the denominator part of the rational number
  * @return the converted numeric value
  */
-inline Value from_rational(TypePtr type, const long numerator, const long denominator)
+inline Value
+from_rational(TypePtr type, const long long numerator, const long long denominator)
 {
     RPY_CHECK(type != nullptr);
 
@@ -1200,7 +1202,6 @@ inline Value from_rational(TypePtr type, const long numerator, const long denomi
 
     return result;
 }
-
 
 }// namespace math
 
