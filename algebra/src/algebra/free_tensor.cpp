@@ -4,6 +4,7 @@
 
 #include "free_tensor.h"
 
+
 using namespace rpy;
 using namespace rpy::algebra;
 
@@ -54,20 +55,30 @@ FreeTensor FreeTensor::log() const
     auto result = new_like(*this);
     const auto max_degree = basis()->max_degree();
     const auto unit = unit_like(*this);
+    const auto stype = scalar_type();
 
     result.as_vector().resize_base_dim(basis()->max_dimension());
 
-    auto divisor = devices::math::reciprocal(Scalar(scalar_type(), max_degree));
-    ops::RightMultiplyOperator op(divisor);
+    const ops::IdentityOperator op{};// NOLINT(*-identifier-length)
     for (deg_t degree = max_degree; degree >= 1; --degree) {
-        result.multiply_inplace(as_vector(), op, max_degree - degree + 1, 0, 1);
-        result += unit;
-        divisor = 1;
+        auto divisor = devices::math::from_rational(stype, 1, degree);
+        if (degree % 2 == 0) {
+            result.as_vector().sub_scal_mul(unit.as_vector(), divisor);
+        } else {
+            result.as_vector().add_scal_mul(unit.as_vector(), divisor);
+        }
+
+        result.multiply_inplace(as_vector(), op, max_degree, 0, 1);
     }
     return result;
 }
 
-FreeTensor FreeTensor::antipode() const { return FreeTensor(); }
+FreeTensor FreeTensor::antipode() const
+{
+    auto result = new_like(*this);
+    p_multiplication->antipode(result.as_vector(), as_vector());
+    return result;
+}
 
 FreeTensor FreeTensor::fused_multiply_exp(const FreeTensor& other) const
 {

@@ -45,6 +45,8 @@ public:
         return BasisKey(static_cast<dimn_t>(0));
     }
 
+    void antipode(Vector& dst, const Vector& src) const;
+
     /**
      * @brief Check if the given basis is compatible with the specific algebraic
      * operation.
@@ -113,6 +115,7 @@ public:
 class FreeTensor : public AlgebraBase<FreeTensor>
 {
     Rc<const FreeTensorMultiplication> p_multiplication;
+
 public:
     static FreeTensor new_like(const FreeTensor& arg) noexcept;
     static FreeTensor clone(const FreeTensor& arg) noexcept;
@@ -142,8 +145,8 @@ public:
             const Vector& rhs,
             const ops::Operator& op,// NOLINT(*-identifier-length)
             deg_t max_degree,
-            deg_t lhs_min_deg=0,
-            deg_t rhs_min_deg=0
+            deg_t lhs_min_deg = 0,
+            deg_t rhs_min_deg = 0
     );
 
     /**
@@ -154,7 +157,7 @@ public:
      *
      * @return A new FreeTensor object representing the exponential value.
      */
-    RPY_NO_DISCARD FreeTensor exp() const;
+    RPY_NO_DISCARD friend FreeTensor exp();
 
     /**
      * @brief Calculates the logarithm of a FreeTensor object.
@@ -205,6 +208,40 @@ public:
      */
     FreeTensor& fused_multiply_exp_inplace(const FreeTensor& other);
 };
+
+template <typename T, typename SFINAE = void>
+inline constexpr bool is_tensor = false;
+
+template <typename T>
+inline constexpr bool is_tensor<
+        T,
+        enable_if_t<is_same_v<FreeTensor, T> || is_base_of_v<FreeTensor, T>>>
+        = true;
+
+template <typename T>
+enable_if_t<is_tensor<T>, T> antipode(const T& arg)
+{
+    return arg.antipode();
+}
+
+template <typename T>
+enable_if_t<is_tensor<T>, T> exp(const T& arg)
+{
+    return arg.exp();
+}
+
+template <typename T>
+enable_if_t<is_tensor<T>, T> log(const T& arg)
+{
+    return arg.log();
+}
+
+template <typename T>
+enable_if_t<is_tensor<T>, T> fmexp(const T& multiply, const T& exponent)
+{
+    return multiply.fused_multiply_exp(exponent);
+}
+
 
 }// namespace algebra
 }// namespace rpy
