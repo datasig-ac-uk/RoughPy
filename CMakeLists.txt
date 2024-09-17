@@ -156,7 +156,6 @@ endif ()
 
 find_package(Python 3.8 REQUIRED COMPONENTS ${PYTHON_COMPONENTS_NEEDED})
 
-
 if (NOT DEFINED pybind11_ROOT)
     execute_process(COMMAND
         "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
