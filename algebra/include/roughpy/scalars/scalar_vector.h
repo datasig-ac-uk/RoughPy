@@ -128,7 +128,6 @@ public:
           m_fibre_data(m_base_data.type())
     {}
 
-
     ScalarArray& mut_base_data();
     const ScalarArray& base_data() const noexcept { return m_base_data; };
     ScalarArray& mut_fibre_data();
@@ -247,15 +246,13 @@ class ROUGHPY_SCALARS_EXPORT VectorOperation
 protected:
     void resize_destination(ScalarVector& arg, dimn_t new_size) const;
 
-    RPY_NO_DISCARD
-    virtual optional<devices::Kernel> get_kernel(
+    RPY_NO_DISCARD virtual optional<devices::Kernel> get_kernel(
             devices::Device device,
             string_view base_name,
             Slice<const Type* const> types
     ) const;
 
-    RPY_NO_DISCARD
-    virtual devices::KernelLaunchParams
+    RPY_NO_DISCARD virtual devices::KernelLaunchParams
     get_launch_params(const devices::KernelArguments& args) const noexcept;
 
     void eval_impl(
@@ -280,8 +277,7 @@ protected:
 public:
     virtual ~VectorOperation();
 
-    RPY_NO_DISCARD
-    virtual dimn_t arity() const noexcept = 0;
+    RPY_NO_DISCARD virtual dimn_t arity() const noexcept = 0;
 };
 
 class ROUGHPY_SCALARS_EXPORT UnaryVectorOperation : public VectorOperation
@@ -291,8 +287,7 @@ protected:
 
 public:
     static constexpr dimn_t my_arity = 1;
-    RPY_NO_DISCARD
-    dimn_t arity() const noexcept override { return my_arity; }
+    RPY_NO_DISCARD dimn_t arity() const noexcept override { return my_arity; }
 
     virtual void
     eval(ScalarVector& destination,
@@ -312,8 +307,7 @@ protected:
 public:
     static constexpr dimn_t my_arity = 2;
 
-    RPY_NO_DISCARD
-    dimn_t arity() const noexcept override { return my_arity; }
+    RPY_NO_DISCARD dimn_t arity() const noexcept override { return my_arity; }
     virtual void
     eval(ScalarVector& destination,
          const ScalarVector& left,
@@ -336,7 +330,7 @@ protected:
 public:
     static constexpr dimn_t my_arity = 3;
 
-    dimn_t arity() const noexcept override { return my_arity; }
+    RPY_NO_DISCARD dimn_t arity() const noexcept override { return my_arity; }
 
     virtual void
     eval(ScalarVector& destination,
@@ -496,8 +490,6 @@ void StandardBinaryVectorOperation<Operation>::eval_inplace(
             *binding
     );
 }
-
-
 
 }// namespace scalars
 }// namespace rpy
