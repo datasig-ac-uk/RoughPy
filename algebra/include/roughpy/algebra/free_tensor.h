@@ -124,6 +124,12 @@ public:
 
     FreeTensor();
 
+    FreeTensor(const FreeTensor& arg) = default;
+    FreeTensor(FreeTensor&& arg) noexcept = default;
+
+    FreeTensor& operator=(const FreeTensor&) = default;
+    FreeTensor& operator=(FreeTensor&&) noexcept = default;
+
     FreeTensor&
     fma(const Vector& lhs,
         const Vector& rhs,
@@ -157,7 +163,7 @@ public:
      *
      * @return A new FreeTensor object representing the exponential value.
      */
-    RPY_NO_DISCARD friend FreeTensor exp();
+    RPY_NO_DISCARD FreeTensor exp() const;
 
     /**
      * @brief Calculates the logarithm of a FreeTensor object.
