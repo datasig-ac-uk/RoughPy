@@ -88,7 +88,7 @@ FreeTensor FreeTensor::fused_multiply_exp(const FreeTensor& other) const
     result.as_vector().resize_base_dim(basis()->max_dimension());
 
     auto divisor = devices::math::reciprocal(Scalar(scalar_type(), max_degree));
-    ops::RightMultiplyOperator op(divisor);
+    const ops::RightMultiplyOperator op(divisor);
     for (deg_t degree = max_degree; degree >= 1; --degree) {
         result.multiply_inplace(as_vector(), op, max_degree - degree + 1, 0, 1);
         result += other;
@@ -98,5 +98,7 @@ FreeTensor FreeTensor::fused_multiply_exp(const FreeTensor& other) const
 }
 FreeTensor& FreeTensor::fused_multiply_exp_inplace(const FreeTensor& other)
 {
+    auto tmp = fused_multiply_exp(other);
+    std::swap(*this, other);
     return *this;
 }
