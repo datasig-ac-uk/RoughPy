@@ -70,6 +70,13 @@ class AlgebraBase
     explicit AlgebraBase(Vector&& data) : p_vector(new Vector(std::move(data)))
     {}
 
+    AlgebraBase() = default;
+    AlgebraBase(const AlgebraBase&) = default;
+    AlgebraBase(AlgebraBase&&) noexcept = default;
+
+    AlgebraBase& operator=(const AlgebraBase&) = default;
+    AlgebraBase& operator=(AlgebraBase&&) noexcept = default;
+
 public:
     using Scalar = scalars::Scalar;
     using ScalarCRef = scalars::ScalarCRef;
@@ -86,6 +93,9 @@ protected:
     }
 
 public:
+
+
+
     RPY_NO_DISCARD Vector& as_vector() noexcept { return *p_vector; }
     RPY_NO_DISCARD const Vector& as_vector() const noexcept
     {

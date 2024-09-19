@@ -8,6 +8,8 @@
 using namespace rpy;
 using namespace rpy::algebra;
 
+
+
 FreeTensor FreeTensor::new_like(const FreeTensor& arg) noexcept { return {}; }
 FreeTensor FreeTensor::clone(const FreeTensor& arg) noexcept { return {}; }
 FreeTensor FreeTensor::from(Vector&& arg) noexcept { return {}; }
@@ -22,7 +24,7 @@ FreeTensor::fma(const Vector& lhs, const Vector& rhs, const ops::Operator& op)
 FreeTensor& FreeTensor::fma(
         const Vector& lhs,
         const Vector& rhs,
-        ops::Operator&& op,
+        const ops::Operator& op,
         deg_t max_degree,
         deg_t lhs_min_deg,
         deg_t rhs_min_deg
@@ -96,9 +98,11 @@ FreeTensor FreeTensor::fused_multiply_exp(const FreeTensor& other) const
     }
     return result;
 }
+
+
 FreeTensor& FreeTensor::fused_multiply_exp_inplace(const FreeTensor& other)
 {
     auto tmp = fused_multiply_exp(other);
-    std::swap(*this, other);
+    std::swap(*this, tmp);
     return *this;
 }

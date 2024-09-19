@@ -138,7 +138,7 @@ public:
     FreeTensor&
     fma(const Vector& lhs,
         const Vector& rhs,
-        ops::Operator&& op,// NOLINT(*-identifier-length)
+        const ops::Operator& op,// NOLINT(*-identifier-length)
         deg_t max_degree,
         deg_t lhs_min_deg = 0,
         deg_t rhs_min_deg = 0);
@@ -247,7 +247,6 @@ enable_if_t<is_tensor<T>, T> fmexp(const T& multiply, const T& exponent)
 {
     return multiply.fused_multiply_exp(exponent);
 }
-
 
 }// namespace algebra
 }// namespace rpy
