@@ -10,96 +10,6 @@
 namespace rpy {
 namespace algebra {
 
-/**
- * @class FreeTensorMultiplication
- *
- * @brief A class representing the multiplication operations for FreeTensor
- * objects.
- *
- * This class provides static methods to perform multiplication operations on
- * FreeTensor objects.
- */
-class ROUGHPY_ALGEBRA_EXPORT FreeTensorMultiplication
-    : public RcBase<FreeTensorMultiplication>
-{
-    using Identity = ops::Identity<scalars::Scalar>;
-    using Uminus = ops::Minus<scalars::Scalar>;
-    using PostMultiply = ops::RightScalarMultiply<scalars::Scalar>;
-
-    containers::Vec<dimn_t> m_sizes;
-    containers::Vec<dimn_t> m_reverses;
-    containers::Vec<dimn_t> m_offsets;
-    deg_t m_width;
-    deg_t m_max_degree;
-    deg_t m_tile_letters;
-
-    FreeTensorMultiplication(deg_t width, deg_t tile_letters, deg_t degree);
-
-public:
-    static constexpr bool is_graded = true;
-    static constexpr bool is_unital = true;
-
-    static BasisKey unit_key() noexcept
-    {
-        // NOLINTNEXTLINE(*-return-braced-init-list)
-        return BasisKey(static_cast<dimn_t>(0));
-    }
-
-    void antipode(Vector& dst, const Vector& src) const;
-
-    /**
-     * @brief Check if the given basis is compatible with the specific algebraic
-     * operation.
-     *
-     * This method checks if the provided basis is compatible with the specific
-     * algebraic operation. The compatibility depends on the requirements of
-     * each operation.
-     *
-     * @param basis The basis to check for compatibility.
-     * @return True if the basis is compatible, false otherwise.
-     */
-    static bool basis_compatibility_check(const Basis& basis) noexcept;
-
-    // NOLINTBEGIN(*-identifier-length)
-    void
-    fma(Vector& out, const Vector& left, const Vector& right, Identity&& op
-    ) const;
-    void
-    fma(Vector& out, const Vector& left, const Vector& right, Uminus&& op
-    ) const;
-    void
-    fma(Vector& out, const Vector& left, const Vector& right, PostMultiply&& op
-    ) const;
-
-    void fma_dense(
-            Vector& out,
-            const Vector& left,
-            const Vector& right,
-            Identity&& op
-    ) const;
-    void
-    fma_dense(Vector& out, const Vector& left, const Vector& right, Uminus&& op)
-            const;
-    void fma_dense(
-            Vector& out,
-            const Vector& left,
-            const Vector& right,
-            PostMultiply&& op
-    ) const;
-    void multiply_into(Vector& out, const Vector& right, Identity&& op) const;
-    void multiply_into(Vector& out, const Vector& right, Uminus&& op) const;
-    void
-    multiply_into(Vector& out, const Vector& right, PostMultiply&& op) const;
-
-    void
-    multiply_into_dense(Vector& out, const Vector& right, Identity&& op) const;
-    void
-    multiply_into_dense(Vector& out, const Vector& right, Uminus&& op) const;
-    void
-    multiply_into_dense(Vector& out, const Vector& right, PostMultiply&& op)
-            const;
-    // NOLINTEND(*-identifier-length)
-};
 
 /**
  * @class FreeTensor
@@ -114,7 +24,6 @@ public:
  */
 class FreeTensor : public AlgebraBase<FreeTensor>
 {
-    Rc<const FreeTensorMultiplication> p_multiplication;
 
 public:
     static FreeTensor new_like(const FreeTensor& arg) noexcept;

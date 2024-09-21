@@ -4,11 +4,10 @@
 
 #include "free_tensor.h"
 
+#include "multiplication/FreeTensorMultiplication.h"
 
 using namespace rpy;
 using namespace rpy::algebra;
-
-
 
 FreeTensor FreeTensor::new_like(const FreeTensor& arg) noexcept { return {}; }
 FreeTensor FreeTensor::clone(const FreeTensor& arg) noexcept { return {}; }
@@ -30,6 +29,22 @@ FreeTensor& FreeTensor::fma(
         deg_t rhs_min_deg
 )
 {
+    const auto basis = this->basis();
+    const FreeTensorMultiplication ftm(
+            basis->alphabet_size(),
+            basis->max_degree()
+    );
+
+    ftm.eval(
+            this->as_vector(),
+            lhs,
+            rhs,
+            op,
+            max_degree,
+            lhs_min_deg,
+            rhs_min_deg
+    );
+
     return *this;
 }
 FreeTensor&
@@ -45,6 +60,20 @@ FreeTensor& FreeTensor::multiply_inplace(
         deg_t rhs_min_deg
 )
 {
+    const auto basis = this->basis();
+    const FreeTensorMultiplication ftm(
+            basis->alphabet_size(),
+            basis->max_degree()
+    );
+
+    ftm.eval_inplace(
+            this->as_vector(),
+            rhs,
+            op,
+            max_degree,
+            lhs_min_deg,
+            rhs_min_deg
+    );
     return *this;
 }
 
@@ -78,7 +107,14 @@ FreeTensor FreeTensor::log() const
 FreeTensor FreeTensor::antipode() const
 {
     auto result = new_like(*this);
-    p_multiplication->antipode(result.as_vector(), as_vector());
+
+    const auto basis = this->basis();
+    const FreeTensorMultiplication ftm(
+            basis->alphabet_size(),
+            basis->max_degree()
+    );
+
+    ftm.antipode(result.as_vector(), as_vector());
     return result;
 }
 
@@ -98,7 +134,6 @@ FreeTensor FreeTensor::fused_multiply_exp(const FreeTensor& other) const
     }
     return result;
 }
-
 
 FreeTensor& FreeTensor::fused_multiply_exp_inplace(const FreeTensor& other)
 {

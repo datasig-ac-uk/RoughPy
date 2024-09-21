@@ -21,11 +21,14 @@ class HostKernelBase : public RefCountBase<KernelInterface>
 {
     using implementation_t = Impl;
 
+    friend Impl;
+    HostKernelBase();
+
+
 protected:
     using signature_t = StandardKernelSignature<ArgSpec...>;
 
 public:
-    HostKernelBase();
 
     RPY_NO_DISCARD static std::unique_ptr<KernelArguments> new_binding()
     {
