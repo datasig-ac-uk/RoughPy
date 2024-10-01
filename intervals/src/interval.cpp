@@ -69,7 +69,7 @@ bool Interval::is_associated(const Interval& arg) const noexcept
 }
 bool Interval::contains(const Interval& arg) const noexcept
 {
-    return contains_point(arg.inf()) && contains_point(arg.sup());
+    return inf() <= arg.inf() && arg.sup() <= sup();
 }
 bool Interval::intersects_with(const Interval& arg) const noexcept
 {
