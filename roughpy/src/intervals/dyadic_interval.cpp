@@ -74,11 +74,11 @@ void python::init_dyadic_interval(py::module_& m)
     klass.def("shrink_to_contained_end",
               &DyadicInterval::shrink_to_contained_end, "arg"_a = 1, "Same as :py:meth:`~shrink_interval` functions, but aware of the type (:py:attr:`~clopen`, :py:attr:`~opencl`).");
     klass.def("shrink_to_omitted_end", &DyadicInterval::shrink_to_omitted_end, "Same as :py:meth:`~shrink_interval` functions, but aware of the type (:py:attr:`~clopen`, :py:attr:`~opencl`).");
-    klass.def("shrink_left", &DyadicInterval::shrink_interval_left, "Split the :class:`~Interval` in half, take the left.");
+    klass.def("shrink_left", &DyadicInterval::shrink_interval_left, "count"_a = 1, "Split the :class:`~Interval` in half, take the left.");
     klass.def("shrink_right", &DyadicInterval::shrink_interval_right, "Split the :class:`~Interval` in half, take the right.");
 
     klass.def_static("to_dyadic_intervals", &to_dyadic_intervals, "interval"_a,
-                     "resolution"_a, "interval_type"_a, TO_DYADIC_INT_DOC);
+                     "resolution"_a = 32, "interval_type"_a = IntervalType::Clopen , TO_DYADIC_INT_DOC);
     klass.def_static(
             "to_dyadic_intervals",
             [](param_t inf, param_t sup, power_t resolution,
@@ -86,7 +86,7 @@ void python::init_dyadic_interval(py::module_& m)
                 return to_dyadic_intervals(RealInterval(inf, sup), resolution,
                                            itype);
             },
-            "inf"_a, "sup"_a, "resolution"_a, "interval_type"_a);
+            "inf"_a, "sup"_a, "resolution"_a = 32, "interval_type"_a = IntervalType::Clopen );
 
 
     klass.def(py::pickle(
