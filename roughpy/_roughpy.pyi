@@ -277,16 +277,16 @@ class DyadicInterval(Interval, Dyadic):
 
     @staticmethod
     def to_dyadic_intervals(interval: Interval,
-                            resolution: int,
-                            interval_type: IntervalType) -> Sequence[
+                            resolution: int = 32,
+                            interval_type: IntervalType = IntervalType.Clopen) -> Sequence[
         Interval]: ...
 
     @overload
     @staticmethod
     def to_dyadic_intervals(inf: float,
                             sup: float,
-                            resolution: int,
-                            interval_type: IntervalType) -> Sequence[
+                            resolution: int = 32,
+                            interval_type: IntervalType = IntervalType.Clopen) -> Sequence[
         Interval]: ...
 
 
