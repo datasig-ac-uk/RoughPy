@@ -68,7 +68,7 @@
     },
     {
       "name": "opencl",
-      "version>=": "v2023.02.06#2"
+      "version>=": "v2024.05.08"
     },
     {
       "name": "boost-stacktrace",
