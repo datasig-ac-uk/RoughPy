@@ -72,7 +72,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - windows-2022
+          - windows-2019
           - macos-12
         include:
           - os: windows-2022
