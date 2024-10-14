@@ -62,7 +62,7 @@
   }, {
     "name" : "boost-stacktrace",
     "version>=" : "1.83.0"
-  } ],
+  }],
   "features" : {
     "tests" : {
       "description" : "dependencies for the unit tests",

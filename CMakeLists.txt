@@ -18,8 +18,8 @@ include(CheckIncludeFileCXX)
 
 
 option(ROUGHPY_ENABLE_DBG_ASSERT "enable debug assertions at runtime" OFF)
-option(ROUGHPY_BUILD_LA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
-option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" ON)
+option(ROUGHPY_BUILD_DefaultLA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
+option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" OFF)
 option(ROUGHPY_BUILD_DOCS "Build the documentation" OFF)
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Build the pymodule in the project roughpy directory" OFF)
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
@@ -28,6 +28,27 @@ option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 cmake_dependent_option(ROUGHPY_PREFER_ACCELERATE
         "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
 option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
+option(ROUGHPY_NO_VCPKG "Do not force install VCPKG if is not already set" OFF)
+
+
+if (NOT CMAKE_TOOLCHAIN_FILE AND NOT ROUGHPY_NO_VCPKG)
+    cmake_path(APPEND CMAKE_CURRENT_LIST_DIR "tools" "vcpkg"
+            OUTPUT_VARIABLE _vcpkg_dir)
+
+    if (NOT EXISTS _vcpkg_dir)
+        find_package(Git REQUIRED)
+        execute_process(COMMAND
+                "${GIT_EXECUTABLE}" "clone" "https://github.com/Microsoft/vcpkg.git" "${_vcpkg_dir}"
+        )
+    endif()
+
+    cmake_path(APPEND _vcpkg_dir "scripts" "buildsystems" "vcpkg.cmake" OUTPUT_VARIABLE _vcpkg_file)
+    message(STATUS "installed VCPKG in ${_vcpkg_dir}")
+    set(CMAKE_TOOLCHAIN_FILE "${_vcpkg_file}" CACHE INTERNAL "")
+endif()
+
+
+
 
 if (ROUGHPY_BUILD_TESTS)
     set(VCPKG_MANIFEST_FEATURES "tests" CACHE INTERNAL "")
@@ -150,20 +171,43 @@ endif ()
 # At minimum we need Interpreter and Development.Module in order to build a
 # Python extension module.
 set(PYTHON_COMPONENTS_NEEDED Interpreter Development.Module)
-if (ROUGHPY_LINK_NUMPY)
-    list(APPEND PYTHON_COMPONENTS_NEEDED NumPy)
-endif ()
+#if (ROUGHPY_LINK_NUMPY)
+#    list(APPEND PYTHON_COMPONENTS_NEEDED NumPy)
+#endif ()
 
 find_package(Python 3.8 REQUIRED COMPONENTS ${PYTHON_COMPONENTS_NEEDED})
 
-if (NOT DEFINED pybind11_ROOT)
-    execute_process(COMMAND
-        "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
-        COMMAND_ECHO STDOUT
-        RESULT_VARIABLE _python_pybind11_dir_found
-        OUTPUT_VARIABLE _python_pybind11_dir
-        OUTPUT_STRIP_TRAILING_WHITESPACE
+if (ROUGHPY_LINK_NUMPY)
+    find_package(Python 3.8 QUIET COMPONENTS NumPy)
+
+    if (NOT TARGET Python::NumPY)
+        message(STATUS "Installing NumPy")
+        execute_process(COMMAND "${Python_EXECUTABLE} -m pip install numpy" COMMAND_ECHO STDOUT)
+        find_package(Python REQUIRED COMPONENTS NumPy)
+    endif()
+
+endif()
+
+
+if(NOT DEFINED pybind11_ROOT)
+    execute_process(COMMAND "${Python_EXECUTABLE}" "-m" "pip" "install" "pybind11"
+                    COMMAND_ECHO STDOUT
+                    RESULT_VARIABLE _pybind11_install_result
+                    OUTPUT_VARIABLE _pybind11_install_message
     )
+    message(STATUS "out: ${_pybind11_install_message}")
+    if (NOT _pybind11_install_result AND NOT _pybind11_install_message MATCHES "Requirement already satisfied: pybind11")
+        message(FATAL_ERROR "could not install pybind11")
+    endif()
+    unset(_pybind11_install_result)
+    execute_process(COMMAND
+            "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
+            COMMAND_ECHO STDOUT
+            RESULT_VARIABLE _python_pybind11_dir_found
+            OUTPUT_VARIABLE _python_pybind11_dir
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    message(STATUS "PYDIR ${_python_pybind11_dir}")
     if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
         message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
         set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
