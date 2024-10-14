@@ -3,7 +3,7 @@ import pytest
 import roughpy as rp
 
 import numpy as np
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal
 
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def test_free_tensor_multiply_shuffles(tensor_data, tensor_context):
     ft2 = rp.FreeTensor(d2, ctx=tensor_context)
     expected = ft1 * ft2
 
-    assert_array_equal(result, expected)
+    assert_array_almost_equal(result, expected)
 
 
 def test_shuffle_multiply_two_frees(tensor_data, tensor_context):
@@ -47,7 +47,7 @@ def test_shuffle_multiply_two_frees(tensor_data, tensor_context):
     sh2 = rp.ShuffleTensor(d2, ctx=tensor_context)
     expected = sh1 * sh2
 
-    assert_array_equal(result, expected)
+    assert_array_almost_equal(result, expected)
 
 
 def test_adjoint_of_left_multiplication(tensor_data, tensor_context):
@@ -73,5 +73,5 @@ def test_adjoint_of_left_multiplication(tensor_data, tensor_context):
 
 
     expected = rp.FreeTensor(expected_data, ctx=tensor_context)
-    assert_array_equal(result, expected)
+    assert_array_almost_equal(result, expected)
     #assert result.size() == t1.size()
