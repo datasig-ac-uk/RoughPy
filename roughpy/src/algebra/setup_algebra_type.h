@@ -227,10 +227,10 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
 
     // setup conversion to numpy array
 #ifdef ROUGHPY_WITH_NUMPY
-    klass.def("__array__", [](const Alg& self) {
+    klass.def("__array__", [](const Alg& self, bool RPY_UNUSED_VAR copy) {
         return algebra_to_array(self);
         // return py::array();
-    });
+    }, "copy"_a = false);
 #endif
 
     klass.def(py::pickle(
