@@ -36,17 +36,15 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - windows-2019
-          - macos-12
+          - windows-latest
+          - macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: true
 
     - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
 
     - name: Setup gha caching for vcpkg
       uses: actions/github-script@v6
