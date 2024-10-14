@@ -36,17 +36,17 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - windows-2019
-          - macos-11
+          - windows-latest
+          - macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: true
 
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: 3.13
 
     - name: Setup gha caching for vcpkg
       uses: actions/github-script@v6
@@ -71,6 +71,12 @@ jobs:
       shell: bash
       run: |
         choco install pkgconfiglite
+
+    - name: install autoconf on macos14
+      if: runner.os == 'MacOs'
+      shell: bash
+      run: |
+        brew install autoconf automake libtool m4 ninja
 
     - name: Python dependencies
       shell: bash

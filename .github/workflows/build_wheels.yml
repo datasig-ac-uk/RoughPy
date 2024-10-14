@@ -36,14 +36,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Setup Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       - name: Build sdist
         run: |
@@ -71,20 +71,20 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-20.04
+          - ubuntu-latest
           - windows-2019
-          - macos-11
+          - macos-12
         include:
-          - os: windows-2019
+          - os: windows-2022
             tag: "win_amd64"
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             tag: "manylinux_x86_64"
-          - os: macos-11
+          - os: macos-13
             tag: "macosx_x86_64"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
