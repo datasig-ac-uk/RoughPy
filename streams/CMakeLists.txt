@@ -57,6 +57,7 @@ add_roughpy_component(Streams
         SndFile::sndfile
         PUBLIC
                 Boost::boost
+                Boost::url
     DEFINITIONS
         BOOST_UUID_FORCE_AUTO_LINK=1
     NEEDS
