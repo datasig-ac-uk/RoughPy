@@ -13,7 +13,7 @@ import roughpy as rp
 import numpy as np
 from numpy.testing import assert_array_equal
 
-@pytest.mark.skipif(jax is None, reason="JAX test require jax to be installed")
+@pytest.mark.skip(reason="Interoperability is currently disabled")
 class TestJaxArrayCreation:
 
     @pytest.fixture(scope="class")
