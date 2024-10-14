@@ -48,7 +48,7 @@
     },
     {
       "name": "pcg",
-      "version>=": "2021-04-06"
+      "version>=": "2021-04-06#2"
     },
     {
       "name": "cereal",
