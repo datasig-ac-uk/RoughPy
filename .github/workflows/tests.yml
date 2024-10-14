@@ -76,7 +76,7 @@ jobs:
       if: runner.os == 'MacOs'
       shell: bash
       run: |
-        brew install autoconf automake libtool m4
+        brew install autoconf automake libtool m4 ninja
 
     - name: Python dependencies
       shell: bash
