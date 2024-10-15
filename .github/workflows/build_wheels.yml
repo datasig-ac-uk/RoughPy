@@ -73,14 +73,8 @@ jobs:
         os:
           - ubuntu-latest
           - windows-2019
-          - macos-12
-        include:
-          - os: windows-2022
-            tag: "win_amd64"
-          - os: ubuntu-latest
-            tag: "manylinux_x86_64"
-          - os: macos-13
-            tag: "macosx_x86_64"
+          - macos-13 # Uses x64
+          - macos-14 # Uses Apple Silicon
 
     steps:
       - name: Checkout
@@ -95,6 +89,9 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
+      - name: Install build deps on MacOs
+        if: runner.os == 'macOs'
+
       - name: Build and test
         uses: pypa/cibuildwheel@v2.21.3
         env:
@@ -102,7 +99,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
 
