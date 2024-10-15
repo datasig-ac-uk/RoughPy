@@ -96,6 +96,7 @@ jobs:
       - name: Build and test
         uses: pypa/cibuildwheel@v2.21.3
         env:
+          MACOSX_DEPLOYMENT_TARGET: 11.0.0
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
 
       - uses: actions/upload-artifact@v4
