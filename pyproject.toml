@@ -33,6 +33,9 @@ classifiers = [
     "Operating System :: Unix",
     "Operating System :: MacOS"
 ]
+dependencies = [
+    "numpy >= 1.23.5"
+]
 #dependencies=[
 #    "intel-openmp; platform_system!='Windows'"
 #]
@@ -44,7 +47,7 @@ requires = [
     "scikit-build-core[pyproject]",
     "pybind11",
     "ninja; platform_system!='Windows'",
-    "oldest-supported-numpy",
+    "numpy>=2.0.0",
     #    "mkl-devel; platform_machine in 'x86_64 x86 AMD64'",
     #    "mkl-static; platform_machine in 'x86_64 x86 AMD64'",
     #    "tbb-devel; platform_system =='Windows'",
