@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message "If you use this software, please cite it as below"
+authors:
+  - family-names: "Lyons"
+    given-names: "Terry"
+    orcid: "https://orcid.org/0000-0002-9972-2809"
+  - family-names: "Morley"
+    given-names: "Sam"
+    orcid: "https://orcid.org/0000-0001-5971-7418"
+title: "RoughPy"
+version: 0.1.1
+identifiers:
+  - type: doi
+    value: 10.25080/dxwy3560
+date-released: "2023-07-14" 
+license: BSD-3-Clause
+repository-code: "https://github.com/datasig-ac-uk/RoughPy"
+
+
