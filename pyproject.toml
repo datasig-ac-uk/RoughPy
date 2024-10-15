@@ -59,6 +59,8 @@ filterwarnings = ["ignore::DeprecationWarning"]
 
 
 [tool.scikit-build]
+cmake.version = ">=3.26"
+ninja.version = ">=1.11"
 wheel.packages = []
 cmake.verbose = true
 logging.level = "INFO"
