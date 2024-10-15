@@ -91,6 +91,7 @@ jobs:
 
       - name: Install build deps on MacOs
         if: runner.os == 'macOs'
+        run:  brew install autoconf automake libtool m4 ninja
 
       - name: Build and test
         uses: pypa/cibuildwheel@v2.21.3
