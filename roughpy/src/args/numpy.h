@@ -59,7 +59,7 @@ void write_entry_to_array(py::array& array,
                           dimn_t index,
                           const scalars::Scalar& arg);
 
-
+bool is_object_dtype(py::dtype dtype) noexcept;
 }
 
 template <typename Interface, template <typename, template <typename> class>
@@ -73,6 +73,7 @@ inline py::array algebra_to_array(
     const auto dimension = basis.dimension();
 
     auto dense_data = alg.dense_data();
+    copy |= dtl::is_object_dtype(ctype_to_npy_dtype(stype));
 
     if (!copy && dense_data && dense_data->size() == dimension) {
         // Dense and full dimension, borrow

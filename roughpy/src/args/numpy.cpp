@@ -28,8 +28,8 @@
 
 #include "numpy.h"
 #include <roughpy/platform/devices/core.h>
-#include <roughpy/scalars/scalar_types.h>
 #include <roughpy/scalars/scalar_type.h>
+#include <roughpy/scalars/scalar_types.h>
 #include <roughpy/scalars/traits.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_17_API_VERSION
@@ -89,7 +89,8 @@ using namespace rpy;
 static inline int info_to_typenum(const devices::TypeInfo& info)
 {
     switch (info.code) {
-        case devices::TypeCode::Int: switch (info.bytes) {
+        case devices::TypeCode::Int:
+            switch (info.bytes) {
                 case 1: return NPY_INT8;
                 case 2: return NPY_INT16;
                 case 4: return NPY_INT32;
@@ -97,7 +98,8 @@ static inline int info_to_typenum(const devices::TypeInfo& info)
                 default: break;
             }
             break;
-        case devices::TypeCode::UInt: switch (info.bytes) {
+        case devices::TypeCode::UInt:
+            switch (info.bytes) {
                 case 1: return NPY_UINT8;
                 case 2: return NPY_UINT16;
                 case 4: return NPY_UINT32;
@@ -105,7 +107,8 @@ static inline int info_to_typenum(const devices::TypeInfo& info)
                 default: break;
             }
             break;
-        case devices::TypeCode::Float: switch (info.bytes) {
+        case devices::TypeCode::Float:
+            switch (info.bytes) {
                 case 2: return NPY_FLOAT16;
                 case 4: return NPY_FLOAT32;
                 case 8: return NPY_FLOAT64;
@@ -136,10 +139,8 @@ const scalars::ScalarType* python::npy_dtype_to_ctype(pybind11::dtype dtype)
     const scalars::ScalarType* type = nullptr;
 
     switch (dtype.num()) {
-        case NPY_FLOAT: type = *scalars::ScalarType::of<float>();
-            break;
-        case NPY_DOUBLE: type = *scalars::ScalarType::of<double>();
-            break;
+        case NPY_FLOAT: type = *scalars::ScalarType::of<float>(); break;
+        case NPY_DOUBLE: type = *scalars::ScalarType::of<double>(); break;
         default:
             // Default behaviour, promote to double
             type = *scalars::ScalarType::of<double>();
@@ -159,40 +160,32 @@ string python::npy_dtype_to_identifier(pybind11::dtype dtype)
     string identifier;
 
     switch (dtype.num()) {
-        case NPY_FLOAT: identifier = "f32";
-            break;
-        case NPY_DOUBLE: identifier = "f64";
-            break;
-        case NPY_INT: identifier = "i32";
-            break;
-        case NPY_UINT: identifier = "u32";
-            break;
+        case NPY_FLOAT: identifier = "f32"; break;
+        case NPY_DOUBLE: identifier = "f64"; break;
+        case NPY_INT: identifier = "i32"; break;
+        case NPY_UINT: identifier = "u32"; break;
         case NPY_LONG: {
-            if (sizeof(long) == sizeof(int)) { identifier = "i32"; } else {
+            if (sizeof(long) == sizeof(int)) {
+                identifier = "i32";
+            } else {
                 identifier = "i64";
             }
-        }
-        break;
+        } break;
         case NPY_ULONG: {
-            if (sizeof(long) == sizeof(int)) { identifier = "ui32"; } else {
+            if (sizeof(long) == sizeof(int)) {
+                identifier = "ui32";
+            } else {
                 identifier = "u64";
             }
-        }
-        break;
-        case NPY_LONGLONG: identifier = "i64";
-            break;
-        case NPY_ULONGLONG: identifier = "u64";
-            break;
+        } break;
+        case NPY_LONGLONG: identifier = "i64"; break;
+        case NPY_ULONGLONG: identifier = "u64"; break;
 
         case NPY_BOOL:
-        case NPY_BYTE: identifier = "i8";
-            break;
-        case NPY_UBYTE: identifier = "u8";
-            break;
-        case NPY_SHORT: identifier = "i16";
-            break;
-        case NPY_USHORT: identifier = "u16";
-            break;
+        case NPY_BYTE: identifier = "i8"; break;
+        case NPY_UBYTE: identifier = "u8"; break;
+        case NPY_SHORT: identifier = "i16"; break;
+        case NPY_USHORT: identifier = "u16"; break;
 
         default: RPY_THROW(py::type_error, "unsupported dtype");
     }
@@ -213,51 +206,62 @@ void write_type_as_py_object(PyObject** dst, Slice<const T> data)
     }
 }
 
-void write_type_as_py_object(PyObject** dst,
-                             Slice<const scalars::rational_poly_scalar> data)
+void write_type_as_py_object(
+        PyObject** dst,
+        Slice<const scalars::rational_poly_scalar> data
+)
 {
     for (dimn_t i = 0; i < data.size(); ++i) {
         Py_XDECREF(dst[i]);
         dst[i] = PyPolynomial_FromPolynomial(
-            scalars::rational_poly_scalar(data[i]));
+                scalars::rational_poly_scalar(data[i])
+        );
     }
 }
 
+}// namespace
 
-}
-
-
-py::array python::dtl::dense_data_to_array(const scalars::ScalarArray& data,
-                                           dimn_t dimension)
+py::array python::dtl::dense_data_to_array(
+        const scalars::ScalarArray& data,
+        dimn_t dimension
+)
 {
     RPY_DBG_ASSERT(data.size() <= dimension);
     const auto type_info = data.type_info();
 
     py::dtype dtype(info_to_typenum(type_info));
 
-    auto result = python::dtl::new_zero_array_for_stype(*data.type(), dimension);
+    auto result
+            = python::dtl::new_zero_array_for_stype(*data.type(), dimension);
 
     if (scalars::traits::is_fundamental(type_info)) {
-        scalars::dtl::scalar_convert_copy(result.mutable_data(),
-                                          type_info,
-                                          data.pointer(),
-                                          type_info,
-                                          data.size());
+        scalars::dtl::scalar_convert_copy(
+                result.mutable_data(),
+                type_info,
+                data.pointer(),
+                type_info,
+                data.size()
+        );
     } else {
-        PyArray_FillWithScalar(reinterpret_cast<PyArrayObject*>(result.ptr()), Py_None);
+        PyArray_FillWithScalar(
+                reinterpret_cast<PyArrayObject*>(result.ptr()),
+                Py_None
+        );
 
         auto** raw = static_cast<PyObject**>(result.mutable_data());
 
         switch (type_info.code) {
-            case devices::TypeCode::ArbitraryPrecisionRational
-            : write_type_as_py_object(
-                    raw,
-                    data.template as_slice<devices::rational_scalar_type>());
+            case devices::TypeCode::ArbitraryPrecisionRational:
+                write_type_as_py_object(
+                        raw,
+                        data.template as_slice<devices::rational_scalar_type>()
+                );
                 break;
-            case devices::TypeCode::APRationalPolynomial
-            : write_type_as_py_object(raw,
-                                      data.template as_slice<
-                                          devices::rational_poly_scalar>());
+            case devices::TypeCode::APRationalPolynomial:
+                write_type_as_py_object(
+                        raw,
+                        data.template as_slice<devices::rational_poly_scalar>()
+                );
                 break;
             case devices::TypeCode::Int:
             case devices::TypeCode::UInt:
@@ -271,23 +275,30 @@ py::array python::dtl::dense_data_to_array(const scalars::ScalarArray& data,
             case devices::TypeCode::ArbitraryPrecisionUInt:
             case devices::TypeCode::ArbitraryPrecisionFloat:
             case devices::TypeCode::ArbitraryPrecisionComplex:
-                RPY_THROW(std::runtime_error,
-                          "this case should have been handled elsewhere");
+                RPY_THROW(
+                        std::runtime_error,
+                        "this case should have been handled elsewhere"
+                );
         }
     }
 
     return result;
 }
 
-py::array python::dtl::new_zero_array_for_stype(const scalars::ScalarType* type,
-                                                dimn_t dimension)
+py::array python::dtl::new_zero_array_for_stype(
+        const scalars::ScalarType* type,
+        dimn_t dimension
+)
 {
     auto typenum = info_to_typenum(type->type_info());
     py::dtype dtype(typenum);
     py::array result(dtype, {static_cast<py::ssize_t>(dimension)}, {});
 
     if (typenum == NPY_OBJECT) {
-        PyArray_FillWithScalar(reinterpret_cast<PyArrayObject*>(result.ptr()), Py_None);
+        PyArray_FillWithScalar(
+                reinterpret_cast<PyArrayObject*>(result.ptr()),
+                Py_None
+        );
     } else {
         PyArray_FILLWBYTE(reinterpret_cast<PyArrayObject*>(result.ptr()), 0);
     }
@@ -295,11 +306,12 @@ py::array python::dtl::new_zero_array_for_stype(const scalars::ScalarType* type,
     return result;
 }
 
-
-void python::dtl::write_entry_to_array(py::array& array,
-                                       dimn_t index,
-                                       const scalars::Scalar& arg) {}
-
+void python::dtl::write_entry_to_array(
+        py::array& array,
+        dimn_t index,
+        const scalars::Scalar& arg
+)
+{}
 
 static inline PyTypeObject* import_numpy_impl() noexcept
 {
@@ -312,4 +324,9 @@ void python::import_numpy()
 #ifdef ROUGHPY_WITH_NUMPY
     if (import_numpy_impl() == nullptr) { throw py::error_already_set(); }
 #endif
+}
+
+bool python::dtl::is_object_dtype(py::dtype dtype) noexcept
+{
+    return dtype.num() == NPY_OBJECT;
 }
