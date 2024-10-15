@@ -227,8 +227,8 @@ void setup_algebra_type(py::class_<Alg, Args...>& klass)
 
     // setup conversion to numpy array
 #ifdef ROUGHPY_WITH_NUMPY
-    klass.def("__array__", [](const Alg& self, bool RPY_UNUSED_VAR copy) {
-        return algebra_to_array(self);
+    klass.def("__array__", [](const Alg& self, bool copy) {
+        return algebra_to_array(self, copy);
         // return py::array();
     }, "copy"_a = false);
 #endif
