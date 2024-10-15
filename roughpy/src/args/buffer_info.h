@@ -23,7 +23,8 @@ struct BufferFormat {
 
 class BufferInfo
 {
-    Py_buffer m_view;
+    // This is mutable because the Python API always passes mutable pointers
+    mutable Py_buffer m_view;
     optional<Py_ssize_t> m_size;
 
 public:
