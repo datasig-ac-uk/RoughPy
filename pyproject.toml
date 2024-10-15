@@ -105,10 +105,9 @@ skip = [
     "*-musl*",
     "pp*",
     "*linux_i686",
-    "*arm64",
     "*universal2",
-    "cp3{6,7}-*",
-    "cp3{8,9}-macos*"
+    "cp3{6,7,8}-*",
+    "cp3{9}-macos*"
 ]
 build-verbosity=1
 
@@ -123,6 +122,15 @@ environment= "CMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake VCPK
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -w {dest_dir} --ignore-in-wheel {wheel}"
 
-
 [tool.cibuildwheel.linux]
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
+environment-pass = [
+    "GITHUB_TOK",
+    "VCPKG_BINARY_SOURCES",
+    "ACTIONS_CACHE_URL",
+    "ACTIONS_RUNTIME_TOKEN"
+]
+
+[tool.cibuildwheel.macos]
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}"
+
