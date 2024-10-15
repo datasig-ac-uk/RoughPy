@@ -172,7 +172,9 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
 
     if (indices.empty()) {
         indices.reserve(num_increments);
-        for (dimn_t i = 0; i < num_increments; ++i) { indices.emplace_back(i); }
+        for (dimn_t i = 0; i < num_increments; ++i) {
+            indices.emplace_back(static_cast<param_t>(i));
+        }
         md.resolution = 0;
     } else if (indices.size() != num_increments) {
         RPY_THROW(

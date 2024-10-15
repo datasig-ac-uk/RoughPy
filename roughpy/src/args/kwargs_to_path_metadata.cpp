@@ -180,7 +180,7 @@ python::PyStreamMetaData python::kwargs_to_metadata(pybind11::kwargs& kwargs)
 
     if (md.schema->is_final()) {
         if (!algebra_config.width) {
-            algebra_config.width = md.schema->width();
+            algebra_config.width = static_cast<deg_t>(md.schema->width());
             RPY_DBG_ASSERT(md.width == 0);
             md.width = *algebra_config.width;
         } else if (md.schema->width() != *algebra_config.width) {
@@ -191,7 +191,7 @@ python::PyStreamMetaData python::kwargs_to_metadata(pybind11::kwargs& kwargs)
         }
     }
 
-    // Additional information that will not effect the algebra config.
+    // Additional information that will not affect the algebra config.
     if (kwargs.contains("vtype")) {
         md.vector_type
                 = kwargs_pop(kwargs, "vtype").cast<algebra::VectorType>();
