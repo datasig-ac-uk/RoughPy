@@ -415,7 +415,7 @@ void ConversionManager::check_dl_size(py::capsule dlcap, deg_t depth)
     leaf.size = static_cast<dimn_t>(std::accumulate(
             leaf.shape.begin(),
             leaf.shape.end(),
-            1,
+            1LL,
             std::multiplies<>()
     ));
 }
@@ -437,7 +437,7 @@ void ConversionManager::check_buffer_size(py::buffer buffer, deg_t depth)
     leaf.size = static_cast<dimn_t>(std::accumulate(
             leaf.shape.begin(),
             leaf.shape.end(),
-            1,
+            1LL,
             std::multiplies<>()
     ));
 }

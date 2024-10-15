@@ -27,7 +27,7 @@ Py_ssize_t BufferInfo::size() const noexcept
     return std::accumulate(
             m_view.shape,
             m_view.shape + m_view.ndim,
-            1,
+            1LL,
             std::multiplies<>()
     );
 }
