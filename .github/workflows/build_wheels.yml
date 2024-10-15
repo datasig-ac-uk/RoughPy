@@ -58,7 +58,7 @@ jobs:
           twine check dist/*
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sdist
           path: ./dist/*
@@ -99,16 +99,10 @@ jobs:
         uses: pypa/cibuildwheel@v2.21.3
         env:
           MACOSX_DEPLOYMENT_TARGET: 12.0.0
-          VCPKG_INSTALL_OPTIONS: "--debug"
-          CIBW_REPAIR_WHEEL_COMMAND_LINUX: >
-            auditwheel show {wheel} &&
-            auditwheel repair -w {dest_dir} {wheel}
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: > 
-            delocate-wheel --require-archs {delocate_archs} --ignore-missing-dependencies -w {dest_dir} -v {wheel}
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
           CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_TOK VCPKG_BINARY_SOURCES ACTIONS_CACHE_URL ACTIONS_RUNTIME_TOKEN
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: ./wheelhouse/*.whl
@@ -121,7 +115,7 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     steps:
       - name: Setup Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
@@ -129,13 +123,13 @@ jobs:
         run: python -m pip install twine
 
       - name: Retrieve sdist
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: sdist
           path: dist
 
       - name: Retrieve wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: wheels
           path: dist
