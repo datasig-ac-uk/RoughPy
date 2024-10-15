@@ -16,9 +16,19 @@ on:
       - "examples/**"
       - "doc/**"
       - "README.md"
-      - "*.txt"
       - "CHANGELOG"
       - "tools/*.py"
+      - ".github/workflows/build_wheels.yml"
+      - ".github/dependabot.yml"
+      - ".github/ISSUE_TEMPLATE/**"
+      - "branding/**"
+      - ".gitignore"
+      - "CMakePresets.json"
+      - "THANKS.txt"
+      - "LICENSE.txt"
+      - "VERSION.txt"
+      - "CITATION.cff"
+      - ".gitignore"
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -72,8 +82,8 @@ jobs:
       run: |
         choco install pkgconfiglite
 
-    - name: install autoconf on macos14
-      if: runner.os == 'MacOs'
+    - name: install autoconf on macos
+      if: runner.os == 'macOs'
       shell: bash
       run: |
         brew install autoconf automake libtool m4 ninja
