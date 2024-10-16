@@ -128,8 +128,9 @@ jobs:
       - name: Retrieve wheels
         uses: actions/download-artifact@v4
         with:
-          name: wheels
+          pattern: "cibw-*"
           path: dist
+          merge-multiple: true
 
       - name: Update release
         shell: bash
