@@ -57,6 +57,10 @@ endif ()
 project(RoughPy VERSION ${_rpy_version})
 
 
+if (MSVC)
+    ## Disable non-compliant behaviour on windows... Comon MS>
+    add_compile_options("/permissive-")
+endif()
 
 
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
@@ -195,10 +199,11 @@ if(NOT DEFINED pybind11_ROOT)
                     RESULT_VARIABLE _pybind11_install_result
                     OUTPUT_VARIABLE _pybind11_install_message
     )
-    message(STATUS "out: ${_pybind11_install_message}")
+
     if (NOT _pybind11_install_result AND NOT _pybind11_install_message MATCHES "Requirement already satisfied: pybind11")
         message(FATAL_ERROR "could not install pybind11")
     endif()
+
     unset(_pybind11_install_result)
     execute_process(COMMAND
             "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
@@ -207,10 +212,12 @@ if(NOT DEFINED pybind11_ROOT)
             OUTPUT_VARIABLE _python_pybind11_dir
             OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    message(STATUS "PYDIR ${_python_pybind11_dir}")
-    if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
+    if (_python_pybind11_dir_found EQUAL 0)
         message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
         set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
+        list(APPEND CMAKE_PREFIX_PATH "${_python_pybind11_dir}")
+    else()
+        message(FATAL_ERROR "Could not add pybind11 dir: ${_python_pybind11_dir_found} && ${_python_pybind11_dir}")
     endif ()
 endif ()
 
@@ -229,6 +236,9 @@ check_include_file_cxx(optional RPY_HAS_STD_OPTIONAL)
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 set(RYP_BOOST_VERSION 1.81)
+
+## FindBoost is deprecated. VCPKG clearly doesn't have an answer for this yet
+cmake_policy(SET CMP0167 OLD)
 find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS url system)
 
 if (NOT RPY_HAS_STD_FILESYSTEM)
@@ -362,20 +372,26 @@ elseif(DEFINED VCPKG_INSTALLED_DIR)
     find_path(GMP_INCLUDES NAMES gmp.h
     PATHS ${VCPKG_INSTALLED_DIR})
 
-    find_library(GMP_LIBRARIES gmp PATHS ${VCPKG_INSTALLED_DIR})
+    find_library(GMP_LIBRARIES gmp mpir PATHS ${VCPKG_INSTALLED_DIR})
 
     message(STATUS "GMP HEADERS: ${GMP_INCLUDES}")
     message(STATUS "GMP LIBRARIES: ${GMP_LIBRARIES}")
     if(GMP_INCLUDES AND GMP_LIBRARIES)
         add_library(GMP::GMP UNKNOWN IMPORTED GLOBAL)
         target_include_directories(GMP::GMP INTERFACE ${GMP_INCLUDES})
-        target_link_libraries(GMP::GMP INTERFACE ${GMP_LIBRARIES})
+
+        set_target_properties(GMP::GMP PROPERTIES
+            IMPORTED_LOCATION "${GMP_LIBRARIES}"
+        )
+
+
     else()
         message(FATAL_ERROR "Could not locate gmp")
     endif()
 else()
     message(FATAL_ERROR "Could not locate gmp, no vcpkg")
 endif()
+
 
 # Now we get to adding our components. Let's do some global setup such as
 # setting the CXX standard and the shared library details.

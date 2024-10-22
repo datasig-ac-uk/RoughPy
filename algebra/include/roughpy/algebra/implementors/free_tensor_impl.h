@@ -97,14 +97,14 @@ template <typename FTImpl, template <typename> class StorageModel>
 FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::exp() const
 {
     return FreeTensor(
-            FreeTensorInterface::p_ctx, dtl::exp_wrapper(base_t::data())
+            this->context(), dtl::exp_wrapper(base_t::data())
     );
 }
 template <typename FTImpl, template <typename> class StorageModel>
 FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::log() const
 {
     return FreeTensor(
-            FreeTensorInterface::p_ctx, dtl::log_wrapper(base_t::data())
+            this->context(), dtl::log_wrapper(base_t::data())
     );
 }
 //template <typename FTImpl, template <typename> class StorageModel>
@@ -118,7 +118,7 @@ template <typename FTImpl, template <typename> class StorageModel>
 FreeTensor FreeTensorImplementation<FTImpl, StorageModel>::antipode() const
 {
     return FreeTensor(
-            FreeTensorInterface::p_ctx, dtl::antipode_wrapper(base_t::data())
+            this->context(), dtl::antipode_wrapper(base_t::data())
     );
 }
 template <typename FTImpl, template <typename> class StorageModel>
