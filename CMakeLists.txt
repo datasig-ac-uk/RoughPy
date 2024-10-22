@@ -375,10 +375,12 @@ elseif(DEFINED VCPKG_INSTALLED_DIR)
     if(GMP_INCLUDES AND GMP_LIBRARIES)
         add_library(GMP::GMP UNKNOWN IMPORTED GLOBAL)
         target_include_directories(GMP::GMP INTERFACE ${GMP_INCLUDES})
-        target_link_libraries(GMP::GMP INTERFACE ${GMP_LIBRARIES})
 
-        set_property(TARGET GMP::GMP PROPERTY
-            EXCLUDE_FROM_DEFAULT_BUILD_DEBUG TRUE)
+        set_target_properties(GMP::GMP PROPERTIES
+            IMPORTED_LOCATION "${GMP_LIBRARIES}"
+        )
+
+
     else()
         message(FATAL_ERROR "Could not locate gmp")
     endif()
