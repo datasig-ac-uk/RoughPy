@@ -355,6 +355,7 @@ find_package(PCGRandom REQUIRED)
 #find_package(Libalgebra_lite REQUIRED)
 
 find_package(PkgConfig REQUIRED)
+if (NOT WIN32)
 pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
 if (TARGET PkgConfig::GMP)
     add_library(GMP::GMP ALIAS PkgConfig::GMP)
@@ -375,6 +376,15 @@ elseif(DEFINED VCPKG_INSTALLED_DIR)
     endif()
 else()
     message(FATAL_ERROR "Could not locate gmp, no vcpkg")
+endif()
+else()
+    pkg_check_modules(MPIR IMPORTED_TARGET mpir)
+
+    if (NOT TARGET PkgConfig::MPIR)
+        message(FATAL_ERROR "Could not locate gmp, no vcpkg")
+    endif()
+
+    add_library(GMP::GMP ALIAS PkgConfig::MPIR)
 endif()
 
 # Now we get to adding our components. Let's do some global setup such as
