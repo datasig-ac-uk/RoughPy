@@ -195,10 +195,11 @@ if(NOT DEFINED pybind11_ROOT)
                     RESULT_VARIABLE _pybind11_install_result
                     OUTPUT_VARIABLE _pybind11_install_message
     )
-    message(STATUS "out: ${_pybind11_install_message}")
+
     if (NOT _pybind11_install_result AND NOT _pybind11_install_message MATCHES "Requirement already satisfied: pybind11")
         message(FATAL_ERROR "could not install pybind11")
     endif()
+
     unset(_pybind11_install_result)
     execute_process(COMMAND
             "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
