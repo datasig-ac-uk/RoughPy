@@ -137,7 +137,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload -r ${{ github.repository }} upload ${{ github.ref_name }} dist/*
+          gh -r ${{ github.repository }} release upload ${{ github.ref_name }} dist/*
 
       - name: Publish
         run: |
