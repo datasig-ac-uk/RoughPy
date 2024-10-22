@@ -211,6 +211,8 @@ if(NOT DEFINED pybind11_ROOT)
     if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
         message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
         set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
+    else()
+        message(FATAL_ERROR "Could not add pybind11 dir: ${_python_pybind11_dir_found} && ${_python_pybind11_dir}")
     endif ()
 endif ()
 
