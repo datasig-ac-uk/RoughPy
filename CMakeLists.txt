@@ -229,6 +229,9 @@ check_include_file_cxx(optional RPY_HAS_STD_OPTIONAL)
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
 set(RYP_BOOST_VERSION 1.81)
+
+## FindBoost is deprecated. VCPKG clearly doesn't have an answer for this yet
+cmake_policy(SET CMP0167 OLD)
 find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS url system)
 
 if (NOT RPY_HAS_STD_FILESYSTEM)
@@ -370,6 +373,9 @@ elseif(DEFINED VCPKG_INSTALLED_DIR)
         add_library(GMP::GMP UNKNOWN IMPORTED GLOBAL)
         target_include_directories(GMP::GMP INTERFACE ${GMP_INCLUDES})
         target_link_libraries(GMP::GMP INTERFACE ${GMP_LIBRARIES})
+
+        set_property(TARGET GMP::GMP PROPERTY
+            EXCLUDE_FROM_DEFAULT_BUILD_DEBUG TRUE)
     else()
         message(FATAL_ERROR "Could not locate gmp")
     endif()
