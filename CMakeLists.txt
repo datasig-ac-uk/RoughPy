@@ -207,8 +207,7 @@ if(NOT DEFINED pybind11_ROOT)
             OUTPUT_VARIABLE _python_pybind11_dir
             OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    message(STATUS "PYDIR ${_python_pybind11_dir}")
-    if (_python_pybind11_dir_found EQUAL 0 AND EXISTS "${_python_pybind11_dir}")
+    if (_python_pybind11_dir_found EQUAL 0)
         message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
         set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
     else()
