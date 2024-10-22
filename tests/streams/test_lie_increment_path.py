@@ -96,7 +96,7 @@ def test_path_creation_odd_data(data):
 def test_from_array_inferred_width_3_2_increments():
     data = np.array([[3, 7, 0], [0, 0, 1]])
     stream = LieIncrementStream.from_increments(data, depth=2,
-                                                coeffs=rp.DPreal)
+                                                coeffs=rp.DPReal)
     sig = stream.signature(depth=1)
 
     assert sig.width == 3
