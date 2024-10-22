@@ -355,7 +355,6 @@ find_package(PCGRandom REQUIRED)
 #find_package(Libalgebra_lite REQUIRED)
 
 find_package(PkgConfig REQUIRED)
-if (NOT WIN32)
 pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
 if (TARGET PkgConfig::GMP)
     add_library(GMP::GMP ALIAS PkgConfig::GMP)
@@ -363,7 +362,7 @@ elseif(DEFINED VCPKG_INSTALLED_DIR)
     find_path(GMP_INCLUDES NAMES gmp.h
     PATHS ${VCPKG_INSTALLED_DIR})
 
-    find_library(GMP_LIBRARIES gmp PATHS ${VCPKG_INSTALLED_DIR})
+    find_library(GMP_LIBRARIES gmp mpir PATHS ${VCPKG_INSTALLED_DIR})
 
     message(STATUS "GMP HEADERS: ${GMP_INCLUDES}")
     message(STATUS "GMP LIBRARIES: ${GMP_LIBRARIES}")
@@ -377,15 +376,7 @@ elseif(DEFINED VCPKG_INSTALLED_DIR)
 else()
     message(FATAL_ERROR "Could not locate gmp, no vcpkg")
 endif()
-else()
-    pkg_check_modules(MPIR IMPORTED_TARGET mpir)
 
-    if (NOT TARGET PkgConfig::MPIR)
-        message(FATAL_ERROR "Could not locate gmp, no vcpkg")
-    endif()
-
-    add_library(GMP::GMP ALIAS PkgConfig::MPIR)
-endif()
 
 # Now we get to adding our components. Let's do some global setup such as
 # setting the CXX standard and the shared library details.
