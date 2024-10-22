@@ -57,6 +57,10 @@ endif ()
 project(RoughPy VERSION ${_rpy_version})
 
 
+if (MSVC)
+    ## Disable non-compliant behaviour on windows... Comon MS>
+    add_compile_options("/permissive-")
+endif()
 
 
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
