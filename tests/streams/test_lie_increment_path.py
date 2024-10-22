@@ -102,7 +102,7 @@ def test_from_array_inferred_width_3_2_increments():
     assert sig.width == 3
     assert sig.max_degree == 1
     expected = rp.FreeTensor(np.array([1, 3, 7, 1]), width=3, depth=1,
-                             dtype=rp.DPReal
+                             dtype=rp.DPReal)
     assert sig == expected, f"{sig} != {expected}"
 
 
