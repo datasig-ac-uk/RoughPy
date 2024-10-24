@@ -180,12 +180,12 @@
 #endif
 
 #ifdef RPY_CPP_17
-#  define RPY_UNUSED [[maybe_unused]]
+#  define RPY_MAYBE_UNUSED [[maybe_unused]]
 #  define RPY_NO_DISCARD [[nodiscard]]
 #  define RPY_NO_RETURN [[noreturn]]
 #  define RPY_IF_CONSTEXPR constexpr
 #else
-#  define RPY_UNUSED
+#  define RPY_MAYBE_UNUSED
 #  define RPY_NO_DISCARD
 #  define RPY_IF_CONSTEXPR
 #  define RPY_NO_RETURN
@@ -196,6 +196,7 @@
 #else
 #  define RPY_UNUSED_VAR
 #endif
+#  define RPY_UNUSED(var) RPY_UNUSED_VAR var
 
 #if defined(RPY_GCC) || defined(RPY_CLANG)
 #  define RPY_UNREACHABLE() (__builtin_unreachable())

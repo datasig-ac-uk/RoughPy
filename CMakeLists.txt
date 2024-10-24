@@ -238,7 +238,9 @@ set(Boost_NO_WARN_NEW_VERSIONS ON)
 set(RYP_BOOST_VERSION 1.81)
 
 ## FindBoost is deprecated. VCPKG clearly doesn't have an answer for this yet
-cmake_policy(SET CMP0167 OLD)
+if (POLICY CMP0167)
+    cmake_policy(SET CMP0167 OLD)
+endif()
 find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS url system)
 
 if (NOT RPY_HAS_STD_FILESYSTEM)

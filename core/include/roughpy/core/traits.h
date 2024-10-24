@@ -68,6 +68,8 @@ using std::is_rvalue_reference;
 using std::is_union;
 using std::is_void;
 
+using std::is_integral_v;
+
 using std::is_arithmetic;
 using std::is_compound;
 using std::is_fundamental;
@@ -99,6 +101,7 @@ using std::is_trivially_destructible;
 using std::is_base_of;
 using std::is_convertible;
 using std::is_same;
+
 
 using std::add_const_t;
 using std::add_cv_t;
@@ -185,6 +188,10 @@ struct ConstLog2 : integral_constant<size_t, ConstLog2<N / 2>::value + 1>{ };
 template <>
 struct ConstLog2<1> : integral_constant<size_t, 0>{};
 
+
+
+template <typename T>
+RPY_INLINE_ALWAYS constexpr void ignore_unused(const T& RPY_UNUSED(arg)) {}
 
 }// namespace rpy
 
