@@ -8,7 +8,7 @@ using namespace rpy;
 
 void* AlignedMemory::do_allocate(std::size_t bytes, std::size_t alignment)
 {
-    return dtl::aligned_alloc(bytes, alignment);
+    return dtl::aligned_alloc(alignment, bytes);
 }
 
 void AlignedMemory::do_deallocate(
