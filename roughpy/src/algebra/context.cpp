@@ -362,7 +362,7 @@ static PyObject* RPyContext_str(PyObject* self)
     return RPyContext_repr(self);
 }
 
-RPY_UNUSED static PyObject*
+static PyObject*
 RPyContext_new(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     RPY_UNREACHABLE_RETURN(nullptr);
