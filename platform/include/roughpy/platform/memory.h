@@ -22,7 +22,7 @@
 #include "roughpy/core/helpers.h"
 #include "roughpy_platform_export.h"
 
-namespace rpy {
+namespace rpy { namespace mem {
 /**
  * @brief The size of chunks allocated by the default small object allocator
  *
@@ -155,6 +155,8 @@ RPY_ALLOC_FUNCTION(small_object_alloc);
  */
 RPY_FREE_FUNCTION(small_object_free);
 
+using PoolMemory = std::pmr::synchronized_pool_resource;
+
 }
 
 
@@ -181,7 +183,7 @@ get_base_memory_resource() noexcept;
  *
  * @return A pointer to the memory resource used for small object allocations.
  */
-RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT std::pmr::memory_resource*
+RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT small::PoolMemory*
 get_small_object_memory_resource() noexcept;
 
 /**
@@ -597,6 +599,7 @@ inline bool RcBase::dec_ref() const
     return false;
 }
 
+} // namespace mem
 }// namespace rpy
 
 #endif// ROUGHPY_PLATFORM_MEMORY_H

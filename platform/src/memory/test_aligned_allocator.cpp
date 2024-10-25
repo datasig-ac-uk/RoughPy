@@ -32,19 +32,19 @@ TEST_F(AlignedAllocatorTest, AllocationTest)
 {
     const size_t alignment = 16;
     const size_t size = 128;
-    void* ptr = rpy::align::aligned_alloc(alignment, size);
+    void* ptr = mem::align::aligned_alloc(alignment, size);
     ASSERT_NE(ptr, nullptr);
-    ASSERT_TRUE(rpy::align::is_pointer_aligned(ptr, alignment));
-    align::aligned_free(ptr, size);
+    ASSERT_TRUE(mem::align::is_pointer_aligned(ptr, alignment));
+    mem::align::aligned_free(ptr, size);
 }
 
 TEST_F(AlignedAllocatorTest, ZeroAllocationTest)
 {
     const size_t alignment = 16;
     const size_t size = 0;
-    void* ptr = rpy::align::aligned_alloc(alignment, size);
+    void* ptr = mem::align::aligned_alloc(alignment, size);
     ASSERT_EQ(ptr, nullptr);
-    align::aligned_free(ptr, size);
+    mem::align::aligned_free(ptr, size);
 }
 
 }// namespace

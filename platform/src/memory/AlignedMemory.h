@@ -10,7 +10,7 @@
 
 
 namespace rpy {
-
+namespace mem {
 class AlignedMemory : public std::pmr::memory_resource {
 protected:
     void* do_allocate(std::size_t bytes, std::size_t alignment) override;
@@ -24,6 +24,7 @@ public:
     static AlignedMemory* get() noexcept;
 };
 
-} // rpy
+} // namespace mem
+} // namespace rpy
 
 #endif //ALIGNEDMEMORY_H

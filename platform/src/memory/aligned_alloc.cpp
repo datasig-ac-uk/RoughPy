@@ -9,8 +9,10 @@
 
 #include <roughpy/core/macros.h>
 
+using namespace rpy;
 
-void* rpy::align::aligned_alloc(dimn_t alignment, dimn_t size) noexcept
+
+void* mem::align::aligned_alloc(dimn_t alignment, dimn_t size) noexcept
 {
     if (RPY_UNLIKELY(size == 0)) { return nullptr; }
     if (RPY_UNLIKELY(alignment == 0)) { alignment = alignof(std::max_align_t); }
@@ -28,7 +30,7 @@ void* rpy::align::aligned_alloc(dimn_t alignment, dimn_t size) noexcept
 #endif
 }
 
-void rpy::align::aligned_free(void* ptr, dimn_t size) noexcept
+void mem::align::aligned_free(void* ptr, dimn_t size) noexcept
 {
     ignore_unused(size);
 #ifdef RPY_MSVC

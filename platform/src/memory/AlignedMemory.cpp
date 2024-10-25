@@ -5,10 +5,11 @@
 #include "AlignedMemory.h"
 
 using namespace rpy;
+using namespace rpy::mem;
 
 void* AlignedMemory::do_allocate(std::size_t bytes, std::size_t alignment)
 {
-    return align::aligned_alloc(alignment, bytes);
+    return mem::align::aligned_alloc(alignment, bytes);
 }
 
 void AlignedMemory::do_deallocate(
@@ -17,7 +18,7 @@ void AlignedMemory::do_deallocate(
         std::size_t RPY_UNUSED(alignment)
 )
 {
-    align::aligned_free(p, bytes);
+    mem::align::aligned_free(p, bytes);
 }
 
 bool AlignedMemory::do_is_equal(const memory_resource& other) const noexcept
@@ -32,7 +33,7 @@ AlignedMemory* AlignedMemory::get() noexcept
 }
 
 
-std::pmr::memory_resource* rpy::get_base_memory_resource() noexcept
+std::pmr::memory_resource* mem::get_base_memory_resource() noexcept
 {
     return AlignedMemory::get();
 }

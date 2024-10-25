@@ -8,13 +8,13 @@
 
 #include "memory.h"
 
-namespace rpy {
-
-using PoolMemory = std::pmr::synchronized_pool_resource;
-
-PoolMemory* get_pool_memory() noexcept;
+namespace rpy { namespace mem {
 
 
+
+small::PoolMemory* get_pool_memory() noexcept;
+
+} //namespace mem
 }
 
 #endif //SMALL_OBJECT_MEMORY_H
