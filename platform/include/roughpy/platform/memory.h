@@ -318,6 +318,33 @@ public:
 };
 
 
+/*
+ * Reference counting and resource management
+ *
+ * We will make extensive use of reference counted smart pointers throughout
+ * RoughPy. The std::shared_ptr type is ok, but it has a very important downside
+ * is the size of two pointers, not just one. This is a problem because quite a
+ * lot of our uses will require a ref-counted pointer alongside some other
+ * pointer, which would mean a total size of three pointers. This has some
+ * fairly major consequences, especially when these objects appear in arrays.
+ *
+ * The alternative is a boost intrusive_ptr style reference counter, which
+ * relies on the object itself to provide the reference counting mechanism. This
+ * is great because it allows the smart pointer to be the size of one pointer,
+ * but it also has a problem. It uses a complicated mechanism of ADL external
+ * functions to increase and decrease the reference count. This is frustrating,
+ * because it means these functions have to be implemented whenever the class
+ * should support reference counting. (This is made easier with a base class,
+ * but this lacks flexibility in special cases.)
+ *
+ * We turn to Google's TSL for some inspiration. They use member functions to
+ * on the class to manage the reference count. This is more flexible because it
+ * allows us to make use of virtual functions in some special cases to customise
+ * the reference counting whilst still making use of the convenience of the base
+ * class and still having the one-pointer-sized smart pointer that we really
+ * need.
+ *
+ */
 
 
 // template <typename T>
@@ -327,6 +354,8 @@ public:
 //     { type.dec_ref() } -> std::convertible_to<bool>;
 //     { type.ref_count() } -> std::convertible_to<dimn_t>;
 // };
+
+
 
 
 /**
