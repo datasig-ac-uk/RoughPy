@@ -68,7 +68,6 @@ constexpr bool compare_impl(const S& lhs, const T& rhs) noexcept
     return lhs == rhs;
 }
 
-RPY_UNUSED
 inline bool
 compare_same(const void* lhs, const void* rhs, TypeInfo info) noexcept
 {
