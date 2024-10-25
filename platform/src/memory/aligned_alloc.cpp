@@ -20,7 +20,7 @@ void* rpy::dtl::aligned_alloc(dimn_t alignment, dimn_t size) noexcept
 
 #ifdef RPY_MSVC
     return _aligned_malloc(size, size);
-#else if defined(RPY_GCC) || defined(RPY_CLANG)
+#elif defined(RPY_GCC) || defined(RPY_CLANG)
     void *ptr;
     if (posix_memalign(&ptr, alignment, size) != 0) {
         ptr = nullptr;
@@ -34,7 +34,7 @@ void rpy::dtl::aligned_free(void* ptr, dimn_t size) noexcept
     ignore_unused(size);
 #ifdef RPY_MSVC
     _aligned_free(ptr);
-#else if defined(RPY_GCC) || defined(RPY_CLANG)
+#elif defined(RPY_GCC) || defined(RPY_CLANG)
     free(ptr);
 #endif
 }
