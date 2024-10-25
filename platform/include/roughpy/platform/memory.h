@@ -588,7 +588,7 @@ inline void RcBase::inc_ref() const noexcept
     RPY_DBG_ASSERT(old_rc > 0);
 }
 
-inline bool RcBase::dec_ref() const noexcept
+inline bool RcBase::dec_ref() const
 {
     RPY_DBG_ASSERT(m_rc.load() > 0);
     if (m_rc.fetch_sub(1, std::memory_order_acq_rel) == 1) {
