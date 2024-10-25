@@ -25,15 +25,7 @@
 namespace rpy { namespace mem {
 
 
-/**
- * @brief Specifies the alignment requirement for data, in bytes.
- *
- * This constant defines the standard alignment, in bytes, for data
- * within the system. It is used to ensure that data structures and
- * allocations are aligned properly in memory to optimize performance
- * and avoid potential issues with misaligned access.
- */
-inline constexpr dimn_t alloc_data_alignment = 64;
+
 
 #define RPY_ALLOC_FUNCTION(name)                                               \
     RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT void* name(                         \
@@ -46,6 +38,16 @@ inline constexpr dimn_t alloc_data_alignment = 64;
 
 
 namespace align {
+
+/**
+ * @brief Specifies the alignment requirement for data, in bytes.
+ *
+ * This constant defines the standard alignment, in bytes, for data
+ * within the system. It is used to ensure that data structures and
+ * allocations are aligned properly in memory to optimize performance
+ * and avoid potential issues with misaligned access.
+ */
+inline constexpr dimn_t alloc_data_alignment = 64;
 
 /**
  * @brief Allocates memory with a specified alignment.
