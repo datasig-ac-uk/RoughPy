@@ -118,8 +118,6 @@ RPY_FREE_FUNCTION(small_object_free);
 
 namespace align {
 
-
-
 /**
  * @brief Checks if a given value is a valid alignment.
  *
