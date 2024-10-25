@@ -20,7 +20,7 @@ mem::small::PoolMemory* mem::get_pool_memory() noexcept
     return &memory_resource;
 }
 
-mem::small::PoolMemory* mem::get_small_object_memory_resource() noexcept
+mem::small::PoolMemory* mem::small::get_small_object_memory_resource() noexcept
 {
     return get_pool_memory();
 }

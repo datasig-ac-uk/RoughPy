@@ -116,6 +116,35 @@ constexpr bool is_pointer_aligned(const volatile void* ptr, std::size_t alignmen
 }
 
 
+/**
+ * @brief Retrieves the base memory resource for the current allocations
+ *
+ * This function provides access to the base memory resource, which is used as
+ * the underlying allocator for memory management operations. It is typically
+ * employed in scenarios where custom memory resources or allocators are in
+ * play, allowing adjustments or inquiries regarding the foundational memory
+ * handling mechanism.
+ *
+ * @return The base memory resource currently in use
+ */
+RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT std::pmr::memory_resource*
+get_base_memory_resource() noexcept;
+
+/**
+ * @brief Retrieves the default allocator instance.
+ *
+ * This function provides access to the default allocator,
+ * which is responsible for managing memory allocations
+ * and deallocations in a standardized manner.
+ *
+ * @return A pointer to the default allocator instance.
+ */
+template <typename Ty>
+std::pmr::polymorphic_allocator<Ty> get_default_allocator() noexcept
+{
+    return std::pmr::polymorphic_allocator<Ty>(get_base_memory_resource());
+}
+
 }
 
 
@@ -171,23 +200,6 @@ RPY_FREE_FUNCTION(small_object_free);
 
 using PoolMemory = std::pmr::synchronized_pool_resource;
 
-}
-
-
-/**
- * @brief Retrieves the base memory resource for the current allocations
- *
- * This function provides access to the base memory resource, which is used as
- * the underlying allocator for memory management operations. It is typically
- * employed in scenarios where custom memory resources or allocators are in
- * play, allowing adjustments or inquiries regarding the foundational memory
- * handling mechanism.
- *
- * @return The base memory resource currently in use
- */
-RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT std::pmr::memory_resource*
-get_base_memory_resource() noexcept;
-
 /**
  * @brief Retrieves the memory resource used for small object allocations.
  *
@@ -197,39 +209,27 @@ get_base_memory_resource() noexcept;
  *
  * @return A pointer to the memory resource used for small object allocations.
  */
-RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT small::PoolMemory*
+RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT PoolMemory*
 get_small_object_memory_resource() noexcept;
 
-/**
- * @brief Retrieves the default allocator instance.
- *
- * This function provides access to the default allocator,
- * which is responsible for managing memory allocations
- * and deallocations in a standardized manner.
- *
- * @return A pointer to the default allocator instance.
- */
-template <typename Ty>
-std::pmr::polymorphic_allocator<Ty> get_default_allocator() noexcept
+template <typename T>
+class PoolAllocator : public std::pmr::polymorphic_allocator<T>
 {
-    return std::pmr::polymorphic_allocator<Ty>(get_base_memory_resource());
-}
+    using base_t = std::pmr::polymorphic_allocator<T>;
+public:
+
+    using base_t::base_t;
+
+    PoolAllocator()
+        : base_t(get_small_object_memory_resource())
+    {
+    }
+
+};
 
 
-/**
- * @brief Retrieves the small object allocator.
- *
- * This method provides access to a specialized allocator designed
- * for efficiently managing small objects.
- *
- * @return The small object allocator.
- */
-template <typename Ty>
-std::pmr::polymorphic_allocator<Ty> get_small_object_allocator() noexcept
-{
-    return std::pmr::polymorphic_allocator<Ty>(get_small_object_memory_resource(
-    ));
 }
+
 
 /**
  * @class AlignedAllocator
@@ -243,7 +243,7 @@ std::pmr::polymorphic_allocator<Ty> get_small_object_allocator() noexcept
  * @tparam Ty The type of objects to be allocated.
  * @tparam Alignment The alignment in bytes for the memory allocation.
  */
-template <typename Ty, size_t Alignment = alloc_data_alignment>
+template <typename Ty, size_t Alignment = align::alloc_data_alignment>
 class AlignedAllocator
 {
     static_assert(
@@ -262,7 +262,7 @@ public:
     using difference_type = std::ptrdiff_t;
 
     static constexpr size_t alignment
-            = std::max(alignof(Ty), alloc_data_alignment);
+            = std::max(alignof(Ty), Alignment);
 
     // Rebind allocator to another type
     template <typename U>

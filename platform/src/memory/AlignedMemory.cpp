@@ -33,7 +33,7 @@ AlignedMemory* AlignedMemory::get() noexcept
 }
 
 
-std::pmr::memory_resource* mem::get_base_memory_resource() noexcept
+std::pmr::memory_resource* mem::align::get_base_memory_resource() noexcept
 {
     return AlignedMemory::get();
 }

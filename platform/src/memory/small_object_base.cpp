@@ -10,7 +10,7 @@ using namespace rpy;
 
 
 void* mem::SmallObjectBase::operator new(dimn_t size) {
-    return small::small_object_alloc(size, small_alloc_chunk_size);
+    return small::small_object_alloc(size, small::small_alloc_chunk_size);
 }
 
 void mem::SmallObjectBase::operator delete(void* p, dimn_t size) {
