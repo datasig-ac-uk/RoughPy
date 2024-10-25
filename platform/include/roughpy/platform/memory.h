@@ -243,7 +243,7 @@ public:
  * @tparam Ty The type of objects to be allocated.
  * @tparam Alignment The alignment in bytes for the memory allocation.
  */
-template <typename Ty, size_t Alignment = align::alloc_data_alignment>
+template <typename Ty, size_t Alignment = alignof(Ty)>
 class AlignedAllocator
 {
     static_assert(
