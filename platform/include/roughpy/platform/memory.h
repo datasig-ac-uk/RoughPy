@@ -5,6 +5,7 @@
 #ifndef ROUGHPY_PLATFORM_MEMORY_H
 #define ROUGHPY_PLATFORM_MEMORY_H
 
+#pragma once
 
 #include <atomic>
 #include <limits>
