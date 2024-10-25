@@ -412,7 +412,7 @@ private:
 
 public:
 
-    Rc(nullptr_t) noexcept : p_data(nullptr) {}
+    Rc(std::nullptr_t) noexcept : p_data(nullptr) {}
 
     Rc(pointer ptr)
     {
@@ -543,7 +543,7 @@ class RcBase : public SmallObjectBase
     mutable std::atomic_intptr_t m_rc;
 
     template <typename Derived>
-    friend Rc<Derived>;
+    friend class Rc;
 
 protected:
     RcBase() = default;
@@ -581,14 +581,14 @@ protected:
     }
 };
 
-inline void RcBase::inc_ref() const
+inline void RcBase::inc_ref() const noexcept
 {
     auto old_rc = m_rc.fetch_add(1, std::memory_order_relaxed);
     ignore_unused(old_rc);
     RPY_DBG_ASSERT(old_rc > 0);
 }
 
-inline bool RcBase::dec_ref() const
+inline bool RcBase::dec_ref() const noexcept
 {
     RPY_DBG_ASSERT(m_rc.load() > 0);
     if (m_rc.fetch_sub(1, std::memory_order_acq_rel) == 1) {
