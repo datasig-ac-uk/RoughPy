@@ -16,6 +16,7 @@ void* rpy::dtl::aligned_alloc(dimn_t alignment, dimn_t size) noexcept
 {
     if (RPY_UNLIKELY(size == 0)) { return nullptr; }
     if (RPY_UNLIKELY(alignment == 0)) { alignment = alignof(std::max_align_t); }
+    RPY_DBG_ASSERT(is_alignment(alignment));
 
 #ifdef RPY_MSVC
     return _aligned_malloc(size, size);
