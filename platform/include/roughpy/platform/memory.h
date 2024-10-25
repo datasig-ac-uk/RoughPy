@@ -556,6 +556,7 @@ protected:
 inline void RcBase::inc_ref() const
 {
     auto old_rc = m_rc.fetch_add(1, std::memory_order_relaxed);
+    ignore_unused(old_rc);
     RPY_DBG_ASSERT(old_rc > 0);
 }
 
