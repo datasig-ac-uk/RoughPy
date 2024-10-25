@@ -8,7 +8,6 @@
 
 #include <deque>
 
-
 #include "roughpy/platform/memory.h"
 
 namespace rpy {
