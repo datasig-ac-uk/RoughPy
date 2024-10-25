@@ -12,15 +12,16 @@
 #include <roughpy/core/macros.h>
 
 
-void* rpy::dtl::aligned_alloc(dimn_t size, dimn_t alignment) noexcept
+void* rpy::dtl::aligned_alloc(dimn_t alignment, dimn_t size) noexcept
 {
-    if (size == 0) { return nullptr; }
+    if (RPY_UNLIKELY(size == 0)) { return nullptr; }
+    if (RPY_UNLIKELY(alignment == 0)) { alignment = alignof(std::max_align_t); }
 
 #ifdef RPY_MSVC
-    return _aligned_malloc(alignment, size);
+    return _aligned_malloc(size, size);
 #else if defined(RPY_GCC) || defined(RPY_CLANG)
     void *ptr;
-    if (posix_memalign(&ptr, size, alignment) != 0) {
+    if (posix_memalign(&ptr, alignment, size) != 0) {
         ptr = nullptr;
     }
     return ptr;
