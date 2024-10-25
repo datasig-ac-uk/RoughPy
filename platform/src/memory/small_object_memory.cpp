@@ -9,16 +9,16 @@
 using namespace rpy;
 
 
-rpy::PoolMemory* rpy::get_pool_memory() noexcept
+mem::small::PoolMemory* mem::get_pool_memory() noexcept
 {
-    static PoolMemory memory_resource(
+    static mem::small::PoolMemory memory_resource(
             std::pmr::pool_options{mem::small_alloc_chunk_size},
             mem::AlignedMemory::get()
     );
     return &memory_resource;
 }
 
-std::pmr::memory_resource* mem::get_small_object_memory_resource() noexcept
+mem::small::PoolMemory* mem::get_small_object_memory_resource() noexcept
 {
-    return rpy::get_pool_memory();
+    return get_pool_memory();
 }
