@@ -101,6 +101,7 @@ constexpr enable_if_t<is_integral_v<I>, bool> is_alignment(I align)
     return align > 0 && (align & (align - 1)) == 0;
 }
 
+
 /**
  * @brief Checks if a given pointer is aligned to a specified boundary.
  *
@@ -583,9 +584,7 @@ protected:
 
 inline void RcBase::inc_ref() const noexcept
 {
-    auto old_rc = m_rc.fetch_add(1, std::memory_order_relaxed);
-    ignore_unused(old_rc);
-    RPY_DBG_ASSERT(old_rc > 0);
+    m_rc.fetch_add(1, std::memory_order_relaxed);
 }
 
 inline bool RcBase::dec_ref() const

@@ -50,80 +50,81 @@ protected:
         bool dec_ref() const noexcept { return (--m_rc) == 0; }
     };
 
-    CustomImplementationRefCountableObject m_obj;
-    Rc<CustomImplementationRefCountableObject> p_obj = nullptr;
+    using Obj = CustomImplementationRefCountableObject;
+    using Ptr = Rc<Obj>;
 
-    void SetUp() override
-    {
-        // Code here will be called immediately after the constructor (right
-        // before each test).
-        p_obj = Rc<CustomImplementationRefCountableObject>(&m_obj);
-    }
 
-    void TearDown() override
-    {
-        // Code here will be called immediately after each test (right before
-        // the destructor).
-    }
+
 };
 
 TEST_F(RcRefCountingTest, InitialRefCountIsOne)
 {
-    EXPECT_EQ(p_obj->get_ref_count(), 1);
+    Obj object;
+    Ptr p(&object);
+
+    EXPECT_EQ(p->get_ref_count(), 1);
 }
 
 TEST_F(RcRefCountingTest, IncreaseRefCount)
 {
-    Rc<CustomImplementationRefCountableObject> obj2
-            = p_obj;// Incrementing the reference count
-    EXPECT_EQ(p_obj->get_ref_count(), 2);
-    EXPECT_EQ(obj2->get_ref_count(), 2);
+    Obj object;
+    Ptr p(&object);
+
+    Ptr p2 = p;// Incrementing the reference count
+    EXPECT_EQ(p->get_ref_count(), 2);
+    EXPECT_EQ(p2->get_ref_count(), 2);
 }
 
 TEST_F(RcRefCountingTest, DecreaseRefCount)
 {
+    Obj object;
+    Ptr p(&object);
+
+    EXPECT_EQ(p->get_ref_count(), 1);
     {
-        Rc<CustomImplementationRefCountableObject> obj2
-                = p_obj;// Incrementing the reference count
-        EXPECT_EQ(obj2->get_ref_count(), 2);
-    }// obj2 goes out of scope here, reference count decrements
-    EXPECT_EQ(p_obj->get_ref_count(), 1);
+        Ptr p2(p);// Incrementing the reference count
+        EXPECT_EQ(p2->get_ref_count(), 2);
+    }// p2 goes out of scope here, reference count decrements
+    EXPECT_EQ(p->get_ref_count(), 1);
 }
 
 TEST_F(RcRefCountingTest, MultipleIncrementsAndDecrements)
 {
-    {
-        Rc<CustomImplementationRefCountableObject> obj2
-                = p_obj;// Incrementing the reference count
-        Rc<CustomImplementationRefCountableObject> obj3
-                = p_obj;                     // Incrementing the reference count
-        EXPECT_EQ(p_obj->get_ref_count(), 3);// ref count should be 3 now
-        EXPECT_EQ(obj2->get_ref_count(), 3);
-        EXPECT_EQ(obj3->get_ref_count(), 3);
-    }// obj2 and obj3 go out of scope here, reference count decrements
-    EXPECT_EQ(p_obj->get_ref_count(), 1);
-}
+    Obj object;
+    Ptr p(&object);
 
-TEST_F(RcRefCountingTest, CustomIncRefWorks)
-{
-    p_obj->inc_ref();// Manually incrementing the reference count
-    EXPECT_EQ(p_obj->get_ref_count(), 2);
+    {
+        Ptr p2(p);
+        Ptr p3(p);
+
+        EXPECT_EQ(p->get_ref_count(), 3);// ref count should be 3 now
+        EXPECT_EQ(p2->get_ref_count(), 3);
+        EXPECT_EQ(p3->get_ref_count(), 3);
+    }// obj2 and obj3 go out of scope here, reference count decrements
+
+    EXPECT_EQ(p->get_ref_count(), 1);
 }
 
 
 TEST_F(RcRefCountingTest, ResetdecreasesRefCount)
 {
-    EXPECT_EQ(p_obj->get_ref_count(), 1);
-    p_obj.reset();
-    EXPECT_EQ(m_obj.get_ref_count(), 0);
-    EXPECT_EQ(p_obj.get(), nullptr);
+    Obj object;
+    Ptr p(&object);
+
+    EXPECT_EQ(p->get_ref_count(), 1);
+    p.reset();
+    EXPECT_EQ(object.get_ref_count(), 0);
+    EXPECT_EQ(p.get(), nullptr);
 }
 
 TEST_F(RcRefCountingTest, ReleaseDoesNotReducRefCount)
 {
-    EXPECT_EQ(p_obj->get_ref_count(), 1);
-    auto* ptr = p_obj.release();
-    EXPECT_EQ(m_obj.get_ref_count(), 1);
-    EXPECT_EQ(p_obj.get(), nullptr);
-    EXPECT_EQ(ptr, &m_obj);
+    Obj object;
+    Ptr p(&object);
+
+    EXPECT_EQ(p->get_ref_count(), 1);
+    auto* ptr = p.release();
+    EXPECT_EQ(object.get_ref_count(), 1);
+    EXPECT_EQ(p.get(), nullptr);
+    EXPECT_EQ(ptr, &object);
 }

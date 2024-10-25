@@ -5,9 +5,7 @@
 
 #include "memory.h"
 
-#ifdef RPY_MSVC
 #include <cstdlib>
-#endif
 
 #include <roughpy/core/macros.h>
 
@@ -22,7 +20,8 @@ void* rpy::align::aligned_alloc(dimn_t alignment, dimn_t size) noexcept
     return _aligned_malloc(size, size);
 #elif defined(RPY_GCC) || defined(RPY_CLANG)
     void *ptr;
-    if (posix_memalign(&ptr, alignment, size) != 0) {
+    if (int err = posix_memalign(&ptr, std::max(alignment, sizeof(void*)), size) != 0) {
+        ignore_unused(err);
         ptr = nullptr;
     }
     return ptr;
