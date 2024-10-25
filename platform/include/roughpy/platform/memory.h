@@ -5,7 +5,6 @@
 #ifndef ROUGHPY_PLATFORM_MEMORY_H
 #define ROUGHPY_PLATFORM_MEMORY_H
 
-#include "errors.h"
 
 #include <atomic>
 #include <limits>
@@ -18,6 +17,7 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
+#include "errors.h"
 #include "roughpy_platform_export.h"
 
 namespace rpy {
