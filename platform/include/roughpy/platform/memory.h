@@ -30,6 +30,8 @@ namespace rpy {
  */
 inline constexpr dimn_t small_alloc_chunk_size = 64;
 
+inline constexpr dimn_t small_alloc_max_chunks = 4096 / small_alloc_chunk_size;
+
 /**
  * @brief Specifies the alignment requirement for data, in bytes.
  *
@@ -49,8 +51,8 @@ inline constexpr dimn_t alloc_data_alignment = 64;
     ROUGHPY_PLATFORM_EXPORT                                                    \
     void name(void* ptr, dimn_t size) noexcept
 
-namespace dtl {
 
+namespace align {
 
 /**
  * @brief Allocates memory with a specified alignment.
@@ -81,42 +83,6 @@ RPY_ALLOC_FUNCTION(aligned_alloc);
  */
 RPY_FREE_FUNCTION(aligned_free);
 
-
-/**
- * @brief Allocates a small object with the specified size and alignment.
- *
- * This function allocates a small memory object of the given size, ensuring
- * that the object's starting address meets the specified alignment
- * requirements. If the size is zero, the function returns nullptr.
- *
- * @param alignment The alignment requirement for the small object. Must be a
- * power of two.
- * @param size The size of the small object to allocate.
- * @return A pointer to the allocated small object, or nullptr if the allocation
- * fails or if size is zero.
- */
-RPY_ALLOC_FUNCTION(small_object_alloc);
-
-
-/**
- * @brief Frees a small object of a specified size.
- *
- * This function releases a block of memory that was previously allocated for a
- * small object. The behavior is implementation-defined depending on the
- * operating system and compiler being used.
- *
- * @param ptr A pointer to the small object memory block to free.
- * @param size The size of the small object memory block. This parameter is used
- * to facilitate the memory free operation.
- */
-RPY_FREE_FUNCTION(small_object_free);
-
-
-
-}// namespace dtl
-
-
-namespace align {
 
 /**
  * @brief Checks if a given value is a valid alignment.
@@ -153,6 +119,40 @@ constexpr bool is_pointer_aligned(const volatile void* ptr, std::size_t alignmen
     return bit_cast<std::uintptr_t>(ptr) % alignment == 0;
 }
 
+
+}
+
+
+namespace small {
+
+/**
+ * @brief Allocates a small object with the specified size and alignment.
+ *
+ * This function allocates a small memory object of the given size, ensuring
+ * that the object's starting address meets the specified alignment
+ * requirements. If the size is zero, the function returns nullptr.
+ *
+ * @param alignment The alignment requirement for the small object. Must be a
+ * power of two.
+ * @param size The size of the small object to allocate.
+ * @return A pointer to the allocated small object, or nullptr if the allocation
+ * fails or if size is zero.
+ */
+RPY_ALLOC_FUNCTION(small_object_alloc);
+
+
+/**
+ * @brief Frees a small object of a specified size.
+ *
+ * This function releases a block of memory that was previously allocated for a
+ * small object. The behavior is implementation-defined depending on the
+ * operating system and compiler being used.
+ *
+ * @param ptr A pointer to the small object memory block to free.
+ * @param size The size of the small object memory block. This parameter is used
+ * to facilitate the memory free operation.
+ */
+RPY_FREE_FUNCTION(small_object_free);
 
 }
 
@@ -277,7 +277,7 @@ public:
     {
         if (RPY_UNLIKELY(size == 0)) { return nullptr; }
 
-        void* ptr = dtl::aligned_alloc(alignment, size * sizeof(Ty));
+        void* ptr = align::aligned_alloc(alignment, size * sizeof(Ty));
         if (RPY_UNLIKELY(!ptr)) { throw std::bad_alloc(); }
 
         return static_cast<pointer>(ptr);
@@ -286,7 +286,7 @@ public:
     // Deallocate memory
     void deallocate(pointer p, size_type n) noexcept
     {
-        dtl::aligned_free(p, n * sizeof(Ty));
+        align::aligned_free(p, n * sizeof(Ty));
     }
 
     // Maximum size

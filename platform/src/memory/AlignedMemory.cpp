@@ -8,16 +8,16 @@ using namespace rpy;
 
 void* AlignedMemory::do_allocate(std::size_t bytes, std::size_t alignment)
 {
-    return dtl::aligned_alloc(alignment, bytes);
+    return align::aligned_alloc(alignment, bytes);
 }
 
 void AlignedMemory::do_deallocate(
         void* p,
         std::size_t bytes,
-        std::size_t alignment
+        std::size_t RPY_UNUSED(alignment)
 )
 {
-    return dtl::aligned_free(p, bytes);
+    align::aligned_free(p, bytes);
 }
 
 bool AlignedMemory::do_is_equal(const memory_resource& other) const noexcept

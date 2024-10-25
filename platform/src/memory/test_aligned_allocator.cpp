@@ -32,19 +32,19 @@ TEST_F(AlignedAllocatorTest, AllocationTest)
 {
     const size_t alignment = 16;
     const size_t size = 128;
-    void* ptr = rpy::dtl::aligned_alloc(alignment, size);
+    void* ptr = rpy::align::aligned_alloc(alignment, size);
     ASSERT_NE(ptr, nullptr);
     ASSERT_TRUE(rpy::align::is_pointer_aligned(ptr, alignment));
-    dtl::aligned_free(ptr, size);
+    align::aligned_free(ptr, size);
 }
 
 TEST_F(AlignedAllocatorTest, ZeroAllocationTest)
 {
     const size_t alignment = 16;
     const size_t size = 0;
-    void* ptr = rpy::dtl::aligned_alloc(alignment, size);
+    void* ptr = rpy::align::aligned_alloc(alignment, size);
     ASSERT_EQ(ptr, nullptr);
-    dtl::aligned_free(ptr, size);
+    align::aligned_free(ptr, size);
 }
 
 }// namespace

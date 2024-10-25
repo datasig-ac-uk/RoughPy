@@ -41,6 +41,9 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/container/small_vector.hpp>
 
+
+#include "roughpy/platform/memory.h"
+
 #include "host_buffer.h"
 #include "host_event.h"
 #include "host_kernel.h"
@@ -210,7 +213,7 @@ Buffer CPUDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
 }
 void CPUDeviceHandle::raw_free(void* pointer, dimn_t size) const
 {
-    aligned_free(pointer);
+    aligned_free(pointer, size);
 }
 
 template <typename... Args>
