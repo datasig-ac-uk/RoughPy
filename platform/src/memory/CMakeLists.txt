@@ -2,8 +2,20 @@
 
 set(INCLUDE_ROOT "${RoughPy_Platform_SOURCE_DIR}/include/roughpy/")
 
+set(CONTAINERS_ROOT "${INCLUDE_ROOT}/platform/containers")
+
 target_sources(RoughPy_Platform PRIVATE
     ${INCLUDE_ROOT}/platform/memory.h
+    ${CONTAINERS_ROOT}/deque.h
+    ${CONTAINERS_ROOT}/hash_map.h
+    ${CONTAINERS_ROOT}/flat_map.h
+    ${CONTAINERS_ROOT}/flat_set.h
+    ${CONTAINERS_ROOT}/hash_set.h
+    ${CONTAINERS_ROOT}/list.h
+    ${CONTAINERS_ROOT}/map.h
+    ${CONTAINERS_ROOT}/set.h
+    ${CONTAINERS_ROOT}/small_vector.h
+    ${CONTAINERS_ROOT}/vector.h
     aligned_alloc.cpp
     small_object_base.cpp
     AlignedMemory.cpp
@@ -13,6 +25,9 @@ target_sources(RoughPy_Platform PRIVATE
     small_object_memory.h
 )
 
+target_include_directories(RoughPy_Platform PRIVATE
+        "${RoughPy_Platform_SOURCE_DIR}/include"
+)
 
 if (ROUGHPY_BUILD_TESTS)
 
