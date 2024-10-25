@@ -52,9 +52,7 @@ protected:
 
     using Obj = CustomImplementationRefCountableObject;
     using Ptr = Rc<Obj>;
-
-
-
+    
 };
 
 TEST_F(RcRefCountingTest, InitialRefCountIsOne)
