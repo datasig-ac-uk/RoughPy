@@ -245,12 +245,12 @@ public:
     }
 
     // Allocate memory
-    RPY_NO_DISCARD pointer allocate(size_type bytes, const void* hint = nullptr)
+    RPY_NO_DISCARD pointer allocate(size_type size, const void* hint = nullptr)
     {
-        if (bytes == 0) { return nullptr; }
+        if (RPY_UNLIKELY(size == 0)) { return nullptr; }
 
-        void* ptr = dtl::aligned_alloc(bytes * sizeof(Ty), alignment);
-        if (!ptr) { throw std::bad_alloc(); }
+        void* ptr = dtl::aligned_alloc(alignment, size * sizeof(Ty));
+        if (RPY_UNLIKELY(!ptr)) { throw std::bad_alloc(); }
 
         return static_cast<pointer>(ptr);
     }
