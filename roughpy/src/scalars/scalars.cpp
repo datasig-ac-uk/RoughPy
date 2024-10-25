@@ -282,7 +282,7 @@ void python::init_scalars(pybind11::module_& m)
         type = scalars::ScalarTypeCode::NAME;                                  \
         break
 
-RPY_UNUSED static const scalars::ScalarType*
+static const scalars::ScalarType*
 dlpack_dtype_to_scalar_type(DLDataType dtype, DLDevice device)
 {
     using rpy::devices::DeviceType;
