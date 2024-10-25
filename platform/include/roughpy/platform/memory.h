@@ -614,6 +614,11 @@ inline bool RcBase::dec_ref() const
 }
 
 } // namespace mem
+
+
+// Rc is going to be used a lot, so alias it here
+using mem::Rc;
+
 }// namespace rpy
 
 #endif// ROUGHPY_PLATFORM_MEMORY_H
