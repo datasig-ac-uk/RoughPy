@@ -113,7 +113,7 @@ TEST_F(TestCPUDeviceOCL, TestCreateKernelFromSource)
     EXPECT_EQ(kernel->name(), "test_kernel");
 
     dimn_t count = 50;
-    auto buf = device->raw_alloc(count * sizeof(float), sizeof(float));
+    auto buf = device->raw_alloc(count * sizeof(float), alignof(float));
     auto* raw = static_cast<float*>(buf.ptr());
 
     for (dimn_t i = 0; i < count; ++i) { raw[i] = static_cast<float>(i); }
