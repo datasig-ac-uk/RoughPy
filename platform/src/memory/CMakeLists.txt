@@ -19,6 +19,7 @@ if (ROUGHPY_BUILD_TESTS)
     add_executable(RoughPy_Platform_test_memory
         test_aligned_allocator.cpp
         test_small_object_allocator.cpp
+        test_ref_count_pointer.cpp
     )
 
     target_link_libraries(RoughPy_Platform_test_memory PRIVATE
