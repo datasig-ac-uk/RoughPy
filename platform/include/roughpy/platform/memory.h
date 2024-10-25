@@ -23,14 +23,7 @@
 #include "roughpy_platform_export.h"
 
 namespace rpy { namespace mem {
-/**
- * @brief The size of chunks allocated by the default small object allocator
- *
- *
- */
-inline constexpr dimn_t small_alloc_chunk_size = 64;
 
-inline constexpr dimn_t small_alloc_max_chunks = 4096 / small_alloc_chunk_size;
 
 /**
  * @brief Specifies the alignment requirement for data, in bytes.
@@ -125,6 +118,25 @@ constexpr bool is_pointer_aligned(const volatile void* ptr, std::size_t alignmen
 
 
 namespace small {
+
+/**
+ * @brief Defines the size of chunks for small memory allocations.
+ *
+ * This constant represents the size, in bytes, of individual chunks
+ * used for small memory allocations. It is utilized to manage memory
+ * allocation efficiently for small objects by dividing the memory into
+ * fixed-size chunks.
+ */
+inline constexpr dimn_t small_alloc_chunk_size = 64;
+
+/**
+ * @brief Defines the maximum number of chunks for small allocations.
+ *
+ * This constant represents the upper limit on the number of chunks
+ * that can be allocated for small memory allocations. It is used to
+ * limit the allocation size and manage memory usage efficiently.
+ */
+inline constexpr dimn_t small_alloc_max_chunks = 4096 / small_alloc_chunk_size;
 
 /**
  * @brief Allocates a small object with the specified size and alignment.

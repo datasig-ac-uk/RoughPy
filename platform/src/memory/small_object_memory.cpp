@@ -8,11 +8,13 @@
 
 using namespace rpy;
 
-
 mem::small::PoolMemory* mem::get_pool_memory() noexcept
 {
     static mem::small::PoolMemory memory_resource(
-            std::pmr::pool_options{mem::small_alloc_chunk_size},
+            std::pmr::pool_options{
+                    small::small_alloc_max_chunks,
+                    small::small_alloc_chunk_size
+            },
             mem::AlignedMemory::get()
     );
     return &memory_resource;
