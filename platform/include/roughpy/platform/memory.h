@@ -64,10 +64,62 @@ constexpr enable_if_t<is_integral_v<I>, bool> is_alignment(I align)
 
 }// namespace dtl
 
+/**
+ * @brief Retrieves the base memory resource for the current allocations
+ *
+ * This function provides access to the base memory resource, which is used as
+ * the underlying allocator for memory management operations. It is typically
+ * employed in scenarios where custom memory resources or allocators are in
+ * play, allowing adjustments or inquiries regarding the foundational memory
+ * handling mechanism.
+ *
+ * @return The base memory resource currently in use
+ */
 RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT std::pmr::memory_resource*
 get_base_memory_resource() noexcept;
+
+/**
+ * @brief Retrieves the memory resource used for small object allocations.
+ *
+ * This function returns the memory resource that is utilized for the allocation
+ * of small objects, enhancing memory management efficiency for frequently
+ * created small objects.
+ *
+ * @return A pointer to the memory resource used for small object allocations.
+ */
 RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT std::pmr::memory_resource*
 get_small_object_memory_resource() noexcept;
+
+/**
+ * @brief Retrieves the default allocator instance.
+ *
+ * This function provides access to the default allocator,
+ * which is responsible for managing memory allocations
+ * and deallocations in a standardized manner.
+ *
+ * @return A pointer to the default allocator instance.
+ */
+template <typename Ty>
+std::pmr::polymorphic_allocator<Ty> get_default_allocator() noexcept
+{
+    return std::pmr::polymorphic_allocator<Ty>(get_base_memory_resource());
+}
+
+
+/**
+ * @brief Retrieves the small object allocator.
+ *
+ * This method provides access to a specialized allocator designed
+ * for efficiently managing small objects.
+ *
+ * @return The small object allocator.
+ */
+template <typename Ty>
+std::pmr::polymorphic_allocator<Ty> get_small_object_allocator() noexcept
+{
+    return std::pmr::polymorphic_allocator<Ty>(get_small_object_memory_resource(
+    ));
+}
 
 /**
  * @class AlignedAllocator
@@ -183,6 +235,16 @@ RPY_NO_DISCARD constexpr bool operator!=(
     return TyAlign != UyAlign;
 }
 
+/**
+ * @brief Base class for small object allocation.
+ *
+ * Provides a base class for objects that utilize a custom
+ * allocator optimized for small objects.
+ *
+ * This class typically serves as a base for other classes
+ * to inherit from, enabling efficient memory management
+ * for small-sized objects.
+ */
 class ROUGHPY_PLATFORM_EXPORT SmallObjectBase
 {
 public:
@@ -190,25 +252,54 @@ public:
     void operator delete(void* ptr, dimn_t size);
 };
 
+
+
+
+// template <typename T>
+// concept ReferenceCountable = requires(const T& type)
+// {
+//     { type.inc_ref() } -> std::convertible_to<void>;
+//     { type.dec_ref() } -> std::convertible_to<bool>;
+//     { type.ref_count() } -> std::convertible_to<dimn_t>;
+// };
+
+
+/**
+ * @brief A reference-counted class for resource management
+ *
+ * This class implements a simple reference counting mechanism which helps
+ * in managing the lifetime of objects. It ensures that the resource is
+ * properly released when there are no more references to it.
+ *
+ * Rc class maintains a count of the number of references to a resource and
+ * automatically frees the resource when the count reaches zero.
+ *
+ * @tparam T Object type pointed to by pointer, should satisfy the
+ * ReferenceCountable concept
+ */
 template <typename T>
 class Rc
 {
-    T* p_data = nullptr;
-
 public:
     using value_type = remove_reference_t<T>;
     using pointer = add_pointer_t<value_type>;
-    using reference = add_lvalue_reference_t<T>;
+    using reference = add_lvalue_reference_t<value_type>;
+
+private:
+    T* p_data = nullptr;
+
+public:
 
     Rc(nullptr_t) noexcept : p_data(nullptr) {}
 
     Rc(pointer ptr)
     {
-        RPY_DBG_ASSERT(ptr != nullptr);
-        // TODO: Is this safe? It seems plausible that these two expressions
-        // could be separated and thus the assignment to p_data does not
-        // not happen, resulting in an indestructible object
-        (p_data = ptr)->inc_ref();
+        if (ptr != nullptr) {
+            // It seems plausible that these two expressions
+            // could be separated and thus the assignment to p_data does
+            // not happen, resulting in an indestructible object
+            (p_data = ptr)->inc_ref();
+        }
     }
 
     Rc(const Rc& other) : Rc(other.get()) {}
@@ -232,7 +323,13 @@ public:
         return *this;
     }
 
-    // ReSharper disable once CppNonExplicitConversionOperator
+    /**
+     * @brief Overloads an operator for the class
+     *
+     * This function provides a custom implementation of an operator for the
+     * class. The specific operator and its behavior should be detailed in the
+     * function.
+     */
     constexpr operator bool() const noexcept { return p_data != nullptr; }
 
     constexpr pointer operator->() const noexcept
@@ -247,27 +344,78 @@ public:
         return *p_data;
     }
 
+    /**
+     * @brief Retrieves the value associated with the specified key from a
+     * container
+     *
+     * This method searches for the given key in a container and returns the
+     * corresponding value if found.
+     *
+     * @return The value associated with the specified key, or an indication
+     * that the key was not found
+     */
     constexpr pointer get() const noexcept { return p_data; }
 
+    /**
+     * @brief Releases the contained pointer from management
+     *
+     * This replaces the managed pointed with nullptr and returns the managed
+     * pointer without decrementing the reference count. The primary use is to
+     * implement move semantics.
+     *
+     * @return the previously contained pointer
+     */
     constexpr pointer release() noexcept
     {
         return std::exchange(p_data, nullptr);
     }
 
+    /**
+     * @brief Resets the Rc object to manage a new pointer, releasing any
+     * currently managed object.
+     *
+     * This method assigns the provided pointer to the current Rc object,
+     * releasing the ownership of any previously managed resource. If no pointer
+     * is provided, it defaults to managing a nullptr. The Rc object will then
+     * manage the newly assigned pointer.
+     *
+     * @param ptr The new pointer to be managed by this Rc object. Defaults to
+     * nullptr if not provided.
+     */
     constexpr void reset(pointer ptr = pointer()) noexcept
     {
         Rc(ptr).swap(*this);
     }
 
+    /**
+     * @brief Swaps the managed pointers of with another Rc
+     *
+     * @param other the Rc to swap managed pointer with
+     */
     void swap(Rc& other) noexcept { std::swap(p_data, other.p_data); }
 };
 
+
+/**
+ * @brief Creates a reference-counted smart pointer
+ *
+ * @param T The type of the object to manage
+ * @param args The arguments to be forwarded to the constructor of T
+ * @return A std::shared_ptr<T> managing the newly created object
+ */
 template <typename T, typename... Args>
 constexpr Rc<T> make_rc(Args&&... args)
 {
     return Rc<T>(new T(std::forward<Args>(args)...));
 }
 
+
+/**
+ * @brief A base class providing reference counting functionality.
+ *
+ * This class offers fundamental methods for managing the reference count,
+ * suitable for derived classes that need reference-counted behavior.
+ */
 class RcBase : public SmallObjectBase
 {
     mutable std::atomic_intptr_t m_rc;
@@ -278,8 +426,37 @@ class RcBase : public SmallObjectBase
 protected:
     RcBase() = default;
 
+    /**
+     * @brief Increments the reference count of the RcBase object
+     *
+     * This method is used to increase the reference count of the RcBase object
+     * ensuring that the object is properly tracked for reference management.
+     */
     void inc_ref() const noexcept;
+
+    /**
+     * @brief Decreases the reference count of the object
+     *
+     * This method decrements the reference count of the object and deletes
+     * it if the reference count reaches zero.
+     *
+     * @return true if the object was deleted, otherwise false
+     */
     bool dec_ref() const;
+
+    /**
+     * @brief The reference count for a shared object
+     *
+     * This value represents the number of references currently held to a shared
+     * object. When the count reaches zero, the shared object can be safely
+     * deleted.
+     *
+     * @return The current reference count
+     */
+    RPY_NO_DISCARD dimn_t ref_count() const noexcept
+    {
+        return static_cast<dimn_t>(m_rc.load(std::memory_order_acquire));
+    }
 };
 
 inline void RcBase::inc_ref() const
