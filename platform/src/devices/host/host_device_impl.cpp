@@ -207,13 +207,13 @@ Buffer CPUDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
     if (alignment == 0) { alignment = alignof(std::max_align_t); }
 
     return Buffer(new CPUBuffer(
-            align::aligned_alloc(alignment, count),
+            mem::align::aligned_alloc(alignment, count),
             count
     ));
 }
 void CPUDeviceHandle::raw_free(void* pointer, dimn_t size) const
 {
-    align::aligned_free(pointer, size);
+    mem::align::aligned_free(pointer, size);
 }
 
 template <typename... Args>
