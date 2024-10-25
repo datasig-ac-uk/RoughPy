@@ -490,6 +490,7 @@ public:
 };
 
 
+template <typename T, typename... Args>
 /**
  * @brief Creates a reference-counted smart pointer
  *
@@ -497,7 +498,6 @@ public:
  * @param args The arguments to be forwarded to the constructor of T
  * @return A std::shared_ptr<T> managing the newly created object
  */
-template <typename T, typename... Args>
 constexpr Rc<T> make_rc(Args&&... args)
 {
     return Rc<T>(new T(std::forward<Args>(args)...));
