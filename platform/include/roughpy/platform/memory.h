@@ -19,6 +19,7 @@
 #include <roughpy/core/types.h>
 
 #include "errors.h"
+#include "roughpy/core/helpers.h"
 #include "roughpy_platform_export.h"
 
 namespace rpy {
@@ -111,6 +112,14 @@ RPY_ALLOC_FUNCTION(small_object_alloc);
 RPY_FREE_FUNCTION(small_object_free);
 
 
+
+}// namespace dtl
+
+
+namespace align {
+
+
+
 /**
  * @brief Checks if a given value is a valid alignment.
  *
@@ -128,7 +137,27 @@ constexpr enable_if_t<is_integral_v<I>, bool> is_alignment(I align)
     return align > 0 && (align & (align - 1)) == 0;
 }
 
-}// namespace dtl
+/**
+ * @brief Checks if a given pointer is aligned to a specified boundary.
+ *
+ * This function determines whether the specified pointer address is aligned
+ * to the given boundary. The boundary must be a power of two.
+ *
+ * @param ptr The pointer to check.
+ * @param alignment The alignment boundary to check against. Must be a power of
+ * two.
+ * @return True if the pointer is aligned to the specified boundary, false
+ * otherwise.
+ */
+constexpr bool is_pointer_aligned(const volatile void* ptr, std::size_t alignment)
+{
+    RPY_DBG_ASSERT(is_alignment(alignment));
+    return bit_cast<std::uintptr_t>(ptr) % alignment == 0;
+}
+
+
+}
+
 
 /**
  * @brief Retrieves the base memory resource for the current allocations
@@ -203,7 +232,7 @@ template <typename Ty, size_t Alignment = alloc_data_alignment>
 class AlignedAllocator
 {
     static_assert(
-            dtl::is_alignment(Alignment),
+            align::is_alignment(Alignment),
             "Valid alignments are powers of 2 and greater than 0"
     );
 
