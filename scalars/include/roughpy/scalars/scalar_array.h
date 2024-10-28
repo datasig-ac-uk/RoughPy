@@ -35,6 +35,7 @@
 
 #include <roughpy/platform/devices/buffer.h>
 #include <roughpy/platform/serialization.h>
+#include <roughpy/containers/vector.h>
 
 namespace rpy {
 namespace scalars {
@@ -191,7 +192,7 @@ public:
 private:
     void check_for_ptr_access(bool mut = false) const;
     RPY_NO_DISCARD
-    std::vector<byte> to_raw_bytes() const;
+    rpy::Vec<byte> to_raw_bytes() const;
     void from_raw_bytes(devices::TypeInfo info, dimn_t count, Slice<byte> bytes);
 
 public:
@@ -270,7 +271,7 @@ RPY_SERIAL_LOAD_FN_IMPL(ScalarArray)
     RPY_SERIAL_SERIALIZE_VAL(type_info);
     uint64_t count;
     RPY_SERIAL_SERIALIZE_VAL(count);
-    std::vector<byte> raw_bytes;
+    rpy::Vec<byte> raw_bytes;
     RPY_SERIAL_SERIALIZE_VAL(raw_bytes);
     from_raw_bytes(type_info, count, raw_bytes);
 }
