@@ -14,6 +14,7 @@ target_sources(RoughPy_Platform PRIVATE
     ${CONTAINERS_ROOT}/list.h
     ${CONTAINERS_ROOT}/map.h
     ${CONTAINERS_ROOT}/set.h
+    ${CONTAINERS_ROOT}/small_flat_map.h
     ${CONTAINERS_ROOT}/small_vector.h
     ${CONTAINERS_ROOT}/vector.h
     aligned_alloc.cpp
