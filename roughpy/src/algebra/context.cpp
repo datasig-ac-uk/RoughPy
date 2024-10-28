@@ -37,6 +37,9 @@
 #include "tensor_key_iterator.h"
 #include <roughpy/algebra/context.h>
 
+
+#include <roughpy/containers/vector.h>
+
 using namespace rpy;
 using namespace rpy::algebra;
 using namespace pybind11::literals;
@@ -135,7 +138,7 @@ RPyContext_cbh(PyObject* self, PyObject* args, PyObject* kwargs)
     }
 
     const auto num_lies = PySequence_Size(py_lies);
-    std::vector<Lie> lies;
+    rpy::Vec<Lie> lies;
     lies.reserve(num_lies);
 
     for (Py_ssize_t i = 0; i < num_lies; ++i) {
