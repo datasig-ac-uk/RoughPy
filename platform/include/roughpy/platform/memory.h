@@ -618,7 +618,8 @@ public:
 template <typename T, typename... Args>
 constexpr Rc<T> make_rc(Args&&... args)
 {
-    return Rc<T>(new T(std::forward<Args>(args)...));
+    std::unique_ptr<T> tmp = std::make_unique<T>(std::forward<Args>(args)...);
+    return Rc<T>(tmp.release());
 }
 
 
