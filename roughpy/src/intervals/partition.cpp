@@ -37,6 +37,8 @@
 
 #include <algorithm>
 
+#include <roughpy/containers/vector.h>
+
 using namespace rpy;
 using namespace intervals;
 using namespace pybind11::literals;
@@ -53,7 +55,7 @@ Partition partition_py_ctor(const RealInterval& interval,
 {
     const auto inf = interval.inf();
     const auto sup = interval.sup();
-    std::vector<param_t> intermediates;
+    rpy::Vec<param_t> intermediates;
     for (auto&& mid : py_intermediates) {
         auto param = mid.cast<param_t>();
         if (interval.contains_point(param) && param != inf && param != sup) {
