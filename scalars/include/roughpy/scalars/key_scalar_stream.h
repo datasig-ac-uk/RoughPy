@@ -28,15 +28,18 @@
 #ifndef ROUGHPY_SCALARS_KEY_SCALAR_STREAM_H_
 #define ROUGHPY_SCALARS_KEY_SCALAR_STREAM_H_
 
+#include <roughpy/containers/vector.h>
+
 #include "scalar_stream.h"
 #include "scalars_fwd.h"
+
 
 namespace rpy {
 namespace scalars {
 
 class ROUGHPY_SCALARS_EXPORT KeyScalarStream : public ScalarStream
 {
-    std::vector<const key_type*> m_key_stream;
+    Vec<const key_type*> m_key_stream;
 
 public:
     KeyScalarStream();
