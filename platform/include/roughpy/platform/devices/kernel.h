@@ -28,6 +28,8 @@
 #ifndef ROUGHPY_DEVICE_KERNEL_H_
 #define ROUGHPY_DEVICE_KERNEL_H_
 
+#include <roughpy/containers/vector.h>
+
 #include "core.h"
 #include "device_object_base.h"
 #include "event.h"
@@ -117,7 +119,7 @@ class ROUGHPY_PLATFORM_EXPORT Kernel
 {
     using base_t = dtl::ObjectBase<KernelInterface, Kernel>;
 
-    std::vector<KernalArgument*> m_args;
+    rpy::Vec<KernalArgument*> m_args;
 
 public:
     using base_t::base_t;
@@ -146,7 +148,7 @@ public:
     RPY_NO_DISCARD EventStatus
     launch_sync(const KernelLaunchParams& params, Slice<KernelArgument> args);
 
-    RPY_NO_DISCARD static std::vector<bitmask_t>
+    RPY_NO_DISCARD static rpy::Vec<bitmask_t>
     construct_work_mask(const KernelLaunchParams& params);
 
     template <typename... Args>
