@@ -31,7 +31,7 @@
 
 #include "roughpy_module.h"
 
-#include <boost/container/small_vector.hpp>
+#include <roughpy/containers/small_vector.h>
 
 #include <roughpy/algebra/context_fwd.h>
 #include <roughpy/algebra/lie_basis.h>
@@ -44,7 +44,7 @@ namespace python {
 class PyLieKey
 {
 public:
-    using container_type = boost::container::small_vector<PyLieLetter, 2>;
+    using container_type = SmallVector<PyLieLetter, 2>;
     using basis_type = algebra::LieBasis;
 
 private:
@@ -56,7 +56,7 @@ public:
     explicit PyLieKey(basis_type basis, let_t letter);
     explicit PyLieKey(
             basis_type basis,
-            const boost::container::small_vector_base<PyLieLetter>& data
+            const SmallVectorBase<PyLieLetter>& data
     );
     explicit PyLieKey(basis_type basis, let_t left, let_t right);
     explicit PyLieKey(basis_type basis, let_t left, const PyLieKey& right);

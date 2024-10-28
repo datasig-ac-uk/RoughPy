@@ -31,6 +31,7 @@
 
 #include "ocl_device.h"
 
+#include <roughpy/containers/small_vector.h>
 #include <roughpy/containers/vector.h>
 
 #include "ocl_buffer.h"
@@ -50,7 +51,6 @@
 #include "devices/queue.h"
 
 #include <CL/cl_ext.h>
-#include <boost/container/small_vector.hpp>
 
 #include <fstream>
 
@@ -392,7 +392,7 @@ void OCLDeviceHandle::compile_kernels_from_src(
     );
     if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-    boost::container::small_vector<cl_kernel, 1> kernels(num_kernels);
+    SmallVector<cl_kernel, 1> kernels(num_kernels);
 
     ecode = clCreateKernelsInProgram(
             program,
