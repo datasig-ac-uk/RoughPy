@@ -31,11 +31,13 @@
 //
 
 #include "ScalarTests.h"
+
+
+#include <roughpy/containers/vector.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_types.h>
 
-#include <vector>
 
 using ScalarTypeTests = rpy::scalars::testing::ScalarTests;
 using namespace rpy::scalars;
@@ -46,7 +48,7 @@ using rpy::devices::DeviceType;
 TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType)
 {
 
-    std::vector<std::int32_t> ints{1, 2, 3, 4, 5, 6};
+    rpy::Vec<std::int32_t> ints{1, 2, 3, 4, 5, 6};
 
     auto alloced = dtype->allocate(ints.size());
 
@@ -60,7 +62,7 @@ TEST_F(ScalarTypeTests, ConvertCopyFromNonScalarType)
 
 TEST_F(ScalarTypeTests, CopyConvertFromScalarType)
 {
-    std::vector<float> floats{1.01, 2.02, 3.03, 4.04, 5.05, 6.06};
+    rpy::Vec<float> floats{1.01, 2.02, 3.03, 4.04, 5.05, 6.06};
 
     auto alloced = dtype->allocate(floats.size());
 
