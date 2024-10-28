@@ -18,7 +18,7 @@ template <
         typename Key,
         typename Value,
         typename Compare = std::less<Key>,
-        typename Alloc = mem::align::AlignedAllocator<pair<const Key, Value>>>
+        typename Alloc = mem::AlignedAllocator<pair<const Key, Value>>>
 using FlatMap = boost::container::flat_map<Key, Value, Compare, Alloc>;
 
 }
