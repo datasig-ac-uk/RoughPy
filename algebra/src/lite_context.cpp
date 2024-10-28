@@ -31,6 +31,9 @@
 //
 
 #include "lite_context.h"
+
+
+#include <roughpy/containers/hash_map.h>
 #include <roughpy/core/macros.h>
 
 #include <roughpy/algebra/context.h>
@@ -43,7 +46,7 @@ using namespace rpy::algebra;
 
 RPY_ALGEBRA_DECLARE_CTX_MAKER(LiteContextMaker);
 
-static std::unordered_map<
+static rpy::HashMap<
         std::tuple<deg_t, deg_t, const scalars::ScalarType*>, context_pointer,
         boost::hash<std::tuple<deg_t, deg_t, const scalars::ScalarType*>>>
         s_lite_context_cache;
