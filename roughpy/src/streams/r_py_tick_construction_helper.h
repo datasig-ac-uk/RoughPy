@@ -34,12 +34,14 @@
 
 #include "roughpy_module.h"
 
+#include <roughpy/containers/hash_map.h>
+#include <roughpy/containers/vector.h>
+
 #include "args/convert_timestamp.h"
 #include <roughpy/core/macros.h>
 #include <roughpy/streams/schema.h>
 #include <roughpy/streams/stream.h>
 
-#include <roughpy/containers/vector.h>
 
 namespace rpy {
 namespace python {
@@ -58,7 +60,7 @@ class RPyTickConstructionHelper
     std::shared_ptr<streams::StreamSchema> p_schema;
     bool b_schema_only;
     py::object m_reference_time;
-    std::unordered_map<param_t, int> m_precedence;
+    rpy::HashMap<param_t, int> m_precedence;
 
     PyDateTimeConversionOptions m_time_conversion_options;
 
