@@ -332,7 +332,7 @@ public:
 template <typename Ty, size_t TyAlign, typename Uy, size_t UyAlign>
 RPY_NO_DISCARD constexpr bool operator==(
         const AlignedAllocator<Ty, TyAlign>& RPY_UNUSED_VAR left,
-        AlignedAllocator<Uy, UyAlign>& RPY_UNUSED_VAR right
+        const AlignedAllocator<Uy, UyAlign>& RPY_UNUSED_VAR right
 ) noexcept
 {
     return TyAlign == UyAlign;
@@ -341,7 +341,7 @@ RPY_NO_DISCARD constexpr bool operator==(
 template <typename Ty, size_t TyAlign, typename Uy, size_t UyAlign>
 RPY_NO_DISCARD constexpr bool operator!=(
         const AlignedAllocator<Ty, TyAlign>& RPY_UNUSED_VAR left,
-        AlignedAllocator<Uy, UyAlign>& RPY_UNUSED_VAR right
+        const AlignedAllocator<Uy, UyAlign>& RPY_UNUSED_VAR right
 ) noexcept
 {
     return TyAlign != UyAlign;
