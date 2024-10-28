@@ -31,6 +31,8 @@
 
 #include "ocl_device.h"
 
+#include <roughpy/containers/vector.h>
+
 #include "ocl_buffer.h"
 #include "ocl_event.h"
 #include "ocl_handle_errors.h"
@@ -118,15 +120,15 @@ OCLDeviceHandle::OCLDeviceHandle(cl_device_id id) : m_device(id)
     if (exists(kernel_dir)) {
         fs::directory_iterator iter(config.get_builtin_kernel_dir());
 
-        std::vector<string> sources;
+        rpy::Vec<string> sources;
         for (auto&& dir : iter) {
             std::ifstream istr(dir.path());
             sources.emplace_back();
         }
         auto count = static_cast<cl_uint>(sources.size());
 
-        std::vector<const char*> strings;
-        std::vector<size_t> sizes;
+        rpy::Vec<const char*> strings;
+        rpy::Vec<size_t> sizes;
         strings.reserve(count);
         sizes.reserve(count);
         for (auto&& src : sources) {
@@ -157,7 +159,7 @@ OCLDeviceHandle::OCLDeviceHandle(cl_device_id id) : m_device(id)
 
         if (RPY_UNLIKELY(ecode != CL_SUCCESS)) { RPY_HANDLE_OCL_ERROR(ecode); }
 
-        std::vector<cl_kernel> kernels(num_kernels);
+        rpy::Vec<cl_kernel> kernels(num_kernels);
         ecode = clCreateKernelsInProgram(
                 program,
                 num_kernels,
@@ -281,8 +283,8 @@ OCLDeviceHandle::compile_program(const ExtensionSourceAndOptions& args) const
     }
     guard_type access(get_lock());
 
-    std::vector<const char*> source_ptrs;
-    std::vector<size_t> source_sizes;
+    rpy::Vec<const char*> source_ptrs;
+    rpy::Vec<size_t> source_sizes;
     source_ptrs.reserve(args.sources.size());
     source_sizes.reserve(args.sources.size());
     for (auto&& src : args.sources) {
@@ -302,8 +304,8 @@ OCLDeviceHandle::compile_program(const ExtensionSourceAndOptions& args) const
     if (program == nullptr) { RPY_HANDLE_OCL_ERROR(ecode); }
 
     if (cl_supports_version({1, 2})) {
-        std::vector<cl_program> header_programs;
-        std::vector<const char*> header_names;
+        rpy::Vec<cl_program> header_programs;
+        rpy::Vec<const char*> header_names;
         header_programs.reserve(args.header_name_and_source.size());
 
         header_names.reserve(args.header_name_and_source.size());
