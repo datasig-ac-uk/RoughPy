@@ -32,6 +32,8 @@
 
 #include "sound_file_data_source.h"
 
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/platform/filesystem.h>
 #include <roughpy/scalars/scalar_types.h>
 
@@ -77,9 +79,9 @@ dimn_t SoundFileDataSource::query_impl(
 
     auto width = schema.width();
 
-    std::vector<T> working(width);
-    std::vector<T> previous(m_handle.channels());
-    std::vector<T> current(m_handle.channels());
+    rpy::Vec<T> working(width);
+    rpy::Vec<T> previous(m_handle.channels());
+    rpy::Vec<T> current(m_handle.channels());
 
     auto frame_begin = param_to_frame(interval.inf());
     auto frame_end = param_to_frame(interval.sup());
