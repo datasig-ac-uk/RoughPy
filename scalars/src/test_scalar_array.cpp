@@ -33,6 +33,8 @@
 
 #include <sstream>
 
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/platform/serialization.h>
 #include <roughpy/platform/archives.h>
 #include <roughpy/scalars.h>
@@ -43,7 +45,7 @@ using namespace rpy::scalars;
 
 TEST(ScalarArray, TestScalarArraySerialize)
 {
-    std::vector<float> nums{1.0F, 2.0F, 3.0F};
+    rpy::Vec<float> nums{1.0F, 2.0F, 3.0F};
     ScalarArray sa(ScalarType::of<float>(), nums.data(), 3);
     std::stringstream ss;
     {
