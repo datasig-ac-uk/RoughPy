@@ -30,6 +30,7 @@
 
 #include "stream_base.h"
 
+#include <roughpy/containers/vector.h>
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/free_tensor.h>
 #include <roughpy/algebra/lie.h>
@@ -45,7 +46,7 @@ public:
     using LiePiece = std::pair<intervals::RealInterval, algebra::Lie>;
 
 private:
-    std::vector<LiePiece> m_data;
+    rpy::Vec<LiePiece> m_data;
 
     RPY_NO_DISCARD
     static inline scalars::Scalar
@@ -65,8 +66,8 @@ private:
     }
 
 public:
-    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md);
-    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md,
+    PiecewiseAbelianStream(rpy::Vec<LiePiece>&& arg, StreamMetadata&& md);
+    PiecewiseAbelianStream(rpy::Vec<LiePiece>&& arg, StreamMetadata&& md,
                            std::shared_ptr<StreamSchema> schema);
 
     RPY_NO_DISCARD
