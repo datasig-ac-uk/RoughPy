@@ -39,6 +39,9 @@
 #include "py_parametrization.h"
 #include <algorithm>
 
+
+#include <roughpy/containers/vector.h>
+
 using namespace rpy;
 using namespace rpy::streams;
 using namespace pybind11::literals;
@@ -99,7 +102,7 @@ void python::RPyTickConstructionHelper::fail_data_none()
     RPY_THROW(py::value_error, "data cannot be None when constructing stream");
 }
 
-const std::vector<python::RPy_Tick>&
+const rpy::Vec<python::RPy_Tick>&
 python::RPyTickConstructionHelper::ticks() noexcept
 {
     std::sort(
