@@ -1,14 +1,15 @@
 
 
-set(INCLUDE_ROOT "${RoughPy_Platform_SOURCE_DIR}/include/roughpy/")
+set(INCLUDE_ROOT "${RoughPy_Platform_SOURCE_DIR}/include/roughpy")
 
-set(CONTAINERS_ROOT "${INCLUDE_ROOT}/platform/containers")
+set(CONTAINERS_ROOT "${INCLUDE_ROOT}/containers")
 
 target_sources(RoughPy_Platform PRIVATE
     ${INCLUDE_ROOT}/platform/memory.h
     ${CONTAINERS_ROOT}/deque.h
     ${CONTAINERS_ROOT}/hash_map.h
     ${CONTAINERS_ROOT}/flat_map.h
+    ${CONTAINERS_ROOT}/flat_multimap.h
     ${CONTAINERS_ROOT}/flat_set.h
     ${CONTAINERS_ROOT}/hash_set.h
     ${CONTAINERS_ROOT}/list.h
