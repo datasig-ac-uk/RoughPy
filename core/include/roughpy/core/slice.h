@@ -163,9 +163,10 @@ public:
         return std::reverse_iterator<const T*>(p_data);
     }
 
-    RPY_NO_DISCARD operator std::vector<remove_const_t<T>>() const
+    template <typename Vec, typename=enable_if_t<is_same_v<typename Vec::value_type, T>>>
+    RPY_NO_DISCARD operator Vec() const
     {
-        std::vector<T> result;
+        Vec result;
         result.reserve(m_size);
         for (dimn_t i = 0; i < m_size; ++i) { result.push_back(p_data[i]); }
         return result;
@@ -181,15 +182,10 @@ class Slice<void>
 public:
     constexpr Slice() = default;
 
-    template <typename T>
-    constexpr Slice(T& num) : p_data(&num),
-                              m_size(1)
-    {}
-
     constexpr Slice(std::nullptr_t) : p_data(nullptr), m_size(0) {}
 
-    template <typename T>
-    constexpr Slice(std::vector<T>& container)
+    template <typename Vec, typename=enable_if_t<is_vector_v<Vec>>>
+    constexpr Slice(Vec& container)
         : p_data(container.data()),
           m_size(container.size())
     {}
