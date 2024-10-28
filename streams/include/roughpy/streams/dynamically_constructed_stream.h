@@ -28,9 +28,15 @@
 #ifndef ROUGHPY_STREAMS_DYNAMICALLY_CONSTRUCTED_STREAM_H_
 #define ROUGHPY_STREAMS_DYNAMICALLY_CONSTRUCTED_STREAM_H_
 
+
+#include <roughpy/containers/map.h>
+#include <roughpy/containers/vector.h>
+
+
 #include "stream_base.h"
 
-#include <map>
+
+
 #include <mutex>
 
 #include <roughpy/platform/serialization.h>
@@ -44,7 +50,7 @@ class ROUGHPY_STREAMS_EXPORT DataIncrement
     using DyadicInterval = intervals::DyadicInterval;
 
 public:
-    using map_type = std::map<DyadicInterval, DataIncrement>;
+    using map_type = Map<DyadicInterval, DataIncrement>;
     using data_increment = typename map_type::iterator;
     using const_data_increment = typename map_type::const_iterator;
 
@@ -203,8 +209,8 @@ template <typename Archive>
 void DynamicallyConstructedStream::store_cache(Archive& archive) const
 {
     std::lock_guard<std::recursive_mutex> access(m_lock);
-    std::map<DyadicInterval, dimn_t> indices;
-    std::vector<dtl::DataIncrementSafe> linear_data;
+    Map<DyadicInterval, dimn_t> indices;
+    rpy::Vec<dtl::DataIncrementSafe> linear_data;
     linear_data.reserve(m_data_tree.size());
 
     dimn_t index = 0;
@@ -226,7 +232,7 @@ template <typename Archive>
 void DynamicallyConstructedStream::load_cache(Archive& archive,
                                               const algebra::Context& ctx)
 {
-    std::vector<dtl::DataIncrementSafe> linear_data;
+    rpy::Vec<dtl::DataIncrementSafe> linear_data;
     RPY_SERIAL_SERIALIZE_NVP("cache_data", linear_data);
 
     for (auto& item : linear_data) {
