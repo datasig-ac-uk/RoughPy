@@ -30,6 +30,8 @@
 // Created by user on 13/04/23.
 //
 
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/streams/external_data_stream.h>
 
 #include "external_data_sources/csv_data_source.h"
@@ -37,7 +39,6 @@
 
 #include <memory>
 #include <mutex>
-#include <vector>
 
 using namespace rpy;
 
@@ -72,7 +73,7 @@ algebra::Lie streams::ExternalDataStream::log_signature_impl(
 }
 
 static std::mutex s_factory_guard;
-static std::vector<std::unique_ptr<const streams::ExternalDataSourceFactory>>
+static rpy::Vec<std::unique_ptr<const streams::ExternalDataSourceFactory>>
         s_factory_list;
 
 void streams::ExternalDataStream::register_factory(
