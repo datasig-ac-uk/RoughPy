@@ -29,11 +29,13 @@
 #ifndef ROUGHPY_INTERVALS_SEGMENTATION_H_
 #define ROUGHPY_INTERVALS_SEGMENTATION_H_
 
+
+#include <functional>
+#include <roughpy/containers/vector.h>
+
 #include "interval.h"
 #include "real_interval.h"
 
-#include <functional>
-#include <vector>
 
 #include "roughpy_intervals_export.h"
 
@@ -44,7 +46,7 @@ using predicate_t = std::function<bool(const Interval&)>;
 
 RPY_NO_DISCARD
 ROUGHPY_INTERVALS_EXPORT
-std::vector<RealInterval> segment(const Interval& interval,
+Vec<RealInterval> segment(const Interval& interval,
                                   predicate_t predicate,
                                   dyadic_depth_t max_depth);
 
