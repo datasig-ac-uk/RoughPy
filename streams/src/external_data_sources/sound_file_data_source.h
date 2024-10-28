@@ -32,7 +32,6 @@
 #include <roughpy/streams/external_data_stream.h>
 #include <roughpy/platform/serialization.h>
 
-#include <boost/container/flat_map.hpp>
 #include <sndfile.hh>
 
 #include <roughpy/platform/filesystem.h>
