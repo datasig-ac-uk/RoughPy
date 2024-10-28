@@ -98,7 +98,7 @@ void StreamConstructionHelper::add_categorical(param_t timestamp,
 typename StreamConstructionHelper::multimap_type
 StreamConstructionHelper::finalise()
 {
-    boost::container::flat_multimap<param_t, algebra::Lie> result;
+    FlatMultiMap<param_t, algebra::Lie> result;
     result = std::move(m_entries);
     return result;
 }
