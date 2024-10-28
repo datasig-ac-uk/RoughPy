@@ -40,7 +40,6 @@
 #include <functional>
 #include <numeric>
 
-#include <boost/container/small_vector.hpp>
 
 using namespace rpy;
 
@@ -141,7 +140,7 @@ void rpy::python::stride_copy(
     } else {
         const auto uncompressed = ndim - compressed_ndim;
         const byte* src = reinterpret_cast<const byte*>(in.pointer());
-        boost::container::small_vector<idimn_t, 2> index(uncompressed);
+        SmallVector<idimn_t, 2> index(uncompressed);
 
         auto src_offset = [&strides, &uncompressed, &index]() {
             dimn_t offset = 0;
