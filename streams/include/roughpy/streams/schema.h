@@ -36,6 +36,8 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/algebra/algebra_fwd.h>
 #include <roughpy/algebra/lie_basis.h>
 #include <roughpy/intervals/interval.h>
@@ -43,11 +45,8 @@
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/key_scalar_array.h>
 
-#include <boost/container/flat_map.hpp>
 
 #include <functional>
-#include <variant>
-#include <vector>
 
 #include "channels.h"
 #include "parametrization.h"
@@ -74,9 +73,9 @@ namespace streams {
  * and other types of data might occupy multiple stream dimensions.
  */
 class ROUGHPY_STREAMS_EXPORT StreamSchema
-    : private std::vector<pair<string, std::shared_ptr<StreamChannel>>>
+    : private rpy::Vec<pair<string, std::shared_ptr<StreamChannel>>>
 {
-    using base_type = std::vector<pair<string, std::shared_ptr<StreamChannel>>>;
+    using base_type = rpy::Vec<pair<string, std::shared_ptr<StreamChannel>>>;
 
     bool m_is_final = false;
 
