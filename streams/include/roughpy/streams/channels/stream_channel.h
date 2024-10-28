@@ -32,13 +32,17 @@
 #ifndef ROUGHPY_STREAMS_STREAM_CHANNEL_H
 #define ROUGHPY_STREAMS_STREAM_CHANNEL_H
 
-#include <roughpy/algebra/algebra_fwd.h>
+
 #include <roughpy/core/alloc.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+
+#include <roughpy/containers/vector.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar_type.h>
+
+#include <roughpy/algebra/algebra_fwd.h>
 
 #include "roughpy_streams_export.h"
 
@@ -117,7 +121,7 @@ public:
      */
     virtual StreamChannel& insert_variant(string variant_label);
 
-    RPY_NO_DISCARD virtual const std::vector<string>& get_variants() const;
+    RPY_NO_DISCARD virtual const rpy::Vec<string>& get_variants() const;
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();

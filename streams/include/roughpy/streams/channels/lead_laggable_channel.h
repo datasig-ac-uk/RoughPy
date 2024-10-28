@@ -49,7 +49,7 @@ public:
     dimn_t num_variants() const override;
     string label_suffix(dimn_t variant_no) const override;
     dimn_t variant_id_of_label(string_view label) const override;
-    const std::vector<string>& get_variants() const override;
+    const rpy::Vec<string>& get_variants() const override;
     void set_lead_lag(bool new_value) override;
     bool is_lead_lag() const override;
 

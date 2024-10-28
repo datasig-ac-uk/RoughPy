@@ -32,6 +32,7 @@
 #ifndef ROUGHPY_STREAMS_CATEGORICAL_CHANNEL_H
 #define ROUGHPY_STREAMS_CATEGORICAL_CHANNEL_H
 
+
 #include "stream_channel.h"
 
 namespace rpy {
@@ -39,7 +40,7 @@ namespace streams {
 
 class ROUGHPY_STREAMS_EXPORT CategoricalChannel : public StreamChannel
 {
-    std::vector<string> m_variants;
+    rpy::Vec<string> m_variants;
 
 public:
 
@@ -49,7 +50,7 @@ public:
     dimn_t num_variants() const override;
     string label_suffix(dimn_t variant_no) const override;
     dimn_t variant_id_of_label(string_view label) const override;
-    const std::vector<string>& get_variants() const override;
+    const rpy::Vec<string>& get_variants() const override;
 
     StreamChannel& add_variant(string variant_label) override;
     StreamChannel& insert_variant(string variant_label) override;
