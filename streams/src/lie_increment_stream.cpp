@@ -29,6 +29,7 @@
 // Created by user on 10/03/23.
 //
 
+#include <roughpy/containers/vector.h>
 #include <roughpy/streams/lie_increment_stream.h>
 
 #include <cereal/types/concepts/pair_associative_container.hpp>
@@ -36,7 +37,6 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include <vector>
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -173,7 +173,7 @@ algebra::Lie LieIncrementStream::log_signature_impl(
 
     if (begin == end) { return ctx.zero_lie(md.cached_vector_type); }
 
-    std::vector<const Lie*> lies;
+    rpy::Vec<const Lie*> lies;
     lies.reserve(static_cast<dimn_t>(end - begin));
 
     for (auto it = begin; it != end; ++it) {
