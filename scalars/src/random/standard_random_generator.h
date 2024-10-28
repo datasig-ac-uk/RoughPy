@@ -38,9 +38,10 @@
 #include <mutex>
 #include <random>
 #include <sstream>
-#include <vector>
 
 #include <roughpy/core/alloc.h>
+
+#include <roughpy/containers/vector.h>
 
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>
@@ -70,7 +71,7 @@ class StandardRandomGenerator : public RandomGenerator
     using scalar_type = ScalarImpl;
     using bit_generator = BitGenerator;
 
-    std::vector<uint64_t> m_seed;
+    rpy::Vec<uint64_t> m_seed;
 
     mutable BitGenerator m_generator;
     mutable std::mutex m_lock;
@@ -85,7 +86,7 @@ public:
     = delete;
 
     void set_seed(Slice<uint64_t> seed_data) override;
-    std::vector<uint64_t> get_seed() const override;
+    rpy::Vec<uint64_t> get_seed() const override;
     string get_type() const override;
     string get_state() const override;
 
@@ -165,7 +166,7 @@ void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_state(
 }
 
 template <typename ScalarImpl, typename BitGenerator>
-std::vector<uint64_t>
+rpy::Vec<uint64_t>
 StandardRandomGenerator<ScalarImpl, BitGenerator>::get_seed() const
 {
     return {m_seed[0]};
@@ -180,7 +181,7 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::uniform_random_scalar(
 ) const
 {
 
-    std::vector<std::uniform_real_distribution<scalar_type>> dists;
+    rpy::Vec<std::uniform_real_distribution<scalar_type>> dists;
 
     if (lower.size() != upper.size()) {
         RPY_THROW(
