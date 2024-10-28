@@ -29,12 +29,12 @@
 // Created by user on 10/03/23.
 //
 
+#include <roughpy/containers/set.h>
+#include <roughpy/containers/vector.h>
 #include <roughpy/streams/tick_stream.h>
 
 #include <cereal/types/vector.hpp>
 #include <cereal/types/unordered_map.hpp>
-#include <set>
-#include <vector>
 
 using namespace rpy;
 optional<streams::TickStream::DyadicInterval>
@@ -127,7 +127,7 @@ streams::TickStream::recursive_logsig(streams::TickStream::DyadicInterval di)
         auto& it = m_data[*pdi1];
         if (!it.is_zero()) { return it; }
 
-        std::vector<algebra::Lie> v;
+        rpy::Vec<algebra::Lie> v;
         v.reserve(2);
         DyadicInterval left(*pdi1);
         DyadicInterval right(*pdi1);
@@ -142,8 +142,8 @@ streams::TickStream::recursive_logsig(streams::TickStream::DyadicInterval di)
     return ctx.zero_lie(md.cached_vector_type);
 }
 streams::TickStream::TickStream(scalars::ScalarStream&& raw_data,
-                                std::vector<const key_type*> raw_key_stream,
-                                std::vector<param_t> raw_timestamps,
+                                rpy::Vec<const key_type*> raw_key_stream,
+                                rpy::Vec<param_t> raw_timestamps,
                                 resolution_t resolution, StreamMetadata md,
                                 intervals::IntervalType itype)
     : StreamInterface(std::move(md)), m_resolution(resolution)
@@ -152,7 +152,7 @@ streams::TickStream::TickStream(scalars::ScalarStream&& raw_data,
         const auto size = raw_timestamps.size();
         const auto& smeta = metadata();
         const auto& ctx = *smeta.default_context;
-        std::set<param_t> index;
+        Set<param_t> index;
 
         for (dimn_t i = 0; i < size; ++i) {
             const DyadicInterval di(raw_timestamps[i], m_resolution,
@@ -190,7 +190,7 @@ streams::TickStream::TickStream(streams::StreamConstructionHelper&& helper,
     : StreamInterface(std::move(md), helper.take_schema()),
       m_resolution(resolution)
 {
-    std::set<param_t> index;
+    Set<param_t> index;
     const auto& ctx = *metadata().default_context;
     const auto& itype = metadata().interval_type;
     const auto& vtype = metadata().cached_vector_type;
