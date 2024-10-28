@@ -26,6 +26,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <roughpy/containers/vector.h>
 #include <roughpy/streams/stream.h>
 
 #include <roughpy/intervals/partition.h>
@@ -112,7 +113,7 @@ inline Stream::Lie Stream::log_signature_impl(
 {
     const auto& md = metadata();
     auto dyadic_queries = intervals::to_dyadic_intervals(interval, resolution);
-    std::vector<Lie> results;
+    rpy::Vec<Lie> results;
     results.reserve(dyadic_queries.size());
     for (const auto& di : dyadic_queries) {
         results.push_back(p_impl->log_signature(di, resolution, ctx));
@@ -176,7 +177,7 @@ Stream::FreeTensor Stream::signature_derivative(
 ) const
 {
     const auto& md = metadata();
-    std::vector<algebra::DerivativeComputeInfo> info;
+    rpy::Vec<algebra::DerivativeComputeInfo> info;
     info.reserve(perturbations.size());
     for (auto&& pert : perturbations) {
         info.push_back({log_signature(pert.first, ctx), pert.second}
@@ -220,7 +221,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
 ) const
 {
     const auto& md = metadata();
-    std::vector<algebra::DerivativeComputeInfo> info;
+    rpy::Vec<algebra::DerivativeComputeInfo> info;
     info.reserve(perturbations.size());
     for (auto&& pert : perturbations) {
         info.push_back({log_signature(pert.first, resolution, ctx), pert.second}
@@ -237,7 +238,7 @@ Stream Stream::simplify(
 {
     using LiePiece = typename PiecewiseAbelianStream::LiePiece;
 
-    std::vector<LiePiece> pieces;
+    rpy::Vec<LiePiece> pieces;
     const auto partition_size = partition.size();
     pieces.reserve(partition_size);
 
