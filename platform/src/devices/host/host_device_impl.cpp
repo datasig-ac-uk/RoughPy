@@ -38,9 +38,6 @@
 #include "devices/kernel.h"
 #include "devices/queue.h"
 
-#include <boost/container/flat_map.hpp>
-#include <boost/container/small_vector.hpp>
-
 
 #include "roughpy/platform/memory.h"
 
