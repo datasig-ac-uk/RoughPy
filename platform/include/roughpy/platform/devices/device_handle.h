@@ -32,6 +32,9 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/filesystem.h>
 
+#include <roughpy/containers/vector.h>
+#include <roughpy/containers/hash_map.h>
+
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
@@ -49,9 +52,9 @@ namespace rpy {
 namespace devices {
 
 struct ExtensionSourceAndOptions {
-    std::vector<string> sources;
+    rpy::Vec<string> sources;
     string compile_options;
-    std::vector<pair<string, string>> header_name_and_source;
+    rpy::Vec<pair<string, string>> header_name_and_source;
     string link_options;
 };
 
@@ -66,7 +69,7 @@ class ROUGHPY_PLATFORM_EXPORT DeviceHandle
     : public boost::intrusive_ref_counter<DeviceHandle>
 {
     mutable std::recursive_mutex m_lock;
-    mutable std::unordered_map<string, Kernel> m_kernel_cache;
+    mutable rpy::HashMap<string, Kernel> m_kernel_cache;
 
 protected:
     using lock_type = std::recursive_mutex;
