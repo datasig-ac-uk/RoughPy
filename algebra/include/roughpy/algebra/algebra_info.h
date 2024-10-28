@@ -33,7 +33,6 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/scalars/scalar_type.h>
 
-#include <boost/container/small_vector.hpp>
 
 #include "basis_info.h"
 
