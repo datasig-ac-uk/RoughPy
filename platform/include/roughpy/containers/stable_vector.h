@@ -13,7 +13,7 @@
 namespace rpy {
 
 template <typename T, typename Alloc = mem::AlignedAllocator<T>>
-using Vec = boost::container::stable_vector<T, Alloc>;
+using StableVector = boost::container::stable_vector<T, Alloc>;
 
 }
 
