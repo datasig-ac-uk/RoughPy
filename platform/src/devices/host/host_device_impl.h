@@ -32,6 +32,7 @@
 #ifndef ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_DEVICE_H_
 #define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_DEVICE_H_
 
+#include <roughpy/containers/stable_vector.h>
 #include "devices/host_device.h"
 
 #include "devices/opencl/ocl_decls.h"
@@ -39,11 +40,10 @@
 
 #include "host_decls.h"
 
-#include <boost/container/stable_vector.hpp>
 
 #include <atomic>
 #include <mutex>
-#include <unordered_map>
+
 
 namespace rpy {
 namespace devices {
@@ -60,7 +60,7 @@ class CPUDeviceHandle : public HostDeviceHandle
      * For this reason, we're using a stable_vector, and will include logic
      * to only grow if absolutely necessary - there are no inactive ref counts.
      */
-    mutable boost::container::stable_vector<std::atomic_size_t> m_ref_counts;
+    mutable StableVector<std::atomic_size_t> m_ref_counts;
 
     std::atomic_size_t* get_ref_count() const;
 
