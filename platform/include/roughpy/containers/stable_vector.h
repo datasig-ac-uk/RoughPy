@@ -2,8 +2,8 @@
 // Created by sam on 25/10/24.
 //
 
-#ifndef ROUGHPY_PLATFORM_CONTAINERS_VECTOR_H
-#define ROUGHPY_PLATFORM_CONTAINERS_VECTOR_H
+#ifndef ROUGHPY_PLATFORM_CONTAINERS_STABLE_VECTOR_H
+#define ROUGHPY_PLATFORM_CONTAINERS_STABLE_VECTOR_H
 
 
 #include <boost/container/stable_vector.hpp>
@@ -18,4 +18,4 @@ using StableVector = boost::container::stable_vector<T, Alloc>;
 }
 
 
-#endif //ROUGHPY_PLATFORM_CONTAINERS_VECTOR_H
+#endif //ROUGHPY_PLATFORM_CONTAINERS_STABLE_VECTOR_H
