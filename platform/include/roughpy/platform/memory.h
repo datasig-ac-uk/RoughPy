@@ -329,6 +329,77 @@ public:
     }
 };
 
+template <size_t Alignment>
+class AlignedAllocator<void, Alignment> {
+    static_assert(
+            align::is_alignment(Alignment),
+            "Valid alignments are powers of 2 and greater than 0"
+    );
+
+public:
+    // Type definitions required for the allocator interface
+    using value_type = void;
+    using pointer = void*;
+    using const_pointer = const void*;
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
+
+    static constexpr size_t alignment
+            = std::max(alignof(void*), Alignment);
+
+    // Rebind allocator to another type
+    template <typename U>
+    struct rebind {
+        using other = AlignedAllocator<U, Alignment>;
+    };
+
+    // Default constructor
+    AlignedAllocator() noexcept = default;
+
+    // Copy constructor
+    template <typename U>
+    AlignedAllocator(const AlignedAllocator<U, Alignment>&) noexcept
+    {}
+
+    // Allocate memory
+    RPY_NO_DISCARD pointer allocate(size_type size, const void* hint = nullptr)
+    {
+        if (RPY_UNLIKELY(size == 0)) { return nullptr; }
+
+        void* ptr = align::aligned_alloc(alignment, size);
+        if (RPY_UNLIKELY(!ptr)) { throw std::bad_alloc(); }
+
+        return static_cast<pointer>(ptr);
+    }
+
+    // Deallocate memory
+    void deallocate(pointer p, size_type n) noexcept
+    {
+        align::aligned_free(p, n);
+    }
+
+    // Maximum size
+    RPY_NO_DISCARD size_type max_size() const noexcept
+    {
+        return (std::numeric_limits<size_type>::max() - alignment);
+    }
+
+    // Construct an object in-place
+    template <typename U, typename... Args>
+    void construct(U* p, Args&&... args)
+    {
+        construct_inplace(p, std::forward<Args>(args)...);
+    }
+
+    // Destroy an object in-place
+    template <typename U>
+    void destroy(U* p)
+    {
+        p->~U();
+    }
+};
+
+
 template <typename Ty, size_t TyAlign, typename Uy, size_t UyAlign>
 RPY_NO_DISCARD constexpr bool operator==(
         const AlignedAllocator<Ty, TyAlign>& RPY_UNUSED_VAR left,
