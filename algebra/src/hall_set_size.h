@@ -33,12 +33,12 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_HALL_SET_SIZE_H
 #define ROUGHPY_ALGEBRA_SRC_HALL_SET_SIZE_H
 
-#include <roughpy/core/types.h>
 
-#include <algorithm>
-#include <cmath>
-#include <unordered_map>
-#include <vector>
+#include <roughpy/core/types.h>
+#include <roughpy/containers/vector.h>
+
+
+
 
 namespace rpy {
 namespace algebra {
@@ -53,7 +53,7 @@ class HallSetSizeHelper
      * should be plenty, but we should include
      * the ability to compute more if we need to.
      */
-    std::vector<int32_t> m_mobius
+    rpy::Vec<int32_t> m_mobius
             = {0,// included so the index = argument
                1, -1, -1, 0, -1, 1,  -1, 0,  0,  1, -1, 0,  -1, 1,  1, 0, -1,
                0, -1, 0,  1, 1,  -1, 0,  0,  1,  0, 0,  -1, -1, -1, 0, 1, 1,
