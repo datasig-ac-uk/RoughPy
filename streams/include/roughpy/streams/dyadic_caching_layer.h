@@ -28,8 +28,9 @@
 #ifndef ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_
 #define ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_
 
-#include <map>
 #include <mutex>
+
+#include <roughpy/containers/map.h>
 
 #include <roughpy/platform.h>
 #include <roughpy/algebra/lie.h>
@@ -60,7 +61,7 @@ namespace streams {
  */
 class ROUGHPY_STREAMS_EXPORT DyadicCachingLayer : public StreamInterface
 {
-    mutable std::map<intervals::DyadicInterval, algebra::Lie> m_cache;
+    mutable Map<intervals::DyadicInterval, algebra::Lie> m_cache;
     mutable std::recursive_mutex m_compute_lock;
 
     uuids::uuid m_cache_id;
