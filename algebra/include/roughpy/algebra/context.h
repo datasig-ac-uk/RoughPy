@@ -34,6 +34,8 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/scalars/key_scalar_array.h>
@@ -42,7 +44,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "free_tensor.h"
 #include "lie_basis.h"
@@ -172,14 +173,14 @@ public:
 
 protected:
     void
-    cbh_fallback(FreeTensor& collector, const std::vector<Lie>& lies) const;
+    cbh_fallback(FreeTensor& collector, const rpy::Vec<Lie>& lies) const;
 
     void
     cbh_fallback(FreeTensor& collector, Slice<const Lie*> lies) const;
 
 public:
     RPY_NO_DISCARD virtual Lie
-    cbh(const std::vector<Lie>& lies, VectorType vtype) const;
+    cbh(const rpy::Vec<Lie>& lies, VectorType vtype) const;
     RPY_NO_DISCARD virtual Lie
     cbh(Slice<const Lie*> lies, VectorType vtype) const;
 
@@ -194,11 +195,11 @@ public:
             = 0;
 
     RPY_NO_DISCARD virtual FreeTensor sig_derivative(
-            const std::vector<DerivativeComputeInfo>& info, VectorType vtype
+            const rpy::Vec<DerivativeComputeInfo>& info, VectorType vtype
     ) const = 0;
 
     // Functions to aid serialization
-    RPY_NO_DISCARD virtual std::vector<byte>
+    RPY_NO_DISCARD virtual rpy::Vec<byte>
     to_raw_bytes(AlgebraType atype, RawUnspecifiedAlgebraType alg) const;
 
     RPY_NO_DISCARD virtual UnspecifiedAlgebraType
@@ -232,7 +233,7 @@ ROUGHPY_ALGEBRA_EXPORT base_context_pointer get_base_context(deg_t width, deg_t 
 
 ROUGHPY_ALGEBRA_EXPORT context_pointer get_context(
         deg_t width, deg_t depth, const scalars::ScalarType* ctype,
-        const std::vector<std::pair<string, string>>& preferences = {}
+        const rpy::Vec<std::pair<string, string>>& preferences = {}
 );
 
 inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2)
@@ -261,7 +262,7 @@ inline void check_contexts_compatible(const Context& ctx1, const Context& ctx2)
 class ROUGHPY_ALGEBRA_EXPORT ContextMaker
 {
 public:
-    using preference_list = std::vector<std::pair<string, string>>;
+    using preference_list = rpy::Vec<std::pair<string, string>>;
 
     virtual ~ContextMaker() = default;
     virtual bool

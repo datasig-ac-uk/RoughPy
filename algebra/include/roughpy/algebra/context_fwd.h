@@ -33,7 +33,9 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
+
 #include <roughpy/core/slice.h>
+#include <roughpy/containers/vector.h>
 
 #include <roughpy/platform/serialization.h>
 
@@ -92,7 +94,7 @@ get_context_spec(const context_pointer& ctx);
 RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT context_pointer
 from_context_spec(const BasicContextSpec& spec);
 
-RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT std::vector<byte> alg_to_raw_bytes(
+RPY_NO_DISCARD ROUGHPY_ALGEBRA_EXPORT rpy::Vec<byte> alg_to_raw_bytes(
         context_pointer ctx, AlgebraType atype, RawUnspecifiedAlgebraType alg
 );
 
