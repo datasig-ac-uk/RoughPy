@@ -52,9 +52,9 @@ namespace rpy {
 namespace devices {
 
 struct ExtensionSourceAndOptions {
-    rpy::Vec<string> sources;
+    Vec<string> sources;
     string compile_options;
-    rpy::Vec<pair<string, string>> header_name_and_source;
+    Vec<pair<string, string>> header_name_and_source;
     string link_options;
 };
 
@@ -69,7 +69,7 @@ class ROUGHPY_PLATFORM_EXPORT DeviceHandle
     : public boost::intrusive_ref_counter<DeviceHandle>
 {
     mutable std::recursive_mutex m_lock;
-    mutable rpy::HashMap<string, Kernel> m_kernel_cache;
+    mutable HashMap<string, Kernel> m_kernel_cache;
 
 protected:
     using lock_type = std::recursive_mutex;
