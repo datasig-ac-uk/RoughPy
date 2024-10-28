@@ -39,6 +39,8 @@
 #include <roughpy/streams/schema.h>
 #include <roughpy/streams/stream.h>
 
+#include <roughpy/containers/vector.h>
+
 namespace rpy {
 namespace python {
 
@@ -52,7 +54,7 @@ struct RPy_Tick {
 
 class RPyTickConstructionHelper
 {
-    std::vector<RPy_Tick> m_ticks;
+    rpy::Vec<RPy_Tick> m_ticks;
     std::shared_ptr<streams::StreamSchema> p_schema;
     bool b_schema_only;
     py::object m_reference_time;
@@ -105,7 +107,7 @@ public:
     {
         return p_schema;
     }
-    const std::vector<RPy_Tick>& ticks() noexcept;
+    const rpy::Vec<RPy_Tick>& ticks() noexcept;
 
 
 
