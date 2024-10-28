@@ -29,6 +29,7 @@
 // Created by user on 09/03/23.
 //
 
+#include <roughpy/containers/vector.h>
 #include <roughpy/streams/stream_base.h>
 
 using namespace rpy;
@@ -75,7 +76,7 @@ rpy::algebra::Lie rpy::streams::StreamInterface::log_signature(
 ) const
 {
     auto dissection = intervals::to_dyadic_intervals(interval, resolution);
-    std::vector<algebra::Lie> lies;
+    rpy::Vec<algebra::Lie> lies;
     lies.reserve(dissection.size());
 
     for (auto& ivl : dissection) {
