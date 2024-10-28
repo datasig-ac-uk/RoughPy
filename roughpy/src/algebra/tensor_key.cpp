@@ -34,6 +34,8 @@
 #include <algorithm>
 #include <sstream>
 
+#include <roughpy/containers/vector.h>
+
 using namespace rpy;
 using namespace pybind11::literals;
 
@@ -106,9 +108,9 @@ bool python::PyTensorKey::is_letter() const
 deg_t python::PyTensorKey::width() const { return m_basis.width(); }
 deg_t python::PyTensorKey::depth() const { return m_basis.depth(); }
 deg_t python::PyTensorKey::degree() const { return m_basis.depth(); }
-std::vector<let_t> python::PyTensorKey::to_letters() const
+rpy::Vec<let_t> python::PyTensorKey::to_letters() const
 {
-    std::vector<let_t> letters;
+    rpy::Vec<let_t> letters;
     const auto width = m_basis.width();
     const auto depth = m_basis.depth();
     letters.reserve(depth);
@@ -140,7 +142,7 @@ python::PyTensorKey python::PyTensorKey::reverse() const
 static python::PyTensorKey
 construct_key(const py::args& args, const py::kwargs& kwargs)
 {
-    std::vector<let_t> letters;
+    rpy::Vec<let_t> letters;
 
     if (args.empty() && kwargs.contains("index")) {
         auto width = kwargs["width"].cast<deg_t>();
@@ -209,7 +211,7 @@ python::PyTensorKey python::operator*(
     const auto left_letters = lhs.to_letters();
     const auto right_letters = rhs.to_letters();
 
-    std::vector<let_t> letters;
+    rpy::Vec<let_t> letters;
     letters.reserve(left_letters.size() + right_letters.size());
     auto it = letters.insert(letters.end(), left_letters.begin(), left_letters.end());
     letters.insert(it, right_letters.begin(), right_letters.end());
