@@ -68,8 +68,6 @@ using std::is_rvalue_reference;
 using std::is_union;
 using std::is_void;
 
-using std::is_integral_v;
-
 using std::is_arithmetic;
 using std::is_compound;
 using std::is_fundamental;
@@ -102,6 +100,45 @@ using std::is_base_of;
 using std::is_convertible;
 using std::is_same;
 
+using std::is_abstract_v;
+using std::is_arithmetic_v;
+using std::is_array_v;
+using std::is_class_v;
+using std::is_compound_v;
+using std::is_const_v;
+using std::is_constructible_v;
+using std::is_convertible_v;
+using std::is_default_constructible_v;
+using std::is_destructible_v;
+using std::is_empty_v;
+using std::is_enum_v;
+using std::is_final_v;
+using std::is_floating_point_v;
+using std::is_function_v;
+using std::is_fundamental_v;
+using std::is_integral_v;
+using std::is_lvalue_reference_v;
+using std::is_member_function_pointer_v;
+using std::is_member_object_pointer_v;
+using std::is_member_pointer_v;
+using std::is_null_pointer_v;
+using std::is_object_v;
+using std::is_pointer_v;
+using std::is_polymorphic_v;
+using std::is_reference_v;
+using std::is_rvalue_reference_v;
+using std::is_same_v;
+using std::is_scalar_v;
+using std::is_signed_v;
+using std::is_standard_layout_v;
+using std::is_trivial_v;
+using std::is_trivially_constructible_v;
+using std::is_trivially_copyable_v;
+using std::is_trivially_default_constructible_v;
+using std::is_trivially_destructible_v;
+using std::is_union_v;
+using std::is_unsigned_v;
+using std::is_volatile_v;
 
 using std::add_const_t;
 using std::add_cv_t;
@@ -135,8 +172,8 @@ using boost::remove_cv_ref_t;
 using boost::is_detected;
 
 #ifdef RPY_CPP_17
-using std::void_t;
 using std::invoke_result_t;
+using std::void_t;
 #else
 using boost::void_t;
 
@@ -182,16 +219,43 @@ using void_or_base = conditional_t<is_void<T>::value, B, T>;
 
 using boost::hash;
 
-
 template <size_t N>
-struct ConstLog2 : integral_constant<size_t, ConstLog2<N / 2>::value + 1>{ };
+struct ConstLog2 : integral_constant<size_t, ConstLog2<N / 2>::value + 1> {
+};
 template <>
-struct ConstLog2<1> : integral_constant<size_t, 0>{};
-
-
+struct ConstLog2<1> : integral_constant<size_t, 0> {
+};
 
 template <typename T>
-RPY_INLINE_ALWAYS constexpr void ignore_unused(const T& RPY_UNUSED(arg)) {}
+RPY_INLINE_ALWAYS constexpr void ignore_unused(const T& RPY_UNUSED(arg))
+{}
+
+template <typename V, typename SFINAE = void>
+inline constexpr bool is_vector_v = false;
+
+template <typename V>
+inline constexpr bool is_vector_v<
+        V,
+        void_t<decltype(V::data),
+               decltype(V::size),
+               decltype(V::resize),
+               typename V::value_type>>
+        = true;
+
+namespace dtl {
+
+struct InvalidType {
+};
+
+template <typename V>
+using vector_content_type
+        = conditional_t<is_vector_v<V>, typename V::value_type, InvalidType>;
+
+}// namespace dtl
+
+template <typename V, typename T, typename SFINAE = void>
+inline constexpr bool is_vector_of_T_v
+        = is_vector_v<V> && is_same_v<dtl::vector_content_type<V>, T>;
 
 }// namespace rpy
 
