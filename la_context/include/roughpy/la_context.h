@@ -30,6 +30,8 @@
 #ifndef ROUGHPY_LA_CONTEXT_LA_CONTEXT_H_
 #define ROUGHPY_LA_CONTEXT_LA_CONTEXT_H_
 
+#include <roughpy/containers/vector.h>
+
 #include "implementors/algebra_impl.h"
 #include "implementors/free_tensor_impl.h"
 #include "roughpy/algebra/algebra_base.h"
@@ -118,7 +120,7 @@ class LAContext : public Context
     lie_t<VType> tensor_to_lie_impl(const FreeTensor& arg) const;
 
     template <VectorType VType>
-    lie_t<VType> cbh_impl(const std::vector<Lie>& lies) const;
+    lie_t<VType> cbh_impl(const rpy::Vec<Lie>& lies) const;
 
     template <VectorType VType>
     free_tensor_t<VType> compute_signature(const SignatureData& data) const;
@@ -140,7 +142,7 @@ class LAContext : public Context
 
     template <VectorType VType>
     free_tensor_t<VType>
-    sig_derivative_impl(const std::vector<DerivativeComputeInfo>& info) const;
+    sig_derivative_impl(const rpy::Vec<DerivativeComputeInfo>& info) const;
 
     UnspecifiedAlgebraType
     construct_impl(const VectorConstructionData& data,
@@ -189,7 +191,7 @@ public:
     Lie tensor_to_lie(const FreeTensor& arg) const override;
     FreeTensor signature(const SignatureData& data) const override;
     Lie log_signature(const SignatureData& data) const override;
-    FreeTensor sig_derivative(const std::vector<DerivativeComputeInfo>& info,
+    FreeTensor sig_derivative(const rpy::Vec<DerivativeComputeInfo>& info,
                               VectorType vtype) const override;
 };
 
@@ -215,7 +217,7 @@ OutType LAContext<Width, Depth, Coefficients>::construct_impl(
     const scalar_type* data_ptr;
 
     const auto size = data.data.size();
-    std::vector<scalar_type> tmp;
+    rpy::Vec<scalar_type> tmp;
     if (data.data.type() != ctype()) {
         tmp.resize(data.data.size());
         ctype()->convert_copy(tmp.data(), data.data, size);
@@ -312,7 +314,7 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::lie_t<VType>
 LAContext<Width, Depth, Coefficients>::cbh_impl(
-        const std::vector<Lie>& lies) const
+        const rpy::Vec<Lie>& lies) const
 {
     maps_t<VType> maps;
     free_tensor_t<VType> collector;
@@ -399,7 +401,7 @@ template <deg_t Width, deg_t Depth, typename Coefficients>
 template <VectorType VType>
 LAContext<Width, Depth, Coefficients>::free_tensor_t<VType>
 LAContext<Width, Depth, Coefficients>::sig_derivative_impl(
-        const std::vector<DerivativeComputeInfo>& info) const
+        const rpy::Vec<DerivativeComputeInfo>& info) const
 {
     free_tensor_t<VType> result;
 
@@ -593,7 +595,7 @@ Lie LAContext<Width, Depth, Coefficients>::log_signature(
 }
 template <deg_t Width, deg_t Depth, typename Coefficients>
 FreeTensor LAContext<Width, Depth, Coefficients>::sig_derivative(
-        const std::vector<DerivativeComputeInfo>& info, VectorType vtype) const
+        const rpy::Vec<DerivativeComputeInfo>& info, VectorType vtype) const
 {
 #define RPY_SWITCH_FN(VTYPE)                                                   \
     FreeTensor(this, sig_derivative_impl<(VTYPE)>(info))
