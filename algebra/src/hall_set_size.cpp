@@ -32,6 +32,8 @@
 
 #include "hall_set_size.h"
 
+#include <roughpy/containers/vector.h>
+
 using namespace rpy;
 using namespace rpy::algebra;
 
@@ -39,7 +41,7 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth)
     : m_width(width), m_depth(depth)
 {
     if (static_cast<dimn_t>(m_depth) > m_mobius.size()) {
-        std::vector<bool> tmp;
+        rpy::Vec<bool> tmp;
         tmp.resize(m_depth / 2, true);
         tmp[0] = false;
 
@@ -49,7 +51,7 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth)
                 tmp[m] = false;
             }
         }
-        std::vector<int> primes;
+        rpy::Vec<int> primes;
         primes.reserve(bound);
         for (int i = 2; i < bound; ++i) {
             if (tmp[i]) { primes.push_back(i); }
