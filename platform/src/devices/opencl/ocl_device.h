@@ -32,6 +32,9 @@
 #ifndef ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_H_
 #define ROUGHPY_DEVICE_SRC_OPENCL_OCL_DEVICE_H_
 
+#include <roughpy/containers/vector.h>
+#include <roughpy/containers/hash_map.h>
+
 #include "ocl_buffer.h"
 #include "ocl_decls.h"
 #include "ocl_event.h"
@@ -59,8 +62,8 @@ class OCLDeviceHandle : public DeviceHandle
 
     OCLVersion m_ocl_version;
 
-    mutable std::vector<cl_program> m_programs;
-    mutable std::unordered_map<string, cl_program> m_header_cache;
+    mutable rpy::Vec<cl_program> m_programs;
+    mutable rpy::HashMap<string, cl_program> m_header_cache;
 
 
 
