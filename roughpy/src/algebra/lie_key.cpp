@@ -115,7 +115,7 @@ struct print_walker {
 };
 
 static typename python::PyLieKey::container_type trim_branch(
-        const boost::container::small_vector_base<python::PyLieLetter>& tree,
+        const SmallVectorBase<python::PyLieLetter>& tree,
         dimn_t start
 )
 {
@@ -159,7 +159,7 @@ python::PyLieKey::PyLieKey(basis_type basis, let_t letter)
 {}
 python::PyLieKey::PyLieKey(
         basis_type basis,
-        const boost::container::small_vector_base<PyLieLetter>& data
+        const SmallVectorBase<PyLieLetter>& data
 )
     : m_data(data), m_basis(std::move(basis))
 {}
