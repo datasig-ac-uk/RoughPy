@@ -28,14 +28,15 @@
 #ifndef ROUGHPY_INTERVALS_DYADIC_INTERVAL_H_
 #define ROUGHPY_INTERVALS_DYADIC_INTERVAL_H_
 
+#include <ostream>
+#include <roughpy/core/types.h>
+
+#include <roughpy/platform/serialization.h>
+#include <roughpy/containers/vector.h>
+
+
 #include "dyadic.h"
 #include "interval.h"
-#include <roughpy/core/types.h>
-#include <roughpy/platform/serialization.h>
-
-#include <ostream>
-#include <vector>
-
 #include "roughpy_intervals_export.h"
 
 namespace rpy {
@@ -127,7 +128,7 @@ ROUGHPY_INTERVALS_EXPORT
 std::ostream& operator<<(std::ostream& os, const DyadicInterval& di);
 
 ROUGHPY_INTERVALS_EXPORT
-std::vector<DyadicInterval>
+Vec<DyadicInterval>
 to_dyadic_intervals(const Interval& interval, typename Dyadic::power_t tol,
                     IntervalType itype = IntervalType::Clopen);
 
