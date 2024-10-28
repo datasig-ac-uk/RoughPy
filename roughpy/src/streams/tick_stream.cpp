@@ -27,14 +27,17 @@
 
 #include "tick_stream.h"
 
-#include <map>
-#include <set>
+
 
 #include <roughpy/algebra/lie.h>
 #include <roughpy/intervals/interval.h>
 #include <roughpy/streams/stream.h>
 #include <roughpy/streams/stream_construction_helper.h>
 #include <roughpy/streams/tick_stream.h>
+
+#include <roughpy/containers/map.h>
+#include <roughpy/containers/set.h>
+#include <roughpy/containers/vector.h>
 
 #include "args/kwargs_to_path_metadata.h"
 #include "r_py_tick_construction_helper.h"
@@ -137,11 +140,11 @@ static py::object construct(const py::object& data, py::kwargs kwargs)
             *pmd.resolution,
             pmd.interval_type};
 
-    std::set<param_t> index;
-    std::map<intervals::DyadicInterval, algebra::Lie> raw_data;
+    rpy::Set<param_t> index;
+    rpy::Map<intervals::DyadicInterval, algebra::Lie> raw_data;
 
     // For value types, we need to keep track of the last value that appeared
-    std::vector<algebra::Lie> previous_values(
+    rpy::Vec<algebra::Lie> previous_values(
             pmd.width, pmd.ctx->zero_lie(meta.cached_vector_type)
     );
 
@@ -231,7 +234,7 @@ static py::object construct(const py::object& data, py::kwargs kwargs)
     }
 
     streams::Stream result(streams::TickStream(
-            std::vector<param_t>(index.begin(), index.end()),
+            rpy::Vec<param_t>(index.begin(), index.end()),
             std::move(raw_data), *pmd.resolution, pmd.schema, std::move(meta)
     ));
 
