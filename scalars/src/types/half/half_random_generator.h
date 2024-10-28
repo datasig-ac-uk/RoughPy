@@ -5,6 +5,8 @@
 #ifndef HALF_RANDOM_GENERATOR_H
 #define HALF_RANDOM_GENERATOR_H
 
+#include <roughpy/containers/vector.h>
+
 #include "random/standard_random_generator.h"
 #include "scalar_types.h"
 
@@ -18,7 +20,7 @@ class StandardRandomGenerator<half, BitGenerator> : public RandomGenerator
     using scalar_type = half;
     using bit_generator = BitGenerator;
 
-    std::vector<uint64_t> m_seed;
+    rpy::Vec<uint64_t> m_seed;
 
     mutable BitGenerator m_generator;
     mutable std::mutex m_lock;
@@ -28,7 +30,7 @@ public:
 
     void set_seed(Slice<seed_int_t> seed_data) override;
     void set_state(string_view state) override;
-    RPY_NO_DISCARD std::vector<seed_int_t> get_seed() const override;
+    RPY_NO_DISCARD rpy::Vec<seed_int_t> get_seed() const override;
     RPY_NO_DISCARD std::string get_type() const override;
     RPY_NO_DISCARD std::string get_state() const override;
     RPY_NO_DISCARD ScalarArray uniform_random_scalar(const ScalarArray& lower,
@@ -60,7 +62,7 @@ StandardRandomGenerator<half, BitGenerator>::StandardRandomGenerator(
             s |= static_cast<seed_int_t>(dev());
             continue_bits -= so_rd_int;
         }
-    } else { m_seed = seed; }
+    } else { m_seed = static_cast<Vec<uint64_t>>(seed); }
 
     m_generator = BitGenerator(m_seed[0]);
 }
@@ -86,7 +88,7 @@ set_state(string_view state)
 }
 
 template <typename BitGenerator>
-std::vector<seed_int_t> StandardRandomGenerator<half, BitGenerator>::
+rpy::Vec<seed_int_t> StandardRandomGenerator<half, BitGenerator>::
 get_seed() const { return {m_seed[0]}; }
 
 template <typename BitGenerator>
@@ -109,7 +111,7 @@ ScalarArray StandardRandomGenerator<half, BitGenerator>::uniform_random_scalar(
     const ScalarArray& upper,
     dimn_t count) const
 {
-    std::vector<std::uniform_real_distribution<float>> dists;
+    rpy::Vec<std::uniform_real_distribution<float>> dists;
 
     if (lower.size() != upper.size()) {
         RPY_THROW(
