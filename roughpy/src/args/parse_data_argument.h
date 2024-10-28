@@ -12,9 +12,9 @@
 #include <roughpy/platform/devices/core.h>
 #include <roughpy/scalars/scalars_fwd.h>
 
-#include <boost/container/small_vector.hpp>
+#include <roughpy/containers/small_vector.h>
+#include <roughpy/containers/vector.h>
 
-#include <vector>
 
 namespace rpy {
 namespace python {
@@ -38,7 +38,7 @@ enum class ValueType : uint8_t
 struct LeafData {
 
     LeafData(
-            boost::container::small_vector<idimn_t, 1>&& shape,
+            rpy::SmallVector<idimn_t, 1>&& shape,
             scalars::KeyScalarArray&& data,
             py::object&& owningObject,
             dimn_t size,
@@ -55,7 +55,7 @@ struct LeafData {
           value_type(valueType)
     {}
 
-    boost::container::small_vector<idimn_t, 1> shape;
+    rpy::SmallVector<idimn_t, 1> shape;
     scalars::KeyScalarArray data;
     py::object owning_object;
     dimn_t size;
@@ -64,12 +64,12 @@ struct LeafData {
     ValueType value_type;
 };
 
-class ParsedData : public std::vector<LeafData>
+class ParsedData : public rpy::Vec<LeafData>
 {
-    std::vector<param_t> m_indices;
+    rpy::Vec<param_t> m_indices;
 
 public:
-    const std::vector<param_t>& indices() const noexcept { return m_indices; }
+    const rpy::Vec<param_t>& indices() const noexcept { return m_indices; }
 
     void fill_ks_stream(scalars::KeyScalarStream& ks_stream);
 
@@ -82,7 +82,7 @@ public:
 // };
 
 struct RPY_NO_EXPORT DataArgOptions {
-    std::vector<param_t> indices;
+    rpy::Vec<param_t> indices;
     const scalars::ScalarType* scalar_type = nullptr;
     algebra::context_pointer context = nullptr;
     AlternativeKeyType* alternative_key = nullptr;
