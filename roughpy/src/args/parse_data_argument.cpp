@@ -27,7 +27,9 @@
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
 
-#include <boost/container/small_vector.hpp>
+
+#include <roughpy/containers/small_vector.h>
+#include <roughpy/containers/vector.h>
 
 #include <algorithm>
 #include <functional>
@@ -40,7 +42,7 @@ using namespace rpy::python;
 namespace {
 
 struct LeafItem {
-    boost::container::small_vector<idimn_t, 1> shape;
+    rpy::SmallVector<idimn_t, 1> shape;
     py::object object;
     dimn_t size;
     dimn_t offset;
@@ -51,7 +53,7 @@ struct LeafItem {
 
 class ConversionManager
 {
-    std::vector<LeafItem> m_leaves;
+    rpy::Vec<LeafItem> m_leaves;
     ParsedData m_parsed_data;
     DataArgOptions& m_options;
     dimn_t m_offset = 0;
@@ -304,12 +306,12 @@ void ConversionManager::handle_dltensor_leaf(LeafItem& leaf)
 
     allocate_leaf(new_leaf);
 
-    boost::container::small_vector<idimn_t, 2> modified_shape(
+    rpy::SmallVector<idimn_t, 2> modified_shape(
             tensor.shape,
             tensor.shape + tensor.ndim
     );
 
-    boost::container::small_vector<idimn_t, 2> modified_strides;
+    rpy::SmallVector<idimn_t, 2> modified_strides;
     if (tensor.strides != nullptr) {
         modified_strides.reserve(tensor.ndim);
         for (int32_t i = 0; i < tensor.ndim; ++i) {
