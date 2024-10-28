@@ -64,9 +64,9 @@ StreamChannel& StreamChannel::insert_variant(string variant_label)
 {
     return *this;
 }
-const std::vector<string>& StreamChannel::get_variants() const
+const rpy::Vec<string>& StreamChannel::get_variants() const
 {
-    static const std::vector<string> no_variants;
+    static const rpy::Vec<string> no_variants;
     return no_variants;
 }
 
