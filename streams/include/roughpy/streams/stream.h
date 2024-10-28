@@ -31,6 +31,8 @@
 
 #include "stream_base.h"
 
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/intervals/interval.h>
 #include <roughpy/intervals/partition.h>
 #include <roughpy/platform/serialization.h>
@@ -50,7 +52,7 @@ public:
     using RealInterval = intervals::RealInterval;
 
     using perturbation_t = std::pair<RealInterval, Lie>;
-    using perturbation_list_t = std::vector<perturbation_t>;
+    using perturbation_list_t = rpy::Vec<perturbation_t>;
 
 private:
     std::shared_ptr<const StreamInterface> p_impl;
