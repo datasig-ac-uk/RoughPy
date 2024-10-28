@@ -40,6 +40,9 @@
 
 #include "dlpack.h"
 
+
+#include <roughpy/containers/vector.h>
+
 namespace rpy {
 namespace python {
 
@@ -68,7 +71,7 @@ struct RPY_NO_EXPORT PyToBufferOptions {
     dimn_t max_nested = 0;
 
     /// Information about the constructed array
-    std::vector<idimn_t> shape;
+    rpy::Vec<idimn_t> shape;
 
     /// Allow a single, untagged scalar as argument
     bool allow_scalar = true;
@@ -130,7 +133,7 @@ scalars::Scalar
 py_to_scalar(const scalars::ScalarType* type, py::handle object);
 
 ArgSizeInfo compute_size_and_type(
-        python::PyToBufferOptions& options, std::vector<py::object>& leaves,
+        python::PyToBufferOptions& options, rpy::Vec<py::object>& leaves,
         py::handle arg
 );
 
