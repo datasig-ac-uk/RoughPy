@@ -6,6 +6,9 @@
 #define ROUGHPY_SCALARS_RAW_BYTES_H
 
 #include <roughpy/core/types.h>
+
+#include <roughpy/containers/vector.h>
+
 #include "scalar_types.h"
 #include "scalars_fwd.h"
 
@@ -16,7 +19,7 @@ namespace scalars {
 namespace dtl {
 
 RPY_NO_DISCARD
-std::vector<byte> to_raw_bytes(const void* ptr, dimn_t size, const devices::TypeInfo& info);
+rpy::Vec<byte> to_raw_bytes(const void* ptr, dimn_t size, const devices::TypeInfo& info);
 
 void from_raw_bytes(void* dst, dimn_t count, Slice<byte> bytes, const devices::TypeInfo& info);
 
