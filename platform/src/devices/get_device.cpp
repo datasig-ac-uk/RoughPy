@@ -29,6 +29,9 @@
 // Created by user on 11/10/23.
 //
 
+
+#include <roughpy/containers/small_vector.h>
+
 #include "devices/core.h"
 #include "devices/device_handle.h"
 #include "devices/device_provider.h"
@@ -36,7 +39,6 @@
 #include "host/host_device_impl.h"
 #include "opencl/ocl_device_provider.h"
 
-#include <boost/container/small_vector.hpp>
 
 #include <mutex>
 
@@ -44,7 +46,7 @@ using namespace rpy;
 using namespace rpy::devices;
 
 static std::mutex s_provider_lock;
-static boost::container::small_vector<std::unique_ptr<DeviceProvider>, 2>
+static SmallVector<std::unique_ptr<DeviceProvider>, 2>
         s_provider_list;
 
 void DeviceProvider::register_provider(
@@ -67,7 +69,7 @@ optional<Device> rpy::devices::get_device(const DeviceSpecification& spec)
     }
 
 
-    boost::container::small_vector<DeviceProvider*, 1> candidates;
+    SmallVector<DeviceProvider*, 1> candidates;
     for (auto&& provider : s_provider_list) {
         if (provider->supports(spec.category())) {
             candidates.push_back(provider.get());
