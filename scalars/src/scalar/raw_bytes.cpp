@@ -3,6 +3,8 @@
 //
 
 
+#include <roughpy/containers/vector.h>
+
 #include "raw_bytes.h"
 #include "do_macro.h"
 
@@ -20,7 +22,7 @@ namespace {
 
 template <typename T>
 enable_if_t<is_trivially_copyable<T>::value> to_raw_bytes_impl(
-    std::vector<byte>& out,
+    rpy::Vec<byte>& out,
     const T* data,
     dimn_t size)
 {
@@ -31,7 +33,7 @@ enable_if_t<is_trivially_copyable<T>::value> to_raw_bytes_impl(
 }
 
 template <typename I>
-void to_raw_bytes_impl_helper(std::vector<byte>& out,
+void to_raw_bytes_impl_helper(rpy::Vec<byte>& out,
                               scalars::dtl::MPIntegerSerializationHelper<I>&
                               helper)
 {
@@ -49,7 +51,7 @@ void to_raw_bytes_impl_helper(std::vector<byte>& out,
 }
 
 
-void to_raw_bytes_impl(std::vector<byte>& out,
+void to_raw_bytes_impl(rpy::Vec<byte>& out,
                        const rational_scalar_type* data,
                        dimn_t count)
 {
@@ -75,7 +77,7 @@ void to_raw_bytes_impl(std::vector<byte>& out,
     }
 }
 
-void to_raw_bytes_impl(std::vector<byte>& out, const indeterminate_type& value)
+void to_raw_bytes_impl(rpy::Vec<byte>& out, const indeterminate_type& value)
 {
     using packed_type = typename indeterminate_type::packed_type;
     using integral_type = typename indeterminate_type::integral_type;
@@ -87,7 +89,7 @@ void to_raw_bytes_impl(std::vector<byte>& out, const indeterminate_type& value)
     to_raw_bytes_impl(out, &integral, 1);
 }
 
-void to_raw_bytes_impl(std::vector<byte>& out, const monomial& value)
+void to_raw_bytes_impl(rpy::Vec<byte>& out, const monomial& value)
 {
     uint64_t size = value.type();
     to_raw_bytes_impl(out, &size, 1);
@@ -98,7 +100,7 @@ void to_raw_bytes_impl(std::vector<byte>& out, const monomial& value)
     }
 }
 
-void to_raw_bytes_impl_single(std::vector<byte>& out,
+void to_raw_bytes_impl_single(rpy::Vec<byte>& out,
                               const rational_poly_scalar& value)
 {
     uint64_t size = value.size();
@@ -109,7 +111,7 @@ void to_raw_bytes_impl_single(std::vector<byte>& out,
     }
 }
 
-void to_raw_bytes_impl(std::vector<byte>& out,
+void to_raw_bytes_impl(rpy::Vec<byte>& out,
                        const rational_poly_scalar* data,
                        dimn_t count)
 {
@@ -122,13 +124,13 @@ void to_raw_bytes_impl(std::vector<byte>& out,
 }
 
 
-std::vector<byte> scalars::dtl::to_raw_bytes(
+rpy::Vec<byte> scalars::dtl::to_raw_bytes(
     const void* ptr,
     dimn_t size,
     const devices::TypeInfo& info
 )
 {
-    std::vector<byte> out;
+    rpy::Vec<byte> out;
     // Reserve approximately the right amount of space to cut down number of
     // reallocations
     out.reserve(size * info.bytes);
