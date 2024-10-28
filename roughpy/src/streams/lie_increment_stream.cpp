@@ -43,6 +43,9 @@
 #include <limits>
 #include <pybind11/pytypes.h>
 
+
+#include <roughpy/containers/vector.h>
+
 using namespace rpy;
 using namespace rpy::python;
 using namespace pybind11::literals;
@@ -55,7 +58,7 @@ of fixed size at specified time intervals.
 )rpydoc";
 
 void buffer_to_indices(
-        std::vector<param_t>& indices,
+        rpy::Vec<param_t>& indices,
         const py::buffer_info& info
 )
 {
@@ -70,7 +73,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
 {
     auto md = kwargs_to_metadata(kwargs);
 
-    std::vector<param_t> indices;
+    rpy::Vec<param_t> indices;
 
     python::DataArgOptions options;
     options.scalar_type = md.scalar_type;
@@ -160,7 +163,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
                 }
             }
         } else if (py::isinstance<py::sequence>(indices_arg)) {
-            indices = indices_arg.cast<std::vector<param_t>>();
+            indices = indices_arg.cast<rpy::Vec<param_t>>();
         } else {
             RPY_THROW(
                     py::type_error,
