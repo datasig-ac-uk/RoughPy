@@ -33,6 +33,9 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LITE_CONTEXT_H
 #define ROUGHPY_ALGEBRA_SRC_LITE_CONTEXT_H
 
+
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/scalars.h>
 #include <roughpy/scalars/scalar_types.h>
 
@@ -186,7 +189,7 @@ private:
     template <VectorType VType>
     lie_t<VType> tensor_to_lie_impl(const FreeTensor& arg) const;
     template <VectorType VType>
-    lie_t<VType> cbh_impl(const std::vector<Lie>& lies) const;
+    lie_t<VType> cbh_impl(const rpy::Vec<Lie>& lies) const;
     template <VectorType VType>
     free_tensor_t<VType> compute_signature(const SignatureData& data) const;
     template <VectorType VType>
@@ -206,7 +209,7 @@ private:
     ) const;
     template <VectorType VType>
     free_tensor_t<VType>
-    sig_derivative_impl(const std::vector<DerivativeComputeInfo>& info) const;
+    sig_derivative_impl(const rpy::Vec<DerivativeComputeInfo>& info) const;
 
     UnspecifiedAlgebraType
     construct_impl(const VectorConstructionData& data, algebra_type_tag<AlgebraType::FreeTensor>)
@@ -267,7 +270,7 @@ public:
     FreeTensor signature(const SignatureData& data) const override;
     Lie log_signature(const SignatureData& data) const override;
     FreeTensor sig_derivative(
-            const std::vector<DerivativeComputeInfo>& info,
+            const rpy::Vec<DerivativeComputeInfo>& info,
             VectorType vtype
     ) const override;
 
@@ -449,7 +452,7 @@ OutType LiteContext<Coefficients>::construct_impl(
     Slice<const scalar_type> raw_data;
 
     const auto size = std::min(data.data.size(), basis->size(-1));
-    std::vector<scalar_type> tmp;
+    rpy::Vec<scalar_type> tmp;
     const auto* this_type = ctype();
     if (data.data.type() != this_type) {
         tmp.resize(data.data.size());
@@ -524,7 +527,7 @@ LiteContext<Coefficients>::tensor_to_lie_impl(const FreeTensor& arg) const
 template <typename Coefficients>
 template <VectorType VType>
 typename LiteContext<Coefficients>::template lie_t<VType>
-LiteContext<Coefficients>::cbh_impl(const std::vector<Lie>& lies) const
+LiteContext<Coefficients>::cbh_impl(const rpy::Vec<Lie>& lies) const
 {
 
     free_tensor_t<VType> collector(p_tbasis, p_ftmul);
@@ -610,7 +613,7 @@ template <typename Coefficients>
 template <VectorType VType>
 typename LiteContext<Coefficients>::template free_tensor_t<VType>
 LiteContext<Coefficients>::sig_derivative_impl(
-        const std::vector<DerivativeComputeInfo>& info
+        const rpy::Vec<DerivativeComputeInfo>& info
 ) const
 {
     using tensor_type = free_tensor_t<VType>;
@@ -898,7 +901,7 @@ Lie LiteContext<Coefficients>::log_signature(const SignatureData& data) const
 }
 template <typename Coefficients>
 FreeTensor LiteContext<Coefficients>::sig_derivative(
-        const std::vector<DerivativeComputeInfo>& info,
+        const rpy::Vec<DerivativeComputeInfo>& info,
         VectorType vtype
 ) const
 {
