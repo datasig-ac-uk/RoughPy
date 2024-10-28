@@ -34,6 +34,8 @@
 #include <roughpy/intervals/partition.h>
 #include <roughpy/platform/archives.h>
 
+#include <roughpy/containers/vector.h>
+
 using namespace rpy;
 using namespace rpy::intervals;
 
@@ -67,7 +69,7 @@ TEST(Partitions, TestPartitionsRefineMidpointIntermediates) {
 
     EXPECT_EQ(refined.size(), 2*parts.size());
 
-    std::vector<param_t> expected_intermediates {
+    rpy::Vec<param_t> expected_intermediates {
             0.15, 0.3, 0.45, 0.6, 0.8
     };
 
