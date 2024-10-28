@@ -33,6 +33,9 @@
 #include "args/parse_schema.h"
 #include <roughpy/streams/schema.h>
 
+
+#include <roughpy/containers/vector.h>
+
 #include "r_py_tick_construction_helper.h"
 
 using namespace rpy;
@@ -100,10 +103,10 @@ public:
             );
         }
     }
-    const std::vector<string>& get_variants() const override
+    const rpy::Vec<string>& get_variants() const override
     {
         if (type() == ChannelType::Categorical) {
-            PYBIND11_OVERRIDE(const std::vector<string>&, StreamChannel, get_variants);
+            PYBIND11_OVERRIDE(const rpy::Vec<string>&, StreamChannel, get_variants);
         } else {
             RPY_THROW(
                     std::runtime_error,
@@ -132,9 +135,9 @@ public:
     {
         PYBIND11_OVERRIDE(dimn_t, LeadLaggableChannel, variant_id_of_label, label);
     }
-    const std::vector<string>& get_variants() const override
+    const rpy::Vec<string>& get_variants() const override
     {
-        PYBIND11_OVERRIDE(const std::vector<string>&, LeadLaggableChannel, get_variants);
+        PYBIND11_OVERRIDE(const rpy::Vec<string>&, LeadLaggableChannel, get_variants);
     }
     void set_lead_lag(bool new_value) override
     {
