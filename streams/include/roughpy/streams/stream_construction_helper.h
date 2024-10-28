@@ -6,10 +6,12 @@
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
+#include <roughpy/containers/flat_multimap.h>
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/lie.h>
 
-#include <boost/container/flat_map.hpp>
 
 #include "roughpy_streams_export.h"
 
@@ -20,16 +22,16 @@ class ROUGHPY_STREAMS_EXPORT StreamConstructionHelper
 {
     std::shared_ptr<StreamSchema> p_schema;
     algebra::context_pointer p_ctx;
-    algebra::VectorType m_vtype RPY_UNUSED_VAR = algebra::VectorType::Sparse;
+    algebra::VectorType m_vtype = algebra::VectorType::Sparse;
 
     using multimap_type
-            = boost::container::flat_multimap<param_t, algebra::Lie>;
+            = rpy::FlatMultiMap<param_t, algebra::Lie>;
 
     multimap_type m_entries;
     algebra::Lie m_zero;
 
-    std::vector<key_type> m_dense_keys;
-    std::vector<scalars::Scalar> m_previous_values;
+    rpy::Vec<key_type> m_dense_keys;
+    rpy::Vec<scalars::Scalar> m_previous_values;
 
 public:
     StreamConstructionHelper(algebra::context_pointer ctx,
