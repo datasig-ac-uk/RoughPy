@@ -29,8 +29,11 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_TYPE_H_
 #define ROUGHPY_SCALARS_SCALAR_TYPE_H_
 
-#include "scalars_fwd.h"
+#include <roughpy/containers/hash_map.h>
 #include <roughpy/platform/devices.h>
+
+#include "scalars_fwd.h"
+
 
 namespace rpy {
 namespace scalars {
@@ -61,7 +64,7 @@ protected:
     devices::TypeInfo m_info;
     RingCharacteristics m_characteristics;
 
-    std::unordered_map<string, rng_getter> m_rng_getters;
+    rpy::HashMap<string, rng_getter> m_rng_getters;
 
     explicit ScalarType(
         string name,
