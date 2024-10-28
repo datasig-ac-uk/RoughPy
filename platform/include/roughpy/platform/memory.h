@@ -111,6 +111,8 @@ constexpr enable_if_t<is_integral_v<I>, bool> is_alignment(I align)
  */
 inline bool is_pointer_aligned(const volatile void* ptr, std::size_t alignment)
 {
+    // TODO: This function should be constexpr, we need to make use of constexpr
+    //       bit cast or something similar.
     RPY_DBG_ASSERT(is_alignment(alignment));
     return reinterpret_cast<std::uintptr_t>(ptr) % alignment == 0;
 }
