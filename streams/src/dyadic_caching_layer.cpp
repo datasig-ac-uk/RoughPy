@@ -29,6 +29,9 @@
 // Created by user on 10/03/23.
 //
 
+#include <roughpy/containers/map.h>
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/streams/dyadic_caching_layer.h>
 
 #include <roughpy/platform/archives.h>
@@ -140,7 +143,7 @@ DyadicCachingLayer::log_signature(const intervals::Interval& domain,
 
     auto dyadic_dissection = intervals::to_dyadic_intervals(domain, resolution);
 
-    std::vector<algebra::Lie> lies;
+        rpy::Vec<algebra::Lie> lies;
     lies.reserve(dyadic_dissection.size());
     for (const auto& itvl : dyadic_dissection) {
         auto lsig = log_signature(itvl, resolution, ctx);
