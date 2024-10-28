@@ -520,7 +520,7 @@ public:
 
     ~Rc()
     {
-        if (p_data) { p_data->dec_ref(); }
+        if (p_data != nullptr) { p_data->dec_ref(); }
     }
 
     Rc& operator=(const Rc& other)
@@ -673,7 +673,8 @@ protected:
 
 inline void RcBase::inc_ref() const noexcept
 {
-    m_rc.fetch_add(1, std::memory_order_relaxed);
+    auto new_ref = m_rc.fetch_add(1, std::memory_order_relaxed);
+    RPY_DBG_ASSERT(new_ref > 0);
 }
 
 inline bool RcBase::dec_ref() const
