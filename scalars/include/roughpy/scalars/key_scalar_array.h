@@ -34,6 +34,8 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 
+#include <roughpy/containers/vector.h>
+
 #include <cereal/types/vector.hpp>
 #include <algorithm>
 
@@ -93,7 +95,7 @@ RPY_SERIAL_LOAD_FN_IMPL(KeyScalarArray)
     bool hkeys = false;
     RPY_SERIAL_SERIALIZE_NVP("has_keys", hkeys);
     if (hkeys) {
-        std::vector<key_type> tmp_keys;
+        rpy::Vec<key_type> tmp_keys;
         RPY_SERIAL_SERIALIZE_NVP("keys", tmp_keys);
 
         RPY_CHECK(tmp_keys.size() == size());
@@ -108,7 +110,7 @@ RPY_SERIAL_SAVE_FN_IMPL(KeyScalarArray)
     bool hkeys = has_keys();
     RPY_SERIAL_SERIALIZE_NVP("has_keys", hkeys);
     if (hkeys) {
-        std::vector<key_type> tmp_keys(p_keys, p_keys + size());
+        rpy::Vec<key_type> tmp_keys(p_keys, p_keys + size());
         RPY_SERIAL_SERIALIZE_NVP("keys", tmp_keys);
     }
 }
