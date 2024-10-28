@@ -28,17 +28,17 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_STREAM_H_
 #define ROUGHPY_SCALARS_SCALAR_STREAM_H_
 
+#include <roughpy/containers/small_vector.h>
+#include <roughpy/containers/vector.h>
 
 #include "scalars_fwd.h"
 
-#include <boost/container/small_vector.hpp>
-#include <vector>
 
 namespace rpy { namespace scalars {
 
 class ROUGHPY_SCALARS_EXPORT ScalarStream {
 protected:
-    std::vector<ScalarArray> m_stream;
+    Vec<ScalarArray> m_stream;
     const ScalarType* p_type;
 
 public:
@@ -49,10 +49,10 @@ public:
     ScalarStream(ScalarStream&& other) noexcept;
 
     explicit ScalarStream(const ScalarType* type);
-    ScalarStream(ScalarArray base, std::vector<dimn_t> shape);
+    ScalarStream(ScalarArray base, rpy::Vec<dimn_t> shape);
 
     ScalarStream(
-            std::vector<ScalarArray>&& stream,
+            rpy::Vec<ScalarArray>&& stream,
             dimn_t row_elts,
             const ScalarType* type
     )
