@@ -28,13 +28,14 @@
 
 #include "scalar_type.h"
 
+#include <roughpy/containers/hash_map.h>
+
 // #include "scalar.h"
 #include "scalars.h"
 
 #include <roughpy/scalars/scalar_types.h>
 
 
-#include <unordered_map>
 
 #include <boost/endian.hpp>
 
@@ -264,7 +265,7 @@ void python::PyScalarMetaType_dealloc(PyObject* arg)
     Py_DECREF(tp);
 }
 
-static std::unordered_map<const scalars::ScalarType*, py::object>
+static rpy::HashMap<const scalars::ScalarType*, py::object>
         ctype_type_cache;
 
 void python::register_scalar_type(
