@@ -31,7 +31,7 @@
 #include "dyadic_caching_layer.h"
 #include "stream_base.h"
 
-#include <boost/container/flat_map.hpp>
+#include <roughpy/containers/flat_map.h>
 
 #include <roughpy/core/helpers.h>
 #include <roughpy/platform/serialization.h>
@@ -49,7 +49,7 @@ public:
     using Lie = algebra::Lie;
 
 private:
-    boost::container::flat_map<param_t, Lie> m_data;
+    FlatMap<param_t, Lie> m_data;
 
 public:
     using DyadicCachingLayer::DyadicCachingLayer;
@@ -100,7 +100,7 @@ RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 //
 //    StreamMetadata md;
 //    RPY_SERIAL_SERIALIZE_NVP("metadata", md);
-//    boost::container::flat_map<param_t, algebra::Lie> data;
+//    FlatMap<param_t, algebra::Lie> data;
 //    RPY_SERIAL_SERIALIZE_VAL(data);
 //
 //    construct(std::move(md));
