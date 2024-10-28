@@ -12,13 +12,12 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/devices/core.h>
 
-#include <boost/container/small_vector.hpp>
 
 namespace rpy {
 namespace python {
 
 struct BufferFormat {
-    boost::container::small_vector<devices::TypeInfo, 1> types;
+    SmallVector<devices::TypeInfo, 1> types;
 };
 
 class BufferInfo
@@ -75,10 +74,10 @@ public:
         );
     }
 
-    RPY_NO_DISCARD boost::container::small_vector<Py_ssize_t, 2>
+    RPY_NO_DISCARD SmallVector<Py_ssize_t, 2>
     new_index() const
     {
-        return boost::container::small_vector<Py_ssize_t, 2>(m_view.ndim);
+        return SmallVector<Py_ssize_t, 2>(m_view.ndim);
     }
 };
 
