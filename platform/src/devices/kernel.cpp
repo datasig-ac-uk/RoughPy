@@ -118,11 +118,11 @@ EventStatus Kernel::launch_sync(
     return launch_sync_in_queue(queue, params, args);
 }
 
-std::vector<bitmask_t>
+rpy::Vec<bitmask_t>
 Kernel::construct_work_mask(const KernelLaunchParams& params)
 {
     RPY_DBG_ASSERT(params.has_work());
-    std::vector<bitmask_t> result;
+    rpy::Vec<bitmask_t> result;
 
     auto total_work = params.total_work_size();
     auto num_masks = round_up_divide(total_work, CHAR_BIT * sizeof(bitmask_t));
