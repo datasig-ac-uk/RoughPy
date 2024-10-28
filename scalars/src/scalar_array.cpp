@@ -26,7 +26,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+
+
 #include "scalar_array.h"
+
+#include <roughpy/containers/vector.h>
 
 #include "scalar.h"
 #include "scalar/casts.h"
@@ -465,7 +469,7 @@ devices::Device ScalarArray::device() const noexcept
     RPY_UNREACHABLE_RETURN(nullptr);
 }
 
-std::vector<byte> ScalarArray::to_raw_bytes() const
+rpy::Vec<byte> ScalarArray::to_raw_bytes() const
 {
     return dtl::to_raw_bytes(pointer(), m_size, type_info());
 }
