@@ -137,7 +137,7 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
             continue_bits -= so_rd_int;
         }
     } else {
-        m_seed = seed;
+        m_seed = static_cast<Vec<uint64_t>>(seed);
     }
 
     m_generator = BitGenerator(m_seed[0]);
