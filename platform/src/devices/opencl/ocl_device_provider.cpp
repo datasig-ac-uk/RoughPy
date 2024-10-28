@@ -29,6 +29,11 @@
 // Created by user on 17/10/23.
 //
 
+#include <roughpy/containers/small_vector.h>
+#include <roughpy/containers/vector.h>
+
+
+
 #include "ocl_device_provider.h"
 #include "ocl_device.h"
 #include "ocl_handle_errors.h"
@@ -38,17 +43,15 @@
 #include "devices/device_handle.h"
 
 #include <CL/cl_ext.h>
-#include <boost/container/small_vector.hpp>
 
 using namespace rpy;
 using namespace rpy::devices;
-namespace bc = boost::container;
 
 bool OCLDeviceProvider::supports(DeviceCategory category) const noexcept
 {
     if (category == DeviceCategory::CPU) { return false; }
 
-    std::vector<cl_platform_id> platforms;
+    rpy::Vec<cl_platform_id> platforms;
     cl_uint count = 0;
     auto ecode = clGetPlatformIDs(0, nullptr, &count);
     if (ecode != CL_SUCCESS || count == 0) { return false; }
@@ -163,7 +166,7 @@ Device OCLDeviceProvider::get(const DeviceSpecification& specification) noexcept
 
     auto cl_category = cl::to_ocl_device_type(specification.category());
 
-    bc::small_vector<cl_platform_id, 1> platforms;
+    SmallVector<cl_platform_id, 1> platforms;
     cl_uint count = 0;
     auto ecode = clGetPlatformIDs(0, nullptr, &count);
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
@@ -172,8 +175,8 @@ Device OCLDeviceProvider::get(const DeviceSpecification& specification) noexcept
     ecode = clGetPlatformIDs(count, platforms.data(), nullptr);
     RPY_DBG_ASSERT(ecode == CL_SUCCESS);
 
-    bc::small_vector<cl_device_id, 1> devices;
-    bc::small_vector<cl_device_id, 1> candidates;
+    SmallVector<cl_device_id, 1> devices;
+    SmallVector<cl_device_id, 1> candidates;
 
     auto clear_candidates = [&candidates]() {
         for (auto&& cand : candidates) { clReleaseDevice(cand); }
