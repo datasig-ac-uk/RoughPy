@@ -546,13 +546,13 @@ public:
 
     constexpr pointer operator->() const noexcept
     {
-        RPY_DBG_ASSERT(*this);
+        RPY_DBG_ASSERT(p_data != nullptr);
         return p_data;
     }
 
     constexpr reference operator*() const noexcept
     {
-        RPY_DBG_ASSERT(*this);
+        RPY_DBG_ASSERT(p_data != nullptr);
         return *p_data;
     }
 
