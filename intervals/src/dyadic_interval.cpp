@@ -38,6 +38,8 @@
 
 #include <roughpy/intervals/real_interval.h>
 
+#include <roughpy/containers/list.h>
+
 using namespace rpy;
 using namespace rpy::intervals;
 
@@ -185,12 +187,12 @@ std::ostream& rpy::intervals::operator<<(std::ostream& os,
     return os << static_cast<const Interval&>(di);
 }
 
-std::vector<DyadicInterval>
+Vec<DyadicInterval>
 rpy::intervals::to_dyadic_intervals(const Interval& interval,
                                     Dyadic::power_t tol, IntervalType itype)
 {
-    using iterator = std::list<DyadicInterval>::iterator;
-    std::list<DyadicInterval> intervals;
+    using iterator = List<DyadicInterval>::iterator;
+    List<DyadicInterval> intervals;
 
     auto store_move = [&](DyadicInterval& b) {
         intervals.push_back(b.shrink_to_omitted_end());
