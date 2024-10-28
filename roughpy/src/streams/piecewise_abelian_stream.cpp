@@ -46,7 +46,7 @@ static const char* PW_LIE_STREAM_DOC
 )rpydoc";
 
 static py::object construct_piecewise_lie_stream(
-        std::vector<std::pair<intervals::RealInterval, algebra::Lie>> lies,
+        rpy::Vec<std::pair<intervals::RealInterval, algebra::Lie>> lies,
         py::kwargs kwargs
 )
 {
