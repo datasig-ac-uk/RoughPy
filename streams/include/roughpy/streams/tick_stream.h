@@ -30,22 +30,23 @@
 
 #include "stream_base.h"
 
+#include <roughpy/containers/map.h>
+#include <roughpy/containers/vector.h>
+
 #include <roughpy/intervals/dyadic_interval.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar_stream.h>
 
 #include "stream_construction_helper.h"
 
-#include <map>
-#include <vector>
 
 namespace rpy {
 namespace streams {
 
 class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface
 {
-    std::vector<param_t> m_granular_times;
-    std::map<intervals::DyadicInterval, algebra::Lie> m_data;
+    rpy::Vec<param_t> m_granular_times;
+    Map<intervals::DyadicInterval, algebra::Lie> m_data;
     resolution_t m_resolution;
 
     using DyadicInterval = intervals::DyadicInterval;
@@ -64,8 +65,8 @@ class ROUGHPY_STREAMS_EXPORT TickStream : public StreamInterface
     algebra::Lie recursive_logsig(DyadicInterval di);
 
 public:
-    TickStream(std::vector<param_t>&& granular_times,
-               std::map<intervals::DyadicInterval, algebra::Lie>&& data,
+    TickStream(Vec<param_t>&& granular_times,
+               Map<intervals::DyadicInterval, algebra::Lie>&& data,
                resolution_t resolution,
                std::shared_ptr<streams::StreamSchema> schema,
                StreamMetadata&& md)
@@ -87,8 +88,8 @@ public:
                resolution_t resolution);
 
     TickStream(scalars::ScalarStream&& raw_data,
-               std::vector<const key_type*> raw_key_stream,
-               std::vector<param_t> raw_timestamps, resolution_t resolution,
+               rpy::Vec<const key_type*> raw_key_stream,
+               rpy::Vec<param_t> raw_timestamps, resolution_t resolution,
                StreamMetadata md,
                intervals::IntervalType itype = intervals::IntervalType::Clopen);
 
@@ -144,9 +145,9 @@ RPY_SERIAL_LOAD_AND_CONSTRUCT(rpy::streams::TickStream)
 
     StreamMetadata metadata;
     RPY_SERIAL_SERIALIZE_VAL(metadata);
-    std::vector<param_t> granular_times;
+    Vec<param_t> granular_times;
     RPY_SERIAL_SERIALIZE_VAL(granular_times);
-    std::map<intervals::DyadicInterval, algebra::Lie> data;
+    Map<intervals::DyadicInterval, algebra::Lie> data;
     RPY_SERIAL_SERIALIZE_VAL(data);
     resolution_t resolution;
     RPY_SERIAL_SERIALIZE_VAL(resolution);
