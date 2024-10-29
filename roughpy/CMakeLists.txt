@@ -180,16 +180,7 @@ target_link_libraries(RoughPy_PyModule PRIVATE
 )
 
 
-target_precompile_headers(RoughPy_PyModule PRIVATE
-        <roughpy/platform/devices.h>
-        <roughpy/platform/serialization.h>
-        <roughpy/platform/filesystem.h>
-        <roughpy/scalars/key_scalar_array.h>
-        <roughpy/algebra/context.h>
-        <pybind11/pybind11.h>
-        <pybind11/functional.h>
-        <pybind11/stl.h>
-)
+
 
 set(RPY_TARGETS RoughPy::Platform
         RoughPy::Scalars
