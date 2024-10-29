@@ -15,6 +15,8 @@
 #include <roughpy/containers/small_vector.h>
 #include <roughpy/containers/vector.h>
 
+#include <roughpy/algebra/context.h>
+
 
 namespace rpy {
 namespace python {

@@ -33,6 +33,8 @@
 #include "strided_copy.h"
 
 #include <roughpy/core/types.h>
+
+#include <roughpy/containers/small_vector.h>
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>
 

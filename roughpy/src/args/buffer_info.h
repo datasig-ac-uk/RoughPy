@@ -11,6 +11,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 #include <roughpy/platform/devices/core.h>
+#include <roughpy/containers/small_vector.h>
 
 
 namespace rpy {
