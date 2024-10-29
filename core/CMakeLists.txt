@@ -20,7 +20,7 @@ add_roughpy_component(Core INTERFACE
     Boost::boost
 )
 
-target_include_directories(RoughPy_Core INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/")
+target_include_directories(RoughPy_Core INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/>")
 
 target_compile_definitions(RoughPy_Core INTERFACE NOMINMAX=1)
 
