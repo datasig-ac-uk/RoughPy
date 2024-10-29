@@ -9,7 +9,7 @@ using namespace rpy;
 
 namespace {
 
-struct DerivedRefCountableObject : public mem::RcBase {
+struct DerivedRefCountableObject : public mem::RcBase<DerivedRefCountableObject> {
 
     dimn_t get_ref_count() const noexcept { return this->ref_count(); }
 };
@@ -30,7 +30,7 @@ TEST(RcBaseDerivedCountingTests, IncreaseAndDecreaseRefCount)
     EXPECT_EQ(obj1.ref_count(), 1);
 
     {
-        mem::Rc<DerivedRefCountableObject> obj2 = obj1;
+        mem::Rc<DerivedRefCountableObject> obj2 (obj1);
         EXPECT_EQ(obj1.ref_count(), 2);
         EXPECT_EQ(obj2.ref_count(), 2);
         EXPECT_EQ(obj1, obj2);
