@@ -459,12 +459,19 @@ template <typename T>
 class Rc
 {
 public:
-    using value_type = remove_reference_t<T>;
-    using pointer = add_pointer_t<value_type>;
-    using reference = add_lvalue_reference_t<value_type>;
+    using value_type = T;
+    using pointer = T*;
+    using reference = T&;
 
 private:
     T* p_data = nullptr;
+
+    struct steal_t {};
+
+    template <typename... Args>
+    friend Rc<T> make_rc(Args&&... args);
+
+    constexpr Rc(T* ptr, steal_t RPY_UNUSED(steal_the_reference)) : p_data(ptr) {}
 
 public:
     Rc(std::nullptr_t) noexcept : p_data(nullptr) {}
@@ -589,12 +596,12 @@ public:
     {
         auto* tmp = p_data;
         p_data = other.p_data;
-        p_data = tmp;
+        other.p_data = tmp;
     }
 
     dimn_t ref_count() const noexcept
     {
-        return (p_data == nullptr) ? p_data->ref_count() : 0;
+        return (p_data != nullptr) ? p_data->ref_count() : 0;
     }
 };
 
