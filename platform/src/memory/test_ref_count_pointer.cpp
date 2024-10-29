@@ -19,24 +19,21 @@ struct DerivedRefCountableObject : public mem::RcBase {
 TEST(RcBaseDerivedCountingTests, InitialRefCountIsOne)
 {
     mem::Rc<DerivedRefCountableObject> obj = mem::make_rc<DerivedRefCountableObject>();
-    ASSERT_NE(obj.get(), nullptr);
-    EXPECT_EQ(obj->get_ref_count(), 1);
+    EXPECT_EQ(obj.ref_count(), 1);
 }
 
 TEST(RcBaseDerivedCountingTests, IncreaseAndDecreaseRefCount)
 {
     mem::Rc<DerivedRefCountableObject> obj1 = mem::make_rc<DerivedRefCountableObject>();
-    ASSERT_NE(obj1.get(), nullptr);
-    EXPECT_EQ(obj1->get_ref_count(), 1);
+    EXPECT_EQ(obj1.ref_count(), 1);
 
     {
         mem::Rc<DerivedRefCountableObject> obj2 = obj1;
-        ASSERT_NE(obj2.get(), nullptr);
-        EXPECT_EQ(obj1->get_ref_count(), 2);
-        EXPECT_EQ(obj2->get_ref_count(), 2);
+        EXPECT_EQ(obj1.ref_count(), 2);
+        EXPECT_EQ(obj2.ref_count(), 2);
     }
 
-    EXPECT_EQ(obj1->get_ref_count(), 1);
+    EXPECT_EQ(obj1.ref_count(), 1);
 }
 
 class RcRefCountingTest : public ::testing::Test
