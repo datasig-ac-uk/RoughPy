@@ -499,7 +499,6 @@ public:
         if (p_data != nullptr) {
             RPY_DBG_ASSERT(p_data->ref_count() > 0);
             if (p_data->dec_ref()) {
-                delete p_data;
                 p_data = nullptr;
             }
         }
@@ -584,7 +583,11 @@ public:
      */
     constexpr void reset(pointer ptr = pointer()) noexcept
     {
-        Rc(ptr).swap(*this);
+        if (RPY_LIKELY(ptr != this->p_data)) {
+            if (ptr) { p_data->inc_ref(); }
+            if (p_data) { p_data->dec_ref(); }
+            p_data = ptr;
+        }
     }
 
     /**
@@ -660,12 +663,14 @@ constexpr Rc<T> make_rc(Args&&... args)
  * This class offers fundamental methods for managing the reference count,
  * suitable for derived classes that need reference-counted behavior.
  */
-class ROUGHPY_PLATFORM_EXPORT RcBase : public SmallObjectBase
+template <typename Derived>
+class RcBase : public SmallObjectBase
 {
     mutable std::atomic_intptr_t m_rc;
 
-    template <typename Derived>
-    friend class Rc;
+    friend Derived;
+
+    friend Rc<Derived>;
 
 protected:
     RcBase() : m_rc(0) {}
@@ -703,16 +708,25 @@ protected:
     }
 };
 
-inline void RcBase::inc_ref() const
+
+template <typename Derived>
+inline void RcBase<Derived>::inc_ref() const
 {
     auto new_ref = m_rc.fetch_add(1, std::memory_order_acq_rel);
     ignore_unused(new_ref);
 }
 
-inline bool RcBase::dec_ref() const
+template <typename Derived>
+inline bool RcBase<Derived>::dec_ref() const
 {
-    RPY_DBG_ASSERT(m_rc.load() > 0);
-    return m_rc.fetch_sub(1, std::memory_order_acq_rel);
+    RPY_CHECK(m_rc.load() > 0);
+
+    if (m_rc.fetch_sub(1, std::memory_order_acq_rel) == 1){
+        delete static_cast<Derived*>(const_cast<RcBase*>(this));
+        return true;
+    }
+
+    return false;
 }
 
 }// namespace mem
