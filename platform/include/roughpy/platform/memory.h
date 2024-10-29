@@ -678,7 +678,6 @@ inline void RcBase::inc_ref() const noexcept
 {
     auto new_ref = m_rc.fetch_add(1, std::memory_order_acq_rel);
     ignore_unused(new_ref);
-    RPY_DBG_ASSERT(new_ref > 0);
 }
 
 inline bool RcBase::dec_ref() const
