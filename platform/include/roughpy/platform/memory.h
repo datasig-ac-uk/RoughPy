@@ -504,13 +504,13 @@ public:
 
     Rc(std::nullptr_t) noexcept : p_data(nullptr) {}
 
-    Rc(pointer ptr)
+    Rc(pointer ptr) : p_data(ptr)
     {
         if (ptr != nullptr) {
             // It seems plausible that these two expressions
             // could be separated and thus the assignment to p_data does
             // not happen, resulting in an indestructible object
-            (p_data = ptr)->inc_ref();
+            p_data->inc_ref();
         }
     }
 
