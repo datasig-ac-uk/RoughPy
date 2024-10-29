@@ -10,14 +10,34 @@ set(ROUGHPY_LIBS CACHE INTERNAL "")
 set(ROUGHPY_RUNTIME_DEPS CACHE INTERNAL "")
 
 
+function(find_boost)
+
+    cmake_parse_arguments("BOOST" "" "VERSION" "COMPONENTS" ${ARGN})
+
+    foreach (lib IN LISTS BOOST_COMPONENTS)
+        message(STATUS "finding boost library ${lib}")
+        if (DEFINED BOOST_VERSION)
+            find_package("boost_${lib}" "${BOOST_VERSION}" CONFIG REQUIRED
+                "${lib}"
+            )
+        else()
+            find_package("boost_${lib}" CONFIG REQUIRED
+                "${lib}"
+            )
+        endif()
+
+    endforeach ()
+
+endfunction()
+
 function(get_brew_prefix _out_var _package)
 
     cmake_parse_arguments(
-            ""
-            "VERBOSE"
-            "BREW_EXECUTABLE"
-            ""
-            ${ARGN}
+        ""
+        "VERBOSE"
+        "BREW_EXECUTABLE"
+        ""
+        ${ARGN}
     )
 
     set(_executable brew)
@@ -40,11 +60,11 @@ function(get_brew_prefix _out_var _package)
     message(DEBUG "Locating ${_package} brew installation prefix")
 
     execute_process(COMMANDS ${_executable}
-            "--prefix" "${_package}"
-            RESULT_VARIABLE _result
-            OUTPUT_VARIABLE _out
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ${_verbosity_flat}
+        "--prefix" "${_package}"
+        RESULT_VARIABLE _result
+        OUTPUT_VARIABLE _out
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ${_verbosity_flat}
     )
 
     if (_result EQUAL 0)
@@ -195,7 +215,7 @@ endfunction()
 
 
 function(_do_configure_file _tgt _path_in _path_out _defines _atonly_flag
-        _is_public)
+    _is_public)
     if (_defines)
         _parse_defs_for_configure("${_defines}")
     endif ()
@@ -236,11 +256,11 @@ function(_configure_file _tgt _args)
         endif ()
 
         cmake_parse_arguments(
-                "FILE"
-                "${flag_args}"
-                "${single_arg_params}"
-                "${multi_arg_params}"
-                "${file_args}"
+            "FILE"
+            "${flag_args}"
+            "${single_arg_params}"
+            "${multi_arg_params}"
+            "${file_args}"
         )
 
         #        cmake_path(IS_ABSOLUTE FILE_IN _is_absolute)
@@ -259,11 +279,11 @@ function(_configure_file _tgt _args)
 
         message(STATUS "generating file \"${_path_out}\" from \"${_path_in}\"")
         _do_configure_file("${_tgt}"
-                "${_path_in}"
-                "${_path_out}"
-                "${FILE_DEFINE}"
-                "${FILE_ATONLY}"
-                "${FILE_IS_PUBLIC}")
+            "${_path_in}"
+            "${_path_out}"
+            "${FILE_DEFINE}"
+            "${FILE_ATONLY}"
+            "${FILE_IS_PUBLIC}")
 
         list(LENGTH _args _nargs)
 
@@ -278,10 +298,10 @@ function(_parse_dependencies _private_var _interface_var)
     set(single_arg_params "")
     set(multi_arg_params "PUBLIC;PRIVATE;INTERFACE")
     cmake_parse_arguments("DEP"
-            "${flag_params}"
-            "${single_arg_params}"
-            "${multi_arg_params}"
-            ${ARGN}
+        "${flag_params}"
+        "${single_arg_params}"
+        "${multi_arg_params}"
+        ${ARGN}
     )
 
     # First do the public dependencies
@@ -304,7 +324,7 @@ function(_parse_dependencies _private_var _interface_var)
             endif ()
 
             if ((_negate AND NOT ${_condition})
-                    OR (NOT _negate AND ${_condition}))
+                OR (NOT _negate AND ${_condition}))
                 # public deps get added to both private and interface lists
                 list(APPEND _interface_libs "${_dep}")
                 list(APPEND _private_libs "${_dep}")
@@ -336,7 +356,7 @@ function(_parse_dependencies _private_var _interface_var)
             endif ()
 
             if ((_negate AND NOT "${_condition}")
-                    OR (NOT _negate AND "${_condition}"))
+                OR (NOT _negate AND "${_condition}"))
                 list(APPEND _private_libs "${_dep}")
             endif ()
         else ()
@@ -364,7 +384,7 @@ function(_parse_dependencies _private_var _interface_var)
             endif ()
 
             if ((_negate AND NOT "${_condition}") OR (
-                    NOT _negate AND "${_condition}"))
+                NOT _negate AND "${_condition}"))
                 list(APPEND _private_libs "${_dep}")
             endif ()
         else ()
@@ -383,22 +403,22 @@ function(add_roughpy_component _name)
     set(flag_params "STATIC" "SHARED" "INTERFACE")
     set(single_arg_params "")
     set(multi_arg_params
-            "SOURCES"
-            "DEPENDENCIES"
-            "PUBLIC_DEPS"
-            "PRIVATE_DEPS"
-            "DEFINITIONS"
-            "CONFIGURE"
-            "PUBLIC_HEADERS"
-            "PVT_INCLUDE_DIRS"
-            "NEEDS")
+        "SOURCES"
+        "DEPENDENCIES"
+        "PUBLIC_DEPS"
+        "PRIVATE_DEPS"
+        "DEFINITIONS"
+        "CONFIGURE"
+        "PUBLIC_HEADERS"
+        "PVT_INCLUDE_DIRS"
+        "NEEDS")
 
     cmake_parse_arguments(
-            ARG
-            "${flag_params}"
-            "${single_arg_params}"
-            "${multi_arg_params}"
-            ${ARGN}
+        ARG
+        "${flag_params}"
+        "${single_arg_params}"
+        "${multi_arg_params}"
+        ${ARGN}
     )
 
     #    _check_and_set_libtype(_lib_type ${ARG_SHARED} ${ARG_STATIC} ${ARG_INTERFACE})
@@ -419,8 +439,8 @@ function(add_roughpy_component _name)
 
     if (NOT _lib_type STREQUAL INTERFACE)
         set(_private_include_dirs
-                "${CMAKE_CURRENT_LIST_DIR}/include/roughpy/${_component}/"
-                "${CMAKE_CURRENT_LIST_DIR}/src")
+            "${CMAKE_CURRENT_LIST_DIR}/include/roughpy/${_component}/"
+            "${CMAKE_CURRENT_LIST_DIR}/src")
         if (ARG_PVT_INCLUDE_DIRS)
             foreach (_pth IN LISTS ARG_PVT_INCLUDE_DIRS)
                 list(APPEND _private_include_dirs ${CMAKE_CURRENT_LIST_DIR}/${_pth})
@@ -435,7 +455,7 @@ function(add_roughpy_component _name)
     else ()
         if (_private_deps)
             message(FATAL_ERROR
-                    "INTERFACE library cannot have private dependencies")
+                "INTERFACE library cannot have private dependencies")
         endif ()
 
     endif ()
@@ -456,23 +476,23 @@ function(add_roughpy_component _name)
 
 
     set_target_properties(${_real_name} PROPERTIES
-            EXPORT_NAME ${_name})
+        EXPORT_NAME ${_name})
 
     if (NOT ${_lib_type} STREQUAL "INTERFACE")
         target_compile_definitions(${_real_name} PRIVATE "RPY_COMPILING_${_name_upper}=1")
         target_include_directories(${_real_name}
-                PRIVATE
-                "${_private_include_dirs}"
+            PRIVATE
+            "${_private_include_dirs}"
         )
         target_sources(${_real_name}
-                PUBLIC
-                ${ARG_PUBLIC_HEADERS}
-                PRIVATE
-                ${ARG_SOURCES}
+            PUBLIC
+            ${ARG_PUBLIC_HEADERS}
+            PRIVATE
+            ${ARG_SOURCES}
         )
         target_link_libraries(${_real_name}
-                PRIVATE
-                ${_pvt_nrpy_deps}
+            PRIVATE
+            ${_pvt_nrpy_deps}
         )
         if (ROUGHPY_ENABLE_DBG_ASSERT)
             target_compile_definitions(${_real_name} PRIVATE RPY_DEBUG=1)
@@ -506,9 +526,9 @@ function(add_roughpy_component _name)
     endif ()
 
     target_include_directories(${_real_name} ${_public}
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 
     target_link_libraries(${_real_name} ${_public} ${_pub_nrpy_deps})
@@ -530,11 +550,11 @@ function(add_roughpy_component _name)
     endif ()
 
     set_target_properties(${_real_name} PROPERTIES
-            PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
-            LINKER_LANGUAGE CXX
-            CXX_DEFAULT_VISIBILITY hidden
-            VISIBILITY_INLINES_HIDDEN ON
-            VERSION "${PROJECT_VERSION}"
+        PUBLIC_HEADER "${ARGS_PUBLIC_HEADERS}"
+        LINKER_LANGUAGE CXX
+        CXX_DEFAULT_VISIBILITY hidden
+        VISIBILITY_INLINES_HIDDEN ON
+        VERSION "${PROJECT_VERSION}"
     )
     #    if (_lib_type STREQUAL SHARED)
     #        set_target_properties(${_real_name} PROPERTIES
@@ -547,7 +567,7 @@ function(add_roughpy_component _name)
 
     if (_lib_type STREQUAL STATIC OR _lib_type STREQUAL OBJECT)
         set_target_properties(${_real_name} PROPERTIES
-                POSITION_INDEPENDENT_CODE ON)
+            POSITION_INDEPENDENT_CODE ON)
     elseif (_lib_type STREQUAL SHARED)
         generate_export_header(${_real_name})
         set_target_properties(${_real_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
@@ -560,11 +580,11 @@ endfunction()
 
 function(extend_roughpy_lib _name)
     cmake_parse_arguments(
-            ARG
-            ""
-            ""
-            "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS"
-            ${ARGN}
+        ARG
+        ""
+        ""
+        "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS;DEFINITIONS;PUBLIC_HEADERS;PVT_INCLUDE_DIRS"
+        ${ARGN}
     )
 
     set(_real_name "RoughPy_${_name}")
@@ -587,10 +607,10 @@ endfunction()
 function(add_roughpy_algebra _name)
 
     cmake_parse_arguments(
-            "ARG"
-            "DEVICE;BUNDLE;REQUIRED"
-            "BASIS_NAME;BASIS_FILE;INTERFACE_FILE;IMPLEMENTATION_FILE"
-            "BASIS_PROPERTIES"
+        "ARG"
+        "DEVICE;BUNDLE;REQUIRED"
+        "BASIS_NAME;BASIS_FILE;INTERFACE_FILE;IMPLEMENTATION_FILE"
+        "BASIS_PROPERTIES"
     )
 
     # set up the names
@@ -610,11 +630,11 @@ function(add_roughpy_test _name)
         return()
     endif ()
     cmake_parse_arguments(
-            test
-            "LINK_COMPONENT"
-            ""
-            "SRC;DEP;DEFN;COMPONENT_SRCS;NEEDS"
-            ${ARGN}
+        test
+        "LINK_COMPONENT"
+        ""
+        "SRC;DEP;DEFN;COMPONENT_SRCS;NEEDS"
+        ${ARGN}
     )
 
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME _component)
@@ -649,15 +669,15 @@ function(add_roughpy_test _name)
 
     target_compile_definitions(${_tests_name} PRIVATE ${test_DEFN})
     target_include_directories(${_tests_name} PRIVATE
-            ${_header_dir}
-            ${CMAKE_CURRENT_BINARY_DIR})
+        ${_header_dir}
+        ${CMAKE_CURRENT_BINARY_DIR})
 
     target_link_components(${_tests_name} PRIVATE ${test_NEEDS})
 
     if (WIN32)
         add_custom_command(TARGET ${_tests_name} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
-                COMMAND_EXPAND_LISTS)
+            COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
+            COMMAND_EXPAND_LISTS)
     endif ()
 
     gtest_discover_tests(${_tests_name})
@@ -670,11 +690,11 @@ function(add_roughpy_test_helper NAME)
     endif ()
 
     cmake_parse_arguments(
-            "ARGS"
-            "STATIC;SHARED"
-            ""
-            "SRCS;DEPS;DEFN;OPTS;INCLUDES"
-            ${ARGN}
+        "ARGS"
+        "STATIC;SHARED"
+        ""
+        "SRCS;DEPS;DEFN;OPTS;INCLUDES"
+        ${ARGN}
     )
     if (ARGS_STATIC AND ARGS_SHARED)
         message(FATAL_ERROR "Invalid library type, must be either STATIC or SHARED")
@@ -690,17 +710,17 @@ function(add_roughpy_test_helper NAME)
     endif ()
 
     set_target_properties(${_lib_name} PROPERTIES
-            POSITION_INDEPENDENT_CODE ON)
+        POSITION_INDEPENDENT_CODE ON)
 
     target_sources(${_lib_name} PRIVATE ${ARGS_SRCS})
 
     target_link_libraries(${_lib_name} PRIVATE
-            GTest::gtest
-            ${ARGS_DEPS})
+        GTest::gtest
+        ${ARGS_DEPS})
 
     target_include_directories(${_lib_name} PRIVATE ${ARGS_INCLUDES})
     target_compile_definitions(${_lib_name}
-            PRIVATE ${ARGS_DEFN})
+        PRIVATE ${ARGS_DEFN})
 
     if (NOT WIN32)
         target_compile_definitions(${_lib_name} PRIVATE RPY_BUILDING_LIBRARY=1)
@@ -814,8 +834,8 @@ optional<algebra::base_context_pointer> algebra::${_class_name}Maker::get_base_c
         )
 
         target_sources(${_target} PRIVATE
-                ${_header_name}
-                ${_bin_dir}/${_class_name}Maker.cpp
+            ${_header_name}
+            ${_bin_dir}/${_class_name}Maker.cpp
         )
     endif ()
 
@@ -841,7 +861,7 @@ extern template class ${_export_name} ${_class_name}<${_width}, ${_depth}, ${RPY
 ")
 
     file(APPEND "${_bin_dir}/${_inline_config_names}"
-            "{{${_width}, ${_depth}, scalars::ScalarType::of<${RPY_CTYPE_${_ctype}}>()}, new rpy::algebra::${_class_name}<${_width}, ${_depth}, ${RPY_LA_CTYPE_${_ctype}}>()},
+        "{{${_width}, ${_depth}, scalars::ScalarType::of<${RPY_CTYPE_${_ctype}}>()}, new rpy::algebra::${_class_name}<${_width}, ${_depth}, ${RPY_LA_CTYPE_${_ctype}}>()},
 "
     )
 
@@ -857,11 +877,11 @@ function(add_libalgebra_contexts _name)
 
 
     cmake_parse_arguments(
-            "ARG"
-            ""
-            "CHECK_SIZE;CLASS_NAME;CLASS_HEADER"
-            "WIDTH;DEPTH;COEFFS"
-            ${ARGN}
+        "ARG"
+        ""
+        "CHECK_SIZE;CLASS_NAME;CLASS_HEADER"
+        "WIDTH;DEPTH;COEFFS"
+        ${ARGN}
     )
 
 
