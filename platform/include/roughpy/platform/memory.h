@@ -22,10 +22,8 @@
 #include "roughpy/core/helpers.h"
 #include "roughpy_platform_export.h"
 
-namespace rpy { namespace mem {
-
-
-
+namespace rpy {
+namespace mem {
 
 #define RPY_ALLOC_FUNCTION(name)                                               \
     RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT void* name(                         \
@@ -35,7 +33,6 @@ namespace rpy { namespace mem {
 #define RPY_FREE_FUNCTION(name)                                                \
     ROUGHPY_PLATFORM_EXPORT                                                    \
     void name(void* ptr, dimn_t size) noexcept
-
 
 namespace align {
 
@@ -63,7 +60,6 @@ inline constexpr dimn_t alloc_data_alignment = 64;
  */
 RPY_ALLOC_FUNCTION(aligned_alloc);
 
-
 /**
  * @brief Frees memory allocated with alignment.
  *
@@ -77,7 +73,6 @@ RPY_ALLOC_FUNCTION(aligned_alloc);
  * @return void
  */
 RPY_FREE_FUNCTION(aligned_free);
-
 
 /**
  * @brief Checks if a given value is a valid alignment.
@@ -95,7 +90,6 @@ constexpr enable_if_t<is_integral_v<I>, bool> is_alignment(I align)
 {
     return align > 0 && (align & (align - 1)) == 0;
 }
-
 
 /**
  * @brief Checks if a given pointer is aligned to a specified boundary.
@@ -116,7 +110,6 @@ inline bool is_pointer_aligned(const volatile void* ptr, std::size_t alignment)
     RPY_DBG_ASSERT(is_alignment(alignment));
     return reinterpret_cast<std::uintptr_t>(ptr) % alignment == 0;
 }
-
 
 /**
  * @brief Retrieves the base memory resource for the current allocations
@@ -147,8 +140,7 @@ std::pmr::polymorphic_allocator<Ty> get_default_allocator() noexcept
     return std::pmr::polymorphic_allocator<Ty>(get_base_memory_resource());
 }
 
-}
-
+}// namespace align
 
 namespace small {
 
@@ -186,7 +178,6 @@ inline constexpr dimn_t small_alloc_max_chunks = 4096 / small_alloc_chunk_size;
  */
 RPY_ALLOC_FUNCTION(small_object_alloc);
 
-
 /**
  * @brief Frees a small object of a specified size.
  *
@@ -218,20 +209,14 @@ template <typename T>
 class PoolAllocator : public std::pmr::polymorphic_allocator<T>
 {
     using base_t = std::pmr::polymorphic_allocator<T>;
-public:
 
+public:
     using base_t::base_t;
 
-    PoolAllocator()
-        : base_t(get_small_object_memory_resource())
-    {
-    }
-
+    PoolAllocator() : base_t(get_small_object_memory_resource()) {}
 };
 
-
-}
-
+}// namespace small
 
 /**
  * @class AlignedAllocator
@@ -263,8 +248,7 @@ public:
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
 
-    static constexpr size_t alignment
-            = std::max(alignof(Ty), Alignment);
+    static constexpr size_t alignment = std::max(alignof(Ty), Alignment);
 
     // Rebind allocator to another type
     template <typename U>
@@ -329,11 +313,11 @@ public:
     {
         return (std::numeric_limits<size_type>::max() - alignment) / sizeof(Ty);
     }
-
 };
 
 template <size_t Alignment>
-class AlignedAllocator<void, Alignment> {
+class AlignedAllocator<void, Alignment>
+{
     static_assert(
             align::is_alignment(Alignment),
             "Valid alignments are powers of 2 and greater than 0"
@@ -347,8 +331,7 @@ public:
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
 
-    static constexpr size_t alignment
-            = std::max(alignof(void*), Alignment);
+    static constexpr size_t alignment = std::max(alignof(void*), Alignment);
 
     // Rebind allocator to another type
     template <typename U>
@@ -386,9 +369,7 @@ public:
     {
         return (std::numeric_limits<size_type>::max() - alignment);
     }
-
 };
-
 
 template <typename Ty, size_t TyAlign, typename Uy, size_t UyAlign>
 RPY_NO_DISCARD constexpr bool operator==(
@@ -425,7 +406,6 @@ public:
     void operator delete(void* ptr, dimn_t size);
 };
 
-
 /*
  * Reference counting and resource management
  *
@@ -454,7 +434,6 @@ public:
  *
  */
 
-
 // template <typename T>
 // concept ReferenceCountable = requires(const T& type)
 // {
@@ -462,9 +441,6 @@ public:
 //     { type.dec_ref() } -> std::convertible_to<bool>;
 //     { type.ref_count() } -> std::convertible_to<dimn_t>;
 // };
-
-
-
 
 /**
  * @brief A reference-counted class for resource management
@@ -491,7 +467,6 @@ private:
     T* p_data = nullptr;
 
 public:
-
     Rc(std::nullptr_t) noexcept : p_data(nullptr) {}
 
     Rc(pointer ptr) : p_data(ptr)
@@ -515,13 +490,18 @@ public:
 
     Rc& operator=(const Rc& other)
     {
-        if (this != &other) { Rc(other).swap(*this); }
+        if (this != &other) {
+            Rc(other).swap(*this);
+        }
         return *this;
     }
 
     Rc& operator=(Rc&& other) noexcept
     {
-        if (this != &other) { this->reset(other.release()); }
+        if (this != &other) {
+            this->~Rc();
+            this->p_data = other.release();
+        }
         return *this;
     }
 
@@ -558,6 +538,7 @@ public:
      */
     constexpr pointer get() const noexcept { return p_data; }
 
+private:
     /**
      * @brief Releases the contained pointer from management
      *
@@ -572,6 +553,7 @@ public:
         return std::exchange(p_data, nullptr);
     }
 
+public:
     /**
      * @brief Resets the Rc object to manage a new pointer, releasing any
      * currently managed object.
@@ -597,7 +579,6 @@ public:
     void swap(Rc& other) noexcept { std::swap(p_data, other.p_data); }
 };
 
-
 /**
  * @brief Creates a reference-counted smart pointer
  *
@@ -611,7 +592,6 @@ constexpr Rc<T> make_rc(Args&&... args)
     std::unique_ptr<T> tmp = std::make_unique<T>(std::forward<Args>(args)...);
     return Rc<T>(tmp.release());
 }
-
 
 /**
  * @brief A base class providing reference counting functionality.
@@ -627,9 +607,7 @@ class RcBase : public SmallObjectBase
     friend class Rc;
 
 protected:
-    RcBase()
-        : m_rc(0)
-    {}
+    RcBase() : m_rc(0) {}
 
     /**
      * @brief Increments the reference count of the RcBase object
@@ -680,8 +658,7 @@ inline bool RcBase::dec_ref() const
     return false;
 }
 
-} // namespace mem
-
+}// namespace mem
 
 // Rc is going to be used a lot, so alias it here
 using mem::Rc;
