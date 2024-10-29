@@ -31,6 +31,7 @@ TEST(RcBaseDerivedCountingTests, IncreaseAndDecreaseRefCount)
 
     {
         mem::Rc<DerivedRefCountableObject> obj2 = obj1;
+        ASSERT_NE(obj2.get(), nullptr);
         EXPECT_EQ(obj1->get_ref_count(), 2);
         EXPECT_EQ(obj2->get_ref_count(), 2);
     }
