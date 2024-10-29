@@ -81,7 +81,8 @@ add_roughpy_component(Platform
         include/roughpy/platform/devices/types.h
     DEPENDENCIES
         PUBLIC
-            Boost::boost
+            Boost::smart_ptr
+            Boost::container
             Boost::system
             Boost::url
             Boost::filesystem IF NOT RPY_HAS_STD_FILESYSTEM
@@ -100,30 +101,9 @@ add_roughpy_component(Platform
         RoughPy::Core
     )
 
+target_link_libraries(RoughPy_Platform PUBLIC RoughPy::Core)
 
 add_subdirectory(src/memory)
-
-target_precompile_headers(RoughPy_Platform PUBLIC
-        <cereal/cereal.hpp>
-        <cereal/access.hpp>
-        <cereal/specialize.hpp>
-        <cereal/types/base_class.hpp>
-        <cereal/types/optional.hpp>
-        <cereal/types/polymorphic.hpp>
-        <cereal/types/string.hpp>
-        <cereal/types/utility.hpp>
-        <cereal/types/vector.hpp>
-        <cereal/archives/binary.hpp>
-        <cereal/archives/json.hpp>
-        <cereal/archives/portable_binary.hpp>
-        <cereal/archives/xml.hpp>
-)
-
-target_precompile_headers(RoughPy_Platform PUBLIC
-        <boost/multiprecision/gmp.hpp>
-        <libalgebra_lite/coefficients.h>
-        <libalgebra_lite/polynomial.h>
-)
 
 if (APPLE)
     target_compile_definitions(RoughPy_Platform PUBLIC BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED)

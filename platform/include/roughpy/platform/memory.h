@@ -280,6 +280,23 @@ public:
     AlignedAllocator(const AlignedAllocator<U, Alignment>&) noexcept
     {}
 
+    template <typename U>
+    AlignedAllocator(AlignedAllocator<U, Alignment>&&) noexcept
+    {}
+
+    template <typename U>
+    AlignedAllocator& operator=(const AlignedAllocator<U, Alignment>&) noexcept
+    {
+        return *this;
+    }
+
+    template <typename U>
+    AlignedAllocator& operator=(AlignedAllocator<U, Alignment>&&) noexcept
+    {
+        return *this;
+    }
+
+
     // Address of
     RPY_NO_DISCARD pointer address(reference x) const noexcept
     {
