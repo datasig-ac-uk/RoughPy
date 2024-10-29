@@ -214,6 +214,14 @@ public:
     using base_t::base_t;
 
     PoolAllocator() : base_t(get_small_object_memory_resource()) {}
+
+    template <typename U>
+    struct rebind
+    {
+        using type = PoolAllocator<U>;
+    };
+
+
 };
 
 }// namespace small
