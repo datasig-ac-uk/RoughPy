@@ -45,5 +45,7 @@ if (ROUGHPY_BUILD_TESTS)
         RoughPy_Platform
     )
 
-    gtest_discover_tests(RoughPy_Platform_test_memory)
+    gtest_discover_tests(RoughPy_Platform_test_memory
+            EXTRA_ARGS --output-on-failure
+    )
 endif ()

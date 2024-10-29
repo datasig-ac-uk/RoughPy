@@ -10,11 +10,17 @@ using namespace rpy;
 namespace {
 
 struct DerivedRefCountableObject : public mem::RcBase<DerivedRefCountableObject> {
-
+    int data = 0;
     dimn_t get_ref_count() const noexcept { return this->ref_count(); }
 };
 
 }// namespace
+
+TEST(RcBaseDerivedCountingTests, AllocateObject)
+{
+    auto ptr = std::make_unique<DerivedRefCountableObject>();
+    EXPECT_NE(ptr.get(), nullptr);
+}
 
 TEST(RcBaseDerivedCountingTests, InitialRefCountIsOne)
 {
