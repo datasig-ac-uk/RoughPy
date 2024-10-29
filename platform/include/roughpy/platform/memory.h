@@ -484,13 +484,13 @@ public:
     }
 
     Rc(Rc&& other) noexcept : p_data(other.release()) {
-        RPY_DBG_ASSERT(!other || other.ref_count > 0);
+        RPY_DBG_ASSERT(!other || other.ref_count() > 0);
     }
 
     ~Rc()
     {
         if (p_data != nullptr) {
-            RPY_DBG_ASSERT(p_data->ref_count > 0);
+            RPY_DBG_ASSERT(p_data->ref_count() > 0);
             p_data->dec_ref();
         }
         p_data = nullptr;
@@ -499,7 +499,7 @@ public:
     Rc& operator=(const Rc& other)
     {
         if (this != &other) {
-            RPY_DBG_ASSERT(!other || other.ref_count > 0);
+            RPY_DBG_ASSERT(!other || other.ref_count() > 0);
             Rc(other).swap(*this);
         }
         return *this;
@@ -508,7 +508,7 @@ public:
     Rc& operator=(Rc&& other) noexcept
     {
         if (this != &other) {
-            RPY_DBG_ASSERT(!other || other.ref_count > 0);
+            RPY_DBG_ASSERT(!other || other.ref_count() > 0);
             Rc(std::move(other)).swap(*this);
         }
         return *this;
