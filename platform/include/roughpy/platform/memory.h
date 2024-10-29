@@ -498,9 +498,11 @@ public:
     {
         if (p_data != nullptr) {
             RPY_DBG_ASSERT(p_data->ref_count() > 0);
-            p_data->dec_ref();
+            if (p_data->dec_ref()) {
+                delete p_data;
+                p_data = nullptr;
+            }
         }
-        p_data = nullptr;
     }
 
     Rc& operator=(const Rc& other)
@@ -661,7 +663,7 @@ constexpr Rc<T> make_rc(Args&&... args)
  * This class offers fundamental methods for managing the reference count,
  * suitable for derived classes that need reference-counted behavior.
  */
-class RcBase : public SmallObjectBase
+class ROUGHPY_PLATFORM_EXPORT RcBase : public SmallObjectBase
 {
     mutable std::atomic_intptr_t m_rc;
 
@@ -677,7 +679,7 @@ protected:
      * This method is used to increase the reference count of the RcBase object
      * ensuring that the object is properly tracked for reference management.
      */
-    void inc_ref() const noexcept;
+    void inc_ref() const;
 
     /**
      * @brief Decreases the reference count of the object
@@ -704,7 +706,7 @@ protected:
     }
 };
 
-inline void RcBase::inc_ref() const noexcept
+inline void RcBase::inc_ref() const
 {
     auto new_ref = m_rc.fetch_add(1, std::memory_order_acq_rel);
     ignore_unused(new_ref);
@@ -713,11 +715,7 @@ inline void RcBase::inc_ref() const noexcept
 inline bool RcBase::dec_ref() const
 {
     RPY_DBG_ASSERT(m_rc.load() > 0);
-    if (m_rc.fetch_sub(1, std::memory_order_acq_rel) == 1) {
-        delete this;
-        return true;
-    }
-    return false;
+    return m_rc.fetch_sub(1, std::memory_order_acq_rel);
 }
 
 }// namespace mem
