@@ -296,7 +296,6 @@ public:
         return *this;
     }
 
-
     // Address of
     RPY_NO_DISCARD pointer address(reference x) const noexcept
     {
@@ -331,19 +330,6 @@ public:
         return (std::numeric_limits<size_type>::max() - alignment) / sizeof(Ty);
     }
 
-    // Construct an object in-place
-    template <typename U, typename... Args>
-    void construct(U* p, Args&&... args)
-    {
-        construct_inplace(p, std::forward<Args>(args)...);
-    }
-
-    // Destroy an object in-place
-    template <typename U>
-    void destroy(U* p)
-    {
-        p->~U();
-    }
 };
 
 template <size_t Alignment>
@@ -401,19 +387,6 @@ public:
         return (std::numeric_limits<size_type>::max() - alignment);
     }
 
-    // Construct an object in-place
-    template <typename U, typename... Args>
-    void construct(U* p, Args&&... args)
-    {
-        construct_inplace(p, std::forward<Args>(args)...);
-    }
-
-    // Destroy an object in-place
-    template <typename U>
-    void destroy(U* p)
-    {
-        p->~U();
-    }
 };
 
 
