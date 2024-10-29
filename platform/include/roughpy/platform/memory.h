@@ -479,18 +479,27 @@ public:
         }
     }
 
-    Rc(const Rc& other) : Rc(other.get()) {}
+    Rc(const Rc& other) : Rc(other.get()) {
+        RPY_DBG_ASSERT(!other || other.ref_count() > 0);
+    }
 
-    Rc(Rc&& other) noexcept : p_data(other.release()) {}
+    Rc(Rc&& other) noexcept : p_data(other.release()) {
+        RPY_DBG_ASSERT(!other || other.ref_count > 0);
+    }
 
     ~Rc()
     {
-        if (p_data != nullptr) { p_data->dec_ref(); }
+        if (p_data != nullptr) {
+            RPY_DBG_ASSERT(p_data->ref_count > 0);
+            p_data->dec_ref();
+        }
+        p_data = nullptr;
     }
 
     Rc& operator=(const Rc& other)
     {
         if (this != &other) {
+            RPY_DBG_ASSERT(!other || other.ref_count > 0);
             Rc(other).swap(*this);
         }
         return *this;
@@ -499,8 +508,8 @@ public:
     Rc& operator=(Rc&& other) noexcept
     {
         if (this != &other) {
-            this->~Rc();
-            this->p_data = other.release();
+            RPY_DBG_ASSERT(!other || other.ref_count > 0);
+            Rc(std::move(other)).swap(*this);
         }
         return *this;
     }
@@ -549,7 +558,9 @@ public:
      */
     constexpr pointer release() noexcept
     {
-        return std::exchange(p_data, nullptr);
+        pointer ptr = p_data;
+        p_data = nullptr;
+        return ptr;
     }
 
     /**
@@ -574,8 +585,54 @@ public:
      *
      * @param other the Rc to swap managed pointer with
      */
-    void swap(Rc& other) noexcept { std::swap(p_data, other.p_data); }
+    void swap(Rc& other) noexcept
+    {
+        auto* tmp = p_data;
+        p_data = other.p_data;
+        p_data = tmp;
+    }
+
+    dimn_t ref_count() const noexcept
+    {
+        return (p_data == nullptr) ? p_data->ref_count() : 0;
+    }
 };
+
+template <typename T, typename U>
+inline bool operator==(const Rc<T>& lhs, const Rc<U>& rhs) noexcept
+{
+    return lhs.get() == rhs.get();
+}
+
+template <typename T, typename U>
+inline bool operator!=(const Rc<T>& lhs, const Rc<U>& rhs) noexcept
+{
+    return lhs.get() != rhs.get();
+}
+
+template <typename T, typename U>
+inline bool operator==(const Rc<T>& lhs, U* rhs) noexcept
+{
+    return lhs.get() == rhs;
+}
+
+template <typename T, typename U>
+inline bool operator!=(const Rc<T>& lhs, U* rhs) noexcept
+{
+    return lhs.get() != rhs;
+}
+
+template <typename T, typename U>
+inline bool operator==(T* lhs, const Rc<U>& rhs) noexcept
+{
+    return lhs == rhs.get();
+}
+
+template <typename T, typename U>
+inline bool operator!=(T* lhs, const Rc<U>& rhs) noexcept
+{
+    return lhs != rhs.get();
+}
 
 /**
  * @brief Creates a reference-counted smart pointer
