@@ -19,18 +19,21 @@ struct DerivedRefCountableObject : public mem::RcBase {
 TEST(RcBaseDerivedCountingTests, InitialRefCountIsOne)
 {
     mem::Rc<DerivedRefCountableObject> obj = mem::make_rc<DerivedRefCountableObject>();
+    ASSERT_TRUE(obj);
     EXPECT_EQ(obj.ref_count(), 1);
 }
 
 TEST(RcBaseDerivedCountingTests, IncreaseAndDecreaseRefCount)
 {
     mem::Rc<DerivedRefCountableObject> obj1 = mem::make_rc<DerivedRefCountableObject>();
+    ASSERT_TRUE(obj1);
     EXPECT_EQ(obj1.ref_count(), 1);
 
     {
         mem::Rc<DerivedRefCountableObject> obj2 = obj1;
         EXPECT_EQ(obj1.ref_count(), 2);
         EXPECT_EQ(obj2.ref_count(), 2);
+        EXPECT_EQ(obj1, obj2);
     }
 
     EXPECT_EQ(obj1.ref_count(), 1);
@@ -47,7 +50,8 @@ protected:
         dimn_t ref_count() const noexcept { return m_rc; }
 
         void inc_ref() const noexcept { ++m_rc; }
-        bool dec_ref() const noexcept { return (--m_rc) == 0; }
+        bool dec_ref() const noexcept { (--m_rc); return false; }
+
     };
 
     using Obj = CustomImplementationRefCountableObject;

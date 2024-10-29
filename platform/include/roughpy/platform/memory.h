@@ -567,9 +567,7 @@ public:
      */
     constexpr pointer release() noexcept
     {
-        pointer ptr = p_data;
-        p_data = nullptr;
-        return ptr;
+        return std::exchange(this->p_data, nullptr);
     }
 
     /**
@@ -596,11 +594,10 @@ public:
      */
     void swap(Rc& other) noexcept
     {
-        auto* tmp = p_data;
-        p_data = other.p_data;
-        other.p_data = tmp;
+        std::swap(this->p_data, other.p_data);
     }
 
+    RPY_NO_DISCARD
     dimn_t ref_count() const noexcept
     {
         return (p_data != nullptr) ? p_data->ref_count() : 0;
