@@ -25,7 +25,7 @@ namespace rpy {
 namespace errors {
 
 ROUGHPY_PLATFORM_EXPORT
-string format_error_message(string_view user_message, const char* filename, int lineno, const char* func, const boost::stacktrace::stacktrace& st);
+string format_error_message(string_view user_message, const char* filename, int lineno, const char* func);
 
 template <typename E>
 RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
