@@ -520,7 +520,7 @@ public:
 
     ~Rc()
     {
-        if (p_data) { p_data->dec_ref(); }
+        if (p_data != nullptr) { p_data->dec_ref(); }
     }
 
     Rc& operator=(const Rc& other)
@@ -546,13 +546,13 @@ public:
 
     constexpr pointer operator->() const noexcept
     {
-        RPY_DBG_ASSERT(*this);
+        RPY_DBG_ASSERT(p_data != nullptr);
         return p_data;
     }
 
     constexpr reference operator*() const noexcept
     {
-        RPY_DBG_ASSERT(*this);
+        RPY_DBG_ASSERT(p_data != nullptr);
         return *p_data;
     }
 
@@ -618,7 +618,8 @@ public:
 template <typename T, typename... Args>
 constexpr Rc<T> make_rc(Args&&... args)
 {
-    return Rc<T>(new T(std::forward<Args>(args)...));
+    std::unique_ptr<T> tmp = std::make_unique<T>(std::forward<Args>(args)...);
+    return Rc<T>(tmp.release());
 }
 
 
@@ -673,7 +674,8 @@ protected:
 
 inline void RcBase::inc_ref() const noexcept
 {
-    m_rc.fetch_add(1, std::memory_order_relaxed);
+    auto new_ref = m_rc.fetch_add(1, std::memory_order_relaxed);
+    RPY_DBG_ASSERT(new_ref > 0);
 }
 
 inline bool RcBase::dec_ref() const
