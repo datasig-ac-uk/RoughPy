@@ -9,7 +9,6 @@
 #include <roughpy/core/types.h>
 
 #include "roughpy_platform_export.h"
-#include <boost/stacktrace.hpp>
 
 /*
  * Check macro definition.
@@ -33,7 +32,7 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const string& msg, const char* filename, int lineno, const char* func
 )
 {
-    throw E(format_error_message(msg, filename, lineno, func, boost::stacktrace::stacktrace()));
+    throw E(format_error_message(msg, filename, lineno, func));
 }
 
 template <typename E>
@@ -41,7 +40,7 @@ RPY_NO_RETURN RPY_INLINE_ALWAYS void throw_exception(
         const char* msg, const char* filename, int lineno, const char* func
 )
 {
-    throw E(format_error_message(msg, filename, lineno, func, boost::stacktrace::stacktrace()));
+    throw E(format_error_message(msg, filename, lineno, func));
 }
 
 }// namespace errors
