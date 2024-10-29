@@ -637,7 +637,9 @@ class RcBase : public SmallObjectBase
     friend class Rc;
 
 protected:
-    RcBase() = default;
+    RcBase()
+        : m_rc(0)
+    {}
 
     /**
      * @brief Increments the reference count of the RcBase object
@@ -674,7 +676,8 @@ protected:
 
 inline void RcBase::inc_ref() const noexcept
 {
-    auto new_ref = m_rc.fetch_add(1, std::memory_order_relaxed);
+    auto new_ref = m_rc.fetch_add(1, std::memory_order_acq_rel);
+    ignore_unused(new_ref);
     RPY_DBG_ASSERT(new_ref > 0);
 }
 
