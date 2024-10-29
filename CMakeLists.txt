@@ -234,18 +234,23 @@ check_include_file_cxx(filesystem RPY_HAS_STD_FILESYSTEM)
 check_include_file_cxx(optional RPY_HAS_STD_OPTIONAL)
 
 
-set(Boost_NO_WARN_NEW_VERSIONS ON)
-set(RYP_BOOST_VERSION 1.81)
+set(RPY_BOOST_VERSION 1.85)
+find_boost(VERSION 1.85 COMPONENTS
+    align
+    container
+    core
+    endian
+    interprocess
+    multiprecision
+    smart_ptr
+    type_traits
+    url
+    uuid
+)
 
-## FindBoost is deprecated. VCPKG clearly doesn't have an answer for this yet
-if (POLICY CMP0167)
-    cmake_policy(SET CMP0167 OLD)
-endif()
+
 find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS url system)
 
-if (NOT RPY_HAS_STD_FILESYSTEM)
-    find_package(Boost ${RPY_BOOST_VERSION} REQUIRED COMPONENTS filesystem)
-endif ()
 
 
 find_package(Eigen3 CONFIG REQUIRED)
