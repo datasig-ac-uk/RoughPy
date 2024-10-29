@@ -30,6 +30,8 @@
 //
 
 #include <roughpy/containers/vector.h>
+#include <roughpy/containers/flat_map.h>
+#include <roughpy/containers/flat_multimap.h>
 #include <roughpy/streams/lie_increment_stream.h>
 
 #include <cereal/types/concepts/pair_associative_container.hpp>
