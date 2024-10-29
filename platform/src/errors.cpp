@@ -18,6 +18,6 @@ string errors::format_error_message(
     std::stringstream ss;
     ss << user_message << " at lineno " << lineno << " in " << filename
        << " in function " << func << '\n'
-       << st << '\n';
+       << '\n';
     return ss.str();
 }
