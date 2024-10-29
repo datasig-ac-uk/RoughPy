@@ -538,7 +538,6 @@ public:
      */
     constexpr pointer get() const noexcept { return p_data; }
 
-private:
     /**
      * @brief Releases the contained pointer from management
      *
@@ -553,7 +552,6 @@ private:
         return std::exchange(p_data, nullptr);
     }
 
-public:
     /**
      * @brief Resets the Rc object to manage a new pointer, releasing any
      * currently managed object.
