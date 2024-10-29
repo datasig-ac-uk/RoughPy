@@ -3,6 +3,8 @@
 //
 
 #include "errors.h"
+
+#include <sstream>
 #include <boost/stacktrace.hpp>
 
 using namespace rpy;
