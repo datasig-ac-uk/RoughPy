@@ -9,8 +9,10 @@
 
 #include <boost/container/flat_map.hpp>
 
-#include <roughpy/core/types.h>
 #include "roughpy/platform/memory.h"
+#include <roughpy/core/types.h>
+
+#include "vector.h"
 
 namespace rpy {
 
@@ -18,9 +20,10 @@ template <
         typename Key,
         typename Value,
         typename Compare = std::less<Key>,
-        typename Alloc = mem::AlignedAllocator<pair<const Key, Value>>>
-using FlatMultiMap = boost::container::flat_multimap<Key, Value, Compare, Alloc>;
+        typename Alloc = mem::AlignedAllocator<pair<Key, Value>>>
+using FlatMultiMap
+        = boost::container::flat_multimap<Key, Value, Compare, Alloc>;
 
-}
+}// namespace rpy
 
 #endif// ROUGHPY_PLATFORM_CONTAINERS_FLAT_MULTIMAP_H
