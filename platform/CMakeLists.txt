@@ -83,9 +83,10 @@ add_roughpy_component(Platform
         PUBLIC
             Boost::smart_ptr
             Boost::container
+            Boost::core
+            Boost::endian
             Boost::system
             Boost::url
-            Boost::filesystem IF NOT RPY_HAS_STD_FILESYSTEM
             cereal::cereal
         Eigen3::Eigen
         Libalgebra_lite::Libalgebra_lite
@@ -105,9 +106,6 @@ target_link_libraries(RoughPy_Platform PUBLIC RoughPy::Core)
 
 add_subdirectory(src/memory)
 
-if (APPLE)
-    target_compile_definitions(RoughPy_Platform PUBLIC BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED)
-endif()
 
 
 add_roughpy_test(Devices
