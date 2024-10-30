@@ -208,12 +208,49 @@ get_small_object_memory_resource() noexcept;
 template <typename T>
 class PoolAllocator : public std::pmr::polymorphic_allocator<T>
 {
-    using base_t = std::pmr::polymorphic_allocator<T>;
+    template <typename U>
+    using base_t_ = std::pmr::polymorphic_allocator<U>;
+
+    using base_t = base_t_<T>;
 
 public:
-    using base_t::base_t;
 
     PoolAllocator() : base_t(get_small_object_memory_resource()) {}
+
+    template <typename U>
+    PoolAllocator(const PoolAllocator<U>& other) noexcept
+        : base_t(other)
+    {}
+
+    template <typename U>
+    PoolAllocator(PoolAllocator<U>&& other) noexcept
+        : base_t(std::move(other))
+    {}
+
+    template <typename U>
+    PoolAllocator(const base_t_<U>& other) noexcept
+        : base_t(other)
+    {}
+
+    template <typename U>
+    PoolAllocator(base_t_<U>&& other) noexcept
+        : base_t(std::move(other))
+    {
+    }
+
+    template <typename U>
+    PoolAllocator& operator=(const base_t_<U>& other) noexcept
+    {
+        base_t::operator=(other);
+        return *this;
+    }
+
+    template <typename U>
+    PoolAllocator& operator=(base_t_<U>&& other) noexcept
+    {
+        base_t::operator=(std::move(other));
+        return *this;
+    }
 
     template <typename U>
     struct rebind
