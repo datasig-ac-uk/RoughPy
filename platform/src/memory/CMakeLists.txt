@@ -46,6 +46,6 @@ if (ROUGHPY_BUILD_TESTS)
     )
 
     gtest_discover_tests(RoughPy_Platform_test_memory
-            EXTRA_ARGS --output-on-failure
+            EXTRA_ARGS --rerun-failed --output-on-failure
     )
 endif ()
