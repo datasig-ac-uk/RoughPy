@@ -48,8 +48,6 @@ if (NOT CMAKE_TOOLCHAIN_FILE AND NOT ROUGHPY_NO_VCPKG)
 endif()
 
 
-
-
 if (ROUGHPY_BUILD_TESTS)
     set(VCPKG_MANIFEST_FEATURES "tests" CACHE INTERNAL "")
 endif ()
@@ -57,9 +55,23 @@ endif ()
 project(RoughPy VERSION ${_rpy_version})
 
 
+find_program(CCACHE_EXECUTABLE ccache)
+if (CCACHE_EXECUTABLE)
+    # From p601 of "Professional CMake 15ed"
+    set (ccache_ENV CACHE_SLOPPINESS=pch_defines,time_macros)
+
+    foreach(lang IN ITEMS C CXX OBJC OBJCXX CUDA)
+        set(CMAKE_${lang}_COMPILER_LAUNCHER
+                ${CMAKE_COMMAND} -E env ${ccache_ENV} ${CCACHE_EXEXUTABLE}
+        )
+    endforeach()
+endif()
+
+
 if (MSVC)
     ## Disable non-compliant behaviour on windows... Comon MS>
     add_compile_options("/permissive-")
+    set(CMAKE_VS_USE_DEBUG_LIBRARIES ON)
 endif()
 
 
