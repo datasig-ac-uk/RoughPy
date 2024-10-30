@@ -153,11 +153,6 @@ function(_split_rpy_deps _rpy_deps_var _nrpy_deps_var _deps_list)
         endif ()
     endforeach ()
     set(${_rpy_deps_var} ${_rpy_deps} PARENT_SCOPE)
-    if (WIN32)
-        add_custom_command(TARGET ${_tests_name} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
-            COMMAND_EXPAND_LISTS)
-    endif ()
     set(${_nrpy_deps_var} ${_nrpy_deps} PARENT_SCOPE)
 endfunction()
 
