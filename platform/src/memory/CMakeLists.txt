@@ -45,11 +45,11 @@ if (ROUGHPY_BUILD_TESTS)
         RoughPy_Platform
     )
 
-    if (WIN32)
-        add_custom_command(TARGET RoughPy_Platform_test_memory POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:RoughPy_Platform_test_memory > $<TARGET_RUNTIME_DLLS:RoughPy_Platform_test_memory >
-                COMMAND_EXPAND_LISTS)
-    endif ()
+#    if (WIN32)
+#        add_custom_command(TARGET RoughPy_Platform_test_memory POST_BUILD
+#                COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:RoughPy_Platform_test_memory > $<TARGET_RUNTIME_DLLS:RoughPy_Platform_test_memory >
+#                COMMAND_EXPAND_LISTS)
+#    endif ()
 
     gtest_discover_tests(RoughPy_Platform_test_memory
             EXTRA_ARGS --rerun-failed --output-on-failure
