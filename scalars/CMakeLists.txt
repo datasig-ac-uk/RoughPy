@@ -73,7 +73,7 @@ add_roughpy_component(Scalars
         src/scalar_type_of.cpp
     DEPENDENCIES
         PUBLIC
-            Boost::boost
+            Boost::headers
         PRIVATE
             PCGRandom::pcg_random
         NEEDS

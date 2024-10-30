@@ -99,7 +99,7 @@ add_roughpy_component(Algebra
 #        include/roughpy/algebra/shuffle_tensor_bundle.h
         include/roughpy/algebra/tensor_basis.h
         DEPENDENCIES PUBLIC
-        Boost::boost
+        Boost::headers
         Libalgebra_lite::Libalgebra_lite
         NEEDS
         RoughPy::Core
