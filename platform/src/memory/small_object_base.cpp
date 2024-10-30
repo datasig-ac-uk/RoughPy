@@ -11,7 +11,9 @@ using namespace rpy;
 
 
 void* mem::SmallObjectBase::operator new(dimn_t size) {
-    if (RPY_UNLIKELY(size == 0)) { return nullptr; }
+    if (RPY_UNLIKELY(size == 0)) {
+        throw std::bad_alloc();
+    }
     auto* pool = get_pool_memory();
     RPY_DBG_ASSERT(pool != nullptr);
 
