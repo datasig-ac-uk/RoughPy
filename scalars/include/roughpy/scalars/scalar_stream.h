@@ -32,6 +32,7 @@
 #include <roughpy/containers/vector.h>
 
 #include "scalars_fwd.h"
+#include "scalar_array.h"
 
 
 namespace rpy { namespace scalars {
