@@ -62,7 +62,9 @@ StandardRandomGenerator<bfloat16, BitGenerator>::StandardRandomGenerator(
             s |= static_cast<seed_int_t>(dev());
             continue_bits -= so_rd_int;
         }
-    } else { m_seed = static_cast<Vec<uint64_t>>(seed); }
+    } else {
+        m_seed.assign(seed.begin(), seed.end());
+    }
 
     m_generator = BitGenerator(m_seed[0]);
 }

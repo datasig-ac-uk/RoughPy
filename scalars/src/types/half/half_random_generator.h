@@ -20,7 +20,7 @@ class StandardRandomGenerator<half, BitGenerator> : public RandomGenerator
     using scalar_type = half;
     using bit_generator = BitGenerator;
 
-    rpy::Vec<uint64_t> m_seed;
+    rpy::Vec<seed_int_t> m_seed;
 
     mutable BitGenerator m_generator;
     mutable std::mutex m_lock;
@@ -62,7 +62,9 @@ StandardRandomGenerator<half, BitGenerator>::StandardRandomGenerator(
             s |= static_cast<seed_int_t>(dev());
             continue_bits -= so_rd_int;
         }
-    } else { m_seed = static_cast<Vec<uint64_t>>(seed); }
+    } else {
+        m_seed.assign(seed.begin(), seed.end());
+    }
 
     m_generator = BitGenerator(m_seed[0]);
 }

@@ -85,8 +85,8 @@ public:
     StandardRandomGenerator& operator=(StandardRandomGenerator&&) noexcept
     = delete;
 
-    void set_seed(Slice<uint64_t> seed_data) override;
-    rpy::Vec<uint64_t> get_seed() const override;
+    void set_seed(Slice<seed_int_t> seed_data) override;
+    rpy::Vec<seed_int_t> get_seed() const override;
     string get_type() const override;
     string get_state() const override;
 
@@ -117,7 +117,7 @@ string StandardRandomGenerator<ScalarImpl, BitGenerator>::get_type() const
 template <typename ScalarImpl, typename BitGenerator>
 StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
     const ScalarType* stype,
-    Slice<uint64_t> seed
+    Slice<seed_int_t> seed
 )
     : RandomGenerator(stype)
 {
@@ -137,7 +137,8 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
             continue_bits -= so_rd_int;
         }
     } else {
-        m_seed = static_cast<Vec<seed_int_t>>(seed);
+        // m_seed = static_cast<Vec<seed_int_t>>(seed);
+        m_seed.assign(seed.begin(), seed.end());
     }
 
     m_generator = BitGenerator(m_seed[0]);
@@ -145,7 +146,7 @@ StandardRandomGenerator<ScalarImpl, BitGenerator>::StandardRandomGenerator(
 
 template <typename ScalarImpl, typename BitGenerator>
 void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_seed(
-    Slice<uint64_t> seed_data
+    Slice<seed_int_t> seed_data
 )
 {
     RPY_CHECK(seed_data.size() >= 1);
@@ -166,7 +167,7 @@ void StandardRandomGenerator<ScalarImpl, BitGenerator>::set_state(
 }
 
 template <typename ScalarImpl, typename BitGenerator>
-rpy::Vec<uint64_t>
+rpy::Vec<seed_int_t>
 StandardRandomGenerator<ScalarImpl, BitGenerator>::get_seed() const
 {
     return {m_seed[0]};
