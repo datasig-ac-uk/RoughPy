@@ -71,7 +71,7 @@ class StandardRandomGenerator : public RandomGenerator
     using scalar_type = ScalarImpl;
     using bit_generator = BitGenerator;
 
-    rpy::Vec<uint64_t> m_seed;
+    rpy::Vec<seed_int_t> m_seed;
 
     mutable BitGenerator m_generator;
     mutable std::mutex m_lock;
