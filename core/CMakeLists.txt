@@ -17,7 +17,7 @@ add_roughpy_component(Core INTERFACE
     include/roughpy/core/helpers.h
     include/roughpy/core/slice.h
     DEPENDENCIES INTERFACE
-    Boost::boost
+    Boost::headers
 )
 
 target_include_directories(RoughPy_Core INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/>")

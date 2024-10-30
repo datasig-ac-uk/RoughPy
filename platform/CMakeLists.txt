@@ -81,8 +81,8 @@ add_roughpy_component(Platform
         include/roughpy/platform/devices/types.h
     DEPENDENCIES
         PUBLIC
+            Boost::headers
             Boost::smart_ptr
-            Boost::container
             Boost::core
             Boost::endian
             Boost::system
