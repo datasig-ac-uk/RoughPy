@@ -31,7 +31,11 @@ option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
 option(ROUGHPY_NO_VCPKG "Do not force install VCPKG if is not already set" OFF)
 
 
-if (NOT CMAKE_TOOLCHAIN_FILE AND NOT ROUGHPY_NO_VCPKG)
+if ((NOT CMAKE_TOOLCHAIN_FILE OR NOT "${CMAKE_TOOLCHAIN_FILE}" MATCHES vcpkg.cmake) AND NOT ROUGHPY_NO_VCPKG)
+    if (NOT ${CMAKE_TOOLCHAIN_FILE} MATCHES vcpkg.cmake)
+        set(VCPKG_TOOLCHAIN_CHAINLOAD "${CMAKE_TOOLCHAIN_FILE}")
+    endif()
+
     cmake_path(APPEND CMAKE_CURRENT_LIST_DIR "tools" "vcpkg"
             OUTPUT_VARIABLE _vcpkg_dir)
 
