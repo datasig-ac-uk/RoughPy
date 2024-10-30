@@ -96,6 +96,7 @@ if (ROUGHPY_BUILD_TESTS)
         message(FATAL_ERROR "GTest::gtest target not defined")
     endif ()
 
+    include(GoogleTest)
     enable_testing()
 
 endif ()
