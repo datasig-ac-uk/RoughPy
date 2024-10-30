@@ -49,6 +49,7 @@ if (ROUGHPY_BUILD_TESTS)
         add_custom_command(TARGET RoughPy_Platform_test_memory POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:RoughPy_Platform_test_memory>
                         $<TARGET_RUNTIME_DLLS:RoughPy_Platform_test_memory>
+                COMMENT "Copying $<TARGET_RUNTIME_DLLS:RoughPy_Platform_test_memory> to $<TARGET_FILE_DIR:RoughPy_Platform_test_memory>"
                 COMMAND_EXPAND_LISTS)
     endif ()
 
