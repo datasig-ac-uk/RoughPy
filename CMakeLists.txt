@@ -97,6 +97,7 @@ if (ROUGHPY_BUILD_TESTS)
         message(FATAL_ERROR "GTest::gtest target not defined")
     endif ()
 
+    set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST CACHE INTERNAL "")
     include(GoogleTest)
     enable_testing()
 
