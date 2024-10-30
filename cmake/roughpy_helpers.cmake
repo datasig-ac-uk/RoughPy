@@ -674,13 +674,13 @@ function(add_roughpy_test _name)
 
     target_link_components(${_tests_name} PRIVATE ${test_NEEDS})
 
-    if (WIN32)
-        add_custom_command(TARGET ${_tests_name} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
-            COMMAND_EXPAND_LISTS)
-    endif ()
+#    if (WIN32)
+#        add_custom_command(TARGET ${_tests_name} POST_BUILD
+#            COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_tests_name}> $<TARGET_RUNTIME_DLLS:${_tests_name}>
+#            COMMAND_EXPAND_LISTS)
+#    endif ()
 
-    gtest_discover_tests(${_tests_name} TEST_LIST ${_tests_name}_LIST DISCOVERY_MODE PRE_TEST)
+    gtest_discover_tests(${_tests_name})
 
 
 endfunction()
