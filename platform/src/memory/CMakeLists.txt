@@ -53,8 +53,6 @@ if (ROUGHPY_BUILD_TESTS)
 
     gtest_discover_tests(RoughPy_Platform_test_memory
             EXTRA_ARGS --rerun-failed --output-on-failure
-            DISCOVERY_MODE POST_BUILD
-            TEST_LIST memory_tests
     )
 
 
