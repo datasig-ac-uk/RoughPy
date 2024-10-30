@@ -102,6 +102,21 @@ add_roughpy_component(Platform
         RoughPy::Core
     )
 
+target_precompile_headers(RoughPy_Platform PUBLIC
+    "<cereal/cereal.hpp>"
+        "<cereal/access.hpp>"
+        "<cereal/specialize.hpp>"
+        "<cereal/types/array.hpp>"
+        "<cereal/types/vector.hpp>"
+        "<cereal/types/functional.hpp>"
+        "<cereal/types/map.hpp>"
+        "<cereal/types/memory.hpp>"
+        "<cereal/types/optional.hpp>"
+        "<cereal/types/string.hpp>"
+        "<cereal/types/unordered_map.hpp>"
+        "<cereal/types/utility.hpp>"
+)
+
 target_link_libraries(RoughPy_Platform PUBLIC RoughPy::Core)
 
 add_subdirectory(src/memory)
