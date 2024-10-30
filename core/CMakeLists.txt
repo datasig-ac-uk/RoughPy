@@ -22,9 +22,9 @@ add_roughpy_component(Core INTERFACE
 
 target_include_directories(RoughPy_Core INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/>")
 
-target_compile_definitions(RoughPy_Core INTERFACE NOMINMAX=1)
 
 
 if (MSVC)
     target_compile_options(RoughPy_Core INTERFACE /permissive-)
+    target_compile_definitions(RoughPy_Core INTERFACE NOMINMAX=1)
 endif ()

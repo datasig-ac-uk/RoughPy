@@ -680,7 +680,9 @@ function(add_roughpy_test _name)
             COMMAND_EXPAND_LISTS)
     endif ()
 
-    gtest_discover_tests(${_tests_name} DISCOVERY_MODE PRE_TEST)
+    gtest_discover_tests(${_tests_name} TEST_LIST ${_tests_name}_LIST DISCOVERY_MODE PRE_TEST)
+
+
 endfunction()
 
 
