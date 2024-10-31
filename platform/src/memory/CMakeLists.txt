@@ -52,12 +52,12 @@ if (ROUGHPY_BUILD_TESTS)
                 COMMENT "Copying $<TARGET_RUNTIME_DLLS:RoughPy_Platform_test_memory> to $<TARGET_FILE_DIR:RoughPy_Platform_test_memory>"
                 COMMAND_EXPAND_LISTS)
 
-        foreach (_test IN LISTS RoughPy_Platform_test_memory_TESTS)
-            set_property(TEST ${_test} APPEND PROPERTY
-                    ENVIRONMENT_MODIFICATION
-                    PATH=path_list_prepend:$<SHELL_PATH:$<TARGET_FILE_DIR:RoughPy_Platform>>
-            )
-        endforeach()
+#        foreach (_test IN LISTS RoughPy_Platform_test_memory_TESTS)
+#            set_property(TEST ${_test} APPEND PROPERTY
+#                    ENVIRONMENT_MODIFICATION
+#                    PATH=path_list_prepend:$<SHELL_PATH:$<TARGET_FILE_DIR:RoughPy_Platform>>
+#            )
+#        endforeach()
     endif ()
 
 #    if (WIN32)
