@@ -39,7 +39,7 @@ if ((NOT CMAKE_TOOLCHAIN_FILE OR NOT "${CMAKE_TOOLCHAIN_FILE}" MATCHES vcpkg.cma
     cmake_path(APPEND CMAKE_CURRENT_LIST_DIR "tools" "vcpkg"
             OUTPUT_VARIABLE _vcpkg_dir)
 
-    if (NOT EXISTS _vcpkg_dir)
+    if (NOT EXISTS ${_vcpkg_dir})
         find_package(Git REQUIRED)
         execute_process(COMMAND
                 "${GIT_EXECUTABLE}" "clone" "https://github.com/Microsoft/vcpkg.git" "${_vcpkg_dir}"
@@ -212,7 +212,7 @@ if (ROUGHPY_LINK_NUMPY)
 endif()
 
 
-if(NOT DEFINED pybind11_ROOT)
+if(NOT DEFINED pybind11_ROOT OR NOT pybind11_ROOT)
     execute_process(COMMAND "${Python_EXECUTABLE}" "-m" "pip" "install" "pybind11"
                     COMMAND_ECHO STDOUT
                     RESULT_VARIABLE _pybind11_install_result
