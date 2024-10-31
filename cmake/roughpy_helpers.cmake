@@ -603,26 +603,7 @@ function(extend_roughpy_lib _name)
 endfunction()
 
 
-function(add_roughpy_algebra _name)
 
-    cmake_parse_arguments(
-        "ARG"
-        "DEVICE;BUNDLE;REQUIRED"
-        "BASIS_NAME;BASIS_FILE;INTERFACE_FILE;IMPLEMENTATION_FILE"
-        "BASIS_PROPERTIES"
-    )
-
-    # set up the names
-    set(_basis_name "${_name}Basis")
-    if (ARG_BASIS_NAME)
-        set(_basis_name "${ARG_BASIS_NAME}")
-    endif ()
-
-    set(_interface_name "${_name}Interface")
-    set(_impl_name "${_name}Implementation")
-
-
-endfunction()
 
 function(add_roughpy_test _name)
     if (NOT ROUGHPY_BUILD_TESTS)
@@ -679,13 +660,13 @@ function(add_roughpy_test _name)
             COMMENT "Copying $<TARGET_RUNTIME_DLLS:RoughPy_Platform_test_memory> to $<TARGET_FILE_DIR:RoughPy_Platform_test_memory>"
             COMMAND_EXPAND_LISTS)
 
-        foreach (_test IN LISTS ${_tests_name}_TESTS)
-            set_property(TEST ${_test} APPEND PROPERTY
-                    ENVIRONMENT_MODIFICATION
-                        PATH=path_list_prepend:$<SHELL_PATH:$<TARGET_FILE_DIR:${_component}>>
-            )
-
-        endforeach()
+#        foreach (_test IN LISTS ${_tests_name}_TESTS)
+#            set_property(TEST ${_test} APPEND PROPERTY
+#                    ENVIRONMENT_MODIFICATION
+#                        PATH=path_list_prepend:$<SHELL_PATH:$<TARGET_FILE_DIR:${_component}>>
+#            )
+#
+#        endforeach()
     endif ()
 
     gtest_discover_tests(${_tests_name})
