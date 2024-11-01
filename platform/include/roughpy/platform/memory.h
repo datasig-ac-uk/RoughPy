@@ -226,9 +226,9 @@ public:
     typedef std::ptrdiff_t difference_type;
     typedef std::size_t size_type;
 
-    typedef std::true_type propagate_on_container_copy_assignment;
-    typedef std::true_type propagate_on_container_move_assignment;
-    typedef std::true_type propagate_on_container_swap;
+    typedef std::false_type propagate_on_container_copy_assignment;
+    typedef std::false_type propagate_on_container_move_assignment;
+    typedef std::false_type propagate_on_container_swap;
     typedef std::true_type is_always_equal;
 
     PoolAllocator() : base_t(get_small_object_memory_resource()) {}
