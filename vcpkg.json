@@ -72,10 +72,6 @@
       "version>=": "v2024.05.08"
     },
     {
-      "name": "boost-stacktrace",
-      "version>=": "1.83.0"
-    },
-    {
       "name": "mpir",
       "version>=": "2022-03-02#3",
       "platform": "windows"
