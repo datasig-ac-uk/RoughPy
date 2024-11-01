@@ -159,6 +159,11 @@ include(cmake/roughpy_helpers.cmake)
 # pip) and the Python executable is provided via the PYTHON_EXECUTABLE cache
 # variable. In this case, make sure that this is the version of Python that gets
 # found.
+
+# Ideally we always find a virtual environment to use, so look for that first
+# looking for a Python virtual environment first.
+set(Python_FIND_VIRTUALENV FIRST)
+
 set(PYBIND11_FINDPYTHON ON)
 if (NOT PYTHON_FOUND AND SKBUILD)
     cmake_path(GET PYTHON_EXECUTABLE PARENT_PATH _sk_env_dir)
@@ -172,22 +177,6 @@ if (NOT PYTHON_FOUND AND SKBUILD)
 
     # clean up temporary
     unset(_sk_env_dir)
-else ()
-    # If we're not using Scikit-Build-Core (i.e. a pure CMake build) then try
-    # looking for a Python virtual environment first.
-    set(Python_FIND_VIRTUALENV FIRST)
-
-    # In particular, if ENV{VIRTUAL_ENV} is set then add this to the cmake
-    # prefix path so FindPython is more likely to find this environemnt.
-    if (DEFINED ENV{VIRTUAL_ENV})
-        # Put venv/lib on the prefix path so we can find
-        # a pip installed MKL
-        message(STATUS "Adding python virtual environment to path")
-        list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}")
-    endif ()
-    if (DEFINED ROUGHPY_PYTHON_VENV_DIR)
-        list(PREPEND CMAKE_PREFIX_PATH "${ROUGHPY_PYTHON_VENV_DIR}")
-    endif()
 endif ()
 
 
@@ -205,7 +194,7 @@ if (ROUGHPY_LINK_NUMPY)
 
     if (NOT TARGET Python::NumPY)
         message(STATUS "Installing NumPy")
-        execute_process(COMMAND "${Python_EXECUTABLE} -m pip install numpy" COMMAND_ECHO STDOUT)
+        execute_process(COMMAND ${Python_EXECUTABLE} -m pip install numpy COMMAND_ECHO STDOUT)
         find_package(Python REQUIRED COMPONENTS NumPy)
     endif()
 
@@ -219,7 +208,7 @@ if(NOT DEFINED pybind11_ROOT OR NOT pybind11_ROOT)
                     OUTPUT_VARIABLE _pybind11_install_message
     )
 
-    if (NOT _pybind11_install_result AND NOT _pybind11_install_message MATCHES "Requirement already satisfied: pybind11")
+    if (NOT _pybind11_install_result EQUAL 0 AND NOT _pybind11_install_message MATCHES "Requirement already satisfied: pybind11")
         message(FATAL_ERROR "could not install pybind11")
     endif()
 
