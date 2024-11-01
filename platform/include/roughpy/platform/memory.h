@@ -11,6 +11,7 @@
 #include <limits>
 #include <memory>
 #include <memory_resource>
+#include <new>
 #include <utility>
 
 #include <roughpy/core/alloc.h>
@@ -205,15 +206,30 @@ using PoolMemory = std::pmr::synchronized_pool_resource;
 RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT PoolMemory*
 get_small_object_memory_resource() noexcept;
 
-template <typename T>
-class PoolAllocator : public std::pmr::polymorphic_allocator<T>
+template <typename Ty>
+class PoolAllocator : public std::pmr::polymorphic_allocator<Ty>
 {
     template <typename U>
     using base_t_ = std::pmr::polymorphic_allocator<U>;
 
-    using base_t = base_t_<T>;
+    using base_t = base_t_<Ty>;
 
 public:
+
+    typedef Ty value_type;
+    typedef Ty* pointer;
+    typedef const Ty* const_pointer;
+    typedef Ty& reference;
+    typedef const Ty& const_reference;
+    typedef void* void_pointer;
+    typedef const void* const_void_pointer;
+    typedef std::ptrdiff_t difference_type;
+    typedef std::size_t size_type;
+
+    typedef std::true_type propagate_on_container_copy_assignment;
+    typedef std::true_type propagate_on_container_move_assignment;
+    typedef std::true_type propagate_on_container_swap;
+    typedef std::true_type is_always_equal;
 
     PoolAllocator() : base_t(get_small_object_memory_resource()) {}
 
@@ -255,10 +271,8 @@ public:
     template <typename U>
     struct rebind
     {
-        using type = PoolAllocator<U>;
+        using other = PoolAllocator<U>;
     };
-
-
 };
 
 }// namespace small
@@ -282,6 +296,10 @@ class AlignedAllocator
             align::is_alignment(Alignment),
             "Valid alignments are powers of 2 and greater than 0"
     );
+    static_assert(
+        Alignment >= alignof(Ty),
+        "Alignment must be at least alignof(Ty)"
+    );
 
 public:
     // Type definitions required for the allocator interface
@@ -290,10 +308,20 @@ public:
     using const_pointer = const Ty*;
     using reference = Ty&;
     using const_reference = const Ty&;
+    using void_pointer = void*;
+    using const_void_pointer = const void*;
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
 
-    static constexpr size_t alignment = std::max(alignof(Ty), Alignment);
+    using propagate_on_container_copy_assignment = std::false_type;
+    using propagate_on_container_move_assignment = std::false_type;
+    using propagate_on_container_swap = std::false_type;
+
+    using is_always_equal = std::true_type;
+
+
+
+    static constexpr size_t alignment = Alignment;
 
     // Rebind allocator to another type
     template <typename U>
@@ -337,21 +365,11 @@ public:
     }
 
     // Allocate memory
-    RPY_NO_DISCARD pointer allocate(size_type size, const void* hint = nullptr)
-    {
-        if (RPY_UNLIKELY(size == 0)) { return nullptr; }
+    RPY_NO_DISCARD pointer allocate(size_type size, const void* hint = nullptr);
 
-        void* ptr = align::aligned_alloc(alignment, size * sizeof(Ty));
-        if (RPY_UNLIKELY(!ptr)) { throw std::bad_alloc(); }
-
-        return static_cast<pointer>(ptr);
-    }
 
     // Deallocate memory
-    void deallocate(pointer p, size_type n) noexcept
-    {
-        align::aligned_free(p, n * sizeof(Ty));
-    }
+    void deallocate(pointer p, size_type n) noexcept;
 
     // Maximum size
     RPY_NO_DISCARD size_type max_size() const noexcept
@@ -376,7 +394,12 @@ public:
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
 
-    static constexpr size_t alignment = std::max(alignof(void*), Alignment);
+    using propagate_on_container_copy_assignment = std::false_type;
+    using propagate_on_container_move_assignment = std::false_type;
+    using propagate_on_container_swap = std::false_type;
+    using is_always_equal = std::true_type;
+
+    static constexpr size_t alignment = Alignment;
 
     // Rebind allocator to another type
     template <typename U>
@@ -393,21 +416,10 @@ public:
     {}
 
     // Allocate memory
-    RPY_NO_DISCARD pointer allocate(size_type size, const void* hint = nullptr)
-    {
-        if (RPY_UNLIKELY(size == 0)) { return nullptr; }
-
-        void* ptr = align::aligned_alloc(alignment, size);
-        if (RPY_UNLIKELY(!ptr)) { throw std::bad_alloc(); }
-
-        return static_cast<pointer>(ptr);
-    }
+    RPY_NO_DISCARD pointer allocate(size_type size, const void* hint = nullptr);
 
     // Deallocate memory
-    void deallocate(pointer p, size_type n) noexcept
-    {
-        align::aligned_free(p, n);
-    }
+    void deallocate(pointer p, size_type n) noexcept;
 
     // Maximum size
     RPY_NO_DISCARD size_type max_size() const noexcept
@@ -415,6 +427,50 @@ public:
         return (std::numeric_limits<size_type>::max() - alignment);
     }
 };
+
+template <typename Ty, size_t Alignment>
+typename AlignedAllocator<Ty, Alignment>::pointer
+AlignedAllocator<Ty, Alignment>::allocate(size_type size, const void* hint)
+{
+    if (RPY_UNLIKELY(size == 0)) { return nullptr; }
+
+    if (RPY_UNLIKELY(size > max_size())) { throw std::bad_array_new_length(); }
+
+    void* ptr = align::aligned_alloc(alignment, size * sizeof(Ty));
+    if (RPY_UNLIKELY(!ptr)) { throw std::bad_alloc(); }
+
+    return static_cast<pointer>(ptr);
+}
+
+template <typename Ty, size_t Alignment>
+void AlignedAllocator<Ty, Alignment>::deallocate(
+        pointer p,
+        size_type n
+) noexcept
+{
+    align::aligned_free(p, n * sizeof(Ty));
+}
+
+template <size_t Alignment>
+typename AlignedAllocator<void, Alignment>::pointer
+AlignedAllocator<void, Alignment>::allocate(size_type size, const void* hint)
+{
+    if (RPY_UNLIKELY(size == 0)) { return nullptr; }
+
+    void* ptr = align::aligned_alloc(alignment, size);
+    if (RPY_UNLIKELY(!ptr)) { throw std::bad_alloc(); }
+
+    return static_cast<pointer>(ptr);
+}
+
+template <size_t Alignment>
+void AlignedAllocator<void, Alignment>::deallocate(
+        pointer p,
+        size_type n
+) noexcept
+{
+    align::aligned_free(p, n);
+}
 
 template <typename Ty, size_t TyAlign, typename Uy, size_t UyAlign>
 RPY_NO_DISCARD constexpr bool operator==(
