@@ -16,7 +16,7 @@ namespace rpy {
 template <
         typename T,
         typename Compare = std::less<T>,
-        typename Allocator = mem::small::PoolAllocator<T>>
+        typename Allocator = std::allocator<T>>
 using FlatSet = boost::container::flat_set<T, Compare>;
 
 }

@@ -14,13 +14,13 @@
 namespace rpy {
 
 
-template <typename T, typename Allocator= mem::AlignedAllocator<T>>
+template <typename T, typename Allocator= std::allocator<T>>
 using SmallVectorBase = boost::container::small_vector_base<T, Allocator>;
 
 template <
         typename T,
         dimn_t InlineSize,
-        typename Allocator = mem::AlignedAllocator<T>>
+        typename Allocator = std::allocator<T>>
 using SmallVector = boost::container::small_vector<T, InlineSize, Allocator>;
 
 }

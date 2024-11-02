@@ -12,7 +12,7 @@
 
 namespace rpy {
 
-template <typename T, typename Allocator = mem::small::PoolAllocator<T>>
+template <typename T, typename Allocator = std::allocator<T>>
 using List = std::list<T, Allocator>;
 
 }

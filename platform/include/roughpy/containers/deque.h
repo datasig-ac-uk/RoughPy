@@ -12,7 +12,7 @@
 
 namespace rpy {
 
-template <typename T, typename Alloc=mem::AlignedAllocator<T>>
+template <typename T, typename Alloc=std::allocator<T>>
 using Deque = std::deque<T, Alloc>;
 
 }

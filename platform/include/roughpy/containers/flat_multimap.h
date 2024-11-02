@@ -20,7 +20,7 @@ template <
         typename Key,
         typename Value,
         typename Compare = std::less<Key>,
-        typename Alloc = mem::AlignedAllocator<pair<Key, Value>>>
+        typename Alloc = std::allocator<pair<Key, Value>>>
 using FlatMultiMap
         = boost::container::flat_multimap<Key, Value, Compare, Alloc>;
 

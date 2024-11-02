@@ -18,7 +18,7 @@ template <
         typename Key,
         typename Value,
         typename Compare = std::less<Key>,
-        typename Alloc = mem::small::PoolAllocator<pair<const Key, Value>>>
+        typename Alloc = std::allocator<pair<const Key, Value>>>
 using Map = std::map<Key, Value, Compare, Alloc>;
 
 }

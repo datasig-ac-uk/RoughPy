@@ -19,7 +19,7 @@ template <
         typename Value,
         typename Hash = std::hash<Key>,
         typename KeyEqual = std::equal_to<Key>,
-        typename Alloc = mem::small::PoolAllocator<pair<const Key, Value>>>
+        typename Alloc = std::allocator<pair<const Key, Value>>>
 using HashMap = std::unordered_map<Key, Value, Hash, KeyEqual, Alloc>;
 
 }

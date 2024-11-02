@@ -16,7 +16,7 @@ template <
         typename T,
         typename Hash = std::hash<T>,
         typename KeyEqual = std::equal_to<T>,
-        typename Alloc = mem::small::PoolAllocator<T>>
+        typename Alloc = std::allocator<T>>
 using HashSet = std::unordered_set<T, Hash, KeyEqual, Alloc>;
 
 }

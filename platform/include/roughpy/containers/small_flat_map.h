@@ -17,7 +17,7 @@ template <
         typename Value,
         dimn_t InlineCapacity,
         typename Compare = std::less<Key>,
-        typename Alloc = mem::AlignedAllocator<std::pair<Key, Value>>>
+        typename Alloc = std::allocator<std::pair<Key, Value>>>
 using SmallFlatMap = boost::container::flat_map < Key,
       Value, Compare, SmallVector<std::pair<Key, Value>, InlineCapcity, Alloc>>;
 

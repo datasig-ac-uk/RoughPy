@@ -15,7 +15,7 @@ namespace rpy {
 template <
         typename T,
         typename Compare = std::less<T>,
-        typename Alloc = mem::small::PoolAllocator<T>>
+        typename Alloc = std::allocator<T>>
 using Set = std::set<T, Compare>;
 
 }
