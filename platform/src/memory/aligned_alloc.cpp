@@ -19,10 +19,10 @@ void* mem::align::aligned_alloc(dimn_t alignment, dimn_t size) noexcept
     RPY_DBG_ASSERT(align::is_alignment(alignment));
 
 #ifdef RPY_MSVC
-    return _aligned_malloc(size, alignment);
+    return ::_aligned_malloc(size, alignment);
 #elif defined(RPY_GCC) || defined(RPY_CLANG)
     void *ptr;
-    if (int err = posix_memalign(&ptr, std::max(alignment, sizeof(void*)), size) != 0) {
+    if (int err = ::posix_memalign(&ptr, alignment, size) != 0) {
         ignore_unused(err);
         ptr = nullptr;
     }
@@ -34,9 +34,9 @@ void mem::align::aligned_free(void* ptr, dimn_t size) noexcept
 {
     ignore_unused(size);
 #ifdef RPY_MSVC
-    _aligned_free(ptr);
+    ::_aligned_free(ptr);
 #elif defined(RPY_GCC) || defined(RPY_CLANG)
-    free(ptr);
+    ::free(ptr);
 #endif
 }
 
