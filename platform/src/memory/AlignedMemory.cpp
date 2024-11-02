@@ -28,8 +28,8 @@ bool AlignedMemory::do_is_equal(const memory_resource& other) const noexcept
 
 AlignedMemory* AlignedMemory::get() noexcept
 {
-    static AlignedMemory s_aligned_memory;
-    return &s_aligned_memory;
+    static auto s_aligned_memory = std::make_unique<AlignedMemory>();
+    return s_aligned_memory.get();
 }
 
 
