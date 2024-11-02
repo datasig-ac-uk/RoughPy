@@ -41,7 +41,7 @@ HallSetSizeHelper::HallSetSizeHelper(deg_t width, deg_t depth)
     : m_width(width), m_depth(depth)
 {
     if (static_cast<dimn_t>(m_depth) > m_mobius.size()) {
-        rpy::Vec<bool> tmp;
+        rpy::Vec<bool, mem::AlignedAllocator<bool, 8>> tmp;
         tmp.resize(m_depth / 2, true);
         tmp[0] = false;
 
