@@ -52,6 +52,8 @@ namespace dtl {
 template <typename ScalarImpl>
 class StandardScalarType : public ScalarType
 {
+    static constexpr dimn_t mem_alignment = mem::align::alloc_data_alignment;
+
     mutable std::unordered_set<void*> m_allocated;
 
     static std::unique_ptr<RandomGenerator> get_mt19937_generator(
@@ -88,7 +90,7 @@ template <typename ScalarImpl>
 ScalarArray StandardScalarType<ScalarImpl>::allocate(dimn_t count) const
 {
     RPY_CHECK(count > 0);
-    ScalarArray result(this, m_device->raw_alloc(count*m_info.bytes, m_info.alignment));;
+    ScalarArray result(this, m_device->raw_alloc(count*m_info.bytes, mem_alignment));;
     {
         auto slice = result.mut_buffer().template as_mut_slice<ScalarImpl>();
         std::uninitialized_fill(slice.begin(), slice.end(), ScalarImpl(0));
