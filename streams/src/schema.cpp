@@ -61,10 +61,12 @@ bool StreamSchema::compare_labels(
 
     if (item_label.empty()) { return false; }
 
+    // TODO: Replace with constrained algorithm when ranges is imported
     auto lit = item_label.begin();
     auto rit = ref_label.begin();
+    const auto lend = item_label.end();
 
-    for (; *lit != '\0'; ++lit, ++rit) {
+    for (; lit != lend && *lit != '\0'; ++lit, ++rit) {
         if (*rit != *lit) { return false; }
     }
 
