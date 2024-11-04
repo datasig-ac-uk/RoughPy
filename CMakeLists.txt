@@ -233,8 +233,12 @@ endif ()
 check_include_file_cxx(filesystem RPY_HAS_STD_FILESYSTEM)
 check_include_file_cxx(optional RPY_HAS_STD_OPTIONAL)
 
-
+# find_package(Boost) is deprecated and finding the CONFIG package might pick
+# up a system library and not the ones installed by vcpkg. For this reason,
+# we provide a function that finds boost_{component} for each component.
+# This sets the Boost::{component} targets to be used in linking as usual.
 find_boost(VERSION 1.83 COMPONENTS
+    headers
     align
     container
     core
