@@ -76,7 +76,14 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 # and text editors.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Now we get to adding our components. Let's do some global setup such as
+# setting the CXX standard and the shared library details.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# I don't think we have any pure C anywhere, but we set the standard anyway
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 
 # TODO: Handle these more delicately.
@@ -242,71 +249,15 @@ find_package(OpenCL CONFIG REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(PCGRandom REQUIRED)
+find_package(GMP REQUIRED)
 
 message(STATUS "Target architecture ${RPY_ARCH}")
 
 
-#find_package(PkgConfig REQUIRED)
-#pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
-#add_library(Bignum::Bignum ALIAS PkgConfig::gmp)
-#set(Bignum_LIBRARY "$<TARGET_FILE:PkgConfig::gmp>")
-#set(Bignum_INCLUDE_DIR "$<TARGET_PROPERTY:PkgConfig::gmp,INTERFACE_INCLUDE_DIRECTORY>")
 
 
-#if (APPLE AND NOT DEFINED MKL_OMP_LIB)
-#    get_brew_prefix(_libomp_prefix libomp VERBOSE)
-#
-#    if (_libomp_prefix AND EXISTS ${_libomp_prefix})
-#        list(APPEND CMAKE_PREFIX_PATH ${_libomp_prefix})
-#    endif()
-#endif()
-#
-#find_package(OpenMP REQUIRED COMPONENTS CXX)
-
-#if (MSVC)
-#    # MSVC has openmp from the stone ages, so add the experimental flag
-#    get_target_property(_omp_flags OpenMP::OpenMP_CXX INTERFACE_COMPILE_OPTIONS)
-#    string(REPLACE "/openmp" "/openmp:experimental" _omp_flags "${_omp_flags}")
-#    set_target_properties(OpenMP::OpenMP_CXX PROPERTIES
-#            INTERFACE_COMPILE_OPTIONS "${_omp_flags}")
-#endif()
 
 
-#find_package(Libalgebra_lite REQUIRED)
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GMP QUIET IMPORTED_TARGET gmp)
-if (TARGET PkgConfig::GMP)
-    add_library(GMP::GMP ALIAS PkgConfig::GMP)
-elseif(DEFINED VCPKG_INSTALLED_DIR)
-    find_path(GMP_INCLUDES NAMES gmp.h
-    PATHS ${VCPKG_INSTALLED_DIR})
-
-    find_library(GMP_LIBRARIES gmp mpir PATHS ${VCPKG_INSTALLED_DIR})
-
-    message(STATUS "GMP HEADERS: ${GMP_INCLUDES}")
-    message(STATUS "GMP LIBRARIES: ${GMP_LIBRARIES}")
-    if(GMP_INCLUDES AND GMP_LIBRARIES)
-        add_library(GMP::GMP UNKNOWN IMPORTED GLOBAL)
-        target_include_directories(GMP::GMP INTERFACE ${GMP_INCLUDES})
-
-        set_target_properties(GMP::GMP PROPERTIES
-            IMPORTED_LOCATION "${GMP_LIBRARIES}"
-        )
-
-
-    else()
-        message(FATAL_ERROR "Could not locate gmp")
-    endif()
-else()
-    message(FATAL_ERROR "Could not locate gmp, no vcpkg")
-endif()
-
-
-# Now we get to adding our components. Let's do some global setup such as
-# setting the CXX standard and the shared library details.
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
