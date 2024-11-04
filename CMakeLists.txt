@@ -5,7 +5,6 @@ include(CheckIncludeFileCXX)
 
 
 option(ROUGHPY_ENABLE_DBG_ASSERT "enable debug assertions at runtime" OFF)
-option(ROUGHPY_BUILD_DefaultLA_CONTEXTS "Build the collection of libalgebra contexts" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" OFF)
 option(ROUGHPY_BUILD_DOCS "Build the documentation" OFF)
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Build the pymodule in the project roughpy directory" OFF)
@@ -269,7 +268,7 @@ endif ()
 
 
 set(LIBALGEBRA_LITE_BUILD_TESTS OFF CACHE INTERNAL "")
-set(LIBALGEBRA_LITE_RATIONAL_CEFFS OFF CACHE INTERNAL "")
+set(LIBALGEBRA_LITE_RATIONAL_COEFFS OFF CACHE INTERNAL "")
 add_subdirectory(external/libalgebra_lite)
 
 
@@ -285,21 +284,10 @@ if (ROUGHPY_BUILD_PYLIB)
 endif ()
 
 
-if (ROUGHPY_BUILD_LA_CONTEXTS)
-    set(LIBALGEBRA_NO_SERIALIZATION ON CACHE INTERNAL "")
-    add_subdirectory(external/libalgebra)
-    add_subdirectory(la_context)
-endif ()
-
-
 if (ROUGHPY_BUILD_DOCS)
+    # The docs subdirectory has it's own find
     add_subdirectory(docs)
 endif()
-
-# TODO: Maybe we should replace this with a custom install target rather than
-# messing with the install directories.
-#set(CMAKE_INSTALL_LIBDIR "roughpy" CACHE STRING "install library dir")
-#set(CMAKE_INSTALL_BINDIR "roughpy" CACHE STRING "install binary dir")
 
 install(TARGETS
         RoughPy_Platform
