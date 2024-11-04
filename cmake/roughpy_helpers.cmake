@@ -73,6 +73,8 @@ function(find_boost)
 
     endforeach ()
 
+    add_library(Boost::boost ALIAS Boost::headers)
+
 endfunction()
 
 
