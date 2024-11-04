@@ -1,9 +1,7 @@
 
 include_guard()
 
-include(GNUInstallDirs)
-include(GenerateExportHeader)
-include(GoogleTest OPTIONAL)
+
 
 
 set(ROUGHPY_LIBS CACHE INTERNAL "")
