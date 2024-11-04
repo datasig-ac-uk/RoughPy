@@ -39,7 +39,7 @@ namespace rpy { namespace scalars {
 
 class ROUGHPY_SCALARS_EXPORT ScalarStream {
 public:
-    using stream_t = Vec<ScalarArray, mem::AlignedAllocator<ScalarArray, 8>>;
+    using stream_t = Vec<ScalarArray>;
 protected:
 
     stream_t m_stream;
