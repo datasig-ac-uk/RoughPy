@@ -253,11 +253,11 @@ find_boost(VERSION 1.83 COMPONENTS
 
 
 find_package(Eigen3 CONFIG REQUIRED)
-find_package(SndFile CONFIG REQUIRED)
-
-# This package is c++17 so cannot be used if changing to a lower standard
-
-find_package(OpenCL REQUIRED)
+find_package(SndFile CONFIG CONFIG REQUIRED)
+find_package(OpenCL CONFIG REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
+find_package(cereal CONFIG REQUIRED)
+find_package(PCGRandom REQUIRED)
 
 message(STATUS "Target architecture ${RPY_ARCH}")
 if (NOT ROUGHPY_DISABLE_BLAS)
@@ -365,9 +365,7 @@ endif ()
 #            INTERFACE_COMPILE_OPTIONS "${_omp_flags}")
 #endif()
 
-find_package(pybind11 REQUIRED)
-find_package(cereal REQUIRED)
-find_package(PCGRandom REQUIRED)
+
 #find_package(Libalgebra_lite REQUIRED)
 
 find_package(PkgConfig REQUIRED)
