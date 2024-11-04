@@ -57,6 +57,29 @@ function(get_brew_prefix _out_var _package)
 endfunction()
 
 
+function(find_boost)
+
+    cmake_parse_arguments("BOOST" "" "VERSION" "COMPONENTS" ${ARGN})
+
+    foreach (lib IN LISTS BOOST_COMPONENTS)
+        message(STATUS "finding boost library ${lib}")
+        if (DEFINED BOOST_VERSION)
+            find_package("boost_${lib}" "${BOOST_VERSION}" CONFIG REQUIRED
+                    "${lib}"
+            )
+        else()
+            find_package("boost_${lib}" CONFIG REQUIRED
+                    "${lib}"
+            )
+        endif()
+
+    endforeach ()
+
+endfunction()
+
+
+
+
 function(_get_component_name _out_var _component)
     string(SUBSTRING ${_component} 0 1 _first_letter)
     string(SUBSTRING ${_component} 1 -1 _remaining)
