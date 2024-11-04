@@ -1,18 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
 
-message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
-#list(APPEND VCPKG_INSTALL_OPTIONS "--no-print-usage")
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-if (EXISTS "VERSION.txt")
-    file(READ "VERSION.txt" _rpy_version)
-    message(STATUS "Repository version ${_rpy_version}")
-    string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" _rpy_version "${_rpy_version}")
-else ()
-    set(_rpy_version 0.0.1)
-endif ()
-
 include(CMakeDependentOption)
 include(CheckIncludeFileCXX)
 
@@ -46,22 +33,57 @@ if (NOT CMAKE_TOOLCHAIN_FILE AND NOT ROUGHPY_NO_VCPKG)
     message(STATUS "installed VCPKG in ${_vcpkg_dir}")
     set(CMAKE_TOOLCHAIN_FILE "${_vcpkg_file}" CACHE INTERNAL "")
 endif()
+message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 
 
 
-
+# This sets the the manifest features to include GoogleTest if we're building tests
+# This means we don't have to interact with vcpkg at all even when we need to build
+# the test suite.
 if (ROUGHPY_BUILD_TESTS)
     set(VCPKG_MANIFEST_FEATURES "tests" CACHE INTERNAL "")
 endif ()
 
+
+
+# Set the version for Roughpy.
+# TODO: This needs a dramatic overhaul.
+if (EXISTS "VERSION.txt")
+    file(READ "VERSION.txt" _rpy_version)
+    message(STATUS "Repository version ${_rpy_version}")
+    string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" _rpy_version "${_rpy_version}")
+else ()
+    set(_rpy_version 0.0.1)
+endif ()
+
+
+###############################################################################
+# Everything above this line has to happen before the call to project, because
+# project sets up the toolchain and vcpkg. Only things that must come before
+# the call to project should be above.
+###############################################################################
 project(RoughPy VERSION ${_rpy_version})
 
 
+
+
+# We have some custom find modules to
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
+
+
+
+# Generate a compilation database, which helps with language servers in some IDEs
+# and text editors.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+
+
+
+# TODO: Handle these more delicately.
 if (MSVC)
     ## Disable non-compliant behaviour on windows... Comon MS>
     add_compile_options("/permissive-")
 endif()
-
 
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
     execute_process(COMMAND ${CMAKE_C_COMPILER} -fuse-ld=gold -Wl,--version OUTPUT_VARIABLE stdout ERROR_QUIET)
@@ -70,6 +92,7 @@ if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
         add_link_options(-fuse-ld=gold)
     endif ()
 endif ()
+
 
 # If testing is enabled, find GTest to make sure the tests can be
 # successfully built.
@@ -87,7 +110,10 @@ endif ()
 
 include(GenerateExportHeader)
 
-
+# Scikit-Build-Core requires that the built artifacts are installed into specific
+# directories provided as cache variables during the configuration step. This file
+# contains a little logic that makes sure the install locations are set accordingly
+# and otherwise sets using the default GNUInstallDirs locations.
 include(cmake/setup_install_dirs.cmake)
 
 # Load the helper functions
