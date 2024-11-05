@@ -113,7 +113,7 @@ if (ROUGHPY_BUILD_TESTS)
     enable_testing()
 endif ()
 
-
+# We need some standard CMake stuff
 include(GenerateExportHeader)
 
 # Scikit-Build-Core requires that the built artifacts are installed into specific
@@ -124,6 +124,15 @@ include(cmake/setup_install_dirs.cmake)
 
 # Load the helper functions
 include(cmake/roughpy_helpers.cmake)
+
+
+# RoughPy components might have sub-components, defined in CMakeLists in directories
+# below the main component. To help these set their include directories and link
+# with other parts of the library, we set a number of variables that point to the
+# component level source tree. See the documentation of the function for a list
+# of the variables set and their purpose.
+include(cmake/component_path_variables.cmake)
+
 
 # We need to provide some help to make sure we find the correct version of
 # Python. Ideally, if we're using Scikit-Build-Core to build the library (via

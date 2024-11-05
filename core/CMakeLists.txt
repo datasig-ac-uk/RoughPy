@@ -1,10 +1,6 @@
-cmake_minimum_required(VERSION 3.28)
 
 
-project(RoughPy_Core
-        VERSION 0.0.1
-        LANGUAGES CXX
-)
+set_component_path_variables(Core)
 
 add_library(RoughPy_Core INTERFACE
         include/roughpy/core/alloc.h
