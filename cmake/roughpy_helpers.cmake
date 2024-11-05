@@ -80,12 +80,22 @@ endfunction()
 
 
 
-
+# Conditionally set the version of the library based on whether RoughPy component
+# versioning is enabled.
 function(set_library_version_properties _library)
 
     if (NOT ROUGHPY_NO_LIBRARY_VERSIONS)
-        set_target_properties(${_library} PROPERTIES
 
+        get_target_property(_comp ${_library} PROPERTIES ROUGHPY_COMPONENT)
+        if (NOT _comp)
+            message(FATAL_ERROR "cannot set library version")
+        endif()
+
+        string(TOUPPER ${_comp} _upper)
+        set(_ver_name ${ROUGHPY_${_upper}_VERSION})
+
+        set_target_properties(${_library} PROPERTIES
+            VERSION ${_ver_name}
         )
     endif()
 

@@ -46,6 +46,9 @@ target_link_libraries(RoughPy_Platform PUBLIC
 
 set_target_properties(RoughPy_Platform PROPERTIES ROUGHPY_COMPONENT Platform)
 
+set_library_version_properties(RoughPy_Platform)
+
+
 add_subdirectory(src/devices)
 
 
@@ -75,6 +78,11 @@ add_subdirectory(src/devices)
 #        RoughPy::Core
 #    )
 
+# Cereal is our current serialization library, and it's dreadful.
+# Parsing these headers and instantiating all the templates therein is
+# easily the biggest contribution to the build type for RoughPy. For this
+# reason, we precompile all the headers for cereal. Ideally, I want a less
+# intensive solution like protobufs or flatbufs, or literally anything else.
 target_precompile_headers(RoughPy_Platform PUBLIC
         <cereal/cereal.hpp>
         <cereal/access.hpp>
@@ -92,10 +100,12 @@ target_precompile_headers(RoughPy_Platform PUBLIC
 )
 
 target_precompile_headers(RoughPy_Platform PUBLIC
-        <boost/multiprecision/gmp.hpp>
+        <boost/multiprecision/gmp.hpp> # TODO: This should be an internal header.
         <libalgebra_lite/coefficients.h>
         <libalgebra_lite/polynomial.h>
 )
+
+
 
 #
 #add_roughpy_test(Devices
