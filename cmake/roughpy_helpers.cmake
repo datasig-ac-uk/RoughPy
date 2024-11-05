@@ -80,6 +80,20 @@ endfunction()
 
 
 
+
+function(set_library_version_properties _library)
+
+    if (NOT ROUGHPY_NO_LIBRARY_VERSIONS)
+        set_target_properties(${_library} PROPERTIES
+
+        )
+    endif()
+
+endfunction()
+
+
+
+
 function(_get_component_name _out_var _component)
     string(SUBSTRING ${_component} 0 1 _first_letter)
     string(SUBSTRING ${_component} 1 -1 _remaining)

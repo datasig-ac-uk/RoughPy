@@ -131,7 +131,7 @@ include(cmake/roughpy_helpers.cmake)
 # with other parts of the library, we set a number of variables that point to the
 # component level source tree. See the documentation of the function for a list
 # of the variables set and their purpose.
-include(cmake/component_path_variables.cmake)
+include(cmake/component_setup.cmake)
 
 
 # We need to provide some help to make sure we find the correct version of

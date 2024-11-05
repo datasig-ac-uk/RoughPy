@@ -1,6 +1,6 @@
 
 
-set_component_path_variables(Core)
+setup_roughpy_component(Core)
 
 add_library(RoughPy_Core INTERFACE
         include/roughpy/core/alloc.h
@@ -23,6 +23,8 @@ target_include_directories(RoughPy_Core INTERFACE
 target_link_libraries(RoughPy_Core INTERFACE
         Boost::headers
 )
+
+set_target_properties(RoughPy_Core PROPERTIES ROUGHPY_COMPONENT Core)
 
 #add_roughpy_component(Core INTERFACE
 #        PUBLIC_HEADERS

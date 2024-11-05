@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.21)
 project(Roughpy_Platform VERSION 0.0.1)
 
 
-set_component_path_variables(Platform)
+setup_roughpy_component(Platform)
 
 add_Library(RoughPy_Platform SHARED
         src/configuration.cpp
@@ -44,6 +44,7 @@ target_link_libraries(RoughPy_Platform PUBLIC
         OpenCL::OpenCL
 )
 
+set_target_properties(RoughPy_Platform PROPERTIES ROUGHPY_COMPONENT Platform)
 
 add_subdirectory(src/devices)
 
