@@ -36,16 +36,4 @@ target_include_directories(RoughPy_Intervals PUBLIC
 target_link_libraries(RoughPy_Intervals PUBLIC RoughPy::Platform)
 
 
-if (ROUGHPY_BUILD_TESTS)
-
-    add_executable(test_intervals
-            src/test_dyadic.cpp
-            src/test_dyadic_intervals.cpp
-            src/test_real_interval.cpp
-            src/test_partition.cpp
-    )
-    target_link_libraries(test_intervals PRIVATE RoughPy::Intervals GTest::gtest)
-
-    setup_roughpy_tests(test_intervals)
-
-endif ()
+add_subdirectory(src)
