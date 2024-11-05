@@ -88,9 +88,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# If ROUGHPY_USE_CCACHE is set, setup the project to use ccache to speed up
-# builds
-include(cmake/setup_ccache.cmake)
+
 
 
 # TODO: Handle these more delicately.
@@ -108,21 +106,17 @@ if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
 endif ()
 
 
-# If testing is enabled, find GTest to make sure the tests can be
-# successfully built.
-if (ROUGHPY_BUILD_TESTS)
-    find_package(GTest CONFIG REQUIRED)
 
-    if (NOT TARGET GTest::gtest)
-        message(FATAL_ERROR "GTest::gtest target not defined")
-    endif ()
-    include(GoogleTest)
-
-    enable_testing()
-endif ()
-
-# We need some standard CMake stuff
 include(GenerateExportHeader)
+
+# TODO: Move this down once the helpers is cleaned out
+if (ROUGHPY_BUILD_TESTS)
+    add_subdirectory(testing)
+endif()
+
+# If ROUGHPY_USE_CCACHE is set, setup the project to use ccache to speed up
+# builds
+include(cmake/setup_ccache.cmake)
 
 # Scikit-Build-Core requires that the built artifacts are installed into specific
 # directories provided as cache variables during the configuration step. This file
@@ -133,13 +127,14 @@ include(cmake/setup_install_dirs.cmake)
 # Load the helper functions
 include(cmake/roughpy_helpers.cmake)
 
-
 # RoughPy components might have sub-components, defined in CMakeLists in directories
 # below the main component. To help these set their include directories and link
 # with other parts of the library, we set a number of variables that point to the
 # component level source tree. See the documentation of the function for a list
 # of the variables set and their purpose.
 include(cmake/component_setup.cmake)
+
+
 
 
 # We need to provide some help to make sure we find the correct version of
