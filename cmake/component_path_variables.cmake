@@ -23,6 +23,7 @@ function(set_component_path_variables _component)
             "Include directory for the ${_component} component")
     _do_set_variable(INCLUDE "${ROUGHPY_${_name}_INCLUDE_DIR}"
             "Include directory for the ${_component} component")
-
+    _do_set_variable(SOURCE "${ROUGHPY_${_name}_ROOT_DIR}/src"
+            "Main source directory for the ${_component} component")
 
 endfunction()
