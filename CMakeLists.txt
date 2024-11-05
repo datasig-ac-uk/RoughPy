@@ -139,27 +139,6 @@ include(cmake/component_setup.cmake)
 
 
 
-
-# At minimum we need Interpreter and Development.Module in order to build a
-# Python extension module.
-
-
-find_package(Python 3.8 REQUIRED COMPONENTS ${PYTHON_COMPONENTS_NEEDED})
-
-if (ROUGHPY_LINK_NUMPY)
-    find_package(Python 3.8 QUIET COMPONENTS NumPy)
-
-    if (NOT TARGET Python::NumPY)
-        message(STATUS "Installing NumPy")
-        execute_process(COMMAND "${Python_EXECUTABLE} -m pip install numpy" COMMAND_ECHO STDOUT)
-        find_package(Python REQUIRED COMPONENTS NumPy)
-    endif()
-
-endif()
-
-
-
-
 set(RPY_ARCH ${CMAKE_SYSTEM_PROCESSOR})
 # TODO: handle this better
 if (DEFINED CMAKE_CXX_COMPILER_TARGET)
