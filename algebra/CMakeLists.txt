@@ -76,21 +76,6 @@ set_target_properties(RoughPy_Algebra PROPERTIES ROUGHPY_COMPONENT Algebra)
 set_library_version_properties(RoughPy_Algebra)
 
 
-add_subdirectory(src/libalgebra_lite_internal)
-
-
-if (ROUGHPY_BUILD_TESTS)
-
-        add_executable(test_algebra
-                src/ContextFixture.cpp
-                src/ContextFixture.h
-                src/test_lie.cpp
-        )
-
-        target_link_libraries(test_algebra PRIVATE RoughPy::Algebra GTest::gtest)
-
-        setup_roughpy_tests(test_algebra)
-
-endif()
+add_subdirectory(src)
 
 
