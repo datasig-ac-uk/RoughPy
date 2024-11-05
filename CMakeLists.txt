@@ -114,8 +114,7 @@ if (ROUGHPY_BUILD_TESTS)
     add_subdirectory(testing)
 endif()
 
-# If ROUGHPY_USE_CCACHE is set, setup the project to use ccache to speed up
-# builds
+# If ROUGHPY_USE_CCACHE is set, setup the project to use ccache to speed up builds
 include(cmake/setup_ccache.cmake)
 
 # Scikit-Build-Core requires that the built artifacts are installed into specific
