@@ -80,7 +80,7 @@ target_include_directories(RoughPy_Scalars PUBLIC
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/src
-        ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/platform
+        ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/scalars
 )
 
 target_link_libraries(RoughPy_Scalars PUBLIC
