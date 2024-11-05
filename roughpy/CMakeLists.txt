@@ -114,19 +114,8 @@ target_compile_definitions(RoughPy_PyModule PRIVATE
         BOOST_UUID_FORCE_AUTO_LINK=1
 )
 
-if (ROUGHPY_BUILD_PYMODULE_INPLACE)
-    if (MSVC)
-        add_custom_command(TARGET RoughPy_PyModule POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:RoughPy_PyModule>
-        )
-        add_custom_command(TARGET RoughPy_PyModule POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
-            COMMAND_EXPAND_LISTS
-        )
-    else()
-        set_target_properties(RoughPy_PyModule PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-    endif ()
+if (ROUGHPY_BUILD_TESTS)
+
 endif ()
 
 set_target_properties(RoughPy_PyModule PROPERTIES ROUGHPY_COMPONENT PyModule)
@@ -279,16 +268,8 @@ if (ROUGHPY_LINK_NUMPY)
     target_link_libraries(RoughPy_PyModule PRIVATE Python::NumPy)
     target_compile_definitions(RoughPy_PyModule PRIVATE
             ROUGHPY_WITH_NUMPY)
-    target_precompile_headers(RoughPy_PyModule PRIVATE <pybind11/numpy.h>)
 endif ()
 
-
-get_target_property(RoughPy_Core_VERSION RoughPy::Core VERSION)
-get_target_property(RoughPy_Platform_VERSION RoughPy::Platform VERSION)
-get_target_property(RoughPy_Scalars_VERSION RoughPy::Scalars VERSION)
-get_target_property(RoughPy_Intervals_VERSION RoughPy::Intervals VERSION)
-get_target_property(RoughPy_Algebra_VERSION RoughPy::Algebra VERSION)
-get_target_property(RoughPy_Streams_VERSION RoughPy::Streams VERSION)
 
 
 configure_file(version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)
@@ -323,7 +304,49 @@ install(DIRECTORY roughpy
 
 if (ROUGHPY_BUILD_TESTS)
 
-    # There are python tests too
+    execute_process(COMMAND ${Python_EXECUTABLE} -m pytest --version
+        RESULT_VARIABLE _has_pytest)
+
+    if (_has_pytest)
+        # There are python tests too
+        set(python_test_dir "${RoughPy_SOURCE_DIR}/tests")
+
+        add_test(
+                NAME PyTest
+                COMMAND ${Python_EXECUTABLE} -m pytest $<SHELL_PATH:${python_test_dir}>
+        )
+
+        set_property(TEST PyTest APPEND PROPERTY
+                ENVIRONMENT_MODIFICATION
+                    PYTHONPATH=path_list_append:"$<SHELL_PATH:${RoughPy_SOURCE_DIR}>"
+        )
+
+
+
+        # If we're building tests, we need to make sure the _roughpy python module is located within
+        # the roughpy directory so it can be imported correctly.
+        if (WIN32)
+            # Windows DLLs are dumb: they don't have a mechanism for locating their dependencies.
+            # This is a major pain. To get around this, have to copy the runtime files from the build
+            # tree into the directory alongside the _roughpy module. There might be a better way of doing
+            # this by modifying the PATH variable as we did above, but it's just easier to copy everything
+            add_custom_command(TARGET RoughPy_PyModule POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:RoughPy_PyModule>
+            )
+            add_custom_command(TARGET RoughPy_PyModule POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
+                    COMMAND_EXPAND_LISTS
+            )
+        else()
+            # On sensible operating systems, we just need the shared _roughpy module to be placed directly
+            # into the correct output directory.
+            set_target_properties(RoughPy_PyModule PROPERTIES
+                    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+        endif ()
+
+
+    endif()
+
 
 
 
