@@ -86,7 +86,7 @@ function(set_library_version_properties _library)
 
     if (NOT ROUGHPY_NO_LIBRARY_VERSIONS)
 
-        get_target_property(_comp ${_library} PROPERTIES ROUGHPY_COMPONENT)
+        get_target_property(_comp ${_library} ROUGHPY_COMPONENT)
         if (NOT _comp)
             message(FATAL_ERROR "cannot set library version")
         endif()
