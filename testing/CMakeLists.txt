@@ -30,6 +30,7 @@ include(GoogleTest)
 function(setup_roughpy_tests _test_name)
 
 
-    gtest_discover_tests(${_test_name})
+    target_link_libraries(${_test_name} PRIVATE GTest::gtest_main)
 
+    gtest_discover_tests(${_test_name})
 endfunction()
