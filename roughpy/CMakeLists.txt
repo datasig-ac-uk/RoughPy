@@ -1,19 +1,105 @@
-cmake_minimum_required(VERSION 3.28)
 
 
-project(RoughPy_PyModule
-        VERSION ${RoughPy_VERSION}
-        LANGUAGES CXX
-)
-message(STATUS "Adding RoughPy::PyModule version ${RoughPy_VERSION}")
+setup_roughpy_component(PyModule)
 
+###############################################################################
+#                                    python                                   #
+###############################################################################
+# We need to provide some help to make sure we find the correct version of
+# Python. Ideally, if we're using Scikit-Build-Core to build the library (via
+# pip) and the Python executable is provided via the PYTHON_EXECUTABLE cache
+# variable. In this case, make sure that this is the version of Python that gets
+# found.
+set(Python_FIND_VIRTUAL_ENVIRONMENT FIRST)
+if (NOT PYTHON_FOUND AND SKBUILD)
+    cmake_path(GET PYTHON_EXECUTABLE PARENT_PATH _sk_env_dir)
+    message(STATUS "SKBuild environment: ${_sk_env_dir}")
 
-if (NOT TARGET pybind11::headers)
-    find_package(Pybind11 CONFIG REQUIRED)
+    # Some variables that are set might cause issues in the FindPython module,
+    # so unset those
+    unset(Python_LIBRARY CACHE)
+    unset(PYTHON_LIBRARY CACHE)
+    unset(Python3_LIBRARY CACHE)
+
+    # clean up temporary
+    unset(_sk_env_dir)
+else ()
+    # If we're not using Scikit-Build-Core (i.e. a pure CMake build) then try
+    # looking for a Python virtual environment first.
+    set(Python_FIND_VIRTUALENV FIRST)
+
+    # In particular, if ENV{VIRTUAL_ENV} is set then add this to the cmake
+    # prefix path so FindPython is more likely to find this environemnt.
+    if (DEFINED ENV{VIRTUAL_ENV})
+        # Put venv/lib on the prefix path so we can find
+        # a pip installed MKL
+        message(STATUS "Adding python virtual environment to path")
+        list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}")
+    endif ()
+    if (DEFINED ROUGHPY_PYTHON_VENV_DIR)
+        list(PREPEND CMAKE_PREFIX_PATH "${ROUGHPY_PYTHON_VENV_DIR}")
+    endif()
 endif ()
 
 
-Python_add_library(RoughPy_PyModule MODULE WITH_SOABI)
+set(_python_components Interpreter Development.Module)
+if (ROUGHPY_LINK_NUMPY)
+    list(APPEND _python_components NumPy)
+endif ()
+
+
+find_package(Python 3.8 REQUIRED COMPONENTS ${_python_components})
+unset(_python_components)
+
+
+
+
+
+
+###############################################################################
+#                                   pybind11                                  #
+###############################################################################
+# Pybind11 might have been installed using pip, which is probably the
+# best way to handle it. In this case, we can get the cmake module dir
+# by calling the pybind11 script installed here. If this is set, add it
+# to the prefix path before we start looking for pybind11 below
+if(NOT DEFINED pybind11_ROOT)
+    execute_process(COMMAND
+            "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
+            RESULT_VARIABLE _python_pybind11_dir_found
+            OUTPUT_VARIABLE _python_pybind11_dir
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if (_python_pybind11_dir_found EQUAL 0)
+        message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
+        set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
+        list(APPEND CMAKE_PREFIX_PATH "${_python_pybind11_dir}")
+    endif ()
+endif ()
+
+
+# Pybind11 can either use it's own internal algorithm for finding Python, or
+# use the FindPython module provided by CMake. We always want it to use the
+# latter so we don't end up with two versions of Python out there.
+set(PYBIND11_FINDPYTHON ON)
+
+# We are not using vcpkg to fetch pybind11 because it "depends" on Python
+# Just in case the Python environment doesn't contain pybind11, such as in
+# a development build, we can fall back to FetchContent
+FetchContent_Declare(
+        pybind11
+        GIT_REPOSITORY https://github.com/pybind/pybind11.git
+        GIT_TAG a2e59f0e7065404b44dfe92a28aca47ba1378dc4 # Release 2.13.6
+        FIND_PACKAGE_ARGS
+)
+FetchContent_MakeAvailable(pybind11)
+
+
+add_library(RoughPy_PyModule MODULE)
+
+
+#Python_add_library(RoughPy_PyModule MODULE WITH_SOABI)
 set_target_properties(RoughPy_PyModule PROPERTIES
         LIBRARY_OUTPUT_NAME _roughpy
         CXX_VISIBILITY_PRESET hidden
@@ -215,3 +301,31 @@ get_target_property(RoughPy_Streams_VERSION RoughPy::Streams VERSION)
 
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)
+
+
+
+install(TARGETS RoughPy_PyModule
+    RUNTIME DESTINATION roughpy
+    LIBRARY
+    DESTINATION roughpy
+    NAMELINK_SKIP
+    ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+    COMPONENT Development
+    EXCLUDE_FROM_ALL
+    INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+    COMPONENT Development
+        FRAMEWORK DESTINATION roughpy
+    EXCLUDE_FROM_ALL
+)
+
+install(FILES roughpy/py.typed DESTINATION roughpy)
+install(DIRECTORY roughpy
+        DESTINATION .
+        FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "*.pyi"
+        PATTERN "src/*" EXCLUDE)
+
+
+
+

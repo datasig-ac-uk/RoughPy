@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
 include(CMakeDependentOption)
-include(CheckIncludeFileCXX)
 
 
 option(ROUGHPY_NO_VCPKG "Do not force install VCPKG if is not already set" OFF)
@@ -106,8 +105,10 @@ if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
 endif ()
 
 
-
+# Standard CMake provided modules
+include(CheckIncludeFileCXX)
 include(GenerateExportHeader)
+include(FetchContent)
 
 # TODO: Move this down once the helpers is cleaned out
 if (ROUGHPY_BUILD_TESTS)
@@ -136,49 +137,12 @@ include(cmake/component_setup.cmake)
 
 
 
-# We need to provide some help to make sure we find the correct version of
-# Python. Ideally, if we're using Scikit-Build-Core to build the library (via
-# pip) and the Python executable is provided via the PYTHON_EXECUTABLE cache
-# variable. In this case, make sure that this is the version of Python that gets
-# found.
-set(PYBIND11_FINDPYTHON ON)
-if (NOT PYTHON_FOUND AND SKBUILD)
-    cmake_path(GET PYTHON_EXECUTABLE PARENT_PATH _sk_env_dir)
-    message(STATUS "SKBuild environment: ${_sk_env_dir}")
 
-    # Some variables that are set might cause issues in the FindPython module,
-    # so unset those
-    unset(Python_LIBRARY CACHE)
-    unset(PYTHON_LIBRARY CACHE)
-    unset(Python3_LIBRARY CACHE)
-
-    # clean up temporary
-    unset(_sk_env_dir)
-else ()
-    # If we're not using Scikit-Build-Core (i.e. a pure CMake build) then try
-    # looking for a Python virtual environment first.
-    set(Python_FIND_VIRTUALENV FIRST)
-
-    # In particular, if ENV{VIRTUAL_ENV} is set then add this to the cmake
-    # prefix path so FindPython is more likely to find this environemnt.
-    if (DEFINED ENV{VIRTUAL_ENV})
-        # Put venv/lib on the prefix path so we can find
-        # a pip installed MKL
-        message(STATUS "Adding python virtual environment to path")
-        list(PREPEND CMAKE_PREFIX_PATH "$ENV{VIRTUAL_ENV}")
-    endif ()
-    if (DEFINED ROUGHPY_PYTHON_VENV_DIR)
-        list(PREPEND CMAKE_PREFIX_PATH "${ROUGHPY_PYTHON_VENV_DIR}")
-    endif()
-endif ()
 
 
 # At minimum we need Interpreter and Development.Module in order to build a
 # Python extension module.
-set(PYTHON_COMPONENTS_NEEDED Interpreter Development.Module)
-#if (ROUGHPY_LINK_NUMPY)
-#    list(APPEND PYTHON_COMPONENTS_NEEDED NumPy)
-#endif ()
+
 
 find_package(Python 3.8 REQUIRED COMPONENTS ${PYTHON_COMPONENTS_NEEDED})
 
@@ -194,33 +158,7 @@ if (ROUGHPY_LINK_NUMPY)
 endif()
 
 
-if(NOT DEFINED pybind11_ROOT)
-    execute_process(COMMAND "${Python_EXECUTABLE}" "-m" "pip" "install" "pybind11"
-                    COMMAND_ECHO STDOUT
-                    RESULT_VARIABLE _pybind11_install_result
-                    OUTPUT_VARIABLE _pybind11_install_message
-    )
 
-    if (NOT _pybind11_install_result AND NOT _pybind11_install_message MATCHES "Requirement already satisfied: pybind11")
-        message(FATAL_ERROR "could not install pybind11")
-    endif()
-
-    unset(_pybind11_install_result)
-    execute_process(COMMAND
-            "${Python_EXECUTABLE}" "-m" "pybind11" "--cmakedir"
-            COMMAND_ECHO STDOUT
-            RESULT_VARIABLE _python_pybind11_dir_found
-            OUTPUT_VARIABLE _python_pybind11_dir
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    if (_python_pybind11_dir_found EQUAL 0)
-        message(STATUS "Adding Pybind11 cmake dir ${_python_pybind11_dir}")
-        set(pybind11_ROOT "${_python_pybind11_dir}" CACHE INTERNAL "")
-        list(APPEND CMAKE_PREFIX_PATH "${_python_pybind11_dir}")
-    else()
-        message(FATAL_ERROR "Could not add pybind11 dir: ${_python_pybind11_dir_found} && ${_python_pybind11_dir}")
-    endif ()
-endif ()
 
 set(RPY_ARCH ${CMAKE_SYSTEM_PROCESSOR})
 # TODO: handle this better
@@ -256,7 +194,6 @@ find_boost(VERSION 1.83 COMPONENTS
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG CONFIG REQUIRED)
 find_package(OpenCL CONFIG REQUIRED)
-find_package(pybind11 CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(PCGRandom REQUIRED)
 find_package(GMP REQUIRED)
@@ -306,7 +243,6 @@ install(TARGETS
         RoughPy_Scalars
         RoughPy_Algebra
         RoughPy_Streams
-    RoughPy_PyModule
     EXPORT RoughPy_EXPORTS
     RUNTIME DESTINATION roughpy
     LIBRARY
@@ -321,20 +257,4 @@ install(TARGETS
     EXCLUDE_FROM_ALL
 )
 
-install(FILES roughpy/py.typed DESTINATION roughpy)
-install(DIRECTORY roughpy
-    DESTINATION .
-    FILES_MATCHING
-    PATTERN "*.py"
-    PATTERN "*.pyi"
-    PATTERN "src/*" EXCLUDE)
 
-set(_runtime_deps "")
-foreach (_rpy_lib IN LISTS ROUGHPY_LIBS)
-    get_target_property(_lib_deps ${_rpy_lib} RUNTIME_DEPENDENCIES)
-    if (_lib_deps)
-        list(APPEND _runtime_deps "${_lib_deps}")
-        #        install(FILES ${_lib_deps} DESTINATION roughpy)
-    endif ()
-endforeach ()
-#install(FILES ${_runtime_deps} DESTINATION roughpy)
