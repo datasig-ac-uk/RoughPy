@@ -53,9 +53,6 @@ unset(_python_components)
 
 
 
-
-
-
 ###############################################################################
 #                                   pybind11                                  #
 ###############################################################################
@@ -96,16 +93,20 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(pybind11)
 
 
-add_library(RoughPy_PyModule MODULE)
 
 
-#Python_add_library(RoughPy_PyModule MODULE WITH_SOABI)
+
+###############################################################################
+#                                   pymodule                                  #
+###############################################################################
+
+python_add_library(RoughPy_PyModule MODULE WITH_SOABI)
+
+
 set_target_properties(RoughPy_PyModule PROPERTIES
         LIBRARY_OUTPUT_NAME _roughpy
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
-        C_STANDARD 11
-        C_STANDARD_REQUIRED ON
 )
 
 target_compile_definitions(RoughPy_PyModule PRIVATE
@@ -329,3 +330,13 @@ install(DIRECTORY roughpy
 
 
 
+
+if (ROUGHPY_BUILD_TESTS)
+
+    # There are python tests too
+
+
+
+
+
+endif()
