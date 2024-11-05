@@ -104,7 +104,7 @@ if (ROUGHPY_BUILD_TESTS)
             src/test_scalar_type.cpp
     )
 
-    target_link_libraries(test_scalars PRIVATE RoughPy::Scalars GTest::gtest_main)
+    target_link_libraries(test_scalars PRIVATE RoughPy::Scalars GTest::gtest)
 
 
     setup_roughpy_tests(test_scalars)
