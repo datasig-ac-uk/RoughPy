@@ -98,7 +98,7 @@ if (GMP_FOUND AND NOT TARGET GMP::GMP)
                 IMPORTED_LOCATION_RELEASE "${GMP_LIBRARY_RELEASE}"
         )
     endif()
-    if (GMP_LIBRARY_RELEASE)
+    if (GMP_LIBRARY_DEBUG)
         set_property(TARGET GMP::GMP APPEND PROPERTY
                 IMPORTED_CONFIGURATIONS DEBUG
         )
