@@ -54,7 +54,7 @@ add_library(RoughPy_Algebra SHARED
 add_library(RoughPy::Algebra ALIAS RoughPy_Algebra)
 
 
-target_include_directories(RoughPy_Platform PUBLIC
+target_include_directories(RoughPy_Algebra PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
