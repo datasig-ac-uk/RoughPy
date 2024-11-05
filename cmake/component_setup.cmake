@@ -20,11 +20,15 @@ function(setup_roughpy_component _name)
     string(TOUPPER ${_name} _upper_name)
     string(TOLOWER ${_name} _lower_name)
 
+    if (NOT comp_VERSION)
+        set(comp_VERSION ${RoughPy_VERSION})
+    endif()
 
-    message(STATUS "Adding RoughPy component ${_name}")
 
+    message(STATUS "Adding RoughPy component ${_name} version ${comp_VERSION}")
 
     message(DEBUG "Setting variables for component ${_name}")
+    _do_set_variable(VERSION ${comp_VERSION} "The version of the component")
     _do_set_variable(ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}"
             "Root directory of the ${_name} component")
     _do_set_variable(INCLUDE_DIR "${ROUGHPY_${_upper_name}_ROOT_DIR}/include/roughpy/${_lower_name}"
