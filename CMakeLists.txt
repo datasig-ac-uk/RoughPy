@@ -4,17 +4,19 @@ include(CMakeDependentOption)
 include(CheckIncludeFileCXX)
 
 
-option(ROUGHPY_ENABLE_DBG_ASSERT "enable debug assertions at runtime" OFF)
+option(ROUGHPY_NO_VCPKG "Do not force install VCPKG if is not already set" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" OFF)
 option(ROUGHPY_BUILD_DOCS "Build the documentation" OFF)
+
+option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
+option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ${ROUGHPY_BUILD_PYLIB})
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Build the pymodule in the project roughpy directory" OFF)
-option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ON)
+
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 cmake_dependent_option(ROUGHPY_PREFER_ACCELERATE
         "Prefer Accelerate framework on MacOS always" OFF APPLE OFF)
-option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
-option(ROUGHPY_NO_VCPKG "Do not force install VCPKG if is not already set" OFF)
+
 
 
 if (NOT CMAKE_TOOLCHAIN_FILE AND NOT ROUGHPY_NO_VCPKG)
