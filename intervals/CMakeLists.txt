@@ -32,8 +32,12 @@ target_include_directories(RoughPy_Intervals PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/include/roughpy/intervals
 )
 
+set_target_properties(RoughPy_Intervals PROPERTIES ROUGHPY_COMPONENT Intervals)
 
 target_link_libraries(RoughPy_Intervals PUBLIC RoughPy::Platform)
 
+set_library_version_properties(RoughPy_Intervals)
+
+generate_export_header(RoughPy_Intervals)
 
 add_subdirectory(src)

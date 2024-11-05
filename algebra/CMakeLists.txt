@@ -75,6 +75,7 @@ set_target_properties(RoughPy_Algebra PROPERTIES ROUGHPY_COMPONENT Algebra)
 
 set_library_version_properties(RoughPy_Algebra)
 
+generate_export_header(RoughPy_Algebra)
 
 add_subdirectory(src)
 

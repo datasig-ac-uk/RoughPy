@@ -129,6 +129,7 @@ if (ROUGHPY_BUILD_PYMODULE_INPLACE)
     endif ()
 endif ()
 
+set_target_properties(RoughPy_PyModule PROPERTIES ROUGHPY_COMPONENT PyModule)
 
 #set_target_properties(RoughPy_PyModule PROPERTIES
 #    INSTALL_RPATH $ORIGIN)
@@ -266,17 +267,6 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         #        recombine::recombine
 )
 
-
-target_precompile_headers(RoughPy_PyModule PRIVATE
-        <roughpy/platform/devices.h>
-        <roughpy/platform/serialization.h>
-        <roughpy/platform/filesystem.h>
-        <roughpy/scalars/key_scalar_array.h>
-        <roughpy/algebra/context.h>
-        <pybind11/pybind11.h>
-        <pybind11/functional.h>
-        <pybind11/stl.h>
-)
 
 set(RPY_TARGETS RoughPy::Platform
         RoughPy::Scalars

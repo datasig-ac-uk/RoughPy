@@ -51,6 +51,8 @@ set_target_properties(RoughPy_Streams PROPERTIES ROUGHPY_COMPONENT Streams)
 
 set_library_version_properties(RoughPy_Streams)
 
+generate_export_header(RoughPy_Streams)
+
 add_subdirectory(src)
 
 

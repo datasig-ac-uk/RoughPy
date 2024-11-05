@@ -44,6 +44,7 @@ set_target_properties(RoughPy_Platform PROPERTIES ROUGHPY_COMPONENT Platform)
 
 set_library_version_properties(RoughPy_Platform)
 
+generate_export_header(RoughPy_Platform)
 
 add_subdirectory(src)
 
@@ -67,12 +68,6 @@ target_precompile_headers(RoughPy_Platform PUBLIC
         <cereal/archives/json.hpp>
         <cereal/archives/portable_binary.hpp>
         <cereal/archives/xml.hpp>
-)
-
-target_precompile_headers(RoughPy_Platform PUBLIC
-        <boost/multiprecision/gmp.hpp> # TODO: This should be an internal header.
-        <libalgebra_lite/coefficients.h>
-        <libalgebra_lite/polynomial.h>
 )
 
 

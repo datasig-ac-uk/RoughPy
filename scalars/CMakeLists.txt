@@ -88,10 +88,11 @@ target_link_libraries(RoughPy_Scalars PUBLIC
         PCGRandom::pcg_random
 )
 
-set_target_properties(RoughPy_Platform PROPERTIES ROUGHPY_COMPONENT Scalars)
+set_target_properties(RoughPy_Scalars PROPERTIES ROUGHPY_COMPONENT Scalars)
 
-set_library_version_properties(RoughPy_Platform)
+set_library_version_properties(RoughPy_Scalars)
 
+generate_export_header(RoughPy_Scalars)
 
 if (ROUGHPY_BUILD_TESTS)
 
