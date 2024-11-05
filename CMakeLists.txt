@@ -8,6 +8,8 @@ option(ROUGHPY_NO_VCPKG "Do not force install VCPKG if is not already set" OFF)
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" OFF)
 option(ROUGHPY_BUILD_DOCS "Build the documentation" OFF)
 
+option(ROUGHPY_USE_CCACHE "Use compiler cache to speed up repeated builds" ON)
+
 option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ${ROUGHPY_BUILD_PYLIB})
 option(ROUGHPY_BUILD_PYMODULE_INPLACE "Build the pymodule in the project roughpy directory" OFF)
@@ -85,6 +87,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # I don't think we have any pure C anywhere, but we set the standard anyway
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# If ROUGHPY_USE_CCACHE is set, setup the project to use ccache to speed up
+# builds
+include(cmake/setup_ccache.cmake)
 
 
 # TODO: Handle these more delicately.
