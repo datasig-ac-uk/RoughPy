@@ -28,24 +28,14 @@
 #ifndef ROUGHPY_PLATFORM_FILESYSTEM_H_
 #define ROUGHPY_PLATFORM_FILESYSTEM_H_
 
-#include "available_libraries.h"
 #include "serialization.h"
 
-
-#if defined(RPY_HAS_STD_FILESYSTEM) && RPY_HAS_STD_FILESYSTEM
 #  include <filesystem>
-#else
-#  include <boost/filesystem.hpp>
-#endif
 
 namespace rpy {
 namespace fs {
 
-#if defined(RPY_HAS_STD_FILESYSTEM) && RPY_HAS_STD_FILESYSTEM
 using namespace std::filesystem;
-#else
-using namespace boost::filesystem;
-#endif
 
 
 template <typename Archive>
