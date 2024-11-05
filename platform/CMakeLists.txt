@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
 
-project(Roughpy_Platform VERSION 0.0.1)
-
 
 setup_roughpy_component(Platform)
 
