@@ -1,16 +1,9 @@
-cmake_minimum_required(VERSION 3.21)
-
-project(RoughPy_Intervals
-        VERSION 0.0.1
-        LANGUAGES CXX)
 
 
-include(GNUInstallDirs)
-include(GenerateExportHeader)
+setup_roughpy_component(Intervals)
 
-
-add_roughpy_component(Intervals
-        SOURCES
+# TODO: I don't think this really needs to be a shared library
+add_library(RoughPy_Intervals SHARED
         src/interval.cpp
         src/dyadic.cpp
         src/dyadic_interval.cpp
@@ -21,25 +14,28 @@ add_roughpy_component(Intervals
         src/dyadic_searcher.cpp
         src/dyadic_searcher.h
         src/partition.cpp
-        PUBLIC_HEADERS
         include/roughpy/intervals/interval.h
         include/roughpy/intervals/dyadic.h
         include/roughpy/intervals/dyadic_interval.h
         include/roughpy/intervals/real_interval.h
         include/roughpy/intervals/partition.h
         include/roughpy/intervals/segmentation.h
-        NEEDS
-        RoughPy::Core
-        RoughPy::Platform
-        )
+)
+add_library(RoughPy::Intervals ALIAS RoughPy_Intervals)
+
+target_link_libraries(RoughPy_Intervals PUBLIC RoughPy::Platform)
 
 
-add_roughpy_test(Intervals
-        SRC
-        src/test_dyadic.cpp
-        src/test_dyadic_intervals.cpp
-        src/test_real_interval.cpp
-        src/test_partition.cpp
-        NEEDS
-        RoughPy::Intervals
-        )
+if (ROUGHPY_BUILD_TESTS)
+
+    add_executable(test_intervals
+            src/test_dyadic.cpp
+            src/test_dyadic_intervals.cpp
+            src/test_real_interval.cpp
+            src/test_partition.cpp
+    )
+    target_link_libraries(test_intervals PRIVATE RoughPy::Intervals GTest::gtest)
+
+    setup_roughpy_tests(test_intervals)
+
+endif ()
