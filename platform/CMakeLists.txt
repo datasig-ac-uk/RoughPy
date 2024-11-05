@@ -45,34 +45,8 @@ set_target_properties(RoughPy_Platform PROPERTIES ROUGHPY_COMPONENT Platform)
 set_library_version_properties(RoughPy_Platform)
 
 
-add_subdirectory(src/devices)
+add_subdirectory(src)
 
-
-#add_roughpy_component(Platform
-#    SOURCES
-
-#    PUBLIC_HEADERS
-
-#    DEPENDENCIES
-#        PUBLIC
-#            Boost::boost
-#            Boost::system
-#            Boost::url
-#            Boost::filesystem IF NOT RPY_HAS_STD_FILESYSTEM
-#            cereal::cereal
-#        Eigen3::Eigen
-#        Libalgebra_lite::Libalgebra_lite
-#        GMP::GMP
-#        PRIVATE
-#        OpenCL::OpenCL
-#    CONFIGURE
-#        FILE
-#            IN available_libraries.h.in
-#            OUT available_libraries.h
-#            ATONLY
-#    NEEDS
-#        RoughPy::Core
-#    )
 
 # Cereal is our current serialization library, and it's dreadful.
 # Parsing these headers and instantiating all the templates therein is
