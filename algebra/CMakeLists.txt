@@ -51,7 +51,7 @@ add_library(RoughPy_Algebra SHARED
         include/roughpy/algebra/shuffle_tensor.h
         include/roughpy/algebra/tensor_basis.h
 )
-add_library(RoughPy::Algebra ALIAS RoughPy::Algebra)
+add_library(RoughPy::Algebra ALIAS RoughPy_Algebra)
 
 
 target_include_directories(RoughPy_Platform PUBLIC
@@ -78,11 +78,19 @@ set_library_version_properties(RoughPy_Algebra)
 
 add_subdirectory(src/libalgebra_lite_internal)
 
-add_roughpy_test(algebra
-        SRC
-        src/ContextFixture.cpp
-        src/ContextFixture.h
-        src/test_lie.cpp
-        NEEDS
-        RoughPy::Algebra
+
+if (ROUGHPY_BUILD_TESTS)
+
+        add_executable(test_algebra
+                src/ContextFixture.cpp
+                src/ContextFixture.h
+                src/test_lie.cpp
         )
+
+        target_link_libraries(test_algebra PRIVATE RoughPy::Algebra GTest::gtest)
+
+        setup_roughpy_tests(test_algebra)
+
+endif()
+
+
