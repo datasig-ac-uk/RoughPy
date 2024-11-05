@@ -32,6 +32,7 @@
 #include "scalars.h"
 
 #include <roughpy/scalars/scalar_types.h>
+#include <roughpy/scalars/scalar.h>
 
 
 #include <unordered_map>
