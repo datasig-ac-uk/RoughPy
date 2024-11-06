@@ -5,7 +5,7 @@
 #ifndef ROUGHPY_BUFFER_INFO_H
 #define ROUGHPY_BUFFER_INFO_H
 
-#include "python.h"
+#include "roughpy_python.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>

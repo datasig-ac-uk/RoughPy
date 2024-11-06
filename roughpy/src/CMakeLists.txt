@@ -4,7 +4,7 @@
 target_sources(RoughPy_PyModule PRIVATE
         roughpy_module.cpp
         roughpy_module.h
-        python.h
+        roughpy_python.h
 )
 
 add_subdirectory(algebra)

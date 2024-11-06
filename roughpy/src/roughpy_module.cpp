@@ -31,7 +31,7 @@
 //
 // Python header first
 
-#include "python.h"
+#include "roughpy_python.h"
 
 #include "roughpy_module.h"
 
