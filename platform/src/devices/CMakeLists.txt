@@ -23,7 +23,7 @@ target_sources(RoughPy_Platform PRIVATE
         memory_view.cpp
         queue.cpp
         queue_interface.cpp
-        INTERFACE
+        PUBLIC
         ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/buffer.h
         ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/core.h
         ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/device_handle.h
