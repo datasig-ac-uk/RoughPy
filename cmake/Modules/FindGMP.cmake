@@ -20,7 +20,7 @@ if (GMP_PKG_FOUND)
     set(GMP_LINK_OPTIONS ${PC_GMP_LDFLAGS} ${PC_GMP_LDFLAGS_OTHER})
 else()
 
-    set(_gmp_lib_names gmp libgmp mpir libmpir)
+    set(_gmp_lib_names gmp libgmp gmp-10 libgmp-10 mpir libmpir)
 
     find_library(GMP_LIBRARY_RELEASE
             NAMES ${_gmp_lib_names}
@@ -77,35 +77,35 @@ if (GMP_FOUND AND NOT TARGET GMP::GMP)
     set_target_properties(GMP::GMP PROPERTIES
             IMPORTED_LOCATION "${GMP_LIBRARY}"
             INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIR}"
-            IMPORTED_IMPLIB "${GMP_LIBRARY_DIRS}"
+            IMPORTED_IMPLIB "${GMP_LIBRARY}"
     )
-    if (GMP_COMPILE_OPTIONS)
-        set_target_properties(GMP::GMP PROPERTIES
-                INTERFACE_COMPILE_OPTIONS "${GMP_COMPILE_OPTIONS}"
-        )
-    endif()
-    if(GMP_LINK_OPTIONS)
-        set_target_properties(GMP::GMP PROPERTIES
-                INTERFACE_LINK_OPTIONS "${GMP_LINK_OPTIONS}"
-        )
-    endif()
-
-    if (GMP_LIBRARY_RELEASE)
-        set_property(TARGET GMP::GMP APPEND PROPERTY
-            IMPORTED_CONFIGURATIONS RELEASE
-        )
-        set_target_properties(GMP::GMP PROPERTIES
-                IMPORTED_LOCATION_RELEASE "${GMP_LIBRARY_RELEASE}"
-        )
-    endif()
-    if (GMP_LIBRARY_DEBUG)
-        set_property(TARGET GMP::GMP APPEND PROPERTY
-                IMPORTED_CONFIGURATIONS DEBUG
-        )
-        set_target_properties(GMP::GMP PROPERTIES
-                IMPORTED_LOCATION_DEBUG "${GMP_LIBRARY_DEBUG}"
-        )
-    endif()
+#    if (GMP_COMPILE_OPTIONS)
+#        set_target_properties(GMP::GMP PROPERTIES
+#                INTERFACE_COMPILE_OPTIONS "${GMP_COMPILE_OPTIONS}"
+#        )
+#    endif()
+#    if(GMP_LINK_OPTIONS)
+#        set_target_properties(GMP::GMP PROPERTIES
+#                INTERFACE_LINK_OPTIONS "${GMP_LINK_OPTIONS}"
+#        )
+#    endif()
+#
+#    if (GMP_LIBRARY_RELEASE)
+#        set_property(TARGET GMP::GMP APPEND PROPERTY
+#            IMPORTED_CONFIGURATIONS RELEASE
+#        )
+#        set_target_properties(GMP::GMP PROPERTIES
+#                IMPORTED_LOCATION_RELEASE "${GMP_LIBRARY_RELEASE}"
+#        )
+#    endif()
+#    if (GMP_LIBRARY_DEBUG)
+#        set_property(TARGET GMP::GMP APPEND PROPERTY
+#                IMPORTED_CONFIGURATIONS DEBUG
+#        )
+#        set_target_properties(GMP::GMP PROPERTIES
+#                IMPORTED_LOCATION_DEBUG "${GMP_LIBRARY_DEBUG}"
+#        )
+#    endif()
 
 
 endif()
