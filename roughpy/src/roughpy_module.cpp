@@ -30,16 +30,14 @@
 // Created by user on 11/03/23.
 //
 // Python header first
-#define PY_SSIZE_T_CLEAN
 
-#include <Python.h>
+#include "python.h"
 
 #include "roughpy_module.h"
 
 #include "algebra/algebra.h"
 #include "args/convert_timestamp.h"
 #include "intervals/intervals.h"
-#include "recombine.h"
 #include "scalars/scalars.h"
 #include "streams/streams.h"
 

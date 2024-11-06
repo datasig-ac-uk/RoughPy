@@ -5,8 +5,7 @@
 #ifndef ROUGHPY_BUFFER_INFO_H
 #define ROUGHPY_BUFFER_INFO_H
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
+#include "python.h"
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
