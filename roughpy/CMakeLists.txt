@@ -66,6 +66,7 @@ if(NOT DEFINED pybind11_ROOT)
             RESULT_VARIABLE _python_pybind11_dir_found
             OUTPUT_VARIABLE _python_pybind11_dir
             OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
     )
 
     if (_python_pybind11_dir_found EQUAL 0)
@@ -93,9 +94,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(pybind11)
 
 
-
-
-
 ###############################################################################
 #                                   pymodule                                  #
 ###############################################################################
@@ -114,9 +112,7 @@ target_compile_definitions(RoughPy_PyModule PRIVATE
         BOOST_UUID_FORCE_AUTO_LINK=1
 )
 
-if (ROUGHPY_BUILD_TESTS)
 
-endif ()
 
 set_target_properties(RoughPy_PyModule PROPERTIES ROUGHPY_COMPONENT PyModule)
 
@@ -165,6 +161,33 @@ if (ROUGHPY_LINK_NUMPY)
     target_compile_definitions(RoughPy_PyModule PRIVATE
             ROUGHPY_WITH_NUMPY)
 endif ()
+
+
+
+if (WIN32)
+    # Windows #pragma comment(lib, <libname>) links are such a pain.
+    # Python includes such link statements, which makes it basically impossible
+    # to link to it in a meaningful manner. To make things worse, Pybind11
+    # disables the _DEBUG macro so it links to the release version
+    # rather than the debug version when not using the minimal API.
+    # This is a huge problem if one actually wants to link against
+    # the debug version of the library. The fix is to just disable
+    # all of them and let the build system do its job.
+
+    foreach(_lib IN LISTS Python_LIBRARIES)
+        if ("${_lib}" MATCHES "debug|optimized")
+            continue()
+        endif()
+        cmake_path(GET _lib FILENAME _lib_name)
+        message(DEBUG "Disable autolinking to ${_lib_name}")
+        list(APPEND _disable_autolinking "/nodefaultlib:${_lib_name}")
+    endforeach()
+
+    # We don't use it, but just in case we do want to use the limited ABI
+    list(APPEND _disable_autolinking "/nodefaultlib:python3.lib")
+
+    target_link_options(RoughPy_PyModule PRIVATE ${_disable_autolinking})
+endif()
 
 
 
