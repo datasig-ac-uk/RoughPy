@@ -225,7 +225,9 @@ if (ROUGHPY_BUILD_TESTS)
     # If we already have pytest, we probably want to test the python alongside the
     # C++ libraries
     execute_process(COMMAND ${Python_EXECUTABLE} -m pytest --version
-        RESULT_VARIABLE _has_pytest)
+        RESULT_VARIABLE _has_pytest
+            OUTPUT_QUIET ERROR_QUIET
+        )
 
     if (_has_pytest)
         # There are python tests too
