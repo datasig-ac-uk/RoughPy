@@ -36,7 +36,7 @@ function(setup_roughpy_cpp_tests _test_name)
         # tree into the directory alongside the test executable. There might be a better way of doing
 
         add_custom_command(TARGET ${_test_name} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:${_test_name}>
+                COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_test_name}> $<TARGET_RUNTIME_DLLS:${_test_name}>
                 COMMAND_EXPAND_LISTS
         )
 
