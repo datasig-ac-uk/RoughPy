@@ -205,6 +205,11 @@ dimn_t StreamSchema::label_to_stream_dim(const string& label) const
     auto result = width_to_iterator(channel);
     auto variant_begin
             = label.begin() + static_cast<idimn_t>(channel->first.size());
+
+    if (variant_begin == label.end()) {
+        return result;
+    }
+
     /*
      * *variant_begin can be either '\0', so the channel is the id
      * we're looking for, or ':', in which case we need to look for
