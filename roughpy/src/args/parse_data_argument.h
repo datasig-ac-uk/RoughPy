@@ -11,6 +11,7 @@
 #include <roughpy/core/types.h>
 #include <roughpy/platform/devices/core.h>
 #include <roughpy/scalars/scalars_fwd.h>
+#include <roughpy/algebra/context.h>
 
 #include <boost/container/small_vector.hpp>
 

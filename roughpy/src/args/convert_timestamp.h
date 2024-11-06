@@ -33,8 +33,6 @@
 #ifndef ROUGHPY_ROUGHPY_SRC_ARGS_CONVERT_TIMESTAMP_H
 #define ROUGHPY_ROUGHPY_SRC_ARGS_CONVERT_TIMESTAMP_H
 
-// #define PY_SSIZE_T_CLEAN
-// #include <Python.h>
 
 #include "roughpy_module.h"
 

@@ -62,15 +62,16 @@ bool StreamSchema::compare_labels(
     if (item_label.empty()) { return false; }
 
     auto lit = item_label.begin();
+    const auto lend = item_label.end();
     auto rit = ref_label.begin();
 
-    for (; *lit != '\0'; ++lit, ++rit) {
+    for (; lit != lend || *lit != '\0'; ++lit, ++rit) {
         if (*rit != *lit) { return false; }
     }
 
     // Either item_label == ref_label or, ref_label has
     // item_label as a prefix followed by ':'
-    return *rit == '\0' || *rit == ':';
+    return rit == ref_label.end() || *rit == '\0' || *rit == ':';
 }
 
 dimn_t StreamSchema::channel_it_to_width(const_iterator channel_it) const
@@ -204,6 +205,11 @@ dimn_t StreamSchema::label_to_stream_dim(const string& label) const
     auto result = width_to_iterator(channel);
     auto variant_begin
             = label.begin() + static_cast<idimn_t>(channel->first.size());
+
+    if (variant_begin == label.end()) {
+        return result;
+    }
+
     /*
      * *variant_begin can be either '\0', so the channel is the id
      * we're looking for, or ':', in which case we need to look for
