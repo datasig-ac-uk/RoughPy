@@ -38,7 +38,7 @@ function(setup_roughpy_cpp_tests _test_name)
         # This is a major pain. To get around this, have to copy the runtime files from the build
         # tree into the directory alongside the test executable. There might be a better way of doing
 
-        add_custom_command(TARGET RoughPy_PyModule POST_BUILD
+        add_custom_command(TARGET ${_test_name} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:${_test_name}>
                 COMMAND_EXPAND_LISTS
         )
