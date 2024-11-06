@@ -2,43 +2,33 @@
   "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 25,
+    "minor": 28,
     "patch": 0
   },
   "configurePresets": [
     {
-      "name": "base",
+      "name": "default",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
-      }
-    },
-    {
-      "name": "tests-base",
-      "displayName": "Build Tests",
-      "hidden": true,
-      "inherits": "base",
-      "cacheVariables": {
-        "ROUGHPY_BUILD_TESTS": {
-          "type": "BOOL",
-          "value": true
-        },
-        "ROUGHPY_BUILD_PYMODULE_INPLACE": {
-          "type": "BOOL",
-          "value": true
-        }
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "YES"
       }
     },
     {
       "name": "release",
-      "displayName": "Build release",
-      "inherits": "base",
+      "inherits": "default",
+      "description": "Release build with optimizations",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": {
-          "type": "STRING",
-          "value": "Release"
-        }
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": "default",
+      "description": "Debug build with debug information",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     }
   ]
