@@ -11,7 +11,7 @@ endif ()
 
 include(GoogleTest)
 
-
+set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST CACHE INTERNAL "")
 
 
 
