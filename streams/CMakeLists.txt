@@ -49,7 +49,12 @@ target_link_libraries(RoughPy_Streams PUBLIC
 
 set_target_properties(RoughPy_Streams PROPERTIES ROUGHPY_COMPONENT Streams)
 
+# TODO: This should be removed, it's not sensible
+target_compile_definitions(RoughPy_Streams PRIVATE "RPY_COMPILING_STREAMS")
+
 set_library_version_properties(RoughPy_Streams)
+
+
 
 generate_export_header(RoughPy_Streams)
 

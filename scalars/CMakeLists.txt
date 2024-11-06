@@ -90,6 +90,9 @@ target_link_libraries(RoughPy_Scalars PUBLIC
 
 set_target_properties(RoughPy_Scalars PROPERTIES ROUGHPY_COMPONENT Scalars)
 
+# TODO: This should be removed, it's not sensible
+target_compile_definitions(RoughPy_Scalars PRIVATE "RPY_COMPILING_SCALARS")
+
 set_library_version_properties(RoughPy_Scalars)
 
 generate_export_header(RoughPy_Scalars)

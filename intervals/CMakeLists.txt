@@ -36,6 +36,9 @@ set_target_properties(RoughPy_Intervals PROPERTIES ROUGHPY_COMPONENT Intervals)
 
 target_link_libraries(RoughPy_Intervals PUBLIC RoughPy::Platform)
 
+# TODO: This should be removed, it's not sensible
+target_compile_definitions(RoughPy_Intervals PRIVATE "RPY_COMPILING_INTERVALS")
+
 set_library_version_properties(RoughPy_Intervals)
 
 generate_export_header(RoughPy_Intervals)

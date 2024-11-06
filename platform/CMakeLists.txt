@@ -49,6 +49,11 @@ endif()
 
 set_library_version_properties(RoughPy_Platform)
 
+
+# TODO: This should be removed, it's not sensible
+target_compile_definitions(RoughPy_Platform PRIVATE "RPY_COMPILING_PLATFORM")
+
+
 generate_export_header(RoughPy_Platform)
 
 add_subdirectory(src)
