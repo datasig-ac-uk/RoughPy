@@ -113,6 +113,7 @@ include(FetchContent)
 
 # TODO: Move this down once the helpers is cleaned out
 if (ROUGHPY_BUILD_TESTS)
+    enable_testing()
     add_subdirectory(testing)
 endif()
 

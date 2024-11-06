@@ -1,6 +1,3 @@
-
-enable_testing()
-
 # find_package imports things locally to the current CMakeLists.txt, so we need the
 # GLOBAL flag to make it available to the rest of the project.
 find_package(GTest CONFIG REQUIRED GLOBAL)
