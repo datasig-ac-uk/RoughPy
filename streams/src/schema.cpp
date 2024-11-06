@@ -62,15 +62,16 @@ bool StreamSchema::compare_labels(
     if (item_label.empty()) { return false; }
 
     auto lit = item_label.begin();
+    const auto lend = item_label.end();
     auto rit = ref_label.begin();
 
-    for (; *lit != '\0'; ++lit, ++rit) {
+    for (; lit != lend || *lit != '\0'; ++lit, ++rit) {
         if (*rit != *lit) { return false; }
     }
 
     // Either item_label == ref_label or, ref_label has
     // item_label as a prefix followed by ':'
-    return *rit == '\0' || *rit == ':';
+    return rit == ref_label.end() || *rit == '\0' || *rit == ':';
 }
 
 dimn_t StreamSchema::channel_it_to_width(const_iterator channel_it) const
