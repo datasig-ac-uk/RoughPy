@@ -245,31 +245,32 @@ if (ROUGHPY_BUILD_TESTS)
     endif ()
 
 
-    # If we already have pytest, we probably want to test the python alongside the
-    # C++ libraries
-    execute_process(COMMAND ${Python_EXECUTABLE} -m pytest --version
-        RESULT_VARIABLE _has_pytest
-            OUTPUT_QUIET ERROR_QUIET
-        )
-
-    if ("${_has_pytest}" EQUAL "0")
-        # There are python tests too
-        set(python_test_dir "${RoughPy_SOURCE_DIR}/tests")
-
-        add_test(
-                NAME PyTest
-                COMMAND ${Python_EXECUTABLE} -m pytest $<SHELL_PATH:${python_test_dir}>
-        )
-
-        set_property(TEST PyTest APPEND PROPERTY
-                ENVIRONMENT_MODIFICATION
-                    PYTHONPATH=path_list_append:"$<SHELL_PATH:${RoughPy_SOURCE_DIR}>"
-        )
-
-    endif()
-
-
-
+    # TODO: This was a nice idea, but it doesn't work right. Come back to this later.
+#    # If we already have pytest, we probably want to test the python alongside the
+#    # C++ libraries
+#    execute_process(COMMAND ${Python_EXECUTABLE} -m pytest --version
+#        RESULT_VARIABLE _has_pytest
+#            OUTPUT_QUIET ERROR_QUIET
+#        )
+#
+#    if ("${_has_pytest}" EQUAL "0")
+#        # There are python tests too
+#        set(python_test_dir "${RoughPy_SOURCE_DIR}/tests")
+#
+#        add_test(
+#                NAME PyTest
+#                COMMAND ${Python_EXECUTABLE} -m pytest $<SHELL_PATH:${python_test_dir}>
+#        )
+#
+#        set_property(TEST PyTest APPEND PROPERTY
+#                ENVIRONMENT_MODIFICATION
+#                    PYTHONPATH=path_list_append:"$<SHELL_PATH:${RoughPy_SOURCE_DIR}>"
+#        )
+#
+#    endif()
+#
+#
+#
 
 
 
