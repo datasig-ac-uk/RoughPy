@@ -110,7 +110,7 @@ if (ROUGHPY_BUILD_TESTS)
     target_link_libraries(test_scalars PRIVATE RoughPy::Scalars GTest::gtest)
 
 
-    setup_roughpy_tests(test_scalars)
+    setup_roughpy_cpp_tests(test_scalars)
 
 endif ()
 

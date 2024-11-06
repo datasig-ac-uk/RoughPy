@@ -9,6 +9,6 @@ if (ROUGHPY_BUILD_TESTS)
     )
     target_link_libraries(test_intervals PRIVATE RoughPy::Intervals GTest::gtest)
 
-    setup_roughpy_tests(test_intervals)
+    setup_roughpy_cpp_tests(test_intervals)
 
 endif ()

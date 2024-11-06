@@ -14,7 +14,7 @@ if (ROUGHPY_BUILD_TESTS)
 
     target_link_libraries(test_algebra PRIVATE RoughPy::Algebra GTest::gtest)
 
-    setup_roughpy_tests(test_algebra)
+    setup_roughpy_cpp_tests(test_algebra)
 
 endif()
 

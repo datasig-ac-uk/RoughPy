@@ -16,6 +16,6 @@ if (ROUGHPY_BUILD_TESTS)
 
     target_link_libraries(test_streams PRIVATE RoughPy::Streams GTest::gtest)
 
-    setup_roughpy_tests(test_streams)
+    setup_roughpy_cpp_tests(test_streams)
 
 endif()
