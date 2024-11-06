@@ -152,7 +152,10 @@ parse_byted_type(string_view id_sub, devices::TypeCode code) noexcept
 {
     dimn_t bits = 0;
 
-    auto result = std::from_chars(&*id_sub.begin(), &*id_sub.end(), bits);
+    auto result = std::from_chars(
+        id_sub.data(),
+        id_sub.data() + id_sub.size(),
+        bits);
     if (result.ec != std::errc{}) { return {}; }
 
     const auto bytes = static_cast<uint8_t>(bits / CHAR_BIT);
