@@ -21,9 +21,27 @@ elseif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU|Clang")
 endif ()
 
 # Sanitizers are only supported if the RoughPy is the top-level build
-if (NOT PROJECT_IS_TOP_LEVEL)
+if (NOT PROJECT_IS_TOP_LEVEL OR NOT ROUGHPY_BUILD_TESTS)
     return()
 endif ()
+
+IF (CMAKE_GENERATOR MATCHES "Makefiles|Ninja")
+option(ROUGHPY_ENABLE_IWYU "Enable include-what-you-use" ON)
+
+if (ROUGHPY_ENABLE_IWYU)
+
+    find_program(IWYU_EXECUTABLE include-what-you-use REQUIRED)
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
+        ${IWYU_EXECUTABLE}
+#        -Xiwyu --mapping_file=${CMAKE_SOURCE_DIR}/tools/IWYU/mapping.imp
+        -Xiwyu --error
+        CACHE STRING "Include what you use command"
+    )
+
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ON)
+endif()
+endif()
+
 
 # Essentially from Professional CMake 19th Edition pp 713-715
 option(ROUGHPY_ROUGHPY_ENABLE_ASAN "Enable Address sanitizer" OFF)
@@ -71,4 +89,42 @@ elseif (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
             $<$<BOOL:${ROUGHPY_ENABLE_UBSAN}>:-fsanitize=undefined>
     )
 endif ()
+
+
+
+# Professional CMake 19th ed. pp. 465-469
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set(CMAKE_CXX_FLAGS_COVERAGE "-g -O0 --coverage")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        string(APPEND CMAKE_CXX_FLAGS_COVERAGE " -fprofile-abs-path")
+    endif()
+
+    set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
+    set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
+    set(CMAKE_MODULE_LINKER_FLAGS_COVERAGE "--coverage")
+
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+        execute_process(
+                COMMAND xcrun --find gcov
+                OUTPUT_VARIABLE GCOV_EXECUTABLE
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        find_program(LLVM_COV_EXECUTABLE llvm-cov REQUIRED)
+        file(CREATE_LINK ${LLVM_COV_EXECUTABLE} ${CMAKE_BINARY_DIR}/gcov SYMBOLIC)
+        set(GCOV_EXECUTABLE "${LLVM_COV_EXECUTABLE} gcov")
+    else()
+        find_program(GCOV_EXECUTABLE gcov REQUIRED)
+    endif()
+
+    configure_file(${CMAKE_CURRENT_LIST_DIR}/gcovr.cfg.in ${CMAKE_BINARY_DIR}/gcovr.cfg @ONLY)
+
+    add_custom_target(process_coverage
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Running gcovr to process coverage results"
+            COMMAND ${GCOVR_EXECUTABLE} --config gcovr.cfg .
+    )
+
+endif()
 
