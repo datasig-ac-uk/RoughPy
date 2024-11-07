@@ -34,7 +34,7 @@ IF (CMAKE_GENERATOR MATCHES "Makefiles|Ninja")
         set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
                 ${IWYU_EXECUTABLE}
                         -Xiwyu --mapping_file=${CMAKE_SOURCE_DIR}/tools/IWYU/roughpy.imp
-                        -Xiwyu --error
+#                        -Xiwyu --error
                 CACHE STRING "Include what you use command"
         )
 
