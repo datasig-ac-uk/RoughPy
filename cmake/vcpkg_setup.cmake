@@ -9,7 +9,7 @@ endif()
 
 
 function(_setup_vcpkg _path)
-    find_package(GIT REQUIRED)
+    find_package(Git REQUIRED)
     message(STATUS "Cloning vcpkg into \"${_real_path}\"")
     execute_process(COMMAND
             ${GIT_EXECUTABLE} clone
@@ -31,29 +31,33 @@ function(_find_or_install_vcpkg _toolchain_location_var)
 
     # First check if VCPKG_ROOT is set as a CMake variable or in the environment
     if (DEFINED VCPKG_ROOT)
-        cmake_path(ABSOLUTE_PATH VCPKG_ROOT NORMALIZE _vcpkg_root)
+        file(REAL_PATH "${VCPKG_ROOT}" _vcpkg_root EXPAND_TILDE)
+        message(DEBUG "vcpkg root set in ${VCPKG_ROOT}")
     elseif(DEFINED ENV{VCPKG_ROOT})
-        cmake_path(ABSOLUTE_PATH ENV{VCPKG_ROOT} NORMALIZE _vcpkg_root)
+        message(DEBUG "vcpkg root set in $ENV{VCPKG_ROOT}")
+        file(REAL_PATH "$ENV{VCPKG_ROOT}" _vcpkg_root EXPAND_TILDE)
     else()
+        message(DEBUG "vcpkg root not set, using ${_vcpkg_in_source_root}")
         set(_vcpkg_root ${_vcpkg_in_source_root})
     endif()
     message(DEBUG "Looking for vcpkg in ${_vcpkg_root}")
 
-    cmake_path(APPEND _vcpkg_root "scripts" "buildsystems" "vcpkg.cmake" _toolchain_file)
+    cmake_path(APPEND _vcpkg_root "scripts" "buildsystems" "vcpkg.cmake" OUTPUT_VARIABLE _toolchain_file)
 
     if (NOT EXISTS ${_toolchain_file})
         if (ROUGHPY_NO_INSTALL_VCPKG)
             message(FATAL_ERROR "vcpkg is requested but not found, and automatic installation is disabled")
         else()
-            cmake_path(NATIVE_PATH _vcpkg_in_source_root _vcpkg_install_dir)
-            _setup_vcpkg(${_vcpkg_install_dir})
+            message("${_vcpkg_in_source_root}")
+            file(TO_NATIVE_PATH "${_vcpkg_in_source_root}" _vcpkg_install_dir)
+            _setup_vcpkg("${_vcpkg_install_dir}")
 
             # If successful, reset the toolchain file to point to the correct file
-            cmake_path(APPEND _vcpkg_in_source_root "scripts" "buildsystems" "vcpkg.cmake" _toolchain_file)
+            cmake_path(APPEND _vcpkg_in_source_root "scripts" "buildsystems" "vcpkg.cmake" OUTPUT_VARIABLE _toolchain_file)
         endif()
     endif()
 
-    message(DEBUG "Using vcpkg toolchain file ${_toolchain_file}")
+    message(DEBUG "Using vcpkg toolchain file: ${_toolchain_file}")
     set(${_toolchain_location_var} ${_toolchain_file} PARENT_SCOPE)
 endfunction()
 
