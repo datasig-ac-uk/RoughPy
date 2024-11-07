@@ -32,16 +32,13 @@ option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 
 
-
-
-
-
-
+# RoughPy usually requires vcpkg to ensure all the dependencies are installed
+# and available for the build system. This file sets everything up including,
+# if allowed, downloading vcpkg into tools/vcpkg
 include(cmake/vcpkg_setup.cmake)
 
-
-
-
+# VCPKG prints a bunch of redundant usage information when installing in manifest mode.
+set(VCPKG_INSTALL_OPTIONS "--no-print-usage")
 
 # This sets the the manifest features to include GoogleTest if we're building tests
 # This means we don't have to interact with vcpkg at all even when we need to build
