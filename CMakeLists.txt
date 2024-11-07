@@ -23,9 +23,7 @@ option(ROUGHPY_USE_CCACHE "Use compiler cache to speed up repeated builds" ON)
 option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ${ROUGHPY_BUILD_PYLIB})
 
-# Developer options
-option(ROUGHPY_ENABLE_ALL_WARNINGS "Enable -Wall or equivalent" OFF)
-option(ROUGHPY_ENABLE_EXTRA_WARNINGS "Enable -Wextra or equivalent" OFF)
+# For developer options, see cmake/developer_options_setup.cmake
 
 # Currently unused
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
