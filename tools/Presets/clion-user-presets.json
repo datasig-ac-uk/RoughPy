@@ -1,0 +1,35 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 28,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "no-vcpkg-usage",
+      "hidden": true,
+      "cacheVariables": {
+        "VCPKG_INSTALL_OPTIONS": "--no-print-usage"
+      }
+    },
+    {
+      "name": "Debug",
+      "inherits": ["dev-debug", "no-vcpkg-usage"],
+      "description": "Development Debug Configuration",
+      "toolchainFile": "~/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "Python_EXECUTABLE": "${sourceDir}/venv/bin/python"
+      }
+    },
+    {
+      "name": "Release",
+      "inherits": ["dev-release", "no-vcpkg-usage"],
+      "description": "Development Release Configuration",
+      "toolchainFile": "~/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "Python_EXECUTABLE": "${sourceDir}/venv/bin/python"
+      }
+    }
+  ]
+}
