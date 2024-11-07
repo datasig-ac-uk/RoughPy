@@ -1,0 +1,6 @@
+root = @CMAKE_SOURCE_DIR@
+cobertura = @CMAKE_BINARY_DIR@/coverage/cobertura.xml
+sonarqube = @CMAKE_BINARY_DIR@/coverage/sonarqube.xml
+html-details = @CMAKE_BINARY_DIR@/coverage/html
+gcov-executable = @GCOV_EXECUTABLE@
+gcov-parallel = yes
