@@ -3,41 +3,44 @@ cmake_minimum_required(VERSION 3.28)
 include(CMakeDependentOption)
 
 
-option(ROUGHPY_NO_VCPKG "Do not force install VCPKG if is not already set" OFF)
+option(ROUGHPY_NO_VCPKG "Do not use VCPKG if is not already set" OFF)
+cmake_dependent_option(
+        ROUGHPY_NO_INSTALL_VCPKG
+        "Do not install VCPKG if it is not found"
+        OFF
+        "NOT ROUGHPY_NO_VCPKG"
+        OFF
+)
+
+# Control the parts of NumPy that are built
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" OFF)
 option(ROUGHPY_BUILD_DOCS "Build the documentation" OFF)
 
+# Modify the build process
 option(ROUGHPY_USE_CCACHE "Use compiler cache to speed up repeated builds" ON)
 
+# Control the building and properties of the Python module
 option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ${ROUGHPY_BUILD_PYLIB})
 
+# Developer options
+option(ROUGHPY_ENABLE_ALL_WARNINGS "Enable -Wall or equivalent" OFF)
+option(ROUGHPY_ENABLE_EXTRA_WARNINGS "Enable -Wextra or equivalent" OFF)
+
+# Currently unused
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 
 
 
 
-if (NOT CMAKE_TOOLCHAIN_FILE AND NOT ROUGHPY_NO_VCPKG)
-    cmake_path(APPEND CMAKE_CURRENT_LIST_DIR "tools" "vcpkg"
-            OUTPUT_VARIABLE _vcpkg_dir)
-
-    if (NOT EXISTS _vcpkg_dir)
-        find_package(Git REQUIRED)
-        execute_process(COMMAND
-                "${GIT_EXECUTABLE}" "clone" "https://github.com/Microsoft/vcpkg.git" "${_vcpkg_dir}"
-        )
-    endif()
-
-    cmake_path(APPEND _vcpkg_dir "scripts" "buildsystems" "vcpkg.cmake" OUTPUT_VARIABLE _vcpkg_file)
-    message(STATUS "installed VCPKG in ${_vcpkg_dir}")
-    set(CMAKE_TOOLCHAIN_FILE "${_vcpkg_file}" CACHE INTERNAL "")
-endif()
-message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 
 
-# VCPKG prints a bunch of redundant usage information when installing in manifest mode.
-set(VCPKG_INSTALL_OPTIONS "--no-print-usage")
+
+include(cmake/vcpkg_setup.cmake)
+
+
+
 
 
 # This sets the the manifest features to include GoogleTest if we're building tests
@@ -88,9 +91,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-
-
-
 # TODO: Handle these more delicately.
 if (MSVC)
     ## Disable non-compliant behaviour on windows... Comon MS>
@@ -136,7 +136,11 @@ include(cmake/roughpy_helpers.cmake)
 # of the variables set and their purpose.
 include(cmake/component_setup.cmake)
 
-
+# When developing RoughPy, it's a good idea to build with as much diagnostic information
+# as possible. To maintain platform independence, RoughPy has two options for including
+# the necessary flags for compiler warnings. These options are turned into compiler
+# options in this file.
+include(cmake/developer_options_setup.cmake)
 
 
 
