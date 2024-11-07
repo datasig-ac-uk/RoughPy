@@ -16,9 +16,31 @@
       }
     },
     {
+      "name": "with-tests",
+      "hidden": true,
+      "cacheVariables": {
+        "ROUGHPY_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "with-pymodule",
+      "hidden": true,
+      "cacheVariables": {
+        "ROUGHPY_BUILD_PYLIB": "ON"
+      }
+    },
+    {
+      "name": "develop",
+      "inherits": ["default", "with-tests", "with-pymodule"],
+      "hidden": true,
+      "cacheVariables": {
+        "ROUGHPY_ENABLE_ALL_WARNINGS": "ON"
+      }
+    },
+    {
       "name": "release",
       "inherits": "default",
-      "description": "Release build with optimizations",
+      "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -26,10 +48,29 @@
     {
       "name": "debug",
       "inherits": "default",
-      "description": "Debug build with debug information",
+      "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
+    },
+    {
+      "name": "dev-debug",
+      "displayName": "Debug Develop",
+      "inherits": [ "debug", "develop" ]
+    },
+    {
+      "name": "dev-release",
+      "displayName": "Release Develop",
+      "inherits": [ "release", "develop" ]
+    },
+    {
+      "name": "ci-testing",
+      "inherits": [
+        "release"
+      ]
     }
+
+
+
   ]
 }
