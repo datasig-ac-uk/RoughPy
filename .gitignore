@@ -124,6 +124,7 @@ dkms.conf
 
 # CMake
 cmake-build-*/
+build/
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
@@ -371,3 +372,4 @@ examples/*.png
 examples/documentation-testing.py
 
 todo.md
+tools/vcpkg/
