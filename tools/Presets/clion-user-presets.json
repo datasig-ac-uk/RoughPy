@@ -7,26 +7,26 @@
   },
   "configurePresets": [
     {
-      "name": "no-vcpkg-usage",
+      "name": "vcpkg-config",
       "hidden": true,
+      "toolchainFile": "~/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/build/vcpkg_installed",
         "VCPKG_INSTALL_OPTIONS": "--no-print-usage"
       }
     },
     {
       "name": "Debug",
-      "inherits": ["dev-debug", "no-vcpkg-usage"],
+      "inherits": ["dev-debug", "vcpkg-config"],
       "description": "Development Debug Configuration",
-      "toolchainFile": "~/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "Python_EXECUTABLE": "${sourceDir}/venv/bin/python"
       }
     },
     {
       "name": "Release",
-      "inherits": ["dev-release", "no-vcpkg-usage"],
+      "inherits": ["dev-release", "vcpkg-config"],
       "description": "Development Release Configuration",
-      "toolchainFile": "~/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "Python_EXECUTABLE": "${sourceDir}/venv/bin/python"
       }
