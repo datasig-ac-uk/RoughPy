@@ -11,9 +11,10 @@
 
 namespace lal {
 
-extern template class coefficient_field<rpy::devices::rational_poly_scalar>;
+extern template struct coefficient_field<rpy::devices::rational_poly_scalar>;
 
-extern template class coefficient_ring<rpy::devices::rational_poly_scalar, rpy::devices::rational_scalar_type>;
+extern template struct coefficient_ring<rpy::devices::rational_poly_scalar,
+rpy::devices::rational_scalar_type>;
 }
 
 namespace rpy {

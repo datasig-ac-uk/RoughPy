@@ -1,3 +1,0 @@
-[submodule "external/libalgebra_lite"]
-	path = external/libalgebra_lite
-	url = https://github.com/datasig-ac-uk/libalgebra-lite
