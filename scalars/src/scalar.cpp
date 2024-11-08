@@ -461,18 +461,6 @@ devices::TypeInfo Scalar::type_info() const noexcept
     return p_type_and_content_type.get_type_info();
 }
 
-static void print_trivial_bytes(
-    std::ostream& os,
-    const byte* bytes,
-    PackedScalarTypePointer<scalars::dtl::ScalarContentType> p_type
-) {}
-
-static void print_opaque_pointer(
-    std::ostream& os,
-    const void* opaque,
-    PackedScalarTypePointer<scalars::dtl::ScalarContentType> p_type
-) {}
-
 std::ostream& rpy::scalars::operator<<(std::ostream& os, const Scalar& value)
 {
     if (value.fast_is_zero()) {

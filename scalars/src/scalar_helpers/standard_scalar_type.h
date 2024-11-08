@@ -151,7 +151,6 @@ void StandardScalarType<ScalarImpl>::convert_copy(
         (*src_type)->convert_copy(dst, src);
     }
 
-    auto src_info = src.type_info();
     auto dst_info = dst.type_info();
     /*
      * Now one of the following cases must be true:

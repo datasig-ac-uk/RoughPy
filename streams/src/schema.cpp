@@ -289,8 +289,8 @@ typename StreamSchema::lie_key StreamSchema::time_channel_to_lie_key() const
 
 void StreamSchema::finalize(deg_t n_channels)
 {
-
-    if (n_channels > 0 && n_channels < width()) {
+    auto my_width = static_cast<deg_t>(width());
+    if (n_channels > 0 && n_channels < my_width) {
         RPY_THROW(
                 std::runtime_error,
                 "specified number of channels does not match actual number of "
@@ -298,7 +298,7 @@ void StreamSchema::finalize(deg_t n_channels)
         );
     }
 
-    for (auto i = width(); i < n_channels; ++i) { insert_increment(""); }
+    for (auto i = my_width; i < n_channels; ++i) { insert_increment(""); }
 
     m_is_final = true;
 }

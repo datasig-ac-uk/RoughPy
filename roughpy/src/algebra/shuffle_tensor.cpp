@@ -137,12 +137,12 @@ static ShuffleTensor construct_shuffle(py::object data, py::kwargs kwargs)
 
     auto parsed_data = python::parse_data_argument(data, options);
 
-    bool is_sparse = false;
+    // bool is_sparse = false;
     scalars::KeyScalarArray buffer;
     if (parsed_data.size() == 1) {
         auto& leaf = parsed_data.back();
         buffer = std::move(leaf.data);
-        is_sparse = leaf.value_type == python::ValueType::KeyValue;
+        // is_sparse = leaf.value_type == python::ValueType::KeyValue;
     }
 
     if (helper.ctype == nullptr) {

@@ -81,7 +81,7 @@ private:
 
     void handle_scalar(py::handle value, bool key = false);
     void handle_key_scalar(py::handle value);
-    void handle_lie(py::handle value);
+    [[maybe_unused]] void handle_lie(py::handle value);
 
     void handle_scalar_leaf(LeafItem& leaf);
     void handle_key_scalar_leaf(LeafItem& leaf);
@@ -403,7 +403,7 @@ void ConversionManager::check_dl_size(py::capsule dlcap, deg_t depth)
     auto& tensor = managed_tensor->dl_tensor;
 
     depth += tensor.ndim;
-    RPY_CHECK(depth <= m_options.max_nested);
+    RPY_CHECK(static_cast<dimn_t>(depth) <= m_options.max_nested);
 
     auto& leaf = add_leaf(dlcap, LeafType::DLTensor);
 
@@ -425,7 +425,7 @@ void ConversionManager::check_buffer_size(py::buffer buffer, deg_t depth)
     const auto info = buffer.request();
 
     depth += info.ndim;
-    RPY_CHECK(depth <= m_options.max_nested);
+    RPY_CHECK(static_cast<dimn_t>(depth) <= m_options.max_nested);
 
     auto& leaf = add_leaf(buffer, LeafType::Buffer);
 
@@ -448,7 +448,7 @@ void ConversionManager::check_size_and_type_recurse(
 )
 {
     RPY_CHECK(
-            depth < m_options.max_nested,
+            static_cast<dimn_t>(depth) < m_options.max_nested,
             "maximum nested depth reached in this context",
             py::value_error
     );
@@ -671,9 +671,7 @@ void ParsedData::fill_ks_stream(scalars::KeyScalarStream& ks_stream)
             case LeafType::Buffer: {
                 if (leaf.size == 0) { break; }
                 if (leaf.shape.size() == 1) {
-                    auto sz = leaf.size;
                     ks_stream.push_back(leaf.data.borrow());
-
                 } else {
                     dimn_t sz = leaf.shape.back();
                     dimn_t offset1 = 0;
