@@ -42,6 +42,17 @@ IF (CMAKE_GENERATOR MATCHES "Makefiles|Ninja")
 endif ()
 
 
+cmake_dependent_option(ROUGHPY_PROFILE_BUILD
+        "Build with -ftime-trace when using Clang"
+        OFF
+        "CMAKE_CXX_COMPILER_ID MATCHES \"Clang\";NOT APPLE"
+        OFF)
+if (ROUGHPY_PROFILE_BUILD)
+    add_compile_options("-ftime-trace")
+endif()
+
+
+
 # Essentially from Professional CMake 19th Edition pp 713-715
 option(ROUGHPY_ROUGHPY_ENABLE_ASAN "Enable Address sanitizer" OFF)
 
