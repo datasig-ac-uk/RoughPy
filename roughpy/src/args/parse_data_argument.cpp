@@ -425,7 +425,7 @@ void ConversionManager::check_buffer_size(py::buffer buffer, deg_t depth)
     const auto info = buffer.request();
 
     depth += info.ndim;
-    RPY_CHECK(depth <= m_options.max_nested);
+    RPY_CHECK(static_cast<dimn_t>(depth) <= m_options.max_nested);
 
     auto& leaf = add_leaf(buffer, LeafType::Buffer);
 
