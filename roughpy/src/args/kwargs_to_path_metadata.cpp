@@ -183,7 +183,8 @@ python::PyStreamMetaData python::kwargs_to_metadata(pybind11::kwargs& kwargs)
             algebra_config.width = static_cast<deg_t>(md.schema->width());
             RPY_DBG_ASSERT(md.width == 0);
             md.width = *algebra_config.width;
-        } else if (md.schema->width() != *algebra_config.width) {
+        } else if (static_cast<deg_t>(md.schema->width()) != *algebra_config
+        .width) {
             RPY_THROW(
                     py::value_error,
                     "specified width does not match the schema width"
