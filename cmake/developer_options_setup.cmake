@@ -26,7 +26,7 @@ if (NOT PROJECT_IS_TOP_LEVEL OR NOT ROUGHPY_BUILD_TESTS)
 endif ()
 
 IF (CMAKE_GENERATOR MATCHES "Makefiles|Ninja")
-    option(ROUGHPY_ENABLE_IWYU "Enable include-what-you-use" ON)
+    option(ROUGHPY_ENABLE_IWYU "Enable include-what-you-use" OFF)
 
     if (ROUGHPY_ENABLE_IWYU)
 
