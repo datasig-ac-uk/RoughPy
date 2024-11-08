@@ -56,7 +56,6 @@ python::PyStreamMetaData python::kwargs_to_metadata(pybind11::kwargs& kwargs)
             false                                // include_param_as_data
     };
 
-    streams::ChannelType ch_type;
 
     if (kwargs.contains("schema")) {
         auto schema = kwargs_pop(kwargs, "schema");
