@@ -253,7 +253,7 @@ private:
 
     template <typename V, typename F, typename I>
     struct has_iterator_inplace_binop<V, F, I, std::void_t<
-        decltype(V::template inplace_binop(
+        decltype(V::inplace_binop(
             std::declval<I>(),
             std::declval<I>(),
             std::declval<F>()
