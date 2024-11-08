@@ -10,11 +10,11 @@ endif()
 
 function(_setup_vcpkg _path)
     find_package(Git REQUIRED)
-    message(STATUS "Cloning vcpkg into \"${_real_path}\"")
+    message(STATUS "Cloning vcpkg into \"${_path}\"")
     execute_process(COMMAND
             ${GIT_EXECUTABLE} clone
             "https://github.com/Microsoft/vcpkg.git"
-            "${_real_path}"
+            "${_path}"
             RESULT_VARIABLE _success
             ERROR_VARIABLE _err_msg
             OUTPUT_QUIET
