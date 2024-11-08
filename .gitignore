@@ -124,6 +124,7 @@ dkms.conf
 
 # CMake
 cmake-build-*/
+build/
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
@@ -170,6 +171,7 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+CMakeUserPresets.json
 
 ### Python template
 # Byte-compiled / optimized / DLL files
@@ -370,3 +372,4 @@ examples/*.png
 examples/documentation-testing.py
 
 todo.md
+tools/vcpkg/

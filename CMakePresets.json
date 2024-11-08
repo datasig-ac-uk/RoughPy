@@ -2,44 +2,75 @@
   "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 25,
+    "minor": 28,
     "patch": 0
   },
   "configurePresets": [
     {
-      "name": "base",
+      "name": "default",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "YES"
       }
     },
     {
-      "name": "tests-base",
-      "displayName": "Build Tests",
+      "name": "with-tests",
       "hidden": true,
-      "inherits": "base",
       "cacheVariables": {
-        "ROUGHPY_BUILD_TESTS": {
-          "type": "BOOL",
-          "value": true
-        },
-        "ROUGHPY_BUILD_PYMODULE_INPLACE": {
-          "type": "BOOL",
-          "value": true
-        }
+        "ROUGHPY_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "with-pymodule",
+      "hidden": true,
+      "cacheVariables": {
+        "ROUGHPY_BUILD_PYLIB": "ON"
+      }
+    },
+    {
+      "name": "develop",
+      "inherits": ["default", "with-tests", "with-pymodule"],
+      "hidden": true,
+      "cacheVariables": {
+        "ROUGHPY_ENABLE_ALL_WARNINGS": "ON"
       }
     },
     {
       "name": "release",
-      "displayName": "Build release",
-      "inherits": "base",
+      "inherits": "default",
+      "hidden": true,
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": {
-          "type": "STRING",
-          "value": "Release"
-        }
+        "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "debug",
+      "inherits": "default",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "dev-debug",
+      "displayName": "Debug Develop",
+      "inherits": [ "debug", "develop" ]
+    },
+    {
+      "name": "dev-release",
+      "displayName": "Release Develop",
+      "inherits": [ "release", "develop" ]
+    },
+    {
+      "name": "ci-testing",
+      "inherits": [
+        "release"
+      ]
     }
+
+
+
   ]
 }

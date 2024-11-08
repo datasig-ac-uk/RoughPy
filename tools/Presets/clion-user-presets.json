@@ -1,0 +1,49 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 28,
+    "patch": 0
+  },
+  "configurePresets": [
+   {
+      "name": "vcpkg-config",
+      "hidden": true,
+      "cacheVariables": {
+        "VCPKG_ROOT": "~/.vcpkg-clion/vcpkg",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/build/vcpkg_installed",
+        "VCPKG_INSTALL_OPTIONS": "--no-print-usage"
+      }
+    },
+    {
+      "name": "local-python",
+      "hidden": true,
+      "cacheVariables": {
+        "Python_EXECUTABLE": "${sourceDir}/venv/bin/python"
+      }
+    },
+    {
+      "name": "Debug",
+      "inherits": ["dev-debug", "vcpkg-config", "local-python"],
+      "description": "Development Debug Configuration"
+    },
+    {
+      "name": "Release",
+      "inherits": ["dev-release", "vcpkg-config", "local-python"],
+      "description": "Development Release Configuration"
+    },
+    {
+      "name": "Debug-Clang",
+      "inherits": ["dev-debug", "vcpkg-config", "local-python"],
+      "cacheVariables": {
+        "CMAKE_MESSAGE_LOG_LEVEL": "DEBUG"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "clang"
+        }
+      }
+
+    }
+   ]
+}
