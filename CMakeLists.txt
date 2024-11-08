@@ -193,11 +193,8 @@ endif ()
 
 
 
-set(LIBALGEBRA_LITE_BUILD_TESTS OFF CACHE INTERNAL "")
-set(LIBALGEBRA_LITE_RATIONAL_COEFFS OFF CACHE INTERNAL "")
-add_subdirectory(external/libalgebra_lite)
-set_property(TARGET Libalgebra_lite PROPERTY C_INCLUDE_WHAT_YOU_USE)
-set_property(TARGET Libalgebra_lite PROPERTY CXX_INCLUDE_WHAT_YOU_USE)
+add_subdirectory(vendored/libalgebra_lite)
+
 
 add_subdirectory(core)
 add_subdirectory(platform)
