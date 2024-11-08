@@ -671,9 +671,7 @@ void ParsedData::fill_ks_stream(scalars::KeyScalarStream& ks_stream)
             case LeafType::Buffer: {
                 if (leaf.size == 0) { break; }
                 if (leaf.shape.size() == 1) {
-                    auto sz = leaf.size;
                     ks_stream.push_back(leaf.data.borrow());
-
                 } else {
                     dimn_t sz = leaf.shape.back();
                     dimn_t offset1 = 0;
