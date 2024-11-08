@@ -62,3 +62,6 @@ target_link_libraries(Libalgebra_lite PRIVATE
         Boost::headers
 )
 
+set_property(TARGET Libalgebra_lite PROPERTY C_INCLUDE_WHAT_YOU_USE)
+set_property(TARGET Libalgebra_lite PROPERTY CXX_INCLUDE_WHAT_YOU_USE)
+
