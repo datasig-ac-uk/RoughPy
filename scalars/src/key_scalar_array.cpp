@@ -149,10 +149,10 @@ void KeyScalarArray::allocate_keys(idimn_t count) {
         if (p_keys != nullptr) { delete[] p_keys; }
 
         if (count == -1) {
-            count = size();
+            count = static_cast<idimn_t>(size());
         }
 
-        RPY_CHECK(count == size());
+        RPY_CHECK(count == static_cast<idimn_t>(size()));
 
         p_keys = new key_type[count] {};
         m_owns_keys = true;
