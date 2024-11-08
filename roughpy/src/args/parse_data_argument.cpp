@@ -81,7 +81,7 @@ private:
 
     void handle_scalar(py::handle value, bool key = false);
     void handle_key_scalar(py::handle value);
-    void handle_lie(py::handle value);
+    [[maybe_unused]] void handle_lie(py::handle value);
 
     void handle_scalar_leaf(LeafItem& leaf);
     void handle_key_scalar_leaf(LeafItem& leaf);
