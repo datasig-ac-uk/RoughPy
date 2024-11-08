@@ -33,12 +33,14 @@
 #ifndef ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_BASIS_INFO_H
 #define ROUGHPY_ALGEBRA_SRC_LIBALGEBRA_LITE_BASIS_INFO_H
 
+#include <libalgebra_lite/tensor_basis.h>
+
+#include <roughpy/core/types.h>
 #include <roughpy/algebra/basis.h>
 #include <roughpy/algebra/basis_impl.h>
 #include <roughpy/algebra/basis_info.h>
 #include <roughpy/algebra/tensor_basis.h>
 
-#include <libalgebra_lite/tensor_basis.h>
 
 namespace rpy {
 namespace algebra {
@@ -175,7 +177,7 @@ struct BasisInfo<TensorBasis, lal::tensor_basis> {
 
         optional<our_key_type> out {};
 
-        const auto degree = ldegree + rdegree;
+        const auto degree = static_cast<deg_t>(ldegree + rdegree);
         if (degree <= basis->depth()) {
             const auto shift = basis->powers()[rdegree];
             const auto idx = left.index() * shift + right.index();
