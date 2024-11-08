@@ -15,8 +15,10 @@ set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST CACHE INTERNAL "")
 # TODO: Add a test runner similar to gtest_main that we can link into
 #       each of our test executables.
 
+add_library(RoughPy_test_harness STATIC src/main.cpp)
 
 
+target_link_libraries(RoughPy_test_harness PUBLIC GTest::gtest)
 
 
 
@@ -26,8 +28,7 @@ set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST CACHE INTERNAL "")
 
 function(setup_roughpy_cpp_tests _test_name)
 
-
-    target_link_libraries(${_test_name} PRIVATE GTest::gtest_main)
+    target_link_libraries(${_test_name} PRIVATE RoughPy_test_harness)
 
     if (WIN32)
 
