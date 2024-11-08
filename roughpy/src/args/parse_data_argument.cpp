@@ -448,7 +448,7 @@ void ConversionManager::check_size_and_type_recurse(
 )
 {
     RPY_CHECK(
-            depth < m_options.max_nested,
+            static_cast<dimn_t>(depth) < m_options.max_nested,
             "maximum nested depth reached in this context",
             py::value_error
     );
