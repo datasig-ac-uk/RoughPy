@@ -403,7 +403,7 @@ void ConversionManager::check_dl_size(py::capsule dlcap, deg_t depth)
     auto& tensor = managed_tensor->dl_tensor;
 
     depth += tensor.ndim;
-    RPY_CHECK(depth <= m_options.max_nested);
+    RPY_CHECK(static_cast<dimn_t>(depth) <= m_options.max_nested);
 
     auto& leaf = add_leaf(dlcap, LeafType::DLTensor);
 
