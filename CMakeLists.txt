@@ -23,9 +23,7 @@ option(ROUGHPY_USE_CCACHE "Use compiler cache to speed up repeated builds" ON)
 option(ROUGHPY_BUILD_PYLIB "Build the Python library for RoughPy" ON)
 option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ${ROUGHPY_BUILD_PYLIB})
 
-# Developer options
-option(ROUGHPY_ENABLE_ALL_WARNINGS "Enable -Wall or equivalent" OFF)
-option(ROUGHPY_ENABLE_EXTRA_WARNINGS "Enable -Wextra or equivalent" OFF)
+# For developer options, see cmake/developer_options_setup.cmake
 
 # Currently unused
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
@@ -198,7 +196,8 @@ endif ()
 set(LIBALGEBRA_LITE_BUILD_TESTS OFF CACHE INTERNAL "")
 set(LIBALGEBRA_LITE_RATIONAL_COEFFS OFF CACHE INTERNAL "")
 add_subdirectory(external/libalgebra_lite)
-
+set_property(TARGET Libalgebra_lite PROPERTY C_INCLUDE_WHAT_YOU_USE)
+set_property(TARGET Libalgebra_lite PROPERTY CXX_INCLUDE_WHAT_YOU_USE)
 
 add_subdirectory(core)
 add_subdirectory(platform)
