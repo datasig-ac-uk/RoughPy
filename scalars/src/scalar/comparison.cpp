@@ -91,7 +91,7 @@ constexpr enable_if_t<
         bool>
 compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 {
-    static_assert(sizeof(L) == sizeof(R), "");
+    static_assert(sizeof(L) == sizeof(R), "comparison of integers of different sizes");
     return (lhs >= 0) && static_cast<R>(lhs) == rhs;
 }
 
@@ -102,8 +102,8 @@ constexpr enable_if_t<
         bool>
 compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 {
-    static_assert(sizeof(L) == sizeof(R), "");
-    return (rhs >= 0) && lhs == static_cast<R>(rhs);
+    static_assert(sizeof(L) == sizeof(R), "comparison of integers of different sizes");
+    return (rhs >= 0) && lhs == static_cast<L>(rhs);
 }
 
 template <typename L, typename R>
