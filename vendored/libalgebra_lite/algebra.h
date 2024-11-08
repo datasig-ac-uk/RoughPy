@@ -65,7 +65,7 @@ private:
     template <typename L, typename R, typename F, typename M>
     struct has_fma_inplace<
             L, R, F, M,
-            void_t<decltype(M::template fma_inplace(
+            void_t<decltype(M::fma_inplace(
                     declval<L&>(), declval<const R&>(), declval<F>()
             ))>> : true_type {
     };
@@ -77,7 +77,7 @@ private:
     template <typename L, typename R, typename F, typename M>
     struct has_fma_inplace_with_deg<
             L, R, F, M,
-            void_t<decltype(M::template fma_inplace(declval<L&>(), declval<const R&>(), declval<F>()), declval<deg_t>())>>
+            void_t<decltype(M::fma_inplace(declval<L&>(), declval<const R&>(), declval<F>()), declval<deg_t>())>>
         : true_type {
     };
 
