@@ -16,10 +16,10 @@ Run the editor command `CMake: Select Configure Preset` and select `Debug Develo
 
 The devcontainer automatically installs the pytest and CTest extension, so after building you can launch any of the tests from the VSCode test explorer panel. Alternatively, you can run directly `pytest` directly from the integrated terminal.
 
-VSCode loads debug scenarios from `.vscode/launch.json`. However, developers frequently need to edit this file with changes that should not be committed, so here they are stored in `example_launch.json` which must be manually copied over with:
+VSCode loads debug scenarios from `.vscode/launch.json`. However, developers frequently need to edit this file with changes that should not be committed, so instead it is stored in `.devcontainer/example_launch.json`. Manually copy this over with:
 
 ```sh
-    cp .vscode/example_launch.json .vscode/launch.json
+    cp .devcontainer/example_launch.json .vscode/launch.json
 ```
 
 Select a debug scenario in the Run and Debug panel, add a breakpoint on the code to stop on, and launch with F5.
