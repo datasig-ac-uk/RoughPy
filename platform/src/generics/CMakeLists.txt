@@ -15,11 +15,11 @@ target_sources(RoughPy_Platform PRIVATE
         "${_generics_header_dir}/traits/trait_casts.h"
         "${_generics_header_dir}/const_reference.h"
         "${_generics_header_dir}/reference.h"
+        "${_generics_header_dir}/type.h"
+        "${_generics_header_dir}/type_ptr.h"
         "${_generics_header_dir}/value.h"
-
         "arithmetic_trait.cpp"
         "equality_trait.cpp"
         "number_traits.cpp"
         "ordering_trait.cpp"
-
 )
