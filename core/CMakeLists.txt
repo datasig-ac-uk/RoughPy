@@ -10,6 +10,7 @@ add_library(RoughPy_Core INTERFACE
         include/roughpy/core/macros.h
         include/roughpy/core/helpers.h
         include/roughpy/core/slice.h
+        include/roughpy/core/smart_ptr.h
 )
 add_library(RoughPy::Core ALIAS RoughPy_Core)
 
