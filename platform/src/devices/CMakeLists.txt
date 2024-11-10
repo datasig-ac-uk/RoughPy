@@ -24,18 +24,18 @@ target_sources(RoughPy_Platform PRIVATE
         queue.cpp
         queue_interface.cpp
         PUBLIC
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/buffer.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/core.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/device_handle.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/device_provider.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/event.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/host_device.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/kernel.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/kernel_arg.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/macros.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/memory_view.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/queue.h
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/devices/types.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/buffer.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/core.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/device_handle.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/device_provider.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/event.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/host_device.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/kernel.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/kernel_arg.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/macros.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/memory_view.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/queue.h
+        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/platform/devices/types.h
 )
 
 add_subdirectory(host)

@@ -31,9 +31,9 @@ function(setup_roughpy_component _name)
     _do_set_variable(VERSION ${comp_VERSION} "The version of the component")
     _do_set_variable(ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}"
             "Root directory of the ${_name} component")
-    _do_set_variable(INCLUDE_DIR "${ROUGHPY_${_upper_name}_ROOT_DIR}/include/roughpy/${_lower_name}"
+    _do_set_variable(INCLUDE_DIR "${ROUGHPY_${_upper_name}_ROOT_DIR}/include/roughpy/"
             "Include directory for the ${_name} component")
-    _do_set_variable(INCLUDE "${ROUGHPY_${_upper_name}_INCLUDE_DIR}"
+    _do_set_variable(INCLUDE "${ROUGHPY_${_upper_name}_INCLUDE_DIR}/${_lower_name}"
             "Include directory for the ${_name} component")
     _do_set_variable(SOURCE "${ROUGHPY_${_upper_name}_ROOT_DIR}/src"
             "Main source directory for the ${_name} component")
