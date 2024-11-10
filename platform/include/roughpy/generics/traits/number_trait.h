@@ -8,18 +8,19 @@
 #include "roughpy/core/macros.h"
 #include "roughpy/core/types.h"
 
+#include "roughpy/generics/type_ptr.h"
+
 #include "builtin_trait.h"
 
+#include "roughpy_platform_export.h"
 
 namespace rpy::generics {
 
 class ConstReference;
 class Value;
 
-class Type;
-using TypePtr = const Type*;
 
-class Number : public BuiltinTrait
+class ROUGHPY_PLATFORM_EXPORT Number : public BuiltinTrait
 {
 
 public:

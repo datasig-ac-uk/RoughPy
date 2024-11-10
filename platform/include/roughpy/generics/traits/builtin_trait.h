@@ -8,6 +8,8 @@
 
 #include "trait.h"
 
+#include "roughpy_platform_export.h"
+
 namespace rpy::generics {
 
 
@@ -22,7 +24,7 @@ enum class BuiltinTraits : size_t
 
 inline constexpr size_t builtin_trait_count = 5;
 
-class BuiltinTrait : public Trait
+class ROUGHPY_PLATFORM_EXPORT BuiltinTrait : public Trait
 {
 public:
     static constexpr size_t hashable

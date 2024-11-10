@@ -7,10 +7,12 @@
 
 #include "trait.h"
 
+#include "roughpy_platform_export.h"
+
 namespace rpy::generics {
 
 
-class DynamicTrait : public Trait
+class ROUGHPY_PLATFORM_EXPORT DynamicTrait : public Trait
 {
 
 public:

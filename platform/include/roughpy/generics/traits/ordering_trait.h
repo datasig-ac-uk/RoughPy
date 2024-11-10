@@ -10,13 +10,16 @@
 
 #include "builtin_trait.h"
 
+
+#include "roughpy_platform_export.h"
+
 namespace rpy::generics {
 
 class ConstReference;
 
 
 
-class Ordering : public BuiltinTrait
+class ROUGHPY_PLATFORM_EXPORT Ordering : public BuiltinTrait
 {
 public:
     static constexpr string_view this_name = "Ordering";
@@ -39,7 +42,7 @@ public:
     static constexpr Result GreaterThan = Result::GreaterThan;
 
     RPY_NO_DISCARD virtual Result
-    compare(ConstReference lhs, ConstReference rhs) const noexcept;
+    compare(ConstReference lhs, ConstReference rhs) const noexcept = 0;
 
     RPY_NO_DISCARD bool
     equals(ConstReference lhs, ConstReference rhs) const noexcept;
