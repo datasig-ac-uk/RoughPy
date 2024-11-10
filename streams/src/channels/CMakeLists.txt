@@ -9,11 +9,11 @@ target_sources(RoughPy_Streams PRIVATE
         lie_channel.cpp
         lead_laggable_channel.cpp
 
-        ${ROUGHPY_STREAMS_INCLUDE_DIR}/channels/stream_channel.h
-        ${ROUGHPY_STREAMS_INCLUDE_DIR}/channels/increment_channel.h
-        ${ROUGHPY_STREAMS_INCLUDE_DIR}/channels/value_channel.h
-        ${ROUGHPY_STREAMS_INCLUDE_DIR}/channels/categorical_channel.h
-        ${ROUGHPY_STREAMS_INCLUDE_DIR}/channels/lie_channel.h
-        ${ROUGHPY_STREAMS_INCLUDE_DIR}/channels/lead_laggable_channel.h
+        ${ROUGHPY_STREAMS_INCLUDE}/channels/stream_channel.h
+        ${ROUGHPY_STREAMS_INCLUDE}/channels/increment_channel.h
+        ${ROUGHPY_STREAMS_INCLUDE}/channels/value_channel.h
+        ${ROUGHPY_STREAMS_INCLUDE}/channels/categorical_channel.h
+        ${ROUGHPY_STREAMS_INCLUDE}/channels/lie_channel.h
+        ${ROUGHPY_STREAMS_INCLUDE}/channels/lead_laggable_channel.h
 )
 
