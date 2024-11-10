@@ -8,7 +8,7 @@
 
 #include "trait.h"
 
-#include "roughpy_platform_export.h"
+#include "roughpy/platform/roughpy_platform_export.h"
 
 namespace rpy::generics {
 
