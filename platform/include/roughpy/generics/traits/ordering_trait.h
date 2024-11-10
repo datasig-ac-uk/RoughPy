@@ -11,7 +11,7 @@
 #include "builtin_trait.h"
 
 
-#include "roughpy_platform_export.h"
+#include "roughpy/platform/roughpy_platform_export.h"
 
 namespace rpy::generics {
 
@@ -35,7 +35,6 @@ public:
         LessThan,
         GreaterThan,
     };
-
     static constexpr Result Incomparable = Result::Incomparable;
     static constexpr Result Equal = Result::Equal;
     static constexpr Result LessThan = Result::LessThan;

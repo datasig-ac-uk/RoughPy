@@ -9,7 +9,7 @@
 #include "roughpy/core/types.h"
 #include "roughpy/core/traits.h"
 
-#include "roughpy_platform_export.h"
+#include "roughpy/platform/roughpy_platform_export.h"
 
 namespace rpy::generics {
 

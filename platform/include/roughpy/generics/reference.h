@@ -7,6 +7,8 @@
 
 #include "const_reference.h"
 
+#include "roughpy/platform/roughpy_platform_export.h"
+
 namespace rpy::generics {
 
 class Reference : public ConstReference {

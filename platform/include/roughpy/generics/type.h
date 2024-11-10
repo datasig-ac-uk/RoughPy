@@ -12,7 +12,7 @@
 #include "traits/builtin_trait.h"
 #include "type_ptr.h"
 
-#include "roughpy_platform_export.h"
+#include "roughpy/platform/roughpy_platform_export.h"
 
 namespace rpy::generics {
 
