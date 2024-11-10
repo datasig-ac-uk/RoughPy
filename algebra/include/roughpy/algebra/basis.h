@@ -46,7 +46,7 @@ class BasisImplementation;
 
 template <typename Derived, typename KeyType = rpy::key_type>
 class BasisInterface
-    : public boost::intrusive_ref_counter<BasisInterface<KeyType>>
+    : public mem::RcBase<BasisInterface<KeyType>>
 {
 public:
     using key_type = KeyType;

@@ -130,15 +130,13 @@ void rpy::devices::intrusive_ptr_add_ref(
         const rpy::devices::DeviceHandle* device
 ) noexcept
 {
-    using counter_t = boost::
-            intrusive_ref_counter<DeviceHandle, boost::thread_safe_counter>;
+    using counter_t = mem::RcBase<DeviceHandle, boost::thread_safe_counter>;
     intrusive_ptr_add_ref(static_cast<const counter_t*>(device));
 }
 void rpy::devices::intrusive_ptr_release(
         const rpy::devices::DeviceHandle* device
 ) noexcept
 {
-    using counter_t = boost::
-            intrusive_ref_counter<DeviceHandle, boost::thread_safe_counter>;
+    using counter_t = mem::RcBase<DeviceHandle, boost::thread_safe_counter>;
     intrusive_ptr_release(static_cast<const counter_t*>(device));
 }
