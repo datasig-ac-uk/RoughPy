@@ -33,9 +33,9 @@
 #define ROUGHPY_DEVICE_SRC_OPENCL_OCL_DECLS_H_
 
 #include <roughpy/core/macros.h>
+#include <roughpy/core/smart_ptr.h>
 #include <roughpy/core/types.h>
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 namespace rpy {
 namespace devices {
@@ -46,7 +46,7 @@ class OCLEvent;
 class OCLKernel;
 class OCLQueue;
 
-using OCLDevice = boost::intrusive_ptr<const OCLDeviceHandle>;
+using OCLDevice = Rc<const OCLDeviceHandle>;
 
 }// namespace devices
 }// namespace rpy

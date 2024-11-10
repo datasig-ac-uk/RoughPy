@@ -32,6 +32,7 @@
 #include "host_device_impl.h"
 
 #include <roughpy/core/alloc.h>
+#include <roughpy/core/smart_ptr.h>
 
 #include "devices/buffer.h"
 #include "devices/event.h"
@@ -190,7 +191,7 @@ CPUDeviceHandle::~CPUDeviceHandle() = default;
 
 CPUDevice CPUDeviceHandle::get()
 {
-    static boost::intrusive_ptr<CPUDeviceHandle> device(new CPUDeviceHandle);
+    static Rc<CPUDeviceHandle> device(new CPUDeviceHandle);
     return device;
 }
 
