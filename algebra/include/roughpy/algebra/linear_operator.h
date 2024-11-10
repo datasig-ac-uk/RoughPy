@@ -35,6 +35,7 @@
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
+#include <roughpy/core/smart_ptr.h>
 
 namespace rpy {
 namespace algebra {
@@ -56,7 +57,7 @@ template <typename Argument, typename Result>
 class LinearOperator
 {
     using interface_type = LinearOperatorInterface<Argument, Result>;
-    boost::intrusive_ptr<interface_type> p_impl;
+    Rc<interface_type> p_impl;
 
 public:
     Result operator()(const Argument& arg) const;

@@ -33,9 +33,10 @@
 #define ROUGHPY_DEVICE_SRC_CPU_CPU_DECLS_H_
 
 #include <roughpy/core/macros.h>
+#include <roughpy/core/smart_ptr.h>
 #include <roughpy/core/types.h>
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
+
 
 namespace rpy {
 namespace devices {
@@ -46,7 +47,7 @@ class CPUEvent;
 class CPUKernel;
 class CPUQueue;
 
-using CPUDevice = boost::intrusive_ptr<const CPUDeviceHandle>;
+using CPUDevice = Rc<const CPUDeviceHandle>;
 
 }// namespace device
 }// namespace rpy

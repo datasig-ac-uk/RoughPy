@@ -68,7 +68,7 @@ struct VectorConstructionData {
     VectorType vector_type = VectorType::Sparse;
 };
 
-class ROUGHPY_ALGEBRA_EXPORT ContextBase : public boost::intrusive_ref_counter<ContextBase>
+class ROUGHPY_ALGEBRA_EXPORT ContextBase : public mem::RcBase<ContextBase>
 {
     deg_t m_width;
     deg_t m_depth;

@@ -372,25 +372,21 @@ UnspecifiedAlgebraType Context::adjoint_to_left_multiply_by(
 
 void rpy::algebra::intrusive_ptr_add_ref(const ContextBase* ptr) noexcept
 {
-    using counter_t = boost::
-            intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
+    using counter_t = mem::RcBase<ContextBase, boost::thread_safe_counter>;
     intrusive_ptr_add_ref(static_cast<const counter_t*>(ptr));
 }
 void rpy::algebra::intrusive_ptr_release(const ContextBase* ptr) noexcept
 {
-    using counter_t = boost::
-            intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
+    using counter_t = mem::RcBase<ContextBase, boost::thread_safe_counter>;
     intrusive_ptr_release(static_cast<const counter_t*>(ptr));
 }
 void rpy::algebra::intrusive_ptr_add_ref(const Context* ptr) noexcept
 {
-    using counter_t = boost::
-            intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
+    using counter_t = mem::RcBase<ContextBase, boost::thread_safe_counter>;
     intrusive_ptr_add_ref(static_cast<const counter_t*>(ptr));
 }
 void rpy::algebra::intrusive_ptr_release(const Context* ptr) noexcept
 {
-    using counter_t = boost::
-            intrusive_ref_counter<ContextBase, boost::thread_safe_counter>;
+    using counter_t = mem::RcBase<ContextBase, boost::thread_safe_counter>;
     intrusive_ptr_release(static_cast<const counter_t*>(ptr));
 }

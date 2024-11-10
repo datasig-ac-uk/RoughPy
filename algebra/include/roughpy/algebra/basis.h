@@ -31,9 +31,8 @@
 
 #include "algebra_fwd.h"
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <roughpy/core/hash.h>
+#include <roughpy/core/smart_ptr.h>
 
 #include <roughpy/core/traits.h>
 
@@ -47,7 +46,7 @@ class BasisImplementation;
 
 template <typename Derived, typename KeyType = rpy::key_type>
 class BasisInterface
-    : public boost::intrusive_ref_counter<BasisInterface<KeyType>>
+    : public mem::RcBase<BasisInterface<KeyType>>
 {
 public:
     using key_type = KeyType;
@@ -165,7 +164,7 @@ class Basis : public PrimaryInterface::mixin_t
             "Primary template must be an instance of BasisInterface"
     );
 
-    boost::intrusive_ptr<const basis_interface> p_impl;
+    Rc<const basis_interface> p_impl;
 
 public:
     using key_type = typename basis_interface::key_type;

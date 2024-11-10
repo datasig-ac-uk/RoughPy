@@ -63,7 +63,7 @@ struct ExtensionSourceAndOptions {
  *
  */
 class ROUGHPY_PLATFORM_EXPORT DeviceHandle
-    : public boost::intrusive_ref_counter<DeviceHandle>
+    : public mem::RcBase<DeviceHandle>
 {
     mutable std::recursive_mutex m_lock;
     mutable std::unordered_map<string, Kernel> m_kernel_cache;
