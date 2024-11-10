@@ -141,6 +141,10 @@ template <typename F, typename... ArgTypes>
 using invoke_result_t = std::result_of_t<F(ArgTypes...)>;
 #endif
 
+using std::is_same_v;
+using std::is_const_v;
+
+
 /**
  * @brief Ensure that the type T is a pointer.
  *
