@@ -5,7 +5,7 @@
 
 #include "roughpy/generics/const_reference.h"
 #include "roughpy/generics/reference.h"
-#include "roughpy/generics/traits.h"
+#include "roughpy/generics/traits/arithmetic_trait.h"
 #include "roughpy/generics/value.h"
 
 

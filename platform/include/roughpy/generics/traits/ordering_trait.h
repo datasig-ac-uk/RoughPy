@@ -33,10 +33,10 @@ public:
         GreaterThan,
     };
 
-    static constexpr Result ResultIncomparable = Result::Incomparable;
-    static constexpr Result ResultEqual = Result::Equal;
-    static constexpr Result ResultLessThan = Result::LessThan;
-    static constexpr Result ResultGreaterThan = Result::GreaterThan;
+    static constexpr Result Incomparable = Result::Incomparable;
+    static constexpr Result Equal = Result::Equal;
+    static constexpr Result LessThan = Result::LessThan;
+    static constexpr Result GreaterThan = Result::GreaterThan;
 
     RPY_NO_DISCARD virtual Result
     compare(ConstReference lhs, ConstReference rhs) const noexcept;

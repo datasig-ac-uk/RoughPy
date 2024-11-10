@@ -7,7 +7,7 @@
 #include "roughpy/platform/errors.h"
 
 #include "roughpy/generics/const_reference.h"
-#include "roughpy/generics/traits.h"
+#include "roughpy/generics/traits/number_trait.h"
 // #include "roughpy/generics/type.h"
 #include "roughpy/generics/value.h"
 

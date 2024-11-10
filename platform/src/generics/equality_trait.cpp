@@ -3,7 +3,7 @@
 //
 
 #include "roughpy/generics/const_reference.h"
-#include "roughpy/generics/traits.h"
+#include "roughpy/generics/traits/equality_trait.h"
 
 
 using namespace rpy;
