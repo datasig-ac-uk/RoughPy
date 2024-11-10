@@ -22,4 +22,5 @@ target_sources(RoughPy_Platform PRIVATE
         "equality_trait.cpp"
         "number_traits.cpp"
         "ordering_trait.cpp"
+        "type.cpp"
 )
