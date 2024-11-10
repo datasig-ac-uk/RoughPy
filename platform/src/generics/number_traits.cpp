@@ -44,7 +44,7 @@ Value Number::sqrt(ConstReference value) const
     RPY_THROW(std::runtime_error, "Not implemented");
 }
 
-Value Number::pow(ConstReference value, int exponent) const
+Value Number::pow(ConstReference value, ConstReference exponent) const
 {
     RPY_THROW(std::runtime_error, "Not implemented");
 }
