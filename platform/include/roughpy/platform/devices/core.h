@@ -30,8 +30,10 @@
 #define ROUGHPY_DEVICE_CORE_H_
 
 #include <roughpy/core/macros.h>
+#include <roughpy/core/smart_ptr.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+
 #include <roughpy/platform/serialization.h>
 #include <roughpy/platform/errors.h>
 
@@ -303,8 +305,8 @@ class MemoryView;
 class QueueInterface;
 class Queue;
 
-using Device = boost::intrusive_ptr<const DeviceHandle>;
-using HostDevice = boost::intrusive_ptr<const HostDeviceHandle>;
+using Device = Rc<const DeviceHandle>;
+using HostDevice = Rc<const HostDeviceHandle>;
 
 ROUGHPY_PLATFORM_EXPORT HostDevice get_host_device();
 ROUGHPY_PLATFORM_EXPORT Device get_default_device();

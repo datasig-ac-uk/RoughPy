@@ -30,10 +30,9 @@
 
 #include "algebra_fwd.h"
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
 #include <roughpy/core/slice.h>
+#include <roughpy/core/smart_ptr.h>
 
 #include <roughpy/platform/serialization.h>
 
@@ -76,8 +75,8 @@ class ContextBase;
 
 class Context;
 
-using base_context_pointer = boost::intrusive_ptr<const ContextBase>;
-using context_pointer = boost::intrusive_ptr<const Context>;
+using base_context_pointer = Rc<const ContextBase>;
+using context_pointer = Rc<const Context>;
 
 struct BasicContextSpec {
     string stype_id;
