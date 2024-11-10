@@ -7,19 +7,18 @@
 
 #include "const_reference.h"
 #include "reference.h"
+#include "type.h"
 
+#include "roughpy_platform_export.h"
 
 namespace rpy::generics {
 
-class Type;
-
-using TypePtr = const Type*;
 
 class ConstrReference;
 class Reference;
 
 
-class Value
+class ROUGHPY_PLATFORM_EXPORT Value
 {
     TypePtr p_type;
 

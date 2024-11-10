@@ -10,6 +10,7 @@
 
 #include "builtin_trait.h"
 
+#include "roughpy_platform_export.h"
 
 namespace rpy::generics {
 
@@ -17,7 +18,7 @@ class ConstReference;
 class Reference;
 class Value;
 
-class Arithmetic : public BuiltinTrait
+class ROUGHPY_PLATFORM_EXPORT Arithmetic : public BuiltinTrait
 {
 public:
     static constexpr string_view this_name = "Arithmetic";

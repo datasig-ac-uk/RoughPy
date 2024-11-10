@@ -8,18 +8,31 @@
 #include <atomic>
 
 #include "roughpy/core/macros.h"
+
+#include "traits/builtin_trait.h"
 #include "type_ptr.h"
+
+#include "roughpy_platform_export.h"
 
 namespace rpy::generics {
 
 
-class Type
+class ROUGHPY_PLATFORM_EXPORT Type
 {
     mutable std::atomic_intptr_t m_rc;
 
+    using builtin_trait_ptr = std::unique_ptr<const BuiltinTraits>;
+
+    std::array<builtin_trait_ptr, builtin_trait_count> m_builtin_traits;
 
 
 protected:
+
+    Type(std::array<builtin_trait_ptr, builtin_trait_count> builtin_traits)
+        : m_rc(0), m_builtin_traits(std::move(builtin_traits))
+    {
+
+    }
 
     virtual ~Type() = default;
 

@@ -7,12 +7,14 @@
 
 #include "trait.h"
 
+#include "roughpy_platform_export.h"
+
 namespace rpy::generics {
 
 
 
 
-class StaticTrait : public Trait
+class ROUGHPY_PLATFORM_EXPORT StaticTrait : public Trait
 {
 public:
     static constexpr TraitType this_type = TraitType::Static;

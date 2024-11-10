@@ -11,11 +11,13 @@
 #include "builtin_trait.h"
 
 
+#include "roughpy_platform_export.h"
+
 namespace rpy::generics {
 
 class ConstReference;
 
-class Equality : public BuiltinTrait
+class ROUGHPY_PLATFORM_EXPORT Equality : public BuiltinTrait
 {
 public:
     static constexpr string_view this_name = "Equality";

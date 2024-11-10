@@ -9,6 +9,7 @@
 #include "roughpy/core/types.h"
 #include "roughpy/core/traits.h"
 
+#include "roughpy_platform_export.h"
 
 namespace rpy::generics {
 
@@ -20,7 +21,7 @@ enum class TraitType
     Dynamic
 };
 
-class Trait
+class ROUGHPY_PLATFORM_EXPORT Trait
 {
 public:
     static constexpr TraitType Builtin = TraitType::Builtin;
