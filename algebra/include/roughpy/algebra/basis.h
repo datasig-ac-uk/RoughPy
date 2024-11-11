@@ -39,20 +39,15 @@
 namespace rpy {
 namespace algebra {
 
-namespace dtl {
-template <typename T, typename PrimaryInterface>
-class BasisImplementation;
-}
 
-template <typename Derived, typename KeyType = rpy::key_type>
+
+template <typename KeyType = rpy::key_type>
 class BasisInterface
     : public mem::RcBase<BasisInterface<KeyType>>
 {
 public:
     using key_type = KeyType;
 
-    template <typename T>
-    using impl_t = dtl::BasisImplementation<T, Derived>;
 
     using base_interface_t = BasisInterface;
 
@@ -65,60 +60,10 @@ public:
     RPY_NO_DISCARD virtual dimn_t dimension() const noexcept = 0;
 
     RPY_NO_DISCARD virtual bool are_same(const BasisInterface &other) const noexcept = 0;
-};
 
-namespace dtl {
-template <typename Derived, typename Base>
-class OrderedBasisMixin;
-
-template <typename T, typename Derived, typename Base>
-class OrderedBasisImplementationMixin;
-
-}// namespace dtl
-
-template <typename Derived, typename Base>
-class OrderedBasisInterface : public void_or_base<Base>
-{
-
-public:
-    using typename Base::key_type;
-
-    using mixin_t = dtl::OrderedBasisMixin<Derived, typename Base::mixin_t>;
-
-    template <typename T>
-    using impl_t = dtl::OrderedBasisImplementationMixin<
-            T,
-            Derived,
-            typename Base::template impl_t<T>>;
-
-    virtual ~OrderedBasisInterface() = default;
-
+    
     RPY_NO_DISCARD virtual key_type index_to_key(dimn_t index) const = 0;
     RPY_NO_DISCARD virtual dimn_t key_to_index(const key_type& key) const = 0;
-};
-
-namespace dtl {
-template <typename Derived, typename Base>
-class WordLikeBasisMixin;
-
-template <typename T, typename Derived, typename Base>
-class WordLikeBasisImplementationMixin;
-
-}// namespace dtl
-
-template <typename Derived, typename Base>
-class WordLikeBasisInterface : public void_or_base<Base>
-{
-public:
-    using typename Base::key_type;
-
-    using mixin_t = dtl::WordLikeBasisMixin<Derived, typename Base::mixin_t>;
-
-    template <typename T>
-    using impl_t = dtl::WordLikeBasisImplementationMixin<
-            T,
-            Derived,
-            typename Base::template impl_t<T>>;
 
     RPY_NO_DISCARD virtual deg_t width() const noexcept = 0;
     RPY_NO_DISCARD virtual deg_t depth() const noexcept = 0;
@@ -149,29 +94,32 @@ public:
     RPY_NO_DISCARD virtual key_type key_of_letter(let_t letter) const noexcept
             = 0;
     RPY_NO_DISCARD virtual bool letter(const key_type& key) const = 0;
+    
 };
 
-template <typename PrimaryInterface>
-class Basis : public PrimaryInterface::mixin_t
-{
-    using basis_interface = PrimaryInterface;
-    static_assert(
-            is_base_of<
-                    BasisInterface<
-                            PrimaryInterface,
-                            typename basis_interface::key_type>,
-                    basis_interface>::value,
-            "Primary template must be an instance of BasisInterface"
-    );
 
-    Rc<const basis_interface> p_impl;
+namespace dtl {
+
+template <typename T, typename Interface>
+class BasisImplementation;
+
+}
+
+
+template <typename Interface>
+/**
+ *
+ */
+class Basis 
+{
+    Rc<const Interface> p_impl;
 
 public:
-    using key_type = typename basis_interface::key_type;
+    using key_type = typename Interface::key_type;
 
     template <typename B>
     explicit Basis(const B* basis)
-        : p_impl(new typename PrimaryInterface::template impl_t<B>(basis))
+        : p_impl(new dtl::BasisImplementation<B, Interface>(basis))
     {}
 
     //    template <typename B>
@@ -183,12 +131,12 @@ public:
     Basis(const Basis&) = default;
     Basis(Basis&&) noexcept = default;
 
-    RPY_NO_UBSAN ~Basis() = default;
+    ~Basis() = default;
 
     Basis& operator=(const Basis&) = default;
     Basis& operator=(Basis&&) noexcept = default;
 
-    RPY_NO_DISCARD const basis_interface& instance() const noexcept
+    RPY_NO_DISCARD const Interface& instance() const noexcept
     {
         return *p_impl;
     }
@@ -226,135 +174,69 @@ public:
     {
         return hash_value(basis.p_impl);
     }
-};
-
-namespace dtl {
-template <
-        typename Derived,
-        typename KeyType,
-        template <typename, typename>
-        class... Interfaces>
-struct make_basis_interface_impl;
-}
-
-template <
-        typename Derived,
-        typename KeyType,
-        template <typename, typename>
-        class... Interfaces>
-using make_basis_interface = typename dtl::
-        make_basis_interface_impl<Derived, KeyType, Interfaces...>::type;
-
-namespace dtl {
-
-template <typename Derived, typename Base>
-class OrderedBasisMixin : public Base
-{
-
-    RPY_NO_DISCARD const Derived& instance() const noexcept
-    {
-        return static_cast<const Basis<Derived>*>(this)->instance();
-    }
-
-public:
-    using key_type = typename Derived::key_type;
 
     RPY_NO_DISCARD key_type index_to_key(dimn_t index) const
     {
-        return instance().index_to_key(index);
+        return p_impl->index_to_key(index);
     }
 
     RPY_NO_DISCARD dimn_t key_to_index(const key_type& key) const
     {
-        return instance().key_to_index(key);
+        return p_impl->key_to_index(key);
     }
-};
-
-template <typename Derived, typename Base>
-class WordLikeBasisMixin
-{
-
-    RPY_NO_DISCARD const Derived& instance() const noexcept
-    {
-        return static_cast<const Basis<Derived>*>(this)->instance();
-    }
-
-public:
-    using key_type = typename Derived::key_type;
-
-    RPY_NO_DISCARD deg_t width() const noexcept { return instance().width(); }
-    RPY_NO_DISCARD deg_t depth() const noexcept { return instance().depth(); }
+ RPY_NO_DISCARD deg_t width() const noexcept { return p_impl->width(); }
+    RPY_NO_DISCARD deg_t depth() const noexcept { return p_impl->depth(); }
     RPY_NO_DISCARD deg_t degree(const key_type& key) const noexcept
     {
-        return instance().degree(key);
+        return p_impl->degree(key);
     }
     RPY_NO_DISCARD deg_t size(deg_t degree) const noexcept
     {
-        return instance().size(degree);
+        return p_impl->size(degree);
     }
     RPY_NO_DISCARD let_t first_letter(const key_type& key) const noexcept
     {
-        return instance().first_letter(key);
+        return p_impl->first_letter(key);
     }
     RPY_NO_DISCARD let_t to_letter(const key_type& key) const noexcept
     {
-        return instance().to_letter(key);
+        return p_impl->to_letter(key);
     }
     RPY_NO_DISCARD dimn_t start_of_degree(deg_t degree) const noexcept
     {
-        return instance().start_of_degree(degree);
+        return p_impl->start_of_degree(degree);
     }
     RPY_NO_DISCARD pair<optional<key_type>, optional<key_type>>
     parents(const key_type& key) const
     {
-        return instance().parents(key);
+        return p_impl->parents(key);
     }
     RPY_NO_DISCARD optional<key_type> lparent(const key_type& key) const
     {
-        return instance().lparent(key);
+        return p_impl->lparent(key);
     }
     RPY_NO_DISCARD optional<key_type> rparent(const key_type& key) const
     {
-        return instance().rparent(key);
+        return p_impl->rparent(key);
     }
     RPY_NO_DISCARD optional<key_type>
     child(const key_type& lparent, const key_type& rparent) const
     {
-        return instance().child(lparent, rparent);
+        return p_impl->child(lparent, rparent);
     }
 
     RPY_NO_DISCARD key_type key_of_letter(let_t letter) const noexcept
     {
-        return instance().key_of_letter(letter);
+        return p_impl->key_of_letter(letter);
     }
     RPY_NO_DISCARD bool letter(const key_type& key) const
     {
-        return instance().letter(key);
+        return p_impl->letter(key);
     }
+
 };
 
-template <
-        typename Derived,
-        typename KeyType,
-        template <typename, typename>
-        class FirstInterface,
-        template <typename, typename>
-        class... Interfaces>
-struct make_basis_interface_impl<
-        Derived,
-        KeyType,
-        FirstInterface,
-        Interfaces...> {
-    using next_t = make_basis_interface_impl<Derived, KeyType, Interfaces...>;
-    using type = FirstInterface<Derived, typename next_t::type>;
-};
 
-template <typename Derived, typename KeyType>
-struct make_basis_interface_impl<Derived, KeyType> {
-    using type = BasisInterface<Derived, KeyType>;
-};
-
-}// namespace dtl
 
 }// namespace algebra
 }// namespace rpy

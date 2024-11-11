@@ -92,12 +92,15 @@ using RawUnspecifiedAlgebraType = dtl::AlgebraInterfaceBase*;
 using ConstRawUnspecifiedAlgebraType = const dtl::AlgebraInterfaceBase*;
 using UnspecifiedAlgebraType = std::unique_ptr<dtl::AlgebraInterfaceBase>;
 
-class TensorBasisInterface;
-class LieBasisInterface;
+
+template <typename KeyType>
+class BasisInterface;
 
 using TensorKey = key_type;
+using TensorBasisInterface = BasisInterface<TensorKey>;
 using TensorBasis = Basis<TensorBasisInterface>;
 using LieKey = key_type;
+using LieBasisInterface = BasisInterface<LieKey>;
 using LieBasis = Basis<LieBasisInterface>;
 
 class FreeTensorInterface;
