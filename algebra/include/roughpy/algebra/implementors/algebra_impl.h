@@ -47,11 +47,12 @@
 namespace rpy {
 namespace algebra {
 
-template <typename Interface, typename Impl>
-class ImplAccessLayer : public Interface
+template <typename Impl>
+class ImplAccessLayer
 {
 protected:
-    using Interface::Interface;
+
+    virtual ~ImplAccessLayer() = default;
 
 public:
     virtual Impl& get_data() noexcept = 0;
@@ -60,21 +61,21 @@ public:
 };
 
 template <typename Impl, typename Interface>
-RPY_NO_UBSAN inline copy_cv_t<Impl, Interface>& algebra_cast(Interface& arg
-) noexcept
+inline copy_cv_t<Impl, Interface>& algebra_cast(Interface& arg
+)
 {
-    using access_t = copy_cv_t<ImplAccessLayer<Interface, Impl>, Interface>;
+    using access_t = copy_cv_t<ImplAccessLayer<Impl>, Interface>;
     static_assert(
             is_base_of<dtl::AlgebraInterfaceBase, Interface>::value,
             "casting to algebra implementation is only possible for "
             "interfaces"
     );
-    //    RPY_DBG_ASSERT(dynamic_cast<access_t*>(&arg) != nullptr);
-    return static_cast<access_t&>(arg).get_data();
+
+    return dynamic_cast<access_t&>(arg).get_data();
 }
 
 template <typename Impl>
-class OwnedStorageModel
+class OwnedStorageModel : public ImplAccessLayer<Impl>
 {
     Impl m_data;
 
@@ -95,13 +96,18 @@ protected:
     {
         return std::move(storage.m_data);
     }
+public:
+
+    Impl& get_data() noexcept override { return m_data; };
+    const Impl& get_data() const noexcept override { return m_data; };
+    Impl&& take_data() override { return std::move(m_data); }
 };
 
 template <typename Impl, typename Interface>
-Impl&& take_algebra(typename Interface::algebra_t&& arg) noexcept;
+Impl&& take_algebra(typename Interface::algebra_t&& arg) ;
 
 template <typename Impl>
-class BorrowedStorageModel
+class BorrowedStorageModel : ImplAccessLayer<Impl>
 {
     Impl* p_data;
 
@@ -121,6 +127,13 @@ protected:
         return *p_data;
     }
     const Impl& data() const noexcept { return *p_data; }
+
+public:
+
+    Impl& get_data() noexcept override { return *p_data; };
+    const Impl& get_data() const noexcept override { return *p_data; };
+    Impl&& take_data() override { RPY_THROW(std::runtime_error, "cannot take borroweddata"); }
+
 };
 
 namespace dtl {
@@ -180,11 +193,11 @@ template <
         typename Impl,
         template <typename>
         class StorageModel>
-class AlgebraImplementation : public ImplAccessLayer<Interface, Impl>,
-                              protected StorageModel<Impl>
+class AlgebraImplementation : public Interface,
+                              public StorageModel<Impl>
 {
     using storage_base_t = StorageModel<Impl>;
-    using access_layer_t = ImplAccessLayer<Interface, Impl>;
+    using access_layer_t = ImplAccessLayer<Impl>;
 
     static_assert(
             is_base_of<dtl::AlgebraInterfaceBase, Interface>::value,
@@ -219,22 +232,11 @@ protected:
     using storage_base_t::data;
 
 public:
-    Impl& get_data() noexcept override { return data(); }
-    const Impl& get_data() const noexcept override { return data(); }
-    Impl&& take_data() override
-    {
-        if (is_same<storage_base_t, BorrowedStorageModel<Impl>>::value) {
-            RPY_THROW(
-                    std::runtime_error,
-                    "cannot take from a borrowed algebra"
-            );
-        }
-        return std::move(data());
-    }
+
 
     template <typename... Args>
     explicit AlgebraImplementation(context_pointer&& ctx, Args&&... args)
-        : access_layer_t(
+        : Interface(
                   std::move(ctx),
                   alg_info::vtype(),
                   alg_info::ctype(),
@@ -413,9 +415,9 @@ public:
 };
 
 template <typename Impl, typename Interface>
-Impl&& take_algebra(typename Interface::algebra_t&& arg) noexcept
+Impl&& take_algebra(typename Interface::algebra_t&& arg)
 {
-    return static_cast<ImplAccessLayer<Interface, Impl>&&>(*arg).take_data();
+    return dynamic_cast<ImplAccessLayer<Impl>&&>(*arg).take_data();
 }
 
 template <

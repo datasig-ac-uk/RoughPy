@@ -66,8 +66,13 @@ protected:
             AlgebraType alg_type
     );
 
+
+
+
 public:
     virtual ~AlgebraInterfaceBase();
+
+
 
     RPY_NO_DISCARD const context_pointer& context() const noexcept
     {

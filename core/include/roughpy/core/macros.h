@@ -275,7 +275,7 @@
 #endif
 
 // Sanitizer supports
-#ifdef RPY_CLANG
+#if defined(RPY_CLANG) || defined(RPY_GCC)
 #  define RPY_NO_UBSAN __attribute__((no_sanitize("undefined")))
 #else
 #  define RPY_NO_UBSAN
