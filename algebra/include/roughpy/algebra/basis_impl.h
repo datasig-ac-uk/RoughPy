@@ -54,7 +54,8 @@ protected:
     basis_storage_t m_impl;
 
 public:
-    using typename Interface::key_type;
+    // using typename Interface::key_type;
+    using key_type = typename Interface::key_type;
 
     template <typename... Args>
     explicit BasisImplementation(Args&&... args)
@@ -81,7 +82,8 @@ public:
     pair<optional<key_type>, optional<key_type>> parents(const key_type& key
     ) const override;
     optional<key_type> child(const key_type& lparent, const key_type& rparent) const override;
-    key_type key_of_letter(let_t letter) const noexcept override;
+    typename Interface::key_type
+    key_of_letter(let_t letter) const noexcept override;
     bool letter(const key_type& key) const override;
 };
 
