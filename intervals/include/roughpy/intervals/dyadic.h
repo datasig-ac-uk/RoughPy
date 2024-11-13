@@ -28,12 +28,16 @@
 #ifndef ROUGHPY_INTERVALS_DYADIC_H_
 #define ROUGHPY_INTERVALS_DYADIC_H_
 
+#include <roughpy/core/debug_assertion.h>
+#include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+
+
+
 #include <roughpy/platform/serialization.h>
 
-
-#include <cassert>
-#include <cmath>
+#include <cstdlib>
+#include <iosfwd>
 #include <limits>
 
 #include "roughpy_intervals_export.h"
