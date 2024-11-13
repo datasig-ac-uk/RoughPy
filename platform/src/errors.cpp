@@ -3,7 +3,7 @@
 //
 
 
-#include <roughpy/core/check.h>
+#include <roughpy/core/check.h>  // IWYU pragma: keep
 
 #include "roughpy/platform/roughpy_platform_export.h"
 
