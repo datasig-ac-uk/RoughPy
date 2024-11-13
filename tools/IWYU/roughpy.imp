@@ -42,6 +42,7 @@
   { "include": [ "<type_traits>", "public", "<roughpy/core/traits.h>", "public" ]},
   { "include": [ "<cstdint>", "public", "<roughpy/core/types.h>", "public" ]},
   { "include": [ "<optional>", "public", "<roughpy/core/optional.h>", "public" ]},
+  { "include": [ "<stdexcept>", "public", "<roughpy/core/check.h>", "public" ]},
   { "include": [ "<string>", "public", "<roughpy/core/types.h>", "public" ]},
   { "include": [ "<string_view>", "public", "<roughpy/core/types.h>", "public" ]},
   { "include": [ "<utility>", "public", "<roughpy/core/types.h>", "public" ]},
