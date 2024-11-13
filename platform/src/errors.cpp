@@ -21,11 +21,6 @@ ROUGHPY_PLATFORM_EXPORT RPY_NO_RETURN void throw_exception<std::runtime_error>(s
   const char* func
 );
 
-template ROUGHPY_PLATFORM_EXPORT RPY_NO_RETURN void throw_exception<std::system_error>(std::string_view user_msg,
-  const char* filename,
-  int lineno,
-  const char* func);
-
 template ROUGHPY_PLATFORM_EXPORT RPY_NO_RETURN void throw_exception<std::logic_error>(std::string_view user_msg,
   const char* filename,
   int lineno,
