@@ -28,11 +28,14 @@
 #ifndef ROUGHPY_DEVICE_EVENT_H_
 #define ROUGHPY_DEVICE_EVENT_H_
 
-#include "core.h"
 
-#include "device_object_base.h"
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+
+#include "roughpy/platform/roughpy_platform_export.h"
+
+#include "device_object_base.h"
+#include "core.h"
 
 namespace rpy {
 namespace devices {

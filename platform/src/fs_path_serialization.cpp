@@ -29,12 +29,13 @@
 // Created by sam on 27/09/23.
 //
 
-
+// IWYU pragma: begin_keep
 #include <roughpy/platform/filesystem.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/platform/archives.h>
 
 #include <cereal/types/string.hpp>
+// IWYU pragma: end_keep
 
 #define RPY_SERIAL_EXTERNAL rpy::fs
 #define RPY_SERIAL_IMPL_CLASSNAME path

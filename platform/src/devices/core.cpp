@@ -3,6 +3,9 @@
 //
 #include "devices/core.h"
 
+#include <climits>
+#include <ostream>
+
 
 std::ostream& rpy::devices::operator<<(std::ostream& os, const TypeInfo& info)
 {

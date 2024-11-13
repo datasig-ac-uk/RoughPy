@@ -30,13 +30,12 @@
 //
 
 #include <roughpy/core/debug_assertion.h>
-#include <roughpy/core/types.h>
 #include <roughpy/core/helpers.h>
+#include <roughpy/core/types.h>
 
 #include "devices/core.h"
 #include "devices/kernel.h"
 
-#include "devices/device_handle.h"
 
 using namespace rpy;
 using namespace rpy::devices;

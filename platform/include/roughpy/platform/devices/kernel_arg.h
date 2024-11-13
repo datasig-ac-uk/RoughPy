@@ -28,11 +28,14 @@
 #ifndef ROUGHPY_DEVICE_KERNEL_ARG_H_
 #define ROUGHPY_DEVICE_KERNEL_ARG_H_
 
-#include "core.h"
 
 #include <roughpy/core/debug_assertion.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
+
+#include "roughpy/platform/roughpy_platform_export.h"
+
+#include "core.h"
 
 namespace rpy {
 namespace devices {

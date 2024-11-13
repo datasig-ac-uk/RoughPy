@@ -31,7 +31,11 @@
 
 #include "devices/device_object_base.h"
 
-#include "devices/device_handle.h"
+#include <memory>
+
+#include "roughpy/core/types.h"
+
+#include "devices/core.h"
 
 using namespace rpy;
 using namespace rpy::devices;

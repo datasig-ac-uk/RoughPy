@@ -32,12 +32,15 @@
 #ifndef ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_EVENT_H_
 #define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_EVENT_H_
 
-#include <roughpy/core/macros.h>
-#include <roughpy/core/types.h>
-#include "devices/event.h"
-
 #include <mutex>
 #include <condition_variable>
+
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+
+#include "devices/core.h"
+#include "devices/device_object_base.h"
+#include "devices/event.h"
 
 namespace rpy {
 namespace devices {
