@@ -29,13 +29,17 @@
 // Created by user on 11/10/23.
 //
 
+#include <roughpy/core/check.h>
+#include <roughpy/core/types.h>
 
+#include "devices/core.h"
 #include "devices/buffer.h"
 #include "devices/event.h"
 
 using namespace rpy;
 using namespace rpy::devices;
 
+namespace rpy::devices { class Queue; }
 
 
 
