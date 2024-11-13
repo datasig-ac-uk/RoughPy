@@ -29,7 +29,11 @@
 // Created by user on 11/10/23.
 //
 
+#include <roughpy/core/debug_assertion.h>
+#include <roughpy/core/types.h>
 #include <roughpy/core/helpers.h>
+
+#include "devices/core.h"
 #include "devices/kernel.h"
 
 #include "devices/device_handle.h"
