@@ -53,6 +53,7 @@ class ImplAccessLayer : public Interface
 protected:
     using Interface::Interface;
 
+    ~ImplAccessLayer() override = default;
 public:
     virtual Impl& get_data() noexcept = 0;
     virtual const Impl& get_data() const noexcept = 0;
@@ -70,7 +71,7 @@ RPY_NO_UBSAN inline copy_cv_t<Impl, Interface>& algebra_cast(Interface& arg
             "interfaces"
     );
     //    RPY_DBG_ASSERT(dynamic_cast<access_t*>(&arg) != nullptr);
-    return static_cast<access_t&>(arg).get_data();
+    return static_cast<access_t*>(&arg)->get_data();
 }
 
 template <typename Impl>

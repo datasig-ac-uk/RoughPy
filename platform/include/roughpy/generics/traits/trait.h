@@ -18,22 +18,37 @@ namespace rpy::generics {
 enum class TraitType
 {
     Builtin,
-    Static,
     Dynamic
 };
 
-class ROUGHPY_PLATFORM_EXPORT Trait
+
+
+template <typename TraitImpl>
+class Trait
 {
+    const TraitImpl* p_impl;
+
 public:
     static constexpr TraitType Builtin = TraitType::Builtin;
-    static constexpr TraitType Static = TraitType::Static;
     static constexpr TraitType Dynamic = TraitType::Dynamic;
 
-    virtual ~Trait() = default;
 
-    RPY_NO_DISCARD virtual TraitType type() const noexcept = 0;
+    RPY_NO_DISCARD TraitType type() const noexcept
+    {
+        return p_impl->type();
+    }
+    RPY_NO_DISCARD string_view name() const noexcept
+    {
+        return p_impl->name();
+    }
 
-    RPY_NO_DISCARD virtual string_view name() const noexcept = 0;
+    template <typename... Args>
+    RPY_NO_DISCARD decltype(auto) operator->(Args&&... args) const
+        noexcept(p_impl->operator()(std::forward<Args>(args)...))
+        -> decltype(p_impl->operator()(std::forward<Args>(args)...))
+    {
+        return p_impl->operator()(std::forward<Args>(args)...);
+    }
 };
 
 }

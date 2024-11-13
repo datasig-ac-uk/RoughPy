@@ -12,13 +12,13 @@
 namespace rpy::generics {
 
 
-class ROUGHPY_PLATFORM_EXPORT DynamicTrait : public Trait
+class ROUGHPY_PLATFORM_EXPORT DynamicTrait
 {
-
 public:
     static constexpr TraitType this_type = TraitType::Dynamic;
 
-    RPY_NO_DISCARD TraitType type() const noexcept final { return this_type; }
+    virtual ~DynamicTrait() = default;
+    RPY_NO_DISCARD TraitType type() const noexcept { return this_type; }
 
     RPY_NO_DISCARD virtual string_view id() const noexcept = 0;
 };

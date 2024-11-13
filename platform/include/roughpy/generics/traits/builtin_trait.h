@@ -24,7 +24,7 @@ enum class BuiltinTraits : size_t
 
 inline constexpr size_t builtin_trait_count = 5;
 
-class ROUGHPY_PLATFORM_EXPORT BuiltinTrait : public Trait
+class ROUGHPY_PLATFORM_EXPORT BuiltinTrait
 {
 public:
     static constexpr size_t hashable
@@ -39,7 +39,8 @@ public:
 
     static constexpr TraitType this_type = TraitType::Builtin;
 
-    RPY_NO_DISCARD TraitType type() const noexcept final { return this_type; }
+    virtual ~BuiltinTrait() = default;
+    RPY_NO_DISCARD TraitType type() const noexcept { return this_type; }
 
     RPY_NO_DISCARD virtual size_t index() const noexcept = 0;
 };
