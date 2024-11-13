@@ -5,8 +5,10 @@
 #ifndef ROUGHPY_CORE_CHECK_H
 #define ROUGHPY_CORE_CHECK_H
 
+#include <stdexcept>
 #include <string>
 #include <string_view>
+
 
 #include "check_helpers.h"
 #include "macros.h"
