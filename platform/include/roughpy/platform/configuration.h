@@ -38,7 +38,7 @@
 
 #include <memory>
 
-#include "roughpy_platform_export.h"
+#include "roughpy/platform/roughpy_platform_export.h"
 #include "filesystem.h"
 
 namespace rpy {
