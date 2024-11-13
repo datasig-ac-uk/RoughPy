@@ -59,13 +59,7 @@ public:
 public:
 
     RPY_NO_DISCARD
-    const std::type_info& type_info() const noexcept { return *p_type_info; }
-
-    RPY_NO_DISCARD
-    virtual std::unique_ptr<const FromTrait> from(const Type& type) const noexcept;
-
-    RPY_NO_DISCARD
-    virtual std::unique_ptr<const IntoTrait> to(const Type& type) const noexcept;
+    const std::type_info* type_info() const noexcept { return p_type_info; }
 
 
 
