@@ -31,6 +31,9 @@
 
 #include "host_buffer.h"
 
+#include <roughpy/core/check.h>
+#include <roughpy/core/debug_assertion.h>
+
 #include "devices/device_handle.h"
 #include "devices/device_object_base.h"
 #include "devices/host_device.h"

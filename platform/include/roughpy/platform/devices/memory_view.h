@@ -31,6 +31,7 @@
 #include "core.h"
 
 #include <roughpy/core/debug_assertion.h>
+#include <roughpy/core/check.h>
 #include <roughpy/core/slice.h>
 
 namespace rpy {
