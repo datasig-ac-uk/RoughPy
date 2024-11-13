@@ -32,6 +32,7 @@
 #include "core.h"
 #include "device_object_base.h"
 
+#include <roughpy/core/check.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>
