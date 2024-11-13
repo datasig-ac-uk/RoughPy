@@ -31,6 +31,9 @@
 
 #include "ocl_device.h"
 
+#include "roughpy/core/check.h"               // for throw_exception, RPY_CHECK
+#include "roughpy/core/debug_assertion.h"     // for RPY_DBG_ASSERT
+
 #include "ocl_buffer.h"
 #include "ocl_event.h"
 #include "ocl_handle_errors.h"

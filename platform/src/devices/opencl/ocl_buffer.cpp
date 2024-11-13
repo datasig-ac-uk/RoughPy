@@ -31,6 +31,9 @@
 
 #include "ocl_buffer.h"
 
+#include <roughpy/core/check.h>
+#include <roughpy/core/debug_assertion.h>
+
 #include "ocl_device.h"
 #include "ocl_handle_errors.h"
 #include "ocl_headers.h"
