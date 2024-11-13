@@ -30,6 +30,9 @@
 //
 
 #include "ocl_handle_errors.h"
+
+#include "roughpy/core/check.h"  // for throw_exception
+
 #include <roughpy/platform/errors.h>
 #include <sstream>
 
