@@ -29,6 +29,11 @@
 // Created by user on 11/10/23.
 //
 
+#include <roughpy/core/check.h>
+#include <roughpy/core/debug_assertion.h>
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+
 #include "devices/buffer.h"
 #include "devices/memory_view.h"
 #include "devices/device_handle.h"
