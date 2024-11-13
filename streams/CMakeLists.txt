@@ -49,6 +49,8 @@ target_link_libraries(RoughPy_Streams PUBLIC
 
 set_target_properties(RoughPy_Streams PROPERTIES ROUGHPY_COMPONENT Streams)
 
+target_precompile_headers(RoughPy_Streams REUSE_FROM RoughPy::Platform)
+
 # TODO: This should be removed, it's not sensible
 target_compile_definitions(RoughPy_Streams PRIVATE "RPY_COMPILING_STREAMS")
 

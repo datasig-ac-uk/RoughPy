@@ -76,6 +76,8 @@ set_target_properties(RoughPy_Algebra PROPERTIES ROUGHPY_COMPONENT Algebra)
 # TODO: This should be removed, it's not sensible
 target_compile_definitions(RoughPy_Algebra PRIVATE "RPY_COMPILING_ALGEBRA")
 
+target_precompile_headers(RoughPy_Algebra REUSE_FROM RoughPy::Platform)
+
 set_library_version_properties(RoughPy_Algebra)
 
 generate_export_header(RoughPy_Algebra)

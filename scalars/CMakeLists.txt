@@ -88,6 +88,7 @@ target_link_libraries(RoughPy_Scalars PUBLIC
         PCGRandom::pcg_random
 )
 
+target_precompile_headers(RoughPy_Scalars REUSE_FROM RoughPy::Platform)
 set_target_properties(RoughPy_Scalars PROPERTIES ROUGHPY_COMPONENT Scalars)
 
 # TODO: This should be removed, it's not sensible
