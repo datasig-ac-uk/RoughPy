@@ -30,10 +30,16 @@
 // Created by user on 02/03/23.
 //
 
-#include <ostream>
+#include "roughpy/intervals/interval.h"
 
-#include <roughpy/platform/errors.h>
-#include <roughpy/intervals/interval.h>
+#include <ostream>
+#include <stdexcept>
+
+#include <roughpy/core/check.h>
+#include <roughpy/core/types.h>
+
+#include "roughpy_intervals_export.h"
+
 
 using namespace rpy;
 using namespace rpy::intervals;
