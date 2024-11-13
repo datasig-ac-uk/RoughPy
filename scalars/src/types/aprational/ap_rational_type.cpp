@@ -3,6 +3,10 @@
 //
 
 #include "ap_rational_type.h"
+
+#include "roughpy/core/check.h"                         // for throw_exception
+#include "roughpy/core/debug_assertion.h"               // for RPY_DBG_ASSERT
+
 #include "scalar_array.h"
 #include "scalar.h"
 

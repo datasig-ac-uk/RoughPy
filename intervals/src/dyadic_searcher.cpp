@@ -31,7 +31,7 @@
 //
 
 #include "dyadic_searcher.h"
-
+#include "roughpy/core/check.h"  // for throw_exception, RPY_CHECK
 #include <roughpy/platform/errors.h>
 
 #include <algorithm>

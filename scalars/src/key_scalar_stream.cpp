@@ -28,6 +28,9 @@
 
 #include "key_scalar_stream.h"
 
+#include "roughpy/core/check.h"  // for throw_exception, RPY_CHECK
+
+
 #include "key_scalar_array.h"
 #include "scalar_stream.h"
 

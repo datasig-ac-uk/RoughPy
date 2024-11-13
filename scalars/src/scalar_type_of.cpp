@@ -5,6 +5,8 @@
 
 #include "scalars_fwd.h"
 
+#include <roughpy/core/check.h>        // for throw_exception, RPY_THROW
+
 #include "scalar_type.h"
 #include "scalar_types.h"
 

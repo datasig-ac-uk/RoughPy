@@ -28,12 +28,12 @@
 #ifndef ROUGHPY_SCALARS_SCALAR_H_
 #define ROUGHPY_SCALARS_SCALAR_H_
 
-#include "packed_scalar_type_ptr.h"
-#include "scalar_interface.h"
-#include "scalar_type.h"
-#include "scalars_fwd.h"
+
 
 #include <roughpy/core/alloc.h>
+#include "roughpy/core/check.h"             // for throw_exception, RPY_CHECK
+#include "roughpy/core/debug_assertion.h"   // for RPY_DBG_ASSERT
+
 #include <roughpy/core/helpers.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/slice.h>
@@ -43,6 +43,11 @@
 #include <roughpy/platform/archives.h>
 
 #include <cereal/types/vector.hpp>
+
+#include "packed_scalar_type_ptr.h"
+#include "scalar_interface.h"
+#include "scalar_type.h"
+#include "scalars_fwd.h"
 
 namespace rpy {
 namespace scalars {

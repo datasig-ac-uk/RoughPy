@@ -28,6 +28,8 @@
 
 #include "scalar_stream.h"
 
+#include "roughpy/core/check.h"  // for throw_exception, RPY_CHECK
+
 #include "scalar.h"
 #include "scalar_array.h"
 
