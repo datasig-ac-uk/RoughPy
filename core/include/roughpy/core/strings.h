@@ -25,6 +25,11 @@ inline void string_append(std::string& result, std::string_view other)
     result.append(other);
 }
 
+inline void string_append(std::string& result, const char* other)
+{
+    result.append(other);
+}
+
 inline void string_append(std::string& result, const char& other)
 {
     result.push_back(other);
