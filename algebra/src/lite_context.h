@@ -73,6 +73,10 @@
 #include <libalgebra_lite/maps.h>
 #include <libalgebra_lite/registry.h>
 
+#include "roughpy/core/check.h"
+#include "roughpy/core/debug_assertion.h"
+
+
 namespace rpy {
 namespace algebra {
 

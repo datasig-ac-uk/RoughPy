@@ -32,6 +32,9 @@
 
 #include "piecewise_abelian_stream.h"
 
+#include "roughpy/core/check.h"                        // for throw_exception
+#include "roughpy/core/types.h"                        // for param_t
+
 #include <roughpy/streams/piecewise_abelian_stream.h>
 #include <roughpy/streams/stream.h>
 

@@ -27,7 +27,11 @@
 
 #include "lie_increment_stream.h"
 
+#include "roughpy/core/check.h"                    // for throw_exception
+#include "roughpy/core/debug_assertion.h"          // for RPY_DBG_ASSERT
+#include "roughpy/core/macros.h"                   // for RPY_UNUSED
 #include <roughpy/core/helpers.h>
+
 #include <roughpy/scalars/key_scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/streams/lie_increment_stream.h>

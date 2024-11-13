@@ -29,6 +29,9 @@
 #define ROUGHPY_STREAMS_BROWNIAN_STREAM_H_
 
 #include "dynamically_constructed_stream.h"
+
+#include "roughpy/core/debug_assertion.h"    // for RPY_DBG_ASSERT
+
 #include "stream_base.h"
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/random.h>

@@ -3,6 +3,7 @@
 
 #include "schema.h"
 
+#include "roughpy/core/check.h"          // for throw_exception
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 

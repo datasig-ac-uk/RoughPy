@@ -31,6 +31,9 @@
 
 #include <roughpy/streams/dyadic_caching_layer.h>
 
+#include "roughpy/core/check.h"              // for throw_exception, RPY_CHECK
+#include "roughpy/core/debug_assertion.h"    // for RPY_DBG_ASSERT
+
 #include <roughpy/platform/archives.h>
 
 #include <boost/interprocess/sync/scoped_lock.hpp>

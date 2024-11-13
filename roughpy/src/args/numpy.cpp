@@ -27,6 +27,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "numpy.h"
+
+#include "roughpy/core/check.h"                         // for throw_exception
+#include "roughpy/core/debug_assertion.h"               // for RPY_DBG_ASSERT
+#include "roughpy/core/slice.h"                         // for Slice
+
 #include <roughpy/platform/devices/core.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/scalar_types.h>

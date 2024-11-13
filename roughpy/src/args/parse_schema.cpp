@@ -3,7 +3,13 @@
 //
 
 #include "parse_schema.h"
+
+
 #include <cctype>
+
+#include "roughpy/core/check.h"      // for throw_exception, RPY_THROW, RPY_...
+#include "roughpy/core/macros.h"     // for RPY_UNUSED_VAR
+
 
 using namespace rpy;
 using namespace rpy::python;

@@ -31,6 +31,11 @@
 
 #include "r_py_tick_construction_helper.h"
 
+#include <roughpy/core/types.h>                       // for move, basic_string
+#include "roughpy/core/check.h"                       // for throw_exception
+#include "roughpy/core/debug_assertion.h"             // for RPY_DBG_ASSERT
+#include "roughpy/core/macros.h"                      // for RPY_UNUSED_VAR
+
 #include <roughpy/streams/tick_stream.h>
 
 #include "args/convert_timestamp.h"

@@ -31,6 +31,8 @@
 
 #include "roughpy_module.h"
 
+#include "roughpy/core/check.h"           // for throw_exception, RPY_CHECK
+
 #include <roughpy/algebra/context.h>
 
 namespace rpy {

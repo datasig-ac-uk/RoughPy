@@ -32,6 +32,10 @@
 #include <cstring>
 #include <sstream>
 
+#include "roughpy/core/alloc.h"                        // for construct_inplace
+#include "roughpy/core/macros.h"                       // for RPY_UNUSED_VAR
+#include "roughpy/core/types.h"                        // for resolution_t
+
 #include <roughpy/intervals/partition.h>
 #include <roughpy/platform/archives.h>
 #include <roughpy/scalars/scalar_type.h>

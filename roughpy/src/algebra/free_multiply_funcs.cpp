@@ -3,6 +3,9 @@
 //
 
 #include "free_multiply_funcs.h"
+
+#include "roughpy/core/check.h"
+
 #include <roughpy/algebra/context.h>
 
 using namespace pybind11::literals;

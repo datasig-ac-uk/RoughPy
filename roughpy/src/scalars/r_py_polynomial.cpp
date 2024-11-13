@@ -34,7 +34,11 @@
 
 #include <sstream>
 
+#include "roughpy/core/check.h"                    // for throw_exception
+#include "roughpy/core/macros.h"                   // for RPY_UNUSED_VAR
+#include "roughpy/core/types.h"                    // for deg_t, string
 #include <roughpy/core/alloc.h>
+
 #include <roughpy/platform/archives.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/scalar.h>

@@ -7,6 +7,10 @@
 // Include Python's datetime module
 #include <datetime.h>
 
+
+#include "roughpy/core/check.h"   // for throw_exception, RPY_THROW, RPY_THR...
+#include "roughpy/core/macros.h"  // for RPY_UNREACHABLE_RETURN
+
 #include "numpy.h"
 
 bool rpy::python::is_py_datetime(py::handle object) noexcept

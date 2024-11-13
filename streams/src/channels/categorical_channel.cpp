@@ -31,6 +31,8 @@
 
 #include <roughpy/streams/channels/categorical_channel.h>
 
+#include "roughpy/core/check.h"  // for throw_exception, RPY_THROW
+
 #include <cereal/types/vector.hpp>
 
 #include <algorithm>

@@ -31,6 +31,11 @@
 
 #include "roughpy_module.h"
 
+
+#include "roughpy/core/check.h"             // for throw_exception, RPY_THROW
+#include "roughpy/core/macros.h"            // for RPY_NO_DISCARD
+#include "roughpy/core/types.h"             // for string, dimn_t
+
 #include <roughpy/scalars/key_scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>
 
