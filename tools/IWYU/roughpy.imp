@@ -63,4 +63,5 @@
   { "symbol": [ "Queue", "public", "<roughpy/platform/devices/core.h>", "public"]},
   { "symbol": [ "QueueInterface", "public", "<roughpy/platform/devices/core.h>", "public"]},
 
+  { "include": [ "<CL/cl.h", "public", "<ocl_headers.h>", "private" ] },
 ]
