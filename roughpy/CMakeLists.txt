@@ -135,9 +135,6 @@ target_include_directories(RoughPy_PyModule PRIVATE
         src/
 )
 
-if(NOT ROUGHPY_ENABLE_IWYU)
-target_precompile_headers(RoughPy_PyModule REUSE_FROM RoughPy::Platform)
-endif()
 
 target_link_libraries(RoughPy_PyModule PRIVATE
         pybind11::headers

@@ -88,9 +88,6 @@ target_link_libraries(RoughPy_Scalars PUBLIC
         PCGRandom::pcg_random
 )
 
-if(NOT ROUGHPY_ENABLE_IWYU)
-target_precompile_headers(RoughPy_Scalars REUSE_FROM RoughPy::Platform)
-endif()
 set_target_properties(RoughPy_Scalars PROPERTIES ROUGHPY_COMPONENT Scalars)
 
 # TODO: This should be removed, it's not sensible
