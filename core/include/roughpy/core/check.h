@@ -9,11 +9,9 @@
 #include <string>
 #include <string_view>
 
-
 #include "check_helpers.h"
 #include "macros.h"
 #include "strings.h"
-
 
 #if defined(RPY_GCC)
 #  define RPY_FUNC_NAME __PRETTY_FUNCTION__
@@ -25,24 +23,39 @@
 #  define RPY_FUNC_NAME static_cast<const char*>(0)
 #endif
 
-
-
 namespace rpy::errors {
 
 template <typename E>
+RPY_LOCAL
 RPY_NO_RETURN void throw_exception(
-        std::string_view user_msg, const char* filename, int lineno, const char* func
+        std::string_view user_msg,
+        const char* filename,
+        int lineno,
+        const char* func
 )
 {
-    throw E(string_cat(user_msg, filename, lineno, func));
-//    throw E(format_error_message(msg, filename, lineno, func, boost::stacktrace::stacktrace()));
+    throw E(string_cat(
+            "Error occurred in ",
+            filename,
+            " at line ",
+            lineno,
+            '(',
+            func,
+            "):\n",
+            user_msg
+    ));
+    //    throw E(format_error_message(msg, filename, lineno, func,
+    //    boost::stacktrace::stacktrace()));
 }
 
-}
+}// namespace rpy::errors
 
 #define RPY_THROW_2(EXC_TYPE, MSG)                                             \
     ::rpy::errors::throw_exception<EXC_TYPE>(                                  \
-            MSG, __FILE__, __LINE__, RPY_FUNC_NAME                             \
+            MSG,                                                               \
+            __FILE__,                                                          \
+            __LINE__,                                                          \
+            RPY_FUNC_NAME                                                      \
     )
 #define RPY_THROW_1(MSG) RPY_THROW_2(std::runtime_error, MSG)
 
@@ -51,10 +64,6 @@ RPY_NO_RETURN void throw_exception(
 #define RPY_THROW_CNT(...) RPY_THROW_CNT_IMPL(__VA_ARGS__, 2, 1, 0)
 #define RPY_THROW(...)                                                         \
     RPY_INVOKE_VA(RPY_THROW_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
-
-
-
-
 
 /*
  * Check macro definition.
@@ -68,15 +77,16 @@ RPY_NO_RETURN void throw_exception(
  * is a std::runtime_error.
  */
 
-
-
 // Dispatch the check macro on the number of arguments
 // See: https://stackoverflow.com/a/16683147/9225581
 #define RPY_CHECK_3(EXPR, MSG, TYPE)                                           \
     do {                                                                       \
         if (RPY_UNLIKELY(!(EXPR))) {                                           \
             ::rpy::errors::throw_exception<TYPE>(                              \
-                    MSG, RPY_FILE_NAME, __LINE__, RPY_FUNC_NAME                \
+                    MSG,                                                       \
+                    RPY_FILE_NAME,                                             \
+                    __LINE__,                                                  \
+                    RPY_FUNC_NAME                                              \
             );                                                                 \
         }                                                                      \
     } while (0)
@@ -94,24 +104,17 @@ RPY_NO_RETURN void throw_exception(
 #define RPY_CHECK(...)                                                         \
     RPY_INVOKE_VA(RPY_CHECK_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
-
-
-
-
 #define RPY_CHECK_EQ(a, b, ...)                                                \
     RPY_CHECK(::rpy::check_equal((a), (b)), __VA_ARGS__)
-#define RPY_CHECK_NE(a, b, ...) \
+#define RPY_CHECK_NE(a, b, ...)                                                \
     RPY_CHECK(::rpy::check_not_equal((a), (b)), __VA_ARGS__)
-#define RPY_CHECK_LT(a, b, ...) \
+#define RPY_CHECK_LT(a, b, ...)                                                \
     RPY_CHECK(::rpy::check_less((a), (b)), __VA_ARGS__)
-#define RPY_CHECK_LE(a, b, ...) \
+#define RPY_CHECK_LE(a, b, ...)                                                \
     RPY_CHECK(::rpy::check_less_equal((a), (b)), __VA_ARGS__)
-#define RPY_CHECK_GT(a, b, ...) \
+#define RPY_CHECK_GT(a, b, ...)                                                \
     RPY_CHECK(::rpy::check_greater((a), (b)), __VA_ARGS__)
-#define RPY_CHECK_GE(a, b, ...) \
+#define RPY_CHECK_GE(a, b, ...)                                                \
     RPY_CHECK(::rpy::check_greater_equal((a), (b)), __VA_ARGS__)
 
-
-
-
-#endif //ROUGHPY_CORE_CHECK_H
+#endif// ROUGHPY_CORE_CHECK_H
