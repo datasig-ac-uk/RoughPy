@@ -2,14 +2,10 @@
 // Created by sam on 10/01/24.
 //
 
-#include "errors.h"
-
-#include <stdexcept>
-#include <string_view>
 
 #include <roughpy/core/check.h>
 
-
+#include "roughpy/platform/roughpy_platform_export.h"
 
 namespace rpy::errors {
 
