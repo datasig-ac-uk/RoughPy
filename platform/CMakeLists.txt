@@ -54,7 +54,9 @@ set_library_version_properties(RoughPy_Platform)
 target_compile_definitions(RoughPy_Platform PRIVATE "RPY_COMPILING_PLATFORM")
 
 
-generate_export_header(RoughPy_Platform)
+generate_export_header(RoughPy_Platform
+        EXPORT_FILE_NAME roughpy/platform/roughpy_platform_export.h
+)
 
 add_subdirectory(src)
 
@@ -64,6 +66,7 @@ add_subdirectory(src)
 # easily the biggest contribution to the build type for RoughPy. For this
 # reason, we precompile all the headers for cereal. Ideally, I want a less
 # intensive solution like protobufs or flatbufs, or literally anything else.
+if (NOT ROUGHPY_ENABLE_IWYU)
 target_precompile_headers(RoughPy_Platform PUBLIC
         <cereal/cereal.hpp>
         <cereal/access.hpp>
@@ -79,7 +82,7 @@ target_precompile_headers(RoughPy_Platform PUBLIC
         <cereal/archives/portable_binary.hpp>
         <cereal/archives/xml.hpp>
 )
-
+endif()
 
 
 #

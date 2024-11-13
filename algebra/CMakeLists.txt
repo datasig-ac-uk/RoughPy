@@ -76,7 +76,9 @@ set_target_properties(RoughPy_Algebra PROPERTIES ROUGHPY_COMPONENT Algebra)
 # TODO: This should be removed, it's not sensible
 target_compile_definitions(RoughPy_Algebra PRIVATE "RPY_COMPILING_ALGEBRA")
 
+if (NOT ROUGHPY_ENABLE_IWYU)
 target_precompile_headers(RoughPy_Algebra REUSE_FROM RoughPy::Platform)
+endif()
 
 set_library_version_properties(RoughPy_Algebra)
 
