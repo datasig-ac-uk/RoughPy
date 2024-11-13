@@ -32,6 +32,8 @@
 
 #include "hall_set_size.h"
 
+#include <roughpy/core/debug_assertion.h>
+
 using namespace rpy;
 using namespace rpy::algebra;
 
