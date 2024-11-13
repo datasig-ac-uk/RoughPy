@@ -28,12 +28,15 @@
 #ifndef ROUGHPY_STREAMS_STREAM_BASE_H_
 #define ROUGHPY_STREAMS_STREAM_BASE_H_
 
+#include <roughpy/core/debug_assertion.h>
+#include <roughpy/core/macros.h>
+#include <roughpy/core/types.h>
+
 #include "roughpy/intervals/dyadic_interval.h"
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/free_tensor.h>
 #include <roughpy/algebra/lie.h>
 #include <roughpy/algebra/shuffle_tensor.h>
-#include <roughpy/core/types.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/platform/errors.h>
