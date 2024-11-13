@@ -30,8 +30,11 @@
 // Created by user on 02/03/23.
 //
 
-#include <roughpy/intervals/dyadic.h>
+#include "roughpy/intervals/dyadic.h"
 
+#include "roughpy/core/types.h"
+
+#include <cmath>
 #include <ostream>
 
 using namespace rpy;
