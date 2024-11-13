@@ -45,7 +45,7 @@
   { "include": [ "<string>", "public", "<roughpy/core/types.h>", "public" ]},
   { "include": [ "<string_view>", "public", "<roughpy/core/types.h>", "public" ]},
   { "include": [ "<utility>", "public", "<roughpy/core/types.h>", "public" ]},
-  { "include": [ "<boost/smart_ptr/intrusive_ptr.hpp>", "public", "<roughpy/core/smart_ptr.h>" "public" ]},
+  { "include": [ "<boost/smart_ptr/intrusive_ptr.hpp>", "public", "<roughpy/core/smart_ptr.h>", "public" ]},
 
   # Platform headers
   { "include": [ "<boost/stacktrace.hpp>", "public", "<roughpy/platform/errors.h>", "public" ]},
