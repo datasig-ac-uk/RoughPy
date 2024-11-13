@@ -338,5 +338,4 @@
 #endif
 
 
-
 #endif// ROUGHPY_CORE_MACROS_H
