@@ -29,6 +29,7 @@
 #ifndef ROUGHPY_CORE_SLICE_H_
 #define ROUGHPY_CORE_SLICE_H_
 
+#include "debug_assertion.h"
 #include "traits.h"
 #include "types.h"
 
