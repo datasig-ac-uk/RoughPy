@@ -3,21 +3,50 @@
 //
 
 #include "errors.h"
-#include <boost/stacktrace.hpp>
 
-using namespace rpy;
+#include <stdexcept>
+#include <string_view>
 
-string errors::format_error_message(
-        string_view user_message,
-        const char* filename,
-        int lineno,
-        const char* func,
-        const boost::stacktrace::stacktrace& st
-)
-{
-    std::stringstream ss;
-    ss << user_message << " at lineno " << lineno << " in " << filename
-       << " in function " << func << '\n'
-       << st << '\n';
-    return ss.str();
+#include <roughpy/core/check.h>
+
+
+
+namespace rpy::errors {
+
+
+template
+ROUGHPY_PLATFORM_EXPORT RPY_NO_RETURN void throw_exception<std::runtime_error>(std::string_view user_msg,
+  const char* filename,
+  int lineno,
+  const char* func
+);
+
+template ROUGHPY_PLATFORM_EXPORT RPY_NO_RETURN void throw_exception<std::system_error>(std::string_view user_msg,
+  const char* filename,
+  int lineno,
+  const char* func);
+
+template ROUGHPY_PLATFORM_EXPORT RPY_NO_RETURN void throw_exception<std::logic_error>(std::string_view user_msg,
+  const char* filename,
+  int lineno,
+  const char* func);
+
+template ROUGHPY_PLATFORM_EXPORT RPY_NO_RETURN void throw_exception<std::invalid_argument>(std::string_view user_msg,
+  const char* filename,
+  int lineno,
+  const char* func);
+
+template ROUGHPY_PLATFORM_EXPORT RPY_NO_RETURN void throw_exception<std::domain_error>(std::string_view user_msg,
+  const char* filename,
+  int lineno,
+  const char* func);
+
+template ROUGHPY_PLATFORM_EXPORT RPY_NO_RETURN void throw_exception<std::out_of_range>(std::string_view user_msg,
+  const char* filename,
+  int lineno,
+  const char* func);
+
+
+
 }
+
