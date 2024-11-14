@@ -1,0 +1,8 @@
+//
+// Created by sam on 14/11/24.
+//
+
+#ifndef ROUGHPY_GENERICS_HASH_TRAIT_H
+#define ROUGHPY_GENERICS_HASH_TRAIT_H
+
+#endif //ROUGHPY_GENERICS_HASH_TRAIT_H
