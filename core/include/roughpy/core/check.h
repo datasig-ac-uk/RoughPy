@@ -26,7 +26,7 @@
 namespace rpy::errors {
 
 template <typename E>
-RPY_LOCAL
+RPY_NO_RETURN
 void throw_exception(
         std::string_view user_msg,
         const char* filename,
