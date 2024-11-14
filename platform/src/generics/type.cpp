@@ -7,7 +7,6 @@
 #include <memory>
 
 
-
 #include "into_from.h"
 
 using namespace rpy;
@@ -30,6 +29,8 @@ intptr_t Type::ref_count() const noexcept
     return this->m_rc.load(std::memory_order_acquire);
 }
 
+
+
 std::unique_ptr<const FromTrait> Type::from(const Type& type) const noexcept
 {
 return nullptr;
@@ -44,11 +45,11 @@ std::unique_ptr<const IntoTrait> Type::into(const Type& type) const noexcept
     return nullptr;
 }
 
-const StaticTrait* Type::get_builtin_trait(BuiltinTraitID id) const noexcept
+const BuiltinTrait* Type::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
     return nullptr;
 }
-const StaticTrait* Type::get_trait(string_view id) const noexcept
+const Trait* Type::get_trait(string_view id) const noexcept
 {
     return nullptr;
 }
