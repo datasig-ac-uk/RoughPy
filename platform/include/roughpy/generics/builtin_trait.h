@@ -14,17 +14,15 @@
 namespace rpy::generics {
 
 
-class EqualityTrait;
+class ComparisonTrait;
 class HashTrait;
 class OrderingTrait;
-class ArithmeticTrait;
 class NumberTrait;
 
 enum class BuiltinTraitID : size_t
 {
-    Equality = 0,
+    Comparison = 0,
     Hash,
-    Ordering,
     Arithmetic,
     Number
 };
