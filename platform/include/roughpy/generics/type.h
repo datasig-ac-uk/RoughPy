@@ -68,14 +68,6 @@ public:
     virtual std::unique_ptr<const IntoTrait> to(const Type& type) const noexcept;
 
 
-    RPY_NO_DISCARD
-    virtual std::unique_ptr<const FromTrait> from(const Type& type) const noexcept;
-
-    RPY_NO_DISCARD
-    virtual std::unique_ptr<const IntoTrait> to(const Type& type) const noexcept;
-
-
-
 
 
 };
