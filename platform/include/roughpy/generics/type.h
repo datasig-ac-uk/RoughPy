@@ -125,6 +125,16 @@ public:
 };
 
 
+RPY_NO_DISCARD
+constexpr bool operator==(const Type& lhs, const Type& rhs) noexcept {
+    return &lhs == &rhs;
+}
+
+RPY_NO_DISCARD
+constexpr bool operator!=(const Type& lhs, const Type& rhs) noexcept {
+    return !(lhs == rhs);
+}
+
 namespace type_props {
 
 
