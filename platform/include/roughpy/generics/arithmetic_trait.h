@@ -71,6 +71,21 @@ public:
 };
 
 
+template <typename T, typename R=T>
+class ROUGHPY_PLATFORM_NO_EXPORT ArithmeticTraitImpl : public ArithmeticTrait
+{
+public:
+    using ArithmeticTrait::ArithmeticTrait;
+
+    RPY_NO_DISCARD bool has_operation(Operation op) const noexcept override;
+
+    void unsafe_add_inplace(void* lhs, const void* rhs) const noexcept override;
+    void unsafe_sub_inplace(void* lhs, const void* rhs) const noexcept override;
+    void unsafe_mul_inplace(void* lhs, const void* rhs) const noexcept override;
+    void unsafe_div_inplace(void* lhs, const void* rhs) const noexcept override;
+};
+
+
 namespace dtl {
 
 template <typename U>
@@ -110,24 +125,6 @@ template <typename U, typename V>
 inline constexpr bool has_div_v<U, V, void_t<div_result_t<U, V>>> = true;
 
 }
-
-template <typename T, typename R=T>
-class ROUGHPY_PLATFORM_NO_EXPORT ArithmeticTraitImpl : public ArithmeticTrait
-{
-
-
-
-
-public:
-    using ArithmeticTrait::ArithmeticTrait;
-
-    RPY_NO_DISCARD bool has_operation(Operation op) const noexcept override;
-
-    void unsafe_add_inplace(void* lhs, const void* rhs) const noexcept override;
-    void unsafe_sub_inplace(void* lhs, const void* rhs) const noexcept override;
-    void unsafe_mul_inplace(void* lhs, const void* rhs) const noexcept override;
-    void unsafe_div_inplace(void* lhs, const void* rhs) const noexcept override;
-};
 
 template <typename T, typename R>
 bool ArithmeticTraitImpl<T, R>::has_operation(Operation op) const noexcept override
