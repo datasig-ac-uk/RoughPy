@@ -40,7 +40,7 @@ protected:
     // constructed is used internally for constructing (derived classes)
     // where the data pointer might be null. (See ConstPointer below.)
     // This causes the construct to skip the validity check.
-    ConstRef(TypePtr type, const void* data, without_null_check)
+    constexpr ConstRef(TypePtr type, const void* data, without_null_check)
         : p_type(std::move(type)), p_data(data) {}
 
     template <typename T=void>
@@ -66,22 +66,33 @@ public:
         RPY_CHECK_NE(p_data, nullptr);
     }
 
+    static ConstRef zero(TypePtr type)
+    {
+        RPY_CHECK_NE(type->get_builtin_trait((BuiltinTraitID::Number)), nullptr);
+        return {std::move(type), nullptr, without_null_check{}};
+    }
 
     RPY_NO_DISCARD
-    bool is_valid() const noexcept
+    constexpr bool is_valid() const noexcept
     {
         return static_cast<bool>(p_type) && p_data != nullptr;
     }
 
     RPY_NO_DISCARD
-    bool fast_is_zero() const noexcept
+    constexpr bool fast_is_zero() const noexcept
     {
-        return !is_valid();
+        return !is_valid() || p_data == nullptr;
     }
 
+    RPY_NO_DISCARD
+    const Type& type() const noexcept
+    {
+        return *p_type;
+    }
 
     template <typename T = void>
-    const T* data() const noexcept
+    RPY_NO_DISCARD
+    constexpr const T* data() const noexcept
     {
         if constexpr (is_void_v<T>) {
             return p_data;
@@ -108,13 +119,15 @@ public:
     {
     }
 
-    ConstRef operator*() const noexcept
+    RPY_NO_DISCARD
+    constexpr ConstRef operator*() const noexcept
     {
         RPY_DBG_ASSERT(is_valid());
         return static_cast<ConstRef>(*this);
     }
 
-    const ConstRef* operator->() const noexcept
+    RPY_NO_DISCARD
+    constexpr const ConstRef* operator->() const noexcept
     {
         RPY_DBG_ASSERT(is_valid());
         return static_cast<const ConstRef*>(this);
@@ -128,6 +141,13 @@ public:
 class ROUGHPY_PLATFORM_EXPORT Ref : public ConstRef
 {
 
+
+protected:
+
+    constexpr Ref(TypePtr type, void* data, without_null_check tag)
+        : ConstRef(std::move(type), data, tag)
+    {}
+
 public:
 
     Ref(TypePtr type, void* data)
@@ -136,10 +156,11 @@ public:
 
     using ConstRef::data;
 
-    template <typename T>
-    T* data() const noexcept
+    template <typename T = void>
+    RPY_NO_DISCARD
+    constexpr T* data() const noexcept
     {
-        return const_cast<T*>(this->data<T>());
+        return const_cast<T*>(ConstRef::data<T>());
     }
 
 
@@ -147,6 +168,34 @@ public:
 };
 class ROUGHPY_PLATFORM_EXPORT Ptr : Ref
 {
+public:
+    using value_type = Value;
+    using const_reference = ConstRef;
+    using reference = Ref;
+    using pointer = Ptr;
+    using const_pointer = ConstPtr;
+
+    explicit Ptr(TypePtr type, const void* data = nullptr)
+        : Ref(std::move(type), data, without_null_check{})
+    {}
+
+    // ReSharper disable once CppNonExplicitConversionOperator
+    operator ConstPtr() const noexcept // NOLINT(*-explicit-constructor)
+    {
+        return ConstPtr {&type(), data()};
+    }
+
+    constexpr Ref operator*() const noexcept
+    {
+        RPY_DBG_ASSERT(is_valid());
+        return static_cast<Ref>(*this);
+    }
+
+    constexpr const Ref* operator->() const noexcept
+    {
+        RPY_DBG_ASSERT(is_valid());
+        return static_cast<const Ref*>(this);
+    }
 
 
 };
