@@ -21,6 +21,7 @@ hash_t HashTrait::hash(ConstRef value) const
     if (value.fast_is_zero()) {
         return static_cast<hash_t>(0);
     }
+
     return unsafe_hash(value.data());
 }
 
