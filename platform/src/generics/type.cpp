@@ -35,11 +35,20 @@ std::unique_ptr<const FromTrait> Type::from(const Type& type) const noexcept
 return nullptr;
 }
 
-std::unique_ptr<const IntoTrait> Type::to(const Type& type) const noexcept
+std::unique_ptr<const IntoTrait> Type::into(const Type& type) const noexcept
 {
     if (auto p_from = from(type)) {
         return std::make_unique<IntoFrom>(std::move(p_from));
     }
 
+    return nullptr;
+}
+
+const StaticTrait* Type::get_builtin_trait(BuiltinTraitID id) const noexcept
+{
+    return nullptr;
+}
+const StaticTrait* Type::get_trait(string_view id) const noexcept
+{
     return nullptr;
 }

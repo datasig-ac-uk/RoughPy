@@ -22,6 +22,16 @@ namespace rpy::generics {
 class FromTrait;
 class IntoTrait;
 
+enum class BuiltinTraitID : uint16_t
+{
+    Equality = 0,
+    Hash,
+    Ordering,
+    Arithmetic,
+    Number
+};
+class StaticTrait;
+
 
 
 class ROUGHPY_PLATFORM_EXPORT Type
@@ -65,7 +75,13 @@ public:
     virtual std::unique_ptr<const FromTrait> from(const Type& type) const noexcept;
 
     RPY_NO_DISCARD
-    virtual std::unique_ptr<const IntoTrait> to(const Type& type) const noexcept;
+    virtual std::unique_ptr<const IntoTrait> into(const Type& type) const noexcept;
+
+    RPY_NO_DISCARD
+    virtual const StaticTrait* get_builtin_trait(BuiltinTraitID id) const noexcept;
+
+    RPY_NO_DISCARD
+    virtual const StaticTrait* get_trait(string_view id) const noexcept;
 
 
 
