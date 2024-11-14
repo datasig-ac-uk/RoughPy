@@ -13,6 +13,7 @@ target_sources(RoughPy_Platform PRIVATE
         ${_header_dir}/values.h
 
         equality_trait.cpp
+        hash_trait.cpp
         into_from.cpp
         into_from.h
         type.cpp
