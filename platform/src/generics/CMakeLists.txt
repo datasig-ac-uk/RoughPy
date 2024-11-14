@@ -12,6 +12,7 @@ target_sources(RoughPy_Platform PRIVATE
         ${_header_dir}/type.h
         ${_header_dir}/values.h
 
+        arithmetic_trait.cpp
         equality_trait.cpp
         hash_trait.cpp
         into_from.cpp
