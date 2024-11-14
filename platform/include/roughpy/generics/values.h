@@ -75,7 +75,7 @@ public:
     RPY_NO_DISCARD
     constexpr bool is_valid() const noexcept
     {
-        return static_cast<bool>(p_type) && p_data != nullptr;
+        return static_cast<bool>(p_type);
     }
 
     RPY_NO_DISCARD
@@ -175,7 +175,7 @@ public:
     using pointer = Ptr;
     using const_pointer = ConstPtr;
 
-    explicit Ptr(TypePtr type, const void* data = nullptr)
+    explicit Ptr(TypePtr type, void* data = nullptr)
         : Ref(std::move(type), data, without_null_check{})
     {}
 
@@ -196,10 +196,168 @@ public:
         RPY_DBG_ASSERT(is_valid());
         return static_cast<const Ref*>(this);
     }
+};
 
+
+
+namespace dtl {
+
+class ValueStorage {
+
+    union Storage
+    {
+        constexpr Storage() : pointer(nullptr) {}
+
+        alignas(void*) byte bytes[sizeof(void*)];
+        void* pointer;
+    };
+
+    Storage m_storage;// NOLINT(*-non-private-member-variables-in-classes)
+
+public:
+
+    constexpr ValueStorage() = default;
+
+    constexpr ValueStorage(ValueStorage&& other) noexcept
+        : m_storage(other.m_storage)
+    {
+        other.m_storage.pointer = nullptr;
+    }
+
+    RPY_NO_DISCARD static bool is_inline_stored(const Type* type) noexcept
+    {
+        return type != nullptr && type_props::is_arithmetic(*type)
+                && type_props::size_of(*type) <= sizeof(void*);
+    }
+
+    void* data(const Type* type) noexcept
+    {
+        if (is_inline_stored(type)) { return m_storage.bytes; }
+        return m_storage.pointer;
+    }
+
+    const void* data(const Type* type) const noexcept
+    {
+        if (is_inline_stored(type)) { return m_storage.bytes; }
+        return m_storage.pointer;
+    }
+
+    constexpr void* reset(void* new_ptr)
+    {
+        return std::exchange(m_storage.pointer, new_ptr);
+    }
 
 };
 
+}
+
+
+class ROUGHPY_PLATFORM_EXPORT Value
+{
+    dtl::ValueStorage m_storage;
+    TypePtr p_type = nullptr;
+
+    RPY_NO_DISCARD bool is_inline_stored() const noexcept
+    {
+        return dtl::ValueStorage::is_inline_stored(p_type.get());
+    }
+
+    friend class ConstRef;
+    friend class Ref;
+
+    void allocate_data();
+
+    void assign_value(const Type* type, const void* source_data);
+
+public:
+
+    // standard constructors
+    Value();
+    Value(const Value& other);
+    Value(Value&& other) noexcept;
+
+    // Construct a zero object if this is valid
+    explicit Value(TypePtr type);
+
+    // Copy a value from an existing reference
+    explicit Value(ConstRef other);
+
+    ~Value();
+
+    // The semantics of copy assignment are different depending on whether the
+    // value is initialized or not. If the value is initialized then the copy
+    // assignment performs a converting copy from other into this. If the type
+    // is not initialized, an ordinary construction is performed.
+    Value& operator=(const Value& other);
+
+    // Move construction also has different semantics
+    // ReSharper disable once CppSpecialFunctionWithoutNoexceptSpecification
+    Value& operator=(Value&& other); // NOLINT(*-noexcept-move-constructor)
+
+    Value& operator=(ConstRef other);
+
+    template <typename T = void>
+    RPY_NO_DISCARD const T* data() const noexcept(is_void_v<T>)
+    {
+        if (!p_type) {
+            return nullptr;
+        }
+
+        if constexpr (is_void_v<T>) {
+            return m_storage.data(p_type.get());
+        } else {
+            RPY_CHECK_EQ(p_type->type_info(), typeid(T));
+            return std::launder(
+                static_cast<const T*>(m_storage.data(p_type.get())));
+        }
+    }
+
+    template <typename T = void>
+    RPY_NO_DISCARD T* data() noexcept(is_void_v<T>)
+    {
+        if (!p_type) {
+            return nullptr;
+        }
+
+        if constexpr (is_void_v<T>) {
+            return m_storage.data(p_type.get());
+        } else {
+            RPY_CHECK_EQ(p_type->type_info(), typeid(T));
+            return std::launder(
+                static_cast<T*>(m_storage.data(p_type.get())));
+        }
+    }
+
+
+    // Inplace arithmetic operations
+    Value& operator+=(const Value& other)
+    {
+
+        return *this;
+    }
+
+    Value& operator-=(const Value& other)
+    {
+
+        return *this;
+    }
+
+    Value& operator*=(const Value& other)
+    {
+
+        return *this;
+    }
+
+    Value& operator/=(const Value& other)
+    {
+
+        return *this;
+    }
+
+
+
+
+};
 
 
 
