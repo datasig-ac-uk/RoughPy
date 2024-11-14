@@ -14,8 +14,6 @@
 #include "roughpy/platform/roughpy_platform_export.h"
 
 #include "type_ptr.h"
-#include "const_reference.h"
-#include "type_ptr.h"
 #include "type.h"
 
 namespace rpy::generics {
@@ -110,7 +108,7 @@ public:
 
     ConstRef operator*() const noexcept
     {
-        RPY_DBG_ASSERT(is_valid())
+        RPY_DBG_ASSERT(is_valid());
         return static_cast<ConstRef>(*this);
     }
 
@@ -142,6 +140,11 @@ public:
         return const_cast<T*>(this->data<T>());
     }
 
+};
+
+
+class ROUGHPY_PLATFORM_EXPORT Ptr : Ref
+{
 
 
 };
