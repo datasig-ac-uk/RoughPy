@@ -19,11 +19,12 @@ class ROUGHPY_PLATFORM_EXPORT EqualityTrait : public BuiltinTrait
 protected:
     constexpr EqualityTrait() : BuiltinTrait(my_id) {}
 
-    virtual ~EqualityTrait();
 
 public:
 
     static constexpr BuiltinTraitID my_id = BuiltinTraitID::Equality;
+
+    virtual ~EqualityTrait();
 
     RPY_NO_DISCARD
     virtual bool
@@ -44,14 +45,19 @@ public:
     EqualityTraitImpl() = default;
 
     RPY_NO_DISCARD
-    bool unsafe_equals(const void* lhs, const void* rhs) const noexcept override
-    {
-        RPY_DBG_ASSERT_NE(lhs, nullptr);
-        RPY_DBG_ASSERT_NE(rhs, nullptr);
-        return *static_cast<const T*>(lhs) == *static_cast<const T*>(rhs);
-    }
+    bool unsafe_equals(const void* lhs, const void* rhs) const noexcept override;
 
 };
+
+template <typename T>
+bool EqualityTraitImpl<T>::unsafe_equals(const void* lhs, const void* rhs)
+        const noexcept
+{
+    RPY_DBG_ASSERT_NE(lhs, nullptr);
+    RPY_DBG_ASSERT_NE(rhs, nullptr);
+    return *static_cast<const T*>(lhs) == *static_cast<const T*>(rhs);
+}
+
 
 }
 
