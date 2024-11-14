@@ -31,12 +31,12 @@
 #endif
 
 
-#define RPY_DBG_ASSERT_EQ(a, b) RPY_DBG_ASSERT(::rpy::check_equal((a), (b)))
-#define RPY_DBG_ASSERT_NE(a, b) RPY_DBG_ASSERT(::rpy::check_not_equal((a), (b)))
-#define RPY_DBG_ASSERT_LT(a, b) RPY_DBUG_ASSERT(::rpy::check_less((a), (b)))
-#define RPY_DBG_ASSERT_GT(a, b) RPY_DBG_ASSERT(::rpy::check_greater((a), (b)))
-#define RPY_DBG_ASSERT_LE(a, b) RPY_DBG_ASSERT(::rpy::check_less_equal((a), (b)))
-#define RPY_DBG_ASSERT_GE(a, b) RPY_DBG_ASSERT(::rpy::check_greater_equal((a), (b)))
+#define RPY_DBG_ASSERT_EQ(a, b) RPY_DBG_ASSERT(::rpy::compare_equal((a), (b)))
+#define RPY_DBG_ASSERT_NE(a, b) RPY_DBG_ASSERT(::rpy::compare_not_equal((a), (b)))
+#define RPY_DBG_ASSERT_LT(a, b) RPY_DBG_ASSERT(::rpy::compare_less((a), (b)))
+#define RPY_DBG_ASSERT_GT(a, b) RPY_DBG_ASSERT(::rpy::compare_greater((a), (b)))
+#define RPY_DBG_ASSERT_LE(a, b) RPY_DBG_ASSERT(::rpy::compare_less_equal((a), (b)))
+#define RPY_DBG_ASSERT_GE(a, b) RPY_DBG_ASSERT(::rpy::compare_greater_equal((a), (b)))
 
 
 
