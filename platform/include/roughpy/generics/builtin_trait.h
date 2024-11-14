@@ -38,6 +38,7 @@ protected:
     explicit constexpr BuiltinTrait(BuiltinTraitID id) : m_id(id) {}
 public:
 
+    RPY_NO_DISCARD
     constexpr BuiltinTraitID id() const noexcept { return m_id; }
 
 };
