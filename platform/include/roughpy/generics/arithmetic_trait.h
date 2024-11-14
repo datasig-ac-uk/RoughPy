@@ -47,6 +47,11 @@ public:
     virtual void unsafe_mul_inplace(void* lhs, const void* rhs) const = 0;
     virtual void unsafe_div_inplace(void* lhs, const void* rhs) const = 0;
 
+    RPY_NO_DISCARD
+    const TypePtr& type() const noexcept { return p_type; }
+
+    RPY_NO_DISCARD
+    const TypePtr& rational_type() const noexcept { return p_rational_type; }
 
     void add_inplace(Ref lhs, ConstRef rhs) const;
     void sub_inplace(Ref lhs, ConstRef rhs) const;
@@ -61,6 +66,17 @@ public:
     Value mul(ConstRef lhs, ConstRef rhs) const;
     RPY_NO_DISCARD
     Value div(ConstRef lhs, ConstRef rhs) const;
+
+};
+
+
+template <typename T, typename R>
+class ROUGHPY_PLATFORM_NO_EXPORT ArithmeticTraitImpl
+    : public ArithmeticTrait
+{
+public:
+
+
 
 };
 
