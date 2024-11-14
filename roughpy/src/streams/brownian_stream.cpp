@@ -31,6 +31,9 @@
 
 #include "brownian_stream.h"
 
+#include "roughpy/core/check.h"               // for throw_exception, RPY_THROW
+
+
 #include <roughpy/streams/brownian_stream.h>
 
 #include "args/kwargs_to_path_metadata.h"

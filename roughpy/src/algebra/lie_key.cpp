@@ -31,6 +31,10 @@
 #include <cassert>
 #include <sstream>
 
+#include "roughpy/core/check.h"                // for throw_exception, RPY_T...
+#include "roughpy/core/debug_assertion.h"      // for RPY_DBG_ASSERT
+#include "roughpy/core/macros.h"               // for RPY_UNUSED
+
 #include <roughpy/scalars/scalar_types.h>
 #include <roughpy/algebra/context.h>
 

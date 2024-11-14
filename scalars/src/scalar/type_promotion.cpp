@@ -3,6 +3,10 @@
 //
 
 #include "type_promotion.h"
+
+#include "roughpy/core/check.h"            // for throw_exception, RPY_THROW
+#include "roughpy/core/debug_assertion.h"  // for RPY_DBG_ASSERT
+
 #include <roughpy/scalars/traits.h>
 
 using namespace rpy;

@@ -28,14 +28,16 @@
 #ifndef ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
 #define ROUGHPY_DEVICE_DEVICE_OBJECT_BASE_H_
 
-#include "core.h"
+#include <atomic>
+#include <memory>
 
+#include "roughpy/core/check.h"
+#include <roughpy/core/debug_assertion.h>
 #include <roughpy/core/macros.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 
-#include <atomic>
-#include <memory>
+#include "core.h"
 
 namespace rpy {
 namespace devices {

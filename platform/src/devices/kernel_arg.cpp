@@ -30,8 +30,5 @@
 //
 
 #include "devices/kernel_arg.h"
-#include "devices/buffer.h"
-#include <stdexcept>
 
-using namespace rpy;
-using namespace rpy::devices;
+

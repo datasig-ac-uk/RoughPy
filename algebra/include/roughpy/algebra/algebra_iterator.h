@@ -31,7 +31,7 @@
 
 #include "algebra_fwd.h"
 #include "basis.h"
-
+#include "roughpy/core/check.h"      // for throw_exception, RPY_THROW
 #include <roughpy/scalars/scalar.h>
 
 #include <memory>

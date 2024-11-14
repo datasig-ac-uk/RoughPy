@@ -30,6 +30,7 @@
 
 #include "dyadic.h"
 #include "interval.h"
+#include "roughpy/core/debug_assertion.h"    // for RPY_DBG_ASSERT
 #include <roughpy/core/types.h>
 #include <roughpy/platform/serialization.h>
 

@@ -28,6 +28,8 @@
 
 #include "scalar_type.h"
 
+#include "roughpy/core/debug_assertion.h"               // for RPY_DBG_ASSERT
+
 // #include "scalar.h"
 #include "scalars.h"
 

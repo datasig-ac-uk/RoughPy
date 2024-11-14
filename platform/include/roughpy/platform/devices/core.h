@@ -29,19 +29,22 @@
 #ifndef ROUGHPY_DEVICE_CORE_H_
 #define ROUGHPY_DEVICE_CORE_H_
 
+#include <iosfwd>
+
+
 #include <roughpy/core/macros.h>
 #include <roughpy/core/smart_ptr.h>
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
+#include "roughpy/core/smart_ptr.h"
 
 #include <roughpy/platform/serialization.h>
-#include <roughpy/platform/errors.h>
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/uuid/uuid.hpp>
 
 #include "rational_numbers.h"
-#include "roughpy_platform_export.h"
+
+#include "roughpy/platform/roughpy_platform_export.h"
 
 /*
  * We use the half precision floating point and bfloat16 types from Eigen but
@@ -298,7 +301,7 @@ class Buffer;
 class EventInterface;
 class Event;
 class HostDeviceHandle;
-class KernalArgument;
+class KernelArgument;
 class KernelInterface;
 class Kernel;
 class MemoryView;

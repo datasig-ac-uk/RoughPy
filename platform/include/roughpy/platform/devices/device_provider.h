@@ -32,7 +32,12 @@
 #ifndef ROUGHPY_DEVICE_DEVICE_PROVIDER_H_
 #define ROUGHPY_DEVICE_DEVICE_PROVIDER_H_
 
+#include <memory>
+
+#include "roughpy/platform/roughpy_platform_export.h"
+
 #include "core.h"
+
 
 namespace rpy {
 namespace devices {

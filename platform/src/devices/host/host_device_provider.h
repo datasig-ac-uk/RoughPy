@@ -32,7 +32,11 @@
 #ifndef ROUGHPY_DEVICE_SRC_CPU_CPU_DEVICE_PROVIDER_H_
 #define ROUGHPY_DEVICE_SRC_CPU_CPU_DEVICE_PROVIDER_H_
 
+
+
+#include "devices/core.h"
 #include "devices/device_provider.h"
+
 
 namespace rpy {
 namespace devices {

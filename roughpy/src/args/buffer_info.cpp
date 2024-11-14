@@ -5,6 +5,8 @@
 #include "buffer_info.h"
 
 #include "roughpy_module.h"
+
+#include "roughpy/core/check.h"  // for throw_exception, RPY_THROW
 #include <roughpy/platform/errors.h>
 
 #include <functional>

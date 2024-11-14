@@ -32,6 +32,9 @@
 
 #include <roughpy/streams/external_data_stream.h>
 
+#include "roughpy/core/check.h"                  // for throw_exception
+#include "roughpy/core/debug_assertion.h"        // for RPY_DBG_ASSERT
+
 #include "external_data_sources/csv_data_source.h"
 #include "external_data_sources/sound_file_data_source.h"
 

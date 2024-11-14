@@ -32,7 +32,9 @@
 
 #include "strided_copy.h"
 
+#include "roughpy/core/debug_assertion.h"          // for RPY_DBG_ASSERT
 #include <roughpy/core/types.h>
+
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>
 

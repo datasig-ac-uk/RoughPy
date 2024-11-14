@@ -32,16 +32,20 @@
 #ifndef ROUGHPY_PLATFORM_CONFIGURATION_H
 #define ROUGHPY_PLATFORM_CONFIGURATION_H
 
+#include <memory>
+
+#include "roughpy/core/macros.h"
 #include <roughpy/core/traits.h>
 #include <roughpy/core/types.h>
 #include <roughpy/core/slice.h>
 
-#include <memory>
 
-#include "roughpy_platform_export.h"
-#include "filesystem.h"
+#include "roughpy/platform/roughpy_platform_export.h"
+
+#include "filesystem.h" // IWYU pragma: keep
 
 namespace rpy {
+
 
 // Forward declaration
 class Configuration;

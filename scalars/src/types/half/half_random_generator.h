@@ -6,6 +6,9 @@
 #define HALF_RANDOM_GENERATOR_H
 
 #include "random/standard_random_generator.h"
+
+#include "roughpy/core/check.h" // for throw_exception, RPY_CHECK
+
 #include "scalar_types.h"
 
 

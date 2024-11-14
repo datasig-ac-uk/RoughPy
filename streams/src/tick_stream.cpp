@@ -31,6 +31,8 @@
 
 #include <roughpy/streams/tick_stream.h>
 
+#include "roughpy/core/debug_assertion.h"       // for RPY_DBG_ASSERT
+
 #include <cereal/types/vector.hpp>
 #include <cereal/types/unordered_map.hpp>
 #include <set>

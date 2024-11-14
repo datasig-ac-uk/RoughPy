@@ -32,12 +32,16 @@
 #ifndef ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_BUFFER_H_
 #define ROUGHPY_DEVICE_SRC_CPUDEVICE_CPU_BUFFER_H_
 
+#include <atomic>
+#include <memory>
+
+#include "devices/core.h"
+#include "devices/device_object_base.h"
+#include "devices/event.h"
 #include "devices/buffer.h"
 
-#include "host_decls.h"
 
 
-#include <atomic>
 
 namespace rpy {
 namespace devices {

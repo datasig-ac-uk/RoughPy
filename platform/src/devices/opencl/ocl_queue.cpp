@@ -31,6 +31,9 @@
 
 #include "ocl_queue.h"
 
+
+#include "roughpy/core/debug_assertion.h"  // for RPY_DBG_ASSERT
+
 #include "ocl_device.h"
 #include "ocl_handle_errors.h"
 #include "ocl_headers.h"

@@ -34,6 +34,9 @@
 
 #include <algorithm>
 #include <list>
+
+
+#include "roughpy/core/check.h"               // for throw_exception, RPY_CHECK
 #include <roughpy/platform/errors.h>
 
 #include <roughpy/intervals/real_interval.h>

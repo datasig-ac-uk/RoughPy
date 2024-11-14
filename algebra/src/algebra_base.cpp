@@ -29,6 +29,9 @@
 // Created by user on 03/03/23.
 //
 
+#include <roughpy/core/check.h>
+
+
 #include "interfaces/algebra_interface.h"
 #include <roughpy/algebra/algebra_base.h>
 #include <roughpy/algebra/algebra_base_impl.h>

@@ -29,7 +29,7 @@
 // Created by user on 05/07/23.
 //
 #include "partition.h"
-
+#include "roughpy/core/check.h"   // for throw_exception, RPY_CHEC
 #include <roughpy/platform/errors.h>
 
 #include <cereal/types/vector.hpp>

@@ -6,6 +6,9 @@
 
 #include <sstream>
 
+#include "roughpy/core/check.h"  // for throw_exception, RPY_THROW
+
+
 using namespace rpy;
 
 void rpy::python::check_for_excess_arguments(const py::kwargs& kwargs)

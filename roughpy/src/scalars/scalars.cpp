@@ -32,6 +32,10 @@
 
 #include <pybind11/operators.h>
 
+#include "roughpy/core/check.h"                         // for throw_exception
+#include "roughpy/core/debug_assertion.h"               // for RPY_DBG_ASSERT
+#include "roughpy/core/macros.h"                        // for RPY_CLANG_DIS...
+
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_array.h>
 #include <roughpy/scalars/scalar_type.h>

@@ -30,7 +30,12 @@
 //
 
 #include "devices/event.h"
-#include "devices/device_handle.h"
+
+#include <roughpy/core/check.h>
+#include <roughpy/core/macros.h>
+
+#include "devices/core.h"
+#include "devices/device_object_base.h"
 
 using namespace rpy;
 using namespace rpy::devices;

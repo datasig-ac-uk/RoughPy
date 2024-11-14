@@ -33,22 +33,29 @@
 #ifndef ROUGHPY_SCALARS_SRC_STANDARD_RANDOM_GENERATOR_H
 #define ROUGHPY_SCALARS_SRC_STANDARD_RANDOM_GENERATOR_H
 
-#include <roughpy/scalars/random.h>
 
+#include <climits>
 #include <mutex>
 #include <random>
 #include <sstream>
+#include <stdexcept>
 #include <vector>
-
-#include <roughpy/core/alloc.h>
-
-#include <roughpy/scalars/scalar.h>
-#include <roughpy/scalars/scalar_type.h>
-#include <roughpy/scalars/scalar_types.h>
 
 #include "random_impl.h"
 #include <pcg_random.hpp>
 #include <pcg_uint128.hpp>
+
+#include <roughpy/core/alloc.h>
+#include <roughpy/core/check.h>
+#include <roughpy/core/slice.h>
+#include <roughpy/core/types.h>
+
+#include "roughpy/scalars/scalars_fwd.h"
+
+#include "roughpy/scalars/random.h"
+#include "roughpy/scalars/scalar.h"
+#include "roughpy/scalars/scalar_array.h"
+#include "roughpy/scalars/scalar_type.h"
 
 namespace pcg_extras {
 

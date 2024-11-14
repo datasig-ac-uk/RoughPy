@@ -30,6 +30,10 @@
 #include <map>
 #include <set>
 
+#include "roughpy/core/check.h"                          // for throw_exception
+#include "roughpy/core/debug_assertion.h"                // for RPY_DBG_ASSERT
+#include "roughpy/core/types.h"                          // for param_t
+
 #include <roughpy/algebra/lie.h>
 #include <roughpy/intervals/interval.h>
 #include <roughpy/streams/stream.h>

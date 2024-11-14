@@ -30,6 +30,7 @@
 //
 
 #include <roughpy/streams/lie_increment_stream.h>
+#include "roughpy/core/check.h"             // for throw_exception, RPY_CHECK
 
 #include <cereal/types/concepts/pair_associative_container.hpp>
 

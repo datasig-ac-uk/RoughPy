@@ -4,6 +4,9 @@ setup_roughpy_component(Core)
 
 add_library(RoughPy_Core INTERFACE
         include/roughpy/core/alloc.h
+        include/roughpy/core/check.h
+        include/roughpy/core/check_helpers.h
+        include/roughpy/core/debug_assertion.h
         include/roughpy/core/hash.h
         include/roughpy/core/types.h
         include/roughpy/core/traits.h
@@ -11,6 +14,7 @@ add_library(RoughPy_Core INTERFACE
         include/roughpy/core/helpers.h
         include/roughpy/core/slice.h
         include/roughpy/core/smart_ptr.h
+        include/roughpy/core/strings.h
 )
 add_library(RoughPy::Core ALIAS RoughPy_Core)
 

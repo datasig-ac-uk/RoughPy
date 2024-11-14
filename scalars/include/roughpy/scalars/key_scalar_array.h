@@ -28,6 +28,8 @@
 #ifndef ROUGHPY_SCALARS_KEY_SCALAR_ARRAY_H_
 #define ROUGHPY_SCALARS_KEY_SCALAR_ARRAY_H_
 
+#include "roughpy/core/check.h" // for throw_exception, RPY_CHECK
+
 #include "scalar_array.h"
 #include "scalars_fwd.h"
 

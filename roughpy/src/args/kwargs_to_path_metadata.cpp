@@ -28,6 +28,10 @@
 #include "kwargs_to_path_metadata.h"
 #include "parse_algebra_configuration.h"
 
+#include "roughpy/core/check.h"                       // for throw_exception
+#include "roughpy/core/debug_assertion.h"             // for RPY_DBG_ASSERT
+
+
 #include "algebra/context.h"
 #include "scalars/scalar_type.h"
 

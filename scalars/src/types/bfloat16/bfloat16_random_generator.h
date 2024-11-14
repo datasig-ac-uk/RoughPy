@@ -6,6 +6,9 @@
 #define BFLOAT16_RANDOM_GENERATOR_H
 
 #include "random/standard_random_generator.h"
+
+#include "roughpy/core/check.h"                    // for throw_exception
+
 #include "scalar_types.h"
 
 

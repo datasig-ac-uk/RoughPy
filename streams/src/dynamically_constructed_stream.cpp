@@ -31,6 +31,8 @@
 
 #include <roughpy/streams/dynamically_constructed_stream.h>
 
+#include "roughpy/core/debug_assertion.h"    // for RPY_DBG_ASSERT
+
 #include <roughpy/algebra/lie.h>
 #include <cereal/types/vector.hpp>
 

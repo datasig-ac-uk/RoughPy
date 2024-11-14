@@ -33,7 +33,7 @@
 #ifndef ROUGHPY_CORE_MACROS_H
 #define ROUGHPY_CORE_MACROS_H
 
-#include <cassert>
+
 
 
 #ifdef __has_builtin
@@ -81,12 +81,7 @@
 
 #define RPY_IDENTITY(ARG) ARG
 
-#if (defined(_DEBUG) || !defined(NDEBUG) || !defined(__OPTIMIZE__))            \
-        && !defined(RPY_DEBUG)
-#  define RPY_DEBUG
-#elif !defined(RPY_DEBUG)
-#  undef RPY_DEBUG
-#endif
+
 
 #if defined(_MSC_VER) && defined(_MSVC_LANG)
 #  define RPY_CPP_VERSION _MSVC_LANG
@@ -342,18 +337,5 @@
 #  define RPY_FILE_NAME __FILE__
 #endif
 
-#ifndef __CLION_IDE__
-#ifdef RPY_DEBUG
-#  if defined(RPY_GCC) || defined(RPY_CLANG)
-#    define RPY_DBG_ASSERT(ARG) assert(ARG)
-#  else
-#    define RPY_DBG_ASSERT(ARG) assert(ARG)
-#  endif
-#else
-#  define RPY_DBG_ASSERT(ARG) (void) 0
-#endif
-#else
-#  define RPY_DBG_ASSERT(ARG)
-#endif
 
 #endif// ROUGHPY_CORE_MACROS_H

@@ -28,6 +28,9 @@
 
 #include "scalar_array.h"
 
+#include "roughpy/core/check.h"                      // for throw_exception
+#include "roughpy/core/debug_assertion.h"            // for RPY_DBG_ASSERT
+
 #include "scalar.h"
 #include "scalar/casts.h"
 #include "scalar_serialization.h"

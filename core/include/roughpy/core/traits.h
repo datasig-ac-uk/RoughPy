@@ -100,6 +100,83 @@ using std::is_base_of;
 using std::is_convertible;
 using std::is_same;
 
+
+using std::is_base_of_v;
+using std::is_convertible_v;
+using std::is_same_v;
+
+using std::is_array_v;
+using std::is_class_v;
+using std::is_enum_v;
+using std::is_floating_point_v;
+using std::is_function_v;
+using std::is_integral_v;
+using std::is_lvalue_reference_v;
+using std::is_member_function_pointer_v;
+using std::is_member_object_pointer_v;
+using std::is_null_pointer_v;
+using std::is_pointer_v;
+using std::is_rvalue_reference_v;
+using std::is_union_v;
+using std::is_void_v;
+
+using std::is_const_v;
+using std::is_literal_type_v;
+using std::is_pod_v;
+using std::is_standard_layout_v;
+using std::is_trivial_v;
+using std::is_trivially_copyable_v;
+using std::is_volatile_v;
+
+using std::is_abstract_v;
+using std::is_aggregate_v;
+using std::is_empty_v;
+using std::is_final_v;
+using std::is_polymorphic_v;
+
+using std::is_signed_v;
+using std::is_unsigned_v;
+
+using std::is_constructible_v;
+using std::is_nothrow_constructible_v;
+using std::is_trivially_constructible_v;
+
+using std::is_default_constructible_v;
+using std::is_nothrow_default_constructible_v;
+using std::is_trivially_default_constructible_v;
+
+using std::is_copy_constructible_v;
+using std::is_nothrow_copy_constructible_v;
+using std::is_trivially_copy_constructible_v;
+
+using std::is_move_constructible_v;
+using std::is_nothrow_move_constructible_v;
+using std::is_trivially_move_constructible_v;
+
+using std::is_assignable_v;
+using std::is_nothrow_assignable_v;
+using std::is_trivially_assignable_v;
+
+using std::is_copy_assignable_v;
+using std::is_nothrow_copy_assignable_v;
+using std::is_trivially_copy_assignable_v;
+
+using std::is_move_assignable_v;
+using std::is_nothrow_move_assignable_v;
+using std::is_trivially_move_assignable_v;
+
+using std::is_destructible_v;
+using std::is_nothrow_destructible_v;
+using std::is_trivially_destructible_v;
+
+using std::has_unique_object_representations_v;
+using std::has_virtual_destructor_v;
+
+using std::is_nothrow_swappable_v;
+using std::is_nothrow_swappable_with_v;
+using std::is_swappable_v;
+using std::is_swappable_with_v;
+
 using std::add_const_t;
 using std::add_cv_t;
 using std::add_volatile_t;

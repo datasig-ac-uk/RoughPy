@@ -28,13 +28,17 @@
 #ifndef ROUGHPY_STREAMS_PIECEWISE_LIE_STREAM_H_
 #define ROUGHPY_STREAMS_PIECEWISE_LIE_STREAM_H_
 
-#include "stream_base.h"
+#include "roughpy/core/debug_assertion.h"     // for RPY_DBG_ASSERT
+#include "roughpy/core/macros.h"              // for RPY_NO_DISCARD
+#include <roughpy/core/types.h>
+
+#include <roughpy/platform/serialization.h>
 
 #include <roughpy/algebra/context.h>
 #include <roughpy/algebra/free_tensor.h>
 #include <roughpy/algebra/lie.h>
-#include <roughpy/core/types.h>
-#include <roughpy/platform/serialization.h>
+
+#include "stream_base.h"
 
 namespace rpy {
 namespace streams {

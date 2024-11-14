@@ -32,6 +32,9 @@
 
 #include "sound_file_data_source.h"
 
+#include "roughpy/core/check.h"                // for throw_exception, RPY_T...
+#include "roughpy/core/debug_assertion.h"      // for RPY_DBG_ASSERT
+
 #include <roughpy/platform/filesystem.h>
 #include <roughpy/scalars/scalar_types.h>
 

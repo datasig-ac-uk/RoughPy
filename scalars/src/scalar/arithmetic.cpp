@@ -31,9 +31,10 @@
 //
 
 #include "arithmetic.h"
-#include "casts.h"
-#include "do_macro.h"
-#include "type_promotion.h"
+
+#include <roughpy/core/check.h>
+#include <roughpy/core/debug_assertion.h>
+#include <roughpy/core/macros.h>
 
 #include "traits.h"
 #include <roughpy/core/alloc.h>
@@ -41,6 +42,11 @@
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>
 #include <roughpy/scalars/scalar_types.h>
+
+#include "do_macro.h"
+#include "type_promotion.h"
+
+
 
 using namespace rpy;
 using namespace rpy::scalars;

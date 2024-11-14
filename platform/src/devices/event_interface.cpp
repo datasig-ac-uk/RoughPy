@@ -32,6 +32,8 @@
 
 #include "devices/event.h"
 
+#include "devices/core.h"
+
 
 using namespace rpy;
 using namespace rpy::devices;

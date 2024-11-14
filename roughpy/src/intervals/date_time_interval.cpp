@@ -4,6 +4,9 @@
 
 #include "date_time_interval.h"
 
+
+#include "roughpy/core/check.h"
+
 #include <datetime.h>
 
 using namespace rpy;

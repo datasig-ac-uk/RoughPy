@@ -4,6 +4,9 @@
 
 
 #include "raw_bytes.h"
+
+#include "roughpy/core/check.h"  // for throw_exception
+
 #include "do_macro.h"
 
 #include "scalar_types.h"

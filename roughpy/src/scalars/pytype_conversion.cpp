@@ -4,6 +4,8 @@
 
 #include "pytype_conversion.h"
 
+#include "roughpy/core/check.h"           // for throw_exception, RPY_CHECK
+
 #include "scalars/scalar_type.h"
 
 using namespace rpy;
