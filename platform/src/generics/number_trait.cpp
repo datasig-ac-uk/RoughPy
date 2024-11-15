@@ -20,12 +20,12 @@ NumberTraits::~NumberTraits() = default;
 void NumberTraits::unsafe_real(void* dst, const void* src) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
-    p_type->copy(dst, src, 1, true);
+    p_type->copy_or_move(dst, src, 1, false);
 }
 void NumberTraits::unsafe_imaginary(void* dst, const void* src) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
-    p_type->copy(dst, nullptr, 1, false);
+    p_type->copy_or_move(dst, nullptr, 1, false);
 }
 void NumberTraits::unsafe_sqrt(void* dst, const void* src) const
 {
@@ -160,7 +160,7 @@ Value NumberTraits::pow(ConstRef value, int64_t power) const
     if (power != 1) {
         unsafe_pow(result.data(), value.data(), power);
     } else {
-        p_type->copy(result.data(), value.data(), 1, true);
+        p_type->copy_or_move(result.data(), value.data(), 1, false);
     }
 
     return result;

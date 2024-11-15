@@ -28,7 +28,7 @@ void Value::allocate_data()
     if (RPY_UNLIKELY(old_ptr != nullptr)) { p_type->free_object(old_ptr); }
 }
 
-void Value::assign_value(const Type* type, const void* source_data)
+void Value::assign_value(const Type* type, const void* source_data, bool move)
 {
     RPY_CHECK_NE(type, nullptr);
 
@@ -38,14 +38,12 @@ void Value::assign_value(const Type* type, const void* source_data)
 
     if (*p_type == *type) {
         const bool is_inline = is_inline_stored();
-        bool is_init = true;
         if (!is_inline && data() == nullptr) {
             allocate_data();
-            is_init = false;
         }
 
         auto* dst = data();
-        p_type->copy(dst, source_data, 1, is_init);
+        p_type->copy_or_move(dst, source_data, 1, move);
     } else {
         const auto from = p_type->convert_from(*type);
         if (!from) {
@@ -72,7 +70,7 @@ Value::Value(const Value& other) : p_type(other.p_type)
             allocate_data();
             void* dst_ptr = m_storage.data(p_type.get());
             const void* src_ptr = other.m_storage.data(p_type.get());
-            p_type->copy(dst_ptr, src_ptr, 1, false);
+            p_type->copy_or_move(dst_ptr, src_ptr, 1, false);
         }
     }
 }
@@ -114,7 +112,7 @@ Value::Value(ConstRef other)
         const auto* src_ptr = other.data();
         auto* dst_ptr = m_storage.data(p_type.get());
 
-        p_type->copy(dst_ptr, src_ptr, 1, false);
+        p_type->copy_or_move(dst_ptr, src_ptr, 1, false);
     }
 }
 

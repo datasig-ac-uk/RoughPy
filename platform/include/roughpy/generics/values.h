@@ -273,8 +273,8 @@ public:
 
     RPY_NO_DISCARD static bool is_inline_stored(const Type* type) noexcept
     {
-        return type != nullptr && type_props::is_arithmetic(*type)
-                && type_props::size_of(*type) <= sizeof(void*);
+        return type != nullptr && concepts::is_arithmetic(*type)
+                && size_of(*type) <= sizeof(void*);
     }
 
     void* data(const Type* type) noexcept
@@ -314,7 +314,7 @@ class ROUGHPY_PLATFORM_EXPORT Value
 
     void allocate_data();
 
-    void assign_value(const Type* type, const void* source_data);
+    void assign_value(const Type* type, const void* source_data, bool move=false);
 
     void ensure_constructed(const Type* backup_type=nullptr);
 
@@ -330,6 +330,9 @@ public:
 
     // Copy a value from an existing reference
     explicit Value(ConstRef other);
+
+    template <typename T, typename=enable_if_t<!dtl::value_like_v<T>>>
+    explicit Value(T&& value);
 
     ~Value();
 
@@ -350,6 +353,7 @@ public:
         return static_cast<bool>(p_type);
     }
 
+    RPY_NO_DISCARD
     const Type& type() const noexcept {
         RPY_DBG_ASSERT(is_valid());
         return *p_type;
@@ -433,6 +437,13 @@ enable_if_t<dtl::value_like_v<T>, hash_t> hash_value(const Value& value)
     return trait->unsafe_hash(value.data());
 }
 
+
+template <typename T, typename>
+Value::Value(T&& value)
+    : p_type(get_type<T>())
+{
+    assign_value(p_type.get(), &value);
+}
 
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator+=(const T& other)

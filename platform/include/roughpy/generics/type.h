@@ -100,7 +100,7 @@ protected:
 
 public:
     virtual void
-    copy(void* dst, const void* src, size_t count, bool is_init) const noexcept
+    copy_or_move(void* dst, const void* src, size_t count, bool move) const noexcept
             = 0;
 
     RPY_NO_DISCARD virtual std::unique_ptr<const ConversionTrait>
@@ -120,6 +120,37 @@ public:
     display(std::ostream& os, const void* value) const = 0;
 };
 
+
+
+
+struct BuiltinTypes
+{
+    TypePtr float_type;
+    TypePtr double_type;
+    
+    TypePtr int8_type;
+    TypePtr uint8_type;
+    TypePtr int16_type;
+    TypePtr uint16_type;
+    TypePtr int32_type;
+    TypePtr uint32_type;
+    TypePtr int64_type;
+    TypePtr uint64_type;
+    
+    TypePtr rational_type;
+    TypePtr poly_rational_type;
+};
+
+ROUGHPY_PLATFORM_EXPORT
+const BuiltinTypes& get_builtin_types() noexcept;
+
+template <typename T>
+TypePtr get_type() noexcept;
+
+
+
+
+
 RPY_NO_DISCARD constexpr bool
 operator==(const Type& lhs, const Type& rhs) noexcept
 {
@@ -132,9 +163,10 @@ operator!=(const Type& lhs, const Type& rhs) noexcept
     return !(lhs == rhs);
 }
 
-namespace type_props {
-
 inline size_t size_of(const Type& type) noexcept { return type.object_size(); }
+
+namespace concepts {
+
 
 /**
  * @brief Check if the given type has standard layout
@@ -271,7 +303,70 @@ inline bool is_arithmetic(Type const& type)
     return is_integral(type) || is_floating_point(type);
 }
 
-}// namespace type_props
+}// namespace concepts
+
+
+
+template <>
+inline TypePtr get_type<float>() noexcept
+{
+    return get_builtin_types().float_type;
+}
+
+template <>
+inline TypePtr get_type<double>() noexcept
+{
+    return get_builtin_types().double_type;
+}
+
+template <>
+inline TypePtr get_type<int8_t>() noexcept
+{
+    return get_builtin_types().int8_type;
+}
+
+template <>
+inline TypePtr get_type<uint8_t>() noexcept
+{
+    return get_builtin_types().uint8_type;
+}
+
+template <>
+inline TypePtr get_type<int16_t>() noexcept
+{
+    return get_builtin_types().int16_type;
+}
+
+template <>
+inline TypePtr get_type<uint16_t>() noexcept
+{
+    return get_builtin_types().uint16_type;
+}
+
+template <>
+inline TypePtr get_type<int32_t>() noexcept
+{
+    return get_builtin_types().int32_type;
+}
+
+template <>
+inline TypePtr get_type<uint32_t>() noexcept
+{
+    return get_builtin_types().uint32_type;
+}
+
+template <>
+inline TypePtr get_type<int64_t>() noexcept
+{
+    return get_builtin_types().int64_type;
+}
+
+template <>
+inline TypePtr get_type<uint64_t>() noexcept
+{
+    return get_builtin_types().uint64_type;
+}
+
 
 }// namespace rpy::generics
 
