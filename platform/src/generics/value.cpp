@@ -6,7 +6,11 @@
 
 #include <cstring>
 
+
+#include "roughpy/generics/comparison_trait.h"
+#include "roughpy/generics/number_trait.h"
 #include "roughpy/generics/type.h"
+
 
 using namespace rpy;
 using namespace rpy::generics;
@@ -70,6 +74,23 @@ Value::Value(const Value& other) : p_type(other.p_type)
             const void* src_ptr = other.m_storage.data(p_type.get());
             p_type->copy(dst_ptr, src_ptr, 1, false);
         }
+    }
+}
+
+void Value::ensure_constructed(const Type* backup_type)
+{
+    if (!is_valid()) {
+        if (backup_type != nullptr) {
+            p_type = backup_type;
+        } else {
+            RPY_THROW(std::runtime_error, "no valid type to assign");
+        }
+    } else if (backup_type != nullptr) {
+        RPY_CHECK_EQ(*p_type, *backup_type);
+    }
+
+    if (!is_inline_stored() && m_storage.data(p_type.get()) == nullptr) {
+        allocate_data();
     }
 }
 
