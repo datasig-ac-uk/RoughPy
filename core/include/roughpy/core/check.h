@@ -105,7 +105,7 @@ void throw_exception(
     RPY_INVOKE_VA(RPY_CHECK_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
 #define RPY_CHECK_EQ(a, b, ...)                                                \
-    RPY_CHECK(::rpy::compare_equal((a), (b)), __VA_ARGS__)
+    RPY_INVOKE_VA(RPY_CHECK, (::rpy::compare_equal((a), (b)), __VA_ARGS__))
 #define RPY_CHECK_NE(a, b, ...)                                                \
     RPY_CHECK(::rpy::compare_not_equal((a), (b)), __VA_ARGS__)
 #define RPY_CHECK_LT(a, b, ...)                                                \
