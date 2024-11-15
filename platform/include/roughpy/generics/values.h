@@ -16,6 +16,10 @@
 #include "type_ptr.h"
 #include "type.h"
 
+#include "builtin_trait.h"
+#include "hash_trait.h"
+
+
 namespace rpy::generics {
 
 class ConstRef;
@@ -276,7 +280,6 @@ class ROUGHPY_PLATFORM_EXPORT Value
     void assign_value(const Type* type, const void* source_data);
 
 public:
-
     // standard constructors
     Value();
     Value(const Value& other);
@@ -298,72 +301,49 @@ public:
 
     // Move construction also has different semantics
     // ReSharper disable once CppSpecialFunctionWithoutNoexceptSpecification
-    Value& operator=(Value&& other); // NOLINT(*-noexcept-move-constructor)
+    Value& operator=(Value&& other);// NOLINT(*-noexcept-move-constructor)
 
     Value& operator=(ConstRef other);
 
     template <typename T = void>
     RPY_NO_DISCARD const T* data() const noexcept(is_void_v<T>)
     {
-        if (!p_type) {
-            return nullptr;
-        }
+        if (!p_type) { return nullptr; }
 
         if constexpr (is_void_v<T>) {
             return m_storage.data(p_type.get());
         } else {
             RPY_CHECK_EQ(p_type->type_info(), typeid(T));
             return std::launder(
-                static_cast<const T*>(m_storage.data(p_type.get())));
+                    static_cast<const T*>(m_storage.data(p_type.get()))
+            );
         }
     }
 
     template <typename T = void>
     RPY_NO_DISCARD T* data() noexcept(is_void_v<T>)
     {
-        if (!p_type) {
-            return nullptr;
-        }
+        if (!p_type) { return nullptr; }
 
         if constexpr (is_void_v<T>) {
             return m_storage.data(p_type.get());
         } else {
             RPY_CHECK_EQ(p_type->type_info(), typeid(T));
-            return std::launder(
-                static_cast<T*>(m_storage.data(p_type.get())));
+            return std::launder(static_cast<T*>(m_storage.data(p_type.get())));
         }
     }
 
-
     // Inplace arithmetic operations
-    Value& operator+=(const Value& other)
-    {
+    Value& operator+=(const Value& other);
 
-        return *this;
-    }
+    Value& operator-=(const Value& other);
 
-    Value& operator-=(const Value& other)
-    {
+    Value& operator*=(const Value& other);
 
-        return *this;
-    }
-
-    Value& operator*=(const Value& other)
-    {
-
-        return *this;
-    }
-
-    Value& operator/=(const Value& other)
-    {
-
-        return *this;
-    }
-
-
-
-
+    Value& operator/=(const Value& other);
 };
+
+
 
 
 
