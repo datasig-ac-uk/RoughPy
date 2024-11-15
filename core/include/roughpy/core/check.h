@@ -25,7 +25,7 @@
 
 namespace rpy::errors {
 
-template <typename E>
+template <typename E=std::runtime_error>
 RPY_NO_RETURN
 void throw_exception(
         std::string_view user_msg,
@@ -49,7 +49,7 @@ void throw_exception(
 }
 
 
-template <typename E>
+template <typename E=std::runtime_error>
 RPY_NO_RETURN void throw_exception(const char* user_msg, const char* filename,
 int
 lineno, const char* func)
@@ -65,7 +65,6 @@ lineno, const char* func)
             user_msg
         ));
 }
-
 
 }// namespace rpy::errors
 
