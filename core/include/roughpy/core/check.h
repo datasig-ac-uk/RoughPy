@@ -11,7 +11,7 @@
 
 #include "check_helpers.h"
 #include "macros.h"
-#include "strings.h"
+#include "string_utils.h"
 
 #if defined(RPY_GCC)
 #  define RPY_FUNC_NAME __PRETTY_FUNCTION__
@@ -105,16 +105,28 @@ void throw_exception(
     RPY_INVOKE_VA(RPY_CHECK_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
 #define RPY_CHECK_EQ(a, b, ...)                                                \
-    RPY_CHECK(::rpy::compare_equal((a), (b)), __VA_ARGS__)
+    RPY_CHECK((::rpy::compare_equal((a), (b))),                                \
+              "failed check \"" RPY_STRINGIFY((a) == (b)) "\""                 \
+              __VA_ARGS__)
 #define RPY_CHECK_NE(a, b, ...)                                                \
-    RPY_CHECK(::rpy::compare_not_equal((a), (b)), __VA_ARGS__)
+    RPY_CHECK((::rpy::compare_not_equal((a), (b))),                            \
+              "failed check \"" RPY_STRINGIFY((a) != (b)) "\""                 \
+              __VA_ARGS__)
 #define RPY_CHECK_LT(a, b, ...)                                                \
-    RPY_CHECK(::rpy::compare_less((a), (b)), __VA_ARGS__)
+    RPY_CHECK((::rpy::compare_less((a), (b))),                                 \
+              "failed check \"" RPY_STRINGIFY((a) < (b)) "\""                  \
+              __VA_ARGS__)
 #define RPY_CHECK_LE(a, b, ...)                                                \
-    RPY_CHECK(::rpy::compare_less_equal((a), (b)), __VA_ARGS__)
+    RPY_CHECK((::rpy::compare_less_equal((a), (b))),                           \
+               "failed check \"" RPY_STRINGIFY((a) <= (b)) "\""                \
+              __VA_ARGS__)
 #define RPY_CHECK_GT(a, b, ...)                                                \
-    RPY_CHECK(::rpy::compare_greater((a), (b)), __VA_ARGS__)
+    RPY_CHECK((::rpy::compare_greater((a), (b))),                              \
+              "failed check \"" RPY_STRINGIFY((a) > (b)) "\""                  \
+              __VA_ARGS__)
 #define RPY_CHECK_GE(a, b, ...)                                                \
-    RPY_CHECK(::rpy::compare_greater_equal((a), (b)), __VA_ARGS__)
+    RPY_CHECK((::rpy::compare_greater_equal((a), (b))),                        \
+              "failed check \"" RPY_STRINGIFY((a) >= (b)) "\""                 \
+              __VA_ARGS__)
 
 #endif// ROUGHPY_CORE_CHECK_H
