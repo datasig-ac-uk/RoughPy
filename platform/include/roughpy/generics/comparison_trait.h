@@ -17,6 +17,16 @@ namespace rpy::generics {
 
 class ConstRef;
 
+enum class Comparison
+{
+    Equal,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual
+};
+
+
 class ROUGHPY_PLATFORM_EXPORT ComparisonTrait : public BuiltinTrait
 {
 protected:
@@ -27,15 +37,6 @@ protected:
 public:
 
     static constexpr BuiltinTraitID my_id = BuiltinTraitID::Comparison;
-
-    enum class Comparison
-    {
-        Equal,
-        Less,
-        LessEqual,
-        Greater,
-        GreaterEqual
-    };
 
     virtual ~ComparisonTrait();
 

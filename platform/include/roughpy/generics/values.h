@@ -9,18 +9,18 @@
 
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
-#include "roughpy/core/types.h"
 #include "roughpy/core/traits.h"
+#include "roughpy/core/types.h"
 
 #include "roughpy/platform/roughpy_platform_export.h"
 
-#include "type_ptr.h"
 #include "type.h"
+#include "type_ptr.h"
 
 #include "arithmetic_trait.h"
 #include "builtin_trait.h"
+#include "comparison_trait.h"
 #include "hash_trait.h"
-
 
 namespace rpy::generics {
 
@@ -30,31 +30,26 @@ class Ref;
 class Ptr;
 class Value;
 
-
 namespace dtl {
 
 template <typename T>
-inline constexpr bool reference_like_v = is_same_v<ConstRef, decay_t<T>>
-    || is_base_of_v<ConstRef, decay_t<T>>;
+inline constexpr bool reference_like_v
+        = is_same_v<ConstRef, decay_t<T>> || is_base_of_v<ConstRef, decay_t<T>>;
 
 template <typename T>
-inline constexpr bool value_like_v =
-    is_same_v<Value, decay_t<T>>
-    || is_base_of_v<Value, decay_t<T>>
-    || reference_like_v<T>;
+inline constexpr bool value_like_v = is_same_v<Value, decay_t<T>>
+        || is_base_of_v<Value, decay_t<T>> || reference_like_v<T>;
 
+}// namespace dtl
 
-}
-
-
-
-class ROUGHPY_PLATFORM_EXPORT ConstRef {
+class ROUGHPY_PLATFORM_EXPORT ConstRef
+{
     TypePtr p_type;
     const void* p_data;
 
 protected:
-
-    struct without_null_check {};
+    struct without_null_check {
+    };
 
     // ConstReference should not usually be constructed without
     // valid data, but internally this is a valid state. This
@@ -62,9 +57,11 @@ protected:
     // where the data pointer might be null. (See ConstPointer below.)
     // This causes the construct to skip the validity check.
     ConstRef(TypePtr type, const void* data, without_null_check)
-        : p_type(std::move(type)), p_data(data) {}
+        : p_type(std::move(type)),
+          p_data(data)
+    {}
 
-    template <typename T=void>
+    template <typename T = void>
     void set_pointer(const T* ptr) noexcept(is_void_v<T>)
     {
         if constexpr (!is_void_v<T>) {
@@ -74,15 +71,14 @@ protected:
     }
 
 public:
-
     using value_type = Value;
     using const_reference = ConstRef;
     using reference = ConstRef;
     using pointer = ConstPtr;
 
-
     ConstRef(TypePtr type, const void* p_data)
-        : p_type(std::move(type)), p_data(p_data)
+        : p_type(std::move(type)),
+          p_data(p_data)
     {
         RPY_CHECK_NE(p_data, nullptr);
     }
@@ -93,27 +89,20 @@ public:
         return {std::move(type), nullptr, without_null_check{}};
     }
 
-    RPY_NO_DISCARD
-    bool is_valid() const noexcept
+    RPY_NO_DISCARD bool is_valid() const noexcept
     {
         return static_cast<bool>(p_type);
     }
 
-    RPY_NO_DISCARD
-    bool fast_is_zero() const noexcept
+    RPY_NO_DISCARD bool fast_is_zero() const noexcept
     {
         return !is_valid() || p_data == nullptr;
     }
 
-    RPY_NO_DISCARD
-    const Type& type() const noexcept
-    {
-        return *p_type;
-    }
+    RPY_NO_DISCARD const Type& type() const noexcept { return *p_type; }
 
     template <typename T = void>
-    RPY_NO_DISCARD
-    constexpr const T* data() const noexcept
+    RPY_NO_DISCARD constexpr const T* data() const noexcept
     {
         if constexpr (is_void_v<T>) {
             return p_data;
@@ -122,87 +111,66 @@ public:
             return std::launder(static_cast<const T*>(p_data));
         }
     }
-
 };
 
 class ROUGHPY_PLATFORM_EXPORT ConstPtr : ConstRef
 {
 
 public:
-
     using value_type = Value;
     using const_reference = ConstRef;
     using reference = ConstRef;
     using pointer = ConstPtr;
 
-    explicit ConstPtr(TypePtr type, const void* data=nullptr)
+    explicit ConstPtr(TypePtr type, const void* data = nullptr)
         : ConstRef(std::move(type), data, without_null_check{})
-    {
-    }
+    {}
 
-    RPY_NO_DISCARD
-    ConstRef operator*() const noexcept
+    RPY_NO_DISCARD ConstRef operator*() const noexcept
     {
         RPY_DBG_ASSERT(is_valid());
         return static_cast<ConstRef>(*this);
     }
 
-    RPY_NO_DISCARD
-    const ConstRef* operator->() const noexcept
+    RPY_NO_DISCARD const ConstRef* operator->() const noexcept
     {
         RPY_DBG_ASSERT(is_valid());
         return static_cast<const ConstRef*>(this);
     }
-
-
-
 };
-
 
 class ROUGHPY_PLATFORM_EXPORT Ref : public ConstRef
 {
 
-
 protected:
-
     Ref(TypePtr type, void* data, without_null_check tag)
         : ConstRef(std::move(type), data, tag)
     {}
 
 public:
-
-    Ref(TypePtr type, void* data)
-        : ConstRef(std::move(type), data)
-    {}
+    Ref(TypePtr type, void* data) : ConstRef(std::move(type), data) {}
 
     using ConstRef::data;
 
     template <typename T = void>
-    RPY_NO_DISCARD
-    T* data() const noexcept
+    RPY_NO_DISCARD T* data() const noexcept
     {
         return const_cast<T*>(ConstRef::data<T>());
     }
 
-
     // Inplace arithmetic operations
     template <typename T>
-    enable_if_t<dtl::value_like_v<T>, Ref&>
-    operator+=(const T& other);
+    enable_if_t<dtl::value_like_v<T>, Ref&> operator+=(const T& other);
 
     template <typename T>
-    enable_if_t<dtl::value_like_v<T>, Ref&>
-    operator-=(const T& other);
+    enable_if_t<dtl::value_like_v<T>, Ref&> operator-=(const T& other);
 
     template <typename T>
-    enable_if_t<dtl::value_like_v<T>, Ref&>
-    operator*=(const T& other);
+    enable_if_t<dtl::value_like_v<T>, Ref&> operator*=(const T& other);
 
     template <typename T>
-    enable_if_t<dtl::value_like_v<T>, Ref&>
-    operator/=(const T& other);
+    enable_if_t<dtl::value_like_v<T>, Ref&> operator/=(const T& other);
 };
-
 
 class ROUGHPY_PLATFORM_EXPORT Ptr : Ref
 {
@@ -218,9 +186,9 @@ public:
     {}
 
     // ReSharper disable once CppNonExplicitConversionOperator
-    operator ConstPtr() const noexcept // NOLINT(*-explicit-constructor)
+    operator ConstPtr() const noexcept// NOLINT(*-explicit-constructor)
     {
-        return ConstPtr {&type(), data()};
+        return ConstPtr{&type(), data()};
     }
 
     Ref operator*() const noexcept
@@ -234,14 +202,12 @@ public:
         RPY_DBG_ASSERT(is_valid());
         return static_cast<const Ref*>(this);
     }
-
 };
-
-
 
 namespace dtl {
 
-class ValueStorage {
+class ValueStorage
+{
 
     union Storage
     {
@@ -254,7 +220,6 @@ class ValueStorage {
     Storage m_storage;// NOLINT(*-non-private-member-variables-in-classes)
 
 public:
-
     constexpr ValueStorage() = default;
 
     constexpr ValueStorage(ValueStorage&& other) noexcept
@@ -265,9 +230,7 @@ public:
 
     ValueStorage& operator=(ValueStorage&& other) noexcept
     {
-        if (&other != this) {
-            m_storage.pointer = other.m_storage.pointer;
-        }
+        if (&other != this) { m_storage.pointer = other.m_storage.pointer; }
         return *this;
     }
 
@@ -293,11 +256,9 @@ public:
     {
         return std::exchange(m_storage.pointer, new_ptr);
     }
-
 };
 
-}
-
+}// namespace dtl
 
 class ROUGHPY_PLATFORM_EXPORT Value
 {
@@ -314,10 +275,10 @@ class ROUGHPY_PLATFORM_EXPORT Value
 
     void allocate_data();
 
-    void assign_value(const Type* type, const void* source_data, bool move=false);
+    void
+    assign_value(const Type* type, const void* source_data, bool move = false);
 
-    void ensure_constructed(const Type* backup_type=nullptr);
-
+    void ensure_constructed(const Type* backup_type = nullptr);
 
 public:
     // standard constructors
@@ -331,7 +292,7 @@ public:
     // Copy a value from an existing reference
     explicit Value(ConstRef other);
 
-    template <typename T, typename=enable_if_t<!dtl::value_like_v<T>>>
+    template <typename T, typename = enable_if_t<!dtl::value_like_v<T>>>
     explicit Value(T&& value);
 
     ~Value();
@@ -353,12 +314,11 @@ public:
         return static_cast<bool>(p_type);
     }
 
-    RPY_NO_DISCARD
-    const Type& type() const noexcept {
+    RPY_NO_DISCARD const Type& type() const noexcept
+    {
         RPY_DBG_ASSERT(is_valid());
         return *p_type;
     }
-
 
     template <typename T = void>
     RPY_NO_DISCARD const T* data() const noexcept(is_void_v<T>)
@@ -388,25 +348,19 @@ public:
         }
     }
 
-
     // Inplace arithmetic operations
     template <typename T>
-    enable_if_t<dtl::value_like_v<T>, Value&>
-    operator+=(const T& other);
+    enable_if_t<dtl::value_like_v<T>, Value&> operator+=(const T& other);
 
     template <typename T>
-    enable_if_t<dtl::value_like_v<T>, Value&>
-    operator-=(const T& other);
+    enable_if_t<dtl::value_like_v<T>, Value&> operator-=(const T& other);
 
     template <typename T>
-    enable_if_t<dtl::value_like_v<T>, Value&>
-    operator*=(const T& other);
+    enable_if_t<dtl::value_like_v<T>, Value&> operator*=(const T& other);
 
     template <typename T>
-    enable_if_t<dtl::value_like_v<T>, Value&>
-    operator/=(const T& other);
+    enable_if_t<dtl::value_like_v<T>, Value&> operator/=(const T& other);
 };
-
 
 namespace dtl {
 
@@ -426,7 +380,6 @@ operator<<(std::ostream& os, const T& value)
     return os;
 }
 
-
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, hash_t> hash_value(const Value& value)
 {
@@ -437,10 +390,34 @@ enable_if_t<dtl::value_like_v<T>, hash_t> hash_value(const Value& value)
     return trait->unsafe_hash(value.data());
 }
 
+namespace dtl {
+
+ROUGHPY_PLATFORM_EXPORT
+bool values_compare(
+        Comparison comp,
+        const Type* ltype,
+        const void* lvalue,
+        const Type* rtype,
+        const void* rvalue
+);
+
+}// namespace dtl
+
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
+operator==(const T& lhs, const U& rhs)
+{
+    return dtl::values_compare(
+            Comparison::Equal,
+            lhs.type_ptr(),
+            lhs.data(),
+            rhs.type_ptr(),
+            rhs.data()
+    );
+}
 
 template <typename T, typename>
-Value::Value(T&& value)
-    : p_type(get_type<T>())
+Value::Value(T&& value) : p_type(get_type<T>())
 {
     assign_value(p_type.get(), &value);
 }
@@ -451,7 +428,9 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator+=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(type().get_builtin_trait(BuiltinTraitID::Arithmetic));
+    const auto* trait = trait_cast<ArithmeticTrait>(
+            type().get_builtin_trait(BuiltinTraitID::Arithmetic)
+    );
     RPY_CHECK_NE(trait, nullptr);
     RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Add));
 
@@ -466,7 +445,9 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator-=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(type().get_builtin_trait(BuiltinTraitID::Arithmetic));
+    const auto* trait = trait_cast<ArithmeticTrait>(
+            type().get_builtin_trait(BuiltinTraitID::Arithmetic)
+    );
     RPY_CHECK_NE(trait, nullptr);
     RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Sub));
 
@@ -480,7 +461,9 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator*=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(type().get_builtin_trait(BuiltinTraitID::Arithmetic));
+    const auto* trait = trait_cast<ArithmeticTrait>(
+            type().get_builtin_trait(BuiltinTraitID::Arithmetic)
+    );
     RPY_CHECK_NE(trait, nullptr);
     RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Mul));
 
@@ -493,7 +476,9 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator/=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(type().get_builtin_trait(BuiltinTraitID::Arithmetic));
+    const auto* trait = trait_cast<ArithmeticTrait>(
+            type().get_builtin_trait(BuiltinTraitID::Arithmetic)
+    );
     RPY_CHECK_NE(trait, nullptr);
     RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Div));
 
@@ -507,7 +492,9 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator+=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(p_type->get_builtin_trait(BuiltinTraitID::Arithmetic));
+    const auto* trait = trait_cast<ArithmeticTrait>(
+            p_type->get_builtin_trait(BuiltinTraitID::Arithmetic)
+    );
     RPY_CHECK_NE(trait, nullptr);
     RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Add));
 
@@ -522,7 +509,9 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator-=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(p_type->get_builtin_trait(BuiltinTraitID::Arithmetic));
+    const auto* trait = trait_cast<ArithmeticTrait>(
+            p_type->get_builtin_trait(BuiltinTraitID::Arithmetic)
+    );
     RPY_CHECK_NE(trait, nullptr);
     RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Sub));
 
@@ -536,7 +525,9 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator*=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(p_type->get_builtin_trait(BuiltinTraitID::Arithmetic));
+    const auto* trait = trait_cast<ArithmeticTrait>(
+            p_type->get_builtin_trait(BuiltinTraitID::Arithmetic)
+    );
     RPY_CHECK_NE(trait, nullptr);
     RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Mul));
 
@@ -549,7 +540,9 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator/=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(p_type->get_builtin_trait(BuiltinTraitID::Arithmetic));
+    const auto* trait = trait_cast<ArithmeticTrait>(
+            p_type->get_builtin_trait(BuiltinTraitID::Arithmetic)
+    );
     RPY_CHECK_NE(trait, nullptr);
     RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Div));
 
@@ -557,7 +550,6 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator/=(const T& other)
     return *this;
 }
 
-}
+}// namespace rpy::generics
 
-
-#endif //ROUGHPY_GENERICS_VALUES_H
+#endif// ROUGHPY_GENERICS_VALUES_H
