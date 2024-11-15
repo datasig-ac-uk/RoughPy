@@ -48,6 +48,25 @@ void throw_exception(
     //    boost::stacktrace::stacktrace()));
 }
 
+
+template <typename E>
+RPY_NO_RETURN void throw_exception(const char* user_msg, const char* filename,
+int
+lineno, const char* func)
+{
+    throw E(string_cat(
+            "Error occurred in ",
+            filename,
+            " at line ",
+            lineno,
+            '(',
+            func,
+            "):\n",
+            user_msg
+        ));
+}
+
+
 }// namespace rpy::errors
 
 #define RPY_THROW_2(EXC_TYPE, MSG)                                             \
