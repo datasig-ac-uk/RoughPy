@@ -14,7 +14,7 @@ add_library(RoughPy_Core INTERFACE
         include/roughpy/core/helpers.h
         include/roughpy/core/slice.h
         include/roughpy/core/smart_ptr.h
-        include/roughpy/core/strings.h
+        include/roughpy/core/string_utils.h
 )
 add_library(RoughPy::Core ALIAS RoughPy_Core)
 
@@ -41,3 +41,4 @@ set_target_properties(RoughPy_Core PROPERTIES ROUGHPY_COMPONENT Core)
 target_compile_definitions(RoughPy_Core INTERFACE NOMINMAX=1)
 
 
+add_subdirectory(src)

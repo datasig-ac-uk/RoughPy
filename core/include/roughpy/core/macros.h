@@ -61,6 +61,28 @@
 #endif
 
 /*
+ * The C++ preprocessor is very basic, but one can accomplish fairly advanced
+ * patterns by exploiting multiple passes of the preprocessor. The following
+ * macros help with the indirection needed to achieve everything one might want
+ * to do. One of main consumers of this set of utilities are the RPY_CHECK and
+ * RPY_DBG_ASSERT macros in Core.
+ *
+ * See https://github.com/pfultz2/Cloak/wiki/C-Preprocessor-tricks,-tips,-and-idioms
+ * and the C++template metaprogramming book by David Abrahams and
+ * Aleksey Gurtovoy
+ */
+#define RPY_STRINGIFY_IMPL(ARG) #ARG
+#define RPY_STRINGIFY(ARG) RPY_STRINGIFY_IMPL(ARG)
+
+#define RPY_JOIN_IMPL_IMPL(LHS, RHS) LHS##RHS
+#define RPY_JOIN_IMPL(LHS, RHS) RPY_JOIN_IMPL_IMPL(LHS, RHS)
+#define RPY_JOIN(LHS, RHS) RPY_JOIN_IMPL(LHS, RHS)
+
+#define RPY_IDENTITY(ARG) ARG
+#define RPY_EMPTY(...)
+#define RPY_DEFER(...) __VA_ARGS__
+
+/*
  * MSVC has a bug where it treats __VA_ARGS__ as a single token in argument
  * lists. To combat this, we use RPY_INVOKE_VA to invoke the overload macro with
  * the __VA_ARGS__ in the token stream so that proper expansion occurs.
@@ -71,15 +93,6 @@
 #define RPY_COUNT_ARGS_1(_4, _3, _2, _1, count, ...) count
 #define RPY_COUNT_ARGS(...)                                                    \
     RPY_INVOKE_VA(RPY_COUNT_ARGS_1, (__VA_ARGS__, 4, 3, 2, 1, 0))
-
-#define RPY_STRINGIFY_IMPL(ARG) #ARG
-#define RPY_STRINGIFY(ARG) RPY_STRINGIFY_IMPL(ARG)
-
-#define RPY_JOIN_IMPL_IMPL(LHS, RHS) LHS##RHS
-#define RPY_JOIN_IMPL(LHS, RHS) RPY_JOIN_IMPL_IMPL(LHS, RHS)
-#define RPY_JOIN(LHS, RHS) RPY_JOIN_IMPL(LHS, RHS)
-
-#define RPY_IDENTITY(ARG) ARG
 
 
 
