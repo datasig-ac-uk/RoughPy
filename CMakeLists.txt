@@ -12,7 +12,7 @@ cmake_dependent_option(
         OFF
 )
 
-# Control the parts of NumPy that are built
+# Control the parts of RoughPy that are built
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" OFF)
 option(ROUGHPY_BUILD_DOCS "Build the documentation" OFF)
 
