@@ -95,8 +95,8 @@ public:
     RPY_NO_DISCARD virtual string_view name() const noexcept = 0;
 
 protected:
-    void* allocate_object() const;
-    void free_object(void*) const;
+    virtual void* allocate_object() const = 0;
+    virtual void free_object(void*) const = 0;
 
 public:
     virtual void
@@ -104,7 +104,10 @@ public:
             = 0;
 
     RPY_NO_DISCARD virtual std::unique_ptr<const ConversionTrait>
-    convert_to(const Type& type, bool try_pass) const noexcept;
+    convert_to(const Type& type) const noexcept;
+
+    RPY_NO_DISCARD virtual std::unique_ptr<const ConversionTrait>
+    convert_from(const Type& type) const noexcept;
 
     RPY_NO_DISCARD virtual const BuiltinTrait*
     get_builtin_trait(BuiltinTraitID id) const noexcept;

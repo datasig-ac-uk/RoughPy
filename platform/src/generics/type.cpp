@@ -28,10 +28,14 @@ intptr_t Type::ref_count() const noexcept
     return this->m_rc.load(std::memory_order_acquire);
 }
 
-std::unique_ptr<const ConversionTrait>
-Type::convert_to(const Type& type, bool try_pass) const noexcept
+std::unique_ptr<const ConversionTrait> Type::convert_to(const Type& type
+) const noexcept
 {
-    if (try_pass) { return type.convert_to(*this, false); }
+    return type.convert_from(*this);
+}
+std::unique_ptr<const ConversionTrait> Type::convert_from(const Type& type
+) const noexcept
+{
     return nullptr;
 }
 
