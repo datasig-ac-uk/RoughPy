@@ -222,6 +222,14 @@ public:
         other.m_storage.pointer = nullptr;
     }
 
+    ValueStorage& operator=(ValueStorage&& other) noexcept
+    {
+        if (&other != this) {
+            m_storage.pointer = other.m_storage.pointer;
+        }
+        return *this;
+    }
+
     RPY_NO_DISCARD static bool is_inline_stored(const Type* type) noexcept
     {
         return type != nullptr && type_props::is_arithmetic(*type)
@@ -252,8 +260,8 @@ public:
 
 class ROUGHPY_PLATFORM_EXPORT Value
 {
-    dtl::ValueStorage m_storage;
     TypePtr p_type = nullptr;
+    dtl::ValueStorage m_storage;
 
     RPY_NO_DISCARD bool is_inline_stored() const noexcept
     {
