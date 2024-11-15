@@ -163,9 +163,9 @@ public:
         return const_cast<T*>(ConstRef::data<T>());
     }
 
-
-
 };
+
+
 class ROUGHPY_PLATFORM_EXPORT Ptr : Ref
 {
 public:
