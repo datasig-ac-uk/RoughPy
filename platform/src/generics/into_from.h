@@ -5,6 +5,10 @@
 #ifndef ROUGHPY_GENERICS_INTERNAL_INTO_FROM_H
 #define ROUGHPY_GENERICS_INTERNAL_INTO_FROM_H
 
+
+#include <memory>
+#include <utility>
+
 namespace rpy {
 namespace generics {
 
