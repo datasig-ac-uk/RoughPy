@@ -16,6 +16,8 @@ cmake_dependent_option(
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" OFF)
 option(ROUGHPY_BUILD_DOCS "Build the documentation" OFF)
 
+option(ROUGHPY_EXPERIMENTAL "Allow building experimental features" OFF)
+
 # Modify the build process
 option(ROUGHPY_USE_CCACHE "Use compiler cache to speed up repeated builds" ON)
 
