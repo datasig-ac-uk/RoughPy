@@ -26,13 +26,13 @@ void Value::allocate_data()
 
 void Value::assign_value(const Type* type, const void* source_data)
 {
-    RPY_CHECK(type);
+    RPY_CHECK_NE(type, nullptr);
 
     if (!p_type) {
         p_type = type;
     }
 
-    if (p_type == type) {
+    if (*p_type == *type) {
         const bool is_inline = is_inline_stored();
         bool is_init = true;
         if (!is_inline && data() == nullptr) {
@@ -43,7 +43,7 @@ void Value::assign_value(const Type* type, const void* source_data)
         auto* dst = data();
         p_type->copy(dst, source_data, 1, is_init);
     } else {
-        const auto from = p_type->from(*type);
+        const auto from = p_type->convert_from(*type);
         if (!from) {
             RPY_THROW(std::invalid_argument, "cannot convert");
         }
@@ -152,7 +152,7 @@ Value& Value::operator=(Value&& other) // NOLINT(*-noexcept-move-constructor)
     }
 
     // Types are different, so move assignment is off the table.
-    const auto from = p_type->from(*other.p_type);
+    const auto from = p_type->convert_from(*other.p_type);
     if (!from) {
         RPY_THROW(std::invalid_argument, "cannot convert");
     }
