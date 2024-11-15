@@ -14,7 +14,9 @@
 
 #include <roughpy/platform/roughpy_platform_export.h>
 
+#include "builtin_trait.h"
 #include "type_ptr.h"
+
 
 namespace rpy::generics {
 
@@ -23,7 +25,6 @@ class FromTrait;
 class IntoTrait;
 
 
-class BuiltinTrait;
 class Trait;
 
 struct BasicProperties
@@ -104,7 +105,7 @@ protected:
 
 public:
 
-    virtual void copy(void* dst, const void* src, size_t count, bool is_init) const noexcept = 0
+    virtual void copy(void* dst, const void* src, size_t count, bool is_init) const noexcept = 0;
 
     RPY_NO_DISCARD
     virtual std::unique_ptr<const FromTrait> from(const Type& type) const noexcept;

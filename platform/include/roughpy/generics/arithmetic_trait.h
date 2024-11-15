@@ -20,7 +20,7 @@ class ROUGHPY_PLATFORM_EXPORT ArithmeticTrait : public BuiltinTrait {
     TypePtr p_rational_type;
 protected:
 
-    explicit constexpr ArithmeticTrait(TypePtr type, TypePtr rational_type)
+    explicit ArithmeticTrait(TypePtr type, TypePtr rational_type)
         : BuiltinTrait(my_id),
           p_type(std::move(type)),
           p_rational_type(std::move(rational_type))

@@ -102,7 +102,7 @@ using equals_test_t
 template <typename T, typename = void>
 inline constexpr bool has_equal_test_v = false;
 
-template <typename T, typename = void>
+template <typename T>
 inline constexpr bool has_equal_test_v<T, void_t<equals_test_t<T>>> = true;
 
 template <typename T>
