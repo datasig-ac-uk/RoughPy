@@ -71,13 +71,13 @@ public:
     }
 
     RPY_NO_DISCARD
-    constexpr bool is_valid() const noexcept
+    bool is_valid() const noexcept
     {
         return static_cast<bool>(p_type);
     }
 
     RPY_NO_DISCARD
-    constexpr bool fast_is_zero() const noexcept
+    bool fast_is_zero() const noexcept
     {
         return !is_valid() || p_data == nullptr;
     }
@@ -118,14 +118,14 @@ public:
     }
 
     RPY_NO_DISCARD
-    constexpr ConstRef operator*() const noexcept
+    ConstRef operator*() const noexcept
     {
         RPY_DBG_ASSERT(is_valid());
         return static_cast<ConstRef>(*this);
     }
 
     RPY_NO_DISCARD
-    constexpr const ConstRef* operator->() const noexcept
+    const ConstRef* operator->() const noexcept
     {
         RPY_DBG_ASSERT(is_valid());
         return static_cast<const ConstRef*>(this);
@@ -142,7 +142,7 @@ class ROUGHPY_PLATFORM_EXPORT Ref : public ConstRef
 
 protected:
 
-    constexpr Ref(TypePtr type, void* data, without_null_check tag)
+    Ref(TypePtr type, void* data, without_null_check tag)
         : ConstRef(std::move(type), data, tag)
     {}
 
@@ -156,7 +156,7 @@ public:
 
     template <typename T = void>
     RPY_NO_DISCARD
-    constexpr T* data() const noexcept
+    T* data() const noexcept
     {
         return const_cast<T*>(ConstRef::data<T>());
     }
@@ -183,13 +183,13 @@ public:
         return ConstPtr {&type(), data()};
     }
 
-    constexpr Ref operator*() const noexcept
+    Ref operator*() const noexcept
     {
         RPY_DBG_ASSERT(is_valid());
         return static_cast<Ref>(*this);
     }
 
-    constexpr const Ref* operator->() const noexcept
+    const Ref* operator->() const noexcept
     {
         RPY_DBG_ASSERT(is_valid());
         return static_cast<const Ref*>(this);
