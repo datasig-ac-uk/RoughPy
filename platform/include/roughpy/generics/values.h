@@ -40,7 +40,7 @@ protected:
     // constructed is used internally for constructing (derived classes)
     // where the data pointer might be null. (See ConstPointer below.)
     // This causes the construct to skip the validity check.
-    constexpr ConstRef(TypePtr type, const void* data, without_null_check)
+    ConstRef(TypePtr type, const void* data, without_null_check)
         : p_type(std::move(type)), p_data(data) {}
 
     template <typename T=void>
@@ -68,7 +68,7 @@ public:
 
     static ConstRef zero(TypePtr type)
     {
-        RPY_CHECK_NE(type->get_builtin_trait((BuiltinTraitID::Number)), nullptr);
+        RPY_CHECK_NE(type->get_builtin_trait(BuiltinTraitID::Number), nullptr);
         return {std::move(type), nullptr, without_null_check{}};
     }
 
