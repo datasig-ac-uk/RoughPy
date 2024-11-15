@@ -6,8 +6,7 @@
 
 #include <memory>
 
-
-#include "into_from.h"
+#include "roughpy/generics/conversion_trait.h"
 
 using namespace rpy;
 using namespace rpy::generics;
@@ -29,19 +28,10 @@ intptr_t Type::ref_count() const noexcept
     return this->m_rc.load(std::memory_order_acquire);
 }
 
-
-
-std::unique_ptr<const FromTrait> Type::from(const Type& type) const noexcept
+std::unique_ptr<const ConversionTrait>
+Type::convert_to(const Type& type, bool try_pass) const noexcept
 {
-return nullptr;
-}
-
-std::unique_ptr<const IntoTrait> Type::into(const Type& type) const noexcept
-{
-    if (auto p_from = from(type)) {
-        return std::make_unique<IntoFrom>(std::move(p_from));
-    }
-
+    if (try_pass) { return type.convert_to(*this, false); }
     return nullptr;
 }
 
@@ -49,7 +39,4 @@ const BuiltinTrait* Type::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
     return nullptr;
 }
-const Trait* Type::get_trait(string_view id) const noexcept
-{
-    return nullptr;
-}
+const Trait* Type::get_trait(string_view id) const noexcept { return nullptr; }
