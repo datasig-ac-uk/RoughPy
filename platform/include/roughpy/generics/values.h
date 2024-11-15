@@ -14,7 +14,6 @@
 #include "roughpy/platform/roughpy_platform_export.h"
 
 #include "type_ptr.h"
-#include "const_reference.h"
 #include "type_ptr.h"
 #include "type.h"
 
