@@ -240,7 +240,7 @@ public:
         return m_storage.pointer;
     }
 
-    constexpr void* reset(void* new_ptr)
+    void* reset(void* new_ptr)
     {
         return std::exchange(m_storage.pointer, new_ptr);
     }
