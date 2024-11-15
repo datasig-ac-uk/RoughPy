@@ -2,7 +2,6 @@
 // Created by sammorley on 15/11/24.
 //
 
-
 #include "roughpy/generics/number_trait.h"
 
 #include <stdexcept>
@@ -13,18 +12,17 @@
 #include "roughpy/generics/type.h"
 #include "roughpy/generics/values.h"
 
-
 using namespace rpy;
 using namespace rpy::generics;
 
 NumberTraits::~NumberTraits() = default;
 
-void NumberTraits::unsafe_real(void* dst, const void* src) const noexcept
+void NumberTraits::unsafe_real(void* dst, const void* src) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     p_type->copy(dst, src, 1, true);
 }
-void NumberTraits::unsafe_imaginary(void* dst, const void* src) const noexcept
+void NumberTraits::unsafe_imaginary(void* dst, const void* src) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     p_type->copy(dst, nullptr, 1, false);
