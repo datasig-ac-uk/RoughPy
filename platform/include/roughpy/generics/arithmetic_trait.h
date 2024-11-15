@@ -143,7 +143,8 @@ bool ArithmeticTraitImpl<T, R>::has_operation(Operation op) const noexcept
 }
 
 template <typename T, typename R>
-void ArithmeticTraitImpl<T, R>::unsafe_add_inplace(void* lhs, const void* rhs) const
+void ArithmeticTraitImpl<T, R>::unsafe_add_inplace(void* lhs, const void*
+rhs) const noexcept
 {
     RPY_DBG_ASSERT(dtl::has_add_v<T>);
     *static_cast<T*>(lhs) += *static_cast<const T*>(rhs);
