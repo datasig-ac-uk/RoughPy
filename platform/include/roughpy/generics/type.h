@@ -114,6 +114,10 @@ public:
 
     RPY_NO_DISCARD virtual const Trait* get_trait(string_view id
     ) const noexcept;
+
+
+    virtual const std::ostream&
+    display(std::ostream& os, const void* value) const = 0;
 };
 
 RPY_NO_DISCARD constexpr bool
