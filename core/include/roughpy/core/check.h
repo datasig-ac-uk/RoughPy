@@ -104,6 +104,9 @@ void throw_exception(
 #define RPY_CHECK(...)                                                         \
     RPY_INVOKE_VA(RPY_CHECK_SEL(RPY_COUNT_ARGS(__VA_ARGS__)), (__VA_ARGS__))
 
+
+// TODO: Ideally have customisable messages for the these checks
+
 #define RPY_CHECK_EQ(a, b, ...)                                                \
     RPY_CHECK((::rpy::compare_equal((a), (b))),                                \
               "failed check \"" RPY_STRINGIFY((a) == (b)) "\""                 \
