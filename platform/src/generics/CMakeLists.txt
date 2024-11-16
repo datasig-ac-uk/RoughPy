@@ -20,5 +20,19 @@ target_sources(RoughPy_Platform PRIVATE
         hash_trait.cpp
         number_trait.cpp
         type.cpp
+        type_promotion.cpp
         value.cpp
 )
+
+
+if (ROUGHPY_BUILD_TESTS)
+
+
+    add_executable(test_generics test_value.cpp)
+
+    target_link_libraries(test_generics PRIVATE RoughPy::Platform GTest::gtest)
+
+    setup_roughpy_cpp_tests(test_generics)
+
+
+endif()
