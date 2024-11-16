@@ -36,6 +36,18 @@ struct BasicProperties {
     bool is_integral : 1;
 };
 
+template <typename T>
+constexpr BasicProperties basic_properties_of() noexcept;
+
+
+template <typename T>
+TypePtr get_type() noexcept
+{
+    static_assert(false, "There is no Type associated with T");
+    RPY_UNREACHABLE_RETURN(nullptr);
+}
+
+
 class ROUGHPY_PLATFORM_EXPORT Type
 {
     mutable std::atomic_intptr_t m_rc;
@@ -63,6 +75,7 @@ protected:
     virtual bool dec_ref() const noexcept;
 
 public:
+
     intptr_t ref_count() const noexcept;
 
     friend void intrusive_ptr_add_ref(const Type* value) noexcept
@@ -93,6 +106,7 @@ public:
     }
 
     RPY_NO_DISCARD virtual string_view name() const noexcept = 0;
+    RPY_NO_DISCARD virtual string_view id() const noexcept = 0;
 
 protected:
     virtual void* allocate_object() const = 0;
@@ -118,6 +132,14 @@ public:
 
     virtual const std::ostream&
     display(std::ostream& os, const void* value) const = 0;
+
+
+    template <typename T>
+    static TypePtr of() noexcept
+    {
+        return get_type<decay_t<T>>();
+    }
+
 };
 
 
@@ -144,12 +166,7 @@ struct BuiltinTypes
 ROUGHPY_PLATFORM_EXPORT
 const BuiltinTypes& get_builtin_types() noexcept;
 
-template <typename T>
-TypePtr get_type() noexcept
-{
-    static_assert(false, "There is no Type associated with T");
-    RPY_UNREACHABLE_RETURN(nullptr);
-}
+
 
 
 ROUGHPY_PLATFORM_EXPORT
@@ -172,6 +189,7 @@ operator!=(const Type& lhs, const Type& rhs) noexcept
 inline size_t size_of(const Type& type) noexcept { return type.object_size(); }
 
 namespace concepts {
+
 
 
 /**
