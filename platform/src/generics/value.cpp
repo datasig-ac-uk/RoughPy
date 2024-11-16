@@ -97,10 +97,14 @@ Value::Value(Value&& other) noexcept
       m_storage(std::move(other.m_storage))
 {}
 
-Value::Value(TypePtr type) : p_type(std::move(type))
+Value::Value(TypePtr type, const void* data)
+    : p_type(std::move(type))
 {
     RPY_CHECK(p_type);
     if (!is_inline_stored()) { allocate_data(); }
+    if (data != nullptr) {
+        assign_value(type.get(), data, false);
+    }
 }
 
 Value::Value(ConstRef other)

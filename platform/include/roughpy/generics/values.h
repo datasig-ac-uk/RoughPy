@@ -287,7 +287,7 @@ public:
     Value(Value&& other) noexcept;
 
     // Construct a zero object if this is valid
-    explicit Value(TypePtr type);
+    explicit Value(TypePtr type, const void* data=nullptr);
 
     // Copy a value from an existing reference
     explicit Value(ConstRef other);
