@@ -101,6 +101,11 @@ public:
 
     RPY_NO_DISCARD const Type& type() const noexcept { return *p_type; }
 
+    RPY_NO_DISCARD const Type* type_ptr() const noexcept
+    {
+        return p_type.get();
+    }
+
     template <typename T = void>
     RPY_NO_DISCARD constexpr const T* data() const noexcept
     {
@@ -281,18 +286,29 @@ class ROUGHPY_PLATFORM_EXPORT Value
     void ensure_constructed(const Type* backup_type = nullptr);
 
 public:
+    using value_type = Value;
+    using const_reference = ConstRef;
+    using reference = Ref;
+    using pointer = Ptr;
+    using const_pointer = ConstPtr;
+
     // standard constructors
     Value();
     Value(const Value& other);
     Value(Value&& other) noexcept;
 
     // Construct a zero object if this is valid
-    explicit Value(TypePtr type, const void* data=nullptr);
+    explicit Value(TypePtr type, const void* data = nullptr);
 
     // Copy a value from an existing reference
     explicit Value(ConstRef other);
 
-    template <typename T, typename = enable_if_t<!dtl::value_like_v<T>>>
+    template <typename T, typename = enable_if_t<
+        !dtl::value_like_v<decay_t<T>>
+        && !is_same_v<decay_t<T>, TypePtr>
+        && !is_same_v<decay_t<T>, const Type*>
+        >
+    >
     explicit Value(T&& value);
 
     ~Value();
@@ -312,6 +328,11 @@ public:
     RPY_NO_DISCARD bool is_valid() const noexcept
     {
         return static_cast<bool>(p_type);
+    }
+
+    RPY_NO_DISCARD const Type* type_ptr() const noexcept
+    {
+        return p_type.get();
     }
 
     RPY_NO_DISCARD const Type& type() const noexcept
@@ -368,6 +389,12 @@ void backup_display(std::ostream& os);
 
 }
 
+template <typename T, typename>
+Value::Value(T&& value) : p_type(get_type<T>())
+{
+    assign_value(p_type.get(), &value);
+}
+
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, std::ostream&>
 operator<<(std::ostream& os, const T& value)
@@ -416,25 +443,112 @@ operator==(const T& lhs, const U& rhs)
     );
 }
 
-template <typename T, typename>
-Value::Value(T&& value) : p_type(get_type<T>())
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
+operator!=(const T& lhs, const U& rhs)
 {
-    assign_value(p_type.get(), &value);
+    return !operator==(lhs, rhs);
 }
+
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
+operator<(const T& lhs, const U& rhs)
+{
+    return dtl::values_compare(
+            Comparison::Less,
+            lhs.type_ptr(),
+            lhs.data(),
+            rhs.type_ptr(),
+            rhs.data()
+    );
+}
+
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
+operator<=(const T& lhs, const U& rhs)
+{
+    return dtl::values_compare(
+            Comparison::LessEqual,
+            lhs.type_ptr(),
+            lhs.data(),
+            rhs.type_ptr(),
+            rhs.data()
+    );
+}
+
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
+operator>(const T& lhs, const U& rhs)
+{
+    return dtl::values_compare(
+            Comparison::Greater,
+            lhs.type_ptr(),
+            lhs.data(),
+            rhs.type_ptr(),
+            rhs.data()
+    );
+}
+
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
+operator>=(const T& lhs, const U& rhs)
+{
+    return dtl::values_compare(
+            Comparison::GreaterEqual,
+            lhs.type_ptr(),
+            lhs.data(),
+            rhs.type_ptr(),
+            rhs.data()
+    );
+}
+
+namespace dtl {
+
+/**
+ * @brief Performs arithmetic operations on the given values.
+ *
+ * This function performs the specified arithmetic operation on two values
+ * of potentially different types. The specific operation to be performed
+ * is determined by the `operation` parameter.
+ *
+ * @param operation The arithmetic operation to be performed. It can be one of
+ *                  the following: Add, Sub, Mul, Div (defined in the
+ * ArithmeticTrait::Operation enum).
+ * @param ltype The type of the left-hand side value.
+ * @param lvalue A pointer to the left-hand side value.
+ * @param rtype The type of the right-hand side value.
+ * @param rvalue A pointer to the right-hand side value.
+ */
+ROUGHPY_PLATFORM_EXPORT void value_inplace_arithmetic(
+        typename ArithmeticTrait::Operation operation,
+        const Type* ltype,
+        void* lvalue,
+        const Type* rtype,
+        const void* rvalue
+);
+
+ROUGHPY_PLATFORM_EXPORT RPY_NO_DISCARD Value value_arithmetic(
+        typename ArithmeticTrait::Operation operation,
+        const Type* ltype,
+        const void* lvalue,
+        const Type* rtype,
+        const void* rvalue
+);
+
+}// namespace dtl
 
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator+=(const T& other)
 {
-    RPY_CHECK(other.is_valid());
-    ensure_constructed(&other.type());
+    RPY_CHECK(is_valid() && other.is_valid());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(
-            type().get_builtin_trait(BuiltinTraitID::Arithmetic)
-    );
-    RPY_CHECK_NE(trait, nullptr);
-    RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Add));
-
-    trait->unsafe_add_inplace(data(), other.data());
+    dtl::value_inplace_arithmetic(
+        ArithmeticTrait::Operation::Add,
+        type_ptr(),
+        data(),
+        other.type_ptr(),
+        other.data()
+        );
 
     return *this;
 }
@@ -442,47 +556,45 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator+=(const T& other)
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator-=(const T& other)
 {
-    RPY_CHECK(other.is_valid());
-    ensure_constructed(&other.type());
+    RPY_CHECK(is_valid() && other.is_valid());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(
-            type().get_builtin_trait(BuiltinTraitID::Arithmetic)
-    );
-    RPY_CHECK_NE(trait, nullptr);
-    RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Sub));
-
-    trait->unsafe_sub_inplace(data(), other.data());
+    dtl::value_inplace_arithmetic(
+        ArithmeticTrait::Operation::Sub,
+        type_ptr(),
+        data(),
+        other.type_ptr(),
+        other.data()
+        );
 
     return *this;
 }
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator*=(const T& other)
 {
-    RPY_CHECK(other.is_valid());
-    ensure_constructed(&other.type());
+    RPY_CHECK(is_valid() && other.is_valid());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(
-            type().get_builtin_trait(BuiltinTraitID::Arithmetic)
-    );
-    RPY_CHECK_NE(trait, nullptr);
-    RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Mul));
-
-    trait->unsafe_mul_inplace(data(), other.data());
+    dtl::value_inplace_arithmetic(
+        ArithmeticTrait::Operation::Mul,
+        type_ptr(),
+        data(),
+        other.type_ptr(),
+        other.data()
+        );
     return *this;
 }
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator/=(const T& other)
 {
-    RPY_CHECK(other.is_valid());
-    ensure_constructed(&other.type());
+    RPY_CHECK(is_valid() && other.is_valid());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(
-            type().get_builtin_trait(BuiltinTraitID::Arithmetic)
-    );
-    RPY_CHECK_NE(trait, nullptr);
-    RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Div));
+    dtl::value_inplace_arithmetic(
+        ArithmeticTrait::Operation::Div,
+        type_ptr(),
+        data(),
+        other.type_ptr(),
+        other.data()
+        );
 
-    trait->unsafe_sub_inplace(data(), other.data());
     return *this;
 }
 
@@ -492,13 +604,13 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator+=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(
-            p_type->get_builtin_trait(BuiltinTraitID::Arithmetic)
-    );
-    RPY_CHECK_NE(trait, nullptr);
-    RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Add));
-
-    trait->unsafe_add_inplace(data(), other.data());
+    dtl::value_inplace_arithmetic(
+        ArithmeticTrait::Operation::Add,
+        type_ptr(),
+        data(),
+        other.type_ptr(),
+        other.data()
+        );
 
     return *this;
 }
@@ -509,14 +621,12 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator-=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(
-            p_type->get_builtin_trait(BuiltinTraitID::Arithmetic)
-    );
-    RPY_CHECK_NE(trait, nullptr);
-    RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Sub));
-
-    trait->unsafe_sub_inplace(data(), other.data());
-
+    dtl::value_inplace_arithmetic(ArithmeticTrait::Operation::Sub,
+        type_ptr(),
+        data(),
+        other.type_ptr(),
+        other.data()
+        );
     return *this;
 }
 template <typename T>
@@ -525,13 +635,13 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator*=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(
-            p_type->get_builtin_trait(BuiltinTraitID::Arithmetic)
-    );
-    RPY_CHECK_NE(trait, nullptr);
-    RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Mul));
-
-    trait->unsafe_mul_inplace(data(), other.data());
+    dtl::value_inplace_arithmetic(
+        ArithmeticTrait::Operation::Mul,
+        type_ptr(),
+        data(),
+        other.type_ptr(),
+        other.data()
+        );
     return *this;
 }
 template <typename T>
@@ -540,14 +650,66 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator/=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    const auto* trait = trait_cast<ArithmeticTrait>(
-            p_type->get_builtin_trait(BuiltinTraitID::Arithmetic)
-    );
-    RPY_CHECK_NE(trait, nullptr);
-    RPY_CHECK(trait->has_operation(ArithmeticTrait::Operation::Div));
-
-    trait->unsafe_sub_inplace(data(), other.data());
+    dtl::value_inplace_arithmetic(
+        ArithmeticTrait::Operation::Div,
+        type_ptr(),
+        data(),
+        other.type_ptr(),
+        other.data()
+        );
     return *this;
+}
+
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, Value>
+operator+(const T& lhs, const U& rhs)
+{
+    return dtl::value_arithmetic(
+            ArithmeticTrait::Operation::Add,
+            lhs.type_ptr(),
+            lhs.data(),
+            rhs.type_ptr(),
+            rhs.data()
+    );
+}
+
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, Value>
+operator-(const T& lhs, const U& rhs)
+{
+    return dtl::value_arithmetic(
+            ArithmeticTrait::Operation::Sub,
+            lhs.type_ptr(),
+            lhs.data(),
+            rhs.type_ptr(),
+            rhs.data()
+    );
+}
+
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, Value>
+operator*(const T& lhs, const U& rhs)
+{
+    return dtl::value_arithmetic(
+            ArithmeticTrait::Operation::Mul,
+            lhs.type_ptr(),
+            lhs.data(),
+            rhs.type_ptr(),
+            rhs.data()
+    );
+}
+
+template <typename T, typename U>
+enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, Value>
+operator/(const T& lhs, const U& rhs)
+{
+    return dtl::value_arithmetic(
+            ArithmeticTrait::Operation::Div,
+            lhs.type_ptr(),
+            lhs.data(),
+            rhs.type_ptr(),
+            rhs.data()
+    );
 }
 
 }// namespace rpy::generics
