@@ -145,7 +145,11 @@ ROUGHPY_PLATFORM_EXPORT
 const BuiltinTypes& get_builtin_types() noexcept;
 
 template <typename T>
-TypePtr get_type() noexcept;
+TypePtr get_type() noexcept
+{
+    static_assert(false, "There is no Type associated with T");
+    RPY_UNREACHABLE_RETURN(nullptr);
+}
 
 
 ROUGHPY_PLATFORM_EXPORT
