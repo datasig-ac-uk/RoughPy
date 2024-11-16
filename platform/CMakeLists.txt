@@ -70,6 +70,7 @@ add_subdirectory(src)
 # intensive solution like protobufs or flatbufs, or literally anything else.
 if (NOT ROUGHPY_ENABLE_IWYU)
 target_precompile_headers(RoughPy_Platform PUBLIC
+        <boost/multiprecision/gmp.hpp>
         <cereal/cereal.hpp>
         <cereal/access.hpp>
         <cereal/specialize.hpp>
