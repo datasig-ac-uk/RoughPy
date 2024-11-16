@@ -390,7 +390,7 @@ void backup_display(std::ostream& os);
 }
 
 template <typename T, typename>
-Value::Value(T&& value) : p_type(get_type<T>())
+Value::Value(T&& value) : p_type(Type::of<T>())
 {
     assign_value(p_type.get(), &value);
 }
