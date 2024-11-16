@@ -19,6 +19,9 @@ TypePtr generics::compute_promotion(const Type* lhs, const Type* rhs) noexcept
     if (rhs == nullptr) {
         return lhs;
     }
+    if (RPY_LIKELY(lhs == rhs)) {
+        return lhs;
+    }
 
     // TODO: Create a mechanism for determining which type should be taken
 

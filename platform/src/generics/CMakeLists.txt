@@ -14,14 +14,16 @@ target_sources(RoughPy_Platform PRIVATE
 
         arithmetic_trait.cpp
         backup_display.cpp
-        compare_values.cpp
         comparison_trait.cpp
         conversion_trait.cpp
         hash_trait.cpp
         number_trait.cpp
         type.cpp
+        type_builtin.cpp
         type_promotion.cpp
         value.cpp
+        value_arithmetic.cpp
+        value_compare.cpp
 )
 
 
