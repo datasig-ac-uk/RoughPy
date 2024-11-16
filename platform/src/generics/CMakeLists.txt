@@ -27,6 +27,8 @@ target_sources(RoughPy_Platform PRIVATE
 )
 
 
+add_subdirectory(builtin_types)
+
 if (ROUGHPY_BUILD_TESTS)
 
 
