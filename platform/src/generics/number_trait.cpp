@@ -15,41 +15,41 @@
 using namespace rpy;
 using namespace rpy::generics;
 
-NumberTraits::~NumberTraits() = default;
+NumberTrait::~NumberTrait() = default;
 
-void NumberTraits::unsafe_real(void* dst, const void* src) const
+void NumberTrait::unsafe_real(void* dst, const void* src) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     p_type->copy_or_move(dst, src, 1, false);
 }
-void NumberTraits::unsafe_imaginary(void* dst, const void* src) const
+void NumberTrait::unsafe_imaginary(void* dst, const void* src) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     p_type->copy_or_move(dst, nullptr, 1, false);
 }
-void NumberTraits::unsafe_sqrt(void* dst, const void* src) const
+void NumberTrait::unsafe_sqrt(void* dst, const void* src) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     RPY_THROW(std::runtime_error, "this operation is not implemented");
 }
-void NumberTraits::unsafe_pow(void* dst, const void* base, int64_t exponent)
+void NumberTrait::unsafe_pow(void* dst, const void* base, int64_t exponent)
         const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     RPY_THROW(std::runtime_error, "this operation is not implemented");
 }
-void NumberTraits::unsafe_exp(void* dst, const void* src) const
+void NumberTrait::unsafe_exp(void* dst, const void* src) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     RPY_THROW(std::runtime_error, "this operation is not implemented");
 }
-void NumberTraits::unsafe_log(void* dst, const void* src) const
+void NumberTrait::unsafe_log(void* dst, const void* src) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     RPY_THROW(std::runtime_error, "this operation is not implemented");
 }
 
-void NumberTraits::real(Ref dst, ConstRef src) const
+void NumberTrait::real(Ref dst, ConstRef src) const
 {
     RPY_CHECK(dst.is_valid() && src.is_valid());
     RPY_CHECK_EQ(dst.type(), *real_type());
@@ -57,7 +57,7 @@ void NumberTraits::real(Ref dst, ConstRef src) const
 
     unsafe_real(dst.data(), src.data());
 }
-void NumberTraits::imaginary(Ref dst, ConstRef src) const
+void NumberTrait::imaginary(Ref dst, ConstRef src) const
 {
     RPY_CHECK(imaginary_type(), "this type is not complex");
     RPY_CHECK(dst.is_valid() && src.is_valid());
@@ -66,7 +66,7 @@ void NumberTraits::imaginary(Ref dst, ConstRef src) const
 
     unsafe_imaginary(dst.data(), src.data());
 }
-void NumberTraits::abs(Ref dst, ConstRef src) const
+void NumberTrait::abs(Ref dst, ConstRef src) const
 {
     RPY_CHECK(dst.is_valid() && src.is_valid());
     RPY_CHECK_EQ(dst.type(), *real_type());
@@ -74,7 +74,7 @@ void NumberTraits::abs(Ref dst, ConstRef src) const
 
     unsafe_abs(dst.data(), src.data());
 }
-void NumberTraits::sqrt(Ref dst, ConstRef src) const
+void NumberTrait::sqrt(Ref dst, ConstRef src) const
 {
     RPY_CHECK(dst.is_valid() && src.is_valid());
     RPY_CHECK_EQ(dst.type(), *real_type());
@@ -82,7 +82,7 @@ void NumberTraits::sqrt(Ref dst, ConstRef src) const
 
     unsafe_abs(dst.data(), src.data());
 }
-void NumberTraits::exp(Ref dst, ConstRef src) const
+void NumberTrait::exp(Ref dst, ConstRef src) const
 {
     RPY_CHECK(dst.is_valid() && src.is_valid());
     RPY_CHECK_EQ(dst.type(), *p_type);
@@ -90,7 +90,7 @@ void NumberTraits::exp(Ref dst, ConstRef src) const
 
     unsafe_exp(dst.data(), src.data());
 }
-void NumberTraits::log(Ref dst, ConstRef src) const
+void NumberTrait::log(Ref dst, ConstRef src) const
 {
     RPY_CHECK(dst.is_valid() && src.is_valid());
     RPY_CHECK_EQ(dst.type(), *p_type);
@@ -98,7 +98,7 @@ void NumberTraits::log(Ref dst, ConstRef src) const
 
     unsafe_log(dst.data(), src.data());
 }
-void NumberTraits::from_rational(
+void NumberTrait::from_rational(
         Ref dst,
         int64_t numerator,
         int64_t denominator
@@ -111,7 +111,7 @@ void NumberTraits::from_rational(
 
     unsafe_from_rational(dst.data(), numerator, denominator);
 }
-Value NumberTraits::real(ConstRef value) const
+Value NumberTrait::real(ConstRef value) const
 {
     RPY_CHECK(value.is_valid());
     RPY_CHECK_EQ(value.type(), *p_type);
@@ -121,7 +121,7 @@ Value NumberTraits::real(ConstRef value) const
 
     return result;
 }
-Value NumberTraits::imaginary(ConstRef value) const
+Value NumberTrait::imaginary(ConstRef value) const
 {
     RPY_CHECK(value.is_valid());
     RPY_CHECK_EQ(value.type(), *p_type);
@@ -131,7 +131,7 @@ Value NumberTraits::imaginary(ConstRef value) const
 
     return result;
 }
-Value NumberTraits::abs(ConstRef value) const
+Value NumberTrait::abs(ConstRef value) const
 {
     RPY_CHECK(value.is_valid());
     RPY_CHECK_EQ(value.type(), *p_type);
@@ -141,7 +141,7 @@ Value NumberTraits::abs(ConstRef value) const
 
     return result;
 }
-Value NumberTraits::sqrt(ConstRef value) const
+Value NumberTrait::sqrt(ConstRef value) const
 {
     RPY_CHECK(value.is_valid());
     RPY_CHECK_EQ(value.type(), *p_type);
@@ -151,7 +151,7 @@ Value NumberTraits::sqrt(ConstRef value) const
 
     return result;
 }
-Value NumberTraits::pow(ConstRef value, int64_t power) const
+Value NumberTrait::pow(ConstRef value, int64_t power) const
 {
     RPY_CHECK(value.is_valid());
     RPY_CHECK_EQ(value.type(), *p_type);
@@ -165,7 +165,7 @@ Value NumberTraits::pow(ConstRef value, int64_t power) const
 
     return result;
 }
-Value NumberTraits::exp(ConstRef value) const
+Value NumberTrait::exp(ConstRef value) const
 {
     RPY_CHECK(value.is_valid());
     RPY_CHECK_EQ(value.type(), *p_type);
@@ -175,7 +175,7 @@ Value NumberTraits::exp(ConstRef value) const
 
     return result;
 }
-Value NumberTraits::log(ConstRef value) const
+Value NumberTrait::log(ConstRef value) const
 {
     RPY_CHECK(value.is_valid());
     RPY_CHECK_EQ(value.type(), *p_type);
@@ -185,7 +185,7 @@ Value NumberTraits::log(ConstRef value) const
 
     return result;
 }
-Value NumberTraits::from_rational(int64_t numerator, int64_t denominator) const
+Value NumberTrait::from_rational(int64_t numerator, int64_t denominator) const
 {
     RPY_CHECK_NE(denominator, 0, std::domain_error);
 

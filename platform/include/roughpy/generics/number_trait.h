@@ -17,14 +17,14 @@ class ConstRef;
 class Ref;
 class Value;
 
-class ROUGHPY_PLATFORM_EXPORT NumberTraits : public BuiltinTrait
+class ROUGHPY_PLATFORM_EXPORT NumberTrait : public BuiltinTrait
 {
     TypePtr p_type;
     TypePtr p_real_type;
 
 protected:
 
-    NumberTraits(TypePtr type, TypePtr real_type=nullptr)
+    NumberTrait(TypePtr type, TypePtr real_type=nullptr)
         : BuiltinTrait(my_id),
           p_type(std::move(type)),
           p_real_type(std::move(real_type))
@@ -36,7 +36,7 @@ public:
 
 
 
-    virtual ~NumberTraits();
+    virtual ~NumberTrait();
 
     virtual void unsafe_real(void* dst, const void* src) const;
     virtual void unsafe_imaginary(void* dst, const void* src) const;
