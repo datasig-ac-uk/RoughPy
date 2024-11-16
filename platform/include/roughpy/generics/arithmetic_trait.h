@@ -16,14 +16,16 @@ class Ref;
 class Value;
 
 class ROUGHPY_PLATFORM_EXPORT ArithmeticTrait : public BuiltinTrait {
-    TypePtr p_type;
-    TypePtr p_rational_type;
+    // Builtin traits should be held on the Type class itself, so having
+    // TypePtrs here would cause a reference loop.
+    const Type* p_type;
+    const Type* p_rational_type;
 protected:
 
-    explicit ArithmeticTrait(TypePtr type, TypePtr rational_type)
+    explicit ArithmeticTrait(const Type* type, const Type* rational_type)
         : BuiltinTrait(my_id),
-          p_type(std::move(type)),
-          p_rational_type(std::move(rational_type))
+          p_type(type),
+          p_rational_type(rational_type)
     {}
 
 public:
