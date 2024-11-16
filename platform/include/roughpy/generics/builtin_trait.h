@@ -16,7 +16,7 @@ namespace rpy::generics {
 
 class ComparisonTrait;
 class HashTrait;
-class OrderingTrait;
+class ArithmeticTrait;
 class NumberTrait;
 
 enum class BuiltinTraitID : size_t
