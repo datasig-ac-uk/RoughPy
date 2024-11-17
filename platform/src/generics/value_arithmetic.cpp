@@ -33,7 +33,6 @@ void value_arithmetic_impl(
         const void* rvalue
 )
 {
-    RPY_CHECK_NE(trait, nullptr);
     if (RPY_LIKELY(ltype == rtype)) {
         fn(trait, lvalue, rvalue);
         return;
@@ -112,7 +111,19 @@ void value_arithmetic_divide(
         const Type* rtype,
         const void* rvalue
 )
-{}
+{
+    if (rtype == trait->rational_type()) {
+        trait->unsafe_div_inplace(lvalue, rvalue);
+        return;
+    }
+
+    Value tmp(trait->rational_type());
+    tmp = ConstRef(rtype, rvalue);
+
+    trait->unsafe_div_inplace(tmp.data(), tmp.data());
+}
+
+
 
 }// namespace
 
