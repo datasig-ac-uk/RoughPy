@@ -68,7 +68,7 @@ public:
 
 
 template <typename T>
-class ROUGHPY_PLATFORM_NO_EXPORT ComparisonTraitImpl : public ComparisonTrait
+class ComparisonTraitImpl : public ComparisonTrait
 {
 public:
 

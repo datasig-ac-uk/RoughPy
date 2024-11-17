@@ -29,9 +29,9 @@ class ROUGHPY_PLATFORM_EXPORT ConversionTrait
     TypePtr p_dst_type;
 
 protected:
-    ConversionTrait(const Type* src_type, const Type* dst_type)
-        : p_src_type(src_type),
-          p_dst_type(dst_type)
+    ConversionTrait(TypePtr src_type, TypePtr dst_type)
+        : p_src_type(std::move(src_type)),
+          p_dst_type(std::move(dst_type))
     {}
 
 public:
@@ -56,13 +56,13 @@ public:
 
 
 template <typename From, typename To>
-class RPY_LOCAL ConversionTraitImpl : public ConversionTrait
+class ConversionTraitImpl : public ConversionTrait
 {
     static_assert(is_convertible_v<From, To>, "From must be convertible to To");
 
 public:
-    ConversionTraitImpl(const Type* from_type, const Type* to_type)
-        : ConversionTrait(from_type, to_type)
+    ConversionTraitImpl(TypePtr from_type, TypePtr to_type)
+        : ConversionTrait(std::move(from_type), std::move(to_type))
     {}
 
     void unsafe_convert(void* dst, const void* src) const override;

@@ -94,7 +94,7 @@ public:
 
 
 template <typename T>
-class ROUGHPY_PLATFORM_NO_EXPORT NumberTraitImpl : public NumberTrait
+class NumberTraitImpl : public NumberTrait
 {
 
 public:

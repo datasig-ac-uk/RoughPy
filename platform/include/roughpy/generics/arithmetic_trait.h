@@ -69,11 +69,10 @@ public:
 
 
 template <typename T, typename R=T>
-class ROUGHPY_PLATFORM_NO_EXPORT ArithmeticTraitImpl : public ArithmeticTrait
+class ArithmeticTraitImpl : public ArithmeticTrait
 {
 public:
 
-    ArithmeticTraitImpl();
     ArithmeticTraitImpl(const Type* type, const Type* rational_type);
 
     RPY_NO_DISCARD bool has_operation(ArithmeticOperation op) const noexcept override;
