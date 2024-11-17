@@ -9,7 +9,7 @@
 
 namespace rpy::generics {
 
-class DoubleType : public BuiltinTypeBase<double>
+class RPY_LOCAL DoubleType : public BuiltinTypeBase<double>
 {
 
 

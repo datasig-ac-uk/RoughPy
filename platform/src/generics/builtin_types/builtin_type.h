@@ -42,7 +42,11 @@ class ROUGHPY_PLATFORM_NO_EXPORT BuiltinTypeBase : public Type
 protected:
 
     BuiltinTypeBase()
-        : Type(&typeid(T), sizeof(T), basic_properties_of<T>())
+        : Type(&typeid(T), sizeof(T), basic_properties_of<T>()),
+          m_arithmetic_trait(this, this),
+          m_comparison_trait(this),
+          m_hash_trait(this),
+          m_number_trait(this)
     {}
 
     void inc_ref() const noexcept override;
