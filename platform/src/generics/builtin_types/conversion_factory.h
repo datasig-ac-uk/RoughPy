@@ -77,7 +77,7 @@ inline void construct_from_table(Map& map, TypeList<T, Ts...> list)
         );
     }
     if constexpr (sizeof...(Ts) > 0) {
-        construct_from_table(map, TypeList<Ts...>{});
+        construct_from_table<BaseType>(map, TypeList<Ts...>{});
     }
 }
 
@@ -92,7 +92,7 @@ void construct_to_table(Map& map, TypeList<T, Ts...> list)
         );
     }
     if constexpr (sizeof...(Ts) > 0) {
-        construct_to_table(map, TypeList<Ts...>{});
+        construct_to_table<ToType>(map, TypeList<Ts...>{});
     }
 }
 
