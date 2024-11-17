@@ -6,6 +6,8 @@
 
 #include "roughpy/generics/type.h"
 
+#include "builtin_types/double_type.h"
+
 
 using namespace rpy;
 using namespace rpy::generics;
@@ -15,7 +17,7 @@ const BuiltinTypes& rpy::generics::get_builtin_types() noexcept
 {
     static BuiltinTypes builtins {
         nullptr,
-        nullptr,
+        DoubleType::get(),
 
         nullptr,
         nullptr,

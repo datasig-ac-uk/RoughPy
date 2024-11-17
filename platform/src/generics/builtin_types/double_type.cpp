@@ -20,7 +20,10 @@ string_view DoubleType::name() const noexcept
     return "double";
 }
 
-string_view DoubleType::id() const noexcept
+string_view DoubleType::id() const noexcept { return type_id_of<double>; }
+
+const Type* DoubleType::get() noexcept
 {
-    return "f64";
+    static const DoubleType object;
+    return &object;
 }

@@ -9,13 +9,17 @@
 
 namespace rpy::generics {
 
-class RPY_LOCAL DoubleType : public BuiltinTypeBase<double>
+extern template class BuiltinTypeBase<double>;
+
+class DoubleType : public BuiltinTypeBase<double>
 {
 public:
     using BuiltinTypeBase::BuiltinTypeBase;
 
     RPY_NO_DISCARD string_view name() const noexcept override;
     RPY_NO_DISCARD string_view id() const noexcept override;
+
+    static const Type* get() noexcept;
 };
 
 
