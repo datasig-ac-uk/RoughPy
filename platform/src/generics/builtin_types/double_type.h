@@ -12,6 +12,9 @@ namespace rpy::generics {
 class RPY_LOCAL DoubleType : public BuiltinTypeBase<double>
 {
 
+public:
+
+    using BuiltinTypeBase::BuiltinTypeBase;
 
 };
 
