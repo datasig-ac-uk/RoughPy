@@ -38,7 +38,7 @@ public:
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>
     make(TypePtr from_type, TypePtr to_type) const override;
 
-    RPY_NO_DISCARD const ConversionFactory* get() const noexcept
+    RPY_NO_DISCARD static const ConversionFactory* get() noexcept
     {
         static const ConversionFactoryImpl object;
         return &object;
@@ -92,7 +92,7 @@ void construct_to_table(Map& map, TypeList<T, Ts...> list)
         );
     }
     if constexpr (sizeof...(Ts) > 0) {
-        consturct_to_table(map, TypeList<Ts...>{});
+        construct_to_table(map, TypeList<Ts...>{});
     }
 }
 
