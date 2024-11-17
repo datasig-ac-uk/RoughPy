@@ -8,10 +8,14 @@
 #include <memory>
 
 #include "roughpy/core/macros.h"
+#include "roughpy/core/traits.h"
 
 #include "roughpy/platform/roughpy_platform_export.h"
 
+#include "roughpy/core/debug_assertion.h"
 #include "type_ptr.h"
+
+#include <random>
 
 namespace rpy::generics {
 
@@ -25,9 +29,9 @@ class ROUGHPY_PLATFORM_EXPORT ConversionTrait
     TypePtr p_dst_type;
 
 protected:
-    ConversionTrait(TypePtr src_type, TypePtr dst_type)
-        : p_src_type(std::move(src_type)),
-          p_dst_type(std::move(dst_type))
+    ConversionTrait(const Type* src_type, const Type* dst_type)
+        : p_src_type(src_type),
+          p_dst_type(dst_type)
     {}
 
 public:
@@ -46,6 +50,35 @@ public:
     RPY_NO_DISCARD
     Value convert(ConstRef src) const;
 };
+
+
+
+
+
+template <typename From, typename To>
+class RPY_LOCAL ConversionTraitImpl : public ConversionTrait
+{
+    static_assert(is_convertible_v<From, To>, "From must be convertible to To");
+
+public:
+    ConversionTraitImpl(const Type* from_type, const Type* to_type)
+        : ConversionTrait(from_type, to_type)
+    {}
+
+    void unsafe_convert(void* dst, const void* src) const override;
+};
+
+template <typename From, typename To>
+void ConversionTraitImpl<From, To>::unsafe_convert(void* dst, const void* src)
+        const
+{
+    RPY_DBG_ASSERT_NE(dst, nullptr);
+    RPY_DBG_ASSERT_NE(src, nullptr);
+    const auto* src_obj = static_cast<const From*>(src);
+    *static_cast<const To*>(dst) = static_cast<To>(src_obj);
+}
+
+
 
 }// namespace rpy::generics
 
