@@ -17,7 +17,6 @@
 #include "generics/builtin_trait.h"
 #include "generics/comparison_trait.h"
 #include "generics/conversion_trait.h"
-#include "generics/hash_trait.h"
 #include "generics/number_trait.h"
 
 namespace rpy::generics {
@@ -32,7 +31,6 @@ class ROUGHPY_PLATFORM_NO_EXPORT BuiltinTypeBase : public Type
 {
     ArithmeticTraitImpl<T> m_arithmetic_trait;
     ComparisonTraitImpl<T> m_comparison_trait;
-    HashTraitImpl<T> m_hash_trait;
     NumberTraitImpl<T> m_number_trait;
 
 
@@ -52,7 +50,6 @@ protected:
         : Type(&typeid(T), sizeof(T), basic_properties_of<T>()),
           m_arithmetic_trait(this, this),
           m_comparison_trait(this),
-          m_hash_trait(),
           m_number_trait(this, this)
     {}
 
