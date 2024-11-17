@@ -28,7 +28,7 @@ namespace rpy::generics {
 
 
 template <typename T>
-class BuiltinTypeBase : public Type
+class ROUGHPY_PLATFORM_NO_EXPORT BuiltinTypeBase : public Type
 {
     ArithmeticTraitImpl<T> m_arithmetic_trait;
     ComparisonTraitImpl<T> m_comparison_trait;
