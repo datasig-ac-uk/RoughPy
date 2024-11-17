@@ -18,6 +18,7 @@ template <typename T>
 using Hash = boost::hash<T>;
 
 using boost::hash_combine;
+using boost::hash_value;
 
 }
 
