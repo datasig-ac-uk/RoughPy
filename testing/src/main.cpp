@@ -55,4 +55,5 @@ int main(int argc, char** argv)
     _CrtSetReportMode(_CRT_ERROR, error_mode);
     _CrtSetReportMode(_CRT_ASSERT, assert_mode);
 #endif
+    return result;
 }
