@@ -26,3 +26,17 @@ target_link_libraries(RoughPy_Generics_BuiltinType PRIVATE
 )
 
 
+if (ROUGHPY_BUILD_TESTS)
+
+    add_executable(test_builtin_types
+            test_double_traits.cpp
+    )
+
+    target_link_libraries(test_builtin_types PRIVATE
+            RoughPy_Platform GTest::gtest
+    )
+
+    setup_roughpy_cpp_tests(test_builtin_types)
+
+
+endif()
