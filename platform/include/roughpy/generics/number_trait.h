@@ -80,12 +80,12 @@ public:
     RPY_NO_DISCARD
     const TypePtr& real_type() const noexcept
     {
-        return p_real_type ? p_real_type : p_type;
+        return this->p_real_type ? this->p_real_type : this->p_type;
     }
 
     RPY_NO_DISCARD const TypePtr& imaginary_type() const noexcept
     {
-        return p_real_type;
+        return this->p_real_type;
     }
 };
 
@@ -134,12 +134,12 @@ struct NoSuchFunction
     }
 };
 
-template <typename T, typename=void>
+template <typename T, typename=int>
 struct AbsFunc : NoSuchFunction
 {
 };
 
-template <typename T, typename>
+template <typename T>
 struct AbsFunc<T, void_t<decltype(abs(declval<T>()))>>
 {
     using result_t = decltype(abs(declval<T>()));
@@ -150,12 +150,12 @@ struct AbsFunc<T, void_t<decltype(abs(declval<T>()))>>
     }
 };
 
-template <typename T, typename=void>
+template <typename T, typename=int>
 struct SqrtFunc : NoSuchFunction
 {
 };
 
-template <typename T, typename>
+template <typename T>
 struct SqrtFunc<T, void_t<decltype(sqrt(declval<T>()))>>
 {
     using result_t = decltype(sqrt(declval<T>()));
@@ -166,12 +166,12 @@ struct SqrtFunc<T, void_t<decltype(sqrt(declval<T>()))>>
     }
 };
 
-template <typename T, typename=void>
+template <typename T, typename=int>
 struct PowFunc : NoSuchFunction
 {
 };
 
-template <typename T, typename>
+template <typename T>
 struct PowFunc<T, void_t<decltype(sqrt(declval<T>()), std::declval<typename NumberTrait::exponent_t>())>>
 {
     using exponent_t = typename NumberTrait::exponent_t;
@@ -183,12 +183,12 @@ struct PowFunc<T, void_t<decltype(sqrt(declval<T>()), std::declval<typename Numb
     }
 };
 
-template <typename T, typename=void>
+template <typename T, typename=int>
 struct ExpFunc : NoSuchFunction
 {
 };
 
-template <typename T, typename>
+template <typename T>
 struct ExpFunc<T, void_t<decltype(exp(declval<T>()))>>
 {
     using result_t = decltype(exp(declval<T>()));
@@ -199,12 +199,12 @@ struct ExpFunc<T, void_t<decltype(exp(declval<T>()))>>
     }
 };
 
-template <typename T, typename=void>
+template <typename T, typename=int>
 struct LogFunc : NoSuchFunction
 {
 };
 
-template <typename T, typename>
+template <typename T>
 struct LogFunc<T, void_t<decltype(log(declval<T>()))>>
 {
     using result_t = decltype(log(declval<T>()));
@@ -214,6 +214,7 @@ struct LogFunc<T, void_t<decltype(log(declval<T>()))>>
         return log(val);
     }
 };
+
 
 
 }

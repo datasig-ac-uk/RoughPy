@@ -13,7 +13,7 @@ using namespace rpy::generics;
 ComparisonTrait::~ComparisonTrait() = default;
 bool ComparisonTrait::compare_equal(ConstRef lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_comparison(Comparison::Equal));
+    RPY_CHECK(has_comparison(ComparisonType::Equal));
 
     if (!lhs.is_valid() && !rhs.is_valid()) {
         return true;
@@ -29,7 +29,7 @@ bool ComparisonTrait::compare_equal(ConstRef lhs, ConstRef rhs) const
 }
 bool ComparisonTrait::compare_less(ConstRef lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_comparison(Comparison::Less));
+    RPY_CHECK(has_comparison(ComparisonType::Less));
 
     RPY_CHECK(!lhs.fast_is_zero());
     RPY_CHECK(!rhs.fast_is_zero());
@@ -40,7 +40,7 @@ bool ComparisonTrait::compare_less(ConstRef lhs, ConstRef rhs) const
 }
 bool ComparisonTrait::compare_less_equal(ConstRef lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_comparison(Comparison::LessEqual));
+    RPY_CHECK(has_comparison(ComparisonType::LessEqual));
     RPY_CHECK(!lhs.fast_is_zero());
     RPY_CHECK(!rhs.fast_is_zero());
 
@@ -50,7 +50,7 @@ bool ComparisonTrait::compare_less_equal(ConstRef lhs, ConstRef rhs) const
 }
 bool ComparisonTrait::compare_less_greater(ConstRef lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_comparison(Comparison::Greater));
+    RPY_CHECK(has_comparison(ComparisonType::Greater));
     RPY_CHECK(!lhs.fast_is_zero());
     RPY_CHECK(!rhs.fast_is_zero());
 
@@ -61,7 +61,7 @@ bool ComparisonTrait::compare_less_greater(ConstRef lhs, ConstRef rhs) const
 bool ComparisonTrait::compare_less_greater_equal(ConstRef lhs, ConstRef rhs)
         const
 {
-    RPY_CHECK(has_comparison(Comparison::GreaterEqual));
+    RPY_CHECK(has_comparison(ComparisonType::GreaterEqual));
     RPY_CHECK(!lhs.fast_is_zero());
     RPY_CHECK(!rhs.fast_is_zero());
 

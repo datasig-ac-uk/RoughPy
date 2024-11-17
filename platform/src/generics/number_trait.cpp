@@ -32,7 +32,7 @@ void NumberTrait::unsafe_sqrt(void* dst, const void* src) const
     RPY_DBG_ASSERT_NE(dst, nullptr);
     RPY_THROW(std::runtime_error, "this operation is not implemented");
 }
-void NumberTrait::unsafe_pow(void* dst, const void* base, int64_t exponent)
+void NumberTrait::unsafe_pow(void* dst, const void* base, exponent_t exponent)
         const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
@@ -151,7 +151,7 @@ Value NumberTrait::sqrt(ConstRef value) const
 
     return result;
 }
-Value NumberTrait::pow(ConstRef value, int64_t power) const
+Value NumberTrait::pow(ConstRef value, exponent_t power) const
 {
     RPY_CHECK(value.is_valid());
     RPY_CHECK_EQ(value.type(), *p_type);

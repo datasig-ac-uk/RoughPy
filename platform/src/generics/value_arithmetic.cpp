@@ -117,7 +117,7 @@ void value_arithmetic_divide(
 }// namespace
 
 void generics::dtl::value_inplace_arithmetic(
-        ArithmeticTrait::Operation operation,
+        ArithmeticOperation operation,
         const Type* ltype,
         void* lvalue,
         const Type* rtype,
@@ -129,16 +129,16 @@ void generics::dtl::value_inplace_arithmetic(
     RPY_CHECK(trait->has_operation(operation));
 
     switch (operation) {
-        case ArithmeticTrait::Operation::Add:
+        case ArithmeticOperation::Add:
             value_arithmetic_add(trait, ltype, lvalue, rtype, rvalue);
             break;
-        case ArithmeticTrait::Operation::Sub:
+        case ArithmeticOperation::Sub:
             value_arithmetic_subtract(trait, ltype, lvalue, rtype, rvalue);
             break;
-        case ArithmeticTrait::Operation::Mul:
+        case ArithmeticOperation::Mul:
             value_arithmetic_multiply(trait, ltype, lvalue, rtype, rvalue);
             break;
-        case ArithmeticTrait::Operation::Div:
+        case ArithmeticOperation::Div:
             value_arithmetic_divide(trait, ltype, lvalue, rtype, rvalue);
             break;
         default: RPY_UNREACHABLE();
@@ -146,7 +146,7 @@ void generics::dtl::value_inplace_arithmetic(
 }
 
 Value generics::dtl::value_arithmetic(
-        ArithmeticTrait::Operation operation,
+        ArithmeticOperation operation,
         const Type* ltype,
         const void* lvalue,
         const Type* rtype,
@@ -164,7 +164,7 @@ Value generics::dtl::value_arithmetic(
     result = ConstRef(ltype, lvalue);
 
     switch (operation) {
-        case ArithmeticTrait::Operation::Add:
+        case ArithmeticOperation::Add:
             value_arithmetic_add(
                     trait,
                     common_type.get(),
@@ -173,7 +173,7 @@ Value generics::dtl::value_arithmetic(
                     rvalue
             );
             break;
-        case ArithmeticTrait::Operation::Sub:
+        case ArithmeticOperation::Sub:
             value_arithmetic_subtract(
                     trait,
                     common_type.get(),
@@ -182,7 +182,7 @@ Value generics::dtl::value_arithmetic(
                     rvalue
             );
             break;
-        case ArithmeticTrait::Operation::Mul:
+        case ArithmeticOperation::Mul:
             value_arithmetic_multiply(
                     trait,
                     common_type.get(),
@@ -191,7 +191,7 @@ Value generics::dtl::value_arithmetic(
                     rvalue
             );
             break;
-        case ArithmeticTrait::Operation::Div:
+        case ArithmeticOperation::Div:
             value_arithmetic_divide(
                     trait,
                     common_type.get(),

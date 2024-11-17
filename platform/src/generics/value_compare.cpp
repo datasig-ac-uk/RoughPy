@@ -154,7 +154,7 @@ bool value_compare_greater_equal(
 }// namespace
 
 bool rpy::generics::dtl::values_compare(
-        Comparison comp,
+        ComparisonType comp,
         const Type* ltype,
         const void* lvalue,
         const Type* rtype,
@@ -162,15 +162,15 @@ bool rpy::generics::dtl::values_compare(
 )
 {
     switch (comp) {
-        case Comparison::Equal:
+        case ComparisonType::Equal:
             return value_compare_equal(ltype, lvalue, rtype, rvalue);
-        case Comparison::Less:
+        case ComparisonType::Less:
             return value_compare_less(ltype, lvalue, rtype, rvalue);
-        case Comparison::LessEqual:
+        case ComparisonType::LessEqual:
             return value_compare_less_equal(ltype, lvalue, rtype, rvalue);
-        case Comparison::Greater:
+        case ComparisonType::Greater:
             return value_compare_greater(ltype, lvalue, rtype, rvalue);
-        case Comparison::GreaterEqual:
+        case ComparisonType::GreaterEqual:
             return value_compare_greater_equal(ltype, lvalue, rtype, rvalue);
     }
     RPY_UNREACHABLE_RETURN(false);

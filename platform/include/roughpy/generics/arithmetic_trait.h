@@ -37,7 +37,7 @@ public:
 
 
     RPY_NO_DISCARD
-    virtual bool has_operation(Operation op) const noexcept;
+    virtual bool has_operation(ArithmeticOperation op) const noexcept;
 
     virtual void unsafe_add_inplace(void* lhs, const void* rhs) const noexcept = 0;
     virtual void unsafe_sub_inplace(void* lhs, const void* rhs) const = 0;
@@ -73,7 +73,7 @@ class ROUGHPY_PLATFORM_NO_EXPORT ArithmeticTraitImpl : public ArithmeticTrait
 public:
     using ArithmeticTrait::ArithmeticTrait;
 
-    RPY_NO_DISCARD bool has_operation(Operation op) const noexcept override;
+    RPY_NO_DISCARD bool has_operation(ArithmeticOperation op) const noexcept override;
 
     void unsafe_add_inplace(void* lhs, const void* rhs) const noexcept override;
     void unsafe_sub_inplace(void* lhs, const void* rhs) const noexcept override;
@@ -123,16 +123,16 @@ inline constexpr bool has_div_v<U, V, void_t<div_result_t<U, V>>> = true;
 }
 
 template <typename T, typename R>
-bool ArithmeticTraitImpl<T, R>::has_operation(Operation op) const noexcept
+bool ArithmeticTraitImpl<T, R>::has_operation(ArithmeticOperation op) const noexcept
 {
     switch (op) {
-        case Operation::Add:
+        case ArithmeticOperation::Add:
             return dtl::has_add_v<T>;
-        case Operation::Sub:
+        case ArithmeticOperation::Sub:
             return dtl::has_sub_v<T>;
-        case Operation::Mul:
+        case ArithmeticOperation::Mul:
             return dtl::has_mul_v<T>;
-        case Operation::Div:
+        case ArithmeticOperation::Div:
             return dtl::has_div_v<T, R>;
     }
     RPY_UNREACHABLE_RETURN(false);

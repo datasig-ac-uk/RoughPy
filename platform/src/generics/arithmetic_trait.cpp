@@ -13,13 +13,13 @@
 using namespace rpy;
 using namespace rpy::generics;
 ArithmeticTrait::~ArithmeticTrait() = default;
-bool ArithmeticTrait::has_operation(Operation op) const noexcept
+bool ArithmeticTrait::has_operation(ArithmeticOperation op) const noexcept
 {
     return false;
 }
 void ArithmeticTrait::add_inplace(Ref lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_operation(Operation::Add));
+    RPY_CHECK(has_operation(ArithmeticOperation::Add));
     RPY_CHECK(rhs.is_valid() && lhs.is_valid());
     RPY_CHECK_EQ(*p_type, lhs.type());
 
@@ -33,7 +33,7 @@ void ArithmeticTrait::add_inplace(Ref lhs, ConstRef rhs) const
 }
 void ArithmeticTrait::sub_inplace(Ref lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_operation(Operation::Sub));
+    RPY_CHECK(has_operation(ArithmeticOperation::Sub));
     RPY_CHECK(rhs.is_valid() && lhs.is_valid());
     RPY_CHECK_EQ(*p_type, lhs.type());
 
@@ -47,7 +47,7 @@ void ArithmeticTrait::sub_inplace(Ref lhs, ConstRef rhs) const
 }
 void ArithmeticTrait::mul_inplace(Ref lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_operation(Operation::Mul));
+    RPY_CHECK(has_operation(ArithmeticOperation::Mul));
     RPY_CHECK(rhs.is_valid() && lhs.is_valid());
     RPY_CHECK_EQ(*p_type, lhs.type());
 
@@ -62,7 +62,7 @@ void ArithmeticTrait::mul_inplace(Ref lhs, ConstRef rhs) const
 }
 void ArithmeticTrait::div_inplace(Ref lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_operation(Operation::Div));
+    RPY_CHECK(has_operation(ArithmeticOperation::Div));
     RPY_CHECK(rhs.is_valid());
     RPY_CHECK(!rhs.fast_is_zero(), "division by zero", std::domain_error);
 
@@ -79,7 +79,7 @@ void ArithmeticTrait::div_inplace(Ref lhs, ConstRef rhs) const
 }
 Value ArithmeticTrait::add(ConstRef lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_operation(Operation::Add));
+    RPY_CHECK(has_operation(ArithmeticOperation::Add));
     RPY_CHECK(rhs.is_valid() && lhs.is_valid());
     Value result(lhs);
     unsafe_add_inplace(result.data(), rhs.data());
@@ -87,7 +87,7 @@ Value ArithmeticTrait::add(ConstRef lhs, ConstRef rhs) const
 }
 Value ArithmeticTrait::sub(ConstRef lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_operation(Operation::Sub));
+    RPY_CHECK(has_operation(ArithmeticOperation::Sub));
     RPY_CHECK(rhs.is_valid() && lhs.is_valid());
     Value result(lhs);
     unsafe_sub_inplace(result.data(), rhs.data());
@@ -95,7 +95,7 @@ Value ArithmeticTrait::sub(ConstRef lhs, ConstRef rhs) const
 }
 Value ArithmeticTrait::mul(ConstRef lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_operation(Operation::Mul));
+    RPY_CHECK(has_operation(ArithmeticOperation::Mul));
     RPY_CHECK(rhs.is_valid() && lhs.is_valid());
     Value result(lhs);
     unsafe_mul_inplace(result.data(), rhs.data());
@@ -103,7 +103,7 @@ Value ArithmeticTrait::mul(ConstRef lhs, ConstRef rhs) const
 }
 Value ArithmeticTrait::div(ConstRef lhs, ConstRef rhs) const
 {
-    RPY_CHECK(has_operation(Operation::Div));
+    RPY_CHECK(has_operation(ArithmeticOperation::Div));
     RPY_CHECK(rhs.is_valid() && lhs.is_valid());
     Value result(lhs);
 
