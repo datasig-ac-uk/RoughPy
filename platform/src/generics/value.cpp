@@ -184,11 +184,8 @@ Value& Value::operator=(Value&& other) // NOLINT(*-noexcept-move-constructor)
 
 Value& Value::operator=(ConstRef other)
 {
-    if (other.is_valid()) {
-        if (p_type) {
-            RPY_THROW(std::invalid_argument, "cannot assign invalid value");
-        }
-        return *this;
+    if (RPY_UNLIKELY(!other.is_valid() && !p_type)) {
+        RPY_THROW(std::invalid_argument, "cannot assign invalid value");
     }
 
     assign_value(&other.type(), other.data());
