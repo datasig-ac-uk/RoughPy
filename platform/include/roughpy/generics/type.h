@@ -167,7 +167,24 @@ ROUGHPY_PLATFORM_EXPORT
 const BuiltinTypes& get_builtin_types() noexcept;
 
 
-
+template <typename T>
+constexpr BasicProperties get_basic_properties() noexcept
+{
+    using base_t = remove_cv_ref_t<T>;
+    return {
+        is_standard_layout_v<base_t>,
+        is_trivially_copyable_v<base_t>,
+        is_trivially_constructible_v<base_t>,
+        is_trivially_default_constructible_v<base_t>,
+        is_trivially_copy_constructible_v<base_t>,
+        is_trivially_copy_assignable_v<base_t>,
+        is_trivially_destructible_v<base_t>,
+        is_polymorphic_v<base_t>,
+        is_signed_v<base_t>,
+        is_floating_point_v<base_t>,
+        is_integral_v<base_t>,
+};
+}
 
 ROUGHPY_PLATFORM_EXPORT
 RPY_NO_DISCARD TypePtr

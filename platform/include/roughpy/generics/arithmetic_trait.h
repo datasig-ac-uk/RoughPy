@@ -6,7 +6,8 @@
 #define ROUGHPY_GENERICS_ARITHMETIC_TRAIT_H
 
 #include "roughpy/core/debug_assertion.h"
-#include "roughpy/generics/builtin_trait.h"
+
+#include "builtin_trait.h"
 #include "type_ptr.h"
 
 namespace rpy::generics {
@@ -45,10 +46,10 @@ public:
     virtual void unsafe_div_inplace(void* lhs, const void* rhs) const = 0;
 
     RPY_NO_DISCARD
-    const TypePtr& type() const noexcept { return p_type; }
+    const Type* type() const noexcept { return p_type; }
 
     RPY_NO_DISCARD
-    const TypePtr& rational_type() const noexcept { return p_rational_type; }
+    const Type* rational_type() const noexcept { return p_rational_type; }
 
     void add_inplace(Ref lhs, ConstRef rhs) const;
     void sub_inplace(Ref lhs, ConstRef rhs) const;

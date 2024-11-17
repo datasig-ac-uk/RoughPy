@@ -26,7 +26,7 @@ class ROUGHPY_PLATFORM_EXPORT NumberTrait : public BuiltinTrait
 
 protected:
 
-    NumberTrait(const Type* type, const Type* real_type=nullptr)
+    explicit NumberTrait(const Type* type, const Type* real_type=nullptr)
         : BuiltinTrait(my_id),
           p_type(type),
           p_real_type(real_type)
@@ -78,12 +78,12 @@ public:
     from_rational(int64_t numerator, int64_t denominator) const;
 
     RPY_NO_DISCARD
-    const TypePtr& real_type() const noexcept
+    const Type* real_type() const noexcept
     {
         return this->p_real_type ? this->p_real_type : this->p_type;
     }
 
-    RPY_NO_DISCARD const TypePtr& imaginary_type() const noexcept
+    RPY_NO_DISCARD const Type* imaginary_type() const noexcept
     {
         return this->p_real_type;
     }
