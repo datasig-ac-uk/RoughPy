@@ -19,7 +19,6 @@
 #include "generics/conversion_trait.h"
 #include "generics/hash_trait.h"
 #include "generics/number_trait.h"
-#include "generics/trait.h"
 
 namespace rpy::generics {
 
@@ -37,7 +36,7 @@ class ROUGHPY_PLATFORM_NO_EXPORT BuiltinTypeBase : public Type
     NumberTraitImpl<T> m_number_trait;
 
 
-    std::unordered_map<string_view, std::unique_ptr<const Trait>> m_traits;
+    // std::unordered_map<string_view, std::unique_ptr<const Trait>> m_traits;
 
 
 protected:
@@ -66,8 +65,8 @@ public:
     convert_from(const Type& type) const noexcept override;
     RPY_NO_DISCARD const BuiltinTrait* get_builtin_trait(BuiltinTraitID id
     ) const noexcept override;
-    RPY_NO_DISCARD const Trait* get_trait(string_view id
-    ) const noexcept override;
+    // RPY_NO_DISCARD const Trait* get_trait(string_view id
+    // ) const noexcept override;
     const std::ostream&
     display(std::ostream& os, const void* value) const override;
 };

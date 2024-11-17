@@ -106,15 +106,15 @@ const BuiltinTrait* BuiltinTypeBase<T>::get_builtin_trait(BuiltinTraitID id
     RPY_UNREACHABLE_RETURN(nullptr);
 }
 
-template <typename T>
-const Trait* BuiltinTypeBase<T>::get_trait(string_view id) const noexcept
-{
-    if (auto it = m_traits.find(id); it != m_traits.end()) {
-        return it->second.get();
-    }
-    return nullptr;
-}
-
+// template <typename T>
+// const Trait* BuiltinTypeBase<T>::get_trait(string_view id) const noexcept
+// {
+//     if (auto it = m_traits.find(id); it != m_traits.end()) {
+//         return it->second.get();
+//     }
+//     return nullptr;
+// }
+//
 
 template <typename T>
 const std::ostream&

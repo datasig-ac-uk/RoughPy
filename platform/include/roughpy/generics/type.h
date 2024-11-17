@@ -20,7 +20,6 @@
 
 namespace rpy::generics {
 
-class Trait;
 
 struct BasicProperties {
     bool standard_layout : 1;
@@ -126,8 +125,8 @@ public:
     RPY_NO_DISCARD virtual const BuiltinTrait*
     get_builtin_trait(BuiltinTraitID id) const noexcept;
 
-    RPY_NO_DISCARD virtual const Trait* get_trait(string_view id
-    ) const noexcept;
+    // RPY_NO_DISCARD virtual const Trait* get_trait(string_view id
+    // ) const noexcept;
 
 
     virtual const std::ostream&
@@ -168,7 +167,7 @@ const BuiltinTypes& get_builtin_types() noexcept;
 
 
 template <typename T>
-constexpr BasicProperties get_basic_properties() noexcept
+constexpr BasicProperties basic_properties_of() noexcept
 {
     using base_t = remove_cv_ref_t<T>;
     return {

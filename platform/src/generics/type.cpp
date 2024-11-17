@@ -43,4 +43,4 @@ const BuiltinTrait* Type::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
     return nullptr;
 }
-const Trait* Type::get_trait(string_view id) const noexcept { return nullptr; }
+// const Trait* Type::get_trait(string_view id) const noexcept { return nullptr; }

@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include <roughpy/core/debug_assertion.h>
+#include "roughpy/core/hash.h"
 
 #include "builtin_trait.h"
 #include "type_ptr.h"
@@ -124,7 +125,7 @@ using namespace std;
 struct NoSuchFunction
 {
 
-    using result_t = void;
+    using result_t = byte;
 
     template <typename... Args>
     RPY_NO_RETURN
@@ -235,15 +236,15 @@ template <typename T>
 void NumberTraitImpl<T>::unsafe_abs(void* dst, const void* src) const noexcept
 {
     using Fn = number_trait_impl::AbsFunc<T>;
-    Fn abs_fn;
-    static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
+    Fn fn;
+    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_sqrt(void* dst, const void* src) const
 {
     using Fn = number_trait_impl::SqrtFunc<T>;
     Fn fn;
-    static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
+    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_pow(
@@ -254,21 +255,21 @@ void NumberTraitImpl<T>::unsafe_pow(
 {
     using Fn = number_trait_impl::PowFunc<T>;
     Fn fn;
-    static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(base));
+    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(base));
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_exp(void* dst, const void* src) const
 {
     using Fn = number_trait_impl::ExpFunc<T>;
     Fn fn;
-    static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
+    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_log(void* dst, const void* src) const
 {
     using Fn = number_trait_impl::LogFunc<T>;
     Fn fn;
-    static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
+    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_from_rational(
@@ -278,7 +279,7 @@ void NumberTraitImpl<T>::unsafe_from_rational(
 ) const
 {
     if constexpr (is_floating_point_v<T>) {
-        static_cast<T*>(dst) = static_cast<T>(numerator) / static_cast<T>(denominator);
+        *static_cast<T*>(dst) = static_cast<T>(numerator) / static_cast<T>(denominator);
     } else {
         RPY_THROW(std::domain_error, "cannot convert from rational");
     }

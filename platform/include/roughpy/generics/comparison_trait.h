@@ -164,7 +164,7 @@ bool ComparisonTraitImpl<T>::has_comparison(ComparisonType comp) const noexcept
         case ComparisonType::Greater:
             return dtl::has_greater_test_v<T>;
         case ComparisonType::GreaterEqual:
-            return dtl::has_greater_equal_test_v<T> || (dtl::has_greater_test_v<T> ** dtl::has_equal_test_v<T>);
+            return dtl::has_greater_equal_test_v<T> || (dtl::has_greater_test_v<T> && dtl::has_equal_test_v<T>);
     }
     RPY_UNREACHABLE_RETURN();
 }
