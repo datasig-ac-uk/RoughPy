@@ -25,9 +25,6 @@ const BuiltinTypes& rpy::generics::get_builtin_types() noexcept
         nullptr,
         nullptr,
         nullptr,
-
-        nullptr,
-        nullptr
     };
 
     return builtins;
