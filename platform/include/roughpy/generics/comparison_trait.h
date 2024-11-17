@@ -92,7 +92,7 @@ namespace dtl {
 
 template <typename T>
 using equals_test_t
-        = decltype(std::declval<const T&> == std::declval<const T&>());
+        = decltype(std::declval<const T&>() == std::declval<const T&>());
 
 template <typename T, typename = void>
 inline constexpr bool has_equal_test_v = false;
@@ -101,7 +101,7 @@ template <typename T>
 inline constexpr bool has_equal_test_v<T, void_t<equals_test_t<T>>> = true;
 
 template <typename T>
-using less_test_t = decltype(std::declval<const T&> < std::declval<const T&>());
+using less_test_t = decltype(std::declval<const T&>() < std::declval<const T&>());
 
 template <typename T, typename = void>
 inline constexpr bool has_less_test_v = false;
@@ -111,7 +111,7 @@ inline constexpr bool has_less_test_v<T, void_t<less_test_t<T>>> = true;
 
 template <typename T>
 using less_equal_test_t
-        = decltype(std::declval<const T&> <= std::declval<const T&>());
+        = decltype(std::declval<const T&>() <= std::declval<const T&>());
 
 template <typename T, typename = void>
 inline constexpr bool has_less_equal_test_v = false;
@@ -122,7 +122,7 @@ inline constexpr bool has_less_equal_test_v<T, void_t<less_equal_test_t<T>>>
 
 template <typename T>
 using greater_test_t
-        = decltype(std::declval<const T&> > std::declval<const T&>());
+        = decltype(std::declval<const T&>() > std::declval<const T&>());
 
 template <typename T, typename = void>
 inline constexpr bool has_greater_test_v = false;
@@ -132,7 +132,7 @@ inline constexpr bool has_greater_test_v<T, void_t<greater_test_t<T>>> = true;
 
 template <typename T>
 using greater_equal_test_t
-        = decltype(std::declval<const T&> >= std::declval<const T&>());
+        = decltype(std::declval<const T&>() >= std::declval<const T&>());
 
 template <typename T, typename = void>
 inline constexpr bool has_greater_equal_test_v = false;
