@@ -161,9 +161,6 @@ struct BuiltinTypes
     TypePtr uint32_type;
     TypePtr int64_type;
     TypePtr uint64_type;
-    
-    TypePtr rational_type;
-    TypePtr poly_rational_type;
 };
 
 ROUGHPY_PLATFORM_EXPORT
