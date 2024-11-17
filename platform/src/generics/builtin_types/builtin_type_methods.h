@@ -153,6 +153,16 @@ BuiltinTypeBase<T>::display(std::ostream& os, const void* value) const
 }
 
 
+template <typename T>
+hash_t BuiltinTypeBase<T>::hash_of(const void* value) const noexcept
+{
+    Hash<T> hasher;
+    if (RPY_UNLIKELY(value == nullptr)) {
+        return 0;
+    }
+    return hasher(*static_cast<const T*>(value));
+}
+
 }
 
 
