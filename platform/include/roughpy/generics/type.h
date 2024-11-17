@@ -16,6 +16,7 @@
 
 #include "builtin_trait.h"
 #include "conversion_trait.h"
+#include "roughpy/core/hash.h"
 #include "type_ptr.h"
 
 namespace rpy::generics {
@@ -189,6 +190,12 @@ ROUGHPY_PLATFORM_EXPORT
 RPY_NO_DISCARD TypePtr
 compute_promotion(const Type* lhs, const Type* rhs) noexcept;
 
+
+inline hash_t hash_value(const Type& value) noexcept
+{
+    const Hash<string_view> hasher;
+    return hasher(value.id());
+}
 
 RPY_NO_DISCARD constexpr bool
 operator==(const Type& lhs, const Type& rhs) noexcept

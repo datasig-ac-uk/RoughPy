@@ -12,3 +12,15 @@ template class BuiltinTypeBase<double>;
 }
 
 
+using namespace rpy;
+using namespace rpy::generics;
+
+string_view DoubleType::name() const noexcept
+{
+    return "double";
+}
+
+string_view DoubleType::id() const noexcept
+{
+    return "f64";
+}

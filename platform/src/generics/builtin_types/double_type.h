@@ -16,6 +16,8 @@ public:
 
     using BuiltinTypeBase::BuiltinTypeBase;
 
+    RPY_NO_DISCARD string_view name() const noexcept override;
+    RPY_NO_DISCARD string_view id() const noexcept override;
 };
 
 
