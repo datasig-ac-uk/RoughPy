@@ -7,7 +7,6 @@ target_sources(RoughPy_Platform PRIVATE
         ${_header_dir}/builtin_trait.h
         ${_header_dir}/comparison_trait.h
         ${_header_dir}/conversion_trait.h
-        ${_header_dir}/hash_trait.h
         ${_header_dir}/number_trait.h
         ${_header_dir}/type.h
         ${_header_dir}/values.h
