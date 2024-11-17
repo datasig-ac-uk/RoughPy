@@ -52,7 +52,7 @@ bool value_compare_equal(
     if (ltype == nullptr && rtype == nullptr) {
         return true;
     }
-    RPY_CHECK(ltype == nullptr || rtype == nullptr);
+    RPY_CHECK(ltype != nullptr && rtype != nullptr);
 
     return value_compare_converting(
         [](const ComparisonTrait* trait, const void* lptr, const void* rptr) {
