@@ -62,7 +62,7 @@ template <typename TraitObject>
 constexpr enable_if_t<is_base_of_v<BuiltinTrait, TraitObject>, const TraitObject*>
 trait_cast(const BuiltinTrait* trait) noexcept
 {
-    if (trait == nullptr || trait->id() == TraitObject::my_id) {
+    if (trait == nullptr || trait->id() != TraitObject::my_id) {
         return nullptr;
     }
     return static_cast<const TraitObject*>(trait);

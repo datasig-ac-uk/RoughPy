@@ -187,8 +187,8 @@ constexpr BasicProperties basic_properties_of() noexcept
 }
 
 ROUGHPY_PLATFORM_EXPORT
-RPY_NO_DISCARD TypePtr
-compute_promotion(const Type* lhs, const Type* rhs) noexcept;
+RPY_NO_DISCARD
+TypePtr compute_promotion(const Type* lhs, const Type* rhs) noexcept;
 
 
 inline hash_t hash_value(const Type& value) noexcept
