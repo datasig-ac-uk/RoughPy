@@ -18,7 +18,6 @@
 #include "type_ptr.h"
 
 #include "builtin_trait.h"
-#include "hash_trait.h"
 
 namespace rpy::generics {
 
@@ -408,11 +407,7 @@ operator<<(std::ostream& os, const T& value)
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, hash_t> hash_value(const Value& value)
 {
-    const auto* trait = trait_cast<HashTrait>(
-            value.type().get_builtin_trait(BuiltinTraitID::Hash)
-    );
-    RPY_CHECK_NE(trait, nullptr);
-    return trait->unsafe_hash(value.data());
+    return value.type().hash_of(value.data());
 }
 
 namespace dtl {

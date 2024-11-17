@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include <roughpy/core/macros.h>
+
 #include "roughpy/generics/conversion_trait.h"
 
 using namespace rpy;
@@ -43,4 +45,9 @@ const BuiltinTrait* Type::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
     return nullptr;
 }
-// const Trait* Type::get_trait(string_view id) const noexcept { return nullptr; }
+// const Trait* Type::get_trait(string_view id) const noexcept { return nullptr;
+// }
+hash_t Type::hash_of(const void* value) const noexcept
+{
+    return 0;
+}

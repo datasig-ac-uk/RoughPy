@@ -134,6 +134,9 @@ public:
     display(std::ostream& os, const void* value) const = 0;
 
 
+    virtual hash_t hash_of(const void* value) const noexcept;
+
+
     template <typename T>
     static TypePtr of() noexcept
     {
