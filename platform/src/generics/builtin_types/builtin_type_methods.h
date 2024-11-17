@@ -62,13 +62,16 @@ void BuiltinTypeBase<T>::copy_or_move(
         return;
     }
 
+    auto* dst_ptr = static_cast<T*>(dst);
+
     if (src == nullptr) {
         // Source is null, which means we should fill the range
         // with 0
-        std::fill_n(dst, count, static_cast<T>(0));
+        std::fill_n(dst_ptr, count, static_cast<T>(0));
     } else {
         // Source is not null, copy data from src to dst
-        std::copy_n(src, count, dst);
+        const auto* src_ptr = static_cast<const T*>(src);
+        std::copy_n(src_ptr, count, dst_ptr);
     }
 }
 

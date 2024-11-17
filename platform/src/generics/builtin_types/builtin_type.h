@@ -19,6 +19,7 @@
 #include "generics/conversion_trait.h"
 #include "generics/hash_trait.h"
 #include "generics/number_trait.h"
+#include "generics/trait.h"
 
 namespace rpy::generics {
 
@@ -45,8 +46,8 @@ protected:
         : Type(&typeid(T), sizeof(T), basic_properties_of<T>()),
           m_arithmetic_trait(this, this),
           m_comparison_trait(this),
-          m_hash_trait(this),
-          m_number_trait(this)
+          m_hash_trait(),
+          m_number_trait(this, this)
     {}
 
     void inc_ref() const noexcept override;
