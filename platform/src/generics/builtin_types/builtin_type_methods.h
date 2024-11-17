@@ -14,7 +14,6 @@
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
 #include "roughpy/core/hash.h"
-#include "roughpy/core/smart_ptr.h"
 #include "roughpy/core/macros.h"
 #include "roughpy/core/traits.h"
 #include "roughpy/core/types.h"

@@ -38,6 +38,13 @@ class ROUGHPY_PLATFORM_NO_EXPORT BuiltinTypeBase : public Type
 
     // std::unordered_map<string_view, std::unique_ptr<const Trait>> m_traits;
 
+    hash_t hash_with_type(const Type& other_type) const noexcept
+    {
+        Hash<string_view> hasher;
+        hash_t result = hasher(this->id());
+        hash_combine(result, hasher(other_type.id()));
+        return result;
+    }
 
 protected:
 
@@ -69,6 +76,8 @@ public:
     // ) const noexcept override;
     const std::ostream&
     display(std::ostream& os, const void* value) const override;
+
+
 };
 
 
