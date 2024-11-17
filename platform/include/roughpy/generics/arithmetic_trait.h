@@ -34,13 +34,7 @@ public:
 
     virtual ~ArithmeticTrait();
 
-    enum class Operation
-    {
-        Add,
-        Sub,
-        Mul,
-        Div
-    };
+
 
     RPY_NO_DISCARD
     virtual bool has_operation(Operation op) const noexcept;

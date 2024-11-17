@@ -17,15 +17,6 @@ namespace rpy::generics {
 
 class ConstRef;
 
-enum class Comparison
-{
-    Equal,
-    Less,
-    LessEqual,
-    Greater,
-    GreaterEqual
-};
-
 
 class ROUGHPY_PLATFORM_EXPORT ComparisonTrait : public BuiltinTrait
 {
@@ -41,7 +32,7 @@ public:
     virtual ~ComparisonTrait();
 
     RPY_NO_DISCARD
-    virtual bool has_comparison(Comparison comp) const noexcept = 0;
+    virtual bool has_comparison(ComparisonType comp) const noexcept = 0;
 
     RPY_NO_DISCARD
     virtual bool unsafe_compare_equal(const void* lhs, const void* rhs) const noexcept = 0;
@@ -80,7 +71,7 @@ public:
 
     using ComparisonTrait::ComparisonTrait;
 
-    RPY_NO_DISCARD bool has_comparison(Comparison comp) const noexcept override;
+    RPY_NO_DISCARD bool has_comparison(ComparisonType comp) const noexcept override;
 
     RPY_NO_DISCARD
     bool unsafe_compare_equal(const void* lhs, const void* rhs) const noexcept override;
@@ -151,18 +142,18 @@ inline constexpr bool
 }// namespace dtl
 
 template <typename T>
-bool ComparisonTraitImpl<T>::has_comparison(Comparison comp) const noexcept
+bool ComparisonTraitImpl<T>::has_comparison(ComparisonType comp) const noexcept
 {
     switch (comp) {
-        case Comparison::Equal:
+        case ComparisonType::Equal:
             return dtl::has_equal_test_v<T>;
-        case Comparison::Less:
+        case ComparisonType::Less:
             return dtl::has_less_test_v<T>;
-        case Comparison::LessEqual:
+        case ComparisonType::LessEqual:
             return dtl::has_less_equal_test_v<T> || (dtl::has_less_test_v<T> && dtl::has_equal_test_v<T>);
-        case Comparison::Greater:
+        case ComparisonType::Greater:
             return dtl::has_greater_test_v<T>;
-        case Comparison::GreaterEqual:
+        case ComparisonType::GreaterEqual:
             return dtl::has_greater_equal_test_v<T> || (dtl::has_greater_test_v<T> ** dtl::has_equal_test_v<T>);
     }
     RPY_UNREACHABLE_RETURN();
@@ -173,7 +164,7 @@ bool ComparisonTraitImpl<T>::unsafe_compare_equal(
         const void* rhs
 ) const noexcept
 {
-    RPY_DBG_ASSERT(has_comparison(Comparison::Equal));
+    RPY_DBG_ASSERT(has_comparison(ComparisonType::Equal));
     return *static_cast<const T*>(lhs) == *static_cast<const T*>(rhs);
 }
 template <typename T>
@@ -182,7 +173,7 @@ bool ComparisonTraitImpl<T>::unsafe_compare_less(
         const void* rhs
 ) const noexcept
 {
-    RPY_DBG_ASSERT(has_comparison(Comparison::Less));
+    RPY_DBG_ASSERT(has_comparison(ComparisonType::Less));
     return *static_cast<const T*>(lhs) < *static_cast<const T*>(rhs);
 }
 template <typename T>
@@ -191,7 +182,7 @@ bool ComparisonTraitImpl<T>::unsafe_compare_less_equal(
         const void* rhs
 ) const noexcept
 {
-    RPY_DBG_ASSERT(has_comparison(Comparison::LessEqual));
+    RPY_DBG_ASSERT(has_comparison(ComparisonType::LessEqual));
     if constexpr (dtl::has_less_equal_test_v<T>) {
         return *static_cast<const T*>(lhs) <= *static_cast<const T*>(rhs);
     } else {
@@ -205,7 +196,7 @@ bool ComparisonTraitImpl<T>::unsafe_compare_greater(
         const void* rhs
 ) const noexcept
 {
-    RPY_DBG_ASSERT(has_comparison(Comparison::Greater));
+    RPY_DBG_ASSERT(has_comparison(ComparisonType::Greater));
     return *static_cast<const T*>(lhs) > *static_cast<const T*>(rhs);
 }
 template <typename T>
@@ -214,7 +205,7 @@ bool ComparisonTraitImpl<T>::unsafe_compare_greater_equal(
         const void* rhs
 ) const noexcept
 {
-    RPY_DBG_ASSERT(has_comparison(Comparison::GreaterEqual));
+    RPY_DBG_ASSERT(has_comparison(ComparisonType::GreaterEqual));
     if constexpr (dtl::has_greater_equal_test_v<T>) {
         return *static_cast<const T*>(lhs) >= *static_cast<const T*>(rhs);
     } else {

@@ -28,6 +28,24 @@ enum class BuiltinTraitID : size_t
 };
 
 
+enum class ArithmeticOperation
+{
+    Add = 0,
+    Sub,
+    Mul,
+    Div
+};
+
+enum class ComparisonType
+{
+    Equal = 0,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual
+};
+
+
 class ROUGHPY_PLATFORM_EXPORT BuiltinTrait {
     BuiltinTraitID m_id;
 

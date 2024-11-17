@@ -17,9 +17,7 @@
 #include "type.h"
 #include "type_ptr.h"
 
-#include "arithmetic_trait.h"
 #include "builtin_trait.h"
-#include "comparison_trait.h"
 #include "hash_trait.h"
 
 namespace rpy::generics {
@@ -421,7 +419,7 @@ namespace dtl {
 
 ROUGHPY_PLATFORM_EXPORT
 bool values_compare(
-        Comparison comp,
+        ComparisonType comp,
         const Type* ltype,
         const void* lvalue,
         const Type* rtype,
@@ -435,7 +433,7 @@ enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
 operator==(const T& lhs, const U& rhs)
 {
     return dtl::values_compare(
-            Comparison::Equal,
+            ComparisonType::Equal,
             lhs.type_ptr(),
             lhs.data(),
             rhs.type_ptr(),
@@ -455,7 +453,7 @@ enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
 operator<(const T& lhs, const U& rhs)
 {
     return dtl::values_compare(
-            Comparison::Less,
+            ComparisonType::Less,
             lhs.type_ptr(),
             lhs.data(),
             rhs.type_ptr(),
@@ -468,7 +466,7 @@ enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
 operator<=(const T& lhs, const U& rhs)
 {
     return dtl::values_compare(
-            Comparison::LessEqual,
+            ComparisonType::LessEqual,
             lhs.type_ptr(),
             lhs.data(),
             rhs.type_ptr(),
@@ -481,7 +479,7 @@ enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
 operator>(const T& lhs, const U& rhs)
 {
     return dtl::values_compare(
-            Comparison::Greater,
+            ComparisonType::Greater,
             lhs.type_ptr(),
             lhs.data(),
             rhs.type_ptr(),
@@ -494,7 +492,7 @@ enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, bool>
 operator>=(const T& lhs, const U& rhs)
 {
     return dtl::values_compare(
-            Comparison::GreaterEqual,
+            ComparisonType::GreaterEqual,
             lhs.type_ptr(),
             lhs.data(),
             rhs.type_ptr(),
@@ -520,7 +518,7 @@ namespace dtl {
  * @param rvalue A pointer to the right-hand side value.
  */
 ROUGHPY_PLATFORM_EXPORT void value_inplace_arithmetic(
-        typename ArithmeticTrait::Operation operation,
+        ArithmeticOperation operation,
         const Type* ltype,
         void* lvalue,
         const Type* rtype,
@@ -528,7 +526,7 @@ ROUGHPY_PLATFORM_EXPORT void value_inplace_arithmetic(
 );
 
 ROUGHPY_PLATFORM_EXPORT RPY_NO_DISCARD Value value_arithmetic(
-        typename ArithmeticTrait::Operation operation,
+        ArithmeticOperation operation,
         const Type* ltype,
         const void* lvalue,
         const Type* rtype,
@@ -543,7 +541,7 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator+=(const T& other)
     RPY_CHECK(is_valid() && other.is_valid());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticTrait::Operation::Add,
+        ArithmeticOperation::Add,
         type_ptr(),
         data(),
         other.type_ptr(),
@@ -559,7 +557,7 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator-=(const T& other)
     RPY_CHECK(is_valid() && other.is_valid());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticTrait::Operation::Sub,
+        ArithmeticOperation::Sub,
         type_ptr(),
         data(),
         other.type_ptr(),
@@ -574,7 +572,7 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator*=(const T& other)
     RPY_CHECK(is_valid() && other.is_valid());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticTrait::Operation::Mul,
+        ArithmeticOperation::Mul,
         type_ptr(),
         data(),
         other.type_ptr(),
@@ -588,7 +586,7 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator/=(const T& other)
     RPY_CHECK(is_valid() && other.is_valid());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticTrait::Operation::Div,
+        ArithmeticOperation::Div,
         type_ptr(),
         data(),
         other.type_ptr(),
@@ -605,7 +603,7 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator+=(const T& other)
     ensure_constructed(&other.type());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticTrait::Operation::Add,
+        ArithmeticOperation::Add,
         type_ptr(),
         data(),
         other.type_ptr(),
@@ -621,7 +619,7 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator-=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    dtl::value_inplace_arithmetic(ArithmeticTrait::Operation::Sub,
+    dtl::value_inplace_arithmetic(ArithmeticOperation::Sub,
         type_ptr(),
         data(),
         other.type_ptr(),
@@ -636,7 +634,7 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator*=(const T& other)
     ensure_constructed(&other.type());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticTrait::Operation::Mul,
+        ArithmeticOperation::Mul,
         type_ptr(),
         data(),
         other.type_ptr(),
@@ -651,7 +649,7 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator/=(const T& other)
     ensure_constructed(&other.type());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticTrait::Operation::Div,
+        ArithmeticOperation::Div,
         type_ptr(),
         data(),
         other.type_ptr(),
@@ -665,7 +663,7 @@ enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, Value>
 operator+(const T& lhs, const U& rhs)
 {
     return dtl::value_arithmetic(
-            ArithmeticTrait::Operation::Add,
+            ArithmeticOperation::Add,
             lhs.type_ptr(),
             lhs.data(),
             rhs.type_ptr(),
@@ -678,7 +676,7 @@ enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, Value>
 operator-(const T& lhs, const U& rhs)
 {
     return dtl::value_arithmetic(
-            ArithmeticTrait::Operation::Sub,
+            ArithmeticOperation::Sub,
             lhs.type_ptr(),
             lhs.data(),
             rhs.type_ptr(),
@@ -691,7 +689,7 @@ enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, Value>
 operator*(const T& lhs, const U& rhs)
 {
     return dtl::value_arithmetic(
-            ArithmeticTrait::Operation::Mul,
+            ArithmeticOperation::Mul,
             lhs.type_ptr(),
             lhs.data(),
             rhs.type_ptr(),
@@ -704,7 +702,7 @@ enable_if_t<dtl::value_like_v<T> && dtl::value_like_v<U>, Value>
 operator/(const T& lhs, const U& rhs)
 {
     return dtl::value_arithmetic(
-            ArithmeticTrait::Operation::Div,
+            ArithmeticOperation::Div,
             lhs.type_ptr(),
             lhs.data(),
             rhs.type_ptr(),
