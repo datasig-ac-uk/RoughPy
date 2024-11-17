@@ -4,7 +4,10 @@
 
 add_library(RoughPy_Generics_BuiltinType STATIC
         builtin_type.h
+        builtin_type_ids.h
         builtin_type_methods.h
+        conversion_factory.cpp
+        conversion_factory.h
         double_type.cpp
         double_type.h
 )

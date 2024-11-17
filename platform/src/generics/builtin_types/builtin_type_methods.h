@@ -3,19 +3,23 @@
 //
 
 #ifndef ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_METHODS_H
-#define ROUGHPY_GRPY_UNREAENERICS_INTERNAL_BUILTIN_TYPE_METHODS_H
+#define ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_METHODS_H
 
 #include "builtin_type.h"
 
 #include <algorithm>
 
+
 #include "roughpy/core/alloc.h"
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
+#include "roughpy/core/hash.h"
 #include "roughpy/core/smart_ptr.h"
 #include "roughpy/core/macros.h"
 #include "roughpy/core/traits.h"
 #include "roughpy/core/types.h"
+
+#include "conversion_factory.h"
 
 
 
@@ -79,6 +83,18 @@ template <typename T>
 std::unique_ptr<const ConversionTrait>
 BuiltinTypeBase<T>::convert_to(const Type& type) const noexcept
 {
+    static const auto conversion_table = make_conversion_to_table<T>();
+
+    if (&type == this || type.type_info() == type_info()) {
+        return std::make_unique<ConversionTraitImpl<T, T>>(this, this);
+    }
+
+    Hash<string_view> hasher;
+    if (const auto it = conversion_table.find(hasher(type.id()));
+        it != conversion_table.end()) {
+        return it->second->make(&type, this);
+    }
+
     return Type::convert_to(type);
 }
 
@@ -86,6 +102,19 @@ template <typename T>
 std::unique_ptr<const ConversionTrait>
 BuiltinTypeBase<T>::convert_from(const Type& type) const noexcept
 {
+    static const auto conversion_table = make_conversion_from_table<T>();
+
+    if (&type == this || type.type_info() == type_info()) {
+        return std::make_unique<ConversionTraitImpl<T, T>>(this, this);
+    }
+
+    Hash<string_view> hasher;
+    if (const auto it = conversion_table.find(hasher(type.id()));
+        it != conversion_table.end()) {
+        return it->second->make(this, &type);
+    }
+
+
     return Type::convert_from(type);
 }
 
