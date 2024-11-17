@@ -22,13 +22,18 @@
 
 namespace rpy::generics {
 
+
+
+
+
+
 template <typename T>
 class BuiltinTypeBase : public Type
 {
     ArithmeticTraitImpl<T> m_arithmetic_trait;
     ComparisonTraitImpl<T> m_comparison_trait;
     HashTraitImpl<T> m_hash_trait;
-    NumberTrait m_number_trait; // Fix
+    NumberTraitImpl<T> m_number_trait;
 
 
     std::unordered_map<string_view, std::unique_ptr<const Trait>> m_traits;
