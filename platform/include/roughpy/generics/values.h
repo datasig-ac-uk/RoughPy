@@ -520,7 +520,7 @@ ROUGHPY_PLATFORM_EXPORT void value_inplace_arithmetic(
         const void* rvalue
 );
 
-ROUGHPY_PLATFORM_EXPORT RPY_NO_DISCARD Value value_arithmetic(
+RPY_NO_DISCARD Value ROUGHPY_PLATFORM_EXPORT value_arithmetic(
         ArithmeticOperation operation,
         const Type* ltype,
         const void* lvalue,
