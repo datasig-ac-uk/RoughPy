@@ -405,7 +405,7 @@ operator<<(std::ostream& os, const T& value)
 }
 
 template <typename T>
-enable_if_t<dtl::value_like_v<T>, hash_t> hash_value(const Value& value)
+enable_if_t<dtl::value_like_v<T>, hash_t> hash_value(const T& value)
 {
     return value.type().hash_of(value.data());
 }
