@@ -12,6 +12,7 @@
 
 #include "builtin_trait.h"
 #include "roughpy/core/debug_assertion.h"
+#include "type.h"
 
 namespace rpy::generics {
 
@@ -20,9 +21,11 @@ class ConstRef;
 
 class ROUGHPY_PLATFORM_EXPORT ComparisonTrait : public BuiltinTrait
 {
+    const Type* p_type;
 protected:
 
-    constexpr ComparisonTrait() : BuiltinTrait(my_id)
+    constexpr explicit ComparisonTrait(const Type* type) : BuiltinTrait
+    (my_id), p_type(type)
     {}
 
 public:
@@ -69,7 +72,7 @@ class ROUGHPY_PLATFORM_NO_EXPORT ComparisonTraitImpl : public ComparisonTrait
 {
 public:
 
-    using ComparisonTrait::ComparisonTrait;
+    explicit ComparisonTraitImpl(const Type* type);
 
     RPY_NO_DISCARD bool has_comparison(ComparisonType comp) const noexcept override;
 
@@ -140,6 +143,13 @@ inline constexpr bool
         = true;
 
 }// namespace dtl
+
+template <typename T>
+ComparisonTraitImpl<T>::ComparisonTraitImpl(const Type* type)
+    : ComparisonTrait(type)
+{
+    RPY_DBG_ASSERT_EQ(type->type_info(), typeid(T));
+}
 
 template <typename T>
 bool ComparisonTraitImpl<T>::has_comparison(ComparisonType comp) const noexcept
