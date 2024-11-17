@@ -75,7 +75,7 @@ void ConversionTraitImpl<From, To>::unsafe_convert(void* dst, const void* src)
     RPY_DBG_ASSERT_NE(dst, nullptr);
     RPY_DBG_ASSERT_NE(src, nullptr);
     const auto* src_obj = static_cast<const From*>(src);
-    *static_cast<const To*>(dst) = static_cast<To>(*src_obj);
+    *static_cast<To*>(dst) = static_cast<To>(*src_obj);
 }
 
 
