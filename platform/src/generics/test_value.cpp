@@ -2,9 +2,11 @@
 // Created by sam on 15/11/24.
 //
 
+#include <cmath>
 
 #include <gtest/gtest.h>
 
+#include "roughpy/core/hash.h"
 #include "roughpy/generics/type.h"
 #include "roughpy/generics/values.h"
 
@@ -85,3 +87,92 @@ TEST(TestValue, TestDivide)
     Value result = left / right;
     EXPECT_EQ(result, Value(12.0 / 4.0));
 }
+
+TEST(TestValue, TestEqualityTrue)
+{
+    Value left(2.0);
+    Value right(2.0);
+
+    EXPECT_TRUE(left == right);
+}
+
+TEST(TestValue, TestEqualityFalse)
+{
+    Value left(2.0);
+    Value right(1.0);
+
+    EXPECT_FALSE(left == right);
+}
+
+TEST(TestValue, TestLessTrue)
+{
+    Value left(1.0);
+    Value right(2.0);
+
+    EXPECT_TRUE(left < right);
+}
+
+TEST(TestValue, TestLessFalse)
+{
+    Value left(2.0);
+    Value right(1.0);
+
+    EXPECT_FALSE(left < right);
+}
+
+TEST(TestValue, TestLessOrEqualTrue)
+{
+    Value left(1.0);
+    Value right(2.0);
+    EXPECT_TRUE(left <= right);
+}
+TEST(TestValue, TestLessOrEqualFalse)
+{
+    Value left(2.0);
+    Value right(1.0);
+    EXPECT_FALSE(left <= right);
+}
+TEST(TestValue, TestGreaterTrue)
+{
+    Value left(3.0);
+    Value right(1.0);
+    EXPECT_TRUE(left > right);
+}
+TEST(TestValue, TestGreaterFalse)
+{
+    Value left(1.0);
+    Value right(3.0);
+    EXPECT_FALSE(left > right);
+}
+TEST(TestValue, TestGreaterOrEqualTrue)
+{
+    Value left(2.0);
+    Value right(1.0);
+    EXPECT_TRUE(left >= right);
+}
+TEST(TestValue, TestGreaterOrEqualFalse)
+{
+    Value left(1.0);
+    Value right(2.0);
+    EXPECT_FALSE(left >= right);
+}
+
+TEST(TestValue, TestHash)
+{
+    double dbl_value = 0.519345234532435;
+    Value value(dbl_value);
+
+    Hash<Value> value_hasher;
+    Hash<double> dbl_hasher;
+
+    EXPECT_EQ(value_hasher(value), dbl_hasher(dbl_value));
+}
+
+// TEST(TestValue, TestRealPart)
+// {
+//     Value value(2.0);
+//     Value expected(2.0);
+//
+//     EXPECT_EQ(math::real(value))
+// }
+
