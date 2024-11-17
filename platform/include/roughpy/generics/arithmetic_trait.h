@@ -31,7 +31,7 @@ protected:
 
 public:
 
-    static constexpr BuiltinTraitID my_id = BuiltinTraitID::Arithmetic;
+    static constexpr auto my_id = BuiltinTraitID::Arithmetic;
 
     virtual ~ArithmeticTrait();
 
@@ -72,7 +72,9 @@ template <typename T, typename R=T>
 class ROUGHPY_PLATFORM_NO_EXPORT ArithmeticTraitImpl : public ArithmeticTrait
 {
 public:
-    using ArithmeticTrait::ArithmeticTrait;
+
+    ArithmeticTraitImpl();
+    ArithmeticTraitImpl(const Type* type, const Type* rational_type);
 
     RPY_NO_DISCARD bool has_operation(ArithmeticOperation op) const noexcept override;
 
@@ -121,7 +123,16 @@ inline constexpr bool has_div_v = false;
 template <typename U, typename V>
 inline constexpr bool has_div_v<U, V, void_t<div_result_t<U, V>>> = true;
 
-}
+}// namespace dtl
+
+
+template <typename T, typename R>
+ArithmeticTraitImpl<T, R>::ArithmeticTraitImpl(
+        const Type* type,
+        const Type* rational_type
+)
+    : ArithmeticTrait(type, rational_type)
+{}
 
 template <typename T, typename R>
 bool ArithmeticTraitImpl<T, R>::has_operation(ArithmeticOperation op) const noexcept
