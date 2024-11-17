@@ -123,7 +123,7 @@ const BuiltinTrait* BuiltinTypeBase<T>::get_builtin_trait(BuiltinTraitID id
 {
     switch (id) {
         case BuiltinTraitID::Comparison:
-            return &m_arithmetic_trait;
+            return &m_comparison_trait;
         case BuiltinTraitID::Arithmetic:
             return &m_arithmetic_trait;
         case BuiltinTraitID::Number:

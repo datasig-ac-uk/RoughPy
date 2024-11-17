@@ -8,16 +8,17 @@
 
 #include <typeinfo>
 #include <unordered_map>
+#include <iosfwd>
 
 #include <roughpy/core/macros.h>
 
-#include "generics/type.h"
+#include "roughpy/generics/type.h"
 
-#include "generics/arithmetic_trait.h"
-#include "generics/builtin_trait.h"
-#include "generics/comparison_trait.h"
-#include "generics/conversion_trait.h"
-#include "generics/number_trait.h"
+#include "roughpy/generics/arithmetic_trait.h"
+#include "roughpy/generics/builtin_trait.h"
+#include "roughpy/generics/comparison_trait.h"
+#include "roughpy/generics/conversion_trait.h"
+#include "roughpy/generics/number_trait.h"
 
 namespace rpy::generics {
 

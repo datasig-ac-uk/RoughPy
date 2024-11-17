@@ -28,7 +28,7 @@ target_sources(RoughPy_Platform PRIVATE
 add_subdirectory(builtin_types)
 
 target_link_libraries(RoughPy_Platform PRIVATE
-        RoughPy_Platform_BuiltinType
+        RoughPy_Generics_BuiltinType
 )
 
 if (ROUGHPY_BUILD_TESTS)

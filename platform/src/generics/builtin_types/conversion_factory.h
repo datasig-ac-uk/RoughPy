@@ -11,15 +11,15 @@
 
 #include "roughpy/core/hash.h"
 
-#include "generics/conversion_trait.h"
-#include "generics/type.h"
+#include "roughpy/generics/conversion_trait.h"
+#include "roughpy/generics/type.h"
 
 #include "builtin_type_ids.h"
 
 namespace rpy {
 namespace generics {
 
-class RPY_LOCAL ConversionFactory
+class ConversionFactory
 {
 
 public:
