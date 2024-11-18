@@ -48,6 +48,7 @@ public:
 
     virtual ~ConversionTrait();
 
+    RPY_NO_DISCARD
     virtual bool is_exact() const noexcept = 0;
 
     virtual void unsafe_convert(void* dst, const void* src, bool exact) const
