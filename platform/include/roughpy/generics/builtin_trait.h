@@ -18,6 +18,11 @@ class ComparisonTrait;
 class ArithmeticTrait;
 class NumberTrait;
 
+/**
+ * Enum representing the IDs of various built-in traits.
+ *
+ * Each ID corresponds to a specific trait that can be used by the system.
+ */
 enum class BuiltinTraitID : size_t
 {
     Comparison = 0,
@@ -25,7 +30,11 @@ enum class BuiltinTraitID : size_t
     Number
 };
 
-
+/**
+ * Enum representing arithmetic operations.
+ *
+ * This enum lists the basic arithmetic operations that can be performed.
+ */
 enum class ArithmeticOperation
 {
     Add = 0,
@@ -34,6 +43,12 @@ enum class ArithmeticOperation
     Div
 };
 
+/**
+ * Enum representing the types of comparisons that can be performed.
+ *
+ * This enum lists various comparison operations such as equality and
+ * inequality.
+ */
 enum class ComparisonType
 {
     Equal = 0,
@@ -43,6 +58,13 @@ enum class ComparisonType
     GreaterEqual
 };
 
+/**
+ * Enum representing functions that can be performed on numbers.
+ *
+ * This enum lists various mathematical functions such as absolute value,
+ * square root, power, exponential, logarithm, and functions to retrieve
+ * the real and imaginary parts of a number.
+ */
 enum class NumberFunction
 {
     Abs = 0,
@@ -57,6 +79,12 @@ enum class NumberFunction
 
 using exponent_t = int;
 
+/**
+ * Class representing a built-in trait.
+ *
+ * This class encapsulates a built-in trait, identified by its ID. It provides
+ * an interface to retrieve the ID of the trait.
+ */
 class ROUGHPY_PLATFORM_EXPORT BuiltinTrait {
     BuiltinTraitID m_id;
 
@@ -72,6 +100,19 @@ public:
 
 
 template <typename TraitObject>
+/**
+ * Casts a built-in trait to a specific trait object type.
+ *
+ * This function attempts to cast a given pointer to a BuiltinTrait to a
+ * pointer to a specific trait object type. If the trait is null or its ID
+ * does not match the ID of the specified trait object type, the function
+ * returns null.
+ *
+ * @tparam TraitObject The specific trait object type to cast to.
+ * @param trait The pointer to the BuiltinTrait that is to be casted.
+ * @return A pointer to the specific trait object type, or null if the
+ *         cast is not possible.
+ */
 constexpr enable_if_t<is_base_of_v<BuiltinTrait, TraitObject>, const TraitObject*>
 trait_cast(const BuiltinTrait* trait) noexcept
 {
