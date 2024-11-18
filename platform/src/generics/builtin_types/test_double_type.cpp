@@ -22,6 +22,12 @@ TEST(TestDoubleType, TestID)
     EXPECT_EQ(type->id(), "f64");
 }
 
+TEST(TestDoubleType, TestName)
+{
+    const auto type = get_type<double>();
+    EXPECT_EQ(type->name(), "double");
+}
+
 TEST(TestDoubleType, TestTypeInfo)
 {
     const auto type = get_type<double>();
@@ -32,39 +38,71 @@ TEST(TestDoubleType, TestTypeInfo)
  *                                Comparison                                  *
  ******************************************************************************/
 
-TEST(TestDoubleType, TestHasEqualOperator)
+TEST(TestDoubleType, TestEqualOperator)
 {
     const auto double_type = get_type<double>();
     ComparisonTraitImpl<double> traits(double_type.get());
-    EXPECT_TRUE(traits.has_comparison(ComparisonType::Equal));
+    ASSERT_TRUE(traits.has_comparison(ComparisonType::Equal));
+
+    double lhs = 2.0;
+    double rhs = 3.0;
+
+    EXPECT_TRUE(traits.unsafe_compare_equal(&lhs, &lhs));
+    EXPECT_FALSE(traits.unsafe_compare_equal(&lhs, &rhs));
 }
 
 TEST(TestDoubleType, TestHasLessOperator)
 {
     const auto double_type = get_type<double>();
     ComparisonTraitImpl<double> traits(double_type.get());
-    EXPECT_TRUE(traits.has_comparison(ComparisonType::Less));
+    ASSERT_TRUE(traits.has_comparison(ComparisonType::Less));
+
+    double lhs = 2.0;
+    double rhs = 3.0;
+
+    EXPECT_TRUE(traits.unsafe_compare_less(&lhs, &rhs));
+    EXPECT_FALSE(traits.unsafe_compare_less(&lhs, &lhs));
 }
 
 TEST(TestDoubleType, TestHasLessEqualOperator)
 {
     const auto double_type = get_type<double>();
     ComparisonTraitImpl<double> traits(double_type.get());
-    EXPECT_TRUE(traits.has_comparison(ComparisonType::LessEqual));
+    ASSERT_TRUE(traits.has_comparison(ComparisonType::LessEqual));
+
+    double lhs = 2.0;
+    double rhs = 3.0;
+
+    EXPECT_TRUE(traits.unsafe_compare_less_equal(&lhs, &rhs));
+    EXPECT_TRUE(traits.unsafe_compare_less_equal(&lhs, &lhs));
+    EXPECT_FALSE(traits.unsafe_compare_less_equal(&rhs, &lhs));
 }
 
 TEST(TestDoubleType, TestHasGreaterOperator)
 {
     const auto double_type = get_type<double>();
     ComparisonTraitImpl<double> traits(double_type.get());
-    EXPECT_TRUE(traits.has_comparison(ComparisonType::Greater));
+    ASSERT_TRUE(traits.has_comparison(ComparisonType::Greater));
+
+    double lhs = 2.0;
+    double rhs = 3.0;
+
+    EXPECT_TRUE(traits.unsafe_compare_greater(&rhs, &lhs));
+    EXPECT_FALSE(traits.unsafe_compare_greater(&lhs, &lhs));
 }
 
 TEST(TestDoubleType, TestHasGreaterEqualOperator)
 {
     const auto double_type = get_type<double>();
     ComparisonTraitImpl<double> traits(double_type.get());
-    EXPECT_TRUE(traits.has_comparison(ComparisonType::GreaterEqual));
+    ASSERT_TRUE(traits.has_comparison(ComparisonType::GreaterEqual));
+
+    double lhs = 2.0;
+    double rhs = 3.0;
+
+    EXPECT_TRUE(traits.unsafe_compare_greater_equal(&rhs, &lhs));
+    EXPECT_TRUE(traits.unsafe_compare_greater_equal(&lhs, &lhs));
+    EXPECT_FALSE(traits.unsafe_compare_greater_equal(&lhs, &rhs));
 }
 
 
