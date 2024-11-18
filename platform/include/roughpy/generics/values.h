@@ -39,9 +39,21 @@ inline constexpr bool value_like_v = is_same_v<Value, decay_t<T>>
 
 }// namespace dtl
 
+/**
+ * @brief Constant reference wrapper for an object.
+ *
+ * This class provides a way to encapsulate a constant reference to an object.
+ * It ensures that the referenced object is not modified, maintaining its
+ * const correctness.
+ *
+ * A ConstRef is only constructible from an existing object with a well-defined
+ * type, both of which must remain valid whilst the ConstRef is alive. The
+ * ConstRef itself does not take (shared) ownership of the type, as it is the
+ * constructor's responsibility to ensure the pointer is valid.
+ */
 class ROUGHPY_PLATFORM_EXPORT ConstRef
 {
-    TypePtr p_type;
+    const Type* p_type;
     const void* p_data;
 
 protected:
@@ -53,8 +65,8 @@ protected:
     // constructed is used internally for constructing (derived classes)
     // where the data pointer might be null. (See ConstPointer below.)
     // This causes the construct to skip the validity check.
-    ConstRef(TypePtr type, const void* data, without_null_check)
-        : p_type(std::move(type)),
+    ConstRef(const Type* type, const void* data, without_null_check)
+        : p_type(type),
           p_data(data)
     {}
 
@@ -73,22 +85,16 @@ public:
     using reference = ConstRef;
     using pointer = ConstPtr;
 
-    ConstRef(TypePtr type, const void* p_data)
-        : p_type(std::move(type)),
+    ConstRef(const Type* type, const void* p_data)
+        : p_type(type),
           p_data(p_data)
     {
         RPY_CHECK_NE(p_data, nullptr);
     }
 
-    static ConstRef zero(TypePtr type)
-    {
-        RPY_CHECK_NE(type->get_builtin_trait(BuiltinTraitID::Number), nullptr);
-        return {std::move(type), nullptr, without_null_check{}};
-    }
-
     RPY_NO_DISCARD bool is_valid() const noexcept
     {
-        return static_cast<bool>(p_type);
+        return p_type != nullptr;
     }
 
     RPY_NO_DISCARD bool fast_is_zero() const noexcept
@@ -100,7 +106,7 @@ public:
 
     RPY_NO_DISCARD const Type* type_ptr() const noexcept
     {
-        return p_type.get();
+        return p_type;
     }
 
     template <typename T = void>
@@ -124,8 +130,8 @@ public:
     using reference = ConstRef;
     using pointer = ConstPtr;
 
-    explicit ConstPtr(TypePtr type, const void* data = nullptr)
-        : ConstRef(std::move(type), data, without_null_check{})
+    explicit ConstPtr(const Type* type, const void* data = nullptr)
+        : ConstRef(type, data, without_null_check{})
     {}
 
     RPY_NO_DISCARD ConstRef operator*() const noexcept
@@ -141,16 +147,27 @@ public:
     }
 };
 
+/**
+ * @brief Mutable reference wrapper for an object.
+ *
+ * This class extends the ConstRef class to provide mutable access to an
+ * encapsulated object. It allows modification of the referenced object and
+ * supports in-place arithmetic operations.
+ *
+ * A Ref object is initialized with a type and data pointer. It provides
+ * template methods to retrieve the data pointer as a specific type and ensure
+ * const correctness when required.
+ */
 class ROUGHPY_PLATFORM_EXPORT Ref : public ConstRef
 {
 
 protected:
-    Ref(TypePtr type, void* data, without_null_check tag)
-        : ConstRef(std::move(type), data, tag)
+    Ref(const Type* type, void* data, without_null_check tag)
+        : ConstRef(type, data, tag)
     {}
 
 public:
-    Ref(TypePtr type, void* data) : ConstRef(std::move(type), data) {}
+    Ref(const Type* type, void* data) : ConstRef(type, data) {}
 
     using ConstRef::data;
 
@@ -183,8 +200,8 @@ public:
     using pointer = Ptr;
     using const_pointer = ConstPtr;
 
-    explicit Ptr(TypePtr type, void* data = nullptr)
-        : Ref(std::move(type), data, without_null_check{})
+    explicit Ptr(const Type* type, void* data = nullptr)
+        : Ref(type, data, without_null_check{})
     {}
 
     // ReSharper disable once CppNonExplicitConversionOperator
@@ -262,6 +279,17 @@ public:
 
 }// namespace dtl
 
+/**
+ * @brief Represents a generic value in the system.
+ *
+ * The Value class is designed to encapsulate different types of values used
+ * throughout the application. It provides necessary interfaces to handle the
+ * encapsulated value in a safe and type-agnostic manner.
+ *
+ * The exact type of the value encapsulated by this class is determined at the
+ * time of instantiation and remains immutable. Operations permitted on the
+ * Value object align with the type of the encapsulated value.
+ */
 class ROUGHPY_PLATFORM_EXPORT Value
 {
     TypePtr p_type = nullptr;
@@ -321,6 +349,16 @@ public:
     Value& operator=(Value&& other);// NOLINT(*-noexcept-move-constructor)
 
     Value& operator=(ConstRef other);
+
+    operator ConstRef() const noexcept
+    {
+        return {p_type.get(), data()};
+    }
+
+    operator Ref() noexcept
+    {
+        return {p_type.get(), data()};
+    }
 
     RPY_NO_DISCARD bool is_valid() const noexcept
     {
