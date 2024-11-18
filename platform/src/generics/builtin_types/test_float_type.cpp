@@ -15,10 +15,16 @@
 using namespace rpy;
 using namespace rpy::generics;
 
-TEST(TestFLoatType, TestID)
+TEST(TestFloatType, TestID)
 {
     const auto float_type = get_type<float>();
     EXPECT_EQ(float_type->id(), "f32");
+}
+
+TEST(TestFloatType, TestName)
+{
+    const auto float_type = get_type<float>();
+    EXPECT_EQ(float_type->name(), "float");
 }
 
 TEST(TestFloatType, TestTypeInfo)
