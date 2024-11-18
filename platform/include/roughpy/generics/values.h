@@ -300,12 +300,12 @@ public:
     // Copy a value from an existing reference
     explicit Value(ConstRef other);
 
-    template <typename T, typename = enable_if_t<
-        !dtl::value_like_v<decay_t<T>>
-        && !is_same_v<decay_t<T>, TypePtr>
-        && !is_same_v<decay_t<T>, const Type*>
-        >
-    >
+    template <
+            typename T,
+            typename = enable_if_t<
+                    !dtl::value_like_v<decay_t<T>>
+                    && !is_same_v<decay_t<T>, TypePtr>
+                    && !is_same_v<decay_t<T>, const Type*>>>
     explicit Value(T&& value);
 
     ~Value();
@@ -536,12 +536,12 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator+=(const T& other)
     RPY_CHECK(is_valid() && other.is_valid());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticOperation::Add,
-        type_ptr(),
-        data(),
-        other.type_ptr(),
-        other.data()
-        );
+            ArithmeticOperation::Add,
+            type_ptr(),
+            data(),
+            other.type_ptr(),
+            other.data()
+    );
 
     return *this;
 }
@@ -552,12 +552,12 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator-=(const T& other)
     RPY_CHECK(is_valid() && other.is_valid());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticOperation::Sub,
-        type_ptr(),
-        data(),
-        other.type_ptr(),
-        other.data()
-        );
+            ArithmeticOperation::Sub,
+            type_ptr(),
+            data(),
+            other.type_ptr(),
+            other.data()
+    );
 
     return *this;
 }
@@ -567,12 +567,12 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator*=(const T& other)
     RPY_CHECK(is_valid() && other.is_valid());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticOperation::Mul,
-        type_ptr(),
-        data(),
-        other.type_ptr(),
-        other.data()
-        );
+            ArithmeticOperation::Mul,
+            type_ptr(),
+            data(),
+            other.type_ptr(),
+            other.data()
+    );
     return *this;
 }
 template <typename T>
@@ -581,12 +581,12 @@ enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator/=(const T& other)
     RPY_CHECK(is_valid() && other.is_valid());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticOperation::Div,
-        type_ptr(),
-        data(),
-        other.type_ptr(),
-        other.data()
-        );
+            ArithmeticOperation::Div,
+            type_ptr(),
+            data(),
+            other.type_ptr(),
+            other.data()
+    );
 
     return *this;
 }
@@ -598,12 +598,12 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator+=(const T& other)
     ensure_constructed(&other.type());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticOperation::Add,
-        type_ptr(),
-        data(),
-        other.type_ptr(),
-        other.data()
-        );
+            ArithmeticOperation::Add,
+            type_ptr(),
+            data(),
+            other.type_ptr(),
+            other.data()
+    );
 
     return *this;
 }
@@ -614,12 +614,13 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator-=(const T& other)
     RPY_CHECK(other.is_valid());
     ensure_constructed(&other.type());
 
-    dtl::value_inplace_arithmetic(ArithmeticOperation::Sub,
-        type_ptr(),
-        data(),
-        other.type_ptr(),
-        other.data()
-        );
+    dtl::value_inplace_arithmetic(
+            ArithmeticOperation::Sub,
+            type_ptr(),
+            data(),
+            other.type_ptr(),
+            other.data()
+    );
     return *this;
 }
 template <typename T>
@@ -629,12 +630,12 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator*=(const T& other)
     ensure_constructed(&other.type());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticOperation::Mul,
-        type_ptr(),
-        data(),
-        other.type_ptr(),
-        other.data()
-        );
+            ArithmeticOperation::Mul,
+            type_ptr(),
+            data(),
+            other.type_ptr(),
+            other.data()
+    );
     return *this;
 }
 template <typename T>
@@ -644,12 +645,12 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator/=(const T& other)
     ensure_constructed(&other.type());
 
     dtl::value_inplace_arithmetic(
-        ArithmeticOperation::Div,
-        type_ptr(),
-        data(),
-        other.type_ptr(),
-        other.data()
-        );
+            ArithmeticOperation::Div,
+            type_ptr(),
+            data(),
+            other.type_ptr(),
+            other.data()
+    );
     return *this;
 }
 
@@ -704,6 +705,93 @@ operator/(const T& lhs, const U& rhs)
             rhs.data()
     );
 }
+
+namespace dtl {
+
+RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT Value
+math_fn(NumberFunction func, const Type* type, const void* data);
+
+ROUGHPY_PLATFORM_EXPORT
+void from_rational(
+        const Type* type,
+        void* dst,
+        int64_t numerator,
+        int64_t denominator
+);
+
+}// namespace dtl
+namespace math {
+
+template <typename T>
+enable_if_t<dtl::value_like_v<T>, Value> abs(const T& value)
+{
+    return dtl::math_fn(NumberFunction::Abs, value.type_ptr(), value.data());
+}
+
+template <typename T>
+enable_if_t<dtl::value_like_v<T>, Value> sqrt(const T& value)
+{
+    return dtl::math_fn(NumberFunction::Sqrt, value.type_ptr(), value.data());
+}
+
+template <typename T>
+enable_if_t<dtl::value_like_v<T>, Value> pow(const T& value, exponent_t exp)
+{
+    return dtl::math_fn(
+            NumberFunction::Pow,
+            value.type_ptr(),
+            &std::make_pair(value.data(), exp)
+    );
+}
+
+template <typename T>
+enable_if_t<dtl::value_like_v<T>, Value> exp(const T& value)
+{
+    return dtl::math_fn(NumberFunction::Exp, value.type_ptr(), value.data());
+}
+
+template <typename T>
+enable_if_t<dtl::value_like_v<T>, Value> log(const T& value)
+{
+    return dtl::math_fn(NumberFunction::Log, value.type_ptr(), value.data());
+}
+
+template <typename T>
+enable_if_t<dtl::value_like_v<T>, Value> real(const T& value)
+{
+    return dtl::math_fn(NumberFunction::Real, value.type_ptr(), value.data());
+}
+
+template <typename T>
+enable_if_t<dtl::value_like_v<T>, Value> imaginary(const T& value)
+{
+    return dtl::math_fn(
+            NumberFunction::Imaginary,
+            value.type_ptr(),
+            value.data()
+    );
+}
+
+inline Value from_rational(TypePtr type, int64_t numerator, int64_t denominator)
+{
+    RPY_CHECK(type);
+    Value result(std::move(type));
+    dtl::from_rational(
+            result.type_ptr(),
+            result.data(),
+            numerator,
+            denominator
+    );
+    return result;
+}
+
+inline void from_rational(Ref value, int64_t numerator, int64_t denominator)
+{
+    RPY_CHECK(value.is_valid());
+    dtl::from_rational(value.type_ptr(), value.data(), numerator, denominator);
+}
+
+}// namespace math
 
 }// namespace rpy::generics
 

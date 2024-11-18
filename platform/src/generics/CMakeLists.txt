@@ -22,6 +22,7 @@ target_sources(RoughPy_Platform PRIVATE
         value.cpp
         value_arithmetic.cpp
         value_compare.cpp
+        value_math.cpp
 )
 
 
