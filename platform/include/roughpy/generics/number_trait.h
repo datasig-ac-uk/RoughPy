@@ -174,7 +174,6 @@ template <typename T>
 struct PowFunc<
         T,
         void_t<decltype(sqrt(declval<T>()), std::declval<exponent_t>())>> {
-    using exponent_t = exponent_t;
     static constexpr bool has_function = false;
     using result_t
             = decltype(pow(std::declval<T>()), std::declval<exponent_t>());
