@@ -27,6 +27,16 @@ TEST(TestFloatType, TestTypeInfo)
     EXPECT_EQ(type->type_info(), typeid(float));
 }
 
+TEST(TestFloatType, TestHash)
+{
+    const auto type = get_type<float>();
+
+    Hash<float> hasher;
+    for (float val : {1.f, -2.f, 3.141592653589793f, -2.7182818284598f}) {
+        EXPECT_EQ(type->hash_of(&val), hasher(val));
+    }
+}
+
 /******************************************************************************
  *                                Comparison                                  *
  ******************************************************************************/

@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+#include <roughpy/core/hash.h>
+
 #include <roughpy/generics/arithmetic_trait.h>
 #include <roughpy/generics/comparison_trait.h>
 #include <roughpy/generics/number_trait.h>
@@ -32,6 +34,17 @@ TEST(TestDoubleType, TestTypeInfo)
 {
     const auto type = get_type<double>();
     EXPECT_EQ(type->type_info(), typeid(double));
+}
+
+TEST(TestDoubleType, TestHash)
+{
+    const auto type = get_type<double>();
+
+    Hash<double> hasher;
+    for (double val : {1., -2., 3.141592653589793, -2.7182818284598}) {
+        EXPECT_EQ(type->hash_of(&val), hasher(val));
+    }
+
 }
 
 /******************************************************************************
