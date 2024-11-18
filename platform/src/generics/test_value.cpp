@@ -197,7 +197,6 @@ TEST(TestValue, TestExp)
 {
     Value value(1.0);
     Value expected(std::exp(1.0));
-
     EXPECT_EQ(generics::math::exp(value), expected);
 }
 
@@ -205,7 +204,6 @@ TEST(TestValue, TestLog)
 {
     Value value(std::exp(1.0));
     Value expected(1.0);
-
     EXPECT_EQ(generics::math::log(value), expected);
 }
 
