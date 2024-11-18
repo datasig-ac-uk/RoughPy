@@ -94,7 +94,7 @@ TEST(TestFloatType, TestSubOperator)
     EXPECT_FLOAT_EQ(lhs, 2.0f - rhs);
 }
 
-TEST(TestFloatType, TestHasMulOperator)
+TEST(TestFloatType, TestMulOperator)
 {
     const auto type = get_type<float>();
     ArithmeticTraitImpl<float> traits(type.get(), type.get());
@@ -108,7 +108,7 @@ TEST(TestFloatType, TestHasMulOperator)
     EXPECT_FLOAT_EQ(lhs, 2.0f * rhs);
 }
 
-TEST(TestFloatType, TestHasDivOperator)
+TEST(TestFloatType, TestDivOperator)
 {
     const auto type = get_type<float>();
     ArithmeticTraitImpl<float> traits(type.get(), type.get());
