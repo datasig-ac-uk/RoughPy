@@ -43,6 +43,19 @@ enum class ComparisonType
     GreaterEqual
 };
 
+enum class NumberFunction
+{
+    Abs = 0,
+    Sqrt,
+    Pow,
+    Exp,
+    Log,
+    FromRational,
+    Real,
+    Imaginary  // Considered together with Real
+};
+
+using exponent_t = int;
 
 class ROUGHPY_PLATFORM_EXPORT BuiltinTrait {
     BuiltinTraitID m_id;

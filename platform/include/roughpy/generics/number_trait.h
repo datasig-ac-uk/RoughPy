@@ -35,12 +35,11 @@ protected:
 
 public:
 
-    using exponent_t = int;
     static constexpr auto my_id = BuiltinTraitID::Number;
 
-
-
     virtual ~NumberTrait();
+
+    virtual bool has_function(NumberFunction fn_id) const noexcept = 0;
 
     virtual void unsafe_real(void* dst, const void* src) const;
     virtual void unsafe_imaginary(void* dst, const void* src) const;
@@ -104,6 +103,8 @@ public:
         RPY_DBG_ASSERT_NE(type, nullptr);
     }
 
+    bool has_function(NumberFunction fn_id) const noexcept override;
+
     void unsafe_real(void* dst, const void* src) const override;
     void unsafe_imaginary(void* dst, const void* src) const override;
     void unsafe_abs(void* dst, const void* src) const noexcept override;
@@ -122,105 +123,125 @@ namespace number_trait_impl {
 // name resolution for standard types.
 using namespace std;
 
-struct NoSuchFunction
-{
-
+struct NoSuchFunction {
     using result_t = byte;
+    static constexpr bool has_function = false;
 
     template <typename... Args>
-    RPY_NO_RETURN
-    result_t operator()(Args&&... args) const
+    RPY_NO_RETURN result_t operator()(Args&&... args) const
     {
         RPY_THROW(std::runtime_error, "function not defined");
     }
 };
 
-template <typename T, typename=int>
-struct AbsFunc : NoSuchFunction
-{
+template <typename T, typename = int>
+struct AbsFunc : NoSuchFunction {
 };
 
 template <typename T>
-struct AbsFunc<T, void_t<decltype(abs(declval<T>()))>>
-{
+struct AbsFunc<T, void_t<decltype(abs(declval<T>()))>> {
     using result_t = decltype(abs(declval<T>()));
 
-    constexpr result_t operator()(const T& val) const noexcept(noexcept(abs(val)))
+    static constexpr bool has_function = false;
+    constexpr result_t operator()(const T& val) const
+            noexcept(noexcept(abs(val)))
     {
         return abs(val);
     }
 };
 
-template <typename T, typename=int>
-struct SqrtFunc : NoSuchFunction
-{
+template <typename T, typename = int>
+struct SqrtFunc : NoSuchFunction {
 };
 
 template <typename T>
-struct SqrtFunc<T, void_t<decltype(sqrt(declval<T>()))>>
-{
+struct SqrtFunc<T, void_t<decltype(sqrt(declval<T>()))>> {
     using result_t = decltype(sqrt(declval<T>()));
 
-    constexpr result_t operator()(const T& val) const noexcept(noexcept(sqrt(val)))
+    static constexpr bool has_function = false;
+    constexpr result_t operator()(const T& val) const
+            noexcept(noexcept(sqrt(val)))
     {
         return sqrt(val);
     }
 };
 
-template <typename T, typename=int>
-struct PowFunc : NoSuchFunction
-{
+template <typename T, typename = int>
+struct PowFunc : NoSuchFunction {
 };
 
 template <typename T>
-struct PowFunc<T, void_t<decltype(sqrt(declval<T>()), std::declval<typename NumberTrait::exponent_t>())>>
-{
-    using exponent_t = typename NumberTrait::exponent_t;
-    using result_t = decltype(pow(std::declval<T>()), std::declval<exponent_t>());
+struct PowFunc<
+        T,
+        void_t<decltype(sqrt(declval<T>()), std::declval<exponent_t>())>> {
+    using exponent_t = exponent_t;
+    static constexpr bool has_function = false;
+    using result_t
+            = decltype(pow(std::declval<T>()), std::declval<exponent_t>());
 
-    constexpr result_t operator()(const T& val, exponent_t exponent) const noexcept(noexcept(pow(val, exponent)))
+    constexpr result_t operator()(const T& val, exponent_t exponent) const
+            noexcept(noexcept(pow(val, exponent)))
     {
         return pow(val, exponent);
     }
 };
 
-template <typename T, typename=int>
-struct ExpFunc : NoSuchFunction
-{
+template <typename T, typename = int>
+struct ExpFunc : NoSuchFunction {
 };
 
 template <typename T>
-struct ExpFunc<T, void_t<decltype(exp(declval<T>()))>>
-{
+struct ExpFunc<T, void_t<decltype(exp(declval<T>()))>> {
     using result_t = decltype(exp(declval<T>()));
+    static constexpr bool has_function = false;
 
-    constexpr result_t operator()(const T& val) const noexcept(noexcept(exp(val)))
+    constexpr result_t operator()(const T& val) const
+            noexcept(noexcept(exp(val)))
     {
         return exp(val);
     }
 };
 
-template <typename T, typename=int>
-struct LogFunc : NoSuchFunction
-{
+template <typename T, typename = int>
+struct LogFunc : NoSuchFunction {
 };
 
 template <typename T>
-struct LogFunc<T, void_t<decltype(log(declval<T>()))>>
-{
+struct LogFunc<T, void_t<decltype(log(declval<T>()))>> {
     using result_t = decltype(log(declval<T>()));
 
-    constexpr result_t operator()(const T& val) const noexcept(noexcept(log(val)))
+    static constexpr bool has_function = false;
+    constexpr result_t operator()(const T& val) const
+            noexcept(noexcept(log(val)))
     {
         return log(val);
     }
 };
 
+}// namespace number_trait_impl
 
-
+template <typename T>
+bool NumberTraitImpl<T>::has_function(NumberFunction fn_id) const noexcept
+{
+    switch (fn_id) {
+        case NumberFunction::Abs:
+            return number_trait_impl::AbsFunc<T>::has_function;
+        case NumberFunction::Sqrt:
+            return number_trait_impl::SqrtFunc<T>::has_function;
+        case NumberFunction::Pow:
+            return number_trait_impl::PowFunc<T>::has_function;
+        case NumberFunction::Exp:
+            return number_trait_impl::ExpFunc<T>::has_function;
+        case NumberFunction::Log:
+            return number_trait_impl::LogFunc<T>::has_function;
+        case NumberFunction::FromRational:
+            return is_floating_point_v<T>;
+        case NumberFunction::Real:
+        case NumberFunction::Imaginary:
+            return true; // all the builtin types are real
+    }
+    RPY_UNREACHABLE_RETURN(false);
 }
-
-
 
 template <typename T>
 void NumberTraitImpl<T>::unsafe_real(void* dst, const void* src) const
