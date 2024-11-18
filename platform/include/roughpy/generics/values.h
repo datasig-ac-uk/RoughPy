@@ -568,6 +568,9 @@ RPY_NO_DISCARD Value ROUGHPY_PLATFORM_EXPORT value_arithmetic(
 
 }// namespace dtl
 
+
+
+
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, Ref&> Ref::operator+=(const T& other)
 {
@@ -690,6 +693,22 @@ enable_if_t<dtl::value_like_v<T>, Value&> Value::operator/=(const T& other)
             other.data()
     );
     return *this;
+}
+
+template <typename T>
+enable_if_t<dtl::value_like_v<T>, Value> operator-(const T& value)
+{
+    Value result(value.type_ptr());
+    if (!value.fast_is_zero()) {
+        dtl::value_inplace_arithmetic(
+            ArithmeticOperation::Sub,
+            result.type_ptr(),
+            result.data(),
+            value.type_ptr(),
+            value.data()
+            );
+    }
+    return result;
 }
 
 template <typename T, typename U>
