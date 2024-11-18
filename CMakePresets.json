@@ -34,7 +34,8 @@
       "inherits": ["default", "with-tests", "with-pymodule"],
       "hidden": true,
       "cacheVariables": {
-        "ROUGHPY_ENABLE_ALL_WARNINGS": "ON"
+        "ROUGHPY_ENABLE_ALL_WARNINGS": "ON",
+        "ROUGHPY_EXPERIMENTAL": "ON"
       }
     },
     {

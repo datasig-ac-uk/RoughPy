@@ -199,6 +199,7 @@ using std::conditional_t;
 using std::decay;
 using std::enable_if_t;
 using std::underlying_type_t;
+using std::decay_t;
 
 using boost::copy_cv_ref_t;
 using boost::copy_cv_t;

@@ -15,7 +15,6 @@ add_Library(RoughPy_Platform SHARED
         include/roughpy/platform/threads.h
         include/roughpy/platform/devices.h
         include/roughpy/platform/errors.h
-
 )
 add_library(RoughPy::Platform ALIAS RoughPy_Platform)
 
@@ -56,7 +55,7 @@ target_compile_definitions(RoughPy_Platform PRIVATE "RPY_COMPILING_PLATFORM")
 
 generate_export_header(RoughPy_Platform
         EXPORT_FILE_NAME roughpy/platform/roughpy_platform_export.h
-)
+    )
 
 add_subdirectory(src)
 
@@ -68,6 +67,7 @@ add_subdirectory(src)
 # intensive solution like protobufs or flatbufs, or literally anything else.
 if (NOT ROUGHPY_ENABLE_IWYU)
 target_precompile_headers(RoughPy_Platform PUBLIC
+        <boost/multiprecision/gmp.hpp>
         <cereal/cereal.hpp>
         <cereal/access.hpp>
         <cereal/specialize.hpp>
