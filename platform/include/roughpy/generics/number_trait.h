@@ -19,7 +19,17 @@ class ConstRef;
 class Ref;
 class Value;
 
-
+/**
+ * @brief Abstract base class providing an interface for traits related to
+ * numerical types.
+ *
+ * This class is intended to be inherited by specific numerical type traits
+ * implementations. It provides methods to perform various mathematical
+ * operations such as real, imaginary, absolute value, square root,
+ * exponentiation, logarithms, and conversion from rational numbers.
+ *
+ * @note Inherits from BuiltinTrait.
+ */
 class ROUGHPY_PLATFORM_EXPORT NumberTrait : public BuiltinTrait
 {
     const Type* p_type;
@@ -39,20 +49,120 @@ public:
 
     virtual ~NumberTrait();
 
+    /**
+     * @brief Check if a specific numerical function is supported.
+     *
+     * This pure virtual method must be implemented by derived classes to
+     * indicate if a specific numerical function, identified by the fn_id
+     * parameter, is supported.
+     *
+     * @param fn_id Identifier of the numerical function to check.
+     * @return true if the function is supported, otherwise false.
+     */
     virtual bool has_function(NumberFunction fn_id) const noexcept = 0;
 
+    /**
+     * @brief Computes the real part of a given complex number.
+     *
+     * This function extracts the real part of a complex number, which is
+     * an approximation and may involve some degree of unsafe operations
+     * depending on the precision and numerical stability of the original
+     * complex number.
+     *
+     */
     virtual void unsafe_real(void* dst, const void* src) const;
+    /**
+     * @brief Computes the imaginary part of a given complex number.
+     *
+     * This method extracts and returns the imaginary component of a complex
+     * number.
+     *
+     */
     virtual void unsafe_imaginary(void* dst, const void* src) const;
 
+    /**
+     * @brief Computes the absolute value of the given numerical value.
+     *
+     * This pure virtual method must be implemented by derived classes to
+     * calculate the absolute value of a numerical type, taking into account
+     * potential unsafe operations that may bypass certain safety checks.
+     *
+     * @param dst Pointer to the memory location where the computed absolute
+     * value will be stored.
+     * @param src Pointer to the memory location of the source numerical value.
+     */
     virtual void unsafe_abs(void* dst, const void* src) const noexcept = 0;
 
-
+    /**
+     * @brief Computes the square root of a given double value without safety
+     * checks.
+     *
+     * This function computes the square root of a given non-negative double
+     * value using an unspecified method. It does not perform any validation on
+     * the input, hence it may produce undefined behavior if provided with a
+     * negative number.
+     *
+     */
     virtual void unsafe_sqrt(void* dst, const void* src) const;
+    /**
+     * @brief Computes the power of a base raised to an exponent and stores the
+     * result.
+     *
+     * This function takes a base value and an exponent, computes the power and
+     * stores the result in the specified destination memory location. The
+     * operation is considered unsafe as it bypasses certain safety checks.
+     * Derived classes need to provide the actual implementation.
+     *
+     * @param dst Pointer to the memory location where the computed power value
+     * will be stored.
+     * @param base Pointer to the memory location of the base value.
+     * @param exponent The exponent to which the base value is raised.
+     */
     virtual void unsafe_pow(void* dst, const void* base, exponent_t exponent) const;
 
+    /**
+     * @brief Performs an exponential operation without any safety checks.
+     *
+     * This method attempts to perform an exponential operation on the source
+     * value pointed to by `src` and stores the result in the destination
+     * pointed to by `dst`. The method bypasses all safety checks and asserts
+     * that `dst` is not null. It throws a runtime error if the operation is not
+     * implemented.
+     *
+     * @param dst Pointer to the memory location where the computed result will
+     * be stored.
+     * @param src Pointer to the memory location of the source value to be used
+     * for the exponential operation.
+     */
     virtual void unsafe_exp(void* dst, const void* src) const;
+    /**
+     * @brief Performs a logarithmic operation without any safety checks.
+     *
+     * This method attempts to perform a logarithmic operation on the source
+     * value pointed to by `src` and stores the result in the destination
+     * pointed to by `dst`. The method asserts that `dst` is not null. It throws
+     * a runtime error if the operation is not implemented.
+     *
+     * @param dst Pointer to the memory location where the computed logarithmic
+     * result will be stored.
+     * @param src Pointer to the memory location of the source value to be used
+     * for the logarithmic operation.
+     */
     virtual void unsafe_log(void* dst, const void* src) const;
 
+    /**
+     * @brief Converts a rational number to a different numerical type unsafely.
+     *
+     * This pure virtual method takes a rational number represented by a
+     * numerator and a denominator and converts it to an equivalent value in a
+     * different numerical type. The result of the conversion is stored at the
+     * memory location pointed to by `dst`.
+     *
+     * @param dst Pointer to the location where the converted value will be
+     * stored.
+     * @param numerator The numerator of the rational number.
+     * @param denominator The denominator of the rational number.
+     */
     virtual void unsafe_from_rational(void* dst, int64_t numerator,
         int64_t denominator) const = 0;
 
