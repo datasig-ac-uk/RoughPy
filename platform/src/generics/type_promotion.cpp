@@ -23,7 +23,24 @@ TypePtr generics::compute_promotion(const Type* lhs, const Type* rhs) noexcept
         return lhs;
     }
 
-    // TODO: Create a mechanism for determining which type should be taken
+    /*
+     * The algorithm is as follows:
+     *   1) if lhs is exactly convertible to rhs then return rhs
+     *   2) if rhs is exactly convertible to lhs then return lhs
+     *
+     * In the future, we might wish to extend this algorithm to allow for a non-
+     * exact conversion or promote to a higher type beyond the two that are
+     * given
+     */
+    if (const auto l2r_conv = lhs->convert_to(*rhs);
+        l2r_conv && l2r_conv->is_exact()) {
+        return rhs;
+    }
+
+    if (const auto r2l_conv = rhs->convert_to(*lhs);
+        r2l_conv && r2l_conv->is_exact()) {
+        return lhs;
+    }
 
     return nullptr;
 }
