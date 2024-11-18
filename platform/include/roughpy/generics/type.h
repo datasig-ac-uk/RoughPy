@@ -47,7 +47,14 @@ TypePtr get_type() noexcept
     RPY_UNREACHABLE_RETURN(nullptr);
 }
 
-
+/**
+ * @brief Encapsulates the definition and functionalities related to custom
+ * types.
+ *
+ * The Type class is used to define, represent, and manipulate various custom
+ * types within the application. It provides methods and properties to interact
+ * with these types, ensuring they are correctly managed throughout the system.
+ */
 class ROUGHPY_PLATFORM_EXPORT Type
 {
     mutable std::atomic_intptr_t m_rc;
@@ -71,11 +78,36 @@ protected:
 
     virtual ~Type();
 
+    /**
+     * @brief Increments the reference count for the Type instance.
+     *
+     * This function increases the internal reference counter for a Type object
+     * in a thread-safe manner using relaxed memory order.
+     */
     virtual void inc_ref() const noexcept;
+
+    /**
+     * @brief Decrements the reference count for the Type instance.
+     *
+     * This function decreases the internal reference counter for a Type object
+     * in a thread-safe manner using acquire-release memory order. If the
+     * reference count reaches zero, it signifies that the Type instance can be
+     * safely destroyed.
+     *
+     * @return true if the reference count after decrementing is zero, false
+     * otherwise.
+     */
     virtual bool dec_ref() const noexcept;
 
 public:
-
+    /**
+     * @brief Retrieves the current reference count of the Type instance.
+     *
+     * This function fetches the value of the internal reference counter for
+     * a Type object in a thread-safe manner using acquire memory order.
+     *
+     * @return The current reference count of the Type instance.
+     */
     intptr_t ref_count() const noexcept;
 
     friend void intrusive_ptr_add_ref(const Type* value) noexcept
@@ -88,56 +120,202 @@ public:
         if (RPY_UNLIKELY(value->dec_ref())) { delete value; }
     }
 
-public:
+    /**
+     * @brief Returns the type information of the current instance.
+     *
+     * This function retrieves the stored type information for the current
+     * instance of the Type class.
+     *
+     * @return A reference to a std::type_info object that represents the type
+     * information.
+     */
     RPY_NO_DISCARD const std::type_info& type_info() const noexcept
     {
         return *p_type_info;
     }
 
+    /**
+     * @brief Retrieves the basic properties of the Type instance.
+     *
+     * This function provides access to the underlying BasicProperties structure
+     * associated with the Type instance. It allows inspection of various
+     * fundamental characteristics pertinent to the type.
+     *
+     * @return A const reference to the BasicProperties structure.
+     */
     RPY_NO_DISCARD constexpr const BasicProperties&
     basic_properties() const noexcept
     {
         return m_basic_properties;
     }
 
+    /**
+     * @brief Retrieves the object size for the Type instance.
+     *
+     * This function returns the size of the object that the Type instance
+     * represents. The size is determined at the instance creation and remains
+     * constant throughout the lifetime of the Type.
+     *
+     * @return The size, in bytes, of the object that the Type instance
+     * represents.
+     */
     RPY_NO_DISCARD constexpr size_t object_size() const noexcept
     {
         return m_obj_size;
     }
 
+    /**
+     * @brief Retrieves the name associated with the current instance.
+     *
+     * This function returns a string view representing the name of the specific
+     * instance. It provides a constant time operation to access the instance's
+     * name as a non-owning view.
+     *
+     * @return A string_view object representing the name of the instance.
+     */
     RPY_NO_DISCARD virtual string_view name() const noexcept = 0;
+
+    /**
+     * @brief Retrieves the unique identifier for the current instance.
+     *
+     * This function returns a string view that uniquely identifies the current
+     * instance of the class. It provides a constant time operation to access
+     * the instance's identifier in a non-owning view.
+     *
+     * @return A string_view object representing the unique identifier of the
+     * instance.
+     */
     RPY_NO_DISCARD virtual string_view id() const noexcept = 0;
 
 protected:
+    /**
+     * @brief Allocates an instance of the represented type.
+     *
+     * This pure virtual function is responsible for allocating an object of the
+     * type that this Type instance represents. The function returns a pointer
+     * to the newly allocated object. Subclasses need to provide the
+     * implementation to specify how the actual allocation is performed.
+     *
+     * @return A void pointer to the newly allocated object.
+     */
     virtual void* allocate_object() const = 0;
+
+    /**
+     * @brief Frees an instance of the represented type.
+     *
+     * This pure virtual function is responsible for deallocating an object of
+     * the type that this Type instance represents. The function must be
+     * implemented by subclasses to define the specific deallocation procedure.
+     * The function ensures that resources occupied by the object are properly
+     * released.
+     *
+     * @param ptr A void pointer to the object that needs to be deallocated.
+     */
     virtual void free_object(void*) const = 0;
 
 public:
+    /**
+     * @brief Abstract function for copying or moving a block of memory.
+     *
+     * This pure virtual function is intended for copying or moving a specified
+     * number of bytes of data from a source to a destination. The operation to
+     * be performed (copy or move) depends on the boolean flag provided.
+     *
+     * @param dst Pointer to the destination memory location.
+     * @param src Pointer to the source memory location.
+     * @param count Number of bytes to be copied or moved.
+     * @param move Flag indicating the operation type:
+     *             - true if the data should be moved,
+     *             - false if the data should be copied.
+     */
     virtual void
     copy_or_move(void* dst, const void* src, size_t count, bool move) const noexcept
             = 0;
 
+    /**
+     * @brief Converts the current Type to another specified Type.
+     *
+     * This method facilitates the conversion of the current Type instance to
+     * another Type instance as specified by the type parameter.
+     *
+     * @param type The target Type to convert to.
+     * @return A unique pointer to a constant ConversionTrait representing the
+     *         conversion result.
+     */
     RPY_NO_DISCARD virtual std::unique_ptr<const ConversionTrait>
     convert_to(const Type& type) const noexcept;
 
+    /**
+     * @brief Converts the given custom type to another type using its
+     * conversion traits.
+     *
+     * This method provides a way to convert from one Type object to another by
+     * utilizing the associated conversion traits. The conversion ensures that
+     * the resulting type adheres to the expected characteristics defined by the
+     * conversion traits.
+     *
+     * @param type The Type object that needs to be converted.
+     * @return A unique pointer to the resulting ConversionTrait after
+     * conversion.
+     */
     RPY_NO_DISCARD virtual std::unique_ptr<const ConversionTrait>
     convert_from(const Type& type) const noexcept;
 
+    /**
+     * @brief Retrieves the built-in trait associated with the given ID.
+     *
+     * This method returns the built-in trait corresponding to the specified
+     * BuiltinTraitID. It provides a mechanism to access built-in trait
+     * functionalities based on their unique identifiers.
+     *
+     * @param id The identifier of the built-in trait to be retrieved.
+     * @return A pointer to the BuiltinTrait corresponding to the given ID,
+     * or nullptr if the trait is not found.
+     */
     RPY_NO_DISCARD virtual const BuiltinTrait*
     get_builtin_trait(BuiltinTraitID id) const noexcept;
 
     // RPY_NO_DISCARD virtual const Trait* get_trait(string_view id
     // ) const noexcept;
 
-
+    /**
+     * @brief Displays the value pointed to by the given pointer using the
+     * provided output stream.
+     *
+     * This pure virtual function is intended to be overridden by derived
+     * classes to provide a specific implementation for displaying values of a
+     * custom type.
+     *
+     * @param os The output stream used for displaying the value.
+     * @param value A pointer to the value that needs to be displayed.
+     * @return A reference to the output stream after the value has been written
+     * to it.
+     */
     virtual const std::ostream&
     display(std::ostream& os, const void* value) const = 0;
 
-
+    /**
+     * @brief Computes the hash value for a given input.
+     *
+     * This function takes a pointer to an input value and returns its computed
+     * hash. It ensures that the hash calculation is performed without throwing
+     * any exceptions.
+     *
+     * @param value A pointer to the input value whose hash is to be computed.
+     * @return The hash value of the input.
+     */
     virtual hash_t hash_of(const void* value) const noexcept;
 
 
     template <typename T>
+    /**
+     * @brief Retrieves the type information for a specified type.
+     *
+     * This method provides a type-safe way to obtain the TypePtr for the given
+     * type, utilizing the decay_t transformation to handle type decay.
+     *
+     * @return A TypePtr representing the specific type.
+     */
     static TypePtr of() noexcept
     {
         return get_type<decay_t<T>>();
@@ -145,9 +323,12 @@ public:
 
 };
 
-
-
-
+/**
+ * @brief Represents a collection of built-in types.
+ *
+ * The BuiltinTypes struct encapsulates various fundamental built-in types
+ * such as floating-point types and integer types.
+ */
 struct BuiltinTypes
 {
     TypePtr float_type;
@@ -163,11 +344,22 @@ struct BuiltinTypes
     TypePtr uint64_type;
 };
 
+/**
+ * @brief Retrieves the set of built-in types.
+ *
+ * @return A reference to a static BuiltinTypes object containing all built-in
+ * types.
+ */
 ROUGHPY_PLATFORM_EXPORT
 const BuiltinTypes& get_builtin_types() noexcept;
 
 
 template <typename T>
+/**
+ * @brief Determines the basic properties of a given type.
+ * @tparam T The type for which the properties are to be determined.
+ * @return A BasicProperties object containing information about the type.
+ */
 constexpr BasicProperties basic_properties_of() noexcept
 {
     using base_t = remove_cv_ref_t<T>;
@@ -186,11 +378,33 @@ constexpr BasicProperties basic_properties_of() noexcept
 };
 }
 
+/**
+ * @brief Computes the type promotion for two given types.
+ *
+ * The function determines the resulting type when the two provided types
+ * interact according to the promotion rules. If either of the types is
+ * `nullptr`, the other type is returned. If both types are the same,
+ * that type is returned. Otherwise, the function checks if one type
+ * is exactly convertible to the other and returns the appropriate type.
+ *
+ * @param lhs A pointer to the first type.
+ * @param rhs A pointer to the second type.
+ * @return The promoted type based on the provided `lhs` and `rhs` types.
+ * If neither type can be promoted to the other, `nullptr` is returned.
+ */
+RPY_NO_DISCARD TypePtr ROUGHPY_PLATFORM_EXPORT compute_promotion(const Type* lhs, const Type* rhs) noexcept;
 
-RPY_NO_DISCARD
-TypePtr ROUGHPY_PLATFORM_EXPORT compute_promotion(const Type* lhs, const Type* rhs) noexcept;
-
-
+/**
+ * @brief Computes the hash value of a given Type object.
+ *
+ * This function creates a hash value for the provided Type object by invoking
+ * the hash function on the type's identifier string. It uses the
+ * `Hash<string_view>` hasher to generate the hash.
+ *
+ * @param value A reference to a Type object whose hash value needs to be
+ * computed.
+ * @return The computed hash value.
+ */
 inline hash_t hash_value(const Type& value) noexcept
 {
     const Hash<string_view> hasher;
@@ -209,6 +423,15 @@ operator!=(const Type& lhs, const Type& rhs) noexcept
     return !(lhs == rhs);
 }
 
+/**
+ * @brief Retrieves the size of an object of the specified type.
+ *
+ * This function returns the size of an object for the given type by calling
+ * the `object_size` method of the `Type` class.
+ *
+ * @param type A reference to the `Type` object for which the size is required.
+ * @return The size of the object for the given type.
+ */
 inline size_t size_of(const Type& type) noexcept { return type.object_size(); }
 
 namespace concepts {
