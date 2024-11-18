@@ -21,7 +21,15 @@
 
 namespace rpy::generics {
 
-
+/**
+ * @brief Represents basic properties and functionalities within the
+ * application.
+ *
+ * The BasicProperties class provides a foundation for various properties and
+ * functionalities that are needed across different components of the system. It
+ * includes methods and attributes which can be leveraged to manage and
+ * manipulate these properties efficiently and effectively.
+ */
 struct BasicProperties {
     bool standard_layout : 1;
     bool trivially_copyable : 1;
@@ -37,6 +45,16 @@ struct BasicProperties {
 };
 
 template <typename T>
+/**
+ * @brief Determines the basic properties of a given type.
+ *
+ * This function evaluates the provided type and returns a BasicProperties
+ * object encapsulating various properties of the type, such as whether it's
+ * trivially copyable, trivially destructible, or polymorphic.
+ *
+ * @tparam T The type for which the properties are to be determined.
+ * @return A BasicProperties object containing information about the type.
+ */
 constexpr BasicProperties basic_properties_of() noexcept;
 
 
