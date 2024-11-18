@@ -134,7 +134,7 @@ struct NoSuchFunction {
     }
 };
 
-template <typename T, typename = int>
+template <typename T, typename = void>
 struct AbsFunc : NoSuchFunction {
 };
 
@@ -150,7 +150,7 @@ struct AbsFunc<T, void_t<decltype(abs(declval<T>()))>> {
     }
 };
 
-template <typename T, typename = int>
+template <typename T, typename = void>
 struct SqrtFunc : NoSuchFunction {
 };
 
@@ -166,7 +166,7 @@ struct SqrtFunc<T, void_t<decltype(sqrt(declval<T>()))>> {
     }
 };
 
-template <typename T, typename = int>
+template <typename T, typename = void>
 struct PowFunc : NoSuchFunction {
 };
 
@@ -176,7 +176,7 @@ struct PowFunc<
         void_t<decltype(sqrt(declval<T>()), std::declval<exponent_t>())>> {
     static constexpr bool has_function = false;
     using result_t
-            = decltype(pow(std::declval<T>()), std::declval<exponent_t>());
+            = decltype(pow(std::declval<T>(), std::declval<exponent_t>()));
 
     constexpr result_t operator()(const T& val, exponent_t exponent) const
             noexcept(noexcept(pow(val, exponent)))
@@ -185,7 +185,7 @@ struct PowFunc<
     }
 };
 
-template <typename T, typename = int>
+template <typename T, typename = void>
 struct ExpFunc : NoSuchFunction {
 };
 
@@ -201,7 +201,7 @@ struct ExpFunc<T, void_t<decltype(exp(declval<T>()))>> {
     }
 };
 
-template <typename T, typename = int>
+template <typename T, typename = void>
 struct LogFunc : NoSuchFunction {
 };
 
@@ -275,7 +275,8 @@ void NumberTraitImpl<T>::unsafe_pow(
 {
     using Fn = number_trait_impl::PowFunc<T>;
     Fn fn;
-    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(base));
+    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>
+    (base), exponent);
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_exp(void* dst, const void* src) const
