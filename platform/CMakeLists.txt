@@ -15,9 +15,6 @@ add_Library(RoughPy_Platform SHARED
         include/roughpy/platform/threads.h
         include/roughpy/platform/devices.h
         include/roughpy/platform/errors.h
-        src/generics/type.cpp
-
-
 )
 add_library(RoughPy::Platform ALIAS RoughPy_Platform)
 
