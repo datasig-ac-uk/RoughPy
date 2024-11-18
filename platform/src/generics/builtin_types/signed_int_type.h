@@ -23,7 +23,7 @@ class SignedInt8Type : public BuiltinTypeBase<int8_t> {
 public:
     using BuiltinTypeBase::BuiltinTypeBase;
 
-    RPY_NO_DISCARD string_view name() const noexcept;
+    RPY_NO_DISCARD string_view name() const noexcept override;
 
     static const Type* get() noexcept;
 };
@@ -33,7 +33,7 @@ class SignedInt16Type : public BuiltinTypeBase<int16_t>
 public:
     using BuiltinTypeBase::BuiltinTypeBase;
 
-    RPY_NO_DISCARD string_view name() const noexcept;
+    RPY_NO_DISCARD string_view name() const noexcept override;
 
     static const Type* get() noexcept;
 };
@@ -43,7 +43,7 @@ class SignedInt32Type : public BuiltinTypeBase<int32_t>
 public:
     using BuiltinTypeBase::BuiltinTypeBase;
 
-    RPY_NO_DISCARD string_view name() const noexcept;
+    RPY_NO_DISCARD string_view name() const noexcept override;
 
     static const Type* get() noexcept;
 };
@@ -53,7 +53,7 @@ class SignedInt64Type : public BuiltinTypeBase<int64_t>
 public:
     using BuiltinTypeBase::BuiltinTypeBase;
 
-    RPY_NO_DISCARD string_view name() const noexcept;
+    RPY_NO_DISCARD string_view name() const noexcept override ;
 
     static const Type* get() noexcept;
 };
