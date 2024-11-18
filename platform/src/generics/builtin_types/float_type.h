@@ -7,8 +7,8 @@
 
 #include "builtin_type.h"
 
-namespace rpy {
-namespace generics {
+
+namespace rpy::generics {
 
 extern template class BuiltinTypeBase<float>;
 
@@ -23,7 +23,6 @@ public:
     static const Type* get() noexcept;
 };
 
-} // generics
-} // rpy
+} // rpy::generics
 
 #endif //ROUGHPY_GENERICS_INTERNAL_FLOAT_TYPE_H

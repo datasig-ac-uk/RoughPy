@@ -58,6 +58,8 @@ protected:
     void free_object(void*) const override;
 
 public:
+    RPY_NO_DISCARD string_view id() const noexcept override;
+
     void copy_or_move(void* dst, const void* src, size_t count, bool move)
             const noexcept override;
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>

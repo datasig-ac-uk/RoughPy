@@ -20,9 +20,16 @@
 
 #include "conversion_factory.h"
 
-
+#include "builtin_type_ids.h"
 
 namespace rpy::generics {
+
+
+template <typename T>
+string_view BuiltinTypeBase<T>::id() const noexcept
+{
+    return type_id_of<T>;
+}
 
 
 template <typename T>
