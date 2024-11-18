@@ -168,11 +168,92 @@ TEST(TestValue, TestHash)
     EXPECT_EQ(value_hasher(value), dbl_hasher(dbl_value));
 }
 
-// TEST(TestValue, TestRealPart)
-// {
-//     Value value(2.0);
-//     Value expected(2.0);
-//
-//     EXPECT_EQ(math::real(value))
-// }
+TEST(TestValue, TestRealPart)
+{
+    Value value(2.0);
+    Value expected(2.0);
 
+    EXPECT_EQ(math::real(value), expected);
+}
+
+TEST(TestValue, TestSqrt)
+{
+    Value value(16.0);
+    Value expected(4.0);
+
+    EXPECT_EQ(generics::math::sqrt(value), expected);
+}
+
+TEST(TestValue, TestPow)
+{
+    Value base(3.0);
+    exponent_t exponent = 2;
+    Value expected(9.0);
+
+    EXPECT_EQ(generics::math::pow(base, exponent), expected);
+}
+
+TEST(TestValue, TestExp)
+{
+    Value value(1.0);
+    Value expected(std::exp(1.0));
+
+    EXPECT_EQ(generics::math::exp(value), expected);
+}
+
+TEST(TestValue, TestLog)
+{
+    Value value(std::exp(1.0));
+    Value expected(1.0);
+
+    EXPECT_EQ(generics::math::log(value), expected);
+}
+
+// TEST(TestValue, TestSin)
+// {
+//     Value value(M_PI / 2);
+//     Value expected(1.0);
+//
+//     EXPECT_EQ(generics::math::sin(value), expected);
+// }
+//
+// TEST(TestValue, TestCos)
+// {
+//     Value value(0.0);
+//     Value expected(1.0);
+//
+//     EXPECT_EQ(generics::math::cos(value), expected);
+// }
+//
+// TEST(TestValue, TestTan)
+// {
+//     Value value(M_PI / 4);
+//     Value expected(1.0);
+//
+//     EXPECT_EQ(generics::math::tan(value), expected);
+// }
+//
+// TEST(TestValue, TestAsin)
+// {
+//     Value value(1.0);
+//     Value expected(M_PI / 2);
+//
+//     EXPECT_EQ(generics::math::asin(value), expected);
+// }
+//
+// TEST(TestValue, TestAcos)
+// {
+//     Value value(1.0);
+//     Value expected(0.0);
+//
+//     EXPECT_EQ(generics::math::acos(value), expected);
+// }
+//
+// TEST(TestValue, TestAtan)
+// {
+//     Value value(1.0);
+//     Value expected(M_PI / 4);
+//
+//     EXPECT_EQ(generics::math::atan(value), expected);
+// }
+//
