@@ -30,7 +30,10 @@ TypePtr generics::compute_promotion(const Type* lhs, const Type* rhs) noexcept
      *
      * In the future, we might wish to extend this algorithm to allow for a non-
      * exact conversion or promote to a higher type beyond the two that are
-     * given
+     * given.
+     *
+     * We specifically use "convertible to" because this will capture both
+     * internally defined conversion and "from conversion" from the other type
      */
     if (const auto l2r_conv = lhs->convert_to(*rhs);
         l2r_conv && l2r_conv->is_exact()) {
