@@ -10,6 +10,8 @@ add_library(RoughPy_Generics_BuiltinType STATIC
         conversion_factory.h
         double_type.cpp
         double_type.h
+        float_type.cpp
+        float_type.h
 )
 
 set_target_properties(RoughPy_Generics_BuiltinType PROPERTIES
@@ -29,7 +31,8 @@ target_link_libraries(RoughPy_Generics_BuiltinType PRIVATE
 if (ROUGHPY_BUILD_TESTS)
 
     add_executable(test_builtin_types
-            test_double_traits.cpp
+            test_double_type.cpp
+            test_float_type.cpp
     )
 
     target_link_libraries(test_builtin_types PRIVATE
