@@ -142,7 +142,7 @@ template <typename T>
 struct AbsFunc<T, void_t<decltype(abs(declval<T>()))>> {
     using result_t = decltype(abs(declval<T>()));
 
-    static constexpr bool has_function = false;
+    static constexpr bool has_function = true;
     constexpr result_t operator()(const T& val) const
             noexcept(noexcept(abs(val)))
     {
@@ -158,7 +158,7 @@ template <typename T>
 struct SqrtFunc<T, void_t<decltype(sqrt(declval<T>()))>> {
     using result_t = decltype(sqrt(declval<T>()));
 
-    static constexpr bool has_function = false;
+    static constexpr bool has_function = true;
     constexpr result_t operator()(const T& val) const
             noexcept(noexcept(sqrt(val)))
     {
@@ -174,7 +174,7 @@ template <typename T>
 struct PowFunc<
         T,
         void_t<decltype(sqrt(declval<T>()), std::declval<exponent_t>())>> {
-    static constexpr bool has_function = false;
+    static constexpr bool has_function = true;
     using result_t
             = decltype(pow(std::declval<T>(), std::declval<exponent_t>()));
 
@@ -192,7 +192,7 @@ struct ExpFunc : NoSuchFunction {
 template <typename T>
 struct ExpFunc<T, void_t<decltype(exp(declval<T>()))>> {
     using result_t = decltype(exp(declval<T>()));
-    static constexpr bool has_function = false;
+    static constexpr bool has_function = true;
 
     constexpr result_t operator()(const T& val) const
             noexcept(noexcept(exp(val)))
@@ -209,7 +209,7 @@ template <typename T>
 struct LogFunc<T, void_t<decltype(log(declval<T>()))>> {
     using result_t = decltype(log(declval<T>()));
 
-    static constexpr bool has_function = false;
+    static constexpr bool has_function = true;
     constexpr result_t operator()(const T& val) const
             noexcept(noexcept(log(val)))
     {
