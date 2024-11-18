@@ -737,10 +737,11 @@ enable_if_t<dtl::value_like_v<T>, Value> sqrt(const T& value)
 template <typename T>
 enable_if_t<dtl::value_like_v<T>, Value> pow(const T& value, exponent_t exp)
 {
+    auto payload = std::make_pair(value.data(), exp);
     return dtl::math_fn(
             NumberFunction::Pow,
             value.type_ptr(),
-            &std::make_pair(value.data(), exp)
+            &payload
     );
 }
 
