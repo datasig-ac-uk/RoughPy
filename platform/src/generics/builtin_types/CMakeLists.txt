@@ -35,6 +35,7 @@ target_link_libraries(RoughPy_Generics_BuiltinType PRIVATE
 if (ROUGHPY_BUILD_TESTS)
 
     add_executable(test_builtin_types
+            test_builtin_conversions.cpp
             test_double_type.cpp
             test_float_type.cpp
     )
