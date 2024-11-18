@@ -97,6 +97,9 @@ class NumberTraitImpl : public NumberTrait
 {
 
 public:
+
+    using real_type = T;
+
     explicit NumberTraitImpl(const Type* type, const Type* real_type = nullptr)
         : NumberTrait(type, real_type)
     {
@@ -257,14 +260,14 @@ void NumberTraitImpl<T>::unsafe_abs(void* dst, const void* src) const noexcept
 {
     using Fn = number_trait_impl::AbsFunc<T>;
     Fn fn;
-    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
+    *static_cast<real_type*>(dst) = fn(*static_cast<const T*>(src));
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_sqrt(void* dst, const void* src) const
 {
     using Fn = number_trait_impl::SqrtFunc<T>;
     Fn fn;
-    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
+    *static_cast<T*>(dst) = fn(*static_cast<const T*>(src));
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_pow(
@@ -275,22 +278,23 @@ void NumberTraitImpl<T>::unsafe_pow(
 {
     using Fn = number_trait_impl::PowFunc<T>;
     Fn fn;
-    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>
-    (base), exponent);
+    auto result = fn(*static_cast<const T*>(base), exponent);
+    *static_cast<T*>(dst) = result;
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_exp(void* dst, const void* src) const
 {
     using Fn = number_trait_impl::ExpFunc<T>;
     Fn fn;
-    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
+    auto result = fn(*static_cast<const T*>(src));
+    *static_cast<T*>(dst) = result;
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_log(void* dst, const void* src) const
 {
     using Fn = number_trait_impl::LogFunc<T>;
     Fn fn;
-    *static_cast<typename Fn::result_t*>(dst) = fn(*static_cast<const T*>(src));
+    *static_cast<T*>(dst) = fn(*static_cast<const T*>(src));
 }
 template <typename T>
 void NumberTraitImpl<T>::unsafe_from_rational(
