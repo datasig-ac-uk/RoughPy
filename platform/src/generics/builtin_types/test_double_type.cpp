@@ -214,7 +214,7 @@ TEST(TestDoubleType, TestAbsFunction)
     EXPECT_EQ(abs_value, -value);
 }
 
-TEST(TestDoubleType, TestHasSqrtFunction)
+TEST(TestDoubleType, TestSqrtFunction)
 {
     const auto type = get_type<double>();
     NumberTraitImpl<double> traits(type.get());
@@ -227,7 +227,7 @@ TEST(TestDoubleType, TestHasSqrtFunction)
     EXPECT_EQ(sqrt, std::sqrt(value));
 }
 
-TEST(TestDoubleType, TestHasPowFunction)
+TEST(TestDoubleType, TestPowFunction)
 {
     const auto type = get_type<double>();
     NumberTraitImpl<double> traits(type.get());
@@ -241,7 +241,7 @@ TEST(TestDoubleType, TestHasPowFunction)
     EXPECT_EQ(pow_value, std::pow(value, exponent));
 }
 
-TEST(TestDoubleType, TestHasExpFunction)
+TEST(TestDoubleType, TestExpFunction)
 {
     const auto type = get_type<double>();
     NumberTraitImpl<double> traits(type.get());
@@ -254,7 +254,7 @@ TEST(TestDoubleType, TestHasExpFunction)
     EXPECT_DOUBLE_EQ(result, std::exp(value));
 }
 
-TEST(TestDoubleType, TestHasLogFunction)
+TEST(TestDoubleType, TestLogFunction)
 {
     const auto type = get_type<double>();
     NumberTraitImpl<double> traits(type.get());
@@ -266,7 +266,7 @@ TEST(TestDoubleType, TestHasLogFunction)
     EXPECT_DOUBLE_EQ(result, std::log(value));
 }
 
-TEST(TestDoubleType, TestHasFromRationalFunction)
+TEST(TestDoubleType, TestFromRationalFunction)
 {
     const auto type = get_type<double>();
     NumberTraitImpl<double> traits(type.get());

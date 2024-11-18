@@ -174,7 +174,7 @@ TEST(TestFloatType, TestAbsFunction)
     EXPECT_EQ(abs_value, -value);
 }
 
-TEST(TestFloatType, TestHasSqrtFunction)
+TEST(TestFloatType, TestSqrtFunction)
 {
     const auto type = get_type<float>();
     NumberTraitImpl<float> traits(type.get());
@@ -187,7 +187,7 @@ TEST(TestFloatType, TestHasSqrtFunction)
     EXPECT_EQ(sqrt, std::sqrt(value));
 }
 
-TEST(TestFloatType, TestHasPowFunction)
+TEST(TestFloatType, TestPowFunction)
 {
     const auto type = get_type<float>();
     NumberTraitImpl<float> traits(type.get());
@@ -201,7 +201,7 @@ TEST(TestFloatType, TestHasPowFunction)
     EXPECT_EQ(pow_value, std::pow(value, exponent));
 }
 
-TEST(TestFloatType, TestHasExpFunction)
+TEST(TestFloatType, TestExpFunction)
 {
     const auto type = get_type<float>();
     NumberTraitImpl<float> traits(type.get());
@@ -214,7 +214,7 @@ TEST(TestFloatType, TestHasExpFunction)
     EXPECT_FLOAT_EQ(result, std::exp(value));
 }
 
-TEST(TestFloatType, TestHasLogFunction)
+TEST(TestFloatType, TestLogFunction)
 {
     const auto type = get_type<float>();
     NumberTraitImpl<float> traits(type.get());
@@ -226,7 +226,7 @@ TEST(TestFloatType, TestHasLogFunction)
     EXPECT_FLOAT_EQ(result, std::log(value));
 }
 
-TEST(TestFloatType, TestHasFromRationalFunction)
+TEST(TestFloatType, TestFromRationalFunction)
 {
     const auto type = get_type<float>();
     NumberTraitImpl<float> traits(type.get());
