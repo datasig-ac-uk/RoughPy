@@ -83,7 +83,7 @@ TEST(TestFloatType, TestAddOperator)
     ASSERT_TRUE(traits.has_operation(ArithmeticOperation::Add));
 
     float lhs = 2.0f;
-    float rhs = -3.0;
+    float rhs = -3.0f;
 
     traits.unsafe_add_inplace(&lhs, &rhs);
 
@@ -97,7 +97,7 @@ TEST(TestFloatType, TestSubOperator)
     ASSERT_TRUE(traits.has_operation(ArithmeticOperation::Sub));
 
     float lhs = 2.0f;
-    float rhs = -3.0;
+    float rhs = -3.0f;
 
     traits.unsafe_sub_inplace(&lhs, &rhs);
 
@@ -111,7 +111,7 @@ TEST(TestFloatType, TestMulOperator)
     ASSERT_TRUE(traits.has_operation(ArithmeticOperation::Mul));
 
     float lhs = 2.0f;
-    float rhs = -3.0;
+    float rhs = -3.0f;
 
     traits.unsafe_mul_inplace(&lhs, &rhs);
 
@@ -125,7 +125,7 @@ TEST(TestFloatType, TestDivOperator)
     ASSERT_TRUE(traits.has_operation(ArithmeticOperation::Div));
 
     float lhs = 2.0f;
-    float rhs = -3.0;
+    float rhs = -3.0f;
 
     traits.unsafe_div_inplace(&lhs, &rhs);
 
