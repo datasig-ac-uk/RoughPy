@@ -4,6 +4,8 @@
 
 #include "signed_int_type.h"
 
+#include "builtin_type_methods.h"
+
 namespace rpy:: generics {
 
 template class BuiltinTypeBase<int8_t>;

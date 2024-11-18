@@ -14,6 +14,8 @@ add_library(RoughPy_Generics_BuiltinType STATIC
         float_type.h
         signed_int_type.cpp
         signed_int_type.h
+        unsigned_int_type.cpp
+        unsigned_int_type.h
 )
 
 set_target_properties(RoughPy_Generics_BuiltinType PROPERTIES
