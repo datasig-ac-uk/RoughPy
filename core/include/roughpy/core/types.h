@@ -28,20 +28,14 @@
 #ifndef ROUGHPY_CORE_IMPLEMENTATION_TYPES_H_
 #define ROUGHPY_CORE_IMPLEMENTATION_TYPES_H_
 
-#include "macros.h"
 
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
+#include <optional>
+#include <string_view>
 
-#ifdef RPY_CPP_17
-#  include <optional>
-#  include <string_view>
-#else
-#  include <boost/optional.hpp>
-#  include <boost/utility/string_view.hpp>
-#endif
 
 namespace rpy {
 
@@ -73,14 +67,9 @@ using bitmask_t = uint64_t;
 
 using std::pair;
 using std::string;
-
-#ifdef RPY_CPP_17
 using std::optional;
 using std::string_view;
-#else
-using boost::optional;
-using boost::string_view;
-#endif
+
 
 }// namespace rpy
 
