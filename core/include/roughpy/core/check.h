@@ -13,11 +13,11 @@
 #include "macros.h"
 #include "string_utils.h"
 
-#if defined(RPY_GCC)
+#if defined(RPY_COMPILER_GCC)
 #  define RPY_FUNC_NAME __PRETTY_FUNCTION__
-#elif defined(RPY_CLANG)
+#elif defined(RPY_COMPILER_CLANG)
 #  define RPY_FUNC_NAME __builtin_FUNCTION()
-#elif defined(RPY_MSVC)
+#elif defined(RPY_COMPILER_MSVC)
 #  define RPY_FUNC_NAME __FUNCTION__
 #else
 #  define RPY_FUNC_NAME static_cast<const char*>(0)
