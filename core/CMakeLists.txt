@@ -3,6 +3,7 @@
 setup_roughpy_component(Core)
 
 add_library(RoughPy_Core INTERFACE
+        include/roughpy/core/detail/config.h
         include/roughpy/core/alloc.h
         include/roughpy/core/check.h
         include/roughpy/core/check_helpers.h
