@@ -250,6 +250,12 @@ template <>
 struct ConstLog2<1> : integral_constant<size_t, 0>{};
 
 
+
+template <typename... Ts>
+RPY_INLINE_ALWAYS void ignore_unused(Ts&&...)
+{}
+
+
 }// namespace rpy
 
 #endif// ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
