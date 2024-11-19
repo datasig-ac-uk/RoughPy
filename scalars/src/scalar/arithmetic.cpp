@@ -37,7 +37,6 @@
 #include <roughpy/core/macros.h>
 
 #include "traits.h"
-#include <roughpy/core/alloc.h>
 #include <roughpy/platform/devices/host_device.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>

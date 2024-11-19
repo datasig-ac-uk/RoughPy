@@ -31,7 +31,6 @@
 
 #include "host_device_impl.h"
 
-#include <roughpy/core/alloc.h>
 #include <roughpy/core/check.h>
 #include <roughpy/core/smart_ptr.h>
 

@@ -30,7 +30,7 @@
 
 
 
-#include <roughpy/core/alloc.h>
+#include "roughpy/core/construct_inplace.h"
 #include "roughpy/core/check.h"             // for throw_exception, RPY_CHECK
 #include "roughpy/core/debug_assertion.h"   // for RPY_DBG_ASSERT
 

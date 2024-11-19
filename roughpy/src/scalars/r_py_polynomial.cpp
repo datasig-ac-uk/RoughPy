@@ -37,7 +37,7 @@
 #include "roughpy/core/check.h"                    // for throw_exception
 #include "roughpy/core/macros.h"                   // for RPY_UNUSED_VAR
 #include "roughpy/core/types.h"                    // for deg_t, string
-#include "roughpy/core/alloc.h"
+#include "roughpy/core/construct_inplace.h"
 #include "roughpy/core/hash.h"
 
 #include <roughpy/platform/archives.h>

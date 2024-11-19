@@ -5,7 +5,7 @@ setup_roughpy_component(Core)
 add_library(RoughPy_Core INTERFACE
         include/roughpy/core/detail/config.h
         include/roughpy/core/detail/bit_cast.h
-        include/roughpy/core/alloc.h
+        include/roughpy/core/construct_inplace.h
         include/roughpy/core/check.h
         include/roughpy/core/check_helpers.h
         include/roughpy/core/debug_assertion.h
