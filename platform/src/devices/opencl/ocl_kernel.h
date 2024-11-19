@@ -47,8 +47,8 @@ class OCLKernel : public KernelInterface
     cl_kernel m_kernel;
     OCLDevice m_device;
 
-    RPY_UNUSED cl_program program() const;
-    RPY_UNUSED cl_context context() const;
+    cl_program program() const;
+    cl_context context() const;
 
 
 public:
