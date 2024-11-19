@@ -73,7 +73,7 @@ template <typename Interface>
 class RefCountBase : public Interface
 {
     static_assert(
-            is_base_of<InterfaceBase, Interface>::value,
+            is_base_of_v<InterfaceBase, Interface>,
             "Interface must be derived from InterfaceBase"
     );
 
@@ -93,7 +93,7 @@ template <typename Interface, typename Derived>
 class ObjectBase
 {
     static_assert(
-            is_base_of<InterfaceBase, Interface>::value,
+            is_base_of_v<InterfaceBase, Interface>,
             "Interface must be derived from InterfaceBase"
     );
 

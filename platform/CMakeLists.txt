@@ -9,12 +9,14 @@ add_Library(RoughPy_Platform SHARED
         src/fs_path_serialization.cpp
 
         include/roughpy/platform.h
+        include/roughpy/platform/alloc.h
         include/roughpy/platform/filesystem.h
         include/roughpy/platform/configuration.h
         include/roughpy/platform/serialization.h
         include/roughpy/platform/threads.h
         include/roughpy/platform/devices.h
         include/roughpy/platform/errors.h
+        src/alloc.cpp
 )
 add_library(RoughPy::Platform ALIAS RoughPy_Platform)
 

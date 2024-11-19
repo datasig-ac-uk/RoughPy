@@ -45,7 +45,7 @@
 #include <pcg_random.hpp>
 #include <pcg_uint128.hpp>
 
-#include <roughpy/core/alloc.h>
+#include "roughpy/core/construct_inplace.h"
 #include <roughpy/core/check.h>
 #include <roughpy/core/slice.h>
 #include <roughpy/core/types.h>

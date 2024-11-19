@@ -65,7 +65,7 @@ RPY_NO_UBSAN inline copy_cv_t<Impl, Interface>& algebra_cast(Interface& arg
 {
     using access_t = copy_cv_t<ImplAccessLayer<Interface, Impl>, Interface>;
     static_assert(
-            is_base_of<dtl::AlgebraInterfaceBase, Interface>::value,
+            is_base_of_v<dtl::AlgebraInterfaceBase, Interface>,
             "casting to algebra implementation is only possible for "
             "interfaces"
     );
@@ -112,7 +112,7 @@ protected:
 
     Impl& data()
     {
-        if (is_const<Impl>::value) {
+        if (is_const_v<Impl>) {
             RPY_THROW(
                     std::runtime_error,
                     "cannot get mutable data from const object"
@@ -145,11 +145,11 @@ public:
 };
 
 template <typename T>
-using d_has_as_ptr_t = decltype(declval<const T&>().as_ptr());
+using d_has_as_ptr_t = decltype(std::declval<const T&>().as_ptr());
 
 #define RPY_HAS_FUSED_OP_CHECKER(NAME)                                         \
     template <typename T>                                                      \
-    using d_##NAME = decltype(declval<T&>().NAME())
+    using d_##NAME = decltype(std::declval<T&>().NAME())
 
 RPY_HAS_FUSED_OP_CHECKER(add_scal_prod);
 RPY_HAS_FUSED_OP_CHECKER(sub_scal_prod);
@@ -169,7 +169,7 @@ struct has_implementation {
 
 template <template <typename> class MF, typename T>
 using use_impl_t = conditional_t<
-        is_detected<MF, T>::value,
+        is_detected_v<MF, T>,
         has_implementation,
         no_implementation>;
 
@@ -187,7 +187,7 @@ class AlgebraImplementation : public ImplAccessLayer<Interface, Impl>,
     using access_layer_t = ImplAccessLayer<Interface, Impl>;
 
     static_assert(
-            is_base_of<dtl::AlgebraInterfaceBase, Interface>::value,
+            is_base_of_v<dtl::AlgebraInterfaceBase, Interface>,
             "algebra_interface must be an accessible base of Interface"
     );
 
@@ -223,7 +223,7 @@ public:
     const Impl& get_data() const noexcept override { return data(); }
     Impl&& take_data() override
     {
-        if (is_same<storage_base_t, BorrowedStorageModel<Impl>>::value) {
+        if (is_same_v<storage_base_t, BorrowedStorageModel<Impl>>) {
             RPY_THROW(
                     std::runtime_error,
                     "cannot take from a borrowed algebra"
@@ -616,8 +616,7 @@ AlgebraImplementation<Interface, Impl, StorageModel>::dense_data() const
 {
     using tag = integral_constant<
             bool,
-            is_detected<dtl::d_has_as_ptr_t, decltype(data().base_vector())>::
-                    value>;
+            is_detected_v<dtl::d_has_as_ptr_t, decltype(data().base_vector())>>;
     return dense_data_impl(data().base_vector(), tag());
 }
 template <

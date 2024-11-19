@@ -104,6 +104,7 @@ elseif (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
             $<$<BOOL:${ROUGHPY_ENABLE_TSAN}>:-fsanitize=thread>
             $<$<BOOL:${ROUGHPY_ENABLE_UBSAN}>:-fsanitize=undefined>
     )
+    add_compile_definitions($<$<BOOL:${ROUGHPY_ENABLE_UBSAN}>:RPY_USING_UBSAN=1>)
 endif ()
 
 

@@ -3,7 +3,9 @@
 setup_roughpy_component(Core)
 
 add_library(RoughPy_Core INTERFACE
-        include/roughpy/core/alloc.h
+        include/roughpy/core/detail/config.h
+        include/roughpy/core/detail/bit_cast.h
+        include/roughpy/core/construct_inplace.h
         include/roughpy/core/check.h
         include/roughpy/core/check_helpers.h
         include/roughpy/core/debug_assertion.h
@@ -15,6 +17,7 @@ add_library(RoughPy_Core INTERFACE
         include/roughpy/core/slice.h
         include/roughpy/core/smart_ptr.h
         include/roughpy/core/string_utils.h
+        include/roughpy/core/ranges.h
 )
 add_library(RoughPy::Core ALIAS RoughPy_Core)
 
@@ -27,6 +30,7 @@ target_include_directories(RoughPy_Core INTERFACE
 
 target_link_libraries(RoughPy_Core INTERFACE
         Boost::headers
+        range-v3::range-v3
 )
 
 set_target_properties(RoughPy_Core PROPERTIES ROUGHPY_COMPONENT Core)

@@ -10,13 +10,14 @@
 #include <algorithm>
 
 
-#include "roughpy/core/alloc.h"
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
 #include "roughpy/core/hash.h"
 #include "roughpy/core/macros.h"
 #include "roughpy/core/traits.h"
 #include "roughpy/core/types.h"
+
+#include "roughpy/platform/alloc.h"
 
 #include "conversion_factory.h"
 
@@ -49,14 +50,14 @@ template <typename T>
 void* BuiltinTypeBase<T>::allocate_object() const
 {
     // TODO: replace with small object allocator
-    return aligned_alloc(alignof(T), alignof(T));
+    return mem::aligned_alloc(alignof(T), alignof(T));
 }
 
 template <typename T>
 void BuiltinTypeBase<T>::free_object(void* ptr) const
 {
     // TODO: replace with small object allocator
-    aligned_free(ptr);
+    mem::aligned_free(ptr);
 }
 
 template <typename T>

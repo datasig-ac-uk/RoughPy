@@ -30,7 +30,7 @@
 
 
 
-#include <roughpy/core/alloc.h>
+#include "roughpy/core/construct_inplace.h"
 #include "roughpy/core/check.h"             // for throw_exception, RPY_CHECK
 #include "roughpy/core/debug_assertion.h"   // for RPY_DBG_ASSERT
 
@@ -147,13 +147,13 @@ content_type_of(PackedScalarTypePointer<ScalarContentType> ptype) noexcept
 
 template <typename T>
 struct can_be_scalar : conditional_t<
-                               !is_base_of<Scalar, T>::value,
-                               std::true_type,
-                               std::false_type> {
+                               !is_base_of_v<Scalar, T>,
+                               true_type,
+                               false_type> {
 };
 
 template <typename T>
-struct can_be_scalar<std::unique_ptr<T>> : std::false_type {
+struct can_be_scalar<std::unique_ptr<T>> : false_type {
 };
 
 }// namespace dtl
@@ -200,10 +200,10 @@ public:
     //    template <
     //            typename T,
     //            typename = enable_if_t<
-    //                    !is_reference<T>::value &&
-    //                    is_standard_layout<T>::value
-    //                    && is_trivially_copyable<T>::value
-    //                    && is_trivially_destructible<T>::value
+    //                    !is_reference<T> &&
+    //                    is_standard_layout<T>
+    //                    && is_trivially_copyable<T>
+    //                    && is_trivially_destructible<T>
     //                    && (sizeof(T) <= sizeof(void*))>>
     //    explicit Scalar(T value)
     //        : p_type_and_content_type(
@@ -223,7 +223,7 @@ public:
           ),
           integer_for_convenience(0)
     {
-        if constexpr (is_standard_layout<T>::value && is_trivially_copyable<T>::value && is_trivially_destructible<T>::value && sizeof(T) <= sizeof(void*)) {
+        if constexpr (is_standard_layout_v<T> && is_trivially_copyable_v<T> && is_trivially_destructible_v<T> && sizeof(T) <= sizeof(void*)) {
             std::memcpy(trivial_bytes, &value, sizeof(T));
         } else {
             allocate_data();
@@ -235,9 +235,9 @@ public:
     template <
             typename T,
             typename = enable_if_t<
-                    !is_pointer<T>::value && is_standard_layout<T>::value
-                    && is_trivially_copyable<T>::value
-                    && is_trivially_destructible<T>::value>>
+                    !is_pointer_v<T> && is_standard_layout_v<T>
+                    && is_trivially_copyable_v<T>
+                    && is_trivially_destructible_v<T>>>
     explicit Scalar(const ScalarType* type, T&& value)
         : p_type_and_content_type(type, dtl::ScalarContentType::TrivialBytes),
           integer_for_convenience(0)
@@ -246,17 +246,17 @@ public:
                 trivial_bytes,
                 type_info(),
                 &value,
-                devices::type_info<remove_cv_ref_t<T>>()
+                devices::type_info<remove_cvref_t<T>>()
         );
     }
 
     template <
             typename T,
             enable_if_t<
-                    !is_pointer<T>::value
-                            && (!is_standard_layout<T>::value
-                                || !is_trivially_copyable<T>::value
-                                || !is_trivially_destructible<T>::value),
+                    !is_pointer_v<T>
+                            && (!is_standard_layout_v<T>
+                                || !is_trivially_copyable_v<T>
+                                || !is_trivially_destructible_v<T>),
                     int>
             = 0>
     explicit Scalar(const ScalarType* type, T&& value)
@@ -265,10 +265,10 @@ public:
     {
         allocate_data();
         auto this_info = type_info();
-        auto value_info = devices::type_info<remove_cv_ref_t<T>>();
+        auto value_info = devices::type_info<remove_cvref_t<T>>();
         if (this_info == value_info) {
             construct_inplace(
-                    static_cast<remove_cv_ref_t<T>*>(opaque_pointer),
+                    static_cast<remove_cvref_t<T>*>(opaque_pointer),
                     std::forward<T>(value)
             );
         } else {
@@ -289,7 +289,7 @@ public:
 
     template <
             typename I,
-            typename = enable_if_t<is_base_of<ScalarInterface, I>::value>>
+            typename = enable_if_t<is_base_of_v<ScalarInterface, I>>>
     explicit Scalar(std::unique_ptr<I>&& iface)
         : p_type_and_content_type(
                   nullptr,
@@ -327,7 +327,7 @@ public:
      *
      */
     template <typename T>
-    enable_if_t<!is_base_of<Scalar, T>::value, Scalar&> operator=(const T& value
+    enable_if_t<!is_base_of_v<Scalar, T>, Scalar&> operator=(const T& value
     )
     {
         if (p_type_and_content_type.is_null()) {

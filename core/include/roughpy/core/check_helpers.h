@@ -33,8 +33,6 @@ compare_equal(T t, U u) noexcept {
 }
 
 
-
-
 template <typename T, typename U>
 constexpr
 std::enable_if_t<std::is_integral_v<T> && std::is_integral_v<U>, bool>

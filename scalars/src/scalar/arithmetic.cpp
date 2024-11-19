@@ -37,7 +37,6 @@
 #include <roughpy/core/macros.h>
 
 #include "traits.h"
-#include <roughpy/core/alloc.h>
 #include <roughpy/platform/devices/host_device.h>
 #include <roughpy/scalars/scalar.h>
 #include <roughpy/scalars/scalar_type.h>
@@ -131,10 +130,10 @@ struct RPY_LOCAL MulInplace {
 struct RPY_LOCAL DivInplace {
     template <typename T, typename R>
     constexpr enable_if_t<
-            !is_same<T, rational_poly_scalar>::value
-            && is_same<
+            !is_same_v<T, rational_poly_scalar>
+            && is_same_v<
                     decltype(std::declval<T&>() /= std::declval<const R&>()),
-                    T&>::value>
+                    T&>>
     operator()(T& lhs, const R& rhs) noexcept
     {
         lhs /= rhs;
@@ -242,8 +241,8 @@ Scalar& Scalar::operator*=(const Scalar& other)
  */
 template <typename T, typename R>
 static inline enable_if_t<
-        is_same<decltype(std::declval<T&>() /= std::declval<const R&>()),
-                T&>::value>
+        is_same_v<decltype(std::declval<T&>() /= std::declval<const R&>()),
+                T&>>
 do_divide_impl(T* dst, const R* divisor)
 {
     *dst /= *divisor;

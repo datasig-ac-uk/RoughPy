@@ -239,7 +239,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
     );
 }
 
-RPY_UNUSED static streams::Stream
+RPY_MAYBE_UNUSED static streams::Stream
 lie_increment_path_from_values(const py::object& data, const py::kwargs& kwargs)
 {
     RPY_THROW(std::runtime_error, "Not implemented");

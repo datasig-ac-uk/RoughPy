@@ -104,7 +104,7 @@ public:
     MPIntegerSerializationHelper(Integer& p)
         : ptr(&p) {}
 
-    using ptr_t = conditional_t<is_const<Integer>::value, const char*, char*>;
+    using ptr_t = conditional_t<is_const_v<Integer>, const char*, char*>;
 
 #if RPY_USING_GMP
     using limbs_t = mp_limb_t;

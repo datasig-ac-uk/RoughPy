@@ -76,7 +76,7 @@ public:
     string_view get_raw_config_value(string_view property) const;
 
     template <typename T>
-    RPY_NO_DISCARD enable_if_t<is_constructible<T, string_view>::value, T>
+    RPY_NO_DISCARD enable_if_t<is_constructible_v<T, string_view>, T>
     get_config_value(string_view property) const;
 
     fs::path stream_cache_dir() const;
@@ -89,7 +89,7 @@ public:
 };
 
 template <typename T>
-RPY_NO_DISCARD enable_if_t<is_constructible<T, string_view>::value, T>
+RPY_NO_DISCARD enable_if_t<is_constructible_v<T, string_view>, T>
 Configuration::get_config_value(string_view property) const
 {
     return T(get_raw_config_value(property));
