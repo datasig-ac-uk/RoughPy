@@ -12,6 +12,8 @@
 
 using namespace rpy;
 using namespace rpy::mem;
+
+
 void* rpy::mem::aligned_alloc(size_t alignment, size_t size) noexcept
 {
     return boost::alignment::aligned_alloc(alignment, size);
