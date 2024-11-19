@@ -52,7 +52,7 @@
 // Abseil sets
 #  define RPY_IS_LITTLE_ENDIAN 1
 #else
-#  error "Cannot detect the endianness of this platform
+#  error "Cannot detect the endianness of this platform"
 #endif
 
 
