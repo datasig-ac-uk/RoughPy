@@ -33,20 +33,17 @@
 #ifndef ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
 #define ROUGHPY_CORE_INCLUDE_ROUGHPY_CORE_TRAITS_H
 
-#include "macros.h"
 
 #include <type_traits>
 #include <utility>
 
-
 #include <boost/type_traits/copy_cv.hpp>
 #include <boost/type_traits/copy_cv_ref.hpp>
-#include <boost/type_traits/detected.hpp>
-#include <boost/type_traits/detected_or.hpp>
 #include <boost/type_traits/is_detected.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
 #include <boost/type_traits/type_identity.hpp>
 
+#include "macros.h"
 
 namespace rpy {
 
