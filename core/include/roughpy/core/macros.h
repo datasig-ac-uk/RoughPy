@@ -132,6 +132,10 @@
 #    define RPY_UNUSED_VAR
 #  endif
 
+
+#define RPY_UNUSED(ARG) RPY_UNUSED_VAR ARG
+
+
 #  if defined(RPY_COMPILER_GCC) || defined(RPY_COMPILER_CLANG)
 #    define RPY_UNREACHABLE() (__builtin_unreachable())
 #    define RPY_UNREACHABLE_RETURN(...) RPY_UNREACHABLE()
