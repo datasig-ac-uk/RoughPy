@@ -35,6 +35,8 @@
 #include <roughpy/core/check.h>
 #include <roughpy/core/smart_ptr.h>
 
+#include "roughpy/platform/alloc.h"
+
 #include "devices/buffer.h"
 #include "devices/event.h"
 #include "devices/kernel.h"
@@ -206,13 +208,13 @@ Buffer CPUDeviceHandle::raw_alloc(dimn_t count, dimn_t alignment) const
     if (alignment == 0) { alignment = alignof(std::max_align_t); }
 
     return Buffer(new CPUBuffer(
-            aligned_alloc(alignment, count),
+            mem::aligned_alloc(alignment, count),
             count
     ));
 }
 void CPUDeviceHandle::raw_free(void* pointer, dimn_t size) const
 {
-    aligned_free(pointer);
+    mem::aligned_free(pointer);
 }
 
 template <typename... Args>
