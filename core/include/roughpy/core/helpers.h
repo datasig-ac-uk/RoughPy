@@ -31,6 +31,7 @@
 #include "macros.h"
 #include "traits.h"
 #include "types.h"
+#include "detail/bit_cast.h" // IWYU pragma: EXPORT
 
 #include <bitset>
 #include <climits>
@@ -40,31 +41,7 @@
 
 namespace rpy {
 
-/**
- * @brief Cast the bit value from a value of type From to a value
- * of type To.
- *
- * The implementation here is pretty similar to the example from
- * https://en.cppreference.com/w/cpp/numeric/bit_cast
- * if we have to define our own version using memcpy.
- */
-#if defined(__cpp_lib_bit_cast) && __cpp_Lib_bit_cast >= 201806L
-using std::bit_cast;
-#else
-template <typename To, typename From>
-RPY_NO_DISCARD enable_if_t<
-        sizeof(To) == sizeof(From) && is_trivially_copyable_v<From>
-                && is_trivially_copyable_v<To>
-                && is_default_constructible_v<To>,
-        To>
-bit_cast(From from)
-{
-    To to;
-    memcpy(static_cast<void*>(std::addressof(to)),
-           static_cast<const void*>(std::addressof(from)), sizeof(To));
-    return to;
-}
-#endif
+
 
 template <typename T>
 RPY_NO_DISCARD inline enable_if_t<is_integral_v<T>, size_t>
