@@ -21,21 +21,21 @@ using boost::alignment::aligned_free;
 
 template <typename T, typename... Args>
 constexpr void construct_inplace(T* dst, Args&&... args)
-    noexcept(is_nothrow_constructible<T, Args...>::value)
+    noexcept(is_nothrow_constructible_v<T, Args...>)
 {
     ::new (static_cast<void*>(dst)) T(std::forward<Args>(args)...);
 }
 
 template <typename T, typename... Args>
 constexpr void construct_inplace(void* dst, Args&&... args)
-    noexcept(is_nothrow_constructible<T, Args...>::value)
+    noexcept(is_nothrow_constructible_v<T, Args...>)
 {
    ::new (dst) T(std::forward<Args>(args)...);
 }
 
 template <typename T, typename... Args>
 constexpr void construct_inplace(T& dst, Args&&... args)
-    noexcept(is_nothrow_constructible<T, Args...>::value)
+    noexcept(is_nothrow_constructible_v<T, Args...>)
 {
     :: new(static_cast<void*>(std::addressof(dst))) T(std::forward<Args>(args)...);
 }

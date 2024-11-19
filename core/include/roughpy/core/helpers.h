@@ -53,9 +53,9 @@ using std::bit_cast;
 #else
 template <typename To, typename From>
 RPY_NO_DISCARD enable_if_t<
-        sizeof(To) == sizeof(From) && is_trivially_copyable<From>::value
-                && is_trivially_copyable<To>::value
-                && is_default_constructible<To>::value,
+        sizeof(To) == sizeof(From) && is_trivially_copyable_v<From>
+                && is_trivially_copyable_v<To>
+                && is_default_constructible_v<To>,
         To>
 bit_cast(From from)
 {
@@ -67,7 +67,7 @@ bit_cast(From from)
 #endif
 
 template <typename T>
-RPY_NO_DISCARD inline enable_if_t<is_integral<T>::value, size_t>
+RPY_NO_DISCARD inline enable_if_t<is_integral_v<T>, size_t>
 count_bits(T val) noexcept
 {
     // There might be optimisations using builtin popcount functions
@@ -119,18 +119,18 @@ public:
 
 
 template <typename I, typename J>
-RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I>
+RPY_NO_DISCARD constexpr enable_if_t<is_integral_v<I>, I>
 round_up_divide(I value, J divisor) noexcept {
     return (value + static_cast<I>(divisor) - 1) / static_cast<I>(divisor);
 }
 
 
 template <typename I>
-RPY_NO_DISCARD constexpr enable_if_t<is_integral<I>::value, I>
+RPY_NO_DISCARD constexpr enable_if_t<is_integral_v<I>, I>
 next_power_2(I value, I start=I(1)) noexcept
 {
     if (value == 0) { return 0; }
-    if (is_signed<I>::value && value < 0) { return -next_power_2(-value); }
+    if (is_signed_v<I> && value < 0) { return -next_power_2(-value); }
     return (start >= value) ? start : next_power_2(value, I(start << 1));
 }
 

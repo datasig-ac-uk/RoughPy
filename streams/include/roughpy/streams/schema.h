@@ -132,7 +132,7 @@ public:
     }
 
     template <typename Context, typename... Args>
-    enable_if_t<is_base_of<Parameterization, Context>::value>
+    enable_if_t<is_base_of_v<Parameterization, Context>>
     init_context(Args&&... args)
     {
         RPY_DBG_ASSERT(!p_parameterization);

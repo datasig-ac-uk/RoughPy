@@ -61,14 +61,14 @@ public:
 
 private:
     template <typename T>
-    static enable_if_t<is_convertible<const T&, scalar_t>::value, scalar_t>
+    static enable_if_t<is_convertible_v<const T&, scalar_t>, scalar_t>
     convert_to_scalar_t(const T& arg)
     {
         return static_cast<scalar_t>(arg);
     }
 
     template <typename T>
-    static enable_if_t<!is_convertible<const T&, scalar_t>::value, scalar_t>
+    static enable_if_t<!is_convertible_v<const T&, scalar_t>, scalar_t>
     convert_to_scalar_t(const T&)
     {
         RPY_THROW(std::runtime_error, "cannot convert to scalar_t");

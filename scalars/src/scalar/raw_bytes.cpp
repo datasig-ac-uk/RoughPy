@@ -22,7 +22,7 @@ using namespace scalars;
 namespace {
 
 template <typename T>
-enable_if_t<is_trivially_copyable<T>::value> to_raw_bytes_impl(
+enable_if_t<is_trivially_copyable_v<T>> to_raw_bytes_impl(
     std::vector<byte>& out,
     const T* data,
     dimn_t size)
@@ -145,7 +145,7 @@ std::vector<byte> scalars::dtl::to_raw_bytes(
 namespace {
 
 template <typename T>
-enable_if_t<is_trivially_copyable<T>::value> from_raw_bytes_impl(
+enable_if_t<is_trivially_copyable_v<T>> from_raw_bytes_impl(
     T* dst,
     dimn_t count,
     Slice<const byte> bytes)

@@ -86,8 +86,8 @@ constexpr bool compare_wrap_equal(const T& lhs, const T& rhs) noexcept
 
 template <typename L, typename R>
 constexpr enable_if_t<
-        !is_same<L, R>::value && is_integral<L>::value && is_integral<R>::value
-                && is_signed<L>::value && is_unsigned<R>::value,
+        !is_same_v<L, R> && is_integral_v<L> && is_integral_v<R>
+                && is_signed_v<L> && is_unsigned_v<R>,
         bool>
 compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 {
@@ -97,8 +97,8 @@ compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 
 template <typename L, typename R>
 constexpr enable_if_t<
-        !is_same<L, R>::value && is_integral<L>::value && is_integral<R>::value
-                && is_unsigned<L>::value && is_signed<R>::value,
+        !is_same_v<L, R> && is_integral_v<L> && is_integral_v<R>
+                && is_unsigned_v<L> && is_signed_v<R>,
         bool>
 compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 {
@@ -108,8 +108,8 @@ compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 
 template <typename L, typename R>
 constexpr enable_if_t<
-        !is_same<L, R>::value && is_integral<L>::value && is_signed<L>::value
-                && is_floating_point<R>::value,
+        !is_same_v<L, R> && is_integral_v<L> && is_signed_v<L>
+                && is_floating_point_v<R>,
         bool>
 compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 {
@@ -123,8 +123,8 @@ compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 }
 template <typename L, typename R>
 constexpr enable_if_t<
-        !is_same<L, R>::value && is_integral<L>::value && is_unsigned<L>::value
-                && is_floating_point<R>::value,
+        !is_same_v<L, R> && is_integral_v<L> && is_unsigned_v<L>
+                && is_floating_point_v<R>,
         bool>
 compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 {
@@ -138,8 +138,8 @@ compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 
 template <typename L, typename R>
 constexpr enable_if_t<
-        !is_same<L, R>::value && is_floating_point<L>::value
-                && is_integral<R>::value,
+        !is_same_v<L, R> && is_floating_point_v<L>
+                && is_integral_v<R>,
         bool>
 compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 {
@@ -149,8 +149,8 @@ compare_wrap_equal(const L& lhs, const R& rhs) noexcept
 
 template <typename L, typename R>
 constexpr enable_if_t<
-        !is_same<L, R>::value && is_integral<L>::value && is_signed<L>::value
-                && is_integral<R>::value && is_unsigned<R>::value,
+        !is_same_v<L, R> && is_integral_v<L> && is_signed_v<L>
+                && is_integral_v<R> && is_unsigned_v<R>,
         bool>
 compare_wrap_unequal(const L& lhs, const R& rhs) noexcept
 {
@@ -159,8 +159,8 @@ compare_wrap_unequal(const L& lhs, const R& rhs) noexcept
 
 template <typename L, typename R>
 constexpr enable_if_t<
-        !is_same<L, R>::value && is_integral<L>::value && is_unsigned<L>::value
-                && is_integral<R>::value && is_signed<R>::value,
+        !is_same_v<L, R> && is_integral_v<L> && is_unsigned_v<L>
+                && is_integral_v<R> && is_signed_v<R>,
         bool>
 compare_wrap_unequal(const L& lhs, const R& rhs) noexcept
 {
@@ -169,8 +169,8 @@ compare_wrap_unequal(const L& lhs, const R& rhs) noexcept
 
 template <typename L, typename R>
 constexpr enable_if_t<
-        !is_same<L, R>::value && is_integral<L>::value
-                && is_floating_point<R>::value,
+        !is_same_v<L, R> && is_integral_v<L>
+                && is_floating_point_v<R>,
         bool>
 compare_wrap_unequal(const L& lhs, const R& rhs) noexcept
 {
@@ -178,8 +178,8 @@ compare_wrap_unequal(const L& lhs, const R& rhs) noexcept
 }
 template <typename L, typename R>
 constexpr enable_if_t<
-        !is_same<L, R>::value && is_floating_point<L>::value
-                && is_integral<R>::value,
+        !is_same_v<L, R> && is_floating_point_v<L>
+                && is_integral_v<R>,
         bool>
 compare_wrap_unequal(const L& lhs, const R& rhs) noexcept
 {
@@ -196,7 +196,7 @@ compare_wrap_unequal(const L& lhs, const rational_scalar_type& rhs) noexcept
 template <typename R>
 constexpr enable_if_t<
         sizeof(rational_scalar_type) < sizeof(R)
-                && !is_same<R, rational_poly_scalar>::value,
+                && !is_same_v<R, rational_poly_scalar>,
         bool>
 compare_wrap_unequal(const rational_scalar_type& lhs, const R& rhs) noexcept
 {

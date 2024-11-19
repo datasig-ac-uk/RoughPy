@@ -143,7 +143,7 @@ public:
     template <
             typename Source,
             typename
-            = enable_if_t<is_base_of<ExternalDataStreamSource, Source>::value>>
+            = enable_if_t<is_base_of_v<ExternalDataStreamSource, Source>>>
     explicit ExternalDataStream(Source&& src, StreamMetadata md)
         : DyadicCachingLayer(std::move(md)),
           p_source(new Source(std::forward<Source>(src)))
@@ -152,7 +152,7 @@ public:
     template <
             typename Source,
             typename
-            = enable_if_t<is_base_of<ExternalDataStreamSource, Source>::value>>
+            = enable_if_t<is_base_of_v<ExternalDataStreamSource, Source>>>
     explicit ExternalDataStream(Source&& src, StreamMetadata md,
                                 std::shared_ptr<StreamSchema> schema)
         : DyadicCachingLayer(std::move(md), std::move(schema)),

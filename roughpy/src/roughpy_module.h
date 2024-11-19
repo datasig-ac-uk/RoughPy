@@ -79,7 +79,7 @@ inline py::object kwargs_pop(py::kwargs& kwargs, const char* name)
 void check_for_excess_arguments(const py::kwargs& kwargs);
 
 template <typename T>
-enable_if_t<is_base_of<py::object, T>::value, T> steal_as(py::object& obj
+enable_if_t<is_base_of_v<py::object, T>, T> steal_as(py::object& obj
 ) noexcept
 {
     return py::reinterpret_steal<T>(obj.release().ptr());

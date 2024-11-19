@@ -380,7 +380,7 @@ template <typename T>
  */
 constexpr BasicProperties basic_properties_of() noexcept
 {
-    using base_t = remove_cv_ref_t<T>;
+    using base_t = remove_cvref_t<T>;
     return {
         is_standard_layout_v<base_t>,
         is_trivially_copyable_v<base_t>,

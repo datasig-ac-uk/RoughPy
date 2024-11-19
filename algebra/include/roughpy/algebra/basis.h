@@ -156,11 +156,11 @@ class Basis : public PrimaryInterface::mixin_t
 {
     using basis_interface = PrimaryInterface;
     static_assert(
-            is_base_of<
+            is_base_of_v<
                     BasisInterface<
                             PrimaryInterface,
                             typename basis_interface::key_type>,
-                    basis_interface>::value,
+                    basis_interface>,
             "Primary template must be an instance of BasisInterface"
     );
 

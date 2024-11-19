@@ -68,7 +68,7 @@ public:
     template <
             typename Container,
             typename
-            = enable_if_t<is_same<typename Container::value_type, T>::value>>
+            = enable_if_t<is_same_v<typename Container::value_type, T>>>
     constexpr Slice(Container& container)
         : p_data(container.data()),
           m_size(container.size())
@@ -77,8 +77,8 @@ public:
     template <
             typename Container,
             typename = enable_if_t<
-                    is_same<remove_cv_t<typename Container::value_type>,
-                            T>::value>>
+                    is_same_v<remove_cv_t<typename Container::value_type>,
+                            T>>>
     constexpr Slice(const Container& container)
         : p_data(container.data()),
           m_size(container.size())
@@ -98,10 +98,10 @@ public:
 
     template <typename Container>
     enable_if_t<
-            is_const<T>::value
-                    && is_same<
+            is_const_v<T>
+                    && is_same_v<
                             remove_const_t<T>,
-                            typename Container::value_type>::value,
+                            typename Container::value_type>,
             Slice>
     operator=(const Container& container) noexcept
     {
@@ -114,14 +114,14 @@ public:
     Slice& operator=(Slice&&) noexcept = default;
 
     template <typename I>
-    constexpr enable_if_t<is_integral<I>::value, T&> operator[](I i) noexcept
+    constexpr enable_if_t<is_integral_v<I>, T&> operator[](I i) noexcept
     {
         RPY_DBG_ASSERT(0 <= i && static_cast<dimn_t>(i) < m_size);
         return p_data[i];
     }
 
     template <typename I>
-    constexpr enable_if_t<is_integral<I>::value, const T&> operator[](I i
+    constexpr enable_if_t<is_integral_v<I>, const T&> operator[](I i
     ) const noexcept
     {
         RPY_DBG_ASSERT(0 <= i && static_cast<dimn_t>(i) < m_size);

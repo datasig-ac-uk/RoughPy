@@ -36,8 +36,8 @@
 #include "macros.h"
 
 #include <type_traits>
+#include <utility>
 
-#include <boost/call_traits.hpp>
 
 #include <boost/type_traits/copy_cv.hpp>
 #include <boost/type_traits/copy_cv_ref.hpp>
@@ -45,179 +45,188 @@
 #include <boost/type_traits/detected_or.hpp>
 #include <boost/type_traits/is_detected.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
+#include <boost/type_traits/type_identity.hpp>
 
-#include <boost/container_hash/hash.hpp>
 
 namespace rpy {
 
 using std::declval;
+
+// Base classes for traits
 using std::integral_constant;
+using std::true_type;
+using std::false_type;
 
-using std::is_array;
-using std::is_class;
-using std::is_enum;
-using std::is_floating_point;
-using std::is_function;
-using std::is_integral;
-using std::is_lvalue_reference;
-using std::is_member_function_pointer;
-using std::is_member_object_pointer;
-using std::is_null_pointer;
-using std::is_pointer;
-using std::is_rvalue_reference;
-using std::is_union;
-using std::is_void;
-
-using std::is_arithmetic;
-using std::is_compound;
-using std::is_fundamental;
-using std::is_member_pointer;
-using std::is_object;
-using std::is_reference;
-using std::is_scalar;
-
-using std::is_abstract;
-using std::is_const;
-using std::is_empty;
-using std::is_final;
-using std::is_polymorphic;
-using std::is_signed;
-using std::is_standard_layout;
-using std::is_trivial;
-using std::is_trivially_copyable;
-using std::is_unsigned;
-using std::is_volatile;
-
-using std::is_constructible;
-using std::is_default_constructible;
-using std::is_nothrow_constructible;
-using std::is_nothrow_default_constructible;
-using std::is_trivially_constructible;
-using std::is_trivially_default_constructible;
-using std::is_trivially_destructible;
-
-using std::is_base_of;
-using std::is_convertible;
-using std::is_same;
-
-
-using std::is_base_of_v;
-using std::is_convertible_v;
-using std::is_same_v;
-
-using std::is_array_v;
-using std::is_class_v;
-using std::is_enum_v;
-using std::is_floating_point_v;
-using std::is_function_v;
-using std::is_integral_v;
-using std::is_lvalue_reference_v;
-using std::is_member_function_pointer_v;
-using std::is_member_object_pointer_v;
-using std::is_null_pointer_v;
-using std::is_pointer_v;
-using std::is_rvalue_reference_v;
-using std::is_union_v;
+// Primary type categories
 using std::is_void_v;
+using std::is_null_pointer_v;
+using std::is_integral_v;
+using std::is_floating_point_v;
+using std::is_array_v;
+using std::is_enum_v;
+using std::is_union_v;
+using std::is_class_v;
+using std::is_function_v;
+using std::is_pointer_v;
+using std::is_lvalue_reference_v;
+using std::is_rvalue_reference_v;
+using std::is_member_object_pointer_v;
+using std::is_member_function_pointer_v;
 
+// Composite type categories
+using std::is_fundamental_v;
+using std::is_arithmetic_v;
+using std::is_scalar_v;
+using std::is_object_v;
+using std::is_compound_v;
+using std::is_reference_v;
+using std::is_member_pointer_v;
+
+// Type properties
 using std::is_const_v;
-using std::is_literal_type_v;
-using std::is_pod_v;
-using std::is_standard_layout_v;
+using std::is_volatile_v;
 using std::is_trivial_v;
 using std::is_trivially_copyable_v;
-using std::is_volatile_v;
-
-using std::is_abstract_v;
-using std::is_aggregate_v;
+using std::is_standard_layout_v;
+// using std::is_pod_v; // deprecated
+// using std::is_literal_type_v; // deprecated
 using std::is_empty_v;
-using std::is_final_v;
 using std::is_polymorphic_v;
-
+using std::is_abstract_v;
+using std::is_final_v;
+using std::is_aggregate_v;
 using std::is_signed_v;
 using std::is_unsigned_v;
+// using std::is_bounded_array_v; // C++20
+// using std::is_unbounded_array_v; // C++20
 
+// Supported operations
 using std::is_constructible_v;
-using std::is_nothrow_constructible_v;
 using std::is_trivially_constructible_v;
-
+using std::is_nothrow_constructible_v;
 using std::is_default_constructible_v;
-using std::is_nothrow_default_constructible_v;
 using std::is_trivially_default_constructible_v;
-
+using std::is_nothrow_default_constructible_v;
 using std::is_copy_constructible_v;
-using std::is_nothrow_copy_constructible_v;
 using std::is_trivially_copy_constructible_v;
-
+using std::is_nothrow_copy_constructible_v;
 using std::is_move_constructible_v;
-using std::is_nothrow_move_constructible_v;
 using std::is_trivially_move_constructible_v;
-
+using std::is_nothrow_move_constructible_v;
 using std::is_assignable_v;
-using std::is_nothrow_assignable_v;
 using std::is_trivially_assignable_v;
-
+using std::is_nothrow_assignable_v;
 using std::is_copy_assignable_v;
-using std::is_nothrow_copy_assignable_v;
 using std::is_trivially_copy_assignable_v;
-
+using std::is_nothrow_copy_assignable_v;
 using std::is_move_assignable_v;
-using std::is_nothrow_move_assignable_v;
 using std::is_trivially_move_assignable_v;
-
+using std::is_nothrow_move_assignable_v;
 using std::is_destructible_v;
-using std::is_nothrow_destructible_v;
 using std::is_trivially_destructible_v;
-
-using std::has_unique_object_representations_v;
+using std::is_nothrow_destructible_v;
 using std::has_virtual_destructor_v;
-
-using std::is_nothrow_swappable_v;
-using std::is_nothrow_swappable_with_v;
 using std::is_swappable_v;
 using std::is_swappable_with_v;
+using std::is_nothrow_swappable_v;
+using std::is_nothrow_swappable_with_v;
 
-using std::add_const_t;
-using std::add_cv_t;
-using std::add_volatile_t;
-using std::remove_const_t;
+// Property queries
+using std::alignment_of_v;
+using std::rank_v;
+using std::extent_v;
+
+// Type relationships
+using std::is_same_v;
+using std::is_base_of_v;
+using std::is_convertible_v;
+// using std::is_nothrow_convertible_v; // C++20
+using std::is_trivially_constructible_v;
+using std::is_nothrow_constructible_v;
+using std::is_assignable_v;
+using std::is_trivially_assignable_v;
+using std::is_nothrow_assignable_v;
+using std::is_invocable_v;
+using std::is_invocable_r_v;
+using std::is_nothrow_invocable_v;
+using std::is_nothrow_invocable_r_v;
+
+// Const-volatile modifications
 using std::remove_cv_t;
+using std::remove_const_t;
 using std::remove_volatile_t;
+using std::add_cv_t;
+using std::add_const_t;
+using std::add_volatile_t;
 
+// Reference modifications
+using std::remove_reference_t;
 using std::add_lvalue_reference_t;
-using std::add_pointer_t;
 using std::add_rvalue_reference_t;
+
+// Pointer modifications
+using std::remove_pointer_t;
+using std::add_pointer_t;
+
+// Sign modifications
 using std::make_signed_t;
 using std::make_unsigned_t;
-using std::remove_all_extents_t;
+
+// Array modifications
 using std::remove_extent_t;
-using std::remove_pointer_t;
-using std::remove_reference_t;
+using std::remove_all_extents_t;
 
-using std::common_type;
-using std::conditional_t;
-using std::decay;
-using std::enable_if_t;
-using std::underlying_type_t;
+// Miscellaneous transformations
+// using std::aligned_storage_t; // deprecated
+// using std::aligned_union_t; // deprecated
 using std::decay_t;
-
-using boost::copy_cv_ref_t;
-using boost::copy_cv_t;
-using boost::detected_or_t;
-using boost::detected_t;
-using boost::remove_cv_ref_t;
-
-using boost::is_detected;
-
-#ifdef RPY_CPP_17
-using std::void_t;
+using std::enable_if_t;
+using std::conditional_t;
+using std::common_type_t;
+using std::underlying_type_t;
+// using std::result_of_t; // deprecated
 using std::invoke_result_t;
-#else
-using boost::void_t;
+using std::void_t;
 
-template <typename F, typename... ArgTypes>
-using invoke_result_t = std::result_of_t<F(ArgTypes...)>;
-#endif
+// remove_cvref_t is C++20, using boost instead
+template <typename T>
+using remove_cvref_t = boost::remove_cv_ref_t<T>;
+
+using boost::type_identity_t;
+
+// Copy cv
+using boost::copy_cv_t;
+
+template <typename T, typename U>
+using copy_cvref_t = boost::copy_cv_ref_t<T, U>;
+
+
+
+using boost::is_detected_v;
+
+
+// Integer sequences
+using std::integer_sequence;
+using std::make_integer_sequence;
+
+template <typename... T>
+using integer_sequence_for = make_integer_sequence<std::size_t, sizeof...(T)>;
+
+
+// Helper tags
+using std::piecewise_construct_t;
+using std::piecewise_construct;
+using std::in_place_t;
+using std::in_place;
+
+// Probably not used;
+// using std::in_place_index_t;
+// using std::in_place_index;
+// using std::in_place_type_t;
+// using std::in_place_type;
+// using std::nontype_t;
+// using std::nontype;
+
 
 /**
  * @brief Ensure that the type T is a pointer.
@@ -225,37 +234,14 @@ using invoke_result_t = std::result_of_t<F(ArgTypes...)>;
  * Makes T a pointer if it isn't already a pointer.
  */
 template <typename T>
-using ensure_pointer = conditional_t<is_pointer<T>::value, T, add_pointer_t<T>>;
+using ensure_pointer = conditional_t<is_pointer_v<T>, T, add_pointer_t<T>>;
 
-/**
- * @brief Get the most sensible parameter type for type T
- */
-template <typename T>
-using param_type_t = typename boost::call_traits<T>::param_type;
 
-namespace dtl {
-template <typename... Ts>
-struct select_first_impl;
 
-template <typename First, typename... Ts>
-struct select_first_impl<First, Ts...> {
-    using type = First;
-};
+struct EmptyType {};
 
-}// namespace dtl
-
-template <typename... Ts>
-using select_first_t = typename dtl::select_first_impl<Ts...>::type;
-
-namespace dtl {
-struct EmptyBase {
-};
-}// namespace dtl
-
-template <typename T, typename B = dtl::EmptyBase>
-using void_or_base = conditional_t<is_void<T>::value, B, T>;
-
-using boost::hash;
+template <typename T, typename B = EmptyType>
+using void_or_base = conditional_t<is_void_v<T>, B, T>;
 
 
 template <size_t N>
