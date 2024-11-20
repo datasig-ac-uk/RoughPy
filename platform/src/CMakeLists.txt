@@ -2,8 +2,12 @@
 if(ROUGHPY_EXPERIMENTAL)
 add_subdirectory(generics)
 endif()
+
 add_subdirectory(devices)
 
+if(ROUGHPY_EXPERIMENTAL)
+    add_subdirectory(new_devices)
+endif()
 
 
 if (ROUGHPY_BUILD_TESTS)
