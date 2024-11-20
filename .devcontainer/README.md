@@ -22,6 +22,7 @@ The devcontainer automatically installs the pytest and CTest extension, so after
 VSCode loads debug scenarios from `.vscode/launch.json`. However, developers frequently need to edit this file with changes that should not be committed, so instead it is stored in `.devcontainer/example_launch.json`. Manually copy this over with:
 
 ```sh
+    mkdir -p .vscode
     cp .devcontainer/example_launch.json .vscode/launch.json
 ```
 
