@@ -85,6 +85,7 @@ target_include_directories(RoughPy_Scalars PUBLIC
 target_link_libraries(RoughPy_Scalars PUBLIC
         RoughPy::Platform
         PRIVATE
+        RoughPy::PrecompiledHeaders
         PCGRandom::pcg_random
 )
 

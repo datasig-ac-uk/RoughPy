@@ -36,7 +36,6 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>      // for basic_string, pair, move
 
-#include <cereal/types/vector.hpp>
 #include <roughpy/streams/schema.h>
 
 using namespace rpy;

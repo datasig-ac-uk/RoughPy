@@ -45,6 +45,8 @@ target_link_libraries(RoughPy_Streams PUBLIC
         RoughPy::Algebra
         RoughPy::Intervals
         Boost::url
+        PRIVATE
+            RoughPy::PrecompiledHeaders
 )
 
 set_target_properties(RoughPy_Streams PROPERTIES ROUGHPY_COMPONENT Streams)

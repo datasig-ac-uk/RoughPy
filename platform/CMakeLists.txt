@@ -2,7 +2,52 @@
 
 setup_roughpy_component(Platform)
 
-add_Library(RoughPy_Platform SHARED
+add_library(RoughPy_PrecompiledHeaders INTERFACE)
+add_library(RoughPy::PrecompiledHeaders ALIAS RoughPy_PrecompiledHeaders)
+
+target_link_libraries(RoughPy_PrecompiledHeaders INTERFACE
+        Boost::headers
+        cereal::cereal
+        GMP::GMP
+        Libalgebra_lite::Libalgebra_lite
+)
+
+# Cereal is our current serialization library, and it's dreadful.
+# Parsing these headers and instantiating all the templates therein is
+# easily the biggest contribution to the build type for RoughPy. For this
+# reason, we precompile all the headers for cereal. Ideally, I want a less
+# intensive solution like protobufs or flatbufs, or literally anything else.
+if (NOT ROUGHPY_ENABLE_IWYU)
+target_precompile_headers(RoughPy_PrecompiledHeaders INTERFACE
+        <boost/multiprecision/gmp.hpp>
+        <cereal/cereal.hpp>
+        <cereal/access.hpp>
+        <cereal/specialize.hpp>
+        <cereal/types/base_class.hpp>
+        <cereal/types/optional.hpp>
+        <cereal/types/polymorphic.hpp>
+        <cereal/types/string.hpp>
+        <cereal/types/utility.hpp>
+        <cereal/types/vector.hpp>
+        <cereal/archives/binary.hpp>
+        <cereal/archives/json.hpp>
+        <cereal/archives/portable_binary.hpp>
+        <cereal/archives/xml.hpp>
+        <libalgebra_lite/dense_vector.h>
+        <libalgebra_lite/sparse_vector.h>
+        <libalgebra_lite/basis.h>
+        <libalgebra_lite/algebra.h>
+        <libalgebra_lite/free_tensor.h>
+        <libalgebra_lite/lie.h>
+        <libalgebra_lite/shuffle_tensor.h>
+        <libalgebra_lite/maps.h>
+        <libalgebra_lite/polynomial.h>
+)
+endif()
+
+
+
+add_library(RoughPy_Platform SHARED
         src/configuration.cpp
         #        src/threading/openmp_threading.cpp
         src/errors.cpp
@@ -33,11 +78,10 @@ target_link_libraries(RoughPy_Platform PUBLIC
         RoughPy::Core
         Boost::system
         Boost::url
-        cereal::cereal
         Eigen3::Eigen
-        GMP::GMP
         Libalgebra_lite::Libalgebra_lite
         PRIVATE
+        RoughPy::PrecompiledHeaders
         OpenCL::OpenCL
 )
 
@@ -62,29 +106,7 @@ generate_export_header(RoughPy_Platform
 add_subdirectory(src)
 
 
-# Cereal is our current serialization library, and it's dreadful.
-# Parsing these headers and instantiating all the templates therein is
-# easily the biggest contribution to the build type for RoughPy. For this
-# reason, we precompile all the headers for cereal. Ideally, I want a less
-# intensive solution like protobufs or flatbufs, or literally anything else.
-if (NOT ROUGHPY_ENABLE_IWYU)
-target_precompile_headers(RoughPy_Platform PUBLIC
-        <boost/multiprecision/gmp.hpp>
-        <cereal/cereal.hpp>
-        <cereal/access.hpp>
-        <cereal/specialize.hpp>
-        <cereal/types/base_class.hpp>
-        <cereal/types/optional.hpp>
-        <cereal/types/polymorphic.hpp>
-        <cereal/types/string.hpp>
-        <cereal/types/utility.hpp>
-        <cereal/types/vector.hpp>
-        <cereal/archives/binary.hpp>
-        <cereal/archives/json.hpp>
-        <cereal/archives/portable_binary.hpp>
-        <cereal/archives/xml.hpp>
-)
-endif()
+
 
 
 #
