@@ -35,7 +35,7 @@ protected:
     void* do_allocate(size_t bytes, size_t alignment) override
     {
         ignore_unused(alignment);
-        void* ptr = std::aligned_alloc(small_chunk_size, bytes);
+        void* ptr = mem::aligned_alloc(small_chunk_size, bytes);
         if (!ptr) { throw std::bad_alloc(); }
         return ptr;
     }
@@ -43,7 +43,7 @@ protected:
     void do_deallocate(void* p, size_t bytes, size_t alignment) override
     {
         ignore_unused(alignment);
-        return aligned_free(p, bytes);
+        return mem::aligned_free(p, bytes);
     }
 
     bool do_is_equal(const std::pmr::memory_resource& other
