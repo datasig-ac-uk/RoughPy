@@ -14,7 +14,7 @@ using namespace rpy;
 
 TEST(TestAlignedAlloc, TestIsAlignmentCorrect)
 {
-    auto alignments[] = { 1, 2, 4, 8, 16, 32, 64,
+    size_t alignments[] = { 1, 2, 4, 8, 16, 32, 64,
                           128, 256, 512, 1024, 2048, 4096};
     for (size_t align : alignments) {
         EXPECT_TRUE(mem::is_alignment(align));
