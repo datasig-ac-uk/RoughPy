@@ -35,7 +35,9 @@ target_link_libraries(RoughPy_Platform PRIVATE
 if (ROUGHPY_BUILD_TESTS)
 
 
-    add_executable(test_generics test_value.cpp)
+    add_executable(test_generics
+            test_value.cpp
+    )
 
     target_link_libraries(test_generics PRIVATE RoughPy::Platform GTest::gtest)
 
