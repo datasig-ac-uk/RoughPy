@@ -36,6 +36,7 @@ RUN pip install \
     pytest-cov
 
 # Use system tools for vcpkg when building aarch64 (Linux on MacOS)
+ENV VCPKG_FORCE_SYSTEM_BINARIES=0
 RUN if [ "$(uname -m)" = "aarch64" ]; then \
         echo "Setting VCPKG_FORCE_SYSTEM_BINARIES for MacOS"; \
         export VCPKG_FORCE_SYSTEM_BINARIES=1; \
