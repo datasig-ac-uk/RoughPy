@@ -28,7 +28,7 @@ class ConstRef;
  */
 class ROUGHPY_PLATFORM_EXPORT ComparisonTrait : public BuiltinTrait
 {
-    const Type* p_type;
+    RPY_MAYBE_UNUSED const Type* p_type;
 
 protected:
     constexpr explicit ComparisonTrait(const Type* type)
