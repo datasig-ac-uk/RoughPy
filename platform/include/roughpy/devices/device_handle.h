@@ -68,7 +68,7 @@ public:
     }
 
 
-    RPY_NO_DISCARD virtual Rc<generics::Memory>
+    RPY_NO_DISCARD virtual Rc<Memory>
     allocate_memory(const generics::Type& type, size_t size) const = 0;
 
 

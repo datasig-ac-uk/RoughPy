@@ -29,7 +29,6 @@ enum class MemoryMode : uint8_t {
 
 
 class ROUGHPY_PLATFORM_EXPORT Memory {
-    mutable std::atomic_intptr_t m_ref_count;
     generics::TypePtr p_type;
     Rc<const DeviceHandle> p_device;
     size_t m_no_elements;
@@ -50,6 +49,9 @@ public:
 
     RPY_NO_DISCARD MemoryMode mode() const noexcept;
 
+
+    virtual const void* data() const;
+    virtual void* data();
 
 
 

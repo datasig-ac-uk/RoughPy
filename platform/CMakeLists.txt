@@ -62,6 +62,8 @@ add_library(RoughPy_Platform SHARED
         include/roughpy/platform/devices.h
         include/roughpy/platform/errors.h
         src/alloc.cpp
+        include/roughpy/platform/reference_counting.h
+        src/polymorphic_ref_counted.cpp
 )
 add_library(RoughPy::Platform ALIAS RoughPy_Platform)
 
