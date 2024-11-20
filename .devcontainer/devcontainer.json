@@ -24,9 +24,7 @@
                 "cmake.cmakePath": "/tools/venv/bin/cmake",
                 "cmake.configureArgs": [
                     "-DCMAKE_MAKE_PROGRAM=/tools/venv/bin/ninja",
-                    "-DCMAKE_TOOLCHAIN_FILE=/tools/vcpkg/scripts/buildsystems/vcpkg.cmake",
-                    "-DROUGHPY_BUILD_TESTS=ON",
-                    "-DROUGHPY_BUILD_PYLIB_INPLACE=ON"
+                    "-DCMAKE_TOOLCHAIN_FILE=/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
                 ]
             }
         }
