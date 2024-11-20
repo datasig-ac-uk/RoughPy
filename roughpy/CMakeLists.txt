@@ -145,6 +145,8 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         RoughPy::Intervals
         RoughPy::Algebra
         RoughPy::Streams
+        RoughPy::PrecompiledHeaders
+
         #        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy::Streams>
         #        recombine::recombine
 )

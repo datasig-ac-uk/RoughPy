@@ -68,6 +68,7 @@ target_link_libraries(RoughPy_Algebra
         RoughPy::Platform
         RoughPy::Scalars
         PRIVATE
+        RoughPy::PrecompiledHeaders
         Libalgebra_lite::Libalgebra_lite
 )
 

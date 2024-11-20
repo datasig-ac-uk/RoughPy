@@ -34,7 +34,11 @@ target_include_directories(RoughPy_Intervals PUBLIC
 
 set_target_properties(RoughPy_Intervals PROPERTIES ROUGHPY_COMPONENT Intervals)
 
-target_link_libraries(RoughPy_Intervals PUBLIC RoughPy::Platform)
+target_link_libraries(RoughPy_Intervals
+        PUBLIC
+            RoughPy::Platform
+        PRIVATE
+            RoughPy::PrecompiledHeaders)
 
 # TODO: This should be removed, it's not sensible
 target_compile_definitions(RoughPy_Intervals PRIVATE "RPY_COMPILING_INTERVALS")
