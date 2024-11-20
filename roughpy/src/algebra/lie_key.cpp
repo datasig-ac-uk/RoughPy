@@ -298,8 +298,8 @@ namespace {
 class ToLieKeyHelper
 {
     using container_type = typename python::PyLieKey::container_type;
-    dimn_t size;
-    dimn_t current;
+    RPY_MAYBE_UNUSED dimn_t size;
+    RPY_MAYBE_UNUSED dimn_t current;
     algebra::LieBasis basis;
     deg_t width;
     let_t max_letter = 0;

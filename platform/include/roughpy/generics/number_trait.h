@@ -252,7 +252,7 @@ struct AbsFunc : NoSuchFunction {
 };
 
 template <typename T>
-struct AbsFunc<T, void_t<decltype(abs(declval<T>()))>> {
+struct AbsFunc<T, void_t<decltype(abs(declval<T>())), enable_if_t<is_signed_v<T>>>> {
     using result_t = decltype(abs(declval<T>()));
 
     static constexpr bool has_function = true;
@@ -262,6 +262,18 @@ struct AbsFunc<T, void_t<decltype(abs(declval<T>()))>> {
         return abs(val);
     }
 };
+
+template <typename T>
+struct AbsFunc<T, enable_if_t<is_unsigned_v<T>>>
+{
+    using result_t = T;
+    static constexpr bool has_function = true;
+    constexpr result_t operator()(const T& val) const
+    {
+        return val;
+    }
+};
+
 
 template <typename T, typename = void>
 struct SqrtFunc : NoSuchFunction {
