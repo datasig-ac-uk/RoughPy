@@ -32,6 +32,12 @@ string_view BuiltinTypeBase<T>::id() const noexcept
     return type_id_of<T>;
 }
 
+template <typename T>
+const std::type_info& BuiltinTypeBase<T>::type_info() const noexcept
+{
+    return typeid(T);
+}
+
 
 template <typename T>
 void BuiltinTypeBase<T>::inc_ref() const noexcept

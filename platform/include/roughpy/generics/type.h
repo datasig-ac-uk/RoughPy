@@ -76,7 +76,6 @@ TypePtr get_type() noexcept
 class ROUGHPY_PLATFORM_EXPORT Type
 {
     mutable std::atomic_intptr_t m_rc;
-    const std::type_info* p_type_info;
 
     size_t m_obj_size;
     BasicProperties m_basic_properties;
@@ -85,11 +84,9 @@ class ROUGHPY_PLATFORM_EXPORT Type
 
 protected:
     explicit
-    Type(const std::type_info* real_type_info,
-         size_t obj_size,
+    Type(size_t obj_size,
          BasicProperties properties)
         : m_rc(1),
-          p_type_info(real_type_info),
           m_obj_size(obj_size),
           m_basic_properties(properties)
     {}
@@ -147,10 +144,7 @@ public:
      * @return A reference to a std::type_info object that represents the type
      * information.
      */
-    RPY_NO_DISCARD const std::type_info& type_info() const noexcept
-    {
-        return *p_type_info;
-    }
+    RPY_NO_DISCARD virtual const std::type_info& type_info() const noexcept = 0;
 
     /**
      * @brief Retrieves the basic properties of the Type instance.
