@@ -4,11 +4,14 @@ The `.devcontainer/` folder provides a consistent build and debug environment th
 
 ## Opening devcontainer locally
 
-When you open the cloned RoughPy folder in VSCode, accept the popup to open in a Dev Container or run the editor command `Dev Containers: Reopen in Dev Container`.
+When you open the cloned RoughPy folder in VSCode, it will detect the `.devcontainer/` folder. Accept the popup to open in a Dev Container or run the editor command `Dev Containers: Reopen in Dev Container`. If the container image needs to be rebuilt, it will take a few extra minutes.
 
-VSCode will restart inside a container that will have mapped your checkout folder to `/workspaces/<dirname>`, so be mindful that editing files is affecting this folder on your machine.
+VSCode will restart inside a container that mounts your checkout folder to `/workspaces/<dirname>`. Be mindful that editing files is affecting this folder on your machine.
 
 The devcontainer `Dockerfile` sets up a root `/tools` folder that contains a `venv` with build dependencies pre-installed, and a clone of `vcpkg`; both of which are added to `$PATH`.
+
+On the first run, the project will need to be configured in CMake and additional build dependencies will be fetched by vcpkg. You must wait for this to finish before you can build and run any tests. Progress can be tracked under 'CMake/Build' in the VSCode 'Output' panel.
+
 
 ## Building, testing and debugging
 
