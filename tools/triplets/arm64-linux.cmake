@@ -4,7 +4,8 @@ set(VCPKG_LIBRARY_LINKAGE static)
 
 set(VCPKG_CMAKE_SYSTEM_NAME Linux)
 
-# FIXME for discussion in PR. I had to add this to get containers working in MacOS, as it seems the macro is not set correctly by default.
+# HAVE_FPU is on for all native platforms, but not by default when building in a
+# Linux container on MacOS (e.g. in devcontainer), so it is set explicitly here.
 if (PORT MATCHES "mpg123")
     set(VCPKG_CMAKE_CONFIGURE_OPTIONS "-DHAVE_FPU=1")
 endif()
