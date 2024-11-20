@@ -45,7 +45,7 @@ RUN if [ "$(uname -m)" = "aarch64" ]; then \
 # Install vcpkg in checkout location
 RUN git clone https://github.com/Microsoft/vcpkg.git /tools/vcpkg
 RUN /tools/vcpkg/bootstrap-vcpkg.sh
-ENV PATH /tools/vcpkg:$PATH
+ENV VCPKG_ROOT=/tools/vcpkg
 
 # This is required to be able to run pytest in the VSCode terminal
 ENV PYTHONPATH=.
