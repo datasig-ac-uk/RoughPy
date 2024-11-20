@@ -35,8 +35,11 @@ RUN pip install \
     pytest \
     pytest-cov
 
-# FIXME make conditional on arm, s390x, ppc64le and riscv
-ENV VCPKG_FORCE_SYSTEM_BINARIES=1
+# Use system tools for vcpkg when building aarch64 (Linux on MacOS)
+RUN if [ "$(uname -m)" = "aarch64" ]; then \
+        echo "Setting VCPKG_FORCE_SYSTEM_BINARIES for MacOS"; \
+        export VCPKG_FORCE_SYSTEM_BINARIES=1; \
+    fi
 
 # Install vcpkg in checkout location
 RUN git clone https://github.com/Microsoft/vcpkg.git /tools/vcpkg
