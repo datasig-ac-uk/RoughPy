@@ -8,11 +8,13 @@
 
 #include "memory.h"
 
+#include "roughpy/platform/reference_counting.h"
 #include "roughpy/platform/roughpy_platform_export.h"
 
 namespace rpy::device {
 
-class ROUGHPY_PLATFORM_EXPORT HostAddressMemory : public Memory
+class ROUGHPY_PLATFORM_EXPORT HostAddressMemory
+    : public mem::RefCountedMiddle<Memory>
 {
     void* p_data;
 
