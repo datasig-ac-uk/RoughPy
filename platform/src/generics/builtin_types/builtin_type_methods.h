@@ -93,6 +93,16 @@ void BuiltinTypeBase<T>::copy_or_move(
 }
 
 template <typename T>
+void BuiltinTypeBase<T>::destroy_range(void* data, size_t count) const
+{
+    if constexpr (!is_trivially_destructible_v<T>) {
+        std::destroy_n(static_cast<T*>(data), count);
+    }
+}
+
+
+
+template <typename T>
 std::unique_ptr<const ConversionTrait>
 BuiltinTypeBase<T>::convert_to(const Type& type) const noexcept
 {

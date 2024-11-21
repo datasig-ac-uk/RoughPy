@@ -2,8 +2,8 @@
 // Created by sam on 20/11/24.
 //
 
-#ifndef ROUGHPY_GENERICS_MEMORY_H
-#define ROUGHPY_GENERICS_MEMORY_H
+#ifndef ROUGHPY_DEVICE_MEMORY_H
+#define ROUGHPY_DEVICE_MEMORY_H
 
 #include <atomic>
 
@@ -16,52 +16,53 @@
 
 #include "roughpy/generics/type_ptr.h"
 
-namespace rpy::devices {
+namespace rpy::device {
 
 // Forward declaration
 class DeviceHandle;
 
-enum class MemoryMode : uint8_t {
+enum class MemoryMode : uint8_t
+{
     ReadOnly,
     WriteOnly,
     ReadWrite
 };
 
-
-class ROUGHPY_PLATFORM_EXPORT Memory {
+class ROUGHPY_PLATFORM_EXPORT Memory
+{
     generics::TypePtr p_type;
     Rc<const DeviceHandle> p_device;
     size_t m_no_elements;
     size_t m_bytes;
+    MemoryMode m_mode;
 
 protected:
-
     Memory(const generics::Type& type,
-        const DeviceHandle& device,
-        size_t no_elements,
-        size_t bytes);
+           const DeviceHandle& device,
+           size_t no_elements,
+           size_t bytes,
+           MemoryMode mode);
 
 public:
-
     virtual ~Memory();
 
     RPY_NO_DISCARD virtual size_t size() const noexcept;
+    RPY_NO_DISCARD size_t bytes() const noexcept { return m_bytes; }
+    RPY_NO_DISCARD const generics::Type& type() const noexcept
+    {
+        return *p_type;
+    }
 
     RPY_NO_DISCARD MemoryMode mode() const noexcept;
-
 
     virtual const void* data() const;
     virtual void* data();
 
-
-
+    const DeviceHandle& device() const noexcept { return *p_device; }
     RPY_NO_DISCARD virtual bool is_null() const noexcept;
     RPY_NO_DISCARD virtual bool empty() const noexcept;
-
-
-
 };
 
-} // rpy::generics
+}// namespace rpy::device
 
-#endif //ROUGHPY_GENERICS_MEMORY_H
+#endif// ROUGHPY_DEVICE_MEMORY_H

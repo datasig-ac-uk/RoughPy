@@ -6,7 +6,7 @@ endif()
 add_subdirectory(devices)
 
 if(ROUGHPY_EXPERIMENTAL)
-    add_subdirectory(new_devices)
+    add_subdirectory(device)
 endif()
 
 

@@ -62,8 +62,13 @@ public:
 
     RPY_NO_DISCARD const std::type_info& type_info() const noexcept override;
 
-    void copy_or_move(void* dst, const void* src, size_t count, bool move)
-            const noexcept override;
+    void copy_or_move(
+            void* dst,
+            const void* src,
+            size_t count,
+            bool move
+    ) const noexcept override;
+    void destroy_range(void* data, size_t count) const override;
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>
     convert_to(const Type& type) const noexcept override;
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>

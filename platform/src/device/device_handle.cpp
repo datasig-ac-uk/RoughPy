@@ -3,11 +3,21 @@
 //
 
 
-#include "roughpy/devices/device_handle.h"
+#include "roughpy/device/device_handle.h"
+
+#include "roughpy/device/host_address_memory.h"
+
+#include <cstddef>
+
+#include "roughpy/platform/alloc.h"
+
+#include "roughpy/generics/type.h"
+
+#include "host_device.h"
 
 
 using namespace rpy;
-using namespace rpy::devices;
+using namespace rpy::device;
 
 DeviceHandle::~DeviceHandle() = default;
 DeviceHandle::DeviceHandle() noexcept : m_ref_count(0) {}
@@ -24,9 +34,17 @@ intptr_t DeviceHandle::ref_count() const noexcept
 {
     return this->m_ref_count.load(std::memory_order_acquire);
 }
+
+bool DeviceHandle::is_host() const noexcept
+{
+    return false;
+}
 Rc<const DeviceHandle> DeviceHandle::host() noexcept
 {
-    return nullptr;
+    static const HostDeviceHandle host;
+    return &host;
 }
+
+
 
 

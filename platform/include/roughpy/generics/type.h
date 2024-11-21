@@ -241,8 +241,12 @@ public:
      *             - false if the data should be copied.
      */
     virtual void
-    copy_or_move(void* dst, const void* src, size_t count, bool move) const noexcept
+    copy_or_move(void* dst, const void* src, size_t count, bool move) const
             = 0;
+
+    virtual void
+    destroy_range(void* data, size_t count) const = 0;
+
 
     /**
      * @brief Converts the current Type to another specified Type.
