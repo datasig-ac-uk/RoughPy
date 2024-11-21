@@ -55,6 +55,11 @@ public:
 
 
 
+    RPY_NO_DISCARD virtual bool is_null() const noexcept;
+    RPY_NO_DISCARD virtual bool empty() const noexcept;
+
+
+
 };
 
 } // rpy::generics
