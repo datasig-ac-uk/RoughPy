@@ -46,7 +46,7 @@ protected:
 public:
     RPY_NO_DISCARD virtual intptr_t ref_count() const noexcept;
 
-    friend void intrusive_ptr_inc_ref(const DeviceHandle* ptr) noexcept
+    friend void intrusive_ptr_add_ref(const DeviceHandle* ptr) noexcept
     {
         ptr->inc_ref();
     }

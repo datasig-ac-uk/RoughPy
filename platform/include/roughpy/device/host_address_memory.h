@@ -5,17 +5,20 @@
 #ifndef ROUGHPY_DEVICE_HOST_ADDRESS_MEMORY_H
 #define ROUGHPY_DEVICE_HOST_ADDRESS_MEMORY_H
 
+#include <atomic>
 
-#include "memory.h"
 
 #include "roughpy/platform/reference_counting.h"
 #include "roughpy/platform/roughpy_platform_export.h"
 
+#include "memory.h"
+
 namespace rpy::device {
 
 class ROUGHPY_PLATFORM_EXPORT HostAddressMemory
-    : public mem::RefCountedMiddle<Memory>
+    : public Memory
 {
+    mutable std::atomic<intptr_t> m_ref_count;
     void* p_data;
 
 public:
@@ -28,9 +31,14 @@ public:
             MemoryMode mode=MemoryMode::ReadWrite
     );
 
+protected:
+    void inc_ref() const noexcept override;
+    RPY_NO_DISCARD bool dec_ref() const noexcept override;
 
+public:
     ~HostAddressMemory() override;
 
+    RPY_NO_DISCARD intptr_t ref_count() const noexcept override;
     const void* data() const override;
     void* data() override;
     RPY_NO_DISCARD bool is_null() const noexcept override;

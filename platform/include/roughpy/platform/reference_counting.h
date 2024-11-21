@@ -15,7 +15,8 @@
 
 #include "roughpy/platform/roughpy_platform_export.h"
 
-namespace rpy::mem {
+namespace rpy {
+namespace mem {
 
 /**
  * @class PolymorphicRefCounted
@@ -87,7 +88,7 @@ public:
  * @note The Base class must be derived from PolymorphicRefCounted.
  */
 template <typename Base=PolymorphicRefCounted>
-class RPY_LOCAL RefCountedMiddle : public Base
+class RefCountedMiddle : public Base
 {
     static_assert(
             is_base_of_v<PolymorphicRefCounted, Base>,
@@ -126,7 +127,11 @@ intptr_t RefCountedMiddle<Base>::ref_count() const noexcept
     return m_ref_count.load(std::memory_order_acquire);
 }
 
+
 };
+
+
+}
 
 
 #endif //ROUGHPY_PLATFORM_REFERENCE_COUNTING_H

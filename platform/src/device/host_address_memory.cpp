@@ -28,9 +28,17 @@ HostAddressMemory::HostAddressMemory(
 {}
 HostAddressMemory::~HostAddressMemory()
 {
-    if (RPY_LIKELY(p_data != nullptr)) {
-        device().destroy_memory(*this);
-    }
+    if (RPY_LIKELY(p_data != nullptr)) { device().destroy_memory(*this); }
+}
+
+void HostAddressMemory::inc_ref() const noexcept
+{
+
+}
+bool HostAddressMemory::dec_ref() const noexcept { return true; }
+intptr_t HostAddressMemory::ref_count() const noexcept
+{
+    return 1;
 }
 const void* HostAddressMemory::data() const
 {

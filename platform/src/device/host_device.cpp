@@ -55,7 +55,9 @@ Rc<Memory> HostDeviceHandle::allocate_memory(
         type,
         *this,
         size,
-        bytes);
+        bytes,
+        MemoryMode::ReadWrite
+        );
 
     // The construction is done, we can hand over management to result.
     safe_holder.reset();

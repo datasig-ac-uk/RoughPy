@@ -5,13 +5,16 @@
 
 #include "roughpy/device/device_handle.h"
 
-#include "roughpy/device/host_address_memory.h"
 
 #include <cstddef>
+
+#include "roughpy/core/smart_ptr.h"
 
 #include "roughpy/platform/alloc.h"
 
 #include "roughpy/generics/type.h"
+
+#include "roughpy/device/host_address_memory.h"
 
 #include "host_device.h"
 

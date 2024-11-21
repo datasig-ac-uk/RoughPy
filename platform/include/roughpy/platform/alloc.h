@@ -123,9 +123,9 @@ inline bool is_pointer_aligned(const volatile void* ptr, std::size_t alignment)
 
 
 
-class AlignedAllocHelper
+struct AlignedAllocHelper
 {
-    static void* alloc(size_t alignment, size_t size) noexcept
+    static void* allocate(size_t alignment, size_t size) noexcept
     {
         return aligned_alloc(alignment, size);
     }
@@ -147,7 +147,7 @@ class ScopedSafePtr
 
 public:
     ScopedSafePtr(size_t size, size_t alignment)
-        : p_data(AllocHelper::allocate(size, alignment)),
+        : p_data(AllocHelper::allocate(alignment, size)),
           m_size(size)
     {}
 
