@@ -1,3 +1,6 @@
+Unreleased
+  - Added VSCode `.devcontainer` settings for containerised developer environment for debugging tests. See `.devcontainer/README.md` for instructions (@alexallmont #148)
+
 Version 0.1.2
   - Documentation is now in sync with the main branch (@philipparubin PR #85)
   - Fixed a fault when constructing with larger than expected array (Issue #70, @inakleinbottle PR #72)

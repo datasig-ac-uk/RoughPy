@@ -1,0 +1,37 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/cpp
+{
+    "name": "RoughPy",
+
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+
+    "customizations": {
+        "vscode":{
+            "extensions": [
+                "ms-python.debugpy",
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-vscode.cmake-tools",
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-extension-pack"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/tools/venv/bin/python",
+                "python.languageServer": "Pylance",
+                "python.testing.pytestEnabled": true,
+                "cmake.cmakePath": "/tools/venv/bin/cmake",
+                "cmake.configureArgs": [
+                    "-DCMAKE_MAKE_PROGRAM=/tools/venv/bin/ninja",
+                    "-DCMAKE_TOOLCHAIN_FILE=/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                ]
+            }
+        }
+    },
+
+    // Enable debugging in container
+    "capAdd": [
+        "SYS_PTRACE"
+    ]
+}
