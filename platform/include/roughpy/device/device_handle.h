@@ -15,6 +15,7 @@
 #include "roughpy/core/types.h"
 
 #include "roughpy/platform/alloc.h"
+#include "roughpy/platform/reference_counting.h"
 #include "roughpy/platform/roughpy_platform_export.h"
 
 namespace rpy {
@@ -29,31 +30,15 @@ namespace device {
 
 class Memory;
 
-class ROUGHPY_PLATFORM_EXPORT DeviceHandle : public mem::SmallObjectBase
+class ROUGHPY_PLATFORM_EXPORT DeviceHandle : public mem::PolymorphicRefCounted
 {
     mutable std::atomic<intptr_t> m_ref_count;
 
-public:
-    virtual ~DeviceHandle();
 
 protected:
     DeviceHandle() noexcept;
 
-    virtual void inc_ref() const noexcept;
-
-    RPY_NO_DISCARD virtual bool dec_ref() const noexcept;
-
 public:
-    RPY_NO_DISCARD virtual intptr_t ref_count() const noexcept;
-
-    friend void intrusive_ptr_add_ref(const DeviceHandle* ptr) noexcept
-    {
-        ptr->inc_ref();
-    }
-    friend void intrusive_ptr_release(const DeviceHandle* ptr) noexcept
-    {
-        if (ptr->dec_ref()) { delete ptr; }
-    }
 
     virtual bool is_host() const noexcept;
     virtual bool supports_type(const generics::Type& type) const noexcept = 0;

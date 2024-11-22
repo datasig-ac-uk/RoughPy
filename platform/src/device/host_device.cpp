@@ -29,6 +29,10 @@ bool HostDeviceHandle::dec_ref() const noexcept
     // Do nothing and never destroy this object.
     return false;
 }
+intptr_t HostDeviceHandle::ref_count() const noexcept
+{
+    return 1;
+}
 bool HostDeviceHandle::is_host() const noexcept
 {
     return true;

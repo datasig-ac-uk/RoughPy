@@ -21,8 +21,7 @@ protected:
     RPY_NO_DISCARD bool dec_ref() const noexcept override;
 
 public:
-
-
+    RPY_NO_DISCARD intptr_t ref_count() const noexcept override;
 
     bool is_host() const noexcept override;
     bool supports_type(const generics::Type& type) const noexcept override;
