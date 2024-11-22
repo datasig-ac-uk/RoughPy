@@ -10,6 +10,8 @@
 #include "roughpy/core/macros.h"
 #include "roughpy/core/types.h"
 
+#include "roughpy/generics/type.h"
+
 #include "roughpy/device/device_handle.h"
 
 using namespace rpy;
