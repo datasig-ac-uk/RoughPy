@@ -80,8 +80,9 @@ public:
     friend enable_if_t<is_base_of_v<PolymorphicRefCounted, T>>
     intrusive_ptr_release(const T* ptr) noexcept
     {
-        const auto* base_ptr = static_cast<const PolymorphicRefCounted*>(ptr);
-        if (base_ptr->dec_ref()) {
+        if (const auto* base_ptr
+            = static_cast<const PolymorphicRefCounted*>(ptr);
+            base_ptr->dec_ref()) {
             delete base_ptr;
         }
     }
