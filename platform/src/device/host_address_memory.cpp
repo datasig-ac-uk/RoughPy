@@ -25,7 +25,7 @@ HostAddressMemory::HostAddressMemory(
         size_t bytes,
         MemoryMode mode
 ) :
-     Memory(type, device, size, bytes, mode),
+     RefCountedMiddle(type, device, size, bytes, mode),
      p_data(data)
 {}
 HostAddressMemory::~HostAddressMemory()
@@ -33,15 +33,6 @@ HostAddressMemory::~HostAddressMemory()
     if (RPY_LIKELY(p_data != nullptr)) { device().destroy_memory(*this); }
 }
 
-void HostAddressMemory::inc_ref() const noexcept
-{
-
-}
-bool HostAddressMemory::dec_ref() const noexcept { return true; }
-intptr_t HostAddressMemory::ref_count() const noexcept
-{
-    return 1;
-}
 const void* HostAddressMemory::data() const
 {
     RPY_CHECK_NE(mode(), MemoryMode::WriteOnly);

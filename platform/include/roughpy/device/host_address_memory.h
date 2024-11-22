@@ -16,9 +16,8 @@
 namespace rpy::device {
 
 class ROUGHPY_PLATFORM_EXPORT HostAddressMemory
-    : public Memory
+    : public mem::RefCountedMiddle<Memory>
 {
-    mutable std::atomic<intptr_t> m_ref_count;
     void* p_data;
 
 public:
@@ -31,14 +30,10 @@ public:
             MemoryMode mode=MemoryMode::ReadWrite
     );
 
-protected:
-    void inc_ref() const noexcept override;
-    RPY_NO_DISCARD bool dec_ref() const noexcept override;
 
 public:
     ~HostAddressMemory() override;
 
-    RPY_NO_DISCARD intptr_t ref_count() const noexcept override;
     const void* data() const override;
     void* data() override;
     RPY_NO_DISCARD bool is_null() const noexcept override;
