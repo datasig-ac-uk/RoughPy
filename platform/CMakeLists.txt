@@ -52,6 +52,8 @@ add_library(RoughPy_Platform SHARED
         #        src/threading/openmp_threading.cpp
         src/errors.cpp
         src/fs_path_serialization.cpp
+        src/alloc.cpp
+        src/polymorphic_ref_counted.cpp
 
         include/roughpy/platform.h
         include/roughpy/platform/alloc.h
@@ -61,9 +63,7 @@ add_library(RoughPy_Platform SHARED
         include/roughpy/platform/threads.h
         include/roughpy/platform/devices.h
         include/roughpy/platform/errors.h
-        src/alloc.cpp
         include/roughpy/platform/reference_counting.h
-        src/polymorphic_ref_counted.cpp
 )
 add_library(RoughPy::Platform ALIAS RoughPy_Platform)
 
