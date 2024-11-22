@@ -12,7 +12,7 @@
 #include "roughpy/core/smart_ptr.h"
 #include "roughpy/core/traits.h"
 
-
+#include "alloc.h"
 #include "roughpy/platform/roughpy_platform_export.h"
 
 namespace rpy {
@@ -53,7 +53,7 @@ intrusive_ptr_release(const T* ptr) noexcept;
  * classes instead.
  *
  */
-class ROUGHPY_PLATFORM_EXPORT PolymorphicRefCounted {
+class ROUGHPY_PLATFORM_EXPORT PolymorphicRefCounted : public SmallObjectBase {
 
 public:
 
