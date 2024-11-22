@@ -17,3 +17,20 @@ target_sources(RoughPy_Platform PUBLIC
         memory.cpp
         queue.cpp
 )
+
+
+if (ROUGHPY_BUILD_TESTS)
+
+    add_executable(test_device
+        test_host_address_memory.cpp
+    )
+
+    target_link_libraries(test_device PRIVATE
+            RoughPy::Platform
+            GTest::gtest
+            GTest::gmock
+    )
+
+    setup_roughpy_cpp_tests(test_device)
+
+endif()
