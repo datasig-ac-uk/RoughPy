@@ -26,7 +26,6 @@ Memory::Memory(
       m_bytes(bytes),
       m_mode(mode)
 {}
-Memory::~Memory() = default;
 size_t Memory::size() const noexcept { return m_no_elements; }
 MemoryMode Memory::mode() const noexcept { return m_mode; }
 const void* Memory::data() const

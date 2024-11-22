@@ -29,7 +29,7 @@ enum class MemoryMode : uint8_t
     ReadWrite
 };
 
-class ROUGHPY_PLATFORM_EXPORT Memory
+class ROUGHPY_PLATFORM_EXPORT Memory : public mem::PolymorphicRefCounted
 {
     generics::TypePtr p_type;
     Rc<const DeviceHandle> p_device;
@@ -45,15 +45,6 @@ protected:
            MemoryMode mode);
 
 public:
-    virtual ~Memory();
-
-protected:
-    virtual void inc_ref() const noexcept = 0;
-    RPY_NO_DISCARD
-    virtual bool dec_ref() const noexcept = 0;
-
-public:
-    RPY_NO_DISCARD virtual intptr_t ref_count() const noexcept = 0;
 
     RPY_NO_DISCARD virtual size_t size() const noexcept;
     RPY_NO_DISCARD size_t bytes() const noexcept { return m_bytes; }
@@ -74,15 +65,7 @@ public:
     RPY_NO_DISCARD Rc<Memory> to(const DeviceHandle& device) const;
     RPY_NO_DISCARD Rc<Memory> to_host() const;
 
-    friend void intrusive_ptr_add_ref(const Memory* ptr) noexcept
-    {
-        ptr->inc_ref();
-    }
 
-    friend void intrusive_ptr_release(const Memory* ptr) noexcept
-    {
-        if (ptr->dec_ref()) { delete ptr; }
-    }
 };
 
 }// namespace rpy::device
