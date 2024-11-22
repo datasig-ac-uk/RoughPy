@@ -25,7 +25,7 @@
 using namespace rpy;
 using namespace rpy::device;
 
-DeviceHandle::DeviceHandle() noexcept  {}
+DeviceHandle::DeviceHandle() noexcept = default;
 
 bool DeviceHandle::is_host() const noexcept
 {
