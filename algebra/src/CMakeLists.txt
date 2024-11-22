@@ -10,6 +10,7 @@ if (ROUGHPY_BUILD_TESTS)
             ContextFixture.cpp
             ContextFixture.h
             test_lie.cpp
+            test_free_tensor.cpp
     )
 
     target_link_libraries(test_algebra PRIVATE RoughPy::Algebra GTest::gtest)
