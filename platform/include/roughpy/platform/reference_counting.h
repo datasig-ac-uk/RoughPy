@@ -18,6 +18,18 @@
 namespace rpy {
 namespace mem {
 
+class PolymorphicRefCounted;
+
+
+template <typename T>
+enable_if_t<is_base_of_v<PolymorphicRefCounted, T>>
+intrusive_ptr_add_ref(const T* ptr) noexcept;
+
+template <typename T>
+enable_if_t<is_base_of_v<PolymorphicRefCounted, T>>
+intrusive_ptr_release(const T* ptr) noexcept;
+
+
 /**
  * @class PolymorphicRefCounted
  * @brief A base class implementing reference counting with polymorphism
@@ -47,26 +59,32 @@ public:
 
     virtual ~PolymorphicRefCounted();
 
+protected:
     virtual void inc_ref() const noexcept = 0;
 
     RPY_NO_DISCARD
     virtual bool dec_ref() const noexcept = 0;
 
+public:
     RPY_NO_DISCARD
     virtual intptr_t ref_count() const noexcept = 0;
 
-
-    friend void intrusive_ptr_add_ref(const PolymorphicRefCounted *ptr) noexcept
+    template <typename T>
+    friend enable_if_t<is_base_of_v<PolymorphicRefCounted, T>>
+    intrusive_ptr_add_ref(const T* ptr) noexcept
     {
         ptr->inc_ref();
     }
 
-    friend void intrusive_ptr_release(const PolymorphicRefCounted *ptr) noexcept
+    template <typename T>
+    friend enable_if_t<is_base_of_v<PolymorphicRefCounted, T>>
+    intrusive_ptr_release(const T* ptr) noexcept
     {
-        if(ptr->dec_ref()) {
+        if (ptr->dec_ref()) {
             delete ptr;
         }
     }
+
 };
 
 
@@ -104,10 +122,12 @@ public:
           m_ref_count(0)
     {}
 
+protected:
     void inc_ref() const noexcept override;
 
     RPY_NO_DISCARD bool dec_ref() const noexcept override;
 
+public:
     RPY_NO_DISCARD intptr_t ref_count() const noexcept override;
 };
 
@@ -130,6 +150,8 @@ intptr_t RefCountedMiddle<Base>::ref_count() const noexcept
 
 };
 
+using mem::intrusive_ptr_add_ref;
+using mem::intrusive_ptr_release;
 
 }
 
