@@ -2,7 +2,6 @@
 // Created by sam on 21/11/24.
 //
 
-
 #include "roughpy/device/host_address_memory.h"
 
 #include "roughpy/core/check.h"
@@ -24,13 +23,15 @@ HostAddressMemory::HostAddressMemory(
         size_t size,
         size_t bytes,
         MemoryMode mode
-) :
-     RefCountedMiddle(type, device, size, bytes, mode),
-     p_data(data)
+)
+    : RefCountedMiddle(type, device, size, bytes, mode),
+      p_data(data)
 {}
 HostAddressMemory::~HostAddressMemory()
 {
-    if (RPY_LIKELY(p_data != nullptr)) { device().destroy_memory(*this); }
+    if (RPY_LIKELY(p_data != nullptr && mode() != MemoryMode::ReadOnly)) {
+        device().destroy_memory(*this);
+    }
 }
 
 const void* HostAddressMemory::data() const
@@ -45,4 +46,3 @@ void* HostAddressMemory::data()
     return p_data;
 }
 bool HostAddressMemory::is_null() const noexcept { return p_data == nullptr; }
-
