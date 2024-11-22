@@ -32,8 +32,6 @@ class Memory;
 
 class ROUGHPY_PLATFORM_EXPORT DeviceHandle : public mem::PolymorphicRefCounted
 {
-    mutable std::atomic<intptr_t> m_ref_count;
-
 
 protected:
     DeviceHandle() noexcept;
