@@ -73,15 +73,16 @@ public:
     friend enable_if_t<is_base_of_v<PolymorphicRefCounted, T>>
     intrusive_ptr_add_ref(const T* ptr) noexcept
     {
-        ptr->inc_ref();
+        static_cast<const PolymorphicRefCounted*>(ptr)->inc_ref();
     }
 
     template <typename T>
     friend enable_if_t<is_base_of_v<PolymorphicRefCounted, T>>
     intrusive_ptr_release(const T* ptr) noexcept
     {
-        if (ptr->dec_ref()) {
-            delete ptr;
+        const auto* base_ptr = static_cast<const PolymorphicRefCounted*>(ptr);
+        if (base_ptr->dec_ref()) {
+            delete base_ptr;
         }
     }
 
