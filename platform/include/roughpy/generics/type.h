@@ -233,7 +233,7 @@ protected:
 
 public:
 
-    virtual bool parse_from_string(void* data, string_view str) const noexcept = 0;
+    virtual bool parse_from_string(void* data, string_view str) const noexcept;
 
     /**
      * @brief Abstract function for copying or moving a block of memory.
