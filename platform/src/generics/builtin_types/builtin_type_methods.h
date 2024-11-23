@@ -8,6 +8,7 @@
 #include "builtin_type.h"
 
 #include <algorithm>
+#include <charconv>
 
 
 #include "roughpy/core/check.h"
@@ -45,6 +46,35 @@ bool BuiltinTypeBase<T>::dec_ref() const noexcept
     // return false so it is never destroyed
     return false;
 }
+
+
+template <typename T>
+bool BuiltinTypeBase<T>::parse_from_string(
+        void* data,
+        string_view str
+) const noexcept
+{
+    RPY_DBG_ASSERT_NE(data, nullptr);
+
+    T value;
+
+    const auto* begin = str.data();
+    const auto* end = str.data() + str.size();
+
+    auto result = std::from_chars(begin, end, value);
+
+    if (result.ec == std::errc::invalid_argument) {
+        return false;
+    }
+
+    if (result.ptr != end) {
+        return false;
+    }
+
+    *static_cast<T*>(data) = std::move(value);
+    return true;
+}
+
 
 template <typename T>
 void* BuiltinTypeBase<T>::allocate_object() const
