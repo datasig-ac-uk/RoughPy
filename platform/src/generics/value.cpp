@@ -203,3 +203,7 @@ Value& Value::operator=(ConstRef other)
     return *this;
 }
 
+Value Value::from_string(TypePtr type, string_view str)
+{
+    return Value(std::move(type), str);
+}

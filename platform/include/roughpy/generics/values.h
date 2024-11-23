@@ -338,6 +338,8 @@ public:
                     && !is_same_v<decay_t<T>, const Type*>>>
     explicit Value(T&& value);
 
+    static Value from_string(TypePtr type, string_view data);
+
     ~Value();
 
     // The semantics of copy assignment are different depending on whether the
