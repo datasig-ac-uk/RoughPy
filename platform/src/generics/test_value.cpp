@@ -14,6 +14,12 @@ using namespace rpy;
 using namespace rpy::generics;
 
 
+TEST(TestValue, TestConstructFromString)
+{
+    Value v(get_type<double>(), string_view("3.1415"));
+
+    EXPECT_EQ(v, Value(3.1415));
+}
 
 
 TEST(TestValue, TestAddInplace)

@@ -325,6 +325,8 @@ public:
     // Construct a zero object if this is valid
     explicit Value(TypePtr type, const void* data = nullptr);
 
+    explicit Value(TypePtr type, string_view data);
+
     // Copy a value from an existing reference
     explicit Value(ConstRef other);
 
