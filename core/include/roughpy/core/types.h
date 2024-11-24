@@ -36,6 +36,9 @@
 #include <optional>
 #include <string_view>
 
+#include <boost/core/span.hpp>
+#include <boost/core/make_span.hpp>
+
 
 namespace rpy {
 
@@ -69,6 +72,10 @@ using std::pair;
 using std::string;
 using std::optional;
 using std::string_view;
+
+
+using boost::span;
+using boost::make_span;
 
 
 }// namespace rpy
