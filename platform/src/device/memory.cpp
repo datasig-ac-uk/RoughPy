@@ -9,6 +9,7 @@
 #include "roughpy/generics/type.h"
 
 #include "roughpy/device/device_handle.h"
+#include "roughpy/device/host_address_memory.h"
 
 using namespace rpy;
 using namespace rpy::device;
@@ -26,6 +27,7 @@ Memory::Memory(
       m_bytes(bytes),
       m_mode(mode)
 {}
+Memory::~Memory() {};
 size_t Memory::size() const noexcept { return m_no_elements; }
 MemoryMode Memory::mode() const noexcept { return m_mode; }
 const void* Memory::data() const
@@ -59,3 +61,4 @@ Rc<Memory> Memory::to(const DeviceHandle& device) const
     return buffer;
 }
 Rc<Memory> Memory::to_host() const { return to(*DeviceHandle::host()); }
+
