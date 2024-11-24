@@ -46,7 +46,7 @@ class BuiltinTypeBase : public Type
 
 protected:
     BuiltinTypeBase()
-        : Type(&typeid(T), sizeof(T), basic_properties_of<T>()),
+        : Type(sizeof(T), basic_properties_of<T>()),
           m_arithmetic_trait(this, this),
           m_comparison_trait(this),
           m_number_trait(this, this)
@@ -60,9 +60,19 @@ protected:
 public:
     RPY_NO_DISCARD string_view id() const noexcept override;
 
+    RPY_NO_DISCARD const std::type_info& type_info() const noexcept override;
+
+    void copy_or_move(
+            void* dst,
+            const void* src,
+            size_t count,
+            bool move
+    ) const noexcept override;
+    void destroy_range(void* data, size_t count) const override;
+
     bool parse_from_string(void* data, string_view str) const noexcept override;
-    void copy_or_move(void* dst, const void* src, size_t count, bool move)
-            const noexcept override;
+
+
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>
     convert_to(const Type& type) const noexcept override;
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>

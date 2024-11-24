@@ -33,6 +33,12 @@ string_view BuiltinTypeBase<T>::id() const noexcept
     return type_id_of<T>;
 }
 
+template <typename T>
+const std::type_info& BuiltinTypeBase<T>::type_info() const noexcept
+{
+    return typeid(T);
+}
+
 
 template <typename T>
 void BuiltinTypeBase<T>::inc_ref() const noexcept
@@ -115,6 +121,16 @@ void BuiltinTypeBase<T>::copy_or_move(
         std::copy_n(src_ptr, count, dst_ptr);
     }
 }
+
+template <typename T>
+void BuiltinTypeBase<T>::destroy_range(void* data, size_t count) const
+{
+    if constexpr (!is_trivially_destructible_v<T>) {
+        std::destroy_n(static_cast<T*>(data), count);
+    }
+}
+
+
 
 template <typename T>
 std::unique_ptr<const ConversionTrait>
