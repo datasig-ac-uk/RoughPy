@@ -14,22 +14,8 @@
 using namespace rpy;
 using namespace rpy::device;
 
-Memory::Memory(
-        const generics::Type& type,
-        const DeviceHandle& device,
-        size_t no_elements,
-        size_t bytes,
-        MemoryMode mode
-)
-    : p_type(&type),
-      p_device(&device),
-      m_no_elements(no_elements),
-      m_bytes(bytes),
-      m_mode(mode)
-{}
+
 Memory::~Memory() {};
-size_t Memory::size() const noexcept { return m_no_elements; }
-MemoryMode Memory::mode() const noexcept { return m_mode; }
 const void* Memory::data() const
 {
     RPY_THROW(
@@ -46,7 +32,7 @@ void* Memory::data()
 }
 
 bool Memory::is_null() const noexcept { return true; }
-bool Memory::empty() const noexcept { return m_no_elements == 0; }
+bool Memory::empty() const noexcept { return size() == 0; }
 
 Rc<Memory> Memory::to(const DeviceHandle& device) const
 {
@@ -61,4 +47,8 @@ Rc<Memory> Memory::to(const DeviceHandle& device) const
     return buffer;
 }
 Rc<Memory> Memory::to_host() const { return to(*DeviceHandle::host()); }
-
+size_t Memory::bytes() const noexcept { return size() * type().object_size(); }
+MemoryMode Memory::mode() const noexcept
+{
+    return MemoryMode::ReadOnly;
+}

@@ -37,41 +37,26 @@ class MutableMemoryView;
 class ROUGHPY_PLATFORM_EXPORT Memory
     : public mem::PolymorphicRefCounted
 {
-    generics::TypePtr p_type;
-    Rc<const DeviceHandle> p_device;
-    size_t m_no_elements;
-    size_t m_bytes;
-    MemoryMode m_mode;
-
     friend class ConstMemoryView;
     friend class MutableMemoryView;
 
-protected:
-    Memory(const generics::Type& type,
-           const DeviceHandle& device,
-           size_t no_elements,
-           size_t bytes,
-           MemoryMode mode
-           );
+
 
 
 public:
 
     ~Memory() override;
 
-    RPY_NO_DISCARD virtual size_t size() const noexcept;
-    RPY_NO_DISCARD size_t bytes() const noexcept { return m_bytes; }
-    RPY_NO_DISCARD const generics::Type& type() const noexcept
-    {
-        return *p_type;
-    }
-
-    RPY_NO_DISCARD MemoryMode mode() const noexcept;
+    RPY_NO_DISCARD virtual size_t size() const noexcept = 0;
+    RPY_NO_DISCARD virtual size_t bytes() const noexcept;
+    RPY_NO_DISCARD virtual const generics::Type& type() const noexcept = 0;
+    RPY_NO_DISCARD virtual MemoryMode mode() const noexcept;
 
     virtual const void* data() const;
     virtual void* data();
 
-    const DeviceHandle& device() const noexcept { return *p_device; }
+    RPY_NO_DISCARD
+    virtual const DeviceHandle& device() const noexcept = 0;
     RPY_NO_DISCARD virtual bool is_null() const noexcept;
     RPY_NO_DISCARD virtual bool empty() const noexcept;
 
@@ -81,18 +66,17 @@ public:
 
     RPY_NO_DISCARD
     virtual MutableMemoryView map_memory(
-        size_t offset = 0,
-        size_t npos = static_cast<size_t>(-1)
+        size_t offset,
+        size_t npos
         ) = 0;
 
     RPY_NO_DISCARD
-    virtual ConstMemoryView const_map_memory(
-        size_t offset = 0,
-        size_t npos = static_cast<size_t>(-1)
+    virtual ConstMemoryView map_const_memory(
+        size_t offset,
+        size_t npos
         ) const = 0;
 
 protected:
-    RPY_NO_DISCARD
     virtual void unmap(const ConstMemoryView& child) const = 0;
 
     virtual void unmap(const MutableMemoryView& child) = 0;
@@ -115,6 +99,12 @@ public:
           m_size(size)
     {}
 
+    ~ConstMemoryView()
+    {
+        if (p_data) {
+            p_owner->unmap(*this);
+        }
+    }
 
     template <typename T=void>
     const T* data() const
@@ -151,6 +141,12 @@ public:
           m_size(size)
     {}
 
+    ~MutableMemoryView()
+    {
+        if (p_data) {
+            p_owner->unmap(*this);
+        }
+    }
 
     RPY_NO_DISCARD
     // ReSharper disable once CppNonExplicitConversionOperator
