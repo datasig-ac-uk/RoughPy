@@ -325,6 +325,8 @@ public:
     // Construct a zero object if this is valid
     explicit Value(TypePtr type, const void* data = nullptr);
 
+    explicit Value(TypePtr type, string_view data);
+
     // Copy a value from an existing reference
     explicit Value(ConstRef other);
 
@@ -335,6 +337,8 @@ public:
                     && !is_same_v<decay_t<T>, TypePtr>
                     && !is_same_v<decay_t<T>, const Type*>>>
     explicit Value(T&& value);
+
+    static Value from_string(TypePtr type, string_view data);
 
     ~Value();
 

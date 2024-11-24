@@ -30,6 +30,10 @@ intptr_t Type::ref_count() const noexcept
     return this->m_rc.load(std::memory_order_acquire);
 }
 
+bool Type::parse_from_string(void* data, string_view str) const noexcept
+{
+    return false;
+}
 std::unique_ptr<const ConversionTrait> Type::convert_to(const Type& type
 ) const noexcept
 {
