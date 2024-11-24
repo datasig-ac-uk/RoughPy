@@ -69,6 +69,10 @@ public:
             bool move
     ) const noexcept override;
     void destroy_range(void* data, size_t count) const override;
+
+    bool parse_from_string(void* data, string_view str) const noexcept override;
+
+
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>
     convert_to(const Type& type) const noexcept override;
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>

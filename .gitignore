@@ -122,6 +122,9 @@ dkms.conf
 # *.iml
 # *.ipr
 
+# VSCode local settings
+.vscode/
+
 # CMake
 cmake-build-*/
 build/

@@ -107,6 +107,17 @@ Value::Value(TypePtr type, const void* data)
     }
 }
 
+Value::Value(TypePtr type, string_view str_data)
+    : p_type(std::move(type))
+{
+    RPY_DBG_ASSERT(p_type != nullptr);
+    ensure_constructed(type.get());
+    if (!p_type->parse_from_string(data(), str_data))
+    {
+        RPY_THROW(std::invalid_argument, "cannot parse string");
+    }
+}
+
 Value::Value(ConstRef other)
     : p_type(&other.type())
 {
@@ -192,3 +203,7 @@ Value& Value::operator=(ConstRef other)
     return *this;
 }
 
+Value Value::from_string(TypePtr type, string_view str)
+{
+    return Value(std::move(type), str);
+}

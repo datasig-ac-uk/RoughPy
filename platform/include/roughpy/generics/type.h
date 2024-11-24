@@ -226,6 +226,9 @@ protected:
     virtual void free_object(void*) const = 0;
 
 public:
+
+    virtual bool parse_from_string(void* data, string_view str) const noexcept;
+
     /**
      * @brief Abstract function for copying or moving a block of memory.
      *
