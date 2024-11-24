@@ -55,9 +55,9 @@ Rc<Memory> HostDeviceHandle::allocate_memory(
     mem::ScopedSafePtr<> safe_holder(alignment, bytes);
 
     auto result = std::make_unique<HostAddressMemory>(
-        safe_holder.data(),
         type,
         *this,
+        safe_holder.data(),
         size,
         bytes,
         MemoryMode::ReadWrite

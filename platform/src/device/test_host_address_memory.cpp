@@ -15,9 +15,9 @@ TEST(HostAddressMemory, TestReadOnlyAccess)
 {
     double value = 3.14159265358979323846;
     HostAddressMemory mem(
-            &value,
             *generics::Type::of<double>(),
             *DeviceHandle::host(),
+            &value,
             1,
             sizeof(double),
             MemoryMode::ReadOnly
