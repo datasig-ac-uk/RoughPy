@@ -95,16 +95,20 @@ void RationalType::copy_or_move(
 
     auto* dst_ptr = static_cast<mpq_ptr>(dst);
     if (src == nullptr) {
-        for (size_t i = 0; i < count; ++i) { mpq_set_si(++dst_ptr, 0, 1); }
+        for (size_t i = 0; i < count; ++i, ++dst_ptr) {
+            mpq_set_si(dst_ptr, 0, 1);
+        }
     } else if (move) {
         auto* src_ptr = static_cast<mpq_ptr>(const_cast<void*>(src));
-        for (size_t i = 0; i < count; ++i) {
-            mpq_swap(++dst_ptr, ++src_ptr);
+        for (size_t i = 0; i < count; ++i, ++src_ptr, ++dst_ptr) {
+            mpq_swap(dst_ptr, src_ptr);
             mpq_clear(src_ptr);
         }
     } else {
         const auto* src_ptr = static_cast<mpq_srcptr>(src);
-        for (size_t i = 0; i < count; ++i) { mpq_set(++dst_ptr, ++src_ptr); }
+        for (size_t i = 0; i < count; ++i, ++src_ptr, ++dst_ptr) {
+            mpq_set(dst_ptr, src_ptr);
+        }
     }
 }
 void RationalType::destroy_range(void* data, size_t count) const
@@ -127,12 +131,9 @@ const BuiltinTrait*
 RationalType::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
     switch (id) {
-        case BuiltinTraitID::Comparison:
-            return &m_comparison;
-        case BuiltinTraitID::Arithmetic:
-            return &m_arithmetic;
-        case BuiltinTraitID::Number:
-            return &m_number;
+        case BuiltinTraitID::Comparison: return &m_comparison;
+        case BuiltinTraitID::Arithmetic: return &m_arithmetic;
+        case BuiltinTraitID::Number: return &m_number;
     }
     RPY_UNREACHABLE_RETURN(nullptr);
 }

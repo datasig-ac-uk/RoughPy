@@ -15,6 +15,10 @@ add_library(RoughPy_Generics_Multiprecision
         rational_comparison.cpp
         rational_comparison.h
         mpz_hash.h
+        integer_type.cpp
+        integer_type.h
+        integer_arithmetic.cpp
+        integer_arithmetic.h
 )
 
 
@@ -43,6 +47,7 @@ if (ROUGHPY_BUILD_TESTS)
 
     add_executable(test_multiprecision_types
             test_rational_type.cpp
+            test_integer_type.cpp
     )
 
     target_link_Libraries(test_multiprecision_types PRIVATE
