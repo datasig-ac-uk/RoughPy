@@ -27,6 +27,7 @@ bool IntegerNumber::has_function(NumberFunction fn_id) const noexcept
         case NumberFunction::Exp: RPY_FALLTHROUGH;
         case NumberFunction::Log: return false;
     }
+    RPY_UNREACHABLE_RETURN(false);
 }
 void IntegerNumber::unsafe_real(void* dst, const void* src) const
 {
