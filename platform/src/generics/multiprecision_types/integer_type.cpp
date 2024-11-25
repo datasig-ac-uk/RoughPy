@@ -86,7 +86,8 @@ bool IntegerType::parse_from_string(void* data, string_view str) const noexcept
 {
     RPY_DBG_ASSERT_NE(data, nullptr);
     auto* ptr = static_cast<mpz_ptr>(data);
-    return mpz_set_str(ptr, str.data(), 10) != -1;
+    string tmp(str);
+    return mpz_set_str(ptr, tmp.c_str(), 10) != -1;
 }
 void IntegerType::copy_or_move(
         void* dst,
