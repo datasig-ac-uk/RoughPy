@@ -17,9 +17,12 @@ namespace rpy {
 namespace generics {
 
 class MPFloatType : public mem::RefCountedMiddle<Type> {
+    // 32 bits for precision should be plenty
+    int m_precision;
+
 public:
 
-    explicit MPFloatType(size_t precision);
+    explicit MPFloatType(int precision);
 
     RPY_NO_DISCARD const std::type_info & type_info() const noexcept override;
 
