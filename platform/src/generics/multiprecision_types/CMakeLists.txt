@@ -23,6 +23,8 @@ add_library(RoughPy_Generics_Multiprecision
         integer_comparison.h
         integer_number.cpp
         integer_number.h
+        float_type.cpp
+        float_type.h
 )
 
 
@@ -53,6 +55,7 @@ if (ROUGHPY_BUILD_TESTS)
     add_executable(test_multiprecision_types
             test_rational_type.cpp
             test_integer_type.cpp
+            test_float_type.cpp
     )
 
     target_link_Libraries(test_multiprecision_types PRIVATE
