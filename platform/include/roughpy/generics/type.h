@@ -320,7 +320,7 @@ public:
     TypePtr rational_type;
 
     RPY_NO_DISCARD
-    TypePtr float_type(size_t n_precision) const;
+    TypePtr float_type(int n_precision) const;
 
     RPY_NO_DISCARD
     static const MultiPrecisionTypes& get() noexcept;
