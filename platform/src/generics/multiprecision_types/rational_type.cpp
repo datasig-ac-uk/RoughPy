@@ -74,8 +74,9 @@ bool RationalType::parse_from_string(void* data, string_view str) const noexcept
     RPY_DBG_ASSERT_NE(data, nullptr);
 
     auto* ptr = static_cast<mpq_ptr>(data);
+    string tmp(str);
 
-    if (mpq_set_str(ptr, str.data(), 10) == -1) { return false; }
+    if (mpq_set_str(ptr, tmp.c_str(), 10) == -1) { return false; }
 
     // Just in case the string was not a canonical rational number, reduce it
     mpq_canonicalize(ptr);
