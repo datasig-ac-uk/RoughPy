@@ -7,7 +7,6 @@
 
 #include <iosfwd>
 #include <typeinfo>
-#include <unordered_map>
 
 #include <roughpy/core/macros.h>
 
@@ -28,7 +27,6 @@ class BuiltinTypeBase : public Type
     ComparisonTraitImpl<T> m_comparison_trait;
     NumberTraitImpl<T> m_number_trait;
 
-    // std::unordered_map<string_view, std::unique_ptr<const Trait>> m_traits;
 
     hash_t hash_with_type(const Type& other_type) const noexcept
     {

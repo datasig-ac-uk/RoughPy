@@ -5,7 +5,6 @@
 #ifndef ROUGHPY_GENERICS_TYPE_H
 #define ROUGHPY_GENERICS_TYPE_H
 
-#include <atomic>
 #include <memory>
 #include <typeinfo>
 
