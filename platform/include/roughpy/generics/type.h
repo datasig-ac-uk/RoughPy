@@ -12,6 +12,7 @@
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
+#include <roughpy/platform/reference_counting.h>
 #include <roughpy/platform/roughpy_platform_export.h>
 
 #include "builtin_trait.h"
@@ -73,67 +74,11 @@ TypePtr get_type() noexcept
  * types within the application. It provides methods and properties to interact
  * with these types, ensuring they are correctly managed throughout the system.
  */
-class ROUGHPY_PLATFORM_EXPORT Type
+class ROUGHPY_PLATFORM_EXPORT Type : public mem::PolymorphicRefCounted
 {
-    mutable std::atomic_intptr_t m_rc;
-
-    size_t m_obj_size;
-    BasicProperties m_basic_properties;
-
     friend class Value;
 
-protected:
-    explicit
-    Type(size_t obj_size,
-         BasicProperties properties)
-        : m_rc(1),
-          m_obj_size(obj_size),
-          m_basic_properties(properties)
-    {}
-
-    virtual ~Type();
-
-    /**
-     * @brief Increments the reference count for the Type instance.
-     *
-     * This function increases the internal reference counter for a Type object
-     * in a thread-safe manner using relaxed memory order.
-     */
-    virtual void inc_ref() const noexcept;
-
-    /**
-     * @brief Decrements the reference count for the Type instance.
-     *
-     * This function decreases the internal reference counter for a Type object
-     * in a thread-safe manner using acquire-release memory order. If the
-     * reference count reaches zero, it signifies that the Type instance can be
-     * safely destroyed.
-     *
-     * @return true if the reference count after decrementing is zero, false
-     * otherwise.
-     */
-    virtual bool dec_ref() const noexcept;
-
 public:
-    /**
-     * @brief Retrieves the current reference count of the Type instance.
-     *
-     * This function fetches the value of the internal reference counter for
-     * a Type object in a thread-safe manner using acquire memory order.
-     *
-     * @return The current reference count of the Type instance.
-     */
-    intptr_t ref_count() const noexcept;
-
-    friend void intrusive_ptr_add_ref(const Type* value) noexcept
-    {
-        value->inc_ref();
-    }
-
-    friend void intrusive_ptr_release(const Type* value) noexcept
-    {
-        if (RPY_UNLIKELY(value->dec_ref())) { delete value; }
-    }
 
     /**
      * @brief Returns the type information of the current instance.
@@ -155,11 +100,8 @@ public:
      *
      * @return A const reference to the BasicProperties structure.
      */
-    RPY_NO_DISCARD constexpr const BasicProperties&
-    basic_properties() const noexcept
-    {
-        return m_basic_properties;
-    }
+    RPY_NO_DISCARD virtual BasicProperties
+    basic_properties() const noexcept = 0;
 
     /**
      * @brief Retrieves the object size for the Type instance.
@@ -171,10 +113,7 @@ public:
      * @return The size, in bytes, of the object that the Type instance
      * represents.
      */
-    RPY_NO_DISCARD constexpr size_t object_size() const noexcept
-    {
-        return m_obj_size;
-    }
+    RPY_NO_DISCARD virtual size_t object_size() const noexcept = 0;
 
     /**
      * @brief Retrieves the name associated with the current instance.
@@ -223,7 +162,7 @@ protected:
      *
      * @param ptr A void pointer to the object that needs to be deallocated.
      */
-    virtual void free_object(void*) const = 0;
+    virtual void free_object(void* ptr) const = 0;
 
 public:
 
@@ -352,7 +291,7 @@ struct BuiltinTypes
 {
     TypePtr float_type;
     TypePtr double_type;
-    
+
     TypePtr int8_type;
     TypePtr uint8_type;
     TypePtr int16_type;
@@ -426,7 +365,7 @@ RPY_NO_DISCARD TypePtr ROUGHPY_PLATFORM_EXPORT compute_promotion(const Type* lhs
  */
 inline hash_t hash_value(const Type& value) noexcept
 {
-    const Hash<string_view> hasher;
+    constexpr Hash<string_view> hasher;
     return hasher(value.id());
 }
 

@@ -5,10 +5,9 @@
 #ifndef ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_H
 #define ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_H
 
-
+#include <iosfwd>
 #include <typeinfo>
 #include <unordered_map>
-#include <iosfwd>
 
 #include <roughpy/core/macros.h>
 
@@ -21,11 +20,6 @@
 #include "roughpy/generics/number_trait.h"
 
 namespace rpy::generics {
-
-
-
-
-
 
 template <typename T>
 class BuiltinTypeBase : public Type
@@ -46,8 +40,7 @@ class BuiltinTypeBase : public Type
 
 protected:
     BuiltinTypeBase()
-        : Type(sizeof(T), basic_properties_of<T>()),
-          m_arithmetic_trait(this, this),
+        : m_arithmetic_trait(this, this),
           m_comparison_trait(this),
           m_number_trait(this, this)
     {}
@@ -58,7 +51,18 @@ protected:
     void free_object(void*) const override;
 
 public:
+    RPY_NO_DISCARD intptr_t ref_count() const noexcept override { return 1; }
     RPY_NO_DISCARD string_view id() const noexcept override;
+
+    RPY_NO_DISCARD BasicProperties
+    basic_properties() const noexcept override
+    {
+        return basic_properties_of<T>();
+    }
+    RPY_NO_DISCARD size_t object_size() const noexcept override
+    {
+        return sizeof(T);
+    }
 
     RPY_NO_DISCARD const std::type_info& type_info() const noexcept override;
 
@@ -72,13 +76,12 @@ public:
 
     bool parse_from_string(void* data, string_view str) const noexcept override;
 
-
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>
     convert_to(const Type& type) const noexcept override;
     RPY_NO_DISCARD std::unique_ptr<const ConversionTrait>
     convert_from(const Type& type) const noexcept override;
-    RPY_NO_DISCARD const BuiltinTrait* get_builtin_trait(BuiltinTraitID id
-    ) const noexcept override;
+    RPY_NO_DISCARD const BuiltinTrait*
+    get_builtin_trait(BuiltinTraitID id) const noexcept override;
     // RPY_NO_DISCARD const Trait* get_trait(string_view id
     // ) const noexcept override;
     const std::ostream&
@@ -87,8 +90,6 @@ public:
     hash_t hash_of(const void* value) const noexcept override;
 };
 
-
-
 }// namespace rpy::generics
 
-#endif //ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_H
+#endif// ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_H

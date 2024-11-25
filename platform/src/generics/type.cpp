@@ -13,23 +13,6 @@
 using namespace rpy;
 using namespace rpy::generics;
 
-Type::~Type() = default;
-
-void Type::inc_ref() const noexcept
-{
-    this->m_rc.fetch_add(1, std::memory_order_relaxed);
-}
-bool Type::dec_ref() const noexcept
-{
-    auto old = this->m_rc.fetch_sub(1, std::memory_order_acq_rel);
-    return old == 1;
-}
-
-intptr_t Type::ref_count() const noexcept
-{
-    return this->m_rc.load(std::memory_order_acquire);
-}
-
 bool Type::parse_from_string(void* data, string_view str) const noexcept
 {
     return false;
