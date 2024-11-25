@@ -4,6 +4,8 @@
 
 #include "float_type.h"
 
+#include "mpz_hash.h"
+
 
 #include <gmp.h>
 #include <mpfr.h>
@@ -92,7 +94,12 @@ void MPFloatType::copy_or_move(void* dst,
 
 }
 
-void MPFloatType::destroy_range(void* data, size_t count) const {}
+void MPFloatType::destroy_range(void* data, size_t count) const
+{
+    RPY_DBG_ASSERT_NE(data, nullptr);
+    auto* ptr = static_cast<mpfr_ptr>(data);
+    for (size_t i = 0; i < count; ++i) { mpfr_clear(ptr++); }
+}
 
 std::unique_ptr<const ConversionTrait> MPFloatType::
 convert_to(const Type& type) const noexcept
@@ -109,13 +116,72 @@ convert_from(const Type& type) const noexcept
 const BuiltinTrait* MPFloatType::
 get_builtin_trait(BuiltinTraitID id) const noexcept
 {
-    return RefCountedMiddle<Type>::get_builtin_trait(id);
+    return false;
+}
+
+namespace {
+
+struct StringCleanup
+{
+    char* ptr = nullptr;
+
+    ~StringCleanup()
+    {
+        if (ptr != nullptr) {
+            mpfr_free_str(ptr);
+        }
+    }
+};
+
+
 }
 
 const std::ostream& MPFloatType::display(std::ostream& os,
-                                         const void* value) const {}
+                                         const void* value) const
+{
+    if (value == nullptr) { return os << 0; }
+
+    const auto* flt_val = static_cast<mpfr_srcptr>(value);
+
+    // Choosing a format to emulate double output.
+    // "%.17g" is a common format to represent doubles with sufficient precision
+    // where 17 significant digits should be sufficient to represent a double value.
+    StringCleanup buffer;
+    const auto n_digits = mpfr_asprintf(&buffer.ptr, "%.17Rg", flt_val);
+
+    RPY_CHECK_GT(n_digits, 0);
+
+    return os << string_view(buffer.ptr, n_digits);
+}
+
+
+namespace {
+
+struct MPZCleanup
+{
+    mpz_t value;
+
+    ~MPZCleanup()
+    {
+        mpz_clear(value);
+    }
+};
+
+}
 
 hash_t MPFloatType::hash_of(const void* value) const noexcept
 {
-    return RefCountedMiddle<Type>::hash_of(value);
+    if (value == nullptr) {
+        return 0;
+    }
+
+    const auto* flt_val = static_cast<mpfr_srcptr>(value);
+
+    MPZCleanup significand;
+    auto exp = mpfr_get_z_2exp(significand.value, flt_val);
+
+    auto result = mpz_hash(significand.value);
+    hash_combine(result, exp);
+
+    return result;
 }
