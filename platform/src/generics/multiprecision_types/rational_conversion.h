@@ -2,8 +2,8 @@
 // Created by sammorley on 25/11/24.
 //
 
-#ifndef RATIONAL_CONVERSION_H
-#define RATIONAL_CONVERSION_H
+#ifndef ROUGHPY_GENERICS_INTERNAL_RATIONAL_CONVERSION_H
+#define ROUGHPY_GENERICS_INTERNAL_RATIONAL_CONVERSION_H
 
 namespace rpy {
 namespace generics {
@@ -15,4 +15,4 @@ class RationalConversion {
 } // generics
 } // rpy
 
-#endif //RATIONAL_CONVERSION_H
+#endif //ROUGHPY_GENERICS_INTERNAL_RATIONAL_CONVERSION_H

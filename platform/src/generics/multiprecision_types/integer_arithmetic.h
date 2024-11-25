@@ -2,8 +2,8 @@
 // Created by sammorley on 25/11/24.
 //
 
-#ifndef INTEGER_ARITHMETIC_H
-#define INTEGER_ARITHMETIC_H
+#ifndef ROUGHPY_GENERICS_INTERNAL_INTEGER_ARITHMETIC_H
+#define ROUGHPY_GENERICS_INTERNAL_INTEGER_ARITHMETIC_H
 
 #include "roughpy/generics/arithmetic_trait.h"
 
@@ -24,4 +24,4 @@ public:
 } // generics
 } // rpy
 
-#endif //INTEGER_ARITHMETIC_H
+#endif //ROUGHPY_GENERICS_INTERNAL_INTEGER_ARITHMETIC_H

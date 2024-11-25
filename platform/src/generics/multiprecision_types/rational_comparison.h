@@ -2,8 +2,8 @@
 // Created by sammorley on 25/11/24.
 //
 
-#ifndef RATIONAL_COMPARISON_H
-#define RATIONAL_COMPARISON_H
+#ifndef ROUGHPY_GENERICS_INTERNAL_RATIONAL_COMPARISON_H
+#define ROUGHPY_GENERICS_INTERNAL_RATIONAL_COMPARISON_H
 
 #include "roughpy/generics/comparison_trait.h"
 
@@ -42,4 +42,4 @@ public:
 } // generics
 } // rpy
 
-#endif //RATIONAL_COMPARISON_H
+#endif //ROUGHPY_GENERICS_INTERNAL_RATIONAL_COMPARISON_H

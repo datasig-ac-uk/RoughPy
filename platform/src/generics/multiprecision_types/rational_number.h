@@ -2,8 +2,8 @@
 // Created by sammorley on 25/11/24.
 //
 
-#ifndef RATIONAL_NUMBER_H
-#define RATIONAL_NUMBER_H
+#ifndef ROUGHPY_GENERICS_INTERNAL_RATIONAL_NUMBER_H
+#define ROUGHPY_GENERICS_INTERNAL_RATIONAL_NUMBER_H
 
 #include "roughpy/generics/number_trait.h"
 namespace rpy {
@@ -32,4 +32,4 @@ public:
 } // generics
 } // rpy
 
-#endif //RATIONAL_NUMBER_H
+#endif //ROUGHPY_GENERICS_INTERNAL_RATIONAL_NUMBER_H
