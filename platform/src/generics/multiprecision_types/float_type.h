@@ -12,11 +12,18 @@
 
 #include "roughpy/generics/type.h"
 
+#include "float_arithmetic.h"
+#include "float_comparison.h"
+#include "float_number.h"
 
 namespace rpy {
 namespace generics {
 
 class MPFloatType : public mem::RefCountedMiddle<Type> {
+    FloatArithmetic m_arithmetic;
+    FloatComparison m_comparison;
+    FloatNumber m_number;
+
     // 32 bits for precision should be plenty
     int m_precision;
 

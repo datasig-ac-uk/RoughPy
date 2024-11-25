@@ -14,7 +14,23 @@ using namespace rpy;
 using namespace rpy::generics;
 
 MPFloatType::MPFloatType(int precision)
-    : m_precision(precision) {}
+    : m_arithmetic(this),
+      m_comparison(this),
+      m_number(this),
+      m_precision(precision)
+{
+    RPY_CHECK_LE(m_precision, MPFR_PREC_MAX);
+}
+
+string_view MPFloatType::name() const noexcept
+{
+    return "MultiPrecisionFloat";
+}
+
+string_view MPFloatType::id() const noexcept
+{
+    return "apf";
+}
 
 const std::type_info& MPFloatType::type_info() const noexcept
 {
@@ -32,7 +48,7 @@ BasicProperties MPFloatType::basic_properties() const noexcept
             false,
             false,
             false,
-            false,
+            true,
             false,
             false
     };
@@ -116,7 +132,12 @@ convert_from(const Type& type) const noexcept
 const BuiltinTrait* MPFloatType::
 get_builtin_trait(BuiltinTraitID id) const noexcept
 {
-    return false;
+    switch (id) {
+        case BuiltinTraitID::Comparison: return &m_comparison;
+        case BuiltinTraitID::Arithmetic: return &m_arithmetic;
+        case BuiltinTraitID::Number: return &m_number;
+    }
+    RPY_UNREACHABLE_RETURN(nullptr);
 }
 
 namespace {
@@ -125,12 +146,7 @@ struct StringCleanup
 {
     char* ptr = nullptr;
 
-    ~StringCleanup()
-    {
-        if (ptr != nullptr) {
-            mpfr_free_str(ptr);
-        }
-    }
+    ~StringCleanup() { if (ptr != nullptr) { mpfr_free_str(ptr); } }
 };
 
 
@@ -171,9 +187,7 @@ struct MPZCleanup
 
 hash_t MPFloatType::hash_of(const void* value) const noexcept
 {
-    if (value == nullptr) {
-        return 0;
-    }
+    if (value == nullptr) { return 0; }
 
     const auto* flt_val = static_cast<mpfr_srcptr>(value);
 
