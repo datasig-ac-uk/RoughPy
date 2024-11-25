@@ -151,8 +151,11 @@ RationalType::display(std::ostream& os, const void* value) const
     string buffer;
     buffer.resize(num_size + denom_size + 3);
 
+
     mpq_get_str(buffer.data(), 10, rat);
 
+    // The buffer has at least one null byte at the end, cut these off
+    while (buffer.back() == '\0') { buffer.pop_back(); }
     return os << buffer;
 }
 
