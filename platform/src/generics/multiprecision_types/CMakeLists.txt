@@ -29,6 +29,8 @@ add_library(RoughPy_Generics_Multiprecision
         float_arithmetic.h
         float_comparison.cpp
         float_comparison.h
+        float_number.cpp
+        float_number.h
 )
 
 
