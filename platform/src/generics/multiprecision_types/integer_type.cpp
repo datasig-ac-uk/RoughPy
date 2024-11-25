@@ -46,7 +46,7 @@ BasicProperties IntegerType::basic_properties() const noexcept
         false,
         true,
         false,
-        true
+        false
     };
 }
 size_t IntegerType::object_size() const noexcept
