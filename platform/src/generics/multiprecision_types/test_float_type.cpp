@@ -77,7 +77,7 @@ TEST_F(TestMPFloatType, TestRefCounting)
 
     {
         RPY_MAYBE_UNUSED TypePtr new_ref(float_type);
-        EXPECT_EQ(float_type->ref_count(), 1);
+        EXPECT_EQ(float_type->ref_count(), 2);
     }
 
     EXPECT_EQ(float_type->ref_count(), 1);
@@ -184,7 +184,7 @@ TEST_F(TestMPFloatType, TestDivideOperator)
     auto* arith = arith_trait();
     ASSERT_NE(arith, nullptr);
 
-    EXPECT_FALSE(arith->has_operation(ArithmeticOperation::Div));
+    EXPECT_TRUE(arith->has_operation(ArithmeticOperation::Div));
 }
 
 /******************************************************************************
