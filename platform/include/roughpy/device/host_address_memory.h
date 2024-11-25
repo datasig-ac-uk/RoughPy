@@ -48,6 +48,7 @@ public:
     void* release() noexcept { return std::exchange(p_data, nullptr); }
 
     RPY_NO_DISCARD size_t size() const noexcept override;
+    RPY_NO_DISCARD size_t bytes() const noexcept override;
     RPY_NO_DISCARD bool empty() const noexcept override;
     RPY_NO_DISCARD MutableMemoryView
     map_memory(size_t offset, size_t npos) override;

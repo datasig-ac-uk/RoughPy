@@ -64,9 +64,10 @@ void* HostAddressMemory::data()
 
 
 bool HostAddressMemory::is_null() const noexcept { return p_data == nullptr; }
-size_t HostAddressMemory::size() const noexcept
+size_t HostAddressMemory::size() const noexcept { return m_no_elements; }
+size_t HostAddressMemory::bytes() const noexcept
 {
-    return m_no_elements;
+    return m_bytes;
 }
 bool HostAddressMemory::empty() const noexcept { return m_no_elements == 0; }
 
