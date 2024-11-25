@@ -126,15 +126,15 @@ RationalType::convert_from(const Type& type) const noexcept
 const BuiltinTrait*
 RationalType::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
-    // switch (id) {
-    //     case BuiltinTraitID::Comparison:
-    //         return &m_comparison;
-    //     case BuiltinTraitID::Arithmetic:
-    //         return &m_arithmetic;
-    //     case BuiltinTraitID::Number:
-    //         return &m_number;
-    // }
-    return nullptr;
+    switch (id) {
+        case BuiltinTraitID::Comparison:
+            return &m_comparison;
+        case BuiltinTraitID::Arithmetic:
+            return &m_arithmetic;
+        case BuiltinTraitID::Number:
+            return &m_number;
+    }
+    RPY_UNREACHABLE_RETURN(nullptr);
 }
 const std::ostream&
 RationalType::display(std::ostream& os, const void* value) const
