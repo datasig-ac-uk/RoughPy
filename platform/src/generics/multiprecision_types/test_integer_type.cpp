@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 
-
 #include "roughpy/generics/arithmetic_trait.h"
 #include "roughpy/generics/builtin_trait.h"
 #include "roughpy/generics/comparison_trait.h"
