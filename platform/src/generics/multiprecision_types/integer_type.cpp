@@ -84,7 +84,9 @@ void IntegerType::free_object(void* ptr) const
 }
 bool IntegerType::parse_from_string(void* data, string_view str) const noexcept
 {
-    return Type::parse_from_string(data, str);
+    RPY_DBG_ASSERT_NE(data, nullptr);
+    auto* ptr = static_cast<mpz_ptr>(data);
+    return mpz_set_str(ptr, str.data(), 10) != -1;
 }
 void IntegerType::copy_or_move(
         void* dst,
@@ -133,11 +135,14 @@ const BuiltinTrait*
 IntegerType::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
     switch (id) {
-        case BuiltinTraitID::Comparison: break;
-        case BuiltinTraitID::Arithmetic: break;
-        case BuiltinTraitID::Number: break;
+        case BuiltinTraitID::Comparison:
+            return &m_comparison;
+        case BuiltinTraitID::Arithmetic:
+            return &m_arithmetic;
+        case BuiltinTraitID::Number:
+            return &m_number;
     }
-    return nullptr;
+    RPY_UNREACHABLE_RETURN(nullptr);
 }
 const std::ostream&
 IntegerType::display(std::ostream& os, const void* value) const
