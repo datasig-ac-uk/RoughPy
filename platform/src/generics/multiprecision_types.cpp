@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "multiprecision_types/integer_type.h"
 #include "multiprecision_types/rational_type.h"
 
 using namespace rpy;
@@ -13,7 +14,7 @@ using namespace rpy::generics;
 
 
 MultiPrecisionTypes::MultiPrecisionTypes()
-    : integer_type(nullptr),
+    : integer_type(IntegerType::get()),
       rational_type(RationalType::get())
 {
 
@@ -27,6 +28,7 @@ TypePtr MultiPrecisionTypes::float_type(size_t n_precision) const {
         return get_builtin_types().double_type;
     }
 
+    ignore_unused(this);
 
 
     RPY_THROW(std::domain_error, "this precision is not available");
