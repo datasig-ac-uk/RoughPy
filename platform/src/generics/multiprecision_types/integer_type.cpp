@@ -55,11 +55,11 @@ size_t IntegerType::object_size() const noexcept
 }
 string_view IntegerType::name() const noexcept
 {
-    return "integer";
+    return "MultiPrecisionInteger";
 }
 string_view IntegerType::id() const noexcept
 {
-    return "api";
+    return "apz";
 }
 void* IntegerType::allocate_object() const
 {
