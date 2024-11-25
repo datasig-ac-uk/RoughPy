@@ -311,6 +311,23 @@ ROUGHPY_PLATFORM_EXPORT
 const BuiltinTypes& get_builtin_types() noexcept;
 
 
+class ROUGHPY_PLATFORM_EXPORT MultiPrecisionTypes
+{
+    MultiPrecisionTypes();
+public:
+
+    TypePtr integer_type;
+    TypePtr rational_type;
+
+    RPY_NO_DISCARD
+    TypePtr float_type(size_t n_precision) const;
+
+    RPY_NO_DISCARD
+    static const MultiPrecisionTypes& get() noexcept;
+};
+
+
+
 template <typename T>
 /**
  * @brief Determines the basic properties of a given type.
