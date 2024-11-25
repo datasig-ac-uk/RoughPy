@@ -7,11 +7,18 @@
 
 #include "roughpy/generics/type.h"
 
+#include "integer_arithmetic.h"
+#include "integer_comparison.h"
+#include "integer_number.h"
 
 namespace rpy {
 namespace generics {
 
 class IntegerType : public Type {
+    IntegerArithmetic m_arithmetic;
+    IntegerComparison m_comparison;
+    IntegerNumber m_number;
+
     IntegerType();
 protected:
     void inc_ref() const noexcept override;

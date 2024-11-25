@@ -16,7 +16,11 @@
 using namespace rpy;
 using namespace rpy::generics;
 
-IntegerType::IntegerType() {}
+IntegerType::IntegerType()
+    : m_arithmetic(this),
+      m_comparison(this),
+      m_number(this)
+{}
 void IntegerType::inc_ref() const noexcept
 {
     // Do Nothing

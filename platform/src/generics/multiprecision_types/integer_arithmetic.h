@@ -13,6 +13,11 @@ namespace generics {
 
 class IntegerArithmetic : public ArithmeticTrait {
 public:
+
+    explicit IntegerArithmetic(const Type* type)
+        : ArithmeticTrait(type, nullptr)
+    {}
+
     RPY_NO_DISCARD bool
     has_operation(ArithmeticOperation op) const noexcept override;
     void unsafe_add_inplace(void* lhs, const void* rhs) const noexcept override;

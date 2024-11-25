@@ -14,6 +14,8 @@ class IntegerNumber : public NumberTrait
 {
 
 public:
+    explicit IntegerNumber(const Type* type) : NumberTrait(type, type) {}
+
     bool has_function(NumberFunction fn_id) const noexcept override;
     void unsafe_real(void* dst, const void* src) const override;
     void unsafe_imaginary(void* dst, const void* src) const override;
@@ -25,7 +27,7 @@ public:
     ) const override;
 };
 
-} // generics
-} // rpy
+}// namespace generics
+}// namespace rpy
 
-#endif //ROUGHPY_GENERICS_INTERNAL_INTEGER_NUMBER_H
+#endif// ROUGHPY_GENERICS_INTERNAL_INTEGER_NUMBER_H
