@@ -19,6 +19,10 @@ add_library(RoughPy_Generics_Multiprecision
         integer_type.h
         integer_arithmetic.cpp
         integer_arithmetic.h
+        integer_comparison.cpp
+        integer_comparison.h
+        integer_number.cpp
+        integer_number.h
 )
 
 
