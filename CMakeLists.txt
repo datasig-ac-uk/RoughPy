@@ -177,6 +177,7 @@ find_package(OpenCL CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(PCGRandom REQUIRED)
 find_package(GMP REQUIRED)
+find_package(MPFR REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
 
 message(STATUS "Target architecture ${RPY_ARCH}")

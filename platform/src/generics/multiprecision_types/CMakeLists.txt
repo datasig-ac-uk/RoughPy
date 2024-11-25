@@ -43,6 +43,7 @@ target_include_directories(RoughPy_Generics_Multiprecision PRIVATE
 target_link_libraries(RoughPy_Generics_Multiprecision PRIVATE
         RoughPy::Core
         GMP::GMP
+        MPFR::MPFR
 )
 
 
