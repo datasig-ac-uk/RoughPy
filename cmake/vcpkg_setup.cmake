@@ -20,7 +20,7 @@ function(_setup_vcpkg _path)
             OUTPUT_QUIET
     )
 
-    if (NOT _success)
+    if (NOT _success STREQUAL "0")
         message(FATAL_ERROR "Failed to clone vcpkg:\n${_err_msg}")
     endif()
 endfunction()
