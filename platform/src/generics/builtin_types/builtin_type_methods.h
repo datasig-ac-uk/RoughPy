@@ -75,7 +75,8 @@ bool BuiltinTypeBase<T>::parse_from_string(
      || defined(RPY_PLATFORM_MACOS))
         // Clang <14.0 and AppleClang don't have support for from_chars
         // for floating_point values
-        std::istringstream ss(result);
+        std::istringstream ss(string(result));
+
         ss >> value;
         if (ss.fail()) {
             result.ptr = nullptr;
