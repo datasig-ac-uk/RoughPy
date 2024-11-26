@@ -59,11 +59,11 @@ constexpr BasicProperties basic_properties_of() noexcept;
 
 
 template <typename T>
-TypePtr get_type() noexcept
-{
-    static_assert(false, "There is no Type associated with T");
-    RPY_UNREACHABLE_RETURN(nullptr);
-}
+TypePtr get_type() noexcept;
+//{
+//    static_assert(false, "There is no Type associated with T");
+//    RPY_UNREACHABLE_RETURN(nullptr);
+//}
 
 /**
  * @brief Encapsulates the definition and functionalities related to custom
