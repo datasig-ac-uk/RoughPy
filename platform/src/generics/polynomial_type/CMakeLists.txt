@@ -15,7 +15,9 @@ target_sources(RoughPy_Platform PRIVATE
 if (ROUGHPY_BUILD_TESTS)
 
     add_executable(test_polynomial
+        test_indeterminate.cpp
         test_monomial.cpp
+        test_polynomial.cpp
         indeterminate.cpp
         indeterminate.h
         monomial.cpp

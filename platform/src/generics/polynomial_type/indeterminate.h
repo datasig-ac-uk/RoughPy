@@ -42,10 +42,14 @@ public:
     static constexpr base_type integer_mask
             = (static_cast<base_type>(1) << char_shift) - 1;
 
-    constexpr Indeterminate() noexcept : m_data(0) {}
+    static constexpr base_type default_value =
+        static_cast<base_type>('x') << char_shift;
+
+
+    constexpr Indeterminate() noexcept : m_data(default_value) {}
 
     explicit Indeterminate(base_type integer) noexcept
-        : m_data(integer & integer_mask)
+        : m_data(default_value | (integer & integer_mask))
     {
         RPY_DBG_ASSERT_LE(integer, integer_mask);
     }

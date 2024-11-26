@@ -22,6 +22,7 @@
 namespace rpy {
 namespace generics {
 
+
 class Monomial
 {
     using map_storage_type = boost::container::
@@ -74,7 +75,6 @@ public:
     Monomial& operator*=(const Monomial& rhs);
 
 
-    RPY_NO_DISCARD
     friend hash_t hash_value(const Monomial& value);
 
 
@@ -83,6 +83,7 @@ public:
 
 RPY_NO_DISCARD
 hash_t hash_value(const Monomial& value);
+
 RPY_NO_DISCARD
 Monomial operator*(const Monomial& lhs, const Monomial& rhs);
 std::ostream &operator<<(std::ostream &os, const Monomial& value);
