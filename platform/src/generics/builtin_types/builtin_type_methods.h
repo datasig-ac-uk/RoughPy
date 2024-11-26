@@ -67,15 +67,19 @@ bool BuiltinTypeBase<T>::parse_from_string(
     const auto* begin = str.data();
     const auto* end = str.data() + str.size();
 
-    auto result = std::from_chars(begin, end, value);
+
+    std::from_chars_result result;
+    if constexpr (is_floating_point_v<T>) {
+        result = std::from_chars(begin, end, value, std::chars_format::general);
+    } else {
+        result = std::from_chars(begin, end, value, 10);
+    }
 
     if (result.ec == std::errc::invalid_argument) {
         return false;
     }
 
-    if (result.ptr != end) {
-        return false;
-    }
+    RPY_DBG_ASSERT_EQ(result.ptr, end);
 
     *static_cast<T*>(data) = std::move(value);
     return true;
