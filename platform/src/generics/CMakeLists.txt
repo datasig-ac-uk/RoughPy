@@ -28,6 +28,8 @@ target_sources(RoughPy_Platform PRIVATE
 
 add_subdirectory(builtin_types)
 
+add_subdirectory(polynomial_type)
+
 target_link_libraries(RoughPy_Platform PRIVATE
         RoughPy_Generics_BuiltinType
 )
