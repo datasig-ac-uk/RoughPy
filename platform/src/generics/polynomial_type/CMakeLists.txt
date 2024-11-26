@@ -7,5 +7,7 @@ target_sources(RoughPy_Platform PRIVATE
     indeterminate.cpp
     monomial.cpp
     monomial.h
+        polynomial.cpp
+        polynomial.h
 )
 

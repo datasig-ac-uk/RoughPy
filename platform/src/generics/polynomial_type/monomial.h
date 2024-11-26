@@ -49,16 +49,24 @@ public:
     {}
 
 
+    RPY_NO_DISCARD
     deg_t degree() const noexcept;
+    RPY_NO_DISCARD
     deg_t type() const noexcept { return m_data.size(); }
 
+    RPY_NO_DISCARD
     iterator begin() noexcept { return m_data.begin(); }
+    RPY_NO_DISCARD
     iterator end() noexcept { return m_data.end(); }
+    RPY_NO_DISCARD
     const_iterator begin() const noexcept { return m_data.begin(); }
+    RPY_NO_DISCARD
     const_iterator end() const noexcept { return m_data.end(); }
 
 
+    RPY_NO_DISCARD
     deg_t operator[](Indeterminate indeterminate) const noexcept;
+    RPY_NO_DISCARD
     deg_t& operator[](Indeterminate indeterminate) noexcept {
         return m_data[indeterminate];
     };
@@ -66,31 +74,40 @@ public:
     Monomial& operator*=(const Monomial& rhs);
 
 
+    RPY_NO_DISCARD
     friend hash_t hash_value(const Monomial& value);
 
 
 };
 
 
+RPY_NO_DISCARD
 hash_t hash_value(const Monomial& value);
+RPY_NO_DISCARD
 Monomial operator*(const Monomial& lhs, const Monomial& rhs);
 std::ostream &operator<<(std::ostream &os, const Monomial& value);
 
+RPY_NO_DISCARD
 bool operator==(const Monomial& lhs, const Monomial& rhs) noexcept;
 
+RPY_NO_DISCARD
 inline bool operator!=(const Monomial& lhs, const Monomial& rhs) noexcept
 {
     return !(lhs == rhs);
 }
 
+RPY_NO_DISCARD
 bool operator<(const Monomial& lhs, const Monomial& rhs) noexcept;
+RPY_NO_DISCARD
 bool operator<=(const Monomial& lhs, const Monomial& rhs) noexcept;
 
+RPY_NO_DISCARD
 inline bool operator>(const Monomial& lhs, const Monomial& rhs) noexcept
 {
     return !(lhs <= rhs);
 }
 
+RPY_NO_DISCARD
 inline bool operator>=(const Monomial& lhs, const Monomial& rhs) noexcept
 {
     return !(lhs < rhs);
