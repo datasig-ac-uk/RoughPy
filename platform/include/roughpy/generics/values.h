@@ -424,7 +424,7 @@ public:
 
 namespace dtl {
 
-void backup_display(std::ostream& os);
+void ROUGHPY_PLATFORM_EXPORT backup_display(std::ostream& os);
 
 }
 
