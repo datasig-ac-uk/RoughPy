@@ -9,11 +9,7 @@
 
 #include <algorithm>
 #include <charconv>
-#if ((defined(RPY_COMPILER_CLANG)                                              \
-      && RPY_COMPILER_CLANG < RPY_COMPILER_VERSION(14, 0, 0))                  \
-     || defined(RPY_PLATFORM_MACOS))
 #include <sstream>
-#endif
 
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
@@ -65,36 +61,28 @@ bool BuiltinTypeBase<T>::parse_from_string(
 
     T value;
 
-    const auto* begin = str.data();
-    const auto* end = str.data() + str.size();
 
-    std::from_chars_result result;
-    if constexpr (is_floating_point_v<T>) {
-#if ((defined(RPY_COMPILER_CLANG)                                              \
-      && RPY_COMPILER_CLANG < RPY_COMPILER_VERSION(14, 0, 0))                  \
-     || defined(RPY_PLATFORM_MACOS))
-        // Clang <14.0 and AppleClang don't have support for from_chars
-        // for floating_point values
-        std::istringstream ss(string(result));
-
-        ss >> value;
-        if (ss.fail()) {
-            result.ptr = nullptr;
-            result.ec = std::errc::invalid_argument;
-        } else {
-            result.ptr = end;
-            result.ec = std::errc();
+    if constexpr (is_integral_v<T>) {
+        const auto* begin = str.data();
+        const auto* end = str.data() + str.size();
+        auto [ptr, ec] = std::from_chars(begin, end, value, 10);
+        if (ec != std::errc() || ptr != end) { return false; }
+    } else if constexpr (is_same_v<T, float>) {
+        string tmp(str);
+        try {
+            value = std::stof(tmp);
+        } catch (std::exception& exc) {
+            return false;
         }
-#else
-        result = std::from_chars(begin, end, value, std::chars_format::general);
-#endif
-    } else {
-        result = std::from_chars(begin, end, value, 10);
+    } else if constexpr(is_same_v<T, double>) {
+        string tmp(str);
+        try {
+            value = std::stod(tmp);
+        } catch (std::exception& exc) {
+            return false;
+        }
     }
 
-    if (result.ec == std::errc::invalid_argument) { return false; }
-
-    RPY_DBG_ASSERT_EQ(result.ptr, end);
 
     *static_cast<T*>(data) = std::move(value);
     return true;
