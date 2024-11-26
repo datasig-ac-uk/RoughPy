@@ -10,6 +10,6 @@ using namespace rpy;
 using namespace rpy::generics;
 
 
-std::ostream& operator<<(std::ostream& os, const Indeterminate& value) {
+std::ostream& generics::operator<<(std::ostream& os, const Indeterminate& value) {
     return os << value.prefix() << value.index();
 }

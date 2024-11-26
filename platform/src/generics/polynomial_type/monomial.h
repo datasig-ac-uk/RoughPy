@@ -25,7 +25,7 @@ namespace generics {
 class Monomial
 {
     using map_storage_type = boost::container::
-            small_vector<pair<const Indeterminate, deg_t>, 1>;
+            small_vector<pair<Indeterminate, deg_t>, 1>;
     using map_type = boost::container::
             flat_map<Indeterminate, deg_t, std::less<>, map_storage_type>;
 
@@ -40,7 +40,7 @@ public:
 
     explicit Monomial(Indeterminate indeterminate, deg_t degree=1) noexcept
     {
-        m_data.emplace(indeterminate, degree);
+        m_data.emplace(std::move(indeterminate), std::move(degree));
     }
 
     template <typename InputIt>
@@ -58,10 +58,16 @@ public:
     const_iterator end() const noexcept { return m_data.end(); }
 
 
+    deg_t operator[](Indeterminate indeterminate) const noexcept;
+    deg_t& operator[](Indeterminate indeterminate) noexcept {
+        return m_data[indeterminate];
+    };
+
     Monomial& operator*=(const Monomial& rhs);
 
 
     friend hash_t hash_value(const Monomial& value);
+
 
 };
 
@@ -69,6 +75,26 @@ public:
 hash_t hash_value(const Monomial& value);
 Monomial operator*(const Monomial& lhs, const Monomial& rhs);
 std::ostream &operator<<(std::ostream &os, const Monomial& value);
+
+bool operator==(const Monomial& lhs, const Monomial& rhs) noexcept;
+
+inline bool operator!=(const Monomial& lhs, const Monomial& rhs) noexcept
+{
+    return !(lhs == rhs);
+}
+
+bool operator<(const Monomial& lhs, const Monomial& rhs) noexcept;
+bool operator<=(const Monomial& lhs, const Monomial& rhs) noexcept;
+
+inline bool operator>(const Monomial& lhs, const Monomial& rhs) noexcept
+{
+    return !(lhs <= rhs);
+}
+
+inline bool operator>=(const Monomial& lhs, const Monomial& rhs) noexcept
+{
+    return !(lhs < rhs);
+}
 
 
 

@@ -45,13 +45,13 @@ public:
 
     constexpr Indeterminate() noexcept : m_data(0) {}
 
-    constexpr explicit Indeterminate(base_type integer) noexcept
+    explicit Indeterminate(base_type integer) noexcept
         : m_data(integer & integer_mask)
     {
         RPY_DBG_ASSERT_LE(integer, integer_mask);
     }
 
-    constexpr explicit Indeterminate(char prefix, base_type integer) noexcept
+    explicit Indeterminate(char prefix, base_type integer) noexcept
     {
         RPY_DBG_ASSERT_LE(integer, integer_mask);
 
