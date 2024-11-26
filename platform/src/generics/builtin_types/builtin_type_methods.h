@@ -7,9 +7,9 @@
 
 #include "builtin_type.h"
 
+#include <cstdlib>
 #include <algorithm>
 #include <charconv>
-#include <sstream>
 
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
@@ -71,14 +71,14 @@ bool BuiltinTypeBase<T>::parse_from_string(
         string tmp(str);
         try {
             value = std::stof(tmp);
-        } catch (std::exception& exc) {
+        } catch (std::exception& RPY_UNUSED(exc)) {
             return false;
         }
     } else if constexpr(is_same_v<T, double>) {
         string tmp(str);
         try {
             value = std::stod(tmp);
-        } catch (std::exception& exc) {
+        } catch (std::exception& RPY_UNUSED(exc)) {
             return false;
         }
     }
