@@ -7,9 +7,9 @@
 
 #include "builtin_type.h"
 
+#include <cstdlib>
 #include <algorithm>
 #include <charconv>
-
 
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
@@ -26,7 +26,6 @@
 
 namespace rpy::generics {
 
-
 template <typename T>
 string_view BuiltinTypeBase<T>::id() const noexcept
 {
@@ -38,7 +37,6 @@ const std::type_info& BuiltinTypeBase<T>::type_info() const noexcept
 {
     return typeid(T);
 }
-
 
 template <typename T>
 void BuiltinTypeBase<T>::inc_ref() const noexcept
@@ -53,7 +51,6 @@ bool BuiltinTypeBase<T>::dec_ref() const noexcept
     return false;
 }
 
-
 template <typename T>
 bool BuiltinTypeBase<T>::parse_from_string(
         void* data,
@@ -64,23 +61,32 @@ bool BuiltinTypeBase<T>::parse_from_string(
 
     T value;
 
-    const auto* begin = str.data();
-    const auto* end = str.data() + str.size();
 
-    auto result = std::from_chars(begin, end, value);
-
-    if (result.ec == std::errc::invalid_argument) {
-        return false;
+    if constexpr (is_integral_v<T>) {
+        const auto* begin = str.data();
+        const auto* end = str.data() + str.size();
+        auto [ptr, ec] = std::from_chars(begin, end, value, 10);
+        if (ec != std::errc() || ptr != end) { return false; }
+    } else if constexpr (is_same_v<T, float>) {
+        string tmp(str);
+        try {
+            value = std::stof(tmp);
+        } catch (std::exception& RPY_UNUSED(exc)) {
+            return false;
+        }
+    } else if constexpr(is_same_v<T, double>) {
+        string tmp(str);
+        try {
+            value = std::stod(tmp);
+        } catch (std::exception& RPY_UNUSED(exc)) {
+            return false;
+        }
     }
 
-    if (result.ptr != end) {
-        return false;
-    }
 
     *static_cast<T*>(data) = std::move(value);
     return true;
 }
-
 
 template <typename T>
 void* BuiltinTypeBase<T>::allocate_object() const
@@ -101,13 +107,11 @@ void BuiltinTypeBase<T>::copy_or_move(
         void* dst,
         const void* src,
         size_t count,
-        bool RPY_UNUSED_VAR(move) // Move semantics makes no difference for T
+        bool RPY_UNUSED_VAR(move)// Move semantics makes no difference for T
 ) const noexcept
 {
 
-    if (RPY_UNLIKELY(dst == nullptr || count == 0)) {
-        return;
-    }
+    if (RPY_UNLIKELY(dst == nullptr || count == 0)) { return; }
 
     auto* dst_ptr = static_cast<T*>(dst);
 
@@ -129,8 +133,6 @@ void BuiltinTypeBase<T>::destroy_range(void* data, size_t count) const
         std::destroy_n(static_cast<T*>(data), count);
     }
 }
-
-
 
 template <typename T>
 std::unique_ptr<const ConversionTrait>
@@ -167,21 +169,17 @@ BuiltinTypeBase<T>::convert_from(const Type& type) const noexcept
         return it->second->make(this, &type);
     }
 
-
     return Type::convert_from(type);
 }
 
 template <typename T>
-const BuiltinTrait* BuiltinTypeBase<T>::get_builtin_trait(BuiltinTraitID id
-) const noexcept
+const BuiltinTrait*
+BuiltinTypeBase<T>::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
     switch (id) {
-        case BuiltinTraitID::Comparison:
-            return &m_comparison_trait;
-        case BuiltinTraitID::Arithmetic:
-            return &m_arithmetic_trait;
-        case BuiltinTraitID::Number:
-            return &m_number_trait;
+        case BuiltinTraitID::Comparison: return &m_comparison_trait;
+        case BuiltinTraitID::Arithmetic: return &m_arithmetic_trait;
+        case BuiltinTraitID::Number: return &m_number_trait;
     }
     RPY_UNREACHABLE_RETURN(nullptr);
 }
@@ -206,18 +204,14 @@ BuiltinTypeBase<T>::display(std::ostream& os, const void* value) const
     return os << *static_cast<const T*>(value);
 }
 
-
 template <typename T>
 hash_t BuiltinTypeBase<T>::hash_of(const void* value) const noexcept
 {
     Hash<T> hasher;
-    if (RPY_UNLIKELY(value == nullptr)) {
-        return hasher(0.0);
-    }
+    if (RPY_UNLIKELY(value == nullptr)) { return hasher(0.0); }
     return hasher(*static_cast<const T*>(value));
 }
 
-}
+}// namespace rpy::generics
 
-
-#endif //ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_METHODS_H
+#endif// ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_METHODS_H
