@@ -24,6 +24,15 @@ inline hash_t mpz_hash(mpz_srcptr integer) noexcept
     return result;
 }
 
+inline hash_t mpq_hash(mpq_srcptr integer) noexcept
+{
+    auto num_hash = mpz_hash(mpq_numref(integer));
+    const auto denom_hash = mpz_hash(mpq_denref(integer));
+
+    hash_combine(num_hash, denom_hash);
+    return num_hash;
+}
+
 
 }
 

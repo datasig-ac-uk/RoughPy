@@ -11,6 +11,7 @@
 #include <roughpy/platform/alloc.h>
 
 #include "mpz_hash.h"
+#include "mpq_string_rep.h"
 
 using namespace rpy;
 using namespace rpy::generics;
@@ -145,18 +146,9 @@ RationalType::display(std::ostream& os, const void* value) const
 
     const auto* rat = static_cast<mpq_srcptr>(value);
 
-    // The GMP docs describe the size of a mpq string representation in the
-    // documentation https://gmplib.org/manual/Rational-Conversions
-    auto num_size = mpz_sizeinbase(mpq_numref(rat), 10);
-    auto denom_size = mpz_sizeinbase(mpq_denref(rat), 10);
-
     string buffer;
-    buffer.resize(num_size + denom_size + 3);
+    mpq_display_rep(buffer, rat);
 
-    mpq_get_str(buffer.data(), 10, rat);
-
-    // The buffer has at least one null byte at the end, cut these off
-    while (buffer.back() == '\0') { buffer.pop_back(); }
     return os << buffer;
 }
 
@@ -165,11 +157,7 @@ hash_t RationalType::hash_of(const void* value) const noexcept
     if (value == nullptr) { return 0; }
 
     auto* rat = static_cast<mpq_srcptr>(value);
-    auto num_hash = mpz_hash(mpq_numref(rat));
-    const auto denom_hash = mpz_hash(mpq_denref(rat));
-
-    hash_combine(num_hash, denom_hash);
-    return num_hash;
+    return mpq_hash(rat);
 }
 
 TypePtr RationalType::get() noexcept
