@@ -30,10 +30,7 @@ target_sources(RoughPy_Platform PRIVATE
 add_subdirectory(builtin_types)
 add_subdirectory(multiprecision_types)
 
-target_link_libraries(RoughPy_Platform PRIVATE
-        RoughPy_Generics_BuiltinType
-        RoughPy_Generics_Multiprecision
-)
+
 
 if (ROUGHPY_BUILD_TESTS)
 

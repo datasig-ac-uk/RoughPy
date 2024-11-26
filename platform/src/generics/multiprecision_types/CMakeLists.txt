@@ -2,8 +2,7 @@
 
 
 
-add_library(RoughPy_Generics_Multiprecision
-        STATIC
+target_sources(RoughPy_Platform PRIVATE
         rational_type.cpp
         rational_type.h
         rational_arithmetic.cpp
@@ -38,25 +37,14 @@ add_library(RoughPy_Generics_Multiprecision
 
 
 
-set_target_properties(RoughPy_Generics_Multiprecision PROPERTIES
-        POSITION_INDEPENDENT_CODE ON
-        LINK_LANGUAGE CXX
-)
 
-target_include_directories(RoughPy_Generics_Multiprecision PRIVATE
-        ${ROUGHPY_PLATFORM_INCLUDE_DIR}/../
-        ${CMAKE_CURRENT_BINARY_DIR}/../../..
-)
-
-target_link_libraries(RoughPy_Generics_Multiprecision PRIVATE
-        RoughPy::Core
+target_link_libraries(RoughPy_Platform PRIVATE
         GMP::GMP
         MPFR::MPFR
 )
 
 
 if (ROUGHPY_BUILD_TESTS)
-
 
     add_executable(test_multiprecision_types
             test_rational_type.cpp
@@ -70,8 +58,6 @@ if (ROUGHPY_BUILD_TESTS)
     )
 
     setup_roughpy_cpp_tests(test_multiprecision_types)
-
-
 
 endif()
 
