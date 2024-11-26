@@ -15,7 +15,6 @@
 #include "roughpy/core/traits.h"
 #include "roughpy/core/types.h"
 
-#include "roughpy/platform/roughpy_platform_export.h"
 
 namespace rpy::generics {
 
@@ -85,7 +84,7 @@ public:
         return result;
     }
 
-    base_type index() const noexcept { return m_data & (~integer_mask); }
+    base_type index() const noexcept { return m_data & integer_mask; }
 
     friend constexpr bool
     operator==(const Indeterminate& lhs, const Indeterminate& rhs) noexcept
