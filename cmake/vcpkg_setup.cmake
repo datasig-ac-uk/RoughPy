@@ -27,7 +27,7 @@ endfunction()
 
 function(_find_or_install_vcpkg _toolchain_location_var)
 
-    cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR "tools" "vcpkg" _vcpkg_in_source_root)
+    cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR "tools" "vcpkg" OUTPUT_VARIABLE _vcpkg_in_source_root)
 
     # First check if VCPKG_ROOT is set as a CMake variable or in the environment
     if (DEFINED VCPKG_ROOT)
@@ -37,9 +37,10 @@ function(_find_or_install_vcpkg _toolchain_location_var)
         message(DEBUG "vcpkg root set in $ENV{VCPKG_ROOT}")
         file(REAL_PATH "$ENV{VCPKG_ROOT}" _vcpkg_root EXPAND_TILDE)
     else()
-        message(DEBUG "vcpkg root not set, using ${_vcpkg_in_source_root}")
+        message(DEBUG "vcpkg root not set, using \"${_vcpkg_in_source_root}\"")
         set(_vcpkg_root ${_vcpkg_in_source_root})
     endif()
+
     message(DEBUG "Looking for vcpkg in ${_vcpkg_root}")
 
     cmake_path(APPEND _vcpkg_root "scripts" "buildsystems" "vcpkg.cmake" OUTPUT_VARIABLE _toolchain_file)
@@ -71,6 +72,9 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 _find_or_install_vcpkg(_vcpkg_toolchain)
+if (NOT DEFINED _vcpkg_toolchain OR NOT EXISTS "${_vcpkg_toolchain}")
+    message(FATAL_ERROR "Failed to detect or install vcpkg")
+endif()
 set(CMAKE_TOOLCHAIN_FILE "${_vcpkg_toolchain}"
         CACHE FILEPATH "vcpkg toolchain file location" FORCE)
 
