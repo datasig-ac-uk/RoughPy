@@ -59,11 +59,11 @@ constexpr BasicProperties basic_properties_of() noexcept;
 
 
 template <typename T>
-TypePtr get_type() noexcept
-{
-    static_assert(false, "There is no Type associated with T");
-    RPY_UNREACHABLE_RETURN(nullptr);
-}
+TypePtr get_type() noexcept;
+//{
+//    static_assert(false, "There is no Type associated with T");
+//    RPY_UNREACHABLE_RETURN(nullptr);
+//}
 
 /**
  * @brief Encapsulates the definition and functionalities related to custom
@@ -309,6 +309,23 @@ struct BuiltinTypes
  */
 ROUGHPY_PLATFORM_EXPORT
 const BuiltinTypes& get_builtin_types() noexcept;
+
+
+class ROUGHPY_PLATFORM_EXPORT MultiPrecisionTypes
+{
+    MultiPrecisionTypes();
+public:
+
+    TypePtr integer_type;
+    TypePtr rational_type;
+
+    RPY_NO_DISCARD
+    TypePtr float_type(int n_precision) const;
+
+    RPY_NO_DISCARD
+    static const MultiPrecisionTypes& get() noexcept;
+};
+
 
 
 template <typename T>
