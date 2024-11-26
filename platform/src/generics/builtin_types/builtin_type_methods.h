@@ -9,7 +9,11 @@
 
 #include <algorithm>
 #include <charconv>
-
+#if ((defined(RPY_COMPILER_CLANG)                                              \
+      && RPY_COMPILER_CLANG < RPY_COMPILER_VERSION(14, 0, 0))                  \
+     || defined(RPY_PLATFORM_MACOS))
+#include <sstream>
+#endif
 
 #include "roughpy/core/check.h"
 #include "roughpy/core/debug_assertion.h"
@@ -26,7 +30,6 @@
 
 namespace rpy::generics {
 
-
 template <typename T>
 string_view BuiltinTypeBase<T>::id() const noexcept
 {
@@ -38,7 +41,6 @@ const std::type_info& BuiltinTypeBase<T>::type_info() const noexcept
 {
     return typeid(T);
 }
-
 
 template <typename T>
 void BuiltinTypeBase<T>::inc_ref() const noexcept
@@ -53,7 +55,6 @@ bool BuiltinTypeBase<T>::dec_ref() const noexcept
     return false;
 }
 
-
 template <typename T>
 bool BuiltinTypeBase<T>::parse_from_string(
         void* data,
@@ -67,24 +68,36 @@ bool BuiltinTypeBase<T>::parse_from_string(
     const auto* begin = str.data();
     const auto* end = str.data() + str.size();
 
-
     std::from_chars_result result;
     if constexpr (is_floating_point_v<T>) {
+#if ((defined(RPY_COMPILER_CLANG)                                              \
+      && RPY_COMPILER_CLANG < RPY_COMPILER_VERSION(14, 0, 0))                  \
+     || defined(RPY_PLATFORM_MACOS))
+        // Clang <14.0 and AppleClang don't have support for from_chars
+        // for floating_point values
+        std::istringstream ss(result);
+        ss >> value;
+        if (ss.fail()) {
+            result.ptr = nullptr;
+            result.ec = std::errc::invalid_argument;
+        } else {
+            result.ptr = end;
+            result.ec = std::errc();
+        }
+#else
         result = std::from_chars(begin, end, value, std::chars_format::general);
+#endif
     } else {
         result = std::from_chars(begin, end, value, 10);
     }
 
-    if (result.ec == std::errc::invalid_argument) {
-        return false;
-    }
+    if (result.ec == std::errc::invalid_argument) { return false; }
 
     RPY_DBG_ASSERT_EQ(result.ptr, end);
 
     *static_cast<T*>(data) = std::move(value);
     return true;
 }
-
 
 template <typename T>
 void* BuiltinTypeBase<T>::allocate_object() const
@@ -105,13 +118,11 @@ void BuiltinTypeBase<T>::copy_or_move(
         void* dst,
         const void* src,
         size_t count,
-        bool RPY_UNUSED_VAR(move) // Move semantics makes no difference for T
+        bool RPY_UNUSED_VAR(move)// Move semantics makes no difference for T
 ) const noexcept
 {
 
-    if (RPY_UNLIKELY(dst == nullptr || count == 0)) {
-        return;
-    }
+    if (RPY_UNLIKELY(dst == nullptr || count == 0)) { return; }
 
     auto* dst_ptr = static_cast<T*>(dst);
 
@@ -133,8 +144,6 @@ void BuiltinTypeBase<T>::destroy_range(void* data, size_t count) const
         std::destroy_n(static_cast<T*>(data), count);
     }
 }
-
-
 
 template <typename T>
 std::unique_ptr<const ConversionTrait>
@@ -171,21 +180,17 @@ BuiltinTypeBase<T>::convert_from(const Type& type) const noexcept
         return it->second->make(this, &type);
     }
 
-
     return Type::convert_from(type);
 }
 
 template <typename T>
-const BuiltinTrait* BuiltinTypeBase<T>::get_builtin_trait(BuiltinTraitID id
-) const noexcept
+const BuiltinTrait*
+BuiltinTypeBase<T>::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
     switch (id) {
-        case BuiltinTraitID::Comparison:
-            return &m_comparison_trait;
-        case BuiltinTraitID::Arithmetic:
-            return &m_arithmetic_trait;
-        case BuiltinTraitID::Number:
-            return &m_number_trait;
+        case BuiltinTraitID::Comparison: return &m_comparison_trait;
+        case BuiltinTraitID::Arithmetic: return &m_arithmetic_trait;
+        case BuiltinTraitID::Number: return &m_number_trait;
     }
     RPY_UNREACHABLE_RETURN(nullptr);
 }
@@ -210,18 +215,14 @@ BuiltinTypeBase<T>::display(std::ostream& os, const void* value) const
     return os << *static_cast<const T*>(value);
 }
 
-
 template <typename T>
 hash_t BuiltinTypeBase<T>::hash_of(const void* value) const noexcept
 {
     Hash<T> hasher;
-    if (RPY_UNLIKELY(value == nullptr)) {
-        return hasher(0.0);
-    }
+    if (RPY_UNLIKELY(value == nullptr)) { return hasher(0.0); }
     return hasher(*static_cast<const T*>(value));
 }
 
-}
+}// namespace rpy::generics
 
-
-#endif //ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_METHODS_H
+#endif// ROUGHPY_GENERICS_INTERNAL_BUILTIN_TYPE_METHODS_H
