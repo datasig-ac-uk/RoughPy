@@ -17,6 +17,7 @@ target_sources(RoughPy_Platform PRIVATE
         conversion_trait.cpp
         multiprecision_types.cpp
         number_trait.cpp
+        polynomial_types.cpp
         type.cpp
         type_builtin.cpp
         type_promotion.cpp
