@@ -4,6 +4,9 @@
 
 #include "polynomial.h"
 
+#include <algorithm>
+#include <numeric>
+
 #include "roughpy/core/hash.h"
 
 #include "generics/multiprecision_types/mpq_string_rep.h"
@@ -11,6 +14,13 @@
 
 using namespace rpy;
 using namespace rpy::generics;
+
+deg_t Polynomial::degree() const noexcept
+{
+    return std::accumulate(begin(), end(), 0, [](auto acc, const auto& pair) {
+        return std::max(acc, pair.first.degree());
+    });
+}
 
 void generics::poly_add_inplace(Polynomial& lhs, const Polynomial& rhs)
 {
@@ -89,7 +99,7 @@ void generics::poly_div_inplace(Polynomial& lhs, const dtl::RationalCoeff& rhs)
         RPY_THROW(std::domain_error, "division by zero");
     }
 
-    for (auto it = lhs.begin(); it != lhs.end();) {
+    for (auto it = lhs.begin(); it != lhs.end(); ++it) {
         // Divide the coefficient of the current term by rhs
         mpq_div(it->second.content, it->second.content, rhs.content);
     }
@@ -133,7 +143,10 @@ void generics::poly_print(std::ostream& os, const Polynomial& value)
     for (const auto& [key, coeff] : value) {
         tmp_coeff.clear();
         mpq_display_rep(tmp_coeff, coeff.content);
-        os << ' ' << tmp_coeff << '(' << key << ')';
+        os << ' ' << tmp_coeff;
+        if (RPY_UNLIKELY(!key.empty())) {
+            os << '(' << key << ')';
+        }
     }
     os << " }";
 }

@@ -6,6 +6,7 @@
 #define ROUGHPY_GENERICS_INTERNAL_POLYNOMIAL_H
 
 #include <iosfwd>
+#include <utility>
 
 #include <boost/container/flat_map.hpp>
 #include <gmp.h>
@@ -35,7 +36,12 @@ struct RationalCoeff {
     {
         mpq_init(content);
         mpq_swap(content, other.content);
-        mpq_clear(other.content);
+    }
+
+    RationalCoeff(int64_t num, int64_t den)
+    {
+        mpq_init(content);
+        mpq_set_si(content, num, den);
     }
 
     // Copy assignment operator
@@ -86,6 +92,12 @@ public:
         : flat_map({std::make_pair(monomial, std::move(coeff))})
     {}
 
+    explicit Polynomial(
+            std::initializer_list<pair<Monomial, dtl::RationalCoeff>> list
+    )
+        : flat_map(list)
+    {}
+
     Polynomial& operator=(const Polynomial& other) = default;
     Polynomial& operator=(Polynomial&& other) noexcept = default;
 
@@ -100,10 +112,12 @@ public:
     using flat_map::rbegin;
     using flat_map::rend;
 
-    using flat_map::size;
-    using flat_map::empty;
     using flat_map::emplace;
+    using flat_map::empty;
+    using flat_map::size;
     using flat_map::operator[];
+
+    deg_t degree() const noexcept;
 };
 
 void poly_add_inplace(Polynomial& lhs, const Polynomial& rhs);
@@ -112,16 +126,17 @@ void poly_mul_inplace(Polynomial& lhs, const Polynomial& rhs);
 void poly_div_inplace(Polynomial& lhs, const dtl::RationalCoeff& rhs);
 
 bool poly_cmp_equal(const Polynomial& lhs, const Polynomial& rhs) noexcept;
-inline bool poly_cmp_is_zero(const Polynomial& value)
-{
-    return value.empty();
-}
+inline bool poly_cmp_is_zero(const Polynomial& value) { return value.empty(); }
 
-RPY_NO_DISCARD
-hash_t hash_value(const Polynomial& value);
+RPY_NO_DISCARD hash_t hash_value(const Polynomial& value);
 
 void poly_print(std::ostream& os, const Polynomial& value);
 
+
+inline bool operator==(const Polynomial& lhs, const Polynomial& rhs) noexcept
+{
+    return poly_cmp_equal(lhs, rhs);
+}
 
 
 }// namespace generics
