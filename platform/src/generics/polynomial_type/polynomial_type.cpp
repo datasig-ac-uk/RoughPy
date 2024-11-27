@@ -41,7 +41,7 @@ const std::type_info& PolynomialType::type_info() const noexcept
 
 BasicProperties PolynomialType::basic_properties() const noexcept
 {
-    return {false, false, false, false, false, false, false, false, false,
+    return {false, false, false, false, false, false, false, false, true,
             false, false};
 }
 
@@ -50,22 +50,15 @@ size_t PolynomialType::object_size() const noexcept
     return sizeof(Polynomial);
 }
 
-string_view PolynomialType::name() const noexcept
-{
-    return "Polynomial";
-}
+string_view PolynomialType::name() const noexcept { return "Polynomial"; }
 
-string_view PolynomialType::id() const noexcept
-{
-    return "poly";
-}
+string_view PolynomialType::id() const noexcept { return "poly"; }
 
 void* PolynomialType::allocate_object() const
 {
-    auto* ptr = static_cast<Polynomial*>(mem::small_object_alloc(sizeof(Polynomial)));
-    if (ptr == nullptr) {
-        throw std::bad_alloc();
-    }
+    auto* ptr = static_cast<Polynomial*>(mem::small_object_alloc(
+        sizeof(Polynomial)));
+    if (ptr == nullptr) { throw std::bad_alloc(); }
     construct_inplace(ptr);
 
     return ptr;
@@ -94,17 +87,13 @@ void PolynomialType::copy_or_move(void* dst,
     const auto* src_poly = static_cast<const Polynomial*>(src);
 
     if (src_poly == nullptr) {
-        for (size_t i = 0; i < count; ++i) {
-            dst_poly[i] = Polynomial();
-        }
+        for (size_t i = 0; i < count; ++i) { dst_poly[i] = Polynomial(); }
     } else if (move) {
         auto* modifiable_src = const_cast<Polynomial*>(src_poly);
         for (size_t i = 0; i < count; ++i) {
             dst_poly[i] = std::move(modifiable_src[i]);
         }
-    } else {
-        std::copy_n(src_poly, count, dst_poly);
-    }
+    } else { std::copy_n(src_poly, count, dst_poly); }
 }
 
 void PolynomialType::destroy_range(void* data, size_t count) const
@@ -132,9 +121,7 @@ get_builtin_trait(BuiltinTraitID id) const noexcept
 const std::ostream& PolynomialType::display(std::ostream& os,
                                             const void* value) const
 {
-    if (value == nullptr) {
-        return os << "{ }";
-    }
+    if (value == nullptr) { return os << "{ }"; }
     const auto* poly = static_cast<const Polynomial*>(value);
     poly_print(os, *poly);
     return os;
@@ -142,9 +129,7 @@ const std::ostream& PolynomialType::display(std::ostream& os,
 
 hash_t PolynomialType::hash_of(const void* value) const noexcept
 {
-    if (value == nullptr) {
-        return 0;
-    }
+    if (value == nullptr) { return 0; }
     return hash_value(*static_cast<const Polynomial*>(value));
 }
 
