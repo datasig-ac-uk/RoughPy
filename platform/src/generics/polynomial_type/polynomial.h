@@ -84,6 +84,9 @@ public:
 
     using flat_map::flat_map;
 
+    Polynomial(const Polynomial& other) = default;
+    Polynomial(Polynomial&& other) noexcept = default;
+
     explicit Polynomial(dtl::RationalCoeff coeff)
         : flat_map({std::make_pair(Monomial(), std::move(coeff))})
     {}
@@ -138,6 +141,11 @@ inline bool operator==(const Polynomial& lhs, const Polynomial& rhs) noexcept
     return poly_cmp_equal(lhs, rhs);
 }
 
+inline std::ostream& operator<<(std::ostream& os, const Polynomial& value)
+{
+    poly_print(os, value);
+    return os;
+}
 
 }// namespace generics
 
