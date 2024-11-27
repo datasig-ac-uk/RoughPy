@@ -86,10 +86,44 @@ TEST_F(TestPolynomialType, TestBasicProperties)
 
 TEST_F(TestPolynomialType, TestDisplayAndParseFromString)
 {
-    Value value(polynomial_type, string_view("{ 15/2 2(x1) 1(x2^2) }")); // Example string
+    Value value(polynomial_type, string_view("{ 15/2 2(x1) 1(x2^2) }"));
     std::stringstream ss;
     polynomial_type->display(ss, value.data());
-    EXPECT_EQ(ss.str(), "{ 15/2 2(x1) 1(x2^2) }"); // Example string
+    EXPECT_EQ(ss.str(), "{ 15/2 2(x1) 1(x2^2) }");
+}
+
+TEST_F(TestPolynomialType, TestParseMixedMonomial)
+{
+    Value value(polynomial_type, string_view("{ 1(x1x2) }"));
+    std::stringstream ss;
+    polynomial_type->display(ss, value.data());
+    EXPECT_EQ(ss.str(), "{ 1(x1 x2) }");
+}
+
+TEST_F(TestPolynomialType, TestParseFloatCoefficient)
+{
+    Value value(polynomial_type, string_view("{ 1.5(x1) }"));
+    std::stringstream ss;
+    polynomial_type->display(ss, value.data());
+    EXPECT_EQ(ss.str(), "{ 3/2(x1) }");
+}
+
+TEST_F(TestPolynomialType, TestParseNegativeCoefficients)
+{
+    Value value(polynomial_type,
+        string_view("{ -1 -1.25(x1) -22/7(x2) }"));
+    std::stringstream ss;
+    polynomial_type->display(ss, value.data());
+    EXPECT_EQ(ss.str(), "{ -1 -5/4(x1) -22/7(x2) }");
+}
+
+TEST_F(TestPolynomialType, TestParsePositiveCoefficients)
+{
+    Value value(polynomial_type,
+        string_view("{ +1 +1.25(x1) +22/7(x2) }"));
+    std::stringstream ss;
+    polynomial_type->display(ss, value.data());
+    EXPECT_EQ(ss.str(), "{ 1 5/4(x1) 22/7(x2) }");
 }
 
 /******************************************************************************
