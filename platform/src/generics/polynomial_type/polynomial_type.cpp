@@ -13,6 +13,7 @@
 
 #include <roughpy/platform/alloc.h>
 
+
 #include "indeterminate.h"
 #include "monomial.h"
 #include "polynomial.h"
@@ -20,6 +21,11 @@
 
 using namespace rpy;
 using namespace rpy::generics;
+
+PolynomialType::PolynomialType()
+    : m_arithmetic(this, MultiPrecisionTypes::get().rational_type.get()),
+      m_comparison(this),
+      m_number(this) {}
 
 void PolynomialType::inc_ref() const noexcept
 {
@@ -115,7 +121,12 @@ convert_from(const Type& type) const noexcept
 const BuiltinTrait* PolynomialType::
 get_builtin_trait(BuiltinTraitID id) const noexcept
 {
-    return Type::get_builtin_trait(id);
+    switch (id) {
+        case BuiltinTraitID::Arithmetic: return &m_arithmetic;
+        case BuiltinTraitID::Comparison: return &m_comparison;
+        case BuiltinTraitID::Number: return &m_number;
+    }
+    RPY_UNREACHABLE_RETURN(nullptr);
 }
 
 const std::ostream& PolynomialType::display(std::ostream& os,

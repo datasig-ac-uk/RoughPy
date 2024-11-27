@@ -7,11 +7,19 @@
 
 #include "roughpy/generics/type.h"
 
+#include "polynomial_arithmetic.h"
+#include "polynomial_comparison.h"
+#include "polynomial_number.h"
+
 namespace rpy {
 namespace generics {
 
 class PolynomialType : public Type {
+    PolynomialArithmetic m_arithmetic;
+    PolynomialComparison m_comparison;
+    PolynomialNumber m_number;
 
+    PolynomialType();
 
 protected:
     void inc_ref() const noexcept override;
