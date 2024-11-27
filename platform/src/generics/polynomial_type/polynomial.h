@@ -126,7 +126,11 @@ public:
 void poly_add_inplace(Polynomial& lhs, const Polynomial& rhs);
 void poly_sub_inplace(Polynomial& lhs, const Polynomial& rhs);
 void poly_mul_inplace(Polynomial& lhs, const Polynomial& rhs);
-void poly_div_inplace(Polynomial& lhs, const dtl::RationalCoeff& rhs);
+void poly_div_inplace(Polynomial& lhs, mpq_srcptr rhs);
+inline void poly_div_inplace(Polynomial& lhs, const dtl::RationalCoeff& rhs)
+{
+    poly_div_inplace(lhs, rhs.content);
+}
 
 bool poly_cmp_equal(const Polynomial& lhs, const Polynomial& rhs) noexcept;
 inline bool poly_cmp_is_zero(const Polynomial& value) { return value.empty(); }

@@ -92,16 +92,16 @@ void generics::poly_mul_inplace(Polynomial& lhs, const Polynomial& rhs)
     lhs = std::move(result);
 }
 
-void generics::poly_div_inplace(Polynomial& lhs, const dtl::RationalCoeff& rhs)
+void generics::poly_div_inplace(Polynomial& lhs, mpq_srcptr rhs)
 {
     dtl::RationalCoeff zero;
-    if (mpq_equal(rhs.content, zero.content)) {
+    if (mpq_equal(rhs, zero.content)) {
         RPY_THROW(std::domain_error, "division by zero");
     }
 
     for (auto it = lhs.begin(); it != lhs.end(); ++it) {
         // Divide the coefficient of the current term by rhs
-        mpq_div(it->second.content, it->second.content, rhs.content);
+        mpq_div(it->second.content, it->second.content, rhs);
     }
 }
 bool generics::poly_cmp_equal(
