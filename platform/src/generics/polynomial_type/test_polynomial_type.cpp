@@ -100,6 +100,14 @@ TEST_F(TestPolynomialType, TestParseMixedMonomial)
     EXPECT_EQ(ss.str(), "{ 1(x1 x2) }");
 }
 
+TEST_F(TestPolynomialType, TestParseMixedMonomialWithPowers)
+{
+    Value value(polynomial_type, string_view("{ 1(x1^2x2x3) }"));
+    std::stringstream ss;
+    polynomial_type->display(ss, value.data());
+    EXPECT_EQ(ss.str(), "{ 1(x1^2 x2 x3) }");
+}
+
 TEST_F(TestPolynomialType, TestParseFloatCoefficient)
 {
     Value value(polynomial_type, string_view("{ 1.5(x1) }"));
