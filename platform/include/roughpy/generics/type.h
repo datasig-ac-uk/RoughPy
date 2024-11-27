@@ -30,18 +30,19 @@ namespace rpy::generics {
  * includes methods and attributes which can be leveraged to manage and
  * manipulate these properties efficiently and effectively.
  */
-struct BasicProperties {
-    bool standard_layout : 1;
-    bool trivially_copyable : 1;
-    bool trivially_constructible : 1;
-    bool trivially_default_constructible : 1;
-    bool trivially_copy_constructible : 1;
-    bool trivially_copy_assignable : 1;
-    bool trivially_destructible : 1;
-    bool polymorphic : 1;
-    bool is_signed : 1;
-    bool is_floating_point : 1;
-    bool is_integral : 1;
+struct BasicProperties
+{
+    bool standard_layout: 1;
+    bool trivially_copyable: 1;
+    bool trivially_constructible: 1;
+    bool trivially_default_constructible: 1;
+    bool trivially_copy_constructible: 1;
+    bool trivially_copy_assignable: 1;
+    bool trivially_destructible: 1;
+    bool polymorphic: 1;
+    bool is_signed: 1;
+    bool is_floating_point: 1;
+    bool is_integral: 1;
 };
 
 template <typename T>
@@ -60,6 +61,7 @@ constexpr BasicProperties basic_properties_of() noexcept;
 
 template <typename T>
 TypePtr get_type() noexcept;
+
 //{
 //    static_assert(false, "There is no Type associated with T");
 //    RPY_UNREACHABLE_RETURN(nullptr);
@@ -78,7 +80,6 @@ class ROUGHPY_PLATFORM_EXPORT Type : public mem::PolymorphicRefCounted
     friend class Value;
 
 public:
-
     /**
      * @brief Returns the type information of the current instance.
      *
@@ -164,7 +165,6 @@ protected:
     virtual void free_object(void* ptr) const = 0;
 
 public:
-
     virtual bool parse_from_string(void* data, string_view str) const noexcept;
 
     /**
@@ -183,7 +183,7 @@ public:
      */
     virtual void
     copy_or_move(void* dst, const void* src, size_t count, bool move) const
-            = 0;
+    = 0;
 
     virtual void
     destroy_range(void* data, size_t count) const = 0;
@@ -273,10 +273,7 @@ public:
      *
      * @return A TypePtr representing the specific type.
      */
-    static TypePtr of() noexcept
-    {
-        return get_type<decay_t<T>>();
-    }
+    static TypePtr of() noexcept { return get_type<decay_t<T> >(); }
 
 };
 
@@ -314,8 +311,8 @@ const BuiltinTypes& get_builtin_types() noexcept;
 class ROUGHPY_PLATFORM_EXPORT MultiPrecisionTypes
 {
     MultiPrecisionTypes();
-public:
 
+public:
     TypePtr integer_type;
     TypePtr rational_type;
 
@@ -326,6 +323,9 @@ public:
     static const MultiPrecisionTypes& get() noexcept;
 };
 
+RPY_NO_DISCARD
+ROUGHPY_PLATFORM_EXPORT
+TypePtr get_polynomial_type() noexcept;
 
 
 template <typename T>
@@ -338,18 +338,18 @@ constexpr BasicProperties basic_properties_of() noexcept
 {
     using base_t = remove_cvref_t<T>;
     return {
-        is_standard_layout_v<base_t>,
-        is_trivially_copyable_v<base_t>,
-        is_trivially_constructible_v<base_t>,
-        is_trivially_default_constructible_v<base_t>,
-        is_trivially_copy_constructible_v<base_t>,
-        is_trivially_copy_assignable_v<base_t>,
-        is_trivially_destructible_v<base_t>,
-        is_polymorphic_v<base_t>,
-        is_signed_v<base_t>,
-        is_floating_point_v<base_t>,
-        is_integral_v<base_t>,
-};
+            is_standard_layout_v<base_t>,
+            is_trivially_copyable_v<base_t>,
+            is_trivially_constructible_v<base_t>,
+            is_trivially_default_constructible_v<base_t>,
+            is_trivially_copy_constructible_v<base_t>,
+            is_trivially_copy_assignable_v<base_t>,
+            is_trivially_destructible_v<base_t>,
+            is_polymorphic_v<base_t>,
+            is_signed_v<base_t>,
+            is_floating_point_v<base_t>,
+            is_integral_v<base_t>,
+    };
 }
 
 /**
@@ -366,7 +366,9 @@ constexpr BasicProperties basic_properties_of() noexcept
  * @return The promoted type based on the provided `lhs` and `rhs` types.
  * If neither type can be promoted to the other, `nullptr` is returned.
  */
-RPY_NO_DISCARD TypePtr ROUGHPY_PLATFORM_EXPORT compute_promotion(const Type* lhs, const Type* rhs) noexcept;
+RPY_NO_DISCARD TypePtr ROUGHPY_PLATFORM_EXPORT compute_promotion(
+    const Type* lhs,
+    const Type* rhs) noexcept;
 
 /**
  * @brief Computes the hash value of a given Type object.
@@ -386,16 +388,10 @@ inline hash_t hash_value(const Type& value) noexcept
 }
 
 RPY_NO_DISCARD constexpr bool
-operator==(const Type& lhs, const Type& rhs) noexcept
-{
-    return &lhs == &rhs;
-}
+operator==(const Type& lhs, const Type& rhs) noexcept { return &lhs == &rhs; }
 
 RPY_NO_DISCARD constexpr bool
-operator!=(const Type& lhs, const Type& rhs) noexcept
-{
-    return !(lhs == rhs);
-}
+operator!=(const Type& lhs, const Type& rhs) noexcept { return !(lhs == rhs); }
 
 /**
  * @brief Retrieves the size of an object of the specified type.
@@ -409,7 +405,6 @@ operator!=(const Type& lhs, const Type& rhs) noexcept
 inline size_t size_of(const Type& type) noexcept { return type.object_size(); }
 
 namespace concepts {
-
 
 
 /**
@@ -548,7 +543,6 @@ inline bool is_arithmetic(Type const& type)
 }
 
 }// namespace concepts
-
 
 
 template <>
