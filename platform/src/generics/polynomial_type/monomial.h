@@ -44,6 +44,11 @@ public:
         m_data.emplace(std::move(indeterminate), std::move(degree));
     }
 
+    explicit Monomial(char prefix, size_t index, deg_t degree=1) noexcept
+    {
+        m_data.emplace(Indeterminate(prefix, index), std::move(degree));
+    }
+
     template <typename InputIt>
     explicit Monomial(InputIt begin, InputIt end)
         : m_data(begin, end)
@@ -54,6 +59,8 @@ public:
     deg_t degree() const noexcept;
     RPY_NO_DISCARD
     deg_t type() const noexcept { return m_data.size(); }
+
+    RPY_NO_DISCARD bool empty() const noexcept { return m_data.empty(); }
 
     RPY_NO_DISCARD
     iterator begin() noexcept { return m_data.begin(); }
