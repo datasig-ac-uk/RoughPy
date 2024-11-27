@@ -118,6 +118,7 @@ public:
     using flat_map::emplace;
     using flat_map::empty;
     using flat_map::size;
+    using flat_map::clear;
     using flat_map::operator[];
 
     deg_t degree() const noexcept;

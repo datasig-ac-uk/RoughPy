@@ -60,6 +60,7 @@ public:
     RPY_NO_DISCARD
     deg_t type() const noexcept { return m_data.size(); }
 
+    void clear() noexcept { m_data.clear(); }
     RPY_NO_DISCARD bool empty() const noexcept { return m_data.empty(); }
 
     RPY_NO_DISCARD
@@ -71,6 +72,11 @@ public:
     RPY_NO_DISCARD
     const_iterator end() const noexcept { return m_data.end(); }
 
+    template <typename... Args>
+    auto emplace(Args&&... args) -> decltype(m_data.emplace(std::forward<Args>(args)...))
+    {
+        return m_data.emplace(std::forward<Args>(args)...);
+    }
 
     RPY_NO_DISCARD
     deg_t operator[](Indeterminate indeterminate) const noexcept;

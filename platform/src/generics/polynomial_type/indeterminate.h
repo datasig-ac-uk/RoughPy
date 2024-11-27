@@ -20,7 +20,7 @@ namespace rpy::generics {
 
 class Indeterminate
 {
-    using base_type = int64_t;
+    using base_type = uint64_t;
     base_type m_data;
 
 public:
