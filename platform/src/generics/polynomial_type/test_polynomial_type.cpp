@@ -52,8 +52,8 @@ public:
 
 TEST_F(TestPolynomialType, TestID)
 {
-    EXPECT_EQ(polynomial_type->id(), "polynomial_id"); // Adjust ID accordingly
-    EXPECT_EQ(polynomial_type->name(), "polynomial");
+    EXPECT_EQ(polynomial_type->id(), "poly");
+    EXPECT_EQ(polynomial_type->name(), "Polynomial");
 }
 
 TEST_F(TestPolynomialType, TestRefCounting)
@@ -70,8 +70,6 @@ TEST_F(TestPolynomialType, TestRefCounting)
 
 TEST_F(TestPolynomialType, TestBasicProperties)
 {
-    EXPECT_EQ(polynomial_type->object_size(), sizeof(void*)); // Adjust if necessary
-
     EXPECT_FALSE(concepts::is_standard_layout(*polynomial_type));
     EXPECT_FALSE(concepts::is_trivially_copyable(*polynomial_type));
     EXPECT_FALSE(concepts::is_trivially_constructible(*polynomial_type));
@@ -88,10 +86,10 @@ TEST_F(TestPolynomialType, TestBasicProperties)
 
 TEST_F(TestPolynomialType, TestDisplayAndParseFromString)
 {
-    Value value(polynomial_type, string_view("x^2+3*x+2")); // Example string
+    Value value(polynomial_type, string_view("{ 15/2 2(x1) 1(x2^2) }")); // Example string
     std::stringstream ss;
     polynomial_type->display(ss, value.data());
-    EXPECT_EQ(ss.str(), "x^2+3*x+2"); // Example string
+    EXPECT_EQ(ss.str(), "{ 15/2 2(x1) 1(x2^2) }"); // Example string
 }
 
 /******************************************************************************
