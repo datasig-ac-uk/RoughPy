@@ -165,7 +165,7 @@ TEST_F(TestPolynomialType, TestDivideOperator)
     auto* arith = arith_trait();
     ASSERT_NE(arith, nullptr);
 
-    EXPECT_FALSE(arith->has_operation(ArithmeticOperation::Div)); // Depending on your polynomial type
+    EXPECT_TRUE(arith->has_operation(ArithmeticOperation::Div)); // Depending on your polynomial type
 }
 
 /******************************************************************************
@@ -209,5 +209,5 @@ TEST_F(TestPolynomialType, TestFromRationalFunction)
 {
     const auto* num = num_trait();
     ASSERT_NE(num, nullptr);
-    EXPECT_FALSE(num->has_function(NumberFunction::FromRational));
+    EXPECT_TRUE(num->has_function(NumberFunction::FromRational));
 }
