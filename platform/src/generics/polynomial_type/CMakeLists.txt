@@ -19,6 +19,8 @@ target_sources(RoughPy_Platform PRIVATE
         polynomial_type.h
 )
 
+target_link_libraries(RoughPy_Platform PRIVATE
+    ctre::ctre)
 
 if (ROUGHPY_BUILD_TESTS)
 
