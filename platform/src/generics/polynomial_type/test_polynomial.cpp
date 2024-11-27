@@ -95,20 +95,22 @@ TEST(TestPolynomial, TestPolynomialMultiplication)
 {
     Polynomial p1{
             {Monomial(), {1, 1}},
-            {Monomial(Indeterminate('x'), 1), {2, 1}}
+            {Monomial('x', 1), {2, 1}}
     };// { 1 2(x1) }
     Polynomial p2{
-            {Monomial(Indeterminate('x'), 1), {3, 1}}
-    };// { 1(x1) }
+            {Monomial('x', 1), {3, 1}}
+    };// { 3(x1) }
+
+    Polynomial result(p1);
 
 
-    poly_mul_inplace(p1, p2);
+    poly_mul_inplace(result, p2);
     Polynomial expected {
-            {Monomial('x', 1), {1, 1}},
-            {Monomial('x', 1, 2), {1, 1}}
-    }; // { 1(x1) 2(x1^2) }
+            {Monomial('x', 1), {3, 1}},
+            {Monomial('x', 1, 2), {6, 1}}
+    }; // { 3(x1) 6(x1^2) }
 
-    EXPECT_EQ(p1, expected);
+    EXPECT_EQ(result, expected) << p1 << ' ' << p2;
 }
 
 
