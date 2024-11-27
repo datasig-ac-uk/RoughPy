@@ -25,8 +25,61 @@ TEST(TestPolynomial, TestDefaultValue)
 
     EXPECT_TRUE(p.empty());
     EXPECT_EQ(p.degree(), 0);
+    EXPECT_TRUE(poly_cmp_is_zero(p));
 }
 
+
+TEST(TestPolynomial, TestPolynomialEquality)
+{
+    Polynomial p1{
+            {Monomial(), {1, 1}},
+            {Monomial(Indeterminate('x'), 1), {2, 1}}
+    };// { 1 + 2(x1) }
+
+    Polynomial p2{
+            {Monomial(), {1, 1}},
+            {Monomial(Indeterminate('x'), 1), {2, 1}}
+    }; // { 1 + 2(x1) }
+
+    Polynomial p3{
+            {Monomial(), {1, 1}},
+            {Monomial(Indeterminate('x'), 1), {3, 1}}
+    }; // { 1 + 3(x1) }
+
+    Polynomial p4{
+            {Monomial(), {1, 1}},
+            {Monomial(Indeterminate('y'), 1), {2, 1}}
+    }; // { 1 + 3(x1) }
+
+    EXPECT_TRUE(poly_cmp_equal(p1, p2));
+    EXPECT_FALSE(poly_cmp_equal(p1, p3));
+    EXPECT_FALSE(poly_cmp_equal(p1, p4));
+}
+
+TEST(TestPolynomial, TestPolynomialHash)
+{
+    Polynomial p1{
+            {Monomial(), {1, 1}},
+            {Monomial(Indeterminate('x'), 1), {2, 1}}
+    };// { 1 + 2(x1) }
+
+    Polynomial p2{
+            {Monomial(), {1, 1}},
+            {Monomial(Indeterminate('x'), 1), {2, 1}}
+    };// { 1 + 2(x1) }
+
+    Polynomial p3{
+            {Monomial(), {1, 1}},
+            {Monomial(Indeterminate('x'), 1), {3, 1}}
+    };// { 1 + 3(x1) }
+
+    auto hash1 = Hash<Polynomial>{}(p1);
+    auto hash2 = Hash<Polynomial>{}(p2);
+    auto hash3 = Hash<Polynomial>{}(p3);
+
+    EXPECT_EQ(hash1, hash2);// Hashes should be the same for p1 and p2
+    EXPECT_NE(hash1, hash3);// Hashes should be different for p1 and p3
+}
 
 TEST(TestPolynomial, TestPolynomialDisplay)
 {
