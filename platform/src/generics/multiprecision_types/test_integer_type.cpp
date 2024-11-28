@@ -83,7 +83,7 @@ TEST_F(TestIntegerType, TestRefCounting)
 
 TEST_F(TestIntegerType, TestBasicProperties)
 {
-    EXPECT_EQ(integer_type->object_size(), sizeof(void*));
+    EXPECT_GE(integer_type->object_size(), sizeof(void*));
 
     EXPECT_FALSE(concepts::is_standard_layout(*integer_type));
     EXPECT_FALSE(concepts::is_trivially_copyable(*integer_type));

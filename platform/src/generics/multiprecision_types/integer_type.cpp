@@ -55,7 +55,7 @@ BasicProperties IntegerType::basic_properties() const noexcept
 }
 size_t IntegerType::object_size() const noexcept
 {
-    return sizeof(mpz_ptr);
+    return sizeof(mpz_t);
 }
 string_view IntegerType::name() const noexcept
 {

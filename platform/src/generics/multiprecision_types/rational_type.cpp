@@ -50,7 +50,7 @@ BasicProperties RationalType::basic_properties() const noexcept
             false,
             false};
 }
-size_t RationalType::object_size() const noexcept { return sizeof(mpq_ptr); }
+size_t RationalType::object_size() const noexcept { return sizeof(mpq_t); }
 string_view RationalType::name() const noexcept { return "rational"; }
 string_view RationalType::id() const noexcept { return "apr"; }
 void* RationalType::allocate_object() const

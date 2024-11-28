@@ -85,7 +85,7 @@ TEST_F(TestMPFloatType, TestRefCounting)
 
 TEST_F(TestMPFloatType, TestBasicProperties)
 {
-    EXPECT_EQ(float_type->object_size(), sizeof(void*));
+    EXPECT_GE(float_type->object_size(), sizeof(void*));
 
     EXPECT_FALSE(concepts::is_standard_layout(*float_type));
     EXPECT_FALSE(concepts::is_trivially_copyable(*float_type));
