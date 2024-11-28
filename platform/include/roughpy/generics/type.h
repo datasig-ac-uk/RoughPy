@@ -177,13 +177,16 @@ public:
      * @param dst Pointer to the destination memory location.
      * @param src Pointer to the source memory location.
      * @param count Number of bytes to be copied or moved.
-     * @param move Flag indicating the operation type:
-     *             - true if the data should be moved,
-     *             - false if the data should be copied.
+     * @param uninit Flag indicating the operation type:
+     *             - true if the data should be assumed uninitialized
+     *             - false if the data is already initialised
      */
     virtual void
-    copy_or_move(void* dst, const void* src, size_t count, bool move) const
+    copy_or_fill(void* dst, const void* src, size_t count, bool uninit) const
     = 0;
+
+
+    virtual void move(void* dst, void* src, size_t count, bool uninit) const;
 
     virtual void
     destroy_range(void* data, size_t count) const = 0;
