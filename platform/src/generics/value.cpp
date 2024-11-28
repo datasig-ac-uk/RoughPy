@@ -28,7 +28,7 @@ void Value::allocate_data()
     if (RPY_UNLIKELY(old_ptr != nullptr)) { p_type->free_object(old_ptr); }
 }
 
-void Value::assign_value(const Type* type, const void* source_data, bool move)
+void Value::copy_assign_value(const Type* type, const void* source_data)
 {
     RPY_CHECK_NE(type, nullptr);
 
@@ -43,7 +43,7 @@ void Value::assign_value(const Type* type, const void* source_data, bool move)
         }
 
         auto* dst = data();
-        p_type->copy_or_move(dst, source_data, 1, move);
+        p_type->copy_or_fill(dst, source_data, 1, false);
     } else {
         const auto from = p_type->convert_from(*type);
         if (!from) {
@@ -51,10 +51,39 @@ void Value::assign_value(const Type* type, const void* source_data, bool move)
         }
 
         // TODO: impl from
-
+        from->unsafe_convert(data(), source_data, false);
     }
 
 }
+
+void Value::move_assign_value(const Type* type, void* source_data)
+{
+    RPY_CHECK_NE(type, nullptr);
+
+    if (!p_type) {
+        p_type = type;
+    }
+
+    if (*p_type == *type) {
+        const bool is_inline = is_inline_stored();
+        if (!is_inline && data() == nullptr) {
+            allocate_data();
+        }
+
+        auto* dst = data();
+        p_type->move(dst, source_data, 1, false);
+    } else {
+        const auto from = p_type->convert_from(*type);
+        if (!from) {
+            RPY_THROW(std::invalid_argument, "cannot convert");
+        }
+
+        // TODO: impl from
+        from->unsafe_convert(data(), source_data, false);
+    }
+
+}
+
 
 
 Value::Value() = default;
@@ -70,7 +99,7 @@ Value::Value(const Value& other) : p_type(other.p_type)
             allocate_data();
             void* dst_ptr = m_storage.data(p_type.get());
             const void* src_ptr = other.m_storage.data(p_type.get());
-            p_type->copy_or_move(dst_ptr, src_ptr, 1, false);
+            p_type->copy_or_fill(dst_ptr, src_ptr, 1, false);
         }
     }
 }
@@ -103,7 +132,7 @@ Value::Value(TypePtr type, const void* data)
     RPY_CHECK(p_type);
     if (!is_inline_stored()) { allocate_data(); }
     if (data != nullptr) {
-        assign_value(type.get(), data, false);
+        copy_assign_value(type.get(), data);
     }
 }
 
@@ -127,7 +156,7 @@ Value::Value(ConstRef other)
         const auto* src_ptr = other.data();
         auto* dst_ptr = m_storage.data(p_type.get());
 
-        p_type->copy_or_move(dst_ptr, src_ptr, 1, false);
+        p_type->copy_or_fill(dst_ptr, src_ptr, 1, false);
     }
 }
 
@@ -152,7 +181,7 @@ Value& Value::operator=(const Value& other)
         return *this;
     }
 
-    assign_value(other.p_type.get(), other.data());
+    copy_assign_value(other.p_type.get(), other.data());
     return *this;
 }
 
@@ -199,7 +228,7 @@ Value& Value::operator=(ConstRef other)
         RPY_THROW(std::invalid_argument, "cannot assign invalid value");
     }
 
-    assign_value(&other.type(), other.data());
+    copy_assign_value(&other.type(), other.data());
     return *this;
 }
 
