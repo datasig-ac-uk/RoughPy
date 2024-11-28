@@ -81,23 +81,45 @@ void PolynomialType::free_object(void* ptr) const
 }
 
 
-void PolynomialType::copy_or_move(void* dst,
+void PolynomialType::copy_or_fill(void* dst,
                                   const void* src,
                                   size_t count,
-                                  bool move) const
+                                  bool uninit) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     auto* dst_poly = static_cast<Polynomial*>(dst);
     const auto* src_poly = static_cast<const Polynomial*>(src);
 
     if (src_poly == nullptr) {
-        for (size_t i = 0; i < count; ++i) { dst_poly[i] = Polynomial(); }
-    } else if (move) {
-        auto* modifiable_src = const_cast<Polynomial*>(src_poly);
-        for (size_t i = 0; i < count; ++i) {
-            dst_poly[i] = std::move(modifiable_src[i]);
+        if (uninit) {
+            std::uninitialized_default_construct_n(dst_poly, count);
+        } else {
+            std::fill_n(dst_poly, count, Polynomial());
         }
-    } else { std::copy_n(src_poly, count, dst_poly); }
+    } else {
+        if (uninit) {
+            std::uninitialized_copy_n(src_poly, count, dst_poly);
+        } else {
+            std::copy_n(src_poly, count, dst_poly);
+        }
+    }
+}
+
+void PolynomialType::move(void* dst, void* src, size_t count, bool uninit) const
+{
+    if (RPY_UNLIKELY(count == 0)) { return; }
+
+    RPY_DBG_ASSERT_NE(dst, nullptr);
+    RPY_DBG_ASSERT_NE(src, nullptr);
+
+    auto* dst_poly = static_cast<Polynomial*>(dst);
+    auto* src_poly = static_cast<const Polynomial*>(src);
+
+    if (uninit) {
+        std::uninitialized_move_n(src_poly, count, dst_poly);
+    } else {
+        std::copy_n(std::make_move_iterator(src_poly), count, dst_poly);
+    }
 }
 
 void PolynomialType::destroy_range(void* data, size_t count) const
