@@ -49,7 +49,9 @@ protected:
 public:
     bool parse_from_string(void *data, string_view str) const noexcept override;
 
-    void copy_or_move(void *dst, const void *src, size_t count, bool move) const override;
+    void copy_or_fill(void *dst, const void *src, size_t count, bool uninit) const override;
+
+    void move(void *dst, void *src, size_t count, bool uninit) const override;
 
     void destroy_range(void *data, size_t count) const override;
 
