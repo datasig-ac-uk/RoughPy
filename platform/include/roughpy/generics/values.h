@@ -401,7 +401,7 @@ void ROUGHPY_PLATFORM_EXPORT backup_display(std::ostream &os);
 
 template<typename T, typename>
 Value::Value(T &&value) : p_type(Type::of<T>()) {
-    assign_value(p_type.get(), &value);
+    move_assign_value(p_type.get(), &value);
 }
 
 template<typename T>
