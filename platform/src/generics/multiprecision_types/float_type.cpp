@@ -113,8 +113,8 @@ void MPFloatType::move(void* dst, void* src, size_t count, bool uninit) const
 {
     if (RPY_UNLIKELY(count == 0)) { return; }
 
-    RPY_CHECK_NE(src, nullptr);
-    RPY_CHECK_NE(dst, nullptr);
+    RPY_DBG_ASSERT_NE(src, nullptr);
+    RPY_DBG_ASSERT_NE(dst, nullptr);
 
     auto* dst_ptr = static_cast<mpfr_ptr>(dst);
     auto* src_ptr = static_cast<mpfr_ptr>(src);
