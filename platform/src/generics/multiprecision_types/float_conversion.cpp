@@ -36,6 +36,46 @@ struct TypeMPFRFunctions
 
 // Unsigned 16-bit integer specialization
 template <>
+struct TypeMPFRFunctions<uint8_t>
+{
+    static int set(mpfr_ptr rop, uint8_t op, mpfr_rnd_t rnd) noexcept
+    {
+        return mpfr_set_ui(rop, op, rnd);
+    }
+
+    static uint8_t get(mpfr_srcptr op, mpfr_rnd_t rnd) noexcept
+    {
+        return static_cast<uint8_t>(mpfr_get_ui(op, rnd));
+    }
+
+    static bool fits(mpfr_srcptr op, mpfr_rnd_t rnd) noexcept
+    {
+        return mpfr_fits_ushort_p(op, rnd) == 0;
+    }
+};
+
+// Signed 16-bit integer specialization
+template <>
+struct TypeMPFRFunctions<int8_t>
+{
+    static int set(mpfr_ptr rop, int8_t op, mpfr_rnd_t rnd) noexcept
+    {
+        return mpfr_set_si(rop, op, rnd);
+    }
+
+    static int8_t get(mpfr_srcptr op, mpfr_rnd_t rnd) noexcept
+    {
+        return static_cast<int8_t>(mpfr_get_si(op, rnd));
+    }
+
+    static bool fits(mpfr_srcptr op, mpfr_rnd_t rnd) noexcept
+    {
+        return mpfr_fits_sshort_p(op, rnd) == 0;
+    }
+};
+
+// Unsigned 16-bit integer specialization
+template <>
 struct TypeMPFRFunctions<uint16_t>
 {
     static int set(mpfr_ptr rop, uint16_t op, mpfr_rnd_t rnd) noexcept
@@ -70,7 +110,7 @@ struct TypeMPFRFunctions<int16_t>
 
     static bool fits(mpfr_srcptr op, mpfr_rnd_t rnd) noexcept
     {
-        mpfr_fits_sshort_p(op, rnd);
+        return mpfr_fits_sshort_p(op, rnd) == 0;
     }
 };
 
@@ -150,7 +190,7 @@ struct TypeMPFRFunctions<int64_t>
 
     static bool fits(mpfr_srcptr op, mpfr_rnd_t rnd) noexcept
     {
-        mpfr_fits_slong_p(op, rnd);
+        return mpfr_fits_slong_p(op, rnd) == 0;
     }
 };
 
@@ -477,9 +517,11 @@ const MPFloatConversionFromFactory* MPFloatConversionFromFactory::get_factory(
     static const boost::container::flat_map<hash_t, factory> cache {
         ADD_FROM_FACTORY(double),
         ADD_FROM_FACTORY(float),
+        ADD_FROM_FACTORY(int8_t),
         ADD_FROM_FACTORY(int16_t),
         ADD_FROM_FACTORY(int32_t),
         ADD_FROM_FACTORY(int64_t),
+        ADD_FROM_FACTORY(uint8_t),
         ADD_FROM_FACTORY(uint16_t),
         ADD_FROM_FACTORY(uint32_t),
         ADD_FROM_FACTORY(uint64_t),
@@ -506,8 +548,10 @@ const MPFloatConversionToFactory* MPFloatConversionToFactory::get_factory(
     static const boost::container::flat_map<hash_t, factory> cache {
         ADD_TO_FACTORY(double),
         ADD_TO_FACTORY(float),
+        ADD_TO_FACTORY(int8_t),
         ADD_TO_FACTORY(int16_t),
         ADD_TO_FACTORY(int32_t),
+        ADD_TO_FACTORY(uint8_t),
         ADD_TO_FACTORY(uint16_t),
         ADD_TO_FACTORY(uint32_t),
         ADD_TO_FACTORY(uint64_t),
@@ -515,9 +559,11 @@ const MPFloatConversionToFactory* MPFloatConversionToFactory::get_factory(
         ADD_TO_FACTORY(MPRational)
    };
 
+    if (auto it = cache.find(hasher(type.id())); it != cache.end()) {
+        return it->second.get();
+    }
 
-
-
+    return nullptr;
 }
 
 
