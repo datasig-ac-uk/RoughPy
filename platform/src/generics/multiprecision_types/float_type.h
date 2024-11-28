@@ -41,6 +41,10 @@ public:
 
     RPY_NO_DISCARD string_view id() const noexcept override;
 
+    RPY_NO_DISCARD int precision() const noexcept
+    {
+        return m_precision;
+    }
 protected:
     void * allocate_object() const override;
 

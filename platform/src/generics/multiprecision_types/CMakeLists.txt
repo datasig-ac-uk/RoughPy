@@ -14,12 +14,15 @@ target_sources(RoughPy_Platform PRIVATE
         rational_comparison.cpp
         rational_comparison.h
         mpz_hash.h
+        mpq_string_rep.h
         integer_type.cpp
         integer_type.h
         integer_arithmetic.cpp
         integer_arithmetic.h
         integer_comparison.cpp
         integer_comparison.h
+        integer_conversion.cpp
+        integer_conversion.h
         integer_number.cpp
         integer_number.h
         float_type.cpp
@@ -28,8 +31,11 @@ target_sources(RoughPy_Platform PRIVATE
         float_arithmetic.h
         float_comparison.cpp
         float_comparison.h
+        float_conversion.cpp
+        float_conversion.h
         float_number.cpp
         float_number.h
+        multiprecision_type_ids.h
 )
 
 
