@@ -67,7 +67,7 @@ Rc<Memory> HostDeviceHandle::allocate_memory(
     safe_holder.reset();
 
     // Initialize with "zero"
-    type.copy_or_move(result->data(), nullptr, size, false);
+    type.copy_or_fill(result->data(), nullptr, size, true);
 
     // Make this a Rc instead of a unique ptr.
     return Rc<Memory>(result.release());
@@ -93,7 +93,7 @@ void HostDeviceHandle::copy_memory(Memory& dst, const Memory& src) const
 
     RPY_CHECK_GE(dst.size(), size);
 
-    dst.type().copy_or_move(dst_ptr, src_ptr, size, false);
+    dst.type().copy_or_fill(dst_ptr, src_ptr, size, false);
 }
 void HostDeviceHandle::destroy_memory(Memory& memory) const
 {
