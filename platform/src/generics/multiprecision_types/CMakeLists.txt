@@ -7,12 +7,12 @@ target_sources(RoughPy_Platform PRIVATE
         rational_type.h
         rational_arithmetic.cpp
         rational_arithmetic.h
+        rational_comparison.cpp
+        rational_comparison.h
         rational_conversion.cpp
         rational_conversion.h
         rational_number.cpp
         rational_number.h
-        rational_comparison.cpp
-        rational_comparison.h
         mpz_hash.h
         mpq_string_rep.h
         integer_type.cpp
