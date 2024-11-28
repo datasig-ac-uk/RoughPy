@@ -106,8 +106,8 @@ void IntegerType::copy_or_fill(
     if (src == nullptr) {
         if (uninit) {
             for (size_t i = 0; i < count; ++i, ++dst_ptr) {
+                // mpz_init sets the value to 0
                 mpz_init(dst_ptr);
-                mpz_set_si(dst_ptr, 0);
             }
         } else {
             for (size_t i = 0; i < count; ++i, ++dst_ptr) {
