@@ -14,27 +14,15 @@
 #include "roughpy/generics/conversion_trait.h"
 
 namespace rpy {
-namespace generics {
-
-class MPRationalConversionFromFactory {
-public:
-    virtual ~MPRationalConversionFromFactory() = default;
-    virtual std::unique_ptr<const ConversionTrait>
-    make(TypePtr from_type, TypePtr to_type) const = 0;
-
-    static const MPRationalConversionFromFactory* get_factory(const Type& type) noexcept;
-};
+namespace generics::conv {
 
 
-class MPRationalConversionToFactory {
-public:
-    virtual ~MPRationalConversionToFactory() = default;
+boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>>
+make_mprational_conversion_to_table();
 
-    virtual std::unique_ptr<const ConversionTrait>
-    make(TypePtr from_type, TypePtr to_type) const = 0;
+boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>>
+make_mprational_conversion_from_table();
 
-    static const MPRationalConversionToFactory* get_factory(const Type& type) noexcept;
-};
 
 } // generics
 } // rpy

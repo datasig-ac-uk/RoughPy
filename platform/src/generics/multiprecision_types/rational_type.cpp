@@ -161,12 +161,28 @@ void RationalType::destroy_range(void* data, size_t count) const
 std::unique_ptr<const ConversionTrait>
 RationalType::convert_to(const Type& type) const noexcept
 {
+    static const auto table = conv::make_mprational_conversion_to_table();
+    constexpr Hash<string_view> hasher;
+
+    auto it = table.find(hasher(type.id()));
+    if (it != table.end()) {
+        return it->second->make(this, &type);
+    }
+
     return Type::convert_to(type);
 }
 
 std::unique_ptr<const ConversionTrait>
 RationalType::convert_from(const Type& type) const noexcept
 {
+    static const auto table = conv::make_mprational_conversion_from_table();
+    constexpr Hash<string_view> hasher;
+
+    auto it = table.find(hasher(type.id()));
+    if (it != table.end()) {
+        return it->second->make(&type, this);
+    }
+
     return Type::convert_from(type);
 }
 

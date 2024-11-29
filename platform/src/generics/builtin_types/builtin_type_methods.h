@@ -153,10 +153,10 @@ template <typename T>
 std::unique_ptr<const ConversionTrait>
 BuiltinTypeBase<T>::convert_to(const Type& type) const noexcept
 {
-    static const auto conversion_table = make_conversion_to_table<T>();
+    static const auto conversion_table = conv::make_conversion_to_table<T>();
 
     if (&type == this || type.type_info() == type_info()) {
-        return std::make_unique<ConversionTraitImpl<T, T>>(this, this);
+        return std::make_unique<conv::ConversionTraitImpl<T, T>>(this, &type);
     }
 
     Hash<string_view> hasher;
@@ -172,10 +172,10 @@ template <typename T>
 std::unique_ptr<const ConversionTrait>
 BuiltinTypeBase<T>::convert_from(const Type& type) const noexcept
 {
-    static const auto conversion_table = make_conversion_from_table<T>();
+    static const auto conversion_table = conv::make_conversion_from_table<T>();
 
     if (&type == this || type.type_info() == type_info()) {
-        return std::make_unique<ConversionTraitImpl<T, T>>(this, this);
+        return std::make_unique<conv::ConversionTraitImpl<T, T>>(&type, this);
     }
 
     Hash<string_view> hasher;
