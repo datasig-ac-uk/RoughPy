@@ -3,6 +3,7 @@
 
 
 target_sources(RoughPy_Platform PRIVATE
+        conversion_helpers.h
         rational_type.cpp
         rational_type.h
         rational_arithmetic.cpp
