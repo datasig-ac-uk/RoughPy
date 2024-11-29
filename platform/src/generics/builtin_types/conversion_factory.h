@@ -14,11 +14,10 @@
 #include "roughpy/generics/type.h"
 
 #include "builtin_type_ids.h"
+#include "conversion_helpers.h"
 
 namespace rpy {
 namespace generics::conv{
-
-
 
 template <typename BaseType>
 boost::container::flat_map<hash_t, const ConversionFactory*>

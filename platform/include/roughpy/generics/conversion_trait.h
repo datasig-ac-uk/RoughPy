@@ -307,7 +307,7 @@ void ConversionTraitImpl<From, To>::unsafe_convert(
 class ConversionFactory
 {
 public:
-    virtual ~ConversionFactory() = default;
+    virtual ~ConversionFactory();
 
     RPY_NO_DISCARD
     virtual std::unique_ptr<const ConversionTrait>

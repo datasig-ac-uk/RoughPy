@@ -6,7 +6,6 @@ target_sources(RoughPy_Platform PRIVATE
         builtin_type.h
         builtin_type_ids.h
         builtin_type_methods.h
-        conversion_factory.cpp
         conversion_factory.h
         conversion_helpers.h
         double_type.cpp

@@ -19,13 +19,13 @@
 namespace rpy::generics::conv {
 
 // Specialization for integral types
-template <typename T, typename U>
-struct ConversionHelpers<T, U, std::enable_if_t<std::is_integral_v<T> &&
+template <typename T, typename U, bool Nested>
+struct ConversionHelpers<T, U, Nested, std::enable_if_t<std::is_integral_v<T> &&
             std::is_integral_v<U>> >
 {
     // conversion from T to U
     // conversion to T from U
-    static constexpr bool is_nested = false;
+    static constexpr bool is_nested = Nested;
 
     static constexpr bool from_exact_convertible() noexcept
     {
@@ -84,13 +84,13 @@ struct ConversionHelpers<T, U, std::enable_if_t<std::is_integral_v<T> &&
 };
 
 // Specialization for floating point types
-template <typename T, typename U>
-struct ConversionHelpers<T, U, std::enable_if_t<std::is_floating_point_v<T> &&
+template <typename T, typename U, bool Nested>
+struct ConversionHelpers<T, U, Nested, std::enable_if_t<std::is_floating_point_v<T> &&
             std::is_floating_point_v<U>> >
 {
     // conversion from T to U
     // conversion to T from U
-    static constexpr bool is_nested = false;
+    static constexpr bool is_nested = Nested;
 
     static constexpr bool from_exact_convertible() noexcept
     {
@@ -136,8 +136,8 @@ struct ConversionHelpers<T, U, std::enable_if_t<std::is_floating_point_v<T> &&
 
 
 // Specialization for when T is a floating point type and U is integral
-template <typename T, typename U>
-struct ConversionHelpers<T, U, std::enable_if_t<std::is_floating_point_v<T> &&
+template <typename T, typename U, bool Nested>
+struct ConversionHelpers<T, U, Nested, std::enable_if_t<std::is_floating_point_v<T> &&
             std::is_integral_v<U>> >
 {
     // conversion from T to U
