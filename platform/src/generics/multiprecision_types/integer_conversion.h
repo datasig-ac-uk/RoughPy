@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include <boost/container/flat_map.hpp>
+
 #include "roughpy/core/macros.h"
 #include "roughpy/core/types.h"
 
@@ -14,29 +16,15 @@
 #include "roughpy/generics/conversion_trait.h"
 
 namespace rpy {
-namespace generics {
-
-class MPIntegerConversionFromFactory {
-public:
-    virtual ~MPIntegerConversionFromFactory() = default;
-
-    RPY_NO_DISCARD virtual std::unique_ptr<const ConversionTrait>
-    make(TypePtr from_type, TypePtr to_type) const = 0;
-
-    static const MPIntegerConversionFromFactory* get_factory(const Type& type);
-};
+namespace generics::conv {
 
 
-class MPIntegerConversionToFactory {
-public:
-    virtual ~MPIntegerConversionToFactory() = default;
+boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>>
+make_mpint_conversion_to_table();
 
-    RPY_NO_DISCARD virtual std::unique_ptr<const ConversionTrait>
-    make(TypePtr from_type, TypePtr to_type) const = 0;
+boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>>
+make_mpint_conversion_from_table();
 
-
-    static const MPIntegerConversionToFactory* get_factory(const Type& type);
-};
 
 } // generics
 } // rpy
