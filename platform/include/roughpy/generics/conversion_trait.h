@@ -125,21 +125,7 @@ public:
     RPY_NO_DISCARD Value convert(ConstRef src, bool exact = true) const;
 };
 
-namespace dtl {
 
-template <typename From, typename To>
-inline constexpr bool exact_convertible_to_floating_v
-        = (is_floating_point_v<From> && sizeof(From) <= sizeof(To))
-        || (is_integral_v<From>
-            && (std::numeric_limits<From>::digits
-                <= std::numeric_limits<To>::digits));
-
-template <typename From, typename To>
-inline constexpr bool exact_convertible_to_integer_v
-        = (is_integral_v<From> && is_signed_v<From> == is_signed_v<To>
-            && sizeof(From) <= sizeof(To));
-
-}// namespace dtl
 
 namespace conv {
 
@@ -256,9 +242,6 @@ struct ConversionHelpers
 };
 
 
-
-
-
 /**
  * @brief Specialized implementation of the ConversionTrait for specific types.
  *
@@ -313,8 +296,14 @@ void ConversionTraitImpl<From, To>::unsafe_convert(
 }
 
 
-
-
+/**
+ * @brief This class is responsible for creating type conversion objects.
+ *
+ * The ConversionFactory class provides a factory mechanism to generate instances
+ * of type conversion objects. It manages the creation process and simplifies
+ * the instantiation of converters for various type transformations by delegating
+ * the responsibility of object creation to the factory class.
+ */
 class ConversionFactory
 {
 public:
@@ -345,8 +334,8 @@ std::unique_ptr<const ConversionTrait> ConversionFactoryImpl<From, To>::make(
 }
 
 
-template <typename Map, typename From, typename To, typename... Ts>
-void build_conversion_list(Map& map, meta::TypeList<To, Ts...> list)
+template <typename From, typename Map, typename To, typename... Ts>
+void build_conversion_from_table(Map& map, meta::TypeList<To, Ts...> list)
 {
     ignore_unused(list);
     if constexpr (!is_same_v<From, To>) {
@@ -357,10 +346,27 @@ void build_conversion_list(Map& map, meta::TypeList<To, Ts...> list)
         );
     }
     if constexpr (sizeof...(Ts) > 0) {
-        build_conversion_list(map, meta::TypeList<Ts...>{});
+        build_conversion_from_table(map, meta::TypeList<Ts...>{});
     }
 }
 
+
+
+template <typename To, typename Map, typename From, typename... Ts>
+void build_conversion_to_table(Map& map, meta::TypeList<From, Ts...> list)
+{
+    ignore_unused(list);
+    if constexpr (!is_same_v<From, To>) {
+        Hash<string_view> hasher;
+        map.emplace(
+            hasher(type_id_of<From>),
+            std::make_unique<ConversionFactoryImpl<From, To>>()
+        );
+    }
+    if constexpr (sizeof...(Ts) > 0) {
+        build_conversion_from_table(map, meta::TypeList<Ts...>{});
+    }
+}
 
 
 
