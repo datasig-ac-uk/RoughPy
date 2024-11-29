@@ -7,6 +7,7 @@
 
 #include <roughpy/core/smart_ptr.h>
 #include "roughpy/core/meta.h"
+#include "roughpy/core/types.h"
 
 namespace rpy::generics {
 

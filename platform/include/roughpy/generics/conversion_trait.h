@@ -20,7 +20,6 @@
 #include "type_ptr.h"
 
 #include <random>
-#include <Eigen/src/Core/Map.h>
 #include <roughpy/core/check.h>
 
 namespace rpy::generics {
@@ -43,9 +42,7 @@ class ROUGHPY_PLATFORM_EXPORT ConversionTrait
     TypePtr p_dst_type;
 
 protected:
-    ConversionTrait(TypePtr src_type, TypePtr dst_type)
-        : p_src_type(std::move(src_type)),
-          p_dst_type(std::move(dst_type)) {}
+    ConversionTrait(TypePtr src_type, TypePtr dst_type);
 
 public:
     RPY_NO_DISCARD const TypePtr& src_type() const noexcept
@@ -241,6 +238,21 @@ struct ConversionHelpers
     }
 };
 
+template <typename From, typename To, typename=void>
+struct ConversionHelper
+{
+    using from_ptr = const From*;
+    using to_ptr = To*;
+
+    // Set to true if the conversion is guaranteed to be exact
+    static constexpr bool is_always_exact = false;
+
+    // The conversion implementation. Should only check for an inexact
+    // conversion if the ensure_exact flag is set (and if the is_always_exact is
+    // false).
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact);
+
+};
 
 /**
  * @brief Specialized implementation of the ConversionTrait for specific types.
@@ -254,12 +266,12 @@ struct ConversionHelpers
  * @tparam From The source type for the conversion.
  * @tparam To The destination type for the conversion.
  */
-template <typename From, typename To>
+template <typename From, typename To, typename SFINEA=void>
 class ConversionTraitImpl : public ConversionTrait
 {
     static_assert(is_convertible_v<From, To>, "From must be convertible to To");
 
-    using helper = conv::ConversionHelpers<From, To>;
+    using helper = ConversionHelper<From, To>;
 
 public:
     ConversionTraitImpl(TypePtr from_type, TypePtr to_type)
@@ -270,29 +282,31 @@ public:
     void unsafe_convert(void* dst, const void* src, bool exact) const override;
 };
 
-template <typename From, typename To>
-bool ConversionTraitImpl<From, To>::is_exact() const noexcept
+template <typename From, typename To, typename SFINEA>
+bool ConversionTraitImpl<From, To, SFINEA>::is_exact() const noexcept
 {
-    return helper::from_exact_convertible();
+    return helper::is_always_exact;
 }
 
-template <typename From, typename To>
-void ConversionTraitImpl<From, To>::unsafe_convert(
-    void* dst,
+template <typename From, typename To, typename SFINEA>
+void ConversionTraitImpl<From, To, SFINEA>::unsafe_convert(void* dst,
     const void* src,
-    bool exact
-) const
+    bool exact) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
     RPY_DBG_ASSERT_NE(src, nullptr);
-    const auto* src_obj = static_cast<const From*>(src);
-    *static_cast<To*>(dst) = static_cast<To>(*src_obj);
 
-    auto result = helper::From(static_cast<To*>(dst),
-                               static_cast<const From*>(src),
-                               exact);
+    auto* dst_ptr = static_cast<typename helper::to_ptr>(dst);
+    auto* src_ptr = static_cast<typename helper::from_ptr>(src);
 
-    RPY_CHECK_EQ(result, conv::ConversionResult::Success);
+    auto result = helper::convert(dst_ptr, src_ptr, exact);
+    if (result == ConversionResult::Failed) {
+        throw std::runtime_error("conversion failed");
+    }
+    if (exact && ConversionResult::Inexact == result) {
+        RPY_THROW(std::runtime_error,
+            "conversion was required to be precise but was not");
+    }
 }
 
 
@@ -346,7 +360,7 @@ void build_conversion_from_table(Map& map, meta::TypeList<To, Ts...> list)
         );
     }
     if constexpr (sizeof...(Ts) > 0) {
-        build_conversion_from_table(map, meta::TypeList<Ts...>{});
+        build_conversion_from_table<From>(map, meta::TypeList<Ts...>{});
     }
 }
 
@@ -364,7 +378,7 @@ void build_conversion_to_table(Map& map, meta::TypeList<From, Ts...> list)
         );
     }
     if constexpr (sizeof...(Ts) > 0) {
-        build_conversion_from_table(map, meta::TypeList<Ts...>{});
+        build_conversion_from_table<To>(map, meta::TypeList<Ts...>{});
     }
 }
 
