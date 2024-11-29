@@ -8,7 +8,10 @@
 #include <limits>
 #include <memory>
 
+#include "roughpy/core/hash.h"
 #include "roughpy/core/macros.h"
+#include "roughpy/core/meta.h"
+#include "roughpy/core/types.h"
 #include "roughpy/core/traits.h"
 
 #include "roughpy/platform/roughpy_platform_export.h"
@@ -17,6 +20,7 @@
 #include "type_ptr.h"
 
 #include <random>
+#include <Eigen/src/Core/Map.h>
 #include <roughpy/core/check.h>
 
 namespace rpy::generics {
@@ -41,14 +45,14 @@ class ROUGHPY_PLATFORM_EXPORT ConversionTrait
 protected:
     ConversionTrait(TypePtr src_type, TypePtr dst_type)
         : p_src_type(std::move(src_type)),
-          p_dst_type(std::move(dst_type))
-    {}
+          p_dst_type(std::move(dst_type)) {}
 
 public:
     RPY_NO_DISCARD const TypePtr& src_type() const noexcept
     {
         return p_src_type;
     }
+
     RPY_NO_DISCARD const TypePtr& dst_type() const noexcept
     {
         return p_dst_type;
@@ -85,7 +89,7 @@ public:
      * as an exact match of types (if supported by the implementation).
      */
     virtual void unsafe_convert(void* dst, const void* src, bool exact) const
-            = 0;
+    = 0;
 
     /**
      * @brief Converts data from the source to the destination type.
@@ -133,11 +137,128 @@ inline constexpr bool exact_convertible_to_floating_v
 template <typename From, typename To>
 inline constexpr bool exact_convertible_to_integer_v
         = (is_integral_v<From> && is_signed_v<From> == is_signed_v<To>
-           && sizeof(From) <= sizeof(To));
+            && sizeof(From) <= sizeof(To));
 
 }// namespace dtl
 
-template <typename From, typename To>
+namespace conv {
+
+
+/**
+ * @brief Represents the result of a type conversion operation.
+ *
+ * ConversionResult is an enumeration used to indicate the outcome of
+ * a conversion process, which can either be successful, inexact, or failed.
+ */
+enum class ConversionResult
+{
+    Success,
+    Inexact,
+    Failed
+};
+
+/**
+ * @brief This class provides helper functions for data conversion operations.
+ *
+ * The ConversionHelpers class offers a collection of static methods designed
+ * to facilitate various data conversion processes. These methods aid in
+ * converting data between different formats or types, ensuring consistency
+ * and correctness.
+ */
+template <typename T, typename U,bool Nested = false, typename SFINAE=void>
+struct ConversionHelpers
+{
+    // conversion from U to T
+    // conversion to U from T
+
+    static constexpr bool is_nested = Nested;
+
+    using reverse_helper = conditional_t<Nested, void, ConversionHelpers<U, T,
+        true> >;
+
+    /*
+     * The primary templated just tries to use the reverse direction helper to
+     * do conversions. This means we only need to specialize where for
+     * combination once.
+     */
+
+    /*
+     * Determine if the conversion from T to U is always exact
+     */
+    static constexpr bool from_exact_convertible() noexcept
+    {
+        if constexpr (Nested) {
+            return false;
+        } else {
+            return reverse_helper::to_exact_convertible();
+        }
+    }
+
+    /*
+     * Determine if the conversion to T from U is always exact
+     */
+    static constexpr bool to_exact_convertible() noexcept
+    {
+        if constexpr (Nested) {
+            return false;
+        } else {
+            return reverse_helper::from_exact_convertible();
+        }
+    }
+
+    /*
+     * Implement conversion from U to T
+     * the ensure_exact parameter is used to check if the conversion was inexact
+     * which is only relevant if the conversion is not infallible and not
+     * guaranteed to be exact (e.g. from int32_t to int64_t is infallible and
+     * always exact, but conversion from double to int64_t is not exact). Return
+     * ConversionResult::Success if the conversion succeeds or if ensure_exact is false.
+     * Return ConversionResult::Failed if the conversion could not be performed.
+     * If ensure_exact is set true and the conversion is not always exact,
+     * additionally check that the conversion result is an exact conversion,
+     * returning ConversionResult::Inexact on failure.
+     */
+    static ConversionResult from(T* dst_ptr,
+                                 const U* src_ptr,
+                                 bool ensure_exact) noexcept
+    {
+        if constexpr (Nested) {
+            return ConversionResult::Failed;
+        } else {
+            return reverse_helper::to(dst_ptr, src_ptr, ensure_exact);
+        }
+    }
+
+    /*
+     * Perform the reverse conversion from T to U. This has the same semantics as
+     * the "from" method but with the roles of T and U reversed.
+     */
+    static ConversionResult to(U* dst_ptr,
+                               const T* src_ptr,
+                               bool ensure_exact) noexcept
+    {
+        if constexpr (Nested) {
+            return ConversionResult::Failed;
+        } else {
+            return reverse_helper::from(dst_ptr, src_ptr, ensure_exact);
+        }
+    }
+
+    // Helper to check if two values are equal
+    static bool compare_equal(const T* t, const U* u) noexcept
+    {
+        if constexpr (Nested) {
+            return false;
+        } else {
+            return reverse_helper::compare_equal(u, t);
+        }
+    }
+};
+
+
+
+
+
 /**
  * @brief Specialized implementation of the ConversionTrait for specific types.
  *
@@ -150,36 +271,33 @@ template <typename From, typename To>
  * @tparam From The source type for the conversion.
  * @tparam To The destination type for the conversion.
  */
+template <typename From, typename To>
 class ConversionTraitImpl : public ConversionTrait
 {
     static_assert(is_convertible_v<From, To>, "From must be convertible to To");
 
-    static constexpr bool conversion_is_exact
-            = (is_floating_point_v<To>
-               && dtl::exact_convertible_to_floating_v<From, To>)
-            || (is_integral_v<To>
-                && dtl::exact_convertible_to_integer_v<From, To>);
+    using helper = conv::ConversionHelpers<From, To>;
 
 public:
     ConversionTraitImpl(TypePtr from_type, TypePtr to_type)
-        : ConversionTrait(std::move(from_type), std::move(to_type))
-    {}
+        : ConversionTrait(std::move(from_type), std::move(to_type)) {}
 
     bool is_exact() const noexcept override;
+
     void unsafe_convert(void* dst, const void* src, bool exact) const override;
 };
 
 template <typename From, typename To>
 bool ConversionTraitImpl<From, To>::is_exact() const noexcept
 {
-    return conversion_is_exact;
+    return helper::from_exact_convertible();
 }
 
 template <typename From, typename To>
 void ConversionTraitImpl<From, To>::unsafe_convert(
-        void* dst,
-        const void* src,
-        bool exact
+    void* dst,
+    const void* src,
+    bool exact
 ) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
@@ -187,15 +305,68 @@ void ConversionTraitImpl<From, To>::unsafe_convert(
     const auto* src_obj = static_cast<const From*>(src);
     *static_cast<To*>(dst) = static_cast<To>(*src_obj);
 
-    if constexpr (!conversion_is_exact) {
-        if (exact) {
-            // If the conversion is not always exact, we might want to check.
-            // The easiest way is to do a round trip and compare the end product
-            From check = static_cast<From>(*static_cast<const To*>(dst));
-            RPY_CHECK_EQ(check, *src_obj);
-        }
+    auto result = helper::From(static_cast<To*>(dst),
+                               static_cast<const From*>(src),
+                               exact);
+
+    RPY_CHECK_EQ(result, conv::ConversionResult::Success);
+}
+
+
+
+
+class ConversionFactory
+{
+public:
+    virtual ~ConversionFactory() = default;
+
+    RPY_NO_DISCARD
+    virtual std::unique_ptr<const ConversionTrait>
+    make(TypePtr from_type, TypePtr to_type) const = 0;
+};
+
+template <typename From, typename To>
+class ConversionFactoryImpl : public ConversionFactory
+{
+public:
+    RPY_NO_DISCARD std::unique_ptr<const ConversionTrait> make(TypePtr from_type,
+        TypePtr to_type) const override;
+};
+
+template <typename From, typename To>
+std::unique_ptr<const ConversionTrait> ConversionFactoryImpl<From, To>::make(
+    TypePtr from_type,
+    TypePtr to_type) const
+{
+    return std::make_unique<const ConversionTraitImpl<From, To>>(
+            std::move(from_type),
+            std::move(to_type)
+    );
+}
+
+
+template <typename Map, typename From, typename To, typename... Ts>
+void build_conversion_list(Map& map, meta::TypeList<To, Ts...> list)
+{
+    ignore_unused(list);
+    if constexpr (!is_same_v<From, To>) {
+        Hash<string_view> hasher;
+        map.emplace(
+            hasher(type_id_of<To>),
+            std::make_unique<ConversionFactoryImpl<From, To>>()
+        );
+    }
+    if constexpr (sizeof...(Ts) > 0) {
+        build_conversion_list(map, meta::TypeList<Ts...>{});
     }
 }
+
+
+
+
+
+
+}// namespace conv
 
 }// namespace rpy::generics
 

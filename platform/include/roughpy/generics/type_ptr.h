@@ -14,6 +14,9 @@ class Type;
 using TypePtr = Rc<const Type>;
 
 
+template <typename T>
+inline constexpr string_view type_id_of;
+
 
 }
 
