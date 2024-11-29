@@ -19,12 +19,13 @@
 namespace rpy {
 namespace generics::conv{
 
+
 template <typename BaseType>
-boost::container::flat_map<hash_t, const ConversionFactory*>
+boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>>
 make_conversion_to_table()
 {
     using type_list = BuiltinTypesList;
-    boost::container::flat_map<hash_t, const ConversionFactory*> map;
+    boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>> map;
     map.reserve(type_list::size);
 
     build_conversion_to_table<BaseType>(map, type_list{});
@@ -33,12 +34,12 @@ make_conversion_to_table()
 }
 
 template <typename ToType>
-boost::container::flat_map<hash_t, const ConversionFactory*>
+boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>>
 make_conversion_from_table()
 {
     using type_list = BuiltinTypesList;
 
-    boost::container::flat_map<hash_t, const ConversionFactory*> map;
+    boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>> map;
     map.reserve(type_list::size);
 
     build_conversion_from_table<ToType>(map, type_list{});

@@ -4,6 +4,7 @@
 
 #include "float_type.h"
 
+#include "float_conversion.h"
 #include "mpz_hash.h"
 
 
@@ -144,13 +145,29 @@ void MPFloatType::destroy_range(void* data, size_t count) const
 std::unique_ptr<const ConversionTrait> MPFloatType::
 convert_to(const Type& type) const noexcept
 {
-    return RefCountedMiddle<Type>::convert_to(type);
+    static const auto table = conv::make_mpfloat_conversion_to_table();
+    constexpr Hash<string_view> hasher;
+
+    auto it = table.find(hasher(type.id()));
+    if (it != table.end()) {
+        return it->second->make(this, &type);
+    }
+
+    return Type::convert_to(type);
 }
 
 std::unique_ptr<const ConversionTrait> MPFloatType::
 convert_from(const Type& type) const noexcept
 {
-    return RefCountedMiddle<Type>::convert_from(type);
+    static const auto table = conv::make_mpfloat_conversion_from_table();
+    constexpr Hash<string_view> hasher;
+
+    auto it = table.find(hasher(type.id()));
+    if (it != table.end()) {
+        return it->second->make(this, &type);
+    }
+
+    return Type::convert_to(type);
 }
 
 const BuiltinTrait* MPFloatType::

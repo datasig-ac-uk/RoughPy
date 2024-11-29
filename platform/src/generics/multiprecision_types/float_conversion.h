@@ -7,35 +7,19 @@
 
 #include <memory>
 
-#include "roughpy/core/macros.h"
-#include "roughpy/core/types.h"
+#include <boost/container/flat_map.hpp>
 
-#include "roughpy/generics/type_ptr.h"
+#include "roughpy/core/hash.h"
+
 #include "roughpy/generics/conversion_trait.h"
 
-namespace rpy::generics {
+namespace rpy::generics::conv {
 
-class MPFloatConversionFromFactory {
-public:
-    virtual ~MPFloatConversionFromFactory() = default;
+boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>>
+make_mpfloat_conversion_to_table();
 
-    RPY_NO_DISCARD virtual std::unique_ptr<const ConversionTrait>
-    make(TypePtr from_type, TypePtr to_type) const = 0;
-
-    static const MPFloatConversionFromFactory* get_factory(const Type& type);
-};
-
-class MPFloatConversionToFactory
-{
-public:
-    virtual ~MPFloatConversionToFactory() = default;
-
-    RPY_NO_DISCARD virtual std::unique_ptr<const ConversionTrait>
-    make(TypePtr from_type, TypePtr to_type) const = 0;
-
-    static const MPFloatConversionToFactory* get_factory(const Type& type);
-};
-
+boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>>
+make_mpfloat_conversion_from_table();
 
 }
 
