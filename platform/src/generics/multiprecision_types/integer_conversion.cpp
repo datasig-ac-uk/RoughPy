@@ -1,18 +1,15 @@
 //
-// Created by sammorley on 25/11/24.
+// Created by sam on 28/11/24.
 //
 
-#include "rational_conversion.h"
-
-#include <limits>
+#include "integer_conversion.h"
 
 #include <gmp.h>
 #include <mpfr.h>
-#include <boost/container/flat_map.hpp>
 
 #include "generics/builtin_types/builtin_type_ids.h"
 
-#include "rational_type.h"
+#include "integer_type.h"
 #include "multiprecision_type_ids.h"
 
 
@@ -20,25 +17,25 @@ using namespace rpy;
 using namespace rpy::generics;
 
 boost::container::flat_map<hash_t, std::unique_ptr<const conv::ConversionFactory
->> conv::make_mprational_conversion_to_table()
+>> conv::make_mpint_conversion_to_table()
 {
-    using type_list = BuiltinTypesList::Append<MPInt>;
+    using type_list = BuiltinTypesList;
     boost::container::flat_map<hash_t, std::unique_ptr<const conv::ConversionFactory>> table;
     table.reserve(type_list::size);
 
-    conv::build_conversion_to_table<MPRational>(table, type_list{});
+    conv::build_conversion_to_table<MPInt>(table, type_list{});
 
     return table;
 }
 
 boost::container::flat_map<hash_t, std::unique_ptr<const conv::ConversionFactory
->> conv::make_mprational_conversion_from_table()
+>> conv::make_mpint_conversion_from_table()
 {
-    using type_list = BuiltinTypesList::Append<MPInt>;
+    using type_list = BuiltinTypesList;
     boost::container::flat_map<hash_t, std::unique_ptr<const conv::ConversionFactory>> table;
     table.reserve(type_list::size);
 
-    conv::build_conversion_from_table<MPRational>(table, type_list{});
+    conv::build_conversion_from_table<MPInt>(table, type_list{});
 
     return table;
 }

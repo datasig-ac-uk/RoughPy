@@ -15,6 +15,10 @@
 using namespace rpy;
 using namespace rpy::generics;
 
+ConversionTrait::ConversionTrait(TypePtr src_type, TypePtr dst_type)
+    : p_src_type(std::move(src_type)), p_dst_type(std::move(dst_type))
+{}
+
 ConversionTrait::~ConversionTrait() = default;
 
 void ConversionTrait::convert(Ref dst, ConstRef src, bool exact) const

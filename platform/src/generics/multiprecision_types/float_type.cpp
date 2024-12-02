@@ -4,6 +4,7 @@
 
 #include "float_type.h"
 
+#include "float_conversion.h"
 #include "mpz_hash.h"
 
 
@@ -17,20 +18,11 @@ MPFloatType::MPFloatType(int precision)
     : m_arithmetic(this),
       m_comparison(this),
       m_number(this),
-      m_precision(precision)
-{
-    RPY_CHECK_LE(m_precision, MPFR_PREC_MAX);
-}
+      m_precision(precision) { RPY_CHECK_LE(m_precision, MPFR_PREC_MAX); }
 
-string_view MPFloatType::name() const noexcept
-{
-    return "MultiPrecisionFloat";
-}
+string_view MPFloatType::name() const noexcept { return "MultiPrecisionFloat"; }
 
-string_view MPFloatType::id() const noexcept
-{
-    return "apf";
-}
+string_view MPFloatType::id() const noexcept { return "apf"; }
 
 const std::type_info& MPFloatType::type_info() const noexcept
 {
@@ -83,10 +75,10 @@ bool MPFloatType::parse_from_string(void* data, string_view str) const noexcept
             != -1;
 }
 
-void MPFloatType::copy_or_move(void* dst,
+void MPFloatType::copy_or_fill(void* dst,
                                const void* src,
                                size_t count,
-                               bool move) const
+                               bool uninit) const
 {
     RPY_DBG_ASSERT_NE(dst, nullptr);
 
@@ -94,20 +86,53 @@ void MPFloatType::copy_or_move(void* dst,
 
     auto* dst_ptr = static_cast<mpfr_ptr>(dst);
     if (src == nullptr) {
-        for (size_t i = 0; i < count; ++i) { mpfr_set_zero(++dst_ptr, 1); }
-    } else if (move) {
-        auto* src_ptr = static_cast<mpfr_ptr>(const_cast<void*>(src));
-        for (size_t i = 0; i < count; ++i, ++src_ptr, ++dst_ptr) {
-            mpfr_swap(dst_ptr, src_ptr);
-            mpfr_clear(src_ptr);
+        if (uninit) {
+            for (size_t i = 0; i < count; ++i, ++dst_ptr) {
+                mpfr_init2(dst_ptr, m_precision);
+                mpfr_set_zero(dst_ptr, 1);
+            }
+        } else {
+            for (size_t i = 0; i < count; ++i) { mpfr_set_zero(++dst_ptr, 1); }
         }
     } else {
         const auto* src_ptr = static_cast<mpfr_srcptr>(src);
-        for (size_t i = 0; i < count; ++i, ++src_ptr, ++dst_ptr) {
-            mpfr_set(dst_ptr, src_ptr, MPFR_RNDN);
+        if (uninit) {
+            for (size_t i = 0; i < count; ++i, ++dst_ptr, ++src_ptr) {
+                mpfr_init2(dst_ptr, m_precision);
+                mpfr_set(dst_ptr, src_ptr, MPFR_RNDN);
+            }
+        } else {
+            for (size_t i = 0; i < count; ++i, ++src_ptr, ++dst_ptr) {
+                mpfr_set(dst_ptr, src_ptr, MPFR_RNDN);
+            }
         }
     }
 
+}
+
+void MPFloatType::move(void* dst, void* src, size_t count, bool uninit) const
+{
+    if (RPY_UNLIKELY(count == 0)) { return; }
+
+    RPY_DBG_ASSERT_NE(src, nullptr);
+    RPY_DBG_ASSERT_NE(dst, nullptr);
+
+    auto* dst_ptr = static_cast<mpfr_ptr>(dst);
+    auto* src_ptr = static_cast<mpfr_ptr>(src);
+
+    const auto prec = mpfr_get_prec(src_ptr);
+    RPY_CHECK_EQ(prec, m_precision);
+
+    if (uninit) {
+        for (size_t i = 0; i < count; ++i, ++dst_ptr, ++src_ptr) {
+            mpfr_init2(dst_ptr, m_precision);
+            mpfr_swap(dst_ptr, src_ptr);
+        }
+    } else {
+        for (size_t i = 0; i < count; ++i, ++dst_ptr, ++src_ptr) {
+            mpfr_swap(dst_ptr, src_ptr);
+        }
+    }
 }
 
 void MPFloatType::destroy_range(void* data, size_t count) const
@@ -120,13 +145,29 @@ void MPFloatType::destroy_range(void* data, size_t count) const
 std::unique_ptr<const ConversionTrait> MPFloatType::
 convert_to(const Type& type) const noexcept
 {
-    return RefCountedMiddle<Type>::convert_to(type);
+    static const auto table = conv::make_mpfloat_conversion_to_table();
+    constexpr Hash<string_view> hasher;
+
+    auto it = table.find(hasher(type.id()));
+    if (it != table.end()) {
+        return it->second->make(this, &type);
+    }
+
+    return Type::convert_to(type);
 }
 
 std::unique_ptr<const ConversionTrait> MPFloatType::
 convert_from(const Type& type) const noexcept
 {
-    return RefCountedMiddle<Type>::convert_from(type);
+    static const auto table = conv::make_mpfloat_conversion_from_table();
+    constexpr Hash<string_view> hasher;
+
+    auto it = table.find(hasher(type.id()));
+    if (it != table.end()) {
+        return it->second->make(this, &type);
+    }
+
+    return Type::convert_to(type);
 }
 
 const BuiltinTrait* MPFloatType::

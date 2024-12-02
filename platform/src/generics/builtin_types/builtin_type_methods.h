@@ -103,11 +103,11 @@ void BuiltinTypeBase<T>::free_object(void* ptr) const
 }
 
 template <typename T>
-void BuiltinTypeBase<T>::copy_or_move(
+void BuiltinTypeBase<T>::copy_or_fill(
         void* dst,
         const void* src,
         size_t count,
-        bool RPY_UNUSED_VAR(move)// Move semantics makes no difference for T
+        bool RPY_UNUSED_VAR(uninit)
 ) const noexcept
 {
 
@@ -115,14 +115,29 @@ void BuiltinTypeBase<T>::copy_or_move(
 
     auto* dst_ptr = static_cast<T*>(dst);
 
+    /*
+     * The uninitialized flag really makes no difference for fundamental types
+     * which are trivially default constructible. However, we've included
+     * handling here as an indication of how it should be handled by new
+     * implementations.
+     */
+
     if (src == nullptr) {
         // Source is null, which means we should fill the range
         // with 0
-        std::fill_n(dst_ptr, count, static_cast<T>(0));
+        if (uninit) {
+            std::fill_n(dst_ptr, count, static_cast<T>(0));
+        } else {
+            std::uninitialized_fill_n(dst_ptr, count, static_cast<T>(0));
+        }
     } else {
         // Source is not null, copy data from src to dst
         const auto* src_ptr = static_cast<const T*>(src);
-        std::copy_n(src_ptr, count, dst_ptr);
+        if (uninit) {
+            std::copy_n(src_ptr, count, dst_ptr);
+        } else {
+            std::uninitialized_copy_n(src_ptr, count, dst_ptr);
+        }
     }
 }
 
@@ -138,10 +153,10 @@ template <typename T>
 std::unique_ptr<const ConversionTrait>
 BuiltinTypeBase<T>::convert_to(const Type& type) const noexcept
 {
-    static const auto conversion_table = make_conversion_to_table<T>();
+    static const auto conversion_table = conv::make_conversion_to_table<T>();
 
     if (&type == this || type.type_info() == type_info()) {
-        return std::make_unique<ConversionTraitImpl<T, T>>(this, this);
+        return std::make_unique<conv::ConversionTraitImpl<T, T>>(this, &type);
     }
 
     Hash<string_view> hasher;
@@ -157,10 +172,10 @@ template <typename T>
 std::unique_ptr<const ConversionTrait>
 BuiltinTypeBase<T>::convert_from(const Type& type) const noexcept
 {
-    static const auto conversion_table = make_conversion_from_table<T>();
+    static const auto conversion_table = conv::make_conversion_from_table<T>();
 
     if (&type == this || type.type_info() == type_info()) {
-        return std::make_unique<ConversionTraitImpl<T, T>>(this, this);
+        return std::make_unique<conv::ConversionTraitImpl<T, T>>(&type, this);
     }
 
     Hash<string_view> hasher;

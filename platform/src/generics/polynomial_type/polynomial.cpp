@@ -150,3 +150,14 @@ void generics::poly_print(std::ostream& os, const Polynomial& value)
     }
     os << " }";
 }
+
+bool Polynomial::is_constant() const noexcept
+{
+    if (empty()) { return true; }
+
+    if (size() == 1 && begin()->first.empty()) {
+        return true;
+    }
+
+    return false;
+}

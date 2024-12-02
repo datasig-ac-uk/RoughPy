@@ -3,6 +3,7 @@
 
 
 target_sources(RoughPy_Platform PRIVATE
+        conversion_helpers.h
         indeterminate.h
         indeterminate.cpp
         monomial.cpp
@@ -13,6 +14,8 @@ target_sources(RoughPy_Platform PRIVATE
         polynomial_arithmetic.h
         polynomial_comparison.cpp
         polynomial_comparison.h
+        polynomial_conversion.cpp
+        polynomial_conversion.h
         polynomial_number.cpp
         polynomial_number.h
         polynomial_type.cpp

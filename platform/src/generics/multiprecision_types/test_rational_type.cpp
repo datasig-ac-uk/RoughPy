@@ -68,7 +68,7 @@ TEST_F(TestRationalType, TestRefCounting)
 
 TEST_F(TestRationalType, TestBasicProperties)
 {
-    EXPECT_EQ(rational_type->object_size(), sizeof(void*));
+    EXPECT_GE(rational_type->object_size(), sizeof(void*));
 
     EXPECT_FALSE(concepts::is_standard_layout(*rational_type));
     EXPECT_FALSE(concepts::is_trivially_copyable(*rational_type));

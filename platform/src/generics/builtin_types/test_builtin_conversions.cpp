@@ -9,6 +9,7 @@
 
 #include "roughpy/generics/conversion_trait.h"
 
+#include "conversion_helpers.h"
 
 using namespace rpy;
 using namespace rpy::generics;
@@ -21,8 +22,8 @@ class ConversionTests : public ::testing::Test
 public:
 
     template <typename From, typename To>
-    ConversionTraitImpl<From, To> get_conversion() const noexcept {
-        return ConversionTraitImpl<From, To>(get_type<From>(), get_type<To>());
+    conv::ConversionTraitImpl<From, To> get_conversion() const noexcept {
+        return conv::ConversionTraitImpl<From, To>(get_type<From>(), get_type<To>());
     }
 };
 

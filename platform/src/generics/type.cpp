@@ -28,6 +28,13 @@ std::unique_ptr<const ConversionTrait> Type::convert_from(const Type& type
     return nullptr;
 }
 
+
+void Type::move(void* dst, void* src, size_t count, bool uninit) const
+{
+    RPY_CHECK_NE(src, nullptr);
+    copy_or_fill(dst, src, count, uninit);
+}
+
 const BuiltinTrait* Type::get_builtin_trait(BuiltinTraitID id) const noexcept
 {
     return nullptr;

@@ -15,6 +15,8 @@ target_sources(RoughPy_Platform PRIVATE
         backup_display.cpp
         comparison_trait.cpp
         conversion_trait.cpp
+        conversion_factory.cpp
+        conversion_impl.h
         multiprecision_types.cpp
         number_trait.cpp
         polynomial_types.cpp
