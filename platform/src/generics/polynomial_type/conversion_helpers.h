@@ -24,10 +24,10 @@ struct ConversionHelper<From, Polynomial, void>
     static constexpr bool is_always_exact = helper::is_always_exact;
 
 
-    static ConversionResult convert(from_ptr from, to_ptr to, bool ensure_exact) noexcept
+    static ConversionResult convert(to_ptr to, from_ptr from, bool ensure_exact) noexcept
     {
         dtl::RationalCoeff rational;
-        auto result = helper::convert(rational.content, from);
+        auto result = helper::convert(rational.content, from, ensure_exact);
         if (result == ConversionResult::Failed) {
             return result;
         } if (ensure_exact && result == ConversionResult::Inexact) {

@@ -15,6 +15,8 @@
 #include "roughpy/generics/type_ptr.h"
 #include "roughpy/generics/conversion_trait.h"
 
+#include "generics/conversion_impl.h"
+
 namespace rpy::generics::conv {
 
 boost::container::flat_map<hash_t, std::unique_ptr<const ConversionFactory>>

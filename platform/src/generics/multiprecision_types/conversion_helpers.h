@@ -360,22 +360,17 @@ struct ConversionHelper<I, MPFloat, enable_if_t<is_integral_v<I> > >
 
     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
-        if (ensure_exact) {
-            if (mpfr_fits_si_p(dst, *src, MPFR_RNDN) != 0) {
-                return ConversionResult::Inexact;
-            }
-        }
         if constexpr (is_signed_v<I>) {
             if constexpr (sizeof(I) < 2) {
-                if (ensure_exact && !mpfr_fits_sshort_p(src, MPFR_RNDN)) {
+                if (ensure_exact && !mpfr_fits_sshort_p(dst, MPFR_RNDN)) {
                     return ConversionResult::Inexact;
                 }
             } else if constexpr (sizeof(I) == 4) {
-                if (ensure_exact && !mpfr_fits_sint_p(src, MPFR_RNDN)) {
+                if (ensure_exact && !mpfr_fits_sint_p(dst, MPFR_RNDN)) {
                     return ConversionResult::Inexact;
                 }
             } else if constexpr (sizeof(I) == 8) {
-                if (ensure_exact && !mpfr_fits_slong_p(src, MPFR_RNDN)) {
+                if (ensure_exact && !mpfr_fits_slong_p(dst, MPFR_RNDN)) {
                     return ConversionResult::Inexact;
                 }
             }
@@ -384,15 +379,15 @@ struct ConversionHelper<I, MPFloat, enable_if_t<is_integral_v<I> > >
             return ConversionResult::Success;
         } else {
             if constexpr (sizeof(I) < 2) {
-                if (ensure_exact && !mpfr_fits_ushort_p(src, MPFR_RNDN)) {
+                if (ensure_exact && !mpfr_fits_ushort_p(dst, MPFR_RNDN)) {
                     return ConversionResult::Inexact;
                 }
             } else if constexpr (sizeof(I) == 4) {
-                if (ensure_exact && !mpfr_fits_uint_p(src, MPFR_RNDN)) {
+                if (ensure_exact && !mpfr_fits_uint_p(dst, MPFR_RNDN)) {
                     return ConversionResult::Inexact;
                 }
             } else if constexpr (sizeof(I) == 8) {
-                if (ensure_exact && !mpfr_fits_ulong_p(src, MPFR_RNDN)) {
+                if (ensure_exact && !mpfr_fits_ulong_p(dst, MPFR_RNDN)) {
                     return ConversionResult::Inexact;
                 }
             }

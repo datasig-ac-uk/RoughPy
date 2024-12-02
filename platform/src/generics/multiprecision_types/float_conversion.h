@@ -12,6 +12,7 @@
 #include "roughpy/core/hash.h"
 
 #include "roughpy/generics/conversion_trait.h"
+#include "generics/conversion_impl.h"
 
 namespace rpy::generics::conv {
 

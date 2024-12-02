@@ -13,6 +13,8 @@
 #include "roughpy/generics/type_ptr.h"
 #include "roughpy/generics/conversion_trait.h"
 
+#include "generics/conversion_impl.h"
+
 namespace rpy {
 namespace generics::conv {
 

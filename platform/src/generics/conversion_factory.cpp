@@ -4,6 +4,8 @@
 
 #include "roughpy/generics/conversion_trait.h"
 
+#include "generics/conversion_impl.h"
+
 
 using namespace rpy::generics::conv;
 

@@ -13,6 +13,8 @@
 #include "roughpy/generics/conversion_trait.h"
 #include "roughpy/generics/type.h"
 
+#include "generics/conversion_impl.h"
+
 #include "builtin_type_ids.h"
 #include "conversion_helpers.h"
 
