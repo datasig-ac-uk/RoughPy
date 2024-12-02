@@ -61,7 +61,7 @@ struct ConversionHelper<From, To, enable_if_t<is_floating_point_v<From> &&
 
     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
-        *dst = static_cast<To>(src);
+        *dst = static_cast<To>(*src);
         if constexpr (!is_always_exact) {
             if (ensure_exact && static_cast<From>(*dst) != *src) {
                 return ConversionResult::Inexact;
@@ -84,8 +84,8 @@ struct ConversionHelper<From, To, enable_if_t<is_integral_v<From> &&
 
     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
-        if constexpr (!is_always_exact) {
-            constexpr From to_max = static_cast<From>(1) << std::numeric_limits<To>::digits;
+        if constexpr (std::numeric_limits<To>::digits > std::numeric_limits<From>::digits) {
+            From to_max = static_cast<From>(1) << std::numeric_limits<To>::digits;
             if (ensure_exact && *src > to_max) {
                 return ConversionResult::Inexact;
             }
@@ -117,11 +117,14 @@ struct ConversionHelper<From, To, enable_if_t<is_floating_point_v<From> &&
         From integral_part;
         auto fractional_part = std::modf(*src, &integral_part);
 
-        constexpr auto to_max = static_cast<To>(std::numeric_limits<From>::max());
-        constexpr auto to_min = static_cast<To>(std::numeric_limits<From>::min());
+        if constexpr (std::numeric_limits<To>::digits > std::numeric_limits<From>::digits) {
+            const auto to_max = static_cast<To>(std::numeric_limits<From>::max());
+            const auto to_min = static_cast<To>(std::numeric_limits<From>::min());
 
-        if (to_min < integral_part || integral_part > to_max) {
-            return ConversionResult::Failed;
+            if (to_min < integral_part || integral_part > to_max) {
+                return ConversionResult::Failed;
+            }
+
         }
 
         if (ensure_exact && fractional_part != 0.0) {
