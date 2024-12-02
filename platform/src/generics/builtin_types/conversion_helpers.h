@@ -25,6 +25,7 @@ struct ConversionHelper<From, To, enable_if_t<is_integral_v<From>&&is_integral_v
     using from_ptr = const From*;
     using to_ptr = To*;
 
+    static constexpr bool is_possible = true;
     // Exact if both have the same
     static constexpr bool is_always_exact = is_signed_v<From> == is_signed_v<To>
             && sizeof(From) >= sizeof(To);
@@ -54,6 +55,7 @@ struct ConversionHelper<From, To, enable_if_t<is_floating_point_v<From> &&
     using from_ptr = const From*;
     using to_ptr = To*;
 
+    static constexpr bool is_possible = true;
     // Exact if the From type has less or equal precision compared to the To type
     static constexpr bool is_always_exact = sizeof(From) <= sizeof(To);
 
@@ -76,6 +78,7 @@ struct ConversionHelper<From, To, enable_if_t<is_integral_v<From> &&
     using from_ptr = const From*;
     using to_ptr = To*;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact =
         std::numeric_limits<From>::digits <= std::numeric_limits<To>::digits;
 
@@ -105,6 +108,7 @@ struct ConversionHelper<From, To, enable_if_t<is_floating_point_v<From> &&
     using from_ptr = const From*;
     using to_ptr = To*;
 
+    static constexpr bool is_possible = true;
     // Conversion to integer from floating point is almost never exact
     static constexpr bool is_always_exact = false;
 
