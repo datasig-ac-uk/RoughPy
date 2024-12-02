@@ -20,6 +20,9 @@
 #include "indeterminate.h"
 #include "monomial.h"
 #include "polynomial.h"
+#include "polynomial_conversion.h"
+#include "conversion_helpers.h"
+#include "generics/builtin_types/conversion_factory.h"
 
 
 using namespace rpy;
@@ -130,11 +133,30 @@ void PolynomialType::destroy_range(void* data, size_t count) const
 }
 
 std::unique_ptr<const ConversionTrait> PolynomialType::
-convert_to(const Type& type) const noexcept { return Type::convert_to(type); }
+convert_to(const Type& type) const noexcept
+{
+    static const auto table = conv::make_poly_conversion_to_table();
+    constexpr Hash<string_view> hasher;
+
+    auto it = table.find(hasher(type.id()));
+    if (it != table.end()) {
+        return it->second->make(&type, this);
+    }
+
+    return Type::convert_to(type);
+}
 
 std::unique_ptr<const ConversionTrait> PolynomialType::
 convert_from(const Type& type) const noexcept
 {
+    static const auto table = conv::make_poly_conversion_from_table();
+    constexpr Hash<string_view> hasher;
+
+    auto it = table.find(hasher(type.id()));
+    if (it != table.end()) {
+        return it->second->make(&type, this);
+    }
+
     return Type::convert_from(type);
 }
 
