@@ -32,7 +32,8 @@ struct ConversionHelper<From, To, enable_if_t<is_integral_v<From>&&is_integral_v
 
     static bool check_fits_in_to_type(const From& src) noexcept
     {
-        return std::numeric_limits<To>::min() <= src && src <= std::numeric_limits<To>::max();
+        return compare_less_equal(std::numeric_limits<To>::min(), src) &&
+                compare_less_equal(src, std::numeric_limits<To>::max());
     }
 
     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
@@ -84,7 +85,7 @@ struct ConversionHelper<From, To, enable_if_t<is_integral_v<From> &&
 
     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
-        if constexpr (std::numeric_limits<To>::digits > std::numeric_limits<From>::digits) {
+        if constexpr (std::numeric_limits<To>::digits < std::numeric_limits<From>::digits) {
             From to_max = static_cast<From>(1) << std::numeric_limits<To>::digits;
             if (ensure_exact && *src > to_max) {
                 return ConversionResult::Inexact;
