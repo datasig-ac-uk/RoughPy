@@ -3,6 +3,7 @@
 
 
 target_sources(RoughPy_Platform PRIVATE
+        conversion_helpers.h
         indeterminate.h
         indeterminate.cpp
         monomial.cpp
