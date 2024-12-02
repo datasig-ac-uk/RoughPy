@@ -122,6 +122,8 @@ public:
     using flat_map::operator[];
 
     deg_t degree() const noexcept;
+
+    bool is_constant() const noexcept;
 };
 
 void poly_add_inplace(Polynomial& lhs, const Polynomial& rhs);
