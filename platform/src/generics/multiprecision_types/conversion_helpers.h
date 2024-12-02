@@ -32,7 +32,7 @@ struct ConversionHelper<MPInt, I, enable_if_t<is_integral_v<I> > >
     static constexpr bool is_always_exact = false;
 
     static ConversionResult
-    ConversionResult(to_ptr dst, from_ptr src, bool ensure_exact)
+    convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
         if constexpr (is_signed_v<I>) {
             if constexpr (sizeof(I) < 2) {
@@ -85,10 +85,11 @@ struct ConversionHelper<I, MPInt, enable_if_t<is_integral_v<I> > >
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
-    static ConversionResult ConversionResult(to_ptr dst,
+    static ConversionResult convert(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
+        ignore_unused(ensure_exact);
         if constexpr (is_signed_v<I>) { mpz_set_si(dst, *src); } else {
             mpz_set_ui(dst, *src);
         }
