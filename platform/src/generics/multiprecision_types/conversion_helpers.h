@@ -27,10 +27,12 @@ struct ConversionHelper<MPInt, I, enable_if_t<is_integral_v<I> > >
 {
     using from_ptr = mpz_srcptr;
     using to_ptr = I*;
-    
+
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = false;
 
-    static ConversionResult ConversionResult(to_ptr dst, from_ptr src, bool ensure_exact)
+    static ConversionResult
+    ConversionResult(to_ptr dst, from_ptr src, bool ensure_exact)
     {
         if constexpr (is_signed_v<I>) {
             if constexpr (sizeof(I) < 2) {
@@ -70,7 +72,6 @@ struct ConversionHelper<MPInt, I, enable_if_t<is_integral_v<I> > >
             *dst = mpz_get_ui(src);
             return ConversionResult::Success;
         }
-
     }
 };
 
@@ -81,15 +82,14 @@ struct ConversionHelper<I, MPInt, enable_if_t<is_integral_v<I> > >
     using from_ptr = const I*;
     using to_ptr = mpz_ptr;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
     static ConversionResult ConversionResult(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
-        if constexpr (is_signed_v<I>) {
-            mpz_set_si(dst, *src);
-        } else {
+        if constexpr (is_signed_v<I>) { mpz_set_si(dst, *src); } else {
             mpz_set_ui(dst, *src);
         }
         return ConversionResult::Success;
@@ -102,6 +102,7 @@ struct ConversionHelper<MPInt, F, enable_if_t<is_floating_point_v<F> > >
     using from_ptr = mpz_srcptr;
     using to_ptr = const F*;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = false;
 
     static ConversionResult ConversionResult(to_ptr dst,
@@ -134,6 +135,7 @@ struct ConversionHelper<F, MPInt, enable_if_t<is_floating_point_v<F> > >
     using from_ptr = const F*;
     using to_ptr = mpz_ptr;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = false;
 
     static ConversionResult ConversionResult(to_ptr dst,
@@ -158,6 +160,7 @@ struct ConversionHelper<MPInt, MPInt, void>
     using from_ptr = mpz_srcptr;
     using to_ptr = mpz_ptr;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
     static ConversionResult ConversionResult(to_ptr dst,
@@ -172,34 +175,43 @@ struct ConversionHelper<MPInt, MPInt, void>
 
 
 template <typename I>
-struct ConversionHelper<MPRational, I, enable_if_t<is_integral_v<I>>>
+struct ConversionHelper<MPRational, I, enable_if_t<is_integral_v<I> > >
 {
     using from_ptr = mpq_srcptr;
     using to_ptr = I*;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
-    static ConversionResult ConversionResult(to_ptr dst, from_ptr src, bool ensure_exact)
+    static ConversionResult ConversionResult(to_ptr dst,
+                                             from_ptr src,
+                                             bool ensure_exact)
     {
         if (mpz_cmp_ui(mpq_denref(src), 1UL)) {
             return ConversionResult::Failed;
         }
 
-        return ConversionHelper<MPInt, I>::convert(dst, mpq_numref(src), ensure_exact);
+        return ConversionHelper<MPInt, I>::convert(
+            dst,
+            mpq_numref(src),
+            ensure_exact);
     }
 
 };
 
 
 template <typename I>
-struct ConversionHelper<I, MPRational, enable_if_t<is_integral_v<I>>>
+struct ConversionHelper<I, MPRational, enable_if_t<is_integral_v<I> > >
 {
     using from_ptr = const I*;
     using to_ptr = mpq_ptr;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
-    static ConversionResult ConversionResult(to_ptr dst, from_ptr src, bool ensure_exact)
+    static ConversionResult ConversionResult(to_ptr dst,
+                                             from_ptr src,
+                                             bool ensure_exact)
     {
         mpq_set_si(dst, *src, 1);
         return ConversionResult::Success;
@@ -213,6 +225,7 @@ struct ConversionHelper<MPRational, F, enable_if_t<is_floating_point_v<F> > >
     using from_ptr = mpq_srcptr;
     using to_ptr = F*;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = false;
 
     static ConversionResult ConversionResult(to_ptr dst,
@@ -231,6 +244,7 @@ struct ConversionHelper<F, MPRational, enable_if_t<is_floating_point_v<F> > >
     using from_ptr = const F*;
     using to_ptr = mpq_ptr;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = false;
 
     static ConversionResult ConversionResult(to_ptr dst,
@@ -252,6 +266,7 @@ struct ConversionHelper<MPRational, MPInt, void>
     using from_ptr = mpq_srcptr;
     using to_ptr = mpz_ptr;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
     static ConversionResult ConversionResult(to_ptr dst,
@@ -275,6 +290,7 @@ struct ConversionHelper<MPInt, MPRational, void>
     using from_ptr = mpz_srcptr;
     using to_ptr = mpq_ptr;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
@@ -292,6 +308,7 @@ struct ConversionHelper<MPRational, MPRational, void>
     using from_ptr = mpq_srcptr;
     using to_ptr = mpq_ptr;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
     static ConversionResult ConversionResult(to_ptr dst,
@@ -305,23 +322,20 @@ struct ConversionHelper<MPRational, MPRational, void>
 };
 
 
-
-
 template <typename I>
-struct ConversionHelper<MPFloat, I, enable_if_t<is_integral_v<I>>>
+struct ConversionHelper<MPFloat, I, enable_if_t<is_integral_v<I> > >
 {
     using from_ptr = mpfr_srcptr;
     using to_ptr = I*;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
         if constexpr (is_signed_v<I>) {
             *dst = mpfr_get_si(src, MPFR_RNDN);
-        } else {
-            *dst = mpfr_get_ui(src, MPFR_RNDN);
-        }
+        } else { *dst = mpfr_get_ui(src, MPFR_RNDN); }
 
         auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
         mpfr_flags_clear(MPFR_FLAGS_ALL);
@@ -335,11 +349,12 @@ struct ConversionHelper<MPFloat, I, enable_if_t<is_integral_v<I>>>
 };
 
 template <typename I>
-struct ConversionHelper<I, MPFloat, enable_if_t<is_integral_v<I>>>
+struct ConversionHelper<I, MPFloat, enable_if_t<is_integral_v<I> > >
 {
     using from_ptr = const I*;
     using to_ptr = mpfr_ptr;
 
+    static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
     static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
@@ -351,34 +366,34 @@ struct ConversionHelper<I, MPFloat, enable_if_t<is_integral_v<I>>>
         }
         if constexpr (is_signed_v<I>) {
             if constexpr (sizeof(I) < 2) {
-               if (ensure_exact && !mpfr_fits_sshort_p(src, MPFR_RNDN)) {
-                   return ConversionResult::Inexact;
-               }
+                if (ensure_exact && !mpfr_fits_sshort_p(src, MPFR_RNDN)) {
+                    return ConversionResult::Inexact;
+                }
             } else if constexpr (sizeof(I) == 4) {
-               if (ensure_exact && !mpfr_fits_sint_p(src, MPFR_RNDN)) {
-                   return ConversionResult::Inexact;
-               }
+                if (ensure_exact && !mpfr_fits_sint_p(src, MPFR_RNDN)) {
+                    return ConversionResult::Inexact;
+                }
             } else if constexpr (sizeof(I) == 8) {
-               if (ensure_exact && !mpfr_fits_slong_p(src, MPFR_RNDN)) {
-                   return ConversionResult::Inexact;
-               }
+                if (ensure_exact && !mpfr_fits_slong_p(src, MPFR_RNDN)) {
+                    return ConversionResult::Inexact;
+                }
             }
 
             mpfr_set_si(dst, *src, MPFR_RNDN);
             return ConversionResult::Success;
         } else {
             if constexpr (sizeof(I) < 2) {
-               if (ensure_exact && !mpfr_fits_ushort_p(src, MPFR_RNDN)) {
-                   return ConversionResult::Inexact;
-               }
+                if (ensure_exact && !mpfr_fits_ushort_p(src, MPFR_RNDN)) {
+                    return ConversionResult::Inexact;
+                }
             } else if constexpr (sizeof(I) == 4) {
-               if (ensure_exact && !mpfr_fits_uint_p(src, MPFR_RNDN)) {
-                   return ConversionResult::Inexact;
-               }
+                if (ensure_exact && !mpfr_fits_uint_p(src, MPFR_RNDN)) {
+                    return ConversionResult::Inexact;
+                }
             } else if constexpr (sizeof(I) == 8) {
-               if (ensure_exact && !mpfr_fits_ulong_p(src, MPFR_RNDN)) {
-                   return ConversionResult::Inexact;
-               }
+                if (ensure_exact && !mpfr_fits_ulong_p(src, MPFR_RNDN)) {
+                    return ConversionResult::Inexact;
+                }
             }
 
             mpfr_set_ui(dst, *src, MPFR_RNDN);
@@ -388,69 +403,132 @@ struct ConversionHelper<I, MPFloat, enable_if_t<is_integral_v<I>>>
     }
 };
 
-
-
-
-template <typename F, bool Nested>
-struct ConversionHelpers<MPFloat, F, Nested, enable_if_t<is_floating_point_v<F> > >
+template <typename F>
+struct ConversionHelper<MPFloat, F, enable_if_t<is_floating_point_v<F> > >
 {
-    static constexpr bool is_nested = Nested;
-    static constexpr bool from_exact_convertible() noexcept { return true; }
-    static constexpr bool to_exact_convertible() noexcept { return false; }
+    using from_ptr = mpfr_srcptr;
+    using to_ptr = const F*;
 
-    static ConversionResult from(mpfr_ptr dst_ptr,
-                                 const F* src_ptr,
-                                 bool ensure_exact) noexcept
+    static constexpr bool is_possible = true;
+    static constexpr bool is_always_exact = false;
+
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+    {
+        *dst = mpfr_get_d(src, MPFR_RNDN);
+        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
+            | MPFR_FLAGS_UNDERFLOW);
+
+        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
+        mpfr_flags_clear(MPFR_FLAGS_ALL);
+        if (t & ~flags) { return ConversionResult::Failed; }
+        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
+
+        return ConversionResult::Success;
+    }
+};
+
+
+template <typename F>
+struct ConversionHelper<F, MPFloat, enable_if_t<is_floating_point_v<F>>>
+{
+    using from_ptr = const F*;
+    using to_ptr = mpfr_ptr;
+
+    static constexpr bool is_possible = true;
+    static constexpr bool is_always_exact = false;
+
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+    {
+        if (ensure_exact) {
+            if (mpfr_fits_d_p(dst, *src, MPFR_RNDN) != 0) {
+                return ConversionResult::Inexact;
+            }
+        }
+        mpfr_set_d(dst, *src, MPFR_RNDN);
+        return ConversionResult::Success;
+    }
+};
+
+template <>
+struct ConversionHelper<MPFloat, MPInt, void>
+{
+    using from_ptr = mpfr_srcptr;
+    using to_ptr = mpz_ptr;
+
+    static constexpr bool is_possible = true;
+    static constexpr bool is_always_exact = false;
+
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+    {
+        mpfr_get_z(dst, src, MPFR_RNDN);
+
+        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
+            | MPFR_FLAGS_UNDERFLOW);
+
+        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
+        mpfr_flags_clear(MPFR_FLAGS_ALL);
+        if (t & ~flags) { return ConversionResult::Failed; }
+        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
+
+        return ConversionResult::Success;
+    }
+};
+
+template <>
+struct ConversionHelper<MPInt, MPFloat, void>
+{
+    using from_ptr = mpz_srcptr;
+    using to_ptr = mpfr_ptr;
+
+    static constexpr bool is_possible = true;
+    static constexpr bool is_always_exact = false;
+
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+    {
+        mpfr_set_z(dst, src, MPFR_RNDN);
+
+        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
+            | MPFR_FLAGS_UNDERFLOW);
+
+        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
+        mpfr_flags_clear(MPFR_FLAGS_ALL);
+        if (t & ~flags) { return ConversionResult::Failed; }
+        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
+
+        return ConversionResult::Success;
+    }
+};
+
+
+template <>
+struct ConversionHelper<MPFloat, MPRational, void>
+{
+    using from_ptr = mpfr_srcptr;
+    using to_ptr = mpq_ptr;
+
+    static constexpr bool is_possible = true;
+    static constexpr bool is_always_exact = true;
+
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
         ignore_unused(ensure_exact);
-
-        mpfr_set_d(dst_ptr, *src_ptr, MPFR_RNDN);
+        mpfr_get_q(dst, src);
         return ConversionResult::Success;
-    }
-
-    static ConversionResult to(F* dst_ptr,
-                               mpfr_ptr src_ptr,
-                               bool ensure_exact) noexcept
-    {
-        if constexpr (is_same_v<F, float>) {
-            *dst_ptr = mpfr_get_flt(src_ptr, MPFR_RNDN);
-        } else { *dst_ptr = mpfr_get_d(src_ptr, MPFR_RNDN); }
-
-        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
-            | MPFR_FLAGS_UNDERFLOW);
-
-        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
-        mpfr_flags_clear(MPFR_FLAGS_ALL);
-        if (t & ~flags) { return ConversionResult::Failed; }
-        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
-
-        return ConversionResult::Success;
-    }
-
-    static bool compare_equal(mpfr_srcptr lhs, const F* rhs) noexcept
-    {
-        return mpfr_cmp_d(lhs, *rhs) == 0;
     }
 };
 
-
-template <bool Nested>
-struct ConversionHelpers<MPFloat, MPInt, Nested, void>
+template <>
+struct ConversionHelper<MPRational, MPFloat, void>
 {
+    using from_ptr = mpq_srcptr;
+    using to_ptr = mpfr_ptr;
 
+    static constexpr bool is_possible = true;
+    static constexpr bool is_always_exact = false;
 
-    static constexpr bool is_nested = Nested;
-
-    static constexpr bool from_exact_convertible() noexcept { return false; }
-    static constexpr bool to_exact_convertible() noexcept { return false; }
-
-
-    static ConversionResult from(mpfr_ptr dst_ptr,
-                                 mpz_srcptr src_ptr,
-                                 bool ensure_exact) noexcept
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
-        ignore_unused(ensure_exact);
-        mpfr_set_z(dst_ptr, src_ptr, MPFR_RNDN);
+        mpfr_set_q(dst, src, MPFR_RNDN);
 
         constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
             | MPFR_FLAGS_UNDERFLOW);
@@ -461,85 +539,22 @@ struct ConversionHelpers<MPFloat, MPInt, Nested, void>
         if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
 
         return ConversionResult::Success;
-    }
-
-    static ConversionResult to(mpz_ptr dst_ptr,
-                               mpfr_srcptr src_ptr,
-                               bool ensure_exact) noexcept
-    {
-        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
-            | MPFR_FLAGS_UNDERFLOW);
-
-        mpfr_get_z(dst_ptr, src_ptr, MPFR_RNDN);
-
-        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
-        mpfr_flags_clear(MPFR_FLAGS_ALL);
-        if (t & ~flags) { return ConversionResult::Failed; }
-        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
-
-        return ConversionResult::Success;
-    }
-
-    static bool compare_equal(mpfr_srcptr lhs, mpz_srcptr rhs) noexcept
-    {
-        return mpfr_cmp_z(lhs, rhs) == 0;
     }
 };
 
-template <bool Nested>
-struct ConversionHelpers<MPFloat, MPRational, Nested, void>
+
+template <>
+struct ConversionHelper<MPFloat, MPFloat, void>
 {
-    static constexpr bool is_nested = Nested;
+    using from_ptr = mpfr_srcptr;
+    using to_ptr = mpfr_ptr;
 
-    static constexpr bool from_exact_convertible() noexcept { return false; }
-    static constexpr bool to_exact_convertible() noexcept { return true; }
+    static constexpr bool is_possible = true;
+    static constexpr bool is_always_exact = false;
 
-
-    static ConversionResult from(mpfr_ptr dst_ptr,
-                                 mpq_srcptr src_ptr,
-                                 bool ensure_exact) noexcept
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
-        constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
-            | MPFR_FLAGS_UNDERFLOW);
-
-        mpfr_set_q(dst_ptr, src_ptr, MPFR_RNDN);
-
-        auto t = mpfr_flags_test(MPFR_FLAGS_ALL);
-        mpfr_flags_clear(MPFR_FLAGS_ALL);
-        if (t & ~flags) { return ConversionResult::Failed; }
-        if (ensure_exact && t & flags) { return ConversionResult::Inexact; }
-
-        return ConversionResult::Success;
-    }
-
-    static ConversionResult to(mpq_ptr dst_ptr,
-                               mpfr_srcptr src_ptr,
-                               bool ensure_exact) noexcept
-    {
-        ignore_unused(ensure_exact);
-        mpfr_get_q(dst_ptr, src_ptr);
-        return ConversionResult::Success;
-    }
-
-    static bool compare_equal(mpfr_srcptr lhs, mpq_srcptr rhs) noexcept
-    {
-        return mpfr_cmp_q(lhs, rhs) == 0;
-    }
-};
-
-template <bool Nested>
-struct ConversionHelpers<MPFloat, MPFloat, Nested, void>
-{
-    static constexpr bool is_nested = Nested;
-
-    static constexpr bool from_exact_convertible() noexcept { return true; }
-    static constexpr bool to_exact_convertible() noexcept { return true; }
-
-    static ConversionResult from(mpfr_ptr dst_ptr,
-                                 mpfr_srcptr src_ptr,
-                                 bool ensure_exact) noexcept
-    {
-        mpfr_set(dst_ptr, src_ptr, MPFR_RNDN);
+        mpfr_set(dst, src, MPFR_RNDN);
 
         constexpr mpfr_flags_t flags = (MPFR_FLAGS_INEXACT | MPFR_FLAGS_OVERFLOW
             | MPFR_FLAGS_UNDERFLOW);
@@ -551,21 +566,7 @@ struct ConversionHelpers<MPFloat, MPFloat, Nested, void>
 
         return ConversionResult::Success;
     }
-
-    static ConversionResult to(mpfr_ptr dst_ptr,
-                               mpfr_srcptr src_ptr,
-                               bool ensure_exact) noexcept
-    {
-        return from(dst_ptr, src_ptr, ensure_exact);
-    }
-
-    static bool compare_equal(mpfr_srcptr lhs, mpfr_srcptr rhs) noexcept
-    {
-        return mpfr_cmp(lhs, rhs) == 0;
-    }
 };
-
-
 
 }
 
