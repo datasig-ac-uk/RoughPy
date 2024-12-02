@@ -18,178 +18,118 @@
 
 namespace rpy::generics::conv {
 
-// Specialization for integral types
-template <typename T, typename U, bool Nested>
-struct ConversionHelpers<T, U, Nested, std::enable_if_t<std::is_integral_v<T> &&
-            std::is_integral_v<U>> >
+
+template <typename From, typename To>
+struct ConversionHelper<From, To, enable_if_t<is_integral_v<From>&&is_integral_v<To>>>
 {
-    // conversion from T to U
-    // conversion to T from U
-    static constexpr bool is_nested = Nested;
+    using from_ptr = const From*;
+    using to_ptr = To*;
 
-    static constexpr bool from_exact_convertible() noexcept
+    // Exact if both have the same
+    static constexpr bool is_always_exact = is_signed_v<From> == is_signed_v<To>
+            && sizeof(From) >= sizeof(To);
+
+    static bool check_fits_in_to_type(const From& src) noexcept
     {
-       if constexpr (is_signed_v<T> == is_signed_v<U>) {
-           return sizeof(U) >= sizeof(T);
-       } else {
-           return false;
-       }
+        return std::numeric_limits<To>::min() <= src && src <= std::numeric_limits<To>::max();
     }
 
-    static constexpr bool to_exact_convertible() noexcept
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
-        if constexpr (is_signed_v<T> == is_signed_v<U>) {
-            return sizeof(T) >= sizeof(U);
-        } else {
-            return false;
+        if constexpr (!is_always_exact) {
+            if (ensure_exact && !check_fits_in_to_type(*src)) {
+                return ConversionResult::Inexact;
+            }
         }
+        *dst = static_cast<To>(*src);
+        return ConversionResult::Success;
     }
+};
 
-    static ConversionResult from(T* dst_ptr,
-                                 const U* src_ptr,
-                                 bool ensure_exact) noexcept
+
+template <typename From, typename To>
+struct ConversionHelper<From, To, enable_if_t<is_floating_point_v<From> &&
+            is_floating_point_v<To>> >
+{
+    using from_ptr = const From*;
+    using to_ptr = To*;
+
+    // Exact if the From type has less or equal precision compared to the To type
+    static constexpr bool is_always_exact = sizeof(From) <= sizeof(To);
+
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
-        if constexpr (!from_exact_convertible()) {
-            if (ensure_exact) {
-                if (std::numeric_limits<T>::min() <= *src_ptr &&
-                    *src_ptr <= std::numeric_limits<T>::max()) {
+        *dst = static_cast<To>(src);
+        if constexpr (!is_always_exact) {
+            if (ensure_exact && static_cast<From>(*dst) != *src) {
+                return ConversionResult::Inexact;
+            }
+        }
+        return ConversionResult::Success;
+    }
+};
+
+template <typename From, typename To>
+struct ConversionHelper<From, To, enable_if_t<is_integral_v<From> &&
+            is_floating_point_v<To>> >
+{
+    using from_ptr = const From*;
+    using to_ptr = To*;
+
+    static constexpr bool is_always_exact =
+        std::numeric_limits<From>::digits <= std::numeric_limits<To>::digits;
+
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
+    {
+        if constexpr (!is_always_exact) {
+            constexpr From to_max = static_cast<From>(1) << std::numeric_limits<To>::digits;
+            if (ensure_exact && *src > to_max) {
+                return ConversionResult::Inexact;
+            }
+            if constexpr (std::is_signed_v<From>) {
+                if (ensure_exact && *src < -to_max) {
                     return ConversionResult::Inexact;
                 }
             }
         }
-        *dst_ptr = static_cast<T>(*src_ptr);
+        *dst = static_cast<To>(*src);
         return ConversionResult::Success;
-    }
-
-    static ConversionResult to(U* dst_ptr,
-                               const T* src_ptr,
-                               bool ensure_exact) noexcept
-    {
-        if constexpr (!to_exact_convertible()) {
-            if (ensure_exact) {
-                if (std::numeric_limits<U>::min() <= *src_ptr &&
-                    *src_ptr <= std::numeric_limits<U>::max()) {
-                    return ConversionResult::Inexact;
-                }
-            }
-        }
-        *dst_ptr = static_cast<U>(*src_ptr);
-        return ConversionResult::Success;
-    }
-
-    static bool compare_equal(const T* t, const U* u) noexcept
-    {
-        return check_equal(*t, *u);
     }
 };
 
-// Specialization for floating point types
-template <typename T, typename U, bool Nested>
-struct ConversionHelpers<T, U, Nested, std::enable_if_t<std::is_floating_point_v<T> &&
-            std::is_floating_point_v<U>> >
+
+template <typename From, typename To>
+struct ConversionHelper<From, To, enable_if_t<is_floating_point_v<From> &&
+            is_integral_v<To>> >
 {
-    // conversion from T to U
-    // conversion to T from U
-    static constexpr bool is_nested = Nested;
+    using from_ptr = const From*;
+    using to_ptr = To*;
 
-    static constexpr bool from_exact_convertible() noexcept
-    {
-        return sizeof(T) <= sizeof(U);
-    }
+    // Conversion to integer from floating point is almost never exact
+    static constexpr bool is_always_exact = false;
 
-    static constexpr bool to_exact_convertible() noexcept
+    static ConversionResult convert(to_ptr dst, from_ptr src, bool ensure_exact)
     {
-        return sizeof(U) <= sizeof(T);
-    }
+        From integral_part;
+        auto fractional_part = std::modf(*src, &integral_part);
 
-    static ConversionResult from(T* dst_ptr,
-                                 const U* src_ptr,
-                                 bool ensure_exact) noexcept
-    {
-        *dst_ptr = static_cast<T>(*src_ptr);
-        if constexpr (!from_exact_convertible()) {
-            if (ensure_exact && *src_ptr != static_cast<U>(*dst_ptr)) {
-                return ConversionResult::Inexact;
-            }
+        constexpr auto to_max = static_cast<To>(std::numeric_limits<From>::max());
+        constexpr auto to_min = static_cast<To>(std::numeric_limits<From>::min());
+
+        if (to_min < integral_part || integral_part > to_max) {
+            return ConversionResult::Failed;
         }
-        return ConversionResult::Success;
-    }
 
-    static ConversionResult to(U* dst_ptr,
-                               const T* src_ptr,
-                               bool ensure_exact) noexcept
-    {
-        *dst_ptr = static_cast<U>(*src_ptr);
-        if constexpr (!to_exact_convertible()) {
-            if (ensure_exact && *src_ptr != static_cast<T>(*dst_ptr)) {
-                return ConversionResult::Inexact;
-            }
+        if (ensure_exact && fractional_part != 0.0) {
+            return ConversionResult::Inexact;
         }
-        return ConversionResult::Success;
-    }
 
-    static bool compare_equal(const T* t, const U* u) noexcept
-    {
-        return *t == static_cast<T>(*u);
+        *dst = static_cast<To>(*src);
+        return ConversionResult::Success;
     }
 };
 
 
-// Specialization for when T is a floating point type and U is integral
-template <typename T, typename U, bool Nested>
-struct ConversionHelpers<T, U, Nested, std::enable_if_t<std::is_floating_point_v<T> &&
-            std::is_integral_v<U>> >
-{
-    // conversion from T to U
-    // conversion to T from U
-    static constexpr bool is_nested = false;
-
-    static constexpr bool from_exact_convertible() noexcept
-    {
-        // Converting to from integer to float is exact if the number of digits
-        // of the integer is less than the number of mantissa bits of the float
-        return std::numeric_limits<T>::digits >= std::numeric_limits<U>::digits;
-    }
-
-    static constexpr bool to_exact_convertible() noexcept
-    {
-        // Converting from floating point to integral is generally inexact
-        return false;
-    }
-
-    static ConversionResult from(T* dst_ptr,
-                                 const U* src_ptr,
-                                 bool ensure_exact) noexcept
-    {
-        *dst_ptr = static_cast<T>(*src_ptr);
-        if constexpr (!from_exact_convertible()) {
-            if (ensure_exact && static_cast<U>(*dst_ptr) != *src_ptr) {
-                return ConversionResult::Inexact;
-            }
-        }
-        return ConversionResult::Success;
-    }
-
-    static ConversionResult to(U* dst_ptr,
-                               const T* src_ptr,
-                               bool ensure_exact) noexcept
-    {
-        *dst_ptr = static_cast<U>(*src_ptr);
-        if (ensure_exact) {
-            // Check if the conversion is exact
-            if (static_cast<T>(*dst_ptr) != *src_ptr) {
-                return ConversionResult::Inexact;
-            }
-        }
-        return ConversionResult::Success;
-    }
-
-    static bool compare_equal(const T* t, const U* u) noexcept
-    {
-        // Compare using a tolerance for floating point precision issues
-        return *t == static_cast<T>(*u);
-    }
-};
 
 
 }
