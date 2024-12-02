@@ -86,8 +86,8 @@ struct ConversionHelper<I, MPInt, enable_if_t<is_integral_v<I> > >
     static constexpr bool is_always_exact = true;
 
     static ConversionResult convert(to_ptr dst,
-                                             from_ptr src,
-                                             bool ensure_exact)
+                                    from_ptr src,
+                                    bool ensure_exact)
     {
         ignore_unused(ensure_exact);
         if constexpr (is_signed_v<I>) { mpz_set_si(dst, *src); } else {
@@ -106,20 +106,20 @@ struct ConversionHelper<MPInt, F, enable_if_t<is_floating_point_v<F> > >
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = false;
 
-    static ConversionResult ConversionResult(to_ptr dst,
-                                             from_ptr src,
-                                             bool ensure_exact)
+    static ConversionResult convert(to_ptr dst,
+                                    from_ptr src,
+                                    bool ensure_exact)
     {
         if (ensure_exact) {
             int64_t tmp;
-            auto first_result = ConversionHelpers<int64_t, F>::from(
+            auto first_result = ConversionHelper<int64_t, F>::from(
                 &tmp,
                 src,
                 ensure_exact);
             if (first_result != ConversionResult::Success) {
                 return first_result;
             }
-            return ConversionHelpers<MPInt, int64_t>::from(
+            return ConversionHelper<int64_t, MPInt>::convert(
                 dst,
                 &tmp,
                 ensure_exact);
@@ -139,7 +139,7 @@ struct ConversionHelper<F, MPInt, enable_if_t<is_floating_point_v<F> > >
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = false;
 
-    static ConversionResult ConversionResult(to_ptr dst,
+    static ConversionResult convert(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
@@ -164,7 +164,7 @@ struct ConversionHelper<MPInt, MPInt, void>
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
-    static ConversionResult ConversionResult(to_ptr dst,
+    static ConversionResult convert(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
@@ -184,7 +184,7 @@ struct ConversionHelper<MPRational, I, enable_if_t<is_integral_v<I> > >
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
-    static ConversionResult ConversionResult(to_ptr dst,
+    static ConversionResult convert(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
@@ -210,7 +210,7 @@ struct ConversionHelper<I, MPRational, enable_if_t<is_integral_v<I> > >
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
-    static ConversionResult ConversionResult(to_ptr dst,
+    static ConversionResult convert(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
@@ -229,7 +229,7 @@ struct ConversionHelper<MPRational, F, enable_if_t<is_floating_point_v<F> > >
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = false;
 
-    static ConversionResult ConversionResult(to_ptr dst,
+    static ConversionResult convert(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
@@ -248,7 +248,7 @@ struct ConversionHelper<F, MPRational, enable_if_t<is_floating_point_v<F> > >
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = false;
 
-    static ConversionResult ConversionResult(to_ptr dst,
+    static ConversionResult convert(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
@@ -270,7 +270,7 @@ struct ConversionHelper<MPRational, MPInt, void>
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
-    static ConversionResult ConversionResult(to_ptr dst,
+    static ConversionResult convert(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
@@ -312,7 +312,7 @@ struct ConversionHelper<MPRational, MPRational, void>
     static constexpr bool is_possible = true;
     static constexpr bool is_always_exact = true;
 
-    static ConversionResult ConversionResult(to_ptr dst,
+    static ConversionResult convert(to_ptr dst,
                                              from_ptr src,
                                              bool ensure_exact)
     {
@@ -430,7 +430,7 @@ struct ConversionHelper<MPFloat, F, enable_if_t<is_floating_point_v<F> > >
 
 
 template <typename F>
-struct ConversionHelper<F, MPFloat, enable_if_t<is_floating_point_v<F>>>
+struct ConversionHelper<F, MPFloat, enable_if_t<is_floating_point_v<F> > >
 {
     using from_ptr = const F*;
     using to_ptr = mpfr_ptr;
