@@ -140,109 +140,14 @@ enum class ConversionResult
     Failed
 };
 
-/**
- * @brief This class provides helper functions for data conversion operations.
- *
- * The ConversionHelpers class offers a collection of static methods designed
- * to facilitate various data conversion processes. These methods aid in
- * converting data between different formats or types, ensuring consistency
- * and correctness.
- */
-template <typename T, typename U,bool Nested = false, typename SFINAE=void>
-struct ConversionHelpers
-{
-    // conversion from U to T
-    // conversion to U from T
-
-    static constexpr bool is_nested = Nested;
-
-    using reverse_helper = conditional_t<Nested, void, ConversionHelpers<U, T,
-        true> >;
-
-    /*
-     * The primary templated just tries to use the reverse direction helper to
-     * do conversions. This means we only need to specialize where for
-     * combination once.
-     */
-
-    /*
-     * Determine if the conversion from T to U is always exact
-     */
-    static constexpr bool from_exact_convertible() noexcept
-    {
-        if constexpr (Nested) {
-            return false;
-        } else {
-            return reverse_helper::to_exact_convertible();
-        }
-    }
-
-    /*
-     * Determine if the conversion to T from U is always exact
-     */
-    static constexpr bool to_exact_convertible() noexcept
-    {
-        if constexpr (Nested) {
-            return false;
-        } else {
-            return reverse_helper::from_exact_convertible();
-        }
-    }
-
-    /*
-     * Implement conversion from U to T
-     * the ensure_exact parameter is used to check if the conversion was inexact
-     * which is only relevant if the conversion is not infallible and not
-     * guaranteed to be exact (e.g. from int32_t to int64_t is infallible and
-     * always exact, but conversion from double to int64_t is not exact). Return
-     * ConversionResult::Success if the conversion succeeds or if ensure_exact is false.
-     * Return ConversionResult::Failed if the conversion could not be performed.
-     * If ensure_exact is set true and the conversion is not always exact,
-     * additionally check that the conversion result is an exact conversion,
-     * returning ConversionResult::Inexact on failure.
-     */
-    static ConversionResult from(T* dst_ptr,
-                                 const U* src_ptr,
-                                 bool ensure_exact) noexcept
-    {
-        if constexpr (Nested) {
-            return ConversionResult::Failed;
-        } else {
-            return reverse_helper::to(dst_ptr, src_ptr, ensure_exact);
-        }
-    }
-
-    /*
-     * Perform the reverse conversion from T to U. This has the same semantics as
-     * the "from" method but with the roles of T and U reversed.
-     */
-    static ConversionResult to(U* dst_ptr,
-                               const T* src_ptr,
-                               bool ensure_exact) noexcept
-    {
-        if constexpr (Nested) {
-            return ConversionResult::Failed;
-        } else {
-            return reverse_helper::from(dst_ptr, src_ptr, ensure_exact);
-        }
-    }
-
-    // Helper to check if two values are equal
-    static bool compare_equal(const T* t, const U* u) noexcept
-    {
-        if constexpr (Nested) {
-            return false;
-        } else {
-            return reverse_helper::compare_equal(u, t);
-        }
-    }
-};
 
 template <typename From, typename To, typename=void>
 struct ConversionHelper
 {
     using from_ptr = const From*;
     using to_ptr = To*;
+
+    static constexpr bool is_possible = false;
 
     // Set to true if the conversion is guaranteed to be exact
     static constexpr bool is_always_exact = false;
@@ -269,9 +174,8 @@ struct ConversionHelper
 template <typename From, typename To, typename SFINEA=void>
 class ConversionTraitImpl : public ConversionTrait
 {
-    static_assert(is_convertible_v<From, To>, "From must be convertible to To");
-
     using helper = ConversionHelper<From, To>;
+    static_assert(helper::is_possible, "From must be convertible to To");
 
 public:
     ConversionTraitImpl(TypePtr from_type, TypePtr to_type)
@@ -351,8 +255,9 @@ std::unique_ptr<const ConversionTrait> ConversionFactoryImpl<From, To>::make(
 template <typename From, typename Map, typename To, typename... Ts>
 void build_conversion_from_table(Map& map, meta::TypeList<To, Ts...> list)
 {
+    using helper = ConversionHelper<From, To>;
     ignore_unused(list);
-    if constexpr (!is_same_v<From, To>) {
+    if constexpr (!is_same_v<From, To> && helper::is_possible) {
         Hash<string_view> hasher;
         map.emplace(
             hasher(type_id_of<To>),
@@ -370,7 +275,8 @@ template <typename To, typename Map, typename From, typename... Ts>
 void build_conversion_to_table(Map& map, meta::TypeList<From, Ts...> list)
 {
     ignore_unused(list);
-    if constexpr (!is_same_v<From, To>) {
+    using helper = ConversionHelper<From, To>;
+    if constexpr (!is_same_v<From, To> && helper::is_possible) {
         Hash<string_view> hasher;
         map.emplace(
             hasher(type_id_of<From>),
