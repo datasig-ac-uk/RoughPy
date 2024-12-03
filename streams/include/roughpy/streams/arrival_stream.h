@@ -9,6 +9,10 @@
 
 #include <boost/container/flat_map.hpp>
 
+#include "roughpy/intervals/interval.h"
+#include "roughpy/intervals/dyadic_interval.h"
+#include "roughpy/intervals/real_interval.h"
+
 #include <roughpy/algebra/lie.h>
 
 #include "stream_base.h"
@@ -21,9 +25,9 @@ namespace rpy::streams {
 
 
 class ROUGHPY_STREAMS_EXPORT ArrivalStream : public StreamInterface {
-    using intervals::DyadicInterval;
-    using intervals::Interval;
-    using algebra::Lie;
+    using DyadicInterval = intervals::DyadicInterval;
+    using Interval = intervals::Interval;
+    using Lie = algebra::Lie;
 
     using virtual_func = std::function<Lie(param_t)>;
 
