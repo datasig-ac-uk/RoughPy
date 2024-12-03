@@ -20,6 +20,7 @@ add_library(RoughPy_Intervals SHARED
         include/roughpy/intervals/real_interval.h
         include/roughpy/intervals/partition.h
         include/roughpy/intervals/segmentation.h
+        src/intersection_and_union.cpp
 )
 add_library(RoughPy::Intervals ALIAS RoughPy_Intervals)
 
