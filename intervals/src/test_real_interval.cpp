@@ -31,6 +31,7 @@
 
 #include <gtest/gtest.h>
 
+#include <roughpy/intervals/interval.h>
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/archives.h>
 
@@ -57,3 +58,42 @@ TEST(RealInterval, RealIntervalSerialization)
 
     EXPECT_EQ(in_terval, interval);
 }
+
+TEST(RealInterval, IntervalIntersection)
+{
+    RealInterval interval1(2.0, 5.0);
+    RealInterval interval2(3.0, 6.0);
+
+    RealInterval expected_intersection(3.0, 5.0);
+
+    RealInterval result = intersection(interval1, interval2);
+
+    EXPECT_EQ(result, expected_intersection);
+}
+
+TEST(RealInterval, NoIntersection)
+{
+    RealInterval interval1(2.0, 3.0);
+    RealInterval interval2(4.0, 6.0);
+
+    RealInterval expected_intersection;
+
+    RealInterval result = intersection(interval1, interval2);
+
+    EXPECT_EQ(result, expected_intersection);
+}
+
+TEST(RealInterval, IntervalUnion)
+{
+    RealInterval interval1(2.0, 5.0);
+    RealInterval interval2(3.0, 6.0);
+
+    RealInterval expected_union(2.0, 6.0);
+    RealInterval result_union = interval_union(interval1, interval2);
+
+    EXPECT_EQ(result_union, expected_union);
+}
+
+
+
+
