@@ -34,22 +34,17 @@ class ROUGHPY_STREAMS_EXPORT ArrivalStream : public StreamInterface {
     using virtual_map_type = boost::container::flat_map<param_t, virtual_func>;
     using arrivals_map_type = boost::container::flat_map<param_t, Lie>;
 
-
     arrivals_map_type m_arrivals;
-
-
 public:
-
-
 
     RPY_NO_DISCARD bool
     empty(const intervals::Interval& interval) const noexcept override;
 
 protected:
+
     RPY_NO_DISCARD algebra::Lie log_signature_impl(
         const intervals::Interval& interval,
         const algebra::Context& ctx) const override;
-
 
 };
 
