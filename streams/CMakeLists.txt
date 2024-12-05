@@ -32,6 +32,8 @@ add_library(RoughPy_Streams SHARED
         src/arrival_stream.cpp
         src/value_stream.cpp
         src/value_stream.h
+        src/tensor_valued_stream.cpp
+        src/tensor_valued_stream.h
 )
 add_library(RoughPy::Streams ALIAS RoughPy_Streams)
 

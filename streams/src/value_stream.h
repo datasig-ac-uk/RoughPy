@@ -9,6 +9,8 @@
 
 #include <roughpy/core/macros.h>
 
+#include <roughpy/generics/values.h>
+
 #include "arrival_stream.h"
 
 namespace rpy {
@@ -16,30 +18,28 @@ namespace streams {
 
 class ValueStream : public StreamInterface
 {
-    intervals::RealInterval m_domain;
-    std::shared_ptr<const ArrivalStream> p_arrival_stream;
-    std::shared_ptr<const StreamInterface> p_increment_stream;
-
 public:
-    ValueStream(
-        intervals::RealInterval domain,
-        std::shared_ptr<const ArrivalStream> arrival_stream,
-        std::shared_ptr<const StreamInterface> increment_stream)
-        : m_domain(domain),
-          p_arrival_stream(std::move(arrival_stream)),
-          p_increment_stream(std::move(increment_stream)) {}
+    using StreamValue = generics::Value;
+
+    virtual const intervals::RealInterval& domain() const noexcept = 0;
 
     RPY_NO_DISCARD
-    std::shared_ptr<const ValueStream> query(
-        const intervals::Interval& interval) const;
+    virtual std::shared_ptr<const ValueStream> query(
+        const intervals::Interval& interval) const = 0;
 
-    RPY_NO_DISCARD bool
-    empty(const intervals::Interval& interval) const noexcept override;
+    RPY_NO_DISCARD
+    virtual std::shared_ptr<const StreamInterface>
+    increment_stream() const noexcept = 0;
 
-protected:
-    RPY_NO_DISCARD algebra::Lie log_signature_impl(
-        const intervals::Interval& interval,
-        const algebra::Context& ctx) const override;
+    RPY_NO_DISCARD
+    virtual StreamValue value_at(param_t param) const = 0;
+
+    RPY_NO_DISCARD
+    virtual StreamValue initial_value() const;
+
+    RPY_NO_DISCARD
+    virtual StreamValue terminal_value() const;
+
 };
 
 }// streams

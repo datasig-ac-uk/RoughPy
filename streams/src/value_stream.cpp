@@ -9,28 +9,12 @@ using namespace rpy;
 using namespace rpy::streams;
 
 
-std::shared_ptr<const ValueStream> ValueStream::query(
-    const intervals::Interval& interval) const
+ValueStream::StreamValue ValueStream::initial_value() const
 {
-    return std::make_shared<const ValueStream>(
-        intervals::RealInterval(interval),
-        p_arrival_stream,
-        p_increment_stream);
+    return value_at(domain().inf());
 }
 
-bool ValueStream::empty(const intervals::Interval& interval) const noexcept
+ValueStream::StreamValue ValueStream::terminal_value() const
 {
-    if (!interval.intersects_with(m_domain)) { return false; }
-
-    return p_arrival_stream->empty(interval) && p_increment_stream->empty(
-        interval);
-}
-
-algebra::Lie ValueStream::log_signature_impl(
-    const intervals::Interval& interval,
-    const algebra::Context& ctx) const
-{
-    auto query_interval = intersection(interval, m_domain);
-
-    return p_increment_stream->log_signature(interval, ctx);
+    return value_at(domain().sup());
 }
