@@ -34,6 +34,8 @@ add_library(RoughPy_Streams SHARED
         src/value_stream.h
         src/tensor_valued_stream.cpp
         src/tensor_valued_stream.h
+        include/roughpy/streams/restriction_stream.h
+        src/restriction_stream.cpp
 )
 add_library(RoughPy::Streams ALIAS RoughPy_Streams)
 
