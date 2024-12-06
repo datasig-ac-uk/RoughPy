@@ -18,17 +18,16 @@
 namespace rpy {
 namespace streams {
 
-class TensorValuedStream : public ValueStream {
-public:
-    using typename ValueStream::StreamValue;
-    using StreamValueCRef = generics::ConstRef;
 
-    using update_fn = std::function<StreamValue(StreamValueCRef, algebra::Lie)>;
+
+
+class TensorValuedStream : public ValueStream<algebra::FreeTensor> {
+protected:
+    using ValueStream::traits;
 
 private:
     intervals::RealInterval m_domain;
     std::shared_ptr<const StreamInterface> p_increment_stream;
-    std::shared_ptr<update_fn> p_updater;
     StreamValue m_initial_value;
     algebra::context_pointer p_ctx;
 
@@ -36,7 +35,6 @@ public:
     TensorValuedStream(
         intervals::RealInterval domain,
         std::shared_ptr<const StreamInterface> increment_stream,
-        std::shared_ptr<update_fn> updater,
         StreamValue initial_value,
         algebra::context_pointer ctx
     );

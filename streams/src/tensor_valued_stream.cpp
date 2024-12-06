@@ -3,22 +3,29 @@
 //
 
 #include "tensor_valued_stream.h"
+#include "roughpy/streams/value_stream.h"
+
+
+#include "roughpy/algebra/algebra_base.h"
+#include "roughpy/algebra/free_tensor.h"
+#include "roughpy/algebra/lie.h"
 
 
 using namespace rpy;
 using namespace rpy::streams;
 
 
+
+
+
 TensorValuedStream::TensorValuedStream(intervals::RealInterval domain,
                                        std::shared_ptr<const StreamInterface>
                                        increment_stream,
-                                       std::shared_ptr<update_fn> updater,
                                        StreamValue initial_value,
                                        algebra::context_pointer ctx
 )
     : m_domain(std::move(domain)),
       p_increment_stream(std::move(increment_stream)),
-      p_updater(std::move(updater)),
       m_initial_value(std::move(initial_value)),
       p_ctx(std::move(ctx)) {}
 
@@ -43,7 +50,7 @@ const intervals::RealInterval& TensorValuedStream::domain() const noexcept
     return m_domain;
 }
 
-std::shared_ptr<const ValueStream> TensorValuedStream::query(
+std::shared_ptr<const ValueStream<algebra::FreeTensor>> TensorValuedStream::query(
     const intervals::Interval& interval) const
 {
     RPY_CHECK(m_domain.intersects_with(interval));
@@ -53,7 +60,6 @@ std::shared_ptr<const ValueStream> TensorValuedStream::query(
     auto inf = query_interval.inf();
     return std::make_shared<TensorValuedStream>(std::move(query_interval),
                                                 p_increment_stream,
-                                                p_updater,
                                                 value_at(inf),
                                                 p_ctx);
 }
@@ -61,24 +67,25 @@ std::shared_ptr<const ValueStream> TensorValuedStream::query(
 std::shared_ptr<const StreamInterface> TensorValuedStream::
 increment_stream() const noexcept { return p_increment_stream; }
 
-ValueStream::StreamValue TensorValuedStream::value_at(param_t param) const
+TensorValuedStream::StreamValue TensorValuedStream::value_at(param_t param) const
 {
     if (param < m_domain.inf() || param > m_domain.sup()) {
         RPY_THROW(std::invalid_argument,
                   "param is not in the domain of this stream");
     }
-    intervals::RealInterval interval(m_domain.inf(), param);
-    return (*p_updater)(initial_value(),
-                        p_increment_stream->log_signature(interval, *p_ctx));
+    const intervals::RealInterval interval(m_domain.inf(), param);
+
+    auto sig = p_increment_stream->signature(interval, *p_ctx);
+    return sig.mul(m_initial_value);
 }
 
-ValueStream::StreamValue TensorValuedStream::initial_value() const
+TensorValuedStream::StreamValue TensorValuedStream::initial_value() const
 {
     return m_initial_value;
 }
 
-ValueStream::StreamValue TensorValuedStream::terminal_value() const
+TensorValuedStream::StreamValue TensorValuedStream::terminal_value() const
 {
-    return (*p_updater)(m_initial_value,
-                        p_increment_stream->log_signature(m_domain, *p_ctx));
+    auto sig = p_increment_stream->signature(m_domain, *p_ctx);
+    return sig.mul(m_initial_value);
 }

@@ -11,15 +11,30 @@
 
 #include <roughpy/generics/values.h>
 
+#include "roughpy/algebra/free_tensor.h"
+
 #include "arrival_stream.h"
+#include "roughpy_streams_export.h"
 
 namespace rpy {
 namespace streams {
 
+template <typename T>
+struct StreamValueTraits {
+    using value_type = T;
+    using reference = T&;
+    using const_reference = const T&;
+    using pointer = T*;
+    using const_pointer = const T*;
+};
+
+template <typename ValueType>
 class ValueStream : public StreamInterface
 {
+protected:
+    using traits = StreamValueTraits<ValueType>;
 public:
-    using StreamValue = generics::Value;
+    using StreamValue = typename traits::value_type;
 
     virtual const intervals::RealInterval& domain() const noexcept = 0;
 
@@ -35,12 +50,17 @@ public:
     virtual StreamValue value_at(param_t param) const = 0;
 
     RPY_NO_DISCARD
-    virtual StreamValue initial_value() const;
+    virtual StreamValue initial_value() const = 0;
 
     RPY_NO_DISCARD
-    virtual StreamValue terminal_value() const;
-
+    virtual StreamValue terminal_value() const = 0;
 };
+
+
+
+template class ROUGHPY_STREAMS_EXPORT ValueStream<algebra::FreeTensor>;
+
+
 
 }// streams
 }// rpy
