@@ -16,7 +16,7 @@ bool rpy::streams::RestrictionStream::empty(
     const intervals::Interval& interval) const noexcept
 {
     if (!m_domain.intersects_with(interval)) { return true; }
-    auto query = intersection(m_domain, interval);
+    const auto query = intersection(m_domain, interval);
     return p_stream->empty(query);
 }
 
@@ -26,6 +26,6 @@ rpy::algebra::Lie rpy::streams::RestrictionStream::log_signature_impl(
 {
     RPY_CHECK(m_domain.intersects_with(interval));
 
-    auto query = intersection(m_domain, interval);
+    const auto query = intersection(m_domain, interval);
     return p_stream->log_signature(query, ctx);
 }
