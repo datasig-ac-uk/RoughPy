@@ -29,14 +29,12 @@ private:
     intervals::RealInterval m_domain;
     std::shared_ptr<const StreamInterface> p_increment_stream;
     StreamValue m_initial_value;
-    algebra::context_pointer p_ctx;
 
 public:
     TensorValuedStream(
         intervals::RealInterval domain,
         std::shared_ptr<const StreamInterface> increment_stream,
-        StreamValue initial_value,
-        algebra::context_pointer ctx
+        StreamValue initial_value
     );
     RPY_NO_DISCARD bool
     empty(const intervals::Interval& interval) const noexcept override;

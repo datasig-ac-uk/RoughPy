@@ -61,6 +61,13 @@ public:
 template class ROUGHPY_STREAMS_EXPORT ValueStream<algebra::FreeTensor>;
 
 
+ROUGHPY_STREAMS_EXPORT
+std::shared_ptr<const ValueStream<algebra::FreeTensor>>
+make_simple_tensor_valued_stream(
+    std::shared_ptr<const StreamInterface> increment_stream,
+    algebra::FreeTensor initial_value,
+    const intervals::Interval& domain
+    );
 
 }// streams
 }// rpy
