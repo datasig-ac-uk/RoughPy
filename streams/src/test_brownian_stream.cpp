@@ -130,3 +130,19 @@ TEST_F(BrownianStreamTests, Serialization)
     auto out_new = instream.log_signature(unit32, 2, *ctx);
     ASSERT_EQ(in_new, out_new);
 }
+
+
+
+TEST_F(BrownianStreamTests, TestSignatureMultiplicative)
+{
+    intervals::RealInterval left_interval(0, 0.5);
+    intervals::RealInterval right_interval(0.5, 1.0);
+
+    auto left = bm.signature(left_interval, 1, *ctx);
+    auto right = bm.signature(right_interval, 1, *ctx);
+
+    auto result = left.mul(right);
+    auto expected = bm.signature(intervals::RealInterval(0, 1), *ctx);
+
+    EXPECT_EQ(result, expected) << result << '\n' << expected;
+}
