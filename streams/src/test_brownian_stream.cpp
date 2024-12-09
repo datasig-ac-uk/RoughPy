@@ -65,7 +65,7 @@ public:
         : seed(12345), ctype(*scalars::ScalarType::of<double>()),
           ctx(algebra::get_context(width, depth, ctype, {})),
           bm(ctype->get_rng("pcg", seed),
-             {width, {0.0, 1.0}, ctx, ctype, vtype, 1})
+             {width, {0.0, 1.0}, ctx, ctype, vtype, 4})
     {}
 };
 
@@ -138,8 +138,8 @@ TEST_F(BrownianStreamTests, TestSignatureMultiplicative)
     intervals::RealInterval left_interval(0, 0.5);
     intervals::RealInterval right_interval(0.5, 1.0);
 
-    auto left = bm.signature(left_interval, 1, *ctx);
-    auto right = bm.signature(right_interval, 1, *ctx);
+    auto left = bm.signature(left_interval,  *ctx);
+    auto right = bm.signature(right_interval,  *ctx);
 
     auto result = left.mul(right);
     auto expected = bm.signature(intervals::RealInterval(0, 1), *ctx);
