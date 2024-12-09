@@ -20,7 +20,8 @@ TensorValuedStream::TensorValuedStream(intervals::RealInterval domain,
                                        increment_stream,
                                        StreamValue initial_value
 )
-    : m_domain(std::move(domain)),
+    : ValueStream(increment_stream->metadata(), increment_stream->get_schema()),
+      m_domain(std::move(domain)),
       p_increment_stream(std::move(increment_stream)),
       m_initial_value(std::move(initial_value))
 {}

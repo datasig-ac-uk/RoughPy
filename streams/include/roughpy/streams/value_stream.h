@@ -36,6 +36,8 @@ protected:
 public:
     using StreamValue = typename traits::value_type;
 
+    using StreamInterface::StreamInterface;
+
     virtual const intervals::RealInterval& domain() const noexcept = 0;
 
     RPY_NO_DISCARD
