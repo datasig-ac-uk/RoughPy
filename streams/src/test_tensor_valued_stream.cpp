@@ -45,7 +45,7 @@ protected:
             algebra::get_context(4, 3, stype),
             stype,
             algebra::VectorType::Dense,
-            15,
+            4,
             intervals::IntervalType::Clopen
         };
 
