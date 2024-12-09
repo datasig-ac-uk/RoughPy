@@ -157,6 +157,9 @@ public:
                                resolution_t resolution,
                                const algebra::Context& ctx) const override;
 
+    RPY_NO_DISCARD algebra::Lie
+    log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
+
 protected:
     template <typename Archive>
     void store_cache(Archive& archive) const;
