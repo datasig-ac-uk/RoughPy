@@ -33,6 +33,10 @@
 
 #include "roughpy/core/debug_assertion.h"    // for RPY_DBG_ASSERT
 
+#include "roughpy/intervals/interval.h"
+#include "roughpy/intervals/dyadic_interval.h"
+#include "roughpy/intervals/real_interval.h"
+
 #include <roughpy/algebra/lie.h>
 #include <cereal/types/vector.hpp>
 
