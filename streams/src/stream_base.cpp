@@ -99,7 +99,7 @@ algebra::FreeTensor StreamInterface::signature(
         const algebra::Context& ctx
 ) const
 {
-    return ctx.lie_to_tensor(log_signature_impl(interval, ctx)).exp();
+    return ctx.lie_to_tensor(log_signature(interval, ctx)).exp();
 }
 rpy::algebra::FreeTensor rpy::streams::StreamInterface::signature(
         const rpy::intervals::Interval& interval,
