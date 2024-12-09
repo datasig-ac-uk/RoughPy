@@ -40,13 +40,13 @@ protected:
         scalars::seed_int_t seed = 12345;
 
         StreamMetadata meta{
-            4,
-            intervals::RealInterval(0.0, 1.0),
-            algebra::get_context(4, 3, stype),
-            stype,
-            algebra::VectorType::Dense,
-            4,
-            intervals::IntervalType::Clopen
+                4,
+                intervals::RealInterval(0.0, 1.0),
+                algebra::get_context(4, 3, stype),
+                stype,
+                algebra::VectorType::Dense,
+                4,
+                intervals::IntervalType::Clopen
         };
 
         increment_stream = std::make_shared<BrownianStream>(
@@ -64,7 +64,6 @@ protected:
 }
 
 
-
 TEST_F(TestTensorValuedStream, TestBasicProperties)
 {
     EXPECT_EQ(stream->domain(), intervals::RealInterval(0.0, 1.0));
@@ -72,8 +71,41 @@ TEST_F(TestTensorValuedStream, TestBasicProperties)
 }
 
 
-TEST_F(TestTensorValuedStream, TestterminalValueSizeCorrect)
+TEST_F(TestTensorValuedStream, TestTerminalValueSizeCorrect)
 {
     EXPECT_EQ(stream->terminal_value().size(), initial_condition.size());
 }
 
+TEST_F(TestTensorValuedStream, TestQueryOperation)
+{
+    auto query = stream->query(intervals::RealInterval(0.5, 1.0));
+
+    EXPECT_EQ(stream->increment_stream(), query->increment_stream());
+    EXPECT_EQ(query->domain(), intervals::RealInterval(0.5, 1.0));
+    EXPECT_EQ(query->initial_value(), stream->value_at(0.5));
+}
+
+TEST_F(TestTensorValuedStream, TestSignatureAndLogSignature)
+{
+    intervals::RealInterval query_interval(0.5, 1.0);
+    EXPECT_EQ(stream->log_signature(query_interval, *ctx),
+              increment_stream->log_signature(query_interval, *ctx));
+
+    EXPECT_EQ(stream->signature(query_interval, *ctx),
+              increment_stream->signature(query_interval, *ctx));
+}
+
+TEST_F(TestTensorValuedStream, TestSignatureMultiplicativeProperty)
+{
+    intervals::RealInterval left_interval(0., .5);
+    intervals::RealInterval right_interval(0.5, 1.);
+
+
+    const auto left_sig = stream->signature(left_interval, *ctx);
+    const auto right_sig = stream->signature(right_interval, *ctx);
+
+    auto result = stream->signature(intervals::RealInterval(0.,1.), *ctx);
+    auto expected = left_sig.mul(right_sig);
+
+    EXPECT_EQ(result, expected) << result.sub(expected);
+}
