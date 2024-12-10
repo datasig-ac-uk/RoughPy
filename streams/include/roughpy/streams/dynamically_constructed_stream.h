@@ -248,9 +248,13 @@ void DynamicallyConstructedStream::load_cache(Archive& archive,
         auto& entry = m_data_tree[item.interval];
         if (item.parent_idx != -1) {
             entry.parent(m_data_tree.find(linear_data[item.parent_idx].interval));
+        } else {
+            entry.parent(m_data_tree.end());
         }
         if (item.sibling_idx != -1) {
             entry.sibling(m_data_tree.find(linear_data[item.sibling_idx].interval));
+        } else {
+            entry.sibling(m_data_tree.end());
         }
     }
 }

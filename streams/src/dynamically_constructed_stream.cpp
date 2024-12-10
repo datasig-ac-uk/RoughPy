@@ -182,7 +182,9 @@ streams::DynamicallyConstructedStream::update_parent_accuracy(
 {
     const auto& md = metadata();
     auto parent = below->second.parent();
-    if (parent != m_data_tree.end()) {
+    const auto dtend = m_data_tree.end();
+
+    if (parent != dtend) {
         // We're not at the root, so parent has a sibling
         auto sibling = below->second.sibling();
         auto accuracy_available = std::min(below->second.accuracy(),
