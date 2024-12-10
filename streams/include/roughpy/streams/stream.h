@@ -53,6 +53,7 @@ public:
     using perturbation_list_t = std::vector<perturbation_t>;
 
 private:
+
     std::shared_ptr<const StreamInterface> p_impl;
     RealInterval m_support;
 
@@ -100,6 +101,11 @@ public:
     RPY_NO_DISCARD const Context& get_default_context() const;
 
     RPY_NO_DISCARD const StreamSchema& schema() const;
+
+    RPY_NO_DISCARD std::shared_ptr<const StreamInterface> impl() const noexcept
+    {
+        return p_impl;
+    }
 
 private:
     RPY_NO_DISCARD Lie log_signature_impl(
