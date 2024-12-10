@@ -178,8 +178,8 @@ struct DataIncrementSafe {
     intervals::DyadicInterval interval;
     resolution_t resolution;
     algebra::Lie content;
-    dimn_t sibling_idx = 0;
-    dimn_t parent_idx = 0;
+    idimn_t sibling_idx = -1;
+    idimn_t parent_idx = -1;
 };
 
 }// namespace dtl
@@ -217,10 +217,16 @@ void DynamicallyConstructedStream::store_cache(Archive& archive) const
         indices[item.first] = index++;
     }
 
-    for (const auto& item : m_data_tree) {
-        auto& entry = linear_data[indices[item.first]];
-        entry.parent_idx = indices[item.second.parent()->first];
-        entry.sibling_idx = indices[item.second.sibling()->first];
+    const auto dtend = m_data_tree.end();
+    for (const auto& [interval, increment] : m_data_tree) {
+        auto& entry = linear_data[indices[interval]];
+
+        if (increment.parent() != dtend) {
+            entry.parent_idx = indices[increment.parent()->first];
+        }
+        if (increment.sibling() != dtend) {
+            entry.sibling_idx = indices[increment.sibling()->first];
+        }
     }
 
     RPY_SERIAL_SERIALIZE_NVP("cache_data", linear_data);
@@ -240,8 +246,12 @@ void DynamicallyConstructedStream::load_cache(Archive& archive,
 
     for (auto& item : linear_data) {
         auto& entry = m_data_tree[item.interval];
-        entry.parent(m_data_tree.find(linear_data[item.parent_idx].interval));
-        entry.sibling(m_data_tree.find(linear_data[item.sibling_idx].interval));
+        if (item.parent_idx != -1) {
+            entry.parent(m_data_tree.find(linear_data[item.parent_idx].interval));
+        }
+        if (item.sibling_idx != -1) {
+            entry.sibling(m_data_tree.find(linear_data[item.sibling_idx].interval));
+        }
     }
 }
 
