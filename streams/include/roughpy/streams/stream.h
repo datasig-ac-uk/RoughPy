@@ -87,6 +87,13 @@ public:
     template <typename Impl>
     explicit Stream(Impl&& impl);
 
+    explicit Stream(std::shared_ptr<const StreamInterface> ptr_impl)
+        : p_impl(std::move(ptr_impl)),
+          m_support(p_impl->metadata().effective_support)
+    {}
+
+
+
     void restrict_to(const Interval& interval);
 
     Stream restrict(const Interval& interval) const;
