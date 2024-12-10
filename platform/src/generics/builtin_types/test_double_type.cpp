@@ -44,7 +44,30 @@ TEST(TestDoubleType, TestHash)
     for (double val : {1., -2., 3.141592653589793, -2.7182818284598}) {
         EXPECT_EQ(type->hash_of(&val), hasher(val));
     }
+}
 
+TEST(TestDoubleType, TestParseFromStringValidString)
+{
+    const auto type = get_type<double>();
+
+    string_view str = "3.141592653589793";
+    double value;
+    auto result = type->parse_from_string(&value, str);
+
+    ASSERT_TRUE(result);
+    EXPECT_EQ(value, 3.141592653589793);
+
+}
+
+TEST(TestDoubleType, TestParseFromStringInvalidString)
+{
+    const auto type = get_type<double>();
+    double value;
+
+    string_view str = "bad value";
+    auto result = type->parse_from_string(&value, str);
+
+    EXPECT_FALSE(result);
 }
 
 /******************************************************************************

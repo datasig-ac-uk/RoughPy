@@ -7,11 +7,10 @@
 
 #include "roughpy/core/types.h"
 
+#include "roughpy/generics/type_ptr.h"
+
 namespace rpy::generics {
 
-
-template <typename T>
-inline constexpr string_view type_id_of;
 
 // Specializations for integer types
 template <>

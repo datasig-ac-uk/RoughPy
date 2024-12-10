@@ -340,7 +340,7 @@ bool ComparisonTraitImpl<T>::has_comparison(ComparisonType comp) const noexcept
             return dtl::has_greater_equal_test_v<T>
                     || (dtl::has_greater_test_v<T> && dtl::has_equal_test_v<T>);
     }
-    RPY_UNREACHABLE_RETURN();
+    RPY_UNREACHABLE_RETURN(false);
 }
 template <typename T>
 bool ComparisonTraitImpl<T>::unsafe_compare_equal(

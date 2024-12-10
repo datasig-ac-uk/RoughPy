@@ -42,6 +42,29 @@ TEST(TestFloatType, TestHash)
         EXPECT_EQ(type->hash_of(&val), hasher(val));
     }
 }
+TEST(TestFloatType, ParseFromStringValidString)
+{
+    const auto type = get_type<float>();
+
+    string_view str = "3.141592653589793";
+    float value;
+    auto result = type->parse_from_string(&value, str);
+
+    ASSERT_TRUE(result);
+    EXPECT_EQ(value, 3.141592653589793f);
+
+}
+
+TEST(TestFloatType, TestParseFromStringInvalidString)
+{
+    const auto type = get_type<float>();
+    float value;
+
+    string_view str = "bad value";
+    auto result = type->parse_from_string(&value, str);
+
+    EXPECT_FALSE(result);
+}
 
 /******************************************************************************
  *                                Comparison                                  *

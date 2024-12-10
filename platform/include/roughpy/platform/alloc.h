@@ -14,11 +14,11 @@
 
 namespace rpy::mem {
 
-
 // 4K is a typical page size most operating systems
 inline constexpr size_t small_chunk_size = 4096;
 inline constexpr size_t small_block_size = 64;
-inline constexpr size_t small_blocks_per_chunk = small_chunk_size / small_block_size;
+inline constexpr size_t small_blocks_per_chunk
+        = small_chunk_size / small_block_size;
 
 /**
  * @brief Allocates a block of aligned memory.
@@ -44,7 +44,7 @@ aligned_alloc(size_t alignment, size_t size) noexcept;
  *
  * @param ptr A pointer to the memory block to be freed.
  */
-ROUGHPY_PLATFORM_EXPORT void aligned_free(void* ptr, size_t size=0) noexcept;
+ROUGHPY_PLATFORM_EXPORT void aligned_free(void* ptr, size_t size = 0) noexcept;
 
 /**
  * @brief Allocates memory for a small object.
@@ -55,8 +55,7 @@ ROUGHPY_PLATFORM_EXPORT void aligned_free(void* ptr, size_t size=0) noexcept;
  * @param size The size of the memory block to allocate, in bytes.
  * @return A pointer to the allocated memory block.
  */
-RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT
-void* small_object_alloc(size_t size);
+RPY_NO_DISCARD ROUGHPY_PLATFORM_EXPORT void* small_object_alloc(size_t size);
 
 /**
  * @brief Frees memory allocated for a small object.
@@ -84,7 +83,6 @@ public:
     void* operator new(size_t size);
     void operator delete(void* object, size_t size);
 };
-
 
 /**
  * @brief Checks if a given value is a valid alignment.
@@ -123,6 +121,52 @@ inline bool is_pointer_aligned(const volatile void* ptr, std::size_t alignment)
     return reinterpret_cast<std::uintptr_t>(ptr) % alignment == 0;
 }
 
+
+
+struct AlignedAllocHelper
+{
+    static void* allocate(size_t alignment, size_t size) noexcept
+    {
+        return aligned_alloc(alignment, size);
+    }
+
+    static void free(void* ptr, size_t size) noexcept
+    {
+        aligned_free(ptr, size);
+    }
+};
+
+
+
+
+template <typename AllocHelper=AlignedAllocHelper>
+class ScopedSafePtr
+{
+    void* p_data;
+    size_t m_size;
+
+public:
+    ScopedSafePtr(size_t size, size_t alignment)
+        : p_data(AllocHelper::allocate(alignment, size)),
+          m_size(size)
+    {}
+
+    ~ScopedSafePtr()
+    {
+        if (p_data != nullptr) { AllocHelper::free(p_data, m_size); }
+    }
+
+    void* data() noexcept
+    {
+        return p_data;
+    }
+
+    void reset() noexcept
+    {
+        p_data = nullptr;
+        m_size = 0;
+    }
+};
 
 }// namespace rpy::mem
 

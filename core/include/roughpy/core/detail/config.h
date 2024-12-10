@@ -58,13 +58,18 @@
 
 // Detect Compiler and Version
 #  if defined(_MSC_VER)
+#    define RPY_COMPILER_VERSION(major, minor, patch) ((major)*10 + (minor))
 #    define RPY_COMPILER_MSVC _MSC_VER
 #  elif defined(__clang__)
-#    define RPY_COMPILER_CLANG                                                 \
-        (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
+#    define RPY_COMPILER_VERSION(major, minor, patch) \
+       ((major)*10000 + (minor)*100 + (patch))
+#    define RPY_COMPILER_CLANG \
+      RPY_COMPILER_VERSION(__clang_major__, __clang_minor__, __clang_patchlevel__)
 #  elif defined(__GNUC__) || defined(__GNUG__)
-#    define RPY_COMPILER_GCC                                                   \
-        (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#    define RPY_COMPILER_VERSION(major, minor, patch) \
+       ((major)*10000 + (minor)*100 + (patch))
+#    define RPY_COMPILER_GCC                                                  \
+        RPY_COMPILER_VERSION(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__)
 #  elif defined(__INTEL_COMPILER)
 #    define RPY_COMPILER_INTEL __INTEL_COMPILER
 #  elif defined(__NVCC__)

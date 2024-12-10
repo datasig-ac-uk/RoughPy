@@ -5,13 +5,13 @@
 #ifndef ROUGHPY_GENERICS_TYPE_H
 #define ROUGHPY_GENERICS_TYPE_H
 
-#include <atomic>
 #include <memory>
 #include <typeinfo>
 
 #include <roughpy/core/macros.h>
 #include <roughpy/core/types.h>
 
+#include <roughpy/platform/reference_counting.h>
 #include <roughpy/platform/roughpy_platform_export.h>
 
 #include "builtin_trait.h"
@@ -30,18 +30,19 @@ namespace rpy::generics {
  * includes methods and attributes which can be leveraged to manage and
  * manipulate these properties efficiently and effectively.
  */
-struct BasicProperties {
-    bool standard_layout : 1;
-    bool trivially_copyable : 1;
-    bool trivially_constructible : 1;
-    bool trivially_default_constructible : 1;
-    bool trivially_copy_constructible : 1;
-    bool trivially_copy_assignable : 1;
-    bool trivially_destructible : 1;
-    bool polymorphic : 1;
-    bool is_signed : 1;
-    bool is_floating_point : 1;
-    bool is_integral : 1;
+struct BasicProperties
+{
+    bool standard_layout: 1;
+    bool trivially_copyable: 1;
+    bool trivially_constructible: 1;
+    bool trivially_default_constructible: 1;
+    bool trivially_copy_constructible: 1;
+    bool trivially_copy_assignable: 1;
+    bool trivially_destructible: 1;
+    bool polymorphic: 1;
+    bool is_signed: 1;
+    bool is_floating_point: 1;
+    bool is_integral: 1;
 };
 
 template <typename T>
@@ -59,11 +60,12 @@ constexpr BasicProperties basic_properties_of() noexcept;
 
 
 template <typename T>
-TypePtr get_type() noexcept
-{
-    static_assert(false, "There is no Type associated with T");
-    RPY_UNREACHABLE_RETURN(nullptr);
-}
+TypePtr get_type() noexcept;
+
+//{
+//    static_assert(false, "There is no Type associated with T");
+//    RPY_UNREACHABLE_RETURN(nullptr);
+//}
 
 /**
  * @brief Encapsulates the definition and functionalities related to custom
@@ -73,71 +75,11 @@ TypePtr get_type() noexcept
  * types within the application. It provides methods and properties to interact
  * with these types, ensuring they are correctly managed throughout the system.
  */
-class ROUGHPY_PLATFORM_EXPORT Type
+class ROUGHPY_PLATFORM_EXPORT Type : public mem::PolymorphicRefCounted
 {
-    mutable std::atomic_intptr_t m_rc;
-    const std::type_info* p_type_info;
-
-    size_t m_obj_size;
-    BasicProperties m_basic_properties;
-
     friend class Value;
 
-protected:
-    explicit
-    Type(const std::type_info* real_type_info,
-         size_t obj_size,
-         BasicProperties properties)
-        : m_rc(1),
-          p_type_info(real_type_info),
-          m_obj_size(obj_size),
-          m_basic_properties(properties)
-    {}
-
-    virtual ~Type();
-
-    /**
-     * @brief Increments the reference count for the Type instance.
-     *
-     * This function increases the internal reference counter for a Type object
-     * in a thread-safe manner using relaxed memory order.
-     */
-    virtual void inc_ref() const noexcept;
-
-    /**
-     * @brief Decrements the reference count for the Type instance.
-     *
-     * This function decreases the internal reference counter for a Type object
-     * in a thread-safe manner using acquire-release memory order. If the
-     * reference count reaches zero, it signifies that the Type instance can be
-     * safely destroyed.
-     *
-     * @return true if the reference count after decrementing is zero, false
-     * otherwise.
-     */
-    virtual bool dec_ref() const noexcept;
-
 public:
-    /**
-     * @brief Retrieves the current reference count of the Type instance.
-     *
-     * This function fetches the value of the internal reference counter for
-     * a Type object in a thread-safe manner using acquire memory order.
-     *
-     * @return The current reference count of the Type instance.
-     */
-    intptr_t ref_count() const noexcept;
-
-    friend void intrusive_ptr_add_ref(const Type* value) noexcept
-    {
-        value->inc_ref();
-    }
-
-    friend void intrusive_ptr_release(const Type* value) noexcept
-    {
-        if (RPY_UNLIKELY(value->dec_ref())) { delete value; }
-    }
-
     /**
      * @brief Returns the type information of the current instance.
      *
@@ -147,10 +89,7 @@ public:
      * @return A reference to a std::type_info object that represents the type
      * information.
      */
-    RPY_NO_DISCARD const std::type_info& type_info() const noexcept
-    {
-        return *p_type_info;
-    }
+    RPY_NO_DISCARD virtual const std::type_info& type_info() const noexcept = 0;
 
     /**
      * @brief Retrieves the basic properties of the Type instance.
@@ -161,11 +100,8 @@ public:
      *
      * @return A const reference to the BasicProperties structure.
      */
-    RPY_NO_DISCARD constexpr const BasicProperties&
-    basic_properties() const noexcept
-    {
-        return m_basic_properties;
-    }
+    RPY_NO_DISCARD virtual BasicProperties
+    basic_properties() const noexcept = 0;
 
     /**
      * @brief Retrieves the object size for the Type instance.
@@ -177,10 +113,7 @@ public:
      * @return The size, in bytes, of the object that the Type instance
      * represents.
      */
-    RPY_NO_DISCARD constexpr size_t object_size() const noexcept
-    {
-        return m_obj_size;
-    }
+    RPY_NO_DISCARD virtual size_t object_size() const noexcept = 0;
 
     /**
      * @brief Retrieves the name associated with the current instance.
@@ -229,9 +162,11 @@ protected:
      *
      * @param ptr A void pointer to the object that needs to be deallocated.
      */
-    virtual void free_object(void*) const = 0;
+    virtual void free_object(void* ptr) const = 0;
 
 public:
+    virtual bool parse_from_string(void* data, string_view str) const noexcept;
+
     /**
      * @brief Abstract function for copying or moving a block of memory.
      *
@@ -242,13 +177,20 @@ public:
      * @param dst Pointer to the destination memory location.
      * @param src Pointer to the source memory location.
      * @param count Number of bytes to be copied or moved.
-     * @param move Flag indicating the operation type:
-     *             - true if the data should be moved,
-     *             - false if the data should be copied.
+     * @param uninit Flag indicating the operation type:
+     *             - true if the data should be assumed uninitialized
+     *             - false if the data is already initialised
      */
     virtual void
-    copy_or_move(void* dst, const void* src, size_t count, bool move) const noexcept
-            = 0;
+    copy_or_fill(void* dst, const void* src, size_t count, bool uninit) const
+    = 0;
+
+
+    virtual void move(void* dst, void* src, size_t count, bool uninit) const;
+
+    virtual void
+    destroy_range(void* data, size_t count) const = 0;
+
 
     /**
      * @brief Converts the current Type to another specified Type.
@@ -334,10 +276,7 @@ public:
      *
      * @return A TypePtr representing the specific type.
      */
-    static TypePtr of() noexcept
-    {
-        return get_type<decay_t<T>>();
-    }
+    static TypePtr of() noexcept { return get_type<decay_t<T> >(); }
 
 };
 
@@ -351,7 +290,7 @@ struct BuiltinTypes
 {
     TypePtr float_type;
     TypePtr double_type;
-    
+
     TypePtr int8_type;
     TypePtr uint8_type;
     TypePtr int16_type;
@@ -372,6 +311,26 @@ ROUGHPY_PLATFORM_EXPORT
 const BuiltinTypes& get_builtin_types() noexcept;
 
 
+class ROUGHPY_PLATFORM_EXPORT MultiPrecisionTypes
+{
+    MultiPrecisionTypes();
+
+public:
+    TypePtr integer_type;
+    TypePtr rational_type;
+
+    RPY_NO_DISCARD
+    TypePtr float_type(int n_precision) const;
+
+    RPY_NO_DISCARD
+    static const MultiPrecisionTypes& get() noexcept;
+};
+
+RPY_NO_DISCARD
+ROUGHPY_PLATFORM_EXPORT
+TypePtr get_polynomial_type() noexcept;
+
+
 template <typename T>
 /**
  * @brief Determines the basic properties of a given type.
@@ -382,18 +341,18 @@ constexpr BasicProperties basic_properties_of() noexcept
 {
     using base_t = remove_cvref_t<T>;
     return {
-        is_standard_layout_v<base_t>,
-        is_trivially_copyable_v<base_t>,
-        is_trivially_constructible_v<base_t>,
-        is_trivially_default_constructible_v<base_t>,
-        is_trivially_copy_constructible_v<base_t>,
-        is_trivially_copy_assignable_v<base_t>,
-        is_trivially_destructible_v<base_t>,
-        is_polymorphic_v<base_t>,
-        is_signed_v<base_t>,
-        is_floating_point_v<base_t>,
-        is_integral_v<base_t>,
-};
+            is_standard_layout_v<base_t>,
+            is_trivially_copyable_v<base_t>,
+            is_trivially_constructible_v<base_t>,
+            is_trivially_default_constructible_v<base_t>,
+            is_trivially_copy_constructible_v<base_t>,
+            is_trivially_copy_assignable_v<base_t>,
+            is_trivially_destructible_v<base_t>,
+            is_polymorphic_v<base_t>,
+            is_signed_v<base_t>,
+            is_floating_point_v<base_t>,
+            is_integral_v<base_t>,
+    };
 }
 
 /**
@@ -410,7 +369,9 @@ constexpr BasicProperties basic_properties_of() noexcept
  * @return The promoted type based on the provided `lhs` and `rhs` types.
  * If neither type can be promoted to the other, `nullptr` is returned.
  */
-RPY_NO_DISCARD TypePtr ROUGHPY_PLATFORM_EXPORT compute_promotion(const Type* lhs, const Type* rhs) noexcept;
+RPY_NO_DISCARD TypePtr ROUGHPY_PLATFORM_EXPORT compute_promotion(
+    const Type* lhs,
+    const Type* rhs) noexcept;
 
 /**
  * @brief Computes the hash value of a given Type object.
@@ -425,21 +386,15 @@ RPY_NO_DISCARD TypePtr ROUGHPY_PLATFORM_EXPORT compute_promotion(const Type* lhs
  */
 inline hash_t hash_value(const Type& value) noexcept
 {
-    const Hash<string_view> hasher;
+    constexpr Hash<string_view> hasher;
     return hasher(value.id());
 }
 
 RPY_NO_DISCARD constexpr bool
-operator==(const Type& lhs, const Type& rhs) noexcept
-{
-    return &lhs == &rhs;
-}
+operator==(const Type& lhs, const Type& rhs) noexcept { return &lhs == &rhs; }
 
 RPY_NO_DISCARD constexpr bool
-operator!=(const Type& lhs, const Type& rhs) noexcept
-{
-    return !(lhs == rhs);
-}
+operator!=(const Type& lhs, const Type& rhs) noexcept { return !(lhs == rhs); }
 
 /**
  * @brief Retrieves the size of an object of the specified type.
@@ -453,7 +408,6 @@ operator!=(const Type& lhs, const Type& rhs) noexcept
 inline size_t size_of(const Type& type) noexcept { return type.object_size(); }
 
 namespace concepts {
-
 
 
 /**
@@ -592,7 +546,6 @@ inline bool is_arithmetic(Type const& type)
 }
 
 }// namespace concepts
-
 
 
 template <>

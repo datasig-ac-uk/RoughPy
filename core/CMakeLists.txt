@@ -18,6 +18,7 @@ add_library(RoughPy_Core INTERFACE
         include/roughpy/core/smart_ptr.h
         include/roughpy/core/string_utils.h
         include/roughpy/core/ranges.h
+        include/roughpy/core/meta.h
 )
 add_library(RoughPy::Core ALIAS RoughPy_Core)
 

@@ -28,6 +28,8 @@ add_library(RoughPy_Streams SHARED
         include/roughpy/streams/parametrization.h
         include/roughpy/streams/stream_construction_helper.h
         include/roughpy/streams/channels.h
+        include/roughpy/streams/restriction_stream.h
+        src/restriction_stream.cpp
 )
 add_library(RoughPy::Streams ALIAS RoughPy_Streams)
 

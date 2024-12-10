@@ -17,7 +17,7 @@ namespace dtl {
 struct index_key_access;
 } // namespace dtl
 
-template <int DegreeDigits=4, typename Int=dimn_t>
+template <int DegreeDigits=8, typename Int=dimn_t>
 class index_key
 {
     using limits = std::numeric_limits<Int>;
