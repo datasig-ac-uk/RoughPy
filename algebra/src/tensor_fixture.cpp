@@ -26,31 +26,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <string>
-
 #include "tensor_fixture.h"
 
-#include "roughpy/core/ranges.h"
-#include "roughpy/algebra/free_tensor.h"
+namespace rpy {
+namespace algebra {
+namespace testing {
 
-namespace {
-
-using namespace rpy;
-using namespace rpy::algebra;
-using namespace rpy::algebra::testing;
-
-using FreeTensorFixture = TensorFixture;
-
-} // namespace
-
-TEST_F(FreeTensorFixture, TestStreamOut)
+void TensorFixture::SetUp()
 {
-    auto tensor = make_ones_tensor('x');
-    std::stringstream ss;
-    ss << tensor;
+    auto rational_poly_tpo = scalars::ScalarType::of<devices::rational_poly_scalar>();
+    if (!rational_poly_tpo) {
+        GTEST_FAIL();
+    }
 
-    const std::string expected = "{ { 1(x0) }() { 1(x1) }(1)";
-    auto first_term = ss.str().substr(0, expected.size());
-
-    EXPECT_EQ(expected, first_term);
+    rational_poly_tp = *rational_poly_tpo;
+    context = rpy::algebra::get_context(width, depth, rational_poly_tp);
 }
+
+} // namespace testing
+} // namespace algebra
+} // namespace rpy
