@@ -24,6 +24,8 @@ target_sources(RoughPy_PyModule PRIVATE
         stream.h
         streams.cpp
         streams.h
+        tensor_valued_stream.cpp
+        tensor_valued_stream.h
         tick_stream.h
         tick_stream.cpp
 )
