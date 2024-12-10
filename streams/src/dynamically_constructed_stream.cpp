@@ -72,25 +72,25 @@ void streams::DynamicallyConstructedStream::refine_accuracy(
     //            ++range.first;
     //        }
     //    }
+    auto [leaf_above, end] = m_data_tree.equal_range(increment->first);
 
-    DyadicInterval refined_inc(increment->first);
-    DyadicInterval refined_end(increment->first);
-    refined_inc.shrink_interval_left(desired - increment->first.power());
-    ++refined_end;
-    refined_end.shrink_interval_left(desired - increment->first.power());
+    for (; leaf_above != end && leaf_above->first.power() < desired; ++leaf_above) {
+        if (!DataIncrement::is_leaf(leaf_above)) { continue; }
 
-    for (; refined_inc < refined_end; ++(++refined_inc)) {
-        auto range = m_data_tree.equal_range(refined_inc);
-        if (dyadic_equals(range.first->first, refined_inc)) { continue; }
-        auto leaf_above = range.first;
-        --leaf_above;
+        DyadicInterval refined_inc(increment->first);
+        DyadicInterval refined_end(increment->first);
+        refined_inc.shrink_interval_left(desired - increment->first.power());
+        ++refined_end;
+        refined_end.shrink_interval_left(desired - increment->first.power());
 
-        while (leaf_above->first.contains_dyadic(refined_inc)
-            && !dyadic_equals(leaf_above->first, refined_inc)) {
-            leaf_above = insert_children_and_refine(leaf_above, refined_inc);
+        for (; refined_inc < refined_end; ++(++refined_inc)) {
+            while (leaf_above->first.contains_dyadic(refined_inc)
+                && !dyadic_equals(leaf_above->first, refined_inc)) {
+                leaf_above = insert_children_and_refine(leaf_above, refined_inc);
+            }
+
+            update_parents(leaf_above);
         }
-
-        update_parents(leaf_above);
     }
 }
 
