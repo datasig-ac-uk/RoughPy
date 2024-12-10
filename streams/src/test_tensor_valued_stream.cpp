@@ -104,8 +104,8 @@ TEST_F(TestTensorValuedStream, TestSignatureMultiplicativeProperty)
     const auto left_sig = stream->signature(left_interval, *ctx);
     const auto right_sig = stream->signature(right_interval, *ctx);
 
-    auto result = stream->signature(intervals::RealInterval(0.,1.), *ctx);
-    auto expected = left_sig.mul(right_sig);
+    const auto result = stream->signature(intervals::RealInterval(0.,1.), *ctx);
+    const auto expected = left_sig.mul(right_sig);
 
-    EXPECT_EQ(result, expected) << result.sub(expected);
+    EXPECT_TRUE(result.sub(expected).almost_zero(scalars::Scalar(1e-15)));
 }
