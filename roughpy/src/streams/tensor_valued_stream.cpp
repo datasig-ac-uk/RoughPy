@@ -18,36 +18,8 @@ using namespace rpy::streams;
 using algebra::FreeTensor;
 
 
-namespace {
 
 
-std::shared_ptr<const ValueStream<FreeTensor>>
-simple_tensor_valued_stream_pyinit(py::handle py_increment_stream,
-                                   py::handle py_initial_value,
-                                   py::handle py_domain)
-{
-
-    if (isinstance(py_increment_stream,
-                   reinterpret_cast<PyObject*>(&python::RPyStream_Type))) {
-        RPY_THROW(py::type_error, "increment stream must be a stream object");
-    }
-
-    const auto& increment_stream_wrapper = reinterpret_cast<const
-        python::RPyStream*>(py_increment_stream.ptr())->m_data;
-
-    const auto& initial_value = py::cast<const FreeTensor&>(py_initial_value);
-    const auto& domain = py::cast<const intervals::Interval&>(py_domain);
-
-    return make_simple_tensor_valued_stream(increment_stream_wrapper.impl(),
-                                            initial_value,
-                                            domain);
-}
-
-
-}
-
-
-extern "C" {
 struct RPySimpleTensorValuedStream
 {
     PyObject_VAR_HEAD//
@@ -71,6 +43,7 @@ py::object python::TensorValuedStream_FromPtr(
 }
 
 
+extern "C" {
 static PyObject* stvs_new(PyTypeObject* subtype,
                           PyObject* args,
                           PyObject* kwargs)
