@@ -57,6 +57,7 @@
 #endif
 
 using namespace rpy;
+using namespace rpy::python;
 using namespace rpy::streams;
 
 static const char* STREAM_DOC = R"rpydoc(
