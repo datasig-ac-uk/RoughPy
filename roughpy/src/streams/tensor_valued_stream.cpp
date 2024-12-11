@@ -172,29 +172,29 @@ static PyObject* stvs_signature(PyObject* self,
                                 PyObject* args,
                                 PyObject* kwargs)
 {
-    python::SigArgs sigargs;
+    python::SigArgs sig_args;
 
     const auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->
             p_data;
-    if (parse_sig_args(args, kwargs, &stream->metadata(), &sigargs)
+    if (parse_sig_args(args, kwargs, &stream->metadata(), &sig_args)
         < 0) { return nullptr; }
 
     py::object result;
 
     auto success = python::with_caught_exceptions([&]() {
-        if (!sigargs.interval) { sigargs.interval = stream->domain(); }
-        if (!sigargs.resolution) {
-            sigargs.resolution = stream->metadata().default_resolution;
+        if (!sig_args.interval) { sig_args.interval = stream->domain(); }
+        if (!sig_args.resolution) {
+            sig_args.resolution = stream->metadata().default_resolution;
         }
-        if (!sigargs.ctx) { sigargs.ctx = stream->metadata().default_context; }
+        if (!sig_args.ctx) { sig_args.ctx = stream->metadata().default_context; }
 
         algebra::FreeTensor sig;
 
         {
             py::gil_scoped_release gil;
-            sig = stream->signature(*sigargs.interval,
-                                    *sigargs.resolution,
-                                    *sigargs.ctx);
+            sig = stream->signature(*sig_args.interval,
+                                    *sig_args.resolution,
+                                    *sig_args.ctx);
         }
 
         result = py::cast(std::move(sig));
@@ -209,28 +209,28 @@ static PyObject* stvs_log_signature(PyObject* self,
                                     PyObject* args,
                                     PyObject* kwargs)
 {
-    python::SigArgs sigargs;
+    python::SigArgs sig_args;
 
     const auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->
             p_data;
-    if (parse_sig_args(args, kwargs, &stream->metadata(), &sigargs)
+    if (parse_sig_args(args, kwargs, &stream->metadata(), &sig_args)
         < 0) { return nullptr; }
 
     py::object result;
 
     auto success = python::with_caught_exceptions([&]() {
-        if (!sigargs.interval) { sigargs.interval = stream->domain(); }
-        if (!sigargs.resolution) {
-            sigargs.resolution = stream->metadata().default_resolution;
+        if (!sig_args.interval) { sig_args.interval = stream->domain(); }
+        if (!sig_args.resolution) {
+            sig_args.resolution = stream->metadata().default_resolution;
         }
-        if (!sigargs.ctx) { sigargs.ctx = stream->metadata().default_context; }
+        if (!sig_args.ctx) { sig_args.ctx = stream->metadata().default_context; }
 
         algebra::Lie logsig;
         {
             py::gil_scoped_release gil;
-            logsig = stream->log_signature(*sigargs.interval,
-                                           *sigargs.resolution,
-                                           *sigargs.ctx);
+            logsig = stream->log_signature(*sig_args.interval,
+                                           *sig_args.resolution,
+                                           *sig_args.ctx);
         }
 
         result = py::cast(std::move(logsig));
