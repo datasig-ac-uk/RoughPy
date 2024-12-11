@@ -68,7 +68,7 @@ static PyObject* stvs_new(PyTypeObject* subtype,
     )) { return nullptr; }
 
     auto new_obj = py::reinterpret_steal<py::object>(subtype->tp_alloc(subtype, 0));
-    if (new_obj) { return nullptr; }
+    if (!new_obj) { return nullptr; }
 
     auto* self = reinterpret_cast<RPySimpleTensorValuedStream*>(new_obj.ptr());
 
