@@ -20,6 +20,8 @@ target_sources(RoughPy_PyModule PRIVATE
         schema.h
         schema_finalization.cpp
         schema_finalization.h
+        signature_arguments.cpp
+        signature_arguments.h
         stream.cpp
         stream.h
         streams.cpp
