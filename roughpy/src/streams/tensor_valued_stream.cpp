@@ -324,7 +324,7 @@ void python::init_tensor_valued_stream(py::module_& m)
         throw py::error_already_set();
     }
 
-    m.add_object("SimpleTensorValuedStream",
+    m.add_object("TensorValuedStream",
                  reinterpret_cast<PyObject*>(&
                      TensorValuedStream_Type));
 
