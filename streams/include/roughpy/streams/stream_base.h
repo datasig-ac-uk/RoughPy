@@ -150,6 +150,8 @@ protected:
             const algebra::Context& ctx
     ) const = 0;
 
+    algebra::FreeTensor unit_tensor() const;
+
 public:
     RPY_NO_DISCARD virtual algebra::Lie log_signature(
             const intervals::Interval& interval,

@@ -51,6 +51,16 @@ bool StreamInterface::empty(const intervals::Interval& interval) const noexcept
             || interval.inf() > m_metadata.effective_support.sup();
 }
 
+algebra::FreeTensor StreamInterface::unit_tensor() const
+{
+    algebra::VectorConstructionData data {
+        scalars::KeyScalarArray (m_metadata.data_scalar_type),
+        m_metadata.cached_vector_type
+    };
+
+    return m_metadata.default_context->construct_free_tensor(data);
+}
+
 algebra::Lie StreamInterface::log_signature(
         const intervals::Interval& interval,
         const algebra::Context& ctx
@@ -89,7 +99,7 @@ algebra::FreeTensor StreamInterface::signature(
         const algebra::Context& ctx
 ) const
 {
-    return ctx.lie_to_tensor(log_signature_impl(interval, ctx)).exp();
+    return ctx.lie_to_tensor(log_signature(interval, ctx)).exp();
 }
 rpy::algebra::FreeTensor rpy::streams::StreamInterface::signature(
         const rpy::intervals::Interval& interval,

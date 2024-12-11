@@ -40,6 +40,9 @@
 namespace rpy {
 namespace intervals {
 
+
+class RealInterval;
+
 enum class IntervalType : uint32_t
 {
     Clopen,
@@ -91,6 +94,34 @@ public:
 
 ROUGHPY_INTERVALS_EXPORT
 std::ostream& operator<<(std::ostream& os, const Interval& interval);
+
+
+/**
+ * @brief Computes the intersection of two intervals.
+ *
+ * @param lhs The first interval to be used in the intersection operation.
+ * @param rhs The second interval to be used in the intersection operation.
+ *
+ * @return A new interval describing the intersection of lhs and rhs.
+ *         The result is degenerate if lhs and rhs do not intersect.
+ */
+RPY_NO_DISCARD ROUGHPY_INTERVALS_EXPORT
+RealInterval intersection(const Interval& lhs, const Interval& rhs) noexcept;
+
+/**
+ * @brief Computes the interval union of two intervals.
+ *
+ * The interval union is defined as the smallest interval that contains both
+ * arguments.
+ *
+ * @param lhs The first interval to be used in the union operation.
+ * @param rhs The second interval to be used in the union operation.
+ *
+ * @return A new interval representing the union of lhs and rhs.
+ *         The result encompasses all points contained in either lhs or rhs.
+ */
+RPY_NO_DISCARD ROUGHPY_INTERVALS_EXPORT
+RealInterval interval_union(const Interval& lhs, const Interval& rhs) noexcept;
 
 
 RPY_SERIAL_LOAD_FN_EXT(IntervalType) {

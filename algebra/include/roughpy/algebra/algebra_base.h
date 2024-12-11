@@ -296,12 +296,15 @@ public:
     RPY_NO_DISCARD
     bool operator!=(const algebra_t& other) const { return !operator==(other); }
 
+
+    bool almost_zero(const scalars::Scalar& atol) const;
 private:
     RPY_SERIAL_ACCESS();
 
     RPY_SERIAL_SAVE_FN();
     RPY_SERIAL_LOAD_FN();
 };
+
 
 
 template <
@@ -312,6 +315,7 @@ operator<<(std::ostream& os, const AlgebraBase<Interface, DerivedImpl>& alg)
 {
     return alg.print(os);
 }
+
 
 namespace dtl {
 

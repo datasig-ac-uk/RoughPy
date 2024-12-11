@@ -701,6 +701,17 @@ bool AlgebraBase<Interface, DerivedImpl>::operator==(const algebra_t& other
 
     return p_impl->equals(other);
 }
+
+template <typename Interface, template <typename, template <typename> class> class DerivedImpl>
+bool AlgebraBase<Interface, DerivedImpl>::almost_zero(const scalars::Scalar& atol) const
+{
+    if (is_equivalent_to_zero(*this)) {
+        return true;
+    }
+
+    return p_impl->almost_zero(atol);
+}
+
 template <
         typename Interface,
         template <typename, template <typename> class> class DerivedImpl>

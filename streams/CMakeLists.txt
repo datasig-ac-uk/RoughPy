@@ -15,6 +15,7 @@ add_library(RoughPy_Streams SHARED
         src/schema.cpp
         src/parametrization.cpp
         src/stream_construction_helper.cpp
+        include/roughpy/streams/arrival_stream.h
         include/roughpy/streams/dyadic_caching_layer.h
         include/roughpy/streams/dynamically_constructed_stream.h
         include/roughpy/streams/lie_increment_stream.h
@@ -28,8 +29,11 @@ add_library(RoughPy_Streams SHARED
         include/roughpy/streams/parametrization.h
         include/roughpy/streams/stream_construction_helper.h
         include/roughpy/streams/channels.h
+        include/roughpy/streams/value_stream.h
+        src/arrival_stream.cpp
         include/roughpy/streams/restriction_stream.h
         src/restriction_stream.cpp
+        src/tensor_valued_stream.cpp
 )
 add_library(RoughPy::Streams ALIAS RoughPy_Streams)
 

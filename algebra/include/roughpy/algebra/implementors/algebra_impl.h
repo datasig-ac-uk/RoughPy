@@ -410,6 +410,8 @@ public:
 
     std::ostream& print(std::ostream& os) const override;
     bool equals(const algebra_t& other) const override;
+
+    bool almost_zero(const scalars::Scalar& atol) const override;
 };
 
 template <typename Impl, typename Interface>
@@ -1190,6 +1192,43 @@ bool AlgebraImplementation<Interface, Impl, StorageModel>::equals(
 ) const
 {
     return data() == static_cast<const Impl&>(convert_argument(other));
+}
+
+
+namespace dtl_abs_check {
+
+using namespace std;
+
+template <typename T, typename =void>
+inline constexpr bool has_abs_v = false;
+
+template <typename T>
+inline constexpr bool has_abs_v<T, std::void_t<decltype(abs(std::declval<T>()))>> = true;
+
+}
+
+
+template <typename Interface, typename Impl, template <typename> class
+    StorageModel>
+bool AlgebraImplementation<Interface, Impl, StorageModel>::almost_zero(
+    const scalars::Scalar& atol) const
+{
+    if constexpr (dtl_abs_check::has_abs_v<scalar_type>) {
+        const auto real_atol = scalars::scalar_cast<scalar_type>(atol);
+
+        auto lit = data().begin();
+        const auto lend = data().end();
+
+        for (; lit != lend; ++lit) {
+            if (abs(lit->value()) > real_atol) {
+                return false;
+            }
+        }
+
+        return true;
+    } else {
+        return is_zero();
+    }
 }
 
 }// namespace algebra
