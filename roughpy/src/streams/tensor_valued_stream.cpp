@@ -183,7 +183,7 @@ static PyMethodDef stvs_methods[] = {
 };
 
 // Define the PyTypeObject for RPySimpleTensorValuedStream
-static PyTypeObject RPySimpleTensorValuedStream_Type = {
+PyTypeObject RPySimpleTensorValuedStream_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)
         "roughpy.SimpleTensorValuedStream",// tp_name
         sizeof(RPySimpleTensorValuedStream),// tp_basicsize
