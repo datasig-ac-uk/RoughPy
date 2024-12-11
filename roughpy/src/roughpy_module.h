@@ -115,8 +115,8 @@ bool with_caught_exceptions(F&& fn) noexcept
         PyErr_SetString(PyExc_IndexError, e.what());
     } catch (const std::bad_alloc& e) {
         PyErr_SetString(PyExc_MemoryError, e.what());
-    } catch (const py::builtin_exception& e) {
-        e.set_error();
+    // } catch (const py::builtin_exception& e) {
+    //     e.set_error();
     } catch (std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
     }
