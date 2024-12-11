@@ -65,10 +65,16 @@ static PyObject* stvs_new(PyTypeObject* subtype,
                                     &initial_value,
                                     py::type::of<intervals::Interval>().ptr(),
                                     &domain
-    )) { return nullptr; }
+    )) {
+        RPY_DBG_ASSERT(PyErr_Occurred() != nullptr);
+        return nullptr;
+    }
 
     auto new_obj = py::reinterpret_steal<py::object>(subtype->tp_alloc(subtype, 0));
-    if (!new_obj) { return nullptr; }
+    if (!new_obj) {
+        RPY_DBG_ASSERT(PyErr_Occurred() != nullptr);
+        return nullptr;
+    }
 
     auto* self = reinterpret_cast<RPySimpleTensorValuedStream*>(new_obj.ptr());
 
@@ -177,7 +183,10 @@ static PyObject* stvs_signature(PyObject* self,
     const auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->
             p_data;
     if (parse_sig_args(args, kwargs, &stream->metadata(), &sig_args)
-        < 0) { return nullptr; }
+        < 0) {
+        return nullptr;
+    }
+
 
     py::object result;
 
