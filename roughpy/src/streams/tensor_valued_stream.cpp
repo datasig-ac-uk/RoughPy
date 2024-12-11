@@ -67,26 +67,23 @@ static PyObject* stvs_new(PyTypeObject* subtype,
                                     &domain
     )) { return nullptr; }
 
-    PyObject* new_obj = subtype->tp_alloc(subtype, 0);
-    if (new_obj == nullptr) { return nullptr; }
+    auto new_obj = py::reinterpret_steal<py::object>(subtype->tp_alloc(subtype, 0));
+    if (new_obj) { return nullptr; }
 
-    auto* self = reinterpret_cast<RPySimpleTensorValuedStream*>(new_obj);
+    auto* self = reinterpret_cast<RPySimpleTensorValuedStream*>(new_obj.ptr());
 
-    try {
+    auto success = python::with_caught_exceptions([&]() {
         // Make sure the shared pointer is properly initialised
-        construct_inplace(&self->p_data,
-                          make_simple_tensor_valued_stream(
+        construct_inplace(&self->p_data, make_simple_tensor_valued_stream(
                               incr_stream->m_data.impl(),
                               py::cast<const FreeTensor&>(initial_value),
                               py::cast<const intervals::Interval&>(domain)
                           ));
-    } catch (std::exception& e) {
-        Py_DECREF(new_obj);
-        PyErr_SetString(PyExc_RuntimeError, e.what());
-        return nullptr;
-    }
+    });
 
-    return new_obj;
+    RPY_DBG_ASSERT(self->p_data || !success);
+
+    return new_obj.release().ptr();
 }
 
 static void stvs_finalize(PyObject* self)
