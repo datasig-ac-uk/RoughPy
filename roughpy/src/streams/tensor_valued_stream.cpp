@@ -55,17 +55,20 @@ static PyObject* stvs_new(PyTypeObject* subtype,
     PyObject* initial_value;
     PyObject* domain;
 
+    auto* ft_type = reinterpret_cast<PyTypeObject*>(py::type::of<FreeTensor>().ptr());
+    auto* interval_type = reinterpret_cast<PyTypeObject*>(py::type::of<intervals::RealInterval>().ptr());
+
     if (PyArg_ParseTupleAndKeywords(args,
                                     kwargs,
                                     "O!O!O!",
                                     const_cast<char**>(kwlist),
                                     &python::RPyStream_Type,
                                     &incr_stream,
-                                    py::type::of<FreeTensor>().ptr(),
+                                    ft_type,
                                     &initial_value,
-                                    py::type::of<intervals::Interval>().ptr(),
+                                    interval_type,
                                     &domain
-    )) {
+    ) == 0) {
         RPY_DBG_ASSERT(PyErr_Occurred() != nullptr);
         return nullptr;
     }
@@ -103,15 +106,16 @@ static void stvs_finalize(PyObject* self)
 static PyObject* stvs_query(PyObject* self, PyObject* py_domain)
 {
     py::object result;
-    try {
+
+    auto success = python::with_caught_exceptions([&]() {
         const auto& domain = py::cast<const intervals::Interval&>(py_domain);
         const auto& vs = reinterpret_cast<const RPySimpleTensorValuedStream*>(
             self)->p_data;
 
         result = python::TensorValuedStream_FromPtr(vs->query(domain));
-    } catch (std::exception& e) {
-        PyErr_SetString(PyExc_RuntimeError, e.what());
-    }
+    });
+
+    RPY_DBG_ASSERT(result || !success);
 
     return result.release().ptr();
 }
