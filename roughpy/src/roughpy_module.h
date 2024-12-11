@@ -104,8 +104,7 @@ bool with_caught_exceptions(F&& fn) noexcept
     try {
         fn();
         completed_successfully = true;
-    } catch (const py::error_already_set& e) {
-        // Python exception
+    // } catch (const py::error_already_set& e) { // Python exception
     } catch (const std::invalid_argument& e) {
         PyErr_SetString(PyExc_ValueError, e.what());
     } catch (const std::domain_error& e) {
