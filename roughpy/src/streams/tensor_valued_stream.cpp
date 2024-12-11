@@ -10,6 +10,7 @@
 #include "roughpy/streams/value_stream.h"
 
 #include "stream.h"
+#include "signature_arguments.h"
 
 using namespace pybind11::literals;
 using namespace rpy;
@@ -115,27 +116,57 @@ static PyObject* stvs_query(PyObject* self, PyObject* py_domain)
 
 static PyObject* stvs_initial_value(PyObject* self)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "stvs_initial_value");
-    return nullptr;
+    py::object result;
+    auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->p_data;
+    auto success = python::with_caught_exceptions([&]() {
+        result = py::cast(stream->initial_value());
+    });
+
+    RPY_DBG_ASSERT(result || !success);
+
+    return result.release().ptr();
 }
 
 
 static PyObject* stvs_terminal_value(PyObject* self)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "stvs_terminal_value");
-    return nullptr;
+    py::object result;
+    auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->p_data;
+    auto success = python::with_caught_exceptions([&]() {
+        result = py::cast(stream->terminal_value());
+    });
+
+    RPY_DBG_ASSERT(result || !success);
+
+    return result.release().ptr();
 }
 
 static PyObject* stvs_increment_stream(PyObject* self)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "stvs_increment_stream");
-    return nullptr;
+    py::object result;
+
+    auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->p_data;
+    auto success = python::with_caught_exceptions([&]() {
+        result = py::reinterpret_steal<py::object>(
+            python::RPyStream_FromStream(Stream(stream->increment_stream())));
+    });
+
+    RPY_DBG_ASSERT(result || !success);
+
+    return result.release().ptr();
 }
 
 static PyObject* stvs_domain(PyObject* self)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "stvs_domain");
-    return nullptr;
+    py::object result;
+    auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->p_data;
+    auto success = python::with_caught_exceptions([&]() {
+        result = py::cast(stream->domain());
+    });
+
+    RPY_DBG_ASSERT(result || !success);
+
+    return result.release().ptr();
 }
 
 static PyObject* stvs_repr(PyObject* self) { return PyObject_Repr(self); }
@@ -144,16 +175,73 @@ static PyObject* stvs_signature(PyObject* self,
                                 PyObject* args,
                                 PyObject* kwargs)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "stvs_signature");
-    return nullptr;
+    python::SigArgs sigargs;
+
+    const auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->
+            p_data;
+    if (parse_sig_args(args, kwargs, &stream->metadata(), &sigargs)
+        < 0) { return nullptr; }
+
+    py::object result;
+
+    auto success = python::with_caught_exceptions([&]() {
+        if (!sigargs.interval) { sigargs.interval = stream->domain(); }
+        if (!sigargs.resolution) {
+            sigargs.resolution = stream->metadata().default_resolution;
+        }
+        if (!sigargs.ctx) { sigargs.ctx = stream->metadata().default_context; }
+
+        algebra::FreeTensor sig;
+
+        {
+            py::gil_scoped_release gil;
+            sig = stream->signature(*sigargs.interval,
+                                    *sigargs.resolution,
+                                    *sigargs.ctx);
+        }
+
+        result = py::cast(std::move(sig));
+    });
+
+    RPY_DBG_ASSERT(result || !success);
+
+    return result.release().ptr();
 }
 
-static PyObject* stvs_log_sigature(PyObject* self,
-                                   PyObject* args,
-                                   PyObject* kwargs)
+static PyObject* stvs_log_signature(PyObject* self,
+                                    PyObject* args,
+                                    PyObject* kwargs)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "stvs_log_sigature");
-    return nullptr;
+    python::SigArgs sigargs;
+
+    const auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->
+            p_data;
+    if (parse_sig_args(args, kwargs, &stream->metadata(), &sigargs)
+        < 0) { return nullptr; }
+
+    py::object result;
+
+    auto success = python::with_caught_exceptions([&]() {
+        if (!sigargs.interval) { sigargs.interval = stream->domain(); }
+        if (!sigargs.resolution) {
+            sigargs.resolution = stream->metadata().default_resolution;
+        }
+        if (!sigargs.ctx) { sigargs.ctx = stream->metadata().default_context; }
+
+        algebra::Lie logsig;
+        {
+            py::gil_scoped_release gil;
+            logsig = stream->log_signature(*sigargs.interval,
+                                           *sigargs.resolution,
+                                           *sigargs.ctx);
+        }
+
+        result = py::cast(std::move(logsig));
+    });
+
+    RPY_DBG_ASSERT(result || !success);
+
+    return result.release().ptr();
 }
 
 
@@ -175,7 +263,7 @@ static PyMethodDef stvs_methods[] = {
          "Get the domain of the stream"},
         {"signature", reinterpret_cast<PyCFunction>(stvs_signature),
          METH_VARARGS | METH_KEYWORDS, "Get the signature of the stream"},
-        {"log_signature", reinterpret_cast<PyCFunction>(stvs_log_sigature),
+        {"log_signature", reinterpret_cast<PyCFunction>(stvs_log_signature),
          METH_VARARGS | METH_KEYWORDS, "Get the log signature of the stream"},
         {nullptr, nullptr, 0, nullptr}// Sentinel
 };
