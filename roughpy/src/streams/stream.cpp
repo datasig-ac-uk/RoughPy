@@ -392,7 +392,7 @@ static const char* SIGNATURE_DOC
 static PyObject* signature(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     SigArgs sigargs;
-    auto* stream = (python::RPyStream*) self;
+    auto* stream = reinterpret_cast<python::RPyStream*>(self);
 
     if (parse_sig_args(args, kwargs, &stream->m_data.metadata(), &sigargs)
         < 0) {

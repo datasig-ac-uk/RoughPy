@@ -18,8 +18,6 @@ using namespace rpy::streams;
 using algebra::FreeTensor;
 
 
-
-
 struct RPySimpleTensorValuedStream
 {
     PyObject_VAR_HEAD//
@@ -183,9 +181,9 @@ static PyMethodDef stvs_methods[] = {
 };
 
 // Define the PyTypeObject for RPySimpleTensorValuedStream
-PyTypeObject RPySimpleTensorValuedStream_Type = {
+PyTypeObject python::TensorValuedStream_Type = {
         PyVarObject_HEAD_INIT(nullptr, 0)
-        "roughpy.SimpleTensorValuedStream",// tp_name
+        "roughpy.TensorValuedStream",// tp_name
         sizeof(RPySimpleTensorValuedStream),// tp_basicsize
         0,// tp_itemsize
         0,// tp_dealloc
@@ -237,12 +235,12 @@ PyTypeObject RPySimpleTensorValuedStream_Type = {
 
 void python::init_tensor_valued_stream(py::module_& m)
 {
-    if (PyType_Ready(&RPySimpleTensorValuedStream_Type) < 0) {
+    if (PyType_Ready(&TensorValuedStream_Type) < 0) {
         throw py::error_already_set();
     }
 
     m.add_object("SimpleTensorValuedStream",
                  reinterpret_cast<PyObject*>(&
-                     RPySimpleTensorValuedStream_Type));
+                     TensorValuedStream_Type));
 
 }
