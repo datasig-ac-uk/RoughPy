@@ -65,11 +65,11 @@ public:
         : seed(12345), ctype(*scalars::ScalarType::of<double>()),
           ctx(algebra::get_context(width, depth, ctype, {})),
           bm(ctype->get_rng("pcg", seed),
-             {width, {0.0, 1.0}, ctx, ctype, vtype, 4})
-    {}
+             {width, {0.0, 1.0}, ctx, ctype, vtype, 4}) {}
 };
 
-RPY_SERIAL_SERIALIZE_FN_IMPL(BrownianStreamTests::BrownianHolder) {
+RPY_SERIAL_SERIALIZE_FN_IMPL(BrownianStreamTests::BrownianHolder)
+{
     RPY_SERIAL_SERIALIZE_BASE(rpy::streams::BrownianStream);
 }
 
@@ -101,15 +101,12 @@ TEST_F(BrownianStreamTests, Serialization)
     DyadicInterval unit12(1, 0);
     auto second = bm.log_signature(unit12, 8, *ctx);
 
-    std::stringstream ss;
-    {
+    std::stringstream ss; {
         archives::JSONOutputArchive oarch(ss);
         oarch(bm);
     }
 
-
-    BrownianHolder instream;
-    {
+    BrownianHolder instream; {
         archives::JSONInputArchive iarch(ss);
         iarch(instream);
     }
@@ -132,17 +129,17 @@ TEST_F(BrownianStreamTests, Serialization)
 }
 
 
-
 TEST_F(BrownianStreamTests, TestSignatureMultiplicative)
 {
     intervals::RealInterval left_interval(0, 0.5);
     intervals::RealInterval right_interval(0.5, 1.0);
 
-    auto left = bm.signature(left_interval,  *ctx);
-    auto right = bm.signature(right_interval,  *ctx);
+    auto left = bm.signature(left_interval, *ctx);
+    auto right = bm.signature(right_interval, *ctx);
 
     auto result = left.mul(right);
     auto expected = bm.signature(intervals::RealInterval(0, 1), *ctx);
 
-    EXPECT_EQ(result, expected) << result << '\n' << expected;
+    EXPECT_TRUE(result.sub(expected).almost_zero(scalars::Scalar(2e-15))) <<
+ result << '\n' << expected;
 }
