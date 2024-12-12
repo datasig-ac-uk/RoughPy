@@ -288,9 +288,9 @@ static PyObject* stvs_from_values(PyObject* cls,
 
     auto* tp = reinterpret_cast<PyTypeObject*>(cls);
 
-    if (args != nullptr && PyTuple_Size(args) > 1) {
+    if (args != nullptr && PyTuple_Size(args) >= 1) {
         value_list = py::reinterpret_borrow<
-            py::object>(PyTuple_GetItem(args, 1));
+            py::object>(PyTuple_GetItem(args, 0));
     } else if (py_kwargs.contains("values")) {
         python::with_caught_exceptions([&]() {
             // This probably never throws, but I'd rather be safe.
@@ -333,7 +333,7 @@ static PyObject* stvs_from_values(PyObject* cls,
         for (Py_ssize_t i = 0; i < size; ++i) {
             py::handle py_item(PySequence_ITEM(value_list.ptr(), i));
 
-            if (!py::isinstance<py::tuple>(py_item) || py::len(py_item) == 2) {
+            if (!py::isinstance<py::tuple>(py_item) || py::len(py_item) != 2) {
                 throw py::type_error("expected a tuple of length 2");
             }
 
@@ -449,9 +449,10 @@ static PyObject* stvs_from_values(PyObject* cls,
             ptr());
 
         construct_inplace(&self->p_data,
-                          std::move(increment_stream),
-                          std::move(initial_value),
-                          *path_md.support);
+                          make_simple_tensor_valued_stream(
+                              std::move(increment_stream),
+                              std::move(initial_value),
+                              *path_md.support));
     });
 
     RPY_DBG_ASSERT(result || !success);
