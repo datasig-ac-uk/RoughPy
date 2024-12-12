@@ -23,8 +23,7 @@ TensorValuedStream::TensorValuedStream(intervals::RealInterval domain,
     : ValueStream(increment_stream->metadata(), increment_stream->get_schema()),
       m_domain(std::move(domain)),
       p_increment_stream(std::move(increment_stream)),
-      m_initial_value(std::move(initial_value))
-{}
+      m_initial_value(std::move(initial_value)) {}
 
 bool TensorValuedStream::empty(
     const intervals::Interval& interval) const noexcept
@@ -71,8 +70,10 @@ TensorValuedStream::StreamValue TensorValuedStream::value_at(
     }
     const intervals::RealInterval interval(m_domain.inf(), param);
 
-    auto sig = p_increment_stream->signature(interval, *m_initial_value.context());
-    return sig.mul(m_initial_value);
+    auto sig = p_increment_stream->signature(interval,
+                                             *m_initial_value.context());
+    return m_initial_value.context()->convert(sig.mul(m_initial_value),
+                                              m_initial_value.storage_type());
 }
 
 TensorValuedStream::StreamValue TensorValuedStream::initial_value() const
@@ -82,8 +83,10 @@ TensorValuedStream::StreamValue TensorValuedStream::initial_value() const
 
 TensorValuedStream::StreamValue TensorValuedStream::terminal_value() const
 {
-    auto sig = p_increment_stream->signature(m_domain, *m_initial_value.context());
-    return sig.mul(m_initial_value);
+    auto sig = p_increment_stream->signature(m_domain,
+                                             *m_initial_value.context());
+    return m_initial_value.context()->convert(sig.mul(m_initial_value),
+                                              m_initial_value.storage_type());
 }
 
 
@@ -97,5 +100,5 @@ streams::make_simple_tensor_valued_stream(
         intervals::RealInterval(domain),
         std::move(increment_stream),
         std::move(initial_value)
-        );
+    );
 }
