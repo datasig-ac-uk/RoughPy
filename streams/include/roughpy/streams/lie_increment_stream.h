@@ -64,6 +64,8 @@ public:
             StreamMetadata md, std::shared_ptr<StreamSchema> schema
             );
 
+    explicit LieIncrementStream(std::vector<pair<param_t, Lie>>&& data, StreamMetadata md, std::shared_ptr<StreamSchema> schema);
+
     RPY_NO_DISCARD bool
     empty(const intervals::Interval& interval) const noexcept override;
 

@@ -12,6 +12,10 @@
 #include "stream.h"
 #include "signature_arguments.h"
 
+#include <args/kwargs_to_path_metadata.h>
+#include <range/v3/view/move.hpp>
+#include <roughpy/streams/lie_increment_stream.h>
+
 using namespace pybind11::literals;
 using namespace rpy;
 using namespace rpy::streams;
@@ -55,8 +59,10 @@ static PyObject* stvs_new(PyTypeObject* subtype,
     PyObject* initial_value;
     PyObject* domain;
 
-    auto* ft_type = reinterpret_cast<PyTypeObject*>(py::type::of<FreeTensor>().ptr());
-    auto* interval_type = reinterpret_cast<PyTypeObject*>(py::type::of<intervals::RealInterval>().ptr());
+    auto* ft_type = reinterpret_cast<PyTypeObject*>(py::type::of<FreeTensor>().
+        ptr());
+    auto* interval_type = reinterpret_cast<PyTypeObject*>(py::type::of<
+        intervals::RealInterval>().ptr());
 
     if (PyArg_ParseTupleAndKeywords(args,
                                     kwargs,
@@ -73,7 +79,8 @@ static PyObject* stvs_new(PyTypeObject* subtype,
         return nullptr;
     }
 
-    auto new_obj = py::reinterpret_steal<py::object>(subtype->tp_alloc(subtype, 0));
+    auto new_obj = py::reinterpret_steal<py::object>(
+        subtype->tp_alloc(subtype, 0));
     if (!new_obj) {
         RPY_DBG_ASSERT(PyErr_Occurred() != nullptr);
         return nullptr;
@@ -83,7 +90,8 @@ static PyObject* stvs_new(PyTypeObject* subtype,
 
     auto success = python::with_caught_exceptions([&]() {
         // Make sure the shared pointer is properly initialised
-        construct_inplace(&self->p_data, make_simple_tensor_valued_stream(
+        construct_inplace(&self->p_data,
+                          make_simple_tensor_valued_stream(
                               incr_stream->m_data.impl(),
                               py::cast<const FreeTensor&>(initial_value),
                               py::cast<const intervals::Interval&>(domain)
@@ -187,10 +195,7 @@ static PyObject* stvs_signature(PyObject* self,
     const auto& stream = reinterpret_cast<RPySimpleTensorValuedStream*>(self)->
             p_data;
     if (parse_sig_args(args, kwargs, &stream->metadata(), &sig_args)
-        < 0) {
-        return nullptr;
-    }
-
+        < 0) { return nullptr; }
 
     py::object result;
 
@@ -199,11 +204,11 @@ static PyObject* stvs_signature(PyObject* self,
         if (!sig_args.resolution) {
             sig_args.resolution = stream->metadata().default_resolution;
         }
-        if (!sig_args.ctx) { sig_args.ctx = stream->metadata().default_context; }
+        if (!sig_args.ctx) {
+            sig_args.ctx = stream->metadata().default_context;
+        }
 
-        algebra::FreeTensor sig;
-
-        {
+        algebra::FreeTensor sig; {
             py::gil_scoped_release gil;
             sig = stream->signature(*sig_args.interval,
                                     *sig_args.resolution,
@@ -236,10 +241,11 @@ static PyObject* stvs_log_signature(PyObject* self,
         if (!sig_args.resolution) {
             sig_args.resolution = stream->metadata().default_resolution;
         }
-        if (!sig_args.ctx) { sig_args.ctx = stream->metadata().default_context; }
+        if (!sig_args.ctx) {
+            sig_args.ctx = stream->metadata().default_context;
+        }
 
-        algebra::Lie logsig;
-        {
+        algebra::Lie logsig; {
             py::gil_scoped_release gil;
             logsig = stream->log_signature(*sig_args.interval,
                                            *sig_args.resolution,
@@ -254,6 +260,205 @@ static PyObject* stvs_log_signature(PyObject* self,
     return result.release().ptr();
 }
 
+
+/**
+ * Constructs a SimpleTensorValuedStream (STVS) object from the given values and metadata.
+ *
+ * The function extracts and processes input values from the provided arguments and keyword
+ * arguments to build an STVS object. It expects a list of tuples, where each tuple contains
+ * a parameter and data in the form of either a group-like free tensor or a Lie element.
+ * The function performs data validation, computes the necessary increments, and organizes
+ * the resulting metadata for constructing the STVS object.
+ *
+ * @param cls A Python class object from which the function is invoked.
+ * @param args Positional arguments, with args[1] optionally being a sequence of values to parse.
+ * @param kwargs Keyword arguments containing optional metadata and the values under the key "values".
+ *               Other relevant keyword arguments may be used for providing metadata like resolution, context, etc.
+ * @return A PyObject representing the constructed STVS object. If any error occurs (e.g.,
+ *         invalid input data or metadata), an exception is raised, and nullptr is returned.
+ */
+static PyObject* stvs_from_values(PyObject* cls,
+                                  PyObject* args,
+                                  PyObject* kwargs)
+{
+    using algebra::Lie;
+    auto py_kwargs = py::reinterpret_borrow<py::kwargs>(kwargs);
+
+    py::object value_list;
+
+    auto* tp = reinterpret_cast<PyTypeObject*>(cls);
+
+    if (args != nullptr && PyTuple_Size(args) >= 1) {
+        value_list = py::reinterpret_borrow<
+            py::object>(PyTuple_GetItem(args, 0));
+    } else if (py_kwargs.contains("values")) {
+        python::with_caught_exceptions([&]() {
+            // This probably never throws, but I'd rather be safe.
+            value_list = py_kwargs["values"];
+        });
+    } else {
+        PyErr_SetString(PyExc_ValueError, "expected a list of values");
+        return nullptr;
+    }
+
+    if (!PySequence_Check(value_list.ptr())) {
+        PyErr_SetString(PyExc_TypeError, "expected a sequence of values");
+        return nullptr;
+    }
+
+    auto size = PySequence_Size(value_list.ptr());
+    if (size == 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "expected a non-empty sequence of values");
+        return nullptr;
+    }
+
+    py::object result;
+
+    auto success = python::with_caught_exceptions([&]() {
+        std::vector<pair<param_t, FreeTensor> > data;
+        data.reserve(size);
+        algebra::context_pointer ctx;
+
+        auto path_md = python::kwargs_to_metadata(py_kwargs);
+        if (path_md.ctx) { ctx = path_md.ctx; }
+
+        /*
+         * To construct the initial data, we need to traverse the sequence of
+         * input data and extract the parameter value and the data member. This
+         * can be either a group-like free tensor or a Lie. These are decoded
+         * into their raw types (converting if necessary) and placed in the
+         * data vector. This will be sorted later.
+         */
+        for (Py_ssize_t i = 0; i < size; ++i) {
+            py::handle py_item(PySequence_ITEM(value_list.ptr(), i));
+
+            if (!py::isinstance<py::tuple>(py_item) || py::len(py_item) != 2) {
+                throw py::type_error("expected a tuple of length 2");
+            }
+
+            py::handle py_param(PySequence_ITEM(py_item.ptr(), 0));
+            py::handle py_data(PySequence_ITEM(py_item.ptr(), 1));
+
+            auto param = py::cast<param_t>(py_param);
+
+            if (py::isinstance<FreeTensor>(py_data)) {
+                const auto& tensor = py::cast<const FreeTensor&>(py_data);
+                if (!ctx) { ctx = tensor.context(); } else {
+                    RPY_CHECK_EQ(ctx->width(), tensor.width(), py::value_error);
+                    RPY_CHECK_EQ(ctx->ctype(),
+                                 tensor.coeff_type(),
+                                 py::type_error);
+                }
+                data.emplace_back(param, py::cast<FreeTensor>(py_data));
+            } else if (py::isinstance<Lie>(py_data)) {
+                const auto& lie = py::cast<const Lie&>(py_data);
+                if (!ctx) { ctx = lie.context(); } else {
+                    RPY_CHECK_EQ(ctx->width(), lie.width(), py::value_error);
+                    RPY_CHECK_EQ(ctx->ctype(),
+                                 lie.coeff_type(),
+                                 py::type_error);
+                }
+                data.emplace_back(param, ctx->lie_to_tensor(lie).exp());
+            } else {
+                throw py::type_error(
+                    "expected a group-like free tensor or Lie data");
+            }
+        }
+        RPY_CHECK_EQ(path_md.width, ctx->width(), py::value_error);
+
+        // There is no reason to expect the values are provided in order.
+        std::sort(data.begin(),
+                  data.end(),
+                  [](const auto& a, const auto& b) {
+                      return a.first < b.first;
+                  });
+
+        // Now it makes sense to get the first element as the initial value.
+        FreeTensor initial_value = data.front().second;
+
+        /*
+         * The next step is to build a sequence of increments from the value data.
+         * This is a list of Lies formed by taking the difference between
+         * adjacent elements of the raw data. At the same time, we can compute
+         * the smallest difference between adjacent timestamps. We will need
+         * this to calculate an appropriate resolution if one isn't given.
+         */
+        std::vector<pair<param_t, Lie> > increment_data;
+        increment_data.reserve(data.size() - 1);
+        param_t min_difference = std::numeric_limits<param_t>::infinity();
+
+        auto previous = ctx->tensor_to_lie(initial_value.log());
+        for (Py_ssize_t i = 1; i < size; ++i) {
+            param_t param_diff = data[i].first - data[i - 1].first;
+            if (param_diff < min_difference) { min_difference = param_diff; }
+
+            auto current = ctx->tensor_to_lie(data[i].second.log());
+
+            increment_data.emplace_back(data[i].first, current.sub(previous));
+            previous = std::move(current);
+        }
+
+        /*
+         * If resolution was not provided, we should compute the one that
+         * separates points.
+         */
+        if (!path_md.resolution) {
+            path_md.resolution = param_to_resolution(min_difference) + 1;
+        }
+
+        /*
+         * If support is not given, set it to be the smallest interval that
+         * contains dyadic intervals of the given resolution containing each of
+         * the data points. This is done so the end increment is also included
+         * when because the clopen interval
+         * [data.front().first, data.back().first) would never show the
+         * increment that happens at data.back().first.
+         */
+        if (!path_md.support) {
+            path_md.support = intervals::RealInterval(
+                data.front().first,
+                data.back().first + ldexp(1., *path_md.resolution));
+        }
+
+        /*
+         * I don't like this but we have to do it because the constructor for
+         * Lie increment streams still needs the metadata like this.
+         */
+        auto schema = std::make_shared<StreamSchema>(path_md.width);
+        StreamMetadata metadata{
+                path_md.width,
+                std::move(path_md.support).value(),
+                path_md.ctx,
+                path_md.scalar_type,
+                (path_md.vector_type
+                    ? *path_md.vector_type
+                    : algebra::VectorType::Dense),
+                *path_md.resolution
+        };
+
+        auto increment_stream = std::make_shared<LieIncrementStream>(
+            std::move(increment_data),
+            std::move(metadata),
+            std::move(schema));
+
+        // Finally build the result.
+        result = py::reinterpret_steal<py::object>(tp->tp_alloc(tp, 0));
+        if (!result) { throw py::error_already_set(); }
+
+        auto* self = reinterpret_cast<RPySimpleTensorValuedStream*>(result.
+            ptr());
+
+        construct_inplace(&self->p_data,
+                          make_simple_tensor_valued_stream(
+                              std::move(increment_stream),
+                              std::move(initial_value),
+                              *path_md.support));
+    });
+
+    RPY_DBG_ASSERT(result || !success);
+    return result.release().ptr();
+}
 
 }
 
@@ -275,6 +480,9 @@ static PyMethodDef stvs_methods[] = {
          METH_VARARGS | METH_KEYWORDS, "Get the signature of the stream"},
         {"log_signature", reinterpret_cast<PyCFunction>(stvs_log_signature),
          METH_VARARGS | METH_KEYWORDS, "Get the log signature of the stream"},
+        {"from_values", reinterpret_cast<PyCFunction>(stvs_from_values),
+         METH_VARARGS | METH_KEYWORDS | METH_CLASS,
+         "Construct a new tensor-valued stream from a sequence of group-like free tensors or Lie elements"},
         {nullptr, nullptr, 0, nullptr}// Sentinel
 };
 
@@ -284,7 +492,7 @@ PyTypeObject python::TensorValuedStream_Type = {
         "roughpy.TensorValuedStream",// tp_name
         sizeof(RPySimpleTensorValuedStream),// tp_basicsize
         0,// tp_itemsize
-        0,// tp_dealloc
+        nullptr,// tp_dealloc
         0,// tp_vectorcall_offset
         0,// tp_getattr
         0,// tp_setattr

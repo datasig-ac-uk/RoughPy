@@ -31,6 +31,7 @@
 
 #include <roughpy/streams/lie_increment_stream.h>
 #include "roughpy/core/check.h"             // for throw_exception, RPY_CHECK
+#include "roughpy/core/ranges.h"
 
 #include <cereal/types/concepts/pair_associative_container.hpp>
 
@@ -155,6 +156,19 @@ LieIncrementStream::LieIncrementStream(
         previous_param = index;
 
     }
+}
+
+
+LieIncrementStream::LieIncrementStream(std::vector<pair<param_t, Lie>>&& data,
+    StreamMetadata md,
+    std::shared_ptr<StreamSchema> schema)
+        : base_t(std::move(md), std::move(schema))
+{
+    m_data.reserve(data.size());
+    for (auto&& [param, lie] : data | views::move) {
+        m_data.emplace(param, std::move(lie));
+    }
+
 }
 
 algebra::Lie LieIncrementStream::log_signature_impl(

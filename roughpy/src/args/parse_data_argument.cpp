@@ -10,6 +10,8 @@
 #include "numpy.h"
 #include "strided_copy.h"
 
+#include "roughpy/core/ranges.h"
+
 #include "scalars/pytype_conversion.h"
 #include "scalars/r_py_polynomial.h"
 #include "scalars/scalar.h"
@@ -509,7 +511,7 @@ void ConversionManager::check_size_and_type_recurse(
     } else if (py::isinstance<py::sequence>(node)) {
         RPY_CHECK(py::len(node) > 0);
         optional<ValueType> expected_tp;
-        bool is_leaf = std::all_of(
+        bool is_leaf = rpy::ranges::all_of(
                 node.begin(),
                 node.end(),
                 [this, &expected_tp](auto item) {
