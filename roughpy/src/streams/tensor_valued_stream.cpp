@@ -387,15 +387,16 @@ static PyObject* stvs_from_values(PyObject* cls,
         std::vector<pair<param_t, Lie> > increment_data;
         increment_data.reserve(data.size() - 1);
         param_t min_difference = std::numeric_limits<param_t>::infinity();
+
+        auto previous = ctx->tensor_to_lie(initial_value.log());
         for (Py_ssize_t i = 1; i < size; ++i) {
             param_t param_diff = data[i].first - data[i - 1].first;
             if (param_diff < min_difference) { min_difference = param_diff; }
 
-            const auto& current = data[i].second;
-            const auto& previous = data[i - 1].second;
-            increment_data.emplace_back(data[i].first,
-                                        ctx->tensor_to_lie(
-                                            current.sub(previous).log()));
+            auto current = ctx->tensor_to_lie(data[i].second.log());
+
+            increment_data.emplace_back(data[i].first, current.sub(previous));
+            previous = std::move(current);
         }
 
         /*
