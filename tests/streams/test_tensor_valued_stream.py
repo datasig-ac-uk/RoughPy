@@ -101,6 +101,15 @@ def test_tv_stream_from_values():
 
     assert stream.initial_value() == values[0][1]
 
+    terminal_value = stream.terminal_value()
+    first_terms = np.array(terminal_value)[:3]
+
+    # The terminal value will have accumulated some additional higher order
+    # terms because we did not restrict the value degree to 1. It should
+    # be the case though, regardless of the higher order terms, that the
+    # level 0 and level 1 terms should match
+    assert_array_almost_equal(first_terms, np.array([1.0, 0.5, 2.2]))
+
 
 
 
