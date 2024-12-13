@@ -98,7 +98,6 @@ jobs:
       shell: bash
       run: |
         echo "C:\\msys64" >> $GITHUB_PATH
-        echo "VCPKG_FORCE_SYSTEM_BINARIES=1" >> $GITHUB_ENV
 
     - name: Setup ninja on Windows
       if: runner.os == 'Windows'
@@ -138,6 +137,7 @@ jobs:
       env:
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
+        VCPKG_FORCE_SYSTEM_BINARIES: 1
 
     - name: Build
       # Build your program with the given configuration
