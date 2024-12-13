@@ -88,12 +88,6 @@ jobs:
       if: runner.os == 'Windows'
       uses: microsoft/setup-msbuild@v2
 
-    - name: Add msys2 to path for Windows
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        echo "C:\\msys64" >> $GITHUB_PATH
-
     - name: Setup ninja on Windows
       if: runner.os == 'Windows'
       uses: ashutoshvarma/setup-ninja@v1.1
