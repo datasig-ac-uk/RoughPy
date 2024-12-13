@@ -1,0 +1,34 @@
+name: update-dependencies.yml
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - vcpkg.json
+      - vcpkg-configuration.json
+
+permissions:
+  contents: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  VCPKG_FEATURE_FLAGS: dependencygraph
+
+jobs:
+  vcpkg-deps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup-vcpkg
+        uses: actions/checkout@v4
+        with:
+          repository: https://github.com/Microsoft/vcpkg.git
+          path: tools/vcpkg
+
+      - name: bootstrap vcpkg
+        run: ${{ github.workspace }}/tools/vcpkg/bootstrap_vcpkg.sh
+
+      - name: build-dep-graph
+        run: ${{ github.workspace }}/tools/vcpkg/vcpkg install --dry-run
