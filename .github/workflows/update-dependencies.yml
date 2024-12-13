@@ -7,6 +7,7 @@ on:
     paths:
       - vcpkg.json
       - vcpkg-configuration.json
+      - .github/workflows/update-dependencies.yml
 
 permissions:
   contents: write
@@ -25,11 +26,11 @@ jobs:
       - name: setup-vcpkg
         uses: actions/checkout@v4
         with:
-          repository: https://github.com/Microsoft/vcpkg.git
+          repository: Microsoft/vcpkg
           path: tools/vcpkg
 
       - name: bootstrap vcpkg
-        run: ${{ github.workspace }}/tools/vcpkg/bootstrap_vcpkg.sh
+        run: ${{ github.workspace }}/tools/vcpkg/bootstrap-vcpkg.sh
 
       - name: build-dep-graph
         run: ${{ github.workspace }}/tools/vcpkg/vcpkg install --dry-run
