@@ -30,7 +30,7 @@ jobs:
           path: tools/vcpkg
 
       - name: bootstrap vcpkg
-        run: ${{ github.workspace }}/tools/vcpkg/bootstrap_vcpkg.sh
+        run: ${{ github.workspace }}/tools/vcpkg/bootstrap-vcpkg.sh
 
       - name: build-dep-graph
         run: ${{ github.workspace }}/tools/vcpkg/vcpkg install --dry-run
