@@ -2,15 +2,26 @@ name: tests
 
 on:
   workflow_dispatch:
-#  push:
-#    branches: [ "main" ]
-#    paths-ignore:
-#      - "examples/**"
-#      - "doc/**"
-#      - "README.md"
-#      - "*.txt"
-#      - "CHANGELOG"
-#      - "tools/*.py"
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - "examples/**"
+      - "doc/**"
+      - "README.md"
+      - "CHANGELOG"
+      - "tools/*.py"
+      - ".github/workflows/build_wheels.yml"
+      - ".github/dependabot.yml"
+      - ".github/ISSUE_TEMPLATE/**"
+      - "branding/**"
+      - ".gitignore"
+      - "CMakePresets.json"
+      - "THANKS.txt"
+      - "LICENSE.txt"
+      - "VERSION.txt"
+      - "CITATION.cff"
+      - ".gitignore"
+
   pull_request:
     branches: [ "main" ]
     paths-ignore:
@@ -30,6 +41,8 @@ on:
       - "VERSION.txt"
       - "CITATION.cff"
       - ".gitignore"
+
+
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
