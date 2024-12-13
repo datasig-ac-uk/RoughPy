@@ -170,7 +170,7 @@ TEST_F(DenseTensorFixture, test_iterators)
     // Tensor has key values 0..N for N basis
     FreeTensor t = make_tensor([](size_t i) {
         auto key = indeterminate_type('x', i);
-        auto coeff = rational_poly_scalar(key, 1) * i;
+        auto coeff = rational_poly_scalar(key, i);
         return coeff;
     });
 
@@ -178,10 +178,16 @@ TEST_F(DenseTensorFixture, test_iterators)
     size_t expected_index = 0;
     for (auto it = t.begin(); it != t.end(); ++it) {
         ASSERT_EQ(it->key(), expected_index);
-        // TODO check it->value() is expected_index
+
+        // Type must be constructed from coeff_type for valid comparison
+        auto expected_key = indeterminate_type('x', expected_index);
+        auto expected_coeff = rational_poly_scalar(expected_key, expected_index);
+        auto coeff_as_scalar = Scalar(t.coeff_type(), expected_coeff);
+        ASSERT_EQ(it->value(), coeff_as_scalar);
         ++expected_index;
     }
-    ASSERT_EQ(expected_index, t.size());
+
+    ASSERT_EQ(expected_index, t.dimension());
 }
 
 TEST_F(DenseTensorFixture, test_dense_data)
