@@ -26,7 +26,7 @@ jobs:
       - name: setup-vcpkg
         uses: actions/checkout@v4
         with:
-          repository: Microsoft/vcpkg.git
+          repository: Microsoft/vcpkg
           path: tools/vcpkg
 
       - name: bootstrap vcpkg
