@@ -71,16 +71,25 @@ TEST_F(DenseTensorFixture, test_move_assign)
 {
 }
 
-TEST_F(DenseTensorFixture, test_context)
+TEST_F(DenseTensorFixture, test_accessors)
 {
-}
+    // Construct a tensor with zeros after a certain point; size() will not
+    // take stock of zero elements, but dimension() does.
+    const size_t index_zero_after = 32;
+    FreeTensor lhs = make_tensor([index_zero_after](size_t i) {
+        auto adjusted_index = (i <= index_zero_after) ? i : 0;
+        auto key = indeterminate_type('x', adjusted_index);
+        auto coeff = rational_poly_scalar(key, adjusted_index);
+        return coeff;
+    });
 
-TEST_F(DenseTensorFixture, test_basis_type)
-{
-}
-
-TEST_F(DenseTensorFixture, test_basis)
-{
+    ASSERT_EQ(lhs.context(), context);
+    ASSERT_EQ(lhs.basis(), context->get_tensor_basis());
+    ASSERT_EQ(lhs.dimension(), 63);
+    ASSERT_EQ(lhs.size(), index_zero_after);
+    ASSERT_EQ(lhs.width(), 2);
+    ASSERT_EQ(lhs.depth(), 5);
+    ASSERT_EQ(lhs.degree(), 5);
 }
 
 TEST_F(DenseTensorFixture, test_borrow)
@@ -137,27 +146,8 @@ TEST_F(DenseTensorFixture, test_mul)
 {
 }
 
-TEST_F(DenseTensorFixture, test_dimension)
-{
-}
-
-TEST_F(DenseTensorFixture, test_size)
-{
-}
 
 TEST_F(DenseTensorFixture, test_is_zero)
-{
-}
-
-TEST_F(DenseTensorFixture, test_width)
-{
-}
-
-TEST_F(DenseTensorFixture, test_depth)
-{
-}
-
-TEST_F(DenseTensorFixture, test_degree)
 {
 }
 
