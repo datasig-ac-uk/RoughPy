@@ -1,6 +1,7 @@
 name: update-dependencies.yml
 
 on:
+  workflow_dispatch:
   push:
     branches: ["main"]
     paths:
