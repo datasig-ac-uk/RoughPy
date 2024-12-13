@@ -93,31 +93,43 @@ TEST_F(DenseTensorFixture, test_borrow_mut)
 
 TEST_F(DenseTensorFixture, test_add)
 {
-    FreeTensor lhs = make_ns_tensor('x', 2);
-    FreeTensor rhs = make_ns_tensor('y', 3);
+    FreeTensor lhs = make_ones_tensor('x');
+    FreeTensor rhs = make_ones_tensor('y');
     FreeTensor result = lhs.add(rhs);
 
     FreeTensor expected = make_tensor([](size_t i) {
-        auto lhs_coeff = rational_poly_scalar(indeterminate_type('x', i), 2);
-        auto rhs_coeff = rational_poly_scalar(indeterminate_type('y', i), 3);
-        return lhs_coeff + rhs_coeff;
+        auto lhs_coeff = rational_poly_scalar(indeterminate_type('x', i), 1);
+        auto rhs_coeff = rational_poly_scalar(indeterminate_type('y', i), 1);
+        auto coeff = lhs_coeff + rhs_coeff;
+        return coeff;
     });
 
+    ASSERT_EQ(result, expected);
+
+    // Test again with inplace version
+    result = lhs;
+    result.add_inplace(rhs);
     ASSERT_EQ(result, expected);
 }
 
 TEST_F(DenseTensorFixture, test_sub)
 {
-    FreeTensor lhs = make_ns_tensor('x', 3);
-    FreeTensor rhs = make_ns_tensor('y', 5);
+    FreeTensor lhs = make_ones_tensor('x');
+    FreeTensor rhs = make_ones_tensor('y');
     FreeTensor result = lhs.sub(rhs);
 
     FreeTensor expected = make_tensor([](size_t i) {
-        auto lhs_coeff = rational_poly_scalar(indeterminate_type('x', i), 3);
-        auto rhs_coeff = rational_poly_scalar(indeterminate_type('y', i), 5);
-        return lhs_coeff - rhs_coeff;
+        auto lhs_coeff = rational_poly_scalar(indeterminate_type('x', i), 1);
+        auto rhs_coeff = rational_poly_scalar(indeterminate_type('y', i), 1);
+        auto coeff = lhs_coeff - rhs_coeff;
+        return coeff;
     });
 
+    ASSERT_EQ(result, expected);
+
+    // Test again with inplace version
+    result = lhs;
+    result.sub_inplace(rhs);
     ASSERT_EQ(result, expected);
 }
 
@@ -201,8 +213,8 @@ TEST_F(DenseTensorFixture, test_uminus)
 
     FreeTensor expected = make_tensor([](size_t i) {
         auto key = indeterminate_type('x', i);
-        auto coeff = rational_poly_scalar(key, 1);
-        return -coeff;
+        auto coeff = -rational_poly_scalar(key, 1);
+        return coeff;
     });
 
     ASSERT_EQ(result, expected);
@@ -210,40 +222,45 @@ TEST_F(DenseTensorFixture, test_uminus)
 
 TEST_F(DenseTensorFixture, test_smul)
 {
-    FreeTensor lhs = make_ns_tensor('x', 5);
+    FreeTensor lhs = make_ones_tensor('x');
     Scalar rhs(7);
     FreeTensor result = lhs.smul(rhs);
 
     FreeTensor expected = make_tensor([](size_t i) {
         auto key = indeterminate_type('x', i);
-        auto coeff = rational_poly_scalar(key, 5);
-        return coeff * 7;
+        auto coeff = rational_poly_scalar(key, 7);
+        return coeff;
     });
 
+    ASSERT_EQ(result, expected);
+
+    // Test again with inplace version
+    result = lhs;
+    result.smul_inplace(rhs);
     ASSERT_EQ(result, expected);
 }
 
 TEST_F(DenseTensorFixture, test_sdiv)
 {
-}
+    FreeTensor lhs = make_ones_tensor('x');
+    Scalar rhs(11);
+    FreeTensor result = lhs.sdiv(rhs);
 
-TEST_F(DenseTensorFixture, test_add_inplace)
-{
-}
+    FreeTensor expected = make_tensor([](size_t i) {
+        auto key = indeterminate_type('x', i);
+        auto coeff = rational_poly_scalar(key, 1) / 11;
+        return coeff;
+    });
 
-TEST_F(DenseTensorFixture, test_sub_inplace)
-{
+    ASSERT_EQ(result, expected);
+
+    // Test again with inplace version
+    result = lhs;
+    result.sdiv_inplace(rhs);
+    ASSERT_EQ(result, expected);
 }
 
 TEST_F(DenseTensorFixture, test_mul_inplace)
-{
-}
-
-TEST_F(DenseTensorFixture, test_smul_inplace)
-{
-}
-
-TEST_F(DenseTensorFixture, test_sdiv_inplace)
 {
 }
 
