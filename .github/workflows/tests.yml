@@ -2,15 +2,26 @@ name: tests
 
 on:
   workflow_dispatch:
-#  push:
-#    branches: [ "main" ]
-#    paths-ignore:
-#      - "examples/**"
-#      - "doc/**"
-#      - "README.md"
-#      - "*.txt"
-#      - "CHANGELOG"
-#      - "tools/*.py"
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - "examples/**"
+      - "doc/**"
+      - "README.md"
+      - "CHANGELOG"
+      - "tools/*.py"
+      - ".github/workflows/build_wheels.yml"
+      - ".github/dependabot.yml"
+      - ".github/ISSUE_TEMPLATE/**"
+      - "branding/**"
+      - ".gitignore"
+      - "CMakePresets.json"
+      - "THANKS.txt"
+      - "LICENSE.txt"
+      - "VERSION.txt"
+      - "CITATION.cff"
+      - ".gitignore"
+
   pull_request:
     branches: [ "main" ]
     paths-ignore:
@@ -30,6 +41,8 @@ on:
       - "VERSION.txt"
       - "CITATION.cff"
       - ".gitignore"
+
+
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -65,11 +78,6 @@ jobs:
         script: |
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
-      #    - uses: microsoft/setup-msbuild@v1.1
-      #      if: runner.os == 'Windows'
-      #      with:
-      #        msbuild-architecture: x64
 
     - name: use ninja
       shell: bash
@@ -116,15 +124,13 @@ jobs:
       run: |
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_PYMODULE_INPLACE=ON
       env:
-        VERBOSE: 1
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
+        VCPKG_FORCE_SYSTEM_BINARIES: 1
 
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{ github.workspace }}/build --config ${{env.BUILD_TYPE}}
-      env:
-        VERBOSE: 1
 
     - name: Test
       shell: bash
