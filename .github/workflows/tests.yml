@@ -79,11 +79,6 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-      #    - uses: microsoft/setup-msbuild@v1.1
-      #      if: runner.os == 'Windows'
-      #      with:
-      #        msbuild-architecture: x64
-
     - name: use ninja
       shell: bash
       run: |
