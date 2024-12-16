@@ -114,8 +114,7 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
 
     dimn_t num_increments = ks_stream.row_count();
 
-    auto effective_support
-            = intervals::RealInterval::right_unbounded(0.0, md.interval_type);
+    intervals::RealInterval effective_support (0.0, 1.0, md.interval_type);
 
     if (kwargs.contains("indices")) {
         auto indices_arg = kwargs_pop(kwargs, "indices");
@@ -232,7 +231,13 @@ static py::object lie_increment_stream_from_increments(py::object data, py::kwar
              *md.resolution},
             md.schema
     ));
-    if (md.support) { result.restrict_to(*md.support); }
+
+    if (md.support) {
+        result.restrict_to(*md.support);
+    }
+    else {
+        result.restrict_to(effective_support);
+    }
 
     return py::reinterpret_steal<py::object>(
             python::RPyStream_FromStream(std::move(result))

@@ -411,3 +411,61 @@ def test_construct_sequence_of_lies():
     lsig = stream.log_signature(rp.RealInterval(0, 1))
 
     assert lsig == seq[0], f"{lsig} != {seq[0]}"
+
+
+def esig_stream2sig(array, depth):
+    no_pts, width = array.shape
+    ctx = rp.get_context(width=width, depth=depth, coeffs=rp.DPReal)
+
+    increments = np.diff(array, axis=0)
+
+    stream = rp.LieIncrementStream.from_increments(increments, ctx=ctx)
+
+    return stream.signature()
+
+
+def test_equivariance_esig_treelike1():
+
+    tree_like = np.array([
+            [0.0, 0],
+            [1, 0],
+            [1, 1],
+            [1, 0],
+            [2, 0],
+            [3, 1],
+            [2, 2],
+            [1, 1],
+            [2, 2],
+            [1, 3],
+            [2, 2],
+            [3, 3],
+            [2, 2],
+            [3, 1],
+            [4, 1],
+            [3, 1],
+            [2, 0],
+            [2, -1],
+            [2, 0],
+            [1, 0],
+            [1, -1],
+            [1, 0],
+            [0, 0],
+        ], dtype=np.float64)
+
+    pruned = np.array([[0.0, 0.0]], dtype=np.float64)
+
+    assert_array_almost_equal(esig_stream2sig(tree_like, 2), esig_stream2sig(pruned, 2))
+
+
+def test_equivariance_esig_treelike2():
+
+    tree_like = np.array([[0.0, 0], [1, 3], [0, 0], [1, 5], [2, 5], [1, 5], [0, 6], [1, 5], [0, 0]], dtype=np.float64)
+    pruned = np.array([[0., 0.]], dtype=np.float64)
+
+    assert_array_almost_equal(esig_stream2sig(tree_like, 2), esig_stream2sig(pruned, 2))
+
+def test_equivariance_esig_treelike3():
+    tree_like = np.array([[0.0, 0], [1, 1], [3, 1], [2, 1], [1, 1], [2, 0]], dtype=np.float64)
+    pruned = np.array([[0., 0.], [1. ,1.], [2., 0]], dtype=np.float64)
+
+    assert_array_almost_equal(esig_stream2sig(tree_like, 2), esig_stream2sig(pruned, 2))
