@@ -211,6 +211,30 @@ add_subdirectory(streams)
 
 if (ROUGHPY_BUILD_PYLIB)
     add_subdirectory(roughpy)
+
+
+    install(TARGETS RoughPy_PyModule
+            RUNTIME DESTINATION roughpy
+            LIBRARY
+            DESTINATION roughpy
+            NAMELINK_SKIP
+            ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            EXCLUDE_FROM_ALL
+            INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
+            COMPONENT Development
+            FRAMEWORK DESTINATION roughpy
+            EXCLUDE_FROM_ALL
+    )
+
+    install(FILES py.typed DESTINATION roughpy)
+    install(DIRECTORY roughpy
+            DESTINATION roughpy
+            FILES_MATCHING
+            PATTERN "*.py"
+            PATTERN "*.pyi"
+            PATTERN "src/*" EXCLUDE)
+
 endif ()
 
 
