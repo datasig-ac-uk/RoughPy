@@ -212,7 +212,7 @@ install(TARGETS RoughPy_PyModule
     EXCLUDE_FROM_ALL
 )
 
-install(FILES roughpy/py.typed DESTINATION roughpy)
+install(FILES py.typed DESTINATION roughpy)
 install(DIRECTORY roughpy
         DESTINATION .
         FILES_MATCHING
