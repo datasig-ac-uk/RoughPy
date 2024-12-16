@@ -483,7 +483,7 @@ def test_linear_signature():
 
     stream = LieIncrementStream.from_increments(np.array([increment]), indices=indices, ctx=ctx)
 
-    sig = stream.signature(rp.RealInterval(0., 1.))
+    sig = stream.signature(rp.RealInterval(0., 1.), resolution=0)
 
     level0 = np.array([1.])
     level1 = increment
