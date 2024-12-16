@@ -151,6 +151,9 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
     auto amended_query = refine_interval(interval);
     if (!amended_query) { return zero_lie(ctx); }
 
+    if (resolution < amended_query->second) {
+        resolution = amended_query->second;
+    }
     return log_signature_impl(amended_query->first, resolution, ctx);
 }
 Stream::FreeTensor Stream::signature(
