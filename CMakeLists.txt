@@ -227,10 +227,10 @@ if (ROUGHPY_BUILD_PYLIB)
             EXCLUDE_FROM_ALL
     )
 
-    install(FILES roughpy/py.typed DESTINATION roughpy)
     install(DIRECTORY roughpy
-            DESTINATION roughpy
+            DESTINATION .
             FILES_MATCHING
+            PATTERN "py.typed"
             PATTERN "*.py"
             PATTERN "*.pyi"
             PATTERN "src/*" EXCLUDE)
