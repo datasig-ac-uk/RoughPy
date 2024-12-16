@@ -225,6 +225,7 @@ install(TARGETS
         RoughPy_Scalars
         RoughPy_Algebra
         RoughPy_Streams
+        Libalgebra_lite
     EXPORT RoughPy_EXPORTS
     RUNTIME DESTINATION roughpy
     LIBRARY
