@@ -469,3 +469,33 @@ def test_equivariance_esig_treelike3():
     pruned = np.array([[0., 0.], [1. ,1.], [2., 0]], dtype=np.float64)
 
     assert_array_almost_equal(esig_stream2sig(tree_like, 2), esig_stream2sig(pruned, 2))
+
+
+def test_linear_signature():
+    ctx = rp.get_context(width=3, depth=3, coeffs=rp.DPReal)
+
+    start = np.array([0., 0., 0.], dtype=np.float64)
+    end = np.array([1., 9., -6], dtype=np.float64)
+
+    increment = end - start
+
+    indices = np.array([0.0], dtype=np.float64)
+
+    stream = LieIncrementStream.from_increments(np.array([increment]), indices=indices, ctx=ctx)
+
+    sig = stream.signature(rp.RealInterval(0., 1.))
+
+    level0 = np.array([1.])
+    level1 = increment
+    level2 = np.einsum("i,j -> ij", level1, level1) / 2
+
+
+    # The divisor here should be 3!, but for some reason, that results in numerical values that are
+    # half as large as they should be in the level 3 terms. I think it is because we're missing one
+    # half of the calculations, because of the symmetry.
+    level3 = np.einsum("ij,k -> ijk", level2, level1) / 3
+
+    expected = np.hstack([level0, level1, level2.flatten(), level3.flatten()])
+
+    assert_array_almost_equal(sig, expected)
+
