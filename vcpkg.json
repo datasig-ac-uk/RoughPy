@@ -64,6 +64,9 @@
   }, {
     "name" : "fmt",
     "version>=" : "11.0.2#1"
+  }, {
+    "name" : "boost-pool",
+    "version>=" : "1.86.0"
   } ],
   "features" : {
     "tests" : {
