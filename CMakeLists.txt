@@ -164,6 +164,7 @@ find_boost(VERSION 1.83 COMPONENTS
     endian
     interprocess
     multiprecision
+    pool
     smart_ptr
     type_traits
     url
