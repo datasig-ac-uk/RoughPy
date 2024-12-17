@@ -27,40 +27,8 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-echo $OSTYPE
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  yum install -y curl zip unzip tar gmp-devel
 
-  # manylinux doesn't have mono, we'll have to install it
-  rpmkeys --import "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF"
-  su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo'
-  yum install -y mono-complete
 
-  MONO_EXE=mono
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-  brew install libomp
-  MONO_EXE=mono
-elif [[ "$OSTYPE" == "msys"* ]]; then
-  MONO_EXE=""
-else
-  exit 1
-fi
+git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
+bash tools/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
-git clone https://github.com/Microsoft/vcpkg.git
-bash vcpkg/bootstrap-vcpkg.sh -disableMetrics
-
-vcpkg_root=./vcpkg
-
-#if [ -n "$GITHUB_TOK" ]; then
-#  # If the token is defined, set up binary caching
-#  $MONO_EXE `$vcpkg_root/vcpkg fetch nuget | tail -n 1` \
-#    sources add \
-#    -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json" \
-#    -storepasswordincleartext \
-#    -name "GitHub" \
-#    -username "datasig-ac-uk" \
-#    -password "$GITHUB_TOK"
-#  $MONO_EXE `$vcpkg_root/vcpkg fetch nuget | tail -n 1` \
-#    setapikey "$GITHUB_TOK" \
-#    -source "https://nuget.pkg.github.com/datasig-ac-uk/index.json"
-#fi
