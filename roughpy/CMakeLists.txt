@@ -198,29 +198,6 @@ configure_file(version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)
 
 
 
-install(TARGETS RoughPy_PyModule
-    RUNTIME DESTINATION roughpy
-    LIBRARY
-    DESTINATION roughpy
-    NAMELINK_SKIP
-    ARCHIVE DESTINATION ${SKBUILD_NULL_DIR}
-    COMPONENT Development
-    EXCLUDE_FROM_ALL
-    INCLUDES DESTINATION ${SKBUILD_NULL_DIR}
-    COMPONENT Development
-        FRAMEWORK DESTINATION roughpy
-    EXCLUDE_FROM_ALL
-)
-
-install(FILES roughpy/py.typed DESTINATION roughpy)
-install(DIRECTORY roughpy
-        DESTINATION .
-        FILES_MATCHING
-        PATTERN "*.py"
-        PATTERN "*.pyi"
-        PATTERN "src/*" EXCLUDE)
-
-
 
 
 
