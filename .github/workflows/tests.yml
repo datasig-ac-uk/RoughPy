@@ -91,11 +91,11 @@ jobs:
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: install pkgconfig on windows
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        choco install pkgconfiglite
+#    - name: install pkgconfig on windows
+#      if: runner.os == 'Windows'
+#      shell: bash
+#      run: |
+#        choco install pkgconfiglite
 
     - name: install autoconf on macos
       if: runner.os == 'macOs'
