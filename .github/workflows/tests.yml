@@ -91,11 +91,11 @@ jobs:
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: install pkgconfig on windows
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        choco install pkgconfiglite
+#    - name: install pkgconfig on windows
+#      if: runner.os == 'Windows'
+#      shell: bash
+#      run: |
+#        choco install pkgconfiglite
 
     - name: install autoconf on macos
       if: runner.os == 'macOs'
@@ -117,7 +117,7 @@ jobs:
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: |
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_PYMODULE_INPLACE=ON
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON
       env:
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0

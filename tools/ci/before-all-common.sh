@@ -27,6 +27,10 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+echo $OSTYPE
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  yum install -y curl zip unzip tar
+fi
 
 
 git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg

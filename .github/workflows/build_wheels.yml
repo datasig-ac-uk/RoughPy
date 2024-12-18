@@ -93,19 +93,9 @@ jobs:
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
 
-      - name: Setup ninja on Windows
-        if: runner.os == 'Windows'
-        uses: ashutoshvarma/setup-ninja@v1.1
-
       - name: Enable developer command prompt
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
-
-      - name: install pkgconfig on windows
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          choco install pkgconfiglite
 
       - name: Install build deps on MacOs
         if: runner.os == 'macOs'
@@ -117,6 +107,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
           CMAKE_GENERATOR: "Ninja"
+          CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
       - uses: actions/upload-artifact@v4
         with:

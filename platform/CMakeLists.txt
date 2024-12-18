@@ -89,9 +89,6 @@ target_link_libraries(RoughPy_Platform PUBLIC
 
 set_target_properties(RoughPy_Platform PROPERTIES ROUGHPY_COMPONENT Platform)
 
-if (APPLE)
-    target_compile_definitions(RoughPy_Platform PUBLIC BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED)
-endif()
 
 
 set_library_version_properties(RoughPy_Platform)
