@@ -125,6 +125,9 @@ before-all = "bash tools/ci/before-all-common.sh"
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -w {dest_dir} --ignore-in-wheel {wheel}"
+environment = [
+    "SKBUILD_CMAKE_DEFINE=\"CC=cl;CXX=cl\""
+]
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = "auditwheel show {wheel} && auditwheel repair -w {dest_dir} {wheel}"
