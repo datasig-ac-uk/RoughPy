@@ -107,6 +107,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: 11.0.0
           GITHUB_TOK: "${{ secrets.GITHUB_TOKEN }}"
           CMAKE_GENERATOR: "Ninja"
+          CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
       - uses: actions/upload-artifact@v4
         with:
