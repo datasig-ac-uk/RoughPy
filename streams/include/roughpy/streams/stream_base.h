@@ -40,6 +40,7 @@
 #include <roughpy/intervals/real_interval.h>
 #include <roughpy/platform/serialization.h>
 #include <roughpy/platform/errors.h>
+#include "roughpy/platform/alloc.h"
 
 #include "schema.h"
 
@@ -97,7 +98,7 @@ inline resolution_t param_to_resolution(param_t arg) noexcept
  * computed from log signatures, rather than using the data to compute these
  * independently.)
  */
-class ROUGHPY_STREAMS_EXPORT StreamInterface
+class ROUGHPY_STREAMS_EXPORT StreamInterface : public mem::SmallObjectBase
 {
     StreamMetadata m_metadata;
     std::shared_ptr<StreamSchema> p_schema;
