@@ -207,10 +207,12 @@ python::PyStreamMetaData python::kwargs_to_metadata(pybind11::kwargs& kwargs)
 
     if (kwargs.contains("support")) {
         auto support = kwargs_pop(kwargs, "support");
-        if (!py::isinstance<intervals::Interval>(support)) {
+        if (py::isinstance<intervals::Interval>(support)) {
             md.support = intervals::RealInterval(
                     support.cast<const intervals::Interval&>()
             );
+        } else {
+            RPY_THROW(py::type_error, "Support must be an Interval");
         }
     }
 
