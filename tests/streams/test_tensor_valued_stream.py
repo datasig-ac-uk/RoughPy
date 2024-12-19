@@ -113,3 +113,26 @@ def test_tv_stream_from_values():
 
 
 
+def test_signature_value_stream():
+
+    ctx = rp.get_context(4, 3, rp.DPReal)
+
+    base_stream = rp.BrownianStream.with_generator("pcg64", ctx=ctx, resolution=4, support=rp.RealInterval(0., 1.))
+    ## sampled Brownian stream or level1 Brownian stream
+
+    delta_t = 0.1
+
+    values = [
+        (t, base_stream.signature(rp.RealInterval(0., t)))
+        for t in np.arange(0., 1., delta_t)
+    ]
+
+    value_stream = rp.TensorValuedStream.from_values(values, ctx=ctx)
+    assert value_stream.domain() == rp.RealInterval(0., 1.)
+
+
+    for i, t in enumerate(np.arange(0., 1., delta_t)):
+        sub_stream = value_stream.query(rp.RealInterval(0., t))
+
+        sig = sub_stream.terminal_value()
+        assert_array_almost_equal(sig, values[i][1])
