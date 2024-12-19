@@ -31,6 +31,7 @@
 #include <roughpy/algebra/context_fwd.h>
 
 #include <roughpy/core/macros.h>
+#include "roughpy/platform/alloc.h"
 #include <roughpy/scalars/scalar_type.h>
 
 
@@ -47,7 +48,7 @@ namespace dtl {
  * various places. If you define an algebra interface, it should derive
  * from the base AlgebraInterface, which publicly derives from this tag.
  */
-class AlgebraInterfaceBase
+class AlgebraInterfaceBase : public mem::SmallObjectBase
 {
 protected:
     context_pointer p_ctx;
