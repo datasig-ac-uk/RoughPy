@@ -418,7 +418,7 @@ static PyObject* stvs_from_values(PyObject* cls,
         if (!path_md.support) {
             path_md.support = intervals::RealInterval(
                 data.front().first,
-                data.back().first + ldexp(1., *path_md.resolution));
+                data.back().first + ldexp(1., -*path_md.resolution));
         }
 
         /*
