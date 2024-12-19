@@ -388,15 +388,20 @@ static PyObject* stvs_from_values(PyObject* cls,
         increment_data.reserve(data.size() - 1);
         param_t min_difference = std::numeric_limits<param_t>::infinity();
 
-        auto previous = ctx->tensor_to_lie(initial_value.log());
+        // auto previous = ctx->tensor_to_lie(initial_value.log());
+        FreeTensor previous = initial_value;
         for (Py_ssize_t i = 1; i < size; ++i) {
             param_t param_diff = data[i].first - data[i - 1].first;
             if (param_diff < min_difference) { min_difference = param_diff; }
 
-            auto current = ctx->tensor_to_lie(data[i].second.log());
+            auto increment = previous.antipode().mul(data[i].second);
+            increment_data.emplace_back(data[i].first, ctx->tensor_to_lie(increment.log()));
+            previous = data[i].second;
 
-            increment_data.emplace_back(data[i].first, current.sub(previous));
-            previous = std::move(current);
+            // auto current = ctx->tensor_to_lie(data[i].second.log());
+
+            // increment_data.emplace_back(data[i].first, current.sub(previous));
+            // previous = std::move(current);
         }
 
         /*
@@ -418,7 +423,7 @@ static PyObject* stvs_from_values(PyObject* cls,
         if (!path_md.support) {
             path_md.support = intervals::RealInterval(
                 data.front().first,
-                data.back().first + ldexp(1., *path_md.resolution));
+                data.back().first + ldexp(1., -*path_md.resolution));
         }
 
         /*
