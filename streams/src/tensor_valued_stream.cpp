@@ -72,7 +72,7 @@ TensorValuedStream::StreamValue TensorValuedStream::value_at(
 
     auto sig = p_increment_stream->signature(interval,
                                              *m_initial_value.context());
-    return m_initial_value.context()->convert(sig.mul(m_initial_value),
+    return m_initial_value.context()->convert(m_initial_value.mul(sig),
                                               m_initial_value.storage_type());
 }
 
@@ -85,7 +85,7 @@ TensorValuedStream::StreamValue TensorValuedStream::terminal_value() const
 {
     auto sig = p_increment_stream->signature(m_domain,
                                              *m_initial_value.context());
-    return m_initial_value.context()->convert(sig.mul(m_initial_value),
+    return m_initial_value.context()->convert(m_initial_value.mul(sig),
                                               m_initial_value.storage_type());
 }
 
