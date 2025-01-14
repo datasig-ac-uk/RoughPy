@@ -30,12 +30,14 @@
 
 #include <roughpy/intervals/partition.h>
 #include <roughpy/streams/piecewise_abelian_stream.h>
+#include "roughpy/streams/restriction_stream.h"
 
 using namespace rpy;
 using namespace rpy::streams;
 
 bool Stream::check_support_and_trim(Stream::RealInterval& domain) const noexcept
 {
+    const auto& m_support = support();
     if (domain.sup() < m_support.inf() || domain.inf() > m_support.sup()) {
         // The intervals don't intersect, return false
         return false;
@@ -56,53 +58,27 @@ Stream::refine_interval(
     const Interval& original_query
 ) const
 {
-    auto query = schema().adjust_interval(original_query);
+    RealInterval query(original_query);
 
     if (!check_support_and_trim(query)) { return {}; }
     auto length = query.sup() - query.inf();
     if (length == 0.0) { return {}; }
 
     auto resolution = std::max(
-            metadata().default_resolution,
+            metadata().resolution(),
             param_to_resolution(length) + 2
             );
 
     return {{query, resolution}};
 }
 
-void Stream::restrict_to(const Stream::Interval& interval)
-{
-    if (p_impl) {
-        m_support = p_impl->schema().adjust_interval(interval);
-    } else {
-        m_support = RealInterval(interval);
-    }
-}
 
 Stream Stream::restrict(const Stream::Interval& interval) const
 {
     RealInterval support(interval);
-    if (p_impl) { support = p_impl->schema().adjust_interval(interval); }
-
-    return {p_impl, support};
+    return Stream(std::make_shared<RestrictionStream>(p_impl, support));
 }
 
-const algebra::Context& rpy::streams::Stream::get_default_context() const
-{
-    RPY_CHECK(p_impl);
-    return *p_impl->metadata().default_context;
-}
-const rpy::streams::StreamMetadata& rpy::streams::Stream::metadata() const
-{
-    RPY_CHECK(p_impl);
-    return p_impl->metadata();
-}
-
-const StreamSchema& Stream::schema() const
-{
-    RPY_CHECK(p_impl);
-    return p_impl->schema();
-}
 
 inline Stream::Lie Stream::log_signature_impl(
         const Stream::Interval& interval,
@@ -119,7 +95,7 @@ inline Stream::Lie Stream::log_signature_impl(
         if (results.back().is_zero()) { results.pop_back(); }
     }
 
-    return ctx.cbh(results, md.cached_vector_type);
+    return ctx.cbh(results, algebra::VectorType::Dense);
 }
 
 Stream::Lie Stream::log_signature(
@@ -140,7 +116,7 @@ rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
 ) const
 {
     const auto& md = metadata();
-    return log_signature(interval, resolution, *md.default_context);
+    return log_signature(interval, resolution, *md.default_context());
 }
 rpy::streams::Stream::Lie rpy::streams::Stream::log_signature(
         const rpy::streams::Stream::Interval& interval,
@@ -182,7 +158,7 @@ Stream::FreeTensor Stream::signature_derivative(
         info.push_back({log_signature(pert.first, ctx), pert.second}
         );
     }
-    return ctx.sig_derivative(info, md.cached_vector_type);
+    return ctx.sig_derivative(info, algebra::VectorType::Dense);
 }
 
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
@@ -196,7 +172,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
             log_signature(domain, ctx),
             perturbation};
 
-    return ctx.sig_derivative({std::move(info)}, md.cached_vector_type);
+    return ctx.sig_derivative({std::move(info)}, algebra::VectorType::Dense);
 }
 
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
@@ -210,7 +186,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
     algebra::DerivativeComputeInfo info{
             log_signature(domain, resolution, ctx),
             perturbation};
-    return ctx.sig_derivative({std::move(info)}, md.cached_vector_type);
+    return ctx.sig_derivative({std::move(info)}, algebra::VectorType::Dense);
 }
 
 rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
@@ -226,7 +202,7 @@ rpy::streams::Stream::FreeTensor rpy::streams::Stream::signature_derivative(
         info.push_back({log_signature(pert.first, resolution, ctx), pert.second}
         );
     }
-    return ctx.sig_derivative(info, md.cached_vector_type);
+    return ctx.sig_derivative(info, algebra::VectorType::Dense);
 }
 
 Stream Stream::simplify(
@@ -252,12 +228,11 @@ Stream Stream::simplify(
 
     return Stream(PiecewiseAbelianStream(
             std::move(pieces),
-            std::move(new_md),
-            p_impl->get_schema()
+            std::move(new_md)
     ));
 }
 
-#define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
-#define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::Stream
-
-#include <roughpy/platform/serialization_instantiations.inl>
+// #define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
+// #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::Stream
+//
+// #include <roughpy/platform/serialization_instantiations.inl>
