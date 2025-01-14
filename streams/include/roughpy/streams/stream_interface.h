@@ -5,6 +5,7 @@
 #include "roughpy/core/types.h"
 #include "roughpy/core/macros.h"
 #include "roughpy/core/debug_assertion.h"
+#include "roughpy/core/check.h"
 #include "roughpy/core/smart_ptr.h"
 
 #include "roughpy/platform/alloc.h"
@@ -19,7 +20,6 @@
 
 #include "stream_metadata.h"
 #include "roughpy_streams_export.h"
-
 
 namespace rpy {
 namespace streams {
@@ -56,13 +56,18 @@ public:
 
     // Access to stream information
     RPY_NO_DISCARD
-    virtual const intervals::RealInterval&
-    domain() const noexcept = 0;
-
-    RPY_NO_DISCARD
     virtual const std::shared_ptr<StreamMetadata>&
     metadata() const noexcept = 0;
 
+    RPY_NO_DISCARD
+    const intervals::RealInterval&
+    domain() const noexcept
+    {
+        return metadata()->domain();
+    }
+
+    RPY_NO_DISCARD
+    virtual const intervals::RealInterval& support() const noexcept;
 
     // Signature and log-signature computations
     RPY_NO_DISCARD
@@ -102,6 +107,7 @@ public:
 protected:
     // helpers
     RPY_NO_DISCARD FreeTensor unit_tensor() const;
+    RPY_NO_DISCARD Lie zero_lie() const;
 
     RPY_SERIAL_SERIALIZE_FN() {}
 };
