@@ -20,15 +20,25 @@ class ROUGHPY_STREAMS_EXPORT RestrictionStream : public StreamInterface {
 
 
 public:
-    RPY_NO_DISCARD bool
-    empty(const intervals::Interval& interval) const noexcept override;
 
-protected:
-    RPY_NO_DISCARD algebra::Lie log_signature_impl(
-        const intervals::Interval& interval,
-        const algebra::Context& ctx) const override;
+    RestrictionStream(std::shared_ptr<const StreamInterface> stream, intervals::RealInterval domain)
+        : m_domain(std::move(domain)), p_stream(std::move(stream))
+    {}
 
 
+    RPY_NO_DISCARD const std::shared_ptr<StreamMetadata>&
+    metadata() const noexcept override;
+
+    RPY_NO_DISCARD const intervals::RealInterval&
+    support() const noexcept override;
+
+    RPY_NO_DISCARD Lie log_signature(const DyadicInterval& interval,
+        resolution_t resolution,
+        const Context& context) const override;
+
+    RPY_NO_DISCARD Lie log_signature(const Interval& interval,
+        resolution_t resolution,
+        const Context& context) const override;
 };
 
 

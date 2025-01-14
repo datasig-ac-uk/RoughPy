@@ -10,22 +10,36 @@
 using namespace rpy;
 using namespace rpy::streams;
 
-
-
-bool rpy::streams::RestrictionStream::empty(
-    const intervals::Interval& interval) const noexcept
+const std::shared_ptr<StreamMetadata>& RestrictionStream::
+metadata() const noexcept
 {
-    if (!m_domain.intersects_with(interval)) { return true; }
-    const auto query = intersection(m_domain, interval);
-    return p_stream->empty(query);
+    return p_stream->metadata();
 }
 
-rpy::algebra::Lie rpy::streams::RestrictionStream::log_signature_impl(
-    const intervals::Interval& interval,
-    const algebra::Context& ctx) const
+const intervals::RealInterval& RestrictionStream::support() const noexcept
 {
-    RPY_CHECK(m_domain.intersects_with(interval));
+    return m_domain;
+}
 
-    const auto query = intersection(m_domain, interval);
-    return p_stream->log_signature(query, ctx);
+StreamInterface::Lie RestrictionStream::log_signature(
+    const DyadicInterval& interval,
+    resolution_t resolution,
+    const Context& context) const
+{
+    auto query = intersection(interval, m_domain);
+    if (query.inf() == query.sup()) {
+        return this->zero_lie();
+    }
+    return p_stream->log_signature(query, resolution, context);
+}
+
+StreamInterface::Lie RestrictionStream::log_signature(const Interval& interval,
+    resolution_t resolution,
+    const Context& context) const
+{
+    auto query = intersection(interval, m_domain);
+    if (query.inf() == query.sup()) {
+        return this->zero_lie();
+    }
+    return p_stream->log_signature(query, resolution, context);
 }
