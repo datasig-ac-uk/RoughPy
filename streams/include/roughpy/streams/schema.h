@@ -43,10 +43,8 @@
 #include <roughpy/platform/serialization.h>
 #include <roughpy/scalars/key_scalar_array.h>
 
-#include <boost/container/flat_map.hpp>
 
 #include <functional>
-#include <variant>
 #include <vector>
 
 #include "channels.h"
