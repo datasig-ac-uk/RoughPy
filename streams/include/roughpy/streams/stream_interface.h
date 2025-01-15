@@ -60,7 +60,7 @@ public:
     metadata() const noexcept = 0;
 
     RPY_NO_DISCARD
-    const intervals::RealInterval&
+    virtual const intervals::RealInterval&
     domain() const noexcept
     {
         return metadata()->domain();
