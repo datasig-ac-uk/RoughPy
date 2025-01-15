@@ -63,6 +63,7 @@ class ROUGHPY_STREAMS_EXPORT DyadicCachingLayer : public StreamInterface
     mutable std::map<intervals::DyadicInterval, algebra::Lie> m_cache;
     mutable std::recursive_mutex m_compute_lock;
 
+    std::shared_ptr<const StreamMetadata> p_metadata;
     uuids::uuid m_cache_id;
 
 public:
@@ -81,7 +82,6 @@ public:
 protected:
 
     virtual Lie log_signature_impl(const DyadicInterval& interval,
-                           resolution_t resolution,
                            const Context& ctx) const = 0;
 
 public:

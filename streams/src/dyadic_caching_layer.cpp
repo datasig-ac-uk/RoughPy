@@ -88,11 +88,11 @@ DyadicCachingLayer::log_signature(const intervals::DyadicInterval& interval,
                                   resolution_t resolution,
                                   const algebra::Context& ctx) const
 {
-    if (empty(interval)) {
-        return ctx.zero_lie(DyadicCachingLayer::metadata().cached_vector_type);
+    if (!interval.intersects_with(support())) {
+        return ctx.zero_lie(algebra::VectorType::Dense);
     }
 
-    const auto stream_resolution = metadata().default_resolution;
+    const auto stream_resolution = p_metadata->resolution();
 
     if (interval.power() == stream_resolution) {
         std::lock_guard<std::recursive_mutex> access(m_compute_lock);
@@ -111,7 +111,8 @@ DyadicCachingLayer::log_signature(const intervals::DyadicInterval& interval,
         if (rational_equals(tmp, interval)) {
             return log_signature(tmp, stream_resolution, ctx);
         }
-        return algebra::Lie();
+
+        return zero_lie();
     }
 
     intervals::DyadicInterval lhs_itvl(interval);
@@ -126,7 +127,7 @@ DyadicCachingLayer::log_signature(const intervals::DyadicInterval& interval,
     if (rhs.is_zero()) { return lhs; }
 
     return ctx.cbh({lhs, rhs},
-                   DyadicCachingLayer::metadata().cached_vector_type);
+                   algebra::VectorType::Dense);
 }
 algebra::Lie
 DyadicCachingLayer::log_signature(const intervals::Interval& domain,
@@ -136,8 +137,10 @@ DyadicCachingLayer::log_signature(const intervals::Interval& domain,
     // For now, if the ctx depth is not the same as md depth just do the
     // calculation without caching be smarter about this in the future.
     const auto& md = DyadicCachingLayer::metadata();
-    RPY_CHECK(ctx.width() == md.width);
-    if (ctx.depth() != md.default_context->depth()) {
+    const auto& stream_ctx = *md->default_context();
+    RPY_CHECK(ctx.width() == stream_ctx.width());
+    if (ctx.depth() != stream_ctx.depth()) {
+
         return StreamInterface::log_signature(domain, resolution, ctx);
     }
 
@@ -150,20 +153,10 @@ DyadicCachingLayer::log_signature(const intervals::Interval& domain,
         if (!lsig.is_zero()) { lies.push_back(lsig); }
     }
 
-    return ctx.cbh(lies, DyadicCachingLayer::metadata().cached_vector_type);
+    return ctx.cbh(lies, algebra::VectorType::Dense);
 }
-algebra::Lie
-DyadicCachingLayer::log_signature(const intervals::Interval& interval,
-                                  const algebra::Context& ctx) const
-{
-    return log_signature(interval, metadata().default_resolution, ctx);
-}
-algebra::FreeTensor
-DyadicCachingLayer::signature(const intervals::Interval& interval,
-                              const algebra::Context& ctx) const
-{
-    return signature(interval, metadata().default_resolution, ctx);
-}
+
+
 
 void DyadicCachingLayer::load_cache() const {
     std::lock_guard<std::recursive_mutex> access(m_compute_lock);
@@ -202,19 +195,6 @@ void DyadicCachingLayer::dump_cache() const {
 
 
 
-RPY_SERIAL_LOAD_FN_IMPL(DyadicCachingLayer) {
-    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-    string tmp;
-    RPY_SERIAL_SERIALIZE_NVP("cache_id", tmp);
-    m_cache_id = uuids::string_generator()(tmp);
-    load_cache();
-}
-
-RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer) {
-    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-    RPY_SERIAL_SERIALIZE_NVP("cache_id", to_string(m_cache_id));
-    dump_cache();
-}
 
 #define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::DyadicCachingLayer
