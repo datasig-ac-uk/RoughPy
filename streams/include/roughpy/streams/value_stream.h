@@ -38,8 +38,6 @@ public:
 
     using StreamInterface::StreamInterface;
 
-    virtual const intervals::RealInterval& domain() const noexcept = 0;
-
     RPY_NO_DISCARD
     virtual std::shared_ptr<const ValueStream> query(
         const intervals::Interval& interval) const = 0;
