@@ -49,7 +49,7 @@ public:
     using LiePiece = std::pair<intervals::RealInterval, algebra::Lie>;
 
 private:
-    std::shared_ptr<StreamMetadata> p_metadata;
+    std::shared_ptr<const StreamMetadata> p_metadata;
     std::vector<LiePiece> m_data;
 
     RPY_NO_DISCARD
@@ -75,12 +75,9 @@ public:
                            std::shared_ptr<StreamMetadata> md);
 
 
-    RPY_NO_DISCARD const std::shared_ptr<StreamMetadata>&
+    RPY_NO_DISCARD std::shared_ptr<const StreamMetadata>
     metadata() const noexcept override;
 
-
-    RPY_NO_DISCARD const intervals::RealInterval&
-    support() const noexcept override;
 
     RPY_NO_DISCARD Lie log_signature(const DyadicInterval& interval,
                                      resolution_t resolution,
@@ -93,11 +90,7 @@ public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-#ifdef RPY_COMPILING_STREAMS
-RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(PiecewiseAbelianStream)
-#else
-RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(PiecewiseAbelianStream)
-#endif
+
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(PiecewiseAbelianStream)
 {

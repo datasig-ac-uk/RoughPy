@@ -138,7 +138,7 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(
 
 
 
-const std::shared_ptr<StreamMetadata>& PiecewiseAbelianStream::
+std::shared_ptr<const StreamMetadata> PiecewiseAbelianStream::
 metadata() const noexcept
 {
     return p_metadata;
@@ -177,6 +177,22 @@ Lie PiecewiseAbelianStream::log_signature(const DyadicInterval& interval,
     }
 
     return context.cbh(lies, algebra::VectorType::Dense);
+}
+
+Lie PiecewiseAbelianStream::log_signature(const Interval& interval,
+    resolution_t resolution,
+    const Context& context) const
+{
+    auto partition = intervals::to_dyadic_intervals(interval, resolution);
+
+    std::vector<Lie> logsigs;
+    logsigs.reserve(partition.size());
+
+    for (const auto& itvl : partition) {
+        logsigs.push_back(log_signature(itvl, resolution, context));
+    }
+
+    return context.cbh(logsigs, algebra::VectorType::Dense);
 }
 
 
