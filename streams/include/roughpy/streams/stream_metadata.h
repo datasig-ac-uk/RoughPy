@@ -59,30 +59,43 @@ public:
           p_default_context(std::move(context)), m_resolution(resolution),
           m_interval_type(interval_type) {}
 
+    RPY_NO_DISCARD
     const intervals::RealInterval& domain() const noexcept { return m_domain; }
 
+    RPY_NO_DISCARD
     span<const string> channel_names() const noexcept
     {
         return {m_channel_names.data(), m_channel_names.size()};
     }
 
+    RPY_NO_DISCARD
+    deg_t stream_dimension() const noexcept
+    {
+        return static_cast<deg_t>(m_channel_names.size());
+    }
+
+    RPY_NO_DISCARD
     const algebra::context_pointer& default_context() const noexcept
     {
         return p_default_context;
     }
 
+    RPY_NO_DISCARD
     const scalars::ScalarType* scalar_type() const noexcept
     {
         return p_default_context->ctype();
     }
 
+    RPY_NO_DISCARD
     deg_t resolution() const noexcept { return m_resolution; }
 
+    RPY_NO_DISCARD
     intervals::IntervalType interval_type() const noexcept
     {
         return m_interval_type;
     }
 
+    RPY_NO_DISCARD
     static StreamMetadataBuilder builder(
         const StreamMetadata* base = nullptr) noexcept;
 
