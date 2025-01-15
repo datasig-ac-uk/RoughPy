@@ -18,8 +18,6 @@ namespace streams {
 class StreamMetadataBuilder;
 
 
-
-
 RPY_NO_DISCARD
 inline resolution_t param_to_resolution(param_t arg) noexcept
 {
@@ -46,18 +44,16 @@ class StreamMetadata
 
     friend StreamMetadataBuilder;
 
-
-
 public:
-
     StreamMetadata() = default;
 
 
-    StreamMetadata( intervals::RealInterval domain,
-        std::vector<string> channels,
-        algebra::context_pointer context,
-        deg_t resolution,
-        intervals::IntervalType interval_type = intervals::IntervalType::Clopen
+    StreamMetadata(intervals::RealInterval domain,
+                   std::vector<string> channels,
+                   algebra::context_pointer context,
+                   deg_t resolution,
+                   intervals::IntervalType interval_type =
+                           intervals::IntervalType::Clopen
     )
         : m_domain(std::move(domain)), m_channel_names(std::move(channels)),
           p_default_context(std::move(context)), m_resolution(resolution),
@@ -87,10 +83,10 @@ public:
         return m_interval_type;
     }
 
-    static StreamMetadataBuilder build(std::shared_ptr<StreamMetadata> base=nullptr) noexcept;
+    static StreamMetadataBuilder builder(
+        const StreamMetadata* base = nullptr) noexcept;
 
 };
-
 
 
 class StreamMetadataBuilder
@@ -99,11 +95,8 @@ class StreamMetadataBuilder
     const scalars::ScalarType* p_ctype = nullptr;
     deg_t m_default_depth = 2;
 
-
 public:
-
-
-    explicit StreamMetadataBuilder(std::shared_ptr<StreamMetadata> existing=nullptr);
+    explicit StreamMetadataBuilder(const StreamMetadata* existing = nullptr);
 
 
     StreamMetadataBuilder& add_channel(string channel_name);
@@ -113,25 +106,37 @@ public:
         p_metadata->m_domain = std::move(domain);
         return *this;
     }
-    StreamMetadataBuilder& set_resolution_from_increment_min(param_t min_increment)
+
+    StreamMetadataBuilder& set_resolution_from_increment_min(
+        param_t min_increment)
     {
         RPY_CHECK_GT(min_increment, 0.0);
         resolution_t resolution = param_to_resolution(min_increment);
         return set_resolution(resolution);
     }
+
     StreamMetadataBuilder& set_resolution(resolution_t resolution) noexcept
     {
         p_metadata->m_resolution = resolution;
         return *this;
     }
+
     StreamMetadataBuilder& set_depth(deg_t depth) noexcept
     {
         m_default_depth = depth;
         return *this;
     }
-    StreamMetadataBuilder& set_scalar_type(const scalars::ScalarType* ctype) noexcept
+
+    StreamMetadataBuilder& set_scalar_type(
+        const scalars::ScalarType* ctype) noexcept
     {
         p_ctype = ctype;
+        return *this;
+    }
+
+    StreamMetadataBuilder& set_context(algebra::context_pointer ctx) noexcept
+    {
+        p_metadata->p_default_context = std::move(ctx);
         return *this;
     }
 
@@ -139,11 +144,8 @@ public:
 };
 
 
-inline StreamMetadataBuilder StreamMetadata::build(
-    std::shared_ptr<StreamMetadata> base) noexcept
-{
-    return StreamMetadataBuilder(std::move(base));
-}
+inline StreamMetadataBuilder StreamMetadata::builder(
+    const StreamMetadata* base) noexcept { return StreamMetadataBuilder(base); }
 
 }// streams
 }// rpy

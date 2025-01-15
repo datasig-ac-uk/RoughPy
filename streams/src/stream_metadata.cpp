@@ -9,10 +9,10 @@ using namespace rpy::streams;
 
 
 StreamMetadataBuilder::StreamMetadataBuilder(
-    std::shared_ptr<StreamMetadata> existing)
-    : p_metadata(std::move(existing))
+    const StreamMetadata* existing)
 {
-    if (!existing) { existing = std::make_shared<StreamMetadata>(); } else {
+    if (!existing) { p_metadata = std::make_shared<StreamMetadata>(); } else {
+        p_metadata = std::make_shared<StreamMetadata>(*existing);
         auto ctx = existing->p_default_context;
         RPY_CHECK(ctx);
 
@@ -32,18 +32,15 @@ std::shared_ptr<StreamMetadata> StreamMetadataBuilder::build()
 {
     RPY_CHECK(!p_metadata->m_channel_names.empty());
 
-    const auto stream_dimension = static_cast<deg_t>(p_metadata->m_channel_names.size());
+    const auto stream_dimension = static_cast<deg_t>(p_metadata->m_channel_names
+        .size());
 
-    if (!p_ctype) {
-        p_ctype = *scalars::ScalarType::of<double>();
-    }
+    if (!p_ctype) { p_ctype = *scalars::ScalarType::of<double>(); }
 
     p_metadata->p_default_context = algebra::get_context(
         stream_dimension,
         m_default_depth,
         p_ctype);
-
-
 
     return std::move(p_metadata);
 }
