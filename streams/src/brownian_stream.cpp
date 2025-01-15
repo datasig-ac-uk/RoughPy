@@ -43,11 +43,11 @@ algebra::Lie BrownianStream::gaussian_increment(
         param_t length
 ) const
 {
-    const auto& md = metadata();
+    const auto& md = *metadata();
     scalars::KeyScalarArray incr(p_generator->normal_random(
             scalars::Scalar(0.),
             scalars::Scalar(length),
-            md.width
+            md.()
     ));
     return ctx.construct_lie({std::move(incr), md.cached_vector_type});
 }

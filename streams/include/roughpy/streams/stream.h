@@ -108,13 +108,6 @@ public:
         return p_impl;
     }
 
-private:
-    RPY_NO_DISCARD Lie log_signature_impl(
-        const Interval& interval,
-        resolution_t resolution,
-        const Context& ctx
-    ) const;
-
 public:
     RPY_NO_DISCARD Lie log_signature(
         const Interval& interval,
@@ -127,24 +120,29 @@ public:
 
     RPY_NO_DISCARD Lie log_signature() const
     {
-        return log_signature(support());
+        const auto& md = metadata();
+        return log_signature(support(), md.resolution(), *md.default_context());
     }
 
     RPY_NO_DISCARD Lie log_signature(const Context& ctx) const
     {
-        return log_signature(support(), ctx);
+        return log_signature(support(), metadata().resolution(), ctx);
     }
 
     RPY_NO_DISCARD Lie log_signature(const Interval& interval) const
     {
-        return p_impl->log_signature(interval);
+        const auto& md = metadata();
+        return p_impl->log_signature(interval,
+                                     md.resolution(),
+                                     *md.default_context());
     }
 
     RPY_NO_DISCARD Lie log_signature(resolution_t resolution)
     {
         return log_signature(
             support(),
-            resolution
+            resolution,
+            *metadata().default_context()
         );
     }
 
@@ -177,7 +175,9 @@ public:
 
     RPY_NO_DISCARD FreeTensor signature(resolution_t resolution)
     {
-        return p_impl->signature(support(), resolution, *metadata().default_context());
+        return p_impl->signature(support(),
+                                 resolution,
+                                 *metadata().default_context());
     }
 
     RPY_NO_DISCARD FreeTensor
@@ -189,7 +189,9 @@ public:
     RPY_NO_DISCARD FreeTensor
     signature(const Interval& interval, resolution_t resolution) const
     {
-        return p_impl->signature(interval, resolution, *metadata().default_context());
+        return p_impl->signature(interval,
+                                 resolution,
+                                 *metadata().default_context());
     }
 
     RPY_NO_DISCARD FreeTensor signature(
@@ -239,7 +241,8 @@ public:
         const perturbation_list_t& perturbations
     ) const
     {
-        return signature_derivative(perturbations, *metadata().default_context());
+        return signature_derivative(perturbations,
+                                    *metadata().default_context());
     }
 
     RPY_NO_DISCARD FreeTensor signature_derivative(

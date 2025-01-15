@@ -80,23 +80,7 @@ Stream Stream::restrict(const Stream::Interval& interval) const
 }
 
 
-inline Stream::Lie Stream::log_signature_impl(
-        const Stream::Interval& interval,
-        resolution_t resolution,
-        const Stream::Context& ctx
-) const
-{
-    const auto& md = metadata();
-    auto dyadic_queries = intervals::to_dyadic_intervals(interval, resolution);
-    std::vector<Lie> results;
-    results.reserve(dyadic_queries.size());
-    for (const auto& di : dyadic_queries) {
-        results.push_back(p_impl->log_signature(di, resolution, ctx));
-        if (results.back().is_zero()) { results.pop_back(); }
-    }
 
-    return ctx.cbh(results, algebra::VectorType::Dense);
-}
 
 Stream::Lie Stream::log_signature(
         const Stream::Interval& interval,

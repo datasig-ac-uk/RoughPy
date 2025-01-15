@@ -50,39 +50,24 @@ public:
 
 private:
     boost::container::flat_map<param_t, Lie> m_data;
+    std::shared_ptr<const StreamMetadata> p_metadata;
 
 public:
     using DyadicCachingLayer::DyadicCachingLayer;
 
-    LieIncrementStream(
-            const scalars::KeyScalarArray& buffer, Slice<param_t> indices,
-            StreamMetadata md, std::shared_ptr<StreamSchema> schema
-    );
+    explicit LieIncrementStream(std::vector<pair<param_t, Lie> >&& data,
+                                std::shared_ptr<const StreamMetadata> md);
 
-    explicit LieIncrementStream(
-            const scalars::KeyScalarStream& ks_stream, Slice<param_t> indices,
-            StreamMetadata md, std::shared_ptr<StreamSchema> schema
-            );
 
-    explicit LieIncrementStream(std::vector<pair<param_t, Lie>>&& data, StreamMetadata md, std::shared_ptr<StreamSchema> schema);
-
-    RPY_NO_DISCARD bool
-    empty(const intervals::Interval& interval) const noexcept override;
 
 protected:
-    RPY_NO_DISCARD algebra::Lie log_signature_impl(
-            const intervals::Interval& interval, const algebra::Context& ctx
-    ) const override;
+    Lie log_signature_impl(const DyadicInterval& interval,
+        resolution_t resolution,
+        const Context& ctx) const override;
 
-public:
     RPY_SERIAL_SERIALIZE_FN();
 };
 
-#ifdef RPY_COMPILING_STREAMS
-RPY_SERIAL_EXTERN_SERIALIZE_CLS_BUILD(LieIncrementStream)
-#else
-RPY_SERIAL_EXTERN_SERIALIZE_CLS_IMP(LieIncrementStream)
-#endif
 
 RPY_SERIAL_SERIALIZE_FN_IMPL(LieIncrementStream)
 {

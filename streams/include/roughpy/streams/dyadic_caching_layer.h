@@ -66,9 +66,6 @@ class ROUGHPY_STREAMS_EXPORT DyadicCachingLayer : public StreamInterface
     uuids::uuid m_cache_id;
 
 public:
-    using StreamInterface::StreamInterface;
-
-
     DyadicCachingLayer();
 
 
@@ -81,10 +78,13 @@ public:
     using StreamInterface::log_signature;
     using StreamInterface::signature;
 
-    RPY_NO_DISCARD
-    algebra::Lie log_signature(const intervals::Interval& interval,
-                               const algebra::Context& ctx) const override;
+protected:
 
+    virtual Lie log_signature_impl(const DyadicInterval& interval,
+                           resolution_t resolution,
+                           const Context& ctx) const = 0;
+
+public:
     RPY_NO_DISCARD
     algebra::Lie log_signature(const intervals::DyadicInterval& interval,
                                resolution_t resolution,
@@ -94,10 +94,6 @@ public:
     algebra::Lie log_signature(const intervals::Interval& domain,
                                resolution_t resolution,
                                const algebra::Context& ctx) const override;
-
-    RPY_NO_DISCARD
-    algebra::FreeTensor signature(const intervals::Interval& interval,
-                                  const algebra::Context& ctx) const override;
 
 
     const uuids::uuid& cache_id() const noexcept { return m_cache_id; }
@@ -112,18 +108,26 @@ protected:
 
 };
 
-#ifdef RPY_COMPILING_STREAMS
-RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(DyadicCachingLayer)
-RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(DyadicCachingLayer)
-#else
-RPY_SERIAL_EXTERN_LOAD_CLS_IMP(DyadicCachingLayer)
-RPY_SERIAL_EXTERN_SAVE_CLS_IMP(DyadicCachingLayer)
-#endif
+
+RPY_SERIAL_LOAD_FN_IMPL(DyadicCachingLayer)
+{
+    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
+    RPY_SERIAL_SERIALIZE_NVP("cache_id", m_cache_id);
+    load_cache();
+}
+
+RPY_SERIAL_SAVE_FN_IMPL(DyadicCachingLayer)
+{
+    RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
+    RPY_SERIAL_SERIALIZE_NVP("cache_id", m_cache_id);
+    dump_cache();
+}
+
+
 
 }// namespace streams
 }// namespace rpy
 
-RPY_SERIAL_SPECIALIZE_TYPES(::rpy::streams::DyadicCachingLayer,
-                            rpy::serial::specialization::member_load_save)
+
 
 #endif// ROUGHPY_STREAMS_DYADIC_CACHING_LAYER_H_

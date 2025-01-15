@@ -37,6 +37,7 @@ add_library(RoughPy_Streams SHARED
         src/stream_metadata.cpp
         include/roughpy/streams/stream_interface.h
         include/roughpy/streams/stream_metadata.h
+        src/stream_interface.cpp
 )
 
 add_library(RoughPy::Streams ALIAS RoughPy_Streams)

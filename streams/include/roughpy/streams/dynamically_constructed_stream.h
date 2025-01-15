@@ -184,17 +184,11 @@ struct DataIncrementSafe {
 
 }// namespace dtl
 
-#ifdef RPY_COMPILING_STREAMS
-RPY_SERIAL_EXTERN_LOAD_CLS_BUILD(DynamicallyConstructedStream)
-RPY_SERIAL_EXTERN_SAVE_CLS_BUILD(DynamicallyConstructedStream)
-#else
-RPY_SERIAL_EXTERN_LOAD_CLS_IMP(DynamicallyConstructedStream)
-RPY_SERIAL_EXTERN_SAVE_CLS_IMP(DynamicallyConstructedStream)
-#endif
+
 
 RPY_SERIAL_LOAD_FN_IMPL(DynamicallyConstructedStream) {
     RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-    load_cache(archive, *metadata().default_context);
+    load_cache(archive, *metadata().default_context());
 }
 
 RPY_SERIAL_SAVE_FN_IMPL(DynamicallyConstructedStream) {

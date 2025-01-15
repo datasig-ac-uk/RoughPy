@@ -39,6 +39,9 @@
 
 #include <roughpy/algebra/lie.h>
 #include <cereal/types/vector.hpp>
+#include <ctre/atoms.hpp>
+#include <range/v3/view/empty.hpp>
+#include <range/v3/view/empty.hpp>
 
 using namespace rpy;
 using namespace rpy::streams;
@@ -180,7 +183,8 @@ DynamicallyConstructedStream::data_increment
 streams::DynamicallyConstructedStream::update_parent_accuracy(
     DynamicallyConstructedStream::data_increment below) const
 {
-    const auto& md = metadata();
+    const auto& md = *metadata();
+    const auto& ctx = *md.default_context();
     auto parent = below->second.parent();
     const auto dtend = m_data_tree.end();
 
@@ -192,15 +196,15 @@ streams::DynamicallyConstructedStream::update_parent_accuracy(
 
         if (parent->second.accuracy() < accuracy_available) {
             if (below->first.aligned()) {
-                parent->second.lie(md.default_context->cbh(
+                parent->second.lie(ctx.cbh(
                     below->second.lie(),
                     sibling->second.lie(),
-                    md.cached_vector_type));
+                    algebra::VectorType::Dense));
             } else {
-                parent->second.lie(md.default_context->cbh(
+                parent->second.lie(ctx.cbh(
                     sibling->second.lie(),
                     below->second.lie(),
-                    md.cached_vector_type));
+                    algebra::VectorType::Dense));
             }
             parent->second.accuracy(accuracy_available);
             below = parent;
@@ -219,7 +223,8 @@ void streams::DynamicallyConstructedStream::update_parents(
     //        below = top;
     //        top = update_parent_accuracy(below);
     //    }
-    const auto& md = metadata();
+    const auto& md = *metadata();
+    const auto& ctx = *md.default_context();
     auto root = m_data_tree.begin();
 
     while (current != root) {
@@ -232,13 +237,13 @@ void streams::DynamicallyConstructedStream::update_parents(
         if (accuracy_available <= parent->second.accuracy()) { break; }
 
         if (current->first.aligned()) {
-            parent->second.lie(md.default_context->cbh(current->second.lie(),
+            parent->second.lie(ctx.cbh(current->second.lie(),
                 sibling->second.lie(),
-                md.cached_vector_type));
+                algebra::VectorType::Dense));
         } else {
-            parent->second.lie(md.default_context->cbh(sibling->second.lie(),
+            parent->second.lie(ctx.cbh(sibling->second.lie(),
                 current->second.lie(),
-                md.cached_vector_type));
+                algebra::VectorType::Dense));
         }
         parent->second.accuracy(accuracy_available);
         current = parent;
@@ -363,7 +368,9 @@ DynamicallyConstructedStream::log_signature(const intervals::Interval& domain,
 {
     const auto& md = metadata();
 
-    if (empty(domain)) { return ctx.zero_lie(md.cached_vector_type); }
+    if (!domain.intersects_with(support())) {
+        return ctx.zero_lie(algebra::VectorType::Dense);
+    }
 
     auto dyadic_dissection = intervals::to_dyadic_intervals(domain, resolution);
     std::vector<Lie> lies;
@@ -373,7 +380,7 @@ DynamicallyConstructedStream::log_signature(const intervals::Interval& domain,
         lies.push_back(log_signature(itvl, resolution, ctx));
     }
 
-    return ctx.cbh(lies, md.cached_vector_type);
+    return ctx.cbh(lies, algebra::VectorType::Dense);
 }
 
 
