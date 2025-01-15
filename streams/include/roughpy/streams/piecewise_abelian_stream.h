@@ -49,6 +49,7 @@ public:
     using LiePiece = std::pair<intervals::RealInterval, algebra::Lie>;
 
 private:
+    std::shared_ptr<StreamMetadata> p_metadata;
     std::vector<LiePiece> m_data;
 
     RPY_NO_DISCARD
@@ -57,31 +58,38 @@ private:
     {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((interval.sup() - param)
-                               / (interval.sup() - interval.inf()));
+            / (interval.sup() - interval.inf()));
     }
+
     RPY_NO_DISCARD
     static inline scalars::Scalar
     to_multiplier_lower(const intervals::RealInterval& interval, param_t param)
     {
         RPY_DBG_ASSERT(interval.inf() <= param && param <= interval.sup());
         return scalars::Scalar((param - interval.inf())
-                               / (interval.sup() - interval.inf()));
+            / (interval.sup() - interval.inf()));
     }
 
 public:
-    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md);
-    PiecewiseAbelianStream(std::vector<LiePiece>&& arg, StreamMetadata&& md,
-                           std::shared_ptr<StreamSchema> schema);
+    PiecewiseAbelianStream(std::vector<LiePiece>&& arg,
+                           std::shared_ptr<StreamMetadata> md);
 
-    RPY_NO_DISCARD
-    bool empty(const intervals::Interval& interval) const noexcept override;
 
-protected:
-    RPY_NO_DISCARD
-    algebra::Lie log_signature_impl(const intervals::Interval& domain,
-                                    const algebra::Context& ctx) const override;
+    RPY_NO_DISCARD const std::shared_ptr<StreamMetadata>&
+    metadata() const noexcept override;
 
-public:
+
+    RPY_NO_DISCARD const intervals::RealInterval&
+    support() const noexcept override;
+
+    RPY_NO_DISCARD Lie log_signature(const DyadicInterval& interval,
+                                     resolution_t resolution,
+                                     const Context& context) const override;
+
+    RPY_NO_DISCARD Lie log_signature(const Interval& interval,
+                                     resolution_t resolution,
+                                     const Context& context) const override;
+
     RPY_SERIAL_SERIALIZE_FN();
 };
 

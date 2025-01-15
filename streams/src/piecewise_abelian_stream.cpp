@@ -43,9 +43,9 @@ using rpy::intervals::Interval;
 using rpy::intervals::RealInterval;
 
 PiecewiseAbelianStream::PiecewiseAbelianStream(
-        std::vector<LiePiece>&& data, StreamMetadata&& md
+        std::vector<LiePiece>&& data, std::shared_ptr<StreamMetadata> md
 )
-    : StreamInterface(std::move(md)), m_data(std::move(data))
+    : m_data(std::move(data)), p_metadata(std::move(md))
 {
     //    // first sort so we know the inf of each interval are in order
     //    auto sort_fun = [](const LiePiece &a, const LiePiece &b) {
@@ -133,33 +133,25 @@ PiecewiseAbelianStream::PiecewiseAbelianStream(
     //        m_data.push_back(std::move(*it));
     //    }
 
-    const auto& meta = metadata();
-    auto schema = std::make_shared<streams::StreamSchema>();
-    auto& info = schema->insert_lie("");
-    info.set_lie_info(
-            meta.width, meta.default_context->depth(), meta.cached_vector_type
-    );
-    set_schema(std::move(schema));
-}
-PiecewiseAbelianStream::PiecewiseAbelianStream(
-        std::vector<LiePiece>&& arg, StreamMetadata&& md,
-        std::shared_ptr<StreamSchema> schema
-)
-    : StreamInterface(std::move(md), std::move(schema)), m_data(std::move(arg))
-{}
 
-bool PiecewiseAbelianStream::empty(const Interval& interval) const noexcept
-{
-    return StreamInterface::empty(interval);
 }
-algebra::Lie PiecewiseAbelianStream::log_signature_impl(
-        const Interval& domain, const Context& ctx
-) const
+
+
+
+const std::shared_ptr<StreamMetadata>& PiecewiseAbelianStream::
+metadata() const noexcept
+{
+    return p_metadata;
+}
+
+Lie PiecewiseAbelianStream::log_signature(const DyadicInterval& interval,
+    resolution_t resolution,
+    const Context& context) const
 {
     std::vector<algebra::Lie> lies;
     lies.reserve(4);
 
-    auto a = domain.inf(), b = domain.sup();
+    auto a = interval.inf(), b = interval.sup();
     for (const auto& piece : m_data) {
         // data is in order, so if we are already past the end of the request
         // interval, then we are done so break.
@@ -184,9 +176,9 @@ algebra::Lie PiecewiseAbelianStream::log_signature_impl(
         }
     }
 
-    const auto& md = metadata();
-    return ctx.cbh(lies, md.cached_vector_type);
+    return context.cbh(lies, algebra::VectorType::Dense);
 }
+
 
 // #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::PiecewiseAbelianStream
 // #include <roughpy/platform/serialization_instantiations.inl>
