@@ -57,12 +57,12 @@ private:
 public:
     DataIncrement() : m_accuracy(-1), m_lie(), m_sibling(), m_parent() {}
 
-    DataIncrement(Lie&& val, resolution_t accuracy,
+    DataIncrement(Lie&& val,
+                  resolution_t accuracy,
                   data_increment sibling = data_increment(),
                   data_increment parent = data_increment())
         : m_accuracy(accuracy), m_lie(std::move(val)), m_sibling(sibling),
-          m_parent(parent)
-    {}
+          m_parent(parent) {}
 
     void lie(Lie&& new_lie) noexcept { m_lie = std::move(new_lie); }
     RPY_NO_DISCARD
@@ -72,12 +72,14 @@ public:
     {
         m_accuracy = new_accuracy;
     }
+
     RPY_NO_DISCARD
     resolution_t accuracy() const noexcept { return m_accuracy; }
 
     void sibling(data_increment sib) { m_sibling = sib; }
     RPY_NO_DISCARD
     data_increment sibling() const { return m_sibling; }
+
     void parent(data_increment par) { m_parent = par; }
     RPY_NO_DISCARD
     data_increment parent() const { return m_parent; }
@@ -89,7 +91,8 @@ public:
     }
 };
 
-class ROUGHPY_STREAMS_EXPORT DynamicallyConstructedStream : public StreamInterface
+class ROUGHPY_STREAMS_EXPORT
+        DynamicallyConstructedStream : public StreamInterface
 {
 public:
     using DyadicInterval = intervals::DyadicInterval;
@@ -101,6 +104,7 @@ protected:
     using const_data_increment = typename data_tree_type::const_iterator;
 
 private:
+    std::shared_ptr<const StreamMetadata> p_metadata;
     mutable std::recursive_mutex m_lock;
     mutable data_tree_type m_data_tree;
 
@@ -111,7 +115,8 @@ private:
                                               DyadicInterval di) const;
 
     RPY_NO_DISCARD
-    data_increment insert_node(DyadicInterval di, Lie&& value,
+    data_increment insert_node(DyadicInterval di,
+                               Lie&& value,
                                resolution_t accuracy,
                                data_increment hint) const;
 
@@ -125,7 +130,8 @@ private:
 
 protected:
     /// Safely update the given increment with the new values and accuracy
-    void update_increment(data_increment increment, Lie&& new_value,
+    void update_increment(data_increment increment,
+                          Lie&& new_value,
                           resolution_t resolution) const;
 
     /// Safely get the lie value associated with an increment
@@ -133,9 +139,11 @@ protected:
 
     RPY_NO_DISCARD
     virtual Lie make_new_root_increment(DyadicInterval di) const;
+
     RPY_NO_DISCARD
     virtual Lie
     make_neighbour_root_increment(DyadicInterval neighbour_di) const;
+
     RPY_NO_DISCARD
     virtual pair<Lie, Lie>
     compute_child_lie_increments(DyadicInterval left_di,
@@ -147,20 +155,21 @@ public:
 
     DynamicallyConstructedStream(DynamicallyConstructedStream&& other) noexcept
         : StreamInterface(static_cast<StreamInterface&&>(other)), m_lock(),
-          m_data_tree(std::move(other.m_data_tree))
-    {}
+          m_data_tree(std::move(other.m_data_tree)) {}
 
     algebra::Lie log_signature(const intervals::DyadicInterval& interval,
                                resolution_t resolution,
                                const algebra::Context& ctx) const override;
+
     algebra::Lie log_signature(const intervals::Interval& domain,
                                resolution_t resolution,
                                const algebra::Context& ctx) const override;
 
-    RPY_NO_DISCARD algebra::Lie
-    log_signature(const intervals::Interval &interval, const algebra::Context &ctx) const override;
-
 protected:
+    virtual Lie log_signature_impl(const DyadicInterval& di,
+                                   resolution_t resolution,
+                                   const Context& ctx) const = 0;
+
     template <typename Archive>
     void store_cache(Archive& archive) const;
 
@@ -169,12 +178,14 @@ protected:
 
 public:
     RPY_SERIAL_LOAD_FN();
+
     RPY_SERIAL_SAVE_FN();
 };
 
 namespace dtl {
 
-struct DataIncrementSafe {
+struct DataIncrementSafe
+{
     intervals::DyadicInterval interval;
     resolution_t resolution;
     algebra::Lie content;
@@ -182,17 +193,29 @@ struct DataIncrementSafe {
     idimn_t parent_idx = -1;
 };
 
+RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe)
+{
+    RPY_SERIAL_SERIALIZE_NVP("interval", value.interval);
+    RPY_SERIAL_SERIALIZE_NVP("resolution", value.resolution);
+    RPY_SERIAL_SERIALIZE_NVP("content", value.content);
+    RPY_SERIAL_SERIALIZE_NVP("sibling_idx", value.sibling_idx);
+    RPY_SERIAL_SERIALIZE_NVP("parent_idx", value.parent_idx);
+}
+
 }// namespace dtl
 
 
-
-RPY_SERIAL_LOAD_FN_IMPL(DynamicallyConstructedStream) {
+RPY_SERIAL_LOAD_FN_IMPL(DynamicallyConstructedStream)
+{
     RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
-    load_cache(archive, *metadata().default_context());
+    RPY_SERIAL_SERIALIZE_NVP("metadata", p_metadata);
+    load_cache(archive, *p_metadata);
 }
 
-RPY_SERIAL_SAVE_FN_IMPL(DynamicallyConstructedStream) {
+RPY_SERIAL_SAVE_FN_IMPL(DynamicallyConstructedStream)
+{
     RPY_SERIAL_SERIALIZE_BASE(StreamInterface);
+    RPY_SERIAL_SERIALIZE_NVP("metadata", p_metadata);
     store_cache(archive);
 }
 
@@ -207,7 +230,7 @@ void DynamicallyConstructedStream::store_cache(Archive& archive) const
     dimn_t index = 0;
     for (const auto& item : m_data_tree) {
         linear_data.push_back(
-                {item.first, item.second.accuracy(), item.second.lie()});
+            {item.first, item.second.accuracy(), item.second.lie()});
         indices[item.first] = index++;
     }
 
@@ -225,6 +248,7 @@ void DynamicallyConstructedStream::store_cache(Archive& archive) const
 
     RPY_SERIAL_SERIALIZE_NVP("cache_data", linear_data);
 }
+
 template <typename Archive>
 void DynamicallyConstructedStream::load_cache(Archive& archive,
                                               const algebra::Context& ctx)
@@ -241,15 +265,13 @@ void DynamicallyConstructedStream::load_cache(Archive& archive,
     for (auto& item : linear_data) {
         auto& entry = m_data_tree[item.interval];
         if (item.parent_idx != -1) {
-            entry.parent(m_data_tree.find(linear_data[item.parent_idx].interval));
-        } else {
-            entry.parent(m_data_tree.end());
-        }
+            entry.parent(
+                m_data_tree.find(linear_data[item.parent_idx].interval));
+        } else { entry.parent(m_data_tree.end()); }
         if (item.sibling_idx != -1) {
-            entry.sibling(m_data_tree.find(linear_data[item.sibling_idx].interval));
-        } else {
-            entry.sibling(m_data_tree.end());
-        }
+            entry.sibling(
+                m_data_tree.find(linear_data[item.sibling_idx].interval));
+        } else { entry.sibling(m_data_tree.end()); }
     }
 }
 
@@ -258,6 +280,7 @@ void DynamicallyConstructedStream::load_cache(Archive& archive,
 
 RPY_SERIAL_SPECIALIZE_TYPES(rpy::streams::DynamicallyConstructedStream,
                             rpy::serial::specialization::member_load_save)
+
 RPY_SERIAL_CLASS_VERSION(rpy::streams::dtl::DataIncrementSafe, 0);
 
 

@@ -77,7 +77,8 @@ void streams::DynamicallyConstructedStream::refine_accuracy(
     //    }
     auto [leaf_above, end] = m_data_tree.equal_range(increment->first);
 
-    for (; leaf_above != end && leaf_above->first.power() < desired; ++leaf_above) {
+    for (; leaf_above != end && leaf_above->first.power() < desired; ++
+           leaf_above) {
         if (!DataIncrement::is_leaf(leaf_above)) { continue; }
 
         DyadicInterval refined_inc(increment->first);
@@ -89,7 +90,8 @@ void streams::DynamicallyConstructedStream::refine_accuracy(
         for (; refined_inc < refined_end; ++(++refined_inc)) {
             while (leaf_above->first.contains_dyadic(refined_inc)
                 && !dyadic_equals(leaf_above->first, refined_inc)) {
-                leaf_above = insert_children_and_refine(leaf_above, refined_inc);
+                leaf_above =
+                        insert_children_and_refine(leaf_above, refined_inc);
             }
 
             update_parents(leaf_above);
@@ -238,12 +240,12 @@ void streams::DynamicallyConstructedStream::update_parents(
 
         if (current->first.aligned()) {
             parent->second.lie(ctx.cbh(current->second.lie(),
-                sibling->second.lie(),
-                algebra::VectorType::Dense));
+                                       sibling->second.lie(),
+                                       algebra::VectorType::Dense));
         } else {
             parent->second.lie(ctx.cbh(sibling->second.lie(),
-                current->second.lie(),
-                algebra::VectorType::Dense));
+                                       current->second.lie(),
+                                       algebra::VectorType::Dense));
         }
         parent->second.accuracy(accuracy_available);
         current = parent;
@@ -384,27 +386,22 @@ DynamicallyConstructedStream::log_signature(const intervals::Interval& domain,
 }
 
 
-algebra::Lie DynamicallyConstructedStream::log_signature(
-    const intervals::Interval& interval,
-    const algebra::Context& ctx) const
-{
-    return log_signature(interval,
-                         metadata().default_resolution,
-                         ctx);
-}
-
 DynamicallyConstructedStream::Lie
 streams::DynamicallyConstructedStream::make_new_root_increment(
     DynamicallyConstructedStream::DyadicInterval di) const
 {
-    return log_signature_impl(di, *metadata().default_context);
+    return log_signature_impl(di,
+                              p_metadata->resolution(),
+                              *p_metadata->default_context());
 }
 
 DynamicallyConstructedStream::Lie
 streams::DynamicallyConstructedStream::make_neighbour_root_increment(
     DynamicallyConstructedStream::DyadicInterval neighbour_di) const
 {
-    return log_signature_impl(neighbour_di, *metadata().default_context);
+    return log_signature_impl(neighbour_di,
+                              p_metadata->resolution(),
+                              *p_metadata->default_context());
 }
 
 pair<algebra::Lie, algebra::Lie>
@@ -413,30 +410,13 @@ streams::DynamicallyConstructedStream::compute_child_lie_increments(
     DynamicallyConstructedStream::DyadicInterval right_di,
     const DynamicallyConstructedStream::Lie& parent_value) const
 {
-    const auto& md = metadata();
-    scalars::Scalar one_half(md.data_scalar_type, 1, 2);
+    const auto& md = *p_metadata;
+    scalars::Scalar one_half(md.scalar_type(), 1, 2);
     return pair<Lie, Lie>(parent_value.smul(one_half),
                           parent_value.smul(one_half));
 }
 
 
-namespace rpy {
-namespace streams {
-namespace dtl {
-
-RPY_SERIAL_SERIALIZE_FN_EXT(DataIncrementSafe)
-{
-    RPY_SERIAL_SERIALIZE_NVP("interval", value.interval);
-    RPY_SERIAL_SERIALIZE_NVP("resolution", value.resolution);
-    RPY_SERIAL_SERIALIZE_NVP("content", value.content);
-    RPY_SERIAL_SERIALIZE_NVP("sibling_idx", value.sibling_idx);
-    RPY_SERIAL_SERIALIZE_NVP("parent_idx", value.parent_idx);
-}
-
-
-}
-}
-}
 
 #define RPY_EXPORT_MACRO ROUGHPY_STREAMS_EXPORT
 #define RPY_SERIAL_IMPL_CLASSNAME rpy::streams::DynamicallyConstructedStream
