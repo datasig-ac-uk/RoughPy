@@ -257,16 +257,58 @@ TEST_F(TestDenseTensor, TestMulInplace)
 {
 }
 
-TEST_F(DenseTensorFixture, test_add_scal_mul)
+TEST_F(TestDenseTensor, TestAddScalMulSameIndeterminate)
 {
+    FreeTensor lhs = builder->make_ns_tensor('x', 2);
+    FreeTensor rhs = builder->make_ns_tensor('x', 3);
+    Scalar scale{5};
+
+    // SAXPY eqivalent 2x + (3x * 5) = 17x
+    FreeTensor expected = builder->make_ns_tensor('x', 17);
+
+    FreeTensor result = lhs.add_scal_mul(rhs, scale);
+    ASSERT_TENSOR_EQ(result, expected);
+
+    // add_scal_mul also modifies in-place
+    ASSERT_TENSOR_EQ(lhs, expected);
 }
 
-TEST_F(DenseTensorFixture, test_sub_scal_mul)
+TEST_F(TestDenseTensor, TestAddScalMulDiffIndeterminate)
 {
+    FreeTensor lhs = builder->make_ns_tensor('x', 2);
+    FreeTensor rhs = builder->make_ns_tensor('y', 3);
+    Scalar scale{5};
+
+    // SAXPY eqivalent 2x + (3y * 5) = 2x + 15y
+    FreeTensor expected = builder->make_tensor([](size_t i) {
+        auto x_coeff = rational_poly_scalar(indeterminate_type('x', i), 2);
+        auto y_coeff = rational_poly_scalar(indeterminate_type('y', i), 15);
+        return x_coeff + y_coeff;
+    });
+
+    FreeTensor result = lhs.add_scal_mul(rhs, scale);
+    ASSERT_TENSOR_EQ(result, expected);
+
+    // add_scal_mul also modifies in-place
+    ASSERT_TENSOR_EQ(lhs, expected);
 }
 
-TEST_F(DenseTensorFixture, test_add_scal_div)
+TEST_F(TestDenseTensor, TestAddScalMulDiffSize)
 {
+    FreeTensor lhs = builder->make_ones_tensor('x');
+
+    TensorBuilder diff_builder{1, 5}; // Different context width
+    FreeTensor rhs = diff_builder.make_ones_tensor('x');
+    Scalar scale{1};
+
+    // In-place value should not change before exception
+    FreeTensor expected = lhs;
+    ASSERT_THROW(
+        (void)lhs.add_scal_mul(rhs, scale),
+        std::runtime_error
+    );
+
+    ASSERT_TENSOR_EQ(lhs, expected);
 }
 
 TEST_F(TestDenseTensor, TestSubScalMul)
