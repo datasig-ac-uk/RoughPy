@@ -40,20 +40,20 @@ namespace rpy {
 namespace algebra {
 namespace testing {
 
-//! FIXME docs
-//!
-class TensorFixture : public ::testing::Test
+//! Helper object wrapping building of free tensors in unit tests
+class TensorBuilder
 {
-protected:
-    const deg_t width = 2;
-    const deg_t depth = 5;
+public:
     const scalars::ScalarType* rational_poly_tp;
-    rpy::algebra::context_pointer context;
-
-protected:
-    void SetUp() override;
+    const rpy::algebra::context_pointer context;
 
 public:
+    TensorBuilder(deg_t width, deg_t depth) :
+        rational_poly_tp{*scalars::ScalarType::of<devices::rational_poly_scalar>()},
+        context{rpy::algebra::get_context(width, depth, rational_poly_tp)}
+    {
+    }
+
     //! Create free tensor with all coeffs 1 of width and depth and given char
     RPY_NO_DISCARD FreeTensor make_ones_tensor(
         char indeterminate_char
@@ -96,7 +96,7 @@ public:
             KeyScalarArray(rational_poly_tp),
             VectorType::Dense
         };
-        const dimn_t size = context->tensor_size(depth);
+        const dimn_t size = context->tensor_size(context->depth());
         cons_data.data.allocate_scalars(size);
 
         // Delegate the construction of each basis with coefficient
@@ -108,6 +108,23 @@ public:
         FreeTensor result = context->construct_free_tensor(cons_data);
         return result;
     }
+};
+
+//! Base fixture for free tensor tests
+class TensorFixture : public ::testing::Test
+{
+protected:
+    std::unique_ptr<TensorBuilder> builder;
+
+protected:
+    void SetUp() override;
+
+public:
+    //! Pretty formatting for tensor inequality assertions using gtest
+    void ASSERT_TENSOR_EQ(
+        const FreeTensor& result,
+        const FreeTensor& expected
+    ) const;
 };
 
 } // namespace testing

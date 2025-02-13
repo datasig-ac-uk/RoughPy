@@ -45,7 +45,7 @@ using FreeTensorFixture = TensorFixture;
 
 TEST_F(FreeTensorFixture, TestStreamOut)
 {
-    auto tensor = make_ones_tensor('x');
+    auto tensor = builder->make_ones_tensor('x');
     std::stringstream ss;
     ss << tensor;
 

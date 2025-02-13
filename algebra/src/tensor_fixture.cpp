@@ -34,13 +34,19 @@ namespace testing {
 
 void TensorFixture::SetUp()
 {
-    auto rational_poly_tpo = scalars::ScalarType::of<devices::rational_poly_scalar>();
-    if (!rational_poly_tpo) {
-        GTEST_FAIL();
-    }
+    // Default width and depth used for bulk of tests
+    builder = std::make_unique<TensorBuilder>(2, 5);
+}
 
-    rational_poly_tp = *rational_poly_tpo;
-    context = rpy::algebra::get_context(width, depth, rational_poly_tp);
+void TensorFixture::ASSERT_TENSOR_EQ(
+    const FreeTensor& result,
+    const FreeTensor& expected
+) const
+{
+    ASSERT_EQ(result, expected)
+        << "Expected:\n" << expected
+        << "\n"
+        << "But got:\n" << result;
 }
 
 } // namespace testing

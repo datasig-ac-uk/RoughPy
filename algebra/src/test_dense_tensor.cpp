@@ -35,56 +35,56 @@ using namespace rpy::algebra;
 using namespace rpy::algebra::testing;
 using namespace scalars;
 
-using DenseTensorFixture = TensorFixture;
+using TestDenseTensor = TensorFixture;
 
 } // namespace
 
-TEST_F(DenseTensorFixture, test_construct_from_context)
+TEST_F(TestDenseTensor, TestConstructFromContext)
 {
-    FreeTensor t(context);
-    ASSERT_EQ(t.context(), context);
-    ASSERT_EQ(t.width(), 2);
-    ASSERT_EQ(t.depth(), 5);
+    FreeTensor tensor(builder->context);
+    ASSERT_EQ(tensor.context(), builder->context);
+    ASSERT_EQ(tensor.width(), 2);
+    ASSERT_EQ(tensor.depth(), 5);
 }
 
-TEST_F(DenseTensorFixture, test_copy_construct)
+TEST_F(TestDenseTensor, TestCopyConstruct)
 {
-    FreeTensor original = make_ns_tensor('x', 3);
-    FreeTensor t(original);
-    ASSERT_EQ(t, original);
+    FreeTensor original = builder->make_ns_tensor('x', 3);
+    FreeTensor copied(original);
+    ASSERT_EQ(copied, original);
 }
 
-TEST_F(DenseTensorFixture, test_move_construct)
+TEST_F(TestDenseTensor, TestMoveConstruct)
 {
-    FreeTensor original = make_ns_tensor('x', 5);
+    FreeTensor original = builder->make_ns_tensor('x', 5);
     FreeTensor expected = original; // Copy assert compare value before move
-    FreeTensor t(std::move(original));
+    FreeTensor moved(std::move(original));
     ASSERT_EQ(original.context(), nullptr); // Original's impl invalidated
-    ASSERT_EQ(t, expected);
+    ASSERT_TENSOR_EQ(moved, expected);
 }
 
-TEST_F(DenseTensorFixture, test_copy_assign)
+TEST_F(TestDenseTensor, TestCopyAssign)
 {
 }
 
-TEST_F(DenseTensorFixture, test_move_assign)
+TEST_F(TestDenseTensor, TestMoveAssign)
 {
 }
 
-TEST_F(DenseTensorFixture, test_accessors)
+TEST_F(TestDenseTensor, TestAccessors)
 {
     // Construct a tensor with zeros after a certain point; size() will not
     // take stock of zero elements, but dimension() does.
     const size_t index_zero_after = 32;
-    FreeTensor lhs = make_tensor([index_zero_after](size_t i) {
+    FreeTensor lhs = builder->make_tensor([index_zero_after](size_t i) {
         auto adjusted_index = (i <= index_zero_after) ? i : 0;
         auto key = indeterminate_type('x', adjusted_index);
         auto coeff = rational_poly_scalar(key, adjusted_index);
         return coeff;
     });
 
-    ASSERT_EQ(lhs.context(), context);
-    ASSERT_EQ(lhs.basis(), context->get_tensor_basis());
+    ASSERT_EQ(lhs.context(), builder->context);
+    ASSERT_EQ(lhs.basis(), builder->context->get_tensor_basis());
     ASSERT_EQ(lhs.dimension(), 63);
     ASSERT_EQ(lhs.size(), index_zero_after);
     ASSERT_EQ(lhs.width(), 2);
@@ -92,85 +92,86 @@ TEST_F(DenseTensorFixture, test_accessors)
     ASSERT_EQ(lhs.degree(), 5);
 }
 
-TEST_F(DenseTensorFixture, test_borrow)
+TEST_F(TestDenseTensor, TestBorrow)
 {
 }
 
-TEST_F(DenseTensorFixture, test_borrow_mut)
+TEST_F(TestDenseTensor, TestBorrowMut)
 {
 }
 
-TEST_F(DenseTensorFixture, test_add)
+TEST_F(TestDenseTensor, TestAdd)
 {
-    FreeTensor lhs = make_ones_tensor('x');
-    FreeTensor rhs = make_ones_tensor('y');
+    FreeTensor lhs = builder->make_ones_tensor('x');
+    FreeTensor rhs = builder->make_ones_tensor('y');
     FreeTensor result = lhs.add(rhs);
 
-    FreeTensor expected = make_tensor([](size_t i) {
+    FreeTensor expected = builder->make_tensor([](size_t i) {
         auto lhs_coeff = rational_poly_scalar(indeterminate_type('x', i), 1);
         auto rhs_coeff = rational_poly_scalar(indeterminate_type('y', i), 1);
         auto coeff = lhs_coeff + rhs_coeff;
         return coeff;
     });
 
-    ASSERT_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, expected);
 
-    // Test again with inplace version
+    // Test again with in-place version
     result = lhs;
-    result.add_inplace(rhs);
-    ASSERT_EQ(result, expected);
+    auto inplace_copy = result.add_inplace(rhs);
+    ASSERT_TENSOR_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, inplace_copy);
 }
 
-TEST_F(DenseTensorFixture, test_sub)
+TEST_F(TestDenseTensor, TestSub)
 {
-    FreeTensor lhs = make_ones_tensor('x');
-    FreeTensor rhs = make_ones_tensor('y');
+    FreeTensor lhs = builder->make_ones_tensor('x');
+    FreeTensor rhs = builder->make_ones_tensor('y');
     FreeTensor result = lhs.sub(rhs);
 
-    FreeTensor expected = make_tensor([](size_t i) {
+    FreeTensor expected = builder->make_tensor([](size_t i) {
         auto lhs_coeff = rational_poly_scalar(indeterminate_type('x', i), 1);
         auto rhs_coeff = rational_poly_scalar(indeterminate_type('y', i), 1);
         auto coeff = lhs_coeff - rhs_coeff;
         return coeff;
     });
 
-    ASSERT_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, expected);
 
-    // Test again with inplace version
+    // Test again with in-place version
     result = lhs;
-    result.sub_inplace(rhs);
-    ASSERT_EQ(result, expected);
+    auto inplace_copy = result.sub_inplace(rhs);
+    ASSERT_TENSOR_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, inplace_copy);
 }
 
-TEST_F(DenseTensorFixture, test_mul)
+TEST_F(TestDenseTensor, TestMul)
 {
 }
 
-
-TEST_F(DenseTensorFixture, test_is_zero)
+TEST_F(TestDenseTensor, TestIsZero)
 {
 }
 
-TEST_F(DenseTensorFixture, test_storage_type)
+TEST_F(TestDenseTensor, TestStorageType)
 {
 }
 
-TEST_F(DenseTensorFixture, test_coeff_type)
+TEST_F(TestDenseTensor, TestCoeffType)
 {
 }
 
-TEST_F(DenseTensorFixture, test_operator_index)
+TEST_F(TestDenseTensor, TestOperatorIndex)
 {
 }
 
-TEST_F(DenseTensorFixture, test_operator_const_index)
+TEST_F(TestDenseTensor, TestOperatorConstIndex)
 {
 }
 
-TEST_F(DenseTensorFixture, test_iterators)
+TEST_F(TestDenseTensor, TestIterators)
 {
-    // Tensor has key values 0..N for N basis
-    FreeTensor t = make_tensor([](size_t i) {
+    // Tensor has key values 0...N for N basis
+    FreeTensor t = builder->make_tensor([](size_t i) {
         auto key = indeterminate_type('x', i);
         auto coeff = rational_poly_scalar(key, i);
         return coeff;
@@ -192,65 +193,67 @@ TEST_F(DenseTensorFixture, test_iterators)
     ASSERT_EQ(expected_index, t.dimension());
 }
 
-TEST_F(DenseTensorFixture, test_dense_data)
+TEST_F(TestDenseTensor, TestDenseData)
 {
 }
 
-TEST_F(DenseTensorFixture, test_uminus)
+TEST_F(TestDenseTensor, TestUminus)
 {
-    FreeTensor lhs = make_ones_tensor('x');
+    FreeTensor lhs = builder->make_ones_tensor('x');
     FreeTensor result = lhs.uminus();
 
-    FreeTensor expected = make_tensor([](size_t i) {
+    FreeTensor expected = builder->make_tensor([](size_t i) {
         auto key = indeterminate_type('x', i);
         auto coeff = -rational_poly_scalar(key, 1);
         return coeff;
     });
 
-    ASSERT_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, expected);
 }
 
-TEST_F(DenseTensorFixture, test_smul)
+TEST_F(TestDenseTensor, TestSmul)
 {
-    FreeTensor lhs = make_ones_tensor('x');
+    FreeTensor lhs = builder->make_ones_tensor('x');
     Scalar rhs(7);
     FreeTensor result = lhs.smul(rhs);
 
-    FreeTensor expected = make_tensor([](size_t i) {
+    FreeTensor expected = builder->make_tensor([](size_t i) {
         auto key = indeterminate_type('x', i);
         auto coeff = rational_poly_scalar(key, 7);
         return coeff;
     });
 
-    ASSERT_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, expected);
 
-    // Test again with inplace version
+    // Test again with in-place version
     result = lhs;
-    result.smul_inplace(rhs);
-    ASSERT_EQ(result, expected);
+    auto inplace_copy = result.smul_inplace(rhs);
+    ASSERT_TENSOR_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, inplace_copy);
 }
 
-TEST_F(DenseTensorFixture, test_sdiv)
+TEST_F(TestDenseTensor, TestSdiv)
 {
-    FreeTensor lhs = make_ones_tensor('x');
+    FreeTensor lhs = builder->make_ones_tensor('x');
     Scalar rhs(11);
     FreeTensor result = lhs.sdiv(rhs);
 
-    FreeTensor expected = make_tensor([](size_t i) {
+    FreeTensor expected = builder->make_tensor([](size_t i) {
         auto key = indeterminate_type('x', i);
         auto coeff = rational_poly_scalar(key, 1) / 11;
         return coeff;
     });
 
-    ASSERT_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, expected);
 
-    // Test again with inplace version
+    // Test again with in-place version
     result = lhs;
-    result.sdiv_inplace(rhs);
-    ASSERT_EQ(result, expected);
+    auto inplace_copy = result.sdiv_inplace(rhs);
+    ASSERT_TENSOR_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, inplace_copy);
 }
 
-TEST_F(DenseTensorFixture, test_mul_inplace)
+TEST_F(TestDenseTensor, TestMulInplace)
 {
 }
 
@@ -266,30 +269,38 @@ TEST_F(DenseTensorFixture, test_add_scal_div)
 {
 }
 
-TEST_F(DenseTensorFixture, test_sub_scal_div)
+TEST_F(TestDenseTensor, TestSubScalMul)
 {
 }
 
-TEST_F(DenseTensorFixture, test_add_mul)
+TEST_F(TestDenseTensor, TestAddScalDiv)
 {
 }
 
-TEST_F(DenseTensorFixture, test_sub_mul)
+TEST_F(TestDenseTensor, TestSubScalDiv)
 {
 }
 
-TEST_F(DenseTensorFixture, test_mul_smul)
+TEST_F(TestDenseTensor, TestAddMul)
 {
 }
 
-TEST_F(DenseTensorFixture, test_mul_sdiv)
+TEST_F(TestDenseTensor, TestSubMul)
 {
 }
 
-TEST_F(DenseTensorFixture, test_operator_equals)
+TEST_F(TestDenseTensor, TestMulSmul)
 {
 }
 
-TEST_F(DenseTensorFixture, test_print)
+TEST_F(TestDenseTensor, TestMulSdiv)
+{
+}
+
+TEST_F(TestDenseTensor, TestOperatorEquals)
+{
+}
+
+TEST_F(TestDenseTensor, TestPrint)
 {
 }
