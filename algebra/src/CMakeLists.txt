@@ -14,7 +14,11 @@ if (ROUGHPY_BUILD_TESTS)
         test_lie.cpp
     )
 
-    target_link_libraries(test_algebra PRIVATE RoughPy::Algebra GTest::gtest)
+    target_link_libraries(test_algebra PRIVATE
+        RoughPy::Algebra
+        GTest::gtest
+        GMP::GMP
+    )
 
     setup_roughpy_cpp_tests(test_algebra)
 
