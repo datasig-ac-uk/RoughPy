@@ -313,6 +313,22 @@ TEST_F(TestDenseTensor, TestAddScalMulDiffSize)
 
 TEST_F(TestDenseTensor, TestSubScalMul)
 {
+    FreeTensor lhs = builder->make_ns_tensor('x', 5);
+    FreeTensor rhs = builder->make_ns_tensor('y', 3);
+    Scalar scale{2};
+
+    // SAXPY eqivalent 5x - (3y * 2) = 5x - 6y
+    FreeTensor expected = builder->make_tensor([](size_t i) {
+        auto x_coeff = rational_poly_scalar(indeterminate_type('x', i), 5);
+        auto y_coeff = rational_poly_scalar(indeterminate_type('y', i), -6);
+        return x_coeff + y_coeff;
+    });
+
+    FreeTensor result = lhs.sub_scal_mul(rhs, scale);
+    ASSERT_TENSOR_EQ(result, expected);
+
+    // sub_scal_mul also modifies in-place
+    ASSERT_TENSOR_EQ(lhs, expected);
 }
 
 TEST_F(TestDenseTensor, TestAddScalDiv)

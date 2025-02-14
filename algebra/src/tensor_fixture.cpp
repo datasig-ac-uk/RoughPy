@@ -34,7 +34,8 @@ namespace testing {
 
 void TensorFixture::SetUp()
 {
-    // Default width and depth used for bulk of tests
+    // Default width and depth used for bulk of tests. 5 is used as it is the
+    // minimum size where tiles come into play in multiplication.
     builder = std::make_unique<TensorBuilder>(2, 5);
 }
 
