@@ -331,12 +331,61 @@ TEST_F(TestDenseTensor, TestSubScalMul)
     ASSERT_TENSOR_EQ(lhs, expected);
 }
 
-TEST_F(TestDenseTensor, TestAddScalDiv)
+TEST_F(TestDenseTensor, TestAddScalDivRational)
 {
+    FreeTensor lhs = builder->make_ns_tensor('x', 5);
+    FreeTensor rhs = builder->make_ns_tensor('y', 3);
+    Scalar scale{2};
+
+    // SAXPY eqivalent 5x + (3y / 2)
+    FreeTensor expected = builder->make_tensor([](size_t i) {
+        auto x_coeff = rational_poly_scalar(indeterminate_type('x', i), 5);
+        auto y_coeff = rational_poly_scalar(indeterminate_type('y', i), rational_scalar_type(3, 2));
+        return x_coeff + y_coeff;
+    });
+
+    FreeTensor result = lhs.add_scal_div(rhs, scale);
+
+    ASSERT_TENSOR_EQ(result, expected);
+
+    // add_scal_div also modifies in-place
+    ASSERT_TENSOR_EQ(lhs, expected);
 }
 
-TEST_F(TestDenseTensor, TestSubScalDiv)
+TEST_F(TestDenseTensor, TestAddScalDivZero)
 {
+    FreeTensor lhs = builder->make_ns_tensor('x', 1);
+    FreeTensor rhs = builder->make_ns_tensor('y', 1);
+    Scalar scale{0}; // Exception: divide by zero
+
+    FreeTensor expected = lhs; // Value should not change before exception
+
+    ASSERT_THROW(
+        (void)lhs.add_scal_div(rhs, scale),
+        std::invalid_argument
+    );
+
+    ASSERT_TENSOR_EQ(lhs, expected);
+}
+
+TEST_F(TestDenseTensor, TestAddScalDivInvalid)
+{
+    // An invalid scalar for division is an indeterminate
+    FreeTensor lhs = builder->make_ns_tensor('x', 1);
+    FreeTensor rhs = builder->make_ns_tensor('y', 1);
+    Scalar scale{
+        builder->context->ctype(),
+        rational_poly_scalar(indeterminate_type('a', 1), 1)
+    };
+
+    FreeTensor expected = lhs; // Value should not change before exception
+
+    ASSERT_THROW(
+        (void)lhs.add_scal_div(rhs, scale),
+        std::runtime_error
+    );
+
+    ASSERT_TENSOR_EQ(lhs, expected);
 }
 
 TEST_F(TestDenseTensor, TestAddMul)
