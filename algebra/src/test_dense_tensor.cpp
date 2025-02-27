@@ -179,6 +179,72 @@ TEST_F(TestDenseTensor, TestContextStartsAndSizes)
     ASSERT_EQ(sizes, expected_sizes);
 }
 
+TEST_F(TestDenseTensor, TestMulSameContext)
+{
+    auto [start_of_degree, size_of_degree] = basis_starts_and_sizes(builder->context);
+    std::vector<scalars::rational_poly_scalar> expected_coeffs;
+
+    for (deg_t degree = 0; degree <= builder->context->depth(); ++degree) {
+        for (dimn_t k_degree = 0; k_degree < size_of_degree[degree]; ++k_degree) {
+            scalars::rational_poly_scalar coeff;
+            auto k = k_degree + start_of_degree[degree];
+
+            {
+                // Left word is empty
+                const dimn_t left_k = 0;
+                const dimn_t right_k = k;
+                // Add { 1(x0 yk) } to coeff.
+                coeff +=
+                    rational_poly_scalar(indeterminate_type('x', left_k), 1) *
+                    rational_poly_scalar(indeterminate_type('y', right_k), 1);
+            }
+
+            // Middle word cases
+            for (int d = 1; d < degree; ++d) {
+                const dimn_t alt_d = degree - d;
+                const dimn_t left_k = start_of_degree[d] + k_degree / size_of_degree[alt_d];
+                const dimn_t right_k = start_of_degree[alt_d] + k_degree % size_of_degree[alt_d];
+                // Add { 1(x[left_k] y[right_k] } to the coefficient
+                coeff +=
+                    rational_poly_scalar(indeterminate_type('x', left_k), 1) *
+                    rational_poly_scalar(indeterminate_type('y', right_k), 1);
+            }
+
+            if (degree != 0) {
+                // Right word is empty
+                const dimn_t left_k = k;
+                const dimn_t right_k = 0;
+                // Add { 1(xk y0) } to the basis
+                coeff +=
+                    rational_poly_scalar(indeterminate_type('x', left_k), 1) *
+                    rational_poly_scalar(indeterminate_type('y', right_k), 1);
+            }
+
+            ASSERT_EQ(expected_coeffs.size(), k);
+            expected_coeffs.push_back(std::move(coeff));
+        }
+    }
+
+    FreeTensor expected = builder->make_tensor([&expected_coeffs](size_t i) {
+        return expected_coeffs[i];
+    });
+
+    FreeTensor lhs = builder->make_ones_tensor('x');
+    FreeTensor rhs = builder->make_ones_tensor('y');
+    FreeTensor result = lhs.mul(rhs);
+
+    ASSERT_TENSOR_EQ(result, expected);
+}
+
+TEST_F(TestDenseTensor, TestMulDiffWidthsError)
+{
+}
+
+TEST_F(TestDenseTensor, TestMulDiffLhsDepthSmallerOk)
+{
+}
+
+TEST_F(TestDenseTensor, TestMulDiffRhsDepthSmallerOk)
 {
 }
 
