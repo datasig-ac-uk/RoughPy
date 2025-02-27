@@ -37,31 +37,27 @@ using namespace scalars;
 
 using TestDenseTensor = TensorFixture;
 
-// Utility method for starts and size vectors used in multiplication, used to
-// generate expected results.
-std::tuple<std::vector<dimn_t>, std::vector<dimn_t>> basis_starts_and_sizes(
-    rpy::algebra::context_pointer context
-)
+} // namespace
+
+
+TEST_F(TestDenseTensor, TestContextStarts)
 {
-    std::vector<dimn_t> result_starts;
-    std::vector<dimn_t> result_sizes;
-
-    auto basis = context->get_tensor_basis();
-    const size_t depth = basis.depth();
-    for (size_t i = 0; i <= depth + 2; ++i) {
-        int start = basis.start_of_degree(i);
-        result_starts.push_back(start);
-    }
-
-    for (size_t i = 0; i <= depth; ++i) {
-        int size = (!i) ? 1 : basis.start_of_degree(i - 1) * basis.width() + 2;
-        result_sizes.push_back(size);
-    }
-
-    return std::make_tuple(result_starts, result_sizes);
+    // Sanity check that the context has right degree start values for a W=2,
+    // D=2 test, so multiplications tests are correct.
+    auto starts = builder->basis_starts();
+    std::vector<dimn_t> expected_starts{0, 1, 3, 7, 15, 31, 63, 127};
+    ASSERT_EQ(starts, expected_starts);
 }
 
-} // namespace
+
+TEST_F(TestDenseTensor, TestContextSizes)
+{
+    // Similar to TestContextStarts, check size values so multiplications tests are correct.
+    auto sizes = builder->basis_sizes();
+    std::vector<dimn_t> expected_sizes{1, 2, 4, 8, 16, 32};
+    ASSERT_EQ(sizes, expected_sizes);
+}
+
 
 TEST_F(TestDenseTensor, TestConstructFromContext)
 {
@@ -168,20 +164,12 @@ TEST_F(TestDenseTensor, TestSub)
     ASSERT_TENSOR_EQ(result, inplace_copy);
 }
 
-TEST_F(TestDenseTensor, TestContextStartsAndSizes)
-{
-    auto [starts, sizes] = basis_starts_and_sizes(builder->context);
-
-    std::vector<dimn_t> expected_starts{0, 1, 3, 7, 15, 31, 63, 127};
-    ASSERT_EQ(starts, expected_starts);
-
-    std::vector<dimn_t> expected_sizes{1, 2, 4, 8, 16, 32};
-    ASSERT_EQ(sizes, expected_sizes);
-}
 
 TEST_F(TestDenseTensor, TestMulSameContext)
 {
-    auto [start_of_degree, size_of_degree] = basis_starts_and_sizes(builder->context);
+    auto start_of_degree = builder->basis_starts();
+    auto size_of_degree = builder->basis_sizes();
+
     std::vector<scalars::rational_poly_scalar> expected_coeffs;
 
     for (deg_t degree = 0; degree <= builder->context->depth(); ++degree) {

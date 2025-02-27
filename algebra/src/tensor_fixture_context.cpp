@@ -40,7 +40,35 @@ TensorFixtureContext::TensorFixtureContext(deg_t width, deg_t depth) :
 }
 
 
-RPY_NO_DISCARD FreeTensor TensorFixtureContext::make_ones_tensor(
+std::vector<dimn_t> TensorFixtureContext::basis_starts() const
+{
+    std::vector<dimn_t> result;
+
+    auto basis = context->get_tensor_basis();
+    for (size_t i = 0, depth = basis.depth(); i <= depth + 2; ++i) {
+        int start = basis.start_of_degree(i);
+        result.push_back(start);
+    }
+
+    return result;
+}
+
+
+std::vector<dimn_t> TensorFixtureContext::basis_sizes() const
+{
+    std::vector<dimn_t> result;
+
+    auto basis = context->get_tensor_basis();
+    for (size_t i = 0, depth = basis.depth(); i <= depth; ++i) {
+        int size = (!i) ? 1 : basis.start_of_degree(i - 1) * basis.width() + 2;
+        result.push_back(size);
+    }
+
+    return result;
+}
+
+
+FreeTensor TensorFixtureContext::make_ones_tensor(
     char indeterminate_char
 ) const
 {
@@ -53,7 +81,7 @@ RPY_NO_DISCARD FreeTensor TensorFixtureContext::make_ones_tensor(
 }
 
 
-RPY_NO_DISCARD FreeTensor TensorFixtureContext::make_ns_tensor(
+FreeTensor TensorFixtureContext::make_ns_tensor(
     char indeterminate_char,
     scalars::rational_scalar_type n
 ) const

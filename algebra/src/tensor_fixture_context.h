@@ -49,13 +49,19 @@ public:
 public:
     TensorFixtureContext(deg_t width, deg_t depth);
 
+    //! Convenience vector of basis starts for testing multiplication
+    std::vector<dimn_t> basis_starts() const;
+
+    //! Convenience vector of basis sizes for testing multiplication
+    std::vector<dimn_t> basis_sizes() const;
+
     //! Create free tensor with all coeffs 1 of width and depth and given char
-    RPY_NO_DISCARD FreeTensor make_ones_tensor(
+    FreeTensor make_ones_tensor(
         char indeterminate_char
     ) const;
 
     //! Create free tensor with all coeffs N of width and depth and given char
-    RPY_NO_DISCARD FreeTensor make_ns_tensor(
+    FreeTensor make_ns_tensor(
         char indeterminate_char,
         scalars::rational_scalar_type n
     ) const;
@@ -64,7 +70,7 @@ public:
     //! defaulting to default tensor data size. Lambda signature is:
     //!     make_coeff_fn(size_t index) -> scalars::rational_poly_scalar
     template <typename MakeCoeffFn>
-    RPY_NO_DISCARD FreeTensor make_tensor(
+    FreeTensor make_tensor(
         MakeCoeffFn&& make_coeff_fn
     ) const
     {
