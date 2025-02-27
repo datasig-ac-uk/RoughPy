@@ -37,6 +37,30 @@ using namespace scalars;
 
 using TestDenseTensor = TensorFixture;
 
+// Utility method for starts and size vectors used in multiplication, used to
+// generate expected results.
+std::tuple<std::vector<dimn_t>, std::vector<dimn_t>> basis_starts_and_sizes(
+    rpy::algebra::context_pointer context
+)
+{
+    std::vector<dimn_t> result_starts;
+    std::vector<dimn_t> result_sizes;
+
+    auto basis = context->get_tensor_basis();
+    const size_t depth = basis.depth();
+    for (size_t i = 0; i <= depth + 2; ++i) {
+        int start = basis.start_of_degree(i);
+        result_starts.push_back(start);
+    }
+
+    for (size_t i = 0; i <= depth; ++i) {
+        int size = (!i) ? 1 : basis.start_of_degree(i - 1) * basis.width() + 2;
+        result_sizes.push_back(size);
+    }
+
+    return std::make_tuple(result_starts, result_sizes);
+}
+
 } // namespace
 
 TEST_F(TestDenseTensor, TestConstructFromContext)
@@ -144,7 +168,17 @@ TEST_F(TestDenseTensor, TestSub)
     ASSERT_TENSOR_EQ(result, inplace_copy);
 }
 
-TEST_F(TestDenseTensor, TestMul)
+TEST_F(TestDenseTensor, TestContextStartsAndSizes)
+{
+    auto [starts, sizes] = basis_starts_and_sizes(builder->context);
+
+    std::vector<dimn_t> expected_starts{0, 1, 3, 7, 15, 31, 63, 127};
+    ASSERT_EQ(starts, expected_starts);
+
+    std::vector<dimn_t> expected_sizes{1, 2, 4, 8, 16, 32};
+    ASSERT_EQ(sizes, expected_sizes);
+}
+
 {
 }
 
