@@ -297,12 +297,12 @@ TEST_F(TestDenseTensor, TestAddScalMulDiffSize)
 {
     FreeTensor lhs = builder->make_ones_tensor('x');
 
-    TensorBuilder diff_builder{1, 5}; // Different context width
+    TensorBuilder diff_builder{1, 5}; // Exception: different context width
     FreeTensor rhs = diff_builder.make_ones_tensor('x');
     Scalar scale{1};
 
-    // In-place value should not change before exception
-    FreeTensor expected = lhs;
+    FreeTensor expected = lhs; // Value should not change before exception
+
     ASSERT_THROW(
         (void)lhs.add_scal_mul(rhs, scale),
         std::runtime_error
@@ -310,6 +310,26 @@ TEST_F(TestDenseTensor, TestAddScalMulDiffSize)
 
     ASSERT_TENSOR_EQ(lhs, expected);
 }
+
+TEST_F(TestDenseTensor, TestAddScalMulZeroLhs)
+{
+    FreeTensor lhs = builder->make_ns_tensor('x', 0);
+    FreeTensor rhs = builder->make_ns_tensor('y', 2);
+    Scalar scale{3};
+
+    // SAXPY eqivalent 0x + (2y * 3) = 6y
+    FreeTensor expected = builder->make_tensor([](size_t i) {
+        auto coeff = rational_poly_scalar(indeterminate_type('y', i), 6);
+        return coeff;
+    });
+
+    FreeTensor result = lhs.add_scal_mul(rhs, scale);
+    ASSERT_TENSOR_EQ(result, expected);
+
+    // add_scal_mul also modifies in-place
+    ASSERT_TENSOR_EQ(lhs, expected);
+}
+
 
 TEST_F(TestDenseTensor, TestSubScalMul)
 {
