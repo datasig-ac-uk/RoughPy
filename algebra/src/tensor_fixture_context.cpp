@@ -77,6 +77,7 @@ FreeTensor TensorFixtureContext::make_ones_tensor(
         auto coeff = scalars::rational_poly_scalar(key, scalars::rational_scalar_type(1));
         return coeff;
     });
+
     return result;
 }
 
@@ -91,6 +92,7 @@ FreeTensor TensorFixtureContext::make_ns_tensor(
         auto coeff = scalars::rational_poly_scalar(key, n);
         return coeff;
     });
+
     return result;
 }
 

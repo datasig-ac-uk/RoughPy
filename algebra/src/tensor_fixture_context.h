@@ -66,6 +66,25 @@ public:
         scalars::rational_scalar_type n
     ) const;
 
+    template <typename UpdateConsDataFn>
+    FreeTensor make_tensor_from_cons_data(
+        UpdateConsDataFn&& cons_data_fn
+    ) const
+    {
+        // Construct and allocate a rational polynomial
+        VectorConstructionData cons_data{
+            scalars::KeyScalarArray(rational_poly_tp),
+            VectorType::Dense
+        };
+        const dimn_t size = context->tensor_size(context->depth());
+        cons_data.data.allocate_scalars(size);
+
+        // Delegate update of cons data before creating free tensor
+        cons_data_fn(cons_data);
+        FreeTensor result = context->construct_free_tensor(cons_data);
+        return result;
+    }
+
     //! Create free tensor with each coeff constructed from make_coeff_fn
     //! defaulting to default tensor data size. Lambda signature is:
     //!     make_coeff_fn(size_t index) -> scalars::rational_poly_scalar
@@ -74,23 +93,57 @@ public:
         MakeCoeffFn&& make_coeff_fn
     ) const
     {
-        using namespace rpy::scalars;
+        FreeTensor result = make_tensor_from_cons_data(
+            [make_coeff_fn](VectorConstructionData& cons_data) {
+                auto slice = cons_data.data.as_mut_slice<scalars::rational_poly_scalar>();
+                for (auto&& [i, coeff] : views::enumerate(slice)) {
+                    // Delegate construction of each basis from coefficient fn
+                    coeff = make_coeff_fn(i);
+                }
+            }
+        );
 
-        // Construct and allocate a rational polynomial
-        VectorConstructionData cons_data{
-            KeyScalarArray(rational_poly_tp),
-            VectorType::Dense
-        };
-        const dimn_t size = context->tensor_size(context->depth());
-        cons_data.data.allocate_scalars(size);
+        return result;
+    }
 
-        // Delegate the construction of each basis with coefficient
-        auto slice = cons_data.data.as_mut_slice<rational_poly_scalar>();
-        for (auto&& [i, coeff] : views::enumerate(slice)) {
-            coeff = make_coeff_fn(i);
-        }
+    template <typename MakeCoeffFn>
+    FreeTensor make_mul_tensor(
+        MakeCoeffFn&& make_coeff_fn
+    ) const
+    {
+        FreeTensor result = make_tensor_from_cons_data(
+            [this, make_coeff_fn](VectorConstructionData& cons_data) {
+                auto start_of_degree = basis_starts();
+                auto size_of_degree = basis_sizes();
+                auto slice = cons_data.data.as_mut_slice<scalars::rational_poly_scalar>();
+                auto coeff = slice.begin();
 
-        FreeTensor result = context->construct_free_tensor(cons_data);
+                for (deg_t degree = 0; degree <= context->depth(); ++degree) {
+                    for (dimn_t k_degree = 0; k_degree < size_of_degree[degree]; ++k_degree) {
+                        auto k = k_degree + start_of_degree[degree];
+
+                        // Left of word: add { 1(x0 yk) }
+                        *coeff += make_coeff_fn(0, k);
+
+                        // Middle of word: add { 1(x[left_k] y[right_k] }
+                        for (int d = 1; d < degree; ++d) {
+                            dimn_t alt_d = degree - d;
+                            dimn_t left_k = start_of_degree[d] + k_degree / size_of_degree[alt_d];
+                            dimn_t right_k = start_of_degree[alt_d] + k_degree % size_of_degree[alt_d];
+                            *coeff += make_coeff_fn(left_k, right_k);
+                        }
+
+                        // Right of word: add { 1(xk y0) }
+                        if (degree != 0) {
+                            *coeff += make_coeff_fn(k, 0);
+                        }
+
+                        ++coeff;
+                    }
+                }
+            }
+        );
+
         return result;
     }
 };
