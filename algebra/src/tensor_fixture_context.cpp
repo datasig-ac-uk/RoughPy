@@ -26,41 +26,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_H
-#define ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_H
-
-#include <gtest/gtest.h>
-
 #include "tensor_fixture_context.h"
-
-#include "roughpy/core/ranges.h"
-#include "roughpy/core/types.h"
-#include "roughpy/algebra/context.h"
-#include "roughpy/scalars/scalar_types.h"
 
 namespace rpy {
 namespace algebra {
 namespace testing {
 
-//! Base fixture for free tensor tests
-class TensorFixture : public ::testing::Test
+
+TensorBuilder::TensorBuilder(deg_t width, deg_t depth) :
+    rational_poly_tp{*scalars::ScalarType::of<devices::rational_poly_scalar>()},
+    context{rpy::algebra::get_context(width, depth, rational_poly_tp)}
 {
-protected:
-    std::unique_ptr<TensorBuilder> builder;
+}
 
-protected:
-    void SetUp() override;
 
-public:
-    //! Pretty formatting for tensor inequality assertions using gtest
-    void ASSERT_TENSOR_EQ(
-        const FreeTensor& result,
-        const FreeTensor& expected
-    ) const;
-};
+RPY_NO_DISCARD FreeTensor TensorBuilder::make_ones_tensor(
+    char indeterminate_char
+) const
+{
+    FreeTensor result = make_tensor([indeterminate_char](size_t i) {
+        auto key = scalars::indeterminate_type(indeterminate_char, i);
+        auto coeff = scalars::rational_poly_scalar(key, scalars::rational_scalar_type(1));
+        return coeff;
+    });
+    return result;
+}
+
+
+RPY_NO_DISCARD FreeTensor TensorBuilder::make_ns_tensor(
+    char indeterminate_char,
+    scalars::rational_scalar_type n
+) const
+{
+    FreeTensor result = make_tensor([indeterminate_char, n](size_t i) {
+        auto key = scalars::indeterminate_type(indeterminate_char, i);
+        auto coeff = scalars::rational_poly_scalar(key, n);
+        return coeff;
+    });
+    return result;
+}
+
 
 } // namespace testing
 } // namespace algebra
 } // namespace rpy
-
-#endif // ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_H

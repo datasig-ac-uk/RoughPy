@@ -26,12 +26,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_H
-#define ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_H
-
-#include <gtest/gtest.h>
-
-#include "tensor_fixture_context.h"
+#ifndef ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_CONTEXT_H
+#define ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_CONTEXT_H
 
 #include "roughpy/core/ranges.h"
 #include "roughpy/core/types.h"
@@ -42,25 +38,61 @@ namespace rpy {
 namespace algebra {
 namespace testing {
 
-//! Base fixture for free tensor tests
-class TensorFixture : public ::testing::Test
-{
-protected:
-    std::unique_ptr<TensorBuilder> builder;
 
-protected:
-    void SetUp() override;
+//! Helper object wrapping building of free tensors in unit tests
+// FIXME rename to TensorFixtureContext
+class TensorBuilder
+{
+public:
+    const scalars::ScalarType* rational_poly_tp;
+    const rpy::algebra::context_pointer context;
 
 public:
-    //! Pretty formatting for tensor inequality assertions using gtest
-    void ASSERT_TENSOR_EQ(
-        const FreeTensor& result,
-        const FreeTensor& expected
+    TensorBuilder(deg_t width, deg_t depth);
+
+    //! Create free tensor with all coeffs 1 of width and depth and given char
+    RPY_NO_DISCARD FreeTensor make_ones_tensor(
+        char indeterminate_char
     ) const;
+
+    //! Create free tensor with all coeffs N of width and depth and given char
+    RPY_NO_DISCARD FreeTensor make_ns_tensor(
+        char indeterminate_char,
+        scalars::rational_scalar_type n
+    ) const;
+
+    //! Create free tensor with each coeff constructed from make_coeff_fn
+    //! defaulting to default tensor data size. Lambda signature is:
+    //!     make_coeff_fn(size_t index) -> scalars::rational_poly_scalar
+    template <typename MakeCoeffFn>
+    RPY_NO_DISCARD FreeTensor make_tensor(
+        MakeCoeffFn&& make_coeff_fn
+    ) const
+    {
+        using namespace rpy::scalars;
+
+        // Construct and allocate a rational polynomial
+        VectorConstructionData cons_data{
+            KeyScalarArray(rational_poly_tp),
+            VectorType::Dense
+        };
+        const dimn_t size = context->tensor_size(context->depth());
+        cons_data.data.allocate_scalars(size);
+
+        // Delegate the construction of each basis with coefficient
+        auto slice = cons_data.data.as_mut_slice<rational_poly_scalar>();
+        for (auto&& [i, coeff] : views::enumerate(slice)) {
+            coeff = make_coeff_fn(i);
+        }
+
+        FreeTensor result = context->construct_free_tensor(cons_data);
+        return result;
+    }
 };
+
 
 } // namespace testing
 } // namespace algebra
 } // namespace rpy
 
-#endif // ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_H
+#endif // ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_CONTEXT_H
