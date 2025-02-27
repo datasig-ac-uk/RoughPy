@@ -40,15 +40,14 @@ namespace testing {
 
 
 //! Helper object wrapping building of free tensors in unit tests
-// FIXME rename to TensorFixtureContext
-class TensorBuilder
+class TensorFixtureContext
 {
 public:
     const scalars::ScalarType* rational_poly_tp;
     const rpy::algebra::context_pointer context;
 
 public:
-    TensorBuilder(deg_t width, deg_t depth);
+    TensorFixtureContext(deg_t width, deg_t depth);
 
     //! Create free tensor with all coeffs 1 of width and depth and given char
     RPY_NO_DISCARD FreeTensor make_ones_tensor(

@@ -33,14 +33,14 @@ namespace algebra {
 namespace testing {
 
 
-TensorBuilder::TensorBuilder(deg_t width, deg_t depth) :
+TensorFixtureContext::TensorFixtureContext(deg_t width, deg_t depth) :
     rational_poly_tp{*scalars::ScalarType::of<devices::rational_poly_scalar>()},
     context{rpy::algebra::get_context(width, depth, rational_poly_tp)}
 {
 }
 
 
-RPY_NO_DISCARD FreeTensor TensorBuilder::make_ones_tensor(
+RPY_NO_DISCARD FreeTensor TensorFixtureContext::make_ones_tensor(
     char indeterminate_char
 ) const
 {
@@ -53,7 +53,7 @@ RPY_NO_DISCARD FreeTensor TensorBuilder::make_ones_tensor(
 }
 
 
-RPY_NO_DISCARD FreeTensor TensorBuilder::make_ns_tensor(
+RPY_NO_DISCARD FreeTensor TensorFixtureContext::make_ns_tensor(
     char indeterminate_char,
     scalars::rational_scalar_type n
 ) const

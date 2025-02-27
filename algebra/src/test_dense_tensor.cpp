@@ -397,7 +397,7 @@ TEST_F(TestDenseTensor, TestAddScalMulDiffSize)
 {
     FreeTensor lhs = builder->make_ones_tensor('x');
 
-    TensorBuilder diff_builder{1, 5}; // Exception: different context width
+    TensorFixtureContext diff_builder{1, 5}; // Exception: different context width
     FreeTensor rhs = diff_builder.make_ones_tensor('x');
     Scalar scale{1};
 

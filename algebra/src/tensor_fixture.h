@@ -46,7 +46,7 @@ namespace testing {
 class TensorFixture : public ::testing::Test
 {
 protected:
-    std::unique_ptr<TensorBuilder> builder;
+    std::unique_ptr<TensorFixtureContext> builder;
 
 protected:
     void SetUp() override;
