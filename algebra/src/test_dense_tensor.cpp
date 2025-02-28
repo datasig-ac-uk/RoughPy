@@ -127,13 +127,6 @@ TEST_F(TestDenseTensor, TestAccessors)
     ASSERT_EQ(lhs.degree(), 5);
 }
 
-TEST_F(TestDenseTensor, TestBorrow)
-{
-}
-
-TEST_F(TestDenseTensor, TestBorrowMut)
-{
-}
 
 TEST_F(TestDenseTensor, TestAdd)
 {
@@ -156,6 +149,7 @@ TEST_F(TestDenseTensor, TestAdd)
     ASSERT_TENSOR_EQ(result, expected);
     ASSERT_TENSOR_EQ(result, inplace_copy);
 }
+
 
 TEST_F(TestDenseTensor, TestSub)
 {
@@ -265,9 +259,6 @@ TEST_F(TestDenseTensor, TestIterators)
     ASSERT_EQ(expected_index, t.dimension());
 }
 
-TEST_F(TestDenseTensor, TestDenseData)
-{
-}
 
 TEST_F(TestDenseTensor, TestUminus)
 {
