@@ -193,19 +193,32 @@ TEST_F(TestDenseTensor, TestMulSameContext)
     });
 
     ASSERT_TENSOR_EQ(result, expected);
+
+    // Test again with in-place version
+    result = lhs;
+    auto inplace_copy = result.mul_inplace(rhs);
+    ASSERT_TENSOR_EQ(result, expected);
+    ASSERT_TENSOR_EQ(result, inplace_copy);
 }
+
 
 TEST_F(TestDenseTensor, TestMulDiffWidthsError)
 {
+    FreeTensor lhs = builder->make_ones_tensor('x');
+
+    TensorFixtureContext diff_builder{3, 5}; // Exception: rhs width differs
+    FreeTensor rhs = diff_builder.make_ones_tensor('y');
+
+    FreeTensor expected = lhs; // Value should not change before exception
+
+    ASSERT_THROW(
+        (void)lhs.mul(rhs),
+        std::runtime_error
+    );
+
+    ASSERT_TENSOR_EQ(lhs, expected);
 }
 
-TEST_F(TestDenseTensor, TestMulDiffLhsDepthSmallerOk)
-{
-}
-
-TEST_F(TestDenseTensor, TestMulDiffRhsDepthSmallerOk)
-{
-}
 
 TEST_F(TestDenseTensor, TestIsZero)
 {
@@ -312,9 +325,6 @@ TEST_F(TestDenseTensor, TestSdiv)
     ASSERT_TENSOR_EQ(result, inplace_copy);
 }
 
-TEST_F(TestDenseTensor, TestMulInplace)
-{
-}
 
 TEST_F(TestDenseTensor, TestAddScalMulSameIndeterminate)
 {
