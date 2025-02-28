@@ -67,29 +67,44 @@ TEST_F(TestDenseTensor, TestConstructFromContext)
     ASSERT_EQ(tensor.depth(), 5);
 }
 
+
 TEST_F(TestDenseTensor, TestCopyConstruct)
 {
     FreeTensor original = builder->make_ns_tensor('x', 3);
     FreeTensor copied(original);
+    ASSERT_FALSE(original.is_zero()); // Original impl valid
     ASSERT_EQ(copied, original);
 }
+
 
 TEST_F(TestDenseTensor, TestMoveConstruct)
 {
     FreeTensor original = builder->make_ns_tensor('x', 5);
     FreeTensor expected = original; // Copy assert compare value before move
     FreeTensor moved(std::move(original));
-    ASSERT_EQ(original.context(), nullptr); // Original's impl invalidated
+    ASSERT_TRUE(original.is_zero()); // Original impl invalidated
     ASSERT_TENSOR_EQ(moved, expected);
 }
 
+
 TEST_F(TestDenseTensor, TestCopyAssign)
 {
+    FreeTensor original = builder->make_ns_tensor('x', 5);
+    FreeTensor copied = original;
+    ASSERT_FALSE(original.is_zero()); // Original impl valid
+    ASSERT_EQ(copied, original);
 }
+
 
 TEST_F(TestDenseTensor, TestMoveAssign)
 {
+    FreeTensor original = builder->make_ns_tensor('x', 7);
+    FreeTensor expected = original; // Copy assert compare value before move
+    FreeTensor moved = std::move(original);
+    ASSERT_TRUE(original.is_zero()); // Original impl invalidated
+    ASSERT_TENSOR_EQ(moved, expected);
 }
+
 
 TEST_F(TestDenseTensor, TestAccessors)
 {
