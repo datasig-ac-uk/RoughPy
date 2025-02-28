@@ -216,7 +216,15 @@ TEST_F(TestDenseTensor, TestMulDiffWidthsError)
 
 TEST_F(TestDenseTensor, TestIsZero)
 {
+    // Test fast case (is_equivalent_to_zero)
+    FreeTensor value;
+    ASSERT_TRUE(value.is_zero());
+
+    // Check complex case (p_impl->is_zero)
+    value = builder->make_ns_tensor('z', 0);
+    ASSERT_TRUE(value.is_zero());
 }
+
 
 TEST_F(TestDenseTensor, TestStorageType)
 {
