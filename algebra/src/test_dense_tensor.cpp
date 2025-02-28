@@ -399,6 +399,32 @@ TEST_F(TestDenseTensor, TestAddScalMulZeroLhs)
 }
 
 
+TEST_F(TestDenseTensor, TestAddScalMulValid)
+{
+    // Unlike scal_div, multiplication by an indeterminate is valid
+    FreeTensor lhs = builder->make_ns_tensor('x', 2);
+    FreeTensor rhs = builder->make_ns_tensor('y', 3);
+    Scalar scale{
+        builder->context->ctype(),
+        rational_poly_scalar(indeterminate_type('a', 1), 5)
+    };
+
+    // SAXPY eqivalent 2x + (3y * 5a) = 2x + 15ay
+    FreeTensor expected = builder->make_tensor([](size_t i) {
+        auto x_coeff = rational_poly_scalar(indeterminate_type('x', i), 2);
+        auto y_coeff = rational_poly_scalar(indeterminate_type('y', i), 3);
+        auto a_coeff = rational_poly_scalar(indeterminate_type('a', 1), 5);
+        return x_coeff + y_coeff * a_coeff;
+    });
+
+    FreeTensor result = lhs.add_scal_mul(rhs, scale);
+    ASSERT_TENSOR_EQ(result, expected);
+
+    // add_scal_mul also modifies in-place
+    ASSERT_TENSOR_EQ(lhs, expected);
+}
+
+
 TEST_F(TestDenseTensor, TestSubScalMul)
 {
     FreeTensor lhs = builder->make_ns_tensor('x', 5);
