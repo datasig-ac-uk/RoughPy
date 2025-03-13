@@ -47,6 +47,11 @@ if (ROUGHPY_LINK_NUMPY)
     list(APPEND _python_components NumPy)
 endif ()
 
+if (ROUGHPY_BUILD_TESTS)
+    # Required to link test_RoughPy_PyModule
+    list(APPEND _python_components Development.Embed)
+endif()
+
 
 find_package(Python 3.8 REQUIRED COMPONENTS ${_python_components})
 unset(_python_components)
@@ -252,6 +257,17 @@ if (ROUGHPY_BUILD_TESTS)
 #
 #
 
+    # Tests interrogating Python data in C++
+    add_executable(test_RoughPy_PyModule
+        src/test_python_embed.cpp
+    )
 
+    target_link_libraries(test_RoughPy_PyModule
+        PRIVATE
+            pybind11::embed
+            RoughPy::Algebra # FIXME review linkage
+    )
+
+    setup_roughpy_cpp_tests(test_RoughPy_PyModule)
 
 endif()
