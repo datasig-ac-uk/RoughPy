@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2024 RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -26,8 +26,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 13/03/23.
-//
+#include <string>
 
-#include "mock_context.h"
+#include "tensor_fixture.h"
+
+#include "roughpy/core/ranges.h"
+#include "roughpy/algebra/free_tensor.h"
+
+namespace {
+
+using namespace rpy;
+using namespace rpy::algebra;
+using namespace rpy::algebra::testing;
+
+using FreeTensorFixture = TensorFixture;
+
+} // namespace
+
+TEST_F(FreeTensorFixture, TestStreamOut)
+{
+    auto tensor = builder->make_ones_tensor('x');
+    std::stringstream ss;
+    ss << tensor;
+
+    const std::string expected = "{ { 1(x0) }() { 1(x1) }(1)";
+    auto first_term = ss.str().substr(0, expected.size());
+
+    EXPECT_EQ(expected, first_term);
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2024 RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -26,39 +26,30 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by sam on 13/03/23.
-//
-
-#ifndef ROUGHPY_CONTEXTFIXTURE_H
-#define ROUGHPY_CONTEXTFIXTURE_H
-
-#include <gtest/gtest.h>
-
-#include <roughpy/algebra/context.h>
-#include <roughpy/core/types.h>
-#include <roughpy/scalars/scalar_types.h>
-#include <roughpy/scalars/scalar_type.h>
+#include "tensor_fixture.h"
 
 namespace rpy {
 namespace algebra {
 namespace testing {
 
-class ContextFixture : public ::testing::Test
+void TensorFixture::SetUp()
 {
-    static constexpr deg_t width = 5;
-    static constexpr deg_t depth = 5;
+    // Default width and depth used for bulk of tests. 5 is used as it is the
+    // minimum size where tiles come into play in multiplication.
+    builder = std::make_unique<TensorFixtureContext>(2, 5);
+}
 
-    const scalars::ScalarType* stype;
+void TensorFixture::ASSERT_TENSOR_EQ(
+    const FreeTensor& result,
+    const FreeTensor& expected
+) const
+{
+    ASSERT_EQ(result, expected)
+        << "Expected:\n" << expected
+        << "\n"
+        << "But got:\n" << result;
+}
 
-    context_pointer ctx;
-
-public:
-    ContextFixture();
-};
-
-}// namespace testing
-}// namespace algebra
-}// namespace rpy
-
-#endif// ROUGHPY_CONTEXTFIXTURE_H
+} // namespace testing
+} // namespace algebra
+} // namespace rpy

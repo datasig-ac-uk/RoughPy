@@ -538,7 +538,7 @@ AlgebraBase<Interface, DerivedImpl>::add_scal_mul(
         const algebra_t& lhs, const scalars::Scalar& rhs
 )
 {
-    if (!is_equivalent_to_zero(lhs) && rhs.is_zero()) {
+    if (!is_equivalent_to_zero(lhs) && !rhs.is_zero()) {
         RPY_CHECK_CONTEXTS(lhs);
 
         if (!is_equivalent_to_zero(*this)) {
@@ -557,7 +557,7 @@ AlgebraBase<Interface, DerivedImpl>::sub_scal_mul(
         const algebra_t& lhs, const scalars::Scalar& rhs
 )
 {
-    if (!is_equivalent_to_zero(lhs) && rhs.is_zero()) {
+    if (!is_equivalent_to_zero(lhs) && !rhs.is_zero()) {
         RPY_CHECK_CONTEXTS(lhs);
 
         if (!is_equivalent_to_zero(*this)) {

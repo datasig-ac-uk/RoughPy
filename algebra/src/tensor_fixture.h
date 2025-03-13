@@ -1,4 +1,4 @@
-// Copyright (c) 2023 RoughPy Developers. All rights reserved.
+// Copyright (c) 2024 RoughPy Developers. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -26,32 +26,41 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Created by user on 13/03/23.
-//
+#ifndef ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_H
+#define ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_H
 
-#ifndef ROUGHPY_ALGEBRA_SRC_TESTING_MOCK_CONTEXT_H
-#define ROUGHPY_ALGEBRA_SRC_TESTING_MOCK_CONTEXT_H
-
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <roughpy/algebra/context.h>
-#include <roughpy/scalars/scalar_type.h>
+#include "tensor_fixture_context.h"
+
+#include "roughpy/core/ranges.h"
+#include "roughpy/core/types.h"
+#include "roughpy/algebra/context.h"
+#include "roughpy/scalars/scalar_types.h"
 
 namespace rpy {
 namespace algebra {
 namespace testing {
 
-class MockContext : public Context
+//! Base fixture for free tensor tests
+class TensorFixture : public ::testing::Test
 {
+protected:
+    std::unique_ptr<TensorFixtureContext> builder;
+
+protected:
+    void SetUp() override;
 
 public:
-    MockContext() : Context(2, 2, *scalars::ScalarType::of<float>(), "mock") {}
+    //! Pretty formatting for tensor inequality assertions using gtest
+    void ASSERT_TENSOR_EQ(
+        const FreeTensor& result,
+        const FreeTensor& expected
+    ) const;
 };
 
-}// namespace testing
-}// namespace algebra
-}// namespace rpy
+} // namespace testing
+} // namespace algebra
+} // namespace rpy
 
-#endif// ROUGHPY_ALGEBRA_SRC_TESTING_MOCK_CONTEXT_H
+#endif // ROUGHPY_ALGEBRA_SRC_TENSOR_FIXTURE_H
