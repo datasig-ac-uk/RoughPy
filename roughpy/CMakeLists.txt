@@ -47,6 +47,11 @@ if (ROUGHPY_LINK_NUMPY)
     list(APPEND _python_components NumPy)
 endif ()
 
+if (ROUGHPY_BUILD_TESTS)
+    # Required to link test_RoughPy_PyModule
+    list(APPEND _python_components Development.Embed)
+endif()
+
 
 find_package(Python 3.8 REQUIRED COMPONENTS ${_python_components})
 unset(_python_components)
@@ -98,8 +103,9 @@ FetchContent_MakeAvailable(pybind11)
 #                                   pymodule                                  #
 ###############################################################################
 
-python_add_library(RoughPy_PyModule MODULE WITH_SOABI)
+add_library(RoughPy_StaticLib)
 
+python_add_library(RoughPy_PyModule MODULE WITH_SOABI)
 
 set_target_properties(RoughPy_PyModule PROPERTIES
         LIBRARY_OUTPUT_NAME _roughpy
@@ -107,7 +113,12 @@ set_target_properties(RoughPy_PyModule PROPERTIES
         VISIBILITY_INLINES_HIDDEN ON
 )
 
-target_compile_definitions(RoughPy_PyModule PRIVATE
+set_target_properties(RoughPy_StaticLib PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+)
+
+target_compile_definitions(RoughPy_StaticLib PRIVATE
         RPY_BUILDING_LIBRARY=1
         BOOST_UUID_FORCE_AUTO_LINK=1
 )
@@ -128,15 +139,17 @@ else ()
             INSTALL_RPATH $ORIGIN)
 endif ()
 
+
+
 add_subdirectory(src)
 
 
-target_include_directories(RoughPy_PyModule PRIVATE
+target_include_directories(RoughPy_StaticLib PUBLIC
         src/
 )
 
 
-target_link_libraries(RoughPy_PyModule PRIVATE
+target_link_libraries(RoughPy_StaticLib PUBLIC
         pybind11::headers
         Boost::boost
         RoughPy::Core
@@ -151,17 +164,17 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         #        recombine::recombine
 )
 
-
-set(RPY_TARGETS RoughPy::Platform
-        RoughPy::Scalars
-        RoughPy::Algebra
-        RoughPy::Intervals
-        RoughPy::Streams)
+# FIXME needed?
+#set(RPY_TARGETS RoughPy::Platform
+#        RoughPy::Scalars
+#        RoughPy::Algebra
+#        RoughPy::Intervals
+#        RoughPy::Streams)
 
 
 if (ROUGHPY_LINK_NUMPY)
-    target_link_libraries(RoughPy_PyModule PRIVATE Python::NumPy)
-    target_compile_definitions(RoughPy_PyModule PRIVATE
+    target_link_libraries(RoughPy_StaticLib PUBLIC Python::NumPy)
+    target_compile_definitions(RoughPy_StaticLib PUBLIC
             ROUGHPY_WITH_NUMPY)
 endif ()
 
@@ -252,6 +265,21 @@ if (ROUGHPY_BUILD_TESTS)
 #
 #
 
+    # Tests interrogating Python data in C++
+    add_executable(test_RoughPy_PyModule
+        src/test_python_embed.cpp
+    )
 
+    target_link_libraries(test_RoughPy_PyModule
+        PRIVATE
+            pybind11::embed
+            RoughPy_StaticLib
+    )
+
+    target_include_directories(test_RoughPy_PyModule PRIVATE
+        src/
+    )
+
+    setup_roughpy_cpp_tests(test_RoughPy_PyModule)
 
 endif()
