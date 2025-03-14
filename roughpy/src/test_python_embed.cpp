@@ -28,20 +28,41 @@
 
 #include <gtest/gtest.h>
 #include <pybind11/embed.h>
-#include <roughpy/algebra/free_tensor.h>
+
+#include "roughpy/algebra/free_tensor.h"
+
+#include "algebra/algebra.h"
+#include "args/convert_timestamp.h"
+#include "intervals/intervals.h"
+#include "scalars/scalars.h"
+#include "streams/streams.h"
+
+#include "args/numpy.h"
 
 namespace {
 
 namespace py = pybind11;
 using namespace pybind11::literals; // use _a literal
+using namespace rpy::python;
 
 } // namespace
+
+PYBIND11_EMBEDDED_MODULE(_embed_roughpy, m)
+{
+    init_datetime(m);
+    init_scalars(m);
+    init_intervals(m);
+    init_algebra(m);
+    init_streams(m);
+
+    import_numpy();
+}
 
 
 TEST(test_RoughPy_PyModule, CreateFreeTensor)
 {
     py::scoped_interpreter guard{};
-    py::module_ rp = py::module_::import("roughpy");
+    py::module_ rp = py::module_::import("_embed_roughpy");
     py::object context = rp.attr("get_context")(
         "width"_a = 2,
         "depth"_a = 3,
@@ -66,3 +87,12 @@ TEST(test_RoughPy_PyModule, CreateFreeTensor)
     a_ptr_str << *a_ptr;
     ASSERT_EQ(a_ptr_str.str(), a_str);
 }
+
+// FIXME including this will segfault `double free or corruption (out)`
+#if 0
+TEST(test_RoughPy_PyModule, WillItCrash)
+{
+    py::scoped_interpreter guard{};
+    py::module_ rp = py::module_::import("_embed_roughpy");
+}
+#endif

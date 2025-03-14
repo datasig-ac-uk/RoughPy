@@ -1,5 +1,5 @@
 
-target_sources(RoughPy_PyModule PRIVATE
+target_sources(RoughPy_StaticLib PUBLIC
         BaseStream.cpp
         BaseStream.h
         brownian_stream.cpp
