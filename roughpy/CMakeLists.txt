@@ -215,11 +215,6 @@ if (WIN32)
     list(APPEND _disable_autolinking "/nodefaultlib:python3.lib")
 
     target_link_options(RoughPy_PyModule PRIVATE ${_disable_autolinking})
-
-    # FIXME experimental to see if this resolves CI Win32 numpy import issue
-    if (ROUGHPY_BUILD_TESTS)
-        target_link_options(test_RoughPy_PyModule PRIVATE ${_disable_autolinking})
-    endif ()
 endif()
 
 
