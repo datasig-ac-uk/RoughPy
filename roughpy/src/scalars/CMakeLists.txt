@@ -1,5 +1,5 @@
 
-target_sources(RoughPy_StaticLib PUBLIC
+roughpy_module_sources(
         pytype_conversion.cpp
         pytype_conversion.h
         r_py_polynomial.cpp

@@ -1,7 +1,7 @@
 
 
 
-target_sources(RoughPy_StaticLib PUBLIC
+roughpy_module_sources(
         date_time_interval.cpp
         date_time_interval.h
         dyadic.h

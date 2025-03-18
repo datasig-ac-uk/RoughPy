@@ -29,15 +29,9 @@
 #include <gtest/gtest.h>
 #include <pybind11/embed.h>
 
-#include "roughpy/algebra/free_tensor.h"
+#include <roughpy/algebra/free_tensor.h>
 
-#include "algebra/algebra.h"
-#include "args/convert_timestamp.h"
-#include "intervals/intervals.h"
-#include "scalars/scalars.h"
-#include "streams/streams.h"
-
-#include "args/numpy.h"
+#include "roughpy_module.h"
 
 namespace {
 
@@ -45,24 +39,52 @@ namespace py = pybind11;
 using namespace pybind11::literals; // use _a literal
 using namespace rpy::python;
 
-} // namespace
-
-PYBIND11_EMBEDDED_MODULE(_embed_roughpy, m)
-{
-    init_datetime(m);
-    init_scalars(m);
-    init_intervals(m);
-    init_algebra(m);
-    init_streams(m);
-
-    import_numpy();
+//! Embed all of roughpy rather than import from external .so
+PYBIND11_EMBEDDED_MODULE(_roughpy_embed, m) {
+    init_roughpy_module(m);
 }
 
-
-TEST(test_RoughPy_PyModule, CreateFreeTensor)
+//! Test fixture for common python state
+class PythonEmbedFixture : public ::testing::Test
 {
-    py::scoped_interpreter guard{};
-    py::module_ rp = py::module_::import("_embed_roughpy");
+protected:
+    void SetUp() override
+    {
+        // FIXME see notes in TearDown on why singleton is used
+        if (!s_interpreter_singleton) {
+            s_interpreter_singleton = std::make_unique<py::scoped_interpreter>();
+        }
+        rp = py::module::import("_roughpy_embed");
+    }
+
+    void TearDown() override
+    {
+        // FIXME presently it's not possible to re-import roughpy for each test
+        // because it results in memory being freed twice and seg faulting. This
+        // workaround reuses the same singleton scoped interpreter around all
+        // tests, then clears globals so each test can run anew. This is far
+        // from ideal because we are still re-using state between tests.
+        py::exec(R"(
+            for v in dir():
+                exec('del '+ v)
+                del v
+        )");
+    }
+
+private:
+    static std::unique_ptr<py::scoped_interpreter> s_interpreter_singleton;
+
+protected:
+    py::module rp; // Equivalent of `import roughpy as rp`
+};
+
+std::unique_ptr<py::scoped_interpreter> PythonEmbedFixture::s_interpreter_singleton;
+
+} // namespace
+
+
+TEST_F(PythonEmbedFixture, CreateFreeTensor)
+{
     py::object context = rp.attr("get_context")(
         "width"_a = 2,
         "depth"_a = 3,
@@ -88,11 +110,13 @@ TEST(test_RoughPy_PyModule, CreateFreeTensor)
     ASSERT_EQ(a_ptr_str.str(), a_str);
 }
 
-// FIXME including this will segfault `double free or corruption (out)`
-#if 0
-TEST(test_RoughPy_PyModule, WillItCrash)
+
+// FIXME Experimental code for running multiple tests when re-importing roughpy.
+TEST_F(PythonEmbedFixture, WillItCrash)
 {
-    py::scoped_interpreter guard{};
-    py::module_ rp = py::module_::import("_embed_roughpy");
+    py::object context = rp.attr("get_context")(
+        "width"_a = 2,
+        "depth"_a = 3,
+        "coeffs"_a = rp.attr("RationalPoly")
+    );
 }
-#endif

@@ -1,6 +1,6 @@
 
 
-target_sources(RoughPy_StaticLib PUBLIC
+roughpy_module_sources(
         buffer_info.cpp
         buffer_info.h
         check_for_excess_args.cpp
