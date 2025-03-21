@@ -1,6 +1,6 @@
 
 
-target_sources(RoughPy_PyModule PRIVATE
+roughpy_module_sources(
         algebra.h
         algebra.cpp
         algebra_iterator.cpp

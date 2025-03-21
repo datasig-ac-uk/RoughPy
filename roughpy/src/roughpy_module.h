@@ -123,6 +123,7 @@ bool with_caught_exceptions(F&& fn) noexcept
     return completed_successfully;
 }
 
+void init_roughpy_module(py::module_& m);
 
 }// namespace python
 }// namespace rpy

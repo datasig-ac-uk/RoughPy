@@ -47,6 +47,11 @@ if (ROUGHPY_LINK_NUMPY)
     list(APPEND _python_components NumPy)
 endif ()
 
+if (ROUGHPY_BUILD_TESTS)
+    # Required to link test_RoughPy_PyModule
+    list(APPEND _python_components Development.Embed)
+endif()
+
 
 find_package(Python 3.8 REQUIRED COMPONENTS ${_python_components})
 unset(_python_components)
@@ -113,8 +118,25 @@ target_compile_definitions(RoughPy_PyModule PRIVATE
 )
 
 
-
 set_target_properties(RoughPy_PyModule PROPERTIES ROUGHPY_COMPONENT PyModule)
+
+
+
+if (ROUGHPY_BUILD_TESTS)
+    add_executable(test_RoughPy_PyModule)
+
+    set_target_properties(test_RoughPy_PyModule PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+    )
+
+    target_compile_definitions(test_RoughPy_PyModule PRIVATE
+        RPY_BUILDING_LIBRARY=1
+        BOOST_UUID_FORCE_AUTO_LINK=1
+    )
+
+    set_target_properties(test_RoughPy_PyModule PROPERTIES ROUGHPY_COMPONENT PyModule)
+endif ()
 
 #set_target_properties(RoughPy_PyModule PROPERTIES
 #    INSTALL_RPATH $ORIGIN)
@@ -127,6 +149,16 @@ else ()
     set_target_properties(RoughPy_PyModule PROPERTIES
             INSTALL_RPATH $ORIGIN)
 endif ()
+
+
+# Local helper function for subdirs to add src to both module and embed tests
+function(roughpy_module_sources)
+    target_sources(RoughPy_PyModule PRIVATE ${ARGN})
+
+    if (ROUGHPY_BUILD_TESTS)
+        target_sources(test_RoughPy_PyModule PRIVATE ${ARGN})
+    endif ()
+endfunction()
 
 add_subdirectory(src)
 
@@ -150,13 +182,6 @@ target_link_libraries(RoughPy_PyModule PRIVATE
         #        $<LINK_LIBRARY:WHOLE_ARCHIVE,RoughPy::Streams>
         #        recombine::recombine
 )
-
-
-set(RPY_TARGETS RoughPy::Platform
-        RoughPy::Scalars
-        RoughPy::Algebra
-        RoughPy::Intervals
-        RoughPy::Streams)
 
 
 if (ROUGHPY_LINK_NUMPY)
@@ -197,11 +222,52 @@ endif()
 configure_file(version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)
 
 
-
-
-
-
 if (ROUGHPY_BUILD_TESTS)
+    target_include_directories(test_RoughPy_PyModule PRIVATE
+        src/
+    )
+
+    target_link_libraries(test_RoughPy_PyModule PRIVATE
+        pybind11::embed
+        pybind11::headers
+        Boost::boost
+        RoughPy::Core
+        RoughPy::Platform
+        RoughPy::Scalars
+        RoughPy::Intervals
+        RoughPy::Algebra
+        RoughPy::Streams
+        RoughPy::PrecompiledHeaders
+    )
+
+    target_sources(test_RoughPy_PyModule PRIVATE
+        src/test_python_embed.cpp
+    )
+
+    if (ROUGHPY_LINK_NUMPY)
+        target_link_libraries(test_RoughPy_PyModule PRIVATE Python::NumPy)
+        target_compile_definitions(test_RoughPy_PyModule PRIVATE ROUGHPY_WITH_NUMPY)
+    endif ()
+
+    execute_process(COMMAND
+        "${Python_EXECUTABLE}" "-c" "import sysconfig; print(sysconfig.get_paths()['purelib'])" "--cmakedir"
+        OUTPUT_VARIABLE CTEST_SITE_PACAKGES_DIR
+    )
+
+    set_target_properties(test_RoughPy_PyModule
+        PROPERTIES
+            CXX_VISIBILITY_PRESET hidden
+            VISIBILITY_INLINES_HIDDEN ON
+            ENVIRONMENT "PYTHONPATH=${CTEST_SITE_PACAKGES_DIR}"
+    )
+
+    target_compile_definitions(test_RoughPy_PyModule
+        PRIVATE
+            BOOST_UUID_FORCE_AUTO_LINK=1
+    )
+
+    setup_roughpy_cpp_tests(test_RoughPy_PyModule)
+
 
     # If we're building tests, we need to make sure the _roughpy python module is located within
     # the roughpy directory so it can be imported correctly.
@@ -217,10 +283,15 @@ if (ROUGHPY_BUILD_TESTS)
                 COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
                 COMMAND_EXPAND_LISTS
         )
+        add_custom_command(TARGET test_RoughPy_PyModule POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:test_RoughPy_PyModule>
+        )
     else()
         # On sensible operating systems, we just need the shared _roughpy module to be placed directly
         # into the correct output directory.
         set_target_properties(RoughPy_PyModule PROPERTIES
+                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+        set_target_properties(test_RoughPy_PyModule PROPERTIES
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
     endif ()
 
@@ -251,7 +322,5 @@ if (ROUGHPY_BUILD_TESTS)
 #
 #
 #
-
-
 
 endif()
