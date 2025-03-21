@@ -249,10 +249,16 @@ if (ROUGHPY_BUILD_TESTS)
         target_compile_definitions(test_RoughPy_PyModule PRIVATE ROUGHPY_WITH_NUMPY)
     endif ()
 
+    execute_process(COMMAND
+        "${Python_EXECUTABLE}" "-c" "import sysconfig; print(sysconfig.get_paths()['purelib'])" "--cmakedir"
+        OUTPUT_VARIABLE CTEST_SITE_PACAKGES_DIR
+    )
+
     set_target_properties(test_RoughPy_PyModule
         PROPERTIES
             CXX_VISIBILITY_PRESET hidden
             VISIBILITY_INLINES_HIDDEN ON
+            ENVIRONMENT "PYTHONPATH=${CTEST_SITE_PACAKGES_DIR}"
     )
 
     target_compile_definitions(test_RoughPy_PyModule
