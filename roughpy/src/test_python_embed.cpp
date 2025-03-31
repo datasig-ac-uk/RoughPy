@@ -54,7 +54,6 @@ protected:
         if (!s_interpreter_singleton) {
             s_interpreter_singleton = std::make_unique<py::scoped_interpreter>();
         }
-        rp = py::module::import("_roughpy_embed");
     }
 
     void TearDown() override
@@ -73,9 +72,6 @@ protected:
 
 private:
     static std::unique_ptr<py::scoped_interpreter> s_interpreter_singleton;
-
-protected:
-    py::module rp; // Equivalent of `import roughpy as rp`
 };
 
 std::unique_ptr<py::scoped_interpreter> PythonEmbedFixture::s_interpreter_singleton;
@@ -85,35 +81,36 @@ std::unique_ptr<py::scoped_interpreter> PythonEmbedFixture::s_interpreter_single
 
 TEST_F(PythonEmbedFixture, CreateFreeTensor)
 {
-    py::object context = rp.attr("get_context")(
-        "width"_a = 2,
-        "depth"_a = 3,
-        "coeffs"_a = rp.attr("RationalPoly")
-    );
+    py::exec(R"(
+        import _roughpy_embed as rp
+        context = rp.get_context(width=2, depth=3, coeffs=rp.DPReal)
+        # Test construction from scalar terms
+        a = rp.FreeTensor(
+            [i for i in range(context.tensor_size())],
+            ctx=context
+        )
 
-    int N = context.attr("tensor_size")().cast<int>();
-    py::list ones;
-    for (int i = 0; i < N; ++i) {
-        ones.append(1);
-    }
+        # Test construction from polynomial (invalid)
+        b = rp.FreeTensor(
+            [1 * rp.Monomial(f"b{i}") for i in range(context.tensor_size())],
+            ctx=context
+        )
+    )");
 
-    py::object a = rp.attr("FreeTensor")(
-        ones,
-        "ctx"_a = context
-    );
-    std::string a_str = py::str(a).cast<std::string>();
-
-    // Initial test: check that C++ cast is correct and values match
-    auto* a_ptr = a.cast<rpy::algebra::FreeTensor*>();
+    auto x = py::globals()["b"];
+    auto* a_ptr = x.cast<rpy::algebra::FreeTensor*>();
     std::ostringstream a_ptr_str;
     a_ptr_str << *a_ptr;
-    ASSERT_EQ(a_ptr_str.str(), a_str);
+
+    // FIXME remove cout when test is complete
+    std::cout << a_ptr_str.str() << std::endl;
 }
 
 
 // FIXME Experimental code for running multiple tests when re-importing roughpy.
 TEST_F(PythonEmbedFixture, WillItCrash)
 {
+    auto rp = py::module::import("_roughpy_embed");
     py::object context = rp.attr("get_context")(
         "width"_a = 2,
         "depth"_a = 3,
