@@ -94,6 +94,8 @@ private:
     void handle_sequence_leaf(LeafItem& leaf);
     void do_conversion();
 
+    void validate_leaf(const LeafItem& leaf) const;
+
     void check_dl_size(py::capsule dlcap, deg_t depth);
     void check_buffer_size(py::buffer buffer, deg_t depth);
 
@@ -399,6 +401,58 @@ void ConversionManager::do_conversion()
     }
 }
 
+// FIXME experimental code
+void py_validate_scalar(py::handle value)
+{
+    // Note that dummy is required as exception happens in operator=
+    scalars::Scalar dummy_scalar;
+    if (py::isinstance<py::float_>(value)) {
+        dummy_scalar = value.cast<double>();
+    } else if (py::isinstance<py::int_>(value)) {
+        dummy_scalar = value.cast<int64_t>();
+    } else if (RPyPolynomial_Check(value.ptr())) {
+        dummy_scalar = RPyPolynomial_cast(value.ptr());
+    } else if (py::isinstance<scalars::Scalar>(value)) {
+        dummy_scalar = value.cast<const scalars::Scalar&>();
+    } else {
+        // FIXME error as in assign_py_object_to_scalar
+        RPY_THROW(py::value_error, "FIXME");
+    }
+
+}
+
+void validate_sequence_leaf(const LeafItem& leaf)
+{
+    if (leaf.value_type == ValueType::Value) {
+        for (auto scalar : leaf.object) {
+            py_validate_scalar(scalar);
+        }
+    } else {
+        for (auto key_scalar : leaf.object) {
+            py_validate_scalar(key_scalar);
+        }
+    }
+}
+
+void ConversionManager::validate_leaf(const LeafItem& leaf) const
+{
+    switch (leaf.leaf_type) {
+        case LeafType::Scalar:
+            py_validate_scalar(leaf.object);
+            break;
+        case LeafType::KeyScalar:
+        case LeafType::Lie:
+        case LeafType::DLTensor:
+        case LeafType::Buffer:
+        case LeafType::Dict:
+            // FIXME implement for each
+            break;
+        case LeafType::Sequence:
+            validate_sequence_leaf(leaf);
+            break;
+    }
+}
+
 void ConversionManager::check_dl_size(py::capsule dlcap, deg_t depth)
 {
     auto* managed_tensor = unpack_dl_capsule(dlcap);
@@ -562,8 +616,6 @@ void ConversionManager::check_size_and_type_recurse(
             auto& leaf = add_leaf(node, LeafType::Sequence);
             leaf.value_type = *expected_tp;
             leaf.shape.push_back(py::len(node));
-            //            leaf.scalar_info =
-            //            py_type_to_type_info(py::type::of(node));
             if (leaf.value_type == ValueType::Value) {
                 leaf.scalar_info = type_info_from(node[py::int_(0)]);
             } else {
@@ -571,6 +623,8 @@ void ConversionManager::check_size_and_type_recurse(
                         = type_info_from(node[py::int_(0)][py::int_(1)]);
             }
             leaf.size = leaf.shape[0];
+
+            validate_leaf(leaf);
         } else {
             for (auto pair : node) {
                 if (m_options.allow_timestamped && depth == 0
