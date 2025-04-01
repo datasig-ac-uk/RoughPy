@@ -39,51 +39,67 @@ namespace py = pybind11;
 using namespace pybind11::literals; // use _a literal
 using namespace rpy::python;
 
-//! Embed all of roughpy rather than import from external .so
+//! Embed all of roughpy in this app rather than import from external .so
 PYBIND11_EMBEDDED_MODULE(_roughpy_embed, m) {
     init_roughpy_module(m);
 }
+
+// Global scoped interpreter used in all tests.
+//
+// Note that a scoped_interpreter per-fixture would be the preference for these
+// tests, but importing roughpy more than once during the application's
+// lifespan results in a segfault due to memory being freed twice.
+//
+// The fixture class works around this by having a single scoped interpreter
+// for all tests and clearing globals between each, whilst depending on the
+// cached roughpy import. This is not ideal because the module's state persists
+// between tests.
+//
+static std::unique_ptr<py::scoped_interpreter> g_fixture_interpreter;
 
 //! Test fixture for common python state
 class PythonEmbedFixture : public ::testing::Test
 {
 protected:
-    void SetUp() override
+    static void SetUpTestSuite()
     {
-        // FIXME see notes in TearDown on why singleton is used
-        if (!s_interpreter_singleton) {
-            s_interpreter_singleton = std::make_unique<py::scoped_interpreter>();
-        }
+        // Ensure only one interpreter is used for all tests
+        assert(!g_fixture_interpreter.get());
+        g_fixture_interpreter = std::make_unique<py::scoped_interpreter>();
     }
 
     void TearDown() override
     {
-        // FIXME presently it's not possible to re-import roughpy for each test
-        // because it results in memory being freed twice and seg faulting. This
-        // workaround reuses the same singleton scoped interpreter around all
-        // tests, then clears globals so each test can run anew. This is far
-        // from ideal because we are still re-using state between tests.
+        // Delete globals between runs - see g_fixture_interpreter for details
         py::exec(R"(
             for v in dir():
                 exec('del '+ v)
                 del v
         )");
     }
-
-private:
-    static std::unique_ptr<py::scoped_interpreter> s_interpreter_singleton;
 };
-
-std::unique_ptr<py::scoped_interpreter> PythonEmbedFixture::s_interpreter_singleton;
 
 } // namespace
 
+TEST_F(PythonEmbedFixture, SelfTest)
+{
+    // Confirm the g_fixture_interpreter workaround causes no seg fault.
+    // This works in tandem with at least one other PythonEmbedFixture TEST_F
+    // to confirm that double-free error does not happen.
+    py::exec(R"(
+        import _roughpy_embed as rp
+        import pytest
+    )");
+}
 
 TEST_F(PythonEmbedFixture, CreateFreeTensor)
 {
     py::exec(R"(
         import _roughpy_embed as rp
+        import pytest
+
         context = rp.get_context(width=2, depth=3, coeffs=rp.DPReal)
+
         # Test construction from scalar terms
         a = rp.FreeTensor(
             [i for i in range(context.tensor_size())],
@@ -91,29 +107,12 @@ TEST_F(PythonEmbedFixture, CreateFreeTensor)
         )
 
         # Test construction from polynomial (invalid)
-        b = rp.FreeTensor(
-            [1 * rp.Monomial(f"b{i}") for i in range(context.tensor_size())],
-            ctx=context
-        )
+        with pytest.raises(ValueError):
+            b = rp.FreeTensor(
+                [1 * rp.Monomial(f"b{i}") for i in range(context.tensor_size())],
+                ctx=context
+            )
     )");
 
-    auto x = py::globals()["b"];
-    auto* a_ptr = x.cast<rpy::algebra::FreeTensor*>();
-    std::ostringstream a_ptr_str;
-    a_ptr_str << *a_ptr;
-
-    // FIXME remove cout when test is complete
-    std::cout << a_ptr_str.str() << std::endl;
-}
-
-
-// FIXME Experimental code for running multiple tests when re-importing roughpy.
-TEST_F(PythonEmbedFixture, WillItCrash)
-{
-    auto rp = py::module::import("_roughpy_embed");
-    py::object context = rp.attr("get_context")(
-        "width"_a = 2,
-        "depth"_a = 3,
-        "coeffs"_a = rp.attr("RationalPoly")
-    );
+    // FIXME demo string conversion to Sam
 }
