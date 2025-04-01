@@ -1,7 +1,7 @@
 
 
 
-target_sources(RoughPy_PyModule PRIVATE
+roughpy_module_sources(
         roughpy_module.cpp
         roughpy_module.h
         roughpy_python.h
