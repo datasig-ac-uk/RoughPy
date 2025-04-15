@@ -518,6 +518,12 @@ void ConversionManager::check_size_and_type_recurse(
                     "dict must be key-scalar or timestamp-value"
             );
         }
+    } else if (py::isinstance<py::str>(node)) {
+        // A string is never a valid container
+        RPY_THROW(
+            py::value_error,
+            "unexpected string as tensor data"
+        );
     } else if (py::isinstance<py::sequence>(node)) {
         RPY_CHECK(py::len(node) > 0);
         optional<ValueType> expected_tp;
@@ -549,6 +555,12 @@ void ConversionManager::check_size_and_type_recurse(
                                             m_options.alternative_key
                                                     ->py_key_type
                                     ))
+                        );
+                    } else if (py::isinstance<py::str>(item)) {
+                        // A string is invalid for any tensor element
+                        RPY_THROW(
+                            py::value_error,
+                            "unexpected string in key-scalar data"
                         );
                     }
 
