@@ -48,7 +48,7 @@ if (ROUGHPY_LINK_NUMPY)
 endif ()
 
 if (ROUGHPY_BUILD_TESTS)
-    # Required to link test_RoughPy_PyModule
+    # Required to link test_python_api
     list(APPEND _python_components Development.Embed)
 endif()
 
@@ -123,19 +123,19 @@ set_target_properties(RoughPy_PyModule PROPERTIES ROUGHPY_COMPONENT PyModule)
 
 
 if (ROUGHPY_BUILD_TESTS)
-    add_executable(test_RoughPy_PyModule)
+    add_executable(test_python_api)
 
-    set_target_properties(test_RoughPy_PyModule PROPERTIES
+    set_target_properties(test_python_api PROPERTIES
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
     )
 
-    target_compile_definitions(test_RoughPy_PyModule PRIVATE
+    target_compile_definitions(test_python_api PRIVATE
         RPY_BUILDING_LIBRARY=1
         BOOST_UUID_FORCE_AUTO_LINK=1
     )
 
-    set_target_properties(test_RoughPy_PyModule PROPERTIES ROUGHPY_COMPONENT PyModule)
+    set_target_properties(test_python_api PROPERTIES ROUGHPY_COMPONENT PyModule)
 endif ()
 
 #set_target_properties(RoughPy_PyModule PROPERTIES
@@ -156,7 +156,7 @@ function(roughpy_module_sources)
     target_sources(RoughPy_PyModule PRIVATE ${ARGN})
 
     if (ROUGHPY_BUILD_TESTS)
-        target_sources(test_RoughPy_PyModule PRIVATE ${ARGN})
+        target_sources(test_python_api PRIVATE ${ARGN})
     endif ()
 endfunction()
 
@@ -223,11 +223,11 @@ configure_file(version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)
 
 
 if (ROUGHPY_BUILD_TESTS)
-    target_include_directories(test_RoughPy_PyModule PRIVATE
+    target_include_directories(test_python_api PRIVATE
         src/
     )
 
-    target_link_libraries(test_RoughPy_PyModule PRIVATE
+    target_link_libraries(test_python_api PRIVATE
         pybind11::embed
         pybind11::headers
         Boost::boost
@@ -240,13 +240,13 @@ if (ROUGHPY_BUILD_TESTS)
         RoughPy::PrecompiledHeaders
     )
 
-    target_sources(test_RoughPy_PyModule PRIVATE
+    target_sources(test_python_api PRIVATE
         src/test_python_embed.cpp
     )
 
     if (ROUGHPY_LINK_NUMPY)
-        target_link_libraries(test_RoughPy_PyModule PRIVATE Python::NumPy)
-        target_compile_definitions(test_RoughPy_PyModule PRIVATE ROUGHPY_WITH_NUMPY)
+        target_link_libraries(test_python_api PRIVATE Python::NumPy)
+        target_compile_definitions(test_python_api PRIVATE ROUGHPY_WITH_NUMPY)
     endif ()
 
     execute_process(COMMAND
@@ -254,19 +254,19 @@ if (ROUGHPY_BUILD_TESTS)
         OUTPUT_VARIABLE CTEST_SITE_PACAKGES_DIR
     )
 
-    set_target_properties(test_RoughPy_PyModule
+    set_target_properties(test_python_api
         PROPERTIES
             CXX_VISIBILITY_PRESET hidden
             VISIBILITY_INLINES_HIDDEN ON
             ENVIRONMENT "PYTHONPATH=${CTEST_SITE_PACAKGES_DIR}"
     )
 
-    target_compile_definitions(test_RoughPy_PyModule
+    target_compile_definitions(test_python_api
         PRIVATE
             BOOST_UUID_FORCE_AUTO_LINK=1
     )
 
-    setup_roughpy_cpp_tests(test_RoughPy_PyModule)
+    setup_roughpy_cpp_tests(test_python_api)
 
 
     # If we're building tests, we need to make sure the _roughpy python module is located within
@@ -283,15 +283,15 @@ if (ROUGHPY_BUILD_TESTS)
                 COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
                 COMMAND_EXPAND_LISTS
         )
-        add_custom_command(TARGET test_RoughPy_PyModule POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:test_RoughPy_PyModule>
+        add_custom_command(TARGET test_python_api POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:test_python_api>
         )
     else()
         # On sensible operating systems, we just need the shared _roughpy module to be placed directly
         # into the correct output directory.
         set_target_properties(RoughPy_PyModule PROPERTIES
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-        set_target_properties(test_RoughPy_PyModule PROPERTIES
+        set_target_properties(test_python_api PROPERTIES
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
     endif ()
 
