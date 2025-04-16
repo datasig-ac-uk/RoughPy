@@ -55,6 +55,12 @@ PYBIND11_MODULE(_roughpy, m)
 {
     using namespace rpy::python;
 
+    init_roughpy_module(m);
+}
+
+
+void rpy::python::init_roughpy_module(py::module_& m)
+{
     m.add_object("__version__", py::str(ROUGHPY_VERSION_STRING));
     init_datetime(m);
 

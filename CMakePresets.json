@@ -19,7 +19,8 @@
       "name": "with-tests",
       "hidden": true,
       "cacheVariables": {
-        "ROUGHPY_BUILD_TESTS": "ON"
+        "ROUGHPY_BUILD_TESTS": "ON",
+        "ROUGHPY_BUILD_TEST_PYTHON_EMBED": "ON"
       }
     },
     {
@@ -70,8 +71,5 @@
         "release"
       ]
     }
-
-
-
   ]
 }

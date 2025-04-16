@@ -14,6 +14,7 @@ cmake_dependent_option(
 
 # Control the parts of RoughPy that are built
 option(ROUGHPY_BUILD_TESTS "Build C++ tests for RoughPy" OFF)
+option(ROUGHPY_BUILD_TEST_PYTHON_EMBED "Build embedded Python C++ tests" OFF)
 option(ROUGHPY_BUILD_DOCS "Build the documentation" OFF)
 
 option(ROUGHPY_EXPERIMENTAL "Allow building experimental features" OFF)
