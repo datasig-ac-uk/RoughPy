@@ -100,19 +100,23 @@ TEST_F(PythonEmbedFixture, CreateFreeTensor)
 
         context = rp.get_context(width=2, depth=3, coeffs=rp.DPReal)
 
-        # Test construction from scalar terms
+        # Example construction from scalar terms
         a = rp.FreeTensor(
             [i for i in range(context.tensor_size())],
             ctx=context
         )
 
-        # Test construction from polynomial (invalid)
+        # Example construction from polynomial (invalid with coeffs DPReal)
         with pytest.raises(ValueError):
-            b = rp.FreeTensor(
+            rp.FreeTensor(
                 [1 * rp.Monomial(f"b{i}") for i in range(context.tensor_size())],
                 ctx=context
             )
     )");
 
-    // FIXME demo string conversion to Sam
+    // Example code querying C++ interface of Python object
+    auto* a_ptr = py::globals()["a"].cast<rpy::algebra::FreeTensor*>();
+    ASSERT_EQ(a_ptr->width(), 2);
+    ASSERT_EQ(a_ptr->depth(), 3);
+    ASSERT_EQ(a_ptr->coeff_type()->name(), "DPReal");
 }
