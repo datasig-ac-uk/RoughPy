@@ -403,7 +403,6 @@ void ConversionManager::do_conversion()
             oss << "Unable to convert value " << i;
             oss << " from " << exc.srcType();
             oss << " to " << exc.dstType();
-            // FIXME review: throw or RPY_THROW for Python API error?
             throw py::value_error(oss.str());
         }
     }
