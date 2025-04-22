@@ -221,6 +221,57 @@ endif()
 configure_file(version.py.in ${CMAKE_CURRENT_LIST_DIR}/version.py @ONLY)
 
 
+if (ROUGHPY_BUILD_TESTS)
+    # If we're building tests, we need to make sure the _roughpy python module is located within
+    # the roughpy directory so it can be imported correctly.
+    if (WIN32)
+        # Windows DLLs are dumb: they don't have a mechanism for locating their dependencies.
+        # This is a major pain. To get around this, have to copy the runtime files from the build
+        # tree into the directory alongside the _roughpy module. There might be a better way of doing
+        # this by modifying the PATH variable as we did above, but it's just easier to copy everything
+        add_custom_command(TARGET RoughPy_PyModule POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:RoughPy_PyModule>
+        )
+        add_custom_command(TARGET RoughPy_PyModule POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
+                COMMAND_EXPAND_LISTS
+        )
+    else()
+        # On sensible operating systems, we just need the shared _roughpy module to be placed directly
+        # into the correct output directory.
+        set_target_properties(RoughPy_PyModule PROPERTIES
+                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    endif ()
+
+
+    # TODO: This was a nice idea, but it doesn't work right. Come back to this later.
+#    # If we already have pytest, we probably want to test the python alongside the
+#    # C++ libraries
+#    execute_process(COMMAND ${Python_EXECUTABLE} -m pytest --version
+#        RESULT_VARIABLE _has_pytest
+#            OUTPUT_QUIET ERROR_QUIET
+#        )
+#
+#    if ("${_has_pytest}" EQUAL "0")
+#        # There are python tests too
+#        set(python_test_dir "${RoughPy_SOURCE_DIR}/tests")
+#
+#        add_test(
+#                NAME PyTest
+#                COMMAND ${Python_EXECUTABLE} -m pytest $<SHELL_PATH:${python_test_dir}>
+#        )
+#
+#        set_property(TEST PyTest APPEND PROPERTY
+#                ENVIRONMENT_MODIFICATION
+#                    PYTHONPATH=path_list_append:"$<SHELL_PATH:${RoughPy_SOURCE_DIR}>"
+#        )
+#
+#    endif()
+#
+#
+#
+endif()
+
 if (ROUGHPY_BUILD_TEST_PYTHON_EMBED)
     target_include_directories(test_python_embed PRIVATE
         src/
@@ -261,59 +312,13 @@ if (ROUGHPY_BUILD_TEST_PYTHON_EMBED)
 
     setup_roughpy_cpp_tests(test_python_embed)
 
-
-    # If we're building tests, we need to make sure the _roughpy python module is located within
-    # the roughpy directory so it can be imported correctly.
+    # _roughpy location fix as above if ROUGHPY_BUILD_TESTS block.
     if (WIN32)
-        # Windows DLLs are dumb: they don't have a mechanism for locating their dependencies.
-        # This is a major pain. To get around this, have to copy the runtime files from the build
-        # tree into the directory alongside the _roughpy module. There might be a better way of doing
-        # this by modifying the PATH variable as we did above, but it's just easier to copy everything
-        add_custom_command(TARGET RoughPy_PyModule POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:RoughPy_PyModule>
-        )
-        add_custom_command(TARGET RoughPy_PyModule POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_RUNTIME_DLLS:RoughPy_PyModule>
-                COMMAND_EXPAND_LISTS
-        )
         add_custom_command(TARGET test_python_embed POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy -t ${CMAKE_CURRENT_LIST_DIR} $<TARGET_FILE:test_python_embed>
         )
-    else()
-        # On sensible operating systems, we just need the shared _roughpy module to be placed directly
-        # into the correct output directory.
-        set_target_properties(RoughPy_PyModule PROPERTIES
-                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    else ()
         set_target_properties(test_python_embed PROPERTIES
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
     endif ()
-
-
-    # TODO: This was a nice idea, but it doesn't work right. Come back to this later.
-#    # If we already have pytest, we probably want to test the python alongside the
-#    # C++ libraries
-#    execute_process(COMMAND ${Python_EXECUTABLE} -m pytest --version
-#        RESULT_VARIABLE _has_pytest
-#            OUTPUT_QUIET ERROR_QUIET
-#        )
-#
-#    if ("${_has_pytest}" EQUAL "0")
-#        # There are python tests too
-#        set(python_test_dir "${RoughPy_SOURCE_DIR}/tests")
-#
-#        add_test(
-#                NAME PyTest
-#                COMMAND ${Python_EXECUTABLE} -m pytest $<SHELL_PATH:${python_test_dir}>
-#        )
-#
-#        set_property(TEST PyTest APPEND PROPERTY
-#                ENVIRONMENT_MODIFICATION
-#                    PYTHONPATH=path_list_append:"$<SHELL_PATH:${RoughPy_SOURCE_DIR}>"
-#        )
-#
-#    endif()
-#
-#
-#
-
-endif()
+endif ()
