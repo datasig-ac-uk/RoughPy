@@ -47,8 +47,6 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
-  # Disable embedded tests on Windows due to platform path issues on CI
-  ROUGHPY_BUILD_TEST_PYTHON_EMBED: ${{ runner.os == 'Windows' && 'OFF' || 'ON' }}
 
 jobs:
   build:
@@ -125,6 +123,8 @@ jobs:
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
         VCPKG_FORCE_SYSTEM_BINARIES: 1
         CMAKE_GENERATOR: "Ninja"
+        # Disable embedded tests on Windows to avoid runner path issues on CI
+        ROUGHPY_BUILD_TEST_PYTHON_EMBED: ${{ runner.os == 'Windows' && 'OFF' || 'ON' }}
 
     - name: Build
       # Build your program with the given configuration
