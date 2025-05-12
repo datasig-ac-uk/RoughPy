@@ -10,6 +10,7 @@ target_sources(RoughPy_Platform PRIVATE
         ${_header_dir}/number_trait.h
         ${_header_dir}/type.h
         ${_header_dir}/values.h
+        ${_header_dir}/array.h
 
         arithmetic_trait.cpp
         backup_display.cpp
@@ -25,6 +26,7 @@ target_sources(RoughPy_Platform PRIVATE
         type_promotion.cpp
         value.cpp
         value_arithmetic.cpp
+        array.cpp
         value_compare.cpp
         value_math.cpp
 )
@@ -41,6 +43,7 @@ if (ROUGHPY_BUILD_TESTS)
 
     add_executable(test_generics
             test_value.cpp
+            test_array.cpp
     )
 
     target_link_libraries(test_generics PRIVATE RoughPy::Platform GTest::gtest)
