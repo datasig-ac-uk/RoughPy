@@ -84,8 +84,7 @@ public:
     ConstRef operator[](dimn_t idx) const
     {
         validate_idx(idx);
-        const char* byte_ptr = reinterpret_cast<const char*>(data());
-        ConstRef result{type(), byte_ptr + (idx * p_type->object_size())};
+        ConstRef result{type(), ptr_at_unsafe(idx)};
         return result;
     }
 
@@ -93,8 +92,7 @@ public:
     Ref operator[](dimn_t idx)
     {
         validate_idx(idx);
-        char* byte_ptr = reinterpret_cast<char*>(data());
-        Ref result{type(), byte_ptr + (idx * p_type->object_size())};
+        Ref result{type(), ptr_at_unsafe(idx)};
         return result;
     }
 
@@ -121,22 +119,41 @@ public:
     RPY_NO_DISCARD
     inline ConstRef get_unchecked(dimn_t idx) const
     {
-        const char* byte_ptr = reinterpret_cast<const char*>(data());
-        const void* p_data = byte_ptr + (idx * p_type->object_size());
-        return ConstRef(&*p_type, p_data);
+        return ConstRef(&*p_type, ptr_at_unsafe(idx));
     }
 
     RPY_NO_DISCARD
     inline Ref get_unchecked_mut(dimn_t idx)
     {
-        char* byte_ptr = reinterpret_cast<char*>(data());
-        void* p_data = byte_ptr + (idx * p_type->object_size());
-        return Ref(&*p_type, p_data);
+        return Ref(&*p_type, ptr_at_unsafe(idx));
     }
 
 private:
     void copy_from(const Array& other);
     void validate_idx(dimn_t idx) const;
+
+    RPY_NO_DISCARD
+    inline std::size_t ptr_offset_unsafe(dimn_t idx) const
+    {
+        std::size_t offset = idx * p_type->object_size();
+        return offset;
+    }
+
+    RPY_NO_DISCARD
+    inline const void* ptr_at_unsafe(dimn_t idx) const
+    {
+        const char* byte_ptr = reinterpret_cast<const char*>(data());
+        const void* ptr = byte_ptr + ptr_offset_unsafe(idx);
+        return ptr;
+    }
+
+    RPY_NO_DISCARD
+    inline void* ptr_at_unsafe(dimn_t idx)
+    {
+        char* byte_ptr = reinterpret_cast<char*>(data());
+        void* ptr = byte_ptr + ptr_offset_unsafe(idx);
+        return ptr;
+    }
 };
 
 } // namespace rpy::generics

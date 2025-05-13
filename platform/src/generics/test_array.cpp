@@ -38,22 +38,30 @@ TEST(TestArray, TestTypedContructorWithSize)
 
     // FIXME for review - valid alignment checks?
     ASSERT_EQ(reinterpret_cast<std::size_t>(a.data()) % 16, 0);
+
+    ASSERT_EQ(*a[0].data<float>(), 0.0f);
+    ASSERT_EQ(*a[1].data<float>(), 0.0f);
+    ASSERT_EQ(*a[2].data<float>(), 0.0f);
 }
 
 TEST(TestArray, TestTypedContructorWithSizeAligned)
 {
-    Array a{get_type<float>(), 5, 1};
+    Array a{get_type<uint8_t>(), 5, 1};
 
     ASSERT_EQ(a.size(), 5);
     ASSERT_EQ(a.capacity(), 5);
     ASSERT_FALSE(a.empty());
+
+    for (std::size_t i = 0; i < 5; ++i) {
+        ASSERT_EQ(*a[i].data<uint8_t>(), 0);
+    }
 }
 
 TEST(TestArray, TestCopyConstructAndAssign)
 {
     // Original data
     Array a{get_type<double>(), 7};
-    for (size_t i = 0; i < 7; ++i) {
+    for (std::size_t i = 0; i < 7; ++i) {
         double *v = a[i].data<double>();
         *v = 1.0 / static_cast<double>(i + 1);
     }
@@ -75,7 +83,7 @@ TEST(TestArray, TestCopyConstructAndAssign)
     // Confirm values are copied correctly to unique locations
     ASSERT_NE(a.data(), b.data());
     ASSERT_NE(a.data(), c.data());
-    for (size_t i = 0; i < 7; ++i) {
+    for (std::size_t i = 0; i < 7; ++i) {
         ASSERT_EQ(a[i], b[i]);
         ASSERT_EQ(a[i], c[i]);
     }
@@ -85,7 +93,7 @@ TEST(TestArray, TestMoveConstructAndAssign)
 {
     // Original data
     Array a{get_type<double>(), 11};
-    for (size_t i = 0; i < 11; ++i) {
+    for (std::size_t i = 0; i < 11; ++i) {
         double *v = a[i].data<double>();
         *v = static_cast<double>(i * i);
     }
@@ -113,7 +121,7 @@ TEST(TestArray, TestMoveConstructAndAssign)
 TEST(TestArray, TestArrayAccessor)
 {
     Array a{get_type<int>(), 13};
-    for (size_t i = 0; i < 13; ++i) {
+    for (std::size_t i = 0; i < 13; ++i) {
         int *v = a[i].data<int>();
         *v = static_cast<int>(i);
     }
@@ -146,4 +154,98 @@ TEST(TestArray, TestArrayAccessor)
 
     *a.get_unchecked_mut(7).data<int>() = -3;
     ASSERT_EQ(*a_unchecked.data<int>(), -3);
+}
+
+TEST(TestArray, TestArrayReserveNoType)
+{
+    Array a{};
+    EXPECT_THROW(a.reserve(10), ArrayTypeException);
+}
+
+TEST(TestArray, TestArrayResizeNoType)
+{
+    Array a{};
+    EXPECT_THROW(a.resize(10), ArrayTypeException);
+}
+
+TEST(TestArray, TestArrayReserve)
+{
+    Array a{get_type<int16_t>(), 17};
+    for (std::size_t i = 0; i < 17; ++i) {
+        *a[i].data<int16_t>() = static_cast<int16_t>(i);
+    }
+
+    const void* old_data = a.data();
+    a.reserve(30);
+
+    // Confirm data has been relocated and copied correctly
+    ASSERT_EQ(a.size(), 17);
+    ASSERT_EQ(a.capacity(), 30);
+    ASSERT_NE(a.data(), old_data);
+    for (std::size_t i = 0; i < 17; ++i) {
+        ASSERT_EQ(*a[i].data<int16_t>(), static_cast<int16_t>(i));
+    }
+}
+
+TEST(TestArray, TestArrayResize)
+{
+    Array a{get_type<uint16_t>(), 19};
+    for (std::size_t i = 0; i < 19; ++i) {
+        *a[i].data<uint16_t>() = static_cast<uint16_t>(i);
+    }
+
+    const void* old_data = a.data();
+    a.resize(40);
+
+    // Confirm relocation and copy has happened as in reserve test above
+    ASSERT_EQ(a.size(), 40);
+    ASSERT_EQ(a.capacity(), 40);
+    ASSERT_NE(a.data(), old_data);
+
+    // Old values must copied and new ones must be default constructed
+    for (std::size_t i = 0; i < 40; ++i) {
+        if (i < 19) {
+            ASSERT_EQ(*a[i].data<uint16_t>(), static_cast<uint16_t>(i));
+        } else {
+            ASSERT_EQ(*a[i].data<uint16_t>(), 0);
+        }
+    }
+}
+
+TEST(TestArray, TestArrayResizeNoRelocate)
+{
+    Array a{get_type<uint8_t>(), 7};
+    for (std::size_t i = 0; i < 7; ++i) {
+        *a[i].data<uint8_t>() = static_cast<uint8_t>(i);
+    }
+
+    // Reserve should realloc
+    const void* old_data1 = a.data();
+    a.reserve(20);
+
+    // Expect relocation of data as above
+    EXPECT_EQ(a.size(), 7);
+    EXPECT_EQ(a.capacity(), 20);
+    EXPECT_NE(a.data(), old_data1);
+    for (std::size_t i = 0; i < 7; ++i) {
+        EXPECT_EQ(*a[i].data<uint8_t>(), static_cast<uint8_t>(i));
+    }
+
+    // Reserve under capacity will preserve old data
+    const void* old_data2 = a.data();
+    a.resize(13);
+
+    // Resized but new data still at old ptr
+    ASSERT_EQ(a.size(), 13);
+    ASSERT_EQ(a.capacity(), 20);
+    ASSERT_EQ(a.data(), old_data2);
+
+    // Old values must copied and new ones must be default constructed
+    for (std::size_t i = 0; i < 13; ++i) {
+        if (i < 7) {
+            ASSERT_EQ(*a[i].data<uint8_t>(), static_cast<uint8_t>(i));
+        } else {
+            ASSERT_EQ(*a[i].data<uint8_t>(), 0);
+        }
+    }
 }

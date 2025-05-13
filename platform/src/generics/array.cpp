@@ -62,14 +62,42 @@ Array& Array::operator=(Array&& other) noexcept
 
 void Array::resize(dimn_t size)
 {
-    // FIXME work in progress
-    assert(false);
+    if (!type()) {
+        throw ArrayTypeException{};
+    }
+
+    if (size < m_size) {
+        // Reducing size preserves capacity
+        p_type->destroy_range(ptr_at_unsafe(size), m_size - size);
+    } else if (size > m_size) {
+        reserve(size);
+
+        // Init any values in new range
+        p_type->copy_or_fill(
+            ptr_at_unsafe(m_size),
+            nullptr,
+            size - m_size,
+            true
+        );
+    }
+
+    m_size = size;
 }
 
 void Array::reserve(dimn_t capacity)
 {
-    // FIXME work in progress
-    assert(false);
+    if (!type()) {
+        throw ArrayTypeException{};
+    }
+
+    // Realloc and copy old data
+    if (capacity > m_capacity) {
+        m_capacity = capacity;
+        void* new_data = rpy::mem::aligned_alloc(m_alignment, m_capacity * p_type->object_size());
+        p_type->copy_or_fill(new_data, m_data, m_size, false);
+        rpy::mem::aligned_free(m_data);
+        m_data = new_data;
+    }
 }
 
 void Array::copy_from(const Array& other)
