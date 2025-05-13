@@ -36,7 +36,11 @@ Array::Array(const TypePtr type, dimn_t size, std::size_t alignment) :
 
 Array::~Array()
 {
-    rpy::mem::aligned_free(m_data, 0);
+    if (!type() && m_size) {
+        p_type->destroy_range(m_data, m_size);
+    }
+
+    rpy::mem::aligned_free(m_data);
 }
 
 Array& Array::operator=(const Array& other)
