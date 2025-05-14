@@ -34,7 +34,7 @@ public:
     Array(const Array& other);
     Array(Array&& other) noexcept;
 
-    explicit Array(const TypePtr type, dimn_t size = 0, std::size_t alignment = alignof(void*));
+    explicit Array(const TypePtr type, dimn_t size = 0, std::size_t alignment = alignof(std::max_align_t));
 
     ~Array();
 
@@ -133,9 +133,9 @@ private:
     void validate_idx(dimn_t idx) const;
 
     RPY_NO_DISCARD
-    inline std::size_t ptr_offset_unsafe(dimn_t idx) const
+    inline std::uintptr_t ptr_offset_unsafe(dimn_t idx) const
     {
-        std::size_t offset = idx * p_type->object_size();
+        std::uintptr_t offset = idx * p_type->object_size();
         return offset;
     }
 
