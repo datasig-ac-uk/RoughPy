@@ -46,7 +46,7 @@ TEST(TestArray, TestTypedContructorWithSize)
 TEST(TestArray, TestTypedContructorWithSizeAligned)
 {
     for (size_t align : { 16, 32, 64, 128 }) {
-        Array a{get_type<uint8_t>(), 5, 1};
+        Array a{get_type<uint8_t>(), 5, align};
         EXPECT_TRUE(mem::is_pointer_aligned(a.data(), align));
     }
 }
