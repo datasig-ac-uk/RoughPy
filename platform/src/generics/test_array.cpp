@@ -36,8 +36,7 @@ TEST(TestArray, TestTypedContructorWithSize)
     ASSERT_EQ(a.capacity(), 3);
     ASSERT_FALSE(a.empty());
 
-    // FIXME for review - valid alignment checks?
-    ASSERT_EQ(reinterpret_cast<std::size_t>(a.data()) % 16, 0);
+    EXPECT_TRUE(mem::is_pointer_aligned(a.data(), alignof(std::max_align_t)));
 
     ASSERT_EQ(*a[0].data<float>(), 0.0f);
     ASSERT_EQ(*a[1].data<float>(), 0.0f);
@@ -46,14 +45,9 @@ TEST(TestArray, TestTypedContructorWithSize)
 
 TEST(TestArray, TestTypedContructorWithSizeAligned)
 {
-    Array a{get_type<uint8_t>(), 5, 1};
-
-    ASSERT_EQ(a.size(), 5);
-    ASSERT_EQ(a.capacity(), 5);
-    ASSERT_FALSE(a.empty());
-
-    for (std::size_t i = 0; i < 5; ++i) {
-        ASSERT_EQ(*a[i].data<uint8_t>(), 0);
+    for (size_t align : { 16, 32, 64, 128 }) {
+        Array a{get_type<uint8_t>(), 5, 1};
+        EXPECT_TRUE(mem::is_pointer_aligned(a.data(), align));
     }
 }
 
