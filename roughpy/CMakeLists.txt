@@ -149,18 +149,7 @@ else ()
             INSTALL_RPATH $ORIGIN)
 endif ()
 
-
-# Local helper function for subdirs to add src to both module and embed tests
-function(roughpy_module_sources)
-    target_sources(RoughPy_PyModule PRIVATE ${ARGN})
-
-    if (ROUGHPY_BUILD_TEST_PYTHON_EMBED)
-        target_sources(test_python_embed PRIVATE ${ARGN})
-    endif ()
-endfunction()
-
 add_subdirectory(src)
-
 
 target_include_directories(RoughPy_PyModule PRIVATE
         src/
