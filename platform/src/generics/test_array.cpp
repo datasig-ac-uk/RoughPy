@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 
 #include "roughpy/generics/array.h"
+#include "roughpy/generics/mocking/mock_type.h"
 
 using namespace rpy;
 using namespace rpy::generics;
+using namespace rpy::mem;
 
 TEST(TestArray, TestDefaultConstructor)
 {
@@ -16,6 +18,28 @@ TEST(TestArray, TestDefaultConstructor)
     // Operator access on null type should throw
     EXPECT_THROW((void)a[0], ArrayTypeException);
     EXPECT_THROW((void)*a[0].data<float>(), ArrayTypeException);
+}
+
+TEST(TestArray, TestDestructorAllocDealloc)
+{
+    using ::testing::_;
+    using namespace rpy::generics::mocking;
+
+    const dimn_t SIZE = 5;
+    auto type_ptr = Rc<MockType>{new MockType};
+    {
+        // Mock double size and confirm data assigned on construction
+        EXPECT_CALL(*type_ptr, object_size()).Times(1).WillOnce([]{
+            // Arbitrary type size for valid example
+            return sizeof(double);
+        });
+        EXPECT_CALL(*type_ptr, copy_or_fill(_, nullptr, SIZE, true)).Times(1);
+        Array arr{type_ptr, SIZE};
+
+        // Data destroyed when arr goes out of scope
+        void* data_ptr = arr.data();
+        EXPECT_CALL(*type_ptr, destroy_range(data_ptr, SIZE)).Times(1);
+    }
 }
 
 TEST(TestArray, TestTypedContructorZeroSize)

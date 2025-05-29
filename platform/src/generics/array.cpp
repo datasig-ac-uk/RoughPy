@@ -36,7 +36,7 @@ Array::Array(const TypePtr type, dimn_t size, std::size_t alignment) :
 
 Array::~Array()
 {
-    if (!type() && m_size) {
+    if (type() && m_size) {
         p_type->destroy_range(m_data, m_size);
     }
 

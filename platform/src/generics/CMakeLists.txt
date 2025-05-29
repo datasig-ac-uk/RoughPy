@@ -33,22 +33,25 @@ target_sources(RoughPy_Platform PRIVATE
 
 
 add_subdirectory(builtin_types)
+add_subdirectory(mocking)
 add_subdirectory(multiprecision_types)
 add_subdirectory(polynomial_type)
 
 
 
 if (ROUGHPY_BUILD_TESTS)
-
-
     add_executable(test_generics
             test_value.cpp
             test_array.cpp
     )
 
-    target_link_libraries(test_generics PRIVATE RoughPy::Platform GTest::gtest)
+    target_link_libraries(test_generics
+        PRIVATE
+            RoughPy::Platform
+            GTest::gtest
+            GTest::gmock
+            RoughPy_Platform_Mocking
+    )
 
     setup_roughpy_cpp_tests(test_generics)
-
-
 endif()
