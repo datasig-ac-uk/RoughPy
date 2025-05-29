@@ -25,7 +25,7 @@ private:
     TypePtr p_type;
     dimn_t m_size = 0;
     dimn_t m_capacity = 0;
-    std::size_t m_alignment = alignof(void*);
+    std::size_t m_alignment = alignof(std::max_align_t);
     void* m_data = nullptr;
 
 public:
