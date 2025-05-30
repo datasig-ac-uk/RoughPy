@@ -386,15 +386,24 @@ void ConversionManager::handle_sequence_leaf(LeafItem& leaf)
 
 void ConversionManager::do_conversion()
 {
-    for (auto& leaf : m_leaves) {
-        switch (leaf.leaf_type) {
-            case LeafType::Scalar: handle_scalar_leaf(leaf); break;
-            case LeafType::KeyScalar: handle_key_scalar_leaf(leaf); break;
-            case LeafType::Lie: handle_lie_leaf(leaf); break;
-            case LeafType::DLTensor: handle_dltensor_leaf(leaf); break;
-            case LeafType::Buffer: handle_buffer_leaf(leaf); break;
-            case LeafType::Dict: handle_dict_leaf(leaf); break;
-            case LeafType::Sequence: handle_sequence_leaf(leaf); break;
+    for (size_t i = 0, n = m_leaves.size(); i< n; ++i) {
+        auto& leaf = m_leaves[i];
+        try {
+            switch (leaf.leaf_type) {
+                case LeafType::Scalar: handle_scalar_leaf(leaf); break;
+                case LeafType::KeyScalar: handle_key_scalar_leaf(leaf); break;
+                case LeafType::Lie: handle_lie_leaf(leaf); break;
+                case LeafType::DLTensor: handle_dltensor_leaf(leaf); break;
+                case LeafType::Buffer: handle_buffer_leaf(leaf); break;
+                case LeafType::Dict: handle_dict_leaf(leaf); break;
+                case LeafType::Sequence: handle_sequence_leaf(leaf); break;
+            }
+        } catch (scalars::ScalarConversionException& exc) {
+            std::ostringstream oss;
+            oss << "Unable to convert value " << i;
+            oss << " from " << exc.srcType();
+            oss << " to " << exc.dstType();
+            throw py::value_error(oss.str());
         }
     }
 }
@@ -508,6 +517,12 @@ void ConversionManager::check_size_and_type_recurse(
                     "dict must be key-scalar or timestamp-value"
             );
         }
+    } else if (py::isinstance<py::str>(node)) {
+        // A string is never a valid container
+        RPY_THROW(
+            py::value_error,
+            "unexpected string as tensor data"
+        );
     } else if (py::isinstance<py::sequence>(node)) {
         RPY_CHECK(py::len(node) > 0);
         optional<ValueType> expected_tp;
@@ -539,6 +554,12 @@ void ConversionManager::check_size_and_type_recurse(
                                             m_options.alternative_key
                                                     ->py_key_type
                                     ))
+                        );
+                    } else if (py::isinstance<py::str>(item)) {
+                        // A string is invalid for any tensor element
+                        RPY_THROW(
+                            py::value_error,
+                            "unexpected string in key-scalar data"
                         );
                     }
 

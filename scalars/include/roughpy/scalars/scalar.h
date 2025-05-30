@@ -158,6 +158,35 @@ struct can_be_scalar<std::unique_ptr<T>> : false_type {
 
 }// namespace dtl
 
+
+class ROUGHPY_SCALARS_EXPORT ScalarConversionException : public std::exception
+{
+private:
+    devices::TypeInfo dst_type;
+    devices::TypeInfo src_type;
+
+public:
+    ScalarConversionException(
+        devices::TypeInfo dst_type_,
+        devices::TypeInfo src_type_
+    ) noexcept :
+        dst_type(dst_type_),
+        src_type(src_type_)
+    {
+    }
+
+    devices::TypeInfo dstType() const noexcept
+    {
+        return dst_type;
+    }
+
+    devices::TypeInfo srcType() const noexcept
+    {
+        return src_type;
+    }
+};
+
+
 /**
  * @brief A wrapper around scalar values.
  *
@@ -330,6 +359,8 @@ public:
     enable_if_t<!is_base_of_v<Scalar, T>, Scalar&> operator=(const T& value
     )
     {
+        auto src_type = devices::type_info<remove_cv_t<T>>();
+
         if (p_type_and_content_type.is_null()) {
             construct_inplace(this, value);
         } else {
@@ -342,20 +373,20 @@ public:
                                 trivial_bytes,
                                 type_info(),
                                 &value,
-                                devices::type_info<remove_cv_t<T>>()
+                                src_type
                         )) {
-                        RPY_THROW(std::runtime_error, "assignment failed");
+                            throw ScalarConversionException(type_info(), src_type);
                     }
                     break;
                 case dtl::ScalarContentType::OpaquePointer:
-                case dtl::ScalarContentType ::OwnedPointer:
+                case dtl::ScalarContentType::OwnedPointer:
                     if (!dtl::scalar_convert_copy(
                                 opaque_pointer,
                                 type_info_from(p_type_and_content_type),
                                 &value,
-                                devices::type_info<remove_cv_t<T>>()
+                                src_type
                         )) {
-                        RPY_THROW(std::runtime_error, "assignment failed");
+                            throw ScalarConversionException(type_info_from(p_type_and_content_type), src_type);
                     }
                     break;
                 case dtl::ScalarContentType::ConstOpaquePointer:
@@ -366,7 +397,7 @@ public:
                 case dtl::ScalarContentType::Interface:
                 case dtl::ScalarContentType::OwnedInterface:
                     interface_ptr->set_value(
-                            Scalar(devices::type_info<remove_cv_t<T>>(), &value)
+                            Scalar(src_type, &value)
                     );
                     break;
             }

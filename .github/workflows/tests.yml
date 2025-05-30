@@ -117,12 +117,14 @@ jobs:
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: |
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_TEST_PYTHON_EMBED=${{env.ROUGHPY_BUILD_TEST_PYTHON_EMBED}}
       env:
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
         VCPKG_FORCE_SYSTEM_BINARIES: 1
         CMAKE_GENERATOR: "Ninja"
+        # Disable embedded tests on Windows to avoid runner path issues on CI
+        ROUGHPY_BUILD_TEST_PYTHON_EMBED: ${{ runner.os == 'Windows' && 'OFF' || 'ON' }}
 
     - name: Build
       # Build your program with the given configuration
