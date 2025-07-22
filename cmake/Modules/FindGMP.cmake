@@ -68,6 +68,7 @@ else()
     )
 
     if (GMP_FOUND AND NOT TARGET gmp::gmp)
+        message(STATUS "Found gmp library, adding target")
         add_library(gmp::gmp UNKNOWN IMPORTED GLOBAL)
         set_target_properties(gmp::gmp PROPERTIES
                 IMPORTED_LOCATION "${GMP_LIBRARY}"
