@@ -19,7 +19,7 @@ if (PC_GMP_FOUND)
     set(GMP_COMPILE_OPTIONS ${PC_GMP_CFLAGS} ${PC_GMP_CFLAGS_OTHER})
     set(GMP_LINK_OPTIONS ${PC_GMP_LDFLAGS} ${PC_GMP_LDFLAGS_OTHER})
 
-    add_library(GMP::GMP ALIAS PkgConfig::PC_GMP)
+    add_library(gmp::gmp ALIAS PkgConfig::PC_GMP)
 else()
 
     set(_gmp_lib_names gmp libgmp gmp-10 libgmp-10 mpir libmpir)
@@ -68,7 +68,6 @@ else()
     )
 
     if (GMP_FOUND AND NOT TARGET gmp::gmp)
-        message(STATUS "Found gmp library, adding target")
         add_library(gmp::gmp UNKNOWN IMPORTED GLOBAL)
         set_target_properties(gmp::gmp PROPERTIES
                 IMPORTED_LOCATION "${GMP_LIBRARY}"
