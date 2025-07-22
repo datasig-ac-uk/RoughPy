@@ -46,7 +46,7 @@ if (ROUGHPY_BUILD_TESTS)
     target_link_libraries(test_polynomial PRIVATE
             RoughPy::Core
             Boost::headers
-            GMP::GMP
+            gmp::gmp
             GTest::gtest
     )
 

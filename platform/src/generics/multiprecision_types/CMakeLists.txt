@@ -46,8 +46,8 @@ target_sources(RoughPy_Platform PRIVATE
 
 
 target_link_libraries(RoughPy_Platform PRIVATE
-        GMP::GMP
-        MPFR::MPFR
+        gmp::gmp
+        mpfr::mpfr
 )
 
 
