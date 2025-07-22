@@ -8,7 +8,7 @@
 namespace rpy::generics {
 namespace mocking {
 
-class ROUGHPY_PLATFORM_EXPORT MockType : public rpy::mem::RefCountedMiddle<Type>
+class MockType : public rpy::mem::RefCountedMiddle<Type>
 {
 public:
     virtual ~MockType();
