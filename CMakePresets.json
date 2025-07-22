@@ -20,7 +20,7 @@
       "hidden": true,
       "cacheVariables": {
         "ROUGHPY_BUILD_TESTS": "ON",
-        "ROUGHPY_BUILD_TEST_PYTHON_EMBED": "ON"
+        "ROUGHPY_BUILD_TEST_PYTHON_EMBED": "OFF"
       }
     },
     {
