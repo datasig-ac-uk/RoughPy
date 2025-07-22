@@ -1,8 +1,9 @@
 
 [project]
 name = "RoughPy"
-author = "The RoughPy Authors"
-author_email = "info@datasig.ac.uk"
+authors = [
+    { name="The RoughPy Authors", email = "info@datasig.ac.uk" }
+    ]
 #license = {file = "LICENSE.txt" }
 license = { text = "BSD-3-Clause" }
 keywords = [
@@ -12,8 +13,8 @@ keywords = [
     "signatures"
 ]
 
-include_package_data = true
-packages = ["roughpy"]
+#include_package_data = true
+#packages = ["roughpy"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -46,7 +47,6 @@ dynamic = ["version", "readme"]
 requires = [
     "scikit-build-core[pyproject]",
     "pybind11<3.0.0",
-    "ninja; platform_system!='Windows'",
     "numpy>=2.0.0",
     #    "mkl-devel; platform_machine in 'x86_64 x86 AMD64'",
     #    "mkl-static; platform_machine in 'x86_64 x86 AMD64'",
