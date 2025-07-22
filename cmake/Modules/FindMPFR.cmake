@@ -21,7 +21,7 @@ if (PC_MPFR_FOUND)
     set(MPFR_COMPILE_OPTIONS "${PC_MPFR_CFLAGS} ${PC_MPFR_CFLAGS_OTHER}")
     set(MPFR_LINK_OPTIONS "${PC_MPFR_LDFLAGS} ${PC_MPFR_LDFLAGS_OTHER}")
 
-    add_library(MPFR::MPFR ALIAS PkgConfig::PC_MPFR)
+    add_library(mpfr::mpfr ALIAS PkgConfig::PC_MPFR)
 else ()
     set(_mpfr_lib_names mpfr libmpfr)
 
