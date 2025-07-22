@@ -9,4 +9,5 @@ add_library(RoughPy_Platform_Mocking
 target_link_libraries(RoughPy_Platform_Mocking
     PRIVATE
         RoughPy::Platform
+        GTest::gmock
 )
