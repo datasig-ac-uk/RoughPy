@@ -21,7 +21,7 @@ if (PC_MPFR_FOUND)
     set(MPFR_COMPILE_OPTIONS "${PC_MPFR_CFLAGS} ${PC_MPFR_CFLAGS_OTHER}")
     set(MPFR_LINK_OPTIONS "${PC_MPFR_LDFLAGS} ${PC_MPFR_LDFLAGS_OTHER}")
 
-    add_library(MPFR::MPFR ALIAS PkgConfig::PC_MPFR)
+    add_library(mpfr::mpfr ALIAS PkgConfig::PC_MPFR)
 else ()
     set(_mpfr_lib_names mpfr libmpfr)
 
@@ -67,9 +67,9 @@ else ()
             MPFR_LINK_OPTIONS
     )
 
-    if (MPFR_FOUND AND NOT MPFR::MPFR)
-        add_library(MPFR::MPFR UNKNOWN IMPORTED GLOBAL)
-        set_target_properties(MPFR::MPFR PROPERTIES
+    if (MPFR_FOUND AND NOT mpfr::mpfr)
+        add_library(mpfr::mpfr UNKNOWN IMPORTED GLOBAL)
+        set_target_properties(mpfr::mpfr PROPERTIES
                 IMPORTED_LOCATION "${MPFR_LIBRARY}"
                 INTERFACE_INCLUDE_DIRECTORIES "${MPFR_INCLUDE_DIR}"
                 IMPORTED_IMPLIB "${MPFR_LIBRARY}"

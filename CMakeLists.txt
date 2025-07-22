@@ -32,6 +32,13 @@ option(ROUGHPY_LINK_NUMPY "Link with Numpy library for array handling" ${ROUGHPY
 option(ROUGHPY_GENERATE_DEVICE_CODE "Generate code for objects on devices" OFF)
 option(ROUGHPY_DISABLE_BLAS "Disable linking to blas/lapack" ON)
 
+if (DEFINED CONAN_COMMAND
+        OR "${CMAKE_PROJECT_TOP_LEVEL_INCLUDES}" MATCHES "conan_provider.cmake"
+        OR "${CMAKE_TOOLCHAIN_FILE}" MATCHES "conan_toolchain.cmake")
+    set(RPY_USING_CONAN ON CACHE BOOL "Are we using the Conan package manager")
+else()
+    set(RPY_USING_CONAN CACHE BOOL "Are we using the Conan package manager")
+endif()
 
 # RoughPy usually requires vcpkg to ensure all the dependencies are installed
 # and available for the build system. This file sets everything up including,
@@ -175,14 +182,23 @@ find_boost(VERSION 1.83 COMPONENTS
 
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG CONFIG REQUIRED)
-find_package(OpenCL CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
-find_package(PCGRandom REQUIRED)
-find_package(GMP REQUIRED)
-find_package(MPFR REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
 find_package(ctre CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+
+if (RPY_USING_CONAN)
+    find_package(OpenCLICDLoader CONFIG REQUIRED)
+    find_package(OpenCLHeaders CONFIG REQUIRED)
+    find_package(pcg-cpp CONFIG REQUIRED)
+    find_package(gmp CONFIG REQUIRED)
+    find_package(mpfr CONFIG REQUIRED)
+else()
+    find_package(OpenCL CONFIG REQUIRED)
+    find_package(PCGRandom REQUIRED)
+    find_package(GMP REQUIRED)
+    find_package(MPFR REQUIRED)
+endif()
 
 message(STATUS "Target architecture ${RPY_ARCH}")
 

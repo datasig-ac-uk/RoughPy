@@ -19,7 +19,7 @@ if (ROUGHPY_BUILD_TESTS)
     target_link_libraries(test_algebra PRIVATE
         RoughPy::Algebra
         GTest::gtest
-        GMP::GMP
+        gmp::gmp
     )
 
     setup_roughpy_cpp_tests(test_algebra)

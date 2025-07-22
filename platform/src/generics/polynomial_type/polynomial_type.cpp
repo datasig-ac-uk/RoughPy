@@ -230,17 +230,17 @@ bool parse_rat_coeff(generics::dtl::RationalCoeff& coeff, bool neg, string_view 
     int64_t numerator;
     int64_t denominator = 1;
 
-    constexpr auto rat_pattern = ctll::fixed_string{
+    static constexpr ctll::fixed_string rat_pattern {
         R"((?<num>[1-9]\d*)(?:\/(?<den>[1-9]\d*))?)"
     };
 
     if (auto match = ctre::match<rat_pattern>(data)) {
-        if (auto num = match.get<"num">()) {
+        if (auto num = match.get<1>()) {
             if (!parse_integer(numerator, num.view())) {
                 return false;
             }
         }
-        if (auto den = match.get<"den">()) {
+        if (auto den = match.get<2>()) {
             if (!parse_integer(denominator, den.view())) {
                 return false;
             }
@@ -257,7 +257,7 @@ bool parse_rat_coeff(generics::dtl::RationalCoeff& coeff, bool neg, string_view 
 
 bool parse_monomial(Monomial& result, string_view monomial_string) noexcept
 {
-    constexpr auto monomial_pattern = ctll::fixed_string{
+    static constexpr auto monomial_pattern = ctll::fixed_string{
             R"(([a-zA-Z])([1-9]\d*)(?:\^([1-9]\d*))?)"
     };
 
@@ -298,21 +298,21 @@ bool PolynomialType::parse_from_string(void* data,
 
     auto* poly = static_cast<Polynomial*>(data);
 
-    constexpr auto term_pattern = ctll::fixed_string{
+    static constexpr auto term_pattern = ctll::fixed_string{
             R"((?<sgn>\+|\-)?(?:(?<dbl>\d+\.\d*)|(?<rat>[1-9]\d*(?:\/[1-9]\d*)?))(?:\((?<mon>(?:[a-zA-Z][1-9]\d*(?:\^(?:[1-9]\d*))?)+)\))?)"
     };
 
     generics::dtl::RationalCoeff tmp_coeff;
     for (auto match : ctre::search_all<term_pattern>(str)) {
-        auto sign_m = match.get<"sgn">();
+        auto sign_m = match.get<1>();
         bool negative = sign_m && *sign_m.begin() == '-';
 
-        if (auto dbl_grp = match.get<"dbl">()) {
+        if (auto dbl_grp = match.get<2>()) {
             if (!parse_dbl_coeff(tmp_coeff, negative, dbl_grp.view())) {
                 poly->clear();
                 return false;
             }
-        } else if (auto rat_grp = match.get<"rat">()) {
+        } else if (auto rat_grp = match.get<3>()) {
             if (!parse_rat_coeff(tmp_coeff, negative, rat_grp.view())) {
                 poly->clear();
                 return false;
@@ -320,7 +320,7 @@ bool PolynomialType::parse_from_string(void* data,
         }
 
         Monomial mon;
-        if (auto monomial_grp = match.get<"mon">()) {
+        if (auto monomial_grp = match.get<4>()) {
             if (!parse_monomial(mon, monomial_grp.view())) {
                 poly->clear();
                 return false;
