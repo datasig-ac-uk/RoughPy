@@ -2,6 +2,7 @@
 # To keep your changes, remove these comment lines, but the plugin won't be able to modify your requirements
 
 requirements:
+  - "gtest/1.16.0"
   - "opencl-icd-loader/2023.12.14"
   - "opencl-headers/2023.12.14"
   - "pcg-cpp/cci.20220409"
