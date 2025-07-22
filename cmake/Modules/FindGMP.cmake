@@ -67,9 +67,9 @@ else()
             GMP_LINK_OPTIONS
     )
 
-    if (GMP_FOUND AND NOT TARGET GMP::GMP)
-        add_library(GMP::GMP UNKNOWN IMPORTED GLOBAL)
-        set_target_properties(GMP::GMP PROPERTIES
+    if (GMP_FOUND AND NOT TARGET gmp::gmp)
+        add_library(gmp::gmp UNKNOWN IMPORTED GLOBAL)
+        set_target_properties(gmp::gmp PROPERTIES
                 IMPORTED_LOCATION "${GMP_LIBRARY}"
                 INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIR}"
                 IMPORTED_IMPLIB "${GMP_LIBRARY}"

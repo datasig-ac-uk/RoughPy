@@ -9,10 +9,10 @@ find_package_handle_standard_args(PCGRandom
         )
 
 
-if (PCGRandom_FOUND AND NOT TARGET PCGRandom::pcg_random)
+if (PCGRandom_FOUND AND NOT TARGET pcg-cpp::pcg-cpp)
 
-    add_library(PCGRandom::pcg_random IMPORTED INTERFACE GLOBAL)
-    set_target_properties(PCGRandom::pcg_random PROPERTIES
+    add_library(pcg-cpp::pcg-cpp IMPORTED INTERFACE GLOBAL)
+    set_target_properties(pcg-cpp::pcg-cpp PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${PCGRandom_INCLUDE_DIRS}"
             )
 

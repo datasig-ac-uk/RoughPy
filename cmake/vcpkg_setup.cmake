@@ -1,7 +1,8 @@
 
 include_guard()
 
-if (ROUGHPY_NO_VCPKG OR "${CMAKE_TOOLCHAIN_FILE}" MATCHES "vcpkg.cmake")
+if (ROUGHPY_NO_VCPKG OR "${CMAKE_TOOLCHAIN_FILE}" MATCHES "vcpkg.cmake"
+    OR RPY_USING_CONAN)
     # Do not use vcpkg, or vcpkg toolchain already set up
     message(DEBUG "Not using vcpkg or toolchain already set")
     return()

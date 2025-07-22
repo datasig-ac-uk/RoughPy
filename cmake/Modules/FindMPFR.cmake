@@ -67,9 +67,9 @@ else ()
             MPFR_LINK_OPTIONS
     )
 
-    if (MPFR_FOUND AND NOT MPFR::MPFR)
-        add_library(MPFR::MPFR UNKNOWN IMPORTED GLOBAL)
-        set_target_properties(MPFR::MPFR PROPERTIES
+    if (MPFR_FOUND AND NOT mpfr::mpfr)
+        add_library(mpfr::mpfr UNKNOWN IMPORTED GLOBAL)
+        set_target_properties(mpfr::mpfr PROPERTIES
                 IMPORTED_LOCATION "${MPFR_LIBRARY}"
                 INTERFACE_INCLUDE_DIRECTORIES "${MPFR_INCLUDE_DIR}"
                 IMPORTED_IMPLIB "${MPFR_LIBRARY}"
