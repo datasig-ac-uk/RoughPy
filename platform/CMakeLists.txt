@@ -8,7 +8,8 @@ add_library(RoughPy::PrecompiledHeaders ALIAS RoughPy_PrecompiledHeaders)
 target_link_libraries(RoughPy_PrecompiledHeaders INTERFACE
         Boost::headers
         cereal::cereal
-        GMP::GMP
+#        GMP::GMP
+        gmp::gmp
         Libalgebra_lite::Libalgebra_lite
 )
 
@@ -81,6 +82,7 @@ target_link_libraries(RoughPy_Platform PUBLIC
         Boost::system
         Boost::url
         Eigen3::Eigen
+        cereal::cereal
         Libalgebra_lite::Libalgebra_lite
         PRIVATE
         RoughPy::PrecompiledHeaders

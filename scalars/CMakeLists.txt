@@ -86,7 +86,8 @@ target_link_libraries(RoughPy_Scalars PUBLIC
         RoughPy::Platform
         PRIVATE
         RoughPy::PrecompiledHeaders
-        PCGRandom::pcg_random
+#        PCGRandom::pcg_random
+        pcg-cpp::pcg-cpp
 )
 
 set_target_properties(RoughPy_Scalars PROPERTIES ROUGHPY_COMPONENT Scalars)
@@ -108,7 +109,7 @@ if (ROUGHPY_BUILD_TESTS)
             src/test_scalar_type.cpp
     )
 
-    target_link_libraries(test_scalars PRIVATE RoughPy::Scalars GTest::gtest)
+    target_link_libraries(test_scalars PRIVATE RoughPy::Scalars pcg-cpp::pcg-cpp GTest::gtest)
 
 
     setup_roughpy_cpp_tests(test_scalars)
