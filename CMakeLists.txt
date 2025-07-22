@@ -197,7 +197,7 @@ else()
     find_package(OpenCL CONFIG REQUIRED)
     find_package(PCGRandom REQUIRED)
     find_package(GMP REQUIRED)
-    find_package(MPR REQUIRED)
+    find_package(MPFR REQUIRED)
 endif()
 
 message(STATUS "Target architecture ${RPY_ARCH}")
