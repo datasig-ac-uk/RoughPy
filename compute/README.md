@@ -31,6 +31,7 @@ On top of these, we can derive a number of intermediate operations:
  - free tensor exponential and fused multiply-exponential (fmexp)
  - free tensor logarithm
  - the adjoint of the right multiplier operator on the free tensor algebra
+ - Lie multiplication
  - change of Lie basis
 
 The basic operations are where we need to spend the most time getting these right, since all other operations build on 
@@ -148,3 +149,67 @@ explicitly construct the matrix.
 The tensor to Lie map performs recursive (right) bracketing. Note that this is sligtly more tricky because (1, 2, 1) 
 does not expand neatly to a Lie word because [1, [2, 1]] is not an element in our (usual) Hall set. Here we have to use
 the identity [u, v] = -[v, u].
+
+These are the only basic operations that involve the Lie algebra, and thus involve a choice of Hall set. We typically 
+use a "greedily constructed" Hall set that prioritizes brackets in the right-hand term of a bracket (i.e. 
+[1, [2, [1, 3]]] appears before [[1, 2], [1, 3]] in the basis order). This is the one that libalgebra (and 
+libalgebra-lite) use, and is generally a fairly sensible choice. Another choice that appears elsewhere in the 
+computational rough paths ecosystem is the Lyndon basis. Ideally we should be agnostic to the actual Lie basis used, and
+our computations should be able to handle all of these. Fortunately, there is a fairly compact way to describe any Hall
+set that is portable and easy to use. This involves two arrays of integers: one containing pairs of "parents" for each
+entry of the set and one set of "degree ranges". The latter is a useful construct for all kinds of graded bases. The 
+struct I like to work with is defined as follows:
+
+```c++
+struct HallSet {
+    size_t const * data;    // size 2 * (lie_size + 1) with first element (0, 0)
+    size_t const * begin;   // size depth + 1
+    int32_t width;          // redunant, because it is begin[1] - begin[0], but useful
+    int32_t depth;
+}; 
+```
+
+This can be silently passed in to any operation that involves a Lie to facilitate computations. 
+
+
+### Left and right half-shuffle and the shuffle product
+
+
+
+
+### The adjoint of the left multiplier operator on the free tensor algebra
+
+Consider a given free tensor $x\in T((V))$ and denote by $L_x$ the operator on $T((V))$ defined by 
+$L_x(y) = x \otimes y$. This is the left multiplier operator. As a linear operator on $T((V))$ there is a corresponding
+adjoint operator $L_x^*:T((V))' \to T((V))'$ (which can also be considered as an operator on $T((V))$). This operator
+appears in several contexts, notably in the system of PDEs used to compute signature kernels on rough streams. In the
+simplified case where $x$ is a single word, $w$, the adjoint operator is that extracts the coefficients of all the words
+prefixed by $w$. Thus $y$ maps to $\sum_v \langle y, wv\rangle v$. where $\langle y, wv\rangle$ denotes the coefficient
+of $wv$ in $y$. The full operator is the natural linear extension of this simplified case.
+
+The dense version of this is very easy to write down, again because of the relationship between the index of a word in
+the basis total order and the word itself. More precisely, if $w$ has index $i$ in the lexicographic order on words of 
+length $d := \ell(w)$, then each index of a word with length $k$ prefixed by $w$ has an index given by $iW^{k - d} + j$.
+If $x$ is a dense vector, we can tile several prefix words together to maximize the cache locality too.
+
+
+### The adjoint of multiplication operator on the shuffle algebra
+
+This is the analogous operator but where the free tensor product is replaced by the shuffle product. (Since shuffle is 
+commutative, there is only one such operator.) This one I know less about, but is is implemented (in pure Python) in the
+"tensor_functions" module of RoughPy, where it is used in the computation of LOG. (The linear extension of the log 
+function to the whole tensor algebra.)
+
+### Width increase or decrease operator on the tensor algebras
+
+Consider a vectors space $V$ and a subspace $U$ then the natural inclusion of $U$ into $V$ induces an algebra embedding
+of $T((U))$ into $T((V))$. If we suppose that $U$ and $V$ have "compatible" bases, then this map can be realised as a 
+map on tensor words. This operation increases the width of the tensor in question in a natural way.
+
+For instance, suppose $U$ has width 3 and V width 5. One possible inclusion operator maps $1\to 1$, $2 \to 2$, and 
+$3\to 3$. Another example might map $1 \to 2$, $2 \to 3$ and $3\to 5$. Both can be easily implemented at a word level 
+for densely represented tensors by again considering the indices. This operation is essential if we consider 
+"width-compressed" sparsity for tensors.
+
+The projection from $V$ onto $U$ is also useful. This is implemented in the completely analogous way.
+
