@@ -102,13 +102,13 @@ done piecemeal. The only complication here is that the terms of degree $d$ are s
 Ignoring these conversions, the algorithm is fairly simple:
 
 ```python
-for idx in range(tensor_size):
-    word = idx_to_word(idx)
+for src_idx in range(tensor_size):
+    word = idx_to_word(src_idx)
     degree = len(word)
     rev_word = reversed(word)
     dst_idx = word_to_idx(rev_word)
     
-    out[dst_idx] = (-1)**degree * src[idx]
+    dst[dst_idx] = (-1)**degree * src[src_idx]
 ```
 
 There is a much better algorithm that once again makes use of tiles. This is easier to implement compared to the tiled
@@ -119,3 +119,32 @@ less painful as well as improving the cache locality.
 
 These are sparse linear maps that embed the Lie algebra into the free tensor algebra and the corresponding projection
 from the tensor algebra onto the Lie algebra. The Lie to tensor map recursively expands brackets to tensor commutators.
+(letters are mapped identically). For width 2, depth 3 we can easily write down the matrix for this operation.
+
+```python
+np.array([[
+ #  1, 2, [1, 2], [1, [1, 2]], [2, [1, 2]]
+   [1, 0,      0,           0,           0],     # (1)
+   [0, 1,      0,           0,           0],     # (2)
+   [0, 0,      0,           0,           0],     # (1, 1)
+   [0, 0,      1,           0,           0],     # (1, 2)
+   [0, 0,     -1,           0,           0],     # (2, 1)
+   [0, 0,      0,           0,           0],     # (2, 2)
+   [0, 0,      0,           0,           0],     # (1, 1, 1)
+   [0, 0,      0,           1,           0],     # (1, 1, 2)
+   [0, 0,      0,          -2,           0],     # (1, 2, 1)
+   [0, 0,      0,           0,          -1],     # (1, 2, 2)
+   [0, 0,      0,           1,           0],     # (2, 1, 1)
+   [0, 0,      0,           0,           2],     # (2, 1, 2)
+   [0, 0,      0,           0,           1],     # (2, 2, 1)
+   [0, 0,      0,           0,           0],     # (2, 2, 2)
+]])
+```
+
+Notice that this is extremely sparse. We can either write it out in sparse form (csr format is most appropriate for
+this application) or we can perform the recursive expansion directly inside the function and bypass the need to 
+explicitly construct the matrix.
+
+The tensor to Lie map performs recursive (right) bracketing. Note that this is sligtly more tricky because (1, 2, 1) 
+does not expand neatly to a Lie word because [1, [2, 1]] is not an element in our (usual) Hall set. Here we have to use
+the identity [u, v] = -[v, u].
