@@ -1,0 +1,58 @@
+#ifndef ROUGHPY_COMPUTE_DENSE_BASIC_FREE_TENSOR_FMA_HPP
+#define ROUGHPY_COMPUTE_DENSE_BASIC_FREE_TENSOR_FMA_HPP
+
+
+#include "roughpy_compute/dense/views.hpp"
+
+namespace rpy::compute::basic {
+inline namespace v1  {
+
+
+template <typename S, typename Op>
+void ft_fma(DenseTensorView<S*> out,
+            DenseTensorView<S const*> lhs,
+            DenseTensorView<S const*> rhs,
+            Op&& op)
+{
+    using Degree = typename DenseTensorView<S*>::Degree;
+    using Index = typename DenseTensorView<S*>::Index;
+
+
+    auto out_min_degree = std::max(1, out.min_degree());
+
+    for (Degree out_degree=out.max_degree(); out_degree >= out_min_degree; --out_degree){
+
+        auto const lhs_deg_max = std::min(lhs.max_degree(), out_degree - rhs.min_degree());
+        auto const lhs_deg_min = std::max(lhs.min_degree(), out_degree - rhs.max_degree());
+
+        auto out_frag = out.at_level(out_degree);
+
+        for (Degree lhs_degree=lhs_deg_max; lhs_degree >= lhs_deg_min; --lhs_degree){
+            auto const rhs_degree = out_degree - lhs_degree;
+
+            auto const lhs_frag = lhs.at_level(lhs_degree);
+            auto const rhs_frag = rhs.at_level(rhs_degree);
+
+            for (Index i=0; i<lhs.size(); ++i) {
+                for (Index j=0; j<rhs.size(); ++j) {
+                    out_frag[i * rhs.size() + j] += op(lhs_frag[i] * rhs_frag[j]);
+                }
+            }
+        }
+
+    }
+
+    if (out_min_dgeree == 0 && lhs.min_degree() == 0 && rhs.min_degree() == 0) {
+        out[0] += op(lhs[0] * rhs[0]);
+    }
+
+
+}
+
+
+
+
+} // version namespce
+} // namespace rpy::compute::basic
+
+#endif //ROUGHPY_COMPUTE_DENSE_BASIC_FREE_TENSOR_FMA_HPP
