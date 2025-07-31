@@ -47,7 +47,8 @@ numerical correctness.
 
 
 
-## More on the operations
+
+## Basic operations
 
 ### Free tensor multiplication
 
@@ -212,4 +213,9 @@ for densely represented tensors by again considering the indices. This operation
 "width-compressed" sparsity for tensors.
 
 The projection from $V$ onto $U$ is also useful. This is implemented in the completely analogous way.
+
+
+
+## Densely stored objects
+
 
