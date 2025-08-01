@@ -42,8 +42,59 @@ numerical correctness.
 
 
 
+## Context
 
+This is a very brief introduction to signatures in the context of data analysis. There are many other resources out
+there that give more information about this. The [RoughPy paper](https://proceedings.scipy.org/articles/DXWY3560) a 
+short but very reasonable introduction and contains many references to what I consider to be some of the most 
+illustrative examples.
 
+Signatures are a high-order summary of the evolution of a path. Given a path $\gamma:[0, T]$ the signature of $\gamma$,
+over some subinterval $[s, t]$ is a free tensor $S(\gamma)_{[s,t]}$ formally defined by iterated integrals of $\gamma$.
+Signatures have the property that if we concatenate two paths (or, for convenience, consider the signature of $\gamma$ 
+over adjacent intervals) then the signature of the concatenation is the tensor product of the signatures; that is,
+$S(\gamma)_{[s, u]} = S(\gamma)_{[s, t]} \otimes S(\gamma)_{[t, u]}$. This is called _Chen's identity_. 
+
+Of course, the signature itself is a full, infinite free tensor. So for practical, computational tasks we have to
+truncate at some particular degree, which we call the depth. Truncated signatures are denoted $S^n(\gamma)_{[s, t]}$.
+Now if we assume that $\gamma$ is linear on $[s,t]$, then we can signature can be computed explicitly as the tensor
+exponential of the "increment" $\gamma(t) - \gamma(s)$ appropriately embedded into the tensor algebra. (More on this
+in a moment.) Thus $S(\gamma)_{[s, t]} = \exp(\gamma(t) - \gamma(s))$. The wonderful thing about the tensor exponent and
+truncation is that the computation is exact after $n$ computations, provided that the exponent has 0 in the degree 0 
+position. 
+
+The way we embed increments into the tensor algebra is actually via the Lie algebra. The Lie algebra (like the tensor 
+algebra) contains $\Bbb R^d$ as a subspace (corresponding to the elements of degree 1). Thus we can embed increments
+$\vec x = \gamma(t) - \gamma(s)$ into the Lie algebra and then map these into the tensor algebra via the lie-to-tensor
+linear map. This extra steps is instructive. Suppose instead that instead we have a genuine rough path, where the
+iterated integrals cannot be computed directly (with sufficient accuracy) from the plain increments; for instance, 
+Brownian motion. To propery compute the signature here we would actually need not only the "increment" data, but also
+some higher order data (for Brownian motion, the Levy areas) to compute the signature properly. These higher-order terms
+live naturally inside the Lie algebra. The process of computing the signature is then exactly the same: embed into the
+tensor algebra using lie-to-tensor and exponentiate.
+
+### Piecewise Abelian paths
+One very basic instance of a rough path is the rough generalisation of the piecewise-linear path which we call a 
+_piecewise Abelian path_. This is defined as follows. Consider a partition $\{0=t_0< t_1< t_2< \dots< t_N=T\}$ of 
+$[0, T]$ and suppose that for each of the intervals $[t_{j-1}, t_{j}]$ one has a corresponding element $L_j$ of the 
+Lie algebra. If we computed the signature of this path over $[t_{j-1}, t_j]$ the result would be $\exp(L_j)$ (to keep
+the notation simple, we omit the lie-to-tensor map here). If we take a sub-interval $[s, t]$ of $[t_{j-1}, t_j]$ then
+we have to scale $L_j$ prior to exponentiating, the amount we scale by is the proportion of $[t_{j-1}, t_j]$ that is 
+"seen" by $[s, t]$, given by $p = (t - s) / (t_j - t_{j-1})$. Thus the signature is now $\exp(pL_j)$. When the query 
+interval $[s, t]$ spans two (or more) partition intervals we have to scale each $L_i$ that appears by the corresponding
+proportion $p_i$ of the interval $[t_{i-1}, t_i]$ that is seen by $[s, t]$ and then tensor the exponentials together:
+$$
+\exp(p_iL_i) \otimes \exp(p_{i+1}L_{i+1}). 
+$$
+This computation is very cheap consisting of two scalar multiplications and two lie-to-tensor maps, a single tensor
+exponential, and a single fused multiply-exponential. The only complicated part is figuring out which of the partition 
+intervals are involved in a given computation. From a batching point of view, it might actually be easier to assume that 
+all of them are and just compute the proportion as zero in those cases.
+
+One very useful fact is that every path can be turned into a piecewise Abelian path with the provision of a partition
+of its support. To do this, one simply computes the log signatures of the path $\delta:[0, T']$ - defined by 
+$\log(S(\delta))_{[u, v]}$ (omitting the map from tensor to Lie) - over each of the intervals in the partition. In 
+particular, RoughPy can deliver such paths. 
 
 
 
@@ -164,7 +215,7 @@ struct I like to work with is defined as follows:
 ```c++
 struct HallSet {
     size_t const * data;    // size 2 * (lie_size + 1) with first element (0, 0)
-    size_t const * begin;   // size depth + 1
+    size_t const * begin;   // size depth + 2
     int32_t width;          // redunant, because it is begin[1] - begin[0], but useful
     int32_t depth;
 }; 
