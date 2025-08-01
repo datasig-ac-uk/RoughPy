@@ -68,7 +68,7 @@ algebra) contains $\Bbb R^d$ as a subspace (corresponding to the elements of deg
 $\vec x = \gamma(t) - \gamma(s)$ into the Lie algebra and then map these into the tensor algebra via the lie-to-tensor
 linear map. This extra steps is instructive. Suppose instead that instead we have a genuine rough path, where the
 iterated integrals cannot be computed directly (with sufficient accuracy) from the plain increments; for instance, 
-Brownian motion. To propery compute the signature here we would actually need not only the "increment" data, but also
+Brownian motion. To properly compute the signature here we would actually need not only the "increment" data, but also
 some higher order data (for Brownian motion, the Levy areas) to compute the signature properly. These higher-order terms
 live naturally inside the Lie algebra. The process of computing the signature is then exactly the same: embed into the
 tensor algebra using lie-to-tensor and exponentiate.
@@ -82,8 +82,8 @@ the notation simple, we omit the lie-to-tensor map here). If we take a sub-inter
 we have to scale $L_j$ prior to exponentiating, the amount we scale by is the proportion of $[t_{j-1}, t_j]$ that is 
 "seen" by $[s, t]$, given by $p = (t - s) / (t_j - t_{j-1})$. Thus the signature is now $\exp(pL_j)$. When the query 
 interval $[s, t]$ spans two (or more) partition intervals we have to scale each $L_i$ that appears by the corresponding
-proportion $p_i$ of the interval $[t_{i-1}, t_i]$ that is seen by $[s, t]$ and then tensor the exponentials together:
-$\exp(p_iL_i) \otimes \exp(p_{i+1}L_{i+1})$.
+proportion $p_i$ of the interval $[t_{i-1}, t_i]$ that is seen by $[s, t]$ and then tensor product the exponentials 
+together: $\exp(p_iL_i) \otimes \exp(p_{i+1}L_{i+1})$.
 
 This computation is very cheap consisting of two scalar multiplications and two lie-to-tensor maps, a single tensor
 exponential, and a single fused multiply-exponential. The only complicated part is figuring out which of the partition 
