@@ -29,7 +29,7 @@ void ft_fmexp(
 
         basic::ft_inplace_mul(
             out.truncate(max_level),
-            exponent.truncate(max_level, 1);
+            exponent.truncate(max_level, 1),
             ops::DivideBy<S>(static_cast<S>(deg))
         );
 
