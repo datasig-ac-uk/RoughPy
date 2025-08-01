@@ -1,8 +1,6 @@
 #ifndef ROUGHPY_COMPUTE_DENSE_VIEWS_HPP
 #define ROUGHPY_COMPUTE_DENSE_VIEWS_HPP
 
-#include "tensor_basis.h"
-
 #include <cassert>
 #include <iterator>
 #include <type_traits>
@@ -15,7 +13,8 @@ inline namespace v1 {
 
 
 template <typename Iter_>
-class DenseVectorFragment {
+class DenseVectorFragment
+{
     using Traits = std::iterator_traits<Iter_>;
     using size_type = std::size_t;
 
@@ -31,7 +30,8 @@ public:
         : base_(begin), size_(size) {}
 
     template <typename Index_>
-    constexpr reference operator[](Index_ index) noexcept {
+    constexpr reference operator[](Index_ index) noexcept
+    {
         assert(static_cast<std::size_t>(index) < size_);
         return base_[index];
     }
@@ -40,11 +40,10 @@ public:
 };
 
 
-
 template <typename Iter_, typename Basis_>
 class DenseVectorView
 {
-    Basis_ basis_
+    Basis_ basis_;
     Iter_ data_;
 
     using Traits = std::iterator_traits<Iter_>;
@@ -56,8 +55,8 @@ class DenseVectorView
             Traits::iterator_category>,
         "iterator must be random access");
 
-    Degree min_degree_;
-    Degree max_degree_;
+    typename Basis_::Degree min_degree_;
+    typename Basis_::Degree max_degree_;
 
 public:
     using Basis = Basis_;
@@ -71,100 +70,102 @@ public:
     using reference = typename Traits::reference;
 
 
-    constexpr DenseVectorView(Iter_ data, Basis basis, Degree min_degree=0, Degree max_degree=-1)
-        : Basis_(std::move(basis)), data_(data), min_degree_{min_degree}, max_degree_{max_degree_}
+    constexpr DenseVectorView(Iter_ data,
+                              Basis basis,
+                              Degree min_degree = 0,
+                              Degree max_degree = -1)
+        : Basis_(std::move(basis)), data_(data), min_degree_{min_degree},
+          max_degree_{max_degree}
     {
-        if (max_degree_ == -1) {
-            max_degree_ = basis_.depth;
-        }
-
+        if (max_degree_ == -1) { max_degree_ = basis_.depth; }
     }
 
 
     [[nodiscard]]
     constexpr Iter_ data() const noexcept { return data_; }
+
     [[nodiscard]]
     constexpr Basis const& basis() const noexcept { return basis_; }
 
 
     [[nodiscard]]
     constexpr Degree width() const noexcept { return basis_.width; }
+
     [[nodiscard]]
     constexpr Degree depth() const noexcept { return max_degree_; }
+
     [[nodiscard]]
-    constexpr Size size() const noexcept { return basis_.size(); }
+    constexpr Size size() const noexcept {
+        return basis_.degree_begin[max_degree_ + 1] - basis_.degree_begin[min_degree_];
+    }
 
     [[nodiscard]]
     constexpr Degree max_degree() const noexcept { return max_degree_; }
+
     [[nodiscard]]
     constexpr Degree min_degree() const noexcept { return min_degree_; }
 
 
-
     [[nodiscard]]
-    constexpr DenseVectorFragment at_level(Degree degree) const noexcept {
+    constexpr DenseVectorFragment<Iter_> at_level(Degree degree) const noexcept
+    {
         assert(min_degree_ <= degree && degree <= max_degree_);
-        auto start_of_degree = basis_.degree_begin[degree]
-        return { data_ + start_of_degree,
-                 static_cast<std::size_t>(basis_.begin[degree + 1] - start_of_degree)
+        auto start_of_degree = basis_.degree_begin[degree];
+        return {data_ + start_of_degree,
+                static_cast<std::size_t>(basis_.begin[degree + 1] -
+                    start_of_degree)
         };
     }
 
 
     [[nodiscard]]
-    constexpr reference operator[](Index i) noexcept {
-        return data_[i];
-    }
+    constexpr reference operator[](Index i) noexcept { return data_[i]; }
 
 };
 
 
-
 template <typename Iter_>
-class DenseTensorView : public DenseTensorView <Iter_, TensorBasis<>>
+class DenseTensorView : public DenseTensorView<Iter_, TensorBasis<> >
 {
-    using Base = DenseTensorView <Iter_, TensorBasis<>>;
+    using Base = DenseTensorView<Iter_, TensorBasis<> >;
     using typename Base::Degree;
 
 
-
-
-    constexpr DenseTensorView truncate(Degree new_max_degree, Degree new_min_degree=0) const noexcept
+    constexpr DenseTensorView truncate(Degree new_max_degree,
+                                       Degree new_min_degree = 0) const noexcept
     {
         return {
-            this->data(),
-            this->basis(),
-            std::max(min_degree_, new_min_degree),
-            std::min(max_degree_, new_max_degree)
+                this->data(),
+                this->basis(),
+                std::max(this->min_degree_, new_min_degree),
+                std::min(this->max_degree(), new_max_degree)
         };
     }
 
 }
 
 
-
 template <typename Iter_>
-class DenseLieView : public DenseVectorView <Iter_, LieBasis<>>
+class DenseLieView : public DenseVectorView<Iter_, LieBasis<> >
 {
-    using Base = DenseVectorView <Iter_, LieBasis<>>;
+    using Base = DenseVectorView<Iter_, LieBasis<> >;
     using typename Base::Degree;
 
     [[nodiscard]]
-    constexpr DenseLieView truncate(Degree new_max_degree, Degree new_min_degree=0) const noexcept
+    constexpr DenseLieView truncate(Degree new_max_degree,
+                                    Degree new_min_degree = 0) const noexcept
     {
         return {
-            this->data(),
-            this->basis(),
-            std::max(min_degree_, new_min_degree),
-            std::min(max_degree_, new_max_degree)
+                this->data(),
+                this->basis(),
+                std::max(this->min_degree(), new_min_degree),
+                std::min(this->max_degree(), new_max_degree)
         };
     }
 };
 
 
-
-
-
-}}// namespace rpy::compute
+}
+}// namespace rpy::compute
 
 #endif //ROUGHPY_COMPUTE_DENSE_VIEWS_HPP
