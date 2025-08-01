@@ -83,9 +83,8 @@ we have to scale $L_j$ prior to exponentiating, the amount we scale by is the pr
 "seen" by $[s, t]$, given by $p = (t - s) / (t_j - t_{j-1})$. Thus the signature is now $\exp(pL_j)$. When the query 
 interval $[s, t]$ spans two (or more) partition intervals we have to scale each $L_i$ that appears by the corresponding
 proportion $p_i$ of the interval $[t_{i-1}, t_i]$ that is seen by $[s, t]$ and then tensor the exponentials together:
-$$
-\exp(p_iL_i) \otimes \exp(p_{i+1}L_{i+1}). 
-$$
+$\exp(p_iL_i) \otimes \exp(p_{i+1}L_{i+1})$.
+
 This computation is very cheap consisting of two scalar multiplications and two lie-to-tensor maps, a single tensor
 exponential, and a single fused multiply-exponential. The only complicated part is figuring out which of the partition 
 intervals are involved in a given computation. From a batching point of view, it might actually be easier to assume that 
