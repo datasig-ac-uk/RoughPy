@@ -125,9 +125,9 @@ public:
 
 
 template <typename Iter_>
-class DenseTensorView : public DenseTensorView<Iter_, TensorBasis<> >
+class DenseTensorView : public DenseVectorView<Iter_, TensorBasis<> >
 {
-    using Base = DenseTensorView<Iter_, TensorBasis<> >;
+    using Base = DenseVectorView<Iter_, TensorBasis<> >;
     using typename Base::Degree;
 
 
@@ -142,7 +142,7 @@ class DenseTensorView : public DenseTensorView<Iter_, TensorBasis<> >
         };
     }
 
-}
+};
 
 
 template <typename Iter_>

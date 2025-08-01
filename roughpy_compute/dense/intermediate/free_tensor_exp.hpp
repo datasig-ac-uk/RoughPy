@@ -27,7 +27,7 @@ void ft_exp(DenseTensorView<S*> out, DenseTensorView<S const*> arg)
         basic::ft_inplace_mul(
             out.truncate(max_level),
             arg.truncate(max_level, 1),
-            ops::DivideBy<S>(static_cast<S>(deg))
+            ops::DivideBy<S>(deg)
         );
 
         out[0] += unit;

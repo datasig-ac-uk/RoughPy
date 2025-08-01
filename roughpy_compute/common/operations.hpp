@@ -39,15 +39,16 @@ struct RightMultiplyBy {
 
     constexpr T operator()(T arg) const noexcept(noexcept(arg * factor_))
     { return arg * factor_; }
-}
+};
 
 template <typename T>
 using MultiplyBy = LeftMultiplyBy<T>;
 
 template <typename T>
 struct DivideBy : RightMultiplyBy<T> {
-    constexpr DivideBy(T factor)
-        noexcept(std::is_nothrow_constructible<RightMultiplyBy<T>, T>
+    template <typename S>
+    constexpr DivideBy(S factor)
+        noexcept(std::is_nothrow_constructible_v<RightMultiplyBy<T>, T>
             && noexcept(T{1} / factor))
         : RightMultiplyBy<T>(T{1} / factor) {}
 };

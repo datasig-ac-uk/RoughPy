@@ -25,6 +25,9 @@ struct BasisBase
 template <typename Architecture_=NativeArchitecture>
 struct TensorBasis : BasisBase<Architecture_>
 {
+    using Base = BasisBase<Architecture_>;
+    using typename Base::Size;
+    using typename Base::Degree;
 
     [[nodiscard]]
     constexpr TensorBasis truncate(Degree new_depth) const noexcept
@@ -44,6 +47,7 @@ struct LieBasis : BasisBase<Architecture_>
 {
     using Base = BasisBase<Architecture_>;
     using typename Base::Size;;
+    using typename Base::Degree;
 
     Size const* data;
 
@@ -56,7 +60,7 @@ struct LieBasis : BasisBase<Architecture_>
             this->width,
             std::min(this->depth, new_depth),
             this->data
-        }
+        };
     }
 };
 
