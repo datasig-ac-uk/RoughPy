@@ -74,7 +74,7 @@ public:
                               Basis basis,
                               Degree min_degree = 0,
                               Degree max_degree = -1)
-        : Basis_(std::move(basis)), data_(data), min_degree_{min_degree},
+        : basis_(std::move(basis)), data_(data), min_degree_{min_degree},
           max_degree_{max_degree}
     {
         if (max_degree_ == -1) { max_degree_ = basis_.depth; }
@@ -112,7 +112,7 @@ public:
         assert(min_degree_ <= degree && degree <= max_degree_);
         auto start_of_degree = basis_.degree_begin[degree];
         return {data_ + start_of_degree,
-                static_cast<std::size_t>(basis_.begin[degree + 1] -
+                static_cast<std::size_t>(basis_.degree_begin[degree + 1] -
                     start_of_degree)
         };
     }
@@ -127,9 +127,11 @@ public:
 template <typename Iter_>
 class DenseTensorView : public DenseVectorView<Iter_, TensorBasis<> >
 {
+public:
     using Base = DenseVectorView<Iter_, TensorBasis<> >;
     using typename Base::Degree;
 
+    using Base::Base;
 
     constexpr DenseTensorView truncate(Degree new_max_degree,
                                        Degree new_min_degree = 0) const noexcept
@@ -148,8 +150,11 @@ class DenseTensorView : public DenseVectorView<Iter_, TensorBasis<> >
 template <typename Iter_>
 class DenseLieView : public DenseVectorView<Iter_, LieBasis<> >
 {
+public:
     using Base = DenseVectorView<Iter_, LieBasis<> >;
     using typename Base::Degree;
+
+    using Base::Base;
 
     [[nodiscard]]
     constexpr DenseLieView truncate(Degree new_max_degree,

@@ -51,8 +51,11 @@ if (RPYCOMPUTE_BUILD_TESTS)
     FetchContent_MakeAvailable(LibalgebraLite)
 
     add_executable(roughpy_compute_tests
+            testing/tensor_helpers.hpp
             dense/basic/vector_addition_tests.cpp
-        )
+            dense/basic/vector_inplace_addition_tests.cpp
+            dense/basic/free_tensor_fma_tests.cpp
+    )
 
 
     target_link_libraries(roughpy_compute_tests PRIVATE GTest::gtest_main roughpy_compute Libalgebra_lite::Libalgebra_lite)

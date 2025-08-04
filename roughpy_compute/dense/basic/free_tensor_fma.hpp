@@ -34,19 +34,19 @@ void ft_fma(DenseTensorView<S*> out,
              lhs_degree) {
             auto const rhs_degree = out_degree - lhs_degree;
 
-            auto const lhs_frag = lhs.at_level(lhs_degree);
-            auto const rhs_frag = rhs.at_level(rhs_degree);
+            auto lhs_frag = lhs.at_level(lhs_degree);
+            auto rhs_frag = rhs.at_level(rhs_degree);
 
-            for (Index i = 0; i < lhs.size(); ++i) {
-                for (Index j = 0; j < rhs.size(); ++j) {
-                    out_frag[i * rhs.size() + j] += op(
+            for (Index i = 0; i < lhs_frag.size(); ++i) {
+                for (Index j = 0; j < rhs_frag.size(); ++j) {
+                    out_frag[i * rhs_frag.size() + j] += op(
                         lhs_frag[i] * rhs_frag[j]);
                 }
             }
         }
     }
 
-    if (out_min_degree == 0 && lhs.min_degree() == 0 && rhs.min_degree() == 0) {
+    if (out.min_degree() == 0 && lhs.min_degree() == 0 && rhs.min_degree() == 0) {
         out[0] += op(lhs[0] * rhs[0]);
     }
 

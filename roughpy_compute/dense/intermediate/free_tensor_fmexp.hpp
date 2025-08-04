@@ -7,7 +7,7 @@
 
 #include "roughpy_compute/dense/views.hpp"
 #include "roughpy_compute/dense/basic/free_tensor_inplace_mul.hpp"
-#include "roughpy_compute/dense/basic/free_tensor_inplace_add.hpp"
+#include "roughpy_compute/dense/basic/vector_inplace_addition.hpp"
 
 namespace rpy::compute::intermediate {
 inline namespace v1 {
@@ -33,7 +33,7 @@ void ft_fmexp(
             ops::DivideBy<S>(static_cast<S>(deg))
         );
 
-        basic::inplace_add(out, multiplier);
+        basic::vector_inplace_addition(out, multiplier);
     }
 }
 

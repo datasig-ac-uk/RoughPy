@@ -9,14 +9,14 @@ namespace rpy::compute::basic {
 inline namespace v1 {
 
 
-template <typename S, typename Op=ops::Identity>
+template <typename S, typename Basis, typename Op=ops::Identity>
 void vector_inplace_addition(
-    DenseVectorView<S*> lhs,
-    DenseVectorView<S const*> rhs,
+    DenseVectorView<S*, Basis> lhs,
+    DenseVectorView<S const*, Basis> rhs,
     Op&& op=Op{}
 )
 {
-    using Size = typename DenseVectorView<S*>::Size;
+    using Size = typename DenseVectorView<S*, Basis>::Size;
 
     // We don't respect min_degree here, but we might want to add this support
     // later.
