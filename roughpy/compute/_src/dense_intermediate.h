@@ -1,0 +1,25 @@
+#ifndef ROUGHPY_COMPUTE__SRC_DENSE_INTERMEDIATE_H
+#define ROUGHPY_COMPUTE__SRC_DENSE_INTERMEDIATE_H
+
+#include "py_headers.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+RPY_NO_EXPORT
+PyObject* py_ft_dense_exp(PyObject*, PyObject*, PyObject*);
+
+RPY_NO_EXPORT
+PyObject* py_ft_dense_fmexp(PyObject*, PyObject*, PyObject*);
+
+RPY_NO_EXPORT
+PyObject* py_ft_dense_log(PyObject*, PyObject*, PyObject*);
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif //ROUGHPY_COMPUTE__SRC_DENSE_INTERMEDIATE_H

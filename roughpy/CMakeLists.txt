@@ -311,3 +311,7 @@ if (ROUGHPY_BUILD_TEST_PYTHON_EMBED)
                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
     endif ()
 endif ()
+
+
+
+add_subdirectory(compute)
