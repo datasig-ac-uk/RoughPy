@@ -26,7 +26,23 @@ enum class Status {
 
 namespace {
 
-struct AlgebraData {
+
+[[gnu::always_inline]] inline
+bool check_dims(npy_intp const * shape1, npy_intp ndims1 , npy_intp const * shape2, npy_intp ndims2)
+{
+	if (ndims1 != ndims2) {
+		return false;
+	}
+
+	for (npy_intp i = 0; i < ndims1; ++i) {
+		if (shape1[i] != shape2[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 
 template <typename Fn>
 [[gnu::always_inline]] inline
@@ -108,6 +124,66 @@ PyObject* ternary_function_outer(PyObject* self [[maybe_unused]], PyObject* args
 
     auto const* shape = PyArray_DIMS(out_arr);
 
+	if (n_dims < core_dims) {
+		PyErr_SetString(PyExc_ValueError, "invalid shape");
+		return nullptr;
+	}
+
+	if (PyArray_STRIDE(out_arr, n_dims - 1) != itemsize) {
+		PyErr_SetString(PyExc_ValueError, "inner-most dimension must be contiguous");
+		return nullptr;
+	}
+
+	if (PyArray_Check(lhs_obj) {
+		PyErr_SetString(PyExc_TypeError, "lhs must be a numpy array");
+		return nullptr;
+	}
+
+	auto* lhs_arr = reinterpret_cast<PyArrayObject*>(lhs_obj);
+
+	if (PyArray_TYPE(lhs_arr) != dtype) {
+		PyErr_SetString(PyExc_TypeError, "lhs must have the same dtype as out");
+		return nullptr;
+	}
+
+	auto lhs_ndims = PyArray_NDIM(lhs_arr);
+	auto const* lhs_shape = PyArray_DIMS(lhs_arr);
+
+	if (!check_dims(lhs_shape, lhs_ndims, shape, n_dims)) {
+		PyErr_SetString(PyExc_ValueError, "lhs and out must have the same shape");
+		return nullptr;
+	}
+
+	if (PyArray_STRIDE(lhs_arr, n_dims - 1) != itemsize) {
+		PyErr_SetString(PyExc_ValueError, "inner-most dimension must be contiguous");
+		return nullptr;
+	}
+
+
+	if (PyArray_Check(rhs_obj) {
+		PyErr_SetString(PyExc_TypeError, "rhs must be a numpy array");
+		return nullptr;
+	}
+
+	auto* rhs_arr = reinterpret_cast<PyArrayObject*>(rhs_obj);
+
+	if (PyArray_TYPE(rhs_arr) != dtype) {
+		PyErr_SetString(PyExc_TypeError, "rhs must have the same dtype as out");
+		return nullptr;
+	}
+
+	auto rhs_ndims = PyArray_NDIM(rhs_arr);
+	auto const* rhs_shape = PyArray_DIMS(rhs_arr);
+
+	if (!check_dims(rhs_shape, rhs_ndims, shape, n_dims)) {
+		PyErr_SetString(PyExc_ValueError, "rhs and out must have the same shape");
+		return nullptr;
+	}
+
+	if (PyArray_STRIDE(rhs_arr, n_dims - 1) != itemsize) {
+		PyErr_SetString(PyExc_ValueError, "inner-most dimension must be contiguous");
+		return nullptr;
+	}
 
 
     switch (dtype) {
@@ -117,10 +193,9 @@ PyObject* ternary_function_outer(PyObject* self [[maybe_unused]], PyObject* args
                 Fn<double>{width, depth}
                 );
         case NPY_FLOAT32:
-            return outer_loop_ternary<Fn<float>>(
+            return outer_loop_ternary(
                 out_arr, lhs_arr, rhs_arr,
-                Fn<float>{width, depth},
-
+                Fn<float>{width, depth}
             );
         default:
             PyErr_SetString(PyExc_TypeError, "unsupported dtype");
@@ -153,21 +228,21 @@ struct DenseFTFma {
         }
     }
 
-    void operator()(void* out_ptr, void const* lhs_ptr, void const* rhs, AlgebraData const* fn_data) const
+    void operator()(void* out_ptr, void const* lhs_ptr, void const* rhs_ptr, AlgebraData const* fn_data) const
     {
 
         DenseTensorView<Scalar*> out_view(
-            static_cast<Scalar*>(PyArray_GetPtr(out, index.data())),
+			out_ptr,
             {degree_begin.data(), width, depth}, 0, depth
         );
 
         DenseTensorView<Scalar const*> lhs_view(
-            static_cast<Scalar const*>(PyArray_GetPtr(lhs, index.data())),
+			lhs_ptr,
             {degree_begin.data(), width, depth}, 0, rhs_depth
         );
 
         DenseTensorView<Scalar const*> rhs_view(
-            static_cast<Scalar const*>(PyArray_GetPtr(rhs, index.data())),
+			rhs_ptr,
             {degree_begin.data(), width, depth}, 0, rhs_depth
         );
 
