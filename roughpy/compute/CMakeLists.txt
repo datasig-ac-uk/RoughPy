@@ -13,9 +13,10 @@ target_include_directories(RoughPyComputeModule PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/../..
 )
 
-target_link_libraries(RoughPyComputeModule PRIVATE Python::Python)
+#target_link_libraries(RoughPyComputeModule PRIVATE )
 
 
 target_sources(RoughPyComputeModule PRIVATE
+        _src/roughpy_compute_module.cpp
         _src/dense_basic.cpp
 )

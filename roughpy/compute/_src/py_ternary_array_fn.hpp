@@ -1,0 +1,207 @@
+#ifndef ROUGHPY_COMPUTE__SRC_PY_TERNARY_ARRAY_FN_HPP
+#define ROUGHPY_COMPUTE__SRC_PY_TERNARY_ARRAY_FN_HPP
+
+#include "py_headers.h"
+
+#include <roughpy_compute/common/cache_array.hpp>
+
+#include "algebra_config.hpp"
+#include "check_dims.hpp"
+
+namespace rpy::compute {
+
+
+template <typename Fn>
+RPY_NO_EXPORT
+PyObject* outer_loop_ternary(
+    PyArrayObject* out,
+    PyArrayObject* lhs,
+    PyArrayObject* rhs,
+    Fn&& fn,
+    AlgebraConfig const& config
+)
+{
+    using Scalar = typename Fn::Scalar;
+    npy_intp ndims = PyArray_NDIM(out);
+
+    npy_intp n_elements = 1;
+    auto* shape = PyArray_SHAPE(out);
+    for (npy_intp i = 0; i < ndims - Fn::CoreDims; ++i) {
+        n_elements *= shape[i];
+    }
+
+    CacheArray<npy_intp, Fn::CoreDims + 1> index(ndims);
+
+    auto advance = [&index, &ndims, &shape] {
+        for (npy_intp pos = ndims - 1 - Fn::CoreDims; pos >= 0; --pos) {
+            index[pos] += 1;
+            if (index[pos] < shape[pos]) { break; } else { index[pos] = 0; }
+        }
+    };
+
+    auto const out_stride = PyArray_STRIDE(out, ndims - 1);
+    auto const lhs_stride = PyArray_STRIDE(lhs, ndims - 1);
+    auto const rhs_stride = PyArray_STRIDE(rhs, ndims - 1);
+
+    for (npy_intp i = 0; i < n_elements; ++i, advance()) {
+        auto* out_ptr = static_cast<Scalar*>(PyArray_GetPtr(out, index.data()));
+        auto const* lhs_ptr = static_cast<Scalar const*>(PyArray_GetPtr(
+            lhs,
+            index.data()));
+        auto const* rhs_ptr = static_cast<Scalar const*>(PyArray_GetPtr(
+            rhs,
+            index.data()));
+        fn(
+            StridedDenseIterator<Scalar*>(out_ptr, out_stride),
+            StirdedDenseIterator<Scalar const*>(lhs_ptr, lhs_stride),
+            StirdedDenseIterator<Scalar const*>(rhs_ptr, rhs_stride),
+            config);
+    }
+
+    Py_RETURN_NONE;
+}
+
+
+template <template <typename> class Fn>
+RPY_NO_EXPORT [[gnu::always_inline]] inline
+PyObject* ternary_function_outer(PyObject* self [[maybe_unused]],
+                                 PyObject* args,
+                                 PyObject* kwargs)
+{
+    static constexpr char const* const kwords[] = {
+            "out", "lhs", "rhs", "width", "depth", "lhs_depth", "rhs_depth",
+            nullptr
+    };
+
+    PyObject *out_obj, *lhs_obj, *rhs_obj;
+
+    AlgebraConfig config;
+
+    if (!PyArg_ParseTupleAndKeywords(args,
+                                     kwargs,
+                                     "OOOii|ii",
+                                     kwords,
+                                     &out_obj,
+                                     &lhs_obj,
+                                     &rhs_obj,
+                                     &config.width,
+                                     &config.depth,
+                                     &config.lhs_max_degree,
+                                     &config.rhs_max_degree)) {
+        return nullptr;
+    }
+
+    if (config.lhs_max_degree == -1 || config.lhs_max_degree >= config.depth) {
+        config.lhs_max_degree = config.depth;
+    }
+    if (config.rhs_max_degree == -1 || config.rhs_max_degree >= config.depth) {
+        config.rhs_max_degree = config.depth;
+    }
+
+    constexpr auto core_dims = Fn<double>::CoreDims;
+
+    if (!PyArray_Check(out_obj)) {
+        PyErr_SetString(PyExc_TypeError, "out must be a numpy array");
+        return nullptr;
+    }
+
+    auto* out_arr = reinterpret_cast<PyArrayObject*>(out_obj);
+
+    auto const n_dims = PyArray_NDIM(out_arr);
+    auto const dtype = PyArray_TYPE(out_arr);
+    auto const itemsize = PyArray_ITEMSIZE(out_arr);
+
+    auto const* shape = PyArray_DIMS(out_arr);
+
+    if (n_dims < core_dims) {
+        PyErr_SetString(PyExc_ValueError, "invalid shape");
+        return nullptr;
+    }
+
+    if (PyArray_STRIDE(out_arr, n_dims - 1) != itemsize) {
+        PyErr_SetString(PyExc_ValueError,
+                        "inner-most dimension must be contiguous");
+        return nullptr;
+    }
+
+    if (PyArray_Check(lhs_obj)) {
+        PyErr_SetString(PyExc_TypeError, "lhs must be a numpy array");
+        return nullptr;
+    }
+
+    auto* lhs_arr = reinterpret_cast<PyArrayObject*>(lhs_obj);
+
+    if (PyArray_TYPE(lhs_arr) != dtype) {
+        PyErr_SetString(PyExc_TypeError, "lhs must have the same dtype as out");
+        return nullptr;
+    }
+
+    auto const lhs_ndims = PyArray_NDIM(lhs_arr);
+    auto const* lhs_shape = PyArray_DIMS(lhs_arr);
+
+    if (!check_dims(lhs_shape, lhs_ndims, shape, n_dims)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "lhs and out must have the same shape");
+        return nullptr;
+    }
+
+    if (PyArray_STRIDE(lhs_arr, n_dims - 1) != itemsize) {
+        PyErr_SetString(PyExc_ValueError,
+                        "inner-most dimension must be contiguous");
+        return nullptr;
+    }
+
+    if (PyArray_Check(rhs_obj)) {
+        PyErr_SetString(PyExc_TypeError, "rhs must be a numpy array");
+        return nullptr;
+    }
+
+    auto* rhs_arr = reinterpret_cast<PyArrayObject*>(rhs_obj);
+
+    if (PyArray_TYPE(rhs_arr) != dtype) {
+        PyErr_SetString(PyExc_TypeError, "rhs must have the same dtype as out");
+        return nullptr;
+    }
+
+    auto const rhs_ndims = PyArray_NDIM(rhs_arr);
+    auto const* rhs_shape = PyArray_DIMS(rhs_arr);
+
+    if (!check_dims(rhs_shape,
+                    rhs_ndims - core_dims,
+                    shape,
+                    n_dims - core_dims)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "rhs and out must have the same shape");
+        return nullptr;
+    }
+
+    if (PyArray_STRIDE(rhs_arr, n_dims - 1) != itemsize) {
+        PyErr_SetString(PyExc_ValueError,
+                        "inner-most dimension must be contiguous");
+        return nullptr;
+    }
+
+    switch (dtype) {
+        case NPY_FLOAT64: return outer_loop_ternary(
+                out_arr,
+                lhs_arr,
+                rhs_arr,
+                Fn<double>{config},
+                config
+            );
+        case NPY_FLOAT32: return outer_loop_ternary(
+                out_arr,
+                lhs_arr,
+                rhs_arr,
+                Fn<float>{config},
+                config
+            );
+        default: PyErr_SetString(PyExc_TypeError, "unsupported dtype");
+            return nullptr;
+    }
+}
+
+
+}// namespace rpy::compute
+
+#endif //ROUGHPY_COMPUTE__SRC_PY_TERNARY_ARRAY_FN_HPP

@@ -2,7 +2,7 @@
 
 
 #define NPY_IMPORT_THE_APIS_PLEASE
-#include "py_headers.hpp"
+#include "py_headers.h"
 
 
 
@@ -21,6 +21,10 @@ PyInit__rpy_compute_internals(void)
 {
     import_array();
 
+    PyObject *module = PyModule_Create(&rpy_compute_internals_module);
+    if (module == nullptr) {
+        return nullptr;
+    }
 
-
+    return module;
 }
