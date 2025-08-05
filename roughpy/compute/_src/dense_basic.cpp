@@ -16,6 +16,8 @@
 
 
 #include "algebra_config.hpp"
+
+#include "py_binary_array_fn.hpp"
 #include "py_ternary_array_fn.hpp"
 
 

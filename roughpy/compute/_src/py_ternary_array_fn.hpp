@@ -39,9 +39,9 @@ PyObject* outer_loop_ternary(
         }
     };
 
-    auto const out_stride = PyArray_STRIDE(out, ndims - 1);
-    auto const lhs_stride = PyArray_STRIDE(lhs, ndims - 1);
-    auto const rhs_stride = PyArray_STRIDE(rhs, ndims - 1);
+    auto const out_stride = PyArray_STRIDE(out, ndims - 1) / sizeof(Scalar);
+    auto const lhs_stride = PyArray_STRIDE(lhs, ndims - 1) / sizeof(Scalar);
+    auto const rhs_stride = PyArray_STRIDE(rhs, ndims - 1) / sizeof(Scalar);
 
     for (npy_intp i = 0; i < n_elements; ++i, advance()) {
         auto* out_ptr = static_cast<Scalar*>(PyArray_GetPtr(out, index.data()));
@@ -109,18 +109,11 @@ PyObject* ternary_function_outer(PyObject* self [[maybe_unused]],
 
     auto const n_dims = PyArray_NDIM(out_arr);
     auto const dtype = PyArray_TYPE(out_arr);
-    auto const itemsize = PyArray_ITEMSIZE(out_arr);
 
     auto const* shape = PyArray_DIMS(out_arr);
 
     if (n_dims < core_dims) {
         PyErr_SetString(PyExc_ValueError, "invalid shape");
-        return nullptr;
-    }
-
-    if (PyArray_STRIDE(out_arr, n_dims - 1) != itemsize) {
-        PyErr_SetString(PyExc_ValueError,
-                        "inner-most dimension must be contiguous");
         return nullptr;
     }
 
@@ -139,15 +132,9 @@ PyObject* ternary_function_outer(PyObject* self [[maybe_unused]],
     auto const lhs_ndims = PyArray_NDIM(lhs_arr);
     auto const* lhs_shape = PyArray_DIMS(lhs_arr);
 
-    if (!check_dims(lhs_shape, lhs_ndims, shape, n_dims)) {
+    if (!check_dims(lhs_shape, lhs_ndims-core_dims, shape, n_dims - core_dims)) {
         PyErr_SetString(PyExc_ValueError,
                         "lhs and out must have the same shape");
-        return nullptr;
-    }
-
-    if (PyArray_STRIDE(lhs_arr, n_dims - 1) != itemsize) {
-        PyErr_SetString(PyExc_ValueError,
-                        "inner-most dimension must be contiguous");
         return nullptr;
     }
 
@@ -172,12 +159,6 @@ PyObject* ternary_function_outer(PyObject* self [[maybe_unused]],
                     n_dims - core_dims)) {
         PyErr_SetString(PyExc_ValueError,
                         "rhs and out must have the same shape");
-        return nullptr;
-    }
-
-    if (PyArray_STRIDE(rhs_arr, n_dims - 1) != itemsize) {
-        PyErr_SetString(PyExc_ValueError,
-                        "inner-most dimension must be contiguous");
         return nullptr;
     }
 
