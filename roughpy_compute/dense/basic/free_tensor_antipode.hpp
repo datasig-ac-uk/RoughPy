@@ -21,11 +21,9 @@ struct BasicAntipodeConfig {
 template <typename S, typename AntipodeConfig>
 void ft_antipode(DenseTensorView<S*> out, DenseTensorView<S const*> arg, AntipodeConfig const& config)
 {
-    using Degree = typename DenseTensorView<S*>::Degree;
-    using Index = typename DenseTensorView<S*>::Index;
 
 
-    CacheArray
+
 
 
 }

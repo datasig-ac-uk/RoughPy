@@ -5,13 +5,13 @@
 namespace rpy::compute::basic {
 inline namespace v1 {
 
-template <typename S>
+template <typename S, typename Basis>
 void vector_scalar_multiply(
-    DenseVectorView<S*> out,
-    DenseVectorView<S const*> in,
+    DenseVectorView<S*, Basis> out,
+    DenseVectorView<S const*, Basis> in,
     S const& scalar)
 {
-    using Size = typename DenseVectorView<S*>::Size;
+    using Size = typename DenseVectorView<S*, Basis>::Size;
 
     auto const common_size = std::min(out.size(), in.size());
 

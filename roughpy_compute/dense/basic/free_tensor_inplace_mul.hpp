@@ -15,7 +15,7 @@ void ft_inplace_mul(DenseTensorView<S*> lhs, DenseTensorView<S const*> rhs, Op&&
 
     using Degree = typename DenseTensorView<S*>::Degree;
     using Index = typename DenseTensorView<S*>::Index;
-
+    using Scalar = S;
 
 
     for (Degree out_degree = lhs.max_degree();
@@ -29,7 +29,7 @@ void ft_inplace_mul(DenseTensorView<S*> lhs, DenseTensorView<S const*> rhs, Op&&
         // out_deg by 0 computation, so we subtract one from the max degree and handle
         // that first. We also want to avoid any terms that would involve data from
         // rhs of degree less than rhs_min_degree.
-        const auto lhs_deg_max = out_deg - std::max(Degree{1}, rhs.min_degree());
+        const auto lhs_deg_max = out_degree - std::max(Degree{1}, rhs.min_degree());
 
 
         auto out_frag = lhs.at_level(out_degree);

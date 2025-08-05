@@ -20,7 +20,6 @@ void vector_addition(
     RhsOp&& rhs_op=RhsOp{}
 )
 {
-    using Degree = typename DenseVectorView<S*, Basis>::Degree;
     using Size = typename DenseVectorView<S*, Basis>::Size;
 
 
