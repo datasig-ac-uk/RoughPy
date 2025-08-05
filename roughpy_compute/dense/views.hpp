@@ -11,6 +11,161 @@
 namespace rpy::compute {
 inline namespace v1 {
 
+namespace dtl {
+
+template <typename Iter_>
+inline constexpr bool is_random_access_v = std::is_base_of_v<
+    std::random_access_iterator_tag,
+    typename std::iterator_traits<Iter_>::iterator_category>;
+
+};
+
+
+template <typename Iter_>
+class StridedDenseIterator
+{
+    using Traits = std::iterator_traits<Iter_>;
+    static_assert(
+        dtl::is_random_access_v<Iter_>,
+        "base iterator must support random access"
+    );
+
+    Iter_ base_;
+    typename Traits::difference_type stride_ = 0;
+
+public:
+    using value_type = typename Traits::value_type;
+    using reference = typename Traits::reference;
+    using difference_type = typename Traits::difference_type;
+    using pointer = typename Traits::pointer;
+
+    /*
+     * The striding means that in general we cannot support contiguous
+     * iteration even if the underlying iterator does.
+     */
+    using iterator_category = std::random_access_iterator_tag;
+
+    constexpr StridedDenseIterator(Iter_ base, difference_type stride) noexcept
+        : base_(base), stride_(stride) {}
+
+    constexpr StridedDenseIterator(Iter_ base,
+                                   difference_type stride,
+                                   difference_type offset) noexcept
+        : base_(base + offset), stride_(stride) {}
+
+
+    [[nodiscard]]
+    constexpr reference operator*() const noexcept { return *base_; }
+
+    [[nodiscard]]
+    constexpr pointer operator->() const noexcept { return base_; }
+
+    [[nodiscard]]
+    constexpr reference operator[](difference_type n) const noexcept {
+        return base_[n * stride_];
+    }
+
+    constexpr StridedDenseIterator& operator++() noexcept
+    {
+        base_ += stride_;
+        return *this;
+    }
+
+    [[nodiscard]]
+    constexpr StridedDenseIterator operator++(int) noexcept
+    {
+        auto tmp = *this;
+        base_ += stride_;
+        return tmp;
+    }
+
+    constexpr StridedDenseIterator& operator--() noexcept
+    {
+        base_ -= stride_;
+        return *this;
+    }
+
+    [[nodiscard]]
+    constexpr StridedDenseIterator operator--(int) noexcept
+    {
+        auto tmp = *this;
+        base_ -= stride_;
+        return tmp;
+    }
+
+    [[nodiscard]]
+    friend constexpr StridedDenseIterator operator+(
+        StridedDenseIterator const& iter,
+        difference_type offset) noexcept
+    {
+        return {iter.base_, iter.stride_, offset};
+    }
+
+    [[nodiscard]]
+    friend constexpr StridedDenseIterator operator+(
+        difference_type offset,
+        StridedDenseIterator const& iter) noexcept
+    {
+        return {iter.base_, iter.stride_, offset};
+    }
+
+    [[nodiscard]]
+    friend constexpr StridedDenseIterator operator-(
+        StridedDenseIterator const& iter,
+        difference_type offset) noexcept
+    {
+        return {iter.base_, iter.stride_, -offset};
+    }
+
+    friend constexpr difference_type operator-(StridedDenseIterator const& lhs, StridedDenseIterator const& rhs)
+    {
+        return static_cast<difference_type>(lhs.base_ - rhs.base_) / static_cast<difference_type>(rhs.stride_);
+    }
+    
+    friend constexpr bool operator==(
+        StridedDenseIterator const& lhs,
+        StridedDenseIterator const& rhs) noexcept
+    {
+        return lhs.base_ == rhs.base_;
+    }
+
+    friend constexpr bool operator!=(
+        StridedDenseIterator const& lhs,
+        StridedDenseIterator const& rhs) noexcept
+    {
+        return lhs.base_ != rhs.base_;
+    }
+
+    friend constexpr bool operator<(
+        StridedDenseIterator const& lhs,
+        StridedDenseIterator const& rhs) noexcept
+    {
+        return lhs.base_ < rhs.base_;
+    }
+
+    friend constexpr bool operator<=(
+        StridedDenseIterator const& lhs,
+        StridedDenseIterator const& rhs) noexcept
+    {
+        return lhs.base_ <= rhs.base_;
+    }
+
+    friend constexpr bool operator>(
+        StridedDenseIterator const& lhs,
+        StridedDenseIterator const& rhs) noexcept
+    {
+        return lhs.base_ > rhs.base_;
+    }
+
+    friend constexpr bool operator>=(
+        StridedDenseIterator const& lhs,
+        StridedDenseIterator const& rhs) noexcept
+    {
+        return lhs.base_ >= rhs.base_;
+    }
+
+};
+
 
 template <typename Iter_>
 class DenseVectorFragment
@@ -95,8 +250,10 @@ public:
     constexpr Degree depth() const noexcept { return max_degree_; }
 
     [[nodiscard]]
-    constexpr Size size() const noexcept {
-        return basis_.degree_begin[max_degree_ + 1] - basis_.degree_begin[min_degree_];
+    constexpr Size size() const noexcept
+    {
+        return basis_.degree_begin[max_degree_ + 1] - basis_.degree_begin[
+            min_degree_];
     }
 
     [[nodiscard]]
