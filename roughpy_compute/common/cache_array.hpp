@@ -29,7 +29,7 @@ class CacheArray : Allocator_ {
 
     union {
         T inline_buffer_[InlineSize];
-        std::size_t alloc_
+        std::size_t alloc_;
     };
     T* ptr_;
     std::size_t size_;
@@ -75,6 +75,11 @@ public:
         return is_inline() ? InlineSize : alloc_;
     }
 
+    [[nodiscard]]
+    constexpr T* data() noexcept { return ptr_; }
+
+    [[nodiscard]]
+    constexpr T const* data() const noexcept { return ptr_; }
 
     /**
      * @brief Resize the array.
