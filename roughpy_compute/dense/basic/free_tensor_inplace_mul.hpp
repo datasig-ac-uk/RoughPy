@@ -10,12 +10,12 @@
 namespace rpy::compute::basic {
 inline namespace v1 {
 
-template <typename S, typename Op=ops::Identity>
-void ft_inplace_mul(DenseTensorView<S*> lhs, DenseTensorView<S const*> rhs, Op&& op=Op{}) {
+template <typename LhsIter, typename RhsIter, typename Op=ops::Identity>
+void ft_inplace_mul(DenseTensorView<LhsIter> lhs, DenseTensorView<RhsIter> rhs, Op&& op=Op{}) {
 
-    using Degree = typename DenseTensorView<S*>::Degree;
-    using Index = typename DenseTensorView<S*>::Index;
-    using Scalar = S;
+    using Degree = typename DenseTensorView<LhsIter>::Degree;
+    using Index = typename DenseTensorView<RhsIter>::Index;
+    using Scalar = typename DenseTensorView<LhsIter>::Scalar;
 
 
     for (Degree out_degree = lhs.max_degree();
@@ -44,7 +44,7 @@ void ft_inplace_mul(DenseTensorView<S*> lhs, DenseTensorView<S const*> rhs, Op&&
          */
         if (rhs.min_degree() == 0) {
             for (Index i = 0; i < lhs.size(); ++i) {
-                out_frag[i] = op(out_frag[i], rhs[0]);
+                out_frag[i] = op(out_frag[i] * rhs[0]);
             }
         } else {
             // if rhs_min_degree > 0 then the unit is implicitly zero, so the
@@ -80,7 +80,7 @@ void ft_inplace_mul(DenseTensorView<S*> lhs, DenseTensorView<S const*> rhs, Op&&
      * actually appears naturally.
      */
     if (lhs.min_degree() == 0 && rhs.min_degree() == 0) {
-        lhs[0] = op(lhs[0], rhs[0]);
+        lhs[0] = op(lhs[0] * rhs[0]);
     } else if (lhs.min_degree() == 0) {
         lhs[0] = Scalar { 0 };
     }

@@ -17,13 +17,15 @@ target_include_directories(RoughPyComputeModule PRIVATE
 
 
 target_sources(RoughPyComputeModule PRIVATE
-        _src/algebra_config.hpp
+        _src/call_config.hpp
+        _src/call_config.cpp
         _src/check_dims.hpp
         _src/dense_basic.cpp
         _src/dense_basic.h
         _src/dense_intermediate.h
         _src/py_binary_array_fn.hpp
         _src/py_headers.h
+        _src/py_obj_handle.hpp
         _src/py_ternary_array_fn.hpp
         _src/roughpy_compute_module.cpp
 )

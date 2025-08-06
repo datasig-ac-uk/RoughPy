@@ -10,16 +10,16 @@ namespace rpy::compute::basic {
 inline namespace v1 {
 
 
-template <typename S, typename Op=ops::Identity>
-void ft_fma(DenseTensorView<S*> out,
-            DenseTensorView<S const*> lhs,
-            DenseTensorView<S const*> rhs,
+template <typename OutIter, typename LhsIter, typename RhsIter, typename Op=ops::Identity>
+void ft_fma(DenseTensorView<OutIter> out,
+            DenseTensorView<LhsIter> lhs,
+            DenseTensorView<RhsIter> rhs,
             Op&& op=Op{})
 {
-    using Degree = typename DenseTensorView<S*>::Degree;
-    using Index = typename DenseTensorView<S*>::Index;
+    using Degree = typename DenseTensorView<OutIter>::Degree;
+    using Index = typename DenseTensorView<OutIter>::Index;
 
-    auto out_min_degree = std::max(1, out.min_degree());
+    auto out_min_degree = std::max(Degree{1}, out.min_degree());
 
     for (Degree out_degree = out.max_degree(); out_degree >= out_min_degree; --
          out_degree) {

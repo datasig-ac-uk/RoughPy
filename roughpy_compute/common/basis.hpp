@@ -7,25 +7,22 @@
 
 namespace rpy::compute {
 
-template <typename Architecture_>
 struct BasisBase
 {
-    using Architecture = Architecture_;
-    using Size = typename Architecture::Size;
-    using Index = typename Architecture::Index;
-    using Degree = typename Architecture::Degree;
+    using Size = std::size_t;
+    using Index = std::ptrdiff_t;
+    using Degree = int32_t;
 
-    Size const* degree_begin; // size depth + 2
+    Index const* degree_begin; // size depth + 2
     Degree width;
     Degree depth;
 
-    Size size() const noexcept { return degree_begin[depth+1]; }
+    Index size() const noexcept { return degree_begin[depth+1]; }
 };
 
-template <typename Architecture_=NativeArchitecture>
-struct TensorBasis : BasisBase<Architecture_>
+struct TensorBasis : BasisBase
 {
-    using Base = BasisBase<Architecture_>;
+    using Base = BasisBase;
     using typename Base::Size;
     using typename Base::Degree;
 
@@ -42,14 +39,13 @@ struct TensorBasis : BasisBase<Architecture_>
 
 
 
-template <typename Architecture_=NativeArchitecture>
-struct LieBasis : BasisBase<Architecture_>
+struct LieBasis : BasisBase
 {
-    using Base = BasisBase<Architecture_>;
-    using typename Base::Size;;
+    using Base = BasisBase;
+    using typename Base::Index;
     using typename Base::Degree;
 
-    Size const* data;
+    Index const* data;
 
 
     [[nodiscard]]

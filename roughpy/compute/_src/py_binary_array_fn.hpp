@@ -5,7 +5,7 @@
 
 #include <roughpy_compute/common/cache_array.hpp>
 
-#include "algebra_config.hpp"
+#include "call_config.hpp"
 #include "check_dims.hpp"
 
 #include <pytypedefs.h>
@@ -17,9 +17,8 @@ RPY_NO_EXPORT
 PyObject* outer_loop_binary(
     PyArrayObject* out,
     PyArrayObject* arg,
-    Fn&& fn,
-    AlgebraConfig const& config
-    )
+    Fn&& fn
+)
 {
     using Scalar = typename Fn::Scalar;
     npy_intp ndims = PyArray_NDIM(out);
@@ -48,8 +47,7 @@ PyObject* outer_loop_binary(
             index.data()));
         fn(
             StridedDenseIterator<Scalar*>(out_ptr, out_stride),
-            StirdedDenseIterator<Scalar const*>(arg_ptr, arg_stride),
-            config);
+            StridedDenseIterator<Scalar const*>(arg_ptr, arg_stride));
     }
 
     Py_RETURN_NONE;
@@ -57,25 +55,26 @@ PyObject* outer_loop_binary(
 
 template <template <typename> class Fn>
 RPY_NO_EXPORT [[gnu::always_inline]] inline
-PyObject* binary_function_outer(PyObject* self [[maybe_unused]],
-                                 PyObject* args,
-                                 PyObject* kwargs)
+PyObject* binary_function_outer(PyObject* out_obj,
+                                PyObject* arg_obj,
+                                CallConfig const& config)
 {
-    static constexpr char const* const kwords[] = {
-            "out", "arg", "width", "depth", "arg_depth", nullptr
-    };
-
-    PyObject *out_obj, *arg_obj;
-    AlgebraConfig config;
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOii|i", kwords,
-        &out_obj, &arg_obj, &config.width, &config.depth, &config.rhs_max_degree)) {
-        return nullptr;
-    }
-
-    if (config.rhs_max_degree == -1 || config.rhs_max_degree >= config.depth) {
-        config.rhs_max_degree = config.depth;
-    }
+    // static constexpr char const* const kwords[] = {
+    //         "out", "arg", "basis", "rhs_max_degree", nullptr
+    // };
+    //
+    // PyObject *out_obj, *arg_obj;
+    // PyObject *basis_obj=nullptr;
+    // CallConfig config;
+    //
+    // if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO|i", kwords,
+    //     &out_obj, &arg_obj, &basis_obj, &config.rhs_max_degree)) {
+    //     return nullptr;
+    // }
+    //
+    // if (config.rhs_max_degree == -1 || config.rhs_max_degree >= config.depth) {
+    //     config.rhs_max_degree = config.depth;
+    // }
 
     constexpr auto core_dims = Fn<double>::CoreDims;
 
@@ -109,8 +108,12 @@ PyObject* binary_function_outer(PyObject* self [[maybe_unused]],
     auto const arg_ndims = PyArray_NDIM(arg_arr);
     auto const* arg_shape = PyArray_DIMS(arg_arr);
 
-    if (!check_dims(arg_shape, arg_ndims-core_dims, shape, n_dims-core_dims)) {
-        PyErr_SetString(PyExc_ValueError, "arg and out must have the same shape");
+    if (!check_dims(arg_shape,
+                    arg_ndims - core_dims,
+                    shape,
+                    n_dims - core_dims)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "arg and out must have the same shape");
         return nullptr;
     }
 
@@ -118,24 +121,19 @@ PyObject* binary_function_outer(PyObject* self [[maybe_unused]],
         case NPY_FLOAT64: return outer_loop_binary(
                 out_arr,
                 arg_arr,
-                Fn<double>{config},
-                config
+                Fn<double>{config}
             );
         case NPY_FLOAT32: return outer_loop_binary(
                 out_arr,
                 arg_arr,
-                Fn<float>{config},
-                config
-        );
-        default:
-            PyErr_SetString(PyExc_TypeError, "unsupported dtype");
+                Fn<float>{config}
+            );
+        default: PyErr_SetString(PyExc_TypeError, "unsupported dtype");
             return nullptr;
     }
 }
 
 
-
-
-} // namespace rpy::compute
+}// namespace rpy::compute
 
 #endif //ROUGHPY_COMPUTE__SRC_PY_BINARY_ARARY_FN_HPP

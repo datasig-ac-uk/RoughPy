@@ -9,20 +9,27 @@
 #include <roughpy_compute/dense/basic/free_tensor_fma.hpp>
 #include <roughpy_compute/dense/basic/free_tensor_inplace_mul.hpp>
 #include <roughpy_compute/dense/basic/shuffle_tensor_product.hpp>
-#include <roughpy_compute/dense/basic/vector_addition.hpp>
-#include <roughpy_compute/dense/basic/vector_inplace_addition.hpp>
-#include <roughpy_compute/dense/basic/vector_inplace_scalar_multiply.hpp>
-#include <roughpy_compute/dense/basic/vector_scalar_multiply.hpp>
+#include <roughpy_compute/dense/basic/apply_sparse_linear_map.hpp>
 
 
-#include "algebra_config.hpp"
+// The vector operations are of limited use to us here. We
+// #include <roughpy_compute/dense/basic/vector_addition.hpp>
+// #include <roughpy_compute/dense/basic/vector_inplace_addition.hpp>
+// #include <roughpy_compute/dense/basic/vector_inplace_scalar_multiply.hpp>
+// #include <roughpy_compute/dense/basic/vector_scalar_multiply.hpp>
 
+
+#include "call_config.hpp"
+
+#include "py_obj_handle.hpp"
 #include "py_binary_array_fn.hpp"
 #include "py_ternary_array_fn.hpp"
 
 
 
 using namespace rpy::compute;
+
+
 
 /*******************************************************************************
  * Free tensor FMA
@@ -35,44 +42,39 @@ struct DenseFTFma
     using Scalar = Scalar_;
     static constexpr npy_intp CoreDims = 1;
 
-    rpy::compute::CacheArray<size_t, CoreDims + 1> degree_begin;
+    CallConfig const* config_;
 
-    DenseFTFma(AlgebraConfig const& config)
-        : degree_begin(config.depth + 2)
+    DenseFTFma(CallConfig const& config)
+        : config_(&config)
     {
-        auto const s_width = static_cast<size_t>(config.width);
-        degree_begin[0] = 0;
-        for (size_t i = 1; i <= config.depth + 1; ++i) {
-            degree_begin[i] = 1 + degree_begin[i - 1] * s_width;
-        }
     }
 
     template <typename OutIter, typename LhsIter, typename RhsIter>
     void operator()(OutIter out_iter,
                     LhsIter lhs_iter,
-                    RhsIter rhs_iter,
-                    AlgebraConfig const& config) const
+                    RhsIter rhs_iter) const
     {
+        auto const* basis = static_cast<TensorBasis const*>(config_->basis_data);
 
         DenseTensorView<OutIter> out_view(
             out_iter,
-            {degree_begin.data(), config.width, config.depth},
-            0,
-            config.depth
+            *basis,
+            config_->out_min_degree,
+            config_->out_max_degree
         );
 
         DenseTensorView<LhsIter> lhs_view(
             lhs_iter,
-            {degree_begin.data(), config.width, config.depth},
-            config.lhs_min_degree,
-            config.lhs_max_degree
+            *basis,
+            config_->lhs_min_degree,
+            config_->lhs_max_degree
         );
 
         DenseTensorView<RhsIter> rhs_view(
             rhs_iter,
-            {degree_begin.data(), config.width, config.depth},
-            config.rhs_min_degree,
-            config.rhs_max_degree
+            *basis,
+            config_->rhs_min_degree,
+            config_->rhs_max_degree
         );
 
         basic::ft_fma(out_view, lhs_view, rhs_view);
@@ -82,7 +84,159 @@ struct DenseFTFma
 }// namespace
 
 
-PyObject* dense_ft_fma(PyObject* out, PyObject* lhs, PyObject* rhs)
+PyObject* dense_ft_fma(PyObject* self [[maybe_unused]], PyObject* args, PyObject* kwargs)
 {
-    return ternary_function_outer<DenseFTFma>(out, lhs, rhs);
+
+    static constexpr char const* const kwords[] = {
+        "out", "lhs", "rhs", "basis", "out_depth", "lhs_depth", "rhs_depth",
+        nullptr
+    };
+
+    PyObject *out_obj, *lhs_obj, *rhs_obj;
+    PyObject *basis_obj=nullptr;
+
+    CallConfig config;
+
+    if (!PyArg_ParseTupleAndKeywords(args,
+                                     kwargs,
+                                     "OOOO|ii",
+                                     kwords,
+                                     &out_obj,
+                                     &lhs_obj,
+                                     &rhs_obj,
+                                     &basis_obj,
+                                     &config.lhs_max_degree,
+                                     &config.rhs_max_degree
+                                     )) {
+        return nullptr;
+                                     }
+
+    // if (!update_depth_params(config)) {
+    //     PyErr_SetString(PyExc_ValueError, "incompatible depth parameters");
+    //     return nullptr;
+    // }
+
+    TensorBasis basis;
+    auto const degree_begins_handle = to_basis(basis_obj, basis);
+
+    if (!degree_begins_handle) {
+        // Error already set
+        return nullptr;
+    }
+
+    config.basis_data = &basis;
+
+    if (!update_algebra_params(config)) {
+        return nullptr;
+    }
+
+    return ternary_function_outer<DenseFTFma>(out_obj, lhs_obj, rhs_obj, config);
 }
+
+
+/*******************************************************************************
+ * Free tensor Inplace multiply
+ ******************************************************************************/
+namespace {
+
+template <typename Scalar_>
+struct DenseFTInplaceMul
+{
+    using Scalar = Scalar_;
+    static constexpr npy_intp CoreDims = 1;
+
+    CallConfig const* config_;
+
+    DenseFTInplaceMul(CallConfig const& config)
+        : config_(&config)
+    {
+    }
+
+    template <typename OutIter, typename RhsIter>
+    void operator()(OutIter out_iter,
+                    RhsIter rhs_iter) const
+    {
+        auto const* basis = static_cast<TensorBasis const*>(config_->basis_data);
+
+        DenseTensorView<OutIter> out_view(
+            out_iter,
+            *basis,
+            config_->out_min_degree,
+            config_->out_max_degree
+        );
+
+        DenseTensorView<RhsIter> rhs_view(
+            rhs_iter,
+            *basis,
+            config_->rhs_min_degree,
+            config_->rhs_max_degree
+        );
+
+        basic::ft_inplace_mul(out_view, rhs_view);
+    }
+};
+
+}// namespace
+
+
+PyObject* dense_ft_inplace_mul(PyObject* self, PyObject* args, PyObject* kwargs)
+{
+    static constexpr char const* const kwords[] = {
+        "out", "lhs", "rhs", "basis", "out_depth", "rhs_depth",
+        nullptr
+    };
+
+    PyObject *out_obj, *rhs_obj;
+    PyObject *basis_obj=nullptr;
+
+    CallConfig config;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO|ii", kwords,
+        &out_obj, &rhs_obj, &basis_obj, &config.rhs_max_degree)) {
+        return nullptr;
+    }
+
+    TensorBasis basis;
+    auto handle = to_basis(basis_obj, basis);
+    if (!handle) {
+        // error already set
+        return nullptr;
+    }
+
+    config.basis_data = &basis;
+
+    if (!update_algebra_params(config)) {
+        // error already set
+        return nullptr;
+    }
+
+    return binary_function_outer<DenseFTInplaceMul>(out_obj, rhs_obj, config);
+}
+
+
+/*******************************************************************************
+ * free tensor antipode
+ ******************************************************************************/
+namespace {
+
+template <typename S>
+struct DenseAntipode
+{
+    using Scalar = S;
+    static constexpr npy_intp CoreDims = 1;
+
+
+
+    template <typename OutIter, typename ArgIter>
+    void operator()(OutIter out_iter, ArgIter arg_iter, CallConfig const& config) const
+    {
+
+
+
+
+    }
+
+
+};
+
+}//namespace

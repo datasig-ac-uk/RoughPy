@@ -61,7 +61,8 @@ public:
     constexpr pointer operator->() const noexcept { return base_; }
 
     [[nodiscard]]
-    constexpr reference operator[](difference_type n) const noexcept {
+    constexpr reference operator[](difference_type n) const noexcept
+    {
         return base_[n * stride_];
     }
 
@@ -117,11 +118,13 @@ public:
         return {iter.base_, iter.stride_, -offset};
     }
 
-    friend constexpr difference_type operator-(StridedDenseIterator const& lhs, StridedDenseIterator const& rhs)
+    friend constexpr difference_type operator-(StridedDenseIterator const& lhs,
+                                               StridedDenseIterator const& rhs)
     {
-        return static_cast<difference_type>(lhs.base_ - rhs.base_) / static_cast<difference_type>(rhs.stride_);
+        return static_cast<difference_type>(lhs.base_ - rhs.base_) / static_cast
+                <difference_type>(rhs.stride_);
     }
-    
+
     friend constexpr bool operator==(
         StridedDenseIterator const& lhs,
         StridedDenseIterator const& rhs) noexcept
@@ -171,27 +174,29 @@ template <typename Iter_>
 class DenseVectorFragment
 {
     using Traits = std::iterator_traits<Iter_>;
-    using size_type = std::size_t;
 
     Iter_ base_;
-    size_type size_;
+    typename Traits::difference_type size_;
 
 public:
     using value_type = typename Traits::value_type;
     using reference = typename Traits::reference;
+    using difference_type = typename Traits::difference_type;
     using iterator = Iter_;
 
-    constexpr DenseVectorFragment(Iter_ begin, std::size_t size) noexcept
+    using Scalar = value_type;
+
+    constexpr DenseVectorFragment(Iter_ begin, difference_type size) noexcept
         : base_(begin), size_(size) {}
 
     template <typename Index_>
     constexpr reference operator[](Index_ index) noexcept
     {
-        assert(static_cast<std::size_t>(index) < size_);
+        assert(static_cast<difference_type>(index) < size_);
         return base_[index];
     }
 
-    constexpr size_type size() const noexcept { return size_; }
+    constexpr difference_type size() const noexcept { return size_; }
 };
 
 
@@ -215,14 +220,14 @@ class DenseVectorView
 
 public:
     using Basis = Basis_;
-    using Architecture = typename Basis::Architecture;
 
-    using Size = typename Architecture::Size;
-    using Index = typename Architecture::Index;
-    using Degree = typename Architecture::Degree;
+    using Index = typename Traits::difference_type;
+    using Degree = typename Basis::Degree;
 
     using value_type = typename Traits::value_type;
     using reference = typename Traits::reference;
+
+    using Scalar = value_type;
 
 
     constexpr DenseVectorView(Iter_ data,
@@ -250,7 +255,7 @@ public:
     constexpr Degree depth() const noexcept { return max_degree_; }
 
     [[nodiscard]]
-    constexpr Size size() const noexcept
+    constexpr Index size() const noexcept
     {
         return basis_.degree_begin[max_degree_ + 1] - basis_.degree_begin[
             min_degree_];
@@ -269,7 +274,7 @@ public:
         assert(min_degree_ <= degree && degree <= max_degree_);
         auto start_of_degree = basis_.degree_begin[degree];
         return {data_ + start_of_degree,
-                static_cast<std::size_t>(basis_.degree_begin[degree + 1] -
+                (basis_.degree_begin[degree + 1] -
                     start_of_degree)
         };
     }
@@ -282,10 +287,10 @@ public:
 
 
 template <typename Iter_>
-class DenseTensorView : public DenseVectorView<Iter_, TensorBasis<> >
+class DenseTensorView : public DenseVectorView<Iter_, TensorBasis>
 {
 public:
-    using Base = DenseVectorView<Iter_, TensorBasis<> >;
+    using Base = DenseVectorView<Iter_, TensorBasis>;
     using typename Base::Degree;
 
     using Base::Base;
@@ -305,10 +310,10 @@ public:
 
 
 template <typename Iter_>
-class DenseLieView : public DenseVectorView<Iter_, LieBasis<> >
+class DenseLieView : public DenseVectorView<Iter_, LieBasis>
 {
 public:
-    using Base = DenseVectorView<Iter_, LieBasis<> >;
+    using Base = DenseVectorView<Iter_, LieBasis>;
     using typename Base::Degree;
 
     using Base::Base;

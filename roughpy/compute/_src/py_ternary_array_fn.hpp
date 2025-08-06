@@ -5,7 +5,7 @@
 
 #include <roughpy_compute/common/cache_array.hpp>
 
-#include "algebra_config.hpp"
+#include "call_config.hpp"
 #include "check_dims.hpp"
 
 namespace rpy::compute {
@@ -17,8 +17,7 @@ PyObject* outer_loop_ternary(
     PyArrayObject* out,
     PyArrayObject* lhs,
     PyArrayObject* rhs,
-    Fn&& fn,
-    AlgebraConfig const& config
+    Fn&& fn
 )
 {
     using Scalar = typename Fn::Scalar;
@@ -53,9 +52,8 @@ PyObject* outer_loop_ternary(
             index.data()));
         fn(
             StridedDenseIterator<Scalar*>(out_ptr, out_stride),
-            StirdedDenseIterator<Scalar const*>(lhs_ptr, lhs_stride),
-            StirdedDenseIterator<Scalar const*>(rhs_ptr, rhs_stride),
-            config);
+            StridedDenseIterator<Scalar const*>(lhs_ptr, lhs_stride),
+            StridedDenseIterator<Scalar const*>(rhs_ptr, rhs_stride));
     }
 
     Py_RETURN_NONE;
@@ -64,39 +62,13 @@ PyObject* outer_loop_ternary(
 
 template <template <typename> class Fn>
 RPY_NO_EXPORT [[gnu::always_inline]] inline
-PyObject* ternary_function_outer(PyObject* self [[maybe_unused]],
-                                 PyObject* args,
-                                 PyObject* kwargs)
+PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
+                                 PyObject* lhs_obj,
+                                 PyObject* rhs_obj,
+                                 CallConfig const& config
+                                 )
 {
-    static constexpr char const* const kwords[] = {
-            "out", "lhs", "rhs", "width", "depth", "lhs_depth", "rhs_depth",
-            nullptr
-    };
 
-    PyObject *out_obj, *lhs_obj, *rhs_obj;
-
-    AlgebraConfig config;
-
-    if (!PyArg_ParseTupleAndKeywords(args,
-                                     kwargs,
-                                     "OOOii|ii",
-                                     kwords,
-                                     &out_obj,
-                                     &lhs_obj,
-                                     &rhs_obj,
-                                     &config.width,
-                                     &config.depth,
-                                     &config.lhs_max_degree,
-                                     &config.rhs_max_degree)) {
-        return nullptr;
-    }
-
-    if (config.lhs_max_degree == -1 || config.lhs_max_degree >= config.depth) {
-        config.lhs_max_degree = config.depth;
-    }
-    if (config.rhs_max_degree == -1 || config.rhs_max_degree >= config.depth) {
-        config.rhs_max_degree = config.depth;
-    }
 
     constexpr auto core_dims = Fn<double>::CoreDims;
 
@@ -167,15 +139,13 @@ PyObject* ternary_function_outer(PyObject* self [[maybe_unused]],
                 out_arr,
                 lhs_arr,
                 rhs_arr,
-                Fn<double>{config},
-                config
+                Fn<double>{config}
             );
         case NPY_FLOAT32: return outer_loop_ternary(
                 out_arr,
                 lhs_arr,
                 rhs_arr,
-                Fn<float>{config},
-                config
+                Fn<float>{config}
             );
         default: PyErr_SetString(PyExc_TypeError, "unsupported dtype");
             return nullptr;
