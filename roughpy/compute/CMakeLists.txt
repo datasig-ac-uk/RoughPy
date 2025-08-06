@@ -28,4 +28,6 @@ target_sources(RoughPyComputeModule PRIVATE
         _src/py_obj_handle.hpp
         _src/py_ternary_array_fn.hpp
         _src/roughpy_compute_module.cpp
+        _src/tensor_basis.c
+        _src/tensor_basis.h
 )
