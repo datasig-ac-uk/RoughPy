@@ -13,12 +13,6 @@ class ROUGHPY_PLATFORM_EXPORT ArrayTypeException : public std::exception
 {
 };
 
-/**
- * @brief FIXME
- * - Documentation
- * - note It's valid to not have type for size = 0
- * - review alignment being stored in array, add accessor for tests?
- */
 class ROUGHPY_PLATFORM_EXPORT Array
 {
 private:
