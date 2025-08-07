@@ -276,10 +276,10 @@ PyMethodDef PyLieBasis_methods[] = {
 
 PyTypeObject PyLieBasis_Type = {
         .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "roughpy.compute.LieBasis",
+        .tp_name = RPY_CPT_TYPE_NAME(LieBasis),
         .tp_basicsize = sizeof(PyLieBasis),
         .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT,
+        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
         .tp_doc = "LieBasis",
         .tp_methods = PyLieBasis_methods,
         .tp_members = PyLieBasis_members,

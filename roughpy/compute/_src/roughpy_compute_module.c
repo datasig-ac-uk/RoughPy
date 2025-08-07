@@ -22,7 +22,7 @@ static PyMethodDef roughpy_compute_methods[] = {
          METH_VARARGS | METH_KEYWORDS,
          "dense free tensor fused multiply-add."},
         {
-                "dense_ft_inplace_mul", (PyCFunction) py_dense_ft_inline_mul,
+                "dense_ft_inplace_mul", (PyCFunction) py_dense_ft_inplace_mul,
                 METH_VARARGS | METH_KEYWORDS,
                 "dense free tensor inplace multiply."
         },
@@ -50,7 +50,7 @@ static PyModuleDef rpy_compute_internals_module = {
 
 
 PyMODINIT_FUNC
-PyInit_rpy_compute_internals(void)
+PyInit__rpy_compute_internals(void)
 {
     import_array();
 

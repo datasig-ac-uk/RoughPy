@@ -15,12 +15,12 @@ PyObject* py_dense_antipode(PyObject*, PyObject*, PyObject*);
 RPY_NO_EXPORT
 PyObject* py_dense_ft_fma(PyObject*, PyObject*, PyObject*);
 RPY_NO_EXPORT
-PyObject* py_dense_ft_inline_mul(PyObject*, PyObject*, PyObject*);
+PyObject* py_dense_ft_inplace_mul(PyObject*, PyObject*, PyObject*);
 
 RPY_NO_EXPORT
 PyObject* py_dense_st_fma(PyObject* , PyObject* , PyObject* );
 RPY_NO_EXPORT
-PyObject* py_dense_st_inline_mul(PyObject* , PyObject* , PyObject* );
+PyObject* py_dense_st_inplace_mul(PyObject* , PyObject* , PyObject* );
 
 
 RPY_NO_EXPORT

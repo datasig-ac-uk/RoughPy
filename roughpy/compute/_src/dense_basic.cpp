@@ -44,7 +44,7 @@ struct DenseFTFma
 
     CallConfig const* config_;
 
-    DenseFTFma(CallConfig const& config)
+    explicit DenseFTFma(CallConfig const& config)
         : config_(&config)
     {
     }
@@ -84,7 +84,7 @@ struct DenseFTFma
 }// namespace
 
 
-PyObject* dense_ft_fma(PyObject* self [[maybe_unused]], PyObject* args, PyObject* kwargs)
+PyObject* py_dense_ft_fma(PyObject* self [[maybe_unused]], PyObject* args, PyObject* kwargs)
 {
 
     static constexpr char const* const kwords[] = {
@@ -147,7 +147,7 @@ struct DenseFTInplaceMul
 
     CallConfig const* config_;
 
-    DenseFTInplaceMul(CallConfig const& config)
+    explicit DenseFTInplaceMul(CallConfig const& config)
         : config_(&config)
     {
     }
@@ -179,7 +179,7 @@ struct DenseFTInplaceMul
 }// namespace
 
 
-PyObject* dense_ft_inplace_mul(PyObject* self, PyObject* args, PyObject* kwargs)
+PyObject* py_dense_ft_inplace_mul(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     static constexpr char const* const kwords[] = {
         "out", "lhs", "rhs", "basis", "out_depth", "rhs_depth",
@@ -240,3 +240,27 @@ struct DenseAntipode
 };
 
 }//namespace
+
+PyObject* py_dense_antipode(PyObject*, PyObject*, PyObject*) {
+    Py_RETURN_NOTIMPLEMENTED;
+}
+
+PyObject* py_dense_st_fma(PyObject*, PyObject*, PyObject*)
+{
+    Py_RETURN_NOTIMPLEMENTED;
+}
+
+PyObject* py_dense_st_inplace_mul(PyObject*, PyObject*, PyObject*)
+{
+    Py_RETURN_NOTIMPLEMENTED;
+}
+
+PyObject* py_dense_lie_to_tensor(PyObject*, PyObject*, PyObject*)
+{
+    Py_RETURN_NOTIMPLEMENTED;
+}
+
+PyObject* py_dense_tensor_to_lie(PyObject*, PyObject*, PyObject*)
+{
+    Py_RETURN_NOTIMPLEMENTED;
+}

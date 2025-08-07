@@ -78,7 +78,7 @@ static int tensor_basis_init(PyTensorBasis* self,
         npy_intp* data = (npy_intp*) PyArray_DATA(
             (PyArrayObject*) self->degree_begin);
 
-        data[0] = 1;
+        data[0] = 0;
         for (npy_intp i = 1; i < self->depth + 2; ++i) {
             data[i] = 1 + data[i - 1] * self->width;
         }
@@ -164,10 +164,10 @@ static PyMethodDef PyTensorBasis_methods[] = {
 
 PyTypeObject PyTensorBasis_Type = {
         .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "roughpy.compute.TensorBasis",
+        .tp_name = RPY_CPT_TYPE_NAME(TensorBasis),
         .tp_basicsize = sizeof(PyTensorBasis),
         .tp_itemsize = 0,
-        .tp_flags = Py_TPFLAGS_DEFAULT,
+        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
         .tp_doc = "TensorBasis",
         .tp_methods = PyTensorBasis_methods,
         .tp_members = PyTensorBasis_members,
