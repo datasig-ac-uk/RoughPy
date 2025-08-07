@@ -66,6 +66,8 @@ static int construct_lie_basis(PyLieBasis* self)
      * computational and doesn't require interaction with
      * any Python objects so we can release the GIL.
      */
+    npy_intp size = 1;
+
     Py_BEGIN_ALLOW_THREADS;
     // Only the "god element" has degree 0
     db_ptr[0] = 0;
@@ -74,7 +76,6 @@ static int construct_lie_basis(PyLieBasis* self)
     data_ptr[0] = 0;
     data_ptr[1] = 0;
 
-    npy_intp size = 1;
 
     // assign the letters first
     if (self->depth > 0) {
@@ -116,25 +117,28 @@ static int construct_lie_basis(PyLieBasis* self)
 
     Py_END_ALLOW_THREADS;
 
-    // data_shape[0] = size;
-    PyArray_Dims dims = {
-        data_shape, 2
-    };
+    data_shape[0] = size;
 
-    PyObject* tmp = PyArray_Newshape((PyArrayObject*) data, &dims, NPY_CORDER);
-    if (tmp == NULL) {
-        Py_XDECREF(tmp);
+    PyObject* resized_data = PyArray_SimpleNew(2, data_shape, NPY_INTP);
+    // PyObject* tmp = PyArray_Newshape((PyArrayObject*) data, &dims, NPY_CORDER);
+    if (resized_data == NULL) {
         goto cleanup;
     }
-    Py_XDECREF(self->data);
-    self->data = tmp;
-    tmp = NULL;
+
+    npy_intp* dst_ptr = (npy_intp*) PyArray_DATA((PyArrayObject*) resized_data);
+    memcpy(dst_ptr, data_ptr, size * sizeof(npy_intp) * 2);
+
+    Py_SETREF(self->data, resized_data);
+    // Py_XDECREF(self->data);
+    // self->data = tmp;
+    // tmp = NULL;
 
 
     // Move the degree_begin data into the struct;
-    Py_XDECREF(self->degree_begin);
-    self->degree_begin = degree_begin;
-    degree_begin = NULL;
+    // Py_XDECREF(self->degree_begin);
+    // self->degree_begin = degree_begin;
+    // degree_begin = NULL;
+    Py_SETREF(self->degree_begin, degree_begin);
 
     ret = 0;
 
