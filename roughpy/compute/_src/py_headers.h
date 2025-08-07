@@ -18,6 +18,9 @@
 #include <numpy/ufuncobject.h>
 
 
+#define PYVER_HEX(major, minor) \
+     (((major) << 24) | \
+      ((minor) << 16))
 
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -25,7 +28,6 @@
 #else
 #define RPY_NO_EXPORT
 #endif
-
 
 
 
