@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include "roughpy_compute/commmon/operations.hpp"
+#include "roughpy_compute/common/operations.hpp"
 
 #include "roughpy_compute/dense/views.hpp"
 #include "roughpy_compute/dense/basic/free_tensor_inplace_mul.hpp"
