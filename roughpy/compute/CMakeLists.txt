@@ -23,6 +23,8 @@ target_sources(RoughPyComputeModule PRIVATE
         _src/dense_basic.cpp
         _src/dense_basic.h
         _src/dense_intermediate.h
+        _src/lie_basis.c
+        _src/lie_basis.h
         _src/py_binary_array_fn.hpp
         _src/py_headers.h
         _src/py_obj_handle.hpp
