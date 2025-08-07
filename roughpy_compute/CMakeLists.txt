@@ -44,7 +44,7 @@ if (RPYCOMPUTE_BUILD_TESTS)
     FetchContent_Declare(
             LibalgebraLite
             GIT_REPOSITORY https://github.com/datasig-ac-uk/libalgebra-lite.git
-            GIT_TAG 53b98d00bd4bff96247ac0bf881b27dfa0e0ad5b
+            GIT_TAG 5adf56d2211df9faec7b0990ce332cfae0c42396
     )
 
     set(LIBALGEBRA_LITE_RATIONAL_COEFFS ON CACHE INTERNAL "we need rational coefficients")
