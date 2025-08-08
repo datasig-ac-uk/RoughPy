@@ -35,7 +35,7 @@ target_include_directories(roughpy_compute INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/..>
 )
 
-if (RPYCOMPUTE_BUILD_TESTS)
+if (ROUGHPY_BUILD_TESTS)
     find_package(GTest CONFIG REQUIRED)
     enable_testing()
     include(GoogleTest)
@@ -58,6 +58,9 @@ if (RPYCOMPUTE_BUILD_TESTS)
     )
 
 
-    target_link_libraries(roughpy_compute_tests PRIVATE GTest::gtest_main roughpy_compute Libalgebra_lite::Libalgebra_lite)
+    target_link_libraries(roughpy_compute_tests PRIVATE
+            GTest::gtest_main
+            roughpy_compute
+            Libalgebra_lite::Libalgebra_lite)
 
 endif()
