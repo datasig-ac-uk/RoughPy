@@ -231,6 +231,9 @@ add_subdirectory(streams)
 # Currently roughpy_compute requires rational coefficients from libalgebra lite, which are disabled
 # in the vendored version For this reason, the roughpy_compute CMakeLists that declares all the tests
 # is not used here and instead we just declare the basic interface target here separately.
+#
+# In any case, this reinforces the fact that roughpy_compute is really a standalone library that might
+# not always reside in roughpy proper
 #add_subdirectory(roughpy_compute)
 
 add_library(RoughPy_Compute INTERFACE
