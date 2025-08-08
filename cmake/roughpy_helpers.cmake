@@ -60,7 +60,7 @@ function(find_boost)
     cmake_parse_arguments("BOOST" "" "VERSION" "COMPONENTS" ${ARGN})
 
     if (ROUGHPY_NO_VCPKG)
-        find_package(Boost ${BOOST_VERSION} CONFIG REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+        find_package(Boost ${BOOST_VERSION} CONFIG REQUIRED)
     else()
     foreach (lib IN LISTS BOOST_COMPONENTS)
         message(STATUS "finding boost library ${lib}")
