@@ -119,7 +119,7 @@ jobs:
     - name: "set conan profile cppstd"
       shell: bash
       run: |
-        conan profile detect default --force && \
+        conan profile detect --force && \
         conan profile update settings.compiler.cppstd=17 default
 
 
