@@ -121,7 +121,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
               -DROUGHPY_BUILD_TESTS=ON
         cmake --build ${{github.workspace}}/rpy_compute_build --config ${{env.BUILD_TYPE}}
-        ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure --test-dir=${{github.workspace}}/rpy_compute_build
+        ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure --test-dir "${{github.workspace}}/rpy_compute_build"
       env:
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
         CMAKE_GENERATOR: "Ninja"
