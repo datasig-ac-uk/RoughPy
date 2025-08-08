@@ -181,7 +181,9 @@ find_boost(VERSION 1.83 # COMPONENTS
 if (NOT TARGET Boost::headers AND TARGET Boost::boost)
     add_library(Boost::headers ALIAS Boost::boost)
 endif()
-
+if (NOT TARGET Boost::boost AND TARGET Boost::headers)
+    add_library(Boost::boost ALIAS Boost::headers)
+endif()
 
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(SndFile CONFIG CONFIG REQUIRED)
