@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.30)
 
 project(RoughPy-Compute LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 option(ROUGHPY_BUILD_TESTS "build tests for roughpy_compute" ON)
