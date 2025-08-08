@@ -11,11 +11,11 @@ void vector_scalar_multiply(
     DenseVectorView<S const*, Basis> in,
     S const& scalar)
 {
-    using Size = typename DenseVectorView<S*, Basis>::Size;
+    using Index = typename DenseVectorView<S*, Basis>::Index;
 
     auto const common_size = std::min(out.size(), in.size());
 
-    for (Size i=0; i < common_size; ++i) {
+    for (Index i=0; i < common_size; ++i) {
         out[i] = in[i] * scalar;
     }
 

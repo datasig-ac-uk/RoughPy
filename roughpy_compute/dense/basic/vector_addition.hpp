@@ -20,7 +20,7 @@ void vector_addition(
     RhsOp&& rhs_op=RhsOp{}
 )
 {
-    using Size = typename DenseVectorView<S*, Basis>::Size;
+    using Index = typename DenseVectorView<S*, Basis>::Index;
 
 
     // I'm going to ignore minimum degree at the moment. We might want to
@@ -28,15 +28,15 @@ void vector_addition(
 
     auto common_size = std::min(lhs.size(), rhs.size());
 
-    for (Size i=0; i < std::min(out.size(), common_size); ++i) {
+    for (Index i=0; i < std::min(out.size(), common_size); ++i) {
         out[i] = lhs_op(lhs[i]) + rhs_op(rhs[i]);
     }
 
-    for (Size i=common_size; i < std::min(out.size(), lhs.size()); ++i) {
+    for (Index i=common_size; i < std::min(out.size(), lhs.size()); ++i) {
         out[i] = lhs_op(lhs[i]);
     }
 
-    for (Size i=common_size; i < std::min(out.size(), rhs.size()); ++i) {
+    for (Index i=common_size; i < std::min(out.size(), rhs.size()); ++i) {
         out[i] = rhs_op(rhs[i]);
     }
 

@@ -16,14 +16,14 @@ void vector_inplace_addition(
     Op&& op=Op{}
 )
 {
-    using Size = typename DenseVectorView<S*, Basis>::Size;
+    using Index = typename DenseVectorView<S*, Basis>::Index;
 
     // We don't respect min_degree here, but we might want to add this support
     // later.
 
     auto const common_size = std::min(lhs.size(), rhs.size());
 
-    for (Size i=0; i < common_size; ++i) {
+    for (Index i=0; i < common_size; ++i) {
         lhs[i] += op(rhs[i]);
     }
 

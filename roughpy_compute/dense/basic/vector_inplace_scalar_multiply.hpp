@@ -10,9 +10,9 @@ inline namespace v1 {
 template <typename S, typename Basis>
 void vector_inplace_scalar_multiply(DenseVectorView<S*, Basis> arg, S const& scalar)
 {
-    using Size = typename DenseVectorView<S*, Basis>::Size;
+    using Index = typename DenseVectorView<S*, Basis>::Index;
 
-    for (Size i=0; i < arg.size(); ++i) {
+    for (Index i=0; i < arg.size(); ++i) {
         arg[i] *= scalar;
     }
 }

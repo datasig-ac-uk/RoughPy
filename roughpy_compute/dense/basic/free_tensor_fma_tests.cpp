@@ -17,8 +17,10 @@ using namespace rpy::compute;
 class FreeTensorFmaTests : public ::testing::Test, public rpy::compute::testing::PolynomialTensorHelper
 {
     using Helper = rpy::compute::testing::PolynomialTensorHelper;
+    using Basis = typename Helper::Basis;
+    using Index = typename Basis::Index;
 
-    std::vector<size_t> tensor_begins;
+    std::vector<Index> tensor_begins;
 
 protected:
     static constexpr int32_t width = 3;

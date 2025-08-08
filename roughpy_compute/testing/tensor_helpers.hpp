@@ -20,7 +20,7 @@ struct PolynomialTensorHelper
     using Indeterminant = typename Monomial::letter_type;
     using Rational = typename Scalar::scalar_type;
 
-    using Basis = TensorBasis<>;
+    using Basis = TensorBasis;
 
     using Degree = typename Basis::Degree;
 

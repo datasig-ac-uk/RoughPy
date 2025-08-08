@@ -19,8 +19,11 @@ using namespace rpy::compute;
 
 class VectorAdditionTests : public ::testing::Test, public rpy::compute::testing::PolynomialTensorHelper
 {
-    std::vector<std::size_t> tensor_begins;
     using Helper = rpy::compute::testing::PolynomialTensorHelper;
+    using Basis = typename Helper::Basis;
+    using Index = typename Basis::Index;
+
+    std::vector<Index> tensor_begins;
 protected:
 
     using Scalar = typename Helper::Scalar;
@@ -28,7 +31,6 @@ protected:
     using Indeterminant = typename Monomial::letter_type;
     using Rational = typename Scalar::scalar_type;
 
-    using typename Helper::Basis;
     using typename Helper::Degree;
 
     template <typename Ptr_>
