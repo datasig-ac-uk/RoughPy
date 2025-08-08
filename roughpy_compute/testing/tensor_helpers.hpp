@@ -103,7 +103,7 @@ struct PolynomialTensorHelper
         {
             size_t idx = 0;
             for (size_t i = 0; i < size; ++i) {
-                if ((mask >> i) & size_t{1} == mask_use) {
+                if (((mask >> i) & size_t{1}) == mask_use) {
                     idx *= base;
                     idx += letters[i];
                 }
