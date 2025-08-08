@@ -164,19 +164,19 @@ check_include_file_cxx(optional RPY_HAS_STD_OPTIONAL)
 # up a system library and not the ones installed by vcpkg. For this reason,
 # we provide a function that finds boost_{component} for each component.
 # This sets the Boost::{component} targets to be used in linking as usual.
-find_boost(VERSION 1.83 COMPONENTS
-    headers
-    align
-    container
-    core
-    endian
-    interprocess
-    multiprecision
-    pool
-    smart_ptr
-    type_traits
-    url
-    uuid
+find_boost(VERSION 1.83 # COMPONENTS
+#    headers
+#    align
+#    container
+#    core
+#    endian
+#    interprocess
+#    multiprecision
+#    pool
+#    smart_ptr
+#    type_traits
+#    url
+#    uuid
 )
 if (NOT TARGET Boost::headers)
     add_library(Boost::headers ALIAS Boost::boost)
