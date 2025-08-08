@@ -90,6 +90,8 @@ jobs:
     - name: Enable developer command prompt
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
 #    - name: install pkgconfig on windows
 #      if: runner.os == 'Windows'
@@ -127,7 +129,7 @@ jobs:
 
     - name: "conan install deps"
       shell: bash
-      run: conan install . --build=missing --output-folder=build
+      run: conan install . --build=missing -s build_type=${{env.BUILD_TYPE}}
 
 # This probably requires the intervention of a package manager because of boost and gmp deps.
 #    - name: Build and test roughpy_compute
@@ -152,7 +154,7 @@ jobs:
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_TEST_PYTHON_EMBED=${{env.ROUGHPY_BUILD_TEST_PYTHON_EMBED}}
       env:
 #        CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
-        CMAKE_TOOLCHAIN_FILE: "build/conan_toolchain.cmake"
+        CMAKE_TOOLCHAIN_FILE: "generators/conan_toolchain.cmake"
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
 #        VCPKG_FORCE_SYSTEM_BINARIES: 1
         CMAKE_GENERATOR: "Ninja"
