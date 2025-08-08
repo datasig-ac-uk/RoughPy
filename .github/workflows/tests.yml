@@ -117,6 +117,8 @@ jobs:
 
     - name: "setup conan"
       uses: conan-io/setup-conan@v1
+      with:
+        cache_packages: true
 
     - name: Configure Conan profile
       if: runner.os == 'Windows'
