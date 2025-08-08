@@ -5,7 +5,7 @@ project(RoughPy-Compute LANGUAGES CXX)
 
 
 
-option(RPYCOMPUTE_BUILD_TESTS "build tests for roughpy_compute" ON)
+option(ROUGHPY_BUILD_TESTS "build tests for roughpy_compute" ON)
 
 
 add_library(roughpy_compute INTERFACE
@@ -63,4 +63,5 @@ if (ROUGHPY_BUILD_TESTS)
             roughpy_compute
             Libalgebra_lite::Libalgebra_lite)
 
+    gtest_discover_tests(roughpy_compute_tests)
 endif()
