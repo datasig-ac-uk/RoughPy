@@ -227,6 +227,39 @@ add_subdirectory(intervals)
 add_subdirectory(algebra)
 add_subdirectory(streams)
 
+
+# Currently roughpy_compute requires rational coefficients from libalgebra lite, which are disabled
+# in the vendored version For this reason, the roughpy_compute CMakeLists that declares all the tests
+# is not used here and instead we just declare the basic interface target here separately.
+#
+# In any case, this reinforces the fact that roughpy_compute is really a standalone library that might
+# not always reside in roughpy proper
+#add_subdirectory(roughpy_compute)
+
+add_library(RoughPy_Compute INTERFACE
+        roughpy_compute/common/architecture.hpp
+        roughpy_compute/common/basis.hpp
+        roughpy_compute/common/cache_array.hpp
+        roughpy_compute/common/operations.hpp
+        roughpy_compute/common/sparse_matrix.hpp
+        roughpy_compute/dense/basic/apply_sparse_linear_map.hpp
+        roughpy_compute/dense/basic/free_tensor_antipode.hpp
+        roughpy_compute/dense/basic/free_tensor_fma.hpp
+        roughpy_compute/dense/basic/free_tensor_inplace_mul.hpp
+        roughpy_compute/dense/basic/vector_addition.hpp
+        roughpy_compute/dense/basic/vector_inplace_addition.hpp
+        roughpy_compute/dense/basic/vector_inplace_scalar_multiply.hpp
+        roughpy_compute/dense/basic/vector_scalar_multiply.hpp
+        roughpy_compute/dense/intermediate/free_tensor_exp.hpp
+        roughpy_compute/dense/intermediate/free_tensor_fmexp.hpp
+        roughpy_compute/dense/intermediate/free_tensor_log.hpp
+        roughpy_compute/dense/views.hpp
+)
+target_include_directories(RoughPy_Compute INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>)
+
+
+
 if (ROUGHPY_BUILD_PYLIB)
     add_subdirectory(roughpy)
 
