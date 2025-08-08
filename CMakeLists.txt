@@ -165,7 +165,6 @@ check_include_file_cxx(optional RPY_HAS_STD_OPTIONAL)
 # we provide a function that finds boost_{component} for each component.
 # This sets the Boost::{component} targets to be used in linking as usual.
 find_boost(VERSION 1.83 COMPONENTS
-    headers
     align
     container
     core
@@ -178,6 +177,9 @@ find_boost(VERSION 1.83 COMPONENTS
     url
     uuid
 )
+if (NOT TARGET Boost::headers)
+    add_library(Boost::headers ALIAS Boost::boost)
+endif()
 
 
 find_package(Eigen3 CONFIG REQUIRED)
