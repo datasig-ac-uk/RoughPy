@@ -113,6 +113,21 @@ jobs:
       run: |
         git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
 
+    - name: Build and test roughpy_compute
+      shell: bash
+      run:
+        cmake -B ${{github.workspace}}/rpy_compute_build \
+              -S ${{github.workspace}}/roughpy_compute \
+              -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+              -DROUGHPY_BUILD_TESTS=ON
+        cmake --build ${{github.workspace}}/rpy_compute_build --config ${{env.BUILD_TYPE}}
+        ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure --test_dir=${{github.workspace}}/rpy_compute_build
+      env:
+        MACOSX_DEPLOYMENT_TARGET: 11.0.0
+        CMAKE_GENERATOR: "Ninja"
+
+
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
