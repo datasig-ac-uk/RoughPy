@@ -72,13 +72,13 @@ jobs:
       with:
         python-version: 3.13
 
-    - name: Setup gha caching for vcpkg
-      uses: actions/github-script@v7
-      with:
-        script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
+#    - name: Setup gha caching for vcpkg
+#      uses: actions/github-script@v7
+#      with:
+#        script: |
+#            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+#            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+#
     - name: Setup msbuild on Windows
       if: runner.os == 'Windows'
       uses: microsoft/setup-msbuild@v2
@@ -108,11 +108,18 @@ jobs:
       run: |
         python -m pip install numpy ninja pytest "pybind11<3.0.0"
 
-    - name: setup vcpkg
-      shell: bash
-      run: |
-        git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
+#    - name: setup vcpkg
+#      shell: bash
+#      run: |
+#        git clone https://github.com/Microsoft/vcpkg.git tools/vcpkg
 
+    - name: "setup conan"
+      uses: conan-io/setup-conan@v1
+
+
+    - name: "conan install deps"
+      shell: bash
+      run: conan install . --build=missing
 
 # This probably requires the intervention of a package manager because of boost and gmp deps.
 #    - name: Build and test roughpy_compute
@@ -136,12 +143,16 @@ jobs:
       run: |
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DROUGHPY_BUILD_TESTS=ON -DROUGHPY_BUILD_TEST_PYTHON_EMBED=${{env.ROUGHPY_BUILD_TEST_PYTHON_EMBED}}
       env:
-        CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+#        CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+        CMAKE_TOOLCHAIN_FILE: "generators/conan_toolchain.cmake"
         MACOSX_DEPLOYMENT_TARGET: 11.0.0
-        VCPKG_FORCE_SYSTEM_BINARIES: 1
+#        VCPKG_FORCE_SYSTEM_BINARIES: 1
         CMAKE_GENERATOR: "Ninja"
         # Disable embedded tests on Windows to avoid runner path issues on CI
         ROUGHPY_BUILD_TEST_PYTHON_EMBED: ${{ runner.os == 'Windows' && 'OFF' || 'ON' }}
+        ROUGHPY_NO_VCPKG: "ON"
+
+
 
     - name: Build
       # Build your program with the given configuration
