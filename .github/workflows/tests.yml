@@ -119,7 +119,7 @@ jobs:
 
     - name: "conan install deps"
       shell: bash
-      run: conan install . --build=missing -s "compiler.cppstd=17"
+      run: conan install . --build=missing -s:b "compiler.cppstd=17" -s:h "compiler.cppstd=17"
 
 # This probably requires the intervention of a package manager because of boost and gmp deps.
 #    - name: Build and test roughpy_compute
