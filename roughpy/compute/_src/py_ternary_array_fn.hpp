@@ -61,7 +61,7 @@ PyObject* outer_loop_ternary(
 
 
 template <template <typename> class Fn>
-RPY_NO_EXPORT [[gnu::always_inline]] inline
+[[gnu::always_inline]] RPY_NO_EXPORT inline
 PyObject* ternary_function_outer(PyObject* out_obj [[maybe_unused]],
                                  PyObject* lhs_obj,
                                  PyObject* rhs_obj,

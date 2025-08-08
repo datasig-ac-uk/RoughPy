@@ -23,6 +23,7 @@
       ((minor) << 16))
 
 
+
 #if defined(__GNUC__) || defined(__clang__)
 #define RPY_NO_EXPORT __attribute__((visibility("hidden")))
 #else

@@ -54,7 +54,7 @@ PyObject* outer_loop_binary(
 }
 
 template <template <typename> class Fn>
-RPY_NO_EXPORT [[gnu::always_inline]] inline
+[[gnu::always_inline]] RPY_NO_EXPORT inline
 PyObject* binary_function_outer(PyObject* out_obj,
                                 PyObject* arg_obj,
                                 CallConfig const& config)
