@@ -13,7 +13,7 @@ target_include_directories(RoughPyComputeModule PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/../..
 )
 
-#target_link_libraries(RoughPyComputeModule PRIVATE )
+target_link_libraries(RoughPyComputeModule PRIVATE Python::NumPy)
 
 
 target_sources(RoughPyComputeModule PRIVATE
