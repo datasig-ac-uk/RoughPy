@@ -122,7 +122,7 @@ jobs:
         conan profile detect --force
         $profile_path = conan profile path default
         (Get-Content $profile_path) -replace 'compiler.cppstd=.*', 'compiler.cppstd=17' | Set-Content $profile_path
-        conan profile show default
+        conan profile show
       shell: powershell
 
     - name: "conan install deps"
