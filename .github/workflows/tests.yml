@@ -116,12 +116,14 @@ jobs:
     - name: "setup conan"
       uses: conan-io/setup-conan@v1
 
-    - name: "set conan profile cppstd"
-      shell: bash
+    - name: Configure Conan profile
+      if: runner.os == 'Windows'
       run: |
-        conan profile detect --force && \
-        conan profile update settings.compiler.cppstd=17 default
-
+        conan profile detect --force
+        $profile_path = conan profile path default
+        (Get-Content $profile_path) -replace 'compiler.cppstd=.*', 'compiler.cppstd=17' | Set-Content $profile_path
+        conan profile show default
+      shell: powershell
 
     - name: "conan install deps"
       shell: bash
