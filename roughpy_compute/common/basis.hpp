@@ -52,9 +52,11 @@ struct LieBasis : BasisBase
     constexpr LieBasis truncate(Degree new_depth) const noexcept
     {
         return {
-            this->degree_begin,
-            this->width,
-            std::min(this->depth, new_depth),
+                {
+                    this->degree_begin,
+                   this->width,
+                   std::min(this->depth, new_depth)
+                },
             this->data
         };
     }
