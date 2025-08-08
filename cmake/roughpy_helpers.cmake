@@ -62,20 +62,20 @@ function(find_boost)
     if (ROUGHPY_NO_VCPKG)
         find_package(Boost ${BOOST_VERSION} CONFIG REQUIRED)
     else()
-    foreach (lib IN LISTS BOOST_COMPONENTS)
-        message(STATUS "finding boost library ${lib}")
-        if (DEFINED BOOST_VERSION)
-            find_package("boost_${lib}" "${BOOST_VERSION}" CONFIG REQUIRED
-                    "${lib}"
-            )
-        else()
-            find_package("boost_${lib}" CONFIG REQUIRED
-                    "${lib}"
-            )
-        endif()
+        foreach (lib IN LISTS BOOST_COMPONENTS)
+            message(STATUS "finding boost library ${lib}")
+            if (DEFINED BOOST_VERSION)
+                find_package("boost_${lib}" "${BOOST_VERSION}" CONFIG REQUIRED
+                        "${lib}"
+                )
+            else ()
+                find_package("boost_${lib}" CONFIG REQUIRED
+                        "${lib}"
+                )
+            endif ()
 
-    endforeach ()
-        add_library(Boost::boost ALIAS Boost::headers)
+        endforeach ()
+#        add_library(Boost::boost ALIAS Boost::headers)
     endif()
 
 

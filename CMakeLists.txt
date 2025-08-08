@@ -178,7 +178,7 @@ find_boost(VERSION 1.83 # COMPONENTS
 #    url
 #    uuid
 )
-if (NOT TARGET Boost::headers)
+if (NOT TARGET Boost::headers AND TARGET Boost::boost)
     add_library(Boost::headers ALIAS Boost::boost)
 endif()
 
